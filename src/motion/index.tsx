@@ -69,6 +69,14 @@ type ParsedValue = {
     unit: string;
 };
 
+type SpringMetrics = {
+    damping: number;
+    dampingRatio: number;
+    mass: number;
+    naturalFrequency: number;
+    stiffness: number;
+};
+
 type TransformParts = {
     x?: ParsedValue;
     y?: ParsedValue;
@@ -77,10 +85,16 @@ type TransformParts = {
 };
 
 const PresenceContext = createContext<PresenceContextValue | null>(null);
-const styleElementId = "stitchable-motion-runtime";
 const layoutRegistry = new Map<string, DOMRect>();
 const motionComponentCache = new Map<string, ReturnType<typeof createMotionComponent>>();
-let animationSequence = 0;
+
+function hasSameTrackedChildren(current: PresenceTrackedChild[], next: PresenceTrackedChild[]) {
+    if (current.length !== next.length) {
+        return false;
+    }
+
+    return current.every((child, index) => child.element.key === next[index]?.element.key && child.isPresent === next[index]?.isPresent);
+}
 
 function isBrowser() {
     return typeof window !== "undefined" && typeof document !== "undefined";
@@ -92,52 +106,6 @@ function toMs(value: number | undefined, fallback: number) {
     }
 
     return value <= 10 ? value * 1000 : value;
-}
-
-function ensureMotionStyleSheet() {
-    if (!isBrowser()) {
-        return null;
-    }
-
-    let style = document.getElementById(styleElementId) as HTMLStyleElement | null;
-
-    if (!style) {
-        style = document.createElement("style");
-        style.id = styleElementId;
-        document.head.appendChild(style);
-    }
-
-    return style.sheet as CSSStyleSheet;
-}
-
-function camelToKebab(value: string) {
-    return value.replace(/[A-Z]/g, (match) => `-${match.toLowerCase()}`);
-}
-
-function serializeStyle(style: CSSProperties) {
-    return Object.entries(style)
-        .filter(([, value]) => value != null && value !== "")
-        .map(([key, value]) => `${camelToKebab(key)}: ${String(value)};`)
-        .join(" ");
-}
-
-function registerKeyframes(frames: CSSProperties[]) {
-    const sheet = ensureMotionStyleSheet();
-
-    if (!sheet) {
-        return "";
-    }
-
-    const name = `stitchable-motion-${animationSequence++}`;
-    const rule = `@keyframes ${name} {${frames
-        .map((frame, index) => {
-            const percent = frames.length === 1 ? 100 : (index / (frames.length - 1)) * 100;
-            return `${percent}% { ${serializeStyle(frame)} }`;
-        })
-        .join(" ")}}`;
-
-    sheet.insertRule(rule, sheet.cssRules.length);
-    return name;
 }
 
 function parseNumericValue(value: MotionPrimitive | undefined) {
@@ -173,6 +141,31 @@ function parseScaleValue(value: MotionPrimitive | undefined) {
 
 function parseTransformParts(style?: MotionStyle): TransformParts {
     const rawTransform = style?.transform?.trim() ?? "";
+    const matrixMatch = rawTransform.match(/^matrix\(([^)]+)\)$/);
+    const matrix3dMatch = rawTransform.match(/^matrix3d\(([^)]+)\)$/);
+
+    if (matrixMatch) {
+        const values = matrixMatch[1].split(",").map((value) => Number.parseFloat(value.trim()));
+
+        return {
+            x: Number.isFinite(values[4]) ? { value: values[4], unit: "px" } : undefined,
+            y: Number.isFinite(values[5]) ? { value: values[5], unit: "px" } : undefined,
+            scale: Number.isFinite(values[0]) ? values[0] : undefined,
+            rest: [],
+        };
+    }
+
+    if (matrix3dMatch) {
+        const values = matrix3dMatch[1].split(",").map((value) => Number.parseFloat(value.trim()));
+
+        return {
+            x: Number.isFinite(values[12]) ? { value: values[12], unit: "px" } : undefined,
+            y: Number.isFinite(values[13]) ? { value: values[13], unit: "px" } : undefined,
+            scale: Number.isFinite(values[0]) ? values[0] : undefined,
+            rest: [],
+        };
+    }
+
     const rest = rawTransform
         .replace(/translate3d\(([^,]+),([^,]+),([^)]+)\)/g, "")
         .replace(/translateX\(([^)]+)\)/g, "")
@@ -210,6 +203,10 @@ function composeTransform(parts: TransformParts) {
     return transforms.join(" ").trim();
 }
 
+function clamp(value: number, min: number, max: number) {
+    return Math.min(max, Math.max(min, value));
+}
+
 function resolveMotionStyle(style?: MotionStyle) {
     if (!style) {
         return {};
@@ -234,16 +231,71 @@ function resolveMotionStyle(style?: MotionStyle) {
     return nextStyle;
 }
 
-function stringifyStyle(style?: MotionStyle) {
-    return JSON.stringify(style ?? {});
+function getSpringMetrics(transition?: MotionTransition): SpringMetrics {
+    const mass = Math.max(0.001, transition?.mass ?? 1);
+    const stiffness = Math.max(0.001, transition?.stiffness ?? 100);
+    const damping = Math.max(0.001, transition?.damping ?? 10);
+    const naturalFrequency = Math.sqrt(stiffness / mass);
+    const dampingRatio = damping / (2 * Math.sqrt(stiffness * mass));
+
+    return {
+        damping,
+        dampingRatio,
+        mass,
+        naturalFrequency,
+        stiffness,
+    };
 }
 
-function interpolateValue(from: ParsedValue | undefined, to: ParsedValue | undefined, progress: number) {
+function getSpringSettlingDuration(metrics: SpringMetrics) {
+    const epsilon = 0.001;
+
+    if (metrics.dampingRatio < 1) {
+        return Math.log(1 / epsilon) / (metrics.dampingRatio * metrics.naturalFrequency);
+    }
+
+    if (Math.abs(metrics.dampingRatio - 1) < 0.0001) {
+        return Math.log(1 / epsilon) / metrics.naturalFrequency;
+    }
+
+    const slowPole = metrics.naturalFrequency * (metrics.dampingRatio - Math.sqrt(metrics.dampingRatio * metrics.dampingRatio - 1));
+    return Math.log(1 / epsilon) / Math.max(slowPole, 0.001);
+}
+
+function getSpringProgress(time: number, metrics: SpringMetrics) {
+    if (metrics.dampingRatio < 1) {
+        const dampedFrequency = metrics.naturalFrequency * Math.sqrt(1 - metrics.dampingRatio * metrics.dampingRatio);
+        const coefficient = metrics.dampingRatio / Math.sqrt(1 - metrics.dampingRatio * metrics.dampingRatio);
+
+        return 1 - Math.exp(-metrics.dampingRatio * metrics.naturalFrequency * time) * (Math.cos(dampedFrequency * time) + coefficient * Math.sin(dampedFrequency * time));
+    }
+
+    if (Math.abs(metrics.dampingRatio - 1) < 0.0001) {
+        const envelope = Math.exp(-metrics.naturalFrequency * time);
+        return 1 - envelope * (1 + metrics.naturalFrequency * time);
+    }
+
+    const sqrtTerm = Math.sqrt(metrics.dampingRatio * metrics.dampingRatio - 1);
+    const slowPole = -metrics.naturalFrequency * (metrics.dampingRatio - sqrtTerm);
+    const fastPole = -metrics.naturalFrequency * (metrics.dampingRatio + sqrtTerm);
+
+    return 1 - (fastPole * Math.exp(slowPole * time) - slowPole * Math.exp(fastPole * time)) / (fastPole - slowPole);
+}
+
+function interpolateParsedValue(from: ParsedValue | undefined, to: ParsedValue | undefined, progress: number) {
     if (!from && !to) {
         return undefined;
     }
 
-    if (!from || !to || from.unit !== to.unit) {
+    if (!from) {
+        return to;
+    }
+
+    if (!to) {
+        return from;
+    }
+
+    if (from.unit !== to.unit) {
         return progress >= 1 ? to : from;
     }
 
@@ -253,61 +305,92 @@ function interpolateValue(from: ParsedValue | undefined, to: ParsedValue | undef
     };
 }
 
-function createSpringFrame(from: MotionStyle, to: MotionStyle, translateFactor: number, scaleFactor: number) {
+function interpolateNumber(from: number | undefined, to: number | undefined, progress: number) {
+    if (from == null && to == null) {
+        return undefined;
+    }
+
+    if (from == null) {
+        return to;
+    }
+
+    if (to == null) {
+        return from;
+    }
+
+    return from + (to - from) * progress;
+}
+
+function createTweenKeyframes(from: MotionStyle, to: MotionStyle): Keyframe[] {
+    return [resolveMotionStyle(from) as Keyframe, resolveMotionStyle(to) as Keyframe];
+}
+
+function createSpringKeyframes(from: MotionStyle, to: MotionStyle, transition?: MotionTransition): Keyframe[] {
+    const metrics = getSpringMetrics(transition);
+    const fromStyle = resolveMotionStyle(from);
+    const toStyle = resolveMotionStyle(to);
     const fromParts = parseTransformParts(from);
     const toParts = parseTransformParts(to);
-    const frame: MotionStyle = {};
+    const duration = resolveDuration(transition) / 1000;
+    const frameCount = clamp(Math.round(duration * 60), 12, 180);
+    const keyframes: Keyframe[] = [];
 
-    for (const [key, value] of Object.entries(to)) {
-        if (value != null && !["x", "y", "scale", "transform"].includes(key)) {
-            frame[key as keyof MotionStyle] = value as never;
+    for (let index = 0; index < frameCount; index += 1) {
+        const offset = frameCount === 1 ? 1 : index / (frameCount - 1);
+        const progress = getSpringProgress(duration * offset, metrics);
+        const clampedProgress = clamp(progress, 0, 1);
+        const keyframe: Keyframe = {
+            offset,
+        };
+
+        const opacity = interpolateNumber(
+            typeof fromStyle.opacity === "number" ? fromStyle.opacity : undefined,
+            typeof toStyle.opacity === "number" ? toStyle.opacity : undefined,
+            clampedProgress
+        );
+
+        if (opacity != null) {
+            keyframe.opacity = opacity;
         }
+
+        const transform = composeTransform({
+            x: interpolateParsedValue(fromParts.x, toParts.x, progress),
+            y: interpolateParsedValue(fromParts.y, toParts.y, progress),
+            scale: interpolateNumber(fromParts.scale, toParts.scale, progress),
+            rest: toParts.rest.length ? toParts.rest : fromParts.rest,
+        });
+
+        if (transform) {
+            keyframe.transform = transform;
+        }
+
+        keyframes.push(keyframe);
     }
 
-    const xDiff = (toParts.x?.value ?? 0) - (fromParts.x?.value ?? 0);
-    const yDiff = (toParts.y?.value ?? 0) - (fromParts.y?.value ?? 0);
-    const scaleDiff = (toParts.scale ?? 1) - (fromParts.scale ?? 1);
+    const lastKeyframe = keyframes[keyframes.length - 1];
 
-    const overshootX =
-        toParts.x && fromParts.x && fromParts.x.unit === toParts.x.unit ? { value: toParts.x.value + xDiff * translateFactor, unit: toParts.x.unit } : toParts.x;
-    const overshootY =
-        toParts.y && fromParts.y && fromParts.y.unit === toParts.y.unit ? { value: toParts.y.value + yDiff * translateFactor, unit: toParts.y.unit } : toParts.y;
-    const overshootScale = toParts.scale != null && fromParts.scale != null ? toParts.scale + scaleDiff * scaleFactor : toParts.scale;
-
-    const nextParts: TransformParts = {
-        x: overshootX,
-        y: overshootY,
-        scale: overshootScale,
-        rest: toParts.rest,
-    };
-    const transform = composeTransform(nextParts);
-
-    if (transform) {
-        frame.transform = transform;
+    if (typeof toStyle.opacity === "number") {
+        lastKeyframe.opacity = toStyle.opacity;
     }
 
-    return frame;
+    if (typeof toStyle.transform === "string") {
+        lastKeyframe.transform = toStyle.transform;
+    }
+
+    return keyframes;
 }
 
 function createAnimationFrames(from: MotionStyle, to: MotionStyle, transition?: MotionTransition) {
-    const resolvedFrom = resolveMotionStyle(from);
-    const resolvedTo = resolveMotionStyle(to);
-
     if (transition?.type !== "spring") {
-        return [resolvedFrom, resolvedTo];
+        return createTweenKeyframes(from, to);
     }
 
-    return [
-        resolvedFrom,
-        createSpringFrame(from, to, -0.08, -0.06),
-        createSpringFrame(from, to, 0.02, 0.02),
-        resolvedTo,
-    ];
+    return createSpringKeyframes(from, to, transition);
 }
 
 function resolveTimingFunction(transition?: MotionTransition) {
     if (transition?.type === "spring") {
-        return "cubic-bezier(0.22, 1, 0.36, 1)";
+        return "linear";
     }
 
     return transition?.ease ?? "ease";
@@ -319,14 +402,47 @@ function resolveDuration(transition?: MotionTransition) {
     }
 
     if (transition?.type === "spring") {
-        const stiffness = transition.stiffness ?? 100;
-        const damping = transition.damping ?? 10;
-        const mass = transition.mass ?? 1;
-        const estimated = (mass * 1000) / Math.max(10, stiffness) + (damping / Math.max(10, stiffness)) * 600;
-        return Math.min(900, Math.max(320, estimated));
+        const duration = getSpringSettlingDuration(getSpringMetrics(transition)) * 1000;
+        return clamp(duration, 120, 6000);
     }
 
     return 320;
+}
+
+function stringifyStyle(style?: MotionStyle) {
+    return JSON.stringify(resolveMotionStyle(style));
+}
+
+function applyResolvedMotionStyle(node: HTMLElement, style?: MotionStyle) {
+    const resolvedStyle = resolveMotionStyle(style);
+
+    if ("opacity" in resolvedStyle) {
+        node.style.opacity = String(resolvedStyle.opacity);
+    }
+
+    if ("transform" in resolvedStyle) {
+        node.style.transform = String(resolvedStyle.transform);
+    }
+}
+
+function captureCurrentMotionStyle(node: HTMLElement, fallback?: MotionStyle) {
+    const computedStyle = window.getComputedStyle(node);
+    const nextStyle: MotionStyle = { ...(fallback ?? {}) };
+    const opacity = Number.parseFloat(computedStyle.opacity);
+
+    if (!Number.isNaN(opacity)) {
+        nextStyle.opacity = opacity;
+    }
+
+    if (computedStyle.transform && computedStyle.transform !== "none") {
+        nextStyle.transform = computedStyle.transform;
+    } else if (fallback?.transform) {
+        nextStyle.transform = fallback.transform;
+    } else {
+        delete nextStyle.transform;
+    }
+
+    return nextStyle;
 }
 
 function useMergedRef<T>(forwardedRef: Ref<T>, localRef: { current: T | null }) {
@@ -398,7 +514,9 @@ export function AnimatedPresence({ children }: { children: ReactNode }) {
                 .filter((child) => child.element.key != null && !nextKeys.has(child.element.key))
                 .map((child) => ({ ...child, isPresent: false }));
 
-            return [...nextChildren, ...exitingChildren];
+            const nextTrackedChildren = [...nextChildren, ...exitingChildren];
+
+            return hasSameTrackedChildren(current, nextTrackedChildren) ? current : nextTrackedChildren;
         });
     }, [validChildren]);
 
@@ -407,7 +525,11 @@ export function AnimatedPresence({ children }: { children: ReactNode }) {
             key={child.element.key}
             isPresent={child.isPresent}
             onExitComplete={() => {
-                setTrackedChildren((current) => current.filter((item) => item.element.key !== child.element.key));
+                setTrackedChildren((current) => {
+                    const nextTrackedChildren = current.filter((item) => item.element.key !== child.element.key);
+
+                    return nextTrackedChildren.length === current.length ? current : nextTrackedChildren;
+                });
             }}
         >
             {cloneElement(child.element)}
@@ -425,18 +547,16 @@ function createMotionComponent(tagName: string) {
         const localRef = useRef<HTMLElement | null>(null);
         const lastAnimatedStyleRef = useRef<MotionStyle>(animate ?? {});
         const previousRectRef = useRef<DOMRect | null>(null);
-        const timeoutRef = useRef<number | null>(null);
+        const animationRef = useRef<Animation | null>(null);
         const hasMountedRef = useRef(false);
-        const [animationStyle, setAnimationStyle] = useState<CSSProperties>({});
         const mergedRef = useMergedRef(forwardedRef, localRef);
         const animateKey = stringifyStyle(animate);
-        const initialKey = initial === false ? "false" : stringifyStyle(initial);
-        const exitKey = stringifyStyle(exit);
 
         useEffect(
             () => () => {
-                if (timeoutRef.current != null) {
-                    window.clearTimeout(timeoutRef.current);
+                if (animationRef.current) {
+                    animationRef.current.cancel();
+                    animationRef.current = null;
                 }
 
                 if (layoutId && localRef.current) {
@@ -478,37 +598,59 @@ function createMotionComponent(tagName: string) {
                 return;
             }
 
-            const fromStyle = hasMountedRef.current ? lastAnimatedStyleRef.current : initial === false ? animate : initial ?? animate;
+            const fromStyle = hasMountedRef.current
+                ? captureCurrentMotionStyle(node, lastAnimatedStyleRef.current)
+                : initial === false
+                  ? animate
+                  : initial ?? animate;
             const shouldAnimate = hasMountedRef.current ? animateKey !== stringifyStyle(lastAnimatedStyleRef.current) : initial !== false;
 
-            hasMountedRef.current = true;
-            lastAnimatedStyleRef.current = animate;
-
             if (!shouldAnimate) {
+                hasMountedRef.current = true;
+                lastAnimatedStyleRef.current = animate;
+                applyResolvedMotionStyle(node, animate);
                 return;
             }
 
-            const frames = createAnimationFrames(fromStyle, animate, transition);
-            const animationName = registerKeyframes(frames);
-            const duration = resolveDuration(transition);
-            const delay = toMs(transition?.delay, 0);
+            const currentAnimation = animationRef.current;
+            const wasInterrupted = Boolean(currentAnimation);
 
-            setAnimationStyle({
-                animationName,
-                animationDuration: `${duration}ms`,
-                animationDelay: `${delay}ms`,
-                animationTimingFunction: resolveTimingFunction(transition),
-                animationFillMode: "both",
-            });
-
-            if (timeoutRef.current != null) {
-                window.clearTimeout(timeoutRef.current);
+            if (currentAnimation) {
+                currentAnimation.cancel();
+                animationRef.current = null;
             }
 
-            timeoutRef.current = window.setTimeout(() => {
-                setAnimationStyle({});
-            }, duration + delay + 34);
-        }, [animate, animateKey, initial, initialKey, presence?.isPresent, transition]);
+            const duration = resolveDuration(transition);
+            const delay = wasInterrupted ? 0 : toMs(transition?.delay, 0);
+            const animation = node.animate(createAnimationFrames(fromStyle, animate, transition), {
+                duration,
+                delay,
+                easing: resolveTimingFunction(transition),
+                fill: "both",
+            });
+
+            animationRef.current = animation;
+            node.style.willChange = "transform, opacity";
+            hasMountedRef.current = true;
+            lastAnimatedStyleRef.current = animate;
+
+            animation.onfinish = () => {
+                if (animationRef.current !== animation) {
+                    return;
+                }
+
+                applyResolvedMotionStyle(node, animate);
+                node.style.willChange = "";
+                animationRef.current = null;
+            };
+
+            animation.oncancel = () => {
+                if (animationRef.current === animation) {
+                    animationRef.current = null;
+                    node.style.willChange = "";
+                }
+            };
+        }, [animate, animateKey, initial, presence?.isPresent, transition]);
 
         useEffect(() => {
             if (presence?.isPresent !== false) {
@@ -520,35 +662,56 @@ function createMotionComponent(tagName: string) {
                 return;
             }
 
-            const frames = createAnimationFrames(lastAnimatedStyleRef.current, exit, transition);
-            const animationName = registerKeyframes(frames);
-            const duration = resolveDuration(transition);
-            const delay = toMs(transition?.delay, 0);
+            const node = localRef.current;
 
-            setAnimationStyle({
-                animationName,
-                animationDuration: `${duration}ms`,
-                animationDelay: `${delay}ms`,
-                animationTimingFunction: resolveTimingFunction(transition),
-                animationFillMode: "both",
-            });
-
-            if (timeoutRef.current != null) {
-                window.clearTimeout(timeoutRef.current);
+            if (!node) {
+                presence.onExitComplete?.();
+                return;
             }
 
-            timeoutRef.current = window.setTimeout(() => {
-                setAnimationStyle({});
+            const fromStyle = captureCurrentMotionStyle(node, lastAnimatedStyleRef.current);
+            const currentAnimation = animationRef.current;
+            const wasInterrupted = Boolean(currentAnimation);
+
+            if (currentAnimation) {
+                currentAnimation.cancel();
+                animationRef.current = null;
+            }
+
+            const duration = resolveDuration(transition);
+            const delay = wasInterrupted ? 0 : toMs(transition?.delay, 0);
+            const animation = node.animate(createAnimationFrames(fromStyle, exit, transition), {
+                duration,
+                delay,
+                easing: resolveTimingFunction(transition),
+                fill: "both",
+            });
+            animationRef.current = animation;
+            node.style.willChange = "transform, opacity";
+
+            animation.onfinish = () => {
+                if (animationRef.current !== animation) {
+                    return;
+                }
+
+                applyResolvedMotionStyle(node, exit);
+                node.style.willChange = "";
+                animationRef.current = null;
                 presence.onExitComplete?.();
-            }, duration + delay + 34);
-        }, [exit, exitKey, presence, transition]);
+            };
+
+            animation.oncancel = () => {
+                if (animationRef.current === animation) {
+                    animationRef.current = null;
+                    node.style.willChange = "";
+                }
+            };
+        }, [exit, presence, transition]);
 
         const resolvedAnimatedStyle = animate ? resolveMotionStyle(animate) : {};
         const mergedStyle = {
             ...style,
             ...resolvedAnimatedStyle,
-            ...animationStyle,
-            willChange: animationStyle.animationName ? "transform, opacity" : style?.willChange,
         } satisfies CSSProperties;
 
         return (

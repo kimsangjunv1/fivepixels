@@ -2,15 +2,7 @@
 
 import { type CSSProperties, type MouseEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useCreateReportMutation, useReportsQuery, useUpdateReportMutation } from "../../entities/report/api/report.query.js";
-import type {
-    ReportAppearance,
-    ReportFeedback,
-    ReportField,
-    ReportFieldValues,
-    ReportStatus,
-    ReportStorageAdapter,
-    ReportTargetType,
-} from "../../entities/report/model/report.type.js";
+import type { ReportAppearance, ReportFeedback, ReportField, ReportFieldValues, ReportStatus, ReportStorageAdapter, ReportTargetType } from "../../entities/report/model/report.type.js";
 import { AnimatedPresence, motion } from "../../motion/index.js";
 import { localStorageReportAdapter } from "../../report/storage/localStorageAdapter.js";
 
@@ -344,7 +336,10 @@ function renderFieldEditor(
     return fields.map((field) => {
         if (field.key === "message") {
             return (
-                <label key={field.key} style={styles.fieldBlock}>
+                <label
+                    key={field.key}
+                    style={styles.fieldBlock}
+                >
                     <span style={{ ...styles.fieldLabel, color: palette.text }}>{field.label}</span>
                     <textarea
                         value={message}
@@ -362,7 +357,10 @@ function renderFieldEditor(
 
         if (field.type === "checkbox") {
             return (
-                <label key={field.key} style={{ ...styles.checkboxRow, color: palette.text }}>
+                <label
+                    key={field.key}
+                    style={{ ...styles.checkboxRow, color: palette.text }}
+                >
                     <input
                         type="checkbox"
                         checked={fieldValues[field.key] === true}
@@ -374,7 +372,10 @@ function renderFieldEditor(
         }
 
         return (
-            <label key={field.key} style={styles.fieldBlock}>
+            <label
+                key={field.key}
+                style={styles.fieldBlock}
+            >
                 <span style={{ ...styles.fieldLabel, color: palette.text }}>{field.label}</span>
                 <textarea
                     value={String(fieldValues[field.key] ?? "")}
@@ -413,7 +414,11 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
     const [selectedReportId, setSelectedReportId] = useState<string | null>(null);
     const [editingReportId, setEditingReportId] = useState<string | null>(null);
     const [editableDraft, setEditableDraft] = useState<EditableDraft | null>(null);
-    const [filters, setFilters] = useState<ReportFilters>({ keyword: "", status: "all", reportType: "all" });
+    const [filters, setFilters] = useState<ReportFilters>({
+        keyword: "",
+        status: "all",
+        reportType: "all",
+    });
     const { data: reports, error, isError, isFetching, refetch } = useReportsQuery(storageAdapter, currentPathname, true);
     const { mutateAsync: createFeedback, isPending: isCreating } = useCreateReportMutation(storageAdapter, () => {
         void refetch();
@@ -437,10 +442,7 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
             }
 
             const keyword = filters.keyword.trim().toLowerCase();
-            return [report.message, report.report_id, report.status]
-                .join(" ")
-                .toLowerCase()
-                .includes(keyword);
+            return [report.message, report.report_id, report.status].join(" ").toLowerCase().includes(keyword);
         });
     }, [filters.keyword, filters.reportType, filters.status, reports]);
 
@@ -764,13 +766,28 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
             >
                 <div style={styles.panelHeader}>
                     <strong style={{ fontSize: 14 }}>stitchable</strong>
-                    <span style={{ ...styles.badge, backgroundColor: palette.chip, color: palette.muted }}>{appearance}</span>
+                    <span
+                        style={{
+                            ...styles.badge,
+                            backgroundColor: palette.chip,
+                            color: palette.muted,
+                        }}
+                    >
+                        {appearance}
+                    </span>
                 </div>
 
                 <p style={{ ...styles.helperText, color: palette.muted }}>{helperText}</p>
 
                 <div style={styles.buttonRow}>
-                    <button type="button" onClick={() => setMode((current) => (current === "report" ? "idle" : "report"))} style={{ ...styles.primaryButton, backgroundColor: mode === "report" ? "#ef4444" : "#2563eb" }}>
+                    <button
+                        type="button"
+                        onClick={() => setMode((current) => (current === "report" ? "idle" : "report"))}
+                        style={{
+                            ...styles.primaryButton,
+                            backgroundColor: mode === "report" ? "#ef4444" : "#2563eb",
+                        }}
+                    >
                         {mode === "report" ? "선택 중단" : "피드백 남기기"}
                     </button>
                     <button
@@ -780,7 +797,11 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
                             stopEditing();
                             setSelectedReportId(filteredReports[0]?.id ?? null);
                         }}
-                        style={{ ...styles.secondaryButton, borderColor: palette.inputBorder, color: palette.text }}
+                        style={{
+                            ...styles.secondaryButton,
+                            borderColor: palette.inputBorder,
+                            color: palette.text,
+                        }}
                     >
                         {mode === "view" ? "목록 닫기" : "피드백 보기"}
                     </button>
@@ -813,7 +834,12 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
                                 backgroundColor: `${TARGET_COLOR[hoveredTarget.type]}15`,
                             }}
                         >
-                            <span style={{ ...styles.highlightLabel, backgroundColor: TARGET_COLOR[hoveredTarget.type] }}>
+                            <span
+                                style={{
+                                    ...styles.highlightLabel,
+                                    backgroundColor: TARGET_COLOR[hoveredTarget.type],
+                                }}
+                            >
                                 {hoveredTarget.type} · {hoveredTarget.id}
                             </span>
                         </div>
@@ -874,10 +900,7 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
                                       left: marker.left,
                                       top: marker.top,
                                       backgroundColor: getMarkerColor(marker.report),
-                                      boxShadow:
-                                          marker.report.id === selectedReport?.id
-                                              ? "0 0 0 4px rgba(15, 23, 42, 0.2)"
-                                              : styles.markerButton.boxShadow,
+                                      boxShadow: marker.report.id === selectedReport?.id ? "0 0 0 4px rgba(15, 23, 42, 0.2)" : styles.markerButton.boxShadow,
                                       transform: marker.report.id === selectedReport?.id ? "scale(1.15)" : "scale(1)",
                                   }}
                               />
@@ -888,11 +911,11 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
                         {mode === "view" && tooltipReport && tooltipMarker ? (
                             <motion.div
                                 key={`${tooltipReport.id}-${activeReplyReport ? "expanded" : "preview"}`}
-                                initial={{ opacity: 0, scale: 0.5, transform: "translateY(-100px)" }}
-                                animate={{ opacity: 1, scale: 1, transform: "translateY(0px)" }}
-                                exit={{ opacity: 0, scale: 0.5, transform: "translateY(-100px)" }}
+                                initial={{ opacity: 0, transform: "translateY(5px)", scale: 0.97 }}
+                                animate={{ opacity: 1, transform: "translateY(0px)", scale: 1 }}
+                                exit={{ opacity: 0, transform: "translateY(5px)", scale: 0.97 }}
                                 transition={{
-                                    delay: 0.1 * 2,
+                                    // delay: 0.3,
                                     type: "spring",
                                     mass: 0.1,
                                     stiffness: 100,
@@ -924,29 +947,70 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
                                     {tooltipReport.report_type} · {tooltipReport.report_id}
                                 </strong>
                                 <div style={styles.markerTooltipHeader}>
-                                    <span style={{ ...styles.statusBadge, ...getReplyStatusTone(hasReply(tooltipReport)) }}>
+                                    <span
+                                        style={{
+                                            ...styles.statusBadge,
+                                            ...getReplyStatusTone(hasReply(tooltipReport)),
+                                        }}
+                                    >
                                         {hasReply(tooltipReport) ? "답변 완료" : "답변 미완료"}
                                     </span>
-                                    <span style={{ ...styles.reportMeta, margin: 0, color: palette.muted }}>{formatDate(tooltipReport.created_at)}</span>
+                                    <span
+                                        style={{
+                                            ...styles.reportMeta,
+                                            margin: 0,
+                                            color: palette.muted,
+                                        }}
+                                    >
+                                        {formatDate(tooltipReport.created_at)}
+                                    </span>
                                 </div>
                                 {tooltipFieldTags.length ? (
                                     <div style={styles.tagList}>
                                         {tooltipFieldTags.map((fieldTag) => (
-                                            <span key={fieldTag.key} style={{ ...styles.fieldTag, backgroundColor: palette.chip, color: palette.text }}>
+                                            <span
+                                                key={fieldTag.key}
+                                                style={{
+                                                    ...styles.fieldTag,
+                                                    backgroundColor: palette.chip,
+                                                    color: palette.text,
+                                                }}
+                                            >
                                                 {fieldTag.label}
                                             </span>
                                         ))}
                                     </div>
                                 ) : null}
-                                <p style={{ ...styles.markerTooltipMessage, color: palette.text }}>{tooltipReport.message}</p>
+                                <p
+                                    style={{
+                                        ...styles.markerTooltipMessage,
+                                        color: palette.text,
+                                    }}
+                                >
+                                    {tooltipReport.message}
+                                </p>
                                 {activeReplyReport ? (
                                     <div style={styles.editorSection}>
                                         {activeReplyReport.replies.length ? (
                                             <div style={styles.replyList}>
                                                 {activeReplyReport.replies.map((reply) => (
-                                                    <div key={reply.id} style={{ ...styles.replyItem, backgroundColor: palette.chip, color: palette.text }}>
+                                                    <div
+                                                        key={reply.id}
+                                                        style={{
+                                                            ...styles.replyItem,
+                                                            backgroundColor: palette.chip,
+                                                            color: palette.text,
+                                                        }}
+                                                    >
                                                         <p style={{ margin: 0, fontSize: 12 }}>{reply.message}</p>
-                                                        <p style={{ ...styles.reportMeta, color: palette.muted }}>{formatDate(reply.created_at)}</p>
+                                                        <p
+                                                            style={{
+                                                                ...styles.reportMeta,
+                                                                color: palette.muted,
+                                                            }}
+                                                        >
+                                                            {formatDate(reply.created_at)}
+                                                        </p>
                                                     </div>
                                                 ))}
                                             </div>
@@ -956,7 +1020,13 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
                                             onChange={(event) => setReplyDraft(event.target.value)}
                                             placeholder="답변을 입력해주세요."
                                             onClick={(event) => event.stopPropagation()}
-                                            style={{ ...styles.textarea, minHeight: 96, backgroundColor: palette.input, borderColor: palette.inputBorder, color: palette.inputText }}
+                                            style={{
+                                                ...styles.textarea,
+                                                minHeight: 96,
+                                                backgroundColor: palette.input,
+                                                borderColor: palette.inputBorder,
+                                                color: palette.inputText,
+                                            }}
                                         />
                                         <div style={styles.buttonRow}>
                                             <button
@@ -965,7 +1035,11 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
                                                     event.stopPropagation();
                                                     closeReplyComposer();
                                                 }}
-                                                style={{ ...styles.secondaryButton, borderColor: palette.inputBorder, color: palette.text }}
+                                                style={{
+                                                    ...styles.secondaryButton,
+                                                    borderColor: palette.inputBorder,
+                                                    color: palette.text,
+                                                }}
                                             >
                                                 닫기
                                             </button>
@@ -976,7 +1050,10 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
                                                     void handleReplySubmit();
                                                 }}
                                                 disabled={isUpdating}
-                                                style={{ ...styles.primaryButton, backgroundColor: "#2563eb" }}
+                                                style={{
+                                                    ...styles.primaryButton,
+                                                    backgroundColor: "#2563eb",
+                                                }}
                                             >
                                                 {isUpdating ? "전송 중..." : "전송"}
                                             </button>
@@ -1011,7 +1088,18 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
                                     draft.fieldValues,
                                     palette,
                                     (nextMessage) => setDraft((current) => (current ? { ...current, message: nextMessage } : current)),
-                                    (key, nextValue) => setDraft((current) => (current ? { ...current, fieldValues: { ...current.fieldValues, [key]: nextValue } } : current)),
+                                    (key, nextValue) =>
+                                        setDraft((current) =>
+                                            current
+                                                ? {
+                                                      ...current,
+                                                      fieldValues: {
+                                                          ...current.fieldValues,
+                                                          [key]: nextValue,
+                                                      },
+                                                  }
+                                                : current,
+                                        ),
                                 )}
                             </div>
 
@@ -1022,11 +1110,23 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
                                         setDraft(null);
                                         setSelectedTarget(null);
                                     }}
-                                    style={{ ...styles.secondaryButton, borderColor: palette.inputBorder, color: palette.text }}
+                                    style={{
+                                        ...styles.secondaryButton,
+                                        borderColor: palette.inputBorder,
+                                        color: palette.text,
+                                    }}
                                 >
                                     취소
                                 </button>
-                                <button type="button" onClick={() => void handleCreateSubmit()} disabled={isCreating} style={{ ...styles.primaryButton, backgroundColor: "#2563eb" }}>
+                                <button
+                                    type="button"
+                                    onClick={() => void handleCreateSubmit()}
+                                    disabled={isCreating}
+                                    style={{
+                                        ...styles.primaryButton,
+                                        backgroundColor: "#2563eb",
+                                    }}
+                                >
                                     {isCreating ? "저장 중..." : "저장"}
                                 </button>
                             </div>
@@ -1054,20 +1154,48 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
                 >
                     <div style={styles.sidePanelHeader}>
                         <strong>피드백 목록</strong>
-                        <span style={{ ...styles.badge, backgroundColor: palette.chip, color: palette.muted }}>{filteredReports.length}</span>
+                        <span
+                            style={{
+                                ...styles.badge,
+                                backgroundColor: palette.chip,
+                                color: palette.muted,
+                            }}
+                        >
+                            {filteredReports.length}
+                        </span>
                     </div>
 
                     <div style={styles.filterGrid}>
                         <input
                             value={filters.keyword}
-                            onChange={(event) => setFilters((current) => ({ ...current, keyword: event.target.value }))}
+                            onChange={(event) =>
+                                setFilters((current) => ({
+                                    ...current,
+                                    keyword: event.target.value,
+                                }))
+                            }
                             placeholder="메시지 / report id 검색"
-                            style={{ ...styles.input, backgroundColor: palette.input, borderColor: palette.inputBorder, color: palette.inputText }}
+                            style={{
+                                ...styles.input,
+                                backgroundColor: palette.input,
+                                borderColor: palette.inputBorder,
+                                color: palette.inputText,
+                            }}
                         />
                         <select
                             value={filters.status}
-                            onChange={(event) => setFilters((current) => ({ ...current, status: event.target.value as ReportFilters["status"] }))}
-                            style={{ ...styles.input, backgroundColor: palette.input, borderColor: palette.inputBorder, color: palette.inputText }}
+                            onChange={(event) =>
+                                setFilters((current) => ({
+                                    ...current,
+                                    status: event.target.value as ReportFilters["status"],
+                                }))
+                            }
+                            style={{
+                                ...styles.input,
+                                backgroundColor: palette.input,
+                                borderColor: palette.inputBorder,
+                                color: palette.inputText,
+                            }}
                         >
                             <option value="all">전체 상태</option>
                             <option value="open">open</option>
@@ -1076,8 +1204,18 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
                         </select>
                         <select
                             value={filters.reportType}
-                            onChange={(event) => setFilters((current) => ({ ...current, reportType: event.target.value as ReportFilters["reportType"] }))}
-                            style={{ ...styles.input, backgroundColor: palette.input, borderColor: palette.inputBorder, color: palette.inputText }}
+                            onChange={(event) =>
+                                setFilters((current) => ({
+                                    ...current,
+                                    reportType: event.target.value as ReportFilters["reportType"],
+                                }))
+                            }
+                            style={{
+                                ...styles.input,
+                                backgroundColor: palette.input,
+                                borderColor: palette.inputBorder,
+                                color: palette.inputText,
+                            }}
                         >
                             <option value="all">전체 타입</option>
                             <option value="item">item</option>
@@ -1087,17 +1225,37 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
 
                     <div style={styles.reportList}>
                         {isError ? (
-                            <div style={{ ...styles.stateCard, backgroundColor: palette.chip, borderColor: palette.inputBorder }}>
+                            <div
+                                style={{
+                                    ...styles.stateCard,
+                                    backgroundColor: palette.chip,
+                                    borderColor: palette.inputBorder,
+                                }}
+                            >
                                 <strong style={{ color: palette.text }}>목록을 불러오지 못했어요.</strong>
                                 <p style={{ ...styles.reportMeta, color: palette.muted }}>{error?.message ?? "잠시 후 다시 시도해주세요."}</p>
-                                <button type="button" onClick={() => void refetch()} style={{ ...styles.secondaryButton, borderColor: palette.inputBorder, color: palette.text }}>
+                                <button
+                                    type="button"
+                                    onClick={() => void refetch()}
+                                    style={{
+                                        ...styles.secondaryButton,
+                                        borderColor: palette.inputBorder,
+                                        color: palette.text,
+                                    }}
+                                >
                                     다시 시도
                                 </button>
                             </div>
                         ) : null}
 
                         {!isError && !isFetching && filteredReports.length === 0 ? (
-                            <div style={{ ...styles.stateCard, backgroundColor: palette.chip, borderColor: palette.inputBorder }}>
+                            <div
+                                style={{
+                                    ...styles.stateCard,
+                                    backgroundColor: palette.chip,
+                                    borderColor: palette.inputBorder,
+                                }}
+                            >
                                 <strong style={{ color: palette.text }}>표시할 피드백이 없습니다.</strong>
                                 <p style={{ ...styles.reportMeta, color: palette.muted }}>
                                     {reports.length === 0 ? "아직 등록된 피드백이 없어요. 리포트 모드에서 첫 피드백을 남겨보세요." : "현재 필터 조건과 일치하는 결과가 없어요."}
@@ -1119,12 +1277,25 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
                                         borderColor: isSelected ? palette.inputBorder : "transparent",
                                     }}
                                 >
-                                    <button type="button" onClick={() => selectReport(report.id)} style={styles.reportCardButton}>
+                                    <button
+                                        type="button"
+                                        onClick={() => selectReport(report.id)}
+                                        style={styles.reportCardButton}
+                                    >
                                         <div style={styles.reportCardHeader}>
                                             <strong style={{ color: palette.text }}>{report.report_id}</strong>
-                                            <span style={{ ...styles.statusBadge, ...getStatusTone(report.status) }}>{report.status}</span>
+                                            <span
+                                                style={{
+                                                    ...styles.statusBadge,
+                                                    ...getStatusTone(report.status),
+                                                }}
+                                            >
+                                                {report.status}
+                                            </span>
                                         </div>
-                                        <p style={{ ...styles.reportMeta, color: palette.muted }}>{report.report_type} · {formatDate(report.created_at)}</p>
+                                        <p style={{ ...styles.reportMeta, color: palette.muted }}>
+                                            {report.report_type} · {formatDate(report.created_at)}
+                                        </p>
                                         <p style={{ ...styles.reportMessage, color: palette.text }}>{report.message}</p>
                                     </button>
 
@@ -1133,7 +1304,11 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
                                             type="button"
                                             onClick={() => startEditing(report)}
                                             disabled={isArchived}
-                                            style={{ ...styles.linkButton, color: isArchived ? palette.muted : "#2563eb", opacity: isArchived ? 0.6 : 1 }}
+                                            style={{
+                                                ...styles.linkButton,
+                                                color: isArchived ? palette.muted : "#2563eb",
+                                                opacity: isArchived ? 0.6 : 1,
+                                            }}
                                         >
                                             {isArchived ? "보관됨" : isEditing ? "수정 중" : "수정"}
                                         </button>
@@ -1149,16 +1324,38 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
                                                     palette,
                                                     (nextMessage) => setEditableDraft((current) => (current ? { ...current, message: nextMessage } : current)),
                                                     (key, nextValue) =>
-                                                        setEditableDraft((current) => (current ? { ...current, fieldValues: { ...current.fieldValues, [key]: nextValue } } : current)),
+                                                        setEditableDraft((current) =>
+                                                            current
+                                                                ? {
+                                                                      ...current,
+                                                                      fieldValues: {
+                                                                          ...current.fieldValues,
+                                                                          [key]: nextValue,
+                                                                      },
+                                                                  }
+                                                                : current,
+                                                        ),
                                                 )}
                                             </div>
 
                                             <select
                                                 value={editableDraft.status}
                                                 onChange={(event) =>
-                                                    setEditableDraft((current) => (current ? { ...current, status: event.target.value as ReportStatus } : current))
+                                                    setEditableDraft((current) =>
+                                                        current
+                                                            ? {
+                                                                  ...current,
+                                                                  status: event.target.value as ReportStatus,
+                                                              }
+                                                            : current,
+                                                    )
                                                 }
-                                                style={{ ...styles.input, backgroundColor: palette.input, borderColor: palette.inputBorder, color: palette.inputText }}
+                                                style={{
+                                                    ...styles.input,
+                                                    backgroundColor: palette.input,
+                                                    borderColor: palette.inputBorder,
+                                                    color: palette.inputText,
+                                                }}
                                             >
                                                 <option value="open">open</option>
                                                 <option value="resolved">resolved</option>
@@ -1166,10 +1363,26 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
                                             </select>
 
                                             <div style={styles.buttonRow}>
-                                                <button type="button" onClick={stopEditing} style={{ ...styles.secondaryButton, borderColor: palette.inputBorder, color: palette.text }}>
+                                                <button
+                                                    type="button"
+                                                    onClick={stopEditing}
+                                                    style={{
+                                                        ...styles.secondaryButton,
+                                                        borderColor: palette.inputBorder,
+                                                        color: palette.text,
+                                                    }}
+                                                >
                                                     닫기
                                                 </button>
-                                                <button type="button" onClick={() => void handleUpdateSubmit()} disabled={isUpdating} style={{ ...styles.primaryButton, backgroundColor: "#2563eb" }}>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => void handleUpdateSubmit()}
+                                                    disabled={isUpdating}
+                                                    style={{
+                                                        ...styles.primaryButton,
+                                                        backgroundColor: "#2563eb",
+                                                    }}
+                                                >
                                                     {isUpdating ? "저장 중..." : "수정 저장"}
                                                 </button>
                                             </div>
