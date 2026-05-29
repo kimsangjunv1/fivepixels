@@ -216,6 +216,14 @@ function findTargetByPoint(overlay: HTMLDivElement | null, clientX: number, clie
     return findTargetElement(hitElement);
 }
 
+function resolveTooltipAnchor(markers: Marker[], reportId: string | null) {
+    if (!reportId) {
+        return null;
+    }
+
+    return markers.find((marker) => marker.report.id === reportId) ?? null;
+}
+
 function getMarkerFromReport(report: ReportFeedback, currentScrollY: number) {
     const selector = `${TARGET_SELECTOR}[data-report-id="${escapeAttribute(report.report_id)}"][data-report-type="${report.report_type}"]`;
     const targetElement = document.querySelector<HTMLElement>(selector);
@@ -533,19 +541,23 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
         return filteredReports.find((report) => report.id === selectedReportId) ?? filteredReports[0] ?? null;
     }, [filteredReports, selectedReportId]);
 
-    const hoveredMarkerReport = useMemo(() => {
-        return markers.find((marker) => marker.report.id === hoveredMarkerId)?.report ?? null;
-    }, [hoveredMarkerId, markers]);
-    const hoveredMarker = useMemo(() => {
-        return markers.find((marker) => marker.report.id === hoveredMarkerId) ?? null;
-    }, [hoveredMarkerId, markers]);
-    const activeReplyMarker = useMemo(() => {
-        return markers.find((marker) => marker.report.id === activeReplyReportId) ?? null;
-    }, [activeReplyReportId, markers]);
-    const activeReplyReport = activeReplyMarker?.report ?? null;
-    const tooltipMarker = activeReplyMarker ?? hoveredMarker;
-    const tooltipReport = activeReplyReport ?? hoveredMarkerReport;
+    const activeReplyAnchor = useMemo(() => resolveTooltipAnchor(markers, activeReplyReportId), [activeReplyReportId, markers]);
+    const activeReplyReport = activeReplyAnchor?.report ?? null;
+    const tooltipAnchor = useMemo(() => {
+        if (activeReplyReportId) {
+            return activeReplyAnchor ?? resolveTooltipAnchor(markers, hoveredMarkerId);
+        }
+
+        return resolveTooltipAnchor(markers, hoveredMarkerId);
+    }, [activeReplyAnchor, activeReplyReportId, hoveredMarkerId, markers]);
+    const tooltipReport = tooltipAnchor?.report ?? null;
     const tooltipFieldTags = useMemo(() => (tooltipReport ? getFieldTags(fields, tooltipReport.field_values) : []), [fields, tooltipReport]);
+
+    useEffect(() => {
+        if (hoveredMarkerId && !markers.some((marker) => marker.report.id === hoveredMarkerId)) {
+            setHoveredMarkerId(null);
+        }
+    }, [hoveredMarkerId, markers]);
 
     const clearHoverLeaveTimeout = () => {
         if (hoverLeaveTimeoutRef.current) {
@@ -908,7 +920,7 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
                         : null}
 
                     <AnimatedPresence>
-                        {mode === "view" && tooltipReport && tooltipMarker ? (
+                        {mode === "view" && tooltipReport && tooltipAnchor ? (
                             <motion.div
                                 key={`${tooltipReport.id}-${activeReplyReport ? "expanded" : "preview"}`}
                                 initial={{ opacity: 0, transform: "translateY(5px)", scale: 0.97 }}
@@ -933,8 +945,8 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
                                 onClick={() => openReplyComposer(tooltipReport)}
                                 style={{
                                     ...styles.markerTooltip,
-                                    left: Math.min(Math.max(tooltipMarker.left - 12, 16), window.innerWidth - 296),
-                                    top: Math.max(tooltipMarker.top - (activeReplyReport ? 232 : 104), 16),
+                                    left: Math.min(Math.max(tooltipAnchor.left - 12, 16), window.innerWidth - 296),
+                                    top: Math.max(tooltipAnchor.top - (activeReplyReport ? 232 : 104), 16),
                                     backgroundColor: activeReplyReport ? palette.panel : resolvedAppearance === "dark" ? "rgba(15, 23, 42, 0.72)" : "rgba(255, 255, 255, 0.72)",
                                     borderColor: palette.panelBorder,
                                     color: palette.text,
