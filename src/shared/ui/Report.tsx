@@ -11,6 +11,7 @@ import type {
     ReportStorageAdapter,
     ReportTargetType,
 } from "../../entities/report/model/report.type.js";
+import { AnimatedPresence, motion } from "../../motion/index.js";
 import { localStorageReportAdapter } from "../../report/storage/localStorageAdapter.js";
 
 const DOT_SIZE = 14;
@@ -883,97 +884,108 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
                           ))
                         : null}
 
-                    {mode === "view" && tooltipReport && tooltipMarker ? (
-                        <div
-                            key={`${tooltipReport.id}-${activeReplyReport ? "expanded" : "preview"}`}
-                            className={activeReplyReport ? "stitchable-marker-tooltip stitchable-marker-tooltip--spring-in" : "stitchable-marker-tooltip"}
-                            onMouseEnter={() => {
-                                clearHoverLeaveTimeout();
-                                setHoveredMarkerId(tooltipReport.id);
-                            }}
-                            onMouseLeave={() => {
-                                if (!activeReplyReportId) {
-                                    scheduleHoverLeave(tooltipReport.id);
-                                }
-                            }}
-                            onClick={() => openReplyComposer(tooltipReport)}
-                            style={{
-                                ...styles.markerTooltip,
-                                left: Math.min(Math.max(tooltipMarker.left - 12, 16), window.innerWidth - 296),
-                                top: Math.max(tooltipMarker.top - (activeReplyReport ? 232 : 104), 16),
-                                backgroundColor: activeReplyReport ? palette.panel : resolvedAppearance === "dark" ? "rgba(15, 23, 42, 0.72)" : "rgba(255, 255, 255, 0.72)",
-                                borderColor: palette.panelBorder,
-                                color: palette.text,
-                                pointerEvents: "auto",
-                                cursor: activeReplyReport ? "default" : "pointer",
-                                backdropFilter: "blur(14px)",
-                            }}
-                        >
-                            <strong style={{ fontSize: 12 }}>
-                                {tooltipReport.report_type} · {tooltipReport.report_id}
-                            </strong>
-                            <div style={styles.markerTooltipHeader}>
-                                <span style={{ ...styles.statusBadge, ...getReplyStatusTone(hasReply(tooltipReport)) }}>
-                                    {hasReply(tooltipReport) ? "답변 완료" : "답변 미완료"}
-                                </span>
-                                <span style={{ ...styles.reportMeta, margin: 0, color: palette.muted }}>{formatDate(tooltipReport.created_at)}</span>
-                            </div>
-                            {tooltipFieldTags.length ? (
-                                <div style={styles.tagList}>
-                                    {tooltipFieldTags.map((fieldTag) => (
-                                        <span key={fieldTag.key} style={{ ...styles.fieldTag, backgroundColor: palette.chip, color: palette.text }}>
-                                            {fieldTag.label}
-                                        </span>
-                                    ))}
+                    <AnimatedPresence>
+                        {mode === "view" && tooltipReport && tooltipMarker ? (
+                            <motion.div
+                                key={`${tooltipReport.id}-${activeReplyReport ? "expanded" : "preview"}`}
+                                initial={{ opacity: 0, scale: 0.5, transform: "translateY(-100px)" }}
+                                animate={{ opacity: 1, scale: 1, transform: "translateY(0px)" }}
+                                exit={{ opacity: 0, scale: 0.5, transform: "translateY(-100px)" }}
+                                transition={{
+                                    delay: 0.1 * 2,
+                                    type: "spring",
+                                    mass: 0.1,
+                                    stiffness: 100,
+                                    damping: 10,
+                                }}
+                                onMouseEnter={() => {
+                                    clearHoverLeaveTimeout();
+                                    setHoveredMarkerId(tooltipReport.id);
+                                }}
+                                onMouseLeave={() => {
+                                    if (!activeReplyReportId) {
+                                        scheduleHoverLeave(tooltipReport.id);
+                                    }
+                                }}
+                                onClick={() => openReplyComposer(tooltipReport)}
+                                style={{
+                                    ...styles.markerTooltip,
+                                    left: Math.min(Math.max(tooltipMarker.left - 12, 16), window.innerWidth - 296),
+                                    top: Math.max(tooltipMarker.top - (activeReplyReport ? 232 : 104), 16),
+                                    backgroundColor: activeReplyReport ? palette.panel : resolvedAppearance === "dark" ? "rgba(15, 23, 42, 0.72)" : "rgba(255, 255, 255, 0.72)",
+                                    borderColor: palette.panelBorder,
+                                    color: palette.text,
+                                    pointerEvents: "auto",
+                                    cursor: activeReplyReport ? "default" : "pointer",
+                                    backdropFilter: "blur(14px)",
+                                }}
+                            >
+                                <strong style={{ fontSize: 12 }}>
+                                    {tooltipReport.report_type} · {tooltipReport.report_id}
+                                </strong>
+                                <div style={styles.markerTooltipHeader}>
+                                    <span style={{ ...styles.statusBadge, ...getReplyStatusTone(hasReply(tooltipReport)) }}>
+                                        {hasReply(tooltipReport) ? "답변 완료" : "답변 미완료"}
+                                    </span>
+                                    <span style={{ ...styles.reportMeta, margin: 0, color: palette.muted }}>{formatDate(tooltipReport.created_at)}</span>
                                 </div>
-                            ) : null}
-                            <p style={{ ...styles.markerTooltipMessage, color: palette.text }}>{tooltipReport.message}</p>
-                            {activeReplyReport ? (
-                                <div style={styles.editorSection}>
-                                    {activeReplyReport.replies.length ? (
-                                        <div style={styles.replyList}>
-                                            {activeReplyReport.replies.map((reply) => (
-                                                <div key={reply.id} style={{ ...styles.replyItem, backgroundColor: palette.chip, color: palette.text }}>
-                                                    <p style={{ margin: 0, fontSize: 12 }}>{reply.message}</p>
-                                                    <p style={{ ...styles.reportMeta, color: palette.muted }}>{formatDate(reply.created_at)}</p>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    ) : null}
-                                    <textarea
-                                        value={replyDraft}
-                                        onChange={(event) => setReplyDraft(event.target.value)}
-                                        placeholder="답변을 입력해주세요."
-                                        onClick={(event) => event.stopPropagation()}
-                                        style={{ ...styles.textarea, minHeight: 96, backgroundColor: palette.input, borderColor: palette.inputBorder, color: palette.inputText }}
-                                    />
-                                    <div style={styles.buttonRow}>
-                                        <button
-                                            type="button"
-                                            onClick={(event) => {
-                                                event.stopPropagation();
-                                                closeReplyComposer();
-                                            }}
-                                            style={{ ...styles.secondaryButton, borderColor: palette.inputBorder, color: palette.text }}
-                                        >
-                                            닫기
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={(event) => {
-                                                event.stopPropagation();
-                                                void handleReplySubmit();
-                                            }}
-                                            disabled={isUpdating}
-                                            style={{ ...styles.primaryButton, backgroundColor: "#2563eb" }}
-                                        >
-                                            {isUpdating ? "전송 중..." : "전송"}
-                                        </button>
+                                {tooltipFieldTags.length ? (
+                                    <div style={styles.tagList}>
+                                        {tooltipFieldTags.map((fieldTag) => (
+                                            <span key={fieldTag.key} style={{ ...styles.fieldTag, backgroundColor: palette.chip, color: palette.text }}>
+                                                {fieldTag.label}
+                                            </span>
+                                        ))}
                                     </div>
-                                </div>
-                            ) : null}
-                        </div>
-                    ) : null}
+                                ) : null}
+                                <p style={{ ...styles.markerTooltipMessage, color: palette.text }}>{tooltipReport.message}</p>
+                                {activeReplyReport ? (
+                                    <div style={styles.editorSection}>
+                                        {activeReplyReport.replies.length ? (
+                                            <div style={styles.replyList}>
+                                                {activeReplyReport.replies.map((reply) => (
+                                                    <div key={reply.id} style={{ ...styles.replyItem, backgroundColor: palette.chip, color: palette.text }}>
+                                                        <p style={{ margin: 0, fontSize: 12 }}>{reply.message}</p>
+                                                        <p style={{ ...styles.reportMeta, color: palette.muted }}>{formatDate(reply.created_at)}</p>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : null}
+                                        <textarea
+                                            value={replyDraft}
+                                            onChange={(event) => setReplyDraft(event.target.value)}
+                                            placeholder="답변을 입력해주세요."
+                                            onClick={(event) => event.stopPropagation()}
+                                            style={{ ...styles.textarea, minHeight: 96, backgroundColor: palette.input, borderColor: palette.inputBorder, color: palette.inputText }}
+                                        />
+                                        <div style={styles.buttonRow}>
+                                            <button
+                                                type="button"
+                                                onClick={(event) => {
+                                                    event.stopPropagation();
+                                                    closeReplyComposer();
+                                                }}
+                                                style={{ ...styles.secondaryButton, borderColor: palette.inputBorder, color: palette.text }}
+                                            >
+                                                닫기
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={(event) => {
+                                                    event.stopPropagation();
+                                                    void handleReplySubmit();
+                                                }}
+                                                disabled={isUpdating}
+                                                style={{ ...styles.primaryButton, backgroundColor: "#2563eb" }}
+                                            >
+                                                {isUpdating ? "전송 중..." : "전송"}
+                                            </button>
+                                        </div>
+                                    </div>
+                                ) : null}
+                            </motion.div>
+                        ) : null}
+                    </AnimatedPresence>
 
                     {draft ? (
                         <div
