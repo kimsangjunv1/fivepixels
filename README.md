@@ -65,7 +65,7 @@ export default function App() {
 - `storage={adapter}`: `ReportStorageAdapter` 인터페이스를 구현한 cloud adapter를 연결할 수 있습니다.
 - 데이터 계약 상세는 [`docs/report-data-model.md`](./docs/report-data-model.md)를 기준으로 맞춥니다.
 - 설치/적용/FAQ는 [`docs/getting-started.md`](./docs/getting-started.md)를 참고합니다.
-- 실행 가능한 데모는 [`docs/example-app.md`](./docs/example-app.md)를 참고합니다.
+- 실행 가능한 데모와 `npm run dev` 사용법은 [`docs/example-app.md`](./docs/example-app.md)를 참고합니다.
 
 ```ts
 import type { ReportStorageAdapter } from "stitchable";
