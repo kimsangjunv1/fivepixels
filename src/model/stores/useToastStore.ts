@@ -60,10 +60,23 @@ interface ToastStore {
     removeToastById: (id: string) => void;
 }
 
-let intervalRef: NodeJS.Timeout | null = null;
+type ToastTimer = ReturnType<typeof setInterval>;
+
+let intervalRef: ToastTimer | null = null;
 let savedCallback: (() => void) | null = null;
 
-const intervalRefMap: Record<string, NodeJS.Timeout> = {};
+const intervalRefMap: Record<string, ToastTimer> = {};
+
+const getCurrentEnvironment = () => {
+    const env =
+        typeof globalThis !== "undefined" &&
+        "process" in globalThis &&
+        typeof (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env === "object"
+            ? (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env
+            : undefined;
+
+    return env?.NEXT_PUBLIC_CURRENT_ENVIRONMENT;
+};
 
 /** `setToast`와 동일한 규칙으로 메시지 → 토스트 id (외부에서 수동 제거 시 사용) */
 export const getToastIdForMessage = (msg: string): string => {
@@ -173,8 +186,9 @@ export const useToastStore = create<ToastStore>()(
 
             // msg가 완전히 같으면 id도 동일, 한 글자라도 다르면 전혀 다른 id 생성
             setToast: ({ msg, time = 3, icon, iconClassName, actions, type, qa = false }, callback) => {
-                const CURRENT_ENV_LOCAL = process.env.NEXT_PUBLIC_CURRENT_ENVIRONMENT === "LOCAL";
-                const CURRENT_ENV_DEV = process.env.NEXT_PUBLIC_CURRENT_ENVIRONMENT === "DEV";
+                const currentEnvironment = getCurrentEnvironment();
+                const CURRENT_ENV_LOCAL = currentEnvironment === "LOCAL";
+                const CURRENT_ENV_DEV = currentEnvironment === "DEV";
 
                 const SET_ONLY_SEE_CORP_MEMEBRS = qa ? CURRENT_ENV_DEV || CURRENT_ENV_LOCAL : true;
 

@@ -14,6 +14,10 @@ body {
     min-width: 320px;
 }
 
+#root {
+    min-height: 100vh;
+}
+
 button {
     font: inherit;
 }
@@ -24,6 +28,18 @@ button {
     display: grid;
     grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
     gap: 24px;
+}
+
+.example-page {
+    min-height: 100vh;
+}
+
+.main-layout {
+    width: 100%;
+}
+
+.main-layout__inner {
+    width: 100%;
 }
 
 .example-panel,
