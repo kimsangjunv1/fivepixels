@@ -2,6 +2,13 @@
 
 기준일: 2026-05-29
 
+## 패키지 경량화
+
+- 런타임 `dependencies` 없음 (`react`, `react-dom`만 peer)
+- 빌드에 포함되지 않던 `src/lib`, `src/model`, `src/shared/types/Database.ts` 제거
+- `npm run size:dist`로 `dist/*.js` 용량 확인 (2026-05-29 기준 합계 82,092 bytes, unminified)
+- `npm run size:example`로 example 프로덕션 번들 확인 (2026-05-29 기준 JS gzip 72.20 kB, 전체 산출물 231.33 kB raw)
+
 ## 검증 결과
 
 - `npm run typecheck` 통과

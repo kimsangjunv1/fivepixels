@@ -2,6 +2,7 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useCreateReportMutation, useReportsQuery, useUpdateReportMutation } from "../../entities/report/api/report.query.js";
+import { AnimatedPresence, motion } from "../../motion/index.js";
 import { localStorageReportAdapter } from "../../report/storage/localStorageAdapter.js";
 const DOT_SIZE = 14;
 const TARGET_SELECTOR = "[data-report-id][data-report-type]";
@@ -129,6 +130,12 @@ function findTargetByPoint(overlay, clientX, clientY) {
     const hitElement = document.elementFromPoint(clientX, clientY);
     overlay.style.pointerEvents = previousPointerEvents;
     return findTargetElement(hitElement);
+}
+function resolveTooltipAnchor(markers, reportId) {
+    if (!reportId) {
+        return null;
+    }
+    return markers.find((marker) => marker.report.id === reportId) ?? null;
 }
 function getMarkerFromReport(report, currentScrollY) {
     const selector = `${TARGET_SELECTOR}[data-report-id="${escapeAttribute(report.report_id)}"][data-report-type="${report.report_type}"]`;
@@ -260,7 +267,11 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
     const [selectedReportId, setSelectedReportId] = useState(null);
     const [editingReportId, setEditingReportId] = useState(null);
     const [editableDraft, setEditableDraft] = useState(null);
-    const [filters, setFilters] = useState({ keyword: "", status: "all", reportType: "all" });
+    const [filters, setFilters] = useState({
+        keyword: "",
+        status: "all",
+        reportType: "all",
+    });
     const { data: reports, error, isError, isFetching, refetch } = useReportsQuery(storageAdapter, currentPathname, true);
     const { mutateAsync: createFeedback, isPending: isCreating } = useCreateReportMutation(storageAdapter, () => {
         void refetch();
@@ -280,10 +291,7 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
                 return true;
             }
             const keyword = filters.keyword.trim().toLowerCase();
-            return [report.message, report.report_id, report.status]
-                .join(" ")
-                .toLowerCase()
-                .includes(keyword);
+            return [report.message, report.report_id, report.status].join(" ").toLowerCase().includes(keyword);
         });
     }, [filters.keyword, filters.reportType, filters.status, reports]);
     useEffect(() => {
@@ -357,19 +365,21 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
     const selectedReport = useMemo(() => {
         return filteredReports.find((report) => report.id === selectedReportId) ?? filteredReports[0] ?? null;
     }, [filteredReports, selectedReportId]);
-    const hoveredMarkerReport = useMemo(() => {
-        return markers.find((marker) => marker.report.id === hoveredMarkerId)?.report ?? null;
-    }, [hoveredMarkerId, markers]);
-    const hoveredMarker = useMemo(() => {
-        return markers.find((marker) => marker.report.id === hoveredMarkerId) ?? null;
-    }, [hoveredMarkerId, markers]);
-    const activeReplyMarker = useMemo(() => {
-        return markers.find((marker) => marker.report.id === activeReplyReportId) ?? null;
-    }, [activeReplyReportId, markers]);
-    const activeReplyReport = activeReplyMarker?.report ?? null;
-    const tooltipMarker = activeReplyMarker ?? hoveredMarker;
-    const tooltipReport = activeReplyReport ?? hoveredMarkerReport;
+    const activeReplyAnchor = useMemo(() => resolveTooltipAnchor(markers, activeReplyReportId), [activeReplyReportId, markers]);
+    const activeReplyReport = activeReplyAnchor?.report ?? null;
+    const tooltipAnchor = useMemo(() => {
+        if (activeReplyReportId) {
+            return activeReplyAnchor ?? resolveTooltipAnchor(markers, hoveredMarkerId);
+        }
+        return resolveTooltipAnchor(markers, hoveredMarkerId);
+    }, [activeReplyAnchor, activeReplyReportId, hoveredMarkerId, markers]);
+    const tooltipReport = tooltipAnchor?.report ?? null;
     const tooltipFieldTags = useMemo(() => (tooltipReport ? getFieldTags(fields, tooltipReport.field_values) : []), [fields, tooltipReport]);
+    useEffect(() => {
+        if (hoveredMarkerId && !markers.some((marker) => marker.report.id === hoveredMarkerId)) {
+            setHoveredMarkerId(null);
+        }
+    }, [hoveredMarkerId, markers]);
     const clearHoverLeaveTimeout = () => {
         if (hoverLeaveTimeoutRef.current) {
             window.clearTimeout(hoverLeaveTimeoutRef.current);
@@ -554,11 +564,22 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
                     width: isMobileViewport ? "calc(100vw - 32px)" : 320,
                     boxShadow: resolvedAppearance === "dark" ? "0 18px 48px rgba(15, 23, 42, 0.42)" : "0 18px 48px rgba(15, 23, 42, 0.16)",
                     backdropFilter: "blur(14px)",
-                }, children: [_jsxs("div", { style: styles.panelHeader, children: [_jsx("strong", { style: { fontSize: 14 }, children: "stitchable" }), _jsx("span", { style: { ...styles.badge, backgroundColor: palette.chip, color: palette.muted }, children: appearance })] }), _jsx("p", { style: { ...styles.helperText, color: palette.muted }, children: helperText }), _jsxs("div", { style: styles.buttonRow, children: [_jsx("button", { type: "button", onClick: () => setMode((current) => (current === "report" ? "idle" : "report")), style: { ...styles.primaryButton, backgroundColor: mode === "report" ? "#ef4444" : "#2563eb" }, children: mode === "report" ? "선택 중단" : "피드백 남기기" }), _jsx("button", { type: "button", onClick: () => {
+                }, children: [_jsxs("div", { style: styles.panelHeader, children: [_jsx("strong", { style: { fontSize: 14 }, children: "stitchable" }), _jsx("span", { style: {
+                                    ...styles.badge,
+                                    backgroundColor: palette.chip,
+                                    color: palette.muted,
+                                }, children: appearance })] }), _jsx("p", { style: { ...styles.helperText, color: palette.muted }, children: helperText }), _jsxs("div", { style: styles.buttonRow, children: [_jsx("button", { type: "button", onClick: () => setMode((current) => (current === "report" ? "idle" : "report")), style: {
+                                    ...styles.primaryButton,
+                                    backgroundColor: mode === "report" ? "#ef4444" : "#2563eb",
+                                }, children: mode === "report" ? "선택 중단" : "피드백 남기기" }), _jsx("button", { type: "button", onClick: () => {
                                     setMode((current) => (current === "view" ? "idle" : "view"));
                                     stopEditing();
                                     setSelectedReportId(filteredReports[0]?.id ?? null);
-                                }, style: { ...styles.secondaryButton, borderColor: palette.inputBorder, color: palette.text }, children: mode === "view" ? "목록 닫기" : "피드백 보기" })] }), errorMessage ? _jsx("p", { style: { ...styles.errorText, color: "#ef4444" }, children: errorMessage }) : null] }), mode !== "idle" ? (_jsxs("div", { ref: overlayRef, onMouseMove: handleOverlayMove, onClick: handleOverlayClick, style: {
+                                }, style: {
+                                    ...styles.secondaryButton,
+                                    borderColor: palette.inputBorder,
+                                    color: palette.text,
+                                }, children: mode === "view" ? "목록 닫기" : "피드백 보기" })] }), errorMessage ? _jsx("p", { style: { ...styles.errorText, color: "#ef4444" }, children: errorMessage }) : null] }), mode !== "idle" ? (_jsxs("div", { ref: overlayRef, onMouseMove: handleOverlayMove, onClick: handleOverlayClick, style: {
                     ...styles.overlay,
                     backgroundColor: mode === "report" ? palette.overlay : "transparent",
                     pointerEvents: "auto",
@@ -571,7 +592,10 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
                             height: hoveredTarget.rect.height,
                             outline: `2px solid ${TARGET_COLOR[hoveredTarget.type]}`,
                             backgroundColor: `${TARGET_COLOR[hoveredTarget.type]}15`,
-                        }, children: _jsxs("span", { style: { ...styles.highlightLabel, backgroundColor: TARGET_COLOR[hoveredTarget.type] }, children: [hoveredTarget.type, " \u00B7 ", hoveredTarget.id] }) })) : null, selectedTarget ? (_jsx("div", { style: {
+                        }, children: _jsxs("span", { style: {
+                                ...styles.highlightLabel,
+                                backgroundColor: TARGET_COLOR[hoveredTarget.type],
+                            }, children: [hoveredTarget.type, " \u00B7 ", hoveredTarget.id] }) })) : null, selectedTarget ? (_jsx("div", { style: {
                             ...styles.highlightBox,
                             left: selectedTarget.rect.left,
                             top: selectedTarget.rect.top,
@@ -603,35 +627,73 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
                                 left: marker.left,
                                 top: marker.top,
                                 backgroundColor: getMarkerColor(marker.report),
-                                boxShadow: marker.report.id === selectedReport?.id
-                                    ? "0 0 0 4px rgba(15, 23, 42, 0.2)"
-                                    : styles.markerButton.boxShadow,
+                                boxShadow: marker.report.id === selectedReport?.id ? "0 0 0 4px rgba(15, 23, 42, 0.2)" : styles.markerButton.boxShadow,
                                 transform: marker.report.id === selectedReport?.id ? "scale(1.15)" : "scale(1)",
                             } }, marker.id)))
-                        : null, mode === "view" && tooltipReport && tooltipMarker ? (_jsxs("div", { className: activeReplyReport ? "stitchable-marker-tooltip stitchable-marker-tooltip--spring-in" : "stitchable-marker-tooltip", onMouseEnter: () => {
-                            clearHoverLeaveTimeout();
-                            setHoveredMarkerId(tooltipReport.id);
-                        }, onMouseLeave: () => {
-                            if (!activeReplyReportId) {
-                                scheduleHoverLeave(tooltipReport.id);
-                            }
-                        }, onClick: () => openReplyComposer(tooltipReport), style: {
-                            ...styles.markerTooltip,
-                            left: Math.min(Math.max(tooltipMarker.left - 12, 16), window.innerWidth - 296),
-                            top: Math.max(tooltipMarker.top - (activeReplyReport ? 232 : 104), 16),
-                            backgroundColor: activeReplyReport ? palette.panel : resolvedAppearance === "dark" ? "rgba(15, 23, 42, 0.72)" : "rgba(255, 255, 255, 0.72)",
-                            borderColor: palette.panelBorder,
-                            color: palette.text,
-                            pointerEvents: "auto",
-                            cursor: activeReplyReport ? "default" : "pointer",
-                            backdropFilter: "blur(14px)",
-                        }, children: [_jsxs("strong", { style: { fontSize: 12 }, children: [tooltipReport.report_type, " \u00B7 ", tooltipReport.report_id] }), _jsxs("div", { style: styles.markerTooltipHeader, children: [_jsx("span", { style: { ...styles.statusBadge, ...getReplyStatusTone(hasReply(tooltipReport)) }, children: hasReply(tooltipReport) ? "답변 완료" : "답변 미완료" }), _jsx("span", { style: { ...styles.reportMeta, margin: 0, color: palette.muted }, children: formatDate(tooltipReport.created_at) })] }), tooltipFieldTags.length ? (_jsx("div", { style: styles.tagList, children: tooltipFieldTags.map((fieldTag) => (_jsx("span", { style: { ...styles.fieldTag, backgroundColor: palette.chip, color: palette.text }, children: fieldTag.label }, fieldTag.key))) })) : null, _jsx("p", { style: { ...styles.markerTooltipMessage, color: palette.text }, children: tooltipReport.message }), activeReplyReport ? (_jsxs("div", { style: styles.editorSection, children: [activeReplyReport.replies.length ? (_jsx("div", { style: styles.replyList, children: activeReplyReport.replies.map((reply) => (_jsxs("div", { style: { ...styles.replyItem, backgroundColor: palette.chip, color: palette.text }, children: [_jsx("p", { style: { margin: 0, fontSize: 12 }, children: reply.message }), _jsx("p", { style: { ...styles.reportMeta, color: palette.muted }, children: formatDate(reply.created_at) })] }, reply.id))) })) : null, _jsx("textarea", { value: replyDraft, onChange: (event) => setReplyDraft(event.target.value), placeholder: "\uB2F5\uBCC0\uC744 \uC785\uB825\uD574\uC8FC\uC138\uC694.", onClick: (event) => event.stopPropagation(), style: { ...styles.textarea, minHeight: 96, backgroundColor: palette.input, borderColor: palette.inputBorder, color: palette.inputText } }), _jsxs("div", { style: styles.buttonRow, children: [_jsx("button", { type: "button", onClick: (event) => {
-                                                    event.stopPropagation();
-                                                    closeReplyComposer();
-                                                }, style: { ...styles.secondaryButton, borderColor: palette.inputBorder, color: palette.text }, children: "\uB2EB\uAE30" }), _jsx("button", { type: "button", onClick: (event) => {
-                                                    event.stopPropagation();
-                                                    void handleReplySubmit();
-                                                }, disabled: isUpdating, style: { ...styles.primaryButton, backgroundColor: "#2563eb" }, children: isUpdating ? "전송 중..." : "전송" })] })] })) : null] }, `${tooltipReport.id}-${activeReplyReport ? "expanded" : "preview"}`)) : null, draft ? (_jsxs("div", { onClick: (event) => event.stopPropagation(), style: {
+                        : null, _jsx(AnimatedPresence, { children: mode === "view" && tooltipReport && tooltipAnchor ? (_jsxs(motion.div, { initial: { opacity: 0, transform: "translateY(5px)", scale: 0.97 }, animate: { opacity: 1, transform: "translateY(0px)", scale: 1 }, exit: { opacity: 0, transform: "translateY(5px)", scale: 0.97 }, transition: {
+                                delay: 0,
+                                type: "spring",
+                                mass: 0.1,
+                                stiffness: 100,
+                                damping: 10,
+                            }, onMouseEnter: () => {
+                                clearHoverLeaveTimeout();
+                                setHoveredMarkerId(tooltipReport.id);
+                            }, onMouseLeave: () => {
+                                if (!activeReplyReportId) {
+                                    scheduleHoverLeave(tooltipReport.id);
+                                }
+                            }, onClick: () => openReplyComposer(tooltipReport), style: {
+                                ...styles.markerTooltip,
+                                left: Math.min(Math.max(tooltipAnchor.left - 12, 16), window.innerWidth - 296),
+                                top: Math.max(tooltipAnchor.top - (activeReplyReport ? 232 : 104), 16),
+                                backgroundColor: activeReplyReport ? palette.panel : resolvedAppearance === "dark" ? "rgba(15, 23, 42, 0.72)" : "rgba(255, 255, 255, 0.72)",
+                                borderColor: palette.panelBorder,
+                                color: palette.text,
+                                pointerEvents: "auto",
+                                cursor: activeReplyReport ? "default" : "pointer",
+                                backdropFilter: "blur(14px)",
+                            }, children: [_jsxs("strong", { style: { fontSize: 12 }, children: [tooltipReport.report_type, " \u00B7 ", tooltipReport.report_id] }), _jsxs("div", { style: styles.markerTooltipHeader, children: [_jsx("span", { style: {
+                                                ...styles.statusBadge,
+                                                ...getReplyStatusTone(hasReply(tooltipReport)),
+                                            }, children: hasReply(tooltipReport) ? "답변 완료" : "답변 미완료" }), _jsx("span", { style: {
+                                                ...styles.reportMeta,
+                                                margin: 0,
+                                                color: palette.muted,
+                                            }, children: formatDate(tooltipReport.created_at) })] }), tooltipFieldTags.length ? (_jsx("div", { style: styles.tagList, children: tooltipFieldTags.map((fieldTag) => (_jsx("span", { style: {
+                                            ...styles.fieldTag,
+                                            backgroundColor: palette.chip,
+                                            color: palette.text,
+                                        }, children: fieldTag.label }, fieldTag.key))) })) : null, _jsx("p", { style: {
+                                        ...styles.markerTooltipMessage,
+                                        color: palette.text,
+                                    }, children: tooltipReport.message }), activeReplyReport ? (_jsxs("div", { style: styles.editorSection, children: [activeReplyReport.replies.length ? (_jsx("div", { style: styles.replyList, children: activeReplyReport.replies.map((reply) => (_jsxs("div", { style: {
+                                                    ...styles.replyItem,
+                                                    backgroundColor: palette.chip,
+                                                    color: palette.text,
+                                                }, children: [_jsx("p", { style: { margin: 0, fontSize: 12 }, children: reply.message }), _jsx("p", { style: {
+                                                            ...styles.reportMeta,
+                                                            color: palette.muted,
+                                                        }, children: formatDate(reply.created_at) })] }, reply.id))) })) : null, _jsx("textarea", { value: replyDraft, onChange: (event) => setReplyDraft(event.target.value), placeholder: "\uB2F5\uBCC0\uC744 \uC785\uB825\uD574\uC8FC\uC138\uC694.", onClick: (event) => event.stopPropagation(), style: {
+                                                ...styles.textarea,
+                                                minHeight: 96,
+                                                backgroundColor: palette.input,
+                                                borderColor: palette.inputBorder,
+                                                color: palette.inputText,
+                                            } }), _jsxs("div", { style: styles.buttonRow, children: [_jsx("button", { type: "button", onClick: (event) => {
+                                                        event.stopPropagation();
+                                                        closeReplyComposer();
+                                                    }, style: {
+                                                        ...styles.secondaryButton,
+                                                        borderColor: palette.inputBorder,
+                                                        color: palette.text,
+                                                    }, children: "\uB2EB\uAE30" }), _jsx("button", { type: "button", onClick: (event) => {
+                                                        event.stopPropagation();
+                                                        void handleReplySubmit();
+                                                    }, disabled: isUpdating, style: {
+                                                        ...styles.primaryButton,
+                                                        backgroundColor: "#2563eb",
+                                                    }, children: isUpdating ? "전송 중..." : "전송" })] })] })) : null] }, `${tooltipReport.id}-${activeReplyReport ? "expanded" : "preview"}`)) : null }), draft ? (_jsxs("div", { onClick: (event) => event.stopPropagation(), style: {
                             ...styles.draftCard,
                             left: isMobileViewport ? 16 : Math.max(16, Math.min(draft.clientX + 16, window.innerWidth - 336)),
                             top: isMobileViewport ? Math.max(80, window.innerHeight - 360) : Math.max(16, Math.min(draft.clientY + 16, window.innerHeight - 320)),
@@ -639,10 +701,25 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
                             backgroundColor: palette.card,
                             borderColor: palette.panelBorder,
                             color: palette.text,
-                        }, children: [_jsxs("p", { style: { margin: 0, fontSize: 13, fontWeight: 700 }, children: [draft.reportType, " \u00B7 ", draft.reportId] }), _jsx("div", { style: styles.fieldStack, children: renderFieldEditor(fields, draft.message, draft.fieldValues, palette, (nextMessage) => setDraft((current) => (current ? { ...current, message: nextMessage } : current)), (key, nextValue) => setDraft((current) => (current ? { ...current, fieldValues: { ...current.fieldValues, [key]: nextValue } } : current))) }), _jsxs("div", { style: styles.buttonRow, children: [_jsx("button", { type: "button", onClick: () => {
+                        }, children: [_jsxs("p", { style: { margin: 0, fontSize: 13, fontWeight: 700 }, children: [draft.reportType, " \u00B7 ", draft.reportId] }), _jsx("div", { style: styles.fieldStack, children: renderFieldEditor(fields, draft.message, draft.fieldValues, palette, (nextMessage) => setDraft((current) => (current ? { ...current, message: nextMessage } : current)), (key, nextValue) => setDraft((current) => current
+                                    ? {
+                                        ...current,
+                                        fieldValues: {
+                                            ...current.fieldValues,
+                                            [key]: nextValue,
+                                        },
+                                    }
+                                    : current)) }), _jsxs("div", { style: styles.buttonRow, children: [_jsx("button", { type: "button", onClick: () => {
                                             setDraft(null);
                                             setSelectedTarget(null);
-                                        }, style: { ...styles.secondaryButton, borderColor: palette.inputBorder, color: palette.text }, children: "\uCDE8\uC18C" }), _jsx("button", { type: "button", onClick: () => void handleCreateSubmit(), disabled: isCreating, style: { ...styles.primaryButton, backgroundColor: "#2563eb" }, children: isCreating ? "저장 중..." : "저장" })] })] })) : null] })) : null, mode === "view" && showFeedbackList ? (_jsxs("aside", { style: {
+                                        }, style: {
+                                            ...styles.secondaryButton,
+                                            borderColor: palette.inputBorder,
+                                            color: palette.text,
+                                        }, children: "\uCDE8\uC18C" }), _jsx("button", { type: "button", onClick: () => void handleCreateSubmit(), disabled: isCreating, style: {
+                                            ...styles.primaryButton,
+                                            backgroundColor: "#2563eb",
+                                        }, children: isCreating ? "저장 중..." : "저장" })] })] })) : null] })) : null, mode === "view" && showFeedbackList ? (_jsxs("aside", { style: {
                     ...styles.sidePanel,
                     backgroundColor: palette.panel,
                     borderColor: palette.panelBorder,
@@ -655,7 +732,47 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
                     right: 16,
                     boxShadow: resolvedAppearance === "dark" ? "0 18px 48px rgba(15, 23, 42, 0.42)" : "0 18px 48px rgba(15, 23, 42, 0.16)",
                     backdropFilter: "blur(14px)",
-                }, children: [_jsxs("div", { style: styles.sidePanelHeader, children: [_jsx("strong", { children: "\uD53C\uB4DC\uBC31 \uBAA9\uB85D" }), _jsx("span", { style: { ...styles.badge, backgroundColor: palette.chip, color: palette.muted }, children: filteredReports.length })] }), _jsxs("div", { style: styles.filterGrid, children: [_jsx("input", { value: filters.keyword, onChange: (event) => setFilters((current) => ({ ...current, keyword: event.target.value })), placeholder: "\uBA54\uC2DC\uC9C0 / report id \uAC80\uC0C9", style: { ...styles.input, backgroundColor: palette.input, borderColor: palette.inputBorder, color: palette.inputText } }), _jsxs("select", { value: filters.status, onChange: (event) => setFilters((current) => ({ ...current, status: event.target.value })), style: { ...styles.input, backgroundColor: palette.input, borderColor: palette.inputBorder, color: palette.inputText }, children: [_jsx("option", { value: "all", children: "\uC804\uCCB4 \uC0C1\uD0DC" }), _jsx("option", { value: "open", children: "open" }), _jsx("option", { value: "resolved", children: "resolved" }), _jsx("option", { value: "archived", children: "archived" })] }), _jsxs("select", { value: filters.reportType, onChange: (event) => setFilters((current) => ({ ...current, reportType: event.target.value })), style: { ...styles.input, backgroundColor: palette.input, borderColor: palette.inputBorder, color: palette.inputText }, children: [_jsx("option", { value: "all", children: "\uC804\uCCB4 \uD0C0\uC785" }), _jsx("option", { value: "item", children: "item" }), _jsx("option", { value: "group", children: "group" })] })] }), _jsxs("div", { style: styles.reportList, children: [isError ? (_jsxs("div", { style: { ...styles.stateCard, backgroundColor: palette.chip, borderColor: palette.inputBorder }, children: [_jsx("strong", { style: { color: palette.text }, children: "\uBAA9\uB85D\uC744 \uBD88\uB7EC\uC624\uC9C0 \uBABB\uD588\uC5B4\uC694." }), _jsx("p", { style: { ...styles.reportMeta, color: palette.muted }, children: error?.message ?? "잠시 후 다시 시도해주세요." }), _jsx("button", { type: "button", onClick: () => void refetch(), style: { ...styles.secondaryButton, borderColor: palette.inputBorder, color: palette.text }, children: "\uB2E4\uC2DC \uC2DC\uB3C4" })] })) : null, !isError && !isFetching && filteredReports.length === 0 ? (_jsxs("div", { style: { ...styles.stateCard, backgroundColor: palette.chip, borderColor: palette.inputBorder }, children: [_jsx("strong", { style: { color: palette.text }, children: "\uD45C\uC2DC\uD560 \uD53C\uB4DC\uBC31\uC774 \uC5C6\uC2B5\uB2C8\uB2E4." }), _jsx("p", { style: { ...styles.reportMeta, color: palette.muted }, children: reports.length === 0 ? "아직 등록된 피드백이 없어요. 리포트 모드에서 첫 피드백을 남겨보세요." : "현재 필터 조건과 일치하는 결과가 없어요." })] })) : null, filteredReports.map((report) => {
+                }, children: [_jsxs("div", { style: styles.sidePanelHeader, children: [_jsx("strong", { children: "\uD53C\uB4DC\uBC31 \uBAA9\uB85D" }), _jsx("span", { style: {
+                                    ...styles.badge,
+                                    backgroundColor: palette.chip,
+                                    color: palette.muted,
+                                }, children: filteredReports.length })] }), _jsxs("div", { style: styles.filterGrid, children: [_jsx("input", { value: filters.keyword, onChange: (event) => setFilters((current) => ({
+                                    ...current,
+                                    keyword: event.target.value,
+                                })), placeholder: "\uBA54\uC2DC\uC9C0 / report id \uAC80\uC0C9", style: {
+                                    ...styles.input,
+                                    backgroundColor: palette.input,
+                                    borderColor: palette.inputBorder,
+                                    color: palette.inputText,
+                                } }), _jsxs("select", { value: filters.status, onChange: (event) => setFilters((current) => ({
+                                    ...current,
+                                    status: event.target.value,
+                                })), style: {
+                                    ...styles.input,
+                                    backgroundColor: palette.input,
+                                    borderColor: palette.inputBorder,
+                                    color: palette.inputText,
+                                }, children: [_jsx("option", { value: "all", children: "\uC804\uCCB4 \uC0C1\uD0DC" }), _jsx("option", { value: "open", children: "open" }), _jsx("option", { value: "resolved", children: "resolved" }), _jsx("option", { value: "archived", children: "archived" })] }), _jsxs("select", { value: filters.reportType, onChange: (event) => setFilters((current) => ({
+                                    ...current,
+                                    reportType: event.target.value,
+                                })), style: {
+                                    ...styles.input,
+                                    backgroundColor: palette.input,
+                                    borderColor: palette.inputBorder,
+                                    color: palette.inputText,
+                                }, children: [_jsx("option", { value: "all", children: "\uC804\uCCB4 \uD0C0\uC785" }), _jsx("option", { value: "item", children: "item" }), _jsx("option", { value: "group", children: "group" })] })] }), _jsxs("div", { style: styles.reportList, children: [isError ? (_jsxs("div", { style: {
+                                    ...styles.stateCard,
+                                    backgroundColor: palette.chip,
+                                    borderColor: palette.inputBorder,
+                                }, children: [_jsx("strong", { style: { color: palette.text }, children: "\uBAA9\uB85D\uC744 \uBD88\uB7EC\uC624\uC9C0 \uBABB\uD588\uC5B4\uC694." }), _jsx("p", { style: { ...styles.reportMeta, color: palette.muted }, children: error?.message ?? "잠시 후 다시 시도해주세요." }), _jsx("button", { type: "button", onClick: () => void refetch(), style: {
+                                            ...styles.secondaryButton,
+                                            borderColor: palette.inputBorder,
+                                            color: palette.text,
+                                        }, children: "\uB2E4\uC2DC \uC2DC\uB3C4" })] })) : null, !isError && !isFetching && filteredReports.length === 0 ? (_jsxs("div", { style: {
+                                    ...styles.stateCard,
+                                    backgroundColor: palette.chip,
+                                    borderColor: palette.inputBorder,
+                                }, children: [_jsx("strong", { style: { color: palette.text }, children: "\uD45C\uC2DC\uD560 \uD53C\uB4DC\uBC31\uC774 \uC5C6\uC2B5\uB2C8\uB2E4." }), _jsx("p", { style: { ...styles.reportMeta, color: palette.muted }, children: reports.length === 0 ? "아직 등록된 피드백이 없어요. 리포트 모드에서 첫 피드백을 남겨보세요." : "현재 필터 조건과 일치하는 결과가 없어요." })] })) : null, filteredReports.map((report) => {
                                 const isSelected = report.id === selectedReport?.id;
                                 const isEditing = report.id === editingReportId && editableDraft;
                                 const isArchived = report.status === "archived";
@@ -663,7 +780,39 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
                                         ...styles.reportCard,
                                         backgroundColor: isSelected ? palette.chip : "transparent",
                                         borderColor: isSelected ? palette.inputBorder : "transparent",
-                                    }, children: [_jsxs("button", { type: "button", onClick: () => selectReport(report.id), style: styles.reportCardButton, children: [_jsxs("div", { style: styles.reportCardHeader, children: [_jsx("strong", { style: { color: palette.text }, children: report.report_id }), _jsx("span", { style: { ...styles.statusBadge, ...getStatusTone(report.status) }, children: report.status })] }), _jsxs("p", { style: { ...styles.reportMeta, color: palette.muted }, children: [report.report_type, " \u00B7 ", formatDate(report.created_at)] }), _jsx("p", { style: { ...styles.reportMessage, color: palette.text }, children: report.message })] }), _jsx("div", { style: styles.cardActions, children: _jsx("button", { type: "button", onClick: () => startEditing(report), disabled: isArchived, style: { ...styles.linkButton, color: isArchived ? palette.muted : "#2563eb", opacity: isArchived ? 0.6 : 1 }, children: isArchived ? "보관됨" : isEditing ? "수정 중" : "수정" }) }), isEditing ? (_jsxs("div", { style: styles.editorSection, children: [_jsx("div", { style: styles.fieldStack, children: renderFieldEditor(fields, editableDraft.message, editableDraft.fieldValues, palette, (nextMessage) => setEditableDraft((current) => (current ? { ...current, message: nextMessage } : current)), (key, nextValue) => setEditableDraft((current) => (current ? { ...current, fieldValues: { ...current.fieldValues, [key]: nextValue } } : current))) }), _jsxs("select", { value: editableDraft.status, onChange: (event) => setEditableDraft((current) => (current ? { ...current, status: event.target.value } : current)), style: { ...styles.input, backgroundColor: palette.input, borderColor: palette.inputBorder, color: palette.inputText }, children: [_jsx("option", { value: "open", children: "open" }), _jsx("option", { value: "resolved", children: "resolved" }), _jsx("option", { value: "archived", children: "archived" })] }), _jsxs("div", { style: styles.buttonRow, children: [_jsx("button", { type: "button", onClick: stopEditing, style: { ...styles.secondaryButton, borderColor: palette.inputBorder, color: palette.text }, children: "\uB2EB\uAE30" }), _jsx("button", { type: "button", onClick: () => void handleUpdateSubmit(), disabled: isUpdating, style: { ...styles.primaryButton, backgroundColor: "#2563eb" }, children: isUpdating ? "저장 중..." : "수정 저장" })] })] })) : null] }, report.id));
+                                    }, children: [_jsxs("button", { type: "button", onClick: () => selectReport(report.id), style: styles.reportCardButton, children: [_jsxs("div", { style: styles.reportCardHeader, children: [_jsx("strong", { style: { color: palette.text }, children: report.report_id }), _jsx("span", { style: {
+                                                                ...styles.statusBadge,
+                                                                ...getStatusTone(report.status),
+                                                            }, children: report.status })] }), _jsxs("p", { style: { ...styles.reportMeta, color: palette.muted }, children: [report.report_type, " \u00B7 ", formatDate(report.created_at)] }), _jsx("p", { style: { ...styles.reportMessage, color: palette.text }, children: report.message })] }), _jsx("div", { style: styles.cardActions, children: _jsx("button", { type: "button", onClick: () => startEditing(report), disabled: isArchived, style: {
+                                                    ...styles.linkButton,
+                                                    color: isArchived ? palette.muted : "#2563eb",
+                                                    opacity: isArchived ? 0.6 : 1,
+                                                }, children: isArchived ? "보관됨" : isEditing ? "수정 중" : "수정" }) }), isEditing ? (_jsxs("div", { style: styles.editorSection, children: [_jsx("div", { style: styles.fieldStack, children: renderFieldEditor(fields, editableDraft.message, editableDraft.fieldValues, palette, (nextMessage) => setEditableDraft((current) => (current ? { ...current, message: nextMessage } : current)), (key, nextValue) => setEditableDraft((current) => current
+                                                        ? {
+                                                            ...current,
+                                                            fieldValues: {
+                                                                ...current.fieldValues,
+                                                                [key]: nextValue,
+                                                            },
+                                                        }
+                                                        : current)) }), _jsxs("select", { value: editableDraft.status, onChange: (event) => setEditableDraft((current) => current
+                                                        ? {
+                                                            ...current,
+                                                            status: event.target.value,
+                                                        }
+                                                        : current), style: {
+                                                        ...styles.input,
+                                                        backgroundColor: palette.input,
+                                                        borderColor: palette.inputBorder,
+                                                        color: palette.inputText,
+                                                    }, children: [_jsx("option", { value: "open", children: "open" }), _jsx("option", { value: "resolved", children: "resolved" }), _jsx("option", { value: "archived", children: "archived" })] }), _jsxs("div", { style: styles.buttonRow, children: [_jsx("button", { type: "button", onClick: stopEditing, style: {
+                                                                ...styles.secondaryButton,
+                                                                borderColor: palette.inputBorder,
+                                                                color: palette.text,
+                                                            }, children: "\uB2EB\uAE30" }), _jsx("button", { type: "button", onClick: () => void handleUpdateSubmit(), disabled: isUpdating, style: {
+                                                                ...styles.primaryButton,
+                                                                backgroundColor: "#2563eb",
+                                                            }, children: isUpdating ? "저장 중..." : "수정 저장" })] })] })) : null] }, report.id));
                             })] })] })) : null] }));
 }
 const styles = {
