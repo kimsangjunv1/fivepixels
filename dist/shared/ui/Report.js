@@ -2,6 +2,7 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useCreateReportMutation, useReportsQuery, useUpdateReportMutation } from "../../entities/report/api/report.query.js";
+import { AnimatedPresence, motion } from "../../motion/index.js";
 import { localStorageReportAdapter } from "../../report/storage/localStorageAdapter.js";
 const DOT_SIZE = 14;
 const TARGET_SELECTOR = "[data-report-id][data-report-type]";
@@ -608,30 +609,36 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
                                     : styles.markerButton.boxShadow,
                                 transform: marker.report.id === selectedReport?.id ? "scale(1.15)" : "scale(1)",
                             } }, marker.id)))
-                        : null, mode === "view" && tooltipReport && tooltipMarker ? (_jsxs("div", { className: activeReplyReport ? "stitchable-marker-tooltip stitchable-marker-tooltip--spring-in" : "stitchable-marker-tooltip", onMouseEnter: () => {
-                            clearHoverLeaveTimeout();
-                            setHoveredMarkerId(tooltipReport.id);
-                        }, onMouseLeave: () => {
-                            if (!activeReplyReportId) {
-                                scheduleHoverLeave(tooltipReport.id);
-                            }
-                        }, onClick: () => openReplyComposer(tooltipReport), style: {
-                            ...styles.markerTooltip,
-                            left: Math.min(Math.max(tooltipMarker.left - 12, 16), window.innerWidth - 296),
-                            top: Math.max(tooltipMarker.top - (activeReplyReport ? 232 : 104), 16),
-                            backgroundColor: activeReplyReport ? palette.panel : resolvedAppearance === "dark" ? "rgba(15, 23, 42, 0.72)" : "rgba(255, 255, 255, 0.72)",
-                            borderColor: palette.panelBorder,
-                            color: palette.text,
-                            pointerEvents: "auto",
-                            cursor: activeReplyReport ? "default" : "pointer",
-                            backdropFilter: "blur(14px)",
-                        }, children: [_jsxs("strong", { style: { fontSize: 12 }, children: [tooltipReport.report_type, " \u00B7 ", tooltipReport.report_id] }), _jsxs("div", { style: styles.markerTooltipHeader, children: [_jsx("span", { style: { ...styles.statusBadge, ...getReplyStatusTone(hasReply(tooltipReport)) }, children: hasReply(tooltipReport) ? "답변 완료" : "답변 미완료" }), _jsx("span", { style: { ...styles.reportMeta, margin: 0, color: palette.muted }, children: formatDate(tooltipReport.created_at) })] }), tooltipFieldTags.length ? (_jsx("div", { style: styles.tagList, children: tooltipFieldTags.map((fieldTag) => (_jsx("span", { style: { ...styles.fieldTag, backgroundColor: palette.chip, color: palette.text }, children: fieldTag.label }, fieldTag.key))) })) : null, _jsx("p", { style: { ...styles.markerTooltipMessage, color: palette.text }, children: tooltipReport.message }), activeReplyReport ? (_jsxs("div", { style: styles.editorSection, children: [activeReplyReport.replies.length ? (_jsx("div", { style: styles.replyList, children: activeReplyReport.replies.map((reply) => (_jsxs("div", { style: { ...styles.replyItem, backgroundColor: palette.chip, color: palette.text }, children: [_jsx("p", { style: { margin: 0, fontSize: 12 }, children: reply.message }), _jsx("p", { style: { ...styles.reportMeta, color: palette.muted }, children: formatDate(reply.created_at) })] }, reply.id))) })) : null, _jsx("textarea", { value: replyDraft, onChange: (event) => setReplyDraft(event.target.value), placeholder: "\uB2F5\uBCC0\uC744 \uC785\uB825\uD574\uC8FC\uC138\uC694.", onClick: (event) => event.stopPropagation(), style: { ...styles.textarea, minHeight: 96, backgroundColor: palette.input, borderColor: palette.inputBorder, color: palette.inputText } }), _jsxs("div", { style: styles.buttonRow, children: [_jsx("button", { type: "button", onClick: (event) => {
-                                                    event.stopPropagation();
-                                                    closeReplyComposer();
-                                                }, style: { ...styles.secondaryButton, borderColor: palette.inputBorder, color: palette.text }, children: "\uB2EB\uAE30" }), _jsx("button", { type: "button", onClick: (event) => {
-                                                    event.stopPropagation();
-                                                    void handleReplySubmit();
-                                                }, disabled: isUpdating, style: { ...styles.primaryButton, backgroundColor: "#2563eb" }, children: isUpdating ? "전송 중..." : "전송" })] })] })) : null] }, `${tooltipReport.id}-${activeReplyReport ? "expanded" : "preview"}`)) : null, draft ? (_jsxs("div", { onClick: (event) => event.stopPropagation(), style: {
+                        : null, _jsx(AnimatedPresence, { children: mode === "view" && tooltipReport && tooltipMarker ? (_jsxs(motion.div, { initial: { opacity: 0, scale: 0.5, transform: "translateY(-100px)" }, animate: { opacity: 1, scale: 1, transform: "translateY(0px)" }, exit: { opacity: 0, scale: 0.5, transform: "translateY(-100px)" }, transition: {
+                                delay: 0.1 * 2,
+                                type: "spring",
+                                mass: 0.1,
+                                stiffness: 100,
+                                damping: 10,
+                            }, onMouseEnter: () => {
+                                clearHoverLeaveTimeout();
+                                setHoveredMarkerId(tooltipReport.id);
+                            }, onMouseLeave: () => {
+                                if (!activeReplyReportId) {
+                                    scheduleHoverLeave(tooltipReport.id);
+                                }
+                            }, onClick: () => openReplyComposer(tooltipReport), style: {
+                                ...styles.markerTooltip,
+                                left: Math.min(Math.max(tooltipMarker.left - 12, 16), window.innerWidth - 296),
+                                top: Math.max(tooltipMarker.top - (activeReplyReport ? 232 : 104), 16),
+                                backgroundColor: activeReplyReport ? palette.panel : resolvedAppearance === "dark" ? "rgba(15, 23, 42, 0.72)" : "rgba(255, 255, 255, 0.72)",
+                                borderColor: palette.panelBorder,
+                                color: palette.text,
+                                pointerEvents: "auto",
+                                cursor: activeReplyReport ? "default" : "pointer",
+                                backdropFilter: "blur(14px)",
+                            }, children: [_jsxs("strong", { style: { fontSize: 12 }, children: [tooltipReport.report_type, " \u00B7 ", tooltipReport.report_id] }), _jsxs("div", { style: styles.markerTooltipHeader, children: [_jsx("span", { style: { ...styles.statusBadge, ...getReplyStatusTone(hasReply(tooltipReport)) }, children: hasReply(tooltipReport) ? "답변 완료" : "답변 미완료" }), _jsx("span", { style: { ...styles.reportMeta, margin: 0, color: palette.muted }, children: formatDate(tooltipReport.created_at) })] }), tooltipFieldTags.length ? (_jsx("div", { style: styles.tagList, children: tooltipFieldTags.map((fieldTag) => (_jsx("span", { style: { ...styles.fieldTag, backgroundColor: palette.chip, color: palette.text }, children: fieldTag.label }, fieldTag.key))) })) : null, _jsx("p", { style: { ...styles.markerTooltipMessage, color: palette.text }, children: tooltipReport.message }), activeReplyReport ? (_jsxs("div", { style: styles.editorSection, children: [activeReplyReport.replies.length ? (_jsx("div", { style: styles.replyList, children: activeReplyReport.replies.map((reply) => (_jsxs("div", { style: { ...styles.replyItem, backgroundColor: palette.chip, color: palette.text }, children: [_jsx("p", { style: { margin: 0, fontSize: 12 }, children: reply.message }), _jsx("p", { style: { ...styles.reportMeta, color: palette.muted }, children: formatDate(reply.created_at) })] }, reply.id))) })) : null, _jsx("textarea", { value: replyDraft, onChange: (event) => setReplyDraft(event.target.value), placeholder: "\uB2F5\uBCC0\uC744 \uC785\uB825\uD574\uC8FC\uC138\uC694.", onClick: (event) => event.stopPropagation(), style: { ...styles.textarea, minHeight: 96, backgroundColor: palette.input, borderColor: palette.inputBorder, color: palette.inputText } }), _jsxs("div", { style: styles.buttonRow, children: [_jsx("button", { type: "button", onClick: (event) => {
+                                                        event.stopPropagation();
+                                                        closeReplyComposer();
+                                                    }, style: { ...styles.secondaryButton, borderColor: palette.inputBorder, color: palette.text }, children: "\uB2EB\uAE30" }), _jsx("button", { type: "button", onClick: (event) => {
+                                                        event.stopPropagation();
+                                                        void handleReplySubmit();
+                                                    }, disabled: isUpdating, style: { ...styles.primaryButton, backgroundColor: "#2563eb" }, children: isUpdating ? "전송 중..." : "전송" })] })] })) : null] }, `${tooltipReport.id}-${activeReplyReport ? "expanded" : "preview"}`)) : null }), draft ? (_jsxs("div", { onClick: (event) => event.stopPropagation(), style: {
                             ...styles.draftCard,
                             left: isMobileViewport ? 16 : Math.max(16, Math.min(draft.clientX + 16, window.innerWidth - 336)),
                             top: isMobileViewport ? Math.max(80, window.innerHeight - 360) : Math.max(16, Math.min(draft.clientY + 16, window.innerHeight - 320)),
