@@ -885,6 +885,8 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
 
                     {mode === "view" && tooltipReport && tooltipMarker ? (
                         <div
+                            key={`${tooltipReport.id}-${activeReplyReport ? "expanded" : "preview"}`}
+                            className={activeReplyReport ? "stitchable-marker-tooltip stitchable-marker-tooltip--spring-in" : "stitchable-marker-tooltip"}
                             onMouseEnter={() => {
                                 clearHoverLeaveTimeout();
                                 setHoveredMarkerId(tooltipReport.id);

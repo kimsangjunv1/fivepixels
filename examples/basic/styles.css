@@ -1,3 +1,5 @@
+@import "./tooltip-animations.css";
+
 :root {
     color-scheme: light;
     font-family: "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;

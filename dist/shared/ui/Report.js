@@ -608,7 +608,7 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
                                     : styles.markerButton.boxShadow,
                                 transform: marker.report.id === selectedReport?.id ? "scale(1.15)" : "scale(1)",
                             } }, marker.id)))
-                        : null, mode === "view" && tooltipReport && tooltipMarker ? (_jsxs("div", { onMouseEnter: () => {
+                        : null, mode === "view" && tooltipReport && tooltipMarker ? (_jsxs("div", { className: activeReplyReport ? "stitchable-marker-tooltip stitchable-marker-tooltip--spring-in" : "stitchable-marker-tooltip", onMouseEnter: () => {
                             clearHoverLeaveTimeout();
                             setHoveredMarkerId(tooltipReport.id);
                         }, onMouseLeave: () => {
@@ -631,7 +631,7 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
                                                 }, style: { ...styles.secondaryButton, borderColor: palette.inputBorder, color: palette.text }, children: "\uB2EB\uAE30" }), _jsx("button", { type: "button", onClick: (event) => {
                                                     event.stopPropagation();
                                                     void handleReplySubmit();
-                                                }, disabled: isUpdating, style: { ...styles.primaryButton, backgroundColor: "#2563eb" }, children: isUpdating ? "전송 중..." : "전송" })] })] })) : null] })) : null, draft ? (_jsxs("div", { onClick: (event) => event.stopPropagation(), style: {
+                                                }, disabled: isUpdating, style: { ...styles.primaryButton, backgroundColor: "#2563eb" }, children: isUpdating ? "전송 중..." : "전송" })] })] })) : null] }, `${tooltipReport.id}-${activeReplyReport ? "expanded" : "preview"}`)) : null, draft ? (_jsxs("div", { onClick: (event) => event.stopPropagation(), style: {
                             ...styles.draftCard,
                             left: isMobileViewport ? 16 : Math.max(16, Math.min(draft.clientX + 16, window.innerWidth - 336)),
                             top: isMobileViewport ? Math.max(80, window.innerHeight - 360) : Math.max(16, Math.min(draft.clientY + 16, window.innerHeight - 320)),
