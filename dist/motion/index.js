@@ -25,7 +25,9 @@ function parseNumericValue(value) {
     if (typeof value === "number") {
         return { value, unit: "px" };
     }
-    const match = String(value).trim().match(/^(-?\d+(?:\.\d+)?)(px|%|rem|em|vw|vh)?$/);
+    const match = String(value)
+        .trim()
+        .match(/^(-?\d+(?:\.\d+)?)(px|%|rem|em|vw|vh)?$/);
     if (!match) {
         return undefined;
     }
@@ -243,7 +245,9 @@ function resolveDuration(transition) {
         return toMs(transition.duration, 320);
     }
     if (transition?.type === "spring") {
-        const duration = getSpringSettlingDuration(getSpringMetrics(transition)) * 1000;
+        // console.log("transition", transition);
+        // console.log("??", getSpringSettlingDuration(getSpringMetrics(transition)) * (transition.delay ? 1000 : 1));
+        const duration = getSpringSettlingDuration(getSpringMetrics(transition)) * (transition.delay ? 1000 : 1);
         return clamp(duration, 120, 6000);
     }
     return 320;
@@ -328,9 +332,7 @@ export function AnimatedPresence({ children }) {
         setTrackedChildren((current) => {
             const nextKeys = new Set(validChildren.map((child) => child.key));
             const nextChildren = validChildren.map((element) => ({ element, isPresent: true }));
-            const exitingChildren = current
-                .filter((child) => child.element.key != null && !nextKeys.has(child.element.key))
-                .map((child) => ({ ...child, isPresent: false }));
+            const exitingChildren = current.filter((child) => child.element.key != null && !nextKeys.has(child.element.key)).map((child) => ({ ...child, isPresent: false }));
             const nextTrackedChildren = [...nextChildren, ...exitingChildren];
             return hasSameTrackedChildren(current, nextTrackedChildren) ? current : nextTrackedChildren;
         });
@@ -387,11 +389,7 @@ function createMotionComponent(tagName) {
             if (!node) {
                 return;
             }
-            const fromStyle = hasMountedRef.current
-                ? captureCurrentMotionStyle(node, lastAnimatedStyleRef.current)
-                : initial === false
-                    ? animate
-                    : initial ?? animate;
+            const fromStyle = hasMountedRef.current ? captureCurrentMotionStyle(node, lastAnimatedStyleRef.current) : initial === false ? animate : (initial ?? animate);
             const shouldAnimate = hasMountedRef.current ? animateKey !== stringifyStyle(lastAnimatedStyleRef.current) : initial !== false;
             if (!shouldAnimate) {
                 hasMountedRef.current = true;

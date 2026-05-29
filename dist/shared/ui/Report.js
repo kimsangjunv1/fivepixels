@@ -631,7 +631,7 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
                                 transform: marker.report.id === selectedReport?.id ? "scale(1.15)" : "scale(1)",
                             } }, marker.id)))
                         : null, _jsx(AnimatedPresence, { children: mode === "view" && tooltipReport && tooltipAnchor ? (_jsxs(motion.div, { initial: { opacity: 0, transform: "translateY(5px)", scale: 0.97 }, animate: { opacity: 1, transform: "translateY(0px)", scale: 1 }, exit: { opacity: 0, transform: "translateY(5px)", scale: 0.97 }, transition: {
-                                // delay: 0.3,
+                                delay: 0,
                                 type: "spring",
                                 mass: 0.1,
                                 stiffness: 100,
