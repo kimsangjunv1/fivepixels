@@ -131,6 +131,12 @@ function findTargetByPoint(overlay, clientX, clientY) {
     overlay.style.pointerEvents = previousPointerEvents;
     return findTargetElement(hitElement);
 }
+function resolveTooltipAnchor(markers, reportId) {
+    if (!reportId) {
+        return null;
+    }
+    return markers.find((marker) => marker.report.id === reportId) ?? null;
+}
 function getMarkerFromReport(report, currentScrollY) {
     const selector = `${TARGET_SELECTOR}[data-report-id="${escapeAttribute(report.report_id)}"][data-report-type="${report.report_type}"]`;
     const targetElement = document.querySelector(selector);
@@ -359,19 +365,21 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
     const selectedReport = useMemo(() => {
         return filteredReports.find((report) => report.id === selectedReportId) ?? filteredReports[0] ?? null;
     }, [filteredReports, selectedReportId]);
-    const hoveredMarkerReport = useMemo(() => {
-        return markers.find((marker) => marker.report.id === hoveredMarkerId)?.report ?? null;
-    }, [hoveredMarkerId, markers]);
-    const hoveredMarker = useMemo(() => {
-        return markers.find((marker) => marker.report.id === hoveredMarkerId) ?? null;
-    }, [hoveredMarkerId, markers]);
-    const activeReplyMarker = useMemo(() => {
-        return markers.find((marker) => marker.report.id === activeReplyReportId) ?? null;
-    }, [activeReplyReportId, markers]);
-    const activeReplyReport = activeReplyMarker?.report ?? null;
-    const tooltipMarker = activeReplyMarker ?? hoveredMarker;
-    const tooltipReport = activeReplyReport ?? hoveredMarkerReport;
+    const activeReplyAnchor = useMemo(() => resolveTooltipAnchor(markers, activeReplyReportId), [activeReplyReportId, markers]);
+    const activeReplyReport = activeReplyAnchor?.report ?? null;
+    const tooltipAnchor = useMemo(() => {
+        if (activeReplyReportId) {
+            return activeReplyAnchor ?? resolveTooltipAnchor(markers, hoveredMarkerId);
+        }
+        return resolveTooltipAnchor(markers, hoveredMarkerId);
+    }, [activeReplyAnchor, activeReplyReportId, hoveredMarkerId, markers]);
+    const tooltipReport = tooltipAnchor?.report ?? null;
     const tooltipFieldTags = useMemo(() => (tooltipReport ? getFieldTags(fields, tooltipReport.field_values) : []), [fields, tooltipReport]);
+    useEffect(() => {
+        if (hoveredMarkerId && !markers.some((marker) => marker.report.id === hoveredMarkerId)) {
+            setHoveredMarkerId(null);
+        }
+    }, [hoveredMarkerId, markers]);
     const clearHoverLeaveTimeout = () => {
         if (hoverLeaveTimeoutRef.current) {
             window.clearTimeout(hoverLeaveTimeoutRef.current);
@@ -622,16 +630,12 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
                                 boxShadow: marker.report.id === selectedReport?.id ? "0 0 0 4px rgba(15, 23, 42, 0.2)" : styles.markerButton.boxShadow,
                                 transform: marker.report.id === selectedReport?.id ? "scale(1.15)" : "scale(1)",
                             } }, marker.id)))
-                        : null, _jsx(AnimatedPresence, { children: mode === "view" && tooltipReport && tooltipMarker ? (_jsxs(motion.div, { 
-                            // initial={{ opacity: 0, transform: "translateY(100px)" }}
-                            // animate={{ opacity: 1, transform: "translateY(0px)" }}
-                            // exit={{ opacity: 0, transform: "translateY(100px)" }}
-                            initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 }, transition: {
-                                delay: 0.3,
+                        : null, _jsx(AnimatedPresence, { children: mode === "view" && tooltipReport && tooltipAnchor ? (_jsxs(motion.div, { initial: { opacity: 0, transform: "translateY(5px)", scale: 0.97 }, animate: { opacity: 1, transform: "translateY(0px)", scale: 1 }, exit: { opacity: 0, transform: "translateY(5px)", scale: 0.97 }, transition: {
+                                // delay: 0.3,
                                 type: "spring",
-                                mass: 50.1,
-                                stiffness: 2100,
-                                damping: 110,
+                                mass: 0.1,
+                                stiffness: 100,
+                                damping: 10,
                             }, onMouseEnter: () => {
                                 clearHoverLeaveTimeout();
                                 setHoveredMarkerId(tooltipReport.id);
@@ -641,8 +645,8 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
                                 }
                             }, onClick: () => openReplyComposer(tooltipReport), style: {
                                 ...styles.markerTooltip,
-                                left: Math.min(Math.max(tooltipMarker.left - 12, 16), window.innerWidth - 296),
-                                top: Math.max(tooltipMarker.top - (activeReplyReport ? 232 : 104), 16),
+                                left: Math.min(Math.max(tooltipAnchor.left - 12, 16), window.innerWidth - 296),
+                                top: Math.max(tooltipAnchor.top - (activeReplyReport ? 232 : 104), 16),
                                 backgroundColor: activeReplyReport ? palette.panel : resolvedAppearance === "dark" ? "rgba(15, 23, 42, 0.72)" : "rgba(255, 255, 255, 0.72)",
                                 borderColor: palette.panelBorder,
                                 color: palette.text,
