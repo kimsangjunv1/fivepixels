@@ -1,0 +1,50 @@
+{
+  "name": "stitchable",
+  "version": "0.1.0",
+  "description": "DOM element based feedback library for browser apps",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kimsangjunv1/stitchable.git"
+  },
+  "homepage": "https://github.com/kimsangjunv1/stitchable",
+  "bugs": {
+    "url": "https://github.com/kimsangjunv1/stitchable/issues"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./report": {
+      "types": "./dist/report/index.d.ts",
+      "import": "./dist/report/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "npm run typecheck",
+    "example": "python3 -m http.server 4173 -d ."
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "react-dom": ">=18"
+  },
+  "dependencies": {
+    "zustand": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "typescript": "^5.0.0"
+  }
+}
