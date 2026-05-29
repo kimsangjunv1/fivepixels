@@ -1,6 +1,9 @@
-export { Report } from "../shared/ui/Report.js";
-export type { ReportProps } from "../shared/ui/Report.js";
-export { createLocalStorageReportAdapter, localStorageReportAdapter } from "./storage/localStorageAdapter.js";
+export { Report } from "../components/report/Report.js";
+export type { ReportProps } from "../components/report/Report.js";
+export { ReportProvider } from "../providers/ReportProvider.js";
+export type { ReportProviderProps } from "../providers/ReportProvider.js";
+export { useReport } from "../providers/reportContext.js";
+export { createLocalStorageReportAdapter, localStorageReportAdapter } from "../storage/local/localStorageAdapter.js";
 export type {
     CreateReportFeedbackPayload,
     ReportAppearance,
@@ -16,5 +19,5 @@ export type {
     SerializedReportFeedback,
     SerializedReportReply,
     UpdateReportFeedbackPayload,
-} from "../entities/report/model/report.type.js";
-export { REPORT_STATUS_FLOW, REPORT_STATUS_TRANSITIONS } from "../entities/report/model/report.type.js";
+} from "../types/report.js";
+export { REPORT_STATUS_FLOW, REPORT_STATUS_TRANSITIONS } from "../types/report.js";
