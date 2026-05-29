@@ -927,7 +927,7 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
                                 animate={{ opacity: 1, transform: "translateY(0px)", scale: 1 }}
                                 exit={{ opacity: 0, transform: "translateY(5px)", scale: 0.97 }}
                                 transition={{
-                                    // delay: 0.3,
+                                    delay: 0,
                                     type: "spring",
                                     mass: 0.1,
                                     stiffness: 100,
