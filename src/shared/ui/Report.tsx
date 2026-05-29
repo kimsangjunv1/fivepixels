@@ -63,6 +63,23 @@ type EditableDraft = {
     status: ReportStatus;
     fieldValues: ReportFieldValues;
 };
+
+function createReplyId() {
+    if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+        return crypto.randomUUID();
+    }
+
+    return `reply-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function hasReply(report: ReportFeedback) {
+    return report.replies.length > 0;
+}
+
+function getReplyStatusTone(hasCompletedReply: boolean) {
+    return hasCompletedReply ? { backgroundColor: "#dcfce7", color: "#166534" } : { backgroundColor: "#fee2e2", color: "#b91c1c" };
+}
+
 export type ReportProps = {
     appearance?: ReportAppearance;
     fields?: ReportField[];
@@ -358,6 +375,7 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
     const overlayRef = useRef<HTMLDivElement | null>(null);
     const hoveredElementRef = useRef<HTMLElement | null>(null);
     const selectedElementRef = useRef<HTMLElement | null>(null);
+    const hoverLeaveTimeoutRef = useRef<number | null>(null);
     const resolvedAppearance = useResolvedAppearance(appearance);
     const isMobileViewport = useIsMobileViewport();
     const palette = usePalette(resolvedAppearance);
@@ -370,6 +388,8 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
     const [selectedTarget, setSelectedTarget] = useState<TargetSnapshot | null>(null);
     const [markers, setMarkers] = useState<Marker[]>([]);
     const [hoveredMarkerId, setHoveredMarkerId] = useState<string | null>(null);
+    const [activeReplyReportId, setActiveReplyReportId] = useState<string | null>(null);
+    const [replyDraft, setReplyDraft] = useState("");
     const [selectedReportId, setSelectedReportId] = useState<string | null>(null);
     const [editingReportId, setEditingReportId] = useState<string | null>(null);
     const [editableDraft, setEditableDraft] = useState<EditableDraft | null>(null);
@@ -410,11 +430,21 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
         setHoveredTarget(null);
         setSelectedTarget(null);
         setHoveredMarkerId(null);
+        setActiveReplyReportId(null);
+        setReplyDraft("");
         setEditingReportId(null);
         setEditableDraft(null);
         hoveredElementRef.current = null;
         selectedElementRef.current = null;
     }, [currentPathname, mode]);
+
+    useEffect(() => {
+        return () => {
+            if (hoverLeaveTimeoutRef.current) {
+                window.clearTimeout(hoverLeaveTimeoutRef.current);
+            }
+        };
+    }, []);
 
     useEffect(() => {
         if (!selectedReportId) {
@@ -487,6 +517,28 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
     const hoveredMarker = useMemo(() => {
         return markers.find((marker) => marker.report.id === hoveredMarkerId) ?? null;
     }, [hoveredMarkerId, markers]);
+    const activeReplyMarker = useMemo(() => {
+        return markers.find((marker) => marker.report.id === activeReplyReportId) ?? null;
+    }, [activeReplyReportId, markers]);
+    const activeReplyReport = activeReplyMarker?.report ?? null;
+    const tooltipMarker = activeReplyMarker ?? hoveredMarker;
+    const tooltipReport = activeReplyReport ?? hoveredMarkerReport;
+
+    const clearHoverLeaveTimeout = () => {
+        if (hoverLeaveTimeoutRef.current) {
+            window.clearTimeout(hoverLeaveTimeoutRef.current);
+            hoverLeaveTimeoutRef.current = null;
+        }
+    };
+
+    const scheduleHoverLeave = (markerId: string) => {
+        clearHoverLeaveTimeout();
+
+        hoverLeaveTimeoutRef.current = window.setTimeout(() => {
+            setHoveredMarkerId((current) => (current === markerId ? null : current));
+            hoverLeaveTimeoutRef.current = null;
+        }, 120);
+    };
 
     const stopEditing = () => {
         setEditingReportId(null);
@@ -499,6 +551,18 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
         if (editingReportId && editingReportId !== reportId) {
             stopEditing();
         }
+    };
+
+    const openReplyComposer = (report: ReportFeedback) => {
+        setSelectedReportId(report.id);
+        setActiveReplyReportId(report.id);
+        setReplyDraft("");
+        clearHoverLeaveTimeout();
+    };
+
+    const closeReplyComposer = () => {
+        setActiveReplyReportId(null);
+        setReplyDraft("");
     };
 
     const handleOverlayMove = (event: MouseEvent<HTMLDivElement>) => {
@@ -634,6 +698,36 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
         }
     };
 
+    const handleReplySubmit = async () => {
+        if (!activeReplyReport) {
+            return;
+        }
+
+        if (!replyDraft.trim()) {
+            setErrorMessage("답변 내용을 입력해주세요.");
+            return;
+        }
+
+        try {
+            await updateFeedback(activeReplyReport.id, {
+                replies: [
+                    ...activeReplyReport.replies,
+                    {
+                        id: createReplyId(),
+                        message: replyDraft.trim(),
+                        created_at: new Date().toISOString(),
+                        author_type: "manager",
+                    },
+                ],
+            });
+
+            setErrorMessage("");
+            closeReplyComposer();
+        } catch (nextError) {
+            setErrorMessage(nextError instanceof Error ? nextError.message : "답변 저장에 실패했어요.");
+        }
+    };
+
     return (
         <>
             <div
@@ -741,14 +835,18 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
                               <button
                                   key={marker.id}
                                   type="button"
-                                  onClick={() => selectReport(marker.report.id)}
+                                  onClick={() => {
+                                      selectReport(marker.report.id);
+                                      openReplyComposer(marker.report);
+                                  }}
                                   onMouseEnter={() => {
+                                      clearHoverLeaveTimeout();
                                       setHoveredMarkerId(marker.report.id);
                                       if (!editingReportId) {
                                           setSelectedReportId(marker.report.id);
                                       }
                                   }}
-                                  onMouseLeave={() => setHoveredMarkerId((current) => (current === marker.report.id ? null : current))}
+                                  onMouseLeave={() => scheduleHoverLeave(marker.report.id)}
                                   title={`${marker.report.report_type} · ${marker.report.report_id}`}
                                   style={{
                                       ...styles.markerButton,
@@ -761,22 +859,84 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
                           ))
                         : null}
 
-                    {mode === "view" && hoveredMarkerReport && hoveredMarker ? (
+                    {mode === "view" && tooltipReport && tooltipMarker ? (
                         <div
+                            onMouseEnter={() => {
+                                clearHoverLeaveTimeout();
+                                setHoveredMarkerId(tooltipReport.id);
+                            }}
+                            onMouseLeave={() => {
+                                if (!activeReplyReportId) {
+                                    scheduleHoverLeave(tooltipReport.id);
+                                }
+                            }}
+                            onClick={() => openReplyComposer(tooltipReport)}
                             style={{
                                 ...styles.markerTooltip,
-                                left: Math.min(Math.max(hoveredMarker.left - 12, 16), window.innerWidth - 296),
-                                top: Math.max(hoveredMarker.top - 82, 16),
-                                backgroundColor: palette.panel,
+                                left: Math.min(Math.max(tooltipMarker.left - 12, 16), window.innerWidth - 296),
+                                top: Math.max(tooltipMarker.top - (activeReplyReport ? 232 : 104), 16),
+                                backgroundColor: activeReplyReport ? palette.panel : resolvedAppearance === "dark" ? "rgba(15, 23, 42, 0.72)" : "rgba(255, 255, 255, 0.72)",
                                 borderColor: palette.panelBorder,
                                 color: palette.text,
+                                pointerEvents: "auto",
+                                cursor: activeReplyReport ? "default" : "pointer",
+                                backdropFilter: "blur(14px)",
                             }}
                         >
                             <strong style={{ fontSize: 12 }}>
-                                {hoveredMarkerReport.report_type} · {hoveredMarkerReport.report_id}
+                                {tooltipReport.report_type} · {tooltipReport.report_id}
                             </strong>
-                            <p style={{ ...styles.markerTooltipMessage, color: palette.text }}>{hoveredMarkerReport.message}</p>
-                            <p style={{ ...styles.reportMeta, color: palette.muted }}>{formatDate(hoveredMarkerReport.created_at)}</p>
+                            <div style={styles.markerTooltipHeader}>
+                                <span style={{ ...styles.statusBadge, ...getReplyStatusTone(hasReply(tooltipReport)) }}>
+                                    {hasReply(tooltipReport) ? "답변 완료" : "답변 미완료"}
+                                </span>
+                                <span style={{ ...styles.reportMeta, margin: 0, color: palette.muted }}>{formatDate(tooltipReport.created_at)}</span>
+                            </div>
+                            <p style={{ ...styles.markerTooltipMessage, color: palette.text }}>{tooltipReport.message}</p>
+                            {activeReplyReport ? (
+                                <div style={styles.editorSection}>
+                                    {activeReplyReport.replies.length ? (
+                                        <div style={styles.replyList}>
+                                            {activeReplyReport.replies.map((reply) => (
+                                                <div key={reply.id} style={{ ...styles.replyItem, backgroundColor: palette.chip, color: palette.text }}>
+                                                    <p style={{ margin: 0, fontSize: 12 }}>{reply.message}</p>
+                                                    <p style={{ ...styles.reportMeta, color: palette.muted }}>{formatDate(reply.created_at)}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : null}
+                                    <textarea
+                                        value={replyDraft}
+                                        onChange={(event) => setReplyDraft(event.target.value)}
+                                        placeholder="답변을 입력해주세요."
+                                        onClick={(event) => event.stopPropagation()}
+                                        style={{ ...styles.textarea, minHeight: 96, backgroundColor: palette.input, borderColor: palette.inputBorder, color: palette.inputText }}
+                                    />
+                                    <div style={styles.buttonRow}>
+                                        <button
+                                            type="button"
+                                            onClick={(event) => {
+                                                event.stopPropagation();
+                                                closeReplyComposer();
+                                            }}
+                                            style={{ ...styles.secondaryButton, borderColor: palette.inputBorder, color: palette.text }}
+                                        >
+                                            닫기
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={(event) => {
+                                                event.stopPropagation();
+                                                void handleReplySubmit();
+                                            }}
+                                            disabled={isUpdating}
+                                            style={{ ...styles.primaryButton, backgroundColor: "#2563eb" }}
+                                        >
+                                            {isUpdating ? "전송 중..." : "전송"}
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : null}
                         </div>
                     ) : null}
 
@@ -972,37 +1132,6 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
                             );
                         })}
                     </div>
-
-                    {selectedReport ? (
-                        <section style={{ ...styles.replySection, borderTopColor: palette.panelBorder }}>
-                            <strong>답변 UI 준비</strong>
-                            <p style={{ ...styles.reportMeta, color: palette.muted }}>
-                                {selectedReport.status === "archived"
-                                    ? "보관된 피드백은 읽기 전용으로 유지하고, 답변 이력만 확인하는 것을 기본 정책으로 둡니다."
-                                    : "현재는 구조만 준비되어 있고, cloud adapter 또는 custom UI에서 답변 저장을 확장할 수 있어요."}
-                            </p>
-                            <div style={styles.replyList}>
-                                {selectedReport.replies.length ? (
-                                    selectedReport.replies.map((reply) => (
-                                        <div key={reply.id} style={{ ...styles.replyItem, backgroundColor: palette.chip, color: palette.text }}>
-                                            <p style={{ margin: 0, fontSize: 12 }}>{reply.message}</p>
-                                            <p style={{ ...styles.reportMeta, color: palette.muted }}>{formatDate(reply.created_at)}</p>
-                                        </div>
-                                    ))
-                                ) : (
-                                    <p style={{ ...styles.reportMeta, color: palette.muted }}>아직 등록된 답변이 없습니다.</p>
-                                )}
-                            </div>
-                            <textarea
-                                disabled
-                                placeholder={selectedReport.status === "archived" ? "archived 상태에서는 답변 입력이 잠겨요." : "답변 입력 UI placeholder"}
-                                style={{ ...styles.textarea, backgroundColor: palette.input, borderColor: palette.inputBorder, color: palette.inputText, opacity: 0.7 }}
-                            />
-                            <button type="button" disabled style={{ ...styles.primaryButton, backgroundColor: "#94a3b8" }}>
-                                답변 저장 예정
-                            </button>
-                        </section>
-                    ) : null}
                 </aside>
             ) : null}
         </>
@@ -1127,6 +1256,13 @@ const styles: Record<string, CSSProperties> = {
         fontSize: 12,
         lineHeight: 1.45,
         wordBreak: "break-word",
+    },
+    markerTooltipHeader: {
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: 8,
+        marginTop: 8,
     },
     draftCard: {
         position: "absolute",
@@ -1269,14 +1405,6 @@ const styles: Record<string, CSSProperties> = {
         flexDirection: "column",
         gap: 10,
         marginTop: 12,
-    },
-    replySection: {
-        display: "flex",
-        flexDirection: "column",
-        gap: 10,
-        marginTop: 16,
-        paddingTop: 16,
-        borderTop: "1px solid",
     },
     replyList: {
         display: "flex",
