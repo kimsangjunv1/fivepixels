@@ -26,6 +26,21 @@ function hasReply(report) {
 function getReplyStatusTone(hasCompletedReply) {
     return hasCompletedReply ? { backgroundColor: "#dcfce7", color: "#166534" } : { backgroundColor: "#fee2e2", color: "#b91c1c" };
 }
+function getMarkerColor(report) {
+    return hasReply(report) ? "#22c55e" : TARGET_COLOR[report.report_type];
+}
+function getFieldTags(fields, fieldValues) {
+    return fields.flatMap((field) => {
+        if (field.key === "message") {
+            return [];
+        }
+        if (field.type === "checkbox") {
+            return fieldValues[field.key] === true ? [{ key: field.key, label: field.label }] : [];
+        }
+        const value = String(fieldValues[field.key] ?? "").trim();
+        return value ? [{ key: field.key, label: `${field.label}: ${value}` }] : [];
+    });
+}
 function clampRatio(value) {
     if (Number.isNaN(value)) {
         return 0;
@@ -354,6 +369,7 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
     const activeReplyReport = activeReplyMarker?.report ?? null;
     const tooltipMarker = activeReplyMarker ?? hoveredMarker;
     const tooltipReport = activeReplyReport ?? hoveredMarkerReport;
+    const tooltipFieldTags = useMemo(() => (tooltipReport ? getFieldTags(fields, tooltipReport.field_values) : []), [fields, tooltipReport]);
     const clearHoverLeaveTimeout = () => {
         if (hoverLeaveTimeoutRef.current) {
             window.clearTimeout(hoverLeaveTimeoutRef.current);
@@ -586,10 +602,13 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
                                 ...styles.markerButton,
                                 left: marker.left,
                                 top: marker.top,
-                                backgroundColor: marker.report.id === selectedReport?.id ? "#0f172a" : TARGET_COLOR[marker.report.report_type],
+                                backgroundColor: getMarkerColor(marker.report),
+                                boxShadow: marker.report.id === selectedReport?.id
+                                    ? "0 0 0 4px rgba(15, 23, 42, 0.2)"
+                                    : styles.markerButton.boxShadow,
                                 transform: marker.report.id === selectedReport?.id ? "scale(1.15)" : "scale(1)",
                             } }, marker.id)))
-                        : null, mode === "view" && tooltipReport && tooltipMarker ? (_jsxs("div", { onMouseEnter: () => {
+                        : null, mode === "view" && tooltipReport && tooltipMarker ? (_jsxs("div", { className: activeReplyReport ? "stitchable-marker-tooltip stitchable-marker-tooltip--spring-in" : "stitchable-marker-tooltip", onMouseEnter: () => {
                             clearHoverLeaveTimeout();
                             setHoveredMarkerId(tooltipReport.id);
                         }, onMouseLeave: () => {
@@ -606,13 +625,13 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
                             pointerEvents: "auto",
                             cursor: activeReplyReport ? "default" : "pointer",
                             backdropFilter: "blur(14px)",
-                        }, children: [_jsxs("strong", { style: { fontSize: 12 }, children: [tooltipReport.report_type, " \u00B7 ", tooltipReport.report_id] }), _jsxs("div", { style: styles.markerTooltipHeader, children: [_jsx("span", { style: { ...styles.statusBadge, ...getReplyStatusTone(hasReply(tooltipReport)) }, children: hasReply(tooltipReport) ? "답변 완료" : "답변 미완료" }), _jsx("span", { style: { ...styles.reportMeta, margin: 0, color: palette.muted }, children: formatDate(tooltipReport.created_at) })] }), _jsx("p", { style: { ...styles.markerTooltipMessage, color: palette.text }, children: tooltipReport.message }), activeReplyReport ? (_jsxs("div", { style: styles.editorSection, children: [activeReplyReport.replies.length ? (_jsx("div", { style: styles.replyList, children: activeReplyReport.replies.map((reply) => (_jsxs("div", { style: { ...styles.replyItem, backgroundColor: palette.chip, color: palette.text }, children: [_jsx("p", { style: { margin: 0, fontSize: 12 }, children: reply.message }), _jsx("p", { style: { ...styles.reportMeta, color: palette.muted }, children: formatDate(reply.created_at) })] }, reply.id))) })) : null, _jsx("textarea", { value: replyDraft, onChange: (event) => setReplyDraft(event.target.value), placeholder: "\uB2F5\uBCC0\uC744 \uC785\uB825\uD574\uC8FC\uC138\uC694.", onClick: (event) => event.stopPropagation(), style: { ...styles.textarea, minHeight: 96, backgroundColor: palette.input, borderColor: palette.inputBorder, color: palette.inputText } }), _jsxs("div", { style: styles.buttonRow, children: [_jsx("button", { type: "button", onClick: (event) => {
+                        }, children: [_jsxs("strong", { style: { fontSize: 12 }, children: [tooltipReport.report_type, " \u00B7 ", tooltipReport.report_id] }), _jsxs("div", { style: styles.markerTooltipHeader, children: [_jsx("span", { style: { ...styles.statusBadge, ...getReplyStatusTone(hasReply(tooltipReport)) }, children: hasReply(tooltipReport) ? "답변 완료" : "답변 미완료" }), _jsx("span", { style: { ...styles.reportMeta, margin: 0, color: palette.muted }, children: formatDate(tooltipReport.created_at) })] }), tooltipFieldTags.length ? (_jsx("div", { style: styles.tagList, children: tooltipFieldTags.map((fieldTag) => (_jsx("span", { style: { ...styles.fieldTag, backgroundColor: palette.chip, color: palette.text }, children: fieldTag.label }, fieldTag.key))) })) : null, _jsx("p", { style: { ...styles.markerTooltipMessage, color: palette.text }, children: tooltipReport.message }), activeReplyReport ? (_jsxs("div", { style: styles.editorSection, children: [activeReplyReport.replies.length ? (_jsx("div", { style: styles.replyList, children: activeReplyReport.replies.map((reply) => (_jsxs("div", { style: { ...styles.replyItem, backgroundColor: palette.chip, color: palette.text }, children: [_jsx("p", { style: { margin: 0, fontSize: 12 }, children: reply.message }), _jsx("p", { style: { ...styles.reportMeta, color: palette.muted }, children: formatDate(reply.created_at) })] }, reply.id))) })) : null, _jsx("textarea", { value: replyDraft, onChange: (event) => setReplyDraft(event.target.value), placeholder: "\uB2F5\uBCC0\uC744 \uC785\uB825\uD574\uC8FC\uC138\uC694.", onClick: (event) => event.stopPropagation(), style: { ...styles.textarea, minHeight: 96, backgroundColor: palette.input, borderColor: palette.inputBorder, color: palette.inputText } }), _jsxs("div", { style: styles.buttonRow, children: [_jsx("button", { type: "button", onClick: (event) => {
                                                     event.stopPropagation();
                                                     closeReplyComposer();
                                                 }, style: { ...styles.secondaryButton, borderColor: palette.inputBorder, color: palette.text }, children: "\uB2EB\uAE30" }), _jsx("button", { type: "button", onClick: (event) => {
                                                     event.stopPropagation();
                                                     void handleReplySubmit();
-                                                }, disabled: isUpdating, style: { ...styles.primaryButton, backgroundColor: "#2563eb" }, children: isUpdating ? "전송 중..." : "전송" })] })] })) : null] })) : null, draft ? (_jsxs("div", { onClick: (event) => event.stopPropagation(), style: {
+                                                }, disabled: isUpdating, style: { ...styles.primaryButton, backgroundColor: "#2563eb" }, children: isUpdating ? "전송 중..." : "전송" })] })] })) : null] }, `${tooltipReport.id}-${activeReplyReport ? "expanded" : "preview"}`)) : null, draft ? (_jsxs("div", { onClick: (event) => event.stopPropagation(), style: {
                             ...styles.draftCard,
                             left: isMobileViewport ? 16 : Math.max(16, Math.min(draft.clientX + 16, window.innerWidth - 336)),
                             top: isMobileViewport ? Math.max(80, window.innerHeight - 360) : Math.max(16, Math.min(draft.clientY + 16, window.innerHeight - 320)),
@@ -772,6 +791,22 @@ const styles = {
         justifyContent: "space-between",
         gap: 8,
         marginTop: 8,
+    },
+    tagList: {
+        display: "flex",
+        flexWrap: "wrap",
+        gap: 6,
+        marginTop: 8,
+    },
+    fieldTag: {
+        display: "inline-flex",
+        alignItems: "center",
+        borderRadius: 999,
+        fontSize: 11,
+        fontWeight: 600,
+        lineHeight: 1.4,
+        padding: "4px 8px",
+        wordBreak: "break-word",
     },
     draftCard: {
         position: "absolute",

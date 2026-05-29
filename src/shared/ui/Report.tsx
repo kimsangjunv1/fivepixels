@@ -80,6 +80,25 @@ function getReplyStatusTone(hasCompletedReply: boolean) {
     return hasCompletedReply ? { backgroundColor: "#dcfce7", color: "#166534" } : { backgroundColor: "#fee2e2", color: "#b91c1c" };
 }
 
+function getMarkerColor(report: ReportFeedback) {
+    return hasReply(report) ? "#22c55e" : TARGET_COLOR[report.report_type];
+}
+
+function getFieldTags(fields: ReportField[], fieldValues: ReportFieldValues) {
+    return fields.flatMap((field) => {
+        if (field.key === "message") {
+            return [];
+        }
+
+        if (field.type === "checkbox") {
+            return fieldValues[field.key] === true ? [{ key: field.key, label: field.label }] : [];
+        }
+
+        const value = String(fieldValues[field.key] ?? "").trim();
+        return value ? [{ key: field.key, label: `${field.label}: ${value}` }] : [];
+    });
+}
+
 export type ReportProps = {
     appearance?: ReportAppearance;
     fields?: ReportField[];
@@ -523,6 +542,7 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
     const activeReplyReport = activeReplyMarker?.report ?? null;
     const tooltipMarker = activeReplyMarker ?? hoveredMarker;
     const tooltipReport = activeReplyReport ?? hoveredMarkerReport;
+    const tooltipFieldTags = useMemo(() => (tooltipReport ? getFieldTags(fields, tooltipReport.field_values) : []), [fields, tooltipReport]);
 
     const clearHoverLeaveTimeout = () => {
         if (hoverLeaveTimeoutRef.current) {
@@ -852,7 +872,11 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
                                       ...styles.markerButton,
                                       left: marker.left,
                                       top: marker.top,
-                                      backgroundColor: marker.report.id === selectedReport?.id ? "#0f172a" : TARGET_COLOR[marker.report.report_type],
+                                      backgroundColor: getMarkerColor(marker.report),
+                                      boxShadow:
+                                          marker.report.id === selectedReport?.id
+                                              ? "0 0 0 4px rgba(15, 23, 42, 0.2)"
+                                              : styles.markerButton.boxShadow,
                                       transform: marker.report.id === selectedReport?.id ? "scale(1.15)" : "scale(1)",
                                   }}
                               />
@@ -861,6 +885,8 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
 
                     {mode === "view" && tooltipReport && tooltipMarker ? (
                         <div
+                            key={`${tooltipReport.id}-${activeReplyReport ? "expanded" : "preview"}`}
+                            className={activeReplyReport ? "stitchable-marker-tooltip stitchable-marker-tooltip--spring-in" : "stitchable-marker-tooltip"}
                             onMouseEnter={() => {
                                 clearHoverLeaveTimeout();
                                 setHoveredMarkerId(tooltipReport.id);
@@ -892,6 +918,15 @@ export function Report({ appearance = "system", fields = DEFAULT_FIELDS, pathnam
                                 </span>
                                 <span style={{ ...styles.reportMeta, margin: 0, color: palette.muted }}>{formatDate(tooltipReport.created_at)}</span>
                             </div>
+                            {tooltipFieldTags.length ? (
+                                <div style={styles.tagList}>
+                                    {tooltipFieldTags.map((fieldTag) => (
+                                        <span key={fieldTag.key} style={{ ...styles.fieldTag, backgroundColor: palette.chip, color: palette.text }}>
+                                            {fieldTag.label}
+                                        </span>
+                                    ))}
+                                </div>
+                            ) : null}
                             <p style={{ ...styles.markerTooltipMessage, color: palette.text }}>{tooltipReport.message}</p>
                             {activeReplyReport ? (
                                 <div style={styles.editorSection}>
@@ -1263,6 +1298,22 @@ const styles: Record<string, CSSProperties> = {
         justifyContent: "space-between",
         gap: 8,
         marginTop: 8,
+    },
+    tagList: {
+        display: "flex",
+        flexWrap: "wrap",
+        gap: 6,
+        marginTop: 8,
+    },
+    fieldTag: {
+        display: "inline-flex",
+        alignItems: "center",
+        borderRadius: 999,
+        fontSize: 11,
+        fontWeight: 600,
+        lineHeight: 1.4,
+        padding: "4px 8px",
+        wordBreak: "break-word",
     },
     draftCard: {
         position: "absolute",
