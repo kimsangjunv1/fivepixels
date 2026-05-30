@@ -4,6 +4,7 @@ declare const ReportContext: import("react").Context<{
     appearance: import("../index.js").ReportAppearance;
     fields: import("../index.js").ReportField[];
     showFeedbackList: boolean;
+    visibleShortcutKeys: boolean;
     resolvedAppearance: import("../types/report-ui.js").ResolvedAppearance;
     isMobileViewport: boolean;
     palette: {
@@ -76,6 +77,7 @@ export declare function useReport(): {
     appearance: import("../index.js").ReportAppearance;
     fields: import("../index.js").ReportField[];
     showFeedbackList: boolean;
+    visibleShortcutKeys: boolean;
     resolvedAppearance: import("../types/report-ui.js").ResolvedAppearance;
     isMobileViewport: boolean;
     palette: {

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useReportShortcuts } from "./useReportShortcuts.js";
 import { useCreateReportMutation, useReportsQuery, useUpdateReportMutation } from "./report.query.js";
 import { useIsMobileViewport } from "./useIsMobileViewport.js";
 import { usePalette } from "./usePalette.js";
@@ -9,7 +10,7 @@ import { createInitialFieldValues, getFieldError, getFieldTags } from "../utils/
 import { createReplyId } from "../utils/format.js";
 import { getCurrentPathname } from "../utils/pathname.js";
 import { resolveStorageAdapter } from "../utils/storage.js";
-export function useReportState({ appearance, fields, pathname, showFeedbackList, storage }) {
+export function useReportState({ appearance, fields, pathname, showFeedbackList, storage, visibleShortcutKeys = false }) {
     // theme
     const overlayRef = useRef(null);
     const hoveredElementRef = useRef(null);
@@ -407,10 +408,23 @@ export function useReportState({ appearance, fields, pathname, showFeedbackList,
             setErrorMessage(nextError instanceof Error ? nextError.message : "답변 저장에 실패했어요.");
         }
     };
+    useReportShortcuts({
+        mode,
+        draft,
+        editingReportId,
+        toggleReportMode,
+        toggleTargetPreview,
+        toggleViewMode,
+        cancelDraft,
+        handleCreateSubmit,
+        stopEditing,
+        handleUpdateSubmit,
+    });
     return {
         appearance,
         fields,
         showFeedbackList,
+        visibleShortcutKeys,
         resolvedAppearance,
         isMobileViewport,
         palette,

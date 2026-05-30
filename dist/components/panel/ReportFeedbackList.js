@@ -1,11 +1,13 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { REPORT_SHORTCUTS } from "../../constants/reportShortcuts.js";
 import { useReport } from "../../providers/reportContext.js";
 import { formatDate } from "../../utils/format.js";
 import { getStatusTone } from "../../utils/reportVisual.js";
+import { ShortcutHint } from "../ShortcutHint.js";
 import { FieldEditor } from "./FieldEditor.js";
 import { reportStyles } from "../report/styles.js";
 export function ReportFeedbackList() {
-    const { palette, resolvedAppearance, isMobileViewport, filters, setFilters, filteredReports, reports, selectedReport, editingReportId, editableDraft, fields, isError, isFetching, isUpdating, queryErrorMessage, selectReport, startEditing, stopEditing, setEditableDraft, handleUpdateSubmit, refetch, } = useReport();
+    const { palette, resolvedAppearance, isMobileViewport, filters, setFilters, filteredReports, reports, selectedReport, editingReportId, editableDraft, fields, isError, isFetching, isUpdating, queryErrorMessage, visibleShortcutKeys, selectReport, startEditing, stopEditing, setEditableDraft, handleUpdateSubmit, refetch, } = useReport();
     return (_jsxs("aside", { style: {
             ...reportStyles.sidePanel,
             backgroundColor: palette.panel,
@@ -96,10 +98,10 @@ export function ReportFeedbackList() {
                                                         ...reportStyles.secondaryButton,
                                                         borderColor: palette.inputBorder,
                                                         color: palette.text,
-                                                    }, children: "\uB2EB\uAE30" }), _jsx("button", { type: "button", onClick: () => void handleUpdateSubmit(), disabled: isUpdating, style: {
+                                                    }, children: _jsxs("span", { style: reportStyles.buttonWithHint, children: ["\uB2EB\uAE30", _jsx(ShortcutHint, { binding: REPORT_SHORTCUTS.cancel, visible: visibleShortcutKeys, palette: palette })] }) }), _jsx("button", { type: "button", onClick: () => void handleUpdateSubmit(), disabled: isUpdating, style: {
                                                         ...reportStyles.primaryButton,
                                                         backgroundColor: "#2563eb",
-                                                    }, children: isUpdating ? "저장 중..." : "수정 저장" })] })] })) : null] }, report.id));
+                                                    }, children: _jsxs("span", { style: reportStyles.buttonWithHint, children: [isUpdating ? "저장 중..." : "수정 저장", _jsx(ShortcutHint, { binding: REPORT_SHORTCUTS.submit, visible: visibleShortcutKeys, palette: palette })] }) })] })] })) : null] }, report.id));
                     })] })] }));
 }
 //# sourceMappingURL=ReportFeedbackList.js.map

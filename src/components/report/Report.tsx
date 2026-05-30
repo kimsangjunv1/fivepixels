@@ -14,6 +14,7 @@ export type ReportProps = {
     pathname?: string;
     showFeedbackList?: boolean;
     storage?: "local" | ReportStorageAdapter;
+    visibleShortcutKeys?: boolean;
 };
 
 export function Report({
@@ -24,6 +25,7 @@ export function Report({
     pathname,
     showFeedbackList = true,
     storage = "local",
+    visibleShortcutKeys = false,
 }: ReportProps) {
     if (!resolveReportEnabled({ enabled, devOnly })) {
         return null;
@@ -36,6 +38,7 @@ export function Report({
             pathname={pathname}
             showFeedbackList={showFeedbackList}
             storage={storage}
+            visibleShortcutKeys={visibleShortcutKeys}
         >
             <ReportView />
         </ReportProvider>

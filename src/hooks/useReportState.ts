@@ -1,4 +1,5 @@
 import { type MouseEvent, useEffect, useMemo, useRef, useState } from "react";
+import { useReportShortcuts } from "./useReportShortcuts.js";
 import { useCreateReportMutation, useReportsQuery, useUpdateReportMutation } from "./report.query.js";
 import { useIsMobileViewport } from "./useIsMobileViewport.js";
 import { usePalette } from "./usePalette.js";
@@ -18,9 +19,10 @@ export type ReportStateConfig = {
     pathname?: string;
     showFeedbackList: boolean;
     storage: "local" | ReportStorageAdapter;
+    visibleShortcutKeys?: boolean;
 };
 
-export function useReportState({ appearance, fields, pathname, showFeedbackList, storage }: ReportStateConfig) {
+export function useReportState({ appearance, fields, pathname, showFeedbackList, storage, visibleShortcutKeys = false }: ReportStateConfig) {
     // theme
     const overlayRef = useRef<HTMLDivElement | null>(null);
     const hoveredElementRef = useRef<HTMLElement | null>(null);
@@ -494,10 +496,24 @@ export function useReportState({ appearance, fields, pathname, showFeedbackList,
         }
     };
 
+    useReportShortcuts({
+        mode,
+        draft,
+        editingReportId,
+        toggleReportMode,
+        toggleTargetPreview,
+        toggleViewMode,
+        cancelDraft,
+        handleCreateSubmit,
+        stopEditing,
+        handleUpdateSubmit,
+    });
+
     return {
         appearance,
         fields,
         showFeedbackList,
+        visibleShortcutKeys,
         resolvedAppearance,
         isMobileViewport,
         palette,

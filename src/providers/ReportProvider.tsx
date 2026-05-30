@@ -13,6 +13,7 @@ export type ReportProviderProps = {
     pathname?: string;
     showFeedbackList?: boolean;
     storage?: "local" | ReportStorageAdapter;
+    visibleShortcutKeys?: boolean;
     children: ReactNode;
 };
 
@@ -24,6 +25,7 @@ function ReportProviderEnabled({
     pathname,
     showFeedbackList = true,
     storage = "local",
+    visibleShortcutKeys = false,
     children,
 }: ReportProviderEnabledProps) {
     const value = useReportState({
@@ -32,6 +34,7 @@ function ReportProviderEnabled({
         pathname,
         showFeedbackList,
         storage,
+        visibleShortcutKeys,
     });
 
     return <ReportContext.Provider value={value}>{children}</ReportContext.Provider>;
@@ -45,6 +48,7 @@ export function ReportProvider({
     pathname,
     showFeedbackList = true,
     storage = "local",
+    visibleShortcutKeys = false,
     children,
 }: ReportProviderProps) {
     if (!resolveReportEnabled({ enabled, devOnly })) {
@@ -58,6 +62,7 @@ export function ReportProvider({
             pathname={pathname}
             showFeedbackList={showFeedbackList}
             storage={storage}
+            visibleShortcutKeys={visibleShortcutKeys}
         >
             {children}
         </ReportProviderEnabled>

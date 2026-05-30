@@ -1,8 +1,10 @@
 import type { ReportStatus } from "../../types/report.js";
 import type { ReportFilters } from "../../types/report-ui.js";
+import { REPORT_SHORTCUTS } from "../../constants/reportShortcuts.js";
 import { useReport } from "../../providers/reportContext.js";
 import { formatDate } from "../../utils/format.js";
 import { getStatusTone } from "../../utils/reportVisual.js";
+import { ShortcutHint } from "../ShortcutHint.js";
 import { FieldEditor } from "./FieldEditor.js";
 import { reportStyles } from "../report/styles.js";
 
@@ -23,6 +25,7 @@ export function ReportFeedbackList() {
         isFetching,
         isUpdating,
         queryErrorMessage,
+        visibleShortcutKeys,
         selectReport,
         startEditing,
         stopEditing,
@@ -271,7 +274,10 @@ export function ReportFeedbackList() {
                                                 color: palette.text,
                                             }}
                                         >
-                                            닫기
+                                            <span style={reportStyles.buttonWithHint}>
+                                                닫기
+                                                <ShortcutHint binding={REPORT_SHORTCUTS.cancel} visible={visibleShortcutKeys} palette={palette} />
+                                            </span>
                                         </button>
                                         <button
                                             type="button"
@@ -282,7 +288,10 @@ export function ReportFeedbackList() {
                                                 backgroundColor: "#2563eb",
                                             }}
                                         >
-                                            {isUpdating ? "저장 중..." : "수정 저장"}
+                                            <span style={reportStyles.buttonWithHint}>
+                                                {isUpdating ? "저장 중..." : "수정 저장"}
+                                                <ShortcutHint binding={REPORT_SHORTCUTS.submit} visible={visibleShortcutKeys} palette={palette} />
+                                            </span>
                                         </button>
                                     </div>
                                 </div>
