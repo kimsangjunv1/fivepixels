@@ -10,7 +10,9 @@ export function ReportControlPanel() {
         mode,
         helperText,
         errorMessage,
+        showTargetPreview,
         toggleReportMode,
+        toggleTargetPreview,
         toggleViewMode,
     } = useReport();
 
@@ -51,6 +53,19 @@ export function ReportControlPanel() {
                     }}
                 >
                     {mode === "report" ? "선택 중단" : "피드백 남기기"}
+                </button>
+                <button
+                    type="button"
+                    onClick={toggleTargetPreview}
+                    disabled={mode !== "idle"}
+                    style={{
+                        ...reportStyles.secondaryButton,
+                        borderColor: showTargetPreview ? "#2563eb" : palette.inputBorder,
+                        color: showTargetPreview ? "#2563eb" : palette.text,
+                        opacity: mode !== "idle" ? 0.5 : 1,
+                    }}
+                >
+                    {showTargetPreview ? "요소 표시 끄기" : "현재 선택 가능한 element 노출하기"}
                 </button>
                 <button
                     type="button"

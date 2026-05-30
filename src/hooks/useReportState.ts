@@ -6,7 +6,7 @@ import { useResolvedAppearance } from "./useResolvedAppearance.js";
 import type { ReportAppearance, ReportFeedback, ReportField, ReportStorageAdapter } from "../types/report.js";
 import type { DraftReport, EditableDraft, Marker, ReportFilters, ReportMode, TargetSnapshot } from "../types/report-ui.js";
 import { clampRatio, getMarkerFromReport, resolveTooltipAnchor } from "../utils/coordinates.js";
-import { findTargetByPoint, toSnapshot } from "../utils/dom.js";
+import { findTargetByPoint, getSelectableTargets, toSnapshot } from "../utils/dom.js";
 import { createInitialFieldValues, getFieldError, getFieldTags } from "../utils/fields.js";
 import { createReplyId } from "../utils/format.js";
 import { getCurrentPathname } from "../utils/pathname.js";
@@ -34,6 +34,8 @@ export function useReportState({ appearance, fields, pathname, showFeedbackList,
     const currentPathname = useMemo(() => getCurrentPathname(pathname), [pathname]);
 
     const [mode, setMode] = useState<ReportMode>("idle");
+    const [showTargetPreview, setShowTargetPreview] = useState(false);
+    const [selectableTargets, setSelectableTargets] = useState<TargetSnapshot[]>([]);
     const [filters, setFilters] = useState<ReportFilters>({
         keyword: "",
         status: "all",
@@ -104,8 +106,19 @@ export function useReportState({ appearance, fields, pathname, showFeedbackList,
             return isFetching ? "피드백을 불러오는 중입니다." : `${filteredReports.length}개의 피드백이 표시 중입니다.`;
         }
 
-        return "리포트 모드를 켜고 DOM 요소에 직접 피드백을 남길 수 있어요.";
-    }, [filteredReports.length, isFetching, mode, selectedTarget]);
+        if (showTargetPreview) {
+            return `선택 가능한 ${selectableTargets.length}개 요소를 표시 중입니다.`;
+        }
+
+        if (selectableTargets.length === 0) {
+            return "현재 페이지에 선택 가능한 요소가 없어요. data-report-id / data-report-type 속성을 확인해주세요.";
+        }
+
+        const groupCount = selectableTargets.filter((target) => target.type === "group").length;
+        const itemCount = selectableTargets.filter((target) => target.type === "item").length;
+
+        return `현재 페이지에서 ${selectableTargets.length}개 요소(group ${groupCount}, item ${itemCount})에 피드백을 남길 수 있어요.`;
+    }, [filteredReports.length, isFetching, mode, selectableTargets, selectedTarget, showTargetPreview]);
 
     useEffect(() => {
         setDraft(null);
@@ -117,6 +130,9 @@ export function useReportState({ appearance, fields, pathname, showFeedbackList,
         setReplyDraft("");
         setEditingReportId(null);
         setEditableDraft(null);
+        if (mode !== "idle") {
+            setShowTargetPreview(false);
+        }
         hoveredElementRef.current = null;
         selectedElementRef.current = null;
         if (hoverLeaveTimeoutRef.current) {
@@ -126,12 +142,49 @@ export function useReportState({ appearance, fields, pathname, showFeedbackList,
     }, [currentPathname, mode]);
 
     useEffect(() => {
+        setShowTargetPreview(false);
+    }, [currentPathname]);
+
+    useEffect(() => {
         return () => {
             if (hoverLeaveTimeoutRef.current) {
                 window.clearTimeout(hoverLeaveTimeoutRef.current);
             }
         };
     }, []);
+
+    useEffect(() => {
+        const syncSelectableTargets = () => {
+            setSelectableTargets(getSelectableTargets());
+        };
+
+        syncSelectableTargets();
+        window.addEventListener("scroll", syncSelectableTargets, { passive: true });
+        window.addEventListener("resize", syncSelectableTargets);
+
+        return () => {
+            window.removeEventListener("scroll", syncSelectableTargets);
+            window.removeEventListener("resize", syncSelectableTargets);
+        };
+    }, [currentPathname]);
+
+    useEffect(() => {
+        if (!showTargetPreview) {
+            return;
+        }
+
+        const syncPreviewRects = () => {
+            setSelectableTargets(getSelectableTargets());
+        };
+
+        window.addEventListener("scroll", syncPreviewRects, { passive: true });
+        window.addEventListener("resize", syncPreviewRects);
+
+        return () => {
+            window.removeEventListener("scroll", syncPreviewRects);
+            window.removeEventListener("resize", syncPreviewRects);
+        };
+    }, [showTargetPreview]);
 
     useEffect(() => {
         if (!selectedReportId) {
@@ -231,13 +284,27 @@ export function useReportState({ appearance, fields, pathname, showFeedbackList,
     };
 
     const toggleReportMode = () => {
+        setShowTargetPreview(false);
         setMode((current) => (current === "report" ? "idle" : "report"));
     };
 
     const toggleViewMode = () => {
+        setShowTargetPreview(false);
         setMode((current) => (current === "view" ? "idle" : "view"));
         stopEditing();
         setSelectedReportId(filteredReports[0]?.id ?? null);
+    };
+
+    const toggleTargetPreview = () => {
+        setShowTargetPreview((current) => {
+            const next = !current;
+
+            if (next) {
+                setMode("idle");
+            }
+
+            return next;
+        });
     };
 
     // overlay (target pick, create draft, edit)
@@ -435,6 +502,8 @@ export function useReportState({ appearance, fields, pathname, showFeedbackList,
         isMobileViewport,
         palette,
         mode,
+        showTargetPreview,
+        selectableTargets,
         filters,
         setFilters,
         reports,
@@ -464,6 +533,7 @@ export function useReportState({ appearance, fields, pathname, showFeedbackList,
         setReplyDraft,
         helperText,
         toggleReportMode,
+        toggleTargetPreview,
         toggleViewMode,
         selectReport,
         openReplyComposer,
