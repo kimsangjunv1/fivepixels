@@ -1,16 +1,22 @@
-import { jsx as _jsx } from "react/jsx-runtime";
+import { jsx as _jsx, Fragment as _Fragment } from "react/jsx-runtime";
 import { DEFAULT_FIELDS } from "../constants/report.js";
-import { useReportController } from "../hooks/useReportController.js";
+import { useReportState } from "../hooks/useReportState.js";
+import { resolveReportEnabled } from "../utils/env.js";
 import { ReportContext } from "./reportContext.js";
-export function ReportProvider({ appearance = "system", fields = DEFAULT_FIELDS, pathname, showFeedbackList = true, storage = "local", children, }) {
-    const config = {
+function ReportProviderEnabled({ appearance = "system", fields = DEFAULT_FIELDS, pathname, showFeedbackList = true, storage = "local", children, }) {
+    const value = useReportState({
         appearance,
         fields,
         pathname,
         showFeedbackList,
         storage,
-    };
-    const value = useReportController(config);
+    });
     return _jsx(ReportContext.Provider, { value: value, children: children });
+}
+export function ReportProvider({ appearance = "system", devOnly = false, enabled = true, fields = DEFAULT_FIELDS, pathname, showFeedbackList = true, storage = "local", children, }) {
+    if (!resolveReportEnabled({ enabled, devOnly })) {
+        return _jsx(_Fragment, { children: children });
+    }
+    return (_jsx(ReportProviderEnabled, { appearance: appearance, fields: fields, pathname: pathname, showFeedbackList: showFeedbackList, storage: storage, children: children }));
 }
 //# sourceMappingURL=ReportProvider.js.map

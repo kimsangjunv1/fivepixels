@@ -17,7 +17,7 @@ import { Report } from "stitchable";
 export function Page() {
     return (
         <>
-            <Report />
+            <Report devOnly />
 
             <section data-report-id="hero" data-report-type="group">
                 <h1>Hero Section</h1>
@@ -74,6 +74,7 @@ export function Page() {
 - `create(payload)`, `update(id, payload)`는 최종 `ReportFeedback` 전체 객체를 반환해야 합니다.
 - 응답의 `status`, `field_values`, `replies` 형태는 local adapter와 같게 맞추는 것이 안전합니다.
 - 목록 패널 없이 마커만 확인하고 싶으면 `showFeedbackList={false}`를 사용할 수 있습니다.
+- production 배포에서 UI를 숨기려면 `devOnly`를 사용하거나 `enabled={false}`로 직접 제어할 수 있습니다.
 
 ## 6. FAQ / 주의사항
 

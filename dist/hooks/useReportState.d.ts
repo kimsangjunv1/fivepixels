@@ -1,14 +1,14 @@
 import { type MouseEvent } from "react";
 import type { ReportAppearance, ReportFeedback, ReportField, ReportStorageAdapter } from "../types/report.js";
 import type { DraftReport, EditableDraft, Marker, ReportFilters, ReportMode, TargetSnapshot } from "../types/report-ui.js";
-export type ReportControllerConfig = {
+export type ReportStateConfig = {
     appearance: ReportAppearance;
     fields: ReportField[];
     pathname?: string;
     showFeedbackList: boolean;
     storage: "local" | ReportStorageAdapter;
 };
-export declare function useReportController({ appearance, fields, pathname, showFeedbackList, storage }: ReportControllerConfig): {
+export declare function useReportState({ appearance, fields, pathname, showFeedbackList, storage }: ReportStateConfig): {
     appearance: ReportAppearance;
     fields: ReportField[];
     showFeedbackList: boolean;
@@ -27,11 +27,6 @@ export declare function useReportController({ appearance, fields, pathname, show
         card: string;
     };
     mode: ReportMode;
-    draft: DraftReport | null;
-    errorMessage: string;
-    hoveredTarget: TargetSnapshot | null;
-    selectedTarget: TargetSnapshot | null;
-    markers: Marker[];
     filters: ReportFilters;
     setFilters: import("react").Dispatch<import("react").SetStateAction<ReportFilters>>;
     reports: ReportFeedback[];
@@ -42,7 +37,11 @@ export declare function useReportController({ appearance, fields, pathname, show
     isUpdating: boolean;
     queryErrorMessage: string | undefined;
     refetch: () => Promise<ReportFeedback[]>;
-    helperText: string;
+    errorMessage: string;
+    draft: DraftReport | null;
+    hoveredTarget: TargetSnapshot | null;
+    selectedTarget: TargetSnapshot | null;
+    markers: Marker[];
     selectedReport: ReportFeedback;
     editingReportId: string | null;
     editableDraft: EditableDraft | null;
@@ -58,6 +57,7 @@ export declare function useReportController({ appearance, fields, pathname, show
     }[];
     replyDraft: string;
     setReplyDraft: import("react").Dispatch<import("react").SetStateAction<string>>;
+    helperText: string;
     toggleReportMode: () => void;
     toggleViewMode: () => void;
     selectReport: (reportId: string) => void;
@@ -77,4 +77,4 @@ export declare function useReportController({ appearance, fields, pathname, show
     handleUpdateSubmit: () => Promise<void>;
     handleReplySubmit: () => Promise<void>;
 };
-//# sourceMappingURL=useReportController.d.ts.map
+//# sourceMappingURL=useReportState.d.ts.map

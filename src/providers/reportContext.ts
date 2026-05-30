@@ -1,7 +1,7 @@
 import { createContext, useContext } from "react";
-import type { useReportController } from "../hooks/useReportController.js";
+import type { useReportState } from "../hooks/useReportState.js";
 
-export type ReportContextValue = ReturnType<typeof useReportController>;
+export type ReportContextValue = ReturnType<typeof useReportState>;
 
 const ReportContext = createContext<ReportContextValue | null>(null);
 

@@ -1,5 +1,5 @@
-import type { useReportController } from "../hooks/useReportController.js";
-export type ReportContextValue = ReturnType<typeof useReportController>;
+import type { useReportState } from "../hooks/useReportState.js";
+export type ReportContextValue = ReturnType<typeof useReportState>;
 declare const ReportContext: import("react").Context<{
     appearance: import("../index.js").ReportAppearance;
     fields: import("../index.js").ReportField[];
@@ -19,11 +19,6 @@ declare const ReportContext: import("react").Context<{
         card: string;
     };
     mode: import("../types/report-ui.js").ReportMode;
-    draft: import("../types/report-ui.js").DraftReport | null;
-    errorMessage: string;
-    hoveredTarget: import("../types/report-ui.js").TargetSnapshot | null;
-    selectedTarget: import("../types/report-ui.js").TargetSnapshot | null;
-    markers: import("../types/report-ui.js").Marker[];
     filters: import("../types/report-ui.js").ReportFilters;
     setFilters: import("react").Dispatch<import("react").SetStateAction<import("../types/report-ui.js").ReportFilters>>;
     reports: import("../index.js").ReportFeedback[];
@@ -34,7 +29,11 @@ declare const ReportContext: import("react").Context<{
     isUpdating: boolean;
     queryErrorMessage: string | undefined;
     refetch: () => Promise<import("../index.js").ReportFeedback[]>;
-    helperText: string;
+    errorMessage: string;
+    draft: import("../types/report-ui.js").DraftReport | null;
+    hoveredTarget: import("../types/report-ui.js").TargetSnapshot | null;
+    selectedTarget: import("../types/report-ui.js").TargetSnapshot | null;
+    markers: import("../types/report-ui.js").Marker[];
     selectedReport: import("../index.js").ReportFeedback;
     editingReportId: string | null;
     editableDraft: import("../types/report-ui.js").EditableDraft | null;
@@ -50,6 +49,7 @@ declare const ReportContext: import("react").Context<{
     }[];
     replyDraft: string;
     setReplyDraft: import("react").Dispatch<import("react").SetStateAction<string>>;
+    helperText: string;
     toggleReportMode: () => void;
     toggleViewMode: () => void;
     selectReport: (reportId: string) => void;
@@ -88,11 +88,6 @@ export declare function useReport(): {
         card: string;
     };
     mode: import("../types/report-ui.js").ReportMode;
-    draft: import("../types/report-ui.js").DraftReport | null;
-    errorMessage: string;
-    hoveredTarget: import("../types/report-ui.js").TargetSnapshot | null;
-    selectedTarget: import("../types/report-ui.js").TargetSnapshot | null;
-    markers: import("../types/report-ui.js").Marker[];
     filters: import("../types/report-ui.js").ReportFilters;
     setFilters: import("react").Dispatch<import("react").SetStateAction<import("../types/report-ui.js").ReportFilters>>;
     reports: import("../index.js").ReportFeedback[];
@@ -103,7 +98,11 @@ export declare function useReport(): {
     isUpdating: boolean;
     queryErrorMessage: string | undefined;
     refetch: () => Promise<import("../index.js").ReportFeedback[]>;
-    helperText: string;
+    errorMessage: string;
+    draft: import("../types/report-ui.js").DraftReport | null;
+    hoveredTarget: import("../types/report-ui.js").TargetSnapshot | null;
+    selectedTarget: import("../types/report-ui.js").TargetSnapshot | null;
+    markers: import("../types/report-ui.js").Marker[];
     selectedReport: import("../index.js").ReportFeedback;
     editingReportId: string | null;
     editableDraft: import("../types/report-ui.js").EditableDraft | null;
@@ -119,6 +118,7 @@ export declare function useReport(): {
     }[];
     replyDraft: string;
     setReplyDraft: import("react").Dispatch<import("react").SetStateAction<string>>;
+    helperText: string;
     toggleReportMode: () => void;
     toggleViewMode: () => void;
     selectReport: (reportId: string) => void;
