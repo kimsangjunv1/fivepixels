@@ -17,4 +17,12 @@ export async function updateReport(adapter: ReportStorageAdapter, id: string, pa
     return adapter.update(id, payload);
 }
 
+export async function deleteReport(adapter: ReportStorageAdapter, id: string) {
+    if (!adapter.remove) {
+        throw new Error("이 storage adapter는 삭제를 지원하지 않아요.");
+    }
+
+    await adapter.remove(id);
+}
+
 export type ReportApiListResponse = ReportFeedback[];

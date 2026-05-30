@@ -16,4 +16,8 @@ export declare const useUpdateReportMutation: (adapter: ReportStorageAdapter, on
     mutateAsync: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
     isPending: boolean;
 };
+export declare const useDeleteReportMutation: (adapter: ReportStorageAdapter, onSuccess?: () => void, onError?: (error: Error) => void) => {
+    mutateAsync: (id: string) => Promise<void>;
+    isPending: boolean;
+};
 //# sourceMappingURL=report.query.d.ts.map

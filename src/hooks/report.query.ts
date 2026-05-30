@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { createReport, listReports, updateReport } from "./report.api.js";
+import { createReport, deleteReport, listReports, updateReport } from "./report.api.js";
 import type {
     CreateReportFeedbackPayload,
     ReportFeedback,
@@ -94,6 +94,30 @@ export const useUpdateReportMutation = (adapter: ReportStorageAdapter, onSuccess
                 return updated;
             } catch (error) {
                 const nextError = error instanceof Error ? error : new Error("피드백 수정에 실패했어요.");
+                onError?.(nextError);
+                throw nextError;
+            } finally {
+                setIsPending(false);
+            }
+        },
+        [adapter, onError, onSuccess],
+    );
+
+    return { mutateAsync, isPending };
+};
+
+export const useDeleteReportMutation = (adapter: ReportStorageAdapter, onSuccess?: () => void, onError?: (error: Error) => void) => {
+    const [isPending, setIsPending] = useState(false);
+
+    const mutateAsync = useCallback(
+        async (id: string) => {
+            setIsPending(true);
+
+            try {
+                await deleteReport(adapter, id);
+                onSuccess?.();
+            } catch (error) {
+                const nextError = error instanceof Error ? error : new Error("피드백 삭제에 실패했어요.");
                 onError?.(nextError);
                 throw nextError;
             } finally {

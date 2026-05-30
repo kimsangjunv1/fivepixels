@@ -68,3 +68,15 @@ export type SerializedReportReply = ReportReply;
 
 export type Report = ReportFeedback;
 export type CreateReportPayload = CreateReportFeedbackPayload;
+
+export type ReportEvent =
+    | { type: "feedback:create"; payload: ReportFeedback }
+    | { type: "feedback:update"; payload: ReportFeedback }
+    | { type: "feedback:delete"; payload: { id: string } }
+    | {
+          type: "feedback:reply";
+          payload: {
+              feedbackId: string;
+              message: string;
+          };
+      };

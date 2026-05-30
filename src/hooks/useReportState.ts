@@ -1,10 +1,10 @@
 import { type MouseEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useReportShortcuts } from "./useReportShortcuts.js";
-import { useCreateReportMutation, useReportsQuery, useUpdateReportMutation } from "./report.query.js";
+import { useCreateReportMutation, useDeleteReportMutation, useReportsQuery, useUpdateReportMutation } from "./report.query.js";
 import { useIsMobileViewport } from "./useIsMobileViewport.js";
 import { usePalette } from "./usePalette.js";
 import { useResolvedAppearance } from "./useResolvedAppearance.js";
-import type { ReportAppearance, ReportFeedback, ReportField, ReportStorageAdapter } from "../types/report.js";
+import type { ReportAppearance, ReportEvent, ReportFeedback, ReportField, ReportStorageAdapter } from "../types/report.js";
 import type { DraftReport, EditableDraft, Marker, ReportFilters, ReportMode, TargetSnapshot } from "../types/report-ui.js";
 import { clampRatio, getMarkerFromReport, resolveTooltipAnchor } from "../utils/coordinates.js";
 import { findTargetByPoint, getSelectableTargets, toSnapshot } from "../utils/dom.js";
@@ -12,17 +12,41 @@ import { createInitialFieldValues, getFieldError, getFieldTags } from "../utils/
 import { createReplyId } from "../utils/format.js";
 import { getCurrentPathname } from "../utils/pathname.js";
 import { resolveStorageAdapter } from "../utils/storage.js";
+import {
+    notifyFeedbackCreate,
+    notifyFeedbackDelete,
+    notifyFeedbackReply,
+    notifyFeedbackUpdate,
+    type ReportEventCallbacks,
+} from "../utils/reportCallbacks.js";
 
 export type ReportStateConfig = {
     appearance: ReportAppearance;
     fields: ReportField[];
+    onEvent?: (event: ReportEvent) => void | Promise<void>;
+    onFeedbackCreate?: (feedback: ReportFeedback) => void | Promise<void>;
+    onFeedbackDelete?: (id: string) => void | Promise<void>;
+    onFeedbackReply?: (params: { feedbackId: string; message: string }) => void | Promise<void>;
+    onFeedbackUpdate?: (feedback: ReportFeedback) => void | Promise<void>;
     pathname?: string;
     showFeedbackList: boolean;
     storage: "local" | ReportStorageAdapter;
     visibleShortcutKeys?: boolean;
 };
 
-export function useReportState({ appearance, fields, pathname, showFeedbackList, storage, visibleShortcutKeys = false }: ReportStateConfig) {
+export function useReportState({
+    appearance,
+    fields,
+    onEvent,
+    onFeedbackCreate,
+    onFeedbackDelete,
+    onFeedbackReply,
+    onFeedbackUpdate,
+    pathname,
+    showFeedbackList,
+    storage,
+    visibleShortcutKeys = false,
+}: ReportStateConfig) {
     // theme
     const overlayRef = useRef<HTMLDivElement | null>(null);
     const searchInputRef = useRef<HTMLInputElement | null>(null);
@@ -35,6 +59,16 @@ export function useReportState({ appearance, fields, pathname, showFeedbackList,
     const palette = usePalette(resolvedAppearance);
     const storageAdapter = useMemo(() => resolveStorageAdapter(storage), [storage]);
     const currentPathname = useMemo(() => getCurrentPathname(pathname), [pathname]);
+    const eventCallbacks = useMemo<ReportEventCallbacks>(
+        () => ({
+            onEvent,
+            onFeedbackCreate,
+            onFeedbackDelete,
+            onFeedbackReply,
+            onFeedbackUpdate,
+        }),
+        [onEvent, onFeedbackCreate, onFeedbackDelete, onFeedbackReply, onFeedbackUpdate],
+    );
 
     const [mode, setMode] = useState<ReportMode>("idle");
     const [showTargetPreview, setShowTargetPreview] = useState(false);
@@ -62,6 +96,9 @@ export function useReportState({ appearance, fields, pathname, showFeedbackList,
         void refetch();
     });
     const { mutateAsync: updateFeedback, isPending: isUpdating } = useUpdateReportMutation(storageAdapter, () => {
+        void refetch();
+    });
+    const { mutateAsync: deleteFeedback, isPending: isDeleting } = useDeleteReportMutation(storageAdapter, () => {
         void refetch();
     });
 
@@ -416,7 +453,7 @@ export function useReportState({ appearance, fields, pathname, showFeedbackList,
         }
 
         try {
-            await createFeedback({
+            const savedFeedback = await createFeedback({
                 pathname: currentPathname,
                 report_id: draft.reportId,
                 report_type: draft.reportType,
@@ -434,6 +471,8 @@ export function useReportState({ appearance, fields, pathname, showFeedbackList,
                 design_width: window.innerWidth,
                 design_height: window.innerHeight,
             });
+
+            await notifyFeedbackCreate(eventCallbacks, savedFeedback);
 
             setDraft(null);
             setSelectedTarget(null);
@@ -479,11 +518,13 @@ export function useReportState({ appearance, fields, pathname, showFeedbackList,
         }
 
         try {
-            await updateFeedback(selectedReport.id, {
+            const updatedFeedback = await updateFeedback(selectedReport.id, {
                 message: editableDraft.message.trim(),
                 status: editableDraft.status,
                 field_values: editableDraft.fieldValues,
             });
+
+            await notifyFeedbackUpdate(eventCallbacks, updatedFeedback);
 
             stopEditing();
             setErrorMessage("");
@@ -502,23 +543,53 @@ export function useReportState({ appearance, fields, pathname, showFeedbackList,
             return;
         }
 
+        const replyMessage = replyDraft.trim();
+
         try {
             await updateFeedback(activeReplyReport.id, {
                 replies: [
                     ...activeReplyReport.replies,
                     {
                         id: createReplyId(),
-                        message: replyDraft.trim(),
+                        message: replyMessage,
                         created_at: new Date().toISOString(),
                         author_type: "manager",
                     },
                 ],
             });
 
+            await notifyFeedbackReply(eventCallbacks, {
+                feedbackId: activeReplyReport.id,
+                message: replyMessage,
+            });
+
             setErrorMessage("");
             closeReplyComposer();
         } catch (nextError) {
             setErrorMessage(nextError instanceof Error ? nextError.message : "답변 저장에 실패했어요.");
+        }
+    };
+
+    const handleDelete = async (id: string) => {
+        try {
+            await deleteFeedback(id);
+            await notifyFeedbackDelete(eventCallbacks, id);
+
+            if (selectedReportId === id) {
+                setSelectedReportId(null);
+            }
+
+            if (editingReportId === id) {
+                stopEditing();
+            }
+
+            if (activeReplyReportId === id) {
+                closeReplyComposer();
+            }
+
+            setErrorMessage("");
+        } catch (nextError) {
+            setErrorMessage(nextError instanceof Error ? nextError.message : "피드백 삭제에 실패했어요.");
         }
     };
 
@@ -559,6 +630,7 @@ export function useReportState({ appearance, fields, pathname, showFeedbackList,
         isFetching,
         isCreating,
         isUpdating,
+        isDeleting,
         queryErrorMessage: error?.message,
         refetch,
         errorMessage,
@@ -600,5 +672,6 @@ export function useReportState({ appearance, fields, pathname, showFeedbackList,
         stopEditing,
         handleUpdateSubmit,
         handleReplySubmit,
+        handleDelete,
     };
 }
