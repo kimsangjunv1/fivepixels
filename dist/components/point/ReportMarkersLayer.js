@@ -47,7 +47,11 @@ export function ReportMarkersLayer() {
                         if (!activeReplyReportId) {
                             scheduleHoverLeave(tooltipReport.id);
                         }
-                    }, onClick: () => openReplyComposer(tooltipReport), style: {
+                    }, onClick: () => {
+                        if (activeReplyReportId !== tooltipReport.id) {
+                            openReplyComposer(tooltipReport);
+                        }
+                    }, style: {
                         ...reportStyles.markerTooltip,
                         left: Math.min(Math.max(tooltipAnchor.left - 12, 16), window.innerWidth - 296),
                         top: Math.max(tooltipAnchor.top - (activeReplyReport ? 232 : 104), 16),
@@ -71,7 +75,7 @@ export function ReportMarkersLayer() {
                                 }, children: fieldTag.label }, fieldTag.key))) })) : null, _jsx("p", { style: {
                                 ...reportStyles.markerTooltipMessage,
                                 color: palette.text,
-                            }, children: tooltipReport.message }), activeReplyReport ? (_jsxs("div", { style: reportStyles.editorSection, children: [activeReplyReport.replies.length ? (_jsx("div", { style: reportStyles.replyList, children: activeReplyReport.replies.map((reply) => (_jsxs("div", { style: {
+                            }, children: tooltipReport.message }), activeReplyReport ? (_jsxs("div", { style: reportStyles.editorSection, onClick: (event) => event.stopPropagation(), onMouseDown: (event) => event.stopPropagation(), children: [activeReplyReport.replies.length ? (_jsx("div", { style: reportStyles.replyList, children: activeReplyReport.replies.map((reply) => (_jsxs("div", { style: {
                                             ...reportStyles.replyItem,
                                             backgroundColor: palette.chip,
                                             color: palette.text,

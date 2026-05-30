@@ -3,11 +3,11 @@ import { Children, cloneElement, createContext, forwardRef, isValidElement, useC
 const PresenceContext = createContext(null);
 const layoutRegistry = new Map();
 const motionComponentCache = new Map();
-function hasSameTrackedChildren(current, next) {
-    if (current.length !== next.length) {
-        return false;
-    }
-    return current.every((child, index) => child.element.key === next[index]?.element.key && child.isPresent === next[index]?.isPresent);
+function trackedListsEqual(current, next) {
+    return current.length === next.length && current.every((child, index) => child === next[index]);
+}
+function getPresentKeySignature(children) {
+    return children.map((child) => String(child.key ?? "")).join("\0");
 }
 function isBrowser() {
     return typeof window !== "undefined" && typeof document !== "undefined";
@@ -327,18 +327,34 @@ function PresenceChild({ children, isPresent, onExitComplete }) {
 }
 export function AnimatedPresence({ children }) {
     const validChildren = Children.toArray(children).filter(isValidElement);
-    const [trackedChildren, setTrackedChildren] = useState(() => validChildren.map((element) => ({ element, isPresent: true })));
-    useEffect(() => {
-        setTrackedChildren((current) => {
-            const nextKeys = new Set(validChildren.map((child) => child.key));
-            const nextChildren = validChildren.map((element) => ({ element, isPresent: true }));
-            const exitingChildren = current.filter((child) => child.element.key != null && !nextKeys.has(child.element.key)).map((child) => ({ ...child, isPresent: false }));
-            const nextTrackedChildren = [...nextChildren, ...exitingChildren];
-            return hasSameTrackedChildren(current, nextTrackedChildren) ? current : nextTrackedChildren;
+    const presentKeySignature = getPresentKeySignature(validChildren);
+    const [exitingChildren, setExitingChildren] = useState([]);
+    const previousPresentRef = useRef(new Map());
+    useLayoutEffect(() => {
+        const presentKeys = new Set(validChildren.flatMap((child) => (child.key != null ? [child.key] : [])));
+        const previousPresent = previousPresentRef.current;
+        setExitingChildren((current) => {
+            let next = current;
+            for (const [key, element] of previousPresent) {
+                if (!presentKeys.has(key) && !next.some((child) => child.element.key === key)) {
+                    if (next === current) {
+                        next = [...current];
+                    }
+                    next.push({ element, isPresent: false });
+                }
+            }
+            const filtered = next.filter((child) => !(child.isPresent === false && child.element.key != null && presentKeys.has(child.element.key)));
+            return trackedListsEqual(filtered, current) ? current : filtered;
         });
-    }, [validChildren]);
+        previousPresentRef.current = new Map(validChildren.flatMap((child) => (child.key != null ? [[child.key, child]] : [])));
+    }, [presentKeySignature]);
+    const presentKeys = new Set(validChildren.flatMap((child) => (child.key != null ? [child.key] : [])));
+    const trackedChildren = [
+        ...validChildren.map((element) => ({ element, isPresent: true })),
+        ...exitingChildren.filter((child) => child.element.key != null && !presentKeys.has(child.element.key)),
+    ];
     return trackedChildren.map((child) => (_jsx(PresenceChild, { isPresent: child.isPresent, onExitComplete: () => {
-            setTrackedChildren((current) => {
+            setExitingChildren((current) => {
                 const nextTrackedChildren = current.filter((item) => item.element.key !== child.element.key);
                 return nextTrackedChildren.length === current.length ? current : nextTrackedChildren;
             });

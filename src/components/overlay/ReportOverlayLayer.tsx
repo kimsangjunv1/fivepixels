@@ -21,6 +21,7 @@ export function ReportOverlayLayer({ children }: ReportOverlayLayerProps) {
     } = useReport();
 
     const isReportMode = mode === "report";
+    const isViewMode = mode === "view";
     const isPreviewMode = showTargetPreview && mode === "idle";
 
     return (
@@ -30,8 +31,9 @@ export function ReportOverlayLayer({ children }: ReportOverlayLayerProps) {
             onClick={isReportMode ? handleOverlayClick : undefined}
             style={{
                 ...reportStyles.overlay,
+                zIndex: isViewMode ? 1110 : reportStyles.overlay.zIndex,
                 backgroundColor: isReportMode ? palette.overlay : "transparent",
-                pointerEvents: isPreviewMode ? "none" : "auto",
+                pointerEvents: isPreviewMode || isViewMode ? "none" : "auto",
                 cursor: isReportMode ? "crosshair" : "default",
             }}
         >

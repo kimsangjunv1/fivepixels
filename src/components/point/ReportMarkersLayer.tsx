@@ -104,7 +104,11 @@ export function ReportMarkersLayer() {
                                 scheduleHoverLeave(tooltipReport.id);
                             }
                         }}
-                        onClick={() => openReplyComposer(tooltipReport)}
+                        onClick={() => {
+                            if (activeReplyReportId !== tooltipReport.id) {
+                                openReplyComposer(tooltipReport);
+                            }
+                        }}
                         style={{
                             ...reportStyles.markerTooltip,
                             left: Math.min(Math.max(tooltipAnchor.left - 12, 16), window.innerWidth - 296),
@@ -164,7 +168,11 @@ export function ReportMarkersLayer() {
                             {tooltipReport.message}
                         </p>
                         {activeReplyReport ? (
-                            <div style={reportStyles.editorSection}>
+                            <div
+                                style={reportStyles.editorSection}
+                                onClick={(event) => event.stopPropagation()}
+                                onMouseDown={(event) => event.stopPropagation()}
+                            >
                                 {activeReplyReport.replies.length ? (
                                     <div style={reportStyles.replyList}>
                                         {activeReplyReport.replies.map((reply) => (
