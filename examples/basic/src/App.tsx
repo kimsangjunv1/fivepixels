@@ -10,6 +10,9 @@ export function App() {
                 appearance="light"
                 pathname="/examples/basic"
                 visibleShortcutKeys
+                onFeedbackCreate={(event) => {
+                    console.log("first", event);
+                }}
                 fields={[
                     { key: "message", type: "textarea", label: "메시지", required: true },
                     { key: "isBug", type: "checkbox", label: "버그" },

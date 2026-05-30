@@ -101,9 +101,81 @@ Report UI는 마우스 없이도 주요 기능을 사용할 수 있도록 키보
 
 - `storage="local"`: 기본 `localStorage` adapter를 사용합니다.
 - `storage={adapter}`: `ReportStorageAdapter` 인터페이스를 구현한 cloud adapter를 연결할 수 있습니다.
+- `storage`는 저장소 자체를 교체하는 용도입니다. 저장 이후 외부 API 호출은 callback props를 사용합니다.
 - 데이터 계약 상세는 `[docs/report-data-model.md](./docs/report-data-model.md)`를 기준으로 맞춥니다.
 - 설치/적용/FAQ는 `[docs/getting-started.md](./docs/getting-started.md)`를 참고합니다.
 - 실행 가능한 데모와 `npm run dev` 사용법은 `[docs/example-app.md](./docs/example-app.md)`를 참고합니다.
+
+### localStorage + API backup
+
+`storage="local"`로 브라우저에 먼저 저장한 뒤, callback props로 서버에 백업할 수 있습니다.
+
+```tsx
+import { Report } from "stitchable";
+
+export default function App() {
+    return (
+        <Report
+            devOnly
+            storage="local"
+            onFeedbackCreate={async (feedback) => {
+                await fetch("/api/stitchable/feedbacks", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(feedback),
+                });
+            }}
+        />
+    );
+}
+```
+
+- `onFeedbackCreate`, `onFeedbackUpdate`, `onFeedbackDelete`, `onFeedbackReply`: 이벤트별 callback
+- `onEvent`: 모든 피드백 이벤트를 통합 수신
+- callback에서 에러가 나도 localStorage 저장 결과는 rollback되지 않습니다.
+
+```ts
+import type { ReportEvent } from "stitchable";
+
+function handleReportEvent(event: ReportEvent) {
+    if (event.type === "feedback:create") {
+        console.log("created", event.payload.id);
+    }
+}
+```
+
+### Custom storage adapter
+
+저장소 자체를 API로 교체하려면 `storage` prop에 adapter를 전달합니다.
+
+```tsx
+import { Report } from "stitchable";
+
+export default function App() {
+    return (
+        <Report
+            devOnly
+            storage={{
+                list: () => fetch("/api/feedbacks").then((res) => res.json()),
+                create: (payload) =>
+                    fetch("/api/feedbacks", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(payload),
+                    }).then((res) => res.json()),
+                update: (id, payload) =>
+                    fetch(`/api/feedbacks/${id}`, {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(payload),
+                    }).then((res) => res.json()),
+            }}
+        />
+    );
+}
+```
 
 ```ts
 import type { ReportStorageAdapter } from "stitchable";

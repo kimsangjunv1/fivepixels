@@ -7,6 +7,7 @@ export { createLocalStorageReportAdapter, localStorageReportAdapter } from "../s
 export type {
     CreateReportFeedbackPayload,
     ReportAppearance,
+    ReportEvent,
     ReportFeedback,
     ReportField,
     ReportFieldBase,

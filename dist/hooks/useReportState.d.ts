@@ -1,15 +1,23 @@
 import { type MouseEvent } from "react";
-import type { ReportAppearance, ReportFeedback, ReportField, ReportStorageAdapter } from "../types/report.js";
+import type { ReportAppearance, ReportEvent, ReportFeedback, ReportField, ReportStorageAdapter } from "../types/report.js";
 import type { DraftReport, EditableDraft, Marker, ReportFilters, ReportMode, TargetSnapshot } from "../types/report-ui.js";
 export type ReportStateConfig = {
     appearance: ReportAppearance;
     fields: ReportField[];
+    onEvent?: (event: ReportEvent) => void | Promise<void>;
+    onFeedbackCreate?: (feedback: ReportFeedback) => void | Promise<void>;
+    onFeedbackDelete?: (id: string) => void | Promise<void>;
+    onFeedbackReply?: (params: {
+        feedbackId: string;
+        message: string;
+    }) => void | Promise<void>;
+    onFeedbackUpdate?: (feedback: ReportFeedback) => void | Promise<void>;
     pathname?: string;
     showFeedbackList: boolean;
     storage: "local" | ReportStorageAdapter;
     visibleShortcutKeys?: boolean;
 };
-export declare function useReportState({ appearance, fields, pathname, showFeedbackList, storage, visibleShortcutKeys }: ReportStateConfig): {
+export declare function useReportState({ appearance, fields, onEvent, onFeedbackCreate, onFeedbackDelete, onFeedbackReply, onFeedbackUpdate, pathname, showFeedbackList, storage, visibleShortcutKeys, }: ReportStateConfig): {
     appearance: ReportAppearance;
     fields: ReportField[];
     showFeedbackList: boolean;
@@ -40,6 +48,7 @@ export declare function useReportState({ appearance, fields, pathname, showFeedb
     isFetching: boolean;
     isCreating: boolean;
     isUpdating: boolean;
+    isDeleting: boolean;
     queryErrorMessage: string | undefined;
     refetch: () => Promise<ReportFeedback[]>;
     errorMessage: string;
@@ -84,5 +93,6 @@ export declare function useReportState({ appearance, fields, pathname, showFeedb
     stopEditing: () => void;
     handleUpdateSubmit: () => Promise<void>;
     handleReplySubmit: () => Promise<void>;
+    handleDelete: (id: string) => Promise<void>;
 };
 //# sourceMappingURL=useReportState.d.ts.map

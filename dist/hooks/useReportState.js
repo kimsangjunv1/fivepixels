@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useReportShortcuts } from "./useReportShortcuts.js";
-import { useCreateReportMutation, useReportsQuery, useUpdateReportMutation } from "./report.query.js";
+import { useCreateReportMutation, useDeleteReportMutation, useReportsQuery, useUpdateReportMutation } from "./report.query.js";
 import { useIsMobileViewport } from "./useIsMobileViewport.js";
 import { usePalette } from "./usePalette.js";
 import { useResolvedAppearance } from "./useResolvedAppearance.js";
@@ -10,7 +10,8 @@ import { createInitialFieldValues, getFieldError, getFieldTags } from "../utils/
 import { createReplyId } from "../utils/format.js";
 import { getCurrentPathname } from "../utils/pathname.js";
 import { resolveStorageAdapter } from "../utils/storage.js";
-export function useReportState({ appearance, fields, pathname, showFeedbackList, storage, visibleShortcutKeys = false }) {
+import { notifyFeedbackCreate, notifyFeedbackDelete, notifyFeedbackReply, notifyFeedbackUpdate, } from "../utils/reportCallbacks.js";
+export function useReportState({ appearance, fields, onEvent, onFeedbackCreate, onFeedbackDelete, onFeedbackReply, onFeedbackUpdate, pathname, showFeedbackList, storage, visibleShortcutKeys = false, }) {
     // theme
     const overlayRef = useRef(null);
     const searchInputRef = useRef(null);
@@ -22,6 +23,13 @@ export function useReportState({ appearance, fields, pathname, showFeedbackList,
     const palette = usePalette(resolvedAppearance);
     const storageAdapter = useMemo(() => resolveStorageAdapter(storage), [storage]);
     const currentPathname = useMemo(() => getCurrentPathname(pathname), [pathname]);
+    const eventCallbacks = useMemo(() => ({
+        onEvent,
+        onFeedbackCreate,
+        onFeedbackDelete,
+        onFeedbackReply,
+        onFeedbackUpdate,
+    }), [onEvent, onFeedbackCreate, onFeedbackDelete, onFeedbackReply, onFeedbackUpdate]);
     const [mode, setMode] = useState("idle");
     const [showTargetPreview, setShowTargetPreview] = useState(false);
     const [selectableTargets, setSelectableTargets] = useState([]);
@@ -47,6 +55,9 @@ export function useReportState({ appearance, fields, pathname, showFeedbackList,
         void refetch();
     });
     const { mutateAsync: updateFeedback, isPending: isUpdating } = useUpdateReportMutation(storageAdapter, () => {
+        void refetch();
+    });
+    const { mutateAsync: deleteFeedback, isPending: isDeleting } = useDeleteReportMutation(storageAdapter, () => {
         void refetch();
     });
     const filteredReports = useMemo(() => {
@@ -335,7 +346,7 @@ export function useReportState({ appearance, fields, pathname, showFeedbackList,
             return;
         }
         try {
-            await createFeedback({
+            const savedFeedback = await createFeedback({
                 pathname: currentPathname,
                 report_id: draft.reportId,
                 report_type: draft.reportType,
@@ -353,6 +364,7 @@ export function useReportState({ appearance, fields, pathname, showFeedbackList,
                 design_width: window.innerWidth,
                 design_height: window.innerHeight,
             });
+            await notifyFeedbackCreate(eventCallbacks, savedFeedback);
             setDraft(null);
             setSelectedTarget(null);
             setHoveredTarget(null);
@@ -391,11 +403,12 @@ export function useReportState({ appearance, fields, pathname, showFeedbackList,
             return;
         }
         try {
-            await updateFeedback(selectedReport.id, {
+            const updatedFeedback = await updateFeedback(selectedReport.id, {
                 message: editableDraft.message.trim(),
                 status: editableDraft.status,
                 field_values: editableDraft.fieldValues,
             });
+            await notifyFeedbackUpdate(eventCallbacks, updatedFeedback);
             stopEditing();
             setErrorMessage("");
         }
@@ -411,23 +424,47 @@ export function useReportState({ appearance, fields, pathname, showFeedbackList,
             setErrorMessage("답변 내용을 입력해주세요.");
             return;
         }
+        const replyMessage = replyDraft.trim();
         try {
             await updateFeedback(activeReplyReport.id, {
                 replies: [
                     ...activeReplyReport.replies,
                     {
                         id: createReplyId(),
-                        message: replyDraft.trim(),
+                        message: replyMessage,
                         created_at: new Date().toISOString(),
                         author_type: "manager",
                     },
                 ],
+            });
+            await notifyFeedbackReply(eventCallbacks, {
+                feedbackId: activeReplyReport.id,
+                message: replyMessage,
             });
             setErrorMessage("");
             closeReplyComposer();
         }
         catch (nextError) {
             setErrorMessage(nextError instanceof Error ? nextError.message : "답변 저장에 실패했어요.");
+        }
+    };
+    const handleDelete = async (id) => {
+        try {
+            await deleteFeedback(id);
+            await notifyFeedbackDelete(eventCallbacks, id);
+            if (selectedReportId === id) {
+                setSelectedReportId(null);
+            }
+            if (editingReportId === id) {
+                stopEditing();
+            }
+            if (activeReplyReportId === id) {
+                closeReplyComposer();
+            }
+            setErrorMessage("");
+        }
+        catch (nextError) {
+            setErrorMessage(nextError instanceof Error ? nextError.message : "피드백 삭제에 실패했어요.");
         }
     };
     useReportShortcuts({
@@ -466,6 +503,7 @@ export function useReportState({ appearance, fields, pathname, showFeedbackList,
         isFetching,
         isCreating,
         isUpdating,
+        isDeleting,
         queryErrorMessage: error?.message,
         refetch,
         errorMessage,
@@ -507,6 +545,7 @@ export function useReportState({ appearance, fields, pathname, showFeedbackList,
         stopEditing,
         handleUpdateSubmit,
         handleReplySubmit,
+        handleDelete,
     };
 }
 //# sourceMappingURL=useReportState.js.map

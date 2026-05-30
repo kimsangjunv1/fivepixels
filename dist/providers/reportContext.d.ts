@@ -31,6 +31,7 @@ declare const ReportContext: import("react").Context<{
     isFetching: boolean;
     isCreating: boolean;
     isUpdating: boolean;
+    isDeleting: boolean;
     queryErrorMessage: string | undefined;
     refetch: () => Promise<import("../index.js").ReportFeedback[]>;
     errorMessage: string;
@@ -75,6 +76,7 @@ declare const ReportContext: import("react").Context<{
     stopEditing: () => void;
     handleUpdateSubmit: () => Promise<void>;
     handleReplySubmit: () => Promise<void>;
+    handleDelete: (id: string) => Promise<void>;
 } | null>;
 export declare function useReport(): {
     appearance: import("../index.js").ReportAppearance;
@@ -107,6 +109,7 @@ export declare function useReport(): {
     isFetching: boolean;
     isCreating: boolean;
     isUpdating: boolean;
+    isDeleting: boolean;
     queryErrorMessage: string | undefined;
     refetch: () => Promise<import("../index.js").ReportFeedback[]>;
     errorMessage: string;
@@ -151,6 +154,7 @@ export declare function useReport(): {
     stopEditing: () => void;
     handleUpdateSubmit: () => Promise<void>;
     handleReplySubmit: () => Promise<void>;
+    handleDelete: (id: string) => Promise<void>;
 };
 export { ReportContext };
 //# sourceMappingURL=reportContext.d.ts.map
