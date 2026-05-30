@@ -27,6 +27,8 @@ export declare function useReportState({ appearance, fields, pathname, showFeedb
         card: string;
     };
     mode: ReportMode;
+    showTargetPreview: boolean;
+    selectableTargets: TargetSnapshot[];
     filters: ReportFilters;
     setFilters: import("react").Dispatch<import("react").SetStateAction<ReportFilters>>;
     reports: ReportFeedback[];
@@ -59,6 +61,7 @@ export declare function useReportState({ appearance, fields, pathname, showFeedb
     setReplyDraft: import("react").Dispatch<import("react").SetStateAction<string>>;
     helperText: string;
     toggleReportMode: () => void;
+    toggleTargetPreview: () => void;
     toggleViewMode: () => void;
     selectReport: (reportId: string) => void;
     openReplyComposer: (report: ReportFeedback) => void;

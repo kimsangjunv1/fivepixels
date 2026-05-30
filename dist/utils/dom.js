@@ -1,3 +1,4 @@
+import { TARGET_SELECTOR } from "../constants/report.js";
 export function escapeAttribute(value) {
     return value.split("\\").join("\\\\").split('"').join('\\"');
 }
@@ -25,6 +26,11 @@ export function findTargetElement(baseElement) {
         return itemTarget;
     }
     return baseElement.closest('[data-report-type="group"][data-report-id]');
+}
+export function getSelectableTargets() {
+    return Array.from(document.querySelectorAll(TARGET_SELECTOR))
+        .map((element) => toSnapshot(element))
+        .filter((snapshot) => snapshot !== null);
 }
 export function findTargetByPoint(overlay, clientX, clientY) {
     if (!overlay) {

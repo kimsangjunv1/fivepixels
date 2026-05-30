@@ -6,7 +6,7 @@ export const reportStyles: Record<string, CSSProperties> = {
         position: "fixed",
         top: 16,
         left: 16,
-        zIndex: 1110,
+        zIndex: 1000000000,
         maxWidth: "calc(100vw - 32px)",
         border: "1px solid",
         borderRadius: 16,

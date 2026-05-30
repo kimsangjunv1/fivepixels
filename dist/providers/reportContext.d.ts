@@ -19,6 +19,8 @@ declare const ReportContext: import("react").Context<{
         card: string;
     };
     mode: import("../types/report-ui.js").ReportMode;
+    showTargetPreview: boolean;
+    selectableTargets: import("../types/report-ui.js").TargetSnapshot[];
     filters: import("../types/report-ui.js").ReportFilters;
     setFilters: import("react").Dispatch<import("react").SetStateAction<import("../types/report-ui.js").ReportFilters>>;
     reports: import("../index.js").ReportFeedback[];
@@ -51,6 +53,7 @@ declare const ReportContext: import("react").Context<{
     setReplyDraft: import("react").Dispatch<import("react").SetStateAction<string>>;
     helperText: string;
     toggleReportMode: () => void;
+    toggleTargetPreview: () => void;
     toggleViewMode: () => void;
     selectReport: (reportId: string) => void;
     openReplyComposer: (report: import("../index.js").ReportFeedback) => void;
@@ -88,6 +91,8 @@ export declare function useReport(): {
         card: string;
     };
     mode: import("../types/report-ui.js").ReportMode;
+    showTargetPreview: boolean;
+    selectableTargets: import("../types/report-ui.js").TargetSnapshot[];
     filters: import("../types/report-ui.js").ReportFilters;
     setFilters: import("react").Dispatch<import("react").SetStateAction<import("../types/report-ui.js").ReportFilters>>;
     reports: import("../index.js").ReportFeedback[];
@@ -120,6 +125,7 @@ export declare function useReport(): {
     setReplyDraft: import("react").Dispatch<import("react").SetStateAction<string>>;
     helperText: string;
     toggleReportMode: () => void;
+    toggleTargetPreview: () => void;
     toggleViewMode: () => void;
     selectReport: (reportId: string) => void;
     openReplyComposer: (report: import("../index.js").ReportFeedback) => void;

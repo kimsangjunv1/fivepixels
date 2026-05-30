@@ -8,22 +8,36 @@ type ReportOverlayLayerProps = {
 };
 
 export function ReportOverlayLayer({ children }: ReportOverlayLayerProps) {
-    const { overlayRef, mode, palette, hoveredTarget, selectedTarget, handleOverlayMove, handleOverlayClick } = useReport();
+    const {
+        overlayRef,
+        mode,
+        palette,
+        hoveredTarget,
+        selectableTargets,
+        selectedTarget,
+        showTargetPreview,
+        handleOverlayMove,
+        handleOverlayClick,
+    } = useReport();
+
+    const isReportMode = mode === "report";
+    const isPreviewMode = showTargetPreview && mode === "idle";
 
     return (
         <div
             ref={overlayRef}
-            onMouseMove={handleOverlayMove}
-            onClick={handleOverlayClick}
+            onMouseMove={isReportMode ? handleOverlayMove : undefined}
+            onClick={isReportMode ? handleOverlayClick : undefined}
             style={{
                 ...reportStyles.overlay,
-                backgroundColor: mode === "report" ? palette.overlay : "transparent",
-                pointerEvents: "auto",
-                cursor: mode === "report" ? "crosshair" : "default",
+                backgroundColor: isReportMode ? palette.overlay : "transparent",
+                pointerEvents: isPreviewMode ? "none" : "auto",
+                cursor: isReportMode ? "crosshair" : "default",
             }}
         >
             <TargetHighlights
                 hoveredTarget={hoveredTarget}
+                previewTargets={isPreviewMode ? selectableTargets : undefined}
                 selectedTarget={selectedTarget}
             />
             {children}

@@ -6,16 +6,22 @@ import { ReportFeedbackList } from "../panel/ReportFeedbackList.js";
 import { ReportMarkersLayer } from "../point/ReportMarkersLayer.js";
 
 export function ReportView() {
-    const { mode, showFeedbackList } = useReport();
+    const { mode, showFeedbackList, showTargetPreview } = useReport();
+
+    const showOverlay = mode !== "idle" || showTargetPreview;
 
     return (
         <>
             <ReportControlPanel />
 
-            {mode !== "idle" ? (
+            {showOverlay ? (
                 <ReportOverlayLayer>
-                    <ReportMarkersLayer />
-                    <ReportDraftForm />
+                    {mode !== "idle" ? (
+                        <>
+                            <ReportMarkersLayer />
+                            <ReportDraftForm />
+                        </>
+                    ) : null}
                 </ReportOverlayLayer>
             ) : null}
 

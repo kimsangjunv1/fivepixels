@@ -4,34 +4,45 @@ import { reportStyles } from "../report/styles.js";
 
 type TargetHighlightsProps = {
     hoveredTarget: TargetSnapshot | null;
+    previewTargets?: TargetSnapshot[];
     selectedTarget: TargetSnapshot | null;
 };
 
-export function TargetHighlights({ hoveredTarget, selectedTarget }: TargetHighlightsProps) {
+function HighlightBox({ target, showLabel }: { target: TargetSnapshot; showLabel?: boolean }) {
     return (
-        <>
-            {hoveredTarget ? (
-                <div
+        <div
+            style={{
+                ...reportStyles.highlightBox,
+                left: target.rect.left,
+                top: target.rect.top,
+                width: target.rect.width,
+                height: target.rect.height,
+                outline: `2px solid ${TARGET_COLOR[target.type]}`,
+                backgroundColor: `${TARGET_COLOR[target.type]}15`,
+            }}
+        >
+            {showLabel ? (
+                <span
                     style={{
-                        ...reportStyles.highlightBox,
-                        left: hoveredTarget.rect.left,
-                        top: hoveredTarget.rect.top,
-                        width: hoveredTarget.rect.width,
-                        height: hoveredTarget.rect.height,
-                        outline: `2px solid ${TARGET_COLOR[hoveredTarget.type]}`,
-                        backgroundColor: `${TARGET_COLOR[hoveredTarget.type]}15`,
+                        ...reportStyles.highlightLabel,
+                        backgroundColor: TARGET_COLOR[target.type],
                     }}
                 >
-                    <span
-                        style={{
-                            ...reportStyles.highlightLabel,
-                            backgroundColor: TARGET_COLOR[hoveredTarget.type],
-                        }}
-                    >
-                        {hoveredTarget.type} · {hoveredTarget.id}
-                    </span>
-                </div>
+                    {target.type} · {target.id}
+                </span>
             ) : null}
+        </div>
+    );
+}
+
+export function TargetHighlights({ hoveredTarget, previewTargets = [], selectedTarget }: TargetHighlightsProps) {
+    return (
+        <>
+            {previewTargets.map((target) => (
+                <HighlightBox key={`${target.type}-${target.id}`} target={target} showLabel />
+            ))}
+
+            {hoveredTarget ? <HighlightBox target={hoveredTarget} showLabel /> : null}
 
             {selectedTarget ? (
                 <div

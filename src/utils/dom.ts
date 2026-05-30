@@ -1,3 +1,4 @@
+import { TARGET_SELECTOR } from "../constants/report.js";
 import type { ReportTargetType } from "../types/report.js";
 import type { TargetSnapshot } from "../types/report-ui.js";
 
@@ -36,6 +37,12 @@ export function findTargetElement(baseElement: HTMLElement | null) {
     }
 
     return baseElement.closest<HTMLElement>('[data-report-type="group"][data-report-id]');
+}
+
+export function getSelectableTargets() {
+    return Array.from(document.querySelectorAll<HTMLElement>(TARGET_SELECTOR))
+        .map((element) => toSnapshot(element))
+        .filter((snapshot): snapshot is TargetSnapshot => snapshot !== null);
 }
 
 export function findTargetByPoint(overlay: HTMLDivElement | null, clientX: number, clientY: number) {
