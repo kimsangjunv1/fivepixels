@@ -4,6 +4,8 @@ declare const ReportContext: import("react").Context<{
     appearance: import("../index.js").ReportAppearance;
     fields: import("../index.js").ReportField[];
     showFeedbackList: boolean;
+    visibleShortcutKeys: boolean;
+    searchInputRef: import("react").MutableRefObject<HTMLInputElement | null>;
     resolvedAppearance: import("../types/report-ui.js").ResolvedAppearance;
     isMobileViewport: boolean;
     palette: {
@@ -56,6 +58,8 @@ declare const ReportContext: import("react").Context<{
     toggleTargetPreview: () => void;
     toggleViewMode: () => void;
     selectReport: (reportId: string) => void;
+    focusSearchInput: () => void;
+    selectAdjacentReport: (direction: "up" | "down") => void;
     openReplyComposer: (report: import("../index.js").ReportFeedback) => void;
     closeReplyComposer: () => void;
     clearHoverLeaveTimeout: () => void;
@@ -76,6 +80,8 @@ export declare function useReport(): {
     appearance: import("../index.js").ReportAppearance;
     fields: import("../index.js").ReportField[];
     showFeedbackList: boolean;
+    visibleShortcutKeys: boolean;
+    searchInputRef: import("react").MutableRefObject<HTMLInputElement | null>;
     resolvedAppearance: import("../types/report-ui.js").ResolvedAppearance;
     isMobileViewport: boolean;
     palette: {
@@ -128,6 +134,8 @@ export declare function useReport(): {
     toggleTargetPreview: () => void;
     toggleViewMode: () => void;
     selectReport: (reportId: string) => void;
+    focusSearchInput: () => void;
+    selectAdjacentReport: (direction: "up" | "down") => void;
     openReplyComposer: (report: import("../index.js").ReportFeedback) => void;
     closeReplyComposer: () => void;
     clearHoverLeaveTimeout: () => void;

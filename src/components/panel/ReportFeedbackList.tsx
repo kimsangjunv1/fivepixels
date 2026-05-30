@@ -1,8 +1,10 @@
 import type { ReportStatus } from "../../types/report.js";
 import type { ReportFilters } from "../../types/report-ui.js";
+import { REPORT_SHORTCUTS } from "../../constants/reportShortcuts.js";
 import { useReport } from "../../providers/reportContext.js";
 import { formatDate } from "../../utils/format.js";
 import { getStatusTone } from "../../utils/reportVisual.js";
+import { ShortcutHint } from "../ShortcutHint.js";
 import { FieldEditor } from "./FieldEditor.js";
 import { reportStyles } from "../report/styles.js";
 
@@ -23,6 +25,8 @@ export function ReportFeedbackList() {
         isFetching,
         isUpdating,
         queryErrorMessage,
+        visibleShortcutKeys,
+        searchInputRef,
         selectReport,
         startEditing,
         stopEditing,
@@ -62,22 +66,27 @@ export function ReportFeedbackList() {
             </div>
 
             <div style={reportStyles.filterGrid}>
-                <input
-                    value={filters.keyword}
-                    onChange={(event) =>
-                        setFilters((current) => ({
-                            ...current,
-                            keyword: event.target.value,
-                        }))
-                    }
-                    placeholder="메시지 / report id 검색"
-                    style={{
-                        ...reportStyles.input,
-                        backgroundColor: palette.input,
-                        borderColor: palette.inputBorder,
-                        color: palette.inputText,
-                    }}
-                />
+                <div style={reportStyles.filterSearchRow}>
+                    <input
+                        ref={searchInputRef}
+                        value={filters.keyword}
+                        onChange={(event) =>
+                            setFilters((current) => ({
+                                ...current,
+                                keyword: event.target.value,
+                            }))
+                        }
+                        placeholder="메시지 / report id 검색"
+                        style={{
+                            ...reportStyles.input,
+                            flex: 1,
+                            backgroundColor: palette.input,
+                            borderColor: palette.inputBorder,
+                            color: palette.inputText,
+                        }}
+                    />
+                    <ShortcutHint binding={REPORT_SHORTCUTS.focusSearch} visible={visibleShortcutKeys} palette={palette} />
+                </div>
                 <select
                     value={filters.status}
                     onChange={(event) =>
@@ -271,7 +280,10 @@ export function ReportFeedbackList() {
                                                 color: palette.text,
                                             }}
                                         >
-                                            닫기
+                                            <span style={reportStyles.buttonWithHint}>
+                                                닫기
+                                                <ShortcutHint binding={REPORT_SHORTCUTS.cancel} visible={visibleShortcutKeys} palette={palette} />
+                                            </span>
                                         </button>
                                         <button
                                             type="button"
@@ -282,7 +294,10 @@ export function ReportFeedbackList() {
                                                 backgroundColor: "#2563eb",
                                             }}
                                         >
-                                            {isUpdating ? "저장 중..." : "수정 저장"}
+                                            <span style={reportStyles.buttonWithHint}>
+                                                {isUpdating ? "저장 중..." : "수정 저장"}
+                                                <ShortcutHint binding={REPORT_SHORTCUTS.submit} visible={visibleShortcutKeys} palette={palette} />
+                                            </span>
                                         </button>
                                     </div>
                                 </div>

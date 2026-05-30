@@ -46,6 +46,7 @@ export default function App() {
             appearance="system"
             storage="local"
             showFeedbackList={false}
+            visibleShortcutKeys
             fields={[
                 { key: "message", type: "textarea", label: "메시지", required: true },
                 { key: "isBug", type: "checkbox", label: "버그" },
@@ -59,8 +60,42 @@ export default function App() {
 - `message` field는 기본 메시지와 연결되므로 예약 key로 취급합니다.
 - `pathname`을 넘기지 않으면 현재 `window.location.pathname` 기준으로 저장됩니다.
 - `showFeedbackList={false}`를 주면 view 모드에서도 우측 목록 패널 없이 마커만 표시할 수 있습니다.
+- `visibleShortcutKeys={true}`를 주면 버튼 옆에 키보드 단축키 힌트를 표시합니다.
 - `devOnly`를 주면 `NODE_ENV === "production"`일 때 Report UI를 렌더링하지 않습니다.
 - `enabled={false}`를 주면 환경과 관계없이 Report UI를 렌더링하지 않습니다.
+
+## Keyboard Shortcuts
+
+Report UI는 마우스 없이도 주요 기능을 사용할 수 있도록 키보드 단축키를 제공합니다. Mac에서는 `⌘`, Windows/Linux에서는 `Ctrl`을 modifier로 사용합니다.
+
+| 동작 | Mac | Windows / Linux |
+| --- | --- | --- |
+| 피드백 남기기 / 선택 중단 | `⌘⇧M` | `Ctrl+Shift+M` |
+| 선택 가능한 요소 미리보기 | `⌘⇧E` | `Ctrl+Shift+E` |
+| 피드백 보기 / 목록 닫기 | `⌘⇧L` | `Ctrl+Shift+L` |
+| 검색 input 포커스 (목록 열림) | `⌘⇧S` | `Ctrl+Shift+S` |
+| 목록 항목 이동 (목록 열림) | `↑` / `↓` | `↑` / `↓` |
+| 드래프트 취소 / 편집 닫기 / 모드 종료 | `Esc` | `Esc` |
+| 드래프트 저장 / 수정 저장 | `⌘↩` | `Ctrl+Enter` |
+
+- `Esc`는 드래프트 취소 → 편집 닫기 → report 모드 종료 → view 모드 종료 → 요소 미리보기 끄기 순으로 동작합니다.
+- 요소 미리보기 단축키는 idle 모드에서만 동작합니다. report/view 모드에서는 버튼과 동일하게 비활성화됩니다.
+- `input`, `textarea`, `select`에 포커스가 있을 때는 글로벌 단축키(`⌘⇧M`, `⌘⇧E`, `⌘⇧L`)와 목록 방향키가 동작하지 않습니다.
+- 검색 포커스(`⌘⇧S`)는 view 모드에서 목록이 열려 있을 때 입력 필드 포커스와 관계없이 동작합니다.
+- 드래프트/편집 폼에서는 `Esc`와 `⌘↩` / `Ctrl+Enter`가 입력 필드 포커스와 관계없이 동작합니다.
+- `visibleShortcutKeys` prop을 켜면 각 버튼 옆에 현재 OS에 맞는 단축키 라벨이 표시됩니다.
+
+```tsx
+<Report devOnly visibleShortcutKeys />
+```
+
+`ReportProvider`를 직접 사용하는 경우에도 동일한 prop을 전달할 수 있습니다.
+
+```tsx
+<ReportProvider devOnly visibleShortcutKeys>
+    {/* custom report UI */}
+</ReportProvider>
+```
 
 ## Storage
 

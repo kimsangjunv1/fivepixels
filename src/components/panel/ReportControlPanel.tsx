@@ -1,4 +1,6 @@
+import { REPORT_SHORTCUTS } from "../../constants/reportShortcuts.js";
 import { useReport } from "../../providers/reportContext.js";
+import { ShortcutHint } from "../ShortcutHint.js";
 import { reportStyles } from "../report/styles.js";
 
 export function ReportControlPanel() {
@@ -11,6 +13,7 @@ export function ReportControlPanel() {
         helperText,
         errorMessage,
         showTargetPreview,
+        visibleShortcutKeys,
         toggleReportMode,
         toggleTargetPreview,
         toggleViewMode,
@@ -52,7 +55,10 @@ export function ReportControlPanel() {
                         backgroundColor: mode === "report" ? "#ef4444" : "#2563eb",
                     }}
                 >
-                    {mode === "report" ? "선택 중단" : "피드백 남기기"}
+                    <span style={reportStyles.buttonWithHint}>
+                        {mode === "report" ? "선택 중단" : "피드백 남기기"}
+                        <ShortcutHint binding={REPORT_SHORTCUTS.toggleReportMode} visible={visibleShortcutKeys} palette={palette} />
+                    </span>
                 </button>
                 <button
                     type="button"
@@ -65,7 +71,10 @@ export function ReportControlPanel() {
                         opacity: mode !== "idle" ? 0.5 : 1,
                     }}
                 >
-                    {showTargetPreview ? "요소 표시 끄기" : "현재 선택 가능한 element 노출하기"}
+                    <span style={reportStyles.buttonWithHint}>
+                        {showTargetPreview ? "요소 표시 끄기" : "현재 선택 가능한 element 노출하기"}
+                        <ShortcutHint binding={REPORT_SHORTCUTS.toggleTargetPreview} visible={visibleShortcutKeys} palette={palette} />
+                    </span>
                 </button>
                 <button
                     type="button"
@@ -76,7 +85,10 @@ export function ReportControlPanel() {
                         color: palette.text,
                     }}
                 >
-                    {mode === "view" ? "목록 닫기" : "피드백 보기"}
+                    <span style={reportStyles.buttonWithHint}>
+                        {mode === "view" ? "목록 닫기" : "피드백 보기"}
+                        <ShortcutHint binding={REPORT_SHORTCUTS.toggleViewMode} visible={visibleShortcutKeys} palette={palette} />
+                    </span>
                 </button>
             </div>
 

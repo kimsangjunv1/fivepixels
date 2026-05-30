@@ -1,4 +1,5 @@
 import { type MouseEvent, useEffect, useMemo, useRef, useState } from "react";
+import { useReportShortcuts } from "./useReportShortcuts.js";
 import { useCreateReportMutation, useReportsQuery, useUpdateReportMutation } from "./report.query.js";
 import { useIsMobileViewport } from "./useIsMobileViewport.js";
 import { usePalette } from "./usePalette.js";
@@ -18,11 +19,13 @@ export type ReportStateConfig = {
     pathname?: string;
     showFeedbackList: boolean;
     storage: "local" | ReportStorageAdapter;
+    visibleShortcutKeys?: boolean;
 };
 
-export function useReportState({ appearance, fields, pathname, showFeedbackList, storage }: ReportStateConfig) {
+export function useReportState({ appearance, fields, pathname, showFeedbackList, storage, visibleShortcutKeys = false }: ReportStateConfig) {
     // theme
     const overlayRef = useRef<HTMLDivElement | null>(null);
+    const searchInputRef = useRef<HTMLInputElement | null>(null);
     const hoveredElementRef = useRef<HTMLElement | null>(null);
     const selectedElementRef = useRef<HTMLElement | null>(null);
     const hoverLeaveTimeoutRef = useRef<number | null>(null);
@@ -271,6 +274,31 @@ export function useReportState({ appearance, fields, pathname, showFeedbackList,
         }
     };
 
+    const focusSearchInput = () => {
+        searchInputRef.current?.focus();
+        searchInputRef.current?.select();
+    };
+
+    const selectAdjacentReport = (direction: "up" | "down") => {
+        if (filteredReports.length === 0) {
+            return;
+        }
+
+        const currentIndex = filteredReports.findIndex((report) => report.id === selectedReportId);
+        let nextIndex: number;
+
+        if (currentIndex === -1) {
+            nextIndex = direction === "down" ? 0 : filteredReports.length - 1;
+        } else {
+            nextIndex =
+                direction === "down"
+                    ? Math.min(currentIndex + 1, filteredReports.length - 1)
+                    : Math.max(currentIndex - 1, 0);
+        }
+
+        selectReport(filteredReports[nextIndex].id);
+    };
+
     const openReplyComposer = (report: ReportFeedback) => {
         selectReport(report.id);
         setActiveReplyReportId(report.id);
@@ -494,10 +522,29 @@ export function useReportState({ appearance, fields, pathname, showFeedbackList,
         }
     };
 
+    useReportShortcuts({
+        mode,
+        draft,
+        editingReportId,
+        showFeedbackList,
+        showTargetPreview,
+        toggleReportMode,
+        toggleTargetPreview,
+        toggleViewMode,
+        cancelDraft,
+        handleCreateSubmit,
+        stopEditing,
+        handleUpdateSubmit,
+        focusSearchInput,
+        selectAdjacentReport,
+    });
+
     return {
         appearance,
         fields,
         showFeedbackList,
+        visibleShortcutKeys,
+        searchInputRef,
         resolvedAppearance,
         isMobileViewport,
         palette,
@@ -536,6 +583,8 @@ export function useReportState({ appearance, fields, pathname, showFeedbackList,
         toggleTargetPreview,
         toggleViewMode,
         selectReport,
+        focusSearchInput,
+        selectAdjacentReport,
         openReplyComposer,
         closeReplyComposer,
         clearHoverLeaveTimeout,

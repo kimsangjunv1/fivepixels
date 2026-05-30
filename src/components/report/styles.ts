@@ -62,6 +62,24 @@ export const reportStyles: Record<string, CSSProperties> = {
         fontWeight: 600,
         padding: "10px 12px",
     },
+    buttonWithHint: {
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 6,
+    },
+    shortcutHint: {
+        display: "inline-flex",
+        alignItems: "center",
+        borderRadius: 6,
+        fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+        fontSize: 10,
+        fontWeight: 600,
+        letterSpacing: 0.2,
+        lineHeight: 1,
+        padding: "3px 5px",
+        whiteSpace: "nowrap",
+    },
     errorText: {
         margin: "10px 0 0",
         fontSize: 12,
@@ -207,6 +225,11 @@ export const reportStyles: Record<string, CSSProperties> = {
         display: "grid",
         gap: 8,
         marginTop: 12,
+    },
+    filterSearchRow: {
+        display: "flex",
+        alignItems: "center",
+        gap: 6,
     },
     input: {
         width: "100%",

@@ -8,7 +8,8 @@ export type ReportProviderProps = {
     pathname?: string;
     showFeedbackList?: boolean;
     storage?: "local" | ReportStorageAdapter;
+    visibleShortcutKeys?: boolean;
     children: ReactNode;
 };
-export declare function ReportProvider({ appearance, devOnly, enabled, fields, pathname, showFeedbackList, storage, children, }: ReportProviderProps): import("react/jsx-runtime").JSX.Element;
+export declare function ReportProvider({ appearance, devOnly, enabled, fields, pathname, showFeedbackList, storage, visibleShortcutKeys, children, }: ReportProviderProps): import("react/jsx-runtime").JSX.Element;
 //# sourceMappingURL=ReportProvider.d.ts.map

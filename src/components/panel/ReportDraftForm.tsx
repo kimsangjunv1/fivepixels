@@ -1,4 +1,6 @@
+import { REPORT_SHORTCUTS } from "../../constants/reportShortcuts.js";
 import { useReport } from "../../providers/reportContext.js";
+import { ShortcutHint } from "../ShortcutHint.js";
 import { FieldEditor } from "./FieldEditor.js";
 import { reportStyles } from "../report/styles.js";
 
@@ -9,6 +11,7 @@ export function ReportDraftForm() {
         palette,
         isMobileViewport,
         isCreating,
+        visibleShortcutKeys,
         updateDraftMessage,
         updateDraftField,
         cancelDraft,
@@ -57,7 +60,10 @@ export function ReportDraftForm() {
                         color: palette.text,
                     }}
                 >
-                    취소
+                    <span style={reportStyles.buttonWithHint}>
+                        취소
+                        <ShortcutHint binding={REPORT_SHORTCUTS.cancel} visible={visibleShortcutKeys} palette={palette} />
+                    </span>
                 </button>
                 <button
                     type="button"
@@ -68,7 +74,10 @@ export function ReportDraftForm() {
                         backgroundColor: "#2563eb",
                     }}
                 >
-                    {isCreating ? "저장 중..." : "저장"}
+                    <span style={reportStyles.buttonWithHint}>
+                        {isCreating ? "저장 중..." : "저장"}
+                        <ShortcutHint binding={REPORT_SHORTCUTS.submit} visible={visibleShortcutKeys} palette={palette} />
+                    </span>
                 </button>
             </div>
         </div>
