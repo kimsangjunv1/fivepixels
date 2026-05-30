@@ -1,9 +1,14 @@
 import { type MouseEvent } from "react";
-import type { ReportAppearance, ReportEvent, ReportFeedback, ReportField, ReportStorageAdapter } from "../types/report.js";
+import type { ReportAppearance, ReportEvent, ReportFeedback, ReportField, ReportIdentify, ReportStorageAdapter } from "../types/report.js";
 import type { DraftReport, EditableDraft, Marker, ReportFilters, ReportMode, TargetSnapshot } from "../types/report-ui.js";
 export type ReportStateConfig = {
+    projectId: string;
+    environment?: string;
+    appVersion?: string;
     appearance: ReportAppearance;
     fields: ReportField[];
+    shortcut?: string;
+    identify?: ReportIdentify;
     onEvent?: (event: ReportEvent) => void | Promise<void>;
     onFeedbackCreate?: (feedback: ReportFeedback) => void | Promise<void>;
     onFeedbackDelete?: (id: string) => void | Promise<void>;
@@ -14,10 +19,11 @@ export type ReportStateConfig = {
     onFeedbackUpdate?: (feedback: ReportFeedback) => void | Promise<void>;
     pathname?: string;
     showFeedbackList: boolean;
-    storage: "local" | ReportStorageAdapter;
+    storage?: "local" | ReportStorageAdapter;
+    storageAdapter?: ReportStorageAdapter;
     visibleShortcutKeys?: boolean;
 };
-export declare function useReportState({ appearance, fields, onEvent, onFeedbackCreate, onFeedbackDelete, onFeedbackReply, onFeedbackUpdate, pathname, showFeedbackList, storage, visibleShortcutKeys, }: ReportStateConfig): {
+export declare function useReportState({ projectId, environment, appVersion, appearance, fields, shortcut: _shortcut, identify, onEvent, onFeedbackCreate, onFeedbackDelete, onFeedbackReply, onFeedbackUpdate, pathname, showFeedbackList, storage, storageAdapter, visibleShortcutKeys, }: ReportStateConfig): {
     appearance: ReportAppearance;
     fields: ReportField[];
     showFeedbackList: boolean;

@@ -7,7 +7,13 @@ import type {
     ReportStatus,
     UpdateReportFeedbackPayload,
 } from "../../types/report.js";
-import { REPORTS_STORAGE_KEY } from "../../constants/storageKeys.js";
+import { DEFAULT_PROJECT_ID } from "../../constants/project.js";
+import { getReportsStorageKey } from "../../constants/storageKeys.js";
+
+export type LocalStorageReportAdapterOptions = {
+    projectId: string;
+    environment?: string;
+};
 
 function createId() {
     if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
@@ -72,12 +78,12 @@ function normalizeReport(item: ReportFeedback): ReportFeedback {
     };
 }
 
-function readAll() {
+function readAll(storageKey: string) {
     if (typeof window === "undefined") {
         return [] as ReportFeedback[];
     }
 
-    const raw = window.localStorage.getItem(REPORTS_STORAGE_KEY);
+    const raw = window.localStorage.getItem(storageKey);
 
     if (!raw) {
         return [] as ReportFeedback[];
@@ -91,18 +97,20 @@ function readAll() {
     }
 }
 
-function writeAll(items: ReportFeedback[]) {
+function writeAll(storageKey: string, items: ReportFeedback[]) {
     if (typeof window === "undefined") {
         return;
     }
 
-    window.localStorage.setItem(REPORTS_STORAGE_KEY, JSON.stringify(items.map(normalizeReport)));
+    window.localStorage.setItem(storageKey, JSON.stringify(items.map(normalizeReport)));
 }
 
-export function createLocalStorageReportAdapter(): ReportStorageAdapter {
+export function createLocalStorageReportAdapter({ projectId, environment }: LocalStorageReportAdapterOptions): ReportStorageAdapter {
+    const storageKey = getReportsStorageKey(projectId, environment);
+
     return {
         async list({ pathname }) {
-            return readAll()
+            return readAll(storageKey)
                 .filter((item) => item.pathname === pathname)
                 .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
         },
@@ -113,14 +121,14 @@ export function createLocalStorageReportAdapter(): ReportStorageAdapter {
                 created_at: new Date().toISOString(),
                 replies: payload.replies ?? [],
             };
-            const items = readAll();
+            const items = readAll(storageKey);
 
             const normalized = normalizeReport(nextItem);
-            writeAll([normalized, ...items]);
+            writeAll(storageKey, [normalized, ...items]);
             return normalized;
         },
         async update(id, payload) {
-            const items = readAll();
+            const items = readAll(storageKey);
             const index = items.findIndex((item) => item.id === id);
 
             if (index < 0) {
@@ -133,14 +141,18 @@ export function createLocalStorageReportAdapter(): ReportStorageAdapter {
             });
 
             items[index] = nextItem;
-            writeAll(items);
+            writeAll(storageKey, items);
 
             return nextItem;
         },
         async remove(id) {
-            writeAll(readAll().filter((item) => item.id !== id));
+            writeAll(
+                storageKey,
+                readAll(storageKey).filter((item) => item.id !== id),
+            );
         },
     };
 }
 
-export const localStorageReportAdapter = createLocalStorageReportAdapter();
+/** @deprecated Use createLocalStorageReportAdapter({ projectId }) instead. */
+export const localStorageReportAdapter = createLocalStorageReportAdapter({ projectId: DEFAULT_PROJECT_ID });

@@ -11,7 +11,7 @@ import { createReplyId } from "../utils/format.js";
 import { getCurrentPathname } from "../utils/pathname.js";
 import { resolveStorageAdapter } from "../utils/storage.js";
 import { notifyFeedbackCreate, notifyFeedbackDelete, notifyFeedbackReply, notifyFeedbackUpdate, } from "../utils/reportCallbacks.js";
-export function useReportState({ appearance, fields, onEvent, onFeedbackCreate, onFeedbackDelete, onFeedbackReply, onFeedbackUpdate, pathname, showFeedbackList, storage, visibleShortcutKeys = false, }) {
+export function useReportState({ projectId, environment, appVersion, appearance, fields, shortcut: _shortcut, identify, onEvent, onFeedbackCreate, onFeedbackDelete, onFeedbackReply, onFeedbackUpdate, pathname, showFeedbackList, storage = "local", storageAdapter, visibleShortcutKeys = false, }) {
     // theme
     const overlayRef = useRef(null);
     const searchInputRef = useRef(null);
@@ -21,7 +21,7 @@ export function useReportState({ appearance, fields, onEvent, onFeedbackCreate, 
     const resolvedAppearance = useResolvedAppearance(appearance);
     const isMobileViewport = useIsMobileViewport();
     const palette = usePalette(resolvedAppearance);
-    const storageAdapter = useMemo(() => resolveStorageAdapter(storage), [storage]);
+    const storageAdapterInstance = useMemo(() => resolveStorageAdapter({ projectId, environment, storage, storageAdapter }), [environment, projectId, storage, storageAdapter]);
     const currentPathname = useMemo(() => getCurrentPathname(pathname), [pathname]);
     const eventCallbacks = useMemo(() => ({
         onEvent,
@@ -50,14 +50,14 @@ export function useReportState({ appearance, fields, onEvent, onFeedbackCreate, 
     const [editingReportId, setEditingReportId] = useState(null);
     const [editableDraft, setEditableDraft] = useState(null);
     // data (list, filter, mutations)
-    const { data: reports, error, isError, isFetching, refetch } = useReportsQuery(storageAdapter, currentPathname, true);
-    const { mutateAsync: createFeedback, isPending: isCreating } = useCreateReportMutation(storageAdapter, () => {
+    const { data: reports, error, isError, isFetching, refetch } = useReportsQuery(storageAdapterInstance, currentPathname, true);
+    const { mutateAsync: createFeedback, isPending: isCreating } = useCreateReportMutation(storageAdapterInstance, () => {
         void refetch();
     });
-    const { mutateAsync: updateFeedback, isPending: isUpdating } = useUpdateReportMutation(storageAdapter, () => {
+    const { mutateAsync: updateFeedback, isPending: isUpdating } = useUpdateReportMutation(storageAdapterInstance, () => {
         void refetch();
     });
-    const { mutateAsync: deleteFeedback, isPending: isDeleting } = useDeleteReportMutation(storageAdapter, () => {
+    const { mutateAsync: deleteFeedback, isPending: isDeleting } = useDeleteReportMutation(storageAdapterInstance, () => {
         void refetch();
     });
     const filteredReports = useMemo(() => {
@@ -363,6 +363,14 @@ export function useReportState({ appearance, fields, onEvent, onFeedbackCreate, 
                 viewport_height: window.innerHeight,
                 design_width: window.innerWidth,
                 design_height: window.innerHeight,
+                ...(environment ? { environment } : {}),
+                ...(appVersion ? { app_version: appVersion } : {}),
+                ...(identify
+                    ? {
+                        author_id: identify.id,
+                        author_name: identify.name,
+                    }
+                    : {}),
             });
             await notifyFeedbackCreate(eventCallbacks, savedFeedback);
             setDraft(null);
