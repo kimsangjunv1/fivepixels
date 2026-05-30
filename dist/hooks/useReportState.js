@@ -13,6 +13,7 @@ import { resolveStorageAdapter } from "../utils/storage.js";
 export function useReportState({ appearance, fields, pathname, showFeedbackList, storage, visibleShortcutKeys = false }) {
     // theme
     const overlayRef = useRef(null);
+    const searchInputRef = useRef(null);
     const hoveredElementRef = useRef(null);
     const selectedElementRef = useRef(null);
     const hoverLeaveTimeoutRef = useRef(null);
@@ -217,6 +218,27 @@ export function useReportState({ appearance, fields, pathname, showFeedbackList,
             stopEditing();
         }
     };
+    const focusSearchInput = () => {
+        searchInputRef.current?.focus();
+        searchInputRef.current?.select();
+    };
+    const selectAdjacentReport = (direction) => {
+        if (filteredReports.length === 0) {
+            return;
+        }
+        const currentIndex = filteredReports.findIndex((report) => report.id === selectedReportId);
+        let nextIndex;
+        if (currentIndex === -1) {
+            nextIndex = direction === "down" ? 0 : filteredReports.length - 1;
+        }
+        else {
+            nextIndex =
+                direction === "down"
+                    ? Math.min(currentIndex + 1, filteredReports.length - 1)
+                    : Math.max(currentIndex - 1, 0);
+        }
+        selectReport(filteredReports[nextIndex].id);
+    };
     const openReplyComposer = (report) => {
         selectReport(report.id);
         setActiveReplyReportId(report.id);
@@ -412,6 +434,8 @@ export function useReportState({ appearance, fields, pathname, showFeedbackList,
         mode,
         draft,
         editingReportId,
+        showFeedbackList,
+        showTargetPreview,
         toggleReportMode,
         toggleTargetPreview,
         toggleViewMode,
@@ -419,12 +443,15 @@ export function useReportState({ appearance, fields, pathname, showFeedbackList,
         handleCreateSubmit,
         stopEditing,
         handleUpdateSubmit,
+        focusSearchInput,
+        selectAdjacentReport,
     });
     return {
         appearance,
         fields,
         showFeedbackList,
         visibleShortcutKeys,
+        searchInputRef,
         resolvedAppearance,
         isMobileViewport,
         palette,
@@ -463,6 +490,8 @@ export function useReportState({ appearance, fields, pathname, showFeedbackList,
         toggleTargetPreview,
         toggleViewMode,
         selectReport,
+        focusSearchInput,
+        selectAdjacentReport,
         openReplyComposer,
         closeReplyComposer,
         clearHoverLeaveTimeout,

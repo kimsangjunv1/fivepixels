@@ -8,6 +8,8 @@ type ReportShortcutHandlers = Pick<
     | "mode"
     | "draft"
     | "editingReportId"
+    | "showFeedbackList"
+    | "showTargetPreview"
     | "toggleReportMode"
     | "toggleTargetPreview"
     | "toggleViewMode"
@@ -15,6 +17,8 @@ type ReportShortcutHandlers = Pick<
     | "handleCreateSubmit"
     | "stopEditing"
     | "handleUpdateSubmit"
+    | "focusSearchInput"
+    | "selectAdjacentReport"
 >;
 
 export function useReportShortcuts(handlers: ReportShortcutHandlers) {
@@ -22,6 +26,8 @@ export function useReportShortcuts(handlers: ReportShortcutHandlers) {
         mode,
         draft,
         editingReportId,
+        showFeedbackList,
+        showTargetPreview,
         toggleReportMode,
         toggleTargetPreview,
         toggleViewMode,
@@ -29,11 +35,14 @@ export function useReportShortcuts(handlers: ReportShortcutHandlers) {
         handleCreateSubmit,
         stopEditing,
         handleUpdateSubmit,
+        focusSearchInput,
+        selectAdjacentReport,
     } = handlers;
 
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
             const inEditable = isEditableTarget(event.target);
+            const isViewListOpen = mode === "view" && showFeedbackList;
 
             if (matchesShortcut(event, REPORT_SHORTCUTS.submit)) {
                 if (draft) {
@@ -64,6 +73,36 @@ export function useReportShortcuts(handlers: ReportShortcutHandlers) {
                     return;
                 }
 
+                if (mode === "report") {
+                    event.preventDefault();
+                    toggleReportMode();
+                    return;
+                }
+
+                if (mode === "view") {
+                    event.preventDefault();
+                    toggleViewMode();
+                    return;
+                }
+
+                if (showTargetPreview) {
+                    event.preventDefault();
+                    toggleTargetPreview();
+                    return;
+                }
+
+                return;
+            }
+
+            if (isViewListOpen && matchesShortcut(event, REPORT_SHORTCUTS.focusSearch)) {
+                event.preventDefault();
+                focusSearchInput();
+                return;
+            }
+
+            if (isViewListOpen && !inEditable && (event.key === "ArrowUp" || event.key === "ArrowDown")) {
+                event.preventDefault();
+                selectAdjacentReport(event.key === "ArrowDown" ? "down" : "up");
                 return;
             }
 
@@ -102,6 +141,8 @@ export function useReportShortcuts(handlers: ReportShortcutHandlers) {
         mode,
         draft,
         editingReportId,
+        showFeedbackList,
+        showTargetPreview,
         toggleReportMode,
         toggleTargetPreview,
         toggleViewMode,
@@ -109,5 +150,7 @@ export function useReportShortcuts(handlers: ReportShortcutHandlers) {
         handleCreateSubmit,
         stopEditing,
         handleUpdateSubmit,
+        focusSearchInput,
+        selectAdjacentReport,
     ]);
 }

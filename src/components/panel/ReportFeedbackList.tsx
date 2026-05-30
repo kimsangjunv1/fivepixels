@@ -26,6 +26,7 @@ export function ReportFeedbackList() {
         isUpdating,
         queryErrorMessage,
         visibleShortcutKeys,
+        searchInputRef,
         selectReport,
         startEditing,
         stopEditing,
@@ -65,22 +66,27 @@ export function ReportFeedbackList() {
             </div>
 
             <div style={reportStyles.filterGrid}>
-                <input
-                    value={filters.keyword}
-                    onChange={(event) =>
-                        setFilters((current) => ({
-                            ...current,
-                            keyword: event.target.value,
-                        }))
-                    }
-                    placeholder="메시지 / report id 검색"
-                    style={{
-                        ...reportStyles.input,
-                        backgroundColor: palette.input,
-                        borderColor: palette.inputBorder,
-                        color: palette.inputText,
-                    }}
-                />
+                <div style={reportStyles.filterSearchRow}>
+                    <input
+                        ref={searchInputRef}
+                        value={filters.keyword}
+                        onChange={(event) =>
+                            setFilters((current) => ({
+                                ...current,
+                                keyword: event.target.value,
+                            }))
+                        }
+                        placeholder="메시지 / report id 검색"
+                        style={{
+                            ...reportStyles.input,
+                            flex: 1,
+                            backgroundColor: palette.input,
+                            borderColor: palette.inputBorder,
+                            color: palette.inputText,
+                        }}
+                    />
+                    <ShortcutHint binding={REPORT_SHORTCUTS.focusSearch} visible={visibleShortcutKeys} palette={palette} />
+                </div>
                 <select
                     value={filters.status}
                     onChange={(event) =>

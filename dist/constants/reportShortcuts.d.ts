@@ -14,6 +14,11 @@ export declare const REPORT_SHORTCUTS: {
         readonly mod: true;
         readonly shift: true;
     };
+    readonly focusSearch: {
+        readonly key: "s";
+        readonly mod: true;
+        readonly shift: true;
+    };
     readonly cancel: {
         readonly key: "Escape";
     };

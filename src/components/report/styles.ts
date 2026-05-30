@@ -226,6 +226,11 @@ export const reportStyles: Record<string, CSSProperties> = {
         gap: 8,
         marginTop: 12,
     },
+    filterSearchRow: {
+        display: "flex",
+        alignItems: "center",
+        gap: 6,
+    },
     input: {
         width: "100%",
         border: "1px solid",

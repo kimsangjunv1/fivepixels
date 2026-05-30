@@ -14,6 +14,7 @@ export declare function useReportState({ appearance, fields, pathname, showFeedb
     fields: ReportField[];
     showFeedbackList: boolean;
     visibleShortcutKeys: boolean;
+    searchInputRef: import("react").MutableRefObject<HTMLInputElement | null>;
     resolvedAppearance: import("../types/report-ui.js").ResolvedAppearance;
     isMobileViewport: boolean;
     palette: {
@@ -66,6 +67,8 @@ export declare function useReportState({ appearance, fields, pathname, showFeedb
     toggleTargetPreview: () => void;
     toggleViewMode: () => void;
     selectReport: (reportId: string) => void;
+    focusSearchInput: () => void;
+    selectAdjacentReport: (direction: "up" | "down") => void;
     openReplyComposer: (report: ReportFeedback) => void;
     closeReplyComposer: () => void;
     clearHoverLeaveTimeout: () => void;

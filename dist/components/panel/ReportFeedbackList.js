@@ -7,7 +7,7 @@ import { ShortcutHint } from "../ShortcutHint.js";
 import { FieldEditor } from "./FieldEditor.js";
 import { reportStyles } from "../report/styles.js";
 export function ReportFeedbackList() {
-    const { palette, resolvedAppearance, isMobileViewport, filters, setFilters, filteredReports, reports, selectedReport, editingReportId, editableDraft, fields, isError, isFetching, isUpdating, queryErrorMessage, visibleShortcutKeys, selectReport, startEditing, stopEditing, setEditableDraft, handleUpdateSubmit, refetch, } = useReport();
+    const { palette, resolvedAppearance, isMobileViewport, filters, setFilters, filteredReports, reports, selectedReport, editingReportId, editableDraft, fields, isError, isFetching, isUpdating, queryErrorMessage, visibleShortcutKeys, searchInputRef, selectReport, startEditing, stopEditing, setEditableDraft, handleUpdateSubmit, refetch, } = useReport();
     return (_jsxs("aside", { style: {
             ...reportStyles.sidePanel,
             backgroundColor: palette.panel,
@@ -25,15 +25,16 @@ export function ReportFeedbackList() {
                             ...reportStyles.badge,
                             backgroundColor: palette.chip,
                             color: palette.muted,
-                        }, children: filteredReports.length })] }), _jsxs("div", { style: reportStyles.filterGrid, children: [_jsx("input", { value: filters.keyword, onChange: (event) => setFilters((current) => ({
-                            ...current,
-                            keyword: event.target.value,
-                        })), placeholder: "\uBA54\uC2DC\uC9C0 / report id \uAC80\uC0C9", style: {
-                            ...reportStyles.input,
-                            backgroundColor: palette.input,
-                            borderColor: palette.inputBorder,
-                            color: palette.inputText,
-                        } }), _jsxs("select", { value: filters.status, onChange: (event) => setFilters((current) => ({
+                        }, children: filteredReports.length })] }), _jsxs("div", { style: reportStyles.filterGrid, children: [_jsxs("div", { style: reportStyles.filterSearchRow, children: [_jsx("input", { ref: searchInputRef, value: filters.keyword, onChange: (event) => setFilters((current) => ({
+                                    ...current,
+                                    keyword: event.target.value,
+                                })), placeholder: "\uBA54\uC2DC\uC9C0 / report id \uAC80\uC0C9", style: {
+                                    ...reportStyles.input,
+                                    flex: 1,
+                                    backgroundColor: palette.input,
+                                    borderColor: palette.inputBorder,
+                                    color: palette.inputText,
+                                } }), _jsx(ShortcutHint, { binding: REPORT_SHORTCUTS.focusSearch, visible: visibleShortcutKeys, palette: palette })] }), _jsxs("select", { value: filters.status, onChange: (event) => setFilters((current) => ({
                             ...current,
                             status: event.target.value,
                         })), style: {

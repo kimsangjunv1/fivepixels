@@ -2,10 +2,11 @@ import { useEffect } from "react";
 import { REPORT_SHORTCUTS } from "../constants/reportShortcuts.js";
 import { isEditableTarget, matchesShortcut } from "../utils/shortcuts.js";
 export function useReportShortcuts(handlers) {
-    const { mode, draft, editingReportId, toggleReportMode, toggleTargetPreview, toggleViewMode, cancelDraft, handleCreateSubmit, stopEditing, handleUpdateSubmit, } = handlers;
+    const { mode, draft, editingReportId, showFeedbackList, showTargetPreview, toggleReportMode, toggleTargetPreview, toggleViewMode, cancelDraft, handleCreateSubmit, stopEditing, handleUpdateSubmit, focusSearchInput, selectAdjacentReport, } = handlers;
     useEffect(() => {
         const handleKeyDown = (event) => {
             const inEditable = isEditableTarget(event.target);
+            const isViewListOpen = mode === "view" && showFeedbackList;
             if (matchesShortcut(event, REPORT_SHORTCUTS.submit)) {
                 if (draft) {
                     event.preventDefault();
@@ -30,6 +31,31 @@ export function useReportShortcuts(handlers) {
                     stopEditing();
                     return;
                 }
+                if (mode === "report") {
+                    event.preventDefault();
+                    toggleReportMode();
+                    return;
+                }
+                if (mode === "view") {
+                    event.preventDefault();
+                    toggleViewMode();
+                    return;
+                }
+                if (showTargetPreview) {
+                    event.preventDefault();
+                    toggleTargetPreview();
+                    return;
+                }
+                return;
+            }
+            if (isViewListOpen && matchesShortcut(event, REPORT_SHORTCUTS.focusSearch)) {
+                event.preventDefault();
+                focusSearchInput();
+                return;
+            }
+            if (isViewListOpen && !inEditable && (event.key === "ArrowUp" || event.key === "ArrowDown")) {
+                event.preventDefault();
+                selectAdjacentReport(event.key === "ArrowDown" ? "down" : "up");
                 return;
             }
             if (inEditable) {
@@ -61,6 +87,8 @@ export function useReportShortcuts(handlers) {
         mode,
         draft,
         editingReportId,
+        showFeedbackList,
+        showTargetPreview,
         toggleReportMode,
         toggleTargetPreview,
         toggleViewMode,
@@ -68,6 +96,8 @@ export function useReportShortcuts(handlers) {
         handleCreateSubmit,
         stopEditing,
         handleUpdateSubmit,
+        focusSearchInput,
+        selectAdjacentReport,
     ]);
 }
 //# sourceMappingURL=useReportShortcuts.js.map
