@@ -16,7 +16,7 @@ import { Report } from "stitchable";
 export default function App() {
     return (
         <>
-            <Report />
+            <Report devOnly />
 
             <main>
                 <section data-report-id="hero" data-report-type="group">
@@ -42,6 +42,7 @@ import { Report } from "stitchable";
 export default function App() {
     return (
         <Report
+            devOnly
             appearance="system"
             storage="local"
             showFeedbackList={false}
@@ -58,6 +59,8 @@ export default function App() {
 - `message` field는 기본 메시지와 연결되므로 예약 key로 취급합니다.
 - `pathname`을 넘기지 않으면 현재 `window.location.pathname` 기준으로 저장됩니다.
 - `showFeedbackList={false}`를 주면 view 모드에서도 우측 목록 패널 없이 마커만 표시할 수 있습니다.
+- `devOnly`를 주면 `NODE_ENV === "production"`일 때 Report UI를 렌더링하지 않습니다.
+- `enabled={false}`를 주면 환경과 관계없이 Report UI를 렌더링하지 않습니다.
 
 ## Storage
 

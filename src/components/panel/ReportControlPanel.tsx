@@ -1,0 +1,71 @@
+import { useReport } from "../../providers/reportContext.js";
+import { reportStyles } from "../report/styles.js";
+
+export function ReportControlPanel() {
+    const {
+        appearance,
+        resolvedAppearance,
+        palette,
+        isMobileViewport,
+        mode,
+        helperText,
+        errorMessage,
+        toggleReportMode,
+        toggleViewMode,
+    } = useReport();
+
+    return (
+        <div
+            style={{
+                ...reportStyles.floatingPanel,
+                backgroundColor: palette.panel,
+                borderColor: palette.panelBorder,
+                color: palette.text,
+                width: isMobileViewport ? "calc(100vw - 32px)" : 320,
+                boxShadow: resolvedAppearance === "dark" ? "0 18px 48px rgba(15, 23, 42, 0.42)" : "0 18px 48px rgba(15, 23, 42, 0.16)",
+                backdropFilter: "blur(14px)",
+            }}
+        >
+            <div style={reportStyles.panelHeader}>
+                <strong style={{ fontSize: 14 }}>stitchable</strong>
+                <span
+                    style={{
+                        ...reportStyles.badge,
+                        backgroundColor: palette.chip,
+                        color: palette.muted,
+                    }}
+                >
+                    {appearance}
+                </span>
+            </div>
+
+            <p style={{ ...reportStyles.helperText, color: palette.muted }}>{helperText}</p>
+
+            <div style={reportStyles.buttonRow}>
+                <button
+                    type="button"
+                    onClick={toggleReportMode}
+                    style={{
+                        ...reportStyles.primaryButton,
+                        backgroundColor: mode === "report" ? "#ef4444" : "#2563eb",
+                    }}
+                >
+                    {mode === "report" ? "선택 중단" : "피드백 남기기"}
+                </button>
+                <button
+                    type="button"
+                    onClick={toggleViewMode}
+                    style={{
+                        ...reportStyles.secondaryButton,
+                        borderColor: palette.inputBorder,
+                        color: palette.text,
+                    }}
+                >
+                    {mode === "view" ? "목록 닫기" : "피드백 보기"}
+                </button>
+            </div>
+
+            {errorMessage ? <p style={{ ...reportStyles.errorText, color: "#ef4444" }}>{errorMessage}</p> : null}
+        </div>
+    );
+}

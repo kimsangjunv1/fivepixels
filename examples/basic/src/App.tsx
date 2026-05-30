@@ -6,6 +6,7 @@ export function App() {
   return (
     <>
       <Report
+        devOnly
         appearance="light"
         pathname="/examples/basic"
         fields={[

@@ -1,0 +1,1 @@
+{"version":3,"file":"pathname.js","sourceRoot":"","sources":["../../src/utils/pathname.ts"],"names":[],"mappings":"AAAA,MAAM,UAAU,kBAAkB,CAAC,QAAiB;IAChD,IAAI,QAAQ,EAAE,CAAC;QACX,OAAO,QAAQ,CAAC;IACpB,CAAC;IAED,IAAI,OAAO,MAAM,KAAK,WAAW,EAAE,CAAC;QAChC,OAAO,MAAM,CAAC,QAAQ,CAAC,QAAQ,IAAI,GAAG,CAAC;IAC3C,CAAC;IAED,OAAO,GAAG,CAAC;AACf,CAAC"}
