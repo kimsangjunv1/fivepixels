@@ -252,10 +252,11 @@
 [data-stitchable-root][data-stitchable-theme="dark"] {
     --stitchable-panel-bg: var(--adaptive-floatBackground);
     --stitchable-panel-border: var(--adaptive-hairlineBorder);
-    --stitchable-text: var(--adaptive-grey900);
+    --stitchable-text: var(--adaptive-grey500);
     --stitchable-muted: var(--adaptive-grey600);
     --stitchable-input-bg: var(--adaptive-backgroundLevel01);
-    --stitchable-input-border: var(--adaptive-hairlineBorder);
+    --stitchable-input-border: var(--adaptive-grey300);
+    /* --stitchable-input-border: var(--adaptive-hairlineBorder); */
     --stitchable-input-text: var(--adaptive-grey900);
     --stitchable-chip-bg: var(--adaptive-grey100);
     --stitchable-overlay-bg: var(--adaptive-backgroundDimmed);
@@ -296,12 +297,21 @@
     position: absolute;
     top: -100%;
     left: -100%;
-    width: 200%;
-    height: 200%;
-    background: var(--adaptive-blue100);
-    filter: blur(90px);
+    width: 220%;
+    height: 250%;
+    background: var(--adaptive-grey100);
+    filter: blur(30px);
     z-index: -1;
     border-radius: 100%;
+}
+
+[data-stitchable-root] .stitchable-floating-panel--collapsed {
+    width: auto;
+    padding: 0;
+}
+
+[data-stitchable-root] .stitchable-floating-panel--collapsed::before {
+    display: none;
 }
 
 [data-stitchable-root] .stitchable-panel-header {
@@ -312,7 +322,7 @@
 }
 
 [data-stitchable-root] .stitchable-panel-title {
-    font-size: 20px;
+    font-size: 24px;
 }
 
 [data-stitchable-root] .stitchable-badge {
@@ -329,9 +339,10 @@
 }
 
 [data-stitchable-root] .stitchable-helper-text {
-    margin: 10px 0 0;
-    font-size: 13px;
-    line-height: 1.45;
+    margin: 0;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 100%;
     color: var(--stitchable-muted);
 }
 
@@ -345,13 +356,13 @@
 [data-stitchable-root] .stitchable-primary-button {
     appearance: none;
     border: 0;
-    border-radius: 12px;
+    border-radius: 16px;
     color: var(--stitchable-primary-on);
     cursor: pointer;
     flex: 1;
     font-size: 13px;
     font-weight: 700;
-    padding: 10px 12px;
+    /* padding: 10px 12px; */
     background-color: var(--stitchable-accent);
 }
 
@@ -361,9 +372,11 @@
 
 [data-stitchable-root] .stitchable-secondary-button {
     appearance: none;
-    background-color: transparent;
-    border: 1px solid var(--stitchable-input-border);
+    /* background-color: transparent; */
+    /* border: 1px solid var(--stitchable-input-border); */
+    border: 0;
     border-radius: 12px;
+    background: var(--stitchable-input-border);
     color: var(--stitchable-text);
     cursor: pointer;
     flex: 1;

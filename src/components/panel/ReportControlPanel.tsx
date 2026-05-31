@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { REPORT_SHORTCUTS } from "../../constants/reportShortcuts.js";
 import { useReport } from "../../providers/reportContext.js";
 import { ShortcutHint } from "../ShortcutHint.js";
@@ -5,6 +6,22 @@ import { stitchablePartProps } from "../report/parts.js";
 
 export function ReportControlPanel() {
     const { appearance, mode, helperText, errorMessage, showTargetPreview, visibleShortcutKeys, toggleReportMode, toggleTargetPreview, toggleViewMode } = useReport();
+    const [panelCollapsed, setPanelCollapsed] = useState(false);
+
+    if (panelCollapsed) {
+        return (
+            <div {...stitchablePartProps("floating-panel", { modifier: "collapsed" })}>
+                <button
+                    type="button"
+                    onClick={() => setPanelCollapsed(false)}
+                    {...stitchablePartProps("secondary-button")}
+                    aria-expanded={false}
+                >
+                    펼치기
+                </button>
+            </div>
+        );
+    }
 
     return (
         <div {...stitchablePartProps("floating-panel")}>
@@ -29,7 +46,6 @@ export function ReportControlPanel() {
                     >
                         <span {...stitchablePartProps("button-with-hint")}>
                             {mode === "report" ? "중단" : "기록"}
-                            {/* {mode === "report" ? "선택 중단" : "피드백 남기기"} */}
                             <ShortcutHint
                                 binding={REPORT_SHORTCUTS.toggleReportMode}
                                 visible={visibleShortcutKeys}
@@ -67,6 +83,15 @@ export function ReportControlPanel() {
                             visible={visibleShortcutKeys}
                         />
                     </span>
+                </button>
+
+                <button
+                    type="button"
+                    onClick={() => setPanelCollapsed(true)}
+                    {...stitchablePartProps("secondary-button")}
+                    aria-expanded={true}
+                >
+                    숨기기
                 </button>
             </div>
 

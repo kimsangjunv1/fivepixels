@@ -27,6 +27,15 @@
     border-radius: 100%;
 }
 
+[data-stitchable-root] .stitchable-floating-panel--collapsed {
+    width: auto;
+    padding: 0;
+}
+
+[data-stitchable-root] .stitchable-floating-panel--collapsed::before {
+    display: none;
+}
+
 [data-stitchable-root] .stitchable-panel-header {
     display: flex;
     align-items: center;
