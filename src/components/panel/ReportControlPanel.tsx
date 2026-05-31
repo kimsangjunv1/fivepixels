@@ -7,6 +7,7 @@ import { EyeClosedIcon, EyeOpenIcon } from "../icons/EyeIcon.js";
 import { ShortcutHint } from "../ShortcutHint.js";
 import { stitchableClass, stitchablePartProps } from "../report/parts.js";
 import { PanelDockGuides } from "./PanelDockGuides.js";
+import { PanelProgressiveBlur } from "./PanelProgressiveBlur.js";
 import { ReportFeedbackList } from "./ReportFeedbackList.js";
 
 function PanelCollapseTab({ collapsed, anchorSide, onClick }: { collapsed: boolean; anchorSide: "left" | "right"; onClick: () => void }) {
@@ -39,7 +40,13 @@ export function ReportControlPanel() {
     });
     const showListSection = mode === "view" && showFeedbackList;
     const anchorSide = panelAnchorSide(placementCorner);
-    const floatingPanelClassName = [panelCollapsed ? stitchableClass("floating-panel", "collapsed") : undefined, stitchableClass("floating-panel", `anchor-${anchorSide}`)].filter(Boolean).join(" ");
+    const floatingPanelClassName = [
+        panelCollapsed ? stitchableClass("floating-panel", "collapsed") : undefined,
+        stitchableClass("floating-panel", `anchor-${anchorSide}`),
+        stitchableClass("floating-panel", placementCorner),
+    ]
+        .filter(Boolean)
+        .join(" ");
 
     return (
         <>
@@ -53,6 +60,8 @@ export function ReportControlPanel() {
                 {...stitchablePartProps("floating-panel", { className: floatingPanelClassName })}
                 style={panelStyle}
             >
+                <PanelProgressiveBlur hidden={panelCollapsed} />
+
                 {anchorSide === "left" ? (
                     <PanelCollapseTab
                         collapsed={panelCollapsed}
@@ -72,19 +81,9 @@ export function ReportControlPanel() {
                         title="드래그해서 위치 변경"
                     >
                         <section style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-                            <p
-                                {...stitchablePartProps("helper-text")}
-                                style={{ fontSize: "16px", color: "var(--adaptive-blue700)", fontWeight: "700" }}
-                            >
-                                피드백을 수집 중...
-                            </p>
+                            <p {...stitchablePartProps("helper-text", { modifier: "title" })}>피드백을 수집 중...</p>
 
-                            <p
-                                {...stitchablePartProps("helper-text")}
-                                style={{ color: "var(--adaptive-greyOpacity500)" }}
-                            >
-                                {helperText}
-                            </p>
+                            <p {...stitchablePartProps("helper-text")}>{helperText}</p>
                         </section>
                     </section>
 
@@ -128,7 +127,7 @@ export function ReportControlPanel() {
                                     </button>
                                 </section>
 
-                                <div style={{ height: "24px", width: "1px", background: "var(--adaptive-grey300)", margin: "auto 0" }} />
+                                <div {...stitchablePartProps("button-divider")} />
 
                                 <button
                                     type="button"

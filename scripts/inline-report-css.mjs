@@ -6,6 +6,7 @@ const rootDir = join(dirname(fileURLToPath(import.meta.url)), "..");
 const cssFiles = [
     "src/theme/adaptive-tokens.css",
     "src/theme/stitchable-semantics.css",
+    "src/components/panel/panel-progressive-blur.tokens.css",
     "src/components/report/report.css",
 ];
 const bundledCss = cssFiles.map((relativePath) => readFileSync(join(rootDir, relativePath), "utf8")).join("\n");

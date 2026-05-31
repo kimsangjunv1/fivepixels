@@ -21,19 +21,11 @@ const DEFAULT_PLACEMENT: PanelPlacement = { corner: "top-left" };
 
 const PANEL_CORNERS: PanelCorner[] = ["top-left", "top-right", "bottom-left", "bottom-right"];
 
-const GLOW_ANCHOR: Record<PanelCorner, { x: string; y: string }> = {
-    "top-left": { x: "18%", y: "22%" },
-    "top-right": { x: "82%", y: "22%" },
-    "bottom-left": { x: "18%", y: "78%" },
-    "bottom-right": { x: "82%", y: "78%" },
-};
-
-/** ::before 확장(inset). bottom-right 기준으로 코너마다 화면 안쪽으로 넉넉히 퍼지도록 대칭 조정. */
-const GLOW_INSET: Record<PanelCorner, string> = {
-    "top-left": "-32px -224px -120px -24px",
-    "top-right": "-32px -24px -120px -224px",
-    "bottom-left": "-120px -224px -32px -24px",
-    "bottom-right": "-120px -24px -32px -224px",
+const BLUR_ORIGIN: Record<PanelCorner, { x: string; y: string }> = {
+    "top-left": { x: "0%", y: "0%" },
+    "top-right": { x: "100%", y: "0%" },
+    "bottom-left": { x: "0%", y: "100%" },
+    "bottom-right": { x: "100%", y: "100%" },
 };
 
 function isPanelCorner(value: string | null | undefined): value is PanelCorner {
@@ -162,7 +154,7 @@ export function projectPointerToPlacement(clientX: number, clientY: number): Pan
 }
 
 export function placementToPanelStyle(placement: PanelPlacement): CSSProperties {
-    const glow = GLOW_ANCHOR[placement.corner];
+    const blurOrigin = BLUR_ORIGIN[placement.corner];
     const style: CSSProperties = {
         top: "auto",
         right: "auto",
@@ -170,9 +162,8 @@ export function placementToPanelStyle(placement: PanelPlacement): CSSProperties 
         left: "auto",
         overflow: "visible",
         maxHeight: "none",
-        "--stitchable-panel-glow-x": glow.x,
-        "--stitchable-panel-glow-y": glow.y,
-        "--stitchable-panel-glow-inset": GLOW_INSET[placement.corner],
+        "--stitchable-blur-origin-x": blurOrigin.x,
+        "--stitchable-blur-origin-y": blurOrigin.y,
     } as CSSProperties;
 
     switch (placement.corner) {
@@ -207,9 +198,8 @@ export function getMobilePanelStyle(): CSSProperties {
         left: EDGE_MARGIN,
         maxHeight: "min(68vh, 560px)",
         // overflow: "auto",
-        "--stitchable-panel-glow-x": GLOW_ANCHOR["bottom-right"].x,
-        "--stitchable-panel-glow-y": GLOW_ANCHOR["bottom-right"].y,
-        "--stitchable-panel-glow-inset": GLOW_INSET["bottom-right"],
+        "--stitchable-blur-origin-x": BLUR_ORIGIN["bottom-right"].x,
+        "--stitchable-blur-origin-y": BLUR_ORIGIN["bottom-right"].y,
     } as CSSProperties;
 }
 

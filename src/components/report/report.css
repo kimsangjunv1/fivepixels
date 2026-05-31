@@ -7,36 +7,100 @@
     font-family: ui-sans-serif, system-ui, sans-serif;
     color: var(--stitchable-text);
     box-sizing: border-box;
-    /* border-radius: 16px; */
-    isolation: isolate;
-
     display: flex;
     align-items: stretch;
-    overflow: hidden;
-    /* transition:
-        width 0.28s ease,
-        padding 0.28s ease; */
+    overflow: visible;
 }
-[data-stitchable-root] .stitchable-floating-panel::before {
-    content: "";
+
+[data-stitchable-root] .stitchable-panel-blur-stack {
     position: absolute;
-    inset: var(--stitchable-panel-glow-inset, -120px -24px -32px -224px);
-    z-index: -1;
+    inset: var(--stitchable-panel-blur-inset, -132px -250px -36px -28px);
+    z-index: 0;
     pointer-events: none;
-    /* border-radius: 32px; */
-    background: var(--adaptive-blue200);
-    /* background: radial-gradient(
-        ellipse 88% 72% at var(--stitchable-panel-glow-x, 50%) var(--stitchable-panel-glow-y, 38%),
-        color-mix(in srgb, var(--adaptive-blue100) 88%, transparent) 0%,
-        color-mix(in srgb, var(--adaptive-blueOpacity100) 42%, transparent) 38%,
-        color-mix(in srgb, var(--adaptive-blueOpacity50) 18%, transparent) 58%,
-        transparent 78%
-    ); */
-    filter: blur(18px);
-    opacity: 1;
-    -webkit-mask-image: radial-gradient(ellipse 92% 78% at var(--stitchable-panel-glow-x, 50%) var(--stitchable-panel-glow-y, 38%), #000 0%, transparent 72%);
-    mask-image: radial-gradient(ellipse 92% 78% at var(--stitchable-panel-glow-x, 50%) var(--stitchable-panel-glow-y, 38%), #000 0%, transparent 72%);
-    transition: opacity 0.22s ease;
+    overflow: visible;
+}
+
+[data-stitchable-root] .stitchable-panel-blur-layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    -webkit-backdrop-filter: blur(var(--stitchable-panel-blur-amount, 8px));
+    backdrop-filter: blur(var(--stitchable-panel-blur-amount, 8px));
+    -webkit-mask-image: radial-gradient(
+        ellipse var(--stitchable-panel-blur-mask-w, 120%) var(--stitchable-panel-blur-mask-h, 110%) at var(--stitchable-blur-origin-x, 0%) var(--stitchable-blur-origin-y, 0%),
+        #000 0%,
+        #000 var(--stitchable-panel-blur-mask-solid, 16%),
+        transparent var(--stitchable-panel-blur-mask-fade, 62%)
+    );
+    mask-image: radial-gradient(
+        ellipse var(--stitchable-panel-blur-mask-w, 120%) var(--stitchable-panel-blur-mask-h, 110%) at var(--stitchable-blur-origin-x, 0%) var(--stitchable-blur-origin-y, 0%),
+        #000 0%,
+        #000 var(--stitchable-panel-blur-mask-solid, 16%),
+        transparent var(--stitchable-panel-blur-mask-fade, 62%)
+    );
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+}
+
+[data-stitchable-root] .stitchable-panel-blur-layer:nth-child(1) {
+    --stitchable-panel-blur-amount: calc(var(--stitchable-panel-blur-1, 4) * 1px * var(--stitchable-panel-blur-strength, 1));
+    --stitchable-panel-blur-mask-w: 190%;
+    --stitchable-panel-blur-mask-h: 170%;
+    --stitchable-panel-blur-mask-solid: 10%;
+    --stitchable-panel-blur-mask-fade: 82%;
+}
+
+[data-stitchable-root] .stitchable-panel-blur-layer:nth-child(2) {
+    --stitchable-panel-blur-amount: calc(var(--stitchable-panel-blur-2, 8) * 1px * var(--stitchable-panel-blur-strength, 1));
+    --stitchable-panel-blur-mask-w: 165%;
+    --stitchable-panel-blur-mask-h: 150%;
+    --stitchable-panel-blur-mask-solid: 14%;
+    --stitchable-panel-blur-mask-fade: 72%;
+}
+
+[data-stitchable-root] .stitchable-panel-blur-layer:nth-child(3) {
+    --stitchable-panel-blur-amount: calc(var(--stitchable-panel-blur-3, 14) * 1px * var(--stitchable-panel-blur-strength, 1));
+    --stitchable-panel-blur-mask-w: 140%;
+    --stitchable-panel-blur-mask-h: 125%;
+    --stitchable-panel-blur-mask-solid: 18%;
+    --stitchable-panel-blur-mask-fade: 62%;
+}
+
+[data-stitchable-root] .stitchable-panel-blur-layer:nth-child(4) {
+    --stitchable-panel-blur-amount: calc(var(--stitchable-panel-blur-4, 22) * 1px * var(--stitchable-panel-blur-strength, 1));
+    --stitchable-panel-blur-mask-w: 115%;
+    --stitchable-panel-blur-mask-h: 105%;
+    --stitchable-panel-blur-mask-solid: 22%;
+    --stitchable-panel-blur-mask-fade: 52%;
+}
+
+[data-stitchable-root] .stitchable-panel-blur-layer:nth-child(5) {
+    --stitchable-panel-blur-amount: calc(var(--stitchable-panel-blur-5, 36) * 1px * var(--stitchable-panel-blur-strength, 1));
+    --stitchable-panel-blur-mask-w: 95%;
+    --stitchable-panel-blur-mask-h: 88%;
+    --stitchable-panel-blur-mask-solid: 26%;
+    --stitchable-panel-blur-mask-fade: 44%;
+}
+
+[data-stitchable-root] .stitchable-panel-blur-layer:nth-child(6) {
+    --stitchable-panel-blur-amount: calc(var(--stitchable-panel-blur-6, 56) * 1px * var(--stitchable-panel-blur-strength, 1));
+    --stitchable-panel-blur-mask-w: 78%;
+    --stitchable-panel-blur-mask-h: 72%;
+    --stitchable-panel-blur-mask-solid: 30%;
+    --stitchable-panel-blur-mask-fade: 36%;
+}
+
+[data-stitchable-root] .stitchable-panel-blur-tint {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(
+        ellipse 100% 88% at var(--stitchable-blur-origin-x, 0%) var(--stitchable-blur-origin-y, 0%),
+        color-mix(in srgb, var(--adaptive-blue400) var(--stitchable-panel-tint-center-effective, 92%), transparent) 10%,
+        color-mix(in srgb, var(--adaptive-blueOpacity100) var(--stitchable-panel-tint-mid-effective, 56%), transparent) 52%,
+        color-mix(in srgb, var(--adaptive-blueOpacity50) var(--stitchable-panel-tint-outer-effective, 30%), transparent) 68%,
+        transparent var(--stitchable-panel-tint-fade-end, 76%)
+    );
 }
 
 [data-stitchable-root] .stitchable-floating-panel--collapsed {
@@ -45,16 +109,11 @@
     overflow: visible;
 }
 
-[data-stitchable-root] .stitchable-floating-panel--collapsed::before {
-    opacity: 0;
-}
-
 [data-stitchable-root] .stitchable-panel-content {
+    position: relative;
+    z-index: 1;
     flex: 1 1 auto;
     min-width: 0;
-    /* transition:
-        transform 0.28s cubic-bezier(0.4, 0, 0.2, 1),
-        opacity 0.22s ease; */
 }
 
 [data-stitchable-root] .stitchable-floating-panel--anchor-right.stitchable-floating-panel--collapsed .stitchable-panel-content {
@@ -87,6 +146,8 @@
     justify-content: center;
     align-self: center;
     padding: 4px 2px;
+    position: relative;
+    z-index: 2;
     transition:
         background-color 0.22s ease,
         color 0.22s ease,
@@ -307,11 +368,59 @@
     color: var(--stitchable-muted);
 }
 
+[data-stitchable-root] .stitchable-floating-panel .stitchable-helper-text {
+    color: #fff;
+}
+
+[data-stitchable-root] .stitchable-floating-panel .stitchable-helper-text--title {
+    font-size: 16px;
+    font-weight: 700;
+}
+
+[data-stitchable-root] .stitchable-floating-panel .stitchable-panel-collapse-tab {
+    color: rgba(255, 255, 255, 0.72);
+}
+
+[data-stitchable-root] .stitchable-floating-panel .stitchable-panel-collapse-tab--peek {
+    background: #fff;
+    color: var(--adaptive-grey700);
+}
+
 [data-stitchable-root] .stitchable-button-row {
     display: flex;
     gap: 8px;
     flex-wrap: wrap;
     margin-top: 12px;
+}
+
+[data-stitchable-root] .stitchable-button-divider {
+    height: 24px;
+    width: 1px;
+    margin: auto 0;
+    background: rgba(255, 255, 255, 0.36);
+}
+
+[data-stitchable-root] .stitchable-floating-panel .stitchable-primary-button,
+[data-stitchable-root] .stitchable-floating-panel .stitchable-secondary-button {
+    background-color: #fff;
+    color: var(--adaptive-grey700);
+    padding: 10px 12px;
+}
+
+[data-stitchable-root] .stitchable-floating-panel .stitchable-primary-button--danger,
+[data-stitchable-root] .stitchable-floating-panel .stitchable-secondary-button--accent {
+    background-color: #fff;
+    color: var(--adaptive-grey700);
+    border-color: transparent;
+}
+
+[data-stitchable-root] .stitchable-floating-panel .stitchable-secondary-button svg {
+    color: var(--adaptive-grey700);
+}
+
+[data-stitchable-root] .stitchable-floating-panel .stitchable-shortcut-hint {
+    background-color: color-mix(in srgb, var(--adaptive-grey700) 10%, transparent);
+    color: var(--adaptive-grey700);
 }
 
 [data-stitchable-root] .stitchable-primary-button {
