@@ -9,6 +9,8 @@
     box-sizing: border-box;
     /* border-radius: 16px; */
     isolation: isolate;
+
+    display: flex;
 }
 [data-stitchable-root] .stitchable-floating-panel::before {
     content: "";
