@@ -13,6 +13,7 @@ export type {
     ReportFieldBase,
     ReportFieldType,
     ReportFieldValues,
+    ReportIdentify,
     ReportReply,
     ReportStatus,
     ReportStorageAdapter,

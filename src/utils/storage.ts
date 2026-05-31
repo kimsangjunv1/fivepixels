@@ -1,10 +1,26 @@
-import { localStorageReportAdapter } from "../storage/local/localStorageAdapter.js";
+import { createLocalStorageReportAdapter } from "../storage/local/localStorageAdapter.js";
 import type { ReportStorageAdapter } from "../types/report.js";
 
-export function resolveStorageAdapter(storage?: "local" | ReportStorageAdapter) {
-    if (!storage || storage === "local") {
-        return localStorageReportAdapter;
+export type ResolveStorageAdapterOptions = {
+    projectId: string;
+    environment?: string;
+    storage?: "local" | ReportStorageAdapter;
+    storageAdapter?: ReportStorageAdapter;
+};
+
+export function resolveStorageAdapter({
+    projectId,
+    environment,
+    storage = "local",
+    storageAdapter,
+}: ResolveStorageAdapterOptions): ReportStorageAdapter {
+    if (storageAdapter) {
+        return storageAdapter;
     }
 
-    return storage;
+    if (storage !== "local") {
+        return storage;
+    }
+
+    return createLocalStorageReportAdapter({ projectId, environment });
 }

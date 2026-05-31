@@ -1,14 +1,11 @@
 import { REPORT_SHORTCUTS } from "../../constants/reportShortcuts.js";
 import { useReport } from "../../providers/reportContext.js";
 import { ShortcutHint } from "../ShortcutHint.js";
-import { reportStyles } from "../report/styles.js";
+import { stitchablePartProps } from "../report/parts.js";
 
 export function ReportControlPanel() {
     const {
         appearance,
-        resolvedAppearance,
-        palette,
-        isMobileViewport,
         mode,
         helperText,
         errorMessage,
@@ -20,79 +17,53 @@ export function ReportControlPanel() {
     } = useReport();
 
     return (
-        <div
-            style={{
-                ...reportStyles.floatingPanel,
-                backgroundColor: palette.panel,
-                borderColor: palette.panelBorder,
-                color: palette.text,
-                width: isMobileViewport ? "calc(100vw - 32px)" : 320,
-                boxShadow: resolvedAppearance === "dark" ? "0 18px 48px rgba(15, 23, 42, 0.42)" : "0 18px 48px rgba(15, 23, 42, 0.16)",
-                backdropFilter: "blur(14px)",
-            }}
-        >
-            <div style={reportStyles.panelHeader}>
-                <strong style={{ fontSize: 14 }}>stitchable</strong>
-                <span
-                    style={{
-                        ...reportStyles.badge,
-                        backgroundColor: palette.chip,
-                        color: palette.muted,
-                    }}
-                >
-                    {appearance}
-                </span>
+        <div {...stitchablePartProps("floating-panel")}>
+            <div {...stitchablePartProps("panel-header")}>
+                <strong {...stitchablePartProps("panel-title")}>stitchable</strong>
+                <span {...stitchablePartProps("badge")}>{appearance}</span>
             </div>
 
-            <p style={{ ...reportStyles.helperText, color: palette.muted }}>{helperText}</p>
+            <p {...stitchablePartProps("helper-text")}>{helperText}</p>
 
-            <div style={reportStyles.buttonRow}>
+            <div {...stitchablePartProps("button-row")}>
                 <button
                     type="button"
                     onClick={toggleReportMode}
-                    style={{
-                        ...reportStyles.primaryButton,
-                        backgroundColor: mode === "report" ? "#ef4444" : "#2563eb",
-                    }}
+                    {...stitchablePartProps("primary-button", {
+                        modifier: mode === "report" ? "danger" : undefined,
+                    })}
                 >
-                    <span style={reportStyles.buttonWithHint}>
+                    <span {...stitchablePartProps("button-with-hint")}>
                         {mode === "report" ? "선택 중단" : "피드백 남기기"}
-                        <ShortcutHint binding={REPORT_SHORTCUTS.toggleReportMode} visible={visibleShortcutKeys} palette={palette} />
+                        <ShortcutHint binding={REPORT_SHORTCUTS.toggleReportMode} visible={visibleShortcutKeys} />
                     </span>
                 </button>
                 <button
                     type="button"
                     onClick={toggleTargetPreview}
                     disabled={mode !== "idle"}
-                    style={{
-                        ...reportStyles.secondaryButton,
-                        borderColor: showTargetPreview ? "#2563eb" : palette.inputBorder,
-                        color: showTargetPreview ? "#2563eb" : palette.text,
-                        opacity: mode !== "idle" ? 0.5 : 1,
-                    }}
+                    {...stitchablePartProps("secondary-button", {
+                        modifier: showTargetPreview ? "accent" : undefined,
+                    })}
                 >
-                    <span style={reportStyles.buttonWithHint}>
+                    <span {...stitchablePartProps("button-with-hint")}>
                         {showTargetPreview ? "요소 표시 끄기" : "현재 선택 가능한 element 노출하기"}
-                        <ShortcutHint binding={REPORT_SHORTCUTS.toggleTargetPreview} visible={visibleShortcutKeys} palette={palette} />
+                        <ShortcutHint binding={REPORT_SHORTCUTS.toggleTargetPreview} visible={visibleShortcutKeys} />
                     </span>
                 </button>
                 <button
                     type="button"
                     onClick={toggleViewMode}
-                    style={{
-                        ...reportStyles.secondaryButton,
-                        borderColor: palette.inputBorder,
-                        color: palette.text,
-                    }}
+                    {...stitchablePartProps("secondary-button")}
                 >
-                    <span style={reportStyles.buttonWithHint}>
+                    <span {...stitchablePartProps("button-with-hint")}>
                         {mode === "view" ? "목록 닫기" : "피드백 보기"}
-                        <ShortcutHint binding={REPORT_SHORTCUTS.toggleViewMode} visible={visibleShortcutKeys} palette={palette} />
+                        <ShortcutHint binding={REPORT_SHORTCUTS.toggleViewMode} visible={visibleShortcutKeys} />
                     </span>
                 </button>
             </div>
 
-            {errorMessage ? <p style={{ ...reportStyles.errorText, color: "#ef4444" }}>{errorMessage}</p> : null}
+            {errorMessage ? <p {...stitchablePartProps("error-text")}>{errorMessage}</p> : null}
         </div>
     );
 }

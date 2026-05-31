@@ -26,6 +26,11 @@ export type ReportReply = {
     author_name?: string | null;
 };
 
+export type ReportIdentify = {
+    id: string;
+    name: string;
+};
+
 export type ReportFeedback = {
     id: string;
     pathname: string;
@@ -46,6 +51,10 @@ export type ReportFeedback = {
     design_width: number;
     design_height: number;
     created_at: string;
+    environment?: string;
+    app_version?: string;
+    author_id?: string;
+    author_name?: string;
 };
 
 export type CreateReportFeedbackPayload = Omit<ReportFeedback, "id" | "created_at" | "replies"> & {

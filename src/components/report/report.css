@@ -1,0 +1,502 @@
+[data-stitchable-root] .stitchable-floating-panel {
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    z-index: 1000000000;
+    max-width: calc(100vw - 32px);
+    width: var(--stitchable-floating-panel-width, 320px);
+    /* border: 1px solid var(--stitchable-panel-border); */
+    /* border-radius: 16px; */
+    padding: 16px;
+    font-family: ui-sans-serif, system-ui, sans-serif;
+    /* background-color: var(--stitchable-panel-bg); */
+    color: var(--stitchable-text);
+    /* box-shadow: var(--stitchable-panel-shadow); */
+    /* backdrop-filter: blur(14px); */
+}
+[data-stitchable-root] .stitchable-floating-panel::before {
+    content: "";
+    position: absolute;
+    top: -100%;
+    left: -100%;
+    width: 200%;
+    height: 200%;
+    background: var(--adaptive-blue100);
+    filter: blur(90px);
+    z-index: -1;
+    border-radius: 100%;
+}
+
+[data-stitchable-root] .stitchable-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+[data-stitchable-root] .stitchable-panel-title {
+    font-size: 24px;
+}
+
+[data-stitchable-root] .stitchable-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    background-color: var(--stitchable-chip-bg);
+    color: var(--stitchable-muted);
+}
+
+[data-stitchable-root] .stitchable-helper-text {
+    margin: 10px 0 0;
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--stitchable-muted);
+}
+
+[data-stitchable-root] .stitchable-button-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+}
+
+[data-stitchable-root] .stitchable-primary-button {
+    appearance: none;
+    border: 0;
+    border-radius: 12px;
+    color: var(--stitchable-primary-on);
+    cursor: pointer;
+    flex: 1;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 10px 12px;
+    background-color: var(--stitchable-accent);
+}
+
+[data-stitchable-root] .stitchable-primary-button--danger {
+    background-color: var(--stitchable-danger);
+}
+
+[data-stitchable-root] .stitchable-secondary-button {
+    appearance: none;
+    background-color: transparent;
+    border: 1px solid var(--stitchable-input-border);
+    border-radius: 12px;
+    color: var(--stitchable-text);
+    cursor: pointer;
+    flex: 1;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 10px 12px;
+}
+
+[data-stitchable-root] .stitchable-secondary-button--accent {
+    border-color: var(--stitchable-accent);
+    color: var(--stitchable-accent);
+}
+
+[data-stitchable-root] .stitchable-secondary-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+[data-stitchable-root] .stitchable-button-with-hint {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+[data-stitchable-root] .stitchable-shortcut-hint {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 6px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    line-height: 1;
+    padding: 3px 5px;
+    white-space: nowrap;
+    background-color: var(--stitchable-chip-bg);
+    color: var(--stitchable-muted);
+}
+
+[data-stitchable-root] .stitchable-error-text {
+    margin: 10px 0 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--stitchable-error);
+}
+
+[data-stitchable-root] .stitchable-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1090;
+}
+
+[data-stitchable-root] .stitchable-overlay[data-overlay-mode="view"] {
+    z-index: 1110;
+    pointer-events: none;
+    background: transparent;
+    cursor: default;
+}
+
+[data-stitchable-root] .stitchable-overlay[data-overlay-mode="preview"] {
+    pointer-events: none;
+    background: transparent;
+    cursor: default;
+}
+
+[data-stitchable-root] .stitchable-overlay[data-overlay-mode="report"] {
+    background-color: var(--stitchable-overlay-bg);
+    pointer-events: auto;
+    cursor: crosshair;
+}
+
+[data-stitchable-root] .stitchable-highlight-box {
+    position: absolute;
+    border-radius: 12px;
+    pointer-events: none;
+}
+
+[data-stitchable-root] .stitchable-highlight-label {
+    position: absolute;
+    top: -30px;
+    left: 0;
+    border-radius: 999px;
+    color: var(--stitchable-on-accent);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 6px 8px;
+    white-space: nowrap;
+}
+
+[data-stitchable-root] .stitchable-readonly-rect {
+    position: absolute;
+    border-radius: 12px;
+    pointer-events: none;
+}
+
+[data-stitchable-root] .stitchable-marker-button {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border-radius: 999px;
+    border: 2px solid var(--stitchable-marker-ring);
+    box-shadow: 0 0 0 4px var(--stitchable-marker-halo);
+    cursor: pointer;
+    pointer-events: auto;
+    transition:
+        transform 0.15s ease,
+        background-color 0.15s ease;
+}
+
+[data-stitchable-root] .stitchable-marker-button--selected {
+    box-shadow: 0 0 0 4px var(--stitchable-marker-selected-halo);
+    transform: scale(1.15);
+}
+
+[data-stitchable-root] .stitchable-marker-tooltip {
+    position: absolute;
+    z-index: 1106;
+    width: 280px;
+    border: 1px solid var(--stitchable-panel-border);
+    border-radius: 12px;
+    padding: 10px;
+    box-shadow: var(--stitchable-tooltip-shadow);
+    color: var(--stitchable-text);
+    backdrop-filter: blur(14px);
+}
+
+[data-stitchable-root] .stitchable-marker-tooltip--expanded {
+    background-color: var(--stitchable-panel-bg);
+    pointer-events: auto;
+    cursor: default;
+}
+
+[data-stitchable-root] .stitchable-marker-tooltip--compact {
+    background-color: var(--stitchable-tooltip-compact-bg);
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+[data-stitchable-root] .stitchable-marker-tooltip-title {
+    font-size: 12px;
+}
+
+[data-stitchable-root] .stitchable-marker-tooltip-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+[data-stitchable-root] .stitchable-marker-tooltip-message {
+    margin: 6px 0 0;
+    font-size: 12px;
+    line-height: 1.45;
+    word-break: break-word;
+    color: var(--stitchable-text);
+}
+
+[data-stitchable-root] .stitchable-tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+[data-stitchable-root] .stitchable-field-tag {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.4;
+    padding: 4px 8px;
+    word-break: break-word;
+    background-color: var(--stitchable-chip-bg);
+    color: var(--stitchable-text);
+}
+
+[data-stitchable-root] .stitchable-draft-card {
+    position: absolute;
+    width: 320px;
+    border: 1px solid var(--stitchable-panel-border);
+    border-radius: 16px;
+    padding: 14px;
+    box-shadow: var(--stitchable-elevated-shadow);
+    background-color: var(--stitchable-card-bg);
+    color: var(--stitchable-text);
+}
+
+[data-stitchable-root] .stitchable-draft-card-title {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+[data-stitchable-root] .stitchable-field-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+[data-stitchable-root] .stitchable-field-block {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+[data-stitchable-root] .stitchable-field-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--stitchable-text);
+}
+
+[data-stitchable-root] .stitchable-textarea {
+    width: 100%;
+    min-height: 88px;
+    resize: vertical;
+    border: 1px solid var(--stitchable-input-border);
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 13px;
+    line-height: 1.5;
+    padding: 12px;
+    box-sizing: border-box;
+    background-color: var(--stitchable-input-bg);
+    color: var(--stitchable-input-text);
+}
+
+[data-stitchable-root] .stitchable-textarea--compact {
+    min-height: 96px;
+}
+
+[data-stitchable-root] .stitchable-checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--stitchable-text);
+}
+
+[data-stitchable-root] .stitchable-side-panel {
+    position: fixed;
+    top: var(--stitchable-side-panel-top, 16px);
+    right: var(--stitchable-side-panel-right, 16px);
+    bottom: var(--stitchable-side-panel-bottom, auto);
+    left: var(--stitchable-side-panel-left, auto);
+    z-index: 1105;
+    width: var(--stitchable-side-panel-width, 360px);
+    max-height: var(--stitchable-side-panel-max-height, calc(100vh - 32px));
+    overflow: auto;
+    border: 1px solid var(--stitchable-panel-border);
+    border-radius: 16px;
+    padding: 16px;
+    font-family: ui-sans-serif, system-ui, sans-serif;
+    background-color: var(--stitchable-panel-bg);
+    color: var(--stitchable-text);
+    box-shadow: var(--stitchable-panel-shadow);
+    backdrop-filter: blur(14px);
+}
+
+[data-stitchable-root] .stitchable-side-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+[data-stitchable-root] .stitchable-filter-grid {
+    display: grid;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+[data-stitchable-root] .stitchable-filter-search-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+[data-stitchable-root] .stitchable-input {
+    width: 100%;
+    border: 1px solid var(--stitchable-input-border);
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 13px;
+    padding: 10px 12px;
+    box-sizing: border-box;
+    background-color: var(--stitchable-input-bg);
+    color: var(--stitchable-input-text);
+}
+
+[data-stitchable-root] .stitchable-input--grow {
+    flex: 1;
+}
+
+[data-stitchable-root] .stitchable-report-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+[data-stitchable-root] .stitchable-state-card {
+    border: 1px solid var(--stitchable-input-border);
+    border-radius: 14px;
+    padding: 14px;
+    background-color: var(--stitchable-chip-bg);
+}
+
+[data-stitchable-root] .stitchable-report-card {
+    border: 1px solid transparent;
+    border-radius: 14px;
+    padding: 12px;
+    background-color: transparent;
+}
+
+[data-stitchable-root] .stitchable-report-card--selected {
+    background-color: var(--stitchable-chip-bg);
+    border-color: var(--stitchable-input-border);
+}
+
+[data-stitchable-root] .stitchable-report-card-button {
+    width: 100%;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    padding: 0;
+    text-align: left;
+}
+
+[data-stitchable-root] .stitchable-report-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+[data-stitchable-root] .stitchable-status-badge {
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 8px;
+    text-transform: uppercase;
+}
+
+[data-stitchable-root] .stitchable-report-meta {
+    margin: 6px 0 0;
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--stitchable-muted);
+}
+
+[data-stitchable-root] .stitchable-report-meta--flat {
+    margin: 0;
+}
+
+[data-stitchable-root] .stitchable-report-message {
+    margin: 8px 0 0;
+    font-size: 13px;
+    line-height: 1.5;
+    word-break: break-word;
+    color: var(--stitchable-text);
+}
+
+[data-stitchable-root] .stitchable-card-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 10px;
+}
+
+[data-stitchable-root] .stitchable-link-button {
+    appearance: none;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 0;
+    color: var(--stitchable-accent);
+}
+
+[data-stitchable-root] .stitchable-link-button:disabled {
+    color: var(--stitchable-muted);
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+[data-stitchable-root] .stitchable-editor-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+[data-stitchable-root] .stitchable-reply-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+[data-stitchable-root] .stitchable-reply-item {
+    border-radius: 12px;
+    padding: 10px;
+    background-color: var(--stitchable-chip-bg);
+    color: var(--stitchable-text);
+}
+
+[data-stitchable-root] .stitchable-reply-text {
+    margin: 0;
+    font-size: 12px;
+}

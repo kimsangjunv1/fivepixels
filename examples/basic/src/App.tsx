@@ -6,6 +6,7 @@ export function App() {
     return (
         <>
             <Report
+                projectId="stitchable-basic-example"
                 devOnly
                 appearance="light"
                 pathname="/examples/basic"

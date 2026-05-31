@@ -5,9 +5,10 @@ import { ReportControlPanel } from "../panel/ReportControlPanel.js";
 import { ReportDraftForm } from "../panel/ReportDraftForm.js";
 import { ReportFeedbackList } from "../panel/ReportFeedbackList.js";
 import { ReportMarkersLayer } from "../point/ReportMarkersLayer.js";
+import { StitchableRoot } from "./StitchableRoot.js";
 export function ReportView() {
     const { mode, showFeedbackList, showTargetPreview } = useReport();
     const showOverlay = mode !== "idle" || showTargetPreview;
-    return (_jsxs(_Fragment, { children: [_jsx(ReportControlPanel, {}), showOverlay ? (_jsx(ReportOverlayLayer, { children: mode !== "idle" ? (_jsxs(_Fragment, { children: [_jsx(ReportMarkersLayer, {}), _jsx(ReportDraftForm, {})] })) : null })) : null, mode === "view" && showFeedbackList ? _jsx(ReportFeedbackList, {}) : null] }));
+    return (_jsxs(StitchableRoot, { children: [_jsx(ReportControlPanel, {}), showOverlay ? (_jsx(ReportOverlayLayer, { children: mode !== "idle" ? (_jsxs(_Fragment, { children: [_jsx(ReportMarkersLayer, {}), _jsx(ReportDraftForm, {})] })) : null })) : null, mode === "view" && showFeedbackList ? _jsx(ReportFeedbackList, {}) : null] }));
 }
 //# sourceMappingURL=ReportView.js.map

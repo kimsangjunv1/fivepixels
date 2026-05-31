@@ -17,7 +17,7 @@ import { Report } from "stitchable";
 export function Page() {
     return (
         <>
-            <Report devOnly />
+            <Report />
 
             <section data-report-id="hero" data-report-type="group">
                 <h1>Hero Section</h1>
@@ -53,8 +53,9 @@ export function Page() {
 
 ## 4. localStorage 동작 방식
 
+- `projectId`를 생략하면 `"my-app"`이 기본값입니다.
 - 기본값 `storage="local"`은 브라우저 `localStorage`를 사용합니다.
-- 저장 키는 `stitchable:reports:v1`입니다.
+- 저장 키는 `stitchable:reports:v1:{projectId}`이며, `environment`가 있으면 `:{environment}`가 추가됩니다.
 - 저장된 report는 `pathname`별로 분리 조회됩니다.
 - `field_values`는 문자열/불리언만 저장하고, `replies`는 배열로 정규화됩니다.
 - 서버 동기화가 필요하면 custom adapter로 교체하면 됩니다.
@@ -66,7 +67,7 @@ import { Report } from "stitchable";
 import { reportAdapter } from "./reportAdapter";
 
 export function Page() {
-    return <Report storage={reportAdapter} pathname="/pricing" showFeedbackList={false} />;
+    return <Report projectId="my-app" storageAdapter={reportAdapter} pathname="/pricing" showFeedbackList={false} />;
 }
 ```
 

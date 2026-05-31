@@ -1,8 +1,11 @@
-import { localStorageReportAdapter } from "../storage/local/localStorageAdapter.js";
-export function resolveStorageAdapter(storage) {
-    if (!storage || storage === "local") {
-        return localStorageReportAdapter;
+import { createLocalStorageReportAdapter } from "../storage/local/localStorageAdapter.js";
+export function resolveStorageAdapter({ projectId, environment, storage = "local", storageAdapter, }) {
+    if (storageAdapter) {
+        return storageAdapter;
     }
-    return storage;
+    if (storage !== "local") {
+        return storage;
+    }
+    return createLocalStorageReportAdapter({ projectId, environment });
 }
 //# sourceMappingURL=storage.js.map

@@ -2,33 +2,13 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { REPORT_SHORTCUTS } from "../../constants/reportShortcuts.js";
 import { useReport } from "../../providers/reportContext.js";
 import { ShortcutHint } from "../ShortcutHint.js";
-import { reportStyles } from "../report/styles.js";
+import { stitchablePartProps } from "../report/parts.js";
 export function ReportControlPanel() {
-    const { appearance, resolvedAppearance, palette, isMobileViewport, mode, helperText, errorMessage, showTargetPreview, visibleShortcutKeys, toggleReportMode, toggleTargetPreview, toggleViewMode, } = useReport();
-    return (_jsxs("div", { style: {
-            ...reportStyles.floatingPanel,
-            backgroundColor: palette.panel,
-            borderColor: palette.panelBorder,
-            color: palette.text,
-            width: isMobileViewport ? "calc(100vw - 32px)" : 320,
-            boxShadow: resolvedAppearance === "dark" ? "0 18px 48px rgba(15, 23, 42, 0.42)" : "0 18px 48px rgba(15, 23, 42, 0.16)",
-            backdropFilter: "blur(14px)",
-        }, children: [_jsxs("div", { style: reportStyles.panelHeader, children: [_jsx("strong", { style: { fontSize: 14 }, children: "stitchable" }), _jsx("span", { style: {
-                            ...reportStyles.badge,
-                            backgroundColor: palette.chip,
-                            color: palette.muted,
-                        }, children: appearance })] }), _jsx("p", { style: { ...reportStyles.helperText, color: palette.muted }, children: helperText }), _jsxs("div", { style: reportStyles.buttonRow, children: [_jsx("button", { type: "button", onClick: toggleReportMode, style: {
-                            ...reportStyles.primaryButton,
-                            backgroundColor: mode === "report" ? "#ef4444" : "#2563eb",
-                        }, children: _jsxs("span", { style: reportStyles.buttonWithHint, children: [mode === "report" ? "선택 중단" : "피드백 남기기", _jsx(ShortcutHint, { binding: REPORT_SHORTCUTS.toggleReportMode, visible: visibleShortcutKeys, palette: palette })] }) }), _jsx("button", { type: "button", onClick: toggleTargetPreview, disabled: mode !== "idle", style: {
-                            ...reportStyles.secondaryButton,
-                            borderColor: showTargetPreview ? "#2563eb" : palette.inputBorder,
-                            color: showTargetPreview ? "#2563eb" : palette.text,
-                            opacity: mode !== "idle" ? 0.5 : 1,
-                        }, children: _jsxs("span", { style: reportStyles.buttonWithHint, children: [showTargetPreview ? "요소 표시 끄기" : "현재 선택 가능한 element 노출하기", _jsx(ShortcutHint, { binding: REPORT_SHORTCUTS.toggleTargetPreview, visible: visibleShortcutKeys, palette: palette })] }) }), _jsx("button", { type: "button", onClick: toggleViewMode, style: {
-                            ...reportStyles.secondaryButton,
-                            borderColor: palette.inputBorder,
-                            color: palette.text,
-                        }, children: _jsxs("span", { style: reportStyles.buttonWithHint, children: [mode === "view" ? "목록 닫기" : "피드백 보기", _jsx(ShortcutHint, { binding: REPORT_SHORTCUTS.toggleViewMode, visible: visibleShortcutKeys, palette: palette })] }) })] }), errorMessage ? _jsx("p", { style: { ...reportStyles.errorText, color: "#ef4444" }, children: errorMessage }) : null] }));
+    const { appearance, mode, helperText, errorMessage, showTargetPreview, visibleShortcutKeys, toggleReportMode, toggleTargetPreview, toggleViewMode, } = useReport();
+    return (_jsxs("div", { ...stitchablePartProps("floating-panel"), children: [_jsxs("div", { ...stitchablePartProps("panel-header"), children: [_jsx("strong", { ...stitchablePartProps("panel-title"), children: "stitchable" }), _jsx("span", { ...stitchablePartProps("badge"), children: appearance })] }), _jsx("p", { ...stitchablePartProps("helper-text"), children: helperText }), _jsxs("div", { ...stitchablePartProps("button-row"), children: [_jsx("button", { type: "button", onClick: toggleReportMode, ...stitchablePartProps("primary-button", {
+                            modifier: mode === "report" ? "danger" : undefined,
+                        }), children: _jsxs("span", { ...stitchablePartProps("button-with-hint"), children: [mode === "report" ? "선택 중단" : "피드백 남기기", _jsx(ShortcutHint, { binding: REPORT_SHORTCUTS.toggleReportMode, visible: visibleShortcutKeys })] }) }), _jsx("button", { type: "button", onClick: toggleTargetPreview, disabled: mode !== "idle", ...stitchablePartProps("secondary-button", {
+                            modifier: showTargetPreview ? "accent" : undefined,
+                        }), children: _jsxs("span", { ...stitchablePartProps("button-with-hint"), children: [showTargetPreview ? "요소 표시 끄기" : "현재 선택 가능한 element 노출하기", _jsx(ShortcutHint, { binding: REPORT_SHORTCUTS.toggleTargetPreview, visible: visibleShortcutKeys })] }) }), _jsx("button", { type: "button", onClick: toggleViewMode, ...stitchablePartProps("secondary-button"), children: _jsxs("span", { ...stitchablePartProps("button-with-hint"), children: [mode === "view" ? "목록 닫기" : "피드백 보기", _jsx(ShortcutHint, { binding: REPORT_SHORTCUTS.toggleViewMode, visible: visibleShortcutKeys })] }) })] }), errorMessage ? _jsx("p", { ...stitchablePartProps("error-text"), children: errorMessage }) : null] }));
 }
 //# sourceMappingURL=ReportControlPanel.js.map

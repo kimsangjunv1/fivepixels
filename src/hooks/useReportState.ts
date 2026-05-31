@@ -4,7 +4,7 @@ import { useCreateReportMutation, useDeleteReportMutation, useReportsQuery, useU
 import { useIsMobileViewport } from "./useIsMobileViewport.js";
 import { usePalette } from "./usePalette.js";
 import { useResolvedAppearance } from "./useResolvedAppearance.js";
-import type { ReportAppearance, ReportEvent, ReportFeedback, ReportField, ReportStorageAdapter } from "../types/report.js";
+import type { ReportAppearance, ReportEvent, ReportFeedback, ReportField, ReportIdentify, ReportStorageAdapter } from "../types/report.js";
 import type { DraftReport, EditableDraft, Marker, ReportFilters, ReportMode, TargetSnapshot } from "../types/report-ui.js";
 import { clampRatio, getMarkerFromReport, resolveTooltipAnchor } from "../utils/coordinates.js";
 import { findTargetByPoint, getSelectableTargets, toSnapshot } from "../utils/dom.js";
@@ -21,8 +21,13 @@ import {
 } from "../utils/reportCallbacks.js";
 
 export type ReportStateConfig = {
+    projectId: string;
+    environment?: string;
+    appVersion?: string;
     appearance: ReportAppearance;
     fields: ReportField[];
+    shortcut?: string;
+    identify?: ReportIdentify;
     onEvent?: (event: ReportEvent) => void | Promise<void>;
     onFeedbackCreate?: (feedback: ReportFeedback) => void | Promise<void>;
     onFeedbackDelete?: (id: string) => void | Promise<void>;
@@ -30,13 +35,19 @@ export type ReportStateConfig = {
     onFeedbackUpdate?: (feedback: ReportFeedback) => void | Promise<void>;
     pathname?: string;
     showFeedbackList: boolean;
-    storage: "local" | ReportStorageAdapter;
+    storage?: "local" | ReportStorageAdapter;
+    storageAdapter?: ReportStorageAdapter;
     visibleShortcutKeys?: boolean;
 };
 
 export function useReportState({
+    projectId,
+    environment,
+    appVersion,
     appearance,
     fields,
+    shortcut: _shortcut,
+    identify,
     onEvent,
     onFeedbackCreate,
     onFeedbackDelete,
@@ -44,7 +55,8 @@ export function useReportState({
     onFeedbackUpdate,
     pathname,
     showFeedbackList,
-    storage,
+    storage = "local",
+    storageAdapter,
     visibleShortcutKeys = false,
 }: ReportStateConfig) {
     // theme
@@ -57,7 +69,10 @@ export function useReportState({
     const resolvedAppearance = useResolvedAppearance(appearance);
     const isMobileViewport = useIsMobileViewport();
     const palette = usePalette(resolvedAppearance);
-    const storageAdapter = useMemo(() => resolveStorageAdapter(storage), [storage]);
+    const storageAdapterInstance = useMemo(
+        () => resolveStorageAdapter({ projectId, environment, storage, storageAdapter }),
+        [environment, projectId, storage, storageAdapter],
+    );
     const currentPathname = useMemo(() => getCurrentPathname(pathname), [pathname]);
     const eventCallbacks = useMemo<ReportEventCallbacks>(
         () => ({
@@ -91,14 +106,14 @@ export function useReportState({
     const [editableDraft, setEditableDraft] = useState<EditableDraft | null>(null);
 
     // data (list, filter, mutations)
-    const { data: reports, error, isError, isFetching, refetch } = useReportsQuery(storageAdapter, currentPathname, true);
-    const { mutateAsync: createFeedback, isPending: isCreating } = useCreateReportMutation(storageAdapter, () => {
+    const { data: reports, error, isError, isFetching, refetch } = useReportsQuery(storageAdapterInstance, currentPathname, true);
+    const { mutateAsync: createFeedback, isPending: isCreating } = useCreateReportMutation(storageAdapterInstance, () => {
         void refetch();
     });
-    const { mutateAsync: updateFeedback, isPending: isUpdating } = useUpdateReportMutation(storageAdapter, () => {
+    const { mutateAsync: updateFeedback, isPending: isUpdating } = useUpdateReportMutation(storageAdapterInstance, () => {
         void refetch();
     });
-    const { mutateAsync: deleteFeedback, isPending: isDeleting } = useDeleteReportMutation(storageAdapter, () => {
+    const { mutateAsync: deleteFeedback, isPending: isDeleting } = useDeleteReportMutation(storageAdapterInstance, () => {
         void refetch();
     });
 
@@ -470,6 +485,14 @@ export function useReportState({
                 viewport_height: window.innerHeight,
                 design_width: window.innerWidth,
                 design_height: window.innerHeight,
+                ...(environment ? { environment } : {}),
+                ...(appVersion ? { app_version: appVersion } : {}),
+                ...(identify
+                    ? {
+                          author_id: identify.id,
+                          author_name: identify.name,
+                      }
+                    : {}),
             });
 
             await notifyFeedbackCreate(eventCallbacks, savedFeedback);

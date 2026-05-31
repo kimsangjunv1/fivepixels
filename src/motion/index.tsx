@@ -7,6 +7,7 @@ import {
     type CSSProperties,
     type ElementType,
     type HTMLAttributes,
+    type Key,
     type MutableRefObject,
     type Ref,
     type ReactElement,
@@ -88,12 +89,12 @@ const PresenceContext = createContext<PresenceContextValue | null>(null);
 const layoutRegistry = new Map<string, DOMRect>();
 const motionComponentCache = new Map<string, ReturnType<typeof createMotionComponent>>();
 
-function hasSameTrackedChildren(current: PresenceTrackedChild[], next: PresenceTrackedChild[]) {
-    if (current.length !== next.length) {
-        return false;
-    }
+function trackedListsEqual(current: PresenceTrackedChild[], next: PresenceTrackedChild[]) {
+    return current.length === next.length && current.every((child, index) => child === next[index]);
+}
 
-    return current.every((child, index) => child.element.key === next[index]?.element.key && child.isPresent === next[index]?.isPresent);
+function getPresentKeySignature(children: ReactElement[]) {
+    return children.map((child) => String(child.key ?? "")).join("\0");
 }
 
 function isBrowser() {
@@ -502,26 +503,51 @@ function PresenceChild({ children, isPresent, onExitComplete }: PresenceContextV
 
 export function AnimatedPresence({ children }: { children: ReactNode }) {
     const validChildren = Children.toArray(children).filter(isValidElement) as ReactElement[];
-    const [trackedChildren, setTrackedChildren] = useState<PresenceTrackedChild[]>(() => validChildren.map((element) => ({ element, isPresent: true })));
+    const presentKeySignature = getPresentKeySignature(validChildren);
+    const [exitingChildren, setExitingChildren] = useState<PresenceTrackedChild[]>([]);
+    const previousPresentRef = useRef<Map<React.Key, ReactElement>>(new Map());
 
-    useEffect(() => {
-        setTrackedChildren((current) => {
-            const nextKeys = new Set(validChildren.map((child) => child.key));
-            const nextChildren = validChildren.map((element) => ({ element, isPresent: true }));
-            const exitingChildren = current.filter((child) => child.element.key != null && !nextKeys.has(child.element.key)).map((child) => ({ ...child, isPresent: false }));
+    useLayoutEffect(() => {
+        const presentKeys = new Set<Key>(validChildren.flatMap((child) => (child.key != null ? [child.key] : [])));
+        const previousPresent = previousPresentRef.current;
 
-            const nextTrackedChildren = [...nextChildren, ...exitingChildren];
+        setExitingChildren((current) => {
+            let next = current;
 
-            return hasSameTrackedChildren(current, nextTrackedChildren) ? current : nextTrackedChildren;
+            for (const [key, element] of previousPresent) {
+                if (!presentKeys.has(key) && !next.some((child) => child.element.key === key)) {
+                    if (next === current) {
+                        next = [...current];
+                    }
+
+                    next.push({ element, isPresent: false });
+                }
+            }
+
+            const filtered = next.filter(
+                (child) => !(child.isPresent === false && child.element.key != null && presentKeys.has(child.element.key)),
+            );
+
+            return trackedListsEqual(filtered, current) ? current : filtered;
         });
-    }, [validChildren]);
+
+        previousPresentRef.current = new Map(
+            validChildren.flatMap((child) => (child.key != null ? [[child.key, child] as const] : [])),
+        );
+    }, [presentKeySignature]);
+
+    const presentKeys = new Set<Key>(validChildren.flatMap((child) => (child.key != null ? [child.key] : [])));
+    const trackedChildren = [
+        ...validChildren.map((element) => ({ element, isPresent: true as const })),
+        ...exitingChildren.filter((child) => child.element.key != null && !presentKeys.has(child.element.key)),
+    ];
 
     return trackedChildren.map((child) => (
         <PresenceChild
             key={child.element.key}
             isPresent={child.isPresent}
             onExitComplete={() => {
-                setTrackedChildren((current) => {
+                setExitingChildren((current) => {
                     const nextTrackedChildren = current.filter((item) => item.element.key !== child.element.key);
 
                     return nextTrackedChildren.length === current.length ? current : nextTrackedChildren;

@@ -16,7 +16,7 @@ import { Report } from "stitchable";
 export default function App() {
     return (
         <>
-            <Report devOnly />
+            <Report />
 
             <main>
                 <section data-report-id="hero" data-report-type="group">
@@ -30,6 +30,7 @@ export default function App() {
 }
 ```
 
+- `projectId`를 생략하면 기본값 `"my-app"`이 사용됩니다. stage/production, Cloud 연동, 같은 origin의 여러 앱에서는 `projectId`를 명시하는 것을 권장합니다.
 - `Report`는 피드백을 받을 화면에 1회만 렌더링합니다.
 - 피드백 대상 요소에는 `data-report-id`, `data-report-type`를 함께 넣어야 합니다.
 - `data-report-type`은 `group` 또는 `item`만 지원합니다.
@@ -42,19 +43,35 @@ import { Report } from "stitchable";
 export default function App() {
     return (
         <Report
-            devOnly
+            projectId="multimachine-ceo"
+            environment="stage"
+            appVersion="1.2.3"
             appearance="system"
-            storage="local"
-            showFeedbackList={false}
-            visibleShortcutKeys
-            fields={[
-                { key: "message", type: "textarea", label: "메시지", required: true },
-                { key: "isBug", type: "checkbox", label: "버그" },
-                { key: "isImportant", type: "checkbox", label: "중요" },
-            ]}
         />
     );
 }
+```
+
+- `environment`는 `local`, `dev`, `stage`, `production` 등 환경별 피드백을 분리할 때 사용합니다.
+- `appVersion`은 피드백 생성 시점의 서비스 버전을 기록합니다.
+- `identify={{ id, name }}`로 작성자 정보를 선택적으로 첨부할 수 있습니다.
+
+### Advanced
+
+```tsx
+<Report
+    projectId="my-app"
+    devOnly
+    appearance="system"
+    storage="local"
+    showFeedbackList={false}
+    visibleShortcutKeys
+    fields={[
+        { key: "message", type: "textarea", label: "메시지", required: true },
+        { key: "isBug", type: "checkbox", label: "버그" },
+        { key: "isImportant", type: "checkbox", label: "중요" },
+    ]}
+/>
 ```
 
 - `message` field는 기본 메시지와 연결되므로 예약 key로 취급합니다.
@@ -86,22 +103,22 @@ Report UI는 마우스 없이도 주요 기능을 사용할 수 있도록 키보
 - `visibleShortcutKeys` prop을 켜면 각 버튼 옆에 현재 OS에 맞는 단축키 라벨이 표시됩니다.
 
 ```tsx
-<Report devOnly visibleShortcutKeys />
+<Report projectId="my-app" devOnly visibleShortcutKeys />
 ```
 
 `ReportProvider`를 직접 사용하는 경우에도 동일한 prop을 전달할 수 있습니다.
 
 ```tsx
-<ReportProvider devOnly visibleShortcutKeys>
+<ReportProvider projectId="my-app" devOnly visibleShortcutKeys>
     {/* custom report UI */}
 </ReportProvider>
 ```
 
 ## Storage
 
-- `storage="local"`: 기본 `localStorage` adapter를 사용합니다.
-- `storage={adapter}`: `ReportStorageAdapter` 인터페이스를 구현한 cloud adapter를 연결할 수 있습니다.
-- `storage`는 저장소 자체를 교체하는 용도입니다. 저장 이후 외부 API 호출은 callback props를 사용합니다.
+- `storage="local"`: 기본 `localStorage` adapter를 사용합니다. 키는 `projectId`와 `environment`로 분리됩니다.
+- `storageAdapter={adapter}`: `ReportStorageAdapter` 인터페이스를 구현한 cloud adapter를 연결할 수 있습니다.
+- `storage={adapter}` 형태도 하위 호환으로 지원합니다. 신규 코드에서는 `storageAdapter` 사용을 권장합니다.
 - 데이터 계약 상세는 `[docs/report-data-model.md](./docs/report-data-model.md)`를 기준으로 맞춥니다.
 - 설치/적용/FAQ는 `[docs/getting-started.md](./docs/getting-started.md)`를 참고합니다.
 - 실행 가능한 데모와 `npm run dev` 사용법은 `[docs/example-app.md](./docs/example-app.md)`를 참고합니다.
@@ -116,6 +133,7 @@ import { Report } from "stitchable";
 export default function App() {
     return (
         <Report
+            projectId="my-app"
             devOnly
             storage="local"
             onFeedbackCreate={async (feedback) => {
@@ -156,8 +174,8 @@ import { Report } from "stitchable";
 export default function App() {
     return (
         <Report
-            devOnly
-            storage={{
+            projectId="my-app"
+            storageAdapter={{
                 list: () => fetch("/api/feedbacks").then((res) => res.json()),
                 create: (payload) =>
                     fetch("/api/feedbacks", {
@@ -239,6 +257,12 @@ export const reportAdapter: ReportStorageAdapter = {
 - `replies`는 기본적으로 `id`, `message`, `created_at`를 가지며, `author_type`, `author_name`를 선택적으로 확장할 수 있습니다.
 - 상태 흐름 기본값은 `open -> resolved -> archived` 입니다.
 - cloud adapter는 `list/create/update`에서 local adapter와 동일한 정규화 결과를 반환해야 합니다.
+
+## Migration
+
+- `projectId`를 생략하면 `"my-app"`이 기본값입니다.
+- 이전에 `workspace` 개념을 사용했다면 `projectId`로 교체하세요. 역할은 동일하며 DB `project_id` 컬럼과 맞추기 쉽습니다.
+- localStorage 기본 키는 `stitchable:reports:v1:{projectId}` 또는 `stitchable:reports:v1:{projectId}:{environment}` 형태입니다.
 
 ## Reply / Status Policy
 

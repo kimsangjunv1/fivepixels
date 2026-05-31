@@ -1,17 +1,15 @@
 import type { ReportField, ReportFieldValues } from "../../types/report.js";
-import type { ReportPalette } from "../../hooks/usePalette.js";
-import { reportStyles } from "../report/styles.js";
+import { stitchablePartProps } from "../report/parts.js";
 
 type FieldEditorProps = {
     fields: ReportField[];
     message: string;
     fieldValues: ReportFieldValues;
-    palette: ReportPalette;
     onMessageChange: (nextValue: string) => void;
     onFieldChange: (key: string, nextValue: string | boolean) => void;
 };
 
-export function FieldEditor({ fields, message, fieldValues, palette, onMessageChange, onFieldChange }: FieldEditorProps) {
+export function FieldEditor({ fields, message, fieldValues, onMessageChange, onFieldChange }: FieldEditorProps) {
     return (
         <>
             {fields.map((field) => {
@@ -19,18 +17,13 @@ export function FieldEditor({ fields, message, fieldValues, palette, onMessageCh
                     return (
                         <label
                             key={field.key}
-                            style={reportStyles.fieldBlock}
+                            {...stitchablePartProps("field-block")}
                         >
-                            <span style={{ ...reportStyles.fieldLabel, color: palette.text }}>{field.label}</span>
+                            <span {...stitchablePartProps("field-label")}>{field.label}</span>
                             <textarea
                                 value={message}
                                 onChange={(event) => onMessageChange(event.target.value)}
-                                style={{
-                                    ...reportStyles.textarea,
-                                    backgroundColor: palette.input,
-                                    borderColor: palette.inputBorder,
-                                    color: palette.inputText,
-                                }}
+                                {...stitchablePartProps("textarea")}
                             />
                         </label>
                     );
@@ -40,7 +33,7 @@ export function FieldEditor({ fields, message, fieldValues, palette, onMessageCh
                     return (
                         <label
                             key={field.key}
-                            style={{ ...reportStyles.checkboxRow, color: palette.text }}
+                            {...stitchablePartProps("checkbox-row")}
                         >
                             <input
                                 type="checkbox"
@@ -55,18 +48,13 @@ export function FieldEditor({ fields, message, fieldValues, palette, onMessageCh
                 return (
                     <label
                         key={field.key}
-                        style={reportStyles.fieldBlock}
+                        {...stitchablePartProps("field-block")}
                     >
-                        <span style={{ ...reportStyles.fieldLabel, color: palette.text }}>{field.label}</span>
+                        <span {...stitchablePartProps("field-label")}>{field.label}</span>
                         <textarea
                             value={String(fieldValues[field.key] ?? "")}
                             onChange={(event) => onFieldChange(field.key, event.target.value)}
-                            style={{
-                                ...reportStyles.textarea,
-                                backgroundColor: palette.input,
-                                borderColor: palette.inputBorder,
-                                color: palette.inputText,
-                            }}
+                            {...stitchablePartProps("textarea")}
                         />
                     </label>
                 );

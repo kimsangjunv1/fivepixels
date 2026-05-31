@@ -4,8 +4,13 @@ export const DOT_SIZE = 14;
 export const TARGET_SELECTOR = "[data-report-id][data-report-type]";
 
 export const TARGET_COLOR: Record<ReportTargetType, string> = {
-    group: "#2563eb",
-    item: "#ef4444",
+    group: "var(--adaptive-blue500)",
+    item: "var(--adaptive-red500)",
+};
+
+export const TARGET_SURFACE: Record<ReportTargetType, string> = {
+    group: "var(--adaptive-blueOpacity50)",
+    item: "var(--adaptive-redOpacity50)",
 };
 
 export const DEFAULT_FIELDS: ReportField[] = [
