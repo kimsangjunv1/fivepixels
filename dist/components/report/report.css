@@ -403,7 +403,7 @@
     justify-content: flex-start;
     gap: 4px;
     position: relative;
-    padding-left: 18px;
+    /* padding-left: 18px; */
     cursor: grab;
     touch-action: none;
 }
@@ -411,8 +411,8 @@
 [data-stitchable-root] .stitchable-panel-header--align-right {
     justify-content: flex-end;
     align-items: flex-end;
-    padding-left: 0;
-    padding-right: 18px;
+    /* padding-left: 0; */
+    /* padding-right: 18px; */
     text-align: right;
 }
 
