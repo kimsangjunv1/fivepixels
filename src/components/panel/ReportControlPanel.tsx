@@ -1,47 +1,58 @@
 import { useState } from "react";
 import { REPORT_SHORTCUTS } from "../../constants/reportShortcuts.js";
-import { panelHeaderAlignModifier, usePanelDock } from "../../hooks/usePanelDock.js";
+import { panelAnchorSide, panelHeaderAlignModifier, usePanelDock } from "../../hooks/usePanelDock.js";
 import { useReport } from "../../providers/reportContext.js";
+import { ChevronLeftIcon, ChevronRightIcon } from "../icons/ChevronIcon.js";
 import { EyeClosedIcon, EyeOpenIcon } from "../icons/EyeIcon.js";
 import { ShortcutHint } from "../ShortcutHint.js";
 import { stitchableClass, stitchablePartProps } from "../report/parts.js";
 import { PanelDockGuides } from "./PanelDockGuides.js";
 import { ReportFeedbackList } from "./ReportFeedbackList.js";
 
+function PanelCollapseTab({
+    collapsed,
+    anchorSide,
+    onClick,
+}: {
+    collapsed: boolean;
+    anchorSide: "left" | "right";
+    onClick: () => void;
+}) {
+    const hideIcon = anchorSide === "right" ? <ChevronRightIcon /> : <ChevronLeftIcon />;
+    const expandIcon = anchorSide === "right" ? <ChevronLeftIcon /> : <ChevronRightIcon />;
+
+    return (
+        <button
+            type="button"
+            onClick={onClick}
+            {...stitchablePartProps("panel-collapse-tab", {
+                modifier: collapsed ? "peek" : undefined,
+                className: stitchableClass("panel-collapse-tab", `anchor-${anchorSide}`),
+            })}
+            aria-expanded={!collapsed}
+            aria-label={collapsed ? "패널 펼치기" : "패널 숨기기"}
+            title={collapsed ? "패널 펼치기" : "패널 숨기기"}
+        >
+            {collapsed ? expandIcon : hideIcon}
+        </button>
+    );
+}
+
 export function ReportControlPanel() {
-    const { appearance, mode, helperText, errorMessage, showFeedbackList, showTargetPreview, visibleShortcutKeys, isMobileViewport, toggleReportMode, toggleTargetPreview, toggleViewMode } =
-        useReport();
+    const { mode, helperText, errorMessage, showFeedbackList, showTargetPreview, visibleShortcutKeys, isMobileViewport, toggleReportMode, toggleTargetPreview, toggleViewMode } = useReport();
     const [panelCollapsed, setPanelCollapsed] = useState(false);
     const { panelRef, panelStyle, placementCorner, isDragging, activeCorner, handleDragHandlePointerDown } = usePanelDock({
         enabled: !isMobileViewport,
         measureKey: panelCollapsed,
     });
     const showListSection = mode === "view" && showFeedbackList;
-
-    if (panelCollapsed) {
-        return (
-            <>
-                <PanelDockGuides
-                    visible={isDragging}
-                    activeCorner={activeCorner}
-                />
-                <div
-                    ref={panelRef}
-                    {...stitchablePartProps("floating-panel", { modifier: "collapsed" })}
-                    style={panelStyle}
-                >
-                    <button
-                        type="button"
-                        onClick={() => setPanelCollapsed(false)}
-                        {...stitchablePartProps("secondary-button")}
-                        aria-expanded={false}
-                    >
-                        펼치기
-                    </button>
-                </div>
-            </>
-        );
-    }
+    const anchorSide = panelAnchorSide(placementCorner);
+    const floatingPanelClassName = [
+        panelCollapsed ? stitchableClass("floating-panel", "collapsed") : undefined,
+        stitchableClass("floating-panel", `anchor-${anchorSide}`),
+    ]
+        .filter(Boolean)
+        .join(" ");
 
     return (
         <>
@@ -52,11 +63,18 @@ export function ReportControlPanel() {
 
             <div
                 ref={panelRef}
-                {...stitchablePartProps("floating-panel")}
+                {...stitchablePartProps("floating-panel", { className: floatingPanelClassName })}
                 style={panelStyle}
             >
-                <section>
-                    {/* 정보 */}
+                {anchorSide === "left" ? (
+                    <PanelCollapseTab
+                        collapsed={panelCollapsed}
+                        anchorSide={anchorSide}
+                        onClick={() => setPanelCollapsed((current) => !current)}
+                    />
+                ) : null}
+
+                <section {...stitchablePartProps("panel-content")}>
                     <section
                         {...stitchablePartProps("panel-header", {
                             modifier: isDragging ? "dragging" : undefined,
@@ -67,7 +85,6 @@ export function ReportControlPanel() {
                         title="드래그해서 위치 변경"
                     >
                         <section style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-                            {/* <strong {...stitchablePartProps("panel-title")}>stitchable</strong> */}
                             <p
                                 {...stitchablePartProps("helper-text")}
                                 style={{ fontSize: "16px", color: "var(--adaptive-blue700)", fontWeight: "700" }}
@@ -81,15 +98,10 @@ export function ReportControlPanel() {
                             >
                                 {helperText}
                             </p>
-                            {/* <p {...stitchablePartProps("helper-text")}>{helperText}</p> */}
                         </section>
                     </section>
-                    {/* 정보 END */}
 
-                    {/* 액션 */}
                     <section {...stitchablePartProps("panel-body")}>
-                        {/* <p {...stitchablePartProps("helper-text")}>{helperText}</p> */}
-
                         <div
                             {...stitchablePartProps("button-row")}
                             style={{ display: "flex", flexDirection: "column" }}
@@ -161,16 +173,15 @@ export function ReportControlPanel() {
                             </div>
                         ) : null}
                     </section>
-                    {/* 액션 END */}
                 </section>
-                <button
-                    type="button"
-                    onClick={() => setPanelCollapsed(true)}
-                    {...stitchablePartProps("secondary-button")}
-                    aria-expanded={true}
-                >
-                    숨기기
-                </button>
+
+                {anchorSide === "right" ? (
+                    <PanelCollapseTab
+                        collapsed={panelCollapsed}
+                        anchorSide={anchorSide}
+                        onClick={() => setPanelCollapsed((current) => !current)}
+                    />
+                ) : null}
             </div>
         </>
     );

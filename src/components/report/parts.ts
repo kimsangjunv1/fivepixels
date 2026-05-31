@@ -9,6 +9,8 @@ export type StitchablePart =
     | "panel-header"
     | "panel-drag-handle"
     | "panel-body"
+    | "panel-content"
+    | "panel-collapse-tab"
     | "panel-feedback-section"
     | "dock-guide-layer"
     | "dock-guide"

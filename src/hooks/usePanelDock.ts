@@ -324,4 +324,8 @@ export function panelHeaderAlignModifier(corner: PanelCorner): "align-left" | "a
     return corner.endsWith("left") ? "align-left" : "align-right";
 }
 
+export function panelAnchorSide(corner: PanelCorner): "left" | "right" {
+    return corner.endsWith("left") ? "left" : "right";
+}
+
 export { PANEL_CORNERS };

@@ -256,5 +256,8 @@ export function usePanelDock({ enabled, measureKey }) {
 export function panelHeaderAlignModifier(corner) {
     return corner.endsWith("left") ? "align-left" : "align-right";
 }
+export function panelAnchorSide(corner) {
+    return corner.endsWith("left") ? "left" : "right";
+}
 export { PANEL_CORNERS };
 //# sourceMappingURL=usePanelDock.js.map
