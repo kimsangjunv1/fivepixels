@@ -293,9 +293,13 @@
  */
 [data-stitchable-root] {
     /* ── 마스터 노브 ── */
-    --stitchable-panel-blur-strength: 1.45;
+    --stitchable-panel-blur-strength: 0.5;
     --stitchable-panel-tint-strength: 1.5;
-    --stitchable-panel-blur-reach: 1.12;
+    --stitchable-panel-blur-reach: 1.5;
+
+    /* --stitchable-panel-blur-strength: 1.45;
+    --stitchable-panel-tint-strength: 1.5;
+    --stitchable-panel-blur-reach: 1.12; */
 
     /* ── tint color-mix % (짙게: 숫자 ↑) ── */
     --stitchable-panel-tint-center: 92%;
@@ -441,9 +445,9 @@
     pointer-events: none;
     background: radial-gradient(
         ellipse 100% 88% at var(--stitchable-blur-origin-x, 0%) var(--stitchable-blur-origin-y, 0%),
-        color-mix(in srgb, var(--adaptive-blue200) var(--stitchable-panel-tint-center-effective, 92%), transparent) 0%,
-        color-mix(in srgb, var(--adaptive-blueOpacity100) var(--stitchable-panel-tint-mid-effective, 56%), transparent) 42%,
-        color-mix(in srgb, var(--adaptive-blueOpacity50) var(--stitchable-panel-tint-outer-effective, 30%), transparent) 58%,
+        color-mix(in srgb, var(--adaptive-blue400) var(--stitchable-panel-tint-center-effective, 92%), transparent) 10%,
+        color-mix(in srgb, var(--adaptive-blueOpacity100) var(--stitchable-panel-tint-mid-effective, 56%), transparent) 52%,
+        color-mix(in srgb, var(--adaptive-blueOpacity50) var(--stitchable-panel-tint-outer-effective, 30%), transparent) 68%,
         transparent var(--stitchable-panel-tint-fade-end, 76%)
     );
 }
