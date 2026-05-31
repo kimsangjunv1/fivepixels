@@ -10,6 +10,13 @@ const GLOW_ANCHOR = {
     "bottom-left": { x: "18%", y: "78%" },
     "bottom-right": { x: "82%", y: "78%" },
 };
+/** ::before 확장(inset). bottom-right 기준으로 코너마다 화면 안쪽으로 넉넉히 퍼지도록 대칭 조정. */
+const GLOW_INSET = {
+    "top-left": "-32px -224px -120px -24px",
+    "top-right": "-32px -24px -120px -224px",
+    "bottom-left": "-120px -224px -32px -24px",
+    "bottom-right": "-120px -24px -32px -224px",
+};
 function isPanelCorner(value) {
     return value === "top-left" || value === "top-right" || value === "bottom-left" || value === "bottom-right";
 }
@@ -127,6 +134,7 @@ export function placementToPanelStyle(placement) {
         maxHeight: "none",
         "--stitchable-panel-glow-x": glow.x,
         "--stitchable-panel-glow-y": glow.y,
+        "--stitchable-panel-glow-inset": GLOW_INSET[placement.corner],
     };
     switch (placement.corner) {
         case "top-left":
@@ -160,6 +168,7 @@ export function getMobilePanelStyle() {
         // overflow: "auto",
         "--stitchable-panel-glow-x": GLOW_ANCHOR["bottom-right"].x,
         "--stitchable-panel-glow-y": GLOW_ANCHOR["bottom-right"].y,
+        "--stitchable-panel-glow-inset": GLOW_INSET["bottom-right"],
     };
 }
 export function usePanelDock({ enabled, measureKey }) {

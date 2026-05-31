@@ -252,8 +252,7 @@
 [data-stitchable-root][data-stitchable-theme="dark"] {
     --stitchable-panel-bg: var(--adaptive-floatBackground);
     --stitchable-panel-border: var(--adaptive-hairlineBorder);
-    --stitchable-text: var(--adaptive-grey500);
-    --stitchable-text: var(--adaptive-grey100);
+    --stitchable-text: var(--adaptive-grey800);
     --stitchable-muted: var(--adaptive-grey600);
     --stitchable-input-bg: var(--adaptive-backgroundLevel01);
     --stitchable-input-border: var(--adaptive-greyOpacity500);
@@ -262,7 +261,7 @@
     --stitchable-chip-bg: var(--adaptive-grey100);
     --stitchable-overlay-bg: var(--adaptive-backgroundDimmed);
     --stitchable-card-bg: var(--adaptive-layeredBackground);
-    --stitchable-accent: var(--adaptive-blue500);
+    --stitchable-accent: var(--adaptive-blue400);
     --stitchable-danger: var(--adaptive-red500);
     --stitchable-error: var(--adaptive-red500);
     --stitchable-primary-on: #ffffff;
@@ -299,7 +298,7 @@
 [data-stitchable-root] .stitchable-floating-panel::before {
     content: "";
     position: absolute;
-    inset: -20px -24px -32px -24px;
+    inset: var(--stitchable-panel-glow-inset, -120px -24px -32px -224px);
     z-index: -1;
     pointer-events: none;
     /* border-radius: 32px; */
@@ -596,7 +595,7 @@
 [data-stitchable-root] .stitchable-primary-button {
     appearance: none;
     border: 0;
-    border-radius: 16px;
+    border-radius: 12px;
     color: var(--stitchable-primary-on);
     cursor: pointer;
     flex: 1;
@@ -641,7 +640,6 @@
 
 [data-stitchable-root] .stitchable-button-with-hint {
     display: inline-flex;
-    white-space: nowrap;
     align-items: center;
     justify-content: center;
     gap: 6px;
@@ -689,9 +687,14 @@
 }
 
 [data-stitchable-root] .stitchable-overlay[data-overlay-mode="report"] {
-    background-color: var(--stitchable-overlay-bg);
+    background-color: transparent;
     pointer-events: auto;
     cursor: crosshair;
+    box-shadow:
+        inset 0 48px 64px -32px color-mix(in srgb, var(--adaptive-blue300) 28%, transparent),
+        inset 0 -48px 64px -32px color-mix(in srgb, var(--adaptive-blue300) 28%, transparent),
+        inset 48px 0 64px -32px color-mix(in srgb, var(--adaptive-blue300) 28%, transparent),
+        inset -48px 0 64px -32px color-mix(in srgb, var(--adaptive-blue300) 28%, transparent);
 }
 
 [data-stitchable-root] .stitchable-highlight-box {

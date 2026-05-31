@@ -9,7 +9,7 @@ import { ShortcutHint } from "../ShortcutHint.js";
 import { stitchableClass, stitchablePartProps } from "../report/parts.js";
 import { PanelDockGuides } from "./PanelDockGuides.js";
 import { ReportFeedbackList } from "./ReportFeedbackList.js";
-function PanelCollapseTab({ collapsed, anchorSide, onClick, }) {
+function PanelCollapseTab({ collapsed, anchorSide, onClick }) {
     const hideIcon = anchorSide === "right" ? _jsx(ChevronRightIcon, {}) : _jsx(ChevronLeftIcon, {});
     const expandIcon = anchorSide === "right" ? _jsx(ChevronLeftIcon, {}) : _jsx(ChevronRightIcon, {});
     return (_jsx("button", { type: "button", onClick: onClick, ...stitchablePartProps("panel-collapse-tab", {
@@ -26,16 +26,11 @@ export function ReportControlPanel() {
     });
     const showListSection = mode === "view" && showFeedbackList;
     const anchorSide = panelAnchorSide(placementCorner);
-    const floatingPanelClassName = [
-        panelCollapsed ? stitchableClass("floating-panel", "collapsed") : undefined,
-        stitchableClass("floating-panel", `anchor-${anchorSide}`),
-    ]
-        .filter(Boolean)
-        .join(" ");
+    const floatingPanelClassName = [panelCollapsed ? stitchableClass("floating-panel", "collapsed") : undefined, stitchableClass("floating-panel", `anchor-${anchorSide}`)].filter(Boolean).join(" ");
     return (_jsxs(_Fragment, { children: [_jsx(PanelDockGuides, { visible: isDragging, activeCorner: activeCorner }), _jsxs("div", { ref: panelRef, ...stitchablePartProps("floating-panel", { className: floatingPanelClassName }), style: panelStyle, children: [anchorSide === "left" ? (_jsx(PanelCollapseTab, { collapsed: panelCollapsed, anchorSide: anchorSide, onClick: () => setPanelCollapsed((current) => !current) })) : null, _jsxs("section", { ...stitchablePartProps("panel-content"), children: [_jsx("section", { ...stitchablePartProps("panel-header", {
                                     modifier: isDragging ? "dragging" : undefined,
                                     className: stitchableClass("panel-header", panelHeaderAlignModifier(placementCorner)),
-                                }), onPointerDown: handleDragHandlePointerDown, "aria-label": "\uD328\uB110 \uC704\uCE58 \uBCC0\uACBD", title: "\uB4DC\uB798\uADF8\uD574\uC11C \uC704\uCE58 \uBCC0\uACBD", children: _jsxs("section", { style: { display: "flex", flexDirection: "column", gap: "4px" }, children: [_jsx("p", { ...stitchablePartProps("helper-text"), style: { fontSize: "16px", color: "var(--adaptive-blue700)", fontWeight: "700" }, children: "\uB9AC\uD3EC\uD2B8 \uB3C4\uAD6C" }), _jsx("p", { ...stitchablePartProps("helper-text"), style: { color: "var(--adaptive-greyOpacity500)" }, children: helperText })] }) }), _jsxs("section", { ...stitchablePartProps("panel-body"), children: [_jsx("div", { ...stitchablePartProps("button-row"), style: { display: "flex", flexDirection: "column" }, children: _jsxs("section", { style: { display: "flex", width: "100%", gap: "8px" }, children: [_jsxs("section", { style: { display: "flex", width: "100%", gap: "4px" }, children: [_jsx("button", { type: "button", onClick: toggleReportMode, ...stitchablePartProps("primary-button", {
+                                }), onPointerDown: handleDragHandlePointerDown, "aria-label": "\uD328\uB110 \uC704\uCE58 \uBCC0\uACBD", title: "\uB4DC\uB798\uADF8\uD574\uC11C \uC704\uCE58 \uBCC0\uACBD", children: _jsxs("section", { style: { display: "flex", flexDirection: "column", gap: "4px" }, children: [_jsx("p", { ...stitchablePartProps("helper-text"), style: { fontSize: "16px", color: "var(--adaptive-blue700)", fontWeight: "700" }, children: "\uD53C\uB4DC\uBC31\uC744 \uC218\uC9D1 \uC911..." }), _jsx("p", { ...stitchablePartProps("helper-text"), style: { color: "var(--adaptive-greyOpacity500)" }, children: helperText })] }) }), _jsxs("section", { ...stitchablePartProps("panel-body"), children: [_jsx("div", { ...stitchablePartProps("button-row"), style: { display: "flex", flexDirection: "column" }, children: _jsxs("section", { style: { display: "flex", width: "100%", gap: "8px" }, children: [_jsxs("section", { style: { display: "flex", width: "100%", gap: "4px" }, children: [_jsx("button", { type: "button", onClick: toggleReportMode, ...stitchablePartProps("primary-button", {
                                                                 modifier: mode === "report" ? "danger" : undefined,
                                                             }), children: _jsxs("span", { ...stitchablePartProps("button-with-hint"), children: [mode === "report" ? "중단" : "기록", _jsx(ShortcutHint, { binding: REPORT_SHORTCUTS.toggleReportMode, visible: visibleShortcutKeys })] }) }), _jsx("button", { type: "button", onClick: toggleViewMode, ...stitchablePartProps("secondary-button", {
                                                                 modifier: showListSection ? "accent" : undefined,

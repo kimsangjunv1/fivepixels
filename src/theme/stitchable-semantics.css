@@ -2,8 +2,7 @@
 [data-stitchable-root][data-stitchable-theme="dark"] {
     --stitchable-panel-bg: var(--adaptive-floatBackground);
     --stitchable-panel-border: var(--adaptive-hairlineBorder);
-    --stitchable-text: var(--adaptive-grey500);
-    --stitchable-text: var(--adaptive-grey100);
+    --stitchable-text: var(--adaptive-grey800);
     --stitchable-muted: var(--adaptive-grey600);
     --stitchable-input-bg: var(--adaptive-backgroundLevel01);
     --stitchable-input-border: var(--adaptive-greyOpacity500);

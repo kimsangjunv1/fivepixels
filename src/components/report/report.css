@@ -20,7 +20,7 @@
 [data-stitchable-root] .stitchable-floating-panel::before {
     content: "";
     position: absolute;
-    inset: -20px -24px -32px -24px;
+    inset: var(--stitchable-panel-glow-inset, -120px -24px -32px -224px);
     z-index: -1;
     pointer-events: none;
     /* border-radius: 32px; */
@@ -125,7 +125,7 @@
     justify-content: flex-start;
     gap: 4px;
     position: relative;
-    padding-left: 18px;
+    /* padding-left: 18px; */
     cursor: grab;
     touch-action: none;
 }
@@ -133,8 +133,8 @@
 [data-stitchable-root] .stitchable-panel-header--align-right {
     justify-content: flex-end;
     align-items: flex-end;
-    padding-left: 0;
-    padding-right: 18px;
+    /* padding-left: 0; */
+    /* padding-right: 18px; */
     text-align: right;
 }
 
@@ -409,9 +409,14 @@
 }
 
 [data-stitchable-root] .stitchable-overlay[data-overlay-mode="report"] {
-    background-color: var(--stitchable-overlay-bg);
+    background-color: transparent;
     pointer-events: auto;
     cursor: crosshair;
+    box-shadow:
+        inset 0 48px 64px -32px color-mix(in srgb, var(--adaptive-blue300) 28%, transparent),
+        inset 0 -48px 64px -32px color-mix(in srgb, var(--adaptive-blue300) 28%, transparent),
+        inset 48px 0 64px -32px color-mix(in srgb, var(--adaptive-blue300) 28%, transparent),
+        inset -48px 0 64px -32px color-mix(in srgb, var(--adaptive-blue300) 28%, transparent);
 }
 
 [data-stitchable-root] .stitchable-highlight-box {
