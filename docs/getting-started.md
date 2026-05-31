@@ -96,3 +96,19 @@ export function Page() {
 ### Q. archived 상태도 수정 가능한가요?
 
 기본 정책은 읽기 전용입니다. 재오픈 정책이 필요하면 custom UI 또는 adapter 정책에서 별도로 다루는 것이 좋습니다.
+
+### Q. 같은 `data-report-id`를 여러 요소에 써도 되나요?
+
+권장하지 않습니다. 마커 복원은 `document.querySelector`로 **첫 번째 일치 요소**만 사용합니다. 화면마다 id는 유일하게 두는 것이 안전합니다.
+
+### Q. Shadow DOM이나 iframe 안 요소도 지원하나요?
+
+기본 `Report`는 메인 document 기준 `querySelector`/`elementFromPoint`만 사용합니다. Shadow DOM 내부, iframe 내부 요소는 기본 UI로는 피드백 대상이 되지 않습니다.
+
+### Q. custom adapter에서 삭제는 어떻게 하나요?
+
+UI에서 피드백 삭제를 쓰려면 `ReportStorageAdapter.remove`를 구현해야 합니다. `remove`가 없으면 삭제 시도 시 에러가 납니다. local adapter는 기본 제공합니다.
+
+### Q. `projectId`를 생략해도 되나요?
+
+가능하지만 기본값 `"my-app"`이 적용됩니다. 같은 origin에서 여러 앱/환경을 쓰면 localStorage 데이터가 섞일 수 있어, QA/스테이지/프로덕션마다 고유 `projectId`를 권장합니다.
