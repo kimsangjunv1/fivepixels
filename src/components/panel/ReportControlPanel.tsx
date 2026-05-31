@@ -9,15 +9,7 @@ import { stitchableClass, stitchablePartProps } from "../report/parts.js";
 import { PanelDockGuides } from "./PanelDockGuides.js";
 import { ReportFeedbackList } from "./ReportFeedbackList.js";
 
-function PanelCollapseTab({
-    collapsed,
-    anchorSide,
-    onClick,
-}: {
-    collapsed: boolean;
-    anchorSide: "left" | "right";
-    onClick: () => void;
-}) {
+function PanelCollapseTab({ collapsed, anchorSide, onClick }: { collapsed: boolean; anchorSide: "left" | "right"; onClick: () => void }) {
     const hideIcon = anchorSide === "right" ? <ChevronRightIcon /> : <ChevronLeftIcon />;
     const expandIcon = anchorSide === "right" ? <ChevronLeftIcon /> : <ChevronRightIcon />;
 
@@ -47,12 +39,7 @@ export function ReportControlPanel() {
     });
     const showListSection = mode === "view" && showFeedbackList;
     const anchorSide = panelAnchorSide(placementCorner);
-    const floatingPanelClassName = [
-        panelCollapsed ? stitchableClass("floating-panel", "collapsed") : undefined,
-        stitchableClass("floating-panel", `anchor-${anchorSide}`),
-    ]
-        .filter(Boolean)
-        .join(" ");
+    const floatingPanelClassName = [panelCollapsed ? stitchableClass("floating-panel", "collapsed") : undefined, stitchableClass("floating-panel", `anchor-${anchorSide}`)].filter(Boolean).join(" ");
 
     return (
         <>
@@ -89,7 +76,7 @@ export function ReportControlPanel() {
                                 {...stitchablePartProps("helper-text")}
                                 style={{ fontSize: "16px", color: "var(--adaptive-blue700)", fontWeight: "700" }}
                             >
-                                리포트 도구
+                                피드백을 수집 중...
                             </p>
 
                             <p

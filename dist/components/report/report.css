@@ -462,55 +462,102 @@
 }
 
 [data-stitchable-root] .stitchable-dock-guide {
+    --stitchable-dock-guide-line: color-mix(in srgb, var(--stitchable-accent, #6366f1) 78%, transparent);
+
     position: absolute;
-    width: 52px;
-    height: 52px;
+    width: 76px;
+    height: 76px;
     box-sizing: border-box;
     border: 0;
-    border-radius: 14px;
     background: transparent;
-    opacity: 0.42;
-    transition:
-        opacity 120ms ease,
-        border-color 120ms ease,
-        box-shadow 120ms ease,
-        background-color 120ms ease;
+    opacity: 0.82;
+    transition: opacity 120ms ease;
+}
+
+[data-stitchable-root] .stitchable-dock-guide::before,
+[data-stitchable-root] .stitchable-dock-guide::after {
+    content: "";
+    position: absolute;
+    box-sizing: border-box;
+    background: var(--stitchable-dock-guide-line);
+    transition: background 120ms ease;
+}
+
+[data-stitchable-root] .stitchable-dock-guide::before {
+    height: 3px;
+    width: 100%;
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 18%, #000 82%, transparent), repeating-linear-gradient(to right, #000 0 7px, transparent 7px 12px);
+    -webkit-mask-composite: source-in;
+    mask-image: linear-gradient(to right, transparent, #000 18%, #000 82%, transparent), repeating-linear-gradient(to right, #000 0 7px, transparent 7px 12px);
+    mask-composite: intersect;
+}
+
+[data-stitchable-root] .stitchable-dock-guide::after {
+    width: 3px;
+    height: 100%;
+    -webkit-mask-image: linear-gradient(to bottom, transparent, #000 18%, #000 82%, transparent), repeating-linear-gradient(to bottom, #000 0 7px, transparent 7px 12px);
+    -webkit-mask-composite: source-in;
+    mask-image: linear-gradient(to bottom, transparent, #000 18%, #000 82%, transparent), repeating-linear-gradient(to bottom, #000 0 7px, transparent 7px 12px);
+    mask-composite: intersect;
 }
 
 [data-stitchable-root] .stitchable-dock-guide--top-left {
-    top: 12px;
-    left: 12px;
-    border-top: 3px dashed color-mix(in srgb, var(--stitchable-accent, #6366f1) 40%, transparent);
-    border-left: 3px dashed color-mix(in srgb, var(--stitchable-accent, #6366f1) 40%, transparent);
+    top: 10px;
+    left: 10px;
+}
+
+[data-stitchable-root] .stitchable-dock-guide--top-left::before,
+[data-stitchable-root] .stitchable-dock-guide--top-left::after {
+    top: 0;
+    left: 0;
 }
 
 [data-stitchable-root] .stitchable-dock-guide--top-right {
-    top: 12px;
-    right: 12px;
-    border-top: 3px dashed color-mix(in srgb, var(--stitchable-accent, #6366f1) 40%, transparent);
-    border-right: 3px dashed color-mix(in srgb, var(--stitchable-accent, #6366f1) 40%, transparent);
+    top: 10px;
+    right: 10px;
+}
+
+[data-stitchable-root] .stitchable-dock-guide--top-right::before,
+[data-stitchable-root] .stitchable-dock-guide--top-right::after {
+    top: 0;
+    right: 0;
 }
 
 [data-stitchable-root] .stitchable-dock-guide--bottom-left {
-    bottom: 12px;
-    left: 12px;
-    border-bottom: 3px dashed color-mix(in srgb, var(--stitchable-accent, #6366f1) 40%, transparent);
-    border-left: 3px dashed color-mix(in srgb, var(--stitchable-accent, #6366f1) 40%, transparent);
+    bottom: 10px;
+    left: 10px;
+}
+
+[data-stitchable-root] .stitchable-dock-guide--bottom-left::before,
+[data-stitchable-root] .stitchable-dock-guide--bottom-left::after {
+    bottom: 0;
+    left: 0;
 }
 
 [data-stitchable-root] .stitchable-dock-guide--bottom-right {
-    right: 12px;
-    bottom: 12px;
-    border-right: 3px dashed color-mix(in srgb, var(--stitchable-accent, #6366f1) 40%, transparent);
-    border-bottom: 3px dashed color-mix(in srgb, var(--stitchable-accent, #6366f1) 40%, transparent);
+    right: 10px;
+    bottom: 10px;
+}
+
+[data-stitchable-root] .stitchable-dock-guide--bottom-right::before,
+[data-stitchable-root] .stitchable-dock-guide--bottom-right::after {
+    right: 0;
+    bottom: 0;
 }
 
 [data-stitchable-root] .stitchable-dock-guide--active {
     opacity: 1;
-    border-style: solid;
-    border-color: var(--stitchable-accent, #6366f1);
-    background: color-mix(in srgb, var(--stitchable-accent, #6366f1) 8%, transparent);
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--stitchable-accent, #6366f1) 22%, transparent);
+    --stitchable-dock-guide-line: var(--stitchable-accent, #6366f1);
+}
+
+[data-stitchable-root] .stitchable-dock-guide--active::before {
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 16%, #000 84%, transparent);
+    mask-image: linear-gradient(to right, transparent, #000 16%, #000 84%, transparent);
+}
+
+[data-stitchable-root] .stitchable-dock-guide--active::after {
+    -webkit-mask-image: linear-gradient(to bottom, transparent, #000 16%, #000 84%, transparent);
+    mask-image: linear-gradient(to bottom, transparent, #000 16%, #000 84%, transparent);
 }
 
 [data-stitchable-root] .stitchable-panel-title {
@@ -533,8 +580,9 @@
 [data-stitchable-root] .stitchable-helper-text {
     margin: 0;
     font-size: 14px;
+    line-height: 1.5;
     font-weight: 500;
-    line-height: 100%;
+    /* line-height: 100%; */
     color: var(--stitchable-muted);
 }
 
@@ -593,6 +641,7 @@
 
 [data-stitchable-root] .stitchable-button-with-hint {
     display: inline-flex;
+    white-space: nowrap;
     align-items: center;
     justify-content: center;
     gap: 6px;
