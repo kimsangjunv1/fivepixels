@@ -1,12 +1,4 @@
-import {
-    useCallback,
-    useEffect,
-    useLayoutEffect,
-    useRef,
-    useState,
-    type CSSProperties,
-    type PointerEvent as ReactPointerEvent,
-} from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
 
 export type PanelCorner = "top-left" | "top-right" | "bottom-left" | "bottom-right";
 
@@ -187,13 +179,11 @@ export function placementToPanelStyle(placement: PanelPlacement): CSSProperties 
             style.bottom = EDGE_MARGIN;
             style.left = EDGE_MARGIN;
             style.maxHeight = "min(68vh, 560px)";
-            style.overflow = "auto";
             break;
         case "bottom-right":
             style.bottom = EDGE_MARGIN;
             style.right = EDGE_MARGIN;
             style.maxHeight = "min(68vh, 560px)";
-            style.overflow = "auto";
             break;
     }
 
@@ -207,7 +197,7 @@ export function getMobilePanelStyle(): CSSProperties {
         bottom: EDGE_MARGIN,
         left: EDGE_MARGIN,
         maxHeight: "min(68vh, 560px)",
-        overflow: "auto",
+        // overflow: "auto",
         "--stitchable-panel-glow-x": GLOW_ANCHOR["bottom-right"].x,
         "--stitchable-panel-glow-y": GLOW_ANCHOR["bottom-right"].y,
     } as CSSProperties;
@@ -323,10 +313,15 @@ export function usePanelDock({ enabled, measureKey }: { enabled: boolean; measur
     return {
         panelRef,
         panelStyle,
+        placementCorner: currentPlacement.corner,
         isDragging,
         activeCorner,
         handleDragHandlePointerDown,
     };
+}
+
+export function panelHeaderAlignModifier(corner: PanelCorner): "align-left" | "align-right" {
+    return corner.endsWith("left") ? "align-left" : "align-right";
 }
 
 export { PANEL_CORNERS };

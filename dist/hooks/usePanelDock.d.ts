@@ -17,9 +17,11 @@ export declare function usePanelDock({ enabled, measureKey }: {
 }): {
     panelRef: import("react").RefObject<HTMLDivElement>;
     panelStyle: CSSProperties;
+    placementCorner: PanelCorner;
     isDragging: boolean;
     activeCorner: PanelCorner | null;
     handleDragHandlePointerDown: (event: ReactPointerEvent<HTMLElement>) => void;
 };
+export declare function panelHeaderAlignModifier(corner: PanelCorner): "align-left" | "align-right";
 export { PANEL_CORNERS };
 //# sourceMappingURL=usePanelDock.d.ts.map

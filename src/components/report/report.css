@@ -7,7 +7,7 @@
     font-family: ui-sans-serif, system-ui, sans-serif;
     color: var(--stitchable-text);
     box-sizing: border-box;
-    border-radius: 16px;
+    /* border-radius: 16px; */
     isolation: isolate;
 }
 [data-stitchable-root] .stitchable-floating-panel::before {
@@ -43,11 +43,27 @@
 
 [data-stitchable-root] .stitchable-panel-header {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
+    flex: 1;
+    min-width: 0;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 4px;
     position: relative;
     padding-left: 18px;
+    cursor: grab;
+    touch-action: none;
+}
+
+[data-stitchable-root] .stitchable-panel-header--align-right {
+    justify-content: flex-end;
+    align-items: flex-end;
+    padding-left: 0;
+    padding-right: 18px;
+    text-align: right;
+}
+
+[data-stitchable-root] .stitchable-panel-header--align-right .stitchable-helper-text {
+    text-align: right;
 }
 
 [data-stitchable-root] .stitchable-panel-header--dragging {

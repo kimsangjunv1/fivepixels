@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 const STORAGE_KEY = "stitchable:panel-placement";
 const LEGACY_STORAGE_KEY = "stitchable:panel-dock-position";
 const EDGE_MARGIN = 16;
@@ -141,13 +141,11 @@ export function placementToPanelStyle(placement) {
             style.bottom = EDGE_MARGIN;
             style.left = EDGE_MARGIN;
             style.maxHeight = "min(68vh, 560px)";
-            style.overflow = "auto";
             break;
         case "bottom-right":
             style.bottom = EDGE_MARGIN;
             style.right = EDGE_MARGIN;
             style.maxHeight = "min(68vh, 560px)";
-            style.overflow = "auto";
             break;
     }
     return style;
@@ -159,7 +157,7 @@ export function getMobilePanelStyle() {
         bottom: EDGE_MARGIN,
         left: EDGE_MARGIN,
         maxHeight: "min(68vh, 560px)",
-        overflow: "auto",
+        // overflow: "auto",
         "--stitchable-panel-glow-x": GLOW_ANCHOR["bottom-right"].x,
         "--stitchable-panel-glow-y": GLOW_ANCHOR["bottom-right"].y,
     };
@@ -249,10 +247,14 @@ export function usePanelDock({ enabled, measureKey }) {
     return {
         panelRef,
         panelStyle,
+        placementCorner: currentPlacement.corner,
         isDragging,
         activeCorner,
         handleDragHandlePointerDown,
     };
+}
+export function panelHeaderAlignModifier(corner) {
+    return corner.endsWith("left") ? "align-left" : "align-right";
 }
 export { PANEL_CORNERS };
 //# sourceMappingURL=usePanelDock.js.map

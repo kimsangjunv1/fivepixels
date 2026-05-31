@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { REPORT_SHORTCUTS } from "../../constants/reportShortcuts.js";
-import { usePanelDock } from "../../hooks/usePanelDock.js";
+import { panelHeaderAlignModifier, usePanelDock } from "../../hooks/usePanelDock.js";
 import { useReport } from "../../providers/reportContext.js";
 import { EyeClosedIcon, EyeOpenIcon } from "../icons/EyeIcon.js";
 import { ShortcutHint } from "../ShortcutHint.js";
-import { stitchablePartProps } from "../report/parts.js";
+import { stitchableClass, stitchablePartProps } from "../report/parts.js";
 import { PanelDockGuides } from "./PanelDockGuides.js";
 import { ReportFeedbackList } from "./ReportFeedbackList.js";
 
@@ -12,7 +12,7 @@ export function ReportControlPanel() {
     const { appearance, mode, helperText, errorMessage, showFeedbackList, showTargetPreview, visibleShortcutKeys, isMobileViewport, toggleReportMode, toggleTargetPreview, toggleViewMode } =
         useReport();
     const [panelCollapsed, setPanelCollapsed] = useState(false);
-    const { panelRef, panelStyle, isDragging, activeCorner, handleDragHandlePointerDown } = usePanelDock({
+    const { panelRef, panelStyle, placementCorner, isDragging, activeCorner, handleDragHandlePointerDown } = usePanelDock({
         enabled: !isMobileViewport,
         measureKey: panelCollapsed,
     });
@@ -54,19 +54,12 @@ export function ReportControlPanel() {
                 {...stitchablePartProps("floating-panel")}
                 style={panelStyle}
             >
-                <section style={{ display: "flex" }}>
+                <section style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}>
                     <div
                         {...stitchablePartProps("panel-header", {
                             modifier: isDragging ? "dragging" : undefined,
+                            className: stitchableClass("panel-header", panelHeaderAlignModifier(placementCorner)),
                         })}
-                        style={{
-                            display: "flex",
-                            // flexDirection: "column",
-                            justifyContent: "flex-start",
-                            alignItems: "flex-start",
-                            gap: "4px",
-                            cursor: "grab",
-                        }}
                         onPointerDown={handleDragHandlePointerDown}
                         aria-label="패널 위치 변경"
                         title="드래그해서 위치 변경"
