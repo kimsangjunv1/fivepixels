@@ -7,6 +7,11 @@ export const STITCHABLE_PART_ATTR = "data-stitchable-part";
 export type StitchablePart =
     | "floating-panel"
     | "panel-header"
+    | "panel-drag-handle"
+    | "panel-body"
+    | "panel-feedback-section"
+    | "dock-guide-layer"
+    | "dock-guide"
     | "panel-title"
     | "badge"
     | "helper-text"

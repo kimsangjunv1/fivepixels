@@ -278,19 +278,13 @@
 
 [data-stitchable-root] .stitchable-floating-panel {
     position: fixed;
-    top: 16px;
-    left: 16px;
     z-index: 1000000000;
     max-width: calc(100vw - 32px);
     width: var(--stitchable-floating-panel-width, 320px);
-    /* border: 1px solid var(--stitchable-panel-border); */
-    /* border-radius: 16px; */
     padding: 16px;
     font-family: ui-sans-serif, system-ui, sans-serif;
-    /* background-color: var(--stitchable-panel-bg); */
     color: var(--stitchable-text);
-    /* box-shadow: var(--stitchable-panel-shadow); */
-    /* backdrop-filter: blur(14px); */
+    box-sizing: border-box;
 }
 [data-stitchable-root] .stitchable-floating-panel::before {
     content: "";
@@ -308,6 +302,7 @@
 [data-stitchable-root] .stitchable-floating-panel--collapsed {
     width: auto;
     padding: 0;
+    overflow: visible;
 }
 
 [data-stitchable-root] .stitchable-floating-panel--collapsed::before {
@@ -319,6 +314,109 @@
     align-items: center;
     justify-content: space-between;
     gap: 8px;
+    position: relative;
+    padding-left: 18px;
+}
+
+[data-stitchable-root] .stitchable-panel-header--dragging {
+    cursor: grabbing;
+}
+
+[data-stitchable-root] .stitchable-panel-drag-handle {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 14px;
+    height: 28px;
+    transform: translateY(-50%);
+    border-radius: 999px;
+    cursor: grab;
+    touch-action: none;
+    background:
+        radial-gradient(circle, var(--stitchable-muted) 1.5px, transparent 1.6px) center/4px 4px;
+}
+
+[data-stitchable-root] .stitchable-panel-header--dragging .stitchable-panel-drag-handle {
+    cursor: grabbing;
+}
+
+[data-stitchable-root] .stitchable-panel-body {
+    min-width: 0;
+}
+
+[data-stitchable-root] .stitchable-panel-feedback-section {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--stitchable-panel-border, rgba(127, 127, 127, 0.25));
+    max-height: min(52vh, 520px);
+    overflow: auto;
+}
+
+[data-stitchable-root] .stitchable-dock-guide-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 999999999;
+    pointer-events: none;
+}
+
+[data-stitchable-root] .stitchable-dock-guide {
+    position: absolute;
+    border: 4px dashed color-mix(in srgb, var(--stitchable-accent, #6366f1) 35%, transparent);
+    border-radius: 0;
+    background: transparent;
+    opacity: 0.45;
+    transition: opacity 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+}
+
+[data-stitchable-root] .stitchable-dock-guide--top {
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 0;
+    border-top-width: 8px;
+    border-bottom: 0;
+    border-left: 0;
+    border-right: 0;
+}
+
+[data-stitchable-root] .stitchable-dock-guide--bottom {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 0;
+    border-bottom-width: 8px;
+    border-top: 0;
+    border-left: 0;
+    border-right: 0;
+}
+
+[data-stitchable-root] .stitchable-dock-guide--left {
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    border-left-width: 8px;
+    border-top: 0;
+    border-bottom: 0;
+    border-right: 0;
+}
+
+[data-stitchable-root] .stitchable-dock-guide--right {
+    top: 0;
+    bottom: 0;
+    right: 0;
+    width: 0;
+    border-right-width: 8px;
+    border-top: 0;
+    border-bottom: 0;
+    border-left: 0;
+}
+
+[data-stitchable-root] .stitchable-dock-guide--active {
+    opacity: 1;
+    border-style: solid;
+    border-color: var(--stitchable-accent, #6366f1);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--stitchable-accent, #6366f1) 25%, transparent);
 }
 
 [data-stitchable-root] .stitchable-panel-title {
@@ -620,23 +718,16 @@
 }
 
 [data-stitchable-root] .stitchable-side-panel {
-    position: fixed;
-    top: var(--stitchable-side-panel-top, 16px);
-    right: var(--stitchable-side-panel-right, 16px);
-    bottom: var(--stitchable-side-panel-bottom, auto);
-    left: var(--stitchable-side-panel-left, auto);
-    z-index: 1105;
-    width: var(--stitchable-side-panel-width, 360px);
-    max-height: var(--stitchable-side-panel-max-height, calc(100vh - 32px));
-    overflow: auto;
-    border: 1px solid var(--stitchable-panel-border);
-    border-radius: 16px;
-    padding: 16px;
-    font-family: ui-sans-serif, system-ui, sans-serif;
-    background-color: var(--stitchable-panel-bg);
-    color: var(--stitchable-text);
-    box-shadow: var(--stitchable-panel-shadow);
-    backdrop-filter: blur(14px);
+    position: static;
+    width: 100%;
+    max-height: none;
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
 }
 
 [data-stitchable-root] .stitchable-side-panel-header {

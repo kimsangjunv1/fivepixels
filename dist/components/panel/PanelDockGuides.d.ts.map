@@ -1,0 +1,1 @@
+{"version":3,"file":"PanelDockGuides.d.ts","sourceRoot":"","sources":["../../../src/components/panel/PanelDockGuides.tsx"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,SAAS,EAAE,MAAM,6BAA6B,CAAC;AAG7D,KAAK,oBAAoB,GAAG;IACxB,OAAO,EAAE,OAAO,CAAC;IACjB,UAAU,EAAE,SAAS,GAAG,IAAI,CAAC;CAChC,CAAC;AAIF,wBAAgB,eAAe,CAAC,EAAE,OAAO,EAAE,UAAU,EAAE,EAAE,oBAAoB,kDAkB5E"}

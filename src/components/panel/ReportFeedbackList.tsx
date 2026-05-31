@@ -33,7 +33,7 @@ export function ReportFeedbackList() {
     } = useReport();
 
     return (
-        <aside {...stitchablePartProps("side-panel")}>
+        <section {...stitchablePartProps("side-panel")}>
             <div {...stitchablePartProps("side-panel-header")}>
                 <strong>피드백 목록</strong>
                 <span {...stitchablePartProps("badge")}>{filteredReports.length}</span>
@@ -227,6 +227,6 @@ export function ReportFeedbackList() {
                     );
                 })}
             </div>
-        </aside>
+        </section>
     );
 }
