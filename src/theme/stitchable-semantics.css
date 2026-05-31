@@ -1,0 +1,26 @@
+[data-stitchable-root][data-stitchable-theme="light"],
+[data-stitchable-root][data-stitchable-theme="dark"] {
+    --stitchable-panel-bg: var(--adaptive-floatBackground);
+    --stitchable-panel-border: var(--adaptive-hairlineBorder);
+    --stitchable-text: var(--adaptive-grey900);
+    --stitchable-muted: var(--adaptive-grey600);
+    --stitchable-input-bg: var(--adaptive-backgroundLevel01);
+    --stitchable-input-border: var(--adaptive-hairlineBorder);
+    --stitchable-input-text: var(--adaptive-grey900);
+    --stitchable-chip-bg: var(--adaptive-grey100);
+    --stitchable-overlay-bg: var(--adaptive-backgroundDimmed);
+    --stitchable-card-bg: var(--adaptive-layeredBackground);
+    --stitchable-accent: var(--adaptive-blue500);
+    --stitchable-danger: var(--adaptive-red500);
+    --stitchable-error: var(--adaptive-red500);
+    --stitchable-primary-on: #ffffff;
+    --stitchable-tooltip-compact-bg: var(--adaptive-greyOpacity100);
+    --stitchable-panel-shadow: 0 18px 48px var(--adaptive-shadowLarge01), 0 8px 24px var(--adaptive-shadowMedium02);
+    --stitchable-elevated-shadow: 0 18px 48px var(--adaptive-shadowLarge01);
+    --stitchable-tooltip-shadow: 0 14px 32px var(--adaptive-shadowMedium01);
+    --stitchable-marker-halo: var(--adaptive-greyOpacity200);
+    --stitchable-marker-selected-halo: var(--adaptive-greyOpacity400);
+    --stitchable-marker-ring: var(--adaptive-backgroundLevel01);
+    --stitchable-on-accent: #ffffff;
+    --stitchable-highlight-surface: var(--adaptive-blueOpacity50);
+}

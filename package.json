@@ -12,7 +12,9 @@
     "url": "https://github.com/kimsangjunv1/stitchable/issues"
   },
   "type": "module",
-  "sideEffects": false,
+  "sideEffects": [
+    "./dist/components/report/ensureReportStyles.js"
+  ],
   "files": [
     "dist"
   ],
@@ -27,15 +29,16 @@
     "./report": {
       "types": "./dist/report/index.d.ts",
       "import": "./dist/report/index.js"
-    }
+    },
+    "./report.css": "./dist/components/report/report.css"
   },
   "scripts": {
     "dev": "vite --config examples/basic/vite.config.ts",
-    "build": "tsc -p tsconfig.json",
+    "build": "node scripts/inline-report-css.mjs && tsc -p tsconfig.json",
     "size:dist": "node scripts/print-dist-size.mjs",
     "example:build": "vite build --config examples/basic/vite.config.ts",
     "size:example": "npm run example:build",
-    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p examples/basic/tsconfig.json --noEmit",
+    "typecheck": "node scripts/inline-report-css.mjs && tsc -p tsconfig.json --noEmit && tsc -p examples/basic/tsconfig.json --noEmit",
     "lint": "npm run typecheck",
     "example": "npm run dev"
   },

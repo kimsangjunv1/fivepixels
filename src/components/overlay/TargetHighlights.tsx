@@ -1,6 +1,6 @@
-import { TARGET_COLOR } from "../../constants/report.js";
+import { TARGET_COLOR, TARGET_SURFACE } from "../../constants/report.js";
 import type { TargetSnapshot } from "../../types/report-ui.js";
-import { reportStyles } from "../report/styles.js";
+import { stitchablePartProps } from "../report/parts.js";
 
 type TargetHighlightsProps = {
     hoveredTarget: TargetSnapshot | null;
@@ -11,20 +11,20 @@ type TargetHighlightsProps = {
 function HighlightBox({ target, showLabel }: { target: TargetSnapshot; showLabel?: boolean }) {
     return (
         <div
+            {...stitchablePartProps("highlight-box")}
             style={{
-                ...reportStyles.highlightBox,
                 left: target.rect.left,
                 top: target.rect.top,
                 width: target.rect.width,
                 height: target.rect.height,
                 outline: `2px solid ${TARGET_COLOR[target.type]}`,
-                backgroundColor: `${TARGET_COLOR[target.type]}15`,
+                backgroundColor: TARGET_SURFACE[target.type],
             }}
         >
             {showLabel ? (
                 <span
+                    {...stitchablePartProps("highlight-label")}
                     style={{
-                        ...reportStyles.highlightLabel,
                         backgroundColor: TARGET_COLOR[target.type],
                     }}
                 >
@@ -46,8 +46,8 @@ export function TargetHighlights({ hoveredTarget, previewTargets = [], selectedT
 
             {selectedTarget ? (
                 <div
+                    {...stitchablePartProps("highlight-box")}
                     style={{
-                        ...reportStyles.highlightBox,
                         left: selectedTarget.rect.left,
                         top: selectedTarget.rect.top,
                         width: selectedTarget.rect.width,

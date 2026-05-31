@@ -1,8 +1,25 @@
 import react from "@vitejs/plugin-react";
+import type { Plugin } from "vite";
 import { defineConfig } from "vite";
 
+const reportStylesheetDev = new URL("../../src/components/report/reportStylesheet.dev.ts", import.meta.url).pathname;
+
+function stitchableDevReportStylesheet(): Plugin {
+    return {
+        name: "stitchable-dev-report-stylesheet",
+        enforce: "pre",
+        resolveId(source, importer) {
+            if (source !== "./reportStylesheet.js" || !importer?.includes("ensureReportStyles")) {
+                return null;
+            }
+
+            return reportStylesheetDev;
+        },
+    };
+}
+
 export default defineConfig({
-    plugins: [react()],
+    plugins: [react(), stitchableDevReportStylesheet()],
     root: new URL("./", import.meta.url).pathname,
     build: {
         outDir: "dist",

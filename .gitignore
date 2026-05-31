@@ -3,3 +3,4 @@ node_modules/
 examples/basic/dist/
 
 .env
+src/components/report/reportStylesheet.ts

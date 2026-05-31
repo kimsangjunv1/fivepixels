@@ -1,16 +1,14 @@
-import { TARGET_COLOR } from "../../constants/report.js";
+import { TARGET_COLOR, TARGET_SURFACE } from "../../constants/report.js";
 import { useReport } from "../../providers/reportContext.js";
 import { AnimatedPresence, motion } from "../../motion/index.js";
 import { formatDate } from "../../utils/format.js";
 import { getMarkerColor, getReplyStatusTone, hasReply } from "../../utils/reportVisual.js";
-import { reportStyles } from "../report/styles.js";
+import { stitchablePartProps } from "../report/parts.js";
 
 export function ReportMarkersLayer() {
     const {
         mode,
         markers,
-        palette,
-        resolvedAppearance,
         selectedReport,
         activeReplyReportId,
         activeReplyReport,
@@ -40,14 +38,14 @@ export function ReportMarkersLayer() {
                 marker.rect ? (
                     <div
                         key={`${marker.id}-rect`}
+                        {...stitchablePartProps("readonly-rect")}
                         style={{
-                            ...reportStyles.readonlyRect,
                             left: marker.rect.left,
                             top: marker.rect.top,
                             width: marker.rect.width,
                             height: marker.rect.height,
                             outline: `1px solid ${TARGET_COLOR[marker.report.report_type]}`,
-                            backgroundColor: `${TARGET_COLOR[marker.report.report_type]}10`,
+                            backgroundColor: TARGET_SURFACE[marker.report.report_type],
                         }}
                     />
                 ) : null,
@@ -70,13 +68,13 @@ export function ReportMarkersLayer() {
                     }}
                     onMouseLeave={() => scheduleHoverLeave(marker.report.id)}
                     title={`${marker.report.report_type} · ${marker.report.report_id}`}
+                    {...stitchablePartProps("marker-button", {
+                        modifier: marker.report.id === selectedReport?.id ? "selected" : undefined,
+                    })}
                     style={{
-                        ...reportStyles.markerButton,
                         left: marker.left,
                         top: marker.top,
                         backgroundColor: getMarkerColor(marker.report),
-                        boxShadow: marker.report.id === selectedReport?.id ? "0 0 0 4px rgba(15, 23, 42, 0.2)" : reportStyles.markerButton.boxShadow,
-                        transform: marker.report.id === selectedReport?.id ? "scale(1.15)" : "scale(1)",
                     }}
                 />
             ))}
@@ -109,90 +107,56 @@ export function ReportMarkersLayer() {
                                 openReplyComposer(tooltipReport);
                             }
                         }}
+                        {...stitchablePartProps("marker-tooltip", {
+                            modifier: activeReplyReport ? "expanded" : "compact",
+                        })}
                         style={{
-                            ...reportStyles.markerTooltip,
                             left: Math.min(Math.max(tooltipAnchor.left - 12, 16), window.innerWidth - 296),
                             top: Math.max(tooltipAnchor.top - (activeReplyReport ? 232 : 104), 16),
-                            backgroundColor: activeReplyReport ? palette.panel : resolvedAppearance === "dark" ? "rgba(15, 23, 42, 0.72)" : "rgba(255, 255, 255, 0.72)",
-                            borderColor: palette.panelBorder,
-                            color: palette.text,
-                            pointerEvents: "auto",
-                            cursor: activeReplyReport ? "default" : "pointer",
-                            backdropFilter: "blur(14px)",
                         }}
                     >
-                        <strong style={{ fontSize: 12 }}>
+                        <strong {...stitchablePartProps("marker-tooltip-title")}>
                             {tooltipReport.report_type} · {tooltipReport.report_id}
                         </strong>
-                        <div style={reportStyles.markerTooltipHeader}>
+                        <div {...stitchablePartProps("marker-tooltip-header")}>
                             <span
-                                style={{
-                                    ...reportStyles.statusBadge,
-                                    ...getReplyStatusTone(hasReply(tooltipReport)),
-                                }}
+                                {...stitchablePartProps("status-badge")}
+                                style={getReplyStatusTone(hasReply(tooltipReport))}
                             >
                                 {hasReply(tooltipReport) ? "답변 완료" : "답변 미완료"}
                             </span>
-                            <span
-                                style={{
-                                    ...reportStyles.reportMeta,
-                                    margin: 0,
-                                    color: palette.muted,
-                                }}
-                            >
+                            <span {...stitchablePartProps("report-meta", { className: "stitchable-report-meta--flat" })}>
                                 {formatDate(tooltipReport.created_at)}
                             </span>
                         </div>
                         {tooltipFieldTags.length ? (
-                            <div style={reportStyles.tagList}>
+                            <div {...stitchablePartProps("tag-list")}>
                                 {tooltipFieldTags.map((fieldTag) => (
                                     <span
                                         key={fieldTag.key}
-                                        style={{
-                                            ...reportStyles.fieldTag,
-                                            backgroundColor: palette.chip,
-                                            color: palette.text,
-                                        }}
+                                        {...stitchablePartProps("field-tag")}
                                     >
                                         {fieldTag.label}
                                     </span>
                                 ))}
                             </div>
                         ) : null}
-                        <p
-                            style={{
-                                ...reportStyles.markerTooltipMessage,
-                                color: palette.text,
-                            }}
-                        >
-                            {tooltipReport.message}
-                        </p>
+                        <p {...stitchablePartProps("marker-tooltip-message")}>{tooltipReport.message}</p>
                         {activeReplyReport ? (
                             <div
-                                style={reportStyles.editorSection}
+                                {...stitchablePartProps("editor-section")}
                                 onClick={(event) => event.stopPropagation()}
                                 onMouseDown={(event) => event.stopPropagation()}
                             >
                                 {activeReplyReport.replies.length ? (
-                                    <div style={reportStyles.replyList}>
+                                    <div {...stitchablePartProps("reply-list")}>
                                         {activeReplyReport.replies.map((reply) => (
                                             <div
                                                 key={reply.id}
-                                                style={{
-                                                    ...reportStyles.replyItem,
-                                                    backgroundColor: palette.chip,
-                                                    color: palette.text,
-                                                }}
+                                                {...stitchablePartProps("reply-item")}
                                             >
-                                                <p style={{ margin: 0, fontSize: 12 }}>{reply.message}</p>
-                                                <p
-                                                    style={{
-                                                        ...reportStyles.reportMeta,
-                                                        color: palette.muted,
-                                                    }}
-                                                >
-                                                    {formatDate(reply.created_at)}
-                                                </p>
+                                                <p {...stitchablePartProps("reply-text")}>{reply.message}</p>
+                                                <p {...stitchablePartProps("report-meta")}>{formatDate(reply.created_at)}</p>
                                             </div>
                                         ))}
                                     </div>
@@ -202,26 +166,16 @@ export function ReportMarkersLayer() {
                                     onChange={(event) => setReplyDraft(event.target.value)}
                                     placeholder="답변을 입력해주세요."
                                     onClick={(event) => event.stopPropagation()}
-                                    style={{
-                                        ...reportStyles.textarea,
-                                        minHeight: 96,
-                                        backgroundColor: palette.input,
-                                        borderColor: palette.inputBorder,
-                                        color: palette.inputText,
-                                    }}
+                                    {...stitchablePartProps("textarea", { className: "stitchable-textarea--compact" })}
                                 />
-                                <div style={reportStyles.buttonRow}>
+                                <div {...stitchablePartProps("button-row")}>
                                     <button
                                         type="button"
                                         onClick={(event) => {
                                             event.stopPropagation();
                                             closeReplyComposer();
                                         }}
-                                        style={{
-                                            ...reportStyles.secondaryButton,
-                                            borderColor: palette.inputBorder,
-                                            color: palette.text,
-                                        }}
+                                        {...stitchablePartProps("secondary-button")}
                                     >
                                         닫기
                                     </button>
@@ -232,10 +186,7 @@ export function ReportMarkersLayer() {
                                             void handleReplySubmit();
                                         }}
                                         disabled={isUpdating}
-                                        style={{
-                                            ...reportStyles.primaryButton,
-                                            backgroundColor: "#2563eb",
-                                        }}
+                                        {...stitchablePartProps("primary-button")}
                                     >
                                         {isUpdating ? "전송 중..." : "전송"}
                                     </button>
