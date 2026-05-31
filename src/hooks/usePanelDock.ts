@@ -6,12 +6,18 @@ import {
     useState,
     type CSSProperties,
     type PointerEvent as ReactPointerEvent,
-    type RefObject,
 } from "react";
 
+export type PanelCorner = "top-left" | "top-right" | "bottom-left" | "bottom-right";
+
+/** @deprecated Edge docking replaced by corner placement; kept for storage migration. */
 export type PanelEdge = "top" | "bottom" | "left" | "right";
 
 export type PanelPlacement = {
+    corner: PanelCorner;
+};
+
+type LegacyPanelPlacement = {
     edge: PanelEdge;
     offset: number;
 };
@@ -19,10 +25,19 @@ export type PanelPlacement = {
 const STORAGE_KEY = "stitchable:panel-placement";
 const LEGACY_STORAGE_KEY = "stitchable:panel-dock-position";
 const EDGE_MARGIN = 16;
-const DEFAULT_PLACEMENT: PanelPlacement = { edge: "left", offset: EDGE_MARGIN };
+const DEFAULT_PLACEMENT: PanelPlacement = { corner: "top-left" };
 
-function clamp(value: number, min: number, max: number) {
-    return Math.min(Math.max(value, min), max);
+const PANEL_CORNERS: PanelCorner[] = ["top-left", "top-right", "bottom-left", "bottom-right"];
+
+const GLOW_ANCHOR: Record<PanelCorner, { x: string; y: string }> = {
+    "top-left": { x: "18%", y: "22%" },
+    "top-right": { x: "82%", y: "22%" },
+    "bottom-left": { x: "18%", y: "78%" },
+    "bottom-right": { x: "82%", y: "78%" },
+};
+
+function isPanelCorner(value: string | null | undefined): value is PanelCorner {
+    return value === "top-left" || value === "top-right" || value === "bottom-left" || value === "bottom-right";
 }
 
 function isPanelEdge(value: string | null): value is PanelEdge {
@@ -30,14 +45,51 @@ function isPanelEdge(value: string | null): value is PanelEdge {
 }
 
 function isPanelPlacement(value: unknown): value is PanelPlacement {
+    return typeof value === "object" && value !== null && "corner" in value && isPanelCorner(String((value as PanelPlacement).corner));
+}
+
+function isLegacyPanelPlacement(value: unknown): value is LegacyPanelPlacement {
     return (
         typeof value === "object" &&
         value !== null &&
         "edge" in value &&
         "offset" in value &&
-        isPanelEdge(String((value as PanelPlacement).edge)) &&
-        typeof (value as PanelPlacement).offset === "number"
+        isPanelEdge(String((value as LegacyPanelPlacement).edge)) &&
+        typeof (value as LegacyPanelPlacement).offset === "number"
     );
+}
+
+function edgeOffsetToCorner(edge: PanelEdge, offset: number): PanelCorner {
+    if (typeof window === "undefined") {
+        return DEFAULT_PLACEMENT.corner;
+    }
+
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    switch (edge) {
+        case "top":
+            return offset < viewportWidth / 2 ? "top-left" : "top-right";
+        case "bottom":
+            return offset < viewportWidth / 2 ? "bottom-left" : "bottom-right";
+        case "left":
+            return offset < viewportHeight / 2 ? "top-left" : "bottom-left";
+        case "right":
+            return offset < viewportHeight / 2 ? "top-right" : "bottom-right";
+    }
+}
+
+function legacyEdgeToCorner(edge: PanelEdge): PanelCorner {
+    switch (edge) {
+        case "top":
+            return "top-left";
+        case "bottom":
+            return "bottom-left";
+        case "left":
+            return "top-left";
+        case "right":
+            return "top-right";
+    }
 }
 
 function readStoredPlacement(): PanelPlacement {
@@ -52,11 +104,14 @@ function readStoredPlacement(): PanelPlacement {
             if (isPanelPlacement(parsed)) {
                 return parsed;
             }
+            if (isLegacyPanelPlacement(parsed)) {
+                return { corner: edgeOffsetToCorner(parsed.edge, parsed.offset) };
+            }
         }
 
         const legacy = window.localStorage.getItem(LEGACY_STORAGE_KEY);
         if (isPanelEdge(legacy)) {
-            return { edge: legacy, offset: EDGE_MARGIN };
+            return { corner: legacyEdgeToCorner(legacy) };
         }
     } catch {
         // Ignore storage failures in restricted environments.
@@ -74,83 +129,40 @@ function persistPlacement(placement: PanelPlacement) {
     }
 }
 
-export function getNearestPanelEdge(clientX: number, clientY: number): PanelEdge {
+export function getNearestPanelCorner(clientX: number, clientY: number): PanelCorner {
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
-    const distances: Array<[PanelEdge, number]> = [
-        ["top", clientY],
-        ["bottom", viewportHeight - clientY],
-        ["left", clientX],
-        ["right", viewportWidth - clientX],
+    const cornerPoints: Array<[PanelCorner, number, number]> = [
+        ["top-left", EDGE_MARGIN, EDGE_MARGIN],
+        ["top-right", viewportWidth - EDGE_MARGIN, EDGE_MARGIN],
+        ["bottom-left", EDGE_MARGIN, viewportHeight - EDGE_MARGIN],
+        ["bottom-right", viewportWidth - EDGE_MARGIN, viewportHeight - EDGE_MARGIN],
     ];
 
-    distances.sort((a, b) => a[1] - b[1]);
-    return distances[0][0];
-}
+    let nearest = cornerPoints[0][0];
+    let nearestDistance = Number.POSITIVE_INFINITY;
 
-function getPanelSize(panelRef: RefObject<HTMLElement | null>) {
-    const rect = panelRef.current?.getBoundingClientRect();
-    return {
-        width: rect?.width ?? 320,
-        height: rect?.height ?? 240,
-    };
-}
-
-export function clampPanelPlacement(
-    placement: PanelPlacement,
-    panelWidth: number,
-    panelHeight: number,
-): PanelPlacement {
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-
-    if (placement.edge === "top" || placement.edge === "bottom") {
-        const min = EDGE_MARGIN;
-        const max = Math.max(min, viewportWidth - panelWidth - EDGE_MARGIN);
-        return {
-            edge: placement.edge,
-            offset: clamp(placement.offset, min, max),
-        };
+    for (const [corner, x, y] of cornerPoints) {
+        const distance = (clientX - x) ** 2 + (clientY - y) ** 2;
+        if (distance < nearestDistance) {
+            nearestDistance = distance;
+            nearest = corner;
+        }
     }
 
-    const min = EDGE_MARGIN;
-    const max = Math.max(min, viewportHeight - panelHeight - EDGE_MARGIN);
-    return {
-        edge: placement.edge,
-        offset: clamp(placement.offset, min, max),
-    };
+    return nearest;
 }
 
-export function projectPointerToPlacement(
-    clientX: number,
-    clientY: number,
-    panelWidth: number,
-    panelHeight: number,
-): PanelPlacement {
-    const edge = getNearestPanelEdge(clientX, clientY);
+export function clampPanelPlacement(placement: PanelPlacement): PanelPlacement {
+    return isPanelCorner(placement.corner) ? placement : DEFAULT_PLACEMENT;
+}
 
-    if (edge === "top" || edge === "bottom") {
-        return clampPanelPlacement(
-            {
-                edge,
-                offset: clientX - panelWidth / 2,
-            },
-            panelWidth,
-            panelHeight,
-        );
-    }
-
-    return clampPanelPlacement(
-        {
-            edge,
-            offset: clientY - panelHeight / 2,
-        },
-        panelWidth,
-        panelHeight,
-    );
+export function projectPointerToPlacement(clientX: number, clientY: number): PanelPlacement {
+    return { corner: getNearestPanelCorner(clientX, clientY) };
 }
 
 export function placementToPanelStyle(placement: PanelPlacement): CSSProperties {
+    const glow = GLOW_ANCHOR[placement.corner];
     const style: CSSProperties = {
         top: "auto",
         right: "auto",
@@ -158,29 +170,29 @@ export function placementToPanelStyle(placement: PanelPlacement): CSSProperties 
         left: "auto",
         overflow: "visible",
         maxHeight: "none",
-    };
+        "--stitchable-panel-glow-x": glow.x,
+        "--stitchable-panel-glow-y": glow.y,
+    } as CSSProperties;
 
-    switch (placement.edge) {
-        case "top":
+    switch (placement.corner) {
+        case "top-left":
             style.top = EDGE_MARGIN;
-            style.left = placement.offset;
+            style.left = EDGE_MARGIN;
             break;
-        case "bottom":
+        case "top-right":
+            style.top = EDGE_MARGIN;
+            style.right = EDGE_MARGIN;
+            break;
+        case "bottom-left":
             style.bottom = EDGE_MARGIN;
-            style.left = placement.offset;
+            style.left = EDGE_MARGIN;
             style.maxHeight = "min(68vh, 560px)";
             style.overflow = "auto";
             break;
-        case "left":
-            style.left = EDGE_MARGIN;
-            style.top = placement.offset;
-            style.maxHeight = `calc(100vh - ${EDGE_MARGIN * 2}px)`;
-            style.overflow = "auto";
-            break;
-        case "right":
+        case "bottom-right":
+            style.bottom = EDGE_MARGIN;
             style.right = EDGE_MARGIN;
-            style.top = placement.offset;
-            style.maxHeight = `calc(100vh - ${EDGE_MARGIN * 2}px)`;
+            style.maxHeight = "min(68vh, 560px)";
             style.overflow = "auto";
             break;
     }
@@ -196,7 +208,9 @@ export function getMobilePanelStyle(): CSSProperties {
         left: EDGE_MARGIN,
         maxHeight: "min(68vh, 560px)",
         overflow: "auto",
-    };
+        "--stitchable-panel-glow-x": GLOW_ANCHOR["bottom-right"].x,
+        "--stitchable-panel-glow-y": GLOW_ANCHOR["bottom-right"].y,
+    } as CSSProperties;
 }
 
 export function usePanelDock({ enabled, measureKey }: { enabled: boolean; measureKey?: unknown }) {
@@ -207,7 +221,7 @@ export function usePanelDock({ enabled, measureKey }: { enabled: boolean; measur
     const dragPointerIdRef = useRef<number | null>(null);
 
     const currentPlacement = previewPlacement ?? placement;
-    const activeEdge = isDragging ? currentPlacement.edge : null;
+    const activeCorner = isDragging ? currentPlacement.corner : null;
 
     useEffect(() => {
         if (enabled) {
@@ -223,14 +237,11 @@ export function usePanelDock({ enabled, measureKey }: { enabled: boolean; measur
             return;
         }
 
-        const panelSize = getPanelSize(panelRef);
-        setPlacement((current) => clampPanelPlacement(current, panelSize.width, panelSize.height));
+        setPlacement((current) => clampPanelPlacement(current));
     }, [enabled, measureKey]);
 
     const updatePlacementFromPointer = useCallback((clientX: number, clientY: number) => {
-        const panelSize = getPanelSize(panelRef);
-        const nextPlacement = projectPointerToPlacement(clientX, clientY, panelSize.width, panelSize.height);
-        setPreviewPlacement(nextPlacement);
+        setPreviewPlacement(projectPointerToPlacement(clientX, clientY));
     }, []);
 
     const finishDrag = useCallback(() => {
@@ -252,11 +263,8 @@ export function usePanelDock({ enabled, measureKey }: { enabled: boolean; measur
         }
 
         const handleResize = () => {
-            const panelSize = getPanelSize(panelRef);
-            setPlacement((current) => clampPanelPlacement(current, panelSize.width, panelSize.height));
-            setPreviewPlacement((current) =>
-                current ? clampPanelPlacement(current, panelSize.width, panelSize.height) : current,
-            );
+            setPlacement((current) => clampPanelPlacement(current));
+            setPreviewPlacement((current) => (current ? clampPanelPlacement(current) : current));
         };
 
         window.addEventListener("resize", handleResize);
@@ -316,7 +324,9 @@ export function usePanelDock({ enabled, measureKey }: { enabled: boolean; measur
         panelRef,
         panelStyle,
         isDragging,
-        activeEdge,
+        activeCorner,
         handleDragHandlePointerDown,
     };
 }
+
+export { PANEL_CORNERS };

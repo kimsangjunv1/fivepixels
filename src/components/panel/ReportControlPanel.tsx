@@ -12,7 +12,7 @@ export function ReportControlPanel() {
     const { appearance, mode, helperText, errorMessage, showFeedbackList, showTargetPreview, visibleShortcutKeys, isMobileViewport, toggleReportMode, toggleTargetPreview, toggleViewMode } =
         useReport();
     const [panelCollapsed, setPanelCollapsed] = useState(false);
-    const { panelRef, panelStyle, isDragging, activeEdge, handleDragHandlePointerDown } = usePanelDock({
+    const { panelRef, panelStyle, isDragging, activeCorner, handleDragHandlePointerDown } = usePanelDock({
         enabled: !isMobileViewport,
         measureKey: panelCollapsed,
     });
@@ -23,7 +23,7 @@ export function ReportControlPanel() {
             <>
                 <PanelDockGuides
                     visible={isDragging}
-                    activeEdge={activeEdge}
+                    activeCorner={activeCorner}
                 />
                 <div
                     ref={panelRef}
@@ -47,7 +47,7 @@ export function ReportControlPanel() {
         <>
             <PanelDockGuides
                 visible={isDragging}
-                activeEdge={activeEdge}
+                activeCorner={activeCorner}
             />
             <div
                 ref={panelRef}
