@@ -2,25 +2,15 @@ import { useState } from "react";
 import { REPORT_SHORTCUTS } from "../../constants/reportShortcuts.js";
 import { usePanelDock } from "../../hooks/usePanelDock.js";
 import { useReport } from "../../providers/reportContext.js";
+import { EyeClosedIcon, EyeOpenIcon } from "../icons/EyeIcon.js";
 import { ShortcutHint } from "../ShortcutHint.js";
 import { stitchablePartProps } from "../report/parts.js";
 import { PanelDockGuides } from "./PanelDockGuides.js";
 import { ReportFeedbackList } from "./ReportFeedbackList.js";
 
 export function ReportControlPanel() {
-    const {
-        appearance,
-        mode,
-        helperText,
-        errorMessage,
-        showFeedbackList,
-        showTargetPreview,
-        visibleShortcutKeys,
-        isMobileViewport,
-        toggleReportMode,
-        toggleTargetPreview,
-        toggleViewMode,
-    } = useReport();
+    const { appearance, mode, helperText, errorMessage, showFeedbackList, showTargetPreview, visibleShortcutKeys, isMobileViewport, toggleReportMode, toggleTargetPreview, toggleViewMode } =
+        useReport();
     const [panelCollapsed, setPanelCollapsed] = useState(false);
     const { panelRef, panelStyle, isDragging, activeEdge, handleDragHandlePointerDown } = usePanelDock({
         enabled: !isMobileViewport,
@@ -31,7 +21,10 @@ export function ReportControlPanel() {
     if (panelCollapsed) {
         return (
             <>
-                <PanelDockGuides visible={isDragging} activeEdge={activeEdge} />
+                <PanelDockGuides
+                    visible={isDragging}
+                    activeEdge={activeEdge}
+                />
                 <div
                     ref={panelRef}
                     {...stitchablePartProps("floating-panel", { modifier: "collapsed" })}
@@ -52,89 +45,125 @@ export function ReportControlPanel() {
 
     return (
         <>
-            <PanelDockGuides visible={isDragging} activeEdge={activeEdge} />
-            <div ref={panelRef} {...stitchablePartProps("floating-panel")} style={panelStyle}>
-                <div
-                    {...stitchablePartProps("panel-header", {
-                        modifier: isDragging ? "dragging" : undefined,
-                    })}
-                >
+            <PanelDockGuides
+                visible={isDragging}
+                activeEdge={activeEdge}
+            />
+            <div
+                ref={panelRef}
+                {...stitchablePartProps("floating-panel")}
+                style={panelStyle}
+            >
+                <section style={{ display: "flex" }}>
                     <div
-                        {...stitchablePartProps("panel-drag-handle")}
+                        {...stitchablePartProps("panel-header", {
+                            modifier: isDragging ? "dragging" : undefined,
+                        })}
+                        style={{
+                            display: "flex",
+                            // flexDirection: "column",
+                            justifyContent: "flex-start",
+                            alignItems: "flex-start",
+                            gap: "4px",
+                            cursor: "grab",
+                        }}
                         onPointerDown={handleDragHandlePointerDown}
                         aria-label="패널 위치 변경"
                         title="드래그해서 위치 변경"
-                    />
-                    <strong {...stitchablePartProps("panel-title")}>stitchable</strong>
-                    <span {...stitchablePartProps("badge")}>{appearance}</span>
-                </div>
+                    >
+                        <section style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                            {/* <strong {...stitchablePartProps("panel-title")}>stitchable</strong> */}
+                            <p
+                                {...stitchablePartProps("helper-text")}
+                                style={{ fontSize: "16px", color: "var(--adaptive-blue700)", fontWeight: "700" }}
+                            >
+                                리포트 도구
+                            </p>
+
+                            <p
+                                {...stitchablePartProps("helper-text")}
+                                style={{ color: "var(--adaptive-greyOpacity500)" }}
+                            >
+                                {helperText}
+                            </p>
+                            {/* <p {...stitchablePartProps("helper-text")}>{helperText}</p> */}
+                        </section>
+                    </div>
+
+                    <button
+                        type="button"
+                        onClick={() => setPanelCollapsed(true)}
+                        {...stitchablePartProps("secondary-button")}
+                        aria-expanded={true}
+                    >
+                        숨기기
+                    </button>
+                </section>
 
                 <div {...stitchablePartProps("panel-body")}>
-                    <p {...stitchablePartProps("helper-text")}>{helperText}</p>
+                    {/* <p {...stitchablePartProps("helper-text")}>{helperText}</p> */}
 
                     <div
                         {...stitchablePartProps("button-row")}
                         style={{ display: "flex", flexDirection: "column" }}
                     >
-                        <section style={{ display: "flex", width: "100%", gap: "4px" }}>
-                            <button
-                                type="button"
-                                onClick={toggleReportMode}
-                                {...stitchablePartProps("primary-button", {
-                                    modifier: mode === "report" ? "danger" : undefined,
-                                })}
-                            >
-                                <span {...stitchablePartProps("button-with-hint")}>
-                                    {mode === "report" ? "중단" : "기록"}
-                                    <ShortcutHint
-                                        binding={REPORT_SHORTCUTS.toggleReportMode}
-                                        visible={visibleShortcutKeys}
-                                    />
-                                </span>
-                            </button>
+                        <section style={{ display: "flex", width: "100%", gap: "8px" }}>
+                            <section style={{ display: "flex", width: "100%", gap: "4px" }}>
+                                <button
+                                    type="button"
+                                    onClick={toggleReportMode}
+                                    {...stitchablePartProps("primary-button", {
+                                        modifier: mode === "report" ? "danger" : undefined,
+                                    })}
+                                >
+                                    <span {...stitchablePartProps("button-with-hint")}>
+                                        {mode === "report" ? "중단" : "기록"}
+                                        <ShortcutHint
+                                            binding={REPORT_SHORTCUTS.toggleReportMode}
+                                            visible={visibleShortcutKeys}
+                                        />
+                                    </span>
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={toggleViewMode}
+                                    {...stitchablePartProps("secondary-button", {
+                                        modifier: showListSection ? "accent" : undefined,
+                                    })}
+                                >
+                                    <span {...stitchablePartProps("button-with-hint")}>
+                                        {showListSection ? "목록 닫기" : "목록"}
+                                        <ShortcutHint
+                                            binding={REPORT_SHORTCUTS.toggleViewMode}
+                                            visible={visibleShortcutKeys}
+                                        />
+                                    </span>
+                                </button>
+                            </section>
+
+                            <div style={{ height: "24px", width: "1px", background: "var(--adaptive-grey300)", margin: "auto 0" }} />
 
                             <button
                                 type="button"
-                                onClick={toggleViewMode}
+                                onClick={toggleTargetPreview}
+                                disabled={mode !== "idle"}
+                                aria-label={showTargetPreview ? "X-Ray 끄기" : "X-Ray 켜기"}
+                                title={showTargetPreview ? "X-Ray 끄기" : "X-Ray 켜기"}
                                 {...stitchablePartProps("secondary-button", {
-                                    modifier: showListSection ? "accent" : undefined,
+                                    modifier: showTargetPreview ? "accent" : undefined,
                                 })}
+                                style={{ flex: "0 0 auto", alignSelf: "flex-end", padding: "8px 10px" }}
                             >
                                 <span {...stitchablePartProps("button-with-hint")}>
-                                    {showListSection ? "목록 닫기" : "목록"}
+                                    {showTargetPreview ? <EyeOpenIcon /> : <EyeClosedIcon />}
                                     <ShortcutHint
-                                        binding={REPORT_SHORTCUTS.toggleViewMode}
+                                        binding={REPORT_SHORTCUTS.toggleTargetPreview}
                                         visible={visibleShortcutKeys}
                                     />
                                 </span>
                             </button>
                         </section>
-
-                        <button
-                            type="button"
-                            onClick={toggleTargetPreview}
-                            disabled={mode !== "idle"}
-                            {...stitchablePartProps("secondary-button", {
-                                modifier: showTargetPreview ? "accent" : undefined,
-                            })}
-                        >
-                            <span {...stitchablePartProps("button-with-hint")}>
-                                {showTargetPreview ? "X-Ray OFF" : "X-Ray ON"}
-                                <ShortcutHint
-                                    binding={REPORT_SHORTCUTS.toggleTargetPreview}
-                                    visible={visibleShortcutKeys}
-                                />
-                            </span>
-                        </button>
-
-                        <button
-                            type="button"
-                            onClick={() => setPanelCollapsed(true)}
-                            {...stitchablePartProps("secondary-button")}
-                            aria-expanded={true}
-                        >
-                            숨기기
-                        </button>
                     </div>
 
                     {errorMessage ? <p {...stitchablePartProps("error-text")}>{errorMessage}</p> : null}

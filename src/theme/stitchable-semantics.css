@@ -3,9 +3,10 @@
     --stitchable-panel-bg: var(--adaptive-floatBackground);
     --stitchable-panel-border: var(--adaptive-hairlineBorder);
     --stitchable-text: var(--adaptive-grey500);
+    --stitchable-text: var(--adaptive-grey100);
     --stitchable-muted: var(--adaptive-grey600);
     --stitchable-input-bg: var(--adaptive-backgroundLevel01);
-    --stitchable-input-border: var(--adaptive-grey300);
+    --stitchable-input-border: var(--adaptive-greyOpacity500);
     /* --stitchable-input-border: var(--adaptive-hairlineBorder); */
     --stitchable-input-text: var(--adaptive-grey900);
     --stitchable-chip-bg: var(--adaptive-grey100);
