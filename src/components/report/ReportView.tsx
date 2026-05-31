@@ -2,12 +2,11 @@ import { useReport } from "../../providers/reportContext.js";
 import { ReportOverlayLayer } from "../overlay/ReportOverlayLayer.js";
 import { ReportControlPanel } from "../panel/ReportControlPanel.js";
 import { ReportDraftForm } from "../panel/ReportDraftForm.js";
-import { ReportFeedbackList } from "../panel/ReportFeedbackList.js";
 import { ReportMarkersLayer } from "../point/ReportMarkersLayer.js";
 import { StitchableRoot } from "./StitchableRoot.js";
 
 export function ReportView() {
-    const { mode, showFeedbackList, showTargetPreview } = useReport();
+    const { mode, showTargetPreview } = useReport();
 
     const showOverlay = mode !== "idle" || showTargetPreview;
 
@@ -26,7 +25,6 @@ export function ReportView() {
                 </ReportOverlayLayer>
             ) : null}
 
-            {mode === "view" && showFeedbackList ? <ReportFeedbackList /> : null}
         </StitchableRoot>
     );
 }

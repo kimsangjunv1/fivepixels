@@ -2,15 +2,16 @@
 [data-stitchable-root][data-stitchable-theme="dark"] {
     --stitchable-panel-bg: var(--adaptive-floatBackground);
     --stitchable-panel-border: var(--adaptive-hairlineBorder);
-    --stitchable-text: var(--adaptive-grey900);
+    --stitchable-text: var(--adaptive-grey800);
     --stitchable-muted: var(--adaptive-grey600);
     --stitchable-input-bg: var(--adaptive-backgroundLevel01);
-    --stitchable-input-border: var(--adaptive-hairlineBorder);
+    --stitchable-input-border: var(--adaptive-greyOpacity500);
+    /* --stitchable-input-border: var(--adaptive-hairlineBorder); */
     --stitchable-input-text: var(--adaptive-grey900);
     --stitchable-chip-bg: var(--adaptive-grey100);
     --stitchable-overlay-bg: var(--adaptive-backgroundDimmed);
     --stitchable-card-bg: var(--adaptive-layeredBackground);
-    --stitchable-accent: var(--adaptive-blue500);
+    --stitchable-accent: var(--adaptive-blue400);
     --stitchable-danger: var(--adaptive-red500);
     --stitchable-error: var(--adaptive-red500);
     --stitchable-primary-on: #ffffff;

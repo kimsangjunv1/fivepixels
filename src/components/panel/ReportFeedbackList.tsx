@@ -33,7 +33,7 @@ export function ReportFeedbackList() {
     } = useReport();
 
     return (
-        <aside {...stitchablePartProps("side-panel")}>
+        <section {...stitchablePartProps("side-panel")}>
             <div {...stitchablePartProps("side-panel-header")}>
                 <strong>피드백 목록</strong>
                 <span {...stitchablePartProps("badge")}>{filteredReports.length}</span>
@@ -53,7 +53,10 @@ export function ReportFeedbackList() {
                         placeholder="메시지 / report id 검색"
                         {...stitchablePartProps("input", { className: "stitchable-input--grow" })}
                     />
-                    <ShortcutHint binding={REPORT_SHORTCUTS.focusSearch} visible={visibleShortcutKeys} />
+                    <ShortcutHint
+                        binding={REPORT_SHORTCUTS.focusSearch}
+                        visible={visibleShortcutKeys}
+                    />
                 </div>
                 <select
                     value={filters.status}
@@ -160,9 +163,7 @@ export function ReportFeedbackList() {
                                             fields={fields}
                                             message={editableDraft.message}
                                             fieldValues={editableDraft.fieldValues}
-                                            onMessageChange={(nextMessage) =>
-                                                setEditableDraft((current) => (current ? { ...current, message: nextMessage } : current))
-                                            }
+                                            onMessageChange={(nextMessage) => setEditableDraft((current) => (current ? { ...current, message: nextMessage } : current))}
                                             onFieldChange={(key, nextValue) =>
                                                 setEditableDraft((current) =>
                                                     current
@@ -206,7 +207,10 @@ export function ReportFeedbackList() {
                                         >
                                             <span {...stitchablePartProps("button-with-hint")}>
                                                 닫기
-                                                <ShortcutHint binding={REPORT_SHORTCUTS.cancel} visible={visibleShortcutKeys} />
+                                                <ShortcutHint
+                                                    binding={REPORT_SHORTCUTS.cancel}
+                                                    visible={visibleShortcutKeys}
+                                                />
                                             </span>
                                         </button>
                                         <button
@@ -217,7 +221,10 @@ export function ReportFeedbackList() {
                                         >
                                             <span {...stitchablePartProps("button-with-hint")}>
                                                 {isUpdating ? "저장 중..." : "수정 저장"}
-                                                <ShortcutHint binding={REPORT_SHORTCUTS.submit} visible={visibleShortcutKeys} />
+                                                <ShortcutHint
+                                                    binding={REPORT_SHORTCUTS.submit}
+                                                    visible={visibleShortcutKeys}
+                                                />
                                             </span>
                                         </button>
                                     </div>
@@ -227,6 +234,6 @@ export function ReportFeedbackList() {
                     );
                 })}
             </div>
-        </aside>
+        </section>
     );
 }
