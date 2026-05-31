@@ -189,6 +189,10 @@ export default function App() {
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify(payload),
                     }).then((res) => res.json()),
+                remove: (id) =>
+                    fetch(`/api/feedbacks/${id}`, {
+                        method: "DELETE",
+                    }).then(() => undefined),
             }}
         />
     );
@@ -208,6 +212,9 @@ export const adapter: ReportStorageAdapter = {
     }),
     update: async (id, payload) => {
         throw new Error(`Implement update for ${id}`);
+    },
+    remove: async (id) => {
+        await fetch(`/api/feedbacks/${id}`, { method: "DELETE" });
     },
 };
 ```
@@ -246,6 +253,10 @@ export const reportAdapter: ReportStorageAdapter = {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload),
+        }),
+    remove: (id: string) =>
+        request<void>(`/api/reports/${id}`, {
+            method: "DELETE",
         }),
 };
 ```

@@ -109,6 +109,8 @@
 - [x] 예제 기준 수동 동작 검증
 - [x] migration 검토
 - [x] 배포 전 체크리스트 정리
+- [x] Vitest 단위 테스트 (`npm run test`)
+- [x] GitHub Actions CI (typecheck, test, build, example:build)
 
 완료 기준
 
