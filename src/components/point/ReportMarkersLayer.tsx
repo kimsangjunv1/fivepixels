@@ -16,8 +16,7 @@ const TOOLTIP_MOTION_TRANSITION = {
     damping: 10,
 };
 
-const MARKER_BUTTON_BASE_CLASS =
-    "pointer-events-auto fixed z-[1000000] flex -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full";
+const MARKER_BUTTON_BASE_CLASS = "pointer-events-auto fixed z-[1000000] flex -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full";
 
 type MarkerButtonProps = {
     markerItem: Marker;
@@ -161,7 +160,7 @@ export function ReportMarkersLayer() {
                         ref={tooltipHoverRef}
                         key={`${tooltipReport.id}-${isExpandedTooltip ? "expanded" : "preview"}`}
                         data-stitchable-interactive=""
-                        initial={false}
+                        initial={{ opacity: 0, y: 5, scale: 0.97 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 5, scale: 0.97 }}
                         transition={TOOLTIP_MOTION_TRANSITION}
@@ -221,9 +220,7 @@ export function ReportMarkersLayer() {
                                                 className="rounded-md border border-slate-100 bg-slate-50 p-1.5 text-xs text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
                                             >
                                                 <p className="text-xs">{reply.message}</p>
-                                                <p className="mt-0.5 text-[10px] text-slate-500 dark:text-slate-400">
-                                                    {formatDate(reply.created_at)}
-                                                </p>
+                                                <p className="mt-0.5 text-[10px] text-slate-500 dark:text-slate-400">{formatDate(reply.created_at)}</p>
                                             </div>
                                         ))}
                                     </div>
