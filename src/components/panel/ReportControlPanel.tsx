@@ -5,6 +5,7 @@ import { useReport } from "../../providers/reportContext.js";
 import { ChevronLeftIcon, ChevronRightIcon } from "../icons/ChevronIcon.js";
 import { EyeClosedIcon, EyeOpenIcon } from "../icons/EyeIcon.js";
 import { ShortcutHint } from "../ShortcutHint.js";
+import { PanelDockGuides } from "./PanelDockGuides.js";
 import { ReportFeedbackList } from "./ReportFeedbackList.js";
 
 function PanelCollapseTab({ collapsed, anchorSide, onClick }: { collapsed: boolean; anchorSide: "left" | "right"; onClick: () => void }) {
@@ -33,7 +34,7 @@ function PanelCollapseTab({ collapsed, anchorSide, onClick }: { collapsed: boole
 export function ReportControlPanel() {
     const { mode, helperText, errorMessage, showFeedbackList, showTargetPreview, visibleShortcutKeys, isMobileViewport, toggleReportMode, toggleTargetPreview, toggleViewMode } = useReport();
     const [panelCollapsed, setPanelCollapsed] = useState(false);
-    const { panelRef, panelStyle, placementCorner, isDragging, handleDragHandlePointerDown } = usePanelDock({
+    const { panelRef, panelStyle, placementCorner, isDragging, activeCorner, handleDragHandlePointerDown } = usePanelDock({
         enabled: !isMobileViewport,
         measureKey: panelCollapsed,
     });
@@ -41,7 +42,10 @@ export function ReportControlPanel() {
     const anchorSide = panelAnchorSide(placementCorner);
 
     return (
-        <div
+        <>
+            <PanelDockGuides visible={isDragging} activeCorner={activeCorner} />
+
+            <div
             ref={panelRef}
             className="pointer-events-auto fixed z-[1000000] flex max-h-[80vh] min-h-[40px] w-[320px] flex-col overflow-hidden rounded-lg border border-slate-300 bg-[var(--adaptive-grey50)] shadow-lg"
             // className={
@@ -158,5 +162,6 @@ export function ReportControlPanel() {
                 />
             ) : null}
         </div>
+        </>
     );
 }
