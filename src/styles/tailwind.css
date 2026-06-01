@@ -3,6 +3,15 @@
 
 @source "../components/**/*.tsx";
 
+@theme {
+    /* Use absolute units so host html font-size does not scale library spacing/text. */
+    --spacing: 4px;
+    --text-xs: 12px;
+    --text-xs--line-height: 1.33333;
+    --text-sm: 14px;
+    --text-sm--line-height: 1.42857;
+}
+
 [data-stitchable-theme="light"] {
     --st-bg: #ffffff;
     --st-bg-muted: #f8fafc;
@@ -34,12 +43,22 @@
 }
 
 [data-stitchable-mount] {
+    all: initial;
+    display: block;
     pointer-events: none;
     position: fixed;
     inset: 0;
     font-family: ui-sans-serif, system-ui, sans-serif;
-    font-size: 0.875rem;
+    font-size: 14px;
+    line-height: 1.42857;
     color: var(--st-text);
+}
+
+[data-stitchable-mount],
+[data-stitchable-mount] *,
+[data-stitchable-mount] *::before,
+[data-stitchable-mount] *::after {
+    box-sizing: border-box;
 }
 
 @keyframes stitchable-tooltip-in {
