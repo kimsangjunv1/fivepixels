@@ -1,5 +1,6 @@
 @import "tailwindcss/theme";
 @import "tailwindcss/utilities";
+@import "./adaptive-colors.css";
 
 @source "../components/**/*.tsx";
 
@@ -12,52 +13,30 @@
     --text-sm--line-height: 1;
 }
 
-[data-stitchable-theme="light"] {
-    --st-bg: #ffffff;
-    --st-bg-muted: #f8fafc;
-    --st-bg-subtle: #f1f5f9;
-    --st-border: #e2e8f0;
-    --st-text: #0f172a;
-    --st-text-muted: #64748b;
-    --st-accent: #3b82f6;
-    --st-accent-soft: #eff6ff;
-    --st-accent-border: #bfdbfe;
-    --st-accent-text: #1d4ed8;
-    --st-danger: #ef4444;
-    --st-overlay: rgba(15, 23, 42, 0.1);
-}
-
-[data-stitchable-theme="dark"] {
-    --st-bg: #0f172a;
-    --st-bg-muted: #1e293b;
-    --st-bg-subtle: #334155;
-    --st-border: #334155;
-    --st-text: #f8fafc;
-    --st-text-muted: #94a3b8;
-    --st-accent: #60a5fa;
-    --st-accent-soft: #172554;
-    --st-accent-border: #1e3a8a;
-    --st-accent-text: #93c5fd;
-    --st-danger: #f87171;
-    --st-overlay: rgba(2, 6, 23, 0.2);
-}
-
 [data-stitchable-mount] {
-    all: initial;
     display: block;
     pointer-events: none;
     position: fixed;
     inset: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
     font-family: ui-sans-serif, system-ui, sans-serif;
     font-size: 14px;
-    color: var(--st-text);
+    color: var(--adaptive-grey900);
     font-weight: 600;
+    font-style: normal;
     font-synthesis: none;
+    letter-spacing: normal;
+    text-align: start;
+    text-transform: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     line-height: 1;
     -webkit-text-size-adjust: 100%;
+    transition: 0.25s colors;
 }
 
 [data-stitchable-mount],
@@ -67,35 +46,11 @@
     box-sizing: border-box;
 }
 
-:where(
-    [data-stitchable-mount],
-    [data-stitchable-mount] *,
-    [data-stitchable-mount] *::before,
-    [data-stitchable-mount] *::after
-) {
+:where([data-stitchable-mount], [data-stitchable-mount] *, [data-stitchable-mount] *::before, [data-stitchable-mount] *::after) {
     line-height: 1;
 }
 
-[data-stitchable-mount] :where(
-    p,
-    h1,
-    h2,
-    h3,
-    h4,
-    h5,
-    h6,
-    ul,
-    ol,
-    li,
-    figure,
-    blockquote,
-    dl,
-    dd,
-    dt,
-    pre,
-    hr,
-    fieldset
-) {
+[data-stitchable-mount] :where(p, h1, h2, h3, h4, h5, h6, ul, ol, li, figure, blockquote, dl, dd, dt, pre, hr, fieldset) {
     margin: 0;
 }
 

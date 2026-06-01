@@ -43,11 +43,12 @@ export function ReportControlPanel() {
     return (
         <div
             ref={panelRef}
-            className={
-                panelCollapsed
-                    ? "pointer-events-auto fixed z-30 flex max-h-[80vh] min-h-[40px] w-[320px] flex-col overflow-hidden rounded-lg border border-slate-300 bg-slate-50/90 shadow-lg backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/90"
-                    : "pointer-events-auto fixed z-30 flex max-h-[80vh] min-h-[160px] w-[360px] flex-col overflow-hidden rounded-lg border border-slate-300 bg-white shadow-xl backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900"
-            }
+            className="pointer-events-auto fixed z-30 flex max-h-[80vh] min-h-[40px] w-[320px] flex-col overflow-hidden rounded-lg border border-slate-300 bg-[var(--adaptive-grey50)] shadow-lg"
+            // className={
+            //     panelCollapsed
+            //         ? "pointer-events-auto fixed z-30 flex max-h-[80vh] min-h-[40px] w-[320px] flex-col overflow-hidden rounded-lg border border-slate-300 bg-slate-50/90 shadow-lg backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/90"
+            //         : "pointer-events-auto fixed z-30 flex max-h-[80vh] min-h-[160px] w-[360px] flex-col overflow-hidden rounded-lg border border-slate-300 bg-white shadow-xl backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900"
+            // }
             style={panelStyle}
         >
             {anchorSide === "left" ? (
@@ -61,18 +62,20 @@ export function ReportControlPanel() {
             {!panelCollapsed ? (
                 <section className="flex flex-1 flex-col">
                     <section
-                        className="flex cursor-move flex-col gap-0.5 border-b border-slate-200 bg-slate-50 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-900/80"
+                        className="flex cursor-move flex-col"
+                        // className="flex cursor-move flex-col gap-0.5 border-b border-slate-200 bg-slate-50 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-900/80"
                         onPointerDown={handleDragHandlePointerDown}
                         aria-label="패널 위치 변경"
                         title="드래그해서 위치 변경"
                         style={isDragging ? { opacity: 0.8 } : undefined}
                     >
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400">피드백을 수집 중...</p>
+                        <p className="text-[11px] text-[var(--adaptive-grey300)]">피드백을 수집 중...</p>
                         <p className="text-[14px] leading-[1.5]">{helperText}</p>
                         {/* <p className="text-xs text-slate-800 dark:text-slate-100">{helperText}</p> */}
                     </section>
 
-                    <section className="flex flex-1 flex-col gap-2 bg-slate-50/60 px-3 py-2 text-xs dark:bg-slate-950/40">
+                    {/* <section className="flex flex-1 flex-col gap-2 bg-slate-50/60 px-3 py-2 text-xs dark:bg-slate-950/40"> */}
+                    <section className="flex flex-1 flex-col gap-2">
                         <div className="flex items-center gap-2">
                             <button
                                 type="button"

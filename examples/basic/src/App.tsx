@@ -8,7 +8,7 @@ export function App() {
             <Report
                 projectId="stitchable-basic-example"
                 devOnly
-                appearance="light"
+                appearance="system"
                 pathname="/examples/basic"
                 visibleShortcutKeys
                 onFeedbackCreate={(event) => {

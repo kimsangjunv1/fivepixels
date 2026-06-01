@@ -7,7 +7,7 @@ export function ReportOverlayLayer({ children }) {
     const isViewMode = mode === "view";
     const isPreviewMode = showTargetPreview && mode === "idle";
     const overlayClassName = isReportMode
-        ? "pointer-events-auto fixed inset-0 z-[999999] cursor-crosshair bg-[var(--st-overlay)]"
+        ? "pointer-events-auto fixed inset-0 z-[999999] cursor-crosshair bg-[var(--adaptive-greyOpacity200)]"
         : "pointer-events-none fixed inset-0 z-[999999]";
     return (_jsxs("div", { ref: overlayRef, onMouseMove: isReportMode ? handleOverlayMove : undefined, onClick: isReportMode ? handleOverlayClick : undefined, className: overlayClassName, "data-overlay-mode": isReportMode ? "report" : isViewMode ? "view" : isPreviewMode ? "preview" : "idle", children: [_jsx(TargetHighlights, { hoveredTarget: hoveredTarget, previewTargets: isPreviewMode ? selectableTargets : undefined, selectedTarget: selectedTarget }), children] }));
 }
