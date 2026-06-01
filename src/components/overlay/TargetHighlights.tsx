@@ -8,7 +8,7 @@ type TargetHighlightsProps = {
     selectedTarget: TargetSnapshot | null;
 };
 
-const HIGHLIGHT_LAYOUT_TRANSITION = { duration: 0.22, ease: "ease-out" } as const;
+const HIGHLIGHT_LAYOUT_TRANSITION = { duration: 0.22, ease: "ease-in-out" } as const;
 const HOVER_LAYOUT_ID = "stitchable-target-highlight-hover";
 
 function HighlightMotionBox({ target, showLabel, layoutId }: { target: TargetSnapshot; showLabel?: boolean; layoutId?: string }) {
@@ -56,10 +56,10 @@ export function TargetHighlights({ hoveredTarget, previewTargets = [], selectedT
 
                 {hoveredTarget ? (
                     <HighlightMotionBox
-                        key={`hover-${hoveredTarget.type}-${hoveredTarget.id}`}
+                        key="hover-highlight"
                         target={hoveredTarget}
                         showLabel
-                        layoutId={HOVER_LAYOUT_ID}
+                        layoutId={hoveredTarget.type}
                     />
                 ) : null}
             </AnimatedPresence>

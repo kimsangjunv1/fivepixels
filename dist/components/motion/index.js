@@ -394,8 +394,8 @@ export function AnimatedPresence({ children }) {
     }, [presentKeySignature]);
     const presentKeys = new Set(validChildren.flatMap((child) => (child.key != null ? [child.key] : [])));
     const trackedChildren = [
-        ...validChildren.map((element) => ({ element, isPresent: true })),
         ...exitingChildren.filter((child) => child.element.key != null && !presentKeys.has(child.element.key)),
+        ...validChildren.map((element) => ({ element, isPresent: true })),
     ];
     return trackedChildren.map((child) => (_jsx(PresenceChild, { isPresent: child.isPresent, onExitComplete: () => {
             setExitingChildren((current) => {
@@ -414,10 +414,18 @@ function createMotionComponent(tagName) {
         const animationRef = useRef(null);
         const layoutAnimationRef = useRef(null);
         const hasMountedRef = useRef(false);
+        const wasPresentForLayoutRef = useRef(true);
         const [layoutMeasureGeneration, setLayoutMeasureGeneration] = useState(0);
         const mergedRef = useMergedRef(forwardedRef, localRef);
         const animateKey = stringifyStyle(animate);
         const layoutEnabled = Boolean(layout || layoutId);
+        useLayoutEffect(() => {
+            return () => {
+                if (layoutId && localRef.current) {
+                    pushLayoutSnapshot(layoutId, localRef.current.getBoundingClientRect());
+                }
+            };
+        }, [layoutId]);
         useEffect(() => () => {
             if (animationRef.current) {
                 animationRef.current.cancel();
@@ -427,10 +435,7 @@ function createMotionComponent(tagName) {
                 layoutAnimationRef.current.cancel();
                 layoutAnimationRef.current = null;
             }
-            if (layoutId && localRef.current) {
-                pushLayoutSnapshot(layoutId, localRef.current.getBoundingClientRect());
-            }
-        }, [layoutId]);
+        }, []);
         useEffect(() => {
             if (!layout || !isBrowser()) {
                 return;
@@ -503,6 +508,17 @@ function createMotionComponent(tagName) {
             }
             const node = localRef.current;
             if (!node) {
+                return;
+            }
+            const isExiting = presence?.isPresent === false;
+            if (layoutId && isExiting && wasPresentForLayoutRef.current) {
+                pushLayoutSnapshot(layoutId, node.getBoundingClientRect());
+                wasPresentForLayoutRef.current = false;
+            }
+            if (!isExiting) {
+                wasPresentForLayoutRef.current = true;
+            }
+            if (isExiting) {
                 return;
             }
             let fromRect = null;

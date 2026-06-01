@@ -601,8 +601,8 @@ export function AnimatedPresence({ children }: { children: ReactNode }) {
 
     const presentKeys = new Set<Key>(validChildren.flatMap((child) => (child.key != null ? [child.key] : [])));
     const trackedChildren = [
-        ...validChildren.map((element) => ({ element, isPresent: true as const })),
         ...exitingChildren.filter((child) => child.element.key != null && !presentKeys.has(child.element.key)),
+        ...validChildren.map((element) => ({ element, isPresent: true as const })),
     ];
 
     return trackedChildren.map((child) => (
@@ -632,10 +632,19 @@ function createMotionComponent(tagName: string) {
         const animationRef = useRef<Animation | null>(null);
         const layoutAnimationRef = useRef<Animation | null>(null);
         const hasMountedRef = useRef(false);
+        const wasPresentForLayoutRef = useRef(true);
         const [layoutMeasureGeneration, setLayoutMeasureGeneration] = useState(0);
         const mergedRef = useMergedRef(forwardedRef, localRef);
         const animateKey = stringifyStyle(animate);
         const layoutEnabled = Boolean(layout || layoutId);
+
+        useLayoutEffect(() => {
+            return () => {
+                if (layoutId && localRef.current) {
+                    pushLayoutSnapshot(layoutId, localRef.current.getBoundingClientRect());
+                }
+            };
+        }, [layoutId]);
 
         useEffect(
             () => () => {
@@ -648,12 +657,8 @@ function createMotionComponent(tagName: string) {
                     layoutAnimationRef.current.cancel();
                     layoutAnimationRef.current = null;
                 }
-
-                if (layoutId && localRef.current) {
-                    pushLayoutSnapshot(layoutId, localRef.current.getBoundingClientRect());
-                }
             },
-            [layoutId],
+            [],
         );
 
         useEffect(() => {
@@ -749,6 +754,21 @@ function createMotionComponent(tagName: string) {
             const node = localRef.current;
 
             if (!node) {
+                return;
+            }
+
+            const isExiting = presence?.isPresent === false;
+
+            if (layoutId && isExiting && wasPresentForLayoutRef.current) {
+                pushLayoutSnapshot(layoutId, node.getBoundingClientRect());
+                wasPresentForLayoutRef.current = false;
+            }
+
+            if (!isExiting) {
+                wasPresentForLayoutRef.current = true;
+            }
+
+            if (isExiting) {
                 return;
             }
 
