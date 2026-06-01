@@ -30,7 +30,7 @@
   },
   "scripts": {
     "dev": "vite --config examples/basic/vite.config.ts",
-    "build": "node scripts/build-report-styles.mjs && tsc -p tsconfig.json",
+    "build": "node scripts/clean-dist.mjs && node scripts/build-report-styles.mjs && tsc -p tsconfig.json",
     "size:dist": "node scripts/print-dist-size.mjs",
     "example:build": "vite build --config examples/basic/vite.config.ts",
     "size:example": "npm run example:build",
