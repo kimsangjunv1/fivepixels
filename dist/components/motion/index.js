@@ -12,6 +12,19 @@ function rectsDiffer(a, b, threshold = 0.5) {
         Math.abs(a.width - b.width) >= threshold ||
         Math.abs(a.height - b.height) >= threshold);
 }
+function readLayoutRectFromStyle(style) {
+    if (!style) {
+        return null;
+    }
+    const left = Number.parseFloat(String(style.left ?? ""));
+    const top = Number.parseFloat(String(style.top ?? ""));
+    const width = Number.parseFloat(String(style.width ?? ""));
+    const height = Number.parseFloat(String(style.height ?? ""));
+    if (![left, top, width, height].every(Number.isFinite)) {
+        return null;
+    }
+    return new DOMRect(left, top, width, height);
+}
 function readTargetLayoutRect(node) {
     const left = Number.parseFloat(node.style.left);
     const top = Number.parseFloat(node.style.top);
@@ -22,7 +35,38 @@ function readTargetLayoutRect(node) {
     }
     return cloneRect(node.getBoundingClientRect());
 }
+function applyLayoutRectStyle(node, rect) {
+    node.style.left = `${rect.left}px`;
+    node.style.top = `${rect.top}px`;
+    node.style.width = `${rect.width}px`;
+    node.style.height = `${rect.height}px`;
+}
+function rectToPositionStyle(rect) {
+    return {
+        left: rect.left,
+        top: rect.top,
+        width: rect.width,
+        height: rect.height,
+    };
+}
+function readVisualLayoutRect(node) {
+    return cloneRect(node.getBoundingClientRect());
+}
+function layoutTransformFromRects(fromRect, toRect) {
+    return {
+        deltaX: fromRect.left - toRect.left,
+        deltaY: fromRect.top - toRect.top,
+        scaleX: fromRect.width / Math.max(toRect.width, 1),
+        scaleY: fromRect.height / Math.max(toRect.height, 1),
+    };
+}
+function applyLayoutTransform(node, fromRect, toRect) {
+    const { deltaX, deltaY, scaleX, scaleY } = layoutTransformFromRects(fromRect, toRect);
+    node.style.transformOrigin = "top left";
+    node.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(${scaleX}, ${scaleY})`;
+}
 function clearLayoutTransform(node) {
+    node.style.transformOrigin = "";
     if (node.style.transform) {
         node.style.transform = "";
     }
@@ -342,23 +386,22 @@ function animateLayout(node, fromRect, transition, layoutAnimationRef, onComplet
         return null;
     }
     const toRect = readTargetLayoutRect(node);
-    const deltaX = fromRect.left - toRect.left;
-    const deltaY = fromRect.top - toRect.top;
-    const scaleX = fromRect.width / Math.max(toRect.width, 1);
-    const scaleY = fromRect.height / Math.max(toRect.height, 1);
+    const { deltaX, deltaY, scaleX, scaleY } = layoutTransformFromRects(fromRect, toRect);
     if (Math.abs(deltaX) < 0.5 && Math.abs(deltaY) < 0.5 && Math.abs(scaleX - 1) < 0.01 && Math.abs(scaleY - 1) < 0.01) {
+        clearLayoutTransform(node);
         onComplete?.(toRect);
         return null;
     }
     if (layoutAnimationRef.current) {
         layoutAnimationRef.current.cancel();
         layoutAnimationRef.current = null;
-        clearLayoutTransform(node);
     }
+    applyLayoutTransform(node, fromRect, toRect);
+    const startTransform = node.style.transform;
     const animation = node.animate([
         {
             transformOrigin: "top left",
-            transform: `translate(${deltaX}px, ${deltaY}px) scale(${scaleX}, ${scaleY})`,
+            transform: startTransform,
         },
         {
             transformOrigin: "top left",
@@ -436,11 +479,30 @@ function createMotionComponent(tagName) {
         const layoutAnimationRef = useRef(null);
         const hasMountedRef = useRef(false);
         const wasPresentForLayoutRef = useRef(true);
+        const [isLayoutAnimating, setIsLayoutAnimating] = useState(false);
         const [layoutMeasureGeneration, setLayoutMeasureGeneration] = useState(0);
         const mergedRef = useMergedRef(forwardedRef, localRef);
         const animateKey = stringifyStyle(animate);
         const layoutEnabled = Boolean(layout || layoutId);
         const resolvedLayoutTransition = layoutTransition ?? transition;
+        const incomingLayoutRect = readLayoutRectFromStyle(style);
+        const layoutStyleKey = incomingLayoutRect
+            ? `${incomingLayoutRect.left}|${incomingLayoutRect.top}|${incomingLayoutRect.width}|${incomingLayoutRect.height}`
+            : "";
+        const finishLayout = (targetRect) => {
+            previousRectRef.current = cloneRect(targetRect);
+            committedLayoutRectRef.current = cloneRect(targetRect);
+            setIsLayoutAnimating(false);
+        };
+        const startLayoutAnimation = (node, fromRect, targetRect) => {
+            applyLayoutRectStyle(node, targetRect);
+            committedLayoutRectRef.current = cloneRect(targetRect);
+            setIsLayoutAnimating(true);
+            const animation = animateLayout(node, fromRect, resolvedLayoutTransition, layoutAnimationRef, finishLayout);
+            if (!animation) {
+                finishLayout(targetRect);
+            }
+        };
         useLayoutEffect(() => {
             return () => {
                 if (layoutId && localRef.current) {
@@ -546,42 +608,54 @@ function createMotionComponent(tagName) {
             if (isExiting) {
                 return;
             }
-            const targetRect = readTargetLayoutRect(node);
+            if (!incomingLayoutRect) {
+                return;
+            }
+            const targetRect = incomingLayoutRect;
+            let fromRect = null;
+            if (layoutId) {
+                fromRect = popLayoutSnapshot(layoutId) ?? null;
+            }
+            if (!committedLayoutRectRef.current) {
+                if (fromRect) {
+                    startLayoutAnimation(node, fromRect, targetRect);
+                    return;
+                }
+                applyLayoutRectStyle(node, targetRect);
+                finishLayout(targetRect);
+                return;
+            }
             if (layoutAnimationRef.current && committedLayoutRectRef.current && !rectsDiffer(committedLayoutRectRef.current, targetRect)) {
                 return;
             }
             if (layoutAnimationRef.current) {
+                const visualRect = readVisualLayoutRect(node);
                 layoutAnimationRef.current.cancel();
                 layoutAnimationRef.current = null;
-                clearLayoutTransform(node);
-                previousRectRef.current = readTargetLayoutRect(node);
-                committedLayoutRectRef.current = null;
-            }
-            if (previousRectRef.current && !rectsDiffer(previousRectRef.current, targetRect)) {
+                if (!rectsDiffer(visualRect, targetRect)) {
+                    applyLayoutRectStyle(node, targetRect);
+                    clearLayoutTransform(node);
+                    finishLayout(targetRect);
+                    return;
+                }
+                startLayoutAnimation(node, visualRect, targetRect);
                 return;
             }
-            let fromRect = null;
-            if (layoutId) {
-                fromRect = popLayoutSnapshot(layoutId) ?? null;
+            if (previousRectRef.current && !rectsDiffer(previousRectRef.current, targetRect)) {
+                applyLayoutRectStyle(node, targetRect);
+                finishLayout(targetRect);
+                return;
             }
             if (!fromRect && layout && previousRectRef.current && rectsDiffer(previousRectRef.current, targetRect)) {
                 fromRect = previousRectRef.current;
             }
             if (!fromRect) {
-                previousRectRef.current = cloneRect(targetRect);
-                committedLayoutRectRef.current = cloneRect(targetRect);
+                applyLayoutRectStyle(node, targetRect);
+                finishLayout(targetRect);
                 return;
             }
-            committedLayoutRectRef.current = cloneRect(targetRect);
-            const animation = animateLayout(node, fromRect, resolvedLayoutTransition, layoutAnimationRef, (completedTargetRect) => {
-                previousRectRef.current = cloneRect(completedTargetRect);
-                committedLayoutRectRef.current = cloneRect(completedTargetRect);
-            });
-            if (!animation) {
-                previousRectRef.current = cloneRect(targetRect);
-                committedLayoutRectRef.current = cloneRect(targetRect);
-            }
-        });
+            startLayoutAnimation(node, fromRect, targetRect);
+        }, [layoutEnabled, layoutId, layoutMeasureGeneration, layoutStyleKey, presence?.isPresent, resolvedLayoutTransition, style]);
         useEffect(() => {
             if (presence?.isPresent !== false) {
                 return;
@@ -629,9 +703,11 @@ function createMotionComponent(tagName) {
             };
         }, [exit, presence, transition]);
         const resolvedAnimatedStyle = animate ? resolveMotionStyle(animate) : {};
+        const layoutPositionStyle = isLayoutAnimating && committedLayoutRectRef.current ? rectToPositionStyle(committedLayoutRectRef.current) : null;
         const mergedStyle = {
             ...style,
             ...resolvedAnimatedStyle,
+            ...(layoutPositionStyle ?? {}),
         };
         return (_jsx(Component, { ref: mergedRef, style: mergedStyle, ...rest, children: children }));
     });
