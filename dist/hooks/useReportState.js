@@ -5,7 +5,8 @@ import { useIsMobileViewport } from "./useIsMobileViewport.js";
 import { useResolvedAppearance } from "./useResolvedAppearance.js";
 import { clampRatio, getMarkerFromReport, resolveTooltipAnchor } from "../utils/coordinates.js";
 const MARKER_HOVER_LEAVE_MS = 250;
-import { findTargetByPoint, getSelectableTargets, toSnapshot } from "../utils/dom.js";
+const OVERLAY_HOVER_LEAVE_MS = 100;
+import { findTargetByPoint, getSelectableTargets, isSameHoverTarget, toSnapshot } from "../utils/dom.js";
 import { createInitialFieldValues, getFieldError, getFieldTags } from "../utils/fields.js";
 import { createReplyId } from "../utils/format.js";
 import { getCurrentPathname } from "../utils/pathname.js";
@@ -18,6 +19,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
     const hoveredElementRef = useRef(null);
     const selectedElementRef = useRef(null);
     const hoverLeaveTimeoutRef = useRef(null);
+    const overlayHoverLeaveTimeoutRef = useRef(null);
     const resolvedAppearance = useResolvedAppearance(appearance);
     const isMobileViewport = useIsMobileViewport();
     const storageAdapterInstance = useMemo(() => resolveStorageAdapter({ projectId, environment, storage, storageAdapter }), [environment, projectId, storage, storageAdapter]);
@@ -127,6 +129,10 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             window.clearTimeout(hoverLeaveTimeoutRef.current);
             hoverLeaveTimeoutRef.current = null;
         }
+        if (overlayHoverLeaveTimeoutRef.current) {
+            window.clearTimeout(overlayHoverLeaveTimeoutRef.current);
+            overlayHoverLeaveTimeoutRef.current = null;
+        }
     }, [currentPathname, mode]);
     useEffect(() => {
         setShowTargetPreview(false);
@@ -135,6 +141,9 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         return () => {
             if (hoverLeaveTimeoutRef.current) {
                 window.clearTimeout(hoverLeaveTimeoutRef.current);
+            }
+            if (overlayHoverLeaveTimeoutRef.current) {
+                window.clearTimeout(overlayHoverLeaveTimeoutRef.current);
             }
         };
     }, []);
@@ -222,6 +231,23 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             hoverLeaveTimeoutRef.current = null;
         }, MARKER_HOVER_LEAVE_MS);
     };
+    const clearOverlayHoverLeaveTimeout = () => {
+        if (overlayHoverLeaveTimeoutRef.current) {
+            window.clearTimeout(overlayHoverLeaveTimeoutRef.current);
+            overlayHoverLeaveTimeoutRef.current = null;
+        }
+    };
+    const scheduleOverlayHoverLeave = () => {
+        if (overlayHoverLeaveTimeoutRef.current) {
+            return;
+        }
+        overlayHoverLeaveTimeoutRef.current = window.setTimeout(() => {
+            if (!hoveredElementRef.current) {
+                setHoveredTarget(null);
+            }
+            overlayHoverLeaveTimeoutRef.current = null;
+        }, OVERLAY_HOVER_LEAVE_MS);
+    };
     const stopEditing = () => {
         setEditingReportId(null);
         setEditableDraft(null);
@@ -286,7 +312,13 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         }
         const targetElement = findTargetByPoint(overlayRef.current, event.clientX, event.clientY);
         hoveredElementRef.current = targetElement;
-        setHoveredTarget(toSnapshot(targetElement));
+        if (!targetElement) {
+            scheduleOverlayHoverLeave();
+            return;
+        }
+        clearOverlayHoverLeaveTimeout();
+        const snapshot = toSnapshot(targetElement);
+        setHoveredTarget((previous) => (isSameHoverTarget(previous, snapshot) ? previous : snapshot));
     };
     const handleOverlayClick = (event) => {
         if (mode !== "report") {

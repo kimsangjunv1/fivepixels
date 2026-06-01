@@ -2,6 +2,15 @@ import { TARGET_SELECTOR } from "../constants/report.js";
 export function escapeAttribute(value) {
     return value.split("\\").join("\\\\").split('"').join('\\"');
 }
+export function isSameHoverTarget(previous, next) {
+    if (previous === next) {
+        return true;
+    }
+    if (!previous || !next) {
+        return false;
+    }
+    return previous.id === next.id && previous.type === next.type;
+}
 export function toSnapshot(element) {
     if (!element) {
         return null;

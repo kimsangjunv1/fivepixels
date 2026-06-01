@@ -6,6 +6,18 @@ export function escapeAttribute(value: string) {
     return value.split("\\").join("\\\\").split('"').join('\\"');
 }
 
+export function isSameHoverTarget(previous: TargetSnapshot | null, next: TargetSnapshot | null) {
+    if (previous === next) {
+        return true;
+    }
+
+    if (!previous || !next) {
+        return false;
+    }
+
+    return previous.id === next.id && previous.type === next.type;
+}
+
 export function toSnapshot(element: HTMLElement | null): TargetSnapshot | null {
     if (!element) {
         return null;

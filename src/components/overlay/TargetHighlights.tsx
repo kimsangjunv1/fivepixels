@@ -1,6 +1,7 @@
 import { TARGET_COLOR, TARGET_SURFACE } from "../../constants/report.js";
+import type { ReportTargetType } from "../../types/report.js";
 import type { TargetSnapshot } from "../../types/report-ui.js";
-import { AnimatedPresence, motion } from "../motion/index.js";
+import { AnimatedPresence, motion, type MotionTransition } from "../motion/index.js";
 
 type TargetHighlightsProps = {
     hoveredTarget: TargetSnapshot | null;
@@ -8,15 +9,35 @@ type TargetHighlightsProps = {
     selectedTarget: TargetSnapshot | null;
 };
 
-const HIGHLIGHT_LAYOUT_TRANSITION = { duration: 0.22, ease: "ease-in-out" } as const;
-const HOVER_LAYOUT_ID = "stitchable-target-highlight-hover";
+const HIGHLIGHT_MOTION: Record<
+    ReportTargetType,
+    {
+        fade: MotionTransition;
+        layout: MotionTransition;
+    }
+> = {
+    group: {
+        fade: { duration: 0.14, ease: "ease-out" },
+        layout: { duration: 0.24, ease: "ease-in-out" },
+    },
+    item: {
+        fade: { duration: 0.14, ease: "ease-out" },
+        layout: { duration: 0.44, ease: "cubic-bezier(0.22, 1, 0.36, 1)" },
+    },
+};
 
-function HighlightMotionBox({ target, showLabel, layoutId }: { target: TargetSnapshot; showLabel?: boolean; layoutId?: string }) {
+function highlightPresenceKey(type: ReportTargetType) {
+    return `hover-${type}`;
+}
+
+function HighlightMotionBox({ target, showLabel }: { target: TargetSnapshot; showLabel?: boolean }) {
+    const motionPreset = HIGHLIGHT_MOTION[target.type];
+
     return (
         <motion.div
             layout
-            layoutId={layoutId}
-            transition={HIGHLIGHT_LAYOUT_TRANSITION}
+            layoutTransition={motionPreset.layout}
+            transition={motionPreset.fade}
             className="pointer-events-none fixed box-border rounded-sm"
             style={{
                 left: target.rect.left,
@@ -56,10 +77,9 @@ export function TargetHighlights({ hoveredTarget, previewTargets = [], selectedT
 
                 {hoveredTarget ? (
                     <HighlightMotionBox
-                        key="hover-highlight"
+                        key={highlightPresenceKey(hoveredTarget.type)}
                         target={hoveredTarget}
                         showLabel
-                        layoutId={hoveredTarget.type}
                     />
                 ) : null}
             </AnimatedPresence>

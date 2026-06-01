@@ -8,7 +8,8 @@ import type { DraftReport, EditableDraft, Marker, ReportFilters, ReportMode, Tar
 import { clampRatio, getMarkerFromReport, resolveTooltipAnchor } from "../utils/coordinates.js";
 
 const MARKER_HOVER_LEAVE_MS = 250;
-import { findTargetByPoint, getSelectableTargets, toSnapshot } from "../utils/dom.js";
+const OVERLAY_HOVER_LEAVE_MS = 100;
+import { findTargetByPoint, getSelectableTargets, isSameHoverTarget, toSnapshot } from "../utils/dom.js";
 import { createInitialFieldValues, getFieldError, getFieldTags } from "../utils/fields.js";
 import { createReplyId } from "../utils/format.js";
 import { getCurrentPathname } from "../utils/pathname.js";
@@ -60,6 +61,7 @@ export function useReportState({
     const hoveredElementRef = useRef<HTMLElement | null>(null);
     const selectedElementRef = useRef<HTMLElement | null>(null);
     const hoverLeaveTimeoutRef = useRef<number | null>(null);
+    const overlayHoverLeaveTimeoutRef = useRef<number | null>(null);
 
     const resolvedAppearance = useResolvedAppearance(appearance);
     const isMobileViewport = useIsMobileViewport();
@@ -191,6 +193,10 @@ export function useReportState({
             window.clearTimeout(hoverLeaveTimeoutRef.current);
             hoverLeaveTimeoutRef.current = null;
         }
+        if (overlayHoverLeaveTimeoutRef.current) {
+            window.clearTimeout(overlayHoverLeaveTimeoutRef.current);
+            overlayHoverLeaveTimeoutRef.current = null;
+        }
     }, [currentPathname, mode]);
 
     useEffect(() => {
@@ -201,6 +207,9 @@ export function useReportState({
         return () => {
             if (hoverLeaveTimeoutRef.current) {
                 window.clearTimeout(hoverLeaveTimeoutRef.current);
+            }
+            if (overlayHoverLeaveTimeoutRef.current) {
+                window.clearTimeout(overlayHoverLeaveTimeoutRef.current);
             }
         };
     }, []);
@@ -310,6 +319,27 @@ export function useReportState({
         }, MARKER_HOVER_LEAVE_MS);
     };
 
+    const clearOverlayHoverLeaveTimeout = () => {
+        if (overlayHoverLeaveTimeoutRef.current) {
+            window.clearTimeout(overlayHoverLeaveTimeoutRef.current);
+            overlayHoverLeaveTimeoutRef.current = null;
+        }
+    };
+
+    const scheduleOverlayHoverLeave = () => {
+        if (overlayHoverLeaveTimeoutRef.current) {
+            return;
+        }
+
+        overlayHoverLeaveTimeoutRef.current = window.setTimeout(() => {
+            if (!hoveredElementRef.current) {
+                setHoveredTarget(null);
+            }
+
+            overlayHoverLeaveTimeoutRef.current = null;
+        }, OVERLAY_HOVER_LEAVE_MS);
+    };
+
     const stopEditing = () => {
         setEditingReportId(null);
         setEditableDraft(null);
@@ -389,7 +419,15 @@ export function useReportState({
 
         const targetElement = findTargetByPoint(overlayRef.current, event.clientX, event.clientY);
         hoveredElementRef.current = targetElement;
-        setHoveredTarget(toSnapshot(targetElement));
+
+        if (!targetElement) {
+            scheduleOverlayHoverLeave();
+            return;
+        }
+
+        clearOverlayHoverLeaveTimeout();
+        const snapshot = toSnapshot(targetElement);
+        setHoveredTarget((previous) => (isSameHoverTarget(previous, snapshot) ? previous : snapshot));
     };
 
     const handleOverlayClick = (event: MouseEvent<HTMLDivElement>) => {

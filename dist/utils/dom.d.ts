@@ -1,5 +1,6 @@
 import type { TargetSnapshot } from "../types/report-ui.js";
 export declare function escapeAttribute(value: string): string;
+export declare function isSameHoverTarget(previous: TargetSnapshot | null, next: TargetSnapshot | null): boolean;
 export declare function toSnapshot(element: HTMLElement | null): TargetSnapshot | null;
 export declare function findTargetElement(baseElement: HTMLElement | null): HTMLElement | null;
 export declare function getSelectableTargets(): TargetSnapshot[];
