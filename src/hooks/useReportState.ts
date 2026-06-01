@@ -13,13 +13,7 @@ import { createInitialFieldValues, getFieldError, getFieldTags } from "../utils/
 import { createReplyId } from "../utils/format.js";
 import { getCurrentPathname } from "../utils/pathname.js";
 import { resolveStorageAdapter } from "../utils/storage.js";
-import {
-    notifyFeedbackCreate,
-    notifyFeedbackDelete,
-    notifyFeedbackReply,
-    notifyFeedbackUpdate,
-    type ReportEventCallbacks,
-} from "../utils/reportCallbacks.js";
+import { notifyFeedbackCreate, notifyFeedbackDelete, notifyFeedbackReply, notifyFeedbackUpdate, type ReportEventCallbacks } from "../utils/reportCallbacks.js";
 
 export type ReportStateConfig = {
     projectId: string;
@@ -69,10 +63,7 @@ export function useReportState({
 
     const resolvedAppearance = useResolvedAppearance(appearance);
     const isMobileViewport = useIsMobileViewport();
-    const storageAdapterInstance = useMemo(
-        () => resolveStorageAdapter({ projectId, environment, storage, storageAdapter }),
-        [environment, projectId, storage, storageAdapter],
-    );
+    const storageAdapterInstance = useMemo(() => resolveStorageAdapter({ projectId, environment, storage, storageAdapter }), [environment, projectId, storage, storageAdapter]);
     const currentPathname = useMemo(() => getCurrentPathname(pathname), [pathname]);
     const eventCallbacks = useMemo<ReportEventCallbacks>(
         () => ({
@@ -164,7 +155,7 @@ export function useReportState({
         }
 
         if (mode === "view") {
-            return isFetching ? "피드백을 불러오는 중입니다." : `${filteredReports.length}개의 피드백이 표시 중입니다.`;
+            return isFetching ? "피드백을 불러오는 중입니다." : `${filteredReports.length} counts feedback is alive.`;
         }
 
         if (showTargetPreview) {
@@ -178,7 +169,7 @@ export function useReportState({
         const groupCount = selectableTargets.filter((target) => target.type === "group").length;
         const itemCount = selectableTargets.filter((target) => target.type === "item").length;
 
-        return `현재 페이지에서 ${selectableTargets.length}개 요소(group ${groupCount}, item ${itemCount})에 피드백을 남길 수 있어요.`;
+        return `${selectableTargets.length} counts elements(group ${groupCount}, item ${itemCount})\navailable leaves the feedback.`;
     }, [filteredReports.length, isFetching, mode, selectableTargets, selectedTarget, showTargetPreview]);
 
     useEffect(() => {
@@ -348,10 +339,7 @@ export function useReportState({
         if (currentIndex === -1) {
             nextIndex = direction === "down" ? 0 : filteredReports.length - 1;
         } else {
-            nextIndex =
-                direction === "down"
-                    ? Math.min(currentIndex + 1, filteredReports.length - 1)
-                    : Math.max(currentIndex - 1, 0);
+            nextIndex = direction === "down" ? Math.min(currentIndex + 1, filteredReports.length - 1) : Math.max(currentIndex - 1, 0);
         }
 
         selectReport(filteredReports[nextIndex].id);

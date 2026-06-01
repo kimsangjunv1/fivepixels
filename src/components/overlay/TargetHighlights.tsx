@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { TARGET_COLOR, TARGET_SURFACE } from "../../constants/report.js";
 import type { TargetSnapshot } from "../../types/report-ui.js";
+import { AnimatedPresence, motion } from "../motion/index.js";
 
 type TargetHighlightsProps = {
     hoveredTarget: TargetSnapshot | null;
@@ -33,13 +35,50 @@ function HighlightBox({ target, showLabel }: { target: TargetSnapshot; showLabel
 }
 
 export function TargetHighlights({ hoveredTarget, previewTargets = [], selectedTarget }: TargetHighlightsProps) {
+    const [test, setTest] = useState(false);
     return (
         <>
-            {previewTargets.map((target) => (
-                <HighlightBox key={`${target.type}-${target.id}`} target={target} showLabel />
-            ))}
+            <AnimatedPresence>
+                <motion.div
+                    layout
+                    layoutId="asd"
+                    className="w-[32px] h-[32px] bg-black"
+                    style={{ width: test ? "20px" : "30px" }}
+                    onClick={() => setTest(!test)}
+                />
+                {previewTargets.map((target) => (
+                    <motion.div
+                        layout
+                        layoutId="asd"
+                        key={`${target.type}-${target.id}`}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                    >
+                        <HighlightBox
+                            key={`${target.type}-${target.id}`}
+                            target={target}
+                            showLabel
+                        />
+                    </motion.div>
+                ))}
 
-            {hoveredTarget ? <HighlightBox target={hoveredTarget} showLabel /> : null}
+                {hoveredTarget ? (
+                    <motion.div
+                        layout
+                        layoutId="asd"
+                        // key={`${target.type}-${target.id}`}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                    >
+                        <HighlightBox
+                            target={hoveredTarget}
+                            showLabel
+                        />
+                    </motion.div>
+                ) : null}
+            </AnimatedPresence>
 
             {selectedTarget ? (
                 <div

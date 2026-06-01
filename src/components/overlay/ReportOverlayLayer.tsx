@@ -22,7 +22,7 @@ export function ReportOverlayLayer({ children }: ReportOverlayLayerProps) {
     const isViewMode = mode === "view";
     const isPreviewMode = showTargetPreview && mode === "idle";
     const overlayClassName = isReportMode
-        ? "pointer-events-auto fixed inset-0 z-[999999] cursor-crosshair bg-[var(--adaptive-greyOpacity200)]"
+        ? "pointer-events-auto fixed inset-0 z-[999999] cursor-crosshair"
         : "pointer-events-none fixed inset-0 z-[999999]";
 
     return (

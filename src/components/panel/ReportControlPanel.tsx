@@ -78,12 +78,10 @@ export function ReportControlPanel() {
                             title="드래그해서 위치 변경"
                             style={isDragging ? { opacity: 0.8 } : undefined}
                         >
-                            <p className="text-right text-[18px] text-[var(--adaptive-grey900)] font-bold">피드백을 수집 중...</p>
-                            <p className="text-right text-[14px] text-[var(--adaptive-greyOpacity600)] leading-[1.5]">{helperText}</p>
-                            {/* <p className="text-xs text-slate-800 dark:text-slate-100">{helperText}</p> */}
+                            <p className="text-right text-[18px] text-[var(--adaptive-grey900)] font-bold">feedback is ready.</p>
+                            <p className="text-right text-[14px] text-[var(--adaptive-greyOpacity600)] leading-[1.5] whitespace-break-spaces">{helperText}</p>
                         </section>
 
-                        {/* <section className="flex flex-1 flex-col gap-2 bg-slate-50/60 px-3 py-2 text-xs dark:bg-slate-950/40"> */}
                         <section className="flex flex-1 flex-col gap-2">
                             <div className="flex items-center justify-end gap-[12px]">
                                 <section className="flex items-center gap-[8px]">
@@ -91,13 +89,8 @@ export function ReportControlPanel() {
                                         type="button"
                                         onClick={toggleReportMode}
                                         className={`flex items-center gap-[4px] rounded-[12px] p-[12px] shadow-[var(--shadow-popup)] bg-[var(--adaptive-grey50)]`}
-                                        // className={`flex items-center gap-[4px] rounded-[12px] p-[12px] shadow-[var(--shadow-normal)] ${
-                                        //     mode === "report"
-                                        //         ? "bg-rose-600 text-white hover:bg-rose-700 dark:bg-rose-500 dark:hover:bg-rose-600"
-                                        //         : "bg-[var(--adaptive-blue400)] text-white hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-600"
-                                        // }`}
                                     >
-                                        <p className="font-bold text-[16px]">{mode === "report" ? "중단" : "기록"}</p>
+                                        <p className="font-bold text-[16px]">{mode === "report" ? "Stop" : "Record"}</p>
                                         <ShortcutHint
                                             binding={REPORT_SHORTCUTS.toggleReportMode}
                                             visible={visibleShortcutKeys}
@@ -113,7 +106,7 @@ export function ReportControlPanel() {
                                                 : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100"
                                         }`}
                                     >
-                                        <p className="font-bold text-[16px]">{showListSection ? "목록 닫기" : "목록"}</p>
+                                        <p className="font-bold text-[16px]">{showListSection ? "off" : "list"}</p>
 
                                         <ShortcutHint
                                             binding={REPORT_SHORTCUTS.toggleViewMode}

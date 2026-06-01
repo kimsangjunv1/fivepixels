@@ -61,6 +61,7 @@
     margin: 0;
     padding: 0;
     border: none;
+    background: transparent;
 }
 
 /* [data-stitchable-mount] :where(p, h1, h2, h3, h4, h5, h6, ul, ol, li, figure, blockquote, dl, dd, dt, pre, hr, fieldset) {
@@ -187,4 +188,13 @@
 [data-stitchable-mount] .stitchable-dock-guide--active::after {
     -webkit-mask-image: linear-gradient(to bottom, transparent, #000 16%, #000 84%, transparent);
     mask-image: linear-gradient(to bottom, transparent, #000 16%, #000 84%, transparent);
+}
+
+[data-stitchable-mount] [data-overlay-mode="report"] {
+    background-color: transparent;
+    box-shadow:
+        inset 0 48px 64px -32px color-mix(in srgb, var(--adaptive-blue300) 28%, transparent),
+        inset 0 -48px 64px -32px color-mix(in srgb, var(--adaptive-blue300) 28%, transparent),
+        inset 48px 0 64px -32px color-mix(in srgb, var(--adaptive-blue300) 28%, transparent),
+        inset -48px 0 64px -32px color-mix(in srgb, var(--adaptive-blue300) 28%, transparent);
 }

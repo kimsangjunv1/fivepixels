@@ -6,6 +6,7 @@ import { formatDate } from "../../utils/format.js";
 import { getStatusTone } from "../../utils/reportVisual.js";
 import { ShortcutHint } from "../ShortcutHint.js";
 import { FieldEditor } from "./FieldEditor.js";
+import { useState } from "react";
 
 export function ReportFeedbackList() {
     const {
@@ -31,6 +32,8 @@ export function ReportFeedbackList() {
         refetch,
     } = useReport();
 
+    const [isShowFilter, setIsShowFilter] = useState(false);
+
     return (
         // <section className="flex flex-col gap-2 border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-900">
         <section className="flex flex-col gap-2 p-3">
@@ -39,42 +42,45 @@ export function ReportFeedbackList() {
                 <span className="inline-flex min-w-6 items-center justify-center rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-200">
                     {filteredReports.length}
                 </span>
+                <button onClick={() => setIsShowFilter(!isShowFilter)}>필터 보기</button>
             </div>
 
-            <div className="flex flex-col gap-2 border-y border-slate-100 py-2 text-xs text-slate-600 dark:border-slate-800 dark:text-slate-300">
-                <div className="flex items-center gap-2">
-                    <input
-                        ref={searchInputRef}
-                        value={filters.keyword}
-                        onChange={(event) => setFilters((current) => ({ ...current, keyword: event.target.value }))}
-                        placeholder="메시지 / report id 검색"
-                        className="h-7 flex-1 rounded-md border border-slate-200 bg-white px-2 text-xs text-slate-900 shadow-sm outline-none ring-0 focus:border-slate-300 focus:ring-1 focus:ring-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-600 dark:focus:ring-slate-700"
-                    />
-                    <ShortcutHint
-                        binding={REPORT_SHORTCUTS.focusSearch}
-                        visible={visibleShortcutKeys}
-                    />
+            {isShowFilter ? (
+                <div className="flex flex-col gap-2 border-y border-slate-100 py-2 text-xs text-slate-600 dark:border-slate-800 dark:text-slate-300">
+                    <div className="flex items-center gap-2">
+                        <input
+                            ref={searchInputRef}
+                            value={filters.keyword}
+                            onChange={(event) => setFilters((current) => ({ ...current, keyword: event.target.value }))}
+                            placeholder="메시지 / report id 검색"
+                            className="h-7 flex-1 rounded-md border border-slate-200 bg-white px-2 text-xs text-slate-900 shadow-sm outline-none ring-0 focus:border-slate-300 focus:ring-1 focus:ring-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-600 dark:focus:ring-slate-700"
+                        />
+                        <ShortcutHint
+                            binding={REPORT_SHORTCUTS.focusSearch}
+                            visible={visibleShortcutKeys}
+                        />
+                    </div>
+                    <select
+                        value={filters.status}
+                        onChange={(event) => setFilters((current) => ({ ...current, status: event.target.value as ReportFilters["status"] }))}
+                        className="h-7 w-full rounded-md border border-slate-200 bg-white px-2 text-xs text-slate-900 shadow-sm outline-none ring-0 focus:border-slate-300 focus:ring-1 focus:ring-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-600 dark:focus:ring-slate-700"
+                    >
+                        <option value="all">전체 상태</option>
+                        <option value="open">open</option>
+                        <option value="resolved">resolved</option>
+                        <option value="archived">archived</option>
+                    </select>
+                    <select
+                        value={filters.reportType}
+                        onChange={(event) => setFilters((current) => ({ ...current, reportType: event.target.value as ReportFilters["reportType"] }))}
+                        className="h-7 w-full rounded-md border border-slate-200 bg-white px-2 text-xs text-slate-900 shadow-sm outline-none ring-0 focus:border-slate-300 focus:ring-1 focus:ring-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-600 dark:focus:ring-slate-700"
+                    >
+                        <option value="all">전체 타입</option>
+                        <option value="item">item</option>
+                        <option value="group">group</option>
+                    </select>
                 </div>
-                <select
-                    value={filters.status}
-                    onChange={(event) => setFilters((current) => ({ ...current, status: event.target.value as ReportFilters["status"] }))}
-                    className="h-7 w-full rounded-md border border-slate-200 bg-white px-2 text-xs text-slate-900 shadow-sm outline-none ring-0 focus:border-slate-300 focus:ring-1 focus:ring-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-600 dark:focus:ring-slate-700"
-                >
-                    <option value="all">전체 상태</option>
-                    <option value="open">open</option>
-                    <option value="resolved">resolved</option>
-                    <option value="archived">archived</option>
-                </select>
-                <select
-                    value={filters.reportType}
-                    onChange={(event) => setFilters((current) => ({ ...current, reportType: event.target.value as ReportFilters["reportType"] }))}
-                    className="h-7 w-full rounded-md border border-slate-200 bg-white px-2 text-xs text-slate-900 shadow-sm outline-none ring-0 focus:border-slate-300 focus:ring-1 focus:ring-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-600 dark:focus:ring-slate-700"
-                >
-                    <option value="all">전체 타입</option>
-                    <option value="item">item</option>
-                    <option value="group">group</option>
-                </select>
-            </div>
+            ) : null}
 
             <div className="mt-1 max-h-[320px] space-y-2 overflow-y-auto pr-1 text-xs">
                 {isError ? (
@@ -98,7 +104,7 @@ export function ReportFeedbackList() {
                     </div>
                 ) : null}
 
-                <div className="mt-1 space-y-2">
+                <div className="flex flex-col gap-[4px]">
                     {filteredReports.map((report) => {
                         const isSelected = report.id === selectedReport?.id;
                         const isEditing = report.id === editingReportId && editableDraft;
@@ -107,11 +113,12 @@ export function ReportFeedbackList() {
                         return (
                             <div
                                 key={report.id}
-                                className={
-                                    isSelected
-                                        ? "space-y-1 rounded-md border border-sky-300 bg-sky-50 p-2 text-xs shadow-sm dark:border-sky-500 dark:bg-sky-950/40"
-                                        : "space-y-1 rounded-md border border-slate-200 bg-white p-2 text-xs shadow-sm hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-slate-500"
-                                }
+                                className="bg-[var(--adaptive-grey100)] p-[12px] rounded-[16px]"
+                                // className={
+                                //     isSelected
+                                //         ? "space-y-1 rounded-md border border-sky-300 bg-sky-50 p-2 text-xs shadow-sm dark:border-sky-500 dark:bg-sky-950/40"
+                                //         : "space-y-1 rounded-md border border-slate-200 bg-white p-2 text-xs shadow-sm hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-slate-500"
+                                // }
                             >
                                 <button
                                     type="button"
@@ -121,7 +128,8 @@ export function ReportFeedbackList() {
                                     <div className="flex items-center justify-between gap-2">
                                         <strong className="max-w-[160px] truncate text-xs font-semibold text-slate-900 dark:text-slate-100">{report.report_id}</strong>
                                         <span
-                                            className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                                            // className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                                            className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-slate-700 dark:bg-slate-800 dark:text-slate-200"
                                             style={getStatusTone(report.status)}
                                         >
                                             {report.status}

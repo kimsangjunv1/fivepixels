@@ -169,11 +169,12 @@ export function ReportMarkersLayer() {
                                 openReplyComposer(tooltipReport);
                             }
                         }}
-                        className={
-                            isExpandedTooltip
-                                ? "pointer-events-auto fixed z-[1000001] rounded-lg border border-slate-200 bg-white p-3 text-xs shadow-xl ring-1 ring-slate-900/5 dark:border-slate-700 dark:bg-slate-900"
-                                : "pointer-events-auto fixed z-[1000001] w-[260px] cursor-pointer rounded-lg border border-slate-200 bg-white p-2.5 text-xs shadow-lg ring-1 ring-slate-900/5 dark:border-slate-700 dark:bg-slate-900"
-                        }
+                        className="pointer-events-auto fixed z-[1000001] bg-[var(--adaptive-grey200)] rounded-[24px] shadow-[0_0_90px_0_var(--adaptive-greyOpacity300)] overflow-hidden"
+                        // className={
+                        //     isExpandedTooltip
+                        //         ? "pointer-events-auto fixed z-[1000001] rounded-lg border border-slate-200 bg-white p-3 text-xs shadow-xl ring-1 ring-slate-900/5 dark:border-slate-700 dark:bg-slate-900"
+                        //         : "pointer-events-auto fixed z-[1000001] w-[260px] cursor-pointer rounded-lg border border-slate-200 bg-white p-2.5 text-xs shadow-lg ring-1 ring-slate-900/5 dark:border-slate-700 dark:bg-slate-900"
+                        // }
                         style={{
                             left: tooltipPosition.left,
                             top: tooltipPosition.top,
@@ -181,18 +182,21 @@ export function ReportMarkersLayer() {
                             pointerEvents: "auto",
                         }}
                     >
-                        <strong className="block text-sm font-semibold text-slate-900 dark:text-slate-100">
-                            {tooltipReport.report_type} · {tooltipReport.report_id}
-                        </strong>
-                        <div className="mt-1 flex items-center justify-between gap-2">
-                            <span
-                                className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-slate-700 dark:bg-slate-800 dark:text-slate-200"
-                                style={getReplyStatusTone(hasReply(tooltipReport))}
-                            >
-                                {hasReply(tooltipReport) ? "답변 완료" : "답변 미완료"}
-                            </span>
-                            <span className="text-[10px] text-slate-500 dark:text-slate-400">{formatDate(tooltipReport.created_at)}</span>
-                        </div>
+                        <section className="p-[16px] bg-[var(--adaptive-grey50)]">
+                            <strong className="block text-sm font-semibold text-slate-900 dark:text-slate-100">
+                                {tooltipReport.report_type} · {tooltipReport.report_id}
+                            </strong>
+                            <div className="mt-1 flex items-center justify-between gap-2">
+                                <span
+                                    className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                                    style={getReplyStatusTone(hasReply(tooltipReport))}
+                                >
+                                    {hasReply(tooltipReport) ? "답변 완료" : "답변 미완료"}
+                                </span>
+                                <span className="text-[10px] text-slate-500 dark:text-slate-400">{formatDate(tooltipReport.created_at)}</span>
+                            </div>
+                        </section>
+
                         {tooltipFieldTags.length ? (
                             <div className="mt-1 flex flex-wrap items-center gap-1">
                                 {tooltipFieldTags.map((fieldTag) => (
@@ -205,34 +209,50 @@ export function ReportMarkersLayer() {
                                 ))}
                             </div>
                         ) : null}
-                        <p className="mt-1 text-xs text-slate-700 dark:text-slate-200">{tooltipReport.message}</p>
+
                         {isExpandedTooltip && activeReplyReport ? (
                             <div
-                                className="mt-2 space-y-2 border-t border-dashed border-slate-200 pt-2 dark:border-slate-700"
+                                // className="mt-2 space-y-2 border-t border-dashed border-slate-200 dark:border-slate-700"
                                 onClick={(event) => event.stopPropagation()}
                                 onPointerDown={(event) => event.stopPropagation()}
                             >
-                                {activeReplyReport.replies.length ? (
-                                    <div className="flex flex-col gap-1.5">
-                                        {activeReplyReport.replies.map((reply) => (
-                                            <div
-                                                key={reply.id}
-                                                className="rounded-md border border-slate-100 bg-slate-50 p-1.5 text-xs text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
-                                            >
-                                                <p className="text-xs">{reply.message}</p>
-                                                <p className="mt-0.5 text-[10px] text-slate-500 dark:text-slate-400">{formatDate(reply.created_at)}</p>
-                                            </div>
-                                        ))}
+                                <section className="p-[16px]">
+                                    <div className="flex flex-col items-start gap-[4px]">
+                                        <p className="text-[12px] text-[var(--adaptive-grey500)]">feedback</p>
+                                        <p className="bg-[var(--adaptive-greyOpacity200)] p-[12px_16px] rounded-[12px] ">{tooltipReport.message}</p>
                                     </div>
-                                ) : null}
+
+                                    {activeReplyReport.replies.length ? (
+                                        <div className="flex flex-col items-end gap-1.5 p-[4px]">
+                                            {activeReplyReport.replies.map((reply) => (
+                                                <section
+                                                    key={reply.id}
+                                                    className="flex flex-col gap-[4px]"
+                                                >
+                                                    <p className="text-right text-[12px] text-[var(--adaptive-grey500)]">answer</p>
+
+                                                    <div
+                                                        // className="rounded-md border border-slate-100 bg-slate-50 p-1.5 text-xs text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                                                        className="bg-[var(--adaptive-blueOpacity100)] p-[12px_16px] rounded-[12px] text-right"
+                                                    >
+                                                        <p className="text-xs">{reply.message}</p>
+                                                        <p className="mt-0.5 text-[10px] text-slate-500 dark:text-slate-400">{formatDate(reply.created_at)}</p>
+                                                    </div>
+                                                </section>
+                                            ))}
+                                        </div>
+                                    ) : null}
+                                </section>
+
                                 <textarea
                                     value={replyDraft}
                                     onChange={(event) => setReplyDraft(event.target.value)}
                                     placeholder="답변을 입력해주세요."
                                     onClick={(event) => event.stopPropagation()}
-                                    className="h-16 w-full resize-none rounded-md border border-slate-200 bg-white px-2 py-1 text-xs text-slate-900 shadow-sm outline-none ring-0 placeholder:text-slate-400 focus:border-slate-300 focus:ring-1 focus:ring-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-slate-600 dark:focus:ring-slate-700"
+                                    className="h-16 w-full resize-none m-0 p-[12px] text-[var(--adaptive-grey900)] bg-[var(--adaptive-grey100)]"
+                                    // className="h-16 w-full resize-none rounded-md border border-slate-200 bg-white px-2 py-1 text-xs text-slate-900 shadow-sm outline-none ring-0 placeholder:text-slate-400 focus:border-slate-300 focus:ring-1 focus:ring-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-slate-600 dark:focus:ring-slate-700"
                                 />
-                                <div className="flex items-center justify-end gap-2">
+                                <div className="flex items-center justify-end gap-2 p-[8px]">
                                     <button
                                         type="button"
                                         data-stitchable-interactive=""
@@ -240,7 +260,8 @@ export function ReportMarkersLayer() {
                                             event.stopPropagation();
                                             closeReplyComposer();
                                         }}
-                                        className="pointer-events-auto inline-flex items-center justify-center rounded-md border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
+                                        className="p-[8px_12px] rounded-[12px] bg-[var(--adaptive-grey400)] text-[var(--adaptive-grey900)] font-semibold"
+                                        // className="pointer-events-auto inline-flex items-center justify-center rounded-md border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
                                     >
                                         닫기
                                     </button>
@@ -252,7 +273,8 @@ export function ReportMarkersLayer() {
                                             void handleReplySubmit();
                                         }}
                                         disabled={isUpdating}
-                                        className="pointer-events-auto inline-flex items-center justify-center rounded-md bg-sky-600 px-3 py-1 text-xs font-medium text-white shadow-sm hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-sky-500 dark:hover:bg-sky-600"
+                                        className="p-[8px_12px] rounded-[12px] bg-[var(--adaptive-blue400)] text-[var(--adaptive-grey900)] font-semibold"
+                                        // className="pointer-events-auto inline-flex items-center justify-center rounded-md bg-sky-600 px-3 py-1 text-xs font-medium text-white shadow-sm hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-sky-500 dark:hover:bg-sky-600"
                                     >
                                         {isUpdating ? "전송 중..." : "전송"}
                                     </button>

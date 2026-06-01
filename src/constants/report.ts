@@ -4,12 +4,12 @@ export const DOT_SIZE = 14;
 export const TARGET_SELECTOR = "[data-report-id][data-report-type]";
 
 export const TARGET_COLOR: Record<ReportTargetType, string> = {
-    group: "#3182f6",
+    group: "#7d44f0",
     item: "#f04452",
 };
 
 export const TARGET_SURFACE: Record<ReportTargetType, string> = {
-    group: "rgba(49, 130, 246, 0.15)",
+    group: "#7d44f010",
     item: "rgba(240, 68, 82, 0.15)",
 };
 
