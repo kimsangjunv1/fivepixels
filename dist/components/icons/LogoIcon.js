@@ -1,0 +1,5 @@
+import { jsx as _jsx } from "react/jsx-runtime";
+export const LogoIcon = ({ className }) => {
+    return (_jsx("svg", { viewBox: "0 0 74 74", fill: "none", xmlns: "http://www.w3.org/2000/svg", className: className, "aria-hidden": "true", children: _jsx("path", { d: "M64 40H50.5C44.701 40 40 44.701 40 50.5V64H34V44.2422L44.2422 34H64V40ZM29.0605 47.0605L17.0605 59.0605L14.9395 56.9395L26.9395 44.9395L29.0605 47.0605ZM59.0605 56.9395L56.9395 59.0605L44.9395 47.0605L47.0605 44.9395L59.0605 56.9395ZM40 29.7578L29.7578 40H10V34H23.5C29.299 34 34 29.299 34 23.5V10H40V29.7578ZM29.0605 26.9395L26.9395 29.0605L14.9395 17.0605L17.0605 14.9395L29.0605 26.9395ZM59.0605 17.0605L47.0605 29.0605L44.9395 26.9395L56.9395 14.9395L59.0605 17.0605Z", fill: "currentColor" }) }));
+};
+//# sourceMappingURL=LogoIcon.js.map

@@ -36,10 +36,10 @@ export function ReportFeedbackList() {
 
     return (
         // <section className="flex flex-col gap-2 border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-900">
-        <section className="flex flex-col gap-2 p-3">
+        <section className="flex flex-col gap-2">
             <div className="flex items-center justify-between gap-2">
                 <section className="flex items-center gap-[4px]">
-                    <p className="text-sm font-bold">피드백 목록</p>
+                    <p className="text-[16px] font-bold">feedback list</p>
                     <p className="bg-[var(--adaptive-greyOpacity700)] text-[var(--adaptive-grey300)] p-[2px_4px] rounded-[6px] text-[12px]">{filteredReports.length}개</p>
                 </section>
                 {/* <span className="inline-flex min-w-6 items-center justify-center rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-200">
@@ -47,9 +47,9 @@ export function ReportFeedbackList() {
                 </span> */}
                 <button
                     onClick={() => setIsShowFilter(!isShowFilter)}
-                    className="bg-[var(--adaptive-greyOpacity700)] p-[2px_4px] rounded-[6px] text-[var(--adaptive-grey300)] text-[12px] font-bold"
+                    className="bg-[var(--adaptive-grey300)] p-[2px_4px] rounded-[6px] text-[var(--adaptive-grey700)] text-[12px] font-bold"
                 >
-                    필터 보기
+                    show filter
                 </button>
             </div>
 
@@ -90,7 +90,7 @@ export function ReportFeedbackList() {
                 </div>
             ) : null}
 
-            <div className="mt-1 max-h-[320px] space-y-2 overflow-y-auto pr-1 text-xs">
+            <div className="mt-1 max-h-[320px] overflow-y-auto">
                 {isError ? (
                     <div className="space-y-1 rounded-md border border-rose-200 bg-rose-50 p-2 text-xs text-rose-800 dark:border-rose-700 dark:bg-rose-950/40 dark:text-rose-200">
                         <strong className="text-sm font-semibold">목록을 불러오지 못했어요.</strong>
@@ -121,7 +121,7 @@ export function ReportFeedbackList() {
                         return (
                             <div
                                 key={report.id}
-                                className="bg-[var(--adaptive-grey100)] p-[12px] rounded-[16px]"
+                                className="flex  bg-[var(--adaptive-grey100)] p-[12px] rounded-[16px]"
                                 // className={
                                 //     isSelected
                                 //         ? "space-y-1 rounded-md border border-sky-300 bg-sky-50 p-2 text-xs shadow-sm dark:border-sky-500 dark:bg-sky-950/40"
@@ -131,7 +131,7 @@ export function ReportFeedbackList() {
                                 <button
                                     type="button"
                                     onClick={() => selectReport(report.id)}
-                                    className="flex w-full flex-col items-start gap-1 text-left"
+                                    className="flex flex-1 flex-col items-start gap-1 text-left"
                                 >
                                     <div className="flex items-center justify-between gap-2">
                                         <strong className="max-w-[160px] truncate text-xs font-semibold text-slate-900 dark:text-slate-100">{report.report_id}</strong>
@@ -143,10 +143,10 @@ export function ReportFeedbackList() {
                                             {report.status}
                                         </span>
                                     </div>
+                                    <p className="line-clamp-2 text-xs text-slate-700 dark:text-slate-200">{report.message}</p>
                                     <p className="text-[11px] text-slate-500 dark:text-slate-400">
                                         {report.report_type} · {formatDate(report.created_at)}
                                     </p>
-                                    <p className="line-clamp-2 text-xs text-slate-700 dark:text-slate-200">{report.message}</p>
                                 </button>
 
                                 <button

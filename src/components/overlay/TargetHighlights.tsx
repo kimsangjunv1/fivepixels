@@ -18,7 +18,7 @@ const HIGHLIGHT_MOTION: Record<
 > = {
     group: {
         fade: { duration: 0.14, ease: "ease-out" },
-        layout: { duration: 0.24, ease: "ease-in-out" },
+        layout: { duration: 0.5, ease: "cubic-bezier(0.22, 1, 0.36, 1)" },
     },
     item: {
         fade: { duration: 0.14, ease: "ease-out" },

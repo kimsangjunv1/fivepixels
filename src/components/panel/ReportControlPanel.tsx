@@ -8,6 +8,7 @@ import { ShortcutHint } from "../ShortcutHint.js";
 import { PanelDockGuides } from "./PanelDockGuides.js";
 import { ReportFeedbackList } from "./ReportFeedbackList.js";
 import { LogoIcon } from "./../icons/LogoIcon.js";
+import { motion } from "../motion/index.js";
 
 function PanelCollapseTab({ collapsed, anchorSide, onClick }: { collapsed: boolean; anchorSide: "left" | "right"; onClick: () => void }) {
     const hideIcon = anchorSide === "right" ? <ChevronRightIcon className="h-3 w-3 text-slate-500 dark:text-slate-300" /> : <ChevronLeftIcon className="h-3 w-3 text-slate-500 dark:text-slate-300" />;
@@ -18,11 +19,12 @@ function PanelCollapseTab({ collapsed, anchorSide, onClick }: { collapsed: boole
         <button
             type="button"
             onClick={onClick}
-            className={
-                anchorSide === "right"
-                    ? "pointer-events-auto absolute right-0 top-4 z-20 flex h-6 w-4 translate-x-full items-center justify-center rounded-r-md border border-l-0 border-slate-300 bg-slate-100 text-xs text-slate-500 shadow-sm hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
-                    : "pointer-events-auto absolute left-0 top-4 z-20 flex h-6 w-4 -translate-x-full items-center justify-center rounded-l-md border border-r-0 border-slate-300 bg-slate-100 text-xs text-slate-500 shadow-sm hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
-            }
+            className=""
+            // className={
+            //     anchorSide === "right"
+            //         ? "pointer-events-auto absolute right-0 top-4 z-20 flex h-6 w-4 translate-x-full items-center justify-center rounded-r-md border border-l-0 border-slate-300 bg-slate-100 text-xs text-slate-500 shadow-sm hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+            //         : "pointer-events-auto absolute left-0 top-4 z-20 flex h-6 w-4 -translate-x-full items-center justify-center rounded-l-md border border-r-0 border-slate-300 bg-slate-100 text-xs text-slate-500 shadow-sm hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+            // }
             aria-expanded={!collapsed}
             aria-label={collapsed ? "패널 펼치기" : "패널 숨기기"}
             title={collapsed ? "패널 펼치기" : "패널 숨기기"}
@@ -49,9 +51,13 @@ export function ReportControlPanel() {
                 activeCorner={activeCorner}
             />
 
-            <div
+            <motion.div
                 ref={panelRef}
-                className="pointer-events-auto fixed z-[1000000] flex max-h-[80vh] min-h-[40px] w-[320px] flex-col"
+                layout
+                layoutId="asdwsww"
+                className="pointer-events-auto fixed z-[1000000] flex max-h-[80vh] min-h-[40px] rounded-[16px] p-[4px] bg-[var(--adaptive-grey50)] backdrop-blur-[30px] gap-[4px] shadow-[0_0_120px_0_var(--adaptive-greyOpacity500)]"
+                // className="pointer-events-auto fixed z-[1000000] flex max-h-[80vh] min-h-[40px] rounded-[16px] p-[4px] bg-[var(--adaptive-greyOpacity100)] backdrop-blur-[30px] flex-col shadow-[0_0_120px_0_var(--adaptive-greyOpacity500)]"
+                // className="pointer-events-auto fixed z-[1000000] flex max-h-[80vh] min-h-[40px] w-[320px] flex-col"
                 // className="pointer-events-auto fixed z-[1000000] flex max-h-[80vh] min-h-[40px] w-[320px] flex-col overflow-hidden rounded-lg shadow-lg"
                 // className="pointer-events-auto fixed z-[1000000] flex max-h-[80vh] min-h-[40px] w-[320px] flex-col overflow-hidden rounded-lg border border-slate-300 bg-[var(--adaptive-grey50)] shadow-lg"
                 // className={
@@ -70,87 +76,98 @@ export function ReportControlPanel() {
                 ) : null}
 
                 {!panelCollapsed ? (
-                    <section className="flex flex-1 flex-col gap-[12px]">
-                        <section
-                            className="flex cursor-move flex-col gap-[8px]"
-                            // className="flex cursor-move flex-col gap-0.5 border-b border-slate-200 bg-slate-50 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-900/80"
-                            onPointerDown={handleDragHandlePointerDown}
-                            aria-label="패널 위치 변경"
-                            title="드래그해서 위치 변경"
-                            style={isDragging ? { opacity: 0.8 } : undefined}
-                        >
-                            <LogoIcon className="w-[12px]" />
-                            <p className="text-right text-[18px] text-[var(--adaptive-grey900)] font-bold">feedback is ready.</p>
-                            <p className="text-right text-[14px] text-[var(--adaptive-greyOpacity600)] leading-[1.5] whitespace-break-spaces">{helperText}</p>
+                    <section className="flex flex-1 flex-col gap-[4px]">
+                        <section className="flex items-center gap-[4px] justify-center">
+                            <LogoIcon className="w-[18px]" />
+                            <p>Radar・</p>
                         </section>
 
-                        <section className="flex flex-1 flex-col gap-2">
-                            <div className="flex items-center justify-end gap-[12px]">
-                                <section className="flex items-center gap-[8px]">
-                                    <button
-                                        type="button"
-                                        onClick={toggleReportMode}
-                                        className={`flex items-center gap-[4px] rounded-[12px] p-[12px] shadow-[var(--shadow-popup)] bg-[var(--adaptive-grey50)]`}
-                                    >
-                                        <p className="font-bold text-[16px]">{mode === "report" ? "Stop" : "Record"}</p>
-                                        <ShortcutHint
-                                            binding={REPORT_SHORTCUTS.toggleReportMode}
-                                            visible={visibleShortcutKeys}
-                                        />
-                                    </button>
+                        <section className="flex flex-col gap-[16px]">
+                            <section className="flex flex-col gap-[4px]">
+                                <section
+                                    className="flex items-center cursor-move gap-[8px] bg-[var(--adaptive-grey50)] shadow-[var(--shadow-normal)] rounded-[12px] px-[4px]"
+                                    // className="flex cursor-move flex-col gap-0.5 border-b border-slate-200 bg-slate-50 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-900/80"
+                                    onPointerDown={handleDragHandlePointerDown}
+                                    aria-label="패널 위치 변경"
+                                    title="드래그해서 위치 변경"
+                                    style={isDragging ? { opacity: 0.8 } : undefined}
+                                >
+                                    {/* <LogoIcon className="w-[34px]" /> */}
+                                    <section className="flex flex-col justify-center items-center gap-[4px] py-[8px] px-[12px]">
+                                        <p className="text-[14px] text-[var(--adaptive-grey900)]">feedback is ready.</p>
+                                        <p className="text-[14px] text-[var(--adaptive-greyOpacity600)] whitespace-break-spaces">{helperText}</p>
+                                    </section>
+                                </section>
+
+                                <section className="flex items-center justify-end gap-[12px] px-[16px]">
+                                    <section className="flex items-center gap-[8px]">
+                                        <button
+                                            type="button"
+                                            onClick={toggleReportMode}
+                                            className={`flex items-center gap-[4px]`}
+                                        >
+                                            <p className="text-[14px]">{mode === "report" ? "Stop" : "Record"}</p>
+                                            <ShortcutHint
+                                                binding={REPORT_SHORTCUTS.toggleReportMode}
+                                                visible={visibleShortcutKeys}
+                                            />
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            onClick={toggleViewMode}
+                                            className="flex items-center gap-[4px]"
+                                            // className={`flex items-center gap-[4px] ${
+                                            //     showListSection
+                                            //         ? "border border-sky-300 bg-sky-50 text-sky-700 hover:bg-sky-100 dark:border-sky-500 dark:bg-sky-950/40 dark:text-sky-200"
+                                            //         : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100"
+                                            // }`}
+                                        >
+                                            <p className="text-[14px]">{showListSection ? "off" : "list"}</p>
+
+                                            <ShortcutHint
+                                                binding={REPORT_SHORTCUTS.toggleViewMode}
+                                                visible={visibleShortcutKeys}
+                                            />
+                                        </button>
+                                    </section>
+
+                                    <div className="h-[12px] w-[1px] bg-[var(--adaptive-blue200)]" />
 
                                     <button
                                         type="button"
-                                        onClick={toggleViewMode}
-                                        className={`flex items-center gap-[4px] rounded-[12px] p-[12px] shadow-[var(--shadow-popup)] ${
-                                            showListSection
-                                                ? "border border-sky-300 bg-sky-50 text-sky-700 hover:bg-sky-100 dark:border-sky-500 dark:bg-sky-950/40 dark:text-sky-200"
-                                                : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100"
-                                        }`}
+                                        onClick={toggleTargetPreview}
+                                        disabled={mode !== "idle"}
+                                        aria-label={showTargetPreview ? "X-Ray 끄기" : "X-Ray 켜기"}
+                                        title={showTargetPreview ? "X-Ray 끄기" : "X-Ray 켜기"}
+                                        className="flex items-center gap-[4px]"
+                                        // className={`${
+                                        //     showTargetPreview
+                                        //         ? "border-sky-300 bg-sky-50 text-sky-700 shadow-sm hover:bg-sky-100 dark:border-sky-500 dark:bg-sky-950/40 dark:text-sky-200"
+                                        //         : "border-slate-200 bg-white text-slate-600 shadow-sm hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200"
+                                        // } flex items-center gap-[4px] rounded-[12px] p-[12px] shadow-[var(--shadow-popup)]`}
                                     >
-                                        <p className="font-bold text-[16px]">{showListSection ? "off" : "list"}</p>
+                                        <p className="text-[14px]">{showTargetPreview ? <EyeOpenIcon className="h-3.5 w-3.5" /> : <EyeClosedIcon className="h-3.5 w-3.5" />}</p>
 
                                         <ShortcutHint
-                                            binding={REPORT_SHORTCUTS.toggleViewMode}
+                                            binding={REPORT_SHORTCUTS.toggleTargetPreview}
                                             visible={visibleShortcutKeys}
                                         />
                                     </button>
                                 </section>
-
-                                <div className="h-[24px] w-[1px] bg-[var(--adaptive-blue200)]" />
-
-                                <button
-                                    type="button"
-                                    onClick={toggleTargetPreview}
-                                    disabled={mode !== "idle"}
-                                    aria-label={showTargetPreview ? "X-Ray 끄기" : "X-Ray 켜기"}
-                                    title={showTargetPreview ? "X-Ray 끄기" : "X-Ray 켜기"}
-                                    className={`${
-                                        showTargetPreview
-                                            ? "border-sky-300 bg-sky-50 text-sky-700 shadow-sm hover:bg-sky-100 dark:border-sky-500 dark:bg-sky-950/40 dark:text-sky-200"
-                                            : "border-slate-200 bg-white text-slate-600 shadow-sm hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200"
-                                    } flex items-center gap-[4px] rounded-[12px] p-[12px] shadow-[var(--shadow-popup)]`}
-                                >
-                                    <p className="font-bold text-[16px]">{showTargetPreview ? <EyeOpenIcon className="h-3.5 w-3.5" /> : <EyeClosedIcon className="h-3.5 w-3.5" />}</p>
-
-                                    <ShortcutHint
-                                        binding={REPORT_SHORTCUTS.toggleTargetPreview}
-                                        visible={visibleShortcutKeys}
-                                    />
-                                </button>
-                            </div>
-
-                            {errorMessage ? (
-                                <p className="mt-1 rounded-md border border-rose-200 bg-rose-50 px-2 py-1 text-[11px] text-rose-700 dark:border-rose-700 dark:bg-rose-950/40 dark:text-rose-200">
-                                    {errorMessage}
-                                </p>
-                            ) : null}
+                            </section>
 
                             {showListSection ? (
-                                <ReportFeedbackList />
-                            ) : // <div className="mt-2 flex-1">
-                            // </div>
-                            null}
+                                <section className="flex flex-1 flex-col gap-[16px]">
+                                    {errorMessage ? (
+                                        <p className="mt-1 rounded-md border border-rose-200 bg-rose-50 px-2 py-1 text-[11px] text-rose-700 dark:border-rose-700 dark:bg-rose-950/40 dark:text-rose-200">
+                                            {errorMessage}
+                                        </p>
+                                    ) : null}
+
+                                    <ReportFeedbackList />
+                                </section>
+                            ) : null}
                         </section>
                     </section>
                 ) : null}
@@ -163,8 +180,8 @@ export function ReportControlPanel() {
                     />
                 ) : null}
 
-                <div className="bg-[var(--adaptive-blue200)] absolute right-[-50%] bottom-[-50%] h-[150%] w-[150%] blur-[98px] z-[-1]" />
-            </div>
+                {/* <div className="bg-[var(--adaptive-blue200)] absolute right-[-50%] bottom-[-50%] h-[150%] w-[150%] blur-[98px] z-[-1]" /> */}
+            </motion.div>
         </>
     );
 }

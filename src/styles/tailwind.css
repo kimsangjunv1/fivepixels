@@ -16,11 +16,14 @@
 [data-stitchable-interactive] {
     pointer-events: auto;
 }
+
+/* tw default settings */
 [data-stitchable-mount] {
     --tw-inset-shadow: 0 0 #0000;
     --tw-inset-ring-shadow: 0 0 #0000;
     --tw-ring-offset-shadow: 0 0 #0000;
     --tw-ring-shadow: 0 0 #0000;
+    --tw-border-style: solid;
 }
 
 [data-stitchable-mount] {
@@ -32,7 +35,8 @@
     padding: 0;
     border: 0;
     background: transparent;
-    font-family: ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--coding-font);
+    /* font-family: ui-sans-serif, system-ui, sans-serif; */
     font-size: 14px;
     color: var(--adaptive-grey900);
     font-weight: 600;
@@ -62,6 +66,7 @@
     padding: 0;
     border: none;
     background: transparent;
+    font-family: var(--coding-font);
 }
 
 /* [data-stitchable-mount] :where(p, h1, h2, h3, h4, h5, h6, ul, ol, li, figure, blockquote, dl, dd, dt, pre, hr, fieldset) {

@@ -8,7 +8,7 @@ export function ReportDraftForm() {
     if (!draft) {
         return null;
     }
-    return (_jsxs("div", { onClick: (event) => event.stopPropagation(), className: "pointer-events-auto fixed z-30 space-y-2 rounded-lg border border-slate-300 bg-white p-3 text-xs shadow-xl ring-1 ring-slate-900/5 dark:border-slate-700 dark:bg-slate-900", style: {
+    return (_jsxs("div", { onClick: (event) => event.stopPropagation(), className: "pointer-events-auto fixed z-30 space-y-2 rounded-[24px] border border-[var(--adaptive-grey300)] bg-[var(--adaptive-greyOpacity50)] backdrop-blur-[30px] p-[8px] text-xs shadow-xl ring-1 ring-slate-900/5 dark:border-slate-700 dark:bg-slate-900", style: {
             left: isMobileViewport ? 16 : Math.max(16, Math.min(draft.clientX + 16, window.innerWidth - 336)),
             top: isMobileViewport ? Math.max(80, window.innerHeight - 360) : Math.max(16, Math.min(draft.clientY + 16, window.innerHeight - 320)),
             width: isMobileViewport ? "calc(100vw - 32px)" : 320,

@@ -108,7 +108,8 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         }
         const groupCount = selectableTargets.filter((target) => target.type === "group").length;
         const itemCount = selectableTargets.filter((target) => target.type === "item").length;
-        return `${selectableTargets.length} counts elements(group ${groupCount}, item ${itemCount})\navailable leaves the feedback.`;
+        return `${selectableTargets.length} counts available`;
+        // return `${selectableTargets.length} counts elements(group ${groupCount}, item ${itemCount})\navailable leaves the feedback.`;
     }, [filteredReports.length, isFetching, mode, selectableTargets, selectedTarget, showTargetPreview]);
     useEffect(() => {
         setDraft(null);

@@ -13,7 +13,7 @@ export function ReportDraftForm() {
     return (
         <div
             onClick={(event) => event.stopPropagation()}
-            className="pointer-events-auto fixed z-30 space-y-2 rounded-lg border border-slate-300 bg-white p-3 text-xs shadow-xl ring-1 ring-slate-900/5 dark:border-slate-700 dark:bg-slate-900"
+            className="pointer-events-auto fixed z-30 space-y-2 rounded-[24px] border border-[var(--adaptive-grey300)] bg-[var(--adaptive-greyOpacity50)] backdrop-blur-[30px] p-[8px] text-xs shadow-xl ring-1 ring-slate-900/5 dark:border-slate-700 dark:bg-slate-900"
             style={{
                 left: isMobileViewport ? 16 : Math.max(16, Math.min(draft.clientX + 16, window.innerWidth - 336)),
                 top: isMobileViewport ? Math.max(80, window.innerHeight - 360) : Math.max(16, Math.min(draft.clientY + 16, window.innerHeight - 320)),
@@ -42,7 +42,10 @@ export function ReportDraftForm() {
                 >
                     <span className="inline-flex items-center gap-1">
                         취소
-                        <ShortcutHint binding={REPORT_SHORTCUTS.cancel} visible={visibleShortcutKeys} />
+                        <ShortcutHint
+                            binding={REPORT_SHORTCUTS.cancel}
+                            visible={visibleShortcutKeys}
+                        />
                     </span>
                 </button>
                 <button
@@ -53,7 +56,10 @@ export function ReportDraftForm() {
                 >
                     <span className="inline-flex items-center gap-1">
                         {isCreating ? "저장 중..." : "저장"}
-                        <ShortcutHint binding={REPORT_SHORTCUTS.submit} visible={visibleShortcutKeys} />
+                        <ShortcutHint
+                            binding={REPORT_SHORTCUTS.submit}
+                            visible={visibleShortcutKeys}
+                        />
                     </span>
                 </button>
             </div>
