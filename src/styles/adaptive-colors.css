@@ -1,3 +1,15 @@
+[data-stitchable-mount] {
+    --shadow-popup:
+        0 1px 1px 0.5px #2929290a, 0 3px 3px -1.5px #29292905, 0 6px 6px -3px #2929290a, 0 12px 12px -6px #2929290a, 0 24px 24px -12px #2929290a, 0 48px 48px -24px #5e5e6a94, 0 0 0 1px #2929290a,
+        inset 0 -1px 1px -0.5px #3333330f;
+
+    --shadow-normal:
+        0 1px 1px 0.5px #2929290a, 0 3px 3px -1.5px #29292905, 0 6px 6px -3px #2929290a, 0 12px 12px -6px #2929290a, 0 24px 24px -12px #2929290a, 0 48px 48px -24px #2929290a, 0 0 0 1px #2929290a,
+        inset 0 -2px 1px -0.5px #3333330f;
+    --shadow-hard:
+        inset 0 0 0 4px var(--color-gray-500), 0 19px 8px #731f0803, 0 11px 6px #731f080a, 0 5px 5px #731f0812, 0 1px 3px #731f0814, 0 0 0 2px var(--color-gray-200), inset 0 0.5px 0.5px #ffffff1f;
+}
+
 [data-stitchable-mount][data-stitchable-theme="light"] {
     --adaptive-background: #ffffff;
     --adaptive-layeredBackground: #ffffff;

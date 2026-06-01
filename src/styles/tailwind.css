@@ -16,6 +16,12 @@
 [data-stitchable-interactive] {
     pointer-events: auto;
 }
+[data-stitchable-mount] {
+    --tw-inset-shadow: 0 0 #0000;
+    --tw-inset-ring-shadow: 0 0 #0000;
+    --tw-ring-offset-shadow: 0 0 #0000;
+    --tw-ring-shadow: 0 0 #0000;
+}
 
 [data-stitchable-mount] {
     display: block;
@@ -52,10 +58,17 @@
 
 :where([data-stitchable-mount], [data-stitchable-mount] *, [data-stitchable-mount] *::before, [data-stitchable-mount] *::after) {
     line-height: 1;
+    margin: 0;
+    padding: 0;
+    border: none;
 }
 
-[data-stitchable-mount] :where(p, h1, h2, h3, h4, h5, h6, ul, ol, li, figure, blockquote, dl, dd, dt, pre, hr, fieldset) {
+/* [data-stitchable-mount] :where(p, h1, h2, h3, h4, h5, h6, ul, ol, li, figure, blockquote, dl, dd, dt, pre, hr, fieldset) {
     margin: 0;
+} */
+
+[data-stitchable-mount] :where(button) {
+    cursor: pointer;
 }
 
 @keyframes stitchable-tooltip-in {
@@ -102,26 +115,18 @@
 [data-stitchable-mount] .stitchable-dock-guide::before {
     height: 3px;
     width: 100%;
-    -webkit-mask-image:
-        linear-gradient(to right, transparent, #000 18%, #000 82%, transparent),
-        repeating-linear-gradient(to right, #000 0 7px, transparent 7px 12px);
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 18%, #000 82%, transparent), repeating-linear-gradient(to right, #000 0 7px, transparent 7px 12px);
     -webkit-mask-composite: source-in;
-    mask-image:
-        linear-gradient(to right, transparent, #000 18%, #000 82%, transparent),
-        repeating-linear-gradient(to right, #000 0 7px, transparent 7px 12px);
+    mask-image: linear-gradient(to right, transparent, #000 18%, #000 82%, transparent), repeating-linear-gradient(to right, #000 0 7px, transparent 7px 12px);
     mask-composite: intersect;
 }
 
 [data-stitchable-mount] .stitchable-dock-guide::after {
     width: 3px;
     height: 100%;
-    -webkit-mask-image:
-        linear-gradient(to bottom, transparent, #000 18%, #000 82%, transparent),
-        repeating-linear-gradient(to bottom, #000 0 7px, transparent 7px 12px);
+    -webkit-mask-image: linear-gradient(to bottom, transparent, #000 18%, #000 82%, transparent), repeating-linear-gradient(to bottom, #000 0 7px, transparent 7px 12px);
     -webkit-mask-composite: source-in;
-    mask-image:
-        linear-gradient(to bottom, transparent, #000 18%, #000 82%, transparent),
-        repeating-linear-gradient(to bottom, #000 0 7px, transparent 7px 12px);
+    mask-image: linear-gradient(to bottom, transparent, #000 18%, #000 82%, transparent), repeating-linear-gradient(to bottom, #000 0 7px, transparent 7px 12px);
     mask-composite: intersect;
 }
 
