@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import { useReport } from "../../providers/reportContext.js";
-import { overlay, overlayInteractive } from "../report/classes.js";
 import { TargetHighlights } from "./TargetHighlights.js";
 
 type ReportOverlayLayerProps = {
@@ -22,7 +21,9 @@ export function ReportOverlayLayer({ children }: ReportOverlayLayerProps) {
     const isReportMode = mode === "report";
     const isViewMode = mode === "view";
     const isPreviewMode = showTargetPreview && mode === "idle";
-    const overlayClassName = isReportMode ? overlayInteractive : overlay;
+    const overlayClassName = isReportMode
+        ? "pointer-events-auto fixed inset-0 z-[999999] cursor-crosshair bg-[var(--st-overlay)]"
+        : "pointer-events-none fixed inset-0 z-[999999]";
 
     return (
         <div

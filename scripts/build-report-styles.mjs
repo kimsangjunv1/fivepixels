@@ -3,11 +3,12 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import postcss from "postcss";
 import cssnano from "cssnano";
+import tailwind from "@tailwindcss/postcss";
 
 const rootDir = join(dirname(fileURLToPath(import.meta.url)), "..");
-const inputPath = join(rootDir, "src/styles/report-ui.css");
+const inputPath = join(rootDir, "src/styles/tailwind.css");
 const css = readFileSync(inputPath, "utf8");
-const result = await postcss([cssnano({ preset: "default" })]).process(css, { from: inputPath });
+const result = await postcss([tailwind(), cssnano({ preset: "default" })]).process(css, { from: inputPath });
 const outputPath = join(rootDir, "src/styles/reportStylesheet.ts");
 
 writeFileSync(

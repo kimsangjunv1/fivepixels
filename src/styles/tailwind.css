@@ -33,6 +33,15 @@
     --st-overlay: rgba(2, 6, 23, 0.2);
 }
 
+[data-stitchable-mount] {
+    pointer-events: none;
+    position: fixed;
+    inset: 0;
+    font-family: ui-sans-serif, system-ui, sans-serif;
+    font-size: 0.875rem;
+    color: var(--st-text);
+}
+
 @keyframes stitchable-tooltip-in {
     from {
         opacity: 0;
@@ -43,8 +52,4 @@
         opacity: 1;
         transform: translateY(0) scale(1);
     }
-}
-
-@utility stitchable-tooltip-enter {
-    animation: stitchable-tooltip-in 180ms ease-out;
 }
