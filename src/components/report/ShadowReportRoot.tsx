@@ -34,7 +34,7 @@ function getOrCreateShadowHost(): ShadowHost {
 
         const mount = document.createElement("div");
         mount.setAttribute(MOUNT_ATTR, "");
-        mount.className = "pointer-events-none fixed inset-0 font-sans text-sm text-slate-900 dark:text-slate-100";
+        mount.className = "";
         shadowRoot.append(mount);
     }
 

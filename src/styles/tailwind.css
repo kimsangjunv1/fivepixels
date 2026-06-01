@@ -1,5 +1,50 @@
-@import "tailwindcss";
-
-@custom-variant dark (&:where([data-stitchable-theme="dark"], [data-stitchable-theme="dark"] *));
+@import "tailwindcss/theme";
+@import "tailwindcss/utilities";
 
 @source "../components/**/*.tsx";
+
+[data-stitchable-theme="light"] {
+    --st-bg: #ffffff;
+    --st-bg-muted: #f8fafc;
+    --st-bg-subtle: #f1f5f9;
+    --st-border: #e2e8f0;
+    --st-text: #0f172a;
+    --st-text-muted: #64748b;
+    --st-accent: #3b82f6;
+    --st-accent-soft: #eff6ff;
+    --st-accent-border: #bfdbfe;
+    --st-accent-text: #1d4ed8;
+    --st-danger: #ef4444;
+    --st-overlay: rgba(15, 23, 42, 0.1);
+}
+
+[data-stitchable-theme="dark"] {
+    --st-bg: #0f172a;
+    --st-bg-muted: #1e293b;
+    --st-bg-subtle: #334155;
+    --st-border: #334155;
+    --st-text: #f8fafc;
+    --st-text-muted: #94a3b8;
+    --st-accent: #60a5fa;
+    --st-accent-soft: #172554;
+    --st-accent-border: #1e3a8a;
+    --st-accent-text: #93c5fd;
+    --st-danger: #f87171;
+    --st-overlay: rgba(2, 6, 23, 0.2);
+}
+
+@keyframes stitchable-tooltip-in {
+    from {
+        opacity: 0;
+        transform: translateY(5px) scale(0.97);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@utility stitchable-tooltip-enter {
+    animation: stitchable-tooltip-in 180ms ease-out;
+}

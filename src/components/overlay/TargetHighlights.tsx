@@ -1,5 +1,6 @@
 import { TARGET_COLOR, TARGET_SURFACE } from "../../constants/report.js";
 import type { TargetSnapshot } from "../../types/report-ui.js";
+import { highlight, highlightLabel } from "../report/classes.js";
 
 type TargetHighlightsProps = {
     hoveredTarget: TargetSnapshot | null;
@@ -10,7 +11,7 @@ type TargetHighlightsProps = {
 function HighlightBox({ target, showLabel }: { target: TargetSnapshot; showLabel?: boolean }) {
     return (
         <div
-            className="pointer-events-none fixed box-border rounded-sm"
+            className={highlight}
             style={{
                 left: target.rect.left,
                 top: target.rect.top,
@@ -21,12 +22,7 @@ function HighlightBox({ target, showLabel }: { target: TargetSnapshot; showLabel
             }}
         >
             {showLabel ? (
-                <span
-                    className="absolute left-0 top-0 -translate-y-full rounded px-1.5 py-0.5 text-[11px] font-medium text-white"
-                    style={{
-                        backgroundColor: TARGET_COLOR[target.type],
-                    }}
-                >
+                <span className={highlightLabel} style={{ backgroundColor: TARGET_COLOR[target.type] }}>
                     {target.type} · {target.id}
                 </span>
             ) : null}
@@ -45,7 +41,7 @@ export function TargetHighlights({ hoveredTarget, previewTargets = [], selectedT
 
             {selectedTarget ? (
                 <div
-                    className="pointer-events-none fixed box-border rounded-sm"
+                    className={highlight}
                     style={{
                         left: selectedTarget.rect.left,
                         top: selectedTarget.rect.top,

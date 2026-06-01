@@ -1,21 +1,11 @@
 import { REPORT_SHORTCUTS } from "../../constants/reportShortcuts.js";
 import { useReport } from "../../providers/reportContext.js";
-import { btnPrimary, btnSecondary, cardSurface } from "../report/classes.js";
+import { btnHint, btnPrimary, btnRow, btnSecondary, cardSurface, stack, textTitle } from "../report/classes.js";
 import { ShortcutHint } from "../ShortcutHint.js";
 import { FieldEditor } from "./FieldEditor.js";
 
 export function ReportDraftForm() {
-    const {
-        draft,
-        fields,
-        isMobileViewport,
-        isCreating,
-        visibleShortcutKeys,
-        updateDraftMessage,
-        updateDraftField,
-        cancelDraft,
-        handleCreateSubmit,
-    } = useReport();
+    const { draft, fields, isMobileViewport, isCreating, visibleShortcutKeys, updateDraftMessage, updateDraftField, cancelDraft, handleCreateSubmit } = useReport();
 
     if (!draft) {
         return null;
@@ -31,29 +21,23 @@ export function ReportDraftForm() {
                 width: isMobileViewport ? "calc(100vw - 32px)" : 320,
             }}
         >
-            <p className="mb-3 text-sm font-semibold text-slate-800 dark:text-slate-100">
+            <p className={textTitle}>
                 {draft.reportType} · {draft.reportId}
             </p>
 
-            <div className="flex flex-col gap-3">
-                <FieldEditor
-                    fields={fields}
-                    message={draft.message}
-                    fieldValues={draft.fieldValues}
-                    onMessageChange={updateDraftMessage}
-                    onFieldChange={updateDraftField}
-                />
+            <div className={stack}>
+                <FieldEditor fields={fields} message={draft.message} fieldValues={draft.fieldValues} onMessageChange={updateDraftMessage} onFieldChange={updateDraftField} />
             </div>
 
-            <div className="mt-4 flex gap-2">
-                <button type="button" onClick={cancelDraft} className={`flex-1 ${btnSecondary}`}>
-                    <span className="inline-flex items-center gap-1">
+            <div className={btnRow}>
+                <button type="button" onClick={cancelDraft} className={btnSecondary}>
+                    <span className={btnHint}>
                         취소
                         <ShortcutHint binding={REPORT_SHORTCUTS.cancel} visible={visibleShortcutKeys} />
                     </span>
                 </button>
-                <button type="button" onClick={() => void handleCreateSubmit()} disabled={isCreating} className={`flex-1 ${btnPrimary}`}>
-                    <span className="inline-flex items-center gap-1">
+                <button type="button" onClick={() => void handleCreateSubmit()} disabled={isCreating} className={btnPrimary}>
+                    <span className={btnHint}>
                         {isCreating ? "저장 중..." : "저장"}
                         <ShortcutHint binding={REPORT_SHORTCUTS.submit} visible={visibleShortcutKeys} />
                     </span>

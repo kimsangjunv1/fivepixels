@@ -1,29 +1,55 @@
-export const btnPrimary =
-    "pointer-events-auto inline-flex items-center justify-center rounded-lg bg-blue-500 px-3 py-2 text-sm font-medium text-white transition hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50";
-
-export const btnPrimaryDanger =
-    "pointer-events-auto inline-flex items-center justify-center rounded-lg bg-red-500 px-3 py-2 text-sm font-medium text-white transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-50";
-
-export const btnSecondary =
-    "pointer-events-auto inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800";
-
-export const btnSecondaryAccent =
-    "pointer-events-auto inline-flex items-center justify-center rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700 transition hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-200 dark:hover:bg-blue-900";
-
-export const btnLink =
-    "pointer-events-auto text-sm font-medium text-blue-600 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-50 dark:text-blue-400 dark:hover:text-blue-300";
-
-export const inputBase =
-    "pointer-events-auto w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100";
-
-export const textareaBase =
-    "pointer-events-auto min-h-24 w-full resize-y rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100";
-
-export const panelSurface =
-    "pointer-events-auto fixed z-[2147483647] flex max-w-[calc(100vw-32px)] flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 shadow-xl backdrop-blur-md dark:border-slate-700/80 dark:bg-slate-900/95";
-
-export const cardSurface =
-    "pointer-events-auto fixed z-[2147483647] w-80 max-w-[calc(100vw-32px)] rounded-2xl border border-slate-200 bg-white p-4 shadow-xl dark:border-slate-700 dark:bg-slate-900";
-
-export const shortcutHint =
-    "ml-1 inline-flex rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[10px] font-medium text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300";
+export const btnPrimary = "st-btn st-btn-primary";
+export const btnPrimaryDanger = "st-btn st-btn-danger";
+export const btnSecondary = "st-btn st-btn-secondary";
+export const btnSecondaryAccent = "st-btn st-btn-accent";
+export const btnLink = "st-btn-link";
+export const inputBase = "st-input";
+export const textareaBase = "st-textarea";
+export const panelSurface = "st-panel st-panel--w";
+export const panelSurfaceCollapsed = "st-panel st-panel--collapsed";
+export const cardSurface = "st-card";
+export const cardTooltip = "st-card st-card--tooltip";
+export const cardTooltipCompact = "st-card st-card--tooltip st-card--compact";
+export const shortcutHint = "st-kbd";
+export const textTitle = "st-title";
+export const textBody = "st-body";
+export const textMuted = "st-muted";
+export const surfaceMuted = "st-surface-muted";
+export const stack = "st-stack";
+export const stackSm = "st-stack st-stack--sm";
+export const row = "st-row";
+export const rowBetween = "st-row-between";
+export const flex1 = "st-flex-1";
+export const overlay = "st-fixed-overlay";
+export const overlayInteractive = "st-fixed-overlay st-fixed-overlay--interactive";
+export const marker = "st-marker";
+export const markerSelected = "st-marker st-marker--selected";
+export const highlight = "st-highlight";
+export const highlightLabel = "st-highlight-label";
+export const feedbackList = "st-list st-surface-muted";
+export const scrollArea = "st-scroll";
+export const panelHeader = "st-panel-header";
+export const panelBody = "st-panel-body";
+export const collapseTabLeft = "st-collapse-tab st-collapse-tab--left";
+export const collapseTabRight = "st-collapse-tab st-collapse-tab--right";
+export const icon = "st-icon";
+export const badge = "st-badge";
+export const chip = "st-chip";
+export const errorText = "st-error";
+export const dividerTop = "st-divider-top";
+export const truncate = "st-truncate";
+export const cardItem = "st-card-item";
+export const cardItemSelected = "st-card-item st-card-item--selected";
+export const replyItem = "st-reply-item";
+export const btnRow = "st-row";
+export const btnHint = "st-row";
+export const inputGrow = "st-input st-flex-1";
+export const textareaCompact = "st-textarea";
+export const panelSection = "st-flex-1";
+export const checkboxLabel = "st-body st-pointer-auto st-row";
+export const fieldBlock = "st-stack st-stack--sm";
+export const listHeader = "st-list-header";
+export const listFilters = "st-list-filters";
+export const cardList = "st-stack st-stack--sm";
+export const wFull = "st-pointer-auto";
+export const btnIcon = "st-btn st-btn-secondary";
