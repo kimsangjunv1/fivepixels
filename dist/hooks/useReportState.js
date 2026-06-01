@@ -9,7 +9,7 @@ const OVERLAY_HOVER_LEAVE_MS = 100;
 import { findTargetByPoint, getSelectableTargets, isSameHoverTarget, toSnapshot } from "../utils/dom.js";
 import { createInitialFieldValues, getFieldError, getFieldTags } from "../utils/fields.js";
 import { createReplyId } from "../utils/format.js";
-import { getCurrentPathname } from "../utils/pathname.js";
+import { useCurrentPathname } from "./useCurrentPathname.js";
 import { resolveStorageAdapter } from "../utils/storage.js";
 import { notifyFeedbackCreate, notifyFeedbackDelete, notifyFeedbackReply, notifyFeedbackUpdate } from "../utils/reportCallbacks.js";
 export function useReportState({ projectId, environment, appVersion, appearance, fields, shortcut: _shortcut, identify, onEvent, onFeedbackCreate, onFeedbackDelete, onFeedbackReply, onFeedbackUpdate, pathname, showFeedbackList, storage = "local", storageAdapter, visibleShortcutKeys = false, }) {
@@ -23,7 +23,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
     const resolvedAppearance = useResolvedAppearance(appearance);
     const isMobileViewport = useIsMobileViewport();
     const storageAdapterInstance = useMemo(() => resolveStorageAdapter({ projectId, environment, storage, storageAdapter }), [environment, projectId, storage, storageAdapter]);
-    const currentPathname = useMemo(() => getCurrentPathname(pathname), [pathname]);
+    const currentPathname = useCurrentPathname(pathname);
     const eventCallbacks = useMemo(() => ({
         onEvent,
         onFeedbackCreate,
