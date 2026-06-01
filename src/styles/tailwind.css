@@ -7,9 +7,9 @@
     /* Use absolute units so host html font-size does not scale library spacing/text. */
     --spacing: 4px;
     --text-xs: 12px;
-    --text-xs--line-height: 1.33333;
+    --text-xs--line-height: 1;
     --text-sm: 14px;
-    --text-sm--line-height: 1.42857;
+    --text-sm--line-height: 1;
 }
 
 [data-stitchable-theme="light"] {
@@ -50,8 +50,14 @@
     inset: 0;
     font-family: ui-sans-serif, system-ui, sans-serif;
     font-size: 14px;
-    line-height: 1.42857;
     color: var(--st-text);
+    font-weight: 600;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    line-height: 1;
+    -webkit-text-size-adjust: 100%;
 }
 
 [data-stitchable-mount],
@@ -59,6 +65,38 @@
 [data-stitchable-mount] *::before,
 [data-stitchable-mount] *::after {
     box-sizing: border-box;
+}
+
+:where(
+    [data-stitchable-mount],
+    [data-stitchable-mount] *,
+    [data-stitchable-mount] *::before,
+    [data-stitchable-mount] *::after
+) {
+    line-height: 1;
+}
+
+[data-stitchable-mount] :where(
+    p,
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    ul,
+    ol,
+    li,
+    figure,
+    blockquote,
+    dl,
+    dd,
+    dt,
+    pre,
+    hr,
+    fieldset
+) {
+    margin: 0;
 }
 
 @keyframes stitchable-tooltip-in {

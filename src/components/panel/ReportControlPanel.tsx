@@ -8,8 +8,7 @@ import { ShortcutHint } from "../ShortcutHint.js";
 import { ReportFeedbackList } from "./ReportFeedbackList.js";
 
 function PanelCollapseTab({ collapsed, anchorSide, onClick }: { collapsed: boolean; anchorSide: "left" | "right"; onClick: () => void }) {
-    const hideIcon =
-        anchorSide === "right" ? <ChevronRightIcon className="h-3 w-3 text-slate-500 dark:text-slate-300" /> : <ChevronLeftIcon className="h-3 w-3 text-slate-500 dark:text-slate-300" />;
+    const hideIcon = anchorSide === "right" ? <ChevronRightIcon className="h-3 w-3 text-slate-500 dark:text-slate-300" /> : <ChevronLeftIcon className="h-3 w-3 text-slate-500 dark:text-slate-300" />;
     const expandIcon =
         anchorSide === "right" ? <ChevronLeftIcon className="h-3 w-3 text-slate-500 dark:text-slate-300" /> : <ChevronRightIcon className="h-3 w-3 text-slate-500 dark:text-slate-300" />;
 
@@ -51,7 +50,13 @@ export function ReportControlPanel() {
             }
             style={panelStyle}
         >
-            {anchorSide === "left" ? <PanelCollapseTab collapsed={panelCollapsed} anchorSide={anchorSide} onClick={() => setPanelCollapsed((current) => !current)} /> : null}
+            {anchorSide === "left" ? (
+                <PanelCollapseTab
+                    collapsed={panelCollapsed}
+                    anchorSide={anchorSide}
+                    onClick={() => setPanelCollapsed((current) => !current)}
+                />
+            ) : null}
 
             {!panelCollapsed ? (
                 <section className="flex flex-1 flex-col">
@@ -63,7 +68,8 @@ export function ReportControlPanel() {
                         style={isDragging ? { opacity: 0.8 } : undefined}
                     >
                         <p className="text-[11px] text-slate-500 dark:text-slate-400">피드백을 수집 중...</p>
-                        <p className="text-xs text-slate-800 dark:text-slate-100">{helperText}</p>
+                        <p className="text-[14px] leading-[1.5]">{helperText}</p>
+                        {/* <p className="text-xs text-slate-800 dark:text-slate-100">{helperText}</p> */}
                     </section>
 
                     <section className="flex flex-1 flex-col gap-2 bg-slate-50/60 px-3 py-2 text-xs dark:bg-slate-950/40">
@@ -79,7 +85,10 @@ export function ReportControlPanel() {
                             >
                                 <span className="inline-flex items-center gap-1">
                                     {mode === "report" ? "중단" : "기록"}
-                                    <ShortcutHint binding={REPORT_SHORTCUTS.toggleReportMode} visible={visibleShortcutKeys} />
+                                    <ShortcutHint
+                                        binding={REPORT_SHORTCUTS.toggleReportMode}
+                                        visible={visibleShortcutKeys}
+                                    />
                                 </span>
                             </button>
 
@@ -94,7 +103,10 @@ export function ReportControlPanel() {
                             >
                                 <span className="inline-flex items-center gap-1">
                                     {showListSection ? "목록 닫기" : "목록"}
-                                    <ShortcutHint binding={REPORT_SHORTCUTS.toggleViewMode} visible={visibleShortcutKeys} />
+                                    <ShortcutHint
+                                        binding={REPORT_SHORTCUTS.toggleViewMode}
+                                        visible={visibleShortcutKeys}
+                                    />
                                 </span>
                             </button>
 
@@ -111,12 +123,11 @@ export function ReportControlPanel() {
                                 }
                             >
                                 <span className="inline-flex items-center gap-1">
-                                    {showTargetPreview ? (
-                                        <EyeOpenIcon className="h-3.5 w-3.5" />
-                                    ) : (
-                                        <EyeClosedIcon className="h-3.5 w-3.5" />
-                                    )}
-                                    <ShortcutHint binding={REPORT_SHORTCUTS.toggleTargetPreview} visible={visibleShortcutKeys} />
+                                    {showTargetPreview ? <EyeOpenIcon className="h-3.5 w-3.5" /> : <EyeClosedIcon className="h-3.5 w-3.5" />}
+                                    <ShortcutHint
+                                        binding={REPORT_SHORTCUTS.toggleTargetPreview}
+                                        visible={visibleShortcutKeys}
+                                    />
                                 </span>
                             </button>
                         </div>
@@ -136,7 +147,13 @@ export function ReportControlPanel() {
                 </section>
             ) : null}
 
-            {anchorSide === "right" ? <PanelCollapseTab collapsed={panelCollapsed} anchorSide={anchorSide} onClick={() => setPanelCollapsed((current) => !current)} /> : null}
+            {anchorSide === "right" ? (
+                <PanelCollapseTab
+                    collapsed={panelCollapsed}
+                    anchorSide={anchorSide}
+                    onClick={() => setPanelCollapsed((current) => !current)}
+                />
+            ) : null}
         </div>
     );
 }
