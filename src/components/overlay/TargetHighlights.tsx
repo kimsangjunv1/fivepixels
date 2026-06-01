@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { TARGET_COLOR, TARGET_SURFACE } from "../../constants/report.js";
 import type { TargetSnapshot } from "../../types/report-ui.js";
 import { AnimatedPresence, motion } from "../motion/index.js";
@@ -9,9 +8,15 @@ type TargetHighlightsProps = {
     selectedTarget: TargetSnapshot | null;
 };
 
-function HighlightBox({ target, showLabel }: { target: TargetSnapshot; showLabel?: boolean }) {
+const HIGHLIGHT_LAYOUT_TRANSITION = { duration: 0.22, ease: "ease-out" } as const;
+const HOVER_LAYOUT_ID = "stitchable-target-highlight-hover";
+
+function HighlightMotionBox({ target, showLabel, layoutId }: { target: TargetSnapshot; showLabel?: boolean; layoutId?: string }) {
     return (
-        <div
+        <motion.div
+            layout
+            layoutId={layoutId}
+            transition={HIGHLIGHT_LAYOUT_TRANSITION}
             className="pointer-events-none fixed box-border rounded-sm"
             style={{
                 left: target.rect.left,
@@ -21,6 +26,9 @@ function HighlightBox({ target, showLabel }: { target: TargetSnapshot; showLabel
                 outline: `2px solid ${TARGET_COLOR[target.type]}`,
                 backgroundColor: TARGET_SURFACE[target.type],
             }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
         >
             {showLabel ? (
                 <span
@@ -30,53 +38,29 @@ function HighlightBox({ target, showLabel }: { target: TargetSnapshot; showLabel
                     {target.type} · {target.id}
                 </span>
             ) : null}
-        </div>
+        </motion.div>
     );
 }
 
 export function TargetHighlights({ hoveredTarget, previewTargets = [], selectedTarget }: TargetHighlightsProps) {
-    const [test, setTest] = useState(false);
     return (
         <>
             <AnimatedPresence>
-                <motion.div
-                    layout
-                    layoutId="asd"
-                    className="w-[32px] h-[32px] bg-black"
-                    style={{ width: test ? "20px" : "30px" }}
-                    onClick={() => setTest(!test)}
-                />
                 {previewTargets.map((target) => (
-                    <motion.div
-                        layout
-                        layoutId="asd"
+                    <HighlightMotionBox
                         key={`${target.type}-${target.id}`}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                    >
-                        <HighlightBox
-                            key={`${target.type}-${target.id}`}
-                            target={target}
-                            showLabel
-                        />
-                    </motion.div>
+                        target={target}
+                        showLabel
+                    />
                 ))}
 
                 {hoveredTarget ? (
-                    <motion.div
-                        layout
-                        layoutId="asd"
-                        // key={`${target.type}-${target.id}`}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                    >
-                        <HighlightBox
-                            target={hoveredTarget}
-                            showLabel
-                        />
-                    </motion.div>
+                    <HighlightMotionBox
+                        key={`hover-${hoveredTarget.type}-${hoveredTarget.id}`}
+                        target={hoveredTarget}
+                        showLabel
+                        layoutId={HOVER_LAYOUT_ID}
+                    />
                 ) : null}
             </AnimatedPresence>
 

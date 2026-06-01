@@ -86,8 +86,45 @@ type TransformParts = {
 };
 
 const PresenceContext = createContext<PresenceContextValue | null>(null);
-const layoutRegistry = new Map<string, DOMRect>();
+const layoutRegistry = new Map<string, DOMRect[]>();
 const motionComponentCache = new Map<string, ReturnType<typeof createMotionComponent>>();
+
+function cloneRect(rect: DOMRect) {
+    return new DOMRect(rect.x, rect.y, rect.width, rect.height);
+}
+
+function rectsDiffer(a: DOMRect, b: DOMRect, threshold = 0.5) {
+    return (
+        Math.abs(a.left - b.left) >= threshold ||
+        Math.abs(a.top - b.top) >= threshold ||
+        Math.abs(a.width - b.width) >= threshold ||
+        Math.abs(a.height - b.height) >= threshold
+    );
+}
+
+function pushLayoutSnapshot(layoutId: string, rect: DOMRect) {
+    const stack = layoutRegistry.get(layoutId) ?? [];
+    stack.push(cloneRect(rect));
+    layoutRegistry.set(layoutId, stack);
+}
+
+function popLayoutSnapshot(layoutId: string) {
+    const stack = layoutRegistry.get(layoutId);
+
+    if (!stack?.length) {
+        return undefined;
+    }
+
+    const rect = stack.pop();
+
+    if (!stack.length) {
+        layoutRegistry.delete(layoutId);
+    } else {
+        layoutRegistry.set(layoutId, stack);
+    }
+
+    return rect;
+}
 
 function trackedListsEqual(current: PresenceTrackedChild[], next: PresenceTrackedChild[]) {
     return current.length === next.length && current.every((child, index) => child === next[index]);
@@ -461,7 +498,12 @@ function useMergedRef<T>(forwardedRef: Ref<T>, localRef: { current: T | null }) 
     };
 }
 
-function animateLayout(node: HTMLElement, fromRect: DOMRect, transition?: MotionTransition) {
+function animateLayout(
+    node: HTMLElement,
+    fromRect: DOMRect,
+    transition: MotionTransition | undefined,
+    layoutAnimationRef: MutableRefObject<Animation | null>,
+) {
     if (typeof node.animate !== "function") {
         return;
     }
@@ -476,7 +518,12 @@ function animateLayout(node: HTMLElement, fromRect: DOMRect, transition?: Motion
         return;
     }
 
-    node.animate(
+    if (layoutAnimationRef.current) {
+        layoutAnimationRef.current.cancel();
+        layoutAnimationRef.current = null;
+    }
+
+    const animation = node.animate(
         [
             {
                 transformOrigin: "top left",
@@ -493,6 +540,22 @@ function animateLayout(node: HTMLElement, fromRect: DOMRect, transition?: Motion
             fill: "both",
         },
     );
+
+    layoutAnimationRef.current = animation;
+
+    animation.onfinish = () => {
+        if (layoutAnimationRef.current !== animation) {
+            return;
+        }
+
+        layoutAnimationRef.current = null;
+    };
+
+    animation.oncancel = () => {
+        if (layoutAnimationRef.current === animation) {
+            layoutAnimationRef.current = null;
+        }
+    };
 }
 
 function PresenceChild({ children, isPresent, onExitComplete }: PresenceContextValue & { children: ReactElement }) {
@@ -567,9 +630,12 @@ function createMotionComponent(tagName: string) {
         const lastAnimatedStyleRef = useRef<MotionStyle>(animate ?? {});
         const previousRectRef = useRef<DOMRect | null>(null);
         const animationRef = useRef<Animation | null>(null);
+        const layoutAnimationRef = useRef<Animation | null>(null);
         const hasMountedRef = useRef(false);
+        const [layoutMeasureGeneration, setLayoutMeasureGeneration] = useState(0);
         const mergedRef = useMergedRef(forwardedRef, localRef);
         const animateKey = stringifyStyle(animate);
+        const layoutEnabled = Boolean(layout || layoutId);
 
         useEffect(
             () => () => {
@@ -578,33 +644,39 @@ function createMotionComponent(tagName: string) {
                     animationRef.current = null;
                 }
 
+                if (layoutAnimationRef.current) {
+                    layoutAnimationRef.current.cancel();
+                    layoutAnimationRef.current = null;
+                }
+
                 if (layoutId && localRef.current) {
-                    layoutRegistry.set(layoutId, localRef.current.getBoundingClientRect());
+                    pushLayoutSnapshot(layoutId, localRef.current.getBoundingClientRect());
                 }
             },
             [layoutId],
         );
 
-        useLayoutEffect(() => {
-            const node = localRef.current;
-
-            if (!node) {
+        useEffect(() => {
+            if (!layout || !isBrowser()) {
                 return;
             }
 
-            if (layoutId) {
-                const previousSharedRect = layoutRegistry.get(layoutId);
+            const node = localRef.current;
 
-                if (previousSharedRect) {
-                    animateLayout(node, previousSharedRect, transition);
-                    layoutRegistry.delete(layoutId);
-                }
-            } else if (layout && previousRectRef.current) {
-                animateLayout(node, previousRectRef.current, transition);
+            if (!node || typeof ResizeObserver === "undefined") {
+                return;
             }
 
-            previousRectRef.current = node.getBoundingClientRect();
-        }, [layout, layoutId, animateKey, transition]);
+            const observer = new ResizeObserver(() => {
+                setLayoutMeasureGeneration((current) => current + 1);
+            });
+
+            observer.observe(node);
+
+            return () => {
+                observer.disconnect();
+            };
+        }, [layout, layoutId]);
 
         useLayoutEffect(() => {
             if (presence?.isPresent === false || !animate) {
@@ -666,6 +738,40 @@ function createMotionComponent(tagName: string) {
                 }
             };
         }, [animate, animateKey, initial, presence?.isPresent, transition]);
+
+        useLayoutEffect(() => {
+            void layoutMeasureGeneration;
+
+            if (!layoutEnabled) {
+                return;
+            }
+
+            const node = localRef.current;
+
+            if (!node) {
+                return;
+            }
+
+            let fromRect: DOMRect | null = null;
+
+            if (layoutId) {
+                fromRect = popLayoutSnapshot(layoutId) ?? null;
+            }
+
+            if (!fromRect && layout && previousRectRef.current) {
+                const currentRect = node.getBoundingClientRect();
+
+                if (rectsDiffer(previousRectRef.current, currentRect)) {
+                    fromRect = previousRectRef.current;
+                }
+            }
+
+            if (fromRect) {
+                animateLayout(node, fromRect, transition, layoutAnimationRef);
+            }
+
+            previousRectRef.current = cloneRect(node.getBoundingClientRect());
+        });
 
         useEffect(() => {
             if (presence?.isPresent !== false) {
