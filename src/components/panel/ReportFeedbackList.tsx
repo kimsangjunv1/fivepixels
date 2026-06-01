@@ -38,11 +38,19 @@ export function ReportFeedbackList() {
         // <section className="flex flex-col gap-2 border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-900">
         <section className="flex flex-col gap-2 p-3">
             <div className="flex items-center justify-between gap-2">
-                <strong className="text-sm font-semibold text-slate-900 dark:text-slate-100">피드백 목록</strong>
-                <span className="inline-flex min-w-6 items-center justify-center rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                <section className="flex items-center gap-[4px]">
+                    <p className="text-sm font-bold">피드백 목록</p>
+                    <p className="bg-[var(--adaptive-greyOpacity700)] text-[var(--adaptive-grey300)] p-[2px_4px] rounded-[6px] text-[12px]">{filteredReports.length}개</p>
+                </section>
+                {/* <span className="inline-flex min-w-6 items-center justify-center rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-200">
                     {filteredReports.length}
-                </span>
-                <button onClick={() => setIsShowFilter(!isShowFilter)}>필터 보기</button>
+                </span> */}
+                <button
+                    onClick={() => setIsShowFilter(!isShowFilter)}
+                    className="bg-[var(--adaptive-greyOpacity700)] p-[2px_4px] rounded-[6px] text-[var(--adaptive-grey300)] text-[12px] font-bold"
+                >
+                    필터 보기
+                </button>
             </div>
 
             {isShowFilter ? (

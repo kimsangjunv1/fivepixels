@@ -7,6 +7,7 @@ import { EyeClosedIcon, EyeOpenIcon } from "../icons/EyeIcon.js";
 import { ShortcutHint } from "../ShortcutHint.js";
 import { PanelDockGuides } from "./PanelDockGuides.js";
 import { ReportFeedbackList } from "./ReportFeedbackList.js";
+import { LogoIcon } from "./../icons/LogoIcon.js";
 
 function PanelCollapseTab({ collapsed, anchorSide, onClick }: { collapsed: boolean; anchorSide: "left" | "right"; onClick: () => void }) {
     const hideIcon = anchorSide === "right" ? <ChevronRightIcon className="h-3 w-3 text-slate-500 dark:text-slate-300" /> : <ChevronLeftIcon className="h-3 w-3 text-slate-500 dark:text-slate-300" />;
@@ -78,6 +79,7 @@ export function ReportControlPanel() {
                             title="드래그해서 위치 변경"
                             style={isDragging ? { opacity: 0.8 } : undefined}
                         >
+                            <LogoIcon className="w-[12px]" />
                             <p className="text-right text-[18px] text-[var(--adaptive-grey900)] font-bold">feedback is ready.</p>
                             <p className="text-right text-[14px] text-[var(--adaptive-greyOpacity600)] leading-[1.5] whitespace-break-spaces">{helperText}</p>
                         </section>

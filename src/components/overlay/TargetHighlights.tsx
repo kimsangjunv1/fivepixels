@@ -38,7 +38,7 @@ function HighlightMotionBox({ target, showLabel }: { target: TargetSnapshot; sho
             layout
             layoutTransition={motionPreset.layout}
             transition={motionPreset.fade}
-            className="pointer-events-none fixed box-border rounded-sm"
+            className="pointer-events-none fixed box-border"
             style={{
                 left: target.rect.left,
                 top: target.rect.top,
@@ -53,8 +53,8 @@ function HighlightMotionBox({ target, showLabel }: { target: TargetSnapshot; sho
         >
             {showLabel ? (
                 <span
-                    className="absolute left-0 top-0 -translate-y-full rounded px-1 py-0.5 text-[11px] font-medium text-white"
-                    style={{ backgroundColor: TARGET_COLOR[target.type] }}
+                    className="absolute left-0 top-0 -translate-y-full px-1 py-0.5 text-[11px] font-medium text-white"
+                    style={{ backgroundColor: TARGET_COLOR[target.type], fontFamily: "Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace" }}
                 >
                     {target.type} · {target.id}
                 </span>
