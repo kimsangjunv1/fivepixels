@@ -3,15 +3,14 @@ import { ReportOverlayLayer } from "../overlay/ReportOverlayLayer.js";
 import { ReportControlPanel } from "../panel/ReportControlPanel.js";
 import { ReportDraftForm } from "../panel/ReportDraftForm.js";
 import { ReportMarkersLayer } from "../point/ReportMarkersLayer.js";
-import { StitchableRoot } from "./StitchableRoot.js";
+import { ShadowReportRoot } from "./ShadowReportRoot.js";
 
 export function ReportView() {
-    const { mode, showTargetPreview } = useReport();
-
+    const { mode, showTargetPreview, resolvedAppearance } = useReport();
     const showOverlay = mode !== "idle" || showTargetPreview;
 
     return (
-        <StitchableRoot>
+        <ShadowReportRoot appearance={resolvedAppearance}>
             <ReportControlPanel />
 
             {showOverlay ? (
@@ -24,7 +23,6 @@ export function ReportView() {
                     ) : null}
                 </ReportOverlayLayer>
             ) : null}
-
-        </StitchableRoot>
+        </ShadowReportRoot>
     );
 }

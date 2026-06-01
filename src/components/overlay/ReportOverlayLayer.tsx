@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import { useReport } from "../../providers/reportContext.js";
-import { stitchablePartProps } from "../report/parts.js";
 import { TargetHighlights } from "./TargetHighlights.js";
 
 type ReportOverlayLayerProps = {
@@ -22,21 +21,19 @@ export function ReportOverlayLayer({ children }: ReportOverlayLayerProps) {
     const isReportMode = mode === "report";
     const isViewMode = mode === "view";
     const isPreviewMode = showTargetPreview && mode === "idle";
-    const overlayMode = isReportMode ? "report" : isViewMode ? "view" : isPreviewMode ? "preview" : "idle";
+    const overlayClassName = isReportMode
+        ? "pointer-events-auto fixed inset-0 z-[999999] cursor-crosshair bg-[var(--adaptive-greyOpacity200)]"
+        : "pointer-events-none fixed inset-0 z-[999999]";
 
     return (
         <div
             ref={overlayRef}
             onMouseMove={isReportMode ? handleOverlayMove : undefined}
             onClick={isReportMode ? handleOverlayClick : undefined}
-            {...stitchablePartProps("overlay")}
-            data-overlay-mode={overlayMode}
+            className={overlayClassName}
+            data-overlay-mode={isReportMode ? "report" : isViewMode ? "view" : isPreviewMode ? "preview" : "idle"}
         >
-            <TargetHighlights
-                hoveredTarget={hoveredTarget}
-                previewTargets={isPreviewMode ? selectableTargets : undefined}
-                selectedTarget={selectedTarget}
-            />
+            <TargetHighlights hoveredTarget={hoveredTarget} previewTargets={isPreviewMode ? selectableTargets : undefined} selectedTarget={selectedTarget} />
             {children}
         </div>
     );

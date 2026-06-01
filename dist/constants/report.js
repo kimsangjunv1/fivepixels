@@ -1,12 +1,12 @@
 export const DOT_SIZE = 14;
 export const TARGET_SELECTOR = "[data-report-id][data-report-type]";
 export const TARGET_COLOR = {
-    group: "var(--adaptive-blue500)",
-    item: "var(--adaptive-red500)",
+    group: "#3182f6",
+    item: "#f04452",
 };
 export const TARGET_SURFACE = {
-    group: "var(--adaptive-blueOpacity50)",
-    item: "var(--adaptive-redOpacity50)",
+    group: "rgba(49, 130, 246, 0.15)",
+    item: "rgba(240, 68, 82, 0.15)",
 };
 export const DEFAULT_FIELDS = [
     { key: "message", type: "textarea", label: "메시지", required: true },

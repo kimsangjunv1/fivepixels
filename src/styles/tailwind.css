@@ -1,0 +1,67 @@
+@import "tailwindcss/theme";
+@import "tailwindcss/utilities";
+@import "./adaptive-colors.css";
+
+@source "../components/**/*.tsx";
+
+@theme {
+    /* Use absolute units so host html font-size does not scale library spacing/text. */
+    --spacing: 4px;
+    --text-xs: 12px;
+    --text-xs--line-height: 1;
+    --text-sm: 14px;
+    --text-sm--line-height: 1;
+}
+
+[data-stitchable-mount] {
+    display: block;
+    pointer-events: none;
+    position: fixed;
+    inset: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    font-family: ui-sans-serif, system-ui, sans-serif;
+    font-size: 14px;
+    color: var(--adaptive-grey900);
+    font-weight: 600;
+    font-style: normal;
+    font-synthesis: none;
+    letter-spacing: normal;
+    text-align: start;
+    text-transform: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    line-height: 1;
+    -webkit-text-size-adjust: 100%;
+    transition: 0.25s colors;
+}
+
+[data-stitchable-mount],
+[data-stitchable-mount] *,
+[data-stitchable-mount] *::before,
+[data-stitchable-mount] *::after {
+    box-sizing: border-box;
+}
+
+:where([data-stitchable-mount], [data-stitchable-mount] *, [data-stitchable-mount] *::before, [data-stitchable-mount] *::after) {
+    line-height: 1;
+}
+
+[data-stitchable-mount] :where(p, h1, h2, h3, h4, h5, h6, ul, ol, li, figure, blockquote, dl, dd, dt, pre, hr, fieldset) {
+    margin: 0;
+}
+
+@keyframes stitchable-tooltip-in {
+    from {
+        opacity: 0;
+        transform: translateY(5px) scale(0.97);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}

@@ -34,6 +34,46 @@ export default function App() {
 - `Report`는 피드백을 받을 화면에 1회만 렌더링합니다.
 - 피드백 대상 요소에는 `data-report-id`, `data-report-type`를 함께 넣어야 합니다.
 - `data-report-type`은 `group` 또는 `item`만 지원합니다.
+- **별도 CSS import는 필요 없습니다.** UI는 Shadow Root 안에서 Tailwind 스타일과 함께 자동으로 마운트됩니다.
+
+## UI Architecture
+
+`Report` UI는 호스트 앱 React 트리와 분리되어 **Shadow Root**(`#stitchable-root`)에 렌더링됩니다.
+
+```
+document.body
+  └── #stitchable-root
+        └── #shadow-root (open)
+              ├── <style>  ← 빌드 시 purge된 Tailwind CSS
+              └── Report UI (패널, 오버레이, 마커)
+```
+
+- 호스트 앱 CSS(Tailwind reset, global style)와 **스타일 간섭이 없습니다.**
+- 피드백 **대상** 탐색은 여전히 메인 document 기준 `querySelector` / `elementFromPoint`를 사용합니다. 호스트 페이지 Shadow DOM 내부 요소는 기본 UI로 피드백 대상이 되지 않습니다.
+- `appearance="light" | "dark" | "system"`은 Shadow Root 내부 `data-stitchable-theme`으로 반영됩니다.
+
+## Styling
+
+기본 UI는 **Tailwind utility class**로 구성된 flat 디자인입니다. npm 패키지 사용자는 CSS 파일을 import하지 않아도 됩니다.
+
+라이브러리 소스를 fork하거나 로컬에서 UI를 수정할 때는 아래 경로를 기준으로 합니다.
+
+| 목적 | 파일 |
+| --- | --- |
+| 공통 버튼·입력·패널 className | `src/components/report/classes.ts` |
+| 컴포넌트별 레이아웃/색상 | `src/components/**/*.tsx`의 `className` |
+| Tailwind theme / dark variant | `src/styles/tailwind.css` |
+| Shadow Root에 주입되는 CSS 번들 | `src/styles/reportStylesheet.ts` (빌드 생성) |
+
+스타일 변경 후에는 `node scripts/build-report-styles.mjs` 또는 `npm run build`로 stylesheet를 다시 생성해야 합니다.
+
+툴팁 등 일부 인터랙션은 내장 `motion` / `AnimatedPresence`를 사용합니다. 필요하면 아래처럼 별도 import할 수 있습니다.
+
+```tsx
+import { motion, AnimatedPresence } from "stitchable";
+```
+
+`stitchable/report` subpath는 `Report`, `ReportProvider`, storage adapter, 타입만 export하며 `motion`은 포함하지 않습니다.
 
 ## Config
 

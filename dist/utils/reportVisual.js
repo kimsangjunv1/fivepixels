@@ -4,19 +4,19 @@ export function hasReply(report) {
 }
 export function getReplyStatusTone(hasCompletedReply) {
     return hasCompletedReply
-        ? { backgroundColor: "var(--adaptive-green50)", color: "var(--adaptive-green700)" }
-        : { backgroundColor: "var(--adaptive-red50)", color: "var(--adaptive-red700)" };
+        ? { backgroundColor: "#e8f5e9", color: "#2e7d32" }
+        : { backgroundColor: "#ffebee", color: "#c62828" };
 }
 export function getMarkerColor(report) {
-    return hasReply(report) ? "var(--adaptive-green500)" : TARGET_COLOR[report.report_type];
+    return hasReply(report) ? "#22c55e" : TARGET_COLOR[report.report_type];
 }
 export function getStatusTone(status) {
     if (status === "resolved") {
-        return { backgroundColor: "var(--adaptive-green50)", color: "var(--adaptive-green700)" };
+        return { backgroundColor: "#e8f5e9", color: "#2e7d32" };
     }
     if (status === "archived") {
-        return { backgroundColor: "var(--adaptive-grey100)", color: "var(--adaptive-grey700)" };
+        return { backgroundColor: "#f3f4f6", color: "#4b5563" };
     }
-    return { backgroundColor: "var(--adaptive-blue50)", color: "var(--adaptive-blue700)" };
+    return { backgroundColor: "#eff6ff", color: "#1d4ed8" };
 }
 //# sourceMappingURL=reportVisual.js.map
