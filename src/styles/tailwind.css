@@ -13,6 +13,10 @@
     --text-sm--line-height: 1;
 }
 
+[data-stitchable-interactive] {
+    pointer-events: auto;
+}
+
 [data-stitchable-mount] {
     display: block;
     pointer-events: none;

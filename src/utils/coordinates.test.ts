@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DOT_SIZE } from "../constants/report.js";
 import type { ReportFeedback } from "../types/report.js";
-import { clampRatio, getMarkerFromReport, resolveTooltipAnchor } from "./coordinates.js";
+import { clampRatio, getMarkerFromReport, getTooltipPosition, resolveTooltipAnchor } from "./coordinates.js";
 
 function createStoredReport(overrides: Partial<ReportFeedback> = {}): ReportFeedback {
     return {
@@ -117,6 +117,22 @@ describe("getMarkerFromReport", () => {
         const marker = getMarkerFromReport(createStoredReport(), 0);
 
         expect(marker.left).toBe(10 + 100 * 0.25 - DOT_SIZE / 2);
+    });
+});
+
+describe("getTooltipPosition", () => {
+    afterEach(() => {
+        vi.unstubAllGlobals();
+    });
+
+    it("clamps tooltip within the viewport", () => {
+        vi.stubGlobal("innerWidth", 400);
+
+        const position = getTooltipPosition({ left: 380, top: 200 }, false);
+
+        expect(position.left).toBe(400 - 260 - 16);
+        expect(position.top).toBe(200 - 104);
+        expect(position.width).toBe(260);
     });
 });
 

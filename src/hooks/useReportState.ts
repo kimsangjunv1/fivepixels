@@ -6,6 +6,8 @@ import { useResolvedAppearance } from "./useResolvedAppearance.js";
 import type { ReportAppearance, ReportEvent, ReportFeedback, ReportField, ReportIdentify, ReportStorageAdapter } from "../types/report.js";
 import type { DraftReport, EditableDraft, Marker, ReportFilters, ReportMode, TargetSnapshot } from "../types/report-ui.js";
 import { clampRatio, getMarkerFromReport, resolveTooltipAnchor } from "../utils/coordinates.js";
+
+const MARKER_HOVER_LEAVE_MS = 250;
 import { findTargetByPoint, getSelectableTargets, toSnapshot } from "../utils/dom.js";
 import { createInitialFieldValues, getFieldError, getFieldTags } from "../utils/fields.js";
 import { createReplyId } from "../utils/format.js";
@@ -141,11 +143,17 @@ export function useReportState({
     const activeReplyAnchor = useMemo(() => resolveTooltipAnchor(markers, activeReplyReportId), [activeReplyReportId, markers]);
     const activeReplyReport = activeReplyAnchor?.report ?? null;
     const tooltipAnchor = useMemo(() => {
-        if (activeReplyReportId) {
-            return activeReplyAnchor ?? resolveTooltipAnchor(markers, hoveredMarkerId);
+        const hoveredAnchor = resolveTooltipAnchor(markers, hoveredMarkerId);
+
+        if (!activeReplyReportId) {
+            return hoveredAnchor;
         }
 
-        return resolveTooltipAnchor(markers, hoveredMarkerId);
+        if (hoveredMarkerId && hoveredMarkerId !== activeReplyReportId) {
+            return hoveredAnchor;
+        }
+
+        return activeReplyAnchor ?? hoveredAnchor;
     }, [activeReplyAnchor, activeReplyReportId, hoveredMarkerId, markers]);
     const tooltipReport = tooltipAnchor?.report ?? null;
     const tooltipFieldTags = useMemo(() => (tooltipReport ? getFieldTags(fields, tooltipReport.field_values) : []), [fields, tooltipReport]);
@@ -308,7 +316,7 @@ export function useReportState({
         hoverLeaveTimeoutRef.current = window.setTimeout(() => {
             setHoveredMarkerId((current) => (current === markerId ? null : current));
             hoverLeaveTimeoutRef.current = null;
-        }, 120);
+        }, MARKER_HOVER_LEAVE_MS);
     };
 
     const stopEditing = () => {
