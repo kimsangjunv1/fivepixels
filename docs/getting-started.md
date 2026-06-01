@@ -103,7 +103,7 @@ export function Page() {
 
 ### Q. Shadow DOM이나 iframe 안 요소도 지원하나요?
 
-기본 `Report`는 메인 document 기준 `querySelector`/`elementFromPoint`만 사용합니다. Shadow DOM 내부, iframe 내부 요소는 기본 UI로는 피드백 대상이 되지 않습니다.
+`Report` UI 자체는 Shadow Root에 렌더링되어 호스트 앱 CSS와 분리됩니다. 다만 피드백 **대상** 탐색은 메인 document 기준 `querySelector`/`elementFromPoint`만 사용합니다. 호스트 페이지 Shadow DOM 내부, iframe 내부 요소는 기본 UI로는 피드백 대상이 되지 않습니다.
 
 ### Q. custom adapter에서 삭제는 어떻게 하나요?
 

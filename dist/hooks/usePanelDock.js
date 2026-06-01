@@ -4,12 +4,6 @@ const LEGACY_STORAGE_KEY = "stitchable:panel-dock-position";
 const EDGE_MARGIN = 16;
 const DEFAULT_PLACEMENT = { corner: "top-left" };
 const PANEL_CORNERS = ["top-left", "top-right", "bottom-left", "bottom-right"];
-const BLUR_ORIGIN = {
-    "top-left": { x: "0%", y: "0%" },
-    "top-right": { x: "100%", y: "0%" },
-    "bottom-left": { x: "0%", y: "100%" },
-    "bottom-right": { x: "100%", y: "100%" },
-};
 function isPanelCorner(value) {
     return value === "top-left" || value === "top-right" || value === "bottom-left" || value === "bottom-right";
 }
@@ -117,16 +111,12 @@ export function projectPointerToPlacement(clientX, clientY) {
     return { corner: getNearestPanelCorner(clientX, clientY) };
 }
 export function placementToPanelStyle(placement) {
-    const blurOrigin = BLUR_ORIGIN[placement.corner];
     const style = {
         top: "auto",
         right: "auto",
         bottom: "auto",
         left: "auto",
-        overflow: "visible",
         maxHeight: "none",
-        "--stitchable-blur-origin-x": blurOrigin.x,
-        "--stitchable-blur-origin-y": blurOrigin.y,
     };
     switch (placement.corner) {
         case "top-left":
@@ -157,9 +147,6 @@ export function getMobilePanelStyle() {
         bottom: EDGE_MARGIN,
         left: EDGE_MARGIN,
         maxHeight: "min(68vh, 560px)",
-        // overflow: "auto",
-        "--stitchable-blur-origin-x": BLUR_ORIGIN["bottom-right"].x,
-        "--stitchable-blur-origin-y": BLUR_ORIGIN["bottom-right"].y,
     };
 }
 export function usePanelDock({ enabled, measureKey }) {

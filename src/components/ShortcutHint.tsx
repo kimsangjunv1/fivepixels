@@ -1,6 +1,6 @@
 import type { ShortcutBinding } from "../utils/shortcuts.js";
 import { formatShortcutLabel } from "../utils/shortcuts.js";
-import { stitchablePartProps } from "./report/parts.js";
+import { shortcutHint } from "./report/classes.js";
 
 type ShortcutHintProps = {
     binding: ShortcutBinding;
@@ -12,5 +12,5 @@ export function ShortcutHint({ binding, visible }: ShortcutHintProps) {
         return null;
     }
 
-    return <kbd {...stitchablePartProps("shortcut-hint")}>{formatShortcutLabel(binding)}</kbd>;
+    return <kbd className={shortcutHint}>{formatShortcutLabel(binding)}</kbd>;
 }

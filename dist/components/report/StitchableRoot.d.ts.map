@@ -1,1 +1,0 @@
-{"version":3,"file":"StitchableRoot.d.ts","sourceRoot":"","sources":["../../../src/components/report/StitchableRoot.tsx"],"names":[],"mappings":"AAAA,OAAO,EAAmB,KAAK,aAAa,EAAE,KAAK,SAAS,EAAE,MAAM,OAAO,CAAC;AAK5E,KAAK,mBAAmB,GAAG;IACvB,QAAQ,EAAE,SAAS,CAAC;IACpB,KAAK,CAAC,EAAE,aAAa,CAAC;CACzB,CAAC;AAEF,wBAAgB,cAAc,CAAC,EAAE,QAAQ,EAAE,KAAK,EAAE,EAAE,mBAAmB,2CAqBtE"}

@@ -8,21 +8,6 @@ declare const ReportContext: import("react").Context<{
     searchInputRef: import("react").MutableRefObject<HTMLInputElement | null>;
     resolvedAppearance: import("../types/report-ui.js").ResolvedAppearance;
     isMobileViewport: boolean;
-    palette: {
-        panel: "var(--stitchable-panel-bg)";
-        panelBorder: "var(--stitchable-panel-border)";
-        text: "var(--stitchable-text)";
-        muted: "var(--stitchable-muted)";
-        input: "var(--stitchable-input-bg)";
-        inputBorder: "var(--stitchable-input-border)";
-        inputText: "var(--stitchable-input-text)";
-        chip: "var(--stitchable-chip-bg)";
-        overlay: "var(--stitchable-overlay-bg)";
-        card: "var(--stitchable-card-bg)";
-        accent: "var(--stitchable-accent)";
-        danger: "var(--stitchable-danger)";
-        error: "var(--stitchable-error)";
-    };
     mode: import("../types/report-ui.js").ReportMode;
     showTargetPreview: boolean;
     selectableTargets: import("../types/report-ui.js").TargetSnapshot[];
@@ -89,21 +74,6 @@ export declare function useReport(): {
     searchInputRef: import("react").MutableRefObject<HTMLInputElement | null>;
     resolvedAppearance: import("../types/report-ui.js").ResolvedAppearance;
     isMobileViewport: boolean;
-    palette: {
-        panel: "var(--stitchable-panel-bg)";
-        panelBorder: "var(--stitchable-panel-border)";
-        text: "var(--stitchable-text)";
-        muted: "var(--stitchable-muted)";
-        input: "var(--stitchable-input-bg)";
-        inputBorder: "var(--stitchable-input-border)";
-        inputText: "var(--stitchable-input-text)";
-        chip: "var(--stitchable-chip-bg)";
-        overlay: "var(--stitchable-overlay-bg)";
-        card: "var(--stitchable-card-bg)";
-        accent: "var(--stitchable-accent)";
-        danger: "var(--stitchable-danger)";
-        error: "var(--stitchable-error)";
-    };
     mode: import("../types/report-ui.js").ReportMode;
     showTargetPreview: boolean;
     selectableTargets: import("../types/report-ui.js").TargetSnapshot[];

@@ -1,0 +1,5 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where([data-stitchable-theme="dark"], [data-stitchable-theme="dark"] *));
+
+@source "../components/**/*.tsx";

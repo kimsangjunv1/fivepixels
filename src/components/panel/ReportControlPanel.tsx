@@ -1,27 +1,22 @@
 import { useState } from "react";
 import { REPORT_SHORTCUTS } from "../../constants/reportShortcuts.js";
-import { panelAnchorSide, panelHeaderAlignModifier, usePanelDock } from "../../hooks/usePanelDock.js";
+import { panelAnchorSide, usePanelDock } from "../../hooks/usePanelDock.js";
 import { useReport } from "../../providers/reportContext.js";
 import { ChevronLeftIcon, ChevronRightIcon } from "../icons/ChevronIcon.js";
 import { EyeClosedIcon, EyeOpenIcon } from "../icons/EyeIcon.js";
 import { ShortcutHint } from "../ShortcutHint.js";
-import { stitchableClass, stitchablePartProps } from "../report/parts.js";
-import { PanelDockGuides } from "./PanelDockGuides.js";
-import { PanelProgressiveBlur } from "./PanelProgressiveBlur.js";
+import { btnPrimary, btnPrimaryDanger, btnSecondary, btnSecondaryAccent, panelSurface } from "../report/classes.js";
 import { ReportFeedbackList } from "./ReportFeedbackList.js";
 
 function PanelCollapseTab({ collapsed, anchorSide, onClick }: { collapsed: boolean; anchorSide: "left" | "right"; onClick: () => void }) {
-    const hideIcon = anchorSide === "right" ? <ChevronRightIcon /> : <ChevronLeftIcon />;
-    const expandIcon = anchorSide === "right" ? <ChevronLeftIcon /> : <ChevronRightIcon />;
+    const hideIcon = anchorSide === "right" ? <ChevronRightIcon className="h-4 w-4" /> : <ChevronLeftIcon className="h-4 w-4" />;
+    const expandIcon = anchorSide === "right" ? <ChevronLeftIcon className="h-4 w-4" /> : <ChevronRightIcon className="h-4 w-4" />;
 
     return (
         <button
             type="button"
             onClick={onClick}
-            {...stitchablePartProps("panel-collapse-tab", {
-                modifier: collapsed ? "peek" : undefined,
-                className: stitchableClass("panel-collapse-tab", `anchor-${anchorSide}`),
-            })}
+            className={`pointer-events-auto absolute top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 ${anchorSide === "right" ? "-right-4" : "-left-4"}`}
             aria-expanded={!collapsed}
             aria-label={collapsed ? "패널 펼치기" : "패널 숨기기"}
             title={collapsed ? "패널 펼치기" : "패널 숨기기"}
@@ -34,100 +29,64 @@ function PanelCollapseTab({ collapsed, anchorSide, onClick }: { collapsed: boole
 export function ReportControlPanel() {
     const { mode, helperText, errorMessage, showFeedbackList, showTargetPreview, visibleShortcutKeys, isMobileViewport, toggleReportMode, toggleTargetPreview, toggleViewMode } = useReport();
     const [panelCollapsed, setPanelCollapsed] = useState(false);
-    const { panelRef, panelStyle, placementCorner, isDragging, activeCorner, handleDragHandlePointerDown } = usePanelDock({
+    const { panelRef, panelStyle, placementCorner, isDragging, handleDragHandlePointerDown } = usePanelDock({
         enabled: !isMobileViewport,
         measureKey: panelCollapsed,
     });
     const showListSection = mode === "view" && showFeedbackList;
     const anchorSide = panelAnchorSide(placementCorner);
-    const floatingPanelClassName = [
-        panelCollapsed ? stitchableClass("floating-panel", "collapsed") : undefined,
-        stitchableClass("floating-panel", `anchor-${anchorSide}`),
-        stitchableClass("floating-panel", placementCorner),
-    ]
-        .filter(Boolean)
-        .join(" ");
+    const panelWidthClass = isMobileViewport ? "w-[calc(100vw-32px)]" : "w-80";
 
     return (
-        <>
-            <PanelDockGuides
-                visible={isDragging}
-                activeCorner={activeCorner}
-            />
+        <div
+            ref={panelRef}
+            className={`${panelSurface} ${panelWidthClass} ${panelCollapsed ? "w-12 overflow-hidden" : ""}`}
+            style={panelStyle}
+        >
+            {anchorSide === "left" ? (
+                <PanelCollapseTab
+                    collapsed={panelCollapsed}
+                    anchorSide={anchorSide}
+                    onClick={() => setPanelCollapsed((current) => !current)}
+                />
+            ) : null}
 
-            <div
-                ref={panelRef}
-                {...stitchablePartProps("floating-panel", { className: floatingPanelClassName })}
-                style={panelStyle}
-            >
-                <PanelProgressiveBlur hidden={panelCollapsed} />
-
-                {anchorSide === "left" ? (
-                    <PanelCollapseTab
-                        collapsed={panelCollapsed}
-                        anchorSide={anchorSide}
-                        onClick={() => setPanelCollapsed((current) => !current)}
-                    />
-                ) : null}
-
-                <section {...stitchablePartProps("panel-content")}>
+            {!panelCollapsed ? (
+                <section className="flex min-h-0 flex-1 flex-col">
                     <section
-                        {...stitchablePartProps("panel-header", {
-                            modifier: isDragging ? "dragging" : undefined,
-                            className: stitchableClass("panel-header", panelHeaderAlignModifier(placementCorner)),
-                        })}
+                        className={`cursor-grab border-b border-slate-200 px-4 py-3 active:cursor-grabbing dark:border-slate-700 ${isDragging ? "opacity-80" : ""}`}
                         onPointerDown={handleDragHandlePointerDown}
                         aria-label="패널 위치 변경"
                         title="드래그해서 위치 변경"
                     >
-                        <section style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-                            <p {...stitchablePartProps("helper-text", { modifier: "title" })}>피드백을 수집 중...</p>
-
-                            <p {...stitchablePartProps("helper-text")}>{helperText}</p>
-                        </section>
+                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">피드백을 수집 중...</p>
+                        <p className="mt-1 text-sm text-slate-700 dark:text-slate-200">{helperText}</p>
                     </section>
 
-                    <section {...stitchablePartProps("panel-body")}>
-                        <div
-                            {...stitchablePartProps("button-row")}
-                            style={{ display: "flex", flexDirection: "column" }}
-                        >
-                            <section style={{ display: "flex", width: "100%", gap: "8px" }}>
-                                <section style={{ display: "flex", width: "100%", gap: "4px" }}>
-                                    <button
-                                        type="button"
-                                        onClick={toggleReportMode}
-                                        {...stitchablePartProps("primary-button", {
-                                            modifier: mode === "report" ? "danger" : undefined,
-                                        })}
-                                    >
-                                        <span {...stitchablePartProps("button-with-hint")}>
-                                            {mode === "report" ? "중단" : "기록"}
-                                            <ShortcutHint
-                                                binding={REPORT_SHORTCUTS.toggleReportMode}
-                                                visible={visibleShortcutKeys}
-                                            />
-                                        </span>
-                                    </button>
+                    <section className="flex min-h-0 flex-1 flex-col gap-3 p-4">
+                        <div className="flex flex-col gap-2">
+                            <div className="flex w-full gap-2">
+                                <button
+                                    type="button"
+                                    onClick={toggleReportMode}
+                                    className={`flex-1 ${mode === "report" ? btnPrimaryDanger : btnPrimary}`}
+                                >
+                                    <span className="inline-flex items-center gap-1">
+                                        {mode === "report" ? "중단" : "기록"}
+                                        <ShortcutHint binding={REPORT_SHORTCUTS.toggleReportMode} visible={visibleShortcutKeys} />
+                                    </span>
+                                </button>
 
-                                    <button
-                                        type="button"
-                                        onClick={toggleViewMode}
-                                        {...stitchablePartProps("secondary-button", {
-                                            modifier: showListSection ? "accent" : undefined,
-                                        })}
-                                    >
-                                        <span {...stitchablePartProps("button-with-hint")}>
-                                            {showListSection ? "목록 닫기" : "목록"}
-                                            <ShortcutHint
-                                                binding={REPORT_SHORTCUTS.toggleViewMode}
-                                                visible={visibleShortcutKeys}
-                                            />
-                                        </span>
-                                    </button>
-                                </section>
-
-                                <div {...stitchablePartProps("button-divider")} />
+                                <button
+                                    type="button"
+                                    onClick={toggleViewMode}
+                                    className={`flex-1 ${showListSection ? btnSecondaryAccent : btnSecondary}`}
+                                >
+                                    <span className="inline-flex items-center gap-1">
+                                        {showListSection ? "목록 닫기" : "목록"}
+                                        <ShortcutHint binding={REPORT_SHORTCUTS.toggleViewMode} visible={visibleShortcutKeys} />
+                                    </span>
+                                </button>
 
                                 <button
                                     type="button"
@@ -135,40 +94,34 @@ export function ReportControlPanel() {
                                     disabled={mode !== "idle"}
                                     aria-label={showTargetPreview ? "X-Ray 끄기" : "X-Ray 켜기"}
                                     title={showTargetPreview ? "X-Ray 끄기" : "X-Ray 켜기"}
-                                    {...stitchablePartProps("secondary-button", {
-                                        modifier: showTargetPreview ? "accent" : undefined,
-                                    })}
-                                    style={{ flex: "0 0 auto", alignSelf: "flex-end", padding: "8px 10px" }}
+                                    className={`shrink-0 px-2.5 ${showTargetPreview ? btnSecondaryAccent : btnSecondary}`}
                                 >
-                                    <span {...stitchablePartProps("button-with-hint")}>
-                                        {showTargetPreview ? <EyeOpenIcon /> : <EyeClosedIcon />}
-                                        <ShortcutHint
-                                            binding={REPORT_SHORTCUTS.toggleTargetPreview}
-                                            visible={visibleShortcutKeys}
-                                        />
+                                    <span className="inline-flex items-center gap-1">
+                                        {showTargetPreview ? <EyeOpenIcon className="h-4 w-4" /> : <EyeClosedIcon className="h-4 w-4" />}
+                                        <ShortcutHint binding={REPORT_SHORTCUTS.toggleTargetPreview} visible={visibleShortcutKeys} />
                                     </span>
                                 </button>
-                            </section>
+                            </div>
                         </div>
 
-                        {errorMessage ? <p {...stitchablePartProps("error-text")}>{errorMessage}</p> : null}
+                        {errorMessage ? <p className="text-sm text-red-500">{errorMessage}</p> : null}
 
                         {showListSection ? (
-                            <div {...stitchablePartProps("panel-feedback-section")}>
+                            <div className="min-h-0 flex-1 overflow-hidden">
                                 <ReportFeedbackList />
                             </div>
                         ) : null}
                     </section>
                 </section>
+            ) : null}
 
-                {anchorSide === "right" ? (
-                    <PanelCollapseTab
-                        collapsed={panelCollapsed}
-                        anchorSide={anchorSide}
-                        onClick={() => setPanelCollapsed((current) => !current)}
-                    />
-                ) : null}
-            </div>
-        </>
+            {anchorSide === "right" ? (
+                <PanelCollapseTab
+                    collapsed={panelCollapsed}
+                    anchorSide={anchorSide}
+                    onClick={() => setPanelCollapsed((current) => !current)}
+                />
+            ) : null}
+        </div>
     );
 }

@@ -2,7 +2,6 @@ import { type MouseEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useReportShortcuts } from "./useReportShortcuts.js";
 import { useCreateReportMutation, useDeleteReportMutation, useReportsQuery, useUpdateReportMutation } from "./report.query.js";
 import { useIsMobileViewport } from "./useIsMobileViewport.js";
-import { usePalette } from "./usePalette.js";
 import { useResolvedAppearance } from "./useResolvedAppearance.js";
 import type { ReportAppearance, ReportEvent, ReportFeedback, ReportField, ReportIdentify, ReportStorageAdapter } from "../types/report.js";
 import type { DraftReport, EditableDraft, Marker, ReportFilters, ReportMode, TargetSnapshot } from "../types/report-ui.js";
@@ -68,7 +67,6 @@ export function useReportState({
 
     const resolvedAppearance = useResolvedAppearance(appearance);
     const isMobileViewport = useIsMobileViewport();
-    const palette = usePalette(resolvedAppearance);
     const storageAdapterInstance = useMemo(
         () => resolveStorageAdapter({ projectId, environment, storage, storageAdapter }),
         [environment, projectId, storage, storageAdapter],
@@ -641,7 +639,6 @@ export function useReportState({
         searchInputRef,
         resolvedAppearance,
         isMobileViewport,
-        palette,
         mode,
         showTargetPreview,
         selectableTargets,

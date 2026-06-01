@@ -1,9 +1,9 @@
 import { TARGET_COLOR, TARGET_SURFACE } from "../../constants/report.js";
 import { useReport } from "../../providers/reportContext.js";
-import { AnimatedPresence, motion } from "../../motion/index.js";
+import { AnimatedPresence, motion } from "../motion/index.js";
 import { formatDate } from "../../utils/format.js";
 import { getMarkerColor, getReplyStatusTone, hasReply } from "../../utils/reportVisual.js";
-import { stitchablePartProps } from "../report/parts.js";
+import { btnPrimary, btnSecondary, textareaBase } from "../report/classes.js";
 
 export function ReportMarkersLayer() {
     const {
@@ -38,7 +38,7 @@ export function ReportMarkersLayer() {
                 marker.rect ? (
                     <div
                         key={`${marker.id}-rect`}
-                        {...stitchablePartProps("readonly-rect")}
+                        className="pointer-events-none fixed box-border rounded-sm"
                         style={{
                             left: marker.rect.left,
                             top: marker.rect.top,
@@ -68,9 +68,7 @@ export function ReportMarkersLayer() {
                     }}
                     onMouseLeave={() => scheduleHoverLeave(marker.report.id)}
                     title={`${marker.report.report_type} · ${marker.report.report_id}`}
-                    {...stitchablePartProps("marker-button", {
-                        modifier: marker.report.id === selectedReport?.id ? "selected" : undefined,
-                    })}
+                    className={`pointer-events-auto fixed h-3.5 w-3.5 rounded-full border-2 border-white shadow-sm dark:border-slate-900 ${marker.report.id === selectedReport?.id ? "ring-2 ring-slate-400" : ""}`}
                     style={{
                         left: marker.left,
                         top: marker.top,
@@ -107,56 +105,43 @@ export function ReportMarkersLayer() {
                                 openReplyComposer(tooltipReport);
                             }
                         }}
-                        {...stitchablePartProps("marker-tooltip", {
-                            modifier: activeReplyReport ? "expanded" : "compact",
-                        })}
+                        className={`pointer-events-auto fixed z-[2147483647] max-w-[calc(100vw-32px)] rounded-xl border border-slate-200 bg-white p-3 shadow-lg dark:border-slate-700 dark:bg-slate-900 ${activeReplyReport ? "w-80" : "w-72"}`}
                         style={{
                             left: Math.min(Math.max(tooltipAnchor.left - 12, 16), window.innerWidth - 296),
                             top: Math.max(tooltipAnchor.top - (activeReplyReport ? 232 : 104), 16),
                         }}
                     >
-                        <strong {...stitchablePartProps("marker-tooltip-title")}>
+                        <strong className="block text-sm font-semibold text-slate-900 dark:text-slate-100">
                             {tooltipReport.report_type} · {tooltipReport.report_id}
                         </strong>
-                        <div {...stitchablePartProps("marker-tooltip-header")}>
-                            <span
-                                {...stitchablePartProps("status-badge")}
-                                style={getReplyStatusTone(hasReply(tooltipReport))}
-                            >
+                        <div className="mt-2 flex items-center gap-2">
+                            <span className="rounded-full px-2 py-0.5 text-[11px] font-medium" style={getReplyStatusTone(hasReply(tooltipReport))}>
                                 {hasReply(tooltipReport) ? "답변 완료" : "답변 미완료"}
                             </span>
-                            <span {...stitchablePartProps("report-meta", { className: "stitchable-report-meta--flat" })}>
-                                {formatDate(tooltipReport.created_at)}
-                            </span>
+                            <span className="text-xs text-slate-500 dark:text-slate-400">{formatDate(tooltipReport.created_at)}</span>
                         </div>
                         {tooltipFieldTags.length ? (
-                            <div {...stitchablePartProps("tag-list")}>
+                            <div className="mt-2 flex flex-wrap gap-1">
                                 {tooltipFieldTags.map((fieldTag) => (
-                                    <span
-                                        key={fieldTag.key}
-                                        {...stitchablePartProps("field-tag")}
-                                    >
+                                    <span key={fieldTag.key} className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                                         {fieldTag.label}
                                     </span>
                                 ))}
                             </div>
                         ) : null}
-                        <p {...stitchablePartProps("marker-tooltip-message")}>{tooltipReport.message}</p>
+                        <p className="mt-2 text-sm text-slate-700 dark:text-slate-200">{tooltipReport.message}</p>
                         {activeReplyReport ? (
                             <div
-                                {...stitchablePartProps("editor-section")}
+                                className="mt-3 border-t border-slate-200 pt-3 dark:border-slate-700"
                                 onClick={(event) => event.stopPropagation()}
                                 onMouseDown={(event) => event.stopPropagation()}
                             >
                                 {activeReplyReport.replies.length ? (
-                                    <div {...stitchablePartProps("reply-list")}>
+                                    <div className="mb-3 flex max-h-32 flex-col gap-2 overflow-auto">
                                         {activeReplyReport.replies.map((reply) => (
-                                            <div
-                                                key={reply.id}
-                                                {...stitchablePartProps("reply-item")}
-                                            >
-                                                <p {...stitchablePartProps("reply-text")}>{reply.message}</p>
-                                                <p {...stitchablePartProps("report-meta")}>{formatDate(reply.created_at)}</p>
+                                            <div key={reply.id} className="rounded-lg bg-slate-50 p-2 dark:bg-slate-800">
+                                                <p className="text-sm text-slate-700 dark:text-slate-200">{reply.message}</p>
+                                                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{formatDate(reply.created_at)}</p>
                                             </div>
                                         ))}
                                     </div>
@@ -166,16 +151,16 @@ export function ReportMarkersLayer() {
                                     onChange={(event) => setReplyDraft(event.target.value)}
                                     placeholder="답변을 입력해주세요."
                                     onClick={(event) => event.stopPropagation()}
-                                    {...stitchablePartProps("textarea", { className: "stitchable-textarea--compact" })}
+                                    className={`${textareaBase} min-h-20`}
                                 />
-                                <div {...stitchablePartProps("button-row")}>
+                                <div className="mt-2 flex gap-2">
                                     <button
                                         type="button"
                                         onClick={(event) => {
                                             event.stopPropagation();
                                             closeReplyComposer();
                                         }}
-                                        {...stitchablePartProps("secondary-button")}
+                                        className={`flex-1 ${btnSecondary}`}
                                     >
                                         닫기
                                     </button>
@@ -186,7 +171,7 @@ export function ReportMarkersLayer() {
                                             void handleReplySubmit();
                                         }}
                                         disabled={isUpdating}
-                                        {...stitchablePartProps("primary-button")}
+                                        className={`flex-1 ${btnPrimary}`}
                                     >
                                         {isUpdating ? "전송 중..." : "전송"}
                                     </button>

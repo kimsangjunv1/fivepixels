@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useReportShortcuts } from "./useReportShortcuts.js";
 import { useCreateReportMutation, useDeleteReportMutation, useReportsQuery, useUpdateReportMutation } from "./report.query.js";
 import { useIsMobileViewport } from "./useIsMobileViewport.js";
-import { usePalette } from "./usePalette.js";
 import { useResolvedAppearance } from "./useResolvedAppearance.js";
 import { clampRatio, getMarkerFromReport, resolveTooltipAnchor } from "../utils/coordinates.js";
 import { findTargetByPoint, getSelectableTargets, toSnapshot } from "../utils/dom.js";
@@ -20,7 +19,6 @@ export function useReportState({ projectId, environment, appVersion, appearance,
     const hoverLeaveTimeoutRef = useRef(null);
     const resolvedAppearance = useResolvedAppearance(appearance);
     const isMobileViewport = useIsMobileViewport();
-    const palette = usePalette(resolvedAppearance);
     const storageAdapterInstance = useMemo(() => resolveStorageAdapter({ projectId, environment, storage, storageAdapter }), [environment, projectId, storage, storageAdapter]);
     const currentPathname = useMemo(() => getCurrentPathname(pathname), [pathname]);
     const eventCallbacks = useMemo(() => ({
@@ -499,7 +497,6 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         searchInputRef,
         resolvedAppearance,
         isMobileViewport,
-        palette,
         mode,
         showTargetPreview,
         selectableTargets,
