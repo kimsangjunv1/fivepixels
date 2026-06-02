@@ -64,8 +64,10 @@ export const DRAFT_POPOVER_WIDTH = 280;
 export const DRAFT_POPOVER_HEIGHT = 228;
 export const DRAFT_POPOVER_GAP = 10;
 export const DRAFT_POPOVER_MARGIN = 16;
-/** Bubble bottom sits near the marker; tail extends below the main rounded body. */
-export const DRAFT_POPOVER_TAIL_OFFSET = 14;
+/** Horizontal line from bubble edge to marker center. */
+export const DRAFT_POPOVER_CONNECTOR_WIDTH = DRAFT_POPOVER_GAP + DOT_SIZE / 2;
+/** Nudge popover upward when vertically centered on the marker. */
+export const DRAFT_POPOVER_VERTICAL_NUDGE = 16;
 const DRAFT_POPOVER_PLACEMENTS = ["right", "left", "bottom", "top"];
 function getDraftPopoverWidth(viewportWidth) {
     return Math.min(DRAFT_POPOVER_WIDTH, viewportWidth - DRAFT_POPOVER_MARGIN * 2);
@@ -88,18 +90,21 @@ function getTailCornerForPlacement(placement) {
             return "bottom-left";
     }
 }
+function isHorizontallyAlignedPlacement(placement) {
+    return placement === "right" || placement === "left";
+}
 function computeDraftPopoverCandidate(placement, center, width, height) {
     const markerRadius = DOT_SIZE / 2;
     switch (placement) {
         case "right":
             return {
                 left: center.x + markerRadius + DRAFT_POPOVER_GAP,
-                top: center.y - height + DRAFT_POPOVER_TAIL_OFFSET,
+                anchorCenterY: center.y - DRAFT_POPOVER_VERTICAL_NUDGE,
             };
         case "left":
             return {
                 left: center.x - markerRadius - DRAFT_POPOVER_GAP - width,
-                top: center.y - height + DRAFT_POPOVER_TAIL_OFFSET,
+                anchorCenterY: center.y - DRAFT_POPOVER_VERTICAL_NUDGE,
             };
         case "bottom":
             return {
@@ -113,18 +118,32 @@ function computeDraftPopoverCandidate(placement, center, width, height) {
             };
     }
 }
-function draftPopoverFitsInViewport(left, top, width, height, viewportWidth, viewportHeight) {
-    return (left >= DRAFT_POPOVER_MARGIN &&
-        top >= DRAFT_POPOVER_MARGIN &&
-        left + width <= viewportWidth - DRAFT_POPOVER_MARGIN &&
-        top + height <= viewportHeight - DRAFT_POPOVER_MARGIN);
+function draftPopoverFitsInViewport(placement, left, width, height, viewportWidth, viewportHeight, anchorCenterY, top) {
+    const horizontalFits = left >= DRAFT_POPOVER_MARGIN && left + width <= viewportWidth - DRAFT_POPOVER_MARGIN;
+    if (isHorizontallyAlignedPlacement(placement) && anchorCenterY !== undefined) {
+        return horizontalFits && anchorCenterY - height / 2 >= DRAFT_POPOVER_MARGIN && anchorCenterY + height / 2 <= viewportHeight - DRAFT_POPOVER_MARGIN;
+    }
+    return horizontalFits && top !== undefined && top >= DRAFT_POPOVER_MARGIN && top + height <= viewportHeight - DRAFT_POPOVER_MARGIN;
 }
-function clampDraftPopoverPosition(left, top, width, height, viewportWidth, viewportHeight) {
+function clampAnchorCenterY(anchorCenterY, height, viewportHeight) {
+    const halfHeight = height / 2;
+    const minCenterY = DRAFT_POPOVER_MARGIN + halfHeight;
+    const maxCenterY = Math.max(minCenterY, viewportHeight - DRAFT_POPOVER_MARGIN - halfHeight);
+    return Math.min(Math.max(anchorCenterY, minCenterY), maxCenterY);
+}
+function clampDraftPopoverPosition(placement, left, width, height, viewportWidth, viewportHeight, anchorCenterY, top) {
     const maxLeft = Math.max(DRAFT_POPOVER_MARGIN, viewportWidth - width - DRAFT_POPOVER_MARGIN);
+    const clampedLeft = Math.min(Math.max(left, DRAFT_POPOVER_MARGIN), maxLeft);
+    if (isHorizontallyAlignedPlacement(placement) && anchorCenterY !== undefined) {
+        return {
+            left: clampedLeft,
+            anchorCenterY: clampAnchorCenterY(anchorCenterY, height, viewportHeight),
+        };
+    }
     const maxTop = Math.max(DRAFT_POPOVER_MARGIN, viewportHeight - height - DRAFT_POPOVER_MARGIN);
     return {
-        left: Math.min(Math.max(left, DRAFT_POPOVER_MARGIN), maxLeft),
-        top: Math.min(Math.max(top, DRAFT_POPOVER_MARGIN), maxTop),
+        left: clampedLeft,
+        top: Math.min(Math.max(top ?? DRAFT_POPOVER_MARGIN, DRAFT_POPOVER_MARGIN), maxTop),
     };
 }
 export function getDraftPopoverPosition(anchor, options) {
@@ -137,17 +156,18 @@ export function getDraftPopoverPosition(anchor, options) {
     let position = computeDraftPopoverCandidate("right", center, width, height);
     for (const candidate of DRAFT_POPOVER_PLACEMENTS) {
         const nextPosition = computeDraftPopoverCandidate(candidate, center, width, height);
-        if (draftPopoverFitsInViewport(nextPosition.left, nextPosition.top, width, height, viewportWidth, viewportHeight)) {
+        if (draftPopoverFitsInViewport(candidate, nextPosition.left, width, height, viewportWidth, viewportHeight, nextPosition.anchorCenterY, nextPosition.top)) {
             placement = candidate;
             position = nextPosition;
             break;
         }
     }
-    const clamped = clampDraftPopoverPosition(position.left, position.top, width, height, viewportWidth, viewportHeight);
+    const clamped = clampDraftPopoverPosition(placement, position.left, width, height, viewportWidth, viewportHeight, position.anchorCenterY, position.top);
     return {
         ...clamped,
         width,
         placement,
+        centerVertically: isHorizontallyAlignedPlacement(placement),
         tailCorner: getTailCornerForPlacement(placement),
     };
 }

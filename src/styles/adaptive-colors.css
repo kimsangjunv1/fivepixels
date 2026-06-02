@@ -9,6 +9,7 @@
     --shadow-hard:
         inset 0 0 0 4px var(--color-gray-500), 0 19px 8px #731f0803, 0 11px 6px #731f080a, 0 5px 5px #731f0812, 0 1px 3px #731f0814, 0 0 0 2px var(--color-gray-200), inset 0 0.5px 0.5px #ffffff1f;
 
+    --shadow-border-normal: 0 24px 24px -12px #2929290a, 0 48px 48px -24px #2929290a, inset 0 0 0 1px var(--adaptive-grey300);
     --coding-font: Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace;
 }
 

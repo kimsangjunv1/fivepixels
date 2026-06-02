@@ -158,7 +158,7 @@ export function ReportControlPanel() {
                                         //         : "border-slate-200 bg-white text-slate-600 shadow-sm hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200"
                                         // } flex items-center gap-[4px] rounded-[12px] p-[12px] shadow-[var(--shadow-popup)]`}
                                     >
-                                        <p className="text-[14px] font-bold text-[var(--adaptive-grey700)]">X-Ray</p>
+                                        <p className="text-[14px] font-bold text-[var(--adaptive-grey700)]">{showTargetPreview ? "끄기" : "보기"} (임시)</p>
                                         {/* <p className="text-[14px]">{showTargetPreview ? <EyeOpenIcon className="h-3.5 w-3.5" /> : <EyeClosedIcon className="h-3.5 w-3.5" />}</p> */}
 
                                         <ShortcutHint

@@ -18,8 +18,10 @@ export declare const DRAFT_POPOVER_WIDTH = 280;
 export declare const DRAFT_POPOVER_HEIGHT = 228;
 export declare const DRAFT_POPOVER_GAP = 10;
 export declare const DRAFT_POPOVER_MARGIN = 16;
-/** Bubble bottom sits near the marker; tail extends below the main rounded body. */
-export declare const DRAFT_POPOVER_TAIL_OFFSET = 14;
+/** Horizontal line from bubble edge to marker center. */
+export declare const DRAFT_POPOVER_CONNECTOR_WIDTH: number;
+/** Nudge popover upward when vertically centered on the marker. */
+export declare const DRAFT_POPOVER_VERTICAL_NUDGE = 16;
 export declare function getDraftPopoverPosition(anchor: Pick<Marker, "left" | "top">, options?: {
     width?: number;
     height?: number;
@@ -28,8 +30,18 @@ export declare function getDraftPopoverPosition(anchor: Pick<Marker, "left" | "t
 }): {
     width: number;
     placement: DraftPopoverPlacement;
+    centerVertically: boolean;
+    tailCorner: DraftPopoverTailCorner;
+    left: number;
+    anchorCenterY: number;
+    top?: undefined;
+} | {
+    width: number;
+    placement: DraftPopoverPlacement;
+    centerVertically: boolean;
     tailCorner: DraftPopoverTailCorner;
     left: number;
     top: number;
+    anchorCenterY?: undefined;
 };
 //# sourceMappingURL=coordinates.d.ts.map

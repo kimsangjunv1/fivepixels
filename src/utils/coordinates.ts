@@ -86,7 +86,7 @@ export const DRAFT_POPOVER_MARGIN = 16;
 /** Horizontal line from bubble edge to marker center. */
 export const DRAFT_POPOVER_CONNECTOR_WIDTH = DRAFT_POPOVER_GAP + DOT_SIZE / 2;
 /** Nudge popover upward when vertically centered on the marker. */
-export const DRAFT_POPOVER_VERTICAL_NUDGE = 16;
+export const DRAFT_POPOVER_VERTICAL_NUDGE = 6;
 
 const DRAFT_POPOVER_PLACEMENTS: DraftPopoverPlacement[] = ["right", "left", "bottom", "top"];
 

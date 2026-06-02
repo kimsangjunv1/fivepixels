@@ -30,7 +30,7 @@ function DraftPopoverConnector({ placement }: DraftPopoverConnectorProps) {
         return null;
     }
 
-    const baseClass = "pointer-events-none absolute top-1/2 h-[2px] -translate-y-1/2 bg-[var(--adaptive-grey200)]";
+    const baseClass = "pointer-events-none absolute top-1/2 h-[2px] -translate-y-1/2 bg-[var(--adaptive-grey500)]";
 
     if (placement === "right") {
         return (
@@ -99,6 +99,7 @@ function ReportDraftFormContent({
     const anchor = getDraftMarkerPosition(draft, selectedTarget);
     const { left, top, anchorCenterY, width, placement, centerVertically } = getDraftPopoverPosition(anchor);
     const verticalOffset = centerVertically ? "-50%" : 0;
+    const checkboxFields = fields.filter((field) => field.type === "checkbox");
 
     return (
         <motion.div
@@ -116,7 +117,7 @@ function ReportDraftFormContent({
 
             transition={{ duration: 0.25, ease: DRAFT_MOTION_EASE }}
             onClick={(event) => event.stopPropagation()}
-            className="pointer-events-auto fixed z-[1000001] text-xs"
+            className="pointer-events-auto fixed z-[1000001] relative flex flex-col items-center rounded-[16px] w-full shadow-[0_0_120px_0_var(--adaptive-grey500)] bg-[var(--adaptive-whiteOpacity500)] backdrop-blur-[30px] p-[4px]"
             style={{
                 left,
                 top: centerVertically ? anchorCenterY : top,
@@ -124,62 +125,72 @@ function ReportDraftFormContent({
                 transformOrigin: getMotionOrigin(placement),
             }}
         >
-            <div className="relative overflow-visible">
-                <div className="relative z-10 flex flex-col items-start text-white">
-                    <p className="w-[calc(100%-(12px*2))] mx-[12px] py-[4px] text-[12px] text-[var(--adaptive-grey200)] bg-[var(--adaptive-grey800)] p-[4px_12px] rounded-[12px_12px_0_0] whitespace-nowrap z-[1]">
-                        * {draft.reportId} *
+            <div className="absolute top-[50%] left-[-32px] transform translate-y-[-50%] w-[32px] h-[1px] bg-black" />
+            <section className="flex flex-col gap-[8px] rounded-[16px] overflow-hidden bg-[var(--adaptive-grey100)] shadow-[var(--shadow-normal)] w-full p-[8px]">
+                <section className="flex items-center justify-between w-full gap-[8px] h-[24px]">
+                    <p className="text-[14px] text-[var(--adaptive-grey700)] pl-[8px]">
+                        * {draft.reportId} *{/* {draft.reportId} */}
                     </p>
-                    <div className="relative flex flex-col items-center bg-[var(--adaptive-grey100)] p-[4px] pb-[16px] rounded-[16px] w-full shadow-[0_0_120px_0_var(--adaptive-grey900)]">
-                        {/* <div className="relative flex flex-col items-center gap-[4px] rounded-[24px] shadow-[0_0_120px_0_var(--adaptive-grey700)] backdrop-blur-[20px] pb-2.5"> */}
-                        {/* <section className="flex items-center w-full p-[4px_12px] gap-[4px]">
-                            <p className="text-left whitespace-nowrap text-[var(--adaptive-grey500)]">메세지</p>
+                </section>
 
-                            <div className="h-[1px] w-full bg-[var(--adaptive-grey300)]" />
-                        </section> */}
+                <section className="flex flex-col items-center gap-[12px] w-full">
+                    <FieldEditor
+                        fields={fields}
+                        message={draft.message}
+                        fieldValues={draft.fieldValues}
+                        onMessageChange={updateDraftMessage}
+                        onFieldChange={updateDraftField}
+                        variant="draft-bubble"
+                    />
+                </section>
 
-                        <section className="flex flex-col items-center gap-[12px] w-full">
-                            <FieldEditor
-                                fields={fields}
-                                message={draft.message}
-                                fieldValues={draft.fieldValues}
-                                onMessageChange={updateDraftMessage}
-                                onFieldChange={updateDraftField}
-                                variant="draft-bubble"
-                            />
-                        </section>
-
-                        <DraftPopoverConnector placement={placement} />
-
-                        <section className="absolute bottom-[-20px] h-[20px] flex justify-center rounded-[0_0_12px_12px] overflow-hidden w-[calc(100%-(12px*2))]">
-                            <button
-                                type="button"
-                                onClick={cancelDraft}
-                                className="flex-1 flex flex-col justify-center items-center gap-[4px] bg-[var(--adaptive-grey200)] text-white text-[20px] whitespace-nowrap"
-                            >
-                                -
-                                {/* <ShortcutHint
+                <section className="flex justify-end w-full gap-[4px]">
+                    <button
+                        type="button"
+                        onClick={cancelDraft}
+                        className="h-full text-[14px] font-semibold flex flex-col justify-center items-center gap-[4px] rounded-[12px] p-[8px_12px] bg-[var(--adaptive-grey300)] text-white whitespace-nowrap"
+                    >
+                        닫기
+                        {/* <ShortcutHint
                                     binding={REPORT_SHORTCUTS.cancel}
                                     visible={visibleShortcutKeys}
                                 /> */}
-                            </button>
-                            <div className="h-full w-[1px] bg-[var(--adaptive-grey300)]" />
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => void handleCreateSubmit()}
+                        disabled={isCreating}
+                        className="h-full flex-1 text-[14px] font-semibold flex flex-col justify-center items-center gap-[4px] rounded-[12px] p-[8px_12px] bg-[var(--adaptive-blue400)] text-white whitespace-nowrap shadow-[var(--shadow-normal)]"
+                    >
+                        {isCreating ? "저장 중..." : "완료"}
+                        {/* <ShortcutHint
+                                        binding={REPORT_SHORTCUTS.submit}
+                                        visible={visibleShortcutKeys}
+                                    /> */}
+                    </button>
+                </section>
+            </section>
 
-                            <button
-                                type="button"
-                                onClick={() => void handleCreateSubmit()}
-                                disabled={isCreating}
-                                className="flex-1 flex flex-col justify-center items-center gap-[4px] bg-[var(--adaptive-grey50)] text-white text-[20px] whitespace-nowrap"
-                            >
-                                {isCreating ? "저장 중..." : "+"}
-                                {/* <ShortcutHint
-                                    binding={REPORT_SHORTCUTS.submit}
-                                    visible={visibleShortcutKeys}
-                                /> */}
-                            </button>
-                        </section>
-                    </div>
-                </div>
-            </div>
+            {checkboxFields.length > 0 ? (
+                <section className="flex w-full flex-col gap-[4px] p-[12px]">
+                    {checkboxFields.map((field) => (
+                        <label
+                            key={field.key}
+                            className="text-[var(--adaptive-grey500)] flex items-center gap-[4px] w-full px-[12px]"
+                        >
+                            <input
+                                type="checkbox"
+                                className="h-3.5 w-3.5 rounded border-white/50 bg-white/10 text-white accent-white bg-transparent"
+                                checked={draft.fieldValues[field.key] === true}
+                                onChange={(event) => updateDraftField(field.key, event.target.checked)}
+                            />
+                            <span>{field.label}</span>
+                        </label>
+                    ))}
+                </section>
+            ) : null}
+
+            <DraftPopoverConnector placement={placement} />
         </motion.div>
     );
 }
