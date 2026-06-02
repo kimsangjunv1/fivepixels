@@ -38,10 +38,7 @@ export function getMarkerFromReport(report: ReportFeedback, currentScrollY: numb
     };
 }
 
-export function getDraftMarkerPosition(
-    draft: Pick<DraftReport, "clientX" | "clientY" | "elementXRatio" | "elementYRatio">,
-    selectedTarget: TargetSnapshot | null,
-) {
+export function getDraftMarkerPosition(draft: Pick<DraftReport, "clientX" | "clientY" | "elementXRatio" | "elementYRatio">, selectedTarget: TargetSnapshot | null) {
     if (selectedTarget) {
         return {
             left: selectedTarget.rect.left + selectedTarget.rect.width * draft.elementXRatio - DOT_SIZE / 2,
@@ -89,7 +86,7 @@ export const DRAFT_POPOVER_MARGIN = 16;
 /** Horizontal line from bubble edge to marker center. */
 export const DRAFT_POPOVER_CONNECTOR_WIDTH = DRAFT_POPOVER_GAP + DOT_SIZE / 2;
 /** Nudge popover upward when vertically centered on the marker. */
-export const DRAFT_POPOVER_VERTICAL_NUDGE = 6;
+export const DRAFT_POPOVER_VERTICAL_NUDGE = 16;
 
 const DRAFT_POPOVER_PLACEMENTS: DraftPopoverPlacement[] = ["right", "left", "bottom", "top"];
 
@@ -121,12 +118,7 @@ function isHorizontallyAlignedPlacement(placement: DraftPopoverPlacement) {
     return placement === "right" || placement === "left";
 }
 
-function computeDraftPopoverCandidate(
-    placement: DraftPopoverPlacement,
-    center: { x: number; y: number },
-    width: number,
-    height: number,
-) {
+function computeDraftPopoverCandidate(placement: DraftPopoverPlacement, center: { x: number; y: number }, width: number, height: number) {
     const markerRadius = DOT_SIZE / 2;
 
     switch (placement) {
@@ -163,24 +155,13 @@ function draftPopoverFitsInViewport(
     anchorCenterY?: number,
     top?: number,
 ) {
-    const horizontalFits =
-        left >= DRAFT_POPOVER_MARGIN &&
-        left + width <= viewportWidth - DRAFT_POPOVER_MARGIN;
+    const horizontalFits = left >= DRAFT_POPOVER_MARGIN && left + width <= viewportWidth - DRAFT_POPOVER_MARGIN;
 
     if (isHorizontallyAlignedPlacement(placement) && anchorCenterY !== undefined) {
-        return (
-            horizontalFits &&
-            anchorCenterY - height / 2 >= DRAFT_POPOVER_MARGIN &&
-            anchorCenterY + height / 2 <= viewportHeight - DRAFT_POPOVER_MARGIN
-        );
+        return horizontalFits && anchorCenterY - height / 2 >= DRAFT_POPOVER_MARGIN && anchorCenterY + height / 2 <= viewportHeight - DRAFT_POPOVER_MARGIN;
     }
 
-    return (
-        horizontalFits &&
-        top !== undefined &&
-        top >= DRAFT_POPOVER_MARGIN &&
-        top + height <= viewportHeight - DRAFT_POPOVER_MARGIN
-    );
+    return horizontalFits && top !== undefined && top >= DRAFT_POPOVER_MARGIN && top + height <= viewportHeight - DRAFT_POPOVER_MARGIN;
 }
 
 function clampAnchorCenterY(anchorCenterY: number, height: number, viewportHeight: number) {
@@ -191,16 +172,7 @@ function clampAnchorCenterY(anchorCenterY: number, height: number, viewportHeigh
     return Math.min(Math.max(anchorCenterY, minCenterY), maxCenterY);
 }
 
-function clampDraftPopoverPosition(
-    placement: DraftPopoverPlacement,
-    left: number,
-    width: number,
-    height: number,
-    viewportWidth: number,
-    viewportHeight: number,
-    anchorCenterY?: number,
-    top?: number,
-) {
+function clampDraftPopoverPosition(placement: DraftPopoverPlacement, left: number, width: number, height: number, viewportWidth: number, viewportHeight: number, anchorCenterY?: number, top?: number) {
     const maxLeft = Math.max(DRAFT_POPOVER_MARGIN, viewportWidth - width - DRAFT_POPOVER_MARGIN);
     const clampedLeft = Math.min(Math.max(left, DRAFT_POPOVER_MARGIN), maxLeft);
 
@@ -240,34 +212,14 @@ export function getDraftPopoverPosition(
     for (const candidate of DRAFT_POPOVER_PLACEMENTS) {
         const nextPosition = computeDraftPopoverCandidate(candidate, center, width, height);
 
-        if (
-            draftPopoverFitsInViewport(
-                candidate,
-                nextPosition.left,
-                width,
-                height,
-                viewportWidth,
-                viewportHeight,
-                nextPosition.anchorCenterY,
-                nextPosition.top,
-            )
-        ) {
+        if (draftPopoverFitsInViewport(candidate, nextPosition.left, width, height, viewportWidth, viewportHeight, nextPosition.anchorCenterY, nextPosition.top)) {
             placement = candidate;
             position = nextPosition;
             break;
         }
     }
 
-    const clamped = clampDraftPopoverPosition(
-        placement,
-        position.left,
-        width,
-        height,
-        viewportWidth,
-        viewportHeight,
-        position.anchorCenterY,
-        position.top,
-    );
+    const clamped = clampDraftPopoverPosition(placement, position.left, width, height, viewportWidth, viewportHeight, position.anchorCenterY, position.top);
 
     return {
         ...clamped,

@@ -31,6 +31,7 @@ export function FieldEditor({ fields, message, fieldValues, onMessageChange, onF
                                 value={message}
                                 onChange={(event) => onMessageChange(event.target.value)}
                                 className="bg-[var(--adaptive-grey50)] rounded-[16px] shadow-[var(--shadow-normal)] p-[14px]"
+                                placeholder="피드백을 남겨주세요"
                                 // className={
                                 //     isDraftBubble
                                 //         ? "h-[72px] w-full resize-none rounded-[14px] bg-white/12 px-3 py-2 text-[13px] leading-[1.4] text-white outline-none ring-0 placeholder:text-white/45 focus:bg-white/16"
@@ -45,13 +46,14 @@ export function FieldEditor({ fields, message, fieldValues, onMessageChange, onF
                     return (
                         <label
                             key={field.key}
-                            className={isDraftBubble ? "flex flex-row items-center gap-2 text-xs text-white/90" : "flex flex-row items-center gap-2 text-xs text-slate-700 dark:text-slate-200"}
+                            className="text-[var(--adaptive-grey500)] flex items-center gap-[4px] w-full px-[12px]"
+                            // className={isDraftBubble ? "flex flex-row items-center gap-2 text-xs text-white/90" : "flex flex-row items-center gap-2 text-xs text-slate-700 dark:text-slate-200"}
                         >
                             <input
                                 type="checkbox"
                                 className={
                                     isDraftBubble
-                                        ? "h-3.5 w-3.5 rounded border-white/50 bg-white/10 text-white accent-white"
+                                        ? "h-3.5 w-3.5 rounded border-white/50 bg-white/10 text-white accent-white bg-transparent"
                                         : "h-3.5 w-3.5 rounded border-slate-300 text-sky-600 focus:ring-sky-500 dark:border-slate-600"
                                 }
                                 checked={fieldValues[field.key] === true}

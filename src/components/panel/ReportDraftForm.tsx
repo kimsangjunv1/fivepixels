@@ -125,48 +125,56 @@ function ReportDraftFormContent({
             }}
         >
             <div className="relative overflow-visible">
-                <div className="relative z-10 flex flex-col items-start gap-2.5 text-white">
-                    <div className="relative flex flex-col items-center gap-[4px] rounded-[24px] bg-[var(--adaptive-greyOpacity100)] p-[4px] shadow-[0_0_120px_0_var(--adaptive-grey700)] backdrop-blur-[20px] pb-2.5">
-                        <section className="flex items-center gap-[4px] px-[12px]">
-                            <p className="py-[4px] text-[12px] text-[var(--adaptive-grey700)]">+ {draft.reportId}</p>
-                            <button
-                                type="button"
-                                onClick={cancelDraft}
-                                className="flex items-center gap-[4px] rounded-[8px] bg-[var(--adaptive-red400)] p-[2px_6px] whitespace-nowrap shadow-[var(--shadow-normal)]"
-                            >
-                                <p className="text-[12px] font-semibold text-white">닫기</p>
-                                <ShortcutHint
-                                    binding={REPORT_SHORTCUTS.cancel}
-                                    visible={visibleShortcutKeys}
-                                />
-                            </button>
-                        </section>
+                <div className="relative z-10 flex flex-col items-start text-white">
+                    <p className="w-[calc(100%-(12px*2))] mx-[12px] py-[4px] text-[12px] text-[var(--adaptive-grey200)] bg-[var(--adaptive-grey800)] p-[4px_12px] rounded-[12px_12px_0_0] whitespace-nowrap z-[1]">
+                        * {draft.reportId} *
+                    </p>
+                    <div className="relative flex flex-col items-center bg-[var(--adaptive-grey100)] p-[4px] pb-[16px] rounded-[16px] w-full shadow-[0_0_120px_0_var(--adaptive-grey900)]">
+                        {/* <div className="relative flex flex-col items-center gap-[4px] rounded-[24px] shadow-[0_0_120px_0_var(--adaptive-grey700)] backdrop-blur-[20px] pb-2.5"> */}
+                        {/* <section className="flex items-center w-full p-[4px_12px] gap-[4px]">
+                            <p className="text-left whitespace-nowrap text-[var(--adaptive-grey500)]">메세지</p>
 
-                        <FieldEditor
-                            fields={fields}
-                            message={draft.message}
-                            fieldValues={draft.fieldValues}
-                            onMessageChange={updateDraftMessage}
-                            onFieldChange={updateDraftField}
-                            variant="draft-bubble"
-                        />
+                            <div className="h-[1px] w-full bg-[var(--adaptive-grey300)]" />
+                        </section> */}
+
+                        <section className="flex flex-col items-center gap-[12px] w-full">
+                            <FieldEditor
+                                fields={fields}
+                                message={draft.message}
+                                fieldValues={draft.fieldValues}
+                                onMessageChange={updateDraftMessage}
+                                onFieldChange={updateDraftField}
+                                variant="draft-bubble"
+                            />
+                        </section>
 
                         <DraftPopoverConnector placement={placement} />
 
-                        <section className="flex w-full justify-end">
+                        <section className="absolute bottom-[-20px] h-[20px] flex justify-center rounded-[0_0_12px_12px] overflow-hidden w-[calc(100%-(12px*2))]">
+                            <button
+                                type="button"
+                                onClick={cancelDraft}
+                                className="flex-1 flex flex-col justify-center items-center gap-[4px] bg-[var(--adaptive-grey200)] text-white text-[20px] whitespace-nowrap"
+                            >
+                                -
+                                {/* <ShortcutHint
+                                    binding={REPORT_SHORTCUTS.cancel}
+                                    visible={visibleShortcutKeys}
+                                /> */}
+                            </button>
+                            <div className="h-full w-[1px] bg-[var(--adaptive-grey300)]" />
+
                             <button
                                 type="button"
                                 onClick={() => void handleCreateSubmit()}
                                 disabled={isCreating}
-                                className="rounded-[8px] bg-blue-400 p-[4px_8px] whitespace-nowrap"
+                                className="flex-1 flex flex-col justify-center items-center gap-[4px] bg-[var(--adaptive-grey50)] text-white text-[20px] whitespace-nowrap"
                             >
-                                <span className="inline-flex items-center gap-1">
-                                    {isCreating ? "저장 중..." : "저장"}
-                                    <ShortcutHint
-                                        binding={REPORT_SHORTCUTS.submit}
-                                        visible={visibleShortcutKeys}
-                                    />
-                                </span>
+                                {isCreating ? "저장 중..." : "+"}
+                                {/* <ShortcutHint
+                                    binding={REPORT_SHORTCUTS.submit}
+                                    visible={visibleShortcutKeys}
+                                /> */}
                             </button>
                         </section>
                     </div>
