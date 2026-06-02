@@ -29,6 +29,18 @@ export function getMarkerFromReport(report, currentScrollY) {
         rect: null,
     };
 }
+export function getDraftMarkerPosition(draft, selectedTarget) {
+    if (selectedTarget) {
+        return {
+            left: selectedTarget.rect.left + selectedTarget.rect.width * draft.elementXRatio - DOT_SIZE / 2,
+            top: selectedTarget.rect.top + selectedTarget.rect.height * draft.elementYRatio - DOT_SIZE / 2,
+        };
+    }
+    return {
+        left: draft.clientX - DOT_SIZE / 2,
+        top: draft.clientY - DOT_SIZE / 2,
+    };
+}
 export function resolveTooltipAnchor(markers, reportId) {
     if (!reportId) {
         return null;

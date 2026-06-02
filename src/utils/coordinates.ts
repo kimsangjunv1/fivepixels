@@ -1,6 +1,6 @@
 import { DOT_SIZE, TARGET_SELECTOR } from "../constants/report.js";
 import type { ReportFeedback } from "../types/report.js";
-import type { Marker } from "../types/report-ui.js";
+import type { DraftReport, Marker, TargetSnapshot } from "../types/report-ui.js";
 import { escapeAttribute } from "./dom.js";
 
 export function clampRatio(value: number) {
@@ -35,6 +35,23 @@ export function getMarkerFromReport(report: ReportFeedback, currentScrollY: numb
         left: pointLeft,
         top: pointTop,
         rect: null,
+    };
+}
+
+export function getDraftMarkerPosition(
+    draft: Pick<DraftReport, "clientX" | "clientY" | "elementXRatio" | "elementYRatio">,
+    selectedTarget: TargetSnapshot | null,
+) {
+    if (selectedTarget) {
+        return {
+            left: selectedTarget.rect.left + selectedTarget.rect.width * draft.elementXRatio - DOT_SIZE / 2,
+            top: selectedTarget.rect.top + selectedTarget.rect.height * draft.elementYRatio - DOT_SIZE / 2,
+        };
+    }
+
+    return {
+        left: draft.clientX - DOT_SIZE / 2,
+        top: draft.clientY - DOT_SIZE / 2,
     };
 }
 

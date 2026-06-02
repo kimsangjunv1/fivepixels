@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DOT_SIZE } from "../constants/report.js";
 import type { ReportFeedback } from "../types/report.js";
-import { clampRatio, getMarkerFromReport, getTooltipPosition, resolveTooltipAnchor } from "./coordinates.js";
+import { clampRatio, getDraftMarkerPosition, getMarkerFromReport, getTooltipPosition, resolveTooltipAnchor } from "./coordinates.js";
 
 function createStoredReport(overrides: Partial<ReportFeedback> = {}): ReportFeedback {
     return {
@@ -117,6 +117,39 @@ describe("getMarkerFromReport", () => {
         const marker = getMarkerFromReport(createStoredReport(), 0);
 
         expect(marker.left).toBe(10 + 100 * 0.25 - DOT_SIZE / 2);
+    });
+});
+
+describe("getDraftMarkerPosition", () => {
+    it("anchors to the selected target rect when available", () => {
+        const position = getDraftMarkerPosition(
+            { clientX: 0, clientY: 0, elementXRatio: 0.25, elementYRatio: 0.75 },
+            {
+                id: "hero",
+                type: "item",
+                rect: {
+                    left: 100,
+                    top: 80,
+                    width: 200,
+                    height: 100,
+                    right: 300,
+                    bottom: 180,
+                    x: 100,
+                    y: 80,
+                    toJSON: () => ({}),
+                } as DOMRect,
+            },
+        );
+
+        expect(position.left).toBe(100 + 200 * 0.25 - DOT_SIZE / 2);
+        expect(position.top).toBe(80 + 100 * 0.75 - DOT_SIZE / 2);
+    });
+
+    it("falls back to viewport click coordinates when no target is selected", () => {
+        const position = getDraftMarkerPosition({ clientX: 240, clientY: 180, elementXRatio: 0, elementYRatio: 0 }, null);
+
+        expect(position.left).toBe(240 - DOT_SIZE / 2);
+        expect(position.top).toBe(180 - DOT_SIZE / 2);
     });
 });
 
