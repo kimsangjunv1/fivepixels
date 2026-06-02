@@ -1,6 +1,4 @@
 import type { ReportField, ReportFieldValues } from "../../types/report.js";
-import { DraftPopoverTailCorner } from "../../utils/coordinates.js";
-import { DraftBubbleTailSvg } from "./DraftBubbleTailSvg.js";
 
 type FieldEditorProps = {
     fields: ReportField[];
@@ -9,10 +7,9 @@ type FieldEditorProps = {
     onMessageChange: (nextValue: string) => void;
     onFieldChange: (key: string, nextValue: string | boolean) => void;
     variant?: "default" | "draft-bubble";
-    tailCorner: DraftPopoverTailCorner;
 };
 
-export function FieldEditor({ fields, message, fieldValues, tailCorner, onMessageChange, onFieldChange, variant = "default" }: FieldEditorProps) {
+export function FieldEditor({ fields, message, fieldValues, onMessageChange, onFieldChange, variant = "default" }: FieldEditorProps) {
     const isDraftBubble = variant === "draft-bubble";
     return (
         <>

@@ -5,7 +5,7 @@ import {
     clampRatio,
     DRAFT_POPOVER_HEIGHT,
     DRAFT_POPOVER_MARGIN,
-    DRAFT_POPOVER_TAIL_OFFSET,
+    DRAFT_POPOVER_VERTICAL_NUDGE,
     DRAFT_POPOVER_WIDTH,
     getDraftMarkerPosition,
     getDraftPopoverPosition,
@@ -176,9 +176,10 @@ describe("getDraftPopoverPosition", () => {
         const position = getDraftPopoverPosition({ left: 200, top: 300 });
 
         expect(position.placement).toBe("right");
+        expect(position.centerVertically).toBe(true);
         expect(position.tailCorner).toBe("bottom-left");
         expect(position.left).toBe(200 + DOT_SIZE / 2 + DOT_SIZE / 2 + 10);
-        expect(position.top).toBe(300 + DOT_SIZE / 2 - DRAFT_POPOVER_HEIGHT + DRAFT_POPOVER_TAIL_OFFSET);
+        expect(position.anchorCenterY).toBe(300 + DOT_SIZE / 2 - DRAFT_POPOVER_VERTICAL_NUDGE);
         expect(position.width).toBe(DRAFT_POPOVER_WIDTH);
     });
 
@@ -210,9 +211,15 @@ describe("getDraftPopoverPosition", () => {
         );
 
         expect(position.left).toBeGreaterThanOrEqual(DRAFT_POPOVER_MARGIN);
-        expect(position.top).toBeGreaterThanOrEqual(DRAFT_POPOVER_MARGIN);
         expect(position.left + position.width).toBeLessThanOrEqual(320 - DRAFT_POPOVER_MARGIN);
-        expect(position.top + DRAFT_POPOVER_HEIGHT).toBeLessThanOrEqual(260 - DRAFT_POPOVER_MARGIN);
+
+        if (position.centerVertically && position.anchorCenterY !== undefined) {
+            expect(position.anchorCenterY - DRAFT_POPOVER_HEIGHT / 2).toBeGreaterThanOrEqual(DRAFT_POPOVER_MARGIN);
+            expect(position.anchorCenterY + DRAFT_POPOVER_HEIGHT / 2).toBeLessThanOrEqual(260 - DRAFT_POPOVER_MARGIN);
+        } else {
+            expect(position.top).toBeGreaterThanOrEqual(DRAFT_POPOVER_MARGIN);
+            expect(position.top! + DRAFT_POPOVER_HEIGHT).toBeLessThanOrEqual(260 - DRAFT_POPOVER_MARGIN);
+        }
     });
 
     it("uses a narrower width on small viewports", () => {
