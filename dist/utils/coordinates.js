@@ -60,4 +60,95 @@ export function getTooltipPosition(anchor, expanded) {
     const top = Math.max(anchor.top - heightOffset, TOOLTIP_MARGIN);
     return { left, top, width };
 }
+export const DRAFT_POPOVER_WIDTH = 280;
+export const DRAFT_POPOVER_HEIGHT = 228;
+export const DRAFT_POPOVER_GAP = 10;
+export const DRAFT_POPOVER_MARGIN = 16;
+/** Bubble bottom sits near the marker; tail extends below the main rounded body. */
+export const DRAFT_POPOVER_TAIL_OFFSET = 14;
+const DRAFT_POPOVER_PLACEMENTS = ["right", "left", "bottom", "top"];
+function getDraftPopoverWidth(viewportWidth) {
+    return Math.min(DRAFT_POPOVER_WIDTH, viewportWidth - DRAFT_POPOVER_MARGIN * 2);
+}
+function getAnchorCenter(anchor) {
+    return {
+        x: anchor.left + DOT_SIZE / 2,
+        y: anchor.top + DOT_SIZE / 2,
+    };
+}
+function getTailCornerForPlacement(placement) {
+    switch (placement) {
+        case "right":
+            return "bottom-left";
+        case "left":
+            return "bottom-right";
+        case "bottom":
+            return "top-left";
+        case "top":
+            return "bottom-left";
+    }
+}
+function computeDraftPopoverCandidate(placement, center, width, height) {
+    const markerRadius = DOT_SIZE / 2;
+    switch (placement) {
+        case "right":
+            return {
+                left: center.x + markerRadius + DRAFT_POPOVER_GAP,
+                top: center.y - height + DRAFT_POPOVER_TAIL_OFFSET,
+            };
+        case "left":
+            return {
+                left: center.x - markerRadius - DRAFT_POPOVER_GAP - width,
+                top: center.y - height + DRAFT_POPOVER_TAIL_OFFSET,
+            };
+        case "bottom":
+            return {
+                left: center.x - width / 2,
+                top: center.y + markerRadius + DRAFT_POPOVER_GAP,
+            };
+        case "top":
+            return {
+                left: center.x - width / 2,
+                top: center.y - markerRadius - DRAFT_POPOVER_GAP - height,
+            };
+    }
+}
+function draftPopoverFitsInViewport(left, top, width, height, viewportWidth, viewportHeight) {
+    return (left >= DRAFT_POPOVER_MARGIN &&
+        top >= DRAFT_POPOVER_MARGIN &&
+        left + width <= viewportWidth - DRAFT_POPOVER_MARGIN &&
+        top + height <= viewportHeight - DRAFT_POPOVER_MARGIN);
+}
+function clampDraftPopoverPosition(left, top, width, height, viewportWidth, viewportHeight) {
+    const maxLeft = Math.max(DRAFT_POPOVER_MARGIN, viewportWidth - width - DRAFT_POPOVER_MARGIN);
+    const maxTop = Math.max(DRAFT_POPOVER_MARGIN, viewportHeight - height - DRAFT_POPOVER_MARGIN);
+    return {
+        left: Math.min(Math.max(left, DRAFT_POPOVER_MARGIN), maxLeft),
+        top: Math.min(Math.max(top, DRAFT_POPOVER_MARGIN), maxTop),
+    };
+}
+export function getDraftPopoverPosition(anchor, options) {
+    const viewportWidth = options?.viewportWidth ?? window.innerWidth;
+    const viewportHeight = options?.viewportHeight ?? window.innerHeight;
+    const width = options?.width ?? getDraftPopoverWidth(viewportWidth);
+    const height = options?.height ?? DRAFT_POPOVER_HEIGHT;
+    const center = getAnchorCenter(anchor);
+    let placement = "right";
+    let position = computeDraftPopoverCandidate("right", center, width, height);
+    for (const candidate of DRAFT_POPOVER_PLACEMENTS) {
+        const nextPosition = computeDraftPopoverCandidate(candidate, center, width, height);
+        if (draftPopoverFitsInViewport(nextPosition.left, nextPosition.top, width, height, viewportWidth, viewportHeight)) {
+            placement = candidate;
+            position = nextPosition;
+            break;
+        }
+    }
+    const clamped = clampDraftPopoverPosition(position.left, position.top, width, height, viewportWidth, viewportHeight);
+    return {
+        ...clamped,
+        width,
+        placement,
+        tailCorner: getTailCornerForPlacement(placement),
+    };
+}
 //# sourceMappingURL=coordinates.js.map

@@ -1,7 +1,18 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DOT_SIZE } from "../constants/report.js";
 import type { ReportFeedback } from "../types/report.js";
-import { clampRatio, getDraftMarkerPosition, getMarkerFromReport, getTooltipPosition, resolveTooltipAnchor } from "./coordinates.js";
+import {
+    clampRatio,
+    DRAFT_POPOVER_HEIGHT,
+    DRAFT_POPOVER_MARGIN,
+    DRAFT_POPOVER_TAIL_OFFSET,
+    DRAFT_POPOVER_WIDTH,
+    getDraftMarkerPosition,
+    getDraftPopoverPosition,
+    getMarkerFromReport,
+    getTooltipPosition,
+    resolveTooltipAnchor,
+} from "./coordinates.js";
 
 function createStoredReport(overrides: Partial<ReportFeedback> = {}): ReportFeedback {
     return {
@@ -150,6 +161,70 @@ describe("getDraftMarkerPosition", () => {
 
         expect(position.left).toBe(240 - DOT_SIZE / 2);
         expect(position.top).toBe(180 - DOT_SIZE / 2);
+    });
+});
+
+describe("getDraftPopoverPosition", () => {
+    afterEach(() => {
+        vi.unstubAllGlobals();
+    });
+
+    it("prefers placing the bubble to the right of the marker", () => {
+        vi.stubGlobal("innerWidth", 1200);
+        vi.stubGlobal("innerHeight", 800);
+
+        const position = getDraftPopoverPosition({ left: 200, top: 300 });
+
+        expect(position.placement).toBe("right");
+        expect(position.tailCorner).toBe("bottom-left");
+        expect(position.left).toBe(200 + DOT_SIZE / 2 + DOT_SIZE / 2 + 10);
+        expect(position.top).toBe(300 + DOT_SIZE / 2 - DRAFT_POPOVER_HEIGHT + DRAFT_POPOVER_TAIL_OFFSET);
+        expect(position.width).toBe(DRAFT_POPOVER_WIDTH);
+    });
+
+    it("flips to the left when there is not enough space on the right", () => {
+        vi.stubGlobal("innerWidth", 360);
+        vi.stubGlobal("innerHeight", 800);
+
+        const anchor = { left: 310, top: 400 };
+        const position = getDraftPopoverPosition(anchor, {
+            viewportWidth: 360,
+            viewportHeight: 800,
+        });
+
+        expect(position.placement).toBe("left");
+        expect(position.tailCorner).toBe("bottom-right");
+        expect(position.left).toBe(310 + DOT_SIZE / 2 - DOT_SIZE / 2 - 10 - position.width);
+    });
+
+    it("clamps the bubble inside the viewport when no side fully fits", () => {
+        vi.stubGlobal("innerWidth", 320);
+        vi.stubGlobal("innerHeight", 260);
+
+        const position = getDraftPopoverPosition(
+            { left: 150, top: 110 },
+            {
+                viewportWidth: 320,
+                viewportHeight: 260,
+            },
+        );
+
+        expect(position.left).toBeGreaterThanOrEqual(DRAFT_POPOVER_MARGIN);
+        expect(position.top).toBeGreaterThanOrEqual(DRAFT_POPOVER_MARGIN);
+        expect(position.left + position.width).toBeLessThanOrEqual(320 - DRAFT_POPOVER_MARGIN);
+        expect(position.top + DRAFT_POPOVER_HEIGHT).toBeLessThanOrEqual(260 - DRAFT_POPOVER_MARGIN);
+    });
+
+    it("uses a narrower width on small viewports", () => {
+        const position = getDraftPopoverPosition(
+            { left: 40, top: 80 },
+            {
+                viewportWidth: 260,
+                viewportHeight: 640,
+            },
+        );
+
+        expect(position.width).toBe(260 - DRAFT_POPOVER_MARGIN * 2);
     });
 });
 
