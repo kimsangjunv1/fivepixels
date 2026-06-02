@@ -16,7 +16,7 @@ export function App() {
                     console.log("feedback created", event);
                 }}
                 fields={[
-                    { key: "message", type: "textarea", label: "메시지", required: true },
+                    { key: "message", type: "textarea", label: "", required: true },
                     { key: "isBug", type: "checkbox", label: "버그" },
                     { key: "isImportant", type: "checkbox", label: "중요" },
                 ]}

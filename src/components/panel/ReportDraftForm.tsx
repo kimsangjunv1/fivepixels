@@ -4,51 +4,26 @@ import { useReport } from "../../providers/reportContext.js";
 import type { DraftPopoverTailCorner } from "../../utils/coordinates.js";
 import { getDraftMarkerPosition, getDraftPopoverPosition } from "../../utils/coordinates.js";
 import { ShortcutHint } from "../ShortcutHint.js";
+import { DraftBubbleTailSvg } from "./DraftBubbleTailSvg.js";
 import { FieldEditor } from "./FieldEditor.js";
 
 const DRAFT_MOTION_EASE = [0.22, 1, 0.36, 1] as const;
 
-function getTailPresentation(tailCorner: DraftPopoverTailCorner) {
+function getMotionOrigin(tailCorner: DraftPopoverTailCorner) {
     switch (tailCorner) {
         case "bottom-left":
-            return {
-                bodyCorner: "rounded-bl-[5px]",
-                hook: "bottom-0 -left-[5px] rounded-br-[17px_16px]",
-                origin: "0% 100%",
-            };
+            return "0% 100%";
         case "bottom-right":
-            return {
-                bodyCorner: "rounded-br-[5px]",
-                hook: "bottom-0 -right-[5px] left-auto rounded-bl-[17px_16px]",
-                origin: "100% 100%",
-            };
+            return "100% 100%";
         case "top-left":
-            return {
-                bodyCorner: "rounded-tl-[5px]",
-                hook: "top-0 -left-[5px] rounded-tr-[17px_16px]",
-                origin: "0% 0%",
-            };
+            return "0% 0%";
         case "top-right":
-            return {
-                bodyCorner: "rounded-tr-[5px]",
-                hook: "top-0 -right-[5px] left-auto rounded-tl-[17px_16px]",
-                origin: "100% 0%",
-            };
+            return "100% 0%";
     }
 }
 
 export function ReportDraftForm() {
-    const {
-        draft,
-        fields,
-        isCreating,
-        selectedTarget,
-        visibleShortcutKeys,
-        updateDraftMessage,
-        updateDraftField,
-        cancelDraft,
-        handleCreateSubmit,
-    } = useReport();
+    const { draft, fields, isCreating, selectedTarget, visibleShortcutKeys, updateDraftMessage, updateDraftField, cancelDraft, handleCreateSubmit } = useReport();
 
     return (
         <AnimatePresence>
@@ -94,7 +69,6 @@ function ReportDraftFormContent({
 }: ReportDraftFormContentProps) {
     const anchor = getDraftMarkerPosition(draft, selectedTarget);
     const { left, top, width, tailCorner } = getDraftPopoverPosition(anchor);
-    const tail = getTailPresentation(tailCorner);
 
     return (
         <motion.div
@@ -105,17 +79,65 @@ function ReportDraftFormContent({
             transition={{ duration: 0.28, ease: DRAFT_MOTION_EASE }}
             onClick={(event) => event.stopPropagation()}
             className="pointer-events-auto fixed z-[1000001] text-xs"
-            style={{ left, top, width, transformOrigin: tail.origin }}
+            style={{ left, top, width, transformOrigin: getMotionOrigin(tailCorner) }}
         >
-            <div className="relative overflow-visible">
-                <div
-                    className={`relative z-10 flex flex-col gap-2.5 rounded-[22px] bg-[var(--adaptive-blue500,#3182f6)] p-3 pb-2.5 text-white shadow-[0_12px_28px_-8px_color-mix(in_srgb,var(--adaptive-blue700,#1b64da)_55%,transparent),0_4px_12px_-4px_rgba(15,23,42,0.28)] ${tail.bodyCorner}`}
-                >
-                    <p className="text-[12px] font-bold leading-[1.2] text-white">
-                        {draft.reportType} · {draft.reportId}
-                    </p>
+            <div className="relative overflow-visible ">
+                {/* <div className="relative z-10 flex flex-col gap-2.5 rounded-[22px] bg-[var(--adaptive-blue500,#3182f6)] p-3 pb-2.5 text-white"> */}
+                <div className="relative z-10 flex flex-col items-start gap-2.5 text-white">
+                    <section className="flex items-center">
+                        {/* <p className="text-[12px] font-bold text-white backdrop-blur-[2px] bg-[var(--adaptive-greyOpacity400)] p-[4px_12px] rounded-[10px]">{draft.reportId}</p> */}
+                        {/* {draft.reportType} · {draft.reportId} */}
+                        <div className="flex items-end justify-end gap-2 pt-0.5">
+                            {/* <button
+                                type="button"
+                                onClick={cancelDraft}
+                                className="bg-red-100 whitespace-nowrap p-[4px_8px] rounded-[8px]"
+                                // className="inline-flex items-center justify-center rounded-[10px] border border-white/55 px-2.5 py-1.5 text-[12px] font-semibold leading-none text-white hover:bg-white/12"
+                            >
+                                <span className="inline-flex items-center gap-1">
+                                    취소
+                                    <ShortcutHint
+                                        binding={REPORT_SHORTCUTS.cancel}
+                                        visible={visibleShortcutKeys}
+                                    />
+                                </span>
+                            </button> */}
+                            {/* <button
+                                type="button"
+                                onClick={() => void handleCreateSubmit()}
+                                disabled={isCreating}
+                                className="bg-blue-400 whitespace-nowrap p-[4px_8px] rounded-[8px]"
+                                // className="inline-flex items-center justify-center rounded-[10px] border border-transparent bg-white px-2.5 py-1.5 text-[12px] font-semibold leading-none text-[var(--adaptive-blue700,#1b64da)] hover:bg-[color-mix(in_srgb,#fff_92%,var(--adaptive-blue100,#c9e2ff))] disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                                <span className="inline-flex items-center gap-1">
+                                    {isCreating ? "저장 중..." : "저장"}
+                                    <ShortcutHint
+                                        binding={REPORT_SHORTCUTS.submit}
+                                        visible={visibleShortcutKeys}
+                                    />
+                                </span>
+                            </button> */}
+                        </div>
+                    </section>
 
-                    <div className="flex flex-col gap-2">
+                    <div className="relative flex flex-col items-center gap-[4px] rounded-[24px] bg-[var(--adaptive-greyOpacity100)] backdrop-blur-[20px] p-[4px] shadow-[0_0_120px_0_var(--adaptive-grey700)] pb-2.5">
+                        <section className="flex items-center gap-[4px] px-[12px]">
+                            <p className="text-[12px] text-[var(--adaptive-grey700)] py-[4px]">+ {draft.reportId}</p>
+                            <button
+                                type="button"
+                                onClick={cancelDraft}
+                                className="flex items-center gap-[4px] bg-[var(--adaptive-red400)] whitespace-nowrap p-[2px_6px] rounded-[8px] shadow-[var(--shadow-normal)]"
+                                // className="inline-flex items-center justify-center rounded-[10px] border border-white/55 px-2.5 py-1.5 text-[12px] font-semibold leading-none text-white hover:bg-white/12"
+                            >
+                                <p className="text-[12px] font-semibold text-white">닫기</p>
+                                <ShortcutHint
+                                    binding={REPORT_SHORTCUTS.cancel}
+                                    visible={visibleShortcutKeys}
+                                />
+                            </button>
+                        </section>
+                        {/* <p className="text-[12px] font-bold text-center text-white backdrop-blur-[2px] bg-[var(--adaptive-greyOpacity500)] p-[4px_8px] rounded-[100px]">{draft.reportId}</p> */}
+
                         <FieldEditor
                             fields={fields}
                             message={draft.message}
@@ -123,38 +145,33 @@ function ReportDraftFormContent({
                             onMessageChange={updateDraftMessage}
                             onFieldChange={updateDraftField}
                             variant="draft-bubble"
+                            tailCorner={tailCorner}
                         />
+                        <div className="w-[32px] h-[2px] bg-[var(--adaptive-grey200)] absolute bottom-[50%] left-[-32px]" />
+                        <section className="flex justify-end w-full">
+                            <button
+                                type="button"
+                                onClick={() => void handleCreateSubmit()}
+                                disabled={isCreating}
+                                className="bg-blue-400 whitespace-nowrap p-[4px_8px] rounded-[8px]"
+                                // className="inline-flex items-center justify-center rounded-[10px] border border-transparent bg-white px-2.5 py-1.5 text-[12px] font-semibold leading-none text-[var(--adaptive-blue700,#1b64da)] hover:bg-[color-mix(in_srgb,#fff_92%,var(--adaptive-blue100,#c9e2ff))] disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                                <span className="inline-flex items-center gap-1">
+                                    {isCreating ? "저장 중..." : "저장"}
+                                    <ShortcutHint
+                                        binding={REPORT_SHORTCUTS.submit}
+                                        visible={visibleShortcutKeys}
+                                    />
+                                </span>
+                            </button>
+                        </section>
                     </div>
-
-                    <div className="flex items-center justify-end gap-2 pt-0.5">
-                        <button
-                            type="button"
-                            onClick={cancelDraft}
-                            className="inline-flex items-center justify-center rounded-[10px] border border-white/55 px-2.5 py-1.5 text-[12px] font-semibold leading-none text-white hover:bg-white/12"
-                        >
-                            <span className="inline-flex items-center gap-1">
-                                취소
-                                <ShortcutHint binding={REPORT_SHORTCUTS.cancel} visible={visibleShortcutKeys} />
-                            </span>
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => void handleCreateSubmit()}
-                            disabled={isCreating}
-                            className="inline-flex items-center justify-center rounded-[10px] border border-transparent bg-white px-2.5 py-1.5 text-[12px] font-semibold leading-none text-[var(--adaptive-blue700,#1b64da)] hover:bg-[color-mix(in_srgb,#fff_92%,var(--adaptive-blue100,#c9e2ff))] disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                            <span className="inline-flex items-center gap-1">
-                                {isCreating ? "저장 중..." : "저장"}
-                                <ShortcutHint binding={REPORT_SHORTCUTS.submit} visible={visibleShortcutKeys} />
-                            </span>
-                        </button>
-                    </div>
+                    {/* <DraftBubbleTailSvg corner={tailCorner} /> */}
+                    {/* <div className="relative flex flex-col gap-2 rounded-[22px] bg-[var(--adaptive-blue500,#3182f6)] p-3 pb-2.5">
+                    </div> */}
                 </div>
 
-                <div
-                    aria-hidden
-                    className={`absolute z-0 h-[17px] w-[21px] bg-[var(--adaptive-blue500,#3182f6)] ${tail.hook}`}
-                />
+                {/* <DraftBubbleTailSvg corner={tailCorner} /> */}
             </div>
         </motion.div>
     );

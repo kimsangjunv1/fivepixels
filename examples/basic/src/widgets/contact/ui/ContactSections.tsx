@@ -4,35 +4,77 @@ export function InquiryForm() {
     const { topics } = useContactProvider();
 
     return (
-        <section className="inquiry-form" data-report-id="contact-form" data-report-type="group">
+        <section
+            className="inquiry-form"
+            data-report-id="contact-form"
+            data-report-type="group"
+        >
             <header className="section-header">
                 <span className="section-badge">group target</span>
                 <h2>문의 남기기</h2>
                 <p>폼 필드와 제출 버튼에도 item target을 연결해 두었습니다.</p>
             </header>
-            <form className="inquiry-form__grid" onSubmit={(event) => event.preventDefault()}>
-                <label className="form-field" data-report-id="contact-field-name" data-report-type="item">
+            <form
+                className="inquiry-form__grid"
+                onSubmit={(event) => event.preventDefault()}
+            >
+                <label
+                    className="form-field"
+                    data-report-id="contact-field-name"
+                    data-report-type="item"
+                >
                     <span>이름</span>
-                    <input type="text" name="name" placeholder="홍길동" />
+                    <input
+                        type="text"
+                        name="name"
+                        placeholder="홍길동"
+                    />
                 </label>
-                <label className="form-field" data-report-id="contact-field-email" data-report-type="item">
+                <label
+                    className="form-field"
+                    data-report-id="contact-field-email"
+                    data-report-type="item"
+                >
                     <span>이메일</span>
-                    <input type="email" name="email" placeholder="you@company.com" />
+                    <input
+                        type="email"
+                        name="email"
+                        placeholder="you@company.com"
+                    />
                 </label>
-                <fieldset className="form-field form-field--full" data-report-id="contact-field-topic" data-report-type="item">
+                <fieldset
+                    className="form-field form-field--full"
+                    data-report-id="contact-field-topic"
+                    data-report-type="item"
+                >
                     <legend>문의 유형</legend>
                     <div className="topic-options">
                         {topics.map((topic) => (
-                            <label key={topic.id} className="topic-option">
-                                <input type="radio" name="topic" value={topic.id} />
+                            <label
+                                key={topic.id}
+                                className="topic-option"
+                            >
+                                <input
+                                    type="radio"
+                                    name="topic"
+                                    value={topic.id}
+                                />
                                 <span>{topic.label}</span>
                             </label>
                         ))}
                     </div>
                 </fieldset>
-                <label className="form-field form-field--full" data-report-id="contact-field-message" data-report-type="item">
+                <label
+                    className="form-field form-field--full"
+                    data-report-id="contact-field-message"
+                    data-report-type="item"
+                >
                     <span>메시지</span>
-                    <textarea name="message" rows={5} placeholder="도입 배경과 팀 규모를 알려주세요." />
+                    <textarea
+                        name="message"
+                        rows={5}
+                        placeholder="도입 배경과 팀 규모를 알려주세요."
+                    />
                 </label>
                 <div className="form-actions form-field--full">
                     <button
@@ -61,7 +103,11 @@ export function ContactInfo() {
     const { channels, officeHours } = useContactProvider();
 
     return (
-        <section className="contact-info" data-report-id="contact-channels" data-report-type="group">
+        <section
+            className="contact-info"
+            data-report-id="contact-channels"
+            data-report-type="group"
+        >
             <header className="section-header">
                 <span className="section-badge">group target</span>
                 <h2>다른 연락 방법</h2>
@@ -98,7 +144,11 @@ export function FaqList() {
     const { faqs } = useContactProvider();
 
     return (
-        <section className="faq-list" data-report-id="contact-faq" data-report-type="group">
+        <section
+            className="faq-list"
+            data-report-id="contact-faq"
+            data-report-type="group"
+        >
             <header className="section-header">
                 <span className="section-badge">group target</span>
                 <h2>자주 묻는 질문</h2>
