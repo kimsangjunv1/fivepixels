@@ -8,6 +8,8 @@ import { ShortcutHint } from "../ShortcutHint.js";
 import { PanelDockGuides } from "./PanelDockGuides.js";
 import { ReportFeedbackList } from "./ReportFeedbackList.js";
 import { LogoIcon } from "./../icons/LogoIcon.js";
+import { LogoTextIcon } from "./../icons/LogoTextIcon.js";
+import { SearchIcon } from "./../icons/SearchIcon.js";
 import { motion } from "../motion/index.js";
 
 function PanelCollapseTab({ collapsed, anchorSide, onClick }: { collapsed: boolean; anchorSide: "left" | "right"; onClick: () => void }) {
@@ -79,7 +81,8 @@ export function ReportControlPanel() {
                     <section className="flex flex-1 flex-col gap-[4px]">
                         <section className="flex items-center gap-[4px] justify-center">
                             <LogoIcon className="w-[18px]" />
-                            <p className="text-[#E26909]">Radar°</p>
+                            {/* <LogoTextIcon className="h-[12px] w-[58px]" /> */}
+                            <p className="text-[#E26909] font-[900]">Radar°</p>
                         </section>
 
                         <section className="flex flex-col gap-[16px]">
@@ -112,7 +115,8 @@ export function ReportControlPanel() {
                                             onClick={toggleReportMode}
                                             className={`flex items-center gap-[4px]`}
                                         >
-                                            <p className="text-[14px]">{mode === "report" ? "Stop" : "Record"}</p>
+                                            {/* <div className="w-[6px] h-[6px] bg-[var(--adaptive-red500)] rounded-full" /> */}
+                                            <p className="text-[14px] font-bold text-[var(--adaptive-grey700)]">{mode === "report" ? "Stop" : "Record"}</p>
                                             <ShortcutHint
                                                 binding={REPORT_SHORTCUTS.toggleReportMode}
                                                 visible={visibleShortcutKeys}
@@ -129,7 +133,8 @@ export function ReportControlPanel() {
                                             //         : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100"
                                             // }`}
                                         >
-                                            <p className="text-[14px]">{showListSection ? "off" : "list"}</p>
+                                            {/* <SearchIcon className="w-[18px]" /> */}
+                                            <p className="text-[14px] font-bold text-[var(--adaptive-grey700)]">{showListSection ? "off" : "list"}</p>
 
                                             <ShortcutHint
                                                 binding={REPORT_SHORTCUTS.toggleViewMode}
@@ -138,7 +143,7 @@ export function ReportControlPanel() {
                                         </button>
                                     </section>
 
-                                    <div className="h-[12px] w-[1px] bg-[var(--adaptive-blue200)]" />
+                                    <div className="h-[12px] w-[1px] bg-[var(--adaptive-grey400)]" />
 
                                     <button
                                         type="button"
@@ -153,7 +158,8 @@ export function ReportControlPanel() {
                                         //         : "border-slate-200 bg-white text-slate-600 shadow-sm hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200"
                                         // } flex items-center gap-[4px] rounded-[12px] p-[12px] shadow-[var(--shadow-popup)]`}
                                     >
-                                        <p className="text-[14px]">{showTargetPreview ? <EyeOpenIcon className="h-3.5 w-3.5" /> : <EyeClosedIcon className="h-3.5 w-3.5" />}</p>
+                                        <p className="text-[14px] font-bold text-[var(--adaptive-grey700)]">X-Ray</p>
+                                        {/* <p className="text-[14px]">{showTargetPreview ? <EyeOpenIcon className="h-3.5 w-3.5" /> : <EyeClosedIcon className="h-3.5 w-3.5" />}</p> */}
 
                                         <ShortcutHint
                                             binding={REPORT_SHORTCUTS.toggleTargetPreview}
