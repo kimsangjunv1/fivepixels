@@ -153,12 +153,12 @@ export function useReportState({
 
     const helperText = useMemo(() => {
         if (mode === "report") {
-            return selectedTarget ? `선택 대상: ${selectedTarget.id}` : "요소를 선택하세요.";
+            return selectedTarget ? `선택 대상: ${selectedTarget.id}` : "selected the elements";
             // return selectedTarget ? `선택 대상: ${selectedTarget.id}` : "data-report-id / data-report-type 요소를 선택하세요.";
         }
 
         if (mode === "view") {
-            return isFetching ? "피드백을 불러오는 중입니다." : `${filteredReports.length} counts feedback is alive.`;
+            return isFetching ? "피드백을 불러오는 중입니다." : `${filteredReports.length}`;
         }
 
         if (showTargetPreview) {
@@ -172,7 +172,7 @@ export function useReportState({
         const groupCount = selectableTargets.filter((target) => target.type === "group").length;
         const itemCount = selectableTargets.filter((target) => target.type === "item").length;
 
-        return `${selectableTargets.length} counts available`;
+        return `${selectableTargets.length}`;
         // return `${selectableTargets.length} counts elements(group ${groupCount}, item ${itemCount})\navailable leaves the feedback.`;
     }, [filteredReports.length, isFetching, mode, selectableTargets, selectedTarget, showTargetPreview]);
 

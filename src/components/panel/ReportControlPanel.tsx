@@ -55,7 +55,7 @@ export function ReportControlPanel() {
                 ref={panelRef}
                 layout
                 layoutId="asdwsww"
-                className="pointer-events-auto fixed z-[1000000] flex max-h-[80vh] min-h-[40px] rounded-[16px] p-[4px] bg-[var(--adaptive-grey50)] backdrop-blur-[30px] gap-[4px] shadow-[0_0_120px_0_var(--adaptive-greyOpacity500)]"
+                className="pointer-events-auto fixed z-[1000000] flex max-h-[80vh] min-h-[40px] rounded-[16px] p-[4px] bg-[var(--adaptive-whiteOpacity100)] backdrop-blur-[30px] gap-[4px] shadow-[0_0_120px_0_var(--adaptive-greyOpacity500)]"
                 // className="pointer-events-auto fixed z-[1000000] flex max-h-[80vh] min-h-[40px] rounded-[16px] p-[4px] bg-[var(--adaptive-greyOpacity100)] backdrop-blur-[30px] flex-col shadow-[0_0_120px_0_var(--adaptive-greyOpacity500)]"
                 // className="pointer-events-auto fixed z-[1000000] flex max-h-[80vh] min-h-[40px] w-[320px] flex-col"
                 // className="pointer-events-auto fixed z-[1000000] flex max-h-[80vh] min-h-[40px] w-[320px] flex-col overflow-hidden rounded-lg shadow-lg"
@@ -79,13 +79,13 @@ export function ReportControlPanel() {
                     <section className="flex flex-1 flex-col gap-[4px]">
                         <section className="flex items-center gap-[4px] justify-center">
                             <LogoIcon className="w-[18px]" />
-                            <p>Radar・</p>
+                            <p className="text-[#E26909]">Radar°</p>
                         </section>
 
                         <section className="flex flex-col gap-[16px]">
                             <section className="flex flex-col gap-[4px]">
                                 <section
-                                    className="flex items-center cursor-move gap-[8px] bg-[var(--adaptive-grey50)] shadow-[var(--shadow-normal)] rounded-[12px] px-[4px]"
+                                    className="flex items-center cursor-move gap-[8px] bg-[var(--adaptive-grey50)] shadow-[var(--shadow-normal)] rounded-[12px] p-[8px_12px]"
                                     // className="flex cursor-move flex-col gap-0.5 border-b border-slate-200 bg-slate-50 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-900/80"
                                     onPointerDown={handleDragHandlePointerDown}
                                     aria-label="패널 위치 변경"
@@ -93,9 +93,15 @@ export function ReportControlPanel() {
                                     style={isDragging ? { opacity: 0.8 } : undefined}
                                 >
                                     {/* <LogoIcon className="w-[34px]" /> */}
-                                    <section className="flex flex-col justify-center items-center gap-[4px] py-[8px] px-[12px]">
-                                        <p className="text-[14px] text-[var(--adaptive-grey900)]">feedback is ready.</p>
-                                        <p className="text-[14px] text-[var(--adaptive-greyOpacity600)] whitespace-break-spaces">{helperText}</p>
+                                    <section className="flex flex-col items-center gap-[4px] flex-1">
+                                        <p className="text-[12px] text-[var(--adaptive-grey500)] text-left">status</p>
+                                        <p className="text-[14px] text-[var(--adaptive-green900)]">ready.</p>
+                                    </section>
+
+                                    <section className="flex flex-col items-center gap-[4px] flex-1">
+                                        <p className="text-[12px] text-[var(--adaptive-grey500)] text-left">status</p>
+
+                                        <p className="text-[14px] text-[var(--adaptive-greyOpacity600)] whitespace-break-spaces">{helperText}ea</p>
                                     </section>
                                 </section>
 

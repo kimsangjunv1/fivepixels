@@ -1,6 +1,7 @@
+import { BrowserRouter } from "react-router-dom";
 import { Report } from "stitchable";
 
-import { BasicView } from "./views/basic/BasicView";
+import { AppRouter } from "./app/router";
 
 export function App() {
     return (
@@ -12,7 +13,7 @@ export function App() {
                 pathname="/examples/basic"
                 visibleShortcutKeys
                 onFeedbackCreate={(event) => {
-                    console.log("first", event);
+                    console.log("feedback created", event);
                 }}
                 fields={[
                     { key: "message", type: "textarea", label: "메시지", required: true },
@@ -20,7 +21,9 @@ export function App() {
                     { key: "isImportant", type: "checkbox", label: "중요" },
                 ]}
             />
-            <BasicView />
+            <BrowserRouter>
+                <AppRouter />
+            </BrowserRouter>
         </>
     );
 }
