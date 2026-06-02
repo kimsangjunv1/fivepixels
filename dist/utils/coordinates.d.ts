@@ -21,7 +21,7 @@ export declare const DRAFT_POPOVER_MARGIN = 16;
 /** Horizontal line from bubble edge to marker center. */
 export declare const DRAFT_POPOVER_CONNECTOR_WIDTH: number;
 /** Nudge popover upward when vertically centered on the marker. */
-export declare const DRAFT_POPOVER_VERTICAL_NUDGE = 16;
+export declare const DRAFT_POPOVER_VERTICAL_NUDGE = 6;
 export declare function getDraftPopoverPosition(anchor: Pick<Marker, "left" | "top">, options?: {
     width?: number;
     height?: number;
