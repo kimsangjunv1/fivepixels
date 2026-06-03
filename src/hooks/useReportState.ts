@@ -165,7 +165,13 @@ export function useReportState({
 
     const statusText = useMemo(() => {
         if (mode === "report") {
-            return selectedTarget ? `선택 대상: ${selectedTarget.id}` : "selected the elements";
+            const focusTarget = selectedTarget ?? hoveredTarget;
+            if (!focusTarget) {
+                return "";
+            }
+
+            const typeLabel = focusTarget.type === "item" ? "selected item" : "selected group";
+            return `${typeLabel}\n${focusTarget.id}`;
         }
 
         if (mode === "view") {
@@ -181,7 +187,7 @@ export function useReportState({
         }
 
         return "ready.";
-    }, [filteredReports.length, isFetching, mode, selectableTargets.length, selectedTarget, showTargetPreview]);
+    }, [filteredReports.length, isFetching, hoveredTarget, mode, selectableTargets.length, selectedTarget, showTargetPreview]);
 
     useEffect(() => {
         setDraft(null);

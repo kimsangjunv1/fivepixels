@@ -105,7 +105,12 @@ export function useReportState({ projectId, environment, appVersion, appearance,
     }, [filteredReports.length, isFetching, mode, selectableTargets]);
     const statusText = useMemo(() => {
         if (mode === "report") {
-            return selectedTarget ? `선택 대상: ${selectedTarget.id}` : "selected the elements";
+            const focusTarget = selectedTarget ?? hoveredTarget;
+            if (!focusTarget) {
+                return "";
+            }
+            const typeLabel = focusTarget.type === "item" ? "selected item" : "selected group";
+            return `${typeLabel}\n${focusTarget.id}`;
         }
         if (mode === "view") {
             return isFetching ? "피드백을 불러오는 중입니다." : "ready.";
@@ -117,7 +122,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             return "현재 페이지에 선택 가능한 요소가 없어요. data-report-id / data-report-type 속성을 확인해주세요.";
         }
         return "ready.";
-    }, [filteredReports.length, isFetching, mode, selectableTargets.length, selectedTarget, showTargetPreview]);
+    }, [filteredReports.length, isFetching, hoveredTarget, mode, selectableTargets.length, selectedTarget, showTargetPreview]);
     useEffect(() => {
         setDraft(null);
         setErrorMessage("");

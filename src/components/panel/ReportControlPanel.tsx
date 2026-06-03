@@ -1,16 +1,14 @@
 import { useState } from "react";
-import { REPORT_SHORTCUTS } from "../../constants/reportShortcuts.js";
 import { panelAnchorSide, usePanelDock } from "../../hooks/usePanelDock.js";
 import { useReport } from "../../providers/reportContext.js";
 import { ChevronLeftIcon, ChevronRightIcon } from "../icons/ChevronIcon.js";
-import { EyeClosedIcon, EyeOpenIcon } from "../icons/EyeIcon.js";
-import { ShortcutHint } from "../ShortcutHint.js";
 import { PanelDockGuides } from "./PanelDockGuides.js";
 import { ReportFeedbackList } from "./ReportFeedbackList.js";
 import { LogoIcon } from "./../icons/LogoIcon.js";
-import { LogoTextIcon } from "./../icons/LogoTextIcon.js";
-import { SearchIcon } from "./../icons/SearchIcon.js";
 import { motion } from "../motion/index.js";
+
+const RECORDING_STATUS_SHADOW =
+    "drop-shadow(0 1px 2px rgba(0,0,0,0.95)) drop-shadow(0 2px 6px rgba(0,0,0,0.9)) drop-shadow(0 4px 16px rgba(0,0,0,0.85)) drop-shadow(0 0 24px rgba(0,0,0,0.75))";
 
 function PanelCollapseTab({ collapsed, anchorSide, onClick }: { collapsed: boolean; anchorSide: "left" | "right"; onClick: () => void }) {
     const hideIcon = anchorSide === "right" ? <ChevronRightIcon className="h-3 w-3 text-slate-500 dark:text-slate-300" /> : <ChevronLeftIcon className="h-3 w-3 text-slate-500 dark:text-slate-300" />;
@@ -22,11 +20,6 @@ function PanelCollapseTab({ collapsed, anchorSide, onClick }: { collapsed: boole
             type="button"
             onClick={onClick}
             className=""
-            // className={
-            //     anchorSide === "right"
-            //         ? "pointer-events-auto absolute right-0 top-4 z-20 flex h-6 w-4 translate-x-full items-center justify-center rounded-r-md border border-l-0 border-slate-300 bg-slate-100 text-xs text-slate-500 shadow-sm hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
-            //         : "pointer-events-auto absolute left-0 top-4 z-20 flex h-6 w-4 -translate-x-full items-center justify-center rounded-l-md border border-r-0 border-slate-300 bg-slate-100 text-xs text-slate-500 shadow-sm hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
-            // }
             aria-expanded={!collapsed}
             aria-label={collapsed ? "패널 펼치기" : "패널 숨기기"}
             title={collapsed ? "패널 펼치기" : "패널 숨기기"}
@@ -41,12 +34,12 @@ function formatStatCount(count: number) {
 }
 
 export function ReportControlPanel() {
-    const { mode, targetStats, statusText, errorMessage, showFeedbackList, showTargetPreview, visibleShortcutKeys, isMobileViewport, toggleReportMode, toggleTargetPreview, toggleViewMode } =
-        useReport();
+    const { mode, targetStats, statusText, errorMessage, showFeedbackList, showTargetPreview, isMobileViewport, toggleReportMode, toggleTargetPreview, toggleViewMode } = useReport();
     const [panelCollapsed, setPanelCollapsed] = useState(false);
+    const isRecording = mode === "report";
     const { panelRef, panelStyle, placementCorner, isDragging, activeCorner, handleDragHandlePointerDown } = usePanelDock({
         enabled: !isMobileViewport,
-        measureKey: panelCollapsed,
+        measureKey: `${panelCollapsed}-${isRecording}`,
     });
     const showListSection = mode === "view" && showFeedbackList;
     const anchorSide = panelAnchorSide(placementCorner);
@@ -58,146 +51,149 @@ export function ReportControlPanel() {
                 activeCorner={activeCorner}
             />
 
+            {isRecording && statusText ? (
+                <div
+                    className="pointer-events-none fixed bottom-[52px] left-0 right-0 z-[1000000] flex flex-col items-center gap-[4px] px-4 text-center text-white"
+                    style={{ filter: RECORDING_STATUS_SHADOW }}
+                >
+                    {statusText.split("\n").map((line, index) => (
+                        <p
+                            key={`${index}-${line}`}
+                            className={index === 0 ? "text-[12px] font-medium" : "text-[18px] font-bold"}
+                        >
+                            {line}
+                        </p>
+                    ))}
+                </div>
+            ) : null}
+
             <motion.div
                 ref={panelRef}
                 layout
                 layoutId="asdwsww"
-                className="pointer-events-auto fixed z-[1000000] flex max-h-[80vh] min-h-[40px] rounded-[16px] p-[4px] bg-[var(--adaptive-grey50)] gap-[4px] max-w-[375px] shadow-[0_0_120px_0_var(--adaptive-greyOpacity500)]"
+                className={
+                    isRecording
+                        ? "pointer-events-auto fixed z-[1000000] flex min-h-[40px] rounded-[16px] p-[4px] bg-[var(--adaptive-grey50)] shadow-[0_0_120px_0_var(--adaptive-greyOpacity500)]"
+                        : "pointer-events-auto fixed z-[1000000] flex max-h-[80vh] min-h-[40px] rounded-[16px] p-[4px] bg-[var(--adaptive-grey50)] gap-[4px] max-w-[375px] shadow-[0_0_120px_0_var(--adaptive-greyOpacity500)]"
+                }
                 style={panelStyle}
-                // panelCollapsed
             >
-                {anchorSide === "left" ? (
-                    <PanelCollapseTab
-                        collapsed={panelCollapsed}
-                        anchorSide={anchorSide}
-                        onClick={() => setPanelCollapsed((current) => !current)}
-                    />
-                ) : null}
-
-                {!panelCollapsed ? (
-                    <section className="flex flex-1 flex-col gap-[4px]">
-                        <section className="flex items-center justify-between">
-                            <section className="flex items-center gap-[4px] justify-start">
-                                <LogoIcon className="w-[18px]" />
-                                {/* <LogoTextIcon className="h-[12px] w-[58px]" /> */}
-                                <p className="text-[var(--adaptive-grey900)] font-[900]">Radar°</p>
-                            </section>
-
-                            <section className="flex items-center justify-end gap-[12px] px-[16px]">
-                                <section className="flex items-center gap-[8px]">
-                                    <button
-                                        type="button"
-                                        onClick={toggleReportMode}
-                                        className={`flex items-center gap-[4px]`}
-                                    >
-                                        {/* <div className="w-[6px] h-[6px] bg-[var(--adaptive-red500)] rounded-full" /> */}
-                                        <p className="text-[14px] font-bold text-[var(--adaptive-grey700)]">{mode === "report" ? "Stop" : "Record"}</p>
-                                        {/* <ShortcutHint
-                                            binding={REPORT_SHORTCUTS.toggleReportMode}
-                                            visible={visibleShortcutKeys}
-                                        /> */}
-                                    </button>
-
-                                    <button
-                                        type="button"
-                                        onClick={toggleViewMode}
-                                        className="flex items-center gap-[4px]"
-                                        // className={`flex items-center gap-[4px] ${
-                                        //     showListSection
-                                        //         ? "border border-sky-300 bg-sky-50 text-sky-700 hover:bg-sky-100 dark:border-sky-500 dark:bg-sky-950/40 dark:text-sky-200"
-                                        //         : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100"
-                                        // }`}
-                                    >
-                                        {/* <SearchIcon className="w-[18px]" /> */}
-                                        <p className="text-[14px] font-bold text-[var(--adaptive-grey700)]">{showListSection ? "off" : "list"}</p>
-
-                                        {/* <ShortcutHint
-                                            binding={REPORT_SHORTCUTS.toggleViewMode}
-                                            visible={visibleShortcutKeys}
-                                        /> */}
-                                    </button>
-                                </section>
-
-                                <button
-                                    type="button"
-                                    onClick={toggleTargetPreview}
-                                    disabled={mode !== "idle"}
-                                    aria-label={showTargetPreview ? "X-Ray 끄기" : "X-Ray 켜기"}
-                                    title={showTargetPreview ? "X-Ray 끄기" : "X-Ray 켜기"}
-                                    className="flex items-center gap-[4px]"
-                                    // className={`${
-                                    //     showTargetPreview
-                                    //         ? "border-sky-300 bg-sky-50 text-sky-700 shadow-sm hover:bg-sky-100 dark:border-sky-500 dark:bg-sky-950/40 dark:text-sky-200"
-                                    //         : "border-slate-200 bg-white text-slate-600 shadow-sm hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200"
-                                    // } flex items-center gap-[4px] rounded-[12px] p-[12px] shadow-[var(--shadow-popup)]`}
-                                >
-                                    <p className="text-[14px] font-bold text-[var(--adaptive-grey700)]">{showTargetPreview ? "Stop" : "View"}</p>
-                                    {/* <p className="text-[14px]">{showTargetPreview ? <EyeOpenIcon className="h-3.5 w-3.5" /> : <EyeClosedIcon className="h-3.5 w-3.5" />}</p> */}
-
-                                    {/* <ShortcutHint
-                                        binding={REPORT_SHORTCUTS.toggleTargetPreview}
-                                        visible={visibleShortcutKeys}
-                                    /> */}
-                                </button>
-                            </section>
+                {isRecording ? (
+                    <section className="flex items-center justify-between gap-[16px] px-[12px] py-[8px]">
+                        <section className="flex items-center gap-[4px] justify-start shrink-0">
+                            <LogoIcon className="w-[18px]" />
+                            <p className="text-[var(--adaptive-grey900)] font-[900]">Radar°</p>
                         </section>
-
-                        <section className="flex flex-col gap-[16px]">
-                            <section className="flex flex-col gap-[4px]">
-                                <section
-                                    className="flex cursor-move flex-col gap-[12px] bg-[var(--adaptive-grey50)]"
-                                    onPointerDown={handleDragHandlePointerDown}
-                                    aria-label="패널 위치 변경"
-                                    title="드래그해서 위치 변경"
-                                    style={isDragging ? { opacity: 0.8 } : undefined}
-                                >
-                                    <section className="flex w-full items-center justify-between">
-                                        <section className="flex flex-col items-start gap-[4px] flex-1">
-                                            <p className="text-[12px] text-[var(--adaptive-grey500)]">Found</p>
-                                            <p className="text-[14px] font-bold text-[var(--adaptive-grey900)]">{formatStatCount(targetStats.found)}</p>
-                                        </section>
-
-                                        <section className="flex flex-col items-start gap-[4px] flex-1">
-                                            <p className="text-[12px] text-[var(--adaptive-grey500)]">Group</p>
-                                            <p className="text-[14px] font-bold text-[var(--adaptive-grey900)]">{formatStatCount(targetStats.group)}</p>
-                                        </section>
-
-                                        <section className="flex flex-col items-start gap-[4px] flex-1">
-                                            <p className="text-[12px] text-[var(--adaptive-grey500)]">Item</p>
-                                            <p className="text-[14px] font-bold text-[var(--adaptive-grey900)]">{formatStatCount(targetStats.item)}</p>
-                                        </section>
-                                    </section>
-
-                                    <section className="border-t border-[var(--adaptive-grey200)] pt-[8px]">
-                                        <p className="text-center text-[12px] text-[var(--adaptive-grey500)] whitespace-break-spaces">{statusText}</p>
-                                    </section>
-                                </section>
-                            </section>
-
-                            {showListSection ? (
-                                <section className="flex flex-1 flex-col gap-[16px]">
-                                    {errorMessage ? (
-                                        <p className="mt-1 rounded-md border border-rose-200 bg-rose-50 px-2 py-1 text-[11px] text-rose-700 dark:border-rose-700 dark:bg-rose-950/40 dark:text-rose-200">
-                                            {errorMessage}
-                                        </p>
-                                    ) : null}
-
-                                    <ReportFeedbackList />
-                                </section>
-                            ) : null}
-                        </section>
+                        <button
+                            type="button"
+                            onClick={toggleReportMode}
+                            className="flex items-center shrink-0"
+                        >
+                            <p className="text-[14px] font-bold text-[var(--adaptive-blue500)]">Stop Recording...</p>
+                        </button>
                     </section>
-                ) : null}
+                ) : (
+                    <>
+                        {anchorSide === "left" ? (
+                            <PanelCollapseTab
+                                collapsed={panelCollapsed}
+                                anchorSide={anchorSide}
+                                onClick={() => setPanelCollapsed((current) => !current)}
+                            />
+                        ) : null}
 
-                {anchorSide === "right" ? (
-                    <PanelCollapseTab
-                        collapsed={panelCollapsed}
-                        anchorSide={anchorSide}
-                        onClick={() => setPanelCollapsed((current) => !current)}
-                    />
-                ) : null}
+                        {!panelCollapsed ? (
+                            <section className="flex flex-1 flex-col gap-[4px]">
+                                <section className="flex items-center justify-between">
+                                    <section className="flex items-center gap-[4px] justify-start">
+                                        <LogoIcon className="w-[18px]" />
+                                        <p className="text-[var(--adaptive-grey900)] font-[900]">Radar°</p>
+                                    </section>
 
-                {/* <div className="bg-[var(--adaptive-blue200)] absolute right-[-50%] bottom-[-50%] h-[150%] w-[150%] blur-[98px] z-[-1]" /> */}
+                                    <section className="flex items-center justify-end gap-[12px] px-[16px]">
+                                        <section className="flex items-center gap-[8px]">
+                                            <button
+                                                type="button"
+                                                onClick={toggleReportMode}
+                                                className="flex items-center gap-[4px]"
+                                            >
+                                                <p className="text-[14px] font-bold text-[var(--adaptive-grey700)]">Record</p>
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                onClick={toggleViewMode}
+                                                className="flex items-center gap-[4px]"
+                                            >
+                                                <p className="text-[14px] font-bold text-[var(--adaptive-grey700)]">{showListSection ? "off" : "list"}</p>
+                                            </button>
+                                        </section>
+
+                                        <button
+                                            type="button"
+                                            onClick={toggleTargetPreview}
+                                            disabled={mode !== "idle"}
+                                            aria-label={showTargetPreview ? "X-Ray 끄기" : "X-Ray 켜기"}
+                                            title={showTargetPreview ? "X-Ray 끄기" : "X-Ray 켜기"}
+                                            className="flex items-center gap-[4px]"
+                                        >
+                                            <p className="text-[14px] font-bold text-[var(--adaptive-grey700)]">{showTargetPreview ? "Stop" : "View"}</p>
+                                        </button>
+                                    </section>
+                                </section>
+
+                                <section className="flex flex-col gap-[16px]">
+                                    <section className="flex flex-col gap-[4px]">
+                                        <section
+                                            className="flex cursor-move flex-col gap-[12px] bg-[var(--adaptive-grey50)]"
+                                            onPointerDown={handleDragHandlePointerDown}
+                                            aria-label="패널 위치 변경"
+                                            title="드래그해서 위치 변경"
+                                            style={isDragging ? { opacity: 0.8 } : undefined}
+                                        >
+                                            <section className="flex w-full items-center justify-between">
+                                                <section className="flex flex-col items-start gap-[4px] flex-1">
+                                                    <p className="text-[12px] text-[var(--adaptive-grey500)]">Found</p>
+                                                    <p className="text-[14px] font-bold text-[var(--adaptive-grey900)]">{formatStatCount(targetStats.found)}</p>
+                                                </section>
+
+                                                <section className="flex flex-col items-start gap-[4px] flex-1">
+                                                    <p className="text-[12px] text-[var(--adaptive-grey500)]">Group</p>
+                                                    <p className="text-[14px] font-bold text-[var(--adaptive-grey900)]">{formatStatCount(targetStats.group)}</p>
+                                                </section>
+
+                                                <section className="flex flex-col items-start gap-[4px] flex-1">
+                                                    <p className="text-[12px] text-[var(--adaptive-grey500)]">Item</p>
+                                                    <p className="text-[14px] font-bold text-[var(--adaptive-grey900)]">{formatStatCount(targetStats.item)}</p>
+                                                </section>
+                                            </section>
+                                        </section>
+                                    </section>
+
+                                    {showListSection ? (
+                                        <section className="flex flex-1 flex-col gap-[16px]">
+                                            {errorMessage ? (
+                                                <p className="mt-1 rounded-md border border-rose-200 bg-rose-50 px-2 py-1 text-[11px] text-rose-700 dark:border-rose-700 dark:bg-rose-950/40 dark:text-rose-200">
+                                                    {errorMessage}
+                                                </p>
+                                            ) : null}
+
+                                            <ReportFeedbackList />
+                                        </section>
+                                    ) : null}
+                                </section>
+                            </section>
+                        ) : null}
+
+                        {anchorSide === "right" ? (
+                            <PanelCollapseTab
+                                collapsed={panelCollapsed}
+                                anchorSide={anchorSide}
+                                onClick={() => setPanelCollapsed((current) => !current)}
+                            />
+                        ) : null}
+                    </>
+                )}
             </motion.div>
         </>
     );
