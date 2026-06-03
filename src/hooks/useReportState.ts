@@ -151,14 +151,25 @@ export function useReportState({
     const tooltipReport = tooltipAnchor?.report ?? null;
     const tooltipFieldTags = useMemo(() => (tooltipReport ? getFieldTags(fields, tooltipReport.field_values) : []), [fields, tooltipReport]);
 
-    const helperText = useMemo(() => {
+    const targetStats = useMemo(() => {
+        const groupCount = selectableTargets.filter((target) => target.type === "group").length;
+        const itemCount = selectableTargets.filter((target) => target.type === "item").length;
+        const foundCount = mode === "view" && !isFetching ? filteredReports.length : selectableTargets.length;
+
+        return {
+            found: foundCount,
+            group: groupCount,
+            item: itemCount,
+        };
+    }, [filteredReports.length, isFetching, mode, selectableTargets]);
+
+    const statusText = useMemo(() => {
         if (mode === "report") {
             return selectedTarget ? `선택 대상: ${selectedTarget.id}` : "selected the elements";
-            // return selectedTarget ? `선택 대상: ${selectedTarget.id}` : "data-report-id / data-report-type 요소를 선택하세요.";
         }
 
         if (mode === "view") {
-            return isFetching ? "피드백을 불러오는 중입니다." : `${filteredReports.length}`;
+            return isFetching ? "피드백을 불러오는 중입니다." : "ready.";
         }
 
         if (showTargetPreview) {
@@ -169,12 +180,8 @@ export function useReportState({
             return "현재 페이지에 선택 가능한 요소가 없어요. data-report-id / data-report-type 속성을 확인해주세요.";
         }
 
-        const groupCount = selectableTargets.filter((target) => target.type === "group").length;
-        const itemCount = selectableTargets.filter((target) => target.type === "item").length;
-
-        return `${selectableTargets.length}`;
-        // return `${selectableTargets.length} counts elements(group ${groupCount}, item ${itemCount})\navailable leaves the feedback.`;
-    }, [filteredReports.length, isFetching, mode, selectableTargets, selectedTarget, showTargetPreview]);
+        return "ready.";
+    }, [filteredReports.length, isFetching, mode, selectableTargets.length, selectedTarget, showTargetPreview]);
 
     useEffect(() => {
         setDraft(null);
@@ -706,7 +713,8 @@ export function useReportState({
         tooltipFieldTags,
         replyDraft,
         setReplyDraft,
-        helperText,
+        targetStats,
+        statusText,
         toggleReportMode,
         toggleTargetPreview,
         toggleViewMode,

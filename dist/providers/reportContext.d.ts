@@ -42,7 +42,12 @@ declare const ReportContext: import("react").Context<{
     }[];
     replyDraft: string;
     setReplyDraft: import("react").Dispatch<import("react").SetStateAction<string>>;
-    helperText: string;
+    targetStats: {
+        found: number;
+        group: number;
+        item: number;
+    };
+    statusText: string;
     toggleReportMode: () => void;
     toggleTargetPreview: () => void;
     toggleViewMode: () => void;
@@ -108,7 +113,12 @@ export declare function useReport(): {
     }[];
     replyDraft: string;
     setReplyDraft: import("react").Dispatch<import("react").SetStateAction<string>>;
-    helperText: string;
+    targetStats: {
+        found: number;
+        group: number;
+        item: number;
+    };
+    statusText: string;
     toggleReportMode: () => void;
     toggleTargetPreview: () => void;
     toggleViewMode: () => void;
