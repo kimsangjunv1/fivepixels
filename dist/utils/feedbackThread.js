@@ -29,8 +29,15 @@ export function canReviewLatestSuggestion(report) {
     const latest = getLatestReply(report);
     return latest?.status === "suggested";
 }
-export function canCheckoutReply(reply) {
-    return reply.status === "found_error";
+export function canCheckoutReply(report, reply) {
+    if (reply.status !== "found_error") {
+        return false;
+    }
+    const latest = getLatestReply(report);
+    return latest?.id === reply.id;
+}
+export function resolveOriginalFeedbackAuthorName(report) {
+    return report.author_name?.trim() ?? "";
 }
 export function createReplyStatusForSubmit(pending) {
     if (pending === "deny") {

@@ -3,7 +3,7 @@ import { useReportShortcuts } from "./useReportShortcuts.js";
 import { useCreateReportMutation, useDeleteReportMutation, useReportsQuery, useUpdateReportMutation } from "./report.query.js";
 import { useIsMobileViewport } from "./useIsMobileViewport.js";
 import { useResolvedAppearance } from "./useResolvedAppearance.js";
-import { createReplyStatusForSubmit } from "../utils/feedbackThread.js";
+import { createReplyStatusForSubmit, resolveOriginalFeedbackAuthorName } from "../utils/feedbackThread.js";
 import { clampRatio, getMarkerFromReport, resolveTooltipAnchor } from "../utils/coordinates.js";
 const MARKER_HOVER_LEAVE_MS = 250;
 const OVERLAY_HOVER_LEAVE_MS = 100;
@@ -57,6 +57,8 @@ export function useReportState({ projectId, environment, appVersion, appearance,
     const [draftAuthorName, setDraftAuthorName] = useState(() => resolveDefaultAuthorName(identify, authors));
     const [replyAuthorName, setReplyAuthorName] = useState(() => resolveDefaultAuthorName(identify, authors));
     const [pendingComposer, setPendingComposer] = useState(null);
+    const [confirmAuthorName, setConfirmAuthorName] = useState("");
+    const [showConfirmAuthorSelect, setShowConfirmAuthorSelect] = useState(false);
     const [selectedReportId, setSelectedReportId] = useState(null);
     const [editingReportId, setEditingReportId] = useState(null);
     const [editableDraft, setEditableDraft] = useState(null);
@@ -142,6 +144,8 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         setActiveReplyReportId(null);
         setReplyDraft("");
         setPendingComposer(null);
+        setShowConfirmAuthorSelect(false);
+        setConfirmAuthorName("");
         setDraftAuthorName(resolveDefaultAuthorName(identify, authors));
         setReplyAuthorName(resolveDefaultAuthorName(identify, authors));
         setEditingReportId(null);
@@ -308,12 +312,18 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         setReplyDraft("");
         setPendingComposer(null);
         setReplyAuthorName(resolveDefaultAuthorName(identify, authors));
+        setConfirmAuthorName(resolveOriginalFeedbackAuthorName(report));
+        setShowConfirmAuthorSelect(false);
         clearHoverLeaveTimeout();
     };
     const closeReplyComposer = () => {
         setActiveReplyReportId(null);
         setReplyDraft("");
         setPendingComposer(null);
+        setShowConfirmAuthorSelect(false);
+    };
+    const toggleConfirmAuthorSelect = () => {
+        setShowConfirmAuthorSelect((current) => !current);
     };
     const startDenyReview = () => {
         if (!activeReplyReport) {
@@ -549,13 +559,18 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         if (!activeReplyReport) {
             return;
         }
+        const resolverName = confirmAuthorName.trim() || resolveOriginalFeedbackAuthorName(activeReplyReport);
+        if (!resolverName) {
+            setErrorMessage("검수 처리자를 선택해주세요.");
+            return;
+        }
         const reply = {
             id: createReplyId(),
             message: "이슈가 해결되었습니다.",
             created_at: new Date().toISOString(),
             status: "verified",
             author_type: "user",
-            author_name: activeReplyReport.author_name ?? (replyAuthorName.trim() || null),
+            author_name: resolverName,
         };
         try {
             const updatedFeedback = await updateFeedback(activeReplyReport.id, {
@@ -566,6 +581,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             setErrorMessage("");
             setPendingComposer(null);
             setReplyDraft("");
+            setShowConfirmAuthorSelect(false);
         }
         catch (nextError) {
             setErrorMessage(nextError instanceof Error ? nextError.message : "확인 처리에 실패했어요.");
@@ -654,6 +670,10 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         startDenyReview,
         startCheckoutReview,
         cancelPendingComposer,
+        confirmAuthorName,
+        setConfirmAuthorName,
+        showConfirmAuthorSelect,
+        toggleConfirmAuthorSelect,
         handleConfirmResolution,
         targetStats,
         statusText,

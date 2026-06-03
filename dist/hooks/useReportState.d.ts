@@ -75,6 +75,10 @@ export declare function useReportState({ projectId, environment, appVersion, app
     startDenyReview: () => void;
     startCheckoutReview: (replyId: string) => void;
     cancelPendingComposer: () => void;
+    confirmAuthorName: string;
+    setConfirmAuthorName: import("react").Dispatch<import("react").SetStateAction<string>>;
+    showConfirmAuthorSelect: boolean;
+    toggleConfirmAuthorSelect: () => void;
     handleConfirmResolution: () => Promise<void>;
     targetStats: {
         found: number;

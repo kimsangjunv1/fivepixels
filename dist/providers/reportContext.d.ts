@@ -51,6 +51,10 @@ declare const ReportContext: import("react").Context<{
     startDenyReview: () => void;
     startCheckoutReview: (replyId: string) => void;
     cancelPendingComposer: () => void;
+    confirmAuthorName: string;
+    setConfirmAuthorName: import("react").Dispatch<import("react").SetStateAction<string>>;
+    showConfirmAuthorSelect: boolean;
+    toggleConfirmAuthorSelect: () => void;
     handleConfirmResolution: () => Promise<void>;
     targetStats: {
         found: number;
@@ -132,6 +136,10 @@ export declare function useReport(): {
     startDenyReview: () => void;
     startCheckoutReview: (replyId: string) => void;
     cancelPendingComposer: () => void;
+    confirmAuthorName: string;
+    setConfirmAuthorName: import("react").Dispatch<import("react").SetStateAction<string>>;
+    showConfirmAuthorSelect: boolean;
+    toggleConfirmAuthorSelect: () => void;
     handleConfirmResolution: () => Promise<void>;
     targetStats: {
         found: number;

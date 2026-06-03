@@ -7,6 +7,7 @@ export declare function getCheckboxFieldsFromValues(fieldValues: ReportFeedback[
     label: string;
 }[];
 export declare function canReviewLatestSuggestion(report: ReportFeedback): boolean;
-export declare function canCheckoutReply(reply: ReportReply): boolean;
+export declare function canCheckoutReply(report: ReportFeedback, reply: ReportReply): boolean;
+export declare function resolveOriginalFeedbackAuthorName(report: ReportFeedback): string;
 export declare function createReplyStatusForSubmit(pending: "deny" | "checkout" | null): ReportReplyStatus;
 //# sourceMappingURL=feedbackThread.d.ts.map

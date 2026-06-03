@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import type { ReportFeedback } from "../types/report.js";
-import { canCheckoutReply, canReviewLatestSuggestion, createReplyStatusForSubmit, getFeedbackDisplayStatus } from "./feedbackThread.js";
+import {
+    canCheckoutReply,
+    canReviewLatestSuggestion,
+    createReplyStatusForSubmit,
+    getFeedbackDisplayStatus,
+} from "./feedbackThread.js";
 
 function createReport(overrides: Partial<ReportFeedback> = {}): ReportFeedback {
     return {
@@ -52,17 +57,32 @@ describe("feedbackThread", () => {
         });
 
         expect(canReviewLatestSuggestion(report)).toBe(true);
-        expect(canCheckoutReply(report.replies[0])).toBe(false);
+        expect(canCheckoutReply(report, report.replies[0])).toBe(false);
     });
 
-    it("allows checkout only on found_error replies", () => {
-        const reply = {
+    it("allows checkout only on the latest found_error reply", () => {
+        const foundError = {
             id: "r2",
             message: "still broken",
             created_at: "2026-01-03T00:00:00.000Z",
             status: "found_error" as const,
         };
+        const reportWithFoundError = createReport({ replies: [foundError] });
 
-        expect(canCheckoutReply(reply)).toBe(true);
+        expect(canCheckoutReply(reportWithFoundError, foundError)).toBe(true);
+
+        const reportWithFollowUp = createReport({
+            replies: [
+                foundError,
+                {
+                    id: "r3",
+                    message: "fixed again",
+                    created_at: "2026-01-04T00:00:00.000Z",
+                    status: "suggested",
+                },
+            ],
+        });
+
+        expect(canCheckoutReply(reportWithFollowUp, foundError)).toBe(false);
     });
 });

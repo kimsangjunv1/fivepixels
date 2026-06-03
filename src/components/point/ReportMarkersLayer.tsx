@@ -90,6 +90,10 @@ export function ReportMarkersLayer() {
         handleReplySubmit,
         startDenyReview,
         startCheckoutReview,
+        confirmAuthorName,
+        setConfirmAuthorName,
+        showConfirmAuthorSelect,
+        toggleConfirmAuthorSelect,
         handleConfirmResolution,
     } = useReport();
 
@@ -227,7 +231,12 @@ export function ReportMarkersLayer() {
 
                                 <FeedbackThread
                                     report={activeReplyReport}
+                                    authors={authors}
                                     pendingComposer={pendingComposer}
+                                    confirmAuthorName={confirmAuthorName}
+                                    showConfirmAuthorSelect={showConfirmAuthorSelect}
+                                    onConfirmAuthorNameChange={setConfirmAuthorName}
+                                    onToggleConfirmAuthorSelect={toggleConfirmAuthorSelect}
                                     onStartDeny={startDenyReview}
                                     onStartCheckout={startCheckoutReview}
                                     onConfirm={() => void handleConfirmResolution()}

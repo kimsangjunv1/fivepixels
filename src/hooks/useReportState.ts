@@ -14,7 +14,7 @@ import type {
     ReportStorageAdapter,
 } from "../types/report.js";
 import type { DraftReport, EditableDraft, Marker, PendingFeedbackComposer, ReportFilters, ReportMode, TargetSnapshot } from "../types/report-ui.js";
-import { createReplyStatusForSubmit } from "../utils/feedbackThread.js";
+import { createReplyStatusForSubmit, resolveOriginalFeedbackAuthorName } from "../utils/feedbackThread.js";
 import { clampRatio, getMarkerFromReport, resolveTooltipAnchor } from "../utils/coordinates.js";
 
 const MARKER_HOVER_LEAVE_MS = 250;
@@ -117,6 +117,8 @@ export function useReportState({
     const [draftAuthorName, setDraftAuthorName] = useState(() => resolveDefaultAuthorName(identify, authors));
     const [replyAuthorName, setReplyAuthorName] = useState(() => resolveDefaultAuthorName(identify, authors));
     const [pendingComposer, setPendingComposer] = useState<PendingFeedbackComposer>(null);
+    const [confirmAuthorName, setConfirmAuthorName] = useState("");
+    const [showConfirmAuthorSelect, setShowConfirmAuthorSelect] = useState(false);
     const [selectedReportId, setSelectedReportId] = useState<string | null>(null);
     const [editingReportId, setEditingReportId] = useState<string | null>(null);
     const [editableDraft, setEditableDraft] = useState<EditableDraft | null>(null);
@@ -221,6 +223,8 @@ export function useReportState({
         setActiveReplyReportId(null);
         setReplyDraft("");
         setPendingComposer(null);
+        setShowConfirmAuthorSelect(false);
+        setConfirmAuthorName("");
         setDraftAuthorName(resolveDefaultAuthorName(identify, authors));
         setReplyAuthorName(resolveDefaultAuthorName(identify, authors));
         setEditingReportId(null);
@@ -422,6 +426,8 @@ export function useReportState({
         setReplyDraft("");
         setPendingComposer(null);
         setReplyAuthorName(resolveDefaultAuthorName(identify, authors));
+        setConfirmAuthorName(resolveOriginalFeedbackAuthorName(report));
+        setShowConfirmAuthorSelect(false);
         clearHoverLeaveTimeout();
     };
 
@@ -429,6 +435,11 @@ export function useReportState({
         setActiveReplyReportId(null);
         setReplyDraft("");
         setPendingComposer(null);
+        setShowConfirmAuthorSelect(false);
+    };
+
+    const toggleConfirmAuthorSelect = () => {
+        setShowConfirmAuthorSelect((current) => !current);
     };
 
     const startDenyReview = () => {
@@ -709,13 +720,20 @@ export function useReportState({
             return;
         }
 
+        const resolverName = confirmAuthorName.trim() || resolveOriginalFeedbackAuthorName(activeReplyReport);
+
+        if (!resolverName) {
+            setErrorMessage("검수 처리자를 선택해주세요.");
+            return;
+        }
+
         const reply: ReportReply = {
             id: createReplyId(),
             message: "이슈가 해결되었습니다.",
             created_at: new Date().toISOString(),
             status: "verified",
             author_type: "user",
-            author_name: activeReplyReport.author_name ?? (replyAuthorName.trim() || null),
+            author_name: resolverName,
         };
 
         try {
@@ -729,6 +747,7 @@ export function useReportState({
             setErrorMessage("");
             setPendingComposer(null);
             setReplyDraft("");
+            setShowConfirmAuthorSelect(false);
         } catch (nextError) {
             setErrorMessage(nextError instanceof Error ? nextError.message : "확인 처리에 실패했어요.");
         }
@@ -822,6 +841,10 @@ export function useReportState({
         startDenyReview,
         startCheckoutReview,
         cancelPendingComposer,
+        confirmAuthorName,
+        setConfirmAuthorName,
+        showConfirmAuthorSelect,
+        toggleConfirmAuthorSelect,
         handleConfirmResolution,
         targetStats,
         statusText,
