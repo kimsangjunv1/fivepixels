@@ -126,13 +126,25 @@ function ReportDraftFormContent({
             }}
         >
             <div className="absolute top-[50%] left-[-32px] transform translate-y-[-50%] w-[32px] h-[1px] bg-black" />
-            <section className="flex flex-col gap-[8px] rounded-[16px] overflow-hidden bg-[var(--adaptive-grey100)] shadow-[var(--shadow-normal)] w-full p-[8px]">
-                <section className="flex items-center justify-between w-full gap-[8px] h-[24px]">
-                    <p className="text-[14px] text-[var(--adaptive-grey700)] pl-[8px]">
-                        * {draft.reportId} *{/* {draft.reportId} */}
-                    </p>
-                </section>
 
+            <section className="flex items-center justify-between w-full">
+                <p className="text-[14px] text-[var(--adaptive-grey700)] pl-[8px]">
+                    * {draft.reportId} *{/* {draft.reportId} */}
+                </p>
+                <button
+                    type="button"
+                    onClick={cancelDraft}
+                    className="h-full text-[14px] font-semibold flex flex-col justify-center items-center gap-[4px] rounded-[12px] p-[8px_12px] bg-[var(--adaptive-grey300)] text-white whitespace-nowrap"
+                >
+                    닫기
+                    {/* <ShortcutHint
+                                    binding={REPORT_SHORTCUTS.cancel}
+                                    visible={visibleShortcutKeys}
+                                /> */}
+                </button>
+            </section>
+
+            <section className="flex flex-col gap-[8px] rounded-[16px] overflow-hidden bg-[var(--adaptive-grey50)] shadow-[var(--shadow-normal)] w-full">
                 <section className="flex flex-col items-center gap-[12px] w-full">
                     <FieldEditor
                         fields={fields}
@@ -147,20 +159,9 @@ function ReportDraftFormContent({
                 <section className="flex justify-end w-full gap-[4px]">
                     <button
                         type="button"
-                        onClick={cancelDraft}
-                        className="h-full text-[14px] font-semibold flex flex-col justify-center items-center gap-[4px] rounded-[12px] p-[8px_12px] bg-[var(--adaptive-grey300)] text-white whitespace-nowrap"
-                    >
-                        닫기
-                        {/* <ShortcutHint
-                                    binding={REPORT_SHORTCUTS.cancel}
-                                    visible={visibleShortcutKeys}
-                                /> */}
-                    </button>
-                    <button
-                        type="button"
                         onClick={() => void handleCreateSubmit()}
                         disabled={isCreating}
-                        className="h-full flex-1 text-[14px] font-semibold flex flex-col justify-center items-center gap-[4px] rounded-[12px] p-[8px_12px] bg-[var(--adaptive-blue400)] text-white whitespace-nowrap shadow-[var(--shadow-normal)]"
+                        className="h-full text-[14px] font-semibold flex flex-col justify-center items-center gap-[4px] rounded-[12px] p-[8px_12px] bg-[var(--adaptive-blue400)] text-white whitespace-nowrap shadow-[var(--shadow-normal)]"
                     >
                         {isCreating ? "저장 중..." : "완료"}
                         {/* <ShortcutHint
@@ -172,20 +173,22 @@ function ReportDraftFormContent({
             </section>
 
             {checkboxFields.length > 0 ? (
-                <section className="flex w-full flex-col gap-[4px] p-[12px]">
+                <section className="flex w-full justify-start items-start gap-[4px] p-[12px]">
                     {checkboxFields.map((field) => (
-                        <label
+                        <button
                             key={field.key}
-                            className="text-[var(--adaptive-grey500)] flex items-center gap-[4px] w-full px-[12px]"
+                            className={`${draft.fieldValues[field.key] === true ? "bg-red-500" : ""} text-[var(--adaptive-grey500)] flex items-center gap-[4px] w-full px-[12px]`}
+                            // checked={draft.fieldValues[field.key] === true}
+                            onClick={(event) => updateDraftField(field.key, !draft.fieldValues[field.key])}
                         >
-                            <input
+                            {/* <input
                                 type="checkbox"
                                 className="h-3.5 w-3.5 rounded border-white/50 bg-white/10 text-white accent-white bg-transparent"
                                 checked={draft.fieldValues[field.key] === true}
                                 onChange={(event) => updateDraftField(field.key, event.target.checked)}
-                            />
+                            /> */}
                             <span>{field.label}</span>
-                        </label>
+                        </button>
                     ))}
                 </section>
             ) : null}

@@ -35,7 +35,7 @@ function renderNonCheckboxField(
                     autoFocus={isDraftBubble}
                     value={message}
                     onChange={(event) => onMessageChange(event.target.value)}
-                    className="bg-[var(--adaptive-grey50)] rounded-[16px] shadow-[var(--shadow-normal)] p-[14px]"
+                    className="bg-[var(--adaptive-grey50)] p-[14px] focus:border-none focus:stroke-none focus:outline-none"
                     placeholder="피드백을 남겨주세요"
                 />
             </label>

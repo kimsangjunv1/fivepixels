@@ -504,3 +504,15 @@ a {
         align-items: flex-start;
     }
 }
+
+.naver-page {
+    min-height: 100vh;
+    overflow-y: auto;
+    background: #fff;
+}
+
+.naver-page__image {
+    display: block;
+    width: 100%;
+    height: auto;
+}
