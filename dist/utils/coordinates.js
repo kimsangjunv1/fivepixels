@@ -48,9 +48,9 @@ export function resolveTooltipAnchor(markers, reportId) {
     return markers.find((marker) => marker.report.id === reportId) ?? null;
 }
 const TOOLTIP_PREVIEW_WIDTH = 260;
-const TOOLTIP_EXPANDED_WIDTH = 280;
+const TOOLTIP_EXPANDED_WIDTH = 320;
 const TOOLTIP_PREVIEW_OFFSET = 104;
-const TOOLTIP_EXPANDED_OFFSET = 232;
+const TOOLTIP_EXPANDED_OFFSET = 280;
 const TOOLTIP_MARGIN = 16;
 export function getTooltipPosition(anchor, expanded) {
     const width = expanded ? TOOLTIP_EXPANDED_WIDTH : TOOLTIP_PREVIEW_WIDTH;
@@ -61,7 +61,7 @@ export function getTooltipPosition(anchor, expanded) {
     return { left, top, width };
 }
 export const DRAFT_POPOVER_WIDTH = 280;
-export const DRAFT_POPOVER_HEIGHT = 228;
+export const DRAFT_POPOVER_HEIGHT = 260;
 export const DRAFT_POPOVER_GAP = 10;
 export const DRAFT_POPOVER_MARGIN = 16;
 /** Horizontal line from bubble edge to marker center. */

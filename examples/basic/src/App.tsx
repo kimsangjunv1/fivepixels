@@ -15,10 +15,16 @@ export function App() {
                 onFeedbackCreate={(event) => {
                     console.log("feedback created", event);
                 }}
+                identify={{ id: "demo-user", name: "김아영 주임" }}
+                authors={[
+                    { id: "1", name: "김아영 주임" },
+                    { id: "2", name: "최민호 전임" },
+                    { id: "3", name: "john doe" },
+                ]}
                 fields={[
                     { key: "message", type: "textarea", label: "", required: true },
-                    { key: "isBug", type: "checkbox", label: "버그" },
-                    { key: "isImportant", type: "checkbox", label: "중요" },
+                    { key: "isBug", type: "checkbox", label: "bug" },
+                    { key: "isImportant", type: "checkbox", label: "IMPORTANT" },
                 ]}
             />
             <BrowserRouter>

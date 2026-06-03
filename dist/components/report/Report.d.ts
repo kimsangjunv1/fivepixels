@@ -1,4 +1,4 @@
-import type { ReportAppearance, ReportEvent, ReportFeedback, ReportField, ReportIdentify, ReportStorageAdapter } from "../../types/report.js";
+import type { ReportAppearance, ReportEvent, ReportFeedback, ReportField, ReportAuthor, ReportIdentify, ReportStorageAdapter } from "../../types/report.js";
 export type ReportProps = {
     projectId?: string;
     environment?: string;
@@ -7,6 +7,7 @@ export type ReportProps = {
     storage?: "local" | ReportStorageAdapter;
     storageAdapter?: ReportStorageAdapter;
     fields?: ReportField[];
+    authors?: ReportAuthor[];
     shortcut?: string;
     identify?: ReportIdentify;
     onEvent?: (event: ReportEvent) => void | Promise<void>;
@@ -23,5 +24,5 @@ export type ReportProps = {
     showFeedbackList?: boolean;
     visibleShortcutKeys?: boolean;
 };
-export declare function Report({ projectId, environment, appVersion, appearance, storage, storageAdapter, fields, shortcut, identify, onEvent, onFeedbackCreate, onFeedbackDelete, onFeedbackReply, onFeedbackUpdate, devOnly, enabled, pathname, showFeedbackList, visibleShortcutKeys, }: ReportProps): import("react/jsx-runtime").JSX.Element | null;
+export declare function Report({ projectId, environment, appVersion, appearance, storage, storageAdapter, fields, authors, shortcut, identify, onEvent, onFeedbackCreate, onFeedbackDelete, onFeedbackReply, onFeedbackUpdate, devOnly, enabled, pathname, showFeedbackList, visibleShortcutKeys, }: ReportProps): import("react/jsx-runtime").JSX.Element | null;
 //# sourceMappingURL=Report.d.ts.map

@@ -8,6 +8,7 @@ import type {
     ReportEvent,
     ReportFeedback,
     ReportField,
+    ReportAuthor,
     ReportIdentify,
     ReportStorageAdapter,
 } from "../../types/report.js";
@@ -21,6 +22,7 @@ export type ReportProps = {
     storage?: "local" | ReportStorageAdapter;
     storageAdapter?: ReportStorageAdapter;
     fields?: ReportField[];
+    authors?: ReportAuthor[];
     shortcut?: string;
     identify?: ReportIdentify;
     onEvent?: (event: ReportEvent) => void | Promise<void>;
@@ -43,6 +45,7 @@ export function Report({
     storage = "local",
     storageAdapter,
     fields = DEFAULT_FIELDS,
+    authors,
     shortcut,
     identify,
     onEvent,
@@ -67,6 +70,7 @@ export function Report({
             appVersion={appVersion}
             appearance={appearance}
             fields={fields}
+            authors={authors}
             shortcut={shortcut}
             identify={identify}
             onEvent={onEvent}

@@ -1,10 +1,8 @@
 import { AnimatePresence, motion } from "motion/react";
-import { REPORT_SHORTCUTS } from "../../constants/reportShortcuts.js";
 import { useReport } from "../../providers/reportContext.js";
 import type { DraftPopoverPlacement } from "../../utils/coordinates.js";
 import { DRAFT_POPOVER_CONNECTOR_WIDTH, getDraftMarkerPosition, getDraftPopoverPosition } from "../../utils/coordinates.js";
-import { ShortcutHint } from "../ShortcutHint.js";
-import { FieldEditor } from "./FieldEditor.js";
+import { FeedbackComposer } from "./feedback/FeedbackComposer.js";
 
 const DRAFT_MOTION_EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -52,7 +50,8 @@ function DraftPopoverConnector({ placement }: DraftPopoverConnectorProps) {
 }
 
 export function ReportDraftForm() {
-    const { draft, fields, isCreating, selectedTarget, visibleShortcutKeys, updateDraftMessage, updateDraftField, cancelDraft, handleCreateSubmit } = useReport();
+    const { draft, fields, authors, isCreating, selectedTarget, updateDraftMessage, updateDraftField, cancelDraft, handleCreateSubmit, draftAuthorName, setDraftAuthorName } =
+        useReport();
 
     return (
         <AnimatePresence>
@@ -60,13 +59,15 @@ export function ReportDraftForm() {
                 <ReportDraftFormContent
                     draft={draft}
                     fields={fields}
+                    authors={authors}
                     isCreating={isCreating}
                     selectedTarget={selectedTarget}
-                    visibleShortcutKeys={visibleShortcutKeys}
                     updateDraftMessage={updateDraftMessage}
                     updateDraftField={updateDraftField}
                     cancelDraft={cancelDraft}
                     handleCreateSubmit={handleCreateSubmit}
+                    draftAuthorName={draftAuthorName}
+                    setDraftAuthorName={setDraftAuthorName}
                 />
             ) : null}
         </AnimatePresence>
@@ -76,30 +77,32 @@ export function ReportDraftForm() {
 type ReportDraftFormContentProps = {
     draft: NonNullable<ReturnType<typeof useReport>["draft"]>;
     fields: ReturnType<typeof useReport>["fields"];
+    authors: ReturnType<typeof useReport>["authors"];
     isCreating: boolean;
     selectedTarget: ReturnType<typeof useReport>["selectedTarget"];
-    visibleShortcutKeys: boolean;
     updateDraftMessage: (message: string) => void;
     updateDraftField: (key: string, value: string | boolean) => void;
     cancelDraft: () => void;
     handleCreateSubmit: () => Promise<void>;
+    draftAuthorName: string;
+    setDraftAuthorName: (name: string) => void;
 };
 
 function ReportDraftFormContent({
     draft,
     fields,
+    authors,
     isCreating,
     selectedTarget,
-    visibleShortcutKeys,
     updateDraftMessage,
     updateDraftField,
-    cancelDraft,
     handleCreateSubmit,
+    draftAuthorName,
+    setDraftAuthorName,
 }: ReportDraftFormContentProps) {
     const anchor = getDraftMarkerPosition(draft, selectedTarget);
     const { left, top, anchorCenterY, width, placement, centerVertically } = getDraftPopoverPosition(anchor);
     const verticalOffset = centerVertically ? "-50%" : 0;
-    const checkboxFields = fields.filter((field) => field.type === "checkbox");
 
     return (
         <motion.div
@@ -107,17 +110,9 @@ function ReportDraftFormContent({
             initial={{ y: verticalOffset }}
             animate={{ y: verticalOffset }}
             exit={{ y: verticalOffset }}
-            // initial={{ opacity: 0 }}
-            // animate={{ opacity: 1 }}
-            // exit={{ opacity: 0 }}
-
-            // initial={{ scale: 0.95, opacity: 0, y: verticalOffset }}
-            // animate={{ scale: 1, opacity: 1, y: verticalOffset }}
-            // exit={{ scale: 0.95, opacity: 0, y: verticalOffset }}
-
             transition={{ duration: 0.25, ease: DRAFT_MOTION_EASE }}
             onClick={(event) => event.stopPropagation()}
-            className="pointer-events-auto fixed z-[1000001] relative flex flex-col items-center rounded-[16px] w-full shadow-[0_0_120px_0_var(--adaptive-grey500)] bg-[var(--adaptive-whiteOpacity500)] backdrop-blur-[30px] p-[4px]"
+            className="pointer-events-auto fixed z-[1000001] flex flex-col rounded-[24px] bg-[var(--adaptive-whiteOpacity500)] p-[4px] shadow-[0_0_120px_0_var(--adaptive-grey500)] backdrop-blur-[30px]"
             style={{
                 left,
                 top: centerVertically ? anchorCenterY : top,
@@ -125,73 +120,22 @@ function ReportDraftFormContent({
                 transformOrigin: getMotionOrigin(placement),
             }}
         >
-            <div className="absolute top-[50%] left-[-32px] transform translate-y-[-50%] w-[32px] h-[1px] bg-black" />
-
-            <section className="flex items-center justify-between w-full">
-                <p className="text-[14px] text-[var(--adaptive-grey700)] pl-[8px]">
-                    * {draft.reportId} *{/* {draft.reportId} */}
-                </p>
-                <button
-                    type="button"
-                    onClick={cancelDraft}
-                    className="h-full text-[14px] font-semibold flex flex-col justify-center items-center gap-[4px] rounded-[12px] p-[8px_12px] bg-[var(--adaptive-grey300)] text-white whitespace-nowrap"
-                >
-                    닫기
-                    {/* <ShortcutHint
-                                    binding={REPORT_SHORTCUTS.cancel}
-                                    visible={visibleShortcutKeys}
-                                /> */}
-                </button>
+            <section className="overflow-hidden rounded-[20px] bg-[var(--adaptive-grey100)]">
+                <FeedbackComposer
+                    message={draft.message}
+                    onMessageChange={updateDraftMessage}
+                    authorName={draftAuthorName}
+                    onAuthorNameChange={setDraftAuthorName}
+                    authors={authors}
+                    fields={fields}
+                    fieldValues={draft.fieldValues}
+                    onFieldChange={updateDraftField}
+                    showTags
+                    onSubmit={() => void handleCreateSubmit()}
+                    isSubmitting={isCreating}
+                    autoFocus
+                />
             </section>
-
-            <section className="flex flex-col gap-[8px] rounded-[16px] overflow-hidden bg-[var(--adaptive-grey50)] shadow-[var(--shadow-normal)] w-full">
-                <section className="flex flex-col items-center gap-[12px] w-full">
-                    <FieldEditor
-                        fields={fields}
-                        message={draft.message}
-                        fieldValues={draft.fieldValues}
-                        onMessageChange={updateDraftMessage}
-                        onFieldChange={updateDraftField}
-                        variant="draft-bubble"
-                    />
-                </section>
-
-                <section className="flex justify-end w-full gap-[4px]">
-                    <button
-                        type="button"
-                        onClick={() => void handleCreateSubmit()}
-                        disabled={isCreating}
-                        className="h-full text-[14px] font-semibold flex flex-col justify-center items-center gap-[4px] rounded-[12px] p-[8px_12px] bg-[var(--adaptive-blue400)] text-white whitespace-nowrap shadow-[var(--shadow-normal)]"
-                    >
-                        {isCreating ? "저장 중..." : "완료"}
-                        {/* <ShortcutHint
-                                        binding={REPORT_SHORTCUTS.submit}
-                                        visible={visibleShortcutKeys}
-                                    /> */}
-                    </button>
-                </section>
-            </section>
-
-            {checkboxFields.length > 0 ? (
-                <section className="flex w-full justify-start items-start gap-[4px] p-[12px]">
-                    {checkboxFields.map((field) => (
-                        <button
-                            key={field.key}
-                            className={`${draft.fieldValues[field.key] === true ? "bg-red-500" : ""} text-[var(--adaptive-grey500)] flex items-center gap-[4px] w-full px-[12px]`}
-                            // checked={draft.fieldValues[field.key] === true}
-                            onClick={(event) => updateDraftField(field.key, !draft.fieldValues[field.key])}
-                        >
-                            {/* <input
-                                type="checkbox"
-                                className="h-3.5 w-3.5 rounded border-white/50 bg-white/10 text-white accent-white bg-transparent"
-                                checked={draft.fieldValues[field.key] === true}
-                                onChange={(event) => updateDraftField(field.key, event.target.checked)}
-                            /> */}
-                            <span>{field.label}</span>
-                        </button>
-                    ))}
-                </section>
-            ) : null}
 
             <DraftPopoverConnector placement={placement} />
         </motion.div>

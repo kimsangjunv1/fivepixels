@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { ReportAppearance, ReportEvent, ReportFeedback, ReportField, ReportIdentify, ReportStorageAdapter } from "../types/report.js";
+import type { ReportAppearance, ReportEvent, ReportFeedback, ReportField, ReportAuthor, ReportIdentify, ReportStorageAdapter } from "../types/report.js";
 export type ReportProviderProps = {
     projectId?: string;
     environment?: string;
@@ -8,6 +8,7 @@ export type ReportProviderProps = {
     storage?: "local" | ReportStorageAdapter;
     storageAdapter?: ReportStorageAdapter;
     fields?: ReportField[];
+    authors?: ReportAuthor[];
     shortcut?: string;
     identify?: ReportIdentify;
     onEvent?: (event: ReportEvent) => void | Promise<void>;
@@ -25,5 +26,5 @@ export type ReportProviderProps = {
     visibleShortcutKeys?: boolean;
     children: ReactNode;
 };
-export declare function ReportProvider({ projectId, environment, appVersion, appearance, devOnly, enabled, storage, storageAdapter, fields, shortcut, identify, onEvent, onFeedbackCreate, onFeedbackDelete, onFeedbackReply, onFeedbackUpdate, pathname, showFeedbackList, visibleShortcutKeys, children, }: ReportProviderProps): import("react/jsx-runtime").JSX.Element;
+export declare function ReportProvider({ projectId, environment, appVersion, appearance, devOnly, enabled, storage, storageAdapter, fields, authors, shortcut, identify, onEvent, onFeedbackCreate, onFeedbackDelete, onFeedbackReply, onFeedbackUpdate, pathname, showFeedbackList, visibleShortcutKeys, children, }: ReportProviderProps): import("react/jsx-runtime").JSX.Element;
 //# sourceMappingURL=ReportProvider.d.ts.map

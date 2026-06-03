@@ -3,6 +3,7 @@ export type ReportContextValue = ReturnType<typeof useReportState>;
 declare const ReportContext: import("react").Context<{
     appearance: import("../index.js").ReportAppearance;
     fields: import("../index.js").ReportField[];
+    authors: import("../index.js").ReportAuthor[];
     showFeedbackList: boolean;
     visibleShortcutKeys: boolean;
     searchInputRef: import("react").MutableRefObject<HTMLInputElement | null>;
@@ -42,6 +43,15 @@ declare const ReportContext: import("react").Context<{
     }[];
     replyDraft: string;
     setReplyDraft: import("react").Dispatch<import("react").SetStateAction<string>>;
+    draftAuthorName: string;
+    setDraftAuthorName: import("react").Dispatch<import("react").SetStateAction<string>>;
+    replyAuthorName: string;
+    setReplyAuthorName: import("react").Dispatch<import("react").SetStateAction<string>>;
+    pendingComposer: import("../types/report-ui.js").PendingFeedbackComposer;
+    startDenyReview: () => void;
+    startCheckoutReview: (replyId: string) => void;
+    cancelPendingComposer: () => void;
+    handleConfirmResolution: () => Promise<void>;
     targetStats: {
         found: number;
         group: number;
@@ -74,6 +84,7 @@ declare const ReportContext: import("react").Context<{
 export declare function useReport(): {
     appearance: import("../index.js").ReportAppearance;
     fields: import("../index.js").ReportField[];
+    authors: import("../index.js").ReportAuthor[];
     showFeedbackList: boolean;
     visibleShortcutKeys: boolean;
     searchInputRef: import("react").MutableRefObject<HTMLInputElement | null>;
@@ -113,6 +124,15 @@ export declare function useReport(): {
     }[];
     replyDraft: string;
     setReplyDraft: import("react").Dispatch<import("react").SetStateAction<string>>;
+    draftAuthorName: string;
+    setDraftAuthorName: import("react").Dispatch<import("react").SetStateAction<string>>;
+    replyAuthorName: string;
+    setReplyAuthorName: import("react").Dispatch<import("react").SetStateAction<string>>;
+    pendingComposer: import("../types/report-ui.js").PendingFeedbackComposer;
+    startDenyReview: () => void;
+    startCheckoutReview: (replyId: string) => void;
+    cancelPendingComposer: () => void;
+    handleConfirmResolution: () => Promise<void>;
     targetStats: {
         found: number;
         group: number;

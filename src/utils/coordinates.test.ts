@@ -200,13 +200,13 @@ describe("getDraftPopoverPosition", () => {
 
     it("clamps the bubble inside the viewport when no side fully fits", () => {
         vi.stubGlobal("innerWidth", 320);
-        vi.stubGlobal("innerHeight", 260);
+        vi.stubGlobal("innerHeight", 320);
 
         const position = getDraftPopoverPosition(
             { left: 150, top: 110 },
             {
                 viewportWidth: 320,
-                viewportHeight: 260,
+                viewportHeight: 320,
             },
         );
 
@@ -215,10 +215,10 @@ describe("getDraftPopoverPosition", () => {
 
         if (position.centerVertically && position.anchorCenterY !== undefined) {
             expect(position.anchorCenterY - DRAFT_POPOVER_HEIGHT / 2).toBeGreaterThanOrEqual(DRAFT_POPOVER_MARGIN);
-            expect(position.anchorCenterY + DRAFT_POPOVER_HEIGHT / 2).toBeLessThanOrEqual(260 - DRAFT_POPOVER_MARGIN);
+            expect(position.anchorCenterY + DRAFT_POPOVER_HEIGHT / 2).toBeLessThanOrEqual(320 - DRAFT_POPOVER_MARGIN);
         } else {
             expect(position.top).toBeGreaterThanOrEqual(DRAFT_POPOVER_MARGIN);
-            expect(position.top! + DRAFT_POPOVER_HEIGHT).toBeLessThanOrEqual(260 - DRAFT_POPOVER_MARGIN);
+            expect(position.top! + DRAFT_POPOVER_HEIGHT).toBeLessThanOrEqual(320 - DRAFT_POPOVER_MARGIN);
         }
     });
 

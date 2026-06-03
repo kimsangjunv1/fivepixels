@@ -20,6 +20,15 @@ function normalizeFieldValues(value) {
         return acc;
     }, {});
 }
+function isReplyStatus(value) {
+    return value === "suggested" || value === "found_error" || value === "verified";
+}
+function normalizeReplyStatus(value) {
+    if (isReplyStatus(value)) {
+        return value;
+    }
+    return "suggested";
+}
 function normalizeReplies(value) {
     if (!Array.isArray(value)) {
         return [];
@@ -37,6 +46,7 @@ function normalizeReplies(value) {
                 id: reply.id,
                 message: reply.message,
                 created_at: reply.created_at,
+                status: normalizeReplyStatus(reply.status),
                 author_type: reply.author_type,
                 author_name: reply.author_name ?? null,
             },

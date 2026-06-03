@@ -3,6 +3,7 @@ import type {
     ReportFeedback,
     ReportFieldValues,
     ReportReply,
+    ReportReplyStatus,
     ReportStorageAdapter,
     ReportStatus,
     UpdateReportFeedbackPayload,
@@ -41,6 +42,18 @@ function normalizeFieldValues(value: unknown): ReportFieldValues {
     }, {});
 }
 
+function isReplyStatus(value: unknown): value is ReportReplyStatus {
+    return value === "suggested" || value === "found_error" || value === "verified";
+}
+
+function normalizeReplyStatus(value: unknown): ReportReplyStatus {
+    if (isReplyStatus(value)) {
+        return value;
+    }
+
+    return "suggested";
+}
+
 function normalizeReplies(value: unknown): ReportReply[] {
     if (!Array.isArray(value)) {
         return [];
@@ -62,6 +75,7 @@ function normalizeReplies(value: unknown): ReportReply[] {
                 id: reply.id,
                 message: reply.message,
                 created_at: reply.created_at,
+                status: normalizeReplyStatus(reply.status),
                 author_type: reply.author_type,
                 author_name: reply.author_name ?? null,
             },

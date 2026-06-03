@@ -15,7 +15,7 @@ export declare function getTooltipPosition(anchor: Pick<Marker, "left" | "top">,
 export type DraftPopoverPlacement = "right" | "left" | "bottom" | "top";
 export type DraftPopoverTailCorner = "bottom-left" | "bottom-right" | "top-left" | "top-right";
 export declare const DRAFT_POPOVER_WIDTH = 280;
-export declare const DRAFT_POPOVER_HEIGHT = 228;
+export declare const DRAFT_POPOVER_HEIGHT = 260;
 export declare const DRAFT_POPOVER_GAP = 10;
 export declare const DRAFT_POPOVER_MARGIN = 16;
 /** Horizontal line from bubble edge to marker center. */

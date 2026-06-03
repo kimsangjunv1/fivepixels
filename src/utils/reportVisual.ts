@@ -12,7 +12,11 @@ export function getReplyStatusTone(hasCompletedReply: boolean) {
 }
 
 export function getMarkerColor(report: ReportFeedback) {
-    return hasReply(report) ? "#22c55e" : TARGET_COLOR[report.report_type];
+    if (report.status === "resolved") {
+        return "var(--adaptive-green500)";
+    }
+
+    return TARGET_COLOR.item;
 }
 
 export function getStatusTone(status: ReportStatus) {

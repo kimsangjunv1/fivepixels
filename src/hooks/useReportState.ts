@@ -3,8 +3,18 @@ import { useReportShortcuts } from "./useReportShortcuts.js";
 import { useCreateReportMutation, useDeleteReportMutation, useReportsQuery, useUpdateReportMutation } from "./report.query.js";
 import { useIsMobileViewport } from "./useIsMobileViewport.js";
 import { useResolvedAppearance } from "./useResolvedAppearance.js";
-import type { ReportAppearance, ReportEvent, ReportFeedback, ReportField, ReportIdentify, ReportStorageAdapter } from "../types/report.js";
-import type { DraftReport, EditableDraft, Marker, ReportFilters, ReportMode, TargetSnapshot } from "../types/report-ui.js";
+import type {
+    ReportAppearance,
+    ReportAuthor,
+    ReportEvent,
+    ReportFeedback,
+    ReportField,
+    ReportIdentify,
+    ReportReply,
+    ReportStorageAdapter,
+} from "../types/report.js";
+import type { DraftReport, EditableDraft, Marker, PendingFeedbackComposer, ReportFilters, ReportMode, TargetSnapshot } from "../types/report-ui.js";
+import { createReplyStatusForSubmit } from "../utils/feedbackThread.js";
 import { clampRatio, getMarkerFromReport, resolveTooltipAnchor } from "../utils/coordinates.js";
 
 const MARKER_HOVER_LEAVE_MS = 250;
@@ -16,12 +26,21 @@ import { useCurrentPathname } from "./useCurrentPathname.js";
 import { resolveStorageAdapter } from "../utils/storage.js";
 import { notifyFeedbackCreate, notifyFeedbackDelete, notifyFeedbackReply, notifyFeedbackUpdate, type ReportEventCallbacks } from "../utils/reportCallbacks.js";
 
+function resolveDefaultAuthorName(identify: ReportIdentify | undefined, authors: ReportAuthor[]) {
+    if (identify?.name) {
+        return identify.name;
+    }
+
+    return authors[0]?.name ?? "";
+}
+
 export type ReportStateConfig = {
     projectId: string;
     environment?: string;
     appVersion?: string;
     appearance: ReportAppearance;
     fields: ReportField[];
+    authors?: ReportAuthor[];
     shortcut?: string;
     identify?: ReportIdentify;
     onEvent?: (event: ReportEvent) => void | Promise<void>;
@@ -42,6 +61,7 @@ export function useReportState({
     appVersion,
     appearance,
     fields,
+    authors = [],
     shortcut: _shortcut,
     identify,
     onEvent,
@@ -94,6 +114,9 @@ export function useReportState({
     const [hoveredMarkerId, setHoveredMarkerId] = useState<string | null>(null);
     const [activeReplyReportId, setActiveReplyReportId] = useState<string | null>(null);
     const [replyDraft, setReplyDraft] = useState("");
+    const [draftAuthorName, setDraftAuthorName] = useState(() => resolveDefaultAuthorName(identify, authors));
+    const [replyAuthorName, setReplyAuthorName] = useState(() => resolveDefaultAuthorName(identify, authors));
+    const [pendingComposer, setPendingComposer] = useState<PendingFeedbackComposer>(null);
     const [selectedReportId, setSelectedReportId] = useState<string | null>(null);
     const [editingReportId, setEditingReportId] = useState<string | null>(null);
     const [editableDraft, setEditableDraft] = useState<EditableDraft | null>(null);
@@ -197,6 +220,9 @@ export function useReportState({
         setHoveredMarkerId(null);
         setActiveReplyReportId(null);
         setReplyDraft("");
+        setPendingComposer(null);
+        setDraftAuthorName(resolveDefaultAuthorName(identify, authors));
+        setReplyAuthorName(resolveDefaultAuthorName(identify, authors));
         setEditingReportId(null);
         setEditableDraft(null);
         if (mode !== "idle") {
@@ -394,11 +420,39 @@ export function useReportState({
         selectReport(report.id);
         setActiveReplyReportId(report.id);
         setReplyDraft("");
+        setPendingComposer(null);
+        setReplyAuthorName(resolveDefaultAuthorName(identify, authors));
         clearHoverLeaveTimeout();
     };
 
     const closeReplyComposer = () => {
         setActiveReplyReportId(null);
+        setReplyDraft("");
+        setPendingComposer(null);
+    };
+
+    const startDenyReview = () => {
+        if (!activeReplyReport) {
+            return;
+        }
+
+        const latest = activeReplyReport.replies[activeReplyReport.replies.length - 1];
+
+        if (!latest) {
+            return;
+        }
+
+        setPendingComposer({ type: "deny", targetReplyId: latest.id });
+        setReplyDraft("");
+    };
+
+    const startCheckoutReview = (replyId: string) => {
+        setPendingComposer({ type: "checkout", targetReplyId: replyId });
+        setReplyDraft("");
+    };
+
+    const cancelPendingComposer = () => {
+        setPendingComposer(null);
         setReplyDraft("");
     };
 
@@ -534,10 +588,10 @@ export function useReportState({
                 design_height: window.innerHeight,
                 ...(environment ? { environment } : {}),
                 ...(appVersion ? { app_version: appVersion } : {}),
-                ...(identify
+                ...(identify || draftAuthorName.trim()
                     ? {
-                          author_id: identify.id,
-                          author_name: identify.name,
+                          ...(identify ? { author_id: identify.id } : {}),
+                          author_name: draftAuthorName.trim() || identify?.name,
                       }
                     : {}),
             });
@@ -603,6 +657,17 @@ export function useReportState({
         }
     };
 
+    const appendReply = async (report: ReportFeedback, reply: ReportReply) => {
+        await updateFeedback(report.id, {
+            replies: [...report.replies, reply],
+        });
+
+        await notifyFeedbackReply(eventCallbacks, {
+            feedbackId: report.id,
+            message: reply.message,
+        });
+    };
+
     const handleReplySubmit = async () => {
         if (!activeReplyReport) {
             return;
@@ -613,30 +678,59 @@ export function useReportState({
             return;
         }
 
+        if (!replyAuthorName.trim()) {
+            setErrorMessage("작성자를 입력해주세요.");
+            return;
+        }
+
         const replyMessage = replyDraft.trim();
+        const pendingType = pendingComposer?.type ?? null;
+        const reply: ReportReply = {
+            id: createReplyId(),
+            message: replyMessage,
+            created_at: new Date().toISOString(),
+            status: createReplyStatusForSubmit(pendingType),
+            author_type: "manager",
+            author_name: replyAuthorName.trim(),
+        };
 
         try {
-            await updateFeedback(activeReplyReport.id, {
-                replies: [
-                    ...activeReplyReport.replies,
-                    {
-                        id: createReplyId(),
-                        message: replyMessage,
-                        created_at: new Date().toISOString(),
-                        author_type: "manager",
-                    },
-                ],
-            });
-
-            await notifyFeedbackReply(eventCallbacks, {
-                feedbackId: activeReplyReport.id,
-                message: replyMessage,
-            });
-
+            await appendReply(activeReplyReport, reply);
             setErrorMessage("");
-            closeReplyComposer();
+            setReplyDraft("");
+            setPendingComposer(null);
         } catch (nextError) {
             setErrorMessage(nextError instanceof Error ? nextError.message : "답변 저장에 실패했어요.");
+        }
+    };
+
+    const handleConfirmResolution = async () => {
+        if (!activeReplyReport) {
+            return;
+        }
+
+        const reply: ReportReply = {
+            id: createReplyId(),
+            message: "이슈가 해결되었습니다.",
+            created_at: new Date().toISOString(),
+            status: "verified",
+            author_type: "user",
+            author_name: activeReplyReport.author_name ?? (replyAuthorName.trim() || null),
+        };
+
+        try {
+            const updatedFeedback = await updateFeedback(activeReplyReport.id, {
+                status: "resolved",
+                replies: [...activeReplyReport.replies, reply],
+            });
+
+            await notifyFeedbackUpdate(eventCallbacks, updatedFeedback);
+
+            setErrorMessage("");
+            setPendingComposer(null);
+            setReplyDraft("");
+        } catch (nextError) {
+            setErrorMessage(nextError instanceof Error ? nextError.message : "확인 처리에 실패했어요.");
         }
     };
 
@@ -683,6 +777,7 @@ export function useReportState({
     return {
         appearance,
         fields,
+        authors,
         showFeedbackList,
         visibleShortcutKeys,
         searchInputRef,
@@ -719,6 +814,15 @@ export function useReportState({
         tooltipFieldTags,
         replyDraft,
         setReplyDraft,
+        draftAuthorName,
+        setDraftAuthorName,
+        replyAuthorName,
+        setReplyAuthorName,
+        pendingComposer,
+        startDenyReview,
+        startCheckoutReview,
+        cancelPendingComposer,
+        handleConfirmResolution,
         targetStats,
         statusText,
         toggleReportMode,

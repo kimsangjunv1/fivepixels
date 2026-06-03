@@ -61,9 +61,9 @@ export function resolveTooltipAnchor(markers: Marker[], reportId: string | null)
 }
 
 const TOOLTIP_PREVIEW_WIDTH = 260;
-const TOOLTIP_EXPANDED_WIDTH = 280;
+const TOOLTIP_EXPANDED_WIDTH = 320;
 const TOOLTIP_PREVIEW_OFFSET = 104;
-const TOOLTIP_EXPANDED_OFFSET = 232;
+const TOOLTIP_EXPANDED_OFFSET = 280;
 const TOOLTIP_MARGIN = 16;
 
 export function getTooltipPosition(anchor: Pick<Marker, "left" | "top">, expanded: boolean) {
@@ -80,7 +80,7 @@ export type DraftPopoverPlacement = "right" | "left" | "bottom" | "top";
 export type DraftPopoverTailCorner = "bottom-left" | "bottom-right" | "top-left" | "top-right";
 
 export const DRAFT_POPOVER_WIDTH = 280;
-export const DRAFT_POPOVER_HEIGHT = 228;
+export const DRAFT_POPOVER_HEIGHT = 260;
 export const DRAFT_POPOVER_GAP = 10;
 export const DRAFT_POPOVER_MARGIN = 16;
 /** Horizontal line from bubble edge to marker center. */
