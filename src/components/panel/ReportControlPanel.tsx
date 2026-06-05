@@ -321,7 +321,7 @@ export function ReportControlPanel() {
                 onDragLeave={handleDragLeave}
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}
-                className={`pointer-events-auto fixed z-[1000000] overflow-hidden rounded-[24px] shadow-[0_0_120px_0_var(--adaptive-blackOpacity500)] flex ${isRecording ? "min-h-[40px] p-[4px]" : "max-h-[80vh] min-h-[40px] max-w-[375px]"}`}
+                className={`pointer-events-auto fixed z-[1000000] overflow-hidden rounded-[24px] shadow-[0_0_120px_0_var(--adaptive-blackOpacity500)] flex ${isRecording ? "min-h-[40px] p-[4px]" : "max-h-[80vh] min-h-[40px w-full max-w-[375px]"}`}
                 style={{ ...panelStyle, fontSize: "14px" }}
             >
                 {isRecording ? (
@@ -358,7 +358,7 @@ export function ReportControlPanel() {
                                         />
                                     ) : null}
 
-                                    <div className="flex flex-col gap-[8px] p-[16px]">
+                                    <div className="flex flex-col gap-[8px] p-[16px] flex-1">
                                         <section className="flex items-center justify-between gap-[8px]">
                                             <section className="flex min-w-0 items-center gap-[6px]">
                                                 <LogoIcon className="w-[18px] shrink-0" />
