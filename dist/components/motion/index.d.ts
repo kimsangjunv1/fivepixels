@@ -21,6 +21,7 @@ type MotionConfig = {
     animate?: MotionStyle;
     exit?: MotionStyle;
     transition?: MotionTransition;
+    layoutTransition?: MotionTransition;
     layout?: boolean;
     layoutId?: string;
 };

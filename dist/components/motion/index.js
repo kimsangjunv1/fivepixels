@@ -3,6 +3,93 @@ import { Children, cloneElement, createContext, forwardRef, isValidElement, useC
 const PresenceContext = createContext(null);
 const layoutRegistry = new Map();
 const motionComponentCache = new Map();
+function cloneRect(rect) {
+    return new DOMRect(rect.x, rect.y, rect.width, rect.height);
+}
+function rectsDiffer(a, b, threshold = 0.5) {
+    return (Math.abs(a.left - b.left) >= threshold ||
+        Math.abs(a.top - b.top) >= threshold ||
+        Math.abs(a.width - b.width) >= threshold ||
+        Math.abs(a.height - b.height) >= threshold);
+}
+function readLayoutRectFromStyle(style) {
+    if (!style) {
+        return null;
+    }
+    const left = Number.parseFloat(String(style.left ?? ""));
+    const top = Number.parseFloat(String(style.top ?? ""));
+    const width = Number.parseFloat(String(style.width ?? ""));
+    const height = Number.parseFloat(String(style.height ?? ""));
+    if (![left, top, width, height].every(Number.isFinite)) {
+        return null;
+    }
+    return new DOMRect(left, top, width, height);
+}
+function readTargetLayoutRect(node) {
+    const left = Number.parseFloat(node.style.left);
+    const top = Number.parseFloat(node.style.top);
+    const width = Number.parseFloat(node.style.width);
+    const height = Number.parseFloat(node.style.height);
+    if ([left, top, width, height].every(Number.isFinite)) {
+        return new DOMRect(left, top, width, height);
+    }
+    return cloneRect(node.getBoundingClientRect());
+}
+function applyLayoutRectStyle(node, rect) {
+    node.style.left = `${rect.left}px`;
+    node.style.top = `${rect.top}px`;
+    node.style.width = `${rect.width}px`;
+    node.style.height = `${rect.height}px`;
+}
+function rectToPositionStyle(rect) {
+    return {
+        left: rect.left,
+        top: rect.top,
+        width: rect.width,
+        height: rect.height,
+    };
+}
+function readVisualLayoutRect(node) {
+    return cloneRect(node.getBoundingClientRect());
+}
+function layoutTransformFromRects(fromRect, toRect) {
+    return {
+        deltaX: fromRect.left - toRect.left,
+        deltaY: fromRect.top - toRect.top,
+        scaleX: fromRect.width / Math.max(toRect.width, 1),
+        scaleY: fromRect.height / Math.max(toRect.height, 1),
+    };
+}
+function applyLayoutTransform(node, fromRect, toRect) {
+    const { deltaX, deltaY, scaleX, scaleY } = layoutTransformFromRects(fromRect, toRect);
+    node.style.transformOrigin = "top left";
+    node.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(${scaleX}, ${scaleY})`;
+}
+function clearLayoutTransform(node) {
+    node.style.transformOrigin = "";
+    if (node.style.transform) {
+        node.style.transform = "";
+    }
+}
+function pushLayoutSnapshot(layoutId, rect) {
+    const stack = layoutRegistry.get(layoutId) ?? [];
+    stack.push(cloneRect(rect));
+    layoutRegistry.set(layoutId, stack);
+}
+function popLayoutSnapshot(layoutId) {
+    const stack = layoutRegistry.get(layoutId);
+    if (!stack?.length) {
+        return undefined;
+    }
+    const rect = stack.pop();
+    if (!stack.length) {
+        layoutRegistry.delete(layoutId);
+    }
+    else {
+        layoutRegistry.set(layoutId, stack);
+    }
+    return rect;
+}
 function trackedListsEqual(current, next) {
     return current.length === next.length && current.every((child, index) => child === next[index]);
 }
@@ -294,22 +381,27 @@ function useMergedRef(forwardedRef, localRef) {
         }
     };
 }
-function animateLayout(node, fromRect, transition) {
+function animateLayout(node, fromRect, transition, layoutAnimationRef, onComplete) {
     if (typeof node.animate !== "function") {
-        return;
+        return null;
     }
-    const toRect = node.getBoundingClientRect();
-    const deltaX = fromRect.left - toRect.left;
-    const deltaY = fromRect.top - toRect.top;
-    const scaleX = fromRect.width / Math.max(toRect.width, 1);
-    const scaleY = fromRect.height / Math.max(toRect.height, 1);
+    const toRect = readTargetLayoutRect(node);
+    const { deltaX, deltaY, scaleX, scaleY } = layoutTransformFromRects(fromRect, toRect);
     if (Math.abs(deltaX) < 0.5 && Math.abs(deltaY) < 0.5 && Math.abs(scaleX - 1) < 0.01 && Math.abs(scaleY - 1) < 0.01) {
-        return;
+        clearLayoutTransform(node);
+        onComplete?.(toRect);
+        return null;
     }
-    node.animate([
+    if (layoutAnimationRef.current) {
+        layoutAnimationRef.current.cancel();
+        layoutAnimationRef.current = null;
+    }
+    applyLayoutTransform(node, fromRect, toRect);
+    const startTransform = node.style.transform;
+    const animation = node.animate([
         {
             transformOrigin: "top left",
-            transform: `translate(${deltaX}px, ${deltaY}px) scale(${scaleX}, ${scaleY})`,
+            transform: startTransform,
         },
         {
             transformOrigin: "top left",
@@ -320,6 +412,21 @@ function animateLayout(node, fromRect, transition) {
         easing: resolveTimingFunction(transition),
         fill: "both",
     });
+    layoutAnimationRef.current = animation;
+    animation.onfinish = () => {
+        if (layoutAnimationRef.current !== animation) {
+            return;
+        }
+        clearLayoutTransform(node);
+        layoutAnimationRef.current = null;
+        onComplete?.(toRect);
+    };
+    animation.oncancel = () => {
+        if (layoutAnimationRef.current === animation) {
+            layoutAnimationRef.current = null;
+        }
+    };
+    return animation;
 }
 function PresenceChild({ children, isPresent, onExitComplete }) {
     const value = useMemo(() => ({ isPresent, onExitComplete }), [isPresent, onExitComplete]);
@@ -350,8 +457,8 @@ export function AnimatedPresence({ children }) {
     }, [presentKeySignature]);
     const presentKeys = new Set(validChildren.flatMap((child) => (child.key != null ? [child.key] : [])));
     const trackedChildren = [
-        ...validChildren.map((element) => ({ element, isPresent: true })),
         ...exitingChildren.filter((child) => child.element.key != null && !presentKeys.has(child.element.key)),
+        ...validChildren.map((element) => ({ element, isPresent: true })),
     ];
     return trackedChildren.map((child) => (_jsx(PresenceChild, { isPresent: child.isPresent, onExitComplete: () => {
             setExitingChildren((current) => {
@@ -361,42 +468,77 @@ export function AnimatedPresence({ children }) {
         }, children: cloneElement(child.element) }, child.element.key)));
 }
 function createMotionComponent(tagName) {
-    return forwardRef(function MotionComponent({ animate, as, children, exit, initial, layout, layoutId, style, transition, ...rest }, forwardedRef) {
+    return forwardRef(function MotionComponent({ animate, as, children, exit, initial, layout, layoutId, layoutTransition, style, transition, ...rest }, forwardedRef) {
         const Component = (as ?? tagName);
         const presence = useContext(PresenceContext);
         const localRef = useRef(null);
         const lastAnimatedStyleRef = useRef(animate ?? {});
         const previousRectRef = useRef(null);
+        const committedLayoutRectRef = useRef(null);
         const animationRef = useRef(null);
+        const layoutAnimationRef = useRef(null);
         const hasMountedRef = useRef(false);
+        const wasPresentForLayoutRef = useRef(true);
+        const [isLayoutAnimating, setIsLayoutAnimating] = useState(false);
+        const [layoutMeasureGeneration, setLayoutMeasureGeneration] = useState(0);
         const mergedRef = useMergedRef(forwardedRef, localRef);
         const animateKey = stringifyStyle(animate);
+        const layoutEnabled = Boolean(layout || layoutId);
+        const resolvedLayoutTransition = layoutTransition ?? transition;
+        const incomingLayoutRect = readLayoutRectFromStyle(style);
+        const layoutStyleKey = incomingLayoutRect
+            ? `${incomingLayoutRect.left}|${incomingLayoutRect.top}|${incomingLayoutRect.width}|${incomingLayoutRect.height}`
+            : "";
+        const finishLayout = (targetRect) => {
+            previousRectRef.current = cloneRect(targetRect);
+            committedLayoutRectRef.current = cloneRect(targetRect);
+            setIsLayoutAnimating(false);
+        };
+        const startLayoutAnimation = (node, fromRect, targetRect) => {
+            applyLayoutRectStyle(node, targetRect);
+            committedLayoutRectRef.current = cloneRect(targetRect);
+            setIsLayoutAnimating(true);
+            const animation = animateLayout(node, fromRect, resolvedLayoutTransition, layoutAnimationRef, finishLayout);
+            if (!animation) {
+                finishLayout(targetRect);
+            }
+        };
+        useLayoutEffect(() => {
+            return () => {
+                if (layoutId && localRef.current) {
+                    pushLayoutSnapshot(layoutId, localRef.current.getBoundingClientRect());
+                }
+            };
+        }, [layoutId]);
         useEffect(() => () => {
             if (animationRef.current) {
                 animationRef.current.cancel();
                 animationRef.current = null;
             }
-            if (layoutId && localRef.current) {
-                layoutRegistry.set(layoutId, localRef.current.getBoundingClientRect());
+            if (layoutAnimationRef.current) {
+                layoutAnimationRef.current.cancel();
+                layoutAnimationRef.current = null;
             }
-        }, [layoutId]);
-        useLayoutEffect(() => {
-            const node = localRef.current;
-            if (!node) {
+        }, []);
+        useEffect(() => {
+            if (!layout || !isBrowser()) {
                 return;
             }
-            if (layoutId) {
-                const previousSharedRect = layoutRegistry.get(layoutId);
-                if (previousSharedRect) {
-                    animateLayout(node, previousSharedRect, transition);
-                    layoutRegistry.delete(layoutId);
+            const node = localRef.current;
+            if (!node || typeof ResizeObserver === "undefined") {
+                return;
+            }
+            const observer = new ResizeObserver(() => {
+                if (layoutAnimationRef.current) {
+                    return;
                 }
-            }
-            else if (layout && previousRectRef.current) {
-                animateLayout(node, previousRectRef.current, transition);
-            }
-            previousRectRef.current = node.getBoundingClientRect();
-        }, [layout, layoutId, animateKey, transition]);
+                setLayoutMeasureGeneration((current) => current + 1);
+            });
+            observer.observe(node);
+            return () => {
+                observer.disconnect();
+            };
+        }, [layout, layoutId]);
         useLayoutEffect(() => {
             if (presence?.isPresent === false || !animate) {
                 return;
@@ -446,6 +588,74 @@ function createMotionComponent(tagName) {
                 }
             };
         }, [animate, animateKey, initial, presence?.isPresent, transition]);
+        useLayoutEffect(() => {
+            void layoutMeasureGeneration;
+            if (!layoutEnabled) {
+                return;
+            }
+            const node = localRef.current;
+            if (!node) {
+                return;
+            }
+            const isExiting = presence?.isPresent === false;
+            if (layoutId && isExiting && wasPresentForLayoutRef.current) {
+                pushLayoutSnapshot(layoutId, node.getBoundingClientRect());
+                wasPresentForLayoutRef.current = false;
+            }
+            if (!isExiting) {
+                wasPresentForLayoutRef.current = true;
+            }
+            if (isExiting) {
+                return;
+            }
+            if (!incomingLayoutRect) {
+                return;
+            }
+            const targetRect = incomingLayoutRect;
+            let fromRect = null;
+            if (layoutId) {
+                fromRect = popLayoutSnapshot(layoutId) ?? null;
+            }
+            if (!committedLayoutRectRef.current) {
+                if (fromRect) {
+                    startLayoutAnimation(node, fromRect, targetRect);
+                    return;
+                }
+                applyLayoutRectStyle(node, targetRect);
+                finishLayout(targetRect);
+                return;
+            }
+            if (layoutAnimationRef.current && committedLayoutRectRef.current && !rectsDiffer(committedLayoutRectRef.current, targetRect)) {
+                return;
+            }
+            if (layoutAnimationRef.current) {
+                const visualRect = readVisualLayoutRect(node);
+                layoutAnimationRef.current.cancel();
+                layoutAnimationRef.current = null;
+                if (!rectsDiffer(visualRect, targetRect)) {
+                    applyLayoutRectStyle(node, targetRect);
+                    clearLayoutTransform(node);
+                    finishLayout(targetRect);
+                    return;
+                }
+                startLayoutAnimation(node, visualRect, targetRect);
+                return;
+            }
+            if (previousRectRef.current && !rectsDiffer(previousRectRef.current, targetRect)) {
+                applyLayoutRectStyle(node, targetRect);
+                finishLayout(targetRect);
+                return;
+            }
+            if (!fromRect && layout && previousRectRef.current && rectsDiffer(previousRectRef.current, targetRect)) {
+                fromRect = previousRectRef.current;
+            }
+            if (!fromRect) {
+                applyLayoutRectStyle(node, targetRect);
+                finishLayout(targetRect);
+                return;
+            }
+            startLayoutAnimation(node, fromRect, targetRect);
+        }, [layoutEnabled, layoutId, layoutMeasureGeneration, layoutStyleKey, presence?.isPresent, resolvedLayoutTransition, style]);
         useEffect(() => {
             if (presence?.isPresent !== false) {
                 return;
@@ -493,9 +703,11 @@ function createMotionComponent(tagName) {
             };
         }, [exit, presence, transition]);
         const resolvedAnimatedStyle = animate ? resolveMotionStyle(animate) : {};
+        const layoutPositionStyle = isLayoutAnimating && committedLayoutRectRef.current ? rectToPositionStyle(committedLayoutRectRef.current) : null;
         const mergedStyle = {
             ...style,
             ...resolvedAnimatedStyle,
+            ...(layoutPositionStyle ?? {}),
         };
         return (_jsx(Component, { ref: mergedRef, style: mergedStyle, ...rest, children: children }));
     });

@@ -1,12 +1,13 @@
 import { type MouseEvent } from "react";
-import type { ReportAppearance, ReportEvent, ReportFeedback, ReportField, ReportIdentify, ReportStorageAdapter } from "../types/report.js";
-import type { DraftReport, EditableDraft, Marker, ReportFilters, ReportMode, TargetSnapshot } from "../types/report-ui.js";
+import type { ReportAppearance, ReportAuthor, ReportEvent, ReportFeedback, ReportField, ReportIdentify, ReportStorageAdapter } from "../types/report.js";
+import type { DraftReport, EditableDraft, Marker, PendingFeedbackComposer, ReportFilters, ReportMode, TargetSnapshot } from "../types/report-ui.js";
 export type ReportStateConfig = {
     projectId: string;
     environment?: string;
     appVersion?: string;
     appearance: ReportAppearance;
     fields: ReportField[];
+    authors?: ReportAuthor[];
     shortcut?: string;
     identify?: ReportIdentify;
     onEvent?: (event: ReportEvent) => void | Promise<void>;
@@ -23,9 +24,10 @@ export type ReportStateConfig = {
     storageAdapter?: ReportStorageAdapter;
     visibleShortcutKeys?: boolean;
 };
-export declare function useReportState({ projectId, environment, appVersion, appearance, fields, shortcut: _shortcut, identify, onEvent, onFeedbackCreate, onFeedbackDelete, onFeedbackReply, onFeedbackUpdate, pathname, showFeedbackList, storage, storageAdapter, visibleShortcutKeys, }: ReportStateConfig): {
+export declare function useReportState({ projectId, environment, appVersion, appearance, fields, authors, shortcut: _shortcut, identify, onEvent, onFeedbackCreate, onFeedbackDelete, onFeedbackReply, onFeedbackUpdate, pathname, showFeedbackList, storage, storageAdapter, visibleShortcutKeys, }: ReportStateConfig): {
     appearance: ReportAppearance;
     fields: ReportField[];
+    authors: ReportAuthor[];
     showFeedbackList: boolean;
     visibleShortcutKeys: boolean;
     searchInputRef: import("react").MutableRefObject<HTMLInputElement | null>;
@@ -65,7 +67,25 @@ export declare function useReportState({ projectId, environment, appVersion, app
     }[];
     replyDraft: string;
     setReplyDraft: import("react").Dispatch<import("react").SetStateAction<string>>;
-    helperText: string;
+    draftAuthorName: string;
+    setDraftAuthorName: import("react").Dispatch<import("react").SetStateAction<string>>;
+    replyAuthorName: string;
+    setReplyAuthorName: import("react").Dispatch<import("react").SetStateAction<string>>;
+    pendingComposer: PendingFeedbackComposer;
+    startDenyReview: () => void;
+    startCheckoutReview: (replyId: string) => void;
+    cancelPendingComposer: () => void;
+    confirmAuthorName: string;
+    setConfirmAuthorName: import("react").Dispatch<import("react").SetStateAction<string>>;
+    showConfirmAuthorSelect: boolean;
+    toggleConfirmAuthorSelect: () => void;
+    handleConfirmResolution: () => Promise<void>;
+    targetStats: {
+        found: number;
+        group: number;
+        item: number;
+    };
+    statusText: string;
     toggleReportMode: () => void;
     toggleTargetPreview: () => void;
     toggleViewMode: () => void;

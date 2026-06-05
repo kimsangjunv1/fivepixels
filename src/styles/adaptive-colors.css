@@ -1,3 +1,18 @@
+[data-stitchable-mount] {
+    --shadow-popup:
+        0 1px 1px 0.5px #2929290a, 0 3px 3px -1.5px #29292905, 0 6px 6px -3px #2929290a, 0 12px 12px -6px #2929290a, 0 24px 24px -12px #2929290a, 0 48px 48px -24px #5e5e6a94, 0 0 0 1px #2929290a,
+        inset 0 -1px 1px -0.5px #3333330f;
+
+    --shadow-normal:
+        0 1px 1px 0.5px #2929290a, 0 3px 3px -1.5px #29292905, 0 6px 6px -3px #2929290a, 0 12px 12px -6px #2929290a, 0 24px 24px -12px #2929290a, 0 48px 48px -24px #2929290a, 0 0 0 1px #2929290a,
+        inset 0 -2px 1px -0.5px #3333330f;
+    --shadow-hard:
+        inset 0 0 0 4px var(--color-gray-500), 0 19px 8px #731f0803, 0 11px 6px #731f080a, 0 5px 5px #731f0812, 0 1px 3px #731f0814, 0 0 0 2px var(--color-gray-200), inset 0 0.5px 0.5px #ffffff1f;
+
+    --shadow-border-normal: 0 24px 24px -12px #2929290a, 0 48px 48px -24px #2929290a, inset 0 0 0 1px var(--adaptive-grey300);
+    --coding-font: Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace;
+}
+
 [data-stitchable-mount][data-stitchable-theme="light"] {
     --adaptive-background: #ffffff;
     --adaptive-layeredBackground: #ffffff;
@@ -25,6 +40,16 @@
     --adaptive-greyOpacity700: rgba(3, 18, 40, 0.7);
     --adaptive-greyOpacity800: rgba(0, 12, 30, 0.8);
     --adaptive-greyOpacity900: rgba(2, 9, 19, 0.91);
+    --adaptive-whiteOpacity50: rgba(255, 255, 255, 0.02);
+    --adaptive-whiteOpacity100: rgba(255, 255, 255, 0.05);
+    --adaptive-whiteOpacity200: rgba(255, 255, 255, 0.1);
+    --adaptive-whiteOpacity300: rgba(255, 255, 255, 0.18);
+    --adaptive-whiteOpacity400: rgba(255, 255, 255, 0.31);
+    --adaptive-whiteOpacity500: rgba(255, 255, 255, 0.46);
+    --adaptive-whiteOpacity600: rgba(255, 255, 255, 0.58);
+    --adaptive-whiteOpacity700: rgba(255, 255, 255, 0.7);
+    --adaptive-whiteOpacity800: rgba(255, 255, 255, 0.8);
+    --adaptive-whiteOpacity900: rgba(255, 255, 255, 0.91);
     --adaptive-blue50: #e8f3ff;
     --adaptive-blue100: #c9e2ff;
     --adaptive-blue200: #90c2ff;
@@ -150,6 +175,16 @@
     --adaptive-greyOpacity700: rgba(253, 253, 255, 0.75);
     --adaptive-greyOpacity800: rgba(253, 253, 254, 0.89);
     --adaptive-greyOpacity900: #ffffff;
+    --adaptive-whiteOpacity50: rgba(0, 0, 0, 0.98);
+    --adaptive-whiteOpacity100: rgba(0, 0, 0, 0.5);
+    --adaptive-whiteOpacity200: rgba(0, 0, 0, 0.9);
+    --adaptive-whiteOpacity300: rgba(0, 0, 0, 0.82);
+    --adaptive-whiteOpacity400: rgba(0, 0, 0, 0.69);
+    --adaptive-whiteOpacity500: rgba(0, 0, 0, 0.54);
+    --adaptive-whiteOpacity600: rgba(0, 0, 0, 0.42);
+    --adaptive-whiteOpacity700: rgba(0, 0, 0, 0.3);
+    --adaptive-whiteOpacity800: rgba(0, 0, 0, 0.2);
+    --adaptive-whiteOpacity900: rgba(0, 0, 0, 0.09);
     --adaptive-blue50: #202c4d;
     --adaptive-blue100: #23386a;
     --adaptive-blue200: #25478c;

@@ -60,7 +60,7 @@ document.body
 
 | 목적 | 파일 |
 | --- | --- |
-| 공통 버튼·입력·패널 className | `src/components/report/classes.ts` |
+| 피드백 작성·타임라인 UI | `src/components/panel/feedback/*.tsx` |
 | 컴포넌트별 레이아웃/색상 | `src/components/**/*.tsx`의 `className` |
 | Tailwind theme / dark variant | `src/styles/tailwind.css` |
 | Shadow Root에 주입되는 CSS 번들 | `src/styles/reportStylesheet.ts` (빌드 생성) |
@@ -94,7 +94,8 @@ export default function App() {
 
 - `environment`는 `local`, `dev`, `stage`, `production` 등 환경별 피드백을 분리할 때 사용합니다.
 - `appVersion`은 피드백 생성 시점의 서비스 버전을 기록합니다.
-- `identify={{ id, name }}`로 작성자 정보를 선택적으로 첨부할 수 있습니다.
+- `identify={{ id, name }}`로 최초 피드백 작성자 정보를 선택적으로 첨부할 수 있습니다.
+- `authors={[{ id, name }, ...]}`로 답변·검수 시 선택할 작성자 목록을 미리 설정할 수 있습니다. 목록이 없으면 작성자를 직접 입력합니다.
 
 ### Advanced
 
@@ -106,15 +107,21 @@ export default function App() {
     storage="local"
     showFeedbackList={false}
     visibleShortcutKeys
+    identify={{ id: "user-1", name: "김아영 주임" }}
+    authors={[
+        { id: "1", name: "김아영 주임" },
+        { id: "2", name: "최민호 전임" },
+    ]}
     fields={[
         { key: "message", type: "textarea", label: "메시지", required: true },
-        { key: "isBug", type: "checkbox", label: "버그" },
-        { key: "isImportant", type: "checkbox", label: "중요" },
+        { key: "isBug", type: "checkbox", label: "bug" },
+        { key: "isImportant", type: "checkbox", label: "IMPORTANT" },
     ]}
 />
 ```
 
 - `message` field는 기본 메시지와 연결되므로 예약 key로 취급합니다.
+- `checkbox` field는 피드백 작성 UI에서 **태그 pill**로 표시되며, 선택 시 강조 스타일이 적용됩니다.
 - `pathname`을 넘기지 않으면 현재 `window.location.pathname` 기준으로 저장됩니다.
 - `showFeedbackList={false}`를 주면 view 모드에서도 우측 목록 패널 없이 마커만 표시할 수 있습니다.
 - `visibleShortcutKeys={true}`를 주면 버튼 옆에 키보드 단축키 힌트를 표시합니다.
@@ -301,13 +308,35 @@ export const reportAdapter: ReportStorageAdapter = {
 };
 ```
 
+## Feedback Workflow (view 모드)
+
+view 모드에서 화면에 표시된 **마커(빨간 점)** 를 기준으로 아래 흐름이 동작합니다.
+
+1. **작성** — 요소 선택 후 메시지, 작성자(`authors` 또는 직접 입력), `checkbox` 태그를 선택해 피드백을 등록합니다.
+2. **hover** — 답변이 없으면 `CURRENTLY WAIT`, 있으면 **최신 답변의 상태**와 원문(2줄), 작성자, 태그를 미리 봅니다.
+3. **클릭** — 원본 이슈와 답변 입력 UI(태그 없음)가 열립니다.
+4. **첫 답변** — `suggested` 상태의 타임라인 항목이 추가되고, 최신 항목에 `denied` / `confirm` / `select`가 표시됩니다.
+5. **denied** — 즉시 반영되지 않습니다. `denied` 버튼이 활성화되고 위에 답변 UI가 열리며, 전송 시 `found_error` 항목이 추가됩니다.
+6. **checkout** — **가장 최근 `found_error` 항목**에만 표시됩니다. 활성화 후 답변을 내면 `suggested` 항목이 추가되며, 이전 `found_error`에는 checkout 버튼이 더 이상 나타나지 않습니다.
+7. **confirm** — 기본 처리자는 **최초 피드백 작성자**입니다. `select`로 다른 처리자를 고른 뒤 `confirm`하면 `verified` 답변이 추가되고 피드백 `status`가 `resolved`가 됩니다.
+
+답변별 타임라인 상태(`ReportReplyStatus`):
+
+| 값 | UI 라벨 | 의미 |
+| --- | --- | --- |
+| `suggested` | SUGGESTED | 수정·제안 답변 |
+| `found_error` | FOUND ERROR | 검수 거절(재확인 요청) 답변 |
+| `verified` | VERIFIED | 검수 완료(이슈 해결) |
+
+피드백 본문 `status`는 `open | resolved | archived`이며, `confirm` 시 `resolved`로 바뀝니다.
+
 ## Data Contract
 
 - `ReportField` 기본 지원 타입은 `textarea`, `checkbox` 입니다.
 - `field_values`는 `Record<string, string | boolean>` 형태만 저장합니다.
-- `replies`는 기본적으로 `id`, `message`, `created_at`를 가지며, `author_type`, `author_name`를 선택적으로 확장할 수 있습니다.
-- 상태 흐름 기본값은 `open -> resolved -> archived` 입니다.
-- cloud adapter는 `list/create/update`에서 local adapter와 동일한 정규화 결과를 반환해야 합니다.
+- `replies` 항목은 `id`, `message`, `created_at`, **`status`** (`suggested` \| `found_error` \| `verified`)를 가지며, `author_type`, `author_name`를 선택적으로 포함할 수 있습니다.
+- 피드백 `status` 흐름 기본값은 `open -> resolved -> archived` 입니다.
+- cloud adapter는 `list/create/update`에서 local adapter와 동일한 정규화 결과를 반환해야 합니다. 저장 시 누락된 `reply.status`는 `suggested`로 정규화됩니다.
 
 ## Migration
 
@@ -317,7 +346,9 @@ export const reportAdapter: ReportStorageAdapter = {
 
 ## Reply / Status Policy
 
-- 기본 `Report` 컴포넌트는 reply를 읽기 전용으로만 보여주고, 입력 UI는 관리자 화면이나 custom UI에서 확장합니다.
+- 기본 `Report` 컴포넌트는 view 모드 마커 UI에서 **답변 작성·검수(denied / confirm / checkout)** 를 지원합니다.
 - reply 저장용 별도 adapter 메서드는 두지 않고, `update(id, { replies, status? })` 계약을 우선 사용합니다.
+- `denied` / `checkout`은 UI 단계이며, 전송 후 타임라인에 반영되는 상태는 각각 `found_error`, `suggested`입니다.
+- `confirm` 시 `verified` reply 추가와 함께 피드백 `status: "resolved"`를 함께 보냅니다.
 - `archived`는 종료 상태이며 기본 UI에서는 읽기 전용으로 취급합니다.
 

@@ -1,17 +1,44 @@
-import { jsxs as _jsxs, jsx as _jsx } from "react/jsx-runtime";
-import { REPORT_SHORTCUTS } from "../../constants/reportShortcuts.js";
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { AnimatePresence, motion } from "motion/react";
 import { useReport } from "../../providers/reportContext.js";
-import { ShortcutHint } from "../ShortcutHint.js";
-import { FieldEditor } from "./FieldEditor.js";
-export function ReportDraftForm() {
-    const { draft, fields, isMobileViewport, isCreating, visibleShortcutKeys, updateDraftMessage, updateDraftField, cancelDraft, handleCreateSubmit } = useReport();
-    if (!draft) {
+import { DRAFT_POPOVER_CONNECTOR_WIDTH, getDraftMarkerPosition, getDraftPopoverPosition } from "../../utils/coordinates.js";
+import { FeedbackComposer } from "./feedback/FeedbackComposer.js";
+const DRAFT_MOTION_EASE = [0.22, 1, 0.36, 1];
+function getMotionOrigin(placement) {
+    switch (placement) {
+        case "right":
+            return "0% 50%";
+        case "left":
+            return "100% 50%";
+        case "bottom":
+            return "50% 0%";
+        case "top":
+            return "50% 100%";
+    }
+}
+function DraftPopoverConnector({ placement }) {
+    if (placement !== "right" && placement !== "left") {
         return null;
     }
-    return (_jsxs("div", { onClick: (event) => event.stopPropagation(), className: "pointer-events-auto fixed z-30 space-y-2 rounded-lg border border-slate-300 bg-white p-3 text-xs shadow-xl ring-1 ring-slate-900/5 dark:border-slate-700 dark:bg-slate-900", style: {
-            left: isMobileViewport ? 16 : Math.max(16, Math.min(draft.clientX + 16, window.innerWidth - 336)),
-            top: isMobileViewport ? Math.max(80, window.innerHeight - 360) : Math.max(16, Math.min(draft.clientY + 16, window.innerHeight - 320)),
-            width: isMobileViewport ? "calc(100vw - 32px)" : 320,
-        }, children: [_jsxs("p", { className: "text-sm font-semibold text-slate-900 dark:text-slate-100", children: [draft.reportType, " \u00B7 ", draft.reportId] }), _jsx("div", { className: "flex flex-col gap-2", children: _jsx(FieldEditor, { fields: fields, message: draft.message, fieldValues: draft.fieldValues, onMessageChange: updateDraftMessage, onFieldChange: updateDraftField }) }), _jsxs("div", { className: "mt-1 flex items-center justify-end gap-2", children: [_jsx("button", { type: "button", onClick: cancelDraft, className: "inline-flex items-center justify-center rounded-md border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800", children: _jsxs("span", { className: "inline-flex items-center gap-1", children: ["\uCDE8\uC18C", _jsx(ShortcutHint, { binding: REPORT_SHORTCUTS.cancel, visible: visibleShortcutKeys })] }) }), _jsx("button", { type: "button", onClick: () => void handleCreateSubmit(), disabled: isCreating, className: "inline-flex items-center justify-center rounded-md bg-sky-600 px-3 py-1 text-xs font-medium text-white shadow-sm hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-sky-500 dark:hover:bg-sky-600", children: _jsxs("span", { className: "inline-flex items-center gap-1", children: [isCreating ? "저장 중..." : "저장", _jsx(ShortcutHint, { binding: REPORT_SHORTCUTS.submit, visible: visibleShortcutKeys })] }) })] })] }));
+    const baseClass = "pointer-events-none absolute top-1/2 h-[2px] -translate-y-1/2 bg-[var(--adaptive-grey500)]";
+    if (placement === "right") {
+        return (_jsx("div", { "aria-hidden": true, className: `${baseClass} left-0 -translate-x-full`, style: { width: DRAFT_POPOVER_CONNECTOR_WIDTH } }));
+    }
+    return (_jsx("div", { "aria-hidden": true, className: `${baseClass} right-0 translate-x-full`, style: { width: DRAFT_POPOVER_CONNECTOR_WIDTH } }));
+}
+export function ReportDraftForm() {
+    const { draft, fields, authors, isCreating, selectedTarget, updateDraftMessage, updateDraftField, cancelDraft, handleCreateSubmit, draftAuthorName, setDraftAuthorName } = useReport();
+    return (_jsx(AnimatePresence, { children: draft ? (_jsx(ReportDraftFormContent, { draft: draft, fields: fields, authors: authors, isCreating: isCreating, selectedTarget: selectedTarget, updateDraftMessage: updateDraftMessage, updateDraftField: updateDraftField, cancelDraft: cancelDraft, handleCreateSubmit: handleCreateSubmit, draftAuthorName: draftAuthorName, setDraftAuthorName: setDraftAuthorName })) : null }));
+}
+function ReportDraftFormContent({ draft, fields, authors, isCreating, selectedTarget, updateDraftMessage, updateDraftField, handleCreateSubmit, draftAuthorName, setDraftAuthorName, }) {
+    const anchor = getDraftMarkerPosition(draft, selectedTarget);
+    const { left, top, anchorCenterY, width, placement, centerVertically } = getDraftPopoverPosition(anchor);
+    const verticalOffset = centerVertically ? "-50%" : 0;
+    return (_jsxs(motion.div, { initial: { y: verticalOffset }, animate: { y: verticalOffset }, exit: { y: verticalOffset }, transition: { duration: 0.25, ease: DRAFT_MOTION_EASE }, onClick: (event) => event.stopPropagation(), className: "pointer-events-auto fixed z-[1000001] flex flex-col rounded-[24px] bg-[var(--adaptive-whiteOpacity500)] p-[4px] shadow-[0_0_120px_0_var(--adaptive-grey500)] backdrop-blur-[30px]", style: {
+            left,
+            top: centerVertically ? anchorCenterY : top,
+            width,
+            transformOrigin: getMotionOrigin(placement),
+        }, children: [_jsx("section", { className: "overflow-hidden rounded-[20px] bg-[var(--adaptive-grey100)]", children: _jsx(FeedbackComposer, { message: draft.message, onMessageChange: updateDraftMessage, authorName: draftAuthorName, onAuthorNameChange: setDraftAuthorName, authors: authors, fields: fields, fieldValues: draft.fieldValues, onFieldChange: updateDraftField, showTags: true, onSubmit: () => void handleCreateSubmit(), isSubmitting: isCreating, autoFocus: true }) }), _jsx(DraftPopoverConnector, { placement: placement })] }, "report-draft-form"));
 }
 //# sourceMappingURL=ReportDraftForm.js.map

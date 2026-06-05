@@ -18,20 +18,37 @@ body {
     min-height: 100vh;
 }
 
-button {
+button,
+input,
+textarea {
     font: inherit;
 }
 
-.example-shell {
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.app-page {
     min-height: 100vh;
-    padding: 32px;
+}
+
+.app-shell {
+    min-height: 100vh;
+    padding: 24px 32px 32px;
+    display: grid;
+    gap: 20px;
+}
+
+.app-body {
     display: grid;
     grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
     gap: 24px;
+    align-items: start;
 }
 
-.example-page {
-    min-height: 100vh;
+.app-outlet {
+    min-width: 0;
 }
 
 .main-layout {
@@ -42,9 +59,74 @@ button {
     width: 100%;
 }
 
+.site-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 22px;
+    border-radius: 20px;
+    border: 1px solid rgba(31, 41, 55, 0.08);
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+}
+
+.site-header__brand {
+    display: grid;
+    gap: 4px;
+}
+
+.site-header__logo {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+.site-header__tagline {
+    font-size: 12px;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.site-nav {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.site-nav__link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 0 16px;
+    border-radius: 999px;
+    background: #fff7e6;
+    color: #92400e;
+    font-weight: 600;
+    transition:
+        transform 0.18s ease,
+        background-color 0.18s ease;
+}
+
+.site-nav__link:hover {
+    transform: translateY(-1px);
+}
+
+.site-nav__link--active {
+    background: #111827;
+    color: #fff;
+}
+
 .example-panel,
 .hero-card,
-.feature-card {
+.feature-card,
+.bottom-cta,
+.plan-card,
+.comparison-section,
+.inquiry-form,
+.contact-card,
+.faq-item {
     border: 1px solid rgba(31, 41, 55, 0.08);
     background: rgba(255, 255, 255, 0.88);
     box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
@@ -53,15 +135,14 @@ button {
 
 .example-panel {
     position: sticky;
-    top: 32px;
+    top: 24px;
     align-self: start;
     padding: 24px;
     border-radius: 24px;
 }
 
 .example-eyebrow,
-.feature-label,
-.hero-badge {
+.section-badge {
     display: inline-flex;
     align-items: center;
     padding: 6px 10px;
@@ -76,8 +157,8 @@ button {
 
 .example-title {
     margin: 16px 0 12px;
-    font-size: clamp(28px, 4vw, 38px);
-    line-height: 1.1;
+    font-size: clamp(24px, 3vw, 32px);
+    line-height: 1.15;
 }
 
 .example-steps,
@@ -97,9 +178,27 @@ button {
     border-top: 1px solid rgba(31, 41, 55, 0.08);
 }
 
-.example-content {
+.route-content {
     display: grid;
     gap: 24px;
+}
+
+.section-header h2,
+.hero-card h2 {
+    margin: 14px 0 10px;
+    font-size: clamp(28px, 4vw, 42px);
+    line-height: 1.08;
+}
+
+.section-header p,
+.hero-card p,
+.feature-card p,
+.plan-description,
+.contact-card p,
+.bottom-cta p {
+    margin: 0;
+    color: #4b5563;
+    line-height: 1.7;
 }
 
 .hero-card {
@@ -110,21 +209,11 @@ button {
         rgba(255, 255, 255, 0.92);
 }
 
-.hero-card h2 {
-    margin: 18px 0 12px;
-    font-size: clamp(30px, 5vw, 52px);
-    line-height: 1.05;
-}
-
-.hero-card p,
-.feature-card p {
-    margin: 0;
-    color: #4b5563;
-    line-height: 1.7;
-}
-
 .hero-actions,
-.feature-grid {
+.feature-grid,
+.plan-grid,
+.contact-info__grid,
+.form-actions {
     display: grid;
     gap: 16px;
 }
@@ -138,14 +227,201 @@ button {
     grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-.feature-card {
+.feature-card,
+.plan-card,
+.contact-card {
     padding: 24px;
     border-radius: 24px;
 }
 
-.feature-card h3 {
+.feature-card h3,
+.plan-card h3,
+.contact-card h3,
+.bottom-cta h3 {
     margin: 16px 0 10px;
     font-size: 24px;
+}
+
+.bottom-cta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 28px 32px;
+    border-radius: 28px;
+}
+
+.bottom-cta__actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.pricing-section,
+.comparison-section,
+.inquiry-form,
+.contact-info,
+.faq-list {
+    display: grid;
+    gap: 20px;
+}
+
+.plan-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.plan-card--featured {
+    border-color: rgba(245, 158, 11, 0.35);
+    background:
+        radial-gradient(circle at top, rgba(245, 158, 11, 0.12), transparent 45%),
+        rgba(255, 255, 255, 0.95);
+}
+
+.plan-price {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin: 0;
+}
+
+.plan-price strong {
+    font-size: 32px;
+}
+
+.plan-price span {
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.plan-highlights {
+    margin: 16px 0 20px;
+    padding-left: 18px;
+    color: #374151;
+    line-height: 1.7;
+}
+
+.comparison-section {
+    padding: 24px;
+    border-radius: 24px;
+}
+
+.comparison-table {
+    display: grid;
+    gap: 8px;
+}
+
+.comparison-row {
+    display: grid;
+    grid-template-columns: 1.2fr repeat(3, 1fr);
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: 16px;
+    background: rgba(255, 247, 230, 0.55);
+}
+
+.comparison-row--head {
+    background: rgba(17, 24, 39, 0.06);
+    font-weight: 700;
+}
+
+.comparison-footer {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.inquiry-form,
+.contact-info,
+.faq-list {
+    padding: 24px;
+    border-radius: 24px;
+}
+
+.inquiry-form__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.form-field {
+    display: grid;
+    gap: 8px;
+}
+
+.form-field span,
+.form-field legend {
+    font-weight: 600;
+    color: #374151;
+}
+
+.form-field input,
+.form-field textarea {
+    width: 100%;
+    min-height: 48px;
+    padding: 12px 14px;
+    border: 1px solid rgba(31, 41, 55, 0.12);
+    border-radius: 14px;
+    background: #fff;
+}
+
+.form-field textarea {
+    min-height: 140px;
+    resize: vertical;
+}
+
+.form-field--full {
+    grid-column: 1 / -1;
+}
+
+.form-field fieldset {
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
+.topic-options {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.topic-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: #fff7e6;
+}
+
+.contact-info__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.contact-card__value {
+    font-size: 18px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.faq-list__items {
+    display: grid;
+    gap: 12px;
+}
+
+.faq-item {
+    padding: 16px 18px;
+    border-radius: 18px;
+}
+
+.faq-item summary {
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.faq-item p {
+    margin: 12px 0 0;
+    color: #4b5563;
+    line-height: 1.6;
 }
 
 .primary-button,
@@ -155,6 +431,7 @@ button {
     justify-content: center;
     align-items: center;
     min-height: 48px;
+    padding: 0 20px;
     border-radius: 999px;
     border: none;
     cursor: pointer;
@@ -184,13 +461,22 @@ button {
 
 .text-button {
     margin-top: 18px;
-    width: 100%;
+}
+
+@media (max-width: 1080px) {
+    .plan-grid,
+    .contact-info__grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 @media (max-width: 960px) {
-    .example-shell {
+    .app-shell {
+        padding: 16px;
+    }
+
+    .app-body {
         grid-template-columns: 1fr;
-        padding: 20px;
     }
 
     .example-panel {
@@ -198,7 +484,35 @@ button {
     }
 
     .hero-actions,
-    .feature-grid {
+    .feature-grid,
+    .inquiry-form__grid,
+    .topic-options {
         grid-template-columns: 1fr;
     }
+
+    .bottom-cta {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .comparison-row {
+        grid-template-columns: 1fr;
+    }
+
+    .site-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+.naver-page {
+    min-height: 100vh;
+    overflow-y: auto;
+    background: #fff;
+}
+
+.naver-page__image {
+    display: block;
+    width: 100%;
+    height: auto;
 }

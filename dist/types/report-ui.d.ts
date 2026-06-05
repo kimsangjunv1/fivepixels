@@ -37,4 +37,8 @@ export type EditableDraft = {
     status: ReportStatus;
     fieldValues: ReportFieldValues;
 };
+export type PendingFeedbackComposer = {
+    type: "deny" | "checkout";
+    targetReplyId: string;
+} | null;
 //# sourceMappingURL=report-ui.d.ts.map
