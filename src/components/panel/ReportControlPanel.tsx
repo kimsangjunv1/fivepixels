@@ -7,8 +7,7 @@ import { ReportFeedbackList } from "./ReportFeedbackList.js";
 import { LogoIcon } from "./../icons/LogoIcon.js";
 import { motion } from "../motion/index.js";
 
-const RECORDING_STATUS_SHADOW =
-    "drop-shadow(0 1px 2px rgba(0,0,0,0.95)) drop-shadow(0 2px 6px rgba(0,0,0,0.9)) drop-shadow(0 4px 16px rgba(0,0,0,0.85)) drop-shadow(0 0 24px rgba(0,0,0,0.75))";
+const RECORDING_STATUS_SHADOW = "drop-shadow(0 1px 2px rgba(0,0,0,0.95)) drop-shadow(0 2px 6px rgba(0,0,0,0.9)) drop-shadow(0 4px 16px rgba(0,0,0,0.85)) drop-shadow(0 0 24px rgba(0,0,0,0.75))";
 
 function PanelCollapseTab({ collapsed, anchorSide, onClick }: { collapsed: boolean; anchorSide: "left" | "right"; onClick: () => void }) {
     const hideIcon = anchorSide === "right" ? <ChevronRightIcon className="h-3 w-3 text-slate-500 dark:text-slate-300" /> : <ChevronLeftIcon className="h-3 w-3 text-slate-500 dark:text-slate-300" />;
@@ -73,7 +72,7 @@ export function ReportControlPanel() {
                 layoutId="asdwsww"
                 className={
                     isRecording
-                        ? "pointer-events-auto fixed z-[1000000] flex min-h-[40px] rounded-[16px] p-[4px] bg-[var(--adaptive-grey50)] shadow-[0_0_120px_0_var(--adaptive-greyOpacity500)]"
+                        ? "pointer-events-auto fixed z-[1000000] flex min-h-[40px] rounded-[24px] p-[4px] bg-[var(--adaptive-grey50)] shadow-[0_0_120px_0_var(--adaptive-greyOpacity500)]"
                         : "pointer-events-auto fixed z-[1000000] flex max-h-[80vh] min-h-[40px] rounded-[16px] p-[4px] bg-[var(--adaptive-grey50)] gap-[4px] max-w-[375px] shadow-[0_0_120px_0_var(--adaptive-greyOpacity500)]"
                 }
                 style={panelStyle}
