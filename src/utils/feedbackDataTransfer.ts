@@ -69,6 +69,20 @@ function isAbortError(error: unknown) {
     return error instanceof DOMException && error.name === "AbortError";
 }
 
+const SHADOW_HOST_ID = "stitchable-root";
+const SHADOW_MOUNT_ATTR = "data-stitchable-mount";
+
+function getShadowDomMount(): HTMLElement | null {
+    const host = document.getElementById(SHADOW_HOST_ID);
+    const mount = host?.shadowRoot?.querySelector(`[${SHADOW_MOUNT_ATTR}]`);
+
+    return mount instanceof HTMLElement ? mount : null;
+}
+
+function getFileTransferParent(): HTMLElement {
+    return getShadowDomMount() ?? document.body;
+}
+
 function downloadFeedbackJsonWithAnchor(filename: string, json: string) {
     const blob = new Blob([json], { type: "application/json" });
     const url = URL.createObjectURL(blob);
@@ -77,7 +91,7 @@ function downloadFeedbackJsonWithAnchor(filename: string, json: string) {
     anchor.href = url;
     anchor.download = filename;
     anchor.rel = "noopener";
-    document.body.appendChild(anchor);
+    getFileTransferParent().appendChild(anchor);
     anchor.click();
     anchor.remove();
     URL.revokeObjectURL(url);
@@ -106,7 +120,7 @@ function pickFeedbackJsonFileWithBodyInput(): Promise<File | null> {
             { once: true },
         );
 
-        document.body.appendChild(input);
+        getFileTransferParent().appendChild(input);
         input.click();
     });
 }

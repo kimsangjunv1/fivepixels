@@ -8,7 +8,8 @@ export function PanelMoreMenu({ open, disabled = false, onToggle, onClose, onExp
             return;
         }
         const handlePointerDown = (event) => {
-            if (!rootRef.current?.contains(event.target)) {
+            const path = event.composedPath();
+            if (!rootRef.current || !path.includes(rootRef.current)) {
                 onClose();
             }
         };

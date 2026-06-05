@@ -19,7 +19,9 @@ export function PanelMoreMenu({ open, disabled = false, onToggle, onClose, onExp
         }
 
         const handlePointerDown = (event: PointerEvent) => {
-            if (!rootRef.current?.contains(event.target as Node)) {
+            const path = event.composedPath();
+
+            if (!rootRef.current || !path.includes(rootRef.current)) {
                 onClose();
             }
         };
