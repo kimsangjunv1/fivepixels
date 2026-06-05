@@ -37,7 +37,7 @@ function isJsonFile(file) {
     return file.type === "application/json" || file.name.toLowerCase().endsWith(".json");
 }
 export function ReportControlPanel() {
-    const { mode, targetStats, statusText, errorMessage, environment, projectId, showFeedbackList, showTargetPreview, isMobileViewport, panelTab, canTransferFeedback, toggleReportMode, toggleTargetPreview, toggleIssueMode, openPanelTab, setErrorMessage, refetch, } = useReport();
+    const { mode, targetStats, statusText, errorMessage, environment, projectId, appVersion, showFeedbackList, showTargetPreview, isMobileViewport, panelTab, canTransferFeedback, toggleReportMode, toggleTargetPreview, toggleIssueMode, openPanelTab, setErrorMessage, refetch, } = useReport();
     const [panelCollapsed, setPanelCollapsed] = useState(false);
     const [moreMenuOpen, setMoreMenuOpen] = useState(false);
     const [isDragOver, setIsDragOver] = useState(false);
@@ -50,7 +50,7 @@ export function ReportControlPanel() {
         measureKey: `${panelCollapsed}-${isRecording}-${panelTab ?? "none"}-${isIssueMode}-${pendingImport ? "import" : "none"}`,
     });
     const anchorSide = panelAnchorSide(placementCorner);
-    const transferScope = { projectId, environment };
+    const transferScope = { projectId, environment, appVersion };
     const handlePanelTabClick = (tab) => {
         if (tab === "feedback-list" && isIssueMode) {
             toggleIssueMode();
@@ -82,7 +82,7 @@ export function ReportControlPanel() {
         }
         setMoreMenuOpen(false);
         const items = readAllFeedback(transferScope);
-        void downloadFeedbackJson(createFeedbackBackupFilename(projectId, environment), items).then((result) => {
+        void downloadFeedbackJson(createFeedbackBackupFilename(projectId, environment, appVersion), items).then((result) => {
             if (result === "failed") {
                 setErrorMessage("JSON export에 실패했어요. 브라우저 다운로드 권한을 확인해주세요.");
                 return;
@@ -130,7 +130,7 @@ export function ReportControlPanel() {
         }
         const currentItems = readAllFeedback(transferScope);
         const pending = pendingImport;
-        void downloadFeedbackJson(createFeedbackBackupFilename(projectId, environment), currentItems).then((result) => {
+        void downloadFeedbackJson(createFeedbackBackupFilename(projectId, environment, appVersion), currentItems).then((result) => {
             if (result === "cancelled" || result === "failed") {
                 if (result === "failed") {
                     setErrorMessage("백업 export에 실패해서 import를 중단했어요.");

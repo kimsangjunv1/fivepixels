@@ -89,8 +89,8 @@ function readAll(storageKey) {
 function writeAll(storageKey, items) {
     writeAllReportsToStorage(storageKey, items);
 }
-export function createLocalStorageReportAdapter({ projectId, environment }) {
-    const storageKey = getReportsStorageKey(projectId, environment);
+export function createLocalStorageReportAdapter({ projectId, environment, appVersion }) {
+    const storageKey = getReportsStorageKey(projectId, environment, appVersion);
     return {
         async list({ pathname }) {
             return readAll(storageKey)

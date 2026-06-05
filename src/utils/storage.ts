@@ -4,6 +4,7 @@ import type { ReportStorageAdapter } from "../types/report.js";
 export type ResolveStorageAdapterOptions = {
     projectId: string;
     environment?: string;
+    appVersion?: string;
     storage?: "local" | ReportStorageAdapter;
     storageAdapter?: ReportStorageAdapter;
 };
@@ -11,6 +12,7 @@ export type ResolveStorageAdapterOptions = {
 export function resolveStorageAdapter({
     projectId,
     environment,
+    appVersion,
     storage = "local",
     storageAdapter,
 }: ResolveStorageAdapterOptions): ReportStorageAdapter {
@@ -22,5 +24,5 @@ export function resolveStorageAdapter({
         return storage;
     }
 
-    return createLocalStorageReportAdapter({ projectId, environment });
+    return createLocalStorageReportAdapter({ projectId, environment, appVersion });
 }

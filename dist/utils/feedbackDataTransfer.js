@@ -7,11 +7,11 @@ const JSON_FILE_TYPES = [
         accept: { "application/json": [".json"] },
     },
 ];
-export function getFeedbackStorageKey({ projectId, environment }) {
-    return getReportsStorageKey(projectId, environment);
+export function getFeedbackStorageKey({ projectId, environment, appVersion }) {
+    return getReportsStorageKey(projectId, environment, appVersion);
 }
-export function readAllFeedback({ projectId, environment }) {
-    return readAllReportsFromStorage(getFeedbackStorageKey({ projectId, environment }));
+export function readAllFeedback({ projectId, environment, appVersion }) {
+    return readAllReportsFromStorage(getFeedbackStorageKey({ projectId, environment, appVersion }));
 }
 export function writeAllFeedback(scope, items) {
     writeAllReportsToStorage(getFeedbackStorageKey(scope), items);
@@ -26,10 +26,11 @@ export function parseFeedbackImportJson(raw) {
     }
     return validateFeedbackImportArray(parsed);
 }
-export function createFeedbackBackupFilename(projectId, environment) {
+export function createFeedbackBackupFilename(projectId, environment, appVersion) {
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
     const envSuffix = environment ? `-${environment}` : "";
-    return `stitchable-feedback-backup-${projectId}${envSuffix}-${timestamp}.json`;
+    const versionSuffix = appVersion ? `-${appVersion}` : "";
+    return `stitchable-feedback-backup-${projectId}${envSuffix}${versionSuffix}-${timestamp}.json`;
 }
 function isAbortError(error) {
     return error instanceof DOMException && error.name === "AbortError";

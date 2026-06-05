@@ -41,9 +41,8 @@ export function ReportRouteDetails() {
                     const IS_NOT_LAST = mappedIdx + 1 !== statusRows.length;
 
                     return (
-                        <Fragment>
+                        <Fragment key={row.status}>
                             <section
-                                key={row.status}
                                 className="flex items-center gap-x-[8px] py-[8px]"
                             >
                                 <div className="flex-1 flex items-center gap-[6px]">
@@ -70,9 +69,8 @@ export function ReportRouteDetails() {
                         const IS_NOT_LAST = mappedIdx + 1 !== fieldCounts.length;
 
                         return (
-                            <Fragment>
+                            <Fragment key={field.key}>
                                 <section
-                                    key={field.key}
                                     className="flex-1 flex flex-col items-center gap-[4px] text-center py-[0.4rem]"
                                 >
                                     <ChevronDownIcon className={`h-4 w-4 transition-transform`} />

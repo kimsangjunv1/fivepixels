@@ -6,6 +6,7 @@ import { validateFeedbackImportArray } from "./validateFeedbackImport.js";
 export type FeedbackTransferScope = {
     projectId: string;
     environment?: string;
+    appVersion?: string;
 };
 
 export type FeedbackDownloadResult = "saved" | "downloaded" | "cancelled" | "failed";
@@ -34,12 +35,12 @@ const JSON_FILE_TYPES = [
     },
 ];
 
-export function getFeedbackStorageKey({ projectId, environment }: FeedbackTransferScope) {
-    return getReportsStorageKey(projectId, environment);
+export function getFeedbackStorageKey({ projectId, environment, appVersion }: FeedbackTransferScope) {
+    return getReportsStorageKey(projectId, environment, appVersion);
 }
 
-export function readAllFeedback({ projectId, environment }: FeedbackTransferScope) {
-    return readAllReportsFromStorage(getFeedbackStorageKey({ projectId, environment }));
+export function readAllFeedback({ projectId, environment, appVersion }: FeedbackTransferScope) {
+    return readAllReportsFromStorage(getFeedbackStorageKey({ projectId, environment, appVersion }));
 }
 
 export function writeAllFeedback(scope: FeedbackTransferScope, items: ReportFeedback[]) {
@@ -58,11 +59,12 @@ export function parseFeedbackImportJson(raw: string): ReportFeedback[] {
     return validateFeedbackImportArray(parsed);
 }
 
-export function createFeedbackBackupFilename(projectId: string, environment?: string) {
+export function createFeedbackBackupFilename(projectId: string, environment?: string, appVersion?: string) {
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
     const envSuffix = environment ? `-${environment}` : "";
+    const versionSuffix = appVersion ? `-${appVersion}` : "";
 
-    return `stitchable-feedback-backup-${projectId}${envSuffix}-${timestamp}.json`;
+    return `stitchable-feedback-backup-${projectId}${envSuffix}${versionSuffix}-${timestamp}.json`;
 }
 
 function isAbortError(error: unknown) {

@@ -86,7 +86,10 @@ export function useReportState({
 
     const resolvedAppearance = useResolvedAppearance(appearance);
     const isMobileViewport = useIsMobileViewport();
-    const storageAdapterInstance = useMemo(() => resolveStorageAdapter({ projectId, environment, storage, storageAdapter }), [environment, projectId, storage, storageAdapter]);
+    const storageAdapterInstance = useMemo(
+        () => resolveStorageAdapter({ projectId, environment, appVersion, storage, storageAdapter }),
+        [appVersion, environment, projectId, storage, storageAdapter],
+    );
     const canTransferFeedback = !storageAdapter && storage === "local";
     const currentPathname = useCurrentPathname(pathname);
     const eventCallbacks = useMemo<ReportEventCallbacks>(

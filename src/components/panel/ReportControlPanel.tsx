@@ -9,7 +9,7 @@ import { ReportRouteDetails } from "./ReportRouteDetails.js";
 import { ReportImportConfirmDialog } from "./ReportImportConfirmDialog.js";
 import { PanelMoreMenu } from "./PanelMoreMenu.js";
 import { LogoIcon } from "./../icons/LogoIcon.js";
-import { motion } from "../motion/index.js";
+import { AnimatedPresence, motion } from "../motion/index.js";
 import { formatStatCount } from "../../utils/formatStatCount.js";
 import { panelNumericClassName } from "../../utils/panelTypography.js";
 import type { ReportPanelTab } from "../../types/report-ui.js";
@@ -85,6 +85,7 @@ export function ReportControlPanel() {
         errorMessage,
         environment,
         projectId,
+        appVersion,
         showFeedbackList,
         showTargetPreview,
         isMobileViewport,
@@ -109,7 +110,7 @@ export function ReportControlPanel() {
         measureKey: `${panelCollapsed}-${isRecording}-${panelTab ?? "none"}-${isIssueMode}-${pendingImport ? "import" : "none"}`,
     });
     const anchorSide = panelAnchorSide(placementCorner);
-    const transferScope = { projectId, environment };
+    const transferScope = { projectId, environment, appVersion };
 
     const handlePanelTabClick = (tab: ReportPanelTab) => {
         if (tab === "feedback-list" && isIssueMode) {
@@ -154,7 +155,7 @@ export function ReportControlPanel() {
         setMoreMenuOpen(false);
         const items = readAllFeedback(transferScope);
 
-        void downloadFeedbackJson(createFeedbackBackupFilename(projectId, environment), items).then((result) => {
+        void downloadFeedbackJson(createFeedbackBackupFilename(projectId, environment, appVersion), items).then((result) => {
             if (result === "failed") {
                 setErrorMessage("JSON export에 실패했어요. 브라우저 다운로드 권한을 확인해주세요.");
                 return;
@@ -218,7 +219,7 @@ export function ReportControlPanel() {
         const currentItems = readAllFeedback(transferScope);
         const pending = pendingImport;
 
-        void downloadFeedbackJson(createFeedbackBackupFilename(projectId, environment), currentItems).then((result) => {
+        void downloadFeedbackJson(createFeedbackBackupFilename(projectId, environment, appVersion), currentItems).then((result) => {
             if (result === "cancelled" || result === "failed") {
                 if (result === "failed") {
                     setErrorMessage("백업 export에 실패해서 import를 중단했어요.");
@@ -317,6 +318,7 @@ export function ReportControlPanel() {
                 ref={panelRef}
                 layout
                 layoutId="asdwsww"
+                transition={{ duration: 0.25, ease: "cubic-bezier(0.22, 1, 0.36, 1)" }}
                 onDragEnter={handleDragEnter}
                 onDragLeave={handleDragLeave}
                 onDragOver={handleDragOver}
@@ -358,7 +360,7 @@ export function ReportControlPanel() {
                                         />
                                     ) : null}
 
-                                    <div className="flex flex-col gap-[8px] p-[16px] flex-1">
+                                    <div className="flex flex-col gap-[8px] p-[12px] flex-1">
                                         <section className="flex items-center justify-between gap-[8px]">
                                             <section className="flex min-w-0 items-center gap-[6px]">
                                                 <LogoIcon className="w-[18px] shrink-0" />

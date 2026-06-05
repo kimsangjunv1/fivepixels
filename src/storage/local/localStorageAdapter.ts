@@ -14,6 +14,7 @@ import { getReportsStorageKey } from "../../constants/storageKeys.js";
 export type LocalStorageReportAdapterOptions = {
     projectId: string;
     environment?: string;
+    appVersion?: string;
 };
 
 function createId() {
@@ -127,8 +128,8 @@ function writeAll(storageKey: string, items: ReportFeedback[]) {
     writeAllReportsToStorage(storageKey, items);
 }
 
-export function createLocalStorageReportAdapter({ projectId, environment }: LocalStorageReportAdapterOptions): ReportStorageAdapter {
-    const storageKey = getReportsStorageKey(projectId, environment);
+export function createLocalStorageReportAdapter({ projectId, environment, appVersion }: LocalStorageReportAdapterOptions): ReportStorageAdapter {
+    const storageKey = getReportsStorageKey(projectId, environment, appVersion);
 
     return {
         async list({ pathname }) {

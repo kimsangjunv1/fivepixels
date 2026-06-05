@@ -56,6 +56,25 @@ describe("createLocalStorageReportAdapter", () => {
         expect(await otherEnvironmentAdapter.list({ pathname: "/a" })).toHaveLength(0);
     });
 
+    it("isolates records by appVersion", async () => {
+        const adapter = createLocalStorageReportAdapter({
+            projectId: PROJECT_ID,
+            environment: ENVIRONMENT,
+            appVersion: "1.0.0",
+        });
+
+        await adapter.create(createReportPayload({ pathname: PATHNAME, message: "v1" }));
+
+        const otherVersionAdapter = createLocalStorageReportAdapter({
+            projectId: PROJECT_ID,
+            environment: ENVIRONMENT,
+            appVersion: "1.0.1",
+        });
+
+        expect(await adapter.list({ pathname: PATHNAME })).toHaveLength(1);
+        expect(await otherVersionAdapter.list({ pathname: PATHNAME })).toHaveLength(0);
+    });
+
     it("normalizes invalid stored field_values and replies", async () => {
         const adapter = createLocalStorageReportAdapter({ projectId: PROJECT_ID });
         const created = await adapter.create(createReportPayload());
