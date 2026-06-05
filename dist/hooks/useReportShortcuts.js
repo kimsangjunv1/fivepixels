@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { REPORT_SHORTCUTS } from "../constants/reportShortcuts.js";
 import { isEditableTarget, matchesShortcut } from "../utils/shortcuts.js";
 export function useReportShortcuts(handlers) {
-    const { mode, draft, editingReportId, panelTab, showTargetPreview, toggleReportMode, toggleTargetPreview, toggleIssueMode, cancelDraft, handleCreateSubmit, stopEditing, handleUpdateSubmit, focusSearchInput, selectAdjacentReport, } = handlers;
+    const { mode, draft, editingReportId, panelTab, showTargetPreview, activeReplyReportId, pendingComposer, toggleReportMode, toggleTargetPreview, toggleIssueMode, cancelDraft, cancelPendingComposer, closeReplyComposer, handleCreateSubmit, stopEditing, handleUpdateSubmit, focusSearchInput, selectAdjacentReport, } = handlers;
     useEffect(() => {
         const handleKeyDown = (event) => {
             const inEditable = isEditableTarget(event.target);
@@ -34,6 +34,16 @@ export function useReportShortcuts(handlers) {
                 if (mode === "report") {
                     event.preventDefault();
                     toggleReportMode();
+                    return;
+                }
+                if (pendingComposer) {
+                    event.preventDefault();
+                    cancelPendingComposer();
+                    return;
+                }
+                if (activeReplyReportId) {
+                    event.preventDefault();
+                    closeReplyComposer();
                     return;
                 }
                 if (mode === "view") {
@@ -89,10 +99,14 @@ export function useReportShortcuts(handlers) {
         editingReportId,
         panelTab,
         showTargetPreview,
+        activeReplyReportId,
+        pendingComposer,
         toggleReportMode,
         toggleTargetPreview,
         toggleIssueMode,
         cancelDraft,
+        cancelPendingComposer,
+        closeReplyComposer,
         handleCreateSubmit,
         stopEditing,
         handleUpdateSubmit,

@@ -1,5 +1,5 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { TARGET_COLOR, TARGET_SURFACE } from "../../constants/report.js";
 import { AnimatedPresence, motion } from "../../components/motion/index.js";
 import { useNativeHover } from "../../hooks/useNativeHover.js";
@@ -17,6 +17,7 @@ const TOOLTIP_MOTION_TRANSITION = {
     stiffness: 100,
     damping: 10,
 };
+const TOOLTIP_BASE_CLASS = "fixed z-[1000001] overflow-hidden rounded-[24px] bg-[var(--adaptive-grey200)] shadow-[0_0_90px_0_var(--adaptive-greyOpacity300)]";
 const MARKER_BUTTON_BASE_CLASS = "pointer-events-auto fixed z-[1000000] flex -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full";
 function MarkerButton({ markerItem, isSelected, onSelect, onOpenReply, onHoverStart, onHoverEnd }) {
     const hoverRef = useNativeHover({
@@ -36,7 +37,7 @@ function MarkerButton({ markerItem, isSelected, onSelect, onOpenReply, onHoverSt
         } }, markerItem.id));
 }
 export function ReportMarkersLayer() {
-    const { mode, markers, selectedReport, fields, authors, activeReplyReportId, activeReplyReport, tooltipReport, tooltipAnchor, tooltipFieldTags, replyDraft, replyAuthorName, pendingComposer, isUpdating, editingReportId, selectReport, openReplyComposer, clearHoverLeaveTimeout, scheduleHoverLeave, setHoveredMarkerId, setReplyDraft, setReplyAuthorName, handleReplySubmit, startDenyReview, startCheckoutReview, confirmAuthorName, setConfirmAuthorName, showConfirmAuthorSelect, toggleConfirmAuthorSelect, handleConfirmResolution, } = useReport();
+    const { mode, markers, selectedReport, fields, authors, activeReplyReportId, activeReplyReport, tooltipReport, tooltipAnchor, tooltipFieldTags, replyDraft, replyAuthorName, pendingComposer, isUpdating, editingReportId, selectReport, openReplyComposer, closeReplyComposer, clearHoverLeaveTimeout, scheduleHoverLeave, setHoveredMarkerId, setReplyDraft, setReplyAuthorName, handleReplySubmit, startDenyReview, startCheckoutReview, confirmAuthorName, setConfirmAuthorName, showConfirmAuthorSelect, toggleConfirmAuthorSelect, handleConfirmResolution, } = useReport();
     const handleMarkerHoverStart = useCallback((reportId) => {
         clearHoverLeaveTimeout();
         setHoveredMarkerId(reportId);
@@ -45,9 +46,15 @@ export function ReportMarkersLayer() {
         }
     }, [clearHoverLeaveTimeout, editingReportId, selectReport, setHoveredMarkerId]);
     const handleMarkerHoverEnd = useCallback((reportId) => {
-        scheduleHoverLeave(reportId);
-    }, [scheduleHoverLeave]);
-    const tooltipHoverRef = useNativeHover({
+        if (activeReplyReportId) {
+            scheduleHoverLeave(reportId);
+            return;
+        }
+        clearHoverLeaveTimeout();
+        setHoveredMarkerId((current) => (current === reportId ? null : current));
+    }, [activeReplyReportId, clearHoverLeaveTimeout, scheduleHoverLeave, setHoveredMarkerId]);
+    const tooltipContainerRef = useRef(null);
+    const expandedTooltipHoverRef = useNativeHover({
         onEnter: () => {
             if (tooltipReport) {
                 clearHoverLeaveTimeout();
@@ -55,7 +62,7 @@ export function ReportMarkersLayer() {
             }
         },
         onLeave: () => {
-            if (tooltipReport && !activeReplyReportId) {
+            if (tooltipReport) {
                 scheduleHoverLeave(tooltipReport.id);
             }
         },
@@ -66,10 +73,32 @@ export function ReportMarkersLayer() {
         }
         return activeReplyReport.replies.length === 0 || pendingComposer !== null;
     }, [activeReplyReport, pendingComposer]);
+    const isExpandedTooltip = Boolean(activeReplyReport && tooltipReport && activeReplyReport.id === tooltipReport.id);
+    useEffect(() => {
+        if (!activeReplyReportId) {
+            return;
+        }
+        const handlePointerDown = (event) => {
+            const path = event.composedPath();
+            if (tooltipContainerRef.current && path.includes(tooltipContainerRef.current)) {
+                return;
+            }
+            const clickedMarker = path.find((node) => node instanceof Element && node.hasAttribute("data-marker-report-id"));
+            if (clickedMarker instanceof Element) {
+                return;
+            }
+            clearHoverLeaveTimeout();
+            setHoveredMarkerId(null);
+            closeReplyComposer();
+        };
+        window.addEventListener("pointerdown", handlePointerDown);
+        return () => {
+            window.removeEventListener("pointerdown", handlePointerDown);
+        };
+    }, [activeReplyReportId, clearHoverLeaveTimeout, closeReplyComposer, setHoveredMarkerId]);
     if (mode !== "view") {
         return null;
     }
-    const isExpandedTooltip = Boolean(activeReplyReport && tooltipReport && activeReplyReport.id === tooltipReport.id);
     const tooltipPosition = tooltipAnchor ? getTooltipPosition(tooltipAnchor, isExpandedTooltip) : null;
     const showTooltip = Boolean(tooltipReport && tooltipAnchor && tooltipPosition);
     return (_jsxs(_Fragment, { children: [markers.map((markerItem) => markerItem.rect ? (_jsx("div", { className: "pointer-events-none fixed rounded-[3px] border border-sky-400/70 bg-sky-200/20 shadow-[0_0_0_1px_rgba(148,163,184,0.4)]", style: {
@@ -79,15 +108,21 @@ export function ReportMarkersLayer() {
                     height: markerItem.rect.height,
                     outline: `1px solid ${TARGET_COLOR[markerItem.report.report_type]}`,
                     backgroundColor: TARGET_SURFACE[markerItem.report.report_type],
-                } }, `${markerItem.id}-rect`)) : null), markers.map((markerItem) => (_jsx(MarkerButton, { markerItem: markerItem, isSelected: markerItem.report.id === selectedReport?.id, onSelect: () => selectReport(markerItem.report.id), onOpenReply: () => openReplyComposer(markerItem.report), onHoverStart: () => handleMarkerHoverStart(markerItem.report.id), onHoverEnd: () => handleMarkerHoverEnd(markerItem.report.id) }, markerItem.id))), _jsx(AnimatedPresence, { children: showTooltip && tooltipReport && tooltipPosition ? (_jsx(motion.div, { ref: tooltipHoverRef, "data-stitchable-interactive": "", initial: { opacity: 0, y: 5, scale: 0.97 }, animate: { opacity: 1, y: 0, scale: 1 }, exit: { opacity: 0, y: 5, scale: 0.97 }, transition: TOOLTIP_MOTION_TRANSITION, onClick: () => {
-                        if (!isExpandedTooltip) {
-                            openReplyComposer(tooltipReport);
+                } }, `${markerItem.id}-rect`)) : null), markers.map((markerItem) => (_jsx(MarkerButton, { markerItem: markerItem, isSelected: markerItem.report.id === selectedReport?.id, onSelect: () => selectReport(markerItem.report.id), onOpenReply: () => openReplyComposer(markerItem.report), onHoverStart: () => handleMarkerHoverStart(markerItem.report.id), onHoverEnd: () => handleMarkerHoverEnd(markerItem.report.id) }, markerItem.id))), showTooltip && !isExpandedTooltip && tooltipReport && tooltipPosition ? (_jsx("div", { className: `pointer-events-none ${TOOLTIP_BASE_CLASS}`, style: {
+                    left: tooltipPosition.left,
+                    top: tooltipPosition.top,
+                    width: tooltipPosition.width,
+                    pointerEvents: "none",
+                }, children: _jsx(FeedbackHoverCard, { report: tooltipReport, fieldTags: tooltipFieldTags }) })) : null, _jsx(AnimatedPresence, { children: showTooltip && isExpandedTooltip && tooltipReport && tooltipPosition && activeReplyReport ? (_jsx(motion.div, { ref: (node) => {
+                        tooltipContainerRef.current = node;
+                        if (node instanceof HTMLDivElement) {
+                            expandedTooltipHoverRef(node);
                         }
-                    }, className: "pointer-events-auto fixed z-[1000001] overflow-hidden rounded-[24px] bg-[var(--adaptive-grey200)] shadow-[0_0_90px_0_var(--adaptive-greyOpacity300)]", style: {
+                    }, "data-stitchable-interactive": "", initial: { opacity: 0, y: 5, scale: 0.97 }, animate: { opacity: 1, y: 0, scale: 1 }, exit: { opacity: 0, y: 5, scale: 0.97 }, transition: TOOLTIP_MOTION_TRANSITION, className: `pointer-events-auto ${TOOLTIP_BASE_CLASS}`, style: {
                         left: tooltipPosition.left,
                         top: tooltipPosition.top,
                         width: tooltipPosition.width,
                         pointerEvents: "auto",
-                    }, children: isExpandedTooltip && activeReplyReport ? (_jsxs("div", { onClick: (event) => event.stopPropagation(), onPointerDown: (event) => event.stopPropagation(), children: [_jsx(FeedbackIssueHeader, { report: activeReplyReport, fieldTags: tooltipFieldTags, expanded: true }), showComposer ? (_jsx("section", { className: "border-t border-[var(--adaptive-greyOpacity200)] bg-[var(--adaptive-grey100)]", children: _jsx(FeedbackComposer, { message: replyDraft, onMessageChange: setReplyDraft, authorName: replyAuthorName, onAuthorNameChange: setReplyAuthorName, authors: authors, fields: fields, fieldValues: activeReplyReport.field_values, onFieldChange: () => undefined, showTags: false, onSubmit: () => void handleReplySubmit(), isSubmitting: isUpdating, autoFocus: pendingComposer !== null }) })) : null, _jsx(FeedbackThread, { report: activeReplyReport, authors: authors, pendingComposer: pendingComposer, confirmAuthorName: confirmAuthorName, showConfirmAuthorSelect: showConfirmAuthorSelect, onConfirmAuthorNameChange: setConfirmAuthorName, onToggleConfirmAuthorSelect: toggleConfirmAuthorSelect, onStartDeny: startDenyReview, onStartCheckout: startCheckoutReview, onConfirm: () => void handleConfirmResolution(), isUpdating: isUpdating })] })) : (_jsx(FeedbackHoverCard, { report: tooltipReport, fieldTags: tooltipFieldTags })) }, `${tooltipReport.id}-${isExpandedTooltip ? "expanded" : "preview"}`)) : null })] }));
+                    }, children: _jsxs("div", { onClick: (event) => event.stopPropagation(), onPointerDown: (event) => event.stopPropagation(), children: [_jsx(FeedbackIssueHeader, { report: activeReplyReport, fieldTags: tooltipFieldTags, expanded: true }), showComposer ? (_jsx("section", { className: "border-t border-[var(--adaptive-greyOpacity200)] bg-[var(--adaptive-grey100)]", children: _jsx(FeedbackComposer, { message: replyDraft, onMessageChange: setReplyDraft, authorName: replyAuthorName, onAuthorNameChange: setReplyAuthorName, authors: authors, fields: fields, fieldValues: activeReplyReport.field_values, onFieldChange: () => undefined, showTags: false, onSubmit: () => void handleReplySubmit(), isSubmitting: isUpdating, autoFocus: pendingComposer !== null }) })) : null, _jsx(FeedbackThread, { report: activeReplyReport, authors: authors, pendingComposer: pendingComposer, confirmAuthorName: confirmAuthorName, showConfirmAuthorSelect: showConfirmAuthorSelect, onConfirmAuthorNameChange: setConfirmAuthorName, onToggleConfirmAuthorSelect: toggleConfirmAuthorSelect, onStartDeny: startDenyReview, onStartCheckout: startCheckoutReview, onConfirm: () => void handleConfirmResolution(), isUpdating: isUpdating })] }) }, `${tooltipReport.id}-expanded`)) : null })] }));
 }
 //# sourceMappingURL=ReportMarkersLayer.js.map

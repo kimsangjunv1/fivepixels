@@ -404,6 +404,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
     };
     const toggleIssueMode = () => {
         setShowTargetPreview(false);
+        closeReplyComposer();
         setMode((current) => {
             const nextMode = current === "view" ? "idle" : "view";
             if (nextMode === "view") {
@@ -680,10 +681,14 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         editingReportId,
         panelTab,
         showTargetPreview,
+        activeReplyReportId,
+        pendingComposer,
         toggleReportMode,
         toggleTargetPreview,
         toggleIssueMode,
         cancelDraft,
+        cancelPendingComposer,
+        closeReplyComposer,
         handleCreateSubmit,
         stopEditing,
         handleUpdateSubmit,

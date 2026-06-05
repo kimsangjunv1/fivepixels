@@ -10,10 +10,14 @@ type ReportShortcutHandlers = Pick<
     | "editingReportId"
     | "panelTab"
     | "showTargetPreview"
+    | "activeReplyReportId"
+    | "pendingComposer"
     | "toggleReportMode"
     | "toggleTargetPreview"
     | "toggleIssueMode"
     | "cancelDraft"
+    | "cancelPendingComposer"
+    | "closeReplyComposer"
     | "handleCreateSubmit"
     | "stopEditing"
     | "handleUpdateSubmit"
@@ -28,10 +32,14 @@ export function useReportShortcuts(handlers: ReportShortcutHandlers) {
         editingReportId,
         panelTab,
         showTargetPreview,
+        activeReplyReportId,
+        pendingComposer,
         toggleReportMode,
         toggleTargetPreview,
         toggleIssueMode,
         cancelDraft,
+        cancelPendingComposer,
+        closeReplyComposer,
         handleCreateSubmit,
         stopEditing,
         handleUpdateSubmit,
@@ -76,6 +84,18 @@ export function useReportShortcuts(handlers: ReportShortcutHandlers) {
                 if (mode === "report") {
                     event.preventDefault();
                     toggleReportMode();
+                    return;
+                }
+
+                if (pendingComposer) {
+                    event.preventDefault();
+                    cancelPendingComposer();
+                    return;
+                }
+
+                if (activeReplyReportId) {
+                    event.preventDefault();
+                    closeReplyComposer();
                     return;
                 }
 
@@ -143,10 +163,14 @@ export function useReportShortcuts(handlers: ReportShortcutHandlers) {
         editingReportId,
         panelTab,
         showTargetPreview,
+        activeReplyReportId,
+        pendingComposer,
         toggleReportMode,
         toggleTargetPreview,
         toggleIssueMode,
         cancelDraft,
+        cancelPendingComposer,
+        closeReplyComposer,
         handleCreateSubmit,
         stopEditing,
         handleUpdateSubmit,

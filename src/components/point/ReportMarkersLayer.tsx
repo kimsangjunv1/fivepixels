@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { TARGET_COLOR, TARGET_SURFACE } from "../../constants/report.js";
 import { AnimatedPresence, motion } from "../../components/motion/index.js";
 import { useNativeHover } from "../../hooks/useNativeHover.js";
@@ -18,6 +18,8 @@ const TOOLTIP_MOTION_TRANSITION = {
     stiffness: 100,
     damping: 10,
 };
+
+const TOOLTIP_BASE_CLASS = "fixed z-[1000001] overflow-hidden rounded-[24px] bg-[var(--adaptive-grey200)] shadow-[0_0_90px_0_var(--adaptive-greyOpacity300)]";
 
 const MARKER_BUTTON_BASE_CLASS = "pointer-events-auto fixed z-[1000000] flex -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full";
 
@@ -82,6 +84,7 @@ export function ReportMarkersLayer() {
         editingReportId,
         selectReport,
         openReplyComposer,
+        closeReplyComposer,
         clearHoverLeaveTimeout,
         scheduleHoverLeave,
         setHoveredMarkerId,
@@ -110,12 +113,20 @@ export function ReportMarkersLayer() {
 
     const handleMarkerHoverEnd = useCallback(
         (reportId: string) => {
-            scheduleHoverLeave(reportId);
+            if (activeReplyReportId) {
+                scheduleHoverLeave(reportId);
+                return;
+            }
+
+            clearHoverLeaveTimeout();
+            setHoveredMarkerId((current) => (current === reportId ? null : current));
         },
-        [scheduleHoverLeave],
+        [activeReplyReportId, clearHoverLeaveTimeout, scheduleHoverLeave, setHoveredMarkerId],
     );
 
-    const tooltipHoverRef = useNativeHover<HTMLDivElement>({
+    const tooltipContainerRef = useRef<HTMLElement | null>(null);
+
+    const expandedTooltipHoverRef = useNativeHover<HTMLDivElement>({
         onEnter: () => {
             if (tooltipReport) {
                 clearHoverLeaveTimeout();
@@ -123,7 +134,7 @@ export function ReportMarkersLayer() {
             }
         },
         onLeave: () => {
-            if (tooltipReport && !activeReplyReportId) {
+            if (tooltipReport) {
                 scheduleHoverLeave(tooltipReport.id);
             }
         },
@@ -137,11 +148,44 @@ export function ReportMarkersLayer() {
         return activeReplyReport.replies.length === 0 || pendingComposer !== null;
     }, [activeReplyReport, pendingComposer]);
 
+    const isExpandedTooltip = Boolean(activeReplyReport && tooltipReport && activeReplyReport.id === tooltipReport.id);
+
+    useEffect(() => {
+        if (!activeReplyReportId) {
+            return;
+        }
+
+        const handlePointerDown = (event: PointerEvent) => {
+            const path = event.composedPath();
+
+            if (tooltipContainerRef.current && path.includes(tooltipContainerRef.current)) {
+                return;
+            }
+
+            const clickedMarker = path.find(
+                (node) => node instanceof Element && node.hasAttribute("data-marker-report-id"),
+            );
+
+            if (clickedMarker instanceof Element) {
+                return;
+            }
+
+            clearHoverLeaveTimeout();
+            setHoveredMarkerId(null);
+            closeReplyComposer();
+        };
+
+        window.addEventListener("pointerdown", handlePointerDown);
+
+        return () => {
+            window.removeEventListener("pointerdown", handlePointerDown);
+        };
+    }, [activeReplyReportId, clearHoverLeaveTimeout, closeReplyComposer, setHoveredMarkerId]);
+
     if (mode !== "view") {
         return null;
     }
 
-    const isExpandedTooltip = Boolean(activeReplyReport && tooltipReport && activeReplyReport.id === tooltipReport.id);
     const tooltipPosition = tooltipAnchor ? getTooltipPosition(tooltipAnchor, isExpandedTooltip) : null;
     const showTooltip = Boolean(tooltipReport && tooltipAnchor && tooltipPosition);
 
@@ -176,22 +220,40 @@ export function ReportMarkersLayer() {
                 />
             ))}
 
+            {showTooltip && !isExpandedTooltip && tooltipReport && tooltipPosition ? (
+                <div
+                    className={`pointer-events-none ${TOOLTIP_BASE_CLASS}`}
+                    style={{
+                        left: tooltipPosition.left,
+                        top: tooltipPosition.top,
+                        width: tooltipPosition.width,
+                        pointerEvents: "none",
+                    }}
+                >
+                    <FeedbackHoverCard
+                        report={tooltipReport}
+                        fieldTags={tooltipFieldTags}
+                    />
+                </div>
+            ) : null}
+
             <AnimatedPresence>
-                {showTooltip && tooltipReport && tooltipPosition ? (
+                {showTooltip && isExpandedTooltip && tooltipReport && tooltipPosition && activeReplyReport ? (
                     <motion.div
-                        ref={tooltipHoverRef}
-                        key={`${tooltipReport.id}-${isExpandedTooltip ? "expanded" : "preview"}`}
+                        ref={(node) => {
+                            tooltipContainerRef.current = node;
+
+                            if (node instanceof HTMLDivElement) {
+                                expandedTooltipHoverRef(node);
+                            }
+                        }}
+                        key={`${tooltipReport.id}-expanded`}
                         data-stitchable-interactive=""
                         initial={{ opacity: 0, y: 5, scale: 0.97 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 5, scale: 0.97 }}
                         transition={TOOLTIP_MOTION_TRANSITION}
-                        onClick={() => {
-                            if (!isExpandedTooltip) {
-                                openReplyComposer(tooltipReport);
-                            }
-                        }}
-                        className="pointer-events-auto fixed z-[1000001] overflow-hidden rounded-[24px] bg-[var(--adaptive-grey200)] shadow-[0_0_90px_0_var(--adaptive-greyOpacity300)]"
+                        className={`pointer-events-auto ${TOOLTIP_BASE_CLASS}`}
                         style={{
                             left: tooltipPosition.left,
                             top: tooltipPosition.top,
@@ -199,56 +261,49 @@ export function ReportMarkersLayer() {
                             pointerEvents: "auto",
                         }}
                     >
-                        {isExpandedTooltip && activeReplyReport ? (
-                            <div
-                                onClick={(event) => event.stopPropagation()}
-                                onPointerDown={(event) => event.stopPropagation()}
-                            >
-                                <FeedbackIssueHeader
-                                    report={activeReplyReport}
-                                    fieldTags={tooltipFieldTags}
-                                    expanded
-                                />
-
-                                {showComposer ? (
-                                    <section className="border-t border-[var(--adaptive-greyOpacity200)] bg-[var(--adaptive-grey100)]">
-                                        <FeedbackComposer
-                                            message={replyDraft}
-                                            onMessageChange={setReplyDraft}
-                                            authorName={replyAuthorName}
-                                            onAuthorNameChange={setReplyAuthorName}
-                                            authors={authors}
-                                            fields={fields}
-                                            fieldValues={activeReplyReport.field_values}
-                                            onFieldChange={() => undefined}
-                                            showTags={false}
-                                            onSubmit={() => void handleReplySubmit()}
-                                            isSubmitting={isUpdating}
-                                            autoFocus={pendingComposer !== null}
-                                        />
-                                    </section>
-                                ) : null}
-
-                                <FeedbackThread
-                                    report={activeReplyReport}
-                                    authors={authors}
-                                    pendingComposer={pendingComposer}
-                                    confirmAuthorName={confirmAuthorName}
-                                    showConfirmAuthorSelect={showConfirmAuthorSelect}
-                                    onConfirmAuthorNameChange={setConfirmAuthorName}
-                                    onToggleConfirmAuthorSelect={toggleConfirmAuthorSelect}
-                                    onStartDeny={startDenyReview}
-                                    onStartCheckout={startCheckoutReview}
-                                    onConfirm={() => void handleConfirmResolution()}
-                                    isUpdating={isUpdating}
-                                />
-                            </div>
-                        ) : (
-                            <FeedbackHoverCard
-                                report={tooltipReport}
+                        <div
+                            onClick={(event) => event.stopPropagation()}
+                            onPointerDown={(event) => event.stopPropagation()}
+                        >
+                            <FeedbackIssueHeader
+                                report={activeReplyReport}
                                 fieldTags={tooltipFieldTags}
+                                expanded
                             />
-                        )}
+
+                            {showComposer ? (
+                                <section className="border-t border-[var(--adaptive-greyOpacity200)] bg-[var(--adaptive-grey100)]">
+                                    <FeedbackComposer
+                                        message={replyDraft}
+                                        onMessageChange={setReplyDraft}
+                                        authorName={replyAuthorName}
+                                        onAuthorNameChange={setReplyAuthorName}
+                                        authors={authors}
+                                        fields={fields}
+                                        fieldValues={activeReplyReport.field_values}
+                                        onFieldChange={() => undefined}
+                                        showTags={false}
+                                        onSubmit={() => void handleReplySubmit()}
+                                        isSubmitting={isUpdating}
+                                        autoFocus={pendingComposer !== null}
+                                    />
+                                </section>
+                            ) : null}
+
+                            <FeedbackThread
+                                report={activeReplyReport}
+                                authors={authors}
+                                pendingComposer={pendingComposer}
+                                confirmAuthorName={confirmAuthorName}
+                                showConfirmAuthorSelect={showConfirmAuthorSelect}
+                                onConfirmAuthorNameChange={setConfirmAuthorName}
+                                onToggleConfirmAuthorSelect={toggleConfirmAuthorSelect}
+                                onStartDeny={startDenyReview}
+                                onStartCheckout={startCheckoutReview}
+                                onConfirm={() => void handleConfirmResolution()}
+                                isUpdating={isUpdating}
+                            />
+                        </div>
                     </motion.div>
                 ) : null}
             </AnimatedPresence>
