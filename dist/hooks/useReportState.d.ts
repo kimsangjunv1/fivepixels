@@ -1,6 +1,6 @@
 import { type MouseEvent } from "react";
 import type { ReportAppearance, ReportAuthor, ReportEvent, ReportFeedback, ReportField, ReportIdentify, ReportStorageAdapter } from "../types/report.js";
-import type { DraftReport, EditableDraft, Marker, PendingFeedbackComposer, ReportFilters, ReportMode, TargetSnapshot } from "../types/report-ui.js";
+import type { DraftReport, EditableDraft, Marker, PendingFeedbackComposer, ReportFilters, ReportMode, ReportPanelTab, TargetSnapshot } from "../types/report-ui.js";
 export type ReportStateConfig = {
     projectId: string;
     environment?: string;
@@ -28,7 +28,26 @@ export declare function useReportState({ projectId, environment, appVersion, app
     appearance: ReportAppearance;
     fields: ReportField[];
     authors: ReportAuthor[];
+    projectId: string;
+    environment: string | undefined;
+    appVersion: string | undefined;
+    currentPathname: string;
     showFeedbackList: boolean;
+    panelTab: ReportPanelTab | null;
+    routeDetailsStats: {
+        pathname: string;
+        statusRows: {
+            status: import("../utils/routeDetailStatus.js").RouteDetailStatus;
+            all: number;
+            today: number;
+        }[];
+        fieldCounts: {
+            key: string;
+            label: string;
+            type: "textarea" | "checkbox";
+            count: number;
+        }[];
+    };
     visibleShortcutKeys: boolean;
     searchInputRef: import("react").MutableRefObject<HTMLInputElement | null>;
     resolvedAppearance: import("../types/report-ui.js").ResolvedAppearance;
@@ -88,7 +107,9 @@ export declare function useReportState({ projectId, environment, appVersion, app
     statusText: string;
     toggleReportMode: () => void;
     toggleTargetPreview: () => void;
-    toggleViewMode: () => void;
+    toggleIssueMode: () => void;
+    openPanelTab: (nextTab: ReportPanelTab) => void;
+    togglePanelTab: (nextTab: ReportPanelTab) => void;
     selectReport: (reportId: string) => void;
     focusSearchInput: () => void;
     selectAdjacentReport: (direction: "up" | "down") => void;

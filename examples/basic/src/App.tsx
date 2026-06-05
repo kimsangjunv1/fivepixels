@@ -7,6 +7,8 @@ export function App() {
     return (
         <>
             <Report
+                appVersion="1.0.0"
+                environment="STAGED"
                 projectId="stitchable-basic-example"
                 devOnly
                 appearance="system"

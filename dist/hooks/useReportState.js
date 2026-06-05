@@ -4,6 +4,7 @@ import { useCreateReportMutation, useDeleteReportMutation, useReportsQuery, useU
 import { useIsMobileViewport } from "./useIsMobileViewport.js";
 import { useResolvedAppearance } from "./useResolvedAppearance.js";
 import { createReplyStatusForSubmit, resolveOriginalFeedbackAuthorName } from "../utils/feedbackThread.js";
+import { getRouteDetailStatus, isCreatedToday, ROUTE_DETAIL_STATUS_ORDER } from "../utils/routeDetailStatus.js";
 import { clampRatio, getMarkerFromReport, resolveTooltipAnchor } from "../utils/coordinates.js";
 const MARKER_HOVER_LEAVE_MS = 250;
 const OVERLAY_HOVER_LEAVE_MS = 100;
@@ -62,6 +63,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
     const [selectedReportId, setSelectedReportId] = useState(null);
     const [editingReportId, setEditingReportId] = useState(null);
     const [editableDraft, setEditableDraft] = useState(null);
+    const [panelTab, setPanelTab] = useState(null);
     // data (list, filter, mutations)
     const { data: reports, error, isError, isFetching, refetch } = useReportsQuery(storageAdapterInstance, currentPathname, true);
     const { mutateAsync: createFeedback, isPending: isCreating } = useCreateReportMutation(storageAdapterInstance, () => {
@@ -75,7 +77,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
     });
     const filteredReports = useMemo(() => {
         return reports.filter((report) => {
-            if (filters.status !== "all" && report.status !== filters.status) {
+            if (filters.status !== "all" && getRouteDetailStatus(report) !== filters.status) {
                 return false;
             }
             if (filters.reportType !== "all" && report.report_type !== filters.reportType) {
@@ -88,6 +90,46 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             return [report.message, report.report_id, report.status].join(" ").toLowerCase().includes(keyword);
         });
     }, [filters.keyword, filters.reportType, filters.status, reports]);
+    const routeDetailsStats = useMemo(() => {
+        const statusRows = ROUTE_DETAIL_STATUS_ORDER.map((status) => ({
+            status,
+            all: 0,
+            today: 0,
+        }));
+        const statusIndex = new Map(statusRows.map((row, index) => [row.status, index]));
+        for (const report of reports) {
+            const status = getRouteDetailStatus(report);
+            const index = statusIndex.get(status);
+            if (index === undefined) {
+                continue;
+            }
+            statusRows[index].all += 1;
+            if (isCreatedToday(report.created_at)) {
+                statusRows[index].today += 1;
+            }
+        }
+        const fieldCounts = fields
+            .filter((field) => field.key !== "message")
+            .map((field) => {
+            const count = reports.filter((report) => {
+                if (field.type === "checkbox") {
+                    return report.field_values[field.key] === true;
+                }
+                return String(report.field_values[field.key] ?? "").trim().length > 0;
+            }).length;
+            return {
+                key: field.key,
+                label: field.label,
+                type: field.type,
+                count,
+            };
+        });
+        return {
+            pathname: currentPathname,
+            statusRows,
+            fieldCounts,
+        };
+    }, [currentPathname, fields, reports]);
     const selectedReport = useMemo(() => {
         return filteredReports.find((report) => report.id === selectedReportId) ?? filteredReports[0] ?? null;
     }, [filteredReports, selectedReportId]);
@@ -348,9 +390,26 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         setShowTargetPreview(false);
         setMode((current) => (current === "report" ? "idle" : "report"));
     };
-    const toggleViewMode = () => {
+    const togglePanelTab = (nextTab) => {
+        setPanelTab((current) => {
+            if (current === nextTab) {
+                return null;
+            }
+            return nextTab;
+        });
+    };
+    const openPanelTab = (nextTab) => {
+        setPanelTab((current) => (current === nextTab ? null : nextTab));
+    };
+    const toggleIssueMode = () => {
         setShowTargetPreview(false);
-        setMode((current) => (current === "view" ? "idle" : "view"));
+        setMode((current) => {
+            const nextMode = current === "view" ? "idle" : "view";
+            if (nextMode === "view") {
+                setPanelTab((tab) => (tab === "feedback-list" ? null : tab));
+            }
+            return nextMode;
+        });
         stopEditing();
         setSelectedReportId(filteredReports[0]?.id ?? null);
     };
@@ -606,15 +665,23 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             setErrorMessage(nextError instanceof Error ? nextError.message : "피드백 삭제에 실패했어요.");
         }
     };
+    useEffect(() => {
+        if (panelTab !== "feedback-list") {
+            return;
+        }
+        if (mode === "view") {
+            setMode("idle");
+        }
+    }, [mode, panelTab]);
     useReportShortcuts({
         mode,
         draft,
         editingReportId,
-        showFeedbackList,
+        panelTab,
         showTargetPreview,
         toggleReportMode,
         toggleTargetPreview,
-        toggleViewMode,
+        toggleIssueMode,
         cancelDraft,
         handleCreateSubmit,
         stopEditing,
@@ -626,7 +693,13 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         appearance,
         fields,
         authors,
+        projectId,
+        environment,
+        appVersion,
+        currentPathname,
         showFeedbackList,
+        panelTab,
+        routeDetailsStats,
         visibleShortcutKeys,
         searchInputRef,
         resolvedAppearance,
@@ -679,7 +752,9 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         statusText,
         toggleReportMode,
         toggleTargetPreview,
-        toggleViewMode,
+        toggleIssueMode,
+        openPanelTab,
+        togglePanelTab,
         selectReport,
         focusSearchInput,
         selectAdjacentReport,

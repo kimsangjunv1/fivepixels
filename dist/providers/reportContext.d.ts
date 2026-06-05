@@ -4,7 +4,26 @@ declare const ReportContext: import("react").Context<{
     appearance: import("../index.js").ReportAppearance;
     fields: import("../index.js").ReportField[];
     authors: import("../index.js").ReportAuthor[];
+    projectId: string;
+    environment: string | undefined;
+    appVersion: string | undefined;
+    currentPathname: string;
     showFeedbackList: boolean;
+    panelTab: import("../types/report-ui.js").ReportPanelTab | null;
+    routeDetailsStats: {
+        pathname: string;
+        statusRows: {
+            status: import("../utils/routeDetailStatus.js").RouteDetailStatus;
+            all: number;
+            today: number;
+        }[];
+        fieldCounts: {
+            key: string;
+            label: string;
+            type: "textarea" | "checkbox";
+            count: number;
+        }[];
+    };
     visibleShortcutKeys: boolean;
     searchInputRef: import("react").MutableRefObject<HTMLInputElement | null>;
     resolvedAppearance: import("../types/report-ui.js").ResolvedAppearance;
@@ -64,7 +83,9 @@ declare const ReportContext: import("react").Context<{
     statusText: string;
     toggleReportMode: () => void;
     toggleTargetPreview: () => void;
-    toggleViewMode: () => void;
+    toggleIssueMode: () => void;
+    openPanelTab: (nextTab: import("../types/report-ui.js").ReportPanelTab) => void;
+    togglePanelTab: (nextTab: import("../types/report-ui.js").ReportPanelTab) => void;
     selectReport: (reportId: string) => void;
     focusSearchInput: () => void;
     selectAdjacentReport: (direction: "up" | "down") => void;
@@ -89,7 +110,26 @@ export declare function useReport(): {
     appearance: import("../index.js").ReportAppearance;
     fields: import("../index.js").ReportField[];
     authors: import("../index.js").ReportAuthor[];
+    projectId: string;
+    environment: string | undefined;
+    appVersion: string | undefined;
+    currentPathname: string;
     showFeedbackList: boolean;
+    panelTab: import("../types/report-ui.js").ReportPanelTab | null;
+    routeDetailsStats: {
+        pathname: string;
+        statusRows: {
+            status: import("../utils/routeDetailStatus.js").RouteDetailStatus;
+            all: number;
+            today: number;
+        }[];
+        fieldCounts: {
+            key: string;
+            label: string;
+            type: "textarea" | "checkbox";
+            count: number;
+        }[];
+    };
     visibleShortcutKeys: boolean;
     searchInputRef: import("react").MutableRefObject<HTMLInputElement | null>;
     resolvedAppearance: import("../types/report-ui.js").ResolvedAppearance;
@@ -149,7 +189,9 @@ export declare function useReport(): {
     statusText: string;
     toggleReportMode: () => void;
     toggleTargetPreview: () => void;
-    toggleViewMode: () => void;
+    toggleIssueMode: () => void;
+    openPanelTab: (nextTab: import("../types/report-ui.js").ReportPanelTab) => void;
+    togglePanelTab: (nextTab: import("../types/report-ui.js").ReportPanelTab) => void;
     selectReport: (reportId: string) => void;
     focusSearchInput: () => void;
     selectAdjacentReport: (direction: "up" | "down") => void;

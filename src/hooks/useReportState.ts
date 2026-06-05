@@ -13,8 +13,9 @@ import type {
     ReportReply,
     ReportStorageAdapter,
 } from "../types/report.js";
-import type { DraftReport, EditableDraft, Marker, PendingFeedbackComposer, ReportFilters, ReportMode, TargetSnapshot } from "../types/report-ui.js";
+import type { DraftReport, EditableDraft, Marker, PendingFeedbackComposer, ReportFilters, ReportMode, ReportPanelTab, TargetSnapshot } from "../types/report-ui.js";
 import { createReplyStatusForSubmit, resolveOriginalFeedbackAuthorName } from "../utils/feedbackThread.js";
+import { getRouteDetailStatus, isCreatedToday, ROUTE_DETAIL_STATUS_ORDER } from "../utils/routeDetailStatus.js";
 import { clampRatio, getMarkerFromReport, resolveTooltipAnchor } from "../utils/coordinates.js";
 
 const MARKER_HOVER_LEAVE_MS = 250;
@@ -122,6 +123,7 @@ export function useReportState({
     const [selectedReportId, setSelectedReportId] = useState<string | null>(null);
     const [editingReportId, setEditingReportId] = useState<string | null>(null);
     const [editableDraft, setEditableDraft] = useState<EditableDraft | null>(null);
+    const [panelTab, setPanelTab] = useState<ReportPanelTab | null>(null);
 
     // data (list, filter, mutations)
     const { data: reports, error, isError, isFetching, refetch } = useReportsQuery(storageAdapterInstance, currentPathname, true);
@@ -137,7 +139,7 @@ export function useReportState({
 
     const filteredReports = useMemo(() => {
         return reports.filter((report) => {
-            if (filters.status !== "all" && report.status !== filters.status) {
+            if (filters.status !== "all" && getRouteDetailStatus(report) !== filters.status) {
                 return false;
             }
 
@@ -153,6 +155,56 @@ export function useReportState({
             return [report.message, report.report_id, report.status].join(" ").toLowerCase().includes(keyword);
         });
     }, [filters.keyword, filters.reportType, filters.status, reports]);
+
+    const routeDetailsStats = useMemo(() => {
+        const statusRows = ROUTE_DETAIL_STATUS_ORDER.map((status) => ({
+            status,
+            all: 0,
+            today: 0,
+        }));
+
+        const statusIndex = new Map(statusRows.map((row, index) => [row.status, index]));
+
+        for (const report of reports) {
+            const status = getRouteDetailStatus(report);
+            const index = statusIndex.get(status);
+
+            if (index === undefined) {
+                continue;
+            }
+
+            statusRows[index].all += 1;
+
+            if (isCreatedToday(report.created_at)) {
+                statusRows[index].today += 1;
+            }
+        }
+
+        const fieldCounts = fields
+            .filter((field) => field.key !== "message")
+            .map((field) => {
+                const count = reports.filter((report) => {
+                    if (field.type === "checkbox") {
+                        return report.field_values[field.key] === true;
+                    }
+
+                    return String(report.field_values[field.key] ?? "").trim().length > 0;
+                }).length;
+
+                return {
+                    key: field.key,
+                    label: field.label,
+                    type: field.type,
+                    count,
+                };
+            });
+
+        return {
+            pathname: currentPathname,
+            statusRows,
+            fieldCounts,
+        };
+    }, [currentPathname, fields, reports]);
 
     const selectedReport = useMemo(() => {
         return filteredReports.find((report) => report.id === selectedReportId) ?? filteredReports[0] ?? null;
@@ -472,9 +524,31 @@ export function useReportState({
         setMode((current) => (current === "report" ? "idle" : "report"));
     };
 
-    const toggleViewMode = () => {
+    const togglePanelTab = (nextTab: ReportPanelTab) => {
+        setPanelTab((current) => {
+            if (current === nextTab) {
+                return null;
+            }
+
+            return nextTab;
+        });
+    };
+
+    const openPanelTab = (nextTab: ReportPanelTab) => {
+        setPanelTab((current) => (current === nextTab ? null : nextTab));
+    };
+
+    const toggleIssueMode = () => {
         setShowTargetPreview(false);
-        setMode((current) => (current === "view" ? "idle" : "view"));
+        setMode((current) => {
+            const nextMode = current === "view" ? "idle" : "view";
+
+            if (nextMode === "view") {
+                setPanelTab((tab) => (tab === "feedback-list" ? null : tab));
+            }
+
+            return nextMode;
+        });
         stopEditing();
         setSelectedReportId(filteredReports[0]?.id ?? null);
     };
@@ -776,15 +850,25 @@ export function useReportState({
         }
     };
 
+    useEffect(() => {
+        if (panelTab !== "feedback-list") {
+            return;
+        }
+
+        if (mode === "view") {
+            setMode("idle");
+        }
+    }, [mode, panelTab]);
+
     useReportShortcuts({
         mode,
         draft,
         editingReportId,
-        showFeedbackList,
+        panelTab,
         showTargetPreview,
         toggleReportMode,
         toggleTargetPreview,
-        toggleViewMode,
+        toggleIssueMode,
         cancelDraft,
         handleCreateSubmit,
         stopEditing,
@@ -797,7 +881,13 @@ export function useReportState({
         appearance,
         fields,
         authors,
+        projectId,
+        environment,
+        appVersion,
+        currentPathname,
         showFeedbackList,
+        panelTab,
+        routeDetailsStats,
         visibleShortcutKeys,
         searchInputRef,
         resolvedAppearance,
@@ -850,7 +940,9 @@ export function useReportState({
         statusText,
         toggleReportMode,
         toggleTargetPreview,
-        toggleViewMode,
+        toggleIssueMode,
+        openPanelTab,
+        togglePanelTab,
         selectReport,
         focusSearchInput,
         selectAdjacentReport,

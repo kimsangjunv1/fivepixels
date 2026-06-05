@@ -1,12 +1,28 @@
-import type { ReportStatus } from "../../types/report.js";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { ReportFilters } from "../../types/report-ui.js";
 import { REPORT_SHORTCUTS } from "../../constants/reportShortcuts.js";
 import { useReport } from "../../providers/reportContext.js";
 import { formatDate } from "../../utils/format.js";
-import { getStatusTone } from "../../utils/reportVisual.js";
+import { getFieldTags } from "../../utils/fields.js";
+import { panelNumericClassName } from "../../utils/panelTypography.js";
+import { getRouteDetailStatus, ROUTE_DETAIL_STATUS_LABEL, type RouteDetailStatus } from "../../utils/routeDetailStatus.js";
 import { ShortcutHint } from "../ShortcutHint.js";
-import { FieldEditor } from "./FieldEditor.js";
-import { useState } from "react";
+import { FeedbackFieldTags } from "./feedback/FeedbackFieldTags.js";
+import { SearchIcon } from "../icons/SearchIcon.js";
+
+const FEEDBACK_PAGE_SIZE = 20;
+
+function getRouteStatusTone(status: RouteDetailStatus) {
+    if (status === "resolved") {
+        return { backgroundColor: "#e8f5e9", color: "#2e7d32" };
+    }
+
+    if (status === "suggested") {
+        return { backgroundColor: "#eff6ff", color: "#1d4ed8" };
+    }
+
+    return { backgroundColor: "#fff7ed", color: "#c2410c" };
+}
 
 export function ReportFeedbackList() {
     const {
@@ -14,91 +30,105 @@ export function ReportFeedbackList() {
         setFilters,
         filteredReports,
         reports,
-        selectedReport,
-        editingReportId,
-        editableDraft,
         fields,
         isError,
         isFetching,
-        isUpdating,
         queryErrorMessage,
         visibleShortcutKeys,
         searchInputRef,
         selectReport,
-        startEditing,
-        stopEditing,
-        setEditableDraft,
-        handleUpdateSubmit,
         refetch,
     } = useReport();
 
-    const [isShowFilter, setIsShowFilter] = useState(false);
+    const [visibleCount, setVisibleCount] = useState(FEEDBACK_PAGE_SIZE);
+    const loadMoreRef = useRef<HTMLDivElement | null>(null);
+
+    const visibleReports = useMemo(() => filteredReports.slice(0, visibleCount), [filteredReports, visibleCount]);
+
+    useEffect(() => {
+        setVisibleCount(FEEDBACK_PAGE_SIZE);
+    }, [filters.keyword, filters.reportType, filters.status, reports.length]);
+
+    useEffect(() => {
+        const node = loadMoreRef.current;
+
+        if (!node || visibleCount >= filteredReports.length) {
+            return;
+        }
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries.some((entry) => entry.isIntersecting)) {
+                    setVisibleCount((current) => Math.min(current + FEEDBACK_PAGE_SIZE, filteredReports.length));
+                }
+            },
+            { root: node.parentElement, rootMargin: "120px" },
+        );
+
+        observer.observe(node);
+
+        return () => {
+            observer.disconnect();
+        };
+    }, [filteredReports.length, visibleCount]);
 
     return (
-        // <section className="flex flex-col gap-2 border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-900">
-        <section className="flex flex-col gap-2">
-            <div className="flex items-center justify-between gap-2">
-                <section className="flex items-center gap-[4px]">
-                    <p className="text-[16px] font-bold">feedback list</p>
-                    <p className="bg-[var(--adaptive-greyOpacity700)] text-[var(--adaptive-grey300)] p-[2px_4px] rounded-[6px] text-[12px]">{filteredReports.length}개</p>
-                </section>
-                {/* <span className="inline-flex min-w-6 items-center justify-center rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-200">
-                    {filteredReports.length}
-                </span> */}
-                <button
-                    onClick={() => setIsShowFilter(!isShowFilter)}
-                    className="bg-[var(--adaptive-grey300)] p-[2px_4px] rounded-[6px] text-[var(--adaptive-grey700)] text-[12px] font-bold"
-                >
-                    show filter
-                </button>
-            </div>
-
-            {isShowFilter ? (
-                <div className="flex flex-col gap-2 border-y border-slate-100 py-2 text-xs text-slate-600 dark:border-slate-800 dark:text-slate-300">
-                    <div className="flex items-center gap-2">
-                        <input
-                            ref={searchInputRef}
-                            value={filters.keyword}
-                            onChange={(event) => setFilters((current) => ({ ...current, keyword: event.target.value }))}
-                            placeholder="메시지 / report id 검색"
-                            className="h-7 flex-1 rounded-md border border-slate-200 bg-white px-2 text-xs text-slate-900 shadow-sm outline-none ring-0 focus:border-slate-300 focus:ring-1 focus:ring-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-600 dark:focus:ring-slate-700"
-                        />
-                        <ShortcutHint
-                            binding={REPORT_SHORTCUTS.focusSearch}
-                            visible={visibleShortcutKeys}
-                        />
-                    </div>
+        <section className="flex min-h-0 flex-1 flex-col gap-[8px]">
+            <div className="flex flex-col gap-[8px] rounded-[12px] bg-[var(--adaptive-grey100)] p-[10px]">
+                <div className="grid grid-cols-2 gap-[8px]">
                     <select
                         value={filters.status}
                         onChange={(event) => setFilters((current) => ({ ...current, status: event.target.value as ReportFilters["status"] }))}
-                        className="h-7 w-full rounded-md border border-slate-200 bg-white px-2 text-xs text-slate-900 shadow-sm outline-none ring-0 focus:border-slate-300 focus:ring-1 focus:ring-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-600 dark:focus:ring-slate-700"
+                        className="h-[32px] w-full rounded-[8px] border border-[var(--adaptive-grey300)] bg-white px-[8px] text-[12px] text-[var(--adaptive-grey800)] outline-none"
                     >
                         <option value="all">전체 상태</option>
-                        <option value="open">open</option>
-                        <option value="resolved">resolved</option>
-                        <option value="archived">archived</option>
+                        {(Object.keys(ROUTE_DETAIL_STATUS_LABEL) as RouteDetailStatus[]).map((status) => (
+                            <option
+                                key={status}
+                                value={status}
+                            >
+                                {ROUTE_DETAIL_STATUS_LABEL[status]}
+                            </option>
+                        ))}
                     </select>
                     <select
                         value={filters.reportType}
                         onChange={(event) => setFilters((current) => ({ ...current, reportType: event.target.value as ReportFilters["reportType"] }))}
-                        className="h-7 w-full rounded-md border border-slate-200 bg-white px-2 text-xs text-slate-900 shadow-sm outline-none ring-0 focus:border-slate-300 focus:ring-1 focus:ring-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-600 dark:focus:ring-slate-700"
+                        className="h-[32px] w-full rounded-[8px] border border-[var(--adaptive-grey300)] bg-white px-[8px] text-[12px] text-[var(--adaptive-grey800)] outline-none"
                     >
                         <option value="all">전체 타입</option>
                         <option value="item">item</option>
                         <option value="group">group</option>
                     </select>
                 </div>
-            ) : null}
 
-            <div className="mt-1 max-h-[320px] overflow-y-auto">
+                <div className="relative">
+                    <input
+                        ref={searchInputRef}
+                        value={filters.keyword}
+                        onChange={(event) => setFilters((current) => ({ ...current, keyword: event.target.value }))}
+                        placeholder="메시지 / report id 검색"
+                        className="h-[32px] w-full rounded-[8px] border border-[var(--adaptive-grey300)] bg-white px-[8px] pr-[30px] text-[12px] text-[var(--adaptive-grey800)] outline-none"
+                    />
+                    <SearchIcon className="pointer-events-none absolute right-[8px] top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--adaptive-grey500)]" />
+                    <div className="absolute right-[30px] top-1/2 -translate-y-1/2">
+                        <ShortcutHint
+                            binding={REPORT_SHORTCUTS.focusSearch}
+                            visible={visibleShortcutKeys}
+                        />
+                    </div>
+                </div>
+            </div>
+
+            <div className="min-h-0 flex-1 overflow-y-auto">
                 {isError ? (
-                    <div className="space-y-1 rounded-md border border-rose-200 bg-rose-50 p-2 text-xs text-rose-800 dark:border-rose-700 dark:bg-rose-950/40 dark:text-rose-200">
+                    <div className="space-y-1 rounded-md border border-rose-200 bg-rose-50 p-2 text-xs text-rose-800">
                         <strong className="text-sm font-semibold">목록을 불러오지 못했어요.</strong>
-                        <p className="text-xs text-slate-600 dark:text-slate-300">{queryErrorMessage ?? "잠시 후 다시 시도해주세요."}</p>
+                        <p>{queryErrorMessage ?? "잠시 후 다시 시도해주세요."}</p>
                         <button
                             type="button"
                             onClick={() => void refetch()}
-                            className="inline-flex items-center justify-center rounded-md border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
+                            className="inline-flex items-center justify-center rounded-md border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700"
                         >
                             다시 시도
                         </button>
@@ -106,120 +136,49 @@ export function ReportFeedbackList() {
                 ) : null}
 
                 {!isError && !isFetching && filteredReports.length === 0 ? (
-                    <div className="space-y-1 rounded-md border border-dashed border-slate-200 bg-slate-50 p-2 text-xs text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
-                        <strong className="text-sm font-semibold text-slate-900 dark:text-slate-100">표시할 피드백이 없습니다.</strong>
+                    <div className="space-y-1 rounded-md border border-dashed border-[var(--adaptive-grey300)] bg-[var(--adaptive-grey100)] p-2 text-xs text-[var(--adaptive-grey600)]">
+                        <strong className="text-sm font-semibold text-[var(--adaptive-grey900)]">표시할 피드백이 없습니다.</strong>
                         <p>{reports.length === 0 ? "아직 등록된 피드백이 없어요. 리포트 모드에서 첫 피드백을 남겨보세요." : "현재 필터 조건과 일치하는 결과가 없어요."}</p>
                     </div>
                 ) : null}
 
-                <div className="flex flex-col gap-[4px]">
-                    {filteredReports.map((report) => {
-                        const isSelected = report.id === selectedReport?.id;
-                        const isEditing = report.id === editingReportId && editableDraft;
-                        const isArchived = report.status === "archived";
+                <div className="flex flex-col">
+                    {visibleReports.map((report) => {
+                        const routeStatus = getRouteDetailStatus(report);
+                        const fieldTags = getFieldTags(fields, report.field_values);
 
                         return (
-                            <div
+                            <button
                                 key={report.id}
-                                className="flex  bg-[var(--adaptive-grey100)] p-[12px] rounded-[16px]"
-                                // className={
-                                //     isSelected
-                                //         ? "space-y-1 rounded-md border border-sky-300 bg-sky-50 p-2 text-xs shadow-sm dark:border-sky-500 dark:bg-sky-950/40"
-                                //         : "space-y-1 rounded-md border border-slate-200 bg-white p-2 text-xs shadow-sm hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-slate-500"
-                                // }
+                                type="button"
+                                onClick={() => selectReport(report.id)}
+                                className="flex w-full flex-col gap-[6px] border-b border-[var(--adaptive-grey200)] px-[4px] py-[12px] text-left last:border-b-0"
                             >
-                                <button
-                                    type="button"
-                                    onClick={() => selectReport(report.id)}
-                                    className="flex flex-1 flex-col items-start gap-1 text-left"
-                                >
-                                    <div className="flex items-center justify-between gap-2">
-                                        <strong className="max-w-[160px] truncate text-xs font-semibold text-slate-900 dark:text-slate-100">{report.report_id}</strong>
-                                        <span
-                                            // className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-slate-700 dark:bg-slate-800 dark:text-slate-200"
-                                            className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-slate-700 dark:bg-slate-800 dark:text-slate-200"
-                                            style={getStatusTone(report.status)}
-                                        >
-                                            {report.status}
-                                        </span>
-                                    </div>
-                                    <p className="line-clamp-2 text-xs text-slate-700 dark:text-slate-200">{report.message}</p>
-                                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                                        {report.report_type} · {formatDate(report.created_at)}
-                                    </p>
-                                </button>
-
-                                <button
-                                    type="button"
-                                    onClick={() => startEditing(report)}
-                                    disabled={isArchived}
-                                    className="mt-1 text-xs font-medium text-sky-600 hover:underline disabled:cursor-not-allowed disabled:text-slate-400 dark:text-sky-400 dark:disabled:text-slate-500"
-                                >
-                                    {isArchived ? "보관됨" : isEditing ? "수정 중" : "수정"}
-                                </button>
-
-                                {isEditing && editableDraft ? (
-                                    <div className="mt-2 border-t border-dashed border-slate-200 pt-2 dark:border-slate-700">
-                                        <div className="flex flex-col gap-2">
-                                            <FieldEditor
-                                                fields={fields}
-                                                message={editableDraft.message}
-                                                fieldValues={editableDraft.fieldValues}
-                                                onMessageChange={(nextMessage) => setEditableDraft((current) => (current ? { ...current, message: nextMessage } : current))}
-                                                onFieldChange={(key, nextValue) =>
-                                                    setEditableDraft((current) =>
-                                                        current
-                                                            ? {
-                                                                  ...current,
-                                                                  fieldValues: { ...current.fieldValues, [key]: nextValue },
-                                                              }
-                                                            : current,
-                                                    )
-                                                }
-                                            />
-                                        </div>
-
-                                        <select
-                                            value={editableDraft.status}
-                                            onChange={(event) => setEditableDraft((current) => (current ? { ...current, status: event.target.value as ReportStatus } : current))}
-                                            className="mt-2 h-7 w-full rounded-md border border-slate-200 bg-white px-2 text-xs text-slate-900 shadow-sm outline-none ring-0 focus:border-slate-300 focus:ring-1 focus:ring-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-600 dark:focus:ring-slate-700"
-                                        />
-
-                                        <div className="mt-2 flex items-center justify-end gap-2">
-                                            <button
-                                                type="button"
-                                                onClick={stopEditing}
-                                                className="inline-flex items-center justify-center rounded-md border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
-                                            >
-                                                <span className="inline-flex items-center gap-1">
-                                                    닫기
-                                                    <ShortcutHint
-                                                        binding={REPORT_SHORTCUTS.cancel}
-                                                        visible={visibleShortcutKeys}
-                                                    />
-                                                </span>
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => void handleUpdateSubmit()}
-                                                disabled={isUpdating}
-                                                className="inline-flex items-center justify-center rounded-md bg-sky-600 px-3 py-1 text-xs font-medium text-white shadow-sm hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-sky-500 dark:hover:bg-sky-600"
-                                            >
-                                                <span className="inline-flex items-center gap-1">
-                                                    {isUpdating ? "저장 중..." : "수정 저장"}
-                                                    <ShortcutHint
-                                                        binding={REPORT_SHORTCUTS.submit}
-                                                        visible={visibleShortcutKeys}
-                                                    />
-                                                </span>
-                                            </button>
-                                        </div>
-                                    </div>
-                                ) : null}
-                            </div>
+                                <div className="flex flex-wrap items-center gap-[6px]">
+                                    <strong className="max-w-full truncate text-[13px] font-bold text-[var(--adaptive-grey900)]">{report.report_id}</strong>
+                                    <FeedbackFieldTags tags={fieldTags} />
+                                    <span
+                                        className="inline-flex items-center rounded-full px-[8px] py-[2px] text-[10px] font-bold uppercase tracking-wide"
+                                        style={getRouteStatusTone(routeStatus)}
+                                    >
+                                        {ROUTE_DETAIL_STATUS_LABEL[routeStatus]}
+                                    </span>
+                                </div>
+                                <p className="line-clamp-2 text-[13px] text-[var(--adaptive-grey700)]">{report.message}</p>
+                                <p className={`text-[11px] text-[var(--adaptive-grey500)] ${panelNumericClassName}`}>{formatDate(report.created_at)}</p>
+                            </button>
                         );
                     })}
                 </div>
+
+                {visibleCount < filteredReports.length ? (
+                    <div
+                        ref={loadMoreRef}
+                        className="py-[8px] text-center text-[11px] text-[var(--adaptive-grey500)]"
+                    >
+                        더 불러오는 중...
+                    </div>
+                ) : null}
             </div>
         </section>
     );
