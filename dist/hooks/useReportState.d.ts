@@ -48,6 +48,7 @@ export declare function useReportState({ projectId, environment, appVersion, app
             count: number;
         }[];
     };
+    canTransferFeedback: boolean;
     visibleShortcutKeys: boolean;
     searchInputRef: import("react").MutableRefObject<HTMLInputElement | null>;
     resolvedAppearance: import("../types/report-ui.js").ResolvedAppearance;
@@ -67,6 +68,7 @@ export declare function useReportState({ projectId, environment, appVersion, app
     queryErrorMessage: string | undefined;
     refetch: () => Promise<ReportFeedback[]>;
     errorMessage: string;
+    setErrorMessage: import("react").Dispatch<import("react").SetStateAction<string>>;
     draft: DraftReport | null;
     hoveredTarget: TargetSnapshot | null;
     selectedTarget: TargetSnapshot | null;

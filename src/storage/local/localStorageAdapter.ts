@@ -92,7 +92,7 @@ function normalizeReport(item: ReportFeedback): ReportFeedback {
     };
 }
 
-function readAll(storageKey: string) {
+export function readAllReportsFromStorage(storageKey: string) {
     if (typeof window === "undefined") {
         return [] as ReportFeedback[];
     }
@@ -111,12 +111,20 @@ function readAll(storageKey: string) {
     }
 }
 
-function writeAll(storageKey: string, items: ReportFeedback[]) {
+export function writeAllReportsToStorage(storageKey: string, items: ReportFeedback[]) {
     if (typeof window === "undefined") {
         return;
     }
 
     window.localStorage.setItem(storageKey, JSON.stringify(items.map(normalizeReport)));
+}
+
+function readAll(storageKey: string) {
+    return readAllReportsFromStorage(storageKey);
+}
+
+function writeAll(storageKey: string, items: ReportFeedback[]) {
+    writeAllReportsToStorage(storageKey, items);
 }
 
 export function createLocalStorageReportAdapter({ projectId, environment }: LocalStorageReportAdapterOptions): ReportStorageAdapter {

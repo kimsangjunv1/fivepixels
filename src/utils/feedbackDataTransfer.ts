@@ -1,0 +1,186 @@
+import { getReportsStorageKey } from "../constants/storageKeys.js";
+import { readAllReportsFromStorage, writeAllReportsToStorage } from "../storage/local/localStorageAdapter.js";
+import type { ReportFeedback } from "../types/report.js";
+import { validateFeedbackImportArray } from "./validateFeedbackImport.js";
+
+export type FeedbackTransferScope = {
+    projectId: string;
+    environment?: string;
+};
+
+export type FeedbackDownloadResult = "saved" | "downloaded" | "cancelled" | "failed";
+
+type FilePickerWindow = Window & {
+    showOpenFilePicker?: (options?: {
+        multiple?: boolean;
+        types?: Array<{
+            description?: string;
+            accept: Record<string, string[]>;
+        }>;
+    }) => Promise<FileSystemFileHandle[]>;
+    showSaveFilePicker?: (options?: {
+        suggestedName?: string;
+        types?: Array<{
+            description?: string;
+            accept: Record<string, string[]>;
+        }>;
+    }) => Promise<FileSystemFileHandle>;
+};
+
+const JSON_FILE_TYPES = [
+    {
+        description: "JSON",
+        accept: { "application/json": [".json"] },
+    },
+];
+
+export function getFeedbackStorageKey({ projectId, environment }: FeedbackTransferScope) {
+    return getReportsStorageKey(projectId, environment);
+}
+
+export function readAllFeedback({ projectId, environment }: FeedbackTransferScope) {
+    return readAllReportsFromStorage(getFeedbackStorageKey({ projectId, environment }));
+}
+
+export function writeAllFeedback(scope: FeedbackTransferScope, items: ReportFeedback[]) {
+    writeAllReportsToStorage(getFeedbackStorageKey(scope), items);
+}
+
+export function parseFeedbackImportJson(raw: string): ReportFeedback[] {
+    let parsed: unknown;
+
+    try {
+        parsed = JSON.parse(raw);
+    } catch {
+        throw new Error("JSON 형식이 올바르지 않아요.");
+    }
+
+    return validateFeedbackImportArray(parsed);
+}
+
+export function createFeedbackBackupFilename(projectId: string, environment?: string) {
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+    const envSuffix = environment ? `-${environment}` : "";
+
+    return `stitchable-feedback-backup-${projectId}${envSuffix}-${timestamp}.json`;
+}
+
+function isAbortError(error: unknown) {
+    return error instanceof DOMException && error.name === "AbortError";
+}
+
+function downloadFeedbackJsonWithAnchor(filename: string, json: string) {
+    const blob = new Blob([json], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+
+    anchor.href = url;
+    anchor.download = filename;
+    anchor.rel = "noopener";
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    URL.revokeObjectURL(url);
+}
+
+function pickFeedbackJsonFileWithBodyInput(): Promise<File | null> {
+    return new Promise((resolve) => {
+        const input = document.createElement("input");
+
+        input.type = "file";
+        input.accept = ".json,application/json";
+        input.multiple = false;
+        input.style.cssText = "position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;pointer-events:none;";
+
+        const cleanup = () => {
+            input.remove();
+        };
+
+        input.addEventListener(
+            "change",
+            () => {
+                const file = input.files?.[0] ?? null;
+                cleanup();
+                resolve(file);
+            },
+            { once: true },
+        );
+
+        document.body.appendChild(input);
+        input.click();
+    });
+}
+
+export function pickFeedbackJsonFile(): Promise<File | null> {
+    if (typeof window === "undefined") {
+        return Promise.resolve(null);
+    }
+
+    const pickerWindow = window as FilePickerWindow;
+
+    if (typeof pickerWindow.showOpenFilePicker === "function") {
+        return pickerWindow
+            .showOpenFilePicker({
+                multiple: false,
+                types: JSON_FILE_TYPES,
+            })
+            .then(async ([handle]) => handle.getFile())
+            .catch((error) => {
+                if (isAbortError(error)) {
+                    return null;
+                }
+
+                return pickFeedbackJsonFileWithBodyInput();
+            });
+    }
+
+    return pickFeedbackJsonFileWithBodyInput();
+}
+
+export function downloadFeedbackJson(filename: string, items: ReportFeedback[]): Promise<FeedbackDownloadResult> {
+    if (typeof window === "undefined") {
+        return Promise.resolve("failed");
+    }
+
+    const json = JSON.stringify(items, null, 2);
+    const pickerWindow = window as FilePickerWindow;
+
+    if (typeof pickerWindow.showSaveFilePicker === "function") {
+        return pickerWindow
+            .showSaveFilePicker({
+                suggestedName: filename,
+                types: JSON_FILE_TYPES,
+            })
+            .then(async (handle): Promise<FeedbackDownloadResult> => {
+                const writable = await handle.createWritable();
+
+                await writable.write(json);
+                await writable.close();
+                return "saved";
+            })
+            .catch((error): FeedbackDownloadResult => {
+                if (isAbortError(error)) {
+                    return "cancelled";
+                }
+
+                try {
+                    downloadFeedbackJsonWithAnchor(filename, json);
+                    return "downloaded";
+                } catch {
+                    return "failed";
+                }
+            });
+    }
+
+    try {
+        downloadFeedbackJsonWithAnchor(filename, json);
+        return Promise.resolve("downloaded");
+    } catch {
+        return Promise.resolve("failed");
+    }
+}
+
+export async function readFeedbackJsonFile(file: File) {
+    const raw = await file.text();
+    return parseFeedbackImportJson(raw);
+}

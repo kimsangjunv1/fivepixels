@@ -24,6 +24,7 @@ declare const ReportContext: import("react").Context<{
             count: number;
         }[];
     };
+    canTransferFeedback: boolean;
     visibleShortcutKeys: boolean;
     searchInputRef: import("react").MutableRefObject<HTMLInputElement | null>;
     resolvedAppearance: import("../types/report-ui.js").ResolvedAppearance;
@@ -43,6 +44,7 @@ declare const ReportContext: import("react").Context<{
     queryErrorMessage: string | undefined;
     refetch: () => Promise<import("../index.js").ReportFeedback[]>;
     errorMessage: string;
+    setErrorMessage: import("react").Dispatch<import("react").SetStateAction<string>>;
     draft: import("../types/report-ui.js").DraftReport | null;
     hoveredTarget: import("../types/report-ui.js").TargetSnapshot | null;
     selectedTarget: import("../types/report-ui.js").TargetSnapshot | null;
@@ -130,6 +132,7 @@ export declare function useReport(): {
             count: number;
         }[];
     };
+    canTransferFeedback: boolean;
     visibleShortcutKeys: boolean;
     searchInputRef: import("react").MutableRefObject<HTMLInputElement | null>;
     resolvedAppearance: import("../types/report-ui.js").ResolvedAppearance;
@@ -149,6 +152,7 @@ export declare function useReport(): {
     queryErrorMessage: string | undefined;
     refetch: () => Promise<import("../index.js").ReportFeedback[]>;
     errorMessage: string;
+    setErrorMessage: import("react").Dispatch<import("react").SetStateAction<string>>;
     draft: import("../types/report-ui.js").DraftReport | null;
     hoveredTarget: import("../types/report-ui.js").TargetSnapshot | null;
     selectedTarget: import("../types/report-ui.js").TargetSnapshot | null;

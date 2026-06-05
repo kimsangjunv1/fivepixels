@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useRef, useState, type DragEvent } from "react";
 import { panelAnchorSide, usePanelDock } from "../../hooks/usePanelDock.js";
 import { useReport } from "../../providers/reportContext.js";
 import { ChevronLeftIcon, ChevronRightIcon } from "../icons/ChevronIcon.js";
@@ -6,11 +6,22 @@ import { ChevronDownIcon } from "../icons/ChevronDownIcon.js";
 import { PanelDockGuides } from "./PanelDockGuides.js";
 import { ReportFeedbackList } from "./ReportFeedbackList.js";
 import { ReportRouteDetails } from "./ReportRouteDetails.js";
+import { ReportImportConfirmDialog } from "./ReportImportConfirmDialog.js";
+import { PanelMoreMenu } from "./PanelMoreMenu.js";
 import { LogoIcon } from "./../icons/LogoIcon.js";
 import { motion } from "../motion/index.js";
 import { formatStatCount } from "../../utils/formatStatCount.js";
 import { panelNumericClassName, PANEL_FONT_FAMILY } from "../../utils/panelTypography.js";
 import type { ReportPanelTab } from "../../types/report-ui.js";
+import type { ReportFeedback } from "../../types/report.js";
+import {
+    createFeedbackBackupFilename,
+    downloadFeedbackJson,
+    pickFeedbackJsonFile,
+    readAllFeedback,
+    readFeedbackJsonFile,
+    writeAllFeedback,
+} from "../../utils/feedbackDataTransfer.js";
 
 const RECORDING_STATUS_SHADOW = "drop-shadow(0 1px 2px rgba(0,0,0,0.95)) drop-shadow(0 2px 6px rgba(0,0,0,0.9)) drop-shadow(0 4px 16px rgba(0,0,0,0.85)) drop-shadow(0 0 24px rgba(0,0,0,0.75))";
 
@@ -40,8 +51,8 @@ function PanelTabButton({ label, active, onClick }: { label: string; active: boo
             onClick={onClick}
             className={
                 active
-                    ? "flex flex-1 items-center justify-center gap-[6px] rounded-[10px] bg-white px-[10px] py-[8px] text-[13px] font-bold text-[var(--adaptive-grey900)]"
-                    : "flex flex-1 items-center justify-center gap-[6px] rounded-[10px] bg-[var(--adaptive-grey200)] px-[10px] py-[8px] text-[13px] font-bold text-[var(--adaptive-grey600)]"
+                    ? "flex flex-1 items-center justify-center gap-[6px] bg-white px-[10px] py-[8px] text-[13px] font-bold text-[var(--adaptive-grey900)]"
+                    : "flex flex-1 items-center justify-center gap-[6px] px-[10px] py-[8px] text-[13px] font-bold text-[var(--adaptive-grey600)]"
             }
         >
             <span>{label}</span>
@@ -66,6 +77,16 @@ function EnvironmentBadge({ environment }: { environment?: string }) {
     );
 }
 
+function isJsonDragEvent(event: DragEvent) {
+    const types = Array.from(event.dataTransfer.types);
+
+    return types.includes("Files") || types.includes("application/json");
+}
+
+function isJsonFile(file: File) {
+    return file.type === "application/json" || file.name.toLowerCase().endsWith(".json");
+}
+
 export function ReportControlPanel() {
     const {
         mode,
@@ -73,23 +94,32 @@ export function ReportControlPanel() {
         statusText,
         errorMessage,
         environment,
+        projectId,
         showFeedbackList,
         showTargetPreview,
         isMobileViewport,
         panelTab,
+        canTransferFeedback,
         toggleReportMode,
         toggleTargetPreview,
         toggleIssueMode,
         openPanelTab,
+        setErrorMessage,
+        refetch,
     } = useReport();
     const [panelCollapsed, setPanelCollapsed] = useState(false);
+    const [moreMenuOpen, setMoreMenuOpen] = useState(false);
+    const [isDragOver, setIsDragOver] = useState(false);
+    const [pendingImport, setPendingImport] = useState<ReportFeedback[] | null>(null);
+    const dragDepthRef = useRef(0);
     const isRecording = mode === "report";
     const isIssueMode = mode === "view";
     const { panelRef, panelStyle, placementCorner, isDragging, activeCorner, handleDragHandlePointerDown } = usePanelDock({
         enabled: !isMobileViewport,
-        measureKey: `${panelCollapsed}-${isRecording}-${panelTab ?? "none"}-${isIssueMode}`,
+        measureKey: `${panelCollapsed}-${isRecording}-${panelTab ?? "none"}-${isIssueMode}-${pendingImport ? "import" : "none"}`,
     });
     const anchorSide = panelAnchorSide(placementCorner);
+    const transferScope = { projectId, environment };
 
     const handlePanelTabClick = (tab: ReportPanelTab) => {
         if (tab === "feedback-list" && isIssueMode) {
@@ -97,6 +127,174 @@ export function ReportControlPanel() {
         }
 
         openPanelTab(tab);
+    };
+
+    const queueImport = useCallback((items: ReportFeedback[]) => {
+        setMoreMenuOpen(false);
+        setPendingImport(items);
+        setErrorMessage("");
+    }, [setErrorMessage]);
+
+    const handleImportFile = useCallback(
+        async (file: File) => {
+            if (!canTransferFeedback) {
+                setErrorMessage("localStorage 저장소에서만 import/export를 사용할 수 있어요.");
+                return;
+            }
+
+            try {
+                const items = await readFeedbackJsonFile(file);
+                queueImport(items);
+            } catch (nextError) {
+                setErrorMessage(nextError instanceof Error ? nextError.message : "JSON import에 실패했어요.");
+            }
+        },
+        [canTransferFeedback, queueImport, setErrorMessage],
+    );
+
+    const handleExport = useCallback(() => {
+        if (!canTransferFeedback) {
+            setErrorMessage("localStorage 저장소에서만 import/export를 사용할 수 있어요.");
+            return;
+        }
+
+        setMoreMenuOpen(false);
+        const items = readAllFeedback(transferScope);
+
+        void downloadFeedbackJson(createFeedbackBackupFilename(projectId, environment), items).then((result) => {
+            if (result === "failed") {
+                setErrorMessage("JSON export에 실패했어요. 브라우저 다운로드 권한을 확인해주세요.");
+                return;
+            }
+
+            if (result === "cancelled") {
+                return;
+            }
+
+            setErrorMessage("");
+        });
+    }, [canTransferFeedback, environment, projectId, setErrorMessage, transferScope]);
+
+    const handleImportFromMenu = useCallback(() => {
+        if (!canTransferFeedback) {
+            setErrorMessage("localStorage 저장소에서만 import/export를 사용할 수 있어요.");
+            return;
+        }
+
+        setMoreMenuOpen(false);
+
+        void pickFeedbackJsonFile()
+            .then((file) => {
+                if (!file) {
+                    return;
+                }
+
+                return handleImportFile(file);
+            })
+            .catch((error) => {
+                setErrorMessage(error instanceof Error ? error.message : "JSON import에 실패했어요.");
+            });
+    }, [canTransferFeedback, handleImportFile, setErrorMessage]);
+
+    const applyImport = useCallback(
+        async (items: ReportFeedback[]) => {
+            writeAllFeedback(transferScope, items);
+            setPendingImport(null);
+            await refetch();
+        },
+        [refetch, transferScope],
+    );
+
+    const handleCancelImport = () => {
+        setPendingImport(null);
+    };
+
+    const handleApplyImport = () => {
+        if (!pendingImport) {
+            return;
+        }
+
+        void applyImport(pendingImport);
+    };
+
+    const handleBackupAndApplyImport = () => {
+        if (!pendingImport) {
+            return;
+        }
+
+        const currentItems = readAllFeedback(transferScope);
+        const pending = pendingImport;
+
+        void downloadFeedbackJson(createFeedbackBackupFilename(projectId, environment), currentItems).then((result) => {
+            if (result === "cancelled" || result === "failed") {
+                if (result === "failed") {
+                    setErrorMessage("백업 export에 실패해서 import를 중단했어요.");
+                }
+
+                return;
+            }
+
+            void applyImport(pending);
+        });
+    };
+
+    const handleDragEnter = (event: DragEvent<HTMLDivElement>) => {
+        if (isRecording || !canTransferFeedback || pendingImport) {
+            return;
+        }
+
+        if (!isJsonDragEvent(event)) {
+            return;
+        }
+
+        event.preventDefault();
+        dragDepthRef.current += 1;
+        setIsDragOver(true);
+    };
+
+    const handleDragLeave = (event: DragEvent<HTMLDivElement>) => {
+        if (isRecording || !canTransferFeedback) {
+            return;
+        }
+
+        event.preventDefault();
+        dragDepthRef.current = Math.max(0, dragDepthRef.current - 1);
+
+        if (dragDepthRef.current === 0) {
+            setIsDragOver(false);
+        }
+    };
+
+    const handleDragOver = (event: DragEvent<HTMLDivElement>) => {
+        if (isRecording || !canTransferFeedback || pendingImport) {
+            return;
+        }
+
+        if (!isJsonDragEvent(event)) {
+            return;
+        }
+
+        event.preventDefault();
+        event.dataTransfer.dropEffect = "copy";
+    };
+
+    const handleDrop = (event: DragEvent<HTMLDivElement>) => {
+        if (isRecording || !canTransferFeedback) {
+            return;
+        }
+
+        event.preventDefault();
+        dragDepthRef.current = 0;
+        setIsDragOver(false);
+
+        const file = Array.from(event.dataTransfer.files).find(isJsonFile);
+
+        if (!file) {
+            setErrorMessage("JSON 파일만 import할 수 있어요.");
+            return;
+        }
+
+        void handleImportFile(file);
     };
 
     return (
@@ -126,6 +324,10 @@ export function ReportControlPanel() {
                 ref={panelRef}
                 layout
                 layoutId="asdwsww"
+                onDragEnter={handleDragEnter}
+                onDragLeave={handleDragLeave}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
                 className={
                     isRecording
                         ? "pointer-events-auto fixed z-[1000000] flex min-h-[40px] rounded-[24px] p-[4px] bg-[var(--adaptive-grey50)] shadow-[0_0_120px_0_var(--adaptive-greyOpacity500)]"
@@ -158,7 +360,13 @@ export function ReportControlPanel() {
                         ) : null}
 
                         {!panelCollapsed ? (
-                            <section className="flex min-w-0 flex-1 flex-col gap-[4px]">
+                            <section className="relative flex min-w-0 flex-1 flex-col gap-[4px]">
+                                {isDragOver ? (
+                                    <div className="pointer-events-none absolute inset-0 z-[30] flex items-center justify-center rounded-[12px] bg-[#dbeafe]/90 px-[16px] text-center backdrop-blur-[2px]">
+                                        <p className="text-[14px] font-bold text-[var(--adaptive-blue500)]">선택하신 JSON을 import 합니다</p>
+                                    </div>
+                                ) : null}
+
                                 <section className="flex items-center justify-between gap-[8px] px-[8px] pt-[6px]">
                                     <section className="flex min-w-0 items-center gap-[6px]">
                                         <LogoIcon className="w-[18px] shrink-0" />
@@ -193,7 +401,7 @@ export function ReportControlPanel() {
                                             className={showTargetPreview ? "rounded-full bg-[var(--adaptive-grey300)] px-[10px] py-[4px]" : "rounded-full bg-white px-[10px] py-[4px]"}
                                             aria-pressed={showTargetPreview}
                                         >
-                                            <p className="text-[11px] font-bold tracking-wide text-[var(--adaptive-grey700)]">{showTargetPreview ? "X-RAY" : "X-RAY"}</p>
+                                            <p className="text-[11px] font-bold tracking-wide text-[var(--adaptive-grey700)]">X-RAY</p>
                                         </button>
                                     </section>
                                 </section>
@@ -223,37 +431,52 @@ export function ReportControlPanel() {
                                     </section>
                                 </section>
 
-                                <section className="grid grid-cols-2 gap-[4px] border-t border-[var(--adaptive-grey200)] px-[4px] pb-[4px] pt-[4px]">
-                                    <PanelTabButton
-                                        label="Route Details"
-                                        active={panelTab === "route-details"}
-                                        onClick={() => handlePanelTabClick("route-details")}
-                                    />
-                                    {showFeedbackList ? (
+                                <section className="flex items-stretch gap-[4px] border-t border-[var(--adaptive-grey200)] px-[4px] pb-[4px] pt-[4px]">
+                                    <div className="flex min-w-0 flex-1 overflow-hidden rounded-[10px] bg-[var(--adaptive-grey200)]">
                                         <PanelTabButton
-                                            label="Feedback List"
-                                            active={panelTab === "feedback-list"}
-                                            onClick={() => handlePanelTabClick("feedback-list")}
+                                            label="Route Details"
+                                            active={panelTab === "route-details"}
+                                            onClick={() => handlePanelTabClick("route-details")}
                                         />
-                                    ) : (
-                                        <div />
-                                    )}
+                                        {showFeedbackList ? (
+                                            <PanelTabButton
+                                                label="Feedback List"
+                                                active={panelTab === "feedback-list"}
+                                                onClick={() => handlePanelTabClick("feedback-list")}
+                                            />
+                                        ) : null}
+                                    </div>
+
+                                    <PanelMoreMenu
+                                        open={moreMenuOpen}
+                                        disabled={!canTransferFeedback}
+                                        onToggle={() => setMoreMenuOpen((current) => !current)}
+                                        onClose={() => setMoreMenuOpen(false)}
+                                        onExport={handleExport}
+                                        onImport={handleImportFromMenu}
+                                    />
                                 </section>
 
-                                {panelTab === "route-details" ? (
+                                {errorMessage && !pendingImport ? (
+                                    <p className="px-[8px] text-[11px] text-rose-700">{errorMessage}</p>
+                                ) : null}
+
+                                {pendingImport ? (
+                                    <ReportImportConfirmDialog
+                                        onApply={handleApplyImport}
+                                        onCancel={handleCancelImport}
+                                        onBackupAndApply={handleBackupAndApplyImport}
+                                    />
+                                ) : null}
+
+                                {panelTab === "route-details" && !pendingImport ? (
                                     <div className="px-[4px] pb-[4px]">
                                         <ReportRouteDetails />
                                     </div>
                                 ) : null}
 
-                                {panelTab === "feedback-list" && showFeedbackList ? (
+                                {panelTab === "feedback-list" && showFeedbackList && !pendingImport ? (
                                     <section className="flex min-h-0 flex-1 flex-col gap-[8px] overflow-hidden px-[4px] pb-[4px]">
-                                        {errorMessage ? (
-                                            <p className="rounded-md border border-rose-200 bg-rose-50 px-2 py-1 text-[11px] text-rose-700 dark:border-rose-700 dark:bg-rose-950/40 dark:text-rose-200">
-                                                {errorMessage}
-                                            </p>
-                                        ) : null}
-
                                         <ReportFeedbackList />
                                     </section>
                                 ) : null}

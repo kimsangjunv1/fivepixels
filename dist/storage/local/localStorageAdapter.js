@@ -61,7 +61,7 @@ function normalizeReport(item) {
         replies: normalizeReplies(item.replies),
     };
 }
-function readAll(storageKey) {
+export function readAllReportsFromStorage(storageKey) {
     if (typeof window === "undefined") {
         return [];
     }
@@ -77,11 +77,17 @@ function readAll(storageKey) {
         return [];
     }
 }
-function writeAll(storageKey, items) {
+export function writeAllReportsToStorage(storageKey, items) {
     if (typeof window === "undefined") {
         return;
     }
     window.localStorage.setItem(storageKey, JSON.stringify(items.map(normalizeReport)));
+}
+function readAll(storageKey) {
+    return readAllReportsFromStorage(storageKey);
+}
+function writeAll(storageKey, items) {
+    writeAllReportsToStorage(storageKey, items);
 }
 export function createLocalStorageReportAdapter({ projectId, environment }) {
     const storageKey = getReportsStorageKey(projectId, environment);
