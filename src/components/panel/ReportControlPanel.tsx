@@ -110,6 +110,7 @@ export function ReportControlPanel() {
         measureKey: `${panelCollapsed}-${isRecording}-${panelTab ?? "none"}-${isIssueMode}-${pendingImport ? "import" : "none"}`,
     });
     const anchorSide = panelAnchorSide(placementCorner);
+    const panelLayout = placementCorner.startsWith("top") ? "size" : "position";
     const transferScope = { projectId, environment, appVersion };
 
     const handlePanelTabClick = (tab: ReportPanelTab) => {
@@ -316,8 +317,6 @@ export function ReportControlPanel() {
 
             <motion.div
                 ref={panelRef}
-                layout
-                layoutId="asdwsww"
                 transition={{ duration: 0.25, ease: "cubic-bezier(0.22, 1, 0.36, 1)" }}
                 onDragEnter={handleDragEnter}
                 onDragLeave={handleDragLeave}
@@ -326,162 +325,166 @@ export function ReportControlPanel() {
                 className={`pointer-events-auto fixed z-[1000000] overflow-hidden rounded-[24px] shadow-[0_0_120px_0_var(--adaptive-blackOpacity500)] flex ${isRecording ? "min-h-[40px] p-[4px]" : "max-h-[80vh] min-h-[40px w-full max-w-[375px]"}`}
                 style={{ ...panelStyle, fontSize: "14px" }}
             >
-                {isRecording ? (
-                    <section className="flex items-center justify-between gap-[16px] px-[12px] py-[8px]">
-                        <section className="flex items-center gap-[4px] justify-start shrink-0">
-                            <LogoIcon className="w-[18px]" />
-                            <p className="text-[var(--adaptive-black900)] font-[900] text-[18px]">Radar°</p>
+                <motion.div className="flex min-w-0 flex-1 flex-col w-full">
+                    {isRecording ? (
+                        <section className="flex items-center justify-between gap-[16px] px-[12px] py-[8px]">
+                            <section className="flex items-center gap-[4px] justify-start shrink-0">
+                                <LogoIcon className="w-[18px]" />
+                                <p className="text-[var(--adaptive-black900)] font-[900] text-[18px]">Radar°</p>
+                            </section>
+
+                            <button
+                                type="button"
+                                onClick={toggleReportMode}
+                                className="flex items-center shrink-0"
+                            >
+                                <p className="text-[14px] font-bold text-[var(--adaptive-blue500)]">Stop Recording...</p>
+                            </button>
                         </section>
-
-                        <button
-                            type="button"
-                            onClick={toggleReportMode}
-                            className="flex items-center shrink-0"
-                        >
-                            <p className="text-[14px] font-bold text-[var(--adaptive-blue500)]">Stop Recording...</p>
-                        </button>
-                    </section>
-                ) : (
-                    <>
-                        {!panelCollapsed ? (
-                            <section className="relative flex min-w-0 flex-1 flex-col">
-                                {isDragOver ? (
-                                    <div className="pointer-events-none absolute inset-0 z-[30] flex items-center justify-center rounded-[12px] bg-[#dbeafe]/90 px-[16px] text-center backdrop-blur-[2px]">
-                                        <p className="text-[14px] font-bold text-[var(--adaptive-blue500)]">선택하신 JSON을 import 합니다</p>
-                                    </div>
-                                ) : null}
-
-                                <section className="flex bg-[var(--adaptive-whiteOpacity700)] backdrop-blur-[50px]">
-                                    {anchorSide === "left" ? (
-                                        <PanelCollapseTab
-                                            collapsed={panelCollapsed}
-                                            anchorSide={anchorSide}
-                                            onClick={() => setPanelCollapsed((current) => !current)}
-                                        />
+                    ) : (
+                        <>
+                            {!panelCollapsed ? (
+                                <section className="relative flex min-w-0 flex-1 flex-col">
+                                    {isDragOver ? (
+                                        <div className="pointer-events-none absolute inset-0 z-[30] flex items-center justify-center rounded-[12px] bg-[#dbeafe]/90 px-[16px] text-center backdrop-blur-[2px]">
+                                            <p className="text-[14px] font-bold text-[var(--adaptive-blue500)]">선택하신 JSON을 import 합니다</p>
+                                        </div>
                                     ) : null}
 
-                                    <div className="flex flex-col gap-[8px] p-[12px] flex-1">
-                                        <section className="flex items-center justify-between gap-[8px]">
-                                            <section className="flex min-w-0 items-center gap-[6px]">
-                                                <LogoIcon className="w-[18px] shrink-0" />
-                                                <p className="shrink-0 text-[var(--adaptive-black900)] font-[700] text-[16px]">Radar°</p>
-                                                <EnvironmentBadge environment={environment} />
-                                            </section>
-
-                                            <section className="flex shrink-0 items-center gap-[4px]">
-                                                <button
-                                                    type="button"
-                                                    onClick={toggleReportMode}
-                                                    className="p-[4px_8px] rounded-[8px] bg-[var(--adaptive-black200)]"
-                                                >
-                                                    <p className="text-[12px] text-[var(--adaptive-black500)]">RECORD</p>
-                                                </button>
-
-                                                <button
-                                                    type="button"
-                                                    onClick={toggleIssueMode}
-                                                    className={
-                                                        isIssueMode ? "rounded-full bg-[var(--adaptive-black300)] px-[10px] py-[4px]" : "p-[4px_8px] rounded-[8px] bg-[var(--adaptive-black200)]"
-                                                    }
-                                                    aria-pressed={isIssueMode}
-                                                >
-                                                    <p className="text-[12px] text-[var(--adaptive-black500)]">ISSUE</p>
-                                                </button>
-
-                                                <button
-                                                    type="button"
-                                                    onClick={toggleTargetPreview}
-                                                    disabled={mode !== "idle"}
-                                                    aria-label={showTargetPreview ? "X-Ray 끄기" : "X-Ray 켜기"}
-                                                    title={showTargetPreview ? "X-Ray 끄기" : "X-Ray 켜기"}
-                                                    className={
-                                                        showTargetPreview ? "rounded-full bg-[var(--adaptive-black300)] px-[10px] py-[4px]" : "p-[4px_8px] rounded-[8px] bg-[var(--adaptive-black200)]"
-                                                    }
-                                                    aria-pressed={showTargetPreview}
-                                                >
-                                                    <p className="text-[12px] text-[var(--adaptive-black500)]">X-RAY</p>
-                                                </button>
-                                            </section>
-                                        </section>
-
-                                        <section
-                                            className="flex cursor-move"
-                                            onPointerDown={handleDragHandlePointerDown}
-                                            aria-label="패널 위치 변경"
-                                            title="드래그해서 위치 변경"
-                                            style={isDragging ? { opacity: 0.8 } : undefined}
-                                        >
-                                            <section className="flex flex-col items-start gap-[4px] flex-1">
-                                                <p className="text-[12px] text-[var(--adaptive-black500)]">Found</p>
-                                                <p className={`text-[18px] font-semibold text-[var(--adaptive-black900)] ${panelNumericClassName}`}>{formatStatCount(targetStats.found)}</p>
-                                            </section>
-
-                                            <section className="flex flex-col items-start gap-[4px] flex-1">
-                                                <p className="text-[12px] text-[var(--adaptive-black500)]">Group</p>
-                                                <p className={`text-[18px] font-semibold text-[var(--adaptive-black900)] ${panelNumericClassName}`}>{formatStatCount(targetStats.group)}</p>
-                                            </section>
-
-                                            <section className="flex flex-col items-start gap-[4px] flex-1">
-                                                <p className="text-[12px] text-[var(--adaptive-black500)]">Item</p>
-                                                <p className={`text-[18px] font-semibold text-[var(--adaptive-black900)] ${panelNumericClassName}`}>{formatStatCount(targetStats.item)}</p>
-                                            </section>
-                                        </section>
-                                    </div>
-
-                                    {anchorSide === "right" ? (
-                                        <PanelCollapseTab
-                                            collapsed={panelCollapsed}
-                                            anchorSide={anchorSide}
-                                            onClick={() => setPanelCollapsed((current) => !current)}
-                                        />
-                                    ) : null}
-                                </section>
-
-                                <section className="flex items-stretch border-t border-[var(--adaptive-black200)] bg-[var(--adaptive-black200)]">
-                                    <div className="flex min-w-0 flex-1 overflow-hidden">
-                                        <PanelTabButton
-                                            label="Page Details"
-                                            active={panelTab === "route-details"}
-                                            onClick={() => handlePanelTabClick("route-details")}
-                                        />
-                                        <div className="h-full w-[1px] bg-[var(--adaptive-black200)]" />
-                                        {showFeedbackList ? (
-                                            <PanelTabButton
-                                                label="Feedback List"
-                                                active={panelTab === "feedback-list"}
-                                                onClick={() => handlePanelTabClick("feedback-list")}
+                                    <section className="flex bg-[var(--adaptive-whiteOpacity700)] backdrop-blur-[50px]">
+                                        {anchorSide === "left" ? (
+                                            <PanelCollapseTab
+                                                collapsed={panelCollapsed}
+                                                anchorSide={anchorSide}
+                                                onClick={() => setPanelCollapsed((current) => !current)}
                                             />
                                         ) : null}
-                                    </div>
-                                    <div className="h-full w-[1px] bg-[var(--adaptive-black200)]" />
 
-                                    <PanelMoreMenu
-                                        open={moreMenuOpen}
-                                        disabled={!canTransferFeedback}
-                                        onToggle={() => setMoreMenuOpen((current) => !current)}
-                                        onClose={() => setMoreMenuOpen(false)}
-                                        onExport={handleExport}
-                                        onImport={handleImportFromMenu}
-                                    />
+                                        <div className="flex flex-col gap-[8px] p-[12px] flex-1">
+                                            <section className="flex items-center justify-between gap-[8px]">
+                                                <section className="flex min-w-0 items-center gap-[6px]">
+                                                    <LogoIcon className="w-[18px] shrink-0" />
+                                                    <p className="shrink-0 text-[var(--adaptive-black900)] font-[700] text-[16px]">Radar°</p>
+                                                    <EnvironmentBadge environment={environment} />
+                                                </section>
+
+                                                <section className="flex shrink-0 items-center gap-[4px]">
+                                                    <button
+                                                        type="button"
+                                                        onClick={toggleReportMode}
+                                                        className="p-[4px_8px] rounded-[8px] bg-[var(--adaptive-black200)]"
+                                                    >
+                                                        <p className="text-[12px] text-[var(--adaptive-black500)]">RECORD</p>
+                                                    </button>
+
+                                                    <button
+                                                        type="button"
+                                                        onClick={toggleIssueMode}
+                                                        className={
+                                                            isIssueMode ? "rounded-full bg-[var(--adaptive-black300)] px-[10px] py-[4px]" : "p-[4px_8px] rounded-[8px] bg-[var(--adaptive-black200)]"
+                                                        }
+                                                        aria-pressed={isIssueMode}
+                                                    >
+                                                        <p className="text-[12px] text-[var(--adaptive-black500)]">ISSUE</p>
+                                                    </button>
+
+                                                    <button
+                                                        type="button"
+                                                        onClick={toggleTargetPreview}
+                                                        disabled={mode !== "idle"}
+                                                        aria-label={showTargetPreview ? "X-Ray 끄기" : "X-Ray 켜기"}
+                                                        title={showTargetPreview ? "X-Ray 끄기" : "X-Ray 켜기"}
+                                                        className={
+                                                            showTargetPreview
+                                                                ? "rounded-full bg-[var(--adaptive-black300)] px-[10px] py-[4px]"
+                                                                : "p-[4px_8px] rounded-[8px] bg-[var(--adaptive-black200)]"
+                                                        }
+                                                        aria-pressed={showTargetPreview}
+                                                    >
+                                                        <p className="text-[12px] text-[var(--adaptive-black500)]">X-RAY</p>
+                                                    </button>
+                                                </section>
+                                            </section>
+
+                                            <section
+                                                className="flex cursor-move"
+                                                onPointerDown={handleDragHandlePointerDown}
+                                                aria-label="패널 위치 변경"
+                                                title="드래그해서 위치 변경"
+                                                style={isDragging ? { opacity: 0.8 } : undefined}
+                                            >
+                                                <section className="flex flex-col items-start gap-[4px] flex-1">
+                                                    <p className="text-[12px] text-[var(--adaptive-black500)]">Found</p>
+                                                    <p className={`text-[18px] font-semibold text-[var(--adaptive-black900)] ${panelNumericClassName}`}>{formatStatCount(targetStats.found)}</p>
+                                                </section>
+
+                                                <section className="flex flex-col items-start gap-[4px] flex-1">
+                                                    <p className="text-[12px] text-[var(--adaptive-black500)]">Group</p>
+                                                    <p className={`text-[18px] font-semibold text-[var(--adaptive-black900)] ${panelNumericClassName}`}>{formatStatCount(targetStats.group)}</p>
+                                                </section>
+
+                                                <section className="flex flex-col items-start gap-[4px] flex-1">
+                                                    <p className="text-[12px] text-[var(--adaptive-black500)]">Item</p>
+                                                    <p className={`text-[18px] font-semibold text-[var(--adaptive-black900)] ${panelNumericClassName}`}>{formatStatCount(targetStats.item)}</p>
+                                                </section>
+                                            </section>
+                                        </div>
+
+                                        {anchorSide === "right" ? (
+                                            <PanelCollapseTab
+                                                collapsed={panelCollapsed}
+                                                anchorSide={anchorSide}
+                                                onClick={() => setPanelCollapsed((current) => !current)}
+                                            />
+                                        ) : null}
+                                    </section>
+
+                                    <section className="flex items-stretch border-t border-[var(--adaptive-black200)] bg-[var(--adaptive-black200)]">
+                                        <div className="flex min-w-0 flex-1 overflow-hidden">
+                                            <PanelTabButton
+                                                label="Page Details"
+                                                active={panelTab === "route-details"}
+                                                onClick={() => handlePanelTabClick("route-details")}
+                                            />
+                                            <div className="h-full w-[1px] bg-[var(--adaptive-black200)]" />
+                                            {showFeedbackList ? (
+                                                <PanelTabButton
+                                                    label="Feedback List"
+                                                    active={panelTab === "feedback-list"}
+                                                    onClick={() => handlePanelTabClick("feedback-list")}
+                                                />
+                                            ) : null}
+                                        </div>
+                                        <div className="h-full w-[1px] bg-[var(--adaptive-black200)]" />
+
+                                        <PanelMoreMenu
+                                            open={moreMenuOpen}
+                                            disabled={!canTransferFeedback}
+                                            onToggle={() => setMoreMenuOpen((current) => !current)}
+                                            onClose={() => setMoreMenuOpen(false)}
+                                            onExport={handleExport}
+                                            onImport={handleImportFromMenu}
+                                        />
+                                    </section>
+
+                                    {errorMessage && !pendingImport ? <p className="px-[8px] text-[12px] text-rose-700">{errorMessage}</p> : null}
+
+                                    {pendingImport ? (
+                                        <ReportImportConfirmDialog
+                                            onApply={handleApplyImport}
+                                            onCancel={handleCancelImport}
+                                            onBackupAndApply={handleBackupAndApplyImport}
+                                        />
+                                    ) : null}
+
+                                    {panelTab === "route-details" && !pendingImport ? <ReportRouteDetails /> : null}
+
+                                    {panelTab === "feedback-list" && showFeedbackList && !pendingImport ? <ReportFeedbackList /> : null}
                                 </section>
-
-                                {errorMessage && !pendingImport ? <p className="px-[8px] text-[12px] text-rose-700">{errorMessage}</p> : null}
-
-                                {pendingImport ? (
-                                    <ReportImportConfirmDialog
-                                        onApply={handleApplyImport}
-                                        onCancel={handleCancelImport}
-                                        onBackupAndApply={handleBackupAndApplyImport}
-                                    />
-                                ) : null}
-
-                                {panelTab === "route-details" && !pendingImport ? <ReportRouteDetails /> : null}
-
-                                {panelTab === "feedback-list" && showFeedbackList && !pendingImport ? <ReportFeedbackList /> : null}
-                            </section>
-                        ) : null}
-                    </>
-                )}
+                            ) : null}
+                        </>
+                    )}
+                </motion.div>
             </motion.div>
         </>
     );

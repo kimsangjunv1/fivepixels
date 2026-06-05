@@ -1,6 +1,7 @@
 import { jsx as _jsx } from "react/jsx-runtime";
 import { Children, cloneElement, createContext, forwardRef, isValidElement, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, } from "react";
 const PresenceContext = createContext(null);
+const LayoutAnimationContext = createContext({ counterScale: null });
 const layoutRegistry = new Map();
 const motionComponentCache = new Map();
 function cloneRect(rect) {
@@ -11,6 +12,27 @@ function rectsDiffer(a, b, threshold = 0.5) {
         Math.abs(a.top - b.top) >= threshold ||
         Math.abs(a.width - b.width) >= threshold ||
         Math.abs(a.height - b.height) >= threshold);
+}
+function normalizeLayoutMode(layout) {
+    if (!layout) {
+        return false;
+    }
+    if (layout === true) {
+        return "both";
+    }
+    return layout;
+}
+function rectsDifferForLayout(a, b, mode, threshold = 0.5) {
+    if (mode === "position") {
+        return Math.abs(a.left - b.left) >= threshold || Math.abs(a.top - b.top) >= threshold;
+    }
+    if (mode === "size") {
+        return Math.abs(a.width - b.width) >= threshold || Math.abs(a.height - b.height) >= threshold;
+    }
+    return rectsDiffer(a, b, threshold);
+}
+function layoutUsesScale(mode) {
+    return mode !== "position";
 }
 function readLayoutRectFromStyle(style) {
     if (!style) {
@@ -52,18 +74,67 @@ function rectToPositionStyle(rect) {
 function readVisualLayoutRect(node) {
     return cloneRect(node.getBoundingClientRect());
 }
-function layoutTransformFromRects(fromRect, toRect) {
-    return {
-        deltaX: fromRect.left - toRect.left,
-        deltaY: fromRect.top - toRect.top,
-        scaleX: fromRect.width / Math.max(toRect.width, 1),
-        scaleY: fromRect.height / Math.max(toRect.height, 1),
-    };
+function layoutTransformFromRects(fromRect, toRect, mode) {
+    let deltaX = fromRect.left - toRect.left;
+    let deltaY = fromRect.top - toRect.top;
+    let scaleX = fromRect.width / Math.max(toRect.width, 1);
+    let scaleY = fromRect.height / Math.max(toRect.height, 1);
+    if (mode === "position") {
+        scaleX = 1;
+        scaleY = 1;
+    }
+    else if (mode === "size") {
+        deltaX = 0;
+        deltaY = 0;
+    }
+    else if (mode === "preserve-aspect") {
+        const fromAspect = fromRect.width / Math.max(fromRect.height, 1);
+        const toAspect = toRect.width / Math.max(toRect.height, 1);
+        if (Math.abs(fromAspect - toAspect) >= 0.01) {
+            scaleX = 1;
+            scaleY = 1;
+        }
+        else {
+            const uniformScale = (scaleX + scaleY) / 2;
+            scaleX = uniformScale;
+            scaleY = uniformScale;
+        }
+    }
+    return { deltaX, deltaY, scaleX, scaleY };
 }
-function applyLayoutTransform(node, fromRect, toRect) {
-    const { deltaX, deltaY, scaleX, scaleY } = layoutTransformFromRects(fromRect, toRect);
+function composeLayoutTransform(deltaX, deltaY, scaleX, scaleY) {
+    if (scaleX === 1 && scaleY === 1) {
+        return `translate(${deltaX}px, ${deltaY}px)`;
+    }
+    if (deltaX === 0 && deltaY === 0) {
+        return `scale(${scaleX}, ${scaleY})`;
+    }
+    return `translate(${deltaX}px, ${deltaY}px) scale(${scaleX}, ${scaleY})`;
+}
+function layoutTransformEndState(mode) {
+    if (mode === "size") {
+        return "scale(1, 1)";
+    }
+    if (mode === "position") {
+        return "translate(0px, 0px)";
+    }
+    return "translate(0px, 0px) scale(1, 1)";
+}
+function layoutTransformIsNoOp(deltaX, deltaY, scaleX, scaleY, mode) {
+    const positionChanged = Math.abs(deltaX) >= 0.5 || Math.abs(deltaY) >= 0.5;
+    const sizeChanged = Math.abs(scaleX - 1) >= 0.01 || Math.abs(scaleY - 1) >= 0.01;
+    if (mode === "position") {
+        return !positionChanged;
+    }
+    if (mode === "size") {
+        return !sizeChanged;
+    }
+    return !positionChanged && !sizeChanged;
+}
+function applyLayoutTransform(node, fromRect, toRect, mode) {
+    const { deltaX, deltaY, scaleX, scaleY } = layoutTransformFromRects(fromRect, toRect, mode);
     node.style.transformOrigin = "top left";
-    node.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(${scaleX}, ${scaleY})`;
+    node.style.transform = composeLayoutTransform(deltaX, deltaY, scaleX, scaleY);
 }
 function clearLayoutTransform(node) {
     node.style.transformOrigin = "";
@@ -381,14 +452,15 @@ function useMergedRef(forwardedRef, localRef) {
         }
     };
 }
-function animateLayout(node, fromRect, transition, layoutAnimationRef, onComplete) {
+function animateLayout(node, fromRect, transition, layoutAnimationRef, layoutMode, onScaleChange, onComplete) {
     if (typeof node.animate !== "function") {
         return null;
     }
     const toRect = readTargetLayoutRect(node);
-    const { deltaX, deltaY, scaleX, scaleY } = layoutTransformFromRects(fromRect, toRect);
-    if (Math.abs(deltaX) < 0.5 && Math.abs(deltaY) < 0.5 && Math.abs(scaleX - 1) < 0.01 && Math.abs(scaleY - 1) < 0.01) {
+    const { deltaX, deltaY, scaleX, scaleY } = layoutTransformFromRects(fromRect, toRect, layoutMode);
+    if (layoutTransformIsNoOp(deltaX, deltaY, scaleX, scaleY, layoutMode)) {
         clearLayoutTransform(node);
+        onScaleChange?.(null);
         onComplete?.(toRect);
         return null;
     }
@@ -396,8 +468,9 @@ function animateLayout(node, fromRect, transition, layoutAnimationRef, onComplet
         layoutAnimationRef.current.cancel();
         layoutAnimationRef.current = null;
     }
-    applyLayoutTransform(node, fromRect, toRect);
+    applyLayoutTransform(node, fromRect, toRect, layoutMode);
     const startTransform = node.style.transform;
+    const endTransform = layoutTransformEndState(layoutMode);
     const animation = node.animate([
         {
             transformOrigin: "top left",
@@ -405,7 +478,7 @@ function animateLayout(node, fromRect, transition, layoutAnimationRef, onComplet
         },
         {
             transformOrigin: "top left",
-            transform: "translate(0px, 0px) scale(1, 1)",
+            transform: endTransform,
         },
     ], {
         duration: resolveDuration(transition),
@@ -413,17 +486,48 @@ function animateLayout(node, fromRect, transition, layoutAnimationRef, onComplet
         fill: "both",
     });
     layoutAnimationRef.current = animation;
+    let scaleFrameId = 0;
+    const shouldTrackScale = layoutUsesScale(layoutMode) && onScaleChange;
+    if (shouldTrackScale) {
+        onScaleChange({ scaleX, scaleY });
+        const trackScale = () => {
+            if (layoutAnimationRef.current !== animation) {
+                return;
+            }
+            const playState = animation.playState;
+            if (playState === "finished" || playState === "idle") {
+                onScaleChange(null);
+                return;
+            }
+            const timing = animation.effect?.getComputedTiming();
+            const progress = typeof timing?.progress === "number" ? timing.progress : 0;
+            onScaleChange({
+                scaleX: scaleX + (1 - scaleX) * progress,
+                scaleY: scaleY + (1 - scaleY) * progress,
+            });
+            scaleFrameId = requestAnimationFrame(trackScale);
+        };
+        scaleFrameId = requestAnimationFrame(trackScale);
+    }
     animation.onfinish = () => {
         if (layoutAnimationRef.current !== animation) {
             return;
         }
+        if (scaleFrameId) {
+            cancelAnimationFrame(scaleFrameId);
+        }
         clearLayoutTransform(node);
         layoutAnimationRef.current = null;
+        onScaleChange?.(null);
         onComplete?.(toRect);
     };
     animation.oncancel = () => {
         if (layoutAnimationRef.current === animation) {
+            if (scaleFrameId) {
+                cancelAnimationFrame(scaleFrameId);
+            }
             layoutAnimationRef.current = null;
+            onScaleChange?.(null);
         }
     };
     return animation;
@@ -468,9 +572,10 @@ export function AnimatedPresence({ children }) {
         }, children: cloneElement(child.element) }, child.element.key)));
 }
 function createMotionComponent(tagName) {
-    return forwardRef(function MotionComponent({ animate, as, children, exit, initial, layout, layoutId, layoutTransition, style, transition, ...rest }, forwardedRef) {
+    return forwardRef(function MotionComponent({ animate, as, children, exit, initial, layout, layoutId, layoutRoot, layoutTransition, style, transition, ...rest }, forwardedRef) {
         const Component = (as ?? tagName);
         const presence = useContext(PresenceContext);
+        const parentLayoutContext = useContext(LayoutAnimationContext);
         const localRef = useRef(null);
         const lastAnimatedStyleRef = useRef(animate ?? {});
         const previousRectRef = useRef(null);
@@ -482,25 +587,38 @@ function createMotionComponent(tagName) {
         const useExplicitLayoutRef = useRef(false);
         const [isLayoutAnimating, setIsLayoutAnimating] = useState(false);
         const [layoutMeasureGeneration, setLayoutMeasureGeneration] = useState(0);
+        const [childCounterScale, setChildCounterScale] = useState(null);
         const mergedRef = useMergedRef(forwardedRef, localRef);
         const animateKey = stringifyStyle(animate);
-        const layoutEnabled = Boolean(layout || layoutId);
+        const layoutMode = normalizeLayoutMode(layout);
+        const effectiveLayoutMode = layoutMode || "both";
+        const layoutEnabled = Boolean(layoutMode || layoutId);
         const resolvedLayoutTransition = layoutTransition ?? transition;
         const incomingLayoutRect = readLayoutRectFromStyle(style);
         const layoutStyleKey = incomingLayoutRect
             ? `${incomingLayoutRect.left}|${incomingLayoutRect.top}|${incomingLayoutRect.width}|${incomingLayoutRect.height}`
             : "";
+        const parentCounterScale = layoutRoot ? null : parentLayoutContext.counterScale;
+        const layoutAnimationContextValue = useMemo(() => ({ counterScale: childCounterScale }), [childCounterScale]);
         const finishLayout = (targetRect) => {
             previousRectRef.current = cloneRect(targetRect);
             committedLayoutRectRef.current = cloneRect(targetRect);
             setIsLayoutAnimating(false);
+            setChildCounterScale(null);
+        };
+        const handleLayoutScaleChange = (scale) => {
+            if (!layoutUsesScale(effectiveLayoutMode)) {
+                setChildCounterScale(null);
+                return;
+            }
+            setChildCounterScale(scale);
         };
         const startLayoutAnimation = (node, fromRect, targetRect) => {
             useExplicitLayoutRef.current = true;
             applyLayoutRectStyle(node, targetRect);
             committedLayoutRectRef.current = cloneRect(targetRect);
             setIsLayoutAnimating(true);
-            const animation = animateLayout(node, fromRect, resolvedLayoutTransition, layoutAnimationRef, finishLayout);
+            const animation = animateLayout(node, fromRect, resolvedLayoutTransition, layoutAnimationRef, effectiveLayoutMode, handleLayoutScaleChange, finishLayout);
             if (!animation) {
                 finishLayout(targetRect);
             }
@@ -509,7 +627,7 @@ function createMotionComponent(tagName) {
             useExplicitLayoutRef.current = false;
             committedLayoutRectRef.current = cloneRect(targetRect);
             setIsLayoutAnimating(true);
-            const animation = animateLayout(node, fromRect, resolvedLayoutTransition, layoutAnimationRef, finishLayout);
+            const animation = animateLayout(node, fromRect, resolvedLayoutTransition, layoutAnimationRef, effectiveLayoutMode, handleLayoutScaleChange, finishLayout);
             if (!animation) {
                 finishLayout(targetRect);
             }
@@ -532,7 +650,7 @@ function createMotionComponent(tagName) {
             }
         }, []);
         useEffect(() => {
-            if (!layout || !isBrowser()) {
+            if (!layoutMode || !isBrowser()) {
                 return;
             }
             const node = localRef.current;
@@ -549,7 +667,7 @@ function createMotionComponent(tagName) {
             return () => {
                 observer.disconnect();
             };
-        }, [layout, layoutId]);
+        }, [layoutId, layoutMode]);
         useLayoutEffect(() => {
             if (presence?.isPresent === false || !animate) {
                 return;
@@ -620,7 +738,7 @@ function createMotionComponent(tagName) {
                 return;
             }
             if (!incomingLayoutRect) {
-                if (!layout) {
+                if (!layoutMode) {
                     return;
                 }
                 const targetRect = readVisualLayoutRect(node);
@@ -636,14 +754,14 @@ function createMotionComponent(tagName) {
                     finishLayout(targetRect);
                     return;
                 }
-                if (layoutAnimationRef.current && committedLayoutRectRef.current && !rectsDiffer(committedLayoutRectRef.current, targetRect)) {
+                if (layoutAnimationRef.current && committedLayoutRectRef.current && !rectsDifferForLayout(committedLayoutRectRef.current, targetRect, effectiveLayoutMode)) {
                     return;
                 }
                 if (layoutAnimationRef.current) {
                     const visualRect = readVisualLayoutRect(node);
                     layoutAnimationRef.current.cancel();
                     layoutAnimationRef.current = null;
-                    if (!rectsDiffer(visualRect, targetRect)) {
+                    if (!rectsDifferForLayout(visualRect, targetRect, effectiveLayoutMode)) {
                         clearLayoutTransform(node);
                         finishLayout(targetRect);
                         return;
@@ -651,11 +769,11 @@ function createMotionComponent(tagName) {
                     startImplicitLayoutAnimation(node, visualRect, targetRect);
                     return;
                 }
-                if (previousRectRef.current && !rectsDiffer(previousRectRef.current, targetRect)) {
+                if (previousRectRef.current && !rectsDifferForLayout(previousRectRef.current, targetRect, effectiveLayoutMode)) {
                     finishLayout(targetRect);
                     return;
                 }
-                if (previousRectRef.current && rectsDiffer(previousRectRef.current, targetRect)) {
+                if (previousRectRef.current && rectsDifferForLayout(previousRectRef.current, targetRect, effectiveLayoutMode)) {
                     startImplicitLayoutAnimation(node, previousRectRef.current, targetRect);
                     return;
                 }
@@ -676,14 +794,14 @@ function createMotionComponent(tagName) {
                 finishLayout(targetRect);
                 return;
             }
-            if (layoutAnimationRef.current && committedLayoutRectRef.current && !rectsDiffer(committedLayoutRectRef.current, targetRect)) {
+            if (layoutAnimationRef.current && committedLayoutRectRef.current && !rectsDifferForLayout(committedLayoutRectRef.current, targetRect, effectiveLayoutMode)) {
                 return;
             }
             if (layoutAnimationRef.current) {
                 const visualRect = readVisualLayoutRect(node);
                 layoutAnimationRef.current.cancel();
                 layoutAnimationRef.current = null;
-                if (!rectsDiffer(visualRect, targetRect)) {
+                if (!rectsDifferForLayout(visualRect, targetRect, effectiveLayoutMode)) {
                     applyLayoutRectStyle(node, targetRect);
                     clearLayoutTransform(node);
                     finishLayout(targetRect);
@@ -692,12 +810,12 @@ function createMotionComponent(tagName) {
                 startLayoutAnimation(node, visualRect, targetRect);
                 return;
             }
-            if (previousRectRef.current && !rectsDiffer(previousRectRef.current, targetRect)) {
+            if (previousRectRef.current && !rectsDifferForLayout(previousRectRef.current, targetRect, effectiveLayoutMode)) {
                 applyLayoutRectStyle(node, targetRect);
                 finishLayout(targetRect);
                 return;
             }
-            if (!fromRect && layout && previousRectRef.current && rectsDiffer(previousRectRef.current, targetRect)) {
+            if (!fromRect && layoutMode && previousRectRef.current && rectsDifferForLayout(previousRectRef.current, targetRect, effectiveLayoutMode)) {
                 fromRect = previousRectRef.current;
             }
             if (!fromRect) {
@@ -706,7 +824,7 @@ function createMotionComponent(tagName) {
                 return;
             }
             startLayoutAnimation(node, fromRect, targetRect);
-        }, [layout, layoutEnabled, layoutId, layoutMeasureGeneration, layoutStyleKey, presence?.isPresent, resolvedLayoutTransition, style]);
+        }, [effectiveLayoutMode, layoutEnabled, layoutId, layoutMeasureGeneration, layoutMode, layoutStyleKey, presence?.isPresent, resolvedLayoutTransition, style]);
         useEffect(() => {
             if (presence?.isPresent !== false) {
                 return;
@@ -754,15 +872,28 @@ function createMotionComponent(tagName) {
             };
         }, [exit, presence, transition]);
         const resolvedAnimatedStyle = animate ? resolveMotionStyle(animate) : {};
+        const { transform: animatedTransform, ...restAnimatedStyle } = resolvedAnimatedStyle;
         const layoutPositionStyle = isLayoutAnimating && useExplicitLayoutRef.current && committedLayoutRectRef.current
             ? rectToPositionStyle(committedLayoutRectRef.current)
             : null;
+        const mergedTransforms = [];
+        if (layoutMode && parentCounterScale) {
+            mergedTransforms.push(`scale(${1 / parentCounterScale.scaleX}, ${1 / parentCounterScale.scaleY})`);
+        }
+        if (animatedTransform) {
+            mergedTransforms.push(String(animatedTransform));
+        }
         const mergedStyle = {
             ...style,
-            ...resolvedAnimatedStyle,
+            ...restAnimatedStyle,
             ...(layoutPositionStyle ?? {}),
+            ...(mergedTransforms.length ? { transform: mergedTransforms.join(" ") } : {}),
         };
-        return (_jsx(Component, { ref: mergedRef, style: mergedStyle, ...rest, children: children }));
+        const element = (_jsx(Component, { ref: mergedRef, style: mergedStyle, ...rest, children: children }));
+        if (layoutRoot || childCounterScale) {
+            return _jsx(LayoutAnimationContext.Provider, { value: layoutAnimationContextValue, children: element });
+        }
+        return element;
     });
 }
 export const motion = new Proxy({}, {
