@@ -17,7 +17,7 @@ const TOOLTIP_MOTION_TRANSITION = {
     stiffness: 100,
     damping: 10,
 };
-const TOOLTIP_BASE_CLASS = "fixed z-[1000001] overflow-hidden rounded-[24px] bg-[var(--adaptive-grey200)] shadow-[0_0_90px_0_var(--adaptive-greyOpacity300)]";
+const TOOLTIP_BASE_CLASS = "fixed z-[1000001] overflow-hidden rounded-[24px] bg-[var(--adaptive-black200)] shadow-[0_0_90px_0_var(--adaptive-blackOpacity300)]";
 const MARKER_BUTTON_BASE_CLASS = "pointer-events-auto fixed z-[1000000] flex -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full";
 function MarkerButton({ markerItem, isSelected, onSelect, onOpenReply, onHoverStart, onHoverEnd }) {
     const hoverRef = useNativeHover({
@@ -27,9 +27,7 @@ function MarkerButton({ markerItem, isSelected, onSelect, onOpenReply, onHoverSt
     return (_jsx("button", { ref: hoverRef, type: "button", "data-stitchable-interactive": "", "data-marker-report-id": markerItem.report.id, "aria-label": `${markerItem.report.report_type} · ${markerItem.report.report_id}`, onClick: () => {
             onSelect();
             onOpenReply();
-        }, className: isSelected
-            ? `${MARKER_BUTTON_BASE_CLASS} h-5 w-5 border-2 border-white/80 shadow-lg ring-2 ring-white/30`
-            : `${MARKER_BUTTON_BASE_CLASS} h-4 w-4 border border-white/60 shadow-sm`, style: {
+        }, className: isSelected ? `${MARKER_BUTTON_BASE_CLASS} h-5 w-5 border-2 border-white/80 shadow-lg ring-2 ring-white/30` : `${MARKER_BUTTON_BASE_CLASS} h-4 w-4 border border-white/60 shadow-sm`, style: {
             left: markerItem.left,
             top: markerItem.top,
             backgroundColor: getMarkerColor(markerItem.report),
@@ -123,6 +121,6 @@ export function ReportMarkersLayer() {
                         top: tooltipPosition.top,
                         width: tooltipPosition.width,
                         pointerEvents: "auto",
-                    }, children: _jsxs("div", { onClick: (event) => event.stopPropagation(), onPointerDown: (event) => event.stopPropagation(), children: [_jsx(FeedbackIssueHeader, { report: activeReplyReport, fieldTags: tooltipFieldTags, expanded: true }), showComposer ? (_jsx("section", { className: "border-t border-[var(--adaptive-greyOpacity200)] bg-[var(--adaptive-grey100)]", children: _jsx(FeedbackComposer, { message: replyDraft, onMessageChange: setReplyDraft, authorName: replyAuthorName, onAuthorNameChange: setReplyAuthorName, authors: authors, fields: fields, fieldValues: activeReplyReport.field_values, onFieldChange: () => undefined, showTags: false, onSubmit: () => void handleReplySubmit(), isSubmitting: isUpdating, autoFocus: pendingComposer !== null }) })) : null, _jsx(FeedbackThread, { report: activeReplyReport, authors: authors, pendingComposer: pendingComposer, confirmAuthorName: confirmAuthorName, showConfirmAuthorSelect: showConfirmAuthorSelect, onConfirmAuthorNameChange: setConfirmAuthorName, onToggleConfirmAuthorSelect: toggleConfirmAuthorSelect, onStartDeny: startDenyReview, onStartCheckout: startCheckoutReview, onConfirm: () => void handleConfirmResolution(), isUpdating: isUpdating })] }) }, `${tooltipReport.id}-expanded`)) : null })] }));
+                    }, children: _jsxs("div", { onClick: (event) => event.stopPropagation(), onPointerDown: (event) => event.stopPropagation(), children: [_jsx(FeedbackIssueHeader, { report: activeReplyReport, fieldTags: tooltipFieldTags, expanded: true }), showComposer ? (_jsx("section", { className: "border-t border-[var(--adaptive-blackOpacity200)] bg-[var(--adaptive-black100)]", children: _jsx(FeedbackComposer, { message: replyDraft, onMessageChange: setReplyDraft, authorName: replyAuthorName, onAuthorNameChange: setReplyAuthorName, authors: authors, fields: fields, fieldValues: activeReplyReport.field_values, onFieldChange: () => undefined, showTags: false, onSubmit: () => void handleReplySubmit(), isSubmitting: isUpdating, autoFocus: pendingComposer !== null }) })) : null, _jsx(FeedbackThread, { report: activeReplyReport, authors: authors, pendingComposer: pendingComposer, confirmAuthorName: confirmAuthorName, showConfirmAuthorSelect: showConfirmAuthorSelect, onConfirmAuthorNameChange: setConfirmAuthorName, onToggleConfirmAuthorSelect: toggleConfirmAuthorSelect, onStartDeny: startDenyReview, onStartCheckout: startCheckoutReview, onConfirm: () => void handleConfirmResolution(), isUpdating: isUpdating })] }) }, `${tooltipReport.id}-expanded`)) : null })] }));
 }
 //# sourceMappingURL=ReportMarkersLayer.js.map

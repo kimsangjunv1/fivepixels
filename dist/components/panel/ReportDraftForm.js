@@ -20,7 +20,7 @@ function DraftPopoverConnector({ placement }) {
     if (placement !== "right" && placement !== "left") {
         return null;
     }
-    const baseClass = "pointer-events-none absolute top-1/2 h-[2px] -translate-y-1/2 bg-[var(--adaptive-grey500)]";
+    const baseClass = "pointer-events-none absolute top-1/2 h-[2px] -translate-y-1/2 bg-[var(--adaptive-black500)]";
     if (placement === "right") {
         return (_jsx("div", { "aria-hidden": true, className: `${baseClass} left-0 -translate-x-full`, style: { width: DRAFT_POPOVER_CONNECTOR_WIDTH } }));
     }
@@ -34,11 +34,11 @@ function ReportDraftFormContent({ draft, fields, authors, isCreating, selectedTa
     const anchor = getDraftMarkerPosition(draft, selectedTarget);
     const { left, top, anchorCenterY, width, placement, centerVertically } = getDraftPopoverPosition(anchor);
     const verticalOffset = centerVertically ? "-50%" : 0;
-    return (_jsxs(motion.div, { initial: { y: verticalOffset }, animate: { y: verticalOffset }, exit: { y: verticalOffset }, transition: { duration: 0.25, ease: DRAFT_MOTION_EASE }, onClick: (event) => event.stopPropagation(), className: "pointer-events-auto fixed z-[1000001] flex flex-col rounded-[24px] bg-[var(--adaptive-whiteOpacity500)] p-[4px] shadow-[0_0_120px_0_var(--adaptive-grey500)] backdrop-blur-[30px]", style: {
+    return (_jsxs(motion.div, { initial: { y: verticalOffset }, animate: { y: verticalOffset }, exit: { y: verticalOffset }, transition: { duration: 0.25, ease: DRAFT_MOTION_EASE }, onClick: (event) => event.stopPropagation(), className: "pointer-events-auto fixed z-[1000001] flex flex-col rounded-[24px] bg-[var(--adaptive-whiteOpacity500)] p-[4px] shadow-[0_0_120px_0_var(--adaptive-black500)] backdrop-blur-[30px]", style: {
             left,
             top: centerVertically ? anchorCenterY : top,
             width,
             transformOrigin: getMotionOrigin(placement),
-        }, children: [_jsx("section", { className: "overflow-hidden rounded-[20px] bg-[var(--adaptive-grey100)]", children: _jsx(FeedbackComposer, { message: draft.message, onMessageChange: updateDraftMessage, authorName: draftAuthorName, onAuthorNameChange: setDraftAuthorName, authors: authors, fields: fields, fieldValues: draft.fieldValues, onFieldChange: updateDraftField, showTags: true, onSubmit: () => void handleCreateSubmit(), isSubmitting: isCreating, autoFocus: true }) }), _jsx(DraftPopoverConnector, { placement: placement })] }, "report-draft-form"));
+        }, children: [_jsx("section", { className: "overflow-hidden rounded-[20px] bg-[var(--adaptive-black100)]", children: _jsx(FeedbackComposer, { message: draft.message, onMessageChange: updateDraftMessage, authorName: draftAuthorName, onAuthorNameChange: setDraftAuthorName, authors: authors, fields: fields, fieldValues: draft.fieldValues, onFieldChange: updateDraftField, showTags: true, onSubmit: () => void handleCreateSubmit(), isSubmitting: isCreating, autoFocus: true }) }), _jsx(DraftPopoverConnector, { placement: placement })] }, "report-draft-form"));
 }
 //# sourceMappingURL=ReportDraftForm.js.map

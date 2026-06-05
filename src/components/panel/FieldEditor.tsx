@@ -35,7 +35,7 @@ function renderNonCheckboxField(
                     autoFocus={isDraftBubble}
                     value={message}
                     onChange={(event) => onMessageChange(event.target.value)}
-                    className="bg-[var(--adaptive-grey50)] p-[14px] focus:border-none focus:stroke-none focus:outline-none"
+                    className="bg-[var(--adaptive-black50)] p-[14px] focus:border-none focus:stroke-none focus:outline-none"
                     placeholder="피드백을 남겨주세요"
                 />
             </label>
@@ -47,7 +47,7 @@ function renderNonCheckboxField(
             key={field.key}
             className="flex flex-col gap-1 text-xs"
         >
-            <span className="text-[11px] text-slate-500 dark:text-slate-400">{field.label}</span>
+            <span className="text-[12px] text-slate-500 dark:text-slate-400">{field.label}</span>
             <textarea
                 value={String(fieldValues[field.key] ?? "")}
                 onChange={(event) => onFieldChange(field.key, event.target.value)}

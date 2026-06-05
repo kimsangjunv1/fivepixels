@@ -42,28 +42,24 @@ export function PanelMoreMenu({ open, disabled = false, onToggle, onClose, onExp
                 type="button"
                 disabled={disabled}
                 onClick={onToggle}
-                className={
-                    open
-                        ? "flex h-full min-w-[72px] items-center justify-center gap-[4px] rounded-[10px] bg-[var(--adaptive-grey300)] px-[12px] py-[8px] text-[13px] font-bold text-[var(--adaptive-grey800)] disabled:cursor-not-allowed disabled:opacity-50"
-                        : "flex h-full min-w-[72px] items-center justify-center gap-[4px] rounded-[10px] bg-[var(--adaptive-grey200)] px-[12px] py-[8px] text-[13px] font-bold text-[var(--adaptive-grey700)] disabled:cursor-not-allowed disabled:opacity-50"
-                }
+                className={`flex h-full items-center justify-center gap-[4px] px-[12px] py-[4px] disabled:cursor-not-allowed disabled:opacity-50  disabled:cursor-not-allowed disabled:opacity-50 ${open ? "text-[var(--adaptive-black800)]" : "text-[var(--adaptive-black700)]"}`}
                 aria-expanded={open}
                 aria-haspopup="menu"
             >
-                <span>more</span>
+                <p className="text-[var(--adaptive-black500)] font-[500]">more</p>
                 <ChevronDownIcon className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`} />
             </button>
 
             {open ? (
                 <div
                     role="menu"
-                    className="absolute bottom-[calc(100%+6px)] right-0 z-[20] min-w-[120px] overflow-hidden rounded-[10px] border border-[var(--adaptive-grey200)] bg-white py-[4px] shadow-[0_8px_24px_rgba(15,23,42,0.12)]"
+                    className="absolute bottom-[calc(100%+6px)] right-0 z-[20] min-w-[120px] overflow-hidden rounded-[10px] border border-[var(--adaptive-black200)] bg-white py-[4px] shadow-[0_8px_24px_rgba(15,23,42,0.12)]"
                 >
                     <button
                         type="button"
                         role="menuitem"
                         onClick={onImport}
-                        className="flex w-full px-[12px] py-[8px] text-left text-[13px] font-semibold text-[var(--adaptive-grey800)] hover:bg-[var(--adaptive-grey100)]"
+                        className="flex w-full px-[12px] py-[8px] text-left font-semibold text-[var(--adaptive-black800)] hover:bg-[var(--adaptive-black100)]"
                     >
                         import
                     </button>
@@ -71,7 +67,7 @@ export function PanelMoreMenu({ open, disabled = false, onToggle, onClose, onExp
                         type="button"
                         role="menuitem"
                         onClick={onExport}
-                        className="flex w-full px-[12px] py-[8px] text-left text-[13px] font-semibold text-[var(--adaptive-grey800)] hover:bg-[var(--adaptive-grey100)]"
+                        className="flex w-full px-[12px] py-[8px] text-left font-semibold text-[var(--adaptive-black800)] hover:bg-[var(--adaptive-black100)]"
                     >
                         export
                     </button>

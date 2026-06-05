@@ -51,7 +51,7 @@ export function FeedbackComposer({
                 onChange={(event) => onMessageChange(event.target.value)}
                 placeholder={placeholder}
                 rows={3}
-                className="min-h-[72px] w-full resize-none bg-transparent px-[16px] pt-[16px] text-[14px] leading-[1.4] text-[var(--adaptive-grey900)] outline-none placeholder:text-[var(--adaptive-grey500)]"
+                className="min-h-[72px] w-full resize-none bg-transparent px-[16px] pt-[16px] text-[14px] leading-[1.4] text-[var(--adaptive-black900)] outline-none placeholder:text-[var(--adaptive-black500)]"
                 onKeyDown={(event) => {
                     if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
                         event.preventDefault();
@@ -71,7 +71,7 @@ export function FeedbackComposer({
                     data-stitchable-interactive=""
                     disabled={isSubmitting}
                     onClick={handleSubmit}
-                    className="inline-flex h-[36px] w-[36px] shrink-0 items-center justify-center rounded-full bg-[var(--adaptive-grey900)] text-[var(--adaptive-grey50)] disabled:opacity-50"
+                    className="inline-flex h-[36px] w-[36px] shrink-0 items-center justify-center rounded-full bg-[var(--adaptive-black900)] text-[var(--adaptive-black50)] disabled:opacity-50"
                     aria-label="전송"
                 >
                     <SendIcon className="h-[16px] w-[16px]" />

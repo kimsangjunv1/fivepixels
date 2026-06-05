@@ -91,7 +91,7 @@ function ThreadEntryActions({
                             className={
                                 denyActive
                                     ? "flex-1 rounded-full bg-[var(--adaptive-red400)] px-[12px] py-[8px] text-[12px] font-semibold text-white"
-                                    : "flex-1 rounded-full border border-[var(--adaptive-grey400)] px-[12px] py-[8px] text-[12px] font-semibold text-[var(--adaptive-grey700)]"
+                                    : "flex-1 rounded-full border border-[var(--adaptive-black400)] px-[12px] py-[8px] text-[12px] font-semibold text-[var(--adaptive-black700)]"
                             }
                         >
                             denied
@@ -101,7 +101,7 @@ function ThreadEntryActions({
                             data-stitchable-interactive=""
                             disabled={isUpdating}
                             onClick={onConfirm}
-                            className="flex-1 rounded-full border border-[var(--adaptive-grey400)] px-[12px] py-[8px] text-[12px] font-semibold text-[var(--adaptive-grey700)]"
+                            className="flex-1 rounded-full border border-[var(--adaptive-black400)] px-[12px] py-[8px] text-[12px] font-semibold text-[var(--adaptive-black700)]"
                         >
                             confirm
                         </button>
@@ -112,8 +112,8 @@ function ThreadEntryActions({
                             onClick={onToggleConfirmAuthorSelect}
                             className={
                                 showConfirmAuthorSelect
-                                    ? "shrink-0 rounded-full bg-[var(--adaptive-grey900)] px-[12px] py-[8px] text-[12px] font-semibold text-[var(--adaptive-grey50)]"
-                                    : "shrink-0 rounded-full border border-[var(--adaptive-grey400)] px-[12px] py-[8px] text-[12px] font-semibold text-[var(--adaptive-grey700)]"
+                                    ? "shrink-0 rounded-full bg-[var(--adaptive-black900)] px-[12px] py-[8px] text-[12px] font-semibold text-[var(--adaptive-black50)]"
+                                    : "shrink-0 rounded-full border border-[var(--adaptive-black400)] px-[12px] py-[8px] text-[12px] font-semibold text-[var(--adaptive-black700)]"
                             }
                         >
                             select
@@ -126,7 +126,7 @@ function ThreadEntryActions({
                             type="button"
                             data-stitchable-interactive=""
                             disabled
-                            className="flex-1 rounded-full border border-[var(--adaptive-grey400)] px-[12px] py-[8px] text-[12px] font-semibold text-[var(--adaptive-grey500)] opacity-60"
+                            className="flex-1 rounded-full border border-[var(--adaptive-black400)] px-[12px] py-[8px] text-[12px] font-semibold text-[var(--adaptive-black500)] opacity-60"
                         >
                             denied
                         </button>
@@ -137,8 +137,8 @@ function ThreadEntryActions({
                             onClick={() => onStartCheckout(reply.id)}
                             className={
                                 checkoutActive
-                                    ? "flex-1 rounded-full bg-[var(--adaptive-grey900)] px-[12px] py-[8px] text-[12px] font-semibold text-[var(--adaptive-grey50)]"
-                                    : "flex-1 rounded-full border border-[var(--adaptive-grey400)] px-[12px] py-[8px] text-[12px] font-semibold text-[var(--adaptive-grey700)]"
+                                    ? "flex-1 rounded-full bg-[var(--adaptive-black900)] px-[12px] py-[8px] text-[12px] font-semibold text-[var(--adaptive-black50)]"
+                                    : "flex-1 rounded-full border border-[var(--adaptive-black400)] px-[12px] py-[8px] text-[12px] font-semibold text-[var(--adaptive-black700)]"
                             }
                         >
                             checkout
@@ -178,18 +178,18 @@ export function FeedbackThread({
     const chronological = [...report.replies].reverse();
 
     return (
-        <section className="flex flex-col bg-[var(--adaptive-grey50)] max-h-[512px] overflow-auto">
+        <section className="flex flex-col bg-[var(--adaptive-black50)] max-h-[512px] overflow-auto">
             {chronological.map((reply) => (
                 <article
                     key={reply.id}
-                    className="flex flex-col gap-[8px] border-t border-[var(--adaptive-greyOpacity200)] p-[16px]"
+                    className="flex flex-col gap-[8px] border-t border-[var(--adaptive-blackOpacity200)] p-[16px]"
                 >
                     <div className="flex items-start justify-between gap-[8px]">
                         <FeedbackStatusBadge status={reply.status} />
-                        <span className="text-[11px] text-[var(--adaptive-grey500)]">{formatDate(reply.created_at)}</span>
+                        <span className="text-[12px] text-[var(--adaptive-black500)]">{formatDate(reply.created_at)}</span>
                     </div>
-                    <p className="text-[13px] leading-[1.45] text-[var(--adaptive-grey900)]">{reply.message}</p>
-                    {reply.author_name ? <p className="text-[12px] text-[var(--adaptive-grey500)]">{reply.author_name}</p> : null}
+                    <p className="leading-[1.45] text-[var(--adaptive-black900)]">{reply.message}</p>
+                    {reply.author_name ? <p className="text-[12px] text-[var(--adaptive-black500)]">{reply.author_name}</p> : null}
                     <ThreadEntryActions
                         reply={reply}
                         report={report}

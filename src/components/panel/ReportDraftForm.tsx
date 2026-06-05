@@ -28,7 +28,7 @@ function DraftPopoverConnector({ placement }: DraftPopoverConnectorProps) {
         return null;
     }
 
-    const baseClass = "pointer-events-none absolute top-1/2 h-[2px] -translate-y-1/2 bg-[var(--adaptive-grey500)]";
+    const baseClass = "pointer-events-none absolute top-1/2 h-[2px] -translate-y-1/2 bg-[var(--adaptive-black500)]";
 
     if (placement === "right") {
         return (
@@ -50,8 +50,7 @@ function DraftPopoverConnector({ placement }: DraftPopoverConnectorProps) {
 }
 
 export function ReportDraftForm() {
-    const { draft, fields, authors, isCreating, selectedTarget, updateDraftMessage, updateDraftField, cancelDraft, handleCreateSubmit, draftAuthorName, setDraftAuthorName } =
-        useReport();
+    const { draft, fields, authors, isCreating, selectedTarget, updateDraftMessage, updateDraftField, cancelDraft, handleCreateSubmit, draftAuthorName, setDraftAuthorName } = useReport();
 
     return (
         <AnimatePresence>
@@ -112,7 +111,7 @@ function ReportDraftFormContent({
             exit={{ y: verticalOffset }}
             transition={{ duration: 0.25, ease: DRAFT_MOTION_EASE }}
             onClick={(event) => event.stopPropagation()}
-            className="pointer-events-auto fixed z-[1000001] flex flex-col rounded-[24px] bg-[var(--adaptive-whiteOpacity500)] p-[4px] shadow-[0_0_120px_0_var(--adaptive-grey500)] backdrop-blur-[30px]"
+            className="pointer-events-auto fixed z-[1000001] flex flex-col rounded-[24px] bg-[var(--adaptive-whiteOpacity500)] p-[4px] shadow-[0_0_120px_0_var(--adaptive-black500)] backdrop-blur-[30px]"
             style={{
                 left,
                 top: centerVertically ? anchorCenterY : top,
@@ -120,7 +119,7 @@ function ReportDraftFormContent({
                 transformOrigin: getMotionOrigin(placement),
             }}
         >
-            <section className="overflow-hidden rounded-[20px] bg-[var(--adaptive-grey100)]">
+            <section className="overflow-hidden rounded-[20px] bg-[var(--adaptive-black100)]">
                 <FeedbackComposer
                     message={draft.message}
                     onMessageChange={updateDraftMessage}

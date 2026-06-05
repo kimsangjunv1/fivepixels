@@ -35,22 +35,22 @@
     padding: 0;
     border: 0;
     background: transparent;
-    font-family: var(--coding-font);
-    /* font-family: ui-sans-serif, system-ui, sans-serif; */
+    /* font-family: var(--ui-font);
     font-size: 14px;
-    color: var(--adaptive-grey900);
     font-weight: 600;
+    color: var(--adaptive-black900); */
     font-style: normal;
     font-synthesis: none;
     letter-spacing: normal;
     text-align: start;
-    text-transform: none;
+    line-height: 1;
+
+    /* text-transform: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    line-height: 1;
-    -webkit-text-size-adjust: 100%;
-    transition: 0.25s colors;
+    -webkit-text-size-adjust: 100%; */
+    /* transition: 0.25s colors; */
 }
 
 [data-stitchable-mount],
@@ -66,7 +66,18 @@
     padding: 0;
     border: none;
     background: transparent;
-    font-family: var(--coding-font);
+    font-family: var(--ui-font);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--adaptive-black900);
+
+    transition: 0.25s colors;
+
+    text-transform: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-text-size-adjust: 100%;
 }
 
 /* [data-stitchable-mount] :where(p, h1, h2, h3, h4, h5, h6, ul, ol, li, figure, blockquote, dl, dd, dt, pre, hr, fieldset) {

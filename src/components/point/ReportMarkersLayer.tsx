@@ -19,7 +19,7 @@ const TOOLTIP_MOTION_TRANSITION = {
     damping: 10,
 };
 
-const TOOLTIP_BASE_CLASS = "fixed z-[1000001] overflow-hidden rounded-[24px] bg-[var(--adaptive-grey200)] shadow-[0_0_90px_0_var(--adaptive-greyOpacity300)]";
+const TOOLTIP_BASE_CLASS = "fixed z-[1000001] overflow-hidden rounded-[24px] bg-[var(--adaptive-black200)] shadow-[0_0_90px_0_var(--adaptive-blackOpacity300)]";
 
 const MARKER_BUTTON_BASE_CLASS = "pointer-events-auto fixed z-[1000000] flex -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full";
 
@@ -51,9 +51,7 @@ function MarkerButton({ markerItem, isSelected, onSelect, onOpenReply, onHoverSt
                 onOpenReply();
             }}
             className={
-                isSelected
-                    ? `${MARKER_BUTTON_BASE_CLASS} h-5 w-5 border-2 border-white/80 shadow-lg ring-2 ring-white/30`
-                    : `${MARKER_BUTTON_BASE_CLASS} h-4 w-4 border border-white/60 shadow-sm`
+                isSelected ? `${MARKER_BUTTON_BASE_CLASS} h-5 w-5 border-2 border-white/80 shadow-lg ring-2 ring-white/30` : `${MARKER_BUTTON_BASE_CLASS} h-4 w-4 border border-white/60 shadow-sm`
             }
             style={{
                 left: markerItem.left,
@@ -162,9 +160,7 @@ export function ReportMarkersLayer() {
                 return;
             }
 
-            const clickedMarker = path.find(
-                (node) => node instanceof Element && node.hasAttribute("data-marker-report-id"),
-            );
+            const clickedMarker = path.find((node) => node instanceof Element && node.hasAttribute("data-marker-report-id"));
 
             if (clickedMarker instanceof Element) {
                 return;
@@ -272,7 +268,7 @@ export function ReportMarkersLayer() {
                             />
 
                             {showComposer ? (
-                                <section className="border-t border-[var(--adaptive-greyOpacity200)] bg-[var(--adaptive-grey100)]">
+                                <section className="border-t border-[var(--adaptive-blackOpacity200)] bg-[var(--adaptive-black100)]">
                                     <FeedbackComposer
                                         message={replyDraft}
                                         onMessageChange={setReplyDraft}

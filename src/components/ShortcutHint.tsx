@@ -12,7 +12,7 @@ export function ShortcutHint({ binding, visible }: ShortcutHintProps) {
     }
 
     return (
-        <kbd className="ml-1 inline-flex items-center rounded border border-[var(--adaptive-hairlineBorder)] bg-[var(--adaptive-grey100)] px-1 py-0.5 text-[10px] font-medium text-[var(--adaptive-grey500)]">
+        <kbd className="ml-1 inline-flex items-center rounded border border-[var(--adaptive-hairlineBorder)] bg-[var(--adaptive-black100)] px-1 py-0.5 text-[10px] font-medium text-[var(--adaptive-black500)]">
             {formatShortcutLabel(binding)}
         </kbd>
     );

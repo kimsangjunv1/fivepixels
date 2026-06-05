@@ -53,8 +53,8 @@ function HighlightMotionBox({ target, showLabel }: { target: TargetSnapshot; sho
         >
             {showLabel ? (
                 <span
-                    className="absolute left-0 top-0 -translate-y-full px-1 py-0.5 text-[11px] font-medium text-white"
-                    style={{ backgroundColor: TARGET_COLOR[target.type], fontFamily: "Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace" }}
+                    className="absolute left-0 top-0 -translate-y-full px-1 py-0.5 font-[var(--coding-font)] text-[12px] font-medium text-white"
+                    style={{ backgroundColor: TARGET_COLOR[target.type] }}
                 >
                     {target.type} · {target.id}
                 </span>

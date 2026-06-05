@@ -14,8 +14,8 @@ export function FeedbackHoverCard({ report, fieldTags }: FeedbackHoverCardProps)
     return (
         <div className="flex w-[260px] flex-col gap-[10px] p-[16px]">
             <FeedbackStatusBadge status={displayStatus} />
-            <p className="line-clamp-2 text-[13px] leading-[1.45] text-[var(--adaptive-grey900)]">{report.message}</p>
-            {report.author_name ? <p className="text-[12px] text-[var(--adaptive-grey500)]">{report.author_name}</p> : null}
+            <p className="line-clamp-2 leading-[1.45] text-[var(--adaptive-black900)]">{report.message}</p>
+            {report.author_name ? <p className="text-[12px] text-[var(--adaptive-black500)]">{report.author_name}</p> : null}
             <FeedbackFieldTags tags={fieldTags} />
         </div>
     );
