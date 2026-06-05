@@ -715,6 +715,7 @@ function createMotionComponent(tagName: string) {
         const layoutAnimationRef = useRef<Animation | null>(null);
         const hasMountedRef = useRef(false);
         const wasPresentForLayoutRef = useRef(true);
+        const useExplicitLayoutRef = useRef(false);
         const [isLayoutAnimating, setIsLayoutAnimating] = useState(false);
         const [layoutMeasureGeneration, setLayoutMeasureGeneration] = useState(0);
         const mergedRef = useMergedRef(forwardedRef, localRef);
@@ -733,7 +734,20 @@ function createMotionComponent(tagName: string) {
         };
 
         const startLayoutAnimation = (node: HTMLElement, fromRect: DOMRect, targetRect: DOMRect) => {
+            useExplicitLayoutRef.current = true;
             applyLayoutRectStyle(node, targetRect);
+            committedLayoutRectRef.current = cloneRect(targetRect);
+            setIsLayoutAnimating(true);
+
+            const animation = animateLayout(node, fromRect, resolvedLayoutTransition, layoutAnimationRef, finishLayout);
+
+            if (!animation) {
+                finishLayout(targetRect);
+            }
+        };
+
+        const startImplicitLayoutAnimation = (node: HTMLElement, fromRect: DOMRect, targetRect: DOMRect) => {
+            useExplicitLayoutRef.current = false;
             committedLayoutRectRef.current = cloneRect(targetRect);
             setIsLayoutAnimating(true);
 
@@ -883,6 +897,57 @@ function createMotionComponent(tagName: string) {
             }
 
             if (!incomingLayoutRect) {
+                if (!layout) {
+                    return;
+                }
+
+                const targetRect = readVisualLayoutRect(node);
+                let fromRect: DOMRect | null = null;
+
+                if (layoutId) {
+                    fromRect = popLayoutSnapshot(layoutId) ?? null;
+                }
+
+                if (!committedLayoutRectRef.current) {
+                    if (fromRect) {
+                        startImplicitLayoutAnimation(node, fromRect, targetRect);
+                        return;
+                    }
+
+                    finishLayout(targetRect);
+                    return;
+                }
+
+                if (layoutAnimationRef.current && committedLayoutRectRef.current && !rectsDiffer(committedLayoutRectRef.current, targetRect)) {
+                    return;
+                }
+
+                if (layoutAnimationRef.current) {
+                    const visualRect = readVisualLayoutRect(node);
+                    layoutAnimationRef.current.cancel();
+                    layoutAnimationRef.current = null;
+
+                    if (!rectsDiffer(visualRect, targetRect)) {
+                        clearLayoutTransform(node);
+                        finishLayout(targetRect);
+                        return;
+                    }
+
+                    startImplicitLayoutAnimation(node, visualRect, targetRect);
+                    return;
+                }
+
+                if (previousRectRef.current && !rectsDiffer(previousRectRef.current, targetRect)) {
+                    finishLayout(targetRect);
+                    return;
+                }
+
+                if (previousRectRef.current && rectsDiffer(previousRectRef.current, targetRect)) {
+                    startImplicitLayoutAnimation(node, previousRectRef.current, targetRect);
+                    return;
+                }
+
+                finishLayout(targetRect);
                 return;
             }
 
@@ -942,7 +1007,7 @@ function createMotionComponent(tagName: string) {
             }
 
             startLayoutAnimation(node, fromRect, targetRect);
-        }, [layoutEnabled, layoutId, layoutMeasureGeneration, layoutStyleKey, presence?.isPresent, resolvedLayoutTransition, style]);
+        }, [layout, layoutEnabled, layoutId, layoutMeasureGeneration, layoutStyleKey, presence?.isPresent, resolvedLayoutTransition, style]);
 
         useEffect(() => {
             if (presence?.isPresent !== false) {
@@ -1002,7 +1067,9 @@ function createMotionComponent(tagName: string) {
 
         const resolvedAnimatedStyle = animate ? resolveMotionStyle(animate) : {};
         const layoutPositionStyle =
-            isLayoutAnimating && committedLayoutRectRef.current ? rectToPositionStyle(committedLayoutRectRef.current) : null;
+            isLayoutAnimating && useExplicitLayoutRef.current && committedLayoutRectRef.current
+                ? rectToPositionStyle(committedLayoutRectRef.current)
+                : null;
         const mergedStyle = {
             ...style,
             ...resolvedAnimatedStyle,
