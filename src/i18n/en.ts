@@ -55,10 +55,6 @@ export const en: ReportMessages = {
         copiedTitle: "Copied",
         reportTypeItem: "Item",
         reportTypeGroup: "Group",
-        filterGitHubIssueAll: "All GitHub",
-        filterGitHubIssueIssued: "GitHub issued",
-        filterGitHubIssueNotIssued: "Not on GitHub",
-        filterGitHubIssueAriaLabel: "GitHub issue filter",
         gitIssueAddAriaLabel: "Send to GitHub issue",
         gitIssueAddTitle: "Git Issue +",
         gitIssueConfirmAriaLabel: "Press again to send GitHub issue",
@@ -67,7 +63,6 @@ export const en: ReportMessages = {
         gitIssueCreatingLabel: "Sending",
         gitIssueViewAriaLabel: "View GitHub issue",
         gitIssueViewTitle: "View issue",
-        gitIssueIssuedBadge: "GIT ISSUED",
     },
     author: {
         placeholder: "Author",
@@ -77,6 +72,10 @@ export const en: ReportMessages = {
     composer: {
         placeholder: "Leave your message",
         sendAriaLabel: "Send",
+        gitIssueSendAriaLabel: "Send directly to GitHub issue",
+        gitIssueSendTitle: "Git Issue",
+        gitIssueSendLabel: "Git Issue",
+        gitIssueSendingLabel: "Sending",
     },
     fieldEditor: {
         messagePlaceholder: "Leave your feedback",
@@ -147,11 +146,13 @@ export const en: ReportMessages = {
         routeDetail: {
             wait: "Wait",
             suggested: "Suggested",
+            git_issued: "Git Issued",
             resolved: "Resolved",
         },
         feedback: {
             currently_wait: "Currently waiting",
             wait_for_reply: "Waiting for reply",
+            git_issued: "Git Issued",
             suggested: "Suggested",
             found_error: "Error found",
             resolved: "Resolved",
@@ -188,7 +189,7 @@ export const en: ReportMessages = {
         stringFieldRequired: (field) => `${field} string is required`,
         createdAtInvalid: "created_at date format is invalid",
         reportTypeInvalid: "report_type must be group or item",
-        statusInvalid: "status must be open, resolved, or archived",
+        statusInvalid: "status must be open, git_issued, resolved, or archived",
         numberFieldRequired: (field) => `${field} number is required`,
         elementXRatioInvalid: "element_x_ratio must be number or null",
         elementYRatioInvalid: "element_y_ratio must be number or null",
@@ -199,7 +200,6 @@ export const en: ReportMessages = {
         githubIssueNumberInvalid: "integrations.github.issue_number number is required",
         githubIssueUrlInvalid: "integrations.github.issue_url string is required",
         githubIssuedAtInvalid: "integrations.github.issued_at date string is required",
-        githubIssueStateInvalid: "integrations.github.state must be open or closed",
     },
     errors: {
         feedbackNotFound: "Feedback not found.",

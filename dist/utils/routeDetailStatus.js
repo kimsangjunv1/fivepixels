@@ -1,11 +1,15 @@
 import { getFeedbackDisplayStatus } from "./feedbackThread.js";
-export const ROUTE_DETAIL_STATUS_ORDER = ["wait", "suggested", "resolved"];
+export const ROUTE_DETAIL_STATUS_ORDER = ["wait", "suggested", "git_issued", "resolved"];
 export const ROUTE_DETAIL_STATUS_LABEL = {
     wait: "Wait",
     suggested: "Suggested",
+    git_issued: "Git Issued",
     resolved: "Resolved",
 };
 export function getRouteDetailStatus(report) {
+    if (report.status === "git_issued") {
+        return "git_issued";
+    }
     const displayStatus = getFeedbackDisplayStatus(report);
     if (displayStatus === "resolved") {
         return "resolved";

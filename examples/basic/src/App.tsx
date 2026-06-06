@@ -20,7 +20,6 @@ async function createGitHubIssue(feedback: ReportFeedback) {
     return response.json() as Promise<{
         issueNumber: number;
         issueUrl: string;
-        state?: "open" | "closed";
     }>;
 }
 
@@ -51,10 +50,11 @@ export function App() {
                         { id: "3", name: "john doe" },
                     ],
                 }}
-                integrations={{
-                    github: { enabled: true },
+                github={{
+                    enabled: true,
+                    modes: ["on-create", "from-list"],
+                    onCreate: createGitHubIssue,
                 }}
-                onGitHubIssueCreate={createGitHubIssue}
                 onEvent={(event) => {
                     if (event.type === "feedback:create") {
                         console.log("feedback created", event.payload);

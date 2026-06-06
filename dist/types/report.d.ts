@@ -1,7 +1,7 @@
 export type ReportTargetType = "group" | "item";
-export type ReportStatus = "open" | "resolved" | "archived";
+export type ReportStatus = "open" | "git_issued" | "resolved" | "archived";
 export type ReportAppearance = "light" | "dark" | "system";
-export declare const REPORT_STATUS_FLOW: readonly ["open", "resolved", "archived"];
+export declare const REPORT_STATUS_FLOW: readonly ["open", "git_issued", "resolved", "archived"];
 export declare const REPORT_STATUS_TRANSITIONS: Record<ReportStatus, ReportStatus[]>;
 export type ReportFieldType = "textarea" | "checkbox";
 export type ReportFieldBase = {
@@ -63,7 +63,6 @@ export type ReportGitHubIntegrationState = {
     issue_number: number;
     issue_url: string;
     issued_at: string;
-    state: "open" | "closed";
 };
 export type ReportIntegrations = {
     github?: ReportGitHubIntegrationState;
@@ -71,12 +70,12 @@ export type ReportIntegrations = {
 export type ReportGitHubIssueCreateResult = {
     issueNumber: number;
     issueUrl: string;
-    state?: ReportGitHubIntegrationState["state"];
 };
-export type ReportIntegrationsConfig = {
-    github?: {
-        enabled?: boolean;
-    };
+export type ReportGitHubIntegrationMode = "on-create" | "from-list";
+export type ReportGitHubConfig = {
+    enabled?: boolean;
+    modes?: ReportGitHubIntegrationMode[];
+    onCreate?: (feedback: ReportFeedback) => Promise<ReportGitHubIssueCreateResult>;
 };
 export type ReportFeedback = {
     id: string;

@@ -53,10 +53,6 @@ export const ko = {
         copiedTitle: "복사됨",
         reportTypeItem: "아이템",
         reportTypeGroup: "그룹",
-        filterGitHubIssueAll: "GitHub 전체",
-        filterGitHubIssueIssued: "GitHub 발행됨",
-        filterGitHubIssueNotIssued: "GitHub 미발행",
-        filterGitHubIssueAriaLabel: "GitHub 발행 필터",
         gitIssueAddAriaLabel: "GitHub 이슈로 전송",
         gitIssueAddTitle: "Git Issue +",
         gitIssueConfirmAriaLabel: "한 번 더 눌러 GitHub 이슈 전송",
@@ -65,7 +61,6 @@ export const ko = {
         gitIssueCreatingLabel: "전송 중",
         gitIssueViewAriaLabel: "GitHub 이슈 보기",
         gitIssueViewTitle: "이슈 보기",
-        gitIssueIssuedBadge: "GIT ISSUED",
     },
     author: {
         placeholder: "작성자",
@@ -75,6 +70,10 @@ export const ko = {
     composer: {
         placeholder: "메시지를 입력하세요",
         sendAriaLabel: "전송",
+        gitIssueSendAriaLabel: "GitHub 이슈로 바로 전송",
+        gitIssueSendTitle: "Git Issue",
+        gitIssueSendLabel: "Git Issue",
+        gitIssueSendingLabel: "전송 중",
     },
     fieldEditor: {
         messagePlaceholder: "피드백을 남겨주세요",
@@ -145,11 +144,13 @@ export const ko = {
         routeDetail: {
             wait: "wait",
             suggested: "suggested",
+            git_issued: "git issued",
             resolved: "resolved",
         },
         feedback: {
             currently_wait: "대기 중",
             wait_for_reply: "답변 대기",
+            git_issued: "Git Issued",
             suggested: "제안됨",
             found_error: "오류 발견",
             resolved: "해결됨",
@@ -186,7 +187,7 @@ export const ko = {
         stringFieldRequired: (field) => `${field} 문자열이 필요합니다`,
         createdAtInvalid: "created_at 날짜 형식이 올바르지 않습니다",
         reportTypeInvalid: "report_type은 group 또는 item이어야 합니다",
-        statusInvalid: "status는 open, resolved, archived 중 하나여야 합니다",
+        statusInvalid: "status는 open, git_issued, resolved, archived 중 하나여야 합니다",
         numberFieldRequired: (field) => `${field} 숫자가 필요합니다`,
         elementXRatioInvalid: "element_x_ratio는 number 또는 null이어야 합니다",
         elementYRatioInvalid: "element_y_ratio는 number 또는 null이어야 합니다",
@@ -197,7 +198,6 @@ export const ko = {
         githubIssueNumberInvalid: "integrations.github.issue_number 숫자가 필요합니다",
         githubIssueUrlInvalid: "integrations.github.issue_url 문자열이 필요합니다",
         githubIssuedAtInvalid: "integrations.github.issued_at 날짜 문자열이 필요합니다",
-        githubIssueStateInvalid: "integrations.github.state는 open 또는 closed여야 합니다",
     },
     errors: {
         feedbackNotFound: "피드백을 찾을 수 없어요.",

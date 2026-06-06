@@ -3,12 +3,10 @@ import type { RouteDetailStatus } from "../utils/routeDetailStatus.js";
 export type ReportMode = "idle" | "report" | "view";
 export type ResolvedAppearance = "light" | "dark";
 export type ReportPanelTab = "route-details" | "feedback-list" | "command";
-export type ReportGitHubIssueFilter = "all" | "issued" | "not_issued";
 export type ReportFilters = {
     keyword: string;
     status: RouteDetailStatus | "all";
     reportType: ReportTargetType | "all";
-    githubIssue: ReportGitHubIssueFilter;
 };
 export type TargetSnapshot = {
     id: string;

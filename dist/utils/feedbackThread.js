@@ -5,6 +5,9 @@ export function getLatestReply(report) {
     return report.replies[report.replies.length - 1] ?? null;
 }
 export function getFeedbackDisplayStatus(report, expanded = false) {
+    if (report.status === "git_issued") {
+        return "git_issued";
+    }
     if (report.status === "resolved") {
         return "resolved";
     }

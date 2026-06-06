@@ -1,15 +1,20 @@
 import { useReport } from "../../providers/reportContext.js";
 import { formatStatCount } from "../../utils/formatStatCount.js";
 import { panelNumericClassName } from "../../utils/panelTypography.js";
+import type { RouteDetailStatus } from "../../utils/routeDetailStatus.js";
 import { ChevronDownIcon } from "../icons/ChevronDownIcon.js";
 
-function StatusRowIcon({ status }: { status: "wait" | "suggested" | "resolved" }) {
+function StatusRowIcon({ status }: { status: RouteDetailStatus }) {
     if (status === "wait") {
         return <span aria-hidden>⚑</span>;
     }
 
     if (status === "suggested") {
         return <span aria-hidden>↻</span>;
+    }
+
+    if (status === "git_issued") {
+        return <span aria-hidden>＋</span>;
     }
 
     return <span aria-hidden>✓</span>;

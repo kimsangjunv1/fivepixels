@@ -1,17 +1,22 @@
 import type { ReportFeedback } from "../types/report.js";
 import { getFeedbackDisplayStatus } from "./feedbackThread.js";
 
-export type RouteDetailStatus = "wait" | "suggested" | "resolved";
+export type RouteDetailStatus = "wait" | "suggested" | "git_issued" | "resolved";
 
-export const ROUTE_DETAIL_STATUS_ORDER: RouteDetailStatus[] = ["wait", "suggested", "resolved"];
+export const ROUTE_DETAIL_STATUS_ORDER: RouteDetailStatus[] = ["wait", "suggested", "git_issued", "resolved"];
 
 export const ROUTE_DETAIL_STATUS_LABEL: Record<RouteDetailStatus, string> = {
     wait: "Wait",
     suggested: "Suggested",
+    git_issued: "Git Issued",
     resolved: "Resolved",
 };
 
 export function getRouteDetailStatus(report: ReportFeedback): RouteDetailStatus {
+    if (report.status === "git_issued") {
+        return "git_issued";
+    }
+
     const displayStatus = getFeedbackDisplayStatus(report);
 
     if (displayStatus === "resolved") {

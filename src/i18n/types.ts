@@ -2,9 +2,9 @@ import type { ReportAppearance } from "../types/report.js";
 
 export type ReportLocale = "en" | "ko";
 
-type RouteDetailStatus = "wait" | "suggested" | "resolved";
+type RouteDetailStatus = "wait" | "suggested" | "git_issued" | "resolved";
 
-type FeedbackDisplayStatus = "currently_wait" | "wait_for_reply" | "suggested" | "found_error" | "resolved";
+type FeedbackDisplayStatus = "currently_wait" | "wait_for_reply" | "git_issued" | "suggested" | "found_error" | "resolved";
 
 export type ReportMessages = {
     common: {
@@ -61,10 +61,6 @@ export type ReportMessages = {
         copiedTitle: string;
         reportTypeItem: string;
         reportTypeGroup: string;
-        filterGitHubIssueAll: string;
-        filterGitHubIssueIssued: string;
-        filterGitHubIssueNotIssued: string;
-        filterGitHubIssueAriaLabel: string;
         gitIssueAddAriaLabel: string;
         gitIssueAddTitle: string;
         gitIssueConfirmAriaLabel: string;
@@ -73,7 +69,6 @@ export type ReportMessages = {
         gitIssueCreatingLabel: string;
         gitIssueViewAriaLabel: string;
         gitIssueViewTitle: string;
-        gitIssueIssuedBadge: string;
     };
     author: {
         placeholder: string;
@@ -83,6 +78,10 @@ export type ReportMessages = {
     composer: {
         placeholder: string;
         sendAriaLabel: string;
+        gitIssueSendAriaLabel: string;
+        gitIssueSendTitle: string;
+        gitIssueSendLabel: string;
+        gitIssueSendingLabel: string;
     };
     fieldEditor: {
         messagePlaceholder: string;
@@ -188,7 +187,6 @@ export type ReportMessages = {
         githubIssueNumberInvalid: string;
         githubIssueUrlInvalid: string;
         githubIssuedAtInvalid: string;
-        githubIssueStateInvalid: string;
     };
     errors: {
         feedbackNotFound: string;

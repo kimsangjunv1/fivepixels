@@ -1,7 +1,7 @@
 import { type MouseEvent } from "react";
 import type { DeepPartialReportMessages } from "../i18n/types.js";
 import type { ReportLocale } from "../i18n/types.js";
-import type { CreateReportFeedbackPayload, ReportAppearance, ReportAuthor, ReportEvent, ReportFeedback, ReportField, ReportGitHubIssueCreateResult, ReportIdentify, ReportIntegrationsConfig, UpdateReportFeedbackPayload } from "../types/report.js";
+import type { CreateReportFeedbackPayload, ReportAppearance, ReportAuthor, ReportEvent, ReportFeedback, ReportField, ReportGitHubConfig, ReportIdentify, UpdateReportFeedbackPayload } from "../types/report.js";
 import type { DraftReport, EditableDraft, Marker, PendingFeedbackComposer, ReportMode, ReportPanelTab, TargetSnapshot } from "../types/report-ui.js";
 export type ReportStateConfig = {
     projectId: string;
@@ -23,15 +23,14 @@ export type ReportStateConfig = {
         feedbackId: string;
         message: string;
     }) => void | Promise<void>;
-    integrations?: ReportIntegrationsConfig;
-    onGitHubIssueCreate?: (feedback: ReportFeedback) => Promise<ReportGitHubIssueCreateResult>;
+    github?: ReportGitHubConfig;
     routeKey?: string;
     showFeedbackList: boolean;
     visibleShortcutKeys?: boolean;
     initialLocale: ReportLocale;
     messageOverrides?: DeepPartialReportMessages;
 };
-export declare function useReportState({ projectId, environment, appVersion, appearance, fields, authors, shortcut: _shortcut, identify, onList, onCreate, onUpdate, onDelete, onEvent, onReply, integrations, onGitHubIssueCreate, routeKey, showFeedbackList, visibleShortcutKeys, initialLocale, messageOverrides, }: ReportStateConfig): {
+export declare function useReportState({ projectId, environment, appVersion, appearance, fields, authors, shortcut: _shortcut, identify, onList, onCreate, onUpdate, onDelete, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys, initialLocale, messageOverrides, }: ReportStateConfig): {
     appearance: ReportAppearance;
     setAppearance: (nextAppearance: ReportAppearance) => void;
     locale: ReportLocale;
@@ -144,8 +143,11 @@ export declare function useReportState({ projectId, environment, appVersion, app
     handleUpdateSubmit: () => Promise<void>;
     handleReplySubmit: () => Promise<void>;
     handleDelete: (id: string) => Promise<void>;
-    canCreateGitHubIssue: boolean;
+    canCreateGitHubIssueFromList: boolean;
+    canCreateGitHubIssueOnCreate: boolean;
     creatingGitHubIssueId: string | null;
     handleCreateGitHubIssue: (report: ReportFeedback) => Promise<void>;
+    handleCreateSubmitWithGitHubIssue: () => Promise<void>;
+    isDraftGitHubIssueSubmitting: boolean;
 };
 //# sourceMappingURL=useReportState.d.ts.map

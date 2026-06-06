@@ -50,7 +50,22 @@ function DraftPopoverConnector({ placement }: DraftPopoverConnectorProps) {
 }
 
 export function ReportDraftForm() {
-    const { draft, fields, authors, isCreating, selectedTarget, updateDraftMessage, updateDraftField, cancelDraft, handleCreateSubmit, draftAuthorName, setDraftAuthorName } = useReport();
+    const {
+        draft,
+        fields,
+        authors,
+        isCreating,
+        selectedTarget,
+        updateDraftMessage,
+        updateDraftField,
+        cancelDraft,
+        handleCreateSubmit,
+        handleCreateSubmitWithGitHubIssue,
+        canCreateGitHubIssueOnCreate,
+        isDraftGitHubIssueSubmitting,
+        draftAuthorName,
+        setDraftAuthorName,
+    } = useReport();
 
     return (
         <AnimatedPresence>
@@ -65,6 +80,9 @@ export function ReportDraftForm() {
                     updateDraftField={updateDraftField}
                     cancelDraft={cancelDraft}
                     handleCreateSubmit={handleCreateSubmit}
+                    handleCreateSubmitWithGitHubIssue={handleCreateSubmitWithGitHubIssue}
+                    canCreateGitHubIssueOnCreate={canCreateGitHubIssueOnCreate}
+                    isDraftGitHubIssueSubmitting={isDraftGitHubIssueSubmitting}
                     draftAuthorName={draftAuthorName}
                     setDraftAuthorName={setDraftAuthorName}
                 />
@@ -83,6 +101,9 @@ type ReportDraftFormContentProps = {
     updateDraftField: (key: string, value: string | boolean) => void;
     cancelDraft: () => void;
     handleCreateSubmit: () => Promise<void>;
+    handleCreateSubmitWithGitHubIssue: () => Promise<void>;
+    canCreateGitHubIssueOnCreate: boolean;
+    isDraftGitHubIssueSubmitting: boolean;
     draftAuthorName: string;
     setDraftAuthorName: (name: string) => void;
 };
@@ -96,6 +117,9 @@ function ReportDraftFormContent({
     updateDraftMessage,
     updateDraftField,
     handleCreateSubmit,
+    handleCreateSubmitWithGitHubIssue,
+    canCreateGitHubIssueOnCreate,
+    isDraftGitHubIssueSubmitting,
     draftAuthorName,
     setDraftAuthorName,
 }: ReportDraftFormContentProps) {
@@ -131,6 +155,9 @@ function ReportDraftFormContent({
                 showTags
                 onSubmit={() => void handleCreateSubmit()}
                 isSubmitting={isCreating}
+                showGitHubIssueOnCreate={canCreateGitHubIssueOnCreate}
+                onGitHubIssueSubmit={() => void handleCreateSubmitWithGitHubIssue()}
+                isGitHubIssueSubmitting={isDraftGitHubIssueSubmitting}
                 autoFocus
             />
 

@@ -10,6 +10,10 @@ export function getLatestReply(report: ReportFeedback): ReportReply | null {
 }
 
 export function getFeedbackDisplayStatus(report: ReportFeedback, expanded = false): FeedbackDisplayStatus {
+    if (report.status === "git_issued") {
+        return "git_issued";
+    }
+
     if (report.status === "resolved") {
         return "resolved";
     }

@@ -10,6 +10,9 @@ function StatusRowIcon({ status }) {
     if (status === "suggested") {
         return _jsx("span", { "aria-hidden": true, children: "\u21BB" });
     }
+    if (status === "git_issued") {
+        return _jsx("span", { "aria-hidden": true, children: "\uFF0B" });
+    }
     return _jsx("span", { "aria-hidden": true, children: "\u2713" });
 }
 export function ReportRouteDetails() {

@@ -5,7 +5,7 @@ const STRING_FIELDS = ["id", "pathname", "report_id", "message", "created_at"] a
 const NUMBER_FIELDS = ["x_ratio", "y_ratio", "scroll_y", "document_y", "viewport_width", "viewport_height", "design_width", "design_height"] as const;
 const OPTIONAL_STRING_FIELDS = ["environment", "app_version", "author_id", "author_name"] as const;
 const REPORT_TYPES = new Set<ReportTargetType>(["group", "item"]);
-const REPORT_STATUSES = new Set<ReportStatus>(["open", "resolved", "archived"]);
+const REPORT_STATUSES = new Set<ReportStatus>(["open", "git_issued", "resolved", "archived"]);
 const REPLY_STATUSES = new Set(["suggested", "found_error", "resolved"]);
 
 function importError(index: number, detail: string) {
@@ -120,16 +120,11 @@ function validateIntegrations(value: unknown, index: number): ReportIntegrations
         throw importError(index, validation.githubIssuedAtInvalid);
     }
 
-    if (githubRecord.state !== "open" && githubRecord.state !== "closed") {
-        throw importError(index, validation.githubIssueStateInvalid);
-    }
-
     return {
         github: {
             issue_number: githubRecord.issue_number,
             issue_url: githubRecord.issue_url,
             issued_at: githubRecord.issued_at,
-            state: githubRecord.state,
         },
     };
 }

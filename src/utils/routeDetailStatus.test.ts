@@ -31,4 +31,9 @@ describe("getRouteDetailStatus", () => {
         const report = createReportFixture({ status: "resolved" });
         expect(getRouteDetailStatus(report)).toBe("resolved");
     });
+
+    it("maps git_issued feedback to git_issued", () => {
+        const report = createReportFixture({ status: "git_issued" });
+        expect(getRouteDetailStatus(report)).toBe("git_issued");
+    });
 });

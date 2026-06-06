@@ -9,7 +9,7 @@ function createId() {
     return `report-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 function isReportStatus(value) {
-    return value === "open" || value === "resolved" || value === "archived";
+    return value === "open" || value === "git_issued" || value === "resolved" || value === "archived";
 }
 function normalizeFieldValues(value) {
     if (!value || typeof value !== "object" || Array.isArray(value)) {
@@ -64,15 +64,13 @@ function normalizeGitHubIntegration(value) {
         !Number.isFinite(github.issue_number) ||
         typeof github.issue_url !== "string" ||
         github.issue_url.trim().length === 0 ||
-        typeof github.issued_at !== "string" ||
-        (github.state !== "open" && github.state !== "closed")) {
+        typeof github.issued_at !== "string") {
         return undefined;
     }
     return {
         issue_number: github.issue_number,
         issue_url: github.issue_url,
         issued_at: github.issued_at,
-        state: github.state,
     };
 }
 function normalizeIntegrations(value) {

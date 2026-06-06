@@ -15,9 +15,8 @@ import type {
     ReportEvent,
     ReportFeedback,
     ReportField,
-    ReportGitHubIssueCreateResult,
+    ReportGitHubConfig,
     ReportIdentify,
-    ReportIntegrationsConfig,
     ReportReply,
     UpdateReportFeedbackPayload,
 } from "../types/report.js";
@@ -39,7 +38,12 @@ import {
     notifyGitHubIssueCreated,
     type ReportSideEffectCallbacks,
 } from "../utils/reportCallbacks.js";
-import { hasGitHubIssue, isGitHubIssueIntegrationEnabled } from "../utils/githubIntegration.js";
+import {
+    buildGitHubIssueUpdate,
+    canCreateGitHubIssueFromList,
+    canCreateGitHubIssueOnCreate,
+    isGitIssued,
+} from "../utils/githubIntegration.js";
 
 function resolveDefaultAuthorName(identify: ReportIdentify | undefined, authors: ReportAuthor[]) {
     if (identify?.name) {
@@ -64,8 +68,7 @@ export type ReportStateConfig = {
     onDelete?: (id: string) => Promise<void>;
     onEvent?: (event: ReportEvent) => void | Promise<void>;
     onReply?: (params: { feedbackId: string; message: string }) => void | Promise<void>;
-    integrations?: ReportIntegrationsConfig;
-    onGitHubIssueCreate?: (feedback: ReportFeedback) => Promise<ReportGitHubIssueCreateResult>;
+    github?: ReportGitHubConfig;
     routeKey?: string;
     showFeedbackList: boolean;
     visibleShortcutKeys?: boolean;
@@ -88,8 +91,7 @@ export function useReportState({
     onDelete,
     onEvent,
     onReply,
-    integrations,
-    onGitHubIssueCreate,
+    github,
     routeKey,
     showFeedbackList,
     visibleShortcutKeys = false,
@@ -175,10 +177,9 @@ export function useReportState({
     const [panelTab, setPanelTab] = useState<ReportPanelTab | null>(null);
     const [creatingGitHubIssueId, setCreatingGitHubIssueId] = useState<string | null>(null);
 
-    const canCreateGitHubIssue = useMemo(
-        () => isGitHubIssueIntegrationEnabled(integrations, onGitHubIssueCreate),
-        [integrations, onGitHubIssueCreate],
-    );
+    const canCreateGitHubIssueFromListValue = useMemo(() => canCreateGitHubIssueFromList(github), [github]);
+
+    const canCreateGitHubIssueOnCreateValue = useMemo(() => canCreateGitHubIssueOnCreate(github), [github]);
 
     const activeReplyAnchor = useMemo(() => resolveTooltipAnchor(markers, activeReplyReportId), [activeReplyReportId, markers]);
     const activeReplyReport = activeReplyAnchor?.report ?? null;
@@ -628,55 +629,100 @@ export function useReportState({
         );
     };
 
-    const handleCreateSubmit = async () => {
+    const buildCreatePayloadFromDraft = (): CreateReportFeedbackPayload | null => {
         if (!draft) {
-            return;
+            return null;
         }
 
         const nextError = getFieldError(draft.message, draft.fieldValues, fields, messages.errors);
 
         if (nextError) {
             setErrorMessage(nextError);
+            return null;
+        }
+
+        return {
+            pathname: currentPathname,
+            report_id: draft.reportId,
+            report_type: draft.reportType,
+            message: draft.message.trim(),
+            status: "open",
+            field_values: draft.fieldValues,
+            x_ratio: draft.xRatio,
+            y_ratio: draft.yRatio,
+            element_x_ratio: draft.elementXRatio,
+            element_y_ratio: draft.elementYRatio,
+            scroll_y: draft.scrollY,
+            document_y: draft.documentY,
+            viewport_width: window.innerWidth,
+            viewport_height: window.innerHeight,
+            design_width: window.innerWidth,
+            design_height: window.innerHeight,
+            ...(environment ? { environment } : {}),
+            ...(appVersion ? { app_version: appVersion } : {}),
+            ...(identify || draftAuthorName.trim()
+                ? {
+                      ...(identify ? { author_id: identify.id } : {}),
+                      author_name: draftAuthorName.trim() || identify?.name,
+                  }
+                : {}),
+        };
+    };
+
+    const finalizeDraftCreate = () => {
+        setDraft(null);
+        setSelectedTarget(null);
+        setHoveredTarget(null);
+        setErrorMessage("");
+        setMode("view");
+    };
+
+    const handleCreateSubmit = async () => {
+        const payload = buildCreatePayloadFromDraft();
+
+        if (!payload) {
             return;
         }
 
         try {
-            const savedFeedback = await createFeedback({
-                pathname: currentPathname,
-                report_id: draft.reportId,
-                report_type: draft.reportType,
-                message: draft.message.trim(),
-                status: "open",
-                field_values: draft.fieldValues,
-                x_ratio: draft.xRatio,
-                y_ratio: draft.yRatio,
-                element_x_ratio: draft.elementXRatio,
-                element_y_ratio: draft.elementYRatio,
-                scroll_y: draft.scrollY,
-                document_y: draft.documentY,
-                viewport_width: window.innerWidth,
-                viewport_height: window.innerHeight,
-                design_width: window.innerWidth,
-                design_height: window.innerHeight,
-                ...(environment ? { environment } : {}),
-                ...(appVersion ? { app_version: appVersion } : {}),
-                ...(identify || draftAuthorName.trim()
-                    ? {
-                          ...(identify ? { author_id: identify.id } : {}),
-                          author_name: draftAuthorName.trim() || identify?.name,
-                      }
-                    : {}),
-            });
-
+            const savedFeedback = await createFeedback(payload);
             await notifyFeedbackCreate(eventCallbacks, savedFeedback);
-
-            setDraft(null);
-            setSelectedTarget(null);
-            setHoveredTarget(null);
-            setErrorMessage("");
-            setMode("view");
+            finalizeDraftCreate();
         } catch (nextError) {
             setErrorMessage(nextError instanceof Error ? nextError.message : messages.errors.saveFeedbackFailed);
+        }
+    };
+
+    const handleCreateSubmitWithGitHubIssue = async () => {
+        if (!github?.onCreate || !canCreateGitHubIssueOnCreateValue || creatingGitHubIssueId || isCreating) {
+            return;
+        }
+
+        const payload = buildCreatePayloadFromDraft();
+
+        if (!payload) {
+            return;
+        }
+
+        setCreatingGitHubIssueId("draft");
+        setErrorMessage("");
+
+        try {
+            const savedFeedback = await createFeedback(payload);
+            await notifyFeedbackCreate(eventCallbacks, savedFeedback);
+
+            const result = await github.onCreate(savedFeedback);
+            const updatedFeedback = await updateFeedback(savedFeedback.id, buildGitHubIssueUpdate(savedFeedback, result));
+
+            await notifyGitHubIssueCreated(eventCallbacks, {
+                feedback: updatedFeedback,
+                issueUrl: result.issueUrl,
+            });
+            finalizeDraftCreate();
+        } catch (nextError) {
+            setErrorMessage(nextError instanceof Error ? nextError.message : messages.errors.createGitHubIssueFailed);
+        } finally {
+            setCreatingGitHubIssueId(null);
         }
     };
 
@@ -815,11 +861,11 @@ export function useReportState({
     };
 
     const handleCreateGitHubIssue = async (report: ReportFeedback) => {
-        if (!onGitHubIssueCreate || !canCreateGitHubIssue || creatingGitHubIssueId) {
+        if (!github?.onCreate || !canCreateGitHubIssueFromListValue || creatingGitHubIssueId) {
             return;
         }
 
-        if (hasGitHubIssue(report)) {
+        if (isGitIssued(report)) {
             return;
         }
 
@@ -827,18 +873,8 @@ export function useReportState({
         setErrorMessage("");
 
         try {
-            const result = await onGitHubIssueCreate(report);
-            const updatedFeedback = await updateFeedback(report.id, {
-                integrations: {
-                    ...report.integrations,
-                    github: {
-                        issue_number: result.issueNumber,
-                        issue_url: result.issueUrl,
-                        issued_at: new Date().toISOString(),
-                        state: result.state ?? "open",
-                    },
-                },
-            });
+            const result = await github.onCreate(report);
+            const updatedFeedback = await updateFeedback(report.id, buildGitHubIssueUpdate(report, result));
 
             await notifyGitHubIssueCreated(eventCallbacks, {
                 feedback: updatedFeedback,
@@ -997,8 +1033,11 @@ export function useReportState({
         handleUpdateSubmit,
         handleReplySubmit,
         handleDelete,
-        canCreateGitHubIssue,
+        canCreateGitHubIssueFromList: canCreateGitHubIssueFromListValue,
+        canCreateGitHubIssueOnCreate: canCreateGitHubIssueOnCreateValue,
         creatingGitHubIssueId,
         handleCreateGitHubIssue,
+        handleCreateSubmitWithGitHubIssue,
+        isDraftGitHubIssueSubmitting: creatingGitHubIssueId === "draft",
     };
 }

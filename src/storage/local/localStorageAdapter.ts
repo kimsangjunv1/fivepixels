@@ -31,7 +31,7 @@ function createId() {
 }
 
 function isReportStatus(value: unknown): value is ReportStatus {
-    return value === "open" || value === "resolved" || value === "archived";
+    return value === "open" || value === "git_issued" || value === "resolved" || value === "archived";
 }
 
 function normalizeFieldValues(value: unknown): ReportFieldValues {
@@ -101,8 +101,7 @@ function normalizeGitHubIntegration(value: unknown): ReportGitHubIntegrationStat
         !Number.isFinite(github.issue_number) ||
         typeof github.issue_url !== "string" ||
         github.issue_url.trim().length === 0 ||
-        typeof github.issued_at !== "string" ||
-        (github.state !== "open" && github.state !== "closed")
+        typeof github.issued_at !== "string"
     ) {
         return undefined;
     }
@@ -111,7 +110,6 @@ function normalizeGitHubIntegration(value: unknown): ReportGitHubIntegrationStat
         issue_number: github.issue_number,
         issue_url: github.issue_url,
         issued_at: github.issued_at,
-        state: github.state,
     };
 }
 

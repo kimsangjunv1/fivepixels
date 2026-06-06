@@ -1,9 +1,10 @@
 export type ReportTargetType = "group" | "item";
-export type ReportStatus = "open" | "resolved" | "archived";
+export type ReportStatus = "open" | "git_issued" | "resolved" | "archived";
 export type ReportAppearance = "light" | "dark" | "system";
-export const REPORT_STATUS_FLOW = ["open", "resolved", "archived"] as const;
+export const REPORT_STATUS_FLOW = ["open", "git_issued", "resolved", "archived"] as const;
 export const REPORT_STATUS_TRANSITIONS: Record<ReportStatus, ReportStatus[]> = {
-    open: ["resolved", "archived"],
+    open: ["git_issued", "resolved", "archived"],
+    git_issued: ["open", "resolved", "archived"],
     resolved: ["open", "archived"],
     archived: [],
 };
@@ -72,7 +73,6 @@ export type ReportGitHubIntegrationState = {
     issue_number: number;
     issue_url: string;
     issued_at: string;
-    state: "open" | "closed";
 };
 
 export type ReportIntegrations = {
@@ -82,13 +82,14 @@ export type ReportIntegrations = {
 export type ReportGitHubIssueCreateResult = {
     issueNumber: number;
     issueUrl: string;
-    state?: ReportGitHubIntegrationState["state"];
 };
 
-export type ReportIntegrationsConfig = {
-    github?: {
-        enabled?: boolean;
-    };
+export type ReportGitHubIntegrationMode = "on-create" | "from-list";
+
+export type ReportGitHubConfig = {
+    enabled?: boolean;
+    modes?: ReportGitHubIntegrationMode[];
+    onCreate?: (feedback: ReportFeedback) => Promise<ReportGitHubIssueCreateResult>;
 };
 
 export type ReportFeedback = {

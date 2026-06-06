@@ -21,13 +21,10 @@ function stitchableDevReportStylesheet(): Plugin {
     };
 }
 
-type CreateGitHubIssueRequest = {
-    feedbackId?: string;
-    feedback?: ReportFeedback;
-};
+type JsonBody = Record<string, unknown>;
 
-function readJsonBody(request: IncomingMessage) {
-    return new Promise<CreateGitHubIssueRequest>((resolve, reject) => {
+function readJsonBody<T extends JsonBody>(request: IncomingMessage) {
+    return new Promise<T>((resolve, reject) => {
         const chunks: Buffer[] = [];
 
         request.on("data", (chunk: Buffer | string) => {
@@ -37,7 +34,7 @@ function readJsonBody(request: IncomingMessage) {
         request.on("end", () => {
             try {
                 const raw = Buffer.concat(chunks).toString("utf8");
-                resolve(raw ? (JSON.parse(raw) as CreateGitHubIssueRequest) : {});
+                resolve(raw ? (JSON.parse(raw) as T) : ({} as T));
             } catch (error) {
                 reject(error);
             }
@@ -53,14 +50,9 @@ function sendJson(response: ServerResponse, statusCode: number, payload: unknown
     response.end(JSON.stringify(payload));
 }
 
-async function handleGitHubIssuesProxy(request: IncomingMessage, response: ServerResponse) {
-    if (request.method !== "POST") {
-        sendJson(response, 405, { error: "Method not allowed" });
-        return;
-    }
-
+async function handleGitHubIssueCreate(request: IncomingMessage, response: ServerResponse) {
     try {
-        const body = await readJsonBody(request);
+        const body = await readJsonBody<{ feedback?: ReportFeedback }>(request);
         const feedback = body.feedback;
 
         if (!feedback?.id) {
@@ -84,7 +76,6 @@ async function handleGitHubIssuesProxy(request: IncomingMessage, response: Serve
         sendJson(response, 200, {
             issueNumber,
             issueUrl,
-            state: "open",
         });
     } catch (error) {
         console.error("[github-issues-proxy] failed", error);
@@ -97,7 +88,12 @@ function stitchableGitHubIssuesProxy(): Plugin {
         name: "stitchable-github-issues-proxy",
         configureServer(server) {
             server.middlewares.use("/api/github/issues", (request, response, next) => {
-                void handleGitHubIssuesProxy(request, response).catch(() => {
+                if (request.method !== "POST") {
+                    next();
+                    return;
+                }
+
+                void handleGitHubIssueCreate(request, response).catch(() => {
                     next();
                 });
             });

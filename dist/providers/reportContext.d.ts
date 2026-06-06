@@ -113,9 +113,12 @@ declare const ReportContext: import("react").Context<{
     handleUpdateSubmit: () => Promise<void>;
     handleReplySubmit: () => Promise<void>;
     handleDelete: (id: string) => Promise<void>;
-    canCreateGitHubIssue: boolean;
+    canCreateGitHubIssueFromList: boolean;
+    canCreateGitHubIssueOnCreate: boolean;
     creatingGitHubIssueId: string | null;
     handleCreateGitHubIssue: (report: import("../index.js").ReportFeedback) => Promise<void>;
+    handleCreateSubmitWithGitHubIssue: () => Promise<void>;
+    isDraftGitHubIssueSubmitting: boolean;
 } | null>;
 export declare function useReport(): {
     appearance: import("../index.js").ReportAppearance;
@@ -230,9 +233,12 @@ export declare function useReport(): {
     handleUpdateSubmit: () => Promise<void>;
     handleReplySubmit: () => Promise<void>;
     handleDelete: (id: string) => Promise<void>;
-    canCreateGitHubIssue: boolean;
+    canCreateGitHubIssueFromList: boolean;
+    canCreateGitHubIssueOnCreate: boolean;
     creatingGitHubIssueId: string | null;
     handleCreateGitHubIssue: (report: import("../index.js").ReportFeedback) => Promise<void>;
+    handleCreateSubmitWithGitHubIssue: () => Promise<void>;
+    isDraftGitHubIssueSubmitting: boolean;
 };
 export { ReportContext };
 //# sourceMappingURL=reportContext.d.ts.map

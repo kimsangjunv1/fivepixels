@@ -1,4 +1,4 @@
-import type { CreateReportFeedbackPayload, ReportEvent, ReportFeedback, ReportField, ReportAuthor, ReportGitHubIssueCreateResult, ReportIdentify, ReportIntegrationsConfig, ReportProject, ReportTeam, ReportUi, ReportVisibility, UpdateReportFeedbackPayload } from "../../types/report.js";
+import type { CreateReportFeedbackPayload, ReportEvent, ReportFeedback, ReportField, ReportAuthor, ReportGitHubConfig, ReportIdentify, ReportProject, ReportTeam, ReportUi, ReportVisibility, UpdateReportFeedbackPayload } from "../../types/report.js";
 export type ReportProps = {
     project?: ReportProject;
     /** @deprecated Use `project.id`. */
@@ -42,8 +42,7 @@ export type ReportProps = {
         feedbackId: string;
         message: string;
     }) => void | Promise<void>;
-    integrations?: ReportIntegrationsConfig;
-    onGitHubIssueCreate?: (feedback: ReportFeedback) => Promise<ReportGitHubIssueCreateResult>;
+    github?: ReportGitHubConfig;
 };
-export declare function Report({ project, projectId, environment, appVersion, ui, appearance, showFeedbackList, visibleShortcutKeys, shortcut, visibility, enabled, devOnly, routeKey, pathname, team, identify, authors, fields, onList, onCreate, onUpdate, onDelete, onEvent, onReply, integrations, onGitHubIssueCreate, }: ReportProps): import("react/jsx-runtime").JSX.Element | null;
+export declare function Report({ project, projectId, environment, appVersion, ui, appearance, showFeedbackList, visibleShortcutKeys, shortcut, visibility, enabled, devOnly, routeKey, pathname, team, identify, authors, fields, onList, onCreate, onUpdate, onDelete, onEvent, onReply, github, }: ReportProps): import("react/jsx-runtime").JSX.Element | null;
 //# sourceMappingURL=Report.d.ts.map

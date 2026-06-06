@@ -1,6 +1,7 @@
 import type { ReportField, ReportFieldValues } from "../../../types/report.js";
 import type { ReportAuthor } from "../../../types/report.js";
 import { useReport } from "../../../providers/reportContext.js";
+import { GitHubIssueIcon } from "../../icons/GitHubIssueIcon.js";
 import { SendIcon } from "../../icons/SendIcon.js";
 import { AuthorSelector } from "./AuthorSelector.js";
 import { FieldTagSelector } from "./FieldTagSelector.js";
@@ -17,6 +18,9 @@ type FeedbackComposerProps = {
     showTags?: boolean;
     onSubmit: () => void;
     isSubmitting?: boolean;
+    showGitHubIssueOnCreate?: boolean;
+    onGitHubIssueSubmit?: () => void;
+    isGitHubIssueSubmitting?: boolean;
     placeholder?: string;
     autoFocus?: boolean;
 };
@@ -33,18 +37,31 @@ export function FeedbackComposer({
     showTags = false,
     onSubmit,
     isSubmitting = false,
+    showGitHubIssueOnCreate = false,
+    onGitHubIssueSubmit,
+    isGitHubIssueSubmitting = false,
     placeholder,
     autoFocus = false,
 }: FeedbackComposerProps) {
     const { messages } = useReport();
     const resolvedPlaceholder = placeholder ?? messages.composer.placeholder;
 
+    const isActionDisabled = isSubmitting || isGitHubIssueSubmitting;
+
     const handleSubmit = () => {
-        if (isSubmitting) {
+        if (isActionDisabled) {
             return;
         }
 
         onSubmit();
+    };
+
+    const handleGitHubIssueSubmit = () => {
+        if (isActionDisabled || !onGitHubIssueSubmit) {
+            return;
+        }
+
+        onGitHubIssueSubmit();
     };
 
     return (
@@ -70,16 +87,34 @@ export function FeedbackComposer({
                     value={authorName}
                     onChange={onAuthorNameChange}
                 />
-                <button
-                    type="button"
-                    data-stitchable-interactive=""
-                    disabled={isSubmitting}
-                    onClick={handleSubmit}
-                    className="inline-flex px-[12px] shrink-0 items-center justify-center rounded-full bg-[var(--adaptive-blue500)] text-[var(--adaptive-black50)] disabled:opacity-50"
-                    aria-label={messages.composer.sendAriaLabel}
-                >
-                    <SendIcon className="w-[16px]" />
-                </button>
+                <div className="flex shrink-0 items-center gap-[6px]">
+                    {showGitHubIssueOnCreate ? (
+                        <button
+                            type="button"
+                            data-stitchable-interactive=""
+                            disabled={isActionDisabled}
+                            onClick={handleGitHubIssueSubmit}
+                            className="inline-flex items-center justify-center gap-[4px] rounded-full border border-[var(--adaptive-black600)] px-[10px] py-[6px] text-[var(--adaptive-black50)] disabled:opacity-50"
+                            aria-label={messages.composer.gitIssueSendAriaLabel}
+                            title={messages.composer.gitIssueSendTitle}
+                        >
+                            <GitHubIssueIcon className="h-[14px] w-[14px]" />
+                            <span className="text-[11px] font-semibold">
+                                {isGitHubIssueSubmitting ? messages.composer.gitIssueSendingLabel : messages.composer.gitIssueSendLabel}
+                            </span>
+                        </button>
+                    ) : null}
+                    <button
+                        type="button"
+                        data-stitchable-interactive=""
+                        disabled={isActionDisabled}
+                        onClick={handleSubmit}
+                        className="inline-flex px-[12px] shrink-0 items-center justify-center rounded-full bg-[var(--adaptive-blue500)] text-[var(--adaptive-black50)] disabled:opacity-50"
+                        aria-label={messages.composer.sendAriaLabel}
+                    >
+                        <SendIcon className="w-[16px]" />
+                    </button>
+                </div>
             </div>
 
             <div className="w-full h-[1px] bg-[var(--adaptive-black800)]" />

@@ -1,6 +1,7 @@
-export const REPORT_STATUS_FLOW = ["open", "resolved", "archived"];
+export const REPORT_STATUS_FLOW = ["open", "git_issued", "resolved", "archived"];
 export const REPORT_STATUS_TRANSITIONS = {
-    open: ["resolved", "archived"],
+    open: ["git_issued", "resolved", "archived"],
+    git_issued: ["open", "resolved", "archived"],
     resolved: ["open", "archived"],
     archived: [],
 };

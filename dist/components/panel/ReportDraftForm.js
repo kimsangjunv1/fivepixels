@@ -27,10 +27,10 @@ function DraftPopoverConnector({ placement }) {
     return (_jsx("div", { "aria-hidden": true, className: `${baseClass} right-0 translate-x-full`, style: { width: DRAFT_POPOVER_CONNECTOR_WIDTH } }));
 }
 export function ReportDraftForm() {
-    const { draft, fields, authors, isCreating, selectedTarget, updateDraftMessage, updateDraftField, cancelDraft, handleCreateSubmit, draftAuthorName, setDraftAuthorName } = useReport();
-    return (_jsx(AnimatedPresence, { children: draft ? (_jsx(ReportDraftFormContent, { draft: draft, fields: fields, authors: authors, isCreating: isCreating, selectedTarget: selectedTarget, updateDraftMessage: updateDraftMessage, updateDraftField: updateDraftField, cancelDraft: cancelDraft, handleCreateSubmit: handleCreateSubmit, draftAuthorName: draftAuthorName, setDraftAuthorName: setDraftAuthorName })) : null }));
+    const { draft, fields, authors, isCreating, selectedTarget, updateDraftMessage, updateDraftField, cancelDraft, handleCreateSubmit, handleCreateSubmitWithGitHubIssue, canCreateGitHubIssueOnCreate, isDraftGitHubIssueSubmitting, draftAuthorName, setDraftAuthorName, } = useReport();
+    return (_jsx(AnimatedPresence, { children: draft ? (_jsx(ReportDraftFormContent, { draft: draft, fields: fields, authors: authors, isCreating: isCreating, selectedTarget: selectedTarget, updateDraftMessage: updateDraftMessage, updateDraftField: updateDraftField, cancelDraft: cancelDraft, handleCreateSubmit: handleCreateSubmit, handleCreateSubmitWithGitHubIssue: handleCreateSubmitWithGitHubIssue, canCreateGitHubIssueOnCreate: canCreateGitHubIssueOnCreate, isDraftGitHubIssueSubmitting: isDraftGitHubIssueSubmitting, draftAuthorName: draftAuthorName, setDraftAuthorName: setDraftAuthorName })) : null }));
 }
-function ReportDraftFormContent({ draft, fields, authors, isCreating, selectedTarget, updateDraftMessage, updateDraftField, handleCreateSubmit, draftAuthorName, setDraftAuthorName, }) {
+function ReportDraftFormContent({ draft, fields, authors, isCreating, selectedTarget, updateDraftMessage, updateDraftField, handleCreateSubmit, handleCreateSubmitWithGitHubIssue, canCreateGitHubIssueOnCreate, isDraftGitHubIssueSubmitting, draftAuthorName, setDraftAuthorName, }) {
     const anchor = getDraftMarkerPosition(draft, selectedTarget);
     const { left, top, anchorCenterY, width, placement, centerVertically } = getDraftPopoverPosition(anchor);
     const verticalOffset = centerVertically ? "-50%" : 0;
@@ -39,6 +39,6 @@ function ReportDraftFormContent({ draft, fields, authors, isCreating, selectedTa
             top: centerVertically ? anchorCenterY : top,
             width,
             transformOrigin: getMotionOrigin(placement),
-        }, children: [_jsx(FeedbackComposer, { message: draft.message, onMessageChange: updateDraftMessage, authorName: draftAuthorName, onAuthorNameChange: setDraftAuthorName, authors: authors, fields: fields, fieldValues: draft.fieldValues, onFieldChange: updateDraftField, showTags: true, onSubmit: () => void handleCreateSubmit(), isSubmitting: isCreating, autoFocus: true }), _jsx(DraftPopoverConnector, { placement: placement })] }, "report-draft-form"));
+        }, children: [_jsx(FeedbackComposer, { message: draft.message, onMessageChange: updateDraftMessage, authorName: draftAuthorName, onAuthorNameChange: setDraftAuthorName, authors: authors, fields: fields, fieldValues: draft.fieldValues, onFieldChange: updateDraftField, showTags: true, onSubmit: () => void handleCreateSubmit(), isSubmitting: isCreating, showGitHubIssueOnCreate: canCreateGitHubIssueOnCreate, onGitHubIssueSubmit: () => void handleCreateSubmitWithGitHubIssue(), isGitHubIssueSubmitting: isDraftGitHubIssueSubmitting, autoFocus: true }), _jsx(DraftPopoverConnector, { placement: placement })] }, "report-draft-form"));
 }
 //# sourceMappingURL=ReportDraftForm.js.map
