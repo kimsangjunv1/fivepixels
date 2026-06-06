@@ -175,7 +175,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             return `선택 가능한 ${selectableTargets.length}개 요소를 표시 중입니다.`;
         }
         if (selectableTargets.length === 0) {
-            return "현재 페이지에 선택 가능한 요소가 없어요. data-report-id / data-report-type 속성을 확인해주세요.";
+            return "현재 페이지에 선택 가능한 요소가 없어요. data-report-id 속성을 확인해주세요.";
         }
         return "ready.";
     }, [filteredReports.length, isFetching, hoveredTarget, mode, selectableTargets.length, selectedTarget, showTargetPreview]);

@@ -1,7 +1,7 @@
 import type { ReportField, ReportTargetType } from "../types/report.js";
 
 export const DOT_SIZE = 14;
-export const TARGET_SELECTOR = "[data-report-id][data-report-type]";
+export const TARGET_SELECTOR = "[data-report-id]";
 
 export const TARGET_COLOR: Record<ReportTargetType, string> = {
     group: "#7d44f0",

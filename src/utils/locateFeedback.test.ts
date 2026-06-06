@@ -17,6 +17,16 @@ describe("getFeedbackTargetElement", () => {
         expect(result).toBe(target);
     });
 
+    it("finds id-only targets as item", () => {
+        const target = document.createElement("button");
+        target.dataset.reportId = "hero-cta";
+        document.body.append(target);
+
+        const result = getFeedbackTargetElement({ report_id: "hero-cta", report_type: "item" });
+
+        expect(result).toBe(target);
+    });
+
     it("returns null when no matching element exists", () => {
         expect(getFeedbackTargetElement({ report_id: "missing", report_type: "group" })).toBeNull();
     });

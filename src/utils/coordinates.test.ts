@@ -82,6 +82,38 @@ describe("getMarkerFromReport", () => {
         expect(marker.top).toBe(80 + 100 * 0.75 - DOT_SIZE / 2);
     });
 
+    it("anchors to id-only item targets", () => {
+        const target = document.createElement("button");
+        target.dataset.reportId = "hero-cta";
+        document.body.append(target);
+
+        vi.spyOn(target, "getBoundingClientRect").mockReturnValue({
+            left: 40,
+            top: 60,
+            width: 120,
+            height: 40,
+            right: 160,
+            bottom: 100,
+            x: 40,
+            y: 60,
+            toJSON: () => ({}),
+        } as DOMRect);
+
+        const marker = getMarkerFromReport(
+            createStoredReport({
+                report_id: "hero-cta",
+                report_type: "item",
+                element_x_ratio: 0.5,
+                element_y_ratio: 0.5,
+            }),
+            0,
+        );
+
+        expect(marker.rect).not.toBeNull();
+        expect(marker.left).toBe(40 + 120 * 0.5 - DOT_SIZE / 2);
+        expect(marker.top).toBe(60 + 40 * 0.5 - DOT_SIZE / 2);
+    });
+
     it("falls back to document coordinates when the target element is missing", () => {
         const marker = getMarkerFromReport(createStoredReport({ document_y: 220 }), 20);
 

@@ -1,6 +1,6 @@
 # stitchable
 
-DOM Element 기반 피드백 라이브러리입니다. `data-report-id`, `data-report-type`를 기준으로 요소를 다시 찾아 피드백 포인트를 렌더링합니다.
+DOM Element 기반 피드백 라이브러리입니다. `data-report-id`를 기준으로 요소를 다시 찾아 피드백 포인트를 렌더링합니다.
 
 ## Install
 
@@ -24,8 +24,7 @@ export default function App() {
                     data-report-type="group"
                 >
                     <button
-                        data-report-id="굳이?"
-                        data-report-type="item"
+                        data-report-id="hero-cta"
                     >
                         시작하기
                     </button>
@@ -38,8 +37,9 @@ export default function App() {
 
 - `project.id`를 생략하면 기본값 `"my-app"`이 사용됩니다. stage/production, Cloud 연동, 같은 origin의 여러 앱에서는 `project={{ id }}`를 명시하는 것을 권장합니다.
 - `Report`는 피드백을 받을 화면에 1회만 렌더링합니다.
-- 피드백 대상 요소에는 `data-report-id`, `data-report-type`를 함께 넣어야 합니다.
-- `data-report-type`은 `group` 또는 `item`만 지원합니다.
+- 피드백 대상 요소에는 `data-report-id`가 필요합니다.
+- `data-report-type`은 선택 사항이며, 생략하면 `item`으로 처리됩니다.
+- 섹션 전체를 피드백 대상으로 쓰려면 `data-report-type="group"`을 명시하세요.
 - **별도 CSS import는 필요 없습니다.** UI는 Shadow Root 안에서 Tailwind 스타일과 함께 자동으로 마운트됩니다.
 
 ## UI Architecture

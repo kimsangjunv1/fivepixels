@@ -264,7 +264,7 @@ export function useReportState({
         }
 
         if (selectableTargets.length === 0) {
-            return "현재 페이지에 선택 가능한 요소가 없어요. data-report-id / data-report-type 속성을 확인해주세요.";
+            return "현재 페이지에 선택 가능한 요소가 없어요. data-report-id 속성을 확인해주세요.";
         }
 
         return "ready.";
