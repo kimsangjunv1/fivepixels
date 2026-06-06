@@ -21,7 +21,7 @@ function resolveDefaultAuthorName(identify, authors) {
     }
     return authors[0]?.name ?? "";
 }
-export function useReportState({ projectId, environment, appVersion, appearance, fields, authors = [], shortcut: _shortcut, identify, onEvent, onCreate, onDelete, onReply, onUpdate, pathname, showFeedbackList, storage = "local", storageAdapter, visibleShortcutKeys = false, }) {
+export function useReportState({ projectId, environment, appVersion, appearance, fields, authors = [], shortcut: _shortcut, identify, onList, onCreate, onUpdate, onDelete, onEvent, onReply, routeKey, showFeedbackList, visibleShortcutKeys = false, }) {
     // theme
     const overlayRef = useRef(null);
     const searchInputRef = useRef(null);
@@ -31,16 +31,13 @@ export function useReportState({ projectId, environment, appVersion, appearance,
     const overlayHoverLeaveTimeoutRef = useRef(null);
     const resolvedAppearance = useResolvedAppearance(appearance);
     const isMobileViewport = useIsMobileViewport();
-    const storageAdapterInstance = useMemo(() => resolveStorageAdapter({ projectId, environment, appVersion, storage, storageAdapter }), [appVersion, environment, projectId, storage, storageAdapter]);
-    const canTransferFeedback = !storageAdapter && storage === "local";
-    const currentPathname = useCurrentPathname(pathname);
+    const { adapter: storageAdapterInstance, usesLocalStorage } = useMemo(() => resolveStorageAdapter({ projectId, environment, appVersion, onList, onCreate, onUpdate, onDelete }), [appVersion, environment, onCreate, onDelete, onList, onUpdate, projectId]);
+    const canTransferFeedback = usesLocalStorage;
+    const currentPathname = useCurrentPathname(routeKey);
     const eventCallbacks = useMemo(() => ({
         onEvent,
-        onCreate,
-        onDelete,
         onReply,
-        onUpdate,
-    }), [onEvent, onCreate, onDelete, onReply, onUpdate]);
+    }), [onEvent, onReply]);
     const [mode, setMode] = useState("idle");
     const [showTargetPreview, setShowTargetPreview] = useState(false);
     const [selectableTargets, setSelectableTargets] = useState([]);

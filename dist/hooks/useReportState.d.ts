@@ -1,5 +1,5 @@
 import { type MouseEvent } from "react";
-import type { ReportAppearance, ReportAuthor, ReportEvent, ReportFeedback, ReportField, ReportIdentify, ReportStorageAdapter } from "../types/report.js";
+import type { CreateReportFeedbackPayload, ReportAppearance, ReportAuthor, ReportEvent, ReportFeedback, ReportField, ReportIdentify, UpdateReportFeedbackPayload } from "../types/report.js";
 import type { DraftReport, EditableDraft, Marker, PendingFeedbackComposer, ReportFilters, ReportMode, ReportPanelTab, TargetSnapshot } from "../types/report-ui.js";
 export type ReportStateConfig = {
     projectId: string;
@@ -10,21 +10,22 @@ export type ReportStateConfig = {
     authors?: ReportAuthor[];
     shortcut?: string;
     identify?: ReportIdentify;
+    onList?: (params: {
+        pathname: string;
+    }) => Promise<ReportFeedback[]>;
+    onCreate?: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
+    onUpdate?: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
+    onDelete?: (id: string) => Promise<void>;
     onEvent?: (event: ReportEvent) => void | Promise<void>;
-    onCreate?: (feedback: ReportFeedback) => void | Promise<void>;
-    onDelete?: (id: string) => void | Promise<void>;
     onReply?: (params: {
         feedbackId: string;
         message: string;
     }) => void | Promise<void>;
-    onUpdate?: (feedback: ReportFeedback) => void | Promise<void>;
-    pathname?: string;
+    routeKey?: string;
     showFeedbackList: boolean;
-    storage?: "local" | ReportStorageAdapter;
-    storageAdapter?: ReportStorageAdapter;
     visibleShortcutKeys?: boolean;
 };
-export declare function useReportState({ projectId, environment, appVersion, appearance, fields, authors, shortcut: _shortcut, identify, onEvent, onCreate, onDelete, onReply, onUpdate, pathname, showFeedbackList, storage, storageAdapter, visibleShortcutKeys, }: ReportStateConfig): {
+export declare function useReportState({ projectId, environment, appVersion, appearance, fields, authors, shortcut: _shortcut, identify, onList, onCreate, onUpdate, onDelete, onEvent, onReply, routeKey, showFeedbackList, visibleShortcutKeys, }: ReportStateConfig): {
     appearance: ReportAppearance;
     fields: ReportField[];
     authors: ReportAuthor[];

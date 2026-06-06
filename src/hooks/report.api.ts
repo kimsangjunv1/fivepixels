@@ -19,7 +19,7 @@ export async function updateReport(adapter: ReportStorageAdapter, id: string, pa
 
 export async function deleteReport(adapter: ReportStorageAdapter, id: string) {
     if (!adapter.remove) {
-        throw new Error("이 storage adapter는 삭제를 지원하지 않아요.");
+        throw new Error("onDelete가 없어서 삭제할 수 없어요.");
     }
 
     await adapter.remove(id);

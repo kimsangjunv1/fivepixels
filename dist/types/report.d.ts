@@ -29,6 +29,30 @@ export type ReportIdentify = {
     id: string;
     name: string;
 };
+/** Project scope passed to `<Report project={{ id, env, version }} />`. */
+export type ReportProject = {
+    id?: string;
+    env?: string;
+    version?: string;
+};
+/** UI options passed to `<Report ui={{ appearance, showFeedbackList, visibleShortcutKeys, shortcut }} />`. */
+export type ReportUi = {
+    appearance?: ReportAppearance;
+    showFeedbackList?: boolean;
+    visibleShortcutKeys?: boolean;
+    shortcut?: string;
+};
+/** Team scope passed to `<Report team={{ user, reviewers }} />`. */
+export type ReportTeam = {
+    user?: ReportIdentify;
+    reviewers?: ReportAuthor[];
+};
+/** Visibility and route scope passed to `<Report visibility={{ enabled, devOnly, routeKey }} />`. */
+export type ReportVisibility = {
+    enabled?: boolean;
+    devOnly?: boolean;
+    routeKey?: string;
+};
 export type ReportAuthor = {
     id: string;
     name: string;
@@ -70,6 +94,15 @@ export interface ReportStorageAdapter {
     update(id: string, payload: UpdateReportFeedbackPayload): Promise<ReportFeedback>;
     remove?(id: string): Promise<void>;
 }
+/** Custom persistence handlers passed to `<Report />`. Requires onList, onCreate, and onUpdate together. */
+export type ReportPersistenceHandlers = {
+    onList: (params: {
+        pathname: string;
+    }) => Promise<ReportFeedback[]>;
+    onCreate: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
+    onUpdate: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
+    onDelete?: (id: string) => Promise<void>;
+};
 export type SerializedReportFeedback = ReportFeedback;
 export type SerializedReportReply = ReportReply;
 export type Report = ReportFeedback;

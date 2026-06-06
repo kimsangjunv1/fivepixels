@@ -1,11 +1,34 @@
 import { createLocalStorageReportAdapter } from "../storage/local/localStorageAdapter.js";
-export function resolveStorageAdapter({ projectId, environment, appVersion, storage = "local", storageAdapter, }) {
-    if (storageAdapter) {
-        return storageAdapter;
+export function hasCustomPersistenceHandlers(options) {
+    return Boolean(options.onList && options.onCreate && options.onUpdate);
+}
+function createStorageAdapterFromHandlers(handlers) {
+    return {
+        list: handlers.onList,
+        create: handlers.onCreate,
+        update: handlers.onUpdate,
+        remove: handlers.onDelete,
+    };
+}
+export function resolveStorageAdapter({ projectId, environment, appVersion, onList, onCreate, onUpdate, onDelete, }) {
+    const hasPartialCustom = Boolean(onList || onCreate || onUpdate || onDelete);
+    if (hasPartialCustom && !hasCustomPersistenceHandlers({ onList, onCreate, onUpdate })) {
+        console.warn("[stitchable] Custom persistence requires onList, onCreate, and onUpdate together. Falling back to localStorage.");
     }
-    if (storage !== "local") {
-        return storage;
+    if (hasCustomPersistenceHandlers({ onList, onCreate, onUpdate })) {
+        return {
+            adapter: createStorageAdapterFromHandlers({
+                onList: onList,
+                onCreate: onCreate,
+                onUpdate: onUpdate,
+                onDelete,
+            }),
+            usesLocalStorage: false,
+        };
     }
-    return createLocalStorageReportAdapter({ projectId, environment, appVersion });
+    return {
+        adapter: createLocalStorageReportAdapter({ projectId, environment, appVersion }),
+        usesLocalStorage: true,
+    };
 }
 //# sourceMappingURL=storage.js.map

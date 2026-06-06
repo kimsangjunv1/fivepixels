@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { getCurrentPathname } from "../utils/pathname.js";
 import { subscribeToPathnameChanges } from "../utils/pathnameNavigation.js";
 
-export function useCurrentPathname(pathname?: string) {
-    const isControlled = pathname !== undefined;
+export function useCurrentPathname(routeKey?: string) {
+    const isControlled = routeKey !== undefined;
     const [browserPathname, setBrowserPathname] = useState(() => getCurrentPathname());
 
     useEffect(() => {
@@ -18,5 +18,5 @@ export function useCurrentPathname(pathname?: string) {
         return subscribeToPathnameChanges(syncPathname);
     }, [isControlled]);
 
-    return isControlled ? pathname : browserPathname;
+    return isControlled ? routeKey : browserPathname;
 }

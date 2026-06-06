@@ -2,65 +2,116 @@ import type { ReactNode } from "react";
 import { DEFAULT_FIELDS } from "../constants/report.js";
 import { useReportState } from "../hooks/useReportState.js";
 import type {
-    ReportAppearance,
+    CreateReportFeedbackPayload,
     ReportEvent,
     ReportFeedback,
     ReportField,
     ReportAuthor,
     ReportIdentify,
-    ReportStorageAdapter,
+    ReportProject,
+    ReportTeam,
+    ReportUi,
+    ReportVisibility,
+    UpdateReportFeedbackPayload,
 } from "../types/report.js";
 import { resolveReportEnabled } from "../utils/env.js";
-import { resolveProjectId } from "../utils/projectId.js";
+import { resolveReportProject } from "../utils/reportProject.js";
+import { resolveReportTeam } from "../utils/reportTeam.js";
+import { resolveReportUi } from "../utils/reportUi.js";
+import { resolveReportVisibility } from "../utils/reportVisibility.js";
 import { ReportContext } from "./reportContext.js";
 
 export type ReportProviderProps = {
+    project?: ReportProject;
+    /** @deprecated Use `project.id`. */
     projectId?: string;
+    /** @deprecated Use `project.env`. */
     environment?: string;
+    /** @deprecated Use `project.version`. */
     appVersion?: string;
-    appearance?: ReportAppearance;
-    storage?: "local" | ReportStorageAdapter;
-    storageAdapter?: ReportStorageAdapter;
-    fields?: ReportField[];
-    authors?: ReportAuthor[];
-    shortcut?: string;
-    identify?: ReportIdentify;
-    onEvent?: (event: ReportEvent) => void | Promise<void>;
-    onCreate?: (feedback: ReportFeedback) => void | Promise<void>;
-    onDelete?: (id: string) => void | Promise<void>;
-    onReply?: (params: { feedbackId: string; message: string }) => void | Promise<void>;
-    onUpdate?: (feedback: ReportFeedback) => void | Promise<void>;
-    devOnly?: boolean;
-    enabled?: boolean;
-    pathname?: string;
+    ui?: ReportUi;
+    /** @deprecated Use `ui.appearance`. */
+    appearance?: ReportUi["appearance"];
+    /** @deprecated Use `ui.showFeedbackList`. */
     showFeedbackList?: boolean;
+    /** @deprecated Use `ui.visibleShortcutKeys`. */
     visibleShortcutKeys?: boolean;
+    /** @deprecated Use `ui.shortcut`. */
+    shortcut?: string;
+    visibility?: ReportVisibility;
+    /** @deprecated Use `visibility.enabled`. */
+    enabled?: boolean;
+    /** @deprecated Use `visibility.devOnly`. */
+    devOnly?: boolean;
+    /** @deprecated Use `visibility.routeKey`. */
+    routeKey?: string;
+    /** @deprecated Use `visibility.routeKey`. */
+    pathname?: string;
+    team?: ReportTeam;
+    /** @deprecated Use `team.user`. */
+    identify?: ReportIdentify;
+    /** @deprecated Use `team.reviewers`. */
+    authors?: ReportAuthor[];
+    fields?: ReportField[];
+    onList?: (params: { pathname: string }) => Promise<ReportFeedback[]>;
+    onCreate?: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
+    onUpdate?: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
+    onDelete?: (id: string) => Promise<void>;
+    onEvent?: (event: ReportEvent) => void | Promise<void>;
+    onReply?: (params: { feedbackId: string; message: string }) => void | Promise<void>;
     children: ReactNode;
 };
 
-type ReportProviderEnabledProps = Omit<ReportProviderProps, "devOnly" | "enabled" | "projectId"> & {
+type ReportProviderEnabledProps = Omit<
+    ReportProviderProps,
+    | "project"
+    | "projectId"
+    | "environment"
+    | "appVersion"
+    | "ui"
+    | "appearance"
+    | "showFeedbackList"
+    | "visibleShortcutKeys"
+    | "shortcut"
+    | "visibility"
+    | "enabled"
+    | "devOnly"
+    | "routeKey"
+    | "pathname"
+    | "team"
+    | "identify"
+    | "authors"
+> & {
     projectId: string;
+    environment?: string;
+    appVersion?: string;
+    appearance: NonNullable<ReportUi["appearance"]>;
+    showFeedbackList: boolean;
+    visibleShortcutKeys: boolean;
+    shortcut?: string;
+    routeKey?: string;
+    identify?: ReportIdentify;
+    authors: ReportAuthor[];
 };
 
 function ReportProviderEnabled({
     projectId,
     environment,
     appVersion,
-    appearance = "system",
-    storage = "local",
-    storageAdapter,
+    appearance,
     fields = DEFAULT_FIELDS,
     authors,
     shortcut,
     identify,
-    onEvent,
+    onList,
     onCreate,
-    onDelete,
-    onReply,
     onUpdate,
-    pathname,
-    showFeedbackList = true,
-    visibleShortcutKeys = false,
+    onDelete,
+    onEvent,
+    onReply,
+    routeKey,
+    showFeedbackList,
+    visibleShortcutKeys,
     children,
 }: ReportProviderEnabledProps) {
     const value = useReportState({
@@ -72,15 +123,14 @@ function ReportProviderEnabled({
         authors,
         shortcut,
         identify,
-        onEvent,
+        onList,
         onCreate,
-        onDelete,
-        onReply,
         onUpdate,
-        pathname,
+        onDelete,
+        onEvent,
+        onReply,
+        routeKey,
         showFeedbackList,
-        storage,
-        storageAdapter,
         visibleShortcutKeys,
     });
 
@@ -88,54 +138,60 @@ function ReportProviderEnabled({
 }
 
 export function ReportProvider({
+    project,
     projectId,
     environment,
     appVersion,
-    appearance = "system",
-    devOnly = false,
-    enabled = true,
-    storage = "local",
-    storageAdapter,
-    fields = DEFAULT_FIELDS,
-    authors,
+    ui,
+    appearance,
+    showFeedbackList,
+    visibleShortcutKeys,
     shortcut,
-    identify,
-    onEvent,
-    onCreate,
-    onDelete,
-    onReply,
-    onUpdate,
+    visibility,
+    enabled,
+    devOnly,
+    routeKey,
     pathname,
-    showFeedbackList = true,
-    visibleShortcutKeys = false,
+    team,
+    identify,
+    authors,
+    fields = DEFAULT_FIELDS,
+    onList,
+    onCreate,
+    onUpdate,
+    onDelete,
+    onEvent,
+    onReply,
     children,
 }: ReportProviderProps) {
-    const resolvedProjectId = resolveProjectId(projectId);
+    const resolvedProject = resolveReportProject({ project, projectId, environment, appVersion });
+    const resolvedUi = resolveReportUi({ ui, appearance, showFeedbackList, visibleShortcutKeys, shortcut });
+    const resolvedVisibility = resolveReportVisibility({ visibility, enabled, devOnly, routeKey, pathname });
+    const resolvedTeam = resolveReportTeam({ team, identify, authors });
 
-    if (!resolveReportEnabled({ enabled, devOnly })) {
+    if (!resolveReportEnabled(resolvedVisibility)) {
         return <>{children}</>;
     }
 
     return (
         <ReportProviderEnabled
-            projectId={resolvedProjectId}
-            environment={environment}
-            appVersion={appVersion}
-            appearance={appearance}
+            projectId={resolvedProject.projectId}
+            environment={resolvedProject.environment}
+            appVersion={resolvedProject.appVersion}
+            appearance={resolvedUi.appearance}
+            showFeedbackList={resolvedUi.showFeedbackList}
+            visibleShortcutKeys={resolvedUi.visibleShortcutKeys}
+            shortcut={resolvedUi.shortcut}
             fields={fields}
-            authors={authors}
-            shortcut={shortcut}
-            identify={identify}
-            onEvent={onEvent}
+            authors={resolvedTeam.reviewers}
+            identify={resolvedTeam.user}
+            onList={onList}
             onCreate={onCreate}
-            onDelete={onDelete}
-            onReply={onReply}
             onUpdate={onUpdate}
-            pathname={pathname}
-            showFeedbackList={showFeedbackList}
-            storage={storage}
-            storageAdapter={storageAdapter}
-            visibleShortcutKeys={visibleShortcutKeys}
+            onDelete={onDelete}
+            onEvent={onEvent}
+            onReply={onReply}
+            routeKey={resolvedVisibility.routeKey}
         >
             {children}
         </ReportProviderEnabled>

@@ -4,6 +4,7 @@ import { useCreateReportMutation, useDeleteReportMutation, useReportsQuery, useU
 import { useIsMobileViewport } from "./useIsMobileViewport.js";
 import { useResolvedAppearance } from "./useResolvedAppearance.js";
 import type {
+    CreateReportFeedbackPayload,
     ReportAppearance,
     ReportAuthor,
     ReportEvent,
@@ -11,7 +12,7 @@ import type {
     ReportField,
     ReportIdentify,
     ReportReply,
-    ReportStorageAdapter,
+    UpdateReportFeedbackPayload,
 } from "../types/report.js";
 import type { DraftReport, EditableDraft, Marker, PendingFeedbackComposer, ReportFilters, ReportMode, ReportPanelTab, TargetSnapshot } from "../types/report-ui.js";
 import { createReplyStatusForSubmit, resolveOriginalFeedbackAuthorName } from "../utils/feedbackThread.js";
@@ -26,7 +27,7 @@ import { createInitialFieldValues, getFieldError, getFieldTags } from "../utils/
 import { createReplyId } from "../utils/format.js";
 import { useCurrentPathname } from "./useCurrentPathname.js";
 import { resolveStorageAdapter } from "../utils/storage.js";
-import { notifyFeedbackCreate, notifyFeedbackDelete, notifyFeedbackReply, notifyFeedbackUpdate, type ReportEventCallbacks } from "../utils/reportCallbacks.js";
+import { notifyFeedbackCreate, notifyFeedbackDelete, notifyFeedbackReply, notifyFeedbackUpdate, type ReportSideEffectCallbacks } from "../utils/reportCallbacks.js";
 
 function resolveDefaultAuthorName(identify: ReportIdentify | undefined, authors: ReportAuthor[]) {
     if (identify?.name) {
@@ -45,15 +46,14 @@ export type ReportStateConfig = {
     authors?: ReportAuthor[];
     shortcut?: string;
     identify?: ReportIdentify;
+    onList?: (params: { pathname: string }) => Promise<ReportFeedback[]>;
+    onCreate?: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
+    onUpdate?: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
+    onDelete?: (id: string) => Promise<void>;
     onEvent?: (event: ReportEvent) => void | Promise<void>;
-    onCreate?: (feedback: ReportFeedback) => void | Promise<void>;
-    onDelete?: (id: string) => void | Promise<void>;
     onReply?: (params: { feedbackId: string; message: string }) => void | Promise<void>;
-    onUpdate?: (feedback: ReportFeedback) => void | Promise<void>;
-    pathname?: string;
+    routeKey?: string;
     showFeedbackList: boolean;
-    storage?: "local" | ReportStorageAdapter;
-    storageAdapter?: ReportStorageAdapter;
     visibleShortcutKeys?: boolean;
 };
 
@@ -66,15 +66,14 @@ export function useReportState({
     authors = [],
     shortcut: _shortcut,
     identify,
-    onEvent,
+    onList,
     onCreate,
-    onDelete,
-    onReply,
     onUpdate,
-    pathname,
+    onDelete,
+    onEvent,
+    onReply,
+    routeKey,
     showFeedbackList,
-    storage = "local",
-    storageAdapter,
     visibleShortcutKeys = false,
 }: ReportStateConfig) {
     // theme
@@ -87,21 +86,18 @@ export function useReportState({
 
     const resolvedAppearance = useResolvedAppearance(appearance);
     const isMobileViewport = useIsMobileViewport();
-    const storageAdapterInstance = useMemo(
-        () => resolveStorageAdapter({ projectId, environment, appVersion, storage, storageAdapter }),
-        [appVersion, environment, projectId, storage, storageAdapter],
+    const { adapter: storageAdapterInstance, usesLocalStorage } = useMemo(
+        () => resolveStorageAdapter({ projectId, environment, appVersion, onList, onCreate, onUpdate, onDelete }),
+        [appVersion, environment, onCreate, onDelete, onList, onUpdate, projectId],
     );
-    const canTransferFeedback = !storageAdapter && storage === "local";
-    const currentPathname = useCurrentPathname(pathname);
-    const eventCallbacks = useMemo<ReportEventCallbacks>(
+    const canTransferFeedback = usesLocalStorage;
+    const currentPathname = useCurrentPathname(routeKey);
+    const eventCallbacks = useMemo<ReportSideEffectCallbacks>(
         () => ({
             onEvent,
-            onCreate,
-            onDelete,
             onReply,
-            onUpdate,
         }),
-        [onEvent, onCreate, onDelete, onReply, onUpdate],
+        [onEvent, onReply],
     );
 
     const [mode, setMode] = useState<ReportMode>("idle");
