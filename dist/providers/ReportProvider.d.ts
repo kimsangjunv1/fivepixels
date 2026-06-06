@@ -12,13 +12,13 @@ export type ReportProviderProps = {
     shortcut?: string;
     identify?: ReportIdentify;
     onEvent?: (event: ReportEvent) => void | Promise<void>;
-    onFeedbackCreate?: (feedback: ReportFeedback) => void | Promise<void>;
-    onFeedbackDelete?: (id: string) => void | Promise<void>;
-    onFeedbackReply?: (params: {
+    onCreate?: (feedback: ReportFeedback) => void | Promise<void>;
+    onDelete?: (id: string) => void | Promise<void>;
+    onReply?: (params: {
         feedbackId: string;
         message: string;
     }) => void | Promise<void>;
-    onFeedbackUpdate?: (feedback: ReportFeedback) => void | Promise<void>;
+    onUpdate?: (feedback: ReportFeedback) => void | Promise<void>;
     devOnly?: boolean;
     enabled?: boolean;
     pathname?: string;
@@ -26,5 +26,5 @@ export type ReportProviderProps = {
     visibleShortcutKeys?: boolean;
     children: ReactNode;
 };
-export declare function ReportProvider({ projectId, environment, appVersion, appearance, devOnly, enabled, storage, storageAdapter, fields, authors, shortcut, identify, onEvent, onFeedbackCreate, onFeedbackDelete, onFeedbackReply, onFeedbackUpdate, pathname, showFeedbackList, visibleShortcutKeys, children, }: ReportProviderProps): import("react/jsx-runtime").JSX.Element;
+export declare function ReportProvider({ projectId, environment, appVersion, appearance, devOnly, enabled, storage, storageAdapter, fields, authors, shortcut, identify, onEvent, onCreate, onDelete, onReply, onUpdate, pathname, showFeedbackList, visibleShortcutKeys, children, }: ReportProviderProps): import("react/jsx-runtime").JSX.Element;
 //# sourceMappingURL=ReportProvider.d.ts.map

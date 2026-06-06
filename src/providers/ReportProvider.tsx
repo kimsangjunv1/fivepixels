@@ -26,10 +26,10 @@ export type ReportProviderProps = {
     shortcut?: string;
     identify?: ReportIdentify;
     onEvent?: (event: ReportEvent) => void | Promise<void>;
-    onFeedbackCreate?: (feedback: ReportFeedback) => void | Promise<void>;
-    onFeedbackDelete?: (id: string) => void | Promise<void>;
-    onFeedbackReply?: (params: { feedbackId: string; message: string }) => void | Promise<void>;
-    onFeedbackUpdate?: (feedback: ReportFeedback) => void | Promise<void>;
+    onCreate?: (feedback: ReportFeedback) => void | Promise<void>;
+    onDelete?: (id: string) => void | Promise<void>;
+    onReply?: (params: { feedbackId: string; message: string }) => void | Promise<void>;
+    onUpdate?: (feedback: ReportFeedback) => void | Promise<void>;
     devOnly?: boolean;
     enabled?: boolean;
     pathname?: string;
@@ -54,10 +54,10 @@ function ReportProviderEnabled({
     shortcut,
     identify,
     onEvent,
-    onFeedbackCreate,
-    onFeedbackDelete,
-    onFeedbackReply,
-    onFeedbackUpdate,
+    onCreate,
+    onDelete,
+    onReply,
+    onUpdate,
     pathname,
     showFeedbackList = true,
     visibleShortcutKeys = false,
@@ -73,10 +73,10 @@ function ReportProviderEnabled({
         shortcut,
         identify,
         onEvent,
-        onFeedbackCreate,
-        onFeedbackDelete,
-        onFeedbackReply,
-        onFeedbackUpdate,
+        onCreate,
+        onDelete,
+        onReply,
+        onUpdate,
         pathname,
         showFeedbackList,
         storage,
@@ -101,10 +101,10 @@ export function ReportProvider({
     shortcut,
     identify,
     onEvent,
-    onFeedbackCreate,
-    onFeedbackDelete,
-    onFeedbackReply,
-    onFeedbackUpdate,
+    onCreate,
+    onDelete,
+    onReply,
+    onUpdate,
     pathname,
     showFeedbackList = true,
     visibleShortcutKeys = false,
@@ -127,10 +127,10 @@ export function ReportProvider({
             shortcut={shortcut}
             identify={identify}
             onEvent={onEvent}
-            onFeedbackCreate={onFeedbackCreate}
-            onFeedbackDelete={onFeedbackDelete}
-            onFeedbackReply={onFeedbackReply}
-            onFeedbackUpdate={onFeedbackUpdate}
+            onCreate={onCreate}
+            onDelete={onDelete}
+            onReply={onReply}
+            onUpdate={onUpdate}
             pathname={pathname}
             showFeedbackList={showFeedbackList}
             storage={storage}

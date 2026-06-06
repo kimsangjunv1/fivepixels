@@ -14,7 +14,7 @@ export function App() {
                 appearance="system"
                 pathname="/examples/basic"
                 visibleShortcutKeys
-                onFeedbackCreate={(event) => {
+                onCreate={(event) => {
                     console.log("feedback created", event);
                 }}
                 identify={{ id: "demo-user", name: "김아영 주임" }}

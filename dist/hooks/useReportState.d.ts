@@ -11,20 +11,20 @@ export type ReportStateConfig = {
     shortcut?: string;
     identify?: ReportIdentify;
     onEvent?: (event: ReportEvent) => void | Promise<void>;
-    onFeedbackCreate?: (feedback: ReportFeedback) => void | Promise<void>;
-    onFeedbackDelete?: (id: string) => void | Promise<void>;
-    onFeedbackReply?: (params: {
+    onCreate?: (feedback: ReportFeedback) => void | Promise<void>;
+    onDelete?: (id: string) => void | Promise<void>;
+    onReply?: (params: {
         feedbackId: string;
         message: string;
     }) => void | Promise<void>;
-    onFeedbackUpdate?: (feedback: ReportFeedback) => void | Promise<void>;
+    onUpdate?: (feedback: ReportFeedback) => void | Promise<void>;
     pathname?: string;
     showFeedbackList: boolean;
     storage?: "local" | ReportStorageAdapter;
     storageAdapter?: ReportStorageAdapter;
     visibleShortcutKeys?: boolean;
 };
-export declare function useReportState({ projectId, environment, appVersion, appearance, fields, authors, shortcut: _shortcut, identify, onEvent, onFeedbackCreate, onFeedbackDelete, onFeedbackReply, onFeedbackUpdate, pathname, showFeedbackList, storage, storageAdapter, visibleShortcutKeys, }: ReportStateConfig): {
+export declare function useReportState({ projectId, environment, appVersion, appearance, fields, authors, shortcut: _shortcut, identify, onEvent, onCreate, onDelete, onReply, onUpdate, pathname, showFeedbackList, storage, storageAdapter, visibleShortcutKeys, }: ReportStateConfig): {
     appearance: ReportAppearance;
     fields: ReportField[];
     authors: ReportAuthor[];
@@ -74,6 +74,7 @@ export declare function useReportState({ projectId, environment, appVersion, app
     selectedTarget: TargetSnapshot | null;
     markers: Marker[];
     selectedReport: ReportFeedback;
+    locatedReportId: string | null;
     editingReportId: string | null;
     editableDraft: EditableDraft | null;
     setEditableDraft: import("react").Dispatch<import("react").SetStateAction<EditableDraft | null>>;
@@ -113,6 +114,7 @@ export declare function useReportState({ projectId, environment, appVersion, app
     openPanelTab: (nextTab: ReportPanelTab) => void;
     togglePanelTab: (nextTab: ReportPanelTab) => void;
     selectReport: (reportId: string) => void;
+    locateFeedback: (reportId: string) => void;
     focusSearchInput: () => void;
     selectAdjacentReport: (direction: "up" | "down") => void;
     openReplyComposer: (report: ReportFeedback) => void;

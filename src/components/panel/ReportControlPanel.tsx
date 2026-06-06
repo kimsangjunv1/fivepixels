@@ -42,7 +42,7 @@ function PanelTabButton({ label, active, onClick }: { label: string; active: boo
         <button
             type="button"
             onClick={onClick}
-            className={`flex flex-1 items-center justify-center gap-[6px] px-[10px] py-[4px] ${active ? "bg-[var(--adaptive-black50)] text-[var(--adaptive-black900)]" : "text-[var(--adaptive-black600)]"}`}
+            className={`flex flex-1 items-center justify-center gap-[6px] px-[10px] py-[4px] ${active ? "bg-[var(--adaptive-black100)] text-[var(--adaptive-black900)]" : "text-[var(--adaptive-black600)]"}`}
         >
             <p className="text-[var(--adaptive-black500)] font-[500]">{label}</p>
 
@@ -114,10 +114,6 @@ export function ReportControlPanel() {
     const transferScope = { projectId, environment, appVersion };
 
     const handlePanelTabClick = (tab: ReportPanelTab) => {
-        if (tab === "feedback-list" && isIssueMode) {
-            toggleIssueMode();
-        }
-
         openPanelTab(tab);
     };
 
@@ -322,7 +318,7 @@ export function ReportControlPanel() {
                 onDragLeave={handleDragLeave}
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}
-                className={`pointer-events-auto fixed z-[1000000] overflow-hidden rounded-[24px] shadow-[0_0_120px_0_var(--adaptive-blackOpacity500)] flex ${isRecording ? "min-h-[40px] p-[4px]" : "max-h-[80vh] min-h-[40px w-full max-w-[375px]"}`}
+                className={`pointer-events-auto fixed z-[1000000] overflow-hidden bg-[var(--adaptive-whiteOpacity800)] backdrop-blur-[50px] rounded-[24px] shadow-[0_0_120px_0_var(--adaptive-blackOpacity500)] flex ${isRecording ? "min-h-[40px] p-[4px]" : "max-h-[80vh] min-h-[40px w-full max-w-[375px]"}`}
                 style={{ ...panelStyle, fontSize: "14px" }}
             >
                 <motion.div className="flex min-w-0 flex-1 flex-col w-full">
@@ -330,7 +326,7 @@ export function ReportControlPanel() {
                         <section className="flex items-center justify-between gap-[16px] px-[12px] py-[8px]">
                             <section className="flex items-center gap-[4px] justify-start shrink-0">
                                 <LogoIcon className="w-[18px]" />
-                                <p className="text-[var(--adaptive-black900)] font-[900] text-[18px]">Radar°</p>
+                                <p className="text-[var(--adaptive-black900)] text-[16px]">Stitchable°</p>
                             </section>
 
                             <button
@@ -351,7 +347,7 @@ export function ReportControlPanel() {
                                         </div>
                                     ) : null}
 
-                                    <section className="flex bg-[var(--adaptive-whiteOpacity700)] backdrop-blur-[50px]">
+                                    <section className="flex">
                                         {anchorSide === "left" ? (
                                             <PanelCollapseTab
                                                 collapsed={panelCollapsed}
@@ -364,7 +360,7 @@ export function ReportControlPanel() {
                                             <section className="flex items-center justify-between gap-[8px]">
                                                 <section className="flex min-w-0 items-center gap-[6px]">
                                                     <LogoIcon className="w-[18px] shrink-0" />
-                                                    <p className="shrink-0 text-[var(--adaptive-black900)] font-[700] text-[16px]">Radar°</p>
+                                                    <p className="shrink-0 text-[var(--adaptive-black900)] font-[700] text-[16px]">Stitchable°</p>
                                                     <EnvironmentBadge environment={environment} />
                                                 </section>
 
@@ -439,7 +435,7 @@ export function ReportControlPanel() {
                                         ) : null}
                                     </section>
 
-                                    <section className="flex items-stretch border-t border-[var(--adaptive-black200)] bg-[var(--adaptive-black200)]">
+                                    <section className="flex items-stretch border-t border-[var(--adaptive-black200)]">
                                         <div className="flex min-w-0 flex-1 overflow-hidden">
                                             <PanelTabButton
                                                 label="Page Details"

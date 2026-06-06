@@ -6,6 +6,7 @@ import { useResolvedAppearance } from "./useResolvedAppearance.js";
 import { createReplyStatusForSubmit, resolveOriginalFeedbackAuthorName } from "../utils/feedbackThread.js";
 import { getRouteDetailStatus, isCreatedToday, ROUTE_DETAIL_STATUS_ORDER } from "../utils/routeDetailStatus.js";
 import { clampRatio, getMarkerFromReport, resolveTooltipAnchor } from "../utils/coordinates.js";
+import { LOCATE_PULSE_DURATION_MS, scrollToFeedbackTarget } from "../utils/locateFeedback.js";
 const MARKER_HOVER_LEAVE_MS = 250;
 const OVERLAY_HOVER_LEAVE_MS = 100;
 import { findTargetByPoint, getSelectableTargets, isSameHoverTarget, toSnapshot } from "../utils/dom.js";
@@ -20,7 +21,7 @@ function resolveDefaultAuthorName(identify, authors) {
     }
     return authors[0]?.name ?? "";
 }
-export function useReportState({ projectId, environment, appVersion, appearance, fields, authors = [], shortcut: _shortcut, identify, onEvent, onFeedbackCreate, onFeedbackDelete, onFeedbackReply, onFeedbackUpdate, pathname, showFeedbackList, storage = "local", storageAdapter, visibleShortcutKeys = false, }) {
+export function useReportState({ projectId, environment, appVersion, appearance, fields, authors = [], shortcut: _shortcut, identify, onEvent, onCreate, onDelete, onReply, onUpdate, pathname, showFeedbackList, storage = "local", storageAdapter, visibleShortcutKeys = false, }) {
     // theme
     const overlayRef = useRef(null);
     const searchInputRef = useRef(null);
@@ -35,11 +36,11 @@ export function useReportState({ projectId, environment, appVersion, appearance,
     const currentPathname = useCurrentPathname(pathname);
     const eventCallbacks = useMemo(() => ({
         onEvent,
-        onFeedbackCreate,
-        onFeedbackDelete,
-        onFeedbackReply,
-        onFeedbackUpdate,
-    }), [onEvent, onFeedbackCreate, onFeedbackDelete, onFeedbackReply, onFeedbackUpdate]);
+        onCreate,
+        onDelete,
+        onReply,
+        onUpdate,
+    }), [onEvent, onCreate, onDelete, onReply, onUpdate]);
     const [mode, setMode] = useState("idle");
     const [showTargetPreview, setShowTargetPreview] = useState(false);
     const [selectableTargets, setSelectableTargets] = useState([]);
@@ -62,6 +63,8 @@ export function useReportState({ projectId, environment, appVersion, appearance,
     const [confirmAuthorName, setConfirmAuthorName] = useState("");
     const [showConfirmAuthorSelect, setShowConfirmAuthorSelect] = useState(false);
     const [selectedReportId, setSelectedReportId] = useState(null);
+    const [locatedReportId, setLocatedReportId] = useState(null);
+    const locatePulseTimeoutRef = useRef(null);
     const [editingReportId, setEditingReportId] = useState(null);
     const [editableDraft, setEditableDraft] = useState(null);
     const [panelTab, setPanelTab] = useState(null);
@@ -331,6 +334,22 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             stopEditing();
         }
     };
+    const locateFeedback = (reportId) => {
+        const report = filteredReports.find((item) => item.id === reportId);
+        if (!report) {
+            return;
+        }
+        selectReport(reportId);
+        scrollToFeedbackTarget(report);
+        setLocatedReportId(reportId);
+        if (locatePulseTimeoutRef.current !== null) {
+            window.clearTimeout(locatePulseTimeoutRef.current);
+        }
+        locatePulseTimeoutRef.current = window.setTimeout(() => {
+            setLocatedReportId(null);
+            locatePulseTimeoutRef.current = null;
+        }, LOCATE_PULSE_DURATION_MS);
+    };
     const focusSearchInput = () => {
         searchInputRef.current?.focus();
         searchInputRef.current?.select();
@@ -347,7 +366,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         else {
             nextIndex = direction === "down" ? Math.min(currentIndex + 1, filteredReports.length - 1) : Math.max(currentIndex - 1, 0);
         }
-        selectReport(filteredReports[nextIndex].id);
+        locateFeedback(filteredReports[nextIndex].id);
     };
     const openReplyComposer = (report) => {
         selectReport(report.id);
@@ -399,19 +418,23 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             return nextTab;
         });
     };
+    const enableIssueMode = () => {
+        setShowTargetPreview(false);
+        closeReplyComposer();
+        stopEditing();
+        setMode("view");
+    };
     const openPanelTab = (nextTab) => {
-        setPanelTab((current) => (current === nextTab ? null : nextTab));
+        const isClosing = panelTab === nextTab;
+        setPanelTab(isClosing ? null : nextTab);
+        if (!isClosing && nextTab === "feedback-list") {
+            enableIssueMode();
+        }
     };
     const toggleIssueMode = () => {
         setShowTargetPreview(false);
         closeReplyComposer();
-        setMode((current) => {
-            const nextMode = current === "view" ? "idle" : "view";
-            if (nextMode === "view") {
-                setPanelTab((tab) => (tab === "feedback-list" ? null : tab));
-            }
-            return nextMode;
-        });
+        setMode((current) => (current === "view" ? "idle" : "view"));
         stopEditing();
         setSelectedReportId(filteredReports[0]?.id ?? null);
     };
@@ -668,13 +691,12 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         }
     };
     useEffect(() => {
-        if (panelTab !== "feedback-list") {
-            return;
-        }
-        if (mode === "view") {
-            setMode("idle");
-        }
-    }, [mode, panelTab]);
+        return () => {
+            if (locatePulseTimeoutRef.current !== null) {
+                window.clearTimeout(locatePulseTimeoutRef.current);
+            }
+        };
+    }, []);
     useReportShortcuts({
         mode,
         draft,
@@ -732,6 +754,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         selectedTarget,
         markers,
         selectedReport,
+        locatedReportId,
         editingReportId,
         editableDraft,
         setEditableDraft,
@@ -764,6 +787,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         openPanelTab,
         togglePanelTab,
         selectReport,
+        locateFeedback,
         focusSearchInput,
         selectAdjacentReport,
         openReplyComposer,

@@ -17,6 +17,7 @@ import type { DraftReport, EditableDraft, Marker, PendingFeedbackComposer, Repor
 import { createReplyStatusForSubmit, resolveOriginalFeedbackAuthorName } from "../utils/feedbackThread.js";
 import { getRouteDetailStatus, isCreatedToday, ROUTE_DETAIL_STATUS_ORDER } from "../utils/routeDetailStatus.js";
 import { clampRatio, getMarkerFromReport, resolveTooltipAnchor } from "../utils/coordinates.js";
+import { LOCATE_PULSE_DURATION_MS, scrollToFeedbackTarget } from "../utils/locateFeedback.js";
 
 const MARKER_HOVER_LEAVE_MS = 250;
 const OVERLAY_HOVER_LEAVE_MS = 100;
@@ -45,10 +46,10 @@ export type ReportStateConfig = {
     shortcut?: string;
     identify?: ReportIdentify;
     onEvent?: (event: ReportEvent) => void | Promise<void>;
-    onFeedbackCreate?: (feedback: ReportFeedback) => void | Promise<void>;
-    onFeedbackDelete?: (id: string) => void | Promise<void>;
-    onFeedbackReply?: (params: { feedbackId: string; message: string }) => void | Promise<void>;
-    onFeedbackUpdate?: (feedback: ReportFeedback) => void | Promise<void>;
+    onCreate?: (feedback: ReportFeedback) => void | Promise<void>;
+    onDelete?: (id: string) => void | Promise<void>;
+    onReply?: (params: { feedbackId: string; message: string }) => void | Promise<void>;
+    onUpdate?: (feedback: ReportFeedback) => void | Promise<void>;
     pathname?: string;
     showFeedbackList: boolean;
     storage?: "local" | ReportStorageAdapter;
@@ -66,10 +67,10 @@ export function useReportState({
     shortcut: _shortcut,
     identify,
     onEvent,
-    onFeedbackCreate,
-    onFeedbackDelete,
-    onFeedbackReply,
-    onFeedbackUpdate,
+    onCreate,
+    onDelete,
+    onReply,
+    onUpdate,
     pathname,
     showFeedbackList,
     storage = "local",
@@ -95,12 +96,12 @@ export function useReportState({
     const eventCallbacks = useMemo<ReportEventCallbacks>(
         () => ({
             onEvent,
-            onFeedbackCreate,
-            onFeedbackDelete,
-            onFeedbackReply,
-            onFeedbackUpdate,
+            onCreate,
+            onDelete,
+            onReply,
+            onUpdate,
         }),
-        [onEvent, onFeedbackCreate, onFeedbackDelete, onFeedbackReply, onFeedbackUpdate],
+        [onEvent, onCreate, onDelete, onReply, onUpdate],
     );
 
     const [mode, setMode] = useState<ReportMode>("idle");
@@ -125,6 +126,8 @@ export function useReportState({
     const [confirmAuthorName, setConfirmAuthorName] = useState("");
     const [showConfirmAuthorSelect, setShowConfirmAuthorSelect] = useState(false);
     const [selectedReportId, setSelectedReportId] = useState<string | null>(null);
+    const [locatedReportId, setLocatedReportId] = useState<string | null>(null);
+    const locatePulseTimeoutRef = useRef<number | null>(null);
     const [editingReportId, setEditingReportId] = useState<string | null>(null);
     const [editableDraft, setEditableDraft] = useState<EditableDraft | null>(null);
     const [panelTab, setPanelTab] = useState<ReportPanelTab | null>(null);
@@ -454,6 +457,27 @@ export function useReportState({
         }
     };
 
+    const locateFeedback = (reportId: string) => {
+        const report = filteredReports.find((item) => item.id === reportId);
+
+        if (!report) {
+            return;
+        }
+
+        selectReport(reportId);
+        scrollToFeedbackTarget(report);
+        setLocatedReportId(reportId);
+
+        if (locatePulseTimeoutRef.current !== null) {
+            window.clearTimeout(locatePulseTimeoutRef.current);
+        }
+
+        locatePulseTimeoutRef.current = window.setTimeout(() => {
+            setLocatedReportId(null);
+            locatePulseTimeoutRef.current = null;
+        }, LOCATE_PULSE_DURATION_MS);
+    };
+
     const focusSearchInput = () => {
         searchInputRef.current?.focus();
         searchInputRef.current?.select();
@@ -473,7 +497,7 @@ export function useReportState({
             nextIndex = direction === "down" ? Math.min(currentIndex + 1, filteredReports.length - 1) : Math.max(currentIndex - 1, 0);
         }
 
-        selectReport(filteredReports[nextIndex].id);
+        locateFeedback(filteredReports[nextIndex].id);
     };
 
     const openReplyComposer = (report: ReportFeedback) => {
@@ -538,22 +562,27 @@ export function useReportState({
         });
     };
 
+    const enableIssueMode = () => {
+        setShowTargetPreview(false);
+        closeReplyComposer();
+        stopEditing();
+        setMode("view");
+    };
+
     const openPanelTab = (nextTab: ReportPanelTab) => {
-        setPanelTab((current) => (current === nextTab ? null : nextTab));
+        const isClosing = panelTab === nextTab;
+
+        setPanelTab(isClosing ? null : nextTab);
+
+        if (!isClosing && nextTab === "feedback-list") {
+            enableIssueMode();
+        }
     };
 
     const toggleIssueMode = () => {
         setShowTargetPreview(false);
         closeReplyComposer();
-        setMode((current) => {
-            const nextMode = current === "view" ? "idle" : "view";
-
-            if (nextMode === "view") {
-                setPanelTab((tab) => (tab === "feedback-list" ? null : tab));
-            }
-
-            return nextMode;
-        });
+        setMode((current) => (current === "view" ? "idle" : "view"));
         stopEditing();
         setSelectedReportId(filteredReports[0]?.id ?? null);
     };
@@ -856,14 +885,12 @@ export function useReportState({
     };
 
     useEffect(() => {
-        if (panelTab !== "feedback-list") {
-            return;
-        }
-
-        if (mode === "view") {
-            setMode("idle");
-        }
-    }, [mode, panelTab]);
+        return () => {
+            if (locatePulseTimeoutRef.current !== null) {
+                window.clearTimeout(locatePulseTimeoutRef.current);
+            }
+        };
+    }, []);
 
     useReportShortcuts({
         mode,
@@ -923,6 +950,7 @@ export function useReportState({
         selectedTarget,
         markers,
         selectedReport,
+        locatedReportId,
         editingReportId,
         editableDraft,
         setEditableDraft,
@@ -955,6 +983,7 @@ export function useReportState({
         openPanelTab,
         togglePanelTab,
         selectReport,
+        locateFeedback,
         focusSearchInput,
         selectAdjacentReport,
         openReplyComposer,

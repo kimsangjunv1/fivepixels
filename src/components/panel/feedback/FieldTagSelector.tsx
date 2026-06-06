@@ -25,8 +25,8 @@ export function FieldTagSelector({ fields, fieldValues, onFieldChange }: FieldTa
                         onClick={() => onFieldChange(field.key, !selected)}
                         className={
                             selected
-                                ? "rounded-full border border-[var(--adaptive-black900)] px-[12px] py-[6px] text-[12px] font-semibold uppercase tracking-wide text-[var(--adaptive-black900)]"
-                                : "rounded-full border border-[var(--adaptive-black400)] px-[12px] py-[6px] text-[12px] font-semibold uppercase tracking-wide text-[var(--adaptive-black500)]"
+                                ? "rounded-full border border-[var(--adaptive-black900)] px-[12px] py-[6px] text-[12px] font-semibold uppercase text-[var(--adaptive-black900)]"
+                                : "rounded-full border border-[var(--adaptive-black400)] px-[12px] py-[6px] text-[12px] font-semibold uppercase text-[var(--adaptive-black500)]"
                         }
                     >
                         {field.label}

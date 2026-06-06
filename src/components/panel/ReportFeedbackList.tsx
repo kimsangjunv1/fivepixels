@@ -61,7 +61,7 @@ function getRouteStatusTone(status: RouteDetailStatus) {
 }
 
 export function ReportFeedbackList() {
-    const { filters, setFilters, filteredReports, reports, fields, isError, isFetching, queryErrorMessage, visibleShortcutKeys, searchInputRef, selectReport, refetch } = useReport();
+    const { filters, setFilters, filteredReports, reports, fields, isError, isFetching, queryErrorMessage, visibleShortcutKeys, searchInputRef, locateFeedback, refetch } = useReport();
 
     const [visibleCount, setVisibleCount] = useState(FEEDBACK_PAGE_SIZE);
     const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() => new Set());
@@ -191,8 +191,8 @@ export function ReportFeedbackList() {
                     // <div className="space-y-1 rounded-md border border-dashed border-[var(--adaptive-black300)] bg-[var(--adaptive-black100)] p-2 text-xs text-[var(--adaptive-black600)]">
                     <div className="p-[12px] flex flex-col gap-[4px] bg-[var(--adaptive-black200)]">
                         <h6 className="font-semibold text-[var(--adaptive-black900)]">표시할 피드백이 없습니다.</h6>
-                        <p className="text-[12px] text-[var(--adaptive-black500)]">
-                            {reports.length === 0 ? "아직 등록된 피드백이 없어요. 리포트 모드에서 첫 피드백을 남겨보세요." : "현재 필터 조건과 일치하는 결과가 없어요."}
+                        <p className="text-[12px] text-[var(--adaptive-black500)] whitespace-break-spaces leading-[1.5]">
+                            {reports.length === 0 ? `아직 등록된 피드백이 없어요.\n"Record"를 눌러 첫 피드백을 남겨보세요.` : "현재 필터 조건과 일치하는 결과가 없어요."}
                         </p>
                     </div>
                 ) : null}
@@ -226,23 +226,27 @@ export function ReportFeedbackList() {
                                               <button
                                                   key={report.id}
                                                   type="button"
-                                                  onClick={() => selectReport(report.id)}
+                                                  onClick={() => locateFeedback(report.id)}
                                                   className="flex w-full flex-col gap-[6px] border-b border-[var(--adaptive-black200)] p-[12px] text-left last:border-b-0"
                                               >
-                                                  <div className="flex flex-wrap items-center gap-[6px]">
-                                                      <strong className="max-w-full truncate font-bold text-[var(--adaptive-black900)]">{report.report_id}</strong>
+                                                  <section className="flex flex-col gap-[4px]">
+                                                      <div className="flex flex-wrap items-center gap-[6px]">
+                                                          <strong className="max-w-full truncate font-bold text-[var(--adaptive-black900)]">{report.report_id}</strong>
 
-                                                      <FeedbackFieldTags tags={fieldTags} />
+                                                          <FeedbackFieldTags tags={fieldTags} />
 
-                                                      <span
-                                                          className="inline-flex items-center rounded-full px-[8px] py-[2px] text-[10px] font-bold uppercase tracking-wide"
-                                                          style={getRouteStatusTone(routeStatus)}
-                                                      >
-                                                          {ROUTE_DETAIL_STATUS_LABEL[routeStatus]}
-                                                      </span>
-                                                  </div>
-                                                  <p className="text-[var(--adaptive-black700)]">{report.message}</p>
-                                                  <p className="text-[var(--adaptive-black500)]">{formatTimeOnly(report.created_at)}</p>
+                                                          <span
+                                                              className="inline-flex items-center rounded-full px-[8px] py-[2px] text-[10px] font-bold uppercase"
+                                                              style={getRouteStatusTone(routeStatus)}
+                                                          >
+                                                              {ROUTE_DETAIL_STATUS_LABEL[routeStatus]}
+                                                          </span>
+                                                      </div>
+
+                                                      <p className="text-[var(--adaptive-black700)]">{report.message}</p>
+                                                  </section>
+
+                                                  <p className="text-[var(--adaptive-black500)] text-[12px]">{formatTimeOnly(report.created_at)}</p>
                                               </button>
                                           );
                                       })

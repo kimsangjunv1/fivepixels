@@ -1,4 +1,4 @@
-import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
+import { jsx as _jsx, Fragment as _Fragment, jsxs as _jsxs } from "react/jsx-runtime";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { TARGET_COLOR, TARGET_SURFACE } from "../../constants/report.js";
 import { AnimatedPresence, motion } from "../../components/motion/index.js";
@@ -10,6 +10,7 @@ import { FeedbackComposer } from "../panel/feedback/FeedbackComposer.js";
 import { FeedbackHoverCard } from "../panel/feedback/FeedbackHoverCard.js";
 import { FeedbackIssueHeader } from "../panel/feedback/FeedbackIssueHeader.js";
 import { FeedbackThread } from "../panel/feedback/FeedbackThread.js";
+import { MarkerLocatePulse, TargetLocatePulse, useLocatePulseTick } from "./FeedbackLocatePulse.js";
 const TOOLTIP_MOTION_TRANSITION = {
     delay: 0,
     type: "spring",
@@ -19,23 +20,27 @@ const TOOLTIP_MOTION_TRANSITION = {
 };
 const TOOLTIP_BASE_CLASS = "fixed z-[1000001] overflow-hidden rounded-[24px] bg-[var(--adaptive-black200)] shadow-[0_0_90px_0_var(--adaptive-blackOpacity300)]";
 const MARKER_BUTTON_BASE_CLASS = "pointer-events-auto fixed z-[1000000] flex -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full";
-function MarkerButton({ markerItem, isSelected, onSelect, onOpenReply, onHoverStart, onHoverEnd }) {
+function MarkerButton({ markerItem, isSelected, isLocated, locatePulseTick, onSelect, onOpenReply, onHoverStart, onHoverEnd }) {
     const hoverRef = useNativeHover({
         onEnter: onHoverStart,
         onLeave: onHoverEnd,
     });
-    return (_jsx("button", { ref: hoverRef, type: "button", "data-stitchable-interactive": "", "data-marker-report-id": markerItem.report.id, "aria-label": `${markerItem.report.report_type} · ${markerItem.report.report_id}`, onClick: () => {
-            onSelect();
-            onOpenReply();
-        }, className: isSelected ? `${MARKER_BUTTON_BASE_CLASS} h-5 w-5 border-2 border-white/80 shadow-lg ring-2 ring-white/30` : `${MARKER_BUTTON_BASE_CLASS} h-4 w-4 border border-white/60 shadow-sm`, style: {
-            left: markerItem.left,
-            top: markerItem.top,
-            backgroundColor: getMarkerColor(markerItem.report),
-            pointerEvents: "auto",
-        } }, markerItem.id));
+    return (_jsxs(_Fragment, { children: [isLocated ? (_jsx(MarkerLocatePulse, { left: markerItem.left, top: markerItem.top, tick: locatePulseTick, accentColor: getMarkerColor(markerItem.report) })) : null, _jsx("button", { ref: hoverRef, type: "button", "data-stitchable-interactive": "", "data-marker-report-id": markerItem.report.id, "aria-label": `${markerItem.report.report_type} · ${markerItem.report.report_id}`, onClick: () => {
+                    onSelect();
+                    onOpenReply();
+                }, className: isLocated
+                    ? `${MARKER_BUTTON_BASE_CLASS} h-5 w-5 border-2 border-white/95 shadow-[0_0_18px_rgba(56,189,248,0.85)] ring-2 ring-sky-300/90`
+                    : isSelected
+                        ? `${MARKER_BUTTON_BASE_CLASS} h-5 w-5 border-2 border-white/80 shadow-lg ring-2 ring-white/30`
+                        : `${MARKER_BUTTON_BASE_CLASS} h-4 w-4 border border-white/60 shadow-sm`, style: {
+                    left: markerItem.left,
+                    top: markerItem.top,
+                    backgroundColor: getMarkerColor(markerItem.report),
+                    pointerEvents: "auto",
+                } }, markerItem.id)] }));
 }
 export function ReportMarkersLayer() {
-    const { mode, markers, selectedReport, fields, authors, activeReplyReportId, activeReplyReport, tooltipReport, tooltipAnchor, tooltipFieldTags, replyDraft, replyAuthorName, pendingComposer, isUpdating, editingReportId, selectReport, openReplyComposer, closeReplyComposer, clearHoverLeaveTimeout, scheduleHoverLeave, setHoveredMarkerId, setReplyDraft, setReplyAuthorName, handleReplySubmit, startDenyReview, startCheckoutReview, confirmAuthorName, setConfirmAuthorName, showConfirmAuthorSelect, toggleConfirmAuthorSelect, handleConfirmResolution, } = useReport();
+    const { mode, markers, selectedReport, locatedReportId, fields, authors, activeReplyReportId, activeReplyReport, tooltipReport, tooltipAnchor, tooltipFieldTags, replyDraft, replyAuthorName, pendingComposer, isUpdating, editingReportId, selectReport, openReplyComposer, closeReplyComposer, clearHoverLeaveTimeout, scheduleHoverLeave, setHoveredMarkerId, setReplyDraft, setReplyAuthorName, handleReplySubmit, startDenyReview, startCheckoutReview, confirmAuthorName, setConfirmAuthorName, showConfirmAuthorSelect, toggleConfirmAuthorSelect, handleConfirmResolution, } = useReport();
     const handleMarkerHoverStart = useCallback((reportId) => {
         clearHoverLeaveTimeout();
         setHoveredMarkerId(reportId);
@@ -94,19 +99,22 @@ export function ReportMarkersLayer() {
             window.removeEventListener("pointerdown", handlePointerDown);
         };
     }, [activeReplyReportId, clearHoverLeaveTimeout, closeReplyComposer, setHoveredMarkerId]);
-    if (mode !== "view") {
+    const isViewMode = mode === "view";
+    const locatePulseTick = useLocatePulseTick(isViewMode && Boolean(locatedReportId));
+    const locatedMarker = isViewMode ? (markers.find((markerItem) => markerItem.report.id === locatedReportId) ?? null) : null;
+    if (!isViewMode) {
         return null;
     }
     const tooltipPosition = tooltipAnchor ? getTooltipPosition(tooltipAnchor, isExpandedTooltip) : null;
     const showTooltip = Boolean(tooltipReport && tooltipAnchor && tooltipPosition);
-    return (_jsxs(_Fragment, { children: [markers.map((markerItem) => markerItem.rect ? (_jsx("div", { className: "pointer-events-none fixed rounded-[3px] border border-sky-400/70 bg-sky-200/20 shadow-[0_0_0_1px_rgba(148,163,184,0.4)]", style: {
+    return (_jsxs(_Fragment, { children: [markers.map((markerItem) => markerItem.rect && locatedReportId !== markerItem.report.id ? (_jsx("div", { className: "pointer-events-none fixed rounded-[3px] border border-sky-400/70 bg-sky-200/20 shadow-[0_0_0_1px_rgba(148,163,184,0.4)]", style: {
                     left: markerItem.rect.left,
                     top: markerItem.rect.top,
                     width: markerItem.rect.width,
                     height: markerItem.rect.height,
                     outline: `1px solid ${TARGET_COLOR[markerItem.report.report_type]}`,
                     backgroundColor: TARGET_SURFACE[markerItem.report.report_type],
-                } }, `${markerItem.id}-rect`)) : null), markers.map((markerItem) => (_jsx(MarkerButton, { markerItem: markerItem, isSelected: markerItem.report.id === selectedReport?.id, onSelect: () => selectReport(markerItem.report.id), onOpenReply: () => openReplyComposer(markerItem.report), onHoverStart: () => handleMarkerHoverStart(markerItem.report.id), onHoverEnd: () => handleMarkerHoverEnd(markerItem.report.id) }, markerItem.id))), showTooltip && !isExpandedTooltip && tooltipReport && tooltipPosition ? (_jsx("div", { className: `pointer-events-none ${TOOLTIP_BASE_CLASS}`, style: {
+                } }, `${markerItem.id}-rect`)) : null), locatedMarker?.rect ? (_jsx(TargetLocatePulse, { rect: locatedMarker.rect, tick: locatePulseTick, outlineColor: TARGET_COLOR[locatedMarker.report.report_type], surfaceColor: TARGET_SURFACE[locatedMarker.report.report_type] })) : null, markers.map((markerItem) => (_jsx(MarkerButton, { markerItem: markerItem, isSelected: markerItem.report.id === selectedReport?.id, isLocated: markerItem.report.id === locatedReportId, locatePulseTick: locatePulseTick, onSelect: () => selectReport(markerItem.report.id), onOpenReply: () => openReplyComposer(markerItem.report), onHoverStart: () => handleMarkerHoverStart(markerItem.report.id), onHoverEnd: () => handleMarkerHoverEnd(markerItem.report.id) }, markerItem.id))), showTooltip && !isExpandedTooltip && tooltipReport && tooltipPosition ? (_jsx("div", { className: `pointer-events-none ${TOOLTIP_BASE_CLASS}`, style: {
                     left: tooltipPosition.left,
                     top: tooltipPosition.top,
                     width: tooltipPosition.width,

@@ -26,10 +26,10 @@ export type ReportProps = {
     shortcut?: string;
     identify?: ReportIdentify;
     onEvent?: (event: ReportEvent) => void | Promise<void>;
-    onFeedbackCreate?: (feedback: ReportFeedback) => void | Promise<void>;
-    onFeedbackDelete?: (id: string) => void | Promise<void>;
-    onFeedbackReply?: (params: { feedbackId: string; message: string }) => void | Promise<void>;
-    onFeedbackUpdate?: (feedback: ReportFeedback) => void | Promise<void>;
+    onCreate?: (feedback: ReportFeedback) => void | Promise<void>;
+    onDelete?: (id: string) => void | Promise<void>;
+    onReply?: (params: { feedbackId: string; message: string }) => void | Promise<void>;
+    onUpdate?: (feedback: ReportFeedback) => void | Promise<void>;
     devOnly?: boolean;
     enabled?: boolean;
     pathname?: string;
@@ -49,10 +49,10 @@ export function Report({
     shortcut,
     identify,
     onEvent,
-    onFeedbackCreate,
-    onFeedbackDelete,
-    onFeedbackReply,
-    onFeedbackUpdate,
+    onCreate,
+    onDelete,
+    onReply,
+    onUpdate,
     devOnly = false,
     enabled = true,
     pathname,
@@ -74,10 +74,10 @@ export function Report({
             shortcut={shortcut}
             identify={identify}
             onEvent={onEvent}
-            onFeedbackCreate={onFeedbackCreate}
-            onFeedbackDelete={onFeedbackDelete}
-            onFeedbackReply={onFeedbackReply}
-            onFeedbackUpdate={onFeedbackUpdate}
+            onCreate={onCreate}
+            onDelete={onDelete}
+            onReply={onReply}
+            onUpdate={onUpdate}
             pathname={pathname}
             showFeedbackList={showFeedbackList}
             storage={storage}

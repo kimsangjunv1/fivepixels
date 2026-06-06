@@ -1,6 +1,6 @@
 export async function notifyFeedbackCreate(callbacks, feedback) {
     try {
-        await callbacks.onFeedbackCreate?.(feedback);
+        await callbacks.onCreate?.(feedback);
         await callbacks.onEvent?.({ type: "feedback:create", payload: feedback });
     }
     catch (error) {
@@ -9,7 +9,7 @@ export async function notifyFeedbackCreate(callbacks, feedback) {
 }
 export async function notifyFeedbackUpdate(callbacks, feedback) {
     try {
-        await callbacks.onFeedbackUpdate?.(feedback);
+        await callbacks.onUpdate?.(feedback);
         await callbacks.onEvent?.({ type: "feedback:update", payload: feedback });
     }
     catch (error) {
@@ -18,7 +18,7 @@ export async function notifyFeedbackUpdate(callbacks, feedback) {
 }
 export async function notifyFeedbackDelete(callbacks, id) {
     try {
-        await callbacks.onFeedbackDelete?.(id);
+        await callbacks.onDelete?.(id);
         await callbacks.onEvent?.({ type: "feedback:delete", payload: { id } });
     }
     catch (error) {
@@ -27,7 +27,7 @@ export async function notifyFeedbackDelete(callbacks, id) {
 }
 export async function notifyFeedbackReply(callbacks, params) {
     try {
-        await callbacks.onFeedbackReply?.(params);
+        await callbacks.onReply?.(params);
         await callbacks.onEvent?.({ type: "feedback:reply", payload: params });
     }
     catch (error) {

@@ -42,9 +42,7 @@ export function ReportRouteDetails() {
 
                     return (
                         <Fragment key={row.status}>
-                            <section
-                                className="flex items-center gap-x-[8px] py-[8px]"
-                            >
+                            <section className="flex items-center gap-x-[8px] py-[8px]">
                                 <div className="flex-1 flex items-center gap-[6px]">
                                     <StatusRowIcon status={row.status} />
                                     <p className="text-[var(--adaptive-black500)] font-[500]">{ROUTE_DETAIL_STATUS_LABEL[row.status]}</p>
@@ -70,11 +68,9 @@ export function ReportRouteDetails() {
 
                         return (
                             <Fragment key={field.key}>
-                                <section
-                                    className="flex-1 flex flex-col items-center gap-[4px] text-center py-[0.4rem]"
-                                >
+                                <section className="flex-1 flex flex-col items-center gap-[4px] text-center py-[0.4rem]">
                                     <ChevronDownIcon className={`h-4 w-4 transition-transform`} />
-                                    <span className="tracking-wide text-[var(--adaptive-black500)]">{field.label}</span>
+                                    <span className="text-[var(--adaptive-black500)]">{field.label}</span>
                                     <p className={`font-normal text-[var(--adaptive-black900)] ${panelNumericClassName}`}>{formatStatCount(field.count)}</p>
                                 </section>
 

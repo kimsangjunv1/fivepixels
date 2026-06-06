@@ -10,7 +10,7 @@ export function FeedbackStatusBadge({ status, className = "" }: FeedbackStatusBa
     const color = FEEDBACK_STATUS_COLOR[status];
 
     return (
-        <div className={`flex items-center gap-[6px] text-[12px] font-bold uppercase tracking-wide ${className}`}>
+        <div className={`flex items-center gap-[6px] text-[12px] font-bold uppercase ${className}`}>
             <span
                 className="inline-flex h-[14px] w-[14px] items-center justify-center rounded-full"
                 style={{ backgroundColor: color, color: "var(--adaptive-black900)" }}

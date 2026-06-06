@@ -50,6 +50,7 @@ declare const ReportContext: import("react").Context<{
     selectedTarget: import("../types/report-ui.js").TargetSnapshot | null;
     markers: import("../types/report-ui.js").Marker[];
     selectedReport: import("../index.js").ReportFeedback;
+    locatedReportId: string | null;
     editingReportId: string | null;
     editableDraft: import("../types/report-ui.js").EditableDraft | null;
     setEditableDraft: import("react").Dispatch<import("react").SetStateAction<import("../types/report-ui.js").EditableDraft | null>>;
@@ -89,6 +90,7 @@ declare const ReportContext: import("react").Context<{
     openPanelTab: (nextTab: import("../types/report-ui.js").ReportPanelTab) => void;
     togglePanelTab: (nextTab: import("../types/report-ui.js").ReportPanelTab) => void;
     selectReport: (reportId: string) => void;
+    locateFeedback: (reportId: string) => void;
     focusSearchInput: () => void;
     selectAdjacentReport: (direction: "up" | "down") => void;
     openReplyComposer: (report: import("../index.js").ReportFeedback) => void;
@@ -158,6 +160,7 @@ export declare function useReport(): {
     selectedTarget: import("../types/report-ui.js").TargetSnapshot | null;
     markers: import("../types/report-ui.js").Marker[];
     selectedReport: import("../index.js").ReportFeedback;
+    locatedReportId: string | null;
     editingReportId: string | null;
     editableDraft: import("../types/report-ui.js").EditableDraft | null;
     setEditableDraft: import("react").Dispatch<import("react").SetStateAction<import("../types/report-ui.js").EditableDraft | null>>;
@@ -197,6 +200,7 @@ export declare function useReport(): {
     openPanelTab: (nextTab: import("../types/report-ui.js").ReportPanelTab) => void;
     togglePanelTab: (nextTab: import("../types/report-ui.js").ReportPanelTab) => void;
     selectReport: (reportId: string) => void;
+    locateFeedback: (reportId: string) => void;
     focusSearchInput: () => void;
     selectAdjacentReport: (direction: "up" | "down") => void;
     openReplyComposer: (report: import("../index.js").ReportFeedback) => void;

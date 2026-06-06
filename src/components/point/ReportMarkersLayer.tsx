@@ -10,6 +10,7 @@ import { FeedbackComposer } from "../panel/feedback/FeedbackComposer.js";
 import { FeedbackHoverCard } from "../panel/feedback/FeedbackHoverCard.js";
 import { FeedbackIssueHeader } from "../panel/feedback/FeedbackIssueHeader.js";
 import { FeedbackThread } from "../panel/feedback/FeedbackThread.js";
+import { MarkerLocatePulse, TargetLocatePulse, useLocatePulseTick } from "./FeedbackLocatePulse.js";
 
 const TOOLTIP_MOTION_TRANSITION = {
     delay: 0,
@@ -26,40 +27,56 @@ const MARKER_BUTTON_BASE_CLASS = "pointer-events-auto fixed z-[1000000] flex -tr
 type MarkerButtonProps = {
     markerItem: Marker;
     isSelected: boolean;
+    isLocated: boolean;
     onSelect: () => void;
     onOpenReply: () => void;
     onHoverStart: () => void;
     onHoverEnd: () => void;
 };
 
-function MarkerButton({ markerItem, isSelected, onSelect, onOpenReply, onHoverStart, onHoverEnd }: MarkerButtonProps) {
+function MarkerButton({ markerItem, isSelected, isLocated, locatePulseTick, onSelect, onOpenReply, onHoverStart, onHoverEnd }: MarkerButtonProps & { locatePulseTick: number }) {
     const hoverRef = useNativeHover<HTMLButtonElement>({
         onEnter: onHoverStart,
         onLeave: onHoverEnd,
     });
 
     return (
-        <button
-            ref={hoverRef}
-            key={markerItem.id}
-            type="button"
-            data-stitchable-interactive=""
-            data-marker-report-id={markerItem.report.id}
-            aria-label={`${markerItem.report.report_type} · ${markerItem.report.report_id}`}
-            onClick={() => {
-                onSelect();
-                onOpenReply();
-            }}
-            className={
-                isSelected ? `${MARKER_BUTTON_BASE_CLASS} h-5 w-5 border-2 border-white/80 shadow-lg ring-2 ring-white/30` : `${MARKER_BUTTON_BASE_CLASS} h-4 w-4 border border-white/60 shadow-sm`
-            }
-            style={{
-                left: markerItem.left,
-                top: markerItem.top,
-                backgroundColor: getMarkerColor(markerItem.report),
-                pointerEvents: "auto",
-            }}
-        />
+        <>
+            {isLocated ? (
+                <MarkerLocatePulse
+                    left={markerItem.left}
+                    top={markerItem.top}
+                    tick={locatePulseTick}
+                    accentColor={getMarkerColor(markerItem.report)}
+                />
+            ) : null}
+
+            <button
+                ref={hoverRef}
+                key={markerItem.id}
+                type="button"
+                data-stitchable-interactive=""
+                data-marker-report-id={markerItem.report.id}
+                aria-label={`${markerItem.report.report_type} · ${markerItem.report.report_id}`}
+                onClick={() => {
+                    onSelect();
+                    onOpenReply();
+                }}
+                className={
+                    isLocated
+                        ? `${MARKER_BUTTON_BASE_CLASS} h-5 w-5 border-2 border-white/95 shadow-[0_0_18px_rgba(56,189,248,0.85)] ring-2 ring-sky-300/90`
+                        : isSelected
+                          ? `${MARKER_BUTTON_BASE_CLASS} h-5 w-5 border-2 border-white/80 shadow-lg ring-2 ring-white/30`
+                          : `${MARKER_BUTTON_BASE_CLASS} h-4 w-4 border border-white/60 shadow-sm`
+                }
+                style={{
+                    left: markerItem.left,
+                    top: markerItem.top,
+                    backgroundColor: getMarkerColor(markerItem.report),
+                    pointerEvents: "auto",
+                }}
+            />
+        </>
     );
 }
 
@@ -68,6 +85,7 @@ export function ReportMarkersLayer() {
         mode,
         markers,
         selectedReport,
+        locatedReportId,
         fields,
         authors,
         activeReplyReportId,
@@ -178,7 +196,11 @@ export function ReportMarkersLayer() {
         };
     }, [activeReplyReportId, clearHoverLeaveTimeout, closeReplyComposer, setHoveredMarkerId]);
 
-    if (mode !== "view") {
+    const isViewMode = mode === "view";
+    const locatePulseTick = useLocatePulseTick(isViewMode && Boolean(locatedReportId));
+    const locatedMarker = isViewMode ? (markers.find((markerItem) => markerItem.report.id === locatedReportId) ?? null) : null;
+
+    if (!isViewMode) {
         return null;
     }
 
@@ -188,7 +210,7 @@ export function ReportMarkersLayer() {
     return (
         <>
             {markers.map((markerItem) =>
-                markerItem.rect ? (
+                markerItem.rect && locatedReportId !== markerItem.report.id ? (
                     <div
                         key={`${markerItem.id}-rect`}
                         className="pointer-events-none fixed rounded-[3px] border border-sky-400/70 bg-sky-200/20 shadow-[0_0_0_1px_rgba(148,163,184,0.4)]"
@@ -204,11 +226,22 @@ export function ReportMarkersLayer() {
                 ) : null,
             )}
 
+            {locatedMarker?.rect ? (
+                <TargetLocatePulse
+                    rect={locatedMarker.rect}
+                    tick={locatePulseTick}
+                    outlineColor={TARGET_COLOR[locatedMarker.report.report_type]}
+                    surfaceColor={TARGET_SURFACE[locatedMarker.report.report_type]}
+                />
+            ) : null}
+
             {markers.map((markerItem) => (
                 <MarkerButton
                     key={markerItem.id}
                     markerItem={markerItem}
                     isSelected={markerItem.report.id === selectedReport?.id}
+                    isLocated={markerItem.report.id === locatedReportId}
+                    locatePulseTick={locatePulseTick}
                     onSelect={() => selectReport(markerItem.report.id)}
                     onOpenReply={() => openReplyComposer(markerItem.report)}
                     onHoverStart={() => handleMarkerHoverStart(markerItem.report.id)}
