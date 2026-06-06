@@ -63,15 +63,7 @@ function getRouteStatusTone(status: RouteDetailStatus) {
     return { backgroundColor: "#fff7ed", color: "#c2410c" };
 }
 
-function FeedbackListDeleteButton({
-    report,
-    onDelete,
-    disabled = false,
-}: {
-    report: ReportFeedback;
-    onDelete: (id: string) => Promise<void>;
-    disabled?: boolean;
-}) {
+function FeedbackListDeleteButton({ report, onDelete, disabled = false }: { report: ReportFeedback; onDelete: (id: string) => Promise<void>; disabled?: boolean }) {
     const [confirming, setConfirming] = useState(false);
 
     useEffect(() => {
@@ -108,9 +100,7 @@ function FeedbackListDeleteButton({
             aria-label={confirming ? "한 번 더 눌러 피드백 삭제" : "피드백 삭제"}
             title={confirming ? "한 번 더 눌러 삭제" : "삭제"}
             className={`flex shrink-0 items-center justify-center gap-[2px] self-start rounded-[6px] p-[6px] disabled:opacity-50 ${
-                confirming
-                    ? "text-rose-700 hover:bg-rose-50"
-                    : "text-[var(--adaptive-black500)] hover:bg-[var(--adaptive-black100)] hover:text-rose-700"
+                confirming ? "text-rose-700 hover:bg-rose-50" : "text-[var(--adaptive-black500)] hover:bg-[var(--adaptive-black100)] hover:text-rose-700"
             }`}
         >
             <TrashIcon className="h-[16px] w-[16px]" />
@@ -150,22 +140,8 @@ function FeedbackListCopyButton({ report }: { report: ReportFeedback }) {
 }
 
 export function ReportFeedbackList() {
-    const {
-        filters,
-        setFilters,
-        filteredReports,
-        reports,
-        fields,
-        isError,
-        isFetching,
-        isDeleting,
-        queryErrorMessage,
-        visibleShortcutKeys,
-        searchInputRef,
-        locateFeedback,
-        refetch,
-        handleDelete,
-    } = useReport();
+    const { filters, setFilters, filteredReports, reports, fields, isError, isFetching, isDeleting, queryErrorMessage, visibleShortcutKeys, searchInputRef, locateFeedback, refetch, handleDelete } =
+        useReport();
 
     const [visibleCount, setVisibleCount] = useState(FEEDBACK_PAGE_SIZE);
     const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() => new Set());
@@ -226,7 +202,7 @@ export function ReportFeedbackList() {
     }, [filteredReports.length, visibleCount]);
 
     return (
-        <section className="flex min-h-0 flex-1 flex-col bg-[var(--adaptive-black50)]">
+        <section className="flex min-h-0 flex-1 flex-col bg-[var(--adaptive-black50)] rounded-[0_0_24px_24px] overflow-hidden">
             <div className="flex bg-[var(--adaptive-black50)] border-y border-y-[var(--adaptive-black200)]">
                 <section className="flex-1 flex">
                     <select
