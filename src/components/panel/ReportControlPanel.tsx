@@ -1,6 +1,8 @@
 import { useCallback, useRef, useState, type DragEvent } from "react";
 import { panelAnchorSide, usePanelDock } from "../../hooks/usePanelDock.js";
 import { useReport } from "../../providers/reportContext.js";
+import { SelectIcon } from "../../components/icons/SelectIcon.js";
+
 import { ChevronLeftIcon, ChevronRightIcon } from "../icons/ChevronIcon.js";
 import { ChevronDownIcon } from "../icons/ChevronDownIcon.js";
 import { PanelDockGuides } from "./PanelDockGuides.js";
@@ -484,13 +486,13 @@ export function ReportControlPanel() {
                                                 </section>
 
                                                 <section className="flex shrink-0 items-center gap-[4px]">
-                                                    <button
+                                                    {/* <button
                                                         type="button"
                                                         onClick={toggleReportMode}
                                                         className="p-[4px_8px] rounded-[8px] bg-[var(--adaptive-black200)]"
                                                     >
                                                         <p className="text-[12px] text-[var(--adaptive-black500)]">RECORD</p>
-                                                    </button>
+                                                    </button> */}
 
                                                     <button
                                                         type="button"
@@ -500,7 +502,7 @@ export function ReportControlPanel() {
                                                         }
                                                         aria-pressed={isIssueMode}
                                                     >
-                                                        <p className="text-[12px] text-[var(--adaptive-black500)]">ISSUE</p>
+                                                        <p className="text-[12px] text-[var(--adaptive-black500)]">f</p>
                                                     </button>
 
                                                     <button
@@ -521,26 +523,39 @@ export function ReportControlPanel() {
                                                 </section>
                                             </section>
 
-                                            <section
-                                                className="flex cursor-move"
-                                                onPointerDown={handleDragHandlePointerDown}
-                                                aria-label="패널 위치 변경"
-                                                title="드래그해서 위치 변경"
-                                                style={isDragging ? { opacity: 0.8 } : undefined}
-                                            >
-                                                <section className="flex flex-col items-start gap-[4px] flex-1">
-                                                    <p className="text-[12px] text-[var(--adaptive-black500)]">Found</p>
-                                                    <p className={`text-[18px] font-semibold text-[var(--adaptive-black900)] ${panelNumericClassName}`}>{formatStatCount(targetStats.found)}</p>
-                                                </section>
+                                            <section className="flex gap-[12px]">
+                                                <button
+                                                    type="button"
+                                                    onClick={toggleReportMode}
+                                                    className="flex items-center gap-[4px] p-[4px_12px] rounded-[12px] bg-[var(--adaptive-black900)]"
+                                                >
+                                                    <SelectIcon className="w-[16px]" />
+                                                    <p className="text-[12px] text-[var(--adaptive-grey50)]">add feedback</p>
+                                                </button>
 
-                                                <section className="flex flex-col items-start gap-[4px] flex-1">
-                                                    <p className="text-[12px] text-[var(--adaptive-black500)]">Group</p>
-                                                    <p className={`text-[18px] font-semibold text-[var(--adaptive-black900)] ${panelNumericClassName}`}>{formatStatCount(targetStats.group)}</p>
-                                                </section>
+                                                <div className="h-[calc(100%/2)] w-[1px] bg-[var(--adaptive-black300)] my-auto" />
 
-                                                <section className="flex flex-col items-start gap-[4px] flex-1">
-                                                    <p className="text-[12px] text-[var(--adaptive-black500)]">Item</p>
-                                                    <p className={`text-[18px] font-semibold text-[var(--adaptive-black900)] ${panelNumericClassName}`}>{formatStatCount(targetStats.item)}</p>
+                                                <section
+                                                    className="flex cursor-move flex-1"
+                                                    onPointerDown={handleDragHandlePointerDown}
+                                                    aria-label="패널 위치 변경"
+                                                    title="드래그해서 위치 변경"
+                                                    style={isDragging ? { opacity: 0.8 } : undefined}
+                                                >
+                                                    <section className="flex flex-col items-start gap-[4px] flex-1">
+                                                        <p className="text-[12px] text-[var(--adaptive-black500)]">Found</p>
+                                                        <p className={`text-[14px] font-semibold text-[var(--adaptive-black900)] ${panelNumericClassName}`}>{formatStatCount(targetStats.found)}</p>
+                                                    </section>
+
+                                                    <section className="flex flex-col items-start gap-[4px] flex-1">
+                                                        <p className="text-[12px] text-[var(--adaptive-black500)]">Group</p>
+                                                        <p className={`text-[14px] font-semibold text-[var(--adaptive-black900)] ${panelNumericClassName}`}>{formatStatCount(targetStats.group)}</p>
+                                                    </section>
+
+                                                    <section className="flex flex-col items-start gap-[4px] flex-1">
+                                                        <p className="text-[12px] text-[var(--adaptive-black500)]">Item</p>
+                                                        <p className={`text-[14px] font-semibold text-[var(--adaptive-black900)] ${panelNumericClassName}`}>{formatStatCount(targetStats.item)}</p>
+                                                    </section>
                                                 </section>
                                             </section>
                                         </div>
