@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { CreateReportFeedbackPayload, ReportEvent, ReportFeedback, ReportField, ReportAuthor, ReportIdentify, ReportProject, ReportTeam, ReportUi, ReportVisibility, UpdateReportFeedbackPayload } from "../types/report.js";
+import type { CreateReportFeedbackPayload, ReportEvent, ReportFeedback, ReportField, ReportAuthor, ReportGitHubIssueCreateResult, ReportIdentify, ReportIntegrationsConfig, ReportProject, ReportTeam, ReportUi, ReportVisibility, UpdateReportFeedbackPayload } from "../types/report.js";
 export type ReportProviderProps = {
     project?: ReportProject;
     /** @deprecated Use `project.id`. */
@@ -43,7 +43,9 @@ export type ReportProviderProps = {
         feedbackId: string;
         message: string;
     }) => void | Promise<void>;
+    integrations?: ReportIntegrationsConfig;
+    onGitHubIssueCreate?: (feedback: ReportFeedback) => Promise<ReportGitHubIssueCreateResult>;
     children: ReactNode;
 };
-export declare function ReportProvider({ project, projectId, environment, appVersion, ui, appearance, showFeedbackList, visibleShortcutKeys, shortcut, visibility, enabled, devOnly, routeKey, pathname, team, identify, authors, fields, onList, onCreate, onUpdate, onDelete, onEvent, onReply, children, }: ReportProviderProps): import("react/jsx-runtime").JSX.Element;
+export declare function ReportProvider({ project, projectId, environment, appVersion, ui, appearance, showFeedbackList, visibleShortcutKeys, shortcut, visibility, enabled, devOnly, routeKey, pathname, team, identify, authors, fields, onList, onCreate, onUpdate, onDelete, onEvent, onReply, integrations, onGitHubIssueCreate, children, }: ReportProviderProps): import("react/jsx-runtime").JSX.Element;
 //# sourceMappingURL=ReportProvider.d.ts.map

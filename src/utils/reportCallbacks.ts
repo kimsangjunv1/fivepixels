@@ -40,3 +40,14 @@ export async function notifyFeedbackReply(
         console.error("[stitchable] feedback reply callback failed", error);
     }
 }
+
+export async function notifyGitHubIssueCreated(
+    callbacks: ReportSideEffectCallbacks,
+    params: { feedback: ReportFeedback; issueUrl: string },
+) {
+    try {
+        await callbacks.onEvent?.({ type: "feedback:github-issue-created", payload: params });
+    } catch (error) {
+        console.error("[stitchable] github issue create callback failed", error);
+    }
+}

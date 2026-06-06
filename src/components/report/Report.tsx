@@ -10,7 +10,9 @@ import type {
     ReportFeedback,
     ReportField,
     ReportAuthor,
+    ReportGitHubIssueCreateResult,
     ReportIdentify,
+    ReportIntegrationsConfig,
     ReportProject,
     ReportTeam,
     ReportUi,
@@ -57,6 +59,8 @@ export type ReportProps = {
     onDelete?: (id: string) => Promise<void>;
     onEvent?: (event: ReportEvent) => void | Promise<void>;
     onReply?: (params: { feedbackId: string; message: string }) => void | Promise<void>;
+    integrations?: ReportIntegrationsConfig;
+    onGitHubIssueCreate?: (feedback: ReportFeedback) => Promise<ReportGitHubIssueCreateResult>;
 };
 
 export function Report({
@@ -84,6 +88,8 @@ export function Report({
     onDelete,
     onEvent,
     onReply,
+    integrations,
+    onGitHubIssueCreate,
 }: ReportProps) {
     const resolvedVisibility = resolveReportVisibility({ visibility, enabled, devOnly, routeKey, pathname });
 
@@ -117,6 +123,8 @@ export function Report({
             onDelete={onDelete}
             onEvent={onEvent}
             onReply={onReply}
+            integrations={integrations}
+            onGitHubIssueCreate={onGitHubIssueCreate}
         >
             <ReportView />
         </ReportProvider>

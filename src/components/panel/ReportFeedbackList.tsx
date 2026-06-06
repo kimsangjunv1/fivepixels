@@ -14,7 +14,10 @@ import { copyTextToClipboard, serializeFeedbackItem } from "../../utils/feedback
 import type { ReportFeedback } from "../../types/report.js";
 import type { ReportMessages } from "../../i18n/types.js";
 import type { ReportLocale } from "../../i18n/types.js";
+import type { ReportGitHubIssueFilter } from "../../types/report-ui.js";
 import { PanelDropdownMenu, PanelDropdownMenuItem } from "./PanelDropdownMenu.js";
+import { GitIssueButton } from "./feedback/GitIssueButton.js";
+import { hasGitHubIssue } from "../../utils/githubIntegration.js";
 
 const FEEDBACK_PAGE_SIZE = 20;
 
@@ -169,23 +172,33 @@ export function ReportFeedbackList() {
         locateFeedback,
         refetch,
         handleDelete,
+        canCreateGitHubIssue,
+        creatingGitHubIssueId,
+        handleCreateGitHubIssue,
     } = useReport();
 
     const [visibleCount, setVisibleCount] = useState(FEEDBACK_PAGE_SIZE);
     const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() => new Set());
     const [statusMenuOpen, setStatusMenuOpen] = useState(false);
     const [reportTypeMenuOpen, setReportTypeMenuOpen] = useState(false);
+    const [githubIssueMenuOpen, setGithubIssueMenuOpen] = useState(false);
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
     const statusLabel = filters.status === "all" ? messages.feedbackList.filterStatusAll : messages.status.routeDetail[filters.status];
     const reportTypeLabel = filters.reportType === "all" ? messages.feedbackList.filterTypeAll : filters.reportType === "item" ? messages.feedbackList.reportTypeItem : messages.feedbackList.reportTypeGroup;
+    const githubIssueLabel =
+        filters.githubIssue === "all"
+            ? messages.feedbackList.filterGitHubIssueAll
+            : filters.githubIssue === "issued"
+              ? messages.feedbackList.filterGitHubIssueIssued
+              : messages.feedbackList.filterGitHubIssueNotIssued;
 
     const visibleReports = useMemo(() => filteredReports.slice(0, visibleCount), [filteredReports, visibleCount]);
     const groupedReports = useMemo(() => groupReportsByDate(visibleReports, locale), [locale, visibleReports]);
 
     useEffect(() => {
         setVisibleCount(FEEDBACK_PAGE_SIZE);
-    }, [filters.keyword, filters.reportType, filters.status, reports.length]);
+    }, [filters.githubIssue, filters.keyword, filters.reportType, filters.status, reports.length]);
 
     useEffect(() => {
         const firstGroupKey = groupedReports[0]?.dateKey;
@@ -195,7 +208,7 @@ export function ReportFeedbackList() {
         } else {
             setExpandedGroups(new Set());
         }
-    }, [filters.keyword, filters.reportType, filters.status, reports.length]);
+    }, [filters.githubIssue, filters.keyword, filters.reportType, filters.status, reports.length]);
 
     const toggleGroup = (dateKey: string) => {
         setExpandedGroups((current) => {
@@ -327,6 +340,55 @@ export function ReportFeedbackList() {
                     </PanelDropdownMenu>
                 </section>
 
+                {canCreateGitHubIssue ? (
+                    <section className="flex items-center gap-[4px]">
+                        <PanelDropdownMenu
+                            open={githubIssueMenuOpen}
+                            onClose={() => setGithubIssueMenuOpen(false)}
+                            align="left"
+                            trigger={
+                                <button
+                                    type="button"
+                                    onClick={() => setGithubIssueMenuOpen((current) => !current)}
+                                    aria-expanded={githubIssueMenuOpen}
+                                    aria-haspopup="menu"
+                                    aria-label={messages.feedbackList.filterGitHubIssueAriaLabel}
+                                    className="flex items-center gap-[4px] px-[8px] text-[12px] text-[var(--adaptive-black800)] outline-none"
+                                >
+                                    <span>{githubIssueLabel}</span>
+                                    <ChevronDownIcon
+                                        className={`h-[14px] w-[14px] text-[var(--adaptive-black600)] transition-transform ${githubIssueMenuOpen ? "rotate-180" : ""}`}
+                                    />
+                                </button>
+                            }
+                        >
+                            <PanelDropdownMenuItem
+                                active={filters.githubIssue === "all"}
+                                onClick={() => {
+                                    setGithubIssueMenuOpen(false);
+                                    setFilters((current) => ({ ...current, githubIssue: "all" }));
+                                }}
+                            >
+                                {messages.feedbackList.filterGitHubIssueAll}
+                            </PanelDropdownMenuItem>
+                            {(["issued", "not_issued"] as ReportGitHubIssueFilter[]).map((githubIssue) => (
+                                <PanelDropdownMenuItem
+                                    key={githubIssue}
+                                    active={filters.githubIssue === githubIssue}
+                                    onClick={() => {
+                                        setGithubIssueMenuOpen(false);
+                                        setFilters((current) => ({ ...current, githubIssue }));
+                                    }}
+                                >
+                                    {githubIssue === "issued"
+                                        ? messages.feedbackList.filterGitHubIssueIssued
+                                        : messages.feedbackList.filterGitHubIssueNotIssued}
+                                </PanelDropdownMenuItem>
+                            ))}
+                        </PanelDropdownMenu>
+                    </section>
+                ) : null}
+
                 <section className="flex-1 relative">
                     <input
                         ref={searchInputRef}
@@ -418,6 +480,12 @@ export function ReportFeedbackList() {
                                                               >
                                                                   {messages.status.routeDetail[routeStatus]}
                                                               </span>
+
+                                                              {hasGitHubIssue(report) ? (
+                                                                  <span className="inline-flex items-center rounded-full bg-[#eff6ff] px-[8px] py-[2px] text-[10px] font-bold uppercase text-[#1d4ed8]">
+                                                                      {messages.feedbackList.gitIssueIssuedBadge}
+                                                                  </span>
+                                                              ) : null}
                                                           </div>
 
                                                           <p className="text-[var(--adaptive-black700)]">{report.message}</p>
@@ -431,6 +499,15 @@ export function ReportFeedbackList() {
                                                           report={report}
                                                           messages={messages}
                                                       />
+                                                      {canCreateGitHubIssue ? (
+                                                          <GitIssueButton
+                                                              report={report}
+                                                              messages={messages}
+                                                              disabled={isDeleting}
+                                                              isSubmitting={creatingGitHubIssueId === report.id}
+                                                              onCreateIssue={handleCreateGitHubIssue}
+                                                          />
+                                                      ) : null}
                                                       <FeedbackListDeleteButton
                                                           report={report}
                                                           onDelete={handleDelete}

@@ -1,7 +1,28 @@
 import { BrowserRouter } from "react-router-dom";
-import { Report } from "stitchable";
+import { Report, type ReportFeedback } from "stitchable";
 
 import { AppRouter } from "./app/router";
+
+async function createGitHubIssue(feedback: ReportFeedback) {
+    const response = await fetch("/api/github/issues", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            feedbackId: feedback.id,
+            feedback,
+        }),
+    });
+
+    if (!response.ok) {
+        throw new Error("GitHub issue creation failed");
+    }
+
+    return response.json() as Promise<{
+        issueNumber: number;
+        issueUrl: string;
+        state?: "open" | "closed";
+    }>;
+}
 
 export function App() {
     return (
@@ -16,6 +37,7 @@ export function App() {
                     locale: "ko",
                     appearance: "system",
                     visibleShortcutKeys: true,
+                    showFeedbackList: true,
                 }}
                 visibility={{
                     devOnly: true,
@@ -29,9 +51,17 @@ export function App() {
                         { id: "3", name: "john doe" },
                     ],
                 }}
+                integrations={{
+                    github: { enabled: true },
+                }}
+                onGitHubIssueCreate={createGitHubIssue}
                 onEvent={(event) => {
                     if (event.type === "feedback:create") {
                         console.log("feedback created", event.payload);
+                    }
+
+                    if (event.type === "feedback:github-issue-created") {
+                        console.log("github issue created", event.payload.issueUrl);
                     }
                 }}
                 fields={[

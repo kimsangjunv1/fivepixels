@@ -4,6 +4,7 @@ import { useCurrentPathname } from "./useCurrentPathname.js";
 import type { CreateReportFeedbackPayload, ReportFeedback, ReportField, ReportStorageAdapter, UpdateReportFeedbackPayload } from "../types/report.js";
 import type { ReportFilters } from "../types/report-ui.js";
 import { getRouteDetailStatus, isCreatedToday, ROUTE_DETAIL_STATUS_ORDER } from "../utils/routeDetailStatus.js";
+import { hasGitHubIssue } from "../utils/githubIntegration.js";
 import { resolveStorageAdapter } from "../utils/storage.js";
 
 export type ReportPersistenceConfig = {
@@ -40,6 +41,7 @@ export function useReportPersistence({
         keyword: "",
         status: "all",
         reportType: "all",
+        githubIssue: "all",
     });
     const [selectedReportId, setSelectedReportId] = useState<string | null>(null);
 
@@ -64,6 +66,14 @@ export function useReportPersistence({
                 return false;
             }
 
+            if (filters.githubIssue === "issued" && !hasGitHubIssue(report)) {
+                return false;
+            }
+
+            if (filters.githubIssue === "not_issued" && hasGitHubIssue(report)) {
+                return false;
+            }
+
             if (!filters.keyword.trim()) {
                 return true;
             }
@@ -71,7 +81,7 @@ export function useReportPersistence({
             const keyword = filters.keyword.trim().toLowerCase();
             return [report.message, report.report_id, report.status].join(" ").toLowerCase().includes(keyword);
         });
-    }, [filters.keyword, filters.reportType, filters.status, reports]);
+    }, [filters.githubIssue, filters.keyword, filters.reportType, filters.status, reports]);
 
     const routeDetailsStats = useMemo(() => {
         const statusRows = ROUTE_DETAIL_STATUS_ORDER.map((status) => ({

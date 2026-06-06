@@ -13,4 +13,8 @@ export declare function notifyFeedbackReply(callbacks: ReportSideEffectCallbacks
     feedbackId: string;
     message: string;
 }): Promise<void>;
+export declare function notifyGitHubIssueCreated(callbacks: ReportSideEffectCallbacks, params: {
+    feedback: ReportFeedback;
+    issueUrl: string;
+}): Promise<void>;
 //# sourceMappingURL=reportCallbacks.d.ts.map

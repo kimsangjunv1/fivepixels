@@ -55,12 +55,44 @@ function normalizeReplies(value) {
         ];
     });
 }
+function normalizeGitHubIntegration(value) {
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
+        return undefined;
+    }
+    const github = value;
+    if (typeof github.issue_number !== "number" ||
+        !Number.isFinite(github.issue_number) ||
+        typeof github.issue_url !== "string" ||
+        github.issue_url.trim().length === 0 ||
+        typeof github.issued_at !== "string" ||
+        (github.state !== "open" && github.state !== "closed")) {
+        return undefined;
+    }
+    return {
+        issue_number: github.issue_number,
+        issue_url: github.issue_url,
+        issued_at: github.issued_at,
+        state: github.state,
+    };
+}
+function normalizeIntegrations(value) {
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
+        return undefined;
+    }
+    const integrations = value;
+    const github = normalizeGitHubIntegration(integrations.github);
+    if (!github) {
+        return undefined;
+    }
+    return { github };
+}
 function normalizeReport(item) {
     return {
         ...item,
         status: isReportStatus(item.status) ? item.status : "open",
         field_values: normalizeFieldValues(item.field_values),
         replies: normalizeReplies(item.replies),
+        integrations: normalizeIntegrations(item.integrations),
     };
 }
 export function readAllReportsFromStorage(storageKey) {

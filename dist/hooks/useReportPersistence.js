@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useCreateReportMutation, useDeleteReportMutation, useReportsQuery, useUpdateReportMutation } from "./report.query.js";
 import { useCurrentPathname } from "./useCurrentPathname.js";
 import { getRouteDetailStatus, isCreatedToday, ROUTE_DETAIL_STATUS_ORDER } from "../utils/routeDetailStatus.js";
+import { hasGitHubIssue } from "../utils/githubIntegration.js";
 import { resolveStorageAdapter } from "../utils/storage.js";
 export function useReportPersistence({ projectId, environment, appVersion, fields, onList, onCreate, onUpdate, onDelete, routeKey, }) {
     const { adapter: storageAdapterInstance, usesLocalStorage } = useMemo(() => resolveStorageAdapter({ projectId, environment, appVersion, onList, onCreate, onUpdate, onDelete }), [appVersion, environment, onCreate, onDelete, onList, onUpdate, projectId]);
@@ -11,6 +12,7 @@ export function useReportPersistence({ projectId, environment, appVersion, field
         keyword: "",
         status: "all",
         reportType: "all",
+        githubIssue: "all",
     });
     const [selectedReportId, setSelectedReportId] = useState(null);
     const { data: reports, error, isError, isFetching, refetch } = useReportsQuery(storageAdapterInstance, currentPathname, true);
@@ -31,13 +33,19 @@ export function useReportPersistence({ projectId, environment, appVersion, field
             if (filters.reportType !== "all" && report.report_type !== filters.reportType) {
                 return false;
             }
+            if (filters.githubIssue === "issued" && !hasGitHubIssue(report)) {
+                return false;
+            }
+            if (filters.githubIssue === "not_issued" && hasGitHubIssue(report)) {
+                return false;
+            }
             if (!filters.keyword.trim()) {
                 return true;
             }
             const keyword = filters.keyword.trim().toLowerCase();
             return [report.message, report.report_id, report.status].join(" ").toLowerCase().includes(keyword);
         });
-    }, [filters.keyword, filters.reportType, filters.status, reports]);
+    }, [filters.githubIssue, filters.keyword, filters.reportType, filters.status, reports]);
     const routeDetailsStats = useMemo(() => {
         const statusRows = ROUTE_DETAIL_STATUS_ORDER.map((status) => ({
             status,

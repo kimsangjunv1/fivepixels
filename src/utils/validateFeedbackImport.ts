@@ -1,4 +1,4 @@
-import type { ReportFeedback, ReportFieldValues, ReportReply, ReportStatus, ReportTargetType } from "../types/report.js";
+import type { ReportFeedback, ReportFieldValues, ReportIntegrations, ReportReply, ReportStatus, ReportTargetType } from "../types/report.js";
 import { getActiveReportMessages } from "../i18n/index.js";
 
 const STRING_FIELDS = ["id", "pathname", "report_id", "message", "created_at"] as const;
@@ -84,6 +84,56 @@ function validateReply(value: unknown, index: number, replyIndex: number): Repor
     };
 }
 
+function validateIntegrations(value: unknown, index: number): ReportIntegrations | undefined {
+    const validation = getActiveReportMessages().importValidation;
+
+    if (value === undefined) {
+        return undefined;
+    }
+
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
+        throw importError(index, validation.integrationsObjectInvalid);
+    }
+
+    const integrations = value as Record<string, unknown>;
+    const github = integrations.github;
+
+    if (github === undefined) {
+        return undefined;
+    }
+
+    if (!github || typeof github !== "object" || Array.isArray(github)) {
+        throw importError(index, validation.githubIntegrationObjectInvalid);
+    }
+
+    const githubRecord = github as Record<string, unknown>;
+
+    if (!isFiniteNumber(githubRecord.issue_number)) {
+        throw importError(index, validation.githubIssueNumberInvalid);
+    }
+
+    if (!isNonEmptyString(githubRecord.issue_url)) {
+        throw importError(index, validation.githubIssueUrlInvalid);
+    }
+
+    if (!isNonEmptyString(githubRecord.issued_at) || !isIsoDateString(githubRecord.issued_at)) {
+        throw importError(index, validation.githubIssuedAtInvalid);
+    }
+
+    if (githubRecord.state !== "open" && githubRecord.state !== "closed") {
+        throw importError(index, validation.githubIssueStateInvalid);
+    }
+
+    return {
+        github: {
+            issue_number: githubRecord.issue_number,
+            issue_url: githubRecord.issue_url,
+            issued_at: githubRecord.issued_at,
+            state: githubRecord.state,
+        },
+    };
+}
+
 function validateReplies(value: unknown, index: number): ReportReply[] {
     const validation = getActiveReportMessages().importValidation;
 
@@ -165,6 +215,7 @@ export function validateFeedbackRecord(item: unknown, index: number): ReportFeed
         app_version: record.app_version as string | undefined,
         author_id: record.author_id as string | undefined,
         author_name: record.author_name as string | undefined,
+        integrations: validateIntegrations(record.integrations, index),
     };
 }
 

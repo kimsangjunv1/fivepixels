@@ -8,7 +8,9 @@ import type {
     ReportFeedback,
     ReportField,
     ReportAuthor,
+    ReportGitHubIssueCreateResult,
     ReportIdentify,
+    ReportIntegrationsConfig,
     ReportProject,
     ReportTeam,
     ReportUi,
@@ -60,6 +62,8 @@ export type ReportProviderProps = {
     onDelete?: (id: string) => Promise<void>;
     onEvent?: (event: ReportEvent) => void | Promise<void>;
     onReply?: (params: { feedbackId: string; message: string }) => void | Promise<void>;
+    integrations?: ReportIntegrationsConfig;
+    onGitHubIssueCreate?: (feedback: ReportFeedback) => Promise<ReportGitHubIssueCreateResult>;
     children: ReactNode;
 };
 
@@ -113,6 +117,8 @@ function ReportProviderEnabled({
     onDelete,
     onEvent,
     onReply,
+    integrations,
+    onGitHubIssueCreate,
     routeKey,
     showFeedbackList,
     visibleShortcutKeys,
@@ -135,6 +141,8 @@ function ReportProviderEnabled({
         onDelete,
         onEvent,
         onReply,
+        integrations,
+        onGitHubIssueCreate,
         routeKey,
         showFeedbackList,
         visibleShortcutKeys,
@@ -170,6 +178,8 @@ export function ReportProvider({
     onDelete,
     onEvent,
     onReply,
+    integrations,
+    onGitHubIssueCreate,
     children,
 }: ReportProviderProps) {
     const resolvedProject = resolveReportProject({ project, projectId, environment, appVersion });
@@ -200,6 +210,8 @@ export function ReportProvider({
             onDelete={onDelete}
             onEvent={onEvent}
             onReply={onReply}
+            integrations={integrations}
+            onGitHubIssueCreate={onGitHubIssueCreate}
             routeKey={resolvedVisibility.routeKey}
             locale={resolvedUi.locale}
             messageOverrides={ui?.messages}

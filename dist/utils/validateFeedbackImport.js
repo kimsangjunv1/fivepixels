@@ -62,6 +62,44 @@ function validateReply(value, index, replyIndex) {
         author_name: authorName === null || typeof authorName === "string" ? authorName : undefined,
     };
 }
+function validateIntegrations(value, index) {
+    const validation = getActiveReportMessages().importValidation;
+    if (value === undefined) {
+        return undefined;
+    }
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
+        throw importError(index, validation.integrationsObjectInvalid);
+    }
+    const integrations = value;
+    const github = integrations.github;
+    if (github === undefined) {
+        return undefined;
+    }
+    if (!github || typeof github !== "object" || Array.isArray(github)) {
+        throw importError(index, validation.githubIntegrationObjectInvalid);
+    }
+    const githubRecord = github;
+    if (!isFiniteNumber(githubRecord.issue_number)) {
+        throw importError(index, validation.githubIssueNumberInvalid);
+    }
+    if (!isNonEmptyString(githubRecord.issue_url)) {
+        throw importError(index, validation.githubIssueUrlInvalid);
+    }
+    if (!isNonEmptyString(githubRecord.issued_at) || !isIsoDateString(githubRecord.issued_at)) {
+        throw importError(index, validation.githubIssuedAtInvalid);
+    }
+    if (githubRecord.state !== "open" && githubRecord.state !== "closed") {
+        throw importError(index, validation.githubIssueStateInvalid);
+    }
+    return {
+        github: {
+            issue_number: githubRecord.issue_number,
+            issue_url: githubRecord.issue_url,
+            issued_at: githubRecord.issued_at,
+            state: githubRecord.state,
+        },
+    };
+}
 function validateReplies(value, index) {
     const validation = getActiveReportMessages().importValidation;
     if (!Array.isArray(value)) {
@@ -129,6 +167,7 @@ export function validateFeedbackRecord(item, index) {
         app_version: record.app_version,
         author_id: record.author_id,
         author_name: record.author_name,
+        integrations: validateIntegrations(record.integrations, index),
     };
 }
 export function validateFeedbackImportArray(parsed) {

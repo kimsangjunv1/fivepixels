@@ -68,6 +68,29 @@ export type ReportAuthor = {
     name: string;
 };
 
+export type ReportGitHubIntegrationState = {
+    issue_number: number;
+    issue_url: string;
+    issued_at: string;
+    state: "open" | "closed";
+};
+
+export type ReportIntegrations = {
+    github?: ReportGitHubIntegrationState;
+};
+
+export type ReportGitHubIssueCreateResult = {
+    issueNumber: number;
+    issueUrl: string;
+    state?: ReportGitHubIntegrationState["state"];
+};
+
+export type ReportIntegrationsConfig = {
+    github?: {
+        enabled?: boolean;
+    };
+};
+
 export type ReportFeedback = {
     id: string;
     pathname: string;
@@ -92,13 +115,16 @@ export type ReportFeedback = {
     app_version?: string;
     author_id?: string;
     author_name?: string;
+    integrations?: ReportIntegrations;
 };
 
 export type CreateReportFeedbackPayload = Omit<ReportFeedback, "id" | "created_at" | "replies"> & {
     replies?: ReportReply[];
 };
 
-export type UpdateReportFeedbackPayload = Partial<Pick<ReportFeedback, "message" | "status" | "field_values" | "replies" | "report_id" | "report_type">>;
+export type UpdateReportFeedbackPayload = Partial<
+    Pick<ReportFeedback, "message" | "status" | "field_values" | "replies" | "report_id" | "report_type" | "integrations">
+>;
 
 export interface ReportStorageAdapter {
     list(params: { pathname: string }): Promise<ReportFeedback[]>;
@@ -130,5 +156,12 @@ export type ReportEvent =
           payload: {
               feedbackId: string;
               message: string;
+          };
+      }
+    | {
+          type: "feedback:github-issue-created";
+          payload: {
+              feedback: ReportFeedback;
+              issueUrl: string;
           };
       };

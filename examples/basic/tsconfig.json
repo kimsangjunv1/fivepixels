@@ -5,8 +5,11 @@
     "rootDir": "../..",
     "declaration": false,
     "declarationMap": false,
-    "sourceMap": false
+    "sourceMap": false,
+    "paths": {
+      "stitchable": ["../../src/index.ts"]
+    }
   },
   "include": ["./**/*.ts", "./**/*.tsx", "../../src/**/*.ts", "../../src/**/*.tsx"],
-  "exclude": ["../../src/**/*.test.ts", "../../src/**/*.test.tsx"]
+  "exclude": ["../../src/**/*.test.ts", "../../src/**/*.test.tsx", "./vite.config.ts"]
 }

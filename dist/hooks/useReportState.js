@@ -14,14 +14,15 @@ const OVERLAY_HOVER_LEAVE_MS = 100;
 import { findTargetByPoint, getSelectableTargets, isSameHoverTarget, toSnapshot } from "../utils/dom.js";
 import { createInitialFieldValues, getFieldError, getFieldTags } from "../utils/fields.js";
 import { createReplyId } from "../utils/format.js";
-import { notifyFeedbackCreate, notifyFeedbackDelete, notifyFeedbackReply, notifyFeedbackUpdate } from "../utils/reportCallbacks.js";
+import { notifyFeedbackCreate, notifyFeedbackDelete, notifyFeedbackReply, notifyFeedbackUpdate, notifyGitHubIssueCreated, } from "../utils/reportCallbacks.js";
+import { hasGitHubIssue, isGitHubIssueIntegrationEnabled } from "../utils/githubIntegration.js";
 function resolveDefaultAuthorName(identify, authors) {
     if (identify?.name) {
         return identify.name;
     }
     return authors[0]?.name ?? "";
 }
-export function useReportState({ projectId, environment, appVersion, appearance, fields, authors = [], shortcut: _shortcut, identify, onList, onCreate, onUpdate, onDelete, onEvent, onReply, routeKey, showFeedbackList, visibleShortcutKeys = false, initialLocale, messageOverrides, }) {
+export function useReportState({ projectId, environment, appVersion, appearance, fields, authors = [], shortcut: _shortcut, identify, onList, onCreate, onUpdate, onDelete, onEvent, onReply, integrations, onGitHubIssueCreate, routeKey, showFeedbackList, visibleShortcutKeys = false, initialLocale, messageOverrides, }) {
     const { appearance: activeAppearance, setAppearance } = useAppearancePreference(appearance);
     const { locale, setLocale } = useLocalePreference(initialLocale);
     const messages = useMemo(() => getReportMessages(locale, messageOverrides), [locale, messageOverrides]);
@@ -72,6 +73,8 @@ export function useReportState({ projectId, environment, appVersion, appearance,
     const [editingReportId, setEditingReportId] = useState(null);
     const [editableDraft, setEditableDraft] = useState(null);
     const [panelTab, setPanelTab] = useState(null);
+    const [creatingGitHubIssueId, setCreatingGitHubIssueId] = useState(null);
+    const canCreateGitHubIssue = useMemo(() => isGitHubIssueIntegrationEnabled(integrations, onGitHubIssueCreate), [integrations, onGitHubIssueCreate]);
     const activeReplyAnchor = useMemo(() => resolveTooltipAnchor(markers, activeReplyReportId), [activeReplyReportId, markers]);
     const activeReplyReport = activeReplyAnchor?.report ?? null;
     const tooltipAnchor = useMemo(() => {
@@ -598,6 +601,41 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             setErrorMessage(nextError instanceof Error ? nextError.message : messages.errors.confirmResolutionFailed);
         }
     };
+    const handleCreateGitHubIssue = async (report) => {
+        if (!onGitHubIssueCreate || !canCreateGitHubIssue || creatingGitHubIssueId) {
+            return;
+        }
+        if (hasGitHubIssue(report)) {
+            return;
+        }
+        setCreatingGitHubIssueId(report.id);
+        setErrorMessage("");
+        try {
+            const result = await onGitHubIssueCreate(report);
+            const updatedFeedback = await updateFeedback(report.id, {
+                integrations: {
+                    ...report.integrations,
+                    github: {
+                        issue_number: result.issueNumber,
+                        issue_url: result.issueUrl,
+                        issued_at: new Date().toISOString(),
+                        state: result.state ?? "open",
+                    },
+                },
+            });
+            await notifyGitHubIssueCreated(eventCallbacks, {
+                feedback: updatedFeedback,
+                issueUrl: result.issueUrl,
+            });
+            setErrorMessage("");
+        }
+        catch (nextError) {
+            setErrorMessage(nextError instanceof Error ? nextError.message : messages.errors.createGitHubIssueFailed);
+        }
+        finally {
+            setCreatingGitHubIssueId(null);
+        }
+    };
     const handleDelete = async (id) => {
         try {
             await deleteFeedback(id);
@@ -737,6 +775,9 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         handleUpdateSubmit,
         handleReplySubmit,
         handleDelete,
+        canCreateGitHubIssue,
+        creatingGitHubIssueId,
+        handleCreateGitHubIssue,
     };
 }
 //# sourceMappingURL=useReportState.js.map

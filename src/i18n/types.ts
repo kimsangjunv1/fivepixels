@@ -61,6 +61,19 @@ export type ReportMessages = {
         copiedTitle: string;
         reportTypeItem: string;
         reportTypeGroup: string;
+        filterGitHubIssueAll: string;
+        filterGitHubIssueIssued: string;
+        filterGitHubIssueNotIssued: string;
+        filterGitHubIssueAriaLabel: string;
+        gitIssueAddAriaLabel: string;
+        gitIssueAddTitle: string;
+        gitIssueConfirmAriaLabel: string;
+        gitIssueConfirmTitle: string;
+        gitIssueConfirmLabel: string;
+        gitIssueCreatingLabel: string;
+        gitIssueViewAriaLabel: string;
+        gitIssueViewTitle: string;
+        gitIssueIssuedBadge: string;
     };
     author: {
         placeholder: string;
@@ -170,6 +183,12 @@ export type ReportMessages = {
         elementYRatioInvalid: string;
         optionalStringFieldInvalid: (field: string) => string;
         duplicateId: (id: string) => string;
+        integrationsObjectInvalid: string;
+        githubIntegrationObjectInvalid: string;
+        githubIssueNumberInvalid: string;
+        githubIssueUrlInvalid: string;
+        githubIssuedAtInvalid: string;
+        githubIssueStateInvalid: string;
     };
     errors: {
         feedbackNotFound: string;
@@ -185,6 +204,7 @@ export type ReportMessages = {
         reviewerRequired: string;
         confirmResolutionFailed: string;
         deleteFeedbackFailed: string;
+        createGitHubIssueFailed: string;
         loadFeedbackFailed: string;
         createFeedbackFailed: string;
         localStorageTransferOnly: string;

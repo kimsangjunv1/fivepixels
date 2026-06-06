@@ -14,7 +14,11 @@ export type {
     ReportFieldType,
     ReportFieldValues,
     ReportAuthor,
+    ReportGitHubIssueCreateResult,
+    ReportGitHubIntegrationState,
     ReportIdentify,
+    ReportIntegrations,
+    ReportIntegrationsConfig,
     ReportPersistenceHandlers,
     ReportProject,
     ReportTeam,
@@ -30,5 +34,7 @@ export type {
     UpdateReportFeedbackPayload,
 } from "../../types/report.js";
 export { REPORT_STATUS_FLOW, REPORT_STATUS_TRANSITIONS } from "../../types/report.js";
+export { formatFeedbackAsGitHubIssueBody } from "../../utils/formatGitHubIssue.js";
+export { getGitHubIssueUrl, hasGitHubIssue, isGitHubIssueIntegrationEnabled } from "../../utils/githubIntegration.js";
 export type { DeepPartialReportMessages, ReportLocale, ReportMessages } from "../../i18n/index.js";
 export { en as reportMessagesEn, getDefaultFields, getReportMessages, ko as reportMessagesKo, resolveReportLocale } from "../../i18n/index.js";
