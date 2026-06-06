@@ -6,11 +6,17 @@ export type FeedbackTransferScope = {
     appVersion?: string;
 };
 export type { FeedbackImportPayload } from "./feedbackTransferSchema.js";
-export { buildProjectComparisonLines, isImportProjectCompatible, parseFeedbackImportJson, serializeFeedbackExport, toReportProject, } from "./feedbackTransferSchema.js";
+export { buildProjectComparisonLines, isImportProjectCompatible, parseFeedbackCommandJson, parseFeedbackImportJson, serializeFeedbackExport, serializeFeedbackItem, toReportProject, } from "./feedbackTransferSchema.js";
 export type FeedbackDownloadResult = "saved" | "downloaded" | "cancelled" | "failed";
 export declare function getFeedbackStorageKey({ projectId, environment, appVersion }: FeedbackTransferScope): string;
 export declare function readAllFeedback({ projectId, environment, appVersion }: FeedbackTransferScope): ReportFeedback[];
 export declare function writeAllFeedback(scope: FeedbackTransferScope, items: ReportFeedback[]): void;
+export type FeedbackInsertResult = {
+    inserted: number;
+    regeneratedIds: number;
+};
+export declare function insertFeedbackItems(scope: FeedbackTransferScope, incoming: ReportFeedback[]): FeedbackInsertResult;
+export declare function copyTextToClipboard(text: string): Promise<void>;
 export declare function createFeedbackBackupFilename(projectId: string, environment?: string, appVersion?: string): string;
 export declare function pickFeedbackJsonFile(): Promise<File | null>;
 export declare function downloadFeedbackJson(filename: string, project: ReportProject, items: ReportFeedback[]): Promise<FeedbackDownloadResult>;

@@ -1,7 +1,7 @@
 import { getReportsStorageKey } from "../constants/storageKeys.js";
 import { readAllReportsFromStorage, writeAllReportsToStorage } from "../storage/local/localStorageAdapter.js";
 import { parseFeedbackImportJson, serializeFeedbackExport, toReportProject, } from "./feedbackTransferSchema.js";
-export { buildProjectComparisonLines, isImportProjectCompatible, parseFeedbackImportJson, serializeFeedbackExport, toReportProject, } from "./feedbackTransferSchema.js";
+export { buildProjectComparisonLines, isImportProjectCompatible, parseFeedbackCommandJson, parseFeedbackImportJson, serializeFeedbackExport, serializeFeedbackItem, toReportProject, } from "./feedbackTransferSchema.js";
 const JSON_FILE_TYPES = [
     {
         description: "JSON",
@@ -16,6 +16,49 @@ export function readAllFeedback({ projectId, environment, appVersion }) {
 }
 export function writeAllFeedback(scope, items) {
     writeAllReportsToStorage(getFeedbackStorageKey(scope), items, toReportProject(scope));
+}
+function createFeedbackId() {
+    if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+        return crypto.randomUUID();
+    }
+    return `report-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+export function insertFeedbackItems(scope, incoming) {
+    const existing = readAllFeedback(scope);
+    const usedIds = new Set(existing.map((item) => item.id));
+    let regeneratedIds = 0;
+    const merged = incoming.map((item) => {
+        if (usedIds.has(item.id)) {
+            regeneratedIds += 1;
+            const nextId = createFeedbackId();
+            usedIds.add(nextId);
+            return { ...item, id: nextId };
+        }
+        usedIds.add(item.id);
+        return item;
+    });
+    writeAllFeedback(scope, [...existing, ...merged]);
+    return {
+        inserted: merged.length,
+        regeneratedIds,
+    };
+}
+export async function copyTextToClipboard(text) {
+    if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+        return;
+    }
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.style.cssText = "position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;pointer-events:none;";
+    getFileTransferParent().appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+    const copied = document.execCommand("copy");
+    textarea.remove();
+    if (!copied) {
+        throw new Error("클립보드 복사에 실패했어요.");
+    }
 }
 export function createFeedbackBackupFilename(projectId, environment, appVersion) {
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");

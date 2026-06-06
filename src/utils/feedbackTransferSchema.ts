@@ -1,5 +1,5 @@
 import type { ReportFeedback, ReportProject } from "../types/report.js";
-import { validateFeedbackImportArray } from "./validateFeedbackImport.js";
+import { validateFeedbackImportArray, validateFeedbackRecord } from "./validateFeedbackImport.js";
 import type { ResolvedReportProject } from "./reportProject.js";
 
 export const FEEDBACK_TRANSFER_SCHEMA_VERSION = 1;
@@ -155,6 +155,40 @@ export function parseFeedbackStorageEnvelope(raw: string): FeedbackStorageEnvelo
         updatedAt,
         items: parsed.items as ReportFeedback[],
     };
+}
+
+export function serializeFeedbackItem(item: ReportFeedback): string {
+    return JSON.stringify(item, null, 2);
+}
+
+function isFeedbackRecordShape(value: unknown): value is Record<string, unknown> {
+    if (!isRecord(value)) {
+        return false;
+    }
+
+    return typeof value.id === "string" && typeof value.pathname === "string" && typeof value.report_id === "string";
+}
+
+export function parseFeedbackCommandJson(raw: string): FeedbackImportPayload {
+    let parsed: unknown;
+
+    try {
+        parsed = JSON.parse(raw);
+    } catch {
+        throw new Error("JSON 형식이 올바르지 않아요.");
+    }
+
+    if (Array.isArray(parsed) || (isRecord(parsed) && Array.isArray(parsed.items))) {
+        return parseFeedbackImportJson(raw);
+    }
+
+    if (isFeedbackRecordShape(parsed)) {
+        return {
+            items: [validateFeedbackRecord(parsed, 0)],
+        };
+    }
+
+    throw new Error("피드백 객체, 배열, 또는 export envelope 형식이어야 해요.");
 }
 
 export function parseFeedbackImportJson(raw: string): FeedbackImportPayload {

@@ -2,7 +2,7 @@ import type { ReportFeedback, ReportFieldValues, ReportStatus, ReportTargetType 
 import type { RouteDetailStatus } from "../utils/routeDetailStatus.js";
 export type ReportMode = "idle" | "report" | "view";
 export type ResolvedAppearance = "light" | "dark";
-export type ReportPanelTab = "route-details" | "feedback-list";
+export type ReportPanelTab = "route-details" | "feedback-list" | "command";
 export type ReportFilters = {
     keyword: string;
     status: RouteDetailStatus | "all";

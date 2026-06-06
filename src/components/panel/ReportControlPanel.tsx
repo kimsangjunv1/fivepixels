@@ -6,6 +6,7 @@ import { ChevronDownIcon } from "../icons/ChevronDownIcon.js";
 import { PanelDockGuides } from "./PanelDockGuides.js";
 import { ReportFeedbackList } from "./ReportFeedbackList.js";
 import { ReportRouteDetails } from "./ReportRouteDetails.js";
+import { ReportCommandPanel } from "./ReportCommandPanel.js";
 import { ReportImportConfirmDialog } from "./ReportImportConfirmDialog.js";
 import { ReportImportProjectMismatchDialog } from "./ReportImportProjectMismatchDialog.js";
 import { PanelMoreMenu } from "./PanelMoreMenu.js";
@@ -17,7 +18,9 @@ import type { ReportPanelTab } from "../../types/report-ui.js";
 import {
     createFeedbackBackupFilename,
     downloadFeedbackJson,
+    insertFeedbackItems,
     isImportProjectCompatible,
+    parseFeedbackCommandJson,
     pickFeedbackJsonFile,
     readAllFeedback,
     readFeedbackJsonFile,
@@ -200,6 +203,42 @@ export function ReportControlPanel() {
                 setErrorMessage(error instanceof Error ? error.message : "JSON import에 실패했어요.");
             });
     }, [canTransferFeedback, handleImportFile, setErrorMessage]);
+
+    const handleOpenCommand = useCallback(() => {
+        if (!canTransferFeedback) {
+            setErrorMessage("localStorage 저장소에서만 command를 사용할 수 있어요.");
+            return;
+        }
+
+        setMoreMenuOpen(false);
+        setErrorMessage("");
+        openPanelTab("command");
+    }, [canTransferFeedback, openPanelTab, setErrorMessage]);
+
+    const handleCloseCommand = useCallback(() => {
+        openPanelTab("command");
+    }, [openPanelTab]);
+
+    const handleCommandExecute = useCallback(
+        async (raw: string) => {
+            if (!canTransferFeedback) {
+                throw new Error("localStorage 저장소에서만 command를 사용할 수 있어요.");
+            }
+
+            const payload = parseFeedbackCommandJson(raw);
+            const result = insertFeedbackItems(transferScope, payload.items);
+
+            await refetch();
+            setErrorMessage("");
+
+            if (result.regeneratedIds > 0) {
+                return `${result.inserted}건의 피드백 데이터가 삽입되었어요. (중복 id ${result.regeneratedIds}건은 새 id로 저장됨)`;
+            }
+
+            return `${result.inserted}건의 피드백 데이터가 삽입되었어요.`;
+        },
+        [canTransferFeedback, refetch, setErrorMessage, transferScope],
+    );
 
     const applyImport = useCallback(
         async (payload: FeedbackImportPayload) => {
@@ -480,6 +519,7 @@ export function ReportControlPanel() {
                                             onClose={() => setMoreMenuOpen(false)}
                                             onExport={handleExport}
                                             onImport={handleImportFromMenu}
+                                            onCommand={handleOpenCommand}
                                         />
                                     </section>
 
@@ -506,6 +546,13 @@ export function ReportControlPanel() {
                                     {panelTab === "route-details" && importStep === "none" ? <ReportRouteDetails /> : null}
 
                                     {panelTab === "feedback-list" && showFeedbackList && importStep === "none" ? <ReportFeedbackList /> : null}
+
+                                    {panelTab === "command" && importStep === "none" ? (
+                                        <ReportCommandPanel
+                                            onExecute={handleCommandExecute}
+                                            onClose={handleCloseCommand}
+                                        />
+                                    ) : null}
                                 </section>
                             ) : null}
                         </>

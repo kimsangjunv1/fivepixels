@@ -8,9 +8,10 @@ type PanelMoreMenuProps = {
     onClose: () => void;
     onExport: () => void;
     onImport: () => void;
+    onCommand: () => void;
 };
 
-export function PanelMoreMenu({ open, disabled = false, onToggle, onClose, onExport, onImport }: PanelMoreMenuProps) {
+export function PanelMoreMenu({ open, disabled = false, onToggle, onClose, onExport, onImport, onCommand }: PanelMoreMenuProps) {
     const rootRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
@@ -62,6 +63,14 @@ export function PanelMoreMenu({ open, disabled = false, onToggle, onClose, onExp
                         className="flex w-full px-[12px] py-[8px] text-left font-semibold text-[var(--adaptive-black800)] hover:bg-[var(--adaptive-black100)]"
                     >
                         import
+                    </button>
+                    <button
+                        type="button"
+                        role="menuitem"
+                        onClick={onCommand}
+                        className="flex w-full px-[12px] py-[8px] text-left font-semibold text-[var(--adaptive-black800)] hover:bg-[var(--adaptive-black100)]"
+                    >
+                        command
                     </button>
                     <button
                         type="button"

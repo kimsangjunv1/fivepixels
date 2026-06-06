@@ -8,7 +8,9 @@ import { getRouteDetailStatus, ROUTE_DETAIL_STATUS_LABEL } from "../../utils/rou
 import { ShortcutHint } from "../ShortcutHint.js";
 import { FeedbackFieldTags } from "./feedback/FeedbackFieldTags.js";
 import { SearchIcon } from "../icons/SearchIcon.js";
+import { CopyIcon } from "../icons/CopyIcon.js";
 import { ChevronDownIcon } from "../icons/ChevronDownIcon.js";
+import { copyTextToClipboard, serializeFeedbackItem } from "../../utils/feedbackDataTransfer.js";
 const FEEDBACK_PAGE_SIZE = 20;
 function getDateGroupKey(value) {
     const date = new Date(value);
@@ -47,6 +49,21 @@ function getRouteStatusTone(status) {
         return { backgroundColor: "#eff6ff", color: "#1d4ed8" };
     }
     return { backgroundColor: "#fff7ed", color: "#c2410c" };
+}
+function FeedbackListCopyButton({ report }) {
+    const [copied, setCopied] = useState(false);
+    const handleCopy = (event) => {
+        event.stopPropagation();
+        void copyTextToClipboard(serializeFeedbackItem(report))
+            .then(() => {
+            setCopied(true);
+            window.setTimeout(() => setCopied(false), 1500);
+        })
+            .catch(() => {
+            setCopied(false);
+        });
+    };
+    return (_jsx("button", { type: "button", "data-stitchable-interactive": "", onClick: handleCopy, "aria-label": "\uD53C\uB4DC\uBC31 \uB370\uC774\uD130 \uBCF5\uC0AC", title: copied ? "복사됨" : "복사", className: "flex shrink-0 items-center justify-center self-start rounded-[6px] p-[6px] text-[var(--adaptive-black500)] hover:bg-[var(--adaptive-black100)] hover:text-[var(--adaptive-black800)]", children: copied ? _jsx("span", { className: "text-[10px] font-semibold text-[var(--adaptive-blue500)]", children: "OK" }) : _jsx(CopyIcon, { className: "h-[16px] w-[16px]" }) }));
 }
 export function ReportFeedbackList() {
     const { filters, setFilters, filteredReports, reports, fields, isError, isFetching, queryErrorMessage, visibleShortcutKeys, searchInputRef, locateFeedback, refetch } = useReport();
@@ -102,7 +119,7 @@ export function ReportFeedbackList() {
                                         ? groupReports.map((report) => {
                                             const routeStatus = getRouteDetailStatus(report);
                                             const fieldTags = getFieldTags(fields, report.field_values);
-                                            return (_jsxs("button", { type: "button", onClick: () => locateFeedback(report.id), className: "flex w-full flex-col gap-[6px] border-b border-[var(--adaptive-black200)] p-[12px] text-left last:border-b-0", children: [_jsxs("section", { className: "flex flex-col gap-[4px]", children: [_jsxs("div", { className: "flex flex-wrap items-center gap-[6px]", children: [_jsx("strong", { className: "max-w-full truncate font-bold text-[var(--adaptive-black900)]", children: report.report_id }), _jsx(FeedbackFieldTags, { tags: fieldTags }), _jsx("span", { className: "inline-flex items-center rounded-full px-[8px] py-[2px] text-[10px] font-bold uppercase", style: getRouteStatusTone(routeStatus), children: ROUTE_DETAIL_STATUS_LABEL[routeStatus] })] }), _jsx("p", { className: "text-[var(--adaptive-black700)]", children: report.message })] }), _jsx("p", { className: "text-[var(--adaptive-black500)] text-[12px]", children: formatTimeOnly(report.created_at) })] }, report.id));
+                                            return (_jsxs("div", { className: "flex w-full items-start gap-[4px] border-b border-[var(--adaptive-black200)] last:border-b-0", children: [_jsxs("button", { type: "button", onClick: () => locateFeedback(report.id), className: "flex min-w-0 flex-1 flex-col gap-[6px] p-[12px] text-left", children: [_jsxs("section", { className: "flex flex-col gap-[4px]", children: [_jsxs("div", { className: "flex flex-wrap items-center gap-[6px]", children: [_jsx("strong", { className: "max-w-full truncate font-bold text-[var(--adaptive-black900)]", children: report.report_id }), _jsx(FeedbackFieldTags, { tags: fieldTags }), _jsx("span", { className: "inline-flex items-center rounded-full px-[8px] py-[2px] text-[10px] font-bold uppercase", style: getRouteStatusTone(routeStatus), children: ROUTE_DETAIL_STATUS_LABEL[routeStatus] })] }), _jsx("p", { className: "text-[var(--adaptive-black700)]", children: report.message })] }), _jsx("p", { className: "text-[var(--adaptive-black500)] text-[12px]", children: formatTimeOnly(report.created_at) })] }), _jsx("div", { className: "p-[12px] pl-0", children: _jsx(FeedbackListCopyButton, { report: report }) })] }, report.id));
                                         })
                                         : null] }, dateKey));
                         }) }), visibleCount < filteredReports.length ? (_jsx("div", { ref: loadMoreRef, className: "py-[8px] text-center text-[12px] text-[var(--adaptive-black500)]", children: "\uB354 \uBD88\uB7EC\uC624\uB294 \uC911..." })) : null] })] }));

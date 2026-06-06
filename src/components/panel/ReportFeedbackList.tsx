@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 import type { ReportFilters } from "../../types/report-ui.js";
 import { REPORT_SHORTCUTS } from "../../constants/reportShortcuts.js";
 import { useReport } from "../../providers/reportContext.js";
@@ -8,7 +8,9 @@ import { getRouteDetailStatus, ROUTE_DETAIL_STATUS_LABEL, type RouteDetailStatus
 import { ShortcutHint } from "../ShortcutHint.js";
 import { FeedbackFieldTags } from "./feedback/FeedbackFieldTags.js";
 import { SearchIcon } from "../icons/SearchIcon.js";
+import { CopyIcon } from "../icons/CopyIcon.js";
 import { ChevronDownIcon } from "../icons/ChevronDownIcon.js";
+import { copyTextToClipboard, serializeFeedbackItem } from "../../utils/feedbackDataTransfer.js";
 import type { ReportFeedback } from "../../types/report.js";
 
 const FEEDBACK_PAGE_SIZE = 20;
@@ -58,6 +60,36 @@ function getRouteStatusTone(status: RouteDetailStatus) {
     }
 
     return { backgroundColor: "#fff7ed", color: "#c2410c" };
+}
+
+function FeedbackListCopyButton({ report }: { report: ReportFeedback }) {
+    const [copied, setCopied] = useState(false);
+
+    const handleCopy = (event: MouseEvent<HTMLButtonElement>) => {
+        event.stopPropagation();
+
+        void copyTextToClipboard(serializeFeedbackItem(report))
+            .then(() => {
+                setCopied(true);
+                window.setTimeout(() => setCopied(false), 1500);
+            })
+            .catch(() => {
+                setCopied(false);
+            });
+    };
+
+    return (
+        <button
+            type="button"
+            data-stitchable-interactive=""
+            onClick={handleCopy}
+            aria-label="피드백 데이터 복사"
+            title={copied ? "복사됨" : "복사"}
+            className="flex shrink-0 items-center justify-center self-start rounded-[6px] p-[6px] text-[var(--adaptive-black500)] hover:bg-[var(--adaptive-black100)] hover:text-[var(--adaptive-black800)]"
+        >
+            {copied ? <span className="text-[10px] font-semibold text-[var(--adaptive-blue500)]">OK</span> : <CopyIcon className="h-[16px] w-[16px]" />}
+        </button>
+    );
 }
 
 export function ReportFeedbackList() {
@@ -223,31 +255,39 @@ export function ReportFeedbackList() {
                                           const fieldTags = getFieldTags(fields, report.field_values);
 
                                           return (
-                                              <button
+                                              <div
                                                   key={report.id}
-                                                  type="button"
-                                                  onClick={() => locateFeedback(report.id)}
-                                                  className="flex w-full flex-col gap-[6px] border-b border-[var(--adaptive-black200)] p-[12px] text-left last:border-b-0"
+                                                  className="flex w-full items-start gap-[4px] border-b border-[var(--adaptive-black200)] last:border-b-0"
                                               >
-                                                  <section className="flex flex-col gap-[4px]">
-                                                      <div className="flex flex-wrap items-center gap-[6px]">
-                                                          <strong className="max-w-full truncate font-bold text-[var(--adaptive-black900)]">{report.report_id}</strong>
+                                                  <button
+                                                      type="button"
+                                                      onClick={() => locateFeedback(report.id)}
+                                                      className="flex min-w-0 flex-1 flex-col gap-[6px] p-[12px] text-left"
+                                                  >
+                                                      <section className="flex flex-col gap-[4px]">
+                                                          <div className="flex flex-wrap items-center gap-[6px]">
+                                                              <strong className="max-w-full truncate font-bold text-[var(--adaptive-black900)]">{report.report_id}</strong>
 
-                                                          <FeedbackFieldTags tags={fieldTags} />
+                                                              <FeedbackFieldTags tags={fieldTags} />
 
-                                                          <span
-                                                              className="inline-flex items-center rounded-full px-[8px] py-[2px] text-[10px] font-bold uppercase"
-                                                              style={getRouteStatusTone(routeStatus)}
-                                                          >
-                                                              {ROUTE_DETAIL_STATUS_LABEL[routeStatus]}
-                                                          </span>
-                                                      </div>
+                                                              <span
+                                                                  className="inline-flex items-center rounded-full px-[8px] py-[2px] text-[10px] font-bold uppercase"
+                                                                  style={getRouteStatusTone(routeStatus)}
+                                                              >
+                                                                  {ROUTE_DETAIL_STATUS_LABEL[routeStatus]}
+                                                              </span>
+                                                          </div>
 
-                                                      <p className="text-[var(--adaptive-black700)]">{report.message}</p>
-                                                  </section>
+                                                          <p className="text-[var(--adaptive-black700)]">{report.message}</p>
+                                                      </section>
 
-                                                  <p className="text-[var(--adaptive-black500)] text-[12px]">{formatTimeOnly(report.created_at)}</p>
-                                              </button>
+                                                      <p className="text-[var(--adaptive-black500)] text-[12px]">{formatTimeOnly(report.created_at)}</p>
+                                                  </button>
+
+                                                  <div className="p-[12px] pl-0">
+                                                      <FeedbackListCopyButton report={report} />
+                                                  </div>
+                                              </div>
                                           );
                                       })
                                     : null}

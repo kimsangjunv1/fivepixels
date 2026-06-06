@@ -31,5 +31,7 @@ export declare function isImportProjectCompatible(current: ResolvedReportProject
 export declare function serializeFeedbackExport(project: ReportProject, items: ReportFeedback[], exportedAt?: string): string;
 export declare function serializeFeedbackStorageEnvelope(project: ReportProject, items: ReportFeedback[], updatedAt?: string): string;
 export declare function parseFeedbackStorageEnvelope(raw: string): FeedbackStorageEnvelope | null;
+export declare function serializeFeedbackItem(item: ReportFeedback): string;
+export declare function parseFeedbackCommandJson(raw: string): FeedbackImportPayload;
 export declare function parseFeedbackImportJson(raw: string): FeedbackImportPayload;
 //# sourceMappingURL=feedbackTransferSchema.d.ts.map

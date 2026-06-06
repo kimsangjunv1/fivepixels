@@ -3,12 +3,14 @@ import { getReportsStorageKey } from "../constants/storageKeys.js";
 import { createReportPayload } from "./reportFixtures.js";
 import {
     isImportProjectCompatible,
+    parseFeedbackCommandJson,
     parseFeedbackImportJson,
     parseFeedbackStorageEnvelope,
     serializeFeedbackExport,
+    serializeFeedbackItem,
     serializeFeedbackStorageEnvelope,
 } from "./feedbackTransferSchema.js";
-import { parseFeedbackImportJson as parseFromTransfer, readAllFeedback, writeAllFeedback } from "./feedbackDataTransfer.js";
+import { insertFeedbackItems, parseFeedbackImportJson as parseFromTransfer, readAllFeedback, writeAllFeedback } from "./feedbackDataTransfer.js";
 
 const scope = { projectId: "transfer-test", environment: "stage", appVersion: "1.0.0" };
 
@@ -53,6 +55,14 @@ describe("feedbackTransferSchema", () => {
         expect(envelope?.updatedAt).toBeTruthy();
         expect(envelope?.items).toHaveLength(1);
     });
+
+    it("parses a single feedback object for command insert", () => {
+        const item = { ...createReportPayload(), id: "1", created_at: "2026-01-01T00:00:00.000Z", replies: [] };
+        const parsed = parseFeedbackCommandJson(serializeFeedbackItem(item));
+
+        expect(parsed.items).toHaveLength(1);
+        expect(parsed.items[0]?.id).toBe("1");
+    });
 });
 
 describe("feedbackDataTransfer", () => {
@@ -89,5 +99,37 @@ describe("feedbackDataTransfer", () => {
     it("rejects invalid import json", () => {
         expect(() => parseFromTransfer("{}")).toThrow("피드백 배열");
         expect(() => parseFromTransfer(JSON.stringify([{ id: "only-id" }]))).toThrow("pathname");
+    });
+
+    it("inserts feedback items without replacing existing data", () => {
+        const first = { ...createReportPayload({ message: "first" }), id: "1", created_at: "2026-01-01T00:00:00.000Z", replies: [] };
+        const second = { ...createReportPayload({ message: "second" }), id: "2", created_at: "2026-01-02T00:00:00.000Z", replies: [] };
+
+        writeAllFeedback(scope, [first]);
+        const result = insertFeedbackItems(scope, [second]);
+
+        expect(result.inserted).toBe(1);
+        expect(result.regeneratedIds).toBe(0);
+
+        const items = readAllFeedback(scope);
+        expect(items).toHaveLength(2);
+        expect(items.map((item) => item.message)).toEqual(["first", "second"]);
+    });
+
+    it("regenerates ids when inserting duplicate feedback ids", () => {
+        const first = { ...createReportPayload({ message: "first" }), id: "dup", created_at: "2026-01-01T00:00:00.000Z", replies: [] };
+        const duplicate = { ...createReportPayload({ message: "duplicate" }), id: "dup", created_at: "2026-01-02T00:00:00.000Z", replies: [] };
+
+        writeAllFeedback(scope, [first]);
+        const result = insertFeedbackItems(scope, [duplicate]);
+
+        expect(result.inserted).toBe(1);
+        expect(result.regeneratedIds).toBe(1);
+
+        const items = readAllFeedback(scope);
+        expect(items).toHaveLength(2);
+        expect(items[0]?.id).toBe("dup");
+        expect(items[1]?.id).not.toBe("dup");
+        expect(items[1]?.message).toBe("duplicate");
     });
 });

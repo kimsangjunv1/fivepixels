@@ -1,0 +1,1 @@
+{"version":3,"file":"ReportCommandPanel.d.ts","sourceRoot":"","sources":["../../../src/components/panel/ReportCommandPanel.tsx"],"names":[],"mappings":"AAEA,KAAK,uBAAuB,GAAG;IAC3B,SAAS,EAAE,CAAC,GAAG,EAAE,MAAM,KAAK,OAAO,CAAC,MAAM,CAAC,CAAC;IAC5C,OAAO,EAAE,MAAM,IAAI,CAAC;CACvB,CAAC;AAEF,wBAAgB,kBAAkB,CAAC,EAAE,SAAS,EAAE,OAAO,EAAE,EAAE,uBAAuB,2CAqEjF"}
