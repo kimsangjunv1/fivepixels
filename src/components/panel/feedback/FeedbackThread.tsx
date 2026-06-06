@@ -3,8 +3,10 @@ import type { ReportAuthor, ReportFeedback, ReportReply } from "../../../types/r
 import { useReport } from "../../../providers/reportContext.js";
 import { formatDate } from "../../../utils/format.js";
 import { canCheckoutReply, canReviewLatestSuggestion, resolveOriginalFeedbackAuthorName } from "../../../utils/feedbackThread.js";
+import { getGitHubIssueUrl, isGitIssuedSystemReply } from "../../../utils/githubIntegration.js";
 import { AuthorSelector } from "./AuthorSelector.js";
 import { FeedbackStatusBadge } from "./FeedbackStatusBadge.js";
+import { GitIssuedThreadEntry } from "./GitIssuedThreadEntry.js";
 
 type PendingComposer = {
     type: "deny" | "checkout";
@@ -244,7 +246,20 @@ export function FeedbackThread({
                 ref={scrollRef}
                 className="flex max-h-[512px] flex-col overflow-auto bg-[var(--adaptive-blackOpacity900)] backdrop-blur-[10px]"
             >
-                {chronological.map((reply) => (
+                {chronological.map((reply) => {
+                    const issueUrl = getGitHubIssueUrl(report);
+
+                    if (isGitIssuedSystemReply(reply, report) && issueUrl) {
+                        return (
+                            <GitIssuedThreadEntry
+                                key={reply.id}
+                                reply={reply}
+                                issueUrl={issueUrl}
+                            />
+                        );
+                    }
+
+                    return (
                     <article
                         key={reply.id}
                         className="flex flex-col gap-[8px] border-t border-[var(--adaptive-black800)] p-[16px]"
@@ -270,7 +285,8 @@ export function FeedbackThread({
                             isUpdating={isUpdating}
                         />
                     </article>
-                ))}
+                    );
+                })}
             </section>
         </div>
     );

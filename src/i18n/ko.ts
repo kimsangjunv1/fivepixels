@@ -175,6 +175,11 @@ export const ko: ReportMessages = {
     },
     resolution: {
         issueResolvedMessage: "이슈가 해결되었습니다.",
+        gitIssuedMessage: "Issue has been sent to GitHub.",
+        gitIssuedOpenLink: "Git Issue 바로가기",
+        gitIssuedCopyLinkAriaLabel: "Git Issue 링크 복사",
+        gitIssuedCopyLinkTitle: "링크 복사",
+        gitIssuedCopiedTitle: "복사됨",
     },
     importValidation: {
         fieldValuesObjectRequired: "field_values 객체가 필요합니다",

@@ -173,6 +173,11 @@ export const en = {
     },
     resolution: {
         issueResolvedMessage: "Issue has been resolved.",
+        gitIssuedMessage: "Issue goes to Git Issued",
+        gitIssuedOpenLink: "Open Git Issue",
+        gitIssuedCopyLinkAriaLabel: "Copy Git Issue link",
+        gitIssuedCopyLinkTitle: "Copy link",
+        gitIssuedCopiedTitle: "Copied",
     },
     importValidation: {
         fieldValuesObjectRequired: "field_values object is required",

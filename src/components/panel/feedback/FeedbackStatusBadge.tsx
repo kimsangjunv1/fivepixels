@@ -18,7 +18,7 @@ export function FeedbackStatusBadge({ status, className = "" }: FeedbackStatusBa
                 style={{ backgroundColor: color, color: "var(--adaptive-black900)" }}
                 aria-hidden
             >
-                {status === "resolved" ? "✓" : status === "found_error" ? "−" : "◷"}
+                {status === "resolved" ? "✓" : status === "found_error" ? "−" : status === "git_issued" ? "＋" : "◷"}
             </span>
             <span
                 style={{ color }}

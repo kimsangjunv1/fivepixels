@@ -712,7 +712,10 @@ export function useReportState({
             await notifyFeedbackCreate(eventCallbacks, savedFeedback);
 
             const result = await github.onCreate(savedFeedback);
-            const updatedFeedback = await updateFeedback(savedFeedback.id, buildGitHubIssueUpdate(savedFeedback, result));
+            const updatedFeedback = await updateFeedback(
+                savedFeedback.id,
+                buildGitHubIssueUpdate(savedFeedback, result, messages.resolution.gitIssuedMessage),
+            );
 
             await notifyGitHubIssueCreated(eventCallbacks, {
                 feedback: updatedFeedback,
@@ -874,7 +877,10 @@ export function useReportState({
 
         try {
             const result = await github.onCreate(report);
-            const updatedFeedback = await updateFeedback(report.id, buildGitHubIssueUpdate(report, result));
+            const updatedFeedback = await updateFeedback(
+                report.id,
+                buildGitHubIssueUpdate(report, result, messages.resolution.gitIssuedMessage),
+            );
 
             await notifyGitHubIssueCreated(eventCallbacks, {
                 feedback: updatedFeedback,

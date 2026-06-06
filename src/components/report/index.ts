@@ -40,9 +40,11 @@ export {
     buildGitHubIssueUpdate,
     canCreateGitHubIssueFromList,
     canCreateGitHubIssueOnCreate,
+    createGitIssuedReply,
     getGitHubIssueUrl,
     hasGitHubIssue,
     isGitIssued,
+    isGitIssuedSystemReply,
     isGitHubIssueIntegrationEnabled,
 } from "../../utils/githubIntegration.js";
 export type { DeepPartialReportMessages, ReportLocale, ReportMessages } from "../../i18n/index.js";

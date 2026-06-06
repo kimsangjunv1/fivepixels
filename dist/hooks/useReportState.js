@@ -512,7 +512,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             const savedFeedback = await createFeedback(payload);
             await notifyFeedbackCreate(eventCallbacks, savedFeedback);
             const result = await github.onCreate(savedFeedback);
-            const updatedFeedback = await updateFeedback(savedFeedback.id, buildGitHubIssueUpdate(savedFeedback, result));
+            const updatedFeedback = await updateFeedback(savedFeedback.id, buildGitHubIssueUpdate(savedFeedback, result, messages.resolution.gitIssuedMessage));
             await notifyGitHubIssueCreated(eventCallbacks, {
                 feedback: updatedFeedback,
                 issueUrl: result.issueUrl,
@@ -651,7 +651,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         setErrorMessage("");
         try {
             const result = await github.onCreate(report);
-            const updatedFeedback = await updateFeedback(report.id, buildGitHubIssueUpdate(report, result));
+            const updatedFeedback = await updateFeedback(report.id, buildGitHubIssueUpdate(report, result, messages.resolution.gitIssuedMessage));
             await notifyGitHubIssueCreated(eventCallbacks, {
                 feedback: updatedFeedback,
                 issueUrl: result.issueUrl,

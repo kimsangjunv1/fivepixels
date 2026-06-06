@@ -3,8 +3,10 @@ import type {
     ReportGitHubConfig,
     ReportGitHubIntegrationMode,
     ReportGitHubIssueCreateResult,
+    ReportReply,
     UpdateReportFeedbackPayload,
 } from "../types/report.js";
+import { createReplyId } from "./format.js";
 
 const DEFAULT_GITHUB_MODES: ReportGitHubIntegrationMode[] = ["from-list"];
 
@@ -44,10 +46,21 @@ export function canCreateGitHubIssueOnCreate(github: ReportGitHubConfig | undefi
     return isGitHubIssueIntegrationEnabled(github) && resolveGitHubIntegrationModes(github).includes("on-create");
 }
 
-export function buildGitHubIssueUpdate(
-    report: ReportFeedback,
-    result: ReportGitHubIssueCreateResult,
-): UpdateReportFeedbackPayload {
+export function createGitIssuedReply(message: string): ReportReply {
+    return {
+        id: createReplyId(),
+        message,
+        created_at: new Date().toISOString(),
+        status: "suggested",
+        author_type: "system",
+    };
+}
+
+export function isGitIssuedSystemReply(reply: ReportReply, report: ReportFeedback) {
+    return reply.author_type === "system" && isGitIssued(report);
+}
+
+export function buildGitHubIssueUpdate(report: ReportFeedback, result: ReportGitHubIssueCreateResult, gitIssuedMessage: string): UpdateReportFeedbackPayload {
     return {
         status: "git_issued",
         integrations: {
@@ -58,5 +71,6 @@ export function buildGitHubIssueUpdate(
                 issued_at: new Date().toISOString(),
             },
         },
+        replies: [...report.replies, createGitIssuedReply(gitIssuedMessage)],
     };
 }

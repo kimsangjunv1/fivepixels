@@ -162,6 +162,11 @@ export type ReportMessages = {
     };
     resolution: {
         issueResolvedMessage: string;
+        gitIssuedMessage: string;
+        gitIssuedOpenLink: string;
+        gitIssuedCopyLinkAriaLabel: string;
+        gitIssuedCopyLinkTitle: string;
+        gitIssuedCopiedTitle: string;
     };
     importValidation: {
         fieldValuesObjectRequired: string;

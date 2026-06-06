@@ -7,7 +7,7 @@ export { createLocalStorageReportAdapter, localStorageReportAdapter } from "../.
 export type { CreateReportFeedbackPayload, ReportAppearance, ReportEvent, ReportFeedback, ReportField, ReportFieldBase, ReportFieldType, ReportFieldValues, ReportAuthor, ReportGitHubIssueCreateResult, ReportGitHubIntegrationMode, ReportGitHubIntegrationState, ReportIdentify, ReportGitHubConfig, ReportIntegrations, ReportPersistenceHandlers, ReportProject, ReportTeam, ReportUi, ReportVisibility, ReportReply, ReportReplyStatus, ReportStatus, ReportStorageAdapter, ReportTargetType, SerializedReportFeedback, SerializedReportReply, UpdateReportFeedbackPayload, } from "../../types/report.js";
 export { REPORT_STATUS_FLOW, REPORT_STATUS_TRANSITIONS } from "../../types/report.js";
 export { formatFeedbackAsGitHubIssueBody } from "../../utils/formatGitHubIssue.js";
-export { buildGitHubIssueUpdate, canCreateGitHubIssueFromList, canCreateGitHubIssueOnCreate, getGitHubIssueUrl, hasGitHubIssue, isGitIssued, isGitHubIssueIntegrationEnabled, } from "../../utils/githubIntegration.js";
+export { buildGitHubIssueUpdate, canCreateGitHubIssueFromList, canCreateGitHubIssueOnCreate, createGitIssuedReply, getGitHubIssueUrl, hasGitHubIssue, isGitIssued, isGitIssuedSystemReply, isGitHubIssueIntegrationEnabled, } from "../../utils/githubIntegration.js";
 export type { DeepPartialReportMessages, ReportLocale, ReportMessages } from "../../i18n/index.js";
 export { en as reportMessagesEn, getDefaultFields, getReportMessages, ko as reportMessagesKo, resolveReportLocale } from "../../i18n/index.js";
 //# sourceMappingURL=index.d.ts.map

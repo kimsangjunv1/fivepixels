@@ -1,3 +1,4 @@
+import { createReplyId } from "./format.js";
 const DEFAULT_GITHUB_MODES = ["from-list"];
 export function isGitIssued(report) {
     return report.status === "git_issued";
@@ -26,7 +27,19 @@ export function canCreateGitHubIssueFromList(github) {
 export function canCreateGitHubIssueOnCreate(github) {
     return isGitHubIssueIntegrationEnabled(github) && resolveGitHubIntegrationModes(github).includes("on-create");
 }
-export function buildGitHubIssueUpdate(report, result) {
+export function createGitIssuedReply(message) {
+    return {
+        id: createReplyId(),
+        message,
+        created_at: new Date().toISOString(),
+        status: "suggested",
+        author_type: "system",
+    };
+}
+export function isGitIssuedSystemReply(reply, report) {
+    return reply.author_type === "system" && isGitIssued(report);
+}
+export function buildGitHubIssueUpdate(report, result, gitIssuedMessage) {
     return {
         status: "git_issued",
         integrations: {
@@ -37,6 +50,7 @@ export function buildGitHubIssueUpdate(report, result) {
                 issued_at: new Date().toISOString(),
             },
         },
+        replies: [...report.replies, createGitIssuedReply(gitIssuedMessage)],
     };
 }
 //# sourceMappingURL=githubIntegration.js.map
