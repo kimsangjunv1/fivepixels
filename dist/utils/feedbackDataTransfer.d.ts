@@ -13,9 +13,16 @@ export declare function readAllFeedback({ projectId, environment, appVersion }: 
 export declare function writeAllFeedback(scope: FeedbackTransferScope, items: ReportFeedback[]): void;
 export type FeedbackInsertResult = {
     inserted: number;
-    regeneratedIds: number;
+    replaced: number;
 };
+export type FeedbackInsertConflict = {
+    id: string;
+    existing: ReportFeedback;
+    incoming: ReportFeedback;
+};
+export declare function findFeedbackInsertConflicts(scope: FeedbackTransferScope, incoming: ReportFeedback[]): FeedbackInsertConflict[];
 export declare function insertFeedbackItems(scope: FeedbackTransferScope, incoming: ReportFeedback[]): FeedbackInsertResult;
+export declare function upsertFeedbackItems(scope: FeedbackTransferScope, incoming: ReportFeedback[]): FeedbackInsertResult;
 export declare function copyTextToClipboard(text: string): Promise<void>;
 export declare function createFeedbackBackupFilename(projectId: string, environment?: string, appVersion?: string): string;
 export declare function pickFeedbackJsonFile(): Promise<File | null>;

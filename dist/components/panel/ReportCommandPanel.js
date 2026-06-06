@@ -1,10 +1,18 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import { useState } from "react";
-export function ReportCommandPanel({ onExecute, onClose }) {
+import { useEffect, useState } from "react";
+export function ReportCommandPanel({ onExecute, onClose, notice = null, onNoticeClear }) {
     const [raw, setRaw] = useState("");
     const [statusMessage, setStatusMessage] = useState("");
     const [isError, setIsError] = useState(false);
     const [isExecuting, setIsExecuting] = useState(false);
+    useEffect(() => {
+        if (!notice) {
+            return;
+        }
+        setStatusMessage(notice.message);
+        setIsError(notice.isError);
+        onNoticeClear?.();
+    }, [notice, onNoticeClear]);
     const handleExecute = () => {
         if (!raw.trim() || isExecuting) {
             return;
@@ -13,8 +21,11 @@ export function ReportCommandPanel({ onExecute, onClose }) {
         setStatusMessage("");
         setIsError(false);
         void onExecute(raw.trim())
-            .then((message) => {
-            setStatusMessage(message);
+            .then((result) => {
+            if (result.status === "pending") {
+                return;
+            }
+            setStatusMessage(result.message);
             setIsError(false);
         })
             .catch((error) => {

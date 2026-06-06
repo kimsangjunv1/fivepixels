@@ -1,15 +1,29 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+export type CommandExecuteResult = { status: "success"; message: string } | { status: "pending" };
 
 type ReportCommandPanelProps = {
-    onExecute: (raw: string) => Promise<string>;
+    onExecute: (raw: string) => Promise<CommandExecuteResult>;
     onClose: () => void;
+    notice?: { message: string; isError: boolean } | null;
+    onNoticeClear?: () => void;
 };
 
-export function ReportCommandPanel({ onExecute, onClose }: ReportCommandPanelProps) {
+export function ReportCommandPanel({ onExecute, onClose, notice = null, onNoticeClear }: ReportCommandPanelProps) {
     const [raw, setRaw] = useState("");
     const [statusMessage, setStatusMessage] = useState("");
     const [isError, setIsError] = useState(false);
     const [isExecuting, setIsExecuting] = useState(false);
+
+    useEffect(() => {
+        if (!notice) {
+            return;
+        }
+
+        setStatusMessage(notice.message);
+        setIsError(notice.isError);
+        onNoticeClear?.();
+    }, [notice, onNoticeClear]);
 
     const handleExecute = () => {
         if (!raw.trim() || isExecuting) {
@@ -21,8 +35,12 @@ export function ReportCommandPanel({ onExecute, onClose }: ReportCommandPanelPro
         setIsError(false);
 
         void onExecute(raw.trim())
-            .then((message) => {
-                setStatusMessage(message);
+            .then((result) => {
+                if (result.status === "pending") {
+                    return;
+                }
+
+                setStatusMessage(result.message);
                 setIsError(false);
             })
             .catch((error) => {

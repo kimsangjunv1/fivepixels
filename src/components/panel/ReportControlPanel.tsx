@@ -7,6 +7,7 @@ import { PanelDockGuides } from "./PanelDockGuides.js";
 import { ReportFeedbackList } from "./ReportFeedbackList.js";
 import { ReportRouteDetails } from "./ReportRouteDetails.js";
 import { ReportCommandPanel } from "./ReportCommandPanel.js";
+import { ReportCommandReplaceConfirmDialog } from "./ReportCommandReplaceConfirmDialog.js";
 import { ReportImportConfirmDialog } from "./ReportImportConfirmDialog.js";
 import { ReportImportProjectMismatchDialog } from "./ReportImportProjectMismatchDialog.js";
 import { PanelMoreMenu } from "./PanelMoreMenu.js";
@@ -18,6 +19,7 @@ import type { ReportPanelTab } from "../../types/report-ui.js";
 import {
     createFeedbackBackupFilename,
     downloadFeedbackJson,
+    findFeedbackInsertConflicts,
     insertFeedbackItems,
     isImportProjectCompatible,
     parseFeedbackCommandJson,
@@ -25,11 +27,26 @@ import {
     readAllFeedback,
     readFeedbackJsonFile,
     toReportProject,
+    upsertFeedbackItems,
     writeAllFeedback,
     type FeedbackImportPayload,
+    type FeedbackInsertConflict,
 } from "../../utils/feedbackDataTransfer.js";
 
 type ImportStep = "none" | "project-mismatch" | "confirm";
+type CommandStep = "none" | "replace-confirm";
+
+function buildCommandSuccessMessage(inserted: number, replaced: number) {
+    if (replaced > 0 && inserted > 0) {
+        return `${inserted}건 삽입, ${replaced}건 교체가 완료되었어요.`;
+    }
+
+    if (replaced > 0) {
+        return `${replaced}건의 피드백 데이터가 교체되었어요.`;
+    }
+
+    return `${inserted}건의 피드백 데이터가 삽입되었어요.`;
+}
 
 const RECORDING_STATUS_SHADOW = "drop-shadow(0 1px 2px rgba(0,0,0,0.95)) drop-shadow(0 2px 6px rgba(0,0,0,0.9)) drop-shadow(0 4px 16px rgba(0,0,0,0.85)) drop-shadow(0 0 24px rgba(0,0,0,0.75))";
 
@@ -118,12 +135,16 @@ export function ReportControlPanel() {
     const [isDragOver, setIsDragOver] = useState(false);
     const [pendingImport, setPendingImport] = useState<FeedbackImportPayload | null>(null);
     const [importStep, setImportStep] = useState<ImportStep>("none");
+    const [pendingCommand, setPendingCommand] = useState<FeedbackImportPayload | null>(null);
+    const [commandConflicts, setCommandConflicts] = useState<FeedbackInsertConflict[]>([]);
+    const [commandStep, setCommandStep] = useState<CommandStep>("none");
+    const [commandNotice, setCommandNotice] = useState<{ message: string; isError: boolean } | null>(null);
     const dragDepthRef = useRef(0);
     const isRecording = mode === "report";
     const isIssueMode = mode === "view";
     const { panelRef, panelStyle, placementCorner, isDragging, activeCorner, handleDragHandlePointerDown } = usePanelDock({
         enabled: !isMobileViewport,
-        measureKey: `${panelCollapsed}-${isRecording}-${panelTab ?? "none"}-${isIssueMode}-${importStep !== "none" ? "import" : "none"}`,
+        measureKey: `${panelCollapsed}-${isRecording}-${panelTab ?? "none"}-${isIssueMode}-${importStep !== "none" ? "import" : "none"}-${commandStep !== "none" ? "command" : "none"}`,
     });
     const anchorSide = panelAnchorSide(placementCorner);
     const panelLayout = placementCorner.startsWith("top") ? "size" : "position";
@@ -216,6 +237,9 @@ export function ReportControlPanel() {
     }, [canTransferFeedback, openPanelTab, setErrorMessage]);
 
     const handleCloseCommand = useCallback(() => {
+        setCommandStep("none");
+        setPendingCommand(null);
+        setCommandConflicts([]);
         openPanelTab("command");
     }, [openPanelTab]);
 
@@ -226,19 +250,55 @@ export function ReportControlPanel() {
             }
 
             const payload = parseFeedbackCommandJson(raw);
+            const conflicts = findFeedbackInsertConflicts(transferScope, payload.items);
+
+            if (conflicts.length > 0) {
+                setPendingCommand(payload);
+                setCommandConflicts(conflicts);
+                setCommandStep("replace-confirm");
+                return { status: "pending" as const };
+            }
+
             const result = insertFeedbackItems(transferScope, payload.items);
 
             await refetch();
             setErrorMessage("");
 
-            if (result.regeneratedIds > 0) {
-                return `${result.inserted}건의 피드백 데이터가 삽입되었어요. (중복 id ${result.regeneratedIds}건은 새 id로 저장됨)`;
-            }
-
-            return `${result.inserted}건의 피드백 데이터가 삽입되었어요.`;
+            return {
+                status: "success" as const,
+                message: buildCommandSuccessMessage(result.inserted, result.replaced),
+            };
         },
         [canTransferFeedback, refetch, setErrorMessage, transferScope],
     );
+
+    const handleCancelCommandReplace = useCallback(() => {
+        setPendingCommand(null);
+        setCommandConflicts([]);
+        setCommandStep("none");
+    }, []);
+
+    const handleConfirmCommandReplace = useCallback(() => {
+        if (!pendingCommand) {
+            return;
+        }
+
+        const payload = pendingCommand;
+
+        void (async () => {
+            const result = upsertFeedbackItems(transferScope, payload.items);
+
+            await refetch();
+            setErrorMessage("");
+            setPendingCommand(null);
+            setCommandConflicts([]);
+            setCommandStep("none");
+            setCommandNotice({
+                message: buildCommandSuccessMessage(result.inserted, result.replaced),
+                isError: false,
+            });
+        })();
+    }, [pendingCommand, refetch, setErrorMessage, transferScope]);
 
     const applyImport = useCallback(
         async (payload: FeedbackImportPayload) => {
@@ -289,7 +349,7 @@ export function ReportControlPanel() {
     };
 
     const handleDragEnter = (event: DragEvent<HTMLDivElement>) => {
-        if (isRecording || !canTransferFeedback || importStep !== "none") {
+        if (isRecording || !canTransferFeedback || importStep !== "none" || commandStep !== "none") {
             return;
         }
 
@@ -316,7 +376,7 @@ export function ReportControlPanel() {
     };
 
     const handleDragOver = (event: DragEvent<HTMLDivElement>) => {
-        if (isRecording || !canTransferFeedback || importStep !== "none") {
+        if (isRecording || !canTransferFeedback || importStep !== "none" || commandStep !== "none") {
             return;
         }
 
@@ -329,7 +389,7 @@ export function ReportControlPanel() {
     };
 
     const handleDrop = (event: DragEvent<HTMLDivElement>) => {
-        if (isRecording || !canTransferFeedback || importStep !== "none") {
+        if (isRecording || !canTransferFeedback || importStep !== "none" || commandStep !== "none") {
             return;
         }
 
@@ -523,7 +583,7 @@ export function ReportControlPanel() {
                                         />
                                     </section>
 
-                                    {errorMessage && importStep === "none" ? <p className="px-[8px] text-[12px] text-rose-700">{errorMessage}</p> : null}
+                                    {errorMessage && importStep === "none" && commandStep === "none" ? <p className="px-[8px] text-[12px] text-rose-700">{errorMessage}</p> : null}
 
                                     {importStep === "project-mismatch" && pendingImport ? (
                                         <ReportImportProjectMismatchDialog
@@ -543,14 +603,24 @@ export function ReportControlPanel() {
                                         />
                                     ) : null}
 
-                                    {panelTab === "route-details" && importStep === "none" ? <ReportRouteDetails /> : null}
+                                    {panelTab === "route-details" && importStep === "none" && commandStep === "none" ? <ReportRouteDetails /> : null}
 
-                                    {panelTab === "feedback-list" && showFeedbackList && importStep === "none" ? <ReportFeedbackList /> : null}
+                                    {panelTab === "feedback-list" && showFeedbackList && importStep === "none" && commandStep === "none" ? <ReportFeedbackList /> : null}
 
-                                    {panelTab === "command" && importStep === "none" ? (
+                                    {commandStep === "replace-confirm" && pendingCommand ? (
+                                        <ReportCommandReplaceConfirmDialog
+                                            conflicts={commandConflicts}
+                                            onConfirm={handleConfirmCommandReplace}
+                                            onCancel={handleCancelCommandReplace}
+                                        />
+                                    ) : null}
+
+                                    {panelTab === "command" && importStep === "none" && commandStep === "none" ? (
                                         <ReportCommandPanel
                                             onExecute={handleCommandExecute}
                                             onClose={handleCloseCommand}
+                                            notice={commandNotice}
+                                            onNoticeClear={() => setCommandNotice(null)}
                                         />
                                     ) : null}
                                 </section>

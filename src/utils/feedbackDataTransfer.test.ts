@@ -10,7 +10,7 @@ import {
     serializeFeedbackItem,
     serializeFeedbackStorageEnvelope,
 } from "./feedbackTransferSchema.js";
-import { insertFeedbackItems, parseFeedbackImportJson as parseFromTransfer, readAllFeedback, writeAllFeedback } from "./feedbackDataTransfer.js";
+import { findFeedbackInsertConflicts, insertFeedbackItems, parseFeedbackImportJson as parseFromTransfer, readAllFeedback, upsertFeedbackItems, writeAllFeedback } from "./feedbackDataTransfer.js";
 
 const scope = { projectId: "transfer-test", environment: "stage", appVersion: "1.0.0" };
 
@@ -109,27 +109,39 @@ describe("feedbackDataTransfer", () => {
         const result = insertFeedbackItems(scope, [second]);
 
         expect(result.inserted).toBe(1);
-        expect(result.regeneratedIds).toBe(0);
+        expect(result.replaced).toBe(0);
 
         const items = readAllFeedback(scope);
         expect(items).toHaveLength(2);
         expect(items.map((item) => item.message)).toEqual(["first", "second"]);
     });
 
-    it("regenerates ids when inserting duplicate feedback ids", () => {
+    it("finds conflicts when inserting duplicate feedback ids", () => {
         const first = { ...createReportPayload({ message: "first" }), id: "dup", created_at: "2026-01-01T00:00:00.000Z", replies: [] };
         const duplicate = { ...createReportPayload({ message: "duplicate" }), id: "dup", created_at: "2026-01-02T00:00:00.000Z", replies: [] };
 
         writeAllFeedback(scope, [first]);
-        const result = insertFeedbackItems(scope, [duplicate]);
+        const conflicts = findFeedbackInsertConflicts(scope, [duplicate]);
 
-        expect(result.inserted).toBe(1);
-        expect(result.regeneratedIds).toBe(1);
+        expect(conflicts).toHaveLength(1);
+        expect(conflicts[0]?.existing.message).toBe("first");
+        expect(conflicts[0]?.incoming.message).toBe("duplicate");
+        expect(() => insertFeedbackItems(scope, [duplicate])).toThrow("이미 등록된 id");
+    });
+
+    it("replaces existing feedback when upserting duplicate ids", () => {
+        const first = { ...createReportPayload({ message: "first" }), id: "dup", created_at: "2026-01-01T00:00:00.000Z", replies: [] };
+        const duplicate = { ...createReportPayload({ message: "duplicate" }), id: "dup", created_at: "2026-01-02T00:00:00.000Z", replies: [] };
+
+        writeAllFeedback(scope, [first]);
+        const result = upsertFeedbackItems(scope, [duplicate]);
+
+        expect(result.inserted).toBe(0);
+        expect(result.replaced).toBe(1);
 
         const items = readAllFeedback(scope);
-        expect(items).toHaveLength(2);
+        expect(items).toHaveLength(1);
         expect(items[0]?.id).toBe("dup");
-        expect(items[1]?.id).not.toBe("dup");
-        expect(items[1]?.message).toBe("duplicate");
+        expect(items[0]?.message).toBe("duplicate");
     });
 });

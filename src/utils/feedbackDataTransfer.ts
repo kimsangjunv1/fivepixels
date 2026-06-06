@@ -65,42 +65,69 @@ export function writeAllFeedback(scope: FeedbackTransferScope, items: ReportFeed
     writeAllReportsToStorage(getFeedbackStorageKey(scope), items, toReportProject(scope));
 }
 
-function createFeedbackId() {
-    if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
-        return crypto.randomUUID();
-    }
-
-    return `report-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-}
-
 export type FeedbackInsertResult = {
     inserted: number;
-    regeneratedIds: number;
+    replaced: number;
 };
+
+export type FeedbackInsertConflict = {
+    id: string;
+    existing: ReportFeedback;
+    incoming: ReportFeedback;
+};
+
+export function findFeedbackInsertConflicts(scope: FeedbackTransferScope, incoming: ReportFeedback[]): FeedbackInsertConflict[] {
+    const existingById = new Map(readAllFeedback(scope).map((item) => [item.id, item]));
+
+    return incoming.flatMap((item) => {
+        const existing = existingById.get(item.id);
+
+        if (!existing) {
+            return [];
+        }
+
+        return [{ id: item.id, existing, incoming: item }];
+    });
+}
 
 export function insertFeedbackItems(scope: FeedbackTransferScope, incoming: ReportFeedback[]): FeedbackInsertResult {
     const existing = readAllFeedback(scope);
-    const usedIds = new Set(existing.map((item) => item.id));
-    let regeneratedIds = 0;
+    const existingIds = new Set(existing.map((item) => item.id));
 
-    const merged = incoming.map((item) => {
-        if (usedIds.has(item.id)) {
-            regeneratedIds += 1;
-            const nextId = createFeedbackId();
+    if (incoming.some((item) => existingIds.has(item.id))) {
+        throw new Error("이미 등록된 id가 포함되어 있어요.");
+    }
 
-            usedIds.add(nextId);
-            return { ...item, id: nextId };
-        }
-
-        usedIds.add(item.id);
-        return item;
-    });
-
-    writeAllFeedback(scope, [...existing, ...merged]);
+    writeAllFeedback(scope, [...existing, ...incoming]);
 
     return {
-        inserted: merged.length,
-        regeneratedIds,
+        inserted: incoming.length,
+        replaced: 0,
+    };
+}
+
+export function upsertFeedbackItems(scope: FeedbackTransferScope, incoming: ReportFeedback[]): FeedbackInsertResult {
+    const existing = readAllFeedback(scope);
+    const existingIds = new Set(existing.map((item) => item.id));
+    const incomingById = new Map(incoming.map((item) => [item.id, item]));
+    let replaced = 0;
+    let inserted = 0;
+
+    for (const item of incoming) {
+        if (existingIds.has(item.id)) {
+            replaced += 1;
+        } else {
+            inserted += 1;
+        }
+    }
+
+    const kept = existing.filter((item) => !incomingById.has(item.id));
+
+    writeAllFeedback(scope, [...kept, ...incoming]);
+
+    return {
+        inserted,
+        replaced,
     };
 }
 
