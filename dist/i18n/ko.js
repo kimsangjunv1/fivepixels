@@ -173,7 +173,7 @@ export const ko = {
     },
     resolution: {
         issueResolvedMessage: "이슈가 해결되었습니다.",
-        gitIssuedMessage: "Issue goes to Git Issued",
+        gitIssuedMessage: "Issue has been sent to GitHub.",
         gitIssuedOpenLink: "Git Issue 바로가기",
         gitIssuedCopyLinkAriaLabel: "Git Issue 링크 복사",
         gitIssuedCopyLinkTitle: "링크 복사",

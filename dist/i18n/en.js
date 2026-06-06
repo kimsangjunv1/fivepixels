@@ -173,7 +173,7 @@ export const en = {
     },
     resolution: {
         issueResolvedMessage: "Issue has been resolved.",
-        gitIssuedMessage: "Issue goes to Git Issued",
+        gitIssuedMessage: "Issue has been sent to GitHub.",
         gitIssuedOpenLink: "Open Git Issue",
         gitIssuedCopyLinkAriaLabel: "Copy Git Issue link",
         gitIssuedCopyLinkTitle: "Copy link",
