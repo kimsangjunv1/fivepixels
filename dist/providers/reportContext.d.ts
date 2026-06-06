@@ -4,6 +4,7 @@ declare const ReportContext: import("react").Context<{
     appearance: import("../index.js").ReportAppearance;
     setAppearance: (nextAppearance: import("../index.js").ReportAppearance) => void;
     locale: import("../index.js").ReportLocale;
+    setLocale: (nextLocale: import("../index.js").ReportLocale) => void;
     messages: import("../index.js").ReportMessages;
     fields: import("../index.js").ReportField[];
     authors: import("../index.js").ReportAuthor[];
@@ -117,6 +118,7 @@ export declare function useReport(): {
     appearance: import("../index.js").ReportAppearance;
     setAppearance: (nextAppearance: import("../index.js").ReportAppearance) => void;
     locale: import("../index.js").ReportLocale;
+    setLocale: (nextLocale: import("../index.js").ReportLocale) => void;
     messages: import("../index.js").ReportMessages;
     fields: import("../index.js").ReportField[];
     authors: import("../index.js").ReportAuthor[];

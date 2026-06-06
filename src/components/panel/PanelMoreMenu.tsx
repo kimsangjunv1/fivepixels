@@ -1,4 +1,5 @@
 import type { ReportAppearance } from "../../types/report.js";
+import type { ReportLocale } from "../../i18n/types.js";
 import { useReport } from "../../providers/reportContext.js";
 import { SettingsIcon } from "../icons/SettingsIcon.js";
 import { PanelDropdownMenu, PanelDropdownMenuItem } from "./PanelDropdownMenu.js";
@@ -16,11 +17,17 @@ type PanelMoreMenuProps = {
     onCommand: () => void;
 };
 
+const LOCALE_OPTIONS = ["en", "ko"] as const satisfies readonly ReportLocale[];
+
 export function PanelMoreMenu({ open, disabled = false, appearance, onAppearanceChange, onToggle, onClose, onExport, onImport, onCommand }: PanelMoreMenuProps) {
-    const { messages } = useReport();
+    const { locale, setLocale, messages } = useReport();
     const appearanceOptions = (["system", "light", "dark"] as const).map((value) => ({
         value,
         label: messages.appearance[value],
+    }));
+    const localeOptions = LOCALE_OPTIONS.map((value) => ({
+        value,
+        label: messages.localeOption[value],
     }));
 
     return (
@@ -50,6 +57,15 @@ export function PanelMoreMenu({ open, disabled = false, appearance, onAppearance
                     value={appearance}
                     onChange={onAppearanceChange}
                     ariaLabel={messages.moreMenu.themeAriaLabel}
+                />
+            </div>
+            <div className="px-[12px] py-[8px]">
+                <p className="mb-[6px] text-[11px] font-semibold uppercase tracking-[0.02em] text-[var(--adaptive-black500)]">{messages.moreMenu.language}</p>
+                <PanelOptionSwitch
+                    options={localeOptions}
+                    value={locale}
+                    onChange={setLocale}
+                    ariaLabel={messages.moreMenu.languageAriaLabel}
                 />
             </div>
             <div className="w-full h-[1px] bg-[var(--adaptive-black300)]" />

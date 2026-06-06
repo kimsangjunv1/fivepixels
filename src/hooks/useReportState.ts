@@ -1,10 +1,12 @@
 import { type MouseEvent, useEffect, useMemo, useRef, useState } from "react";
-import type { ReportMessages } from "../i18n/types.js";
+import { getReportMessages, setActiveReportMessages } from "../i18n/index.js";
+import type { DeepPartialReportMessages } from "../i18n/types.js";
 import type { ReportLocale } from "../i18n/types.js";
 import { useReportShortcuts } from "./useReportShortcuts.js";
 import { useReportPersistence } from "./useReportPersistence.js";
 import { useIsMobileViewport } from "./useIsMobileViewport.js";
 import { useAppearancePreference } from "./useAppearancePreference.js";
+import { useLocalePreference } from "./useLocalePreference.js";
 import { useResolvedAppearance } from "./useResolvedAppearance.js";
 import type {
     CreateReportFeedbackPayload,
@@ -55,8 +57,8 @@ export type ReportStateConfig = {
     routeKey?: string;
     showFeedbackList: boolean;
     visibleShortcutKeys?: boolean;
-    locale: ReportLocale;
-    messages: ReportMessages;
+    initialLocale: ReportLocale;
+    messageOverrides?: DeepPartialReportMessages;
 };
 
 export function useReportState({
@@ -77,10 +79,16 @@ export function useReportState({
     routeKey,
     showFeedbackList,
     visibleShortcutKeys = false,
-    locale,
-    messages,
+    initialLocale,
+    messageOverrides,
 }: ReportStateConfig) {
     const { appearance: activeAppearance, setAppearance } = useAppearancePreference(appearance);
+    const { locale, setLocale } = useLocalePreference(initialLocale);
+    const messages = useMemo(() => getReportMessages(locale, messageOverrides), [locale, messageOverrides]);
+
+    useEffect(() => {
+        setActiveReportMessages(messages);
+    }, [messages]);
     const overlayRef = useRef<HTMLDivElement | null>(null);
     const searchInputRef = useRef<HTMLInputElement | null>(null);
     const hoveredElementRef = useRef<HTMLElement | null>(null);
@@ -842,6 +850,7 @@ export function useReportState({
         appearance: activeAppearance,
         setAppearance,
         locale,
+        setLocale,
         messages,
         fields,
         authors,

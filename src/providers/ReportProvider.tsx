@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
-import { useEffect } from "react";
-import { getDefaultFields, setActiveReportMessages } from "../i18n/index.js";
-import type { ReportLocale, ReportMessages } from "../i18n/types.js";
+import { getDefaultFields } from "../i18n/index.js";
+import type { DeepPartialReportMessages, ReportLocale } from "../i18n/types.js";
 import { useReportState } from "../hooks/useReportState.js";
 import type {
     CreateReportFeedbackPayload,
@@ -96,7 +95,7 @@ type ReportProviderEnabledProps = Omit<
     identify?: ReportIdentify;
     authors: ReportAuthor[];
     locale: ReportLocale;
-    messages: ReportMessages;
+    messageOverrides?: DeepPartialReportMessages;
 };
 
 function ReportProviderEnabled({
@@ -118,13 +117,9 @@ function ReportProviderEnabled({
     showFeedbackList,
     visibleShortcutKeys,
     locale,
-    messages,
+    messageOverrides,
     children,
 }: ReportProviderEnabledProps) {
-    useEffect(() => {
-        setActiveReportMessages(messages);
-    }, [messages]);
-
     const value = useReportState({
         projectId,
         environment,
@@ -143,8 +138,8 @@ function ReportProviderEnabled({
         routeKey,
         showFeedbackList,
         visibleShortcutKeys,
-        locale,
-        messages,
+        initialLocale: locale,
+        messageOverrides,
     });
 
     return <ReportContext.Provider value={value}>{children}</ReportContext.Provider>;
@@ -207,7 +202,7 @@ export function ReportProvider({
             onReply={onReply}
             routeKey={resolvedVisibility.routeKey}
             locale={resolvedUi.locale}
-            messages={resolvedUi.messages}
+            messageOverrides={ui?.messages}
         >
             {children}
         </ReportProviderEnabled>

@@ -1,6 +1,5 @@
 import { jsx as _jsx, Fragment as _Fragment } from "react/jsx-runtime";
-import { useEffect } from "react";
-import { getDefaultFields, setActiveReportMessages } from "../i18n/index.js";
+import { getDefaultFields } from "../i18n/index.js";
 import { useReportState } from "../hooks/useReportState.js";
 import { resolveReportEnabled } from "../utils/env.js";
 import { resolveReportProject } from "../utils/reportProject.js";
@@ -8,10 +7,7 @@ import { resolveReportTeam } from "../utils/reportTeam.js";
 import { resolveReportUi } from "../utils/reportUi.js";
 import { resolveReportVisibility } from "../utils/reportVisibility.js";
 import { ReportContext } from "./reportContext.js";
-function ReportProviderEnabled({ projectId, environment, appVersion, appearance, fields, authors, shortcut, identify, onList, onCreate, onUpdate, onDelete, onEvent, onReply, routeKey, showFeedbackList, visibleShortcutKeys, locale, messages, children, }) {
-    useEffect(() => {
-        setActiveReportMessages(messages);
-    }, [messages]);
+function ReportProviderEnabled({ projectId, environment, appVersion, appearance, fields, authors, shortcut, identify, onList, onCreate, onUpdate, onDelete, onEvent, onReply, routeKey, showFeedbackList, visibleShortcutKeys, locale, messageOverrides, children, }) {
     const value = useReportState({
         projectId,
         environment,
@@ -30,8 +26,8 @@ function ReportProviderEnabled({ projectId, environment, appVersion, appearance,
         routeKey,
         showFeedbackList,
         visibleShortcutKeys,
-        locale,
-        messages,
+        initialLocale: locale,
+        messageOverrides,
     });
     return _jsx(ReportContext.Provider, { value: value, children: children });
 }
@@ -44,6 +40,6 @@ export function ReportProvider({ project, projectId, environment, appVersion, ui
     if (!resolveReportEnabled(resolvedVisibility)) {
         return _jsx(_Fragment, { children: children });
     }
-    return (_jsx(ReportProviderEnabled, { projectId: resolvedProject.projectId, environment: resolvedProject.environment, appVersion: resolvedProject.appVersion, appearance: resolvedUi.appearance, showFeedbackList: resolvedUi.showFeedbackList, visibleShortcutKeys: resolvedUi.visibleShortcutKeys, shortcut: resolvedUi.shortcut, fields: resolvedFields, authors: resolvedTeam.reviewers, identify: resolvedTeam.user, onList: onList, onCreate: onCreate, onUpdate: onUpdate, onDelete: onDelete, onEvent: onEvent, onReply: onReply, routeKey: resolvedVisibility.routeKey, locale: resolvedUi.locale, messages: resolvedUi.messages, children: children }));
+    return (_jsx(ReportProviderEnabled, { projectId: resolvedProject.projectId, environment: resolvedProject.environment, appVersion: resolvedProject.appVersion, appearance: resolvedUi.appearance, showFeedbackList: resolvedUi.showFeedbackList, visibleShortcutKeys: resolvedUi.visibleShortcutKeys, shortcut: resolvedUi.shortcut, fields: resolvedFields, authors: resolvedTeam.reviewers, identify: resolvedTeam.user, onList: onList, onCreate: onCreate, onUpdate: onUpdate, onDelete: onDelete, onEvent: onEvent, onReply: onReply, routeKey: resolvedVisibility.routeKey, locale: resolvedUi.locale, messageOverrides: ui?.messages, children: children }));
 }
 //# sourceMappingURL=ReportProvider.js.map

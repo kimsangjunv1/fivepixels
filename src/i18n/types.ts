@@ -91,8 +91,11 @@ export type ReportMessages = {
         export: string;
         theme: string;
         themeAriaLabel: string;
+        language: string;
+        languageAriaLabel: string;
         command: string;
     };
+    localeOption: Record<ReportLocale, string>;
     appearance: Record<ReportAppearance, string>;
     command: {
         title: string;

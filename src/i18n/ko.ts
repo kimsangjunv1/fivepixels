@@ -85,7 +85,13 @@ export const ko: ReportMessages = {
         export: "내보내기",
         theme: "테마",
         themeAriaLabel: "테마 설정",
+        language: "언어",
+        languageAriaLabel: "언어 설정",
         command: "명령",
+    },
+    localeOption: {
+        en: "English",
+        ko: "한국어",
     },
     appearance: {
         system: "시스템",

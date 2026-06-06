@@ -1,5 +1,5 @@
 import { type MouseEvent } from "react";
-import type { ReportMessages } from "../i18n/types.js";
+import type { DeepPartialReportMessages } from "../i18n/types.js";
 import type { ReportLocale } from "../i18n/types.js";
 import type { CreateReportFeedbackPayload, ReportAppearance, ReportAuthor, ReportEvent, ReportFeedback, ReportField, ReportIdentify, UpdateReportFeedbackPayload } from "../types/report.js";
 import type { DraftReport, EditableDraft, Marker, PendingFeedbackComposer, ReportMode, ReportPanelTab, TargetSnapshot } from "../types/report-ui.js";
@@ -26,14 +26,15 @@ export type ReportStateConfig = {
     routeKey?: string;
     showFeedbackList: boolean;
     visibleShortcutKeys?: boolean;
-    locale: ReportLocale;
-    messages: ReportMessages;
+    initialLocale: ReportLocale;
+    messageOverrides?: DeepPartialReportMessages;
 };
-export declare function useReportState({ projectId, environment, appVersion, appearance, fields, authors, shortcut: _shortcut, identify, onList, onCreate, onUpdate, onDelete, onEvent, onReply, routeKey, showFeedbackList, visibleShortcutKeys, locale, messages, }: ReportStateConfig): {
+export declare function useReportState({ projectId, environment, appVersion, appearance, fields, authors, shortcut: _shortcut, identify, onList, onCreate, onUpdate, onDelete, onEvent, onReply, routeKey, showFeedbackList, visibleShortcutKeys, initialLocale, messageOverrides, }: ReportStateConfig): {
     appearance: ReportAppearance;
     setAppearance: (nextAppearance: ReportAppearance) => void;
     locale: ReportLocale;
-    messages: ReportMessages;
+    setLocale: (nextLocale: ReportLocale) => void;
+    messages: import("../index.js").ReportMessages;
     fields: ReportField[];
     authors: ReportAuthor[];
     projectId: string;

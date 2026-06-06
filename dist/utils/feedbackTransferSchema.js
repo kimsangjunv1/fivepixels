@@ -36,21 +36,22 @@ export function formatProjectScopeValue(value) {
 }
 export function buildProjectComparisonLines(current, imported) {
     const currentProject = toReportProject(current);
+    const labels = getActiveReportMessages().projectComparison;
     return [
         {
-            label: "project.id",
+            label: labels.projectId,
             current: formatProjectScopeValue(currentProject.id),
             imported: formatProjectScopeValue(imported?.id),
             differs: (currentProject.id ?? "") !== (imported?.id ?? ""),
         },
         {
-            label: "project.version",
+            label: labels.projectVersion,
             current: formatProjectScopeValue(currentProject.version),
             imported: formatProjectScopeValue(imported?.version),
             differs: (currentProject.version ?? "") !== (imported?.version ?? ""),
         },
         {
-            label: "project.env",
+            label: labels.projectEnv,
             current: formatProjectScopeValue(currentProject.env),
             imported: formatProjectScopeValue(imported?.env),
             differs: (currentProject.env ?? "") !== (imported?.env ?? ""),

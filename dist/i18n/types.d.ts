@@ -55,6 +55,8 @@ export type ReportMessages = {
         copyAriaLabel: string;
         copyTitle: string;
         copiedTitle: string;
+        reportTypeItem: string;
+        reportTypeGroup: string;
     };
     author: {
         placeholder: string;
@@ -85,8 +87,11 @@ export type ReportMessages = {
         export: string;
         theme: string;
         themeAriaLabel: string;
+        language: string;
+        languageAriaLabel: string;
         command: string;
     };
+    localeOption: Record<ReportLocale, string>;
     appearance: Record<ReportAppearance, string>;
     command: {
         title: string;
@@ -105,12 +110,20 @@ export type ReportMessages = {
         description: string;
         currentData: string;
         updatedData: string;
+        exportedAtLabel: string;
     };
     commandReplace: {
         title: string;
         description: string;
         existingMessage: string;
         replacementMessage: string;
+        idLabel: string;
+        reportIdLabel: string;
+    };
+    projectComparison: {
+        projectId: string;
+        projectVersion: string;
+        projectEnv: string;
     };
     status: {
         routeDetail: Record<RouteDetailStatus, string>;

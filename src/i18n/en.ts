@@ -85,7 +85,13 @@ export const en: ReportMessages = {
         export: "Export",
         theme: "Theme",
         themeAriaLabel: "Theme preference",
+        language: "Language",
+        languageAriaLabel: "Language preference",
         command: "Command",
+    },
+    localeOption: {
+        en: "English",
+        ko: "한국어",
     },
     appearance: {
         system: "System",

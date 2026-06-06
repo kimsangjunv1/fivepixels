@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { getReportMessages, setActiveReportMessages } from "../i18n/index.js";
 import { useReportShortcuts } from "./useReportShortcuts.js";
 import { useReportPersistence } from "./useReportPersistence.js";
 import { useIsMobileViewport } from "./useIsMobileViewport.js";
 import { useAppearancePreference } from "./useAppearancePreference.js";
+import { useLocalePreference } from "./useLocalePreference.js";
 import { useResolvedAppearance } from "./useResolvedAppearance.js";
 import { createReplyStatusForSubmit, resolveOriginalFeedbackAuthorName } from "../utils/feedbackThread.js";
 import { clampRatio, getMarkerFromReport, resolveTooltipAnchor } from "../utils/coordinates.js";
@@ -19,8 +21,13 @@ function resolveDefaultAuthorName(identify, authors) {
     }
     return authors[0]?.name ?? "";
 }
-export function useReportState({ projectId, environment, appVersion, appearance, fields, authors = [], shortcut: _shortcut, identify, onList, onCreate, onUpdate, onDelete, onEvent, onReply, routeKey, showFeedbackList, visibleShortcutKeys = false, locale, messages, }) {
+export function useReportState({ projectId, environment, appVersion, appearance, fields, authors = [], shortcut: _shortcut, identify, onList, onCreate, onUpdate, onDelete, onEvent, onReply, routeKey, showFeedbackList, visibleShortcutKeys = false, initialLocale, messageOverrides, }) {
     const { appearance: activeAppearance, setAppearance } = useAppearancePreference(appearance);
+    const { locale, setLocale } = useLocalePreference(initialLocale);
+    const messages = useMemo(() => getReportMessages(locale, messageOverrides), [locale, messageOverrides]);
+    useEffect(() => {
+        setActiveReportMessages(messages);
+    }, [messages]);
     const overlayRef = useRef(null);
     const searchInputRef = useRef(null);
     const hoveredElementRef = useRef(null);
@@ -641,6 +648,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         appearance: activeAppearance,
         setAppearance,
         locale,
+        setLocale,
         messages,
         fields,
         authors,
