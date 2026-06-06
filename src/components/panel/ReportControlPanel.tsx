@@ -77,9 +77,9 @@ function PanelTabButton({ label, active, onClick }: { label: string; active: boo
         <button
             type="button"
             onClick={onClick}
-            className={`flex flex-1 items-center justify-center gap-[6px] px-[10px] py-[4px] ${active ? "bg-[var(--adaptive-black100)] text-[var(--adaptive-black900)]" : "text-[var(--adaptive-black600)]"}`}
+            className={`flex flex-1 items-center justify-center gap-[6px] px-[10px] py-[2px] ${active ? "bg-[var(--adaptive-black100)] text-[var(--adaptive-black900)]" : "text-[var(--adaptive-black600)]"}`}
         >
-            <p className="text-[var(--adaptive-black500)] font-[500]">{label}</p>
+            <p className="text-[var(--adaptive-black800)] font-[500]">{label}</p>
 
             <ChevronDownIcon className={`h-4 w-4 transition-transform ${active ? "rotate-180" : ""}`} />
         </button>
@@ -125,6 +125,8 @@ export function ReportControlPanel() {
         showTargetPreview,
         isMobileViewport,
         panelTab,
+        appearance,
+        setAppearance,
         canTransferFeedback,
         toggleReportMode,
         toggleTargetPreview,
@@ -481,9 +483,9 @@ export function ReportControlPanel() {
 
                                         <div className="flex flex-col gap-[8px] p-[8px_0_8px_12px] flex-1">
                                             <section className="flex items-center justify-between gap-[8px]">
-                                                <section className="flex min-w-0 items-center gap-[6px]">
-                                                    <LogoIcon className="w-[18px] shrink-0" />
-                                                    <p className="shrink-0 text-[var(--adaptive-black900)] font-[700] text-[16px]">Stitchable°</p>
+                                                <section className="flex min-w-0 items-center gap-[4px]">
+                                                    <LogoIcon className="w-[16px] shrink-0" />
+                                                    <p className="shrink-0 text-[var(--adaptive-black900)] font-[700] text-[14px] select-none">Stitchable°</p>
                                                     <EnvironmentBadge environment={environment} />
                                                 </section>
 
@@ -494,7 +496,7 @@ export function ReportControlPanel() {
                                                         className="flex items-center gap-[4px] rounded-l-[8px] bg-[var(--adaptive-black900)] p-[0_8px]"
                                                     >
                                                         <SelectIcon className="w-[16px]" />
-                                                        <p className="text-[12px] text-[var(--adaptive-grey50)]">add feedback</p>
+                                                        <p className="text-[12px] text-[var(--adaptive-black50)]">add feedback</p>
                                                     </button>
 
                                                     <PanelDropdownMenu
@@ -510,7 +512,7 @@ export function ReportControlPanel() {
                                                                 aria-label="View options"
                                                                 className="flex items-center rounded-r-[8px] border-l border-[var(--adaptive-black700)] bg-[var(--adaptive-black900)] p-[2px_8px] h-[24px]"
                                                             >
-                                                                <ChevronDownIcon className={`h-4 w-4 text-[var(--adaptive-grey50)] transition-transform ${viewMenuOpen ? "rotate-180" : ""}`} />
+                                                                <ChevronDownIcon className={`h-4 w-4 text-[var(--adaptive-black900)] transition-transform ${viewMenuOpen ? "rotate-180" : ""}`} />
                                                             </button>
                                                         }
                                                     >
@@ -593,6 +595,8 @@ export function ReportControlPanel() {
                                         <PanelMoreMenu
                                             open={moreMenuOpen}
                                             disabled={!canTransferFeedback}
+                                            appearance={appearance}
+                                            onAppearanceChange={setAppearance}
                                             onToggle={() => setMoreMenuOpen((current) => !current)}
                                             onClose={() => setMoreMenuOpen(false)}
                                             onExport={handleExport}

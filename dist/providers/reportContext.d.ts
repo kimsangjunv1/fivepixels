@@ -2,6 +2,7 @@ import type { useReportState } from "../hooks/useReportState.js";
 export type ReportContextValue = ReturnType<typeof useReportState>;
 declare const ReportContext: import("react").Context<{
     appearance: import("../index.js").ReportAppearance;
+    setAppearance: (nextAppearance: import("../index.js").ReportAppearance) => void;
     fields: import("../index.js").ReportField[];
     authors: import("../index.js").ReportAuthor[];
     projectId: string;
@@ -112,6 +113,7 @@ declare const ReportContext: import("react").Context<{
 } | null>;
 export declare function useReport(): {
     appearance: import("../index.js").ReportAppearance;
+    setAppearance: (nextAppearance: import("../index.js").ReportAppearance) => void;
     fields: import("../index.js").ReportField[];
     authors: import("../index.js").ReportAuthor[];
     projectId: string;

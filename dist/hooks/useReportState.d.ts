@@ -27,6 +27,7 @@ export type ReportStateConfig = {
 };
 export declare function useReportState({ projectId, environment, appVersion, appearance, fields, authors, shortcut: _shortcut, identify, onList, onCreate, onUpdate, onDelete, onEvent, onReply, routeKey, showFeedbackList, visibleShortcutKeys, }: ReportStateConfig): {
     appearance: ReportAppearance;
+    setAppearance: (nextAppearance: ReportAppearance) => void;
     fields: ReportField[];
     authors: ReportAuthor[];
     projectId: string;

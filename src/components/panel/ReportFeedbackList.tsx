@@ -277,7 +277,7 @@ export function ReportFeedbackList() {
                     </div>
                 ) : null}
 
-                <section className="flex flex-col gap-[8px] p-[8px]">
+                <section className="flex flex-col gap-[8px]">
                     {groupedReports.map(({ dateKey, label, reports: groupReports }) => {
                         const isExpanded = expandedGroups.has(dateKey);
 
@@ -290,9 +290,9 @@ export function ReportFeedbackList() {
                                     type="button"
                                     onClick={() => toggleGroup(dateKey)}
                                     aria-expanded={isExpanded}
-                                    className="sticky top-[8px] z-10 flex w-full items-center justify-between rounded-[8px] bg-[var(--adaptive-black200)] p-[8px]"
+                                    className="sticky z-10 flex w-full items-center justify-between bg-[var(--adaptive-black200)] p-[4px_8px]"
                                 >
-                                    <p className="text-[14px] font-[600] text-[var(--adaptive-black500)]">{label}</p>
+                                    <p className="text-[12px] font-[600] text-[var(--adaptive-black700)]">{label}</p>
 
                                     <ChevronDownIcon className={`h-4 w-4 shrink-0 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
                                 </button>

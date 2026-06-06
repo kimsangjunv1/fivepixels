@@ -2,6 +2,7 @@ import { type MouseEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useReportShortcuts } from "./useReportShortcuts.js";
 import { useCreateReportMutation, useDeleteReportMutation, useReportsQuery, useUpdateReportMutation } from "./report.query.js";
 import { useIsMobileViewport } from "./useIsMobileViewport.js";
+import { useAppearancePreference } from "./useAppearancePreference.js";
 import { useResolvedAppearance } from "./useResolvedAppearance.js";
 import type {
     CreateReportFeedbackPayload,
@@ -76,7 +77,7 @@ export function useReportState({
     showFeedbackList,
     visibleShortcutKeys = false,
 }: ReportStateConfig) {
-    // theme
+    const { appearance: activeAppearance, setAppearance } = useAppearancePreference(appearance);
     const overlayRef = useRef<HTMLDivElement | null>(null);
     const searchInputRef = useRef<HTMLInputElement | null>(null);
     const hoveredElementRef = useRef<HTMLElement | null>(null);
@@ -84,7 +85,7 @@ export function useReportState({
     const hoverLeaveTimeoutRef = useRef<number | null>(null);
     const overlayHoverLeaveTimeoutRef = useRef<number | null>(null);
 
-    const resolvedAppearance = useResolvedAppearance(appearance);
+    const resolvedAppearance = useResolvedAppearance(activeAppearance);
     const isMobileViewport = useIsMobileViewport();
     const { adapter: storageAdapterInstance, usesLocalStorage } = useMemo(
         () => resolveStorageAdapter({ projectId, environment, appVersion, onList, onCreate, onUpdate, onDelete }),
@@ -910,7 +911,8 @@ export function useReportState({
     });
 
     return {
-        appearance,
+        appearance: activeAppearance,
+        setAppearance,
         fields,
         authors,
         projectId,
