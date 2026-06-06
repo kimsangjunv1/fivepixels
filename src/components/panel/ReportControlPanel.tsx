@@ -175,7 +175,7 @@ export function ReportControlPanel() {
                 onDragLeave={handleDragLeave}
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}
-                className={`pointer-events-auto fixed z-[1000000] bg-[var(--adaptive-whiteOpacity800)] backdrop-blur-[50px] rounded-[24px] shadow-[0_0_120px_0_var(--adaptive-blackOpacity500)] flex ${isRecording ? "min-h-[40px] p-[4px]" : "max-h-[80vh] min-h-[40px w-full max-w-[375px]"}`}
+                className={`pointer-events-auto fixed z-[1000000] bg-[var(--adaptive-whiteOpacity800)] backdrop-blur-[50px] rounded-[24px] shadow-[0_0_120px_0_var(--adaptive-blackOpacity500)] flex ${isRecording ? "min-h-[40px] p-[4px]" : "max-h-[80vh] max-w-[calc(100svw-(16px*2))]"}`}
                 style={{ ...panelStyle, fontSize: "14px" }}
             >
                 <motion.div className="flex min-w-0 flex-1 flex-col w-full">

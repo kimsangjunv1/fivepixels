@@ -161,7 +161,7 @@ function ThreadEntryActions({
                                     : "bg-[var(--adaptive-black900)] border border-[var(--adaptive-black400)] text-[var(--adaptive-black300)]")
                             }
                         >
-                            leave a resuㄴlt
+                            leave a result
                         </button>
                     </>
                 ) : null}
