@@ -479,7 +479,7 @@ export function ReportControlPanel() {
                                             />
                                         ) : null}
 
-                                        <div className="flex flex-col gap-[8px] p-[12px] flex-1">
+                                        <div className="flex flex-col gap-[8px] p-[8px_0_8px_12px] flex-1">
                                             <section className="flex items-center justify-between gap-[8px]">
                                                 <section className="flex min-w-0 items-center gap-[6px]">
                                                     <LogoIcon className="w-[18px] shrink-0" />
@@ -491,7 +491,7 @@ export function ReportControlPanel() {
                                                     <button
                                                         type="button"
                                                         onClick={toggleReportMode}
-                                                        className="flex items-center gap-[4px] rounded-l-[12px] bg-[var(--adaptive-black900)] p-[2px_8px]"
+                                                        className="flex items-center gap-[4px] rounded-l-[8px] bg-[var(--adaptive-black900)] p-[0_8px]"
                                                     >
                                                         <SelectIcon className="w-[16px]" />
                                                         <p className="text-[12px] text-[var(--adaptive-grey50)]">add feedback</p>
@@ -508,7 +508,7 @@ export function ReportControlPanel() {
                                                                 aria-expanded={viewMenuOpen}
                                                                 aria-haspopup="menu"
                                                                 aria-label="View options"
-                                                                className="flex items-center rounded-r-[12px] border-l border-[var(--adaptive-black700)] bg-[var(--adaptive-black900)] p-[2px_8px] h-[28px]"
+                                                                className="flex items-center rounded-r-[8px] border-l border-[var(--adaptive-black700)] bg-[var(--adaptive-black900)] p-[2px_8px] h-[24px]"
                                                             >
                                                                 <ChevronDownIcon className={`h-4 w-4 text-[var(--adaptive-grey50)] transition-transform ${viewMenuOpen ? "rotate-180" : ""}`} />
                                                             </button>
