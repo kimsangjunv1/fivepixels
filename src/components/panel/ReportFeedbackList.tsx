@@ -277,7 +277,7 @@ export function ReportFeedbackList() {
                     </div>
                 ) : null}
 
-                <section className="flex flex-col gap-[8px]">
+                <section className="flex flex-col">
                     {groupedReports.map(({ dateKey, label, reports: groupReports }) => {
                         const isExpanded = expandedGroups.has(dateKey);
 

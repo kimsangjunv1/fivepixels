@@ -12,6 +12,10 @@ export function AppRouter() {
     return (
         <Routes>
             <Route
+                path="/"
+                element={<LandingPage />}
+            />
+            <Route
                 path="/examples/naver"
                 element={<NaverPage />}
             />
@@ -24,10 +28,6 @@ export function AppRouter() {
                 element={<DanggnPage />}
             />
             <Route element={<AppLayout />}>
-                <Route
-                    path="/"
-                    element={<LandingPage />}
-                />
                 <Route
                     path="/pricing"
                     element={<PricingPage />}
