@@ -5,6 +5,7 @@ import LandingPage from "./(public)/landing/page";
 import NaverPage from "./(examples)/naver/page";
 import KraftonPage from "./(examples)/krafton/page";
 import DanggnPage from "./(examples)/danggn/page";
+import NexonPage from "./(examples)/nexon/page";
 import PricingPage from "./(public)/pricing/page";
 import { AppLayout } from "./layout/AppLayout";
 
@@ -22,6 +23,10 @@ export function AppRouter() {
             <Route
                 path="/examples/krafton"
                 element={<KraftonPage />}
+            />
+            <Route
+                path="/examples/nexon"
+                element={<NexonPage />}
             />
             <Route
                 path="/examples/danggn"
