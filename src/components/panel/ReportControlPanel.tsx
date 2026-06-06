@@ -502,7 +502,7 @@ export function ReportControlPanel() {
                                                         }
                                                         aria-pressed={isIssueMode}
                                                     >
-                                                        <p className="text-[12px] text-[var(--adaptive-black500)]">f</p>
+                                                        <p className="text-[12px] text-[var(--adaptive-black500)]">VIEW FEEDBACKS</p>
                                                     </button>
 
                                                     <button
@@ -518,7 +518,7 @@ export function ReportControlPanel() {
                                                         }
                                                         aria-pressed={showTargetPreview}
                                                     >
-                                                        <p className="text-[12px] text-[var(--adaptive-black500)]">X-RAY</p>
+                                                        <p className="text-[12px] text-[var(--adaptive-black500)]">VIEW SELECTABLE ELEMENTS</p>
                                                     </button>
                                                 </section>
                                             </section>
