@@ -1,6 +1,7 @@
 import { getReportsStorageKey } from "../constants/storageKeys.js";
 import { readAllReportsFromStorage, writeAllReportsToStorage } from "../storage/local/localStorageAdapter.js";
-import { validateFeedbackImportArray } from "./validateFeedbackImport.js";
+import { parseFeedbackImportJson, serializeFeedbackExport, toReportProject, } from "./feedbackTransferSchema.js";
+export { buildProjectComparisonLines, isImportProjectCompatible, parseFeedbackImportJson, serializeFeedbackExport, toReportProject, } from "./feedbackTransferSchema.js";
 const JSON_FILE_TYPES = [
     {
         description: "JSON",
@@ -14,17 +15,7 @@ export function readAllFeedback({ projectId, environment, appVersion }) {
     return readAllReportsFromStorage(getFeedbackStorageKey({ projectId, environment, appVersion }));
 }
 export function writeAllFeedback(scope, items) {
-    writeAllReportsToStorage(getFeedbackStorageKey(scope), items);
-}
-export function parseFeedbackImportJson(raw) {
-    let parsed;
-    try {
-        parsed = JSON.parse(raw);
-    }
-    catch {
-        throw new Error("JSON 형식이 올바르지 않아요.");
-    }
-    return validateFeedbackImportArray(parsed);
+    writeAllReportsToStorage(getFeedbackStorageKey(scope), items, toReportProject(scope));
 }
 export function createFeedbackBackupFilename(projectId, environment, appVersion) {
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
@@ -97,11 +88,11 @@ export function pickFeedbackJsonFile() {
     }
     return pickFeedbackJsonFileWithBodyInput();
 }
-export function downloadFeedbackJson(filename, items) {
+export function downloadFeedbackJson(filename, project, items) {
     if (typeof window === "undefined") {
         return Promise.resolve("failed");
     }
-    const json = JSON.stringify(items, null, 2);
+    const json = serializeFeedbackExport(project, items);
     const pickerWindow = window;
     if (typeof pickerWindow.showSaveFilePicker === "function") {
         return pickerWindow

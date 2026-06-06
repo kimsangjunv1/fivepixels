@@ -1,9 +1,59 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { getReportsStorageKey } from "../constants/storageKeys.js";
 import { createReportPayload } from "./reportFixtures.js";
-import { parseFeedbackImportJson, readAllFeedback, writeAllFeedback } from "./feedbackDataTransfer.js";
+import {
+    isImportProjectCompatible,
+    parseFeedbackImportJson,
+    parseFeedbackStorageEnvelope,
+    serializeFeedbackExport,
+    serializeFeedbackStorageEnvelope,
+} from "./feedbackTransferSchema.js";
+import { parseFeedbackImportJson as parseFromTransfer, readAllFeedback, writeAllFeedback } from "./feedbackDataTransfer.js";
 
-const scope = { projectId: "transfer-test", environment: "stage" };
+const scope = { projectId: "transfer-test", environment: "stage", appVersion: "1.0.0" };
+
+describe("feedbackTransferSchema", () => {
+    it("serializes export payload with project metadata", () => {
+        const payload = createReportPayload({ pathname: "/demo", message: "hello" });
+        const json = serializeFeedbackExport({ id: scope.projectId, env: scope.environment, version: scope.appVersion }, [
+            { ...payload, id: "1", created_at: "2026-01-01T00:00:00.000Z", replies: [] },
+        ]);
+
+        const parsed = parseFeedbackImportJson(json);
+
+        expect(parsed.project).toEqual({ id: scope.projectId, env: scope.environment, version: scope.appVersion });
+        expect(parsed.exportedAt).toBeTruthy();
+        expect(parsed.items).toHaveLength(1);
+    });
+
+    it("parses legacy feedback arrays", () => {
+        const json = JSON.stringify([{ ...createReportPayload(), id: "1", created_at: "2026-01-01T00:00:00.000Z", replies: [] }]);
+        const parsed = parseFeedbackImportJson(json);
+
+        expect(parsed.project).toBeUndefined();
+        expect(parsed.items).toHaveLength(1);
+    });
+
+    it("compares project id and version for import compatibility", () => {
+        expect(isImportProjectCompatible(scope, { id: scope.projectId, version: scope.appVersion })).toBe(true);
+        expect(isImportProjectCompatible(scope, { id: "other", version: scope.appVersion })).toBe(false);
+        expect(isImportProjectCompatible(scope, { id: scope.projectId, version: "9.9.9" })).toBe(false);
+        expect(isImportProjectCompatible(scope, undefined)).toBe(false);
+    });
+
+    it("serializes and parses localStorage envelopes", () => {
+        const payload = createReportPayload({ pathname: "/demo", message: "stored" });
+        const raw = serializeFeedbackStorageEnvelope({ id: scope.projectId, env: scope.environment, version: scope.appVersion }, [
+            { ...payload, id: "1", created_at: "2026-01-01T00:00:00.000Z", replies: [] },
+        ]);
+
+        const envelope = parseFeedbackStorageEnvelope(raw);
+
+        expect(envelope?.project).toEqual({ id: scope.projectId, env: scope.environment, version: scope.appVersion });
+        expect(envelope?.updatedAt).toBeTruthy();
+        expect(envelope?.items).toHaveLength(1);
+    });
+});
 
 describe("feedbackDataTransfer", () => {
     beforeEach(() => {
@@ -14,26 +64,30 @@ describe("feedbackDataTransfer", () => {
         window.localStorage.clear();
     });
 
-    it("reads and writes all feedback for a storage scope", () => {
+    it("reads and writes all feedback for a storage scope with project metadata", () => {
         const payload = createReportPayload({ pathname: "/demo", message: "hello" });
         writeAllFeedback(scope, [{ ...payload, id: "1", created_at: "2026-01-01T00:00:00.000Z", replies: [] }]);
 
         const items = readAllFeedback(scope);
         expect(items).toHaveLength(1);
         expect(items[0]?.message).toBe("hello");
-        expect(window.localStorage.getItem(getReportsStorageKey(scope.projectId, scope.environment))).toBeTruthy();
+
+        const raw = window.localStorage.getItem(getReportsStorageKey(scope.projectId, scope.environment, scope.appVersion));
+        const envelope = parseFeedbackStorageEnvelope(raw ?? "");
+
+        expect(envelope?.project).toEqual({ id: scope.projectId, env: scope.environment, version: scope.appVersion });
     });
 
-    it("parses feedback import json arrays", () => {
+    it("parses feedback import json payloads", () => {
         const json = JSON.stringify([{ ...createReportPayload(), id: "1", created_at: "2026-01-01T00:00:00.000Z", replies: [] }]);
-        const parsed = parseFeedbackImportJson(json);
+        const parsed = parseFromTransfer(json);
 
-        expect(parsed).toHaveLength(1);
-        expect(parsed[0]?.id).toBe("1");
+        expect(parsed.items).toHaveLength(1);
+        expect(parsed.items[0]?.id).toBe("1");
     });
 
     it("rejects invalid import json", () => {
-        expect(() => parseFeedbackImportJson("{}")).toThrow("피드백 배열");
-        expect(() => parseFeedbackImportJson(JSON.stringify([{ id: "only-id" }]))).toThrow("pathname");
+        expect(() => parseFromTransfer("{}")).toThrow("피드백 배열");
+        expect(() => parseFromTransfer(JSON.stringify([{ id: "only-id" }]))).toThrow("pathname");
     });
 });

@@ -2,6 +2,7 @@ import type {
     CreateReportFeedbackPayload,
     ReportFeedback,
     ReportFieldValues,
+    ReportProject,
     ReportReply,
     ReportReplyStatus,
     ReportStorageAdapter,
@@ -10,6 +11,7 @@ import type {
 } from "../../types/report.js";
 import { DEFAULT_PROJECT_ID } from "../../constants/project.js";
 import { getReportsStorageKey } from "../../constants/storageKeys.js";
+import { parseFeedbackStorageEnvelope, serializeFeedbackStorageEnvelope } from "../../utils/feedbackTransferSchema.js";
 
 export type LocalStorageReportAdapterOptions = {
     projectId: string;
@@ -105,31 +107,47 @@ export function readAllReportsFromStorage(storageKey: string) {
     }
 
     try {
-        const parsed = JSON.parse(raw) as ReportFeedback[];
-        return Array.isArray(parsed) ? parsed.map(normalizeReport) : [];
+        const parsed = JSON.parse(raw) as unknown;
+
+        if (Array.isArray(parsed)) {
+            return parsed.map(normalizeReport);
+        }
+
+        const envelope = parseFeedbackStorageEnvelope(raw);
+
+        if (envelope) {
+            return envelope.items.map(normalizeReport);
+        }
+
+        return [];
     } catch {
         return [];
     }
 }
 
-export function writeAllReportsToStorage(storageKey: string, items: ReportFeedback[]) {
+export function writeAllReportsToStorage(storageKey: string, items: ReportFeedback[], project?: ReportProject) {
     if (typeof window === "undefined") {
         return;
     }
 
-    window.localStorage.setItem(storageKey, JSON.stringify(items.map(normalizeReport)));
+    window.localStorage.setItem(storageKey, serializeFeedbackStorageEnvelope(project ?? {}, items.map(normalizeReport)));
 }
 
 function readAll(storageKey: string) {
     return readAllReportsFromStorage(storageKey);
 }
 
-function writeAll(storageKey: string, items: ReportFeedback[]) {
-    writeAllReportsToStorage(storageKey, items);
+function writeAll(storageKey: string, items: ReportFeedback[], project: ReportProject) {
+    writeAllReportsToStorage(storageKey, items, project);
 }
 
 export function createLocalStorageReportAdapter({ projectId, environment, appVersion }: LocalStorageReportAdapterOptions): ReportStorageAdapter {
     const storageKey = getReportsStorageKey(projectId, environment, appVersion);
+    const project: ReportProject = {
+        id: projectId,
+        env: environment,
+        version: appVersion,
+    };
 
     return {
         async list({ pathname }) {
@@ -147,7 +165,7 @@ export function createLocalStorageReportAdapter({ projectId, environment, appVer
             const items = readAll(storageKey);
 
             const normalized = normalizeReport(nextItem);
-            writeAll(storageKey, [normalized, ...items]);
+            writeAll(storageKey, [normalized, ...items], project);
             return normalized;
         },
         async update(id, payload) {
@@ -164,7 +182,7 @@ export function createLocalStorageReportAdapter({ projectId, environment, appVer
             });
 
             items[index] = nextItem;
-            writeAll(storageKey, items);
+            writeAll(storageKey, items, project);
 
             return nextItem;
         },
@@ -172,6 +190,7 @@ export function createLocalStorageReportAdapter({ projectId, environment, appVer
             writeAll(
                 storageKey,
                 readAll(storageKey).filter((item) => item.id !== id),
+                project,
             );
         },
     };

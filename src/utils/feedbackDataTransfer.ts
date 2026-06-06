@@ -1,13 +1,27 @@
 import { getReportsStorageKey } from "../constants/storageKeys.js";
 import { readAllReportsFromStorage, writeAllReportsToStorage } from "../storage/local/localStorageAdapter.js";
-import type { ReportFeedback } from "../types/report.js";
-import { validateFeedbackImportArray } from "./validateFeedbackImport.js";
+import type { ReportFeedback, ReportProject } from "../types/report.js";
+import {
+    parseFeedbackImportJson,
+    serializeFeedbackExport,
+    toReportProject,
+    type FeedbackImportPayload,
+} from "./feedbackTransferSchema.js";
 
 export type FeedbackTransferScope = {
     projectId: string;
     environment?: string;
     appVersion?: string;
 };
+
+export type { FeedbackImportPayload } from "./feedbackTransferSchema.js";
+export {
+    buildProjectComparisonLines,
+    isImportProjectCompatible,
+    parseFeedbackImportJson,
+    serializeFeedbackExport,
+    toReportProject,
+} from "./feedbackTransferSchema.js";
 
 export type FeedbackDownloadResult = "saved" | "downloaded" | "cancelled" | "failed";
 
@@ -44,19 +58,7 @@ export function readAllFeedback({ projectId, environment, appVersion }: Feedback
 }
 
 export function writeAllFeedback(scope: FeedbackTransferScope, items: ReportFeedback[]) {
-    writeAllReportsToStorage(getFeedbackStorageKey(scope), items);
-}
-
-export function parseFeedbackImportJson(raw: string): ReportFeedback[] {
-    let parsed: unknown;
-
-    try {
-        parsed = JSON.parse(raw);
-    } catch {
-        throw new Error("JSON 형식이 올바르지 않아요.");
-    }
-
-    return validateFeedbackImportArray(parsed);
+    writeAllReportsToStorage(getFeedbackStorageKey(scope), items, toReportProject(scope));
 }
 
 export function createFeedbackBackupFilename(projectId: string, environment?: string, appVersion?: string) {
@@ -153,12 +155,12 @@ export function pickFeedbackJsonFile(): Promise<File | null> {
     return pickFeedbackJsonFileWithBodyInput();
 }
 
-export function downloadFeedbackJson(filename: string, items: ReportFeedback[]): Promise<FeedbackDownloadResult> {
+export function downloadFeedbackJson(filename: string, project: ReportProject, items: ReportFeedback[]): Promise<FeedbackDownloadResult> {
     if (typeof window === "undefined") {
         return Promise.resolve("failed");
     }
 
-    const json = JSON.stringify(items, null, 2);
+    const json = serializeFeedbackExport(project, items);
     const pickerWindow = window as FilePickerWindow;
 
     if (typeof pickerWindow.showSaveFilePicker === "function") {
@@ -196,7 +198,7 @@ export function downloadFeedbackJson(filename: string, items: ReportFeedback[]):
     }
 }
 
-export async function readFeedbackJsonFile(file: File) {
+export async function readFeedbackJsonFile(file: File): Promise<FeedbackImportPayload> {
     const raw = await file.text();
     return parseFeedbackImportJson(raw);
 }

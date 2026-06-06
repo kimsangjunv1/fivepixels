@@ -7,14 +7,26 @@ import { PanelDockGuides } from "./PanelDockGuides.js";
 import { ReportFeedbackList } from "./ReportFeedbackList.js";
 import { ReportRouteDetails } from "./ReportRouteDetails.js";
 import { ReportImportConfirmDialog } from "./ReportImportConfirmDialog.js";
+import { ReportImportProjectMismatchDialog } from "./ReportImportProjectMismatchDialog.js";
 import { PanelMoreMenu } from "./PanelMoreMenu.js";
 import { LogoIcon } from "./../icons/LogoIcon.js";
 import { AnimatedPresence, motion } from "../motion/index.js";
 import { formatStatCount } from "../../utils/formatStatCount.js";
 import { panelNumericClassName } from "../../utils/panelTypography.js";
 import type { ReportPanelTab } from "../../types/report-ui.js";
-import type { ReportFeedback } from "../../types/report.js";
-import { createFeedbackBackupFilename, downloadFeedbackJson, pickFeedbackJsonFile, readAllFeedback, readFeedbackJsonFile, writeAllFeedback } from "../../utils/feedbackDataTransfer.js";
+import {
+    createFeedbackBackupFilename,
+    downloadFeedbackJson,
+    isImportProjectCompatible,
+    pickFeedbackJsonFile,
+    readAllFeedback,
+    readFeedbackJsonFile,
+    toReportProject,
+    writeAllFeedback,
+    type FeedbackImportPayload,
+} from "../../utils/feedbackDataTransfer.js";
+
+type ImportStep = "none" | "project-mismatch" | "confirm";
 
 const RECORDING_STATUS_SHADOW = "drop-shadow(0 1px 2px rgba(0,0,0,0.95)) drop-shadow(0 2px 6px rgba(0,0,0,0.9)) drop-shadow(0 4px 16px rgba(0,0,0,0.85)) drop-shadow(0 0 24px rgba(0,0,0,0.75))";
 
@@ -101,13 +113,14 @@ export function ReportControlPanel() {
     const [panelCollapsed, setPanelCollapsed] = useState(false);
     const [moreMenuOpen, setMoreMenuOpen] = useState(false);
     const [isDragOver, setIsDragOver] = useState(false);
-    const [pendingImport, setPendingImport] = useState<ReportFeedback[] | null>(null);
+    const [pendingImport, setPendingImport] = useState<FeedbackImportPayload | null>(null);
+    const [importStep, setImportStep] = useState<ImportStep>("none");
     const dragDepthRef = useRef(0);
     const isRecording = mode === "report";
     const isIssueMode = mode === "view";
     const { panelRef, panelStyle, placementCorner, isDragging, activeCorner, handleDragHandlePointerDown } = usePanelDock({
         enabled: !isMobileViewport,
-        measureKey: `${panelCollapsed}-${isRecording}-${panelTab ?? "none"}-${isIssueMode}-${pendingImport ? "import" : "none"}`,
+        measureKey: `${panelCollapsed}-${isRecording}-${panelTab ?? "none"}-${isIssueMode}-${importStep !== "none" ? "import" : "none"}`,
     });
     const anchorSide = panelAnchorSide(placementCorner);
     const panelLayout = placementCorner.startsWith("top") ? "size" : "position";
@@ -118,12 +131,13 @@ export function ReportControlPanel() {
     };
 
     const queueImport = useCallback(
-        (items: ReportFeedback[]) => {
+        (payload: FeedbackImportPayload) => {
             setMoreMenuOpen(false);
-            setPendingImport(items);
+            setPendingImport(payload);
+            setImportStep(isImportProjectCompatible(transferScope, payload.project) ? "confirm" : "project-mismatch");
             setErrorMessage("");
         },
-        [setErrorMessage],
+        [setErrorMessage, transferScope],
     );
 
     const handleImportFile = useCallback(
@@ -134,8 +148,8 @@ export function ReportControlPanel() {
             }
 
             try {
-                const items = await readFeedbackJsonFile(file);
-                queueImport(items);
+                const payload = await readFeedbackJsonFile(file);
+                queueImport(payload);
             } catch (nextError) {
                 setErrorMessage(nextError instanceof Error ? nextError.message : "JSON import에 실패했어요.");
             }
@@ -152,7 +166,7 @@ export function ReportControlPanel() {
         setMoreMenuOpen(false);
         const items = readAllFeedback(transferScope);
 
-        void downloadFeedbackJson(createFeedbackBackupFilename(projectId, environment, appVersion), items).then((result) => {
+        void downloadFeedbackJson(createFeedbackBackupFilename(projectId, environment, appVersion), toReportProject(transferScope), items).then((result) => {
             if (result === "failed") {
                 setErrorMessage("JSON export에 실패했어요. 브라우저 다운로드 권한을 확인해주세요.");
                 return;
@@ -188,9 +202,10 @@ export function ReportControlPanel() {
     }, [canTransferFeedback, handleImportFile, setErrorMessage]);
 
     const applyImport = useCallback(
-        async (items: ReportFeedback[]) => {
-            writeAllFeedback(transferScope, items);
+        async (payload: FeedbackImportPayload) => {
+            writeAllFeedback(transferScope, payload.items);
             setPendingImport(null);
+            setImportStep("none");
             await refetch();
         },
         [refetch, transferScope],
@@ -198,6 +213,11 @@ export function ReportControlPanel() {
 
     const handleCancelImport = () => {
         setPendingImport(null);
+        setImportStep("none");
+    };
+
+    const handleProceedImportAfterMismatch = () => {
+        setImportStep("confirm");
     };
 
     const handleApplyImport = () => {
@@ -216,7 +236,7 @@ export function ReportControlPanel() {
         const currentItems = readAllFeedback(transferScope);
         const pending = pendingImport;
 
-        void downloadFeedbackJson(createFeedbackBackupFilename(projectId, environment, appVersion), currentItems).then((result) => {
+        void downloadFeedbackJson(createFeedbackBackupFilename(projectId, environment, appVersion), toReportProject(transferScope), currentItems).then((result) => {
             if (result === "cancelled" || result === "failed") {
                 if (result === "failed") {
                     setErrorMessage("백업 export에 실패해서 import를 중단했어요.");
@@ -230,7 +250,7 @@ export function ReportControlPanel() {
     };
 
     const handleDragEnter = (event: DragEvent<HTMLDivElement>) => {
-        if (isRecording || !canTransferFeedback || pendingImport) {
+        if (isRecording || !canTransferFeedback || importStep !== "none") {
             return;
         }
 
@@ -257,7 +277,7 @@ export function ReportControlPanel() {
     };
 
     const handleDragOver = (event: DragEvent<HTMLDivElement>) => {
-        if (isRecording || !canTransferFeedback || pendingImport) {
+        if (isRecording || !canTransferFeedback || importStep !== "none") {
             return;
         }
 
@@ -270,7 +290,7 @@ export function ReportControlPanel() {
     };
 
     const handleDrop = (event: DragEvent<HTMLDivElement>) => {
-        if (isRecording || !canTransferFeedback) {
+        if (isRecording || !canTransferFeedback || importStep !== "none") {
             return;
         }
 
@@ -463,9 +483,19 @@ export function ReportControlPanel() {
                                         />
                                     </section>
 
-                                    {errorMessage && !pendingImport ? <p className="px-[8px] text-[12px] text-rose-700">{errorMessage}</p> : null}
+                                    {errorMessage && importStep === "none" ? <p className="px-[8px] text-[12px] text-rose-700">{errorMessage}</p> : null}
 
-                                    {pendingImport ? (
+                                    {importStep === "project-mismatch" && pendingImport ? (
+                                        <ReportImportProjectMismatchDialog
+                                            currentProject={transferScope}
+                                            importedProject={pendingImport.project}
+                                            exportedAt={pendingImport.exportedAt}
+                                            onProceed={handleProceedImportAfterMismatch}
+                                            onCancel={handleCancelImport}
+                                        />
+                                    ) : null}
+
+                                    {importStep === "confirm" && pendingImport ? (
                                         <ReportImportConfirmDialog
                                             onApply={handleApplyImport}
                                             onCancel={handleCancelImport}
@@ -473,9 +503,9 @@ export function ReportControlPanel() {
                                         />
                                     ) : null}
 
-                                    {panelTab === "route-details" && !pendingImport ? <ReportRouteDetails /> : null}
+                                    {panelTab === "route-details" && importStep === "none" ? <ReportRouteDetails /> : null}
 
-                                    {panelTab === "feedback-list" && showFeedbackList && !pendingImport ? <ReportFeedbackList /> : null}
+                                    {panelTab === "feedback-list" && showFeedbackList && importStep === "none" ? <ReportFeedbackList /> : null}
                                 </section>
                             ) : null}
                         </>
