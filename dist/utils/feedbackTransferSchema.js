@@ -1,3 +1,4 @@
+import { getActiveReportMessages } from "../i18n/index.js";
 import { validateFeedbackImportArray, validateFeedbackRecord } from "./validateFeedbackImport.js";
 export const FEEDBACK_TRANSFER_SCHEMA_VERSION = 1;
 function isRecord(value) {
@@ -31,7 +32,7 @@ export function toReportProject({ projectId, environment, appVersion }) {
     };
 }
 export function formatProjectScopeValue(value) {
-    return value?.trim() || "(없음)";
+    return value?.trim() || getActiveReportMessages().common.none;
 }
 export function buildProjectComparisonLines(current, imported) {
     const currentProject = toReportProject(current);
@@ -119,7 +120,7 @@ export function parseFeedbackCommandJson(raw) {
         parsed = JSON.parse(raw);
     }
     catch {
-        throw new Error("JSON 형식이 올바르지 않아요.");
+        throw new Error(getActiveReportMessages().errors.invalidJson);
     }
     if (Array.isArray(parsed) || (isRecord(parsed) && Array.isArray(parsed.items))) {
         return parseFeedbackImportJson(raw);
@@ -129,7 +130,7 @@ export function parseFeedbackCommandJson(raw) {
             items: [validateFeedbackRecord(parsed, 0)],
         };
     }
-    throw new Error("피드백 객체, 배열, 또는 export envelope 형식이어야 해요.");
+    throw new Error(getActiveReportMessages().errors.invalidFeedbackFormat);
 }
 export function parseFeedbackImportJson(raw) {
     let parsed;
@@ -137,7 +138,7 @@ export function parseFeedbackImportJson(raw) {
         parsed = JSON.parse(raw);
     }
     catch {
-        throw new Error("JSON 형식이 올바르지 않아요.");
+        throw new Error(getActiveReportMessages().errors.invalidJson);
     }
     if (Array.isArray(parsed)) {
         return {
@@ -145,11 +146,11 @@ export function parseFeedbackImportJson(raw) {
         };
     }
     if (!isRecord(parsed) || !Array.isArray(parsed.items)) {
-        throw new Error("피드백 배열(JSON array) 또는 export envelope 형식이어야 해요.");
+        throw new Error(getActiveReportMessages().errors.feedbackArrayRequired);
     }
     const exportedAt = normalizeOptionalString(parsed.exportedAt);
     if (exportedAt && !isIsoDateString(exportedAt)) {
-        throw new Error("exportedAt 날짜 형식이 올바르지 않아요.");
+        throw new Error(getActiveReportMessages().errors.invalidExportedAt);
     }
     return {
         items: validateFeedbackImportArray(parsed.items),

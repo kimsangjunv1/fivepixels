@@ -1,3 +1,4 @@
+import { getActiveReportMessages } from "../../i18n/index.js";
 import type {
     CreateReportFeedbackPayload,
     ReportFeedback,
@@ -173,7 +174,7 @@ export function createLocalStorageReportAdapter({ projectId, environment, appVer
             const index = items.findIndex((item) => item.id === id);
 
             if (index < 0) {
-                throw new Error("피드백을 찾을 수 없어요.");
+                throw new Error(getActiveReportMessages().errors.feedbackNotFound);
             }
 
             const nextItem = normalizeReport({

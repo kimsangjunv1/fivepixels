@@ -1,3 +1,4 @@
+import { getActiveReportMessages } from "../i18n/index.js";
 export async function listReports(adapter, pathname) {
     return adapter.list({ pathname });
 }
@@ -9,7 +10,7 @@ export async function updateReport(adapter, id, payload) {
 }
 export async function deleteReport(adapter, id) {
     if (!adapter.remove) {
-        throw new Error("onDelete가 없어서 삭제할 수 없어요.");
+        throw new Error(getActiveReportMessages().errors.deleteHandlerMissing);
     }
     await adapter.remove(id);
 }

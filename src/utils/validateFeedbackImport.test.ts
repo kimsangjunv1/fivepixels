@@ -1,4 +1,5 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, beforeEach } from "vitest";
+import { ko, setActiveReportMessages } from "../i18n/index.js";
 import { createReportPayload } from "./reportFixtures.js";
 import { validateFeedbackImportArray } from "./validateFeedbackImport.js";
 
@@ -13,6 +14,10 @@ function createValidRecord(overrides: Record<string, unknown> = {}) {
 }
 
 describe("validateFeedbackImportArray", () => {
+    beforeEach(() => {
+        setActiveReportMessages(ko);
+    });
+
     it("accepts valid stitchable feedback arrays", () => {
         const result = validateFeedbackImportArray([createValidRecord()]);
 

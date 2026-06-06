@@ -1,4 +1,5 @@
 import type { ReportField, ReportFieldValues } from "../../types/report.js";
+import { useReport } from "../../providers/reportContext.js";
 
 type FieldEditorProps = {
     fields: ReportField[];
@@ -17,12 +18,14 @@ function renderNonCheckboxField(
         fieldValues,
         onMessageChange,
         onFieldChange,
+        messagePlaceholder,
     }: {
         isDraftBubble: boolean;
         message: string;
         fieldValues: ReportFieldValues;
         onMessageChange: (nextValue: string) => void;
         onFieldChange: (key: string, nextValue: string | boolean) => void;
+        messagePlaceholder: string;
     },
 ) {
     if (field.key === "message") {
@@ -36,7 +39,7 @@ function renderNonCheckboxField(
                     value={message}
                     onChange={(event) => onMessageChange(event.target.value)}
                     className="bg-[var(--adaptive-black50)] p-[14px] focus:border-none focus:stroke-none focus:outline-none"
-                    placeholder="피드백을 남겨주세요"
+                    placeholder={messagePlaceholder}
                 />
             </label>
         );
@@ -58,6 +61,7 @@ function renderNonCheckboxField(
 }
 
 export function FieldEditor({ fields, message, fieldValues, onMessageChange, onFieldChange, variant = "default" }: FieldEditorProps) {
+    const { messages } = useReport();
     const isDraftBubble = variant === "draft-bubble";
     const fieldsToRender = isDraftBubble ? fields.filter((field) => field.type !== "checkbox") : fields;
 
@@ -87,6 +91,7 @@ export function FieldEditor({ fields, message, fieldValues, onMessageChange, onF
                     fieldValues,
                     onMessageChange,
                     onFieldChange,
+                    messagePlaceholder: messages.fieldEditor.messagePlaceholder,
                 });
             })}
         </div>

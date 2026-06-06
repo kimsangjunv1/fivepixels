@@ -1,4 +1,5 @@
 import { type DragEvent } from "react";
+import type { ReportMessages } from "../i18n/types.js";
 import { type FeedbackImportPayload, type FeedbackInsertConflict } from "../utils/feedbackDataTransfer.js";
 export type FeedbackTransferScope = {
     projectId: string;
@@ -10,13 +11,14 @@ export type CommandStep = "none" | "replace-confirm";
 type UsePanelFeedbackTransferOptions = {
     transferScope: FeedbackTransferScope;
     canTransferFeedback: boolean;
+    messages: ReportMessages;
     setErrorMessage: (message: string) => void;
     refetch: () => Promise<unknown>;
     openPanelTab: (tab: "command") => void;
     onMoreMenuClose?: () => void;
     isRecording: boolean;
 };
-export declare function usePanelFeedbackTransfer({ transferScope, canTransferFeedback, setErrorMessage, refetch, openPanelTab, onMoreMenuClose, isRecording, }: UsePanelFeedbackTransferOptions): {
+export declare function usePanelFeedbackTransfer({ transferScope, canTransferFeedback, messages, setErrorMessage, refetch, openPanelTab, onMoreMenuClose, isRecording, }: UsePanelFeedbackTransferOptions): {
     isDragOver: boolean;
     pendingImport: FeedbackImportPayload | null;
     importStep: ImportStep;

@@ -13,6 +13,7 @@ export function App() {
                     version: "1.0.0",
                 }}
                 ui={{
+                    locale: "ko",
                     appearance: "system",
                     visibleShortcutKeys: true,
                 }}
@@ -36,7 +37,7 @@ export function App() {
                 fields={[
                     { key: "message", type: "textarea", label: "", required: true },
                     { key: "isBug", type: "checkbox", label: "bug" },
-                    { key: "isImportant", type: "checkbox", label: "IMPORTANT" },
+                    { key: "isImportant", type: "checkbox", label: "important" },
                 ]}
             />
             <BrowserRouter>

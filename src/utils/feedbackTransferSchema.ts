@@ -1,5 +1,6 @@
-import type { ReportFeedback, ReportProject } from "../types/report.js";
+import { getActiveReportMessages } from "../i18n/index.js";
 import { validateFeedbackImportArray, validateFeedbackRecord } from "./validateFeedbackImport.js";
+import type { ReportFeedback, ReportProject } from "../types/report.js";
 import type { ResolvedReportProject } from "./reportProject.js";
 
 export const FEEDBACK_TRANSFER_SCHEMA_VERSION = 1;
@@ -62,7 +63,7 @@ export function toReportProject({ projectId, environment, appVersion }: Resolved
 }
 
 export function formatProjectScopeValue(value?: string) {
-    return value?.trim() || "(없음)";
+    return value?.trim() || getActiveReportMessages().common.none;
 }
 
 export type ProjectComparisonLine = {
@@ -74,22 +75,23 @@ export type ProjectComparisonLine = {
 
 export function buildProjectComparisonLines(current: ResolvedReportProject, imported?: ReportProject): ProjectComparisonLine[] {
     const currentProject = toReportProject(current);
+    const labels = getActiveReportMessages().projectComparison;
 
     return [
         {
-            label: "project.id",
+            label: labels.projectId,
             current: formatProjectScopeValue(currentProject.id),
             imported: formatProjectScopeValue(imported?.id),
             differs: (currentProject.id ?? "") !== (imported?.id ?? ""),
         },
         {
-            label: "project.version",
+            label: labels.projectVersion,
             current: formatProjectScopeValue(currentProject.version),
             imported: formatProjectScopeValue(imported?.version),
             differs: (currentProject.version ?? "") !== (imported?.version ?? ""),
         },
         {
-            label: "project.env",
+            label: labels.projectEnv,
             current: formatProjectScopeValue(currentProject.env),
             imported: formatProjectScopeValue(imported?.env),
             differs: (currentProject.env ?? "") !== (imported?.env ?? ""),
@@ -175,7 +177,7 @@ export function parseFeedbackCommandJson(raw: string): FeedbackImportPayload {
     try {
         parsed = JSON.parse(raw);
     } catch {
-        throw new Error("JSON 형식이 올바르지 않아요.");
+        throw new Error(getActiveReportMessages().errors.invalidJson);
     }
 
     if (Array.isArray(parsed) || (isRecord(parsed) && Array.isArray(parsed.items))) {
@@ -188,7 +190,7 @@ export function parseFeedbackCommandJson(raw: string): FeedbackImportPayload {
         };
     }
 
-    throw new Error("피드백 객체, 배열, 또는 export envelope 형식이어야 해요.");
+    throw new Error(getActiveReportMessages().errors.invalidFeedbackFormat);
 }
 
 export function parseFeedbackImportJson(raw: string): FeedbackImportPayload {
@@ -197,7 +199,7 @@ export function parseFeedbackImportJson(raw: string): FeedbackImportPayload {
     try {
         parsed = JSON.parse(raw);
     } catch {
-        throw new Error("JSON 형식이 올바르지 않아요.");
+        throw new Error(getActiveReportMessages().errors.invalidJson);
     }
 
     if (Array.isArray(parsed)) {
@@ -207,13 +209,13 @@ export function parseFeedbackImportJson(raw: string): FeedbackImportPayload {
     }
 
     if (!isRecord(parsed) || !Array.isArray(parsed.items)) {
-        throw new Error("피드백 배열(JSON array) 또는 export envelope 형식이어야 해요.");
+        throw new Error(getActiveReportMessages().errors.feedbackArrayRequired);
     }
 
     const exportedAt = normalizeOptionalString(parsed.exportedAt);
 
     if (exportedAt && !isIsoDateString(exportedAt)) {
-        throw new Error("exportedAt 날짜 형식이 올바르지 않아요.");
+        throw new Error(getActiveReportMessages().errors.invalidExportedAt);
     }
 
     return {

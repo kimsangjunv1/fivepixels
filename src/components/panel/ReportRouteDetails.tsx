@@ -1,8 +1,6 @@
-import { Fragment } from "react/jsx-runtime";
 import { useReport } from "../../providers/reportContext.js";
 import { formatStatCount } from "../../utils/formatStatCount.js";
 import { panelNumericClassName } from "../../utils/panelTypography.js";
-import { ROUTE_DETAIL_STATUS_LABEL } from "../../utils/routeDetailStatus.js";
 import { ChevronDownIcon } from "../icons/ChevronDownIcon.js";
 
 function StatusRowIcon({ status }: { status: "wait" | "suggested" | "resolved" }) {
@@ -18,7 +16,7 @@ function StatusRowIcon({ status }: { status: "wait" | "suggested" | "resolved" }
 }
 
 export function ReportRouteDetails() {
-    const { routeDetailsStats, projectId, environment, appVersion } = useReport();
+    const { routeDetailsStats, projectId, environment, appVersion, messages } = useReport();
     const { pathname, statusRows, fieldCounts } = routeDetailsStats;
 
     return (
@@ -30,8 +28,8 @@ export function ReportRouteDetails() {
                     </div>
 
                     <div className="flex-1 flex">
-                        <p className="flex-1 text-[var(--adaptive-black500)] font-[500]">All</p>
-                        <p className="flex-1 text-[var(--adaptive-black500)] font-[500]">Today</p>
+                        <p className="flex-1 text-[var(--adaptive-black500)] font-[500]">{messages.routeDetails.all}</p>
+                        <p className="flex-1 text-[var(--adaptive-black500)] font-[500]">{messages.routeDetails.today}</p>
                     </div>
                 </section>
 
@@ -41,11 +39,14 @@ export function ReportRouteDetails() {
                     const IS_NOT_LAST = mappedIdx + 1 !== statusRows.length;
 
                     return (
-                        <Fragment key={row.status}>
+                        <section
+                            key={row.status}
+                            className="flex flex-col"
+                        >
                             <section className="flex items-center gap-x-[8px] py-[8px]">
                                 <div className="flex-1 flex items-center gap-[6px]">
                                     <StatusRowIcon status={row.status} />
-                                    <p className="text-[var(--adaptive-black500)] font-[500]">{ROUTE_DETAIL_STATUS_LABEL[row.status]}</p>
+                                    <p className="text-[var(--adaptive-black500)] font-[500]">{messages.status.routeDetail[row.status]}</p>
                                 </div>
 
                                 <div className="flex-1 flex">
@@ -55,19 +56,21 @@ export function ReportRouteDetails() {
                             </section>
 
                             {IS_NOT_LAST ? <div className="w-full h-[1px] bg-[var(--adaptive-black200)]" /> : null}
-                        </Fragment>
+                        </section>
                     );
                 })}
             </article>
 
             {fieldCounts.length > 0 ? (
-                // <article className="flex border-t border-[var(--adaptive-black200)] py-[12px]">
                 <article className="flex border-t border-[var(--adaptive-black200)]">
                     {fieldCounts.map((field, mappedIdx) => {
                         const IS_NOT_LAST = mappedIdx + 1 !== fieldCounts.length;
 
                         return (
-                            <Fragment key={field.key}>
+                            <section
+                                key={field.key}
+                                className="contents"
+                            >
                                 <section className="flex-1 flex flex-col items-center gap-[4px] text-center py-[0.4rem]">
                                     <ChevronDownIcon className={`h-4 w-4 transition-transform`} />
                                     <span className="text-[var(--adaptive-black500)]">{field.label}</span>
@@ -75,7 +78,7 @@ export function ReportRouteDetails() {
                                 </section>
 
                                 {IS_NOT_LAST ? <div className="w-[1px] h-full bg-[var(--adaptive-black200)]" /> : null}
-                            </Fragment>
+                            </section>
                         );
                     })}
                 </article>

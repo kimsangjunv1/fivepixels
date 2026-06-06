@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { ko, setActiveReportMessages } from "../i18n/index.js";
 import { getReportsStorageKey } from "../constants/storageKeys.js";
 import { createReportPayload } from "./reportFixtures.js";
 import {
@@ -15,6 +16,10 @@ import { findFeedbackInsertConflicts, insertFeedbackItems, parseFeedbackImportJs
 const scope = { projectId: "transfer-test", environment: "stage", appVersion: "1.0.0" };
 
 describe("feedbackTransferSchema", () => {
+    beforeEach(() => {
+        setActiveReportMessages(ko);
+    });
+
     it("serializes export payload with project metadata", () => {
         const payload = createReportPayload({ pathname: "/demo", message: "hello" });
         const json = serializeFeedbackExport({ id: scope.projectId, env: scope.environment, version: scope.appVersion }, [
@@ -67,6 +72,7 @@ describe("feedbackTransferSchema", () => {
 
 describe("feedbackDataTransfer", () => {
     beforeEach(() => {
+        setActiveReportMessages(ko);
         window.localStorage.clear();
     });
 

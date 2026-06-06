@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
-import { DEFAULT_FIELDS } from "../constants/report.js";
+import { useEffect } from "react";
+import { getDefaultFields, setActiveReportMessages } from "../i18n/index.js";
+import type { ReportLocale, ReportMessages } from "../i18n/types.js";
 import { useReportState } from "../hooks/useReportState.js";
 import type {
     CreateReportFeedbackPayload,
@@ -89,9 +91,12 @@ type ReportProviderEnabledProps = Omit<
     showFeedbackList: boolean;
     visibleShortcutKeys: boolean;
     shortcut?: string;
+    fields: ReportField[];
     routeKey?: string;
     identify?: ReportIdentify;
     authors: ReportAuthor[];
+    locale: ReportLocale;
+    messages: ReportMessages;
 };
 
 function ReportProviderEnabled({
@@ -99,7 +104,7 @@ function ReportProviderEnabled({
     environment,
     appVersion,
     appearance,
-    fields = DEFAULT_FIELDS,
+    fields,
     authors,
     shortcut,
     identify,
@@ -112,8 +117,14 @@ function ReportProviderEnabled({
     routeKey,
     showFeedbackList,
     visibleShortcutKeys,
+    locale,
+    messages,
     children,
 }: ReportProviderEnabledProps) {
+    useEffect(() => {
+        setActiveReportMessages(messages);
+    }, [messages]);
+
     const value = useReportState({
         projectId,
         environment,
@@ -132,6 +143,8 @@ function ReportProviderEnabled({
         routeKey,
         showFeedbackList,
         visibleShortcutKeys,
+        locale,
+        messages,
     });
 
     return <ReportContext.Provider value={value}>{children}</ReportContext.Provider>;
@@ -155,7 +168,7 @@ export function ReportProvider({
     team,
     identify,
     authors,
-    fields = DEFAULT_FIELDS,
+    fields,
     onList,
     onCreate,
     onUpdate,
@@ -168,6 +181,7 @@ export function ReportProvider({
     const resolvedUi = resolveReportUi({ ui, appearance, showFeedbackList, visibleShortcutKeys, shortcut });
     const resolvedVisibility = resolveReportVisibility({ visibility, enabled, devOnly, routeKey, pathname });
     const resolvedTeam = resolveReportTeam({ team, identify, authors });
+    const resolvedFields = fields ?? getDefaultFields(resolvedUi.messages);
 
     if (!resolveReportEnabled(resolvedVisibility)) {
         return <>{children}</>;
@@ -182,7 +196,7 @@ export function ReportProvider({
             showFeedbackList={resolvedUi.showFeedbackList}
             visibleShortcutKeys={resolvedUi.visibleShortcutKeys}
             shortcut={resolvedUi.shortcut}
-            fields={fields}
+            fields={resolvedFields}
             authors={resolvedTeam.reviewers}
             identify={resolvedTeam.user}
             onList={onList}
@@ -192,6 +206,8 @@ export function ReportProvider({
             onEvent={onEvent}
             onReply={onReply}
             routeKey={resolvedVisibility.routeKey}
+            locale={resolvedUi.locale}
+            messages={resolvedUi.messages}
         >
             {children}
         </ReportProviderEnabled>

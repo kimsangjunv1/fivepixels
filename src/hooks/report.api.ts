@@ -1,3 +1,4 @@
+import { getActiveReportMessages } from "../i18n/index.js";
 import type {
     CreateReportFeedbackPayload,
     ReportFeedback,
@@ -19,7 +20,7 @@ export async function updateReport(adapter: ReportStorageAdapter, id: string, pa
 
 export async function deleteReport(adapter: ReportStorageAdapter, id: string) {
     if (!adapter.remove) {
-        throw new Error("onDelete가 없어서 삭제할 수 없어요.");
+        throw new Error(getActiveReportMessages().errors.deleteHandlerMissing);
     }
 
     await adapter.remove(id);

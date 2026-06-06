@@ -1,5 +1,6 @@
 import type { ReportField, ReportFieldValues } from "../../../types/report.js";
 import type { ReportAuthor } from "../../../types/report.js";
+import { useReport } from "../../../providers/reportContext.js";
 import { SendIcon } from "../../icons/SendIcon.js";
 import { AuthorSelector } from "./AuthorSelector.js";
 import { FieldTagSelector } from "./FieldTagSelector.js";
@@ -32,9 +33,12 @@ export function FeedbackComposer({
     showTags = false,
     onSubmit,
     isSubmitting = false,
-    placeholder = "leave your message",
+    placeholder,
     autoFocus = false,
 }: FeedbackComposerProps) {
+    const { messages } = useReport();
+    const resolvedPlaceholder = placeholder ?? messages.composer.placeholder;
+
     const handleSubmit = () => {
         if (isSubmitting) {
             return;
@@ -49,7 +53,7 @@ export function FeedbackComposer({
                 autoFocus={autoFocus}
                 value={message}
                 onChange={(event) => onMessageChange(event.target.value)}
-                placeholder={placeholder}
+                placeholder={resolvedPlaceholder}
                 rows={3}
                 className="min-h-[72px] w-full resize-none bg-transparent px-[16px] pt-[16px] text-[14px] leading-[1.4] text-[var(--adaptive-black50)] outline-none placeholder:text-[var(--adaptive-black500)]"
                 onKeyDown={(event) => {
@@ -72,7 +76,7 @@ export function FeedbackComposer({
                     disabled={isSubmitting}
                     onClick={handleSubmit}
                     className="inline-flex px-[12px] shrink-0 items-center justify-center rounded-full bg-[var(--adaptive-blue500)] text-[var(--adaptive-black50)] disabled:opacity-50"
-                    aria-label="전송"
+                    aria-label={messages.composer.sendAriaLabel}
                 >
                     <SendIcon className="w-[16px]" />
                 </button>

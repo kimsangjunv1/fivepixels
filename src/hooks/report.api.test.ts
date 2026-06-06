@@ -1,8 +1,13 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, beforeEach } from "vitest";
+import { ko, setActiveReportMessages } from "../i18n/index.js";
 import type { ReportStorageAdapter } from "../types/report.js";
 import { deleteReport } from "./report.api.js";
 
 describe("deleteReport", () => {
+    beforeEach(() => {
+        setActiveReportMessages(ko);
+    });
+
     it("throws when the adapter does not implement remove", async () => {
         const adapter: ReportStorageAdapter = {
             list: async () => [],

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { getReportMessages } from "../i18n/index.js";
 import { resolveReportUi } from "./reportUi.js";
 
 describe("resolveReportUi", () => {
@@ -10,6 +11,7 @@ describe("resolveReportUi", () => {
                     showFeedbackList: false,
                     visibleShortcutKeys: true,
                     shortcut: "mod+shift+m",
+                    locale: "ko",
                 },
                 appearance: "light",
                 showFeedbackList: true,
@@ -21,6 +23,8 @@ describe("resolveReportUi", () => {
             showFeedbackList: false,
             visibleShortcutKeys: true,
             shortcut: "mod+shift+m",
+            locale: "ko",
+            messages: getReportMessages("ko"),
         });
     });
 });

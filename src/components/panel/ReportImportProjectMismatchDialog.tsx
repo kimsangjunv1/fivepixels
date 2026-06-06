@@ -1,5 +1,6 @@
 import type { ReportProject } from "../../types/report.js";
-import { buildProjectComparisonLines, formatProjectScopeValue, toReportProject } from "../../utils/feedbackTransferSchema.js";
+import { useReport } from "../../providers/reportContext.js";
+import { buildProjectComparisonLines } from "../../utils/feedbackTransferSchema.js";
 import type { ResolvedReportProject } from "../../utils/reportProject.js";
 
 type ReportImportProjectMismatchDialogProps = {
@@ -10,9 +11,9 @@ type ReportImportProjectMismatchDialogProps = {
     onCancel: () => void;
 };
 
-function formatExportedAt(value?: string) {
+function formatExportedAt(value: string | undefined, noneLabel: string, locale: string) {
     if (!value) {
-        return "(없음)";
+        return noneLabel;
     }
 
     const date = new Date(value);
@@ -21,22 +22,22 @@ function formatExportedAt(value?: string) {
         return value;
     }
 
-    return date.toLocaleString();
+    return date.toLocaleString(locale);
 }
 
 export function ReportImportProjectMismatchDialog({ currentProject, importedProject, exportedAt, onProceed, onCancel }: ReportImportProjectMismatchDialogProps) {
+    const { locale, messages } = useReport();
     const comparisonLines = buildProjectComparisonLines(currentProject, importedProject);
-    const currentProjectLabel = formatProjectScopeValue(toReportProject(currentProject).id);
 
     return (
         <article className="bg-[var(--adaptive-grey100)]">
             <section className="flex flex-col gap-[4px] p-[16px]">
-                <h6 className="text-[14px] font-bold text-[var(--adaptive-black900)]">project와 version 이 기존과 다릅니다</h6>
-                <p className="leading-[1.5] text-[var(--adaptive-black500)]">현재 앱의 project 설정과 import 파일의 project 정보를 비교해주세요. 진행을 선택하면 기존 import 확인 단계로 이동합니다.</p>
+                <h6 className="text-[14px] font-bold text-[var(--adaptive-black900)]">{messages.importMismatch.title}</h6>
+                <p className="leading-[1.5] text-[var(--adaptive-black500)]">{messages.importMismatch.description}</p>
             </section>
 
             <section className="flex flex-col gap-[4px] p-[12px]">
-                <p className="text-[12px] text-[var(--adaptive-black700)]">- 현재 데이터</p>
+                <p className="text-[12px] text-[var(--adaptive-black700)]">{messages.importMismatch.currentData}</p>
                 <dl className="">
                     {comparisonLines.map((line) => (
                         <div
@@ -51,7 +52,7 @@ export function ReportImportProjectMismatchDialog({ currentProject, importedProj
             </section>
 
             <section className="flex flex-col gap-[4px] p-[12px]">
-                <p className="text-[12px] text-[var(--adaptive-black700)]">+ 업데이트 될 데이터</p>
+                <p className="text-[12px] text-[var(--adaptive-black700)]">{messages.importMismatch.updatedData}</p>
                 <dl className="">
                     {comparisonLines.map((line) => (
                         <div
@@ -64,8 +65,8 @@ export function ReportImportProjectMismatchDialog({ currentProject, importedProj
                     ))}
 
                     <div className="grid grid-cols-[112px_1fr] gap-[8px] text-[12px]">
-                        <p className="font-medium text-[var(--adaptive-black500)]">exportedAt</p>
-                        <p className="text-[var(--adaptive-black800)]">{formatExportedAt(exportedAt)}</p>
+                        <p className="font-medium text-[var(--adaptive-black500)]">{messages.importMismatch.exportedAtLabel}</p>
+                        <p className="text-[var(--adaptive-black800)]">{formatExportedAt(exportedAt, messages.common.none, locale === "ko" ? "ko-KR" : "en-US")}</p>
                     </div>
                 </dl>
             </section>
@@ -76,7 +77,7 @@ export function ReportImportProjectMismatchDialog({ currentProject, importedProj
                     onClick={onCancel}
                     className="bg-[var(--adaptive-grey300)] p-[4px_8px] rounded-[8px] font-semibold text-[var(--adaptive-black700)] border border-transparent"
                 >
-                    취소
+                    {messages.common.cancel}
                 </button>
 
                 <button
@@ -84,7 +85,7 @@ export function ReportImportProjectMismatchDialog({ currentProject, importedProj
                     onClick={onProceed}
                     className="bg-[var(--adaptive-blue100)] p-[4px_8px] rounded-[8px] font-bold text-[var(--adaptive-blue500)] border border-transparent"
                 >
-                    진행
+                    {messages.common.proceed}
                 </button>
             </section>
         </article>

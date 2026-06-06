@@ -1,4 +1,5 @@
 import type { ReportFeedback, ReportFieldValues, ReportReply, ReportStatus, ReportTargetType } from "../types/report.js";
+import { getActiveReportMessages } from "../i18n/index.js";
 
 const STRING_FIELDS = ["id", "pathname", "report_id", "message", "created_at"] as const;
 const NUMBER_FIELDS = ["x_ratio", "y_ratio", "scroll_y", "document_y", "viewport_width", "viewport_height", "design_width", "design_height"] as const;
@@ -8,7 +9,9 @@ const REPORT_STATUSES = new Set<ReportStatus>(["open", "resolved", "archived"]);
 const REPLY_STATUSES = new Set(["suggested", "found_error", "resolved"]);
 
 function importError(index: number, detail: string) {
-    return new Error(`피드백 데이터 형식이 올바르지 않아요. (index ${index}: ${detail})`);
+    const { errors } = getActiveReportMessages();
+
+    return new Error(errors.importInvalidFormat(index, detail));
 }
 
 function isNonEmptyString(value: unknown): value is string {
@@ -28,8 +31,10 @@ function isIsoDateString(value: string) {
 }
 
 function validateFieldValues(value: unknown, index: number): ReportFieldValues {
+    const validation = getActiveReportMessages().importValidation;
+
     if (!value || typeof value !== "object" || Array.isArray(value)) {
-        throw importError(index, "field_values 객체가 필요합니다");
+        throw importError(index, validation.fieldValuesObjectRequired);
     }
 
     return Object.entries(value).reduce<ReportFieldValues>((acc, [key, itemValue]) => {
@@ -38,31 +43,33 @@ function validateFieldValues(value: unknown, index: number): ReportFieldValues {
             return acc;
         }
 
-        throw importError(index, `field_values.${key}는 string 또는 boolean이어야 합니다`);
+        throw importError(index, validation.fieldValuesEntryType(key));
     }, {});
 }
 
 function validateReply(value: unknown, index: number, replyIndex: number): ReportReply {
+    const validation = getActiveReportMessages().importValidation;
+
     if (!value || typeof value !== "object" || Array.isArray(value)) {
-        throw importError(index, `replies[${replyIndex}] 객체가 필요합니다`);
+        throw importError(index, validation.replyObjectRequired(replyIndex));
     }
 
     const reply = value as Record<string, unknown>;
 
     if (!isNonEmptyString(reply.id)) {
-        throw importError(index, `replies[${replyIndex}].id 문자열이 필요합니다`);
+        throw importError(index, validation.replyIdRequired(replyIndex));
     }
 
     if (typeof reply.message !== "string") {
-        throw importError(index, `replies[${replyIndex}].message 문자열이 필요합니다`);
+        throw importError(index, validation.replyMessageRequired(replyIndex));
     }
 
     if (!isNonEmptyString(reply.created_at) || !isIsoDateString(reply.created_at)) {
-        throw importError(index, `replies[${replyIndex}].created_at 날짜 문자열이 필요합니다`);
+        throw importError(index, validation.replyCreatedAtRequired(replyIndex));
     }
 
     if (reply.status !== undefined && !REPLY_STATUSES.has(reply.status as ReportReply["status"])) {
-        throw importError(index, `replies[${replyIndex}].status 값이 올바르지 않습니다`);
+        throw importError(index, validation.replyStatusInvalid(replyIndex));
     }
 
     const authorName = reply.author_name;
@@ -78,55 +85,59 @@ function validateReply(value: unknown, index: number, replyIndex: number): Repor
 }
 
 function validateReplies(value: unknown, index: number): ReportReply[] {
+    const validation = getActiveReportMessages().importValidation;
+
     if (!Array.isArray(value)) {
-        throw importError(index, "replies 배열이 필요합니다");
+        throw importError(index, validation.repliesArrayRequired);
     }
 
     return value.map((reply, replyIndex) => validateReply(reply, index, replyIndex));
 }
 
 export function validateFeedbackRecord(item: unknown, index: number): ReportFeedback {
+    const validation = getActiveReportMessages().importValidation;
+
     if (!item || typeof item !== "object" || Array.isArray(item)) {
-        throw importError(index, "객체가 필요합니다");
+        throw importError(index, validation.objectRequired);
     }
 
     const record = item as Record<string, unknown>;
 
     for (const field of STRING_FIELDS) {
         if (!isNonEmptyString(record[field])) {
-            throw importError(index, `${field} 문자열이 필요합니다`);
+            throw importError(index, validation.stringFieldRequired(field));
         }
     }
 
     if (!isIsoDateString(record.created_at as string)) {
-        throw importError(index, "created_at 날짜 형식이 올바르지 않습니다");
+        throw importError(index, validation.createdAtInvalid);
     }
 
     if (!REPORT_TYPES.has(record.report_type as ReportTargetType)) {
-        throw importError(index, "report_type은 group 또는 item이어야 합니다");
+        throw importError(index, validation.reportTypeInvalid);
     }
 
     if (!REPORT_STATUSES.has(record.status as ReportStatus)) {
-        throw importError(index, "status는 open, resolved, archived 중 하나여야 합니다");
+        throw importError(index, validation.statusInvalid);
     }
 
     for (const field of NUMBER_FIELDS) {
         if (!isFiniteNumber(record[field])) {
-            throw importError(index, `${field} 숫자가 필요합니다`);
+            throw importError(index, validation.numberFieldRequired(field));
         }
     }
 
     if (!isNullableFiniteNumber(record.element_x_ratio)) {
-        throw importError(index, "element_x_ratio는 number 또는 null이어야 합니다");
+        throw importError(index, validation.elementXRatioInvalid);
     }
 
     if (!isNullableFiniteNumber(record.element_y_ratio)) {
-        throw importError(index, "element_y_ratio는 number 또는 null이어야 합니다");
+        throw importError(index, validation.elementYRatioInvalid);
     }
 
     for (const field of OPTIONAL_STRING_FIELDS) {
         if (record[field] !== undefined && typeof record[field] !== "string") {
-            throw importError(index, `${field}는 string이어야 합니다`);
+            throw importError(index, validation.optionalStringFieldInvalid(field));
         }
     }
 
@@ -158,12 +169,14 @@ export function validateFeedbackRecord(item: unknown, index: number): ReportFeed
 }
 
 export function validateFeedbackImportArray(parsed: unknown): ReportFeedback[] {
+    const { errors, importValidation } = getActiveReportMessages();
+
     if (!Array.isArray(parsed)) {
-        throw new Error("피드백 배열(JSON array) 형식이어야 해요.");
+        throw new Error(errors.feedbackArrayRequired);
     }
 
     if (parsed.length === 0) {
-        throw new Error("가져올 피드백 데이터가 비어 있어요.");
+        throw new Error(errors.importDataEmpty);
     }
 
     const seenIds = new Set<string>();
@@ -172,7 +185,7 @@ export function validateFeedbackImportArray(parsed: unknown): ReportFeedback[] {
         const feedback = validateFeedbackRecord(item, index);
 
         if (seenIds.has(feedback.id)) {
-            throw importError(index, `중복된 id (${feedback.id})`);
+            throw importError(index, importValidation.duplicateId(feedback.id));
         }
 
         seenIds.add(feedback.id);

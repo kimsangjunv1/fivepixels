@@ -35,12 +35,14 @@ export type ReportProject = {
     env?: string;
     version?: string;
 };
-/** UI options passed to `<Report ui={{ appearance, showFeedbackList, visibleShortcutKeys, shortcut }} />`. */
+/** UI options passed to `<Report ui={{ appearance, showFeedbackList, visibleShortcutKeys, shortcut, locale, messages }} />`. */
 export type ReportUi = {
     appearance?: ReportAppearance;
     showFeedbackList?: boolean;
     visibleShortcutKeys?: boolean;
     shortcut?: string;
+    locale?: import("../i18n/types.js").ReportLocale;
+    messages?: import("../i18n/types.js").DeepPartialReportMessages;
 };
 /** Team scope passed to `<Report team={{ user, reviewers }} />`. */
 export type ReportTeam = {

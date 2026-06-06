@@ -19,7 +19,7 @@ function resolveDefaultAuthorName(identify, authors) {
     }
     return authors[0]?.name ?? "";
 }
-export function useReportState({ projectId, environment, appVersion, appearance, fields, authors = [], shortcut: _shortcut, identify, onList, onCreate, onUpdate, onDelete, onEvent, onReply, routeKey, showFeedbackList, visibleShortcutKeys = false, }) {
+export function useReportState({ projectId, environment, appVersion, appearance, fields, authors = [], shortcut: _shortcut, identify, onList, onCreate, onUpdate, onDelete, onEvent, onReply, routeKey, showFeedbackList, visibleShortcutKeys = false, locale, messages, }) {
     const { appearance: activeAppearance, setAppearance } = useAppearancePreference(appearance);
     const overlayRef = useRef(null);
     const searchInputRef = useRef(null);
@@ -95,20 +95,20 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             if (!focusTarget) {
                 return "";
             }
-            const typeLabel = focusTarget.type === "item" ? "selected item" : "selected group";
+            const typeLabel = focusTarget.type === "item" ? messages.statusText.selectedItem : messages.statusText.selectedGroup;
             return `${typeLabel}\n${focusTarget.id}`;
         }
         if (mode === "view") {
-            return isFetching ? "피드백을 불러오는 중입니다." : "ready.";
+            return isFetching ? messages.statusText.loadingFeedback : messages.statusText.ready;
         }
         if (showTargetPreview) {
-            return `선택 가능한 ${selectableTargets.length}개 요소를 표시 중입니다.`;
+            return messages.statusText.showingSelectableTargets(selectableTargets.length);
         }
         if (selectableTargets.length === 0) {
-            return "현재 페이지에 선택 가능한 요소가 없어요. data-report-id 속성을 확인해주세요.";
+            return messages.statusText.noSelectableTargets;
         }
-        return "ready.";
-    }, [filteredReports.length, isFetching, hoveredTarget, mode, selectableTargets.length, selectedTarget, showTargetPreview]);
+        return messages.statusText.ready;
+    }, [filteredReports.length, isFetching, hoveredTarget, messages.statusText, mode, selectableTargets.length, selectedTarget, showTargetPreview]);
     useEffect(() => {
         setDraft(null);
         setErrorMessage("");
@@ -389,7 +389,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         const targetElement = findTargetByPoint(overlayRef.current, event.clientX, event.clientY);
         const snapshot = toSnapshot(targetElement);
         if (!targetElement || !snapshot) {
-            setErrorMessage("선택 가능한 리포트 영역을 클릭해주세요.");
+            setErrorMessage(messages.errors.clickSelectableArea);
             return;
         }
         hoveredElementRef.current = targetElement;
@@ -434,7 +434,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         if (!draft) {
             return;
         }
-        const nextError = getFieldError(draft.message, draft.fieldValues, fields);
+        const nextError = getFieldError(draft.message, draft.fieldValues, fields, messages.errors);
         if (nextError) {
             setErrorMessage(nextError);
             return;
@@ -474,12 +474,12 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             setMode("view");
         }
         catch (nextError) {
-            setErrorMessage(nextError instanceof Error ? nextError.message : "피드백 저장에 실패했어요.");
+            setErrorMessage(nextError instanceof Error ? nextError.message : messages.errors.saveFeedbackFailed);
         }
     };
     const startEditing = (report) => {
         if (report.status === "archived") {
-            setErrorMessage("archived 상태의 피드백은 읽기 전용이에요.");
+            setErrorMessage(messages.errors.archivedReadOnly);
             setSelectedReportId(report.id);
             return;
         }
@@ -496,10 +496,10 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             return;
         }
         if (selectedReport.status === "archived") {
-            setErrorMessage("archived 상태의 피드백은 수정할 수 없어요.");
+            setErrorMessage(messages.errors.archivedNotEditable);
             return;
         }
-        const nextError = getFieldError(editableDraft.message, editableDraft.fieldValues, fields);
+        const nextError = getFieldError(editableDraft.message, editableDraft.fieldValues, fields, messages.errors);
         if (nextError) {
             setErrorMessage(nextError);
             return;
@@ -515,7 +515,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             setErrorMessage("");
         }
         catch (nextError) {
-            setErrorMessage(nextError instanceof Error ? nextError.message : "피드백 수정에 실패했어요.");
+            setErrorMessage(nextError instanceof Error ? nextError.message : messages.errors.updateFeedbackFailed);
         }
     };
     const appendReply = async (report, reply) => {
@@ -532,11 +532,11 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             return;
         }
         if (!replyDraft.trim()) {
-            setErrorMessage("답변 내용을 입력해주세요.");
+            setErrorMessage(messages.errors.replyContentRequired);
             return;
         }
         if (!replyAuthorName.trim()) {
-            setErrorMessage("작성자를 입력해주세요.");
+            setErrorMessage(messages.errors.authorRequired);
             return;
         }
         const replyMessage = replyDraft.trim();
@@ -556,7 +556,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             setPendingComposer(null);
         }
         catch (nextError) {
-            setErrorMessage(nextError instanceof Error ? nextError.message : "답변 저장에 실패했어요.");
+            setErrorMessage(nextError instanceof Error ? nextError.message : messages.errors.saveReplyFailed);
         }
     };
     const handleConfirmResolution = async () => {
@@ -565,12 +565,12 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         }
         const resolverName = confirmAuthorName.trim() || resolveOriginalFeedbackAuthorName(activeReplyReport);
         if (!resolverName) {
-            setErrorMessage("검수 처리자를 선택해주세요.");
+            setErrorMessage(messages.errors.reviewerRequired);
             return;
         }
         const reply = {
             id: createReplyId(),
-            message: "이슈가 해결되었습니다.",
+            message: messages.resolution.issueResolvedMessage,
             created_at: new Date().toISOString(),
             status: "resolved",
             author_type: "user",
@@ -588,7 +588,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             setShowConfirmAuthorSelect(false);
         }
         catch (nextError) {
-            setErrorMessage(nextError instanceof Error ? nextError.message : "확인 처리에 실패했어요.");
+            setErrorMessage(nextError instanceof Error ? nextError.message : messages.errors.confirmResolutionFailed);
         }
     };
     const handleDelete = async (id) => {
@@ -607,7 +607,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             setErrorMessage("");
         }
         catch (nextError) {
-            setErrorMessage(nextError instanceof Error ? nextError.message : "피드백 삭제에 실패했어요.");
+            setErrorMessage(nextError instanceof Error ? nextError.message : messages.errors.deleteFeedbackFailed);
         }
     };
     useEffect(() => {
@@ -640,6 +640,8 @@ export function useReportState({ projectId, environment, appVersion, appearance,
     return {
         appearance: activeAppearance,
         setAppearance,
+        locale,
+        messages,
         fields,
         authors,
         projectId,

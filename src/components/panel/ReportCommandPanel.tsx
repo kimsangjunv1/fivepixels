@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useReport } from "../../providers/reportContext.js";
 
 export type CommandExecuteResult = { status: "success"; message: string } | { status: "pending" };
 
@@ -10,6 +11,7 @@ type ReportCommandPanelProps = {
 };
 
 export function ReportCommandPanel({ onExecute, onClose, notice = null, onNoticeClear }: ReportCommandPanelProps) {
+    const { messages } = useReport();
     const [raw, setRaw] = useState("");
     const [statusMessage, setStatusMessage] = useState("");
     const [isError, setIsError] = useState(false);
@@ -44,7 +46,7 @@ export function ReportCommandPanel({ onExecute, onClose, notice = null, onNotice
                 setIsError(false);
             })
             .catch((error) => {
-                setStatusMessage(error instanceof Error ? error.message : "데이터 삽입에 실패했어요.");
+                setStatusMessage(error instanceof Error ? error.message : messages.command.insertFailed);
                 setIsError(true);
             })
             .finally(() => {
@@ -55,15 +57,15 @@ export function ReportCommandPanel({ onExecute, onClose, notice = null, onNotice
     return (
         <section className="flex min-h-0 flex-1 flex-col bg-[var(--adaptive-black50)] rounded-[0_0_24px_24px] overflow-hidden">
             <div className="border-b border-[var(--adaptive-black200)] p-[12px]">
-                <p className="text-[14px] font-bold text-[var(--adaptive-black900)]">Command</p>
-                <p className="mt-[4px] text-[12px] leading-[1.5] text-[var(--adaptive-black500)]">복사한 피드백 JSON을 붙여넣고 실행하면 localStorage에 삽입됩니다.</p>
+                <p className="text-[14px] font-bold text-[var(--adaptive-black900)]">{messages.command.title}</p>
+                <p className="mt-[4px] text-[12px] leading-[1.5] text-[var(--adaptive-black500)]">{messages.command.description}</p>
             </div>
 
             <div className="flex min-h-0 flex-1 flex-col gap-[8px]">
                 <textarea
                     value={raw}
                     onChange={(event) => setRaw(event.target.value)}
-                    placeholder='{"id":"...","pathname":"...", ...}'
+                    placeholder={messages.command.jsonPlaceholder}
                     spellCheck={false}
                     className="min-h-[160px] flex-1 resize-none bg-[var(--adaptive-black900)] p-[4px] font-mono text-[12px] leading-[1.5] text-[var(--adaptive-black400)] outline-none placeholder:text-[var(--adaptive-black700)]"
                 />
@@ -76,7 +78,7 @@ export function ReportCommandPanel({ onExecute, onClose, notice = null, onNotice
                         onClick={onClose}
                         className="rounded-[8px] border border-[var(--adaptive-black300)] px-[12px] py-[6px] text-[12px] font-semibold text-[var(--adaptive-black700)]"
                     >
-                        닫기
+                        {messages.common.close}
                     </button>
                     <button
                         type="button"
@@ -84,7 +86,7 @@ export function ReportCommandPanel({ onExecute, onClose, notice = null, onNotice
                         onClick={handleExecute}
                         className="rounded-[8px] bg-[var(--adaptive-blue500)] px-[12px] py-[6px] text-[12px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                        {isExecuting ? "실행 중..." : "실행"}
+                        {isExecuting ? messages.common.executing : messages.common.execute}
                     </button>
                 </div>
             </div>

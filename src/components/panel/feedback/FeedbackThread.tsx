@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ReportAuthor, ReportFeedback, ReportReply } from "../../../types/report.js";
+import { useReport } from "../../../providers/reportContext.js";
 import { formatDate } from "../../../utils/format.js";
 import { canCheckoutReply, canReviewLatestSuggestion, resolveOriginalFeedbackAuthorName } from "../../../utils/feedbackThread.js";
 import { AuthorSelector } from "./AuthorSelector.js";
@@ -84,6 +85,7 @@ function ThreadEntryActions({
     onConfirm: () => void;
     isUpdating?: boolean;
 }) {
+    const { messages } = useReport();
     const confirmAuthorOptions = useMemo(() => buildConfirmAuthorOptions(report, authors), [authors, report]);
     const isLatest = report.replies[report.replies.length - 1]?.id === reply.id;
     const showReview = isLatest && canReviewLatestSuggestion(report);
@@ -107,7 +109,7 @@ function ThreadEntryActions({
                             onClick={onStartDeny}
                             className={`flex-1 rounded-full py-[4px] px-[8px] text-[12px] font-semibold border ${denyActive ? " bg-[#FF2B6A] text-white border-transparent" : " border-[var(--adaptive-black800)] text-[var(--adaptive-black500)] text-[var(--adaptive-black50)]"}`}
                         >
-                            denied
+                            {messages.thread.denied}
                         </button>
 
                         <section className="flex items-center gap-[8px] py-[4px] px-[8px] border border-[var(--adaptive-black800)] bg-[var(--adaptive-black900)] rounded-full">
@@ -118,7 +120,7 @@ function ThreadEntryActions({
                                 onClick={onConfirm}
                                 className="flex-1 rounded-full text-[12px] font-semibold text-[var(--adaptive-black500)]"
                             >
-                                resolved
+                                {messages.thread.resolved}
                             </button>
                             <div className="h-full w-[1px] bg-[var(--adaptive-black700)]" />
 
@@ -133,7 +135,7 @@ function ThreadEntryActions({
                                         : "shrink-0 rounded-fulltext-[12px] font-semibold text-[var(--adaptive-black700)]"
                                 }
                             >
-                                select
+                                {messages.thread.select}
                             </button>
                         </section>
                     </>
@@ -147,7 +149,7 @@ function ThreadEntryActions({
                             disabled
                             className="flex-1 border border-[var(--adaptive-black400)] py-[4px] rounded-[8px] text-[12px] font-semibold text-[var(--adaptive-black500)] opacity-60"
                         >
-                            denied
+                            {messages.thread.denied}
                         </button>
                         <button
                             type="button"
@@ -161,7 +163,7 @@ function ThreadEntryActions({
                                     : "bg-[var(--adaptive-black900)] border border-[var(--adaptive-black400)] text-[var(--adaptive-black300)]")
                             }
                         >
-                            leave a result
+                            {messages.thread.leaveResult}
                         </button>
                     </>
                 ) : null}
@@ -191,6 +193,7 @@ export function FeedbackThread({
     onConfirm,
     isUpdating,
 }: FeedbackThreadProps) {
+    const { locale, messages } = useReport();
     const scrollRef = useRef<HTMLElement>(null);
     const [scrollOverflow, setScrollOverflow] = useState<ScrollOverflowState>({
         canScrollUp: false,
@@ -235,8 +238,8 @@ export function FeedbackThread({
 
     return (
         <div className="relative max-h-[512px]">
-            {scrollOverflow.canScrollUp ? <p className={`${SCROLL_HINT_CLASS} top-0 bg-[linear-gradient(0deg,transparent,var(--adaptive-black900))]`}>message available up</p> : null}
-            {scrollOverflow.canScrollDown ? <p className={`${SCROLL_HINT_CLASS} bottom-0 bg-[linear-gradient(180deg,transparent,var(--adaptive-black900))]`}>message available down</p> : null}
+            {scrollOverflow.canScrollUp ? <p className={`${SCROLL_HINT_CLASS} top-0 bg-[linear-gradient(0deg,transparent,var(--adaptive-black900))]`}>{messages.thread.scrollHintUp}</p> : null}
+            {scrollOverflow.canScrollDown ? <p className={`${SCROLL_HINT_CLASS} bottom-0 bg-[linear-gradient(180deg,transparent,var(--adaptive-black900))]`}>{messages.thread.scrollHintDown}</p> : null}
             <section
                 ref={scrollRef}
                 className="flex max-h-[512px] flex-col overflow-auto bg-[var(--adaptive-blackOpacity900)] backdrop-blur-[10px]"
@@ -248,7 +251,7 @@ export function FeedbackThread({
                     >
                         <div className="flex items-start justify-between gap-[8px]">
                             <FeedbackStatusBadge status={reply.status} />
-                            <span className="text-[12px] text-[var(--adaptive-black500)]">{formatDate(reply.created_at)}</span>
+                            <span className="text-[12px] text-[var(--adaptive-black500)]">{formatDate(reply.created_at, locale)}</span>
                         </div>
                         <p className="leading-[1.5] text-[14px] text-[var(--adaptive-black50)]">{reply.message}</p>
                         {reply.author_name ? <p className="text-[12px] text-[var(--adaptive-black500)]">{reply.author_name}</p> : null}

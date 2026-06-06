@@ -3,7 +3,7 @@ import { REPORT_SHORTCUTS } from "../../constants/reportShortcuts.js";
 import { useReport } from "../../providers/reportContext.js";
 import { formatDateOnly, formatTimeOnly } from "../../utils/format.js";
 import { getFieldTags } from "../../utils/fields.js";
-import { getRouteDetailStatus, ROUTE_DETAIL_STATUS_LABEL, type RouteDetailStatus } from "../../utils/routeDetailStatus.js";
+import { getRouteDetailStatus, type RouteDetailStatus } from "../../utils/routeDetailStatus.js";
 import { ShortcutHint } from "../ShortcutHint.js";
 import { FeedbackFieldTags } from "./feedback/FeedbackFieldTags.js";
 import { SearchIcon } from "../icons/SearchIcon.js";
@@ -12,6 +12,8 @@ import { TrashIcon } from "../icons/TrashIcon.js";
 import { ChevronDownIcon } from "../icons/ChevronDownIcon.js";
 import { copyTextToClipboard, serializeFeedbackItem } from "../../utils/feedbackDataTransfer.js";
 import type { ReportFeedback } from "../../types/report.js";
+import type { ReportMessages } from "../../i18n/types.js";
+import type { ReportLocale } from "../../i18n/types.js";
 import { PanelDropdownMenu, PanelDropdownMenuItem } from "./PanelDropdownMenu.js";
 
 const FEEDBACK_PAGE_SIZE = 20;
@@ -25,7 +27,7 @@ function getDateGroupKey(value: string) {
     return `${year}-${month}-${day}`;
 }
 
-function groupReportsByDate(reports: ReportFeedback[]) {
+function groupReportsByDate(reports: ReportFeedback[], locale: ReportLocale) {
     const groups: { dateKey: string; label: string; reports: ReportFeedback[] }[] = [];
     const groupMap = new Map<string, ReportFeedback[]>();
 
@@ -43,7 +45,7 @@ function groupReportsByDate(reports: ReportFeedback[]) {
     for (const [dateKey, groupedReports] of groupMap) {
         groups.push({
             dateKey,
-            label: formatDateOnly(groupedReports[0]!.created_at),
+            label: formatDateOnly(groupedReports[0]!.created_at, locale),
             reports: groupedReports,
         });
     }
@@ -63,7 +65,17 @@ function getRouteStatusTone(status: RouteDetailStatus) {
     return { backgroundColor: "#fff7ed", color: "#c2410c" };
 }
 
-function FeedbackListDeleteButton({ report, onDelete, disabled = false }: { report: ReportFeedback; onDelete: (id: string) => Promise<void>; disabled?: boolean }) {
+function FeedbackListDeleteButton({
+    report,
+    onDelete,
+    disabled = false,
+    messages,
+}: {
+    report: ReportFeedback;
+    onDelete: (id: string) => Promise<void>;
+    disabled?: boolean;
+    messages: ReportMessages;
+}) {
     const [confirming, setConfirming] = useState(false);
 
     useEffect(() => {
@@ -97,19 +109,19 @@ function FeedbackListDeleteButton({ report, onDelete, disabled = false }: { repo
             data-stitchable-interactive=""
             onClick={handleDelete}
             disabled={disabled}
-            aria-label={confirming ? "한 번 더 눌러 피드백 삭제" : "피드백 삭제"}
-            title={confirming ? "한 번 더 눌러 삭제" : "삭제"}
+            aria-label={confirming ? messages.feedbackList.deleteConfirmAriaLabel : messages.feedbackList.deleteAriaLabel}
+            title={confirming ? messages.feedbackList.deleteConfirmTitle : messages.feedbackList.deleteTitle}
             className={`flex shrink-0 items-center justify-center gap-[2px] self-start rounded-[6px] p-[6px] disabled:opacity-50 ${
                 confirming ? "text-rose-700 hover:bg-rose-50" : "text-[var(--adaptive-black500)] hover:bg-[var(--adaptive-black100)] hover:text-rose-700"
             }`}
         >
             <TrashIcon className="h-[16px] w-[16px]" />
-            {confirming ? <span className="text-[10px] font-semibold">삭제</span> : null}
+            {confirming ? <span className="text-[10px] font-semibold">{messages.feedbackList.deleteConfirmLabel}</span> : null}
         </button>
     );
 }
 
-function FeedbackListCopyButton({ report }: { report: ReportFeedback }) {
+function FeedbackListCopyButton({ report, messages }: { report: ReportFeedback; messages: ReportMessages }) {
     const [copied, setCopied] = useState(false);
 
     const handleCopy = (event: MouseEvent<HTMLButtonElement>) => {
@@ -130,18 +142,34 @@ function FeedbackListCopyButton({ report }: { report: ReportFeedback }) {
             type="button"
             data-stitchable-interactive=""
             onClick={handleCopy}
-            aria-label="피드백 데이터 복사"
-            title={copied ? "복사됨" : "복사"}
+            aria-label={messages.feedbackList.copyAriaLabel}
+            title={copied ? messages.feedbackList.copiedTitle : messages.feedbackList.copyTitle}
             className="flex shrink-0 items-center justify-center self-start rounded-[6px] p-[6px] text-[var(--adaptive-black500)] hover:bg-[var(--adaptive-black100)] hover:text-[var(--adaptive-black800)]"
         >
-            {copied ? <span className="text-[10px] font-semibold text-[var(--adaptive-blue500)]">OK</span> : <CopyIcon className="h-[16px] w-[16px]" />}
+            {copied ? <span className="text-[10px] font-semibold text-[var(--adaptive-blue500)]">{messages.common.ok}</span> : <CopyIcon className="h-[16px] w-[16px]" />}
         </button>
     );
 }
 
 export function ReportFeedbackList() {
-    const { filters, setFilters, filteredReports, reports, fields, isError, isFetching, isDeleting, queryErrorMessage, visibleShortcutKeys, searchInputRef, locateFeedback, refetch, handleDelete } =
-        useReport();
+    const {
+        filters,
+        setFilters,
+        filteredReports,
+        reports,
+        fields,
+        locale,
+        messages,
+        isError,
+        isFetching,
+        isDeleting,
+        queryErrorMessage,
+        visibleShortcutKeys,
+        searchInputRef,
+        locateFeedback,
+        refetch,
+        handleDelete,
+    } = useReport();
 
     const [visibleCount, setVisibleCount] = useState(FEEDBACK_PAGE_SIZE);
     const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() => new Set());
@@ -149,11 +177,11 @@ export function ReportFeedbackList() {
     const [reportTypeMenuOpen, setReportTypeMenuOpen] = useState(false);
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
-    const statusLabel = filters.status === "all" ? "전체 상태" : ROUTE_DETAIL_STATUS_LABEL[filters.status];
-    const reportTypeLabel = filters.reportType === "all" ? "전체 타입" : filters.reportType;
+    const statusLabel = filters.status === "all" ? messages.feedbackList.filterStatusAll : messages.status.routeDetail[filters.status];
+    const reportTypeLabel = filters.reportType === "all" ? messages.feedbackList.filterTypeAll : filters.reportType === "item" ? messages.feedbackList.reportTypeItem : messages.feedbackList.reportTypeGroup;
 
     const visibleReports = useMemo(() => filteredReports.slice(0, visibleCount), [filteredReports, visibleCount]);
-    const groupedReports = useMemo(() => groupReportsByDate(visibleReports), [visibleReports]);
+    const groupedReports = useMemo(() => groupReportsByDate(visibleReports, locale), [locale, visibleReports]);
 
     useEffect(() => {
         setVisibleCount(FEEDBACK_PAGE_SIZE);
@@ -220,7 +248,7 @@ export function ReportFeedbackList() {
                                 onClick={() => setStatusMenuOpen((current) => !current)}
                                 aria-expanded={statusMenuOpen}
                                 aria-haspopup="menu"
-                                aria-label="상태 필터"
+                                aria-label={messages.feedbackList.filterStatusAriaLabel}
                                 className="flex items-center gap-[4px] px-[8px] text-[12px] text-[var(--adaptive-black800)] outline-none"
                             >
                                 <span>{statusLabel}</span>
@@ -235,9 +263,9 @@ export function ReportFeedbackList() {
                                 setFilters((current) => ({ ...current, status: "all" }));
                             }}
                         >
-                            전체 상태
+                            {messages.feedbackList.filterStatusAll}
                         </PanelDropdownMenuItem>
-                        {(Object.keys(ROUTE_DETAIL_STATUS_LABEL) as RouteDetailStatus[]).map((status) => (
+                        {(Object.keys(messages.status.routeDetail) as RouteDetailStatus[]).map((status) => (
                             <PanelDropdownMenuItem
                                 key={status}
                                 active={filters.status === status}
@@ -246,7 +274,7 @@ export function ReportFeedbackList() {
                                     setFilters((current) => ({ ...current, status }));
                                 }}
                             >
-                                {ROUTE_DETAIL_STATUS_LABEL[status]}
+                                {messages.status.routeDetail[status]}
                             </PanelDropdownMenuItem>
                         ))}
                     </PanelDropdownMenu>
@@ -261,7 +289,7 @@ export function ReportFeedbackList() {
                                 onClick={() => setReportTypeMenuOpen((current) => !current)}
                                 aria-expanded={reportTypeMenuOpen}
                                 aria-haspopup="menu"
-                                aria-label="타입 필터"
+                                aria-label={messages.feedbackList.filterTypeAriaLabel}
                                 className="flex items-center gap-[4px] px-[8px] text-[12px] text-[var(--adaptive-black800)] outline-none"
                             >
                                 <span>{reportTypeLabel}</span>
@@ -276,7 +304,7 @@ export function ReportFeedbackList() {
                                 setFilters((current) => ({ ...current, reportType: "all" }));
                             }}
                         >
-                            전체 타입
+                            {messages.feedbackList.filterTypeAll}
                         </PanelDropdownMenuItem>
                         <PanelDropdownMenuItem
                             active={filters.reportType === "item"}
@@ -285,7 +313,7 @@ export function ReportFeedbackList() {
                                 setFilters((current) => ({ ...current, reportType: "item" }));
                             }}
                         >
-                            item
+                            {messages.feedbackList.reportTypeItem}
                         </PanelDropdownMenuItem>
                         <PanelDropdownMenuItem
                             active={filters.reportType === "group"}
@@ -294,7 +322,7 @@ export function ReportFeedbackList() {
                                 setFilters((current) => ({ ...current, reportType: "group" }));
                             }}
                         >
-                            group
+                            {messages.feedbackList.reportTypeGroup}
                         </PanelDropdownMenuItem>
                     </PanelDropdownMenu>
                 </section>
@@ -304,7 +332,7 @@ export function ReportFeedbackList() {
                         ref={searchInputRef}
                         value={filters.keyword}
                         onChange={(event) => setFilters((current) => ({ ...current, keyword: event.target.value }))}
-                        placeholder="메시지 / report id 검색"
+                        placeholder={messages.feedbackList.searchPlaceholder}
                         className="h-[32px] w-full rounded-[8px] px-[8px] pr-[30px] text-[12px] text-[var(--adaptive-black800)] outline-none"
                     />
 
@@ -322,24 +350,23 @@ export function ReportFeedbackList() {
             <div className="min-h-0 flex-1 overflow-y-auto bg-[var(--adaptive-black50)] rounded-[0_0_24px_24px]">
                 {isError ? (
                     <div className="space-y-1 rounded-md border border-rose-200 bg-rose-50 p-2 text-xs text-rose-800">
-                        <strong className="text-sm font-semibold">목록을 불러오지 못했어요.</strong>
-                        <p>{queryErrorMessage ?? "잠시 후 다시 시도해주세요."}</p>
+                        <strong className="text-sm font-semibold">{messages.feedbackList.loadFailedTitle}</strong>
+                        <p>{queryErrorMessage ?? messages.feedbackList.loadFailedRetry}</p>
                         <button
                             type="button"
                             onClick={() => void refetch()}
                             className="inline-flex items-center justify-center rounded-md border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700"
                         >
-                            다시 시도
+                            {messages.common.retry}
                         </button>
                     </div>
                 ) : null}
 
                 {!isError && !isFetching && filteredReports.length === 0 ? (
-                    // <div className="space-y-1 rounded-md border border-dashed border-[var(--adaptive-black300)] bg-[var(--adaptive-black100)] p-2 text-xs text-[var(--adaptive-black600)]">
                     <div className="p-[12px] flex flex-col gap-[4px] bg-[var(--adaptive-black200)]">
-                        <h6 className="font-semibold text-[var(--adaptive-black900)]">표시할 피드백이 없습니다.</h6>
+                        <h6 className="font-semibold text-[var(--adaptive-black900)]">{messages.feedbackList.emptyTitle}</h6>
                         <p className="text-[12px] text-[var(--adaptive-black500)] whitespace-break-spaces leading-[1.5]">
-                            {reports.length === 0 ? `아직 등록된 피드백이 없어요.\n"Record"를 눌러 첫 피드백을 남겨보세요.` : "현재 필터 조건과 일치하는 결과가 없어요."}
+                            {reports.length === 0 ? messages.feedbackList.emptyNoFeedback : messages.feedbackList.emptyNoMatch}
                         </p>
                     </div>
                 ) : null}
@@ -389,22 +416,26 @@ export function ReportFeedbackList() {
                                                                   className="inline-flex items-center rounded-full px-[8px] py-[2px] text-[10px] font-bold uppercase"
                                                                   style={getRouteStatusTone(routeStatus)}
                                                               >
-                                                                  {ROUTE_DETAIL_STATUS_LABEL[routeStatus]}
+                                                                  {messages.status.routeDetail[routeStatus]}
                                                               </span>
                                                           </div>
 
                                                           <p className="text-[var(--adaptive-black700)]">{report.message}</p>
                                                       </section>
 
-                                                      <p className="text-[var(--adaptive-black500)] text-[12px]">{formatTimeOnly(report.created_at)}</p>
+                                                      <p className="text-[var(--adaptive-black500)] text-[12px]">{formatTimeOnly(report.created_at, locale)}</p>
                                                   </button>
 
                                                   <div className="flex shrink-0 items-start gap-[2px] p-[12px] pl-0">
-                                                      <FeedbackListCopyButton report={report} />
+                                                      <FeedbackListCopyButton
+                                                          report={report}
+                                                          messages={messages}
+                                                      />
                                                       <FeedbackListDeleteButton
                                                           report={report}
                                                           onDelete={handleDelete}
                                                           disabled={isDeleting}
+                                                          messages={messages}
                                                       />
                                                   </div>
                                               </div>
@@ -421,7 +452,7 @@ export function ReportFeedbackList() {
                         ref={loadMoreRef}
                         className="py-[8px] text-center text-[12px] text-[var(--adaptive-black500)]"
                     >
-                        더 불러오는 중...
+                        {messages.feedbackList.loadingMore}
                     </div>
                 ) : null}
             </div>

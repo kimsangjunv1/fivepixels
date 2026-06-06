@@ -1,3 +1,4 @@
+import { getActiveReportMessages } from "../../i18n/index.js";
 import { DEFAULT_PROJECT_ID } from "../../constants/project.js";
 import { getReportsStorageKey } from "../../constants/storageKeys.js";
 import { parseFeedbackStorageEnvelope, serializeFeedbackStorageEnvelope } from "../../utils/feedbackTransferSchema.js";
@@ -126,7 +127,7 @@ export function createLocalStorageReportAdapter({ projectId, environment, appVer
             const items = readAll(storageKey);
             const index = items.findIndex((item) => item.id === id);
             if (index < 0) {
-                throw new Error("피드백을 찾을 수 없어요.");
+                throw new Error(getActiveReportMessages().errors.feedbackNotFound);
             }
             const nextItem = normalizeReport({
                 ...items[index],

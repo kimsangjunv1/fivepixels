@@ -1,15 +1,17 @@
 import { useState } from "react";
+import { useReport } from "../../../providers/reportContext.js";
 import { ChevronDownIcon } from "../../icons/ChevronDownIcon.js";
-import type { ReportAuthor } from "../../../types/report.js";
 import { PanelDropdownMenu, PanelDropdownMenuItem } from "../PanelDropdownMenu.js";
+import type { ReportAuthor } from "../../../types/report.js";
 
 type AuthorSelectorProps = {
     authors: ReportAuthor[];
     value: string;
-    onChange: (nextValue: string) => void;
+    onChange: (value: string) => void;
 };
 
 export function AuthorSelector({ authors, value, onChange }: AuthorSelectorProps) {
+    const { messages } = useReport();
     const [menuOpen, setMenuOpen] = useState(false);
 
     if (authors.length === 0) {
@@ -18,7 +20,7 @@ export function AuthorSelector({ authors, value, onChange }: AuthorSelectorProps
                 type="text"
                 value={value}
                 onChange={(event) => onChange(event.target.value)}
-                placeholder="작성자"
+                placeholder={messages.author.placeholder}
                 className="min-w-0 flex-1 rounded-full bg-[var(--adaptive-black800)] px-[12px] py-[4px] h-[24px] text-[12px] text-[var(--adaptive-black900)] outline-none placeholder:text-[var(--adaptive-black500)]"
             />
         );
@@ -36,10 +38,10 @@ export function AuthorSelector({ authors, value, onChange }: AuthorSelectorProps
                     onClick={() => setMenuOpen((current) => !current)}
                     aria-expanded={menuOpen}
                     aria-haspopup="menu"
-                    aria-label="작성자 선택"
+                    aria-label={messages.author.selectAriaLabel}
                     className="flex w-full min-w-0 items-center justify-between rounded-full bg-[var(--adaptive-black800)] py-[4px] h-[24px] pr-[10px] pl-[12px] text-[12px] outline-none"
                 >
-                    <span className={`text-[var(--adaptive-black500)]`}>{value || "작성자 선택"}</span>
+                    <span className={`text-[var(--adaptive-black500)]`}>{value || messages.author.selectPlaceholder}</span>
 
                     <ChevronDownIcon className={`h-[14px] w-[14px] shrink-0 text-[var(--adaptive-black600)] transition-transform ${menuOpen ? "rotate-180" : ""}`} />
                 </button>
@@ -48,10 +50,10 @@ export function AuthorSelector({ authors, value, onChange }: AuthorSelectorProps
             {authors.map((author) => (
                 <PanelDropdownMenuItem
                     key={author.id}
-                    active={value === author.name}
+                    active={author.name === value}
                     onClick={() => {
-                        setMenuOpen(false);
                         onChange(author.name);
+                        setMenuOpen(false);
                     }}
                 >
                     {author.name}

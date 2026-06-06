@@ -1,5 +1,6 @@
 import type { FeedbackDisplayStatus } from "../../../constants/feedbackStatus.js";
-import { FEEDBACK_STATUS_COLOR, FEEDBACK_STATUS_LABEL } from "../../../constants/feedbackStatus.js";
+import { FEEDBACK_STATUS_COLOR } from "../../../constants/feedbackStatus.js";
+import { useReport } from "../../../providers/reportContext.js";
 
 type FeedbackStatusBadgeProps = {
     status: FeedbackDisplayStatus;
@@ -7,6 +8,7 @@ type FeedbackStatusBadgeProps = {
 };
 
 export function FeedbackStatusBadge({ status, className = "" }: FeedbackStatusBadgeProps) {
+    const { messages } = useReport();
     const color = FEEDBACK_STATUS_COLOR[status];
 
     return (
@@ -22,7 +24,7 @@ export function FeedbackStatusBadge({ status, className = "" }: FeedbackStatusBa
                 style={{ color }}
                 className="text-[12px]"
             >
-                {FEEDBACK_STATUS_LABEL[status]}
+                {messages.status.feedback[status]}
             </span>
         </div>
     );

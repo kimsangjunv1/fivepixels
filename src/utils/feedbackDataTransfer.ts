@@ -1,3 +1,4 @@
+import { getActiveReportMessages } from "../i18n/index.js";
 import { getReportsStorageKey } from "../constants/storageKeys.js";
 import { readAllReportsFromStorage, writeAllReportsToStorage } from "../storage/local/localStorageAdapter.js";
 import type { ReportFeedback, ReportProject } from "../types/report.js";
@@ -95,7 +96,7 @@ export function insertFeedbackItems(scope: FeedbackTransferScope, incoming: Repo
     const existingIds = new Set(existing.map((item) => item.id));
 
     if (incoming.some((item) => existingIds.has(item.id))) {
-        throw new Error("이미 등록된 id가 포함되어 있어요.");
+        throw new Error(getActiveReportMessages().errors.duplicateIdIncluded);
     }
 
     writeAllFeedback(scope, [...existing, ...incoming]);
@@ -150,7 +151,7 @@ export async function copyTextToClipboard(text: string) {
     textarea.remove();
 
     if (!copied) {
-        throw new Error("클립보드 복사에 실패했어요.");
+        throw new Error(getActiveReportMessages().errors.clipboardCopyFailed);
     }
 }
 

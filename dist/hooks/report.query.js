@@ -1,3 +1,4 @@
+import { getActiveReportMessages } from "../i18n/index.js";
 import { useCallback, useEffect, useState } from "react";
 import { createReport, deleteReport, listReports, updateReport } from "./report.api.js";
 const EMPTY_REPORTS = [];
@@ -22,7 +23,7 @@ export const useReportsQuery = (adapter, pathname, enabled = true) => {
             return reports;
         }
         catch (nextError) {
-            setError(nextError instanceof Error ? nextError : new Error("피드백을 불러오지 못했어요."));
+            setError(nextError instanceof Error ? nextError : new Error(getActiveReportMessages().errors.loadFeedbackFailed));
             return EMPTY_REPORTS;
         }
         finally {
@@ -54,7 +55,7 @@ export const useCreateReportMutation = (adapter, onSuccess, onError) => {
             return created;
         }
         catch (error) {
-            const nextError = error instanceof Error ? error : new Error("피드백 등록에 실패했어요.");
+            const nextError = error instanceof Error ? error : new Error(getActiveReportMessages().errors.createFeedbackFailed);
             onError?.(nextError);
             throw nextError;
         }
@@ -74,7 +75,7 @@ export const useUpdateReportMutation = (adapter, onSuccess, onError) => {
             return updated;
         }
         catch (error) {
-            const nextError = error instanceof Error ? error : new Error("피드백 수정에 실패했어요.");
+            const nextError = error instanceof Error ? error : new Error(getActiveReportMessages().errors.updateFeedbackFailed);
             onError?.(nextError);
             throw nextError;
         }
@@ -93,7 +94,7 @@ export const useDeleteReportMutation = (adapter, onSuccess, onError) => {
             onSuccess?.();
         }
         catch (error) {
-            const nextError = error instanceof Error ? error : new Error("피드백 삭제에 실패했어요.");
+            const nextError = error instanceof Error ? error : new Error(getActiveReportMessages().errors.deleteFeedbackFailed);
             onError?.(nextError);
             throw nextError;
         }

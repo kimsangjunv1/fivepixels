@@ -1,13 +1,13 @@
 import { useCallback, useRef, useState } from "react";
 import { createFeedbackBackupFilename, downloadFeedbackJson, findFeedbackInsertConflicts, insertFeedbackItems, isImportProjectCompatible, parseFeedbackCommandJson, pickFeedbackJsonFile, readAllFeedback, readFeedbackJsonFile, toReportProject, upsertFeedbackItems, writeAllFeedback, } from "../utils/feedbackDataTransfer.js";
-function buildCommandSuccessMessage(inserted, replaced) {
+function buildCommandSuccessMessage(messages, inserted, replaced) {
     if (replaced > 0 && inserted > 0) {
-        return `${inserted}건 삽입, ${replaced}건 교체가 완료되었어요.`;
+        return messages.errors.commandSuccessInsertedReplaced(inserted, replaced);
     }
     if (replaced > 0) {
-        return `${replaced}건의 피드백 데이터가 교체되었어요.`;
+        return messages.errors.commandSuccessReplaced(replaced);
     }
-    return `${inserted}건의 피드백 데이터가 삽입되었어요.`;
+    return messages.errors.commandSuccessInserted(inserted);
 }
 function isJsonDragEvent(event) {
     const types = Array.from(event.dataTransfer.types);
@@ -16,7 +16,7 @@ function isJsonDragEvent(event) {
 function isJsonFile(file) {
     return file.type === "application/json" || file.name.toLowerCase().endsWith(".json");
 }
-export function usePanelFeedbackTransfer({ transferScope, canTransferFeedback, setErrorMessage, refetch, openPanelTab, onMoreMenuClose, isRecording, }) {
+export function usePanelFeedbackTransfer({ transferScope, canTransferFeedback, messages, setErrorMessage, refetch, openPanelTab, onMoreMenuClose, isRecording, }) {
     const { projectId, environment, appVersion } = transferScope;
     const [isDragOver, setIsDragOver] = useState(false);
     const [pendingImport, setPendingImport] = useState(null);
@@ -37,7 +37,7 @@ export function usePanelFeedbackTransfer({ transferScope, canTransferFeedback, s
     }, [closeMoreMenu, setErrorMessage, transferScope]);
     const handleImportFile = useCallback(async (file) => {
         if (!canTransferFeedback) {
-            setErrorMessage("localStorage 저장소에서만 import/export를 사용할 수 있어요.");
+            setErrorMessage(messages.errors.localStorageTransferOnly);
             return;
         }
         try {
@@ -45,19 +45,19 @@ export function usePanelFeedbackTransfer({ transferScope, canTransferFeedback, s
             queueImport(payload);
         }
         catch (nextError) {
-            setErrorMessage(nextError instanceof Error ? nextError.message : "JSON import에 실패했어요.");
+            setErrorMessage(nextError instanceof Error ? nextError.message : messages.errors.jsonImportFailed);
         }
-    }, [canTransferFeedback, queueImport, setErrorMessage]);
+    }, [canTransferFeedback, messages.errors, queueImport, setErrorMessage]);
     const handleExport = useCallback(() => {
         if (!canTransferFeedback) {
-            setErrorMessage("localStorage 저장소에서만 import/export를 사용할 수 있어요.");
+            setErrorMessage(messages.errors.localStorageTransferOnly);
             return;
         }
         closeMoreMenu();
         const items = readAllFeedback(transferScope);
         void downloadFeedbackJson(createFeedbackBackupFilename(projectId, environment, appVersion), toReportProject(transferScope), items).then((result) => {
             if (result === "failed") {
-                setErrorMessage("JSON export에 실패했어요. 브라우저 다운로드 권한을 확인해주세요.");
+                setErrorMessage(messages.errors.jsonExportFailed);
                 return;
             }
             if (result === "cancelled") {
@@ -65,10 +65,10 @@ export function usePanelFeedbackTransfer({ transferScope, canTransferFeedback, s
             }
             setErrorMessage("");
         });
-    }, [canTransferFeedback, closeMoreMenu, environment, projectId, setErrorMessage, transferScope, appVersion]);
+    }, [canTransferFeedback, closeMoreMenu, environment, messages.errors, projectId, setErrorMessage, transferScope, appVersion]);
     const handleImportFromMenu = useCallback(() => {
         if (!canTransferFeedback) {
-            setErrorMessage("localStorage 저장소에서만 import/export를 사용할 수 있어요.");
+            setErrorMessage(messages.errors.localStorageTransferOnly);
             return;
         }
         closeMoreMenu();
@@ -80,18 +80,18 @@ export function usePanelFeedbackTransfer({ transferScope, canTransferFeedback, s
             return handleImportFile(file);
         })
             .catch((error) => {
-            setErrorMessage(error instanceof Error ? error.message : "JSON import에 실패했어요.");
+            setErrorMessage(error instanceof Error ? error.message : messages.errors.jsonImportFailed);
         });
-    }, [canTransferFeedback, closeMoreMenu, handleImportFile, setErrorMessage]);
+    }, [canTransferFeedback, closeMoreMenu, handleImportFile, messages.errors, setErrorMessage]);
     const handleOpenCommand = useCallback(() => {
         if (!canTransferFeedback) {
-            setErrorMessage("localStorage 저장소에서만 command를 사용할 수 있어요.");
+            setErrorMessage(messages.errors.localStorageCommandOnly);
             return;
         }
         closeMoreMenu();
         setErrorMessage("");
         openPanelTab("command");
-    }, [canTransferFeedback, closeMoreMenu, openPanelTab, setErrorMessage]);
+    }, [canTransferFeedback, closeMoreMenu, messages.errors, openPanelTab, setErrorMessage]);
     const handleCloseCommand = useCallback(() => {
         setCommandStep("none");
         setPendingCommand(null);
@@ -100,7 +100,7 @@ export function usePanelFeedbackTransfer({ transferScope, canTransferFeedback, s
     }, [openPanelTab]);
     const handleCommandExecute = useCallback(async (raw) => {
         if (!canTransferFeedback) {
-            throw new Error("localStorage 저장소에서만 command를 사용할 수 있어요.");
+            throw new Error(messages.errors.localStorageCommandOnly);
         }
         const payload = parseFeedbackCommandJson(raw);
         const conflicts = findFeedbackInsertConflicts(transferScope, payload.items);
@@ -115,9 +115,9 @@ export function usePanelFeedbackTransfer({ transferScope, canTransferFeedback, s
         setErrorMessage("");
         return {
             status: "success",
-            message: buildCommandSuccessMessage(result.inserted, result.replaced),
+            message: buildCommandSuccessMessage(messages, result.inserted, result.replaced),
         };
-    }, [canTransferFeedback, refetch, setErrorMessage, transferScope]);
+    }, [canTransferFeedback, messages, refetch, setErrorMessage, transferScope]);
     const handleCancelCommandReplace = useCallback(() => {
         setPendingCommand(null);
         setCommandConflicts([]);
@@ -136,11 +136,11 @@ export function usePanelFeedbackTransfer({ transferScope, canTransferFeedback, s
             setCommandConflicts([]);
             setCommandStep("none");
             setCommandNotice({
-                message: buildCommandSuccessMessage(result.inserted, result.replaced),
+                message: buildCommandSuccessMessage(messages, result.inserted, result.replaced),
                 isError: false,
             });
         })();
-    }, [pendingCommand, refetch, setErrorMessage, transferScope]);
+    }, [messages, pendingCommand, refetch, setErrorMessage, transferScope]);
     const applyImport = useCallback(async (payload) => {
         writeAllFeedback(transferScope, payload.items);
         setPendingImport(null);
@@ -169,13 +169,13 @@ export function usePanelFeedbackTransfer({ transferScope, canTransferFeedback, s
         void downloadFeedbackJson(createFeedbackBackupFilename(projectId, environment, appVersion), toReportProject(transferScope), currentItems).then((result) => {
             if (result === "cancelled" || result === "failed") {
                 if (result === "failed") {
-                    setErrorMessage("백업 export에 실패해서 import를 중단했어요.");
+                    setErrorMessage(messages.errors.backupExportFailedAbortImport);
                 }
                 return;
             }
             void applyImport(pending);
         });
-    }, [applyImport, environment, pendingImport, projectId, setErrorMessage, transferScope, appVersion]);
+    }, [applyImport, environment, messages.errors, pendingImport, projectId, setErrorMessage, transferScope, appVersion]);
     const handleDragEnter = useCallback((event) => {
         if (isRecording || !canTransferFeedback || importStep !== "none" || commandStep !== "none") {
             return;
@@ -216,11 +216,11 @@ export function usePanelFeedbackTransfer({ transferScope, canTransferFeedback, s
         setIsDragOver(false);
         const file = Array.from(event.dataTransfer.files).find(isJsonFile);
         if (!file) {
-            setErrorMessage("JSON 파일만 import할 수 있어요.");
+            setErrorMessage(messages.errors.jsonFileOnly);
             return;
         }
         void handleImportFile(file);
-    }, [canTransferFeedback, commandStep, handleImportFile, importStep, isRecording, setErrorMessage]);
+    }, [canTransferFeedback, commandStep, handleImportFile, importStep, isRecording, messages.errors, setErrorMessage]);
     return {
         isDragOver,
         pendingImport,

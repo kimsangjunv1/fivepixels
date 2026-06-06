@@ -30,3 +30,5 @@ export type {
     UpdateReportFeedbackPayload,
 } from "../../types/report.js";
 export { REPORT_STATUS_FLOW, REPORT_STATUS_TRANSITIONS } from "../../types/report.js";
+export type { DeepPartialReportMessages, ReportLocale, ReportMessages } from "../../i18n/index.js";
+export { en as reportMessagesEn, getDefaultFields, getReportMessages, ko as reportMessagesKo, resolveReportLocale } from "../../i18n/index.js";

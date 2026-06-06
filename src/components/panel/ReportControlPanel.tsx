@@ -21,7 +21,7 @@ import { formatStatCount } from "../../utils/formatStatCount.js";
 import { panelNumericClassName } from "../../utils/panelTypography.js";
 import type { ReportPanelTab } from "../../types/report-ui.js";
 
-function PanelCollapseTab({ collapsed, anchorSide, onClick }: { collapsed: boolean; anchorSide: "left" | "right"; onClick: () => void }) {
+function PanelCollapseTab({ collapsed, anchorSide, onClick, messages }: { collapsed: boolean; anchorSide: "left" | "right"; onClick: () => void; messages: ReturnType<typeof useReport>["messages"] }) {
     const hideIcon = anchorSide === "right" ? <ChevronRightIcon className="h-3 w-3 text-slate-500 dark:text-slate-300" /> : <ChevronLeftIcon className="h-3 w-3 text-slate-500 dark:text-slate-300" />;
     const expandIcon =
         anchorSide === "right" ? <ChevronLeftIcon className="h-3 w-3 text-slate-500 dark:text-slate-300" /> : <ChevronRightIcon className="h-3 w-3 text-slate-500 dark:text-slate-300" />;
@@ -32,8 +32,8 @@ function PanelCollapseTab({ collapsed, anchorSide, onClick }: { collapsed: boole
             onClick={onClick}
             className=""
             aria-expanded={!collapsed}
-            aria-label={collapsed ? "패널 펼치기" : "패널 숨기기"}
-            title={collapsed ? "패널 펼치기" : "패널 숨기기"}
+            aria-label={collapsed ? messages.panel.expand : messages.panel.collapse}
+            title={collapsed ? messages.panel.expand : messages.panel.collapse}
         >
             {collapsed ? expandIcon : hideIcon}
         </button>
@@ -88,6 +88,7 @@ export function ReportControlPanel() {
         appearance,
         setAppearance,
         canTransferFeedback,
+        messages,
         toggleReportMode,
         toggleTargetPreview,
         toggleIssueMode,
@@ -128,6 +129,7 @@ export function ReportControlPanel() {
     } = usePanelFeedbackTransfer({
         transferScope,
         canTransferFeedback,
+        messages,
         setErrorMessage,
         refetch,
         openPanelTab,
@@ -191,7 +193,7 @@ export function ReportControlPanel() {
                                 onClick={toggleReportMode}
                                 className="flex items-center shrink-0"
                             >
-                                <p className="text-[14px] font-bold text-[var(--adaptive-blue500)]">Stop Feedback...</p>
+                                <p className="text-[14px] font-bold text-[var(--adaptive-blue500)]">{messages.panel.stopFeedback}</p>
                             </button>
                         </section>
                     ) : (
@@ -200,7 +202,7 @@ export function ReportControlPanel() {
                                 <section className="relative flex min-w-0 flex-1 flex-col">
                                     {isDragOver ? (
                                         <div className="pointer-events-none absolute inset-0 z-[30] flex items-center justify-center rounded-[12px] bg-[#dbeafe]/90 px-[16px] text-center backdrop-blur-[2px]">
-                                            <p className="text-[14px] font-bold text-[var(--adaptive-blue500)]">선택하신 JSON을 import 합니다</p>
+                                            <p className="text-[14px] font-bold text-[var(--adaptive-blue500)]">{messages.panel.importDragOverlay}</p>
                                         </div>
                                     ) : null}
 
@@ -210,6 +212,7 @@ export function ReportControlPanel() {
                                                 collapsed={panelCollapsed}
                                                 anchorSide={anchorSide}
                                                 onClick={() => setPanelCollapsed((current) => !current)}
+                                                messages={messages}
                                             />
                                         ) : null}
 
@@ -228,7 +231,7 @@ export function ReportControlPanel() {
                                                         className="flex items-center gap-[4px] rounded-l-[8px] bg-[var(--adaptive-black900)] p-[0_8px]"
                                                     >
                                                         <SelectIcon className="w-[16px]" />
-                                                        <p className="text-[12px] text-[var(--adaptive-black50)]">add feedback</p>
+                                                        <p className="text-[12px] text-[var(--adaptive-black50)]">{messages.panel.addFeedback}</p>
                                                     </button>
 
                                                     <PanelDropdownMenu
@@ -241,7 +244,7 @@ export function ReportControlPanel() {
                                                                 onClick={() => setViewMenuOpen((current) => !current)}
                                                                 aria-expanded={viewMenuOpen}
                                                                 aria-haspopup="menu"
-                                                                aria-label="View options"
+                                                                aria-label={messages.panel.viewOptionsAriaLabel}
                                                                 className="flex items-center rounded-r-[8px] border-l border-[var(--adaptive-black700)] bg-[var(--adaptive-black900)] p-[2px_8px] h-[24px]"
                                                             >
                                                                 <ChevronDownIcon className={`h-4 w-4 text-[var(--adaptive-black900)] transition-transform ${viewMenuOpen ? "rotate-180" : ""}`} />
@@ -256,7 +259,7 @@ export function ReportControlPanel() {
                                                                 toggleTargetPreview();
                                                             }}
                                                         >
-                                                            View Selectable Elements
+                                                            {messages.panel.viewSelectableElements}
                                                         </PanelDropdownMenuItem>
                                                         <PanelDropdownMenuItem
                                                             active={isIssueMode}
@@ -265,7 +268,7 @@ export function ReportControlPanel() {
                                                                 toggleIssueMode();
                                                             }}
                                                         >
-                                                            View Feedbacks
+                                                            {messages.panel.viewFeedbacks}
                                                         </PanelDropdownMenuItem>
                                                     </PanelDropdownMenu>
                                                 </section>
@@ -275,22 +278,22 @@ export function ReportControlPanel() {
                                                 <section
                                                     className="flex cursor-move flex-1"
                                                     onPointerDown={handleDragHandlePointerDown}
-                                                    aria-label="패널 위치 변경"
-                                                    title="드래그해서 위치 변경"
+                                                    aria-label={messages.panel.repositionAriaLabel}
+                                                    title={messages.panel.repositionTitle}
                                                     style={isDragging ? { opacity: 0.8 } : undefined}
                                                 >
                                                     <section className="flex flex-col items-start gap-[4px] flex-1">
-                                                        <p className="text-[12px] text-[var(--adaptive-black500)]">Found</p>
+                                                        <p className="text-[12px] text-[var(--adaptive-black500)]">{messages.panel.statsFound}</p>
                                                         <p className={`text-[14px] font-semibold text-[var(--adaptive-black900)] ${panelNumericClassName}`}>{formatStatCount(targetStats.found)}</p>
                                                     </section>
 
                                                     <section className="flex flex-col items-start gap-[4px] flex-1">
-                                                        <p className="text-[12px] text-[var(--adaptive-black500)]">Group</p>
+                                                        <p className="text-[12px] text-[var(--adaptive-black500)]">{messages.panel.statsGroup}</p>
                                                         <p className={`text-[14px] font-semibold text-[var(--adaptive-black900)] ${panelNumericClassName}`}>{formatStatCount(targetStats.group)}</p>
                                                     </section>
 
                                                     <section className="flex flex-col items-start gap-[4px] flex-1">
-                                                        <p className="text-[12px] text-[var(--adaptive-black500)]">Item</p>
+                                                        <p className="text-[12px] text-[var(--adaptive-black500)]">{messages.panel.statsItem}</p>
                                                         <p className={`text-[14px] font-semibold text-[var(--adaptive-black900)] ${panelNumericClassName}`}>{formatStatCount(targetStats.item)}</p>
                                                     </section>
                                                 </section>
@@ -302,6 +305,7 @@ export function ReportControlPanel() {
                                                 collapsed={panelCollapsed}
                                                 anchorSide={anchorSide}
                                                 onClick={() => setPanelCollapsed((current) => !current)}
+                                                messages={messages}
                                             />
                                         ) : null}
                                     </section>
@@ -309,14 +313,14 @@ export function ReportControlPanel() {
                                     <section className="flex items-stretch border-t border-[var(--adaptive-black200)]">
                                         <div className="flex min-w-0 flex-1 overflow-hidden">
                                             <PanelTabButton
-                                                label="Page Details"
+                                                label={messages.panel.tabPageDetails}
                                                 active={panelTab === "route-details"}
                                                 onClick={() => handlePanelTabClick("route-details")}
                                             />
                                             <div className="h-full w-[1px] bg-[var(--adaptive-black200)]" />
                                             {showFeedbackList ? (
                                                 <PanelTabButton
-                                                    label="Feedback List"
+                                                    label={messages.panel.tabFeedbackList}
                                                     active={panelTab === "feedback-list"}
                                                     onClick={() => handlePanelTabClick("feedback-list")}
                                                 />
