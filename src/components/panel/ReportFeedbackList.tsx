@@ -9,6 +9,7 @@ import { ShortcutHint } from "../ShortcutHint.js";
 import { FeedbackFieldTags } from "./feedback/FeedbackFieldTags.js";
 import { SearchIcon } from "../icons/SearchIcon.js";
 import { CopyIcon } from "../icons/CopyIcon.js";
+import { TrashIcon } from "../icons/TrashIcon.js";
 import { ChevronDownIcon } from "../icons/ChevronDownIcon.js";
 import { copyTextToClipboard, serializeFeedbackItem } from "../../utils/feedbackDataTransfer.js";
 import type { ReportFeedback } from "../../types/report.js";
@@ -62,6 +63,62 @@ function getRouteStatusTone(status: RouteDetailStatus) {
     return { backgroundColor: "#fff7ed", color: "#c2410c" };
 }
 
+function FeedbackListDeleteButton({
+    report,
+    onDelete,
+    disabled = false,
+}: {
+    report: ReportFeedback;
+    onDelete: (id: string) => Promise<void>;
+    disabled?: boolean;
+}) {
+    const [confirming, setConfirming] = useState(false);
+
+    useEffect(() => {
+        if (!confirming) {
+            return;
+        }
+
+        const timer = window.setTimeout(() => setConfirming(false), 1500);
+
+        return () => {
+            window.clearTimeout(timer);
+        };
+    }, [confirming]);
+
+    const handleDelete = (event: MouseEvent<HTMLButtonElement>) => {
+        event.stopPropagation();
+
+        if (!confirming) {
+            setConfirming(true);
+            return;
+        }
+
+        void onDelete(report.id).finally(() => {
+            setConfirming(false);
+        });
+    };
+
+    return (
+        <button
+            type="button"
+            data-stitchable-interactive=""
+            onClick={handleDelete}
+            disabled={disabled}
+            aria-label={confirming ? "한 번 더 눌러 피드백 삭제" : "피드백 삭제"}
+            title={confirming ? "한 번 더 눌러 삭제" : "삭제"}
+            className={`flex shrink-0 items-center justify-center gap-[2px] self-start rounded-[6px] p-[6px] disabled:opacity-50 ${
+                confirming
+                    ? "text-rose-700 hover:bg-rose-50"
+                    : "text-[var(--adaptive-black500)] hover:bg-[var(--adaptive-black100)] hover:text-rose-700"
+            }`}
+        >
+            <TrashIcon className="h-[16px] w-[16px]" />
+            {confirming ? <span className="text-[10px] font-semibold">삭제</span> : null}
+        </button>
+    );
+}
+
 function FeedbackListCopyButton({ report }: { report: ReportFeedback }) {
     const [copied, setCopied] = useState(false);
 
@@ -93,7 +150,22 @@ function FeedbackListCopyButton({ report }: { report: ReportFeedback }) {
 }
 
 export function ReportFeedbackList() {
-    const { filters, setFilters, filteredReports, reports, fields, isError, isFetching, queryErrorMessage, visibleShortcutKeys, searchInputRef, locateFeedback, refetch } = useReport();
+    const {
+        filters,
+        setFilters,
+        filteredReports,
+        reports,
+        fields,
+        isError,
+        isFetching,
+        isDeleting,
+        queryErrorMessage,
+        visibleShortcutKeys,
+        searchInputRef,
+        locateFeedback,
+        refetch,
+        handleDelete,
+    } = useReport();
 
     const [visibleCount, setVisibleCount] = useState(FEEDBACK_PAGE_SIZE);
     const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() => new Set());
@@ -284,8 +356,13 @@ export function ReportFeedbackList() {
                                                       <p className="text-[var(--adaptive-black500)] text-[12px]">{formatTimeOnly(report.created_at)}</p>
                                                   </button>
 
-                                                  <div className="p-[12px] pl-0">
+                                                  <div className="flex shrink-0 items-start gap-[2px] p-[12px] pl-0">
                                                       <FeedbackListCopyButton report={report} />
+                                                      <FeedbackListDeleteButton
+                                                          report={report}
+                                                          onDelete={handleDelete}
+                                                          disabled={isDeleting}
+                                                      />
                                                   </div>
                                               </div>
                                           );
