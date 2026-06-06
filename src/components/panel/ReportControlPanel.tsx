@@ -151,7 +151,8 @@ export function ReportControlPanel() {
                 activeCorner={activeCorner}
             />
 
-            {isRecording && statusText ? (
+            {/* 임시 주석 */}
+            {/* {isRecording && statusText ? (
                 <div
                     className="pointer-events-none fixed bottom-[52px] left-0 right-0 z-[1000000] flex flex-col items-center gap-[4px] px-4 text-center text-white"
                     style={{ filter: RECORDING_STATUS_SHADOW }}
@@ -165,7 +166,7 @@ export function ReportControlPanel() {
                         </p>
                     ))}
                 </div>
-            ) : null}
+            ) : null} */}
 
             <motion.div
                 ref={panelRef}
@@ -181,8 +182,8 @@ export function ReportControlPanel() {
                     {isRecording ? (
                         <section className="flex items-center justify-between gap-[16px] px-[12px] py-[8px]">
                             <section className="flex items-center gap-[4px] justify-start shrink-0">
-                                <LogoIcon className="w-[18px]" />
-                                <p className="text-[var(--adaptive-black900)] text-[16px]">Stitchable°</p>
+                                <LogoIcon className="w-[16px]" />
+                                <p className="text-[var(--adaptive-black900)] text-[14px]">Stitchable°</p>
                             </section>
 
                             <button
@@ -190,7 +191,7 @@ export function ReportControlPanel() {
                                 onClick={toggleReportMode}
                                 className="flex items-center shrink-0"
                             >
-                                <p className="text-[14px] font-bold text-[var(--adaptive-blue500)]">Stop Recording...</p>
+                                <p className="text-[14px] font-bold text-[var(--adaptive-blue500)]">Stop Feedback...</p>
                             </button>
                         </section>
                     ) : (

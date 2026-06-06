@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { ChevronDownIcon } from "../../icons/ChevronDownIcon.js";
 import type { ReportAuthor } from "../../../types/report.js";
+import { PanelDropdownMenu, PanelDropdownMenuItem } from "../PanelDropdownMenu.js";
 
 type AuthorSelectorProps = {
     authors: ReportAuthor[];
@@ -8,6 +10,8 @@ type AuthorSelectorProps = {
 };
 
 export function AuthorSelector({ authors, value, onChange }: AuthorSelectorProps) {
+    const [menuOpen, setMenuOpen] = useState(false);
+
     if (authors.length === 0) {
         return (
             <input
@@ -21,30 +25,38 @@ export function AuthorSelector({ authors, value, onChange }: AuthorSelectorProps
     }
 
     return (
-        <div className="relative min-w-0">
-            <select
-                value={value}
-                onChange={(event) => onChange(event.target.value)}
-                className="w-full appearance-none rounded-full bg-[var(--adaptive-black800)] py-[4px] h-[24px] pr-[28px] pl-[12px] text-[12px] text-[var(--adaptive-black500)] outline-none"
-            >
-                {!value ? (
-                    <option
-                        value=""
-                        disabled
-                    >
-                        작성자 선택
-                    </option>
-                ) : null}
-                {authors.map((author) => (
-                    <option
-                        key={author.id}
-                        value={author.name}
-                    >
-                        {author.name}
-                    </option>
-                ))}
-            </select>
-            <ChevronDownIcon className="pointer-events-none absolute top-1/2 right-[10px] h-[14px] w-[14px] -translate-y-1/2 text-[var(--adaptive-black600)]" />
-        </div>
+        <PanelDropdownMenu
+            open={menuOpen}
+            onClose={() => setMenuOpen(false)}
+            align="left"
+            menuClassName="min-w-full"
+            trigger={
+                <button
+                    type="button"
+                    onClick={() => setMenuOpen((current) => !current)}
+                    aria-expanded={menuOpen}
+                    aria-haspopup="menu"
+                    aria-label="작성자 선택"
+                    className="flex w-full min-w-0 items-center justify-between rounded-full bg-[var(--adaptive-black800)] py-[4px] h-[24px] pr-[10px] pl-[12px] text-[12px] outline-none"
+                >
+                    <span className={`text-[var(--adaptive-black500)]`}>{value || "작성자 선택"}</span>
+
+                    <ChevronDownIcon className={`h-[14px] w-[14px] shrink-0 text-[var(--adaptive-black600)] transition-transform ${menuOpen ? "rotate-180" : ""}`} />
+                </button>
+            }
+        >
+            {authors.map((author) => (
+                <PanelDropdownMenuItem
+                    key={author.id}
+                    active={value === author.name}
+                    onClick={() => {
+                        setMenuOpen(false);
+                        onChange(author.name);
+                    }}
+                >
+                    {author.name}
+                </PanelDropdownMenuItem>
+            ))}
+        </PanelDropdownMenu>
     );
 }

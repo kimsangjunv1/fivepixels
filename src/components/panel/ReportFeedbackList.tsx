@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
-import type { ReportFilters } from "../../types/report-ui.js";
 import { REPORT_SHORTCUTS } from "../../constants/reportShortcuts.js";
 import { useReport } from "../../providers/reportContext.js";
 import { formatDateOnly, formatTimeOnly } from "../../utils/format.js";
@@ -13,6 +12,7 @@ import { TrashIcon } from "../icons/TrashIcon.js";
 import { ChevronDownIcon } from "../icons/ChevronDownIcon.js";
 import { copyTextToClipboard, serializeFeedbackItem } from "../../utils/feedbackDataTransfer.js";
 import type { ReportFeedback } from "../../types/report.js";
+import { PanelDropdownMenu, PanelDropdownMenuItem } from "./PanelDropdownMenu.js";
 
 const FEEDBACK_PAGE_SIZE = 20;
 
@@ -145,7 +145,12 @@ export function ReportFeedbackList() {
 
     const [visibleCount, setVisibleCount] = useState(FEEDBACK_PAGE_SIZE);
     const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() => new Set());
+    const [statusMenuOpen, setStatusMenuOpen] = useState(false);
+    const [reportTypeMenuOpen, setReportTypeMenuOpen] = useState(false);
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
+
+    const statusLabel = filters.status === "all" ? "전체 상태" : ROUTE_DETAIL_STATUS_LABEL[filters.status];
+    const reportTypeLabel = filters.reportType === "all" ? "전체 타입" : filters.reportType;
 
     const visibleReports = useMemo(() => filteredReports.slice(0, visibleCount), [filteredReports, visibleCount]);
     const groupedReports = useMemo(() => groupReportsByDate(visibleReports), [visibleReports]);
@@ -202,34 +207,96 @@ export function ReportFeedbackList() {
     }, [filteredReports.length, visibleCount]);
 
     return (
-        <section className="flex min-h-0 flex-1 flex-col bg-[var(--adaptive-black50)] rounded-[0_0_24px_24px] overflow-hidden">
+        <section className="flex min-h-0 flex-1 flex-col bg-[var(--adaptive-black50)] rounded-[0_0_24px_24px]">
             <div className="flex bg-[var(--adaptive-black50)] border-y border-y-[var(--adaptive-black200)]">
-                <section className="flex-1 flex">
-                    <select
-                        value={filters.status}
-                        onChange={(event) => setFilters((current) => ({ ...current, status: event.target.value as ReportFilters["status"] }))}
-                        className="px-[8px] text-[12px] text-[var(--adaptive-black800)] outline-none"
+                <section className="flex flex-1 items-center gap-[4px]">
+                    <PanelDropdownMenu
+                        open={statusMenuOpen}
+                        onClose={() => setStatusMenuOpen(false)}
+                        align="left"
+                        trigger={
+                            <button
+                                type="button"
+                                onClick={() => setStatusMenuOpen((current) => !current)}
+                                aria-expanded={statusMenuOpen}
+                                aria-haspopup="menu"
+                                aria-label="상태 필터"
+                                className="flex items-center gap-[4px] px-[8px] text-[12px] text-[var(--adaptive-black800)] outline-none"
+                            >
+                                <span>{statusLabel}</span>
+                                <ChevronDownIcon className={`h-[14px] w-[14px] text-[var(--adaptive-black600)] transition-transform ${statusMenuOpen ? "rotate-180" : ""}`} />
+                            </button>
+                        }
                     >
-                        <option value="all">전체 상태</option>
+                        <PanelDropdownMenuItem
+                            active={filters.status === "all"}
+                            onClick={() => {
+                                setStatusMenuOpen(false);
+                                setFilters((current) => ({ ...current, status: "all" }));
+                            }}
+                        >
+                            전체 상태
+                        </PanelDropdownMenuItem>
                         {(Object.keys(ROUTE_DETAIL_STATUS_LABEL) as RouteDetailStatus[]).map((status) => (
-                            <option
+                            <PanelDropdownMenuItem
                                 key={status}
-                                value={status}
+                                active={filters.status === status}
+                                onClick={() => {
+                                    setStatusMenuOpen(false);
+                                    setFilters((current) => ({ ...current, status }));
+                                }}
                             >
                                 {ROUTE_DETAIL_STATUS_LABEL[status]}
-                            </option>
+                            </PanelDropdownMenuItem>
                         ))}
-                    </select>
+                    </PanelDropdownMenu>
 
-                    <select
-                        value={filters.reportType}
-                        onChange={(event) => setFilters((current) => ({ ...current, reportType: event.target.value as ReportFilters["reportType"] }))}
-                        className="px-[8px] text-[12px] text-[var(--adaptive-black800)] outline-none"
+                    <PanelDropdownMenu
+                        open={reportTypeMenuOpen}
+                        onClose={() => setReportTypeMenuOpen(false)}
+                        align="left"
+                        trigger={
+                            <button
+                                type="button"
+                                onClick={() => setReportTypeMenuOpen((current) => !current)}
+                                aria-expanded={reportTypeMenuOpen}
+                                aria-haspopup="menu"
+                                aria-label="타입 필터"
+                                className="flex items-center gap-[4px] px-[8px] text-[12px] text-[var(--adaptive-black800)] outline-none"
+                            >
+                                <span>{reportTypeLabel}</span>
+                                <ChevronDownIcon className={`h-[14px] w-[14px] text-[var(--adaptive-black600)] transition-transform ${reportTypeMenuOpen ? "rotate-180" : ""}`} />
+                            </button>
+                        }
                     >
-                        <option value="all">전체 타입</option>
-                        <option value="item">item</option>
-                        <option value="group">group</option>
-                    </select>
+                        <PanelDropdownMenuItem
+                            active={filters.reportType === "all"}
+                            onClick={() => {
+                                setReportTypeMenuOpen(false);
+                                setFilters((current) => ({ ...current, reportType: "all" }));
+                            }}
+                        >
+                            전체 타입
+                        </PanelDropdownMenuItem>
+                        <PanelDropdownMenuItem
+                            active={filters.reportType === "item"}
+                            onClick={() => {
+                                setReportTypeMenuOpen(false);
+                                setFilters((current) => ({ ...current, reportType: "item" }));
+                            }}
+                        >
+                            item
+                        </PanelDropdownMenuItem>
+                        <PanelDropdownMenuItem
+                            active={filters.reportType === "group"}
+                            onClick={() => {
+                                setReportTypeMenuOpen(false);
+                                setFilters((current) => ({ ...current, reportType: "group" }));
+                            }}
+                        >
+                            group
+                        </PanelDropdownMenuItem>
+                    </PanelDropdownMenu>
                 </section>
 
                 <section className="flex-1 relative">
@@ -252,7 +319,7 @@ export function ReportFeedbackList() {
                 </section>
             </div>
 
-            <div className="min-h-0 flex-1 overflow-y-auto bg-[var(--adaptive-black50)]">
+            <div className="min-h-0 flex-1 overflow-y-auto bg-[var(--adaptive-black50)] rounded-[0_0_24px_24px]">
                 {isError ? (
                     <div className="space-y-1 rounded-md border border-rose-200 bg-rose-50 p-2 text-xs text-rose-800">
                         <strong className="text-sm font-semibold">목록을 불러오지 못했어요.</strong>
