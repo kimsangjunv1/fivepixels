@@ -16,7 +16,7 @@ export type ReportField = (ReportFieldBase & {
 });
 export type ReportFieldValues = Record<string, string | boolean>;
 /** Stored on each timeline reply. Hover-only states use helpers, not storage. */
-export type ReportReplyStatus = "suggested" | "found_error" | "verified";
+export type ReportReplyStatus = "suggested" | "found_error" | "resolved";
 export type ReportReply = {
     id: string;
     message: string;

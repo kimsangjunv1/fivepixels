@@ -1,6 +1,7 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
-import { useCallback, useRef, useState } from "react";
+import { useState } from "react";
 import { panelAnchorSide, usePanelDock } from "../../hooks/usePanelDock.js";
+import { usePanelFeedbackTransfer } from "../../hooks/usePanelFeedbackTransfer.js";
 import { useReport } from "../../providers/reportContext.js";
 import { SelectIcon } from "../../components/icons/SelectIcon.js";
 import { ChevronLeftIcon, ChevronRightIcon } from "../icons/ChevronIcon.js";
@@ -18,17 +19,6 @@ import { LogoIcon } from "./../icons/LogoIcon.js";
 import { motion } from "../motion/index.js";
 import { formatStatCount } from "../../utils/formatStatCount.js";
 import { panelNumericClassName } from "../../utils/panelTypography.js";
-import { createFeedbackBackupFilename, downloadFeedbackJson, findFeedbackInsertConflicts, insertFeedbackItems, isImportProjectCompatible, parseFeedbackCommandJson, pickFeedbackJsonFile, readAllFeedback, readFeedbackJsonFile, toReportProject, upsertFeedbackItems, writeAllFeedback, } from "../../utils/feedbackDataTransfer.js";
-function buildCommandSuccessMessage(inserted, replaced) {
-    if (replaced > 0 && inserted > 0) {
-        return `${inserted}건 삽입, ${replaced}건 교체가 완료되었어요.`;
-    }
-    if (replaced > 0) {
-        return `${replaced}건의 피드백 데이터가 교체되었어요.`;
-    }
-    return `${inserted}건의 피드백 데이터가 삽입되었어요.`;
-}
-const RECORDING_STATUS_SHADOW = "drop-shadow(0 1px 2px rgba(0,0,0,0.95)) drop-shadow(0 2px 6px rgba(0,0,0,0.9)) drop-shadow(0 4px 16px rgba(0,0,0,0.85)) drop-shadow(0 0 24px rgba(0,0,0,0.75))";
 function PanelCollapseTab({ collapsed, anchorSide, onClick }) {
     const hideIcon = anchorSide === "right" ? _jsx(ChevronRightIcon, { className: "h-3 w-3 text-slate-500 dark:text-slate-300" }) : _jsx(ChevronLeftIcon, { className: "h-3 w-3 text-slate-500 dark:text-slate-300" });
     const expandIcon = anchorSide === "right" ? _jsx(ChevronLeftIcon, { className: "h-3 w-3 text-slate-500 dark:text-slate-300" }) : _jsx(ChevronRightIcon, { className: "h-3 w-3 text-slate-500 dark:text-slate-300" });
@@ -43,229 +33,31 @@ function EnvironmentBadge({ environment }) {
     }
     return (_jsxs("span", { className: "inline-flex items-center gap-[4px] rounded-full border border-[var(--adaptive-black300)] bg-[var(--adaptive-black50)] px-[4px] py-[2px]", children: [_jsx("span", { className: "text-[12px] text-[var(--adaptive-black500)]", children: environment }), _jsx("span", { className: "inline-flex h-[4px] w-[4px] rounded-full bg-[var(--adaptive-green500)]", "aria-hidden": true })] }));
 }
-function isJsonDragEvent(event) {
-    const types = Array.from(event.dataTransfer.types);
-    return types.includes("Files") || types.includes("application/json");
-}
-function isJsonFile(file) {
-    return file.type === "application/json" || file.name.toLowerCase().endsWith(".json");
-}
+const RECORDING_STATUS_SHADOW = "drop-shadow(0 1px 2px rgba(0,0,0,0.95)) drop-shadow(0 2px 6px rgba(0,0,0,0.9)) drop-shadow(0 4px 16px rgba(0,0,0,0.85)) drop-shadow(0 0 24px rgba(0,0,0,0.75))";
 export function ReportControlPanel() {
     const { mode, targetStats, statusText, errorMessage, environment, projectId, appVersion, showFeedbackList, showTargetPreview, isMobileViewport, panelTab, appearance, setAppearance, canTransferFeedback, toggleReportMode, toggleTargetPreview, toggleIssueMode, openPanelTab, setErrorMessage, refetch, } = useReport();
     const [panelCollapsed, setPanelCollapsed] = useState(false);
     const [moreMenuOpen, setMoreMenuOpen] = useState(false);
     const [viewMenuOpen, setViewMenuOpen] = useState(false);
-    const [isDragOver, setIsDragOver] = useState(false);
-    const [pendingImport, setPendingImport] = useState(null);
-    const [importStep, setImportStep] = useState("none");
-    const [pendingCommand, setPendingCommand] = useState(null);
-    const [commandConflicts, setCommandConflicts] = useState([]);
-    const [commandStep, setCommandStep] = useState("none");
-    const [commandNotice, setCommandNotice] = useState(null);
-    const dragDepthRef = useRef(0);
     const isRecording = mode === "report";
     const isIssueMode = mode === "view";
+    const transferScope = { projectId, environment, appVersion };
+    const { isDragOver, pendingImport, importStep, pendingCommand, commandConflicts, commandStep, commandNotice, setCommandNotice, handleExport, handleImportFromMenu, handleOpenCommand, handleCloseCommand, handleCommandExecute, handleCancelCommandReplace, handleConfirmCommandReplace, handleCancelImport, handleProceedImportAfterMismatch, handleApplyImport, handleBackupAndApplyImport, handleDragEnter, handleDragLeave, handleDragOver, handleDrop, } = usePanelFeedbackTransfer({
+        transferScope,
+        canTransferFeedback,
+        setErrorMessage,
+        refetch,
+        openPanelTab,
+        onMoreMenuClose: () => setMoreMenuOpen(false),
+        isRecording,
+    });
     const { panelRef, panelStyle, placementCorner, isDragging, activeCorner, handleDragHandlePointerDown } = usePanelDock({
         enabled: !isMobileViewport,
         measureKey: `${panelCollapsed}-${isRecording}-${panelTab ?? "none"}-${isIssueMode}-${importStep !== "none" ? "import" : "none"}-${commandStep !== "none" ? "command" : "none"}`,
     });
     const anchorSide = panelAnchorSide(placementCorner);
-    const panelLayout = placementCorner.startsWith("top") ? "size" : "position";
-    const transferScope = { projectId, environment, appVersion };
     const handlePanelTabClick = (tab) => {
         openPanelTab(tab);
-    };
-    const queueImport = useCallback((payload) => {
-        setMoreMenuOpen(false);
-        setPendingImport(payload);
-        setImportStep(isImportProjectCompatible(transferScope, payload.project) ? "confirm" : "project-mismatch");
-        setErrorMessage("");
-    }, [setErrorMessage, transferScope]);
-    const handleImportFile = useCallback(async (file) => {
-        if (!canTransferFeedback) {
-            setErrorMessage("localStorage 저장소에서만 import/export를 사용할 수 있어요.");
-            return;
-        }
-        try {
-            const payload = await readFeedbackJsonFile(file);
-            queueImport(payload);
-        }
-        catch (nextError) {
-            setErrorMessage(nextError instanceof Error ? nextError.message : "JSON import에 실패했어요.");
-        }
-    }, [canTransferFeedback, queueImport, setErrorMessage]);
-    const handleExport = useCallback(() => {
-        if (!canTransferFeedback) {
-            setErrorMessage("localStorage 저장소에서만 import/export를 사용할 수 있어요.");
-            return;
-        }
-        setMoreMenuOpen(false);
-        const items = readAllFeedback(transferScope);
-        void downloadFeedbackJson(createFeedbackBackupFilename(projectId, environment, appVersion), toReportProject(transferScope), items).then((result) => {
-            if (result === "failed") {
-                setErrorMessage("JSON export에 실패했어요. 브라우저 다운로드 권한을 확인해주세요.");
-                return;
-            }
-            if (result === "cancelled") {
-                return;
-            }
-            setErrorMessage("");
-        });
-    }, [canTransferFeedback, environment, projectId, setErrorMessage, transferScope]);
-    const handleImportFromMenu = useCallback(() => {
-        if (!canTransferFeedback) {
-            setErrorMessage("localStorage 저장소에서만 import/export를 사용할 수 있어요.");
-            return;
-        }
-        setMoreMenuOpen(false);
-        void pickFeedbackJsonFile()
-            .then((file) => {
-            if (!file) {
-                return;
-            }
-            return handleImportFile(file);
-        })
-            .catch((error) => {
-            setErrorMessage(error instanceof Error ? error.message : "JSON import에 실패했어요.");
-        });
-    }, [canTransferFeedback, handleImportFile, setErrorMessage]);
-    const handleOpenCommand = useCallback(() => {
-        if (!canTransferFeedback) {
-            setErrorMessage("localStorage 저장소에서만 command를 사용할 수 있어요.");
-            return;
-        }
-        setMoreMenuOpen(false);
-        setErrorMessage("");
-        openPanelTab("command");
-    }, [canTransferFeedback, openPanelTab, setErrorMessage]);
-    const handleCloseCommand = useCallback(() => {
-        setCommandStep("none");
-        setPendingCommand(null);
-        setCommandConflicts([]);
-        openPanelTab("command");
-    }, [openPanelTab]);
-    const handleCommandExecute = useCallback(async (raw) => {
-        if (!canTransferFeedback) {
-            throw new Error("localStorage 저장소에서만 command를 사용할 수 있어요.");
-        }
-        const payload = parseFeedbackCommandJson(raw);
-        const conflicts = findFeedbackInsertConflicts(transferScope, payload.items);
-        if (conflicts.length > 0) {
-            setPendingCommand(payload);
-            setCommandConflicts(conflicts);
-            setCommandStep("replace-confirm");
-            return { status: "pending" };
-        }
-        const result = insertFeedbackItems(transferScope, payload.items);
-        await refetch();
-        setErrorMessage("");
-        return {
-            status: "success",
-            message: buildCommandSuccessMessage(result.inserted, result.replaced),
-        };
-    }, [canTransferFeedback, refetch, setErrorMessage, transferScope]);
-    const handleCancelCommandReplace = useCallback(() => {
-        setPendingCommand(null);
-        setCommandConflicts([]);
-        setCommandStep("none");
-    }, []);
-    const handleConfirmCommandReplace = useCallback(() => {
-        if (!pendingCommand) {
-            return;
-        }
-        const payload = pendingCommand;
-        void (async () => {
-            const result = upsertFeedbackItems(transferScope, payload.items);
-            await refetch();
-            setErrorMessage("");
-            setPendingCommand(null);
-            setCommandConflicts([]);
-            setCommandStep("none");
-            setCommandNotice({
-                message: buildCommandSuccessMessage(result.inserted, result.replaced),
-                isError: false,
-            });
-        })();
-    }, [pendingCommand, refetch, setErrorMessage, transferScope]);
-    const applyImport = useCallback(async (payload) => {
-        writeAllFeedback(transferScope, payload.items);
-        setPendingImport(null);
-        setImportStep("none");
-        await refetch();
-    }, [refetch, transferScope]);
-    const handleCancelImport = () => {
-        setPendingImport(null);
-        setImportStep("none");
-    };
-    const handleProceedImportAfterMismatch = () => {
-        setImportStep("confirm");
-    };
-    const handleApplyImport = () => {
-        if (!pendingImport) {
-            return;
-        }
-        void applyImport(pendingImport);
-    };
-    const handleBackupAndApplyImport = () => {
-        if (!pendingImport) {
-            return;
-        }
-        const currentItems = readAllFeedback(transferScope);
-        const pending = pendingImport;
-        void downloadFeedbackJson(createFeedbackBackupFilename(projectId, environment, appVersion), toReportProject(transferScope), currentItems).then((result) => {
-            if (result === "cancelled" || result === "failed") {
-                if (result === "failed") {
-                    setErrorMessage("백업 export에 실패해서 import를 중단했어요.");
-                }
-                return;
-            }
-            void applyImport(pending);
-        });
-    };
-    const handleDragEnter = (event) => {
-        if (isRecording || !canTransferFeedback || importStep !== "none" || commandStep !== "none") {
-            return;
-        }
-        if (!isJsonDragEvent(event)) {
-            return;
-        }
-        event.preventDefault();
-        dragDepthRef.current += 1;
-        setIsDragOver(true);
-    };
-    const handleDragLeave = (event) => {
-        if (isRecording || !canTransferFeedback) {
-            return;
-        }
-        event.preventDefault();
-        dragDepthRef.current = Math.max(0, dragDepthRef.current - 1);
-        if (dragDepthRef.current === 0) {
-            setIsDragOver(false);
-        }
-    };
-    const handleDragOver = (event) => {
-        if (isRecording || !canTransferFeedback || importStep !== "none" || commandStep !== "none") {
-            return;
-        }
-        if (!isJsonDragEvent(event)) {
-            return;
-        }
-        event.preventDefault();
-        event.dataTransfer.dropEffect = "copy";
-    };
-    const handleDrop = (event) => {
-        if (isRecording || !canTransferFeedback || importStep !== "none" || commandStep !== "none") {
-            return;
-        }
-        event.preventDefault();
-        dragDepthRef.current = 0;
-        setIsDragOver(false);
-        const file = Array.from(event.dataTransfer.files).find(isJsonFile);
-        if (!file) {
-            setErrorMessage("JSON 파일만 import할 수 있어요.");
-            return;
-        }
-        void handleImportFile(file);
     };
     return (_jsxs(_Fragment, { children: [_jsx(PanelDockGuides, { visible: isDragging, activeCorner: activeCorner }), isRecording && statusText ? (_jsx("div", { className: "pointer-events-none fixed bottom-[52px] left-0 right-0 z-[1000000] flex flex-col items-center gap-[4px] px-4 text-center text-white", style: { filter: RECORDING_STATUS_SHADOW }, children: statusText.split("\n").map((line, index) => (_jsx("p", { className: index === 0 ? "text-[12px] font-medium" : "text-[18px] font-bold", children: line }, `${index}-${line}`))) })) : null, _jsx(motion.div, { ref: panelRef, transition: { duration: 0.25, ease: "cubic-bezier(0.22, 1, 0.36, 1)" }, onDragEnter: handleDragEnter, onDragLeave: handleDragLeave, onDragOver: handleDragOver, onDrop: handleDrop, className: `pointer-events-auto fixed z-[1000000] bg-[var(--adaptive-whiteOpacity800)] backdrop-blur-[50px] rounded-[24px] shadow-[0_0_120px_0_var(--adaptive-blackOpacity500)] flex ${isRecording ? "min-h-[40px] p-[4px]" : "max-h-[80vh] min-h-[40px w-full max-w-[375px]"}`, style: { ...panelStyle, fontSize: "14px" }, children: _jsx(motion.div, { className: "flex min-w-0 flex-1 flex-col w-full", children: isRecording ? (_jsxs("section", { className: "flex items-center justify-between gap-[16px] px-[12px] py-[8px]", children: [_jsxs("section", { className: "flex items-center gap-[4px] justify-start shrink-0", children: [_jsx(LogoIcon, { className: "w-[18px]" }), _jsx("p", { className: "text-[var(--adaptive-black900)] text-[16px]", children: "Stitchable\u00B0" })] }), _jsx("button", { type: "button", onClick: toggleReportMode, className: "flex items-center shrink-0", children: _jsx("p", { className: "text-[14px] font-bold text-[var(--adaptive-blue500)]", children: "Stop Recording..." }) })] })) : (_jsx(_Fragment, { children: !panelCollapsed ? (_jsxs("section", { className: "relative flex min-w-0 flex-1 flex-col", children: [isDragOver ? (_jsx("div", { className: "pointer-events-none absolute inset-0 z-[30] flex items-center justify-center rounded-[12px] bg-[#dbeafe]/90 px-[16px] text-center backdrop-blur-[2px]", children: _jsx("p", { className: "text-[14px] font-bold text-[var(--adaptive-blue500)]", children: "\uC120\uD0DD\uD558\uC2E0 JSON\uC744 import \uD569\uB2C8\uB2E4" }) })) : null, _jsxs("section", { className: "flex", children: [anchorSide === "left" ? (_jsx(PanelCollapseTab, { collapsed: panelCollapsed, anchorSide: anchorSide, onClick: () => setPanelCollapsed((current) => !current) })) : null, _jsxs("div", { className: "flex flex-col gap-[8px] p-[8px_0_8px_12px] flex-1", children: [_jsxs("section", { className: "flex items-center justify-between gap-[8px]", children: [_jsxs("section", { className: "flex min-w-0 items-center gap-[4px]", children: [_jsx(LogoIcon, { className: "w-[16px] shrink-0" }), _jsx("p", { className: "shrink-0 text-[var(--adaptive-black900)] font-[700] text-[14px] select-none", children: "Stitchable\u00B0" }), _jsx(EnvironmentBadge, { environment: environment })] }), _jsxs("section", { className: "flex shrink-0 items-center", children: [_jsxs("button", { type: "button", onClick: toggleReportMode, className: "flex items-center gap-[4px] rounded-l-[8px] bg-[var(--adaptive-black900)] p-[0_8px]", children: [_jsx(SelectIcon, { className: "w-[16px]" }), _jsx("p", { className: "text-[12px] text-[var(--adaptive-black50)]", children: "add feedback" })] }), _jsxs(PanelDropdownMenu, { open: viewMenuOpen, onClose: () => setViewMenuOpen(false), menuClassName: "min-w-[200px]", trigger: _jsx("button", { type: "button", onClick: () => setViewMenuOpen((current) => !current), "aria-expanded": viewMenuOpen, "aria-haspopup": "menu", "aria-label": "View options", className: "flex items-center rounded-r-[8px] border-l border-[var(--adaptive-black700)] bg-[var(--adaptive-black900)] p-[2px_8px] h-[24px]", children: _jsx(ChevronDownIcon, { className: `h-4 w-4 text-[var(--adaptive-black900)] transition-transform ${viewMenuOpen ? "rotate-180" : ""}` }) }), children: [_jsx(PanelDropdownMenuItem, { active: showTargetPreview, disabled: mode !== "idle", onClick: () => {
                                                                                 setViewMenuOpen(false);

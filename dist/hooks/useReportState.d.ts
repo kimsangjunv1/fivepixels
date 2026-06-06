@@ -1,6 +1,6 @@
 import { type MouseEvent } from "react";
 import type { CreateReportFeedbackPayload, ReportAppearance, ReportAuthor, ReportEvent, ReportFeedback, ReportField, ReportIdentify, UpdateReportFeedbackPayload } from "../types/report.js";
-import type { DraftReport, EditableDraft, Marker, PendingFeedbackComposer, ReportFilters, ReportMode, ReportPanelTab, TargetSnapshot } from "../types/report-ui.js";
+import type { DraftReport, EditableDraft, Marker, PendingFeedbackComposer, ReportMode, ReportPanelTab, TargetSnapshot } from "../types/report-ui.js";
 export type ReportStateConfig = {
     projectId: string;
     environment?: string;
@@ -58,8 +58,8 @@ export declare function useReportState({ projectId, environment, appVersion, app
     mode: ReportMode;
     showTargetPreview: boolean;
     selectableTargets: TargetSnapshot[];
-    filters: ReportFilters;
-    setFilters: import("react").Dispatch<import("react").SetStateAction<ReportFilters>>;
+    filters: import("../types/report-ui.js").ReportFilters;
+    setFilters: import("react").Dispatch<import("react").SetStateAction<import("../types/report-ui.js").ReportFilters>>;
     reports: ReportFeedback[];
     filteredReports: ReportFeedback[];
     isError: boolean;

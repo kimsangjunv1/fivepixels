@@ -11,7 +11,7 @@ export function getLatestReply(report: ReportFeedback): ReportReply | null {
 
 export function getFeedbackDisplayStatus(report: ReportFeedback, expanded = false): FeedbackDisplayStatus {
     if (report.status === "resolved") {
-        return "verified";
+        return "resolved";
     }
 
     const latest = getLatestReply(report);
@@ -23,10 +23,7 @@ export function getFeedbackDisplayStatus(report: ReportFeedback, expanded = fals
     return latest.status;
 }
 
-export function getCheckboxFieldsFromValues(
-    fieldValues: ReportFeedback["field_values"],
-    labels: Map<string, string>,
-): { key: string; label: string }[] {
+export function getCheckboxFieldsFromValues(fieldValues: ReportFeedback["field_values"], labels: Map<string, string>): { key: string; label: string }[] {
     return Object.entries(fieldValues).flatMap(([key, value]) => {
         if (key === "message" || value !== true) {
             return [];

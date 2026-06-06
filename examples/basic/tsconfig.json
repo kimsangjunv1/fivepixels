@@ -7,5 +7,6 @@
     "declarationMap": false,
     "sourceMap": false
   },
-  "include": ["./**/*.ts", "./**/*.tsx", "../../src/**/*.ts", "../../src/**/*.tsx"]
+  "include": ["./**/*.ts", "./**/*.tsx", "../../src/**/*.ts", "../../src/**/*.tsx"],
+  "exclude": ["../../src/**/*.test.ts", "../../src/**/*.test.tsx"]
 }

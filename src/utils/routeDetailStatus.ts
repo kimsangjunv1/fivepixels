@@ -14,7 +14,7 @@ export const ROUTE_DETAIL_STATUS_LABEL: Record<RouteDetailStatus, string> = {
 export function getRouteDetailStatus(report: ReportFeedback): RouteDetailStatus {
     const displayStatus = getFeedbackDisplayStatus(report);
 
-    if (displayStatus === "verified") {
+    if (displayStatus === "resolved") {
         return "resolved";
     }
 
@@ -32,9 +32,5 @@ export function isCreatedToday(createdAt: string, now = new Date()) {
         return false;
     }
 
-    return (
-        created.getFullYear() === now.getFullYear() &&
-        created.getMonth() === now.getMonth() &&
-        created.getDate() === now.getDate()
-    );
+    return created.getFullYear() === now.getFullYear() && created.getMonth() === now.getMonth() && created.getDate() === now.getDate();
 }

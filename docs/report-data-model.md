@@ -22,11 +22,11 @@
 ## 3. replies 타입 규칙
 
 - reply 구조는 `id`, `message`, `created_at`, `status`를 기본으로 합니다.
-- `status`는 `suggested`, `found_error`, `verified` 중 하나입니다.
+- `status`는 `suggested`, `found_error`, `resolved` 중 하나입니다.
 - 확장 대비용으로 `author_type`, `author_name`는 선택값입니다.
 - 기본 `Report` UI는 view 모드에서 답변 작성·검수 흐름(`denied` / `confirm` / `checkout`)을 지원합니다.
 - `denied`, `checkout`은 UI 단계이며, 전송 후 저장되는 상태는 각각 `found_error`, `suggested`입니다.
-- `confirm` 시 `verified` reply를 추가하고, 필요하면 같은 `update` 요청에서 피드백 `status: "resolved"`를 함께 보냅니다.
+- `confirm` 시 `resolved` reply를 추가하고, 필요하면 같은 `update` 요청에서 피드백 `status: "resolved"`를 함께 보냅니다.
 - reply draft는 `ReportFeedback`에 섞지 않고 UI 로컬 상태로만 관리합니다.
 - local adapter는 역직렬화 시 알 수 없거나 누락된 `reply.status`를 `suggested`로 정규화합니다.
 
@@ -37,7 +37,7 @@
 - 필요 시 `resolved -> open` 재오픈은 허용할 수 있습니다.
 - 권장 전이 규칙은 `REPORT_STATUS_TRANSITIONS` 상수를 따릅니다.
 - 일반 답변(`suggested`, `found_error`)만 추가할 때는 피드백 `status`를 자동으로 바꾸지 않습니다.
-- 검수 완료(`confirm`) 시에는 `verified` reply와 함께 피드백 `status: "resolved"`를 명시적으로 보냅니다.
+- 검수 완료(`confirm`) 시에는 `resolved` reply와 함께 피드백 `status: "resolved"`를 명시적으로 보냅니다.
 - 종료 보관이 필요하면 `status: "archived"`를 명시적으로 보냅니다.
 - 기존 reply 이력은 status 변경으로 삭제하지 않습니다.
 - `archived` 상태의 report는 읽기 전용으로 보고, 기본 UI에서는 message/field/status/reply를 더 수정하지 않는 것을 기준으로 합니다.

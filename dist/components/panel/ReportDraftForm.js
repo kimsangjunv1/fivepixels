@@ -1,9 +1,9 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatedPresence, motion } from "../motion/index.js";
 import { useReport } from "../../providers/reportContext.js";
 import { DRAFT_POPOVER_CONNECTOR_WIDTH, getDraftMarkerPosition, getDraftPopoverPosition } from "../../utils/coordinates.js";
 import { FeedbackComposer } from "./feedback/FeedbackComposer.js";
-const DRAFT_MOTION_EASE = [0.22, 1, 0.36, 1];
+const DRAFT_MOTION_EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
 function getMotionOrigin(placement) {
     switch (placement) {
         case "right":
@@ -28,17 +28,17 @@ function DraftPopoverConnector({ placement }) {
 }
 export function ReportDraftForm() {
     const { draft, fields, authors, isCreating, selectedTarget, updateDraftMessage, updateDraftField, cancelDraft, handleCreateSubmit, draftAuthorName, setDraftAuthorName } = useReport();
-    return (_jsx(AnimatePresence, { children: draft ? (_jsx(ReportDraftFormContent, { draft: draft, fields: fields, authors: authors, isCreating: isCreating, selectedTarget: selectedTarget, updateDraftMessage: updateDraftMessage, updateDraftField: updateDraftField, cancelDraft: cancelDraft, handleCreateSubmit: handleCreateSubmit, draftAuthorName: draftAuthorName, setDraftAuthorName: setDraftAuthorName })) : null }));
+    return (_jsx(AnimatedPresence, { children: draft ? (_jsx(ReportDraftFormContent, { draft: draft, fields: fields, authors: authors, isCreating: isCreating, selectedTarget: selectedTarget, updateDraftMessage: updateDraftMessage, updateDraftField: updateDraftField, cancelDraft: cancelDraft, handleCreateSubmit: handleCreateSubmit, draftAuthorName: draftAuthorName, setDraftAuthorName: setDraftAuthorName })) : null }));
 }
 function ReportDraftFormContent({ draft, fields, authors, isCreating, selectedTarget, updateDraftMessage, updateDraftField, handleCreateSubmit, draftAuthorName, setDraftAuthorName, }) {
     const anchor = getDraftMarkerPosition(draft, selectedTarget);
     const { left, top, anchorCenterY, width, placement, centerVertically } = getDraftPopoverPosition(anchor);
     const verticalOffset = centerVertically ? "-50%" : 0;
-    return (_jsxs(motion.div, { initial: { y: verticalOffset }, animate: { y: verticalOffset }, exit: { y: verticalOffset }, transition: { duration: 0.25, ease: DRAFT_MOTION_EASE }, onClick: (event) => event.stopPropagation(), className: "pointer-events-auto fixed z-[1000001] flex flex-col rounded-[24px] bg-[var(--adaptive-whiteOpacity500)] p-[4px] shadow-[0_0_120px_0_var(--adaptive-black500)] backdrop-blur-[30px]", style: {
+    return (_jsxs(motion.div, { initial: { y: verticalOffset }, animate: { y: verticalOffset }, exit: { y: verticalOffset }, transition: { duration: 0.25, ease: DRAFT_MOTION_EASE }, onClick: (event) => event.stopPropagation(), className: "pointer-events-auto fixed z-[1000001] flex flex-col rounded-[24px] border-[2px] border-[var(--adaptive-black200)] bg-[var(--adaptive-blackOpacity800)] shadow-[0_0_120px_0_var(--adaptive-black500)] backdrop-blur-[30px]", style: {
             left,
             top: centerVertically ? anchorCenterY : top,
             width,
             transformOrigin: getMotionOrigin(placement),
-        }, children: [_jsx("section", { className: "overflow-hidden rounded-[20px] bg-[var(--adaptive-black100)]", children: _jsx(FeedbackComposer, { message: draft.message, onMessageChange: updateDraftMessage, authorName: draftAuthorName, onAuthorNameChange: setDraftAuthorName, authors: authors, fields: fields, fieldValues: draft.fieldValues, onFieldChange: updateDraftField, showTags: true, onSubmit: () => void handleCreateSubmit(), isSubmitting: isCreating, autoFocus: true }) }), _jsx(DraftPopoverConnector, { placement: placement })] }, "report-draft-form"));
+        }, children: [_jsx(FeedbackComposer, { message: draft.message, onMessageChange: updateDraftMessage, authorName: draftAuthorName, onAuthorNameChange: setDraftAuthorName, authors: authors, fields: fields, fieldValues: draft.fieldValues, onFieldChange: updateDraftField, showTags: true, onSubmit: () => void handleCreateSubmit(), isSubmitting: isCreating, autoFocus: true }), _jsx(DraftPopoverConnector, { placement: placement })] }, "report-draft-form"));
 }
 //# sourceMappingURL=ReportDraftForm.js.map

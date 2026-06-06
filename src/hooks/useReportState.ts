@@ -1,6 +1,6 @@
 import { type MouseEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useReportShortcuts } from "./useReportShortcuts.js";
-import { useCreateReportMutation, useDeleteReportMutation, useReportsQuery, useUpdateReportMutation } from "./report.query.js";
+import { useReportPersistence } from "./useReportPersistence.js";
 import { useIsMobileViewport } from "./useIsMobileViewport.js";
 import { useAppearancePreference } from "./useAppearancePreference.js";
 import { useResolvedAppearance } from "./useResolvedAppearance.js";
@@ -15,9 +15,8 @@ import type {
     ReportReply,
     UpdateReportFeedbackPayload,
 } from "../types/report.js";
-import type { DraftReport, EditableDraft, Marker, PendingFeedbackComposer, ReportFilters, ReportMode, ReportPanelTab, TargetSnapshot } from "../types/report-ui.js";
+import type { DraftReport, EditableDraft, Marker, PendingFeedbackComposer, ReportMode, ReportPanelTab, TargetSnapshot } from "../types/report-ui.js";
 import { createReplyStatusForSubmit, resolveOriginalFeedbackAuthorName } from "../utils/feedbackThread.js";
-import { getRouteDetailStatus, isCreatedToday, ROUTE_DETAIL_STATUS_ORDER } from "../utils/routeDetailStatus.js";
 import { clampRatio, getMarkerFromReport, resolveTooltipAnchor } from "../utils/coordinates.js";
 import { LOCATE_PULSE_DURATION_MS, scrollToFeedbackTarget } from "../utils/locateFeedback.js";
 
@@ -26,8 +25,6 @@ const OVERLAY_HOVER_LEAVE_MS = 100;
 import { findTargetByPoint, getSelectableTargets, isSameHoverTarget, toSnapshot } from "../utils/dom.js";
 import { createInitialFieldValues, getFieldError, getFieldTags } from "../utils/fields.js";
 import { createReplyId } from "../utils/format.js";
-import { useCurrentPathname } from "./useCurrentPathname.js";
-import { resolveStorageAdapter } from "../utils/storage.js";
 import { notifyFeedbackCreate, notifyFeedbackDelete, notifyFeedbackReply, notifyFeedbackUpdate, type ReportSideEffectCallbacks } from "../utils/reportCallbacks.js";
 
 function resolveDefaultAuthorName(identify: ReportIdentify | undefined, authors: ReportAuthor[]) {
@@ -87,12 +84,38 @@ export function useReportState({
 
     const resolvedAppearance = useResolvedAppearance(activeAppearance);
     const isMobileViewport = useIsMobileViewport();
-    const { adapter: storageAdapterInstance, usesLocalStorage } = useMemo(
-        () => resolveStorageAdapter({ projectId, environment, appVersion, onList, onCreate, onUpdate, onDelete }),
-        [appVersion, environment, onCreate, onDelete, onList, onUpdate, projectId],
-    );
-    const canTransferFeedback = usesLocalStorage;
-    const currentPathname = useCurrentPathname(routeKey);
+    const {
+        canTransferFeedback,
+        currentPathname,
+        filters,
+        setFilters,
+        selectedReportId,
+        setSelectedReportId,
+        reports,
+        filteredReports,
+        routeDetailsStats,
+        selectedReport,
+        isError,
+        isFetching,
+        isCreating,
+        isUpdating,
+        isDeleting,
+        queryErrorMessage,
+        refetch,
+        createFeedback,
+        updateFeedback,
+        deleteFeedback,
+    } = useReportPersistence({
+        projectId,
+        environment,
+        appVersion,
+        fields,
+        onList,
+        onCreate,
+        onUpdate,
+        onDelete,
+        routeKey,
+    });
     const eventCallbacks = useMemo<ReportSideEffectCallbacks>(
         () => ({
             onEvent,
@@ -104,11 +127,6 @@ export function useReportState({
     const [mode, setMode] = useState<ReportMode>("idle");
     const [showTargetPreview, setShowTargetPreview] = useState(false);
     const [selectableTargets, setSelectableTargets] = useState<TargetSnapshot[]>([]);
-    const [filters, setFilters] = useState<ReportFilters>({
-        keyword: "",
-        status: "all",
-        reportType: "all",
-    });
     const [errorMessage, setErrorMessage] = useState("");
     const [draft, setDraft] = useState<DraftReport | null>(null);
     const [hoveredTarget, setHoveredTarget] = useState<TargetSnapshot | null>(null);
@@ -122,97 +140,11 @@ export function useReportState({
     const [pendingComposer, setPendingComposer] = useState<PendingFeedbackComposer>(null);
     const [confirmAuthorName, setConfirmAuthorName] = useState("");
     const [showConfirmAuthorSelect, setShowConfirmAuthorSelect] = useState(false);
-    const [selectedReportId, setSelectedReportId] = useState<string | null>(null);
     const [locatedReportId, setLocatedReportId] = useState<string | null>(null);
     const locatePulseTimeoutRef = useRef<number | null>(null);
     const [editingReportId, setEditingReportId] = useState<string | null>(null);
     const [editableDraft, setEditableDraft] = useState<EditableDraft | null>(null);
     const [panelTab, setPanelTab] = useState<ReportPanelTab | null>(null);
-
-    // data (list, filter, mutations)
-    const { data: reports, error, isError, isFetching, refetch } = useReportsQuery(storageAdapterInstance, currentPathname, true);
-    const { mutateAsync: createFeedback, isPending: isCreating } = useCreateReportMutation(storageAdapterInstance, () => {
-        void refetch();
-    });
-    const { mutateAsync: updateFeedback, isPending: isUpdating } = useUpdateReportMutation(storageAdapterInstance, () => {
-        void refetch();
-    });
-    const { mutateAsync: deleteFeedback, isPending: isDeleting } = useDeleteReportMutation(storageAdapterInstance, () => {
-        void refetch();
-    });
-
-    const filteredReports = useMemo(() => {
-        return reports.filter((report) => {
-            if (filters.status !== "all" && getRouteDetailStatus(report) !== filters.status) {
-                return false;
-            }
-
-            if (filters.reportType !== "all" && report.report_type !== filters.reportType) {
-                return false;
-            }
-
-            if (!filters.keyword.trim()) {
-                return true;
-            }
-
-            const keyword = filters.keyword.trim().toLowerCase();
-            return [report.message, report.report_id, report.status].join(" ").toLowerCase().includes(keyword);
-        });
-    }, [filters.keyword, filters.reportType, filters.status, reports]);
-
-    const routeDetailsStats = useMemo(() => {
-        const statusRows = ROUTE_DETAIL_STATUS_ORDER.map((status) => ({
-            status,
-            all: 0,
-            today: 0,
-        }));
-
-        const statusIndex = new Map(statusRows.map((row, index) => [row.status, index]));
-
-        for (const report of reports) {
-            const status = getRouteDetailStatus(report);
-            const index = statusIndex.get(status);
-
-            if (index === undefined) {
-                continue;
-            }
-
-            statusRows[index].all += 1;
-
-            if (isCreatedToday(report.created_at)) {
-                statusRows[index].today += 1;
-            }
-        }
-
-        const fieldCounts = fields
-            .filter((field) => field.key !== "message")
-            .map((field) => {
-                const count = reports.filter((report) => {
-                    if (field.type === "checkbox") {
-                        return report.field_values[field.key] === true;
-                    }
-
-                    return String(report.field_values[field.key] ?? "").trim().length > 0;
-                }).length;
-
-                return {
-                    key: field.key,
-                    label: field.label,
-                    type: field.type,
-                    count,
-                };
-            });
-
-        return {
-            pathname: currentPathname,
-            statusRows,
-            fieldCounts,
-        };
-    }, [currentPathname, fields, reports]);
-
-    const selectedReport = useMemo(() => {
-        return filteredReports.find((report) => report.id === selectedReportId) ?? filteredReports[0] ?? null;
-    }, [filteredReports, selectedReportId]);
 
     const activeReplyAnchor = useMemo(() => resolveTooltipAnchor(markers, activeReplyReportId), [activeReplyReportId, markers]);
     const activeReplyReport = activeReplyAnchor?.report ?? null;
@@ -347,16 +279,6 @@ export function useReportState({
             window.removeEventListener("resize", syncPreviewRects);
         };
     }, [showTargetPreview]);
-
-    useEffect(() => {
-        if (!selectedReportId) {
-            return;
-        }
-
-        if (!filteredReports.some((report) => report.id === selectedReportId)) {
-            setSelectedReportId(filteredReports[0]?.id ?? null);
-        }
-    }, [filteredReports, selectedReportId]);
 
     useEffect(() => {
         if (mode !== "view") {
@@ -836,7 +758,7 @@ export function useReportState({
             id: createReplyId(),
             message: "이슈가 해결되었습니다.",
             created_at: new Date().toISOString(),
-            status: "verified",
+            status: "resolved",
             author_type: "user",
             author_name: resolverName,
         };
@@ -939,7 +861,7 @@ export function useReportState({
         isCreating,
         isUpdating,
         isDeleting,
-        queryErrorMessage: error?.message,
+        queryErrorMessage,
         refetch,
         errorMessage,
         setErrorMessage,

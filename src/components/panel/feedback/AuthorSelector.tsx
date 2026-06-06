@@ -15,17 +15,17 @@ export function AuthorSelector({ authors, value, onChange }: AuthorSelectorProps
                 value={value}
                 onChange={(event) => onChange(event.target.value)}
                 placeholder="작성자"
-                className="min-w-0 flex-1 rounded-full border border-[var(--adaptive-blackOpacity300)] bg-[var(--adaptive-blackOpacity200)] px-[12px] py-[8px] text-[12px] text-[var(--adaptive-black900)] outline-none placeholder:text-[var(--adaptive-black500)]"
+                className="min-w-0 flex-1 rounded-full bg-[var(--adaptive-black800)] px-[12px] py-[4px] h-[24px] text-[12px] text-[var(--adaptive-black900)] outline-none placeholder:text-[var(--adaptive-black500)]"
             />
         );
     }
 
     return (
-        <div className="relative min-w-0 flex-1">
+        <div className="relative min-w-0">
             <select
                 value={value}
                 onChange={(event) => onChange(event.target.value)}
-                className="w-full appearance-none rounded-full border border-[var(--adaptive-blackOpacity300)] bg-[var(--adaptive-blackOpacity200)] py-[8px] pr-[28px] pl-[12px] text-[12px] text-[var(--adaptive-black900)] outline-none"
+                className="w-full appearance-none rounded-full bg-[var(--adaptive-black800)] py-[4px] h-[24px] pr-[28px] pl-[12px] text-[12px] text-[var(--adaptive-black500)] outline-none"
             >
                 {!value ? (
                     <option

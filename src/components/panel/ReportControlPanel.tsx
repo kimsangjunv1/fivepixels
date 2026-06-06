@@ -1,5 +1,6 @@
-import { useCallback, useRef, useState, type DragEvent } from "react";
+import { useState } from "react";
 import { panelAnchorSide, usePanelDock } from "../../hooks/usePanelDock.js";
+import { usePanelFeedbackTransfer } from "../../hooks/usePanelFeedbackTransfer.js";
 import { useReport } from "../../providers/reportContext.js";
 import { SelectIcon } from "../../components/icons/SelectIcon.js";
 
@@ -15,43 +16,10 @@ import { ReportImportProjectMismatchDialog } from "./ReportImportProjectMismatch
 import { PanelMoreMenu } from "./PanelMoreMenu.js";
 import { PanelDropdownMenu, PanelDropdownMenuItem } from "./PanelDropdownMenu.js";
 import { LogoIcon } from "./../icons/LogoIcon.js";
-import { AnimatedPresence, motion } from "../motion/index.js";
+import { motion } from "../motion/index.js";
 import { formatStatCount } from "../../utils/formatStatCount.js";
 import { panelNumericClassName } from "../../utils/panelTypography.js";
 import type { ReportPanelTab } from "../../types/report-ui.js";
-import {
-    createFeedbackBackupFilename,
-    downloadFeedbackJson,
-    findFeedbackInsertConflicts,
-    insertFeedbackItems,
-    isImportProjectCompatible,
-    parseFeedbackCommandJson,
-    pickFeedbackJsonFile,
-    readAllFeedback,
-    readFeedbackJsonFile,
-    toReportProject,
-    upsertFeedbackItems,
-    writeAllFeedback,
-    type FeedbackImportPayload,
-    type FeedbackInsertConflict,
-} from "../../utils/feedbackDataTransfer.js";
-
-type ImportStep = "none" | "project-mismatch" | "confirm";
-type CommandStep = "none" | "replace-confirm";
-
-function buildCommandSuccessMessage(inserted: number, replaced: number) {
-    if (replaced > 0 && inserted > 0) {
-        return `${inserted}건 삽입, ${replaced}건 교체가 완료되었어요.`;
-    }
-
-    if (replaced > 0) {
-        return `${replaced}건의 피드백 데이터가 교체되었어요.`;
-    }
-
-    return `${inserted}건의 피드백 데이터가 삽입되었어요.`;
-}
-
-const RECORDING_STATUS_SHADOW = "drop-shadow(0 1px 2px rgba(0,0,0,0.95)) drop-shadow(0 2px 6px rgba(0,0,0,0.9)) drop-shadow(0 4px 16px rgba(0,0,0,0.85)) drop-shadow(0 0 24px rgba(0,0,0,0.75))";
 
 function PanelCollapseTab({ collapsed, anchorSide, onClick }: { collapsed: boolean; anchorSide: "left" | "right"; onClick: () => void }) {
     const hideIcon = anchorSide === "right" ? <ChevronRightIcon className="h-3 w-3 text-slate-500 dark:text-slate-300" /> : <ChevronLeftIcon className="h-3 w-3 text-slate-500 dark:text-slate-300" />;
@@ -102,15 +70,7 @@ function EnvironmentBadge({ environment }: { environment?: string }) {
     );
 }
 
-function isJsonDragEvent(event: DragEvent) {
-    const types = Array.from(event.dataTransfer.types);
-
-    return types.includes("Files") || types.includes("application/json");
-}
-
-function isJsonFile(file: File) {
-    return file.type === "application/json" || file.name.toLowerCase().endsWith(".json");
-}
+const RECORDING_STATUS_SHADOW = "drop-shadow(0 1px 2px rgba(0,0,0,0.95)) drop-shadow(0 2px 6px rgba(0,0,0,0.9)) drop-shadow(0 4px 16px rgba(0,0,0,0.85)) drop-shadow(0 0 24px rgba(0,0,0,0.75))";
 
 export function ReportControlPanel() {
     const {
@@ -138,279 +98,50 @@ export function ReportControlPanel() {
     const [panelCollapsed, setPanelCollapsed] = useState(false);
     const [moreMenuOpen, setMoreMenuOpen] = useState(false);
     const [viewMenuOpen, setViewMenuOpen] = useState(false);
-    const [isDragOver, setIsDragOver] = useState(false);
-    const [pendingImport, setPendingImport] = useState<FeedbackImportPayload | null>(null);
-    const [importStep, setImportStep] = useState<ImportStep>("none");
-    const [pendingCommand, setPendingCommand] = useState<FeedbackImportPayload | null>(null);
-    const [commandConflicts, setCommandConflicts] = useState<FeedbackInsertConflict[]>([]);
-    const [commandStep, setCommandStep] = useState<CommandStep>("none");
-    const [commandNotice, setCommandNotice] = useState<{ message: string; isError: boolean } | null>(null);
-    const dragDepthRef = useRef(0);
     const isRecording = mode === "report";
     const isIssueMode = mode === "view";
+    const transferScope = { projectId, environment, appVersion };
+    const {
+        isDragOver,
+        pendingImport,
+        importStep,
+        pendingCommand,
+        commandConflicts,
+        commandStep,
+        commandNotice,
+        setCommandNotice,
+        handleExport,
+        handleImportFromMenu,
+        handleOpenCommand,
+        handleCloseCommand,
+        handleCommandExecute,
+        handleCancelCommandReplace,
+        handleConfirmCommandReplace,
+        handleCancelImport,
+        handleProceedImportAfterMismatch,
+        handleApplyImport,
+        handleBackupAndApplyImport,
+        handleDragEnter,
+        handleDragLeave,
+        handleDragOver,
+        handleDrop,
+    } = usePanelFeedbackTransfer({
+        transferScope,
+        canTransferFeedback,
+        setErrorMessage,
+        refetch,
+        openPanelTab,
+        onMoreMenuClose: () => setMoreMenuOpen(false),
+        isRecording,
+    });
     const { panelRef, panelStyle, placementCorner, isDragging, activeCorner, handleDragHandlePointerDown } = usePanelDock({
         enabled: !isMobileViewport,
         measureKey: `${panelCollapsed}-${isRecording}-${panelTab ?? "none"}-${isIssueMode}-${importStep !== "none" ? "import" : "none"}-${commandStep !== "none" ? "command" : "none"}`,
     });
     const anchorSide = panelAnchorSide(placementCorner);
-    const panelLayout = placementCorner.startsWith("top") ? "size" : "position";
-    const transferScope = { projectId, environment, appVersion };
 
     const handlePanelTabClick = (tab: ReportPanelTab) => {
         openPanelTab(tab);
-    };
-
-    const queueImport = useCallback(
-        (payload: FeedbackImportPayload) => {
-            setMoreMenuOpen(false);
-            setPendingImport(payload);
-            setImportStep(isImportProjectCompatible(transferScope, payload.project) ? "confirm" : "project-mismatch");
-            setErrorMessage("");
-        },
-        [setErrorMessage, transferScope],
-    );
-
-    const handleImportFile = useCallback(
-        async (file: File) => {
-            if (!canTransferFeedback) {
-                setErrorMessage("localStorage 저장소에서만 import/export를 사용할 수 있어요.");
-                return;
-            }
-
-            try {
-                const payload = await readFeedbackJsonFile(file);
-                queueImport(payload);
-            } catch (nextError) {
-                setErrorMessage(nextError instanceof Error ? nextError.message : "JSON import에 실패했어요.");
-            }
-        },
-        [canTransferFeedback, queueImport, setErrorMessage],
-    );
-
-    const handleExport = useCallback(() => {
-        if (!canTransferFeedback) {
-            setErrorMessage("localStorage 저장소에서만 import/export를 사용할 수 있어요.");
-            return;
-        }
-
-        setMoreMenuOpen(false);
-        const items = readAllFeedback(transferScope);
-
-        void downloadFeedbackJson(createFeedbackBackupFilename(projectId, environment, appVersion), toReportProject(transferScope), items).then((result) => {
-            if (result === "failed") {
-                setErrorMessage("JSON export에 실패했어요. 브라우저 다운로드 권한을 확인해주세요.");
-                return;
-            }
-
-            if (result === "cancelled") {
-                return;
-            }
-
-            setErrorMessage("");
-        });
-    }, [canTransferFeedback, environment, projectId, setErrorMessage, transferScope]);
-
-    const handleImportFromMenu = useCallback(() => {
-        if (!canTransferFeedback) {
-            setErrorMessage("localStorage 저장소에서만 import/export를 사용할 수 있어요.");
-            return;
-        }
-
-        setMoreMenuOpen(false);
-
-        void pickFeedbackJsonFile()
-            .then((file) => {
-                if (!file) {
-                    return;
-                }
-
-                return handleImportFile(file);
-            })
-            .catch((error) => {
-                setErrorMessage(error instanceof Error ? error.message : "JSON import에 실패했어요.");
-            });
-    }, [canTransferFeedback, handleImportFile, setErrorMessage]);
-
-    const handleOpenCommand = useCallback(() => {
-        if (!canTransferFeedback) {
-            setErrorMessage("localStorage 저장소에서만 command를 사용할 수 있어요.");
-            return;
-        }
-
-        setMoreMenuOpen(false);
-        setErrorMessage("");
-        openPanelTab("command");
-    }, [canTransferFeedback, openPanelTab, setErrorMessage]);
-
-    const handleCloseCommand = useCallback(() => {
-        setCommandStep("none");
-        setPendingCommand(null);
-        setCommandConflicts([]);
-        openPanelTab("command");
-    }, [openPanelTab]);
-
-    const handleCommandExecute = useCallback(
-        async (raw: string) => {
-            if (!canTransferFeedback) {
-                throw new Error("localStorage 저장소에서만 command를 사용할 수 있어요.");
-            }
-
-            const payload = parseFeedbackCommandJson(raw);
-            const conflicts = findFeedbackInsertConflicts(transferScope, payload.items);
-
-            if (conflicts.length > 0) {
-                setPendingCommand(payload);
-                setCommandConflicts(conflicts);
-                setCommandStep("replace-confirm");
-                return { status: "pending" as const };
-            }
-
-            const result = insertFeedbackItems(transferScope, payload.items);
-
-            await refetch();
-            setErrorMessage("");
-
-            return {
-                status: "success" as const,
-                message: buildCommandSuccessMessage(result.inserted, result.replaced),
-            };
-        },
-        [canTransferFeedback, refetch, setErrorMessage, transferScope],
-    );
-
-    const handleCancelCommandReplace = useCallback(() => {
-        setPendingCommand(null);
-        setCommandConflicts([]);
-        setCommandStep("none");
-    }, []);
-
-    const handleConfirmCommandReplace = useCallback(() => {
-        if (!pendingCommand) {
-            return;
-        }
-
-        const payload = pendingCommand;
-
-        void (async () => {
-            const result = upsertFeedbackItems(transferScope, payload.items);
-
-            await refetch();
-            setErrorMessage("");
-            setPendingCommand(null);
-            setCommandConflicts([]);
-            setCommandStep("none");
-            setCommandNotice({
-                message: buildCommandSuccessMessage(result.inserted, result.replaced),
-                isError: false,
-            });
-        })();
-    }, [pendingCommand, refetch, setErrorMessage, transferScope]);
-
-    const applyImport = useCallback(
-        async (payload: FeedbackImportPayload) => {
-            writeAllFeedback(transferScope, payload.items);
-            setPendingImport(null);
-            setImportStep("none");
-            await refetch();
-        },
-        [refetch, transferScope],
-    );
-
-    const handleCancelImport = () => {
-        setPendingImport(null);
-        setImportStep("none");
-    };
-
-    const handleProceedImportAfterMismatch = () => {
-        setImportStep("confirm");
-    };
-
-    const handleApplyImport = () => {
-        if (!pendingImport) {
-            return;
-        }
-
-        void applyImport(pendingImport);
-    };
-
-    const handleBackupAndApplyImport = () => {
-        if (!pendingImport) {
-            return;
-        }
-
-        const currentItems = readAllFeedback(transferScope);
-        const pending = pendingImport;
-
-        void downloadFeedbackJson(createFeedbackBackupFilename(projectId, environment, appVersion), toReportProject(transferScope), currentItems).then((result) => {
-            if (result === "cancelled" || result === "failed") {
-                if (result === "failed") {
-                    setErrorMessage("백업 export에 실패해서 import를 중단했어요.");
-                }
-
-                return;
-            }
-
-            void applyImport(pending);
-        });
-    };
-
-    const handleDragEnter = (event: DragEvent<HTMLDivElement>) => {
-        if (isRecording || !canTransferFeedback || importStep !== "none" || commandStep !== "none") {
-            return;
-        }
-
-        if (!isJsonDragEvent(event)) {
-            return;
-        }
-
-        event.preventDefault();
-        dragDepthRef.current += 1;
-        setIsDragOver(true);
-    };
-
-    const handleDragLeave = (event: DragEvent<HTMLDivElement>) => {
-        if (isRecording || !canTransferFeedback) {
-            return;
-        }
-
-        event.preventDefault();
-        dragDepthRef.current = Math.max(0, dragDepthRef.current - 1);
-
-        if (dragDepthRef.current === 0) {
-            setIsDragOver(false);
-        }
-    };
-
-    const handleDragOver = (event: DragEvent<HTMLDivElement>) => {
-        if (isRecording || !canTransferFeedback || importStep !== "none" || commandStep !== "none") {
-            return;
-        }
-
-        if (!isJsonDragEvent(event)) {
-            return;
-        }
-
-        event.preventDefault();
-        event.dataTransfer.dropEffect = "copy";
-    };
-
-    const handleDrop = (event: DragEvent<HTMLDivElement>) => {
-        if (isRecording || !canTransferFeedback || importStep !== "none" || commandStep !== "none") {
-            return;
-        }
-
-        event.preventDefault();
-        dragDepthRef.current = 0;
-        setIsDragOver(false);
-
-        const file = Array.from(event.dataTransfer.files).find(isJsonFile);
-
-        if (!file) {
-            setErrorMessage("JSON 파일만 import할 수 있어요.");
-            return;
-        }
-
-        void handleImportFile(file);
     };
 
     return (

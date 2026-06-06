@@ -14,12 +14,10 @@ export type ReportFieldBase = {
     label: string;
     required?: boolean;
 };
-export type ReportField =
-    | (ReportFieldBase & { type: "textarea" })
-    | (ReportFieldBase & { type: "checkbox" });
+export type ReportField = (ReportFieldBase & { type: "textarea" }) | (ReportFieldBase & { type: "checkbox" });
 export type ReportFieldValues = Record<string, string | boolean>;
 /** Stored on each timeline reply. Hover-only states use helpers, not storage. */
-export type ReportReplyStatus = "suggested" | "found_error" | "verified";
+export type ReportReplyStatus = "suggested" | "found_error" | "resolved";
 
 export type ReportReply = {
     id: string;
@@ -98,9 +96,7 @@ export type CreateReportFeedbackPayload = Omit<ReportFeedback, "id" | "created_a
     replies?: ReportReply[];
 };
 
-export type UpdateReportFeedbackPayload = Partial<
-    Pick<ReportFeedback, "message" | "status" | "field_values" | "replies" | "report_id" | "report_type">
->;
+export type UpdateReportFeedbackPayload = Partial<Pick<ReportFeedback, "message" | "status" | "field_values" | "replies" | "report_id" | "report_type">>;
 
 export interface ReportStorageAdapter {
     list(params: { pathname: string }): Promise<ReportFeedback[]>;

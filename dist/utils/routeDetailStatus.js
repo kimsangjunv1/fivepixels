@@ -7,7 +7,7 @@ export const ROUTE_DETAIL_STATUS_LABEL = {
 };
 export function getRouteDetailStatus(report) {
     const displayStatus = getFeedbackDisplayStatus(report);
-    if (displayStatus === "verified") {
+    if (displayStatus === "resolved") {
         return "resolved";
     }
     if (displayStatus === "suggested" || displayStatus === "found_error") {
@@ -20,8 +20,6 @@ export function isCreatedToday(createdAt, now = new Date()) {
     if (Number.isNaN(created.getTime())) {
         return false;
     }
-    return (created.getFullYear() === now.getFullYear() &&
-        created.getMonth() === now.getMonth() &&
-        created.getDate() === now.getDate());
+    return created.getFullYear() === now.getFullYear() && created.getMonth() === now.getMonth() && created.getDate() === now.getDate();
 }
 //# sourceMappingURL=routeDetailStatus.js.map

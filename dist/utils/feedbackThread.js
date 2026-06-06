@@ -6,7 +6,7 @@ export function getLatestReply(report) {
 }
 export function getFeedbackDisplayStatus(report, expanded = false) {
     if (report.status === "resolved") {
-        return "verified";
+        return "resolved";
     }
     const latest = getLatestReply(report);
     if (!latest) {

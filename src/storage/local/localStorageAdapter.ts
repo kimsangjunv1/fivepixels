@@ -46,7 +46,7 @@ function normalizeFieldValues(value: unknown): ReportFieldValues {
 }
 
 function isReplyStatus(value: unknown): value is ReportReplyStatus {
-    return value === "suggested" || value === "found_error" || value === "verified";
+    return value === "suggested" || value === "found_error" || value === "resolved";
 }
 
 function normalizeReplyStatus(value: unknown): ReportReplyStatus {

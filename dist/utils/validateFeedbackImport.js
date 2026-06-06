@@ -3,7 +3,7 @@ const NUMBER_FIELDS = ["x_ratio", "y_ratio", "scroll_y", "document_y", "viewport
 const OPTIONAL_STRING_FIELDS = ["environment", "app_version", "author_id", "author_name"];
 const REPORT_TYPES = new Set(["group", "item"]);
 const REPORT_STATUSES = new Set(["open", "resolved", "archived"]);
-const REPLY_STATUSES = new Set(["suggested", "found_error", "verified"]);
+const REPLY_STATUSES = new Set(["suggested", "found_error", "resolved"]);
 function importError(index, detail) {
     return new Error(`피드백 데이터 형식이 올바르지 않아요. (index ${index}: ${detail})`);
 }

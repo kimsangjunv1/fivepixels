@@ -16,9 +16,14 @@ export function FeedbackStatusBadge({ status, className = "" }: FeedbackStatusBa
                 style={{ backgroundColor: color, color: "var(--adaptive-black900)" }}
                 aria-hidden
             >
-                {status === "verified" ? "✓" : status === "found_error" ? "−" : "◷"}
+                {status === "resolved" ? "✓" : status === "found_error" ? "−" : "◷"}
             </span>
-            <span style={{ color }}>{FEEDBACK_STATUS_LABEL[status]}</span>
+            <span
+                style={{ color }}
+                className="text-[12px]"
+            >
+                {FEEDBACK_STATUS_LABEL[status]}
+            </span>
         </div>
     );
 }

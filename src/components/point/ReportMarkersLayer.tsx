@@ -20,7 +20,9 @@ const TOOLTIP_MOTION_TRANSITION = {
     damping: 10,
 };
 
-const TOOLTIP_BASE_CLASS = "fixed z-[1000001] overflow-hidden rounded-[24px] bg-[var(--adaptive-black200)] shadow-[0_0_90px_0_var(--adaptive-blackOpacity300)]";
+const TOOLTIP_BASE_CLASS =
+    // "fixed z-[1000001] overflow-hidden rounded-[24px] bg-[var(--adaptive-blackOpacity900)] shadow-[0_0_90px_0_var(--adaptive-blackOpacity500)] backdrop-blur-sm border border-[2px] border-[var(--adaptive-black400)]";
+    "fixed z-[1000001] overflow-hidden rounded-[24px] shadow-[0_0_90px_0_var(--adaptive-blackOpacity500)] border border-[2px] border-[var(--adaptive-black300)] backdrop-blur-[10px]";
 
 const MARKER_BUTTON_BASE_CLASS = "pointer-events-auto fixed z-[1000000] flex -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full";
 
@@ -301,7 +303,7 @@ export function ReportMarkersLayer() {
                             />
 
                             {showComposer ? (
-                                <section className="border-t border-[var(--adaptive-blackOpacity200)] bg-[var(--adaptive-black100)]">
+                                <section className="backdrop-blur-[10px] bg-[var(--adaptive-blackOpacity900)]">
                                     <FeedbackComposer
                                         message={replyDraft}
                                         onMessageChange={setReplyDraft}

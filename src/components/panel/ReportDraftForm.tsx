@@ -1,10 +1,10 @@
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatedPresence, motion } from "../motion/index.js";
 import { useReport } from "../../providers/reportContext.js";
 import type { DraftPopoverPlacement } from "../../utils/coordinates.js";
 import { DRAFT_POPOVER_CONNECTOR_WIDTH, getDraftMarkerPosition, getDraftPopoverPosition } from "../../utils/coordinates.js";
 import { FeedbackComposer } from "./feedback/FeedbackComposer.js";
 
-const DRAFT_MOTION_EASE = [0.22, 1, 0.36, 1] as const;
+const DRAFT_MOTION_EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
 
 function getMotionOrigin(placement: DraftPopoverPlacement) {
     switch (placement) {
@@ -53,7 +53,7 @@ export function ReportDraftForm() {
     const { draft, fields, authors, isCreating, selectedTarget, updateDraftMessage, updateDraftField, cancelDraft, handleCreateSubmit, draftAuthorName, setDraftAuthorName } = useReport();
 
     return (
-        <AnimatePresence>
+        <AnimatedPresence>
             {draft ? (
                 <ReportDraftFormContent
                     draft={draft}
@@ -69,7 +69,7 @@ export function ReportDraftForm() {
                     setDraftAuthorName={setDraftAuthorName}
                 />
             ) : null}
-        </AnimatePresence>
+        </AnimatedPresence>
     );
 }
 
@@ -111,7 +111,7 @@ function ReportDraftFormContent({
             exit={{ y: verticalOffset }}
             transition={{ duration: 0.25, ease: DRAFT_MOTION_EASE }}
             onClick={(event) => event.stopPropagation()}
-            className="pointer-events-auto fixed z-[1000001] flex flex-col rounded-[24px] bg-[var(--adaptive-whiteOpacity500)] p-[4px] shadow-[0_0_120px_0_var(--adaptive-black500)] backdrop-blur-[30px]"
+            className="pointer-events-auto fixed z-[1000001] flex flex-col rounded-[24px] border-[2px] border-[var(--adaptive-black200)] bg-[var(--adaptive-blackOpacity800)] shadow-[0_0_120px_0_var(--adaptive-black500)] backdrop-blur-[30px]"
             style={{
                 left,
                 top: centerVertically ? anchorCenterY : top,
@@ -119,22 +119,20 @@ function ReportDraftFormContent({
                 transformOrigin: getMotionOrigin(placement),
             }}
         >
-            <section className="overflow-hidden rounded-[20px] bg-[var(--adaptive-black100)]">
-                <FeedbackComposer
-                    message={draft.message}
-                    onMessageChange={updateDraftMessage}
-                    authorName={draftAuthorName}
-                    onAuthorNameChange={setDraftAuthorName}
-                    authors={authors}
-                    fields={fields}
-                    fieldValues={draft.fieldValues}
-                    onFieldChange={updateDraftField}
-                    showTags
-                    onSubmit={() => void handleCreateSubmit()}
-                    isSubmitting={isCreating}
-                    autoFocus
-                />
-            </section>
+            <FeedbackComposer
+                message={draft.message}
+                onMessageChange={updateDraftMessage}
+                authorName={draftAuthorName}
+                onAuthorNameChange={setDraftAuthorName}
+                authors={authors}
+                fields={fields}
+                fieldValues={draft.fieldValues}
+                onFieldChange={updateDraftField}
+                showTags
+                onSubmit={() => void handleCreateSubmit()}
+                isSubmitting={isCreating}
+                autoFocus
+            />
 
             <DraftPopoverConnector placement={placement} />
         </motion.div>
