@@ -94,13 +94,12 @@ export function FeedbackComposer({
                             data-stitchable-interactive=""
                             disabled={isActionDisabled}
                             onClick={handleGitHubIssueSubmit}
-                            className="inline-flex items-center justify-center gap-[4px] rounded-full border border-[var(--adaptive-black600)] px-[10px] py-[6px] text-[var(--adaptive-black50)] disabled:opacity-50"
+                            className="inline-flex items-center justify-center gap-[4px] rounded-full border border-[var(--adaptive-black600)] p-[4px] h-[24px] px-[12px] disabled:opacity-50"
                             aria-label={messages.composer.gitIssueSendAriaLabel}
                             title={messages.composer.gitIssueSendTitle}
                         >
-                            <GitHubIssueIcon className="h-[14px] w-[14px]" />
-                            <span className="text-[11px] font-semibold">
-                                {isGitHubIssueSubmitting ? messages.composer.gitIssueSendingLabel : messages.composer.gitIssueSendLabel}
+                            <span className="text-[12px] font-semibold text-[var(--adaptive-black500)]">
+                                + {isGitHubIssueSubmitting ? messages.composer.gitIssueSendingLabel : messages.composer.gitIssueSendLabel}
                             </span>
                         </button>
                     ) : null}

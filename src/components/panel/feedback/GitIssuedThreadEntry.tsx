@@ -4,7 +4,9 @@ import { useReport } from "../../../providers/reportContext.js";
 import { formatDate } from "../../../utils/format.js";
 import { copyTextToClipboard } from "../../../utils/feedbackDataTransfer.js";
 import { FeedbackStatusBadge } from "./FeedbackStatusBadge.js";
-import { CopyIcon } from "../../icons/CopyIcon.js";
+// import { CopyIcon } from "../../icons/CopyIcon.js";
+import { LinkIcon } from "../../icons/LinkIcon.js";
+import { ArrowTRIcon } from "../../icons/ArrowTRIcon.js";
 
 type GitIssuedThreadEntryProps = {
     reply: ReportReply;
@@ -44,9 +46,10 @@ export function GitIssuedThreadEntry({ reply, issueUrl }: GitIssuedThreadEntryPr
                     rel="noopener noreferrer"
                     data-stitchable-interactive=""
                     onClick={(event) => event.stopPropagation()}
-                    className="inline-flex items-center rounded-full border border-[var(--adaptive-black700)] px-[10px] py-[4px] text-[12px] font-semibold text-[var(--adaptive-blue500)] hover:bg-[var(--adaptive-black900)]"
+                    className="flex items-center justify-center gap-[4px] rounded-full text border border-[var(--adaptive-black700)] px-[10px] py-[4px] text-[12px] font-semibold text-[var(--adaptive-black500)] hover:bg-[var(--adaptive-black900)]"
                 >
                     {messages.resolution.gitIssuedOpenLink}
+                    <ArrowTRIcon className="h-[12px] w-[12px]" />
                 </a>
 
                 <button
@@ -55,10 +58,10 @@ export function GitIssuedThreadEntry({ reply, issueUrl }: GitIssuedThreadEntryPr
                     onClick={handleCopy}
                     aria-label={messages.resolution.gitIssuedCopyLinkAriaLabel}
                     title={copied ? messages.resolution.gitIssuedCopiedTitle : messages.resolution.gitIssuedCopyLinkTitle}
-                    className="inline-flex items-center justify-center gap-[4px] rounded-full border border-[var(--adaptive-black700)] px-[10px] py-[4px] text-[12px] font-semibold text-[var(--adaptive-black500)] hover:bg-[var(--adaptive-black900)] hover:text-[var(--adaptive-black50)]"
+                    className="flex items-center justify-center gap-[4px] rounded-full border border-[var(--adaptive-black700)] px-[10px] py-[4px] text-[12px] font-semibold text-[var(--adaptive-black500)] hover:bg-[var(--adaptive-black900)] hover:text-[var(--adaptive-black50)]"
                 >
-                    <CopyIcon className="h-[14px] w-[14px]" />
                     {copied ? messages.resolution.gitIssuedCopiedTitle : messages.resolution.gitIssuedCopyLinkTitle}
+                    <LinkIcon className="h-[12px] w-[12px]" />
                 </button>
             </div>
         </article>

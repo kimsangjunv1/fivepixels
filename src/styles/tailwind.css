@@ -72,6 +72,7 @@
     color: var(--adaptive-black900);
 
     transition: 0.25s colors;
+    text-decoration: auto;
 
     text-transform: none;
     text-rendering: optimizeLegibility;
