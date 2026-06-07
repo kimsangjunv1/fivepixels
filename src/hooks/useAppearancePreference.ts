@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import type { ReportAppearance } from "../types/report.js";
+import type { ReportAppearance } from "@/types/report.js";
 
 const STORAGE_KEY = "stitchable:appearance-preference";
 

@@ -1,4 +1,4 @@
-import type { ReportFeedback } from "../types/report.js";
+import type { ReportFeedback } from "@/types/report.js";
 import { getFeedbackTargetSelector } from "./dom.js";
 
 export const LOCATE_PULSE_DURATION_MS = 2400;

@@ -1,6 +1,6 @@
-import type { FeedbackDisplayStatus } from "../../../constants/feedbackStatus.js";
-import { FEEDBACK_STATUS_COLOR } from "../../../constants/feedbackStatus.js";
-import { useReport } from "../../../providers/reportContext.js";
+import type { FeedbackDisplayStatus } from "@/constants/feedbackStatus.js";
+import { FEEDBACK_STATUS_COLOR } from "@/constants/feedbackStatus.js";
+import { useReport } from "@/providers/reportContext.js";
 
 type FeedbackStatusBadgeProps = {
     status: FeedbackDisplayStatus;

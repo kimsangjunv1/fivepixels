@@ -1,4 +1,4 @@
-import type { ReportAuthor, ReportIdentify, ReportTeam } from "../types/report.js";
+import type { ReportAuthor, ReportIdentify, ReportTeam } from "@/types/report.js";
 
 export type ResolvedReportTeam = {
     user?: ReportIdentify;

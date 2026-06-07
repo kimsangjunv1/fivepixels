@@ -113,6 +113,7 @@ export default defineConfig({
     },
     resolve: {
         alias: {
+            "@": new URL("../../src", import.meta.url).pathname,
             stitchable: new URL("../../src/index.ts", import.meta.url).pathname,
         },
     },

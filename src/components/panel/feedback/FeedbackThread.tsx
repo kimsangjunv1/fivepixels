@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { ReportAuthor, ReportFeedback, ReportReply } from "../../../types/report.js";
-import { useReport } from "../../../providers/reportContext.js";
-import { formatDate } from "../../../utils/format.js";
-import { canCheckoutReply, canReviewLatestSuggestion, resolveOriginalFeedbackAuthorName } from "../../../utils/feedbackThread.js";
-import { getGitHubIssueUrl, isGitIssuedSystemReply } from "../../../utils/githubIntegration.js";
+import type { ReportAuthor, ReportFeedback, ReportReply } from "@/types/report.js";
+import { useReport } from "@/providers/reportContext.js";
+import { formatDate } from "@/utils/format.js";
+import { canCheckoutReply, canReviewLatestSuggestion, resolveOriginalFeedbackAuthorName } from "@/utils/feedbackThread.js";
+import { getGitHubIssueUrl, isGitIssuedSystemReply } from "@/utils/githubIntegration.js";
 import { AuthorSelector } from "./AuthorSelector.js";
 import { FeedbackStatusBadge } from "./FeedbackStatusBadge.js";
 import { GitIssuedThreadEntry } from "./GitIssuedThreadEntry.js";

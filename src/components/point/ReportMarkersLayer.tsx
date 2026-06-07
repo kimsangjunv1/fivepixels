@@ -1,15 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
-import { TARGET_COLOR, TARGET_SURFACE } from "../../constants/report.js";
-import { AnimatedPresence, motion } from "../../components/motion/index.js";
-import { useNativeHover } from "../../hooks/useNativeHover.js";
-import { useReport } from "../../providers/reportContext.js";
-import { getTooltipPosition } from "../../utils/coordinates.js";
-import type { Marker } from "../../types/report-ui.js";
-import { getMarkerColor } from "../../utils/reportVisual.js";
-import { FeedbackComposer } from "../panel/feedback/FeedbackComposer.js";
-import { FeedbackHoverCard } from "../panel/feedback/FeedbackHoverCard.js";
-import { FeedbackIssueHeader } from "../panel/feedback/FeedbackIssueHeader.js";
-import { FeedbackThread } from "../panel/feedback/FeedbackThread.js";
+import { TARGET_COLOR, TARGET_SURFACE } from "@/constants/report.js";
+import { AnimatedPresence, motion } from "@/components/motion/index.js";
+import { useNativeHover } from "@/hooks/useNativeHover.js";
+import { useReport } from "@/providers/reportContext.js";
+import { getTooltipPosition } from "@/utils/coordinates.js";
+import type { Marker } from "@/types/report-ui.js";
+import { getMarkerColor } from "@/utils/reportVisual.js";
+import { FeedbackComposer } from "@/components/panel/feedback/FeedbackComposer.js";
+import { FeedbackHoverCard } from "@/components/panel/feedback/FeedbackHoverCard.js";
+import { FeedbackIssueHeader } from "@/components/panel/feedback/FeedbackIssueHeader.js";
+import { FeedbackThread } from "@/components/panel/feedback/FeedbackThread.js";
 import { MarkerLocatePulse, TargetLocatePulse, useLocatePulseTick } from "./FeedbackLocatePulse.js";
 
 const TOOLTIP_MOTION_TRANSITION = {

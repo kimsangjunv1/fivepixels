@@ -1,5 +1,5 @@
-import type { ReportFeedback } from "../../../types/report.js";
-import { getFeedbackDisplayStatus } from "../../../utils/feedbackThread.js";
+import type { ReportFeedback } from "@/types/report.js";
+import { getFeedbackDisplayStatus } from "@/utils/feedbackThread.js";
 import { FeedbackFieldTags } from "./FeedbackFieldTags.js";
 import { FeedbackStatusBadge } from "./FeedbackStatusBadge.js";
 

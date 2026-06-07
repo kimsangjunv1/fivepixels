@@ -1,6 +1,6 @@
 import { jsxs as _jsxs, jsx as _jsx, Fragment as _Fragment } from "react/jsx-runtime";
 import { TARGET_COLOR, TARGET_SURFACE } from "../../constants/report.js";
-import { AnimatedPresence, motion } from "../motion/index.js";
+import { AnimatedPresence, motion } from "../../components/motion/index.js";
 const HIGHLIGHT_MOTION = {
     group: {
         fade: { duration: 0.14, ease: "ease-out" },

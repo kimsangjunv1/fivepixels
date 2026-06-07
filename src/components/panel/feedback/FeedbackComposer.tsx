@@ -1,8 +1,8 @@
-import type { ReportField, ReportFieldValues } from "../../../types/report.js";
-import type { ReportAuthor } from "../../../types/report.js";
-import { useReport } from "../../../providers/reportContext.js";
-import { GitHubIssueIcon } from "../../icons/GitHubIssueIcon.js";
-import { SendIcon } from "../../icons/SendIcon.js";
+import type { ReportField, ReportFieldValues } from "@/types/report.js";
+import type { ReportAuthor } from "@/types/report.js";
+import { useReport } from "@/providers/reportContext.js";
+import { GitHubIssueIcon } from "@/components/icons/GitHubIssueIcon.js";
+import { SendIcon } from "@/components/icons/SendIcon.js";
 import { AuthorSelector } from "./AuthorSelector.js";
 import { FieldTagSelector } from "./FieldTagSelector.js";
 

@@ -1,5 +1,5 @@
 import { describe, expect, it, beforeEach } from "vitest";
-import { ko, setActiveReportMessages } from "../i18n/index.js";
+import { ko, setActiveReportMessages } from "@/i18n/index.js";
 import { createReportPayload } from "./reportFixtures.js";
 import { validateFeedbackImportArray } from "./validateFeedbackImport.js";
 

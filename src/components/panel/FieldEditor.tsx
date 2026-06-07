@@ -1,5 +1,5 @@
-import type { ReportField, ReportFieldValues } from "../../types/report.js";
-import { useReport } from "../../providers/reportContext.js";
+import type { ReportField, ReportFieldValues } from "@/types/report.js";
+import { useReport } from "@/providers/reportContext.js";
 
 type FieldEditorProps = {
     fields: ReportField[];

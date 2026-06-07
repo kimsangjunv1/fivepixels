@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { panelAnchorSide, usePanelDock } from "../../hooks/usePanelDock.js";
-import { usePanelFeedbackTransfer } from "../../hooks/usePanelFeedbackTransfer.js";
-import { useReport } from "../../providers/reportContext.js";
-import { SelectIcon } from "../../components/icons/SelectIcon.js";
+import { panelAnchorSide, usePanelDock } from "@/hooks/usePanelDock.js";
+import { usePanelFeedbackTransfer } from "@/hooks/usePanelFeedbackTransfer.js";
+import { useReport } from "@/providers/reportContext.js";
+import { SelectIcon } from "@/components/icons/SelectIcon.js";
 
-import { ChevronLeftIcon, ChevronRightIcon } from "../icons/ChevronIcon.js";
-import { ChevronDownIcon } from "../icons/ChevronDownIcon.js";
+import { ChevronLeftIcon, ChevronRightIcon } from "@/components/icons/ChevronIcon.js";
+import { ChevronDownIcon } from "@/components/icons/ChevronDownIcon.js";
 import { PanelDockGuides } from "./PanelDockGuides.js";
 import { ReportFeedbackList } from "./ReportFeedbackList.js";
 import { ReportRouteDetails } from "./ReportRouteDetails.js";
@@ -15,11 +15,11 @@ import { ReportImportConfirmDialog } from "./ReportImportConfirmDialog.js";
 import { ReportImportProjectMismatchDialog } from "./ReportImportProjectMismatchDialog.js";
 import { PanelMoreMenu } from "./PanelMoreMenu.js";
 import { PanelDropdownMenu, PanelDropdownMenuItem } from "./PanelDropdownMenu.js";
-import { LogoIcon } from "./../icons/LogoIcon.js";
-import { motion } from "../motion/index.js";
-import { formatStatCount } from "../../utils/formatStatCount.js";
-import { panelNumericClassName } from "../../utils/panelTypography.js";
-import type { ReportPanelTab } from "../../types/report-ui.js";
+import { LogoIcon } from "@/components/icons/LogoIcon.js";
+import { motion } from "@/components/motion/index.js";
+import { formatStatCount } from "@/utils/formatStatCount.js";
+import { panelNumericClassName } from "@/utils/panelTypography.js";
+import type { ReportPanelTab } from "@/types/report-ui.js";
 
 function PanelCollapseTab({ collapsed, anchorSide, onClick, messages }: { collapsed: boolean; anchorSide: "left" | "right"; onClick: () => void; messages: ReturnType<typeof useReport>["messages"] }) {
     const hideIcon = anchorSide === "right" ? <ChevronRightIcon className="h-3 w-3 text-slate-500 dark:text-slate-300" /> : <ChevronLeftIcon className="h-3 w-3 text-slate-500 dark:text-slate-300" />;

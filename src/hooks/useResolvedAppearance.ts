@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import type { ReportAppearance } from "../types/report.js";
-import type { ResolvedAppearance } from "../types/report-ui.js";
+import type { ReportAppearance } from "@/types/report.js";
+import type { ResolvedAppearance } from "@/types/report-ui.js";
 
 export function useResolvedAppearance(appearance: ReportAppearance) {
     const [resolved, setResolved] = useState<ResolvedAppearance>("light");

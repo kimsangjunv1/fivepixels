@@ -1,6 +1,6 @@
-import type { ReportField, ReportTargetType } from "../types/report.js";
-import { ko } from "../i18n/ko.js";
-import { getDefaultFields } from "../i18n/index.js";
+import type { ReportField, ReportTargetType } from "@/types/report.js";
+import { ko } from "@/i18n/ko.js";
+import { getDefaultFields } from "@/i18n/index.js";
 
 export const DOT_SIZE = 14;
 export const TARGET_SELECTOR = "[data-report-id]";

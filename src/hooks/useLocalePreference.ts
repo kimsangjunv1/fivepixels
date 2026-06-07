@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import type { ReportLocale } from "../i18n/types.js";
+import type { ReportLocale } from "@/i18n/types.js";
 
 const STORAGE_KEY = "stitchable:locale-preference";
 

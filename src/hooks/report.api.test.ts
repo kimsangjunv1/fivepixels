@@ -1,6 +1,6 @@
 import { describe, expect, it, beforeEach } from "vitest";
-import { ko, setActiveReportMessages } from "../i18n/index.js";
-import type { ReportStorageAdapter } from "../types/report.js";
+import { ko, setActiveReportMessages } from "@/i18n/index.js";
+import type { ReportStorageAdapter } from "@/types/report.js";
 import { deleteReport } from "./report.api.js";
 
 describe("deleteReport", () => {

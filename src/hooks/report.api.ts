@@ -1,10 +1,10 @@
-import { getActiveReportMessages } from "../i18n/index.js";
+import { getActiveReportMessages } from "@/i18n/index.js";
 import type {
     CreateReportFeedbackPayload,
     ReportFeedback,
     ReportStorageAdapter,
     UpdateReportFeedbackPayload,
-} from "../types/report.js";
+} from "@/types/report.js";
 
 export async function listReports(adapter: ReportStorageAdapter, pathname: string) {
     return adapter.list({ pathname });

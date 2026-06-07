@@ -1,4 +1,4 @@
-import type { ReportFeedback } from "../types/report.js";
+import type { ReportFeedback } from "@/types/report.js";
 import { getFeedbackDisplayStatus } from "./feedbackThread.js";
 
 export type RouteDetailStatus = "wait" | "suggested" | "git_issued" | "resolved";

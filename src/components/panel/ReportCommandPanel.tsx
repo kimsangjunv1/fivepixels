@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useReport } from "../../providers/reportContext.js";
+import { useReport } from "@/providers/reportContext.js";
 
 export type CommandExecuteResult = { status: "success"; message: string } | { status: "pending" };
 

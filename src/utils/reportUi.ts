@@ -1,6 +1,6 @@
-import type { DeepPartialReportMessages, ReportLocale, ReportMessages } from "../i18n/index.js";
-import { getReportMessages, resolveReportLocale } from "../i18n/index.js";
-import type { ReportUi } from "../types/report.js";
+import type { DeepPartialReportMessages, ReportLocale, ReportMessages } from "@/i18n/index.js";
+import { getReportMessages, resolveReportLocale } from "@/i18n/index.js";
+import type { ReportUi } from "@/types/report.js";
 
 export type ResolvedReportUi = {
     appearance: NonNullable<ReportUi["appearance"]>;

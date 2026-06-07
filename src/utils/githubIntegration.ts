@@ -5,7 +5,7 @@ import type {
     ReportGitHubIssueCreateResult,
     ReportReply,
     UpdateReportFeedbackPayload,
-} from "../types/report.js";
+} from "@/types/report.js";
 import { createReplyId } from "./format.js";
 
 const DEFAULT_GITHUB_MODES: ReportGitHubIntegrationMode[] = ["from-list"];

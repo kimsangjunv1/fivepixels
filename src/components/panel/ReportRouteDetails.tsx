@@ -1,8 +1,8 @@
-import { useReport } from "../../providers/reportContext.js";
-import { formatStatCount } from "../../utils/formatStatCount.js";
-import { panelNumericClassName } from "../../utils/panelTypography.js";
-import type { RouteDetailStatus } from "../../utils/routeDetailStatus.js";
-import { ChevronDownIcon } from "../icons/ChevronDownIcon.js";
+import { useReport } from "@/providers/reportContext.js";
+import { formatStatCount } from "@/utils/formatStatCount.js";
+import { panelNumericClassName } from "@/utils/panelTypography.js";
+import type { RouteDetailStatus } from "@/utils/routeDetailStatus.js";
+import { ChevronDownIcon } from "@/components/icons/ChevronDownIcon.js";
 
 function StatusRowIcon({ status }: { status: RouteDetailStatus }) {
     if (status === "wait") {

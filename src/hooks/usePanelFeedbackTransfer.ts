@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState, type DragEvent } from "react";
-import type { ReportMessages } from "../i18n/types.js";
+import type { ReportMessages } from "@/i18n/types.js";
 import {
     createFeedbackBackupFilename,
     downloadFeedbackJson,
@@ -15,7 +15,7 @@ import {
     writeAllFeedback,
     type FeedbackImportPayload,
     type FeedbackInsertConflict,
-} from "../utils/feedbackDataTransfer.js";
+} from "@/utils/feedbackDataTransfer.js";
 
 export type FeedbackTransferScope = {
     projectId: string;

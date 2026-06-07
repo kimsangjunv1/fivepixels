@@ -1,9 +1,9 @@
 "use client";
 
-import { DEFAULT_FIELDS } from "../../constants/report.js";
-import { ReportProvider } from "../../providers/ReportProvider.js";
-import { resolveReportEnabled } from "../../utils/env.js";
-import { resolveReportVisibility } from "../../utils/reportVisibility.js";
+import { DEFAULT_FIELDS } from "@/constants/report.js";
+import { ReportProvider } from "@/providers/ReportProvider.js";
+import { resolveReportEnabled } from "@/utils/env.js";
+import { resolveReportVisibility } from "@/utils/reportVisibility.js";
 import type {
     CreateReportFeedbackPayload,
     ReportEvent,
@@ -17,7 +17,7 @@ import type {
     ReportUi,
     ReportVisibility,
     UpdateReportFeedbackPayload,
-} from "../../types/report.js";
+} from "@/types/report.js";
 import { ReportView } from "./ReportView.js";
 
 export type ReportProps = {

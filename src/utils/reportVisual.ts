@@ -1,5 +1,5 @@
-import type { ReportFeedback, ReportStatus } from "../types/report.js";
-import { TARGET_COLOR } from "../constants/report.js";
+import type { ReportFeedback, ReportStatus } from "@/types/report.js";
+import { TARGET_COLOR } from "@/constants/report.js";
 
 export function hasReply(report: ReportFeedback) {
     return report.replies.length > 0;

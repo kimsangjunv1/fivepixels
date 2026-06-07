@@ -1,4 +1,4 @@
-import type { ReportLocale } from "../i18n/types.js";
+import type { ReportLocale } from "@/i18n/types.js";
 
 function toIntlLocale(locale: ReportLocale) {
     return locale === "ko" ? "ko-KR" : "en-US";

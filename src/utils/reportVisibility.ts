@@ -1,4 +1,4 @@
-import type { ReportVisibility } from "../types/report.js";
+import type { ReportVisibility } from "@/types/report.js";
 
 export type ResolvedReportVisibility = {
     enabled: boolean;

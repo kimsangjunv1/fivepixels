@@ -1,7 +1,7 @@
-import { AnimatedPresence, motion } from "../motion/index.js";
-import { useReport } from "../../providers/reportContext.js";
-import type { DraftPopoverPlacement } from "../../utils/coordinates.js";
-import { DRAFT_POPOVER_CONNECTOR_WIDTH, getDraftMarkerPosition, getDraftPopoverPosition } from "../../utils/coordinates.js";
+import { AnimatedPresence, motion } from "@/components/motion/index.js";
+import { useReport } from "@/providers/reportContext.js";
+import type { DraftPopoverPlacement } from "@/utils/coordinates.js";
+import { DRAFT_POPOVER_CONNECTOR_WIDTH, getDraftMarkerPosition, getDraftPopoverPosition } from "@/utils/coordinates.js";
 import { FeedbackComposer } from "./feedback/FeedbackComposer.js";
 
 const DRAFT_MOTION_EASE = "cubic-bezier(0.22, 1, 0.36, 1)";

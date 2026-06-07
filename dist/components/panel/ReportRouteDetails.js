@@ -2,7 +2,7 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useReport } from "../../providers/reportContext.js";
 import { formatStatCount } from "../../utils/formatStatCount.js";
 import { panelNumericClassName } from "../../utils/panelTypography.js";
-import { ChevronDownIcon } from "../icons/ChevronDownIcon.js";
+import { ChevronDownIcon } from "../../components/icons/ChevronDownIcon.js";
 function StatusRowIcon({ status }) {
     if (status === "wait") {
         return _jsx("span", { "aria-hidden": true, children: "\u2691" });

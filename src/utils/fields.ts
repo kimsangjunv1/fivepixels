@@ -1,5 +1,5 @@
-import type { ReportField, ReportFieldValues } from "../types/report.js";
-import type { ReportMessages } from "../i18n/types.js";
+import type { ReportField, ReportFieldValues } from "@/types/report.js";
+import type { ReportMessages } from "@/i18n/types.js";
 
 export function createInitialFieldValues(fields: ReportField[], source?: ReportFieldValues) {
     return fields.reduce<ReportFieldValues>((acc, field) => {

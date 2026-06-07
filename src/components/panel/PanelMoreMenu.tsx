@@ -1,7 +1,7 @@
-import type { ReportAppearance } from "../../types/report.js";
-import type { ReportLocale } from "../../i18n/types.js";
-import { useReport } from "../../providers/reportContext.js";
-import { SettingsIcon } from "../icons/SettingsIcon.js";
+import type { ReportAppearance } from "@/types/report.js";
+import type { ReportLocale } from "@/i18n/types.js";
+import { useReport } from "@/providers/reportContext.js";
+import { SettingsIcon } from "@/components/icons/SettingsIcon.js";
 import { PanelDropdownMenu, PanelDropdownMenuItem } from "./PanelDropdownMenu.js";
 import { PanelOptionSwitch } from "./PanelOptionSwitch.js";
 

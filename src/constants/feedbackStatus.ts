@@ -1,4 +1,4 @@
-import type { ReportReplyStatus } from "../types/report.js";
+import type { ReportReplyStatus } from "@/types/report.js";
 
 export type FeedbackDisplayStatus = "currently_wait" | "wait_for_reply" | "git_issued" | ReportReplyStatus;
 

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { DOT_SIZE } from "../../constants/report.js";
-import { motion, type MotionTransition } from "../motion/index.js";
-import { LOCATE_PULSE_DURATION_MS } from "../../utils/locateFeedback.js";
+import { DOT_SIZE } from "@/constants/report.js";
+import { motion, type MotionTransition } from "@/components/motion/index.js";
+import { LOCATE_PULSE_DURATION_MS } from "@/utils/locateFeedback.js";
 
 export const LOCATE_PULSE_TRANSITION: MotionTransition = {
     duration: 0.65,

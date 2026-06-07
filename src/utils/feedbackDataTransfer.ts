@@ -1,7 +1,7 @@
-import { getActiveReportMessages } from "../i18n/index.js";
-import { getReportsStorageKey } from "../constants/storageKeys.js";
-import { readAllReportsFromStorage, writeAllReportsToStorage } from "../storage/local/localStorageAdapter.js";
-import type { ReportFeedback, ReportProject } from "../types/report.js";
+import { getActiveReportMessages } from "@/i18n/index.js";
+import { getReportsStorageKey } from "@/constants/storageKeys.js";
+import { readAllReportsFromStorage, writeAllReportsToStorage } from "@/storage/local/localStorageAdapter.js";
+import type { ReportFeedback, ReportProject } from "@/types/report.js";
 import {
     parseFeedbackCommandJson,
     parseFeedbackImportJson,

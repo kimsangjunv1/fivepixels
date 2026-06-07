@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
-import { getDefaultFields } from "../i18n/index.js";
-import type { DeepPartialReportMessages, ReportLocale } from "../i18n/types.js";
-import { useReportState } from "../hooks/useReportState.js";
+import { getDefaultFields } from "@/i18n/index.js";
+import type { DeepPartialReportMessages, ReportLocale } from "@/i18n/types.js";
+import { useReportState } from "@/hooks/useReportState.js";
 import type {
     CreateReportFeedbackPayload,
     ReportEvent,
@@ -15,12 +15,12 @@ import type {
     ReportUi,
     ReportVisibility,
     UpdateReportFeedbackPayload,
-} from "../types/report.js";
-import { resolveReportEnabled } from "../utils/env.js";
-import { resolveReportProject } from "../utils/reportProject.js";
-import { resolveReportTeam } from "../utils/reportTeam.js";
-import { resolveReportUi } from "../utils/reportUi.js";
-import { resolveReportVisibility } from "../utils/reportVisibility.js";
+} from "@/types/report.js";
+import { resolveReportEnabled } from "@/utils/env.js";
+import { resolveReportProject } from "@/utils/reportProject.js";
+import { resolveReportTeam } from "@/utils/reportTeam.js";
+import { resolveReportUi } from "@/utils/reportUi.js";
+import { resolveReportVisibility } from "@/utils/reportVisibility.js";
 import { ReportContext } from "./reportContext.js";
 
 export type ReportProviderProps = {

@@ -70,7 +70,7 @@ export const en: ReportMessages = {
         selectPlaceholder: "Select author",
     },
     composer: {
-        placeholder: "Leave your message",
+        placeholder: "Leave your feedback",
         sendAriaLabel: "Send",
         gitIssueSendAriaLabel: "Send directly to GitHub issue",
         gitIssueSendTitle: "Git Issue",

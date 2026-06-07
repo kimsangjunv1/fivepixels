@@ -1,5 +1,5 @@
-import type { ReportFeedback, ReportFieldValues, ReportIntegrations, ReportReply, ReportStatus, ReportTargetType } from "../types/report.js";
-import { getActiveReportMessages } from "../i18n/index.js";
+import type { ReportFeedback, ReportFieldValues, ReportIntegrations, ReportReply, ReportStatus, ReportTargetType } from "@/types/report.js";
+import { getActiveReportMessages } from "@/i18n/index.js";
 
 const STRING_FIELDS = ["id", "pathname", "report_id", "message", "created_at"] as const;
 const NUMBER_FIELDS = ["x_ratio", "y_ratio", "scroll_y", "document_y", "viewport_width", "viewport_height", "design_width", "design_height"] as const;

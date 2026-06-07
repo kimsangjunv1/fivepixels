@@ -1,4 +1,4 @@
-import { PANEL_CORNERS, type PanelCorner } from "../../hooks/usePanelDock.js";
+import { PANEL_CORNERS, type PanelCorner } from "@/hooks/usePanelDock.js";
 
 type PanelDockGuidesProps = {
     visible: boolean;

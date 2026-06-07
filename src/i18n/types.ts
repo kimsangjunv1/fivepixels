@@ -1,4 +1,4 @@
-import type { ReportAppearance } from "../types/report.js";
+import type { ReportAppearance } from "@/types/report.js";
 
 export type ReportLocale = "en" | "ko";
 

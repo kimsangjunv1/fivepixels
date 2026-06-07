@@ -1,7 +1,7 @@
 import { useLayoutEffect, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import type { ResolvedAppearance } from "../../types/report-ui.js";
-import { REPORT_STYLESHEET } from "../../styles/reportStylesheet.js";
+import type { ResolvedAppearance } from "@/types/report-ui.js";
+import { REPORT_STYLESHEET } from "@/styles/reportStylesheet.js";
 
 const HOST_ID = "stitchable-root";
 const STYLE_ELEMENT_ID = "stitchable-report-styles";

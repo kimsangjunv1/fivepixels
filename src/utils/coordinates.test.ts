@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { DOT_SIZE } from "../constants/report.js";
-import type { ReportFeedback } from "../types/report.js";
+import { DOT_SIZE } from "@/constants/report.js";
+import type { ReportFeedback } from "@/types/report.js";
 import {
     clampRatio,
     DRAFT_POPOVER_HEIGHT,

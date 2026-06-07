@@ -1,4 +1,4 @@
-import { DEFAULT_PROJECT_ID } from "../constants/project.js";
+import { DEFAULT_PROJECT_ID } from "@/constants/project.js";
 import { isProductionEnv } from "./env.js";
 
 let hasWarnedDefaultProjectId = false;

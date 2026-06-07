@@ -1,4 +1,4 @@
-import { type MotionTransition } from "../motion/index.js";
+import { type MotionTransition } from "../../components/motion/index.js";
 export declare const LOCATE_PULSE_TRANSITION: MotionTransition;
 export declare const LOCATE_PULSE_RIPPLE_TRANSITION: MotionTransition;
 export declare function useLocatePulseTick(active: boolean): number;

@@ -1,7 +1,7 @@
-import { TARGET_COLOR, TARGET_SURFACE } from "../../constants/report.js";
-import type { ReportTargetType } from "../../types/report.js";
-import type { TargetSnapshot } from "../../types/report-ui.js";
-import { AnimatedPresence, motion, type MotionTransition } from "../motion/index.js";
+import { TARGET_COLOR, TARGET_SURFACE } from "@/constants/report.js";
+import type { ReportTargetType } from "@/types/report.js";
+import type { TargetSnapshot } from "@/types/report-ui.js";
+import { AnimatedPresence, motion, type MotionTransition } from "@/components/motion/index.js";
 
 type TargetHighlightsProps = {
     hoveredTarget: TargetSnapshot | null;

@@ -1,5 +1,5 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import { AnimatedPresence, motion } from "../motion/index.js";
+import { AnimatedPresence, motion } from "../../components/motion/index.js";
 import { useReport } from "../../providers/reportContext.js";
 import { DRAFT_POPOVER_CONNECTOR_WIDTH, getDraftMarkerPosition, getDraftPopoverPosition } from "../../utils/coordinates.js";
 import { FeedbackComposer } from "./feedback/FeedbackComposer.js";

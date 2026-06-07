@@ -1,6 +1,6 @@
-import { TARGET_SELECTOR } from "../constants/report.js";
-import type { ReportTargetType } from "../types/report.js";
-import type { TargetSnapshot } from "../types/report-ui.js";
+import { TARGET_SELECTOR } from "@/constants/report.js";
+import type { ReportTargetType } from "@/types/report.js";
+import type { TargetSnapshot } from "@/types/report-ui.js";
 
 export function escapeAttribute(value: string) {
     return value.split("\\").join("\\\\").split('"').join('\\"');

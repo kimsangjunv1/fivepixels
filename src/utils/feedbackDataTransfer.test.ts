@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { ko, setActiveReportMessages } from "../i18n/index.js";
-import { getReportsStorageKey } from "../constants/storageKeys.js";
+import { ko, setActiveReportMessages } from "@/i18n/index.js";
+import { getReportsStorageKey } from "@/constants/storageKeys.js";
 import { createReportPayload } from "./reportFixtures.js";
 import {
     isImportProjectCompatible,

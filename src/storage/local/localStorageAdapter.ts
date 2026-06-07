@@ -1,4 +1,4 @@
-import { getActiveReportMessages } from "../../i18n/index.js";
+import { getActiveReportMessages } from "@/i18n/index.js";
 import type {
     CreateReportFeedbackPayload,
     ReportFeedback,
@@ -11,10 +11,10 @@ import type {
     ReportStorageAdapter,
     ReportStatus,
     UpdateReportFeedbackPayload,
-} from "../../types/report.js";
-import { DEFAULT_PROJECT_ID } from "../../constants/project.js";
-import { getReportsStorageKey } from "../../constants/storageKeys.js";
-import { parseFeedbackStorageEnvelope, serializeFeedbackStorageEnvelope } from "../../utils/feedbackTransferSchema.js";
+} from "@/types/report.js";
+import { DEFAULT_PROJECT_ID } from "@/constants/project.js";
+import { getReportsStorageKey } from "@/constants/storageKeys.js";
+import { parseFeedbackStorageEnvelope, serializeFeedbackStorageEnvelope } from "@/utils/feedbackTransferSchema.js";
 
 export type LocalStorageReportAdapterOptions = {
     projectId: string;

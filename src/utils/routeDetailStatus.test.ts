@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ReportFeedback } from "../types/report.js";
+import type { ReportFeedback } from "@/types/report.js";
 import { createReportPayload } from "./reportFixtures.js";
 import { getRouteDetailStatus } from "./routeDetailStatus.js";
 

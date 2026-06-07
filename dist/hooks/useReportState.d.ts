@@ -35,7 +35,7 @@ export declare function useReportState({ projectId, environment, appVersion, app
     setAppearance: (nextAppearance: ReportAppearance) => void;
     locale: ReportLocale;
     setLocale: (nextLocale: ReportLocale) => void;
-    messages: import("../index.js").ReportMessages;
+    messages: import("../i18n/types.js").ReportMessages;
     fields: ReportField[];
     authors: ReportAuthor[];
     projectId: string;

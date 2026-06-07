@@ -1,7 +1,7 @@
 import { jsx as _jsx, Fragment as _Fragment, jsxs as _jsxs } from "react/jsx-runtime";
 import { useEffect, useState } from "react";
 import { DOT_SIZE } from "../../constants/report.js";
-import { motion } from "../motion/index.js";
+import { motion } from "../../components/motion/index.js";
 import { LOCATE_PULSE_DURATION_MS } from "../../utils/locateFeedback.js";
 export const LOCATE_PULSE_TRANSITION = {
     duration: 0.65,

@@ -1,7 +1,7 @@
-import type { ReportProject } from "../../types/report.js";
-import { useReport } from "../../providers/reportContext.js";
-import { buildProjectComparisonLines } from "../../utils/feedbackTransferSchema.js";
-import type { ResolvedReportProject } from "../../utils/reportProject.js";
+import type { ReportProject } from "@/types/report.js";
+import { useReport } from "@/providers/reportContext.js";
+import { buildProjectComparisonLines } from "@/utils/feedbackTransferSchema.js";
+import type { ResolvedReportProject } from "@/utils/reportProject.js";
 
 type ReportImportProjectMismatchDialogProps = {
     currentProject: ResolvedReportProject;

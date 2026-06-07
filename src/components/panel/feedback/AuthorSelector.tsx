@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { useReport } from "../../../providers/reportContext.js";
-import { ChevronDownIcon } from "../../icons/ChevronDownIcon.js";
-import { PanelDropdownMenu, PanelDropdownMenuItem } from "../PanelDropdownMenu.js";
-import type { ReportAuthor } from "../../../types/report.js";
+import { useReport } from "@/providers/reportContext.js";
+import { ChevronDownIcon } from "@/components/icons/ChevronDownIcon.js";
+import { PanelDropdownMenu, PanelDropdownMenuItem } from "@/components/panel/PanelDropdownMenu.js";
+import type { ReportAuthor } from "@/types/report.js";
 
 type AuthorSelectorProps = {
     authors: ReportAuthor[];

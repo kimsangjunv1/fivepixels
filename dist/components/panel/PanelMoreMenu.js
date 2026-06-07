@@ -1,6 +1,6 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useReport } from "../../providers/reportContext.js";
-import { SettingsIcon } from "../icons/SettingsIcon.js";
+import { SettingsIcon } from "../../components/icons/SettingsIcon.js";
 import { PanelDropdownMenu, PanelDropdownMenuItem } from "./PanelDropdownMenu.js";
 import { PanelOptionSwitch } from "./PanelOptionSwitch.js";
 const LOCALE_OPTIONS = ["en", "ko"];

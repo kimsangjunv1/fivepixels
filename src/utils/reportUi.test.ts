@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getReportMessages } from "../i18n/index.js";
+import { getReportMessages } from "@/i18n/index.js";
 import { resolveReportUi } from "./reportUi.js";
 
 describe("resolveReportUi", () => {

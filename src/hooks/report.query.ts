@@ -1,4 +1,4 @@
-import { getActiveReportMessages } from "../i18n/index.js";
+import { getActiveReportMessages } from "@/i18n/index.js";
 import { useCallback, useEffect, useState } from "react";
 import { createReport, deleteReport, listReports, updateReport } from "./report.api.js";
 import type {
@@ -6,7 +6,7 @@ import type {
     ReportFeedback,
     ReportStorageAdapter,
     UpdateReportFeedbackPayload,
-} from "../types/report.js";
+} from "@/types/report.js";
 
 const EMPTY_REPORTS: ReportFeedback[] = [];
 

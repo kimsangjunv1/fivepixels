@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { getReportsStorageKey } from "../../constants/storageKeys.js";
-import { createReportPayload } from "../../utils/reportFixtures.js";
+import { getReportsStorageKey } from "@/constants/storageKeys.js";
+import { createReportPayload } from "@/utils/reportFixtures.js";
 import { createLocalStorageReportAdapter } from "./localStorageAdapter.js";
 
 const PROJECT_ID = "test-project";

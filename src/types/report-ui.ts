@@ -1,5 +1,5 @@
 import type { ReportFeedback, ReportFieldValues, ReportStatus, ReportTargetType } from "./report.js";
-import type { RouteDetailStatus } from "../utils/routeDetailStatus.js";
+import type { RouteDetailStatus } from "@/utils/routeDetailStatus.js";
 
 export type ReportMode = "idle" | "report" | "view";
 export type ResolvedAppearance = "light" | "dark";

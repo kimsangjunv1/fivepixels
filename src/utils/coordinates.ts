@@ -1,6 +1,6 @@
-import { DOT_SIZE } from "../constants/report.js";
-import type { ReportFeedback } from "../types/report.js";
-import type { DraftReport, Marker, TargetSnapshot } from "../types/report-ui.js";
+import { DOT_SIZE } from "@/constants/report.js";
+import type { ReportFeedback } from "@/types/report.js";
+import type { DraftReport, Marker, TargetSnapshot } from "@/types/report-ui.js";
 import { getFeedbackTargetSelector } from "./dom.js";
 
 export function clampRatio(value: number) {

@@ -3,11 +3,13 @@
   "compilerOptions": {
     "noEmit": true,
     "rootDir": "../..",
+    "baseUrl": ".",
     "declaration": false,
     "declarationMap": false,
     "sourceMap": false,
     "paths": {
-      "stitchable": ["../../src/index.ts"]
+      "stitchable": ["../../src/index.ts"],
+      "@/*": ["../../src/*"]
     }
   },
   "include": ["./**/*.ts", "./**/*.tsx", "../../src/**/*.ts", "../../src/**/*.tsx"],

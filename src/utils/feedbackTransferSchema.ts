@@ -1,6 +1,6 @@
-import { getActiveReportMessages } from "../i18n/index.js";
+import { getActiveReportMessages } from "@/i18n/index.js";
 import { validateFeedbackImportArray, validateFeedbackRecord } from "./validateFeedbackImport.js";
-import type { ReportFeedback, ReportProject } from "../types/report.js";
+import type { ReportFeedback, ReportProject } from "@/types/report.js";
 import type { ResolvedReportProject } from "./reportProject.js";
 
 export const FEEDBACK_TRANSFER_SCHEMA_VERSION = 1;

@@ -1,7 +1,7 @@
 import { type MouseEvent, useEffect, useMemo, useRef, useState } from "react";
-import { getReportMessages, setActiveReportMessages } from "../i18n/index.js";
-import type { DeepPartialReportMessages } from "../i18n/types.js";
-import type { ReportLocale } from "../i18n/types.js";
+import { getReportMessages, setActiveReportMessages } from "@/i18n/index.js";
+import type { DeepPartialReportMessages } from "@/i18n/types.js";
+import type { ReportLocale } from "@/i18n/types.js";
 import { useReportShortcuts } from "./useReportShortcuts.js";
 import { useReportPersistence } from "./useReportPersistence.js";
 import { useIsMobileViewport } from "./useIsMobileViewport.js";
@@ -19,17 +19,17 @@ import type {
     ReportIdentify,
     ReportReply,
     UpdateReportFeedbackPayload,
-} from "../types/report.js";
-import type { DraftReport, EditableDraft, Marker, PendingFeedbackComposer, ReportMode, ReportPanelTab, TargetSnapshot } from "../types/report-ui.js";
-import { createReplyStatusForSubmit, resolveOriginalFeedbackAuthorName } from "../utils/feedbackThread.js";
-import { clampRatio, getMarkerFromReport, resolveTooltipAnchor } from "../utils/coordinates.js";
-import { LOCATE_PULSE_DURATION_MS, scrollToFeedbackTarget } from "../utils/locateFeedback.js";
+} from "@/types/report.js";
+import type { DraftReport, EditableDraft, Marker, PendingFeedbackComposer, ReportMode, ReportPanelTab, TargetSnapshot } from "@/types/report-ui.js";
+import { createReplyStatusForSubmit, resolveOriginalFeedbackAuthorName } from "@/utils/feedbackThread.js";
+import { clampRatio, getMarkerFromReport, resolveTooltipAnchor } from "@/utils/coordinates.js";
+import { LOCATE_PULSE_DURATION_MS, scrollToFeedbackTarget } from "@/utils/locateFeedback.js";
 
 const MARKER_HOVER_LEAVE_MS = 250;
 const OVERLAY_HOVER_LEAVE_MS = 100;
-import { findTargetByPoint, getSelectableTargets, isSameHoverTarget, toSnapshot } from "../utils/dom.js";
-import { createInitialFieldValues, getFieldError, getFieldTags } from "../utils/fields.js";
-import { createReplyId } from "../utils/format.js";
+import { findTargetByPoint, getSelectableTargets, isSameHoverTarget, toSnapshot } from "@/utils/dom.js";
+import { createInitialFieldValues, getFieldError, getFieldTags } from "@/utils/fields.js";
+import { createReplyId } from "@/utils/format.js";
 import {
     notifyFeedbackCreate,
     notifyFeedbackDelete,
@@ -37,13 +37,13 @@ import {
     notifyFeedbackUpdate,
     notifyGitHubIssueCreated,
     type ReportSideEffectCallbacks,
-} from "../utils/reportCallbacks.js";
+} from "@/utils/reportCallbacks.js";
 import {
     buildGitHubIssueUpdate,
     canCreateGitHubIssueFromList,
     canCreateGitHubIssueOnCreate,
     isGitIssued,
-} from "../utils/githubIntegration.js";
+} from "@/utils/githubIntegration.js";
 
 function resolveDefaultAuthorName(identify: ReportIdentify | undefined, authors: ReportAuthor[]) {
     if (identify?.name) {

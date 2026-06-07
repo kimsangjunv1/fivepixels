@@ -1,8 +1,8 @@
 import { useEffect, useState, type MouseEvent } from "react";
-import { GitHubIssueIcon } from "../../icons/GitHubIssueIcon.js";
-import type { ReportFeedback } from "../../../types/report.js";
-import type { ReportMessages } from "../../../i18n/types.js";
-import { getGitHubIssueUrl, hasGitHubIssue } from "../../../utils/githubIntegration.js";
+import { GitHubIssueIcon } from "@/components/icons/GitHubIssueIcon.js";
+import type { ReportFeedback } from "@/types/report.js";
+import type { ReportMessages } from "@/i18n/types.js";
+import { getGitHubIssueUrl, hasGitHubIssue } from "@/utils/githubIntegration.js";
 
 type GitIssueButtonProps = {
     report: ReportFeedback;

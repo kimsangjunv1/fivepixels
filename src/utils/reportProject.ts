@@ -1,4 +1,4 @@
-import type { ReportProject } from "../types/report.js";
+import type { ReportProject } from "@/types/report.js";
 import { resolveProjectId } from "./projectId.js";
 
 export type ResolvedReportProject = {

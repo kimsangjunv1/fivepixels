@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { useReport } from "../../providers/reportContext.js";
+import { useReport } from "@/providers/reportContext.js";
 import { TargetHighlights } from "./TargetHighlights.js";
 
 type ReportOverlayLayerProps = {

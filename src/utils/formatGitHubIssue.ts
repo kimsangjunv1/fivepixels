@@ -1,4 +1,4 @@
-import type { ReportFeedback, ReportField } from "../types/report.js";
+import type { ReportFeedback, ReportField } from "@/types/report.js";
 
 function escapeMarkdownTableCell(value: string) {
     return value.replace(/\|/g, "\\|").replace(/\n/g, " ");

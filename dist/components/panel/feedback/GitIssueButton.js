@@ -1,6 +1,6 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useEffect, useState } from "react";
-import { GitHubIssueIcon } from "../../icons/GitHubIssueIcon.js";
+import { GitHubIssueIcon } from "../../../components/icons/GitHubIssueIcon.js";
 import { getGitHubIssueUrl, hasGitHubIssue } from "../../../utils/githubIntegration.js";
 export function GitIssueButton({ report, messages, disabled = false, isSubmitting = false, onCreateIssue }) {
     const [confirming, setConfirming] = useState(false);

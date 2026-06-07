@@ -1,4 +1,4 @@
-import { useReport } from "../../providers/reportContext.js";
+import { useReport } from "@/providers/reportContext.js";
 
 type ReportImportConfirmDialogProps = {
     onApply: () => void;
