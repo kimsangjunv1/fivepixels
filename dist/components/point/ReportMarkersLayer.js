@@ -1,4 +1,4 @@
-import { jsx as _jsx, Fragment as _Fragment, jsxs as _jsxs } from "react/jsx-runtime";
+import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { TARGET_COLOR, TARGET_SURFACE } from "../../constants/report.js";
 import { AnimatedPresence, motion } from "../../components/motion/index.js";
@@ -21,25 +21,31 @@ const TOOLTIP_MOTION_TRANSITION = {
 const TOOLTIP_BASE_CLASS = 
 // "fixed z-[1000001] overflow-hidden rounded-[24px] bg-[var(--adaptive-blackOpacity900)] shadow-[0_0_90px_0_var(--adaptive-blackOpacity500)] backdrop-blur-sm border border-[2px] border-[var(--adaptive-black400)]";
 "fixed z-[1000001] overflow-hidden rounded-[24px] shadow-[0_0_90px_0_var(--adaptive-blackOpacity500)] border border-[2px] border-[var(--adaptive-black300)] backdrop-blur-[10px]";
-const MARKER_BUTTON_BASE_CLASS = "pointer-events-auto fixed z-[1000000] flex -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full";
+const MARKER_ANCHOR_CLASS = "pointer-events-none fixed z-[1000000] -translate-x-1/2 -translate-y-1/2";
+const MARKER_BUTTON_BASE_CLASS = "flex items-center justify-center rounded-full";
 function MarkerButton({ markerItem, isSelected, isLocated, locatePulseTick, onSelect, onOpenReply, onHoverStart, onHoverEnd }) {
     const hoverRef = useNativeHover({
         onEnter: onHoverStart,
         onLeave: onHoverEnd,
     });
-    return (_jsxs(_Fragment, { children: [isLocated ? (_jsx(MarkerLocatePulse, { left: markerItem.left, top: markerItem.top, tick: locatePulseTick, accentColor: getMarkerColor(markerItem.report) })) : null, _jsx("button", { ref: hoverRef, type: "button", "data-stitchable-interactive": "", "data-marker-report-id": markerItem.report.id, "aria-label": `${markerItem.report.report_type} · ${markerItem.report.report_id}`, onClick: () => {
-                    onSelect();
-                    onOpenReply();
-                }, className: isLocated
-                    ? `${MARKER_BUTTON_BASE_CLASS} h-5 w-5 border-2 border-white/95 shadow-[0_0_18px_rgba(56,189,248,0.85)] ring-2 ring-sky-300/90`
-                    : isSelected
-                        ? `${MARKER_BUTTON_BASE_CLASS} h-5 w-5 border-2 border-white/80 shadow-lg ring-2 ring-white/30`
-                        : `${MARKER_BUTTON_BASE_CLASS} h-4 w-4 border border-white/60 shadow-sm`, style: {
+    const replyCount = markerItem.report.replies.length;
+    const markerLabel = replyCount > 0
+        ? `${markerItem.report.report_type} · ${markerItem.report.report_id} · ${replyCount} replies`
+        : `${markerItem.report.report_type} · ${markerItem.report.report_id}`;
+    return (_jsxs(_Fragment, { children: [isLocated ? (_jsx(MarkerLocatePulse, { left: markerItem.left, top: markerItem.top, tick: locatePulseTick, accentColor: getMarkerColor(markerItem.report) })) : null, _jsx("div", { className: MARKER_ANCHOR_CLASS, style: {
                     left: markerItem.left,
                     top: markerItem.top,
-                    backgroundColor: getMarkerColor(markerItem.report),
-                    pointerEvents: "auto",
-                } }, markerItem.id)] }));
+                }, children: _jsxs("div", { className: "relative pointer-events-auto", children: [_jsx("button", { ref: hoverRef, type: "button", "data-stitchable-interactive": "", "data-marker-report-id": markerItem.report.id, "aria-label": markerLabel, onClick: () => {
+                                onSelect();
+                                onOpenReply();
+                            }, className: isLocated
+                                ? `${MARKER_BUTTON_BASE_CLASS} h-5 w-5 border-2 border-white/95 shadow-[0_0_18px_rgba(56,189,248,0.85)] ring-2 ring-sky-300/90`
+                                : isSelected
+                                    ? `${MARKER_BUTTON_BASE_CLASS} h-5 w-5 border-2 border-white/80 shadow-lg ring-2 ring-white/30`
+                                    : `${MARKER_BUTTON_BASE_CLASS} h-4 w-4 border border-white/60 shadow-sm`, style: {
+                                backgroundColor: getMarkerColor(markerItem.report),
+                                pointerEvents: "auto",
+                            } }, markerItem.id), replyCount > 0 ? (_jsxs("span", { className: "absolute -right-[6px] -top-[6px] flex h-[14px] min-w-[14px] items-center justify-center rounded-full bg-[var(--adaptive-black900)] px-[3px] text-[10px] font-semibold leading-none text-[var(--adaptive-black50)] ring-1 ring-white/80", children: ["+", replyCount] })) : null] }) })] }));
 }
 export function ReportMarkersLayer() {
     const { mode, markers, selectedReport, locatedReportId, fields, authors, activeReplyReportId, activeReplyReport, tooltipReport, tooltipAnchor, tooltipFieldTags, replyDraft, replyAuthorName, pendingComposer, isUpdating, editingReportId, selectReport, openReplyComposer, closeReplyComposer, clearHoverLeaveTimeout, scheduleHoverLeave, setHoveredMarkerId, setReplyDraft, setReplyAuthorName, handleReplySubmit, startDenyReview, startCheckoutReview, confirmAuthorName, setConfirmAuthorName, showConfirmAuthorSelect, toggleConfirmAuthorSelect, handleConfirmResolution, } = useReport();

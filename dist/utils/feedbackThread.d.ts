@@ -1,6 +1,7 @@
 import type { FeedbackDisplayStatus } from "../constants/feedbackStatus.js";
 import type { ReportFeedback, ReportReply, ReportReplyStatus } from "../types/report.js";
 export declare function getLatestReply(report: ReportFeedback): ReportReply | null;
+export declare function getRemainingReplyCount(report: ReportFeedback): number;
 export declare function getFeedbackDisplayStatus(report: ReportFeedback, expanded?: boolean): FeedbackDisplayStatus;
 export declare function getCheckboxFieldsFromValues(fieldValues: ReportFeedback["field_values"], labels: Map<string, string>): {
     key: string;

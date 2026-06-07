@@ -4,6 +4,9 @@ export function getLatestReply(report) {
     }
     return report.replies[report.replies.length - 1] ?? null;
 }
+export function getRemainingReplyCount(report) {
+    return Math.max(0, report.replies.length - 1);
+}
 export function getFeedbackDisplayStatus(report, expanded = false) {
     if (report.status === "git_issued") {
         return "git_issued";

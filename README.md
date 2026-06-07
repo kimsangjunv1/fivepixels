@@ -433,6 +433,39 @@ export default function App() {
 - `onList`, `onCreate`, `onUpdate`는 persistence handler입니다. 저장 실패 시 UI에 에러가 표시됩니다.
 - `onDelete`를 생략하면 삭제 시도 시 에러가 납니다.
 - 답변 추가는 내부적으로 `onUpdate({ replies, status? })`로 저장됩니다.
+- view 모드 마커의 **`+N` 배지**와 hover **최근 답변 미리보기**는 `onList` 응답의 `replies[]`에서 파생됩니다. 별도 count 필드는 없습니다. `replies`는 시간순으로 append하고, **최신 답변은 배열의 마지막** 항목입니다.
+
+```json
+{
+  "id": "fb_001",
+  "message": "버튼 색상이 디자인과 다릅니다.",
+  "status": "open",
+  "author_name": "김상준",
+  "replies": [
+    {
+      "id": "r_001",
+      "message": "확인해보겠습니다.",
+      "created_at": "2026-06-01T10:00:00.000Z",
+      "status": "suggested",
+      "author_name": "리뷰어A"
+    },
+    {
+      "id": "r_009",
+      "message": "내일 배포에 포함됩니다.",
+      "created_at": "2026-06-07T15:30:00.000Z",
+      "status": "suggested",
+      "author_name": "리뷰어B"
+    }
+  ]
+}
+```
+
+위 예시는 `replies` 중 **첫 항목·마지막 항목만** 표시한 것입니다 (`replies.length === 9` 가정). UI 동작:
+
+| UI | 값 |
+| -- | -- |
+| 마커 배지 | `+9` (`replies.length`) |
+| hover 하단 | `리뷰어B \| 내일 배포에 포함됩니다. \| +8` (`+8` = `replies.length - 1`) |
 
 ### Side effects (`onEvent` / `onReply`)
 
@@ -556,12 +589,13 @@ return { issueNumber: issue.number, issueUrl: issue.html_url };
 view 모드(`⌘⇧L`)에서 화면에 표시된 **마커**(`item` 빨간 점 · `group` 보라 점)를 기준으로 아래 흐름이 동작합니다.
 
 1. **작성** — 요소 선택 후 메시지, 작성자(`team.reviewers` 또는 직접 입력), `checkbox` 태그를 선택해 피드백을 등록합니다.
-2. **hover** — 답변이 없으면 `CURRENTLY WAIT`, 있으면 **최신 답변의 상태**와 원문(2줄), 작성자, 태그를 미리 봅니다.
-3. **클릭** — 원본 이슈와 답변 입력 UI(태그 없음)가 열립니다.
-4. **첫 답변** — `suggested` 상태의 타임라인 항목이 추가되고, 최신 항목에 `denied` / `confirm` / `select`가 표시됩니다.
-5. **denied** — 즉시 반영되지 않습니다. `denied` 버튼이 활성화되고 위에 답변 UI가 열리며, 전송 시 `found_error` 항목이 추가됩니다.
-6. **checkout** — **가장 최근 `found_error` 항목**에만 표시됩니다. 활성화 후 답변을 내면 `suggested` 항목이 추가되며, 이전 `found_error`에는 checkout 버튼이 더 이상 나타나지 않습니다.
-7. **confirm** — 기본 처리자는 **최초 피드백 작성자**입니다. `select`로 다른 처리자를 고른 뒤 `confirm`하면 `resolved` 답변이 추가되고 피드백 `status`가 `resolved`가 됩니다.
+2. **마커 배지** — 답변이 1개 이상이면 마커 우상단에 **`+N`** (`N` = `replies.length`, 총 답변 수)이 표시됩니다. 답변이 없으면 배지를 숨깁니다.
+3. **hover** — 원본 피드백의 상태 배지, 메시지(2줄), 작성자, 태그를 미리 봅니다. 답변이 없으면 상태는 `CURRENTLY WAIT`입니다. 답변이 있으면 상태 배지는 **최신 답변의 status**를 반영하고, 카드 하단에 **`최근 답변 작성자 | 내용 1줄 | +M`** 미리보기가 추가됩니다. (`M` = `replies.length - 1`, 미리보기에 보여준 1건을 제외한 나머지 답변 수. 답변이 1개뿐이면 `+M`은 표시하지 않습니다.)
+4. **클릭** — 원본 이슈와 답변 입력 UI(태그 없음)가 열립니다.
+5. **첫 답변** — `suggested` 상태의 타임라인 항목이 추가되고, 최신 항목에 `denied` / `confirm` / `select`가 표시됩니다.
+6. **denied** — 즉시 반영되지 않습니다. `denied` 버튼이 활성화되고 위에 답변 UI가 열리며, 전송 시 `found_error` 항목이 추가됩니다.
+7. **checkout** — **가장 최근 `found_error` 항목**에만 표시됩니다. 활성화 후 답변을 내면 `suggested` 항목이 추가되며, 이전 `found_error`에는 checkout 버튼이 더 이상 나타나지 않습니다.
+8. **confirm** — 기본 처리자는 **최초 피드백 작성자**입니다. `select`로 다른 처리자를 고른 뒤 `confirm`하면 `resolved` 답변이 추가되고 피드백 `status`가 `resolved`가 됩니다.
 
 답변별 타임라인 상태(`ReportReplyStatus`):
 
@@ -578,6 +612,7 @@ view 모드(`⌘⇧L`)에서 화면에 표시된 **마커**(`item` 빨간 점 ·
 - `ReportField` 기본 지원 타입은 `textarea`, `checkbox` 입니다.
 - `field_values`는 `Record<string, string | boolean>` 형태만 저장합니다.
 - `replies` 항목은 `id`, `message`, `created_at`, **`status`** (`suggested` \| `found_error` \| `resolved`)를 가지며, `author_type`, `author_name`를 선택적으로 포함할 수 있습니다.
+- `replies`는 **시간순 append** 배열입니다. 최신 답변은 **마지막** 항목이며, 마커 `+N`은 `replies.length`, hover 미리보기는 마지막 항목의 `author_name`·`message`를 사용합니다.
 - 피드백 `status` 흐름 기본값은 `open -> git_issued -> resolved -> archived` 입니다. (`git_issued`는 GitHub Issue 전송 시에만 설정)
 - `integrations.github`는 선택 필드이며 `{ issue_number, issue_url, issued_at }` 형태입니다.
 - GitHub Issue 전송 시 `author_type: "system"` reply가 추가되며, 메시지는 `Issue has been sent to GitHub.`입니다.
