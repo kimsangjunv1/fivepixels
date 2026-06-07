@@ -68,6 +68,7 @@ export const en: ReportMessages = {
         placeholder: "Author",
         selectAriaLabel: "Select author",
         selectPlaceholder: "Select author",
+        creatorLabel: "Creator",
     },
     composer: {
         placeholder: "Leave your feedback",

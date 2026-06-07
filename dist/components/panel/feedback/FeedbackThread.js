@@ -5,6 +5,7 @@ import { formatDate } from "../../../utils/format.js";
 import { canCheckoutReply, canReviewLatestSuggestion, resolveOriginalFeedbackAuthorName } from "../../../utils/feedbackThread.js";
 import { getGitHubIssueUrl, isGitIssuedSystemReply } from "../../../utils/githubIntegration.js";
 import { AuthorSelector } from "./AuthorSelector.js";
+import { FeedbackCreatorBadge } from "./FeedbackCreatorBadge.js";
 import { FeedbackStatusBadge } from "./FeedbackStatusBadge.js";
 import { GitIssuedThreadEntry } from "./GitIssuedThreadEntry.js";
 function buildConfirmAuthorOptions(report, authors) {
@@ -77,12 +78,13 @@ export function FeedbackThread({ report, authors, pendingComposer, confirmAuthor
         return null;
     }
     const chronological = [...report.replies].reverse();
+    const originalAuthorName = resolveOriginalFeedbackAuthorName(report);
     return (_jsxs("div", { className: "relative max-h-[512px]", children: [scrollOverflow.canScrollUp ? _jsx("p", { className: `${SCROLL_HINT_CLASS} top-0 bg-[linear-gradient(0deg,transparent,var(--adaptive-black900))]`, children: messages.thread.scrollHintUp }) : null, scrollOverflow.canScrollDown ? _jsx("p", { className: `${SCROLL_HINT_CLASS} bottom-0 bg-[linear-gradient(180deg,transparent,var(--adaptive-black900))]`, children: messages.thread.scrollHintDown }) : null, _jsx("section", { ref: scrollRef, className: "flex max-h-[512px] flex-col overflow-auto bg-[var(--adaptive-blackOpacity900)] backdrop-blur-[10px]", children: chronological.map((reply) => {
                     const issueUrl = getGitHubIssueUrl(report);
                     if (isGitIssuedSystemReply(reply, report) && issueUrl) {
                         return (_jsx(GitIssuedThreadEntry, { reply: reply, issueUrl: issueUrl }, reply.id));
                     }
-                    return (_jsxs("article", { className: "flex flex-col gap-[8px] border-t border-[var(--adaptive-black800)] p-[16px]", children: [_jsxs("div", { className: "flex items-start justify-between gap-[8px]", children: [_jsx(FeedbackStatusBadge, { status: reply.status }), _jsx("span", { className: "text-[12px] text-[var(--adaptive-black500)]", children: formatDate(reply.created_at, locale) })] }), _jsx("p", { className: "leading-[1.5] text-[14px] text-[var(--adaptive-black50)]", children: reply.message }), reply.author_name ? _jsx("p", { className: "text-[12px] text-[var(--adaptive-black500)]", children: reply.author_name }) : null, _jsx(ThreadEntryActions, { reply: reply, report: report, authors: authors, pendingComposer: pendingComposer, confirmAuthorName: confirmAuthorName, showConfirmAuthorSelect: showConfirmAuthorSelect, onConfirmAuthorNameChange: onConfirmAuthorNameChange, onToggleConfirmAuthorSelect: onToggleConfirmAuthorSelect, onStartDeny: onStartDeny, onStartCheckout: onStartCheckout, onConfirm: onConfirm, isUpdating: isUpdating })] }, reply.id));
+                    return (_jsxs("article", { className: "flex flex-col gap-[8px] border-t border-[var(--adaptive-black800)] p-[16px]", children: [_jsxs("div", { className: "flex items-start justify-between gap-[8px]", children: [_jsx(FeedbackStatusBadge, { status: reply.status }), _jsx("span", { className: "text-[12px] text-[var(--adaptive-black500)]", children: formatDate(reply.created_at, locale) })] }), _jsx("p", { className: "leading-[1.5] text-[14px] text-[var(--adaptive-black50)]", children: reply.message }), reply.author_name ? (_jsxs("div", { className: "flex items-center gap-[6px]", children: [_jsx("p", { className: "text-[12px] text-[var(--adaptive-black500)]", children: reply.author_name }), reply.author_name.trim() === originalAuthorName ? _jsx(FeedbackCreatorBadge, {}) : null] })) : null, _jsx(ThreadEntryActions, { reply: reply, report: report, authors: authors, pendingComposer: pendingComposer, confirmAuthorName: confirmAuthorName, showConfirmAuthorSelect: showConfirmAuthorSelect, onConfirmAuthorNameChange: onConfirmAuthorNameChange, onToggleConfirmAuthorSelect: onToggleConfirmAuthorSelect, onStartDeny: onStartDeny, onStartCheckout: onStartCheckout, onConfirm: onConfirm, isUpdating: isUpdating })] }, reply.id));
                 }) })] }));
 }
 //# sourceMappingURL=FeedbackThread.js.map

@@ -74,6 +74,7 @@ export type ReportMessages = {
         placeholder: string;
         selectAriaLabel: string;
         selectPlaceholder: string;
+        creatorLabel: string;
     };
     composer: {
         placeholder: string;

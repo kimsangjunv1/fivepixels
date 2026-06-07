@@ -5,6 +5,7 @@ import { formatDate } from "@/utils/format.js";
 import { canCheckoutReply, canReviewLatestSuggestion, resolveOriginalFeedbackAuthorName } from "@/utils/feedbackThread.js";
 import { getGitHubIssueUrl, isGitIssuedSystemReply } from "@/utils/githubIntegration.js";
 import { AuthorSelector } from "./AuthorSelector.js";
+import { FeedbackCreatorBadge } from "./FeedbackCreatorBadge.js";
 import { FeedbackStatusBadge } from "./FeedbackStatusBadge.js";
 import { GitIssuedThreadEntry } from "./GitIssuedThreadEntry.js";
 
@@ -237,6 +238,7 @@ export function FeedbackThread({
     }
 
     const chronological = [...report.replies].reverse();
+    const originalAuthorName = resolveOriginalFeedbackAuthorName(report);
 
     return (
         <div className="relative max-h-[512px]">
@@ -269,7 +271,12 @@ export function FeedbackThread({
                             <span className="text-[12px] text-[var(--adaptive-black500)]">{formatDate(reply.created_at, locale)}</span>
                         </div>
                         <p className="leading-[1.5] text-[14px] text-[var(--adaptive-black50)]">{reply.message}</p>
-                        {reply.author_name ? <p className="text-[12px] text-[var(--adaptive-black500)]">{reply.author_name}</p> : null}
+                        {reply.author_name ? (
+                            <div className="flex items-center gap-[6px]">
+                                <p className="text-[12px] text-[var(--adaptive-black500)]">{reply.author_name}</p>
+                                {reply.author_name.trim() === originalAuthorName ? <FeedbackCreatorBadge /> : null}
+                            </div>
+                        ) : null}
                         <ThreadEntryActions
                             reply={reply}
                             report={report}

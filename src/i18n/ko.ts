@@ -68,6 +68,7 @@ export const ko: ReportMessages = {
         placeholder: "작성자",
         selectAriaLabel: "작성자 선택",
         selectPlaceholder: "작성자 선택",
+        creatorLabel: "생성자",
     },
     composer: {
         placeholder: "메시지를 입력하세요",
