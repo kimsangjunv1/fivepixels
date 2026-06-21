@@ -116,7 +116,7 @@ export function placementToPanelStyle(placement) {
         right: "auto",
         bottom: "auto",
         left: "auto",
-        maxHeight: "none",
+        // maxHeight: "none",
     };
     switch (placement.corner) {
         case "top-left":

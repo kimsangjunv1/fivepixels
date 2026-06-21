@@ -5,6 +5,7 @@ import { useReportPersistence } from "./useReportPersistence.js";
 import { useIsMobileViewport } from "./useIsMobileViewport.js";
 import { useAppearancePreference } from "./useAppearancePreference.js";
 import { useLocalePreference } from "./useLocalePreference.js";
+import { usePersonalKey } from "./usePersonalKey.js";
 import { useResolvedAppearance } from "./useResolvedAppearance.js";
 import { createReplyStatusForSubmit, resolveOriginalFeedbackAuthorName } from "../utils/feedbackThread.js";
 import { clampRatio, getMarkerFromReport, resolveTooltipAnchor } from "../utils/coordinates.js";
@@ -53,6 +54,14 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         onEvent,
         onReply,
     }), [onEvent, onReply]);
+    const { personalKey, personalKeyRequired, authorizedAuthors, issuePersonalKey, insertPersonalKey, } = usePersonalKey({
+        enabled: canTransferFeedback,
+        projectId,
+        environment,
+        identify,
+        authors,
+    });
+    const activeIdentify = canTransferFeedback ? (personalKey ? identify : undefined) : identify;
     const [mode, setMode] = useState("idle");
     const [showTargetPreview, setShowTargetPreview] = useState(false);
     const [selectableTargets, setSelectableTargets] = useState([]);
@@ -64,8 +73,8 @@ export function useReportState({ projectId, environment, appVersion, appearance,
     const [hoveredMarkerId, setHoveredMarkerId] = useState(null);
     const [activeReplyReportId, setActiveReplyReportId] = useState(null);
     const [replyDraft, setReplyDraft] = useState("");
-    const [draftAuthorName, setDraftAuthorName] = useState(() => resolveDefaultAuthorName(identify, authors));
-    const [replyAuthorName, setReplyAuthorName] = useState(() => resolveDefaultAuthorName(identify, authors));
+    const [draftAuthorName, setDraftAuthorName] = useState(() => resolveDefaultAuthorName(activeIdentify, authorizedAuthors));
+    const [replyAuthorName, setReplyAuthorName] = useState(() => resolveDefaultAuthorName(activeIdentify, authorizedAuthors));
     const [pendingComposer, setPendingComposer] = useState(null);
     const [confirmAuthorName, setConfirmAuthorName] = useState("");
     const [showConfirmAuthorSelect, setShowConfirmAuthorSelect] = useState(false);
@@ -133,8 +142,8 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         setPendingComposer(null);
         setShowConfirmAuthorSelect(false);
         setConfirmAuthorName("");
-        setDraftAuthorName(resolveDefaultAuthorName(identify, authors));
-        setReplyAuthorName(resolveDefaultAuthorName(identify, authors));
+        setDraftAuthorName(resolveDefaultAuthorName(activeIdentify, authorizedAuthors));
+        setReplyAuthorName(resolveDefaultAuthorName(activeIdentify, authorizedAuthors));
         setEditingReportId(null);
         setEditableDraft(null);
         if (mode !== "idle") {
@@ -337,7 +346,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         setActiveReplyReportId(report.id);
         setReplyDraft("");
         setPendingComposer(null);
-        setReplyAuthorName(resolveDefaultAuthorName(identify, authors));
+        setReplyAuthorName(resolveDefaultAuthorName(activeIdentify, authorizedAuthors));
         setConfirmAuthorName(resolveOriginalFeedbackAuthorName(report));
         setShowConfirmAuthorSelect(false);
         clearHoverLeaveTimeout();
@@ -481,6 +490,10 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         if (!draft) {
             return null;
         }
+        if (personalKeyRequired) {
+            setErrorMessage(messages.errors.personalKeyRequired);
+            return null;
+        }
         const nextError = getFieldError(draft.message, draft.fieldValues, fields, messages.errors);
         if (nextError) {
             setErrorMessage(nextError);
@@ -505,10 +518,10 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             design_height: window.innerHeight,
             ...(environment ? { environment } : {}),
             ...(appVersion ? { app_version: appVersion } : {}),
-            ...(identify || draftAuthorName.trim()
+            ...(activeIdentify || draftAuthorName.trim()
                 ? {
-                    ...(identify ? { author_id: identify.id } : {}),
-                    author_name: draftAuthorName.trim() || identify?.name,
+                    ...(activeIdentify ? { author_id: activeIdentify.id } : {}),
+                    author_name: draftAuthorName.trim() || activeIdentify?.name,
                 }
                 : {}),
         };
@@ -614,6 +627,10 @@ export function useReportState({ projectId, environment, appVersion, appearance,
     };
     const handleReplySubmit = async () => {
         if (!activeReplyReport) {
+            return;
+        }
+        if (personalKeyRequired) {
+            setErrorMessage(messages.errors.personalKeyRequired);
             return;
         }
         if (!replyDraft.trim()) {
@@ -754,7 +771,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         setLocale,
         messages,
         fields,
-        authors,
+        authors: authorizedAuthors,
         projectId,
         environment,
         appVersion,
@@ -763,6 +780,10 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         panelTab,
         routeDetailsStats,
         canTransferFeedback,
+        personalKey,
+        personalKeyRequired,
+        issuePersonalKey,
+        insertPersonalKey,
         canListAllFeedback,
         visibleShortcutKeys,
         searchInputRef,

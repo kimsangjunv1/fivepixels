@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { panelAnchorSide, usePanelDock } from "@/hooks/usePanelDock.js";
 import { usePanelFeedbackTransfer } from "@/hooks/usePanelFeedbackTransfer.js";
 import { useReport } from "@/providers/reportContext.js";
@@ -13,6 +13,7 @@ import { ReportCommandPanel } from "./ReportCommandPanel.js";
 import { ReportCommandReplaceConfirmDialog } from "./ReportCommandReplaceConfirmDialog.js";
 import { ReportImportConfirmDialog } from "./ReportImportConfirmDialog.js";
 import { ReportImportProjectMismatchDialog } from "./ReportImportProjectMismatchDialog.js";
+import { ReportPersonalKeyDialog } from "./ReportPersonalKeyDialog.js";
 import { PanelMoreMenu } from "./PanelMoreMenu.js";
 import { PanelDropdownMenu, PanelDropdownMenuItem } from "./PanelDropdownMenu.js";
 import { LogoIcon } from "@/components/icons/LogoIcon.js";
@@ -87,6 +88,8 @@ export function ReportControlPanel() {
         appearance,
         setAppearance,
         canTransferFeedback,
+        personalKey,
+        personalKeyRequired,
         messages,
         toggleReportMode,
         toggleTargetPreview,
@@ -98,6 +101,8 @@ export function ReportControlPanel() {
     const [panelCollapsed, setPanelCollapsed] = useState(false);
     const [moreMenuOpen, setMoreMenuOpen] = useState(false);
     const [viewMenuOpen, setViewMenuOpen] = useState(false);
+    const [personalKeyStep, setPersonalKeyStep] = useState<"none" | "required" | "insert">("none");
+    const [personalKeyNotice, setPersonalKeyNotice] = useState("");
     const isRecording = mode === "report";
     const isIssueMode = mode === "view";
     const transferScope = { projectId, environment, appVersion };
@@ -140,6 +145,26 @@ export function ReportControlPanel() {
         measureKey: `${panelCollapsed}-${isRecording}-${panelTab ?? "none"}-${isIssueMode}-${importStep !== "none" ? "import" : "none"}-${commandStep !== "none" ? "command" : "none"}`,
     });
     const anchorSide = panelAnchorSide(placementCorner);
+
+    useEffect(() => {
+        if (personalKeyRequired) {
+            setPersonalKeyStep("required");
+        }
+    }, [personalKeyRequired]);
+
+    const handleKeyCopy = async () => {
+        if (!personalKey) {
+            return;
+        }
+
+        try {
+            await navigator.clipboard.writeText(personalKey);
+            setPersonalKeyNotice(messages.personalKey.copySuccess);
+            setMoreMenuOpen(false);
+        } catch {
+            setErrorMessage(messages.errors.clipboardCopyFailed);
+        }
+    };
 
     const handlePanelTabClick = (tab: ReportPanelTab) => {
         openPanelTab(tab);
@@ -337,12 +362,31 @@ export function ReportControlPanel() {
                                             onExport={handleExport}
                                             onImport={handleImportFromMenu}
                                             onCommand={handleOpenCommand}
+                                            hasPersonalKey={Boolean(personalKey)}
+                                            onKeyCopy={() => void handleKeyCopy()}
+                                            onKeyInsert={() => {
+                                                setMoreMenuOpen(false);
+                                                setPersonalKeyStep("insert");
+                                                setPersonalKeyNotice("");
+                                            }}
                                         />
                                     </section>
 
                                     {errorMessage && importStep === "none" && commandStep === "none" ? <p className="px-[8px] text-[12px] text-rose-700">{errorMessage}</p> : null}
+                                    {personalKeyNotice ? <p className="px-[8px] py-[4px] text-[12px] text-[var(--adaptive-green500)]">{personalKeyNotice}</p> : null}
 
-                                    {importStep === "project-mismatch" && pendingImport ? (
+                                    {personalKeyStep !== "none" ? (
+                                        <ReportPersonalKeyDialog
+                                            mode={personalKeyStep}
+                                            onCancel={() => setPersonalKeyStep("none")}
+                                            onComplete={(message) => {
+                                                setPersonalKeyNotice(message);
+                                                setPersonalKeyStep("none");
+                                            }}
+                                        />
+                                    ) : null}
+
+                                    {personalKeyStep === "none" && importStep === "project-mismatch" && pendingImport ? (
                                         <ReportImportProjectMismatchDialog
                                             currentProject={transferScope}
                                             importedProject={pendingImport.project}
@@ -352,7 +396,7 @@ export function ReportControlPanel() {
                                         />
                                     ) : null}
 
-                                    {importStep === "confirm" && pendingImport ? (
+                                    {personalKeyStep === "none" && importStep === "confirm" && pendingImport ? (
                                         <ReportImportConfirmDialog
                                             onApply={handleApplyImport}
                                             onCancel={handleCancelImport}
@@ -360,11 +404,11 @@ export function ReportControlPanel() {
                                         />
                                     ) : null}
 
-                                    {panelTab === "route-details" && importStep === "none" && commandStep === "none" ? <ReportRouteDetails /> : null}
+                                    {personalKeyStep === "none" && panelTab === "route-details" && importStep === "none" && commandStep === "none" ? <ReportRouteDetails /> : null}
 
-                                    {panelTab === "feedback-list" && showFeedbackList && importStep === "none" && commandStep === "none" ? <ReportFeedbackList /> : null}
+                                    {personalKeyStep === "none" && panelTab === "feedback-list" && showFeedbackList && importStep === "none" && commandStep === "none" ? <ReportFeedbackList /> : null}
 
-                                    {commandStep === "replace-confirm" && pendingCommand ? (
+                                    {personalKeyStep === "none" && commandStep === "replace-confirm" && pendingCommand ? (
                                         <ReportCommandReplaceConfirmDialog
                                             conflicts={commandConflicts}
                                             onConfirm={handleConfirmCommandReplace}
@@ -372,7 +416,7 @@ export function ReportControlPanel() {
                                         />
                                     ) : null}
 
-                                    {panelTab === "command" && importStep === "none" && commandStep === "none" ? (
+                                    {personalKeyStep === "none" && panelTab === "command" && importStep === "none" && commandStep === "none" ? (
                                         <ReportCommandPanel
                                             onExecute={handleCommandExecute}
                                             onClose={handleCloseCommand}

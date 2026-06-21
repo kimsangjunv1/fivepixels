@@ -101,11 +101,27 @@ export type ReportMessages = {
     moreMenu: {
         import: string;
         export: string;
+        keyCopy: string;
+        keyInsert: string;
+        keyChange: string;
         theme: string;
         themeAriaLabel: string;
         language: string;
         languageAriaLabel: string;
         command: string;
+    };
+    personalKey: {
+        requiredTitle: string;
+        requiredDescription: string;
+        backupWarning: string;
+        restoreGuide: string;
+        insertTitle: string;
+        insertDescription: string;
+        inputPlaceholder: string;
+        copySuccess: string;
+        setupSuccess: string;
+        invalidKey: string;
+        ownerRequired: string;
     };
     localeOption: Record<ReportLocale, string>;
     appearance: Record<ReportAppearance, string>;
@@ -230,6 +246,7 @@ export type ReportMessages = {
         importInvalidFormat: (index: number, detail: string) => string;
         fieldRequiredInput: (label: string) => string;
         fieldRequiredConfirm: (label: string) => string;
+        personalKeyRequired: string;
     };
 };
 export type DeepPartialReportMessages = {

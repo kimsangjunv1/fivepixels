@@ -29,6 +29,10 @@ declare const ReportContext: import("react").Context<{
         }[];
     };
     canTransferFeedback: boolean;
+    personalKey: string | null;
+    personalKeyRequired: boolean;
+    issuePersonalKey: () => Promise<string | null>;
+    insertPersonalKey: (key: string) => Promise<boolean>;
     canListAllFeedback: boolean;
     visibleShortcutKeys: boolean;
     searchInputRef: import("react").MutableRefObject<HTMLInputElement | null>;
@@ -155,6 +159,10 @@ export declare function useReport(): {
         }[];
     };
     canTransferFeedback: boolean;
+    personalKey: string | null;
+    personalKeyRequired: boolean;
+    issuePersonalKey: () => Promise<string | null>;
+    insertPersonalKey: (key: string) => Promise<boolean>;
     canListAllFeedback: boolean;
     visibleShortcutKeys: boolean;
     searchInputRef: import("react").MutableRefObject<HTMLInputElement | null>;

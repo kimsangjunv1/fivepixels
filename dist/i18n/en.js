@@ -97,11 +97,27 @@ export const en = {
     moreMenu: {
         import: "Import",
         export: "Export",
+        keyCopy: "Key copy",
+        keyInsert: "Key insert",
+        keyChange: "Key change",
         theme: "Theme",
         themeAriaLabel: "Theme preference",
         language: "Language",
         languageAriaLabel: "Language preference",
         command: "Command",
+    },
+    personalKey: {
+        requiredTitle: "Personal Key Required",
+        requiredDescription: "A personal key is required to separate permissions. Set up a key in this browser?",
+        backupWarning: "The key may be lost if the browser or computer is reset. Back it up after setup.",
+        restoreGuide: "You can restore a backed-up key through Settings → Key insert.",
+        insertTitle: "Put your key",
+        insertDescription: "Enter your backed-up personal key.",
+        inputPlaceholder: "Enter personal key",
+        copySuccess: "The key has been copied.",
+        setupSuccess: "The key has been set.",
+        invalidKey: "This key does not match the current project or reviewer.",
+        ownerRequired: "Set team.user or configure exactly one reviewer to issue a key.",
     },
     localeOption: {
         en: "English",
@@ -246,6 +262,7 @@ export const en = {
         importInvalidFormat: (index, detail) => `Invalid feedback data format. (index ${index}: ${detail})`,
         fieldRequiredInput: (label) => `Enter ${label}.`,
         fieldRequiredConfirm: (label) => `Confirm ${label}.`,
+        personalKeyRequired: "Set a personal key before writing feedback.",
     },
 };
 //# sourceMappingURL=en.js.map

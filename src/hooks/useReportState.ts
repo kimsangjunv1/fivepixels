@@ -7,6 +7,7 @@ import { useReportPersistence } from "./useReportPersistence.js";
 import { useIsMobileViewport } from "./useIsMobileViewport.js";
 import { useAppearancePreference } from "./useAppearancePreference.js";
 import { useLocalePreference } from "./useLocalePreference.js";
+import { usePersonalKey } from "./usePersonalKey.js";
 import { useResolvedAppearance } from "./useResolvedAppearance.js";
 import type {
     CreateReportFeedbackPayload,
@@ -167,6 +168,20 @@ export function useReportState({
         }),
         [onEvent, onReply],
     );
+    const {
+        personalKey,
+        personalKeyRequired,
+        authorizedAuthors,
+        issuePersonalKey,
+        insertPersonalKey,
+    } = usePersonalKey({
+        enabled: canTransferFeedback,
+        projectId,
+        environment,
+        identify,
+        authors,
+    });
+    const activeIdentify = canTransferFeedback ? (personalKey ? identify : undefined) : identify;
 
     const [mode, setMode] = useState<ReportMode>("idle");
     const [showTargetPreview, setShowTargetPreview] = useState(false);
@@ -179,8 +194,8 @@ export function useReportState({
     const [hoveredMarkerId, setHoveredMarkerId] = useState<string | null>(null);
     const [activeReplyReportId, setActiveReplyReportId] = useState<string | null>(null);
     const [replyDraft, setReplyDraft] = useState("");
-    const [draftAuthorName, setDraftAuthorName] = useState(() => resolveDefaultAuthorName(identify, authors));
-    const [replyAuthorName, setReplyAuthorName] = useState(() => resolveDefaultAuthorName(identify, authors));
+    const [draftAuthorName, setDraftAuthorName] = useState(() => resolveDefaultAuthorName(activeIdentify, authorizedAuthors));
+    const [replyAuthorName, setReplyAuthorName] = useState(() => resolveDefaultAuthorName(activeIdentify, authorizedAuthors));
     const [pendingComposer, setPendingComposer] = useState<PendingFeedbackComposer>(null);
     const [confirmAuthorName, setConfirmAuthorName] = useState("");
     const [showConfirmAuthorSelect, setShowConfirmAuthorSelect] = useState(false);
@@ -262,8 +277,8 @@ export function useReportState({
         setPendingComposer(null);
         setShowConfirmAuthorSelect(false);
         setConfirmAuthorName("");
-        setDraftAuthorName(resolveDefaultAuthorName(identify, authors));
-        setReplyAuthorName(resolveDefaultAuthorName(identify, authors));
+        setDraftAuthorName(resolveDefaultAuthorName(activeIdentify, authorizedAuthors));
+        setReplyAuthorName(resolveDefaultAuthorName(activeIdentify, authorizedAuthors));
         setEditingReportId(null);
         setEditableDraft(null);
         if (mode !== "idle") {
@@ -512,7 +527,7 @@ export function useReportState({
         setActiveReplyReportId(report.id);
         setReplyDraft("");
         setPendingComposer(null);
-        setReplyAuthorName(resolveDefaultAuthorName(identify, authors));
+        setReplyAuthorName(resolveDefaultAuthorName(activeIdentify, authorizedAuthors));
         setConfirmAuthorName(resolveOriginalFeedbackAuthorName(report));
         setShowConfirmAuthorSelect(false);
         clearHoverLeaveTimeout();
@@ -690,6 +705,11 @@ export function useReportState({
             return null;
         }
 
+        if (personalKeyRequired) {
+            setErrorMessage(messages.errors.personalKeyRequired);
+            return null;
+        }
+
         const nextError = getFieldError(draft.message, draft.fieldValues, fields, messages.errors);
 
         if (nextError) {
@@ -716,10 +736,10 @@ export function useReportState({
             design_height: window.innerHeight,
             ...(environment ? { environment } : {}),
             ...(appVersion ? { app_version: appVersion } : {}),
-            ...(identify || draftAuthorName.trim()
+            ...(activeIdentify || draftAuthorName.trim()
                 ? {
-                      ...(identify ? { author_id: identify.id } : {}),
-                      author_name: draftAuthorName.trim() || identify?.name,
+                      ...(activeIdentify ? { author_id: activeIdentify.id } : {}),
+                      author_name: draftAuthorName.trim() || activeIdentify?.name,
                   }
                 : {}),
         };
@@ -847,6 +867,11 @@ export function useReportState({
 
     const handleReplySubmit = async () => {
         if (!activeReplyReport) {
+            return;
+        }
+
+        if (personalKeyRequired) {
+            setErrorMessage(messages.errors.personalKeyRequired);
             return;
         }
 
@@ -1009,7 +1034,7 @@ export function useReportState({
         setLocale,
         messages,
         fields,
-        authors,
+        authors: authorizedAuthors,
         projectId,
         environment,
         appVersion,
@@ -1018,6 +1043,10 @@ export function useReportState({
         panelTab,
         routeDetailsStats,
         canTransferFeedback,
+        personalKey,
+        personalKeyRequired,
+        issuePersonalKey,
+        insertPersonalKey,
         canListAllFeedback,
         visibleShortcutKeys,
         searchInputRef,

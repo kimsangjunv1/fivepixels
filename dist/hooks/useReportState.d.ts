@@ -61,6 +61,10 @@ export declare function useReportState({ projectId, environment, appVersion, app
         }[];
     };
     canTransferFeedback: boolean;
+    personalKey: string | null;
+    personalKeyRequired: boolean;
+    issuePersonalKey: () => Promise<string | null>;
+    insertPersonalKey: (key: string) => Promise<boolean>;
     canListAllFeedback: boolean;
     visibleShortcutKeys: boolean;
     searchInputRef: import("react").MutableRefObject<HTMLInputElement | null>;

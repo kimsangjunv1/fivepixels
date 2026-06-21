@@ -97,11 +97,27 @@ export const ko = {
     moreMenu: {
         import: "가져오기",
         export: "내보내기",
+        keyCopy: "키 복사",
+        keyInsert: "키 입력",
+        keyChange: "키 변경",
         theme: "테마",
         themeAriaLabel: "테마 설정",
         language: "언어",
         languageAriaLabel: "언어 설정",
         command: "명령",
+    },
+    personalKey: {
+        requiredTitle: "Personal Key Required",
+        requiredDescription: "현재 권한 분리를 위해 개인 키 설정이 필요합니다. 브라우저에 키 설정을 진행할까요?",
+        backupWarning: "브라우저 또는 컴퓨터 초기화 시 키가 삭제될 수 있으니 설정 후 반드시 백업해주세요.",
+        restoreGuide: "백업한 키는 설정 → 키 입력을 통해 다시 등록할 수 있습니다.",
+        insertTitle: "Put your key",
+        insertDescription: "백업한 개인 키를 입력해주세요.",
+        inputPlaceholder: "개인 키 입력",
+        copySuccess: "키 복사가 완료되었습니다.",
+        setupSuccess: "키 설정이 완료되었습니다.",
+        invalidKey: "현재 프로젝트 또는 담당자와 일치하지 않는 키입니다.",
+        ownerRequired: "키 발급을 위해 team.user를 설정하거나 reviewer를 한 명만 등록해주세요.",
     },
     localeOption: {
         en: "English",
@@ -246,6 +262,7 @@ export const ko = {
         importInvalidFormat: (index, detail) => `피드백 데이터 형식이 올바르지 않아요. (index ${index}: ${detail})`,
         fieldRequiredInput: (label) => `${label}을(를) 입력해주세요.`,
         fieldRequiredConfirm: (label) => `${label}을(를) 확인해주세요.`,
+        personalKeyRequired: "피드백을 작성하려면 개인 키 설정이 필요합니다.",
     },
 };
 //# sourceMappingURL=ko.js.map

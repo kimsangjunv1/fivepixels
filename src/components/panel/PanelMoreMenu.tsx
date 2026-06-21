@@ -15,11 +15,27 @@ type PanelMoreMenuProps = {
     onExport: () => void;
     onImport: () => void;
     onCommand: () => void;
+    hasPersonalKey: boolean;
+    onKeyCopy: () => void;
+    onKeyInsert: () => void;
 };
 
 const LOCALE_OPTIONS = ["en", "ko"] as const satisfies readonly ReportLocale[];
 
-export function PanelMoreMenu({ open, disabled = false, appearance, onAppearanceChange, onToggle, onClose, onExport, onImport, onCommand }: PanelMoreMenuProps) {
+export function PanelMoreMenu({
+    open,
+    disabled = false,
+    appearance,
+    onAppearanceChange,
+    onToggle,
+    onClose,
+    onExport,
+    onImport,
+    onCommand,
+    hasPersonalKey,
+    onKeyCopy,
+    onKeyInsert,
+}: PanelMoreMenuProps) {
     const { locale, setLocale, messages } = useReport();
     const appearanceOptions = (["system", "light", "dark"] as const).map((value) => ({
         value,
@@ -49,6 +65,15 @@ export function PanelMoreMenu({ open, disabled = false, appearance, onAppearance
         >
             <PanelDropdownMenuItem onClick={onImport}>{messages.moreMenu.import}</PanelDropdownMenuItem>
             <PanelDropdownMenuItem onClick={onExport}>{messages.moreMenu.export}</PanelDropdownMenuItem>
+            <PanelDropdownMenuItem
+                disabled={!hasPersonalKey}
+                onClick={onKeyCopy}
+            >
+                {messages.moreMenu.keyCopy}
+            </PanelDropdownMenuItem>
+            <PanelDropdownMenuItem onClick={onKeyInsert}>
+                {hasPersonalKey ? messages.moreMenu.keyChange : messages.moreMenu.keyInsert}
+            </PanelDropdownMenuItem>
             <div className="w-full h-[1px] bg-[var(--adaptive-black300)]" />
             <div className="px-[12px] py-[8px]">
                 <p className="mb-[6px] text-[11px] font-semibold uppercase tracking-[0.02em] text-[var(--adaptive-black500)]">{messages.moreMenu.theme}</p>
