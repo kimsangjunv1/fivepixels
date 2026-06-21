@@ -61,7 +61,7 @@ function EnvironmentBadge({ environment }: { environment?: string }) {
     }
 
     return (
-        <span className="inline-flex items-center gap-[4px] rounded-full border border-[var(--adaptive-black300)] bg-[var(--adaptive-black50)] px-[4px] py-[2px]">
+        <span className="inline-flex items-center gap-[4px] rounded-full border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] px-[4px] py-[2px]">
             <span className="text-[12px] text-[var(--adaptive-black500)]">{environment}</span>
             <span
                 className="inline-flex h-[4px] w-[4px] rounded-full bg-[var(--adaptive-green500)]"
@@ -246,7 +246,7 @@ export function ReportControlPanel() {
                                                                 aria-expanded={viewMenuOpen}
                                                                 aria-haspopup="menu"
                                                                 aria-label={messages.panel.viewOptionsAriaLabel}
-                                                                className="flex items-center rounded-r-[8px] border-l border-[var(--adaptive-text-secondary)] bg-[var(--adaptive-surface-inverse)] p-[2px_8px] h-[24px]"
+                                                                className="flex items-center rounded-r-[8px] border-l border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface-inverse)] p-[2px_8px] h-[24px]"
                                                             >
                                                                 <ChevronDownIcon className={`h-4 w-4 text-[var(--adaptive-text-inverse)] transition-transform ${viewMenuOpen ? "rotate-180" : ""}`} />
                                                             </button>
@@ -311,14 +311,14 @@ export function ReportControlPanel() {
                                         ) : null}
                                     </section>
 
-                                    <section className="flex items-stretch border-t border-[var(--adaptive-black200)]">
+                                    <section className="flex items-stretch border-t border-[var(--adaptive-border-subtle)]">
                                         <div className="flex min-w-0 flex-1 overflow-hidden">
                                             <PanelTabButton
                                                 label={messages.panel.tabPageDetails}
                                                 active={panelTab === "route-details"}
                                                 onClick={() => handlePanelTabClick("route-details")}
                                             />
-                                            <div className="h-full w-[1px] bg-[var(--adaptive-black200)]" />
+                                            <div className="h-full w-[1px] bg-[var(--adaptive-border-subtle)]" />
                                             {showFeedbackList ? (
                                                 <PanelTabButton
                                                     label={messages.panel.tabFeedbackList}
@@ -327,7 +327,7 @@ export function ReportControlPanel() {
                                                 />
                                             ) : null}
                                         </div>
-                                        <div className="h-full w-[1px] bg-[var(--adaptive-black200)]" />
+                                        <div className="h-full w-[1px] bg-[var(--adaptive-border-subtle)]" />
 
                                         <PanelMoreMenu
                                             open={moreMenuOpen}

@@ -243,7 +243,7 @@ export function ReportFeedbackList() {
 
     return (
         <section className="flex min-h-0 flex-1 flex-col bg-[var(--adaptive-black50)] rounded-[0_0_24px_24px]">
-            <div className="flex bg-[var(--adaptive-black50)] border-y border-y-[var(--adaptive-black200)]">
+            <div className="flex bg-[var(--adaptive-black50)] border-y border-y-[var(--adaptive-border-subtle)]">
                 <section className="flex flex-1 items-center gap-[4px]">
                     <PanelDropdownMenu
                         open={statusMenuOpen}
@@ -356,13 +356,13 @@ export function ReportFeedbackList() {
 
             <div className="min-h-0 flex-1 overflow-y-auto bg-[var(--adaptive-black50)] rounded-[0_0_24px_24px]">
                 {isError ? (
-                    <div className="space-y-1 rounded-md border border-rose-200 bg-rose-50 p-2 text-xs text-rose-800">
+                    <div className="space-y-1 rounded-md border border-[var(--adaptive-border-subtle)] bg-rose-50 p-2 text-xs text-rose-800">
                         <strong className="text-sm font-semibold">{messages.feedbackList.loadFailedTitle}</strong>
                         <p>{queryErrorMessage ?? messages.feedbackList.loadFailedRetry}</p>
                         <button
                             type="button"
                             onClick={() => void refetch()}
-                            className="inline-flex items-center justify-center rounded-md border border-[var(--adaptive-border)] bg-[var(--adaptive-surface)] px-3 py-1 text-xs font-medium text-[var(--adaptive-text-secondary)]"
+                            className="inline-flex items-center justify-center rounded-md border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface)] px-3 py-1 text-xs font-medium text-[var(--adaptive-text-secondary)]"
                         >
                             {messages.common.retry}
                         </button>
@@ -406,7 +406,7 @@ export function ReportFeedbackList() {
                                           return (
                                               <div
                                                   key={report.id}
-                                                  className="flex w-full items-start gap-[4px] border-b border-[var(--adaptive-black200)] last:border-b-0"
+                                                  className="flex w-full items-start gap-[4px] border-b border-[var(--adaptive-border-subtle)] last:border-b-0"
                                               >
                                                   <button
                                                       type="button"
