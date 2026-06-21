@@ -1,5 +1,6 @@
 import type { ReportField, ReportFieldValues } from "@/types/report.js";
 import type { ReportAuthor } from "@/types/report.js";
+import { useEffect, useState } from "react";
 import { useReport } from "@/providers/reportContext.js";
 import { GitHubIssueIcon } from "@/components/icons/GitHubIssueIcon.js";
 import { SendIcon } from "@/components/icons/SendIcon.js";
@@ -44,9 +45,20 @@ export function FeedbackComposer({
     autoFocus = false,
 }: FeedbackComposerProps) {
     const { messages } = useReport();
+    const [isGitHubIssueConfirming, setIsGitHubIssueConfirming] = useState(false);
     const resolvedPlaceholder = placeholder ?? messages.composer.placeholder;
 
     const isActionDisabled = isSubmitting || isGitHubIssueSubmitting;
+
+    useEffect(() => {
+        if (!isGitHubIssueConfirming) {
+            return;
+        }
+
+        const timer = window.setTimeout(() => setIsGitHubIssueConfirming(false), 1500);
+
+        return () => window.clearTimeout(timer);
+    }, [isGitHubIssueConfirming]);
 
     const handleSubmit = () => {
         if (isActionDisabled) {
@@ -61,6 +73,12 @@ export function FeedbackComposer({
             return;
         }
 
+        if (!isGitHubIssueConfirming) {
+            setIsGitHubIssueConfirming(true);
+            return;
+        }
+
+        setIsGitHubIssueConfirming(false);
         onGitHubIssueSubmit();
     };
 
@@ -95,11 +113,15 @@ export function FeedbackComposer({
                             disabled={isActionDisabled}
                             onClick={handleGitHubIssueSubmit}
                             className="inline-flex h-[24px] items-center justify-center gap-[4px] rounded-full border border-[var(--adaptive-border-subtle)] px-[12px] py-[4px] disabled:opacity-50"
-                            aria-label={messages.composer.gitIssueSendAriaLabel}
-                            title={messages.composer.gitIssueSendTitle}
+                            aria-label={isGitHubIssueConfirming ? messages.feedbackList.gitIssueConfirmAriaLabel : messages.composer.gitIssueSendAriaLabel}
+                            title={isGitHubIssueConfirming ? messages.feedbackList.gitIssueConfirmTitle : messages.composer.gitIssueSendTitle}
                         >
                             <span className="text-[12px] font-semibold text-[var(--adaptive-black500)]">
-                                + {isGitHubIssueSubmitting ? messages.composer.gitIssueSendingLabel : messages.composer.gitIssueSendLabel}
+                                + {isGitHubIssueSubmitting
+                                    ? messages.composer.gitIssueSendingLabel
+                                    : isGitHubIssueConfirming
+                                      ? messages.feedbackList.gitIssueConfirmLabel
+                                      : messages.composer.gitIssueSendLabel}
                             </span>
                         </button>
                     ) : null}
