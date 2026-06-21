@@ -23,7 +23,7 @@ function resolveDefaultAuthorName(identify, authors) {
     }
     return authors[0]?.name ?? "";
 }
-export function useReportState({ projectId, environment, appVersion, appearance, fields, authors = [], shortcut: _shortcut, identify, onList, onListAll, onNavigate, onCreate, onUpdate, onDelete, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys = false, initialLocale, messageOverrides, }) {
+export function useReportState({ projectId, environment, appVersion, appearance, fields, authors = [], requireReviewerKey = false, shortcut: _shortcut, identify, onList, onListAll, onNavigate, onCreate, onUpdate, onDelete, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys = false, initialLocale, messageOverrides, }) {
     const { appearance: activeAppearance, setAppearance } = useAppearancePreference(appearance);
     const { locale, setLocale } = useLocalePreference(initialLocale);
     const messages = useMemo(() => getReportMessages(locale, messageOverrides), [locale, messageOverrides]);
@@ -54,14 +54,25 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         onEvent,
         onReply,
     }), [onEvent, onReply]);
-    const { personalKey, personalKeyRequired, authorizedAuthors, issuePersonalKey, insertPersonalKey, } = usePersonalKey({
-        enabled: canTransferFeedback,
+    const { personalKey, publicKey, personalKeyRequired, personalKeyPendingRegistration, personalKeyCandidates, authorizedAuthors, issuePersonalKey, insertPersonalKey, signPayload, } = usePersonalKey({
+        enabled: requireReviewerKey || authors.some((author) => Boolean(author.publicKey)),
         projectId,
         environment,
         identify,
         authors,
     });
-    const activeIdentify = canTransferFeedback ? (personalKey ? identify : undefined) : identify;
+    const activeIdentify = authorizedAuthors[0] ?? (personalKeyRequired ? undefined : identify);
+    const signCreatePayload = async (payload) => {
+        const auth = await signPayload("feedback:create", payload);
+        return auth ? { ...payload, auth } : payload;
+    };
+    const signUpdatePayload = async (payload) => {
+        if (personalKeyRequired) {
+            throw new Error(messages.errors.personalKeyRequired);
+        }
+        const auth = await signPayload("feedback:update", payload);
+        return auth ? { ...payload, auth } : payload;
+    };
     const [mode, setMode] = useState("idle");
     const [showTargetPreview, setShowTargetPreview] = useState(false);
     const [selectableTargets, setSelectableTargets] = useState([]);
@@ -383,6 +394,10 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         setReplyDraft("");
     };
     const toggleReportMode = () => {
+        if (personalKeyRequired) {
+            setErrorMessage(messages.errors.personalKeyRequired);
+            return;
+        }
         setShowTargetPreview(false);
         setMode((current) => (current === "report" ? "idle" : "report"));
     };
@@ -539,7 +554,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             return;
         }
         try {
-            const savedFeedback = await createFeedback(payload);
+            const savedFeedback = await createFeedback(await signCreatePayload(payload));
             await notifyFeedbackCreate(eventCallbacks, savedFeedback);
             finalizeDraftCreate();
         }
@@ -558,10 +573,10 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         setCreatingGitHubIssueId("draft");
         setErrorMessage("");
         try {
-            const savedFeedback = await createFeedback(payload);
+            const savedFeedback = await createFeedback(await signCreatePayload(payload));
             await notifyFeedbackCreate(eventCallbacks, savedFeedback);
             const result = await github.onCreate(savedFeedback);
-            const updatedFeedback = await updateFeedback(savedFeedback.id, buildGitHubIssueUpdate(savedFeedback, result, messages.resolution.gitIssuedMessage));
+            const updatedFeedback = await updateFeedback(savedFeedback.id, await signUpdatePayload(buildGitHubIssueUpdate(savedFeedback, result, messages.resolution.gitIssuedMessage)));
             await notifyGitHubIssueCreated(eventCallbacks, {
                 feedback: updatedFeedback,
                 issueUrl: result.issueUrl,
@@ -603,11 +618,11 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             return;
         }
         try {
-            const updatedFeedback = await updateFeedback(selectedReport.id, {
+            const updatedFeedback = await updateFeedback(selectedReport.id, await signUpdatePayload({
                 message: editableDraft.message.trim(),
                 status: editableDraft.status,
                 field_values: editableDraft.fieldValues,
-            });
+            }));
             await notifyFeedbackUpdate(eventCallbacks, updatedFeedback);
             stopEditing();
             setErrorMessage("");
@@ -617,9 +632,10 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         }
     };
     const appendReply = async (report, reply) => {
-        await updateFeedback(report.id, {
+        const payload = await signUpdatePayload({
             replies: [...report.replies, reply],
         });
+        await updateFeedback(report.id, payload);
         await notifyFeedbackReply(eventCallbacks, {
             feedbackId: report.id,
             message: reply.message,
@@ -679,10 +695,10 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             author_name: resolverName,
         };
         try {
-            const updatedFeedback = await updateFeedback(activeReplyReport.id, {
+            const updatedFeedback = await updateFeedback(activeReplyReport.id, await signUpdatePayload({
                 status: "resolved",
                 replies: [...activeReplyReport.replies, reply],
-            });
+            }));
             await notifyFeedbackUpdate(eventCallbacks, updatedFeedback);
             setErrorMessage("");
             setPendingComposer(null);
@@ -704,7 +720,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         setErrorMessage("");
         try {
             const result = await github.onCreate(report);
-            const updatedFeedback = await updateFeedback(report.id, buildGitHubIssueUpdate(report, result, messages.resolution.gitIssuedMessage));
+            const updatedFeedback = await updateFeedback(report.id, await signUpdatePayload(buildGitHubIssueUpdate(report, result, messages.resolution.gitIssuedMessage)));
             await notifyGitHubIssueCreated(eventCallbacks, {
                 feedback: updatedFeedback,
                 issueUrl: result.issueUrl,
@@ -719,6 +735,10 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         }
     };
     const handleDelete = async (id) => {
+        if (personalKeyRequired) {
+            setErrorMessage(messages.errors.personalKeyRequired);
+            return;
+        }
         try {
             await deleteFeedback(id);
             await notifyFeedbackDelete(eventCallbacks, id);
@@ -781,7 +801,10 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         routeDetailsStats,
         canTransferFeedback,
         personalKey,
+        publicKey,
         personalKeyRequired,
+        personalKeyPendingRegistration,
+        personalKeyCandidates,
         issuePersonalKey,
         insertPersonalKey,
         canListAllFeedback,

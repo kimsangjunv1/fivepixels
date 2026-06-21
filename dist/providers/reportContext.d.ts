@@ -7,7 +7,7 @@ declare const ReportContext: import("react").Context<{
     setLocale: (nextLocale: import("..").ReportLocale) => void;
     messages: import("..").ReportMessages;
     fields: import("..").ReportField[];
-    authors: import("..").ReportAuthor[];
+    authors: import("..").ReportIdentify[];
     projectId: string;
     environment: string | undefined;
     appVersion: string | undefined;
@@ -30,9 +30,17 @@ declare const ReportContext: import("react").Context<{
     };
     canTransferFeedback: boolean;
     personalKey: string | null;
+    publicKey: string | null;
     personalKeyRequired: boolean;
-    issuePersonalKey: () => Promise<string | null>;
-    insertPersonalKey: (key: string) => Promise<boolean>;
+    personalKeyPendingRegistration: boolean;
+    personalKeyCandidates: import("..").ReportAuthor[];
+    issuePersonalKey: (authorId?: string) => Promise<{
+        privateKey: string;
+        publicKey: string;
+    } | null>;
+    insertPersonalKey: (key: string) => Promise<{
+        authorized: boolean;
+    } | null>;
     canListAllFeedback: boolean;
     visibleShortcutKeys: boolean;
     searchInputRef: import("react").MutableRefObject<HTMLInputElement | null>;
@@ -137,7 +145,7 @@ export declare function useReport(): {
     setLocale: (nextLocale: import("..").ReportLocale) => void;
     messages: import("..").ReportMessages;
     fields: import("..").ReportField[];
-    authors: import("..").ReportAuthor[];
+    authors: import("..").ReportIdentify[];
     projectId: string;
     environment: string | undefined;
     appVersion: string | undefined;
@@ -160,9 +168,17 @@ export declare function useReport(): {
     };
     canTransferFeedback: boolean;
     personalKey: string | null;
+    publicKey: string | null;
     personalKeyRequired: boolean;
-    issuePersonalKey: () => Promise<string | null>;
-    insertPersonalKey: (key: string) => Promise<boolean>;
+    personalKeyPendingRegistration: boolean;
+    personalKeyCandidates: import("..").ReportAuthor[];
+    issuePersonalKey: (authorId?: string) => Promise<{
+        privateKey: string;
+        publicKey: string;
+    } | null>;
+    insertPersonalKey: (key: string) => Promise<{
+        authorized: boolean;
+    } | null>;
     canListAllFeedback: boolean;
     visibleShortcutKeys: boolean;
     searchInputRef: import("react").MutableRefObject<HTMLInputElement | null>;

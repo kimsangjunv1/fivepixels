@@ -15,6 +15,7 @@ describe("resolveReportTeam", () => {
         ).toEqual({
             user: { id: "team-user", name: "팀 사용자" },
             reviewers: [{ id: "1", name: "리뷰어" }],
+            requireReviewerKey: false,
         });
     });
 
@@ -27,6 +28,11 @@ describe("resolveReportTeam", () => {
         ).toEqual({
             user: { id: "legacy-user", name: "레거시" },
             reviewers: [{ id: "2", name: "작성자" }],
+            requireReviewerKey: false,
         });
+    });
+
+    it("enables reviewer key authentication from team config", () => {
+        expect(resolveReportTeam({ team: { requireReviewerKey: true } }).requireReviewerKey).toBe(true);
     });
 });

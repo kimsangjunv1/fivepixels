@@ -51,6 +51,7 @@ function normalizeReplies(value) {
                 status: normalizeReplyStatus(reply.status),
                 author_type: reply.author_type,
                 author_name: reply.author_name ?? null,
+                auth: reply.auth,
             },
         ];
     });

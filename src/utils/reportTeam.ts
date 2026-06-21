@@ -3,6 +3,7 @@ import type { ReportAuthor, ReportIdentify, ReportTeam } from "@/types/report.js
 export type ResolvedReportTeam = {
     user?: ReportIdentify;
     reviewers: ReportAuthor[];
+    requireReviewerKey: boolean;
 };
 
 export type ResolveReportTeamOptions = {
@@ -17,5 +18,6 @@ export function resolveReportTeam({ team, identify, authors }: ResolveReportTeam
     return {
         user: team?.user ?? identify,
         reviewers: team?.reviewers ?? authors ?? [],
+        requireReviewerKey: team?.requireReviewerKey ?? false,
     };
 }

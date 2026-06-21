@@ -1,57 +1,62 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { createPersonalKey, parsePersonalKey, readPersonalKey, resolvePersonalKeyAuthor, resolvePersonalKeyOwner, savePersonalKey, } from "../utils/personalKey.js";
+import { createReviewerKeyPair, getPublicKeyFromPrivateKey, parsePrivateKeyBundle, readPersonalKey, resolvePersonalKeyAuthor, resolvePersonalKeyOwner, savePersonalKey, signReportPayload, } from "../utils/personalKey.js";
 export function usePersonalKey({ enabled, projectId, environment, identify, authors }) {
     const [personalKey, setPersonalKey] = useState(null);
     const [isReady, setIsReady] = useState(!enabled);
     useEffect(() => {
-        let active = true;
         if (!enabled) {
             setPersonalKey(null);
             setIsReady(true);
             return;
         }
-        setIsReady(false);
-        void readPersonalKey(projectId, environment, identify, authors).then((key) => {
-            if (active) {
-                setPersonalKey(key);
-                setIsReady(true);
-            }
-        });
-        return () => {
-            active = false;
-        };
-    }, [authors, enabled, environment, identify, projectId]);
-    const authorizedAuthors = useMemo(() => {
-        if (!enabled) {
-            return authors;
-        }
-        const payload = personalKey ? parsePersonalKey(personalKey) : null;
-        const author = payload ? resolvePersonalKeyAuthor(payload, identify, authors) : undefined;
-        return author ? [author] : [];
-    }, [authors, enabled, identify, personalKey]);
-    const issuePersonalKey = useCallback(async () => {
-        const owner = resolvePersonalKeyOwner(identify, authors);
+        setPersonalKey(readPersonalKey(projectId, environment));
+        setIsReady(true);
+    }, [enabled, environment, projectId]);
+    const keyBundle = useMemo(() => (personalKey ? parsePrivateKeyBundle(personalKey) : null), [personalKey]);
+    const authorizedAuthor = useMemo(() => (keyBundle ? resolvePersonalKeyAuthor(keyBundle, identify, authors) : undefined), [authors, identify, keyBundle]);
+    const issuePersonalKey = useCallback(async (authorId) => {
+        const owner = authors.find((author) => author.id === authorId) ?? resolvePersonalKeyOwner(identify, authors);
         if (!owner) {
             return null;
         }
-        const key = createPersonalKey(projectId, environment, owner.id);
-        await savePersonalKey(projectId, environment, key, identify, authors);
-        setPersonalKey(key);
-        return key;
+        const issued = await createReviewerKeyPair(projectId, environment, owner.id);
+        savePersonalKey(projectId, environment, issued.privateKey);
+        setPersonalKey(issued.privateKey);
+        return issued;
     }, [authors, environment, identify, projectId]);
     const insertPersonalKey = useCallback(async (key) => {
-        const saved = await savePersonalKey(projectId, environment, key, identify, authors);
+        const saved = savePersonalKey(projectId, environment, key);
         if (saved) {
             setPersonalKey(key.trim());
         }
-        return saved;
+        const bundle = saved ? parsePrivateKeyBundle(key) : null;
+        return bundle
+            ? {
+                authorized: Boolean(resolvePersonalKeyAuthor(bundle, identify, authors)),
+            }
+            : null;
     }, [authors, environment, identify, projectId]);
+    const signPayload = useCallback(async (action, payload) => {
+        if (!personalKey || !authorizedAuthor) {
+            return null;
+        }
+        return signReportPayload(personalKey, {
+            projectId,
+            environment,
+            action,
+            payload,
+        });
+    }, [authorizedAuthor, environment, personalKey, projectId]);
     return {
         personalKey,
-        personalKeyRequired: enabled && isReady && !personalKey,
-        authorizedAuthors,
+        publicKey: personalKey ? getPublicKeyFromPrivateKey(personalKey) : null,
+        personalKeyRequired: enabled && isReady && !authorizedAuthor,
+        personalKeyPendingRegistration: enabled && Boolean(personalKey) && !authorizedAuthor,
+        personalKeyCandidates: authors,
+        authorizedAuthors: enabled ? (authorizedAuthor ? [authorizedAuthor] : []) : authors,
         issuePersonalKey,
         insertPersonalKey,
+        signPayload,
     };
 }
 //# sourceMappingURL=usePersonalKey.js.map

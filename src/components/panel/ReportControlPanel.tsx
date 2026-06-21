@@ -89,7 +89,9 @@ export function ReportControlPanel() {
         setAppearance,
         canTransferFeedback,
         personalKey,
+        publicKey,
         personalKeyRequired,
+        personalKeyPendingRegistration,
         messages,
         toggleReportMode,
         toggleTargetPreview,
@@ -147,10 +149,10 @@ export function ReportControlPanel() {
     const anchorSide = panelAnchorSide(placementCorner);
 
     useEffect(() => {
-        if (personalKeyRequired) {
+        if (personalKeyRequired && !personalKey) {
             setPersonalKeyStep("required");
         }
-    }, [personalKeyRequired]);
+    }, [personalKey, personalKeyRequired]);
 
     const handleKeyCopy = async () => {
         if (!personalKey) {
@@ -160,6 +162,20 @@ export function ReportControlPanel() {
         try {
             await navigator.clipboard.writeText(personalKey);
             setPersonalKeyNotice(messages.personalKey.copySuccess);
+            setMoreMenuOpen(false);
+        } catch {
+            setErrorMessage(messages.errors.clipboardCopyFailed);
+        }
+    };
+
+    const handlePublicKeyCopy = async () => {
+        if (!publicKey) {
+            return;
+        }
+
+        try {
+            await navigator.clipboard.writeText(publicKey);
+            setPersonalKeyNotice(messages.personalKey.publicKeyCopied);
             setMoreMenuOpen(false);
         } catch {
             setErrorMessage(messages.errors.clipboardCopyFailed);
@@ -354,7 +370,7 @@ export function ReportControlPanel() {
 
                                         <PanelMoreMenu
                                             open={moreMenuOpen}
-                                            disabled={!canTransferFeedback}
+                                            transferDisabled={!canTransferFeedback}
                                             appearance={appearance}
                                             onAppearanceChange={setAppearance}
                                             onToggle={() => setMoreMenuOpen((current) => !current)}
@@ -364,6 +380,7 @@ export function ReportControlPanel() {
                                             onCommand={handleOpenCommand}
                                             hasPersonalKey={Boolean(personalKey)}
                                             onKeyCopy={() => void handleKeyCopy()}
+                                            onPublicKeyCopy={() => void handlePublicKeyCopy()}
                                             onKeyInsert={() => {
                                                 setMoreMenuOpen(false);
                                                 setPersonalKeyStep("insert");
@@ -374,6 +391,7 @@ export function ReportControlPanel() {
 
                                     {errorMessage && importStep === "none" && commandStep === "none" ? <p className="px-[8px] text-[12px] text-rose-700">{errorMessage}</p> : null}
                                     {personalKeyNotice ? <p className="px-[8px] py-[4px] text-[12px] text-[var(--adaptive-green500)]">{personalKeyNotice}</p> : null}
+                                    {personalKeyPendingRegistration ? <p className="px-[8px] py-[4px] text-[12px] text-amber-700">{messages.personalKey.registrationPending}</p> : null}
 
                                     {personalKeyStep !== "none" ? (
                                         <ReportPersonalKeyDialog

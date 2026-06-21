@@ -7,6 +7,8 @@ export { createLocalStorageReportAdapter, localStorageReportAdapter } from "@/st
 export type {
     CreateReportFeedbackPayload,
     ReportAppearance,
+    ReportAuthAction,
+    ReportAuthProof,
     ReportEvent,
     ReportFeedback,
     ReportField,
@@ -36,6 +38,11 @@ export type {
     SerializedReportReply,
     UpdateReportFeedbackPayload,
 } from "@/types/report.js";
+export {
+    createReportAuthMessage,
+    parsePublicKey,
+    verifyReportAuthProof,
+} from "@/utils/personalKey.js";
 export { REPORT_STATUS_FLOW, REPORT_STATUS_TRANSITIONS } from "@/types/report.js";
 export { formatFeedbackAsGitHubIssueBody } from "@/utils/formatGitHubIssue.js";
 export {

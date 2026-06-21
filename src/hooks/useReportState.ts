@@ -63,6 +63,7 @@ export type ReportStateConfig = {
     appearance: ReportAppearance;
     fields: ReportField[];
     authors?: ReportAuthor[];
+    requireReviewerKey?: boolean;
     shortcut?: string;
     identify?: ReportIdentify;
     onList?: (params: { pathname: string }) => Promise<ReportFeedback[]>;
@@ -88,6 +89,7 @@ export function useReportState({
     appearance,
     fields,
     authors = [],
+    requireReviewerKey = false,
     shortcut: _shortcut,
     identify,
     onList,
@@ -170,18 +172,36 @@ export function useReportState({
     );
     const {
         personalKey,
+        publicKey,
         personalKeyRequired,
+        personalKeyPendingRegistration,
+        personalKeyCandidates,
         authorizedAuthors,
         issuePersonalKey,
         insertPersonalKey,
+        signPayload,
     } = usePersonalKey({
-        enabled: canTransferFeedback,
+        enabled: requireReviewerKey || authors.some((author) => Boolean(author.publicKey)),
         projectId,
         environment,
         identify,
         authors,
     });
-    const activeIdentify = canTransferFeedback ? (personalKey ? identify : undefined) : identify;
+    const activeIdentify = authorizedAuthors[0] ?? (personalKeyRequired ? undefined : identify);
+
+    const signCreatePayload = async (payload: CreateReportFeedbackPayload) => {
+        const auth = await signPayload("feedback:create", payload);
+        return auth ? { ...payload, auth } : payload;
+    };
+
+    const signUpdatePayload = async (payload: UpdateReportFeedbackPayload) => {
+        if (personalKeyRequired) {
+            throw new Error(messages.errors.personalKeyRequired);
+        }
+
+        const auth = await signPayload("feedback:update", payload);
+        return auth ? { ...payload, auth } : payload;
+    };
 
     const [mode, setMode] = useState<ReportMode>("idle");
     const [showTargetPreview, setShowTargetPreview] = useState(false);
@@ -573,6 +593,11 @@ export function useReportState({
     };
 
     const toggleReportMode = () => {
+        if (personalKeyRequired) {
+            setErrorMessage(messages.errors.personalKeyRequired);
+            return;
+        }
+
         setShowTargetPreview(false);
         setMode((current) => (current === "report" ? "idle" : "report"));
     };
@@ -761,7 +786,7 @@ export function useReportState({
         }
 
         try {
-            const savedFeedback = await createFeedback(payload);
+            const savedFeedback = await createFeedback(await signCreatePayload(payload));
             await notifyFeedbackCreate(eventCallbacks, savedFeedback);
             finalizeDraftCreate();
         } catch (nextError) {
@@ -784,13 +809,13 @@ export function useReportState({
         setErrorMessage("");
 
         try {
-            const savedFeedback = await createFeedback(payload);
+            const savedFeedback = await createFeedback(await signCreatePayload(payload));
             await notifyFeedbackCreate(eventCallbacks, savedFeedback);
 
             const result = await github.onCreate(savedFeedback);
             const updatedFeedback = await updateFeedback(
                 savedFeedback.id,
-                buildGitHubIssueUpdate(savedFeedback, result, messages.resolution.gitIssuedMessage),
+                await signUpdatePayload(buildGitHubIssueUpdate(savedFeedback, result, messages.resolution.gitIssuedMessage)),
             );
 
             await notifyGitHubIssueCreated(eventCallbacks, {
@@ -839,11 +864,11 @@ export function useReportState({
         }
 
         try {
-            const updatedFeedback = await updateFeedback(selectedReport.id, {
+            const updatedFeedback = await updateFeedback(selectedReport.id, await signUpdatePayload({
                 message: editableDraft.message.trim(),
                 status: editableDraft.status,
                 field_values: editableDraft.fieldValues,
-            });
+            }));
 
             await notifyFeedbackUpdate(eventCallbacks, updatedFeedback);
 
@@ -855,9 +880,10 @@ export function useReportState({
     };
 
     const appendReply = async (report: ReportFeedback, reply: ReportReply) => {
-        await updateFeedback(report.id, {
+        const payload = await signUpdatePayload({
             replies: [...report.replies, reply],
         });
+        await updateFeedback(report.id, payload);
 
         await notifyFeedbackReply(eventCallbacks, {
             feedbackId: report.id,
@@ -928,10 +954,10 @@ export function useReportState({
         };
 
         try {
-            const updatedFeedback = await updateFeedback(activeReplyReport.id, {
+            const updatedFeedback = await updateFeedback(activeReplyReport.id, await signUpdatePayload({
                 status: "resolved",
                 replies: [...activeReplyReport.replies, reply],
-            });
+            }));
 
             await notifyFeedbackUpdate(eventCallbacks, updatedFeedback);
 
@@ -960,7 +986,7 @@ export function useReportState({
             const result = await github.onCreate(report);
             const updatedFeedback = await updateFeedback(
                 report.id,
-                buildGitHubIssueUpdate(report, result, messages.resolution.gitIssuedMessage),
+                await signUpdatePayload(buildGitHubIssueUpdate(report, result, messages.resolution.gitIssuedMessage)),
             );
 
             await notifyGitHubIssueCreated(eventCallbacks, {
@@ -976,6 +1002,11 @@ export function useReportState({
     };
 
     const handleDelete = async (id: string) => {
+        if (personalKeyRequired) {
+            setErrorMessage(messages.errors.personalKeyRequired);
+            return;
+        }
+
         try {
             await deleteFeedback(id);
             await notifyFeedbackDelete(eventCallbacks, id);
@@ -1044,7 +1075,10 @@ export function useReportState({
         routeDetailsStats,
         canTransferFeedback,
         personalKey,
+        publicKey,
         personalKeyRequired,
+        personalKeyPendingRegistration,
+        personalKeyCandidates,
         issuePersonalKey,
         insertPersonalKey,
         canListAllFeedback,

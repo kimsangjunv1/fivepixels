@@ -2,6 +2,7 @@ import type { ReportAuthor, ReportIdentify, ReportTeam } from "../types/report.j
 export type ResolvedReportTeam = {
     user?: ReportIdentify;
     reviewers: ReportAuthor[];
+    requireReviewerKey: boolean;
 };
 export type ResolveReportTeamOptions = {
     team?: ReportTeam;
