@@ -1,0 +1,82 @@
+import { en } from "./en.js";
+import { ko } from "./ko.js";
+import type { DeepPartialReportMessages, ReportLocale, ReportMessages } from "./types.js";
+
+const MESSAGES_BY_LOCALE: Record<ReportLocale, ReportMessages> = {
+    en,
+    ko,
+};
+
+let activeMessages: ReportMessages = en;
+
+export function resolveReportLocale(locale?: ReportLocale): ReportLocale {
+    if (locale) {
+        return locale;
+    }
+
+    if (typeof navigator !== "undefined" && navigator.language.toLowerCase().startsWith("ko")) {
+        return "ko";
+    }
+
+    return "en";
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+    return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function mergeMessages(base: ReportMessages, override?: DeepPartialReportMessages): ReportMessages {
+    if (!override) {
+        return base;
+    }
+
+    const next = { ...base } as ReportMessages;
+
+    for (const key of Object.keys(override) as Array<keyof ReportMessages>) {
+        const overrideValue = override[key];
+        const baseValue = base[key];
+
+        if (typeof overrideValue === "function") {
+            (next as Record<keyof ReportMessages, ReportMessages[keyof ReportMessages]>)[key] = overrideValue as ReportMessages[typeof key];
+            continue;
+        }
+
+        if (isPlainObject(overrideValue) && isPlainObject(baseValue)) {
+            (next as Record<keyof ReportMessages, ReportMessages[keyof ReportMessages]>)[key] = {
+                ...baseValue,
+                ...overrideValue,
+            } as ReportMessages[typeof key];
+            continue;
+        }
+
+        if (overrideValue !== undefined) {
+            (next as Record<keyof ReportMessages, ReportMessages[keyof ReportMessages]>)[key] = overrideValue as ReportMessages[typeof key];
+        }
+    }
+
+    return next;
+}
+
+export function getReportMessages(locale: ReportLocale, overrides?: DeepPartialReportMessages): ReportMessages {
+    return mergeMessages(MESSAGES_BY_LOCALE[locale], overrides);
+}
+
+export function setActiveReportMessages(messages: ReportMessages) {
+    activeMessages = messages;
+}
+
+export function getActiveReportMessages() {
+    return activeMessages;
+}
+
+export function getDefaultFields(messages: ReportMessages) {
+    return [
+        { key: "message", type: "textarea" as const, label: messages.defaults.fields.message, required: true },
+        { key: "checkbox1", type: "checkbox" as const, label: messages.defaults.fields.checkbox1 },
+        { key: "checkbox2", type: "checkbox" as const, label: messages.defaults.fields.checkbox2 },
+    ];
+}
+
+export type { DeepPartialReportMessages, ReportLocale, ReportMessages } from "./types.js";
+export { en } from "./en.js";
+export { ko } from "./ko.js";

@@ -1,5 +1,5 @@
-import type { ReportFeedback, ReportStatus } from "../types/report.js";
-import { TARGET_COLOR } from "../constants/report.js";
+import type { ReportFeedback, ReportStatus } from "@/types/report.js";
+import { TARGET_COLOR } from "@/constants/report.js";
 
 export function hasReply(report: ReportFeedback) {
     return report.replies.length > 0;
@@ -16,12 +16,20 @@ export function getMarkerColor(report: ReportFeedback) {
         return "var(--adaptive-green500)";
     }
 
+    if (report.status === "git_issued") {
+        return "var(--adaptive-blue500)";
+    }
+
     return TARGET_COLOR.item;
 }
 
 export function getStatusTone(status: ReportStatus) {
     if (status === "resolved") {
         return { backgroundColor: "#e8f5e9", color: "#2e7d32" };
+    }
+
+    if (status === "git_issued") {
+        return { backgroundColor: "#eff6ff", color: "#1d4ed8" };
     }
 
     if (status === "archived") {

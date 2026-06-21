@@ -1,9 +1,13 @@
-import { jsx as _jsx, Fragment as _Fragment, jsxs as _jsxs } from "react/jsx-runtime";
-import { useMemo } from "react";
+import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useReport } from "../../../providers/reportContext.js";
 import { formatDate } from "../../../utils/format.js";
 import { canCheckoutReply, canReviewLatestSuggestion, resolveOriginalFeedbackAuthorName } from "../../../utils/feedbackThread.js";
+import { getGitHubIssueUrl, isGitIssuedSystemReply } from "../../../utils/githubIntegration.js";
 import { AuthorSelector } from "./AuthorSelector.js";
+import { FeedbackCreatorBadge } from "./FeedbackCreatorBadge.js";
 import { FeedbackStatusBadge } from "./FeedbackStatusBadge.js";
+import { GitIssuedThreadEntry } from "./GitIssuedThreadEntry.js";
 function buildConfirmAuthorOptions(report, authors) {
     const byName = new Map();
     for (const author of authors) {
@@ -15,29 +19,72 @@ function buildConfirmAuthorOptions(report, authors) {
     }
     return Array.from(byName.values());
 }
+function getScrollOverflowState(element) {
+    const { scrollTop, scrollHeight, clientHeight } = element;
+    const hasOverflow = scrollHeight > clientHeight + 1;
+    return {
+        canScrollUp: hasOverflow && scrollTop > 0,
+        canScrollDown: hasOverflow && scrollTop + clientHeight < scrollHeight - 1,
+    };
+}
+const SCROLL_HINT_CLASS = "pointer-events-none absolute left-0 right-0 z-10 px-[16px] py-[12px] text-center text-[12px] text-[var(--adaptive-black600)]";
 function ThreadEntryActions({ reply, report, authors, pendingComposer, confirmAuthorName, showConfirmAuthorSelect, onConfirmAuthorNameChange, onToggleConfirmAuthorSelect, onStartDeny, onStartCheckout, onConfirm, isUpdating, }) {
+    const { messages } = useReport();
     const confirmAuthorOptions = useMemo(() => buildConfirmAuthorOptions(report, authors), [authors, report]);
     const isLatest = report.replies[report.replies.length - 1]?.id === reply.id;
     const showReview = isLatest && canReviewLatestSuggestion(report);
     const showCheckout = canCheckoutReply(report, reply);
-    const denyActive = pendingComposer?.type === "deny" && pendingComposer.targetReplyId === reply.id;
+    const denyActive = (pendingComposer?.type === "deny" || pendingComposer?.type === "recheck") && pendingComposer.targetReplyId === reply.id;
     const checkoutActive = pendingComposer?.type === "checkout" && pendingComposer.targetReplyId === reply.id;
     if (!showReview && !showCheckout) {
         return null;
     }
-    return (_jsxs("div", { className: "mt-[10px] flex flex-col gap-[8px]", children: [_jsxs("div", { className: "flex gap-[8px]", children: [showReview ? (_jsxs(_Fragment, { children: [_jsx("button", { type: "button", "data-stitchable-interactive": "", disabled: isUpdating, onClick: onStartDeny, className: denyActive
-                                    ? "flex-1 rounded-full bg-[var(--adaptive-red400)] px-[12px] py-[8px] text-[12px] font-semibold text-white"
-                                    : "flex-1 rounded-full border border-[var(--adaptive-grey400)] px-[12px] py-[8px] text-[12px] font-semibold text-[var(--adaptive-grey700)]", children: "denied" }), _jsx("button", { type: "button", "data-stitchable-interactive": "", disabled: isUpdating, onClick: onConfirm, className: "flex-1 rounded-full border border-[var(--adaptive-grey400)] px-[12px] py-[8px] text-[12px] font-semibold text-[var(--adaptive-grey700)]", children: "confirm" }), _jsx("button", { type: "button", "data-stitchable-interactive": "", disabled: isUpdating, onClick: onToggleConfirmAuthorSelect, className: showConfirmAuthorSelect
-                                    ? "shrink-0 rounded-full bg-[var(--adaptive-grey900)] px-[12px] py-[8px] text-[12px] font-semibold text-[var(--adaptive-grey50)]"
-                                    : "shrink-0 rounded-full border border-[var(--adaptive-grey400)] px-[12px] py-[8px] text-[12px] font-semibold text-[var(--adaptive-grey700)]", children: "select" })] })) : null, showCheckout ? (_jsxs(_Fragment, { children: [_jsx("button", { type: "button", "data-stitchable-interactive": "", disabled: true, className: "flex-1 rounded-full border border-[var(--adaptive-grey400)] px-[12px] py-[8px] text-[12px] font-semibold text-[var(--adaptive-grey500)] opacity-60", children: "denied" }), _jsx("button", { type: "button", "data-stitchable-interactive": "", disabled: isUpdating, onClick: () => onStartCheckout(reply.id), className: checkoutActive
-                                    ? "flex-1 rounded-full bg-[var(--adaptive-grey900)] px-[12px] py-[8px] text-[12px] font-semibold text-[var(--adaptive-grey50)]"
-                                    : "flex-1 rounded-full border border-[var(--adaptive-grey400)] px-[12px] py-[8px] text-[12px] font-semibold text-[var(--adaptive-grey700)]", children: "checkout" })] })) : null] }), showReview && showConfirmAuthorSelect ? (_jsx(AuthorSelector, { authors: confirmAuthorOptions, value: confirmAuthorName, onChange: onConfirmAuthorNameChange })) : null] }));
+    return (_jsxs("div", { className: "mt-[10px] flex flex-col gap-[8px]", children: [_jsxs("div", { className: "flex gap-[8px]", children: [showReview ? (_jsxs(_Fragment, { children: [_jsx("button", { type: "button", "data-stitchable-interactive": "", disabled: isUpdating, onClick: onStartDeny, className: `flex-1 rounded-full py-[4px] px-[8px] text-[12px] font-semibold border ${denyActive ? " bg-[#FF2B6A] text-white border-transparent" : " border-[var(--adaptive-border-subtle)] text-[var(--adaptive-text-primary)]"}`, children: messages.thread.denied }), _jsxs("section", { className: "flex items-center gap-[8px] rounded-full border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface-muted)] px-[8px] py-[4px]", children: [_jsx("button", { type: "button", "data-stitchable-interactive": "", disabled: isUpdating, onClick: onConfirm, className: "flex-1 rounded-full text-[12px] font-semibold text-[var(--adaptive-black500)]", children: messages.thread.resolved }), _jsx("div", { className: "h-full w-[1px] bg-[var(--adaptive-black700)]" }), _jsx("button", { type: "button", "data-stitchable-interactive": "", disabled: isUpdating, onClick: onToggleConfirmAuthorSelect, className: showConfirmAuthorSelect
+                                            ? "shrink-0 rounded-full bg-[var(--adaptive-surface-inverse)] text-[12px] font-semibold text-[var(--adaptive-text-inverse)]"
+                                            : "shrink-0 rounded-full text-[12px] font-semibold text-[var(--adaptive-text-secondary)]", children: messages.thread.select })] })] })) : null, showCheckout ? (_jsxs(_Fragment, { children: [_jsx("button", { type: "button", "data-stitchable-interactive": "", disabled: isUpdating, onClick: onStartDeny, className: `flex-1 rounded-[8px] border py-[4px] text-[12px] font-semibold ${denyActive ? "border-transparent bg-[#FF2B6A] text-white" : "border-[var(--adaptive-border-subtle)] text-[var(--adaptive-text-primary)]"}`, children: messages.thread.denied }), _jsx("button", { type: "button", "data-stitchable-interactive": "", disabled: isUpdating, onClick: () => onStartCheckout(reply.id), className: "flex-1 py-[4px] rounded-[8px] text-[12px] font-semibold " +
+                                    (checkoutActive
+                                        ? "bg-[var(--adaptive-surface-inverse)] text-[var(--adaptive-text-inverse)]"
+                                        : "border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface-muted)] text-[var(--adaptive-text-muted)]"), children: messages.thread.leaveResult })] })) : null] }), showReview && showConfirmAuthorSelect ? (_jsx(AuthorSelector, { authors: confirmAuthorOptions, value: confirmAuthorName, onChange: onConfirmAuthorNameChange })) : null] }));
 }
 export function FeedbackThread({ report, authors, pendingComposer, confirmAuthorName, showConfirmAuthorSelect, onConfirmAuthorNameChange, onToggleConfirmAuthorSelect, onStartDeny, onStartCheckout, onConfirm, isUpdating, }) {
+    const { locale, messages } = useReport();
+    const scrollRef = useRef(null);
+    const [scrollOverflow, setScrollOverflow] = useState({
+        canScrollUp: false,
+        canScrollDown: false,
+    });
+    const refreshScrollOverflow = useCallback(() => {
+        const element = scrollRef.current;
+        if (!element) {
+            return;
+        }
+        setScrollOverflow(getScrollOverflowState(element));
+    }, []);
+    useEffect(() => {
+        const element = scrollRef.current;
+        if (!element) {
+            return;
+        }
+        refreshScrollOverflow();
+        element.addEventListener("scroll", refreshScrollOverflow, { passive: true });
+        const resizeObserver = new ResizeObserver(refreshScrollOverflow);
+        resizeObserver.observe(element);
+        return () => {
+            element.removeEventListener("scroll", refreshScrollOverflow);
+            resizeObserver.disconnect();
+        };
+    }, [refreshScrollOverflow, report.replies]);
     if (report.replies.length === 0) {
         return null;
     }
     const chronological = [...report.replies].reverse();
-    return (_jsx("section", { className: "flex flex-col bg-[var(--adaptive-grey50)]", children: chronological.map((reply) => (_jsxs("article", { className: "flex flex-col gap-[8px] border-t border-[var(--adaptive-greyOpacity200)] p-[16px]", children: [_jsxs("div", { className: "flex items-start justify-between gap-[8px]", children: [_jsx(FeedbackStatusBadge, { status: reply.status }), _jsx("span", { className: "text-[11px] text-[var(--adaptive-grey500)]", children: formatDate(reply.created_at) })] }), _jsx("p", { className: "text-[13px] leading-[1.45] text-[var(--adaptive-grey900)]", children: reply.message }), reply.author_name ? _jsx("p", { className: "text-[12px] text-[var(--adaptive-grey500)]", children: reply.author_name }) : null, _jsx(ThreadEntryActions, { reply: reply, report: report, authors: authors, pendingComposer: pendingComposer, confirmAuthorName: confirmAuthorName, showConfirmAuthorSelect: showConfirmAuthorSelect, onConfirmAuthorNameChange: onConfirmAuthorNameChange, onToggleConfirmAuthorSelect: onToggleConfirmAuthorSelect, onStartDeny: onStartDeny, onStartCheckout: onStartCheckout, onConfirm: onConfirm, isUpdating: isUpdating })] }, reply.id))) }));
+    const originalAuthorName = resolveOriginalFeedbackAuthorName(report);
+    return (_jsxs("div", { className: "relative max-h-[512px]", children: [scrollOverflow.canScrollUp ? _jsx("p", { className: `${SCROLL_HINT_CLASS} top-0 bg-[linear-gradient(0deg,transparent,var(--adaptive-surface-overlay))]`, children: messages.thread.scrollHintUp }) : null, scrollOverflow.canScrollDown ? _jsx("p", { className: `${SCROLL_HINT_CLASS} bottom-0 bg-[linear-gradient(180deg,transparent,var(--adaptive-surface-overlay))]`, children: messages.thread.scrollHintDown }) : null, _jsx("section", { ref: scrollRef, className: "flex max-h-[512px] flex-col overflow-auto bg-transparent", children: chronological.map((reply) => {
+                    const issueUrl = getGitHubIssueUrl(report);
+                    if (isGitIssuedSystemReply(reply, report) && issueUrl) {
+                        return (_jsx(GitIssuedThreadEntry, { reply: reply, issueUrl: issueUrl }, reply.id));
+                    }
+                    return (_jsxs("article", { className: "flex flex-col gap-[8px] border-t border-[var(--adaptive-border-subtle)] p-[16px]", children: [_jsxs("div", { className: "flex items-start justify-between gap-[8px]", children: [_jsx(FeedbackStatusBadge, { status: reply.status }), _jsx("span", { className: "text-[12px] text-[var(--adaptive-black500)]", children: formatDate(reply.created_at, locale) })] }), _jsx("p", { className: "leading-[1.5] text-[14px] text-[var(--adaptive-text-primary)]", children: reply.message }), reply.author_name ? (_jsxs("div", { className: "flex items-center gap-[6px]", children: [_jsx("p", { className: "text-[12px] text-[var(--adaptive-black500)]", children: reply.author_name }), reply.author_name.trim() === originalAuthorName ? _jsx(FeedbackCreatorBadge, {}) : null] })) : null, _jsx(ThreadEntryActions, { reply: reply, report: report, authors: authors, pendingComposer: pendingComposer, confirmAuthorName: confirmAuthorName, showConfirmAuthorSelect: showConfirmAuthorSelect, onConfirmAuthorNameChange: onConfirmAuthorNameChange, onToggleConfirmAuthorSelect: onToggleConfirmAuthorSelect, onStartDeny: onStartDeny, onStartCheckout: onStartCheckout, onConfirm: onConfirm, isUpdating: isUpdating })] }, reply.id));
+                }) })] }));
 }
 //# sourceMappingURL=FeedbackThread.js.map

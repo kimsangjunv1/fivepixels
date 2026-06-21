@@ -16,14 +16,16 @@ type MotionTransition = {
     stiffness?: number;
     damping?: number;
 };
+type LayoutProp = boolean | "position" | "size" | "preserve-aspect";
 type MotionConfig = {
     initial?: MotionStyle | false;
     animate?: MotionStyle;
     exit?: MotionStyle;
     transition?: MotionTransition;
     layoutTransition?: MotionTransition;
-    layout?: boolean;
+    layout?: LayoutProp;
     layoutId?: string;
+    layoutRoot?: boolean;
 };
 type MotionProps<T extends ElementType> = MotionConfig & Omit<HTMLAttributes<HTMLElement>, keyof MotionConfig> & {
     as?: T;
@@ -42,5 +44,5 @@ type MotionFactory = {
     [K in keyof JSX.IntrinsicElements]: ReturnType<typeof createMotionComponent>;
 };
 export declare const motion: MotionFactory;
-export type { MotionConfig, MotionProps, MotionStyle, MotionTransition };
+export type { LayoutProp, MotionConfig, MotionProps, MotionStyle, MotionTransition };
 //# sourceMappingURL=index.d.ts.map

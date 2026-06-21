@@ -1,4 +1,4 @@
-import type { CreateReportFeedbackPayload } from "../types/report.js";
+import type { CreateReportFeedbackPayload } from "@/types/report.js";
 
 export function createReportPayload(
     overrides: Partial<CreateReportFeedbackPayload> = {},

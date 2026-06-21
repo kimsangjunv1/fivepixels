@@ -4,9 +4,15 @@ export function getLatestReply(report) {
     }
     return report.replies[report.replies.length - 1] ?? null;
 }
+export function getRemainingReplyCount(report) {
+    return Math.max(0, report.replies.length - 1);
+}
 export function getFeedbackDisplayStatus(report, expanded = false) {
+    if (report.status === "git_issued") {
+        return "git_issued";
+    }
     if (report.status === "resolved") {
-        return "verified";
+        return "resolved";
     }
     const latest = getLatestReply(report);
     if (!latest) {
@@ -30,7 +36,7 @@ export function canReviewLatestSuggestion(report) {
     return latest?.status === "suggested";
 }
 export function canCheckoutReply(report, reply) {
-    if (reply.status !== "found_error") {
+    if (reply.status !== "found_error" && reply.status !== "recheck_requested") {
         return false;
     }
     const latest = getLatestReply(report);
@@ -40,6 +46,9 @@ export function resolveOriginalFeedbackAuthorName(report) {
     return report.author_name?.trim() ?? "";
 }
 export function createReplyStatusForSubmit(pending) {
+    if (pending === "recheck") {
+        return "recheck_requested";
+    }
     if (pending === "deny") {
         return "found_error";
     }

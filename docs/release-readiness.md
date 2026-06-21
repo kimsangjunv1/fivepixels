@@ -5,9 +5,9 @@
 ## 패키지 경량화
 
 - 런타임 `dependencies` 없음 (`react`, `react-dom`만 peer)
-- 빌드에 포함되지 않던 `src/lib`, `src/model`, `src/shared/types/Database.ts` 제거
-- `npm run size:dist`로 `dist/*.js` 용량 확인 (2026-05-31 기준 합계 159,115 bytes, unminified)
-- `npm run size:example`로 example 프로덕션 번들 확인 (`npm run example:build` 후 `examples/basic/dist` 기준)
+- UI 애니메이션은 자체 `components/motion` 구현 사용 (`motion` npm 패키지 미사용)
+- `npm run size:dist`로 `dist/*.js` 용량 확인
+- `npm run size:bundle`로 minify+gzip 번들 예산 확인 (2026-06-06 기준 `stitchable/report` total 46,809 gzip, CSS 9,993 gzip)
 
 ## 검증 결과
 
@@ -37,7 +37,7 @@
 ## CI
 
 - GitHub Actions: `.github/workflows/ci.yml`
-- push/PR 시 `typecheck`, `test`, `build`, `example:build` 실행
+- push/PR 시 `typecheck`, `test`, `build`, `size:bundle`, `example:build` 실행
 
 ## 배포 전 체크
 

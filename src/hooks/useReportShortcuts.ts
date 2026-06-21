@@ -1,6 +1,6 @@
 import { useEffect } from "react";
-import { REPORT_SHORTCUTS } from "../constants/reportShortcuts.js";
-import { isEditableTarget, matchesShortcut } from "../utils/shortcuts.js";
+import { REPORT_SHORTCUTS } from "@/constants/reportShortcuts.js";
+import { isEditableTarget, matchesShortcut } from "@/utils/shortcuts.js";
 import type { useReportState } from "./useReportState.js";
 
 type ReportShortcutHandlers = Pick<
@@ -8,12 +8,16 @@ type ReportShortcutHandlers = Pick<
     | "mode"
     | "draft"
     | "editingReportId"
-    | "showFeedbackList"
+    | "panelTab"
     | "showTargetPreview"
+    | "activeReplyReportId"
+    | "pendingComposer"
     | "toggleReportMode"
     | "toggleTargetPreview"
-    | "toggleViewMode"
+    | "toggleIssueMode"
     | "cancelDraft"
+    | "cancelPendingComposer"
+    | "closeReplyComposer"
     | "handleCreateSubmit"
     | "stopEditing"
     | "handleUpdateSubmit"
@@ -26,12 +30,16 @@ export function useReportShortcuts(handlers: ReportShortcutHandlers) {
         mode,
         draft,
         editingReportId,
-        showFeedbackList,
+        panelTab,
         showTargetPreview,
+        activeReplyReportId,
+        pendingComposer,
         toggleReportMode,
         toggleTargetPreview,
-        toggleViewMode,
+        toggleIssueMode,
         cancelDraft,
+        cancelPendingComposer,
+        closeReplyComposer,
         handleCreateSubmit,
         stopEditing,
         handleUpdateSubmit,
@@ -42,7 +50,7 @@ export function useReportShortcuts(handlers: ReportShortcutHandlers) {
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
             const inEditable = isEditableTarget(event.target);
-            const isViewListOpen = mode === "view" && showFeedbackList;
+            const isFeedbackListOpen = panelTab === "feedback-list";
 
             if (matchesShortcut(event, REPORT_SHORTCUTS.submit)) {
                 if (draft) {
@@ -79,9 +87,21 @@ export function useReportShortcuts(handlers: ReportShortcutHandlers) {
                     return;
                 }
 
+                if (pendingComposer) {
+                    event.preventDefault();
+                    cancelPendingComposer();
+                    return;
+                }
+
+                if (activeReplyReportId) {
+                    event.preventDefault();
+                    closeReplyComposer();
+                    return;
+                }
+
                 if (mode === "view") {
                     event.preventDefault();
-                    toggleViewMode();
+                    toggleIssueMode();
                     return;
                 }
 
@@ -94,13 +114,13 @@ export function useReportShortcuts(handlers: ReportShortcutHandlers) {
                 return;
             }
 
-            if (isViewListOpen && matchesShortcut(event, REPORT_SHORTCUTS.focusSearch)) {
+            if (isFeedbackListOpen && matchesShortcut(event, REPORT_SHORTCUTS.focusSearch)) {
                 event.preventDefault();
                 focusSearchInput();
                 return;
             }
 
-            if (isViewListOpen && !inEditable && (event.key === "ArrowUp" || event.key === "ArrowDown")) {
+            if (isFeedbackListOpen && !inEditable && (event.key === "ArrowUp" || event.key === "ArrowDown")) {
                 event.preventDefault();
                 selectAdjacentReport(event.key === "ArrowDown" ? "down" : "up");
                 return;
@@ -128,7 +148,7 @@ export function useReportShortcuts(handlers: ReportShortcutHandlers) {
 
             if (matchesShortcut(event, REPORT_SHORTCUTS.toggleViewMode)) {
                 event.preventDefault();
-                toggleViewMode();
+                toggleIssueMode();
             }
         };
 
@@ -141,12 +161,16 @@ export function useReportShortcuts(handlers: ReportShortcutHandlers) {
         mode,
         draft,
         editingReportId,
-        showFeedbackList,
+        panelTab,
         showTargetPreview,
+        activeReplyReportId,
+        pendingComposer,
         toggleReportMode,
         toggleTargetPreview,
-        toggleViewMode,
+        toggleIssueMode,
         cancelDraft,
+        cancelPendingComposer,
+        closeReplyComposer,
         handleCreateSubmit,
         stopEditing,
         handleUpdateSubmit,

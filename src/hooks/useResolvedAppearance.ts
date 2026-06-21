@@ -1,9 +1,17 @@
 import { useEffect, useState } from "react";
-import type { ReportAppearance } from "../types/report.js";
-import type { ResolvedAppearance } from "../types/report-ui.js";
+import type { ReportAppearance } from "@/types/report.js";
+import type { ResolvedAppearance } from "@/types/report-ui.js";
+
+function resolveAppearance(appearance: ReportAppearance): ResolvedAppearance {
+    if (appearance !== "system" || typeof window === "undefined") {
+        return appearance === "dark" ? "dark" : "light";
+    }
+
+    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
 
 export function useResolvedAppearance(appearance: ReportAppearance) {
-    const [resolved, setResolved] = useState<ResolvedAppearance>("light");
+    const [resolved, setResolved] = useState<ResolvedAppearance>(() => resolveAppearance(appearance));
 
     useEffect(() => {
         if (appearance !== "system") {

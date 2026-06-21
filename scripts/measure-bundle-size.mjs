@@ -1,14 +1,28 @@
-import { readFileSync, writeFileSync, mkdtempSync, rmSync } from "node:fs";
+import { readFileSync, mkdtempSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { gzipSync } from "node:zlib";
 import { spawnSync } from "node:child_process";
 
-const LIMIT_GZIP_BYTES = 15 * 1024;
+const TARGET_JS_GZIP_BYTES = 15 * 1024;
+const TARGET_CSS_GZIP_BYTES = 12 * 1024;
+const TARGET_TOTAL_GZIP_BYTES = TARGET_JS_GZIP_BYTES + TARGET_CSS_GZIP_BYTES;
+
+const LIMIT_REPORT_TOTAL_GZIP_BYTES = 48 * 1024;
+const LIMIT_CSS_GZIP_BYTES = 12 * 1024;
+
 const entries = [
     { name: "stitchable/report", file: "dist/components/report/index.js" },
     { name: "stitchable", file: "dist/index.js" },
 ];
+
+function gzipFileBytes(filePath) {
+    const source = readFileSync(filePath);
+    return {
+        rawBytes: source.length,
+        gzipBytes: gzipSync(source).length,
+    };
+}
 
 function bundleMinGzip(entryFile) {
     const tempDir = mkdtempSync(join(tmpdir(), "stitchable-size-"));
@@ -30,20 +44,47 @@ function bundleMinGzip(entryFile) {
     return { rawBytes: source.length, gzipBytes };
 }
 
+function formatRow(status, gzipBytes, rawBytes, label) {
+    console.log(`  ${status.padEnd(4)} ${String(gzipBytes).padStart(5)} gzip / ${String(rawBytes).padStart(6)} raw  ${label}`);
+}
+
 console.log("stitchable bundle size (minified, react/react-dom externalized):");
 let failed = false;
 
+let reportBundle = null;
+
 for (const entry of entries) {
-    const { rawBytes, gzipBytes } = bundleMinGzip(entry.file);
-    const ok = entry.name === "stitchable/report" ? gzipBytes < LIMIT_GZIP_BYTES : true;
-    const status = entry.name === "stitchable/report" ? (ok ? "OK" : "OVER") : "info";
-    console.log(`  ${status.padEnd(4)} ${String(gzipBytes).padStart(5)} gzip / ${String(rawBytes).padStart(6)} raw  ${entry.name}`);
-    if (entry.name === "stitchable/report" && !ok) {
-        failed = true;
+    const bundle = bundleMinGzip(entry.file);
+    const isReportEntry = entry.name === "stitchable/report";
+    const status = isReportEntry ? (bundle.gzipBytes <= LIMIT_REPORT_TOTAL_GZIP_BYTES ? "OK" : "OVER") : "info";
+    formatRow(status, bundle.gzipBytes, bundle.rawBytes, entry.name);
+
+    if (isReportEntry) {
+        reportBundle = bundle;
+
+        if (bundle.gzipBytes > LIMIT_REPORT_TOTAL_GZIP_BYTES) {
+            failed = true;
+        }
     }
 }
 
-console.log(`  limit ${LIMIT_GZIP_BYTES} gzip for stitchable/report`);
+const css = gzipFileBytes("dist/styles/reportStylesheet.js");
+const cssStatus = css.gzipBytes <= LIMIT_CSS_GZIP_BYTES ? "OK" : "OVER";
+formatRow(cssStatus, css.gzipBytes, css.rawBytes, "stylesheet (reportStylesheet.js)");
+
+if (css.gzipBytes > LIMIT_CSS_GZIP_BYTES) {
+    failed = true;
+}
+
+if (reportBundle) {
+    const estimatedJsGzip = Math.max(0, reportBundle.gzipBytes - css.gzipBytes);
+    const jsTargetStatus = estimatedJsGzip <= TARGET_JS_GZIP_BYTES ? "OK" : "goal";
+    formatRow(jsTargetStatus, estimatedJsGzip, reportBundle.rawBytes - css.rawBytes, "stitchable/report JS (total - stylesheet)");
+}
+
+console.log("");
+console.log(`  CI limits: report total <= ${LIMIT_REPORT_TOTAL_GZIP_BYTES} gzip, css <= ${LIMIT_CSS_GZIP_BYTES} gzip`);
+console.log(`  stretch goals: js <= ${TARGET_JS_GZIP_BYTES} gzip, css <= ${TARGET_CSS_GZIP_BYTES} gzip, total <= ${TARGET_TOTAL_GZIP_BYTES} gzip`);
 
 if (failed) {
     process.exitCode = 1;

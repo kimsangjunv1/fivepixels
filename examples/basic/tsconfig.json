@@ -3,9 +3,15 @@
   "compilerOptions": {
     "noEmit": true,
     "rootDir": "../..",
+    "baseUrl": ".",
     "declaration": false,
     "declarationMap": false,
-    "sourceMap": false
+    "sourceMap": false,
+    "paths": {
+      "stitchable": ["../../src/index.ts"],
+      "@/*": ["../../src/*"]
+    }
   },
-  "include": ["./**/*.ts", "./**/*.tsx", "../../src/**/*.ts", "../../src/**/*.tsx"]
+  "include": ["./**/*.ts", "./**/*.tsx", "../../src/**/*.ts", "../../src/**/*.tsx"],
+  "exclude": ["../../src/**/*.test.ts", "../../src/**/*.test.tsx", "./vite.config.ts"]
 }

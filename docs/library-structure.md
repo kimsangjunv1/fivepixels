@@ -42,6 +42,10 @@ src/
 
 - hooks는 React Hook만 저장
 
+- hooks/useReportPersistence.ts: 목록·필터·mutation persistence 레이어
+
+- hooks/usePanelFeedbackTransfer.ts: 패널 import/export/command 전용 상태
+
 - styles는 Tailwind 입력 CSS와 Shadow Root에 주입할 빌드 결과 stylesheet를 저장
 
 - components/motion처럼 재사용 UI primitive는 components 하위 기능 폴더로 둔다

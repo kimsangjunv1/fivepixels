@@ -1,4 +1,4 @@
-import type { ShortcutBinding } from "../utils/shortcuts.js";
+import type { ShortcutBinding } from "@/utils/shortcuts.js";
 
 export const REPORT_SHORTCUTS = {
     toggleReportMode: { key: "m", mod: true, shift: true },

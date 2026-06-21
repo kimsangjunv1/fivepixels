@@ -1,5 +1,5 @@
-import type { FeedbackDisplayStatus } from "../constants/feedbackStatus.js";
-import type { ReportFeedback, ReportReply, ReportReplyStatus } from "../types/report.js";
+import type { FeedbackDisplayStatus } from "@/constants/feedbackStatus.js";
+import type { ReportFeedback, ReportReply, ReportReplyStatus } from "@/types/report.js";
 
 export function getLatestReply(report: ReportFeedback): ReportReply | null {
     if (report.replies.length === 0) {
@@ -9,9 +9,17 @@ export function getLatestReply(report: ReportFeedback): ReportReply | null {
     return report.replies[report.replies.length - 1] ?? null;
 }
 
+export function getRemainingReplyCount(report: ReportFeedback) {
+    return Math.max(0, report.replies.length - 1);
+}
+
 export function getFeedbackDisplayStatus(report: ReportFeedback, expanded = false): FeedbackDisplayStatus {
+    if (report.status === "git_issued") {
+        return "git_issued";
+    }
+
     if (report.status === "resolved") {
-        return "verified";
+        return "resolved";
     }
 
     const latest = getLatestReply(report);
@@ -23,10 +31,7 @@ export function getFeedbackDisplayStatus(report: ReportFeedback, expanded = fals
     return latest.status;
 }
 
-export function getCheckboxFieldsFromValues(
-    fieldValues: ReportFeedback["field_values"],
-    labels: Map<string, string>,
-): { key: string; label: string }[] {
+export function getCheckboxFieldsFromValues(fieldValues: ReportFeedback["field_values"], labels: Map<string, string>): { key: string; label: string }[] {
     return Object.entries(fieldValues).flatMap(([key, value]) => {
         if (key === "message" || value !== true) {
             return [];
@@ -46,7 +51,7 @@ export function canReviewLatestSuggestion(report: ReportFeedback): boolean {
 }
 
 export function canCheckoutReply(report: ReportFeedback, reply: ReportReply): boolean {
-    if (reply.status !== "found_error") {
+    if (reply.status !== "found_error" && reply.status !== "recheck_requested") {
         return false;
     }
 
@@ -58,7 +63,11 @@ export function resolveOriginalFeedbackAuthorName(report: ReportFeedback) {
     return report.author_name?.trim() ?? "";
 }
 
-export function createReplyStatusForSubmit(pending: "deny" | "checkout" | null): ReportReplyStatus {
+export function createReplyStatusForSubmit(pending: "deny" | "recheck" | "checkout" | null): ReportReplyStatus {
+    if (pending === "recheck") {
+        return "recheck_requested";
+    }
+
     if (pending === "deny") {
         return "found_error";
     }

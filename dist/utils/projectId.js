@@ -7,7 +7,7 @@ export function resolveProjectId(projectId) {
     }
     if (!isProductionEnv() && !hasWarnedDefaultProjectId) {
         hasWarnedDefaultProjectId = true;
-        console.warn(`[stitchable] projectId defaults to "${DEFAULT_PROJECT_ID}". Set projectId for production or multi-project storage.`);
+        console.warn(`[stitchable] project.id defaults to "${DEFAULT_PROJECT_ID}". Set project={{ id }} for production or multi-project storage.`);
     }
     return DEFAULT_PROJECT_ID;
 }

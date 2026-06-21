@@ -1,4 +1,5 @@
-import type { ReportField, ReportFieldValues } from "../../types/report.js";
+import type { ReportField, ReportFieldValues } from "@/types/report.js";
+import { useReport } from "@/providers/reportContext.js";
 
 type FieldEditorProps = {
     fields: ReportField[];
@@ -17,12 +18,14 @@ function renderNonCheckboxField(
         fieldValues,
         onMessageChange,
         onFieldChange,
+        messagePlaceholder,
     }: {
         isDraftBubble: boolean;
         message: string;
         fieldValues: ReportFieldValues;
         onMessageChange: (nextValue: string) => void;
         onFieldChange: (key: string, nextValue: string | boolean) => void;
+        messagePlaceholder: string;
     },
 ) {
     if (field.key === "message") {
@@ -35,8 +38,8 @@ function renderNonCheckboxField(
                     autoFocus={isDraftBubble}
                     value={message}
                     onChange={(event) => onMessageChange(event.target.value)}
-                    className="bg-[var(--adaptive-grey50)] p-[14px] focus:border-none focus:stroke-none focus:outline-none"
-                    placeholder="피드백을 남겨주세요"
+                    className="bg-[var(--adaptive-surface)] p-[14px] focus:border-none focus:stroke-none focus:outline-none"
+                    placeholder={messagePlaceholder}
                 />
             </label>
         );
@@ -47,17 +50,18 @@ function renderNonCheckboxField(
             key={field.key}
             className="flex flex-col gap-1 text-xs"
         >
-            <span className="text-[11px] text-slate-500 dark:text-slate-400">{field.label}</span>
+            <span className="text-[12px] text-[var(--adaptive-text-muted)]">{field.label}</span>
             <textarea
                 value={String(fieldValues[field.key] ?? "")}
                 onChange={(event) => onFieldChange(field.key, event.target.value)}
-                className="h-16 w-full resize-none rounded-md border border-slate-200 bg-white px-2 py-1 text-xs text-slate-900 shadow-sm outline-none ring-0 placeholder:text-slate-400 focus:border-slate-300 focus:ring-1 focus:ring-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-slate-600 dark:focus:ring-slate-700"
+                className="h-16 w-full resize-none rounded-md border border-[var(--adaptive-border)] bg-[var(--adaptive-surface)] px-2 py-1 text-xs text-[var(--adaptive-text-primary)] shadow-sm outline-none ring-0 placeholder:text-[var(--adaptive-text-muted)] focus:border-[var(--adaptive-text-muted)]"
             />
         </label>
     );
 }
 
 export function FieldEditor({ fields, message, fieldValues, onMessageChange, onFieldChange, variant = "default" }: FieldEditorProps) {
+    const { messages } = useReport();
     const isDraftBubble = variant === "draft-bubble";
     const fieldsToRender = isDraftBubble ? fields.filter((field) => field.type !== "checkbox") : fields;
 
@@ -68,11 +72,11 @@ export function FieldEditor({ fields, message, fieldValues, onMessageChange, onF
                     return (
                         <label
                             key={field.key}
-                            className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-200"
+                            className="flex items-center gap-2 text-xs text-[var(--adaptive-text-secondary)]"
                         >
                             <input
                                 type="checkbox"
-                                className="h-3.5 w-3.5 rounded border-slate-300 text-sky-600 focus:ring-sky-500 dark:border-slate-600"
+                                className="h-3.5 w-3.5 rounded border-[var(--adaptive-border)] text-[var(--adaptive-blue500)]"
                                 checked={fieldValues[field.key] === true}
                                 onChange={(event) => onFieldChange(field.key, event.target.checked)}
                             />
@@ -87,6 +91,7 @@ export function FieldEditor({ fields, message, fieldValues, onMessageChange, onF
                     fieldValues,
                     onMessageChange,
                     onFieldChange,
+                    messagePlaceholder: messages.fieldEditor.messagePlaceholder,
                 });
             })}
         </div>

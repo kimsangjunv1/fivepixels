@@ -1,10 +1,10 @@
-import { AnimatePresence, motion } from "motion/react";
-import { useReport } from "../../providers/reportContext.js";
-import type { DraftPopoverPlacement } from "../../utils/coordinates.js";
-import { DRAFT_POPOVER_CONNECTOR_WIDTH, getDraftMarkerPosition, getDraftPopoverPosition } from "../../utils/coordinates.js";
+import { AnimatedPresence, motion } from "@/components/motion/index.js";
+import { useReport } from "@/providers/reportContext.js";
+import type { DraftPopoverPlacement } from "@/utils/coordinates.js";
+import { DRAFT_POPOVER_CONNECTOR_WIDTH, getDraftMarkerPosition, getDraftPopoverPosition } from "@/utils/coordinates.js";
 import { FeedbackComposer } from "./feedback/FeedbackComposer.js";
 
-const DRAFT_MOTION_EASE = [0.22, 1, 0.36, 1] as const;
+const DRAFT_MOTION_EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
 
 function getMotionOrigin(placement: DraftPopoverPlacement) {
     switch (placement) {
@@ -28,7 +28,7 @@ function DraftPopoverConnector({ placement }: DraftPopoverConnectorProps) {
         return null;
     }
 
-    const baseClass = "pointer-events-none absolute top-1/2 h-[2px] -translate-y-1/2 bg-[var(--adaptive-grey500)]";
+    const baseClass = "pointer-events-none absolute top-1/2 h-[2px] -translate-y-1/2 bg-[var(--adaptive-whiteOpacity500)]";
 
     if (placement === "right") {
         return (
@@ -50,11 +50,25 @@ function DraftPopoverConnector({ placement }: DraftPopoverConnectorProps) {
 }
 
 export function ReportDraftForm() {
-    const { draft, fields, authors, isCreating, selectedTarget, updateDraftMessage, updateDraftField, cancelDraft, handleCreateSubmit, draftAuthorName, setDraftAuthorName } =
-        useReport();
+    const {
+        draft,
+        fields,
+        authors,
+        isCreating,
+        selectedTarget,
+        updateDraftMessage,
+        updateDraftField,
+        cancelDraft,
+        handleCreateSubmit,
+        handleCreateSubmitWithGitHubIssue,
+        canCreateGitHubIssueOnCreate,
+        isDraftGitHubIssueSubmitting,
+        draftAuthorName,
+        setDraftAuthorName,
+    } = useReport();
 
     return (
-        <AnimatePresence>
+        <AnimatedPresence>
             {draft ? (
                 <ReportDraftFormContent
                     draft={draft}
@@ -66,11 +80,14 @@ export function ReportDraftForm() {
                     updateDraftField={updateDraftField}
                     cancelDraft={cancelDraft}
                     handleCreateSubmit={handleCreateSubmit}
+                    handleCreateSubmitWithGitHubIssue={handleCreateSubmitWithGitHubIssue}
+                    canCreateGitHubIssueOnCreate={canCreateGitHubIssueOnCreate}
+                    isDraftGitHubIssueSubmitting={isDraftGitHubIssueSubmitting}
                     draftAuthorName={draftAuthorName}
                     setDraftAuthorName={setDraftAuthorName}
                 />
             ) : null}
-        </AnimatePresence>
+        </AnimatedPresence>
     );
 }
 
@@ -84,6 +101,9 @@ type ReportDraftFormContentProps = {
     updateDraftField: (key: string, value: string | boolean) => void;
     cancelDraft: () => void;
     handleCreateSubmit: () => Promise<void>;
+    handleCreateSubmitWithGitHubIssue: () => Promise<void>;
+    canCreateGitHubIssueOnCreate: boolean;
+    isDraftGitHubIssueSubmitting: boolean;
     draftAuthorName: string;
     setDraftAuthorName: (name: string) => void;
 };
@@ -97,6 +117,9 @@ function ReportDraftFormContent({
     updateDraftMessage,
     updateDraftField,
     handleCreateSubmit,
+    handleCreateSubmitWithGitHubIssue,
+    canCreateGitHubIssueOnCreate,
+    isDraftGitHubIssueSubmitting,
     draftAuthorName,
     setDraftAuthorName,
 }: ReportDraftFormContentProps) {
@@ -112,7 +135,7 @@ function ReportDraftFormContent({
             exit={{ y: verticalOffset }}
             transition={{ duration: 0.25, ease: DRAFT_MOTION_EASE }}
             onClick={(event) => event.stopPropagation()}
-            className="pointer-events-auto fixed z-[1000001] flex flex-col rounded-[24px] bg-[var(--adaptive-whiteOpacity500)] p-[4px] shadow-[0_0_120px_0_var(--adaptive-grey500)] backdrop-blur-[30px]"
+            className="pointer-events-auto fixed z-[1000001] flex flex-col rounded-[24px] border-[2px] border-[var(--adaptive-border)] bg-[var(--adaptive-surface-overlay)] shadow-[0_0_120px_0_var(--adaptive-blackOpacity500)] backdrop-blur-[30px]"
             style={{
                 left,
                 top: centerVertically ? anchorCenterY : top,
@@ -120,22 +143,23 @@ function ReportDraftFormContent({
                 transformOrigin: getMotionOrigin(placement),
             }}
         >
-            <section className="overflow-hidden rounded-[20px] bg-[var(--adaptive-grey100)]">
-                <FeedbackComposer
-                    message={draft.message}
-                    onMessageChange={updateDraftMessage}
-                    authorName={draftAuthorName}
-                    onAuthorNameChange={setDraftAuthorName}
-                    authors={authors}
-                    fields={fields}
-                    fieldValues={draft.fieldValues}
-                    onFieldChange={updateDraftField}
-                    showTags
-                    onSubmit={() => void handleCreateSubmit()}
-                    isSubmitting={isCreating}
-                    autoFocus
-                />
-            </section>
+            <FeedbackComposer
+                message={draft.message}
+                onMessageChange={updateDraftMessage}
+                authorName={draftAuthorName}
+                onAuthorNameChange={setDraftAuthorName}
+                authors={authors}
+                fields={fields}
+                fieldValues={draft.fieldValues}
+                onFieldChange={updateDraftField}
+                showTags
+                onSubmit={() => void handleCreateSubmit()}
+                isSubmitting={isCreating}
+                showGitHubIssueOnCreate={canCreateGitHubIssueOnCreate}
+                onGitHubIssueSubmit={() => void handleCreateSubmitWithGitHubIssue()}
+                isGitHubIssueSubmitting={isDraftGitHubIssueSubmitting}
+                autoFocus
+            />
 
             <DraftPopoverConnector placement={placement} />
         </motion.div>

@@ -1,12 +1,16 @@
+import { getActiveReportMessages } from "../i18n/index.js";
 import { useCallback, useEffect, useState } from "react";
-import { createReport, deleteReport, listReports, updateReport } from "./report.api.js";
+import { createReport, deleteReport, listAllReports, listReports, updateReport } from "./report.api.js";
 const EMPTY_REPORTS = [];
-export const useReportsQuery = (adapter, pathname, enabled = true) => {
+const REPORT_LIST_PAGE_SIZE = 100;
+export const useReportsQuery = (adapter, pathname, scope, enabled = true) => {
     const [data, setData] = useState(EMPTY_REPORTS);
     const [isLoading, setIsLoading] = useState(enabled);
     const [isFetching, setIsFetching] = useState(false);
     const [isFetched, setIsFetched] = useState(false);
     const [error, setError] = useState(null);
+    const [nextCursor, setNextCursor] = useState();
+    const [isFetchingNextPage, setIsFetchingNextPage] = useState(false);
     const refetch = useCallback(async () => {
         if (!enabled || !pathname) {
             setData(EMPTY_REPORTS);
@@ -16,20 +20,44 @@ export const useReportsQuery = (adapter, pathname, enabled = true) => {
         setIsFetching(true);
         setError(null);
         try {
-            const reports = await listReports(adapter, pathname);
+            const result = scope === "all"
+                ? await listAllReports(adapter, { limit: REPORT_LIST_PAGE_SIZE })
+                : { items: await listReports(adapter, pathname), nextCursor: undefined };
+            const reports = result.items;
             setData(reports);
+            setNextCursor(result.nextCursor);
             setIsFetched(true);
             return reports;
         }
         catch (nextError) {
-            setError(nextError instanceof Error ? nextError : new Error("피드백을 불러오지 못했어요."));
+            setError(nextError instanceof Error ? nextError : new Error(getActiveReportMessages().errors.loadFeedbackFailed));
             return EMPTY_REPORTS;
         }
         finally {
             setIsLoading(false);
             setIsFetching(false);
         }
-    }, [adapter, enabled, pathname]);
+    }, [adapter, enabled, pathname, scope]);
+    const fetchNextPage = useCallback(async () => {
+        if (scope !== "all" || !nextCursor || isFetchingNextPage) {
+            return;
+        }
+        setIsFetchingNextPage(true);
+        try {
+            const result = await listAllReports(adapter, {
+                cursor: nextCursor,
+                limit: REPORT_LIST_PAGE_SIZE,
+            });
+            setData((current) => [...current, ...result.items]);
+            setNextCursor(result.nextCursor);
+        }
+        catch (nextError) {
+            setError(nextError instanceof Error ? nextError : new Error(getActiveReportMessages().errors.loadFeedbackFailed));
+        }
+        finally {
+            setIsFetchingNextPage(false);
+        }
+    }, [adapter, isFetchingNextPage, nextCursor, scope]);
     useEffect(() => {
         setIsLoading(enabled);
         void refetch();
@@ -41,6 +69,9 @@ export const useReportsQuery = (adapter, pathname, enabled = true) => {
         error,
         isFetching,
         isFetched,
+        hasNextPage: Boolean(nextCursor),
+        isFetchingNextPage,
+        fetchNextPage,
         refetch,
     };
 };
@@ -54,7 +85,7 @@ export const useCreateReportMutation = (adapter, onSuccess, onError) => {
             return created;
         }
         catch (error) {
-            const nextError = error instanceof Error ? error : new Error("피드백 등록에 실패했어요.");
+            const nextError = error instanceof Error ? error : new Error(getActiveReportMessages().errors.createFeedbackFailed);
             onError?.(nextError);
             throw nextError;
         }
@@ -74,7 +105,7 @@ export const useUpdateReportMutation = (adapter, onSuccess, onError) => {
             return updated;
         }
         catch (error) {
-            const nextError = error instanceof Error ? error : new Error("피드백 수정에 실패했어요.");
+            const nextError = error instanceof Error ? error : new Error(getActiveReportMessages().errors.updateFeedbackFailed);
             onError?.(nextError);
             throw nextError;
         }
@@ -93,7 +124,7 @@ export const useDeleteReportMutation = (adapter, onSuccess, onError) => {
             onSuccess?.();
         }
         catch (error) {
-            const nextError = error instanceof Error ? error : new Error("피드백 삭제에 실패했어요.");
+            const nextError = error instanceof Error ? error : new Error(getActiveReportMessages().errors.deleteFeedbackFailed);
             onError?.(nextError);
             throw nextError;
         }

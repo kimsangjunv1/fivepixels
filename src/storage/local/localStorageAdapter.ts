@@ -1,19 +1,25 @@
+import { getActiveReportMessages } from "@/i18n/index.js";
 import type {
     CreateReportFeedbackPayload,
     ReportFeedback,
     ReportFieldValues,
+    ReportGitHubIntegrationState,
+    ReportIntegrations,
+    ReportProject,
     ReportReply,
     ReportReplyStatus,
     ReportStorageAdapter,
     ReportStatus,
     UpdateReportFeedbackPayload,
-} from "../../types/report.js";
-import { DEFAULT_PROJECT_ID } from "../../constants/project.js";
-import { getReportsStorageKey } from "../../constants/storageKeys.js";
+} from "@/types/report.js";
+import { DEFAULT_PROJECT_ID } from "@/constants/project.js";
+import { getReportsStorageKey } from "@/constants/storageKeys.js";
+import { parseFeedbackStorageEnvelope, serializeFeedbackStorageEnvelope } from "@/utils/feedbackTransferSchema.js";
 
 export type LocalStorageReportAdapterOptions = {
     projectId: string;
     environment?: string;
+    appVersion?: string;
 };
 
 function createId() {
@@ -25,7 +31,7 @@ function createId() {
 }
 
 function isReportStatus(value: unknown): value is ReportStatus {
-    return value === "open" || value === "resolved" || value === "archived";
+    return value === "open" || value === "git_issued" || value === "resolved" || value === "archived";
 }
 
 function normalizeFieldValues(value: unknown): ReportFieldValues {
@@ -43,7 +49,7 @@ function normalizeFieldValues(value: unknown): ReportFieldValues {
 }
 
 function isReplyStatus(value: unknown): value is ReportReplyStatus {
-    return value === "suggested" || value === "found_error" || value === "verified";
+    return value === "suggested" || value === "found_error" || value === "recheck_requested" || value === "resolved";
 }
 
 function normalizeReplyStatus(value: unknown): ReportReplyStatus {
@@ -83,16 +89,56 @@ function normalizeReplies(value: unknown): ReportReply[] {
     });
 }
 
+function normalizeGitHubIntegration(value: unknown): ReportGitHubIntegrationState | undefined {
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
+        return undefined;
+    }
+
+    const github = value as Partial<ReportGitHubIntegrationState>;
+
+    if (
+        typeof github.issue_number !== "number" ||
+        !Number.isFinite(github.issue_number) ||
+        typeof github.issue_url !== "string" ||
+        github.issue_url.trim().length === 0 ||
+        typeof github.issued_at !== "string"
+    ) {
+        return undefined;
+    }
+
+    return {
+        issue_number: github.issue_number,
+        issue_url: github.issue_url,
+        issued_at: github.issued_at,
+    };
+}
+
+function normalizeIntegrations(value: unknown): ReportIntegrations | undefined {
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
+        return undefined;
+    }
+
+    const integrations = value as ReportIntegrations;
+    const github = normalizeGitHubIntegration(integrations.github);
+
+    if (!github) {
+        return undefined;
+    }
+
+    return { github };
+}
+
 function normalizeReport(item: ReportFeedback): ReportFeedback {
     return {
         ...item,
         status: isReportStatus(item.status) ? item.status : "open",
         field_values: normalizeFieldValues(item.field_values),
         replies: normalizeReplies(item.replies),
+        integrations: normalizeIntegrations(item.integrations),
     };
 }
 
-function readAll(storageKey: string) {
+export function readAllReportsFromStorage(storageKey: string) {
     if (typeof window === "undefined") {
         return [] as ReportFeedback[];
     }
@@ -104,29 +150,63 @@ function readAll(storageKey: string) {
     }
 
     try {
-        const parsed = JSON.parse(raw) as ReportFeedback[];
-        return Array.isArray(parsed) ? parsed.map(normalizeReport) : [];
+        const parsed = JSON.parse(raw) as unknown;
+
+        if (Array.isArray(parsed)) {
+            return parsed.map(normalizeReport);
+        }
+
+        const envelope = parseFeedbackStorageEnvelope(raw);
+
+        if (envelope) {
+            return envelope.items.map(normalizeReport);
+        }
+
+        return [];
     } catch {
         return [];
     }
 }
 
-function writeAll(storageKey: string, items: ReportFeedback[]) {
+export function writeAllReportsToStorage(storageKey: string, items: ReportFeedback[], project?: ReportProject) {
     if (typeof window === "undefined") {
         return;
     }
 
-    window.localStorage.setItem(storageKey, JSON.stringify(items.map(normalizeReport)));
+    window.localStorage.setItem(storageKey, serializeFeedbackStorageEnvelope(project ?? {}, items.map(normalizeReport)));
 }
 
-export function createLocalStorageReportAdapter({ projectId, environment }: LocalStorageReportAdapterOptions): ReportStorageAdapter {
-    const storageKey = getReportsStorageKey(projectId, environment);
+function readAll(storageKey: string) {
+    return readAllReportsFromStorage(storageKey);
+}
+
+function writeAll(storageKey: string, items: ReportFeedback[], project: ReportProject) {
+    writeAllReportsToStorage(storageKey, items, project);
+}
+
+export function createLocalStorageReportAdapter({ projectId, environment, appVersion }: LocalStorageReportAdapterOptions): ReportStorageAdapter {
+    const storageKey = getReportsStorageKey(projectId, environment, appVersion);
+    const project: ReportProject = {
+        id: projectId,
+        env: environment,
+        version: appVersion,
+    };
 
     return {
         async list({ pathname }) {
             return readAll(storageKey)
                 .filter((item) => item.pathname === pathname)
                 .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        },
+        async listAll({ cursor, limit }) {
+            const offset = Math.max(0, Number.parseInt(cursor ?? "0", 10) || 0);
+            const items = readAll(storageKey).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+            const nextOffset = offset + limit;
+
+            return {
+                items: items.slice(offset, nextOffset),
+                nextCursor: nextOffset < items.length ? String(nextOffset) : undefined,
+            };
         },
         async create(payload) {
             const nextItem: ReportFeedback = {
@@ -138,7 +218,7 @@ export function createLocalStorageReportAdapter({ projectId, environment }: Loca
             const items = readAll(storageKey);
 
             const normalized = normalizeReport(nextItem);
-            writeAll(storageKey, [normalized, ...items]);
+            writeAll(storageKey, [normalized, ...items], project);
             return normalized;
         },
         async update(id, payload) {
@@ -146,7 +226,7 @@ export function createLocalStorageReportAdapter({ projectId, environment }: Loca
             const index = items.findIndex((item) => item.id === id);
 
             if (index < 0) {
-                throw new Error("피드백을 찾을 수 없어요.");
+                throw new Error(getActiveReportMessages().errors.feedbackNotFound);
             }
 
             const nextItem = normalizeReport({
@@ -155,7 +235,7 @@ export function createLocalStorageReportAdapter({ projectId, environment }: Loca
             });
 
             items[index] = nextItem;
-            writeAll(storageKey, items);
+            writeAll(storageKey, items, project);
 
             return nextItem;
         },
@@ -163,6 +243,7 @@ export function createLocalStorageReportAdapter({ projectId, environment }: Loca
             writeAll(
                 storageKey,
                 readAll(storageKey).filter((item) => item.id !== id),
+                project,
             );
         },
     };

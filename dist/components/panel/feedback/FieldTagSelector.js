@@ -4,11 +4,12 @@ export function FieldTagSelector({ fields, fieldValues, onFieldChange }) {
     if (tagFields.length === 0) {
         return null;
     }
-    return (_jsx("div", { className: "flex flex-wrap items-center gap-[8px] border-t border-[var(--adaptive-greyOpacity200)] px-[16px] py-[12px]", children: tagFields.map((field) => {
+    return (_jsx("div", { className: "flex flex-wrap items-center gap-[8px] border-t border-[var(--adaptive-blackOpacity100)] px-[16px] py-[12px]", children: tagFields.map((field) => {
             const selected = fieldValues[field.key] === true;
-            return (_jsx("button", { type: "button", onClick: () => onFieldChange(field.key, !selected), className: selected
-                    ? "rounded-full border border-[var(--adaptive-grey900)] px-[12px] py-[6px] text-[11px] font-semibold uppercase tracking-wide text-[var(--adaptive-grey900)]"
-                    : "rounded-full border border-[var(--adaptive-grey400)] px-[12px] py-[6px] text-[11px] font-semibold uppercase tracking-wide text-[var(--adaptive-grey500)]", children: field.label }, field.key));
+            return (_jsx("button", { type: "button", onClick: () => onFieldChange(field.key, !selected), className: "rounded-[8px] border px-[12px] py-[4px] text-[12px] font-semibold uppercase " +
+                    (selected
+                        ? "border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface-inverse)] text-[var(--adaptive-text-inverse)]"
+                        : "border-[var(--adaptive-border-subtle)] text-[var(--adaptive-text-muted)]"), children: field.label }, field.key));
         }) }));
 }
 //# sourceMappingURL=FieldTagSelector.js.map

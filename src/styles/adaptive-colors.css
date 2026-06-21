@@ -10,10 +10,28 @@
         inset 0 0 0 4px var(--color-gray-500), 0 19px 8px #731f0803, 0 11px 6px #731f080a, 0 5px 5px #731f0812, 0 1px 3px #731f0814, 0 0 0 2px var(--color-gray-200), inset 0 0.5px 0.5px #ffffff1f;
 
     --shadow-border-normal: 0 24px 24px -12px #2929290a, 0 48px 48px -24px #2929290a, inset 0 0 0 1px var(--adaptive-grey300);
+    --ui-font: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     --coding-font: Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace;
 }
 
 [data-stitchable-mount][data-stitchable-theme="light"] {
+    color-scheme: light;
+
+    --adaptive-surface: #ffffff;
+    --adaptive-surface-muted: #f5f5f5;
+    --adaptive-surface-overlay: rgba(255, 255, 255, 0.91);
+    --adaptive-surface-inverse: #212121;
+    --adaptive-text-primary: #212121;
+    --adaptive-text-secondary: #616161;
+    --adaptive-text-muted: #999999;
+    --adaptive-text-inverse: #fafafa;
+    --adaptive-overlay-surface: rgba(0, 0, 0, 0.91);
+    --adaptive-overlay-text: #fafafa;
+    --adaptive-overlay-text-muted: #bdbdbd;
+    --adaptive-border: #eeeeee;
+    --adaptive-border-subtle: rgba(0, 0, 0, 0.1);
+    --adaptive-popup-shadow: 0 24px 64px rgba(0, 0, 0, 0.18);
+
     --adaptive-background: #ffffff;
     --adaptive-layeredBackground: #ffffff;
     --adaptive-floatBackground: #ffffff;
@@ -30,6 +48,29 @@
     --adaptive-grey700: #4e5968;
     --adaptive-grey800: #333d4b;
     --adaptive-grey900: #191f28;
+
+    --adaptive-black50: #fafafa;
+    --adaptive-black100: #f5f5f5;
+    --adaptive-black200: #eeeeee;
+    --adaptive-black300: #e0e0e0;
+    --adaptive-black400: #bdbdbd;
+    --adaptive-black500: #999999;
+    --adaptive-black600: #757575;
+    --adaptive-black700: #616161;
+    --adaptive-black800: #424242;
+    --adaptive-black900: #212121;
+
+    --adaptive-blackOpacity50: rgba(0, 0, 0, 0.02);
+    --adaptive-blackOpacity100: rgba(0, 0, 0, 0.05);
+    --adaptive-blackOpacity200: rgba(0, 0, 0, 0.1);
+    --adaptive-blackOpacity300: rgba(0, 0, 0, 0.18);
+    --adaptive-blackOpacity400: rgba(0, 0, 0, 0.31);
+    --adaptive-blackOpacity500: rgba(0, 0, 0, 0.46);
+    --adaptive-blackOpacity600: rgba(0, 0, 0, 0.58);
+    --adaptive-blackOpacity700: rgba(0, 0, 0, 0.7);
+    --adaptive-blackOpacity800: rgba(0, 0, 0, 0.8);
+    --adaptive-blackOpacity900: rgba(0, 0, 0, 0.91);
+
     --adaptive-greyOpacity50: rgba(0, 23, 51, 0.02);
     --adaptive-greyOpacity100: rgba(2, 32, 71, 0.05);
     --adaptive-greyOpacity200: rgba(0, 27, 55, 0.1);
@@ -40,6 +81,7 @@
     --adaptive-greyOpacity700: rgba(3, 18, 40, 0.7);
     --adaptive-greyOpacity800: rgba(0, 12, 30, 0.8);
     --adaptive-greyOpacity900: rgba(2, 9, 19, 0.91);
+
     --adaptive-whiteOpacity50: rgba(255, 255, 255, 0.02);
     --adaptive-whiteOpacity100: rgba(255, 255, 255, 0.05);
     --adaptive-whiteOpacity200: rgba(255, 255, 255, 0.1);
@@ -50,6 +92,7 @@
     --adaptive-whiteOpacity700: rgba(255, 255, 255, 0.7);
     --adaptive-whiteOpacity800: rgba(255, 255, 255, 0.8);
     --adaptive-whiteOpacity900: rgba(255, 255, 255, 0.91);
+
     --adaptive-blue50: #e8f3ff;
     --adaptive-blue100: #c9e2ff;
     --adaptive-blue200: #90c2ff;
@@ -64,6 +107,7 @@
     --adaptive-blueOpacity100: rgba(100, 168, 255, 0.34);
     --adaptive-blueOpacity200: rgba(100, 168, 255, 0.7);
     --adaptive-blueOpacity300: rgba(26, 122, 249, 0.27);
+
     --adaptive-red50: #ffeeee;
     --adaptive-red100: #ffd4d6;
     --adaptive-red200: #feafb4;
@@ -78,6 +122,7 @@
     --adaptive-redOpacity100: rgba(251, 136, 144, 0.34);
     --adaptive-redOpacity200: rgba(251, 136, 144, 0.7);
     --adaptive-redOpacity300: rgba(237, 40, 49, 0.24);
+
     --adaptive-orange50: #fff3e0;
     --adaptive-orange100: #ffe0b0;
     --adaptive-orange200: #ffcd80;
@@ -88,6 +133,7 @@
     --adaptive-orange700: #f57800;
     --adaptive-orange800: #ed6700;
     --adaptive-orange900: #e45600;
+
     --adaptive-yellow50: #fff9e7;
     --adaptive-yellow100: #ffefbf;
     --adaptive-yellow200: #ffe69b;
@@ -101,6 +147,7 @@
     --adaptive-yellowOpacity50: rgba(255, 195, 66, 0.2);
     --adaptive-yellowOpacity100: rgba(255, 195, 66, 0.35);
     --adaptive-yellowOpacity200: rgba(255, 195, 66, 0.6);
+
     --adaptive-green50: #f0faf6;
     --adaptive-green100: #aeefd5;
     --adaptive-green200: #76e4b8;
@@ -112,6 +159,7 @@
     --adaptive-green800: #028450;
     --adaptive-green900: #027648;
     --adaptive-greenOpacity50: rgba(21, 196, 126, 0.15);
+
     --adaptive-teal50: #edf8f8;
     --adaptive-teal100: #bce9e9;
     --adaptive-teal200: #89d8d8;
@@ -122,6 +170,7 @@
     --adaptive-teal700: #0c8585;
     --adaptive-teal800: #097575;
     --adaptive-teal900: #076565;
+
     --adaptive-purple50: #f9f0fc;
     --adaptive-purple100: #edccf8;
     --adaptive-purple200: #da9bef;
@@ -132,6 +181,7 @@
     --adaptive-purple700: #8222a2;
     --adaptive-purple800: #73228e;
     --adaptive-purple900: #65237b;
+
     --adaptive-backgroundDimmed: rgba(0, 0, 0, 0.2);
     --adaptive-backgroundLevelB01: #f2f4f6;
     --adaptive-backgroundLevel01: #ffffff;
@@ -149,6 +199,23 @@
 }
 
 [data-stitchable-mount][data-stitchable-theme="dark"] {
+    color-scheme: dark;
+
+    --adaptive-surface: #212121;
+    --adaptive-surface-muted: #2c2c35;
+    --adaptive-surface-overlay: rgba(0, 0, 0, 0.91);
+    --adaptive-surface-inverse: #fafafa;
+    --adaptive-text-primary: #fafafa;
+    --adaptive-text-secondary: #eeeeee;
+    --adaptive-text-muted: #bdbdbd;
+    --adaptive-text-inverse: #212121;
+    --adaptive-overlay-surface: rgba(0, 0, 0, 0.91);
+    --adaptive-overlay-text: #fafafa;
+    --adaptive-overlay-text-muted: #bdbdbd;
+    --adaptive-border: #3c3c47;
+    --adaptive-border-subtle: rgba(255, 255, 255, 0.1);
+    --adaptive-popup-shadow: 0 24px 64px rgba(0, 0, 0, 0.42);
+
     --adaptive-background: #17171c;
     --adaptive-layeredBackground: #202027;
     --adaptive-floatBackground: #2c2c35;
@@ -165,6 +232,30 @@
     --adaptive-grey700: #c3c3c6;
     --adaptive-grey800: #e4e4e5;
     --adaptive-grey900: #ffffff;
+
+    --adaptive-black: #000000;
+    --adaptive-black50: #212121;
+    --adaptive-black100: #424242;
+    --adaptive-black200: #616161;
+    --adaptive-black300: #757575;
+    --adaptive-black400: #999999;
+    --adaptive-black500: #bdbdbd;
+    --adaptive-black600: #e0e0e0;
+    --adaptive-black700: #eeeeee;
+    --adaptive-black800: #f5f5f5;
+    --adaptive-black900: #fafafa;
+
+    --adaptive-blackOpacity50: rgba(0, 0, 0, 0.05);
+    --adaptive-blackOpacity100: rgba(0, 0, 0, 0.11);
+    --adaptive-blackOpacity200: rgba(0, 0, 0, 0.19);
+    --adaptive-blackOpacity300: rgba(0, 0, 0, 0.27);
+    --adaptive-blackOpacity400: rgba(0, 0, 0, 0.36);
+    --adaptive-blackOpacity500: rgba(0, 0, 0, 0.47);
+    --adaptive-blackOpacity600: rgba(0, 0, 0, 0.6);
+    --adaptive-blackOpacity700: rgba(0, 0, 0, 0.75);
+    --adaptive-blackOpacity800: rgba(0, 0, 0, 0.89);
+    --adaptive-blackOpacity900: #000000;
+
     --adaptive-greyOpacity50: rgba(209, 209, 253, 0.05);
     --adaptive-greyOpacity100: rgba(217, 217, 255, 0.11);
     --adaptive-greyOpacity200: rgba(222, 222, 255, 0.19);
@@ -175,16 +266,18 @@
     --adaptive-greyOpacity700: rgba(253, 253, 255, 0.75);
     --adaptive-greyOpacity800: rgba(253, 253, 254, 0.89);
     --adaptive-greyOpacity900: #ffffff;
-    --adaptive-whiteOpacity50: rgba(0, 0, 0, 0.98);
-    --adaptive-whiteOpacity100: rgba(0, 0, 0, 0.5);
-    --adaptive-whiteOpacity200: rgba(0, 0, 0, 0.9);
-    --adaptive-whiteOpacity300: rgba(0, 0, 0, 0.82);
-    --adaptive-whiteOpacity400: rgba(0, 0, 0, 0.69);
-    --adaptive-whiteOpacity500: rgba(0, 0, 0, 0.54);
-    --adaptive-whiteOpacity600: rgba(0, 0, 0, 0.42);
-    --adaptive-whiteOpacity700: rgba(0, 0, 0, 0.3);
-    --adaptive-whiteOpacity800: rgba(0, 0, 0, 0.2);
-    --adaptive-whiteOpacity900: rgba(0, 0, 0, 0.09);
+
+    --adaptive-whiteOpacity50: rgba(0, 0, 0, 0.05);
+    --adaptive-whiteOpacity100: rgba(0, 0, 0, 0.1);
+    --adaptive-whiteOpacity200: rgba(0, 0, 0, 0.18);
+    --adaptive-whiteOpacity300: rgba(0, 0, 0, 0.27);
+    --adaptive-whiteOpacity400: rgba(0, 0, 0, 0.36);
+    --adaptive-whiteOpacity500: rgba(0, 0, 0, 0.46);
+    --adaptive-whiteOpacity600: rgba(0, 0, 0, 0.58);
+    --adaptive-whiteOpacity700: rgba(0, 0, 0, 0.7);
+    --adaptive-whiteOpacity800: rgba(0, 0, 0, 0.8);
+    --adaptive-whiteOpacity900: rgba(0, 0, 0, 0.91);
+
     --adaptive-blue50: #202c4d;
     --adaptive-blue100: #23386a;
     --adaptive-blue200: #25478c;
@@ -199,6 +292,7 @@
     --adaptive-blueOpacity100: rgba(52, 133, 250, 0.33);
     --adaptive-blueOpacity200: rgba(52, 133, 250, 0.45);
     --adaptive-blueOpacity300: rgba(60, 121, 220, 0.41);
+
     --adaptive-red50: #3c2020;
     --adaptive-red100: #562025;
     --adaptive-red200: #7a242d;
@@ -213,6 +307,7 @@
     --adaptive-redOpacity100: rgba(240, 66, 81, 0.33);
     --adaptive-redOpacity200: rgba(240, 66, 81, 0.4);
     --adaptive-redOpacity300: rgba(223, 58, 68, 0.45);
+
     --adaptive-orange50: #3d2500;
     --adaptive-orange100: #563200;
     --adaptive-orange200: #804600;
@@ -223,6 +318,7 @@
     --adaptive-orange700: #ffa861;
     --adaptive-orange800: #ffc39e;
     --adaptive-orange900: #ffe4d6;
+
     --adaptive-yellow50: #3d2d1a;
     --adaptive-yellow100: #724c1e;
     --adaptive-yellow200: #b56f1d;
@@ -236,6 +332,7 @@
     --adaptive-yellowOpacity50: rgba(235, 139, 30, 0.2);
     --adaptive-yellowOpacity100: rgba(235, 139, 30, 0.35);
     --adaptive-yellowOpacity200: rgba(235, 139, 30, 0.5);
+
     --adaptive-green50: #153729;
     --adaptive-green100: #135338;
     --adaptive-green200: #136d47;
@@ -247,6 +344,7 @@
     --adaptive-green800: #82f6c5;
     --adaptive-green900: #ccffea;
     --adaptive-greenOpacity50: rgba(22, 187, 118, 0.2);
+
     --adaptive-teal50: #203537;
     --adaptive-teal100: #224e51;
     --adaptive-teal200: #226368;
@@ -257,6 +355,7 @@
     --adaptive-teal700: #65d4dc;
     --adaptive-teal800: #9be8ee;
     --adaptive-teal900: #d6fcff;
+
     --adaptive-purple50: #3f2447;
     --adaptive-purple100: #522361;
     --adaptive-purple200: #66247b;
@@ -267,6 +366,7 @@
     --adaptive-purple700: #d77cf2;
     --adaptive-purple800: #eaacfc;
     --adaptive-purple900: #f6d9ff;
+
     --adaptive-backgroundDimmed: rgba(0, 0, 0, 0.56);
     --adaptive-backgroundLevelB01: #101013;
     --adaptive-backgroundLevel01: #202027;

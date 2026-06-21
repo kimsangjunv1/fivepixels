@@ -53,29 +53,58 @@ export function Page() {
 
 ## 4. localStorage 동작 방식
 
-- `projectId`를 생략하면 `"my-app"`이 기본값입니다.
-- 기본값 `storage="local"`은 브라우저 `localStorage`를 사용합니다.
+- `project.id`를 생략하면 `"my-app"`이 기본값입니다.
+- handler props(`onList`, `onCreate`, `onUpdate`)를 넘기지 않으면 브라우저 `localStorage`를 사용합니다.
 - 저장 키는 `stitchable:reports:v1:{projectId}`이며, `environment`가 있으면 `:{environment}`가 추가됩니다.
-- 저장된 report는 `pathname`별로 분리 조회됩니다.
+- 저장된 report는 화면 키(`visibility.routeKey`, 기본값은 브라우저 pathname)별로 분리 조회됩니다.
 - `field_values`는 문자열/불리언만 저장하고, `replies`는 배열로 정규화됩니다.
-- 서버 동기화가 필요하면 custom adapter로 교체하면 됩니다.
+- 서버 연동이 필요하면 `onList` / `onCreate` / `onUpdate` / `onDelete` handler를 함께 넘깁니다.
 
-## 5. Custom Adapter 연결
+## 5. 서버 persistence 연결
 
 ```tsx
+import type { CreateReportFeedbackPayload, ReportFeedback, UpdateReportFeedbackPayload } from "stitchable";
 import { Report } from "stitchable";
-import { reportAdapter } from "./reportAdapter";
 
 export function Page() {
-    return <Report projectId="my-app" storageAdapter={reportAdapter} pathname="/pricing" showFeedbackList={false} />;
+    return (
+        <Report
+            project={{ id: "my-app" }}
+            ui={{ showFeedbackList: true }}
+            onList={({ pathname }) => fetch(`/api/feedbacks?pathname=${encodeURIComponent(pathname)}`).then((res) => res.json())}
+            onListAll={({ cursor, limit }) =>
+                fetch(`/api/feedbacks?cursor=${encodeURIComponent(cursor ?? "")}&limit=${limit}`).then((res) => res.json())
+            }
+            onNavigate={(pathname) => window.location.assign(pathname)}
+            onCreate={(payload: CreateReportFeedbackPayload) =>
+                fetch("/api/feedbacks", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload),
+                }).then((res) => res.json() as Promise<ReportFeedback>)
+            }
+            onUpdate={(id, payload: UpdateReportFeedbackPayload) =>
+                fetch(`/api/feedbacks/${id}`, {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload),
+                }).then((res) => res.json() as Promise<ReportFeedback>)
+            }
+            onDelete={(id) => fetch(`/api/feedbacks/${id}`, { method: "DELETE" }).then(() => undefined)}
+        />
+    );
 }
 ```
 
-- `list({ pathname })`는 현재 경로의 report 목록을 반환해야 합니다.
-- `create(payload)`, `update(id, payload)`는 최종 `ReportFeedback` 전체 객체를 반환해야 합니다.
+- `onList({ pathname })`는 현재 경로의 report 목록을 반환해야 합니다.
+- `onListAll({ cursor, limit })`을 제공하면 피드백 목록에서 전체 페이지 조회가 활성화됩니다.
+- 전체 조회 응답은 `{ items, nextCursor? }` 형태여야 합니다.
+- 다른 페이지 피드백을 SPA 라우터로 열려면 `onNavigate(pathname)`에 라우터 이동 함수를 연결하세요.
+- `onCreate(payload)`, `onUpdate(id, payload)`는 최종 `ReportFeedback` 전체 객체를 반환해야 합니다.
 - 응답의 `status`, `field_values`, `replies` 형태는 local adapter와 같게 맞추는 것이 안전합니다.
-- 목록 패널 없이 마커만 확인하고 싶으면 `showFeedbackList={false}`를 사용할 수 있습니다.
+- 목록 패널 없이 마커만 확인하고 싶으면 `ui={{ showFeedbackList: false }}`를 사용할 수 있습니다.
 - production 배포에서 UI를 숨기려면 `devOnly`를 사용하거나 `enabled={false}`로 직접 제어할 수 있습니다.
+- analytics·Slack 알림은 `onEvent` / `onReply` side effect prop을 사용하세요.
 
 ## 6. FAQ / 주의사항
 
@@ -95,7 +124,7 @@ export function Page() {
 
 ### Q. archived 상태도 수정 가능한가요?
 
-기본 정책은 읽기 전용입니다. 재오픈 정책이 필요하면 custom UI 또는 adapter 정책에서 별도로 다루는 것이 좋습니다.
+기본 정책은 읽기 전용입니다. 재오픈 정책이 필요하면 custom UI 또는 persistence handler 정책에서 별도로 다루는 것이 좋습니다.
 
 ### Q. 같은 `data-report-id`를 여러 요소에 써도 되나요?
 
@@ -105,10 +134,10 @@ export function Page() {
 
 `Report` UI 자체는 Shadow Root에 렌더링되어 호스트 앱 CSS와 분리됩니다. 다만 피드백 **대상** 탐색은 메인 document 기준 `querySelector`/`elementFromPoint`만 사용합니다. 호스트 페이지 Shadow DOM 내부, iframe 내부 요소는 기본 UI로는 피드백 대상이 되지 않습니다.
 
-### Q. custom adapter에서 삭제는 어떻게 하나요?
+### Q. UI에서 삭제는 어떻게 하나요?
 
-UI에서 피드백 삭제를 쓰려면 `ReportStorageAdapter.remove`를 구현해야 합니다. `remove`가 없으면 삭제 시도 시 에러가 납니다. local adapter는 기본 제공합니다.
+서버 persistence를 쓰면 `onDelete`를 구현해야 합니다. 생략하면 삭제 시도 시 에러가 납니다. localStorage 기본 모드는 삭제를 지원합니다.
 
-### Q. `projectId`를 생략해도 되나요?
+### Q. `project.id`를 생략해도 되나요?
 
-가능하지만 기본값 `"my-app"`이 적용됩니다. 같은 origin에서 여러 앱/환경을 쓰면 localStorage 데이터가 섞일 수 있어, QA/스테이지/프로덕션마다 고유 `projectId`를 권장합니다.
+가능하지만 기본값 `"my-app"`이 적용됩니다. 같은 origin에서 여러 앱/환경을 쓰면 localStorage 데이터가 섞일 수 있어, QA/스테이지/프로덕션마다 고유 `project.id`를 권장합니다.

@@ -12,9 +12,12 @@ type FeedbackComposerProps = {
     showTags?: boolean;
     onSubmit: () => void;
     isSubmitting?: boolean;
+    showGitHubIssueOnCreate?: boolean;
+    onGitHubIssueSubmit?: () => void;
+    isGitHubIssueSubmitting?: boolean;
     placeholder?: string;
     autoFocus?: boolean;
 };
-export declare function FeedbackComposer({ message, onMessageChange, authorName, onAuthorNameChange, authors, fields, fieldValues, onFieldChange, showTags, onSubmit, isSubmitting, placeholder, autoFocus, }: FeedbackComposerProps): import("react/jsx-runtime").JSX.Element;
+export declare function FeedbackComposer({ message, onMessageChange, authorName, onAuthorNameChange, authors, fields, fieldValues, onFieldChange, showTags, onSubmit, isSubmitting, showGitHubIssueOnCreate, onGitHubIssueSubmit, isGitHubIssueSubmitting, placeholder, autoFocus, }: FeedbackComposerProps): import("react/jsx-runtime").JSX.Element;
 export {};
 //# sourceMappingURL=FeedbackComposer.d.ts.map

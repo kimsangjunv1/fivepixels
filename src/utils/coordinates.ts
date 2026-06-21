@@ -1,7 +1,7 @@
-import { DOT_SIZE, TARGET_SELECTOR } from "../constants/report.js";
-import type { ReportFeedback } from "../types/report.js";
-import type { DraftReport, Marker, TargetSnapshot } from "../types/report-ui.js";
-import { escapeAttribute } from "./dom.js";
+import { DOT_SIZE } from "@/constants/report.js";
+import type { ReportFeedback } from "@/types/report.js";
+import type { DraftReport, Marker, TargetSnapshot } from "@/types/report-ui.js";
+import { getFeedbackTargetSelector } from "./dom.js";
 
 export function clampRatio(value: number) {
     if (Number.isNaN(value)) {
@@ -12,7 +12,7 @@ export function clampRatio(value: number) {
 }
 
 export function getMarkerFromReport(report: ReportFeedback, currentScrollY: number): Marker {
-    const selector = `${TARGET_SELECTOR}[data-report-id="${escapeAttribute(report.report_id)}"][data-report-type="${report.report_type}"]`;
+    const selector = getFeedbackTargetSelector(report.report_id, report.report_type);
     const targetElement = document.querySelector<HTMLElement>(selector);
     const pointLeft = window.innerWidth * report.x_ratio - DOT_SIZE / 2;
     const pointTop = report.document_y - currentScrollY - DOT_SIZE / 2;

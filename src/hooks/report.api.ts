@@ -1,12 +1,19 @@
+import { getActiveReportMessages } from "@/i18n/index.js";
 import type {
     CreateReportFeedbackPayload,
     ReportFeedback,
+    ReportListAllParams,
+    ReportListAllResult,
     ReportStorageAdapter,
     UpdateReportFeedbackPayload,
-} from "../types/report.js";
+} from "@/types/report.js";
 
 export async function listReports(adapter: ReportStorageAdapter, pathname: string) {
     return adapter.list({ pathname });
+}
+
+export async function listAllReports(adapter: ReportStorageAdapter, params: ReportListAllParams): Promise<ReportListAllResult> {
+    return adapter.listAll?.(params) ?? { items: [] };
 }
 
 export async function createReport(adapter: ReportStorageAdapter, payload: CreateReportFeedbackPayload) {
@@ -19,7 +26,7 @@ export async function updateReport(adapter: ReportStorageAdapter, id: string, pa
 
 export async function deleteReport(adapter: ReportStorageAdapter, id: string) {
     if (!adapter.remove) {
-        throw new Error("이 storage adapter는 삭제를 지원하지 않아요.");
+        throw new Error(getActiveReportMessages().errors.deleteHandlerMissing);
     }
 
     await adapter.remove(id);

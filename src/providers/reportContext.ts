@@ -1,5 +1,5 @@
 import { createContext, useContext } from "react";
-import type { useReportState } from "../hooks/useReportState.js";
+import type { useReportState } from "@/hooks/useReportState.js";
 
 export type ReportContextValue = ReturnType<typeof useReportState>;
 

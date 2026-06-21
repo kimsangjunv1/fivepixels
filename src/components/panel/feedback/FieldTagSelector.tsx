@@ -1,4 +1,4 @@
-import type { ReportField, ReportFieldValues } from "../../../types/report.js";
+import type { ReportField, ReportFieldValues } from "@/types/report.js";
 
 type FieldTagSelectorProps = {
     fields: ReportField[];
@@ -14,7 +14,7 @@ export function FieldTagSelector({ fields, fieldValues, onFieldChange }: FieldTa
     }
 
     return (
-        <div className="flex flex-wrap items-center gap-[8px] border-t border-[var(--adaptive-greyOpacity200)] px-[16px] py-[12px]">
+        <div className="flex flex-wrap items-center gap-[8px] border-t border-[var(--adaptive-blackOpacity100)] px-[16px] py-[12px]">
             {tagFields.map((field) => {
                 const selected = fieldValues[field.key] === true;
 
@@ -24,9 +24,10 @@ export function FieldTagSelector({ fields, fieldValues, onFieldChange }: FieldTa
                         type="button"
                         onClick={() => onFieldChange(field.key, !selected)}
                         className={
-                            selected
-                                ? "rounded-full border border-[var(--adaptive-grey900)] px-[12px] py-[6px] text-[11px] font-semibold uppercase tracking-wide text-[var(--adaptive-grey900)]"
-                                : "rounded-full border border-[var(--adaptive-grey400)] px-[12px] py-[6px] text-[11px] font-semibold uppercase tracking-wide text-[var(--adaptive-grey500)]"
+                            "rounded-[8px] border px-[12px] py-[4px] text-[12px] font-semibold uppercase " +
+                            (selected
+                                ? "border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface-inverse)] text-[var(--adaptive-text-inverse)]"
+                                : "border-[var(--adaptive-border-subtle)] text-[var(--adaptive-text-muted)]")
                         }
                     >
                         {field.label}

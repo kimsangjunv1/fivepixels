@@ -1,6 +1,5 @@
 export async function notifyFeedbackCreate(callbacks, feedback) {
     try {
-        await callbacks.onFeedbackCreate?.(feedback);
         await callbacks.onEvent?.({ type: "feedback:create", payload: feedback });
     }
     catch (error) {
@@ -9,7 +8,6 @@ export async function notifyFeedbackCreate(callbacks, feedback) {
 }
 export async function notifyFeedbackUpdate(callbacks, feedback) {
     try {
-        await callbacks.onFeedbackUpdate?.(feedback);
         await callbacks.onEvent?.({ type: "feedback:update", payload: feedback });
     }
     catch (error) {
@@ -18,7 +16,6 @@ export async function notifyFeedbackUpdate(callbacks, feedback) {
 }
 export async function notifyFeedbackDelete(callbacks, id) {
     try {
-        await callbacks.onFeedbackDelete?.(id);
         await callbacks.onEvent?.({ type: "feedback:delete", payload: { id } });
     }
     catch (error) {
@@ -27,11 +24,19 @@ export async function notifyFeedbackDelete(callbacks, id) {
 }
 export async function notifyFeedbackReply(callbacks, params) {
     try {
-        await callbacks.onFeedbackReply?.(params);
+        await callbacks.onReply?.(params);
         await callbacks.onEvent?.({ type: "feedback:reply", payload: params });
     }
     catch (error) {
         console.error("[stitchable] feedback reply callback failed", error);
+    }
+}
+export async function notifyGitHubIssueCreated(callbacks, params) {
+    try {
+        await callbacks.onEvent?.({ type: "feedback:github-issue-created", payload: params });
+    }
+    catch (error) {
+        console.error("[stitchable] github issue create callback failed", error);
     }
 }
 //# sourceMappingURL=reportCallbacks.js.map

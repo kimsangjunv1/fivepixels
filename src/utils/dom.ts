@@ -1,9 +1,23 @@
-import { TARGET_SELECTOR } from "../constants/report.js";
-import type { ReportTargetType } from "../types/report.js";
-import type { TargetSnapshot } from "../types/report-ui.js";
+import { TARGET_SELECTOR } from "@/constants/report.js";
+import type { ReportTargetType } from "@/types/report.js";
+import type { TargetSnapshot } from "@/types/report-ui.js";
 
 export function escapeAttribute(value: string) {
     return value.split("\\").join("\\\\").split('"').join('\\"');
+}
+
+export function resolveReportType(element: HTMLElement): ReportTargetType {
+    return element.dataset.reportType === "group" ? "group" : "item";
+}
+
+export function getFeedbackTargetSelector(reportId: string, reportType: ReportTargetType) {
+    const escapedId = escapeAttribute(reportId);
+
+    if (reportType === "group") {
+        return `[data-report-id="${escapedId}"][data-report-type="group"]`;
+    }
+
+    return `[data-report-id="${escapedId}"]:not([data-report-type="group"])`;
 }
 
 export function isSameHoverTarget(previous: TargetSnapshot | null, next: TargetSnapshot | null) {
@@ -24,15 +38,14 @@ export function toSnapshot(element: HTMLElement | null): TargetSnapshot | null {
     }
 
     const reportId = element.dataset.reportId?.trim();
-    const reportType = element.dataset.reportType;
 
-    if (!reportId || (reportType !== "group" && reportType !== "item")) {
+    if (!reportId) {
         return null;
     }
 
     return {
         id: reportId,
-        type: reportType as ReportTargetType,
+        type: resolveReportType(element),
         rect: element.getBoundingClientRect(),
     };
 }
@@ -42,13 +55,26 @@ export function findTargetElement(baseElement: HTMLElement | null) {
         return null;
     }
 
-    const itemTarget = baseElement.closest<HTMLElement>('[data-report-type="item"][data-report-id]');
+    let groupFallback: HTMLElement | null = null;
+    let node: HTMLElement | null = baseElement;
 
-    if (itemTarget) {
-        return itemTarget;
+    while (node) {
+        const reportId = node.dataset.reportId?.trim();
+
+        if (reportId) {
+            if (resolveReportType(node) === "item") {
+                return node;
+            }
+
+            if (!groupFallback) {
+                groupFallback = node;
+            }
+        }
+
+        node = node.parentElement;
     }
 
-    return baseElement.closest<HTMLElement>('[data-report-type="group"][data-report-id]');
+    return groupFallback;
 }
 
 export function getSelectableTargets() {

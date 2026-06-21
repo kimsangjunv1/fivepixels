@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { getReportsStorageKey } from "../../constants/storageKeys.js";
-import { createReportPayload } from "../../utils/reportFixtures.js";
+import { getReportsStorageKey } from "@/constants/storageKeys.js";
+import { createReportPayload } from "@/utils/reportFixtures.js";
 import { createLocalStorageReportAdapter } from "./localStorageAdapter.js";
 
 const PROJECT_ID = "test-project";
@@ -54,6 +54,41 @@ describe("createLocalStorageReportAdapter", () => {
         });
 
         expect(await otherEnvironmentAdapter.list({ pathname: "/a" })).toHaveLength(0);
+    });
+
+    it("lists feedback across pathnames with cursor pagination", async () => {
+        const adapter = createLocalStorageReportAdapter({ projectId: PROJECT_ID, environment: ENVIRONMENT });
+
+        await adapter.create(createReportPayload({ pathname: "/a", message: "A" }));
+        await adapter.create(createReportPayload({ pathname: "/b", message: "B" }));
+
+        const firstPage = await adapter.listAll?.({ limit: 1 });
+        const secondPage = await adapter.listAll?.({ cursor: firstPage?.nextCursor, limit: 1 });
+
+        expect(firstPage?.items).toHaveLength(1);
+        expect(firstPage?.nextCursor).toBe("1");
+        expect(secondPage?.items).toHaveLength(1);
+        expect(secondPage?.nextCursor).toBeUndefined();
+        expect(new Set([firstPage?.items[0]?.pathname, secondPage?.items[0]?.pathname])).toEqual(new Set(["/a", "/b"]));
+    });
+
+    it("isolates records by appVersion", async () => {
+        const adapter = createLocalStorageReportAdapter({
+            projectId: PROJECT_ID,
+            environment: ENVIRONMENT,
+            appVersion: "1.0.0",
+        });
+
+        await adapter.create(createReportPayload({ pathname: PATHNAME, message: "v1" }));
+
+        const otherVersionAdapter = createLocalStorageReportAdapter({
+            projectId: PROJECT_ID,
+            environment: ENVIRONMENT,
+            appVersion: "1.0.1",
+        });
+
+        expect(await adapter.list({ pathname: PATHNAME })).toHaveLength(1);
+        expect(await otherVersionAdapter.list({ pathname: PATHNAME })).toHaveLength(0);
     });
 
     it("normalizes invalid stored field_values and replies", async () => {

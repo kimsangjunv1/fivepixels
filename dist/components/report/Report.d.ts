@@ -1,28 +1,50 @@
-import type { ReportAppearance, ReportEvent, ReportFeedback, ReportField, ReportAuthor, ReportIdentify, ReportStorageAdapter } from "../../types/report.js";
+import type { CreateReportFeedbackPayload, ReportEvent, ReportFeedback, ReportField, ReportAuthor, ReportGitHubConfig, ReportIdentify, ReportListAllParams, ReportListAllResult, ReportProject, ReportTeam, ReportUi, ReportVisibility, UpdateReportFeedbackPayload } from "../../types/report.js";
 export type ReportProps = {
+    project?: ReportProject;
+    /** @deprecated Use `project.id`. */
     projectId?: string;
+    /** @deprecated Use `project.env`. */
     environment?: string;
+    /** @deprecated Use `project.version`. */
     appVersion?: string;
-    appearance?: ReportAppearance;
-    storage?: "local" | ReportStorageAdapter;
-    storageAdapter?: ReportStorageAdapter;
-    fields?: ReportField[];
-    authors?: ReportAuthor[];
+    ui?: ReportUi;
+    /** @deprecated Use `ui.appearance`. */
+    appearance?: ReportUi["appearance"];
+    /** @deprecated Use `ui.showFeedbackList`. */
+    showFeedbackList?: boolean;
+    /** @deprecated Use `ui.visibleShortcutKeys`. */
+    visibleShortcutKeys?: boolean;
+    /** @deprecated Use `ui.shortcut`. */
     shortcut?: string;
+    visibility?: ReportVisibility;
+    /** @deprecated Use `visibility.enabled`. */
+    enabled?: boolean;
+    /** @deprecated Use `visibility.devOnly`. */
+    devOnly?: boolean;
+    /** @deprecated Use `visibility.routeKey`. */
+    routeKey?: string;
+    /** @deprecated Use `visibility.routeKey`. */
+    pathname?: string;
+    team?: ReportTeam;
+    /** @deprecated Use `team.user`. */
     identify?: ReportIdentify;
+    /** @deprecated Use `team.reviewers`. */
+    authors?: ReportAuthor[];
+    fields?: ReportField[];
+    onList?: (params: {
+        pathname: string;
+    }) => Promise<ReportFeedback[]>;
+    onListAll?: (params: ReportListAllParams) => Promise<ReportListAllResult>;
+    onNavigate?: (pathname: string) => void | Promise<void>;
+    onCreate?: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
+    onUpdate?: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
+    onDelete?: (id: string) => Promise<void>;
     onEvent?: (event: ReportEvent) => void | Promise<void>;
-    onFeedbackCreate?: (feedback: ReportFeedback) => void | Promise<void>;
-    onFeedbackDelete?: (id: string) => void | Promise<void>;
-    onFeedbackReply?: (params: {
+    onReply?: (params: {
         feedbackId: string;
         message: string;
     }) => void | Promise<void>;
-    onFeedbackUpdate?: (feedback: ReportFeedback) => void | Promise<void>;
-    devOnly?: boolean;
-    enabled?: boolean;
-    pathname?: string;
-    showFeedbackList?: boolean;
-    visibleShortcutKeys?: boolean;
+    github?: ReportGitHubConfig;
 };
-export declare function Report({ projectId, environment, appVersion, appearance, storage, storageAdapter, fields, authors, shortcut, identify, onEvent, onFeedbackCreate, onFeedbackDelete, onFeedbackReply, onFeedbackUpdate, devOnly, enabled, pathname, showFeedbackList, visibleShortcutKeys, }: ReportProps): import("react/jsx-runtime").JSX.Element | null;
+export declare function Report({ project, projectId, environment, appVersion, ui, appearance, showFeedbackList, visibleShortcutKeys, shortcut, visibility, enabled, devOnly, routeKey, pathname, team, identify, authors, fields, onList, onListAll, onNavigate, onCreate, onUpdate, onDelete, onEvent, onReply, github, }: ReportProps): import("react/jsx-runtime").JSX.Element | null;
 //# sourceMappingURL=Report.d.ts.map

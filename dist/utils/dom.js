@@ -2,6 +2,16 @@ import { TARGET_SELECTOR } from "../constants/report.js";
 export function escapeAttribute(value) {
     return value.split("\\").join("\\\\").split('"').join('\\"');
 }
+export function resolveReportType(element) {
+    return element.dataset.reportType === "group" ? "group" : "item";
+}
+export function getFeedbackTargetSelector(reportId, reportType) {
+    const escapedId = escapeAttribute(reportId);
+    if (reportType === "group") {
+        return `[data-report-id="${escapedId}"][data-report-type="group"]`;
+    }
+    return `[data-report-id="${escapedId}"]:not([data-report-type="group"])`;
+}
 export function isSameHoverTarget(previous, next) {
     if (previous === next) {
         return true;
@@ -16,13 +26,12 @@ export function toSnapshot(element) {
         return null;
     }
     const reportId = element.dataset.reportId?.trim();
-    const reportType = element.dataset.reportType;
-    if (!reportId || (reportType !== "group" && reportType !== "item")) {
+    if (!reportId) {
         return null;
     }
     return {
         id: reportId,
-        type: reportType,
+        type: resolveReportType(element),
         rect: element.getBoundingClientRect(),
     };
 }
@@ -30,11 +39,21 @@ export function findTargetElement(baseElement) {
     if (!baseElement) {
         return null;
     }
-    const itemTarget = baseElement.closest('[data-report-type="item"][data-report-id]');
-    if (itemTarget) {
-        return itemTarget;
+    let groupFallback = null;
+    let node = baseElement;
+    while (node) {
+        const reportId = node.dataset.reportId?.trim();
+        if (reportId) {
+            if (resolveReportType(node) === "item") {
+                return node;
+            }
+            if (!groupFallback) {
+                groupFallback = node;
+            }
+        }
+        node = node.parentElement;
     }
-    return baseElement.closest('[data-report-type="group"][data-report-id]');
+    return groupFallback;
 }
 export function getSelectableTargets() {
     return Array.from(document.querySelectorAll(TARGET_SELECTOR))

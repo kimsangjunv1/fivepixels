@@ -11,19 +11,19 @@ export function createInitialFieldValues(fields, source) {
         return acc;
     }, {});
 }
-export function getFieldError(message, fieldValues, fields) {
+export function getFieldError(message, fieldValues, fields, fieldErrors) {
     for (const field of fields) {
         if (!field.required) {
             continue;
         }
         if (field.key === "message" && !message.trim()) {
-            return `${field.label}을 입력해주세요.`;
+            return fieldErrors.fieldRequiredInput(field.label);
         }
         if (field.type === "checkbox" && fieldValues[field.key] !== true) {
-            return `${field.label}을 확인해주세요.`;
+            return fieldErrors.fieldRequiredConfirm(field.label);
         }
         if (field.type === "textarea" && field.key !== "message" && !String(fieldValues[field.key] ?? "").trim()) {
-            return `${field.label}을 입력해주세요.`;
+            return fieldErrors.fieldRequiredInput(field.label);
         }
     }
     return "";

@@ -1,88 +1,134 @@
 "use client";
 
-import { DEFAULT_FIELDS } from "../../constants/report.js";
-import { ReportProvider } from "../../providers/ReportProvider.js";
-import { resolveReportEnabled } from "../../utils/env.js";
+import { DEFAULT_FIELDS } from "@/constants/report.js";
+import { ReportProvider } from "@/providers/ReportProvider.js";
+import { resolveReportEnabled } from "@/utils/env.js";
+import { resolveReportVisibility } from "@/utils/reportVisibility.js";
 import type {
-    ReportAppearance,
+    CreateReportFeedbackPayload,
     ReportEvent,
     ReportFeedback,
     ReportField,
     ReportAuthor,
+    ReportGitHubConfig,
     ReportIdentify,
-    ReportStorageAdapter,
-} from "../../types/report.js";
+    ReportListAllParams,
+    ReportListAllResult,
+    ReportProject,
+    ReportTeam,
+    ReportUi,
+    ReportVisibility,
+    UpdateReportFeedbackPayload,
+} from "@/types/report.js";
 import { ReportView } from "./ReportView.js";
 
 export type ReportProps = {
+    project?: ReportProject;
+    /** @deprecated Use `project.id`. */
     projectId?: string;
+    /** @deprecated Use `project.env`. */
     environment?: string;
+    /** @deprecated Use `project.version`. */
     appVersion?: string;
-    appearance?: ReportAppearance;
-    storage?: "local" | ReportStorageAdapter;
-    storageAdapter?: ReportStorageAdapter;
-    fields?: ReportField[];
-    authors?: ReportAuthor[];
-    shortcut?: string;
-    identify?: ReportIdentify;
-    onEvent?: (event: ReportEvent) => void | Promise<void>;
-    onFeedbackCreate?: (feedback: ReportFeedback) => void | Promise<void>;
-    onFeedbackDelete?: (id: string) => void | Promise<void>;
-    onFeedbackReply?: (params: { feedbackId: string; message: string }) => void | Promise<void>;
-    onFeedbackUpdate?: (feedback: ReportFeedback) => void | Promise<void>;
-    devOnly?: boolean;
-    enabled?: boolean;
-    pathname?: string;
+    ui?: ReportUi;
+    /** @deprecated Use `ui.appearance`. */
+    appearance?: ReportUi["appearance"];
+    /** @deprecated Use `ui.showFeedbackList`. */
     showFeedbackList?: boolean;
+    /** @deprecated Use `ui.visibleShortcutKeys`. */
     visibleShortcutKeys?: boolean;
+    /** @deprecated Use `ui.shortcut`. */
+    shortcut?: string;
+    visibility?: ReportVisibility;
+    /** @deprecated Use `visibility.enabled`. */
+    enabled?: boolean;
+    /** @deprecated Use `visibility.devOnly`. */
+    devOnly?: boolean;
+    /** @deprecated Use `visibility.routeKey`. */
+    routeKey?: string;
+    /** @deprecated Use `visibility.routeKey`. */
+    pathname?: string;
+    team?: ReportTeam;
+    /** @deprecated Use `team.user`. */
+    identify?: ReportIdentify;
+    /** @deprecated Use `team.reviewers`. */
+    authors?: ReportAuthor[];
+    fields?: ReportField[];
+    onList?: (params: { pathname: string }) => Promise<ReportFeedback[]>;
+    onListAll?: (params: ReportListAllParams) => Promise<ReportListAllResult>;
+    onNavigate?: (pathname: string) => void | Promise<void>;
+    onCreate?: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
+    onUpdate?: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
+    onDelete?: (id: string) => Promise<void>;
+    onEvent?: (event: ReportEvent) => void | Promise<void>;
+    onReply?: (params: { feedbackId: string; message: string }) => void | Promise<void>;
+    github?: ReportGitHubConfig;
 };
 
 export function Report({
+    project,
     projectId,
     environment,
     appVersion,
-    appearance = "system",
-    storage = "local",
-    storageAdapter,
-    fields = DEFAULT_FIELDS,
-    authors,
+    ui,
+    appearance,
+    showFeedbackList,
+    visibleShortcutKeys,
     shortcut,
-    identify,
-    onEvent,
-    onFeedbackCreate,
-    onFeedbackDelete,
-    onFeedbackReply,
-    onFeedbackUpdate,
-    devOnly = false,
-    enabled = true,
+    visibility,
+    enabled,
+    devOnly,
+    routeKey,
     pathname,
-    showFeedbackList = true,
-    visibleShortcutKeys = false,
+    team,
+    identify,
+    authors,
+    fields = DEFAULT_FIELDS,
+    onList,
+    onListAll,
+    onNavigate,
+    onCreate,
+    onUpdate,
+    onDelete,
+    onEvent,
+    onReply,
+    github,
 }: ReportProps) {
-    if (!resolveReportEnabled({ enabled, devOnly })) {
+    const resolvedVisibility = resolveReportVisibility({ visibility, enabled, devOnly, routeKey, pathname });
+
+    if (!resolveReportEnabled(resolvedVisibility)) {
         return null;
     }
 
     return (
         <ReportProvider
+            project={project}
             projectId={projectId}
             environment={environment}
             appVersion={appVersion}
+            ui={ui}
             appearance={appearance}
-            fields={fields}
-            authors={authors}
-            shortcut={shortcut}
-            identify={identify}
-            onEvent={onEvent}
-            onFeedbackCreate={onFeedbackCreate}
-            onFeedbackDelete={onFeedbackDelete}
-            onFeedbackReply={onFeedbackReply}
-            onFeedbackUpdate={onFeedbackUpdate}
-            pathname={pathname}
             showFeedbackList={showFeedbackList}
-            storage={storage}
-            storageAdapter={storageAdapter}
             visibleShortcutKeys={visibleShortcutKeys}
+            shortcut={shortcut}
+            visibility={visibility}
+            enabled={enabled}
+            devOnly={devOnly}
+            routeKey={routeKey}
+            pathname={pathname}
+            team={team}
+            identify={identify}
+            authors={authors}
+            fields={fields}
+            onList={onList}
+            onListAll={onListAll}
+            onNavigate={onNavigate}
+            onCreate={onCreate}
+            onUpdate={onUpdate}
+            onDelete={onDelete}
+            onEvent={onEvent}
+            onReply={onReply}
+            github={github}
         >
             <ReportView />
         </ReportProvider>

@@ -1,6 +1,12 @@
 import { useEffect, useState } from "react";
+function resolveAppearance(appearance) {
+    if (appearance !== "system" || typeof window === "undefined") {
+        return appearance === "dark" ? "dark" : "light";
+    }
+    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
 export function useResolvedAppearance(appearance) {
-    const [resolved, setResolved] = useState("light");
+    const [resolved, setResolved] = useState(() => resolveAppearance(appearance));
     useEffect(() => {
         if (appearance !== "system") {
             setResolved(appearance);

@@ -1,5 +1,6 @@
-import type { FeedbackDisplayStatus } from "../../../constants/feedbackStatus.js";
-import { FEEDBACK_STATUS_COLOR, FEEDBACK_STATUS_LABEL } from "../../../constants/feedbackStatus.js";
+import type { FeedbackDisplayStatus } from "@/constants/feedbackStatus.js";
+import { FEEDBACK_STATUS_COLOR } from "@/constants/feedbackStatus.js";
+import { useReport } from "@/providers/reportContext.js";
 
 type FeedbackStatusBadgeProps = {
     status: FeedbackDisplayStatus;
@@ -7,18 +8,24 @@ type FeedbackStatusBadgeProps = {
 };
 
 export function FeedbackStatusBadge({ status, className = "" }: FeedbackStatusBadgeProps) {
+    const { messages } = useReport();
     const color = FEEDBACK_STATUS_COLOR[status];
 
     return (
-        <div className={`flex items-center gap-[6px] text-[11px] font-bold uppercase tracking-wide ${className}`}>
+        <div className={`flex items-center gap-[6px] text-[12px] font-bold uppercase ${className}`}>
             <span
                 className="inline-flex h-[14px] w-[14px] items-center justify-center rounded-full"
-                style={{ backgroundColor: color, color: "var(--adaptive-grey900)" }}
+                style={{ backgroundColor: color, color: "var(--adaptive-black900)" }}
                 aria-hidden
             >
-                {status === "verified" ? "✓" : status === "found_error" ? "−" : "◷"}
+                {status === "resolved" ? "✓" : status === "found_error" ? "−" : status === "git_issued" ? "＋" : "◷"}
             </span>
-            <span style={{ color }}>{FEEDBACK_STATUS_LABEL[status]}</span>
+            <span
+                style={{ color }}
+                className="text-[12px]"
+            >
+                {messages.status.feedback[status]}
+            </span>
         </div>
     );
 }

@@ -1,51 +1,70 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { getReportMessages, setActiveReportMessages } from "../i18n/index.js";
 import { useReportShortcuts } from "./useReportShortcuts.js";
-import { useCreateReportMutation, useDeleteReportMutation, useReportsQuery, useUpdateReportMutation } from "./report.query.js";
+import { useReportPersistence } from "./useReportPersistence.js";
 import { useIsMobileViewport } from "./useIsMobileViewport.js";
+import { useAppearancePreference } from "./useAppearancePreference.js";
+import { useLocalePreference } from "./useLocalePreference.js";
+import { usePersonalKey } from "./usePersonalKey.js";
 import { useResolvedAppearance } from "./useResolvedAppearance.js";
 import { createReplyStatusForSubmit, resolveOriginalFeedbackAuthorName } from "../utils/feedbackThread.js";
 import { clampRatio, getMarkerFromReport, resolveTooltipAnchor } from "../utils/coordinates.js";
+import { LOCATE_PULSE_DURATION_MS, scrollToFeedbackTarget } from "../utils/locateFeedback.js";
 const MARKER_HOVER_LEAVE_MS = 250;
 const OVERLAY_HOVER_LEAVE_MS = 100;
 import { findTargetByPoint, getSelectableTargets, isSameHoverTarget, toSnapshot } from "../utils/dom.js";
 import { createInitialFieldValues, getFieldError, getFieldTags } from "../utils/fields.js";
 import { createReplyId } from "../utils/format.js";
-import { useCurrentPathname } from "./useCurrentPathname.js";
-import { resolveStorageAdapter } from "../utils/storage.js";
-import { notifyFeedbackCreate, notifyFeedbackDelete, notifyFeedbackReply, notifyFeedbackUpdate } from "../utils/reportCallbacks.js";
+import { notifyFeedbackCreate, notifyFeedbackDelete, notifyFeedbackReply, notifyFeedbackUpdate, notifyGitHubIssueCreated, } from "../utils/reportCallbacks.js";
+import { buildGitHubIssueUpdate, canCreateGitHubIssueFromList, canCreateGitHubIssueOnCreate, isGitIssued, } from "../utils/githubIntegration.js";
 function resolveDefaultAuthorName(identify, authors) {
     if (identify?.name) {
         return identify.name;
     }
     return authors[0]?.name ?? "";
 }
-export function useReportState({ projectId, environment, appVersion, appearance, fields, authors = [], shortcut: _shortcut, identify, onEvent, onFeedbackCreate, onFeedbackDelete, onFeedbackReply, onFeedbackUpdate, pathname, showFeedbackList, storage = "local", storageAdapter, visibleShortcutKeys = false, }) {
-    // theme
+export function useReportState({ projectId, environment, appVersion, appearance, fields, authors = [], shortcut: _shortcut, identify, onList, onListAll, onNavigate, onCreate, onUpdate, onDelete, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys = false, initialLocale, messageOverrides, }) {
+    const { appearance: activeAppearance, setAppearance } = useAppearancePreference(appearance);
+    const { locale, setLocale } = useLocalePreference(initialLocale);
+    const messages = useMemo(() => getReportMessages(locale, messageOverrides), [locale, messageOverrides]);
+    useEffect(() => {
+        setActiveReportMessages(messages);
+    }, [messages]);
     const overlayRef = useRef(null);
     const searchInputRef = useRef(null);
     const hoveredElementRef = useRef(null);
     const selectedElementRef = useRef(null);
     const hoverLeaveTimeoutRef = useRef(null);
     const overlayHoverLeaveTimeoutRef = useRef(null);
-    const resolvedAppearance = useResolvedAppearance(appearance);
+    const resolvedAppearance = useResolvedAppearance(activeAppearance);
     const isMobileViewport = useIsMobileViewport();
-    const storageAdapterInstance = useMemo(() => resolveStorageAdapter({ projectId, environment, storage, storageAdapter }), [environment, projectId, storage, storageAdapter]);
-    const currentPathname = useCurrentPathname(pathname);
+    const { canTransferFeedback, canListAllFeedback, currentPathname, listScope, setListScope, filters, setFilters, selectedReportId, setSelectedReportId, reports, filteredReports, currentPageFilteredReports, routeDetailsStats, selectedReport, isError, isFetching, hasNextPage, isFetchingNextPage, fetchNextPage, isCreating, isUpdating, isDeleting, queryErrorMessage, refetch, createFeedback, updateFeedback, deleteFeedback, } = useReportPersistence({
+        projectId,
+        environment,
+        appVersion,
+        fields,
+        onList,
+        onListAll,
+        onCreate,
+        onUpdate,
+        onDelete,
+        routeKey,
+    });
     const eventCallbacks = useMemo(() => ({
         onEvent,
-        onFeedbackCreate,
-        onFeedbackDelete,
-        onFeedbackReply,
-        onFeedbackUpdate,
-    }), [onEvent, onFeedbackCreate, onFeedbackDelete, onFeedbackReply, onFeedbackUpdate]);
+        onReply,
+    }), [onEvent, onReply]);
+    const { personalKey, personalKeyRequired, authorizedAuthors, issuePersonalKey, insertPersonalKey, } = usePersonalKey({
+        enabled: canTransferFeedback,
+        projectId,
+        environment,
+        identify,
+        authors,
+    });
+    const activeIdentify = canTransferFeedback ? (personalKey ? identify : undefined) : identify;
     const [mode, setMode] = useState("idle");
     const [showTargetPreview, setShowTargetPreview] = useState(false);
     const [selectableTargets, setSelectableTargets] = useState([]);
-    const [filters, setFilters] = useState({
-        keyword: "",
-        status: "all",
-        reportType: "all",
-    });
     const [errorMessage, setErrorMessage] = useState("");
     const [draft, setDraft] = useState(null);
     const [hoveredTarget, setHoveredTarget] = useState(null);
@@ -54,43 +73,20 @@ export function useReportState({ projectId, environment, appVersion, appearance,
     const [hoveredMarkerId, setHoveredMarkerId] = useState(null);
     const [activeReplyReportId, setActiveReplyReportId] = useState(null);
     const [replyDraft, setReplyDraft] = useState("");
-    const [draftAuthorName, setDraftAuthorName] = useState(() => resolveDefaultAuthorName(identify, authors));
-    const [replyAuthorName, setReplyAuthorName] = useState(() => resolveDefaultAuthorName(identify, authors));
+    const [draftAuthorName, setDraftAuthorName] = useState(() => resolveDefaultAuthorName(activeIdentify, authorizedAuthors));
+    const [replyAuthorName, setReplyAuthorName] = useState(() => resolveDefaultAuthorName(activeIdentify, authorizedAuthors));
     const [pendingComposer, setPendingComposer] = useState(null);
     const [confirmAuthorName, setConfirmAuthorName] = useState("");
     const [showConfirmAuthorSelect, setShowConfirmAuthorSelect] = useState(false);
-    const [selectedReportId, setSelectedReportId] = useState(null);
+    const [locatedReportId, setLocatedReportId] = useState(null);
+    const locatePulseTimeoutRef = useRef(null);
+    const pendingLocateReportIdRef = useRef(null);
     const [editingReportId, setEditingReportId] = useState(null);
     const [editableDraft, setEditableDraft] = useState(null);
-    // data (list, filter, mutations)
-    const { data: reports, error, isError, isFetching, refetch } = useReportsQuery(storageAdapterInstance, currentPathname, true);
-    const { mutateAsync: createFeedback, isPending: isCreating } = useCreateReportMutation(storageAdapterInstance, () => {
-        void refetch();
-    });
-    const { mutateAsync: updateFeedback, isPending: isUpdating } = useUpdateReportMutation(storageAdapterInstance, () => {
-        void refetch();
-    });
-    const { mutateAsync: deleteFeedback, isPending: isDeleting } = useDeleteReportMutation(storageAdapterInstance, () => {
-        void refetch();
-    });
-    const filteredReports = useMemo(() => {
-        return reports.filter((report) => {
-            if (filters.status !== "all" && report.status !== filters.status) {
-                return false;
-            }
-            if (filters.reportType !== "all" && report.report_type !== filters.reportType) {
-                return false;
-            }
-            if (!filters.keyword.trim()) {
-                return true;
-            }
-            const keyword = filters.keyword.trim().toLowerCase();
-            return [report.message, report.report_id, report.status].join(" ").toLowerCase().includes(keyword);
-        });
-    }, [filters.keyword, filters.reportType, filters.status, reports]);
-    const selectedReport = useMemo(() => {
-        return filteredReports.find((report) => report.id === selectedReportId) ?? filteredReports[0] ?? null;
-    }, [filteredReports, selectedReportId]);
+    const [panelTab, setPanelTab] = useState(null);
+    const [creatingGitHubIssueId, setCreatingGitHubIssueId] = useState(null);
+    const canCreateGitHubIssueFromListValue = useMemo(() => canCreateGitHubIssueFromList(github), [github]);
+    const canCreateGitHubIssueOnCreateValue = useMemo(() => canCreateGitHubIssueOnCreate(github), [github]);
     const activeReplyAnchor = useMemo(() => resolveTooltipAnchor(markers, activeReplyReportId), [activeReplyReportId, markers]);
     const activeReplyReport = activeReplyAnchor?.report ?? null;
     const tooltipAnchor = useMemo(() => {
@@ -108,33 +104,33 @@ export function useReportState({ projectId, environment, appVersion, appearance,
     const targetStats = useMemo(() => {
         const groupCount = selectableTargets.filter((target) => target.type === "group").length;
         const itemCount = selectableTargets.filter((target) => target.type === "item").length;
-        const foundCount = mode === "view" && !isFetching ? filteredReports.length : selectableTargets.length;
+        const foundCount = mode === "view" && !isFetching ? currentPageFilteredReports.length : selectableTargets.length;
         return {
             found: foundCount,
             group: groupCount,
             item: itemCount,
         };
-    }, [filteredReports.length, isFetching, mode, selectableTargets]);
+    }, [currentPageFilteredReports.length, isFetching, mode, selectableTargets]);
     const statusText = useMemo(() => {
         if (mode === "report") {
             const focusTarget = selectedTarget ?? hoveredTarget;
             if (!focusTarget) {
                 return "";
             }
-            const typeLabel = focusTarget.type === "item" ? "selected item" : "selected group";
+            const typeLabel = focusTarget.type === "item" ? messages.statusText.selectedItem : messages.statusText.selectedGroup;
             return `${typeLabel}\n${focusTarget.id}`;
         }
         if (mode === "view") {
-            return isFetching ? "피드백을 불러오는 중입니다." : "ready.";
+            return isFetching ? messages.statusText.loadingFeedback : messages.statusText.ready;
         }
         if (showTargetPreview) {
-            return `선택 가능한 ${selectableTargets.length}개 요소를 표시 중입니다.`;
+            return messages.statusText.showingSelectableTargets(selectableTargets.length);
         }
         if (selectableTargets.length === 0) {
-            return "현재 페이지에 선택 가능한 요소가 없어요. data-report-id / data-report-type 속성을 확인해주세요.";
+            return messages.statusText.noSelectableTargets;
         }
-        return "ready.";
-    }, [filteredReports.length, isFetching, hoveredTarget, mode, selectableTargets.length, selectedTarget, showTargetPreview]);
+        return messages.statusText.ready;
+    }, [filteredReports.length, isFetching, hoveredTarget, messages.statusText, mode, selectableTargets.length, selectedTarget, showTargetPreview]);
     useEffect(() => {
         setDraft(null);
         setErrorMessage("");
@@ -146,8 +142,8 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         setPendingComposer(null);
         setShowConfirmAuthorSelect(false);
         setConfirmAuthorName("");
-        setDraftAuthorName(resolveDefaultAuthorName(identify, authors));
-        setReplyAuthorName(resolveDefaultAuthorName(identify, authors));
+        setDraftAuthorName(resolveDefaultAuthorName(activeIdentify, authorizedAuthors));
+        setReplyAuthorName(resolveDefaultAuthorName(activeIdentify, authorizedAuthors));
         setEditingReportId(null);
         setEditableDraft(null);
         if (mode !== "idle") {
@@ -204,20 +200,12 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         };
     }, [showTargetPreview]);
     useEffect(() => {
-        if (!selectedReportId) {
-            return;
-        }
-        if (!filteredReports.some((report) => report.id === selectedReportId)) {
-            setSelectedReportId(filteredReports[0]?.id ?? null);
-        }
-    }, [filteredReports, selectedReportId]);
-    useEffect(() => {
         if (mode !== "view") {
             setMarkers([]);
             return;
         }
         const syncMarkers = () => {
-            setMarkers(filteredReports.map((report) => getMarkerFromReport(report, window.scrollY)));
+            setMarkers(currentPageFilteredReports.map((report) => getMarkerFromReport(report, window.scrollY)));
         };
         syncMarkers();
         window.addEventListener("scroll", syncMarkers, { passive: true });
@@ -226,7 +214,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             window.removeEventListener("scroll", syncMarkers);
             window.removeEventListener("resize", syncMarkers);
         };
-    }, [filteredReports, mode]);
+    }, [currentPageFilteredReports, mode]);
     useEffect(() => {
         if (mode !== "report") {
             return;
@@ -288,6 +276,53 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             stopEditing();
         }
     };
+    const showLocatedFeedback = useCallback((report) => {
+        scrollToFeedbackTarget(report);
+        setLocatedReportId(report.id);
+        if (locatePulseTimeoutRef.current !== null) {
+            window.clearTimeout(locatePulseTimeoutRef.current);
+        }
+        locatePulseTimeoutRef.current = window.setTimeout(() => {
+            setLocatedReportId(null);
+            locatePulseTimeoutRef.current = null;
+        }, LOCATE_PULSE_DURATION_MS);
+    }, []);
+    const locateFeedback = async (reportId) => {
+        const report = filteredReports.find((item) => item.id === reportId);
+        if (!report) {
+            return;
+        }
+        selectReport(reportId);
+        if (report.pathname !== currentPathname) {
+            pendingLocateReportIdRef.current = reportId;
+            try {
+                if (onNavigate) {
+                    await onNavigate(report.pathname);
+                }
+                else if (typeof window !== "undefined") {
+                    window.location.assign(report.pathname);
+                }
+            }
+            catch (nextError) {
+                pendingLocateReportIdRef.current = null;
+                setErrorMessage(nextError instanceof Error ? nextError.message : messages.errors.loadFeedbackFailed);
+            }
+            return;
+        }
+        showLocatedFeedback(report);
+    };
+    useEffect(() => {
+        const pendingReportId = pendingLocateReportIdRef.current;
+        if (!pendingReportId) {
+            return;
+        }
+        const report = reports.find((item) => item.id === pendingReportId && item.pathname === currentPathname);
+        if (!report) {
+            return;
+        }
+        pendingLocateReportIdRef.current = null;
+        window.setTimeout(() => showLocatedFeedback(report), 0);
+    }, [currentPathname, reports, showLocatedFeedback]);
     const focusSearchInput = () => {
         searchInputRef.current?.focus();
         searchInputRef.current?.select();
@@ -304,14 +339,14 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         else {
             nextIndex = direction === "down" ? Math.min(currentIndex + 1, filteredReports.length - 1) : Math.max(currentIndex - 1, 0);
         }
-        selectReport(filteredReports[nextIndex].id);
+        void locateFeedback(filteredReports[nextIndex].id);
     };
     const openReplyComposer = (report) => {
         selectReport(report.id);
         setActiveReplyReportId(report.id);
         setReplyDraft("");
         setPendingComposer(null);
-        setReplyAuthorName(resolveDefaultAuthorName(identify, authors));
+        setReplyAuthorName(resolveDefaultAuthorName(activeIdentify, authorizedAuthors));
         setConfirmAuthorName(resolveOriginalFeedbackAuthorName(report));
         setShowConfirmAuthorSelect(false);
         clearHoverLeaveTimeout();
@@ -333,7 +368,10 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         if (!latest) {
             return;
         }
-        setPendingComposer({ type: "deny", targetReplyId: latest.id });
+        setPendingComposer({
+            type: latest.status === "found_error" ? "recheck" : "deny",
+            targetReplyId: latest.id,
+        });
         setReplyDraft("");
     };
     const startCheckoutReview = (replyId) => {
@@ -348,8 +386,30 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         setShowTargetPreview(false);
         setMode((current) => (current === "report" ? "idle" : "report"));
     };
-    const toggleViewMode = () => {
+    const togglePanelTab = (nextTab) => {
+        setPanelTab((current) => {
+            if (current === nextTab) {
+                return null;
+            }
+            return nextTab;
+        });
+    };
+    const enableIssueMode = () => {
         setShowTargetPreview(false);
+        closeReplyComposer();
+        stopEditing();
+        setMode("view");
+    };
+    const openPanelTab = (nextTab) => {
+        const isClosing = panelTab === nextTab;
+        setPanelTab(isClosing ? null : nextTab);
+        if (!isClosing && nextTab === "feedback-list") {
+            enableIssueMode();
+        }
+    };
+    const toggleIssueMode = () => {
+        setShowTargetPreview(false);
+        closeReplyComposer();
         setMode((current) => (current === "view" ? "idle" : "view"));
         stopEditing();
         setSelectedReportId(filteredReports[0]?.id ?? null);
@@ -385,7 +445,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         const targetElement = findTargetByPoint(overlayRef.current, event.clientX, event.clientY);
         const snapshot = toSnapshot(targetElement);
         if (!targetElement || !snapshot) {
-            setErrorMessage("선택 가능한 리포트 영역을 클릭해주세요.");
+            setErrorMessage(messages.errors.clickSelectableArea);
             return;
         }
         hoveredElementRef.current = targetElement;
@@ -426,56 +486,98 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             }
             : current);
     };
-    const handleCreateSubmit = async () => {
+    const buildCreatePayloadFromDraft = () => {
         if (!draft) {
-            return;
+            return null;
         }
-        const nextError = getFieldError(draft.message, draft.fieldValues, fields);
+        if (personalKeyRequired) {
+            setErrorMessage(messages.errors.personalKeyRequired);
+            return null;
+        }
+        const nextError = getFieldError(draft.message, draft.fieldValues, fields, messages.errors);
         if (nextError) {
             setErrorMessage(nextError);
+            return null;
+        }
+        return {
+            pathname: currentPathname,
+            report_id: draft.reportId,
+            report_type: draft.reportType,
+            message: draft.message.trim(),
+            status: "open",
+            field_values: draft.fieldValues,
+            x_ratio: draft.xRatio,
+            y_ratio: draft.yRatio,
+            element_x_ratio: draft.elementXRatio,
+            element_y_ratio: draft.elementYRatio,
+            scroll_y: draft.scrollY,
+            document_y: draft.documentY,
+            viewport_width: window.innerWidth,
+            viewport_height: window.innerHeight,
+            design_width: window.innerWidth,
+            design_height: window.innerHeight,
+            ...(environment ? { environment } : {}),
+            ...(appVersion ? { app_version: appVersion } : {}),
+            ...(activeIdentify || draftAuthorName.trim()
+                ? {
+                    ...(activeIdentify ? { author_id: activeIdentify.id } : {}),
+                    author_name: draftAuthorName.trim() || activeIdentify?.name,
+                }
+                : {}),
+        };
+    };
+    const finalizeDraftCreate = () => {
+        setDraft(null);
+        setSelectedTarget(null);
+        setHoveredTarget(null);
+        setErrorMessage("");
+        setMode("view");
+    };
+    const handleCreateSubmit = async () => {
+        const payload = buildCreatePayloadFromDraft();
+        if (!payload) {
             return;
         }
         try {
-            const savedFeedback = await createFeedback({
-                pathname: currentPathname,
-                report_id: draft.reportId,
-                report_type: draft.reportType,
-                message: draft.message.trim(),
-                status: "open",
-                field_values: draft.fieldValues,
-                x_ratio: draft.xRatio,
-                y_ratio: draft.yRatio,
-                element_x_ratio: draft.elementXRatio,
-                element_y_ratio: draft.elementYRatio,
-                scroll_y: draft.scrollY,
-                document_y: draft.documentY,
-                viewport_width: window.innerWidth,
-                viewport_height: window.innerHeight,
-                design_width: window.innerWidth,
-                design_height: window.innerHeight,
-                ...(environment ? { environment } : {}),
-                ...(appVersion ? { app_version: appVersion } : {}),
-                ...(identify || draftAuthorName.trim()
-                    ? {
-                        ...(identify ? { author_id: identify.id } : {}),
-                        author_name: draftAuthorName.trim() || identify?.name,
-                    }
-                    : {}),
-            });
+            const savedFeedback = await createFeedback(payload);
             await notifyFeedbackCreate(eventCallbacks, savedFeedback);
-            setDraft(null);
-            setSelectedTarget(null);
-            setHoveredTarget(null);
-            setErrorMessage("");
-            setMode("view");
+            finalizeDraftCreate();
         }
         catch (nextError) {
-            setErrorMessage(nextError instanceof Error ? nextError.message : "피드백 저장에 실패했어요.");
+            setErrorMessage(nextError instanceof Error ? nextError.message : messages.errors.saveFeedbackFailed);
+        }
+    };
+    const handleCreateSubmitWithGitHubIssue = async () => {
+        if (!github?.onCreate || !canCreateGitHubIssueOnCreateValue || creatingGitHubIssueId || isCreating) {
+            return;
+        }
+        const payload = buildCreatePayloadFromDraft();
+        if (!payload) {
+            return;
+        }
+        setCreatingGitHubIssueId("draft");
+        setErrorMessage("");
+        try {
+            const savedFeedback = await createFeedback(payload);
+            await notifyFeedbackCreate(eventCallbacks, savedFeedback);
+            const result = await github.onCreate(savedFeedback);
+            const updatedFeedback = await updateFeedback(savedFeedback.id, buildGitHubIssueUpdate(savedFeedback, result, messages.resolution.gitIssuedMessage));
+            await notifyGitHubIssueCreated(eventCallbacks, {
+                feedback: updatedFeedback,
+                issueUrl: result.issueUrl,
+            });
+            finalizeDraftCreate();
+        }
+        catch (nextError) {
+            setErrorMessage(nextError instanceof Error ? nextError.message : messages.errors.createGitHubIssueFailed);
+        }
+        finally {
+            setCreatingGitHubIssueId(null);
         }
     };
     const startEditing = (report) => {
         if (report.status === "archived") {
-            setErrorMessage("archived 상태의 피드백은 읽기 전용이에요.");
+            setErrorMessage(messages.errors.archivedReadOnly);
             setSelectedReportId(report.id);
             return;
         }
@@ -492,10 +594,10 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             return;
         }
         if (selectedReport.status === "archived") {
-            setErrorMessage("archived 상태의 피드백은 수정할 수 없어요.");
+            setErrorMessage(messages.errors.archivedNotEditable);
             return;
         }
-        const nextError = getFieldError(editableDraft.message, editableDraft.fieldValues, fields);
+        const nextError = getFieldError(editableDraft.message, editableDraft.fieldValues, fields, messages.errors);
         if (nextError) {
             setErrorMessage(nextError);
             return;
@@ -511,7 +613,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             setErrorMessage("");
         }
         catch (nextError) {
-            setErrorMessage(nextError instanceof Error ? nextError.message : "피드백 수정에 실패했어요.");
+            setErrorMessage(nextError instanceof Error ? nextError.message : messages.errors.updateFeedbackFailed);
         }
     };
     const appendReply = async (report, reply) => {
@@ -527,12 +629,16 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         if (!activeReplyReport) {
             return;
         }
+        if (personalKeyRequired) {
+            setErrorMessage(messages.errors.personalKeyRequired);
+            return;
+        }
         if (!replyDraft.trim()) {
-            setErrorMessage("답변 내용을 입력해주세요.");
+            setErrorMessage(messages.errors.replyContentRequired);
             return;
         }
         if (!replyAuthorName.trim()) {
-            setErrorMessage("작성자를 입력해주세요.");
+            setErrorMessage(messages.errors.authorRequired);
             return;
         }
         const replyMessage = replyDraft.trim();
@@ -552,7 +658,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             setPendingComposer(null);
         }
         catch (nextError) {
-            setErrorMessage(nextError instanceof Error ? nextError.message : "답변 저장에 실패했어요.");
+            setErrorMessage(nextError instanceof Error ? nextError.message : messages.errors.saveReplyFailed);
         }
     };
     const handleConfirmResolution = async () => {
@@ -561,14 +667,14 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         }
         const resolverName = confirmAuthorName.trim() || resolveOriginalFeedbackAuthorName(activeReplyReport);
         if (!resolverName) {
-            setErrorMessage("검수 처리자를 선택해주세요.");
+            setErrorMessage(messages.errors.reviewerRequired);
             return;
         }
         const reply = {
             id: createReplyId(),
-            message: "이슈가 해결되었습니다.",
+            message: messages.resolution.issueResolvedMessage,
             created_at: new Date().toISOString(),
-            status: "verified",
+            status: "resolved",
             author_type: "user",
             author_name: resolverName,
         };
@@ -584,7 +690,32 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             setShowConfirmAuthorSelect(false);
         }
         catch (nextError) {
-            setErrorMessage(nextError instanceof Error ? nextError.message : "확인 처리에 실패했어요.");
+            setErrorMessage(nextError instanceof Error ? nextError.message : messages.errors.confirmResolutionFailed);
+        }
+    };
+    const handleCreateGitHubIssue = async (report) => {
+        if (!github?.onCreate || !canCreateGitHubIssueFromListValue || creatingGitHubIssueId) {
+            return;
+        }
+        if (isGitIssued(report)) {
+            return;
+        }
+        setCreatingGitHubIssueId(report.id);
+        setErrorMessage("");
+        try {
+            const result = await github.onCreate(report);
+            const updatedFeedback = await updateFeedback(report.id, buildGitHubIssueUpdate(report, result, messages.resolution.gitIssuedMessage));
+            await notifyGitHubIssueCreated(eventCallbacks, {
+                feedback: updatedFeedback,
+                issueUrl: result.issueUrl,
+            });
+            setErrorMessage("");
+        }
+        catch (nextError) {
+            setErrorMessage(nextError instanceof Error ? nextError.message : messages.errors.createGitHubIssueFailed);
+        }
+        finally {
+            setCreatingGitHubIssueId(null);
         }
     };
     const handleDelete = async (id) => {
@@ -603,19 +734,30 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             setErrorMessage("");
         }
         catch (nextError) {
-            setErrorMessage(nextError instanceof Error ? nextError.message : "피드백 삭제에 실패했어요.");
+            setErrorMessage(nextError instanceof Error ? nextError.message : messages.errors.deleteFeedbackFailed);
         }
     };
+    useEffect(() => {
+        return () => {
+            if (locatePulseTimeoutRef.current !== null) {
+                window.clearTimeout(locatePulseTimeoutRef.current);
+            }
+        };
+    }, []);
     useReportShortcuts({
         mode,
         draft,
         editingReportId,
-        showFeedbackList,
+        panelTab,
         showTargetPreview,
+        activeReplyReportId,
+        pendingComposer,
         toggleReportMode,
         toggleTargetPreview,
-        toggleViewMode,
+        toggleIssueMode,
         cancelDraft,
+        cancelPendingComposer,
+        closeReplyComposer,
         handleCreateSubmit,
         stopEditing,
         handleUpdateSubmit,
@@ -623,10 +765,26 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         selectAdjacentReport,
     });
     return {
-        appearance,
+        appearance: activeAppearance,
+        setAppearance,
+        locale,
+        setLocale,
+        messages,
         fields,
-        authors,
+        authors: authorizedAuthors,
+        projectId,
+        environment,
+        appVersion,
+        currentPathname,
         showFeedbackList,
+        panelTab,
+        routeDetailsStats,
+        canTransferFeedback,
+        personalKey,
+        personalKeyRequired,
+        issuePersonalKey,
+        insertPersonalKey,
+        canListAllFeedback,
         visibleShortcutKeys,
         searchInputRef,
         resolvedAppearance,
@@ -636,21 +794,28 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         selectableTargets,
         filters,
         setFilters,
+        listScope,
+        setListScope,
         reports,
         filteredReports,
         isError,
         isFetching,
+        hasNextPage,
+        isFetchingNextPage,
+        fetchNextPage,
         isCreating,
         isUpdating,
         isDeleting,
-        queryErrorMessage: error?.message,
+        queryErrorMessage,
         refetch,
         errorMessage,
+        setErrorMessage,
         draft,
         hoveredTarget,
         selectedTarget,
         markers,
         selectedReport,
+        locatedReportId,
         editingReportId,
         editableDraft,
         setEditableDraft,
@@ -679,8 +844,11 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         statusText,
         toggleReportMode,
         toggleTargetPreview,
-        toggleViewMode,
+        toggleIssueMode,
+        openPanelTab,
+        togglePanelTab,
         selectReport,
+        locateFeedback,
         focusSearchInput,
         selectAdjacentReport,
         openReplyComposer,
@@ -699,6 +867,12 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         handleUpdateSubmit,
         handleReplySubmit,
         handleDelete,
+        canCreateGitHubIssueFromList: canCreateGitHubIssueFromListValue,
+        canCreateGitHubIssueOnCreate: canCreateGitHubIssueOnCreateValue,
+        creatingGitHubIssueId,
+        handleCreateGitHubIssue,
+        handleCreateSubmitWithGitHubIssue,
+        isDraftGitHubIssueSubmitting: creatingGitHubIssueId === "draft",
     };
 }
 //# sourceMappingURL=useReportState.js.map

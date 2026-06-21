@@ -1,2 +1,2 @@
-export declare function useCurrentPathname(pathname?: string): string;
+export declare function useCurrentPathname(routeKey?: string): string;
 //# sourceMappingURL=useCurrentPathname.d.ts.map

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ReportFeedback } from "../types/report.js";
+import type { ReportFeedback } from "@/types/report.js";
 import {
     canCheckoutReply,
     canReviewLatestSuggestion,
@@ -40,6 +40,7 @@ describe("feedbackThread", () => {
 
     it("maps deny and checkout submit statuses", () => {
         expect(createReplyStatusForSubmit("deny")).toBe("found_error");
+        expect(createReplyStatusForSubmit("recheck")).toBe("recheck_requested");
         expect(createReplyStatusForSubmit("checkout")).toBe("suggested");
         expect(createReplyStatusForSubmit(null)).toBe("suggested");
     });
@@ -60,7 +61,7 @@ describe("feedbackThread", () => {
         expect(canCheckoutReply(report, report.replies[0])).toBe(false);
     });
 
-    it("allows checkout only on the latest found_error reply", () => {
+    it("allows checkout on the latest found_error or recheck_requested reply", () => {
         const foundError = {
             id: "r2",
             message: "still broken",
@@ -84,5 +85,14 @@ describe("feedbackThread", () => {
         });
 
         expect(canCheckoutReply(reportWithFollowUp, foundError)).toBe(false);
+
+        const recheckRequested = {
+            id: "r4",
+            message: "please review again",
+            created_at: "2026-01-05T00:00:00.000Z",
+            status: "recheck_requested" as const,
+        };
+
+        expect(canCheckoutReply(createReport({ replies: [recheckRequested] }), recheckRequested)).toBe(true);
     });
 });

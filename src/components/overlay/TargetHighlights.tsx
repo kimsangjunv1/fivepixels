@@ -1,7 +1,7 @@
-import { TARGET_COLOR, TARGET_SURFACE } from "../../constants/report.js";
-import type { ReportTargetType } from "../../types/report.js";
-import type { TargetSnapshot } from "../../types/report-ui.js";
-import { AnimatedPresence, motion, type MotionTransition } from "../motion/index.js";
+import { TARGET_COLOR, TARGET_SURFACE } from "@/constants/report.js";
+import type { ReportTargetType } from "@/types/report.js";
+import type { TargetSnapshot } from "@/types/report-ui.js";
+import { AnimatedPresence, motion, type MotionTransition } from "@/components/motion/index.js";
 
 type TargetHighlightsProps = {
     hoveredTarget: TargetSnapshot | null;
@@ -44,8 +44,10 @@ function HighlightMotionBox({ target, showLabel }: { target: TargetSnapshot; sho
                 top: target.rect.top,
                 width: target.rect.width,
                 height: target.rect.height,
-                outline: `2px solid ${TARGET_COLOR[target.type]}`,
-                backgroundColor: TARGET_SURFACE[target.type],
+                outline: `2px solid #0ed1b4`,
+                backgroundColor: "#0ed1b41c",
+                // outline: `2px solid ${TARGET_COLOR[target.type]}`,
+                // backgroundColor: TARGET_SURFACE[target.type],
             }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -53,8 +55,8 @@ function HighlightMotionBox({ target, showLabel }: { target: TargetSnapshot; sho
         >
             {showLabel ? (
                 <span
-                    className="absolute left-0 top-0 -translate-y-full px-1 py-0.5 text-[11px] font-medium text-white"
-                    style={{ backgroundColor: TARGET_COLOR[target.type], fontFamily: "Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace" }}
+                    className="absolute left-0 top-0 -translate-y-full px-1 py-0.5 font-[var(--coding-font)] text-[12px] font-medium text-white"
+                    style={{ backgroundColor: TARGET_COLOR[target.type] }}
                 >
                     {target.type} · {target.id}
                 </span>
@@ -92,7 +94,7 @@ export function TargetHighlights({ hoveredTarget, previewTargets = [], selectedT
                         top: selectedTarget.rect.top,
                         width: selectedTarget.rect.width,
                         height: selectedTarget.rect.height,
-                        boxShadow: `0 0 0 3px ${TARGET_COLOR[selectedTarget.type]}`,
+                        // boxShadow: `0 0 0 3px ${TARGET_COLOR[selectedTarget.type]}`,
                     }}
                 />
             ) : null}

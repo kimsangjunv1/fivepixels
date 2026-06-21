@@ -152,7 +152,7 @@ export function placementToPanelStyle(placement: PanelPlacement): CSSProperties 
         right: "auto",
         bottom: "auto",
         left: "auto",
-        maxHeight: "none",
+        // maxHeight: "none",
     };
 
     switch (placement.corner) {

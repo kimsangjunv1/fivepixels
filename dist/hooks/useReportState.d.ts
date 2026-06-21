@@ -1,6 +1,8 @@
 import { type MouseEvent } from "react";
-import type { ReportAppearance, ReportAuthor, ReportEvent, ReportFeedback, ReportField, ReportIdentify, ReportStorageAdapter } from "../types/report.js";
-import type { DraftReport, EditableDraft, Marker, PendingFeedbackComposer, ReportFilters, ReportMode, TargetSnapshot } from "../types/report-ui.js";
+import type { DeepPartialReportMessages } from "../i18n/types.js";
+import type { ReportLocale } from "../i18n/types.js";
+import type { CreateReportFeedbackPayload, ReportAppearance, ReportAuthor, ReportEvent, ReportFeedback, ReportField, ReportGitHubConfig, ReportIdentify, ReportListAllParams, ReportListAllResult, UpdateReportFeedbackPayload } from "../types/report.js";
+import type { DraftReport, EditableDraft, Marker, PendingFeedbackComposer, ReportMode, ReportPanelTab, TargetSnapshot } from "../types/report-ui.js";
 export type ReportStateConfig = {
     projectId: string;
     environment?: string;
@@ -10,25 +12,60 @@ export type ReportStateConfig = {
     authors?: ReportAuthor[];
     shortcut?: string;
     identify?: ReportIdentify;
+    onList?: (params: {
+        pathname: string;
+    }) => Promise<ReportFeedback[]>;
+    onListAll?: (params: ReportListAllParams) => Promise<ReportListAllResult>;
+    onNavigate?: (pathname: string) => void | Promise<void>;
+    onCreate?: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
+    onUpdate?: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
+    onDelete?: (id: string) => Promise<void>;
     onEvent?: (event: ReportEvent) => void | Promise<void>;
-    onFeedbackCreate?: (feedback: ReportFeedback) => void | Promise<void>;
-    onFeedbackDelete?: (id: string) => void | Promise<void>;
-    onFeedbackReply?: (params: {
+    onReply?: (params: {
         feedbackId: string;
         message: string;
     }) => void | Promise<void>;
-    onFeedbackUpdate?: (feedback: ReportFeedback) => void | Promise<void>;
-    pathname?: string;
+    github?: ReportGitHubConfig;
+    routeKey?: string;
     showFeedbackList: boolean;
-    storage?: "local" | ReportStorageAdapter;
-    storageAdapter?: ReportStorageAdapter;
     visibleShortcutKeys?: boolean;
+    initialLocale: ReportLocale;
+    messageOverrides?: DeepPartialReportMessages;
 };
-export declare function useReportState({ projectId, environment, appVersion, appearance, fields, authors, shortcut: _shortcut, identify, onEvent, onFeedbackCreate, onFeedbackDelete, onFeedbackReply, onFeedbackUpdate, pathname, showFeedbackList, storage, storageAdapter, visibleShortcutKeys, }: ReportStateConfig): {
+export declare function useReportState({ projectId, environment, appVersion, appearance, fields, authors, shortcut: _shortcut, identify, onList, onListAll, onNavigate, onCreate, onUpdate, onDelete, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys, initialLocale, messageOverrides, }: ReportStateConfig): {
     appearance: ReportAppearance;
+    setAppearance: (nextAppearance: ReportAppearance) => void;
+    locale: ReportLocale;
+    setLocale: (nextLocale: ReportLocale) => void;
+    messages: import("../i18n/types.js").ReportMessages;
     fields: ReportField[];
     authors: ReportAuthor[];
+    projectId: string;
+    environment: string | undefined;
+    appVersion: string | undefined;
+    currentPathname: string;
     showFeedbackList: boolean;
+    panelTab: ReportPanelTab | null;
+    routeDetailsStats: {
+        pathname: string;
+        statusRows: {
+            status: import("../utils/routeDetailStatus.js").RouteDetailStatus;
+            all: number;
+            today: number;
+        }[];
+        fieldCounts: {
+            key: string;
+            label: string;
+            type: "textarea" | "checkbox";
+            count: number;
+        }[];
+    };
+    canTransferFeedback: boolean;
+    personalKey: string | null;
+    personalKeyRequired: boolean;
+    issuePersonalKey: () => Promise<string | null>;
+    insertPersonalKey: (key: string) => Promise<boolean>;
+    canListAllFeedback: boolean;
     visibleShortcutKeys: boolean;
     searchInputRef: import("react").MutableRefObject<HTMLInputElement | null>;
     resolvedAppearance: import("../types/report-ui.js").ResolvedAppearance;
@@ -36,23 +73,30 @@ export declare function useReportState({ projectId, environment, appVersion, app
     mode: ReportMode;
     showTargetPreview: boolean;
     selectableTargets: TargetSnapshot[];
-    filters: ReportFilters;
-    setFilters: import("react").Dispatch<import("react").SetStateAction<ReportFilters>>;
+    filters: import("../types/report-ui.js").ReportFilters;
+    setFilters: import("react").Dispatch<import("react").SetStateAction<import("../types/report-ui.js").ReportFilters>>;
+    listScope: import("../types/report-ui.js").ReportListScope;
+    setListScope: import("react").Dispatch<import("react").SetStateAction<import("../types/report-ui.js").ReportListScope>>;
     reports: ReportFeedback[];
     filteredReports: ReportFeedback[];
     isError: boolean;
     isFetching: boolean;
+    hasNextPage: boolean;
+    isFetchingNextPage: boolean;
+    fetchNextPage: () => Promise<void>;
     isCreating: boolean;
     isUpdating: boolean;
     isDeleting: boolean;
     queryErrorMessage: string | undefined;
     refetch: () => Promise<ReportFeedback[]>;
     errorMessage: string;
+    setErrorMessage: import("react").Dispatch<import("react").SetStateAction<string>>;
     draft: DraftReport | null;
     hoveredTarget: TargetSnapshot | null;
     selectedTarget: TargetSnapshot | null;
     markers: Marker[];
     selectedReport: ReportFeedback;
+    locatedReportId: string | null;
     editingReportId: string | null;
     editableDraft: EditableDraft | null;
     setEditableDraft: import("react").Dispatch<import("react").SetStateAction<EditableDraft | null>>;
@@ -88,8 +132,11 @@ export declare function useReportState({ projectId, environment, appVersion, app
     statusText: string;
     toggleReportMode: () => void;
     toggleTargetPreview: () => void;
-    toggleViewMode: () => void;
+    toggleIssueMode: () => void;
+    openPanelTab: (nextTab: ReportPanelTab) => void;
+    togglePanelTab: (nextTab: ReportPanelTab) => void;
     selectReport: (reportId: string) => void;
+    locateFeedback: (reportId: string) => Promise<void>;
     focusSearchInput: () => void;
     selectAdjacentReport: (direction: "up" | "down") => void;
     openReplyComposer: (report: ReportFeedback) => void;
@@ -108,5 +155,11 @@ export declare function useReportState({ projectId, environment, appVersion, app
     handleUpdateSubmit: () => Promise<void>;
     handleReplySubmit: () => Promise<void>;
     handleDelete: (id: string) => Promise<void>;
+    canCreateGitHubIssueFromList: boolean;
+    canCreateGitHubIssueOnCreate: boolean;
+    creatingGitHubIssueId: string | null;
+    handleCreateGitHubIssue: (report: ReportFeedback) => Promise<void>;
+    handleCreateSubmitWithGitHubIssue: () => Promise<void>;
+    isDraftGitHubIssueSubmitting: boolean;
 };
 //# sourceMappingURL=useReportState.d.ts.map

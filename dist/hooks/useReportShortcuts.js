@@ -2,11 +2,11 @@ import { useEffect } from "react";
 import { REPORT_SHORTCUTS } from "../constants/reportShortcuts.js";
 import { isEditableTarget, matchesShortcut } from "../utils/shortcuts.js";
 export function useReportShortcuts(handlers) {
-    const { mode, draft, editingReportId, showFeedbackList, showTargetPreview, toggleReportMode, toggleTargetPreview, toggleViewMode, cancelDraft, handleCreateSubmit, stopEditing, handleUpdateSubmit, focusSearchInput, selectAdjacentReport, } = handlers;
+    const { mode, draft, editingReportId, panelTab, showTargetPreview, activeReplyReportId, pendingComposer, toggleReportMode, toggleTargetPreview, toggleIssueMode, cancelDraft, cancelPendingComposer, closeReplyComposer, handleCreateSubmit, stopEditing, handleUpdateSubmit, focusSearchInput, selectAdjacentReport, } = handlers;
     useEffect(() => {
         const handleKeyDown = (event) => {
             const inEditable = isEditableTarget(event.target);
-            const isViewListOpen = mode === "view" && showFeedbackList;
+            const isFeedbackListOpen = panelTab === "feedback-list";
             if (matchesShortcut(event, REPORT_SHORTCUTS.submit)) {
                 if (draft) {
                     event.preventDefault();
@@ -36,9 +36,19 @@ export function useReportShortcuts(handlers) {
                     toggleReportMode();
                     return;
                 }
+                if (pendingComposer) {
+                    event.preventDefault();
+                    cancelPendingComposer();
+                    return;
+                }
+                if (activeReplyReportId) {
+                    event.preventDefault();
+                    closeReplyComposer();
+                    return;
+                }
                 if (mode === "view") {
                     event.preventDefault();
-                    toggleViewMode();
+                    toggleIssueMode();
                     return;
                 }
                 if (showTargetPreview) {
@@ -48,12 +58,12 @@ export function useReportShortcuts(handlers) {
                 }
                 return;
             }
-            if (isViewListOpen && matchesShortcut(event, REPORT_SHORTCUTS.focusSearch)) {
+            if (isFeedbackListOpen && matchesShortcut(event, REPORT_SHORTCUTS.focusSearch)) {
                 event.preventDefault();
                 focusSearchInput();
                 return;
             }
-            if (isViewListOpen && !inEditable && (event.key === "ArrowUp" || event.key === "ArrowDown")) {
+            if (isFeedbackListOpen && !inEditable && (event.key === "ArrowUp" || event.key === "ArrowDown")) {
                 event.preventDefault();
                 selectAdjacentReport(event.key === "ArrowDown" ? "down" : "up");
                 return;
@@ -76,7 +86,7 @@ export function useReportShortcuts(handlers) {
             }
             if (matchesShortcut(event, REPORT_SHORTCUTS.toggleViewMode)) {
                 event.preventDefault();
-                toggleViewMode();
+                toggleIssueMode();
             }
         };
         window.addEventListener("keydown", handleKeyDown);
@@ -87,12 +97,16 @@ export function useReportShortcuts(handlers) {
         mode,
         draft,
         editingReportId,
-        showFeedbackList,
+        panelTab,
         showTargetPreview,
+        activeReplyReportId,
+        pendingComposer,
         toggleReportMode,
         toggleTargetPreview,
-        toggleViewMode,
+        toggleIssueMode,
         cancelDraft,
+        cancelPendingComposer,
+        closeReplyComposer,
         handleCreateSubmit,
         stopEditing,
         handleUpdateSubmit,

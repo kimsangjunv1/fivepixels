@@ -1,50 +1,64 @@
-import { ChevronDownIcon } from "../../icons/ChevronDownIcon.js";
-import type { ReportAuthor } from "../../../types/report.js";
+import { useState } from "react";
+import { useReport } from "@/providers/reportContext.js";
+import { ChevronDownIcon } from "@/components/icons/ChevronDownIcon.js";
+import { PanelDropdownMenu, PanelDropdownMenuItem } from "@/components/panel/PanelDropdownMenu.js";
+import type { ReportAuthor } from "@/types/report.js";
 
 type AuthorSelectorProps = {
     authors: ReportAuthor[];
     value: string;
-    onChange: (nextValue: string) => void;
+    onChange: (value: string) => void;
 };
 
 export function AuthorSelector({ authors, value, onChange }: AuthorSelectorProps) {
+    const { messages } = useReport();
+    const [menuOpen, setMenuOpen] = useState(false);
+
     if (authors.length === 0) {
         return (
             <input
                 type="text"
                 value={value}
                 onChange={(event) => onChange(event.target.value)}
-                placeholder="작성자"
-                className="min-w-0 flex-1 rounded-full border border-[var(--adaptive-greyOpacity300)] bg-[var(--adaptive-greyOpacity200)] px-[12px] py-[8px] text-[12px] text-[var(--adaptive-grey900)] outline-none placeholder:text-[var(--adaptive-grey500)]"
+                placeholder={messages.author.placeholder}
+                className="h-[24px] min-w-0 flex-1 rounded-full bg-[var(--adaptive-surface-muted)] px-[12px] py-[4px] text-[12px] text-[var(--adaptive-text-primary)] outline-none placeholder:text-[var(--adaptive-text-muted)]"
             />
         );
     }
 
     return (
-        <div className="relative min-w-0 flex-1">
-            <select
-                value={value}
-                onChange={(event) => onChange(event.target.value)}
-                className="w-full appearance-none rounded-full border border-[var(--adaptive-greyOpacity300)] bg-[var(--adaptive-greyOpacity200)] py-[8px] pr-[28px] pl-[12px] text-[12px] text-[var(--adaptive-grey900)] outline-none"
-            >
-                {!value ? (
-                    <option
-                        value=""
-                        disabled
-                    >
-                        작성자 선택
-                    </option>
-                ) : null}
-                {authors.map((author) => (
-                    <option
-                        key={author.id}
-                        value={author.name}
-                    >
-                        {author.name}
-                    </option>
-                ))}
-            </select>
-            <ChevronDownIcon className="pointer-events-none absolute top-1/2 right-[10px] h-[14px] w-[14px] -translate-y-1/2 text-[var(--adaptive-grey600)]" />
-        </div>
+        <PanelDropdownMenu
+            open={menuOpen}
+            onClose={() => setMenuOpen(false)}
+            align="left"
+            menuClassName="min-w-full"
+            trigger={
+                <button
+                    type="button"
+                    onClick={() => setMenuOpen((current) => !current)}
+                    aria-expanded={menuOpen}
+                    aria-haspopup="menu"
+                    aria-label={messages.author.selectAriaLabel}
+                    className="flex h-[24px] w-full min-w-0 items-center justify-between rounded-full bg-[var(--adaptive-surface-muted)] py-[4px] pr-[10px] pl-[12px] text-[12px] outline-none"
+                >
+                    <span className={`text-[var(--adaptive-black500)]`}>{value || messages.author.selectPlaceholder}</span>
+
+                    <ChevronDownIcon className={`h-[14px] w-[14px] shrink-0 text-[var(--adaptive-black600)] transition-transform ${menuOpen ? "rotate-180" : ""}`} />
+                </button>
+            }
+        >
+            {authors.map((author) => (
+                <PanelDropdownMenuItem
+                    key={author.id}
+                    active={author.name === value}
+                    onClick={() => {
+                        onChange(author.name);
+                        setMenuOpen(false);
+                    }}
+                >
+                    {author.name}
+                </PanelDropdownMenuItem>
+            ))}
+        </PanelDropdownMenu>
     );
 }
