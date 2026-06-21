@@ -267,6 +267,8 @@ export default function App() {
 | `authors`             | _(deprecated)_ `team.reviewers` 사용.                                          |
 | `fields`              | 피드백 작성 폼 필드 배열.                                                      |
 | `onList`              | 현재 화면 키의 피드백 목록을 반환. 서버 연동 시 필수.                          |
+| `onListAll`           | 전체 화면의 피드백 목록을 cursor pagination으로 반환.                          |
+| `onNavigate`          | 다른 화면의 피드백 선택 시 해당 pathname으로 이동.                             |
 | `onCreate`            | 피드백 생성 persistence handler.                                               |
 | `onUpdate`            | 피드백 수정 persistence handler.                                               |
 | `onDelete`            | 피드백 삭제 persistence handler. UI 삭제 기능 사용 시 필요.                    |

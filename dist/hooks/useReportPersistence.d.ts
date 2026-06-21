@@ -1,5 +1,5 @@
-import type { CreateReportFeedbackPayload, ReportFeedback, ReportField, ReportStorageAdapter, UpdateReportFeedbackPayload } from "../types/report.js";
-import type { ReportFilters } from "../types/report-ui.js";
+import type { CreateReportFeedbackPayload, ReportFeedback, ReportField, ReportPersistenceHandlers, ReportStorageAdapter, UpdateReportFeedbackPayload } from "../types/report.js";
+import type { ReportFilters, ReportListScope } from "../types/report-ui.js";
 export type ReportPersistenceConfig = {
     projectId: string;
     environment?: string;
@@ -8,21 +8,26 @@ export type ReportPersistenceConfig = {
     onList?: (params: {
         pathname: string;
     }) => Promise<ReportFeedback[]>;
+    onListAll?: ReportPersistenceHandlers["onListAll"];
     onCreate?: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
     onUpdate?: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
     onDelete?: (id: string) => Promise<void>;
     routeKey?: string;
 };
-export declare function useReportPersistence({ projectId, environment, appVersion, fields, onList, onCreate, onUpdate, onDelete, routeKey, }: ReportPersistenceConfig): {
+export declare function useReportPersistence({ projectId, environment, appVersion, fields, onList, onListAll, onCreate, onUpdate, onDelete, routeKey, }: ReportPersistenceConfig): {
     storageAdapterInstance: ReportStorageAdapter;
     canTransferFeedback: boolean;
+    canListAllFeedback: boolean;
     currentPathname: string;
+    listScope: ReportListScope;
+    setListScope: import("react").Dispatch<import("react").SetStateAction<ReportListScope>>;
     filters: ReportFilters;
     setFilters: import("react").Dispatch<import("react").SetStateAction<ReportFilters>>;
     selectedReportId: string | null;
     setSelectedReportId: import("react").Dispatch<import("react").SetStateAction<string | null>>;
     reports: ReportFeedback[];
     filteredReports: ReportFeedback[];
+    currentPageFilteredReports: ReportFeedback[];
     routeDetailsStats: {
         pathname: string;
         statusRows: {
@@ -40,6 +45,9 @@ export declare function useReportPersistence({ projectId, environment, appVersio
     selectedReport: ReportFeedback;
     isError: boolean;
     isFetching: boolean;
+    hasNextPage: boolean;
+    isFetchingNextPage: boolean;
+    fetchNextPage: () => Promise<void>;
     isCreating: boolean;
     isUpdating: boolean;
     isDeleting: boolean;

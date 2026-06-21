@@ -22,10 +22,8 @@ import { panelNumericClassName } from "@/utils/panelTypography.js";
 import type { ReportPanelTab } from "@/types/report-ui.js";
 
 function PanelCollapseTab({ collapsed, anchorSide, onClick, messages }: { collapsed: boolean; anchorSide: "left" | "right"; onClick: () => void; messages: ReturnType<typeof useReport>["messages"] }) {
-    const hideIcon =
-        anchorSide === "right" ? <ChevronRightIcon className="h-3 w-3 text-[var(--adaptive-text-muted)]" /> : <ChevronLeftIcon className="h-3 w-3 text-[var(--adaptive-text-muted)]" />;
-    const expandIcon =
-        anchorSide === "right" ? <ChevronLeftIcon className="h-3 w-3 text-[var(--adaptive-text-muted)]" /> : <ChevronRightIcon className="h-3 w-3 text-[var(--adaptive-text-muted)]" />;
+    const hideIcon = anchorSide === "right" ? <ChevronRightIcon className="h-3 w-3 text-[var(--adaptive-text-muted)]" /> : <ChevronLeftIcon className="h-3 w-3 text-[var(--adaptive-text-muted)]" />;
+    const expandIcon = anchorSide === "right" ? <ChevronLeftIcon className="h-3 w-3 text-[var(--adaptive-text-muted)]" /> : <ChevronRightIcon className="h-3 w-3 text-[var(--adaptive-text-muted)]" />;
 
     return (
         <button
@@ -178,7 +176,7 @@ export function ReportControlPanel() {
                 onDragLeave={handleDragLeave}
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}
-                className={`pointer-events-auto fixed z-[1000000] bg-[var(--adaptive-surface-overlay)] backdrop-blur-[50px] rounded-[24px] shadow-[0_0_120px_0_var(--adaptive-blackOpacity500)] flex ${isRecording ? "min-h-[40px] p-[4px]" : "max-h-[80vh] max-w-[calc(100svw-(16px*2))]"}`}
+                className={`pointer-events-auto fixed z-[1000000] bg-[var(--adaptive-surface-overlay)] overflow-hidden backdrop-blur-[50px] rounded-[24px] shadow-[0_0_120px_0_var(--adaptive-blackOpacity500)] flex ${isRecording ? "min-h-[40px] p-[4px]" : "max-h-[calc(100svh-(16px*2))] max-w-[calc(100svw-(16px*2))]"}`}
                 style={{ ...panelStyle, fontSize: "14px" }}
             >
                 <motion.div className="flex min-w-0 flex-1 flex-col w-full">
@@ -200,7 +198,7 @@ export function ReportControlPanel() {
                     ) : (
                         <>
                             {!panelCollapsed ? (
-                                <section className="relative flex min-w-0 flex-1 flex-col">
+                                <section className="relative flex min-w-0 flex-1 flex-col h-full">
                                     {isDragOver ? (
                                         <div className="pointer-events-none absolute inset-0 z-[30] flex items-center justify-center rounded-[12px] bg-[#dbeafe]/90 px-[16px] text-center backdrop-blur-[2px]">
                                             <p className="text-[14px] font-bold text-[var(--adaptive-blue500)]">{messages.panel.importDragOverlay}</p>
@@ -217,7 +215,7 @@ export function ReportControlPanel() {
                                             />
                                         ) : null}
 
-                                        <div className="flex flex-col gap-[8px] p-[8px_0_8px_12px] flex-1">
+                                        <div className="flex flex-col gap-[8px] p-[8px_8px_8px_12px] flex-1">
                                             <section className="flex items-center justify-between gap-[8px]">
                                                 <section className="flex min-w-0 items-center gap-[4px]">
                                                     <LogoIcon className="w-[16px] shrink-0" />

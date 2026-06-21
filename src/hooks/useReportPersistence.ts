@@ -1,8 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { useCreateReportMutation, useDeleteReportMutation, useReportsQuery, useUpdateReportMutation } from "./report.query.js";
 import { useCurrentPathname } from "./useCurrentPathname.js";
-import type { CreateReportFeedbackPayload, ReportFeedback, ReportField, ReportStorageAdapter, UpdateReportFeedbackPayload } from "@/types/report.js";
-import type { ReportFilters } from "@/types/report-ui.js";
+import type {
+    CreateReportFeedbackPayload,
+    ReportFeedback,
+    ReportField,
+    ReportPersistenceHandlers,
+    ReportStorageAdapter,
+    UpdateReportFeedbackPayload,
+} from "@/types/report.js";
+import type { ReportFilters, ReportListScope } from "@/types/report-ui.js";
 import { getRouteDetailStatus, isCreatedToday, ROUTE_DETAIL_STATUS_ORDER } from "@/utils/routeDetailStatus.js";
 import { resolveStorageAdapter } from "@/utils/storage.js";
 
@@ -12,11 +19,31 @@ export type ReportPersistenceConfig = {
     appVersion?: string;
     fields: ReportField[];
     onList?: (params: { pathname: string }) => Promise<ReportFeedback[]>;
+    onListAll?: ReportPersistenceHandlers["onListAll"];
     onCreate?: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
     onUpdate?: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
     onDelete?: (id: string) => Promise<void>;
     routeKey?: string;
 };
+
+function filterReports(reports: ReportFeedback[], filters: ReportFilters) {
+    return reports.filter((report) => {
+        if (filters.status !== "all" && getRouteDetailStatus(report) !== filters.status) {
+            return false;
+        }
+
+        if (filters.reportType !== "all" && report.report_type !== filters.reportType) {
+            return false;
+        }
+
+        if (!filters.keyword.trim()) {
+            return true;
+        }
+
+        const keyword = filters.keyword.trim().toLowerCase();
+        return [report.message, report.report_id, report.status, report.pathname].join(" ").toLowerCase().includes(keyword);
+    });
+}
 
 export function useReportPersistence({
     projectId,
@@ -24,14 +51,15 @@ export function useReportPersistence({
     appVersion,
     fields,
     onList,
+    onListAll,
     onCreate,
     onUpdate,
     onDelete,
     routeKey,
 }: ReportPersistenceConfig) {
     const { adapter: storageAdapterInstance, usesLocalStorage } = useMemo(
-        () => resolveStorageAdapter({ projectId, environment, appVersion, onList, onCreate, onUpdate, onDelete }),
-        [appVersion, environment, onCreate, onDelete, onList, onUpdate, projectId],
+        () => resolveStorageAdapter({ projectId, environment, appVersion, onList, onListAll, onCreate, onUpdate, onDelete }),
+        [appVersion, environment, onCreate, onDelete, onList, onListAll, onUpdate, projectId],
     );
     const canTransferFeedback = usesLocalStorage;
     const currentPathname = useCurrentPathname(routeKey);
@@ -42,38 +70,45 @@ export function useReportPersistence({
         reportType: "all",
     });
     const [selectedReportId, setSelectedReportId] = useState<string | null>(null);
+    const [listScope, setListScope] = useState<ReportListScope>("current");
 
-    const { data: reports, error, isError, isFetching, refetch } = useReportsQuery(storageAdapterInstance, currentPathname, true);
+    const currentReportsQuery = useReportsQuery(storageAdapterInstance, currentPathname, "current", true);
+    const allReportsQuery = useReportsQuery(
+        storageAdapterInstance,
+        currentPathname,
+        "all",
+        listScope === "all" && Boolean(storageAdapterInstance.listAll),
+    );
+    const activeReportsQuery = listScope === "all" ? allReportsQuery : currentReportsQuery;
+    const reports = activeReportsQuery.data;
+    const { error, isError, isFetching, hasNextPage, isFetchingNextPage, fetchNextPage, refetch } = activeReportsQuery;
     const { mutateAsync: createFeedback, isPending: isCreating } = useCreateReportMutation(storageAdapterInstance, () => {
         void refetch();
+        if (listScope === "all") {
+            void currentReportsQuery.refetch();
+        }
     });
     const { mutateAsync: updateFeedback, isPending: isUpdating } = useUpdateReportMutation(storageAdapterInstance, () => {
         void refetch();
+        if (listScope === "all") {
+            void currentReportsQuery.refetch();
+        }
     });
     const { mutateAsync: deleteFeedback, isPending: isDeleting } = useDeleteReportMutation(storageAdapterInstance, () => {
         void refetch();
+        if (listScope === "all") {
+            void currentReportsQuery.refetch();
+        }
     });
 
-    const filteredReports = useMemo(() => {
-        return reports.filter((report) => {
-            if (filters.status !== "all" && getRouteDetailStatus(report) !== filters.status) {
-                return false;
-            }
-
-            if (filters.reportType !== "all" && report.report_type !== filters.reportType) {
-                return false;
-            }
-
-            if (!filters.keyword.trim()) {
-                return true;
-            }
-
-            const keyword = filters.keyword.trim().toLowerCase();
-            return [report.message, report.report_id, report.status].join(" ").toLowerCase().includes(keyword);
-        });
-    }, [filters.keyword, filters.reportType, filters.status, reports]);
+    const filteredReports = useMemo(() => filterReports(reports, filters), [filters, reports]);
+    const currentPageFilteredReports = useMemo(
+        () => filterReports(currentReportsQuery.data, filters),
+        [currentReportsQuery.data, filters],
+    );
 
     const routeDetailsStats = useMemo(() => {
+        const currentPageReports = currentReportsQuery.data;
         const statusRows = ROUTE_DETAIL_STATUS_ORDER.map((status) => ({
             status,
             all: 0,
@@ -82,7 +117,7 @@ export function useReportPersistence({
 
         const statusIndex = new Map(statusRows.map((row, index) => [row.status, index]));
 
-        for (const report of reports) {
+        for (const report of currentPageReports) {
             const status = getRouteDetailStatus(report);
             const index = statusIndex.get(status);
 
@@ -100,7 +135,7 @@ export function useReportPersistence({
         const fieldCounts = fields
             .filter((field) => field.key !== "message")
             .map((field) => {
-                const count = reports.filter((report) => {
+                const count = currentPageReports.filter((report) => {
                     if (field.type === "checkbox") {
                         return report.field_values[field.key] === true;
                     }
@@ -121,7 +156,7 @@ export function useReportPersistence({
             statusRows,
             fieldCounts,
         };
-    }, [currentPathname, fields, reports]);
+    }, [currentPathname, currentReportsQuery.data, fields]);
 
     const selectedReport = useMemo(() => {
         return filteredReports.find((report) => report.id === selectedReportId) ?? filteredReports[0] ?? null;
@@ -140,17 +175,24 @@ export function useReportPersistence({
     return {
         storageAdapterInstance,
         canTransferFeedback,
+        canListAllFeedback: Boolean(storageAdapterInstance.listAll),
         currentPathname,
+        listScope,
+        setListScope,
         filters,
         setFilters,
         selectedReportId,
         setSelectedReportId,
         reports,
         filteredReports,
+        currentPageFilteredReports,
         routeDetailsStats,
         selectedReport,
         isError,
         isFetching,
+        hasNextPage,
+        isFetchingNextPage,
+        fetchNextPage,
         isCreating,
         isUpdating,
         isDeleting,

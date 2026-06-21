@@ -29,6 +29,7 @@ declare const ReportContext: import("react").Context<{
         }[];
     };
     canTransferFeedback: boolean;
+    canListAllFeedback: boolean;
     visibleShortcutKeys: boolean;
     searchInputRef: import("react").MutableRefObject<HTMLInputElement | null>;
     resolvedAppearance: import("../types/report-ui").ResolvedAppearance;
@@ -38,10 +39,15 @@ declare const ReportContext: import("react").Context<{
     selectableTargets: import("../types/report-ui").TargetSnapshot[];
     filters: import("../types/report-ui").ReportFilters;
     setFilters: import("react").Dispatch<import("react").SetStateAction<import("../types/report-ui").ReportFilters>>;
+    listScope: import("../types/report-ui").ReportListScope;
+    setListScope: import("react").Dispatch<import("react").SetStateAction<import("../types/report-ui").ReportListScope>>;
     reports: import("..").ReportFeedback[];
     filteredReports: import("..").ReportFeedback[];
     isError: boolean;
     isFetching: boolean;
+    hasNextPage: boolean;
+    isFetchingNextPage: boolean;
+    fetchNextPage: () => Promise<void>;
     isCreating: boolean;
     isUpdating: boolean;
     isDeleting: boolean;
@@ -94,7 +100,7 @@ declare const ReportContext: import("react").Context<{
     openPanelTab: (nextTab: import("../types/report-ui").ReportPanelTab) => void;
     togglePanelTab: (nextTab: import("../types/report-ui").ReportPanelTab) => void;
     selectReport: (reportId: string) => void;
-    locateFeedback: (reportId: string) => void;
+    locateFeedback: (reportId: string) => Promise<void>;
     focusSearchInput: () => void;
     selectAdjacentReport: (direction: "up" | "down") => void;
     openReplyComposer: (report: import("..").ReportFeedback) => void;
@@ -149,6 +155,7 @@ export declare function useReport(): {
         }[];
     };
     canTransferFeedback: boolean;
+    canListAllFeedback: boolean;
     visibleShortcutKeys: boolean;
     searchInputRef: import("react").MutableRefObject<HTMLInputElement | null>;
     resolvedAppearance: import("../types/report-ui").ResolvedAppearance;
@@ -158,10 +165,15 @@ export declare function useReport(): {
     selectableTargets: import("../types/report-ui").TargetSnapshot[];
     filters: import("../types/report-ui").ReportFilters;
     setFilters: import("react").Dispatch<import("react").SetStateAction<import("../types/report-ui").ReportFilters>>;
+    listScope: import("../types/report-ui").ReportListScope;
+    setListScope: import("react").Dispatch<import("react").SetStateAction<import("../types/report-ui").ReportListScope>>;
     reports: import("..").ReportFeedback[];
     filteredReports: import("..").ReportFeedback[];
     isError: boolean;
     isFetching: boolean;
+    hasNextPage: boolean;
+    isFetchingNextPage: boolean;
+    fetchNextPage: () => Promise<void>;
     isCreating: boolean;
     isUpdating: boolean;
     isDeleting: boolean;
@@ -214,7 +226,7 @@ export declare function useReport(): {
     openPanelTab: (nextTab: import("../types/report-ui").ReportPanelTab) => void;
     togglePanelTab: (nextTab: import("../types/report-ui").ReportPanelTab) => void;
     selectReport: (reportId: string) => void;
-    locateFeedback: (reportId: string) => void;
+    locateFeedback: (reportId: string) => Promise<void>;
     focusSearchInput: () => void;
     selectAdjacentReport: (direction: "up" | "down") => void;
     openReplyComposer: (report: import("..").ReportFeedback) => void;

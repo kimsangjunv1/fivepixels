@@ -44,12 +44,14 @@ describe("resolveStorageAdapter", () => {
             ...payload,
         }));
         const onDelete = vi.fn(async () => undefined);
+        const onListAll = vi.fn(async () => ({ items: [sampleFeedback] }));
 
         expect(hasCustomPersistenceHandlers({ onList, onCreate, onUpdate })).toBe(true);
 
         const { adapter, usesLocalStorage } = resolveStorageAdapter({
             projectId: "demo-app",
             onList,
+            onListAll,
             onCreate,
             onUpdate,
             onDelete,
@@ -58,5 +60,7 @@ describe("resolveStorageAdapter", () => {
         expect(usesLocalStorage).toBe(false);
         await expect(adapter.list({ pathname: "/demo" })).resolves.toEqual([sampleFeedback]);
         expect(onList).toHaveBeenCalledWith({ pathname: "/demo" });
+        await expect(adapter.listAll?.({ limit: 100 })).resolves.toEqual({ items: [sampleFeedback] });
+        expect(onListAll).toHaveBeenCalledWith({ limit: 100 });
     });
 });

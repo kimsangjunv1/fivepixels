@@ -34,6 +34,9 @@ export const en: ReportMessages = {
         tabFeedbackList: "Feedback list",
     },
     feedbackList: {
+        scopeAriaLabel: "Feedback scope",
+        scopeCurrentPage: "Current page",
+        scopeAllPages: "All pages",
         filterStatusAll: "All statuses",
         filterTypeAll: "All types",
         filterStatusAriaLabel: "Status filter",

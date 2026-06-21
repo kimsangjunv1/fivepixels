@@ -2,12 +2,18 @@ import { getActiveReportMessages } from "@/i18n/index.js";
 import type {
     CreateReportFeedbackPayload,
     ReportFeedback,
+    ReportListAllParams,
+    ReportListAllResult,
     ReportStorageAdapter,
     UpdateReportFeedbackPayload,
 } from "@/types/report.js";
 
 export async function listReports(adapter: ReportStorageAdapter, pathname: string) {
     return adapter.list({ pathname });
+}
+
+export async function listAllReports(adapter: ReportStorageAdapter, params: ReportListAllParams): Promise<ReportListAllResult> {
+    return adapter.listAll?.(params) ?? { items: [] };
 }
 
 export async function createReport(adapter: ReportStorageAdapter, payload: CreateReportFeedbackPayload) {

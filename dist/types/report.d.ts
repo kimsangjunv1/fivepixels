@@ -107,10 +107,19 @@ export type CreateReportFeedbackPayload = Omit<ReportFeedback, "id" | "created_a
     replies?: ReportReply[];
 };
 export type UpdateReportFeedbackPayload = Partial<Pick<ReportFeedback, "message" | "status" | "field_values" | "replies" | "report_id" | "report_type" | "integrations">>;
+export type ReportListAllParams = {
+    cursor?: string;
+    limit: number;
+};
+export type ReportListAllResult = {
+    items: ReportFeedback[];
+    nextCursor?: string;
+};
 export interface ReportStorageAdapter {
     list(params: {
         pathname: string;
     }): Promise<ReportFeedback[]>;
+    listAll?(params: ReportListAllParams): Promise<ReportListAllResult>;
     create(payload: CreateReportFeedbackPayload): Promise<ReportFeedback>;
     update(id: string, payload: UpdateReportFeedbackPayload): Promise<ReportFeedback>;
     remove?(id: string): Promise<void>;
@@ -120,6 +129,7 @@ export type ReportPersistenceHandlers = {
     onList: (params: {
         pathname: string;
     }) => Promise<ReportFeedback[]>;
+    onListAll?: (params: ReportListAllParams) => Promise<ReportListAllResult>;
     onCreate: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
     onUpdate: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
     onDelete?: (id: string) => Promise<void>;

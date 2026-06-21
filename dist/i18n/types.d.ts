@@ -36,6 +36,9 @@ export type ReportMessages = {
         tabFeedbackList: string;
     };
     feedbackList: {
+        scopeAriaLabel: string;
+        scopeCurrentPage: string;
+        scopeAllPages: string;
         filterStatusAll: string;
         filterTypeAll: string;
         filterStatusAriaLabel: string;

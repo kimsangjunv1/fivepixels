@@ -162,11 +162,17 @@ export function ReportFeedbackList() {
         setFilters,
         filteredReports,
         reports,
+        listScope,
+        setListScope,
+        canListAllFeedback,
         fields,
         locale,
         messages,
         isError,
         isFetching,
+        hasNextPage,
+        isFetchingNextPage,
+        fetchNextPage,
         isDeleting,
         queryErrorMessage,
         visibleShortcutKeys,
@@ -192,7 +198,7 @@ export function ReportFeedbackList() {
 
     useEffect(() => {
         setVisibleCount(FEEDBACK_PAGE_SIZE);
-    }, [filters.keyword, filters.reportType, filters.status, reports.length]);
+    }, [filters.keyword, filters.reportType, filters.status, listScope, reports.length]);
 
     useEffect(() => {
         const firstGroupKey = groupedReports[0]?.dateKey;
@@ -202,7 +208,7 @@ export function ReportFeedbackList() {
         } else {
             setExpandedGroups(new Set());
         }
-    }, [filters.keyword, filters.reportType, filters.status, reports.length]);
+    }, [filters.keyword, filters.reportType, filters.status, listScope, reports.length]);
 
     const toggleGroup = (dateKey: string) => {
         setExpandedGroups((current) => {
@@ -221,14 +227,18 @@ export function ReportFeedbackList() {
     useEffect(() => {
         const node = loadMoreRef.current;
 
-        if (!node || visibleCount >= filteredReports.length) {
+        if (!node || (visibleCount >= filteredReports.length && !hasNextPage)) {
             return;
         }
 
         const observer = new IntersectionObserver(
             (entries) => {
                 if (entries.some((entry) => entry.isIntersecting)) {
-                    setVisibleCount((current) => Math.min(current + FEEDBACK_PAGE_SIZE, filteredReports.length));
+                    if (visibleCount < filteredReports.length) {
+                        setVisibleCount((current) => Math.min(current + FEEDBACK_PAGE_SIZE, filteredReports.length));
+                    } else {
+                        void fetchNextPage();
+                    }
                 }
             },
             { root: node.parentElement, rootMargin: "120px" },
@@ -239,10 +249,34 @@ export function ReportFeedbackList() {
         return () => {
             observer.disconnect();
         };
-    }, [filteredReports.length, visibleCount]);
+    }, [fetchNextPage, filteredReports.length, hasNextPage, visibleCount]);
 
     return (
         <section className="flex min-h-0 flex-1 flex-col bg-[var(--adaptive-black50)] rounded-[0_0_24px_24px]">
+            {canListAllFeedback ? (
+                <div
+                    className="flex border-t border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] p-[4px]"
+                    role="group"
+                    aria-label={messages.feedbackList.scopeAriaLabel}
+                >
+                    {(["current", "all"] as const).map((scope) => (
+                        <button
+                            key={scope}
+                            type="button"
+                            aria-pressed={listScope === scope}
+                            onClick={() => setListScope(scope)}
+                            className={`flex-1 rounded-[6px] px-[8px] py-[4px] text-[12px] font-[600] ${
+                                listScope === scope
+                                    ? "bg-[var(--adaptive-black200)] text-[var(--adaptive-black900)]"
+                                    : "text-[var(--adaptive-black500)] hover:bg-[var(--adaptive-black100)]"
+                            }`}
+                        >
+                            {scope === "current" ? messages.feedbackList.scopeCurrentPage : messages.feedbackList.scopeAllPages}
+                        </button>
+                    ))}
+                </div>
+            ) : null}
+
             <div className="flex bg-[var(--adaptive-black50)] border-y border-y-[var(--adaptive-border-subtle)]">
                 <section className="flex flex-1 items-center gap-[4px]">
                     <PanelDropdownMenu
@@ -428,6 +462,9 @@ export function ReportFeedbackList() {
                                                           </div>
 
                                                           <p className="text-[var(--adaptive-black700)]">{report.message}</p>
+                                                          {listScope === "all" ? (
+                                                              <p className="truncate text-[11px] text-[var(--adaptive-black500)]">{report.pathname}</p>
+                                                          ) : null}
                                                       </section>
 
                                                       <p className="text-[var(--adaptive-black500)] text-[12px]">{formatTimeOnly(report.created_at, locale)}</p>
@@ -463,12 +500,12 @@ export function ReportFeedbackList() {
                     })}
                 </section>
 
-                {visibleCount < filteredReports.length ? (
+                {visibleCount < filteredReports.length || hasNextPage ? (
                     <div
                         ref={loadMoreRef}
                         className="py-[8px] text-center text-[12px] text-[var(--adaptive-black500)]"
                     >
-                        {messages.feedbackList.loadingMore}
+                        {isFetchingNextPage ? messages.feedbackList.loadingMore : ""}
                     </div>
                 ) : null}
             </div>

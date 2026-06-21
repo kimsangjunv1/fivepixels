@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { CreateReportFeedbackPayload, ReportEvent, ReportFeedback, ReportField, ReportAuthor, ReportGitHubConfig, ReportIdentify, ReportProject, ReportTeam, ReportUi, ReportVisibility, UpdateReportFeedbackPayload } from "../types/report.js";
+import type { CreateReportFeedbackPayload, ReportEvent, ReportFeedback, ReportField, ReportAuthor, ReportGitHubConfig, ReportIdentify, ReportListAllParams, ReportListAllResult, ReportProject, ReportTeam, ReportUi, ReportVisibility, UpdateReportFeedbackPayload } from "../types/report.js";
 export type ReportProviderProps = {
     project?: ReportProject;
     /** @deprecated Use `project.id`. */
@@ -35,6 +35,8 @@ export type ReportProviderProps = {
     onList?: (params: {
         pathname: string;
     }) => Promise<ReportFeedback[]>;
+    onListAll?: (params: ReportListAllParams) => Promise<ReportListAllResult>;
+    onNavigate?: (pathname: string) => void | Promise<void>;
     onCreate?: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
     onUpdate?: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
     onDelete?: (id: string) => Promise<void>;
@@ -46,5 +48,5 @@ export type ReportProviderProps = {
     github?: ReportGitHubConfig;
     children: ReactNode;
 };
-export declare function ReportProvider({ project, projectId, environment, appVersion, ui, appearance, showFeedbackList, visibleShortcutKeys, shortcut, visibility, enabled, devOnly, routeKey, pathname, team, identify, authors, fields, onList, onCreate, onUpdate, onDelete, onEvent, onReply, github, children, }: ReportProviderProps): import("react/jsx-runtime").JSX.Element;
+export declare function ReportProvider({ project, projectId, environment, appVersion, ui, appearance, showFeedbackList, visibleShortcutKeys, shortcut, visibility, enabled, devOnly, routeKey, pathname, team, identify, authors, fields, onList, onListAll, onNavigate, onCreate, onUpdate, onDelete, onEvent, onReply, github, children, }: ReportProviderProps): import("react/jsx-runtime").JSX.Element;
 //# sourceMappingURL=ReportProvider.d.ts.map

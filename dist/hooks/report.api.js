@@ -2,6 +2,9 @@ import { getActiveReportMessages } from "../i18n/index.js";
 export async function listReports(adapter, pathname) {
     return adapter.list({ pathname });
 }
+export async function listAllReports(adapter, params) {
+    return adapter.listAll?.(params) ?? { items: [] };
+}
 export async function createReport(adapter, payload) {
     return adapter.create(payload);
 }

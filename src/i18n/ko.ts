@@ -34,6 +34,9 @@ export const ko: ReportMessages = {
         tabFeedbackList: "피드백 목록",
     },
     feedbackList: {
+        scopeAriaLabel: "피드백 조회 범위",
+        scopeCurrentPage: "현재 페이지",
+        scopeAllPages: "전체 페이지",
         filterStatusAll: "전체 상태",
         filterTypeAll: "전체 타입",
         filterStatusAriaLabel: "상태 필터",

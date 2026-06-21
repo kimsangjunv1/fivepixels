@@ -1,13 +1,16 @@
 import { getActiveReportMessages } from "../i18n/index.js";
 import { useCallback, useEffect, useState } from "react";
-import { createReport, deleteReport, listReports, updateReport } from "./report.api.js";
+import { createReport, deleteReport, listAllReports, listReports, updateReport } from "./report.api.js";
 const EMPTY_REPORTS = [];
-export const useReportsQuery = (adapter, pathname, enabled = true) => {
+const REPORT_LIST_PAGE_SIZE = 100;
+export const useReportsQuery = (adapter, pathname, scope, enabled = true) => {
     const [data, setData] = useState(EMPTY_REPORTS);
     const [isLoading, setIsLoading] = useState(enabled);
     const [isFetching, setIsFetching] = useState(false);
     const [isFetched, setIsFetched] = useState(false);
     const [error, setError] = useState(null);
+    const [nextCursor, setNextCursor] = useState();
+    const [isFetchingNextPage, setIsFetchingNextPage] = useState(false);
     const refetch = useCallback(async () => {
         if (!enabled || !pathname) {
             setData(EMPTY_REPORTS);
@@ -17,8 +20,12 @@ export const useReportsQuery = (adapter, pathname, enabled = true) => {
         setIsFetching(true);
         setError(null);
         try {
-            const reports = await listReports(adapter, pathname);
+            const result = scope === "all"
+                ? await listAllReports(adapter, { limit: REPORT_LIST_PAGE_SIZE })
+                : { items: await listReports(adapter, pathname), nextCursor: undefined };
+            const reports = result.items;
             setData(reports);
+            setNextCursor(result.nextCursor);
             setIsFetched(true);
             return reports;
         }
@@ -30,7 +37,27 @@ export const useReportsQuery = (adapter, pathname, enabled = true) => {
             setIsLoading(false);
             setIsFetching(false);
         }
-    }, [adapter, enabled, pathname]);
+    }, [adapter, enabled, pathname, scope]);
+    const fetchNextPage = useCallback(async () => {
+        if (scope !== "all" || !nextCursor || isFetchingNextPage) {
+            return;
+        }
+        setIsFetchingNextPage(true);
+        try {
+            const result = await listAllReports(adapter, {
+                cursor: nextCursor,
+                limit: REPORT_LIST_PAGE_SIZE,
+            });
+            setData((current) => [...current, ...result.items]);
+            setNextCursor(result.nextCursor);
+        }
+        catch (nextError) {
+            setError(nextError instanceof Error ? nextError : new Error(getActiveReportMessages().errors.loadFeedbackFailed));
+        }
+        finally {
+            setIsFetchingNextPage(false);
+        }
+    }, [adapter, isFetchingNextPage, nextCursor, scope]);
     useEffect(() => {
         setIsLoading(enabled);
         void refetch();
@@ -42,6 +69,9 @@ export const useReportsQuery = (adapter, pathname, enabled = true) => {
         error,
         isFetching,
         isFetched,
+        hasNextPage: Boolean(nextCursor),
+        isFetchingNextPage,
+        fetchNextPage,
         refetch,
     };
 };

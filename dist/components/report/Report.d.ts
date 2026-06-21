@@ -1,4 +1,4 @@
-import type { CreateReportFeedbackPayload, ReportEvent, ReportFeedback, ReportField, ReportAuthor, ReportGitHubConfig, ReportIdentify, ReportProject, ReportTeam, ReportUi, ReportVisibility, UpdateReportFeedbackPayload } from "../../types/report.js";
+import type { CreateReportFeedbackPayload, ReportEvent, ReportFeedback, ReportField, ReportAuthor, ReportGitHubConfig, ReportIdentify, ReportListAllParams, ReportListAllResult, ReportProject, ReportTeam, ReportUi, ReportVisibility, UpdateReportFeedbackPayload } from "../../types/report.js";
 export type ReportProps = {
     project?: ReportProject;
     /** @deprecated Use `project.id`. */
@@ -34,6 +34,8 @@ export type ReportProps = {
     onList?: (params: {
         pathname: string;
     }) => Promise<ReportFeedback[]>;
+    onListAll?: (params: ReportListAllParams) => Promise<ReportListAllResult>;
+    onNavigate?: (pathname: string) => void | Promise<void>;
     onCreate?: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
     onUpdate?: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
     onDelete?: (id: string) => Promise<void>;
@@ -44,5 +46,5 @@ export type ReportProps = {
     }) => void | Promise<void>;
     github?: ReportGitHubConfig;
 };
-export declare function Report({ project, projectId, environment, appVersion, ui, appearance, showFeedbackList, visibleShortcutKeys, shortcut, visibility, enabled, devOnly, routeKey, pathname, team, identify, authors, fields, onList, onCreate, onUpdate, onDelete, onEvent, onReply, github, }: ReportProps): import("react/jsx-runtime").JSX.Element | null;
+export declare function Report({ project, projectId, environment, appVersion, ui, appearance, showFeedbackList, visibleShortcutKeys, shortcut, visibility, enabled, devOnly, routeKey, pathname, team, identify, authors, fields, onList, onListAll, onNavigate, onCreate, onUpdate, onDelete, onEvent, onReply, github, }: ReportProps): import("react/jsx-runtime").JSX.Element | null;
 //# sourceMappingURL=Report.d.ts.map

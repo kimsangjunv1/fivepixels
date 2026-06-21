@@ -20,6 +20,8 @@ export type {
     ReportIdentify,
     ReportGitHubConfig,
     ReportIntegrations,
+    ReportListAllParams,
+    ReportListAllResult,
     ReportPersistenceHandlers,
     ReportProject,
     ReportTeam,

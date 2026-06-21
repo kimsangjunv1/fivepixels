@@ -70,9 +70,12 @@ export function Page() {
     return (
         <Report
             project={{ id: "my-app" }}
-            visibility={{ routeKey: "/pricing" }}
-            ui={{ showFeedbackList: false }}
+            ui={{ showFeedbackList: true }}
             onList={({ pathname }) => fetch(`/api/feedbacks?pathname=${encodeURIComponent(pathname)}`).then((res) => res.json())}
+            onListAll={({ cursor, limit }) =>
+                fetch(`/api/feedbacks?cursor=${encodeURIComponent(cursor ?? "")}&limit=${limit}`).then((res) => res.json())
+            }
+            onNavigate={(pathname) => window.location.assign(pathname)}
             onCreate={(payload: CreateReportFeedbackPayload) =>
                 fetch("/api/feedbacks", {
                     method: "POST",
@@ -94,6 +97,9 @@ export function Page() {
 ```
 
 - `onList({ pathname })`는 현재 경로의 report 목록을 반환해야 합니다.
+- `onListAll({ cursor, limit })`을 제공하면 피드백 목록에서 전체 페이지 조회가 활성화됩니다.
+- 전체 조회 응답은 `{ items, nextCursor? }` 형태여야 합니다.
+- 다른 페이지 피드백을 SPA 라우터로 열려면 `onNavigate(pathname)`에 라우터 이동 함수를 연결하세요.
 - `onCreate(payload)`, `onUpdate(id, payload)`는 최종 `ReportFeedback` 전체 객체를 반환해야 합니다.
 - 응답의 `status`, `field_values`, `replies` 형태는 local adapter와 같게 맞추는 것이 안전합니다.
 - 목록 패널 없이 마커만 확인하고 싶으면 `ui={{ showFeedbackList: false }}`를 사용할 수 있습니다.

@@ -10,6 +10,8 @@ import type {
     ReportAuthor,
     ReportGitHubConfig,
     ReportIdentify,
+    ReportListAllParams,
+    ReportListAllResult,
     ReportProject,
     ReportTeam,
     ReportUi,
@@ -56,6 +58,8 @@ export type ReportProviderProps = {
     authors?: ReportAuthor[];
     fields?: ReportField[];
     onList?: (params: { pathname: string }) => Promise<ReportFeedback[]>;
+    onListAll?: (params: ReportListAllParams) => Promise<ReportListAllResult>;
+    onNavigate?: (pathname: string) => void | Promise<void>;
     onCreate?: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
     onUpdate?: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
     onDelete?: (id: string) => Promise<void>;
@@ -110,6 +114,8 @@ function ReportProviderEnabled({
     shortcut,
     identify,
     onList,
+    onListAll,
+    onNavigate,
     onCreate,
     onUpdate,
     onDelete,
@@ -133,6 +139,8 @@ function ReportProviderEnabled({
         shortcut,
         identify,
         onList,
+        onListAll,
+        onNavigate,
         onCreate,
         onUpdate,
         onDelete,
@@ -169,6 +177,8 @@ export function ReportProvider({
     authors,
     fields,
     onList,
+    onListAll,
+    onNavigate,
     onCreate,
     onUpdate,
     onDelete,
@@ -200,6 +210,8 @@ export function ReportProvider({
             authors={resolvedTeam.reviewers}
             identify={resolvedTeam.user}
             onList={onList}
+            onListAll={onListAll}
+            onNavigate={onNavigate}
             onCreate={onCreate}
             onUpdate={onUpdate}
             onDelete={onDelete}

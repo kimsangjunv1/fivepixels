@@ -56,6 +56,22 @@ describe("createLocalStorageReportAdapter", () => {
         expect(await otherEnvironmentAdapter.list({ pathname: "/a" })).toHaveLength(0);
     });
 
+    it("lists feedback across pathnames with cursor pagination", async () => {
+        const adapter = createLocalStorageReportAdapter({ projectId: PROJECT_ID, environment: ENVIRONMENT });
+
+        await adapter.create(createReportPayload({ pathname: "/a", message: "A" }));
+        await adapter.create(createReportPayload({ pathname: "/b", message: "B" }));
+
+        const firstPage = await adapter.listAll?.({ limit: 1 });
+        const secondPage = await adapter.listAll?.({ cursor: firstPage?.nextCursor, limit: 1 });
+
+        expect(firstPage?.items).toHaveLength(1);
+        expect(firstPage?.nextCursor).toBe("1");
+        expect(secondPage?.items).toHaveLength(1);
+        expect(secondPage?.nextCursor).toBeUndefined();
+        expect(new Set([firstPage?.items[0]?.pathname, secondPage?.items[0]?.pathname])).toEqual(new Set(["/a", "/b"]));
+    });
+
     it("isolates records by appVersion", async () => {
         const adapter = createLocalStorageReportAdapter({
             projectId: PROJECT_ID,

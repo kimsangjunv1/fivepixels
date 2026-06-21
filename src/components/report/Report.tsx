@@ -12,6 +12,8 @@ import type {
     ReportAuthor,
     ReportGitHubConfig,
     ReportIdentify,
+    ReportListAllParams,
+    ReportListAllResult,
     ReportProject,
     ReportTeam,
     ReportUi,
@@ -53,6 +55,8 @@ export type ReportProps = {
     authors?: ReportAuthor[];
     fields?: ReportField[];
     onList?: (params: { pathname: string }) => Promise<ReportFeedback[]>;
+    onListAll?: (params: ReportListAllParams) => Promise<ReportListAllResult>;
+    onNavigate?: (pathname: string) => void | Promise<void>;
     onCreate?: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
     onUpdate?: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
     onDelete?: (id: string) => Promise<void>;
@@ -81,6 +85,8 @@ export function Report({
     authors,
     fields = DEFAULT_FIELDS,
     onList,
+    onListAll,
+    onNavigate,
     onCreate,
     onUpdate,
     onDelete,
@@ -115,6 +121,8 @@ export function Report({
             authors={authors}
             fields={fields}
             onList={onList}
+            onListAll={onListAll}
+            onNavigate={onNavigate}
             onCreate={onCreate}
             onUpdate={onUpdate}
             onDelete={onDelete}

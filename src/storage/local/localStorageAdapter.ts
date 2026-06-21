@@ -198,6 +198,16 @@ export function createLocalStorageReportAdapter({ projectId, environment, appVer
                 .filter((item) => item.pathname === pathname)
                 .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
         },
+        async listAll({ cursor, limit }) {
+            const offset = Math.max(0, Number.parseInt(cursor ?? "0", 10) || 0);
+            const items = readAll(storageKey).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+            const nextOffset = offset + limit;
+
+            return {
+                items: items.slice(offset, nextOffset),
+                nextCursor: nextOffset < items.length ? String(nextOffset) : undefined,
+            };
+        },
         async create(payload) {
             const nextItem: ReportFeedback = {
                 ...payload,

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getReportMessages, setActiveReportMessages } from "../i18n/index.js";
 import { useReportShortcuts } from "./useReportShortcuts.js";
 import { useReportPersistence } from "./useReportPersistence.js";
@@ -22,7 +22,7 @@ function resolveDefaultAuthorName(identify, authors) {
     }
     return authors[0]?.name ?? "";
 }
-export function useReportState({ projectId, environment, appVersion, appearance, fields, authors = [], shortcut: _shortcut, identify, onList, onCreate, onUpdate, onDelete, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys = false, initialLocale, messageOverrides, }) {
+export function useReportState({ projectId, environment, appVersion, appearance, fields, authors = [], shortcut: _shortcut, identify, onList, onListAll, onNavigate, onCreate, onUpdate, onDelete, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys = false, initialLocale, messageOverrides, }) {
     const { appearance: activeAppearance, setAppearance } = useAppearancePreference(appearance);
     const { locale, setLocale } = useLocalePreference(initialLocale);
     const messages = useMemo(() => getReportMessages(locale, messageOverrides), [locale, messageOverrides]);
@@ -37,12 +37,13 @@ export function useReportState({ projectId, environment, appVersion, appearance,
     const overlayHoverLeaveTimeoutRef = useRef(null);
     const resolvedAppearance = useResolvedAppearance(activeAppearance);
     const isMobileViewport = useIsMobileViewport();
-    const { canTransferFeedback, currentPathname, filters, setFilters, selectedReportId, setSelectedReportId, reports, filteredReports, routeDetailsStats, selectedReport, isError, isFetching, isCreating, isUpdating, isDeleting, queryErrorMessage, refetch, createFeedback, updateFeedback, deleteFeedback, } = useReportPersistence({
+    const { canTransferFeedback, canListAllFeedback, currentPathname, listScope, setListScope, filters, setFilters, selectedReportId, setSelectedReportId, reports, filteredReports, currentPageFilteredReports, routeDetailsStats, selectedReport, isError, isFetching, hasNextPage, isFetchingNextPage, fetchNextPage, isCreating, isUpdating, isDeleting, queryErrorMessage, refetch, createFeedback, updateFeedback, deleteFeedback, } = useReportPersistence({
         projectId,
         environment,
         appVersion,
         fields,
         onList,
+        onListAll,
         onCreate,
         onUpdate,
         onDelete,
@@ -70,6 +71,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
     const [showConfirmAuthorSelect, setShowConfirmAuthorSelect] = useState(false);
     const [locatedReportId, setLocatedReportId] = useState(null);
     const locatePulseTimeoutRef = useRef(null);
+    const pendingLocateReportIdRef = useRef(null);
     const [editingReportId, setEditingReportId] = useState(null);
     const [editableDraft, setEditableDraft] = useState(null);
     const [panelTab, setPanelTab] = useState(null);
@@ -93,13 +95,13 @@ export function useReportState({ projectId, environment, appVersion, appearance,
     const targetStats = useMemo(() => {
         const groupCount = selectableTargets.filter((target) => target.type === "group").length;
         const itemCount = selectableTargets.filter((target) => target.type === "item").length;
-        const foundCount = mode === "view" && !isFetching ? filteredReports.length : selectableTargets.length;
+        const foundCount = mode === "view" && !isFetching ? currentPageFilteredReports.length : selectableTargets.length;
         return {
             found: foundCount,
             group: groupCount,
             item: itemCount,
         };
-    }, [filteredReports.length, isFetching, mode, selectableTargets]);
+    }, [currentPageFilteredReports.length, isFetching, mode, selectableTargets]);
     const statusText = useMemo(() => {
         if (mode === "report") {
             const focusTarget = selectedTarget ?? hoveredTarget;
@@ -194,7 +196,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             return;
         }
         const syncMarkers = () => {
-            setMarkers(filteredReports.map((report) => getMarkerFromReport(report, window.scrollY)));
+            setMarkers(currentPageFilteredReports.map((report) => getMarkerFromReport(report, window.scrollY)));
         };
         syncMarkers();
         window.addEventListener("scroll", syncMarkers, { passive: true });
@@ -203,7 +205,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             window.removeEventListener("scroll", syncMarkers);
             window.removeEventListener("resize", syncMarkers);
         };
-    }, [filteredReports, mode]);
+    }, [currentPageFilteredReports, mode]);
     useEffect(() => {
         if (mode !== "report") {
             return;
@@ -265,14 +267,9 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             stopEditing();
         }
     };
-    const locateFeedback = (reportId) => {
-        const report = filteredReports.find((item) => item.id === reportId);
-        if (!report) {
-            return;
-        }
-        selectReport(reportId);
+    const showLocatedFeedback = useCallback((report) => {
         scrollToFeedbackTarget(report);
-        setLocatedReportId(reportId);
+        setLocatedReportId(report.id);
         if (locatePulseTimeoutRef.current !== null) {
             window.clearTimeout(locatePulseTimeoutRef.current);
         }
@@ -280,7 +277,43 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             setLocatedReportId(null);
             locatePulseTimeoutRef.current = null;
         }, LOCATE_PULSE_DURATION_MS);
+    }, []);
+    const locateFeedback = async (reportId) => {
+        const report = filteredReports.find((item) => item.id === reportId);
+        if (!report) {
+            return;
+        }
+        selectReport(reportId);
+        if (report.pathname !== currentPathname) {
+            pendingLocateReportIdRef.current = reportId;
+            try {
+                if (onNavigate) {
+                    await onNavigate(report.pathname);
+                }
+                else if (typeof window !== "undefined") {
+                    window.location.assign(report.pathname);
+                }
+            }
+            catch (nextError) {
+                pendingLocateReportIdRef.current = null;
+                setErrorMessage(nextError instanceof Error ? nextError.message : messages.errors.loadFeedbackFailed);
+            }
+            return;
+        }
+        showLocatedFeedback(report);
     };
+    useEffect(() => {
+        const pendingReportId = pendingLocateReportIdRef.current;
+        if (!pendingReportId) {
+            return;
+        }
+        const report = reports.find((item) => item.id === pendingReportId && item.pathname === currentPathname);
+        if (!report) {
+            return;
+        }
+        pendingLocateReportIdRef.current = null;
+        window.setTimeout(() => showLocatedFeedback(report), 0);
+    }, [currentPathname, reports, showLocatedFeedback]);
     const focusSearchInput = () => {
         searchInputRef.current?.focus();
         searchInputRef.current?.select();
@@ -297,7 +330,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         else {
             nextIndex = direction === "down" ? Math.min(currentIndex + 1, filteredReports.length - 1) : Math.max(currentIndex - 1, 0);
         }
-        locateFeedback(filteredReports[nextIndex].id);
+        void locateFeedback(filteredReports[nextIndex].id);
     };
     const openReplyComposer = (report) => {
         selectReport(report.id);
@@ -730,6 +763,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         panelTab,
         routeDetailsStats,
         canTransferFeedback,
+        canListAllFeedback,
         visibleShortcutKeys,
         searchInputRef,
         resolvedAppearance,
@@ -739,10 +773,15 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         selectableTargets,
         filters,
         setFilters,
+        listScope,
+        setListScope,
         reports,
         filteredReports,
         isError,
         isFetching,
+        hasNextPage,
+        isFetchingNextPage,
+        fetchNextPage,
         isCreating,
         isUpdating,
         isDeleting,

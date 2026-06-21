@@ -1,7 +1,7 @@
 import { type MouseEvent } from "react";
 import type { DeepPartialReportMessages } from "../i18n/types.js";
 import type { ReportLocale } from "../i18n/types.js";
-import type { CreateReportFeedbackPayload, ReportAppearance, ReportAuthor, ReportEvent, ReportFeedback, ReportField, ReportGitHubConfig, ReportIdentify, UpdateReportFeedbackPayload } from "../types/report.js";
+import type { CreateReportFeedbackPayload, ReportAppearance, ReportAuthor, ReportEvent, ReportFeedback, ReportField, ReportGitHubConfig, ReportIdentify, ReportListAllParams, ReportListAllResult, UpdateReportFeedbackPayload } from "../types/report.js";
 import type { DraftReport, EditableDraft, Marker, PendingFeedbackComposer, ReportMode, ReportPanelTab, TargetSnapshot } from "../types/report-ui.js";
 export type ReportStateConfig = {
     projectId: string;
@@ -15,6 +15,8 @@ export type ReportStateConfig = {
     onList?: (params: {
         pathname: string;
     }) => Promise<ReportFeedback[]>;
+    onListAll?: (params: ReportListAllParams) => Promise<ReportListAllResult>;
+    onNavigate?: (pathname: string) => void | Promise<void>;
     onCreate?: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
     onUpdate?: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
     onDelete?: (id: string) => Promise<void>;
@@ -30,7 +32,7 @@ export type ReportStateConfig = {
     initialLocale: ReportLocale;
     messageOverrides?: DeepPartialReportMessages;
 };
-export declare function useReportState({ projectId, environment, appVersion, appearance, fields, authors, shortcut: _shortcut, identify, onList, onCreate, onUpdate, onDelete, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys, initialLocale, messageOverrides, }: ReportStateConfig): {
+export declare function useReportState({ projectId, environment, appVersion, appearance, fields, authors, shortcut: _shortcut, identify, onList, onListAll, onNavigate, onCreate, onUpdate, onDelete, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys, initialLocale, messageOverrides, }: ReportStateConfig): {
     appearance: ReportAppearance;
     setAppearance: (nextAppearance: ReportAppearance) => void;
     locale: ReportLocale;
@@ -59,6 +61,7 @@ export declare function useReportState({ projectId, environment, appVersion, app
         }[];
     };
     canTransferFeedback: boolean;
+    canListAllFeedback: boolean;
     visibleShortcutKeys: boolean;
     searchInputRef: import("react").MutableRefObject<HTMLInputElement | null>;
     resolvedAppearance: import("../types/report-ui.js").ResolvedAppearance;
@@ -68,10 +71,15 @@ export declare function useReportState({ projectId, environment, appVersion, app
     selectableTargets: TargetSnapshot[];
     filters: import("../types/report-ui.js").ReportFilters;
     setFilters: import("react").Dispatch<import("react").SetStateAction<import("../types/report-ui.js").ReportFilters>>;
+    listScope: import("../types/report-ui.js").ReportListScope;
+    setListScope: import("react").Dispatch<import("react").SetStateAction<import("../types/report-ui.js").ReportListScope>>;
     reports: ReportFeedback[];
     filteredReports: ReportFeedback[];
     isError: boolean;
     isFetching: boolean;
+    hasNextPage: boolean;
+    isFetchingNextPage: boolean;
+    fetchNextPage: () => Promise<void>;
     isCreating: boolean;
     isUpdating: boolean;
     isDeleting: boolean;
@@ -124,7 +132,7 @@ export declare function useReportState({ projectId, environment, appVersion, app
     openPanelTab: (nextTab: ReportPanelTab) => void;
     togglePanelTab: (nextTab: ReportPanelTab) => void;
     selectReport: (reportId: string) => void;
-    locateFeedback: (reportId: string) => void;
+    locateFeedback: (reportId: string) => Promise<void>;
     focusSearchInput: () => void;
     selectAdjacentReport: (direction: "up" | "down") => void;
     openReplyComposer: (report: ReportFeedback) => void;

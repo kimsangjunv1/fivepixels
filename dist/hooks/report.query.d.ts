@@ -1,11 +1,15 @@
 import type { CreateReportFeedbackPayload, ReportFeedback, ReportStorageAdapter, UpdateReportFeedbackPayload } from "../types/report.js";
-export declare const useReportsQuery: (adapter: ReportStorageAdapter, pathname: string, enabled?: boolean) => {
+import type { ReportListScope } from "../types/report-ui.js";
+export declare const useReportsQuery: (adapter: ReportStorageAdapter, pathname: string, scope: ReportListScope, enabled?: boolean) => {
     data: ReportFeedback[];
     isLoading: boolean;
     isError: boolean;
     error: Error | null;
     isFetching: boolean;
     isFetched: boolean;
+    hasNextPage: boolean;
+    isFetchingNextPage: boolean;
+    fetchNextPage: () => Promise<void>;
     refetch: () => Promise<ReportFeedback[]>;
 };
 export declare const useCreateReportMutation: (adapter: ReportStorageAdapter, onSuccess?: () => void, onError?: (error: Error) => void) => {

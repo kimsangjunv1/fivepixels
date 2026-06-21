@@ -1,4 +1,4 @@
-import { type MouseEvent, useEffect, useMemo, useRef, useState } from "react";
+import { type MouseEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getReportMessages, setActiveReportMessages } from "@/i18n/index.js";
 import type { DeepPartialReportMessages } from "@/i18n/types.js";
 import type { ReportLocale } from "@/i18n/types.js";
@@ -17,6 +17,8 @@ import type {
     ReportField,
     ReportGitHubConfig,
     ReportIdentify,
+    ReportListAllParams,
+    ReportListAllResult,
     ReportReply,
     UpdateReportFeedbackPayload,
 } from "@/types/report.js";
@@ -63,6 +65,8 @@ export type ReportStateConfig = {
     shortcut?: string;
     identify?: ReportIdentify;
     onList?: (params: { pathname: string }) => Promise<ReportFeedback[]>;
+    onListAll?: (params: ReportListAllParams) => Promise<ReportListAllResult>;
+    onNavigate?: (pathname: string) => void | Promise<void>;
     onCreate?: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
     onUpdate?: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
     onDelete?: (id: string) => Promise<void>;
@@ -86,6 +90,8 @@ export function useReportState({
     shortcut: _shortcut,
     identify,
     onList,
+    onListAll,
+    onNavigate,
     onCreate,
     onUpdate,
     onDelete,
@@ -116,17 +122,24 @@ export function useReportState({
     const isMobileViewport = useIsMobileViewport();
     const {
         canTransferFeedback,
+        canListAllFeedback,
         currentPathname,
+        listScope,
+        setListScope,
         filters,
         setFilters,
         selectedReportId,
         setSelectedReportId,
         reports,
         filteredReports,
+        currentPageFilteredReports,
         routeDetailsStats,
         selectedReport,
         isError,
         isFetching,
+        hasNextPage,
+        isFetchingNextPage,
+        fetchNextPage,
         isCreating,
         isUpdating,
         isDeleting,
@@ -141,6 +154,7 @@ export function useReportState({
         appVersion,
         fields,
         onList,
+        onListAll,
         onCreate,
         onUpdate,
         onDelete,
@@ -172,6 +186,7 @@ export function useReportState({
     const [showConfirmAuthorSelect, setShowConfirmAuthorSelect] = useState(false);
     const [locatedReportId, setLocatedReportId] = useState<string | null>(null);
     const locatePulseTimeoutRef = useRef<number | null>(null);
+    const pendingLocateReportIdRef = useRef<string | null>(null);
     const [editingReportId, setEditingReportId] = useState<string | null>(null);
     const [editableDraft, setEditableDraft] = useState<EditableDraft | null>(null);
     const [panelTab, setPanelTab] = useState<ReportPanelTab | null>(null);
@@ -180,7 +195,6 @@ export function useReportState({
     const canCreateGitHubIssueFromListValue = useMemo(() => canCreateGitHubIssueFromList(github), [github]);
 
     const canCreateGitHubIssueOnCreateValue = useMemo(() => canCreateGitHubIssueOnCreate(github), [github]);
-
     const activeReplyAnchor = useMemo(() => resolveTooltipAnchor(markers, activeReplyReportId), [activeReplyReportId, markers]);
     const activeReplyReport = activeReplyAnchor?.report ?? null;
     const tooltipAnchor = useMemo(() => {
@@ -202,14 +216,14 @@ export function useReportState({
     const targetStats = useMemo(() => {
         const groupCount = selectableTargets.filter((target) => target.type === "group").length;
         const itemCount = selectableTargets.filter((target) => target.type === "item").length;
-        const foundCount = mode === "view" && !isFetching ? filteredReports.length : selectableTargets.length;
+        const foundCount = mode === "view" && !isFetching ? currentPageFilteredReports.length : selectableTargets.length;
 
         return {
             found: foundCount,
             group: groupCount,
             item: itemCount,
         };
-    }, [filteredReports.length, isFetching, mode, selectableTargets]);
+    }, [currentPageFilteredReports.length, isFetching, mode, selectableTargets]);
 
     const statusText = useMemo(() => {
         if (mode === "report") {
@@ -322,7 +336,7 @@ export function useReportState({
         }
 
         const syncMarkers = () => {
-            setMarkers(filteredReports.map((report) => getMarkerFromReport(report, window.scrollY)));
+            setMarkers(currentPageFilteredReports.map((report) => getMarkerFromReport(report, window.scrollY)));
         };
 
         syncMarkers();
@@ -333,7 +347,7 @@ export function useReportState({
             window.removeEventListener("scroll", syncMarkers);
             window.removeEventListener("resize", syncMarkers);
         };
-    }, [filteredReports, mode]);
+    }, [currentPageFilteredReports, mode]);
 
     useEffect(() => {
         if (mode !== "report") {
@@ -411,16 +425,9 @@ export function useReportState({
         }
     };
 
-    const locateFeedback = (reportId: string) => {
-        const report = filteredReports.find((item) => item.id === reportId);
-
-        if (!report) {
-            return;
-        }
-
-        selectReport(reportId);
+    const showLocatedFeedback = useCallback((report: ReportFeedback) => {
         scrollToFeedbackTarget(report);
-        setLocatedReportId(reportId);
+        setLocatedReportId(report.id);
 
         if (locatePulseTimeoutRef.current !== null) {
             window.clearTimeout(locatePulseTimeoutRef.current);
@@ -430,7 +437,53 @@ export function useReportState({
             setLocatedReportId(null);
             locatePulseTimeoutRef.current = null;
         }, LOCATE_PULSE_DURATION_MS);
+    }, []);
+
+    const locateFeedback = async (reportId: string) => {
+        const report = filteredReports.find((item) => item.id === reportId);
+
+        if (!report) {
+            return;
+        }
+
+        selectReport(reportId);
+
+        if (report.pathname !== currentPathname) {
+            pendingLocateReportIdRef.current = reportId;
+
+            try {
+                if (onNavigate) {
+                    await onNavigate(report.pathname);
+                } else if (typeof window !== "undefined") {
+                    window.location.assign(report.pathname);
+                }
+            } catch (nextError) {
+                pendingLocateReportIdRef.current = null;
+                setErrorMessage(nextError instanceof Error ? nextError.message : messages.errors.loadFeedbackFailed);
+            }
+
+            return;
+        }
+
+        showLocatedFeedback(report);
     };
+
+    useEffect(() => {
+        const pendingReportId = pendingLocateReportIdRef.current;
+
+        if (!pendingReportId) {
+            return;
+        }
+
+        const report = reports.find((item) => item.id === pendingReportId && item.pathname === currentPathname);
+
+        if (!report) {
+            return;
+        }
+
+        pendingLocateReportIdRef.current = null;
+        window.setTimeout(() => showLocatedFeedback(report), 0);
+    }, [currentPathname, reports, showLocatedFeedback]);
 
     const focusSearchInput = () => {
         searchInputRef.current?.focus();
@@ -451,7 +504,7 @@ export function useReportState({
             nextIndex = direction === "down" ? Math.min(currentIndex + 1, filteredReports.length - 1) : Math.max(currentIndex - 1, 0);
         }
 
-        locateFeedback(filteredReports[nextIndex].id);
+        void locateFeedback(filteredReports[nextIndex].id);
     };
 
     const openReplyComposer = (report: ReportFeedback) => {
@@ -965,6 +1018,7 @@ export function useReportState({
         panelTab,
         routeDetailsStats,
         canTransferFeedback,
+        canListAllFeedback,
         visibleShortcutKeys,
         searchInputRef,
         resolvedAppearance,
@@ -974,10 +1028,15 @@ export function useReportState({
         selectableTargets,
         filters,
         setFilters,
+        listScope,
+        setListScope,
         reports,
         filteredReports,
         isError,
         isFetching,
+        hasNextPage,
+        isFetchingNextPage,
+        fetchNextPage,
         isCreating,
         isUpdating,
         isDeleting,

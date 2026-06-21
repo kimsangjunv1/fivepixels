@@ -95,7 +95,7 @@ function FeedbackListCopyButton({ report, messages }) {
     return (_jsx("button", { type: "button", "data-stitchable-interactive": "", onClick: handleCopy, "aria-label": messages.feedbackList.copyAriaLabel, title: copied ? messages.feedbackList.copiedTitle : messages.feedbackList.copyTitle, className: "flex shrink-0 items-center justify-center self-start rounded-[6px] p-[6px] text-[var(--adaptive-black500)] hover:bg-[var(--adaptive-black100)] hover:text-[var(--adaptive-black800)]", children: copied ? _jsx("span", { className: "text-[10px] font-semibold text-[var(--adaptive-blue500)]", children: messages.common.ok }) : _jsx(CopyIcon, { className: "h-[16px] w-[16px]" }) }));
 }
 export function ReportFeedbackList() {
-    const { filters, setFilters, filteredReports, reports, fields, locale, messages, isError, isFetching, isDeleting, queryErrorMessage, visibleShortcutKeys, searchInputRef, locateFeedback, refetch, handleDelete, canCreateGitHubIssueFromList, creatingGitHubIssueId, handleCreateGitHubIssue, } = useReport();
+    const { filters, setFilters, filteredReports, reports, listScope, setListScope, canListAllFeedback, fields, locale, messages, isError, isFetching, hasNextPage, isFetchingNextPage, fetchNextPage, isDeleting, queryErrorMessage, visibleShortcutKeys, searchInputRef, locateFeedback, refetch, handleDelete, canCreateGitHubIssueFromList, creatingGitHubIssueId, handleCreateGitHubIssue, } = useReport();
     const [visibleCount, setVisibleCount] = useState(FEEDBACK_PAGE_SIZE);
     const [expandedGroups, setExpandedGroups] = useState(() => new Set());
     const [statusMenuOpen, setStatusMenuOpen] = useState(false);
@@ -107,7 +107,7 @@ export function ReportFeedbackList() {
     const groupedReports = useMemo(() => groupReportsByDate(visibleReports, locale), [locale, visibleReports]);
     useEffect(() => {
         setVisibleCount(FEEDBACK_PAGE_SIZE);
-    }, [filters.keyword, filters.reportType, filters.status, reports.length]);
+    }, [filters.keyword, filters.reportType, filters.status, listScope, reports.length]);
     useEffect(() => {
         const firstGroupKey = groupedReports[0]?.dateKey;
         if (firstGroupKey) {
@@ -116,7 +116,7 @@ export function ReportFeedbackList() {
         else {
             setExpandedGroups(new Set());
         }
-    }, [filters.keyword, filters.reportType, filters.status, reports.length]);
+    }, [filters.keyword, filters.reportType, filters.status, listScope, reports.length]);
     const toggleGroup = (dateKey) => {
         setExpandedGroups((current) => {
             const next = new Set(current);
@@ -131,20 +131,27 @@ export function ReportFeedbackList() {
     };
     useEffect(() => {
         const node = loadMoreRef.current;
-        if (!node || visibleCount >= filteredReports.length) {
+        if (!node || (visibleCount >= filteredReports.length && !hasNextPage)) {
             return;
         }
         const observer = new IntersectionObserver((entries) => {
             if (entries.some((entry) => entry.isIntersecting)) {
-                setVisibleCount((current) => Math.min(current + FEEDBACK_PAGE_SIZE, filteredReports.length));
+                if (visibleCount < filteredReports.length) {
+                    setVisibleCount((current) => Math.min(current + FEEDBACK_PAGE_SIZE, filteredReports.length));
+                }
+                else {
+                    void fetchNextPage();
+                }
             }
         }, { root: node.parentElement, rootMargin: "120px" });
         observer.observe(node);
         return () => {
             observer.disconnect();
         };
-    }, [filteredReports.length, visibleCount]);
-    return (_jsxs("section", { className: "flex min-h-0 flex-1 flex-col bg-[var(--adaptive-black50)] rounded-[0_0_24px_24px]", children: [_jsxs("div", { className: "flex bg-[var(--adaptive-black50)] border-y border-y-[var(--adaptive-border-subtle)]", children: [_jsxs("section", { className: "flex flex-1 items-center gap-[4px]", children: [_jsxs(PanelDropdownMenu, { open: statusMenuOpen, onClose: () => setStatusMenuOpen(false), align: "left", trigger: _jsxs("button", { type: "button", onClick: () => setStatusMenuOpen((current) => !current), "aria-expanded": statusMenuOpen, "aria-haspopup": "menu", "aria-label": messages.feedbackList.filterStatusAriaLabel, className: "flex items-center gap-[4px] px-[8px] text-[12px] text-[var(--adaptive-black800)] outline-none", children: [_jsx("span", { children: statusLabel }), _jsx(ChevronDownIcon, { className: `h-[14px] w-[14px] text-[var(--adaptive-black600)] transition-transform ${statusMenuOpen ? "rotate-180" : ""}` })] }), children: [_jsx(PanelDropdownMenuItem, { active: filters.status === "all", onClick: () => {
+    }, [fetchNextPage, filteredReports.length, hasNextPage, visibleCount]);
+    return (_jsxs("section", { className: "flex min-h-0 flex-1 flex-col bg-[var(--adaptive-black50)] rounded-[0_0_24px_24px]", children: [canListAllFeedback ? (_jsx("div", { className: "flex border-t border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] p-[4px]", role: "group", "aria-label": messages.feedbackList.scopeAriaLabel, children: ["current", "all"].map((scope) => (_jsx("button", { type: "button", "aria-pressed": listScope === scope, onClick: () => setListScope(scope), className: `flex-1 rounded-[6px] px-[8px] py-[4px] text-[12px] font-[600] ${listScope === scope
+                        ? "bg-[var(--adaptive-black200)] text-[var(--adaptive-black900)]"
+                        : "text-[var(--adaptive-black500)] hover:bg-[var(--adaptive-black100)]"}`, children: scope === "current" ? messages.feedbackList.scopeCurrentPage : messages.feedbackList.scopeAllPages }, scope))) })) : null, _jsxs("div", { className: "flex bg-[var(--adaptive-black50)] border-y border-y-[var(--adaptive-border-subtle)]", children: [_jsxs("section", { className: "flex flex-1 items-center gap-[4px]", children: [_jsxs(PanelDropdownMenu, { open: statusMenuOpen, onClose: () => setStatusMenuOpen(false), align: "left", trigger: _jsxs("button", { type: "button", onClick: () => setStatusMenuOpen((current) => !current), "aria-expanded": statusMenuOpen, "aria-haspopup": "menu", "aria-label": messages.feedbackList.filterStatusAriaLabel, className: "flex items-center gap-[4px] px-[8px] text-[12px] text-[var(--adaptive-black800)] outline-none", children: [_jsx("span", { children: statusLabel }), _jsx(ChevronDownIcon, { className: `h-[14px] w-[14px] text-[var(--adaptive-black600)] transition-transform ${statusMenuOpen ? "rotate-180" : ""}` })] }), children: [_jsx(PanelDropdownMenuItem, { active: filters.status === "all", onClick: () => {
                                             setStatusMenuOpen(false);
                                             setFilters((current) => ({ ...current, status: "all" }));
                                         }, children: messages.feedbackList.filterStatusAll }), Object.keys(messages.status.routeDetail).map((status) => (_jsx(PanelDropdownMenuItem, { active: filters.status === status, onClick: () => {
@@ -165,9 +172,9 @@ export function ReportFeedbackList() {
                                         ? groupReports.map((report) => {
                                             const routeStatus = getRouteDetailStatus(report);
                                             const fieldTags = getFieldTags(fields, report.field_values);
-                                            return (_jsxs("div", { className: "flex w-full items-start gap-[4px] border-b border-[var(--adaptive-border-subtle)] last:border-b-0", children: [_jsxs("button", { type: "button", onClick: () => locateFeedback(report.id), className: "flex min-w-0 flex-1 flex-col gap-[6px] p-[12px] text-left", children: [_jsxs("section", { className: "flex flex-col gap-[4px]", children: [_jsxs("div", { className: "flex flex-wrap items-center gap-[6px]", children: [_jsx("strong", { className: "max-w-full truncate font-bold text-[var(--adaptive-black900)]", children: report.report_id }), _jsx(FeedbackFieldTags, { tags: fieldTags }), _jsx("span", { className: "inline-flex items-center rounded-full px-[8px] py-[2px] text-[10px] font-bold uppercase", style: getRouteStatusTone(routeStatus), children: messages.status.routeDetail[routeStatus] })] }), _jsx("p", { className: "text-[var(--adaptive-black700)]", children: report.message })] }), _jsx("p", { className: "text-[var(--adaptive-black500)] text-[12px]", children: formatTimeOnly(report.created_at, locale) })] }), _jsxs("div", { className: "flex shrink-0 items-start gap-[2px] p-[12px] pl-0", children: [_jsx(FeedbackListCopyButton, { report: report, messages: messages }), canCreateGitHubIssueFromList ? (_jsx(GitIssueButton, { report: report, messages: messages, disabled: isDeleting, isSubmitting: creatingGitHubIssueId === report.id, onCreateIssue: handleCreateGitHubIssue })) : null, _jsx(FeedbackListDeleteButton, { report: report, onDelete: handleDelete, disabled: isDeleting, messages: messages })] })] }, report.id));
+                                            return (_jsxs("div", { className: "flex w-full items-start gap-[4px] border-b border-[var(--adaptive-border-subtle)] last:border-b-0", children: [_jsxs("button", { type: "button", onClick: () => locateFeedback(report.id), className: "flex min-w-0 flex-1 flex-col gap-[6px] p-[12px] text-left", children: [_jsxs("section", { className: "flex flex-col gap-[4px]", children: [_jsxs("div", { className: "flex flex-wrap items-center gap-[6px]", children: [_jsx("strong", { className: "max-w-full truncate font-bold text-[var(--adaptive-black900)]", children: report.report_id }), _jsx(FeedbackFieldTags, { tags: fieldTags }), _jsx("span", { className: "inline-flex items-center rounded-full px-[8px] py-[2px] text-[10px] font-bold uppercase", style: getRouteStatusTone(routeStatus), children: messages.status.routeDetail[routeStatus] })] }), _jsx("p", { className: "text-[var(--adaptive-black700)]", children: report.message }), listScope === "all" ? (_jsx("p", { className: "truncate text-[11px] text-[var(--adaptive-black500)]", children: report.pathname })) : null] }), _jsx("p", { className: "text-[var(--adaptive-black500)] text-[12px]", children: formatTimeOnly(report.created_at, locale) })] }), _jsxs("div", { className: "flex shrink-0 items-start gap-[2px] p-[12px] pl-0", children: [_jsx(FeedbackListCopyButton, { report: report, messages: messages }), canCreateGitHubIssueFromList ? (_jsx(GitIssueButton, { report: report, messages: messages, disabled: isDeleting, isSubmitting: creatingGitHubIssueId === report.id, onCreateIssue: handleCreateGitHubIssue })) : null, _jsx(FeedbackListDeleteButton, { report: report, onDelete: handleDelete, disabled: isDeleting, messages: messages })] })] }, report.id));
                                         })
                                         : null] }, dateKey));
-                        }) }), visibleCount < filteredReports.length ? (_jsx("div", { ref: loadMoreRef, className: "py-[8px] text-center text-[12px] text-[var(--adaptive-black500)]", children: messages.feedbackList.loadingMore })) : null] })] }));
+                        }) }), visibleCount < filteredReports.length || hasNextPage ? (_jsx("div", { ref: loadMoreRef, className: "py-[8px] text-center text-[12px] text-[var(--adaptive-black500)]", children: isFetchingNextPage ? messages.feedbackList.loadingMore : "" })) : null] })] }));
 }
 //# sourceMappingURL=ReportFeedbackList.js.map

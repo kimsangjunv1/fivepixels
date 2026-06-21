@@ -6,6 +6,7 @@ export type ResolveStorageAdapterOptions = {
     environment?: string;
     appVersion?: string;
     onList?: ReportPersistenceHandlers["onList"];
+    onListAll?: ReportPersistenceHandlers["onListAll"];
     onCreate?: ReportPersistenceHandlers["onCreate"];
     onUpdate?: ReportPersistenceHandlers["onUpdate"];
     onDelete?: ReportPersistenceHandlers["onDelete"];
@@ -19,10 +20,11 @@ export function hasCustomPersistenceHandlers(
 
 function createStorageAdapterFromHandlers(
     handlers: Required<Pick<ReportPersistenceHandlers, "onList" | "onCreate" | "onUpdate">> &
-        Pick<ReportPersistenceHandlers, "onDelete">,
+        Pick<ReportPersistenceHandlers, "onDelete" | "onListAll">,
 ): ReportStorageAdapter {
     return {
         list: handlers.onList,
+        listAll: handlers.onListAll,
         create: handlers.onCreate,
         update: handlers.onUpdate,
         remove: handlers.onDelete,
@@ -34,6 +36,7 @@ export function resolveStorageAdapter({
     environment,
     appVersion,
     onList,
+    onListAll,
     onCreate,
     onUpdate,
     onDelete,
@@ -41,7 +44,7 @@ export function resolveStorageAdapter({
     adapter: ReportStorageAdapter;
     usesLocalStorage: boolean;
 } {
-    const hasPartialCustom = Boolean(onList || onCreate || onUpdate || onDelete);
+    const hasPartialCustom = Boolean(onList || onListAll || onCreate || onUpdate || onDelete);
 
     if (hasPartialCustom && !hasCustomPersistenceHandlers({ onList, onCreate, onUpdate })) {
         console.warn(
@@ -53,6 +56,7 @@ export function resolveStorageAdapter({
         return {
             adapter: createStorageAdapterFromHandlers({
                 onList: onList!,
+                onListAll,
                 onCreate: onCreate!,
                 onUpdate: onUpdate!,
                 onDelete,
