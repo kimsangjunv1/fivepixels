@@ -1,5 +1,5 @@
 type ReportPersonalKeyDialogProps = {
-    mode: "required" | "insert";
+    mode: "required" | "insert" | "rotate";
     onCancel: () => void;
     onComplete: (message: string) => void;
 };

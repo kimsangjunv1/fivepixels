@@ -178,6 +178,7 @@ export function useReportState({
         personalKeyCandidates,
         authorizedAuthors,
         issuePersonalKey,
+        rotatePersonalKey,
         insertPersonalKey,
         signPayload,
     } = usePersonalKey({
@@ -1080,6 +1081,7 @@ export function useReportState({
         personalKeyPendingRegistration,
         personalKeyCandidates,
         issuePersonalKey,
+        rotatePersonalKey,
         insertPersonalKey,
         canListAllFeedback,
         visibleShortcutKeys,

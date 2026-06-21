@@ -13,7 +13,8 @@ type PanelMoreMenuProps = {
     onKeyCopy: () => void;
     onPublicKeyCopy: () => void;
     onKeyInsert: () => void;
+    onKeyRotate: () => void;
 };
-export declare function PanelMoreMenu({ open, transferDisabled, appearance, onAppearanceChange, onToggle, onClose, onExport, onImport, onCommand, hasPersonalKey, onKeyCopy, onPublicKeyCopy, onKeyInsert, }: PanelMoreMenuProps): import("react/jsx-runtime").JSX.Element;
+export declare function PanelMoreMenu({ open, transferDisabled, appearance, onAppearanceChange, onToggle, onClose, onExport, onImport, onCommand, hasPersonalKey, onKeyCopy, onPublicKeyCopy, onKeyInsert, onKeyRotate, }: PanelMoreMenuProps): import("react/jsx-runtime").JSX.Element;
 export {};
 //# sourceMappingURL=PanelMoreMenu.d.ts.map

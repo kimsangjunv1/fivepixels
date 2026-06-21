@@ -19,6 +19,7 @@ type PanelMoreMenuProps = {
     onKeyCopy: () => void;
     onPublicKeyCopy: () => void;
     onKeyInsert: () => void;
+    onKeyRotate: () => void;
 };
 
 const LOCALE_OPTIONS = ["en", "ko"] as const satisfies readonly ReportLocale[];
@@ -37,6 +38,7 @@ export function PanelMoreMenu({
     onKeyCopy,
     onPublicKeyCopy,
     onKeyInsert,
+    onKeyRotate,
 }: PanelMoreMenuProps) {
     const { locale, setLocale, messages } = useReport();
     const appearanceOptions = (["system", "light", "dark"] as const).map((value) => ({
@@ -78,8 +80,9 @@ export function PanelMoreMenu({
             >
                 {messages.moreMenu.keyCopy}
             </PanelDropdownMenuItem>
-            <PanelDropdownMenuItem onClick={onKeyInsert}>
-                {hasPersonalKey ? messages.moreMenu.keyChange : messages.moreMenu.keyInsert}
+            <PanelDropdownMenuItem onClick={onKeyInsert}>{messages.moreMenu.keyInsert}</PanelDropdownMenuItem>
+            <PanelDropdownMenuItem disabled={!hasPersonalKey} onClick={onKeyRotate}>
+                {messages.moreMenu.keyRotate}
             </PanelDropdownMenuItem>
             <div className="w-full h-[1px] bg-[var(--adaptive-black300)]" />
             <div className="px-[12px] py-[8px]">

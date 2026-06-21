@@ -53,6 +53,17 @@ export function usePersonalKey({ enabled, projectId, environment, identify, auth
         return issued;
     }, [authors, environment, identify, projectId]);
 
+    const rotatePersonalKey = useCallback(async () => {
+        if (!authorizedAuthor) {
+            return null;
+        }
+
+        const issued = await createReviewerKeyPair(projectId, environment, authorizedAuthor.id);
+        savePersonalKey(projectId, environment, issued.privateKey);
+        setPersonalKey(issued.privateKey);
+        return issued;
+    }, [authorizedAuthor, environment, projectId]);
+
     const insertPersonalKey = useCallback(
         async (key: string) => {
             const saved = savePersonalKey(projectId, environment, key);
@@ -95,6 +106,7 @@ export function usePersonalKey({ enabled, projectId, environment, identify, auth
         personalKeyCandidates: authors,
         authorizedAuthors: enabled ? (authorizedAuthor ? [authorizedAuthor] : []) : authors,
         issuePersonalKey,
+        rotatePersonalKey,
         insertPersonalKey,
         signPayload,
     };
