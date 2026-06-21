@@ -8,6 +8,7 @@ export const FEEDBACK_STATUS_LABEL: Record<FeedbackDisplayStatus, string> = {
     git_issued: "GIT ISSUED",
     suggested: "SUGGESTED",
     found_error: "FOUND ERROR",
+    recheck_requested: "IS NOT ERROR",
     resolved: "RESOLVED",
 };
 
@@ -17,5 +18,6 @@ export const FEEDBACK_STATUS_COLOR: Record<FeedbackDisplayStatus, string> = {
     git_issued: "var(--adaptive-blue500)",
     suggested: "var(--adaptive-orange500)",
     found_error: "var(--adaptive-red400)",
+    recheck_requested: "var(--adaptive-orange500)",
     resolved: "var(--adaptive-green500)",
 };

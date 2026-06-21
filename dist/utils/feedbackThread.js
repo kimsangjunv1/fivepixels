@@ -36,7 +36,7 @@ export function canReviewLatestSuggestion(report) {
     return latest?.status === "suggested";
 }
 export function canCheckoutReply(report, reply) {
-    if (reply.status !== "found_error") {
+    if (reply.status !== "found_error" && reply.status !== "recheck_requested") {
         return false;
     }
     const latest = getLatestReply(report);
@@ -46,6 +46,9 @@ export function resolveOriginalFeedbackAuthorName(report) {
     return report.author_name?.trim() ?? "";
 }
 export function createReplyStatusForSubmit(pending) {
+    if (pending === "recheck") {
+        return "recheck_requested";
+    }
     if (pending === "deny") {
         return "found_error";
     }

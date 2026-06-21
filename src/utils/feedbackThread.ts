@@ -51,7 +51,7 @@ export function canReviewLatestSuggestion(report: ReportFeedback): boolean {
 }
 
 export function canCheckoutReply(report: ReportFeedback, reply: ReportReply): boolean {
-    if (reply.status !== "found_error") {
+    if (reply.status !== "found_error" && reply.status !== "recheck_requested") {
         return false;
     }
 
@@ -63,7 +63,11 @@ export function resolveOriginalFeedbackAuthorName(report: ReportFeedback) {
     return report.author_name?.trim() ?? "";
 }
 
-export function createReplyStatusForSubmit(pending: "deny" | "checkout" | null): ReportReplyStatus {
+export function createReplyStatusForSubmit(pending: "deny" | "recheck" | "checkout" | null): ReportReplyStatus {
+    if (pending === "recheck") {
+        return "recheck_requested";
+    }
+
     if (pending === "deny") {
         return "found_error";
     }

@@ -14,7 +14,7 @@ export function getRouteDetailStatus(report) {
     if (displayStatus === "resolved") {
         return "resolved";
     }
-    if (displayStatus === "suggested" || displayStatus === "found_error") {
+    if (displayStatus === "suggested" || displayStatus === "found_error" || displayStatus === "recheck_requested") {
         return "suggested";
     }
     return "wait";

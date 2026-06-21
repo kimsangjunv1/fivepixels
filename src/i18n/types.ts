@@ -4,7 +4,7 @@ export type ReportLocale = "en" | "ko";
 
 type RouteDetailStatus = "wait" | "suggested" | "git_issued" | "resolved";
 
-type FeedbackDisplayStatus = "currently_wait" | "wait_for_reply" | "git_issued" | "suggested" | "found_error" | "resolved";
+type FeedbackDisplayStatus = "currently_wait" | "wait_for_reply" | "git_issued" | "suggested" | "found_error" | "recheck_requested" | "resolved";
 
 export type ReportMessages = {
     common: {

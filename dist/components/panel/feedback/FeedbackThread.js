@@ -34,7 +34,7 @@ function ThreadEntryActions({ reply, report, authors, pendingComposer, confirmAu
     const isLatest = report.replies[report.replies.length - 1]?.id === reply.id;
     const showReview = isLatest && canReviewLatestSuggestion(report);
     const showCheckout = canCheckoutReply(report, reply);
-    const denyActive = pendingComposer?.type === "deny" && pendingComposer.targetReplyId === reply.id;
+    const denyActive = (pendingComposer?.type === "deny" || pendingComposer?.type === "recheck") && pendingComposer.targetReplyId === reply.id;
     const checkoutActive = pendingComposer?.type === "checkout" && pendingComposer.targetReplyId === reply.id;
     if (!showReview && !showCheckout) {
         return null;

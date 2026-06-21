@@ -593,7 +593,7 @@ view 모드(`⌘⇧L`)에서 화면에 표시된 **마커**(`item` 빨간 점 ·
 3. **hover** — 원본 피드백의 상태 배지, 메시지(2줄), 작성자, 태그를 미리 봅니다. 답변이 없으면 상태는 `CURRENTLY WAIT`입니다. 답변이 있으면 상태 배지는 **최신 답변의 status**를 반영하고, 카드 하단에 **`최근 답변 작성자 | 내용 1줄 | +M`** 미리보기가 추가됩니다. (`M` = `replies.length - 1`, 미리보기에 보여준 1건을 제외한 나머지 답변 수. 답변이 1개뿐이면 `+M`은 표시하지 않습니다.)
 4. **클릭** — 원본 이슈와 답변 입력 UI(태그 없음)가 열립니다.
 5. **첫 답변** — `suggested` 상태의 타임라인 항목이 추가되고, 최신 항목에 `denied` / `confirm` / `select`가 표시됩니다.
-6. **denied** — 즉시 반영되지 않습니다. `denied` 버튼이 활성화되고 위에 답변 UI가 열리며, 전송 시 `found_error` 항목이 추가됩니다.
+6. **denied** — 즉시 반영되지 않습니다. `denied` 버튼이 활성화되고 위에 답변 UI가 열리며, 전송 시 `found_error` 항목이 추가됩니다. `found_error`에 대한 denied는 `recheck_requested`로 저장됩니다.
 7. **checkout** — **가장 최근 `found_error` 항목**에만 표시됩니다. 활성화 후 답변을 내면 `suggested` 항목이 추가되며, 이전 `found_error`에는 checkout 버튼이 더 이상 나타나지 않습니다.
 8. **confirm** — 기본 처리자는 **최초 피드백 작성자**입니다. `select`로 다른 처리자를 고른 뒤 `confirm`하면 `resolved` 답변이 추가되고 피드백 `status`가 `resolved`가 됩니다.
 
@@ -603,6 +603,7 @@ view 모드(`⌘⇧L`)에서 화면에 표시된 **마커**(`item` 빨간 점 ·
 | ------------- | ----------- | --------------------------- |
 | `suggested`   | SUGGESTED   | 수정·제안 답변              |
 | `found_error` | FOUND ERROR | 검수 거절(재확인 요청) 답변 |
+| `recheck_requested` | IS NOT ERROR | 오류 발견 판단에 대한 반박 |
 | `resolved`    | RESOLVED    | 검수 완료(이슈 해결)        |
 
 피드백 본문 `status`는 `open | git_issued | resolved | archived`이며, `confirm` 시 `resolved`로 바뀝니다. GitHub Issue 전송 시 `git_issued`로 바뀝니다.
@@ -611,7 +612,7 @@ view 모드(`⌘⇧L`)에서 화면에 표시된 **마커**(`item` 빨간 점 ·
 
 - `ReportField` 기본 지원 타입은 `textarea`, `checkbox` 입니다.
 - `field_values`는 `Record<string, string | boolean>` 형태만 저장합니다.
-- `replies` 항목은 `id`, `message`, `created_at`, **`status`** (`suggested` \| `found_error` \| `resolved`)를 가지며, `author_type`, `author_name`를 선택적으로 포함할 수 있습니다.
+- `replies` 항목은 `id`, `message`, `created_at`, **`status`** (`suggested` \| `found_error` \| `recheck_requested` \| `resolved`)를 가지며, `author_type`, `author_name`를 선택적으로 포함할 수 있습니다.
 - `replies`는 **시간순 append** 배열입니다. 최신 답변은 **마지막** 항목이며, 마커 `+N`은 `replies.length`, hover 미리보기는 마지막 항목의 `author_name`·`message`를 사용합니다.
 - 피드백 `status` 흐름 기본값은 `open -> git_issued -> resolved -> archived` 입니다. (`git_issued`는 GitHub Issue 전송 시에만 설정)
 - `integrations.github`는 선택 필드이며 `{ issue_number, issue_url, issued_at }` 형태입니다.

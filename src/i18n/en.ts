@@ -156,6 +156,7 @@ export const en: ReportMessages = {
             git_issued: "Git Issued",
             suggested: "Suggested",
             found_error: "Error found",
+            recheck_requested: "Is not error",
             resolved: "Resolved",
         },
     },

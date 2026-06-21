@@ -22,10 +22,10 @@
 ## 3. replies 타입 규칙
 
 - reply 구조는 `id`, `message`, `created_at`, `status`를 기본으로 합니다.
-- `status`는 `suggested`, `found_error`, `resolved` 중 하나입니다.
+- `status`는 `suggested`, `found_error`, `recheck_requested`, `resolved` 중 하나입니다.
 - 확장 대비용으로 `author_type`, `author_name`는 선택값입니다.
 - 기본 `Report` UI는 view 모드에서 답변 작성·검수 흐름(`denied` / `confirm` / `checkout`)을 지원합니다.
-- `denied`, `checkout`은 UI 단계이며, 전송 후 저장되는 상태는 각각 `found_error`, `suggested`입니다.
+- `denied`, `checkout`은 UI 단계이며, 전송 후 저장되는 상태는 각각 `found_error`, `suggested`입니다. 단, `found_error`에 대한 `denied`는 `recheck_requested`로 저장됩니다.
 - `confirm` 시 `resolved` reply를 추가하고, 필요하면 같은 `update` 요청에서 피드백 `status: "resolved"`를 함께 보냅니다.
 - GitHub Issue 전송 시 `author_type: "system"` reply를 추가합니다. 메시지 기본값은 `Issue has been sent to GitHub.`이며, UI에서 Issue 바로가기·링크 복사를 함께 표시합니다.
 - reply draft는 `ReportFeedback`에 섞지 않고 UI 로컬 상태로만 관리합니다.
@@ -38,7 +38,7 @@
 - `archived`는 종료 상태로 간주합니다.
 - 필요 시 `resolved -> open` 재오픈은 허용할 수 있습니다.
 - 권장 전이 규칙은 `REPORT_STATUS_TRANSITIONS` 상수를 따릅니다.
-- 일반 답변(`suggested`, `found_error`)만 추가할 때는 피드백 `status`를 자동으로 바꾸지 않습니다.
+- 일반 답변(`suggested`, `found_error`, `recheck_requested`)만 추가할 때는 피드백 `status`를 자동으로 바꾸지 않습니다.
 - 검수 완료(`confirm`) 시에는 `resolved` reply와 함께 피드백 `status: "resolved"`를 명시적으로 보냅니다.
 - GitHub Issue 전송 시에는 `status: "git_issued"`, `integrations.github`, 시스템 reply를 같은 `update` 요청으로 보냅니다.
 - 종료 보관이 필요하면 `status: "archived"`를 명시적으로 보냅니다.

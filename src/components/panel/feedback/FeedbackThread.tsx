@@ -10,7 +10,7 @@ import { FeedbackStatusBadge } from "./FeedbackStatusBadge.js";
 import { GitIssuedThreadEntry } from "./GitIssuedThreadEntry.js";
 
 type PendingComposer = {
-    type: "deny" | "checkout";
+    type: "deny" | "recheck" | "checkout";
     targetReplyId: string;
 } | null;
 
@@ -93,7 +93,7 @@ function ThreadEntryActions({
     const isLatest = report.replies[report.replies.length - 1]?.id === reply.id;
     const showReview = isLatest && canReviewLatestSuggestion(report);
     const showCheckout = canCheckoutReply(report, reply);
-    const denyActive = pendingComposer?.type === "deny" && pendingComposer.targetReplyId === reply.id;
+    const denyActive = (pendingComposer?.type === "deny" || pendingComposer?.type === "recheck") && pendingComposer.targetReplyId === reply.id;
     const checkoutActive = pendingComposer?.type === "checkout" && pendingComposer.targetReplyId === reply.id;
 
     if (!showReview && !showCheckout) {

@@ -23,7 +23,7 @@ export function getRouteDetailStatus(report: ReportFeedback): RouteDetailStatus 
         return "resolved";
     }
 
-    if (displayStatus === "suggested" || displayStatus === "found_error") {
+    if (displayStatus === "suggested" || displayStatus === "found_error" || displayStatus === "recheck_requested") {
         return "suggested";
     }
 

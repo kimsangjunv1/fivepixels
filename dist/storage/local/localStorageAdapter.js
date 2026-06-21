@@ -23,7 +23,7 @@ function normalizeFieldValues(value) {
     }, {});
 }
 function isReplyStatus(value) {
-    return value === "suggested" || value === "found_error" || value === "resolved";
+    return value === "suggested" || value === "found_error" || value === "recheck_requested" || value === "resolved";
 }
 function normalizeReplyStatus(value) {
     if (isReplyStatus(value)) {

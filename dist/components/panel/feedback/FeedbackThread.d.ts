@@ -1,6 +1,6 @@
 import type { ReportAuthor, ReportFeedback } from "../../../types/report.js";
 type PendingComposer = {
-    type: "deny" | "checkout";
+    type: "deny" | "recheck" | "checkout";
     targetReplyId: string;
 } | null;
 type FeedbackThreadProps = {

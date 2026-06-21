@@ -154,6 +154,7 @@ export const ko = {
             git_issued: "Git Issued",
             suggested: "제안됨",
             found_error: "오류 발견",
+            recheck_requested: "오류 아님",
             resolved: "해결됨",
         },
     },

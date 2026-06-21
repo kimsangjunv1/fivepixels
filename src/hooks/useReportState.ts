@@ -487,7 +487,10 @@ export function useReportState({
             return;
         }
 
-        setPendingComposer({ type: "deny", targetReplyId: latest.id });
+        setPendingComposer({
+            type: latest.status === "found_error" ? "recheck" : "deny",
+            targetReplyId: latest.id,
+        });
         setReplyDraft("");
     };
 

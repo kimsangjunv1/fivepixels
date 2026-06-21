@@ -47,6 +47,6 @@ export type EditableDraft = {
 };
 
 export type PendingFeedbackComposer = {
-    type: "deny" | "checkout";
+    type: "deny" | "recheck" | "checkout";
     targetReplyId: string;
 } | null;

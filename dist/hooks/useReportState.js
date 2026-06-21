@@ -326,7 +326,10 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         if (!latest) {
             return;
         }
-        setPendingComposer({ type: "deny", targetReplyId: latest.id });
+        setPendingComposer({
+            type: latest.status === "found_error" ? "recheck" : "deny",
+            targetReplyId: latest.id,
+        });
         setReplyDraft("");
     };
     const startCheckoutReview = (replyId) => {

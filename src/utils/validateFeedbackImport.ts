@@ -6,7 +6,7 @@ const NUMBER_FIELDS = ["x_ratio", "y_ratio", "scroll_y", "document_y", "viewport
 const OPTIONAL_STRING_FIELDS = ["environment", "app_version", "author_id", "author_name"] as const;
 const REPORT_TYPES = new Set<ReportTargetType>(["group", "item"]);
 const REPORT_STATUSES = new Set<ReportStatus>(["open", "git_issued", "resolved", "archived"]);
-const REPLY_STATUSES = new Set(["suggested", "found_error", "resolved"]);
+const REPLY_STATUSES = new Set(["suggested", "found_error", "recheck_requested", "resolved"]);
 
 function importError(index: number, detail: string) {
     const { errors } = getActiveReportMessages();

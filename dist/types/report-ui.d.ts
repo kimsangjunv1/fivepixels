@@ -40,7 +40,7 @@ export type EditableDraft = {
     fieldValues: ReportFieldValues;
 };
 export type PendingFeedbackComposer = {
-    type: "deny" | "checkout";
+    type: "deny" | "recheck" | "checkout";
     targetReplyId: string;
 } | null;
 //# sourceMappingURL=report-ui.d.ts.map
