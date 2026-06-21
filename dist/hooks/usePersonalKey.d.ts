@@ -17,6 +17,10 @@ export declare function usePersonalKey({ enabled, projectId, environment, identi
         privateKey: string;
         publicKey: string;
     } | null>;
+    rotatePersonalKey: () => Promise<{
+        privateKey: string;
+        publicKey: string;
+    } | null>;
     insertPersonalKey: (key: string) => Promise<{
         authorized: boolean;
     } | null>;

@@ -54,7 +54,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         onEvent,
         onReply,
     }), [onEvent, onReply]);
-    const { personalKey, publicKey, personalKeyRequired, personalKeyPendingRegistration, personalKeyCandidates, authorizedAuthors, issuePersonalKey, insertPersonalKey, signPayload, } = usePersonalKey({
+    const { personalKey, publicKey, personalKeyRequired, personalKeyPendingRegistration, personalKeyCandidates, authorizedAuthors, issuePersonalKey, rotatePersonalKey, insertPersonalKey, signPayload, } = usePersonalKey({
         enabled: requireReviewerKey || authors.some((author) => Boolean(author.publicKey)),
         projectId,
         environment,
@@ -806,6 +806,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         personalKeyPendingRegistration,
         personalKeyCandidates,
         issuePersonalKey,
+        rotatePersonalKey,
         insertPersonalKey,
         canListAllFeedback,
         visibleShortcutKeys,

@@ -104,6 +104,10 @@ export function ReportControlPanel() {
                                                 setMoreMenuOpen(false);
                                                 setPersonalKeyStep("insert");
                                                 setPersonalKeyNotice("");
+                                            }, onKeyRotate: () => {
+                                                setMoreMenuOpen(false);
+                                                setPersonalKeyStep("rotate");
+                                                setPersonalKeyNotice("");
                                             } })] }), errorMessage && importStep === "none" && commandStep === "none" ? _jsx("p", { className: "px-[8px] text-[12px] text-rose-700", children: errorMessage }) : null, personalKeyNotice ? _jsx("p", { className: "px-[8px] py-[4px] text-[12px] text-[var(--adaptive-green500)]", children: personalKeyNotice }) : null, personalKeyPendingRegistration ? _jsx("p", { className: "px-[8px] py-[4px] text-[12px] text-amber-700", children: messages.personalKey.registrationPending }) : null, personalKeyStep !== "none" ? (_jsx(ReportPersonalKeyDialog, { mode: personalKeyStep, onCancel: () => setPersonalKeyStep("none"), onComplete: (message) => {
                                         setPersonalKeyNotice(message);
                                         setPersonalKeyStep("none");

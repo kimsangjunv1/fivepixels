@@ -71,6 +71,10 @@ export declare function useReportState({ projectId, environment, appVersion, app
         privateKey: string;
         publicKey: string;
     } | null>;
+    rotatePersonalKey: () => Promise<{
+        privateKey: string;
+        publicKey: string;
+    } | null>;
     insertPersonalKey: (key: string) => Promise<{
         authorized: boolean;
     } | null>;

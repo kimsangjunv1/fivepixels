@@ -103,7 +103,7 @@ export function ReportControlPanel() {
     const [panelCollapsed, setPanelCollapsed] = useState(false);
     const [moreMenuOpen, setMoreMenuOpen] = useState(false);
     const [viewMenuOpen, setViewMenuOpen] = useState(false);
-    const [personalKeyStep, setPersonalKeyStep] = useState<"none" | "required" | "insert">("none");
+    const [personalKeyStep, setPersonalKeyStep] = useState<"none" | "required" | "insert" | "rotate">("none");
     const [personalKeyNotice, setPersonalKeyNotice] = useState("");
     const isRecording = mode === "report";
     const isIssueMode = mode === "view";
@@ -384,6 +384,11 @@ export function ReportControlPanel() {
                                             onKeyInsert={() => {
                                                 setMoreMenuOpen(false);
                                                 setPersonalKeyStep("insert");
+                                                setPersonalKeyNotice("");
+                                            }}
+                                            onKeyRotate={() => {
+                                                setMoreMenuOpen(false);
+                                                setPersonalKeyStep("rotate");
                                                 setPersonalKeyNotice("");
                                             }}
                                         />

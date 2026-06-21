@@ -109,6 +109,7 @@ export type ReportMessages = {
         publicKeyCopy: string;
         keyInsert: string;
         keyChange: string;
+        keyRotate: string;
         theme: string;
         themeAriaLabel: string;
         language: string;
@@ -128,6 +129,9 @@ export type ReportMessages = {
         setupSuccess: string;
         publicKeyCopied: string;
         registrationPending: string;
+        rotateTitle: string;
+        rotateDescription: string;
+        rotateWarning: string;
         invalidKey: string;
         ownerRequired: string;
     };

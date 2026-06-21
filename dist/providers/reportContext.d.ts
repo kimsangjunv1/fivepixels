@@ -38,6 +38,10 @@ declare const ReportContext: import("react").Context<{
         privateKey: string;
         publicKey: string;
     } | null>;
+    rotatePersonalKey: () => Promise<{
+        privateKey: string;
+        publicKey: string;
+    } | null>;
     insertPersonalKey: (key: string) => Promise<{
         authorized: boolean;
     } | null>;
@@ -173,6 +177,10 @@ export declare function useReport(): {
     personalKeyPendingRegistration: boolean;
     personalKeyCandidates: import("..").ReportAuthor[];
     issuePersonalKey: (authorId?: string) => Promise<{
+        privateKey: string;
+        publicKey: string;
+    } | null>;
+    rotatePersonalKey: () => Promise<{
         privateKey: string;
         publicKey: string;
     } | null>;
