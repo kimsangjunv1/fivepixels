@@ -149,8 +149,9 @@ function ThreadEntryActions({
                         <button
                             type="button"
                             data-stitchable-interactive=""
-                            disabled
-                            className="flex-1 border border-[var(--adaptive-black400)] py-[4px] rounded-[8px] text-[12px] font-semibold text-[var(--adaptive-black500)] opacity-60"
+                            disabled={isUpdating}
+                            onClick={onStartDeny}
+                            className={`flex-1 rounded-[8px] border py-[4px] text-[12px] font-semibold ${denyActive ? "border-transparent bg-[#FF2B6A] text-white" : "border-[var(--adaptive-border-subtle)] text-[var(--adaptive-text-primary)]"}`}
                         >
                             {messages.thread.denied}
                         </button>
