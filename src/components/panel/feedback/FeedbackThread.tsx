@@ -110,12 +110,12 @@ function ThreadEntryActions({
                             data-stitchable-interactive=""
                             disabled={isUpdating}
                             onClick={onStartDeny}
-                            className={`flex-1 rounded-full py-[4px] px-[8px] text-[12px] font-semibold border ${denyActive ? " bg-[#FF2B6A] text-white border-transparent" : " border-[var(--adaptive-black800)] text-[var(--adaptive-black500)] text-[var(--adaptive-black50)]"}`}
+                            className={`flex-1 rounded-full py-[4px] px-[8px] text-[12px] font-semibold border ${denyActive ? " bg-[#FF2B6A] text-white border-transparent" : " border-[var(--adaptive-border-subtle)] text-[var(--adaptive-text-primary)]"}`}
                         >
                             {messages.thread.denied}
                         </button>
 
-                        <section className="flex items-center gap-[8px] py-[4px] px-[8px] border border-[var(--adaptive-black800)] bg-[var(--adaptive-black900)] rounded-full">
+                        <section className="flex items-center gap-[8px] rounded-full border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface-muted)] px-[8px] py-[4px]">
                             <button
                                 type="button"
                                 data-stitchable-interactive=""
@@ -134,8 +134,8 @@ function ThreadEntryActions({
                                 onClick={onToggleConfirmAuthorSelect}
                                 className={
                                     showConfirmAuthorSelect
-                                        ? "shrink-0 rounded-full bg-[var(--adaptive-black900)] text-[12px] font-semibold text-[var(--adaptive-black50)]"
-                                        : "shrink-0 rounded-fulltext-[12px] font-semibold text-[var(--adaptive-black700)]"
+                                        ? "shrink-0 rounded-full bg-[var(--adaptive-surface-inverse)] text-[12px] font-semibold text-[var(--adaptive-text-inverse)]"
+                                        : "shrink-0 rounded-full text-[12px] font-semibold text-[var(--adaptive-text-secondary)]"
                                 }
                             >
                                 {messages.thread.select}
@@ -162,8 +162,8 @@ function ThreadEntryActions({
                             className={
                                 "flex-1 py-[4px] rounded-[8px] text-[12px] font-semibold " +
                                 (checkoutActive
-                                    ? "bg-[var(--adaptive-black900)] text-[var(--adaptive-black50)]"
-                                    : "bg-[var(--adaptive-black900)] border border-[var(--adaptive-black400)] text-[var(--adaptive-black300)]")
+                                    ? "bg-[var(--adaptive-surface-inverse)] text-[var(--adaptive-text-inverse)]"
+                                    : "border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface-muted)] text-[var(--adaptive-text-muted)]")
                             }
                         >
                             {messages.thread.leaveResult}
@@ -242,11 +242,11 @@ export function FeedbackThread({
 
     return (
         <div className="relative max-h-[512px]">
-            {scrollOverflow.canScrollUp ? <p className={`${SCROLL_HINT_CLASS} top-0 bg-[linear-gradient(0deg,transparent,var(--adaptive-black900))]`}>{messages.thread.scrollHintUp}</p> : null}
-            {scrollOverflow.canScrollDown ? <p className={`${SCROLL_HINT_CLASS} bottom-0 bg-[linear-gradient(180deg,transparent,var(--adaptive-black900))]`}>{messages.thread.scrollHintDown}</p> : null}
+            {scrollOverflow.canScrollUp ? <p className={`${SCROLL_HINT_CLASS} top-0 bg-[linear-gradient(0deg,transparent,var(--adaptive-surface-overlay))]`}>{messages.thread.scrollHintUp}</p> : null}
+            {scrollOverflow.canScrollDown ? <p className={`${SCROLL_HINT_CLASS} bottom-0 bg-[linear-gradient(180deg,transparent,var(--adaptive-surface-overlay))]`}>{messages.thread.scrollHintDown}</p> : null}
             <section
                 ref={scrollRef}
-                className="flex max-h-[512px] flex-col overflow-auto bg-[var(--adaptive-blackOpacity900)] backdrop-blur-[10px]"
+                className="flex max-h-[512px] flex-col overflow-auto bg-transparent"
             >
                 {chronological.map((reply) => {
                     const issueUrl = getGitHubIssueUrl(report);
@@ -264,13 +264,13 @@ export function FeedbackThread({
                     return (
                     <article
                         key={reply.id}
-                        className="flex flex-col gap-[8px] border-t border-[var(--adaptive-black800)] p-[16px]"
+                        className="flex flex-col gap-[8px] border-t border-[var(--adaptive-border-subtle)] p-[16px]"
                     >
                         <div className="flex items-start justify-between gap-[8px]">
                             <FeedbackStatusBadge status={reply.status} />
                             <span className="text-[12px] text-[var(--adaptive-black500)]">{formatDate(reply.created_at, locale)}</span>
                         </div>
-                        <p className="leading-[1.5] text-[14px] text-[var(--adaptive-black50)]">{reply.message}</p>
+                        <p className="leading-[1.5] text-[14px] text-[var(--adaptive-text-primary)]">{reply.message}</p>
                         {reply.author_name ? (
                             <div className="flex items-center gap-[6px]">
                                 <p className="text-[12px] text-[var(--adaptive-black500)]">{reply.author_name}</p>

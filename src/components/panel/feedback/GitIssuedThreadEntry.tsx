@@ -31,13 +31,13 @@ export function GitIssuedThreadEntry({ reply, issueUrl }: GitIssuedThreadEntryPr
     };
 
     return (
-        <article className="flex flex-col gap-[8px] border-t border-[var(--adaptive-black800)] p-[16px]">
+        <article className="flex flex-col gap-[8px] border-t border-[var(--adaptive-border-subtle)] p-[16px]">
             <div className="flex items-start justify-between gap-[8px]">
                 <FeedbackStatusBadge status="git_issued" />
                 <span className="text-[12px] text-[var(--adaptive-black500)]">{formatDate(reply.created_at, locale)}</span>
             </div>
 
-            <p className="leading-[1.5] text-[14px] text-[var(--adaptive-black50)]">{reply.message}</p>
+            <p className="leading-[1.5] text-[14px] text-[var(--adaptive-text-primary)]">{reply.message}</p>
 
             <div className="flex flex-wrap items-center gap-[8px]">
                 <a
@@ -46,7 +46,7 @@ export function GitIssuedThreadEntry({ reply, issueUrl }: GitIssuedThreadEntryPr
                     rel="noopener noreferrer"
                     data-stitchable-interactive=""
                     onClick={(event) => event.stopPropagation()}
-                    className="flex items-center justify-center gap-[4px] rounded-full text border border-[var(--adaptive-black700)] px-[10px] py-[4px] text-[12px] font-semibold text-[var(--adaptive-black500)] hover:bg-[var(--adaptive-black900)]"
+                    className="flex items-center justify-center gap-[4px] rounded-full border border-[var(--adaptive-border-subtle)] px-[10px] py-[4px] text-[12px] font-semibold text-[var(--adaptive-text-muted)] hover:bg-[var(--adaptive-surface-muted)]"
                 >
                     {messages.resolution.gitIssuedOpenLink}
                     <ArrowTRIcon className="h-[12px] w-[12px]" />
@@ -58,7 +58,7 @@ export function GitIssuedThreadEntry({ reply, issueUrl }: GitIssuedThreadEntryPr
                     onClick={handleCopy}
                     aria-label={messages.resolution.gitIssuedCopyLinkAriaLabel}
                     title={copied ? messages.resolution.gitIssuedCopiedTitle : messages.resolution.gitIssuedCopyLinkTitle}
-                    className="flex items-center justify-center gap-[4px] rounded-full border border-[var(--adaptive-black700)] px-[10px] py-[4px] text-[12px] font-semibold text-[var(--adaptive-black500)] hover:bg-[var(--adaptive-black900)] hover:text-[var(--adaptive-black50)]"
+                    className="flex items-center justify-center gap-[4px] rounded-full border border-[var(--adaptive-border-subtle)] px-[10px] py-[4px] text-[12px] font-semibold text-[var(--adaptive-text-muted)] hover:bg-[var(--adaptive-surface-muted)] hover:text-[var(--adaptive-text-primary)]"
                 >
                     {copied ? messages.resolution.gitIssuedCopiedTitle : messages.resolution.gitIssuedCopyLinkTitle}
                     <LinkIcon className="h-[12px] w-[12px]" />

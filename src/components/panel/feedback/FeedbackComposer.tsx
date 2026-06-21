@@ -72,7 +72,7 @@ export function FeedbackComposer({
                 onChange={(event) => onMessageChange(event.target.value)}
                 placeholder={resolvedPlaceholder}
                 rows={3}
-                className="min-h-[72px] w-full resize-none bg-transparent px-[16px] pt-[16px] text-[14px] leading-[1.4] text-[var(--adaptive-black50)] outline-none placeholder:text-[var(--adaptive-black500)]"
+                className="min-h-[72px] w-full resize-none bg-transparent px-[16px] pt-[16px] text-[14px] leading-[1.4] text-[var(--adaptive-text-primary)] outline-none placeholder:text-[var(--adaptive-text-muted)]"
                 onKeyDown={(event) => {
                     if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
                         event.preventDefault();
@@ -94,7 +94,7 @@ export function FeedbackComposer({
                             data-stitchable-interactive=""
                             disabled={isActionDisabled}
                             onClick={handleGitHubIssueSubmit}
-                            className="inline-flex items-center justify-center gap-[4px] rounded-full border border-[var(--adaptive-black600)] p-[4px] h-[24px] px-[12px] disabled:opacity-50"
+                            className="inline-flex h-[24px] items-center justify-center gap-[4px] rounded-full border border-[var(--adaptive-border-subtle)] px-[12px] py-[4px] disabled:opacity-50"
                             aria-label={messages.composer.gitIssueSendAriaLabel}
                             title={messages.composer.gitIssueSendTitle}
                         >
@@ -108,7 +108,7 @@ export function FeedbackComposer({
                         data-stitchable-interactive=""
                         disabled={isActionDisabled}
                         onClick={handleSubmit}
-                        className="inline-flex px-[12px] shrink-0 items-center justify-center rounded-full bg-[var(--adaptive-blue500)] text-[var(--adaptive-black50)] disabled:opacity-50"
+                        className="inline-flex px-[12px] shrink-0 items-center justify-center rounded-full bg-[var(--adaptive-blue500)] text-[var(--adaptive-overlay-text)] disabled:opacity-50"
                         aria-label={messages.composer.sendAriaLabel}
                     >
                         <SendIcon className="w-[16px]" />
@@ -116,7 +116,7 @@ export function FeedbackComposer({
                 </div>
             </div>
 
-            <div className="w-full h-[1px] bg-[var(--adaptive-black800)]" />
+            {/* <div className="w-full h-[1px] bg-[var(--adaptive-whiteOpacity200)]" /> */}
 
             {showTags ? (
                 <FieldTagSelector

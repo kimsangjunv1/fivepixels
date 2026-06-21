@@ -1,5 +1,5 @@
 import { jsxs as _jsxs, jsx as _jsx, Fragment as _Fragment } from "react/jsx-runtime";
-import { TARGET_COLOR, TARGET_SURFACE } from "../../constants/report.js";
+import { TARGET_COLOR } from "../../constants/report.js";
 import { AnimatedPresence, motion } from "../../components/motion/index.js";
 const HIGHLIGHT_MOTION = {
     group: {
@@ -21,8 +21,10 @@ function HighlightMotionBox({ target, showLabel }) {
             top: target.rect.top,
             width: target.rect.width,
             height: target.rect.height,
-            outline: `2px solid ${TARGET_COLOR[target.type]}`,
-            backgroundColor: TARGET_SURFACE[target.type],
+            outline: `2px solid #0ed1b4`,
+            backgroundColor: "#0ed1b41c",
+            // outline: `2px solid ${TARGET_COLOR[target.type]}`,
+            // backgroundColor: TARGET_SURFACE[target.type],
         }, initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 }, children: showLabel ? (_jsxs("span", { className: "absolute left-0 top-0 -translate-y-full px-1 py-0.5 font-[var(--coding-font)] text-[12px] font-medium text-white", style: { backgroundColor: TARGET_COLOR[target.type] }, children: [target.type, " \u00B7 ", target.id] })) : null }));
 }
 export function TargetHighlights({ hoveredTarget, previewTargets = [], selectedTarget }) {
@@ -31,7 +33,7 @@ export function TargetHighlights({ hoveredTarget, previewTargets = [], selectedT
                     top: selectedTarget.rect.top,
                     width: selectedTarget.rect.width,
                     height: selectedTarget.rect.height,
-                    boxShadow: `0 0 0 3px ${TARGET_COLOR[selectedTarget.type]}`,
+                    // boxShadow: `0 0 0 3px ${TARGET_COLOR[selectedTarget.type]}`,
                 } })) : null] }));
 }
 //# sourceMappingURL=TargetHighlights.js.map

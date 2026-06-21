@@ -28,7 +28,7 @@ function DraftPopoverConnector({ placement }: DraftPopoverConnectorProps) {
         return null;
     }
 
-    const baseClass = "pointer-events-none absolute top-1/2 h-[2px] -translate-y-1/2 bg-[var(--adaptive-black500)]";
+    const baseClass = "pointer-events-none absolute top-1/2 h-[2px] -translate-y-1/2 bg-[var(--adaptive-whiteOpacity500)]";
 
     if (placement === "right") {
         return (
@@ -135,7 +135,7 @@ function ReportDraftFormContent({
             exit={{ y: verticalOffset }}
             transition={{ duration: 0.25, ease: DRAFT_MOTION_EASE }}
             onClick={(event) => event.stopPropagation()}
-            className="pointer-events-auto fixed z-[1000001] flex flex-col rounded-[24px] border-[2px] border-[var(--adaptive-black200)] bg-[var(--adaptive-blackOpacity800)] shadow-[0_0_120px_0_var(--adaptive-black500)] backdrop-blur-[30px]"
+            className="pointer-events-auto fixed z-[1000001] flex flex-col rounded-[24px] border-[2px] border-[var(--adaptive-border)] bg-[var(--adaptive-surface-overlay)] shadow-[0_0_120px_0_var(--adaptive-blackOpacity500)] backdrop-blur-[30px]"
             style={{
                 left,
                 top: centerVertically ? anchorCenterY : top,

@@ -21,8 +21,7 @@ const TOOLTIP_MOTION_TRANSITION = {
 };
 
 const TOOLTIP_BASE_CLASS =
-    // "fixed z-[1000001] overflow-hidden rounded-[24px] bg-[var(--adaptive-blackOpacity900)] shadow-[0_0_90px_0_var(--adaptive-blackOpacity500)] backdrop-blur-sm border border-[2px] border-[var(--adaptive-black400)]";
-    "fixed z-[1000001] overflow-hidden rounded-[24px] shadow-[0_0_90px_0_var(--adaptive-blackOpacity500)] border border-[2px] border-[var(--adaptive-black300)] backdrop-blur-[10px]";
+    "fixed z-[1000001] overflow-hidden rounded-[24px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface-overlay)] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[20px]";
 
 const MARKER_ANCHOR_CLASS = "pointer-events-none fixed z-[1000000] -translate-x-1/2 -translate-y-1/2";
 const MARKER_BUTTON_BASE_CLASS = "flex items-center justify-center rounded-full";
@@ -44,9 +43,7 @@ function MarkerButton({ markerItem, isSelected, isLocated, locatePulseTick, onSe
     });
     const replyCount = markerItem.report.replies.length;
     const markerLabel =
-        replyCount > 0
-            ? `${markerItem.report.report_type} · ${markerItem.report.report_id} · ${replyCount} replies`
-            : `${markerItem.report.report_type} · ${markerItem.report.report_id}`;
+        replyCount > 0 ? `${markerItem.report.report_type} · ${markerItem.report.report_id} · ${replyCount} replies` : `${markerItem.report.report_type} · ${markerItem.report.report_id}`;
 
     return (
         <>
@@ -91,7 +88,7 @@ function MarkerButton({ markerItem, isSelected, isLocated, locatePulseTick, onSe
                         }}
                     />
                     {replyCount > 0 ? (
-                        <span className="absolute -right-[6px] -top-[6px] flex h-[14px] min-w-[14px] items-center justify-center rounded-full bg-[var(--adaptive-black900)] px-[3px] text-[10px] font-semibold leading-none text-[var(--adaptive-black50)] ring-1 ring-white/80">
+                        <span className="absolute -right-[6px] -top-[6px] flex h-[14px] min-w-[14px] items-center justify-center rounded-full bg-[var(--adaptive-surface-inverse)] px-[3px] text-[10px] font-semibold leading-none text-[var(--adaptive-text-inverse)] ring-1 ring-white/80">
                             +{replyCount}
                         </span>
                     ) : null}
@@ -234,14 +231,17 @@ export function ReportMarkersLayer() {
                 markerItem.rect && locatedReportId !== markerItem.report.id ? (
                     <div
                         key={`${markerItem.id}-rect`}
-                        className="pointer-events-none fixed rounded-[3px] border border-sky-400/70 bg-sky-200/20 shadow-[0_0_0_1px_rgba(148,163,184,0.4)]"
+                        className="pointer-events-none fixed"
                         style={{
                             left: markerItem.rect.left,
                             top: markerItem.rect.top,
                             width: markerItem.rect.width,
                             height: markerItem.rect.height,
-                            outline: `1px solid ${TARGET_COLOR[markerItem.report.report_type]}`,
-                            backgroundColor: TARGET_SURFACE[markerItem.report.report_type],
+                            // outline: `1px solid ${TARGET_COLOR[markerItem.report.report_type]}`,
+                            // backgroundColor: TARGET_SURFACE[markerItem.report.report_type],
+
+                            outline: `2px solid #0ed1b4`,
+                            backgroundColor: "#0ed1b41c",
                         }}
                     />
                 ) : null,
@@ -322,7 +322,7 @@ export function ReportMarkersLayer() {
                             />
 
                             {showComposer ? (
-                                <section className="backdrop-blur-[10px] bg-[var(--adaptive-blackOpacity900)]">
+                                <section className="border-t border-[var(--adaptive-border-subtle)] bg-transparent">
                                     <FeedbackComposer
                                         message={replyDraft}
                                         onMessageChange={setReplyDraft}

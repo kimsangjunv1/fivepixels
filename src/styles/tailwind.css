@@ -69,9 +69,12 @@
     font-family: var(--ui-font);
     font-size: 14px;
     font-weight: 600;
-    color: var(--adaptive-black900);
+    color: var(--adaptive-text-primary);
 
-    transition: 0.25s colors;
+    transition:
+        color 0.25s,
+        background-color 0.25s,
+        border-color 0.25s;
     text-decoration: auto;
 
     text-transform: none;

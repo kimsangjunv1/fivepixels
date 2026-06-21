@@ -22,9 +22,10 @@ import { panelNumericClassName } from "@/utils/panelTypography.js";
 import type { ReportPanelTab } from "@/types/report-ui.js";
 
 function PanelCollapseTab({ collapsed, anchorSide, onClick, messages }: { collapsed: boolean; anchorSide: "left" | "right"; onClick: () => void; messages: ReturnType<typeof useReport>["messages"] }) {
-    const hideIcon = anchorSide === "right" ? <ChevronRightIcon className="h-3 w-3 text-slate-500 dark:text-slate-300" /> : <ChevronLeftIcon className="h-3 w-3 text-slate-500 dark:text-slate-300" />;
+    const hideIcon =
+        anchorSide === "right" ? <ChevronRightIcon className="h-3 w-3 text-[var(--adaptive-text-muted)]" /> : <ChevronLeftIcon className="h-3 w-3 text-[var(--adaptive-text-muted)]" />;
     const expandIcon =
-        anchorSide === "right" ? <ChevronLeftIcon className="h-3 w-3 text-slate-500 dark:text-slate-300" /> : <ChevronRightIcon className="h-3 w-3 text-slate-500 dark:text-slate-300" />;
+        anchorSide === "right" ? <ChevronLeftIcon className="h-3 w-3 text-[var(--adaptive-text-muted)]" /> : <ChevronRightIcon className="h-3 w-3 text-[var(--adaptive-text-muted)]" />;
 
     return (
         <button
@@ -177,7 +178,7 @@ export function ReportControlPanel() {
                 onDragLeave={handleDragLeave}
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}
-                className={`pointer-events-auto fixed z-[1000000] bg-[var(--adaptive-whiteOpacity800)] backdrop-blur-[50px] rounded-[24px] shadow-[0_0_120px_0_var(--adaptive-blackOpacity500)] flex ${isRecording ? "min-h-[40px] p-[4px]" : "max-h-[80vh] max-w-[calc(100svw-(16px*2))]"}`}
+                className={`pointer-events-auto fixed z-[1000000] bg-[var(--adaptive-surface-overlay)] backdrop-blur-[50px] rounded-[24px] shadow-[0_0_120px_0_var(--adaptive-blackOpacity500)] flex ${isRecording ? "min-h-[40px] p-[4px]" : "max-h-[80vh] max-w-[calc(100svw-(16px*2))]"}`}
                 style={{ ...panelStyle, fontSize: "14px" }}
             >
                 <motion.div className="flex min-w-0 flex-1 flex-col w-full">
@@ -228,10 +229,10 @@ export function ReportControlPanel() {
                                                     <button
                                                         type="button"
                                                         onClick={toggleReportMode}
-                                                        className="flex items-center gap-[4px] rounded-l-[8px] bg-[var(--adaptive-black900)] p-[0_8px]"
+                                                        className="flex items-center gap-[4px] rounded-l-[8px] bg-[var(--adaptive-surface-inverse)] p-[0_8px]"
                                                     >
                                                         <SelectIcon className="w-[16px]" />
-                                                        <p className="text-[12px] text-[var(--adaptive-black50)]">{messages.panel.addFeedback}</p>
+                                                        <p className="text-[12px] text-[var(--adaptive-text-inverse)]">{messages.panel.addFeedback}</p>
                                                     </button>
 
                                                     <PanelDropdownMenu
@@ -245,9 +246,9 @@ export function ReportControlPanel() {
                                                                 aria-expanded={viewMenuOpen}
                                                                 aria-haspopup="menu"
                                                                 aria-label={messages.panel.viewOptionsAriaLabel}
-                                                                className="flex items-center rounded-r-[8px] border-l border-[var(--adaptive-black700)] bg-[var(--adaptive-black900)] p-[2px_8px] h-[24px]"
+                                                                className="flex items-center rounded-r-[8px] border-l border-[var(--adaptive-text-secondary)] bg-[var(--adaptive-surface-inverse)] p-[2px_8px] h-[24px]"
                                                             >
-                                                                <ChevronDownIcon className={`h-4 w-4 text-[var(--adaptive-black900)] transition-transform ${viewMenuOpen ? "rotate-180" : ""}`} />
+                                                                <ChevronDownIcon className={`h-4 w-4 text-[var(--adaptive-text-inverse)] transition-transform ${viewMenuOpen ? "rotate-180" : ""}`} />
                                                             </button>
                                                         }
                                                     >

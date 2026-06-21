@@ -44,8 +44,10 @@ function HighlightMotionBox({ target, showLabel }: { target: TargetSnapshot; sho
                 top: target.rect.top,
                 width: target.rect.width,
                 height: target.rect.height,
-                outline: `2px solid ${TARGET_COLOR[target.type]}`,
-                backgroundColor: TARGET_SURFACE[target.type],
+                outline: `2px solid #0ed1b4`,
+                backgroundColor: "#0ed1b41c",
+                // outline: `2px solid ${TARGET_COLOR[target.type]}`,
+                // backgroundColor: TARGET_SURFACE[target.type],
             }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -92,7 +94,7 @@ export function TargetHighlights({ hoveredTarget, previewTargets = [], selectedT
                         top: selectedTarget.rect.top,
                         width: selectedTarget.rect.width,
                         height: selectedTarget.rect.height,
-                        boxShadow: `0 0 0 3px ${TARGET_COLOR[selectedTarget.type]}`,
+                        // boxShadow: `0 0 0 3px ${TARGET_COLOR[selectedTarget.type]}`,
                     }}
                 />
             ) : null}

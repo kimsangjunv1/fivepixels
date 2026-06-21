@@ -3,12 +3,12 @@ import { getDefaultFields } from "../i18n/index.js";
 export const DOT_SIZE = 14;
 export const TARGET_SELECTOR = "[data-report-id]";
 export const TARGET_COLOR = {
-    group: "#7d44f0",
-    item: "#f04452",
+    group: "#0ed1b4",
+    item: "#0ed1b4",
 };
 export const TARGET_SURFACE = {
-    group: "#7d44f010",
-    item: "rgba(240, 68, 82, 0.15)",
+    group: "#0ed1b41c",
+    item: "#0ed1b41c",
 };
 export const DEFAULT_FIELDS = getDefaultFields(ko);
 //# sourceMappingURL=report.js.map

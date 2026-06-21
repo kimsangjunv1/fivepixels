@@ -67,7 +67,7 @@ export function ReportCommandPanel({ onExecute, onClose, notice = null, onNotice
                     onChange={(event) => setRaw(event.target.value)}
                     placeholder={messages.command.jsonPlaceholder}
                     spellCheck={false}
-                    className="min-h-[160px] flex-1 resize-none bg-[var(--adaptive-black900)] p-[4px] font-mono text-[12px] leading-[1.5] text-[var(--adaptive-black400)] outline-none placeholder:text-[var(--adaptive-black700)]"
+                    className="min-h-[160px] flex-1 resize-none bg-[var(--adaptive-overlay-surface)] p-[4px] font-mono text-[12px] leading-[1.5] text-[var(--adaptive-overlay-text)] outline-none placeholder:text-[var(--adaptive-overlay-text-muted)]"
                 />
 
                 {statusMessage ? <p className={`text-[12px] ${isError ? "text-rose-700" : "text-[var(--adaptive-green600,#2e7d32)]"}`}>{statusMessage}</p> : null}

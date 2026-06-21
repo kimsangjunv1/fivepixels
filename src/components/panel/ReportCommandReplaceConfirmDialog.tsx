@@ -31,12 +31,12 @@ export function ReportCommandReplaceConfirmDialog({ conflicts, onConfirm, onCanc
 
                     <section className="flex flex-col gap-[4px]">
                         <p className="text-[12px] text-[var(--adaptive-black700)]">{messages.commandReplace.existingMessage}</p>
-                        <p className="rounded-[8px] bg-white p-[8px] text-[12px] leading-[1.5] text-[var(--adaptive-black800)]">{conflict.existing.message}</p>
+                        <p className="rounded-[8px] bg-[var(--adaptive-surface)] p-[8px] text-[12px] leading-[1.5] text-[var(--adaptive-text-secondary)]">{conflict.existing.message}</p>
                     </section>
 
                     <section className="mt-[8px] flex flex-col gap-[4px]">
                         <p className="text-[12px] text-[var(--adaptive-black700)]">{messages.commandReplace.replacementMessage}</p>
-                        <p className="rounded-[8px] bg-white p-[8px] text-[12px] leading-[1.5] text-[var(--adaptive-blue500)]">{conflict.incoming.message}</p>
+                        <p className="rounded-[8px] bg-[var(--adaptive-surface)] p-[8px] text-[12px] leading-[1.5] text-[var(--adaptive-blue500)]">{conflict.incoming.message}</p>
                     </section>
                 </section>
             ))}

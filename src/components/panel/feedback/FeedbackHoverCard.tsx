@@ -15,9 +15,9 @@ export function FeedbackHoverCard({ report, fieldTags }: FeedbackHoverCardProps)
     const remainingReplyCount = getRemainingReplyCount(report);
 
     return (
-        <div className="flex w-[260px] flex-col gap-[10px] p-[16px] bg-[var(--adaptive-blackOpacity800)] backdrop-blur-[10px]">
+        <div className="flex w-[260px] flex-col gap-[10px] bg-transparent p-[16px]">
             <FeedbackStatusBadge status={displayStatus} />
-            <p className="line-clamp-2 leading-[1.5] text-[16px] text-[var(--adaptive-black50)]">{report.message}</p>
+            <p className="line-clamp-2 leading-[1.5] text-[16px] text-[var(--adaptive-text-primary)]">{report.message}</p>
             {report.author_name ? (
                 <div className="flex items-center gap-[6px]">
                     <p className="text-[12px] text-[var(--adaptive-black500)]">{report.author_name}</p>
@@ -26,7 +26,7 @@ export function FeedbackHoverCard({ report, fieldTags }: FeedbackHoverCardProps)
             ) : null}
             <FeedbackFieldTags tags={fieldTags} />
             {latestReply ? (
-                <div className="flex min-w-0 items-center gap-[6px] border-t border-[var(--adaptive-black800)] pt-[10px] text-[12px] text-[var(--adaptive-black500)]">
+                <div className="flex min-w-0 items-center gap-[6px] border-t border-[var(--adaptive-border-subtle)] pt-[10px] text-[12px] text-[var(--adaptive-text-muted)]">
                     {latestReply.author_name ? (
                         <>
                             <span className="shrink-0">{latestReply.author_name}</span>

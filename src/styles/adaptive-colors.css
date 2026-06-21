@@ -15,6 +15,23 @@
 }
 
 [data-stitchable-mount][data-stitchable-theme="light"] {
+    color-scheme: light;
+
+    --adaptive-surface: #ffffff;
+    --adaptive-surface-muted: #f5f5f5;
+    --adaptive-surface-overlay: rgba(255, 255, 255, 0.91);
+    --adaptive-surface-inverse: #212121;
+    --adaptive-text-primary: #212121;
+    --adaptive-text-secondary: #616161;
+    --adaptive-text-muted: #999999;
+    --adaptive-text-inverse: #fafafa;
+    --adaptive-overlay-surface: rgba(0, 0, 0, 0.91);
+    --adaptive-overlay-text: #fafafa;
+    --adaptive-overlay-text-muted: #bdbdbd;
+    --adaptive-border: #eeeeee;
+    --adaptive-border-subtle: rgba(0, 0, 0, 0.1);
+    --adaptive-popup-shadow: 0 24px 64px rgba(0, 0, 0, 0.18);
+
     --adaptive-background: #ffffff;
     --adaptive-layeredBackground: #ffffff;
     --adaptive-floatBackground: #ffffff;
@@ -182,6 +199,23 @@
 }
 
 [data-stitchable-mount][data-stitchable-theme="dark"] {
+    color-scheme: dark;
+
+    --adaptive-surface: #212121;
+    --adaptive-surface-muted: #2c2c35;
+    --adaptive-surface-overlay: rgba(0, 0, 0, 0.91);
+    --adaptive-surface-inverse: #fafafa;
+    --adaptive-text-primary: #fafafa;
+    --adaptive-text-secondary: #eeeeee;
+    --adaptive-text-muted: #bdbdbd;
+    --adaptive-text-inverse: #212121;
+    --adaptive-overlay-surface: rgba(0, 0, 0, 0.91);
+    --adaptive-overlay-text: #fafafa;
+    --adaptive-overlay-text-muted: #bdbdbd;
+    --adaptive-border: #3c3c47;
+    --adaptive-border-subtle: rgba(255, 255, 255, 0.1);
+    --adaptive-popup-shadow: 0 24px 64px rgba(0, 0, 0, 0.42);
+
     --adaptive-background: #17171c;
     --adaptive-layeredBackground: #202027;
     --adaptive-floatBackground: #2c2c35;
@@ -233,16 +267,16 @@
     --adaptive-greyOpacity800: rgba(253, 253, 254, 0.89);
     --adaptive-greyOpacity900: #ffffff;
 
-    --adaptive-whiteOpacity50: rgba(0, 0, 0, 0.98);
-    --adaptive-whiteOpacity100: rgba(0, 0, 0, 0.5);
-    --adaptive-whiteOpacity200: rgba(0, 0, 0, 0.9);
-    --adaptive-whiteOpacity300: rgba(0, 0, 0, 0.82);
-    --adaptive-whiteOpacity400: rgba(0, 0, 0, 0.69);
-    --adaptive-whiteOpacity500: rgba(0, 0, 0, 0.54);
-    --adaptive-whiteOpacity600: rgba(0, 0, 0, 0.42);
-    --adaptive-whiteOpacity700: rgba(0, 0, 0, 0.3);
-    --adaptive-whiteOpacity800: rgba(0, 0, 0, 0.2);
-    --adaptive-whiteOpacity900: rgba(0, 0, 0, 0.09);
+    --adaptive-whiteOpacity50: rgba(0, 0, 0, 0.05);
+    --adaptive-whiteOpacity100: rgba(0, 0, 0, 0.1);
+    --adaptive-whiteOpacity200: rgba(0, 0, 0, 0.18);
+    --adaptive-whiteOpacity300: rgba(0, 0, 0, 0.27);
+    --adaptive-whiteOpacity400: rgba(0, 0, 0, 0.36);
+    --adaptive-whiteOpacity500: rgba(0, 0, 0, 0.46);
+    --adaptive-whiteOpacity600: rgba(0, 0, 0, 0.58);
+    --adaptive-whiteOpacity700: rgba(0, 0, 0, 0.7);
+    --adaptive-whiteOpacity800: rgba(0, 0, 0, 0.8);
+    --adaptive-whiteOpacity900: rgba(0, 0, 0, 0.91);
 
     --adaptive-blue50: #202c4d;
     --adaptive-blue100: #23386a;

@@ -21,7 +21,7 @@ export function AuthorSelector({ authors, value, onChange }: AuthorSelectorProps
                 value={value}
                 onChange={(event) => onChange(event.target.value)}
                 placeholder={messages.author.placeholder}
-                className="min-w-0 flex-1 rounded-full bg-[var(--adaptive-black800)] px-[12px] py-[4px] h-[24px] text-[12px] text-[var(--adaptive-black900)] outline-none placeholder:text-[var(--adaptive-black500)]"
+                className="h-[24px] min-w-0 flex-1 rounded-full bg-[var(--adaptive-surface-muted)] px-[12px] py-[4px] text-[12px] text-[var(--adaptive-text-primary)] outline-none placeholder:text-[var(--adaptive-text-muted)]"
             />
         );
     }
@@ -39,7 +39,7 @@ export function AuthorSelector({ authors, value, onChange }: AuthorSelectorProps
                     aria-expanded={menuOpen}
                     aria-haspopup="menu"
                     aria-label={messages.author.selectAriaLabel}
-                    className="flex w-full min-w-0 items-center justify-between rounded-full bg-[var(--adaptive-black800)] py-[4px] h-[24px] pr-[10px] pl-[12px] text-[12px] outline-none"
+                    className="flex h-[24px] w-full min-w-0 items-center justify-between rounded-full bg-[var(--adaptive-surface-muted)] py-[4px] pr-[10px] pl-[12px] text-[12px] outline-none"
                 >
                     <span className={`text-[var(--adaptive-black500)]`}>{value || messages.author.selectPlaceholder}</span>
 

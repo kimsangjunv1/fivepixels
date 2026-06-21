@@ -362,7 +362,7 @@ export function ReportFeedbackList() {
                         <button
                             type="button"
                             onClick={() => void refetch()}
-                            className="inline-flex items-center justify-center rounded-md border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700"
+                            className="inline-flex items-center justify-center rounded-md border border-[var(--adaptive-border)] bg-[var(--adaptive-surface)] px-3 py-1 text-xs font-medium text-[var(--adaptive-text-secondary)]"
                         >
                             {messages.common.retry}
                         </button>

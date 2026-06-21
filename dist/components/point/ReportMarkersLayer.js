@@ -18,9 +18,7 @@ const TOOLTIP_MOTION_TRANSITION = {
     stiffness: 100,
     damping: 10,
 };
-const TOOLTIP_BASE_CLASS = 
-// "fixed z-[1000001] overflow-hidden rounded-[24px] bg-[var(--adaptive-blackOpacity900)] shadow-[0_0_90px_0_var(--adaptive-blackOpacity500)] backdrop-blur-sm border border-[2px] border-[var(--adaptive-black400)]";
-"fixed z-[1000001] overflow-hidden rounded-[24px] shadow-[0_0_90px_0_var(--adaptive-blackOpacity500)] border border-[2px] border-[var(--adaptive-black300)] backdrop-blur-[10px]";
+const TOOLTIP_BASE_CLASS = "fixed z-[1000001] overflow-hidden rounded-[24px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface-overlay)] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[20px]";
 const MARKER_ANCHOR_CLASS = "pointer-events-none fixed z-[1000000] -translate-x-1/2 -translate-y-1/2";
 const MARKER_BUTTON_BASE_CLASS = "flex items-center justify-center rounded-full";
 function MarkerButton({ markerItem, isSelected, isLocated, locatePulseTick, onSelect, onOpenReply, onHoverStart, onHoverEnd }) {
@@ -29,9 +27,7 @@ function MarkerButton({ markerItem, isSelected, isLocated, locatePulseTick, onSe
         onLeave: onHoverEnd,
     });
     const replyCount = markerItem.report.replies.length;
-    const markerLabel = replyCount > 0
-        ? `${markerItem.report.report_type} · ${markerItem.report.report_id} · ${replyCount} replies`
-        : `${markerItem.report.report_type} · ${markerItem.report.report_id}`;
+    const markerLabel = replyCount > 0 ? `${markerItem.report.report_type} · ${markerItem.report.report_id} · ${replyCount} replies` : `${markerItem.report.report_type} · ${markerItem.report.report_id}`;
     return (_jsxs(_Fragment, { children: [isLocated ? (_jsx(MarkerLocatePulse, { left: markerItem.left, top: markerItem.top, tick: locatePulseTick, accentColor: getMarkerColor(markerItem.report) })) : null, _jsx("div", { className: MARKER_ANCHOR_CLASS, style: {
                     left: markerItem.left,
                     top: markerItem.top,
@@ -45,7 +41,7 @@ function MarkerButton({ markerItem, isSelected, isLocated, locatePulseTick, onSe
                                     : `${MARKER_BUTTON_BASE_CLASS} h-4 w-4 border border-white/60 shadow-sm`, style: {
                                 backgroundColor: getMarkerColor(markerItem.report),
                                 pointerEvents: "auto",
-                            } }, markerItem.id), replyCount > 0 ? (_jsxs("span", { className: "absolute -right-[6px] -top-[6px] flex h-[14px] min-w-[14px] items-center justify-center rounded-full bg-[var(--adaptive-black900)] px-[3px] text-[10px] font-semibold leading-none text-[var(--adaptive-black50)] ring-1 ring-white/80", children: ["+", replyCount] })) : null] }) })] }));
+                            } }, markerItem.id), replyCount > 0 ? (_jsxs("span", { className: "absolute -right-[6px] -top-[6px] flex h-[14px] min-w-[14px] items-center justify-center rounded-full bg-[var(--adaptive-surface-inverse)] px-[3px] text-[10px] font-semibold leading-none text-[var(--adaptive-text-inverse)] ring-1 ring-white/80", children: ["+", replyCount] })) : null] }) })] }));
 }
 export function ReportMarkersLayer() {
     const { mode, markers, selectedReport, locatedReportId, fields, authors, activeReplyReportId, activeReplyReport, tooltipReport, tooltipAnchor, tooltipFieldTags, replyDraft, replyAuthorName, pendingComposer, isUpdating, editingReportId, selectReport, openReplyComposer, closeReplyComposer, clearHoverLeaveTimeout, scheduleHoverLeave, setHoveredMarkerId, setReplyDraft, setReplyAuthorName, handleReplySubmit, startDenyReview, startCheckoutReview, confirmAuthorName, setConfirmAuthorName, showConfirmAuthorSelect, toggleConfirmAuthorSelect, handleConfirmResolution, } = useReport();
@@ -115,13 +111,15 @@ export function ReportMarkersLayer() {
     }
     const tooltipPosition = tooltipAnchor ? getTooltipPosition(tooltipAnchor, isExpandedTooltip) : null;
     const showTooltip = Boolean(tooltipReport && tooltipAnchor && tooltipPosition);
-    return (_jsxs(_Fragment, { children: [markers.map((markerItem) => markerItem.rect && locatedReportId !== markerItem.report.id ? (_jsx("div", { className: "pointer-events-none fixed rounded-[3px] border border-sky-400/70 bg-sky-200/20 shadow-[0_0_0_1px_rgba(148,163,184,0.4)]", style: {
+    return (_jsxs(_Fragment, { children: [markers.map((markerItem) => markerItem.rect && locatedReportId !== markerItem.report.id ? (_jsx("div", { className: "pointer-events-none fixed", style: {
                     left: markerItem.rect.left,
                     top: markerItem.rect.top,
                     width: markerItem.rect.width,
                     height: markerItem.rect.height,
-                    outline: `1px solid ${TARGET_COLOR[markerItem.report.report_type]}`,
-                    backgroundColor: TARGET_SURFACE[markerItem.report.report_type],
+                    // outline: `1px solid ${TARGET_COLOR[markerItem.report.report_type]}`,
+                    // backgroundColor: TARGET_SURFACE[markerItem.report.report_type],
+                    outline: `2px solid #0ed1b4`,
+                    backgroundColor: "#0ed1b41c",
                 } }, `${markerItem.id}-rect`)) : null), locatedMarker?.rect ? (_jsx(TargetLocatePulse, { rect: locatedMarker.rect, tick: locatePulseTick, outlineColor: TARGET_COLOR[locatedMarker.report.report_type], surfaceColor: TARGET_SURFACE[locatedMarker.report.report_type] })) : null, markers.map((markerItem) => (_jsx(MarkerButton, { markerItem: markerItem, isSelected: markerItem.report.id === selectedReport?.id, isLocated: markerItem.report.id === locatedReportId, locatePulseTick: locatePulseTick, onSelect: () => selectReport(markerItem.report.id), onOpenReply: () => openReplyComposer(markerItem.report), onHoverStart: () => handleMarkerHoverStart(markerItem.report.id), onHoverEnd: () => handleMarkerHoverEnd(markerItem.report.id) }, markerItem.id))), showTooltip && !isExpandedTooltip && tooltipReport && tooltipPosition ? (_jsx("div", { className: `pointer-events-none ${TOOLTIP_BASE_CLASS}`, style: {
                     left: tooltipPosition.left,
                     top: tooltipPosition.top,
@@ -137,6 +135,6 @@ export function ReportMarkersLayer() {
                         top: tooltipPosition.top,
                         width: tooltipPosition.width,
                         pointerEvents: "auto",
-                    }, children: _jsxs("div", { onClick: (event) => event.stopPropagation(), onPointerDown: (event) => event.stopPropagation(), children: [_jsx(FeedbackIssueHeader, { report: activeReplyReport, fieldTags: tooltipFieldTags, expanded: true }), showComposer ? (_jsx("section", { className: "backdrop-blur-[10px] bg-[var(--adaptive-blackOpacity900)]", children: _jsx(FeedbackComposer, { message: replyDraft, onMessageChange: setReplyDraft, authorName: replyAuthorName, onAuthorNameChange: setReplyAuthorName, authors: authors, fields: fields, fieldValues: activeReplyReport.field_values, onFieldChange: () => undefined, showTags: false, onSubmit: () => void handleReplySubmit(), isSubmitting: isUpdating, autoFocus: pendingComposer !== null }) })) : null, _jsx(FeedbackThread, { report: activeReplyReport, authors: authors, pendingComposer: pendingComposer, confirmAuthorName: confirmAuthorName, showConfirmAuthorSelect: showConfirmAuthorSelect, onConfirmAuthorNameChange: setConfirmAuthorName, onToggleConfirmAuthorSelect: toggleConfirmAuthorSelect, onStartDeny: startDenyReview, onStartCheckout: startCheckoutReview, onConfirm: () => void handleConfirmResolution(), isUpdating: isUpdating })] }) }, `${tooltipReport.id}-expanded`)) : null })] }));
+                    }, children: _jsxs("div", { onClick: (event) => event.stopPropagation(), onPointerDown: (event) => event.stopPropagation(), children: [_jsx(FeedbackIssueHeader, { report: activeReplyReport, fieldTags: tooltipFieldTags, expanded: true }), showComposer ? (_jsx("section", { className: "border-t border-[var(--adaptive-border-subtle)] bg-transparent", children: _jsx(FeedbackComposer, { message: replyDraft, onMessageChange: setReplyDraft, authorName: replyAuthorName, onAuthorNameChange: setReplyAuthorName, authors: authors, fields: fields, fieldValues: activeReplyReport.field_values, onFieldChange: () => undefined, showTags: false, onSubmit: () => void handleReplySubmit(), isSubmitting: isUpdating, autoFocus: pendingComposer !== null }) })) : null, _jsx(FeedbackThread, { report: activeReplyReport, authors: authors, pendingComposer: pendingComposer, confirmAuthorName: confirmAuthorName, showConfirmAuthorSelect: showConfirmAuthorSelect, onConfirmAuthorNameChange: setConfirmAuthorName, onToggleConfirmAuthorSelect: toggleConfirmAuthorSelect, onStartDeny: startDenyReview, onStartCheckout: startCheckoutReview, onConfirm: () => void handleConfirmResolution(), isUpdating: isUpdating })] }) }, `${tooltipReport.id}-expanded`)) : null })] }));
 }
 //# sourceMappingURL=ReportMarkersLayer.js.map

@@ -12,7 +12,7 @@ export function FeedbackFieldTags({ tags }: FeedbackFieldTagsProps) {
             {tags.map((tag) => (
                 <span
                     key={tag.key}
-                    className="rounded-[8px] border border-[var(--adaptive-black600)] px-[8px] py-[4px] text-[12px] font-semibold uppercase text-[var(--adaptive-black500)]"
+                    className="rounded-[8px] border border-[var(--adaptive-border-subtle)] px-[8px] py-[4px] text-[12px] font-semibold uppercase text-[var(--adaptive-text-muted)]"
                 >
                     {tag.label}
                 </span>
