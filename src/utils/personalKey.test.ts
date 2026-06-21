@@ -1,58 +1,67 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { getPersonalKeyStorageKey } from "@/constants/storageKeys.js";
 import {
-    createPersonalKey,
-    parsePersonalKey,
+    createReviewerKeyPair,
+    getPublicKeyFromPrivateKey,
+    parsePrivateKeyBundle,
     readPersonalKey,
     resolvePersonalKeyAuthor,
     savePersonalKey,
+    signReportPayload,
+    verifyReportAuthProof,
 } from "./personalKey.js";
 
 const identify = { id: "reviewer-1", name: "김담당" };
-const authors = [identify, { id: "reviewer-2", name: "이담당" }];
 
-describe("personalKey", () => {
+describe("reviewer key signature", () => {
     beforeEach(() => {
         localStorage.clear();
     });
 
-    it("creates a project-scoped key and resolves its reviewer", () => {
-        const key = createPersonalKey("demo", "staging", identify.id);
-        const payload = parsePersonalKey(key);
+    it("generates a key pair and matches only the configured reviewer public key", async () => {
+        const issued = await createReviewerKeyPair("demo", "stage", identify.id);
+        const bundle = parsePrivateKeyBundle(issued.privateKey)!;
 
-        expect(payload).toMatchObject({
+        expect(getPublicKeyFromPrivateKey(issued.privateKey)).toBe(issued.publicKey);
+        expect(resolvePersonalKeyAuthor(bundle, identify, [{ ...identify, publicKey: issued.publicKey }])).toEqual(identify);
+        expect(resolvePersonalKeyAuthor(bundle, identify, [{ ...identify, publicKey: "stpub1.invalid" }])).toBeUndefined();
+    });
+
+    it("stores only a key scoped to the current project and environment", async () => {
+        const issued = await createReviewerKeyPair("demo", "stage", identify.id);
+
+        expect(savePersonalKey("demo", "stage", issued.privateKey)).toBe(true);
+        expect(readPersonalKey("demo", "stage")).toBe(issued.privateKey);
+        expect(savePersonalKey("other", "stage", issued.privateKey)).toBe(false);
+        expect(localStorage.getItem(getPersonalKeyStorageKey("other", "stage"))).toBeNull();
+    });
+
+    it("signs a payload that can be verified with the registered public key", async () => {
+        const issued = await createReviewerKeyPair("demo", undefined, identify.id);
+        const payload = { message: "확인했습니다.", author_id: identify.id };
+        const proof = await signReportPayload(issued.privateKey, {
             projectId: "demo",
-            environment: "staging",
-            authorId: identify.id,
+            action: "feedback:create",
+            payload,
         });
-        expect(resolvePersonalKeyAuthor(payload!, identify, authors)).toEqual(identify);
-    });
 
-    it("stores and restores a valid key", async () => {
-        const key = createPersonalKey("demo", undefined, identify.id);
-
-        expect(await savePersonalKey("demo", undefined, key, identify, authors)).toBe(true);
-        expect(await readPersonalKey("demo", undefined, identify, authors)).toBe(key);
-    });
-
-    it("rejects keys from another project or unknown reviewer", async () => {
-        const otherProjectKey = createPersonalKey("other", undefined, identify.id);
-        const unknownReviewerKey = createPersonalKey("demo", undefined, "unknown");
-
-        expect(await savePersonalKey("demo", undefined, otherProjectKey, identify, authors)).toBe(false);
-        expect(await savePersonalKey("demo", undefined, unknownReviewerKey, identify, authors)).toBe(false);
-        expect(localStorage.getItem(getPersonalKeyStorageKey("demo"))).toBeNull();
-    });
-
-    it("removes a stored key when its hash is changed", async () => {
-        const key = createPersonalKey("demo", undefined, identify.id);
-        await savePersonalKey("demo", undefined, key, identify, authors);
-
-        const storageKey = getPersonalKeyStorageKey("demo");
-        const stored = JSON.parse(localStorage.getItem(storageKey)!);
-        localStorage.setItem(storageKey, JSON.stringify({ ...stored, hash: "changed" }));
-
-        expect(await readPersonalKey("demo", undefined, identify, authors)).toBeNull();
-        expect(localStorage.getItem(storageKey)).toBeNull();
+        expect(
+            await verifyReportAuthProof({
+                proof,
+                publicKey: issued.publicKey,
+                projectId: "demo",
+                action: "feedback:create",
+                payload: { ...payload, auth: proof },
+            }),
+        ).toBe(true);
+        expect(
+            await verifyReportAuthProof({
+                proof,
+                publicKey: issued.publicKey,
+                projectId: "demo",
+                action: "feedback:create",
+                payload: { ...payload, message: "변조됨" },
+            }),
+        ).toBe(false);
     });
 });

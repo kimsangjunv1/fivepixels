@@ -8,20 +8,26 @@ type ReportPersonalKeyDialogProps = {
 };
 
 export function ReportPersonalKeyDialog({ mode, onCancel, onComplete }: ReportPersonalKeyDialogProps) {
-    const { issuePersonalKey, insertPersonalKey, messages } = useReport();
+    const { issuePersonalKey, insertPersonalKey, personalKeyCandidates, messages } = useReport();
     const [key, setKey] = useState("");
+    const [authorId, setAuthorId] = useState(personalKeyCandidates.length === 1 ? personalKeyCandidates[0]!.id : "");
     const [error, setError] = useState("");
 
     const handleConfirm = async () => {
         if (mode === "required") {
-            const issuedKey = await issuePersonalKey();
+            const issuedKey = await issuePersonalKey(authorId);
 
             if (!issuedKey) {
                 setError(messages.personalKey.ownerRequired);
                 return;
             }
 
-            onComplete(messages.personalKey.setupSuccess);
+            try {
+                await navigator.clipboard.writeText(issuedKey.publicKey);
+                onComplete(messages.personalKey.publicKeyCopied);
+            } catch {
+                onComplete(messages.personalKey.registrationPending);
+            }
             return;
         }
 
@@ -32,7 +38,7 @@ export function ReportPersonalKeyDialog({ mode, onCancel, onComplete }: ReportPe
             return;
         }
 
-        onComplete(messages.personalKey.setupSuccess);
+        onComplete(inserted.authorized ? messages.personalKey.setupSuccess : messages.personalKey.registrationPending);
     };
 
     return (
@@ -45,10 +51,22 @@ export function ReportPersonalKeyDialog({ mode, onCancel, onComplete }: ReportPe
             </p>
 
             {mode === "required" ? (
-                <ul className="mt-[10px] list-disc space-y-[4px] pl-[18px] text-[12px] leading-[1.4] text-[var(--adaptive-black600)]">
-                    <li>{messages.personalKey.backupWarning}</li>
-                    <li>{messages.personalKey.restoreGuide}</li>
-                </ul>
+                <>
+                    <select
+                        value={authorId}
+                        onChange={(event) => setAuthorId(event.target.value)}
+                        className="mt-[12px] w-full rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface)] px-[10px] py-[8px] text-[12px] text-[var(--adaptive-text-primary)] outline-none"
+                    >
+                        <option value="">{messages.personalKey.reviewerPlaceholder}</option>
+                        {personalKeyCandidates.map((author) => (
+                            <option key={author.id} value={author.id}>{author.name}</option>
+                        ))}
+                    </select>
+                    <ul className="mt-[10px] list-disc space-y-[4px] pl-[18px] text-[12px] leading-[1.4] text-[var(--adaptive-black600)]">
+                        <li>{messages.personalKey.backupWarning}</li>
+                        <li>{messages.personalKey.restoreGuide}</li>
+                    </ul>
+                </>
             ) : (
                 <input
                     autoFocus
@@ -74,7 +92,7 @@ export function ReportPersonalKeyDialog({ mode, onCancel, onComplete }: ReportPe
                 </button>
                 <button
                     type="button"
-                    disabled={mode === "insert" && !key.trim()}
+                    disabled={mode === "required" ? !authorId : !key.trim()}
                     onClick={() => void handleConfirm()}
                     className="rounded-[8px] bg-[var(--adaptive-blue100)] p-[4px_8px] font-bold text-[var(--adaptive-blue500)] disabled:opacity-50"
                 >

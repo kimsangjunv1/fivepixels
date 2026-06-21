@@ -7,7 +7,7 @@ import { PanelOptionSwitch } from "./PanelOptionSwitch.js";
 
 type PanelMoreMenuProps = {
     open: boolean;
-    disabled?: boolean;
+    transferDisabled?: boolean;
     appearance: ReportAppearance;
     onAppearanceChange: (appearance: ReportAppearance) => void;
     onToggle: () => void;
@@ -17,6 +17,7 @@ type PanelMoreMenuProps = {
     onCommand: () => void;
     hasPersonalKey: boolean;
     onKeyCopy: () => void;
+    onPublicKeyCopy: () => void;
     onKeyInsert: () => void;
 };
 
@@ -24,7 +25,7 @@ const LOCALE_OPTIONS = ["en", "ko"] as const satisfies readonly ReportLocale[];
 
 export function PanelMoreMenu({
     open,
-    disabled = false,
+    transferDisabled = false,
     appearance,
     onAppearanceChange,
     onToggle,
@@ -34,6 +35,7 @@ export function PanelMoreMenu({
     onCommand,
     hasPersonalKey,
     onKeyCopy,
+    onPublicKeyCopy,
     onKeyInsert,
 }: PanelMoreMenuProps) {
     const { locale, setLocale, messages } = useReport();
@@ -53,7 +55,6 @@ export function PanelMoreMenu({
             trigger={
                 <button
                     type="button"
-                    disabled={disabled}
                     onClick={onToggle}
                     aria-expanded={open}
                     aria-haspopup="menu"
@@ -63,8 +64,14 @@ export function PanelMoreMenu({
                 </button>
             }
         >
-            <PanelDropdownMenuItem onClick={onImport}>{messages.moreMenu.import}</PanelDropdownMenuItem>
-            <PanelDropdownMenuItem onClick={onExport}>{messages.moreMenu.export}</PanelDropdownMenuItem>
+            <PanelDropdownMenuItem disabled={transferDisabled} onClick={onImport}>{messages.moreMenu.import}</PanelDropdownMenuItem>
+            <PanelDropdownMenuItem disabled={transferDisabled} onClick={onExport}>{messages.moreMenu.export}</PanelDropdownMenuItem>
+            <PanelDropdownMenuItem
+                disabled={!hasPersonalKey}
+                onClick={onPublicKeyCopy}
+            >
+                {messages.moreMenu.publicKeyCopy}
+            </PanelDropdownMenuItem>
             <PanelDropdownMenuItem
                 disabled={!hasPersonalKey}
                 onClick={onKeyCopy}
@@ -94,7 +101,7 @@ export function PanelMoreMenu({
                 />
             </div>
             <div className="w-full h-[1px] bg-[var(--adaptive-black300)]" />
-            <PanelDropdownMenuItem onClick={onCommand}>{messages.moreMenu.command}</PanelDropdownMenuItem>
+            <PanelDropdownMenuItem disabled={transferDisabled} onClick={onCommand}>{messages.moreMenu.command}</PanelDropdownMenuItem>
         </PanelDropdownMenu>
     );
 }

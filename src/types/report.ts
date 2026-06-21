@@ -27,6 +27,7 @@ export type ReportReply = {
     status: ReportReplyStatus;
     author_type?: "user" | "manager" | "system";
     author_name?: string | null;
+    auth?: ReportAuthProof;
 };
 
 export type ReportIdentify = {
@@ -55,6 +56,7 @@ export type ReportUi = {
 export type ReportTeam = {
     user?: ReportIdentify;
     reviewers?: ReportAuthor[];
+    requireReviewerKey?: boolean;
 };
 
 /** Visibility and route scope passed to `<Report visibility={{ enabled, devOnly, routeKey }} />`. */
@@ -67,6 +69,17 @@ export type ReportVisibility = {
 export type ReportAuthor = {
     id: string;
     name: string;
+    publicKey?: string;
+};
+
+export type ReportAuthAction = "feedback:create" | "feedback:update";
+
+export type ReportAuthProof = {
+    author_id: string;
+    algorithm: "ECDSA-P256-SHA256";
+    action: ReportAuthAction;
+    signed_at: string;
+    signature: string;
 };
 
 export type ReportGitHubIntegrationState = {
@@ -116,6 +129,7 @@ export type ReportFeedback = {
     app_version?: string;
     author_id?: string;
     author_name?: string;
+    auth?: ReportAuthProof;
     integrations?: ReportIntegrations;
 };
 
@@ -124,7 +138,7 @@ export type CreateReportFeedbackPayload = Omit<ReportFeedback, "id" | "created_a
 };
 
 export type UpdateReportFeedbackPayload = Partial<
-    Pick<ReportFeedback, "message" | "status" | "field_values" | "replies" | "report_id" | "report_type" | "integrations">
+    Pick<ReportFeedback, "message" | "status" | "field_values" | "replies" | "report_id" | "report_type" | "integrations" | "auth">
 >;
 
 export type ReportListAllParams = {

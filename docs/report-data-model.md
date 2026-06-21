@@ -63,6 +63,14 @@
 - reply 저장을 위해 별도 `reply.create()` 인터페이스를 추가하지 않고, 우선은 `update(id, { replies, status? })` 계약으로 유지합니다.
 - 서버에서 reply 전용 endpoint를 쓰더라도 adapter 바깥 API에서 감추고, 최종적으로는 갱신된 `ReportFeedback` 전체를 반환해야 합니다.
 
+## 5-1. 담당자 서명
+
+- `team.requireReviewerKey` 또는 reviewer의 `publicKey`가 설정되면 create/update payload에 `auth`가 포함됩니다.
+- `auth`는 `author_id`, `algorithm`, `action`, `signed_at`, `signature`로 구성됩니다.
+- API 서버는 `author_id`로 DB의 reviewer 공개키를 조회한 뒤 `verifyReportAuthProof`로 payload를 검증합니다.
+- 서버는 클라이언트가 보낸 `author_name`을 신뢰하지 않고 검증된 reviewer 정보로 덮어씁니다.
+- `signed_at` 유효 시간, 요청 재사용 방지, 삭제 권한은 서버에서 별도로 강제합니다.
+
 ## 6. archived UX 기준
 
 - 기본 목록에서는 `archived`도 조회 가능하지만, 활성 작업 목록과 구분되는 종료 상태로 취급합니다.

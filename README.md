@@ -243,6 +243,7 @@ export default function App() {
 - `visibility.routeKey`를 생략하면 `window.location.pathname`으로 피드백을 자동 분리합니다. 쿼리/탭/논리 화면별로 나누고 싶을 때만 지정하세요.
 - `team.user`로 현재 사용자(피드백 작성 기본값)를 설정할 수 있습니다.
 - `team.reviewers`로 답변·검수 시 선택할 reviewer 목록을 미리 설정할 수 있습니다. 목록이 없으면 작성자를 직접 입력합니다.
+- `team.requireReviewerKey`를 켜면 담당자 공개키 등록 전에는 작성할 수 없고, 등록된 개인키와 일치하는 담당자만 사용합니다. 운영 순서는 [Reviewer key authentication](./docs/reviewer-key-auth.md)을 참고하세요.
 
 ### Props
 
@@ -262,7 +263,7 @@ export default function App() {
 | `shortcut`            | _(deprecated)_ `ui.shortcut` 사용.                                             |
 | `devOnly`             | _(deprecated)_ `visibility.devOnly` 사용.                                      |
 | `enabled`             | _(deprecated)_ `visibility.enabled` 사용.                                      |
-| `team`                | `{ user?, reviewers? }` 현재 사용자와 reviewer 목록.                           |
+| `team`                | `{ user?, reviewers?, requireReviewerKey? }` 현재 사용자, reviewer 목록, 키 인증 여부. |
 | `identify`            | _(deprecated)_ `team.user` 사용.                                               |
 | `authors`             | _(deprecated)_ `team.reviewers` 사용.                                          |
 | `fields`              | 피드백 작성 폼 필드 배열.                                                      |

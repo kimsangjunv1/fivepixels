@@ -106,6 +106,7 @@ export type ReportMessages = {
         import: string;
         export: string;
         keyCopy: string;
+        publicKeyCopy: string;
         keyInsert: string;
         keyChange: string;
         theme: string;
@@ -122,8 +123,11 @@ export type ReportMessages = {
         insertTitle: string;
         insertDescription: string;
         inputPlaceholder: string;
+        reviewerPlaceholder: string;
         copySuccess: string;
         setupSuccess: string;
+        publicKeyCopied: string;
+        registrationPending: string;
         invalidKey: string;
         ownerRequired: string;
     };

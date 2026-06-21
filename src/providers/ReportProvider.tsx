@@ -100,6 +100,7 @@ type ReportProviderEnabledProps = Omit<
     routeKey?: string;
     identify?: ReportIdentify;
     authors: ReportAuthor[];
+    requireReviewerKey: boolean;
     locale: ReportLocale;
     messageOverrides?: DeepPartialReportMessages;
 };
@@ -111,6 +112,7 @@ function ReportProviderEnabled({
     appearance,
     fields,
     authors,
+    requireReviewerKey,
     shortcut,
     identify,
     onList,
@@ -136,6 +138,7 @@ function ReportProviderEnabled({
         appearance,
         fields,
         authors,
+        requireReviewerKey,
         shortcut,
         identify,
         onList,
@@ -208,6 +211,7 @@ export function ReportProvider({
             shortcut={resolvedUi.shortcut}
             fields={resolvedFields}
             authors={resolvedTeam.reviewers}
+            requireReviewerKey={resolvedTeam.requireReviewerKey}
             identify={resolvedTeam.user}
             onList={onList}
             onListAll={onListAll}

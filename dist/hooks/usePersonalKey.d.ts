@@ -1,4 +1,4 @@
-import type { ReportAuthor, ReportIdentify } from "../types/report.js";
+import type { ReportAuthAction, ReportAuthor, ReportIdentify } from "../types/report.js";
 type UsePersonalKeyOptions = {
     enabled: boolean;
     projectId: string;
@@ -8,10 +8,19 @@ type UsePersonalKeyOptions = {
 };
 export declare function usePersonalKey({ enabled, projectId, environment, identify, authors }: UsePersonalKeyOptions): {
     personalKey: string | null;
+    publicKey: string | null;
     personalKeyRequired: boolean;
-    authorizedAuthors: ReportAuthor[];
-    issuePersonalKey: () => Promise<string | null>;
-    insertPersonalKey: (key: string) => Promise<boolean>;
+    personalKeyPendingRegistration: boolean;
+    personalKeyCandidates: ReportAuthor[];
+    authorizedAuthors: ReportIdentify[];
+    issuePersonalKey: (authorId?: string) => Promise<{
+        privateKey: string;
+        publicKey: string;
+    } | null>;
+    insertPersonalKey: (key: string) => Promise<{
+        authorized: boolean;
+    } | null>;
+    signPayload: (action: ReportAuthAction, payload: unknown) => Promise<import("../types/report.js").ReportAuthProof | null>;
 };
 export {};
 //# sourceMappingURL=usePersonalKey.d.ts.map
