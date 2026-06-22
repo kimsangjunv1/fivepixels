@@ -47,9 +47,9 @@ function PanelTabButton({ label, active, onClick }: { label: string; active: boo
             onClick={onClick}
             className={`flex flex-1 items-center justify-center gap-[6px] px-[10px] py-[2px] ${active ? "bg-[var(--adaptive-black100)] text-[var(--adaptive-black900)]" : "text-[var(--adaptive-black600)]"}`}
         >
-            <p className="text-[var(--adaptive-black800)] font-[500]">{label}</p>
+            <p className="font-[500]">{label}</p>
 
-            <ChevronDownIcon className={`h-4 w-4 transition-transform ${active ? "rotate-180" : ""}`} />
+            <ChevronDownIcon className={`h-4 w-4 shrink-0 transition-transform ${active ? "rotate-180" : ""}`} />
         </button>
     );
 }
@@ -217,15 +217,16 @@ export function ReportControlPanel() {
                 onDragLeave={handleDragLeave}
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}
-                className={`pointer-events-auto fixed z-[1000000] bg-[var(--adaptive-surface-overlay)] overflow-hidden backdrop-blur-[50px] rounded-[24px] shadow-[0_0_120px_0_var(--adaptive-blackOpacity500)] flex ${isRecording ? "min-h-[40px] p-[4px]" : "max-h-[calc(100svh-(16px*2))] max-w-[calc(100svw-(16px*2))]"}`}
+                className={`pointer-events-auto fixed z-[1000000] bg-[var(--adaptive-surface-overlay)] backdrop-blur-[50px] rounded-[24px] shadow-[0_0_120px_0_var(--adaptive-blackOpacity500)] flex ${isRecording ? "min-h-[40px] p-[4px]" : "max-h-[calc(100svh-(16px*2))] max-w-[calc(100svw-(16px*2))]"}`}
+                // className={`pointer-events-auto fixed z-[1000000] bg-[var(--adaptive-surface-overlay)] overflow-hidden backdrop-blur-[50px] rounded-[24px] shadow-[0_0_120px_0_var(--adaptive-blackOpacity500)] flex ${isRecording ? "min-h-[40px] p-[4px]" : "max-h-[calc(100svh-(16px*2))] max-w-[calc(100svw-(16px*2))]"}`}
                 style={{ ...panelStyle, fontSize: "14px" }}
             >
                 <motion.div className="flex min-w-0 flex-1 flex-col w-full">
                     {isRecording ? (
                         <section className="flex items-center justify-between gap-[16px] px-[12px] py-[8px]">
                             <section className="flex items-center gap-[4px] justify-start shrink-0">
-                                <LogoIcon className="w-[16px]" />
-                                <p className="text-[var(--adaptive-black900)] text-[14px]">Stitchable°</p>
+                                <LogoIcon className="w-[94px]" />
+                                {/* <p className="text-[var(--adaptive-black900)] text-[14px]">Fivepixels°</p> */}
                             </section>
 
                             <button
@@ -259,19 +260,19 @@ export function ReportControlPanel() {
                                         <div className="flex flex-col gap-[8px] p-[8px_8px_8px_12px] flex-1">
                                             <section className="flex items-center justify-between gap-[8px]">
                                                 <section className="flex min-w-0 items-center gap-[4px]">
-                                                    <LogoIcon className="w-[16px] shrink-0" />
-                                                    <p className="shrink-0 text-[var(--adaptive-black900)] font-[700] text-[14px] select-none">Stitchable°</p>
-                                                    <EnvironmentBadge environment={environment} />
+                                                    <LogoIcon className="w-[94px] shrink-0" />
+
+                                                    {/* <EnvironmentBadge environment={environment} /> */}
                                                 </section>
 
                                                 <section className="flex shrink-0 items-center">
                                                     <button
                                                         type="button"
                                                         onClick={toggleReportMode}
-                                                        className="flex items-center gap-[4px] rounded-l-[8px] bg-[var(--adaptive-surface-inverse)] p-[0_8px]"
+                                                        className="flex items-center gap-[4px] rounded-l-[8px] bg-[var(--adaptive-black300)] p-[0_8px]"
                                                     >
                                                         <SelectIcon className="w-[16px]" />
-                                                        <p className="text-[12px] text-[var(--adaptive-text-inverse)]">{messages.panel.addFeedback}</p>
+                                                        <p className="text-[12px] text-[var(--adaptive-black900)]">{messages.panel.addFeedback}</p>
                                                     </button>
 
                                                     <PanelDropdownMenu
@@ -285,9 +286,9 @@ export function ReportControlPanel() {
                                                                 aria-expanded={viewMenuOpen}
                                                                 aria-haspopup="menu"
                                                                 aria-label={messages.panel.viewOptionsAriaLabel}
-                                                                className="flex items-center rounded-r-[8px] border-l border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface-inverse)] p-[2px_8px] h-[24px]"
+                                                                className="flex items-center rounded-r-[8px] border-l border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black300)] p-[2px_8px] h-[24px]"
                                                             >
-                                                                <ChevronDownIcon className={`h-4 w-4 text-[var(--adaptive-text-inverse)] transition-transform ${viewMenuOpen ? "rotate-180" : ""}`} />
+                                                                <ChevronDownIcon className={`h-4 w-4 text-[var(--adaptive-black900)] transition-transform ${viewMenuOpen ? "rotate-180" : ""}`} />
                                                             </button>
                                                         }
                                                     >

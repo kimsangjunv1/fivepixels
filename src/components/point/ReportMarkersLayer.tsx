@@ -68,7 +68,7 @@ function MarkerButton({ markerItem, isSelected, isLocated, locatePulseTick, onSe
                         ref={hoverRef}
                         key={markerItem.id}
                         type="button"
-                        data-stitchable-interactive=""
+                        data-fivepixels-interactive=""
                         data-marker-report-id={markerItem.report.id}
                         aria-label={markerLabel}
                         onClick={() => {
@@ -298,7 +298,7 @@ export function ReportMarkersLayer() {
                             }
                         }}
                         key={`${tooltipReport.id}-expanded`}
-                        data-stitchable-interactive=""
+                        data-fivepixels-interactive=""
                         initial={{ opacity: 0, y: 5, scale: 0.97 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 5, scale: 0.97 }}

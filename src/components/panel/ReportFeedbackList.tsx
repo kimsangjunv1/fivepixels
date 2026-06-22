@@ -70,17 +70,7 @@ function getRouteStatusTone(status: RouteDetailStatus) {
     return { backgroundColor: "#fff7ed", color: "#c2410c" };
 }
 
-function FeedbackListDeleteButton({
-    report,
-    onDelete,
-    disabled = false,
-    messages,
-}: {
-    report: ReportFeedback;
-    onDelete: (id: string) => Promise<void>;
-    disabled?: boolean;
-    messages: ReportMessages;
-}) {
+function FeedbackListDeleteButton({ report, onDelete, disabled = false, messages }: { report: ReportFeedback; onDelete: (id: string) => Promise<void>; disabled?: boolean; messages: ReportMessages }) {
     const [confirming, setConfirming] = useState(false);
 
     useEffect(() => {
@@ -111,7 +101,7 @@ function FeedbackListDeleteButton({
     return (
         <button
             type="button"
-            data-stitchable-interactive=""
+            data-fivepixels-interactive=""
             onClick={handleDelete}
             disabled={disabled}
             aria-label={confirming ? messages.feedbackList.deleteConfirmAriaLabel : messages.feedbackList.deleteAriaLabel}
@@ -145,7 +135,7 @@ function FeedbackListCopyButton({ report, messages }: { report: ReportFeedback; 
     return (
         <button
             type="button"
-            data-stitchable-interactive=""
+            data-fivepixels-interactive=""
             onClick={handleCopy}
             aria-label={messages.feedbackList.copyAriaLabel}
             title={copied ? messages.feedbackList.copiedTitle : messages.feedbackList.copyTitle}
@@ -192,7 +182,8 @@ export function ReportFeedbackList() {
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
     const statusLabel = filters.status === "all" ? messages.feedbackList.filterStatusAll : messages.status.routeDetail[filters.status];
-    const reportTypeLabel = filters.reportType === "all" ? messages.feedbackList.filterTypeAll : filters.reportType === "item" ? messages.feedbackList.reportTypeItem : messages.feedbackList.reportTypeGroup;
+    const reportTypeLabel =
+        filters.reportType === "all" ? messages.feedbackList.filterTypeAll : filters.reportType === "item" ? messages.feedbackList.reportTypeItem : messages.feedbackList.reportTypeGroup;
     const visibleReports = useMemo(() => filteredReports.slice(0, visibleCount), [filteredReports, visibleCount]);
     const groupedReports = useMemo(() => groupReportsByDate(visibleReports, locale), [locale, visibleReports]);
 
@@ -266,9 +257,7 @@ export function ReportFeedbackList() {
                             aria-pressed={listScope === scope}
                             onClick={() => setListScope(scope)}
                             className={`flex-1 rounded-[6px] px-[8px] py-[4px] text-[12px] font-[600] ${
-                                listScope === scope
-                                    ? "bg-[var(--adaptive-black200)] text-[var(--adaptive-black900)]"
-                                    : "text-[var(--adaptive-black500)] hover:bg-[var(--adaptive-black100)]"
+                                listScope === scope ? "bg-[var(--adaptive-black200)] text-[var(--adaptive-black900)]" : "text-[var(--adaptive-black500)] hover:bg-[var(--adaptive-black100)]"
                             }`}
                         >
                             {scope === "current" ? messages.feedbackList.scopeCurrentPage : messages.feedbackList.scopeAllPages}
@@ -425,7 +414,7 @@ export function ReportFeedbackList() {
                                     type="button"
                                     onClick={() => toggleGroup(dateKey)}
                                     aria-expanded={isExpanded}
-                                    className="sticky z-10 flex w-full items-center justify-between bg-[var(--adaptive-black200)] p-[4px_8px]"
+                                    className="sticky z-10 flex w-full items-center justify-between bg-[var(--adaptive-black100)] p-[4px_8px]"
                                 >
                                     <p className="text-[12px] font-[600] text-[var(--adaptive-black700)]">{label}</p>
 
@@ -462,9 +451,7 @@ export function ReportFeedbackList() {
                                                           </div>
 
                                                           <p className="text-[var(--adaptive-black700)]">{report.message}</p>
-                                                          {listScope === "all" ? (
-                                                              <p className="truncate text-[11px] text-[var(--adaptive-black500)]">{report.pathname}</p>
-                                                          ) : null}
+                                                          {listScope === "all" ? <p className="truncate text-[11px] text-[var(--adaptive-black500)]">{report.pathname}</p> : null}
                                                       </section>
 
                                                       <p className="text-[var(--adaptive-black500)] text-[12px]">{formatTimeOnly(report.created_at, locale)}</p>

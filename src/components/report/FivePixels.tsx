@@ -22,7 +22,7 @@ import type {
 } from "@/types/report.js";
 import { ReportView } from "./ReportView.js";
 
-export type ReportProps = {
+export type FivePixelsProps = {
     project?: ReportProject;
     /** @deprecated Use `project.id`. */
     projectId?: string;
@@ -65,7 +65,7 @@ export type ReportProps = {
     github?: ReportGitHubConfig;
 };
 
-export function Report({
+export function FivePixels({
     project,
     projectId,
     environment,
@@ -93,7 +93,7 @@ export function Report({
     onEvent,
     onReply,
     github,
-}: ReportProps) {
+}: FivePixelsProps) {
     const resolvedVisibility = resolveReportVisibility({ visibility, enabled, devOnly, routeKey, pathname });
 
     if (!resolveReportEnabled(resolvedVisibility)) {

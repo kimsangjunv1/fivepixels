@@ -3,9 +3,9 @@ import { createPortal } from "react-dom";
 import type { ResolvedAppearance } from "@/types/report-ui.js";
 import { REPORT_STYLESHEET } from "@/styles/reportStylesheet.js";
 
-const HOST_ID = "stitchable-root";
-const STYLE_ELEMENT_ID = "stitchable-report-styles";
-const MOUNT_ATTR = "data-stitchable-mount";
+const HOST_ID = "fivepixels-root";
+const STYLE_ELEMENT_ID = "fivepixels-report-styles";
+const MOUNT_ATTR = "data-fivepixels-mount";
 
 type ShadowHost = {
     mount: HTMLElement;
@@ -41,7 +41,7 @@ function getOrCreateShadowHost(): ShadowHost {
     const mount = shadowRoot.querySelector(`[${MOUNT_ATTR}]`) as HTMLElement | null;
 
     if (!mount) {
-        throw new Error("Stitchable shadow mount element is missing.");
+        throw new Error("Fivepixels shadow mount element is missing.");
     }
 
     return { mount, shadowRoot };
@@ -99,7 +99,7 @@ export function ShadowReportRoot({ appearance, children }: ShadowReportRootProps
             return;
         }
 
-        mount.setAttribute("data-stitchable-theme", appearance);
+        mount.setAttribute("data-fivepixels-theme", appearance);
     }, [appearance, mount]);
 
     if (!mount) {

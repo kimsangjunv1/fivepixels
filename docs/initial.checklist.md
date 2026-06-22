@@ -1,6 +1,6 @@
-# stitchable Checklist
+# fivepixels Checklist
 
-이 문서는 stitchable 라이브러리 작업의 기준 체크리스트입니다.  
+이 문서는 fivepixels 라이브러리 작업의 기준 체크리스트입니다.  
 앞으로 "페이즈 진행하자"라고 요청하면 이 문서에서 완료되지 않은 가장 앞 phase부터 순서대로 진행합니다.
 
 # 규칙
@@ -17,19 +17,19 @@
 - [x] Next.js 전용 의존성 제거
 - [x] `ReportStorageAdapter` 인터페이스 설계
 - [x] `localStorage` adapter MVP 구현
-- [x] `Report` 기본 생성/목록/수정 UI 연결
+- [x] `FivePixels` 기본 생성/목록/수정 UI 연결
 - [x] README 사용 예시 추가
 
 완료 기준
 
-- `Report`가 브라우저 환경에서 Next 의존성 없이 동작 가능한 구조일 것
+- `FivePixels`가 브라우저 환경에서 Next 의존성 없이 동작 가능한 구조일 것
 - 저장소가 최소 `localStorage` 기반으로 생성/조회/수정 가능할 것
 
 ## Phase 2. 라이브러리 엔트리/설정 복구
 
 목표: 실제 배포 가능한 라이브러리 기본 설정과 개발 검증 기반을 복구한다.
 
-- [x] GitHub repository 생성 또는 기존 repository 연결 (`https://github.com/kimsangjunv1/stitchable.git`)
+- [x] GitHub repository 생성 또는 기존 repository 연결 (`https://github.com/kimsangjunv1/fivepixels.git`)
 - [x] `package.json` 추가
 - [x] `tsconfig.json` 추가
 - [x] export entry 기준 alias/path 정리
@@ -123,7 +123,7 @@
 
 - [x] example 앱 폴더 구조 정의
 - [x] 예제 앱의 개발 실행 방식 결정
-- [x] `stitchable` 로컬 패키지 연결 방식 정리
+- [x] `fivepixels` 로컬 패키지 연결 방식 정리
 - [x] 기본 생성/조회/수정 데모 화면 구성
 - [x] example 앱 실행 가이드 문서화
 

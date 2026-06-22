@@ -11,14 +11,14 @@ export function PanelDockGuides({ visible, activeCorner }: PanelDockGuidesProps)
     }
 
     return (
-        <div className="stitchable-dock-guide-layer" aria-hidden="true">
+        <div className="fivepixels-dock-guide-layer" aria-hidden="true">
             {PANEL_CORNERS.map((corner) => (
                 <div
                     key={corner}
                     className={[
-                        "stitchable-dock-guide",
-                        `stitchable-dock-guide--${corner}`,
-                        activeCorner === corner ? "stitchable-dock-guide--active" : undefined,
+                        "fivepixels-dock-guide",
+                        `fivepixels-dock-guide--${corner}`,
+                        activeCorner === corner ? "fivepixels-dock-guide--active" : undefined,
                     ]
                         .filter(Boolean)
                         .join(" ")}

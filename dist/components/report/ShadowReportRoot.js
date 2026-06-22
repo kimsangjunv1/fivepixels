@@ -1,9 +1,9 @@
 import { useLayoutEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { REPORT_STYLESHEET } from "../../styles/reportStylesheet.js";
-const HOST_ID = "stitchable-root";
-const STYLE_ELEMENT_ID = "stitchable-report-styles";
-const MOUNT_ATTR = "data-stitchable-mount";
+const HOST_ID = "fivepixels-root";
+const STYLE_ELEMENT_ID = "fivepixels-report-styles";
+const MOUNT_ATTR = "data-fivepixels-mount";
 function getOrCreateShadowHost() {
     let host = document.getElementById(HOST_ID);
     if (!host) {
@@ -26,7 +26,7 @@ function getOrCreateShadowHost() {
     }
     const mount = shadowRoot.querySelector(`[${MOUNT_ATTR}]`);
     if (!mount) {
-        throw new Error("Stitchable shadow mount element is missing.");
+        throw new Error("Fivepixels shadow mount element is missing.");
     }
     return { mount, shadowRoot };
 }
@@ -63,7 +63,7 @@ export function ShadowReportRoot({ appearance, children }) {
         if (!mount) {
             return;
         }
-        mount.setAttribute("data-stitchable-theme", appearance);
+        mount.setAttribute("data-fivepixels-theme", appearance);
     }, [appearance, mount]);
     if (!mount) {
         return null;

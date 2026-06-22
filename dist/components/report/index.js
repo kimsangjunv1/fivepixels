@@ -1,4 +1,4 @@
-export { Report } from "./Report.js";
+export { FivePixels } from "./FivePixels.js";
 export { ReportProvider } from "../../providers/ReportProvider.js";
 export { useReport } from "../../providers/reportContext.js";
 export { createLocalStorageReportAdapter, localStorageReportAdapter } from "../../storage/local/localStorageAdapter.js";

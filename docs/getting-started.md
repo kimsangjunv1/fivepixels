@@ -3,7 +3,7 @@
 ## 1. 설치
 
 ```bash
-npm install stitchable react react-dom
+npm install fivepixels react react-dom
 ```
 
 - `react`, `react-dom`은 peer dependency입니다.
@@ -12,12 +12,12 @@ npm install stitchable react react-dom
 ## 2. 기본 연결
 
 ```tsx
-import { Report } from "stitchable";
+import { FivePixels } from "fivepixels";
 
 export function Page() {
     return (
         <>
-            <Report />
+            <FivePixels />
 
             <section data-report-id="hero" data-report-type="group">
                 <h1>Hero Section</h1>
@@ -30,7 +30,7 @@ export function Page() {
 }
 ```
 
-- `Report`는 화면당 1개만 두는 것을 권장합니다.
+- `FivePixels`는 화면당 1개만 두는 것을 권장합니다.
 - 마커 위치 복원은 `data-report-id`, `data-report-type` 조합을 기준으로 동작합니다.
 
 ## 3. Dataset 적용 가이드
@@ -55,7 +55,7 @@ export function Page() {
 
 - `project.id`를 생략하면 `"my-app"`이 기본값입니다.
 - handler props(`onList`, `onCreate`, `onUpdate`)를 넘기지 않으면 브라우저 `localStorage`를 사용합니다.
-- 저장 키는 `stitchable:reports:v1:{projectId}`이며, `environment`가 있으면 `:{environment}`가 추가됩니다.
+- 저장 키는 `fivepixels:reports:v1:{projectId}`이며, `environment`가 있으면 `:{environment}`가 추가됩니다.
 - 저장된 report는 화면 키(`visibility.routeKey`, 기본값은 브라우저 pathname)별로 분리 조회됩니다.
 - `field_values`는 문자열/불리언만 저장하고, `replies`는 배열로 정규화됩니다.
 - 서버 연동이 필요하면 `onList` / `onCreate` / `onUpdate` / `onDelete` handler를 함께 넘깁니다.
@@ -63,12 +63,12 @@ export function Page() {
 ## 5. 서버 persistence 연결
 
 ```tsx
-import type { CreateReportFeedbackPayload, ReportFeedback, UpdateReportFeedbackPayload } from "stitchable";
-import { Report } from "stitchable";
+import type { CreateReportFeedbackPayload, ReportFeedback, UpdateReportFeedbackPayload } from "fivepixels";
+import { FivePixels } from "fivepixels";
 
 export function Page() {
     return (
-        <Report
+        <FivePixels
             project={{ id: "my-app" }}
             ui={{ showFeedbackList: true }}
             onList={({ pathname }) => fetch(`/api/feedbacks?pathname=${encodeURIComponent(pathname)}`).then((res) => res.json())}
@@ -112,7 +112,7 @@ export function Page() {
 
 ### Q. Next.js에서도 사용할 수 있나요?
 
-가능합니다. 다만 `Report`는 DOM을 직접 사용하므로 브라우저에서만 렌더링되게 두는 것이 안전합니다.
+가능합니다. 다만 `FivePixels`는 DOM을 직접 사용하므로 브라우저에서만 렌더링되게 두는 것이 안전합니다.
 
 ### Q. `message`를 custom field로 다시 써도 되나요?
 
@@ -132,7 +132,7 @@ export function Page() {
 
 ### Q. Shadow DOM이나 iframe 안 요소도 지원하나요?
 
-`Report` UI 자체는 Shadow Root에 렌더링되어 호스트 앱 CSS와 분리됩니다. 다만 피드백 **대상** 탐색은 메인 document 기준 `querySelector`/`elementFromPoint`만 사용합니다. 호스트 페이지 Shadow DOM 내부, iframe 내부 요소는 기본 UI로는 피드백 대상이 되지 않습니다.
+`FivePixels` UI 자체는 Shadow Root에 렌더링되어 호스트 앱 CSS와 분리됩니다. 다만 피드백 **대상** 탐색은 메인 document 기준 `querySelector`/`elementFromPoint`만 사용합니다. 호스트 페이지 Shadow DOM 내부, iframe 내부 요소는 기본 UI로는 피드백 대상이 되지 않습니다.
 
 ### Q. UI에서 삭제는 어떻게 하나요?
 

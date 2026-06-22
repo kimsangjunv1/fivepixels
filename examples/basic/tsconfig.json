@@ -8,7 +8,7 @@
     "declarationMap": false,
     "sourceMap": false,
     "paths": {
-      "stitchable": ["../../src/index.ts"],
+      "fivepixels": ["../../src/index.ts"],
       "@/*": ["../../src/*"]
     }
   },

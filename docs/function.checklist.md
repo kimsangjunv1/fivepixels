@@ -1,6 +1,6 @@
-# stitchable Checklist
+# fivepixels Checklist
 
-이 문서는 stitchable 라이브러리 작업의 기준 체크리스트입니다.  
+이 문서는 fivepixels 라이브러리 작업의 기준 체크리스트입니다.  
 앞으로 "페이즈 진행하자"라고 요청하면 이 문서에서 완료되지 않은 가장 앞 phase부터 순서대로 진행합니다.
 
 # 규칙

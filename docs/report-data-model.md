@@ -1,6 +1,6 @@
 # Report Data Model
 
-`stitchable`은 local storage adapter와 향후 cloud adapter가 같은 데이터 계약을 공유하도록 아래 구조를 기준으로 합니다.
+`fivepixels`은 local storage adapter와 향후 cloud adapter가 같은 데이터 계약을 공유하도록 아래 구조를 기준으로 합니다.
 
 ## 1. ReportField 확장 정책
 
@@ -24,7 +24,7 @@
 - reply 구조는 `id`, `message`, `created_at`, `status`를 기본으로 합니다.
 - `status`는 `suggested`, `found_error`, `recheck_requested`, `resolved` 중 하나입니다.
 - 확장 대비용으로 `author_type`, `author_name`는 선택값입니다.
-- 기본 `Report` UI는 view 모드에서 답변 작성·검수 흐름(`denied` / `confirm` / `checkout`)을 지원합니다.
+- 기본 FivePixels UI는 view 모드에서 답변 작성·검수 흐름(`denied` / `confirm` / `checkout`)을 지원합니다.
 - `denied`, `checkout`은 UI 단계이며, 전송 후 저장되는 상태는 각각 `found_error`, `suggested`입니다. 단, `found_error`에 대한 `denied`는 `recheck_requested`로 저장됩니다.
 - `confirm` 시 `resolved` reply를 추가하고, 필요하면 같은 `update` 요청에서 피드백 `status: "resolved"`를 함께 보냅니다.
 - GitHub Issue 전송 시 `author_type: "system"` reply를 추가합니다. 메시지 기본값은 `Issue has been sent to GitHub.`이며, UI에서 Issue 바로가기·링크 복사를 함께 표시합니다.

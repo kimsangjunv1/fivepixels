@@ -18,7 +18,7 @@ describe("validateFeedbackImportArray", () => {
         setActiveReportMessages(ko);
     });
 
-    it("accepts valid stitchable feedback arrays", () => {
+    it("accepts valid fivepixels feedback arrays", () => {
         const result = validateFeedbackImportArray([createValidRecord()]);
 
         expect(result).toHaveLength(1);

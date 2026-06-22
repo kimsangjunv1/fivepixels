@@ -1,6 +1,6 @@
 [폴더 구조 규칙]
 
-Stitchable은 FSD를 사용하지 않는다.
+Fivepixels은 FSD를 사용하지 않는다.
 
 이 프로젝트는 React 라이브러리(package) 구조를 따른다.
 

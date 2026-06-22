@@ -10,7 +10,7 @@ export function HeroIntro() {
             <span className="section-badge">group target</span>
             <h2>팀 피드백을 한곳에서 수집하세요</h2>
             <p>
-                stitchable은 DOM 요소에 마커를 남기고 팀과 공유하는 피드백 라이브러리입니다. 랜딩, 요금, 문의
+                fivepixels은 DOM 요소에 마커를 남기고 팀과 공유하는 피드백 라이브러리입니다. 랜딩, 요금, 문의
                 페이지를 오가며 마커 복원을 확인해보세요.
             </p>
             <div className="hero-actions">

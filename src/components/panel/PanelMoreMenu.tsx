@@ -60,7 +60,7 @@ export function PanelMoreMenu({
                     onClick={onToggle}
                     aria-expanded={open}
                     aria-haspopup="menu"
-                    className={`flex h-full items-center justify-center gap-[4px] px-[12px_16px] py-[0px] disabled:cursor-not-allowed disabled:opacity-50 ${open ? "bg-[var(--adaptive-grey200)]" : "bg-transparent"}`}
+                    className={`flex h-full items-center justify-center gap-[4px] px-[12px_16px] py-[0px] text-[var(--adaptive-black700)] hover:text-[var(--adaptive-black900)] disabled:cursor-not-allowed disabled:opacity-50 ${open ? "bg-[var(--adaptive-grey200)]" : "bg-transparent"}`}
                 >
                     <SettingsIcon className={`${open ? "rotate-45" : ""} w-[16px] transition-transform`} />
                 </button>

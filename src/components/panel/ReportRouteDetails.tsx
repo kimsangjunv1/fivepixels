@@ -3,21 +3,15 @@ import { formatStatCount } from "@/utils/formatStatCount.js";
 import { panelNumericClassName } from "@/utils/panelTypography.js";
 import type { RouteDetailStatus } from "@/utils/routeDetailStatus.js";
 import { ChevronDownIcon } from "@/components/icons/ChevronDownIcon.js";
+import { RouteDetailStatusIcon } from "@/components/icons/StatusIcons.js";
 
 function StatusRowIcon({ status }: { status: RouteDetailStatus }) {
-    if (status === "wait") {
-        return <span aria-hidden>⚑</span>;
-    }
-
-    if (status === "suggested") {
-        return <span aria-hidden>↻</span>;
-    }
-
-    if (status === "git_issued") {
-        return <span aria-hidden>＋</span>;
-    }
-
-    return <span aria-hidden>✓</span>;
+    return (
+        <RouteDetailStatusIcon
+            status={status}
+            className="h-4 w-4 text-[var(--adaptive-black500)]"
+        />
+    );
 }
 
 export function ReportRouteDetails() {

@@ -12,8 +12,8 @@ const LIMIT_REPORT_TOTAL_GZIP_BYTES = 48 * 1024;
 const LIMIT_CSS_GZIP_BYTES = 12 * 1024;
 
 const entries = [
-    { name: "stitchable/report", file: "dist/components/report/index.js" },
-    { name: "stitchable", file: "dist/index.js" },
+    { name: "fivepixels/report", file: "dist/components/report/index.js" },
+    { name: "fivepixels", file: "dist/index.js" },
 ];
 
 function gzipFileBytes(filePath) {
@@ -25,7 +25,7 @@ function gzipFileBytes(filePath) {
 }
 
 function bundleMinGzip(entryFile) {
-    const tempDir = mkdtempSync(join(tmpdir(), "stitchable-size-"));
+    const tempDir = mkdtempSync(join(tmpdir(), "fivepixels-size-"));
     const outfile = join(tempDir, "bundle.js");
     const result = spawnSync(
         "npx",
@@ -48,14 +48,14 @@ function formatRow(status, gzipBytes, rawBytes, label) {
     console.log(`  ${status.padEnd(4)} ${String(gzipBytes).padStart(5)} gzip / ${String(rawBytes).padStart(6)} raw  ${label}`);
 }
 
-console.log("stitchable bundle size (minified, react/react-dom externalized):");
+console.log("fivepixels bundle size (minified, react/react-dom externalized):");
 let failed = false;
 
 let reportBundle = null;
 
 for (const entry of entries) {
     const bundle = bundleMinGzip(entry.file);
-    const isReportEntry = entry.name === "stitchable/report";
+    const isReportEntry = entry.name === "fivepixels/report";
     const status = isReportEntry ? (bundle.gzipBytes <= LIMIT_REPORT_TOTAL_GZIP_BYTES ? "OK" : "OVER") : "info";
     formatRow(status, bundle.gzipBytes, bundle.rawBytes, entry.name);
 
@@ -79,7 +79,7 @@ if (css.gzipBytes > LIMIT_CSS_GZIP_BYTES) {
 if (reportBundle) {
     const estimatedJsGzip = Math.max(0, reportBundle.gzipBytes - css.gzipBytes);
     const jsTargetStatus = estimatedJsGzip <= TARGET_JS_GZIP_BYTES ? "OK" : "goal";
-    formatRow(jsTargetStatus, estimatedJsGzip, reportBundle.rawBytes - css.rawBytes, "stitchable/report JS (total - stylesheet)");
+    formatRow(jsTargetStatus, estimatedJsGzip, reportBundle.rawBytes - css.rawBytes, "fivepixels/report JS (total - stylesheet)");
 }
 
 console.log("");

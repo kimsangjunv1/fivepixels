@@ -109,7 +109,7 @@ export function FeedbackComposer({
                     {showGitHubIssueOnCreate ? (
                         <button
                             type="button"
-                            data-stitchable-interactive=""
+                            data-fivepixels-interactive=""
                             disabled={isActionDisabled}
                             onClick={handleGitHubIssueSubmit}
                             className="inline-flex h-[24px] items-center justify-center gap-[4px] rounded-full border border-[var(--adaptive-border-subtle)] px-[12px] py-[4px] disabled:opacity-50"
@@ -127,7 +127,7 @@ export function FeedbackComposer({
                     ) : null}
                     <button
                         type="button"
-                        data-stitchable-interactive=""
+                        data-fivepixels-interactive=""
                         disabled={isActionDisabled}
                         onClick={handleSubmit}
                         className="inline-flex px-[12px] shrink-0 items-center justify-center rounded-full bg-[var(--adaptive-blue500)] text-[var(--adaptive-overlay-text)] disabled:opacity-50"

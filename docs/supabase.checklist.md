@@ -1,6 +1,6 @@
-# stitchable Supabase Checklist
+# fivepixels Supabase Checklist
 
-이 문서는 stitchable의 cloud 저장소를 Supabase로 확장할 때 사용하는 전용 체크리스트입니다.  
+이 문서는 fivepixels의 cloud 저장소를 Supabase로 확장할 때 사용하는 전용 체크리스트입니다.  
 로컬 MVP와 분리해서 관리하며, Supabase 작업을 시작할 때 이 문서의 미완료 phase부터 순서대로 진행합니다.
 
 # 규칙

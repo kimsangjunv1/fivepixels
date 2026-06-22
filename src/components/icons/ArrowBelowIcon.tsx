@@ -1,17 +1,10 @@
-const ArrowBelowIcon = () => {
+import { MaterialIcon } from "@/components/icons/MaterialIcon.js";
+
+const ArrowBelowIcon = ({ className }: { className?: string }) => {
     return (
-        <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-        >
-            <path
-                d="M22.0002 8L12.0002 18L2.00024 8L3.77524 6.225L12.0002 14.45L20.2252 6.225L22.0002 8Z"
-                fill="var(--adaptive-black50)"
-            />
-        </svg>
+        <MaterialIcon className={className}>
+            <path d="M480-97q-8 0-15-2.5t-13-8.5L228-332q-11-11-11-28t11-28q12-12 28.5-11.5T284-388l156 155v-607q0-17 11.5-28.5T480-880q17 0 28.5 11.5T520-840v607l155-155q12-12 28.5-12t28.5 12q11 12 11 28.5T732-332L508-108q-6 6-13 8.5T480-97Z" />
+        </MaterialIcon>
     );
 };
 

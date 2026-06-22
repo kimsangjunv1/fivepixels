@@ -1,4 +1,4 @@
-# stitchable Release Readiness
+# fivepixels Release Readiness
 
 기준일: 2026-05-31
 
@@ -7,7 +7,7 @@
 - 런타임 `dependencies` 없음 (`react`, `react-dom`만 peer)
 - UI 애니메이션은 자체 `components/motion` 구현 사용 (`motion` npm 패키지 미사용)
 - `npm run size:dist`로 `dist/*.js` 용량 확인
-- `npm run size:bundle`로 minify+gzip 번들 예산 확인 (2026-06-06 기준 `stitchable/report` total 46,809 gzip, CSS 9,993 gzip)
+- `npm run size:bundle`로 minify+gzip 번들 예산 확인 (2026-06-06 기준 `fivepixels/report` total 46,809 gzip, CSS 9,993 gzip)
 
 ## 검증 결과
 

@@ -1,5 +1,5 @@
 import { useEffect, useState, type MouseEvent } from "react";
-import { GitHubIssueIcon } from "@/components/icons/GitHubIssueIcon.js";
+import { GitHubIcon } from "@/components/icons/GitHubIcon.js";
 import type { ReportFeedback } from "@/types/report.js";
 import type { ReportMessages } from "@/i18n/types.js";
 import { getGitHubIssueUrl, hasGitHubIssue } from "@/utils/githubIntegration.js";
@@ -34,13 +34,13 @@ export function GitIssueButton({ report, messages, disabled = false, isSubmittin
                 href={issueUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                data-stitchable-interactive=""
+                data-fivepixels-interactive=""
                 onClick={(event) => event.stopPropagation()}
                 aria-label={messages.feedbackList.gitIssueViewAriaLabel}
                 title={messages.feedbackList.gitIssueViewTitle}
                 className="flex shrink-0 items-center justify-center self-start rounded-[6px] p-[6px] text-[var(--adaptive-black500)] hover:bg-[var(--adaptive-black100)] hover:text-[var(--adaptive-blue500)]"
             >
-                <GitHubIssueIcon className="h-[16px] w-[16px]" />
+                <GitHubIcon className="h-[16px] w-[16px]" />
             </a>
         );
     }
@@ -65,7 +65,7 @@ export function GitIssueButton({ report, messages, disabled = false, isSubmittin
     return (
         <button
             type="button"
-            data-stitchable-interactive=""
+            data-fivepixels-interactive=""
             onClick={handleCreate}
             disabled={disabled || isSubmitting}
             aria-label={confirming ? messages.feedbackList.gitIssueConfirmAriaLabel : messages.feedbackList.gitIssueAddAriaLabel}
@@ -76,7 +76,7 @@ export function GitIssueButton({ report, messages, disabled = false, isSubmittin
                     : "text-[var(--adaptive-black500)] hover:bg-[var(--adaptive-black100)] hover:text-[var(--adaptive-blue500)]"
             }`}
         >
-            <GitHubIssueIcon className="h-[16px] w-[16px]" />
+            <GitHubIcon className="h-[16px] w-[16px]" />
             {isSubmitting ? (
                 <span className="text-[10px] font-semibold">{messages.feedbackList.gitIssueCreatingLabel}</span>
             ) : confirming ? (

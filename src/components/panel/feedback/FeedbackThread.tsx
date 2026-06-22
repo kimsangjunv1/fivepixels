@@ -107,7 +107,7 @@ function ThreadEntryActions({
                     <>
                         <button
                             type="button"
-                            data-stitchable-interactive=""
+                            data-fivepixels-interactive=""
                             disabled={isUpdating}
                             onClick={onStartDeny}
                             className={`flex-1 rounded-full py-[4px] px-[8px] text-[12px] font-semibold border ${denyActive ? " bg-[#FF2B6A] text-white border-transparent" : " border-[var(--adaptive-border-subtle)] text-[var(--adaptive-text-primary)]"}`}
@@ -118,7 +118,7 @@ function ThreadEntryActions({
                         <section className="flex items-center gap-[8px] rounded-full border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface-muted)] px-[8px] py-[4px]">
                             <button
                                 type="button"
-                                data-stitchable-interactive=""
+                                data-fivepixels-interactive=""
                                 disabled={isUpdating}
                                 onClick={onConfirm}
                                 className="flex-1 rounded-full text-[12px] font-semibold text-[var(--adaptive-black500)]"
@@ -129,7 +129,7 @@ function ThreadEntryActions({
 
                             <button
                                 type="button"
-                                data-stitchable-interactive=""
+                                data-fivepixels-interactive=""
                                 disabled={isUpdating}
                                 onClick={onToggleConfirmAuthorSelect}
                                 className={
@@ -148,7 +148,7 @@ function ThreadEntryActions({
                     <>
                         <button
                             type="button"
-                            data-stitchable-interactive=""
+                            data-fivepixels-interactive=""
                             disabled={isUpdating}
                             onClick={onStartDeny}
                             className={`flex-1 rounded-[8px] border py-[4px] text-[12px] font-semibold ${denyActive ? "border-transparent bg-[#FF2B6A] text-white" : "border-[var(--adaptive-border-subtle)] text-[var(--adaptive-text-primary)]"}`}
@@ -157,7 +157,7 @@ function ThreadEntryActions({
                         </button>
                         <button
                             type="button"
-                            data-stitchable-interactive=""
+                            data-fivepixels-interactive=""
                             disabled={isUpdating}
                             onClick={() => onStartCheckout(reply.id)}
                             className={

@@ -38,7 +38,7 @@ const contactValue: ContactContextValue = {
         {
             id: "contact-channel-email",
             label: "이메일",
-            value: "hello@stitchable.dev",
+            value: "hello@fivepixels.dev",
             description: "평균 1영업일 내 답변",
         },
         {

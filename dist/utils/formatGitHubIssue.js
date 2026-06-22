@@ -33,7 +33,7 @@ export function formatFeedbackAsGitHubIssueBody(feedback, fields = []) {
         "|---|---|---|---|",
         threadRows || "| - | - | - | (no replies yet) |",
         "",
-        `> stitchable feedback id: \`${feedback.id}\``,
+        `> fivepixels feedback id: \`${feedback.id}\``,
     ].join("\n");
 }
 //# sourceMappingURL=formatGitHubIssue.js.map

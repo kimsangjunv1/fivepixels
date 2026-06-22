@@ -1,22 +1,9 @@
+import { MaterialIcon } from "@/components/icons/MaterialIcon.js";
+
 export function TrashIcon({ className }: { className?: string }) {
     return (
-        <svg
-            width="16"
-            height="16"
-            viewBox="0 0 16 16"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className={className}
-            aria-hidden
-        >
-            <path
-                d="M6 2.66667H10L10.3333 3.33333H12.6667V4.66667H3.33333V3.33333H5.66667L6 2.66667Z"
-                fill="currentColor"
-            />
-            <path
-                d="M4 5.33333H12L11.3333 13.3333C11.3333 13.7015 11.0349 14 10.6667 14H5.33333C4.96514 14 4.66667 13.7015 4.66667 13.3333L4 5.33333ZM6 6.66667V12H7.33333V6.66667H6ZM8.66667 6.66667V12H10V6.66667H8.66667Z"
-                fill="currentColor"
-            />
-        </svg>
+        <MaterialIcon className={className}>
+            <path d="M280-120q-33 0-56.5-23.5T200-200v-520q-17 0-28.5-11.5T160-760q0-17 11.5-28.5T200-800h160q0-17 11.5-28.5T400-840h160q17 0 28.5 11.5T600-800h160q17 0 28.5 11.5T800-760q0 17-11.5 28.5T760-720v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM400-280q17 0 28.5-11.5T440-320v-280q0-17-11.5-28.5T400-640q-17 0-28.5 11.5T360-600v280q0 17 11.5 28.5T400-280Zm160 0q17 0 28.5-11.5T600-320v-280q0-17-11.5-28.5T560-640q-17 0-28.5 11.5T520-600v280q0 17 11.5 28.5T560-280ZM240-720h480v-80H240v80Zm0 0v-80 80Z" />
+        </MaterialIcon>
     );
 }

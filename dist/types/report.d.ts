@@ -30,13 +30,13 @@ export type ReportIdentify = {
     id: string;
     name: string;
 };
-/** Project scope passed to `<Report project={{ id, env, version }} />`. */
+/** Project scope passed to `<FivePixels project={{ id, env, version }} />`. */
 export type ReportProject = {
     id?: string;
     env?: string;
     version?: string;
 };
-/** UI options passed to `<Report ui={{ appearance, showFeedbackList, visibleShortcutKeys, shortcut, locale, messages }} />`. */
+/** UI options passed to `<FivePixels ui={{ appearance, showFeedbackList, visibleShortcutKeys, shortcut, locale, messages }} />`. */
 export type ReportUi = {
     appearance?: ReportAppearance;
     showFeedbackList?: boolean;
@@ -45,13 +45,13 @@ export type ReportUi = {
     locale?: import("../i18n/types.js").ReportLocale;
     messages?: import("../i18n/types.js").DeepPartialReportMessages;
 };
-/** Team scope passed to `<Report team={{ user, reviewers }} />`. */
+/** Team scope passed to `<FivePixels team={{ user, reviewers }} />`. */
 export type ReportTeam = {
     user?: ReportIdentify;
     reviewers?: ReportAuthor[];
     requireReviewerKey?: boolean;
 };
-/** Visibility and route scope passed to `<Report visibility={{ enabled, devOnly, routeKey }} />`. */
+/** Visibility and route scope passed to `<FivePixels visibility={{ enabled, devOnly, routeKey }} />`. */
 export type ReportVisibility = {
     enabled?: boolean;
     devOnly?: boolean;
@@ -136,7 +136,7 @@ export interface ReportStorageAdapter {
     update(id: string, payload: UpdateReportFeedbackPayload): Promise<ReportFeedback>;
     remove?(id: string): Promise<void>;
 }
-/** Custom persistence handlers passed to `<Report />`. Requires onList, onCreate, and onUpdate together. */
+/** Custom persistence handlers passed to `<FivePixels />`. Requires onList, onCreate, and onUpdate together. */
 export type ReportPersistenceHandlers = {
     onList: (params: {
         pathname: string;

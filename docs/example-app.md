@@ -1,12 +1,12 @@
 # Example App Guide
 
-`stitchable`의 기본 생성/조회/수정 흐름을 브라우저에서 바로 확인할 수 있는 Vite example 앱입니다.
+`fivepixels`의 기본 생성/조회/수정 흐름을 브라우저에서 바로 확인할 수 있는 Vite example 앱입니다.
 
 ## 위치
 
 - `examples/basic/index.html`
 - `examples/basic/main.tsx`
-- `examples/basic/src/App.tsx` — `<Report />` 풀 설정 (localStorage + GitHub mock)
+- `examples/basic/src/App.tsx` — `<FivePixels />` 풀 설정 (localStorage + GitHub mock)
 - `examples/basic/styles.css`
 - `examples/basic/vite.config.ts`
 

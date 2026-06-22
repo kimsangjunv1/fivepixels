@@ -1,21 +1,13 @@
+import { MaterialIcon } from "@/components/icons/MaterialIcon.js";
+
 type SendIconProps = {
     className?: string;
 };
 
 export function SendIcon({ className }: SendIconProps) {
     return (
-        <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className={className}
-        >
-            <path
-                d="M3 20V14L11 12L3 10V4L22 12L3 20Z"
-                fill="var(--adaptive-black50)"
-            />
-        </svg>
+        <MaterialIcon className={className}>
+            <path d="M792-443 176-183q-20 8-38-3.5T120-220v-520q0-22 18-33.5t38-3.5l616 260q25 11 25 37t-25 37ZM200-280l474-200-474-200v140l240 60-240 60v140Zm0 0v-400 400Z" />
+        </MaterialIcon>
     );
 }

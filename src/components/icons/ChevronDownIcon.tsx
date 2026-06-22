@@ -1,25 +1,13 @@
+import { MaterialIcon } from "@/components/icons/MaterialIcon.js";
+
 type ChevronDownIconProps = {
     className?: string;
 };
 
 export function ChevronDownIcon({ className }: ChevronDownIconProps) {
     return (
-        <svg
-            className={className}
-            width="16"
-            height="16"
-            viewBox="0 0 16 16"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            aria-hidden="true"
-        >
-            <path
-                d="M4 6L8 10L12 6"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-            />
-        </svg>
+        <MaterialIcon className={className}>
+            <path d="M480-362q-8 0-15-2.5t-13-8.5L268-557q-11-11-11-28t11-28q11-11 28-11t28 11l156 156 156-156q11-11 28-11t28 11q11 11 11 28t-11 28L508-373q-6 6-13 8.5t-15 2.5Z" />
+        </MaterialIcon>
     );
 }

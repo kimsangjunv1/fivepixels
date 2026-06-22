@@ -1,5 +1,5 @@
 import type { CreateReportFeedbackPayload, ReportEvent, ReportFeedback, ReportField, ReportAuthor, ReportGitHubConfig, ReportIdentify, ReportListAllParams, ReportListAllResult, ReportProject, ReportTeam, ReportUi, ReportVisibility, UpdateReportFeedbackPayload } from "../../types/report.js";
-export type ReportProps = {
+export type FivePixelsProps = {
     project?: ReportProject;
     /** @deprecated Use `project.id`. */
     projectId?: string;
@@ -46,5 +46,5 @@ export type ReportProps = {
     }) => void | Promise<void>;
     github?: ReportGitHubConfig;
 };
-export declare function Report({ project, projectId, environment, appVersion, ui, appearance, showFeedbackList, visibleShortcutKeys, shortcut, visibility, enabled, devOnly, routeKey, pathname, team, identify, authors, fields, onList, onListAll, onNavigate, onCreate, onUpdate, onDelete, onEvent, onReply, github, }: ReportProps): import("react/jsx-runtime").JSX.Element | null;
-//# sourceMappingURL=Report.d.ts.map
+export declare function FivePixels({ project, projectId, environment, appVersion, ui, appearance, showFeedbackList, visibleShortcutKeys, shortcut, visibility, enabled, devOnly, routeKey, pathname, team, identify, authors, fields, onList, onListAll, onNavigate, onCreate, onUpdate, onDelete, onEvent, onReply, github, }: FivePixelsProps): import("react/jsx-runtime").JSX.Element | null;
+//# sourceMappingURL=FivePixels.d.ts.map

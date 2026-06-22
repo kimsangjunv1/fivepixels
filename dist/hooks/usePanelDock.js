@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-const STORAGE_KEY = "stitchable:panel-placement";
-const LEGACY_STORAGE_KEY = "stitchable:panel-dock-position";
+const STORAGE_KEY = "fivepixels:panel-placement";
+const LEGACY_STORAGE_KEY = "fivepixels:panel-dock-position";
 const EDGE_MARGIN = 16;
 const DEFAULT_PLACEMENT = { corner: "top-left" };
 const PANEL_CORNERS = ["top-left", "top-right", "bottom-left", "bottom-right"];

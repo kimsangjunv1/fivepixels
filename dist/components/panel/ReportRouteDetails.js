@@ -3,17 +3,9 @@ import { useReport } from "../../providers/reportContext.js";
 import { formatStatCount } from "../../utils/formatStatCount.js";
 import { panelNumericClassName } from "../../utils/panelTypography.js";
 import { ChevronDownIcon } from "../../components/icons/ChevronDownIcon.js";
+import { RouteDetailStatusIcon } from "../../components/icons/StatusIcons.js";
 function StatusRowIcon({ status }) {
-    if (status === "wait") {
-        return _jsx("span", { "aria-hidden": true, children: "\u2691" });
-    }
-    if (status === "suggested") {
-        return _jsx("span", { "aria-hidden": true, children: "\u21BB" });
-    }
-    if (status === "git_issued") {
-        return _jsx("span", { "aria-hidden": true, children: "\uFF0B" });
-    }
-    return _jsx("span", { "aria-hidden": true, children: "\u2713" });
+    return (_jsx(RouteDetailStatusIcon, { status: status, className: "h-4 w-4 text-[var(--adaptive-black500)]" }));
 }
 export function ReportRouteDetails() {
     const { routeDetailsStats, projectId, environment, appVersion, messages } = useReport();

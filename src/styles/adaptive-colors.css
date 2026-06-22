@@ -1,4 +1,4 @@
-[data-stitchable-mount] {
+[data-fivepixels-mount] {
     --shadow-popup:
         0 1px 1px 0.5px #2929290a, 0 3px 3px -1.5px #29292905, 0 6px 6px -3px #2929290a, 0 12px 12px -6px #2929290a, 0 24px 24px -12px #2929290a, 0 48px 48px -24px #5e5e6a94, 0 0 0 1px #2929290a,
         inset 0 -1px 1px -0.5px #3333330f;
@@ -14,7 +14,7 @@
     --coding-font: Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace;
 }
 
-[data-stitchable-mount][data-stitchable-theme="light"] {
+[data-fivepixels-mount][data-fivepixels-theme="light"] {
     color-scheme: light;
 
     --adaptive-surface: #ffffff;
@@ -198,7 +198,7 @@
     --adaptive-__internal__focusRing: rgba(255, 255, 255, 0.5);
 }
 
-[data-stitchable-mount][data-stitchable-theme="dark"] {
+[data-fivepixels-mount][data-fivepixels-theme="dark"] {
     color-scheme: dark;
 
     --adaptive-surface: #212121;

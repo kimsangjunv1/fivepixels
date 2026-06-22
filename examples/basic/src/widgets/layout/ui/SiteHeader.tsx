@@ -10,7 +10,7 @@ export function SiteHeader() {
     return (
         <header className="site-header" data-report-id="site-header" data-report-type="group">
             <div className="site-header__brand" data-report-id="site-brand" data-report-type="item">
-                <span className="site-header__logo">stitchable</span>
+                <span className="site-header__logo">fivepixels</span>
                 <span className="site-header__tagline">feedback demo</span>
             </div>
             <nav className="site-nav" data-report-id="site-nav" data-report-type="group">

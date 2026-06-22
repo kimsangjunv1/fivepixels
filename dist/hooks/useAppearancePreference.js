@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-const STORAGE_KEY = "stitchable:appearance-preference";
+const STORAGE_KEY = "fivepixels:appearance-preference";
 function isReportAppearance(value) {
     return value === "system" || value === "light" || value === "dark";
 }

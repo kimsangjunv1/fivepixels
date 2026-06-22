@@ -1,5 +1,5 @@
-export { Report } from "./Report.js";
-export type { ReportProps } from "./Report.js";
+export { FivePixels } from "./FivePixels.js";
+export type { FivePixelsProps } from "./FivePixels.js";
 export { ReportProvider } from "../../providers/ReportProvider.js";
 export type { ReportProviderProps } from "../../providers/ReportProvider.js";
 export { useReport } from "../../providers/reportContext.js";

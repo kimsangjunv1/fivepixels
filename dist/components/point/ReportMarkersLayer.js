@@ -31,7 +31,7 @@ function MarkerButton({ markerItem, isSelected, isLocated, locatePulseTick, onSe
     return (_jsxs(_Fragment, { children: [isLocated ? (_jsx(MarkerLocatePulse, { left: markerItem.left, top: markerItem.top, tick: locatePulseTick, accentColor: getMarkerColor(markerItem.report) })) : null, _jsx("div", { className: MARKER_ANCHOR_CLASS, style: {
                     left: markerItem.left,
                     top: markerItem.top,
-                }, children: _jsxs("div", { className: "relative pointer-events-auto", children: [_jsx("button", { ref: hoverRef, type: "button", "data-stitchable-interactive": "", "data-marker-report-id": markerItem.report.id, "aria-label": markerLabel, onClick: () => {
+                }, children: _jsxs("div", { className: "relative pointer-events-auto", children: [_jsx("button", { ref: hoverRef, type: "button", "data-fivepixels-interactive": "", "data-marker-report-id": markerItem.report.id, "aria-label": markerLabel, onClick: () => {
                                 onSelect();
                                 onOpenReply();
                             }, className: isLocated
@@ -130,7 +130,7 @@ export function ReportMarkersLayer() {
                         if (node instanceof HTMLDivElement) {
                             expandedTooltipHoverRef(node);
                         }
-                    }, "data-stitchable-interactive": "", initial: { opacity: 0, y: 5, scale: 0.97 }, animate: { opacity: 1, y: 0, scale: 1 }, exit: { opacity: 0, y: 5, scale: 0.97 }, transition: TOOLTIP_MOTION_TRANSITION, className: `pointer-events-auto ${TOOLTIP_BASE_CLASS}`, style: {
+                    }, "data-fivepixels-interactive": "", initial: { opacity: 0, y: 5, scale: 0.97 }, animate: { opacity: 1, y: 0, scale: 1 }, exit: { opacity: 0, y: 5, scale: 0.97 }, transition: TOOLTIP_MOTION_TRANSITION, className: `pointer-events-auto ${TOOLTIP_BASE_CLASS}`, style: {
                         left: tooltipPosition.left,
                         top: tooltipPosition.top,
                         width: tooltipPosition.width,
