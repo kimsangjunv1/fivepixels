@@ -1,5 +1,5 @@
 import { BrowserRouter, useNavigate } from "react-router-dom";
-import { FivePixels, type ReportFeedback } from "fivepixels";
+import { FivePixels, type ReportFeedback } from "@fivepixels-js/react";
 
 import { AppRouter } from "./app/router";
 

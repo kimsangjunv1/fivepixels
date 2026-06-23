@@ -114,7 +114,7 @@ export default defineConfig({
     resolve: {
         alias: {
             "@": new URL("../../src", import.meta.url).pathname,
-            fivepixels: new URL("../../src/index.ts", import.meta.url).pathname,
+            "@fivepixels-js/react": new URL("../../src/index.ts", import.meta.url).pathname,
         },
     },
 });

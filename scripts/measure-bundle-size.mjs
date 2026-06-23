@@ -12,8 +12,8 @@ const LIMIT_REPORT_TOTAL_GZIP_BYTES = 48 * 1024;
 const LIMIT_CSS_GZIP_BYTES = 12 * 1024;
 
 const entries = [
-    { name: "fivepixels/report", file: "dist/components/report/index.js" },
-    { name: "fivepixels", file: "dist/index.js" },
+    { name: "@fivepixels-js/react/report", file: "dist/components/report/index.js" },
+    { name: "@fivepixels-js/react", file: "dist/index.js" },
 ];
 
 function gzipFileBytes(filePath) {
@@ -55,7 +55,7 @@ let reportBundle = null;
 
 for (const entry of entries) {
     const bundle = bundleMinGzip(entry.file);
-    const isReportEntry = entry.name === "fivepixels/report";
+    const isReportEntry = entry.name === "@fivepixels-js/react/report";
     const status = isReportEntry ? (bundle.gzipBytes <= LIMIT_REPORT_TOTAL_GZIP_BYTES ? "OK" : "OVER") : "info";
     formatRow(status, bundle.gzipBytes, bundle.rawBytes, entry.name);
 
@@ -79,7 +79,7 @@ if (css.gzipBytes > LIMIT_CSS_GZIP_BYTES) {
 if (reportBundle) {
     const estimatedJsGzip = Math.max(0, reportBundle.gzipBytes - css.gzipBytes);
     const jsTargetStatus = estimatedJsGzip <= TARGET_JS_GZIP_BYTES ? "OK" : "goal";
-    formatRow(jsTargetStatus, estimatedJsGzip, reportBundle.rawBytes - css.rawBytes, "fivepixels/report JS (total - stylesheet)");
+    formatRow(jsTargetStatus, estimatedJsGzip, reportBundle.rawBytes - css.rawBytes, "@fivepixels-js/react/report JS (total - stylesheet)");
 }
 
 console.log("");

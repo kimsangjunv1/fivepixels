@@ -1,8 +1,11 @@
 {
-  "name": "fivepixels",
+  "name": "@fivepixels-js/react",
   "version": "0.1.0",
   "description": "DOM element based feedback library for browser apps",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/kimsangjunv1/fivepixels.git"
