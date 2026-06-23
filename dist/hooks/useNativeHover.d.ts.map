@@ -1,0 +1,1 @@
+{"version":3,"file":"useNativeHover.d.ts","sourceRoot":"","sources":["../../src/hooks/useNativeHover.ts"],"names":[],"mappings":"AAEA,KAAK,mBAAmB,GAAG;IACvB,OAAO,EAAE,MAAM,IAAI,CAAC;IACpB,OAAO,EAAE,MAAM,IAAI,CAAC;CACvB,CAAC;AAEF,wBAAgB,cAAc,CAAC,CAAC,SAAS,WAAW,EAAE,QAAQ,EAAE,mBAAmB,aAM7C,CAAC,GAAG,IAAI,UA0B7C"}

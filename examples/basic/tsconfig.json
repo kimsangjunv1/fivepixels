@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": "../..",
+    "baseUrl": ".",
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": false,
+    "paths": {
+      "@fivepixels-js/react": ["../../src/index.ts"],
+      "@/*": ["../../src/*"]
+    }
+  },
+  "include": ["./**/*.ts", "./**/*.tsx", "../../src/**/*.ts", "../../src/**/*.tsx"],
+  "exclude": ["../../src/**/*.test.ts", "../../src/**/*.test.tsx", "./vite.config.ts"]
+}

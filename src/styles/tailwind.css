@@ -1,0 +1,282 @@
+@import "tailwindcss/theme";
+@import "tailwindcss/utilities";
+@import "./adaptive-colors.css";
+
+@source "../components/**/*.tsx";
+
+@theme {
+    /* Use absolute units so host html font-size does not scale library spacing/text. */
+    --spacing: 4px;
+    --text-xs: 12px;
+    --text-xs--line-height: 1;
+    --text-sm: 14px;
+    --text-sm--line-height: 1;
+}
+
+[data-fivepixels-interactive] {
+    pointer-events: auto;
+}
+
+/* tw default settings */
+[data-fivepixels-mount] {
+    --tw-inset-shadow: 0 0 #0000;
+    --tw-inset-ring-shadow: 0 0 #0000;
+    --tw-ring-offset-shadow: 0 0 #0000;
+    --tw-ring-shadow: 0 0 #0000;
+    --tw-border-style: solid;
+}
+
+[data-fivepixels-mount] {
+    display: block;
+    pointer-events: none;
+    position: fixed;
+    inset: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    /* font-family: var(--ui-font);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--adaptive-black900); */
+    font-style: normal;
+    font-synthesis: none;
+    letter-spacing: normal;
+    text-align: start;
+    line-height: 1;
+
+    /* text-transform: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-text-size-adjust: 100%; */
+    /* transition: 0.25s colors; */
+}
+
+[data-fivepixels-mount],
+[data-fivepixels-mount] *,
+[data-fivepixels-mount] *::before,
+[data-fivepixels-mount] *::after {
+    box-sizing: border-box;
+}
+
+:where([data-fivepixels-mount], [data-fivepixels-mount] *, [data-fivepixels-mount] *::before, [data-fivepixels-mount] *::after) {
+    line-height: 1;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: transparent;
+    font-family: var(--ui-font);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--adaptive-text-primary);
+
+    transition:
+        color 0.25s,
+        background-color 0.25s,
+        border-color 0.25s;
+    text-decoration: auto;
+
+    text-transform: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-text-size-adjust: 100%;
+}
+
+/* [data-fivepixels-mount] :where(p, h1, h2, h3, h4, h5, h6, ul, ol, li, figure, blockquote, dl, dd, dt, pre, hr, fieldset) {
+    margin: 0;
+} */
+
+[data-fivepixels-mount] :where(button) {
+    cursor: pointer;
+}
+
+@keyframes fivepixels-tooltip-in {
+    from {
+        opacity: 0;
+        transform: translateY(5px) scale(0.97);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+[data-fivepixels-mount] .fivepixels-locate-pulse-ring {
+    transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+[data-fivepixels-mount] .fivepixels-locate-pulse-ring--peak {
+    opacity: 0;
+}
+
+[data-fivepixels-mount] .fivepixels-locate-pulse-ring--valley {
+    opacity: 0.8;
+}
+
+[data-fivepixels-mount] .fivepixels-locate-pulse-core {
+    transition:
+        transform 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+[data-fivepixels-mount] .fivepixels-locate-pulse-core--peak {
+    opacity: 1;
+    transform: scale(1.45);
+}
+
+[data-fivepixels-mount] .fivepixels-locate-pulse-core--valley {
+    opacity: 0.4;
+    transform: scale(0.9);
+}
+
+[data-fivepixels-mount] .fivepixels-locate-pulse-target-outline {
+    transition: opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+[data-fivepixels-mount] .fivepixels-locate-pulse-target-outline--peak {
+    opacity: 1;
+}
+
+[data-fivepixels-mount] .fivepixels-locate-pulse-target-outline--valley {
+    opacity: 0.35;
+}
+
+[data-fivepixels-mount] .fivepixels-locate-pulse-target-surface {
+    transition: opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+[data-fivepixels-mount] .fivepixels-locate-pulse-target-surface--peak {
+    opacity: 1;
+}
+
+[data-fivepixels-mount] .fivepixels-locate-pulse-target-surface--valley {
+    opacity: 0.55;
+}
+
+[data-fivepixels-mount] .fivepixels-target-highlight {
+    opacity: 1;
+    transition:
+        opacity 0.14s ease-out,
+        left 0.44s cubic-bezier(0.22, 1, 0.36, 1),
+        top 0.44s cubic-bezier(0.22, 1, 0.36, 1),
+        width 0.44s cubic-bezier(0.22, 1, 0.36, 1),
+        height 0.44s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+[data-fivepixels-mount] .fivepixels-dock-guide-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 999999;
+    pointer-events: none;
+}
+
+[data-fivepixels-mount] .fivepixels-dock-guide {
+    --fivepixels-dock-guide-line: color-mix(in srgb, var(--adaptive-blue500, #3182f6) 78%, transparent);
+
+    position: absolute;
+    width: 76px;
+    height: 76px;
+    box-sizing: border-box;
+    border: 0;
+    background: transparent;
+    opacity: 0.82;
+    transition: opacity 120ms ease;
+}
+
+[data-fivepixels-mount] .fivepixels-dock-guide::before,
+[data-fivepixels-mount] .fivepixels-dock-guide::after {
+    content: "";
+    position: absolute;
+    box-sizing: border-box;
+    background: var(--fivepixels-dock-guide-line);
+    transition: background 120ms ease;
+}
+
+[data-fivepixels-mount] .fivepixels-dock-guide::before {
+    height: 3px;
+    width: 100%;
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 18%, #000 82%, transparent), repeating-linear-gradient(to right, #000 0 7px, transparent 7px 12px);
+    -webkit-mask-composite: source-in;
+    mask-image: linear-gradient(to right, transparent, #000 18%, #000 82%, transparent), repeating-linear-gradient(to right, #000 0 7px, transparent 7px 12px);
+    mask-composite: intersect;
+}
+
+[data-fivepixels-mount] .fivepixels-dock-guide::after {
+    width: 3px;
+    height: 100%;
+    -webkit-mask-image: linear-gradient(to bottom, transparent, #000 18%, #000 82%, transparent), repeating-linear-gradient(to bottom, #000 0 7px, transparent 7px 12px);
+    -webkit-mask-composite: source-in;
+    mask-image: linear-gradient(to bottom, transparent, #000 18%, #000 82%, transparent), repeating-linear-gradient(to bottom, #000 0 7px, transparent 7px 12px);
+    mask-composite: intersect;
+}
+
+[data-fivepixels-mount] .fivepixels-dock-guide--top-left {
+    top: 10px;
+    left: 10px;
+}
+
+[data-fivepixels-mount] .fivepixels-dock-guide--top-left::before,
+[data-fivepixels-mount] .fivepixels-dock-guide--top-left::after {
+    top: 0;
+    left: 0;
+}
+
+[data-fivepixels-mount] .fivepixels-dock-guide--top-right {
+    top: 10px;
+    right: 10px;
+}
+
+[data-fivepixels-mount] .fivepixels-dock-guide--top-right::before,
+[data-fivepixels-mount] .fivepixels-dock-guide--top-right::after {
+    top: 0;
+    right: 0;
+}
+
+[data-fivepixels-mount] .fivepixels-dock-guide--bottom-left {
+    bottom: 10px;
+    left: 10px;
+}
+
+[data-fivepixels-mount] .fivepixels-dock-guide--bottom-left::before,
+[data-fivepixels-mount] .fivepixels-dock-guide--bottom-left::after {
+    bottom: 0;
+    left: 0;
+}
+
+[data-fivepixels-mount] .fivepixels-dock-guide--bottom-right {
+    right: 10px;
+    bottom: 10px;
+}
+
+[data-fivepixels-mount] .fivepixels-dock-guide--bottom-right::before,
+[data-fivepixels-mount] .fivepixels-dock-guide--bottom-right::after {
+    right: 0;
+    bottom: 0;
+}
+
+[data-fivepixels-mount] .fivepixels-dock-guide--active {
+    opacity: 1;
+    --fivepixels-dock-guide-line: var(--adaptive-blue500, #3182f6);
+}
+
+[data-fivepixels-mount] .fivepixels-dock-guide--active::before {
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 16%, #000 84%, transparent);
+    mask-image: linear-gradient(to right, transparent, #000 16%, #000 84%, transparent);
+}
+
+[data-fivepixels-mount] .fivepixels-dock-guide--active::after {
+    -webkit-mask-image: linear-gradient(to bottom, transparent, #000 16%, #000 84%, transparent);
+    mask-image: linear-gradient(to bottom, transparent, #000 16%, #000 84%, transparent);
+}
+
+[data-fivepixels-mount] [data-overlay-mode="report"] {
+    background-color: transparent;
+    box-shadow:
+        inset 0 48px 64px -32px color-mix(in srgb, var(--adaptive-black900) 28%, transparent),
+        inset 0 -48px 64px -32px color-mix(in srgb, var(--adaptive-black900) 28%, transparent),
+        inset 48px 0 64px -32px color-mix(in srgb, var(--adaptive-black900) 28%, transparent),
+        inset -48px 0 64px -32px color-mix(in srgb, var(--adaptive-black900) 28%, transparent);
+}

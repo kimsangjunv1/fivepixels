@@ -10,10 +10,14 @@
     "sourceMap": true,
     "outDir": "dist",
     "rootDir": "src",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    },
     "strict": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true
   },
-  "include": ["src/index.ts", "src/report/index.ts"]
+  "include": ["src/index.ts", "src/components/report/index.ts"]
 }
