@@ -2,8 +2,8 @@ import { useCallback, useEffect, useMemo, useRef } from "react";
 import { TARGET_COLOR, TARGET_SURFACE } from "@/constants/report.js";
 import { AnimatedPresence, motion } from "@/components/motion/index.js";
 import { useNativeHover } from "@/hooks/useNativeHover.js";
+import { useTooltipLayout } from "@/hooks/useTooltipLayout.js";
 import { useReport } from "@/providers/reportContext.js";
-import { getTooltipPosition } from "@/utils/coordinates.js";
 import type { Marker } from "@/types/report-ui.js";
 import { getMarkerColor } from "@/utils/reportVisual.js";
 import { FeedbackComposer } from "@/components/panel/feedback/FeedbackComposer.js";
@@ -20,8 +20,9 @@ const TOOLTIP_MOTION_TRANSITION = {
     damping: 10,
 };
 
-const TOOLTIP_BASE_CLASS =
-    "fixed z-[1000001] overflow-hidden rounded-[24px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface-overlay)] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[20px]";
+const TOOLTIP_SURFACE_CLASS = "overflow-hidden rounded-[24px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] shadow-[var(--adaptive-popup-shadow)]";
+const TOOLTIP_FIXED_CLASS = `fixed z-[1000001] ${TOOLTIP_SURFACE_CLASS}`;
+const EXPANDED_TOOLTIP_ANCHOR_CLASS = "pointer-events-auto fixed z-[1000001]";
 
 const MARKER_ANCHOR_CLASS = "pointer-events-none fixed z-[1000000] -translate-x-1/2 -translate-y-1/2";
 const MARKER_BUTTON_BASE_CLASS = "flex items-center justify-center rounded-full";
@@ -75,23 +76,25 @@ function MarkerButton({ markerItem, isSelected, isLocated, locatePulseTick, onSe
                             onSelect();
                             onOpenReply();
                         }}
-                        className={
+                        className={`${
                             isLocated
-                                ? `${MARKER_BUTTON_BASE_CLASS} h-5 w-5 border-2 border-white/95 shadow-[0_0_18px_rgba(56,189,248,0.85)] ring-2 ring-sky-300/90`
+                                ? `${MARKER_BUTTON_BASE_CLASS} min-h-[16px] min-w-[16px] border-[2px] border-white shadow-[0_4px_10px_#00000090]`
                                 : isSelected
-                                  ? `${MARKER_BUTTON_BASE_CLASS} h-5 w-5 border-2 border-white/80 shadow-lg ring-2 ring-white/30`
-                                  : `${MARKER_BUTTON_BASE_CLASS} h-4 w-4 border border-white/60 shadow-sm`
-                        }
+                                  ? `${MARKER_BUTTON_BASE_CLASS} min-h-[16px] min-w-[16px] border-[2px] scale-[1.4] border-white shadow-[0_4px_10px_#00000090]`
+                                  : `${MARKER_BUTTON_BASE_CLASS} min-h-[16px] min-w-[16px] border-[2px] border-white shadow-[0_4px_10px_#00000090]`
+                        } ${replyCount > 0 ? "p-[4px_8px] text-white" : ""}`}
                         style={{
                             backgroundColor: getMarkerColor(markerItem.report),
                             pointerEvents: "auto",
                         }}
-                    />
-                    {replyCount > 0 ? (
-                        <span className="absolute -right-[6px] -top-[6px] flex h-[14px] min-w-[14px] items-center justify-center rounded-full bg-[var(--adaptive-surface-inverse)] px-[3px] text-[10px] font-semibold leading-none text-[var(--adaptive-text-inverse)] ring-1 ring-white/80">
+                    >
+                        {replyCount > 0 ? `+${replyCount}` : null}
+                    </button>
+                    {/* {replyCount > 0 ? (
+                        <span className="absolute -right-[20px] -top-[12px] flex min-w-[14px] items-center justify-center rounded-full border-[2px] border-white bg-[var(--adaptive-black900)] p-[2px_6px] text-[12px] font-black text-[var(--adaptive-black50)] shadow-[0_4px_4px_#00000090]">
                             +{replyCount}
                         </span>
-                    ) : null}
+                    ) : null} */}
                 </div>
             </div>
         </>
@@ -217,13 +220,35 @@ export function ReportMarkersLayer() {
     const isViewMode = mode === "view";
     const locatePulseTick = useLocatePulseTick(isViewMode && Boolean(locatedReportId));
     const locatedMarker = isViewMode ? (markers.find((markerItem) => markerItem.report.id === locatedReportId) ?? null) : null;
+    const showTooltip = Boolean(tooltipReport && tooltipAnchor);
+    const { layout: tooltipLayout, setTooltipElement } = useTooltipLayout(tooltipAnchor, isExpandedTooltip, showTooltip);
+    const tooltipPosition = tooltipLayout?.position ?? null;
+    const tooltipAnchorStyle = tooltipLayout?.anchorStyle;
+    const tooltipScaleOrigin = tooltipPosition?.placement === "below" ? "top left" : "bottom left";
+
+    const bindHoverTooltipRef = useCallback(
+        (node: HTMLDivElement | null) => {
+            setTooltipElement(node);
+        },
+        [setTooltipElement],
+    );
+
+    const bindExpandedTooltipRef = useCallback(
+        (node: HTMLDivElement | null) => {
+            tooltipContainerRef.current = node;
+
+            if (node instanceof HTMLDivElement) {
+                expandedTooltipHoverRef(node);
+            }
+
+            setTooltipElement(node);
+        },
+        [expandedTooltipHoverRef, setTooltipElement],
+    );
 
     if (!isViewMode) {
         return null;
     }
-
-    const tooltipPosition = tooltipAnchor ? getTooltipPosition(tooltipAnchor, isExpandedTooltip) : null;
-    const showTooltip = Boolean(tooltipReport && tooltipAnchor && tooltipPosition);
 
     return (
         <>
@@ -270,13 +295,15 @@ export function ReportMarkersLayer() {
                 />
             ))}
 
-            {showTooltip && !isExpandedTooltip && tooltipReport && tooltipPosition ? (
-                <div
-                    className={`pointer-events-none ${TOOLTIP_BASE_CLASS}`}
+            {showTooltip && !isExpandedTooltip && tooltipReport && tooltipPosition && tooltipAnchorStyle ? (
+                <motion.div
+                    ref={bindHoverTooltipRef}
+                    className={`pointer-events-none ${TOOLTIP_FIXED_CLASS}`}
                     style={{
                         left: tooltipPosition.left,
                         top: tooltipPosition.top,
                         width: tooltipPosition.width,
+                        ...tooltipAnchorStyle,
                         pointerEvents: "none",
                     }}
                 >
@@ -284,76 +311,82 @@ export function ReportMarkersLayer() {
                         report={tooltipReport}
                         fieldTags={tooltipFieldTags}
                     />
-                </div>
+                </motion.div>
             ) : null}
 
             <AnimatedPresence>
-                {showTooltip && isExpandedTooltip && tooltipReport && tooltipPosition && activeReplyReport ? (
+                {showTooltip && isExpandedTooltip && tooltipReport && tooltipPosition && tooltipAnchorStyle && activeReplyReport ? (
                     <motion.div
-                        ref={(node) => {
-                            tooltipContainerRef.current = node;
-
-                            if (node instanceof HTMLDivElement) {
-                                expandedTooltipHoverRef(node);
-                            }
-                        }}
+                        ref={bindExpandedTooltipRef}
                         key={`${tooltipReport.id}-expanded`}
-                        data-fivepixels-interactive=""
-                        initial={{ opacity: 0, y: 5, scale: 0.97 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 5, scale: 0.97 }}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
                         transition={TOOLTIP_MOTION_TRANSITION}
-                        className={`pointer-events-auto ${TOOLTIP_BASE_CLASS}`}
+                        className={EXPANDED_TOOLTIP_ANCHOR_CLASS}
                         style={{
                             left: tooltipPosition.left,
                             top: tooltipPosition.top,
                             width: tooltipPosition.width,
-                            pointerEvents: "auto",
+                            ...tooltipAnchorStyle,
                         }}
                     >
-                        <div
-                            onClick={(event) => event.stopPropagation()}
-                            onPointerDown={(event) => event.stopPropagation()}
+                        <motion.div
+                            data-fivepixels-interactive=""
+                            initial={{ scale: 0.97 }}
+                            animate={{ scale: 1 }}
+                            exit={{ scale: 0.97 }}
+                            transition={TOOLTIP_MOTION_TRANSITION}
+                            className={TOOLTIP_SURFACE_CLASS}
+                            style={{
+                                pointerEvents: "auto",
+                                transformOrigin: tooltipScaleOrigin,
+                            }}
                         >
-                            <FeedbackIssueHeader
-                                report={activeReplyReport}
-                                fieldTags={tooltipFieldTags}
-                                expanded
-                            />
+                            <div
+                                onClick={(event) => event.stopPropagation()}
+                                onPointerDown={(event) => event.stopPropagation()}
+                            >
+                                <FeedbackIssueHeader
+                                    report={activeReplyReport}
+                                    fieldTags={tooltipFieldTags}
+                                    expanded
+                                />
 
-                            {showComposer ? (
-                                <section className="border-t border-[var(--adaptive-border-subtle)] bg-transparent">
-                                    <FeedbackComposer
-                                        message={replyDraft}
-                                        onMessageChange={setReplyDraft}
-                                        authorName={replyAuthorName}
-                                        onAuthorNameChange={setReplyAuthorName}
-                                        authors={authors}
-                                        fields={fields}
-                                        fieldValues={activeReplyReport.field_values}
-                                        onFieldChange={() => undefined}
-                                        showTags={false}
-                                        onSubmit={() => void handleReplySubmit()}
-                                        isSubmitting={isUpdating}
-                                        autoFocus={pendingComposer !== null}
-                                    />
-                                </section>
-                            ) : null}
+                                {showComposer ? (
+                                    <section className="border-t border-[var(--adaptive-border-subtle)] bg-transparent">
+                                        <FeedbackComposer
+                                            message={replyDraft}
+                                            onMessageChange={setReplyDraft}
+                                            authorName={replyAuthorName}
+                                            onAuthorNameChange={setReplyAuthorName}
+                                            authors={authors}
+                                            fields={fields}
+                                            fieldValues={activeReplyReport.field_values}
+                                            onFieldChange={() => undefined}
+                                            showTags={false}
+                                            onSubmit={() => void handleReplySubmit()}
+                                            isSubmitting={isUpdating}
+                                            autoFocus={pendingComposer !== null}
+                                        />
+                                    </section>
+                                ) : null}
 
-                            <FeedbackThread
-                                report={activeReplyReport}
-                                authors={authors}
-                                pendingComposer={pendingComposer}
-                                confirmAuthorName={confirmAuthorName}
-                                showConfirmAuthorSelect={showConfirmAuthorSelect}
-                                onConfirmAuthorNameChange={setConfirmAuthorName}
-                                onToggleConfirmAuthorSelect={toggleConfirmAuthorSelect}
-                                onStartDeny={startDenyReview}
-                                onStartCheckout={startCheckoutReview}
-                                onConfirm={() => void handleConfirmResolution()}
-                                isUpdating={isUpdating}
-                            />
-                        </div>
+                                <FeedbackThread
+                                    report={activeReplyReport}
+                                    authors={authors}
+                                    pendingComposer={pendingComposer}
+                                    confirmAuthorName={confirmAuthorName}
+                                    showConfirmAuthorSelect={showConfirmAuthorSelect}
+                                    onConfirmAuthorNameChange={setConfirmAuthorName}
+                                    onToggleConfirmAuthorSelect={toggleConfirmAuthorSelect}
+                                    onStartDeny={startDenyReview}
+                                    onStartCheckout={startCheckoutReview}
+                                    onConfirm={() => void handleConfirmResolution()}
+                                    isUpdating={isUpdating}
+                                />
+                            </div>
+                        </motion.div>
                     </motion.div>
                 ) : null}
             </AnimatedPresence>

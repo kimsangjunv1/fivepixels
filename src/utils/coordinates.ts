@@ -62,18 +62,106 @@ export function resolveTooltipAnchor(markers: Marker[], reportId: string | null)
 
 const TOOLTIP_PREVIEW_WIDTH = 260;
 const TOOLTIP_EXPANDED_WIDTH = 320;
-const TOOLTIP_PREVIEW_OFFSET = 104;
-const TOOLTIP_EXPANDED_OFFSET = 280;
-const TOOLTIP_MARGIN = 16;
+export const TOOLTIP_MARGIN = 16;
+const TOOLTIP_PREVIEW_HEIGHT_ESTIMATE = 140;
+const TOOLTIP_EXPANDED_HEIGHT_ESTIMATE = 320;
 
-export function getTooltipPosition(anchor: Pick<Marker, "left" | "top">, expanded: boolean) {
+export type TooltipPlacement = "above" | "below";
+
+function getTooltipHeightEstimate(expanded: boolean) {
+    return expanded ? TOOLTIP_EXPANDED_HEIGHT_ESTIMATE : TOOLTIP_PREVIEW_HEIGHT_ESTIMATE;
+}
+
+function getTooltipAboveTop(anchor: Pick<Marker, "top">) {
+    return anchor.top - DOT_SIZE / 2 - TOOLTIP_MARGIN;
+}
+
+function getTooltipBelowTop(anchor: Pick<Marker, "top">) {
+    return anchor.top + DOT_SIZE / 2 + TOOLTIP_MARGIN;
+}
+
+export function resolveTooltipPlacement(anchor: Pick<Marker, "top">, height: number, viewportHeight = window.innerHeight): TooltipPlacement {
+    const aboveAnchorTop = getTooltipAboveTop(anchor);
+    const belowTop = getTooltipBelowTop(anchor);
+    const spaceAbove = aboveAnchorTop - TOOLTIP_MARGIN;
+    const spaceBelow = viewportHeight - TOOLTIP_MARGIN - belowTop;
+    const aboveFits = height <= spaceAbove;
+    const belowFits = height <= spaceBelow;
+
+    if (aboveFits) {
+        return "above";
+    }
+
+    if (belowFits) {
+        return "below";
+    }
+
+    return spaceAbove >= spaceBelow ? "above" : "below";
+}
+
+function clampTooltipTop(top: number, height: number, placement: TooltipPlacement, viewportHeight: number) {
+    if (placement === "above") {
+        const visualTop = top - height;
+
+        if (visualTop < TOOLTIP_MARGIN) {
+            return TOOLTIP_MARGIN + height;
+        }
+
+        return top;
+    }
+
+    const maxTop = Math.max(TOOLTIP_MARGIN, viewportHeight - TOOLTIP_MARGIN - height);
+
+    return Math.min(Math.max(top, TOOLTIP_MARGIN), maxTop);
+}
+
+export function getTooltipAnchorStyle(placement: TooltipPlacement) {
+    if (placement === "above") {
+        return {
+            transform: "translateY(-100%)",
+            transformOrigin: "bottom left",
+        } as const;
+    }
+
+    return {
+        transformOrigin: "top left",
+    } as const;
+}
+
+export function getTooltipPosition(
+    anchor: Pick<Marker, "left" | "top">,
+    expanded: boolean,
+    options?: {
+        height?: number;
+        placement?: TooltipPlacement;
+        viewportWidth?: number;
+        viewportHeight?: number;
+    },
+) {
     const width = expanded ? TOOLTIP_EXPANDED_WIDTH : TOOLTIP_PREVIEW_WIDTH;
-    const heightOffset = expanded ? TOOLTIP_EXPANDED_OFFSET : TOOLTIP_PREVIEW_OFFSET;
+    const viewportWidth = options?.viewportWidth ?? window.innerWidth;
+    const viewportHeight = options?.viewportHeight ?? window.innerHeight;
+    const hasMeasuredHeight = options?.height !== undefined;
+    const height = options?.height ?? getTooltipHeightEstimate(expanded);
     const preferredLeft = anchor.left - 12;
-    const left = Math.min(Math.max(preferredLeft, TOOLTIP_MARGIN), window.innerWidth - width - TOOLTIP_MARGIN);
-    const top = Math.max(anchor.top - heightOffset, TOOLTIP_MARGIN);
+    const left = Math.min(Math.max(preferredLeft, TOOLTIP_MARGIN), viewportWidth - width - TOOLTIP_MARGIN);
+    const aboveAnchorTop = getTooltipAboveTop(anchor);
 
-    return { left, top, width };
+    let placement: TooltipPlacement;
+
+    if (options?.placement) {
+        placement = options.placement;
+    } else if (!hasMeasuredHeight) {
+        // Before measurement, keep the default above placement unless the marker hugs the top edge.
+        placement = aboveAnchorTop <= TOOLTIP_MARGIN ? "below" : "above";
+    } else {
+        placement = resolveTooltipPlacement(anchor, height, viewportHeight);
+    }
+
+    const anchorTop = placement === "above" ? aboveAnchorTop : getTooltipBelowTop(anchor);
+    const top = hasMeasuredHeight ? clampTooltipTop(anchorTop, height, placement, viewportHeight) : anchorTop;
+
+    return { left, top, width, placement };
 }
 
 export type DraftPopoverPlacement = "right" | "left" | "bottom" | "top";

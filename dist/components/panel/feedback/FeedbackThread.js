@@ -79,7 +79,7 @@ export function FeedbackThread({ report, authors, pendingComposer, confirmAuthor
     }
     const chronological = [...report.replies].reverse();
     const originalAuthorName = resolveOriginalFeedbackAuthorName(report);
-    return (_jsxs("div", { className: "relative max-h-[512px]", children: [scrollOverflow.canScrollUp ? _jsx("p", { className: `${SCROLL_HINT_CLASS} top-0 bg-[linear-gradient(0deg,transparent,var(--adaptive-surface-overlay))]`, children: messages.thread.scrollHintUp }) : null, scrollOverflow.canScrollDown ? _jsx("p", { className: `${SCROLL_HINT_CLASS} bottom-0 bg-[linear-gradient(180deg,transparent,var(--adaptive-surface-overlay))]`, children: messages.thread.scrollHintDown }) : null, _jsx("section", { ref: scrollRef, className: "flex max-h-[512px] flex-col overflow-auto bg-transparent", children: chronological.map((reply) => {
+    return (_jsxs("div", { className: "relative max-h-[512px]", children: [scrollOverflow.canScrollUp ? _jsx("p", { className: `${SCROLL_HINT_CLASS} top-0 bg-[linear-gradient(0deg,transparent,var(--adaptive-surface-overlay))]`, children: messages.thread.scrollHintUp }) : null, scrollOverflow.canScrollDown ? (_jsx("p", { className: `${SCROLL_HINT_CLASS} bottom-0 bg-[linear-gradient(180deg,transparent,var(--adaptive-surface-overlay))]`, children: messages.thread.scrollHintDown })) : null, _jsx("section", { ref: scrollRef, className: "flex max-h-[512px] flex-col overflow-auto bg-transparent", children: chronological.map((reply) => {
                     const issueUrl = getGitHubIssueUrl(report);
                     if (isGitIssuedSystemReply(reply, report) && issueUrl) {
                         return (_jsx(GitIssuedThreadEntry, { reply: reply, issueUrl: issueUrl }, reply.id));

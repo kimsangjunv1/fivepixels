@@ -7,7 +7,7 @@ export const TARGET_SELECTOR = "[data-report-id]";
 
 export const TARGET_COLOR: Record<ReportTargetType, string> = {
     group: "#0ed1b4",
-    item: "#0ed1b4",
+    item: "#f6572d",
 };
 
 export const TARGET_SURFACE: Record<ReportTargetType, string> = {

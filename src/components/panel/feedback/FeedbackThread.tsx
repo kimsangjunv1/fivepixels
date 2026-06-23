@@ -244,7 +244,9 @@ export function FeedbackThread({
     return (
         <div className="relative max-h-[512px]">
             {scrollOverflow.canScrollUp ? <p className={`${SCROLL_HINT_CLASS} top-0 bg-[linear-gradient(0deg,transparent,var(--adaptive-surface-overlay))]`}>{messages.thread.scrollHintUp}</p> : null}
-            {scrollOverflow.canScrollDown ? <p className={`${SCROLL_HINT_CLASS} bottom-0 bg-[linear-gradient(180deg,transparent,var(--adaptive-surface-overlay))]`}>{messages.thread.scrollHintDown}</p> : null}
+            {scrollOverflow.canScrollDown ? (
+                <p className={`${SCROLL_HINT_CLASS} bottom-0 bg-[linear-gradient(180deg,transparent,var(--adaptive-surface-overlay))]`}>{messages.thread.scrollHintDown}</p>
+            ) : null}
             <section
                 ref={scrollRef}
                 className="flex max-h-[512px] flex-col overflow-auto bg-transparent"
@@ -263,36 +265,37 @@ export function FeedbackThread({
                     }
 
                     return (
-                    <article
-                        key={reply.id}
-                        className="flex flex-col gap-[8px] border-t border-[var(--adaptive-border-subtle)] p-[16px]"
-                    >
-                        <div className="flex items-start justify-between gap-[8px]">
-                            <FeedbackStatusBadge status={reply.status} />
-                            <span className="text-[12px] text-[var(--adaptive-black500)]">{formatDate(reply.created_at, locale)}</span>
-                        </div>
-                        <p className="leading-[1.5] text-[14px] text-[var(--adaptive-text-primary)]">{reply.message}</p>
-                        {reply.author_name ? (
-                            <div className="flex items-center gap-[6px]">
-                                <p className="text-[12px] text-[var(--adaptive-black500)]">{reply.author_name}</p>
-                                {reply.author_name.trim() === originalAuthorName ? <FeedbackCreatorBadge /> : null}
+                        <article
+                            key={reply.id}
+                            className="flex flex-col gap-[8px] border-t border-[var(--adaptive-border-subtle)] p-[16px]"
+                        >
+                            <div className="flex items-start justify-between gap-[8px]">
+                                <FeedbackStatusBadge status={reply.status} />
+                                <span className="text-[12px] text-[var(--adaptive-black500)]">{formatDate(reply.created_at, locale)}</span>
                             </div>
-                        ) : null}
-                        <ThreadEntryActions
-                            reply={reply}
-                            report={report}
-                            authors={authors}
-                            pendingComposer={pendingComposer}
-                            confirmAuthorName={confirmAuthorName}
-                            showConfirmAuthorSelect={showConfirmAuthorSelect}
-                            onConfirmAuthorNameChange={onConfirmAuthorNameChange}
-                            onToggleConfirmAuthorSelect={onToggleConfirmAuthorSelect}
-                            onStartDeny={onStartDeny}
-                            onStartCheckout={onStartCheckout}
-                            onConfirm={onConfirm}
-                            isUpdating={isUpdating}
-                        />
-                    </article>
+
+                            <p className="leading-[1.5] text-[14px] text-[var(--adaptive-text-primary)]">{reply.message}</p>
+                            {reply.author_name ? (
+                                <div className="flex items-center gap-[6px]">
+                                    <p className="text-[12px] text-[var(--adaptive-black500)]">{reply.author_name}</p>
+                                    {reply.author_name.trim() === originalAuthorName ? <FeedbackCreatorBadge /> : null}
+                                </div>
+                            ) : null}
+                            <ThreadEntryActions
+                                reply={reply}
+                                report={report}
+                                authors={authors}
+                                pendingComposer={pendingComposer}
+                                confirmAuthorName={confirmAuthorName}
+                                showConfirmAuthorSelect={showConfirmAuthorSelect}
+                                onConfirmAuthorNameChange={onConfirmAuthorNameChange}
+                                onToggleConfirmAuthorSelect={onToggleConfirmAuthorSelect}
+                                onStartDeny={onStartDeny}
+                                onStartCheckout={onStartCheckout}
+                                onConfirm={onConfirm}
+                                isUpdating={isUpdating}
+                            />
+                        </article>
                     );
                 })}
             </section>

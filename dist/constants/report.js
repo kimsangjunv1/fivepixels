@@ -4,7 +4,7 @@ export const DOT_SIZE = 14;
 export const TARGET_SELECTOR = "[data-report-id]";
 export const TARGET_COLOR = {
     group: "#0ed1b4",
-    item: "#0ed1b4",
+    item: "#f6572d",
 };
 export const TARGET_SURFACE = {
     group: "#0ed1b41c",
