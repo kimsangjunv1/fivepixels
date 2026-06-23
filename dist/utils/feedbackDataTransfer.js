@@ -82,13 +82,13 @@ export function createFeedbackBackupFilename(projectId, environment, appVersion)
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
     const envSuffix = environment ? `-${environment}` : "";
     const versionSuffix = appVersion ? `-${appVersion}` : "";
-    return `stitchable-feedback-backup-${projectId}${envSuffix}${versionSuffix}-${timestamp}.json`;
+    return `fivepixels-feedback-backup-${projectId}${envSuffix}${versionSuffix}-${timestamp}.json`;
 }
 function isAbortError(error) {
     return error instanceof DOMException && error.name === "AbortError";
 }
-const SHADOW_HOST_ID = "stitchable-root";
-const SHADOW_MOUNT_ATTR = "data-stitchable-mount";
+const SHADOW_HOST_ID = "fivepixels-root";
+const SHADOW_MOUNT_ATTR = "data-fivepixels-mount";
 function getShadowDomMount() {
     const host = document.getElementById(SHADOW_HOST_ID);
     const mount = host?.shadowRoot?.querySelector(`[${SHADOW_MOUNT_ATTR}]`);

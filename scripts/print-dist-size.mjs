@@ -34,7 +34,7 @@ files.sort((a, b) => b.size - a.size);
 
 let total = 0;
 
-console.log("stitchable dist/*.js sizes (bytes, unminified):");
+console.log("fivepixels dist/*.js sizes (bytes, unminified):");
 for (const file of files) {
     total += file.size;
     console.log(`  ${String(file.size).padStart(6)}  ${file.path}`);

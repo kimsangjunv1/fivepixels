@@ -97,6 +97,7 @@ export const en: ReportMessages = {
         today: "Today",
     },
     moreMenu: {
+        settings: "Settings",
         import: "Import",
         export: "Export",
         keyCopy: "Back up private key",

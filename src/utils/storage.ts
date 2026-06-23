@@ -48,7 +48,7 @@ export function resolveStorageAdapter({
 
     if (hasPartialCustom && !hasCustomPersistenceHandlers({ onList, onCreate, onUpdate })) {
         console.warn(
-            "[stitchable] Custom persistence requires onList, onCreate, and onUpdate together. Falling back to localStorage.",
+            "[fivepixels] Custom persistence requires onList, onCreate, and onUpdate together. Falling back to localStorage.",
         );
     }
 

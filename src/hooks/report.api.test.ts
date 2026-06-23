@@ -1,5 +1,6 @@
 import { describe, expect, it, beforeEach } from "vitest";
-import { ko, setActiveReportMessages } from "@/i18n/index.js";
+import { ko } from "@/i18n/ko.js";
+import { setActiveReportMessages } from "@/i18n/index.js";
 import type { ReportStorageAdapter } from "@/types/report.js";
 import { deleteReport } from "./report.api.js";
 

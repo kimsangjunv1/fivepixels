@@ -7,9 +7,9 @@ import { formatFeedbackAsGitHubIssueBody } from "../../src/utils/formatGitHubIss
 
 const reportStylesheetDev = new URL("../../src/styles/reportStylesheet.dev.ts", import.meta.url).pathname;
 
-function stitchableDevReportStylesheet(): Plugin {
+function fivepixelsDevReportStylesheet(): Plugin {
     return {
-        name: "stitchable-dev-report-stylesheet",
+        name: "fivepixels-dev-report-stylesheet",
         enforce: "pre",
         resolveId(source, importer) {
             if (!source.endsWith("styles/reportStylesheet.js") || !importer?.includes("ShadowReportRoot")) {
@@ -62,7 +62,7 @@ async function handleGitHubIssueCreate(request: IncomingMessage, response: Serve
 
         const issueNumber = Math.floor(1000 + Math.random() * 9000);
         const owner = process.env.GITHUB_OWNER ?? "kimsangjunv1";
-        const repo = process.env.GITHUB_REPO ?? "stitchable";
+        const repo = process.env.GITHUB_REPO ?? "fivepixels";
         const issueUrl = `https://github.com/${owner}/${repo}/issues/${issueNumber}`;
         const markdownBody = formatFeedbackAsGitHubIssueBody(feedback);
 
@@ -83,9 +83,9 @@ async function handleGitHubIssueCreate(request: IncomingMessage, response: Serve
     }
 }
 
-function stitchableGitHubIssuesProxy(): Plugin {
+function fivepixelsGitHubIssuesProxy(): Plugin {
     return {
-        name: "stitchable-github-issues-proxy",
+        name: "fivepixels-github-issues-proxy",
         configureServer(server) {
             server.middlewares.use("/api/github/issues", (request, response, next) => {
                 if (request.method !== "POST") {
@@ -102,7 +102,7 @@ function stitchableGitHubIssuesProxy(): Plugin {
 }
 
 export default defineConfig({
-    plugins: [react(), stitchableDevReportStylesheet(), stitchableGitHubIssuesProxy()],
+    plugins: [react(), fivepixelsDevReportStylesheet(), fivepixelsGitHubIssuesProxy()],
     css: {
         postcss: new URL("../../postcss.config.js", import.meta.url).pathname,
     },
@@ -114,7 +114,7 @@ export default defineConfig({
     resolve: {
         alias: {
             "@": new URL("../../src", import.meta.url).pathname,
-            stitchable: new URL("../../src/index.ts", import.meta.url).pathname,
+            "@fivepixels-js/react": new URL("../../src/index.ts", import.meta.url).pathname,
         },
     },
 });

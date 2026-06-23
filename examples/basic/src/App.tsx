@@ -1,5 +1,5 @@
-import { BrowserRouter } from "react-router-dom";
-import { Report, type ReportFeedback } from "stitchable";
+import { BrowserRouter, useNavigate } from "react-router-dom";
+import { FivePixels, type ReportFeedback } from "@fivepixels-js/react";
 
 import { AppRouter } from "./app/router";
 
@@ -23,12 +23,14 @@ async function createGitHubIssue(feedback: ReportFeedback) {
     }>;
 }
 
-export function App() {
+function AppContent() {
+    const navigate = useNavigate();
+
     return (
         <>
-            <Report
+            <FivePixels
                 project={{
-                    id: "stitchable-basic-example",
+                    id: "fivepixels-basic-example",
                     env: "STAGED",
                     version: "1.0.0",
                 }}
@@ -40,7 +42,6 @@ export function App() {
                 }}
                 visibility={{
                     devOnly: true,
-                    routeKey: "/examples/basic",
                 }}
                 team={{
                     user: { id: "demo-user", name: "김아영 주임" },
@@ -54,6 +55,9 @@ export function App() {
                     enabled: true,
                     modes: ["on-create", "from-list"],
                     onCreate: createGitHubIssue,
+                }}
+                onNavigate={(pathname) => {
+                    navigate(pathname);
                 }}
                 onEvent={(event) => {
                     if (event.type === "feedback:create") {
@@ -70,9 +74,15 @@ export function App() {
                     { key: "isImportant", type: "checkbox", label: "important" },
                 ]}
             />
-            <BrowserRouter>
-                <AppRouter />
-            </BrowserRouter>
+            <AppRouter />
         </>
+    );
+}
+
+export function App() {
+    return (
+        <BrowserRouter>
+            <AppContent />
+        </BrowserRouter>
     );
 }

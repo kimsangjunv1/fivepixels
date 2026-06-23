@@ -1,7 +1,7 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useState } from "react";
 import { useReport } from "../../../providers/reportContext.js";
-import { ChevronDownIcon } from "../../../components/icons/ChevronDownIcon.js";
+import { ChevronDownIcon } from "../../../components/icons/Icons.js";
 import { PanelDropdownMenu, PanelDropdownMenuItem } from "../../../components/panel/PanelDropdownMenu.js";
 export function AuthorSelector({ authors, value, onChange }) {
     const { messages } = useReport();

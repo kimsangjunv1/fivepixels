@@ -16,4 +16,12 @@ export const FEEDBACK_STATUS_COLOR = {
     recheck_requested: "var(--adaptive-orange500)",
     resolved: "var(--adaptive-green500)",
 };
+export const FEEDBACK_DISPLAY_STATUS_ORDER = [
+    "wait_for_reply",
+    "suggested",
+    "found_error",
+    "recheck_requested",
+    "git_issued",
+    "resolved",
+];
 //# sourceMappingURL=feedbackStatus.js.map

@@ -1,9 +1,9 @@
 import { useLayoutEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { REPORT_STYLESHEET } from "../../styles/reportStylesheet.js";
-const HOST_ID = "stitchable-root";
-const STYLE_ELEMENT_ID = "stitchable-report-styles";
-const MOUNT_ATTR = "data-stitchable-mount";
+import { ensureReportTooltipLayer } from "../../utils/dom.js";
+const HOST_ID = "fivepixels-root";
+const STYLE_ELEMENT_ID = "fivepixels-report-styles";
+const MOUNT_ATTR = "data-fivepixels-mount";
 function getOrCreateShadowHost() {
     let host = document.getElementById(HOST_ID);
     if (!host) {
@@ -17,7 +17,6 @@ function getOrCreateShadowHost() {
         shadowRoot = host.attachShadow({ mode: "open" });
         const style = document.createElement("style");
         style.id = STYLE_ELEMENT_ID;
-        style.textContent = REPORT_STYLESHEET;
         shadowRoot.append(style);
         const mount = document.createElement("div");
         mount.setAttribute(MOUNT_ATTR, "");
@@ -26,7 +25,7 @@ function getOrCreateShadowHost() {
     }
     const mount = shadowRoot.querySelector(`[${MOUNT_ATTR}]`);
     if (!mount) {
-        throw new Error("Stitchable shadow mount element is missing.");
+        throw new Error("Fivepixels shadow mount element is missing.");
     }
     return { mount, shadowRoot };
 }
@@ -52,10 +51,18 @@ hot?.accept("../../styles/reportStylesheet.js", (module) => {
 export function ShadowReportRoot({ appearance, children }) {
     const [mount, setMount] = useState(null);
     useLayoutEffect(() => {
+        let cancelled = false;
         const host = getOrCreateShadowHost();
-        applyReportStyles(host.shadowRoot, REPORT_STYLESHEET);
+        ensureReportTooltipLayer();
         setMount(host.mount);
+        void import("../../styles/reportStylesheet.js").then((module) => {
+            if (cancelled) {
+                return;
+            }
+            applyReportStyles(host.shadowRoot, module.REPORT_STYLESHEET);
+        });
         return () => {
+            cancelled = true;
             setMount(null);
         };
     }, []);
@@ -63,7 +70,7 @@ export function ShadowReportRoot({ appearance, children }) {
         if (!mount) {
             return;
         }
-        mount.setAttribute("data-stitchable-theme", appearance);
+        mount.setAttribute("data-fivepixels-theme", appearance);
     }, [appearance, mount]);
     if (!mount) {
         return null;

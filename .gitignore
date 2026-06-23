@@ -2,5 +2,7 @@
 node_modules/
 examples/basic/dist/
 
+docs/
+
 .env
 src/components/report/reportStylesheet.ts

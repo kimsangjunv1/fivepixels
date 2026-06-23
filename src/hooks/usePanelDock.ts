@@ -14,8 +14,8 @@ type LegacyPanelPlacement = {
     offset: number;
 };
 
-const STORAGE_KEY = "stitchable:panel-placement";
-const LEGACY_STORAGE_KEY = "stitchable:panel-dock-position";
+const STORAGE_KEY = "fivepixels:panel-placement";
+const LEGACY_STORAGE_KEY = "fivepixels:panel-dock-position";
 const EDGE_MARGIN = 16;
 const DEFAULT_PLACEMENT: PanelPlacement = { corner: "top-left" };
 
@@ -173,6 +173,38 @@ export function placementToPanelStyle(placement: PanelPlacement): CSSProperties 
             style.bottom = EDGE_MARGIN;
             style.right = EDGE_MARGIN;
             style.maxHeight = "min(68vh, 560px)";
+            break;
+    }
+
+    return style;
+}
+
+export function placementToCollapsedPanelStyle(placement: PanelPlacement): CSSProperties {
+    const style: CSSProperties = {
+        top: "auto",
+        right: "auto",
+        bottom: "auto",
+        left: "auto",
+        maxHeight: "none",
+        maxWidth: "none",
+    };
+
+    switch (placement.corner) {
+        case "top-left":
+            style.top = EDGE_MARGIN;
+            style.left = 0;
+            break;
+        case "top-right":
+            style.top = EDGE_MARGIN;
+            style.right = 0;
+            break;
+        case "bottom-left":
+            style.bottom = EDGE_MARGIN;
+            style.left = 0;
+            break;
+        case "bottom-right":
+            style.bottom = EDGE_MARGIN;
+            style.right = 0;
             break;
     }
 

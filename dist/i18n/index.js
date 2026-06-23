@@ -1,9 +1,6 @@
 import { en } from "./en.js";
-import { ko } from "./ko.js";
-const MESSAGES_BY_LOCALE = {
-    en,
-    ko,
-};
+let koMessages = null;
+let koMessagesPromise = null;
 let activeMessages = en;
 export function resolveReportLocale(locale) {
     if (locale) {
@@ -42,8 +39,26 @@ function mergeMessages(base, override) {
     }
     return next;
 }
+function getLocaleMessages(locale) {
+    if (locale === "ko") {
+        return koMessages ?? en;
+    }
+    return en;
+}
+export async function ensureReportLocaleMessages(locale) {
+    if (locale !== "ko" || koMessages) {
+        return;
+    }
+    if (!koMessagesPromise) {
+        koMessagesPromise = import("./ko.js").then((module) => {
+            koMessages = module.ko;
+            return koMessages;
+        });
+    }
+    await koMessagesPromise;
+}
 export function getReportMessages(locale, overrides) {
-    return mergeMessages(MESSAGES_BY_LOCALE[locale], overrides);
+    return mergeMessages(getLocaleMessages(locale), overrides);
 }
 export function setActiveReportMessages(messages) {
     activeMessages = messages;
@@ -59,5 +74,4 @@ export function getDefaultFields(messages) {
     ];
 }
 export { en } from "./en.js";
-export { ko } from "./ko.js";
 //# sourceMappingURL=index.js.map

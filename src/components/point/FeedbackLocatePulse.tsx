@@ -1,17 +1,9 @@
 import { useEffect, useState } from "react";
 import { DOT_SIZE } from "@/constants/report.js";
-import { motion, type MotionTransition } from "@/components/motion/index.js";
 import { LOCATE_PULSE_DURATION_MS } from "@/utils/locateFeedback.js";
 
-export const LOCATE_PULSE_TRANSITION: MotionTransition = {
-    duration: 0.65,
-    ease: "cubic-bezier(0.22, 1, 0.36, 1)",
-};
-
-export const LOCATE_PULSE_RIPPLE_TRANSITION: MotionTransition = {
-    duration: 0.8,
-    ease: "cubic-bezier(0.22, 1, 0.36, 1)",
-};
+export const LOCATE_PULSE_TRANSITION_MS = 650;
+export const LOCATE_PULSE_RIPPLE_TRANSITION_MS = 800;
 
 const PULSE_TICK_MS = 650;
 
@@ -56,9 +48,9 @@ export function MarkerLocatePulse({ left, top, tick, accentColor }: MarkerLocate
 
     return (
         <>
-            <motion.div
+            <div
                 aria-hidden
-                className="pointer-events-none fixed z-[999998] rounded-full"
+                className={`fivepixels-locate-pulse-ring pointer-events-none fixed z-[999998] rounded-full ${isPeak ? "fivepixels-locate-pulse-ring--peak" : "fivepixels-locate-pulse-ring--valley"}`}
                 style={{
                     left: centerX,
                     top: centerY,
@@ -70,13 +62,11 @@ export function MarkerLocatePulse({ left, top, tick, accentColor }: MarkerLocate
                     border: "2px solid rgba(56, 189, 248, 0.95)",
                     boxShadow: "0 0 28px rgba(56, 189, 248, 0.65)",
                 }}
-                animate={isPeak ? { scale: 1.85, opacity: 0 } : { scale: 1, opacity: 0.8 }}
-                transition={LOCATE_PULSE_RIPPLE_TRANSITION}
             />
 
-            <motion.div
+            <div
                 aria-hidden
-                className="pointer-events-none fixed z-[999999] rounded-full"
+                className={`fivepixels-locate-pulse-core pointer-events-none fixed z-[999999] rounded-full ${isPeak ? "fivepixels-locate-pulse-core--peak" : "fivepixels-locate-pulse-core--valley"}`}
                 style={{
                     left: centerX,
                     top: centerY,
@@ -88,8 +78,6 @@ export function MarkerLocatePulse({ left, top, tick, accentColor }: MarkerLocate
                     border: `3px solid ${accentColor}`,
                     boxShadow: `0 0 20px ${accentColor}, 0 0 36px rgba(56, 189, 248, 0.55)`,
                 }}
-                animate={isPeak ? { scale: 1.45, opacity: 1 } : { scale: 0.9, opacity: 0.4 }}
-                transition={LOCATE_PULSE_TRANSITION}
             />
         </>
     );
@@ -107,9 +95,9 @@ export function TargetLocatePulse({ rect, tick, outlineColor, surfaceColor }: Ta
 
     return (
         <>
-            <motion.div
+            <div
                 aria-hidden
-                className="pointer-events-none fixed rounded-[6px]"
+                className={`fivepixels-locate-pulse-target-outline pointer-events-none fixed rounded-[6px] ${isPeak ? "fivepixels-locate-pulse-target-outline--peak" : "fivepixels-locate-pulse-target-outline--valley"}`}
                 style={{
                     left: rect.left - 8,
                     top: rect.top - 8,
@@ -119,13 +107,11 @@ export function TargetLocatePulse({ rect, tick, outlineColor, surfaceColor }: Ta
                     border: "2px solid rgba(56, 189, 248, 0.9)",
                     boxShadow: "0 0 32px rgba(56, 189, 248, 0.45)",
                 }}
-                animate={isPeak ? { scale: 1.06, opacity: 1 } : { scale: 1, opacity: 0.35 }}
-                transition={LOCATE_PULSE_TRANSITION}
             />
 
-            <motion.div
+            <div
                 aria-hidden
-                className="pointer-events-none fixed rounded-[3px]"
+                className={`fivepixels-locate-pulse-target-surface pointer-events-none fixed rounded-[3px] ${isPeak ? "fivepixels-locate-pulse-target-surface--peak" : "fivepixels-locate-pulse-target-surface--valley"}`}
                 style={{
                     left: rect.left,
                     top: rect.top,
@@ -136,8 +122,6 @@ export function TargetLocatePulse({ rect, tick, outlineColor, surfaceColor }: Ta
                     backgroundColor: surfaceColor,
                     boxShadow: `0 0 0 2px rgba(56, 189, 248, 0.55), inset 0 0 24px rgba(56, 189, 248, 0.18)`,
                 }}
-                animate={isPeak ? { scale: 1.02, opacity: 1 } : { scale: 1, opacity: 0.55 }}
-                transition={LOCATE_PULSE_TRANSITION}
             />
         </>
     );

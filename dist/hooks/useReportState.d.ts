@@ -50,7 +50,7 @@ export declare function useReportState({ projectId, environment, appVersion, app
     routeDetailsStats: {
         pathname: string;
         statusRows: {
-            status: import("../utils/routeDetailStatus.js").RouteDetailStatus;
+            status: import("../constants/feedbackStatus.js").FeedbackDisplayStatus;
             all: number;
             today: number;
         }[];
@@ -109,7 +109,6 @@ export declare function useReportState({ projectId, environment, appVersion, app
     selectedTarget: TargetSnapshot | null;
     markers: Marker[];
     selectedReport: ReportFeedback;
-    locatedReportId: string | null;
     editingReportId: string | null;
     editableDraft: EditableDraft | null;
     setEditableDraft: import("react").Dispatch<import("react").SetStateAction<EditableDraft | null>>;

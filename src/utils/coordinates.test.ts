@@ -274,12 +274,49 @@ describe("getTooltipPosition", () => {
 
     it("clamps tooltip within the viewport", () => {
         vi.stubGlobal("innerWidth", 400);
+        vi.stubGlobal("innerHeight", 800);
 
         const position = getTooltipPosition({ left: 380, top: 200 }, false);
 
         expect(position.left).toBe(400 - 260 - 16);
-        expect(position.top).toBe(200 - 104);
+        expect(position.top).toBe(200 - DOT_SIZE / 2 - 16);
         expect(position.width).toBe(260);
+        expect(position.placement).toBe("above");
+    });
+
+    it("anchors expanded tooltip bottom above marker top", () => {
+        vi.stubGlobal("innerHeight", 800);
+
+        const position = getTooltipPosition({ left: 100, top: 200 }, true);
+
+        expect(position.top).toBe(200 - DOT_SIZE / 2 - 16);
+        expect(position.width).toBe(320);
+        expect(position.placement).toBe("above");
+    });
+
+    it("flips tooltip below marker when there is not enough space above", () => {
+        vi.stubGlobal("innerHeight", 800);
+
+        const position = getTooltipPosition({ left: 100, top: 10 }, false, { height: 140 });
+
+        expect(position.placement).toBe("below");
+        expect(position.top).toBe(10 + DOT_SIZE / 2 + 16);
+    });
+
+    it("keeps unmeasured tooltips above unless the marker hugs the top edge", () => {
+        vi.stubGlobal("innerHeight", 800);
+
+        expect(getTooltipPosition({ left: 100, top: 200 }, true).placement).toBe("above");
+        expect(getTooltipPosition({ left: 100, top: 10 }, true).placement).toBe("below");
+    });
+
+    it("clamps above tooltip when it still overflows the top edge", () => {
+        vi.stubGlobal("innerHeight", 800);
+
+        const position = getTooltipPosition({ left: 100, top: 40 }, false, { height: 200, placement: "above" });
+
+        expect(position.placement).toBe("above");
+        expect(position.top).toBe(16 + 200);
     });
 });
 

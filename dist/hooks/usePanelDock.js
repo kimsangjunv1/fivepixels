@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-const STORAGE_KEY = "stitchable:panel-placement";
-const LEGACY_STORAGE_KEY = "stitchable:panel-dock-position";
+const STORAGE_KEY = "fivepixels:panel-placement";
+const LEGACY_STORAGE_KEY = "fivepixels:panel-dock-position";
 const EDGE_MARGIN = 16;
 const DEFAULT_PLACEMENT = { corner: "top-left" };
 const PANEL_CORNERS = ["top-left", "top-right", "bottom-left", "bottom-right"];
@@ -136,6 +136,35 @@ export function placementToPanelStyle(placement) {
             style.bottom = EDGE_MARGIN;
             style.right = EDGE_MARGIN;
             style.maxHeight = "min(68vh, 560px)";
+            break;
+    }
+    return style;
+}
+export function placementToCollapsedPanelStyle(placement) {
+    const style = {
+        top: "auto",
+        right: "auto",
+        bottom: "auto",
+        left: "auto",
+        maxHeight: "none",
+        maxWidth: "none",
+    };
+    switch (placement.corner) {
+        case "top-left":
+            style.top = EDGE_MARGIN;
+            style.left = 0;
+            break;
+        case "top-right":
+            style.top = EDGE_MARGIN;
+            style.right = 0;
+            break;
+        case "bottom-left":
+            style.bottom = EDGE_MARGIN;
+            style.left = 0;
+            break;
+        case "bottom-right":
+            style.bottom = EDGE_MARGIN;
+            style.right = 0;
             break;
     }
     return style;

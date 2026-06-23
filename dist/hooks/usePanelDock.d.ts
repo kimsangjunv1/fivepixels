@@ -10,6 +10,7 @@ export declare function getNearestPanelCorner(clientX: number, clientY: number):
 export declare function clampPanelPlacement(placement: PanelPlacement): PanelPlacement;
 export declare function projectPointerToPlacement(clientX: number, clientY: number): PanelPlacement;
 export declare function placementToPanelStyle(placement: PanelPlacement): CSSProperties;
+export declare function placementToCollapsedPanelStyle(placement: PanelPlacement): CSSProperties;
 export declare function getMobilePanelStyle(): CSSProperties;
 export declare function usePanelDock({ enabled, measureKey }: {
     enabled: boolean;

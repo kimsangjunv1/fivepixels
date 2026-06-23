@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { getReportMessages, setActiveReportMessages } from "../i18n/index.js";
+import { ensureReportLocaleMessages, getReportMessages, setActiveReportMessages } from "../i18n/index.js";
 import { useReportShortcuts } from "./useReportShortcuts.js";
 import { useReportPersistence } from "./useReportPersistence.js";
 import { useIsMobileViewport } from "./useIsMobileViewport.js";
@@ -9,7 +9,7 @@ import { usePersonalKey } from "./usePersonalKey.js";
 import { useResolvedAppearance } from "./useResolvedAppearance.js";
 import { createReplyStatusForSubmit, resolveOriginalFeedbackAuthorName } from "../utils/feedbackThread.js";
 import { clampRatio, getMarkerFromReport, resolveTooltipAnchor } from "../utils/coordinates.js";
-import { LOCATE_PULSE_DURATION_MS, scrollToFeedbackTarget } from "../utils/locateFeedback.js";
+import { scrollToFeedbackTarget } from "../utils/locateFeedback.js";
 const MARKER_HOVER_LEAVE_MS = 250;
 const OVERLAY_HOVER_LEAVE_MS = 100;
 import { findTargetByPoint, getSelectableTargets, isSameHoverTarget, toSnapshot } from "../utils/dom.js";
@@ -26,7 +26,24 @@ function resolveDefaultAuthorName(identify, authors) {
 export function useReportState({ projectId, environment, appVersion, appearance, fields, authors = [], requireReviewerKey = false, shortcut: _shortcut, identify, onList, onListAll, onNavigate, onCreate, onUpdate, onDelete, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys = false, initialLocale, messageOverrides, }) {
     const { appearance: activeAppearance, setAppearance } = useAppearancePreference(appearance);
     const { locale, setLocale } = useLocalePreference(initialLocale);
-    const messages = useMemo(() => getReportMessages(locale, messageOverrides), [locale, messageOverrides]);
+    const [localeMessagesReady, setLocaleMessagesReady] = useState(locale !== "ko");
+    const messages = useMemo(() => getReportMessages(locale, messageOverrides), [locale, localeMessagesReady, messageOverrides]);
+    useEffect(() => {
+        if (locale !== "ko") {
+            setLocaleMessagesReady(true);
+            return;
+        }
+        let cancelled = false;
+        setLocaleMessagesReady(false);
+        void ensureReportLocaleMessages("ko").then(() => {
+            if (!cancelled) {
+                setLocaleMessagesReady(true);
+            }
+        });
+        return () => {
+            cancelled = true;
+        };
+    }, [locale]);
     useEffect(() => {
         setActiveReportMessages(messages);
     }, [messages]);
@@ -89,8 +106,6 @@ export function useReportState({ projectId, environment, appVersion, appearance,
     const [pendingComposer, setPendingComposer] = useState(null);
     const [confirmAuthorName, setConfirmAuthorName] = useState("");
     const [showConfirmAuthorSelect, setShowConfirmAuthorSelect] = useState(false);
-    const [locatedReportId, setLocatedReportId] = useState(null);
-    const locatePulseTimeoutRef = useRef(null);
     const pendingLocateReportIdRef = useRef(null);
     const [editingReportId, setEditingReportId] = useState(null);
     const [editableDraft, setEditableDraft] = useState(null);
@@ -287,17 +302,18 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             stopEditing();
         }
     };
-    const showLocatedFeedback = useCallback((report) => {
+    const closeReplyComposer = () => {
+        setActiveReplyReportId(null);
+        setReplyDraft("");
+        setPendingComposer(null);
+        setShowConfirmAuthorSelect(false);
+    };
+    const showFeedbackTooltip = useCallback((report) => {
         scrollToFeedbackTarget(report);
-        setLocatedReportId(report.id);
-        if (locatePulseTimeoutRef.current !== null) {
-            window.clearTimeout(locatePulseTimeoutRef.current);
-        }
-        locatePulseTimeoutRef.current = window.setTimeout(() => {
-            setLocatedReportId(null);
-            locatePulseTimeoutRef.current = null;
-        }, LOCATE_PULSE_DURATION_MS);
-    }, []);
+        clearHoverLeaveTimeout();
+        closeReplyComposer();
+        setHoveredMarkerId(report.id);
+    }, [clearHoverLeaveTimeout]);
     const locateFeedback = async (reportId) => {
         const report = filteredReports.find((item) => item.id === reportId);
         if (!report) {
@@ -320,7 +336,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             }
             return;
         }
-        showLocatedFeedback(report);
+        showFeedbackTooltip(report);
     };
     useEffect(() => {
         const pendingReportId = pendingLocateReportIdRef.current;
@@ -332,8 +348,8 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             return;
         }
         pendingLocateReportIdRef.current = null;
-        window.setTimeout(() => showLocatedFeedback(report), 0);
-    }, [currentPathname, reports, showLocatedFeedback]);
+        window.setTimeout(() => showFeedbackTooltip(report), 0);
+    }, [currentPathname, reports, showFeedbackTooltip]);
     const focusSearchInput = () => {
         searchInputRef.current?.focus();
         searchInputRef.current?.select();
@@ -361,12 +377,6 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         setConfirmAuthorName(resolveOriginalFeedbackAuthorName(report));
         setShowConfirmAuthorSelect(false);
         clearHoverLeaveTimeout();
-    };
-    const closeReplyComposer = () => {
-        setActiveReplyReportId(null);
-        setReplyDraft("");
-        setPendingComposer(null);
-        setShowConfirmAuthorSelect(false);
     };
     const toggleConfirmAuthorSelect = () => {
         setShowConfirmAuthorSelect((current) => !current);
@@ -757,13 +767,6 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             setErrorMessage(nextError instanceof Error ? nextError.message : messages.errors.deleteFeedbackFailed);
         }
     };
-    useEffect(() => {
-        return () => {
-            if (locatePulseTimeoutRef.current !== null) {
-                window.clearTimeout(locatePulseTimeoutRef.current);
-            }
-        };
-    }, []);
     useReportShortcuts({
         mode,
         draft,
@@ -839,7 +842,6 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         selectedTarget,
         markers,
         selectedReport,
-        locatedReportId,
         editingReportId,
         editableDraft,
         setEditableDraft,

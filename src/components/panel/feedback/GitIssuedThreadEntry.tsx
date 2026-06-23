@@ -4,9 +4,8 @@ import { useReport } from "@/providers/reportContext.js";
 import { formatDate } from "@/utils/format.js";
 import { copyTextToClipboard } from "@/utils/feedbackDataTransfer.js";
 import { FeedbackStatusBadge } from "./FeedbackStatusBadge.js";
-// import { CopyIcon } from "@/components/icons/CopyIcon.js";
-import { LinkIcon } from "@/components/icons/LinkIcon.js";
-import { ArrowTRIcon } from "@/components/icons/ArrowTRIcon.js";
+// import { CopyIcon } from "@/components/icons/Icons.js";
+import { LinkIcon, ArrowTRIcon } from "@/components/icons/Icons.js";
 
 type GitIssuedThreadEntryProps = {
     reply: ReportReply;
@@ -44,7 +43,7 @@ export function GitIssuedThreadEntry({ reply, issueUrl }: GitIssuedThreadEntryPr
                     href={issueUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    data-stitchable-interactive=""
+                    data-fivepixels-interactive=""
                     onClick={(event) => event.stopPropagation()}
                     className="flex items-center justify-center gap-[4px] rounded-full border border-[var(--adaptive-border-subtle)] px-[10px] py-[4px] text-[12px] font-semibold text-[var(--adaptive-text-muted)] hover:bg-[var(--adaptive-surface-muted)]"
                 >
@@ -54,7 +53,7 @@ export function GitIssuedThreadEntry({ reply, issueUrl }: GitIssuedThreadEntryPr
 
                 <button
                     type="button"
-                    data-stitchable-interactive=""
+                    data-fivepixels-interactive=""
                     onClick={handleCopy}
                     aria-label={messages.resolution.gitIssuedCopyLinkAriaLabel}
                     title={copied ? messages.resolution.gitIssuedCopiedTitle : messages.resolution.gitIssuedCopyLinkTitle}

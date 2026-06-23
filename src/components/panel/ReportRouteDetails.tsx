@@ -1,24 +1,8 @@
 import { useReport } from "@/providers/reportContext.js";
 import { formatStatCount } from "@/utils/formatStatCount.js";
 import { panelNumericClassName } from "@/utils/panelTypography.js";
-import type { RouteDetailStatus } from "@/utils/routeDetailStatus.js";
-import { ChevronDownIcon } from "@/components/icons/ChevronDownIcon.js";
-
-function StatusRowIcon({ status }: { status: RouteDetailStatus }) {
-    if (status === "wait") {
-        return <span aria-hidden>⚑</span>;
-    }
-
-    if (status === "suggested") {
-        return <span aria-hidden>↻</span>;
-    }
-
-    if (status === "git_issued") {
-        return <span aria-hidden>＋</span>;
-    }
-
-    return <span aria-hidden>✓</span>;
-}
+import { ChevronDownIcon } from "@/components/icons/Icons.js";
+import { FeedbackStatusBadge } from "./feedback/FeedbackStatusBadge.js";
 
 export function ReportRouteDetails() {
     const { routeDetailsStats, projectId, environment, appVersion, messages } = useReport();
@@ -49,9 +33,8 @@ export function ReportRouteDetails() {
                             className="flex flex-col"
                         >
                             <section className="flex items-center gap-x-[8px] py-[8px]">
-                                <div className="flex-1 flex items-center gap-[6px]">
-                                    <StatusRowIcon status={row.status} />
-                                    <p className="text-[var(--adaptive-black500)] font-[500]">{messages.status.routeDetail[row.status]}</p>
+                                <div className="flex-1">
+                                    <FeedbackStatusBadge status={row.status} />
                                 </div>
 
                                 <div className="flex-1 flex">

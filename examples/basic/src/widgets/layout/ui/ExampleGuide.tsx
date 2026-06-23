@@ -26,7 +26,7 @@ const guideByPath: Record<string, { title: string; steps: string[]; note: string
             "연락 채널 카드와 FAQ 항목에도 피드백을 남겨보세요.",
             "헤더 네비게이션 item target과 함께 라우트 간 복원을 테스트합니다.",
         ],
-        note: "실제 전송은 되지 않으며 stitchable 동작 확인용 UI입니다.",
+        note: "실제 전송은 되지 않으며 fivepixels 동작 확인용 UI입니다.",
     },
 };
 
@@ -36,7 +36,7 @@ export function ExampleGuide() {
 
     return (
         <aside className="example-panel" data-report-id="example-guide" data-report-type="group">
-            <p className="example-eyebrow">stitchable example</p>
+            <p className="example-eyebrow">fivepixels example</p>
             <h1 className="example-title">{guide.title}</h1>
             <ol className="example-steps">
                 {guide.steps.map((step) => (

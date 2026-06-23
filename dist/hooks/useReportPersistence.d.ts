@@ -31,7 +31,7 @@ export declare function useReportPersistence({ projectId, environment, appVersio
     routeDetailsStats: {
         pathname: string;
         statusRows: {
-            status: import("../utils/routeDetailStatus.js").RouteDetailStatus;
+            status: import("../constants/feedbackStatus.js").FeedbackDisplayStatus;
             all: number;
             today: number;
         }[];

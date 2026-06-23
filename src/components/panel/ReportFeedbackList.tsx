@@ -3,13 +3,13 @@ import { REPORT_SHORTCUTS } from "@/constants/reportShortcuts.js";
 import { useReport } from "@/providers/reportContext.js";
 import { formatDateOnly, formatTimeOnly } from "@/utils/format.js";
 import { getFieldTags } from "@/utils/fields.js";
-import { getRouteDetailStatus, type RouteDetailStatus } from "@/utils/routeDetailStatus.js";
+import { type RouteDetailStatus } from "@/utils/routeDetailStatus.js";
+import { getFeedbackDisplayStatus } from "@/utils/feedbackThread.js";
 import { ShortcutHint } from "@/components/ShortcutHint.js";
+import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
 import { FeedbackFieldTags } from "./feedback/FeedbackFieldTags.js";
-import { SearchIcon } from "@/components/icons/SearchIcon.js";
-import { CopyIcon } from "@/components/icons/CopyIcon.js";
-import { TrashIcon } from "@/components/icons/TrashIcon.js";
-import { ChevronDownIcon } from "@/components/icons/ChevronDownIcon.js";
+import { FeedbackStatusBadge } from "./feedback/FeedbackStatusBadge.js";
+import { SearchIcon, CopyIcon, TrashIcon, ChevronDownIcon } from "@/components/icons/Icons.js";
 import { copyTextToClipboard, serializeFeedbackItem } from "@/utils/feedbackDataTransfer.js";
 import type { ReportFeedback } from "@/types/report.js";
 import type { ReportMessages } from "@/i18n/types.js";
@@ -54,33 +54,7 @@ function groupReportsByDate(reports: ReportFeedback[], locale: ReportLocale) {
     return groups;
 }
 
-function getRouteStatusTone(status: RouteDetailStatus) {
-    if (status === "resolved") {
-        return { backgroundColor: "#e8f5e9", color: "#2e7d32" };
-    }
-
-    if (status === "git_issued") {
-        return { backgroundColor: "#eff6ff", color: "#1d4ed8" };
-    }
-
-    if (status === "suggested") {
-        return { backgroundColor: "#eff6ff", color: "#1d4ed8" };
-    }
-
-    return { backgroundColor: "#fff7ed", color: "#c2410c" };
-}
-
-function FeedbackListDeleteButton({
-    report,
-    onDelete,
-    disabled = false,
-    messages,
-}: {
-    report: ReportFeedback;
-    onDelete: (id: string) => Promise<void>;
-    disabled?: boolean;
-    messages: ReportMessages;
-}) {
+function FeedbackListDeleteButton({ report, onDelete, disabled = false, messages }: { report: ReportFeedback; onDelete: (id: string) => Promise<void>; disabled?: boolean; messages: ReportMessages }) {
     const [confirming, setConfirming] = useState(false);
 
     useEffect(() => {
@@ -109,20 +83,21 @@ function FeedbackListDeleteButton({
     };
 
     return (
-        <button
-            type="button"
-            data-stitchable-interactive=""
-            onClick={handleDelete}
-            disabled={disabled}
-            aria-label={confirming ? messages.feedbackList.deleteConfirmAriaLabel : messages.feedbackList.deleteAriaLabel}
-            title={confirming ? messages.feedbackList.deleteConfirmTitle : messages.feedbackList.deleteTitle}
-            className={`flex shrink-0 items-center justify-center gap-[2px] self-start rounded-[6px] p-[6px] disabled:opacity-50 ${
-                confirming ? "text-rose-700 hover:bg-rose-50" : "text-[var(--adaptive-black500)] hover:bg-[var(--adaptive-black100)] hover:text-rose-700"
-            }`}
-        >
-            <TrashIcon className="h-[16px] w-[16px]" />
-            {confirming ? <span className="text-[10px] font-semibold">{messages.feedbackList.deleteConfirmLabel}</span> : null}
-        </button>
+        <HoverTooltip label={confirming ? messages.feedbackList.deleteConfirmTitle : messages.feedbackList.deleteTitle}>
+            <button
+                type="button"
+                data-fivepixels-interactive=""
+                onClick={handleDelete}
+                disabled={disabled}
+                aria-label={confirming ? messages.feedbackList.deleteConfirmAriaLabel : messages.feedbackList.deleteAriaLabel}
+                className={`flex shrink-0 items-center justify-center gap-[2px] self-start rounded-[6px] p-[6px] disabled:opacity-50 ${
+                    confirming ? "text-rose-700 hover:bg-rose-50" : "text-[var(--adaptive-black500)] hover:bg-[var(--adaptive-black100)] hover:text-rose-700"
+                }`}
+            >
+                <TrashIcon className="h-[16px] w-[16px]" />
+                {confirming ? <span className="text-[10px] font-semibold">{messages.feedbackList.deleteConfirmLabel}</span> : null}
+            </button>
+        </HoverTooltip>
     );
 }
 
@@ -143,16 +118,17 @@ function FeedbackListCopyButton({ report, messages }: { report: ReportFeedback; 
     };
 
     return (
-        <button
-            type="button"
-            data-stitchable-interactive=""
-            onClick={handleCopy}
-            aria-label={messages.feedbackList.copyAriaLabel}
-            title={copied ? messages.feedbackList.copiedTitle : messages.feedbackList.copyTitle}
-            className="flex shrink-0 items-center justify-center self-start rounded-[6px] p-[6px] text-[var(--adaptive-black500)] hover:bg-[var(--adaptive-black100)] hover:text-[var(--adaptive-black800)]"
-        >
-            {copied ? <span className="text-[10px] font-semibold text-[var(--adaptive-blue500)]">{messages.common.ok}</span> : <CopyIcon className="h-[16px] w-[16px]" />}
-        </button>
+        <HoverTooltip label={copied ? messages.feedbackList.copiedTitle : messages.feedbackList.copyTitle}>
+            <button
+                type="button"
+                data-fivepixels-interactive=""
+                onClick={handleCopy}
+                aria-label={messages.feedbackList.copyAriaLabel}
+                className="flex shrink-0 items-center justify-center self-start rounded-[6px] p-[6px] text-[var(--adaptive-black500)] hover:bg-[var(--adaptive-black100)] hover:text-[var(--adaptive-black800)]"
+            >
+                {copied ? <span className="text-[10px] font-semibold text-[var(--adaptive-blue500)]">{messages.common.ok}</span> : <CopyIcon className="h-[16px] w-[16px]" />}
+            </button>
+        </HoverTooltip>
     );
 }
 
@@ -192,7 +168,8 @@ export function ReportFeedbackList() {
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
     const statusLabel = filters.status === "all" ? messages.feedbackList.filterStatusAll : messages.status.routeDetail[filters.status];
-    const reportTypeLabel = filters.reportType === "all" ? messages.feedbackList.filterTypeAll : filters.reportType === "item" ? messages.feedbackList.reportTypeItem : messages.feedbackList.reportTypeGroup;
+    const reportTypeLabel =
+        filters.reportType === "all" ? messages.feedbackList.filterTypeAll : filters.reportType === "item" ? messages.feedbackList.reportTypeItem : messages.feedbackList.reportTypeGroup;
     const visibleReports = useMemo(() => filteredReports.slice(0, visibleCount), [filteredReports, visibleCount]);
     const groupedReports = useMemo(() => groupReportsByDate(visibleReports, locale), [locale, visibleReports]);
 
@@ -266,9 +243,7 @@ export function ReportFeedbackList() {
                             aria-pressed={listScope === scope}
                             onClick={() => setListScope(scope)}
                             className={`flex-1 rounded-[6px] px-[8px] py-[4px] text-[12px] font-[600] ${
-                                listScope === scope
-                                    ? "bg-[var(--adaptive-black200)] text-[var(--adaptive-black900)]"
-                                    : "text-[var(--adaptive-black500)] hover:bg-[var(--adaptive-black100)]"
+                                listScope === scope ? "bg-[var(--adaptive-black200)] text-[var(--adaptive-black900)]" : "text-[var(--adaptive-black500)] hover:bg-[var(--adaptive-black100)]"
                             }`}
                         >
                             {scope === "current" ? messages.feedbackList.scopeCurrentPage : messages.feedbackList.scopeAllPages}
@@ -425,7 +400,7 @@ export function ReportFeedbackList() {
                                     type="button"
                                     onClick={() => toggleGroup(dateKey)}
                                     aria-expanded={isExpanded}
-                                    className="sticky z-10 flex w-full items-center justify-between bg-[var(--adaptive-black200)] p-[4px_8px]"
+                                    className="sticky z-10 flex w-full items-center justify-between bg-[var(--adaptive-black100)] p-[4px_8px]"
                                 >
                                     <p className="text-[12px] font-[600] text-[var(--adaptive-black700)]">{label}</p>
 
@@ -434,7 +409,7 @@ export function ReportFeedbackList() {
 
                                 {isExpanded
                                     ? groupReports.map((report) => {
-                                          const routeStatus = getRouteDetailStatus(report);
+                                          const displayStatus = getFeedbackDisplayStatus(report, true);
                                           const fieldTags = getFieldTags(fields, report.field_values);
 
                                           return (
@@ -453,18 +428,11 @@ export function ReportFeedbackList() {
 
                                                               <FeedbackFieldTags tags={fieldTags} />
 
-                                                              <span
-                                                                  className="inline-flex items-center rounded-full px-[8px] py-[2px] text-[10px] font-bold uppercase"
-                                                                  style={getRouteStatusTone(routeStatus)}
-                                                              >
-                                                                  {messages.status.routeDetail[routeStatus]}
-                                                              </span>
+                                                              <FeedbackStatusBadge status={displayStatus} />
                                                           </div>
 
                                                           <p className="text-[var(--adaptive-black700)]">{report.message}</p>
-                                                          {listScope === "all" ? (
-                                                              <p className="truncate text-[11px] text-[var(--adaptive-black500)]">{report.pathname}</p>
-                                                          ) : null}
+                                                          {listScope === "all" ? <p className="truncate text-[11px] text-[var(--adaptive-black500)]">{report.pathname}</p> : null}
                                                       </section>
 
                                                       <p className="text-[var(--adaptive-black500)] text-[12px]">{formatTimeOnly(report.created_at, locale)}</p>

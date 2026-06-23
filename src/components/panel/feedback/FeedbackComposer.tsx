@@ -2,9 +2,9 @@ import type { ReportField, ReportFieldValues } from "@/types/report.js";
 import type { ReportAuthor } from "@/types/report.js";
 import { useEffect, useState } from "react";
 import { useReport } from "@/providers/reportContext.js";
-import { GitHubIssueIcon } from "@/components/icons/GitHubIssueIcon.js";
-import { SendIcon } from "@/components/icons/SendIcon.js";
+import { GitHubIssueIcon, SendIcon } from "@/components/icons/Icons.js";
 import { AuthorSelector } from "./AuthorSelector.js";
+import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
 import { FieldTagSelector } from "./FieldTagSelector.js";
 
 type FeedbackComposerProps = {
@@ -109,7 +109,7 @@ export function FeedbackComposer({
                     {showGitHubIssueOnCreate ? (
                         <button
                             type="button"
-                            data-stitchable-interactive=""
+                            data-fivepixels-interactive=""
                             disabled={isActionDisabled}
                             onClick={handleGitHubIssueSubmit}
                             className="inline-flex h-[24px] items-center justify-center gap-[4px] rounded-full border border-[var(--adaptive-border-subtle)] px-[12px] py-[4px] disabled:opacity-50"
@@ -125,16 +125,18 @@ export function FeedbackComposer({
                             </span>
                         </button>
                     ) : null}
-                    <button
-                        type="button"
-                        data-stitchable-interactive=""
-                        disabled={isActionDisabled}
-                        onClick={handleSubmit}
-                        className="inline-flex px-[12px] shrink-0 items-center justify-center rounded-full bg-[var(--adaptive-blue500)] text-[var(--adaptive-overlay-text)] disabled:opacity-50"
-                        aria-label={messages.composer.sendAriaLabel}
-                    >
-                        <SendIcon className="w-[16px]" />
-                    </button>
+                    <HoverTooltip label={messages.composer.sendAriaLabel}>
+                        <button
+                            type="button"
+                            data-fivepixels-interactive=""
+                            disabled={isActionDisabled}
+                            onClick={handleSubmit}
+                            className="inline-flex px-[12px] shrink-0 items-center justify-center rounded-full bg-[var(--adaptive-blue500)] text-[var(--adaptive-overlay-text)] disabled:opacity-50"
+                            aria-label={messages.composer.sendAriaLabel}
+                        >
+                            <SendIcon className="w-[16px]" />
+                        </button>
+                    </HoverTooltip>
                 </div>
             </div>
 

@@ -7,10 +7,26 @@ export declare function getDraftMarkerPosition(draft: Pick<DraftReport, "clientX
     top: number;
 };
 export declare function resolveTooltipAnchor(markers: Marker[], reportId: string | null): Marker | null;
-export declare function getTooltipPosition(anchor: Pick<Marker, "left" | "top">, expanded: boolean): {
+export declare const TOOLTIP_MARGIN = 16;
+export type TooltipPlacement = "above" | "below";
+export declare function resolveTooltipPlacement(anchor: Pick<Marker, "top">, height: number, viewportHeight?: number): TooltipPlacement;
+export declare function getTooltipAnchorStyle(placement: TooltipPlacement): {
+    readonly transform: "translateY(-100%)";
+    readonly transformOrigin: "bottom left";
+} | {
+    readonly transformOrigin: "top left";
+    readonly transform?: undefined;
+};
+export declare function getTooltipPosition(anchor: Pick<Marker, "left" | "top">, expanded: boolean, options?: {
+    height?: number;
+    placement?: TooltipPlacement;
+    viewportWidth?: number;
+    viewportHeight?: number;
+}): {
     left: number;
     top: number;
     width: number;
+    placement: TooltipPlacement;
 };
 export type DraftPopoverPlacement = "right" | "left" | "bottom" | "top";
 export type DraftPopoverTailCorner = "bottom-left" | "bottom-right" | "top-left" | "top-right";

@@ -49,7 +49,7 @@ describe("formatFeedbackAsGitHubIssueBody", () => {
         expect(body).toContain("| Tags | bug |");
         expect(body).toContain("## Thread");
         expect(body).toContain("재현 확인 \\| 테스트");
-        expect(body).toContain("> stitchable feedback id: `fb-1`");
+        expect(body).toContain("> fivepixels feedback id: `fb-1`");
     });
 
     it("renders placeholder row when there are no replies", () => {

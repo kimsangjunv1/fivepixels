@@ -1,5 +1,5 @@
-import { NaverLanding } from "../../../widgets/landing/naver";
+import { LandingView } from "../../../views/landing/LandingView";
 
 export default function LandingPage() {
-    return <NaverLanding />;
+    return <LandingView />;
 }

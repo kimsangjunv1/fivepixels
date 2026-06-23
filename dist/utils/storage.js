@@ -14,7 +14,7 @@ function createStorageAdapterFromHandlers(handlers) {
 export function resolveStorageAdapter({ projectId, environment, appVersion, onList, onListAll, onCreate, onUpdate, onDelete, }) {
     const hasPartialCustom = Boolean(onList || onListAll || onCreate || onUpdate || onDelete);
     if (hasPartialCustom && !hasCustomPersistenceHandlers({ onList, onCreate, onUpdate })) {
-        console.warn("[stitchable] Custom persistence requires onList, onCreate, and onUpdate together. Falling back to localStorage.");
+        console.warn("[fivepixels] Custom persistence requires onList, onCreate, and onUpdate together. Falling back to localStorage.");
     }
     if (hasCustomPersistenceHandlers({ onList, onCreate, onUpdate })) {
         return {

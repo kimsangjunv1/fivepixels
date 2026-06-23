@@ -1,11 +1,11 @@
 import { useLayoutEffect, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import type { ResolvedAppearance } from "@/types/report-ui.js";
-import { REPORT_STYLESHEET } from "@/styles/reportStylesheet.js";
+import { ensureReportTooltipLayer } from "@/utils/dom.js";
 
-const HOST_ID = "stitchable-root";
-const STYLE_ELEMENT_ID = "stitchable-report-styles";
-const MOUNT_ATTR = "data-stitchable-mount";
+const HOST_ID = "fivepixels-root";
+const STYLE_ELEMENT_ID = "fivepixels-report-styles";
+const MOUNT_ATTR = "data-fivepixels-mount";
 
 type ShadowHost = {
     mount: HTMLElement;
@@ -29,7 +29,6 @@ function getOrCreateShadowHost(): ShadowHost {
 
         const style = document.createElement("style");
         style.id = STYLE_ELEMENT_ID;
-        style.textContent = REPORT_STYLESHEET;
         shadowRoot.append(style);
 
         const mount = document.createElement("div");
@@ -41,7 +40,7 @@ function getOrCreateShadowHost(): ShadowHost {
     const mount = shadowRoot.querySelector(`[${MOUNT_ATTR}]`) as HTMLElement | null;
 
     if (!mount) {
-        throw new Error("Stitchable shadow mount element is missing.");
+        throw new Error("Fivepixels shadow mount element is missing.");
     }
 
     return { mount, shadowRoot };
@@ -85,11 +84,21 @@ export function ShadowReportRoot({ appearance, children }: ShadowReportRootProps
     const [mount, setMount] = useState<HTMLElement | null>(null);
 
     useLayoutEffect(() => {
+        let cancelled = false;
         const host = getOrCreateShadowHost();
-        applyReportStyles(host.shadowRoot, REPORT_STYLESHEET);
+        ensureReportTooltipLayer();
         setMount(host.mount);
 
+        void import("@/styles/reportStylesheet.js").then((module) => {
+            if (cancelled) {
+                return;
+            }
+
+            applyReportStyles(host.shadowRoot, module.REPORT_STYLESHEET);
+        });
+
         return () => {
+            cancelled = true;
             setMount(null);
         };
     }, []);
@@ -99,7 +108,7 @@ export function ShadowReportRoot({ appearance, children }: ShadowReportRootProps
             return;
         }
 
-        mount.setAttribute("data-stitchable-theme", appearance);
+        mount.setAttribute("data-fivepixels-theme", appearance);
     }, [appearance, mount]);
 
     if (!mount) {

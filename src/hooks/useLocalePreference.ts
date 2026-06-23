@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import type { ReportLocale } from "@/i18n/types.js";
 
-const STORAGE_KEY = "stitchable:locale-preference";
+const STORAGE_KEY = "fivepixels:locale-preference";
 
 function isReportLocale(value: unknown): value is ReportLocale {
     return value === "en" || value === "ko";

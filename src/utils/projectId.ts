@@ -11,7 +11,7 @@ export function resolveProjectId(projectId?: string | null): string {
     if (!isProductionEnv() && !hasWarnedDefaultProjectId) {
         hasWarnedDefaultProjectId = true;
         console.warn(
-            `[stitchable] project.id defaults to "${DEFAULT_PROJECT_ID}". Set project={{ id }} for production or multi-project storage.`,
+            `[fivepixels] project.id defaults to "${DEFAULT_PROJECT_ID}". Set project={{ id }} for production or multi-project storage.`,
         );
     }
 

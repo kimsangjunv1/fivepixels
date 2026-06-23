@@ -97,6 +97,7 @@ export const ko: ReportMessages = {
         today: "오늘",
     },
     moreMenu: {
+        settings: "설정",
         import: "가져오기",
         export: "내보내기",
         keyCopy: "개인키 백업",
