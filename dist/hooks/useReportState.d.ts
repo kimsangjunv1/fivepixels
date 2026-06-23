@@ -18,6 +18,7 @@ export type ReportStateConfig = {
     }) => Promise<ReportFeedback[]>;
     onListAll?: (params: ReportListAllParams) => Promise<ReportListAllResult>;
     onNavigate?: (pathname: string) => void | Promise<void>;
+    onRevealTarget?: (report: ReportFeedback) => boolean | Promise<boolean>;
     onCreate?: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
     onUpdate?: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
     onDelete?: (id: string) => Promise<void>;
@@ -33,7 +34,7 @@ export type ReportStateConfig = {
     initialLocale: ReportLocale;
     messageOverrides?: DeepPartialReportMessages;
 };
-export declare function useReportState({ projectId, environment, appVersion, appearance, fields, authors, requireReviewerKey, shortcut: _shortcut, identify, onList, onListAll, onNavigate, onCreate, onUpdate, onDelete, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys, initialLocale, messageOverrides, }: ReportStateConfig): {
+export declare function useReportState({ projectId, environment, appVersion, appearance, fields, authors, requireReviewerKey, shortcut: _shortcut, identify, onList, onListAll, onNavigate, onRevealTarget, onCreate, onUpdate, onDelete, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys, initialLocale, messageOverrides, }: ReportStateConfig): {
     appearance: ReportAppearance;
     setAppearance: (nextAppearance: ReportAppearance) => void;
     locale: ReportLocale;
@@ -138,8 +139,8 @@ export declare function useReportState({ projectId, environment, appVersion, app
     handleConfirmResolution: () => Promise<void>;
     targetStats: {
         found: number;
-        group: number;
-        item: number;
+        resolved: number;
+        inProgress: number;
     };
     statusText: string;
     toggleReportMode: () => void;
@@ -152,6 +153,7 @@ export declare function useReportState({ projectId, environment, appVersion, app
     focusSearchInput: () => void;
     selectAdjacentReport: (direction: "up" | "down") => void;
     openReplyComposer: (report: ReportFeedback) => void;
+    activateFeedbackMarker: (report: ReportFeedback) => Promise<void>;
     closeReplyComposer: () => void;
     clearHoverLeaveTimeout: () => void;
     scheduleHoverLeave: (markerId: string) => void;

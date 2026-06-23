@@ -20,6 +20,32 @@ export function getFeedbackTargetSelector(reportId: string, reportType: ReportTa
     return `[data-report-id="${escapedId}"]:not([data-report-type="group"])`;
 }
 
+export function isFeedbackTargetVisible(element: HTMLElement) {
+    if ("checkVisibility" in element && typeof element.checkVisibility === "function") {
+        if (!element.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true })) {
+            return false;
+        }
+    }
+
+    const rect = element.getBoundingClientRect();
+
+    if (rect.width <= 0 || rect.height <= 0) {
+        return false;
+    }
+
+    const style = window.getComputedStyle(element);
+
+    if (style.display === "none" || style.visibility === "hidden") {
+        return false;
+    }
+
+    if (Number.parseFloat(style.opacity) <= 0) {
+        return false;
+    }
+
+    return true;
+}
+
 export function isSameHoverTarget(previous: TargetSnapshot | null, next: TargetSnapshot | null) {
     if (previous === next) {
         return true;
@@ -48,6 +74,22 @@ export function toSnapshot(element: HTMLElement | null): TargetSnapshot | null {
         type: resolveReportType(element),
         rect: element.getBoundingClientRect(),
     };
+}
+
+export function resolveFeedbackDocumentAnchor(targetElement: HTMLElement): TargetSnapshot | null {
+    let node: HTMLElement | null = targetElement.parentElement;
+
+    while (node && node !== document.documentElement) {
+        const reportId = node.dataset.reportId?.trim();
+
+        if (reportId && window.getComputedStyle(node).position !== "fixed") {
+            return toSnapshot(node);
+        }
+
+        node = node.parentElement;
+    }
+
+    return null;
 }
 
 export function findTargetElement(baseElement: HTMLElement | null) {

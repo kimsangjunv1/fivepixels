@@ -7,9 +7,11 @@ import { FeedbackStatusBadge } from "./FeedbackStatusBadge.js";
 type FeedbackHoverCardProps = {
     report: ReportFeedback;
     fieldTags: { key: string; label: string }[];
+    detached?: boolean;
+    detachedHint?: string;
 };
 
-export function FeedbackHoverCard({ report, fieldTags }: FeedbackHoverCardProps) {
+export function FeedbackHoverCard({ report, fieldTags, detached = false, detachedHint }: FeedbackHoverCardProps) {
     const displayStatus = getFeedbackDisplayStatus(report, true);
     const latestReply = getLatestReply(report);
     const remainingReplyCount = getRemainingReplyCount(report);
@@ -18,6 +20,8 @@ export function FeedbackHoverCard({ report, fieldTags }: FeedbackHoverCardProps)
         // <div className="flex w-[260px] flex-col gap-[10px] bg-transparent p-[16px]">
         <div className="flex w-[260px] flex-col gap-[10px] bg-transparent p-[12px]">
             <FeedbackStatusBadge status={displayStatus} />
+
+            {detached && detachedHint ? <p className="text-[12px] leading-[1.4] text-[var(--adaptive-black500)]">{detachedHint}</p> : null}
 
             <p className="line-clamp-2 leading-[1.5] text-[16px] text-[var(--adaptive-text-primary)]">{report.message}</p>
 

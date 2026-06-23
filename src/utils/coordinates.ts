@@ -1,7 +1,8 @@
 import { DOT_SIZE } from "@/constants/report.js";
 import type { ReportFeedback } from "@/types/report.js";
 import type { DraftReport, Marker, TargetSnapshot } from "@/types/report-ui.js";
-import { getFeedbackTargetSelector } from "./dom.js";
+import { getFeedbackTargetSelector, isFeedbackTargetVisible } from "./dom.js";
+import { getFeedbackAnchorElement } from "./locateFeedback.js";
 
 export function clampRatio(value: number) {
     if (Number.isNaN(value)) {
@@ -11,13 +12,55 @@ export function clampRatio(value: number) {
     return Math.min(1, Math.max(0, value));
 }
 
+function getAnchorMarkerPosition(report: ReportFeedback) {
+    if (!report.anchor_report_id || !report.anchor_report_type) {
+        return null;
+    }
+
+    if (report.anchor_x_ratio === null || report.anchor_x_ratio === undefined || report.anchor_y_ratio === null || report.anchor_y_ratio === undefined) {
+        return null;
+    }
+
+    const anchorElement = getFeedbackAnchorElement({
+        anchor_report_id: report.anchor_report_id,
+        anchor_report_type: report.anchor_report_type,
+    });
+
+    if (!anchorElement) {
+        return null;
+    }
+
+    const rect = anchorElement.getBoundingClientRect();
+
+    if (rect.width <= 0 || rect.height <= 0) {
+        return null;
+    }
+
+    return {
+        left: rect.left + rect.width * report.anchor_x_ratio - DOT_SIZE / 2,
+        top: rect.top + rect.height * report.anchor_y_ratio - DOT_SIZE / 2,
+    };
+}
+
+function getDetachedMarkerPosition(report: ReportFeedback, currentScrollY: number) {
+    const anchorPosition = getAnchorMarkerPosition(report);
+
+    if (anchorPosition) {
+        return anchorPosition;
+    }
+
+    const widthScale = report.viewport_width > 0 ? window.innerWidth / report.viewport_width : 1;
+    const left = report.viewport_width * report.x_ratio * widthScale - DOT_SIZE / 2;
+    const top = report.document_y - currentScrollY - DOT_SIZE / 2;
+
+    return { left, top };
+}
+
 export function getMarkerFromReport(report: ReportFeedback, currentScrollY: number): Marker {
     const selector = getFeedbackTargetSelector(report.report_id, report.report_type);
     const targetElement = document.querySelector<HTMLElement>(selector);
-    const pointLeft = window.innerWidth * report.x_ratio - DOT_SIZE / 2;
-    const pointTop = report.document_y - currentScrollY - DOT_SIZE / 2;
 
-    if (targetElement) {
+    if (targetElement && isFeedbackTargetVisible(targetElement)) {
         const rect = targetElement.getBoundingClientRect();
 
         return {
@@ -26,15 +69,19 @@ export function getMarkerFromReport(report: ReportFeedback, currentScrollY: numb
             left: rect.left + rect.width * (report.element_x_ratio ?? report.x_ratio) - DOT_SIZE / 2,
             top: rect.top + rect.height * (report.element_y_ratio ?? report.y_ratio) - DOT_SIZE / 2,
             rect,
+            detached: false,
         };
     }
+
+    const detachedPosition = getDetachedMarkerPosition(report, currentScrollY);
 
     return {
         id: report.id,
         report,
-        left: pointLeft,
-        top: pointTop,
+        left: detachedPosition.left,
+        top: detachedPosition.top,
         rect: null,
+        detached: true,
     };
 }
 

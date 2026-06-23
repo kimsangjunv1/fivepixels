@@ -7,6 +7,7 @@ import KraftonPage from "./(examples)/krafton/page";
 import DanggnPage from "./(examples)/danggn/page";
 import NexonPage from "./(examples)/nexon/page";
 import PricingPage from "./(public)/pricing/page";
+import ModalsPage from "./(public)/modals/page";
 import { AppLayout } from "./layout/AppLayout";
 
 export function AppRouter() {
@@ -40,6 +41,10 @@ export function AppRouter() {
                 <Route
                     path="/contact"
                     element={<ContactPage />}
+                />
+                <Route
+                    path="/modals"
+                    element={<ModalsPage />}
                 />
                 <Route
                     path="*"

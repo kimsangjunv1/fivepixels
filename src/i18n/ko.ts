@@ -28,8 +28,8 @@ export const ko: ReportMessages = {
         viewFeedbacks: "피드백 보기",
         importDragOverlay: "선택한 JSON을 가져옵니다",
         statsFound: "발견",
-        statsGroup: "그룹",
-        statsItem: "아이템",
+        statsResolved: "해결됨",
+        statsInProgress: "진행중",
         tabPageDetails: "페이지 상세",
         tabFeedbackList: "피드백 목록",
     },
@@ -196,6 +196,11 @@ export const ko: ReportMessages = {
         selectedItem: "선택된 아이템",
         selectedGroup: "선택된 그룹",
     },
+    marker: {
+        detachedAriaLabel: "원본 요소가 현재 화면에 없는 피드백",
+        detachedHint: "원본 요소가 현재 화면에 없습니다. 저장된 위치에 마커가 표시됩니다.",
+        detachedBadge: "숨김",
+    },
     defaults: {
         fields: {
             message: "메시지",
@@ -228,6 +233,10 @@ export const ko: ReportMessages = {
         numberFieldRequired: (field) => `${field} 숫자가 필요합니다`,
         elementXRatioInvalid: "element_x_ratio는 number 또는 null이어야 합니다",
         elementYRatioInvalid: "element_y_ratio는 number 또는 null이어야 합니다",
+        anchorXRatioInvalid: "anchor_x_ratio는 number 또는 null이어야 합니다",
+        anchorYRatioInvalid: "anchor_y_ratio는 number 또는 null이어야 합니다",
+        anchorReportIdInvalid: "anchor_report_id는 string 또는 null이어야 합니다",
+        anchorReportTypeInvalid: "anchor_report_type은 group 또는 item이어야 합니다",
         optionalStringFieldInvalid: (field) => `${field}는 string이어야 합니다`,
         duplicateId: (id) => `중복된 id (${id})`,
         integrationsObjectInvalid: "integrations 객체 형식이 올바르지 않습니다",

@@ -21,6 +21,10 @@ export type DraftReport = {
     yRatio: number;
     elementXRatio: number;
     elementYRatio: number;
+    anchorReportId: string | null;
+    anchorReportType: ReportTargetType | null;
+    anchorXRatio: number | null;
+    anchorYRatio: number | null;
     scrollY: number;
     documentY: number;
     reportId: string;
@@ -33,6 +37,7 @@ export type Marker = {
     left: number;
     top: number;
     rect: DOMRect | null;
+    detached: boolean;
     report: ReportFeedback;
 };
 export type EditableDraft = {

@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { escapeAttribute, findTargetElement, getFeedbackTargetSelector, resolveReportType, toSnapshot } from "./dom.js";
+import { describe, expect, it, vi } from "vitest";
+import { escapeAttribute, findTargetElement, getFeedbackTargetSelector, isFeedbackTargetVisible, resolveFeedbackDocumentAnchor, resolveReportType, toSnapshot } from "./dom.js";
 
 describe("escapeAttribute", () => {
     it("escapes backslashes and double quotes for selector safety", () => {
@@ -97,5 +97,54 @@ describe("toSnapshot", () => {
         invalid.dataset.reportId = "hero";
         invalid.dataset.reportType = "invalid";
         expect(toSnapshot(invalid)?.type).toBe("item");
+    });
+});
+
+describe("isFeedbackTargetVisible", () => {
+    it("returns false for display:none elements", () => {
+        const target = document.createElement("div");
+        target.dataset.reportId = "hero";
+        target.style.display = "none";
+        document.body.append(target);
+
+        expect(isFeedbackTargetVisible(target)).toBe(false);
+    });
+
+    it("returns true for visible elements with size", () => {
+        const target = document.createElement("div");
+        target.dataset.reportId = "hero";
+        document.body.append(target);
+
+        vi.spyOn(target, "getBoundingClientRect").mockReturnValue({
+            left: 0,
+            top: 0,
+            width: 100,
+            height: 40,
+            right: 100,
+            bottom: 40,
+            x: 0,
+            y: 0,
+            toJSON: () => ({}),
+        } as DOMRect);
+
+        expect(isFeedbackTargetVisible(target)).toBe(true);
+    });
+});
+
+describe("resolveFeedbackDocumentAnchor", () => {
+    it("returns the nearest non-fixed report ancestor", () => {
+        document.body.innerHTML = `
+            <section data-report-id="modal-demo" data-report-type="group">
+                <div class="overlay" style="position: fixed">
+                    <div data-report-id="modal-target" data-report-type="item">target</div>
+                </div>
+            </section>
+        `;
+
+        const target = document.querySelector<HTMLElement>('[data-report-id="modal-target"]')!;
+        const anchor = resolveFeedbackDocumentAnchor(target);
+
+        expect(anchor?.id).toBe("modal-demo");
+        expect(anchor?.type).toBe("group");
     });
 });

@@ -4,6 +4,7 @@ const navItems = [
     { id: "nav-landing", to: "/", label: "랜딩" },
     { id: "nav-pricing", to: "/pricing", label: "요금" },
     { id: "nav-contact", to: "/contact", label: "문의" },
+    { id: "nav-modals", to: "/modals", label: "모달" },
 ];
 
 export function SiteHeader() {

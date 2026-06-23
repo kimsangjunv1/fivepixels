@@ -180,6 +180,22 @@ export function validateFeedbackRecord(item: unknown, index: number): ReportFeed
         throw importError(index, validation.elementYRatioInvalid);
     }
 
+    if (record.anchor_x_ratio !== undefined && !isNullableFiniteNumber(record.anchor_x_ratio)) {
+        throw importError(index, validation.anchorXRatioInvalid);
+    }
+
+    if (record.anchor_y_ratio !== undefined && !isNullableFiniteNumber(record.anchor_y_ratio)) {
+        throw importError(index, validation.anchorYRatioInvalid);
+    }
+
+    if (record.anchor_report_id !== undefined && record.anchor_report_id !== null && typeof record.anchor_report_id !== "string") {
+        throw importError(index, validation.anchorReportIdInvalid);
+    }
+
+    if (record.anchor_report_type !== undefined && record.anchor_report_type !== null && !REPORT_TYPES.has(record.anchor_report_type as ReportTargetType)) {
+        throw importError(index, validation.anchorReportTypeInvalid);
+    }
+
     for (const field of OPTIONAL_STRING_FIELDS) {
         if (record[field] !== undefined && typeof record[field] !== "string") {
             throw importError(index, validation.optionalStringFieldInvalid(field));
@@ -199,6 +215,10 @@ export function validateFeedbackRecord(item: unknown, index: number): ReportFeed
         y_ratio: record.y_ratio as number,
         element_x_ratio: record.element_x_ratio as number | null,
         element_y_ratio: record.element_y_ratio as number | null,
+        anchor_report_id: record.anchor_report_id as string | null | undefined,
+        anchor_report_type: record.anchor_report_type as ReportTargetType | null | undefined,
+        anchor_x_ratio: record.anchor_x_ratio as number | null | undefined,
+        anchor_y_ratio: record.anchor_y_ratio as number | null | undefined,
         scroll_y: record.scroll_y as number,
         document_y: record.document_y as number,
         viewport_width: record.viewport_width as number,

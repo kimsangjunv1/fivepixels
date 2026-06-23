@@ -154,6 +154,7 @@ export function ReportFeedbackList() {
         visibleShortcutKeys,
         searchInputRef,
         locateFeedback,
+        markers,
         refetch,
         handleDelete,
         canCreateGitHubIssueFromList,
@@ -172,6 +173,7 @@ export function ReportFeedbackList() {
         filters.reportType === "all" ? messages.feedbackList.filterTypeAll : filters.reportType === "item" ? messages.feedbackList.reportTypeItem : messages.feedbackList.reportTypeGroup;
     const visibleReports = useMemo(() => filteredReports.slice(0, visibleCount), [filteredReports, visibleCount]);
     const groupedReports = useMemo(() => groupReportsByDate(visibleReports, locale), [locale, visibleReports]);
+    const detachedMarkerIds = useMemo(() => new Set(markers.filter((marker) => marker.detached).map((marker) => marker.id)), [markers]);
 
     useEffect(() => {
         setVisibleCount(FEEDBACK_PAGE_SIZE);
@@ -425,6 +427,12 @@ export function ReportFeedbackList() {
                                                       <section className="flex flex-col gap-[4px]">
                                                           <div className="flex flex-wrap items-center gap-[6px]">
                                                               <strong className="max-w-full truncate font-bold text-[var(--adaptive-black900)]">{report.report_id}</strong>
+
+                                                              {detachedMarkerIds.has(report.id) ? (
+                                                                  <span className="rounded-[4px] border border-dashed border-[var(--adaptive-black400)] px-[4px] py-[1px] text-[10px] text-[var(--adaptive-black500)]">
+                                                                      {messages.marker.detachedBadge}
+                                                                  </span>
+                                                              ) : null}
 
                                                               <FeedbackFieldTags tags={fieldTags} />
 

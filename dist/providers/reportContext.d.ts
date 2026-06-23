@@ -105,8 +105,8 @@ declare const ReportContext: import("react").Context<{
     handleConfirmResolution: () => Promise<void>;
     targetStats: {
         found: number;
-        group: number;
-        item: number;
+        resolved: number;
+        inProgress: number;
     };
     statusText: string;
     toggleReportMode: () => void;
@@ -119,6 +119,7 @@ declare const ReportContext: import("react").Context<{
     focusSearchInput: () => void;
     selectAdjacentReport: (direction: "up" | "down") => void;
     openReplyComposer: (report: import("..").ReportFeedback) => void;
+    activateFeedbackMarker: (report: import("..").ReportFeedback) => Promise<void>;
     closeReplyComposer: () => void;
     clearHoverLeaveTimeout: () => void;
     scheduleHoverLeave: (markerId: string) => void;
@@ -246,8 +247,8 @@ export declare function useReport(): {
     handleConfirmResolution: () => Promise<void>;
     targetStats: {
         found: number;
-        group: number;
-        item: number;
+        resolved: number;
+        inProgress: number;
     };
     statusText: string;
     toggleReportMode: () => void;
@@ -260,6 +261,7 @@ export declare function useReport(): {
     focusSearchInput: () => void;
     selectAdjacentReport: (direction: "up" | "down") => void;
     openReplyComposer: (report: import("..").ReportFeedback) => void;
+    activateFeedbackMarker: (report: import("..").ReportFeedback) => Promise<void>;
     closeReplyComposer: () => void;
     clearHoverLeaveTimeout: () => void;
     scheduleHoverLeave: (markerId: string) => void;

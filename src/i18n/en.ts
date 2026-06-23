@@ -28,8 +28,8 @@ export const en: ReportMessages = {
         viewFeedbacks: "View feedbacks",
         importDragOverlay: "Importing selected JSON",
         statsFound: "Found",
-        statsGroup: "Group",
-        statsItem: "Item",
+        statsResolved: "Resolved",
+        statsInProgress: "In progress",
         tabPageDetails: "Page details",
         tabFeedbackList: "Feedback list",
     },
@@ -196,6 +196,11 @@ export const en: ReportMessages = {
         selectedItem: "Selected item",
         selectedGroup: "Selected group",
     },
+    marker: {
+        detachedAriaLabel: "Feedback whose source element is not currently visible",
+        detachedHint: "The source element is not visible right now. The marker is shown at the saved position.",
+        detachedBadge: "Hidden",
+    },
     defaults: {
         fields: {
             message: "Message",
@@ -228,6 +233,10 @@ export const en: ReportMessages = {
         numberFieldRequired: (field) => `${field} number is required`,
         elementXRatioInvalid: "element_x_ratio must be number or null",
         elementYRatioInvalid: "element_y_ratio must be number or null",
+        anchorXRatioInvalid: "anchor_x_ratio must be number or null",
+        anchorYRatioInvalid: "anchor_y_ratio must be number or null",
+        anchorReportIdInvalid: "anchor_report_id must be a string or null",
+        anchorReportTypeInvalid: "anchor_report_type must be group or item",
         optionalStringFieldInvalid: (field) => `${field} must be a string`,
         duplicateId: (id) => `duplicate id (${id})`,
         integrationsObjectInvalid: "integrations object format is invalid",

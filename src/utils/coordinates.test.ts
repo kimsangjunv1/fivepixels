@@ -78,6 +78,7 @@ describe("getMarkerFromReport", () => {
         const marker = getMarkerFromReport(createStoredReport(), 0);
 
         expect(marker.rect).not.toBeNull();
+        expect(marker.detached).toBe(false);
         expect(marker.left).toBe(100 + 200 * 0.25 - DOT_SIZE / 2);
         expect(marker.top).toBe(80 + 100 * 0.75 - DOT_SIZE / 2);
     });
@@ -110,6 +111,7 @@ describe("getMarkerFromReport", () => {
         );
 
         expect(marker.rect).not.toBeNull();
+        expect(marker.detached).toBe(false);
         expect(marker.left).toBe(40 + 120 * 0.5 - DOT_SIZE / 2);
         expect(marker.top).toBe(60 + 40 * 0.5 - DOT_SIZE / 2);
     });
@@ -118,6 +120,7 @@ describe("getMarkerFromReport", () => {
         const marker = getMarkerFromReport(createStoredReport({ document_y: 220 }), 20);
 
         expect(marker.rect).toBeNull();
+        expect(marker.detached).toBe(true);
         expect(marker.left).toBe(1000 * 0.5 - DOT_SIZE / 2);
         expect(marker.top).toBe(220 - 20 - DOT_SIZE / 2);
     });
@@ -160,6 +163,151 @@ describe("getMarkerFromReport", () => {
         const marker = getMarkerFromReport(createStoredReport(), 0);
 
         expect(marker.left).toBe(10 + 100 * 0.25 - DOT_SIZE / 2);
+    });
+
+    it("falls back to document coordinates when the target element is hidden", () => {
+        const target = document.createElement("section");
+        target.dataset.reportId = "hero";
+        target.dataset.reportType = "group";
+        target.style.display = "none";
+        document.body.append(target);
+
+        const marker = getMarkerFromReport(createStoredReport({ document_y: 220 }), 20);
+
+        expect(marker.rect).toBeNull();
+        expect(marker.detached).toBe(true);
+        expect(marker.top).toBe(220 - 20 - DOT_SIZE / 2);
+    });
+
+    it("scrolls detached markers with the document when a hidden target has no layout box", () => {
+        vi.stubGlobal("innerWidth", 1000);
+        vi.stubGlobal("innerHeight", 800);
+
+        const overlay = document.createElement("div");
+        overlay.style.position = "fixed";
+        overlay.style.display = "none";
+
+        const target = document.createElement("section");
+        target.dataset.reportId = "hero";
+        target.dataset.reportType = "group";
+        overlay.append(target);
+        document.body.append(overlay);
+
+        const markerAtRest = getMarkerFromReport(
+            createStoredReport({
+                document_y: 900,
+            }),
+            100,
+        );
+        const markerAfterScroll = getMarkerFromReport(
+            createStoredReport({
+                document_y: 900,
+            }),
+            400,
+        );
+
+        expect(markerAtRest.detached).toBe(true);
+        expect(markerAtRest.top).toBe(900 - 100 - DOT_SIZE / 2);
+        expect(markerAfterScroll.top).toBe(900 - 400 - DOT_SIZE / 2);
+        expect(markerAfterScroll.top).not.toBe(markerAtRest.top);
+    });
+
+    it("uses document coordinates for opacity-hidden fixed targets instead of live rect", () => {
+        vi.stubGlobal("innerWidth", 1000);
+        vi.stubGlobal("innerHeight", 800);
+
+        const overlay = document.createElement("div");
+        overlay.style.position = "fixed";
+
+        const target = document.createElement("section");
+        target.dataset.reportId = "hero";
+        target.dataset.reportType = "group";
+        target.style.opacity = "0";
+        overlay.append(target);
+        document.body.append(overlay);
+
+        vi.spyOn(target, "getBoundingClientRect").mockReturnValue({
+            left: 120,
+            top: 180,
+            width: 240,
+            height: 120,
+            right: 360,
+            bottom: 300,
+            x: 120,
+            y: 180,
+            toJSON: () => ({}),
+        } as DOMRect);
+
+        const marker = getMarkerFromReport(
+            createStoredReport({
+                document_y: 620,
+                viewport_width: 1000,
+                x_ratio: 0.5,
+            }),
+            200,
+        );
+
+        expect(marker.detached).toBe(true);
+        expect(marker.top).toBe(620 - 200 - DOT_SIZE / 2);
+        expect(marker.top).not.toBe(180 + 120 * 0.75 - DOT_SIZE / 2);
+    });
+
+    it("scales detached horizontal position when the viewport width changes", () => {
+        const report = createStoredReport({
+            x_ratio: 0.5,
+            viewport_width: 1000,
+            document_y: 300,
+        });
+
+        vi.stubGlobal("innerWidth", 1000);
+        const markerAtFullWidth = getMarkerFromReport(report, 0);
+
+        vi.stubGlobal("innerWidth", 500);
+        const markerAtHalfWidth = getMarkerFromReport(report, 0);
+
+        expect(markerAtFullWidth.left).toBe(1000 * 0.5 - DOT_SIZE / 2);
+        expect(markerAtHalfWidth.left).toBe(500 * 0.5 - DOT_SIZE / 2);
+    });
+
+    it("anchors detached markers to a document-flow parent section", () => {
+        document.body.innerHTML = `
+            <section data-report-id="modal-demo" data-report-type="group">
+                <div style="position: fixed; display: none">
+                    <div data-report-id="modal-target" data-report-type="item">target</div>
+                </div>
+            </section>
+        `;
+
+        const section = document.querySelector<HTMLElement>('[data-report-id="modal-demo"]')!;
+
+        vi.spyOn(section, "getBoundingClientRect").mockReturnValue({
+            left: 80,
+            top: 320,
+            width: 640,
+            height: 220,
+            right: 720,
+            bottom: 540,
+            x: 80,
+            y: 320,
+            toJSON: () => ({}),
+        } as DOMRect);
+
+        const marker = getMarkerFromReport(
+            createStoredReport({
+                report_id: "modal-target",
+                report_type: "item",
+                anchor_report_id: "modal-demo",
+                anchor_report_type: "group",
+                anchor_x_ratio: 0.5,
+                anchor_y_ratio: 0.5,
+                document_y: 9999,
+            }),
+            0,
+        );
+
+        expect(marker.detached).toBe(true);
+        expect(marker.left).toBe(80 + 640 * 0.5 - DOT_SIZE / 2);
+        expect(marker.top).toBe(320 + 220 * 0.5 - DOT_SIZE / 2);
     });
 });
 
@@ -324,8 +472,8 @@ describe("resolveTooltipAnchor", () => {
     it("returns the marker that matches the selected report id", () => {
         const report = createStoredReport({ id: "selected" });
         const markers = [
-            { id: "other", left: 0, top: 0, rect: null, report: createStoredReport({ id: "other" }) },
-            { id: "selected", left: 1, top: 2, rect: null, report },
+            { id: "other", left: 0, top: 0, rect: null, detached: true, report: createStoredReport({ id: "other" }) },
+            { id: "selected", left: 1, top: 2, rect: null, detached: false, report },
         ];
 
         expect(resolveTooltipAnchor(markers, "selected")?.report.id).toBe("selected");

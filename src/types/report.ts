@@ -118,6 +118,10 @@ export type ReportFeedback = {
     y_ratio: number;
     element_x_ratio: number | null;
     element_y_ratio: number | null;
+    anchor_report_id?: string | null;
+    anchor_report_type?: ReportTargetType | null;
+    anchor_x_ratio?: number | null;
+    anchor_y_ratio?: number | null;
     scroll_y: number;
     document_y: number;
     viewport_width: number;

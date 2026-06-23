@@ -28,6 +28,15 @@ const guideByPath: Record<string, { title: string; steps: string[]; note: string
         ],
         note: "실제 전송은 되지 않으며 fivepixels 동작 확인용 UI입니다.",
     },
+    "/modals": {
+        title: "모달 · detached / reveal 데모",
+        steps: [
+            "각 모달을 연 뒤 내부 item target에 피드백을 남깁니다.",
+            "모달을 닫고 view 모드에서 detached 마커(점선)를 확인합니다.",
+            "피드백 목록이나 마커를 클릭해 onRevealTarget으로 모달이 다시 열리는지 봅니다.",
+        ],
+        note: "opacity, display:none, 조건부 렌더링, visibility:hidden, Zustand boolean 다섯 가지 숨김 방식을 비교할 수 있습니다.",
+    },
 };
 
 export function ExampleGuide() {

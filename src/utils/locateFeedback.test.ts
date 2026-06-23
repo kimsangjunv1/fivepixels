@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { getFeedbackTargetElement, scrollToFeedbackTarget } from "./locateFeedback.js";
+import { getFeedbackTargetElement, isFeedbackTargetDetached, scrollToFeedbackTarget } from "./locateFeedback.js";
 
 describe("getFeedbackTargetElement", () => {
     beforeEach(() => {
@@ -29,6 +29,45 @@ describe("getFeedbackTargetElement", () => {
 
     it("returns null when no matching element exists", () => {
         expect(getFeedbackTargetElement({ report_id: "missing", report_type: "group" })).toBeNull();
+    });
+});
+
+describe("isFeedbackTargetDetached", () => {
+    beforeEach(() => {
+        document.body.innerHTML = "";
+    });
+
+    it("returns true when the target element is missing", () => {
+        expect(isFeedbackTargetDetached({ report_id: "missing", report_type: "group" })).toBe(true);
+    });
+
+    it("returns true when the target element is hidden", () => {
+        const target = document.createElement("button");
+        target.dataset.reportId = "hero-cta";
+        target.style.display = "none";
+        document.body.append(target);
+
+        expect(isFeedbackTargetDetached({ report_id: "hero-cta", report_type: "item" })).toBe(true);
+    });
+
+    it("returns false when the target element is visible", () => {
+        const target = document.createElement("button");
+        target.dataset.reportId = "hero-cta";
+        document.body.append(target);
+
+        vi.spyOn(target, "getBoundingClientRect").mockReturnValue({
+            left: 0,
+            top: 0,
+            width: 120,
+            height: 40,
+            right: 120,
+            bottom: 40,
+            x: 0,
+            y: 0,
+            toJSON: () => ({}),
+        } as DOMRect);
+
+        expect(isFeedbackTargetDetached({ report_id: "hero-cta", report_type: "item" })).toBe(false);
     });
 });
 

@@ -3,6 +3,7 @@ import { useNativeHover } from "@/hooks/useNativeHover.js";
 import { useTooltipLayout } from "@/hooks/useTooltipLayout.js";
 import { useReport } from "@/providers/reportContext.js";
 import type { Marker } from "@/types/report-ui.js";
+import type { ReportFeedback } from "@/types/report.js";
 import { getMarkerColor } from "@/utils/reportVisual.js";
 import { FeedbackComposer } from "@/components/panel/feedback/FeedbackComposer.js";
 import { FeedbackHoverCard } from "@/components/panel/feedback/FeedbackHoverCard.js";
@@ -19,13 +20,13 @@ const MARKER_BUTTON_BASE_CLASS = "flex items-center justify-center rounded-full"
 type MarkerButtonProps = {
     markerItem: Marker;
     isSelected: boolean;
-    onSelect: () => void;
-    onOpenReply: () => void;
+    detachedAriaLabel: string;
+    onActivate: (report: ReportFeedback) => void;
     onHoverStart: () => void;
     onHoverEnd: () => void;
 };
 
-function MarkerButton({ markerItem, isSelected, onSelect, onOpenReply, onHoverStart, onHoverEnd }: MarkerButtonProps) {
+function MarkerButton({ markerItem, isSelected, detachedAriaLabel, onActivate, onHoverStart, onHoverEnd }: MarkerButtonProps) {
     const hoverRef = useNativeHover<HTMLButtonElement>({
         onEnter: onHoverStart,
         onLeave: onHoverEnd,
@@ -33,6 +34,7 @@ function MarkerButton({ markerItem, isSelected, onSelect, onOpenReply, onHoverSt
     const replyCount = markerItem.report.replies.length;
     const markerLabel =
         replyCount > 0 ? `${markerItem.report.report_type} · ${markerItem.report.report_id} · ${replyCount} replies` : `${markerItem.report.report_type} · ${markerItem.report.report_id}`;
+    const isDetached = markerItem.detached;
 
     return (
         <div
@@ -43,22 +45,27 @@ function MarkerButton({ markerItem, isSelected, onSelect, onOpenReply, onHoverSt
             }}
         >
             <div className="relative pointer-events-auto">
+                {isDetached ? (
+                    <div
+                        aria-hidden
+                        className="pointer-events-none absolute -inset-[6px] rounded-full border border-dashed border-white/80"
+                    />
+                ) : null}
                 <button
                     ref={hoverRef}
                     key={markerItem.id}
                     type="button"
                     data-fivepixels-interactive=""
                     data-marker-report-id={markerItem.report.id}
-                    aria-label={markerLabel}
+                    aria-label={isDetached ? `${detachedAriaLabel} · ${markerLabel}` : markerLabel}
                     onClick={() => {
-                        onSelect();
-                        onOpenReply();
+                        void onActivate(markerItem.report);
                     }}
                     className={`${
                         isSelected
                             ? `${MARKER_BUTTON_BASE_CLASS} min-h-[16px] min-w-[16px] border-[2px] scale-[1.4] border-white shadow-[0_4px_10px_#00000090]`
                             : `${MARKER_BUTTON_BASE_CLASS} min-h-[16px] min-w-[16px] border-[2px] border-white shadow-[0_4px_10px_#00000090]`
-                    } ${replyCount > 0 ? "p-[4px_8px] text-white" : ""}`}
+                    } ${replyCount > 0 ? "p-[4px_8px] text-white" : ""} ${isDetached ? "border-dashed opacity-75" : ""}`}
                     style={{
                         backgroundColor: getMarkerColor(markerItem.report),
                         pointerEvents: "auto",
@@ -88,8 +95,9 @@ export function ReportMarkersLayer() {
         pendingComposer,
         isUpdating,
         editingReportId,
+        messages,
         selectReport,
-        openReplyComposer,
+        activateFeedbackMarker,
         closeReplyComposer,
         clearHoverLeaveTimeout,
         scheduleHoverLeave,
@@ -223,8 +231,8 @@ export function ReportMarkersLayer() {
                     key={markerItem.id}
                     markerItem={markerItem}
                     isSelected={markerItem.report.id === selectedReport?.id}
-                    onSelect={() => selectReport(markerItem.report.id)}
-                    onOpenReply={() => openReplyComposer(markerItem.report)}
+                    detachedAriaLabel={messages.marker.detachedAriaLabel}
+                    onActivate={activateFeedbackMarker}
                     onHoverStart={() => handleMarkerHoverStart(markerItem.report.id)}
                     onHoverEnd={() => handleMarkerHoverEnd(markerItem.report.id)}
                 />
@@ -245,6 +253,8 @@ export function ReportMarkersLayer() {
                     <FeedbackHoverCard
                         report={tooltipReport}
                         fieldTags={tooltipFieldTags}
+                        detached={Boolean(tooltipAnchor?.detached)}
+                        detachedHint={messages.marker.detachedHint}
                     />
                 </div>
             ) : null}
@@ -276,6 +286,12 @@ export function ReportMarkersLayer() {
                                 fieldTags={tooltipFieldTags}
                                 expanded
                             />
+
+                            {tooltipAnchor?.detached ? (
+                                <p className="border-b border-[var(--adaptive-border-subtle)] px-[12px] pb-[10px] text-[12px] leading-[1.4] text-[var(--adaptive-black500)]">
+                                    {messages.marker.detachedHint}
+                                </p>
+                            ) : null}
 
                             {showComposer ? (
                                 <section className="border-t border-[var(--adaptive-border-subtle)] bg-transparent">
