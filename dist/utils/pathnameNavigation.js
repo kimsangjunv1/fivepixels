@@ -3,9 +3,11 @@ let isInstalled = false;
 let originalPushState = null;
 let originalReplaceState = null;
 function notifyPathnameListeners() {
-    for (const listener of listeners) {
-        listener();
-    }
+    queueMicrotask(() => {
+        for (const listener of listeners) {
+            listener();
+        }
+    });
 }
 function installPathnameListeners() {
     if (isInstalled || typeof window === "undefined") {

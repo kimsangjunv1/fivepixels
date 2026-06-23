@@ -1,22 +1,17 @@
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { getCurrentPathname } from "@/utils/pathname.js";
 import { subscribeToPathnameChanges } from "@/utils/pathnameNavigation.js";
 
+function getServerPathname() {
+    return "/";
+}
+
 export function useCurrentPathname(routeKey?: string) {
-    const isControlled = routeKey !== undefined;
-    const [browserPathname, setBrowserPathname] = useState(() => getCurrentPathname());
+    const browserPathname = useSyncExternalStore(
+        subscribeToPathnameChanges,
+        getCurrentPathname,
+        getServerPathname,
+    );
 
-    useEffect(() => {
-        if (isControlled) {
-            return;
-        }
-
-        const syncPathname = () => {
-            setBrowserPathname(getCurrentPathname());
-        };
-
-        return subscribeToPathnameChanges(syncPathname);
-    }, [isControlled]);
-
-    return isControlled ? routeKey : browserPathname;
+    return routeKey !== undefined ? routeKey : browserPathname;
 }
