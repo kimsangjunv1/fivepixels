@@ -35,6 +35,7 @@ function MarkerButton({ markerItem, isSelected, detachedAriaLabel, onActivate, o
     const markerLabel =
         replyCount > 0 ? `${markerItem.report.report_type} · ${markerItem.report.report_id} · ${replyCount} replies` : `${markerItem.report.report_type} · ${markerItem.report.report_id}`;
     const isDetached = markerItem.detached;
+    const isClamped = markerItem.clampedEdge !== null;
 
     return (
         <div
@@ -45,10 +46,10 @@ function MarkerButton({ markerItem, isSelected, detachedAriaLabel, onActivate, o
             }}
         >
             <div className="relative pointer-events-auto">
-                {isDetached ? (
+                {isDetached || isClamped ? (
                     <div
                         aria-hidden
-                        className="pointer-events-none absolute -inset-[6px] rounded-full border border-dashed border-white/80"
+                        className={`pointer-events-none absolute -inset-[6px] rounded-full border border-dashed border-white/80 ${isClamped && !isDetached ? "opacity-80" : ""}`}
                     />
                 ) : null}
                 <button

@@ -37,12 +37,15 @@ export type DraftReport = {
     fieldValues: ReportFieldValues;
 };
 
+export type MarkerClampEdge = "top" | "bottom" | "left" | "right";
+
 export type Marker = {
     id: string;
     left: number;
     top: number;
     rect: DOMRect | null;
     detached: boolean;
+    clampedEdge: MarkerClampEdge | null;
     report: ReportFeedback;
 };
 

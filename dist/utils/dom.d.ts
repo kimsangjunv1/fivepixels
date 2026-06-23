@@ -8,6 +8,7 @@ export declare function isSameHoverTarget(previous: TargetSnapshot | null, next:
 export declare function toSnapshot(element: HTMLElement | null): TargetSnapshot | null;
 export declare function resolveFeedbackDocumentAnchor(targetElement: HTMLElement): TargetSnapshot | null;
 export declare function findTargetElement(baseElement: HTMLElement | null): HTMLElement | null;
+export declare function getNearestScrollContainer(element: HTMLElement): HTMLElement | null;
 export declare function getSelectableTargets(): TargetSnapshot[];
 export declare function findTargetByPoint(overlay: HTMLDivElement | null, clientX: number, clientY: number): HTMLElement | null;
 export declare function getReportPortalRoot(): HTMLElement;

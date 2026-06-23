@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { escapeAttribute, findTargetElement, getFeedbackTargetSelector, isFeedbackTargetVisible, resolveFeedbackDocumentAnchor, resolveReportType, toSnapshot } from "./dom.js";
+import { escapeAttribute, findTargetElement, getFeedbackTargetSelector, getNearestScrollContainer, isFeedbackTargetVisible, resolveFeedbackDocumentAnchor, resolveReportType, toSnapshot } from "./dom.js";
 
 describe("escapeAttribute", () => {
     it("escapes backslashes and double quotes for selector safety", () => {
@@ -146,5 +146,36 @@ describe("resolveFeedbackDocumentAnchor", () => {
 
         expect(anchor?.id).toBe("modal-demo");
         expect(anchor?.type).toBe("group");
+    });
+});
+
+describe("getNearestScrollContainer", () => {
+    it("returns the nearest ancestor with scrollable overflow", () => {
+        document.body.innerHTML = `
+            <div id="outer" style="overflow-y: auto; height: 200px">
+                <div id="inner" style="overflow-y: auto; height: 120px">
+                    <section data-report-id="hero">target</section>
+                </div>
+            </div>
+        `;
+
+        const outer = document.getElementById("outer")!;
+        const inner = document.getElementById("inner")!;
+        const target = document.querySelector<HTMLElement>("[data-report-id='hero']")!;
+
+        Object.defineProperty(outer, "scrollHeight", { configurable: true, value: 400 });
+        Object.defineProperty(outer, "clientHeight", { configurable: true, value: 200 });
+        Object.defineProperty(inner, "scrollHeight", { configurable: true, value: 300 });
+        Object.defineProperty(inner, "clientHeight", { configurable: true, value: 120 });
+
+        expect(getNearestScrollContainer(target)?.id).toBe("inner");
+    });
+
+    it("returns null when no scrollable ancestor exists", () => {
+        const target = document.createElement("section");
+        target.dataset.reportId = "hero";
+        document.body.append(target);
+
+        expect(getNearestScrollContainer(target)).toBeNull();
     });
 });

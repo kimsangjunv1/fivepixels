@@ -11,8 +11,9 @@ export function ReportDraftMarker() {
         return null;
     }
 
-    const { left, top } = getDraftMarkerPosition(draft, selectedTarget);
+    const { left, top, clampedEdge } = getDraftMarkerPosition(draft, selectedTarget);
     const markerColor = TARGET_COLOR[draft.reportType];
+    const isClamped = clampedEdge !== null;
 
     return (
         <>
@@ -33,11 +34,12 @@ export function ReportDraftMarker() {
 
             <div
                 aria-hidden
-                className={DRAFT_MARKER_CLASS}
+                className={`${DRAFT_MARKER_CLASS} ${isClamped ? "opacity-80" : ""}`}
                 style={{
                     left,
                     top,
                     backgroundColor: markerColor,
+                    boxShadow: isClamped ? "0 0 0 2px rgba(255,255,255,0.7)" : undefined,
                 }}
             />
         </>

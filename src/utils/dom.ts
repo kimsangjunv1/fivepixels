@@ -119,6 +119,28 @@ export function findTargetElement(baseElement: HTMLElement | null) {
     return groupFallback;
 }
 
+function isScrollableOverflow(value: string) {
+    return value === "auto" || value === "scroll" || value === "overlay";
+}
+
+export function getNearestScrollContainer(element: HTMLElement): HTMLElement | null {
+    let node: HTMLElement | null = element.parentElement;
+
+    while (node && node !== document.documentElement) {
+        const style = window.getComputedStyle(node);
+        const canScrollY = isScrollableOverflow(style.overflowY) && node.scrollHeight > node.clientHeight + 1;
+        const canScrollX = isScrollableOverflow(style.overflowX) && node.scrollWidth > node.clientWidth + 1;
+
+        if (canScrollY || canScrollX) {
+            return node;
+        }
+
+        node = node.parentElement;
+    }
+
+    return null;
+}
+
 export function getSelectableTargets() {
     return Array.from(document.querySelectorAll<HTMLElement>(TARGET_SELECTOR))
         .map((element) => toSnapshot(element))

@@ -1,6 +1,46 @@
 import { DOT_SIZE } from "../constants/report.js";
-import { getFeedbackTargetSelector, isFeedbackTargetVisible } from "./dom.js";
+import { getFeedbackTargetSelector, getNearestScrollContainer, isFeedbackTargetVisible } from "./dom.js";
 import { getFeedbackAnchorElement } from "./locateFeedback.js";
+function applyScrollContainerClamp(left, top, element) {
+    if (!element) {
+        return { left, top, clampedEdge: null };
+    }
+    const scrollContainer = getNearestScrollContainer(element);
+    if (!scrollContainer) {
+        return { left, top, clampedEdge: null };
+    }
+    const bounds = scrollContainer.getBoundingClientRect();
+    const anchorX = left + DOT_SIZE / 2;
+    const anchorY = top + DOT_SIZE / 2;
+    let clampedX = anchorX;
+    let clampedY = anchorY;
+    let clampedEdge = null;
+    if (anchorY < bounds.top) {
+        clampedY = bounds.top;
+        clampedEdge = "top";
+    }
+    else if (anchorY > bounds.bottom) {
+        clampedY = bounds.bottom;
+        clampedEdge = "bottom";
+    }
+    if (anchorX < bounds.left) {
+        clampedX = bounds.left;
+        if (!clampedEdge) {
+            clampedEdge = "left";
+        }
+    }
+    else if (anchorX > bounds.right) {
+        clampedX = bounds.right;
+        if (!clampedEdge) {
+            clampedEdge = "right";
+        }
+    }
+    return {
+        left: clampedX - DOT_SIZE / 2,
+        top: clampedY - DOT_SIZE / 2,
+        clampedEdge,
+    };
+}
 export function clampRatio(value) {
     if (Number.isNaN(value)) {
         return 0;
@@ -25,10 +65,7 @@ function getAnchorMarkerPosition(report) {
     if (rect.width <= 0 || rect.height <= 0) {
         return null;
     }
-    return {
-        left: rect.left + rect.width * report.anchor_x_ratio - DOT_SIZE / 2,
-        top: rect.top + rect.height * report.anchor_y_ratio - DOT_SIZE / 2,
-    };
+    return applyScrollContainerClamp(rect.left + rect.width * report.anchor_x_ratio - DOT_SIZE / 2, rect.top + rect.height * report.anchor_y_ratio - DOT_SIZE / 2, anchorElement);
 }
 function getDetachedMarkerPosition(report, currentScrollY) {
     const anchorPosition = getAnchorMarkerPosition(report);
@@ -38,20 +75,22 @@ function getDetachedMarkerPosition(report, currentScrollY) {
     const widthScale = report.viewport_width > 0 ? window.innerWidth / report.viewport_width : 1;
     const left = report.viewport_width * report.x_ratio * widthScale - DOT_SIZE / 2;
     const top = report.document_y - currentScrollY - DOT_SIZE / 2;
-    return { left, top };
+    return { left, top, clampedEdge: null };
 }
 export function getMarkerFromReport(report, currentScrollY) {
     const selector = getFeedbackTargetSelector(report.report_id, report.report_type);
     const targetElement = document.querySelector(selector);
     if (targetElement && isFeedbackTargetVisible(targetElement)) {
         const rect = targetElement.getBoundingClientRect();
+        const position = applyScrollContainerClamp(rect.left + rect.width * (report.element_x_ratio ?? report.x_ratio) - DOT_SIZE / 2, rect.top + rect.height * (report.element_y_ratio ?? report.y_ratio) - DOT_SIZE / 2, targetElement);
         return {
             id: report.id,
             report,
-            left: rect.left + rect.width * (report.element_x_ratio ?? report.x_ratio) - DOT_SIZE / 2,
-            top: rect.top + rect.height * (report.element_y_ratio ?? report.y_ratio) - DOT_SIZE / 2,
+            left: position.left,
+            top: position.top,
             rect,
             detached: false,
+            clampedEdge: position.clampedEdge,
         };
     }
     const detachedPosition = getDetachedMarkerPosition(report, currentScrollY);
@@ -62,18 +101,19 @@ export function getMarkerFromReport(report, currentScrollY) {
         top: detachedPosition.top,
         rect: null,
         detached: true,
+        clampedEdge: detachedPosition.clampedEdge,
     };
 }
 export function getDraftMarkerPosition(draft, selectedTarget) {
     if (selectedTarget) {
-        return {
-            left: selectedTarget.rect.left + selectedTarget.rect.width * draft.elementXRatio - DOT_SIZE / 2,
-            top: selectedTarget.rect.top + selectedTarget.rect.height * draft.elementYRatio - DOT_SIZE / 2,
-        };
+        const selector = getFeedbackTargetSelector(selectedTarget.id, selectedTarget.type);
+        const targetElement = document.querySelector(selector);
+        return applyScrollContainerClamp(selectedTarget.rect.left + selectedTarget.rect.width * draft.elementXRatio - DOT_SIZE / 2, selectedTarget.rect.top + selectedTarget.rect.height * draft.elementYRatio - DOT_SIZE / 2, targetElement);
     }
     return {
         left: draft.clientX - DOT_SIZE / 2,
         top: draft.clientY - DOT_SIZE / 2,
+        clampedEdge: null,
     };
 }
 export function resolveTooltipAnchor(markers, reportId) {

@@ -21,10 +21,11 @@ function MarkerButton({ markerItem, isSelected, detachedAriaLabel, onActivate, o
     const replyCount = markerItem.report.replies.length;
     const markerLabel = replyCount > 0 ? `${markerItem.report.report_type} · ${markerItem.report.report_id} · ${replyCount} replies` : `${markerItem.report.report_type} · ${markerItem.report.report_id}`;
     const isDetached = markerItem.detached;
+    const isClamped = markerItem.clampedEdge !== null;
     return (_jsx("div", { className: MARKER_ANCHOR_CLASS, style: {
             left: markerItem.left,
             top: markerItem.top,
-        }, children: _jsxs("div", { className: "relative pointer-events-auto", children: [isDetached ? (_jsx("div", { "aria-hidden": true, className: "pointer-events-none absolute -inset-[6px] rounded-full border border-dashed border-white/80" })) : null, _jsx("button", { ref: hoverRef, type: "button", "data-fivepixels-interactive": "", "data-marker-report-id": markerItem.report.id, "aria-label": isDetached ? `${detachedAriaLabel} · ${markerLabel}` : markerLabel, onClick: () => {
+        }, children: _jsxs("div", { className: "relative pointer-events-auto", children: [isDetached || isClamped ? (_jsx("div", { "aria-hidden": true, className: `pointer-events-none absolute -inset-[6px] rounded-full border border-dashed border-white/80 ${isClamped && !isDetached ? "opacity-80" : ""}` })) : null, _jsx("button", { ref: hoverRef, type: "button", "data-fivepixels-interactive": "", "data-marker-report-id": markerItem.report.id, "aria-label": isDetached ? `${detachedAriaLabel} · ${markerLabel}` : markerLabel, onClick: () => {
                         void onActivate(markerItem.report);
                     }, className: `${isSelected
                         ? `${MARKER_BUTTON_BASE_CLASS} min-h-[16px] min-w-[16px] border-[2px] scale-[1.4] border-white shadow-[0_4px_10px_#00000090]`

@@ -370,11 +370,11 @@ export function useReportState({
         };
 
         syncSelectableTargets();
-        window.addEventListener("scroll", syncSelectableTargets, { passive: true });
+        window.addEventListener("scroll", syncSelectableTargets, { passive: true, capture: true });
         window.addEventListener("resize", syncSelectableTargets);
 
         return () => {
-            window.removeEventListener("scroll", syncSelectableTargets);
+            window.removeEventListener("scroll", syncSelectableTargets, { capture: true });
             window.removeEventListener("resize", syncSelectableTargets);
         };
     }, [currentPathname]);
@@ -388,11 +388,11 @@ export function useReportState({
             setSelectableTargets(getSelectableTargets());
         };
 
-        window.addEventListener("scroll", syncPreviewRects, { passive: true });
+        window.addEventListener("scroll", syncPreviewRects, { passive: true, capture: true });
         window.addEventListener("resize", syncPreviewRects);
 
         return () => {
-            window.removeEventListener("scroll", syncPreviewRects);
+            window.removeEventListener("scroll", syncPreviewRects, { capture: true });
             window.removeEventListener("resize", syncPreviewRects);
         };
     }, [showTargetPreview]);
@@ -408,11 +408,11 @@ export function useReportState({
         }
 
         syncMarkers();
-        window.addEventListener("scroll", syncMarkers, { passive: true });
+        window.addEventListener("scroll", syncMarkers, { passive: true, capture: true });
         window.addEventListener("resize", syncMarkers);
 
         return () => {
-            window.removeEventListener("scroll", syncMarkers);
+            window.removeEventListener("scroll", syncMarkers, { capture: true });
             window.removeEventListener("resize", syncMarkers);
         };
     }, [mode, syncMarkers]);
@@ -456,11 +456,11 @@ export function useReportState({
             setSelectedTarget(toSnapshot(selectedElementRef.current));
         };
 
-        window.addEventListener("scroll", syncTargetRects, { passive: true });
+        window.addEventListener("scroll", syncTargetRects, { passive: true, capture: true });
         window.addEventListener("resize", syncTargetRects);
 
         return () => {
-            window.removeEventListener("scroll", syncTargetRects);
+            window.removeEventListener("scroll", syncTargetRects, { capture: true });
             window.removeEventListener("resize", syncTargetRects);
         };
     }, [mode]);

@@ -1,1 +1,1 @@
-export { default as LandingPanel } from "./Panel";
+export { PulseBoardLayout } from "./ui/PulseBoardLayout";

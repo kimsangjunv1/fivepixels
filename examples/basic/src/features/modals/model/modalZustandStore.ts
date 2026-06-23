@@ -1,6 +1,8 @@
 import type { ReportFeedback } from "@fivepixels-js/react";
 import { create } from "zustand";
 
+import { isDashboardPath } from "../../landing/model/dashboardPaths";
+
 export const MODAL_ZUSTAND_TARGET_ID = "modal-zustand-target";
 
 type ModalZustandState = {
@@ -16,7 +18,7 @@ export const useModalZustandStore = create<ModalZustandState>((set) => ({
 }));
 
 export function revealZustandModal(report: Pick<ReportFeedback, "report_id" | "pathname">) {
-    if (report.pathname !== "/modals" || report.report_id !== MODAL_ZUSTAND_TARGET_ID) {
+    if (!report.pathname || !isDashboardPath(report.pathname) || report.report_id !== MODAL_ZUSTAND_TARGET_ID) {
         return false;
     }
 

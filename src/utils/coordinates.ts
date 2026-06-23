@@ -1,8 +1,61 @@
 import { DOT_SIZE } from "@/constants/report.js";
 import type { ReportFeedback } from "@/types/report.js";
-import type { DraftReport, Marker, TargetSnapshot } from "@/types/report-ui.js";
-import { getFeedbackTargetSelector, isFeedbackTargetVisible } from "./dom.js";
+import type { DraftReport, Marker, MarkerClampEdge, TargetSnapshot } from "@/types/report-ui.js";
+import { getFeedbackTargetSelector, getNearestScrollContainer, isFeedbackTargetVisible } from "./dom.js";
 import { getFeedbackAnchorElement } from "./locateFeedback.js";
+
+export type MarkerPosition = {
+    left: number;
+    top: number;
+    clampedEdge: MarkerClampEdge | null;
+};
+
+function applyScrollContainerClamp(left: number, top: number, element: HTMLElement | null): MarkerPosition {
+    if (!element) {
+        return { left, top, clampedEdge: null };
+    }
+
+    const scrollContainer = getNearestScrollContainer(element);
+
+    if (!scrollContainer) {
+        return { left, top, clampedEdge: null };
+    }
+
+    const bounds = scrollContainer.getBoundingClientRect();
+    const anchorX = left + DOT_SIZE / 2;
+    const anchorY = top + DOT_SIZE / 2;
+    let clampedX = anchorX;
+    let clampedY = anchorY;
+    let clampedEdge: MarkerClampEdge | null = null;
+
+    if (anchorY < bounds.top) {
+        clampedY = bounds.top;
+        clampedEdge = "top";
+    } else if (anchorY > bounds.bottom) {
+        clampedY = bounds.bottom;
+        clampedEdge = "bottom";
+    }
+
+    if (anchorX < bounds.left) {
+        clampedX = bounds.left;
+
+        if (!clampedEdge) {
+            clampedEdge = "left";
+        }
+    } else if (anchorX > bounds.right) {
+        clampedX = bounds.right;
+
+        if (!clampedEdge) {
+            clampedEdge = "right";
+        }
+    }
+
+    return {
+        left: clampedX - DOT_SIZE / 2,
+        top: clampedY - DOT_SIZE / 2,
+        clampedEdge,
+    };
+}
 
 export function clampRatio(value: number) {
     if (Number.isNaN(value)) {
@@ -36,10 +89,11 @@ function getAnchorMarkerPosition(report: ReportFeedback) {
         return null;
     }
 
-    return {
-        left: rect.left + rect.width * report.anchor_x_ratio - DOT_SIZE / 2,
-        top: rect.top + rect.height * report.anchor_y_ratio - DOT_SIZE / 2,
-    };
+    return applyScrollContainerClamp(
+        rect.left + rect.width * report.anchor_x_ratio - DOT_SIZE / 2,
+        rect.top + rect.height * report.anchor_y_ratio - DOT_SIZE / 2,
+        anchorElement,
+    );
 }
 
 function getDetachedMarkerPosition(report: ReportFeedback, currentScrollY: number) {
@@ -53,7 +107,7 @@ function getDetachedMarkerPosition(report: ReportFeedback, currentScrollY: numbe
     const left = report.viewport_width * report.x_ratio * widthScale - DOT_SIZE / 2;
     const top = report.document_y - currentScrollY - DOT_SIZE / 2;
 
-    return { left, top };
+    return { left, top, clampedEdge: null };
 }
 
 export function getMarkerFromReport(report: ReportFeedback, currentScrollY: number): Marker {
@@ -62,14 +116,20 @@ export function getMarkerFromReport(report: ReportFeedback, currentScrollY: numb
 
     if (targetElement && isFeedbackTargetVisible(targetElement)) {
         const rect = targetElement.getBoundingClientRect();
+        const position = applyScrollContainerClamp(
+            rect.left + rect.width * (report.element_x_ratio ?? report.x_ratio) - DOT_SIZE / 2,
+            rect.top + rect.height * (report.element_y_ratio ?? report.y_ratio) - DOT_SIZE / 2,
+            targetElement,
+        );
 
         return {
             id: report.id,
             report,
-            left: rect.left + rect.width * (report.element_x_ratio ?? report.x_ratio) - DOT_SIZE / 2,
-            top: rect.top + rect.height * (report.element_y_ratio ?? report.y_ratio) - DOT_SIZE / 2,
+            left: position.left,
+            top: position.top,
             rect,
             detached: false,
+            clampedEdge: position.clampedEdge,
         };
     }
 
@@ -82,20 +142,26 @@ export function getMarkerFromReport(report: ReportFeedback, currentScrollY: numb
         top: detachedPosition.top,
         rect: null,
         detached: true,
+        clampedEdge: detachedPosition.clampedEdge,
     };
 }
 
-export function getDraftMarkerPosition(draft: Pick<DraftReport, "clientX" | "clientY" | "elementXRatio" | "elementYRatio">, selectedTarget: TargetSnapshot | null) {
+export function getDraftMarkerPosition(draft: Pick<DraftReport, "clientX" | "clientY" | "elementXRatio" | "elementYRatio">, selectedTarget: TargetSnapshot | null): MarkerPosition {
     if (selectedTarget) {
-        return {
-            left: selectedTarget.rect.left + selectedTarget.rect.width * draft.elementXRatio - DOT_SIZE / 2,
-            top: selectedTarget.rect.top + selectedTarget.rect.height * draft.elementYRatio - DOT_SIZE / 2,
-        };
+        const selector = getFeedbackTargetSelector(selectedTarget.id, selectedTarget.type);
+        const targetElement = document.querySelector<HTMLElement>(selector);
+
+        return applyScrollContainerClamp(
+            selectedTarget.rect.left + selectedTarget.rect.width * draft.elementXRatio - DOT_SIZE / 2,
+            selectedTarget.rect.top + selectedTarget.rect.height * draft.elementYRatio - DOT_SIZE / 2,
+            targetElement,
+        );
     }
 
     return {
         left: draft.clientX - DOT_SIZE / 2,
         top: draft.clientY - DOT_SIZE / 2,
+        clampedEdge: null,
     };
 }
 

@@ -1,61 +1,31 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 
-import ContactPage from "./(public)/contact/page";
-import LandingPage from "./(public)/landing/page";
-import NaverPage from "./(examples)/naver/page";
-import KraftonPage from "./(examples)/krafton/page";
-import DanggnPage from "./(examples)/danggn/page";
-import NexonPage from "./(examples)/nexon/page";
-import PricingPage from "./(public)/pricing/page";
-import ModalsPage from "./(public)/modals/page";
-import { AppLayout } from "./layout/AppLayout";
+import { LandingPageProvider } from "../features/landing/model/LandingContext";
+import { ModalDemoProvider } from "../features/modals/model/ModalDemoContext";
+import { PulseIssuesPage } from "../widgets/landing/pages/PulseIssuesPage";
+import { PulseOverviewPage } from "../widgets/landing/pages/PulseOverviewPage";
+import { PulseReleasePage } from "../widgets/landing/pages/PulseReleasePage";
+import { PulseReviewsPage } from "../widgets/landing/pages/PulseReviewsPage";
+import { PulseSettingsPage } from "../widgets/landing/pages/PulseSettingsPage";
+import { PulseBoardLayout } from "../widgets/landing/ui/PulseBoardLayout";
+
+import "../../styles/pulse-board.css";
 
 export function AppRouter() {
     return (
-        <Routes>
-            <Route
-                path="/examples/naver"
-                element={<NaverPage />}
-            />
-            <Route
-                path="/examples/krafton"
-                element={<KraftonPage />}
-            />
-            <Route
-                path="/examples/nexon"
-                element={<NexonPage />}
-            />
-            <Route
-                path="/examples/danggn"
-                element={<DanggnPage />}
-            />
-            <Route element={<AppLayout />}>
-                <Route
-                    path="/"
-                    element={<LandingPage />}
-                />
-                <Route
-                    path="/pricing"
-                    element={<PricingPage />}
-                />
-                <Route
-                    path="/contact"
-                    element={<ContactPage />}
-                />
-                <Route
-                    path="/modals"
-                    element={<ModalsPage />}
-                />
-                <Route
-                    path="*"
-                    element={
-                        <Navigate
-                            to="/"
-                            replace
-                        />
-                    }
-                />
-            </Route>
-        </Routes>
+        <LandingPageProvider>
+            <ModalDemoProvider>
+                <Routes>
+                    <Route element={<PulseBoardLayout />}>
+                        <Route index element={<PulseOverviewPage />} />
+                        <Route path="issues" element={<PulseIssuesPage />} />
+                        <Route path="reviews" element={<PulseReviewsPage />} />
+                        <Route path="release" element={<PulseReleasePage />} />
+                        <Route path="settings" element={<PulseSettingsPage />} />
+                    </Route>
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+            </ModalDemoProvider>
+        </LandingPageProvider>
     );
 }

@@ -3,7 +3,7 @@ import type { ReportFeedback } from "@fivepixels-js/react";
 
 import { registerModalRevealHandler } from "./modalRevealRegistry";
 
-type ModalCaseKey = "opacity" | "display" | "conditional" | "visibility";
+type ModalCaseKey = "opacity" | "display" | "conditional" | "visibility" | "offscreen";
 
 type ModalDemoContextValue = {
     isOpen: (key: ModalCaseKey) => boolean;
@@ -18,6 +18,7 @@ const revealTargetByCase: Record<ModalCaseKey, string> = {
     display: "modal-display-target",
     conditional: "modal-conditional-target",
     visibility: "modal-visibility-target",
+    offscreen: "modal-offscreen-target",
 };
 
 export function ModalDemoProvider({ children }: PropsWithChildren) {
@@ -26,6 +27,7 @@ export function ModalDemoProvider({ children }: PropsWithChildren) {
         display: false,
         conditional: false,
         visibility: false,
+        offscreen: false,
     });
 
     const openModal = useCallback((key: ModalCaseKey) => {

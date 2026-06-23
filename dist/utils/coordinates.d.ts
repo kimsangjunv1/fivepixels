@@ -1,11 +1,13 @@
 import type { ReportFeedback } from "../types/report.js";
-import type { DraftReport, Marker, TargetSnapshot } from "../types/report-ui.js";
-export declare function clampRatio(value: number): number;
-export declare function getMarkerFromReport(report: ReportFeedback, currentScrollY: number): Marker;
-export declare function getDraftMarkerPosition(draft: Pick<DraftReport, "clientX" | "clientY" | "elementXRatio" | "elementYRatio">, selectedTarget: TargetSnapshot | null): {
+import type { DraftReport, Marker, MarkerClampEdge, TargetSnapshot } from "../types/report-ui.js";
+export type MarkerPosition = {
     left: number;
     top: number;
+    clampedEdge: MarkerClampEdge | null;
 };
+export declare function clampRatio(value: number): number;
+export declare function getMarkerFromReport(report: ReportFeedback, currentScrollY: number): Marker;
+export declare function getDraftMarkerPosition(draft: Pick<DraftReport, "clientX" | "clientY" | "elementXRatio" | "elementYRatio">, selectedTarget: TargetSnapshot | null): MarkerPosition;
 export declare function resolveTooltipAnchor(markers: Marker[], reportId: string | null): Marker | null;
 export declare const TOOLTIP_MARGIN = 16;
 export type TooltipPlacement = "above" | "below";
