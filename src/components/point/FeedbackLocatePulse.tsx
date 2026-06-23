@@ -70,7 +70,8 @@ export function MarkerLocatePulse({ left, top, tick, accentColor }: MarkerLocate
                     border: "2px solid rgba(56, 189, 248, 0.95)",
                     boxShadow: "0 0 28px rgba(56, 189, 248, 0.65)",
                 }}
-                animate={isPeak ? { scale: 1.85, opacity: 0 } : { scale: 1, opacity: 0.8 }}
+                animate={isPeak ? { opacity: 0 } : { opacity: 0.8 }}
+                // animate={isPeak ? { scale: 1.85, opacity: 0 } : { scale: 1, opacity: 0.8 }}
                 transition={LOCATE_PULSE_RIPPLE_TRANSITION}
             />
 
@@ -119,7 +120,7 @@ export function TargetLocatePulse({ rect, tick, outlineColor, surfaceColor }: Ta
                     border: "2px solid rgba(56, 189, 248, 0.9)",
                     boxShadow: "0 0 32px rgba(56, 189, 248, 0.45)",
                 }}
-                animate={isPeak ? { scale: 1.06, opacity: 1 } : { scale: 1, opacity: 0.35 }}
+                animate={isPeak ? { opacity: 1 } : { opacity: 0.35 }}
                 transition={LOCATE_PULSE_TRANSITION}
             />
 
@@ -136,7 +137,7 @@ export function TargetLocatePulse({ rect, tick, outlineColor, surfaceColor }: Ta
                     backgroundColor: surfaceColor,
                     boxShadow: `0 0 0 2px rgba(56, 189, 248, 0.55), inset 0 0 24px rgba(56, 189, 248, 0.18)`,
                 }}
-                animate={isPeak ? { scale: 1.02, opacity: 1 } : { scale: 1, opacity: 0.55 }}
+                animate={isPeak ? { opacity: 1 } : { opacity: 0.55 }}
                 transition={LOCATE_PULSE_TRANSITION}
             />
         </>

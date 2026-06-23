@@ -103,6 +103,7 @@ export type ReportMessages = {
         today: string;
     };
     moreMenu: {
+        settings: string;
         import: string;
         export: string;
         keyCopy: string;

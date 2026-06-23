@@ -1,8 +1,9 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useEffect, useState } from "react";
 import { useReport } from "../../../providers/reportContext.js";
-import { SendIcon } from "../../../components/icons/SendIcon.js";
+import { SendIcon } from "../../../components/icons/Icons.js";
 import { AuthorSelector } from "./AuthorSelector.js";
+import { HoverTooltip } from "../../../components/ui/HoverTooltip.js";
 import { FieldTagSelector } from "./FieldTagSelector.js";
 export function FeedbackComposer({ message, onMessageChange, authorName, onAuthorNameChange, authors, fields, fieldValues, onFieldChange, showTags = false, onSubmit, isSubmitting = false, showGitHubIssueOnCreate = false, onGitHubIssueSubmit, isGitHubIssueSubmitting = false, placeholder, autoFocus = false, }) {
     const { messages } = useReport();
@@ -42,6 +43,6 @@ export function FeedbackComposer({ message, onMessageChange, authorName, onAutho
                                             ? messages.composer.gitIssueSendingLabel
                                             : isGitHubIssueConfirming
                                                 ? messages.feedbackList.gitIssueConfirmLabel
-                                                : messages.composer.gitIssueSendLabel] }) })) : null, _jsx("button", { type: "button", "data-fivepixels-interactive": "", disabled: isActionDisabled, onClick: handleSubmit, className: "inline-flex px-[12px] shrink-0 items-center justify-center rounded-full bg-[var(--adaptive-blue500)] text-[var(--adaptive-overlay-text)] disabled:opacity-50", "aria-label": messages.composer.sendAriaLabel, children: _jsx(SendIcon, { className: "w-[16px]" }) })] })] }), showTags ? (_jsx(FieldTagSelector, { fields: fields, fieldValues: fieldValues, onFieldChange: (key, value) => onFieldChange(key, value) })) : null] }));
+                                                : messages.composer.gitIssueSendLabel] }) })) : null, _jsx(HoverTooltip, { label: messages.composer.sendAriaLabel, children: _jsx("button", { type: "button", "data-fivepixels-interactive": "", disabled: isActionDisabled, onClick: handleSubmit, className: "inline-flex px-[12px] shrink-0 items-center justify-center rounded-full bg-[var(--adaptive-blue500)] text-[var(--adaptive-overlay-text)] disabled:opacity-50", "aria-label": messages.composer.sendAriaLabel, children: _jsx(SendIcon, { className: "w-[16px]" }) }) })] })] }), showTags ? (_jsx(FieldTagSelector, { fields: fields, fieldValues: fieldValues, onFieldChange: (key, value) => onFieldChange(key, value) })) : null] }));
 }
 //# sourceMappingURL=FeedbackComposer.js.map

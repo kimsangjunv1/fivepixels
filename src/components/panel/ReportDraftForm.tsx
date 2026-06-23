@@ -1,19 +1,10 @@
 import { useMemo } from "react";
-import { AnimatedPresence, motion } from "@/components/motion/index.js";
 import { useTooltipLayout } from "@/hooks/useTooltipLayout.js";
 import { useReport } from "@/providers/reportContext.js";
 import { getDraftMarkerPosition } from "@/utils/coordinates.js";
 import { FeedbackComposer } from "./feedback/FeedbackComposer.js";
 
-const TOOLTIP_MOTION_TRANSITION = {
-    delay: 0,
-    type: "spring" as const,
-    mass: 0.1,
-    stiffness: 100,
-    damping: 10,
-};
-
-const TOOLTIP_SURFACE_CLASS = "overflow-hidden rounded-[24px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[20px]";
+const TOOLTIP_SURFACE_CLASS = "overflow-hidden rounded-[12px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[20px]";
 const EXPANDED_TOOLTIP_ANCHOR_CLASS = "pointer-events-auto fixed z-[1000001]";
 
 export function ReportDraftForm() {
@@ -25,7 +16,6 @@ export function ReportDraftForm() {
         selectedTarget,
         updateDraftMessage,
         updateDraftField,
-        cancelDraft,
         handleCreateSubmit,
         handleCreateSubmitWithGitHubIssue,
         canCreateGitHubIssueOnCreate,
@@ -34,27 +24,26 @@ export function ReportDraftForm() {
         setDraftAuthorName,
     } = useReport();
 
+    if (!draft) {
+        return null;
+    }
+
     return (
-        <AnimatedPresence>
-            {draft ? (
-                <ReportDraftFormContent
-                    draft={draft}
-                    fields={fields}
-                    authors={authors}
-                    isCreating={isCreating}
-                    selectedTarget={selectedTarget}
-                    updateDraftMessage={updateDraftMessage}
-                    updateDraftField={updateDraftField}
-                    cancelDraft={cancelDraft}
-                    handleCreateSubmit={handleCreateSubmit}
-                    handleCreateSubmitWithGitHubIssue={handleCreateSubmitWithGitHubIssue}
-                    canCreateGitHubIssueOnCreate={canCreateGitHubIssueOnCreate}
-                    isDraftGitHubIssueSubmitting={isDraftGitHubIssueSubmitting}
-                    draftAuthorName={draftAuthorName}
-                    setDraftAuthorName={setDraftAuthorName}
-                />
-            ) : null}
-        </AnimatedPresence>
+        <ReportDraftFormContent
+            draft={draft}
+            fields={fields}
+            authors={authors}
+            isCreating={isCreating}
+            selectedTarget={selectedTarget}
+            updateDraftMessage={updateDraftMessage}
+            updateDraftField={updateDraftField}
+            handleCreateSubmit={handleCreateSubmit}
+            handleCreateSubmitWithGitHubIssue={handleCreateSubmitWithGitHubIssue}
+            canCreateGitHubIssueOnCreate={canCreateGitHubIssueOnCreate}
+            isDraftGitHubIssueSubmitting={isDraftGitHubIssueSubmitting}
+            draftAuthorName={draftAuthorName}
+            setDraftAuthorName={setDraftAuthorName}
+        />
     );
 }
 
@@ -66,7 +55,6 @@ type ReportDraftFormContentProps = {
     selectedTarget: ReturnType<typeof useReport>["selectedTarget"];
     updateDraftMessage: (message: string) => void;
     updateDraftField: (key: string, value: string | boolean) => void;
-    cancelDraft: () => void;
     handleCreateSubmit: () => Promise<void>;
     handleCreateSubmitWithGitHubIssue: () => Promise<void>;
     canCreateGitHubIssueOnCreate: boolean;
@@ -94,20 +82,15 @@ function ReportDraftFormContent({
     const { layout: tooltipLayout, setTooltipElement } = useTooltipLayout(anchor, true, true);
     const tooltipPosition = tooltipLayout?.position ?? null;
     const tooltipAnchorStyle = tooltipLayout?.anchorStyle;
-    const tooltipScaleOrigin = tooltipPosition?.placement === "below" ? "top left" : "bottom left";
 
     if (!tooltipPosition || !tooltipAnchorStyle) {
         return null;
     }
 
     return (
-        <motion.div
+        <div
             ref={setTooltipElement}
-            key="report-draft-form"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={TOOLTIP_MOTION_TRANSITION}
+            data-fivepixels-interactive=""
             onClick={(event) => event.stopPropagation()}
             className={EXPANDED_TOOLTIP_ANCHOR_CLASS}
             style={{
@@ -117,16 +100,10 @@ function ReportDraftFormContent({
                 ...tooltipAnchorStyle,
             }}
         >
-            <motion.div
-                data-fivepixels-interactive=""
-                initial={{ scale: 0.97 }}
-                animate={{ scale: 1 }}
-                exit={{ scale: 0.97 }}
-                transition={TOOLTIP_MOTION_TRANSITION}
+            <div
                 className={TOOLTIP_SURFACE_CLASS}
                 style={{
                     pointerEvents: "auto",
-                    transformOrigin: tooltipScaleOrigin,
                 }}
             >
                 <FeedbackComposer
@@ -146,7 +123,7 @@ function ReportDraftFormContent({
                     isGitHubIssueSubmitting={isDraftGitHubIssueSubmitting}
                     autoFocus
                 />
-            </motion.div>
-        </motion.div>
+            </div>
+        </div>
     );
 }

@@ -179,6 +179,38 @@ export function placementToPanelStyle(placement: PanelPlacement): CSSProperties 
     return style;
 }
 
+export function placementToCollapsedPanelStyle(placement: PanelPlacement): CSSProperties {
+    const style: CSSProperties = {
+        top: "auto",
+        right: "auto",
+        bottom: "auto",
+        left: "auto",
+        maxHeight: "none",
+        maxWidth: "none",
+    };
+
+    switch (placement.corner) {
+        case "top-left":
+            style.top = EDGE_MARGIN;
+            style.left = 0;
+            break;
+        case "top-right":
+            style.top = EDGE_MARGIN;
+            style.right = 0;
+            break;
+        case "bottom-left":
+            style.bottom = EDGE_MARGIN;
+            style.left = 0;
+            break;
+        case "bottom-right":
+            style.bottom = EDGE_MARGIN;
+            style.right = 0;
+            break;
+    }
+
+    return style;
+}
+
 export function getMobilePanelStyle(): CSSProperties {
     return {
         top: "auto",

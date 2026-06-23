@@ -10,7 +10,9 @@ import type {
     UpdateReportFeedbackPayload,
 } from "@/types/report.js";
 import type { ReportFilters, ReportListScope } from "@/types/report-ui.js";
-import { getRouteDetailStatus, isCreatedToday, ROUTE_DETAIL_STATUS_ORDER } from "@/utils/routeDetailStatus.js";
+import { getRouteDetailStatus, isCreatedToday } from "@/utils/routeDetailStatus.js";
+import { getFeedbackDisplayStatus } from "@/utils/feedbackThread.js";
+import { FEEDBACK_DISPLAY_STATUS_ORDER } from "@/constants/feedbackStatus.js";
 import { resolveStorageAdapter } from "@/utils/storage.js";
 
 export type ReportPersistenceConfig = {
@@ -109,7 +111,7 @@ export function useReportPersistence({
 
     const routeDetailsStats = useMemo(() => {
         const currentPageReports = currentReportsQuery.data;
-        const statusRows = ROUTE_DETAIL_STATUS_ORDER.map((status) => ({
+        const statusRows = FEEDBACK_DISPLAY_STATUS_ORDER.map((status) => ({
             status,
             all: 0,
             today: 0,
@@ -118,7 +120,7 @@ export function useReportPersistence({
         const statusIndex = new Map(statusRows.map((row, index) => [row.status, index]));
 
         for (const report of currentPageReports) {
-            const status = getRouteDetailStatus(report);
+            const status = getFeedbackDisplayStatus(report, true);
             const index = statusIndex.get(status);
 
             if (index === undefined) {

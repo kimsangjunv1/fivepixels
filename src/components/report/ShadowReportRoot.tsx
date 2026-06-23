@@ -2,6 +2,7 @@ import { useLayoutEffect, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import type { ResolvedAppearance } from "@/types/report-ui.js";
 import { REPORT_STYLESHEET } from "@/styles/reportStylesheet.js";
+import { ensureReportTooltipLayer } from "@/utils/dom.js";
 
 const HOST_ID = "fivepixels-root";
 const STYLE_ELEMENT_ID = "fivepixels-report-styles";
@@ -87,6 +88,7 @@ export function ShadowReportRoot({ appearance, children }: ShadowReportRootProps
     useLayoutEffect(() => {
         const host = getOrCreateShadowHost();
         applyReportStyles(host.shadowRoot, REPORT_STYLESHEET);
+        ensureReportTooltipLayer();
         setMount(host.mount);
 
         return () => {

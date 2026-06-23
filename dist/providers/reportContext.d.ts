@@ -17,7 +17,7 @@ declare const ReportContext: import("react").Context<{
     routeDetailsStats: {
         pathname: string;
         statusRows: {
-            status: import("../utils/routeDetailStatus").RouteDetailStatus;
+            status: import("../constants/feedbackStatus").FeedbackDisplayStatus;
             all: number;
             today: number;
         }[];
@@ -76,7 +76,6 @@ declare const ReportContext: import("react").Context<{
     selectedTarget: import("../types/report-ui").TargetSnapshot | null;
     markers: import("../types/report-ui").Marker[];
     selectedReport: import("..").ReportFeedback;
-    locatedReportId: string | null;
     editingReportId: string | null;
     editableDraft: import("../types/report-ui").EditableDraft | null;
     setEditableDraft: import("react").Dispatch<import("react").SetStateAction<import("../types/report-ui").EditableDraft | null>>;
@@ -159,7 +158,7 @@ export declare function useReport(): {
     routeDetailsStats: {
         pathname: string;
         statusRows: {
-            status: import("../utils/routeDetailStatus").RouteDetailStatus;
+            status: import("../constants/feedbackStatus").FeedbackDisplayStatus;
             all: number;
             today: number;
         }[];
@@ -218,7 +217,6 @@ export declare function useReport(): {
     selectedTarget: import("../types/report-ui").TargetSnapshot | null;
     markers: import("../types/report-ui").Marker[];
     selectedReport: import("..").ReportFeedback;
-    locatedReportId: string | null;
     editingReportId: string | null;
     editableDraft: import("../types/report-ui").EditableDraft | null;
     setEditableDraft: import("react").Dispatch<import("react").SetStateAction<import("../types/report-ui").EditableDraft | null>>;

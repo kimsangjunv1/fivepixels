@@ -70,4 +70,35 @@ export function findTargetByPoint(overlay, clientX, clientY) {
     overlay.style.pointerEvents = previousPointerEvents;
     return findTargetElement(hitElement);
 }
+const REPORT_HOST_ID = "fivepixels-root";
+const REPORT_MOUNT_ATTR = "data-fivepixels-mount";
+const REPORT_TOOLTIP_LAYER_ATTR = "data-fivepixels-tooltip-layer";
+export function getReportPortalRoot() {
+    const mount = document.getElementById(REPORT_HOST_ID)?.shadowRoot?.querySelector(`[${REPORT_MOUNT_ATTR}]`);
+    if (mount instanceof HTMLElement) {
+        return mount;
+    }
+    return document.body;
+}
+export function ensureReportTooltipLayer() {
+    const shadowRoot = document.getElementById(REPORT_HOST_ID)?.shadowRoot;
+    if (!shadowRoot) {
+        return document.body;
+    }
+    let layer = shadowRoot.querySelector(`[${REPORT_TOOLTIP_LAYER_ATTR}]`);
+    if (!(layer instanceof HTMLElement)) {
+        const newLayer = document.createElement("div");
+        newLayer.setAttribute(REPORT_TOOLTIP_LAYER_ATTR, "");
+        newLayer.style.cssText = "position:fixed;inset:0;z-index:2147483647;pointer-events:none;overflow:visible;";
+        shadowRoot.append(newLayer);
+        return newLayer;
+    }
+    if (layer !== shadowRoot.lastElementChild) {
+        shadowRoot.append(layer);
+    }
+    return layer;
+}
+export function getReportTooltipRoot() {
+    return ensureReportTooltipLayer();
+}
 //# sourceMappingURL=dom.js.map

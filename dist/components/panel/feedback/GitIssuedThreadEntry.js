@@ -4,9 +4,8 @@ import { useReport } from "../../../providers/reportContext.js";
 import { formatDate } from "../../../utils/format.js";
 import { copyTextToClipboard } from "../../../utils/feedbackDataTransfer.js";
 import { FeedbackStatusBadge } from "./FeedbackStatusBadge.js";
-// import { CopyIcon } from "../../../components/icons/CopyIcon.js";
-import { LinkIcon } from "../../../components/icons/LinkIcon.js";
-import { ArrowTRIcon } from "../../../components/icons/ArrowTRIcon.js";
+// import { CopyIcon } from "../../../components/icons/Icons.js";
+import { LinkIcon, ArrowTRIcon } from "../../../components/icons/Icons.js";
 export function GitIssuedThreadEntry({ reply, issueUrl }) {
     const { locale, messages } = useReport();
     const [copied, setCopied] = useState(false);

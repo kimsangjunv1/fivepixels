@@ -4,13 +4,12 @@ import { REPORT_SHORTCUTS } from "../../constants/reportShortcuts.js";
 import { useReport } from "../../providers/reportContext.js";
 import { formatDateOnly, formatTimeOnly } from "../../utils/format.js";
 import { getFieldTags } from "../../utils/fields.js";
-import { getRouteDetailStatus } from "../../utils/routeDetailStatus.js";
+import { getFeedbackDisplayStatus } from "../../utils/feedbackThread.js";
 import { ShortcutHint } from "../../components/ShortcutHint.js";
+import { HoverTooltip } from "../../components/ui/HoverTooltip.js";
 import { FeedbackFieldTags } from "./feedback/FeedbackFieldTags.js";
-import { SearchIcon } from "../../components/icons/SearchIcon.js";
-import { CopyIcon } from "../../components/icons/CopyIcon.js";
-import { TrashIcon } from "../../components/icons/TrashIcon.js";
-import { ChevronDownIcon } from "../../components/icons/ChevronDownIcon.js";
+import { FeedbackStatusBadge } from "./feedback/FeedbackStatusBadge.js";
+import { SearchIcon, CopyIcon, TrashIcon, ChevronDownIcon } from "../../components/icons/Icons.js";
 import { copyTextToClipboard, serializeFeedbackItem } from "../../utils/feedbackDataTransfer.js";
 import { PanelDropdownMenu, PanelDropdownMenuItem } from "./PanelDropdownMenu.js";
 import { GitIssueButton } from "./feedback/GitIssueButton.js";
@@ -44,18 +43,6 @@ function groupReportsByDate(reports, locale) {
     }
     return groups;
 }
-function getRouteStatusTone(status) {
-    if (status === "resolved") {
-        return { backgroundColor: "#e8f5e9", color: "#2e7d32" };
-    }
-    if (status === "git_issued") {
-        return { backgroundColor: "#eff6ff", color: "#1d4ed8" };
-    }
-    if (status === "suggested") {
-        return { backgroundColor: "#eff6ff", color: "#1d4ed8" };
-    }
-    return { backgroundColor: "#fff7ed", color: "#c2410c" };
-}
 function FeedbackListDeleteButton({ report, onDelete, disabled = false, messages }) {
     const [confirming, setConfirming] = useState(false);
     useEffect(() => {
@@ -77,7 +64,7 @@ function FeedbackListDeleteButton({ report, onDelete, disabled = false, messages
             setConfirming(false);
         });
     };
-    return (_jsxs("button", { type: "button", "data-fivepixels-interactive": "", onClick: handleDelete, disabled: disabled, "aria-label": confirming ? messages.feedbackList.deleteConfirmAriaLabel : messages.feedbackList.deleteAriaLabel, title: confirming ? messages.feedbackList.deleteConfirmTitle : messages.feedbackList.deleteTitle, className: `flex shrink-0 items-center justify-center gap-[2px] self-start rounded-[6px] p-[6px] disabled:opacity-50 ${confirming ? "text-rose-700 hover:bg-rose-50" : "text-[var(--adaptive-black500)] hover:bg-[var(--adaptive-black100)] hover:text-rose-700"}`, children: [_jsx(TrashIcon, { className: "h-[16px] w-[16px]" }), confirming ? _jsx("span", { className: "text-[10px] font-semibold", children: messages.feedbackList.deleteConfirmLabel }) : null] }));
+    return (_jsx(HoverTooltip, { label: confirming ? messages.feedbackList.deleteConfirmTitle : messages.feedbackList.deleteTitle, children: _jsxs("button", { type: "button", "data-fivepixels-interactive": "", onClick: handleDelete, disabled: disabled, "aria-label": confirming ? messages.feedbackList.deleteConfirmAriaLabel : messages.feedbackList.deleteAriaLabel, className: `flex shrink-0 items-center justify-center gap-[2px] self-start rounded-[6px] p-[6px] disabled:opacity-50 ${confirming ? "text-rose-700 hover:bg-rose-50" : "text-[var(--adaptive-black500)] hover:bg-[var(--adaptive-black100)] hover:text-rose-700"}`, children: [_jsx(TrashIcon, { className: "h-[16px] w-[16px]" }), confirming ? _jsx("span", { className: "text-[10px] font-semibold", children: messages.feedbackList.deleteConfirmLabel }) : null] }) }));
 }
 function FeedbackListCopyButton({ report, messages }) {
     const [copied, setCopied] = useState(false);
@@ -92,7 +79,7 @@ function FeedbackListCopyButton({ report, messages }) {
             setCopied(false);
         });
     };
-    return (_jsx("button", { type: "button", "data-fivepixels-interactive": "", onClick: handleCopy, "aria-label": messages.feedbackList.copyAriaLabel, title: copied ? messages.feedbackList.copiedTitle : messages.feedbackList.copyTitle, className: "flex shrink-0 items-center justify-center self-start rounded-[6px] p-[6px] text-[var(--adaptive-black500)] hover:bg-[var(--adaptive-black100)] hover:text-[var(--adaptive-black800)]", children: copied ? _jsx("span", { className: "text-[10px] font-semibold text-[var(--adaptive-blue500)]", children: messages.common.ok }) : _jsx(CopyIcon, { className: "h-[16px] w-[16px]" }) }));
+    return (_jsx(HoverTooltip, { label: copied ? messages.feedbackList.copiedTitle : messages.feedbackList.copyTitle, children: _jsx("button", { type: "button", "data-fivepixels-interactive": "", onClick: handleCopy, "aria-label": messages.feedbackList.copyAriaLabel, className: "flex shrink-0 items-center justify-center self-start rounded-[6px] p-[6px] text-[var(--adaptive-black500)] hover:bg-[var(--adaptive-black100)] hover:text-[var(--adaptive-black800)]", children: copied ? _jsx("span", { className: "text-[10px] font-semibold text-[var(--adaptive-blue500)]", children: messages.common.ok }) : _jsx(CopyIcon, { className: "h-[16px] w-[16px]" }) }) }));
 }
 export function ReportFeedbackList() {
     const { filters, setFilters, filteredReports, reports, listScope, setListScope, canListAllFeedback, fields, locale, messages, isError, isFetching, hasNextPage, isFetchingNextPage, fetchNextPage, isDeleting, queryErrorMessage, visibleShortcutKeys, searchInputRef, locateFeedback, refetch, handleDelete, canCreateGitHubIssueFromList, creatingGitHubIssueId, handleCreateGitHubIssue, } = useReport();
@@ -168,9 +155,9 @@ export function ReportFeedbackList() {
                             const isExpanded = expandedGroups.has(dateKey);
                             return (_jsxs("div", { className: "flex flex-col", children: [_jsxs("button", { type: "button", onClick: () => toggleGroup(dateKey), "aria-expanded": isExpanded, className: "sticky z-10 flex w-full items-center justify-between bg-[var(--adaptive-black100)] p-[4px_8px]", children: [_jsx("p", { className: "text-[12px] font-[600] text-[var(--adaptive-black700)]", children: label }), _jsx(ChevronDownIcon, { className: `h-4 w-4 shrink-0 transition-transform ${isExpanded ? "rotate-180" : ""}` })] }), isExpanded
                                         ? groupReports.map((report) => {
-                                            const routeStatus = getRouteDetailStatus(report);
+                                            const displayStatus = getFeedbackDisplayStatus(report, true);
                                             const fieldTags = getFieldTags(fields, report.field_values);
-                                            return (_jsxs("div", { className: "flex w-full items-start gap-[4px] border-b border-[var(--adaptive-border-subtle)] last:border-b-0", children: [_jsxs("button", { type: "button", onClick: () => locateFeedback(report.id), className: "flex min-w-0 flex-1 flex-col gap-[6px] p-[12px] text-left", children: [_jsxs("section", { className: "flex flex-col gap-[4px]", children: [_jsxs("div", { className: "flex flex-wrap items-center gap-[6px]", children: [_jsx("strong", { className: "max-w-full truncate font-bold text-[var(--adaptive-black900)]", children: report.report_id }), _jsx(FeedbackFieldTags, { tags: fieldTags }), _jsx("span", { className: "inline-flex items-center rounded-full px-[8px] py-[2px] text-[10px] font-bold uppercase", style: getRouteStatusTone(routeStatus), children: messages.status.routeDetail[routeStatus] })] }), _jsx("p", { className: "text-[var(--adaptive-black700)]", children: report.message }), listScope === "all" ? _jsx("p", { className: "truncate text-[11px] text-[var(--adaptive-black500)]", children: report.pathname }) : null] }), _jsx("p", { className: "text-[var(--adaptive-black500)] text-[12px]", children: formatTimeOnly(report.created_at, locale) })] }), _jsxs("div", { className: "flex shrink-0 items-start gap-[2px] p-[12px] pl-0", children: [_jsx(FeedbackListCopyButton, { report: report, messages: messages }), canCreateGitHubIssueFromList ? (_jsx(GitIssueButton, { report: report, messages: messages, disabled: isDeleting, isSubmitting: creatingGitHubIssueId === report.id, onCreateIssue: handleCreateGitHubIssue })) : null, _jsx(FeedbackListDeleteButton, { report: report, onDelete: handleDelete, disabled: isDeleting, messages: messages })] })] }, report.id));
+                                            return (_jsxs("div", { className: "flex w-full items-start gap-[4px] border-b border-[var(--adaptive-border-subtle)] last:border-b-0", children: [_jsxs("button", { type: "button", onClick: () => locateFeedback(report.id), className: "flex min-w-0 flex-1 flex-col gap-[6px] p-[12px] text-left", children: [_jsxs("section", { className: "flex flex-col gap-[4px]", children: [_jsxs("div", { className: "flex flex-wrap items-center gap-[6px]", children: [_jsx("strong", { className: "max-w-full truncate font-bold text-[var(--adaptive-black900)]", children: report.report_id }), _jsx(FeedbackFieldTags, { tags: fieldTags }), _jsx(FeedbackStatusBadge, { status: displayStatus })] }), _jsx("p", { className: "text-[var(--adaptive-black700)]", children: report.message }), listScope === "all" ? _jsx("p", { className: "truncate text-[11px] text-[var(--adaptive-black500)]", children: report.pathname }) : null] }), _jsx("p", { className: "text-[var(--adaptive-black500)] text-[12px]", children: formatTimeOnly(report.created_at, locale) })] }), _jsxs("div", { className: "flex shrink-0 items-start gap-[2px] p-[12px] pl-0", children: [_jsx(FeedbackListCopyButton, { report: report, messages: messages }), canCreateGitHubIssueFromList ? (_jsx(GitIssueButton, { report: report, messages: messages, disabled: isDeleting, isSubmitting: creatingGitHubIssueId === report.id, onCreateIssue: handleCreateGitHubIssue })) : null, _jsx(FeedbackListDeleteButton, { report: report, onDelete: handleDelete, disabled: isDeleting, messages: messages })] })] }, report.id));
                                         })
                                         : null] }, dateKey));
                         }) }), visibleCount < filteredReports.length || hasNextPage ? (_jsx("div", { ref: loadMoreRef, className: "py-[8px] text-center text-[12px] text-[var(--adaptive-black500)]", children: isFetchingNextPage ? messages.feedbackList.loadingMore : "" })) : null] })] }));

@@ -21,3 +21,12 @@ export const FEEDBACK_STATUS_COLOR: Record<FeedbackDisplayStatus, string> = {
     recheck_requested: "var(--adaptive-orange500)",
     resolved: "var(--adaptive-green500)",
 };
+
+export const FEEDBACK_DISPLAY_STATUS_ORDER: FeedbackDisplayStatus[] = [
+    "wait_for_reply",
+    "suggested",
+    "found_error",
+    "recheck_requested",
+    "git_issued",
+    "resolved",
+];

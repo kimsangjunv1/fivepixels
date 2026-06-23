@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
-import { panelAnchorSide, usePanelDock } from "@/hooks/usePanelDock.js";
+import { panelAnchorSide, placementToCollapsedPanelStyle, usePanelDock } from "@/hooks/usePanelDock.js";
 import { usePanelFeedbackTransfer } from "@/hooks/usePanelFeedbackTransfer.js";
 import { useReport } from "@/providers/reportContext.js";
-import { SelectIcon } from "@/components/icons/SelectIcon.js";
-
-import { ChevronLeftIcon, ChevronRightIcon } from "@/components/icons/ChevronIcon.js";
-import { ChevronDownIcon } from "@/components/icons/ChevronDownIcon.js";
+import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, EyeOpenIcon, LogoIcon, RouteWaitStatusIcon, SelectIcon } from "@/components/icons/Icons.js";
+import { IconTooltipButton } from "@/components/ui/IconTooltipButton.js";
+import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
 import { PanelDockGuides } from "./PanelDockGuides.js";
 import { ReportFeedbackList } from "./ReportFeedbackList.js";
 import { ReportRouteDetails } from "./ReportRouteDetails.js";
@@ -15,28 +14,33 @@ import { ReportImportConfirmDialog } from "./ReportImportConfirmDialog.js";
 import { ReportImportProjectMismatchDialog } from "./ReportImportProjectMismatchDialog.js";
 import { ReportPersonalKeyDialog } from "./ReportPersonalKeyDialog.js";
 import { PanelMoreMenu } from "./PanelMoreMenu.js";
-import { PanelDropdownMenu, PanelDropdownMenuItem } from "./PanelDropdownMenu.js";
-import { LogoIcon } from "@/components/icons/LogoIcon.js";
 import { motion } from "@/components/motion/index.js";
 import { formatStatCount } from "@/utils/formatStatCount.js";
 import { panelNumericClassName } from "@/utils/panelTypography.js";
 import type { ReportPanelTab } from "@/types/report-ui.js";
 
 function PanelCollapseTab({ collapsed, anchorSide, onClick, messages }: { collapsed: boolean; anchorSide: "left" | "right"; onClick: () => void; messages: ReturnType<typeof useReport>["messages"] }) {
-    const hideIcon = anchorSide === "right" ? <ChevronRightIcon className="h-3 w-3 text-[var(--adaptive-text-muted)]" /> : <ChevronLeftIcon className="h-3 w-3 text-[var(--adaptive-text-muted)]" />;
-    const expandIcon = anchorSide === "right" ? <ChevronLeftIcon className="h-3 w-3 text-[var(--adaptive-text-muted)]" /> : <ChevronRightIcon className="h-3 w-3 text-[var(--adaptive-text-muted)]" />;
+    const hideIcon = anchorSide === "right" ? <ChevronRightIcon className="h-4 w-4" /> : <ChevronLeftIcon className="h-4 w-4" />;
+    const expandIcon = anchorSide === "right" ? <ChevronLeftIcon className="h-4 w-4" /> : <ChevronRightIcon className="h-4 w-4" />;
 
     return (
-        <button
-            type="button"
-            onClick={onClick}
-            className=""
-            aria-expanded={!collapsed}
-            aria-label={collapsed ? messages.panel.expand : messages.panel.collapse}
-            title={collapsed ? messages.panel.expand : messages.panel.collapse}
-        >
-            {collapsed ? expandIcon : hideIcon}
-        </button>
+        <HoverTooltip label={collapsed ? messages.panel.expand : messages.panel.collapse}>
+            <button
+                type="button"
+                onClick={onClick}
+                aria-expanded={!collapsed}
+                aria-label={collapsed ? messages.panel.expand : messages.panel.collapse}
+                className={
+                    collapsed
+                        ? anchorSide === "right"
+                            ? "flex h-[105px] w-[32px] items-center justify-center rounded-l-[12px] rounded-r-none bg-[var(--adaptive-black200)] text-[var(--adaptive-blue500)] shadow-[0_0_24px_0_rgba(0,0,0,0.35)]"
+                            : "flex h-[105px] w-[32px] items-center justify-center rounded-r-[12px] rounded-l-none bg-[var(--adaptive-black200)] text-[var(--adaptive-blue500)] shadow-[0_0_24px_0_rgba(0,0,0,0.35)]"
+                        : "flex items-center justify-center px-[4px] py-[8px] text-[var(--adaptive-text-muted)]"
+                }
+            >
+                {collapsed ? expandIcon : hideIcon}
+            </button>
+        </HoverTooltip>
     );
 }
 
@@ -102,7 +106,6 @@ export function ReportControlPanel() {
     } = useReport();
     const [panelCollapsed, setPanelCollapsed] = useState(false);
     const [moreMenuOpen, setMoreMenuOpen] = useState(false);
-    const [viewMenuOpen, setViewMenuOpen] = useState(false);
     const [personalKeyStep, setPersonalKeyStep] = useState<"none" | "required" | "insert" | "rotate">("none");
     const [personalKeyNotice, setPersonalKeyNotice] = useState("");
     const isRecording = mode === "report";
@@ -186,6 +189,13 @@ export function ReportControlPanel() {
         openPanelTab(tab);
     };
 
+    const handleTogglePanelCollapsed = () => {
+        setMoreMenuOpen(false);
+        setPanelCollapsed((current) => !current);
+    };
+
+    const resolvedPanelStyle = panelCollapsed && !isRecording ? placementToCollapsedPanelStyle({ corner: placementCorner }) : panelStyle;
+
     return (
         <>
             <PanelDockGuides
@@ -217,11 +227,16 @@ export function ReportControlPanel() {
                 onDragLeave={handleDragLeave}
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}
-                className={`pointer-events-auto fixed z-[1000000] bg-[var(--adaptive-surface-overlay)] backdrop-blur-[50px] rounded-[24px] shadow-[0_0_120px_0_var(--adaptive-blackOpacity500)] flex ${isRecording ? "min-h-[40px] p-[4px]" : "max-h-[calc(100svh-(16px*2))] max-w-[calc(100svw-(16px*2))]"}`}
-                // className={`pointer-events-auto fixed z-[1000000] bg-[var(--adaptive-surface-overlay)] overflow-hidden backdrop-blur-[50px] rounded-[24px] shadow-[0_0_120px_0_var(--adaptive-blackOpacity500)] flex ${isRecording ? "min-h-[40px] p-[4px]" : "max-h-[calc(100svh-(16px*2))] max-w-[calc(100svw-(16px*2))]"}`}
-                style={{ ...panelStyle, fontSize: "14px" }}
+                className={`pointer-events-auto fixed z-[1000000] flex ${
+                    isRecording
+                        ? "min-h-[40px] bg-[var(--adaptive-surface-overlay)] p-[4px] backdrop-blur-[50px] rounded-[12px] shadow-[0_0_120px_0_var(--adaptive-blackOpacity500)]"
+                        : panelCollapsed
+                          ? ""
+                          : "max-h-[calc(100svh-(16px*2))] max-w-[calc(100svw-(16px*2))] bg-[var(--adaptive-surface-overlay)] backdrop-blur-[50px] rounded-[12px] shadow-[0_0_120px_0_var(--adaptive-blackOpacity500)]"
+                }`}
+                style={{ ...resolvedPanelStyle, fontSize: "14px" }}
             >
-                <motion.div className="flex min-w-0 flex-1 flex-col w-full">
+                <motion.div className={panelCollapsed && !isRecording ? "flex shrink-0" : "flex min-w-0 flex-1 flex-col w-full"}>
                     {isRecording ? (
                         <section className="flex items-center justify-between gap-[16px] px-[12px] py-[8px]">
                             <section className="flex items-center gap-[4px] justify-start shrink-0">
@@ -237,219 +252,203 @@ export function ReportControlPanel() {
                                 <p className="text-[14px] font-bold text-[var(--adaptive-blue500)]">{messages.panel.stopFeedback}</p>
                             </button>
                         </section>
+                    ) : panelCollapsed ? (
+                        <PanelCollapseTab
+                            collapsed={panelCollapsed}
+                            anchorSide={anchorSide}
+                            onClick={handleTogglePanelCollapsed}
+                            messages={messages}
+                        />
                     ) : (
                         <>
-                            {!panelCollapsed ? (
-                                <section className="relative flex min-w-0 flex-1 flex-col h-full">
-                                    {isDragOver ? (
-                                        <div className="pointer-events-none absolute inset-0 z-[30] flex items-center justify-center rounded-[12px] bg-[#dbeafe]/90 px-[16px] text-center backdrop-blur-[2px]">
-                                            <p className="text-[14px] font-bold text-[var(--adaptive-blue500)]">{messages.panel.importDragOverlay}</p>
-                                        </div>
+                            <section className="relative flex min-w-0 flex-1 flex-col h-full">
+                                {isDragOver ? (
+                                    <div className="pointer-events-none absolute inset-0 z-[30] flex items-center justify-center rounded-[12px] bg-[#dbeafe]/90 px-[16px] text-center backdrop-blur-[2px]">
+                                        <p className="text-[14px] font-bold text-[var(--adaptive-blue500)]">{messages.panel.importDragOverlay}</p>
+                                    </div>
+                                ) : null}
+
+                                <section className="flex">
+                                    {anchorSide === "left" ? (
+                                        <PanelCollapseTab
+                                            collapsed={panelCollapsed}
+                                            anchorSide={anchorSide}
+                                            onClick={handleTogglePanelCollapsed}
+                                            messages={messages}
+                                        />
                                     ) : null}
 
-                                    <section className="flex">
-                                        {anchorSide === "left" ? (
-                                            <PanelCollapseTab
-                                                collapsed={panelCollapsed}
-                                                anchorSide={anchorSide}
-                                                onClick={() => setPanelCollapsed((current) => !current)}
-                                                messages={messages}
-                                            />
-                                        ) : null}
+                                    <div className="flex flex-col gap-[8px] p-[8px_8px_8px_12px] flex-1">
+                                        <section className="flex items-center justify-between gap-[8px]">
+                                            <section className="flex min-w-0 items-center gap-[4px]">
+                                                <LogoIcon className="w-[94px] shrink-0" />
 
-                                        <div className="flex flex-col gap-[8px] p-[8px_8px_8px_12px] flex-1">
-                                            <section className="flex items-center justify-between gap-[8px]">
-                                                <section className="flex min-w-0 items-center gap-[4px]">
-                                                    <LogoIcon className="w-[94px] shrink-0" />
-
-                                                    {/* <EnvironmentBadge environment={environment} /> */}
-                                                </section>
-
-                                                <section className="flex shrink-0 items-center">
-                                                    <button
-                                                        type="button"
-                                                        onClick={toggleReportMode}
-                                                        className="flex items-center gap-[4px] rounded-l-[8px] bg-[var(--adaptive-black300)] p-[0_8px]"
-                                                    >
-                                                        <SelectIcon className="w-[16px]" />
-                                                        <p className="text-[12px] text-[var(--adaptive-black900)]">{messages.panel.addFeedback}</p>
-                                                    </button>
-
-                                                    <PanelDropdownMenu
-                                                        open={viewMenuOpen}
-                                                        onClose={() => setViewMenuOpen(false)}
-                                                        menuClassName="min-w-[200px]"
-                                                        trigger={
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => setViewMenuOpen((current) => !current)}
-                                                                aria-expanded={viewMenuOpen}
-                                                                aria-haspopup="menu"
-                                                                aria-label={messages.panel.viewOptionsAriaLabel}
-                                                                className="flex items-center rounded-r-[8px] border-l border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black300)] p-[2px_8px] h-[24px]"
-                                                            >
-                                                                <ChevronDownIcon className={`h-4 w-4 text-[var(--adaptive-black900)] transition-transform ${viewMenuOpen ? "rotate-180" : ""}`} />
-                                                            </button>
-                                                        }
-                                                    >
-                                                        <PanelDropdownMenuItem
-                                                            active={showTargetPreview}
-                                                            disabled={mode !== "idle"}
-                                                            onClick={() => {
-                                                                setViewMenuOpen(false);
-                                                                toggleTargetPreview();
-                                                            }}
-                                                        >
-                                                            {messages.panel.viewSelectableElements}
-                                                        </PanelDropdownMenuItem>
-                                                        <PanelDropdownMenuItem
-                                                            active={isIssueMode}
-                                                            onClick={() => {
-                                                                setViewMenuOpen(false);
-                                                                toggleIssueMode();
-                                                            }}
-                                                        >
-                                                            {messages.panel.viewFeedbacks}
-                                                        </PanelDropdownMenuItem>
-                                                    </PanelDropdownMenu>
-                                                </section>
+                                                {/* <EnvironmentBadge environment={environment} /> */}
                                             </section>
 
-                                            <section className="flex gap-[12px]">
-                                                <section
-                                                    className="flex cursor-move flex-1"
-                                                    onPointerDown={handleDragHandlePointerDown}
-                                                    aria-label={messages.panel.repositionAriaLabel}
-                                                    title={messages.panel.repositionTitle}
-                                                    style={isDragging ? { opacity: 0.8 } : undefined}
+                                            <section className="flex shrink-0 items-center gap-[4px]">
+                                                <button
+                                                    type="button"
+                                                    onClick={toggleReportMode}
+                                                    className="flex items-center gap-[4px] rounded-[8px] bg-[var(--adaptive-black100)] p-[0_8px] h-[24px]"
                                                 >
-                                                    <section className="flex flex-col items-start gap-[4px] flex-1">
-                                                        <p className="text-[12px] text-[var(--adaptive-black500)]">{messages.panel.statsFound}</p>
-                                                        <p className={`text-[14px] font-semibold text-[var(--adaptive-black900)] ${panelNumericClassName}`}>{formatStatCount(targetStats.found)}</p>
-                                                    </section>
+                                                    <SelectIcon className="w-[16px]" />
+                                                    <p className="text-[12px] text-[var(--adaptive-black900)]">{messages.panel.addFeedback}</p>
+                                                </button>
 
-                                                    <section className="flex flex-col items-start gap-[4px] flex-1">
-                                                        <p className="text-[12px] text-[var(--adaptive-black500)]">{messages.panel.statsGroup}</p>
-                                                        <p className={`text-[14px] font-semibold text-[var(--adaptive-black900)] ${panelNumericClassName}`}>{formatStatCount(targetStats.group)}</p>
-                                                    </section>
+                                                <IconTooltipButton
+                                                    label={messages.panel.viewSelectableElements}
+                                                    active={showTargetPreview}
+                                                    disabled={mode !== "idle"}
+                                                    onClick={toggleTargetPreview}
+                                                >
+                                                    <EyeOpenIcon className="h-[16px] w-[16px]" />
+                                                </IconTooltipButton>
 
-                                                    <section className="flex flex-col items-start gap-[4px] flex-1">
-                                                        <p className="text-[12px] text-[var(--adaptive-black500)]">{messages.panel.statsItem}</p>
-                                                        <p className={`text-[14px] font-semibold text-[var(--adaptive-black900)] ${panelNumericClassName}`}>{formatStatCount(targetStats.item)}</p>
-                                                    </section>
+                                                <IconTooltipButton
+                                                    label={messages.panel.viewFeedbacks}
+                                                    active={isIssueMode}
+                                                    onClick={toggleIssueMode}
+                                                >
+                                                    <RouteWaitStatusIcon className="h-[16px] w-[16px]" />
+                                                </IconTooltipButton>
+                                            </section>
+                                        </section>
+
+                                        <section className="flex gap-[12px]">
+                                            <section
+                                                className="flex cursor-move flex-1"
+                                                onPointerDown={handleDragHandlePointerDown}
+                                                aria-label={messages.panel.repositionAriaLabel}
+                                                title={messages.panel.repositionTitle}
+                                                style={isDragging ? { opacity: 0.8 } : undefined}
+                                            >
+                                                <section className="flex flex-col items-start gap-[4px] flex-1">
+                                                    <p className="text-[12px] text-[var(--adaptive-black500)]">{messages.panel.statsFound}</p>
+                                                    <p className={`text-[14px] font-semibold text-[var(--adaptive-black900)] ${panelNumericClassName}`}>{formatStatCount(targetStats.found)}</p>
+                                                </section>
+
+                                                <section className="flex flex-col items-start gap-[4px] flex-1">
+                                                    <p className="text-[12px] text-[var(--adaptive-black500)]">{messages.panel.statsGroup}</p>
+                                                    <p className={`text-[14px] font-semibold text-[var(--adaptive-black900)] ${panelNumericClassName}`}>{formatStatCount(targetStats.group)}</p>
+                                                </section>
+
+                                                <section className="flex flex-col items-start gap-[4px] flex-1">
+                                                    <p className="text-[12px] text-[var(--adaptive-black500)]">{messages.panel.statsItem}</p>
+                                                    <p className={`text-[14px] font-semibold text-[var(--adaptive-black900)] ${panelNumericClassName}`}>{formatStatCount(targetStats.item)}</p>
                                                 </section>
                                             </section>
-                                        </div>
+                                        </section>
+                                    </div>
 
-                                        {anchorSide === "right" ? (
-                                            <PanelCollapseTab
-                                                collapsed={panelCollapsed}
-                                                anchorSide={anchorSide}
-                                                onClick={() => setPanelCollapsed((current) => !current)}
-                                                messages={messages}
-                                            />
-                                        ) : null}
-                                    </section>
-
-                                    <section className="flex items-stretch border-t border-[var(--adaptive-border-subtle)]">
-                                        <div className="flex min-w-0 flex-1 overflow-hidden">
-                                            <PanelTabButton
-                                                label={messages.panel.tabPageDetails}
-                                                active={panelTab === "route-details"}
-                                                onClick={() => handlePanelTabClick("route-details")}
-                                            />
-                                            <div className="h-full w-[1px] bg-[var(--adaptive-border-subtle)]" />
-                                            {showFeedbackList ? (
-                                                <PanelTabButton
-                                                    label={messages.panel.tabFeedbackList}
-                                                    active={panelTab === "feedback-list"}
-                                                    onClick={() => handlePanelTabClick("feedback-list")}
-                                                />
-                                            ) : null}
-                                        </div>
-                                        <div className="h-full w-[1px] bg-[var(--adaptive-border-subtle)]" />
-
-                                        <PanelMoreMenu
-                                            open={moreMenuOpen}
-                                            transferDisabled={!canTransferFeedback}
-                                            appearance={appearance}
-                                            onAppearanceChange={setAppearance}
-                                            onToggle={() => setMoreMenuOpen((current) => !current)}
-                                            onClose={() => setMoreMenuOpen(false)}
-                                            onExport={handleExport}
-                                            onImport={handleImportFromMenu}
-                                            onCommand={handleOpenCommand}
-                                            hasPersonalKey={Boolean(personalKey)}
-                                            onKeyCopy={() => void handleKeyCopy()}
-                                            onPublicKeyCopy={() => void handlePublicKeyCopy()}
-                                            onKeyInsert={() => {
-                                                setMoreMenuOpen(false);
-                                                setPersonalKeyStep("insert");
-                                                setPersonalKeyNotice("");
-                                            }}
-                                            onKeyRotate={() => {
-                                                setMoreMenuOpen(false);
-                                                setPersonalKeyStep("rotate");
-                                                setPersonalKeyNotice("");
-                                            }}
-                                        />
-                                    </section>
-
-                                    {errorMessage && importStep === "none" && commandStep === "none" ? <p className="px-[8px] text-[12px] text-rose-700">{errorMessage}</p> : null}
-                                    {personalKeyNotice ? <p className="px-[8px] py-[4px] text-[12px] text-[var(--adaptive-green500)]">{personalKeyNotice}</p> : null}
-                                    {personalKeyPendingRegistration ? <p className="px-[8px] py-[4px] text-[12px] text-amber-700">{messages.personalKey.registrationPending}</p> : null}
-
-                                    {personalKeyStep !== "none" ? (
-                                        <ReportPersonalKeyDialog
-                                            mode={personalKeyStep}
-                                            onCancel={() => setPersonalKeyStep("none")}
-                                            onComplete={(message) => {
-                                                setPersonalKeyNotice(message);
-                                                setPersonalKeyStep("none");
-                                            }}
-                                        />
-                                    ) : null}
-
-                                    {personalKeyStep === "none" && importStep === "project-mismatch" && pendingImport ? (
-                                        <ReportImportProjectMismatchDialog
-                                            currentProject={transferScope}
-                                            importedProject={pendingImport.project}
-                                            exportedAt={pendingImport.exportedAt}
-                                            onProceed={handleProceedImportAfterMismatch}
-                                            onCancel={handleCancelImport}
-                                        />
-                                    ) : null}
-
-                                    {personalKeyStep === "none" && importStep === "confirm" && pendingImport ? (
-                                        <ReportImportConfirmDialog
-                                            onApply={handleApplyImport}
-                                            onCancel={handleCancelImport}
-                                            onBackupAndApply={handleBackupAndApplyImport}
-                                        />
-                                    ) : null}
-
-                                    {personalKeyStep === "none" && panelTab === "route-details" && importStep === "none" && commandStep === "none" ? <ReportRouteDetails /> : null}
-
-                                    {personalKeyStep === "none" && panelTab === "feedback-list" && showFeedbackList && importStep === "none" && commandStep === "none" ? <ReportFeedbackList /> : null}
-
-                                    {personalKeyStep === "none" && commandStep === "replace-confirm" && pendingCommand ? (
-                                        <ReportCommandReplaceConfirmDialog
-                                            conflicts={commandConflicts}
-                                            onConfirm={handleConfirmCommandReplace}
-                                            onCancel={handleCancelCommandReplace}
-                                        />
-                                    ) : null}
-
-                                    {personalKeyStep === "none" && panelTab === "command" && importStep === "none" && commandStep === "none" ? (
-                                        <ReportCommandPanel
-                                            onExecute={handleCommandExecute}
-                                            onClose={handleCloseCommand}
-                                            notice={commandNotice}
-                                            onNoticeClear={() => setCommandNotice(null)}
+                                    {anchorSide === "right" ? (
+                                        <PanelCollapseTab
+                                            collapsed={panelCollapsed}
+                                            anchorSide={anchorSide}
+                                            onClick={handleTogglePanelCollapsed}
+                                            messages={messages}
                                         />
                                     ) : null}
                                 </section>
-                            ) : null}
+
+                                <section className="flex items-stretch border-t border-[var(--adaptive-border-subtle)]">
+                                    <div className="flex min-w-0 flex-1 overflow-hidden">
+                                        <PanelTabButton
+                                            label={messages.panel.tabPageDetails}
+                                            active={panelTab === "route-details"}
+                                            onClick={() => handlePanelTabClick("route-details")}
+                                        />
+                                        <div className="h-full w-[1px] bg-[var(--adaptive-border-subtle)]" />
+                                        {showFeedbackList ? (
+                                            <PanelTabButton
+                                                label={messages.panel.tabFeedbackList}
+                                                active={panelTab === "feedback-list"}
+                                                onClick={() => handlePanelTabClick("feedback-list")}
+                                            />
+                                        ) : null}
+                                    </div>
+                                    <div className="h-full w-[1px] bg-[var(--adaptive-border-subtle)]" />
+
+                                    <PanelMoreMenu
+                                        open={moreMenuOpen}
+                                        transferDisabled={!canTransferFeedback}
+                                        appearance={appearance}
+                                        onAppearanceChange={setAppearance}
+                                        onToggle={() => setMoreMenuOpen((current) => !current)}
+                                        onClose={() => setMoreMenuOpen(false)}
+                                        onExport={handleExport}
+                                        onImport={handleImportFromMenu}
+                                        onCommand={handleOpenCommand}
+                                        hasPersonalKey={Boolean(personalKey)}
+                                        onKeyCopy={() => void handleKeyCopy()}
+                                        onPublicKeyCopy={() => void handlePublicKeyCopy()}
+                                        onKeyInsert={() => {
+                                            setMoreMenuOpen(false);
+                                            setPersonalKeyStep("insert");
+                                            setPersonalKeyNotice("");
+                                        }}
+                                        onKeyRotate={() => {
+                                            setMoreMenuOpen(false);
+                                            setPersonalKeyStep("rotate");
+                                            setPersonalKeyNotice("");
+                                        }}
+                                    />
+                                </section>
+
+                                {errorMessage && importStep === "none" && commandStep === "none" ? <p className="px-[8px] text-[12px] text-rose-700">{errorMessage}</p> : null}
+                                {personalKeyNotice ? <p className="px-[8px] py-[4px] text-[12px] text-[var(--adaptive-green500)]">{personalKeyNotice}</p> : null}
+                                {personalKeyPendingRegistration ? <p className="px-[8px] py-[4px] text-[12px] text-amber-700">{messages.personalKey.registrationPending}</p> : null}
+
+                                {personalKeyStep !== "none" ? (
+                                    <ReportPersonalKeyDialog
+                                        mode={personalKeyStep}
+                                        onCancel={() => setPersonalKeyStep("none")}
+                                        onComplete={(message) => {
+                                            setPersonalKeyNotice(message);
+                                            setPersonalKeyStep("none");
+                                        }}
+                                    />
+                                ) : null}
+
+                                {personalKeyStep === "none" && importStep === "project-mismatch" && pendingImport ? (
+                                    <ReportImportProjectMismatchDialog
+                                        currentProject={transferScope}
+                                        importedProject={pendingImport.project}
+                                        exportedAt={pendingImport.exportedAt}
+                                        onProceed={handleProceedImportAfterMismatch}
+                                        onCancel={handleCancelImport}
+                                    />
+                                ) : null}
+
+                                {personalKeyStep === "none" && importStep === "confirm" && pendingImport ? (
+                                    <ReportImportConfirmDialog
+                                        onApply={handleApplyImport}
+                                        onCancel={handleCancelImport}
+                                        onBackupAndApply={handleBackupAndApplyImport}
+                                    />
+                                ) : null}
+
+                                {personalKeyStep === "none" && panelTab === "route-details" && importStep === "none" && commandStep === "none" ? <ReportRouteDetails /> : null}
+
+                                {personalKeyStep === "none" && panelTab === "feedback-list" && showFeedbackList && importStep === "none" && commandStep === "none" ? <ReportFeedbackList /> : null}
+
+                                {personalKeyStep === "none" && commandStep === "replace-confirm" && pendingCommand ? (
+                                    <ReportCommandReplaceConfirmDialog
+                                        conflicts={commandConflicts}
+                                        onConfirm={handleConfirmCommandReplace}
+                                        onCancel={handleCancelCommandReplace}
+                                    />
+                                ) : null}
+
+                                {personalKeyStep === "none" && panelTab === "command" && importStep === "none" && commandStep === "none" ? (
+                                    <ReportCommandPanel
+                                        onExecute={handleCommandExecute}
+                                        onClose={handleCloseCommand}
+                                        notice={commandNotice}
+                                        onNoticeClear={() => setCommandNotice(null)}
+                                    />
+                                ) : null}
+                            </section>
                         </>
                     )}
                 </motion.div>
