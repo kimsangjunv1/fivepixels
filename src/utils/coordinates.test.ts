@@ -11,6 +11,7 @@ import {
     getDraftPopoverPosition,
     getMarkerFromReport,
     getTooltipPosition,
+    resolveMarkerOverflowHints,
     resolveTooltipAnchor,
 } from "./coordinates.js";
 
@@ -80,6 +81,8 @@ describe("getMarkerFromReport", () => {
         expect(marker.rect).not.toBeNull();
         expect(marker.detached).toBe(false);
         expect(marker.clampedEdge).toBeNull();
+        expect(marker.clampBounds).toBeNull();
+        expect(marker.clampContainerId).toBeNull();
         expect(marker.left).toBe(100 + 200 * 0.25 - DOT_SIZE / 2);
         expect(marker.top).toBe(80 + 100 * 0.75 - DOT_SIZE / 2);
     });
@@ -113,6 +116,7 @@ describe("getMarkerFromReport", () => {
 
         expect(marker.rect).not.toBeNull();
         expect(marker.detached).toBe(false);
+        expect(marker.clampBounds).toBeNull();
         expect(marker.left).toBe(40 + 120 * 0.5 - DOT_SIZE / 2);
         expect(marker.top).toBe(60 + 40 * 0.5 - DOT_SIZE / 2);
     });
@@ -122,6 +126,7 @@ describe("getMarkerFromReport", () => {
 
         expect(marker.rect).toBeNull();
         expect(marker.detached).toBe(true);
+        expect(marker.clampBounds).toBeNull();
         expect(marker.left).toBe(1000 * 0.5 - DOT_SIZE / 2);
         expect(marker.top).toBe(220 - 20 - DOT_SIZE / 2);
     });
@@ -177,6 +182,7 @@ describe("getMarkerFromReport", () => {
 
         expect(marker.rect).toBeNull();
         expect(marker.detached).toBe(true);
+        expect(marker.clampBounds).toBeNull();
         expect(marker.top).toBe(220 - 20 - DOT_SIZE / 2);
     });
 
@@ -208,6 +214,7 @@ describe("getMarkerFromReport", () => {
         );
 
         expect(markerAtRest.detached).toBe(true);
+        expect(markerAtRest.clampBounds).toBeNull();
         expect(markerAtRest.top).toBe(900 - 100 - DOT_SIZE / 2);
         expect(markerAfterScroll.top).toBe(900 - 400 - DOT_SIZE / 2);
         expect(markerAfterScroll.top).not.toBe(markerAtRest.top);
@@ -249,6 +256,7 @@ describe("getMarkerFromReport", () => {
         );
 
         expect(marker.detached).toBe(true);
+        expect(marker.clampBounds).toBeNull();
         expect(marker.top).toBe(620 - 200 - DOT_SIZE / 2);
         expect(marker.top).not.toBe(180 + 120 * 0.75 - DOT_SIZE / 2);
     });
@@ -307,6 +315,7 @@ describe("getMarkerFromReport", () => {
         );
 
         expect(marker.detached).toBe(true);
+        expect(marker.clampBounds).toBeNull();
         expect(marker.left).toBe(80 + 640 * 0.5 - DOT_SIZE / 2);
         expect(marker.top).toBe(320 + 220 * 0.5 - DOT_SIZE / 2);
     });
@@ -350,6 +359,8 @@ describe("getMarkerFromReport", () => {
         const marker = getMarkerFromReport(createStoredReport({ element_y_ratio: 0.5 }), 0);
 
         expect(marker.clampedEdge).toBe("top");
+        expect(marker.clampBounds).toEqual({ left: 50, top: 100, right: 350, bottom: 400 });
+        expect(marker.clampContainerId).toBeTruthy();
         expect(marker.top).toBe(100 - DOT_SIZE / 2);
     });
 
@@ -392,6 +403,8 @@ describe("getMarkerFromReport", () => {
         const marker = getMarkerFromReport(createStoredReport({ element_y_ratio: 0.5 }), 0);
 
         expect(marker.clampedEdge).toBe("bottom");
+        expect(marker.clampBounds).toEqual({ left: 50, top: 100, right: 350, bottom: 400 });
+        expect(marker.clampContainerId).toBeTruthy();
         expect(marker.top).toBe(400 - DOT_SIZE / 2);
     });
 });
@@ -420,6 +433,7 @@ describe("getDraftMarkerPosition", () => {
         expect(position.left).toBe(100 + 200 * 0.25 - DOT_SIZE / 2);
         expect(position.top).toBe(80 + 100 * 0.75 - DOT_SIZE / 2);
         expect(position.clampedEdge).toBeNull();
+        expect(position.clampBounds).toBeNull();
     });
 
     it("falls back to viewport click coordinates when no target is selected", () => {
@@ -428,6 +442,7 @@ describe("getDraftMarkerPosition", () => {
         expect(position.left).toBe(240 - DOT_SIZE / 2);
         expect(position.top).toBe(180 - DOT_SIZE / 2);
         expect(position.clampedEdge).toBeNull();
+        expect(position.clampBounds).toBeNull();
     });
 
     it("clamps draft marker to the scroll container edge when the selected target is outside it", () => {
@@ -474,6 +489,8 @@ describe("getDraftMarkerPosition", () => {
         );
 
         expect(position.clampedEdge).toBe("top");
+        expect(position.clampBounds).toEqual({ left: 50, top: 100, right: 350, bottom: 400 });
+        expect(position.clampContainerId).toBeTruthy();
         expect(position.top).toBe(100 - DOT_SIZE / 2);
     });
 });
@@ -602,12 +619,72 @@ describe("getTooltipPosition", () => {
     });
 });
 
+describe("resolveMarkerOverflowHints", () => {
+    it("groups clamped markers by container and edge with counts", () => {
+        const bounds = { left: 50, top: 100, right: 350, bottom: 400 };
+        const markers = [
+            {
+                id: "a",
+                left: 0,
+                top: 0,
+                rect: null,
+                detached: false,
+                clampedEdge: "top" as const,
+                clampBounds: bounds,
+                clampContainerId: "container-1",
+                report: createStoredReport({ id: "a" }),
+            },
+            {
+                id: "b",
+                left: 0,
+                top: 0,
+                rect: null,
+                detached: false,
+                clampedEdge: "top" as const,
+                clampBounds: bounds,
+                clampContainerId: "container-1",
+                report: createStoredReport({ id: "b" }),
+            },
+            {
+                id: "c",
+                left: 0,
+                top: 0,
+                rect: null,
+                detached: false,
+                clampedEdge: "bottom" as const,
+                clampBounds: bounds,
+                clampContainerId: "container-1",
+                report: createStoredReport({ id: "c" }),
+            },
+            {
+                id: "d",
+                left: 10,
+                top: 10,
+                rect: null,
+                detached: false,
+                clampedEdge: null,
+                clampBounds: null,
+                clampContainerId: null,
+                report: createStoredReport({ id: "d" }),
+            },
+        ];
+
+        const hints = resolveMarkerOverflowHints(markers);
+
+        expect(hints).toHaveLength(2);
+        expect(hints.find((hint) => hint.edge === "top")?.count).toBe(2);
+        expect(hints.find((hint) => hint.edge === "bottom")?.count).toBe(1);
+        expect(hints.find((hint) => hint.edge === "top")?.left).toBe(200);
+        expect(hints.find((hint) => hint.edge === "bottom")?.top).toBe(390);
+    });
+});
+
 describe("resolveTooltipAnchor", () => {
     it("returns the marker that matches the selected report id", () => {
         const report = createStoredReport({ id: "selected" });
         const markers = [
-            { id: "other", left: 0, top: 0, rect: null, detached: true, clampedEdge: null, report: createStoredReport({ id: "other" }) },
-            { id: "selected", left: 1, top: 2, rect: null, detached: false, clampedEdge: null, report },
+            { id: "other", left: 0, top: 0, rect: null, detached: true, clampedEdge: null, clampBounds: null, clampContainerId: null, report: createStoredReport({ id: "other" }) },
+            { id: "selected", left: 1, top: 2, rect: null, detached: false, clampedEdge: null, clampBounds: null, clampContainerId: null, report },
         ];
 
         expect(resolveTooltipAnchor(markers, "selected")?.report.id).toBe("selected");

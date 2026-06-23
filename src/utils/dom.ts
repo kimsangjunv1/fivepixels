@@ -141,6 +141,49 @@ export function getNearestScrollContainer(element: HTMLElement): HTMLElement | n
     return null;
 }
 
+const SCROLL_CLAMP_ATTR = "data-fivepixels-scroll-clamp";
+
+export function getScrollContainerClampId(scrollContainer: HTMLElement): string {
+    const existing = scrollContainer.getAttribute(SCROLL_CLAMP_ATTR);
+
+    if (existing) {
+        return existing;
+    }
+
+    const id = `scroll-clamp-${Math.random().toString(36).slice(2, 10)}`;
+    scrollContainer.setAttribute(SCROLL_CLAMP_ATTR, id);
+    return id;
+}
+
+export function getScrollContainerByClampId(containerId: string): HTMLElement | null {
+    return document.querySelector<HTMLElement>(`[${SCROLL_CLAMP_ATTR}="${containerId}"]`);
+}
+
+export function scrollContainerTowardEdge(containerId: string, edge: "top" | "bottom" | "left" | "right") {
+    const container = getScrollContainerByClampId(containerId);
+
+    if (!container) {
+        return;
+    }
+
+    const scrollAmount = Math.max(Math.min(container.clientHeight, container.clientWidth) * 0.6, 120);
+
+    switch (edge) {
+        case "top":
+            container.scrollBy({ top: -scrollAmount, behavior: "smooth" });
+            break;
+        case "bottom":
+            container.scrollBy({ top: scrollAmount, behavior: "smooth" });
+            break;
+        case "left":
+            container.scrollBy({ left: -scrollAmount, behavior: "smooth" });
+            break;
+        case "right":
+            container.scrollBy({ left: scrollAmount, behavior: "smooth" });
+            break;
+    }
+}
+
 export function getSelectableTargets() {
     return Array.from(document.querySelectorAll<HTMLElement>(TARGET_SELECTOR))
         .map((element) => toSnapshot(element))

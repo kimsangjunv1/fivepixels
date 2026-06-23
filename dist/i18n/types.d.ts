@@ -182,6 +182,10 @@ export type ReportMessages = {
         detachedAriaLabel: string;
         detachedHint: string;
         detachedBadge: string;
+        moreIssuesAbove: (count: number) => string;
+        moreIssuesBelow: (count: number) => string;
+        moreIssuesLeft: (count: number) => string;
+        moreIssuesRight: (count: number) => string;
     };
     defaults: {
         fields: {

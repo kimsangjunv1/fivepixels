@@ -407,15 +407,26 @@ export function useReportState({
             return;
         }
 
-        syncMarkers();
+        let cancelled = false;
+
+        const runSync = () => {
+            if (!cancelled) {
+                syncMarkers();
+            }
+        };
+
+        runSync();
+        void waitForTargetRevealResync().then(runSync);
+
         window.addEventListener("scroll", syncMarkers, { passive: true, capture: true });
         window.addEventListener("resize", syncMarkers);
 
         return () => {
+            cancelled = true;
             window.removeEventListener("scroll", syncMarkers, { capture: true });
             window.removeEventListener("resize", syncMarkers);
         };
-    }, [mode, syncMarkers]);
+    }, [currentPathname, mode, syncMarkers]);
 
     const prepareFeedbackLocation = useCallback(
         async (report: ReportFeedback) => {

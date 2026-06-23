@@ -10,7 +10,9 @@ export function ReportDraftMarker() {
     }
     const { left, top, clampedEdge } = getDraftMarkerPosition(draft, selectedTarget);
     const markerColor = TARGET_COLOR[draft.reportType];
-    const isClamped = clampedEdge !== null;
+    if (clampedEdge !== null) {
+        return null;
+    }
     return (_jsxs(_Fragment, { children: [selectedTarget ? (_jsx("div", { 
                 // className="pointer-events-none fixed rounded-[3px] border border-sky-400/70 bg-sky-200/20 shadow-[0_0_0_1px_rgba(148,163,184,0.4)]"
                 className: "pointer-events-none fixed", style: {
@@ -20,11 +22,10 @@ export function ReportDraftMarker() {
                     height: selectedTarget.rect.height,
                     // outline: `1px solid ${markerColor}`,
                     // backgroundColor: TARGET_SURFACE[draft.reportType],
-                } })) : null, _jsx("div", { "aria-hidden": true, className: `${DRAFT_MARKER_CLASS} ${isClamped ? "opacity-80" : ""}`, style: {
+                } })) : null, _jsx("div", { "aria-hidden": true, className: DRAFT_MARKER_CLASS, style: {
                     left,
                     top,
                     backgroundColor: markerColor,
-                    boxShadow: isClamped ? "0 0 0 2px rgba(255,255,255,0.7)" : undefined,
                 } })] }));
 }
 //# sourceMappingURL=ReportDraftMarker.js.map

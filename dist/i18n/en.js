@@ -198,6 +198,10 @@ export const en = {
         detachedAriaLabel: "Feedback whose source element is not currently visible",
         detachedHint: "The source element is not visible right now. The marker is shown at the saved position.",
         detachedBadge: "Hidden",
+        moreIssuesAbove: (count) => `${count} more issues above`,
+        moreIssuesBelow: (count) => `${count} more issues below`,
+        moreIssuesLeft: (count) => `${count} more issues to the left`,
+        moreIssuesRight: (count) => `${count} more issues to the right`,
     },
     defaults: {
         fields: {

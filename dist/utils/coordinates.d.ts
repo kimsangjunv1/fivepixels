@@ -1,13 +1,16 @@
 import type { ReportFeedback } from "../types/report.js";
-import type { DraftReport, Marker, MarkerClampEdge, TargetSnapshot } from "../types/report-ui.js";
+import type { DraftReport, Marker, MarkerClampBounds, MarkerClampEdge, MarkerOverflowHint, TargetSnapshot } from "../types/report-ui.js";
 export type MarkerPosition = {
     left: number;
     top: number;
     clampedEdge: MarkerClampEdge | null;
+    clampBounds: MarkerClampBounds | null;
+    clampContainerId: string | null;
 };
 export declare function clampRatio(value: number): number;
 export declare function getMarkerFromReport(report: ReportFeedback, currentScrollY: number): Marker;
 export declare function getDraftMarkerPosition(draft: Pick<DraftReport, "clientX" | "clientY" | "elementXRatio" | "elementYRatio">, selectedTarget: TargetSnapshot | null): MarkerPosition;
+export declare function resolveMarkerOverflowHints(markers: Marker[]): MarkerOverflowHint[];
 export declare function resolveTooltipAnchor(markers: Marker[], reportId: string | null): Marker | null;
 export declare const TOOLTIP_MARGIN = 16;
 export type TooltipPlacement = "above" | "below";

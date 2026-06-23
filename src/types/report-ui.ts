@@ -39,6 +39,13 @@ export type DraftReport = {
 
 export type MarkerClampEdge = "top" | "bottom" | "left" | "right";
 
+export type MarkerClampBounds = {
+    left: number;
+    top: number;
+    right: number;
+    bottom: number;
+};
+
 export type Marker = {
     id: string;
     left: number;
@@ -46,7 +53,19 @@ export type Marker = {
     rect: DOMRect | null;
     detached: boolean;
     clampedEdge: MarkerClampEdge | null;
+    clampBounds: MarkerClampBounds | null;
+    clampContainerId: string | null;
     report: ReportFeedback;
+};
+
+export type MarkerOverflowHint = {
+    id: string;
+    edge: MarkerClampEdge;
+    count: number;
+    bounds: MarkerClampBounds;
+    containerId: string;
+    left: number;
+    top: number;
 };
 
 export type EditableDraft = {

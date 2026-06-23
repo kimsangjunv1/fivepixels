@@ -200,6 +200,10 @@ export const ko: ReportMessages = {
         detachedAriaLabel: "원본 요소가 현재 화면에 없는 피드백",
         detachedHint: "원본 요소가 현재 화면에 없습니다. 저장된 위치에 마커가 표시됩니다.",
         detachedBadge: "숨김",
+        moreIssuesAbove: (count) => `위에 ${count}개의 이슈가 더 있어요`,
+        moreIssuesBelow: (count) => `아래에 ${count}개의 이슈가 더 있어요`,
+        moreIssuesLeft: (count) => `왼쪽에 ${count}개의 이슈가 더 있어요`,
+        moreIssuesRight: (count) => `오른쪽에 ${count}개의 이슈가 더 있어요`,
     },
     defaults: {
         fields: {

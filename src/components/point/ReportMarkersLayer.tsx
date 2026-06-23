@@ -2,8 +2,10 @@ import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useNativeHover } from "@/hooks/useNativeHover.js";
 import { useTooltipLayout } from "@/hooks/useTooltipLayout.js";
 import { useReport } from "@/providers/reportContext.js";
-import type { Marker } from "@/types/report-ui.js";
+import type { Marker, MarkerOverflowHint } from "@/types/report-ui.js";
 import type { ReportFeedback } from "@/types/report.js";
+import { resolveMarkerOverflowHints } from "@/utils/coordinates.js";
+import { scrollContainerTowardEdge } from "@/utils/dom.js";
 import { getMarkerColor } from "@/utils/reportVisual.js";
 import { FeedbackComposer } from "@/components/panel/feedback/FeedbackComposer.js";
 import { FeedbackHoverCard } from "@/components/panel/feedback/FeedbackHoverCard.js";
@@ -16,6 +18,45 @@ const EXPANDED_TOOLTIP_ANCHOR_CLASS = "pointer-events-auto fixed z-[1000001]";
 
 const MARKER_ANCHOR_CLASS = "pointer-events-none fixed z-[1000000] -translate-x-1/2 -translate-y-1/2";
 const MARKER_BUTTON_BASE_CLASS = "flex items-center justify-center rounded-full";
+const OVERFLOW_HINT_BASE_CLASS =
+    "pointer-events-auto fixed z-[1000000] flex items-center justify-center rounded-full border border-white/80 bg-[#000000b3] text-white shadow-[0_4px_10px_#00000090] backdrop-blur-[6px]";
+const OVERFLOW_HINT_TEXT_CLASS = "max-w-[220px] whitespace-nowrap px-[10px] py-[6px] text-[12px] font-medium leading-none";
+const OVERFLOW_HINT_ARROW_CLASS = "flex h-[28px] w-[28px] items-center justify-center text-[16px] font-semibold leading-none";
+
+type MarkerOverflowHintButtonProps = {
+    hint: MarkerOverflowHint;
+    label: string;
+    onActivate: (hint: MarkerOverflowHint) => void;
+};
+
+function MarkerOverflowHintButton({ hint, label, onActivate }: MarkerOverflowHintButtonProps) {
+    const isVertical = hint.edge === "top" || hint.edge === "bottom";
+    const transform =
+        hint.edge === "top"
+            ? "translate(-50%, 0)"
+            : hint.edge === "bottom"
+              ? "translate(-50%, -100%)"
+              : hint.edge === "left"
+                ? "translate(0, -50%)"
+                : "translate(-100%, -50%)";
+
+    return (
+        <button
+            type="button"
+            data-fivepixels-interactive=""
+            aria-label={label}
+            onClick={() => onActivate(hint)}
+            className={OVERFLOW_HINT_BASE_CLASS}
+            style={{
+                left: hint.left,
+                top: hint.top,
+                transform,
+            }}
+        >
+            {isVertical ? <span className={OVERFLOW_HINT_TEXT_CLASS}>{label}</span> : <span className={OVERFLOW_HINT_ARROW_CLASS}>{hint.edge === "left" ? "←" : "→"}</span>}
+        </button>
+    );
+}
 
 type MarkerButtonProps = {
     markerItem: Marker;
@@ -35,7 +76,6 @@ function MarkerButton({ markerItem, isSelected, detachedAriaLabel, onActivate, o
     const markerLabel =
         replyCount > 0 ? `${markerItem.report.report_type} · ${markerItem.report.report_id} · ${replyCount} replies` : `${markerItem.report.report_type} · ${markerItem.report.report_id}`;
     const isDetached = markerItem.detached;
-    const isClamped = markerItem.clampedEdge !== null;
 
     return (
         <div
@@ -46,10 +86,10 @@ function MarkerButton({ markerItem, isSelected, detachedAriaLabel, onActivate, o
             }}
         >
             <div className="relative pointer-events-auto">
-                {isDetached || isClamped ? (
+                {isDetached ? (
                     <div
                         aria-hidden
-                        className={`pointer-events-none absolute -inset-[6px] rounded-full border border-dashed border-white/80 ${isClamped && !isDetached ? "opacity-80" : ""}`}
+                        className="pointer-events-none absolute -inset-[6px] rounded-full border border-dashed border-white/80"
                     />
                 ) : null}
                 <button
@@ -196,6 +236,29 @@ export function ReportMarkersLayer() {
     }, [activeReplyReportId, clearHoverLeaveTimeout, closeReplyComposer, setHoveredMarkerId]);
 
     const isViewMode = mode === "view";
+    const visibleMarkers = useMemo(() => markers.filter((marker) => marker.clampedEdge === null), [markers]);
+    const overflowHints = useMemo(() => resolveMarkerOverflowHints(markers), [markers]);
+
+    const getOverflowHintLabel = useCallback(
+        (hint: MarkerOverflowHint) => {
+            switch (hint.edge) {
+                case "top":
+                    return messages.marker.moreIssuesAbove(hint.count);
+                case "bottom":
+                    return messages.marker.moreIssuesBelow(hint.count);
+                case "left":
+                    return messages.marker.moreIssuesLeft(hint.count);
+                case "right":
+                    return messages.marker.moreIssuesRight(hint.count);
+            }
+        },
+        [messages.marker],
+    );
+
+    const handleOverflowHintActivate = useCallback((hint: MarkerOverflowHint) => {
+        scrollContainerTowardEdge(hint.containerId, hint.edge);
+    }, []);
+
     const showTooltip = Boolean(tooltipReport && tooltipAnchor);
     const { layout: tooltipLayout, setTooltipElement } = useTooltipLayout(tooltipAnchor, isExpandedTooltip, showTooltip);
     const tooltipPosition = tooltipLayout?.position ?? null;
@@ -227,7 +290,7 @@ export function ReportMarkersLayer() {
 
     return (
         <>
-            {markers.map((markerItem) => (
+            {visibleMarkers.map((markerItem) => (
                 <MarkerButton
                     key={markerItem.id}
                     markerItem={markerItem}
@@ -236,6 +299,15 @@ export function ReportMarkersLayer() {
                     onActivate={activateFeedbackMarker}
                     onHoverStart={() => handleMarkerHoverStart(markerItem.report.id)}
                     onHoverEnd={() => handleMarkerHoverEnd(markerItem.report.id)}
+                />
+            ))}
+
+            {overflowHints.map((hint) => (
+                <MarkerOverflowHintButton
+                    key={hint.id}
+                    hint={hint}
+                    label={getOverflowHintLabel(hint)}
+                    onActivate={handleOverflowHintActivate}
                 />
             ))}
 

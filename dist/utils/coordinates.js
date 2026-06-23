@@ -1,15 +1,22 @@
 import { DOT_SIZE } from "../constants/report.js";
-import { getFeedbackTargetSelector, getNearestScrollContainer, isFeedbackTargetVisible } from "./dom.js";
+import { getFeedbackTargetSelector, getNearestScrollContainer, getScrollContainerClampId, isFeedbackTargetVisible } from "./dom.js";
 import { getFeedbackAnchorElement } from "./locateFeedback.js";
 function applyScrollContainerClamp(left, top, element) {
     if (!element) {
-        return { left, top, clampedEdge: null };
+        return { left, top, clampedEdge: null, clampBounds: null, clampContainerId: null };
     }
     const scrollContainer = getNearestScrollContainer(element);
     if (!scrollContainer) {
-        return { left, top, clampedEdge: null };
+        return { left, top, clampedEdge: null, clampBounds: null, clampContainerId: null };
     }
     const bounds = scrollContainer.getBoundingClientRect();
+    const clampBounds = {
+        left: bounds.left,
+        top: bounds.top,
+        right: bounds.right,
+        bottom: bounds.bottom,
+    };
+    const clampContainerId = getScrollContainerClampId(scrollContainer);
     const anchorX = left + DOT_SIZE / 2;
     const anchorY = top + DOT_SIZE / 2;
     let clampedX = anchorX;
@@ -39,6 +46,8 @@ function applyScrollContainerClamp(left, top, element) {
         left: clampedX - DOT_SIZE / 2,
         top: clampedY - DOT_SIZE / 2,
         clampedEdge,
+        clampBounds: clampedEdge ? clampBounds : null,
+        clampContainerId: clampedEdge ? clampContainerId : null,
     };
 }
 export function clampRatio(value) {
@@ -75,7 +84,7 @@ function getDetachedMarkerPosition(report, currentScrollY) {
     const widthScale = report.viewport_width > 0 ? window.innerWidth / report.viewport_width : 1;
     const left = report.viewport_width * report.x_ratio * widthScale - DOT_SIZE / 2;
     const top = report.document_y - currentScrollY - DOT_SIZE / 2;
-    return { left, top, clampedEdge: null };
+    return { left, top, clampedEdge: null, clampBounds: null, clampContainerId: null };
 }
 export function getMarkerFromReport(report, currentScrollY) {
     const selector = getFeedbackTargetSelector(report.report_id, report.report_type);
@@ -91,6 +100,8 @@ export function getMarkerFromReport(report, currentScrollY) {
             rect,
             detached: false,
             clampedEdge: position.clampedEdge,
+            clampBounds: position.clampBounds,
+            clampContainerId: position.clampContainerId,
         };
     }
     const detachedPosition = getDetachedMarkerPosition(report, currentScrollY);
@@ -102,6 +113,8 @@ export function getMarkerFromReport(report, currentScrollY) {
         rect: null,
         detached: true,
         clampedEdge: detachedPosition.clampedEdge,
+        clampBounds: detachedPosition.clampBounds,
+        clampContainerId: detachedPosition.clampContainerId,
     };
 }
 export function getDraftMarkerPosition(draft, selectedTarget) {
@@ -114,7 +127,52 @@ export function getDraftMarkerPosition(draft, selectedTarget) {
         left: draft.clientX - DOT_SIZE / 2,
         top: draft.clientY - DOT_SIZE / 2,
         clampedEdge: null,
+        clampBounds: null,
+        clampContainerId: null,
     };
+}
+const OVERFLOW_HINT_EDGE_OFFSET = 10;
+function serializeClampBounds(bounds) {
+    return `${bounds.left}:${bounds.top}:${bounds.right}:${bounds.bottom}`;
+}
+function getOverflowHintPosition(edge, bounds) {
+    const centerX = (bounds.left + bounds.right) / 2;
+    const centerY = (bounds.top + bounds.bottom) / 2;
+    switch (edge) {
+        case "top":
+            return { left: centerX, top: bounds.top + OVERFLOW_HINT_EDGE_OFFSET };
+        case "bottom":
+            return { left: centerX, top: bounds.bottom - OVERFLOW_HINT_EDGE_OFFSET };
+        case "left":
+            return { left: bounds.left + OVERFLOW_HINT_EDGE_OFFSET, top: centerY };
+        case "right":
+            return { left: bounds.right - OVERFLOW_HINT_EDGE_OFFSET, top: centerY };
+    }
+}
+export function resolveMarkerOverflowHints(markers) {
+    const grouped = new Map();
+    for (const marker of markers) {
+        if (!marker.clampedEdge || !marker.clampBounds || !marker.clampContainerId) {
+            continue;
+        }
+        const key = `${marker.clampContainerId}:${marker.clampedEdge}:${serializeClampBounds(marker.clampBounds)}`;
+        const existing = grouped.get(key);
+        if (existing) {
+            existing.count += 1;
+            continue;
+        }
+        const position = getOverflowHintPosition(marker.clampedEdge, marker.clampBounds);
+        grouped.set(key, {
+            id: key,
+            edge: marker.clampedEdge,
+            count: 1,
+            bounds: marker.clampBounds,
+            containerId: marker.clampContainerId,
+            left: position.left,
+            top: position.top,
+        });
+    }
+    return Array.from(grouped.values());
 }
 export function resolveTooltipAnchor(markers, reportId) {
     if (!reportId) {
