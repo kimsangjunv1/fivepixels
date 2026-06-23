@@ -12,21 +12,51 @@ export function getFeedbackTargetSelector(reportId, reportType) {
     }
     return `[data-report-id="${escapedId}"]:not([data-report-type="group"])`;
 }
+function isStyleHidden(style) {
+    if (style.display === "none" || style.visibility === "hidden") {
+        return true;
+    }
+    if (Number.parseFloat(style.opacity) <= 0) {
+        return true;
+    }
+    return false;
+}
+function intersectsViewport(rect) {
+    if (rect.width <= 0 || rect.height <= 0) {
+        return false;
+    }
+    return rect.right > 0 && rect.bottom > 0 && rect.left < window.innerWidth && rect.top < window.innerHeight;
+}
+export function hasFixedPositionAncestor(element) {
+    let node = element.parentElement;
+    while (node && node !== document.documentElement) {
+        if (window.getComputedStyle(node).position === "fixed") {
+            return true;
+        }
+        node = node.parentElement;
+    }
+    return false;
+}
 export function isFeedbackTargetVisible(element) {
     if ("checkVisibility" in element && typeof element.checkVisibility === "function") {
         if (!element.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true })) {
             return false;
         }
     }
+    else {
+        let node = element;
+        while (node && node !== document.documentElement) {
+            if (isStyleHidden(window.getComputedStyle(node))) {
+                return false;
+            }
+            node = node.parentElement;
+        }
+    }
     const rect = element.getBoundingClientRect();
     if (rect.width <= 0 || rect.height <= 0) {
         return false;
     }
-    const style = window.getComputedStyle(element);
-    if (style.display === "none" || style.visibility === "hidden") {
-        return false;
-    }
-    if (Number.parseFloat(style.opacity) <= 0) {
+    if (!intersectsViewport(rect)) {
         return false;
     }
     return true;

@@ -1,7 +1,7 @@
 import { DOT_SIZE } from "@/constants/report.js";
 import type { ReportFeedback } from "@/types/report.js";
 import type { DraftReport, Marker, MarkerClampBounds, MarkerClampEdge, MarkerOverflowHint, TargetSnapshot } from "@/types/report-ui.js";
-import { getFeedbackTargetSelector, getNearestScrollContainer, getScrollContainerClampId, isFeedbackTargetVisible } from "./dom.js";
+import { getFeedbackTargetSelector, getNearestScrollContainer, getScrollContainerClampId, hasFixedPositionAncestor, isFeedbackTargetVisible } from "./dom.js";
 import { getFeedbackAnchorElement } from "./locateFeedback.js";
 
 export type MarkerPosition = {
@@ -107,7 +107,17 @@ function getAnchorMarkerPosition(report: ReportFeedback) {
     );
 }
 
-function getDetachedMarkerPosition(report: ReportFeedback, currentScrollY: number) {
+function shouldUseViewportDetachedCoords(report: ReportFeedback, targetElement: HTMLElement | null) {
+    if (targetElement) {
+        const rect = targetElement.getBoundingClientRect();
+
+        return hasFixedPositionAncestor(targetElement) && rect.width > 0 && rect.height > 0;
+    }
+
+    return !report.anchor_report_id;
+}
+
+function getDetachedMarkerPosition(report: ReportFeedback, currentScrollY: number, targetElement: HTMLElement | null) {
     const anchorPosition = getAnchorMarkerPosition(report);
 
     if (anchorPosition) {
@@ -116,6 +126,15 @@ function getDetachedMarkerPosition(report: ReportFeedback, currentScrollY: numbe
 
     const widthScale = report.viewport_width > 0 ? window.innerWidth / report.viewport_width : 1;
     const left = report.viewport_width * report.x_ratio * widthScale - DOT_SIZE / 2;
+    const useViewportCoords = shouldUseViewportDetachedCoords(report, targetElement);
+
+    if (useViewportCoords) {
+        const heightScale = report.viewport_height > 0 ? window.innerHeight / report.viewport_height : 1;
+        const top = report.viewport_height * report.y_ratio * heightScale - DOT_SIZE / 2;
+
+        return { left, top, clampedEdge: null, clampBounds: null, clampContainerId: null };
+    }
+
     const top = report.document_y - currentScrollY - DOT_SIZE / 2;
 
     return { left, top, clampedEdge: null, clampBounds: null, clampContainerId: null };
@@ -146,7 +165,7 @@ export function getMarkerFromReport(report: ReportFeedback, currentScrollY: numb
         };
     }
 
-    const detachedPosition = getDetachedMarkerPosition(report, currentScrollY);
+    const detachedPosition = getDetachedMarkerPosition(report, currentScrollY, targetElement);
 
     return {
         id: report.id,

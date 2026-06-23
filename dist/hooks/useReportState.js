@@ -250,10 +250,34 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         };
         runSync();
         void waitForTargetRevealResync().then(runSync);
+        let mutationSyncTimeout = null;
+        const scheduleMutationSync = () => {
+            if (mutationSyncTimeout !== null) {
+                window.clearTimeout(mutationSyncTimeout);
+            }
+            mutationSyncTimeout = window.setTimeout(() => {
+                mutationSyncTimeout = null;
+                runSync();
+            }, 50);
+        };
+        const mutationObserver = new MutationObserver((mutations) => {
+            if (mutations.some((mutation) => mutation.type === "attributes")) {
+                scheduleMutationSync();
+            }
+        });
+        mutationObserver.observe(document.body, {
+            attributes: true,
+            attributeFilter: ["class", "style", "aria-hidden"],
+            subtree: true,
+        });
         window.addEventListener("scroll", syncMarkers, { passive: true, capture: true });
         window.addEventListener("resize", syncMarkers);
         return () => {
             cancelled = true;
+            if (mutationSyncTimeout !== null) {
+                window.clearTimeout(mutationSyncTimeout);
+            }
+            mutationObserver.disconnect();
             window.removeEventListener("scroll", syncMarkers, { capture: true });
             window.removeEventListener("resize", syncMarkers);
         };

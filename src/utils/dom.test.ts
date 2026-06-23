@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { escapeAttribute, findTargetElement, getFeedbackTargetSelector, getNearestScrollContainer, isFeedbackTargetVisible, resolveFeedbackDocumentAnchor, resolveReportType, toSnapshot } from "./dom.js";
+import { escapeAttribute, findTargetElement, getFeedbackTargetSelector, getNearestScrollContainer, hasFixedPositionAncestor, isFeedbackTargetVisible, resolveFeedbackDocumentAnchor, resolveReportType, toSnapshot } from "./dom.js";
 
 describe("escapeAttribute", () => {
     it("escapes backslashes and double quotes for selector safety", () => {
@@ -128,6 +128,67 @@ describe("isFeedbackTargetVisible", () => {
         } as DOMRect);
 
         expect(isFeedbackTargetVisible(target)).toBe(true);
+    });
+
+    it("returns false when a parent hides the target with opacity", () => {
+        const overlay = document.createElement("div");
+        overlay.style.opacity = "0";
+
+        const target = document.createElement("div");
+        target.dataset.reportId = "hero";
+        overlay.append(target);
+        document.body.append(overlay);
+
+        vi.spyOn(target, "getBoundingClientRect").mockReturnValue({
+            left: 100,
+            top: 120,
+            width: 200,
+            height: 80,
+            right: 300,
+            bottom: 200,
+            x: 100,
+            y: 120,
+            toJSON: () => ({}),
+        } as DOMRect);
+
+        expect(isFeedbackTargetVisible(target)).toBe(false);
+    });
+
+    it("returns false when the target is translated off-screen", () => {
+        const overlay = document.createElement("div");
+        overlay.style.transform = "translateX(-200vw)";
+
+        const target = document.createElement("div");
+        target.dataset.reportId = "hero";
+        overlay.append(target);
+        document.body.append(overlay);
+
+        vi.spyOn(target, "getBoundingClientRect").mockReturnValue({
+            left: -2400,
+            top: 120,
+            width: 200,
+            height: 80,
+            right: -2200,
+            bottom: 200,
+            x: -2400,
+            y: 120,
+            toJSON: () => ({}),
+        } as DOMRect);
+
+        expect(isFeedbackTargetVisible(target)).toBe(false);
+    });
+});
+
+describe("hasFixedPositionAncestor", () => {
+    it("detects fixed ancestors", () => {
+        document.body.innerHTML = `
+            <div style="position: fixed">
+                <div data-report-id="hero">target</div>
+            </div>
+        `;
+
+        const target = document.querySelector<HTMLElement>("[data-report-id='hero']")!;
+        expect(hasFixedPositionAncestor(target)).toBe(true);
     });
 });
 
