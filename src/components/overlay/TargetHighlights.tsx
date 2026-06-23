@@ -1,7 +1,6 @@
-import { TARGET_COLOR, TARGET_SURFACE } from "@/constants/report.js";
+import { TARGET_COLOR } from "@/constants/report.js";
 import type { ReportTargetType } from "@/types/report.js";
 import type { TargetSnapshot } from "@/types/report-ui.js";
-import { AnimatedPresence, motion, type MotionTransition } from "@/components/motion/index.js";
 
 type TargetHighlightsProps = {
     hoveredTarget: TargetSnapshot | null;
@@ -9,36 +8,14 @@ type TargetHighlightsProps = {
     selectedTarget: TargetSnapshot | null;
 };
 
-const HIGHLIGHT_MOTION: Record<
-    ReportTargetType,
-    {
-        fade: MotionTransition;
-        layout: MotionTransition;
-    }
-> = {
-    group: {
-        fade: { duration: 0.14, ease: "ease-out" },
-        layout: { duration: 0.5, ease: "cubic-bezier(0.22, 1, 0.36, 1)" },
-    },
-    item: {
-        fade: { duration: 0.14, ease: "ease-out" },
-        layout: { duration: 0.44, ease: "cubic-bezier(0.22, 1, 0.36, 1)" },
-    },
-};
-
 function highlightPresenceKey(type: ReportTargetType) {
     return `hover-${type}`;
 }
 
-function HighlightMotionBox({ target, showLabel }: { target: TargetSnapshot; showLabel?: boolean }) {
-    const motionPreset = HIGHLIGHT_MOTION[target.type];
-
+function HighlightBox({ target, showLabel }: { target: TargetSnapshot; showLabel?: boolean }) {
     return (
-        <motion.div
-            layout
-            layoutTransition={motionPreset.layout}
-            transition={motionPreset.fade}
-            className="pointer-events-none fixed box-border"
+        <div
+            className="fivepixels-target-highlight pointer-events-none fixed box-border"
             style={{
                 left: target.rect.left,
                 top: target.rect.top,
@@ -46,12 +23,7 @@ function HighlightMotionBox({ target, showLabel }: { target: TargetSnapshot; sho
                 height: target.rect.height,
                 outline: `2px solid #0ed1b4`,
                 backgroundColor: "#0ed1b41c",
-                // outline: `2px solid ${TARGET_COLOR[target.type]}`,
-                // backgroundColor: TARGET_SURFACE[target.type],
             }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
         >
             {showLabel ? (
                 <span
@@ -61,30 +33,28 @@ function HighlightMotionBox({ target, showLabel }: { target: TargetSnapshot; sho
                     {target.type} · {target.id}
                 </span>
             ) : null}
-        </motion.div>
+        </div>
     );
 }
 
 export function TargetHighlights({ hoveredTarget, previewTargets = [], selectedTarget }: TargetHighlightsProps) {
     return (
         <>
-            <AnimatedPresence>
-                {previewTargets.map((target) => (
-                    <HighlightMotionBox
-                        key={`${target.type}-${target.id}`}
-                        target={target}
-                        showLabel
-                    />
-                ))}
+            {previewTargets.map((target) => (
+                <HighlightBox
+                    key={`${target.type}-${target.id}`}
+                    target={target}
+                    showLabel
+                />
+            ))}
 
-                {hoveredTarget ? (
-                    <HighlightMotionBox
-                        key={highlightPresenceKey(hoveredTarget.type)}
-                        target={hoveredTarget}
-                        showLabel
-                    />
-                ) : null}
-            </AnimatedPresence>
+            {hoveredTarget ? (
+                <HighlightBox
+                    key={highlightPresenceKey(hoveredTarget.type)}
+                    target={hoveredTarget}
+                    showLabel
+                />
+            ) : null}
 
             {selectedTarget ? (
                 <div
@@ -94,7 +64,6 @@ export function TargetHighlights({ hoveredTarget, previewTargets = [], selectedT
                         top: selectedTarget.rect.top,
                         width: selectedTarget.rect.width,
                         height: selectedTarget.rect.height,
-                        // boxShadow: `0 0 0 3px ${TARGET_COLOR[selectedTarget.type]}`,
                     }}
                 />
             ) : null}

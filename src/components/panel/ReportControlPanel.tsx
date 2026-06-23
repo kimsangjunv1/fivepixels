@@ -14,7 +14,6 @@ import { ReportImportConfirmDialog } from "./ReportImportConfirmDialog.js";
 import { ReportImportProjectMismatchDialog } from "./ReportImportProjectMismatchDialog.js";
 import { ReportPersonalKeyDialog } from "./ReportPersonalKeyDialog.js";
 import { PanelMoreMenu } from "./PanelMoreMenu.js";
-import { motion } from "@/components/motion/index.js";
 import { formatStatCount } from "@/utils/formatStatCount.js";
 import { panelNumericClassName } from "@/utils/panelTypography.js";
 import type { ReportPanelTab } from "@/types/report-ui.js";
@@ -220,9 +219,8 @@ export function ReportControlPanel() {
                 </div>
             ) : null} */}
 
-            <motion.div
+            <div
                 ref={panelRef}
-                transition={{ duration: 0.25, ease: "cubic-bezier(0.22, 1, 0.36, 1)" }}
                 onDragEnter={handleDragEnter}
                 onDragLeave={handleDragLeave}
                 onDragOver={handleDragOver}
@@ -236,7 +234,7 @@ export function ReportControlPanel() {
                 }`}
                 style={{ ...resolvedPanelStyle, fontSize: "14px" }}
             >
-                <motion.div className={panelCollapsed && !isRecording ? "flex shrink-0" : "flex min-w-0 flex-1 flex-col w-full"}>
+                <div className={panelCollapsed && !isRecording ? "flex shrink-0" : "flex min-w-0 flex-1 flex-col w-full"}>
                     {isRecording ? (
                         <section className="flex items-center justify-between gap-[16px] px-[12px] py-[8px]">
                             <section className="flex items-center gap-[4px] justify-start shrink-0">
@@ -451,8 +449,8 @@ export function ReportControlPanel() {
                             </section>
                         </>
                     )}
-                </motion.div>
-            </motion.div>
+                </div>
+            </div>
         </>
     );
 }

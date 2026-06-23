@@ -1,5 +1,5 @@
 import type { ReportField, ReportTargetType } from "@/types/report.js";
-import { ko } from "@/i18n/ko.js";
+import { en } from "@/i18n/en.js";
 import { getDefaultFields } from "@/i18n/index.js";
 
 export const DOT_SIZE = 14;
@@ -15,4 +15,4 @@ export const TARGET_SURFACE: Record<ReportTargetType, string> = {
     item: "#0ed1b41c",
 };
 
-export const DEFAULT_FIELDS: ReportField[] = getDefaultFields(ko);
+export const DEFAULT_FIELDS: ReportField[] = getDefaultFields(en);

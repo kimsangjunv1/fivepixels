@@ -1,11 +1,8 @@
 import { en } from "./en.js";
-import { ko } from "./ko.js";
 import type { DeepPartialReportMessages, ReportLocale, ReportMessages } from "./types.js";
 
-const MESSAGES_BY_LOCALE: Record<ReportLocale, ReportMessages> = {
-    en,
-    ko,
-};
+let koMessages: ReportMessages | null = null;
+let koMessagesPromise: Promise<ReportMessages> | null = null;
 
 let activeMessages: ReportMessages = en;
 
@@ -57,8 +54,31 @@ function mergeMessages(base: ReportMessages, override?: DeepPartialReportMessage
     return next;
 }
 
+function getLocaleMessages(locale: ReportLocale): ReportMessages {
+    if (locale === "ko") {
+        return koMessages ?? en;
+    }
+
+    return en;
+}
+
+export async function ensureReportLocaleMessages(locale: ReportLocale): Promise<void> {
+    if (locale !== "ko" || koMessages) {
+        return;
+    }
+
+    if (!koMessagesPromise) {
+        koMessagesPromise = import("./ko.js").then((module) => {
+            koMessages = module.ko;
+            return koMessages;
+        });
+    }
+
+    await koMessagesPromise;
+}
+
 export function getReportMessages(locale: ReportLocale, overrides?: DeepPartialReportMessages): ReportMessages {
-    return mergeMessages(MESSAGES_BY_LOCALE[locale], overrides);
+    return mergeMessages(getLocaleMessages(locale), overrides);
 }
 
 export function setActiveReportMessages(messages: ReportMessages) {
@@ -79,4 +99,3 @@ export function getDefaultFields(messages: ReportMessages) {
 
 export type { DeepPartialReportMessages, ReportLocale, ReportMessages } from "./types.js";
 export { en } from "./en.js";
-export { ko } from "./ko.js";

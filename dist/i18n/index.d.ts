@@ -1,5 +1,6 @@
 import type { DeepPartialReportMessages, ReportLocale, ReportMessages } from "./types.js";
 export declare function resolveReportLocale(locale?: ReportLocale): ReportLocale;
+export declare function ensureReportLocaleMessages(locale: ReportLocale): Promise<void>;
 export declare function getReportMessages(locale: ReportLocale, overrides?: DeepPartialReportMessages): ReportMessages;
 export declare function setActiveReportMessages(messages: ReportMessages): void;
 export declare function getActiveReportMessages(): ReportMessages;
@@ -16,5 +17,4 @@ export declare function getDefaultFields(messages: ReportMessages): ({
 })[];
 export type { DeepPartialReportMessages, ReportLocale, ReportMessages } from "./types.js";
 export { en } from "./en.js";
-export { ko } from "./ko.js";
 //# sourceMappingURL=index.d.ts.map

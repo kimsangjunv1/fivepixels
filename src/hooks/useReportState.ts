@@ -1,5 +1,5 @@
 import { type MouseEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { getReportMessages, setActiveReportMessages } from "@/i18n/index.js";
+import { ensureReportLocaleMessages, getReportMessages, setActiveReportMessages } from "@/i18n/index.js";
 import type { DeepPartialReportMessages } from "@/i18n/types.js";
 import type { ReportLocale } from "@/i18n/types.js";
 import { useReportShortcuts } from "./useReportShortcuts.js";
@@ -109,7 +109,28 @@ export function useReportState({
 }: ReportStateConfig) {
     const { appearance: activeAppearance, setAppearance } = useAppearancePreference(appearance);
     const { locale, setLocale } = useLocalePreference(initialLocale);
-    const messages = useMemo(() => getReportMessages(locale, messageOverrides), [locale, messageOverrides]);
+    const [localeMessagesReady, setLocaleMessagesReady] = useState(locale !== "ko");
+    const messages = useMemo(() => getReportMessages(locale, messageOverrides), [locale, localeMessagesReady, messageOverrides]);
+
+    useEffect(() => {
+        if (locale !== "ko") {
+            setLocaleMessagesReady(true);
+            return;
+        }
+
+        let cancelled = false;
+        setLocaleMessagesReady(false);
+
+        void ensureReportLocaleMessages("ko").then(() => {
+            if (!cancelled) {
+                setLocaleMessagesReady(true);
+            }
+        });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [locale]);
 
     useEffect(() => {
         setActiveReportMessages(messages);

@@ -44,7 +44,6 @@ export {
     verifyReportAuthProof,
 } from "@/utils/personalKey.js";
 export { REPORT_STATUS_FLOW, REPORT_STATUS_TRANSITIONS } from "@/types/report.js";
-export { formatFeedbackAsGitHubIssueBody } from "@/utils/formatGitHubIssue.js";
 export {
     buildGitHubIssueUpdate,
     canCreateGitHubIssueFromList,
@@ -57,4 +56,4 @@ export {
     isGitHubIssueIntegrationEnabled,
 } from "@/utils/githubIntegration.js";
 export type { DeepPartialReportMessages, ReportLocale, ReportMessages } from "@/i18n/index.js";
-export { en as reportMessagesEn, getDefaultFields, getReportMessages, ko as reportMessagesKo, resolveReportLocale } from "@/i18n/index.js";
+export { en as reportMessagesEn, ensureReportLocaleMessages, getDefaultFields, getReportMessages, resolveReportLocale } from "@/i18n/index.js";

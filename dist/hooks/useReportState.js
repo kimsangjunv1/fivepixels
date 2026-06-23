@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { getReportMessages, setActiveReportMessages } from "../i18n/index.js";
+import { ensureReportLocaleMessages, getReportMessages, setActiveReportMessages } from "../i18n/index.js";
 import { useReportShortcuts } from "./useReportShortcuts.js";
 import { useReportPersistence } from "./useReportPersistence.js";
 import { useIsMobileViewport } from "./useIsMobileViewport.js";
@@ -26,7 +26,24 @@ function resolveDefaultAuthorName(identify, authors) {
 export function useReportState({ projectId, environment, appVersion, appearance, fields, authors = [], requireReviewerKey = false, shortcut: _shortcut, identify, onList, onListAll, onNavigate, onCreate, onUpdate, onDelete, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys = false, initialLocale, messageOverrides, }) {
     const { appearance: activeAppearance, setAppearance } = useAppearancePreference(appearance);
     const { locale, setLocale } = useLocalePreference(initialLocale);
-    const messages = useMemo(() => getReportMessages(locale, messageOverrides), [locale, messageOverrides]);
+    const [localeMessagesReady, setLocaleMessagesReady] = useState(locale !== "ko");
+    const messages = useMemo(() => getReportMessages(locale, messageOverrides), [locale, localeMessagesReady, messageOverrides]);
+    useEffect(() => {
+        if (locale !== "ko") {
+            setLocaleMessagesReady(true);
+            return;
+        }
+        let cancelled = false;
+        setLocaleMessagesReady(false);
+        void ensureReportLocaleMessages("ko").then(() => {
+            if (!cancelled) {
+                setLocaleMessagesReady(true);
+            }
+        });
+        return () => {
+            cancelled = true;
+        };
+    }, [locale]);
     useEffect(() => {
         setActiveReportMessages(messages);
     }, [messages]);

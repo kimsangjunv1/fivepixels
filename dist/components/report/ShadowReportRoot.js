@@ -1,6 +1,5 @@
 import { useLayoutEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { REPORT_STYLESHEET } from "../../styles/reportStylesheet.js";
 import { ensureReportTooltipLayer } from "../../utils/dom.js";
 const HOST_ID = "fivepixels-root";
 const STYLE_ELEMENT_ID = "fivepixels-report-styles";
@@ -18,7 +17,6 @@ function getOrCreateShadowHost() {
         shadowRoot = host.attachShadow({ mode: "open" });
         const style = document.createElement("style");
         style.id = STYLE_ELEMENT_ID;
-        style.textContent = REPORT_STYLESHEET;
         shadowRoot.append(style);
         const mount = document.createElement("div");
         mount.setAttribute(MOUNT_ATTR, "");
@@ -53,11 +51,18 @@ hot?.accept("../../styles/reportStylesheet.js", (module) => {
 export function ShadowReportRoot({ appearance, children }) {
     const [mount, setMount] = useState(null);
     useLayoutEffect(() => {
+        let cancelled = false;
         const host = getOrCreateShadowHost();
-        applyReportStyles(host.shadowRoot, REPORT_STYLESHEET);
         ensureReportTooltipLayer();
         setMount(host.mount);
+        void import("../../styles/reportStylesheet.js").then((module) => {
+            if (cancelled) {
+                return;
+            }
+            applyReportStyles(host.shadowRoot, module.REPORT_STYLESHEET);
+        });
         return () => {
+            cancelled = true;
             setMount(null);
         };
     }, []);

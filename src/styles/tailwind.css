@@ -104,6 +104,68 @@
     }
 }
 
+[data-fivepixels-mount] .fivepixels-locate-pulse-ring {
+    transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+[data-fivepixels-mount] .fivepixels-locate-pulse-ring--peak {
+    opacity: 0;
+}
+
+[data-fivepixels-mount] .fivepixels-locate-pulse-ring--valley {
+    opacity: 0.8;
+}
+
+[data-fivepixels-mount] .fivepixels-locate-pulse-core {
+    transition:
+        transform 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+[data-fivepixels-mount] .fivepixels-locate-pulse-core--peak {
+    opacity: 1;
+    transform: scale(1.45);
+}
+
+[data-fivepixels-mount] .fivepixels-locate-pulse-core--valley {
+    opacity: 0.4;
+    transform: scale(0.9);
+}
+
+[data-fivepixels-mount] .fivepixels-locate-pulse-target-outline {
+    transition: opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+[data-fivepixels-mount] .fivepixels-locate-pulse-target-outline--peak {
+    opacity: 1;
+}
+
+[data-fivepixels-mount] .fivepixels-locate-pulse-target-outline--valley {
+    opacity: 0.35;
+}
+
+[data-fivepixels-mount] .fivepixels-locate-pulse-target-surface {
+    transition: opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+[data-fivepixels-mount] .fivepixels-locate-pulse-target-surface--peak {
+    opacity: 1;
+}
+
+[data-fivepixels-mount] .fivepixels-locate-pulse-target-surface--valley {
+    opacity: 0.55;
+}
+
+[data-fivepixels-mount] .fivepixels-target-highlight {
+    opacity: 1;
+    transition:
+        opacity 0.14s ease-out,
+        left 0.44s cubic-bezier(0.22, 1, 0.36, 1),
+        top 0.44s cubic-bezier(0.22, 1, 0.36, 1),
+        width 0.44s cubic-bezier(0.22, 1, 0.36, 1),
+        height 0.44s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 [data-fivepixels-mount] .fivepixels-dock-guide-layer {
     position: fixed;
     inset: 0;
