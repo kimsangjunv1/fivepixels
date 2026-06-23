@@ -86,6 +86,12 @@ Omit handlers to use **localStorage**. Pass persistence handlers for API-backed 
 | **report** | `⌘⇧M` | Click elements to create feedback |
 | **view** | `⌘⇧L` | Browse markers, replies, and reviews |
 
+## Contributing
+
+Issues and pull requests are welcome. Branch feature and fix work from `develop`.
+
+Run `npm run lint` before opening a PR. See [CONTRIBUTING-en_us.md](./CONTRIBUTING-en_us.md) for details.
+
 ## License
 
 MIT © Sangjun Kim. See [LICENSE](./LICENSE).
