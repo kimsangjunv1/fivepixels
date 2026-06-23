@@ -1,6 +1,57 @@
 # fivepixels
 
+React library for **DOM element-level feedback** on staging, QA, and internal tool screens. Click targets to drop markers, collaborate with replies and reviews, and optionally escalate to GitHub Issues.
+
+**Full documentation:** [library.codi-agit.com/fivepixels/guide](https://library.codi-agit.com/fivepixels/guide)
+
+- **`data-report-id`** — re-find elements and restore marker positions after navigation or layout changes
+- **Shadow Root UI** — panel, overlay, and markers isolated from host CSS; no stylesheet import required
+- **localStorage or custom API** — omit handlers for browser storage, or pass `onList` / `onCreate` / `onUpdate` / `onDelete`
+
+## Install
+
+```bash
+npm install @fivepixels-js/react react react-dom
+```
+
+## Quick Start
+
+```tsx
+import { FivePixels } from "@fivepixels-js/react";
+
+export default function App() {
+    return (
+        <>
+            <FivePixels />
+
+            <main>
+                <section
+                    data-report-id="hero"
+                    data-report-type="group"
+                >
+                    <button data-report-id="hero-cta">Get started</button>
+                </section>
+            </main>
+        </>
+    );
+}
+```
+
+- `project.id` defaults to `"my-app"`. Set `project={{ id }}` for stage/production or multi-app setups.
+- Render `<FivePixels />` once on pages that accept feedback.
+- Target elements need `data-report-id`. Optional `data-report-type` defaults to `item`; use `group` for section-level targets.
+- No CSS import — UI mounts inside a Shadow Root with bundled styles.
+- For SSR (Next.js, etc.), render `FivePixels` on the client only (`"use client"`, dynamic import, etc.).
+
+See the [guide](https://library.codi-agit.com/fivepixels/guide) for configuration, persistence, GitHub integration, and the full API.
+
+---
+
+## 한국어 문서
+
 스테이징·QA·내부 도구 화면 위에 **DOM 요소 단위 피드백**을 남기는 React 라이브러리입니다. 버튼·섹션을 클릭해 마커를 찍고, 팀과 답변·검수 흐름을 거친 뒤 필요하면 GitHub Issue로 승격할 수 있습니다.
+
+상세 가이드: [library.codi-agit.com/fivepixels/guide](https://library.codi-agit.com/fivepixels/guide)
 
 - **`data-report-id`** — 화면이 바뀌어도 `querySelector`로 같은 요소를 다시 찾아 마커 위치를 복원합니다.
 - **Shadow Root UI** — 호스트 앱 CSS와 분리된 패널·오버레이·마커를 제공합니다. 별도 CSS import는 필요 없습니다.
@@ -16,13 +67,13 @@
 
 답변·검수(`denied` / `confirm` / `checkout`) 상세는 [Feedback Workflow](#feedback-workflow-view-모드)를 참고하세요.
 
-## Install
+### 설치
 
 ```bash
 npm install @fivepixels-js/react react react-dom
 ```
 
-## Quick Start
+### 빠른 시작
 
 ```tsx
 import { FivePixels } from "@fivepixels-js/react";
