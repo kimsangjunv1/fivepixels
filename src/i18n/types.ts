@@ -186,6 +186,9 @@ export type ReportMessages = {
         detachedAriaLabel: string;
         detachedHint: string;
         detachedBadge: string;
+        detachedModalAriaLabel: string;
+        detachedModalHint: string;
+        detachedModalBadge: string;
         moreIssuesAbove: (count: number) => string;
         moreIssuesBelow: (count: number) => string;
         moreIssuesLeft: (count: number) => string;

@@ -13,12 +13,12 @@ type ModalDemoContextValue = {
 
 const ModalDemoContext = createContext<ModalDemoContextValue | null>(null);
 
-const revealTargetByCase: Record<ModalCaseKey, string> = {
-    opacity: "modal-opacity-target",
-    display: "modal-display-target",
-    conditional: "modal-conditional-target",
-    visibility: "modal-visibility-target",
-    offscreen: "modal-offscreen-target",
+const revealTargetByCase: Record<ModalCaseKey, string[]> = {
+    opacity: ["modal-opacity-target", "modal-opacity-overlay"],
+    display: ["modal-display-target", "modal-display-overlay"],
+    conditional: ["modal-conditional-target", "modal-conditional-overlay"],
+    visibility: ["modal-visibility-target", "modal-visibility-overlay"],
+    offscreen: ["modal-offscreen-target", "modal-offscreen-overlay"],
 };
 
 export function ModalDemoProvider({ children }: PropsWithChildren) {
@@ -42,7 +42,9 @@ export function ModalDemoProvider({ children }: PropsWithChildren) {
 
     useEffect(() => {
         registerModalRevealHandler((report: ReportFeedback) => {
-            const matchedCase = (Object.entries(revealTargetByCase) as Array<[ModalCaseKey, string]>).find(([, targetId]) => targetId === report.report_id)?.[0];
+            const matchedCase = (Object.entries(revealTargetByCase) as Array<[ModalCaseKey, string[]]>).find(([, targetIds]) =>
+                targetIds.includes(report.report_id),
+            )?.[0];
 
             if (!matchedCase) {
                 return false;

@@ -228,6 +228,62 @@ export function getSelectableTargets() {
         .filter((snapshot): snapshot is TargetSnapshot => snapshot !== null);
 }
 
+function getElementsFromPoint(clientX: number, clientY: number) {
+    if (typeof document.elementsFromPoint === "function") {
+        return document.elementsFromPoint(clientX, clientY).filter((node): node is HTMLElement => node instanceof HTMLElement);
+    }
+
+    if (typeof document.elementFromPoint === "function") {
+        const hitElement = document.elementFromPoint(clientX, clientY);
+
+        return hitElement instanceof HTMLElement ? [hitElement] : [];
+    }
+
+    return [];
+}
+
+function isAriaHiddenSubtree(element: HTMLElement) {
+    let node: HTMLElement | null = element;
+
+    while (node && node !== document.documentElement) {
+        if (node.getAttribute("aria-hidden") === "true") {
+            return true;
+        }
+
+        node = node.parentElement;
+    }
+
+    return false;
+}
+
+function isSelectableFeedbackTarget(target: HTMLElement) {
+    if (!isFeedbackTargetVisible(target)) {
+        return false;
+    }
+
+    if (isAriaHiddenSubtree(target)) {
+        return false;
+    }
+
+    return true;
+}
+
+function isPointerEventBlockingLayer(element: HTMLElement) {
+    const style = window.getComputedStyle(element);
+
+    if (style.pointerEvents === "none" || isStyleHidden(style)) {
+        return false;
+    }
+
+    if (style.position !== "fixed" && style.position !== "sticky") {
+        return false;
+    }
+
+    const rect = element.getBoundingClientRect();
+
+    return rect.width > 0 && rect.height > 0;
+}
+
 export function findTargetByPoint(overlay: HTMLDivElement | null, clientX: number, clientY: number) {
     if (!overlay) {
         return null;
@@ -235,10 +291,36 @@ export function findTargetByPoint(overlay: HTMLDivElement | null, clientX: numbe
 
     const previousPointerEvents = overlay.style.pointerEvents;
     overlay.style.pointerEvents = "none";
-    const hitElement = document.elementFromPoint(clientX, clientY) as HTMLElement | null;
+    const elements = getElementsFromPoint(clientX, clientY);
     overlay.style.pointerEvents = previousPointerEvents;
 
-    return findTargetElement(hitElement);
+    const seen = new Set<HTMLElement>();
+
+    for (const element of elements) {
+        const target = findTargetElement(element);
+
+        if (!target) {
+            if (isPointerEventBlockingLayer(element)) {
+                return null;
+            }
+
+            continue;
+        }
+
+        if (seen.has(target)) {
+            continue;
+        }
+
+        seen.add(target);
+
+        if (!isSelectableFeedbackTarget(target)) {
+            continue;
+        }
+
+        return target;
+    }
+
+    return null;
 }
 
 const REPORT_HOST_ID = "fivepixels-root";

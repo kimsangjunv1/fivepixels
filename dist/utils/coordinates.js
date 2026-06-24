@@ -1,6 +1,7 @@
 import { DOT_SIZE } from "../constants/report.js";
 import { getFeedbackTargetSelector, getNearestScrollContainer, getScrollContainerClampId, hasFixedPositionAncestor, isFeedbackTargetVisible } from "./dom.js";
 import { getFeedbackAnchorElement } from "./locateFeedback.js";
+import { resolveDetachedKind } from "./markerContext.js";
 function applyScrollContainerClamp(left, top, element) {
     if (!element) {
         return { left, top, clampedEdge: null, clampBounds: null, clampContainerId: null };
@@ -112,6 +113,7 @@ export function getMarkerFromReport(report, currentScrollY) {
             top: position.top,
             rect,
             detached: false,
+            detachedKind: null,
             clampedEdge: position.clampedEdge,
             clampBounds: position.clampBounds,
             clampContainerId: position.clampContainerId,
@@ -125,6 +127,7 @@ export function getMarkerFromReport(report, currentScrollY) {
         top: detachedPosition.top,
         rect: null,
         detached: true,
+        detachedKind: resolveDetachedKind(report, targetElement, true),
         clampedEdge: detachedPosition.clampedEdge,
         clampBounds: detachedPosition.clampBounds,
         clampContainerId: detachedPosition.clampContainerId,

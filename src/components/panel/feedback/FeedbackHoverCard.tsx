@@ -1,4 +1,6 @@
 import type { ReportFeedback } from "@/types/report.js";
+import type { MarkerDetachedKind } from "@/types/report-ui.js";
+import { getDetachedMarkerHint } from "@/utils/markerContext.js";
 import { getFeedbackDisplayStatus, getLatestReply, getRemainingReplyCount } from "@/utils/feedbackThread.js";
 import { FeedbackCreatorBadge } from "./FeedbackCreatorBadge.js";
 import { FeedbackFieldTags } from "./FeedbackFieldTags.js";
@@ -8,20 +10,26 @@ type FeedbackHoverCardProps = {
     report: ReportFeedback;
     fieldTags: { key: string; label: string }[];
     detached?: boolean;
+    detachedKind?: MarkerDetachedKind;
     detachedHint?: string;
+    detachedModalHint?: string;
 };
 
-export function FeedbackHoverCard({ report, fieldTags, detached = false, detachedHint }: FeedbackHoverCardProps) {
+export function FeedbackHoverCard({ report, fieldTags, detached = false, detachedKind = null, detachedHint, detachedModalHint }: FeedbackHoverCardProps) {
     const displayStatus = getFeedbackDisplayStatus(report, true);
     const latestReply = getLatestReply(report);
     const remainingReplyCount = getRemainingReplyCount(report);
+    const resolvedDetachedHint =
+        detached && detachedHint && detachedModalHint
+            ? getDetachedMarkerHint(detachedKind, { detachedHint, detachedModalHint })
+            : null;
 
     return (
         // <div className="flex w-[260px] flex-col gap-[10px] bg-transparent p-[16px]">
         <div className="flex w-[260px] flex-col gap-[10px] bg-transparent p-[12px]">
             <FeedbackStatusBadge status={displayStatus} />
 
-            {detached && detachedHint ? <p className="text-[12px] leading-[1.4] text-[var(--adaptive-black500)]">{detachedHint}</p> : null}
+            {resolvedDetachedHint ? <p className="text-[12px] leading-[1.4] text-[var(--adaptive-black500)]">{resolvedDetachedHint}</p> : null}
 
             <p className="line-clamp-2 leading-[1.5] text-[16px] text-[var(--adaptive-text-primary)]">{report.message}</p>
 

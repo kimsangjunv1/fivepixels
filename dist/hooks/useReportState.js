@@ -261,13 +261,14 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             }, 50);
         };
         const mutationObserver = new MutationObserver((mutations) => {
-            if (mutations.some((mutation) => mutation.type === "attributes")) {
+            if (mutations.some((mutation) => mutation.type === "attributes" || mutation.type === "childList")) {
                 scheduleMutationSync();
             }
         });
         mutationObserver.observe(document.body, {
             attributes: true,
             attributeFilter: ["class", "style", "aria-hidden"],
+            childList: true,
             subtree: true,
         });
         window.addEventListener("scroll", syncMarkers, { passive: true, capture: true });

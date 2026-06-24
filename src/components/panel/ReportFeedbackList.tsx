@@ -11,6 +11,7 @@ import { FeedbackFieldTags } from "./feedback/FeedbackFieldTags.js";
 import { FeedbackStatusBadge } from "./feedback/FeedbackStatusBadge.js";
 import { SearchIcon, CopyIcon, TrashIcon, ChevronDownIcon } from "@/components/icons/Icons.js";
 import { copyTextToClipboard, serializeFeedbackItem } from "@/utils/feedbackDataTransfer.js";
+import { formatModalReportLabel } from "@/utils/markerContext.js";
 import type { ReportFeedback } from "@/types/report.js";
 import type { ReportMessages } from "@/i18n/types.js";
 import type { ReportLocale } from "@/i18n/types.js";
@@ -173,7 +174,10 @@ export function ReportFeedbackList() {
         filters.reportType === "all" ? messages.feedbackList.filterTypeAll : filters.reportType === "item" ? messages.feedbackList.reportTypeItem : messages.feedbackList.reportTypeGroup;
     const visibleReports = useMemo(() => filteredReports.slice(0, visibleCount), [filteredReports, visibleCount]);
     const groupedReports = useMemo(() => groupReportsByDate(visibleReports, locale), [locale, visibleReports]);
-    const detachedMarkerIds = useMemo(() => new Set(markers.filter((marker) => marker.detached).map((marker) => marker.id)), [markers]);
+    const detachedMarkerKinds = useMemo(
+        () => new Map(markers.filter((marker) => marker.detached).map((marker) => [marker.report.id, marker.detachedKind])),
+        [markers],
+    );
 
     useEffect(() => {
         setVisibleCount(FEEDBACK_PAGE_SIZE);
@@ -426,11 +430,23 @@ export function ReportFeedbackList() {
                                                   >
                                                       <section className="flex flex-col gap-[4px]">
                                                           <div className="flex flex-wrap items-center gap-[6px]">
-                                                              <strong className="max-w-full truncate font-bold text-[var(--adaptive-black900)]">{report.report_id}</strong>
+                                                              <strong className="max-w-full truncate font-bold text-[var(--adaptive-black900)]">
+                                                                  {detachedMarkerKinds.get(report.id) === "modal"
+                                                                      ? formatModalReportLabel(report.report_id)
+                                                                      : report.report_id}
+                                                              </strong>
 
-                                                              {detachedMarkerIds.has(report.id) ? (
-                                                                  <span className="rounded-[4px] border border-dashed border-[var(--adaptive-black400)] px-[4px] py-[1px] text-[10px] text-[var(--adaptive-black500)]">
-                                                                      {messages.marker.detachedBadge}
+                                                              {detachedMarkerKinds.has(report.id) ? (
+                                                                  <span
+                                                                      className={`rounded-[4px] border border-dashed px-[4px] py-[1px] text-[10px] ${
+                                                                          detachedMarkerKinds.get(report.id) === "modal"
+                                                                              ? "border-[#818cf8]/70 text-[#4f46e5]"
+                                                                              : "border-[var(--adaptive-black400)] text-[var(--adaptive-black500)]"
+                                                                      }`}
+                                                                  >
+                                                                      {detachedMarkerKinds.get(report.id) === "modal"
+                                                                          ? messages.marker.detachedModalBadge
+                                                                          : messages.marker.detachedBadge}
                                                                   </span>
                                                               ) : null}
 

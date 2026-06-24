@@ -3,6 +3,7 @@ import type { ReportFeedback } from "@/types/report.js";
 import type { DraftReport, Marker, MarkerClampBounds, MarkerClampEdge, MarkerOverflowHint, TargetSnapshot } from "@/types/report-ui.js";
 import { getFeedbackTargetSelector, getNearestScrollContainer, getScrollContainerClampId, hasFixedPositionAncestor, isFeedbackTargetVisible } from "./dom.js";
 import { getFeedbackAnchorElement } from "./locateFeedback.js";
+import { resolveDetachedKind } from "./markerContext.js";
 
 export type MarkerPosition = {
     left: number;
@@ -159,6 +160,7 @@ export function getMarkerFromReport(report: ReportFeedback, currentScrollY: numb
             top: position.top,
             rect,
             detached: false,
+            detachedKind: null,
             clampedEdge: position.clampedEdge,
             clampBounds: position.clampBounds,
             clampContainerId: position.clampContainerId,
@@ -174,6 +176,7 @@ export function getMarkerFromReport(report: ReportFeedback, currentScrollY: numb
         top: detachedPosition.top,
         rect: null,
         detached: true,
+        detachedKind: resolveDetachedKind(report, targetElement, true),
         clampedEdge: detachedPosition.clampedEdge,
         clampBounds: detachedPosition.clampBounds,
         clampContainerId: detachedPosition.clampContainerId,

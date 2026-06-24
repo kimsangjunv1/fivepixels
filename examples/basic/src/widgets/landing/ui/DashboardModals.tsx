@@ -16,6 +16,8 @@ export function DashboardModals() {
         <>
             <div
                 className={`modal-demo-overlay ${opacityOpen ? "modal-demo-overlay--interactive" : "modal-demo-overlay--hidden-opacity"}`}
+                data-report-id="modal-opacity-overlay"
+                data-report-type="group"
                 aria-hidden={!opacityOpen}
             >
                 <ModalDemoDialog
@@ -28,7 +30,13 @@ export function DashboardModals() {
                 </ModalDemoDialog>
             </div>
 
-            <div className="modal-demo-overlay" style={{ display: displayOpen ? "flex" : "none" }}>
+            <div
+                className="modal-demo-overlay"
+                data-report-id="modal-display-overlay"
+                data-report-type="group"
+                style={{ display: displayOpen ? "flex" : "none" }}
+                aria-hidden={!displayOpen}
+            >
                 <ModalDemoDialog
                     title="display:none 모달"
                     description="닫으면 display가 none으로 바뀝니다."
@@ -40,7 +48,12 @@ export function DashboardModals() {
             </div>
 
             {conditionalOpen ? (
-                <div className="modal-demo-overlay modal-demo-overlay--interactive">
+                <div
+                    className="modal-demo-overlay modal-demo-overlay--interactive"
+                    data-report-id="modal-conditional-overlay"
+                    data-report-type="group"
+                    aria-hidden={false}
+                >
                     <ModalDemoDialog
                         title="조건부 렌더 모달"
                         description="닫으면 이 컴포넌트 트리가 DOM에서 사라집니다."
@@ -54,6 +67,8 @@ export function DashboardModals() {
 
             <div
                 className={`modal-demo-overlay ${visibilityOpen ? "modal-demo-overlay--interactive" : "modal-demo-overlay--hidden-visibility"}`}
+                data-report-id="modal-visibility-overlay"
+                data-report-type="group"
                 aria-hidden={!visibilityOpen}
             >
                 <ModalDemoDialog
@@ -68,6 +83,8 @@ export function DashboardModals() {
 
             <div
                 className={`modal-demo-overlay ${offscreenOpen ? "modal-demo-overlay--interactive" : "modal-demo-overlay--hidden-offscreen"}`}
+                data-report-id="modal-offscreen-overlay"
+                data-report-type="group"
                 aria-hidden={!offscreenOpen}
             >
                 <ModalDemoDialog
@@ -81,7 +98,12 @@ export function DashboardModals() {
             </div>
 
             {zustandOpen ? (
-                <div className="modal-demo-overlay modal-demo-overlay--interactive">
+                <div
+                    className="modal-demo-overlay modal-demo-overlay--interactive"
+                    data-report-id="modal-zustand-overlay"
+                    data-report-type="group"
+                    aria-hidden={false}
+                >
                     <ModalDemoDialog
                         title="Zustand 모달"
                         description="닫으면 store의 isOpen이 false가 되며 언마운트됩니다."

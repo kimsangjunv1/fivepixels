@@ -170,15 +170,73 @@ export function getSelectableTargets() {
         .map((element) => toSnapshot(element))
         .filter((snapshot) => snapshot !== null);
 }
+function getElementsFromPoint(clientX, clientY) {
+    if (typeof document.elementsFromPoint === "function") {
+        return document.elementsFromPoint(clientX, clientY).filter((node) => node instanceof HTMLElement);
+    }
+    if (typeof document.elementFromPoint === "function") {
+        const hitElement = document.elementFromPoint(clientX, clientY);
+        return hitElement instanceof HTMLElement ? [hitElement] : [];
+    }
+    return [];
+}
+function isAriaHiddenSubtree(element) {
+    let node = element;
+    while (node && node !== document.documentElement) {
+        if (node.getAttribute("aria-hidden") === "true") {
+            return true;
+        }
+        node = node.parentElement;
+    }
+    return false;
+}
+function isSelectableFeedbackTarget(target) {
+    if (!isFeedbackTargetVisible(target)) {
+        return false;
+    }
+    if (isAriaHiddenSubtree(target)) {
+        return false;
+    }
+    return true;
+}
+function isPointerEventBlockingLayer(element) {
+    const style = window.getComputedStyle(element);
+    if (style.pointerEvents === "none" || isStyleHidden(style)) {
+        return false;
+    }
+    if (style.position !== "fixed" && style.position !== "sticky") {
+        return false;
+    }
+    const rect = element.getBoundingClientRect();
+    return rect.width > 0 && rect.height > 0;
+}
 export function findTargetByPoint(overlay, clientX, clientY) {
     if (!overlay) {
         return null;
     }
     const previousPointerEvents = overlay.style.pointerEvents;
     overlay.style.pointerEvents = "none";
-    const hitElement = document.elementFromPoint(clientX, clientY);
+    const elements = getElementsFromPoint(clientX, clientY);
     overlay.style.pointerEvents = previousPointerEvents;
-    return findTargetElement(hitElement);
+    const seen = new Set();
+    for (const element of elements) {
+        const target = findTargetElement(element);
+        if (!target) {
+            if (isPointerEventBlockingLayer(element)) {
+                return null;
+            }
+            continue;
+        }
+        if (seen.has(target)) {
+            continue;
+        }
+        seen.add(target);
+        if (!isSelectableFeedbackTarget(target)) {
+            continue;
+        }
+        return target;
+    }
+    return null;
 }
 const REPORT_HOST_ID = "fivepixels-root";
 const REPORT_MOUNT_ATTR = "data-fivepixels-mount";

@@ -1,5 +1,5 @@
-import { describe, expect, it, vi } from "vitest";
-import { escapeAttribute, findTargetElement, getFeedbackTargetSelector, getNearestScrollContainer, hasFixedPositionAncestor, isFeedbackTargetVisible, resolveFeedbackDocumentAnchor, resolveReportType, toSnapshot } from "./dom.js";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { escapeAttribute, findTargetByPoint, findTargetElement, getFeedbackTargetSelector, getNearestScrollContainer, hasFixedPositionAncestor, isFeedbackTargetVisible, resolveFeedbackDocumentAnchor, resolveReportType, toSnapshot } from "./dom.js";
 
 describe("escapeAttribute", () => {
     it("escapes backslashes and double quotes for selector safety", () => {
@@ -207,6 +207,157 @@ describe("resolveFeedbackDocumentAnchor", () => {
 
         expect(anchor?.id).toBe("modal-demo");
         expect(anchor?.type).toBe("group");
+    });
+});
+
+describe("findTargetByPoint", () => {
+    function mockFullViewportRect(element: HTMLElement) {
+        vi.spyOn(element, "getBoundingClientRect").mockReturnValue({
+            left: 0,
+            top: 0,
+            width: window.innerWidth,
+            height: window.innerHeight,
+            right: window.innerWidth,
+            bottom: window.innerHeight,
+            x: 0,
+            y: 0,
+            toJSON: () => ({}),
+        } as DOMRect);
+    }
+
+    function mockElementsFromPoint(elements: HTMLElement[]) {
+        document.elementsFromPoint = vi.fn(() => elements) as typeof document.elementsFromPoint;
+    }
+
+    beforeEach(() => {
+        document.elementsFromPoint = vi.fn(() => []) as typeof document.elementsFromPoint;
+    });
+
+    it("skips hidden overlays and selects the visible modal target below", () => {
+        document.body.innerHTML = `
+            <div
+                data-report-id="modal-overlay-hidden"
+                style="position: fixed; inset: 0; opacity: 0;"
+                aria-hidden="true"
+            >
+                <div data-report-id="modal-hidden-target">hidden</div>
+            </div>
+            <div data-report-id="modal-overlay-visible" style="position: fixed; inset: 0;">
+                <div data-report-id="modal-visible-target">visible</div>
+            </div>
+        `;
+
+        const hiddenOverlay = document.querySelector<HTMLElement>('[data-report-id="modal-overlay-hidden"]')!;
+        const hiddenTarget = document.querySelector<HTMLElement>('[data-report-id="modal-hidden-target"]')!;
+        const visibleOverlay = document.querySelector<HTMLElement>('[data-report-id="modal-overlay-visible"]')!;
+        const visibleTarget = document.querySelector<HTMLElement>('[data-report-id="modal-visible-target"]')!;
+        const overlay = document.createElement("div");
+
+        mockFullViewportRect(hiddenOverlay);
+        mockFullViewportRect(visibleOverlay);
+        mockFullViewportRect(visibleTarget);
+
+        mockElementsFromPoint([hiddenTarget, hiddenOverlay, visibleTarget, visibleOverlay, document.body]);
+
+        const result = findTargetByPoint(overlay, window.innerWidth / 2, window.innerHeight / 2);
+
+        expect(result?.dataset.reportId).toBe("modal-visible-target");
+    });
+
+    it("skips aria-hidden overlays that still participate in hit testing", () => {
+        document.body.innerHTML = `
+            <div
+                data-report-id="modal-overlay-closed"
+                style="position: fixed; inset: 0;"
+                aria-hidden="true"
+            >
+                <div data-report-id="modal-closed-target">closed</div>
+            </div>
+            <div data-report-id="modal-overlay-open" style="position: fixed; inset: 0;" aria-hidden="false">
+                <div data-report-id="modal-open-target">open</div>
+            </div>
+        `;
+
+        const closedOverlay = document.querySelector<HTMLElement>('[data-report-id="modal-overlay-closed"]')!;
+        const closedTarget = document.querySelector<HTMLElement>('[data-report-id="modal-closed-target"]')!;
+        const openOverlay = document.querySelector<HTMLElement>('[data-report-id="modal-overlay-open"]')!;
+        const openTarget = document.querySelector<HTMLElement>('[data-report-id="modal-open-target"]')!;
+        const overlay = document.createElement("div");
+
+        mockFullViewportRect(closedOverlay);
+        mockFullViewportRect(openOverlay);
+        mockFullViewportRect(openTarget);
+
+        mockElementsFromPoint([closedTarget, closedOverlay, openTarget, openOverlay, document.body]);
+
+        const result = findTargetByPoint(overlay, window.innerWidth / 2, window.innerHeight / 2);
+
+        expect(result?.dataset.reportId).toBe("modal-open-target");
+    });
+
+    it("returns null when every stacked report target is hidden", () => {
+        document.body.innerHTML = `
+            <div data-report-id="modal-overlay-hidden" style="position: fixed; inset: 0; display: none;">
+                <div data-report-id="modal-hidden-target">hidden</div>
+            </div>
+        `;
+
+        const hiddenTarget = document.querySelector<HTMLElement>('[data-report-id="modal-hidden-target"]')!;
+        const hiddenOverlay = document.querySelector<HTMLElement>('[data-report-id="modal-overlay-hidden"]')!;
+        const overlay = document.createElement("div");
+
+        mockFullViewportRect(hiddenOverlay);
+        mockElementsFromPoint([hiddenTarget, hiddenOverlay, document.body]);
+
+        const result = findTargetByPoint(overlay, window.innerWidth / 2, window.innerHeight / 2);
+
+        expect(result).toBeNull();
+    });
+
+    it("does not select page targets below a fixed modal backdrop without report-id", () => {
+        document.body.innerHTML = `
+            <button data-report-id="page-target" data-report-type="item">page</button>
+            <div class="modal-backdrop" style="position: fixed; inset: 0;"></div>
+        `;
+
+        const pageTarget = document.querySelector<HTMLElement>('[data-report-id="page-target"]')!;
+        const modalBackdrop = document.querySelector<HTMLElement>(".modal-backdrop")!;
+        const overlay = document.createElement("div");
+
+        mockFullViewportRect(pageTarget);
+        mockFullViewportRect(modalBackdrop);
+        mockElementsFromPoint([modalBackdrop, pageTarget, document.body]);
+
+        const result = findTargetByPoint(overlay, window.innerWidth / 2, window.innerHeight / 2);
+
+        expect(result).toBeNull();
+    });
+
+    it("selects a modal overlay group instead of page targets below the backdrop", () => {
+        document.body.innerHTML = `
+            <button data-report-id="page-target" data-report-type="item">page</button>
+            <div
+                data-report-id="modal-overlay-open"
+                data-report-type="group"
+                style="position: fixed; inset: 0;"
+                aria-hidden="false"
+            >
+                <div data-report-id="modal-open-target" data-report-type="item">open</div>
+            </div>
+        `;
+
+        const pageTarget = document.querySelector<HTMLElement>('[data-report-id="page-target"]')!;
+        const openOverlay = document.querySelector<HTMLElement>('[data-report-id="modal-overlay-open"]')!;
+        const overlay = document.createElement("div");
+
+        mockFullViewportRect(pageTarget);
+        mockFullViewportRect(openOverlay);
+        mockElementsFromPoint([openOverlay, pageTarget, document.body]);
+
+        const result = findTargetByPoint(overlay, window.innerWidth / 2, window.innerHeight / 2);
+
+        expect(result?.dataset.reportId).toBe("modal-overlay-open");
+        expect(result?.dataset.reportType).toBe("group");
     });
 });
 

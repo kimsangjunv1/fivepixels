@@ -46,12 +46,15 @@ export type MarkerClampBounds = {
     bottom: number;
 };
 
+export type MarkerDetachedKind = "modal" | "hidden" | null;
+
 export type Marker = {
     id: string;
     left: number;
     top: number;
     rect: DOMRect | null;
     detached: boolean;
+    detachedKind: MarkerDetachedKind;
     clampedEdge: MarkerClampEdge | null;
     clampBounds: MarkerClampBounds | null;
     clampContainerId: string | null;

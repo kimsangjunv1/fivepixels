@@ -80,6 +80,7 @@ describe("getMarkerFromReport", () => {
 
         expect(marker.rect).not.toBeNull();
         expect(marker.detached).toBe(false);
+        expect(marker.detachedKind).toBeNull();
         expect(marker.clampedEdge).toBeNull();
         expect(marker.clampBounds).toBeNull();
         expect(marker.clampContainerId).toBeNull();
@@ -116,6 +117,7 @@ describe("getMarkerFromReport", () => {
 
         expect(marker.rect).not.toBeNull();
         expect(marker.detached).toBe(false);
+        expect(marker.detachedKind).toBeNull();
         expect(marker.clampBounds).toBeNull();
         expect(marker.left).toBe(40 + 120 * 0.5 - DOT_SIZE / 2);
         expect(marker.top).toBe(60 + 40 * 0.5 - DOT_SIZE / 2);
@@ -129,6 +131,7 @@ describe("getMarkerFromReport", () => {
 
         expect(marker.rect).toBeNull();
         expect(marker.detached).toBe(true);
+        expect(marker.detachedKind).toBe("modal");
         expect(marker.clampBounds).toBeNull();
         expect(marker.left).toBe(1000 * 0.5 - DOT_SIZE / 2);
         expect(marker.top).toBe(800 * 0.5 - DOT_SIZE / 2);
@@ -169,7 +172,21 @@ describe("getMarkerFromReport", () => {
         );
 
         expect(marker.detached).toBe(true);
+        expect(marker.detachedKind).toBe("hidden");
         expect(marker.top).toBe(320 + 220 * 0.5 - DOT_SIZE / 2);
+    });
+
+    it("classifies detached modal report ids as modal", () => {
+        const marker = getMarkerFromReport(
+            createStoredReport({
+                report_id: "modal-zustand-overlay",
+                report_type: "group",
+            }),
+            0,
+        );
+
+        expect(marker.detached).toBe(true);
+        expect(marker.detachedKind).toBe("modal");
     });
 
     it("uses the first matching element when duplicate ids exist", () => {
@@ -713,6 +730,7 @@ describe("resolveMarkerOverflowHints", () => {
                 top: 0,
                 rect: null,
                 detached: false,
+                detachedKind: null,
                 clampedEdge: "top" as const,
                 clampBounds: bounds,
                 clampContainerId: "container-1",
@@ -724,6 +742,7 @@ describe("resolveMarkerOverflowHints", () => {
                 top: 0,
                 rect: null,
                 detached: false,
+                detachedKind: null,
                 clampedEdge: "top" as const,
                 clampBounds: bounds,
                 clampContainerId: "container-1",
@@ -735,6 +754,7 @@ describe("resolveMarkerOverflowHints", () => {
                 top: 0,
                 rect: null,
                 detached: false,
+                detachedKind: null,
                 clampedEdge: "bottom" as const,
                 clampBounds: bounds,
                 clampContainerId: "container-1",
@@ -746,6 +766,7 @@ describe("resolveMarkerOverflowHints", () => {
                 top: 10,
                 rect: null,
                 detached: false,
+                detachedKind: null,
                 clampedEdge: null,
                 clampBounds: null,
                 clampContainerId: null,
@@ -767,8 +788,8 @@ describe("resolveTooltipAnchor", () => {
     it("returns the marker that matches the selected report id", () => {
         const report = createStoredReport({ id: "selected" });
         const markers = [
-            { id: "other", left: 0, top: 0, rect: null, detached: true, clampedEdge: null, clampBounds: null, clampContainerId: null, report: createStoredReport({ id: "other" }) },
-            { id: "selected", left: 1, top: 2, rect: null, detached: false, clampedEdge: null, clampBounds: null, clampContainerId: null, report },
+            { id: "other", left: 0, top: 0, rect: null, detached: true, detachedKind: "hidden", clampedEdge: null, clampBounds: null, clampContainerId: null, report: createStoredReport({ id: "other" }) },
+            { id: "selected", left: 1, top: 2, rect: null, detached: false, detachedKind: null, clampedEdge: null, clampBounds: null, clampContainerId: null, report },
         ];
 
         expect(resolveTooltipAnchor(markers, "selected")?.report.id).toBe("selected");

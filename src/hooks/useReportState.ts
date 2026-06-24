@@ -432,7 +432,7 @@ export function useReportState({
         };
 
         const mutationObserver = new MutationObserver((mutations) => {
-            if (mutations.some((mutation) => mutation.type === "attributes")) {
+            if (mutations.some((mutation) => mutation.type === "attributes" || mutation.type === "childList")) {
                 scheduleMutationSync();
             }
         });
@@ -440,6 +440,7 @@ export function useReportState({
         mutationObserver.observe(document.body, {
             attributes: true,
             attributeFilter: ["class", "style", "aria-hidden"],
+            childList: true,
             subtree: true,
         });
 
