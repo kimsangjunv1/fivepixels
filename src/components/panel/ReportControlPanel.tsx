@@ -327,13 +327,13 @@ export function ReportControlPanel() {
                                                 </section>
 
                                                 <section className="flex flex-col items-start gap-[4px] flex-1">
-                                                    <p className="text-[12px] text-[var(--adaptive-black500)]">{messages.panel.statsGroup}</p>
-                                                    <p className={`text-[14px] font-semibold text-[var(--adaptive-black900)] ${panelNumericClassName}`}>{formatStatCount(targetStats.group)}</p>
+                                                    <p className="text-[12px] text-[var(--adaptive-black500)]">{messages.panel.statsResolved}</p>
+                                                    <p className={`text-[14px] font-semibold text-[var(--adaptive-black900)] ${panelNumericClassName}`}>{formatStatCount(targetStats.resolved)}</p>
                                                 </section>
 
                                                 <section className="flex flex-col items-start gap-[4px] flex-1">
-                                                    <p className="text-[12px] text-[var(--adaptive-black500)]">{messages.panel.statsItem}</p>
-                                                    <p className={`text-[14px] font-semibold text-[var(--adaptive-black900)] ${panelNumericClassName}`}>{formatStatCount(targetStats.item)}</p>
+                                                    <p className="text-[12px] text-[var(--adaptive-black500)]">{messages.panel.statsInProgress}</p>
+                                                    <p className={`text-[14px] font-semibold text-[var(--adaptive-black900)] ${panelNumericClassName}`}>{formatStatCount(targetStats.inProgress)}</p>
                                                 </section>
                                             </section>
                                         </section>

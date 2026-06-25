@@ -30,8 +30,8 @@ export type ReportMessages = {
         viewFeedbacks: string;
         importDragOverlay: string;
         statsFound: string;
-        statsGroup: string;
-        statsItem: string;
+        statsResolved: string;
+        statsInProgress: string;
         tabPageDetails: string;
         tabFeedbackList: string;
     };
@@ -178,6 +178,18 @@ export type ReportMessages = {
         selectedItem: string;
         selectedGroup: string;
     };
+    marker: {
+        detachedAriaLabel: string;
+        detachedHint: string;
+        detachedBadge: string;
+        detachedModalAriaLabel: string;
+        detachedModalHint: string;
+        detachedModalBadge: string;
+        moreIssuesAbove: (count: number) => string;
+        moreIssuesBelow: (count: number) => string;
+        moreIssuesLeft: (count: number) => string;
+        moreIssuesRight: (count: number) => string;
+    };
     defaults: {
         fields: {
             message: string;
@@ -210,6 +222,10 @@ export type ReportMessages = {
         numberFieldRequired: (field: string) => string;
         elementXRatioInvalid: string;
         elementYRatioInvalid: string;
+        anchorXRatioInvalid: string;
+        anchorYRatioInvalid: string;
+        anchorReportIdInvalid: string;
+        anchorReportTypeInvalid: string;
         optionalStringFieldInvalid: (field: string) => string;
         duplicateId: (id: string) => string;
         integrationsObjectInvalid: string;

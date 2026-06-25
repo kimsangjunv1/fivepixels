@@ -11,6 +11,7 @@ import {
     getDraftPopoverPosition,
     getMarkerFromReport,
     getTooltipPosition,
+    resolveMarkerOverflowHints,
     resolveTooltipAnchor,
 } from "./coordinates.js";
 
@@ -78,6 +79,11 @@ describe("getMarkerFromReport", () => {
         const marker = getMarkerFromReport(createStoredReport(), 0);
 
         expect(marker.rect).not.toBeNull();
+        expect(marker.detached).toBe(false);
+        expect(marker.detachedKind).toBeNull();
+        expect(marker.clampedEdge).toBeNull();
+        expect(marker.clampBounds).toBeNull();
+        expect(marker.clampContainerId).toBeNull();
         expect(marker.left).toBe(100 + 200 * 0.25 - DOT_SIZE / 2);
         expect(marker.top).toBe(80 + 100 * 0.75 - DOT_SIZE / 2);
     });
@@ -110,16 +116,77 @@ describe("getMarkerFromReport", () => {
         );
 
         expect(marker.rect).not.toBeNull();
+        expect(marker.detached).toBe(false);
+        expect(marker.detachedKind).toBeNull();
+        expect(marker.clampBounds).toBeNull();
         expect(marker.left).toBe(40 + 120 * 0.5 - DOT_SIZE / 2);
         expect(marker.top).toBe(60 + 40 * 0.5 - DOT_SIZE / 2);
     });
 
-    it("falls back to document coordinates when the target element is missing", () => {
-        const marker = getMarkerFromReport(createStoredReport({ document_y: 220 }), 20);
+    it("falls back to viewport coordinates when the target element is missing and no document anchor exists", () => {
+        vi.stubGlobal("innerWidth", 1000);
+        vi.stubGlobal("innerHeight", 800);
+
+        const marker = getMarkerFromReport(createStoredReport({ document_y: 220, y_ratio: 0.5, viewport_height: 800 }), 20);
 
         expect(marker.rect).toBeNull();
+        expect(marker.detached).toBe(true);
+        expect(marker.detachedKind).toBe("modal");
+        expect(marker.clampBounds).toBeNull();
         expect(marker.left).toBe(1000 * 0.5 - DOT_SIZE / 2);
-        expect(marker.top).toBe(220 - 20 - DOT_SIZE / 2);
+        expect(marker.top).toBe(800 * 0.5 - DOT_SIZE / 2);
+    });
+
+    it("falls back to document coordinates when the target element is missing but a document anchor exists", () => {
+        document.body.innerHTML = `
+            <section data-report-id="page-section" data-report-type="group">
+                <p>content</p>
+            </section>
+        `;
+
+        const section = document.querySelector<HTMLElement>('[data-report-id="page-section"]')!;
+
+        vi.spyOn(section, "getBoundingClientRect").mockReturnValue({
+            left: 80,
+            top: 320,
+            width: 640,
+            height: 220,
+            right: 720,
+            bottom: 540,
+            x: 80,
+            y: 320,
+            toJSON: () => ({}),
+        } as DOMRect);
+
+        const marker = getMarkerFromReport(
+            createStoredReport({
+                report_id: "missing-target",
+                report_type: "item",
+                anchor_report_id: "page-section",
+                anchor_report_type: "group",
+                anchor_x_ratio: 0.5,
+                anchor_y_ratio: 0.5,
+                document_y: 220,
+            }),
+            20,
+        );
+
+        expect(marker.detached).toBe(true);
+        expect(marker.detachedKind).toBe("hidden");
+        expect(marker.top).toBe(320 + 220 * 0.5 - DOT_SIZE / 2);
+    });
+
+    it("classifies detached modal report ids as modal", () => {
+        const marker = getMarkerFromReport(
+            createStoredReport({
+                report_id: "modal-zustand-overlay",
+                report_type: "group",
+            }),
+            0,
+        );
+
+        expect(marker.detached).toBe(true);
+        expect(marker.detachedKind).toBe("modal");
     });
 
     it("uses the first matching element when duplicate ids exist", () => {
@@ -161,6 +228,286 @@ describe("getMarkerFromReport", () => {
 
         expect(marker.left).toBe(10 + 100 * 0.25 - DOT_SIZE / 2);
     });
+
+    it("falls back to document coordinates when the target element is hidden", () => {
+        const target = document.createElement("section");
+        target.dataset.reportId = "hero";
+        target.dataset.reportType = "group";
+        target.style.display = "none";
+        document.body.append(target);
+
+        const marker = getMarkerFromReport(createStoredReport({ document_y: 220 }), 20);
+
+        expect(marker.rect).toBeNull();
+        expect(marker.detached).toBe(true);
+        expect(marker.clampBounds).toBeNull();
+        expect(marker.top).toBe(220 - 20 - DOT_SIZE / 2);
+    });
+
+    it("scrolls detached markers with the document when a hidden target has no layout box", () => {
+        vi.stubGlobal("innerWidth", 1000);
+        vi.stubGlobal("innerHeight", 800);
+
+        const overlay = document.createElement("div");
+        overlay.style.position = "fixed";
+        overlay.style.display = "none";
+
+        const target = document.createElement("section");
+        target.dataset.reportId = "hero";
+        target.dataset.reportType = "group";
+        overlay.append(target);
+        document.body.append(overlay);
+
+        const markerAtRest = getMarkerFromReport(
+            createStoredReport({
+                document_y: 900,
+            }),
+            100,
+        );
+        const markerAfterScroll = getMarkerFromReport(
+            createStoredReport({
+                document_y: 900,
+            }),
+            400,
+        );
+
+        expect(markerAtRest.detached).toBe(true);
+        expect(markerAtRest.clampBounds).toBeNull();
+        expect(markerAtRest.top).toBe(900 - 100 - DOT_SIZE / 2);
+        expect(markerAfterScroll.top).toBe(900 - 400 - DOT_SIZE / 2);
+        expect(markerAfterScroll.top).not.toBe(markerAtRest.top);
+    });
+
+    it("uses viewport coordinates for opacity-hidden fixed targets instead of live rect", () => {
+        vi.stubGlobal("innerWidth", 1000);
+        vi.stubGlobal("innerHeight", 800);
+
+        const overlay = document.createElement("div");
+        overlay.style.position = "fixed";
+
+        const target = document.createElement("section");
+        target.dataset.reportId = "hero";
+        target.dataset.reportType = "group";
+        target.style.opacity = "0";
+        overlay.append(target);
+        document.body.append(overlay);
+
+        vi.spyOn(target, "getBoundingClientRect").mockReturnValue({
+            left: 120,
+            top: 180,
+            width: 240,
+            height: 120,
+            right: 360,
+            bottom: 300,
+            x: 120,
+            y: 180,
+            toJSON: () => ({}),
+        } as DOMRect);
+
+        const marker = getMarkerFromReport(
+            createStoredReport({
+                document_y: 620,
+                viewport_width: 1000,
+                viewport_height: 800,
+                x_ratio: 0.5,
+                y_ratio: 0.5,
+            }),
+            200,
+        );
+
+        expect(marker.detached).toBe(true);
+        expect(marker.clampBounds).toBeNull();
+        expect(marker.top).toBe(800 * 0.5 - DOT_SIZE / 2);
+        expect(marker.top).not.toBe(180 + 120 * 0.75 - DOT_SIZE / 2);
+        expect(marker.top).not.toBe(620 - 200 - DOT_SIZE / 2);
+    });
+
+    it("keeps viewport-detached markers stable while the page scrolls", () => {
+        vi.stubGlobal("innerWidth", 1000);
+        vi.stubGlobal("innerHeight", 800);
+
+        const overlay = document.createElement("div");
+        overlay.style.position = "fixed";
+
+        const target = document.createElement("section");
+        target.dataset.reportId = "hero";
+        target.dataset.reportType = "group";
+        target.style.opacity = "0";
+        overlay.append(target);
+        document.body.append(overlay);
+
+        vi.spyOn(target, "getBoundingClientRect").mockReturnValue({
+            left: 120,
+            top: 180,
+            width: 240,
+            height: 120,
+            right: 360,
+            bottom: 300,
+            x: 120,
+            y: 180,
+            toJSON: () => ({}),
+        } as DOMRect);
+
+        const report = createStoredReport({
+            viewport_width: 1000,
+            viewport_height: 800,
+            y_ratio: 0.4,
+            document_y: 900,
+        });
+
+        const markerAtRest = getMarkerFromReport(report, 100);
+        const markerAfterScroll = getMarkerFromReport(report, 400);
+
+        expect(markerAtRest.detached).toBe(true);
+        expect(markerAfterScroll.top).toBe(markerAtRest.top);
+    });
+
+    it("scales detached horizontal position when the viewport width changes", () => {
+        const report = createStoredReport({
+            x_ratio: 0.5,
+            viewport_width: 1000,
+            document_y: 300,
+        });
+
+        vi.stubGlobal("innerWidth", 1000);
+        const markerAtFullWidth = getMarkerFromReport(report, 0);
+
+        vi.stubGlobal("innerWidth", 500);
+        const markerAtHalfWidth = getMarkerFromReport(report, 0);
+
+        expect(markerAtFullWidth.left).toBe(1000 * 0.5 - DOT_SIZE / 2);
+        expect(markerAtHalfWidth.left).toBe(500 * 0.5 - DOT_SIZE / 2);
+    });
+
+    it("anchors detached markers to a document-flow parent section", () => {
+        document.body.innerHTML = `
+            <section data-report-id="modal-demo" data-report-type="group">
+                <div style="position: fixed; display: none">
+                    <div data-report-id="modal-target" data-report-type="item">target</div>
+                </div>
+            </section>
+        `;
+
+        const section = document.querySelector<HTMLElement>('[data-report-id="modal-demo"]')!;
+
+        vi.spyOn(section, "getBoundingClientRect").mockReturnValue({
+            left: 80,
+            top: 320,
+            width: 640,
+            height: 220,
+            right: 720,
+            bottom: 540,
+            x: 80,
+            y: 320,
+            toJSON: () => ({}),
+        } as DOMRect);
+
+        const marker = getMarkerFromReport(
+            createStoredReport({
+                report_id: "modal-target",
+                report_type: "item",
+                anchor_report_id: "modal-demo",
+                anchor_report_type: "group",
+                anchor_x_ratio: 0.5,
+                anchor_y_ratio: 0.5,
+                document_y: 9999,
+            }),
+            0,
+        );
+
+        expect(marker.detached).toBe(true);
+        expect(marker.clampBounds).toBeNull();
+        expect(marker.left).toBe(80 + 640 * 0.5 - DOT_SIZE / 2);
+        expect(marker.top).toBe(320 + 220 * 0.5 - DOT_SIZE / 2);
+    });
+
+    it("clamps marker to the top edge of a scroll container when the target scrolls above it", () => {
+        const scrollContainer = document.createElement("div");
+        scrollContainer.style.overflowY = "auto";
+        Object.defineProperty(scrollContainer, "scrollHeight", { configurable: true, value: 1000 });
+        Object.defineProperty(scrollContainer, "clientHeight", { configurable: true, value: 300 });
+
+        const target = document.createElement("section");
+        target.dataset.reportId = "hero";
+        target.dataset.reportType = "group";
+        scrollContainer.append(target);
+        document.body.append(scrollContainer);
+
+        vi.spyOn(scrollContainer, "getBoundingClientRect").mockReturnValue({
+            left: 50,
+            top: 100,
+            width: 300,
+            height: 300,
+            right: 350,
+            bottom: 400,
+            x: 50,
+            y: 100,
+            toJSON: () => ({}),
+        } as DOMRect);
+
+        vi.spyOn(target, "getBoundingClientRect").mockReturnValue({
+            left: 60,
+            top: 40,
+            width: 200,
+            height: 80,
+            right: 260,
+            bottom: 120,
+            x: 60,
+            y: 40,
+            toJSON: () => ({}),
+        } as DOMRect);
+
+        const marker = getMarkerFromReport(createStoredReport({ element_y_ratio: 0.5 }), 0);
+
+        expect(marker.clampedEdge).toBe("top");
+        expect(marker.clampBounds).toEqual({ left: 50, top: 100, right: 350, bottom: 400 });
+        expect(marker.clampContainerId).toBeTruthy();
+        expect(marker.top).toBe(100 - DOT_SIZE / 2);
+    });
+
+    it("clamps marker to the bottom edge of a scroll container when the target scrolls below it", () => {
+        const scrollContainer = document.createElement("div");
+        scrollContainer.style.overflowY = "auto";
+        Object.defineProperty(scrollContainer, "scrollHeight", { configurable: true, value: 1000 });
+        Object.defineProperty(scrollContainer, "clientHeight", { configurable: true, value: 300 });
+
+        const target = document.createElement("section");
+        target.dataset.reportId = "hero";
+        target.dataset.reportType = "group";
+        scrollContainer.append(target);
+        document.body.append(scrollContainer);
+
+        vi.spyOn(scrollContainer, "getBoundingClientRect").mockReturnValue({
+            left: 50,
+            top: 100,
+            width: 300,
+            height: 300,
+            right: 350,
+            bottom: 400,
+            x: 50,
+            y: 100,
+            toJSON: () => ({}),
+        } as DOMRect);
+
+        vi.spyOn(target, "getBoundingClientRect").mockReturnValue({
+            left: 60,
+            top: 430,
+            width: 200,
+            height: 80,
+            right: 260,
+            bottom: 510,
+            x: 60,
+            y: 430,
+            toJSON: () => ({}),
+        } as DOMRect);
+
+        const marker = getMarkerFromReport(createStoredReport({ element_y_ratio: 0.5 }), 0);
+
+        expect(marker.clampedEdge).toBe("bottom");
+        expect(marker.clampBounds).toEqual({ left: 50, top: 100, right: 350, bottom: 400 });
+        expect(marker.clampContainerId).toBeTruthy();
+        expect(marker.top).toBe(400 - DOT_SIZE / 2);
+    });
 });
 
 describe("getDraftMarkerPosition", () => {
@@ -186,6 +533,8 @@ describe("getDraftMarkerPosition", () => {
 
         expect(position.left).toBe(100 + 200 * 0.25 - DOT_SIZE / 2);
         expect(position.top).toBe(80 + 100 * 0.75 - DOT_SIZE / 2);
+        expect(position.clampedEdge).toBeNull();
+        expect(position.clampBounds).toBeNull();
     });
 
     it("falls back to viewport click coordinates when no target is selected", () => {
@@ -193,6 +542,57 @@ describe("getDraftMarkerPosition", () => {
 
         expect(position.left).toBe(240 - DOT_SIZE / 2);
         expect(position.top).toBe(180 - DOT_SIZE / 2);
+        expect(position.clampedEdge).toBeNull();
+        expect(position.clampBounds).toBeNull();
+    });
+
+    it("clamps draft marker to the scroll container edge when the selected target is outside it", () => {
+        const scrollContainer = document.createElement("div");
+        scrollContainer.style.overflowY = "auto";
+        Object.defineProperty(scrollContainer, "scrollHeight", { configurable: true, value: 1000 });
+        Object.defineProperty(scrollContainer, "clientHeight", { configurable: true, value: 300 });
+
+        const target = document.createElement("section");
+        target.dataset.reportId = "hero";
+        target.dataset.reportType = "item";
+        scrollContainer.append(target);
+        document.body.append(scrollContainer);
+
+        vi.spyOn(scrollContainer, "getBoundingClientRect").mockReturnValue({
+            left: 50,
+            top: 100,
+            width: 300,
+            height: 300,
+            right: 350,
+            bottom: 400,
+            x: 50,
+            y: 100,
+            toJSON: () => ({}),
+        } as DOMRect);
+
+        const position = getDraftMarkerPosition(
+            { clientX: 0, clientY: 0, elementXRatio: 0.5, elementYRatio: 0.5 },
+            {
+                id: "hero",
+                type: "item",
+                rect: {
+                    left: 60,
+                    top: 40,
+                    width: 200,
+                    height: 80,
+                    right: 260,
+                    bottom: 120,
+                    x: 60,
+                    y: 40,
+                    toJSON: () => ({}),
+                } as DOMRect,
+            },
+        );
+
+        expect(position.clampedEdge).toBe("top");
+        expect(position.clampBounds).toEqual({ left: 50, top: 100, right: 350, bottom: 400 });
+        expect(position.clampContainerId).toBeTruthy();
+        expect(position.top).toBe(100 - DOT_SIZE / 2);
     });
 });
 
@@ -320,12 +720,76 @@ describe("getTooltipPosition", () => {
     });
 });
 
+describe("resolveMarkerOverflowHints", () => {
+    it("groups clamped markers by container and edge with counts", () => {
+        const bounds = { left: 50, top: 100, right: 350, bottom: 400 };
+        const markers = [
+            {
+                id: "a",
+                left: 0,
+                top: 0,
+                rect: null,
+                detached: false,
+                detachedKind: null,
+                clampedEdge: "top" as const,
+                clampBounds: bounds,
+                clampContainerId: "container-1",
+                report: createStoredReport({ id: "a" }),
+            },
+            {
+                id: "b",
+                left: 0,
+                top: 0,
+                rect: null,
+                detached: false,
+                detachedKind: null,
+                clampedEdge: "top" as const,
+                clampBounds: bounds,
+                clampContainerId: "container-1",
+                report: createStoredReport({ id: "b" }),
+            },
+            {
+                id: "c",
+                left: 0,
+                top: 0,
+                rect: null,
+                detached: false,
+                detachedKind: null,
+                clampedEdge: "bottom" as const,
+                clampBounds: bounds,
+                clampContainerId: "container-1",
+                report: createStoredReport({ id: "c" }),
+            },
+            {
+                id: "d",
+                left: 10,
+                top: 10,
+                rect: null,
+                detached: false,
+                detachedKind: null,
+                clampedEdge: null,
+                clampBounds: null,
+                clampContainerId: null,
+                report: createStoredReport({ id: "d" }),
+            },
+        ];
+
+        const hints = resolveMarkerOverflowHints(markers);
+
+        expect(hints).toHaveLength(2);
+        expect(hints.find((hint) => hint.edge === "top")?.count).toBe(2);
+        expect(hints.find((hint) => hint.edge === "bottom")?.count).toBe(1);
+        expect(hints.find((hint) => hint.edge === "top")?.left).toBe(200);
+        expect(hints.find((hint) => hint.edge === "bottom")?.top).toBe(390);
+    });
+});
+
 describe("resolveTooltipAnchor", () => {
     it("returns the marker that matches the selected report id", () => {
         const report = createStoredReport({ id: "selected" });
         const markers = [
-            { id: "other", left: 0, top: 0, rect: null, report: createStoredReport({ id: "other" }) },
-            { id: "selected", left: 1, top: 2, rect: null, report },
+            { id: "other", left: 0, top: 0, rect: null, detached: true, detachedKind: "hidden", clampedEdge: null, clampBounds: null, clampContainerId: null, report: createStoredReport({ id: "other" }) },
+            { id: "selected", left: 1, top: 2, rect: null, detached: false, detachedKind: null, clampedEdge: null, clampBounds: null, clampContainerId: null, report },
         ];
 
         expect(resolveTooltipAnchor(markers, "selected")?.report.id).toBe("selected");

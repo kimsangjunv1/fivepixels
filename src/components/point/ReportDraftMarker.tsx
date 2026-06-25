@@ -1,4 +1,4 @@
-import { TARGET_COLOR, TARGET_SURFACE } from "@/constants/report.js";
+import { TARGET_COLOR } from "@/constants/report.js";
 import { useReport } from "@/providers/reportContext.js";
 import { getDraftMarkerPosition } from "@/utils/coordinates.js";
 
@@ -11,8 +11,12 @@ export function ReportDraftMarker() {
         return null;
     }
 
-    const { left, top } = getDraftMarkerPosition(draft, selectedTarget);
+    const { left, top, clampedEdge } = getDraftMarkerPosition(draft, selectedTarget);
     const markerColor = TARGET_COLOR[draft.reportType];
+
+    if (clampedEdge !== null) {
+        return null;
+    }
 
     return (
         <>

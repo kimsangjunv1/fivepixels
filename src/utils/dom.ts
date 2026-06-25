@@ -20,6 +20,70 @@ export function getFeedbackTargetSelector(reportId: string, reportType: ReportTa
     return `[data-report-id="${escapedId}"]:not([data-report-type="group"])`;
 }
 
+function isStyleHidden(style: CSSStyleDeclaration) {
+    if (style.display === "none" || style.visibility === "hidden") {
+        return true;
+    }
+
+    if (Number.parseFloat(style.opacity) <= 0) {
+        return true;
+    }
+
+    return false;
+}
+
+function intersectsViewport(rect: DOMRect) {
+    if (rect.width <= 0 || rect.height <= 0) {
+        return false;
+    }
+
+    return rect.right > 0 && rect.bottom > 0 && rect.left < window.innerWidth && rect.top < window.innerHeight;
+}
+
+export function hasFixedPositionAncestor(element: HTMLElement) {
+    let node: HTMLElement | null = element.parentElement;
+
+    while (node && node !== document.documentElement) {
+        if (window.getComputedStyle(node).position === "fixed") {
+            return true;
+        }
+
+        node = node.parentElement;
+    }
+
+    return false;
+}
+
+export function isFeedbackTargetVisible(element: HTMLElement) {
+    if ("checkVisibility" in element && typeof element.checkVisibility === "function") {
+        if (!element.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true })) {
+            return false;
+        }
+    } else {
+        let node: HTMLElement | null = element;
+
+        while (node && node !== document.documentElement) {
+            if (isStyleHidden(window.getComputedStyle(node))) {
+                return false;
+            }
+
+            node = node.parentElement;
+        }
+    }
+
+    const rect = element.getBoundingClientRect();
+
+    if (rect.width <= 0 || rect.height <= 0) {
+        return false;
+    }
+
+    if (!intersectsViewport(rect)) {
+        return false;
+    }
+
+    return true;
+}
+
 export function isSameHoverTarget(previous: TargetSnapshot | null, next: TargetSnapshot | null) {
     if (previous === next) {
         return true;
@@ -50,6 +114,22 @@ export function toSnapshot(element: HTMLElement | null): TargetSnapshot | null {
     };
 }
 
+export function resolveFeedbackDocumentAnchor(targetElement: HTMLElement): TargetSnapshot | null {
+    let node: HTMLElement | null = targetElement.parentElement;
+
+    while (node && node !== document.documentElement) {
+        const reportId = node.dataset.reportId?.trim();
+
+        if (reportId && window.getComputedStyle(node).position !== "fixed") {
+            return toSnapshot(node);
+        }
+
+        node = node.parentElement;
+    }
+
+    return null;
+}
+
 export function findTargetElement(baseElement: HTMLElement | null) {
     if (!baseElement) {
         return null;
@@ -77,10 +157,131 @@ export function findTargetElement(baseElement: HTMLElement | null) {
     return groupFallback;
 }
 
+function isScrollableOverflow(value: string) {
+    return value === "auto" || value === "scroll" || value === "overlay";
+}
+
+export function getNearestScrollContainer(element: HTMLElement): HTMLElement | null {
+    let node: HTMLElement | null = element.parentElement;
+
+    while (node && node !== document.documentElement) {
+        const style = window.getComputedStyle(node);
+        const canScrollY = isScrollableOverflow(style.overflowY) && node.scrollHeight > node.clientHeight + 1;
+        const canScrollX = isScrollableOverflow(style.overflowX) && node.scrollWidth > node.clientWidth + 1;
+
+        if (canScrollY || canScrollX) {
+            return node;
+        }
+
+        node = node.parentElement;
+    }
+
+    return null;
+}
+
+const SCROLL_CLAMP_ATTR = "data-fivepixels-scroll-clamp";
+
+export function getScrollContainerClampId(scrollContainer: HTMLElement): string {
+    const existing = scrollContainer.getAttribute(SCROLL_CLAMP_ATTR);
+
+    if (existing) {
+        return existing;
+    }
+
+    const id = `scroll-clamp-${Math.random().toString(36).slice(2, 10)}`;
+    scrollContainer.setAttribute(SCROLL_CLAMP_ATTR, id);
+    return id;
+}
+
+export function getScrollContainerByClampId(containerId: string): HTMLElement | null {
+    return document.querySelector<HTMLElement>(`[${SCROLL_CLAMP_ATTR}="${containerId}"]`);
+}
+
+export function scrollContainerTowardEdge(containerId: string, edge: "top" | "bottom" | "left" | "right") {
+    const container = getScrollContainerByClampId(containerId);
+
+    if (!container) {
+        return;
+    }
+
+    const scrollAmount = Math.max(Math.min(container.clientHeight, container.clientWidth) * 0.6, 120);
+
+    switch (edge) {
+        case "top":
+            container.scrollBy({ top: -scrollAmount, behavior: "smooth" });
+            break;
+        case "bottom":
+            container.scrollBy({ top: scrollAmount, behavior: "smooth" });
+            break;
+        case "left":
+            container.scrollBy({ left: -scrollAmount, behavior: "smooth" });
+            break;
+        case "right":
+            container.scrollBy({ left: scrollAmount, behavior: "smooth" });
+            break;
+    }
+}
+
 export function getSelectableTargets() {
     return Array.from(document.querySelectorAll<HTMLElement>(TARGET_SELECTOR))
         .map((element) => toSnapshot(element))
         .filter((snapshot): snapshot is TargetSnapshot => snapshot !== null);
+}
+
+function getElementsFromPoint(clientX: number, clientY: number) {
+    if (typeof document.elementsFromPoint === "function") {
+        return document.elementsFromPoint(clientX, clientY).filter((node): node is HTMLElement => node instanceof HTMLElement);
+    }
+
+    if (typeof document.elementFromPoint === "function") {
+        const hitElement = document.elementFromPoint(clientX, clientY);
+
+        return hitElement instanceof HTMLElement ? [hitElement] : [];
+    }
+
+    return [];
+}
+
+function isAriaHiddenSubtree(element: HTMLElement) {
+    let node: HTMLElement | null = element;
+
+    while (node && node !== document.documentElement) {
+        if (node.getAttribute("aria-hidden") === "true") {
+            return true;
+        }
+
+        node = node.parentElement;
+    }
+
+    return false;
+}
+
+function isSelectableFeedbackTarget(target: HTMLElement) {
+    if (!isFeedbackTargetVisible(target)) {
+        return false;
+    }
+
+    if (isAriaHiddenSubtree(target)) {
+        return false;
+    }
+
+    return true;
+}
+
+function isPointerEventBlockingLayer(element: HTMLElement) {
+    const style = window.getComputedStyle(element);
+
+    if (style.pointerEvents === "none" || isStyleHidden(style)) {
+        return false;
+    }
+
+    if (style.position !== "fixed" && style.position !== "sticky") {
+        return false;
+    }
+
+    const rect = element.getBoundingClientRect();
+
+    return rect.width > 0 && rect.height > 0;
 }
 
 export function findTargetByPoint(overlay: HTMLDivElement | null, clientX: number, clientY: number) {
@@ -90,10 +291,36 @@ export function findTargetByPoint(overlay: HTMLDivElement | null, clientX: numbe
 
     const previousPointerEvents = overlay.style.pointerEvents;
     overlay.style.pointerEvents = "none";
-    const hitElement = document.elementFromPoint(clientX, clientY) as HTMLElement | null;
+    const elements = getElementsFromPoint(clientX, clientY);
     overlay.style.pointerEvents = previousPointerEvents;
 
-    return findTargetElement(hitElement);
+    const seen = new Set<HTMLElement>();
+
+    for (const element of elements) {
+        const target = findTargetElement(element);
+
+        if (!target) {
+            if (isPointerEventBlockingLayer(element)) {
+                return null;
+            }
+
+            continue;
+        }
+
+        if (seen.has(target)) {
+            continue;
+        }
+
+        seen.add(target);
+
+        if (!isSelectableFeedbackTarget(target)) {
+            continue;
+        }
+
+        return target;
+    }
+
+    return null;
 }
 
 const REPORT_HOST_ID = "fivepixels-root";

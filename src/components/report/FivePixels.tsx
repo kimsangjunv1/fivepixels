@@ -57,6 +57,7 @@ export type FivePixelsProps = {
     onList?: (params: { pathname: string }) => Promise<ReportFeedback[]>;
     onListAll?: (params: ReportListAllParams) => Promise<ReportListAllResult>;
     onNavigate?: (pathname: string) => void | Promise<void>;
+    onRevealTarget?: (report: ReportFeedback) => boolean | Promise<boolean>;
     onCreate?: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
     onUpdate?: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
     onDelete?: (id: string) => Promise<void>;
@@ -87,6 +88,7 @@ export function FivePixels({
     onList,
     onListAll,
     onNavigate,
+    onRevealTarget,
     onCreate,
     onUpdate,
     onDelete,
@@ -123,6 +125,7 @@ export function FivePixels({
             onList={onList}
             onListAll={onListAll}
             onNavigate={onNavigate}
+            onRevealTarget={onRevealTarget}
             onCreate={onCreate}
             onUpdate={onUpdate}
             onDelete={onDelete}

@@ -1,1 +1,1 @@
-export { BottomCta, FeatureGrid, HeroIntro } from "./LandingSections";
+export { PulseBoardLayout } from "./PulseBoardLayout";

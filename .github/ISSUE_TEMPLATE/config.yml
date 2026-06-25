@@ -1,0 +1,10 @@
+blank_issues_enabled: true
+
+contact_links:
+    - name: Questions & Discussions
+      url: https://github.com/kimsangjunv1/fivepixels/discussions
+      about: Ask questions and discuss ideas here.
+
+    - name: Security Report
+      url: https://github.com/kimsangjunv1/fivepixels/security/policy
+      about: Report security vulnerabilities privately.

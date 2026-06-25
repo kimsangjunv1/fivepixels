@@ -7,9 +7,11 @@ let originalPushState: History["pushState"] | null = null;
 let originalReplaceState: History["replaceState"] | null = null;
 
 function notifyPathnameListeners() {
-    for (const listener of listeners) {
-        listener();
-    }
+    queueMicrotask(() => {
+        for (const listener of listeners) {
+            listener();
+        }
+    });
 }
 
 function installPathnameListeners() {

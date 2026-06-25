@@ -37,6 +37,7 @@ export type ReportProviderProps = {
     }) => Promise<ReportFeedback[]>;
     onListAll?: (params: ReportListAllParams) => Promise<ReportListAllResult>;
     onNavigate?: (pathname: string) => void | Promise<void>;
+    onRevealTarget?: (report: ReportFeedback) => boolean | Promise<boolean>;
     onCreate?: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
     onUpdate?: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
     onDelete?: (id: string) => Promise<void>;
@@ -48,5 +49,5 @@ export type ReportProviderProps = {
     github?: ReportGitHubConfig;
     children: ReactNode;
 };
-export declare function ReportProvider({ project, projectId, environment, appVersion, ui, appearance, showFeedbackList, visibleShortcutKeys, shortcut, visibility, enabled, devOnly, routeKey, pathname, team, identify, authors, fields, onList, onListAll, onNavigate, onCreate, onUpdate, onDelete, onEvent, onReply, github, children, }: ReportProviderProps): import("react/jsx-runtime").JSX.Element;
+export declare function ReportProvider({ project, projectId, environment, appVersion, ui, appearance, showFeedbackList, visibleShortcutKeys, shortcut, visibility, enabled, devOnly, routeKey, pathname, team, identify, authors, fields, onList, onListAll, onNavigate, onRevealTarget, onCreate, onUpdate, onDelete, onEvent, onReply, github, children, }: ReportProviderProps): import("react/jsx-runtime").JSX.Element;
 //# sourceMappingURL=ReportProvider.d.ts.map

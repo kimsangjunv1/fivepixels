@@ -7,12 +7,12 @@ import { useAppearancePreference } from "./useAppearancePreference.js";
 import { useLocalePreference } from "./useLocalePreference.js";
 import { usePersonalKey } from "./usePersonalKey.js";
 import { useResolvedAppearance } from "./useResolvedAppearance.js";
-import { createReplyStatusForSubmit, resolveOriginalFeedbackAuthorName } from "../utils/feedbackThread.js";
+import { createReplyStatusForSubmit, getFeedbackDisplayStatus, resolveOriginalFeedbackAuthorName } from "../utils/feedbackThread.js";
 import { clampRatio, getMarkerFromReport, resolveTooltipAnchor } from "../utils/coordinates.js";
-import { scrollToFeedbackTarget } from "../utils/locateFeedback.js";
+import { getFeedbackTargetElement, isFeedbackTargetVisible, scrollToFeedbackTarget, waitForTargetRevealResync } from "../utils/locateFeedback.js";
 const MARKER_HOVER_LEAVE_MS = 250;
 const OVERLAY_HOVER_LEAVE_MS = 100;
-import { findTargetByPoint, getSelectableTargets, isSameHoverTarget, toSnapshot } from "../utils/dom.js";
+import { findTargetByPoint, getSelectableTargets, isSameHoverTarget, resolveFeedbackDocumentAnchor, toSnapshot } from "../utils/dom.js";
 import { createInitialFieldValues, getFieldError, getFieldTags } from "../utils/fields.js";
 import { createReplyId } from "../utils/format.js";
 import { notifyFeedbackCreate, notifyFeedbackDelete, notifyFeedbackReply, notifyFeedbackUpdate, notifyGitHubIssueCreated, } from "../utils/reportCallbacks.js";
@@ -23,7 +23,7 @@ function resolveDefaultAuthorName(identify, authors) {
     }
     return authors[0]?.name ?? "";
 }
-export function useReportState({ projectId, environment, appVersion, appearance, fields, authors = [], requireReviewerKey = false, shortcut: _shortcut, identify, onList, onListAll, onNavigate, onCreate, onUpdate, onDelete, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys = false, initialLocale, messageOverrides, }) {
+export function useReportState({ projectId, environment, appVersion, appearance, fields, authors = [], requireReviewerKey = false, shortcut: _shortcut, identify, onList, onListAll, onNavigate, onRevealTarget, onCreate, onUpdate, onDelete, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys = false, initialLocale, messageOverrides, }) {
     const { appearance: activeAppearance, setAppearance } = useAppearancePreference(appearance);
     const { locale, setLocale } = useLocalePreference(initialLocale);
     const [localeMessagesReady, setLocaleMessagesReady] = useState(locale !== "ko");
@@ -128,15 +128,24 @@ export function useReportState({ projectId, environment, appVersion, appearance,
     const tooltipReport = tooltipAnchor?.report ?? null;
     const tooltipFieldTags = useMemo(() => (tooltipReport ? getFieldTags(fields, tooltipReport.field_values) : []), [fields, tooltipReport]);
     const targetStats = useMemo(() => {
-        const groupCount = selectableTargets.filter((target) => target.type === "group").length;
-        const itemCount = selectableTargets.filter((target) => target.type === "item").length;
-        const foundCount = mode === "view" && !isFetching ? currentPageFilteredReports.length : selectableTargets.length;
+        let resolved = 0;
+        let inProgress = 0;
+        for (const report of currentPageFilteredReports) {
+            const status = getFeedbackDisplayStatus(report, true);
+            if (status === "resolved") {
+                resolved += 1;
+            }
+            else if (status === "wait_for_reply" || status === "suggested" || status === "found_error" || status === "recheck_requested") {
+                inProgress += 1;
+            }
+        }
+        const foundCount = currentPageFilteredReports.length;
         return {
             found: foundCount,
-            group: groupCount,
-            item: itemCount,
+            resolved,
+            inProgress,
         };
-    }, [currentPageFilteredReports.length, isFetching, mode, selectableTargets]);
+    }, [currentPageFilteredReports]);
     const statusText = useMemo(() => {
         if (mode === "report") {
             const focusTarget = selectedTarget ?? hoveredTarget;
@@ -204,10 +213,10 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             setSelectableTargets(getSelectableTargets());
         };
         syncSelectableTargets();
-        window.addEventListener("scroll", syncSelectableTargets, { passive: true });
+        window.addEventListener("scroll", syncSelectableTargets, { passive: true, capture: true });
         window.addEventListener("resize", syncSelectableTargets);
         return () => {
-            window.removeEventListener("scroll", syncSelectableTargets);
+            window.removeEventListener("scroll", syncSelectableTargets, { capture: true });
             window.removeEventListener("resize", syncSelectableTargets);
         };
     }, [currentPathname]);
@@ -218,29 +227,83 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         const syncPreviewRects = () => {
             setSelectableTargets(getSelectableTargets());
         };
-        window.addEventListener("scroll", syncPreviewRects, { passive: true });
+        window.addEventListener("scroll", syncPreviewRects, { passive: true, capture: true });
         window.addEventListener("resize", syncPreviewRects);
         return () => {
-            window.removeEventListener("scroll", syncPreviewRects);
+            window.removeEventListener("scroll", syncPreviewRects, { capture: true });
             window.removeEventListener("resize", syncPreviewRects);
         };
     }, [showTargetPreview]);
+    const syncMarkers = useCallback(() => {
+        setMarkers(currentPageFilteredReports.map((report) => getMarkerFromReport(report, window.scrollY)));
+    }, [currentPageFilteredReports]);
     useEffect(() => {
         if (mode !== "view") {
             setMarkers([]);
             return;
         }
-        const syncMarkers = () => {
-            setMarkers(currentPageFilteredReports.map((report) => getMarkerFromReport(report, window.scrollY)));
+        let cancelled = false;
+        const runSync = () => {
+            if (!cancelled) {
+                syncMarkers();
+            }
         };
-        syncMarkers();
-        window.addEventListener("scroll", syncMarkers, { passive: true });
+        runSync();
+        void waitForTargetRevealResync().then(runSync);
+        let mutationSyncTimeout = null;
+        const scheduleMutationSync = () => {
+            if (mutationSyncTimeout !== null) {
+                window.clearTimeout(mutationSyncTimeout);
+            }
+            mutationSyncTimeout = window.setTimeout(() => {
+                mutationSyncTimeout = null;
+                runSync();
+            }, 50);
+        };
+        const mutationObserver = new MutationObserver((mutations) => {
+            if (mutations.some((mutation) => mutation.type === "attributes" || mutation.type === "childList")) {
+                scheduleMutationSync();
+            }
+        });
+        mutationObserver.observe(document.body, {
+            attributes: true,
+            attributeFilter: ["class", "style", "aria-hidden"],
+            childList: true,
+            subtree: true,
+        });
+        window.addEventListener("scroll", syncMarkers, { passive: true, capture: true });
         window.addEventListener("resize", syncMarkers);
         return () => {
-            window.removeEventListener("scroll", syncMarkers);
+            cancelled = true;
+            if (mutationSyncTimeout !== null) {
+                window.clearTimeout(mutationSyncTimeout);
+            }
+            mutationObserver.disconnect();
+            window.removeEventListener("scroll", syncMarkers, { capture: true });
             window.removeEventListener("resize", syncMarkers);
         };
-    }, [currentPageFilteredReports, mode]);
+    }, [currentPathname, mode, syncMarkers]);
+    const prepareFeedbackLocation = useCallback(async (report) => {
+        const targetElement = getFeedbackTargetElement(report);
+        if (targetElement && isFeedbackTargetVisible(targetElement)) {
+            scrollToFeedbackTarget(report);
+            return;
+        }
+        let revealed = false;
+        if (onRevealTarget) {
+            try {
+                revealed = Boolean(await onRevealTarget(report));
+            }
+            catch {
+                revealed = false;
+            }
+        }
+        if (revealed) {
+            await waitForTargetRevealResync();
+            syncMarkers();
+        }
+        scrollToFeedbackTarget(report);
+    }, [onRevealTarget, syncMarkers]);
     useEffect(() => {
         if (mode !== "report") {
             return;
@@ -249,10 +312,10 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             setHoveredTarget(toSnapshot(hoveredElementRef.current));
             setSelectedTarget(toSnapshot(selectedElementRef.current));
         };
-        window.addEventListener("scroll", syncTargetRects, { passive: true });
+        window.addEventListener("scroll", syncTargetRects, { passive: true, capture: true });
         window.addEventListener("resize", syncTargetRects);
         return () => {
-            window.removeEventListener("scroll", syncTargetRects);
+            window.removeEventListener("scroll", syncTargetRects, { capture: true });
             window.removeEventListener("resize", syncTargetRects);
         };
     }, [mode]);
@@ -308,12 +371,12 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         setPendingComposer(null);
         setShowConfirmAuthorSelect(false);
     };
-    const showFeedbackTooltip = useCallback((report) => {
-        scrollToFeedbackTarget(report);
+    const showFeedbackTooltip = useCallback(async (report) => {
+        await prepareFeedbackLocation(report);
         clearHoverLeaveTimeout();
         closeReplyComposer();
         setHoveredMarkerId(report.id);
-    }, [clearHoverLeaveTimeout]);
+    }, [clearHoverLeaveTimeout, closeReplyComposer, prepareFeedbackLocation]);
     const locateFeedback = async (reportId) => {
         const report = filteredReports.find((item) => item.id === reportId);
         if (!report) {
@@ -378,6 +441,10 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         setShowConfirmAuthorSelect(false);
         clearHoverLeaveTimeout();
     };
+    const activateFeedbackMarker = useCallback(async (report) => {
+        await prepareFeedbackLocation(report);
+        openReplyComposer(report);
+    }, [openReplyComposer, prepareFeedbackLocation]);
     const toggleConfirmAuthorSelect = () => {
         setShowConfirmAuthorSelect((current) => !current);
     };
@@ -478,6 +545,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         setHoveredTarget(snapshot);
         setSelectedTarget(snapshot);
         setErrorMessage("");
+        const anchorSnapshot = resolveFeedbackDocumentAnchor(targetElement);
         setDraft({
             clientX: event.clientX,
             clientY: event.clientY,
@@ -485,6 +553,14 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             yRatio: clampRatio(event.clientY / window.innerHeight),
             elementXRatio: clampRatio((event.clientX - snapshot.rect.left) / Math.max(snapshot.rect.width, 1)),
             elementYRatio: clampRatio((event.clientY - snapshot.rect.top) / Math.max(snapshot.rect.height, 1)),
+            anchorReportId: anchorSnapshot?.id ?? null,
+            anchorReportType: anchorSnapshot?.type ?? null,
+            anchorXRatio: anchorSnapshot
+                ? clampRatio((event.clientX - anchorSnapshot.rect.left) / Math.max(anchorSnapshot.rect.width, 1))
+                : null,
+            anchorYRatio: anchorSnapshot
+                ? clampRatio((event.clientY - anchorSnapshot.rect.top) / Math.max(anchorSnapshot.rect.height, 1))
+                : null,
             scrollY: window.scrollY,
             documentY: Math.round(window.scrollY + event.clientY),
             reportId: snapshot.id,
@@ -535,6 +611,10 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             y_ratio: draft.yRatio,
             element_x_ratio: draft.elementXRatio,
             element_y_ratio: draft.elementYRatio,
+            anchor_report_id: draft.anchorReportId,
+            anchor_report_type: draft.anchorReportType,
+            anchor_x_ratio: draft.anchorXRatio,
+            anchor_y_ratio: draft.anchorYRatio,
             scroll_y: draft.scrollY,
             document_y: draft.documentY,
             viewport_width: window.innerWidth,
@@ -878,6 +958,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         focusSearchInput,
         selectAdjacentReport,
         openReplyComposer,
+        activateFeedbackMarker,
         closeReplyComposer,
         clearHoverLeaveTimeout,
         scheduleHoverLeave,

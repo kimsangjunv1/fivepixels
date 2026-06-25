@@ -21,6 +21,10 @@ export type DraftReport = {
     yRatio: number;
     elementXRatio: number;
     elementYRatio: number;
+    anchorReportId: string | null;
+    anchorReportType: ReportTargetType | null;
+    anchorXRatio: number | null;
+    anchorYRatio: number | null;
     scrollY: number;
     documentY: number;
     reportId: string;
@@ -28,12 +32,34 @@ export type DraftReport = {
     message: string;
     fieldValues: ReportFieldValues;
 };
+export type MarkerClampEdge = "top" | "bottom" | "left" | "right";
+export type MarkerClampBounds = {
+    left: number;
+    top: number;
+    right: number;
+    bottom: number;
+};
+export type MarkerDetachedKind = "modal" | "hidden" | null;
 export type Marker = {
     id: string;
     left: number;
     top: number;
     rect: DOMRect | null;
+    detached: boolean;
+    detachedKind: MarkerDetachedKind;
+    clampedEdge: MarkerClampEdge | null;
+    clampBounds: MarkerClampBounds | null;
+    clampContainerId: string | null;
     report: ReportFeedback;
+};
+export type MarkerOverflowHint = {
+    id: string;
+    edge: MarkerClampEdge;
+    count: number;
+    bounds: MarkerClampBounds;
+    containerId: string;
+    left: number;
+    top: number;
 };
 export type EditableDraft = {
     message: string;

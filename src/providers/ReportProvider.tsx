@@ -60,6 +60,7 @@ export type ReportProviderProps = {
     onList?: (params: { pathname: string }) => Promise<ReportFeedback[]>;
     onListAll?: (params: ReportListAllParams) => Promise<ReportListAllResult>;
     onNavigate?: (pathname: string) => void | Promise<void>;
+    onRevealTarget?: (report: ReportFeedback) => boolean | Promise<boolean>;
     onCreate?: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
     onUpdate?: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
     onDelete?: (id: string) => Promise<void>;
@@ -118,6 +119,7 @@ function ReportProviderEnabled({
     onList,
     onListAll,
     onNavigate,
+    onRevealTarget,
     onCreate,
     onUpdate,
     onDelete,
@@ -144,6 +146,7 @@ function ReportProviderEnabled({
         onList,
         onListAll,
         onNavigate,
+        onRevealTarget,
         onCreate,
         onUpdate,
         onDelete,
@@ -182,6 +185,7 @@ export function ReportProvider({
     onList,
     onListAll,
     onNavigate,
+    onRevealTarget,
     onCreate,
     onUpdate,
     onDelete,
@@ -216,6 +220,7 @@ export function ReportProvider({
             onList={onList}
             onListAll={onListAll}
             onNavigate={onNavigate}
+            onRevealTarget={onRevealTarget}
             onCreate={onCreate}
             onUpdate={onUpdate}
             onDelete={onDelete}

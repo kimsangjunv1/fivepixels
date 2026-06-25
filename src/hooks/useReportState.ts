@@ -24,13 +24,13 @@ import type {
     UpdateReportFeedbackPayload,
 } from "@/types/report.js";
 import type { DraftReport, EditableDraft, Marker, PendingFeedbackComposer, ReportMode, ReportPanelTab, TargetSnapshot } from "@/types/report-ui.js";
-import { createReplyStatusForSubmit, resolveOriginalFeedbackAuthorName } from "@/utils/feedbackThread.js";
+import { createReplyStatusForSubmit, getFeedbackDisplayStatus, resolveOriginalFeedbackAuthorName } from "@/utils/feedbackThread.js";
 import { clampRatio, getMarkerFromReport, resolveTooltipAnchor } from "@/utils/coordinates.js";
-import { scrollToFeedbackTarget } from "@/utils/locateFeedback.js";
+import { getFeedbackTargetElement, isFeedbackTargetVisible, scrollToFeedbackTarget, waitForTargetRevealResync } from "@/utils/locateFeedback.js";
 
 const MARKER_HOVER_LEAVE_MS = 250;
 const OVERLAY_HOVER_LEAVE_MS = 100;
-import { findTargetByPoint, getSelectableTargets, isSameHoverTarget, toSnapshot } from "@/utils/dom.js";
+import { findTargetByPoint, getSelectableTargets, isSameHoverTarget, resolveFeedbackDocumentAnchor, toSnapshot } from "@/utils/dom.js";
 import { createInitialFieldValues, getFieldError, getFieldTags } from "@/utils/fields.js";
 import { createReplyId } from "@/utils/format.js";
 import {
@@ -69,6 +69,7 @@ export type ReportStateConfig = {
     onList?: (params: { pathname: string }) => Promise<ReportFeedback[]>;
     onListAll?: (params: ReportListAllParams) => Promise<ReportListAllResult>;
     onNavigate?: (pathname: string) => void | Promise<void>;
+    onRevealTarget?: (report: ReportFeedback) => boolean | Promise<boolean>;
     onCreate?: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
     onUpdate?: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
     onDelete?: (id: string) => Promise<void>;
@@ -95,6 +96,7 @@ export function useReportState({
     onList,
     onListAll,
     onNavigate,
+    onRevealTarget,
     onCreate,
     onUpdate,
     onDelete,
@@ -269,16 +271,27 @@ export function useReportState({
     const tooltipFieldTags = useMemo(() => (tooltipReport ? getFieldTags(fields, tooltipReport.field_values) : []), [fields, tooltipReport]);
 
     const targetStats = useMemo(() => {
-        const groupCount = selectableTargets.filter((target) => target.type === "group").length;
-        const itemCount = selectableTargets.filter((target) => target.type === "item").length;
-        const foundCount = mode === "view" && !isFetching ? currentPageFilteredReports.length : selectableTargets.length;
+        let resolved = 0;
+        let inProgress = 0;
+
+        for (const report of currentPageFilteredReports) {
+            const status = getFeedbackDisplayStatus(report, true);
+
+            if (status === "resolved") {
+                resolved += 1;
+            } else if (status === "wait_for_reply" || status === "suggested" || status === "found_error" || status === "recheck_requested") {
+                inProgress += 1;
+            }
+        }
+
+        const foundCount = currentPageFilteredReports.length;
 
         return {
             found: foundCount,
-            group: groupCount,
-            item: itemCount,
+            resolved,
+            inProgress,
         };
-    }, [currentPageFilteredReports.length, isFetching, mode, selectableTargets]);
+    }, [currentPageFilteredReports]);
 
     const statusText = useMemo(() => {
         if (mode === "report") {
@@ -357,11 +370,11 @@ export function useReportState({
         };
 
         syncSelectableTargets();
-        window.addEventListener("scroll", syncSelectableTargets, { passive: true });
+        window.addEventListener("scroll", syncSelectableTargets, { passive: true, capture: true });
         window.addEventListener("resize", syncSelectableTargets);
 
         return () => {
-            window.removeEventListener("scroll", syncSelectableTargets);
+            window.removeEventListener("scroll", syncSelectableTargets, { capture: true });
             window.removeEventListener("resize", syncSelectableTargets);
         };
     }, [currentPathname]);
@@ -375,14 +388,18 @@ export function useReportState({
             setSelectableTargets(getSelectableTargets());
         };
 
-        window.addEventListener("scroll", syncPreviewRects, { passive: true });
+        window.addEventListener("scroll", syncPreviewRects, { passive: true, capture: true });
         window.addEventListener("resize", syncPreviewRects);
 
         return () => {
-            window.removeEventListener("scroll", syncPreviewRects);
+            window.removeEventListener("scroll", syncPreviewRects, { capture: true });
             window.removeEventListener("resize", syncPreviewRects);
         };
     }, [showTargetPreview]);
+
+    const syncMarkers = useCallback(() => {
+        setMarkers(currentPageFilteredReports.map((report) => getMarkerFromReport(report, window.scrollY)));
+    }, [currentPageFilteredReports]);
 
     useEffect(() => {
         if (mode !== "view") {
@@ -390,19 +407,87 @@ export function useReportState({
             return;
         }
 
-        const syncMarkers = () => {
-            setMarkers(currentPageFilteredReports.map((report) => getMarkerFromReport(report, window.scrollY)));
+        let cancelled = false;
+
+        const runSync = () => {
+            if (!cancelled) {
+                syncMarkers();
+            }
         };
 
-        syncMarkers();
-        window.addEventListener("scroll", syncMarkers, { passive: true });
+        runSync();
+        void waitForTargetRevealResync().then(runSync);
+
+        let mutationSyncTimeout: number | null = null;
+
+        const scheduleMutationSync = () => {
+            if (mutationSyncTimeout !== null) {
+                window.clearTimeout(mutationSyncTimeout);
+            }
+
+            mutationSyncTimeout = window.setTimeout(() => {
+                mutationSyncTimeout = null;
+                runSync();
+            }, 50);
+        };
+
+        const mutationObserver = new MutationObserver((mutations) => {
+            if (mutations.some((mutation) => mutation.type === "attributes" || mutation.type === "childList")) {
+                scheduleMutationSync();
+            }
+        });
+
+        mutationObserver.observe(document.body, {
+            attributes: true,
+            attributeFilter: ["class", "style", "aria-hidden"],
+            childList: true,
+            subtree: true,
+        });
+
+        window.addEventListener("scroll", syncMarkers, { passive: true, capture: true });
         window.addEventListener("resize", syncMarkers);
 
         return () => {
-            window.removeEventListener("scroll", syncMarkers);
+            cancelled = true;
+
+            if (mutationSyncTimeout !== null) {
+                window.clearTimeout(mutationSyncTimeout);
+            }
+
+            mutationObserver.disconnect();
+            window.removeEventListener("scroll", syncMarkers, { capture: true });
             window.removeEventListener("resize", syncMarkers);
         };
-    }, [currentPageFilteredReports, mode]);
+    }, [currentPathname, mode, syncMarkers]);
+
+    const prepareFeedbackLocation = useCallback(
+        async (report: ReportFeedback) => {
+            const targetElement = getFeedbackTargetElement(report);
+
+            if (targetElement && isFeedbackTargetVisible(targetElement)) {
+                scrollToFeedbackTarget(report);
+                return;
+            }
+
+            let revealed = false;
+
+            if (onRevealTarget) {
+                try {
+                    revealed = Boolean(await onRevealTarget(report));
+                } catch {
+                    revealed = false;
+                }
+            }
+
+            if (revealed) {
+                await waitForTargetRevealResync();
+                syncMarkers();
+            }
+
+            scrollToFeedbackTarget(report);
+        },
+        [onRevealTarget, syncMarkers],
+    );
 
     useEffect(() => {
         if (mode !== "report") {
@@ -414,11 +499,11 @@ export function useReportState({
             setSelectedTarget(toSnapshot(selectedElementRef.current));
         };
 
-        window.addEventListener("scroll", syncTargetRects, { passive: true });
+        window.addEventListener("scroll", syncTargetRects, { passive: true, capture: true });
         window.addEventListener("resize", syncTargetRects);
 
         return () => {
-            window.removeEventListener("scroll", syncTargetRects);
+            window.removeEventListener("scroll", syncTargetRects, { capture: true });
             window.removeEventListener("resize", syncTargetRects);
         };
     }, [mode]);
@@ -488,13 +573,13 @@ export function useReportState({
     };
 
     const showFeedbackTooltip = useCallback(
-        (report: ReportFeedback) => {
-            scrollToFeedbackTarget(report);
+        async (report: ReportFeedback) => {
+            await prepareFeedbackLocation(report);
             clearHoverLeaveTimeout();
             closeReplyComposer();
             setHoveredMarkerId(report.id);
         },
-        [clearHoverLeaveTimeout],
+        [clearHoverLeaveTimeout, closeReplyComposer, prepareFeedbackLocation],
     );
 
     const locateFeedback = async (reportId: string) => {
@@ -575,6 +660,14 @@ export function useReportState({
         setShowConfirmAuthorSelect(false);
         clearHoverLeaveTimeout();
     };
+
+    const activateFeedbackMarker = useCallback(
+        async (report: ReportFeedback) => {
+            await prepareFeedbackLocation(report);
+            openReplyComposer(report);
+        },
+        [openReplyComposer, prepareFeedbackLocation],
+    );
 
     const toggleConfirmAuthorSelect = () => {
         setShowConfirmAuthorSelect((current) => !current);
@@ -702,6 +795,7 @@ export function useReportState({
         setHoveredTarget(snapshot);
         setSelectedTarget(snapshot);
         setErrorMessage("");
+        const anchorSnapshot = resolveFeedbackDocumentAnchor(targetElement);
         setDraft({
             clientX: event.clientX,
             clientY: event.clientY,
@@ -709,6 +803,14 @@ export function useReportState({
             yRatio: clampRatio(event.clientY / window.innerHeight),
             elementXRatio: clampRatio((event.clientX - snapshot.rect.left) / Math.max(snapshot.rect.width, 1)),
             elementYRatio: clampRatio((event.clientY - snapshot.rect.top) / Math.max(snapshot.rect.height, 1)),
+            anchorReportId: anchorSnapshot?.id ?? null,
+            anchorReportType: anchorSnapshot?.type ?? null,
+            anchorXRatio: anchorSnapshot
+                ? clampRatio((event.clientX - anchorSnapshot.rect.left) / Math.max(anchorSnapshot.rect.width, 1))
+                : null,
+            anchorYRatio: anchorSnapshot
+                ? clampRatio((event.clientY - anchorSnapshot.rect.top) / Math.max(anchorSnapshot.rect.height, 1))
+                : null,
             scrollY: window.scrollY,
             documentY: Math.round(window.scrollY + event.clientY),
             reportId: snapshot.id,
@@ -769,6 +871,10 @@ export function useReportState({
             y_ratio: draft.yRatio,
             element_x_ratio: draft.elementXRatio,
             element_y_ratio: draft.elementYRatio,
+            anchor_report_id: draft.anchorReportId,
+            anchor_report_type: draft.anchorReportType,
+            anchor_x_ratio: draft.anchorXRatio,
+            anchor_y_ratio: draft.anchorYRatio,
             scroll_y: draft.scrollY,
             document_y: draft.documentY,
             viewport_width: window.innerWidth,
@@ -1157,6 +1263,7 @@ export function useReportState({
         focusSearchInput,
         selectAdjacentReport,
         openReplyComposer,
+        activateFeedbackMarker,
         closeReplyComposer,
         clearHoverLeaveTimeout,
         scheduleHoverLeave,

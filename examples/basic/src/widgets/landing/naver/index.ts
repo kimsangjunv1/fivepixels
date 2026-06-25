@@ -1,1 +1,0 @@
-export { NaverLanding } from "./NaverLanding";

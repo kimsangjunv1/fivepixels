@@ -2,6 +2,7 @@ import { BrowserRouter, useNavigate } from "react-router-dom";
 import { FivePixels, type ReportFeedback } from "@fivepixels-js/react";
 
 import { AppRouter } from "./app/router";
+import { invokeModalRevealHandler } from "./features/modals/model/modalRevealRegistry";
 
 async function createGitHubIssue(feedback: ReportFeedback) {
     const response = await fetch("/api/github/issues", {
@@ -59,6 +60,7 @@ function AppContent() {
                 onNavigate={(pathname) => {
                     navigate(pathname);
                 }}
+                onRevealTarget={invokeModalRevealHandler}
                 onEvent={(event) => {
                     if (event.type === "feedback:create") {
                         console.log("feedback created", event.payload);

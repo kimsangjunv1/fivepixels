@@ -134,6 +134,18 @@ export function validateFeedbackRecord(item, index) {
     if (!isNullableFiniteNumber(record.element_y_ratio)) {
         throw importError(index, validation.elementYRatioInvalid);
     }
+    if (record.anchor_x_ratio !== undefined && !isNullableFiniteNumber(record.anchor_x_ratio)) {
+        throw importError(index, validation.anchorXRatioInvalid);
+    }
+    if (record.anchor_y_ratio !== undefined && !isNullableFiniteNumber(record.anchor_y_ratio)) {
+        throw importError(index, validation.anchorYRatioInvalid);
+    }
+    if (record.anchor_report_id !== undefined && record.anchor_report_id !== null && typeof record.anchor_report_id !== "string") {
+        throw importError(index, validation.anchorReportIdInvalid);
+    }
+    if (record.anchor_report_type !== undefined && record.anchor_report_type !== null && !REPORT_TYPES.has(record.anchor_report_type)) {
+        throw importError(index, validation.anchorReportTypeInvalid);
+    }
     for (const field of OPTIONAL_STRING_FIELDS) {
         if (record[field] !== undefined && typeof record[field] !== "string") {
             throw importError(index, validation.optionalStringFieldInvalid(field));
@@ -152,6 +164,10 @@ export function validateFeedbackRecord(item, index) {
         y_ratio: record.y_ratio,
         element_x_ratio: record.element_x_ratio,
         element_y_ratio: record.element_y_ratio,
+        anchor_report_id: record.anchor_report_id,
+        anchor_report_type: record.anchor_report_type,
+        anchor_x_ratio: record.anchor_x_ratio,
+        anchor_y_ratio: record.anchor_y_ratio,
         scroll_y: record.scroll_y,
         document_y: record.document_y,
         viewport_width: record.viewport_width,
