@@ -175,6 +175,15 @@ export function FeedbackStatusIcon({ status, className, fill }: { status: Feedba
         );
     }
 
+    if (status === "additional_question") {
+        return (
+            <WaitStatusIcon
+                className={className}
+                fill={fill}
+            />
+        );
+    }
+
     if (status === "recheck_requested") {
         return (
             <RecheckRequestedStatusIcon

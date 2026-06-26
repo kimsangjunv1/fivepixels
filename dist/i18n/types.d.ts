@@ -1,7 +1,7 @@
 import type { ReportAppearance } from "../types/report.js";
 export type ReportLocale = "en" | "ko";
 type RouteDetailStatus = "wait" | "suggested" | "git_issued" | "resolved";
-type FeedbackDisplayStatus = "currently_wait" | "wait_for_reply" | "git_issued" | "suggested" | "found_error" | "recheck_requested" | "resolved";
+type FeedbackDisplayStatus = "currently_wait" | "wait_for_reply" | "git_issued" | "suggested" | "additional_question" | "found_error" | "recheck_requested" | "resolved";
 export type ReportMessages = {
     common: {
         cancel: string;
@@ -34,11 +34,19 @@ export type ReportMessages = {
         statsInProgress: string;
         tabPageDetails: string;
         tabFeedbackList: string;
+        tabSettings: string;
+        resizeWidthAriaLabel: string;
+        resizeHeightAriaLabel: string;
+        resetSize: string;
+        resetSizeTitle: string;
     };
     feedbackList: {
         scopeAriaLabel: string;
         scopeCurrentPage: string;
         scopeAllPages: string;
+        filterRangeLabel: string;
+        filterCategoryLabel: string;
+        threadReplyPrefix: string;
         filterStatusAll: string;
         filterTypeAll: string;
         filterStatusAriaLabel: string;
@@ -77,6 +85,8 @@ export type ReportMessages = {
     };
     composer: {
         placeholder: string;
+        questionPlaceholder: string;
+        askQuestionLabel: string;
         sendAriaLabel: string;
         gitIssueSendAriaLabel: string;
         gitIssueSendTitle: string;
@@ -93,6 +103,7 @@ export type ReportMessages = {
         resolved: string;
         select: string;
         leaveResult: string;
+        askQuestion: string;
     };
     routeDetails: {
         all: string;
@@ -100,6 +111,9 @@ export type ReportMessages = {
     };
     moreMenu: {
         settings: string;
+        sectionTransfer: string;
+        sectionKey: string;
+        sectionAdvanced: string;
         import: string;
         export: string;
         keyCopy: string;

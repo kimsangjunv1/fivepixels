@@ -49,7 +49,7 @@ function normalizeFieldValues(value: unknown): ReportFieldValues {
 }
 
 function isReplyStatus(value: unknown): value is ReportReplyStatus {
-    return value === "suggested" || value === "found_error" || value === "recheck_requested" || value === "resolved";
+    return value === "suggested" || value === "additional_question" || value === "found_error" || value === "recheck_requested" || value === "resolved";
 }
 
 function normalizeReplyStatus(value: unknown): ReportReplyStatus {
@@ -82,6 +82,7 @@ function normalizeReplies(value: unknown): ReportReply[] {
                 message: reply.message,
                 created_at: reply.created_at,
                 status: normalizeReplyStatus(reply.status),
+                parent_reply_id: typeof reply.parent_reply_id === "string" ? reply.parent_reply_id : null,
                 author_type: reply.author_type,
                 author_name: reply.author_name ?? null,
                 auth: reply.auth,

@@ -24,7 +24,7 @@ import type {
     UpdateReportFeedbackPayload,
 } from "@/types/report.js";
 import type { DraftReport, EditableDraft, Marker, PendingFeedbackComposer, ReportMode, ReportPanelTab, TargetSnapshot } from "@/types/report-ui.js";
-import { createReplyStatusForSubmit, getFeedbackDisplayStatus, resolveOriginalFeedbackAuthorName } from "@/utils/feedbackThread.js";
+import { createReplyStatusForSubmit, getFeedbackDisplayStatus, getLatestBranchRoot, ISSUE_ROOT_PARENT_ID, resolveOriginalFeedbackAuthorName, resolveParentReplyIdForQuestion } from "@/utils/feedbackThread.js";
 import { clampRatio, getMarkerFromReport, resolveTooltipAnchor } from "@/utils/coordinates.js";
 import { getFeedbackTargetElement, isFeedbackTargetVisible, scrollToFeedbackTarget, waitForTargetRevealResync } from "@/utils/locateFeedback.js";
 
@@ -238,6 +238,7 @@ export function useReportState({
     const [hoveredMarkerId, setHoveredMarkerId] = useState<string | null>(null);
     const [activeReplyReportId, setActiveReplyReportId] = useState<string | null>(null);
     const [replyDraft, setReplyDraft] = useState("");
+    const [replySubmitAsQuestion, setReplySubmitAsQuestion] = useState(false);
     const [draftAuthorName, setDraftAuthorName] = useState(() => resolveDefaultAuthorName(activeIdentify, authorizedAuthors));
     const [replyAuthorName, setReplyAuthorName] = useState(() => resolveDefaultAuthorName(activeIdentify, authorizedAuthors));
     const [pendingComposer, setPendingComposer] = useState<PendingFeedbackComposer>(null);
@@ -279,7 +280,13 @@ export function useReportState({
 
             if (status === "resolved") {
                 resolved += 1;
-            } else if (status === "wait_for_reply" || status === "suggested" || status === "found_error" || status === "recheck_requested") {
+            } else if (
+                status === "wait_for_reply" ||
+                status === "additional_question" ||
+                status === "suggested" ||
+                status === "found_error" ||
+                status === "recheck_requested"
+            ) {
                 inProgress += 1;
             }
         }
@@ -568,6 +575,7 @@ export function useReportState({
     const closeReplyComposer = () => {
         setActiveReplyReportId(null);
         setReplyDraft("");
+        setReplySubmitAsQuestion(false);
         setPendingComposer(null);
         setShowConfirmAuthorSelect(false);
     };
@@ -654,6 +662,7 @@ export function useReportState({
         selectReport(report.id);
         setActiveReplyReportId(report.id);
         setReplyDraft("");
+        setReplySubmitAsQuestion(false);
         setPendingComposer(null);
         setReplyAuthorName(resolveDefaultAuthorName(activeIdentify, authorizedAuthors));
         setConfirmAuthorName(resolveOriginalFeedbackAuthorName(report));
@@ -678,27 +687,61 @@ export function useReportState({
             return;
         }
 
-        const latest = activeReplyReport.replies[activeReplyReport.replies.length - 1];
+        const latestRoot = getLatestBranchRoot(activeReplyReport.replies);
 
-        if (!latest) {
+        if (!latestRoot) {
             return;
         }
 
         setPendingComposer({
-            type: latest.status === "found_error" ? "recheck" : "deny",
-            targetReplyId: latest.id,
+            type: latestRoot.status === "found_error" ? "recheck" : "deny",
+            targetReplyId: latestRoot.id,
         });
         setReplyDraft("");
+        setReplySubmitAsQuestion(false);
     };
 
     const startCheckoutReview = (replyId: string) => {
         setPendingComposer({ type: "checkout", targetReplyId: replyId });
         setReplyDraft("");
+        setReplySubmitAsQuestion(false);
+    };
+
+    const startAskQuestion = () => {
+        if (!activeReplyReport) {
+            return;
+        }
+
+        const latestRoot = getLatestBranchRoot(activeReplyReport.replies);
+
+        setReplyDraft("");
+
+        if (!latestRoot) {
+            setPendingComposer({
+                type: "question",
+                targetReplyId: ISSUE_ROOT_PARENT_ID,
+            });
+            setReplySubmitAsQuestion(true);
+            return;
+        }
+
+        if (
+            latestRoot.status === "suggested" ||
+            latestRoot.status === "found_error" ||
+            latestRoot.status === "recheck_requested"
+        ) {
+            setPendingComposer({
+                type: "question",
+                targetReplyId: latestRoot.id,
+            });
+            setReplySubmitAsQuestion(true);
+        }
     };
 
     const cancelPendingComposer = () => {
         setPendingComposer(null);
         setReplyDraft("");
+        setReplySubmitAsQuestion(false);
     };
 
     const toggleReportMode = () => {
@@ -1028,27 +1071,54 @@ export function useReportState({
             return;
         }
 
-        if (!replyAuthorName.trim()) {
-            setErrorMessage(messages.errors.authorRequired);
+        const pendingType = pendingComposer?.type ?? null;
+        const isCreatorSubmit = pendingType === "deny" || pendingType === "recheck" || pendingType === "question";
+        const isQuestionSubmit = pendingType === "question";
+        const authorName = isCreatorSubmit
+            ? (confirmAuthorName.trim() || resolveOriginalFeedbackAuthorName(activeReplyReport))
+            : replyAuthorName.trim();
+
+        if (!authorName) {
+            setErrorMessage(isCreatorSubmit ? messages.errors.reviewerRequired : messages.errors.authorRequired);
             return;
         }
 
         const replyMessage = replyDraft.trim();
-        const pendingType = pendingComposer?.type ?? null;
+        const replyStatus = createReplyStatusForSubmit(pendingType, isQuestionSubmit);
+        const parentReplyId =
+            replyStatus === "additional_question"
+                ? resolveParentReplyIdForQuestion(activeReplyReport, pendingComposer)
+                : null;
         const reply: ReportReply = {
             id: createReplyId(),
             message: replyMessage,
             created_at: new Date().toISOString(),
-            status: createReplyStatusForSubmit(pendingType),
-            author_type: "manager",
-            author_name: replyAuthorName.trim(),
+            status: replyStatus,
+            ...(parentReplyId ? { parent_reply_id: parentReplyId } : {}),
+            author_type: isCreatorSubmit ? "user" : "manager",
+            author_name: authorName,
         };
 
         try {
             await appendReply(activeReplyReport, reply);
             setErrorMessage("");
             setReplyDraft("");
-            setPendingComposer(null);
+
+            if (replyStatus === "additional_question") {
+                setReplySubmitAsQuestion(true);
+
+                if (pendingType === "question" && pendingComposer) {
+                    setPendingComposer({
+                        type: "question",
+                        targetReplyId: pendingComposer.targetReplyId,
+                    });
+                } else {
+                    setPendingComposer(null);
+                }
+            } else {
+                setReplySubmitAsQuestion(false);
+                setPendingComposer(null);
+            }
         } catch (nextError) {
             setErrorMessage(nextError instanceof Error ? nextError.message : messages.errors.saveReplyFailed);
         }
@@ -1238,6 +1308,8 @@ export function useReportState({
         tooltipFieldTags,
         replyDraft,
         setReplyDraft,
+        replySubmitAsQuestion,
+        setReplySubmitAsQuestion,
         draftAuthorName,
         setDraftAuthorName,
         replyAuthorName,
@@ -1245,6 +1317,7 @@ export function useReportState({
         pendingComposer,
         startDenyReview,
         startCheckoutReview,
+        startAskQuestion,
         cancelPendingComposer,
         confirmAuthorName,
         setConfirmAuthorName,

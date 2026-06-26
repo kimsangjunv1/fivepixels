@@ -1,6 +1,6 @@
 import type { ReportAuthor, ReportFeedback } from "../../../types/report.js";
 type PendingComposer = {
-    type: "deny" | "recheck" | "checkout";
+    type: "deny" | "recheck" | "checkout" | "question";
     targetReplyId: string;
 } | null;
 type FeedbackThreadProps = {
@@ -13,9 +13,10 @@ type FeedbackThreadProps = {
     onToggleConfirmAuthorSelect: () => void;
     onStartDeny: () => void;
     onStartCheckout: (replyId: string) => void;
+    onStartAskQuestion: () => void;
     onConfirm: () => void;
     isUpdating?: boolean;
 };
-export declare function FeedbackThread({ report, authors, pendingComposer, confirmAuthorName, showConfirmAuthorSelect, onConfirmAuthorNameChange, onToggleConfirmAuthorSelect, onStartDeny, onStartCheckout, onConfirm, isUpdating, }: FeedbackThreadProps): import("react/jsx-runtime").JSX.Element | null;
+export declare function FeedbackThread({ report, authors, pendingComposer, confirmAuthorName, showConfirmAuthorSelect, onConfirmAuthorNameChange, onToggleConfirmAuthorSelect: _onToggleConfirmAuthorSelect, onStartDeny, onStartCheckout, onStartAskQuestion, onConfirm, isUpdating, }: FeedbackThreadProps): import("react/jsx-runtime").JSX.Element;
 export {};
 //# sourceMappingURL=FeedbackThread.d.ts.map

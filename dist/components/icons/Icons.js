@@ -63,6 +63,9 @@ export function FeedbackStatusIcon({ status, className, fill }) {
     if (status === "suggested") {
         return (_jsx(SuggestedStatusIcon, { className: className, fill: fill }));
     }
+    if (status === "additional_question") {
+        return (_jsx(WaitStatusIcon, { className: className, fill: fill }));
+    }
     if (status === "recheck_requested") {
         return (_jsx(RecheckRequestedStatusIcon, { className: className, fill: fill }));
     }

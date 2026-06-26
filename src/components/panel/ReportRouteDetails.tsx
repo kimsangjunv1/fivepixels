@@ -9,7 +9,7 @@ export function ReportRouteDetails() {
     const { pathname, statusRows, fieldCounts } = routeDetailsStats;
 
     return (
-        <section className="flex flex-col bg-[var(--adaptive-black50)] border-t border-t-[var(--adaptive-black200)] rounded-[0_0_24px_24px] overflow-hidden">
+        <section className="flex min-h-0 flex-1 flex-col overflow-y-auto bg-[var(--adaptive-black50)] rounded-[0_0_24px_24px]">
             <article className="flex flex-col px-[16px]">
                 <section className="flex items-center text-[12px] py-[8px]">
                     <div className="flex-1">

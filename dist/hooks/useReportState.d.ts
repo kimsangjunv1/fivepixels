@@ -124,6 +124,8 @@ export declare function useReportState({ projectId, environment, appVersion, app
     }[];
     replyDraft: string;
     setReplyDraft: import("react").Dispatch<import("react").SetStateAction<string>>;
+    replySubmitAsQuestion: boolean;
+    setReplySubmitAsQuestion: import("react").Dispatch<import("react").SetStateAction<boolean>>;
     draftAuthorName: string;
     setDraftAuthorName: import("react").Dispatch<import("react").SetStateAction<string>>;
     replyAuthorName: string;
@@ -131,6 +133,7 @@ export declare function useReportState({ projectId, environment, appVersion, app
     pendingComposer: PendingFeedbackComposer;
     startDenyReview: () => void;
     startCheckoutReview: (replyId: string) => void;
+    startAskQuestion: () => void;
     cancelPendingComposer: () => void;
     confirmAuthorName: string;
     setConfirmAuthorName: import("react").Dispatch<import("react").SetStateAction<string>>;

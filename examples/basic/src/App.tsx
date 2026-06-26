@@ -69,6 +69,8 @@ function AppContent() {
                     if (event.type === "feedback:github-issue-created") {
                         console.log("github issue created", event.payload.issueUrl);
                     }
+
+                    const result = fetch("asd");
                 }}
                 fields={[
                     { key: "message", type: "textarea", label: "", required: true },

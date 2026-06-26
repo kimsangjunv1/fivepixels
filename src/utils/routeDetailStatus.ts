@@ -27,6 +27,10 @@ export function getRouteDetailStatus(report: ReportFeedback): RouteDetailStatus 
         return "suggested";
     }
 
+    if (displayStatus === "additional_question") {
+        return "wait";
+    }
+
     return "wait";
 }
 

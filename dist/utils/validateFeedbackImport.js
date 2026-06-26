@@ -4,7 +4,7 @@ const NUMBER_FIELDS = ["x_ratio", "y_ratio", "scroll_y", "document_y", "viewport
 const OPTIONAL_STRING_FIELDS = ["environment", "app_version", "author_id", "author_name"];
 const REPORT_TYPES = new Set(["group", "item"]);
 const REPORT_STATUSES = new Set(["open", "git_issued", "resolved", "archived"]);
-const REPLY_STATUSES = new Set(["suggested", "found_error", "recheck_requested", "resolved"]);
+const REPLY_STATUSES = new Set(["suggested", "additional_question", "found_error", "recheck_requested", "resolved"]);
 function importError(index, detail) {
     const { errors } = getActiveReportMessages();
     return new Error(errors.importInvalidFormat(index, detail));
@@ -53,11 +53,13 @@ function validateReply(value, index, replyIndex) {
         throw importError(index, validation.replyStatusInvalid(replyIndex));
     }
     const authorName = reply.author_name;
+    const parentReplyId = reply.parent_reply_id;
     return {
         id: reply.id,
         message: reply.message,
         created_at: reply.created_at,
         status: reply.status ?? "suggested",
+        ...(typeof parentReplyId === "string" ? { parent_reply_id: parentReplyId } : {}),
         author_type: reply.author_type,
         author_name: authorName === null || typeof authorName === "string" ? authorName : undefined,
     };

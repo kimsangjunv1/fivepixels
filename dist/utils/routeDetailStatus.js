@@ -17,6 +17,9 @@ export function getRouteDetailStatus(report) {
     if (displayStatus === "suggested" || displayStatus === "found_error" || displayStatus === "recheck_requested") {
         return "suggested";
     }
+    if (displayStatus === "additional_question") {
+        return "wait";
+    }
     return "wait";
 }
 export function isCreatedToday(createdAt, now = new Date()) {

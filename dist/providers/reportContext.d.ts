@@ -90,6 +90,8 @@ declare const ReportContext: import("react").Context<{
     }[];
     replyDraft: string;
     setReplyDraft: import("react").Dispatch<import("react").SetStateAction<string>>;
+    replySubmitAsQuestion: boolean;
+    setReplySubmitAsQuestion: import("react").Dispatch<import("react").SetStateAction<boolean>>;
     draftAuthorName: string;
     setDraftAuthorName: import("react").Dispatch<import("react").SetStateAction<string>>;
     replyAuthorName: string;
@@ -97,6 +99,7 @@ declare const ReportContext: import("react").Context<{
     pendingComposer: import("../types/report-ui").PendingFeedbackComposer;
     startDenyReview: () => void;
     startCheckoutReview: (replyId: string) => void;
+    startAskQuestion: () => void;
     cancelPendingComposer: () => void;
     confirmAuthorName: string;
     setConfirmAuthorName: import("react").Dispatch<import("react").SetStateAction<string>>;
@@ -232,6 +235,8 @@ export declare function useReport(): {
     }[];
     replyDraft: string;
     setReplyDraft: import("react").Dispatch<import("react").SetStateAction<string>>;
+    replySubmitAsQuestion: boolean;
+    setReplySubmitAsQuestion: import("react").Dispatch<import("react").SetStateAction<boolean>>;
     draftAuthorName: string;
     setDraftAuthorName: import("react").Dispatch<import("react").SetStateAction<string>>;
     replyAuthorName: string;
@@ -239,6 +244,7 @@ export declare function useReport(): {
     pendingComposer: import("../types/report-ui").PendingFeedbackComposer;
     startDenyReview: () => void;
     startCheckoutReview: (replyId: string) => void;
+    startAskQuestion: () => void;
     cancelPendingComposer: () => void;
     confirmAuthorName: string;
     setConfirmAuthorName: import("react").Dispatch<import("react").SetStateAction<string>>;

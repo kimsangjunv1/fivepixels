@@ -6,7 +6,7 @@ const NUMBER_FIELDS = ["x_ratio", "y_ratio", "scroll_y", "document_y", "viewport
 const OPTIONAL_STRING_FIELDS = ["environment", "app_version", "author_id", "author_name"] as const;
 const REPORT_TYPES = new Set<ReportTargetType>(["group", "item"]);
 const REPORT_STATUSES = new Set<ReportStatus>(["open", "git_issued", "resolved", "archived"]);
-const REPLY_STATUSES = new Set(["suggested", "found_error", "recheck_requested", "resolved"]);
+const REPLY_STATUSES = new Set(["suggested", "additional_question", "found_error", "recheck_requested", "resolved"]);
 
 function importError(index: number, detail: string) {
     const { errors } = getActiveReportMessages();
@@ -73,12 +73,14 @@ function validateReply(value: unknown, index: number, replyIndex: number): Repor
     }
 
     const authorName = reply.author_name;
+    const parentReplyId = reply.parent_reply_id;
 
     return {
         id: reply.id,
         message: reply.message,
         created_at: reply.created_at,
         status: (reply.status as ReportReply["status"] | undefined) ?? "suggested",
+        ...(typeof parentReplyId === "string" ? { parent_reply_id: parentReplyId } : {}),
         author_type: reply.author_type as ReportReply["author_type"],
         author_name: authorName === null || typeof authorName === "string" ? authorName : undefined,
     };

@@ -4,6 +4,7 @@ const LEGACY_STORAGE_KEY = "fivepixels:panel-dock-position";
 const EDGE_MARGIN = 16;
 const DEFAULT_PLACEMENT = { corner: "top-left" };
 const PANEL_CORNERS = ["top-left", "top-right", "bottom-left", "bottom-right"];
+const DRAG_LISTENER_OPTIONS = { capture: true };
 function isPanelCorner(value) {
     return value === "top-left" || value === "top-right" || value === "bottom-left" || value === "bottom-right";
 }
@@ -112,11 +113,11 @@ export function projectPointerToPlacement(clientX, clientY) {
 }
 export function placementToPanelStyle(placement) {
     const style = {
+        position: "fixed",
         top: "auto",
         right: "auto",
         bottom: "auto",
         left: "auto",
-        // maxHeight: "none",
     };
     switch (placement.corner) {
         case "top-left":
@@ -130,18 +131,17 @@ export function placementToPanelStyle(placement) {
         case "bottom-left":
             style.bottom = EDGE_MARGIN;
             style.left = EDGE_MARGIN;
-            style.maxHeight = "min(68vh, 560px)";
             break;
         case "bottom-right":
             style.bottom = EDGE_MARGIN;
             style.right = EDGE_MARGIN;
-            style.maxHeight = "min(68vh, 560px)";
             break;
     }
     return style;
 }
 export function placementToCollapsedPanelStyle(placement) {
     const style = {
+        position: "fixed",
         top: "auto",
         right: "auto",
         bottom: "auto",
@@ -171,6 +171,7 @@ export function placementToCollapsedPanelStyle(placement) {
 }
 export function getMobilePanelStyle() {
     return {
+        position: "fixed",
         top: "auto",
         right: EDGE_MARGIN,
         bottom: EDGE_MARGIN,
@@ -184,15 +185,28 @@ export function usePanelDock({ enabled, measureKey }) {
     const [previewPlacement, setPreviewPlacement] = useState(null);
     const [isDragging, setIsDragging] = useState(false);
     const dragPointerIdRef = useRef(null);
+    const dragListenersRef = useRef(null);
     const currentPlacement = previewPlacement ?? placement;
     const activeCorner = isDragging ? currentPlacement.corner : null;
+    const detachDragListeners = useCallback(() => {
+        const listeners = dragListenersRef.current;
+        if (!listeners) {
+            return;
+        }
+        window.removeEventListener("pointermove", listeners.move, DRAG_LISTENER_OPTIONS);
+        window.removeEventListener("pointerup", listeners.up, DRAG_LISTENER_OPTIONS);
+        window.removeEventListener("pointercancel", listeners.up, DRAG_LISTENER_OPTIONS);
+        dragListenersRef.current = null;
+    }, []);
     useEffect(() => {
         if (enabled) {
             return;
         }
+        detachDragListeners();
         setPreviewPlacement(null);
         setIsDragging(false);
-    }, [enabled]);
+        dragPointerIdRef.current = null;
+    }, [detachDragListeners, enabled]);
     useLayoutEffect(() => {
         if (!enabled) {
             return;
@@ -203,6 +217,7 @@ export function usePanelDock({ enabled, measureKey }) {
         setPreviewPlacement(projectPointerToPlacement(clientX, clientY));
     }, []);
     const finishDrag = useCallback(() => {
+        detachDragListeners();
         setPreviewPlacement((currentPreview) => {
             if (currentPreview) {
                 setPlacement(currentPreview);
@@ -212,7 +227,7 @@ export function usePanelDock({ enabled, measureKey }) {
         });
         dragPointerIdRef.current = null;
         setIsDragging(false);
-    }, []);
+    }, [detachDragListeners]);
     useEffect(() => {
         if (!enabled) {
             return;
@@ -224,41 +239,35 @@ export function usePanelDock({ enabled, measureKey }) {
         window.addEventListener("resize", handleResize);
         return () => window.removeEventListener("resize", handleResize);
     }, [enabled]);
-    useEffect(() => {
-        if (!isDragging) {
-            return;
-        }
-        const handlePointerMove = (event) => {
-            if (dragPointerIdRef.current !== event.pointerId) {
-                return;
-            }
-            updatePlacementFromPointer(event.clientX, event.clientY);
-        };
-        const handlePointerUp = (event) => {
-            if (dragPointerIdRef.current !== event.pointerId) {
-                return;
-            }
-            finishDrag();
-        };
-        window.addEventListener("pointermove", handlePointerMove);
-        window.addEventListener("pointerup", handlePointerUp);
-        window.addEventListener("pointercancel", handlePointerUp);
-        return () => {
-            window.removeEventListener("pointermove", handlePointerMove);
-            window.removeEventListener("pointerup", handlePointerUp);
-            window.removeEventListener("pointercancel", handlePointerUp);
-        };
-    }, [finishDrag, isDragging, updatePlacementFromPointer]);
+    useEffect(() => () => detachDragListeners(), [detachDragListeners]);
     const handleDragHandlePointerDown = useCallback((event) => {
         if (!enabled || event.button !== 0) {
             return;
         }
         event.preventDefault();
+        event.stopPropagation();
+        detachDragListeners();
         event.currentTarget.setPointerCapture(event.pointerId);
         dragPointerIdRef.current = event.pointerId;
         setIsDragging(true);
         updatePlacementFromPointer(event.clientX, event.clientY);
-    }, [enabled, updatePlacementFromPointer]);
+        const handlePointerMove = (moveEvent) => {
+            if (dragPointerIdRef.current !== moveEvent.pointerId) {
+                return;
+            }
+            updatePlacementFromPointer(moveEvent.clientX, moveEvent.clientY);
+        };
+        const handlePointerUp = (upEvent) => {
+            if (dragPointerIdRef.current !== upEvent.pointerId) {
+                return;
+            }
+            finishDrag();
+        };
+        dragListenersRef.current = { move: handlePointerMove, up: handlePointerUp };
+        window.addEventListener("pointermove", handlePointerMove, DRAG_LISTENER_OPTIONS);
+        window.addEventListener("pointerup", handlePointerUp, DRAG_LISTENER_OPTIONS);
+        window.addEventListener("pointercancel", handlePointerUp, DRAG_LISTENER_OPTIONS);
+    }, [detachDragListeners, enabled, finishDrag, updatePlacementFromPointer]);
     const panelStyle = enabled ? placementToPanelStyle(currentPlacement) : getMobilePanelStyle();
     return {
         panelRef,

@@ -19,19 +19,16 @@ export function FeedbackHoverCard({ report, fieldTags, detached = false, detache
     const displayStatus = getFeedbackDisplayStatus(report, true);
     const latestReply = getLatestReply(report);
     const remainingReplyCount = getRemainingReplyCount(report);
-    const resolvedDetachedHint =
-        detached && detachedHint && detachedModalHint
-            ? getDetachedMarkerHint(detachedKind, { detachedHint, detachedModalHint })
-            : null;
+    const resolvedDetachedHint = detached && detachedHint && detachedModalHint ? getDetachedMarkerHint(detachedKind, { detachedHint, detachedModalHint }) : null;
 
     return (
         // <div className="flex w-[260px] flex-col gap-[10px] bg-transparent p-[16px]">
-        <div className="flex w-[260px] flex-col gap-[10px] bg-transparent p-[12px]">
+        <div className="flex w-[260px] flex-col gap-[4px] bg-transparent p-[8px_8px]">
             <FeedbackStatusBadge status={displayStatus} />
 
             {resolvedDetachedHint ? <p className="text-[12px] leading-[1.4] text-[var(--adaptive-black500)]">{resolvedDetachedHint}</p> : null}
 
-            <p className="line-clamp-2 leading-[1.5] text-[16px] text-[var(--adaptive-text-primary)]">{report.message}</p>
+            <p className="line-clamp-2 leading-[1.5] text-[14px] text-[var(--adaptive-text-primary)]">{report.message}</p>
 
             {report.author_name ? (
                 <div className="flex items-center gap-[6px]">
@@ -44,19 +41,9 @@ export function FeedbackHoverCard({ report, fieldTags, detached = false, detache
 
             {latestReply ? (
                 <div className="flex min-w-0 items-center gap-[6px] border-t border-[var(--adaptive-border-subtle)] pt-[10px] text-[12px] text-[var(--adaptive-text-muted)]">
-                    {latestReply.author_name ? (
-                        <>
-                            <span className="shrink-0">{latestReply.author_name}</span>
-                            <span className="shrink-0 text-[var(--adaptive-black700)]">|</span>
-                        </>
-                    ) : null}
-                    <span className="min-w-0 flex-1 truncate text-[var(--adaptive-black400)]">{latestReply.message}</span>
-                    {remainingReplyCount > 0 ? (
-                        <>
-                            <span className="shrink-0 text-[var(--adaptive-black700)]">|</span>
-                            <span className="shrink-0 tabular-nums">+{remainingReplyCount}</span>
-                        </>
-                    ) : null}
+                    <span className="text-[var(--adaptive-black900)]">↳</span>
+                    <span className="min-w-0 flex-1 truncate text-[var(--adaptive-black900)] text-[14px]">{latestReply.message}</span>
+                    {remainingReplyCount > 0 ? <span className="text-[12px] bg-[var(--adaptive-black500)] rounded-full p-[2px_4px] text-white">+{remainingReplyCount}</span> : null}
                 </div>
             ) : null}
         </div>

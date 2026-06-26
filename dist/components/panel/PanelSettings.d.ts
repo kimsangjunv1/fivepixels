@@ -1,11 +1,8 @@
 import type { ReportAppearance } from "../../types/report.js";
-type PanelMoreMenuProps = {
-    open: boolean;
+type PanelSettingsProps = {
     transferDisabled?: boolean;
     appearance: ReportAppearance;
     onAppearanceChange: (appearance: ReportAppearance) => void;
-    onToggle: () => void;
-    onClose: () => void;
     onExport: () => void;
     onImport: () => void;
     onCommand: () => void;
@@ -15,6 +12,6 @@ type PanelMoreMenuProps = {
     onKeyInsert: () => void;
     onKeyRotate: () => void;
 };
-export declare function PanelMoreMenu({ open, transferDisabled, appearance, onAppearanceChange, onToggle, onClose, onExport, onImport, onCommand, hasPersonalKey, onKeyCopy, onPublicKeyCopy, onKeyInsert, onKeyRotate, }: PanelMoreMenuProps): import("react/jsx-runtime").JSX.Element;
+export declare function PanelSettings({ transferDisabled, appearance, onAppearanceChange, onExport, onImport, onCommand, hasPersonalKey, onKeyCopy, onPublicKeyCopy, onKeyInsert, onKeyRotate, }: PanelSettingsProps): import("react/jsx-runtime").JSX.Element;
 export {};
-//# sourceMappingURL=PanelMoreMenu.d.ts.map
+//# sourceMappingURL=PanelSettings.d.ts.map
