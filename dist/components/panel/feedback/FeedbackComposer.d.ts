@@ -17,11 +17,12 @@ type FeedbackComposerProps = {
     isGitHubIssueSubmitting?: boolean;
     placeholder?: string;
     autoFocus?: boolean;
+    errorMessage?: string;
     showAskQuestionToggle?: boolean;
     askQuestionChecked?: boolean;
     onAskQuestionChange?: (checked: boolean) => void;
     askQuestionForced?: boolean;
 };
-export declare function FeedbackComposer({ message, onMessageChange, authorName, onAuthorNameChange, authors, fields, fieldValues, onFieldChange, showTags, onSubmit, isSubmitting, showGitHubIssueOnCreate, onGitHubIssueSubmit, isGitHubIssueSubmitting, placeholder, autoFocus, showAskQuestionToggle, askQuestionChecked, onAskQuestionChange, askQuestionForced, }: FeedbackComposerProps): import("react/jsx-runtime").JSX.Element;
+export declare function FeedbackComposer({ message, onMessageChange, authorName, onAuthorNameChange, authors, fields, fieldValues, onFieldChange, showTags, onSubmit, isSubmitting, showGitHubIssueOnCreate, onGitHubIssueSubmit, isGitHubIssueSubmitting, placeholder, autoFocus, errorMessage, showAskQuestionToggle, askQuestionChecked, onAskQuestionChange, askQuestionForced, }: FeedbackComposerProps): import("react/jsx-runtime").JSX.Element;
 export {};
 //# sourceMappingURL=FeedbackComposer.d.ts.map

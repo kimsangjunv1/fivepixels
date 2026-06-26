@@ -106,6 +106,30 @@ export type ReportGitHubConfig = {
     onCreate?: (feedback: ReportFeedback) => Promise<ReportGitHubIssueCreateResult>;
 };
 
+export type ReportPositionRatio = {
+    x: number;
+    y: number;
+};
+
+export type ReportPositionViewport = ReportPositionRatio & {
+    width: number;
+    height: number;
+};
+
+export type ReportPositionAnchor = {
+    reportId: string;
+    reportType: ReportTargetType;
+    x: number;
+    y: number;
+};
+
+export type ReportPosition = {
+    target: ReportPositionRatio | null;
+    viewport: ReportPositionViewport;
+    scrollY: number;
+    anchor: ReportPositionAnchor | null;
+};
+
 export type ReportFeedback = {
     id: string;
     pathname: string;
@@ -115,20 +139,7 @@ export type ReportFeedback = {
     status: ReportStatus;
     field_values: ReportFieldValues;
     replies: ReportReply[];
-    x_ratio: number;
-    y_ratio: number;
-    element_x_ratio: number | null;
-    element_y_ratio: number | null;
-    anchor_report_id?: string | null;
-    anchor_report_type?: ReportTargetType | null;
-    anchor_x_ratio?: number | null;
-    anchor_y_ratio?: number | null;
-    scroll_y: number;
-    document_y: number;
-    viewport_width: number;
-    viewport_height: number;
-    design_width: number;
-    design_height: number;
+    position: ReportPosition;
     created_at: string;
     environment?: string;
     app_version?: string;

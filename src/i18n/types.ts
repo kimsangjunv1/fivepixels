@@ -239,13 +239,11 @@ export type ReportMessages = {
         createdAtInvalid: string;
         reportTypeInvalid: string;
         statusInvalid: string;
-        numberFieldRequired: (field: string) => string;
-        elementXRatioInvalid: string;
-        elementYRatioInvalid: string;
-        anchorXRatioInvalid: string;
-        anchorYRatioInvalid: string;
-        anchorReportIdInvalid: string;
-        anchorReportTypeInvalid: string;
+        positionObjectRequired: string;
+        positionRatioInvalid: (label: string) => string;
+        positionViewportInvalid: string;
+        positionScrollYInvalid: string;
+        positionAnchorInvalid: string;
         optionalStringFieldInvalid: (field: string) => string;
         duplicateId: (id: string) => string;
         integrationsObjectInvalid: string;

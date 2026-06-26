@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DOT_SIZE } from "@/constants/report.js";
-import type { ReportFeedback } from "@/types/report.js";
+import type { ReportFeedback, ReportPosition } from "@/types/report.js";
+import { createReportFeedback } from "./reportFixtures.js";
+import { createReportPosition } from "./reportPosition.js";
 import {
     clampRatio,
     DRAFT_POPOVER_HEIGHT,
@@ -16,27 +18,22 @@ import {
 } from "./coordinates.js";
 
 function createStoredReport(overrides: Partial<ReportFeedback> = {}): ReportFeedback {
-    return {
+    return createReportFeedback({
         id: "report-1",
         pathname: "/demo",
         report_id: "hero",
         report_type: "group",
-        message: "테스트",
-        status: "open",
-        field_values: {},
-        replies: [],
-        x_ratio: 0.5,
-        y_ratio: 0.5,
-        element_x_ratio: 0.25,
-        element_y_ratio: 0.75,
-        scroll_y: 0,
-        document_y: 200,
-        viewport_width: 1000,
-        viewport_height: 800,
-        design_width: 1000,
-        design_height: 800,
-        created_at: "2026-05-31T00:00:00.000Z",
+        position: createReportPosition({
+            target: { x: 0.25, y: 0.75 },
+            viewport: { x: 0.5, y: 0.5, width: 1000, height: 800 },
+        }),
         ...overrides,
+    });
+}
+
+function withPosition(position: Partial<ReportPosition>): Partial<ReportFeedback> {
+    return {
+        position: createReportPosition(position),
     };
 }
 
@@ -109,8 +106,10 @@ describe("getMarkerFromReport", () => {
             createStoredReport({
                 report_id: "hero-cta",
                 report_type: "item",
-                element_x_ratio: 0.5,
-                element_y_ratio: 0.5,
+                position: createReportPosition({
+                    target: { x: 0.5, y: 0.5 },
+                    viewport: { x: 0.5, y: 0.5, width: 1000, height: 800 },
+                }),
             }),
             0,
         );
@@ -127,7 +126,7 @@ describe("getMarkerFromReport", () => {
         vi.stubGlobal("innerWidth", 1000);
         vi.stubGlobal("innerHeight", 800);
 
-        const marker = getMarkerFromReport(createStoredReport({ document_y: 220, y_ratio: 0.5, viewport_height: 800 }), 20);
+        const marker = getMarkerFromReport(createStoredReport(withPosition({ viewport: { x: 0.5, y: 0.5, width: 1000, height: 800 } })), 20);
 
         expect(marker.rect).toBeNull();
         expect(marker.detached).toBe(true);
@@ -162,11 +161,15 @@ describe("getMarkerFromReport", () => {
             createStoredReport({
                 report_id: "missing-target",
                 report_type: "item",
-                anchor_report_id: "page-section",
-                anchor_report_type: "group",
-                anchor_x_ratio: 0.5,
-                anchor_y_ratio: 0.5,
-                document_y: 220,
+                position: createReportPosition({
+                    viewport: { x: 0.5, y: 0.275, width: 1000, height: 800 },
+                    anchor: {
+                        reportId: "page-section",
+                        reportType: "group",
+                        x: 0.5,
+                        y: 0.5,
+                    },
+                }),
             }),
             20,
         );
@@ -236,12 +239,12 @@ describe("getMarkerFromReport", () => {
         target.style.display = "none";
         document.body.append(target);
 
-        const marker = getMarkerFromReport(createStoredReport({ document_y: 220 }), 20);
+        const marker = getMarkerFromReport(createStoredReport(withPosition({ viewport: { x: 0.5, y: 0.275, width: 1000, height: 800 } })), 20);
 
         expect(marker.rect).toBeNull();
         expect(marker.detached).toBe(true);
         expect(marker.clampBounds).toBeNull();
-        expect(marker.top).toBe(220 - 20 - DOT_SIZE / 2);
+        expect(marker.top).toBeCloseTo(220 - 20 - DOT_SIZE / 2, 5);
     });
 
     it("scrolls detached markers with the document when a hidden target has no layout box", () => {
@@ -258,15 +261,19 @@ describe("getMarkerFromReport", () => {
         overlay.append(target);
         document.body.append(overlay);
 
+        const scrollPosition = createReportPosition({
+            scrollY: 100,
+            viewport: { x: 0.5, y: 1, width: 1000, height: 800 },
+        });
         const markerAtRest = getMarkerFromReport(
             createStoredReport({
-                document_y: 900,
+                position: scrollPosition,
             }),
             100,
         );
         const markerAfterScroll = getMarkerFromReport(
             createStoredReport({
-                document_y: 900,
+                position: scrollPosition,
             }),
             400,
         );
@@ -305,13 +312,11 @@ describe("getMarkerFromReport", () => {
         } as DOMRect);
 
         const marker = getMarkerFromReport(
-            createStoredReport({
-                document_y: 620,
-                viewport_width: 1000,
-                viewport_height: 800,
-                x_ratio: 0.5,
-                y_ratio: 0.5,
-            }),
+            createStoredReport(
+                withPosition({
+                    viewport: { x: 0.5, y: 0.5, width: 1000, height: 800 },
+                }),
+            ),
             200,
         );
 
@@ -348,12 +353,11 @@ describe("getMarkerFromReport", () => {
             toJSON: () => ({}),
         } as DOMRect);
 
-        const report = createStoredReport({
-            viewport_width: 1000,
-            viewport_height: 800,
-            y_ratio: 0.4,
-            document_y: 900,
-        });
+        const report = createStoredReport(
+            withPosition({
+                viewport: { x: 0.5, y: 0.4, width: 1000, height: 800 },
+            }),
+        );
 
         const markerAtRest = getMarkerFromReport(report, 100);
         const markerAfterScroll = getMarkerFromReport(report, 400);
@@ -363,11 +367,11 @@ describe("getMarkerFromReport", () => {
     });
 
     it("scales detached horizontal position when the viewport width changes", () => {
-        const report = createStoredReport({
-            x_ratio: 0.5,
-            viewport_width: 1000,
-            document_y: 300,
-        });
+        const report = createStoredReport(
+            withPosition({
+                viewport: { x: 0.5, y: 0.375, width: 1000, height: 800 },
+            }),
+        );
 
         vi.stubGlobal("innerWidth", 1000);
         const markerAtFullWidth = getMarkerFromReport(report, 0);
@@ -406,11 +410,15 @@ describe("getMarkerFromReport", () => {
             createStoredReport({
                 report_id: "modal-target",
                 report_type: "item",
-                anchor_report_id: "modal-demo",
-                anchor_report_type: "group",
-                anchor_x_ratio: 0.5,
-                anchor_y_ratio: 0.5,
-                document_y: 9999,
+                position: createReportPosition({
+                    viewport: { x: 0.5, y: 0.5, width: 1000, height: 800 },
+                    anchor: {
+                        reportId: "modal-demo",
+                        reportType: "group",
+                        x: 0.5,
+                        y: 0.5,
+                    },
+                }),
             }),
             0,
         );
@@ -457,7 +465,7 @@ describe("getMarkerFromReport", () => {
             toJSON: () => ({}),
         } as DOMRect);
 
-        const marker = getMarkerFromReport(createStoredReport({ element_y_ratio: 0.5 }), 0);
+        const marker = getMarkerFromReport(createStoredReport(withPosition({ target: { x: 0.5, y: 0.5 } })), 0);
 
         expect(marker.clampedEdge).toBe("top");
         expect(marker.clampBounds).toEqual({ left: 50, top: 100, right: 350, bottom: 400 });
@@ -501,7 +509,7 @@ describe("getMarkerFromReport", () => {
             toJSON: () => ({}),
         } as DOMRect);
 
-        const marker = getMarkerFromReport(createStoredReport({ element_y_ratio: 0.5 }), 0);
+        const marker = getMarkerFromReport(createStoredReport(withPosition({ target: { x: 0.5, y: 0.5 } })), 0);
 
         expect(marker.clampedEdge).toBe("bottom");
         expect(marker.clampBounds).toEqual({ left: 50, top: 100, right: 350, bottom: 400 });

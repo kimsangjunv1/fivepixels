@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { ReportFeedback } from "@/types/report.js";
+import { createReportFeedback } from "./reportFixtures.js";
 import {
     buildThreadTimeline,
     canAskQuestionOnLatest,
@@ -20,28 +21,18 @@ import {
 } from "./feedbackThread.js";
 
 function createReport(overrides: Partial<ReportFeedback> = {}): ReportFeedback {
-    return {
+    return createReportFeedback({
         id: "f1",
         pathname: "/",
-        report_id: "hero",
-        report_type: "group",
         message: "issue",
-        status: "open",
-        field_values: {},
-        replies: [],
-        x_ratio: 0.5,
-        y_ratio: 0.5,
-        element_x_ratio: null,
-        element_y_ratio: null,
-        scroll_y: 0,
-        document_y: 0,
-        viewport_width: 100,
-        viewport_height: 100,
-        design_width: 100,
-        design_height: 100,
-        created_at: "2026-01-01T00:00:00.000Z",
+        position: {
+            target: null,
+            viewport: { x: 0.5, y: 0.5, width: 100, height: 100 },
+            scrollY: 0,
+            anchor: null,
+        },
         ...overrides,
-    };
+    });
 }
 
 describe("feedbackThread", () => {

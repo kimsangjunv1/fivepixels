@@ -1,8 +1,9 @@
-import type { CreateReportFeedbackPayload } from "@/types/report.js";
+import type { CreateReportFeedbackPayload, ReportFeedback } from "@/types/report.js";
+import { createReportPosition } from "./reportPosition.js";
 
-export function createReportPayload(
-    overrides: Partial<CreateReportFeedbackPayload> = {},
-): CreateReportFeedbackPayload {
+export function createReportPayload(overrides: Partial<CreateReportFeedbackPayload> = {}): CreateReportFeedbackPayload {
+    const { position, ...rest } = overrides;
+
     return {
         pathname: "/demo",
         report_id: "hero",
@@ -10,16 +11,19 @@ export function createReportPayload(
         message: "테스트 메시지",
         status: "open",
         field_values: { message: "테스트 메시지" },
-        x_ratio: 0.5,
-        y_ratio: 0.5,
-        element_x_ratio: 0.25,
-        element_y_ratio: 0.75,
-        scroll_y: 0,
-        document_y: 120,
-        viewport_width: 1024,
-        viewport_height: 768,
-        design_width: 1024,
-        design_height: 768,
-        ...overrides,
+        position: createReportPosition(position),
+        ...rest,
+    };
+}
+
+export function createReportFeedback(overrides: Partial<ReportFeedback> = {}): ReportFeedback {
+    const { position, ...rest } = overrides;
+
+    return {
+        ...createReportPayload({ position }),
+        id: "report-1",
+        created_at: "2026-05-31T00:00:00.000Z",
+        replies: [],
+        ...rest,
     };
 }

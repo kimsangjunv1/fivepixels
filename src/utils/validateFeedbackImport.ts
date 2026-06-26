@@ -1,8 +1,18 @@
-import type { ReportFeedback, ReportFieldValues, ReportIntegrations, ReportReply, ReportStatus, ReportTargetType } from "@/types/report.js";
+import type {
+    ReportFeedback,
+    ReportFieldValues,
+    ReportIntegrations,
+    ReportPosition,
+    ReportPositionAnchor,
+    ReportPositionRatio,
+    ReportPositionViewport,
+    ReportReply,
+    ReportStatus,
+    ReportTargetType,
+} from "@/types/report.js";
 import { getActiveReportMessages } from "@/i18n/index.js";
 
 const STRING_FIELDS = ["id", "pathname", "report_id", "message", "created_at"] as const;
-const NUMBER_FIELDS = ["x_ratio", "y_ratio", "scroll_y", "document_y", "viewport_width", "viewport_height", "design_width", "design_height"] as const;
 const OPTIONAL_STRING_FIELDS = ["environment", "app_version", "author_id", "author_name"] as const;
 const REPORT_TYPES = new Set<ReportTargetType>(["group", "item"]);
 const REPORT_STATUSES = new Set<ReportStatus>(["open", "git_issued", "resolved", "archived"]);
@@ -22,12 +32,106 @@ function isFiniteNumber(value: unknown): value is number {
     return typeof value === "number" && Number.isFinite(value);
 }
 
-function isNullableFiniteNumber(value: unknown): value is number | null {
-    return value === null || isFiniteNumber(value);
-}
-
 function isIsoDateString(value: string) {
     return !Number.isNaN(Date.parse(value));
+}
+
+function validatePositionRatio(value: unknown, index: number, label: string): ReportPositionRatio {
+    const validation = getActiveReportMessages().importValidation;
+
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
+        throw importError(index, validation.positionRatioInvalid(label));
+    }
+
+    const ratio = value as Record<string, unknown>;
+
+    if (!isFiniteNumber(ratio.x) || !isFiniteNumber(ratio.y)) {
+        throw importError(index, validation.positionRatioInvalid(label));
+    }
+
+    return {
+        x: ratio.x,
+        y: ratio.y,
+    };
+}
+
+function validatePositionViewport(value: unknown, index: number): ReportPositionViewport {
+    const validation = getActiveReportMessages().importValidation;
+
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
+        throw importError(index, validation.positionViewportInvalid);
+    }
+
+    const viewport = value as Record<string, unknown>;
+
+    if (!isFiniteNumber(viewport.x) || !isFiniteNumber(viewport.y) || !isFiniteNumber(viewport.width) || !isFiniteNumber(viewport.height)) {
+        throw importError(index, validation.positionViewportInvalid);
+    }
+
+    return {
+        x: viewport.x,
+        y: viewport.y,
+        width: viewport.width,
+        height: viewport.height,
+    };
+}
+
+function validatePositionAnchor(value: unknown, index: number): ReportPositionAnchor | null {
+    const validation = getActiveReportMessages().importValidation;
+
+    if (value === null) {
+        return null;
+    }
+
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
+        throw importError(index, validation.positionAnchorInvalid);
+    }
+
+    const anchor = value as Record<string, unknown>;
+
+    if (!isNonEmptyString(anchor.reportId)) {
+        throw importError(index, validation.positionAnchorInvalid);
+    }
+
+    if (!REPORT_TYPES.has(anchor.reportType as ReportTargetType)) {
+        throw importError(index, validation.positionAnchorInvalid);
+    }
+
+    if (!isFiniteNumber(anchor.x) || !isFiniteNumber(anchor.y)) {
+        throw importError(index, validation.positionAnchorInvalid);
+    }
+
+    return {
+        reportId: anchor.reportId,
+        reportType: anchor.reportType as ReportTargetType,
+        x: anchor.x,
+        y: anchor.y,
+    };
+}
+
+function validatePosition(value: unknown, index: number): ReportPosition {
+    const validation = getActiveReportMessages().importValidation;
+
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
+        throw importError(index, validation.positionObjectRequired);
+    }
+
+    const position = value as Record<string, unknown>;
+
+    if (position.target !== null && position.target !== undefined) {
+        validatePositionRatio(position.target, index, "position.target");
+    }
+
+    if (!isFiniteNumber(position.scrollY)) {
+        throw importError(index, validation.positionScrollYInvalid);
+    }
+
+    return {
+        target: position.target === null || position.target === undefined ? null : validatePositionRatio(position.target, index, "position.target"),
+        viewport: validatePositionViewport(position.viewport, index),
+        scrollY: position.scrollY,
+        anchor: position.anchor === undefined ? null : validatePositionAnchor(position.anchor, index),
+    };
 }
 
 function validateFieldValues(value: unknown, index: number): ReportFieldValues {
@@ -168,36 +272,6 @@ export function validateFeedbackRecord(item: unknown, index: number): ReportFeed
         throw importError(index, validation.statusInvalid);
     }
 
-    for (const field of NUMBER_FIELDS) {
-        if (!isFiniteNumber(record[field])) {
-            throw importError(index, validation.numberFieldRequired(field));
-        }
-    }
-
-    if (!isNullableFiniteNumber(record.element_x_ratio)) {
-        throw importError(index, validation.elementXRatioInvalid);
-    }
-
-    if (!isNullableFiniteNumber(record.element_y_ratio)) {
-        throw importError(index, validation.elementYRatioInvalid);
-    }
-
-    if (record.anchor_x_ratio !== undefined && !isNullableFiniteNumber(record.anchor_x_ratio)) {
-        throw importError(index, validation.anchorXRatioInvalid);
-    }
-
-    if (record.anchor_y_ratio !== undefined && !isNullableFiniteNumber(record.anchor_y_ratio)) {
-        throw importError(index, validation.anchorYRatioInvalid);
-    }
-
-    if (record.anchor_report_id !== undefined && record.anchor_report_id !== null && typeof record.anchor_report_id !== "string") {
-        throw importError(index, validation.anchorReportIdInvalid);
-    }
-
-    if (record.anchor_report_type !== undefined && record.anchor_report_type !== null && !REPORT_TYPES.has(record.anchor_report_type as ReportTargetType)) {
-        throw importError(index, validation.anchorReportTypeInvalid);
-    }
-
     for (const field of OPTIONAL_STRING_FIELDS) {
         if (record[field] !== undefined && typeof record[field] !== "string") {
             throw importError(index, validation.optionalStringFieldInvalid(field));
@@ -213,20 +287,7 @@ export function validateFeedbackRecord(item: unknown, index: number): ReportFeed
         status: record.status as ReportStatus,
         field_values: validateFieldValues(record.field_values, index),
         replies: validateReplies(record.replies, index),
-        x_ratio: record.x_ratio as number,
-        y_ratio: record.y_ratio as number,
-        element_x_ratio: record.element_x_ratio as number | null,
-        element_y_ratio: record.element_y_ratio as number | null,
-        anchor_report_id: record.anchor_report_id as string | null | undefined,
-        anchor_report_type: record.anchor_report_type as ReportTargetType | null | undefined,
-        anchor_x_ratio: record.anchor_x_ratio as number | null | undefined,
-        anchor_y_ratio: record.anchor_y_ratio as number | null | undefined,
-        scroll_y: record.scroll_y as number,
-        document_y: record.document_y as number,
-        viewport_width: record.viewport_width as number,
-        viewport_height: record.viewport_height as number,
-        design_width: record.design_width as number,
-        design_height: record.design_height as number,
+        position: validatePosition(record.position, index),
         created_at: record.created_at as string,
         environment: record.environment as string | undefined,
         app_version: record.app_version as string | undefined,

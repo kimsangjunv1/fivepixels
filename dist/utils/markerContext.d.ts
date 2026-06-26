@@ -15,10 +15,10 @@ export type ModalGhostFrame = {
     };
 };
 export declare function isModalReportId(reportId: string): boolean;
-export declare function usesViewportDetachedCoords(report: Pick<ReportFeedback, "anchor_report_id" | "viewport_width">): boolean;
-export declare function resolveDetachedKind(report: Pick<ReportFeedback, "report_id" | "anchor_report_id" | "viewport_width">, targetElement: HTMLElement | null, detached: boolean): MarkerDetachedKind;
+export declare function usesViewportDetachedCoords(report: Pick<ReportFeedback, "position">): boolean;
+export declare function resolveDetachedKind(report: Pick<ReportFeedback, "report_id" | "position">, targetElement: HTMLElement | null, detached: boolean): MarkerDetachedKind;
 export declare function formatModalReportLabel(reportId: string): string;
-export declare function getModalGhostFrame(report: Pick<ReportFeedback, "x_ratio" | "y_ratio" | "viewport_width" | "viewport_height">): ModalGhostFrame;
+export declare function getModalGhostFrame(report: Pick<ReportFeedback, "position">): ModalGhostFrame;
 export declare function getDetachedMarkerHint(detachedKind: MarkerDetachedKind, messages: {
     detachedHint: string;
     detachedModalHint: string;

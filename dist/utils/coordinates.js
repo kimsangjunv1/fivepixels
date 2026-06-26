@@ -2,6 +2,7 @@ import { DOT_SIZE } from "../constants/report.js";
 import { getFeedbackTargetSelector, getNearestScrollContainer, getScrollContainerClampId, hasFixedPositionAncestor, isFeedbackTargetVisible } from "./dom.js";
 import { getFeedbackAnchorElement } from "./locateFeedback.js";
 import { resolveDetachedKind } from "./markerContext.js";
+import { getDocumentY } from "./reportPosition.js";
 function applyScrollContainerClamp(left, top, element) {
     if (!element) {
         return { left, top, clampedEdge: null, clampBounds: null, clampContainerId: null };
@@ -58,16 +59,11 @@ export function clampRatio(value) {
     return Math.min(1, Math.max(0, value));
 }
 function getAnchorMarkerPosition(report) {
-    if (!report.anchor_report_id || !report.anchor_report_type) {
+    const anchor = report.position.anchor;
+    if (!anchor) {
         return null;
     }
-    if (report.anchor_x_ratio === null || report.anchor_x_ratio === undefined || report.anchor_y_ratio === null || report.anchor_y_ratio === undefined) {
-        return null;
-    }
-    const anchorElement = getFeedbackAnchorElement({
-        anchor_report_id: report.anchor_report_id,
-        anchor_report_type: report.anchor_report_type,
-    });
+    const anchorElement = getFeedbackAnchorElement(report);
     if (!anchorElement) {
         return null;
     }
@@ -75,37 +71,41 @@ function getAnchorMarkerPosition(report) {
     if (rect.width <= 0 || rect.height <= 0) {
         return null;
     }
-    return applyScrollContainerClamp(rect.left + rect.width * report.anchor_x_ratio - DOT_SIZE / 2, rect.top + rect.height * report.anchor_y_ratio - DOT_SIZE / 2, anchorElement);
+    return applyScrollContainerClamp(rect.left + rect.width * anchor.x - DOT_SIZE / 2, rect.top + rect.height * anchor.y - DOT_SIZE / 2, anchorElement);
 }
 function shouldUseViewportDetachedCoords(report, targetElement) {
     if (targetElement) {
         const rect = targetElement.getBoundingClientRect();
         return hasFixedPositionAncestor(targetElement) && rect.width > 0 && rect.height > 0;
     }
-    return !report.anchor_report_id;
+    return !report.position.anchor;
 }
 function getDetachedMarkerPosition(report, currentScrollY, targetElement) {
     const anchorPosition = getAnchorMarkerPosition(report);
     if (anchorPosition) {
         return anchorPosition;
     }
-    const widthScale = report.viewport_width > 0 ? window.innerWidth / report.viewport_width : 1;
-    const left = report.viewport_width * report.x_ratio * widthScale - DOT_SIZE / 2;
+    const { viewport } = report.position;
+    const widthScale = viewport.width > 0 ? window.innerWidth / viewport.width : 1;
+    const left = viewport.width * viewport.x * widthScale - DOT_SIZE / 2;
     const useViewportCoords = shouldUseViewportDetachedCoords(report, targetElement);
     if (useViewportCoords) {
-        const heightScale = report.viewport_height > 0 ? window.innerHeight / report.viewport_height : 1;
-        const top = report.viewport_height * report.y_ratio * heightScale - DOT_SIZE / 2;
+        const heightScale = viewport.height > 0 ? window.innerHeight / viewport.height : 1;
+        const top = viewport.height * viewport.y * heightScale - DOT_SIZE / 2;
         return { left, top, clampedEdge: null, clampBounds: null, clampContainerId: null };
     }
-    const top = report.document_y - currentScrollY - DOT_SIZE / 2;
+    const top = getDocumentY(report.position) - currentScrollY - DOT_SIZE / 2;
     return { left, top, clampedEdge: null, clampBounds: null, clampContainerId: null };
 }
 export function getMarkerFromReport(report, currentScrollY) {
     const selector = getFeedbackTargetSelector(report.report_id, report.report_type);
     const targetElement = document.querySelector(selector);
+    const { target, viewport } = report.position;
     if (targetElement && isFeedbackTargetVisible(targetElement)) {
         const rect = targetElement.getBoundingClientRect();
-        const position = applyScrollContainerClamp(rect.left + rect.width * (report.element_x_ratio ?? report.x_ratio) - DOT_SIZE / 2, rect.top + rect.height * (report.element_y_ratio ?? report.y_ratio) - DOT_SIZE / 2, targetElement);
+        const targetX = target?.x ?? viewport.x;
+        const targetY = target?.y ?? viewport.y;
+        const position = applyScrollContainerClamp(rect.left + rect.width * targetX - DOT_SIZE / 2, rect.top + rect.height * targetY - DOT_SIZE / 2, targetElement);
         return {
             id: report.id,
             report,

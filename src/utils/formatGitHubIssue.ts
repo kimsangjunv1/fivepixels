@@ -32,7 +32,7 @@ export function formatFeedbackAsGitHubIssueBody(feedback: ReportFeedback, fields
         `| Path | ${escapeMarkdownTableCell(feedback.pathname)} |`,
         `| Report ID | ${escapeMarkdownTableCell(feedback.report_id)} |`,
         `| Author | ${escapeMarkdownTableCell(feedback.author_name ?? "-")} |`,
-        `| Position | (${feedback.x_ratio}, ${feedback.y_ratio}) |`,
+        `| Position | (${feedback.position.viewport.x}, ${feedback.position.viewport.y}) |`,
         `| Tags | ${escapeMarkdownTableCell(tags || "-")} |`,
         `| Env | ${escapeMarkdownTableCell(feedback.environment ?? "-")} |`,
         `| Version | ${escapeMarkdownTableCell(feedback.app_version ?? "-")} |`,
