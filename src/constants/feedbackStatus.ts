@@ -6,20 +6,20 @@ export const FEEDBACK_STATUS_LABEL: Record<FeedbackDisplayStatus, string> = {
     currently_wait: "CURRENTLY WAIT",
     wait_for_reply: "WAIT FOR REPLY",
     git_issued: "GIT ISSUED",
-    suggested: "SUGGESTED",
+    suggested: "REQUEST CONFIRM",
     found_error: "FOUND ERROR",
     recheck_requested: "IS NOT ERROR",
     resolved: "RESOLVED",
 };
 
 export const FEEDBACK_STATUS_COLOR: Record<FeedbackDisplayStatus, string> = {
-    currently_wait: "var(--adaptive-orange500)",
-    wait_for_reply: "var(--adaptive-orange500)",
-    git_issued: "var(--adaptive-blue500)",
-    suggested: "var(--adaptive-orange500)",
-    found_error: "var(--adaptive-red400)",
-    recheck_requested: "var(--adaptive-orange500)",
-    resolved: "var(--adaptive-green500)",
+    currently_wait: "#808080",
+    wait_for_reply: "#808080",
+    git_issued: "#5894CC",
+    suggested: "#ED9F18",
+    found_error: "#D62F2F",
+    recheck_requested: "#AF2CD6",
+    resolved: "#91B01C",
 };
 
 export const FEEDBACK_DISPLAY_STATUS_ORDER: FeedbackDisplayStatus[] = [

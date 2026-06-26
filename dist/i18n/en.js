@@ -172,7 +172,7 @@ export const en = {
     status: {
         routeDetail: {
             wait: "Wait",
-            suggested: "Suggested",
+            suggested: "Request Confirm",
             git_issued: "Git Issued",
             resolved: "Resolved",
         },
@@ -180,7 +180,7 @@ export const en = {
             currently_wait: "Currently waiting",
             wait_for_reply: "Waiting for reply",
             git_issued: "Git Issued",
-            suggested: "Suggested",
+            suggested: "Request Confirm",
             found_error: "Error found",
             recheck_requested: "Is not error",
             resolved: "Resolved",

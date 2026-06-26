@@ -7,7 +7,7 @@ export const ROUTE_DETAIL_STATUS_ORDER: RouteDetailStatus[] = ["wait", "suggeste
 
 export const ROUTE_DETAIL_STATUS_LABEL: Record<RouteDetailStatus, string> = {
     wait: "Wait",
-    suggested: "Suggested",
+    suggested: "Request Confirm",
     git_issued: "Git Issued",
     resolved: "Resolved",
 };

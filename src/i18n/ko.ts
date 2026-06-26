@@ -174,7 +174,7 @@ export const ko: ReportMessages = {
     status: {
         routeDetail: {
             wait: "wait",
-            suggested: "suggested",
+            suggested: "확인 요청",
             git_issued: "git issued",
             resolved: "resolved",
         },
@@ -182,7 +182,7 @@ export const ko: ReportMessages = {
             currently_wait: "대기 중",
             wait_for_reply: "답변 대기",
             git_issued: "Git Issued",
-            suggested: "제안됨",
+            suggested: "확인 요청",
             found_error: "오류 발견",
             recheck_requested: "오류 아님",
             resolved: "해결됨",

@@ -4,6 +4,7 @@ import { type MaterialIconProps } from "../../components/icons/MaterialIcon.js";
 export declare function WaitStatusIcon(props: MaterialIconProps): import("react/jsx-runtime").JSX.Element;
 export declare function RouteWaitStatusIcon(props: MaterialIconProps): import("react/jsx-runtime").JSX.Element;
 export declare function SuggestedStatusIcon(props: MaterialIconProps): import("react/jsx-runtime").JSX.Element;
+export declare function RecheckRequestedStatusIcon(props: MaterialIconProps): import("react/jsx-runtime").JSX.Element;
 export declare function GitIssuedStatusIcon(props: MaterialIconProps): import("react/jsx-runtime").JSX.Element;
 export declare function ResolvedStatusIcon(props: MaterialIconProps): import("react/jsx-runtime").JSX.Element;
 export declare function FoundErrorStatusIcon(props: MaterialIconProps): import("react/jsx-runtime").JSX.Element;
