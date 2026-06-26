@@ -1,8 +1,8 @@
 import { jsx as _jsx } from "react/jsx-runtime";
 import { useMemo } from "react";
-import { useTooltipLayout } from "../../hooks/useTooltipLayout.js";
-import { useReport } from "../../providers/reportContext.js";
-import { getDraftMarkerPosition } from "../../utils/coordinates.js";
+import { useTooltipLayout } from "@/hooks/useTooltipLayout.js";
+import { useReport } from "@/providers/reportContext.js";
+import { getDraftMarkerPosition } from "@/utils/coordinates.js";
 import { FeedbackComposer } from "./feedback/FeedbackComposer.js";
 const TOOLTIP_SURFACE_CLASS = "overflow-hidden rounded-[12px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[20px]";
 const EXPANDED_TOOLTIP_ANCHOR_CLASS = "pointer-events-auto fixed z-[1000001]";

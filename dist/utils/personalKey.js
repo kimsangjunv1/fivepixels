@@ -1,4 +1,4 @@
-import { getPersonalKeyStorageKey } from "../constants/storageKeys.js";
+import { getPersonalKeyStorageKey } from "@/constants/storageKeys.js";
 const PRIVATE_KEY_PREFIX = "stpk2";
 const PUBLIC_KEY_PREFIX = "stpub1";
 const ALGORITHM = { name: "ECDSA", namedCurve: "P-256" };

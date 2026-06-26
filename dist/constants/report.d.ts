@@ -1,4 +1,4 @@
-import type { ReportField, ReportTargetType } from "../types/report.js";
+import type { ReportField, ReportTargetType } from "@/types/report.js";
 export declare const DOT_SIZE = 14;
 export declare const TARGET_SELECTOR = "[data-report-id]";
 export declare const TARGET_COLOR: Record<ReportTargetType, string>;

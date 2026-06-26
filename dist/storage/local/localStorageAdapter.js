@@ -1,7 +1,7 @@
-import { getActiveReportMessages } from "../../i18n/index.js";
-import { DEFAULT_PROJECT_ID } from "../../constants/project.js";
-import { getReportsStorageKey } from "../../constants/storageKeys.js";
-import { parseFeedbackStorageEnvelope, serializeFeedbackStorageEnvelope } from "../../utils/feedbackTransferSchema.js";
+import { getActiveReportMessages } from "@/i18n/index.js";
+import { DEFAULT_PROJECT_ID } from "@/constants/project.js";
+import { getReportsStorageKey } from "@/constants/storageKeys.js";
+import { parseFeedbackStorageEnvelope, serializeFeedbackStorageEnvelope } from "@/utils/feedbackTransferSchema.js";
 function createId() {
     if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
         return crypto.randomUUID();

@@ -1,8 +1,8 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useEffect, useState } from "react";
-import { GitHubIcon } from "../../../components/icons/Icons.js";
-import { HoverTooltip } from "../../../components/ui/HoverTooltip.js";
-import { getGitHubIssueUrl, hasGitHubIssue } from "../../../utils/githubIntegration.js";
+import { GitHubIcon } from "@/components/icons/Icons.js";
+import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
+import { getGitHubIssueUrl, hasGitHubIssue } from "@/utils/githubIntegration.js";
 export function GitIssueButton({ report, messages, disabled = false, isSubmitting = false, onCreateIssue }) {
     const [confirming, setConfirming] = useState(false);
     const issueUrl = getGitHubIssueUrl(report);

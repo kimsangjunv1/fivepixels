@@ -1,5 +1,5 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import { useReport } from "../../providers/reportContext.js";
+import { useReport } from "@/providers/reportContext.js";
 import { TargetHighlights } from "./TargetHighlights.js";
 export function ReportOverlayLayer({ children }) {
     const { overlayRef, mode, hoveredTarget, selectableTargets, selectedTarget, showTargetPreview, handleOverlayMove, handleOverlayClick, } = useReport();

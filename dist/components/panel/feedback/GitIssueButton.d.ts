@@ -1,5 +1,5 @@
-import type { ReportFeedback } from "../../../types/report.js";
-import type { ReportMessages } from "../../../i18n/types.js";
+import type { ReportFeedback } from "@/types/report.js";
+import type { ReportMessages } from "@/i18n/types.js";
 type GitIssueButtonProps = {
     report: ReportFeedback;
     messages: ReportMessages;

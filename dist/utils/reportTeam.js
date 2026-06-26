@@ -1,7 +1,7 @@
-export function resolveReportTeam({ team, identify, authors }) {
+export function resolveReportTeam({ team }) {
     return {
-        user: team?.user ?? identify,
-        reviewers: team?.reviewers ?? authors ?? [],
+        user: team?.user,
+        reviewers: team?.reviewers ?? [],
         requireReviewerKey: team?.requireReviewerKey ?? false,
     };
 }

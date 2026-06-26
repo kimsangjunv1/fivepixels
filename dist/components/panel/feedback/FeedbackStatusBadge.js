@@ -1,7 +1,7 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import { FEEDBACK_STATUS_COLOR } from "../../../constants/feedbackStatus.js";
-import { FeedbackStatusIcon } from "../../../components/icons/Icons.js";
-import { useReport } from "../../../providers/reportContext.js";
+import { FEEDBACK_STATUS_COLOR } from "@/constants/feedbackStatus.js";
+import { FeedbackStatusIcon } from "@/components/icons/Icons.js";
+import { useReport } from "@/providers/reportContext.js";
 export function FeedbackStatusBadge({ status, className = "" }) {
     const { messages } = useReport();
     const color = FEEDBACK_STATUS_COLOR[status];

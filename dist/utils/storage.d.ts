@@ -1,4 +1,4 @@
-import type { ReportPersistenceHandlers, ReportStorageAdapter } from "../types/report.js";
+import type { ReportPersistenceHandlers, ReportStorageAdapter } from "@/types/report.js";
 export type ResolveStorageAdapterOptions = {
     projectId: string;
     environment?: string;

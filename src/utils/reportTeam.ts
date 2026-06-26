@@ -8,16 +8,12 @@ export type ResolvedReportTeam = {
 
 export type ResolveReportTeamOptions = {
     team?: ReportTeam;
-    /** @deprecated Use `team.user`. */
-    identify?: ReportIdentify;
-    /** @deprecated Use `team.reviewers`. */
-    authors?: ReportAuthor[];
 };
 
-export function resolveReportTeam({ team, identify, authors }: ResolveReportTeamOptions): ResolvedReportTeam {
+export function resolveReportTeam({ team }: ResolveReportTeamOptions): ResolvedReportTeam {
     return {
-        user: team?.user ?? identify,
-        reviewers: team?.reviewers ?? authors ?? [],
+        user: team?.user,
+        reviewers: team?.reviewers ?? [],
         requireReviewerKey: team?.requireReviewerKey ?? false,
     };
 }

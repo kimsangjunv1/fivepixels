@@ -1,4 +1,4 @@
-import type { ReportFeedback, ReportGitHubConfig, ReportGitHubIntegrationMode, ReportGitHubIssueCreateResult, ReportReply, UpdateReportFeedbackPayload } from "../types/report.js";
+import type { ReportFeedback, ReportGitHubConfig, ReportGitHubIntegrationMode, ReportGitHubIssueCreateResult, ReportReply, UpdateReportFeedbackPayload } from "@/types/report.js";
 export declare function isGitIssued(report: ReportFeedback): boolean;
 export declare function hasGitHubIssue(report: ReportFeedback): boolean;
 export declare function getGitHubIssueUrl(report: ReportFeedback): string | undefined;

@@ -1,8 +1,8 @@
 import { type MouseEvent } from "react";
-import type { DeepPartialReportMessages } from "../i18n/types.js";
-import type { ReportLocale } from "../i18n/types.js";
-import type { CreateReportFeedbackPayload, ReportAppearance, ReportAuthor, ReportEvent, ReportFeedback, ReportField, ReportGitHubConfig, ReportIdentify, ReportListAllParams, ReportListAllResult, UpdateReportFeedbackPayload } from "../types/report.js";
-import type { DraftReport, EditableDraft, Marker, PendingFeedbackComposer, ReportMode, ReportPanelTab, TargetSnapshot } from "../types/report-ui.js";
+import type { DeepPartialReportMessages } from "@/i18n/types.js";
+import type { ReportLocale } from "@/i18n/types.js";
+import type { CreateReportFeedbackPayload, ReportAppearance, ReportAuthor, ReportEvent, ReportFeedback, ReportField, ReportGitHubConfig, ReportIdentify, ReportListAllParams, ReportListAllResult, UpdateReportFeedbackPayload } from "@/types/report.js";
+import type { DraftReport, EditableDraft, Marker, PendingFeedbackComposer, ReportMode, ReportPanelTab, TargetSnapshot } from "@/types/report-ui.js";
 export type ReportStateConfig = {
     projectId: string;
     environment?: string;
@@ -39,7 +39,7 @@ export declare function useReportState({ projectId, environment, appVersion, app
     setAppearance: (nextAppearance: ReportAppearance) => void;
     locale: ReportLocale;
     setLocale: (nextLocale: ReportLocale) => void;
-    messages: import("../i18n/types.js").ReportMessages;
+    messages: import("@/i18n/types.js").ReportMessages;
     fields: ReportField[];
     authors: ReportIdentify[];
     projectId: string;
@@ -82,15 +82,15 @@ export declare function useReportState({ projectId, environment, appVersion, app
     canListAllFeedback: boolean;
     visibleShortcutKeys: boolean;
     searchInputRef: import("react").MutableRefObject<HTMLInputElement | null>;
-    resolvedAppearance: import("../types/report-ui.js").ResolvedAppearance;
+    resolvedAppearance: import("@/types/report-ui.js").ResolvedAppearance;
     isMobileViewport: boolean;
     mode: ReportMode;
     showTargetPreview: boolean;
     selectableTargets: TargetSnapshot[];
-    filters: import("../types/report-ui.js").ReportFilters;
-    setFilters: import("react").Dispatch<import("react").SetStateAction<import("../types/report-ui.js").ReportFilters>>;
-    listScope: import("../types/report-ui.js").ReportListScope;
-    setListScope: import("react").Dispatch<import("react").SetStateAction<import("../types/report-ui.js").ReportListScope>>;
+    filters: import("@/types/report-ui.js").ReportFilters;
+    setFilters: import("react").Dispatch<import("react").SetStateAction<import("@/types/report-ui.js").ReportFilters>>;
+    listScope: import("@/types/report-ui.js").ReportListScope;
+    setListScope: import("react").Dispatch<import("react").SetStateAction<import("@/types/report-ui.js").ReportListScope>>;
     reports: ReportFeedback[];
     filteredReports: ReportFeedback[];
     isError: boolean;

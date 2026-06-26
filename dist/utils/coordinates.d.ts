@@ -1,5 +1,5 @@
-import type { ReportFeedback } from "../types/report.js";
-import type { DraftReport, Marker, MarkerClampBounds, MarkerClampEdge, MarkerOverflowHint, TargetSnapshot } from "../types/report-ui.js";
+import type { ReportFeedback } from "@/types/report.js";
+import type { DraftReport, Marker, MarkerClampBounds, MarkerClampEdge, MarkerOverflowHint, TargetSnapshot } from "@/types/report-ui.js";
 export type MarkerPosition = {
     left: number;
     top: number;

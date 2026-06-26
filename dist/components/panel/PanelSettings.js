@@ -1,5 +1,5 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import { useReport } from "../../providers/reportContext.js";
+import { useReport } from "@/providers/reportContext.js";
 import { PanelOptionSwitch } from "./PanelOptionSwitch.js";
 const LOCALE_OPTIONS = ["en", "ko"];
 function SettingsSection({ label, children }) {

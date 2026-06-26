@@ -1,9 +1,9 @@
 import { resolveProjectId } from "./projectId.js";
-export function resolveReportProject({ project, projectId, environment, appVersion, }) {
+export function resolveReportProject({ project }) {
     return {
-        projectId: resolveProjectId(project?.id ?? projectId),
-        environment: project?.env ?? environment,
-        appVersion: project?.version ?? appVersion,
+        projectId: resolveProjectId(project?.id),
+        environment: project?.env,
+        appVersion: project?.version,
     };
 }
 //# sourceMappingURL=reportProject.js.map

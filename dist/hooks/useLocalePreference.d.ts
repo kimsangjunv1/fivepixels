@@ -1,4 +1,4 @@
-import type { ReportLocale } from "../i18n/types.js";
+import type { ReportLocale } from "@/i18n/types.js";
 export declare function useLocalePreference(initialLocale: ReportLocale): {
     locale: ReportLocale;
     setLocale: (nextLocale: ReportLocale) => void;

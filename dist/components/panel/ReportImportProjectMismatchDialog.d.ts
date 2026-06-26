@@ -1,5 +1,5 @@
-import type { ReportProject } from "../../types/report.js";
-import type { ResolvedReportProject } from "../../utils/reportProject.js";
+import type { ReportProject } from "@/types/report.js";
+import type { ResolvedReportProject } from "@/utils/reportProject.js";
 type ReportImportProjectMismatchDialogProps = {
     currentProject: ResolvedReportProject;
     importedProject?: ReportProject;

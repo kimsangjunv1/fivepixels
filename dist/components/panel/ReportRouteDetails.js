@@ -1,8 +1,8 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import { useReport } from "../../providers/reportContext.js";
-import { formatStatCount } from "../../utils/formatStatCount.js";
-import { panelNumericClassName } from "../../utils/panelTypography.js";
-import { ChevronDownIcon } from "../../components/icons/Icons.js";
+import { useReport } from "@/providers/reportContext.js";
+import { formatStatCount } from "@/utils/formatStatCount.js";
+import { panelNumericClassName } from "@/utils/panelTypography.js";
+import { ChevronDownIcon } from "@/components/icons/Icons.js";
 import { FeedbackStatusBadge } from "./feedback/FeedbackStatusBadge.js";
 export function ReportRouteDetails() {
     const { routeDetailsStats, projectId, environment, appVersion, messages } = useReport();

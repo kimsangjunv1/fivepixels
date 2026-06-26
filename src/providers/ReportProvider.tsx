@@ -27,35 +27,9 @@ import { ReportContext } from "./reportContext.js";
 
 export type ReportProviderProps = {
     project?: ReportProject;
-    /** @deprecated Use `project.id`. */
-    projectId?: string;
-    /** @deprecated Use `project.env`. */
-    environment?: string;
-    /** @deprecated Use `project.version`. */
-    appVersion?: string;
     ui?: ReportUi;
-    /** @deprecated Use `ui.appearance`. */
-    appearance?: ReportUi["appearance"];
-    /** @deprecated Use `ui.showFeedbackList`. */
-    showFeedbackList?: boolean;
-    /** @deprecated Use `ui.visibleShortcutKeys`. */
-    visibleShortcutKeys?: boolean;
-    /** @deprecated Use `ui.shortcut`. */
-    shortcut?: string;
     visibility?: ReportVisibility;
-    /** @deprecated Use `visibility.enabled`. */
-    enabled?: boolean;
-    /** @deprecated Use `visibility.devOnly`. */
-    devOnly?: boolean;
-    /** @deprecated Use `visibility.routeKey`. */
-    routeKey?: string;
-    /** @deprecated Use `visibility.routeKey`. */
-    pathname?: string;
     team?: ReportTeam;
-    /** @deprecated Use `team.user`. */
-    identify?: ReportIdentify;
-    /** @deprecated Use `team.reviewers`. */
-    authors?: ReportAuthor[];
     fields?: ReportField[];
     onList?: (params: { pathname: string }) => Promise<ReportFeedback[]>;
     onListAll?: (params: ReportListAllParams) => Promise<ReportListAllResult>;
@@ -70,26 +44,7 @@ export type ReportProviderProps = {
     children: ReactNode;
 };
 
-type ReportProviderEnabledProps = Omit<
-    ReportProviderProps,
-    | "project"
-    | "projectId"
-    | "environment"
-    | "appVersion"
-    | "ui"
-    | "appearance"
-    | "showFeedbackList"
-    | "visibleShortcutKeys"
-    | "shortcut"
-    | "visibility"
-    | "enabled"
-    | "devOnly"
-    | "routeKey"
-    | "pathname"
-    | "team"
-    | "identify"
-    | "authors"
-> & {
+type ReportProviderEnabledProps = Omit<ReportProviderProps, "project" | "ui" | "visibility" | "team"> & {
     projectId: string;
     environment?: string;
     appVersion?: string;
@@ -165,22 +120,9 @@ function ReportProviderEnabled({
 
 export function ReportProvider({
     project,
-    projectId,
-    environment,
-    appVersion,
     ui,
-    appearance,
-    showFeedbackList,
-    visibleShortcutKeys,
-    shortcut,
     visibility,
-    enabled,
-    devOnly,
-    routeKey,
-    pathname,
     team,
-    identify,
-    authors,
     fields,
     onList,
     onListAll,
@@ -194,10 +136,10 @@ export function ReportProvider({
     github,
     children,
 }: ReportProviderProps) {
-    const resolvedProject = resolveReportProject({ project, projectId, environment, appVersion });
-    const resolvedUi = resolveReportUi({ ui, appearance, showFeedbackList, visibleShortcutKeys, shortcut });
-    const resolvedVisibility = resolveReportVisibility({ visibility, enabled, devOnly, routeKey, pathname });
-    const resolvedTeam = resolveReportTeam({ team, identify, authors });
+    const resolvedProject = resolveReportProject({ project });
+    const resolvedUi = resolveReportUi({ ui });
+    const resolvedVisibility = resolveReportVisibility({ visibility });
+    const resolvedTeam = resolveReportTeam({ team });
     const resolvedFields = fields ?? getDefaultFields(resolvedUi.messages);
 
     if (!resolveReportEnabled(resolvedVisibility)) {

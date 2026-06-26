@@ -3,7 +3,7 @@ import { getReportMessages } from "@/i18n/index.js";
 import { resolveReportUi } from "./reportUi.js";
 
 describe("resolveReportUi", () => {
-    it("prefers ui object values over legacy flat props", () => {
+    it("resolves ui object values", () => {
         expect(
             resolveReportUi({
                 ui: {
@@ -13,10 +13,6 @@ describe("resolveReportUi", () => {
                     shortcut: "mod+shift+m",
                     locale: "ko",
                 },
-                appearance: "light",
-                showFeedbackList: true,
-                visibleShortcutKeys: false,
-                shortcut: "legacy",
             }),
         ).toEqual({
             appearance: "dark",
@@ -25,6 +21,17 @@ describe("resolveReportUi", () => {
             shortcut: "mod+shift+m",
             locale: "ko",
             messages: getReportMessages("ko"),
+        });
+    });
+
+    it("uses defaults when ui is omitted", () => {
+        expect(resolveReportUi({})).toEqual({
+            appearance: "system",
+            showFeedbackList: true,
+            visibleShortcutKeys: false,
+            shortcut: undefined,
+            locale: "en",
+            messages: getReportMessages("en"),
         });
     });
 });

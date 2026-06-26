@@ -1,4 +1,4 @@
-import type { ReportFeedback, ReportProject } from "../types/report.js";
+import type { ReportFeedback, ReportProject } from "@/types/report.js";
 import { type FeedbackImportPayload } from "./feedbackTransferSchema.js";
 export type FeedbackTransferScope = {
     projectId: string;

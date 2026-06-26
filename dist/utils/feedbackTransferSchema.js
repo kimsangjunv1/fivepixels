@@ -1,4 +1,4 @@
-import { getActiveReportMessages } from "../i18n/index.js";
+import { getActiveReportMessages } from "@/i18n/index.js";
 import { validateFeedbackImportArray, validateFeedbackRecord } from "./validateFeedbackImport.js";
 export const FEEDBACK_TRANSFER_SCHEMA_VERSION = 1;
 function isRecord(value) {

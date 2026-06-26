@@ -1,4 +1,4 @@
-import type { TargetSnapshot } from "../../types/report-ui.js";
+import type { TargetSnapshot } from "@/types/report-ui.js";
 type TargetHighlightsProps = {
     hoveredTarget: TargetSnapshot | null;
     previewTargets?: TargetSnapshot[];

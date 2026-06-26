@@ -1,5 +1,5 @@
-import type { FeedbackDisplayStatus } from "../constants/feedbackStatus.js";
-import type { ReportAuthor, ReportFeedback, ReportReply, ReportReplyStatus } from "../types/report.js";
+import type { FeedbackDisplayStatus } from "@/constants/feedbackStatus.js";
+import type { ReportAuthor, ReportFeedback, ReportReply, ReportReplyStatus } from "@/types/report.js";
 export declare function getLatestReply(report: ReportFeedback): ReportReply | null;
 export declare function getRemainingReplyCount(report: ReportFeedback): number;
 export declare function getFeedbackDisplayStatus(report: ReportFeedback, expanded?: boolean): FeedbackDisplayStatus;

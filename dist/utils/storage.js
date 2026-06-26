@@ -1,4 +1,4 @@
-import { createLocalStorageReportAdapter } from "../storage/local/localStorageAdapter.js";
+import { createLocalStorageReportAdapter } from "@/storage/local/localStorageAdapter.js";
 export function hasCustomPersistenceHandlers(options) {
     return Boolean(options.onList && options.onCreate && options.onUpdate);
 }

@@ -1,4 +1,4 @@
-import { TARGET_COLOR } from "../constants/report.js";
+import { TARGET_COLOR } from "@/constants/report.js";
 export function hasReply(report) {
     return report.replies.length > 0;
 }

@@ -1,4 +1,4 @@
-import type { ReportFeedback, ReportProject, ReportStorageAdapter } from "../../types/report.js";
+import type { ReportFeedback, ReportProject, ReportStorageAdapter } from "@/types/report.js";
 export type LocalStorageReportAdapterOptions = {
     projectId: string;
     environment?: string;

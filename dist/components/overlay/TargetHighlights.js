@@ -1,5 +1,5 @@
 import { jsxs as _jsxs, jsx as _jsx, Fragment as _Fragment } from "react/jsx-runtime";
-import { TARGET_COLOR } from "../../constants/report.js";
+import { TARGET_COLOR } from "@/constants/report.js";
 function highlightPresenceKey(type) {
     return `hover-${type}`;
 }

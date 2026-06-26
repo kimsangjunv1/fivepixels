@@ -1,4 +1,4 @@
-import { getActiveReportMessages } from "../i18n/index.js";
+import { getActiveReportMessages } from "@/i18n/index.js";
 export async function listReports(adapter, pathname) {
     return adapter.list({ pathname });
 }

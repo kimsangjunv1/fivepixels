@@ -1,5 +1,5 @@
-import type { CreateReportFeedbackPayload, ReportFeedback, ReportStorageAdapter, UpdateReportFeedbackPayload } from "../types/report.js";
-import type { ReportListScope } from "../types/report-ui.js";
+import type { CreateReportFeedbackPayload, ReportFeedback, ReportStorageAdapter, UpdateReportFeedbackPayload } from "@/types/report.js";
+import type { ReportListScope } from "@/types/report-ui.js";
 export declare const useReportsQuery: (adapter: ReportStorageAdapter, pathname: string, scope: ReportListScope, enabled?: boolean) => {
     data: ReportFeedback[];
     isLoading: boolean;

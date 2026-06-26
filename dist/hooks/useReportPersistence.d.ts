@@ -1,5 +1,5 @@
-import type { CreateReportFeedbackPayload, ReportFeedback, ReportField, ReportPersistenceHandlers, ReportStorageAdapter, UpdateReportFeedbackPayload } from "../types/report.js";
-import type { ReportFilters, ReportListScope } from "../types/report-ui.js";
+import type { CreateReportFeedbackPayload, ReportFeedback, ReportField, ReportPersistenceHandlers, ReportStorageAdapter, UpdateReportFeedbackPayload } from "@/types/report.js";
+import type { ReportFilters, ReportListScope } from "@/types/report-ui.js";
 export type ReportPersistenceConfig = {
     projectId: string;
     environment?: string;
@@ -31,7 +31,7 @@ export declare function useReportPersistence({ projectId, environment, appVersio
     routeDetailsStats: {
         pathname: string;
         statusRows: {
-            status: import("../constants/feedbackStatus.js").FeedbackDisplayStatus;
+            status: import("@/constants/feedbackStatus.js").FeedbackDisplayStatus;
             all: number;
             today: number;
         }[];

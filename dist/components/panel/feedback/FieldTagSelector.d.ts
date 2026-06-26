@@ -1,4 +1,4 @@
-import type { ReportField, ReportFieldValues } from "../../../types/report.js";
+import type { ReportField, ReportFieldValues } from "@/types/report.js";
 type FieldTagSelectorProps = {
     fields: ReportField[];
     fieldValues: ReportFieldValues;

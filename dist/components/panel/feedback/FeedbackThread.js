@@ -1,9 +1,9 @@
 import { jsx as _jsx, Fragment as _Fragment, jsxs as _jsxs } from "react/jsx-runtime";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useReport } from "../../../providers/reportContext.js";
-import { formatDate } from "../../../utils/format.js";
-import { buildConfirmAuthorOptions, buildThreadTimeline, canShowCheckoutBranchActions, canShowIssueEntryActions, canShowSuggestedBranchActions, ISSUE_ROOT_PARENT_ID, resolveOriginalFeedbackAuthorName, } from "../../../utils/feedbackThread.js";
-import { getGitHubIssueUrl, isGitIssuedSystemReply } from "../../../utils/githubIntegration.js";
+import { useReport } from "@/providers/reportContext.js";
+import { formatDate } from "@/utils/format.js";
+import { buildConfirmAuthorOptions, buildThreadTimeline, canShowCheckoutBranchActions, canShowIssueEntryActions, canShowSuggestedBranchActions, ISSUE_ROOT_PARENT_ID, resolveOriginalFeedbackAuthorName, } from "@/utils/feedbackThread.js";
+import { getGitHubIssueUrl, isGitIssuedSystemReply } from "@/utils/githubIntegration.js";
 import { AuthorSelector } from "./AuthorSelector.js";
 import { FeedbackCreatorBadge } from "./FeedbackCreatorBadge.js";
 import { FeedbackStatusBadge } from "./FeedbackStatusBadge.js";

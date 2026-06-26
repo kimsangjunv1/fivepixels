@@ -1,5 +1,5 @@
-import type { ReportTargetType } from "../types/report.js";
-import type { TargetSnapshot } from "../types/report-ui.js";
+import type { ReportTargetType } from "@/types/report.js";
+import type { TargetSnapshot } from "@/types/report-ui.js";
 export declare function escapeAttribute(value: string): string;
 export declare function resolveReportType(element: HTMLElement): ReportTargetType;
 export declare function getFeedbackTargetSelector(reportId: string, reportType: ReportTargetType): string;

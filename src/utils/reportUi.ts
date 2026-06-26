@@ -20,24 +20,16 @@ const DEFAULT_UI: Pick<ResolvedReportUi, "appearance" | "showFeedbackList" | "vi
 
 export type ResolveReportUiOptions = {
     ui?: ReportUi;
-    /** @deprecated Use `ui.appearance`. */
-    appearance?: ReportUi["appearance"];
-    /** @deprecated Use `ui.showFeedbackList`. */
-    showFeedbackList?: boolean;
-    /** @deprecated Use `ui.visibleShortcutKeys`. */
-    visibleShortcutKeys?: boolean;
-    /** @deprecated Use `ui.shortcut`. */
-    shortcut?: string;
 };
 
-export function resolveReportUi({ ui, appearance, showFeedbackList, visibleShortcutKeys, shortcut }: ResolveReportUiOptions): ResolvedReportUi {
+export function resolveReportUi({ ui }: ResolveReportUiOptions): ResolvedReportUi {
     const locale = resolveReportLocale(ui?.locale);
 
     return {
-        appearance: ui?.appearance ?? appearance ?? DEFAULT_UI.appearance,
-        showFeedbackList: ui?.showFeedbackList ?? showFeedbackList ?? DEFAULT_UI.showFeedbackList,
-        visibleShortcutKeys: ui?.visibleShortcutKeys ?? visibleShortcutKeys ?? DEFAULT_UI.visibleShortcutKeys,
-        shortcut: ui?.shortcut ?? shortcut,
+        appearance: ui?.appearance ?? DEFAULT_UI.appearance,
+        showFeedbackList: ui?.showFeedbackList ?? DEFAULT_UI.showFeedbackList,
+        visibleShortcutKeys: ui?.visibleShortcutKeys ?? DEFAULT_UI.visibleShortcutKeys,
+        shortcut: ui?.shortcut,
         locale,
         messages: getReportMessages(locale, ui?.messages),
     };

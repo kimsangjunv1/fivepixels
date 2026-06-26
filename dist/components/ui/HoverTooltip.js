@@ -1,9 +1,9 @@
 import { jsx as _jsx, Fragment as _Fragment, jsxs as _jsxs } from "react/jsx-runtime";
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { useNativeHover } from "../../hooks/useNativeHover.js";
-import { getReportTooltipRoot, ensureReportTooltipLayer } from "../../utils/dom.js";
-import { getHoverTooltipLayout } from "../../utils/hoverTooltipLayout.js";
+import { useNativeHover } from "@/hooks/useNativeHover.js";
+import { getReportTooltipRoot, ensureReportTooltipLayer } from "@/utils/dom.js";
+import { getHoverTooltipLayout } from "@/utils/hoverTooltipLayout.js";
 const TOOLTIP_STYLE = {
     position: "fixed",
     pointerEvents: "none",
