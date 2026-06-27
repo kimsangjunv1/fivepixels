@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import { useCreateReportMutation, useDeleteReportMutation, useReportsQuery, useUpdateReportMutation } from "./report.query.js";
 import { useCurrentPathname } from "./useCurrentPathname.js";
 import { createReply as createReplyApi, listReplies as listRepliesApi } from "./report.api.js";
+import { casesToSearchText } from "../utils/reportCases.js";
 import { getRouteDetailStatus, isCreatedToday } from "../utils/routeDetailStatus.js";
 import { getFeedbackDisplayStatus } from "../utils/feedbackThread.js";
 import { FEEDBACK_DISPLAY_STATUS_ORDER } from "../constants/feedbackStatus.js";
@@ -19,7 +20,7 @@ function filterReports(reports, filters) {
             return true;
         }
         const keyword = filters.keyword.trim().toLowerCase();
-        return [report.message, report.report_id, report.status, report.pathname].join(" ").toLowerCase().includes(keyword);
+        return [casesToSearchText(report.cases), report.report_id, report.status, report.pathname].join(" ").toLowerCase().includes(keyword);
     });
 }
 function enrichReports(reports, repliesByReportId) {

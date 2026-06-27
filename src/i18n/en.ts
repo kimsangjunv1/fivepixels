@@ -266,6 +266,9 @@ export const en: ReportMessages = {
         githubIssueNumberInvalid: "integrations.github.issue_number number is required",
         githubIssueUrlInvalid: "integrations.github.issue_url string is required",
         githubIssuedAtInvalid: "integrations.github.issued_at date string is required",
+        casesRequired: "At least one case is required in cases[]",
+        caseInvalid: (caseIndex) => `cases[${caseIndex}] is invalid`,
+        caseTextRequired: (caseIndex) => `cases[${caseIndex}].text string is required`,
     },
     errors: {
         feedbackNotFound: "Feedback not found.",
@@ -306,6 +309,8 @@ export const en: ReportMessages = {
         importInvalidFormat: (index, detail) => `Invalid feedback data format. (index ${index}: ${detail})`,
         fieldRequiredInput: (label) => `Enter ${label}.`,
         fieldRequiredConfirm: (label) => `Confirm ${label}.`,
+        casesRequired: "Add at least one case.",
+        caseTextRequired: (index) => `Enter case ${index}.`,
         personalKeyRequired: "Set a personal key before writing feedback.",
     },
 };

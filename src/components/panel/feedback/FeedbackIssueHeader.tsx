@@ -1,4 +1,5 @@
 import type { ReportFeedback } from "@/types/report.js";
+import { getIssueSummary } from "@/utils/reportCases.js";
 import { FeedbackCreatorBadge } from "./FeedbackCreatorBadge.js";
 import { FeedbackFieldTags } from "./FeedbackFieldTags.js";
 
@@ -11,7 +12,7 @@ export function FeedbackIssueHeader({ report, fieldTags }: FeedbackIssueHeaderPr
     return (
         <section className="flex flex-col gap-[12px] bg-transparent p-[8px]">
             <section className="flex flex-col gap-[4px]">
-                <p className="text-[16px] leading-[1.5] font-semibold text-[var(--adaptive-text-primary)]">{report.message}</p>
+                <p className="text-[16px] leading-[1.5] font-semibold text-[var(--adaptive-text-primary)]">{getIssueSummary(report)}</p>
 
                 {report.author_name ? (
                     <div className="flex items-center gap-[6px]">

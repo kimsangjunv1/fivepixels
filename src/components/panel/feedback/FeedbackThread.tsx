@@ -3,6 +3,7 @@ import type { ReportAuthor, ReportFeedback, ReportReply } from "@/types/report.j
 import type { ReportLocale } from "@/i18n/types.js";
 import { useReport } from "@/providers/reportContext.js";
 import { formatDate } from "@/utils/format.js";
+import { getIssueSummary } from "@/utils/reportCases.js";
 import {
     buildConfirmAuthorOptions,
     buildThreadTimeline,
@@ -303,7 +304,7 @@ function ThreadIssueEntry({
                     <span className="text-[12px] text-[var(--adaptive-black500)]">{formatDate(report.created_at, locale)}</span>
                 </div>
 
-                <p className="leading-[1.5] text-[14px] text-[var(--adaptive-text-primary)]">{report.message}</p>
+                <p className="leading-[1.5] text-[14px] text-[var(--adaptive-text-primary)]">{getIssueSummary(report)}</p>
                 {report.author_name ? (
                     <div className="flex items-center gap-[6px]">
                         <p className="text-[12px] text-[var(--adaptive-black500)]">{report.author_name}</p>

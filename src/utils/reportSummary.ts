@@ -6,6 +6,7 @@ export function toReplySummary(reply: ReportReply): ReportReplySummary {
         message: reply.message,
         created_at: reply.created_at,
         status: reply.status,
+        case_ids: reply.case_ids,
         author_type: reply.author_type,
         author_name: reply.author_name,
     };
@@ -15,6 +16,7 @@ export function summaryToReply(summary: ReportReplySummary, commentId: string): 
     return {
         ...summary,
         comment_id: commentId,
+        case_ids: summary.case_ids ?? [],
     };
 }
 

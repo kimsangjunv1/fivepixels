@@ -1,5 +1,6 @@
+import { normalizeReportCase, normalizeReplyCaseIds } from "../utils/reportCases.js";
 import { getActiveReportMessages } from "../i18n/index.js";
-const STRING_FIELDS = ["id", "pathname", "report_id", "message", "created_at"];
+const STRING_FIELDS = ["id", "pathname", "report_id", "created_at"];
 const OPTIONAL_STRING_FIELDS = ["environment", "app_version", "author_id", "author_name"];
 const REPORT_TYPES = new Set(["group", "item"]);
 const REPORT_STATUSES = new Set(["open", "git_issued", "resolved", "archived"]);
@@ -129,6 +130,7 @@ function validateReply(value, index, replyIndex) {
         message: reply.message,
         created_at: reply.created_at,
         status: reply.status ?? "suggested",
+        case_ids: normalizeReplyCaseIds(reply.case_ids),
         ...(typeof parentReplyId === "string" ? { parent_reply_id: parentReplyId } : {}),
         author_type: reply.author_type,
         author_name: authorName === null || typeof authorName === "string" ? authorName : undefined,
@@ -175,6 +177,23 @@ function validateReplies(value, index) {
     }
     return value.map((reply, replyIndex) => validateReply(reply, index, replyIndex));
 }
+export function validateCases(value, index, createdAt) {
+    const validation = getActiveReportMessages().importValidation;
+    if (!Array.isArray(value) || value.length === 0) {
+        throw importError(index, validation.casesRequired);
+    }
+    const cases = value.flatMap((item, caseIndex) => {
+        const normalized = normalizeReportCase(item, createdAt);
+        if (!normalized) {
+            throw importError(index, validation.caseInvalid(caseIndex));
+        }
+        if (!normalized.text.trim()) {
+            throw importError(index, validation.caseTextRequired(caseIndex));
+        }
+        return [normalized];
+    });
+    return cases;
+}
 export function validateFeedbackRecord(item, index) {
     const validation = getActiveReportMessages().importValidation;
     if (!item || typeof item !== "object" || Array.isArray(item)) {
@@ -205,7 +224,7 @@ export function validateFeedbackRecord(item, index) {
         pathname: record.pathname,
         report_id: record.report_id,
         report_type: record.report_type,
-        message: record.message,
+        cases: validateCases(record.cases, index, record.created_at),
         status: record.status,
         field_values: validateFieldValues(record.field_values, index),
         replies: validateReplies(record.replies, index),

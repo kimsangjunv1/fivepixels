@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { getReportsStorageKey } from "@/constants/storageKeys.js";
-import { createReportPayload } from "@/utils/reportFixtures.js";
+import { createReportCase, createReportPayload } from "@/utils/reportFixtures.js";
 import { createLocalStorageReportAdapter } from "./localStorageAdapter.js";
 
 const PROJECT_ID = "test-project";
@@ -29,9 +29,12 @@ describe("createLocalStorageReportAdapter", () => {
         expect(listed).toHaveLength(1);
         expect(listed[0]?.id).toBe(created.id);
 
-        const updated = await adapter.update(created.id, { status: "resolved", message: "수정됨" });
+        const updated = await adapter.update(created.id, {
+            status: "resolved",
+            cases: created.cases.map((item) => ({ ...item, status: "resolved" as const })),
+        });
         expect(updated.status).toBe("resolved");
-        expect(updated.message).toBe("수정됨");
+        expect(updated.cases[0]?.text).toBe("테스트 케이스");
 
         await adapter.remove?.(created.id);
 
@@ -42,8 +45,8 @@ describe("createLocalStorageReportAdapter", () => {
     it("isolates records by pathname and environment", async () => {
         const adapter = createLocalStorageReportAdapter({ projectId: PROJECT_ID, environment: ENVIRONMENT });
 
-        await adapter.create(createReportPayload({ pathname: "/a", message: "A" }));
-        await adapter.create(createReportPayload({ pathname: "/b", message: "B" }));
+        await adapter.create(createReportPayload({ pathname: "/a", cases: [createReportCase("A")] }));
+        await adapter.create(createReportPayload({ pathname: "/b", cases: [createReportCase("B")] }));
 
         expect(await adapter.list({ pathname: "/a" })).toHaveLength(1);
         expect(await adapter.list({ pathname: "/b" })).toHaveLength(1);
@@ -59,8 +62,8 @@ describe("createLocalStorageReportAdapter", () => {
     it("lists feedback across pathnames with cursor pagination", async () => {
         const adapter = createLocalStorageReportAdapter({ projectId: PROJECT_ID, environment: ENVIRONMENT });
 
-        await adapter.create(createReportPayload({ pathname: "/a", message: "A" }));
-        await adapter.create(createReportPayload({ pathname: "/b", message: "B" }));
+        await adapter.create(createReportPayload({ pathname: "/a", cases: [createReportCase("A")] }));
+        await adapter.create(createReportPayload({ pathname: "/b", cases: [createReportCase("B")] }));
 
         const firstPage = await adapter.listAll?.({ limit: 1 });
         const secondPage = await adapter.listAll?.({ cursor: firstPage?.nextCursor, limit: 1 });
@@ -79,7 +82,7 @@ describe("createLocalStorageReportAdapter", () => {
             appVersion: "1.0.0",
         });
 
-        await adapter.create(createReportPayload({ pathname: PATHNAME, message: "v1" }));
+        await adapter.create(createReportPayload({ pathname: PATHNAME, cases: [createReportCase("v1")] }));
 
         const otherVersionAdapter = createLocalStorageReportAdapter({
             projectId: PROJECT_ID,
@@ -102,7 +105,7 @@ describe("createLocalStorageReportAdapter", () => {
                     ...created,
                     status: "invalid",
                     field_values: { ok: "yes", bad: 1, also: null },
-                    replies: [{ id: "r1", message: "reply", created_at: "2026-05-31T00:00:00.000Z" }, { id: "bad" }],
+                    replies: [{ id: "r1", message: "reply", created_at: "2026-05-31T00:00:00.000Z", case_ids: [] }, { id: "bad" }],
                 },
             ]),
         );
@@ -112,5 +115,6 @@ describe("createLocalStorageReportAdapter", () => {
         expect(item?.status).toBe("open");
         expect(item?.field_values).toEqual({ ok: "yes" });
         expect(item?.replies).toHaveLength(1);
+        expect(item?.replies?.[0]?.case_ids).toEqual([]);
     });
 });

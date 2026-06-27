@@ -14,6 +14,7 @@ const MARKER_HOVER_LEAVE_MS = 250;
 const OVERLAY_HOVER_LEAVE_MS = 100;
 import { findTargetByPoint, getSelectableTargets, isSameHoverTarget, resolveFeedbackDocumentAnchor, toSnapshot } from "../utils/dom.js";
 import { createInitialFieldValues, getFieldError, getFieldTags } from "../utils/fields.js";
+import { createReportCase } from "../utils/reportCases.js";
 import { createReplyId } from "../utils/format.js";
 import { notifyFeedbackCreate, notifyFeedbackDelete, notifyFeedbackReply, notifyFeedbackUpdate, notifyGitHubIssueCreated, } from "../utils/reportCallbacks.js";
 import { buildGitHubIssueStatusUpdate, buildGitHubIssueUpdate, canCreateGitHubIssueFromList, canCreateGitHubIssueOnCreate, isGitIssued, } from "../utils/githubIntegration.js";
@@ -621,7 +622,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             documentY: Math.round(window.scrollY + event.clientY),
             reportId: snapshot.id,
             reportType: snapshot.type,
-            message: "",
+            cases: [createReportCase("")],
             fieldValues: createInitialFieldValues(fields),
         });
     };
@@ -630,7 +631,22 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         setSelectedTarget(null);
     };
     const updateDraftMessage = (nextMessage) => {
-        setDraft((current) => (current ? { ...current, message: nextMessage } : current));
+        setDraft((current) => {
+            if (!current) {
+                return current;
+            }
+            const [firstCase, ...restCases] = current.cases;
+            if (!firstCase) {
+                return {
+                    ...current,
+                    cases: [createReportCase(nextMessage)],
+                };
+            }
+            return {
+                ...current,
+                cases: [{ ...firstCase, text: nextMessage }, ...restCases],
+            };
+        });
     };
     const updateDraftField = (key, nextValue) => {
         setDraft((current) => current
@@ -651,16 +667,21 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             setErrorMessage(messages.errors.personalKeyRequired);
             return null;
         }
-        const nextError = getFieldError(draft.message, draft.fieldValues, fields, messages.errors);
+        const nextError = getFieldError(draft.cases, draft.fieldValues, fields, messages.errors);
         if (nextError) {
             setErrorMessage(nextError);
             return null;
         }
+        const cases = draft.cases.map((item) => ({
+            ...item,
+            text: item.text.trim(),
+            updated_at: new Date().toISOString(),
+        }));
         return {
             pathname: currentPathname,
             report_id: draft.reportId,
             report_type: draft.reportType,
-            message: draft.message.trim(),
+            cases,
             status: "open",
             field_values: draft.fieldValues,
             position: {
@@ -751,7 +772,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         }
         setEditingReportId(report.id);
         setEditableDraft({
-            message: report.message,
+            cases: report.cases.map((item) => ({ ...item })),
             status: report.status,
             fieldValues: createInitialFieldValues(fields, report.field_values),
         });
@@ -765,14 +786,19 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             setErrorMessage(messages.errors.archivedNotEditable);
             return;
         }
-        const nextError = getFieldError(editableDraft.message, editableDraft.fieldValues, fields, messages.errors);
+        const nextError = getFieldError(editableDraft.cases, editableDraft.fieldValues, fields, messages.errors);
         if (nextError) {
             setErrorMessage(nextError);
             return;
         }
         try {
+            const cases = editableDraft.cases.map((item) => ({
+                ...item,
+                text: item.text.trim(),
+                updated_at: new Date().toISOString(),
+            }));
             const updatedFeedback = await updateFeedback(selectedReport.id, await signUpdatePayload({
-                message: editableDraft.message.trim(),
+                cases,
                 status: editableDraft.status,
                 field_values: editableDraft.fieldValues,
             }));
@@ -837,6 +863,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             message: replyMessage,
             created_at: new Date().toISOString(),
             status: replyStatus,
+            case_ids: [],
             ...(parentReplyId ? { parent_reply_id: parentReplyId } : {}),
             author_type: isCreatorSubmit ? "user" : "manager",
             author_name: authorName,
@@ -894,6 +921,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
                     message: messages.resolution.issueResolvedMessage,
                     created_at: new Date().toISOString(),
                     status: "resolved",
+                    case_ids: [],
                     author_type: "user",
                     author_name: resolverName,
                 };

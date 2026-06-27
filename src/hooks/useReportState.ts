@@ -33,6 +33,7 @@ const MARKER_HOVER_LEAVE_MS = 250;
 const OVERLAY_HOVER_LEAVE_MS = 100;
 import { findTargetByPoint, getSelectableTargets, isSameHoverTarget, resolveFeedbackDocumentAnchor, toSnapshot } from "@/utils/dom.js";
 import { createInitialFieldValues, getFieldError, getFieldTags } from "@/utils/fields.js";
+import { createReportCase } from "@/utils/reportCases.js";
 import { createReplyId } from "@/utils/format.js";
 import {
     notifyFeedbackCreate,
@@ -904,7 +905,7 @@ export function useReportState({
             documentY: Math.round(window.scrollY + event.clientY),
             reportId: snapshot.id,
             reportType: snapshot.type,
-            message: "",
+            cases: [createReportCase("")],
             fieldValues: createInitialFieldValues(fields),
         });
     };
@@ -915,7 +916,25 @@ export function useReportState({
     };
 
     const updateDraftMessage = (nextMessage: string) => {
-        setDraft((current) => (current ? { ...current, message: nextMessage } : current));
+        setDraft((current) => {
+            if (!current) {
+                return current;
+            }
+
+            const [firstCase, ...restCases] = current.cases;
+
+            if (!firstCase) {
+                return {
+                    ...current,
+                    cases: [createReportCase(nextMessage)],
+                };
+            }
+
+            return {
+                ...current,
+                cases: [{ ...firstCase, text: nextMessage }, ...restCases],
+            };
+        });
     };
 
     const updateDraftField = (key: string, nextValue: string | boolean) => {
@@ -942,18 +961,24 @@ export function useReportState({
             return null;
         }
 
-        const nextError = getFieldError(draft.message, draft.fieldValues, fields, messages.errors);
+        const nextError = getFieldError(draft.cases, draft.fieldValues, fields, messages.errors);
 
         if (nextError) {
             setErrorMessage(nextError);
             return null;
         }
 
+        const cases = draft.cases.map((item) => ({
+            ...item,
+            text: item.text.trim(),
+            updated_at: new Date().toISOString(),
+        }));
+
         return {
             pathname: currentPathname,
             report_id: draft.reportId,
             report_type: draft.reportType,
-            message: draft.message.trim(),
+            cases,
             status: "open",
             field_values: draft.fieldValues,
             position: {
@@ -1055,7 +1080,7 @@ export function useReportState({
 
         setEditingReportId(report.id);
         setEditableDraft({
-            message: report.message,
+            cases: report.cases.map((item) => ({ ...item })),
             status: report.status,
             fieldValues: createInitialFieldValues(fields, report.field_values),
         });
@@ -1072,7 +1097,7 @@ export function useReportState({
             return;
         }
 
-        const nextError = getFieldError(editableDraft.message, editableDraft.fieldValues, fields, messages.errors);
+        const nextError = getFieldError(editableDraft.cases, editableDraft.fieldValues, fields, messages.errors);
 
         if (nextError) {
             setErrorMessage(nextError);
@@ -1080,8 +1105,13 @@ export function useReportState({
         }
 
         try {
+            const cases = editableDraft.cases.map((item) => ({
+                ...item,
+                text: item.text.trim(),
+                updated_at: new Date().toISOString(),
+            }));
             const updatedFeedback = await updateFeedback(selectedReport.id, await signUpdatePayload({
-                message: editableDraft.message.trim(),
+                cases,
                 status: editableDraft.status,
                 field_values: editableDraft.fieldValues,
             }));
@@ -1158,6 +1188,7 @@ export function useReportState({
             message: replyMessage,
             created_at: new Date().toISOString(),
             status: replyStatus,
+            case_ids: [],
             ...(parentReplyId ? { parent_reply_id: parentReplyId } : {}),
             author_type: isCreatorSubmit ? "user" : "manager",
             author_name: authorName,
@@ -1225,6 +1256,7 @@ export function useReportState({
                     message: messages.resolution.issueResolvedMessage,
                     created_at: new Date().toISOString(),
                     status: "resolved",
+                    case_ids: [],
                     author_type: "user",
                     author_name: resolverName,
                 };

@@ -266,6 +266,9 @@ export const ko: ReportMessages = {
         githubIssueNumberInvalid: "integrations.github.issue_number 숫자가 필요합니다",
         githubIssueUrlInvalid: "integrations.github.issue_url 문자열이 필요합니다",
         githubIssuedAtInvalid: "integrations.github.issued_at 날짜 문자열이 필요합니다",
+        casesRequired: "cases 배열이 1개 이상 필요합니다",
+        caseInvalid: (caseIndex) => `cases[${caseIndex}] 형식이 올바르지 않습니다`,
+        caseTextRequired: (caseIndex) => `cases[${caseIndex}].text 문자열이 필요합니다`,
     },
     errors: {
         feedbackNotFound: "피드백을 찾을 수 없어요.",
@@ -306,6 +309,8 @@ export const ko: ReportMessages = {
         importInvalidFormat: (index, detail) => `피드백 데이터 형식이 올바르지 않아요. (index ${index}: ${detail})`,
         fieldRequiredInput: (label) => `${label}을(를) 입력해주세요.`,
         fieldRequiredConfirm: (label) => `${label}을(를) 확인해주세요.`,
+        casesRequired: "케이스를 1개 이상 입력해주세요.",
+        caseTextRequired: (index) => `${index}번째 케이스 내용을 입력해주세요.`,
         personalKeyRequired: "피드백을 작성하려면 개인 키 설정이 필요합니다.",
     },
 };

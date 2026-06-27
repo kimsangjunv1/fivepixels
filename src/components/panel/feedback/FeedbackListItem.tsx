@@ -2,6 +2,7 @@ import { useEffect, useState, type MouseEvent, type ReactNode } from "react";
 import type { ReportFeedback } from "@/types/report.js";
 import type { ReportLocale, ReportMessages } from "@/i18n/types.js";
 import { formatTimeOnly } from "@/utils/format.js";
+import { getIssueSummary } from "@/utils/reportCases.js";
 import { getFeedbackDisplayStatus, getLatestReply, getRemainingReplyCount } from "@/utils/feedbackThread.js";
 import { copyTextToClipboard, serializeFeedbackItem } from "@/utils/feedbackDataTransfer.js";
 import { FeedbackStatusBadge } from "./FeedbackStatusBadge.js";
@@ -180,7 +181,7 @@ export function FeedbackListItem({
                 className="flex w-full flex-col gap-[6px] p-[10px_12px] text-left"
             >
                 <FeedbackListRow
-                    text={<p className="truncate text-[13px] leading-[1.4] text-[var(--adaptive-black900)]">{report.message}</p>}
+                    text={<p className="truncate text-[13px] leading-[1.4] text-[var(--adaptive-black900)]">{getIssueSummary(report)}</p>}
                     trailing={
                         hovered ? (
                             <div

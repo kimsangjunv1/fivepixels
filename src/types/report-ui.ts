@@ -1,4 +1,4 @@
-import type { ReportFeedback, ReportFieldValues, ReportStatus, ReportTargetType } from "./report.js";
+import type { ReportCase, ReportFeedback, ReportFieldValues, ReportStatus, ReportTargetType } from "./report.js";
 import type { RouteDetailStatus } from "@/utils/routeDetailStatus.js";
 
 export type ReportMode = "idle" | "report" | "view";
@@ -33,7 +33,7 @@ export type DraftReport = {
     documentY: number;
     reportId: string;
     reportType: ReportTargetType;
-    message: string;
+    cases: ReportCase[];
     fieldValues: ReportFieldValues;
 };
 
@@ -72,7 +72,7 @@ export type MarkerOverflowHint = {
 };
 
 export type EditableDraft = {
-    message: string;
+    cases: ReportCase[];
     status: ReportStatus;
     fieldValues: ReportFieldValues;
 };

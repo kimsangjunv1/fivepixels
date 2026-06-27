@@ -3,6 +3,15 @@ export type ReportStatus = "open" | "git_issued" | "resolved" | "archived";
 export type ReportAppearance = "light" | "dark" | "system";
 export declare const REPORT_STATUS_FLOW: readonly ["open", "git_issued", "resolved", "archived"];
 export declare const REPORT_STATUS_TRANSITIONS: Record<ReportStatus, ReportStatus[]>;
+export type ReportCaseStatus = "open" | "resolved";
+export type ReportCase = {
+    id: string;
+    text: string;
+    status: ReportCaseStatus;
+    assignee_name?: string | null;
+    created_at: string;
+    updated_at: string;
+};
 export type ReportFieldType = "textarea" | "checkbox";
 export type ReportFieldBase = {
     key: string;
@@ -23,15 +32,17 @@ export type ReportReply = {
     message: string;
     created_at: string;
     status: ReportReplyStatus;
+    case_ids: string[];
     parent_reply_id?: string | null;
     author_type?: "user" | "manager" | "system";
     author_name?: string | null;
     auth?: ReportAuthProof;
 };
-export type ReportReplySummary = Pick<ReportReply, "id" | "message" | "created_at" | "status" | "author_type" | "author_name">;
+export type ReportReplySummary = Pick<ReportReply, "id" | "message" | "created_at" | "status" | "author_type" | "author_name" | "case_ids">;
 export type CreateReplyPayload = {
     message: string;
     status: ReportReplyStatus;
+    case_ids?: string[];
     parent_reply_id?: string | null;
     author_type: NonNullable<ReportReply["author_type"]>;
     author_name?: string | null;
@@ -124,7 +135,7 @@ export type ReportFeedback = {
     pathname: string;
     report_id: string;
     report_type: ReportTargetType;
-    message: string;
+    cases: ReportCase[];
     status: ReportStatus;
     field_values: ReportFieldValues;
     replies?: ReportReply[];
@@ -142,7 +153,7 @@ export type ReportFeedback = {
 export type CreateReportFeedbackPayload = Omit<ReportFeedback, "id" | "created_at" | "replies"> & {
     replies?: ReportReply[];
 };
-export type UpdateReportFeedbackPayload = Partial<Pick<ReportFeedback, "message" | "status" | "field_values" | "replies" | "report_id" | "report_type" | "integrations" | "auth">>;
+export type UpdateReportFeedbackPayload = Partial<Pick<ReportFeedback, "cases" | "status" | "field_values" | "replies" | "report_id" | "report_type" | "integrations" | "auth">>;
 export type ReportListAllParams = {
     cursor?: string;
     limit: number;

@@ -10,6 +10,8 @@ export type {
     ReportAuthAction,
     ReportAuthProof,
     ReportEvent,
+    ReportCase,
+    ReportCaseStatus,
     ReportFeedback,
     ReportField,
     ReportFieldBase,
@@ -42,6 +44,19 @@ export type {
     SerializedReportReply,
     UpdateReportFeedbackPayload,
 } from "@/types/report.js";
+export {
+    allCasesResolved,
+    applyCaseStatusSync,
+    createCaseId,
+    createReportCase,
+    getIssueProgressLabel,
+    getIssueSummary,
+    getOpenCases,
+    getReportCases,
+    getResolvedCaseCount,
+    resolveCases,
+    syncIssueStatusFromCases,
+} from "@/utils/reportCases.js";
 export {
     createReportAuthMessage,
     parsePublicKey,

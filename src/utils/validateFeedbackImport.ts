@@ -1,4 +1,5 @@
 import type {
+    ReportCase,
     ReportFeedback,
     ReportFieldValues,
     ReportIntegrations,
@@ -10,9 +11,10 @@ import type {
     ReportStatus,
     ReportTargetType,
 } from "@/types/report.js";
+import { normalizeReportCase, normalizeReplyCaseIds } from "@/utils/reportCases.js";
 import { getActiveReportMessages } from "@/i18n/index.js";
 
-const STRING_FIELDS = ["id", "pathname", "report_id", "message", "created_at"] as const;
+const STRING_FIELDS = ["id", "pathname", "report_id", "created_at"] as const;
 const OPTIONAL_STRING_FIELDS = ["environment", "app_version", "author_id", "author_name"] as const;
 const REPORT_TYPES = new Set<ReportTargetType>(["group", "item"]);
 const REPORT_STATUSES = new Set<ReportStatus>(["open", "git_issued", "resolved", "archived"]);
@@ -184,6 +186,7 @@ function validateReply(value: unknown, index: number, replyIndex: number): Repor
         message: reply.message,
         created_at: reply.created_at,
         status: (reply.status as ReportReply["status"] | undefined) ?? "suggested",
+        case_ids: normalizeReplyCaseIds(reply.case_ids),
         ...(typeof parentReplyId === "string" ? { parent_reply_id: parentReplyId } : {}),
         author_type: reply.author_type as ReportReply["author_type"],
         author_name: authorName === null || typeof authorName === "string" ? authorName : undefined,
@@ -245,6 +248,30 @@ function validateReplies(value: unknown, index: number): ReportReply[] {
     return value.map((reply, replyIndex) => validateReply(reply, index, replyIndex));
 }
 
+export function validateCases(value: unknown, index: number, createdAt: string): ReportCase[] {
+    const validation = getActiveReportMessages().importValidation;
+
+    if (!Array.isArray(value) || value.length === 0) {
+        throw importError(index, validation.casesRequired);
+    }
+
+    const cases = value.flatMap((item, caseIndex) => {
+        const normalized = normalizeReportCase(item, createdAt);
+
+        if (!normalized) {
+            throw importError(index, validation.caseInvalid(caseIndex));
+        }
+
+        if (!normalized.text.trim()) {
+            throw importError(index, validation.caseTextRequired(caseIndex));
+        }
+
+        return [normalized];
+    });
+
+    return cases;
+}
+
 export function validateFeedbackRecord(item: unknown, index: number): ReportFeedback {
     const validation = getActiveReportMessages().importValidation;
 
@@ -283,7 +310,7 @@ export function validateFeedbackRecord(item: unknown, index: number): ReportFeed
         pathname: record.pathname as string,
         report_id: record.report_id as string,
         report_type: record.report_type as ReportTargetType,
-        message: record.message as string,
+        cases: validateCases(record.cases, index, record.created_at as string),
         status: record.status as ReportStatus,
         field_values: validateFieldValues(record.field_values, index),
         replies: validateReplies(record.replies, index),

@@ -251,6 +251,9 @@ export type ReportMessages = {
         githubIssueNumberInvalid: string;
         githubIssueUrlInvalid: string;
         githubIssuedAtInvalid: string;
+        casesRequired: string;
+        caseInvalid: (caseIndex: number) => string;
+        caseTextRequired: (caseIndex: number) => string;
     };
     errors: {
         feedbackNotFound: string;
@@ -291,6 +294,8 @@ export type ReportMessages = {
         importInvalidFormat: (index: number, detail: string) => string;
         fieldRequiredInput: (label: string) => string;
         fieldRequiredConfirm: (label: string) => string;
+        casesRequired: string;
+        caseTextRequired: (index: number) => string;
         personalKeyRequired: string;
     };
 };

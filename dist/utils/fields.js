@@ -1,3 +1,4 @@
+import { validateCasesForSubmit } from "../utils/reportCases.js";
 export function createInitialFieldValues(fields, source) {
     return fields.reduce((acc, field) => {
         if (field.key === "message") {
@@ -11,13 +12,17 @@ export function createInitialFieldValues(fields, source) {
         return acc;
     }, {});
 }
-export function getFieldError(message, fieldValues, fields, fieldErrors) {
+export function getFieldError(cases, fieldValues, fields, fieldErrors) {
+    const caseError = validateCasesForSubmit(cases, {
+        casesRequired: fieldErrors.casesRequired,
+        caseTextRequired: fieldErrors.caseTextRequired,
+    });
+    if (caseError) {
+        return caseError;
+    }
     for (const field of fields) {
         if (!field.required) {
             continue;
-        }
-        if (field.key === "message" && !message.trim()) {
-            return fieldErrors.fieldRequiredInput(field.label);
         }
         if (field.type === "checkbox" && fieldValues[field.key] !== true) {
             return fieldErrors.fieldRequiredConfirm(field.label);

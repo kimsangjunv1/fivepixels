@@ -1,6 +1,7 @@
 import type { ReportFeedback } from "@/types/report.js";
 import type { ReportLocale } from "@/i18n/types.js";
 import { formatDate } from "@/utils/format.js";
+import { getIssueSummary } from "@/utils/reportCases.js";
 import { FeedbackCreatorBadge } from "./FeedbackCreatorBadge.js";
 
 type FeedbackIssuePinnedHeaderProps = {
@@ -18,7 +19,7 @@ export function FeedbackIssuePinnedHeader({ report, locale }: FeedbackIssuePinne
                         <FeedbackCreatorBadge />
                     </div>
                 ) : null}
-                <p className="min-w-0 flex-1 truncate text-[12px] text-[var(--adaptive-black600)]">{report.message}</p>
+                <p className="min-w-0 flex-1 truncate text-[12px] text-[var(--adaptive-black600)]">{getIssueSummary(report)}</p>
                 <span className="shrink-0 text-[11px] tabular-nums text-[var(--adaptive-black500)]">{formatDate(report.created_at, locale)}</span>
             </div>
         </section>

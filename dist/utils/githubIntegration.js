@@ -33,6 +33,7 @@ export function createGitIssuedReply(message) {
         message,
         created_at: new Date().toISOString(),
         status: "suggested",
+        case_ids: [],
         author_type: "system",
     };
 }

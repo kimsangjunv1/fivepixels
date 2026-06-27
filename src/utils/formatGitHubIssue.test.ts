@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createReportFeedback } from "./reportFixtures.js";
+import { createReportCase, createReportFeedback } from "./reportFixtures.js";
 import { formatFeedbackAsGitHubIssueBody } from "./formatGitHubIssue.js";
 
 const baseFeedback = createReportFeedback({
@@ -7,14 +7,15 @@ const baseFeedback = createReportFeedback({
     pathname: "/pricing",
     report_id: "price-card",
     report_type: "item",
-    message: "가격 카드가 모바일에서 잘림",
-    field_values: { message: "가격 카드가 모바일에서 잘림", isBug: true },
+    cases: [createReportCase("가격 카드가 모바일에서 잘림")],
+    field_values: { isBug: true },
     replies: [
         {
             id: "r1",
             message: "재현 확인 | 테스트",
             created_at: "2026-06-07T10:00:00.000Z",
             status: "suggested",
+            case_ids: ["case-1"],
             author_name: "PM",
         },
     ],
@@ -31,13 +32,12 @@ const baseFeedback = createReportFeedback({
 });
 
 describe("formatFeedbackAsGitHubIssueBody", () => {
-    it("includes summary, context table, thread table, and feedback id", () => {
+    it("includes cases, context table, thread table, and feedback id", () => {
         const body = formatFeedbackAsGitHubIssueBody(baseFeedback, [
-            { key: "message", type: "textarea", label: "Message" },
             { key: "isBug", type: "checkbox", label: "bug" },
         ]);
 
-        expect(body).toContain("## Summary");
+        expect(body).toContain("## Cases");
         expect(body).toContain("가격 카드가 모바일에서 잘림");
         expect(body).toContain("| Path | /pricing |");
         expect(body).toContain("| Author | 디자이너 |");
@@ -53,6 +53,6 @@ describe("formatFeedbackAsGitHubIssueBody", () => {
             replies: [],
         });
 
-        expect(body).toContain("| - | - | - | (no replies yet) |");
+        expect(body).toContain("| - | - | - | - | (no replies yet) |");
     });
 });

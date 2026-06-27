@@ -13,6 +13,7 @@ import type {
     UpdateReportFeedbackPayload,
 } from "@/types/report.js";
 import type { ReportFilters, ReportListScope } from "@/types/report-ui.js";
+import { casesToSearchText } from "@/utils/reportCases.js";
 import { getRouteDetailStatus, isCreatedToday } from "@/utils/routeDetailStatus.js";
 import { getFeedbackDisplayStatus } from "@/utils/feedbackThread.js";
 import { FEEDBACK_DISPLAY_STATUS_ORDER } from "@/constants/feedbackStatus.js";
@@ -49,7 +50,7 @@ function filterReports(reports: ReportFeedback[], filters: ReportFilters) {
         }
 
         const keyword = filters.keyword.trim().toLowerCase();
-        return [report.message, report.report_id, report.status, report.pathname].join(" ").toLowerCase().includes(keyword);
+        return [casesToSearchText(report.cases), report.report_id, report.status, report.pathname].join(" ").toLowerCase().includes(keyword);
     });
 }
 

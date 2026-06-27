@@ -108,7 +108,7 @@ function ReportDraftFormContent({
                 }}
             >
                 <FeedbackComposer
-                    message={draft.message}
+                    message={draft.cases[0]?.text ?? ""}
                     onMessageChange={updateDraftMessage}
                     authorName={draftAuthorName}
                     onAuthorNameChange={setDraftAuthorName}

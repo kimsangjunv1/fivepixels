@@ -16,6 +16,11 @@ import type {
 import { DEFAULT_PROJECT_ID } from "@/constants/project.js";
 import { getReportsStorageKey } from "@/constants/storageKeys.js";
 import { parseFeedbackStorageEnvelope, serializeFeedbackStorageEnvelope } from "@/utils/feedbackTransferSchema.js";
+import {
+    applyCaseStatusSync,
+    normalizeFeedbackCases,
+    normalizeReplyCaseIds,
+} from "@/utils/reportCases.js";
 
 export type LocalStorageReportAdapterOptions = {
     projectId: string;
@@ -83,6 +88,7 @@ function normalizeReplies(value: unknown): ReportReply[] {
                 message: reply.message,
                 created_at: reply.created_at,
                 status: normalizeReplyStatus(reply.status),
+                case_ids: normalizeReplyCaseIds(reply.case_ids),
                 parent_reply_id: typeof reply.parent_reply_id === "string" ? reply.parent_reply_id : null,
                 author_type: reply.author_type,
                 author_name: reply.author_name ?? null,
@@ -131,14 +137,17 @@ function normalizeIntegrations(value: unknown): ReportIntegrations | undefined {
     return { github };
 }
 
-function normalizeReport(item: ReportFeedback): ReportFeedback {
-    return {
+function normalizeReport(item: ReportFeedback & { message?: string }): ReportFeedback {
+    const cases = normalizeFeedbackCases(item);
+
+    return applyCaseStatusSync({
         ...item,
+        cases,
         status: isReportStatus(item.status) ? item.status : "open",
         field_values: normalizeFieldValues(item.field_values),
         replies: normalizeReplies(item.replies),
         integrations: normalizeIntegrations(item.integrations),
-    };
+    });
 }
 
 export function readAllReportsFromStorage(storageKey: string) {
@@ -247,6 +256,7 @@ export function createLocalStorageReportAdapter({ projectId, environment, appVer
                 message: payload.message,
                 created_at: new Date().toISOString(),
                 status: normalizeReplyStatus(payload.status),
+                case_ids: normalizeReplyCaseIds(payload.case_ids),
                 parent_reply_id: typeof payload.parent_reply_id === "string" ? payload.parent_reply_id : null,
                 author_type: payload.author_type,
                 author_name: payload.author_name ?? null,
