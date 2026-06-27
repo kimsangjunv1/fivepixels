@@ -144,6 +144,93 @@ export function canEditReportCases(report) {
 export function getOpenCaseIds(report) {
     return getOpenCases(report).map((item) => item.id);
 }
+export function getCaseById(report, caseId) {
+    return getReportCases(report).find((item) => item.id === caseId);
+}
+export function replyBelongsToCase(reply, caseId, report) {
+    const caseIds = reply.case_ids ?? [];
+    if (caseIds.length === 0) {
+        const cases = report ? getReportCases(report) : [];
+        return cases.length === 1 && cases[0]?.id === caseId;
+    }
+    return caseIds.includes(caseId);
+}
+export function getRepliesForCase(report, caseId) {
+    return (report.replies ?? []).filter((reply) => replyBelongsToCase(reply, caseId, report));
+}
+export function getCaseAssigneeName(report, caseId) {
+    const assignee = getCaseById(report, caseId)?.assignee_name?.trim();
+    return assignee || null;
+}
+export function getLatestReplyAuthorForCase(report, caseId) {
+    const replies = getRepliesForCase(report, caseId);
+    for (let index = replies.length - 1; index >= 0; index -= 1) {
+        const reply = replies[index];
+        if (reply.author_type === "system") {
+            continue;
+        }
+        const authorName = reply.author_name?.trim();
+        if (authorName) {
+            return authorName;
+        }
+    }
+    return null;
+}
+export function getCaseHandlerName(report, caseId) {
+    return getCaseAssigneeName(report, caseId) ?? getLatestReplyAuthorForCase(report, caseId);
+}
+export function hasCaseDiscussion(report, caseId) {
+    return getRepliesForCase(report, caseId).length > 0;
+}
+export function isCaseInProgress(report, caseId) {
+    const caseItem = getCaseById(report, caseId);
+    if (!caseItem || caseItem.status !== "open") {
+        return false;
+    }
+    return Boolean(getCaseAssigneeName(report, caseId));
+}
+export function canActOnCase(report, caseId, actorName) {
+    const actor = actorName.trim();
+    if (!actor) {
+        return false;
+    }
+    const qaName = report.author_name?.trim() ?? "";
+    if (qaName && actor === qaName) {
+        return true;
+    }
+    const assignee = getCaseAssigneeName(report, caseId);
+    if (!assignee) {
+        return true;
+    }
+    return actor === assignee;
+}
+export function claimCaseAssignee(cases, caseId, assigneeName, claimedAt = new Date().toISOString()) {
+    const normalizedName = assigneeName.trim();
+    if (!normalizedName) {
+        return cases;
+    }
+    return cases.map((item) => {
+        if (item.id !== caseId || item.assignee_name?.trim()) {
+            return item;
+        }
+        return {
+            ...item,
+            assignee_name: normalizedName,
+            updated_at: claimedAt,
+        };
+    });
+}
+export function resolveDefaultFocusedCaseId(report) {
+    const cases = getReportCases(report);
+    const firstOpenCase = cases.find((item) => item.status === "open");
+    return firstOpenCase?.id ?? cases[0]?.id ?? null;
+}
+export function isValidFocusedCase(report, caseId) {
+    if (!caseId) {
+        return false;
+    }
+    return getReportCases(report).some((item) => item.id === caseId);
+}
 export function isValidCaseSelection(report, selectedCaseIds) {
     if (selectedCaseIds.length === 0) {
         return false;

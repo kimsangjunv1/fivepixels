@@ -11,7 +11,7 @@ import { getMarkerColor, getMarkerDisplayLabel } from "@/utils/reportVisual.js";
 import { FeedbackComposer } from "@/components/panel/feedback/FeedbackComposer.js";
 import { FeedbackHoverCard } from "@/components/panel/feedback/FeedbackHoverCard.js";
 import { FeedbackIssuePinnedHeader } from "@/components/panel/feedback/FeedbackIssuePinnedHeader.js";
-import { buildConfirmAuthorOptions, getReplyCount, shouldShowReplyComposer } from "@/utils/feedbackThread.js";
+import { buildConfirmAuthorOptions, getReplyCount, shouldShowCaseReplyComposer } from "@/utils/feedbackThread.js";
 import { FeedbackThread } from "@/components/panel/feedback/FeedbackThread.js";
 
 const TOOLTIP_SURFACE_CLASS = "overflow-hidden rounded-[12px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] shadow-[var(--adaptive-popup-shadow)]";
@@ -205,6 +205,7 @@ export function ReportMarkersLayer() {
         showConfirmAuthorSelect,
         toggleConfirmAuthorSelect,
         handleConfirmResolution,
+        focusedCaseId,
     } = useReport();
 
     const handleMarkerHoverStart = useCallback(
@@ -248,12 +249,12 @@ export function ReportMarkersLayer() {
     });
 
     const showComposer = useMemo(() => {
-        if (!activeReplyReport) {
+        if (!activeReplyReport || !focusedCaseId) {
             return false;
         }
 
-        return shouldShowReplyComposer(activeReplyReport, pendingComposer);
-    }, [activeReplyReport, pendingComposer]);
+        return shouldShowCaseReplyComposer(activeReplyReport, focusedCaseId, pendingComposer);
+    }, [activeReplyReport, focusedCaseId, pendingComposer]);
 
     const isCreatorQuestionComposer = pendingComposer?.type === "question";
     const composerAuthors = useMemo(() => {

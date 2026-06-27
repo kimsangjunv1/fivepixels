@@ -1,13 +1,14 @@
-import type { ReportCase } from "../../../types/report.js";
+import type { ReportCase, ReportFeedback } from "../../../types/report.js";
 type FeedbackCaseListProps = {
+    report: Pick<ReportFeedback, "cases" | "replies" | "author_name">;
     cases: ReportCase[];
     isEditing?: boolean;
     canEdit?: boolean;
     isSaving?: boolean;
     errorMessage?: string;
     selectable?: boolean;
-    selectedCaseIds?: string[];
-    onToggleCaseSelection?: (caseId: string) => void;
+    focusedCaseId?: string | null;
+    onSelectCase?: (caseId: string) => void;
     onBeginEdit?: () => void;
     onCancelEdit?: () => void;
     onSaveEdit?: () => void;
@@ -15,6 +16,6 @@ type FeedbackCaseListProps = {
     onAddCase?: () => void;
     onRemoveCase?: (caseId: string) => void;
 };
-export declare function FeedbackCaseList({ cases, isEditing, canEdit, isSaving, errorMessage, selectable, selectedCaseIds, onToggleCaseSelection, onBeginEdit, onCancelEdit, onSaveEdit, onCaseChange, onAddCase, onRemoveCase, }: FeedbackCaseListProps): import("react/jsx-runtime").JSX.Element;
+export declare function FeedbackCaseList({ report, cases, isEditing, canEdit, isSaving, errorMessage, selectable, focusedCaseId, onSelectCase, onBeginEdit, onCancelEdit, onSaveEdit, onCaseChange, onAddCase, onRemoveCase, }: FeedbackCaseListProps): import("react/jsx-runtime").JSX.Element;
 export {};
 //# sourceMappingURL=FeedbackCaseList.d.ts.map

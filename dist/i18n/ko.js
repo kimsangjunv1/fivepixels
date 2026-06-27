@@ -103,6 +103,9 @@ export const ko = {
         open: "진행 중",
         resolved: "해결됨",
         selectForDiscussion: "논의할 케이스를 선택하세요",
+        selectToView: "케이스를 선택하면 해당 스레드가 표시됩니다",
+        unassigned: "미배정",
+        assignee: "담당",
         summaryMore: (count) => `외 ${count}건`,
         progressResolved: (resolved, total) => `진행: ${resolved}/${total} 해결`,
     },
@@ -324,6 +327,8 @@ export const ko = {
         casesRequired: "케이스를 1개 이상 입력해주세요.",
         caseTextRequired: (index) => `${index}번째 케이스 내용을 입력해주세요.`,
         caseSelectionRequired: "논의할 케이스를 1개 이상 선택해주세요.",
+        selectCaseFirst: "케이스를 선택해주세요.",
+        caseAssigneeOnly: "이 케이스는 담당자 또는 이슈 작성자만 처리할 수 있습니다.",
         personalKeyRequired: "피드백을 작성하려면 개인 키 설정이 필요합니다.",
     },
 };

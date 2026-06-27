@@ -1,3 +1,4 @@
+import { getRepliesForCase } from "../utils/reportCases.js";
 import { summaryToReply } from "../utils/reportSummary.js";
 export function getReportReplies(report) {
     return report.replies ?? [];
@@ -181,6 +182,54 @@ export function buildThreadTimeline(report) {
         branchMap.set(reply.id, branch);
     }
     return { issueChildren, branches };
+}
+export function buildCaseThreadTimeline(report, caseId) {
+    return buildThreadTimeline({
+        ...report,
+        replies: getRepliesForCase(report, caseId),
+    });
+}
+export function getLatestBranchRootForCase(report, caseId) {
+    return getLatestBranchRoot(getRepliesForCase(report, caseId));
+}
+export function isActiveCaseBranchRoot(report, reply, caseId) {
+    if (report.status !== "open") {
+        return false;
+    }
+    const latestRoot = getLatestBranchRootForCase(report, caseId);
+    return latestRoot?.id === reply.id;
+}
+export function canShowSuggestedBranchActionsForCase(report, reply, caseId) {
+    return reply.status === "suggested" && isActiveCaseBranchRoot(report, reply, caseId);
+}
+export function canShowCheckoutBranchActionsForCase(report, reply, caseId) {
+    return (reply.status === "found_error" || reply.status === "recheck_requested") && isActiveCaseBranchRoot(report, reply, caseId);
+}
+export function canShowCaseEntryActions(report, caseId) {
+    if (report.status !== "open") {
+        return false;
+    }
+    const caseItem = report.cases?.find((item) => item.id === caseId);
+    if (!caseItem || caseItem.status === "resolved") {
+        return false;
+    }
+    return getLatestBranchRootForCase(report, caseId) === null;
+}
+export function shouldShowCaseReplyComposer(report, caseId, pendingComposer) {
+    const caseItem = report.cases?.find((item) => item.id === caseId);
+    if (!caseItem || caseItem.status === "resolved" || report.status === "resolved") {
+        return false;
+    }
+    return shouldShowReplyComposer({
+        ...report,
+        replies: getRepliesForCase(report, caseId),
+    }, pendingComposer);
+}
+export function resolveParentReplyIdForCaseQuestion(report, caseId, pendingComposer) {
+    return resolveParentReplyIdForQuestion({
+        ...report,
+        replies: getRepliesForCase(report, caseId),
+    }, pendingComposer);
 }
 /** @deprecated Use buildThreadTimeline instead. */
 export function groupRepliesIntoBranches(replies) {

@@ -1,4 +1,4 @@
-import type { ReportCase, ReportCaseStatus, ReportFeedback, ReportStatus } from "@/types/report.js";
+import type { ReportCase, ReportCaseStatus, ReportFeedback, ReportReply, ReportStatus } from "@/types/report.js";
 
 export function createCaseId() {
     if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
@@ -198,6 +198,127 @@ export function canEditReportCases(report: Pick<ReportFeedback, "status">): bool
 
 export function getOpenCaseIds(report: Pick<ReportFeedback, "cases">): string[] {
     return getOpenCases(report).map((item) => item.id);
+}
+
+export function getCaseById(report: Pick<ReportFeedback, "cases">, caseId: string): ReportCase | undefined {
+    return getReportCases(report).find((item) => item.id === caseId);
+}
+
+export function replyBelongsToCase(reply: ReportReply, caseId: string, report?: Pick<ReportFeedback, "cases">): boolean {
+    const caseIds = reply.case_ids ?? [];
+
+    if (caseIds.length === 0) {
+        const cases = report ? getReportCases(report) : [];
+
+        return cases.length === 1 && cases[0]?.id === caseId;
+    }
+
+    return caseIds.includes(caseId);
+}
+
+export function getRepliesForCase(report: Pick<ReportFeedback, "cases" | "replies">, caseId: string): ReportReply[] {
+    return (report.replies ?? []).filter((reply) => replyBelongsToCase(reply, caseId, report));
+}
+
+export function getCaseAssigneeName(report: Pick<ReportFeedback, "cases">, caseId: string): string | null {
+    const assignee = getCaseById(report, caseId)?.assignee_name?.trim();
+
+    return assignee || null;
+}
+
+export function getLatestReplyAuthorForCase(report: Pick<ReportFeedback, "cases" | "replies">, caseId: string): string | null {
+    const replies = getRepliesForCase(report, caseId);
+
+    for (let index = replies.length - 1; index >= 0; index -= 1) {
+        const reply = replies[index];
+
+        if (reply.author_type === "system") {
+            continue;
+        }
+
+        const authorName = reply.author_name?.trim();
+
+        if (authorName) {
+            return authorName;
+        }
+    }
+
+    return null;
+}
+
+export function getCaseHandlerName(report: Pick<ReportFeedback, "cases" | "replies" | "author_name">, caseId: string): string | null {
+    return getCaseAssigneeName(report, caseId) ?? getLatestReplyAuthorForCase(report, caseId);
+}
+
+export function hasCaseDiscussion(report: Pick<ReportFeedback, "cases" | "replies">, caseId: string): boolean {
+    return getRepliesForCase(report, caseId).length > 0;
+}
+
+export function isCaseInProgress(report: Pick<ReportFeedback, "cases" | "replies" | "status">, caseId: string): boolean {
+    const caseItem = getCaseById(report, caseId);
+
+    if (!caseItem || caseItem.status !== "open") {
+        return false;
+    }
+
+    return Boolean(getCaseAssigneeName(report, caseId));
+}
+
+export function canActOnCase(report: Pick<ReportFeedback, "cases" | "author_name">, caseId: string, actorName: string): boolean {
+    const actor = actorName.trim();
+
+    if (!actor) {
+        return false;
+    }
+
+    const qaName = report.author_name?.trim() ?? "";
+
+    if (qaName && actor === qaName) {
+        return true;
+    }
+
+    const assignee = getCaseAssigneeName(report, caseId);
+
+    if (!assignee) {
+        return true;
+    }
+
+    return actor === assignee;
+}
+
+export function claimCaseAssignee(cases: ReportCase[], caseId: string, assigneeName: string, claimedAt = new Date().toISOString()): ReportCase[] {
+    const normalizedName = assigneeName.trim();
+
+    if (!normalizedName) {
+        return cases;
+    }
+
+    return cases.map((item) => {
+        if (item.id !== caseId || item.assignee_name?.trim()) {
+            return item;
+        }
+
+        return {
+            ...item,
+            assignee_name: normalizedName,
+            updated_at: claimedAt,
+        };
+    });
+}
+
+export function resolveDefaultFocusedCaseId(report: Pick<ReportFeedback, "cases">): string | null {
+    const cases = getReportCases(report);
+    const firstOpenCase = cases.find((item) => item.status === "open");
+
+    return firstOpenCase?.id ?? cases[0]?.id ?? null;
+}
+
+export function isValidFocusedCase(report: Pick<ReportFeedback, "cases">, caseId: string | null): boolean {
+    if (!caseId) {
+        return false;
+    }
+
+    return getReportCases(report).some((item) => item.id === caseId);
 }
 
 export function isValidCaseSelection(report: Pick<ReportFeedback, "cases">, selectedCaseIds: string[]): boolean {

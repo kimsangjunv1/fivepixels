@@ -1,17 +1,18 @@
-import type { ReportCase } from "@/types/report.js";
+import type { ReportCase, ReportFeedback } from "@/types/report.js";
 import { useReport } from "@/providers/reportContext.js";
-import { getIssueProgressLabel } from "@/utils/reportCases.js";
+import { getCaseHandlerName, getIssueProgressLabel } from "@/utils/reportCases.js";
 import { FeedbackCaseEditor } from "./FeedbackCaseEditor.js";
 
 type FeedbackCaseListProps = {
+    report: Pick<ReportFeedback, "cases" | "replies" | "author_name">;
     cases: ReportCase[];
     isEditing?: boolean;
     canEdit?: boolean;
     isSaving?: boolean;
     errorMessage?: string;
     selectable?: boolean;
-    selectedCaseIds?: string[];
-    onToggleCaseSelection?: (caseId: string) => void;
+    focusedCaseId?: string | null;
+    onSelectCase?: (caseId: string) => void;
     onBeginEdit?: () => void;
     onCancelEdit?: () => void;
     onSaveEdit?: () => void;
@@ -21,14 +22,15 @@ type FeedbackCaseListProps = {
 };
 
 export function FeedbackCaseList({
+    report,
     cases,
     isEditing = false,
     canEdit = false,
     isSaving = false,
     errorMessage = "",
     selectable = false,
-    selectedCaseIds = [],
-    onToggleCaseSelection,
+    focusedCaseId = null,
+    onSelectCase,
     onBeginEdit,
     onCancelEdit,
     onSaveEdit,
@@ -101,24 +103,26 @@ export function FeedbackCaseList({
                 ) : null}
             </div>
             {selectable && hasOpenCases ? (
-                <p className="px-[8px] text-[11px] text-[var(--adaptive-black500)]">{messages.cases.selectForDiscussion}</p>
+                <p className="px-[8px] text-[11px] text-[var(--adaptive-black500)]">{messages.cases.selectToView}</p>
             ) : null}
             <ul className="flex flex-col gap-[6px] px-[8px]">
                 {cases.map((item, index) => {
                     const isOpen = item.status === "open";
-                    const isSelected = selectedCaseIds.includes(item.id);
+                    const isSelected = focusedCaseId === item.id;
+                    const handlerName = getCaseHandlerName(report, item.id);
 
                     return (
                         <li
                             key={item.id}
-                            className={`flex items-start gap-[6px] text-[14px] leading-[1.5] text-[var(--adaptive-text-primary)] ${selectable && isOpen && isSelected ? "rounded-[8px] bg-[var(--adaptive-blue100)]/60 px-[4px] py-[2px]" : ""}`}
+                            className={`flex items-start gap-[6px] text-[14px] leading-[1.5] text-[var(--adaptive-text-primary)] ${selectable && isSelected ? "rounded-[8px] bg-[var(--adaptive-blue100)]/60 px-[4px] py-[2px]" : ""}`}
                         >
-                            {selectable && isOpen ? (
+                            {selectable ? (
                                 <input
-                                    type="checkbox"
+                                    type="radio"
+                                    name="focused-case"
                                     data-fivepixels-interactive=""
                                     checked={isSelected}
-                                    onChange={() => onToggleCaseSelection?.(item.id)}
+                                    onChange={() => onSelectCase?.(item.id)}
                                     aria-label={item.text}
                                     className="mt-[6px] h-[14px] w-[14px] shrink-0 accent-[var(--adaptive-blue500)]"
                                 />
@@ -136,7 +140,14 @@ export function FeedbackCaseList({
                             >
                                 {item.status === "resolved" ? "✓" : ""}
                             </span>
-                            <span className={item.status === "resolved" ? "text-[var(--adaptive-black600)] line-through" : undefined}>{item.text}</span>
+                            <div className="min-w-0 flex-1">
+                                <span className={item.status === "resolved" ? "text-[var(--adaptive-black600)] line-through" : undefined}>{item.text}</span>
+                                {isOpen ? (
+                                    <p className="mt-[2px] text-[11px] text-[var(--adaptive-black500)]">
+                                        {messages.cases.assignee}: {handlerName ?? messages.cases.unassigned}
+                                    </p>
+                                ) : null}
+                            </div>
                         </li>
                     );
                 })}

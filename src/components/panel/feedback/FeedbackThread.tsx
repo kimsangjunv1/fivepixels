@@ -3,20 +3,20 @@ import type { ReportAuthor, ReportFeedback, ReportReply } from "@/types/report.j
 import type { ReportLocale } from "@/i18n/types.js";
 import { useReport } from "@/providers/reportContext.js";
 import { formatDate } from "@/utils/format.js";
-import { canEditReportCases } from "@/utils/reportCases.js";
+import { canActOnCase, canEditReportCases } from "@/utils/reportCases.js";
 import {
+    buildCaseThreadTimeline,
     buildConfirmAuthorOptions,
     buildThreadTimeline,
-    canShowCheckoutBranchActions,
-    canShowIssueEntryActions,
-    canShowSuggestedBranchActions,
+    canShowCaseEntryActions,
+    canShowCheckoutBranchActionsForCase,
+    canShowSuggestedBranchActionsForCase,
     getReportReplies,
     ISSUE_ROOT_PARENT_ID,
     resolveOriginalFeedbackAuthorName,
 } from "@/utils/feedbackThread.js";
 import { getGitHubIssueUrl, isGitIssuedSystemReply } from "@/utils/githubIntegration.js";
 import { AuthorSelector } from "./AuthorSelector.js";
-import { FeedbackCaseChips } from "./FeedbackCaseChips.js";
 import { FeedbackCaseList } from "./FeedbackCaseList.js";
 import { FeedbackCreatorBadge } from "./FeedbackCreatorBadge.js";
 import { FeedbackStatusBadge } from "./FeedbackStatusBadge.js";
@@ -59,9 +59,16 @@ function getScrollOverflowState(element: HTMLElement): ScrollOverflowState {
 
 const SCROLL_HINT_CLASS = "pointer-events-none absolute left-0 right-0 z-10 px-[16px] py-[12px] text-center text-[12px] text-[var(--adaptive-black600)]";
 
+function canShowCaseThreadActions(report: ReportFeedback, caseId: string, replyAuthorName: string, confirmAuthorName: string) {
+    const actorCandidates = [replyAuthorName.trim(), confirmAuthorName.trim(), resolveOriginalFeedbackAuthorName(report)].filter(Boolean);
+
+    return actorCandidates.some((actorName) => canActOnCase(report, caseId, actorName));
+}
+
 function ThreadEntryActions({
     reply,
     report,
+    caseId,
     authors,
     pendingComposer,
     confirmAuthorName,
@@ -72,9 +79,11 @@ function ThreadEntryActions({
     onStartAskQuestion,
     onConfirm,
     isUpdating,
+    canAct,
 }: {
     reply: ReportReply;
     report: ReportFeedback;
+    caseId: string;
     authors: ReportAuthor[];
     pendingComposer: PendingComposer;
     confirmAuthorName: string;
@@ -85,12 +94,13 @@ function ThreadEntryActions({
     onStartAskQuestion: () => void;
     onConfirm: () => void;
     isUpdating?: boolean;
+    canAct: boolean;
 }) {
     const { messages } = useReport();
     const [isResolvedConfirming, setIsResolvedConfirming] = useState(false);
     const confirmAuthorOptions = useMemo(() => buildConfirmAuthorOptions(report, authors), [authors, report]);
-    const showReview = canShowSuggestedBranchActions(report, reply);
-    const showCheckout = canShowCheckoutBranchActions(report, reply);
+    const showReview = canShowSuggestedBranchActionsForCase(report, reply, caseId);
+    const showCheckout = canShowCheckoutBranchActionsForCase(report, reply, caseId);
     const denyActive = (pendingComposer?.type === "deny" || pendingComposer?.type === "recheck") && pendingComposer.targetReplyId === reply.id;
     const checkoutActive = pendingComposer?.type === "checkout" && pendingComposer.targetReplyId === reply.id;
     const askQuestionActive = pendingComposer?.type === "question" && pendingComposer.targetReplyId === reply.id;
@@ -106,7 +116,7 @@ function ThreadEntryActions({
     }, [isResolvedConfirming]);
 
     const handleResolvedClick = () => {
-        if (isUpdating) {
+        if (isUpdating || !canAct) {
             return;
         }
 
@@ -131,7 +141,7 @@ function ThreadEntryActions({
                         <button
                             type="button"
                             data-fivepixels-interactive=""
-                            disabled={isUpdating}
+                            disabled={isUpdating || !canAct}
                             onClick={onStartDeny}
                             className={`rounded-full py-[4px] px-[8px] text-[12px] font-semibold border ${denyActive ? " bg-[#FF2B6A] text-white border-transparent" : " border-[var(--adaptive-border-subtle)] text-[var(--adaptive-text-primary)]"}`}
                         >
@@ -141,7 +151,7 @@ function ThreadEntryActions({
                         <button
                             type="button"
                             data-fivepixels-interactive=""
-                            disabled={isUpdating}
+                            disabled={isUpdating || !canAct}
                             onClick={onStartAskQuestion}
                             className={`rounded-full border py-[4px] px-[8px] text-[12px] font-semibold ${askQuestionActive ? "border-transparent bg-[var(--adaptive-blue500)] text-white" : "border-[var(--adaptive-border-subtle)] text-[var(--adaptive-text-primary)]"}`}
                         >
@@ -151,7 +161,7 @@ function ThreadEntryActions({
                         <button
                             type="button"
                             data-fivepixels-interactive=""
-                            disabled={isUpdating}
+                            disabled={isUpdating || !canAct}
                             onClick={handleResolvedClick}
                             aria-label={isResolvedConfirming ? messages.thread.resolvedConfirmAriaLabel : messages.thread.resolved}
                             className={`flex-1 rounded-full text-[12px] font-semibold text-white ${isResolvedConfirming ? "bg-[#D94A22]" : "bg-[#F6572E]"}`}
@@ -166,7 +176,7 @@ function ThreadEntryActions({
                         <button
                             type="button"
                             data-fivepixels-interactive=""
-                            disabled={isUpdating}
+                            disabled={isUpdating || !canAct}
                             onClick={onStartDeny}
                             className={`rounded-[8px] border py-[4px] px-[8px] text-[12px] font-semibold ${denyActive ? "border-transparent bg-[#FF2B6A] text-white" : "border-[var(--adaptive-border-subtle)] text-[var(--adaptive-text-primary)]"}`}
                         >
@@ -175,7 +185,7 @@ function ThreadEntryActions({
                         <button
                             type="button"
                             data-fivepixels-interactive=""
-                            disabled={isUpdating}
+                            disabled={isUpdating || !canAct}
                             onClick={onStartAskQuestion}
                             className={`rounded-[8px] border py-[4px] px-[8px] text-[12px] font-semibold ${askQuestionActive ? "border-transparent bg-[var(--adaptive-blue500)] text-white" : "border-[var(--adaptive-border-subtle)] text-[var(--adaptive-text-primary)]"}`}
                         >
@@ -184,7 +194,7 @@ function ThreadEntryActions({
                         <button
                             type="button"
                             data-fivepixels-interactive=""
-                            disabled={isUpdating}
+                            disabled={isUpdating || !canAct}
                             onClick={() => onStartCheckout(reply.id)}
                             className={
                                 "flex-1 py-[4px] rounded-[8px] text-[12px] font-semibold " + (checkoutActive ? "bg-[#F6572E] text-[var(--adaptive-text-inverse)]" : "bg-[#F6572E20] text-[#F6572E]")
@@ -195,6 +205,8 @@ function ThreadEntryActions({
                     </>
                 ) : null}
             </div>
+
+            {!canAct ? <p className="text-[11px] text-[var(--adaptive-black500)]">{messages.errors.caseAssigneeOnly}</p> : null}
 
             {showReview && showConfirmAuthorSelect ? (
                 <AuthorSelector
@@ -207,15 +219,13 @@ function ThreadEntryActions({
     );
 }
 
-function ThreadChildReply({ reply, cases, originalAuthorName, locale, threadReplyPrefix }: { reply: ReportReply; cases: ReportFeedback["cases"]; originalAuthorName: string; locale: ReportLocale; threadReplyPrefix: string }) {
+function ThreadChildReply({ reply, originalAuthorName, locale, threadReplyPrefix }: { reply: ReportReply; originalAuthorName: string; locale: ReportLocale; threadReplyPrefix: string }) {
     return (
         <article className={`flex flex-col gap-[4px] border-t border-[var(--adaptive-border-subtle)] ${threadReplyPrefix ? "py-[8px] pl-[18px]" : "py-[8px] pl-[12px]"}`}>
             <div className="flex items-start justify-between gap-[8px]">
                 <FeedbackStatusBadge status={reply.status} />
                 <span className="text-[12px] text-[var(--adaptive-black500)]">{formatDate(reply.created_at, locale)}</span>
             </div>
-
-            <FeedbackCaseChips cases={cases} caseIds={reply.case_ids ?? []} />
 
             <p className="leading-[1.5] text-[13px] text-[var(--adaptive-text-primary)]">
                 <span className="text-[var(--adaptive-black400)]">{threadReplyPrefix}</span> {reply.message}
@@ -231,22 +241,26 @@ function ThreadChildReply({ reply, cases, originalAuthorName, locale, threadRepl
     );
 }
 
-function ThreadIssueEntryActions({
+function CaseThreadEntryActions({
     report,
+    caseId,
     pendingComposer,
     onStartAskQuestion,
     onStartCheckout,
     isUpdating,
+    canAct,
 }: {
     report: ReportFeedback;
+    caseId: string;
     pendingComposer: PendingComposer;
     onStartAskQuestion: () => void;
     onStartCheckout: (replyId: string) => void;
     isUpdating?: boolean;
+    canAct: boolean;
 }) {
     const { messages } = useReport();
 
-    if (!canShowIssueEntryActions(report)) {
+    if (!canShowCaseEntryActions(report, caseId)) {
         return null;
     }
 
@@ -254,12 +268,12 @@ function ThreadIssueEntryActions({
     const leaveResultActive = pendingComposer?.type === "checkout" && pendingComposer.targetReplyId === ISSUE_ROOT_PARENT_ID;
 
     return (
-        <div className="mt-[10px] flex flex-col gap-[8px]">
+        <div className="mt-[10px] flex flex-col gap-[8px] px-[8px]">
             <div className="flex gap-[8px]">
                 <button
                     type="button"
                     data-fivepixels-interactive=""
-                    disabled={isUpdating}
+                    disabled={isUpdating || !canAct}
                     onClick={onStartAskQuestion}
                     className={`rounded-full border py-[4px] px-[8px] text-[12px] font-semibold ${askQuestionActive ? "border-transparent bg-[var(--adaptive-blue500)] text-white" : "border-[var(--adaptive-border-subtle)] text-[var(--adaptive-text-primary)]"}`}
                 >
@@ -268,106 +282,14 @@ function ThreadIssueEntryActions({
                 <button
                     type="button"
                     data-fivepixels-interactive=""
-                    disabled={isUpdating}
+                    disabled={isUpdating || !canAct}
                     onClick={() => onStartCheckout(ISSUE_ROOT_PARENT_ID)}
                     className={"flex-1 rounded-full py-[4px] text-[12px] font-semibold " + (leaveResultActive ? "bg-[#F6572E] text-white" : "bg-[#F6572E20] text-[#F6572E]")}
                 >
                     {messages.thread.leaveResult}
                 </button>
             </div>
-        </div>
-    );
-}
-
-function ThreadIssueEntry({
-    report,
-    children,
-    locale,
-    originalAuthorName,
-    threadReplyPrefix,
-    pendingComposer,
-    onStartAskQuestion,
-    onStartCheckout,
-    isUpdating,
-}: {
-    report: ReportFeedback;
-    children: ReportReply[];
-    locale: ReportLocale;
-    originalAuthorName: string;
-    threadReplyPrefix: string;
-    pendingComposer: PendingComposer;
-    onStartAskQuestion: () => void;
-    onStartCheckout: (replyId: string) => void;
-    isUpdating?: boolean;
-}) {
-    const {
-        caseEditReportId,
-        caseEditCases,
-        beginCaseEdit,
-        cancelCaseEdit,
-        handleCaseEditSave,
-        updateCaseEditDraftCase,
-        addCaseEditDraftCase,
-        removeCaseEditDraftCase,
-        selectedCaseIds,
-        toggleSelectedCase,
-        errorMessage,
-    } = useReport();
-    const isEditingCases = caseEditReportId === report.id && caseEditCases !== null;
-    const casesForEditor = isEditingCases ? caseEditCases : report.cases;
-    const hasOpenCases = casesForEditor.some((item) => item.status === "open");
-    const caseSelectionEnabled = !isEditingCases && report.status !== "archived" && hasOpenCases;
-
-    return (
-        <div className="flex flex-col">
-            <article className="flex flex-col gap-[4px] border-t border-[var(--adaptive-border-subtle)] p-[8px]">
-                <div className="flex items-start justify-between gap-[8px]">
-                    <FeedbackStatusBadge status="wait_for_reply" />
-                    <span className="text-[12px] text-[var(--adaptive-black500)]">{formatDate(report.created_at, locale)}</span>
-                </div>
-
-                <FeedbackCaseList
-                    cases={casesForEditor}
-                    isEditing={isEditingCases}
-                    canEdit={canEditReportCases(report) && !isEditingCases}
-                    isSaving={isUpdating}
-                    errorMessage={isEditingCases ? errorMessage : ""}
-                    selectable={caseSelectionEnabled}
-                    selectedCaseIds={selectedCaseIds}
-                    onToggleCaseSelection={toggleSelectedCase}
-                    onBeginEdit={() => beginCaseEdit(report)}
-                    onCancelEdit={cancelCaseEdit}
-                    onSaveEdit={() => void handleCaseEditSave()}
-                    onCaseChange={updateCaseEditDraftCase}
-                    onAddCase={addCaseEditDraftCase}
-                    onRemoveCase={removeCaseEditDraftCase}
-                />
-                {report.author_name ? (
-                    <div className="flex items-center gap-[6px] px-[8px]">
-                        <p className="text-[12px] text-[var(--adaptive-black500)]">{report.author_name}</p>
-                        <FeedbackCreatorBadge />
-                    </div>
-                ) : null}
-                {!isEditingCases ? (
-                    <ThreadIssueEntryActions
-                        report={report}
-                        pendingComposer={pendingComposer}
-                        onStartAskQuestion={onStartAskQuestion}
-                        onStartCheckout={onStartCheckout}
-                        isUpdating={isUpdating}
-                    />
-                ) : null}
-            </article>
-            {children.map((child) => (
-                <ThreadChildReply
-                    key={child.id}
-                    reply={child}
-                    cases={report.cases}
-                    originalAuthorName={originalAuthorName}
-                    locale={locale}
-                    threadReplyPrefix={threadReplyPrefix}
-                />
-            ))}
+            {!canAct ? <p className="text-[11px] text-[var(--adaptive-black500)]">{messages.errors.caseAssigneeOnly}</p> : null}
         </div>
     );
 }
@@ -375,6 +297,7 @@ function ThreadIssueEntry({
 function ThreadRootReply({
     reply,
     report,
+    caseId,
     authors,
     pendingComposer,
     confirmAuthorName,
@@ -388,9 +311,11 @@ function ThreadRootReply({
     onStartAskQuestion,
     onConfirm,
     isUpdating,
+    canAct,
 }: {
     reply: ReportReply;
     report: ReportFeedback;
+    caseId: string;
     authors: ReportAuthor[];
     pendingComposer: PendingComposer;
     confirmAuthorName: string;
@@ -404,6 +329,7 @@ function ThreadRootReply({
     onStartAskQuestion: () => void;
     onConfirm: () => void;
     isUpdating?: boolean;
+    canAct: boolean;
 }) {
     if (isGitIssuedSystemReply(reply, report) && issueUrl) {
         return (
@@ -421,8 +347,6 @@ function ThreadRootReply({
                 <span className="text-[12px] text-[var(--adaptive-black500)]">{formatDate(reply.created_at, locale)}</span>
             </div>
 
-            <FeedbackCaseChips cases={report.cases} caseIds={reply.case_ids ?? []} />
-
             <p className="leading-[1.5] text-[14px] text-[var(--adaptive-text-primary)]">{reply.message}</p>
             {reply.author_name ? (
                 <div className="flex items-center gap-[6px]">
@@ -433,6 +357,7 @@ function ThreadRootReply({
             <ThreadEntryActions
                 reply={reply}
                 report={report}
+                caseId={caseId}
                 authors={authors}
                 pendingComposer={pendingComposer}
                 confirmAuthorName={confirmAuthorName}
@@ -443,6 +368,7 @@ function ThreadRootReply({
                 onStartAskQuestion={onStartAskQuestion}
                 onConfirm={onConfirm}
                 isUpdating={isUpdating}
+                canAct={canAct}
             />
         </article>
     );
@@ -462,17 +388,44 @@ export function FeedbackThread({
     onConfirm,
     isUpdating,
 }: FeedbackThreadProps) {
-    const { locale, messages } = useReport();
+    const {
+        locale,
+        messages,
+        caseEditReportId,
+        caseEditCases,
+        beginCaseEdit,
+        cancelCaseEdit,
+        handleCaseEditSave,
+        updateCaseEditDraftCase,
+        addCaseEditDraftCase,
+        removeCaseEditDraftCase,
+        focusedCaseId,
+        selectCase,
+        replyAuthorName,
+        errorMessage,
+    } = useReport();
     const scrollRef = useRef<HTMLElement>(null);
     const [scrollOverflow, setScrollOverflow] = useState<ScrollOverflowState>({
         canScrollUp: false,
         canScrollDown: false,
     });
 
+    const isEditingCases = caseEditReportId === report.id && caseEditCases !== null;
+    const casesForEditor = isEditingCases ? caseEditCases : report.cases;
+    const hasOpenCases = casesForEditor.some((item) => item.status === "open");
+    const caseSelectionEnabled = !isEditingCases && report.status !== "archived" && casesForEditor.length > 0;
     const replies = getReportReplies(report);
-    const timeline = useMemo(() => buildThreadTimeline(report), [report, replies]);
+    const timeline = useMemo(
+        () => (focusedCaseId ? buildCaseThreadTimeline(report, focusedCaseId) : { issueChildren: [], branches: [] }),
+        [focusedCaseId, report, replies],
+    );
     const originalAuthorName = resolveOriginalFeedbackAuthorName(report);
     const issueUrl = getGitHubIssueUrl(report);
+    const canAct = focusedCaseId ? canShowCaseThreadActions(report, focusedCaseId, replyAuthorName, confirmAuthorName) : false;
+    const systemBranches = useMemo(
+        () => buildThreadTimeline(report).branches.filter((branch) => isGitIssuedSystemReply(branch.root, report)),
+        [report, replies],
+    );
 
     const refreshScrollOverflow = useCallback(() => {
         const element = scrollRef.current;
@@ -513,11 +466,11 @@ export function FeedbackThread({
             element.removeEventListener("scroll", refreshScrollOverflow);
             resizeObserver.disconnect();
         };
-    }, [refreshScrollOverflow, replies.length]);
+    }, [focusedCaseId, refreshScrollOverflow, replies.length]);
 
     useEffect(() => {
         scrollToBottom();
-    }, [replies.length, scrollToBottom]);
+    }, [focusedCaseId, replies.length, scrollToBottom]);
 
     return (
         <div className="relative min-h-0 flex-1">
@@ -529,50 +482,115 @@ export function FeedbackThread({
                 ref={scrollRef}
                 className="flex h-full max-h-[360px] flex-col overflow-auto bg-transparent"
             >
-                <ThreadIssueEntry
-                    report={report}
-                    children={timeline.issueChildren}
-                    locale={locale}
-                    originalAuthorName={originalAuthorName}
-                    threadReplyPrefix={messages.feedbackList.threadReplyPrefix}
-                    pendingComposer={pendingComposer}
-                    onStartAskQuestion={onStartAskQuestion}
-                    onStartCheckout={onStartCheckout}
-                    isUpdating={isUpdating}
-                />
-                {timeline.branches.map((branch) => (
-                    <div
-                        key={branch.root.id}
-                        className="flex flex-col"
-                    >
-                        <ThreadRootReply
-                            reply={branch.root}
-                            report={report}
-                            authors={authors}
-                            pendingComposer={pendingComposer}
-                            confirmAuthorName={confirmAuthorName}
-                            showConfirmAuthorSelect={showConfirmAuthorSelect}
-                            originalAuthorName={originalAuthorName}
-                            locale={locale}
-                            issueUrl={issueUrl}
-                            onConfirmAuthorNameChange={onConfirmAuthorNameChange}
-                            onStartDeny={onStartDeny}
-                            onStartCheckout={onStartCheckout}
-                            onStartAskQuestion={onStartAskQuestion}
-                            onConfirm={onConfirm}
-                            isUpdating={isUpdating}
-                        />
-                        {branch.children.map((child) => (
+                <article className="flex flex-col gap-[4px] border-t border-[var(--adaptive-border-subtle)] p-[8px]">
+                    <FeedbackCaseList
+                        report={report}
+                        cases={casesForEditor}
+                        isEditing={isEditingCases}
+                        canEdit={canEditReportCases(report) && !isEditingCases}
+                        isSaving={isUpdating}
+                        errorMessage={isEditingCases ? errorMessage : ""}
+                        selectable={caseSelectionEnabled}
+                        focusedCaseId={focusedCaseId}
+                        onSelectCase={selectCase}
+                        onBeginEdit={() => beginCaseEdit(report)}
+                        onCancelEdit={cancelCaseEdit}
+                        onSaveEdit={() => void handleCaseEditSave()}
+                        onCaseChange={updateCaseEditDraftCase}
+                        onAddCase={addCaseEditDraftCase}
+                        onRemoveCase={removeCaseEditDraftCase}
+                    />
+                    {report.author_name ? (
+                        <div className="flex items-center gap-[6px] px-[8px]">
+                            <p className="text-[12px] text-[var(--adaptive-black500)]">{report.author_name}</p>
+                            <FeedbackCreatorBadge />
+                        </div>
+                    ) : null}
+                </article>
+
+                {focusedCaseId ? (
+                    <>
+                        {timeline.issueChildren.map((child) => (
                             <ThreadChildReply
                                 key={child.id}
                                 reply={child}
-                                cases={report.cases}
                                 originalAuthorName={originalAuthorName}
                                 locale={locale}
                                 threadReplyPrefix={messages.feedbackList.threadReplyPrefix}
                             />
                         ))}
-                    </div>
+                        {timeline.branches.map((branch) => (
+                            <div
+                                key={branch.root.id}
+                                className="flex flex-col"
+                            >
+                                <ThreadRootReply
+                                    reply={branch.root}
+                                    report={report}
+                                    caseId={focusedCaseId}
+                                    authors={authors}
+                                    pendingComposer={pendingComposer}
+                                    confirmAuthorName={confirmAuthorName}
+                                    showConfirmAuthorSelect={showConfirmAuthorSelect}
+                                    originalAuthorName={originalAuthorName}
+                                    locale={locale}
+                                    issueUrl={issueUrl}
+                                    onConfirmAuthorNameChange={onConfirmAuthorNameChange}
+                                    onStartDeny={onStartDeny}
+                                    onStartCheckout={onStartCheckout}
+                                    onStartAskQuestion={onStartAskQuestion}
+                                    onConfirm={onConfirm}
+                                    isUpdating={isUpdating}
+                                    canAct={canAct}
+                                />
+                                {branch.children.map((child) => (
+                                    <ThreadChildReply
+                                        key={child.id}
+                                        reply={child}
+                                        originalAuthorName={originalAuthorName}
+                                        locale={locale}
+                                        threadReplyPrefix={messages.feedbackList.threadReplyPrefix}
+                                    />
+                                ))}
+                            </div>
+                        ))}
+                        {!isEditingCases ? (
+                            <CaseThreadEntryActions
+                                report={report}
+                                caseId={focusedCaseId}
+                                pendingComposer={pendingComposer}
+                                onStartAskQuestion={onStartAskQuestion}
+                                onStartCheckout={onStartCheckout}
+                                isUpdating={isUpdating}
+                                canAct={canAct}
+                            />
+                        ) : null}
+                    </>
+                ) : (
+                    <p className="px-[12px] py-[8px] text-[12px] text-[var(--adaptive-black500)]">{messages.cases.selectToView}</p>
+                )}
+
+                {systemBranches.map((branch) => (
+                    <ThreadRootReply
+                        key={branch.root.id}
+                        reply={branch.root}
+                        report={report}
+                        caseId={focusedCaseId ?? ""}
+                        authors={authors}
+                        pendingComposer={pendingComposer}
+                        confirmAuthorName={confirmAuthorName}
+                        showConfirmAuthorSelect={showConfirmAuthorSelect}
+                        originalAuthorName={originalAuthorName}
+                        locale={locale}
+                        issueUrl={issueUrl}
+                        onConfirmAuthorNameChange={onConfirmAuthorNameChange}
+                        onStartDeny={onStartDeny}
+                        onStartCheckout={onStartCheckout}
+                        onStartAskQuestion={onStartAskQuestion}
+                        onConfirm={onConfirm}
+                        isUpdating={isUpdating}
+                        canAct={false}
+                    />
                 ))}
             </section>
         </div>

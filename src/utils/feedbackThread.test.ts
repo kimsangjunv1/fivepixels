@@ -2,11 +2,13 @@ import { describe, expect, it } from "vitest";
 import type { ReportFeedback } from "@/types/report.js";
 import { createReportFeedback } from "./reportFixtures.js";
 import {
+    buildCaseThreadTimeline,
     buildThreadTimeline,
     canAskQuestionOnLatest,
     canCheckoutReply,
     canManagerAskQuestionOnLatest,
     canReviewLatestSuggestion,
+    canShowCaseEntryActions,
     canShowCheckoutBranchActions,
     canShowIssueEntryActions,
     canShowSuggestedBranchActions,
@@ -19,6 +21,7 @@ import {
     resolveParentReplyIdForQuestion,
     shouldShowReplyComposer,
 } from "./feedbackThread.js";
+import { createReportCase } from "./reportCases.js";
 
 function createReport(overrides: Partial<ReportFeedback> = {}): ReportFeedback {
     return createReportFeedback({
@@ -292,5 +295,48 @@ describe("feedbackThread", () => {
         expect(timeline.issueChildren[0]?.id).toBe("q1");
         expect(timeline.branches).toHaveLength(0);
         expect(resolveParentReplyIdForQuestion(createReport(), null)).toBe(ISSUE_ROOT_PARENT_ID);
+    });
+
+    it("builds case-scoped timelines and entry actions", () => {
+        const caseA = createReportCase("A");
+        const caseB = createReportCase("B");
+        const report = createReport({
+            cases: [caseA, caseB],
+            replies: [
+                {
+                    id: "r-a",
+                    message: "result for A",
+                    created_at: "2026-01-02T00:00:00.000Z",
+                    status: "suggested",
+                    case_ids: [caseA.id],
+                },
+                {
+                    id: "r-b",
+                    message: "result for B",
+                    created_at: "2026-01-03T00:00:00.000Z",
+                    status: "suggested",
+                    case_ids: [caseB.id],
+                },
+            ],
+        });
+
+        expect(canShowCaseEntryActions(report, caseA.id)).toBe(false);
+        expect(canShowCaseEntryActions(report, caseB.id)).toBe(false);
+
+        const emptyCaseReport = createReport({
+            cases: [caseA, caseB],
+            replies: [],
+        });
+
+        expect(canShowCaseEntryActions(emptyCaseReport, caseA.id)).toBe(true);
+        expect(canShowCaseEntryActions(emptyCaseReport, caseB.id)).toBe(true);
+
+        const timelineA = buildCaseThreadTimeline(report, caseA.id);
+        expect(timelineA.branches).toHaveLength(1);
+        expect(timelineA.branches[0]?.root.id).toBe("r-a");
+
+        const timelineB = buildCaseThreadTimeline(report, caseB.id);
+        expect(timelineB.branches).toHaveLength(1);
+        expect(timelineB.branches[0]?.root.id).toBe("r-b");
     });
 });

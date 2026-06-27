@@ -105,6 +105,9 @@ export const en: ReportMessages = {
         open: "Open",
         resolved: "Resolved",
         selectForDiscussion: "Select cases to discuss",
+        selectToView: "Select a case to view its thread",
+        unassigned: "Unassigned",
+        assignee: "Assignee",
         summaryMore: (count) => `and ${count} more`,
         progressResolved: (resolved, total) => `Progress: ${resolved}/${total} resolved`,
     },
@@ -326,6 +329,8 @@ export const en: ReportMessages = {
         casesRequired: "Add at least one case.",
         caseTextRequired: (index) => `Enter case ${index}.`,
         caseSelectionRequired: "Select at least one case to discuss.",
+        selectCaseFirst: "Select a case to continue.",
+        caseAssigneeOnly: "Only the assignee or issue author can act on this case.",
         personalKeyRequired: "Set a personal key before writing feedback.",
     },
 };

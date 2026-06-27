@@ -107,6 +107,9 @@ export type ReportMessages = {
         open: string;
         resolved: string;
         selectForDiscussion: string;
+        selectToView: string;
+        unassigned: string;
+        assignee: string;
         summaryMore: (count: number) => string;
         progressResolved: (resolved: number, total: number) => string;
     };
@@ -307,6 +310,8 @@ export type ReportMessages = {
         casesRequired: string;
         caseTextRequired: (index: number) => string;
         caseSelectionRequired: string;
+        selectCaseFirst: string;
+        caseAssigneeOnly: string;
         personalKeyRequired: string;
     };
 };

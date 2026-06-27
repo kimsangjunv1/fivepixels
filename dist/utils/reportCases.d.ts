@@ -1,4 +1,4 @@
-import type { ReportCase, ReportFeedback, ReportStatus } from "../types/report.js";
+import type { ReportCase, ReportFeedback, ReportReply, ReportStatus } from "../types/report.js";
 export declare function createCaseId(): string;
 export declare function createReportCase(text: string, overrides?: Partial<Omit<ReportCase, "text">>): ReportCase;
 export declare function getReportCases(report: Pick<ReportFeedback, "cases">): ReportCase[];
@@ -28,6 +28,18 @@ type CaseValidationMessages = {
 };
 export declare function canEditReportCases(report: Pick<ReportFeedback, "status">): boolean;
 export declare function getOpenCaseIds(report: Pick<ReportFeedback, "cases">): string[];
+export declare function getCaseById(report: Pick<ReportFeedback, "cases">, caseId: string): ReportCase | undefined;
+export declare function replyBelongsToCase(reply: ReportReply, caseId: string, report?: Pick<ReportFeedback, "cases">): boolean;
+export declare function getRepliesForCase(report: Pick<ReportFeedback, "cases" | "replies">, caseId: string): ReportReply[];
+export declare function getCaseAssigneeName(report: Pick<ReportFeedback, "cases">, caseId: string): string | null;
+export declare function getLatestReplyAuthorForCase(report: Pick<ReportFeedback, "cases" | "replies">, caseId: string): string | null;
+export declare function getCaseHandlerName(report: Pick<ReportFeedback, "cases" | "replies" | "author_name">, caseId: string): string | null;
+export declare function hasCaseDiscussion(report: Pick<ReportFeedback, "cases" | "replies">, caseId: string): boolean;
+export declare function isCaseInProgress(report: Pick<ReportFeedback, "cases" | "replies" | "status">, caseId: string): boolean;
+export declare function canActOnCase(report: Pick<ReportFeedback, "cases" | "author_name">, caseId: string, actorName: string): boolean;
+export declare function claimCaseAssignee(cases: ReportCase[], caseId: string, assigneeName: string, claimedAt?: string): ReportCase[];
+export declare function resolveDefaultFocusedCaseId(report: Pick<ReportFeedback, "cases">): string | null;
+export declare function isValidFocusedCase(report: Pick<ReportFeedback, "cases">, caseId: string | null): boolean;
 export declare function isValidCaseSelection(report: Pick<ReportFeedback, "cases">, selectedCaseIds: string[]): boolean;
 export declare function getCaseLabels(report: Pick<ReportFeedback, "cases">, caseIds: string[]): string[];
 export declare function buildResolvedCasesUpdate(report: ReportFeedback, caseIds: string[]): ReportCase[];

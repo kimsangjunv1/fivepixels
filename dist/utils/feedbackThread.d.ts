@@ -37,6 +37,19 @@ export type FeedbackThreadTimeline = {
 export declare function inferParentReplyId(replies: ReportReply[], replyIndex: number): string | null;
 export declare function normalizeReplyParents(replies: ReportReply[]): ReportReply[];
 export declare function buildThreadTimeline(report: ReportFeedback): FeedbackThreadTimeline;
+export declare function buildCaseThreadTimeline(report: ReportFeedback, caseId: string): FeedbackThreadTimeline;
+export declare function getLatestBranchRootForCase(report: ReportFeedback, caseId: string): ReportReply | null;
+export declare function isActiveCaseBranchRoot(report: ReportFeedback, reply: ReportReply, caseId: string): boolean;
+export declare function canShowSuggestedBranchActionsForCase(report: ReportFeedback, reply: ReportReply, caseId: string): boolean;
+export declare function canShowCheckoutBranchActionsForCase(report: ReportFeedback, reply: ReportReply, caseId: string): boolean;
+export declare function canShowCaseEntryActions(report: ReportFeedback, caseId: string): boolean;
+export declare function shouldShowCaseReplyComposer(report: ReportFeedback, caseId: string, pendingComposer: {
+    type: string;
+} | null): boolean;
+export declare function resolveParentReplyIdForCaseQuestion(report: ReportFeedback, caseId: string, pendingComposer: {
+    type: string;
+    targetReplyId: string;
+} | null): string | null;
 /** @deprecated Use buildThreadTimeline instead. */
 export declare function groupRepliesIntoBranches(replies: ReportReply[]): FeedbackReplyBranch[];
 export declare function resolveParentReplyIdForQuestion(report: ReportFeedback, pendingComposer: {

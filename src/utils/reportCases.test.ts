@@ -4,16 +4,22 @@ import {
     allCasesResolved,
     applyCaseStatusSync,
     buildResolvedCasesUpdate,
+    canActOnCase,
+    claimCaseAssignee,
     createReportCase,
+    getCaseHandlerName,
     getCaseLabels,
     getIssueProgressLabel,
     getIssueSummary,
     getOpenCaseIds,
     getOpenCases,
+    getRepliesForCase,
     isValidCaseSelection,
+    isValidFocusedCase,
     normalizeFeedbackCases,
     normalizeReplyCaseIds,
     resolveCases,
+    resolveDefaultFocusedCaseId,
     shouldShowCaseProgress,
     syncIssueStatusFromCases,
     validateCasesForSubmit,
@@ -112,11 +118,41 @@ describe("reportCases", () => {
         const report = createReportFeedback({ cases });
 
         expect(getOpenCaseIds(report)).toEqual([cases[0].id, cases[1].id]);
-        expect(isValidCaseSelection(report, [])).toBe(false);
+        expect(isValidFocusedCase(report, null)).toBe(false);
+        expect(isValidFocusedCase(report, cases[0].id)).toBe(true);
         expect(isValidCaseSelection(report, [cases[0].id])).toBe(true);
-        expect(isValidCaseSelection(report, [cases[0].id, cases[1].id])).toBe(true);
         expect(isValidCaseSelection(report, [cases[2].id])).toBe(false);
-        expect(isValidCaseSelection(report, ["missing"])).toBe(false);
+    });
+
+    it("filters replies and enforces assignee lock with QA override", () => {
+        const cases = [createReportCase("A"), createReportCase("B", { assignee_name: "Dev A" })];
+        const report = createReportFeedback({
+            author_name: "QA",
+            cases,
+            replies: [
+                {
+                    id: "r1",
+                    message: "case A question",
+                    created_at: "2026-01-02T00:00:00.000Z",
+                    status: "additional_question",
+                    case_ids: [cases[0].id],
+                    author_name: "Dev B",
+                },
+            ],
+        });
+
+        expect(getRepliesForCase(report, cases[0].id)).toHaveLength(1);
+        expect(getRepliesForCase(report, cases[1].id)).toHaveLength(0);
+        expect(getCaseHandlerName(report, cases[1].id)).toBe("Dev A");
+        expect(canActOnCase(report, cases[1].id, "Dev B")).toBe(false);
+        expect(canActOnCase(report, cases[1].id, "Dev A")).toBe(true);
+        expect(canActOnCase(report, cases[1].id, "QA")).toBe(true);
+        expect(canActOnCase(report, cases[0].id, "Dev B")).toBe(true);
+
+        const claimed = claimCaseAssignee(cases, cases[0].id, "Dev B");
+        expect(claimed[0]?.assignee_name).toBe("Dev B");
+        expect(claimCaseAssignee(cases, cases[1].id, "Dev C")[1]?.assignee_name).toBe("Dev A");
+        expect(resolveDefaultFocusedCaseId(report)).toBe(cases[0].id);
     });
 
     it("builds partial resolve updates and case labels", () => {

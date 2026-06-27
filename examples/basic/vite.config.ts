@@ -1,11 +1,20 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
+import { fileURLToPath } from "node:url";
 import react from "@vitejs/plugin-react";
-import type { Plugin } from "vite";
+import type { Plugin, ViteDevServer } from "vite";
 import { defineConfig } from "vite";
 import type { ReportFeedback } from "../../src/types/report.js";
-import { formatFeedbackAsGitHubIssueBody } from "../../src/utils/formatGitHubIssue.js";
 
 const reportStylesheetDev = new URL("../../src/styles/reportStylesheet.dev.ts", import.meta.url).pathname;
+const formatGitHubIssueModuleId = fileURLToPath(new URL("../../src/utils/formatGitHubIssue.ts", import.meta.url));
+
+type FormatGitHubIssueBody = (feedback: ReportFeedback, fields?: import("../../src/types/report.js").ReportField[], options?: { formatProgress?: (resolved: number, total: number) => string }) => string;
+
+async function loadFormatGitHubIssueBody(server: ViteDevServer): Promise<FormatGitHubIssueBody> {
+    const module = await server.ssrLoadModule(formatGitHubIssueModuleId);
+
+    return module.formatFeedbackAsGitHubIssueBody as FormatGitHubIssueBody;
+}
 
 function fivepixelsDevReportStylesheet(): Plugin {
     return {
@@ -50,7 +59,7 @@ function sendJson(response: ServerResponse, statusCode: number, payload: unknown
     response.end(JSON.stringify(payload));
 }
 
-async function handleGitHubIssueCreate(request: IncomingMessage, response: ServerResponse) {
+async function handleGitHubIssueCreate(request: IncomingMessage, response: ServerResponse, formatFeedbackAsGitHubIssueBody: FormatGitHubIssueBody) {
     try {
         const body = await readJsonBody<{ feedback?: ReportFeedback }>(request);
         const feedback = body.feedback;
@@ -93,9 +102,16 @@ function fivepixelsGitHubIssuesProxy(): Plugin {
                     return;
                 }
 
-                void handleGitHubIssueCreate(request, response).catch(() => {
-                    next();
-                });
+                void (async () => {
+                    try {
+                        const formatFeedbackAsGitHubIssueBody = await loadFormatGitHubIssueBody(server);
+
+                        await handleGitHubIssueCreate(request, response, formatFeedbackAsGitHubIssueBody);
+                    } catch (error) {
+                        console.error("[github-issues-proxy] failed to load formatter", error);
+                        next();
+                    }
+                })();
             });
         },
     };
