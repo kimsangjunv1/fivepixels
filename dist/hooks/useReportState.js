@@ -630,21 +630,33 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         setDraft(null);
         setSelectedTarget(null);
     };
-    const updateDraftMessage = (nextMessage) => {
+    const updateDraftCase = (caseId, text) => {
         setDraft((current) => {
             if (!current) {
                 return current;
             }
-            const [firstCase, ...restCases] = current.cases;
-            if (!firstCase) {
-                return {
-                    ...current,
-                    cases: [createReportCase(nextMessage)],
-                };
+            return {
+                ...current,
+                cases: current.cases.map((item) => (item.id === caseId ? { ...item, text } : item)),
+            };
+        });
+    };
+    const addDraftCase = () => {
+        setDraft((current) => current
+            ? {
+                ...current,
+                cases: [...current.cases, createReportCase("")],
+            }
+            : current);
+    };
+    const removeDraftCase = (caseId) => {
+        setDraft((current) => {
+            if (!current || current.cases.length <= 1) {
+                return current;
             }
             return {
                 ...current,
-                cases: [{ ...firstCase, text: nextMessage }, ...restCases],
+                cases: current.cases.filter((item) => item.id !== caseId),
             };
         });
     };
@@ -1110,7 +1122,9 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         handleOverlayMove,
         handleOverlayClick,
         cancelDraft,
-        updateDraftMessage,
+        updateDraftCase,
+        addDraftCase,
+        removeDraftCase,
         updateDraftField,
         handleCreateSubmit,
         startEditing,

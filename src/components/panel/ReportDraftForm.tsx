@@ -5,7 +5,6 @@ import { getDraftMarkerPosition } from "@/utils/coordinates.js";
 import { FeedbackComposer } from "./feedback/FeedbackComposer.js";
 
 const TOOLTIP_SURFACE_CLASS = "overflow-hidden rounded-[12px] border border-[var(--adaptive-border-subtle)] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[20px]";
-// const TOOLTIP_SURFACE_CLASS = "overflow-hidden rounded-[12px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[20px]";
 const EXPANDED_TOOLTIP_ANCHOR_CLASS = "pointer-events-auto fixed z-[1000001]";
 
 export function ReportDraftForm() {
@@ -15,7 +14,9 @@ export function ReportDraftForm() {
         authors,
         isCreating,
         selectedTarget,
-        updateDraftMessage,
+        updateDraftCase,
+        addDraftCase,
+        removeDraftCase,
         updateDraftField,
         handleCreateSubmit,
         handleCreateSubmitWithGitHubIssue,
@@ -23,6 +24,7 @@ export function ReportDraftForm() {
         isDraftGitHubIssueSubmitting,
         draftAuthorName,
         setDraftAuthorName,
+        errorMessage,
     } = useReport();
 
     if (!draft) {
@@ -36,7 +38,9 @@ export function ReportDraftForm() {
             authors={authors}
             isCreating={isCreating}
             selectedTarget={selectedTarget}
-            updateDraftMessage={updateDraftMessage}
+            updateDraftCase={updateDraftCase}
+            addDraftCase={addDraftCase}
+            removeDraftCase={removeDraftCase}
             updateDraftField={updateDraftField}
             handleCreateSubmit={handleCreateSubmit}
             handleCreateSubmitWithGitHubIssue={handleCreateSubmitWithGitHubIssue}
@@ -44,6 +48,7 @@ export function ReportDraftForm() {
             isDraftGitHubIssueSubmitting={isDraftGitHubIssueSubmitting}
             draftAuthorName={draftAuthorName}
             setDraftAuthorName={setDraftAuthorName}
+            errorMessage={errorMessage}
         />
     );
 }
@@ -54,7 +59,9 @@ type ReportDraftFormContentProps = {
     authors: ReturnType<typeof useReport>["authors"];
     isCreating: boolean;
     selectedTarget: ReturnType<typeof useReport>["selectedTarget"];
-    updateDraftMessage: (message: string) => void;
+    updateDraftCase: (caseId: string, text: string) => void;
+    addDraftCase: () => void;
+    removeDraftCase: (caseId: string) => void;
     updateDraftField: (key: string, value: string | boolean) => void;
     handleCreateSubmit: () => Promise<void>;
     handleCreateSubmitWithGitHubIssue: () => Promise<void>;
@@ -62,6 +69,7 @@ type ReportDraftFormContentProps = {
     isDraftGitHubIssueSubmitting: boolean;
     draftAuthorName: string;
     setDraftAuthorName: (name: string) => void;
+    errorMessage: string;
 };
 
 function ReportDraftFormContent({
@@ -70,7 +78,9 @@ function ReportDraftFormContent({
     authors,
     isCreating,
     selectedTarget,
-    updateDraftMessage,
+    updateDraftCase,
+    addDraftCase,
+    removeDraftCase,
     updateDraftField,
     handleCreateSubmit,
     handleCreateSubmitWithGitHubIssue,
@@ -78,6 +88,7 @@ function ReportDraftFormContent({
     isDraftGitHubIssueSubmitting,
     draftAuthorName,
     setDraftAuthorName,
+    errorMessage,
 }: ReportDraftFormContentProps) {
     const anchor = useMemo(() => getDraftMarkerPosition(draft, selectedTarget), [draft, selectedTarget]);
     const { layout: tooltipLayout, setTooltipElement } = useTooltipLayout(anchor, true, true);
@@ -98,6 +109,7 @@ function ReportDraftFormContent({
                 left: tooltipPosition.left,
                 top: tooltipPosition.top,
                 width: tooltipPosition.width,
+                minWidth: 320,
                 ...tooltipAnchorStyle,
             }}
         >
@@ -108,8 +120,10 @@ function ReportDraftFormContent({
                 }}
             >
                 <FeedbackComposer
-                    message={draft.cases[0]?.text ?? ""}
-                    onMessageChange={updateDraftMessage}
+                    cases={draft.cases}
+                    onCaseChange={updateDraftCase}
+                    onAddCase={addDraftCase}
+                    onRemoveCase={removeDraftCase}
                     authorName={draftAuthorName}
                     onAuthorNameChange={setDraftAuthorName}
                     authors={authors}
@@ -123,6 +137,7 @@ function ReportDraftFormContent({
                     onGitHubIssueSubmit={() => void handleCreateSubmitWithGitHubIssue()}
                     isGitHubIssueSubmitting={isDraftGitHubIssueSubmitting}
                     autoFocus
+                    errorMessage={errorMessage}
                 />
             </div>
         </div>

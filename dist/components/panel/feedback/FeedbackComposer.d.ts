@@ -1,8 +1,12 @@
-import type { ReportField, ReportFieldValues } from "../../../types/report.js";
+import type { ReportField, ReportFieldValues, ReportCase } from "../../../types/report.js";
 import type { ReportAuthor } from "../../../types/report.js";
 type FeedbackComposerProps = {
-    message: string;
-    onMessageChange: (value: string) => void;
+    message?: string;
+    onMessageChange?: (value: string) => void;
+    cases?: ReportCase[];
+    onCaseChange?: (caseId: string, text: string) => void;
+    onAddCase?: () => void;
+    onRemoveCase?: (caseId: string) => void;
     authorName: string;
     onAuthorNameChange: (value: string) => void;
     authors: ReportAuthor[];
@@ -23,6 +27,6 @@ type FeedbackComposerProps = {
     onAskQuestionChange?: (checked: boolean) => void;
     askQuestionForced?: boolean;
 };
-export declare function FeedbackComposer({ message, onMessageChange, authorName, onAuthorNameChange, authors, fields, fieldValues, onFieldChange, showTags, onSubmit, isSubmitting, showGitHubIssueOnCreate, onGitHubIssueSubmit, isGitHubIssueSubmitting, placeholder, autoFocus, errorMessage, showAskQuestionToggle, askQuestionChecked, onAskQuestionChange, askQuestionForced, }: FeedbackComposerProps): import("react/jsx-runtime").JSX.Element;
+export declare function FeedbackComposer({ message, onMessageChange, cases, onCaseChange, onAddCase, onRemoveCase, authorName, onAuthorNameChange, authors, fields, fieldValues, onFieldChange, showTags, onSubmit, isSubmitting, showGitHubIssueOnCreate, onGitHubIssueSubmit, isGitHubIssueSubmitting, placeholder, autoFocus, errorMessage, showAskQuestionToggle, askQuestionChecked, onAskQuestionChange, askQuestionForced, }: FeedbackComposerProps): import("react/jsx-runtime").JSX.Element;
 export {};
 //# sourceMappingURL=FeedbackComposer.d.ts.map

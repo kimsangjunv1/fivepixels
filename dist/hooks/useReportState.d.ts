@@ -166,7 +166,9 @@ export declare function useReportState({ projectId, environment, appVersion, app
     handleOverlayMove: (event: MouseEvent<HTMLDivElement>) => void;
     handleOverlayClick: (event: MouseEvent<HTMLDivElement>) => void;
     cancelDraft: () => void;
-    updateDraftMessage: (nextMessage: string) => void;
+    updateDraftCase: (caseId: string, text: string) => void;
+    addDraftCase: () => void;
+    removeDraftCase: (caseId: string) => void;
     updateDraftField: (key: string, nextValue: string | boolean) => void;
     handleCreateSubmit: () => Promise<void>;
     startEditing: (report: ReportFeedback) => void;

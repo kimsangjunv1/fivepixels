@@ -88,6 +88,9 @@ export const en = {
         gitIssueSendTitle: "Git Issue",
         gitIssueSendLabel: "Git Issue",
         gitIssueSendingLabel: "Sending",
+        casePlaceholder: "Describe this case",
+        addCase: "Add case",
+        removeCaseAriaLabel: (index) => `Remove case ${index}`,
     },
     fieldEditor: {
         messagePlaceholder: "Leave your feedback",

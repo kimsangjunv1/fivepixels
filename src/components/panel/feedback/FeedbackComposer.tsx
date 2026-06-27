@@ -1,4 +1,4 @@
-import type { ReportField, ReportFieldValues } from "@/types/report.js";
+import type { ReportField, ReportFieldValues, ReportCase } from "@/types/report.js";
 import type { ReportAuthor } from "@/types/report.js";
 import { useEffect, useState } from "react";
 import { useReport } from "@/providers/reportContext.js";
@@ -6,10 +6,15 @@ import { GitHubIssueIcon, SendIcon } from "@/components/icons/Icons.js";
 import { AuthorSelector } from "./AuthorSelector.js";
 import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
 import { FieldTagSelector } from "./FieldTagSelector.js";
+import { FeedbackCaseEditor } from "./FeedbackCaseEditor.js";
 
 type FeedbackComposerProps = {
-    message: string;
-    onMessageChange: (value: string) => void;
+    message?: string;
+    onMessageChange?: (value: string) => void;
+    cases?: ReportCase[];
+    onCaseChange?: (caseId: string, text: string) => void;
+    onAddCase?: () => void;
+    onRemoveCase?: (caseId: string) => void;
     authorName: string;
     onAuthorNameChange: (value: string) => void;
     authors: ReportAuthor[];
@@ -32,8 +37,12 @@ type FeedbackComposerProps = {
 };
 
 export function FeedbackComposer({
-    message,
+    message = "",
     onMessageChange,
+    cases,
+    onCaseChange,
+    onAddCase,
+    onRemoveCase,
     authorName,
     onAuthorNameChange,
     authors,
@@ -57,7 +66,10 @@ export function FeedbackComposer({
     const { messages } = useReport();
     const [isGitHubIssueConfirming, setIsGitHubIssueConfirming] = useState(false);
     const isQuestionMode = askQuestionForced || askQuestionChecked;
-    const resolvedPlaceholder = isQuestionMode ? messages.composer.questionPlaceholder : (placeholder ?? messages.composer.placeholder);
+    const usesCaseEditor = Boolean(cases && onCaseChange && onAddCase && onRemoveCase);
+    const resolvedPlaceholder = isQuestionMode
+        ? messages.composer.questionPlaceholder
+        : (placeholder ?? (usesCaseEditor ? messages.fieldEditor.messagePlaceholder : messages.composer.placeholder));
 
     const isActionDisabled = isSubmitting || isGitHubIssueSubmitting;
 
@@ -104,20 +116,32 @@ export function FeedbackComposer({
                         {errorMessage}
                     </p>
                 ) : null}
-                <textarea
-                    autoFocus={autoFocus}
-                    value={message}
-                    onChange={(event) => onMessageChange(event.target.value)}
-                    placeholder={resolvedPlaceholder}
-                    rows={3}
-                    className="min-h-[72px] w-full resize-none bg-transparent px-[8px] pt-[8px] text-[14px] leading-[1.4] text-[var(--adaptive-text-primary)] outline-none placeholder:text-[var(--adaptive-text-muted)]"
-                    onKeyDown={(event) => {
-                        if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
-                            event.preventDefault();
-                            handleSubmit();
-                        }
-                    }}
-                />
+                {usesCaseEditor ? (
+                    <FeedbackCaseEditor
+                        cases={cases!}
+                        onCaseChange={onCaseChange!}
+                        onAddCase={onAddCase!}
+                        onRemoveCase={onRemoveCase!}
+                        autoFocus={autoFocus}
+                        placeholder={resolvedPlaceholder}
+                        onSubmitShortcut={handleSubmit}
+                    />
+                ) : (
+                    <textarea
+                        autoFocus={autoFocus}
+                        value={message}
+                        onChange={(event) => onMessageChange?.(event.target.value)}
+                        placeholder={resolvedPlaceholder}
+                        rows={3}
+                        className="min-h-[72px] w-full resize-none bg-transparent px-[8px] pt-[8px] text-[14px] leading-[1.4] text-[var(--adaptive-text-primary)] outline-none placeholder:text-[var(--adaptive-text-muted)]"
+                        onKeyDown={(event) => {
+                            if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
+                                event.preventDefault();
+                                handleSubmit();
+                            }
+                        }}
+                    />
+                )}
             </div>
 
             <div className="flex items-center justify-between gap-[8px] px-[8px] pb-[8px]">

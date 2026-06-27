@@ -130,7 +130,9 @@ declare const ReportContext: import("react").Context<{
     handleOverlayMove: (event: import("react").MouseEvent<HTMLDivElement>) => void;
     handleOverlayClick: (event: import("react").MouseEvent<HTMLDivElement>) => void;
     cancelDraft: () => void;
-    updateDraftMessage: (nextMessage: string) => void;
+    updateDraftCase: (caseId: string, text: string) => void;
+    addDraftCase: () => void;
+    removeDraftCase: (caseId: string) => void;
     updateDraftField: (key: string, nextValue: string | boolean) => void;
     handleCreateSubmit: () => Promise<void>;
     startEditing: (report: import("..").ReportFeedback) => void;
@@ -275,7 +277,9 @@ export declare function useReport(): {
     handleOverlayMove: (event: import("react").MouseEvent<HTMLDivElement>) => void;
     handleOverlayClick: (event: import("react").MouseEvent<HTMLDivElement>) => void;
     cancelDraft: () => void;
-    updateDraftMessage: (nextMessage: string) => void;
+    updateDraftCase: (caseId: string, text: string) => void;
+    addDraftCase: () => void;
+    removeDraftCase: (caseId: string) => void;
     updateDraftField: (key: string, nextValue: string | boolean) => void;
     handleCreateSubmit: () => Promise<void>;
     startEditing: (report: import("..").ReportFeedback) => void;

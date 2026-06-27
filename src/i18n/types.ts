@@ -96,6 +96,9 @@ export type ReportMessages = {
         gitIssueSendTitle: string;
         gitIssueSendLabel: string;
         gitIssueSendingLabel: string;
+        casePlaceholder: string;
+        addCase: string;
+        removeCaseAriaLabel: (index: number) => string;
     };
     fieldEditor: {
         messagePlaceholder: string;

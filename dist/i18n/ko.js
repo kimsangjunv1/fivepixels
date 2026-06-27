@@ -88,6 +88,9 @@ export const ko = {
         gitIssueSendTitle: "Git Issue",
         gitIssueSendLabel: "Git Issue",
         gitIssueSendingLabel: "전송 중",
+        casePlaceholder: "케이스 내용을 입력하세요",
+        addCase: "추가 케이스 작성",
+        removeCaseAriaLabel: (index) => `${index}번째 케이스 삭제`,
     },
     fieldEditor: {
         messagePlaceholder: "피드백을 남겨주세요",

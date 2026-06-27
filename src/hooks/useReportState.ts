@@ -915,24 +915,39 @@ export function useReportState({
         setSelectedTarget(null);
     };
 
-    const updateDraftMessage = (nextMessage: string) => {
+    const updateDraftCase = (caseId: string, text: string) => {
         setDraft((current) => {
             if (!current) {
                 return current;
             }
 
-            const [firstCase, ...restCases] = current.cases;
+            return {
+                ...current,
+                cases: current.cases.map((item) => (item.id === caseId ? { ...item, text } : item)),
+            };
+        });
+    };
 
-            if (!firstCase) {
-                return {
-                    ...current,
-                    cases: [createReportCase(nextMessage)],
-                };
+    const addDraftCase = () => {
+        setDraft((current) =>
+            current
+                ? {
+                      ...current,
+                      cases: [...current.cases, createReportCase("")],
+                  }
+                : current,
+        );
+    };
+
+    const removeDraftCase = (caseId: string) => {
+        setDraft((current) => {
+            if (!current || current.cases.length <= 1) {
+                return current;
             }
 
             return {
                 ...current,
-                cases: [{ ...firstCase, text: nextMessage }, ...restCases],
+                cases: current.cases.filter((item) => item.id !== caseId),
             };
         });
     };
@@ -1459,7 +1474,9 @@ export function useReportState({
         handleOverlayMove,
         handleOverlayClick,
         cancelDraft,
-        updateDraftMessage,
+        updateDraftCase,
+        addDraftCase,
+        removeDraftCase,
         updateDraftField,
         handleCreateSubmit,
         startEditing,
