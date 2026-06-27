@@ -1,0 +1,7 @@
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { formatDate } from "../../../utils/format.js";
+import { FeedbackCreatorBadge } from "./FeedbackCreatorBadge.js";
+export function ThreadChildReply({ reply, originalAuthorName, locale, threadReplyPrefix }) {
+    return (_jsxs("article", { className: `flex flex-col gap-[4px] border-t border-[var(--adaptive-border-subtle)] ${threadReplyPrefix ? "py-[8px] pl-[18px]" : "py-[8px] pl-[12px]"}`, children: [_jsx("div", { className: "flex items-start justify-between gap-[8px]", children: _jsx("span", { className: "text-[12px] text-[var(--adaptive-black500)]", children: formatDate(reply.created_at, locale) }) }), _jsxs("p", { className: "leading-[1.5] text-[13px] text-[var(--adaptive-text-primary)]", children: [_jsx("span", { className: "text-[var(--adaptive-black400)]", children: threadReplyPrefix }), " ", reply.message] }), reply.author_name ? (_jsxs("div", { className: "flex items-center gap-[6px]", children: [_jsx("p", { className: "text-[12px] text-[var(--adaptive-black500)]", children: reply.author_name }), reply.author_name.trim() === originalAuthorName ? _jsx(FeedbackCreatorBadge, {}) : null] })) : null] }));
+}
+//# sourceMappingURL=ThreadChildReply.js.map

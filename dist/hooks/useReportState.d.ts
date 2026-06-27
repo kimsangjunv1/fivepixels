@@ -1,13 +1,14 @@
 import { type MouseEvent } from "react";
 import type { DeepPartialReportMessages } from "../i18n/types.js";
 import type { ReportLocale } from "../i18n/types.js";
-import type { CreateReportFeedbackPayload, CreateReplyPayload, ReportAppearance, ReportAuthor, ReportEvent, ReportFeedback, ReportField, ReportGitHubConfig, ReportIdentify, ReportListAllParams, ReportListAllResult, ReportReply, UpdateReportFeedbackPayload } from "../types/report.js";
+import type { CreateReportFeedbackPayload, CreateReplyPayload, ReportAppearance, ReportAuthor, ReportEvent, ReportFeedback, ReportField, ReportGitHubConfig, ReportIdentify, ReportListAllParams, ReportListAllResult, ReportReply, QuestionThreadDisplay, UpdateReportFeedbackPayload } from "../types/report.js";
 import type { DraftReport, EditableDraft, Marker, PendingFeedbackComposer, ReportMode, ReportPanelTab, TargetSnapshot } from "../types/report-ui.js";
 export type ReportStateConfig = {
     projectId: string;
     environment?: string;
     appVersion?: string;
     appearance: ReportAppearance;
+    questionThreadDefault?: QuestionThreadDisplay;
     fields: ReportField[];
     authors?: ReportAuthor[];
     requireReviewerKey?: boolean;
@@ -36,9 +37,11 @@ export type ReportStateConfig = {
     initialLocale: ReportLocale;
     messageOverrides?: DeepPartialReportMessages;
 };
-export declare function useReportState({ projectId, environment, appVersion, appearance, fields, authors, requireReviewerKey, shortcut: _shortcut, identify, onList, onListAll, onListReplies, onNavigate, onRevealTarget, onCreate, onCreateReply, onUpdate, onDelete, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys, initialLocale, messageOverrides, }: ReportStateConfig): {
+export declare function useReportState({ projectId, environment, appVersion, appearance, questionThreadDefault, fields, authors, requireReviewerKey, shortcut: _shortcut, identify, onList, onListAll, onListReplies, onNavigate, onRevealTarget, onCreate, onCreateReply, onUpdate, onDelete, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys, initialLocale, messageOverrides, }: ReportStateConfig): {
     appearance: ReportAppearance;
     setAppearance: (nextAppearance: ReportAppearance) => void;
+    questionThreadDisplay: QuestionThreadDisplay;
+    setQuestionThreadDisplay: (nextDisplay: QuestionThreadDisplay) => void;
     locale: ReportLocale;
     setLocale: (nextLocale: ReportLocale) => void;
     messages: import("../i18n/types.js").ReportMessages;

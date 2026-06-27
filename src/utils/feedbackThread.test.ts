@@ -23,6 +23,7 @@ import {
     resolveParentReplyIdForQuestion,
     shouldShowCaseReplyComposer,
     shouldShowReplyComposer,
+    shouldForceExpandQuestionGroup,
 } from "./feedbackThread.js";
 import { createReportCase } from "./reportCases.js";
 
@@ -415,5 +416,48 @@ describe("feedbackThread", () => {
 
         expect(shouldShowCaseReplyComposer(questionReport, caseA.id, null)).toBe(false);
         expect(shouldShowCaseReplyComposer(questionReport, caseA.id, { type: "question", targetReplyId: ISSUE_ROOT_PARENT_ID })).toBe(true);
+    });
+
+    it("forces question groups open when awaiting reply or composing a question", () => {
+        const caseA = { id: "case-a", text: "Case A", status: "open" as const, created_at: "2026-01-01T00:00:00.000Z" };
+        const questions = [
+            {
+                id: "q1",
+                message: "need detail",
+                created_at: "2026-01-02T00:00:00.000Z",
+                status: "additional_question" as const,
+                case_ids: [caseA.id],
+            },
+        ];
+        const report = createReport({
+            cases: [caseA],
+            replies: questions,
+        });
+
+        expect(shouldForceExpandQuestionGroup(report, caseA.id, questions)).toBe(true);
+        expect(
+            shouldForceExpandQuestionGroup(report, caseA.id, questions, {
+                composerTargetsGroup: true,
+            }),
+        ).toBe(true);
+        expect(
+            shouldForceExpandQuestionGroup(
+                {
+                    ...report,
+                    replies: [
+                        ...questions,
+                        {
+                            id: "r1",
+                            message: "answered",
+                            created_at: "2026-01-03T00:00:00.000Z",
+                            status: "suggested",
+                            case_ids: [caseA.id],
+                        },
+                    ],
+                },
+                caseA.id,
+                questions,
+            ),
+        ).toBe(false);
     });
 });

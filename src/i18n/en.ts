@@ -121,6 +121,10 @@ export const en: ReportMessages = {
         select: "Select",
         leaveResult: "Leave a result",
         askQuestion: "Ask question",
+        questionsShow: (count) => `Show ${count} question${count === 1 ? "" : "s"}`,
+        questionsHide: (count) => `Hide ${count} question${count === 1 ? "" : "s"}`,
+        questionsPending: (count) => (count === 1 ? "Question awaiting reply" : `${count} questions awaiting reply`),
+        questionsToggleAriaLabel: (count, expanded) => (expanded ? `Hide ${count} question${count === 1 ? "" : "s"}` : `Show ${count} question${count === 1 ? "" : "s"}`),
     },
     routeDetails: {
         all: "All",
@@ -142,6 +146,8 @@ export const en: ReportMessages = {
         themeAriaLabel: "Theme preference",
         language: "Language",
         languageAriaLabel: "Language preference",
+        questionThread: "Questions",
+        questionThreadAriaLabel: "Question display preference",
         command: "Command",
     },
     personalKey: {
@@ -171,6 +177,10 @@ export const en: ReportMessages = {
         system: "System",
         light: "Light",
         dark: "Dark",
+    },
+    questionThreadOption: {
+        expanded: "Open by default",
+        collapsed: "Collapsed by default",
     },
     command: {
         title: "Command",

@@ -7,6 +7,7 @@ import { useReportPersistence } from "./useReportPersistence.js";
 import { useIsMobileViewport } from "./useIsMobileViewport.js";
 import { useAppearancePreference } from "./useAppearancePreference.js";
 import { useLocalePreference } from "./useLocalePreference.js";
+import { useQuestionThreadPreference } from "./useQuestionThreadPreference.js";
 import { usePersonalKey } from "./usePersonalKey.js";
 import { useResolvedAppearance } from "./useResolvedAppearance.js";
 import type {
@@ -22,6 +23,7 @@ import type {
     ReportListAllParams,
     ReportListAllResult,
     ReportReply,
+    QuestionThreadDisplay,
     UpdateReportFeedbackPayload,
 } from "@/types/report.js";
 import type { DraftReport, EditableDraft, Marker, PendingFeedbackComposer, ReportMode, ReportPanelTab, TargetSnapshot } from "@/types/report-ui.js";
@@ -64,6 +66,7 @@ export type ReportStateConfig = {
     environment?: string;
     appVersion?: string;
     appearance: ReportAppearance;
+    questionThreadDefault?: QuestionThreadDisplay;
     fields: ReportField[];
     authors?: ReportAuthor[];
     requireReviewerKey?: boolean;
@@ -93,6 +96,7 @@ export function useReportState({
     environment,
     appVersion,
     appearance,
+    questionThreadDefault = "expanded",
     fields,
     authors = [],
     requireReviewerKey = false,
@@ -117,6 +121,7 @@ export function useReportState({
     messageOverrides,
 }: ReportStateConfig) {
     const { appearance: activeAppearance, setAppearance } = useAppearancePreference(appearance);
+    const { questionThreadDisplay, setQuestionThreadDisplay } = useQuestionThreadPreference(questionThreadDefault);
     const { locale, setLocale } = useLocalePreference(initialLocale);
     const [localeMessagesReady, setLocaleMessagesReady] = useState(locale !== "ko");
     const messages = useMemo(() => getReportMessages(locale, messageOverrides), [locale, localeMessagesReady, messageOverrides]);
@@ -1574,6 +1579,8 @@ export function useReportState({
     return {
         appearance: activeAppearance,
         setAppearance,
+        questionThreadDisplay,
+        setQuestionThreadDisplay,
         locale,
         setLocale,
         messages,

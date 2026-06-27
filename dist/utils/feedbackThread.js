@@ -193,7 +193,8 @@ export function getLatestBranchRootForCase(report, caseId) {
     return getLatestBranchRoot(getRepliesForCase(report, caseId));
 }
 export function isActiveCaseBranchRoot(report, reply, caseId) {
-    if (report.status !== "open") {
+    const caseItem = report.cases?.find((item) => item.id === caseId);
+    if (report.status !== "open" || !caseItem || caseItem.status === "resolved") {
         return false;
     }
     const latestRoot = getLatestBranchRootForCase(report, caseId);
@@ -215,15 +216,15 @@ export function canShowCaseEntryActions(report, caseId) {
     }
     return getLatestBranchRootForCase(report, caseId) === null;
 }
-export function shouldShowCaseReplyComposer(report, caseId, pendingComposer) {
-    const caseItem = report.cases?.find((item) => item.id === caseId);
-    if (!caseItem || caseItem.status === "resolved" || report.status === "resolved") {
+export function shouldShowCaseReplyComposer(_report, caseId, pendingComposer) {
+    if (!caseId || pendingComposer === null) {
         return false;
     }
-    return shouldShowReplyComposer({
-        ...report,
-        replies: getRepliesForCase(report, caseId),
-    }, pendingComposer);
+    const caseItem = _report.cases?.find((item) => item.id === caseId);
+    if (!caseItem || caseItem.status === "resolved" || _report.status === "resolved") {
+        return false;
+    }
+    return true;
 }
 export function resolveParentReplyIdForCaseQuestion(report, caseId, pendingComposer) {
     return resolveParentReplyIdForQuestion({
@@ -266,5 +267,19 @@ export function resolveParentReplyIdForQuestion(report, pendingComposer) {
         }
     }
     return ISSUE_ROOT_PARENT_ID;
+}
+export function shouldForceExpandQuestionGroup(report, caseId, questions, options) {
+    if (options?.composerTargetsGroup) {
+        return true;
+    }
+    if (questions.length === 0) {
+        return false;
+    }
+    const caseReplies = getRepliesForCase(report, caseId);
+    const latestReply = caseReplies[caseReplies.length - 1];
+    if (!latestReply || latestReply.status !== "additional_question") {
+        return false;
+    }
+    return questions.some((question) => question.id === latestReply.id);
 }
 //# sourceMappingURL=feedbackThread.js.map

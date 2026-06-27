@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { ReportAppearance } from "@/types/report.js";
+import type { ReportAppearance, QuestionThreadDisplay } from "@/types/report.js";
 import type { ReportLocale } from "@/i18n/types.js";
 import { useReport } from "@/providers/reportContext.js";
 import { PanelOptionSwitch } from "./PanelOptionSwitch.js";
@@ -8,6 +8,8 @@ type PanelSettingsProps = {
     transferDisabled?: boolean;
     appearance: ReportAppearance;
     onAppearanceChange: (appearance: ReportAppearance) => void;
+    questionThreadDisplay: QuestionThreadDisplay;
+    onQuestionThreadDisplayChange: (display: QuestionThreadDisplay) => void;
     onExport: () => void;
     onImport: () => void;
     onCommand: () => void;
@@ -19,6 +21,7 @@ type PanelSettingsProps = {
 };
 
 const LOCALE_OPTIONS = ["en", "ko"] as const satisfies readonly ReportLocale[];
+const QUESTION_THREAD_OPTIONS = ["expanded", "collapsed"] as const satisfies readonly QuestionThreadDisplay[];
 
 function SettingsSection({ label, children }: { label: string; children: ReactNode }) {
     return (
@@ -46,6 +49,8 @@ export function PanelSettings({
     transferDisabled = false,
     appearance,
     onAppearanceChange,
+    questionThreadDisplay,
+    onQuestionThreadDisplayChange,
     onExport,
     onImport,
     onCommand,
@@ -63,6 +68,10 @@ export function PanelSettings({
     const localeOptions = LOCALE_OPTIONS.map((value) => ({
         value,
         label: messages.localeOption[value],
+    }));
+    const questionThreadOptions = QUESTION_THREAD_OPTIONS.map((value) => ({
+        value,
+        label: messages.questionThreadOption[value],
     }));
 
     return (
@@ -122,6 +131,17 @@ export function PanelSettings({
                         value={locale}
                         onChange={setLocale}
                         ariaLabel={messages.moreMenu.languageAriaLabel}
+                    />
+                </div>
+            </SettingsSection>
+
+            <SettingsSection label={messages.moreMenu.questionThread}>
+                <div className="px-[12px] pb-[10px]">
+                    <PanelOptionSwitch
+                        options={questionThreadOptions}
+                        value={questionThreadDisplay}
+                        onChange={onQuestionThreadDisplayChange}
+                        ariaLabel={messages.moreMenu.questionThreadAriaLabel}
                     />
                 </div>
             </SettingsSection>

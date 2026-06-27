@@ -3,6 +3,8 @@ export type ReportContextValue = ReturnType<typeof useReportState>;
 declare const ReportContext: import("react").Context<{
     appearance: import("..").ReportAppearance;
     setAppearance: (nextAppearance: import("..").ReportAppearance) => void;
+    questionThreadDisplay: import("..").QuestionThreadDisplay;
+    setQuestionThreadDisplay: (nextDisplay: import("..").QuestionThreadDisplay) => void;
     locale: import("..").ReportLocale;
     setLocale: (nextLocale: import("..").ReportLocale) => void;
     messages: import("..").ReportMessages;
@@ -162,6 +164,8 @@ declare const ReportContext: import("react").Context<{
 export declare function useReport(): {
     appearance: import("..").ReportAppearance;
     setAppearance: (nextAppearance: import("..").ReportAppearance) => void;
+    questionThreadDisplay: import("..").QuestionThreadDisplay;
+    setQuestionThreadDisplay: (nextDisplay: import("..").QuestionThreadDisplay) => void;
     locale: import("..").ReportLocale;
     setLocale: (nextLocale: import("..").ReportLocale) => void;
     messages: import("..").ReportMessages;

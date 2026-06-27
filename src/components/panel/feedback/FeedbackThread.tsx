@@ -14,6 +14,7 @@ import {
     getReportReplies,
     ISSUE_ROOT_PARENT_ID,
     resolveOriginalFeedbackAuthorName,
+    shouldForceExpandQuestionGroup,
 } from "@/utils/feedbackThread.js";
 import { getGitHubIssueUrl, isGitIssuedSystemReply } from "@/utils/githubIntegration.js";
 import { AuthorSelector } from "./AuthorSelector.js";
@@ -21,6 +22,7 @@ import { FeedbackCaseList } from "./FeedbackCaseList.js";
 import { FeedbackCreatorBadge } from "./FeedbackCreatorBadge.js";
 import { FeedbackStatusBadge } from "./FeedbackStatusBadge.js";
 import { GitIssuedThreadEntry } from "./GitIssuedThreadEntry.js";
+import { QuestionThreadGroup } from "./QuestionThreadGroup.js";
 
 type PendingComposer = {
     type: "deny" | "recheck" | "checkout" | "question";
@@ -219,28 +221,6 @@ function ThreadEntryActions({
     );
 }
 
-function ThreadChildReply({ reply, originalAuthorName, locale, threadReplyPrefix }: { reply: ReportReply; originalAuthorName: string; locale: ReportLocale; threadReplyPrefix: string }) {
-    return (
-        <article className={`flex flex-col gap-[4px] border-t border-[var(--adaptive-border-subtle)] ${threadReplyPrefix ? "py-[8px] pl-[18px]" : "py-[8px] pl-[12px]"}`}>
-            <div className="flex items-start justify-between gap-[8px]">
-                <FeedbackStatusBadge status={reply.status} />
-                <span className="text-[12px] text-[var(--adaptive-black500)]">{formatDate(reply.created_at, locale)}</span>
-            </div>
-
-            <p className="leading-[1.5] text-[13px] text-[var(--adaptive-text-primary)]">
-                <span className="text-[var(--adaptive-black400)]">{threadReplyPrefix}</span> {reply.message}
-            </p>
-
-            {reply.author_name ? (
-                <div className="flex items-center gap-[6px]">
-                    <p className="text-[12px] text-[var(--adaptive-black500)]">{reply.author_name}</p>
-                    {reply.author_name.trim() === originalAuthorName ? <FeedbackCreatorBadge /> : null}
-                </div>
-            ) : null}
-        </article>
-    );
-}
-
 function CaseThreadEntryActions({
     report,
     caseId,
@@ -415,17 +395,11 @@ export function FeedbackThread({
     const hasOpenCases = casesForEditor.some((item) => item.status === "open");
     const caseSelectionEnabled = !isEditingCases && report.status !== "archived" && casesForEditor.length > 0;
     const replies = getReportReplies(report);
-    const timeline = useMemo(
-        () => (focusedCaseId ? buildCaseThreadTimeline(report, focusedCaseId) : { issueChildren: [], branches: [] }),
-        [focusedCaseId, report, replies],
-    );
+    const timeline = useMemo(() => (focusedCaseId ? buildCaseThreadTimeline(report, focusedCaseId) : { issueChildren: [], branches: [] }), [focusedCaseId, report, replies]);
     const originalAuthorName = resolveOriginalFeedbackAuthorName(report);
     const issueUrl = getGitHubIssueUrl(report);
     const canAct = focusedCaseId ? canShowCaseThreadActions(report, focusedCaseId, replyAuthorName, confirmAuthorName) : false;
-    const systemBranches = useMemo(
-        () => buildThreadTimeline(report).branches.filter((branch) => isGitIssuedSystemReply(branch.root, report)),
-        [report, replies],
-    );
+    const systemBranches = useMemo(() => buildThreadTimeline(report).branches.filter((branch) => isGitIssuedSystemReply(branch.root, report)), [report, replies]);
 
     const refreshScrollOverflow = useCallback(() => {
         const element = scrollRef.current;
@@ -510,15 +484,15 @@ export function FeedbackThread({
 
                 {focusedCaseId ? (
                     <>
-                        {timeline.issueChildren.map((child) => (
-                            <ThreadChildReply
-                                key={child.id}
-                                reply={child}
-                                originalAuthorName={originalAuthorName}
-                                locale={locale}
-                                threadReplyPrefix={messages.feedbackList.threadReplyPrefix}
-                            />
-                        ))}
+                        <QuestionThreadGroup
+                            questions={timeline.issueChildren}
+                            originalAuthorName={originalAuthorName}
+                            locale={locale}
+                            threadReplyPrefix={messages.feedbackList.threadReplyPrefix}
+                            forceExpanded={shouldForceExpandQuestionGroup(report, focusedCaseId, timeline.issueChildren, {
+                                composerTargetsGroup: pendingComposer?.type === "question" && pendingComposer.targetReplyId === ISSUE_ROOT_PARENT_ID,
+                            })}
+                        />
                         {timeline.branches.map((branch) => (
                             <div
                                 key={branch.root.id}
@@ -543,15 +517,15 @@ export function FeedbackThread({
                                     isUpdating={isUpdating}
                                     canAct={canAct}
                                 />
-                                {branch.children.map((child) => (
-                                    <ThreadChildReply
-                                        key={child.id}
-                                        reply={child}
-                                        originalAuthorName={originalAuthorName}
-                                        locale={locale}
-                                        threadReplyPrefix={messages.feedbackList.threadReplyPrefix}
-                                    />
-                                ))}
+                                <QuestionThreadGroup
+                                    questions={branch.children}
+                                    originalAuthorName={originalAuthorName}
+                                    locale={locale}
+                                    threadReplyPrefix={messages.feedbackList.threadReplyPrefix}
+                                    forceExpanded={shouldForceExpandQuestionGroup(report, focusedCaseId, branch.children, {
+                                        composerTargetsGroup: pendingComposer?.type === "question" && pendingComposer.targetReplyId === branch.root.id,
+                                    })}
+                                />
                             </div>
                         ))}
                         {!isEditingCases ? (

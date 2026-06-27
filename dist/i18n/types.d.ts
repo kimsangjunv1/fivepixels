@@ -1,4 +1,4 @@
-import type { ReportAppearance } from "../types/report.js";
+import type { ReportAppearance, QuestionThreadDisplay } from "../types/report.js";
 export type ReportLocale = "en" | "ko";
 type RouteDetailStatus = "wait" | "suggested" | "git_issued" | "resolved";
 type FeedbackDisplayStatus = "currently_wait" | "wait_for_reply" | "git_issued" | "suggested" | "additional_question" | "found_error" | "recheck_requested" | "resolved";
@@ -123,6 +123,10 @@ export type ReportMessages = {
         select: string;
         leaveResult: string;
         askQuestion: string;
+        questionsShow: (count: number) => string;
+        questionsHide: (count: number) => string;
+        questionsPending: (count: number) => string;
+        questionsToggleAriaLabel: (count: number, expanded: boolean) => string;
     };
     routeDetails: {
         all: string;
@@ -144,6 +148,8 @@ export type ReportMessages = {
         themeAriaLabel: string;
         language: string;
         languageAriaLabel: string;
+        questionThread: string;
+        questionThreadAriaLabel: string;
         command: string;
     };
     personalKey: {
@@ -167,6 +173,7 @@ export type ReportMessages = {
     };
     localeOption: Record<ReportLocale, string>;
     appearance: Record<ReportAppearance, string>;
+    questionThreadOption: Record<QuestionThreadDisplay, string>;
     command: {
         title: string;
         description: string;

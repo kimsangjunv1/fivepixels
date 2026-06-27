@@ -119,6 +119,10 @@ export const ko = {
         select: "선택",
         leaveResult: "결과 남기기",
         askQuestion: "질문하기",
+        questionsShow: (count) => `질문 ${count}개 보기`,
+        questionsHide: (count) => `질문 ${count}개 숨기기`,
+        questionsPending: (count) => (count === 1 ? "답변 대기 중인 질문" : `답변 대기 중인 질문 ${count}개`),
+        questionsToggleAriaLabel: (count, expanded) => (expanded ? `질문 ${count}개 숨기기` : `질문 ${count}개 보기`),
     },
     routeDetails: {
         all: "전체",
@@ -140,6 +144,8 @@ export const ko = {
         themeAriaLabel: "테마 설정",
         language: "언어",
         languageAriaLabel: "언어 설정",
+        questionThread: "질문 표시",
+        questionThreadAriaLabel: "질문 표시 설정",
         command: "명령",
     },
     personalKey: {
@@ -169,6 +175,10 @@ export const ko = {
         system: "시스템",
         light: "라이트",
         dark: "다크",
+    },
+    questionThreadOption: {
+        expanded: "펼침",
+        collapsed: "접기",
     },
     command: {
         title: "명령",

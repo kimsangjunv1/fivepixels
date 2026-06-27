@@ -94,6 +94,8 @@ export function ReportControlPanel() {
         panelTab,
         appearance,
         setAppearance,
+        questionThreadDisplay,
+        setQuestionThreadDisplay,
         canTransferFeedback,
         personalKey,
         publicKey,
@@ -453,6 +455,8 @@ export function ReportControlPanel() {
                                                 transferDisabled={!canTransferFeedback}
                                                 appearance={appearance}
                                                 onAppearanceChange={setAppearance}
+                                                questionThreadDisplay={questionThreadDisplay}
+                                                onQuestionThreadDisplayChange={setQuestionThreadDisplay}
                                                 onExport={handleExport}
                                                 onImport={handleImportFromMenu}
                                                 onCommand={handleOpenCommand}

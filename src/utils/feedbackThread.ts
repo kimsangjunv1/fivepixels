@@ -386,3 +386,27 @@ export function resolveParentReplyIdForQuestion(
 
     return ISSUE_ROOT_PARENT_ID;
 }
+
+export function shouldForceExpandQuestionGroup(
+    report: ReportFeedback,
+    caseId: string,
+    questions: ReportReply[],
+    options?: { composerTargetsGroup?: boolean },
+): boolean {
+    if (options?.composerTargetsGroup) {
+        return true;
+    }
+
+    if (questions.length === 0) {
+        return false;
+    }
+
+    const caseReplies = getRepliesForCase(report, caseId);
+    const latestReply = caseReplies[caseReplies.length - 1];
+
+    if (!latestReply || latestReply.status !== "additional_question") {
+        return false;
+    }
+
+    return questions.some((question) => question.id === latestReply.id);
+}

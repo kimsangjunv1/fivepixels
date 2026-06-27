@@ -32,6 +32,7 @@ export type {
     ReportPositionRatio,
     ReportPositionViewport,
     ReportProject,
+    QuestionThreadDisplay,
     ReportTeam,
     ReportUi,
     ReportVisibility,

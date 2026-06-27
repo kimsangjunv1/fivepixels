@@ -43,7 +43,7 @@ export declare function isActiveCaseBranchRoot(report: ReportFeedback, reply: Re
 export declare function canShowSuggestedBranchActionsForCase(report: ReportFeedback, reply: ReportReply, caseId: string): boolean;
 export declare function canShowCheckoutBranchActionsForCase(report: ReportFeedback, reply: ReportReply, caseId: string): boolean;
 export declare function canShowCaseEntryActions(report: ReportFeedback, caseId: string): boolean;
-export declare function shouldShowCaseReplyComposer(report: ReportFeedback, caseId: string, pendingComposer: {
+export declare function shouldShowCaseReplyComposer(_report: ReportFeedback, caseId: string, pendingComposer: {
     type: string;
 } | null): boolean;
 export declare function resolveParentReplyIdForCaseQuestion(report: ReportFeedback, caseId: string, pendingComposer: {
@@ -56,4 +56,7 @@ export declare function resolveParentReplyIdForQuestion(report: ReportFeedback, 
     type: string;
     targetReplyId: string;
 } | null): string | null;
+export declare function shouldForceExpandQuestionGroup(report: ReportFeedback, caseId: string, questions: ReportReply[], options?: {
+    composerTargetsGroup?: boolean;
+}): boolean;
 //# sourceMappingURL=feedbackThread.d.ts.map

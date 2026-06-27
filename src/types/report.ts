@@ -68,11 +68,14 @@ export type ReportProject = {
     version?: string;
 };
 
+export type QuestionThreadDisplay = "expanded" | "collapsed";
+
 /** UI options passed to `<FivePixels ui={{ appearance, showFeedbackList, visibleShortcutKeys, shortcut, locale, messages }} />`. */
 export type ReportUi = {
     appearance?: ReportAppearance;
     showFeedbackList?: boolean;
     visibleShortcutKeys?: boolean;
+    questionThreadDefault?: QuestionThreadDisplay;
     shortcut?: string;
     locale?: import("../i18n/types.js").ReportLocale;
     messages?: import("../i18n/types.js").DeepPartialReportMessages;

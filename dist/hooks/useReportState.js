@@ -5,6 +5,7 @@ import { useReportPersistence } from "./useReportPersistence.js";
 import { useIsMobileViewport } from "./useIsMobileViewport.js";
 import { useAppearancePreference } from "./useAppearancePreference.js";
 import { useLocalePreference } from "./useLocalePreference.js";
+import { useQuestionThreadPreference } from "./useQuestionThreadPreference.js";
 import { usePersonalKey } from "./usePersonalKey.js";
 import { useResolvedAppearance } from "./useResolvedAppearance.js";
 import { createReplyStatusForSubmit, getFeedbackDisplayStatus, getLatestBranchRootForCase, getReportReplies, ISSUE_ROOT_PARENT_ID, resolveOriginalFeedbackAuthorName, resolveParentReplyIdForCaseQuestion } from "../utils/feedbackThread.js";
@@ -24,8 +25,9 @@ function resolveDefaultAuthorName(identify, authors) {
     }
     return authors[0]?.name ?? "";
 }
-export function useReportState({ projectId, environment, appVersion, appearance, fields, authors = [], requireReviewerKey = false, shortcut: _shortcut, identify, onList, onListAll, onListReplies, onNavigate, onRevealTarget, onCreate, onCreateReply, onUpdate, onDelete, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys = false, initialLocale, messageOverrides, }) {
+export function useReportState({ projectId, environment, appVersion, appearance, questionThreadDefault = "expanded", fields, authors = [], requireReviewerKey = false, shortcut: _shortcut, identify, onList, onListAll, onListReplies, onNavigate, onRevealTarget, onCreate, onCreateReply, onUpdate, onDelete, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys = false, initialLocale, messageOverrides, }) {
     const { appearance: activeAppearance, setAppearance } = useAppearancePreference(appearance);
+    const { questionThreadDisplay, setQuestionThreadDisplay } = useQuestionThreadPreference(questionThreadDefault);
     const { locale, setLocale } = useLocalePreference(initialLocale);
     const [localeMessagesReady, setLocaleMessagesReady] = useState(locale !== "ko");
     const messages = useMemo(() => getReportMessages(locale, messageOverrides), [locale, localeMessagesReady, messageOverrides]);
@@ -411,6 +413,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         setFocusedCaseId(caseId);
         setPendingComposer(null);
         setReplyDraft("");
+        setReplySubmitAsQuestion(false);
         setErrorMessage("");
     }, []);
     const ensureFocusedCase = useCallback((report) => {
@@ -1170,6 +1173,8 @@ export function useReportState({ projectId, environment, appVersion, appearance,
     return {
         appearance: activeAppearance,
         setAppearance,
+        questionThreadDisplay,
+        setQuestionThreadDisplay,
         locale,
         setLocale,
         messages,

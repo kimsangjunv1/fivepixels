@@ -1,4 +1,4 @@
-import type { ReportAppearance } from "@/types/report.js";
+import type { ReportAppearance, QuestionThreadDisplay } from "@/types/report.js";
 
 export type ReportLocale = "en" | "ko";
 
@@ -127,6 +127,10 @@ export type ReportMessages = {
         select: string;
         leaveResult: string;
         askQuestion: string;
+        questionsShow: (count: number) => string;
+        questionsHide: (count: number) => string;
+        questionsPending: (count: number) => string;
+        questionsToggleAriaLabel: (count: number, expanded: boolean) => string;
     };
     routeDetails: {
         all: string;
@@ -148,6 +152,8 @@ export type ReportMessages = {
         themeAriaLabel: string;
         language: string;
         languageAriaLabel: string;
+        questionThread: string;
+        questionThreadAriaLabel: string;
         command: string;
     };
     personalKey: {
@@ -171,6 +177,7 @@ export type ReportMessages = {
     };
     localeOption: Record<ReportLocale, string>;
     appearance: Record<ReportAppearance, string>;
+    questionThreadOption: Record<QuestionThreadDisplay, string>;
     command: {
         title: string;
         description: string;
