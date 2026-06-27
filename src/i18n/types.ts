@@ -103,6 +103,14 @@ export type ReportMessages = {
     fieldEditor: {
         messagePlaceholder: string;
     };
+    cases: {
+        title: string;
+        edit: string;
+        save: string;
+        saving: string;
+        open: string;
+        resolved: string;
+    };
     thread: {
         scrollHintUp: string;
         scrollHintDown: string;

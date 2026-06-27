@@ -95,6 +95,14 @@ export const en = {
     fieldEditor: {
         messagePlaceholder: "Leave your feedback",
     },
+    cases: {
+        title: "Cases",
+        edit: "Edit cases",
+        save: "Save",
+        saving: "Saving",
+        open: "Open",
+        resolved: "Resolved",
+    },
     thread: {
         scrollHintUp: "More messages above",
         scrollHintDown: "More messages below",

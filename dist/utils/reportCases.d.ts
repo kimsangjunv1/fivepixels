@@ -23,6 +23,7 @@ type CaseValidationMessages = {
     casesRequired: string;
     caseTextRequired: (index: number) => string;
 };
+export declare function canEditReportCases(report: Pick<ReportFeedback, "status">): boolean;
 export declare function validateCasesForSubmit(cases: Array<Pick<ReportCase, "text">>, messages: CaseValidationMessages): string;
 export {};
 //# sourceMappingURL=reportCases.d.ts.map

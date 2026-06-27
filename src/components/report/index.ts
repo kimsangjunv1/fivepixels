@@ -56,6 +56,7 @@ export {
     getResolvedCaseCount,
     resolveCases,
     syncIssueStatusFromCases,
+    canEditReportCases,
 } from "@/utils/reportCases.js";
 export {
     createReportAuthMessage,

@@ -142,6 +142,15 @@ export declare function useReportState({ projectId, environment, appVersion, app
     showConfirmAuthorSelect: boolean;
     toggleConfirmAuthorSelect: () => void;
     handleConfirmResolution: () => Promise<void>;
+    beginCaseEdit: (report: ReportFeedback) => void;
+    cancelCaseEdit: () => void;
+    handleCaseEditSave: () => Promise<void>;
+    updateCaseEditDraftCase: (caseId: string, text: string) => void;
+    addCaseEditDraftCase: () => void;
+    removeCaseEditDraftCase: (caseId: string) => void;
+    isCaseEditing: boolean;
+    caseEditReportId: string | null;
+    caseEditCases: import("../types/report.js").ReportCase[] | null;
     targetStats: {
         found: number;
         resolved: number;

@@ -97,6 +97,14 @@ export const ko: ReportMessages = {
     fieldEditor: {
         messagePlaceholder: "피드백을 남겨주세요",
     },
+    cases: {
+        title: "케이스",
+        edit: "케이스 편집",
+        save: "저장",
+        saving: "저장 중",
+        open: "진행 중",
+        resolved: "해결됨",
+    },
     thread: {
         scrollHintUp: "위쪽에 더 많은 메시지가 있어요",
         scrollHintDown: "아래쪽에 더 많은 메시지가 있어요",

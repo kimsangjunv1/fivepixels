@@ -3,7 +3,7 @@ import type { ReportAuthor, ReportFeedback, ReportReply } from "@/types/report.j
 import type { ReportLocale } from "@/i18n/types.js";
 import { useReport } from "@/providers/reportContext.js";
 import { formatDate } from "@/utils/format.js";
-import { getIssueSummary } from "@/utils/reportCases.js";
+import { canEditReportCases } from "@/utils/reportCases.js";
 import {
     buildConfirmAuthorOptions,
     buildThreadTimeline,
@@ -16,6 +16,7 @@ import {
 } from "@/utils/feedbackThread.js";
 import { getGitHubIssueUrl, isGitIssuedSystemReply } from "@/utils/githubIntegration.js";
 import { AuthorSelector } from "./AuthorSelector.js";
+import { FeedbackCaseList } from "./FeedbackCaseList.js";
 import { FeedbackCreatorBadge } from "./FeedbackCreatorBadge.js";
 import { FeedbackStatusBadge } from "./FeedbackStatusBadge.js";
 import { GitIssuedThreadEntry } from "./GitIssuedThreadEntry.js";
@@ -296,6 +297,20 @@ function ThreadIssueEntry({
     onStartCheckout: (replyId: string) => void;
     isUpdating?: boolean;
 }) {
+    const {
+        caseEditReportId,
+        caseEditCases,
+        beginCaseEdit,
+        cancelCaseEdit,
+        handleCaseEditSave,
+        updateCaseEditDraftCase,
+        addCaseEditDraftCase,
+        removeCaseEditDraftCase,
+        errorMessage,
+    } = useReport();
+    const isEditingCases = caseEditReportId === report.id && caseEditCases !== null;
+    const casesForEditor = isEditingCases ? caseEditCases : report.cases;
+
     return (
         <div className="flex flex-col">
             <article className="flex flex-col gap-[4px] border-t border-[var(--adaptive-border-subtle)] p-[8px]">
@@ -304,20 +319,34 @@ function ThreadIssueEntry({
                     <span className="text-[12px] text-[var(--adaptive-black500)]">{formatDate(report.created_at, locale)}</span>
                 </div>
 
-                <p className="leading-[1.5] text-[14px] text-[var(--adaptive-text-primary)]">{getIssueSummary(report)}</p>
+                <FeedbackCaseList
+                    cases={casesForEditor}
+                    isEditing={isEditingCases}
+                    canEdit={canEditReportCases(report) && !isEditingCases}
+                    isSaving={isUpdating}
+                    errorMessage={isEditingCases ? errorMessage : ""}
+                    onBeginEdit={() => beginCaseEdit(report)}
+                    onCancelEdit={cancelCaseEdit}
+                    onSaveEdit={() => void handleCaseEditSave()}
+                    onCaseChange={updateCaseEditDraftCase}
+                    onAddCase={addCaseEditDraftCase}
+                    onRemoveCase={removeCaseEditDraftCase}
+                />
                 {report.author_name ? (
-                    <div className="flex items-center gap-[6px]">
+                    <div className="flex items-center gap-[6px] px-[8px]">
                         <p className="text-[12px] text-[var(--adaptive-black500)]">{report.author_name}</p>
                         <FeedbackCreatorBadge />
                     </div>
                 ) : null}
-                <ThreadIssueEntryActions
-                    report={report}
-                    pendingComposer={pendingComposer}
-                    onStartAskQuestion={onStartAskQuestion}
-                    onStartCheckout={onStartCheckout}
-                    isUpdating={isUpdating}
-                />
+                {!isEditingCases ? (
+                    <ThreadIssueEntryActions
+                        report={report}
+                        pendingComposer={pendingComposer}
+                        onStartAskQuestion={onStartAskQuestion}
+                        onStartCheckout={onStartCheckout}
+                        isUpdating={isUpdating}
+                    />
+                ) : null}
             </article>
             {children.map((child) => (
                 <ThreadChildReply

@@ -12,6 +12,7 @@ import {
     resolveCases,
     syncIssueStatusFromCases,
     validateCasesForSubmit,
+    canEditReportCases,
 } from "@/utils/reportCases.js";
 
 describe("reportCases", () => {
@@ -83,5 +84,11 @@ describe("reportCases", () => {
     it("normalizes reply case ids", () => {
         expect(normalizeReplyCaseIds(["a", "", "b"])).toEqual(["a", "b"]);
         expect(normalizeReplyCaseIds(undefined)).toEqual([]);
+    });
+
+    it("allows case edits except for archived issues", () => {
+        expect(canEditReportCases(createReportFeedback({ status: "open" }))).toBe(true);
+        expect(canEditReportCases(createReportFeedback({ status: "resolved" }))).toBe(true);
+        expect(canEditReportCases(createReportFeedback({ status: "archived" }))).toBe(false);
     });
 });

@@ -106,6 +106,15 @@ declare const ReportContext: import("react").Context<{
     showConfirmAuthorSelect: boolean;
     toggleConfirmAuthorSelect: () => void;
     handleConfirmResolution: () => Promise<void>;
+    beginCaseEdit: (report: import("..").ReportFeedback) => void;
+    cancelCaseEdit: () => void;
+    handleCaseEditSave: () => Promise<void>;
+    updateCaseEditDraftCase: (caseId: string, text: string) => void;
+    addCaseEditDraftCase: () => void;
+    removeCaseEditDraftCase: (caseId: string) => void;
+    isCaseEditing: boolean;
+    caseEditReportId: string | null;
+    caseEditCases: import("..").ReportCase[] | null;
     targetStats: {
         found: number;
         resolved: number;
@@ -253,6 +262,15 @@ export declare function useReport(): {
     showConfirmAuthorSelect: boolean;
     toggleConfirmAuthorSelect: () => void;
     handleConfirmResolution: () => Promise<void>;
+    beginCaseEdit: (report: import("..").ReportFeedback) => void;
+    cancelCaseEdit: () => void;
+    handleCaseEditSave: () => Promise<void>;
+    updateCaseEditDraftCase: (caseId: string, text: string) => void;
+    addCaseEditDraftCase: () => void;
+    removeCaseEditDraftCase: (caseId: string) => void;
+    isCaseEditing: boolean;
+    caseEditReportId: string | null;
+    caseEditCases: import("..").ReportCase[] | null;
     targetStats: {
         found: number;
         resolved: number;

@@ -134,6 +134,9 @@ export function normalizeFeedbackCases(item) {
     }
     return normalized;
 }
+export function canEditReportCases(report) {
+    return report.status !== "archived";
+}
 export function validateCasesForSubmit(cases, messages) {
     if (cases.length === 0) {
         return messages.casesRequired;

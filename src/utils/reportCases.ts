@@ -186,6 +186,10 @@ type CaseValidationMessages = {
     caseTextRequired: (index: number) => string;
 };
 
+export function canEditReportCases(report: Pick<ReportFeedback, "status">): boolean {
+    return report.status !== "archived";
+}
+
 export function validateCasesForSubmit(cases: Array<Pick<ReportCase, "text">>, messages: CaseValidationMessages): string {
     if (cases.length === 0) {
         return messages.casesRequired;

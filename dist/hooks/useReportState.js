@@ -14,7 +14,7 @@ const MARKER_HOVER_LEAVE_MS = 250;
 const OVERLAY_HOVER_LEAVE_MS = 100;
 import { findTargetByPoint, getSelectableTargets, isSameHoverTarget, resolveFeedbackDocumentAnchor, toSnapshot } from "../utils/dom.js";
 import { createInitialFieldValues, getFieldError, getFieldTags } from "../utils/fields.js";
-import { createReportCase } from "../utils/reportCases.js";
+import { canEditReportCases, createReportCase } from "../utils/reportCases.js";
 import { createReplyId } from "../utils/format.js";
 import { notifyFeedbackCreate, notifyFeedbackDelete, notifyFeedbackReply, notifyFeedbackUpdate, notifyGitHubIssueCreated, } from "../utils/reportCallbacks.js";
 import { buildGitHubIssueStatusUpdate, buildGitHubIssueUpdate, canCreateGitHubIssueFromList, canCreateGitHubIssueOnCreate, isGitIssued, } from "../utils/githubIntegration.js";
@@ -134,6 +134,8 @@ export function useReportState({ projectId, environment, appVersion, appearance,
     const [editableDraft, setEditableDraft] = useState(null);
     const [panelTab, setPanelTab] = useState(null);
     const [creatingGitHubIssueId, setCreatingGitHubIssueId] = useState(null);
+    const [caseEditReportId, setCaseEditReportId] = useState(null);
+    const [caseEditDraft, setCaseEditDraft] = useState(null);
     const canCreateGitHubIssueFromListValue = useMemo(() => canCreateGitHubIssueFromList(github), [github]);
     const canCreateGitHubIssueOnCreateValue = useMemo(() => canCreateGitHubIssueOnCreate(github), [github]);
     const activeReplyAnchor = useMemo(() => resolveTooltipAnchor(markers, activeReplyReportId), [activeReplyReportId, markers]);
@@ -386,6 +388,77 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         setEditingReportId(null);
         setEditableDraft(null);
     };
+    const cancelCaseEdit = useCallback(() => {
+        setCaseEditReportId(null);
+        setCaseEditDraft(null);
+    }, []);
+    const beginCaseEdit = useCallback((report) => {
+        if (!canEditReportCases(report)) {
+            setErrorMessage(messages.errors.archivedReadOnly);
+            return;
+        }
+        setCaseEditReportId(report.id);
+        setCaseEditDraft(report.cases.map((item) => ({ ...item })));
+        setErrorMessage("");
+    }, [messages.errors.archivedReadOnly]);
+    const updateCaseEditDraftCase = useCallback((caseId, text) => {
+        setCaseEditDraft((current) => {
+            if (!current) {
+                return current;
+            }
+            return current.map((item) => (item.id === caseId ? { ...item, text } : item));
+        });
+    }, []);
+    const addCaseEditDraftCase = useCallback(() => {
+        setCaseEditDraft((current) => (current ? [...current, createReportCase("")] : current));
+    }, []);
+    const removeCaseEditDraftCase = useCallback((caseId) => {
+        setCaseEditDraft((current) => {
+            if (!current || current.length <= 1) {
+                return current;
+            }
+            return current.filter((item) => item.id !== caseId);
+        });
+    }, []);
+    const handleCaseEditSave = async () => {
+        if (!caseEditReportId || !caseEditDraft) {
+            return;
+        }
+        const report = reports.find((item) => item.id === caseEditReportId) ?? activeReplyReport;
+        if (!report) {
+            return;
+        }
+        if (!canEditReportCases(report)) {
+            setErrorMessage(messages.errors.archivedNotEditable);
+            return;
+        }
+        const nextError = getFieldError(caseEditDraft, report.field_values, fields, messages.errors);
+        if (nextError) {
+            setErrorMessage(nextError);
+            return;
+        }
+        try {
+            const cases = caseEditDraft.map((item) => ({
+                ...item,
+                text: item.text.trim(),
+                updated_at: new Date().toISOString(),
+            }));
+            const updatedFeedback = await updateFeedback(report.id, await signUpdatePayload({ cases }));
+            await notifyFeedbackUpdate(eventCallbacks, updatedFeedback);
+            cancelCaseEdit();
+            setErrorMessage("");
+        }
+        catch (nextError) {
+            setErrorMessage(nextError instanceof Error ? nextError.message : messages.errors.updateFeedbackFailed);
+        }
+    };
+    const isCaseEditing = Boolean(caseEditReportId && caseEditDraft);
+    const caseEditCases = caseEditReportId === activeReplyReport?.id ? caseEditDraft : null;
+    useEffect(() => {
+        if (caseEditReportId && activeReplyReportId && caseEditReportId !== activeReplyReportId) {
+            cancelCaseEdit();
+        }
+    }, [activeReplyReportId, cancelCaseEdit, caseEditReportId]);
     const selectReport = (reportId) => {
         setSelectedReportId(reportId);
         if (editingReportId && editingReportId !== reportId) {
@@ -398,6 +471,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         setReplySubmitAsQuestion(false);
         setPendingComposer(null);
         setShowConfirmAuthorSelect(false);
+        cancelCaseEdit();
     };
     const showFeedbackTooltip = useCallback(async (report) => {
         await prepareFeedbackLocation(report);
@@ -1102,6 +1176,15 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         showConfirmAuthorSelect,
         toggleConfirmAuthorSelect,
         handleConfirmResolution,
+        beginCaseEdit,
+        cancelCaseEdit,
+        handleCaseEditSave,
+        updateCaseEditDraftCase,
+        addCaseEditDraftCase,
+        removeCaseEditDraftCase,
+        isCaseEditing,
+        caseEditReportId,
+        caseEditCases,
         targetStats,
         statusText,
         toggleReportMode,
