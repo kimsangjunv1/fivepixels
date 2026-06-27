@@ -1,4 +1,4 @@
-import type { ReportFeedback, ReportStatus } from "@/types/report.js";
+import type { ReportFeedback, ReportStatus } from "../types/report.js";
 export declare function hasReply(report: ReportFeedback): boolean;
 export declare function getReplyStatusTone(hasCompletedReply: boolean): {
     backgroundColor: string;

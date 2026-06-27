@@ -1,4 +1,4 @@
-import type { FeedbackDisplayStatus } from "@/constants/feedbackStatus.js";
+import type { FeedbackDisplayStatus } from "../../../constants/feedbackStatus.js";
 type FeedbackStatusBadgeProps = {
     status: FeedbackDisplayStatus;
     className?: string;

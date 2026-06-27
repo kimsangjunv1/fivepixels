@@ -4,6 +4,7 @@ import type { DeepPartialReportMessages, ReportLocale } from "@/i18n/types.js";
 import { useReportState } from "@/hooks/useReportState.js";
 import type {
     CreateReportFeedbackPayload,
+    CreateReplyPayload,
     ReportEvent,
     ReportFeedback,
     ReportField,
@@ -13,6 +14,7 @@ import type {
     ReportListAllParams,
     ReportListAllResult,
     ReportProject,
+    ReportReply,
     ReportTeam,
     ReportUi,
     ReportVisibility,
@@ -33,9 +35,11 @@ export type ReportProviderProps = {
     fields?: ReportField[];
     onList?: (params: { pathname: string }) => Promise<ReportFeedback[]>;
     onListAll?: (params: ReportListAllParams) => Promise<ReportListAllResult>;
+    onListReplies?: (commentId: string) => Promise<ReportReply[]>;
     onNavigate?: (pathname: string) => void | Promise<void>;
     onRevealTarget?: (report: ReportFeedback) => boolean | Promise<boolean>;
     onCreate?: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
+    onCreateReply?: (commentId: string, payload: CreateReplyPayload) => Promise<ReportReply>;
     onUpdate?: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
     onDelete?: (id: string) => Promise<void>;
     onEvent?: (event: ReportEvent) => void | Promise<void>;
@@ -73,9 +77,11 @@ function ReportProviderEnabled({
     identify,
     onList,
     onListAll,
+    onListReplies,
     onNavigate,
     onRevealTarget,
     onCreate,
+    onCreateReply,
     onUpdate,
     onDelete,
     onEvent,
@@ -100,9 +106,11 @@ function ReportProviderEnabled({
         identify,
         onList,
         onListAll,
+        onListReplies,
         onNavigate,
         onRevealTarget,
         onCreate,
+        onCreateReply,
         onUpdate,
         onDelete,
         onEvent,
@@ -126,9 +134,11 @@ export function ReportProvider({
     fields,
     onList,
     onListAll,
+    onListReplies,
     onNavigate,
     onRevealTarget,
     onCreate,
+    onCreateReply,
     onUpdate,
     onDelete,
     onEvent,
@@ -161,9 +171,11 @@ export function ReportProvider({
             identify={resolvedTeam.user}
             onList={onList}
             onListAll={onListAll}
+            onListReplies={onListReplies}
             onNavigate={onNavigate}
             onRevealTarget={onRevealTarget}
             onCreate={onCreate}
+            onCreateReply={onCreateReply}
             onUpdate={onUpdate}
             onDelete={onDelete}
             onEvent={onEvent}

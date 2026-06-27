@@ -1,4 +1,4 @@
-import type { PanelResizeEdge } from "@/hooks/usePanelResize.js";
+import type { PanelResizeEdge } from "../../hooks/usePanelResize.js";
 import type { PointerEvent as ReactPointerEvent } from "react";
 type PanelResizeHandleProps = {
     edge: PanelResizeEdge;

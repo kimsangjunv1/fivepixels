@@ -1,4 +1,4 @@
-import type { ReportAuthor } from "@/types/report.js";
+import type { ReportAuthor } from "../../../types/report.js";
 type AuthorSelectorProps = {
     authors: ReportAuthor[];
     value: string;

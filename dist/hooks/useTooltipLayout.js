@@ -1,5 +1,5 @@
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { getTooltipAnchorStyle, getTooltipPosition } from "@/utils/coordinates.js";
+import { getTooltipAnchorStyle, getTooltipPosition } from "../utils/coordinates.js";
 export function useTooltipLayout(anchor, expanded, visible) {
     const elementRef = useRef(null);
     const [measuredHeight, setMeasuredHeight] = useState(null);

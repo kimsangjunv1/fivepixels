@@ -1,10 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { useCreateReportMutation, useDeleteReportMutation, useReportsQuery, useUpdateReportMutation } from "./report.query.js";
 import { useCurrentPathname } from "./useCurrentPathname.js";
-import { getRouteDetailStatus, isCreatedToday } from "@/utils/routeDetailStatus.js";
-import { getFeedbackDisplayStatus } from "@/utils/feedbackThread.js";
-import { FEEDBACK_DISPLAY_STATUS_ORDER } from "@/constants/feedbackStatus.js";
-import { resolveStorageAdapter } from "@/utils/storage.js";
+import { createReply as createReplyApi, listReplies as listRepliesApi } from "./report.api.js";
+import { getRouteDetailStatus, isCreatedToday } from "../utils/routeDetailStatus.js";
+import { getFeedbackDisplayStatus } from "../utils/feedbackThread.js";
+import { FEEDBACK_DISPLAY_STATUS_ORDER } from "../constants/feedbackStatus.js";
+import { mergeRepliesIntoReport, needsReplyLoad } from "../utils/reportSummary.js";
+import { resolveStorageAdapter } from "../utils/storage.js";
 function filterReports(reports, filters) {
     return reports.filter((report) => {
         if (filters.status !== "all" && getRouteDetailStatus(report) !== filters.status) {
@@ -20,10 +22,33 @@ function filterReports(reports, filters) {
         return [report.message, report.report_id, report.status, report.pathname].join(" ").toLowerCase().includes(keyword);
     });
 }
-export function useReportPersistence({ projectId, environment, appVersion, fields, onList, onListAll, onCreate, onUpdate, onDelete, routeKey, }) {
-    const { adapter: storageAdapterInstance, usesLocalStorage } = useMemo(() => resolveStorageAdapter({ projectId, environment, appVersion, onList, onListAll, onCreate, onUpdate, onDelete }), [appVersion, environment, onCreate, onDelete, onList, onListAll, onUpdate, projectId]);
+function enrichReports(reports, repliesByReportId) {
+    return reports.map((report) => {
+        const loadedReplies = repliesByReportId[report.id];
+        if (!loadedReplies) {
+            return report;
+        }
+        return mergeRepliesIntoReport(report, loadedReplies);
+    });
+}
+export function useReportPersistence({ projectId, environment, appVersion, fields, onList, onListAll, onListReplies, onCreate, onCreateReply, onUpdate, onDelete, routeKey, }) {
+    const { adapter: storageAdapterInstance, usesLocalStorage } = useMemo(() => resolveStorageAdapter({
+        projectId,
+        environment,
+        appVersion,
+        onList,
+        onListAll,
+        onListReplies,
+        onCreate,
+        onCreateReply,
+        onUpdate,
+        onDelete,
+    }), [appVersion, environment, onCreate, onCreateReply, onDelete, onList, onListAll, onListReplies, onUpdate, projectId]);
     const canTransferFeedback = usesLocalStorage;
+    const usesLazyReplies = Boolean(storageAdapterInstance.listReplies);
+    const usesCreateReply = Boolean(storageAdapterInstance.createReply);
     const currentPathname = useCurrentPathname(routeKey);
+    const [repliesByReportId, setRepliesByReportId] = useState({});
     const [filters, setFilters] = useState({
         keyword: "",
         status: "all",
@@ -31,10 +56,14 @@ export function useReportPersistence({ projectId, environment, appVersion, field
     });
     const [selectedReportId, setSelectedReportId] = useState(null);
     const [listScope, setListScope] = useState("current");
-    const currentReportsQuery = useReportsQuery(storageAdapterInstance, currentPathname, "current", true);
-    const allReportsQuery = useReportsQuery(storageAdapterInstance, currentPathname, "all", listScope === "all" && Boolean(storageAdapterInstance.listAll));
+    const clearLoadedReplies = useCallback(() => {
+        setRepliesByReportId({});
+    }, []);
+    const currentReportsQuery = useReportsQuery(storageAdapterInstance, currentPathname, "current", true, clearLoadedReplies);
+    const allReportsQuery = useReportsQuery(storageAdapterInstance, currentPathname, "all", listScope === "all" && Boolean(storageAdapterInstance.listAll), clearLoadedReplies);
     const activeReportsQuery = listScope === "all" ? allReportsQuery : currentReportsQuery;
-    const reports = activeReportsQuery.data;
+    const rawReports = activeReportsQuery.data;
+    const reports = useMemo(() => enrichReports(rawReports, repliesByReportId), [rawReports, repliesByReportId]);
     const { error, isError, isFetching, hasNextPage, isFetchingNextPage, fetchNextPage, refetch } = activeReportsQuery;
     const { mutateAsync: createFeedback, isPending: isCreating } = useCreateReportMutation(storageAdapterInstance, () => {
         void refetch();
@@ -43,21 +72,49 @@ export function useReportPersistence({ projectId, environment, appVersion, field
         }
     });
     const { mutateAsync: updateFeedback, isPending: isUpdating } = useUpdateReportMutation(storageAdapterInstance, () => {
+        clearLoadedReplies();
         void refetch();
         if (listScope === "all") {
             void currentReportsQuery.refetch();
         }
     });
     const { mutateAsync: deleteFeedback, isPending: isDeleting } = useDeleteReportMutation(storageAdapterInstance, () => {
+        clearLoadedReplies();
         void refetch();
         if (listScope === "all") {
             void currentReportsQuery.refetch();
         }
     });
+    const loadRepliesIfNeeded = useCallback(async (report) => {
+        if (!needsReplyLoad(report, usesLazyReplies)) {
+            return report;
+        }
+        const replies = await listRepliesApi(storageAdapterInstance, report.id);
+        setRepliesByReportId((current) => ({
+            ...current,
+            [report.id]: replies,
+        }));
+        return mergeRepliesIntoReport(report, replies);
+    }, [storageAdapterInstance, usesLazyReplies]);
+    const createReply = useCallback(async (commentId, payload) => {
+        const created = await createReplyApi(storageAdapterInstance, commentId, payload);
+        if (usesLazyReplies) {
+            const replies = await listRepliesApi(storageAdapterInstance, commentId);
+            setRepliesByReportId((current) => ({
+                ...current,
+                [commentId]: replies,
+            }));
+        }
+        void refetch();
+        if (listScope === "all") {
+            void currentReportsQuery.refetch();
+        }
+        return created;
+    }, [currentReportsQuery, listScope, refetch, storageAdapterInstance, usesLazyReplies]);
     const filteredReports = useMemo(() => filterReports(reports, filters), [filters, reports]);
-    const currentPageFilteredReports = useMemo(() => filterReports(currentReportsQuery.data, filters), [currentReportsQuery.data, filters]);
+    const currentPageFilteredReports = useMemo(() => filterReports(enrichReports(currentReportsQuery.data, repliesByReportId), filters), [currentReportsQuery.data, filters, repliesByReportId]);
     const routeDetailsStats = useMemo(() => {
-        const currentPageReports = currentReportsQuery.data;
+        const currentPageReports = enrichReports(currentReportsQuery.data, repliesByReportId);
         const statusRows = FEEDBACK_DISPLAY_STATUS_ORDER.map((status) => ({
             status,
             all: 0,
@@ -96,7 +153,7 @@ export function useReportPersistence({ projectId, environment, appVersion, field
             statusRows,
             fieldCounts,
         };
-    }, [currentPathname, currentReportsQuery.data, fields]);
+    }, [currentPathname, currentReportsQuery.data, fields, repliesByReportId]);
     const selectedReport = useMemo(() => {
         return filteredReports.find((report) => report.id === selectedReportId) ?? filteredReports[0] ?? null;
     }, [filteredReports, selectedReportId]);
@@ -112,6 +169,8 @@ export function useReportPersistence({ projectId, environment, appVersion, field
         storageAdapterInstance,
         canTransferFeedback,
         canListAllFeedback: Boolean(storageAdapterInstance.listAll),
+        usesLazyReplies,
+        usesCreateReply,
         currentPathname,
         listScope,
         setListScope,
@@ -137,6 +196,8 @@ export function useReportPersistence({ projectId, environment, appVersion, field
         createFeedback,
         updateFeedback,
         deleteFeedback,
+        loadRepliesIfNeeded,
+        createReply,
     };
 }
 //# sourceMappingURL=useReportPersistence.js.map

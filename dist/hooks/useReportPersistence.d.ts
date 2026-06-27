@@ -1,5 +1,5 @@
-import type { CreateReportFeedbackPayload, ReportFeedback, ReportField, ReportPersistenceHandlers, ReportStorageAdapter, UpdateReportFeedbackPayload } from "@/types/report.js";
-import type { ReportFilters, ReportListScope } from "@/types/report-ui.js";
+import type { CreateReportFeedbackPayload, CreateReplyPayload, ReportFeedback, ReportField, ReportPersistenceHandlers, ReportReply, ReportStorageAdapter, UpdateReportFeedbackPayload } from "../types/report.js";
+import type { ReportFilters, ReportListScope } from "../types/report-ui.js";
 export type ReportPersistenceConfig = {
     projectId: string;
     environment?: string;
@@ -9,15 +9,19 @@ export type ReportPersistenceConfig = {
         pathname: string;
     }) => Promise<ReportFeedback[]>;
     onListAll?: ReportPersistenceHandlers["onListAll"];
+    onListReplies?: ReportPersistenceHandlers["onListReplies"];
     onCreate?: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
+    onCreateReply?: ReportPersistenceHandlers["onCreateReply"];
     onUpdate?: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
     onDelete?: (id: string) => Promise<void>;
     routeKey?: string;
 };
-export declare function useReportPersistence({ projectId, environment, appVersion, fields, onList, onListAll, onCreate, onUpdate, onDelete, routeKey, }: ReportPersistenceConfig): {
+export declare function useReportPersistence({ projectId, environment, appVersion, fields, onList, onListAll, onListReplies, onCreate, onCreateReply, onUpdate, onDelete, routeKey, }: ReportPersistenceConfig): {
     storageAdapterInstance: ReportStorageAdapter;
     canTransferFeedback: boolean;
     canListAllFeedback: boolean;
+    usesLazyReplies: boolean;
+    usesCreateReply: boolean;
     currentPathname: string;
     listScope: ReportListScope;
     setListScope: import("react").Dispatch<import("react").SetStateAction<ReportListScope>>;
@@ -31,7 +35,7 @@ export declare function useReportPersistence({ projectId, environment, appVersio
     routeDetailsStats: {
         pathname: string;
         statusRows: {
-            status: import("@/constants/feedbackStatus.js").FeedbackDisplayStatus;
+            status: import("../constants/feedbackStatus.js").FeedbackDisplayStatus;
             all: number;
             today: number;
         }[];
@@ -56,6 +60,8 @@ export declare function useReportPersistence({ projectId, environment, appVersio
     createFeedback: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
     updateFeedback: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
     deleteFeedback: (id: string) => Promise<void>;
+    loadRepliesIfNeeded: (report: ReportFeedback) => Promise<ReportFeedback>;
+    createReply: (commentId: string, payload: CreateReplyPayload) => Promise<ReportReply>;
 };
 export type ReportPersistenceState = ReturnType<typeof useReportPersistence> & {
     storageAdapterInstance: ReportStorageAdapter;

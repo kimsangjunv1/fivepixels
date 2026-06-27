@@ -1,4 +1,4 @@
-import { DOT_SIZE } from "@/constants/report.js";
+import { DOT_SIZE } from "../constants/report.js";
 import { getFeedbackTargetSelector, getNearestScrollContainer, getScrollContainerClampId, hasFixedPositionAncestor, isFeedbackTargetVisible } from "./dom.js";
 import { getFeedbackAnchorElement } from "./locateFeedback.js";
 import { resolveDetachedKind } from "./markerContext.js";

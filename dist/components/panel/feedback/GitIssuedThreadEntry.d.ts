@@ -1,4 +1,4 @@
-import type { ReportReply } from "@/types/report.js";
+import type { ReportReply } from "../../../types/report.js";
 type GitIssuedThreadEntryProps = {
     reply: ReportReply;
     issueUrl: string;

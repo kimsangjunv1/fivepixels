@@ -1,4 +1,4 @@
-import type { ReportAuthAction, ReportAuthor, ReportIdentify } from "@/types/report.js";
+import type { ReportAuthAction, ReportAuthor, ReportIdentify } from "../types/report.js";
 type UsePersonalKeyOptions = {
     enabled: boolean;
     projectId: string;
@@ -24,7 +24,7 @@ export declare function usePersonalKey({ enabled, projectId, environment, identi
     insertPersonalKey: (key: string) => Promise<{
         authorized: boolean;
     } | null>;
-    signPayload: (action: ReportAuthAction, payload: unknown) => Promise<import("@/types/report.js").ReportAuthProof | null>;
+    signPayload: (action: ReportAuthAction, payload: unknown) => Promise<import("../types/report.js").ReportAuthProof | null>;
 };
 export {};
 //# sourceMappingURL=usePersonalKey.d.ts.map

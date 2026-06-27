@@ -1,9 +1,9 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useEffect, useState } from "react";
-import { useReport } from "@/providers/reportContext.js";
-import { SendIcon } from "@/components/icons/Icons.js";
+import { useReport } from "../../../providers/reportContext.js";
+import { SendIcon } from "../../../components/icons/Icons.js";
 import { AuthorSelector } from "./AuthorSelector.js";
-import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
+import { HoverTooltip } from "../../../components/ui/HoverTooltip.js";
 import { FieldTagSelector } from "./FieldTagSelector.js";
 export function FeedbackComposer({ message, onMessageChange, authorName, onAuthorNameChange, authors, fields, fieldValues, onFieldChange, showTags = false, onSubmit, isSubmitting = false, showGitHubIssueOnCreate = false, onGitHubIssueSubmit, isGitHubIssueSubmitting = false, placeholder, autoFocus = false, errorMessage = "", showAskQuestionToggle = false, askQuestionChecked = false, onAskQuestionChange, askQuestionForced = false, }) {
     const { messages } = useReport();

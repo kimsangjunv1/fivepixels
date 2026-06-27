@@ -11,7 +11,7 @@ import { getMarkerColor } from "@/utils/reportVisual.js";
 import { FeedbackComposer } from "@/components/panel/feedback/FeedbackComposer.js";
 import { FeedbackHoverCard } from "@/components/panel/feedback/FeedbackHoverCard.js";
 import { FeedbackIssuePinnedHeader } from "@/components/panel/feedback/FeedbackIssuePinnedHeader.js";
-import { buildConfirmAuthorOptions, shouldShowReplyComposer } from "@/utils/feedbackThread.js";
+import { buildConfirmAuthorOptions, getReplyCount, shouldShowReplyComposer } from "@/utils/feedbackThread.js";
 import { FeedbackThread } from "@/components/panel/feedback/FeedbackThread.js";
 
 const TOOLTIP_SURFACE_CLASS = "overflow-hidden rounded-[12px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] shadow-[var(--adaptive-popup-shadow)]";
@@ -102,7 +102,7 @@ function MarkerButton({ markerItem, isSelected, detachedAriaLabel, detachedModal
         onEnter: onHoverStart,
         onLeave: onHoverEnd,
     });
-    const replyCount = markerItem.report.replies.length;
+    const replyCount = getReplyCount(markerItem.report);
     const markerLabel =
         replyCount > 0 ? `${markerItem.report.report_type} · ${markerItem.report.report_id} · ${replyCount} replies` : `${markerItem.report.report_type} · ${markerItem.report.report_id}`;
     const isDetached = markerItem.detached;

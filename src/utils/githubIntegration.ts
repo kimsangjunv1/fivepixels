@@ -60,7 +60,7 @@ export function isGitIssuedSystemReply(reply: ReportReply, report: ReportFeedbac
     return reply.author_type === "system" && isGitIssued(report);
 }
 
-export function buildGitHubIssueUpdate(report: ReportFeedback, result: ReportGitHubIssueCreateResult, gitIssuedMessage: string): UpdateReportFeedbackPayload {
+export function buildGitHubIssueStatusUpdate(report: ReportFeedback, result: ReportGitHubIssueCreateResult): UpdateReportFeedbackPayload {
     return {
         status: "git_issued",
         integrations: {
@@ -71,6 +71,12 @@ export function buildGitHubIssueUpdate(report: ReportFeedback, result: ReportGit
                 issued_at: new Date().toISOString(),
             },
         },
-        replies: [...report.replies, createGitIssuedReply(gitIssuedMessage)],
+    };
+}
+
+export function buildGitHubIssueUpdate(report: ReportFeedback, result: ReportGitHubIssueCreateResult, gitIssuedMessage: string): UpdateReportFeedbackPayload {
+    return {
+        ...buildGitHubIssueStatusUpdate(report, result),
+        replies: [...(report.replies ?? []), createGitIssuedReply(gitIssuedMessage)],
     };
 }

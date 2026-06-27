@@ -1,4 +1,4 @@
-import type { ReportAuthAction, ReportAuthProof, ReportAuthor, ReportIdentify } from "@/types/report.js";
+import type { ReportAuthAction, ReportAuthProof, ReportAuthor, ReportIdentify } from "../types/report.js";
 type ReviewerKeyBundle = {
     projectId: string;
     environment?: string;

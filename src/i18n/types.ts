@@ -268,6 +268,8 @@ export type ReportMessages = {
         deleteFeedbackFailed: string;
         createGitHubIssueFailed: string;
         loadFeedbackFailed: string;
+        loadRepliesFailed: string;
+        createReplyFailed: string;
         createFeedbackFailed: string;
         localStorageTransferOnly: string;
         jsonImportFailed: string;

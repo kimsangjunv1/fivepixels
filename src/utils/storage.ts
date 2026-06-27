@@ -7,7 +7,9 @@ export type ResolveStorageAdapterOptions = {
     appVersion?: string;
     onList?: ReportPersistenceHandlers["onList"];
     onListAll?: ReportPersistenceHandlers["onListAll"];
+    onListReplies?: ReportPersistenceHandlers["onListReplies"];
     onCreate?: ReportPersistenceHandlers["onCreate"];
+    onCreateReply?: ReportPersistenceHandlers["onCreateReply"];
     onUpdate?: ReportPersistenceHandlers["onUpdate"];
     onDelete?: ReportPersistenceHandlers["onDelete"];
 };
@@ -20,12 +22,14 @@ export function hasCustomPersistenceHandlers(
 
 function createStorageAdapterFromHandlers(
     handlers: Required<Pick<ReportPersistenceHandlers, "onList" | "onCreate" | "onUpdate">> &
-        Pick<ReportPersistenceHandlers, "onDelete" | "onListAll">,
+        Pick<ReportPersistenceHandlers, "onDelete" | "onListAll" | "onListReplies" | "onCreateReply">,
 ): ReportStorageAdapter {
     return {
         list: handlers.onList,
         listAll: handlers.onListAll,
+        listReplies: handlers.onListReplies,
         create: handlers.onCreate,
+        createReply: handlers.onCreateReply,
         update: handlers.onUpdate,
         remove: handlers.onDelete,
     };
@@ -37,14 +41,16 @@ export function resolveStorageAdapter({
     appVersion,
     onList,
     onListAll,
+    onListReplies,
     onCreate,
+    onCreateReply,
     onUpdate,
     onDelete,
 }: ResolveStorageAdapterOptions): {
     adapter: ReportStorageAdapter;
     usesLocalStorage: boolean;
 } {
-    const hasPartialCustom = Boolean(onList || onListAll || onCreate || onUpdate || onDelete);
+    const hasPartialCustom = Boolean(onList || onListAll || onListReplies || onCreate || onCreateReply || onUpdate || onDelete);
 
     if (hasPartialCustom && !hasCustomPersistenceHandlers({ onList, onCreate, onUpdate })) {
         console.warn(
@@ -57,7 +63,9 @@ export function resolveStorageAdapter({
             adapter: createStorageAdapterFromHandlers({
                 onList: onList!,
                 onListAll,
+                onListReplies,
                 onCreate: onCreate!,
+                onCreateReply,
                 onUpdate: onUpdate!,
                 onDelete,
             }),

@@ -283,6 +283,8 @@ export const ko: ReportMessages = {
         deleteFeedbackFailed: "피드백 삭제에 실패했어요.",
         createGitHubIssueFailed: "GitHub 이슈 전송에 실패했어요.",
         loadFeedbackFailed: "피드백을 불러오지 못했어요.",
+        loadRepliesFailed: "답변을 불러오지 못했어요.",
+        createReplyFailed: "답변 등록에 실패했어요.",
         createFeedbackFailed: "피드백 등록에 실패했어요.",
         localStorageTransferOnly: "localStorage 저장소에서만 가져오기/내보내기를 사용할 수 있어요.",
         jsonImportFailed: "JSON 가져오기에 실패했어요.",

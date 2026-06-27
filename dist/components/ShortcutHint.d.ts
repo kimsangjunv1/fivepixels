@@ -1,4 +1,4 @@
-import type { ShortcutBinding } from "@/utils/shortcuts.js";
+import type { ShortcutBinding } from "../utils/shortcuts.js";
 type ShortcutHintProps = {
     binding: ShortcutBinding;
     visible: boolean;

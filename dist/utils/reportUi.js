@@ -1,4 +1,4 @@
-import { getReportMessages, resolveReportLocale } from "@/i18n/index.js";
+import { getReportMessages, resolveReportLocale } from "../i18n/index.js";
 const DEFAULT_UI = {
     appearance: "system",
     showFeedbackList: true,

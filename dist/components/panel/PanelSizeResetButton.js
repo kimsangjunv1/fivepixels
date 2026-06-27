@@ -1,5 +1,5 @@
 import { jsx as _jsx } from "react/jsx-runtime";
-import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
+import { HoverTooltip } from "../../components/ui/HoverTooltip.js";
 export function PanelSizeResetButton({ collapsed, disabled = false, label, onClick }) {
     if (collapsed) {
         return null;

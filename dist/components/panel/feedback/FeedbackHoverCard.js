@@ -1,6 +1,6 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import { getDetachedMarkerHint } from "@/utils/markerContext.js";
-import { getFeedbackDisplayStatus, getLatestReply, getRemainingReplyCount } from "@/utils/feedbackThread.js";
+import { getDetachedMarkerHint } from "../../../utils/markerContext.js";
+import { getFeedbackDisplayStatus, getLatestReply, getRemainingReplyCount } from "../../../utils/feedbackThread.js";
 import { FeedbackCreatorBadge } from "./FeedbackCreatorBadge.js";
 import { FeedbackFieldTags } from "./FeedbackFieldTags.js";
 import { FeedbackStatusBadge } from "./FeedbackStatusBadge.js";

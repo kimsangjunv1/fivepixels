@@ -1,6 +1,6 @@
-import { getActiveReportMessages } from "@/i18n/index.js";
-import { getReportsStorageKey } from "@/constants/storageKeys.js";
-import { readAllReportsFromStorage, writeAllReportsToStorage } from "@/storage/local/localStorageAdapter.js";
+import { getActiveReportMessages } from "../i18n/index.js";
+import { getReportsStorageKey } from "../constants/storageKeys.js";
+import { readAllReportsFromStorage, writeAllReportsToStorage } from "../storage/local/localStorageAdapter.js";
 import { parseFeedbackImportJson, serializeFeedbackExport, toReportProject, } from "./feedbackTransferSchema.js";
 export { buildProjectComparisonLines, isImportProjectCompatible, parseFeedbackCommandJson, parseFeedbackImportJson, serializeFeedbackExport, serializeFeedbackItem, toReportProject, } from "./feedbackTransferSchema.js";
 const JSON_FILE_TYPES = [

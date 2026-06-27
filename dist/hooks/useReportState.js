@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ensureReportLocaleMessages, getReportMessages, setActiveReportMessages } from "@/i18n/index.js";
+import { ensureReportLocaleMessages, getReportMessages, setActiveReportMessages } from "../i18n/index.js";
 import { useReportShortcuts } from "./useReportShortcuts.js";
 import { useReportPersistence } from "./useReportPersistence.js";
 import { useIsMobileViewport } from "./useIsMobileViewport.js";
@@ -7,23 +7,23 @@ import { useAppearancePreference } from "./useAppearancePreference.js";
 import { useLocalePreference } from "./useLocalePreference.js";
 import { usePersonalKey } from "./usePersonalKey.js";
 import { useResolvedAppearance } from "./useResolvedAppearance.js";
-import { createReplyStatusForSubmit, getFeedbackDisplayStatus, getLatestBranchRoot, ISSUE_ROOT_PARENT_ID, resolveOriginalFeedbackAuthorName, resolveParentReplyIdForQuestion } from "@/utils/feedbackThread.js";
-import { clampRatio, getMarkerFromReport, resolveTooltipAnchor } from "@/utils/coordinates.js";
-import { getFeedbackTargetElement, isFeedbackTargetVisible, scrollToFeedbackTarget, waitForTargetRevealResync } from "@/utils/locateFeedback.js";
+import { createReplyStatusForSubmit, getFeedbackDisplayStatus, getLatestBranchRoot, getReportReplies, ISSUE_ROOT_PARENT_ID, resolveOriginalFeedbackAuthorName, resolveParentReplyIdForQuestion } from "../utils/feedbackThread.js";
+import { clampRatio, getMarkerFromReport, resolveTooltipAnchor } from "../utils/coordinates.js";
+import { getFeedbackTargetElement, isFeedbackTargetVisible, scrollToFeedbackTarget, waitForTargetRevealResync } from "../utils/locateFeedback.js";
 const MARKER_HOVER_LEAVE_MS = 250;
 const OVERLAY_HOVER_LEAVE_MS = 100;
-import { findTargetByPoint, getSelectableTargets, isSameHoverTarget, resolveFeedbackDocumentAnchor, toSnapshot } from "@/utils/dom.js";
-import { createInitialFieldValues, getFieldError, getFieldTags } from "@/utils/fields.js";
-import { createReplyId } from "@/utils/format.js";
-import { notifyFeedbackCreate, notifyFeedbackDelete, notifyFeedbackReply, notifyFeedbackUpdate, notifyGitHubIssueCreated, } from "@/utils/reportCallbacks.js";
-import { buildGitHubIssueUpdate, canCreateGitHubIssueFromList, canCreateGitHubIssueOnCreate, isGitIssued, } from "@/utils/githubIntegration.js";
+import { findTargetByPoint, getSelectableTargets, isSameHoverTarget, resolveFeedbackDocumentAnchor, toSnapshot } from "../utils/dom.js";
+import { createInitialFieldValues, getFieldError, getFieldTags } from "../utils/fields.js";
+import { createReplyId } from "../utils/format.js";
+import { notifyFeedbackCreate, notifyFeedbackDelete, notifyFeedbackReply, notifyFeedbackUpdate, notifyGitHubIssueCreated, } from "../utils/reportCallbacks.js";
+import { buildGitHubIssueStatusUpdate, buildGitHubIssueUpdate, canCreateGitHubIssueFromList, canCreateGitHubIssueOnCreate, isGitIssued, } from "../utils/githubIntegration.js";
 function resolveDefaultAuthorName(identify, authors) {
     if (identify?.name) {
         return identify.name;
     }
     return authors[0]?.name ?? "";
 }
-export function useReportState({ projectId, environment, appVersion, appearance, fields, authors = [], requireReviewerKey = false, shortcut: _shortcut, identify, onList, onListAll, onNavigate, onRevealTarget, onCreate, onUpdate, onDelete, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys = false, initialLocale, messageOverrides, }) {
+export function useReportState({ projectId, environment, appVersion, appearance, fields, authors = [], requireReviewerKey = false, shortcut: _shortcut, identify, onList, onListAll, onListReplies, onNavigate, onRevealTarget, onCreate, onCreateReply, onUpdate, onDelete, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys = false, initialLocale, messageOverrides, }) {
     const { appearance: activeAppearance, setAppearance } = useAppearancePreference(appearance);
     const { locale, setLocale } = useLocalePreference(initialLocale);
     const [localeMessagesReady, setLocaleMessagesReady] = useState(locale !== "ko");
@@ -55,14 +55,16 @@ export function useReportState({ projectId, environment, appVersion, appearance,
     const overlayHoverLeaveTimeoutRef = useRef(null);
     const resolvedAppearance = useResolvedAppearance(activeAppearance);
     const isMobileViewport = useIsMobileViewport();
-    const { canTransferFeedback, canListAllFeedback, currentPathname, listScope, setListScope, filters, setFilters, selectedReportId, setSelectedReportId, reports, filteredReports, currentPageFilteredReports, routeDetailsStats, selectedReport, isError, isFetching, hasNextPage, isFetchingNextPage, fetchNextPage, isCreating, isUpdating, isDeleting, queryErrorMessage, refetch, createFeedback, updateFeedback, deleteFeedback, } = useReportPersistence({
+    const { canTransferFeedback, canListAllFeedback, currentPathname, listScope, setListScope, filters, setFilters, selectedReportId, setSelectedReportId, reports, filteredReports, currentPageFilteredReports, routeDetailsStats, selectedReport, isError, isFetching, hasNextPage, isFetchingNextPage, fetchNextPage, isCreating, isUpdating, isDeleting, queryErrorMessage, refetch, createFeedback, updateFeedback, deleteFeedback, loadRepliesIfNeeded, createReply, usesCreateReply, } = useReportPersistence({
         projectId,
         environment,
         appVersion,
         fields,
         onList,
         onListAll,
+        onListReplies,
         onCreate,
+        onCreateReply,
         onUpdate,
         onDelete,
         routeKey,
@@ -89,6 +91,25 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         }
         const auth = await signPayload("feedback:update", payload);
         return auth ? { ...payload, auth } : payload;
+    };
+    const signReplyPayload = async (payload) => {
+        if (personalKeyRequired) {
+            throw new Error(messages.errors.personalKeyRequired);
+        }
+        const auth = await signPayload("reply:create", payload);
+        return auth ? { ...payload, auth } : payload;
+    };
+    const applyGitHubIssueUpdate = async (report, result) => {
+        if (usesCreateReply) {
+            const updatedFeedback = await updateFeedback(report.id, await signUpdatePayload(buildGitHubIssueStatusUpdate(report, result)));
+            await createReply(report.id, await signReplyPayload({
+                message: messages.resolution.gitIssuedMessage,
+                status: "suggested",
+                author_type: "system",
+            }));
+            return updatedFeedback;
+        }
+        return updateFeedback(report.id, await signUpdatePayload(buildGitHubIssueUpdate(report, result, messages.resolution.gitIssuedMessage)));
     };
     const [mode, setMode] = useState("idle");
     const [showTargetPreview, setShowTargetPreview] = useState(false);
@@ -449,9 +470,10 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         clearHoverLeaveTimeout();
     };
     const activateFeedbackMarker = useCallback(async (report) => {
-        await prepareFeedbackLocation(report);
-        openReplyComposer(report);
-    }, [openReplyComposer, prepareFeedbackLocation]);
+        const enrichedReport = await loadRepliesIfNeeded(report);
+        await prepareFeedbackLocation(enrichedReport);
+        openReplyComposer(enrichedReport);
+    }, [loadRepliesIfNeeded, openReplyComposer, prepareFeedbackLocation]);
     const toggleConfirmAuthorSelect = () => {
         setShowConfirmAuthorSelect((current) => !current);
     };
@@ -459,7 +481,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         if (!activeReplyReport) {
             return;
         }
-        const latestRoot = getLatestBranchRoot(activeReplyReport.replies);
+        const latestRoot = getLatestBranchRoot(getReportReplies(activeReplyReport));
         if (!latestRoot) {
             return;
         }
@@ -479,7 +501,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         if (!activeReplyReport) {
             return;
         }
-        const latestRoot = getLatestBranchRoot(activeReplyReport.replies);
+        const latestRoot = getLatestBranchRoot(getReportReplies(activeReplyReport));
         setReplyDraft("");
         if (!latestRoot) {
             setPendingComposer({
@@ -707,7 +729,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             const savedFeedback = await createFeedback(await signCreatePayload(payload));
             await notifyFeedbackCreate(eventCallbacks, savedFeedback);
             const result = await github.onCreate(savedFeedback);
-            const updatedFeedback = await updateFeedback(savedFeedback.id, await signUpdatePayload(buildGitHubIssueUpdate(savedFeedback, result, messages.resolution.gitIssuedMessage)));
+            const updatedFeedback = await applyGitHubIssueUpdate(savedFeedback, result);
             await notifyGitHubIssueCreated(eventCallbacks, {
                 feedback: updatedFeedback,
                 issueUrl: result.issueUrl,
@@ -763,10 +785,21 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         }
     };
     const appendReply = async (report, reply) => {
-        const payload = await signUpdatePayload({
-            replies: [...report.replies, reply],
-        });
-        await updateFeedback(report.id, payload);
+        if (usesCreateReply) {
+            await createReply(report.id, await signReplyPayload({
+                message: reply.message,
+                status: reply.status,
+                parent_reply_id: reply.parent_reply_id,
+                author_type: reply.author_type ?? "manager",
+                author_name: reply.author_name,
+            }));
+        }
+        else {
+            const payload = await signUpdatePayload({
+                replies: [...getReportReplies(report), reply],
+            });
+            await updateFeedback(report.id, payload);
+        }
         await notifyFeedbackReply(eventCallbacks, {
             feedbackId: report.id,
             message: reply.message,
@@ -842,20 +875,34 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             setErrorMessage(messages.errors.reviewerRequired);
             return;
         }
-        const reply = {
-            id: createReplyId(),
-            message: messages.resolution.issueResolvedMessage,
-            created_at: new Date().toISOString(),
-            status: "resolved",
-            author_type: "user",
-            author_name: resolverName,
-        };
         try {
-            const updatedFeedback = await updateFeedback(activeReplyReport.id, await signUpdatePayload({
-                status: "resolved",
-                replies: [...activeReplyReport.replies, reply],
-            }));
-            await notifyFeedbackUpdate(eventCallbacks, updatedFeedback);
+            if (usesCreateReply) {
+                await createReply(activeReplyReport.id, await signReplyPayload({
+                    message: messages.resolution.issueResolvedMessage,
+                    status: "resolved",
+                    author_type: "user",
+                    author_name: resolverName,
+                }));
+                const updatedFeedback = await updateFeedback(activeReplyReport.id, await signUpdatePayload({
+                    status: "resolved",
+                }));
+                await notifyFeedbackUpdate(eventCallbacks, updatedFeedback);
+            }
+            else {
+                const reply = {
+                    id: createReplyId(),
+                    message: messages.resolution.issueResolvedMessage,
+                    created_at: new Date().toISOString(),
+                    status: "resolved",
+                    author_type: "user",
+                    author_name: resolverName,
+                };
+                const updatedFeedback = await updateFeedback(activeReplyReport.id, await signUpdatePayload({
+                    status: "resolved",
+                    replies: [...getReportReplies(activeReplyReport), reply],
+                }));
+                await notifyFeedbackUpdate(eventCallbacks, updatedFeedback);
+            }
             setErrorMessage("");
             setPendingComposer(null);
             setReplyDraft("");
@@ -876,7 +923,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         setErrorMessage("");
         try {
             const result = await github.onCreate(report);
-            const updatedFeedback = await updateFeedback(report.id, await signUpdatePayload(buildGitHubIssueUpdate(report, result, messages.resolution.gitIssuedMessage)));
+            const updatedFeedback = await applyGitHubIssueUpdate(report, result);
             await notifyGitHubIssueCreated(eventCallbacks, {
                 feedback: updatedFeedback,
                 issueUrl: result.issueUrl,

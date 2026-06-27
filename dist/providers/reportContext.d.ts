@@ -1,4 +1,4 @@
-import type { useReportState } from "@/hooks/useReportState.js";
+import type { useReportState } from "../hooks/useReportState.js";
 export type ReportContextValue = ReturnType<typeof useReportState>;
 declare const ReportContext: import("react").Context<{
     appearance: import("..").ReportAppearance;

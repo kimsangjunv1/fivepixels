@@ -1,4 +1,4 @@
-import type { ReportAuthor, ReportFeedback } from "@/types/report.js";
+import type { ReportAuthor, ReportFeedback } from "../../../types/report.js";
 type PendingComposer = {
     type: "deny" | "recheck" | "checkout" | "question";
     targetReplyId: string;

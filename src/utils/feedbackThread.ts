@@ -1,16 +1,35 @@
 import type { FeedbackDisplayStatus } from "@/constants/feedbackStatus.js";
 import type { ReportAuthor, ReportFeedback, ReportReply, ReportReplyStatus } from "@/types/report.js";
+import { summaryToReply } from "@/utils/reportSummary.js";
 
-export function getLatestReply(report: ReportFeedback): ReportReply | null {
-    if (report.replies.length === 0) {
-        return null;
+export function getReportReplies(report: ReportFeedback): ReportReply[] {
+    return report.replies ?? [];
+}
+
+export function getReplyCount(report: ReportFeedback): number {
+    if (typeof report.reply_count === "number") {
+        return report.reply_count;
     }
 
-    return report.replies[report.replies.length - 1] ?? null;
+    return report.replies?.length ?? 0;
+}
+
+export function getLatestReply(report: ReportFeedback): ReportReply | null {
+    const replies = getReportReplies(report);
+
+    if (replies.length > 0) {
+        return replies[replies.length - 1] ?? null;
+    }
+
+    if (report.latest_reply) {
+        return summaryToReply(report.latest_reply, report.id);
+    }
+
+    return null;
 }
 
 export function getRemainingReplyCount(report: ReportFeedback) {
-    return Math.max(0, report.replies.length - 1);
+    return Math.max(0, getReplyCount(report) - 1);
 }
 
 export function getFeedbackDisplayStatus(report: ReportFeedback, expanded = false): FeedbackDisplayStatus {
@@ -62,7 +81,7 @@ export function isActiveBranchRoot(report: ReportFeedback, reply: ReportReply): 
         return false;
     }
 
-    const latestRoot = getLatestBranchRoot(report.replies);
+    const latestRoot = getLatestBranchRoot(getReportReplies(report));
     return latestRoot?.id === reply.id;
 }
 
@@ -79,7 +98,7 @@ export function canReviewLatestSuggestion(report: ReportFeedback): boolean {
         return false;
     }
 
-    const latestRoot = getLatestBranchRoot(report.replies);
+    const latestRoot = getLatestBranchRoot(getReportReplies(report));
     return latestRoot?.status === "suggested";
 }
 
@@ -92,7 +111,7 @@ export function canManagerAskQuestionOnLatest(report: ReportFeedback): boolean {
         return false;
     }
 
-    const latestRoot = getLatestBranchRoot(report.replies);
+    const latestRoot = getLatestBranchRoot(getReportReplies(report));
     return latestRoot?.status === "found_error" || latestRoot?.status === "recheck_requested";
 }
 
@@ -105,7 +124,7 @@ export function canShowIssueEntryActions(report: ReportFeedback): boolean {
         return false;
     }
 
-    return getLatestBranchRoot(report.replies) === null;
+    return getLatestBranchRoot(getReportReplies(report)) === null;
 }
 
 export function resolveOriginalFeedbackAuthorName(report: ReportFeedback) {
@@ -152,7 +171,7 @@ export function shouldShowReplyComposer(report: ReportFeedback, pendingComposer:
         return false;
     }
 
-    if (report.replies.length === 0) {
+    if (getReplyCount(report) === 0) {
         return pendingComposer !== null;
     }
 
@@ -215,7 +234,7 @@ export function normalizeReplyParents(replies: ReportReply[]): ReportReply[] {
 }
 
 export function buildThreadTimeline(report: ReportFeedback): FeedbackThreadTimeline {
-    const normalized = normalizeReplyParents(report.replies);
+    const normalized = normalizeReplyParents(getReportReplies(report));
     const issueChildren: ReportReply[] = [];
     const branchMap = new Map<string, FeedbackReplyBranch>();
     const branches: FeedbackReplyBranch[] = [];
@@ -256,7 +275,7 @@ export function resolveParentReplyIdForQuestion(
             return ISSUE_ROOT_PARENT_ID;
         }
 
-        const target = report.replies.find((reply) => reply.id === pendingComposer.targetReplyId);
+        const target = getReportReplies(report).find((reply) => reply.id === pendingComposer.targetReplyId);
 
         if (target && isBranchRootStatus(target.status)) {
             return target.id;
@@ -281,8 +300,10 @@ export function resolveParentReplyIdForQuestion(
         return latest.id;
     }
 
-    for (let index = report.replies.length - 1; index >= 0; index -= 1) {
-        const reply = report.replies[index];
+    const replies = getReportReplies(report);
+
+    for (let index = replies.length - 1; index >= 0; index -= 1) {
+        const reply = replies[index];
 
         if (isBranchRootStatus(reply.status)) {
             return reply.id;

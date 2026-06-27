@@ -1,12 +1,12 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import { useEffect, useState } from "react";
-import { formatTimeOnly } from "@/utils/format.js";
-import { getFeedbackDisplayStatus, getLatestReply, getRemainingReplyCount } from "@/utils/feedbackThread.js";
-import { copyTextToClipboard, serializeFeedbackItem } from "@/utils/feedbackDataTransfer.js";
+import { formatTimeOnly } from "../../../utils/format.js";
+import { getFeedbackDisplayStatus, getLatestReply, getRemainingReplyCount } from "../../../utils/feedbackThread.js";
+import { copyTextToClipboard, serializeFeedbackItem } from "../../../utils/feedbackDataTransfer.js";
 import { FeedbackStatusBadge } from "./FeedbackStatusBadge.js";
 import { GitIssueButton } from "./GitIssueButton.js";
-import { CopyIcon, TrashIcon } from "@/components/icons/Icons.js";
-import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
+import { CopyIcon, TrashIcon } from "../../../components/icons/Icons.js";
+import { HoverTooltip } from "../../../components/ui/HoverTooltip.js";
 function FeedbackListCopyAction({ report, messages }) {
     const [copied, setCopied] = useState(false);
     const handleCopy = (event) => {

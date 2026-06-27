@@ -1,5 +1,5 @@
-import type { ReportField, ReportFieldValues } from "@/types/report.js";
-import type { ReportAuthor } from "@/types/report.js";
+import type { ReportField, ReportFieldValues } from "../../../types/report.js";
+import type { ReportAuthor } from "../../../types/report.js";
 type FeedbackComposerProps = {
     message: string;
     onMessageChange: (value: string) => void;

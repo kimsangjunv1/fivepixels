@@ -39,7 +39,7 @@ export function createGitIssuedReply(message) {
 export function isGitIssuedSystemReply(reply, report) {
     return reply.author_type === "system" && isGitIssued(report);
 }
-export function buildGitHubIssueUpdate(report, result, gitIssuedMessage) {
+export function buildGitHubIssueStatusUpdate(report, result) {
     return {
         status: "git_issued",
         integrations: {
@@ -50,7 +50,12 @@ export function buildGitHubIssueUpdate(report, result, gitIssuedMessage) {
                 issued_at: new Date().toISOString(),
             },
         },
-        replies: [...report.replies, createGitIssuedReply(gitIssuedMessage)],
+    };
+}
+export function buildGitHubIssueUpdate(report, result, gitIssuedMessage) {
+    return {
+        ...buildGitHubIssueStatusUpdate(report, result),
+        replies: [...(report.replies ?? []), createGitIssuedReply(gitIssuedMessage)],
     };
 }
 //# sourceMappingURL=githubIntegration.js.map

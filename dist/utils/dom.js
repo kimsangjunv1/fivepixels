@@ -1,4 +1,4 @@
-import { TARGET_SELECTOR } from "@/constants/report.js";
+import { TARGET_SELECTOR } from "../constants/report.js";
 export function escapeAttribute(value) {
     return value.split("\\").join("\\\\").split('"').join('\\"');
 }

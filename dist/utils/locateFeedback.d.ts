@@ -1,4 +1,4 @@
-import type { ReportFeedback } from "@/types/report.js";
+import type { ReportFeedback } from "../types/report.js";
 export { isFeedbackTargetVisible } from "./dom.js";
 export declare const LOCATE_PULSE_DURATION_MS = 2400;
 export declare const TARGET_REVEAL_RESYNC_DELAY_MS = 50;

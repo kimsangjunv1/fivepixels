@@ -1,11 +1,11 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useState } from "react";
-import { useReport } from "@/providers/reportContext.js";
-import { formatDate } from "@/utils/format.js";
-import { copyTextToClipboard } from "@/utils/feedbackDataTransfer.js";
+import { useReport } from "../../../providers/reportContext.js";
+import { formatDate } from "../../../utils/format.js";
+import { copyTextToClipboard } from "../../../utils/feedbackDataTransfer.js";
 import { FeedbackStatusBadge } from "./FeedbackStatusBadge.js";
-// import { CopyIcon } from "@/components/icons/Icons.js";
-import { LinkIcon, ArrowTRIcon } from "@/components/icons/Icons.js";
+// import { CopyIcon } from "../../../components/icons/Icons.js";
+import { LinkIcon, ArrowTRIcon } from "../../../components/icons/Icons.js";
 export function GitIssuedThreadEntry({ reply, issueUrl }) {
     const { locale, messages } = useReport();
     const [copied, setCopied] = useState(false);

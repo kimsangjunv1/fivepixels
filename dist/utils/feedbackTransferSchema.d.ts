@@ -1,4 +1,4 @@
-import type { ReportFeedback, ReportProject } from "@/types/report.js";
+import type { ReportFeedback, ReportProject } from "../types/report.js";
 import type { ResolvedReportProject } from "./reportProject.js";
 export declare const FEEDBACK_TRANSFER_SCHEMA_VERSION = 1;
 export type FeedbackExportPayload = {

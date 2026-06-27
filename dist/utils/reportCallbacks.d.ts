@@ -1,4 +1,4 @@
-import type { ReportEvent, ReportFeedback } from "@/types/report.js";
+import type { ReportEvent, ReportFeedback } from "../types/report.js";
 export type ReportSideEffectCallbacks = {
     onEvent?: (event: ReportEvent) => void | Promise<void>;
     onReply?: (params: {

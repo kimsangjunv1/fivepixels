@@ -1,6 +1,6 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import { useReport } from "@/providers/reportContext.js";
-import { buildProjectComparisonLines } from "@/utils/feedbackTransferSchema.js";
+import { useReport } from "../../providers/reportContext.js";
+import { buildProjectComparisonLines } from "../../utils/feedbackTransferSchema.js";
 function formatExportedAt(value, noneLabel, locale) {
     if (!value) {
         return noneLabel;

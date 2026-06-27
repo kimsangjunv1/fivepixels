@@ -1,4 +1,4 @@
-import type { ReportAppearance } from "@/types/report.js";
+import type { ReportAppearance } from "../types/report.js";
 export type ReportLocale = "en" | "ko";
 type RouteDetailStatus = "wait" | "suggested" | "git_issued" | "resolved";
 type FeedbackDisplayStatus = "currently_wait" | "wait_for_reply" | "git_issued" | "suggested" | "additional_question" | "found_error" | "recheck_requested" | "resolved";
@@ -264,6 +264,8 @@ export type ReportMessages = {
         deleteFeedbackFailed: string;
         createGitHubIssueFailed: string;
         loadFeedbackFailed: string;
+        loadRepliesFailed: string;
+        createReplyFailed: string;
         createFeedbackFailed: string;
         localStorageTransferOnly: string;
         jsonImportFailed: string;

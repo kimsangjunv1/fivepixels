@@ -1,5 +1,5 @@
 import { type CSSProperties, type PointerEvent as ReactPointerEvent, type RefObject } from "react";
-import type { PanelCorner } from "@/hooks/usePanelDock.js";
+import type { PanelCorner } from "../hooks/usePanelDock.js";
 export type PanelSizeState = {
     width: number;
     height: number | null;

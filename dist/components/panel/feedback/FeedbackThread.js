@@ -1,9 +1,9 @@
 import { jsx as _jsx, Fragment as _Fragment, jsxs as _jsxs } from "react/jsx-runtime";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useReport } from "@/providers/reportContext.js";
-import { formatDate } from "@/utils/format.js";
-import { buildConfirmAuthorOptions, buildThreadTimeline, canShowCheckoutBranchActions, canShowIssueEntryActions, canShowSuggestedBranchActions, ISSUE_ROOT_PARENT_ID, resolveOriginalFeedbackAuthorName, } from "@/utils/feedbackThread.js";
-import { getGitHubIssueUrl, isGitIssuedSystemReply } from "@/utils/githubIntegration.js";
+import { useReport } from "../../../providers/reportContext.js";
+import { formatDate } from "../../../utils/format.js";
+import { buildConfirmAuthorOptions, buildThreadTimeline, canShowCheckoutBranchActions, canShowIssueEntryActions, canShowSuggestedBranchActions, getReportReplies, ISSUE_ROOT_PARENT_ID, resolveOriginalFeedbackAuthorName, } from "../../../utils/feedbackThread.js";
+import { getGitHubIssueUrl, isGitIssuedSystemReply } from "../../../utils/githubIntegration.js";
 import { AuthorSelector } from "./AuthorSelector.js";
 import { FeedbackCreatorBadge } from "./FeedbackCreatorBadge.js";
 import { FeedbackStatusBadge } from "./FeedbackStatusBadge.js";
@@ -77,7 +77,8 @@ export function FeedbackThread({ report, authors, pendingComposer, confirmAuthor
         canScrollUp: false,
         canScrollDown: false,
     });
-    const timeline = useMemo(() => buildThreadTimeline(report), [report]);
+    const replies = getReportReplies(report);
+    const timeline = useMemo(() => buildThreadTimeline(report), [report, replies]);
     const originalAuthorName = resolveOriginalFeedbackAuthorName(report);
     const issueUrl = getGitHubIssueUrl(report);
     const refreshScrollOverflow = useCallback(() => {
@@ -108,10 +109,10 @@ export function FeedbackThread({ report, authors, pendingComposer, confirmAuthor
             element.removeEventListener("scroll", refreshScrollOverflow);
             resizeObserver.disconnect();
         };
-    }, [refreshScrollOverflow, report.replies]);
+    }, [refreshScrollOverflow, replies.length]);
     useEffect(() => {
         scrollToBottom();
-    }, [report.replies, scrollToBottom]);
+    }, [replies.length, scrollToBottom]);
     return (_jsxs("div", { className: "relative min-h-0 flex-1", children: [scrollOverflow.canScrollUp ? _jsx("p", { className: `${SCROLL_HINT_CLASS} top-0 bg-[linear-gradient(0deg,transparent,var(--adaptive-surface-overlay))]`, children: messages.thread.scrollHintUp }) : null, scrollOverflow.canScrollDown ? (_jsx("p", { className: `${SCROLL_HINT_CLASS} bottom-0 bg-[linear-gradient(180deg,transparent,var(--adaptive-surface-overlay))]`, children: messages.thread.scrollHintDown })) : null, _jsxs("section", { ref: scrollRef, className: "flex h-full max-h-[360px] flex-col overflow-auto bg-transparent", children: [_jsx(ThreadIssueEntry, { report: report, children: timeline.issueChildren, locale: locale, originalAuthorName: originalAuthorName, threadReplyPrefix: messages.feedbackList.threadReplyPrefix, pendingComposer: pendingComposer, onStartAskQuestion: onStartAskQuestion, onStartCheckout: onStartCheckout, isUpdating: isUpdating }), timeline.branches.map((branch) => (_jsxs("div", { className: "flex flex-col", children: [_jsx(ThreadRootReply, { reply: branch.root, report: report, authors: authors, pendingComposer: pendingComposer, confirmAuthorName: confirmAuthorName, showConfirmAuthorSelect: showConfirmAuthorSelect, originalAuthorName: originalAuthorName, locale: locale, issueUrl: issueUrl, onConfirmAuthorNameChange: onConfirmAuthorNameChange, onStartDeny: onStartDeny, onStartCheckout: onStartCheckout, onStartAskQuestion: onStartAskQuestion, onConfirm: onConfirm, isUpdating: isUpdating }), branch.children.map((child) => (_jsx(ThreadChildReply, { reply: child, originalAuthorName: originalAuthorName, locale: locale, threadReplyPrefix: messages.feedbackList.threadReplyPrefix }, child.id)))] }, branch.root.id)))] })] }));
 }
 //# sourceMappingURL=FeedbackThread.js.map

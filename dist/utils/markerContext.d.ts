@@ -1,5 +1,5 @@
-import type { ReportFeedback } from "@/types/report.js";
-import type { MarkerDetachedKind } from "@/types/report-ui.js";
+import type { ReportFeedback } from "../types/report.js";
+import type { MarkerDetachedKind } from "../types/report-ui.js";
 export type ModalGhostFrame = {
     backdrop: {
         left: number;

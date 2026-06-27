@@ -1,10 +1,10 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { REPORT_SHORTCUTS } from "@/constants/reportShortcuts.js";
-import { useReport } from "@/providers/reportContext.js";
-import { formatDateOnly } from "@/utils/format.js";
-import { ShortcutHint } from "@/components/ShortcutHint.js";
-import { SearchIcon, ChevronDownIcon } from "@/components/icons/Icons.js";
+import { REPORT_SHORTCUTS } from "../../constants/reportShortcuts.js";
+import { useReport } from "../../providers/reportContext.js";
+import { formatDateOnly } from "../../utils/format.js";
+import { ShortcutHint } from "../../components/ShortcutHint.js";
+import { SearchIcon, ChevronDownIcon } from "../../components/icons/Icons.js";
 import { PanelDropdownMenu, PanelDropdownMenuItem } from "./PanelDropdownMenu.js";
 import { FeedbackListItem } from "./feedback/FeedbackListItem.js";
 const FEEDBACK_PAGE_SIZE = 20;

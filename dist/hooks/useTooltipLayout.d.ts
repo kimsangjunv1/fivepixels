@@ -1,4 +1,4 @@
-import type { Marker } from "@/types/report-ui.js";
+import type { Marker } from "../types/report-ui.js";
 export type TooltipAnchor = Pick<Marker, "left" | "top">;
 export declare function useTooltipLayout(anchor: TooltipAnchor | null, expanded: boolean, visible: boolean): {
     layout: {
@@ -6,7 +6,7 @@ export declare function useTooltipLayout(anchor: TooltipAnchor | null, expanded:
             left: number;
             top: number;
             width: number;
-            placement: import("@/utils/coordinates.js").TooltipPlacement;
+            placement: import("../utils/coordinates.js").TooltipPlacement;
         };
         anchorStyle: {
             readonly transform: "translateY(-100%)";

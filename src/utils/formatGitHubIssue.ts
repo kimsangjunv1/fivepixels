@@ -1,4 +1,5 @@
 import type { ReportFeedback, ReportField } from "@/types/report.js";
+import { getReportReplies } from "@/utils/feedbackThread.js";
 
 function escapeMarkdownTableCell(value: string) {
     return value.replace(/\|/g, "\\|").replace(/\n/g, " ");
@@ -15,7 +16,7 @@ function formatCheckboxTags(feedback: ReportFeedback, fields: ReportField[]) {
 
 export function formatFeedbackAsGitHubIssueBody(feedback: ReportFeedback, fields: ReportField[] = []) {
     const tags = formatCheckboxTags(feedback, fields);
-    const threadRows = feedback.replies
+    const threadRows = getReportReplies(feedback)
         .map(
             (reply) =>
                 `| ${reply.created_at} | ${escapeMarkdownTableCell(reply.author_name ?? "-")} | ${reply.status} | ${escapeMarkdownTableCell(reply.message)} |`,

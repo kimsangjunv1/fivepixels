@@ -9,6 +9,7 @@ import {
     canShowCheckoutBranchActions,
     canShowIssueEntryActions,
     canShowSuggestedBranchActions,
+    getReportReplies,
     ISSUE_ROOT_PARENT_ID,
     resolveOriginalFeedbackAuthorName,
 } from "@/utils/feedbackThread.js";
@@ -425,7 +426,8 @@ export function FeedbackThread({
         canScrollDown: false,
     });
 
-    const timeline = useMemo(() => buildThreadTimeline(report), [report]);
+    const replies = getReportReplies(report);
+    const timeline = useMemo(() => buildThreadTimeline(report), [report, replies]);
     const originalAuthorName = resolveOriginalFeedbackAuthorName(report);
     const issueUrl = getGitHubIssueUrl(report);
 
@@ -468,11 +470,11 @@ export function FeedbackThread({
             element.removeEventListener("scroll", refreshScrollOverflow);
             resizeObserver.disconnect();
         };
-    }, [refreshScrollOverflow, report.replies]);
+    }, [refreshScrollOverflow, replies.length]);
 
     useEffect(() => {
         scrollToBottom();
-    }, [report.replies, scrollToBottom]);
+    }, [replies.length, scrollToBottom]);
 
     return (
         <div className="relative min-h-0 flex-1">

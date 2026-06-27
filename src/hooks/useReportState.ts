@@ -11,6 +11,7 @@ import { usePersonalKey } from "./usePersonalKey.js";
 import { useResolvedAppearance } from "./useResolvedAppearance.js";
 import type {
     CreateReportFeedbackPayload,
+    CreateReplyPayload,
     ReportAppearance,
     ReportAuthor,
     ReportEvent,
@@ -24,7 +25,7 @@ import type {
     UpdateReportFeedbackPayload,
 } from "@/types/report.js";
 import type { DraftReport, EditableDraft, Marker, PendingFeedbackComposer, ReportMode, ReportPanelTab, TargetSnapshot } from "@/types/report-ui.js";
-import { createReplyStatusForSubmit, getFeedbackDisplayStatus, getLatestBranchRoot, ISSUE_ROOT_PARENT_ID, resolveOriginalFeedbackAuthorName, resolveParentReplyIdForQuestion } from "@/utils/feedbackThread.js";
+import { createReplyStatusForSubmit, getFeedbackDisplayStatus, getLatestBranchRoot, getReportReplies, ISSUE_ROOT_PARENT_ID, resolveOriginalFeedbackAuthorName, resolveParentReplyIdForQuestion } from "@/utils/feedbackThread.js";
 import { clampRatio, getMarkerFromReport, resolveTooltipAnchor } from "@/utils/coordinates.js";
 import { getFeedbackTargetElement, isFeedbackTargetVisible, scrollToFeedbackTarget, waitForTargetRevealResync } from "@/utils/locateFeedback.js";
 
@@ -42,6 +43,7 @@ import {
     type ReportSideEffectCallbacks,
 } from "@/utils/reportCallbacks.js";
 import {
+    buildGitHubIssueStatusUpdate,
     buildGitHubIssueUpdate,
     canCreateGitHubIssueFromList,
     canCreateGitHubIssueOnCreate,
@@ -68,9 +70,11 @@ export type ReportStateConfig = {
     identify?: ReportIdentify;
     onList?: (params: { pathname: string }) => Promise<ReportFeedback[]>;
     onListAll?: (params: ReportListAllParams) => Promise<ReportListAllResult>;
+    onListReplies?: (commentId: string) => Promise<ReportReply[]>;
     onNavigate?: (pathname: string) => void | Promise<void>;
     onRevealTarget?: (report: ReportFeedback) => boolean | Promise<boolean>;
     onCreate?: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
+    onCreateReply?: (commentId: string, payload: CreateReplyPayload) => Promise<ReportReply>;
     onUpdate?: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
     onDelete?: (id: string) => Promise<void>;
     onEvent?: (event: ReportEvent) => void | Promise<void>;
@@ -95,9 +99,11 @@ export function useReportState({
     identify,
     onList,
     onListAll,
+    onListReplies,
     onNavigate,
     onRevealTarget,
     onCreate,
+    onCreateReply,
     onUpdate,
     onDelete,
     onEvent,
@@ -174,6 +180,9 @@ export function useReportState({
         createFeedback,
         updateFeedback,
         deleteFeedback,
+        loadRepliesIfNeeded,
+        createReply,
+        usesCreateReply,
     } = useReportPersistence({
         projectId,
         environment,
@@ -181,7 +190,9 @@ export function useReportState({
         fields,
         onList,
         onListAll,
+        onListReplies,
         onCreate,
+        onCreateReply,
         onUpdate,
         onDelete,
         routeKey,
@@ -225,6 +236,40 @@ export function useReportState({
 
         const auth = await signPayload("feedback:update", payload);
         return auth ? { ...payload, auth } : payload;
+    };
+
+    const signReplyPayload = async (payload: CreateReplyPayload) => {
+        if (personalKeyRequired) {
+            throw new Error(messages.errors.personalKeyRequired);
+        }
+
+        const auth = await signPayload("reply:create", payload);
+        return auth ? { ...payload, auth } : payload;
+    };
+
+    const applyGitHubIssueUpdate = async (report: ReportFeedback, result: { issueNumber: number; issueUrl: string }) => {
+        if (usesCreateReply) {
+            const updatedFeedback = await updateFeedback(
+                report.id,
+                await signUpdatePayload(buildGitHubIssueStatusUpdate(report, result)),
+            );
+
+            await createReply(
+                report.id,
+                await signReplyPayload({
+                    message: messages.resolution.gitIssuedMessage,
+                    status: "suggested",
+                    author_type: "system",
+                }),
+            );
+
+            return updatedFeedback;
+        }
+
+        return updateFeedback(
+            report.id,
+            await signUpdatePayload(buildGitHubIssueUpdate(report, result, messages.resolution.gitIssuedMessage)),
+        );
     };
 
     const [mode, setMode] = useState<ReportMode>("idle");
@@ -672,10 +717,11 @@ export function useReportState({
 
     const activateFeedbackMarker = useCallback(
         async (report: ReportFeedback) => {
-            await prepareFeedbackLocation(report);
-            openReplyComposer(report);
+            const enrichedReport = await loadRepliesIfNeeded(report);
+            await prepareFeedbackLocation(enrichedReport);
+            openReplyComposer(enrichedReport);
         },
-        [openReplyComposer, prepareFeedbackLocation],
+        [loadRepliesIfNeeded, openReplyComposer, prepareFeedbackLocation],
     );
 
     const toggleConfirmAuthorSelect = () => {
@@ -687,7 +733,7 @@ export function useReportState({
             return;
         }
 
-        const latestRoot = getLatestBranchRoot(activeReplyReport.replies);
+        const latestRoot = getLatestBranchRoot(getReportReplies(activeReplyReport));
 
         if (!latestRoot) {
             return;
@@ -712,7 +758,7 @@ export function useReportState({
             return;
         }
 
-        const latestRoot = getLatestBranchRoot(activeReplyReport.replies);
+        const latestRoot = getLatestBranchRoot(getReportReplies(activeReplyReport));
 
         setReplyDraft("");
 
@@ -986,10 +1032,7 @@ export function useReportState({
             await notifyFeedbackCreate(eventCallbacks, savedFeedback);
 
             const result = await github.onCreate(savedFeedback);
-            const updatedFeedback = await updateFeedback(
-                savedFeedback.id,
-                await signUpdatePayload(buildGitHubIssueUpdate(savedFeedback, result, messages.resolution.gitIssuedMessage)),
-            );
+            const updatedFeedback = await applyGitHubIssueUpdate(savedFeedback, result);
 
             await notifyGitHubIssueCreated(eventCallbacks, {
                 feedback: updatedFeedback,
@@ -1053,10 +1096,23 @@ export function useReportState({
     };
 
     const appendReply = async (report: ReportFeedback, reply: ReportReply) => {
-        const payload = await signUpdatePayload({
-            replies: [...report.replies, reply],
-        });
-        await updateFeedback(report.id, payload);
+        if (usesCreateReply) {
+            await createReply(
+                report.id,
+                await signReplyPayload({
+                    message: reply.message,
+                    status: reply.status,
+                    parent_reply_id: reply.parent_reply_id,
+                    author_type: reply.author_type ?? "manager",
+                    author_name: reply.author_name,
+                }),
+            );
+        } else {
+            const payload = await signUpdatePayload({
+                replies: [...getReportReplies(report), reply],
+            });
+            await updateFeedback(report.id, payload);
+        }
 
         await notifyFeedbackReply(eventCallbacks, {
             feedbackId: report.id,
@@ -1144,22 +1200,44 @@ export function useReportState({
             return;
         }
 
-        const reply: ReportReply = {
-            id: createReplyId(),
-            message: messages.resolution.issueResolvedMessage,
-            created_at: new Date().toISOString(),
-            status: "resolved",
-            author_type: "user",
-            author_name: resolverName,
-        };
-
         try {
-            const updatedFeedback = await updateFeedback(activeReplyReport.id, await signUpdatePayload({
-                status: "resolved",
-                replies: [...activeReplyReport.replies, reply],
-            }));
+            if (usesCreateReply) {
+                await createReply(
+                    activeReplyReport.id,
+                    await signReplyPayload({
+                        message: messages.resolution.issueResolvedMessage,
+                        status: "resolved",
+                        author_type: "user",
+                        author_name: resolverName,
+                    }),
+                );
+                const updatedFeedback = await updateFeedback(
+                    activeReplyReport.id,
+                    await signUpdatePayload({
+                        status: "resolved",
+                    }),
+                );
 
-            await notifyFeedbackUpdate(eventCallbacks, updatedFeedback);
+                await notifyFeedbackUpdate(eventCallbacks, updatedFeedback);
+            } else {
+                const reply: ReportReply = {
+                    id: createReplyId(),
+                    message: messages.resolution.issueResolvedMessage,
+                    created_at: new Date().toISOString(),
+                    status: "resolved",
+                    author_type: "user",
+                    author_name: resolverName,
+                };
+                const updatedFeedback = await updateFeedback(
+                    activeReplyReport.id,
+                    await signUpdatePayload({
+                        status: "resolved",
+                        replies: [...getReportReplies(activeReplyReport), reply],
+                    }),
+                );
+
+                await notifyFeedbackUpdate(eventCallbacks, updatedFeedback);
+            }
 
             setErrorMessage("");
             setPendingComposer(null);
@@ -1184,10 +1262,7 @@ export function useReportState({
 
         try {
             const result = await github.onCreate(report);
-            const updatedFeedback = await updateFeedback(
-                report.id,
-                await signUpdatePayload(buildGitHubIssueUpdate(report, result, messages.resolution.gitIssuedMessage)),
-            );
+            const updatedFeedback = await applyGitHubIssueUpdate(report, result);
 
             await notifyGitHubIssueCreated(eventCallbacks, {
                 feedback: updatedFeedback,

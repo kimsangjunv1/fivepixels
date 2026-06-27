@@ -1,4 +1,4 @@
-import { getActiveReportMessages } from "@/i18n/index.js";
+import { getActiveReportMessages } from "../i18n/index.js";
 const STRING_FIELDS = ["id", "pathname", "report_id", "message", "created_at"];
 const OPTIONAL_STRING_FIELDS = ["environment", "app_version", "author_id", "author_name"];
 const REPORT_TYPES = new Set(["group", "item"]);

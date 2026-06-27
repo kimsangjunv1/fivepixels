@@ -1,7 +1,7 @@
-import { getActiveReportMessages } from "@/i18n/index.js";
-import { DEFAULT_PROJECT_ID } from "@/constants/project.js";
-import { getReportsStorageKey } from "@/constants/storageKeys.js";
-import { parseFeedbackStorageEnvelope, serializeFeedbackStorageEnvelope } from "@/utils/feedbackTransferSchema.js";
+import { getActiveReportMessages } from "../../i18n/index.js";
+import { DEFAULT_PROJECT_ID } from "../../constants/project.js";
+import { getReportsStorageKey } from "../../constants/storageKeys.js";
+import { parseFeedbackStorageEnvelope, serializeFeedbackStorageEnvelope } from "../../utils/feedbackTransferSchema.js";
 function createId() {
     if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
         return crypto.randomUUID();
@@ -152,6 +152,13 @@ export function createLocalStorageReportAdapter({ projectId, environment, appVer
                 nextCursor: nextOffset < items.length ? String(nextOffset) : undefined,
             };
         },
+        async listReplies(commentId) {
+            const item = readAll(storageKey).find((entry) => entry.id === commentId);
+            if (!item) {
+                throw new Error(getActiveReportMessages().errors.feedbackNotFound);
+            }
+            return normalizeReplies(item.replies);
+        },
         async create(payload) {
             const nextItem = {
                 ...payload,
@@ -163,6 +170,32 @@ export function createLocalStorageReportAdapter({ projectId, environment, appVer
             const normalized = normalizeReport(nextItem);
             writeAll(storageKey, [normalized, ...items], project);
             return normalized;
+        },
+        async createReply(commentId, payload) {
+            const items = readAll(storageKey);
+            const index = items.findIndex((item) => item.id === commentId);
+            if (index < 0) {
+                throw new Error(getActiveReportMessages().errors.feedbackNotFound);
+            }
+            const reply = {
+                id: createId(),
+                comment_id: commentId,
+                message: payload.message,
+                created_at: new Date().toISOString(),
+                status: normalizeReplyStatus(payload.status),
+                parent_reply_id: typeof payload.parent_reply_id === "string" ? payload.parent_reply_id : null,
+                author_type: payload.author_type,
+                author_name: payload.author_name ?? null,
+                auth: payload.auth,
+            };
+            const currentReplies = normalizeReplies(items[index].replies);
+            const nextItem = normalizeReport({
+                ...items[index],
+                replies: [...currentReplies, reply],
+            });
+            items[index] = nextItem;
+            writeAll(storageKey, items, project);
+            return reply;
         },
         async update(id, payload) {
             const items = readAll(storageKey);

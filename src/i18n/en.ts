@@ -283,6 +283,8 @@ export const en: ReportMessages = {
         deleteFeedbackFailed: "Failed to delete feedback.",
         createGitHubIssueFailed: "Failed to send GitHub issue.",
         loadFeedbackFailed: "Failed to load feedback.",
+        loadRepliesFailed: "Failed to load replies.",
+        createReplyFailed: "Failed to create reply.",
         createFeedbackFailed: "Failed to create feedback.",
         localStorageTransferOnly: "Import and export are only available with the localStorage adapter.",
         jsonImportFailed: "JSON import failed.",

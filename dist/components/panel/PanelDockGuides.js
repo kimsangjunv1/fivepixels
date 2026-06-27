@@ -1,5 +1,5 @@
 import { jsx as _jsx } from "react/jsx-runtime";
-import { PANEL_CORNERS } from "@/hooks/usePanelDock.js";
+import { PANEL_CORNERS } from "../../hooks/usePanelDock.js";
 export function PanelDockGuides({ visible, activeCorner }) {
     if (!visible) {
         return null;

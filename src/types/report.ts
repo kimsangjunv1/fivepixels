@@ -22,11 +22,23 @@ export type ReportReplyStatus = "suggested" | "additional_question" | "found_err
 
 export type ReportReply = {
     id: string;
+    comment_id?: string;
     message: string;
     created_at: string;
     status: ReportReplyStatus;
     parent_reply_id?: string | null;
     author_type?: "user" | "manager" | "system";
+    author_name?: string | null;
+    auth?: ReportAuthProof;
+};
+
+export type ReportReplySummary = Pick<ReportReply, "id" | "message" | "created_at" | "status" | "author_type" | "author_name">;
+
+export type CreateReplyPayload = {
+    message: string;
+    status: ReportReplyStatus;
+    parent_reply_id?: string | null;
+    author_type: NonNullable<ReportReply["author_type"]>;
     author_name?: string | null;
     auth?: ReportAuthProof;
 };
@@ -73,7 +85,7 @@ export type ReportAuthor = {
     publicKey?: string;
 };
 
-export type ReportAuthAction = "feedback:create" | "feedback:update";
+export type ReportAuthAction = "feedback:create" | "feedback:update" | "reply:create";
 
 export type ReportAuthProof = {
     author_id: string;
@@ -138,7 +150,9 @@ export type ReportFeedback = {
     message: string;
     status: ReportStatus;
     field_values: ReportFieldValues;
-    replies: ReportReply[];
+    replies?: ReportReply[];
+    reply_count?: number;
+    latest_reply?: ReportReplySummary | null;
     position: ReportPosition;
     created_at: string;
     environment?: string;
@@ -170,7 +184,9 @@ export type ReportListAllResult = {
 export interface ReportStorageAdapter {
     list(params: { pathname: string }): Promise<ReportFeedback[]>;
     listAll?(params: ReportListAllParams): Promise<ReportListAllResult>;
+    listReplies?(commentId: string): Promise<ReportReply[]>;
     create(payload: CreateReportFeedbackPayload): Promise<ReportFeedback>;
+    createReply?(commentId: string, payload: CreateReplyPayload): Promise<ReportReply>;
     update(id: string, payload: UpdateReportFeedbackPayload): Promise<ReportFeedback>;
     remove?(id: string): Promise<void>;
 }
@@ -179,7 +195,9 @@ export interface ReportStorageAdapter {
 export type ReportPersistenceHandlers = {
     onList: (params: { pathname: string }) => Promise<ReportFeedback[]>;
     onListAll?: (params: ReportListAllParams) => Promise<ReportListAllResult>;
+    onListReplies?: (commentId: string) => Promise<ReportReply[]>;
     onCreate: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
+    onCreateReply?: (commentId: string, payload: CreateReplyPayload) => Promise<ReportReply>;
     onUpdate: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
     onDelete?: (id: string) => Promise<void>;
 };

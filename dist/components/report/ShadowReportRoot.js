@@ -1,6 +1,6 @@
 import { useLayoutEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { ensureReportTooltipLayer } from "@/utils/dom.js";
+import { ensureReportTooltipLayer } from "../../utils/dom.js";
 const HOST_ID = "fivepixels-root";
 const STYLE_ELEMENT_ID = "fivepixels-report-styles";
 const MOUNT_ATTR = "data-fivepixels-mount";
@@ -55,7 +55,7 @@ export function ShadowReportRoot({ appearance, children }) {
         const host = getOrCreateShadowHost();
         ensureReportTooltipLayer();
         setMount(host.mount);
-        void import("@/styles/reportStylesheet.js").then((module) => {
+        void import("../../styles/reportStylesheet.js").then((module) => {
             if (cancelled) {
                 return;
             }
