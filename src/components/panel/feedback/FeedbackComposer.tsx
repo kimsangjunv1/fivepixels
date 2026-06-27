@@ -24,6 +24,11 @@ type FeedbackComposerProps = {
     isGitHubIssueSubmitting?: boolean;
     placeholder?: string;
     autoFocus?: boolean;
+    errorMessage?: string;
+    showAskQuestionToggle?: boolean;
+    askQuestionChecked?: boolean;
+    onAskQuestionChange?: (checked: boolean) => void;
+    askQuestionForced?: boolean;
 };
 
 export function FeedbackComposer({
@@ -43,10 +48,16 @@ export function FeedbackComposer({
     isGitHubIssueSubmitting = false,
     placeholder,
     autoFocus = false,
+    errorMessage = "",
+    showAskQuestionToggle = false,
+    askQuestionChecked = false,
+    onAskQuestionChange,
+    askQuestionForced = false,
 }: FeedbackComposerProps) {
     const { messages } = useReport();
     const [isGitHubIssueConfirming, setIsGitHubIssueConfirming] = useState(false);
-    const resolvedPlaceholder = placeholder ?? messages.composer.placeholder;
+    const isQuestionMode = askQuestionForced || askQuestionChecked;
+    const resolvedPlaceholder = isQuestionMode ? messages.composer.questionPlaceholder : (placeholder ?? messages.composer.placeholder);
 
     const isActionDisabled = isSubmitting || isGitHubIssueSubmitting;
 
@@ -84,28 +95,51 @@ export function FeedbackComposer({
 
     return (
         <div className="flex w-full flex-col">
-            <textarea
-                autoFocus={autoFocus}
-                value={message}
-                onChange={(event) => onMessageChange(event.target.value)}
-                placeholder={resolvedPlaceholder}
-                rows={3}
-                className="min-h-[72px] w-full resize-none bg-transparent px-[16px] pt-[16px] text-[14px] leading-[1.4] text-[var(--adaptive-text-primary)] outline-none placeholder:text-[var(--adaptive-text-muted)]"
-                onKeyDown={(event) => {
-                    if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
-                        event.preventDefault();
-                        handleSubmit();
-                    }
-                }}
-            />
+            <div className="relative">
+                {errorMessage ? (
+                    <p
+                        role="alert"
+                        className="absolute bottom-full left-[8px] right-[8px] z-10 mb-[6px] rounded-[8px] border border-rose-200 bg-rose-50 px-[8px] py-[4px] text-[12px] leading-[1.4] text-rose-700 shadow-[0_2px_8px_rgba(0,0,0,0.08)]"
+                    >
+                        {errorMessage}
+                    </p>
+                ) : null}
+                <textarea
+                    autoFocus={autoFocus}
+                    value={message}
+                    onChange={(event) => onMessageChange(event.target.value)}
+                    placeholder={resolvedPlaceholder}
+                    rows={3}
+                    className="min-h-[72px] w-full resize-none bg-transparent px-[8px] pt-[8px] text-[14px] leading-[1.4] text-[var(--adaptive-text-primary)] outline-none placeholder:text-[var(--adaptive-text-muted)]"
+                    onKeyDown={(event) => {
+                        if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
+                            event.preventDefault();
+                            handleSubmit();
+                        }
+                    }}
+                />
+            </div>
 
-            <div className="flex items-center justify-between gap-[8px] px-[12px] pb-[12px]">
+            <div className="flex items-center justify-between gap-[8px] px-[8px] pb-[8px]">
                 <AuthorSelector
                     authors={authors}
                     value={authorName}
                     onChange={onAuthorNameChange}
                 />
                 <div className="flex shrink-0 items-center gap-[6px]">
+                    {showAskQuestionToggle ? (
+                        <label className="inline-flex items-center gap-[4px] px-[2px] text-[12px] text-[var(--adaptive-black600)]">
+                            <input
+                                type="checkbox"
+                                data-fivepixels-interactive=""
+                                checked={isQuestionMode}
+                                disabled={askQuestionForced || isActionDisabled}
+                                onChange={(event) => onAskQuestionChange?.(event.target.checked)}
+                                className="h-[14px] w-[14px] accent-[var(--adaptive-blue500)]"
+                            />
+                            <span>{messages.composer.askQuestionLabel}</span>
+                        </label>
+                    ) : null}
                     {showGitHubIssueOnCreate ? (
                         <button
                             type="button"
@@ -117,7 +151,8 @@ export function FeedbackComposer({
                             title={isGitHubIssueConfirming ? messages.feedbackList.gitIssueConfirmTitle : messages.composer.gitIssueSendTitle}
                         >
                             <span className="text-[12px] font-semibold text-[var(--adaptive-black500)]">
-                                + {isGitHubIssueSubmitting
+                                +{" "}
+                                {isGitHubIssueSubmitting
                                     ? messages.composer.gitIssueSendingLabel
                                     : isGitHubIssueConfirming
                                       ? messages.feedbackList.gitIssueConfirmLabel
@@ -131,16 +166,15 @@ export function FeedbackComposer({
                             data-fivepixels-interactive=""
                             disabled={isActionDisabled}
                             onClick={handleSubmit}
-                            className="inline-flex px-[12px] shrink-0 items-center justify-center rounded-full bg-[var(--adaptive-blue500)] text-[var(--adaptive-overlay-text)] disabled:opacity-50"
+                            className="inline-flex px-[8px_4px] gap-[4px] shrink-0 items-center justify-center rounded-full bg-[var(--adaptive-blue500)] text-[var(--adaptive-overlay-text)] disabled:opacity-50"
                             aria-label={messages.composer.sendAriaLabel}
                         >
-                            <SendIcon className="w-[16px]" />
+                            Send
+                            <SendIcon className="w-[16px] invert" />
                         </button>
                     </HoverTooltip>
                 </div>
             </div>
-
-            {/* <div className="w-full h-[1px] bg-[var(--adaptive-whiteOpacity200)]" /> */}
 
             {showTags ? (
                 <FieldTagSelector

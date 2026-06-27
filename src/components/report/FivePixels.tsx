@@ -6,15 +6,15 @@ import { resolveReportEnabled } from "@/utils/env.js";
 import { resolveReportVisibility } from "@/utils/reportVisibility.js";
 import type {
     CreateReportFeedbackPayload,
+    CreateReplyPayload,
     ReportEvent,
     ReportFeedback,
     ReportField,
-    ReportAuthor,
     ReportGitHubConfig,
-    ReportIdentify,
     ReportListAllParams,
     ReportListAllResult,
     ReportProject,
+    ReportReply,
     ReportTeam,
     ReportUi,
     ReportVisibility,
@@ -24,41 +24,17 @@ import { ReportView } from "./ReportView.js";
 
 export type FivePixelsProps = {
     project?: ReportProject;
-    /** @deprecated Use `project.id`. */
-    projectId?: string;
-    /** @deprecated Use `project.env`. */
-    environment?: string;
-    /** @deprecated Use `project.version`. */
-    appVersion?: string;
     ui?: ReportUi;
-    /** @deprecated Use `ui.appearance`. */
-    appearance?: ReportUi["appearance"];
-    /** @deprecated Use `ui.showFeedbackList`. */
-    showFeedbackList?: boolean;
-    /** @deprecated Use `ui.visibleShortcutKeys`. */
-    visibleShortcutKeys?: boolean;
-    /** @deprecated Use `ui.shortcut`. */
-    shortcut?: string;
     visibility?: ReportVisibility;
-    /** @deprecated Use `visibility.enabled`. */
-    enabled?: boolean;
-    /** @deprecated Use `visibility.devOnly`. */
-    devOnly?: boolean;
-    /** @deprecated Use `visibility.routeKey`. */
-    routeKey?: string;
-    /** @deprecated Use `visibility.routeKey`. */
-    pathname?: string;
     team?: ReportTeam;
-    /** @deprecated Use `team.user`. */
-    identify?: ReportIdentify;
-    /** @deprecated Use `team.reviewers`. */
-    authors?: ReportAuthor[];
     fields?: ReportField[];
     onList?: (params: { pathname: string }) => Promise<ReportFeedback[]>;
     onListAll?: (params: ReportListAllParams) => Promise<ReportListAllResult>;
+    onListReplies?: (commentId: string) => Promise<ReportReply[]>;
     onNavigate?: (pathname: string) => void | Promise<void>;
     onRevealTarget?: (report: ReportFeedback) => boolean | Promise<boolean>;
     onCreate?: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
+    onCreateReply?: (commentId: string, payload: CreateReplyPayload) => Promise<ReportReply>;
     onUpdate?: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
     onDelete?: (id: string) => Promise<void>;
     onEvent?: (event: ReportEvent) => void | Promise<void>;
@@ -68,35 +44,24 @@ export type FivePixelsProps = {
 
 export function FivePixels({
     project,
-    projectId,
-    environment,
-    appVersion,
     ui,
-    appearance,
-    showFeedbackList,
-    visibleShortcutKeys,
-    shortcut,
     visibility,
-    enabled,
-    devOnly,
-    routeKey,
-    pathname,
     team,
-    identify,
-    authors,
     fields = DEFAULT_FIELDS,
     onList,
     onListAll,
+    onListReplies,
     onNavigate,
     onRevealTarget,
     onCreate,
+    onCreateReply,
     onUpdate,
     onDelete,
     onEvent,
     onReply,
     github,
 }: FivePixelsProps) {
-    const resolvedVisibility = resolveReportVisibility({ visibility, enabled, devOnly, routeKey, pathname });
+    const resolvedVisibility = resolveReportVisibility({ visibility });
 
     if (!resolveReportEnabled(resolvedVisibility)) {
         return null;
@@ -105,28 +70,17 @@ export function FivePixels({
     return (
         <ReportProvider
             project={project}
-            projectId={projectId}
-            environment={environment}
-            appVersion={appVersion}
             ui={ui}
-            appearance={appearance}
-            showFeedbackList={showFeedbackList}
-            visibleShortcutKeys={visibleShortcutKeys}
-            shortcut={shortcut}
             visibility={visibility}
-            enabled={enabled}
-            devOnly={devOnly}
-            routeKey={routeKey}
-            pathname={pathname}
             team={team}
-            identify={identify}
-            authors={authors}
             fields={fields}
             onList={onList}
             onListAll={onListAll}
+            onListReplies={onListReplies}
             onNavigate={onNavigate}
             onRevealTarget={onRevealTarget}
             onCreate={onCreate}
+            onCreateReply={onCreateReply}
             onUpdate={onUpdate}
             onDelete={onDelete}
             onEvent={onEvent}

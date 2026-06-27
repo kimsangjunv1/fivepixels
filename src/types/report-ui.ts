@@ -3,7 +3,7 @@ import type { RouteDetailStatus } from "@/utils/routeDetailStatus.js";
 
 export type ReportMode = "idle" | "report" | "view";
 export type ResolvedAppearance = "light" | "dark";
-export type ReportPanelTab = "route-details" | "feedback-list" | "command";
+export type ReportPanelTab = "route-details" | "feedback-list" | "settings" | "command";
 export type ReportListScope = "current" | "all";
 
 export type ReportFilters = {
@@ -78,6 +78,6 @@ export type EditableDraft = {
 };
 
 export type PendingFeedbackComposer = {
-    type: "deny" | "recheck" | "checkout";
+    type: "deny" | "recheck" | "checkout" | "question";
     targetReplyId: string;
 } | null;

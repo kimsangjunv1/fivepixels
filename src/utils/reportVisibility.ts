@@ -13,26 +13,12 @@ const DEFAULT_VISIBILITY: Pick<ResolvedReportVisibility, "enabled" | "devOnly"> 
 
 export type ResolveReportVisibilityOptions = {
     visibility?: ReportVisibility;
-    /** @deprecated Use `visibility.enabled`. */
-    enabled?: boolean;
-    /** @deprecated Use `visibility.devOnly`. */
-    devOnly?: boolean;
-    /** @deprecated Use `visibility.routeKey`. */
-    routeKey?: string;
-    /** @deprecated Use `visibility.routeKey`. */
-    pathname?: string;
 };
 
-export function resolveReportVisibility({
-    visibility,
-    enabled,
-    devOnly,
-    routeKey,
-    pathname,
-}: ResolveReportVisibilityOptions): ResolvedReportVisibility {
+export function resolveReportVisibility({ visibility }: ResolveReportVisibilityOptions): ResolvedReportVisibility {
     return {
-        enabled: visibility?.enabled ?? enabled ?? DEFAULT_VISIBILITY.enabled,
-        devOnly: visibility?.devOnly ?? devOnly ?? DEFAULT_VISIBILITY.devOnly,
-        routeKey: visibility?.routeKey ?? routeKey ?? pathname,
+        enabled: visibility?.enabled ?? DEFAULT_VISIBILITY.enabled,
+        devOnly: visibility?.devOnly ?? DEFAULT_VISIBILITY.devOnly,
+        routeKey: visibility?.routeKey,
     };
 }

@@ -14,7 +14,7 @@ export function FieldTagSelector({ fields, fieldValues, onFieldChange }: FieldTa
     }
 
     return (
-        <div className="flex flex-wrap items-center gap-[8px] border-t border-[var(--adaptive-blackOpacity100)] px-[16px] py-[12px]">
+        <div className="flex flex-wrap items-center gap-[8px] border-t border-[var(--adaptive-blackOpacity100)] p-[8px]">
             {tagFields.map((field) => {
                 const selected = fieldValues[field.key] === true;
 

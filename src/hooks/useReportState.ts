@@ -11,6 +11,7 @@ import { usePersonalKey } from "./usePersonalKey.js";
 import { useResolvedAppearance } from "./useResolvedAppearance.js";
 import type {
     CreateReportFeedbackPayload,
+    CreateReplyPayload,
     ReportAppearance,
     ReportAuthor,
     ReportEvent,
@@ -24,7 +25,7 @@ import type {
     UpdateReportFeedbackPayload,
 } from "@/types/report.js";
 import type { DraftReport, EditableDraft, Marker, PendingFeedbackComposer, ReportMode, ReportPanelTab, TargetSnapshot } from "@/types/report-ui.js";
-import { createReplyStatusForSubmit, getFeedbackDisplayStatus, resolveOriginalFeedbackAuthorName } from "@/utils/feedbackThread.js";
+import { createReplyStatusForSubmit, getFeedbackDisplayStatus, getLatestBranchRoot, getReportReplies, ISSUE_ROOT_PARENT_ID, resolveOriginalFeedbackAuthorName, resolveParentReplyIdForQuestion } from "@/utils/feedbackThread.js";
 import { clampRatio, getMarkerFromReport, resolveTooltipAnchor } from "@/utils/coordinates.js";
 import { getFeedbackTargetElement, isFeedbackTargetVisible, scrollToFeedbackTarget, waitForTargetRevealResync } from "@/utils/locateFeedback.js";
 
@@ -42,6 +43,7 @@ import {
     type ReportSideEffectCallbacks,
 } from "@/utils/reportCallbacks.js";
 import {
+    buildGitHubIssueStatusUpdate,
     buildGitHubIssueUpdate,
     canCreateGitHubIssueFromList,
     canCreateGitHubIssueOnCreate,
@@ -68,9 +70,11 @@ export type ReportStateConfig = {
     identify?: ReportIdentify;
     onList?: (params: { pathname: string }) => Promise<ReportFeedback[]>;
     onListAll?: (params: ReportListAllParams) => Promise<ReportListAllResult>;
+    onListReplies?: (commentId: string) => Promise<ReportReply[]>;
     onNavigate?: (pathname: string) => void | Promise<void>;
     onRevealTarget?: (report: ReportFeedback) => boolean | Promise<boolean>;
     onCreate?: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
+    onCreateReply?: (commentId: string, payload: CreateReplyPayload) => Promise<ReportReply>;
     onUpdate?: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
     onDelete?: (id: string) => Promise<void>;
     onEvent?: (event: ReportEvent) => void | Promise<void>;
@@ -95,9 +99,11 @@ export function useReportState({
     identify,
     onList,
     onListAll,
+    onListReplies,
     onNavigate,
     onRevealTarget,
     onCreate,
+    onCreateReply,
     onUpdate,
     onDelete,
     onEvent,
@@ -174,6 +180,9 @@ export function useReportState({
         createFeedback,
         updateFeedback,
         deleteFeedback,
+        loadRepliesIfNeeded,
+        createReply,
+        usesCreateReply,
     } = useReportPersistence({
         projectId,
         environment,
@@ -181,7 +190,9 @@ export function useReportState({
         fields,
         onList,
         onListAll,
+        onListReplies,
         onCreate,
+        onCreateReply,
         onUpdate,
         onDelete,
         routeKey,
@@ -227,6 +238,40 @@ export function useReportState({
         return auth ? { ...payload, auth } : payload;
     };
 
+    const signReplyPayload = async (payload: CreateReplyPayload) => {
+        if (personalKeyRequired) {
+            throw new Error(messages.errors.personalKeyRequired);
+        }
+
+        const auth = await signPayload("reply:create", payload);
+        return auth ? { ...payload, auth } : payload;
+    };
+
+    const applyGitHubIssueUpdate = async (report: ReportFeedback, result: { issueNumber: number; issueUrl: string }) => {
+        if (usesCreateReply) {
+            const updatedFeedback = await updateFeedback(
+                report.id,
+                await signUpdatePayload(buildGitHubIssueStatusUpdate(report, result)),
+            );
+
+            await createReply(
+                report.id,
+                await signReplyPayload({
+                    message: messages.resolution.gitIssuedMessage,
+                    status: "suggested",
+                    author_type: "system",
+                }),
+            );
+
+            return updatedFeedback;
+        }
+
+        return updateFeedback(
+            report.id,
+            await signUpdatePayload(buildGitHubIssueUpdate(report, result, messages.resolution.gitIssuedMessage)),
+        );
+    };
+
     const [mode, setMode] = useState<ReportMode>("idle");
     const [showTargetPreview, setShowTargetPreview] = useState(false);
     const [selectableTargets, setSelectableTargets] = useState<TargetSnapshot[]>([]);
@@ -238,6 +283,7 @@ export function useReportState({
     const [hoveredMarkerId, setHoveredMarkerId] = useState<string | null>(null);
     const [activeReplyReportId, setActiveReplyReportId] = useState<string | null>(null);
     const [replyDraft, setReplyDraft] = useState("");
+    const [replySubmitAsQuestion, setReplySubmitAsQuestion] = useState(false);
     const [draftAuthorName, setDraftAuthorName] = useState(() => resolveDefaultAuthorName(activeIdentify, authorizedAuthors));
     const [replyAuthorName, setReplyAuthorName] = useState(() => resolveDefaultAuthorName(activeIdentify, authorizedAuthors));
     const [pendingComposer, setPendingComposer] = useState<PendingFeedbackComposer>(null);
@@ -279,7 +325,13 @@ export function useReportState({
 
             if (status === "resolved") {
                 resolved += 1;
-            } else if (status === "wait_for_reply" || status === "suggested" || status === "found_error" || status === "recheck_requested") {
+            } else if (
+                status === "wait_for_reply" ||
+                status === "additional_question" ||
+                status === "suggested" ||
+                status === "found_error" ||
+                status === "recheck_requested"
+            ) {
                 inProgress += 1;
             }
         }
@@ -568,6 +620,7 @@ export function useReportState({
     const closeReplyComposer = () => {
         setActiveReplyReportId(null);
         setReplyDraft("");
+        setReplySubmitAsQuestion(false);
         setPendingComposer(null);
         setShowConfirmAuthorSelect(false);
     };
@@ -654,6 +707,7 @@ export function useReportState({
         selectReport(report.id);
         setActiveReplyReportId(report.id);
         setReplyDraft("");
+        setReplySubmitAsQuestion(false);
         setPendingComposer(null);
         setReplyAuthorName(resolveDefaultAuthorName(activeIdentify, authorizedAuthors));
         setConfirmAuthorName(resolveOriginalFeedbackAuthorName(report));
@@ -663,10 +717,11 @@ export function useReportState({
 
     const activateFeedbackMarker = useCallback(
         async (report: ReportFeedback) => {
-            await prepareFeedbackLocation(report);
-            openReplyComposer(report);
+            const enrichedReport = await loadRepliesIfNeeded(report);
+            await prepareFeedbackLocation(enrichedReport);
+            openReplyComposer(enrichedReport);
         },
-        [openReplyComposer, prepareFeedbackLocation],
+        [loadRepliesIfNeeded, openReplyComposer, prepareFeedbackLocation],
     );
 
     const toggleConfirmAuthorSelect = () => {
@@ -678,27 +733,61 @@ export function useReportState({
             return;
         }
 
-        const latest = activeReplyReport.replies[activeReplyReport.replies.length - 1];
+        const latestRoot = getLatestBranchRoot(getReportReplies(activeReplyReport));
 
-        if (!latest) {
+        if (!latestRoot) {
             return;
         }
 
         setPendingComposer({
-            type: latest.status === "found_error" ? "recheck" : "deny",
-            targetReplyId: latest.id,
+            type: latestRoot.status === "found_error" ? "recheck" : "deny",
+            targetReplyId: latestRoot.id,
         });
         setReplyDraft("");
+        setReplySubmitAsQuestion(false);
     };
 
     const startCheckoutReview = (replyId: string) => {
         setPendingComposer({ type: "checkout", targetReplyId: replyId });
         setReplyDraft("");
+        setReplySubmitAsQuestion(false);
+    };
+
+    const startAskQuestion = () => {
+        if (!activeReplyReport) {
+            return;
+        }
+
+        const latestRoot = getLatestBranchRoot(getReportReplies(activeReplyReport));
+
+        setReplyDraft("");
+
+        if (!latestRoot) {
+            setPendingComposer({
+                type: "question",
+                targetReplyId: ISSUE_ROOT_PARENT_ID,
+            });
+            setReplySubmitAsQuestion(true);
+            return;
+        }
+
+        if (
+            latestRoot.status === "suggested" ||
+            latestRoot.status === "found_error" ||
+            latestRoot.status === "recheck_requested"
+        ) {
+            setPendingComposer({
+                type: "question",
+                targetReplyId: latestRoot.id,
+            });
+            setReplySubmitAsQuestion(true);
+        }
     };
 
     const cancelPendingComposer = () => {
         setPendingComposer(null);
         setReplyDraft("");
+        setReplySubmitAsQuestion(false);
     };
 
     const toggleReportMode = () => {
@@ -867,20 +956,28 @@ export function useReportState({
             message: draft.message.trim(),
             status: "open",
             field_values: draft.fieldValues,
-            x_ratio: draft.xRatio,
-            y_ratio: draft.yRatio,
-            element_x_ratio: draft.elementXRatio,
-            element_y_ratio: draft.elementYRatio,
-            anchor_report_id: draft.anchorReportId,
-            anchor_report_type: draft.anchorReportType,
-            anchor_x_ratio: draft.anchorXRatio,
-            anchor_y_ratio: draft.anchorYRatio,
-            scroll_y: draft.scrollY,
-            document_y: draft.documentY,
-            viewport_width: window.innerWidth,
-            viewport_height: window.innerHeight,
-            design_width: window.innerWidth,
-            design_height: window.innerHeight,
+            position: {
+                target: {
+                    x: draft.elementXRatio,
+                    y: draft.elementYRatio,
+                },
+                viewport: {
+                    x: draft.xRatio,
+                    y: draft.yRatio,
+                    width: window.innerWidth,
+                    height: window.innerHeight,
+                },
+                scrollY: draft.scrollY,
+                anchor:
+                    draft.anchorReportId && draft.anchorReportType && draft.anchorXRatio !== null && draft.anchorYRatio !== null
+                        ? {
+                              reportId: draft.anchorReportId,
+                              reportType: draft.anchorReportType,
+                              x: draft.anchorXRatio,
+                              y: draft.anchorYRatio,
+                          }
+                        : null,
+            },
             ...(environment ? { environment } : {}),
             ...(appVersion ? { app_version: appVersion } : {}),
             ...(activeIdentify || draftAuthorName.trim()
@@ -935,10 +1032,7 @@ export function useReportState({
             await notifyFeedbackCreate(eventCallbacks, savedFeedback);
 
             const result = await github.onCreate(savedFeedback);
-            const updatedFeedback = await updateFeedback(
-                savedFeedback.id,
-                await signUpdatePayload(buildGitHubIssueUpdate(savedFeedback, result, messages.resolution.gitIssuedMessage)),
-            );
+            const updatedFeedback = await applyGitHubIssueUpdate(savedFeedback, result);
 
             await notifyGitHubIssueCreated(eventCallbacks, {
                 feedback: updatedFeedback,
@@ -1002,10 +1096,23 @@ export function useReportState({
     };
 
     const appendReply = async (report: ReportFeedback, reply: ReportReply) => {
-        const payload = await signUpdatePayload({
-            replies: [...report.replies, reply],
-        });
-        await updateFeedback(report.id, payload);
+        if (usesCreateReply) {
+            await createReply(
+                report.id,
+                await signReplyPayload({
+                    message: reply.message,
+                    status: reply.status,
+                    parent_reply_id: reply.parent_reply_id,
+                    author_type: reply.author_type ?? "manager",
+                    author_name: reply.author_name,
+                }),
+            );
+        } else {
+            const payload = await signUpdatePayload({
+                replies: [...getReportReplies(report), reply],
+            });
+            await updateFeedback(report.id, payload);
+        }
 
         await notifyFeedbackReply(eventCallbacks, {
             feedbackId: report.id,
@@ -1028,27 +1135,54 @@ export function useReportState({
             return;
         }
 
-        if (!replyAuthorName.trim()) {
-            setErrorMessage(messages.errors.authorRequired);
+        const pendingType = pendingComposer?.type ?? null;
+        const isCreatorSubmit = pendingType === "deny" || pendingType === "recheck" || pendingType === "question";
+        const isQuestionSubmit = pendingType === "question";
+        const authorName = isCreatorSubmit
+            ? (confirmAuthorName.trim() || resolveOriginalFeedbackAuthorName(activeReplyReport))
+            : replyAuthorName.trim();
+
+        if (!authorName) {
+            setErrorMessage(isCreatorSubmit ? messages.errors.reviewerRequired : messages.errors.authorRequired);
             return;
         }
 
         const replyMessage = replyDraft.trim();
-        const pendingType = pendingComposer?.type ?? null;
+        const replyStatus = createReplyStatusForSubmit(pendingType, isQuestionSubmit);
+        const parentReplyId =
+            replyStatus === "additional_question"
+                ? resolveParentReplyIdForQuestion(activeReplyReport, pendingComposer)
+                : null;
         const reply: ReportReply = {
             id: createReplyId(),
             message: replyMessage,
             created_at: new Date().toISOString(),
-            status: createReplyStatusForSubmit(pendingType),
-            author_type: "manager",
-            author_name: replyAuthorName.trim(),
+            status: replyStatus,
+            ...(parentReplyId ? { parent_reply_id: parentReplyId } : {}),
+            author_type: isCreatorSubmit ? "user" : "manager",
+            author_name: authorName,
         };
 
         try {
             await appendReply(activeReplyReport, reply);
             setErrorMessage("");
             setReplyDraft("");
-            setPendingComposer(null);
+
+            if (replyStatus === "additional_question") {
+                setReplySubmitAsQuestion(true);
+
+                if (pendingType === "question" && pendingComposer) {
+                    setPendingComposer({
+                        type: "question",
+                        targetReplyId: pendingComposer.targetReplyId,
+                    });
+                } else {
+                    setPendingComposer(null);
+                }
+            } else {
+                setReplySubmitAsQuestion(false);
+                setPendingComposer(null);
+            }
         } catch (nextError) {
             setErrorMessage(nextError instanceof Error ? nextError.message : messages.errors.saveReplyFailed);
         }
@@ -1066,22 +1200,44 @@ export function useReportState({
             return;
         }
 
-        const reply: ReportReply = {
-            id: createReplyId(),
-            message: messages.resolution.issueResolvedMessage,
-            created_at: new Date().toISOString(),
-            status: "resolved",
-            author_type: "user",
-            author_name: resolverName,
-        };
-
         try {
-            const updatedFeedback = await updateFeedback(activeReplyReport.id, await signUpdatePayload({
-                status: "resolved",
-                replies: [...activeReplyReport.replies, reply],
-            }));
+            if (usesCreateReply) {
+                await createReply(
+                    activeReplyReport.id,
+                    await signReplyPayload({
+                        message: messages.resolution.issueResolvedMessage,
+                        status: "resolved",
+                        author_type: "user",
+                        author_name: resolverName,
+                    }),
+                );
+                const updatedFeedback = await updateFeedback(
+                    activeReplyReport.id,
+                    await signUpdatePayload({
+                        status: "resolved",
+                    }),
+                );
 
-            await notifyFeedbackUpdate(eventCallbacks, updatedFeedback);
+                await notifyFeedbackUpdate(eventCallbacks, updatedFeedback);
+            } else {
+                const reply: ReportReply = {
+                    id: createReplyId(),
+                    message: messages.resolution.issueResolvedMessage,
+                    created_at: new Date().toISOString(),
+                    status: "resolved",
+                    author_type: "user",
+                    author_name: resolverName,
+                };
+                const updatedFeedback = await updateFeedback(
+                    activeReplyReport.id,
+                    await signUpdatePayload({
+                        status: "resolved",
+                        replies: [...getReportReplies(activeReplyReport), reply],
+                    }),
+                );
+
+                await notifyFeedbackUpdate(eventCallbacks, updatedFeedback);
+            }
 
             setErrorMessage("");
             setPendingComposer(null);
@@ -1106,10 +1262,7 @@ export function useReportState({
 
         try {
             const result = await github.onCreate(report);
-            const updatedFeedback = await updateFeedback(
-                report.id,
-                await signUpdatePayload(buildGitHubIssueUpdate(report, result, messages.resolution.gitIssuedMessage)),
-            );
+            const updatedFeedback = await applyGitHubIssueUpdate(report, result);
 
             await notifyGitHubIssueCreated(eventCallbacks, {
                 feedback: updatedFeedback,
@@ -1238,6 +1391,8 @@ export function useReportState({
         tooltipFieldTags,
         replyDraft,
         setReplyDraft,
+        replySubmitAsQuestion,
+        setReplySubmitAsQuestion,
         draftAuthorName,
         setDraftAuthorName,
         replyAuthorName,
@@ -1245,6 +1400,7 @@ export function useReportState({
         pendingComposer,
         startDenyReview,
         startCheckoutReview,
+        startAskQuestion,
         cancelPendingComposer,
         confirmAuthorName,
         setConfirmAuthorName,

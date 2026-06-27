@@ -9,23 +9,12 @@ export type ResolvedReportProject = {
 
 export type ResolveReportProjectOptions = {
     project?: ReportProject;
-    /** @deprecated Use `project.id`. */
-    projectId?: string;
-    /** @deprecated Use `project.env`. */
-    environment?: string;
-    /** @deprecated Use `project.version`. */
-    appVersion?: string;
 };
 
-export function resolveReportProject({
-    project,
-    projectId,
-    environment,
-    appVersion,
-}: ResolveReportProjectOptions): ResolvedReportProject {
+export function resolveReportProject({ project }: ResolveReportProjectOptions): ResolvedReportProject {
     return {
-        projectId: resolveProjectId(project?.id ?? projectId),
-        environment: project?.env ?? environment,
-        appVersion: project?.version ?? appVersion,
+        projectId: resolveProjectId(project?.id),
+        environment: project?.env,
+        appVersion: project?.version,
     };
 }

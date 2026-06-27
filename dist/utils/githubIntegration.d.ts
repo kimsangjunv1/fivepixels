@@ -8,5 +8,6 @@ export declare function canCreateGitHubIssueFromList(github: ReportGitHubConfig 
 export declare function canCreateGitHubIssueOnCreate(github: ReportGitHubConfig | undefined): boolean;
 export declare function createGitIssuedReply(message: string): ReportReply;
 export declare function isGitIssuedSystemReply(reply: ReportReply, report: ReportFeedback): boolean;
+export declare function buildGitHubIssueStatusUpdate(report: ReportFeedback, result: ReportGitHubIssueCreateResult): UpdateReportFeedbackPayload;
 export declare function buildGitHubIssueUpdate(report: ReportFeedback, result: ReportGitHubIssueCreateResult, gitIssuedMessage: string): UpdateReportFeedbackPayload;
 //# sourceMappingURL=githubIntegration.d.ts.map

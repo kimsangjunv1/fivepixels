@@ -7,7 +7,7 @@ export const ROUTE_DETAIL_STATUS_ORDER: RouteDetailStatus[] = ["wait", "suggeste
 
 export const ROUTE_DETAIL_STATUS_LABEL: Record<RouteDetailStatus, string> = {
     wait: "Wait",
-    suggested: "Suggested",
+    suggested: "Request Confirm",
     git_issued: "Git Issued",
     resolved: "Resolved",
 };
@@ -25,6 +25,10 @@ export function getRouteDetailStatus(report: ReportFeedback): RouteDetailStatus 
 
     if (displayStatus === "suggested" || displayStatus === "found_error" || displayStatus === "recheck_requested") {
         return "suggested";
+    }
+
+    if (displayStatus === "additional_question") {
+        return "wait";
     }
 
     return "wait";

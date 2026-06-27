@@ -2,18 +2,11 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { REPORT_SHORTCUTS } from "../../constants/reportShortcuts.js";
 import { useReport } from "../../providers/reportContext.js";
-import { formatDateOnly, formatTimeOnly } from "../../utils/format.js";
-import { getFieldTags } from "../../utils/fields.js";
-import { getFeedbackDisplayStatus } from "../../utils/feedbackThread.js";
+import { formatDateOnly } from "../../utils/format.js";
 import { ShortcutHint } from "../../components/ShortcutHint.js";
-import { HoverTooltip } from "../../components/ui/HoverTooltip.js";
-import { FeedbackFieldTags } from "./feedback/FeedbackFieldTags.js";
-import { FeedbackStatusBadge } from "./feedback/FeedbackStatusBadge.js";
-import { SearchIcon, CopyIcon, TrashIcon, ChevronDownIcon } from "../../components/icons/Icons.js";
-import { copyTextToClipboard, serializeFeedbackItem } from "../../utils/feedbackDataTransfer.js";
-import { formatModalReportLabel } from "../../utils/markerContext.js";
+import { SearchIcon, ChevronDownIcon } from "../../components/icons/Icons.js";
 import { PanelDropdownMenu, PanelDropdownMenuItem } from "./PanelDropdownMenu.js";
-import { GitIssueButton } from "./feedback/GitIssueButton.js";
+import { FeedbackListItem } from "./feedback/FeedbackListItem.js";
 const FEEDBACK_PAGE_SIZE = 20;
 function getDateGroupKey(value) {
     const date = new Date(value);
@@ -44,46 +37,8 @@ function groupReportsByDate(reports, locale) {
     }
     return groups;
 }
-function FeedbackListDeleteButton({ report, onDelete, disabled = false, messages }) {
-    const [confirming, setConfirming] = useState(false);
-    useEffect(() => {
-        if (!confirming) {
-            return;
-        }
-        const timer = window.setTimeout(() => setConfirming(false), 1500);
-        return () => {
-            window.clearTimeout(timer);
-        };
-    }, [confirming]);
-    const handleDelete = (event) => {
-        event.stopPropagation();
-        if (!confirming) {
-            setConfirming(true);
-            return;
-        }
-        void onDelete(report.id).finally(() => {
-            setConfirming(false);
-        });
-    };
-    return (_jsx(HoverTooltip, { label: confirming ? messages.feedbackList.deleteConfirmTitle : messages.feedbackList.deleteTitle, children: _jsxs("button", { type: "button", "data-fivepixels-interactive": "", onClick: handleDelete, disabled: disabled, "aria-label": confirming ? messages.feedbackList.deleteConfirmAriaLabel : messages.feedbackList.deleteAriaLabel, className: `flex shrink-0 items-center justify-center gap-[2px] self-start rounded-[6px] p-[6px] disabled:opacity-50 ${confirming ? "text-rose-700 hover:bg-rose-50" : "text-[var(--adaptive-black500)] hover:bg-[var(--adaptive-black100)] hover:text-rose-700"}`, children: [_jsx(TrashIcon, { className: "h-[16px] w-[16px]" }), confirming ? _jsx("span", { className: "text-[10px] font-semibold", children: messages.feedbackList.deleteConfirmLabel }) : null] }) }));
-}
-function FeedbackListCopyButton({ report, messages }) {
-    const [copied, setCopied] = useState(false);
-    const handleCopy = (event) => {
-        event.stopPropagation();
-        void copyTextToClipboard(serializeFeedbackItem(report))
-            .then(() => {
-            setCopied(true);
-            window.setTimeout(() => setCopied(false), 1500);
-        })
-            .catch(() => {
-            setCopied(false);
-        });
-    };
-    return (_jsx(HoverTooltip, { label: copied ? messages.feedbackList.copiedTitle : messages.feedbackList.copyTitle, children: _jsx("button", { type: "button", "data-fivepixels-interactive": "", onClick: handleCopy, "aria-label": messages.feedbackList.copyAriaLabel, className: "flex shrink-0 items-center justify-center self-start rounded-[6px] p-[6px] text-[var(--adaptive-black500)] hover:bg-[var(--adaptive-black100)] hover:text-[var(--adaptive-black800)]", children: copied ? _jsx("span", { className: "text-[10px] font-semibold text-[var(--adaptive-blue500)]", children: messages.common.ok }) : _jsx(CopyIcon, { className: "h-[16px] w-[16px]" }) }) }));
-}
 export function ReportFeedbackList() {
-    const { filters, setFilters, filteredReports, reports, listScope, setListScope, canListAllFeedback, fields, locale, messages, isError, isFetching, hasNextPage, isFetchingNextPage, fetchNextPage, isDeleting, queryErrorMessage, visibleShortcutKeys, searchInputRef, locateFeedback, markers, refetch, handleDelete, canCreateGitHubIssueFromList, creatingGitHubIssueId, handleCreateGitHubIssue, } = useReport();
+    const { filters, setFilters, filteredReports, reports, listScope, setListScope, canListAllFeedback, locale, messages, isError, isFetching, hasNextPage, isFetchingNextPage, fetchNextPage, isDeleting, queryErrorMessage, visibleShortcutKeys, searchInputRef, locateFeedback, refetch, handleDelete, canCreateGitHubIssueFromList, creatingGitHubIssueId, handleCreateGitHubIssue, } = useReport();
     const [visibleCount, setVisibleCount] = useState(FEEDBACK_PAGE_SIZE);
     const [expandedGroups, setExpandedGroups] = useState(() => new Set());
     const [statusMenuOpen, setStatusMenuOpen] = useState(false);
@@ -93,7 +48,6 @@ export function ReportFeedbackList() {
     const reportTypeLabel = filters.reportType === "all" ? messages.feedbackList.filterTypeAll : filters.reportType === "item" ? messages.feedbackList.reportTypeItem : messages.feedbackList.reportTypeGroup;
     const visibleReports = useMemo(() => filteredReports.slice(0, visibleCount), [filteredReports, visibleCount]);
     const groupedReports = useMemo(() => groupReportsByDate(visibleReports, locale), [locale, visibleReports]);
-    const detachedMarkerKinds = useMemo(() => new Map(markers.filter((marker) => marker.detached).map((marker) => [marker.report.id, marker.detachedKind])), [markers]);
     useEffect(() => {
         setVisibleCount(FEEDBACK_PAGE_SIZE);
     }, [filters.keyword, filters.reportType, filters.status, listScope, reports.length]);
@@ -138,36 +92,28 @@ export function ReportFeedbackList() {
             observer.disconnect();
         };
     }, [fetchNextPage, filteredReports.length, hasNextPage, visibleCount]);
-    return (_jsxs("section", { className: "flex min-h-0 flex-1 flex-col bg-[var(--adaptive-black50)] rounded-[0_0_24px_24px]", children: [canListAllFeedback ? (_jsx("div", { className: "flex border-t border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] p-[4px]", role: "group", "aria-label": messages.feedbackList.scopeAriaLabel, children: ["current", "all"].map((scope) => (_jsx("button", { type: "button", "aria-pressed": listScope === scope, onClick: () => setListScope(scope), className: `flex-1 rounded-[6px] px-[8px] py-[4px] text-[12px] font-[600] ${listScope === scope ? "bg-[var(--adaptive-black200)] text-[var(--adaptive-black900)]" : "text-[var(--adaptive-black500)] hover:bg-[var(--adaptive-black100)]"}`, children: scope === "current" ? messages.feedbackList.scopeCurrentPage : messages.feedbackList.scopeAllPages }, scope))) })) : null, _jsxs("div", { className: "flex bg-[var(--adaptive-black50)] border-y border-y-[var(--adaptive-border-subtle)]", children: [_jsxs("section", { className: "flex flex-1 items-center gap-[4px]", children: [_jsxs(PanelDropdownMenu, { open: statusMenuOpen, onClose: () => setStatusMenuOpen(false), align: "left", trigger: _jsxs("button", { type: "button", onClick: () => setStatusMenuOpen((current) => !current), "aria-expanded": statusMenuOpen, "aria-haspopup": "menu", "aria-label": messages.feedbackList.filterStatusAriaLabel, className: "flex items-center gap-[4px] px-[8px] text-[12px] text-[var(--adaptive-black800)] outline-none", children: [_jsx("span", { children: statusLabel }), _jsx(ChevronDownIcon, { className: `h-[14px] w-[14px] text-[var(--adaptive-black600)] transition-transform ${statusMenuOpen ? "rotate-180" : ""}` })] }), children: [_jsx(PanelDropdownMenuItem, { active: filters.status === "all", onClick: () => {
-                                            setStatusMenuOpen(false);
-                                            setFilters((current) => ({ ...current, status: "all" }));
-                                        }, children: messages.feedbackList.filterStatusAll }), Object.keys(messages.status.routeDetail).map((status) => (_jsx(PanelDropdownMenuItem, { active: filters.status === status, onClick: () => {
-                                            setStatusMenuOpen(false);
-                                            setFilters((current) => ({ ...current, status }));
-                                        }, children: messages.status.routeDetail[status] }, status)))] }), _jsxs(PanelDropdownMenu, { open: reportTypeMenuOpen, onClose: () => setReportTypeMenuOpen(false), align: "left", trigger: _jsxs("button", { type: "button", onClick: () => setReportTypeMenuOpen((current) => !current), "aria-expanded": reportTypeMenuOpen, "aria-haspopup": "menu", "aria-label": messages.feedbackList.filterTypeAriaLabel, className: "flex items-center gap-[4px] px-[8px] text-[12px] text-[var(--adaptive-black800)] outline-none", children: [_jsx("span", { children: reportTypeLabel }), _jsx(ChevronDownIcon, { className: `h-[14px] w-[14px] text-[var(--adaptive-black600)] transition-transform ${reportTypeMenuOpen ? "rotate-180" : ""}` })] }), children: [_jsx(PanelDropdownMenuItem, { active: filters.reportType === "all", onClick: () => {
-                                            setReportTypeMenuOpen(false);
-                                            setFilters((current) => ({ ...current, reportType: "all" }));
-                                        }, children: messages.feedbackList.filterTypeAll }), _jsx(PanelDropdownMenuItem, { active: filters.reportType === "item", onClick: () => {
-                                            setReportTypeMenuOpen(false);
-                                            setFilters((current) => ({ ...current, reportType: "item" }));
-                                        }, children: messages.feedbackList.reportTypeItem }), _jsx(PanelDropdownMenuItem, { active: filters.reportType === "group", onClick: () => {
-                                            setReportTypeMenuOpen(false);
-                                            setFilters((current) => ({ ...current, reportType: "group" }));
-                                        }, children: messages.feedbackList.reportTypeGroup })] })] }), _jsxs("section", { className: "flex-1 relative", children: [_jsx("input", { ref: searchInputRef, value: filters.keyword, onChange: (event) => setFilters((current) => ({ ...current, keyword: event.target.value })), placeholder: messages.feedbackList.searchPlaceholder, className: "h-[32px] w-full rounded-[8px] px-[8px] pr-[30px] text-[12px] text-[var(--adaptive-black800)] outline-none" }), _jsx(SearchIcon, { className: "pointer-events-none absolute right-[8px] top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--adaptive-black500)]" }), _jsx("div", { className: "absolute right-[30px] top-1/2 -translate-y-1/2", children: _jsx(ShortcutHint, { binding: REPORT_SHORTCUTS.focusSearch, visible: visibleShortcutKeys }) })] })] }), _jsxs("div", { className: "min-h-0 flex-1 overflow-y-auto bg-[var(--adaptive-black50)] rounded-[0_0_24px_24px]", children: [isError ? (_jsxs("div", { className: "space-y-1 rounded-md border border-[var(--adaptive-border-subtle)] bg-rose-50 p-2 text-xs text-rose-800", children: [_jsx("strong", { className: "text-sm font-semibold", children: messages.feedbackList.loadFailedTitle }), _jsx("p", { children: queryErrorMessage ?? messages.feedbackList.loadFailedRetry }), _jsx("button", { type: "button", onClick: () => void refetch(), className: "inline-flex items-center justify-center rounded-md border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface)] px-3 py-1 text-xs font-medium text-[var(--adaptive-text-secondary)]", children: messages.common.retry })] })) : null, !isError && !isFetching && filteredReports.length === 0 ? (_jsxs("div", { className: "p-[12px] flex flex-col gap-[4px] bg-[var(--adaptive-black200)]", children: [_jsx("h6", { className: "font-semibold text-[var(--adaptive-black900)]", children: messages.feedbackList.emptyTitle }), _jsx("p", { className: "text-[12px] text-[var(--adaptive-black500)] whitespace-break-spaces leading-[1.5]", children: reports.length === 0 ? messages.feedbackList.emptyNoFeedback : messages.feedbackList.emptyNoMatch })] })) : null, _jsx("section", { className: "flex flex-col", children: groupedReports.map(({ dateKey, label, reports: groupReports }) => {
-                            const isExpanded = expandedGroups.has(dateKey);
-                            return (_jsxs("div", { className: "flex flex-col", children: [_jsxs("button", { type: "button", onClick: () => toggleGroup(dateKey), "aria-expanded": isExpanded, className: "sticky z-10 flex w-full items-center justify-between bg-[var(--adaptive-black100)] p-[4px_8px]", children: [_jsx("p", { className: "text-[12px] font-[600] text-[var(--adaptive-black700)]", children: label }), _jsx(ChevronDownIcon, { className: `h-4 w-4 shrink-0 transition-transform ${isExpanded ? "rotate-180" : ""}` })] }), isExpanded
-                                        ? groupReports.map((report) => {
-                                            const displayStatus = getFeedbackDisplayStatus(report, true);
-                                            const fieldTags = getFieldTags(fields, report.field_values);
-                                            return (_jsxs("div", { className: "flex w-full items-start gap-[4px] border-b border-[var(--adaptive-border-subtle)] last:border-b-0", children: [_jsxs("button", { type: "button", onClick: () => locateFeedback(report.id), className: "flex min-w-0 flex-1 flex-col gap-[6px] p-[12px] text-left", children: [_jsxs("section", { className: "flex flex-col gap-[4px]", children: [_jsxs("div", { className: "flex flex-wrap items-center gap-[6px]", children: [_jsx("strong", { className: "max-w-full truncate font-bold text-[var(--adaptive-black900)]", children: detachedMarkerKinds.get(report.id) === "modal"
-                                                                                    ? formatModalReportLabel(report.report_id)
-                                                                                    : report.report_id }), detachedMarkerKinds.has(report.id) ? (_jsx("span", { className: `rounded-[4px] border border-dashed px-[4px] py-[1px] text-[10px] ${detachedMarkerKinds.get(report.id) === "modal"
-                                                                                    ? "border-[#818cf8]/70 text-[#4f46e5]"
-                                                                                    : "border-[var(--adaptive-black400)] text-[var(--adaptive-black500)]"}`, children: detachedMarkerKinds.get(report.id) === "modal"
-                                                                                    ? messages.marker.detachedModalBadge
-                                                                                    : messages.marker.detachedBadge })) : null, _jsx(FeedbackFieldTags, { tags: fieldTags }), _jsx(FeedbackStatusBadge, { status: displayStatus })] }), _jsx("p", { className: "text-[var(--adaptive-black700)]", children: report.message }), listScope === "all" ? _jsx("p", { className: "truncate text-[11px] text-[var(--adaptive-black500)]", children: report.pathname }) : null] }), _jsx("p", { className: "text-[var(--adaptive-black500)] text-[12px]", children: formatTimeOnly(report.created_at, locale) })] }), _jsxs("div", { className: "flex shrink-0 items-start gap-[2px] p-[12px] pl-0", children: [_jsx(FeedbackListCopyButton, { report: report, messages: messages }), canCreateGitHubIssueFromList ? (_jsx(GitIssueButton, { report: report, messages: messages, disabled: isDeleting, isSubmitting: creatingGitHubIssueId === report.id, onCreateIssue: handleCreateGitHubIssue })) : null, _jsx(FeedbackListDeleteButton, { report: report, onDelete: handleDelete, disabled: isDeleting, messages: messages })] })] }, report.id));
-                                        })
-                                        : null] }, dateKey));
-                        }) }), visibleCount < filteredReports.length || hasNextPage ? (_jsx("div", { ref: loadMoreRef, className: "py-[8px] text-center text-[12px] text-[var(--adaptive-black500)]", children: isFetchingNextPage ? messages.feedbackList.loadingMore : "" })) : null] })] }));
+    return (_jsxs("section", { className: "flex min-h-0 flex-1 flex-col bg-[var(--adaptive-black50)]", children: [_jsx("div", { className: "shrink-0 border-y border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)]", children: _jsxs("div", { className: "relative", children: [_jsx("input", { ref: searchInputRef, value: filters.keyword, onChange: (event) => setFilters((current) => ({ ...current, keyword: event.target.value })), placeholder: messages.feedbackList.searchPlaceholder, className: "h-[32px] w-full px-[8px] pr-[30px] text-[12px] text-[var(--adaptive-black800)] outline-none" }), _jsx(SearchIcon, { className: "pointer-events-none absolute right-[8px] top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--adaptive-black500)]" }), _jsx("div", { className: "absolute right-[30px] top-1/2 -translate-y-1/2", children: _jsx(ShortcutHint, { binding: REPORT_SHORTCUTS.focusSearch, visible: visibleShortcutKeys }) })] }) }), _jsxs("div", { className: "flex min-h-0 flex-1", children: [_jsxs("aside", { className: "flex w-[118px] shrink-0 flex-col gap-[12px] border-r border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] p-[8px]", children: [canListAllFeedback ? (_jsxs("section", { className: "flex flex-col gap-[6px]", children: [_jsx("p", { className: "text-[11px] font-[600] text-[var(--adaptive-black500)]", children: messages.feedbackList.filterRangeLabel }), _jsx("div", { className: "flex flex-col gap-[4px]", role: "group", "aria-label": messages.feedbackList.scopeAriaLabel, children: ["current", "all"].map((scope) => (_jsx("button", { type: "button", "aria-pressed": listScope === scope, onClick: () => setListScope(scope), className: `rounded-[6px] px-[8px] py-[4px] text-left text-[12px] font-[600] ${listScope === scope
+                                                ? "bg-[var(--adaptive-black200)] text-[var(--adaptive-black900)]"
+                                                : "text-[var(--adaptive-black500)] hover:bg-[var(--adaptive-black100)]"}`, children: scope === "current" ? messages.feedbackList.scopeCurrentPage : messages.feedbackList.scopeAllPages }, scope))) })] })) : null, _jsxs("section", { className: "flex flex-col gap-[6px]", children: [_jsx("p", { className: "text-[11px] font-[600] text-[var(--adaptive-black500)]", children: messages.feedbackList.filterCategoryLabel }), _jsxs("div", { className: "flex flex-col gap-[4px]", children: [_jsxs(PanelDropdownMenu, { open: statusMenuOpen, onClose: () => setStatusMenuOpen(false), align: "left", trigger: _jsxs("button", { type: "button", onClick: () => setStatusMenuOpen((current) => !current), "aria-expanded": statusMenuOpen, "aria-haspopup": "menu", "aria-label": messages.feedbackList.filterStatusAriaLabel, className: "flex w-full items-center justify-between gap-[4px] rounded-[6px] px-[8px] py-[4px] text-left text-[12px] text-[var(--adaptive-black800)] outline-none hover:bg-[var(--adaptive-black100)]", children: [_jsx("span", { className: "truncate", children: statusLabel }), _jsx(ChevronDownIcon, { className: `h-[14px] w-[14px] shrink-0 text-[var(--adaptive-black600)] transition-transform ${statusMenuOpen ? "rotate-180" : ""}` })] }), children: [_jsx(PanelDropdownMenuItem, { active: filters.status === "all", onClick: () => {
+                                                            setStatusMenuOpen(false);
+                                                            setFilters((current) => ({ ...current, status: "all" }));
+                                                        }, children: messages.feedbackList.filterStatusAll }), Object.keys(messages.status.routeDetail).map((status) => (_jsx(PanelDropdownMenuItem, { active: filters.status === status, onClick: () => {
+                                                            setStatusMenuOpen(false);
+                                                            setFilters((current) => ({ ...current, status }));
+                                                        }, children: messages.status.routeDetail[status] }, status)))] }), _jsxs(PanelDropdownMenu, { open: reportTypeMenuOpen, onClose: () => setReportTypeMenuOpen(false), align: "left", trigger: _jsxs("button", { type: "button", onClick: () => setReportTypeMenuOpen((current) => !current), "aria-expanded": reportTypeMenuOpen, "aria-haspopup": "menu", "aria-label": messages.feedbackList.filterTypeAriaLabel, className: "flex w-full items-center justify-between gap-[4px] rounded-[6px] px-[8px] py-[4px] text-left text-[12px] text-[var(--adaptive-black800)] outline-none hover:bg-[var(--adaptive-black100)]", children: [_jsx("span", { className: "truncate", children: reportTypeLabel }), _jsx(ChevronDownIcon, { className: `h-[14px] w-[14px] shrink-0 text-[var(--adaptive-black600)] transition-transform ${reportTypeMenuOpen ? "rotate-180" : ""}` })] }), children: [_jsx(PanelDropdownMenuItem, { active: filters.reportType === "all", onClick: () => {
+                                                            setReportTypeMenuOpen(false);
+                                                            setFilters((current) => ({ ...current, reportType: "all" }));
+                                                        }, children: messages.feedbackList.filterTypeAll }), _jsx(PanelDropdownMenuItem, { active: filters.reportType === "item", onClick: () => {
+                                                            setReportTypeMenuOpen(false);
+                                                            setFilters((current) => ({ ...current, reportType: "item" }));
+                                                        }, children: messages.feedbackList.reportTypeItem }), _jsx(PanelDropdownMenuItem, { active: filters.reportType === "group", onClick: () => {
+                                                            setReportTypeMenuOpen(false);
+                                                            setFilters((current) => ({ ...current, reportType: "group" }));
+                                                        }, children: messages.feedbackList.reportTypeGroup })] })] })] })] }), _jsxs("div", { className: "min-h-0 min-w-0 flex-1 overflow-y-auto bg-[var(--adaptive-black50)]", children: [isError ? (_jsxs("div", { className: "space-y-1 rounded-md border border-[var(--adaptive-border-subtle)] bg-rose-50 p-2 text-xs text-rose-800", children: [_jsx("strong", { className: "text-sm font-semibold", children: messages.feedbackList.loadFailedTitle }), _jsx("p", { children: queryErrorMessage ?? messages.feedbackList.loadFailedRetry }), _jsx("button", { type: "button", onClick: () => void refetch(), className: "inline-flex items-center justify-center rounded-md border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface)] px-3 py-1 text-xs font-medium text-[var(--adaptive-text-secondary)]", children: messages.common.retry })] })) : null, !isError && !isFetching && filteredReports.length === 0 ? (_jsxs("div", { className: "flex flex-col gap-[4px] bg-[var(--adaptive-black200)] p-[12px]", children: [_jsx("h6", { className: "font-semibold text-[var(--adaptive-black900)]", children: messages.feedbackList.emptyTitle }), _jsx("p", { className: "whitespace-break-spaces text-[12px] leading-[1.5] text-[var(--adaptive-black500)]", children: reports.length === 0 ? messages.feedbackList.emptyNoFeedback : messages.feedbackList.emptyNoMatch })] })) : null, _jsx("section", { className: "flex flex-col", children: groupedReports.map(({ dateKey, label, reports: groupReports }) => {
+                                    const isExpanded = expandedGroups.has(dateKey);
+                                    return (_jsxs("div", { className: "flex flex-col", children: [_jsxs("button", { type: "button", onClick: () => toggleGroup(dateKey), "aria-expanded": isExpanded, className: "sticky top-0 z-10 flex w-full items-center justify-between bg-[var(--adaptive-black100)] p-[4px_8px]", children: [_jsx("p", { className: "text-[12px] font-[600] text-[var(--adaptive-black700)]", children: label }), _jsx(ChevronDownIcon, { className: `h-4 w-4 shrink-0 transition-transform ${isExpanded ? "rotate-180" : ""}` })] }), isExpanded
+                                                ? groupReports.map((report) => (_jsx(FeedbackListItem, { report: report, locale: locale, messages: messages, listScope: listScope, disabled: isDeleting, canCreateGitHubIssue: canCreateGitHubIssueFromList, creatingGitHubIssueId: creatingGitHubIssueId, onLocate: locateFeedback, onDelete: handleDelete, onCreateGitHubIssue: handleCreateGitHubIssue }, report.id)))
+                                                : null] }, dateKey));
+                                }) }), visibleCount < filteredReports.length || hasNextPage ? (_jsx("div", { ref: loadMoreRef, className: "py-[8px] text-center text-[12px] text-[var(--adaptive-black500)]", children: isFetchingNextPage ? messages.feedbackList.loadingMore : "" })) : null] })] })] }));
 }
 //# sourceMappingURL=ReportFeedbackList.js.map

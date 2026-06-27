@@ -6,10 +6,6 @@ export type ResolvedReportTeam = {
 };
 export type ResolveReportTeamOptions = {
     team?: ReportTeam;
-    /** @deprecated Use `team.user`. */
-    identify?: ReportIdentify;
-    /** @deprecated Use `team.reviewers`. */
-    authors?: ReportAuthor[];
 };
-export declare function resolveReportTeam({ team, identify, authors }: ResolveReportTeamOptions): ResolvedReportTeam;
+export declare function resolveReportTeam({ team }: ResolveReportTeamOptions): ResolvedReportTeam;
 //# sourceMappingURL=reportTeam.d.ts.map

@@ -4,7 +4,7 @@ export type ReportLocale = "en" | "ko";
 
 type RouteDetailStatus = "wait" | "suggested" | "git_issued" | "resolved";
 
-type FeedbackDisplayStatus = "currently_wait" | "wait_for_reply" | "git_issued" | "suggested" | "found_error" | "recheck_requested" | "resolved";
+type FeedbackDisplayStatus = "currently_wait" | "wait_for_reply" | "git_issued" | "suggested" | "additional_question" | "found_error" | "recheck_requested" | "resolved";
 
 export type ReportMessages = {
     common: {
@@ -38,11 +38,19 @@ export type ReportMessages = {
         statsInProgress: string;
         tabPageDetails: string;
         tabFeedbackList: string;
+        tabSettings: string;
+        resizeWidthAriaLabel: string;
+        resizeHeightAriaLabel: string;
+        resetSize: string;
+        resetSizeTitle: string;
     };
     feedbackList: {
         scopeAriaLabel: string;
         scopeCurrentPage: string;
         scopeAllPages: string;
+        filterRangeLabel: string;
+        filterCategoryLabel: string;
+        threadReplyPrefix: string;
         filterStatusAll: string;
         filterTypeAll: string;
         filterStatusAriaLabel: string;
@@ -81,6 +89,8 @@ export type ReportMessages = {
     };
     composer: {
         placeholder: string;
+        questionPlaceholder: string;
+        askQuestionLabel: string;
         sendAriaLabel: string;
         gitIssueSendAriaLabel: string;
         gitIssueSendTitle: string;
@@ -95,8 +105,11 @@ export type ReportMessages = {
         scrollHintDown: string;
         denied: string;
         resolved: string;
+        resolvedConfirmLabel: string;
+        resolvedConfirmAriaLabel: string;
         select: string;
         leaveResult: string;
+        askQuestion: string;
     };
     routeDetails: {
         all: string;
@@ -104,6 +117,9 @@ export type ReportMessages = {
     };
     moreMenu: {
         settings: string;
+        sectionTransfer: string;
+        sectionKey: string;
+        sectionAdvanced: string;
         import: string;
         export: string;
         keyCopy: string;
@@ -223,13 +239,11 @@ export type ReportMessages = {
         createdAtInvalid: string;
         reportTypeInvalid: string;
         statusInvalid: string;
-        numberFieldRequired: (field: string) => string;
-        elementXRatioInvalid: string;
-        elementYRatioInvalid: string;
-        anchorXRatioInvalid: string;
-        anchorYRatioInvalid: string;
-        anchorReportIdInvalid: string;
-        anchorReportTypeInvalid: string;
+        positionObjectRequired: string;
+        positionRatioInvalid: (label: string) => string;
+        positionViewportInvalid: string;
+        positionScrollYInvalid: string;
+        positionAnchorInvalid: string;
         optionalStringFieldInvalid: (field: string) => string;
         duplicateId: (id: string) => string;
         integrationsObjectInvalid: string;
@@ -254,6 +268,8 @@ export type ReportMessages = {
         deleteFeedbackFailed: string;
         createGitHubIssueFailed: string;
         loadFeedbackFailed: string;
+        loadRepliesFailed: string;
+        createReplyFailed: string;
         createFeedbackFailed: string;
         localStorageTransferOnly: string;
         jsonImportFailed: string;

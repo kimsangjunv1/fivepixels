@@ -1,6 +1,7 @@
+import { getReplyCount } from "../utils/feedbackThread.js";
 import { TARGET_COLOR } from "../constants/report.js";
 export function hasReply(report) {
-    return report.replies.length > 0;
+    return getReplyCount(report) > 0;
 }
 export function getReplyStatusTone(hasCompletedReply) {
     return hasCompletedReply

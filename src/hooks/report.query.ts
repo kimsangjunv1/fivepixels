@@ -12,7 +12,13 @@ import type { ReportListScope } from "@/types/report-ui.js";
 const EMPTY_REPORTS: ReportFeedback[] = [];
 const REPORT_LIST_PAGE_SIZE = 100;
 
-export const useReportsQuery = (adapter: ReportStorageAdapter, pathname: string, scope: ReportListScope, enabled = true) => {
+export const useReportsQuery = (
+    adapter: ReportStorageAdapter,
+    pathname: string,
+    scope: ReportListScope,
+    enabled = true,
+    onRefetch?: () => void,
+) => {
     const [data, setData] = useState<ReportFeedback[]>(EMPTY_REPORTS);
     const [isLoading, setIsLoading] = useState(enabled);
     const [isFetching, setIsFetching] = useState(false);
@@ -37,6 +43,7 @@ export const useReportsQuery = (adapter: ReportStorageAdapter, pathname: string,
                     ? await listAllReports(adapter, { limit: REPORT_LIST_PAGE_SIZE })
                     : { items: await listReports(adapter, pathname), nextCursor: undefined };
             const reports = result.items;
+            onRefetch?.();
             setData(reports);
             setNextCursor(result.nextCursor);
             setIsFetched(true);
@@ -48,7 +55,7 @@ export const useReportsQuery = (adapter: ReportStorageAdapter, pathname: string,
             setIsLoading(false);
             setIsFetching(false);
         }
-    }, [adapter, enabled, pathname, scope]);
+    }, [adapter, enabled, onRefetch, pathname, scope]);
 
     const fetchNextPage = useCallback(async () => {
         if (scope !== "all" || !nextCursor || isFetchingNextPage) {

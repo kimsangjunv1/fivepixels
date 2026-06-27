@@ -16,13 +16,24 @@ export type ReportField = (ReportFieldBase & {
 });
 export type ReportFieldValues = Record<string, string | boolean>;
 /** Stored on each timeline reply. Hover-only states use helpers, not storage. */
-export type ReportReplyStatus = "suggested" | "found_error" | "recheck_requested" | "resolved";
+export type ReportReplyStatus = "suggested" | "additional_question" | "found_error" | "recheck_requested" | "resolved";
 export type ReportReply = {
     id: string;
+    comment_id?: string;
     message: string;
     created_at: string;
     status: ReportReplyStatus;
+    parent_reply_id?: string | null;
     author_type?: "user" | "manager" | "system";
+    author_name?: string | null;
+    auth?: ReportAuthProof;
+};
+export type ReportReplySummary = Pick<ReportReply, "id" | "message" | "created_at" | "status" | "author_type" | "author_name">;
+export type CreateReplyPayload = {
+    message: string;
+    status: ReportReplyStatus;
+    parent_reply_id?: string | null;
+    author_type: NonNullable<ReportReply["author_type"]>;
     author_name?: string | null;
     auth?: ReportAuthProof;
 };
@@ -62,7 +73,7 @@ export type ReportAuthor = {
     name: string;
     publicKey?: string;
 };
-export type ReportAuthAction = "feedback:create" | "feedback:update";
+export type ReportAuthAction = "feedback:create" | "feedback:update" | "reply:create";
 export type ReportAuthProof = {
     author_id: string;
     algorithm: "ECDSA-P256-SHA256";
@@ -88,6 +99,26 @@ export type ReportGitHubConfig = {
     modes?: ReportGitHubIntegrationMode[];
     onCreate?: (feedback: ReportFeedback) => Promise<ReportGitHubIssueCreateResult>;
 };
+export type ReportPositionRatio = {
+    x: number;
+    y: number;
+};
+export type ReportPositionViewport = ReportPositionRatio & {
+    width: number;
+    height: number;
+};
+export type ReportPositionAnchor = {
+    reportId: string;
+    reportType: ReportTargetType;
+    x: number;
+    y: number;
+};
+export type ReportPosition = {
+    target: ReportPositionRatio | null;
+    viewport: ReportPositionViewport;
+    scrollY: number;
+    anchor: ReportPositionAnchor | null;
+};
 export type ReportFeedback = {
     id: string;
     pathname: string;
@@ -96,21 +127,10 @@ export type ReportFeedback = {
     message: string;
     status: ReportStatus;
     field_values: ReportFieldValues;
-    replies: ReportReply[];
-    x_ratio: number;
-    y_ratio: number;
-    element_x_ratio: number | null;
-    element_y_ratio: number | null;
-    anchor_report_id?: string | null;
-    anchor_report_type?: ReportTargetType | null;
-    anchor_x_ratio?: number | null;
-    anchor_y_ratio?: number | null;
-    scroll_y: number;
-    document_y: number;
-    viewport_width: number;
-    viewport_height: number;
-    design_width: number;
-    design_height: number;
+    replies?: ReportReply[];
+    reply_count?: number;
+    latest_reply?: ReportReplySummary | null;
+    position: ReportPosition;
     created_at: string;
     environment?: string;
     app_version?: string;
@@ -136,7 +156,9 @@ export interface ReportStorageAdapter {
         pathname: string;
     }): Promise<ReportFeedback[]>;
     listAll?(params: ReportListAllParams): Promise<ReportListAllResult>;
+    listReplies?(commentId: string): Promise<ReportReply[]>;
     create(payload: CreateReportFeedbackPayload): Promise<ReportFeedback>;
+    createReply?(commentId: string, payload: CreateReplyPayload): Promise<ReportReply>;
     update(id: string, payload: UpdateReportFeedbackPayload): Promise<ReportFeedback>;
     remove?(id: string): Promise<void>;
 }
@@ -146,7 +168,9 @@ export type ReportPersistenceHandlers = {
         pathname: string;
     }) => Promise<ReportFeedback[]>;
     onListAll?: (params: ReportListAllParams) => Promise<ReportListAllResult>;
+    onListReplies?: (commentId: string) => Promise<ReportReply[]>;
     onCreate: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
+    onCreateReply?: (commentId: string, payload: CreateReplyPayload) => Promise<ReportReply>;
     onUpdate: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
     onDelete?: (id: string) => Promise<void>;
 };

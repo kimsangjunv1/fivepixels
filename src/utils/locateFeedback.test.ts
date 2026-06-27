@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { createReportPosition } from "./reportPosition.js";
 import { getFeedbackTargetElement, isFeedbackTargetDetached, scrollToFeedbackTarget } from "./locateFeedback.js";
 
 describe("getFeedbackTargetElement", () => {
@@ -90,7 +91,11 @@ describe("scrollToFeedbackTarget", () => {
         const scrollIntoView = vi.fn();
         target.scrollIntoView = scrollIntoView;
 
-        const result = scrollToFeedbackTarget({ report_id: "hero", report_type: "group", scroll_y: 120 });
+        const result = scrollToFeedbackTarget({
+            report_id: "hero",
+            report_type: "group",
+            position: createReportPosition({ scrollY: 120 }),
+        });
 
         expect(scrollIntoView).toHaveBeenCalledWith({ block: "center", inline: "nearest", behavior: "smooth" });
         expect(window.scrollTo).not.toHaveBeenCalled();
@@ -99,7 +104,11 @@ describe("scrollToFeedbackTarget", () => {
     });
 
     it("falls back to scroll_y when the target element is missing", () => {
-        const result = scrollToFeedbackTarget({ report_id: "hero", report_type: "group", scroll_y: 240 });
+        const result = scrollToFeedbackTarget({
+            report_id: "hero",
+            report_type: "group",
+            position: createReportPosition({ scrollY: 240 }),
+        });
 
         expect(window.scrollTo).toHaveBeenCalledWith({ top: 240, behavior: "smooth" });
         expect(result.foundElement).toBe(false);

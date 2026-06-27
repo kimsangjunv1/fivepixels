@@ -1,7 +1,7 @@
 import { type MouseEvent } from "react";
 import type { DeepPartialReportMessages } from "../i18n/types.js";
 import type { ReportLocale } from "../i18n/types.js";
-import type { CreateReportFeedbackPayload, ReportAppearance, ReportAuthor, ReportEvent, ReportFeedback, ReportField, ReportGitHubConfig, ReportIdentify, ReportListAllParams, ReportListAllResult, UpdateReportFeedbackPayload } from "../types/report.js";
+import type { CreateReportFeedbackPayload, CreateReplyPayload, ReportAppearance, ReportAuthor, ReportEvent, ReportFeedback, ReportField, ReportGitHubConfig, ReportIdentify, ReportListAllParams, ReportListAllResult, ReportReply, UpdateReportFeedbackPayload } from "../types/report.js";
 import type { DraftReport, EditableDraft, Marker, PendingFeedbackComposer, ReportMode, ReportPanelTab, TargetSnapshot } from "../types/report-ui.js";
 export type ReportStateConfig = {
     projectId: string;
@@ -17,9 +17,11 @@ export type ReportStateConfig = {
         pathname: string;
     }) => Promise<ReportFeedback[]>;
     onListAll?: (params: ReportListAllParams) => Promise<ReportListAllResult>;
+    onListReplies?: (commentId: string) => Promise<ReportReply[]>;
     onNavigate?: (pathname: string) => void | Promise<void>;
     onRevealTarget?: (report: ReportFeedback) => boolean | Promise<boolean>;
     onCreate?: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
+    onCreateReply?: (commentId: string, payload: CreateReplyPayload) => Promise<ReportReply>;
     onUpdate?: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
     onDelete?: (id: string) => Promise<void>;
     onEvent?: (event: ReportEvent) => void | Promise<void>;
@@ -34,7 +36,7 @@ export type ReportStateConfig = {
     initialLocale: ReportLocale;
     messageOverrides?: DeepPartialReportMessages;
 };
-export declare function useReportState({ projectId, environment, appVersion, appearance, fields, authors, requireReviewerKey, shortcut: _shortcut, identify, onList, onListAll, onNavigate, onRevealTarget, onCreate, onUpdate, onDelete, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys, initialLocale, messageOverrides, }: ReportStateConfig): {
+export declare function useReportState({ projectId, environment, appVersion, appearance, fields, authors, requireReviewerKey, shortcut: _shortcut, identify, onList, onListAll, onListReplies, onNavigate, onRevealTarget, onCreate, onCreateReply, onUpdate, onDelete, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys, initialLocale, messageOverrides, }: ReportStateConfig): {
     appearance: ReportAppearance;
     setAppearance: (nextAppearance: ReportAppearance) => void;
     locale: ReportLocale;
@@ -124,6 +126,8 @@ export declare function useReportState({ projectId, environment, appVersion, app
     }[];
     replyDraft: string;
     setReplyDraft: import("react").Dispatch<import("react").SetStateAction<string>>;
+    replySubmitAsQuestion: boolean;
+    setReplySubmitAsQuestion: import("react").Dispatch<import("react").SetStateAction<boolean>>;
     draftAuthorName: string;
     setDraftAuthorName: import("react").Dispatch<import("react").SetStateAction<string>>;
     replyAuthorName: string;
@@ -131,6 +135,7 @@ export declare function useReportState({ projectId, environment, appVersion, app
     pendingComposer: PendingFeedbackComposer;
     startDenyReview: () => void;
     startCheckoutReview: (replyId: string) => void;
+    startAskQuestion: () => void;
     cancelPendingComposer: () => void;
     confirmAuthorName: string;
     setConfirmAuthorName: import("react").Dispatch<import("react").SetStateAction<string>>;

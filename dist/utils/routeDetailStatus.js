@@ -2,7 +2,7 @@ import { getFeedbackDisplayStatus } from "./feedbackThread.js";
 export const ROUTE_DETAIL_STATUS_ORDER = ["wait", "suggested", "git_issued", "resolved"];
 export const ROUTE_DETAIL_STATUS_LABEL = {
     wait: "Wait",
-    suggested: "Suggested",
+    suggested: "Request Confirm",
     git_issued: "Git Issued",
     resolved: "Resolved",
 };
@@ -16,6 +16,9 @@ export function getRouteDetailStatus(report) {
     }
     if (displayStatus === "suggested" || displayStatus === "found_error" || displayStatus === "recheck_requested") {
         return "suggested";
+    }
+    if (displayStatus === "additional_question") {
+        return "wait";
     }
     return "wait";
 }

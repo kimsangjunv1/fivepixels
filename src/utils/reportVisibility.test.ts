@@ -2,14 +2,10 @@ import { describe, expect, it } from "vitest";
 import { resolveReportVisibility } from "./reportVisibility.js";
 
 describe("resolveReportVisibility", () => {
-    it("prefers visibility object values over legacy flat props", () => {
+    it("resolves visibility object values", () => {
         expect(
             resolveReportVisibility({
                 visibility: { enabled: false, devOnly: true, routeKey: "/a" },
-                enabled: true,
-                devOnly: false,
-                routeKey: "/b",
-                pathname: "/c",
             }),
         ).toEqual({
             enabled: false,
@@ -18,16 +14,11 @@ describe("resolveReportVisibility", () => {
         });
     });
 
-    it("falls back to legacy flat props", () => {
-        expect(
-            resolveReportVisibility({
-                devOnly: true,
-                routeKey: "/legacy",
-            }),
-        ).toEqual({
+    it("uses defaults when visibility is omitted", () => {
+        expect(resolveReportVisibility({})).toEqual({
             enabled: true,
-            devOnly: true,
-            routeKey: "/legacy",
+            devOnly: false,
+            routeKey: undefined,
         });
     });
 });

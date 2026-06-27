@@ -15,11 +15,14 @@ export function FeedbackStatusBadge({ status, className = "" }: FeedbackStatusBa
     return (
         <div className={`flex items-center gap-[6px] text-[12px] font-bold uppercase ${className}`}>
             <span
-                className="inline-flex h-[14px] w-[14px] items-center justify-center rounded-full [&_svg]:h-[10px] [&_svg]:w-[10px]"
-                style={{ backgroundColor: color, color: "var(--adaptive-black900)" }}
+                className="inline-flex w-[18px]"
+                // className="inline-flex h-[14px] w-[14px] shrink-0 items-center justify-center [&_svg]:h-[14px] [&_svg]:w-[14px]"
                 aria-hidden
             >
-                <FeedbackStatusIcon status={status} />
+                <FeedbackStatusIcon
+                    status={status}
+                    fill={color}
+                />
             </span>
             <span
                 style={{ color }}

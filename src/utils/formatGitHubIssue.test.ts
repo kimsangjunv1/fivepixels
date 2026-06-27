@@ -1,14 +1,13 @@
 import { describe, expect, it } from "vitest";
-import type { ReportFeedback } from "@/types/report.js";
+import { createReportFeedback } from "./reportFixtures.js";
 import { formatFeedbackAsGitHubIssueBody } from "./formatGitHubIssue.js";
 
-const baseFeedback: ReportFeedback = {
+const baseFeedback = createReportFeedback({
     id: "fb-1",
     pathname: "/pricing",
     report_id: "price-card",
     report_type: "item",
     message: "가격 카드가 모바일에서 잘림",
-    status: "open",
     field_values: { message: "가격 카드가 모바일에서 잘림", isBug: true },
     replies: [
         {
@@ -19,21 +18,17 @@ const baseFeedback: ReportFeedback = {
             author_name: "PM",
         },
     ],
-    x_ratio: 0.42,
-    y_ratio: 0.18,
-    element_x_ratio: 0.5,
-    element_y_ratio: 0.5,
-    scroll_y: 0,
-    document_y: 100,
-    viewport_width: 1280,
-    viewport_height: 720,
-    design_width: 1280,
-    design_height: 720,
+    position: {
+        target: { x: 0.5, y: 0.5 },
+        viewport: { x: 0.42, y: 0.18, width: 1280, height: 720 },
+        scrollY: 0,
+        anchor: null,
+    },
     created_at: "2026-06-07T09:00:00.000Z",
     environment: "staging",
     app_version: "1.0.0",
     author_name: "디자이너",
-};
+});
 
 describe("formatFeedbackAsGitHubIssueBody", () => {
     it("includes summary, context table, thread table, and feedback id", () => {

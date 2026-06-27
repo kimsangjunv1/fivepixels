@@ -7,10 +7,11 @@ export function getFeedbackTargetElement(report) {
     return document.querySelector(selector);
 }
 export function getFeedbackAnchorElement(report) {
-    if (!report.anchor_report_id || !report.anchor_report_type) {
+    const anchor = report.position.anchor;
+    if (!anchor) {
         return null;
     }
-    const selector = getFeedbackTargetSelector(report.anchor_report_id, report.anchor_report_type);
+    const selector = getFeedbackTargetSelector(anchor.reportId, anchor.reportType);
     return document.querySelector(selector);
 }
 export function isFeedbackTargetDetached(report) {
@@ -40,7 +41,7 @@ export function scrollToFeedbackTarget(report) {
         anchorElement.scrollIntoView({ block: "center", inline: "nearest", behavior: "smooth" });
         return { foundElement: true, targetElement: anchorElement };
     }
-    window.scrollTo({ top: report.scroll_y, behavior: "smooth" });
+    window.scrollTo({ top: report.position.scrollY, behavior: "smooth" });
     return { foundElement: false, targetElement: null };
 }
 //# sourceMappingURL=locateFeedback.js.map

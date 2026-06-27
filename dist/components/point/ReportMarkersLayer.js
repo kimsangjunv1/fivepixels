@@ -9,26 +9,21 @@ import { getDetachedMarkerAriaLabel, getDetachedMarkerHint, getModalGhostFrame }
 import { getMarkerColor } from "../../utils/reportVisual.js";
 import { FeedbackComposer } from "../../components/panel/feedback/FeedbackComposer.js";
 import { FeedbackHoverCard } from "../../components/panel/feedback/FeedbackHoverCard.js";
-import { FeedbackIssueHeader } from "../../components/panel/feedback/FeedbackIssueHeader.js";
+import { FeedbackIssuePinnedHeader } from "../../components/panel/feedback/FeedbackIssuePinnedHeader.js";
+import { buildConfirmAuthorOptions, getReplyCount, shouldShowReplyComposer } from "../../utils/feedbackThread.js";
 import { FeedbackThread } from "../../components/panel/feedback/FeedbackThread.js";
 const TOOLTIP_SURFACE_CLASS = "overflow-hidden rounded-[12px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] shadow-[var(--adaptive-popup-shadow)]";
 const TOOLTIP_FIXED_CLASS = `fixed z-[1000001] ${TOOLTIP_SURFACE_CLASS}`;
 const EXPANDED_TOOLTIP_ANCHOR_CLASS = "pointer-events-auto fixed z-[1000001]";
 const MARKER_ANCHOR_CLASS = "pointer-events-none fixed z-[1000000] -translate-x-1/2 -translate-y-1/2";
 const MARKER_BUTTON_BASE_CLASS = "flex items-center justify-center";
-const OVERFLOW_HINT_BASE_CLASS = "pointer-events-auto fixed z-[1000000] flex items-center justify-center rounded-full border border-white/80 bg-[#000000b3] text-white shadow-[0_4px_10px_#00000090] backdrop-blur-[6px]";
-const OVERFLOW_HINT_TEXT_CLASS = "max-w-[220px] whitespace-nowrap px-[10px] py-[6px] text-[12px] font-medium leading-none";
+const OVERFLOW_HINT_BASE_CLASS = "pointer-events-auto fixed z-[1000000] flex items-center justify-center rounded-full bg-[#000000b3] backdrop-blur-[6px]";
+const OVERFLOW_HINT_TEXT_CLASS = "max-w-[220px] whitespace-nowrap px-[10px] py-[6px] text-[12px] font-medium leading-none text-white";
 const OVERFLOW_HINT_ARROW_CLASS = "flex h-[28px] w-[28px] items-center justify-center text-[16px] font-semibold leading-none";
 const MODAL_GHOST_LAYER_CLASS = "pointer-events-none fixed inset-0 z-[999999]";
 function MarkerOverflowHintButton({ hint, label, onActivate }) {
     const isVertical = hint.edge === "top" || hint.edge === "bottom";
-    const transform = hint.edge === "top"
-        ? "translate(-50%, 0)"
-        : hint.edge === "bottom"
-            ? "translate(-50%, -100%)"
-            : hint.edge === "left"
-                ? "translate(0, -50%)"
-                : "translate(-100%, -50%)";
+    const transform = hint.edge === "top" ? "translate(-50%, 0)" : hint.edge === "bottom" ? "translate(-50%, -100%)" : hint.edge === "left" ? "translate(0, -50%)" : "translate(-100%, -50%)";
     return (_jsx("button", { type: "button", "data-fivepixels-interactive": "", "aria-label": label, onClick: () => onActivate(hint), className: OVERFLOW_HINT_BASE_CLASS, style: {
             left: hint.left,
             top: hint.top,
@@ -54,7 +49,7 @@ function MarkerButton({ markerItem, isSelected, detachedAriaLabel, detachedModal
         onEnter: onHoverStart,
         onLeave: onHoverEnd,
     });
-    const replyCount = markerItem.report.replies.length;
+    const replyCount = getReplyCount(markerItem.report);
     const markerLabel = replyCount > 0 ? `${markerItem.report.report_type} · ${markerItem.report.report_id} · ${replyCount} replies` : `${markerItem.report.report_type} · ${markerItem.report.report_id}`;
     const isDetached = markerItem.detached;
     const isModalDetached = markerItem.detachedKind === "modal";
@@ -78,7 +73,7 @@ function MarkerButton({ markerItem, isSelected, detachedAriaLabel, detachedModal
                     }, children: replyCount > 0 ? (`+${replyCount}`) : isModalDetached ? (_jsx("span", { "aria-hidden": true, className: "block h-[7px] w-[9px] border border-white/90 bg-white/15" })) : null }, markerItem.id)] }) }));
 }
 export function ReportMarkersLayer() {
-    const { mode, markers, selectedReport, fields, authors, activeReplyReportId, activeReplyReport, tooltipReport, tooltipAnchor, tooltipFieldTags, replyDraft, replyAuthorName, pendingComposer, isUpdating, editingReportId, messages, selectReport, activateFeedbackMarker, closeReplyComposer, clearHoverLeaveTimeout, scheduleHoverLeave, setHoveredMarkerId, setReplyDraft, setReplyAuthorName, handleReplySubmit, startDenyReview, startCheckoutReview, confirmAuthorName, setConfirmAuthorName, showConfirmAuthorSelect, toggleConfirmAuthorSelect, handleConfirmResolution, } = useReport();
+    const { mode, markers, selectedReport, fields, authors, activeReplyReportId, activeReplyReport, tooltipReport, tooltipAnchor, tooltipFieldTags, replyDraft, replyAuthorName, pendingComposer, errorMessage, setErrorMessage, isUpdating, editingReportId, messages, locale, selectReport, activateFeedbackMarker, closeReplyComposer, clearHoverLeaveTimeout, scheduleHoverLeave, setHoveredMarkerId, setReplyDraft, setReplyAuthorName, handleReplySubmit, startDenyReview, startCheckoutReview, startAskQuestion, confirmAuthorName, setConfirmAuthorName, showConfirmAuthorSelect, toggleConfirmAuthorSelect, handleConfirmResolution, } = useReport();
     const handleMarkerHoverStart = useCallback((reportId) => {
         clearHoverLeaveTimeout();
         setHoveredMarkerId(reportId);
@@ -109,11 +104,18 @@ export function ReportMarkersLayer() {
         },
     });
     const showComposer = useMemo(() => {
-        if (!activeReplyReport || activeReplyReport.status === "resolved") {
+        if (!activeReplyReport) {
             return false;
         }
-        return activeReplyReport.replies.length === 0 || pendingComposer !== null;
+        return shouldShowReplyComposer(activeReplyReport, pendingComposer);
     }, [activeReplyReport, pendingComposer]);
+    const isCreatorQuestionComposer = pendingComposer?.type === "question";
+    const composerAuthors = useMemo(() => {
+        if (!activeReplyReport || !isCreatorQuestionComposer) {
+            return authors;
+        }
+        return buildConfirmAuthorOptions(activeReplyReport, authors);
+    }, [activeReplyReport, authors, isCreatorQuestionComposer]);
     const isExpandedTooltip = Boolean(activeReplyReport && tooltipReport && activeReplyReport.id === tooltipReport.id);
     useEffect(() => {
         if (!activeReplyReportId) {
@@ -202,6 +204,11 @@ export function ReportMarkersLayer() {
                     ...tooltipAnchorStyle,
                 }, children: _jsx("div", { className: TOOLTIP_SURFACE_CLASS, style: {
                         pointerEvents: "auto",
-                    }, children: _jsxs("div", { onClick: (event) => event.stopPropagation(), onPointerDown: (event) => event.stopPropagation(), children: [_jsx(FeedbackIssueHeader, { report: activeReplyReport, fieldTags: tooltipFieldTags, expanded: true }), tooltipAnchor?.detached && resolvedDetachedHint ? (_jsx("p", { className: "border-b border-[var(--adaptive-border-subtle)] px-[12px] pb-[10px] text-[12px] leading-[1.4] text-[var(--adaptive-black500)]", children: resolvedDetachedHint })) : null, showComposer ? (_jsx("section", { className: "border-t border-[var(--adaptive-border-subtle)] bg-transparent", children: _jsx(FeedbackComposer, { message: replyDraft, onMessageChange: setReplyDraft, authorName: replyAuthorName, onAuthorNameChange: setReplyAuthorName, authors: authors, fields: fields, fieldValues: activeReplyReport.field_values, onFieldChange: () => undefined, showTags: false, onSubmit: () => void handleReplySubmit(), isSubmitting: isUpdating, autoFocus: pendingComposer !== null }) })) : null, _jsx(FeedbackThread, { report: activeReplyReport, authors: authors, pendingComposer: pendingComposer, confirmAuthorName: confirmAuthorName, showConfirmAuthorSelect: showConfirmAuthorSelect, onConfirmAuthorNameChange: setConfirmAuthorName, onToggleConfirmAuthorSelect: toggleConfirmAuthorSelect, onStartDeny: startDenyReview, onStartCheckout: startCheckoutReview, onConfirm: () => void handleConfirmResolution(), isUpdating: isUpdating })] }) }) })) : null] }));
+                    }, children: _jsxs("div", { onClick: (event) => event.stopPropagation(), onPointerDown: (event) => event.stopPropagation(), className: "flex max-h-[512px] flex-col", children: [_jsx(FeedbackIssuePinnedHeader, { report: activeReplyReport, locale: locale }), tooltipAnchor?.detached && resolvedDetachedHint ? (_jsx("p", { className: "shrink-0 border-b border-[var(--adaptive-border-subtle)] px-[12px] pb-[10px] text-[12px] leading-[1.4] text-[var(--adaptive-black500)]", children: resolvedDetachedHint })) : null, _jsxs("div", { className: "flex min-h-0 flex-1 flex-col", children: [_jsx(FeedbackThread, { report: activeReplyReport, authors: authors, pendingComposer: pendingComposer, confirmAuthorName: confirmAuthorName, showConfirmAuthorSelect: showConfirmAuthorSelect, onConfirmAuthorNameChange: setConfirmAuthorName, onToggleConfirmAuthorSelect: toggleConfirmAuthorSelect, onStartDeny: startDenyReview, onStartCheckout: startCheckoutReview, onStartAskQuestion: startAskQuestion, onConfirm: () => void handleConfirmResolution(), isUpdating: isUpdating }), showComposer ? (_jsx("section", { className: "relative shrink-0 overflow-visible border-t border-[var(--adaptive-border-subtle)] bg-transparent", children: _jsx(FeedbackComposer, { message: replyDraft, onMessageChange: (value) => {
+                                                setReplyDraft(value);
+                                                if (errorMessage) {
+                                                    setErrorMessage("");
+                                                }
+                                            }, authorName: isCreatorQuestionComposer ? confirmAuthorName : replyAuthorName, onAuthorNameChange: isCreatorQuestionComposer ? setConfirmAuthorName : setReplyAuthorName, authors: composerAuthors, fields: fields, fieldValues: activeReplyReport.field_values, onFieldChange: () => undefined, showTags: false, onSubmit: () => void handleReplySubmit(), isSubmitting: isUpdating, autoFocus: pendingComposer !== null, askQuestionForced: isCreatorQuestionComposer, errorMessage: errorMessage }) })) : null] })] }) }) })) : null] }));
 }
 //# sourceMappingURL=ReportMarkersLayer.js.map
