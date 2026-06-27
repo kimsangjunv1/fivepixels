@@ -640,6 +640,7 @@ export function useReportState({
         setFocusedCaseId(caseId);
         setPendingComposer(null);
         setReplyDraft("");
+        setReplySubmitAsQuestion(false);
         setErrorMessage("");
     }, []);
 

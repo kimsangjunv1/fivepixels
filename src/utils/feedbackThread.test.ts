@@ -12,13 +12,16 @@ import {
     canShowCheckoutBranchActions,
     canShowIssueEntryActions,
     canShowSuggestedBranchActions,
+    canShowSuggestedBranchActionsForCase,
     createReplyStatusForSubmit,
     getFeedbackDisplayStatus,
     groupRepliesIntoBranches,
     inferParentReplyId,
+    isActiveCaseBranchRoot,
     ISSUE_ROOT_PARENT_ID,
     normalizeReplyParents,
     resolveParentReplyIdForQuestion,
+    shouldShowCaseReplyComposer,
     shouldShowReplyComposer,
 } from "./feedbackThread.js";
 import { createReportCase } from "./reportCases.js";
@@ -338,5 +341,79 @@ describe("feedbackThread", () => {
         const timelineB = buildCaseThreadTimeline(report, caseB.id);
         expect(timelineB.branches).toHaveLength(1);
         expect(timelineB.branches[0]?.root.id).toBe("r-b");
+    });
+
+    it("hides branch actions after the focused case is resolved", () => {
+        const caseA = createReportCase("A");
+        const report = createReport({
+            status: "open",
+            cases: [{ ...caseA, status: "resolved" }],
+            replies: [
+                {
+                    id: "r-suggested",
+                    message: "굿",
+                    created_at: "2026-01-02T00:00:00.000Z",
+                    status: "suggested",
+                    case_ids: [caseA.id],
+                },
+                {
+                    id: "r-resolved",
+                    message: "이슈가 해결되었습니다.",
+                    created_at: "2026-01-02T00:00:01.000Z",
+                    status: "resolved",
+                    case_ids: [caseA.id],
+                },
+            ],
+        });
+        const suggested = report.replies[0]!;
+
+        expect(isActiveCaseBranchRoot(report, suggested, caseA.id)).toBe(false);
+        expect(canShowSuggestedBranchActionsForCase(report, suggested, caseA.id)).toBe(false);
+        expect(canShowCaseEntryActions(report, caseA.id)).toBe(false);
+    });
+
+    it("shows case composer only after action or when a response is required", () => {
+        const caseA = createReportCase("A");
+        const caseB = createReportCase("B");
+        const report = createReport({
+            cases: [caseA, caseB],
+            reply_count: 2,
+            latest_reply: {
+                id: "r-b",
+                message: "result for B",
+                created_at: "2026-01-03T00:00:00.000Z",
+                status: "suggested",
+                case_ids: [caseB.id],
+            },
+            replies: [
+                {
+                    id: "r-b",
+                    message: "result for B",
+                    created_at: "2026-01-03T00:00:00.000Z",
+                    status: "suggested",
+                    case_ids: [caseB.id],
+                },
+            ],
+        });
+
+        expect(shouldShowCaseReplyComposer(report, caseA.id, null)).toBe(false);
+        expect(shouldShowCaseReplyComposer(report, caseA.id, { type: "checkout", targetReplyId: ISSUE_ROOT_PARENT_ID })).toBe(true);
+        expect(shouldShowCaseReplyComposer(report, caseB.id, null)).toBe(false);
+
+        const questionReport = createReport({
+            cases: [caseA],
+            replies: [
+                {
+                    id: "q1",
+                    message: "need detail",
+                    created_at: "2026-01-02T00:00:00.000Z",
+                    status: "additional_question",
+                    case_ids: [caseA.id],
+                },
+            ],
+        });
+
+        expect(shouldShowCaseReplyComposer(questionReport, caseA.id, null)).toBe(false);
+        expect(shouldShowCaseReplyComposer(questionReport, caseA.id, { type: "question", targetReplyId: ISSUE_ROOT_PARENT_ID })).toBe(true);
     });
 });

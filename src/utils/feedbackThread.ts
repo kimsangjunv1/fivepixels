@@ -274,7 +274,9 @@ export function getLatestBranchRootForCase(report: ReportFeedback, caseId: strin
 }
 
 export function isActiveCaseBranchRoot(report: ReportFeedback, reply: ReportReply, caseId: string): boolean {
-    if (report.status !== "open") {
+    const caseItem = report.cases?.find((item) => item.id === caseId);
+
+    if (report.status !== "open" || !caseItem || caseItem.status === "resolved") {
         return false;
     }
 
@@ -305,20 +307,18 @@ export function canShowCaseEntryActions(report: ReportFeedback, caseId: string):
     return getLatestBranchRootForCase(report, caseId) === null;
 }
 
-export function shouldShowCaseReplyComposer(report: ReportFeedback, caseId: string, pendingComposer: { type: string } | null) {
-    const caseItem = report.cases?.find((item) => item.id === caseId);
-
-    if (!caseItem || caseItem.status === "resolved" || report.status === "resolved") {
+export function shouldShowCaseReplyComposer(_report: ReportFeedback, caseId: string, pendingComposer: { type: string } | null) {
+    if (!caseId || pendingComposer === null) {
         return false;
     }
 
-    return shouldShowReplyComposer(
-        {
-            ...report,
-            replies: getRepliesForCase(report, caseId),
-        },
-        pendingComposer,
-    );
+    const caseItem = _report.cases?.find((item) => item.id === caseId);
+
+    if (!caseItem || caseItem.status === "resolved" || _report.status === "resolved") {
+        return false;
+    }
+
+    return true;
 }
 
 export function resolveParentReplyIdForCaseQuestion(
