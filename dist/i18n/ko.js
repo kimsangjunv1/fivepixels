@@ -102,6 +102,7 @@ export const ko = {
         saving: "저장 중",
         open: "진행 중",
         resolved: "해결됨",
+        selectForDiscussion: "논의할 케이스를 선택하세요",
     },
     thread: {
         scrollHintUp: "위쪽에 더 많은 메시지가 있어요",
@@ -320,6 +321,7 @@ export const ko = {
         fieldRequiredConfirm: (label) => `${label}을(를) 확인해주세요.`,
         casesRequired: "케이스를 1개 이상 입력해주세요.",
         caseTextRequired: (index) => `${index}번째 케이스 내용을 입력해주세요.`,
+        caseSelectionRequired: "논의할 케이스를 1개 이상 선택해주세요.",
         personalKeyRequired: "피드백을 작성하려면 개인 키 설정이 필요합니다.",
     },
 };

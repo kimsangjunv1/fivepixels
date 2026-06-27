@@ -110,6 +110,7 @@ export type ReportMessages = {
         saving: string;
         open: string;
         resolved: string;
+        selectForDiscussion: string;
     };
     thread: {
         scrollHintUp: string;
@@ -307,6 +308,7 @@ export type ReportMessages = {
         fieldRequiredConfirm: (label: string) => string;
         casesRequired: string;
         caseTextRequired: (index: number) => string;
+        caseSelectionRequired: string;
         personalKeyRequired: string;
     };
 };

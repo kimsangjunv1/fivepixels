@@ -24,6 +24,10 @@ type CaseValidationMessages = {
     caseTextRequired: (index: number) => string;
 };
 export declare function canEditReportCases(report: Pick<ReportFeedback, "status">): boolean;
+export declare function getOpenCaseIds(report: Pick<ReportFeedback, "cases">): string[];
+export declare function isValidCaseSelection(report: Pick<ReportFeedback, "cases">, selectedCaseIds: string[]): boolean;
+export declare function getCaseLabels(report: Pick<ReportFeedback, "cases">, caseIds: string[]): string[];
+export declare function buildResolvedCasesUpdate(report: ReportFeedback, caseIds: string[]): ReportCase[];
 export declare function validateCasesForSubmit(cases: Array<Pick<ReportCase, "text">>, messages: CaseValidationMessages): string;
 export {};
 //# sourceMappingURL=reportCases.d.ts.map

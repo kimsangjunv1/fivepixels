@@ -16,6 +16,7 @@ import {
 } from "@/utils/feedbackThread.js";
 import { getGitHubIssueUrl, isGitIssuedSystemReply } from "@/utils/githubIntegration.js";
 import { AuthorSelector } from "./AuthorSelector.js";
+import { FeedbackCaseChips } from "./FeedbackCaseChips.js";
 import { FeedbackCaseList } from "./FeedbackCaseList.js";
 import { FeedbackCreatorBadge } from "./FeedbackCreatorBadge.js";
 import { FeedbackStatusBadge } from "./FeedbackStatusBadge.js";
@@ -206,13 +207,15 @@ function ThreadEntryActions({
     );
 }
 
-function ThreadChildReply({ reply, originalAuthorName, locale, threadReplyPrefix }: { reply: ReportReply; originalAuthorName: string; locale: ReportLocale; threadReplyPrefix: string }) {
+function ThreadChildReply({ reply, cases, originalAuthorName, locale, threadReplyPrefix }: { reply: ReportReply; cases: ReportFeedback["cases"]; originalAuthorName: string; locale: ReportLocale; threadReplyPrefix: string }) {
     return (
         <article className={`flex flex-col gap-[4px] border-t border-[var(--adaptive-border-subtle)] ${threadReplyPrefix ? "py-[8px] pl-[18px]" : "py-[8px] pl-[12px]"}`}>
             <div className="flex items-start justify-between gap-[8px]">
                 <FeedbackStatusBadge status={reply.status} />
                 <span className="text-[12px] text-[var(--adaptive-black500)]">{formatDate(reply.created_at, locale)}</span>
             </div>
+
+            <FeedbackCaseChips cases={cases} caseIds={reply.case_ids ?? []} />
 
             <p className="leading-[1.5] text-[13px] text-[var(--adaptive-text-primary)]">
                 <span className="text-[var(--adaptive-black400)]">{threadReplyPrefix}</span> {reply.message}
@@ -306,10 +309,14 @@ function ThreadIssueEntry({
         updateCaseEditDraftCase,
         addCaseEditDraftCase,
         removeCaseEditDraftCase,
+        selectedCaseIds,
+        toggleSelectedCase,
         errorMessage,
     } = useReport();
     const isEditingCases = caseEditReportId === report.id && caseEditCases !== null;
     const casesForEditor = isEditingCases ? caseEditCases : report.cases;
+    const hasOpenCases = casesForEditor.some((item) => item.status === "open");
+    const caseSelectionEnabled = !isEditingCases && report.status !== "archived" && hasOpenCases;
 
     return (
         <div className="flex flex-col">
@@ -325,6 +332,9 @@ function ThreadIssueEntry({
                     canEdit={canEditReportCases(report) && !isEditingCases}
                     isSaving={isUpdating}
                     errorMessage={isEditingCases ? errorMessage : ""}
+                    selectable={caseSelectionEnabled}
+                    selectedCaseIds={selectedCaseIds}
+                    onToggleCaseSelection={toggleSelectedCase}
                     onBeginEdit={() => beginCaseEdit(report)}
                     onCancelEdit={cancelCaseEdit}
                     onSaveEdit={() => void handleCaseEditSave()}
@@ -352,6 +362,7 @@ function ThreadIssueEntry({
                 <ThreadChildReply
                     key={child.id}
                     reply={child}
+                    cases={report.cases}
                     originalAuthorName={originalAuthorName}
                     locale={locale}
                     threadReplyPrefix={threadReplyPrefix}
@@ -409,6 +420,8 @@ function ThreadRootReply({
                 <FeedbackStatusBadge status={reply.status} />
                 <span className="text-[12px] text-[var(--adaptive-black500)]">{formatDate(reply.created_at, locale)}</span>
             </div>
+
+            <FeedbackCaseChips cases={report.cases} caseIds={reply.case_ids ?? []} />
 
             <p className="leading-[1.5] text-[14px] text-[var(--adaptive-text-primary)]">{reply.message}</p>
             {reply.author_name ? (
@@ -553,6 +566,7 @@ export function FeedbackThread({
                             <ThreadChildReply
                                 key={child.id}
                                 reply={child}
+                                cases={report.cases}
                                 originalAuthorName={originalAuthorName}
                                 locale={locale}
                                 threadReplyPrefix={messages.feedbackList.threadReplyPrefix}

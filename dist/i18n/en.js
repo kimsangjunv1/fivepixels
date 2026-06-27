@@ -102,6 +102,7 @@ export const en = {
         saving: "Saving",
         open: "Open",
         resolved: "Resolved",
+        selectForDiscussion: "Select cases to discuss",
     },
     thread: {
         scrollHintUp: "More messages above",
@@ -320,6 +321,7 @@ export const en = {
         fieldRequiredConfirm: (label) => `Confirm ${label}.`,
         casesRequired: "Add at least one case.",
         caseTextRequired: (index) => `Enter case ${index}.`,
+        caseSelectionRequired: "Select at least one case to discuss.",
         personalKeyRequired: "Set a personal key before writing feedback.",
     },
 };

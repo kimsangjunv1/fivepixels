@@ -112,6 +112,9 @@ declare const ReportContext: import("react").Context<{
     updateCaseEditDraftCase: (caseId: string, text: string) => void;
     addCaseEditDraftCase: () => void;
     removeCaseEditDraftCase: (caseId: string) => void;
+    selectedCaseIds: string[];
+    toggleSelectedCase: (caseId: string) => void;
+    clearSelectedCases: () => void;
     isCaseEditing: boolean;
     caseEditReportId: string | null;
     caseEditCases: import("..").ReportCase[] | null;
@@ -268,6 +271,9 @@ export declare function useReport(): {
     updateCaseEditDraftCase: (caseId: string, text: string) => void;
     addCaseEditDraftCase: () => void;
     removeCaseEditDraftCase: (caseId: string) => void;
+    selectedCaseIds: string[];
+    toggleSelectedCase: (caseId: string) => void;
+    clearSelectedCases: () => void;
     isCaseEditing: boolean;
     caseEditReportId: string | null;
     caseEditCases: import("..").ReportCase[] | null;

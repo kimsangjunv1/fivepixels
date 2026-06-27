@@ -14,7 +14,7 @@ const MARKER_HOVER_LEAVE_MS = 250;
 const OVERLAY_HOVER_LEAVE_MS = 100;
 import { findTargetByPoint, getSelectableTargets, isSameHoverTarget, resolveFeedbackDocumentAnchor, toSnapshot } from "../utils/dom.js";
 import { createInitialFieldValues, getFieldError, getFieldTags } from "../utils/fields.js";
-import { canEditReportCases, createReportCase } from "../utils/reportCases.js";
+import { canEditReportCases, createReportCase, buildResolvedCasesUpdate, isValidCaseSelection } from "../utils/reportCases.js";
 import { createReplyId } from "../utils/format.js";
 import { notifyFeedbackCreate, notifyFeedbackDelete, notifyFeedbackReply, notifyFeedbackUpdate, notifyGitHubIssueCreated, } from "../utils/reportCallbacks.js";
 import { buildGitHubIssueStatusUpdate, buildGitHubIssueUpdate, canCreateGitHubIssueFromList, canCreateGitHubIssueOnCreate, isGitIssued, } from "../utils/githubIntegration.js";
@@ -136,6 +136,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
     const [creatingGitHubIssueId, setCreatingGitHubIssueId] = useState(null);
     const [caseEditReportId, setCaseEditReportId] = useState(null);
     const [caseEditDraft, setCaseEditDraft] = useState(null);
+    const [selectedCaseIds, setSelectedCaseIds] = useState([]);
     const canCreateGitHubIssueFromListValue = useMemo(() => canCreateGitHubIssueFromList(github), [github]);
     const canCreateGitHubIssueOnCreateValue = useMemo(() => canCreateGitHubIssueOnCreate(github), [github]);
     const activeReplyAnchor = useMemo(() => resolveTooltipAnchor(markers, activeReplyReportId), [activeReplyReportId, markers]);
@@ -392,6 +393,19 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         setCaseEditReportId(null);
         setCaseEditDraft(null);
     }, []);
+    const clearSelectedCases = useCallback(() => {
+        setSelectedCaseIds([]);
+    }, []);
+    const toggleSelectedCase = useCallback((caseId) => {
+        setSelectedCaseIds((current) => (current.includes(caseId) ? current.filter((id) => id !== caseId) : [...current, caseId]));
+    }, []);
+    const ensureCaseSelection = useCallback((report) => {
+        if (isValidCaseSelection(report, selectedCaseIds)) {
+            return true;
+        }
+        setErrorMessage(messages.errors.caseSelectionRequired);
+        return false;
+    }, [messages.errors.caseSelectionRequired, selectedCaseIds]);
     const beginCaseEdit = useCallback((report) => {
         if (!canEditReportCases(report)) {
             setErrorMessage(messages.errors.archivedReadOnly);
@@ -472,6 +486,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         setPendingComposer(null);
         setShowConfirmAuthorSelect(false);
         cancelCaseEdit();
+        clearSelectedCases();
     };
     const showFeedbackTooltip = useCallback(async (report) => {
         await prepareFeedbackLocation(report);
@@ -542,6 +557,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         setReplyAuthorName(resolveDefaultAuthorName(activeIdentify, authorizedAuthors));
         setConfirmAuthorName(resolveOriginalFeedbackAuthorName(report));
         setShowConfirmAuthorSelect(false);
+        clearSelectedCases();
         clearHoverLeaveTimeout();
     };
     const activateFeedbackMarker = useCallback(async (report) => {
@@ -556,6 +572,9 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         if (!activeReplyReport) {
             return;
         }
+        if (!ensureCaseSelection(activeReplyReport)) {
+            return;
+        }
         const latestRoot = getLatestBranchRoot(getReportReplies(activeReplyReport));
         if (!latestRoot) {
             return;
@@ -568,12 +587,18 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         setReplySubmitAsQuestion(false);
     };
     const startCheckoutReview = (replyId) => {
+        if (!activeReplyReport || !ensureCaseSelection(activeReplyReport)) {
+            return;
+        }
         setPendingComposer({ type: "checkout", targetReplyId: replyId });
         setReplyDraft("");
         setReplySubmitAsQuestion(false);
     };
     const startAskQuestion = () => {
         if (!activeReplyReport) {
+            return;
+        }
+        if (!ensureCaseSelection(activeReplyReport)) {
             return;
         }
         const latestRoot = getLatestBranchRoot(getReportReplies(activeReplyReport));
@@ -901,6 +926,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             await createReply(report.id, await signReplyPayload({
                 message: reply.message,
                 status: reply.status,
+                case_ids: reply.case_ids,
                 parent_reply_id: reply.parent_reply_id,
                 author_type: reply.author_type ?? "manager",
                 author_name: reply.author_name,
@@ -929,6 +955,10 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             setErrorMessage(messages.errors.replyContentRequired);
             return;
         }
+        if (!ensureCaseSelection(activeReplyReport)) {
+            return;
+        }
+        const scopedCaseIds = [...selectedCaseIds];
         const pendingType = pendingComposer?.type ?? null;
         const isCreatorSubmit = pendingType === "deny" || pendingType === "recheck" || pendingType === "question";
         const isQuestionSubmit = pendingType === "question";
@@ -949,7 +979,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             message: replyMessage,
             created_at: new Date().toISOString(),
             status: replyStatus,
-            case_ids: [],
+            case_ids: scopedCaseIds,
             ...(parentReplyId ? { parent_reply_id: parentReplyId } : {}),
             author_type: isCreatorSubmit ? "user" : "manager",
             author_name: authorName,
@@ -983,21 +1013,27 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         if (!activeReplyReport) {
             return;
         }
+        if (!ensureCaseSelection(activeReplyReport)) {
+            return;
+        }
         const resolverName = confirmAuthorName.trim() || resolveOriginalFeedbackAuthorName(activeReplyReport);
         if (!resolverName) {
             setErrorMessage(messages.errors.reviewerRequired);
             return;
         }
+        const resolvedCaseIds = [...selectedCaseIds];
+        const nextCases = buildResolvedCasesUpdate(activeReplyReport, resolvedCaseIds);
         try {
             if (usesCreateReply) {
                 await createReply(activeReplyReport.id, await signReplyPayload({
                     message: messages.resolution.issueResolvedMessage,
                     status: "resolved",
+                    case_ids: resolvedCaseIds,
                     author_type: "user",
                     author_name: resolverName,
                 }));
                 const updatedFeedback = await updateFeedback(activeReplyReport.id, await signUpdatePayload({
-                    status: "resolved",
+                    cases: nextCases,
                 }));
                 await notifyFeedbackUpdate(eventCallbacks, updatedFeedback);
             }
@@ -1007,16 +1043,17 @@ export function useReportState({ projectId, environment, appVersion, appearance,
                     message: messages.resolution.issueResolvedMessage,
                     created_at: new Date().toISOString(),
                     status: "resolved",
-                    case_ids: [],
+                    case_ids: resolvedCaseIds,
                     author_type: "user",
                     author_name: resolverName,
                 };
                 const updatedFeedback = await updateFeedback(activeReplyReport.id, await signUpdatePayload({
-                    status: "resolved",
+                    cases: nextCases,
                     replies: [...getReportReplies(activeReplyReport), reply],
                 }));
                 await notifyFeedbackUpdate(eventCallbacks, updatedFeedback);
             }
+            setSelectedCaseIds((current) => current.filter((caseId) => !resolvedCaseIds.includes(caseId)));
             setErrorMessage("");
             setPendingComposer(null);
             setReplyDraft("");
@@ -1182,6 +1219,9 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         updateCaseEditDraftCase,
         addCaseEditDraftCase,
         removeCaseEditDraftCase,
+        selectedCaseIds,
+        toggleSelectedCase,
+        clearSelectedCases,
         isCaseEditing,
         caseEditReportId,
         caseEditCases,

@@ -190,6 +190,34 @@ export function canEditReportCases(report: Pick<ReportFeedback, "status">): bool
     return report.status !== "archived";
 }
 
+export function getOpenCaseIds(report: Pick<ReportFeedback, "cases">): string[] {
+    return getOpenCases(report).map((item) => item.id);
+}
+
+export function isValidCaseSelection(report: Pick<ReportFeedback, "cases">, selectedCaseIds: string[]): boolean {
+    if (selectedCaseIds.length === 0) {
+        return false;
+    }
+
+    const openCaseIds = new Set(getOpenCaseIds(report));
+
+    return selectedCaseIds.every((caseId) => openCaseIds.has(caseId));
+}
+
+export function getCaseLabels(report: Pick<ReportFeedback, "cases">, caseIds: string[]): string[] {
+    const caseMap = new Map(getReportCases(report).map((item) => [item.id, item.text]));
+
+    return caseIds.flatMap((caseId) => {
+        const label = caseMap.get(caseId)?.trim();
+
+        return label ? [label] : [];
+    });
+}
+
+export function buildResolvedCasesUpdate(report: ReportFeedback, caseIds: string[]): ReportCase[] {
+    return resolveCases(getReportCases(report), caseIds);
+}
+
 export function validateCasesForSubmit(cases: Array<Pick<ReportCase, "text">>, messages: CaseValidationMessages): string {
     if (cases.length === 0) {
         return messages.casesRequired;

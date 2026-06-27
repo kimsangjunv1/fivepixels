@@ -3,10 +3,14 @@ import { createReportFeedback } from "@/utils/reportFixtures.js";
 import {
     allCasesResolved,
     applyCaseStatusSync,
+    buildResolvedCasesUpdate,
     createReportCase,
+    getCaseLabels,
     getIssueProgressLabel,
     getIssueSummary,
+    getOpenCaseIds,
     getOpenCases,
+    isValidCaseSelection,
     normalizeFeedbackCases,
     normalizeReplyCaseIds,
     resolveCases,
@@ -90,5 +94,27 @@ describe("reportCases", () => {
         expect(canEditReportCases(createReportFeedback({ status: "open" }))).toBe(true);
         expect(canEditReportCases(createReportFeedback({ status: "resolved" }))).toBe(true);
         expect(canEditReportCases(createReportFeedback({ status: "archived" }))).toBe(false);
+    });
+
+    it("validates open case selection for scoped replies", () => {
+        const cases = [createReportCase("A"), createReportCase("B"), createReportCase("done", { status: "resolved" })];
+        const report = createReportFeedback({ cases });
+
+        expect(getOpenCaseIds(report)).toEqual([cases[0].id, cases[1].id]);
+        expect(isValidCaseSelection(report, [])).toBe(false);
+        expect(isValidCaseSelection(report, [cases[0].id])).toBe(true);
+        expect(isValidCaseSelection(report, [cases[0].id, cases[1].id])).toBe(true);
+        expect(isValidCaseSelection(report, [cases[2].id])).toBe(false);
+        expect(isValidCaseSelection(report, ["missing"])).toBe(false);
+    });
+
+    it("builds partial resolve updates and case labels", () => {
+        const cases = [createReportCase("A"), createReportCase("B")];
+        const report = createReportFeedback({ cases, status: "open" });
+        const nextCases = buildResolvedCasesUpdate(report, [cases[0].id]);
+
+        expect(nextCases[0]?.status).toBe("resolved");
+        expect(nextCases[1]?.status).toBe("open");
+        expect(getCaseLabels(report, [cases[0].id, cases[1].id])).toEqual(["A", "B"]);
     });
 });

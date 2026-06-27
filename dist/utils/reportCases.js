@@ -137,6 +137,26 @@ export function normalizeFeedbackCases(item) {
 export function canEditReportCases(report) {
     return report.status !== "archived";
 }
+export function getOpenCaseIds(report) {
+    return getOpenCases(report).map((item) => item.id);
+}
+export function isValidCaseSelection(report, selectedCaseIds) {
+    if (selectedCaseIds.length === 0) {
+        return false;
+    }
+    const openCaseIds = new Set(getOpenCaseIds(report));
+    return selectedCaseIds.every((caseId) => openCaseIds.has(caseId));
+}
+export function getCaseLabels(report, caseIds) {
+    const caseMap = new Map(getReportCases(report).map((item) => [item.id, item.text]));
+    return caseIds.flatMap((caseId) => {
+        const label = caseMap.get(caseId)?.trim();
+        return label ? [label] : [];
+    });
+}
+export function buildResolvedCasesUpdate(report, caseIds) {
+    return resolveCases(getReportCases(report), caseIds);
+}
 export function validateCasesForSubmit(cases, messages) {
     if (cases.length === 0) {
         return messages.casesRequired;

@@ -33,7 +33,7 @@ const MARKER_HOVER_LEAVE_MS = 250;
 const OVERLAY_HOVER_LEAVE_MS = 100;
 import { findTargetByPoint, getSelectableTargets, isSameHoverTarget, resolveFeedbackDocumentAnchor, toSnapshot } from "@/utils/dom.js";
 import { createInitialFieldValues, getFieldError, getFieldTags } from "@/utils/fields.js";
-import { canEditReportCases, createReportCase } from "@/utils/reportCases.js";
+import { canEditReportCases, createReportCase, buildResolvedCasesUpdate, isValidCaseSelection } from "@/utils/reportCases.js";
 import { createReplyId } from "@/utils/format.js";
 import {
     notifyFeedbackCreate,
@@ -297,6 +297,7 @@ export function useReportState({
     const [creatingGitHubIssueId, setCreatingGitHubIssueId] = useState<string | null>(null);
     const [caseEditReportId, setCaseEditReportId] = useState<string | null>(null);
     const [caseEditDraft, setCaseEditDraft] = useState<ReportFeedback["cases"] | null>(null);
+    const [selectedCaseIds, setSelectedCaseIds] = useState<string[]>([]);
 
     const canCreateGitHubIssueFromListValue = useMemo(() => canCreateGitHubIssueFromList(github), [github]);
 
@@ -617,6 +618,26 @@ export function useReportState({
         setCaseEditDraft(null);
     }, []);
 
+    const clearSelectedCases = useCallback(() => {
+        setSelectedCaseIds([]);
+    }, []);
+
+    const toggleSelectedCase = useCallback((caseId: string) => {
+        setSelectedCaseIds((current) => (current.includes(caseId) ? current.filter((id) => id !== caseId) : [...current, caseId]));
+    }, []);
+
+    const ensureCaseSelection = useCallback(
+        (report: ReportFeedback) => {
+            if (isValidCaseSelection(report, selectedCaseIds)) {
+                return true;
+            }
+
+            setErrorMessage(messages.errors.caseSelectionRequired);
+            return false;
+        },
+        [messages.errors.caseSelectionRequired, selectedCaseIds],
+    );
+
     const beginCaseEdit = useCallback(
         (report: ReportFeedback) => {
             if (!canEditReportCases(report)) {
@@ -718,6 +739,7 @@ export function useReportState({
         setPendingComposer(null);
         setShowConfirmAuthorSelect(false);
         cancelCaseEdit();
+        clearSelectedCases();
     };
 
     const showFeedbackTooltip = useCallback(
@@ -807,6 +829,7 @@ export function useReportState({
         setReplyAuthorName(resolveDefaultAuthorName(activeIdentify, authorizedAuthors));
         setConfirmAuthorName(resolveOriginalFeedbackAuthorName(report));
         setShowConfirmAuthorSelect(false);
+        clearSelectedCases();
         clearHoverLeaveTimeout();
     };
 
@@ -828,6 +851,10 @@ export function useReportState({
             return;
         }
 
+        if (!ensureCaseSelection(activeReplyReport)) {
+            return;
+        }
+
         const latestRoot = getLatestBranchRoot(getReportReplies(activeReplyReport));
 
         if (!latestRoot) {
@@ -843,6 +870,10 @@ export function useReportState({
     };
 
     const startCheckoutReview = (replyId: string) => {
+        if (!activeReplyReport || !ensureCaseSelection(activeReplyReport)) {
+            return;
+        }
+
         setPendingComposer({ type: "checkout", targetReplyId: replyId });
         setReplyDraft("");
         setReplySubmitAsQuestion(false);
@@ -850,6 +881,10 @@ export function useReportState({
 
     const startAskQuestion = () => {
         if (!activeReplyReport) {
+            return;
+        }
+
+        if (!ensureCaseSelection(activeReplyReport)) {
             return;
         }
 
@@ -1241,6 +1276,7 @@ export function useReportState({
                 await signReplyPayload({
                     message: reply.message,
                     status: reply.status,
+                    case_ids: reply.case_ids,
                     parent_reply_id: reply.parent_reply_id,
                     author_type: reply.author_type ?? "manager",
                     author_name: reply.author_name,
@@ -1274,6 +1310,11 @@ export function useReportState({
             return;
         }
 
+        if (!ensureCaseSelection(activeReplyReport)) {
+            return;
+        }
+
+        const scopedCaseIds = [...selectedCaseIds];
         const pendingType = pendingComposer?.type ?? null;
         const isCreatorSubmit = pendingType === "deny" || pendingType === "recheck" || pendingType === "question";
         const isQuestionSubmit = pendingType === "question";
@@ -1297,7 +1338,7 @@ export function useReportState({
             message: replyMessage,
             created_at: new Date().toISOString(),
             status: replyStatus,
-            case_ids: [],
+            case_ids: scopedCaseIds,
             ...(parentReplyId ? { parent_reply_id: parentReplyId } : {}),
             author_type: isCreatorSubmit ? "user" : "manager",
             author_name: authorName,
@@ -1333,12 +1374,19 @@ export function useReportState({
             return;
         }
 
+        if (!ensureCaseSelection(activeReplyReport)) {
+            return;
+        }
+
         const resolverName = confirmAuthorName.trim() || resolveOriginalFeedbackAuthorName(activeReplyReport);
 
         if (!resolverName) {
             setErrorMessage(messages.errors.reviewerRequired);
             return;
         }
+
+        const resolvedCaseIds = [...selectedCaseIds];
+        const nextCases = buildResolvedCasesUpdate(activeReplyReport, resolvedCaseIds);
 
         try {
             if (usesCreateReply) {
@@ -1347,6 +1395,7 @@ export function useReportState({
                     await signReplyPayload({
                         message: messages.resolution.issueResolvedMessage,
                         status: "resolved",
+                        case_ids: resolvedCaseIds,
                         author_type: "user",
                         author_name: resolverName,
                     }),
@@ -1354,7 +1403,7 @@ export function useReportState({
                 const updatedFeedback = await updateFeedback(
                     activeReplyReport.id,
                     await signUpdatePayload({
-                        status: "resolved",
+                        cases: nextCases,
                     }),
                 );
 
@@ -1365,14 +1414,14 @@ export function useReportState({
                     message: messages.resolution.issueResolvedMessage,
                     created_at: new Date().toISOString(),
                     status: "resolved",
-                    case_ids: [],
+                    case_ids: resolvedCaseIds,
                     author_type: "user",
                     author_name: resolverName,
                 };
                 const updatedFeedback = await updateFeedback(
                     activeReplyReport.id,
                     await signUpdatePayload({
-                        status: "resolved",
+                        cases: nextCases,
                         replies: [...getReportReplies(activeReplyReport), reply],
                     }),
                 );
@@ -1380,6 +1429,7 @@ export function useReportState({
                 await notifyFeedbackUpdate(eventCallbacks, updatedFeedback);
             }
 
+            setSelectedCaseIds((current) => current.filter((caseId) => !resolvedCaseIds.includes(caseId)));
             setErrorMessage("");
             setPendingComposer(null);
             setReplyDraft("");
@@ -1554,6 +1604,9 @@ export function useReportState({
         updateCaseEditDraftCase,
         addCaseEditDraftCase,
         removeCaseEditDraftCase,
+        selectedCaseIds,
+        toggleSelectedCase,
+        clearSelectedCases,
         isCaseEditing,
         caseEditReportId,
         caseEditCases,

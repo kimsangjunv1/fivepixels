@@ -9,6 +9,9 @@ type FeedbackCaseListProps = {
     canEdit?: boolean;
     isSaving?: boolean;
     errorMessage?: string;
+    selectable?: boolean;
+    selectedCaseIds?: string[];
+    onToggleCaseSelection?: (caseId: string) => void;
     onBeginEdit?: () => void;
     onCancelEdit?: () => void;
     onSaveEdit?: () => void;
@@ -23,6 +26,9 @@ export function FeedbackCaseList({
     canEdit = false,
     isSaving = false,
     errorMessage = "",
+    selectable = false,
+    selectedCaseIds = [],
+    onToggleCaseSelection,
     onBeginEdit,
     onCancelEdit,
     onSaveEdit,
@@ -32,6 +38,7 @@ export function FeedbackCaseList({
 }: FeedbackCaseListProps) {
     const { messages } = useReport();
     const progressLabel = getIssueProgressLabel({ cases });
+    const hasOpenCases = cases.some((item) => item.status === "open");
 
     if (isEditing && onCaseChange && onAddCase && onRemoveCase) {
         return (
@@ -93,26 +100,46 @@ export function FeedbackCaseList({
                     </button>
                 ) : null}
             </div>
+            {selectable && hasOpenCases ? (
+                <p className="px-[8px] text-[11px] text-[var(--adaptive-black500)]">{messages.cases.selectForDiscussion}</p>
+            ) : null}
             <ul className="flex flex-col gap-[6px] px-[8px]">
-                {cases.map((item, index) => (
-                    <li
-                        key={item.id}
-                        className="flex items-start gap-[6px] text-[14px] leading-[1.5] text-[var(--adaptive-text-primary)]"
-                    >
-                        <span className="w-[20px] shrink-0 tabular-nums text-[12px] text-[var(--adaptive-black500)]">{index + 1}.</span>
-                        <span
-                            className={`mt-[2px] inline-flex h-[16px] w-[16px] shrink-0 items-center justify-center rounded-full text-[10px] font-bold ${
-                                item.status === "resolved"
-                                    ? "bg-[var(--adaptive-green500)] text-white"
-                                    : "border border-[var(--adaptive-border-subtle)] text-[var(--adaptive-black400)]"
-                            }`}
-                            aria-label={item.status === "resolved" ? messages.cases.resolved : messages.cases.open}
+                {cases.map((item, index) => {
+                    const isOpen = item.status === "open";
+                    const isSelected = selectedCaseIds.includes(item.id);
+
+                    return (
+                        <li
+                            key={item.id}
+                            className={`flex items-start gap-[6px] text-[14px] leading-[1.5] text-[var(--adaptive-text-primary)] ${selectable && isOpen && isSelected ? "rounded-[8px] bg-[var(--adaptive-blue100)]/60 px-[4px] py-[2px]" : ""}`}
                         >
-                            {item.status === "resolved" ? "✓" : ""}
-                        </span>
-                        <span className={item.status === "resolved" ? "text-[var(--adaptive-black600)] line-through" : undefined}>{item.text}</span>
-                    </li>
-                ))}
+                            {selectable && isOpen ? (
+                                <input
+                                    type="checkbox"
+                                    data-fivepixels-interactive=""
+                                    checked={isSelected}
+                                    onChange={() => onToggleCaseSelection?.(item.id)}
+                                    aria-label={item.text}
+                                    className="mt-[6px] h-[14px] w-[14px] shrink-0 accent-[var(--adaptive-blue500)]"
+                                />
+                            ) : (
+                                <span className="w-[14px] shrink-0" aria-hidden />
+                            )}
+                            <span className="w-[20px] shrink-0 tabular-nums text-[12px] text-[var(--adaptive-black500)]">{index + 1}.</span>
+                            <span
+                                className={`mt-[2px] inline-flex h-[16px] w-[16px] shrink-0 items-center justify-center rounded-full text-[10px] font-bold ${
+                                    item.status === "resolved"
+                                        ? "bg-[var(--adaptive-green500)] text-white"
+                                        : "border border-[var(--adaptive-border-subtle)] text-[var(--adaptive-black400)]"
+                                }`}
+                                aria-label={item.status === "resolved" ? messages.cases.resolved : messages.cases.open}
+                            >
+                                {item.status === "resolved" ? "✓" : ""}
+                            </span>
+                            <span className={item.status === "resolved" ? "text-[var(--adaptive-black600)] line-through" : undefined}>{item.text}</span>
+                        </li>
+                    );
+                })}
             </ul>
         </div>
     );
