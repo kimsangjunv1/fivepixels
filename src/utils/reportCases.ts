@@ -86,7 +86,7 @@ export function applyCaseStatusSync(report: ReportFeedback): ReportFeedback {
     };
 }
 
-export function getIssueSummary(report: Pick<ReportFeedback, "cases">): string {
+export function getIssueSummary(report: Pick<ReportFeedback, "cases">, options?: { summaryMore?: (count: number) => string }): string {
     const cases = getReportCases(report).map((item) => item.text.trim()).filter(Boolean);
 
     if (cases.length === 0) {
@@ -97,7 +97,13 @@ export function getIssueSummary(report: Pick<ReportFeedback, "cases">): string {
         return cases[0];
     }
 
-    return `${cases[0]} 외 ${cases.length - 1}건`;
+    const formatMore = options?.summaryMore ?? ((count) => `외 ${count}건`);
+
+    return `${cases[0]} ${formatMore(cases.length - 1)}`;
+}
+
+export function shouldShowCaseProgress(report: Pick<ReportFeedback, "cases">): boolean {
+    return getReportCases(report).length > 1;
 }
 
 export function getIssueProgressLabel(report: Pick<ReportFeedback, "cases">): string {

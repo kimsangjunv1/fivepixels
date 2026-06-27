@@ -5,6 +5,7 @@ import { formatTimeOnly } from "@/utils/format.js";
 import { getIssueSummary } from "@/utils/reportCases.js";
 import { getFeedbackDisplayStatus, getLatestReply, getRemainingReplyCount } from "@/utils/feedbackThread.js";
 import { copyTextToClipboard, serializeFeedbackItem } from "@/utils/feedbackDataTransfer.js";
+import { CaseProgressLabel } from "./CaseProgressLabel.js";
 import { FeedbackStatusBadge } from "./FeedbackStatusBadge.js";
 import { GitIssueButton } from "./GitIssueButton.js";
 import { CopyIcon, TrashIcon } from "@/components/icons/Icons.js";
@@ -181,7 +182,12 @@ export function FeedbackListItem({
                 className="flex w-full flex-col gap-[6px] p-[10px_12px] text-left"
             >
                 <FeedbackListRow
-                    text={<p className="truncate text-[13px] leading-[1.4] text-[var(--adaptive-black900)]">{getIssueSummary(report)}</p>}
+                    text={
+                        <p className="truncate text-[13px] leading-[1.4] text-[var(--adaptive-black900)]">
+                            {getIssueSummary(report, { summaryMore: messages.cases.summaryMore })}
+                            <CaseProgressLabel report={report} />
+                        </p>
+                    }
                     trailing={
                         hovered ? (
                             <div

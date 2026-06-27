@@ -105,6 +105,8 @@ export const en: ReportMessages = {
         open: "Open",
         resolved: "Resolved",
         selectForDiscussion: "Select cases to discuss",
+        summaryMore: (count) => `and ${count} more`,
+        progressResolved: (resolved, total) => `Progress: ${resolved}/${total} resolved`,
     },
     thread: {
         scrollHintUp: "More messages above",

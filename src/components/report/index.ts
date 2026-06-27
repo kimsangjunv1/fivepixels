@@ -53,6 +53,7 @@ export {
     getIssueSummary,
     getOpenCases,
     getReportCases,
+    shouldShowCaseProgress,
     getResolvedCaseCount,
     resolveCases,
     syncIssueStatusFromCases,

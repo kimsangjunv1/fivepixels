@@ -65,7 +65,7 @@ export function applyCaseStatusSync(report) {
         status: syncIssueStatusFromCases(report),
     };
 }
-export function getIssueSummary(report) {
+export function getIssueSummary(report, options) {
     const cases = getReportCases(report).map((item) => item.text.trim()).filter(Boolean);
     if (cases.length === 0) {
         return "";
@@ -73,7 +73,11 @@ export function getIssueSummary(report) {
     if (cases.length === 1) {
         return cases[0];
     }
-    return `${cases[0]} 외 ${cases.length - 1}건`;
+    const formatMore = options?.summaryMore ?? ((count) => `외 ${count}건`);
+    return `${cases[0]} ${formatMore(cases.length - 1)}`;
+}
+export function shouldShowCaseProgress(report) {
+    return getReportCases(report).length > 1;
 }
 export function getIssueProgressLabel(report) {
     const total = getReportCases(report).length;

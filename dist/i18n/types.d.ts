@@ -107,6 +107,8 @@ export type ReportMessages = {
         open: string;
         resolved: string;
         selectForDiscussion: string;
+        summaryMore: (count: number) => string;
+        progressResolved: (resolved: number, total: number) => string;
     };
     thread: {
         scrollHintUp: string;

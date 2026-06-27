@@ -6,7 +6,7 @@ import { useReport } from "../../providers/reportContext.js";
 import { resolveMarkerOverflowHints } from "../../utils/coordinates.js";
 import { scrollContainerTowardEdge } from "../../utils/dom.js";
 import { getDetachedMarkerAriaLabel, getDetachedMarkerHint, getModalGhostFrame } from "../../utils/markerContext.js";
-import { getMarkerColor } from "../../utils/reportVisual.js";
+import { getMarkerColor, getMarkerDisplayLabel } from "../../utils/reportVisual.js";
 import { FeedbackComposer } from "../../components/panel/feedback/FeedbackComposer.js";
 import { FeedbackHoverCard } from "../../components/panel/feedback/FeedbackHoverCard.js";
 import { FeedbackIssuePinnedHeader } from "../../components/panel/feedback/FeedbackIssuePinnedHeader.js";
@@ -50,7 +50,10 @@ function MarkerButton({ markerItem, isSelected, detachedAriaLabel, detachedModal
         onLeave: onHoverEnd,
     });
     const replyCount = getReplyCount(markerItem.report);
-    const markerLabel = replyCount > 0 ? `${markerItem.report.report_type} · ${markerItem.report.report_id} · ${replyCount} replies` : `${markerItem.report.report_type} · ${markerItem.report.report_id}`;
+    const markerBadgeLabel = getMarkerDisplayLabel(markerItem.report, replyCount);
+    const markerLabel = markerBadgeLabel
+        ? `${markerItem.report.report_type} · ${markerItem.report.report_id} · ${markerBadgeLabel}`
+        : `${markerItem.report.report_type} · ${markerItem.report.report_id}`;
     const isDetached = markerItem.detached;
     const isModalDetached = markerItem.detachedKind === "modal";
     const resolvedDetachedAriaLabel = getDetachedMarkerAriaLabel(markerItem.detachedKind, {
@@ -67,10 +70,10 @@ function MarkerButton({ markerItem, isSelected, detachedAriaLabel, detachedModal
                         void onActivate(markerItem.report);
                     }, className: `${isSelected
                         ? `${MARKER_BUTTON_BASE_CLASS} min-h-[16px] min-w-[16px] border-[2px] scale-[1.4] border-white shadow-[0_4px_10px_#00000090]`
-                        : `${MARKER_BUTTON_BASE_CLASS} min-h-[16px] min-w-[16px] border-[2px] border-white shadow-[0_4px_10px_#00000090]`} ${markerShapeClass} ${replyCount > 0 ? "p-[4px_8px] text-white" : ""} ${isDetached ? "border-dashed opacity-75" : ""}`, style: {
+                        : `${MARKER_BUTTON_BASE_CLASS} min-h-[16px] min-w-[16px] border-[2px] border-white shadow-[0_4px_10px_#00000090]`} ${markerShapeClass} ${markerBadgeLabel ? "p-[4px_8px] text-white" : ""} ${isDetached ? "border-dashed opacity-75" : ""}`, style: {
                         backgroundColor: getMarkerColor(markerItem.report),
                         pointerEvents: "auto",
-                    }, children: replyCount > 0 ? (`+${replyCount}`) : isModalDetached ? (_jsx("span", { "aria-hidden": true, className: "block h-[7px] w-[9px] border border-white/90 bg-white/15" })) : null }, markerItem.id)] }) }));
+                    }, children: markerBadgeLabel ? (markerBadgeLabel) : isModalDetached ? (_jsx("span", { "aria-hidden": true, className: "block h-[7px] w-[9px] border border-white/90 bg-white/15" })) : null }, markerItem.id)] }) }));
 }
 export function ReportMarkersLayer() {
     const { mode, markers, selectedReport, fields, authors, activeReplyReportId, activeReplyReport, tooltipReport, tooltipAnchor, tooltipFieldTags, replyDraft, replyAuthorName, pendingComposer, errorMessage, setErrorMessage, isUpdating, editingReportId, messages, locale, selectReport, activateFeedbackMarker, closeReplyComposer, clearHoverLeaveTimeout, scheduleHoverLeave, setHoveredMarkerId, setReplyDraft, setReplyAuthorName, handleReplySubmit, startDenyReview, startCheckoutReview, startAskQuestion, confirmAuthorName, setConfirmAuthorName, showConfirmAuthorSelect, toggleConfirmAuthorSelect, handleConfirmResolution, } = useReport();

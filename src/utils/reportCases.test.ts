@@ -14,6 +14,7 @@ import {
     normalizeFeedbackCases,
     normalizeReplyCaseIds,
     resolveCases,
+    shouldShowCaseProgress,
     syncIssueStatusFromCases,
     validateCasesForSubmit,
     canEditReportCases,
@@ -94,6 +95,16 @@ describe("reportCases", () => {
         expect(canEditReportCases(createReportFeedback({ status: "open" }))).toBe(true);
         expect(canEditReportCases(createReportFeedback({ status: "resolved" }))).toBe(true);
         expect(canEditReportCases(createReportFeedback({ status: "archived" }))).toBe(false);
+    });
+
+    it("formats localized issue summary", () => {
+        const report = createReportFeedback({
+            cases: [createReportCase("A"), createReportCase("B")],
+        });
+
+        expect(getIssueSummary(report, { summaryMore: (count) => `and ${count} more` })).toBe("A and 1 more");
+        expect(shouldShowCaseProgress(report)).toBe(true);
+        expect(shouldShowCaseProgress(createReportFeedback({ cases: [createReportCase("only")] }))).toBe(false);
     });
 
     it("validates open case selection for scoped replies", () => {

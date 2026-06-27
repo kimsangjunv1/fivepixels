@@ -2,12 +2,14 @@ import { describe, expect, it } from "vitest";
 import { createReportCase, createReportFeedback } from "./reportFixtures.js";
 import { formatFeedbackAsGitHubIssueBody } from "./formatGitHubIssue.js";
 
+const baseCase = createReportCase("가격 카드가 모바일에서 잘림");
+
 const baseFeedback = createReportFeedback({
     id: "fb-1",
     pathname: "/pricing",
     report_id: "price-card",
     report_type: "item",
-    cases: [createReportCase("가격 카드가 모바일에서 잘림")],
+    cases: [baseCase],
     field_values: { isBug: true },
     replies: [
         {
@@ -15,7 +17,7 @@ const baseFeedback = createReportFeedback({
             message: "재현 확인 | 테스트",
             created_at: "2026-06-07T10:00:00.000Z",
             status: "suggested",
-            case_ids: ["case-1"],
+            case_ids: [baseCase.id],
             author_name: "PM",
         },
     ],
@@ -38,12 +40,15 @@ describe("formatFeedbackAsGitHubIssueBody", () => {
         ]);
 
         expect(body).toContain("## Cases");
+        expect(body).toContain("Progress: 0/1 resolved");
         expect(body).toContain("가격 카드가 모바일에서 잘림");
         expect(body).toContain("| Path | /pricing |");
         expect(body).toContain("| Author | 디자이너 |");
         expect(body).toContain("| Tags | bug |");
         expect(body).toContain("## Thread");
         expect(body).toContain("재현 확인 \\| 테스트");
+        expect(body).toContain("가격 카드가 모바일에서 잘림");
+        expect(body).not.toContain(baseCase.id);
         expect(body).toContain("> fivepixels feedback id: `fb-1`");
     });
 
@@ -54,5 +59,24 @@ describe("formatFeedbackAsGitHubIssueBody", () => {
         });
 
         expect(body).toContain("| - | - | - | - | (no replies yet) |");
+    });
+
+    it("renders resolved case checkboxes and custom progress label", () => {
+        const cases = [createReportCase("A"), createReportCase("B", { status: "resolved" })];
+        const body = formatFeedbackAsGitHubIssueBody(
+            createReportFeedback({
+                ...baseFeedback,
+                cases,
+                replies: [],
+            }),
+            [],
+            {
+                formatProgress: (resolved, total) => `${resolved}/${total} done`,
+            },
+        );
+
+        expect(body).toContain("1/2 done");
+        expect(body).toContain("- [ ] A");
+        expect(body).toContain("- [x] B");
     });
 });

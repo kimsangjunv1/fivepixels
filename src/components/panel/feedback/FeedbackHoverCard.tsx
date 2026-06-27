@@ -3,6 +3,8 @@ import type { MarkerDetachedKind } from "@/types/report-ui.js";
 import { getDetachedMarkerHint } from "@/utils/markerContext.js";
 import { getIssueSummary } from "@/utils/reportCases.js";
 import { getFeedbackDisplayStatus, getLatestReply, getRemainingReplyCount } from "@/utils/feedbackThread.js";
+import { useReport } from "@/providers/reportContext.js";
+import { CaseProgressLabel } from "./CaseProgressLabel.js";
 import { FeedbackCreatorBadge } from "./FeedbackCreatorBadge.js";
 import { FeedbackFieldTags } from "./FeedbackFieldTags.js";
 import { FeedbackStatusBadge } from "./FeedbackStatusBadge.js";
@@ -17,6 +19,7 @@ type FeedbackHoverCardProps = {
 };
 
 export function FeedbackHoverCard({ report, fieldTags, detached = false, detachedKind = null, detachedHint, detachedModalHint }: FeedbackHoverCardProps) {
+    const { messages } = useReport();
     const displayStatus = getFeedbackDisplayStatus(report, true);
     const latestReply = getLatestReply(report);
     const remainingReplyCount = getRemainingReplyCount(report);
@@ -29,7 +32,10 @@ export function FeedbackHoverCard({ report, fieldTags, detached = false, detache
 
             {resolvedDetachedHint ? <p className="text-[12px] leading-[1.4] text-[var(--adaptive-black500)]">{resolvedDetachedHint}</p> : null}
 
-            <p className="line-clamp-2 leading-[1.5] text-[14px] text-[var(--adaptive-text-primary)]">{getIssueSummary(report)}</p>
+            <p className="line-clamp-2 leading-[1.5] text-[14px] text-[var(--adaptive-text-primary)]">
+                {getIssueSummary(report, { summaryMore: messages.cases.summaryMore })}
+                <CaseProgressLabel report={report} />
+            </p>
 
             {report.author_name ? (
                 <div className="flex items-center gap-[6px]">

@@ -5,6 +5,7 @@ export declare function getReplyStatusTone(hasCompletedReply: boolean): {
     color: string;
 };
 export declare function getMarkerColor(report: ReportFeedback): string;
+export declare function getMarkerDisplayLabel(report: ReportFeedback, replyCount?: number): string | null;
 export declare function getStatusTone(status: ReportStatus): {
     backgroundColor: string;
     color: string;

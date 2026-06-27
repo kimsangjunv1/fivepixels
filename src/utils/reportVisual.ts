@@ -1,5 +1,6 @@
 import type { ReportFeedback, ReportStatus } from "@/types/report.js";
 import { getReplyCount } from "@/utils/feedbackThread.js";
+import { getIssueProgressLabel, getReportCases } from "@/utils/reportCases.js";
 import { TARGET_COLOR } from "@/constants/report.js";
 
 export function hasReply(report: ReportFeedback) {
@@ -22,6 +23,18 @@ export function getMarkerColor(report: ReportFeedback) {
     }
 
     return TARGET_COLOR.item;
+}
+
+export function getMarkerDisplayLabel(report: ReportFeedback, replyCount = getReplyCount(report)): string | null {
+    if (getReportCases(report).length > 1) {
+        return getIssueProgressLabel(report);
+    }
+
+    if (replyCount > 0) {
+        return `+${replyCount}`;
+    }
+
+    return null;
 }
 
 export function getStatusTone(status: ReportStatus) {

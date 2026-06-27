@@ -103,6 +103,8 @@ export const ko = {
         open: "진행 중",
         resolved: "해결됨",
         selectForDiscussion: "논의할 케이스를 선택하세요",
+        summaryMore: (count) => `외 ${count}건`,
+        progressResolved: (resolved, total) => `진행: ${resolved}/${total} 해결`,
     },
     thread: {
         scrollHintUp: "위쪽에 더 많은 메시지가 있어요",

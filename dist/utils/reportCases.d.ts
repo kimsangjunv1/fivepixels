@@ -10,7 +10,10 @@ export declare function hasOpenCases(report: Pick<ReportFeedback, "cases">): boo
 export declare function resolveCases(cases: ReportCase[], caseIds: string[], resolvedAt?: string): ReportCase[];
 export declare function syncIssueStatusFromCases(report: Pick<ReportFeedback, "cases" | "status">): ReportStatus;
 export declare function applyCaseStatusSync(report: ReportFeedback): ReportFeedback;
-export declare function getIssueSummary(report: Pick<ReportFeedback, "cases">): string;
+export declare function getIssueSummary(report: Pick<ReportFeedback, "cases">, options?: {
+    summaryMore?: (count: number) => string;
+}): string;
+export declare function shouldShowCaseProgress(report: Pick<ReportFeedback, "cases">): boolean;
 export declare function getIssueProgressLabel(report: Pick<ReportFeedback, "cases">): string;
 export declare function casesToSearchText(cases: ReportCase[]): string;
 export declare function normalizeReportCase(value: unknown, fallbackTimestamp: string): ReportCase | null;

@@ -1,4 +1,5 @@
 import { getReplyCount } from "../utils/feedbackThread.js";
+import { getIssueProgressLabel, getReportCases } from "../utils/reportCases.js";
 import { TARGET_COLOR } from "../constants/report.js";
 export function hasReply(report) {
     return getReplyCount(report) > 0;
@@ -16,6 +17,15 @@ export function getMarkerColor(report) {
         return "var(--adaptive-blue500)";
     }
     return TARGET_COLOR.item;
+}
+export function getMarkerDisplayLabel(report, replyCount = getReplyCount(report)) {
+    if (getReportCases(report).length > 1) {
+        return getIssueProgressLabel(report);
+    }
+    if (replyCount > 0) {
+        return `+${replyCount}`;
+    }
+    return null;
 }
 export function getStatusTone(status) {
     if (status === "resolved") {

@@ -2,12 +2,26 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import { useCreateReportMutation, useDeleteReportMutation, useReportsQuery, useUpdateReportMutation } from "./report.query.js";
 import { useCurrentPathname } from "./useCurrentPathname.js";
 import { createReply as createReplyApi, listReplies as listRepliesApi } from "./report.api.js";
-import { casesToSearchText } from "../utils/reportCases.js";
+import { casesToSearchText, getReportCases } from "../utils/reportCases.js";
 import { getRouteDetailStatus, isCreatedToday } from "../utils/routeDetailStatus.js";
-import { getFeedbackDisplayStatus } from "../utils/feedbackThread.js";
+import { getFeedbackDisplayStatus, getLatestReply } from "../utils/feedbackThread.js";
 import { FEEDBACK_DISPLAY_STATUS_ORDER } from "../constants/feedbackStatus.js";
 import { mergeRepliesIntoReport, needsReplyLoad } from "../utils/reportSummary.js";
 import { resolveStorageAdapter } from "../utils/storage.js";
+function buildReportSearchHaystack(report) {
+    const latestReply = getLatestReply(report);
+    return [
+        casesToSearchText(getReportCases(report)),
+        report.author_name ?? "",
+        report.report_id,
+        report.status,
+        report.pathname,
+        latestReply?.message ?? "",
+        latestReply?.author_name ?? "",
+    ]
+        .join(" ")
+        .toLowerCase();
+}
 function filterReports(reports, filters) {
     return reports.filter((report) => {
         if (filters.status !== "all" && getRouteDetailStatus(report) !== filters.status) {
@@ -20,7 +34,7 @@ function filterReports(reports, filters) {
             return true;
         }
         const keyword = filters.keyword.trim().toLowerCase();
-        return [casesToSearchText(report.cases), report.report_id, report.status, report.pathname].join(" ").toLowerCase().includes(keyword);
+        return buildReportSearchHaystack(report).includes(keyword);
     });
 }
 function enrichReports(reports, repliesByReportId) {
