@@ -15,7 +15,8 @@ import { ReportImportConfirmDialog } from "./ReportImportConfirmDialog.js";
 import { ReportImportProjectMismatchDialog } from "./ReportImportProjectMismatchDialog.js";
 import { ReportPersonalKeyDialog } from "./ReportPersonalKeyDialog.js";
 import { PanelSettings } from "./PanelSettings.js";
-import { PanelResizeHandle } from "./PanelResizeHandle.js";
+import { CornerResizeGhost } from "@/components/ui/CornerResizeGhost.js";
+import { CornerResizeHandle } from "@/components/ui/CornerResizeHandle.js";
 import { PanelSizeResetButton } from "./PanelSizeResetButton.js";
 import { formatStatCount } from "@/utils/formatStatCount.js";
 import { panelNumericClassName } from "@/utils/panelTypography.js";
@@ -154,7 +155,7 @@ export function ReportControlPanel() {
     });
     const panelExpanded = !panelCollapsed && !isRecording;
     const contentSectionOpen = panelTab !== null && personalKeyStep === "none" && importStep === "none";
-    const { panelSize, widthEdge, heightEdge, heightResizeEnabled, handleResizePointerDown, resetPanelSize, isDefaultSize, isResizing } = usePanelResize({
+    const { panelSize, resizeCorner, handleResizePointerDown, resetPanelSize, isDefaultSize, isResizing, ghostRef } = usePanelResize({
         enabled: !isMobileViewport && panelExpanded,
         corner: placementCorner,
         heightResizeEnabled: contentSectionOpen,
@@ -230,6 +231,8 @@ export function ReportControlPanel() {
                 activeCorner={activeCorner}
             />
 
+            {isResizing ? <CornerResizeGhost ghostRef={ghostRef} zIndexClassName="z-[1000001]" /> : null}
+
             {/* 임시 주석 */}
             {/* {isRecording && statusText ? (
                 <div
@@ -258,29 +261,17 @@ export function ReportControlPanel() {
                         ? "min-h-[40px] bg-[var(--adaptive-surface-overlay)] p-[4px] backdrop-blur-[50px] rounded-[12px] shadow-[0_0_120px_0_var(--adaptive-blackOpacity500)]"
                         : panelCollapsed
                           ? ""
-                          : `bg-[var(--adaptive-surface-overlay)] backdrop-blur-[50px] rounded-[12px] shadow-[0_0_120px_0_var(--adaptive-blackOpacity500)] ${isResizing ? "border border-solid border-[#F6572E]" : "border-0"}`
+                          : "relative bg-[var(--adaptive-surface-overlay)] backdrop-blur-[50px] rounded-[12px] border-0 shadow-[0_0_120px_0_var(--adaptive-blackOpacity500)]"
                 }`}
                 style={{ ...resolvedPanelStyle, ...resolvedSizeStyle, fontSize: "14px" }}
             >
                 {panelExpanded ? (
-                    <>
-                        <PanelResizeHandle
-                            key={`${placementCorner}-height`}
-                            edge={heightEdge}
-                            ariaLabel={messages.panel.resizeHeightAriaLabel}
-                            inactive={isDragging || !heightResizeEnabled}
-                            active={isResizing}
-                            onPointerDown={handleResizePointerDown(heightEdge)}
-                        />
-                        <PanelResizeHandle
-                            key={`${placementCorner}-width`}
-                            edge={widthEdge}
-                            ariaLabel={messages.panel.resizeWidthAriaLabel}
-                            inactive={isDragging}
-                            active={isResizing}
-                            onPointerDown={handleResizePointerDown(widthEdge)}
-                        />
-                    </>
+                    <CornerResizeHandle
+                        corner={resizeCorner}
+                        ariaLabel={messages.panel.resizeAriaLabel}
+                        inactive={isDragging}
+                        onPointerDown={handleResizePointerDown}
+                    />
                 ) : null}
                 <div className={panelCollapsed && !isRecording ? "flex shrink-0" : `flex w-full min-w-0 flex-col ${applyFixedHeight ? "h-full min-h-0" : ""}`}>
                     {isRecording ? (

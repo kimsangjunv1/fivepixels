@@ -2,6 +2,7 @@ import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-run
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useNativeHover } from "../../hooks/useNativeHover.js";
 import { useTooltipLayout } from "../../hooks/useTooltipLayout.js";
+import { useTooltipResize } from "../../hooks/useTooltipResize.js";
 import { useReport } from "../../providers/reportContext.js";
 import { resolveMarkerOverflowHints } from "../../utils/coordinates.js";
 import { scrollContainerTowardEdge } from "../../utils/dom.js";
@@ -12,6 +13,9 @@ import { FeedbackHoverCard } from "../../components/panel/feedback/FeedbackHover
 import { FeedbackIssuePinnedHeader } from "../../components/panel/feedback/FeedbackIssuePinnedHeader.js";
 import { buildConfirmAuthorOptions, getReplyCount, shouldShowCaseReplyComposer } from "../../utils/feedbackThread.js";
 import { FeedbackThread } from "../../components/panel/feedback/FeedbackThread.js";
+import { CornerResizeGhost } from "../../components/ui/CornerResizeGhost.js";
+import { CornerResizeHandle } from "../../components/ui/CornerResizeHandle.js";
+import { TOOLTIP_EXPANDED_DEFAULT_MAX_HEIGHT } from "../../utils/coordinates.js";
 const TOOLTIP_SURFACE_CLASS = "overflow-hidden rounded-[12px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] shadow-[var(--adaptive-popup-shadow)]";
 const TOOLTIP_FIXED_CLASS = `fixed z-[1000001] ${TOOLTIP_SURFACE_CLASS}`;
 const EXPANDED_TOOLTIP_ANCHOR_CLASS = "pointer-events-auto fixed z-[1000001]";
@@ -93,6 +97,7 @@ export function ReportMarkersLayer() {
         setHoveredMarkerId((current) => (current === reportId ? null : current));
     }, [activeReplyReportId, clearHoverLeaveTimeout, scheduleHoverLeave, setHoveredMarkerId]);
     const tooltipContainerRef = useRef(null);
+    const tooltipSurfaceRef = useRef(null);
     const expandedTooltipHoverRef = useNativeHover({
         onEnter: () => {
             if (tooltipReport) {
@@ -120,6 +125,15 @@ export function ReportMarkersLayer() {
         return buildConfirmAuthorOptions(activeReplyReport, authors);
     }, [activeReplyReport, authors, isCreatorQuestionComposer]);
     const isExpandedTooltip = Boolean(activeReplyReport && tooltipReport && activeReplyReport.id === tooltipReport.id);
+    const { customSize, isResizing, ghostRef, handleResizePointerDown, resetTooltipSize } = useTooltipResize({
+        enabled: isExpandedTooltip,
+        tooltipRef: tooltipSurfaceRef,
+    });
+    useEffect(() => {
+        if (!activeReplyReportId) {
+            resetTooltipSize();
+        }
+    }, [activeReplyReportId, resetTooltipSize]);
     useEffect(() => {
         if (!activeReplyReportId) {
             return;
@@ -178,7 +192,10 @@ export function ReportMarkersLayer() {
         scrollContainerTowardEdge(hint.containerId, hint.edge);
     }, []);
     const showTooltip = Boolean(tooltipReport && tooltipAnchor);
-    const { layout: tooltipLayout, setTooltipElement } = useTooltipLayout(tooltipAnchor, isExpandedTooltip, showTooltip);
+    const { layout: tooltipLayout, setTooltipElement } = useTooltipLayout(tooltipAnchor, isExpandedTooltip, showTooltip, {
+        customWidth: customSize?.width,
+        customHeight: customSize?.height,
+    });
     const tooltipPosition = tooltipLayout?.position ?? null;
     const tooltipAnchorStyle = tooltipLayout?.anchorStyle;
     const bindHoverTooltipRef = useCallback((node) => {
@@ -200,18 +217,23 @@ export function ReportMarkersLayer() {
                     width: tooltipPosition.width,
                     ...tooltipAnchorStyle,
                     pointerEvents: "none",
-                }, children: _jsx(FeedbackHoverCard, { report: tooltipReport, fieldTags: tooltipFieldTags, detached: Boolean(tooltipAnchor?.detached), detachedKind: tooltipAnchor?.detachedKind ?? null, detachedHint: messages.marker.detachedHint, detachedModalHint: messages.marker.detachedModalHint }) })) : null, showTooltip && isExpandedTooltip && tooltipReport && tooltipPosition && tooltipAnchorStyle && activeReplyReport ? (_jsx("div", { ref: bindExpandedTooltipRef, "data-fivepixels-interactive": "", className: EXPANDED_TOOLTIP_ANCHOR_CLASS, style: {
-                    left: tooltipPosition.left,
-                    top: tooltipPosition.top,
-                    width: tooltipPosition.width,
-                    ...tooltipAnchorStyle,
-                }, children: _jsx("div", { className: TOOLTIP_SURFACE_CLASS, style: {
-                        pointerEvents: "auto",
-                    }, children: _jsxs("div", { onClick: (event) => event.stopPropagation(), onPointerDown: (event) => event.stopPropagation(), className: "flex max-h-[512px] flex-col", children: [_jsx(FeedbackIssuePinnedHeader, { report: activeReplyReport, locale: locale }), tooltipAnchor?.detached && resolvedDetachedHint ? (_jsx("p", { className: "shrink-0 border-b border-[var(--adaptive-border-subtle)] px-[12px] pb-[10px] text-[12px] leading-[1.4] text-[var(--adaptive-black500)]", children: resolvedDetachedHint })) : null, _jsxs("div", { className: "flex min-h-0 flex-1 flex-col", children: [_jsx(FeedbackThread, { report: activeReplyReport, authors: authors, pendingComposer: pendingComposer, confirmAuthorName: confirmAuthorName, showConfirmAuthorSelect: showConfirmAuthorSelect, onConfirmAuthorNameChange: setConfirmAuthorName, onToggleConfirmAuthorSelect: toggleConfirmAuthorSelect, onStartDeny: startDenyReview, onStartCheckout: startCheckoutReview, onStartAskQuestion: startAskQuestion, onConfirm: () => void handleConfirmResolution(), isUpdating: isUpdating }), showComposer ? (_jsx("section", { className: "relative shrink-0 overflow-visible border-t border-[var(--adaptive-border-subtle)] bg-transparent", children: _jsx(FeedbackComposer, { message: replyDraft, onMessageChange: (value) => {
-                                                setReplyDraft(value);
-                                                if (errorMessage) {
-                                                    setErrorMessage("");
-                                                }
-                                            }, authorName: isCreatorQuestionComposer ? confirmAuthorName : replyAuthorName, onAuthorNameChange: isCreatorQuestionComposer ? setConfirmAuthorName : setReplyAuthorName, authors: composerAuthors, fields: fields, fieldValues: activeReplyReport.field_values, onFieldChange: () => undefined, showTags: false, onSubmit: () => void handleReplySubmit(), isSubmitting: isUpdating, autoFocus: pendingComposer !== null, askQuestionForced: isCreatorQuestionComposer, errorMessage: errorMessage }) })) : null] })] }) }) })) : null] }));
+                }, children: _jsx(FeedbackHoverCard, { report: tooltipReport, fieldTags: tooltipFieldTags, detached: Boolean(tooltipAnchor?.detached), detachedKind: tooltipAnchor?.detachedKind ?? null, detachedHint: messages.marker.detachedHint, detachedModalHint: messages.marker.detachedModalHint }) })) : null, showTooltip && isExpandedTooltip && tooltipReport && tooltipPosition && tooltipAnchorStyle && activeReplyReport ? (_jsxs(_Fragment, { children: [isResizing ? _jsx(CornerResizeGhost, { ghostRef: ghostRef }) : null, _jsx("div", { ref: bindExpandedTooltipRef, "data-fivepixels-interactive": "", className: EXPANDED_TOOLTIP_ANCHOR_CLASS, style: {
+                            left: tooltipPosition.left,
+                            top: tooltipPosition.top,
+                            width: tooltipPosition.width,
+                            ...(customSize?.height !== undefined ? { height: customSize.height } : null),
+                            ...tooltipAnchorStyle,
+                        }, children: _jsxs("div", { ref: tooltipSurfaceRef, className: `relative ${TOOLTIP_SURFACE_CLASS}`, style: {
+                                pointerEvents: "auto",
+                                height: customSize?.height,
+                            }, children: [_jsxs("div", { onClick: (event) => event.stopPropagation(), onPointerDown: (event) => event.stopPropagation(), className: "flex min-h-0 flex-col", style: {
+                                        maxHeight: customSize?.height ?? TOOLTIP_EXPANDED_DEFAULT_MAX_HEIGHT,
+                                        height: customSize?.height,
+                                    }, children: [_jsx(FeedbackIssuePinnedHeader, { report: activeReplyReport, locale: locale }), tooltipAnchor?.detached && resolvedDetachedHint ? (_jsx("p", { className: "shrink-0 border-b border-[var(--adaptive-border-subtle)] px-[12px] pb-[10px] text-[12px] leading-[1.4] text-[var(--adaptive-black500)]", children: resolvedDetachedHint })) : null, _jsxs("div", { className: "flex min-h-0 flex-1 flex-col", children: [_jsx(FeedbackThread, { report: activeReplyReport, authors: authors, pendingComposer: pendingComposer, confirmAuthorName: confirmAuthorName, showConfirmAuthorSelect: showConfirmAuthorSelect, onConfirmAuthorNameChange: setConfirmAuthorName, onToggleConfirmAuthorSelect: toggleConfirmAuthorSelect, onStartDeny: startDenyReview, onStartCheckout: startCheckoutReview, onStartAskQuestion: startAskQuestion, onConfirm: () => void handleConfirmResolution(), isUpdating: isUpdating }), showComposer ? (_jsx("section", { className: "relative shrink-0 overflow-visible border-t border-[var(--adaptive-border-subtle)] bg-transparent", children: _jsx(FeedbackComposer, { message: replyDraft, onMessageChange: (value) => {
+                                                            setReplyDraft(value);
+                                                            if (errorMessage) {
+                                                                setErrorMessage("");
+                                                            }
+                                                        }, authorName: isCreatorQuestionComposer ? confirmAuthorName : replyAuthorName, onAuthorNameChange: isCreatorQuestionComposer ? setConfirmAuthorName : setReplyAuthorName, authors: composerAuthors, fields: fields, fieldValues: activeReplyReport.field_values, onFieldChange: () => undefined, showTags: false, onSubmit: () => void handleReplySubmit(), isSubmitting: isUpdating, autoFocus: pendingComposer !== null, askQuestionForced: isCreatorQuestionComposer, errorMessage: errorMessage }) })) : null] })] }), _jsx(CornerResizeHandle, { corner: "bottom-right", ariaLabel: messages.marker.resizeAriaLabel, onPointerDown: handleResizePointerDown })] }) })] })) : null] }));
 }
 //# sourceMappingURL=ReportMarkersLayer.js.map

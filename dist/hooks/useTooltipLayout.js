@@ -1,14 +1,18 @@
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { getTooltipAnchorStyle, getTooltipPosition } from "../utils/coordinates.js";
-export function useTooltipLayout(anchor, expanded, visible) {
+export function useTooltipLayout(anchor, expanded, visible, layoutOptions) {
     const elementRef = useRef(null);
     const [measuredHeight, setMeasuredHeight] = useState(null);
+    const hasFixedHeight = layoutOptions?.customHeight !== undefined;
     const setTooltipElement = useCallback((node) => {
         elementRef.current = node;
     }, []);
     useLayoutEffect(() => {
         if (!visible) {
             setMeasuredHeight(null);
+            return;
+        }
+        if (hasFixedHeight) {
             return;
         }
         const node = elementRef.current;
@@ -24,19 +28,20 @@ export function useTooltipLayout(anchor, expanded, visible) {
         return () => {
             resizeObserver.disconnect();
         };
-    }, [visible, anchor?.left, anchor?.top, expanded]);
+    }, [hasFixedHeight, visible, anchor?.left, anchor?.top, expanded, layoutOptions?.customWidth]);
     const layout = useMemo(() => {
         if (!anchor || !visible) {
             return null;
         }
         const position = getTooltipPosition(anchor, expanded, {
-            height: measuredHeight ?? undefined,
+            width: layoutOptions?.customWidth,
+            height: layoutOptions?.customHeight ?? measuredHeight ?? undefined,
         });
         return {
             position,
             anchorStyle: getTooltipAnchorStyle(position.placement),
         };
-    }, [anchor, expanded, measuredHeight, visible]);
+    }, [anchor, expanded, layoutOptions?.customHeight, layoutOptions?.customWidth, measuredHeight, visible]);
     return {
         layout,
         setTooltipElement,

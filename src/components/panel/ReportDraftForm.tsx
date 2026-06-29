@@ -5,7 +5,9 @@ import { getDraftMarkerPosition } from "@/utils/coordinates.js";
 import { FeedbackComposer } from "./feedback/FeedbackComposer.js";
 
 const TOOLTIP_SURFACE_CLASS =
-    "overflow-hidden rounded-[12px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-blackOpacity700)] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[20px]";
+    "overflow-hidden rounded-[12px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface-overlay)] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[20px]";
+// ("overflow-hidden rounded-[12px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface-overlay)] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[20px]");
+// "overflow-hidden rounded-[12px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-blackOpacity700)] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[20px]";
 const EXPANDED_TOOLTIP_ANCHOR_CLASS = "pointer-events-auto fixed z-[1000001]";
 
 export function ReportDraftForm() {

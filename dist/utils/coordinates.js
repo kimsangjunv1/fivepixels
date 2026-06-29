@@ -197,10 +197,38 @@ export function resolveTooltipAnchor(markers, reportId) {
     return markers.find((marker) => marker.report.id === reportId) ?? null;
 }
 const TOOLTIP_PREVIEW_WIDTH = 260;
-const TOOLTIP_EXPANDED_WIDTH = 320;
+export const TOOLTIP_EXPANDED_WIDTH = 320;
+export const TOOLTIP_EXPANDED_MIN_WIDTH = 260;
+export const TOOLTIP_EXPANDED_MIN_HEIGHT = 180;
+export const TOOLTIP_EXPANDED_DEFAULT_MAX_HEIGHT = 512;
 export const TOOLTIP_MARGIN = 16;
 const TOOLTIP_PREVIEW_HEIGHT_ESTIMATE = 140;
 const TOOLTIP_EXPANDED_HEIGHT_ESTIMATE = 320;
+export function getTooltipExpandedSizeLimits() {
+    if (typeof window === "undefined") {
+        return {
+            minWidth: TOOLTIP_EXPANDED_MIN_WIDTH,
+            minHeight: TOOLTIP_EXPANDED_MIN_HEIGHT,
+            maxWidth: 600,
+            maxHeight: TOOLTIP_EXPANDED_DEFAULT_MAX_HEIGHT,
+        };
+    }
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    return {
+        minWidth: TOOLTIP_EXPANDED_MIN_WIDTH,
+        minHeight: TOOLTIP_EXPANDED_MIN_HEIGHT,
+        maxWidth: Math.max(TOOLTIP_EXPANDED_MIN_WIDTH, viewportWidth - TOOLTIP_MARGIN * 2),
+        maxHeight: Math.max(TOOLTIP_EXPANDED_MIN_HEIGHT, viewportHeight - TOOLTIP_MARGIN * 2),
+    };
+}
+export function clampTooltipExpandedSize(width, height) {
+    const limits = getTooltipExpandedSizeLimits();
+    return {
+        width: Math.min(Math.max(width, limits.minWidth), limits.maxWidth),
+        height: Math.min(Math.max(height, limits.minHeight), limits.maxHeight),
+    };
+}
 function getTooltipHeightEstimate(expanded) {
     return expanded ? TOOLTIP_EXPANDED_HEIGHT_ESTIMATE : TOOLTIP_PREVIEW_HEIGHT_ESTIMATE;
 }
@@ -248,7 +276,7 @@ export function getTooltipAnchorStyle(placement) {
     };
 }
 export function getTooltipPosition(anchor, expanded, options) {
-    const width = expanded ? TOOLTIP_EXPANDED_WIDTH : TOOLTIP_PREVIEW_WIDTH;
+    const width = options?.width ?? (expanded ? TOOLTIP_EXPANDED_WIDTH : TOOLTIP_PREVIEW_WIDTH);
     const viewportWidth = options?.viewportWidth ?? window.innerWidth;
     const viewportHeight = options?.viewportHeight ?? window.innerHeight;
     const hasMeasuredHeight = options?.height !== undefined;

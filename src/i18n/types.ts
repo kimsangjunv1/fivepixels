@@ -41,6 +41,7 @@ export type ReportMessages = {
         tabSettings: string;
         resizeWidthAriaLabel: string;
         resizeHeightAriaLabel: string;
+        resizeAriaLabel: string;
         resetSize: string;
         resetSizeTitle: string;
     };
@@ -233,6 +234,7 @@ export type ReportMessages = {
         moreIssuesBelow: (count: number) => string;
         moreIssuesLeft: (count: number) => string;
         moreIssuesRight: (count: number) => string;
+        resizeAriaLabel: string;
     };
     defaults: {
         fields: {

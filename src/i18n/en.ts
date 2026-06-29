@@ -35,6 +35,7 @@ export const en: ReportMessages = {
         tabSettings: "Settings",
         resizeWidthAriaLabel: "Resize panel width",
         resizeHeightAriaLabel: "Resize panel height",
+        resizeAriaLabel: "Resize panel",
         resetSize: "Reset panel size",
         resetSizeTitle: "Restore default width and height",
     },
@@ -251,6 +252,7 @@ export const en: ReportMessages = {
         moreIssuesBelow: (count) => `${count} more issues below`,
         moreIssuesLeft: (count) => `${count} more issues to the left`,
         moreIssuesRight: (count) => `${count} more issues to the right`,
+        resizeAriaLabel: "Resize tooltip",
     },
     defaults: {
         fields: {

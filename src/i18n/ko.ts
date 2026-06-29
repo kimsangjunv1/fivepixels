@@ -35,6 +35,7 @@ export const ko: ReportMessages = {
         tabSettings: "설정",
         resizeWidthAriaLabel: "패널 너비 조절",
         resizeHeightAriaLabel: "패널 높이 조절",
+        resizeAriaLabel: "패널 크기 조절",
         resetSize: "패널 크기 초기화",
         resetSizeTitle: "너비와 높이를 기본값으로 되돌립니다",
     },
@@ -251,6 +252,7 @@ export const ko: ReportMessages = {
         moreIssuesBelow: (count) => `아래에 ${count}개의 이슈가 더 있어요`,
         moreIssuesLeft: (count) => `왼쪽에 ${count}개의 이슈가 더 있어요`,
         moreIssuesRight: (count) => `오른쪽에 ${count}개의 이슈가 더 있어요`,
+        resizeAriaLabel: "툴팁 크기 조절",
     },
     defaults: {
         fields: {

@@ -33,6 +33,7 @@ export const en = {
         tabSettings: "Settings",
         resizeWidthAriaLabel: "Resize panel width",
         resizeHeightAriaLabel: "Resize panel height",
+        resizeAriaLabel: "Resize panel",
         resetSize: "Reset panel size",
         resetSizeTitle: "Restore default width and height",
     },
@@ -177,8 +178,8 @@ export const en = {
         dark: "Dark",
     },
     questionThreadOption: {
-        expanded: "Expanded",
-        collapsed: "Collapsed",
+        expanded: "Open by default",
+        collapsed: "Collapsed by default",
     },
     command: {
         title: "Command",
@@ -249,6 +250,7 @@ export const en = {
         moreIssuesBelow: (count) => `${count} more issues below`,
         moreIssuesLeft: (count) => `${count} more issues to the left`,
         moreIssuesRight: (count) => `${count} more issues to the right`,
+        resizeAriaLabel: "Resize tooltip",
     },
     defaults: {
         fields: {

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useNativeHover } from "@/hooks/useNativeHover.js";
 import { useTooltipLayout } from "@/hooks/useTooltipLayout.js";
+import { useTooltipResize } from "@/hooks/useTooltipResize.js";
 import { useReport } from "@/providers/reportContext.js";
 import type { Marker, MarkerOverflowHint } from "@/types/report-ui.js";
 import type { ReportFeedback } from "@/types/report.js";
@@ -13,6 +14,9 @@ import { FeedbackHoverCard } from "@/components/panel/feedback/FeedbackHoverCard
 import { FeedbackIssuePinnedHeader } from "@/components/panel/feedback/FeedbackIssuePinnedHeader.js";
 import { buildConfirmAuthorOptions, getReplyCount, shouldShowCaseReplyComposer } from "@/utils/feedbackThread.js";
 import { FeedbackThread } from "@/components/panel/feedback/FeedbackThread.js";
+import { CornerResizeGhost } from "@/components/ui/CornerResizeGhost.js";
+import { CornerResizeHandle } from "@/components/ui/CornerResizeHandle.js";
+import { TOOLTIP_EXPANDED_DEFAULT_MAX_HEIGHT } from "@/utils/coordinates.js";
 
 const TOOLTIP_SURFACE_CLASS = "overflow-hidden rounded-[12px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] shadow-[var(--adaptive-popup-shadow)]";
 const TOOLTIP_FIXED_CLASS = `fixed z-[1000001] ${TOOLTIP_SURFACE_CLASS}`;
@@ -233,6 +237,7 @@ export function ReportMarkersLayer() {
     );
 
     const tooltipContainerRef = useRef<HTMLElement | null>(null);
+    const tooltipSurfaceRef = useRef<HTMLDivElement | null>(null);
 
     const expandedTooltipHoverRef = useNativeHover<HTMLDivElement>({
         onEnter: () => {
@@ -266,6 +271,17 @@ export function ReportMarkersLayer() {
     }, [activeReplyReport, authors, isCreatorQuestionComposer]);
 
     const isExpandedTooltip = Boolean(activeReplyReport && tooltipReport && activeReplyReport.id === tooltipReport.id);
+
+    const { customSize, isResizing, ghostRef, handleResizePointerDown, resetTooltipSize } = useTooltipResize({
+        enabled: isExpandedTooltip,
+        tooltipRef: tooltipSurfaceRef,
+    });
+
+    useEffect(() => {
+        if (!activeReplyReportId) {
+            resetTooltipSize();
+        }
+    }, [activeReplyReportId, resetTooltipSize]);
 
     useEffect(() => {
         if (!activeReplyReportId) {
@@ -343,7 +359,10 @@ export function ReportMarkersLayer() {
     }, []);
 
     const showTooltip = Boolean(tooltipReport && tooltipAnchor);
-    const { layout: tooltipLayout, setTooltipElement } = useTooltipLayout(tooltipAnchor, isExpandedTooltip, showTooltip);
+    const { layout: tooltipLayout, setTooltipElement } = useTooltipLayout(tooltipAnchor, isExpandedTooltip, showTooltip, {
+        customWidth: customSize?.width,
+        customHeight: customSize?.height,
+    });
     const tooltipPosition = tooltipLayout?.position ?? null;
     const tooltipAnchorStyle = tooltipLayout?.anchorStyle;
 
@@ -421,28 +440,38 @@ export function ReportMarkersLayer() {
             ) : null}
 
             {showTooltip && isExpandedTooltip && tooltipReport && tooltipPosition && tooltipAnchorStyle && activeReplyReport ? (
-                <div
-                    ref={bindExpandedTooltipRef}
-                    data-fivepixels-interactive=""
-                    className={EXPANDED_TOOLTIP_ANCHOR_CLASS}
-                    style={{
-                        left: tooltipPosition.left,
-                        top: tooltipPosition.top,
-                        width: tooltipPosition.width,
-                        ...tooltipAnchorStyle,
-                    }}
-                >
+                <>
+                    {isResizing ? <CornerResizeGhost ghostRef={ghostRef} /> : null}
+
                     <div
-                        className={TOOLTIP_SURFACE_CLASS}
+                        ref={bindExpandedTooltipRef}
+                        data-fivepixels-interactive=""
+                        className={EXPANDED_TOOLTIP_ANCHOR_CLASS}
                         style={{
-                            pointerEvents: "auto",
+                            left: tooltipPosition.left,
+                            top: tooltipPosition.top,
+                            width: tooltipPosition.width,
+                            ...(customSize?.height !== undefined ? { height: customSize.height } : null),
+                            ...tooltipAnchorStyle,
                         }}
                     >
                         <div
-                            onClick={(event) => event.stopPropagation()}
-                            onPointerDown={(event) => event.stopPropagation()}
-                            className="flex max-h-[512px] flex-col"
+                            ref={tooltipSurfaceRef}
+                            className={`relative ${TOOLTIP_SURFACE_CLASS}`}
+                            style={{
+                                pointerEvents: "auto",
+                                height: customSize?.height,
+                            }}
                         >
+                            <div
+                                onClick={(event) => event.stopPropagation()}
+                                onPointerDown={(event) => event.stopPropagation()}
+                                className="flex min-h-0 flex-col"
+                                style={{
+                                    maxHeight: customSize?.height ?? TOOLTIP_EXPANDED_DEFAULT_MAX_HEIGHT,
+                                    height: customSize?.height,
+                                }}
+                            >
                             <FeedbackIssuePinnedHeader
                                 report={activeReplyReport}
                                 locale={locale}
@@ -497,9 +526,16 @@ export function ReportMarkersLayer() {
                                     </section>
                                 ) : null}
                             </div>
+                            </div>
+
+                            <CornerResizeHandle
+                                corner="bottom-right"
+                                ariaLabel={messages.marker.resizeAriaLabel}
+                                onPointerDown={handleResizePointerDown}
+                            />
                         </div>
                     </div>
-                </div>
+                </>
             ) : null}
         </>
     );

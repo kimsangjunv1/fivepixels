@@ -12,7 +12,21 @@ export declare function getMarkerFromReport(report: ReportFeedback, currentScrol
 export declare function getDraftMarkerPosition(draft: Pick<DraftReport, "clientX" | "clientY" | "elementXRatio" | "elementYRatio">, selectedTarget: TargetSnapshot | null): MarkerPosition;
 export declare function resolveMarkerOverflowHints(markers: Marker[]): MarkerOverflowHint[];
 export declare function resolveTooltipAnchor(markers: Marker[], reportId: string | null): Marker | null;
+export declare const TOOLTIP_EXPANDED_WIDTH = 320;
+export declare const TOOLTIP_EXPANDED_MIN_WIDTH = 260;
+export declare const TOOLTIP_EXPANDED_MIN_HEIGHT = 180;
+export declare const TOOLTIP_EXPANDED_DEFAULT_MAX_HEIGHT = 512;
 export declare const TOOLTIP_MARGIN = 16;
+export declare function getTooltipExpandedSizeLimits(): {
+    minWidth: number;
+    minHeight: number;
+    maxWidth: number;
+    maxHeight: number;
+};
+export declare function clampTooltipExpandedSize(width: number, height: number): {
+    width: number;
+    height: number;
+};
 export type TooltipPlacement = "above" | "below";
 export declare function resolveTooltipPlacement(anchor: Pick<Marker, "top">, height: number, viewportHeight?: number): TooltipPlacement;
 export declare function getTooltipAnchorStyle(placement: TooltipPlacement): {
@@ -24,6 +38,7 @@ export declare function getTooltipAnchorStyle(placement: TooltipPlacement): {
 };
 export declare function getTooltipPosition(anchor: Pick<Marker, "left" | "top">, expanded: boolean, options?: {
     height?: number;
+    width?: number;
     placement?: TooltipPlacement;
     viewportWidth?: number;
     viewportHeight?: number;
