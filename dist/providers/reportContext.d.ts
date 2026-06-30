@@ -90,6 +90,8 @@ declare const ReportContext: import("react").Context<{
     pickTargetContextMenu: import("../types/report-ui").PickTargetContextMenuState | null;
     contextMenuElementKey: string | null;
     savedProbeEdits: Record<string, import("../types/report-ui").SavedProbeEntry>;
+    savedProbeDeletions: Record<string, import("../types/report-ui").SavedProbeDeletion>;
+    hasProbeSessionChanges: boolean;
     savedProbeCompareMode: import("../types/report-ui").PickProbeCompareMode;
     closePickProbe: () => void;
     closePickTargetContextMenu: () => void;
@@ -280,6 +282,8 @@ export declare function useReport(): {
     pickTargetContextMenu: import("../types/report-ui").PickTargetContextMenuState | null;
     contextMenuElementKey: string | null;
     savedProbeEdits: Record<string, import("../types/report-ui").SavedProbeEntry>;
+    savedProbeDeletions: Record<string, import("../types/report-ui").SavedProbeDeletion>;
+    hasProbeSessionChanges: boolean;
     savedProbeCompareMode: import("../types/report-ui").PickProbeCompareMode;
     closePickProbe: () => void;
     closePickTargetContextMenu: () => void;

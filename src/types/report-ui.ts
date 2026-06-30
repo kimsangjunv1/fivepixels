@@ -65,6 +65,13 @@ export type SavedProbeEntry = {
     originalInputValue: string | null;
 };
 
+export type SavedProbeDeletion = {
+    elementKey: string;
+    outerHTML: string;
+    parentSelector: string;
+    childIndex: number;
+};
+
 export type ProbeOriginalSnapshot = {
     style: string | null;
     innerHTML: string;

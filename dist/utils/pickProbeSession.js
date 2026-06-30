@@ -30,6 +30,40 @@ export function captureProbeOriginalSnapshot(element) {
         inputValue: isTextInput ? element.value : null,
     };
 }
+export function captureSavedProbeDeletion(element, elementKey) {
+    const parent = element.parentElement;
+    if (!parent) {
+        return null;
+    }
+    const childIndex = Array.from(parent.children).indexOf(element);
+    if (childIndex < 0) {
+        return null;
+    }
+    return {
+        elementKey,
+        outerHTML: element.outerHTML,
+        parentSelector: generateCssSelector(parent),
+        childIndex,
+    };
+}
+export function restoreSavedProbeDeletion(entry) {
+    if (findElementByProbeKey(entry.elementKey)) {
+        return null;
+    }
+    const parent = findElementByTargetSelector(entry.parentSelector);
+    if (!parent) {
+        return null;
+    }
+    const template = document.createElement("template");
+    template.innerHTML = entry.outerHTML;
+    const restored = template.content.firstElementChild;
+    if (!(restored instanceof HTMLElement)) {
+        return null;
+    }
+    const referenceChild = parent.children[entry.childIndex] ?? null;
+    parent.insertBefore(restored, referenceChild);
+    return restored;
+}
 export function restoreProbeElementOriginal(element, entry) {
     if (entry.originalStyle === null) {
         element.removeAttribute("style");

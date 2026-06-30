@@ -2,7 +2,7 @@ import { type MouseEvent } from "react";
 import type { DeepPartialReportMessages } from "../i18n/types.js";
 import type { ReportLocale } from "../i18n/types.js";
 import type { CreateReportFeedbackPayload, CreateReplyPayload, ReportAppearance, ReportAuthor, ReportEvent, ReportFeedback, ReportField, ReportGitHubConfig, ReportIdentify, ReportListAllParams, ReportListAllResult, ReportReply, QuestionThreadDisplay, UpdateReportFeedbackPayload } from "../types/report.js";
-import type { DraftReport, EditableDraft, HoverPointer, Marker, PendingFeedbackComposer, PickProbeCompareMode, PickProbeFieldKey, PickProbeValues, PickTargetContextMenuState, ReportMode, ReportPanelTab, SavedProbeEntry, TargetSnapshot } from "../types/report-ui.js";
+import type { DraftReport, EditableDraft, HoverPointer, Marker, PendingFeedbackComposer, PickProbeCompareMode, PickProbeFieldKey, PickProbeValues, PickTargetContextMenuState, ReportMode, ReportPanelTab, SavedProbeDeletion, SavedProbeEntry, TargetSnapshot } from "../types/report-ui.js";
 export type ReportStateConfig = {
     projectId: string;
     environment?: string;
@@ -127,6 +127,8 @@ export declare function useReportState({ projectId, environment, appVersion, app
     pickTargetContextMenu: PickTargetContextMenuState | null;
     contextMenuElementKey: string | null;
     savedProbeEdits: Record<string, SavedProbeEntry>;
+    savedProbeDeletions: Record<string, SavedProbeDeletion>;
+    hasProbeSessionChanges: boolean;
     savedProbeCompareMode: PickProbeCompareMode;
     closePickProbe: () => void;
     closePickTargetContextMenu: () => void;

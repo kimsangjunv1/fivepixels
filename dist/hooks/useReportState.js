@@ -17,7 +17,8 @@ const OVERLAY_HOVER_LEAVE_MS = 100;
 import { findPickTargetByPoint, getSelectableTargets, isSameHoverTarget, resolveFeedbackDocumentAnchor, toFeedbackHoverSnapshot, toPickSnapshot, toSnapshot, hasDirectReportId } from "../utils/dom.js";
 import { shouldInspectFontStyle } from "../utils/pickTargetInspect.js";
 import { applyPickProbeCompareMode, applyPickProbeValues, capturePickProbeValues, formatSavedProbeEditsSummary, getProposedChanges, } from "../utils/pickProbe.js";
-import { applySavedProbeEditsCompareMode, captureProbeOriginalSnapshot, createSavedProbeEntry, findElementByProbeKey, getPickProbeElementKey, restoreProbeElementOriginal, } from "../utils/pickProbeSession.js";
+import { applySavedProbeEditsCompareMode, captureProbeOriginalSnapshot, captureSavedProbeDeletion, createSavedProbeEntry, findElementByProbeKey, getPickProbeElementKey, restoreProbeElementOriginal, restoreSavedProbeDeletion, } from "../utils/pickProbeSession.js";
+import { playPickTargetDeleteAnimation } from "../utils/pickTargetDeleteAnimation.js";
 import { markerToTargetSnapshot } from "../utils/markerTarget.js";
 import { createInitialFieldValues, getFieldError, getFieldTags } from "../utils/fields.js";
 import { canEditReportCases, claimCaseAssignee, createReportCase, buildResolvedCasesUpdate, canActOnCase, getCaseAssigneeName, isValidFocusedCase, resolveDefaultFocusedCaseId } from "../utils/reportCases.js";
@@ -136,6 +137,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
     const [pickTargetContextMenu, setPickTargetContextMenu] = useState(null);
     const [contextMenuElementKey, setContextMenuElementKey] = useState(null);
     const [savedProbeEdits, setSavedProbeEdits] = useState({});
+    const [savedProbeDeletions, setSavedProbeDeletions] = useState({});
     const [savedProbeCompareMode, setSavedProbeCompareModeState] = useState("after");
     const pickProbeRestoreRef = useRef(null);
     const pickProbeOriginalSnapshotRef = useRef(null);
@@ -536,6 +538,12 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         }
     }, [closePickProbePanelOnly]);
     const revertAllSavedProbeEdits = useCallback(() => {
+        setSavedProbeDeletions((deletions) => {
+            for (const entry of Object.values(deletions)) {
+                restoreSavedProbeDeletion(entry);
+            }
+            return {};
+        });
         setSavedProbeEdits((current) => {
             for (const entry of Object.values(current)) {
                 const element = findElementByProbeKey(entry.elementKey);
@@ -547,6 +555,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         });
         setSavedProbeCompareModeState("after");
     }, []);
+    const hasProbeSessionChanges = useMemo(() => Object.keys(savedProbeEdits).length > 0 || Object.keys(savedProbeDeletions).length > 0, [savedProbeDeletions, savedProbeEdits]);
     const setSavedProbeCompareMode = useCallback((compareMode) => {
         setSavedProbeCompareModeState(compareMode);
         setSavedProbeEdits((current) => {
@@ -671,18 +680,9 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             return;
         }
         const shouldClearDraft = draftElementRef.current === element;
-        element.remove();
+        const rect = element.getBoundingClientRect();
+        const deletion = elementKey ? captureSavedProbeDeletion(element, elementKey) : null;
         contextMenuElementRef.current = null;
-        if (elementKey) {
-            setSavedProbeEdits((current) => {
-                if (!current[elementKey]) {
-                    return current;
-                }
-                const next = { ...current };
-                delete next[elementKey];
-                return next;
-            });
-        }
         if (selectedElementRef.current === element) {
             selectedElementRef.current = null;
             hoveredElementRef.current = null;
@@ -690,10 +690,22 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             setHoveredTarget(null);
             setHoverPointer(null);
         }
-        if (shouldClearDraft) {
-            draftElementRef.current = null;
-            setDraft(null);
-        }
+        void playPickTargetDeleteAnimation(rect).then(() => {
+            if (!element.isConnected) {
+                return;
+            }
+            element.remove();
+            if (deletion) {
+                setSavedProbeDeletions((current) => ({
+                    ...current,
+                    [deletion.elementKey]: deletion,
+                }));
+            }
+            if (shouldClearDraft) {
+                draftElementRef.current = null;
+                setDraft(null);
+            }
+        });
     }, [closePickTargetContextMenu, resetPickProbeState]);
     useEffect(() => {
         if (mode !== "report") {
@@ -1653,6 +1665,8 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         pickTargetContextMenu,
         contextMenuElementKey,
         savedProbeEdits,
+        savedProbeDeletions,
+        hasProbeSessionChanges,
         savedProbeCompareMode,
         closePickProbe,
         closePickTargetContextMenu,

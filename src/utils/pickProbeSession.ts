@@ -1,5 +1,5 @@
 import type { ReportTargetType } from "@/types/report.js";
-import type { PickProbeCompareMode, PickProbeValues, ProbeOriginalSnapshot, SavedProbeEntry } from "@/types/report-ui.js";
+import type { PickProbeCompareMode, PickProbeValues, ProbeOriginalSnapshot, SavedProbeDeletion, SavedProbeEntry } from "@/types/report-ui.js";
 import { applyPickProbeCompareMode, applyPickProbeValues } from "./pickProbe.js";
 import { getFeedbackTargetSelector, resolveReportType } from "./dom.js";
 import { findElementByTargetSelector, generateCssSelector } from "./targetSelector.js";
@@ -41,6 +41,52 @@ export function captureProbeOriginalSnapshot(element: HTMLElement): ProbeOrigina
         textContent: element.textContent,
         inputValue: isTextInput ? element.value : null,
     };
+}
+
+export function captureSavedProbeDeletion(element: HTMLElement, elementKey: string): SavedProbeDeletion | null {
+    const parent = element.parentElement;
+
+    if (!parent) {
+        return null;
+    }
+
+    const childIndex = Array.from(parent.children).indexOf(element);
+
+    if (childIndex < 0) {
+        return null;
+    }
+
+    return {
+        elementKey,
+        outerHTML: element.outerHTML,
+        parentSelector: generateCssSelector(parent),
+        childIndex,
+    };
+}
+
+export function restoreSavedProbeDeletion(entry: SavedProbeDeletion) {
+    if (findElementByProbeKey(entry.elementKey)) {
+        return null;
+    }
+
+    const parent = findElementByTargetSelector(entry.parentSelector);
+
+    if (!parent) {
+        return null;
+    }
+
+    const template = document.createElement("template");
+    template.innerHTML = entry.outerHTML;
+    const restored = template.content.firstElementChild;
+
+    if (!(restored instanceof HTMLElement)) {
+        return null;
+    }
+
+    const referenceChild = parent.children[entry.childIndex] ?? null;
+    parent.insertBefore(restored, referenceChild);
+
+    return restored;
 }
 
 export function restoreProbeElementOriginal(element: HTMLElement, entry: SavedProbeEntry) {

@@ -3,6 +3,8 @@ import {
     captureProbeOriginalSnapshot,
     createSavedProbeEntry,
     restoreProbeElementOriginal,
+    restoreSavedProbeDeletion,
+    captureSavedProbeDeletion,
 } from "./pickProbeSession.js";
 
 const probeColors = {
@@ -172,5 +174,20 @@ describe("pickProbeSession", () => {
         ));
 
         expect(element.textContent).toBe("Original");
+    });
+
+    it("restores a deleted element back into the DOM", () => {
+        document.body.innerHTML = `<main><p id="target">Remove me</p></main>`;
+        const element = document.getElementById("target") as HTMLElement;
+        const deletion = captureSavedProbeDeletion(element, "selector:#target");
+
+        expect(deletion).not.toBeNull();
+
+        element.remove();
+
+        const restored = restoreSavedProbeDeletion(deletion!);
+
+        expect(restored?.textContent).toBe("Remove me");
+        expect(document.getElementById("target")).not.toBeNull();
     });
 });

@@ -16,16 +16,19 @@ function ProbeEditModeDivider() {
 
 export function ProbeEditModeBanner() {
     const {
-        savedProbeEdits,
+        hasProbeSessionChanges,
         savedProbeCompareMode,
         setSavedProbeCompareMode,
         revertAllSavedProbeEdits,
+        savedProbeEdits,
         messages,
     } = useReport();
 
-    if (Object.keys(savedProbeEdits).length === 0) {
+    if (!hasProbeSessionChanges) {
         return null;
     }
+
+    const showCompare = Object.keys(savedProbeEdits).length > 0;
 
     return (
         <section
@@ -45,14 +48,18 @@ export function ProbeEditModeBanner() {
             >
                 {messages.panel.probeEditModeReset}
             </button>
-            <ProbeEditModeDivider />
-            <PickTargetCompareSegment
-                mode={savedProbeCompareMode}
-                onChange={setSavedProbeCompareMode}
-                beforeLabel={messages.pickTarget.probeBefore}
-                afterLabel={messages.pickTarget.probeAfter}
-                tone="inverse"
-            />
+            {showCompare ? (
+                <>
+                    <ProbeEditModeDivider />
+                    <PickTargetCompareSegment
+                        mode={savedProbeCompareMode}
+                        onChange={setSavedProbeCompareMode}
+                        beforeLabel={messages.pickTarget.probeBefore}
+                        afterLabel={messages.pickTarget.probeAfter}
+                        tone="inverse"
+                    />
+                </>
+            ) : null}
         </section>
     );
 }
