@@ -2,7 +2,7 @@ import { type MouseEvent } from "react";
 import type { DeepPartialReportMessages } from "../i18n/types.js";
 import type { ReportLocale } from "../i18n/types.js";
 import type { CreateReportFeedbackPayload, CreateReplyPayload, ReportAppearance, ReportAuthor, ReportEvent, ReportFeedback, ReportField, ReportGitHubConfig, ReportIdentify, ReportListAllParams, ReportListAllResult, ReportReply, QuestionThreadDisplay, UpdateReportFeedbackPayload } from "../types/report.js";
-import type { DraftReport, EditableDraft, Marker, PendingFeedbackComposer, ReportMode, ReportPanelTab, TargetSnapshot } from "../types/report-ui.js";
+import type { DraftReport, EditableDraft, HoverPointer, Marker, PendingFeedbackComposer, PickProbeCompareMode, PickProbeFieldKey, PickProbeValues, ReportMode, ReportPanelTab, TargetSnapshot } from "../types/report-ui.js";
 export type ReportStateConfig = {
     projectId: string;
     environment?: string;
@@ -117,7 +117,18 @@ export declare function useReportState({ projectId, environment, appVersion, app
     setErrorMessage: import("react").Dispatch<import("react").SetStateAction<string>>;
     draft: DraftReport | null;
     hoveredTarget: TargetSnapshot | null;
+    hoverPointer: HoverPointer | null;
     selectedTarget: TargetSnapshot | null;
+    pickProbeOpen: boolean;
+    pickProbeValues: PickProbeValues | null;
+    pickProbeCompareMode: PickProbeCompareMode;
+    pickProbeHasEdits: boolean;
+    togglePickProbe: () => void;
+    closePickProbe: () => void;
+    setPickProbeCompareMode: (mode: PickProbeCompareMode) => void;
+    updatePickProbeValue: (key: PickProbeFieldKey, value: string) => void;
+    resetPickProbeValues: () => void;
+    insertPickProbeSummaryToDraft: () => void;
     markers: Marker[];
     selectedReport: ReportFeedback;
     editingReportId: string | null;

@@ -18,6 +18,9 @@ export function ReportDraftForm() {
         authors,
         isCreating,
         selectedTarget,
+        pickProbeOpen,
+        togglePickProbe,
+        messages,
         updateDraftCase,
         addDraftCase,
         removeDraftCase,
@@ -42,6 +45,10 @@ export function ReportDraftForm() {
             authors={authors}
             isCreating={isCreating}
             selectedTarget={selectedTarget}
+            pickProbeOpen={pickProbeOpen}
+            togglePickProbe={togglePickProbe}
+            probeEditLabel={messages.pickTarget.probeEdit}
+            probeCloseLabel={messages.pickTarget.probeClose}
             updateDraftCase={updateDraftCase}
             addDraftCase={addDraftCase}
             removeDraftCase={removeDraftCase}
@@ -63,6 +70,10 @@ type ReportDraftFormContentProps = {
     authors: ReturnType<typeof useReport>["authors"];
     isCreating: boolean;
     selectedTarget: ReturnType<typeof useReport>["selectedTarget"];
+    pickProbeOpen: boolean;
+    togglePickProbe: () => void;
+    probeEditLabel: string;
+    probeCloseLabel: string;
     updateDraftCase: (caseId: string, text: string) => void;
     addDraftCase: () => void;
     removeDraftCase: (caseId: string) => void;
@@ -82,6 +93,10 @@ function ReportDraftFormContent({
     authors,
     isCreating,
     selectedTarget,
+    pickProbeOpen,
+    togglePickProbe,
+    probeEditLabel,
+    probeCloseLabel,
     updateDraftCase,
     addDraftCase,
     removeDraftCase,
@@ -123,6 +138,21 @@ function ReportDraftFormContent({
                     pointerEvents: "auto",
                 }}
             >
+                <div className="flex items-center justify-between gap-[8px] border-b border-[var(--adaptive-border-subtle)] px-[12px] py-[8px]">
+                    <p className="text-[12px] font-semibold text-[var(--adaptive-black900)]">Feedback</p>
+                    <button
+                        type="button"
+                        data-fivepixels-interactive=""
+                        onClick={togglePickProbe}
+                        className={`rounded-[8px] px-[10px] py-[4px] text-[11px] font-semibold ${
+                            pickProbeOpen
+                                ? "bg-[var(--adaptive-blue500)] text-white"
+                                : "border border-[var(--adaptive-border-subtle)] text-[var(--adaptive-black700)]"
+                        }`}
+                    >
+                        {pickProbeOpen ? probeCloseLabel : probeEditLabel}
+                    </button>
+                </div>
                 {draft.targetSelector && draft.suggestedReportId ? (
                     <PickTargetSnippet suggestedReportId={draft.suggestedReportId} reportType={draft.reportType} />
                 ) : null}

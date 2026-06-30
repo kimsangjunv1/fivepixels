@@ -1,5 +1,5 @@
 import { TARGET_SELECTOR } from "../constants/report.js";
-import { getPickTargetFontStyle, getPickTargetReportIdAttribute, getPickTargetTagName } from "./pickTargetInspect.js";
+import { getPickTargetBoxStyle, getPickTargetFontStyle, getPickTargetReportIdAttribute, getPickTargetTagName } from "./pickTargetInspect.js";
 import { createAutoPickReportId, generateCssSelector, generateSuggestedReportId, isPickableElement, } from "./targetSelector.js";
 export function escapeAttribute(value) {
     return value.split("\\").join("\\\\").split('"').join('\\"');
@@ -70,15 +70,26 @@ function isSamePickTargetFontStyle(previous, next) {
     if (!previous || !next) {
         return !previous && !next;
     }
-    return (previous.fontSize === next.fontSize &&
+    return (previous.fontFamily === next.fontFamily &&
+        previous.fontSize === next.fontSize &&
         previous.fontWeight === next.fontWeight &&
         previous.lineHeight === next.lineHeight);
+}
+function isSamePickTargetBoxStyle(previous, next) {
+    if (previous === next) {
+        return true;
+    }
+    if (!previous || !next) {
+        return !previous && !next;
+    }
+    return previous.padding === next.padding && previous.margin === next.margin && previous.display === next.display;
 }
 function enrichPickTargetInspect(element, snapshot) {
     return {
         ...snapshot,
         tagName: getPickTargetTagName(element),
         reportIdAttribute: getPickTargetReportIdAttribute(element),
+        boxStyle: getPickTargetBoxStyle(element),
         fontStyle: getPickTargetFontStyle(element),
     };
 }
@@ -98,6 +109,7 @@ export function isSameHoverTarget(previous, next) {
         previous.rect.height === next.rect.height &&
         previous.tagName === next.tagName &&
         previous.reportIdAttribute === next.reportIdAttribute &&
+        isSamePickTargetBoxStyle(previous.boxStyle, next.boxStyle) &&
         isSamePickTargetFontStyle(previous.fontStyle, next.fontStyle));
 }
 export function hasDirectReportId(element) {

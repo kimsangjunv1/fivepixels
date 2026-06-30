@@ -25,6 +25,23 @@ export type PickTargetBoxStyle = {
     margin: string;
 };
 
+export type HoverPointer = {
+    clientX: number;
+    clientY: number;
+};
+
+export type PickProbeFieldKey = "textContent" | "fontSize" | "padding" | "margin" | "lineHeight";
+
+export type PickProbeValues = Record<PickProbeFieldKey, string>;
+
+export type PickProbeCompareMode = "before" | "after";
+
+export type ProposedChange = {
+    key: PickProbeFieldKey;
+    before: string;
+    after: string;
+};
+
 export type TargetSnapshot = {
     id: string;
     type: ReportTargetType;

@@ -249,6 +249,24 @@ export type ReportMessages = {
         tooltipLineHeight: string;
         tooltipReportId: string;
         tooltipNoReportId: string;
+        probeEdit: string;
+        probeClose: string;
+        probeTitle: string;
+        probeText: string;
+        probeFontSize: string;
+        probePadding: string;
+        probeMargin: string;
+        probeLineHeight: string;
+        probeBefore: string;
+        probeAfter: string;
+        probeReset: string;
+        probeInsertSummary: string;
+        probeSummaryTitle: string;
+        probeChangeText: (before: string, after: string) => string;
+        probeChangeFontSize: (before: string, after: string) => string;
+        probeChangePadding: (before: string, after: string) => string;
+        probeChangeMargin: (before: string, after: string) => string;
+        probeChangeLineHeight: (before: string, after: string) => string;
     };
     marker: {
         detachedAriaLabel: string;

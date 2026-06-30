@@ -1,10 +1,12 @@
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import { useReport } from "@/providers/reportContext.js";
 import type { TargetSnapshot } from "@/types/report-ui.js";
-import { getHoverTooltipLayout } from "@/utils/hoverTooltipLayout.js";
+import { HOVER_TOOLTIP_MARGIN } from "@/utils/hoverTooltipLayout.js";
 
 const TOOLTIP_SURFACE_CLASS =
     "pointer-events-none fixed z-[1000002] min-w-[220px] max-w-[min(320px,calc(100vw-16px))] overflow-hidden rounded-[12px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface-overlay)] px-[12px] py-[10px] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[20px]";
+
+const POINTER_OFFSET = 12;
 
 type PickTargetHoverTooltipProps = {
     target: TargetSnapshot;
@@ -43,22 +45,47 @@ function ReportIdStatusIcon({ tagged }: { tagged: boolean }) {
     );
 }
 
+function getPointerTooltipLayout(clientX: number, clientY: number, tooltipRect: DOMRect) {
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    let left = clientX + POINTER_OFFSET;
+    let top = clientY + POINTER_OFFSET;
+
+    if (left + tooltipRect.width > viewportWidth - HOVER_TOOLTIP_MARGIN) {
+        left = clientX - POINTER_OFFSET - tooltipRect.width;
+    }
+
+    if (top + tooltipRect.height > viewportHeight - HOVER_TOOLTIP_MARGIN) {
+        top = clientY - POINTER_OFFSET - tooltipRect.height;
+    }
+
+    left = Math.min(Math.max(left, HOVER_TOOLTIP_MARGIN), Math.max(HOVER_TOOLTIP_MARGIN, viewportWidth - HOVER_TOOLTIP_MARGIN - tooltipRect.width));
+    top = Math.min(Math.max(top, HOVER_TOOLTIP_MARGIN), Math.max(HOVER_TOOLTIP_MARGIN, viewportHeight - HOVER_TOOLTIP_MARGIN - tooltipRect.height));
+
+    return { top, left };
+}
+
 export function PickTargetHoverTooltip({ target }: PickTargetHoverTooltipProps) {
-    const { messages } = useReport();
+    const { messages, hoverPointer } = useReport();
     const tooltipRef = useRef<HTMLDivElement | null>(null);
     const [layout, setLayout] = useState<{ top: number; left: number } | null>(null);
 
     const updateLayout = useCallback(() => {
         const tooltip = tooltipRef.current;
 
-        if (!tooltip) {
+        if (!tooltip || !hoverPointer) {
             return;
         }
 
-        setLayout(getHoverTooltipLayout(target.rect, tooltip.getBoundingClientRect()));
-    }, [target.rect]);
+        setLayout(getPointerTooltipLayout(hoverPointer.clientX, hoverPointer.clientY, tooltip.getBoundingClientRect()));
+    }, [hoverPointer]);
 
     useLayoutEffect(() => {
+        if (!hoverPointer) {
+            setLayout(null);
+            return;
+        }
+
         updateLayout();
         const frameId = window.requestAnimationFrame(updateLayout);
 
@@ -70,7 +97,11 @@ export function PickTargetHoverTooltip({ target }: PickTargetHoverTooltipProps) 
             window.removeEventListener("resize", updateLayout);
             window.removeEventListener("scroll", updateLayout, true);
         };
-    }, [target, updateLayout]);
+    }, [hoverPointer, target, updateLayout]);
+
+    if (!hoverPointer) {
+        return null;
+    }
 
     const tagName = target.tagName ?? "—";
     const sizeLabel = `${Math.round(target.rect.width)} × ${Math.round(target.rect.height)}`;
@@ -81,8 +112,8 @@ export function PickTargetHoverTooltip({ target }: PickTargetHoverTooltipProps) 
             ref={tooltipRef}
             className={TOOLTIP_SURFACE_CLASS}
             style={{
-                top: layout?.top ?? target.rect.top,
-                left: layout?.left ?? target.rect.left,
+                top: layout?.top ?? hoverPointer.clientY + POINTER_OFFSET,
+                left: layout?.left ?? hoverPointer.clientX + POINTER_OFFSET,
                 opacity: layout ? 1 : 0,
             }}
         >

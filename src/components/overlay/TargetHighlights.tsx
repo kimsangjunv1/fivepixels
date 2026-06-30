@@ -1,15 +1,21 @@
 import { FEEDBACK_HIGHLIGHT } from "@/constants/report.js";
 import type { TargetSnapshot } from "@/types/report-ui.js";
+import { PickTargetCompareChip } from "./PickTargetCompareChip.js";
 import { PickTargetHoverTooltip } from "./PickTargetHoverTooltip.js";
 
 type TargetHighlightsProps = {
     hoveredTarget: TargetSnapshot | null;
+    selectedTarget?: TargetSnapshot | null;
+    showHoverInspect?: boolean;
+    showSelectionHighlight?: boolean;
+    showPickProbeCompare?: boolean;
     previewTargets?: TargetSnapshot[];
     markerPreviewTargets?: TargetSnapshot[];
     activeMarkerTarget: TargetSnapshot | null;
 };
 
 const HOVER_HIGHLIGHT_KEY = "hover-active";
+const SELECTION_HIGHLIGHT_KEY = "selection-active";
 const ACTIVE_MARKER_HIGHLIGHT_KEY = "marker-active";
 
 function highlightLabel(target: TargetSnapshot) {
@@ -49,12 +55,14 @@ function HighlightBox({ target, showLabel }: { target: TargetSnapshot; showLabel
 
 export function TargetHighlights({
     hoveredTarget,
+    selectedTarget = null,
+    showHoverInspect = false,
+    showSelectionHighlight = false,
+    showPickProbeCompare = false,
     previewTargets = [],
     markerPreviewTargets = [],
     activeMarkerTarget,
 }: TargetHighlightsProps) {
-    const showHoveredTarget = hoveredTarget && !activeMarkerTarget;
-
     return (
         <>
             {previewTargets.map((target) => (
@@ -73,13 +81,23 @@ export function TargetHighlights({
                 />
             ))}
 
-            {showHoveredTarget ? (
+            {showHoverInspect && hoveredTarget ? (
                 <>
                     <HighlightBox
                         key={HOVER_HIGHLIGHT_KEY}
                         target={hoveredTarget}
                     />
                     <PickTargetHoverTooltip target={hoveredTarget} />
+                </>
+            ) : null}
+
+            {showSelectionHighlight && selectedTarget ? (
+                <>
+                    <HighlightBox
+                        key={SELECTION_HIGHLIGHT_KEY}
+                        target={selectedTarget}
+                    />
+                    {showPickProbeCompare ? <PickTargetCompareChip target={selectedTarget} /> : null}
                 </>
             ) : null}
 

@@ -10,9 +10,27 @@ export type ReportFilters = {
     reportType: ReportTargetType | "all";
 };
 export type PickTargetFontStyle = {
+    fontFamily: string;
     fontSize: string;
     fontWeight: string;
     lineHeight: string;
+};
+export type PickTargetBoxStyle = {
+    display: string;
+    padding: string;
+    margin: string;
+};
+export type HoverPointer = {
+    clientX: number;
+    clientY: number;
+};
+export type PickProbeFieldKey = "textContent" | "fontSize" | "padding" | "margin" | "lineHeight";
+export type PickProbeValues = Record<PickProbeFieldKey, string>;
+export type PickProbeCompareMode = "before" | "after";
+export type ProposedChange = {
+    key: PickProbeFieldKey;
+    before: string;
+    after: string;
 };
 export type TargetSnapshot = {
     id: string;
@@ -23,6 +41,7 @@ export type TargetSnapshot = {
     suggestedReportId?: string | null;
     tagName?: string;
     reportIdAttribute?: string | null;
+    boxStyle?: PickTargetBoxStyle;
     fontStyle?: PickTargetFontStyle | null;
 };
 export type DraftReport = {

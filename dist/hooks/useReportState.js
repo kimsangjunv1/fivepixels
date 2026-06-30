@@ -15,6 +15,7 @@ import { getFeedbackTargetElement, isFeedbackTargetVisible, scrollToFeedbackTarg
 const MARKER_HOVER_LEAVE_MS = 250;
 const OVERLAY_HOVER_LEAVE_MS = 100;
 import { findPickTargetByPoint, getSelectableTargets, isSameHoverTarget, resolveFeedbackDocumentAnchor, toFeedbackHoverSnapshot, toPickSnapshot, toSnapshot, hasDirectReportId } from "../utils/dom.js";
+import { applyPickProbeCompareMode, applyPickProbeValues, capturePickProbeValues, formatProposedChanges, getProposedChanges, } from "../utils/pickProbe.js";
 import { markerToTargetSnapshot } from "../utils/markerTarget.js";
 import { createInitialFieldValues, getFieldError, getFieldTags } from "../utils/fields.js";
 import { canEditReportCases, claimCaseAssignee, createReportCase, buildResolvedCasesUpdate, canActOnCase, getCaseAssigneeName, isValidFocusedCase, resolveDefaultFocusedCaseId } from "../utils/reportCases.js";
@@ -123,7 +124,13 @@ export function useReportState({ projectId, environment, appVersion, appearance,
     const [errorMessage, setErrorMessage] = useState("");
     const [draft, setDraft] = useState(null);
     const [hoveredTarget, setHoveredTarget] = useState(null);
+    const [hoverPointer, setHoverPointer] = useState(null);
     const [selectedTarget, setSelectedTarget] = useState(null);
+    const [pickProbeOpen, setPickProbeOpen] = useState(false);
+    const [pickProbeBaseline, setPickProbeBaseline] = useState(null);
+    const [pickProbeValues, setPickProbeValues] = useState(null);
+    const [pickProbeCompareMode, setPickProbeCompareModeState] = useState("after");
+    const pickProbeRestoreRef = useRef(null);
     const [markers, setMarkers] = useState([]);
     const [hoveredMarkerId, setHoveredMarkerId] = useState(null);
     const [activeReplyReportId, setActiveReplyReportId] = useState(null);
@@ -444,10 +451,118 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         overlayHoverLeaveTimeoutRef.current = window.setTimeout(() => {
             if (!hoveredElementRef.current) {
                 setHoveredTarget(null);
+                setHoverPointer(null);
             }
             overlayHoverLeaveTimeoutRef.current = null;
         }, OVERLAY_HOVER_LEAVE_MS);
     };
+    const refreshSelectedTargetSnapshot = useCallback(() => {
+        const element = selectedElementRef.current;
+        if (!element) {
+            return;
+        }
+        const snapshot = toFeedbackHoverSnapshot(element);
+        if (!snapshot) {
+            return;
+        }
+        setSelectedTarget(snapshot);
+        setHoveredTarget(snapshot);
+    }, []);
+    const restorePickProbeElement = useCallback(() => {
+        const element = selectedElementRef.current;
+        const restore = pickProbeRestoreRef.current;
+        if (!element || !restore) {
+            return;
+        }
+        if (restore.style === null) {
+            element.removeAttribute("style");
+        }
+        else {
+            element.setAttribute("style", restore.style);
+        }
+        if (restore.textContent !== null) {
+            element.textContent = restore.textContent;
+        }
+        pickProbeRestoreRef.current = null;
+        refreshSelectedTargetSnapshot();
+    }, [refreshSelectedTargetSnapshot]);
+    const resetPickProbeState = useCallback(() => {
+        restorePickProbeElement();
+        setPickProbeOpen(false);
+        setPickProbeBaseline(null);
+        setPickProbeValues(null);
+        setPickProbeCompareModeState("after");
+    }, [restorePickProbeElement]);
+    const pickProbeChanges = useMemo(() => {
+        if (!pickProbeBaseline || !pickProbeValues) {
+            return [];
+        }
+        return getProposedChanges(pickProbeBaseline, pickProbeValues);
+    }, [pickProbeBaseline, pickProbeValues]);
+    const pickProbeHasEdits = pickProbeChanges.length > 0;
+    const openPickProbe = useCallback(() => {
+        const element = selectedElementRef.current;
+        if (!element) {
+            return;
+        }
+        pickProbeRestoreRef.current = {
+            style: element.getAttribute("style"),
+            textContent: element.textContent,
+        };
+        const baseline = capturePickProbeValues(element);
+        setPickProbeBaseline(baseline);
+        setPickProbeValues(baseline);
+        setPickProbeCompareModeState("after");
+        setPickProbeOpen(true);
+    }, []);
+    const closePickProbe = useCallback(() => {
+        resetPickProbeState();
+    }, [resetPickProbeState]);
+    const togglePickProbe = useCallback(() => {
+        if (pickProbeOpen) {
+            closePickProbe();
+            return;
+        }
+        openPickProbe();
+    }, [closePickProbe, openPickProbe, pickProbeOpen]);
+    useEffect(() => {
+        if (mode !== "report") {
+            resetPickProbeState();
+        }
+    }, [mode, resetPickProbeState]);
+    const setPickProbeCompareMode = useCallback((mode) => {
+        const element = selectedElementRef.current;
+        if (!element || !pickProbeBaseline || !pickProbeValues) {
+            return;
+        }
+        applyPickProbeCompareMode(element, mode, pickProbeBaseline, pickProbeValues);
+        setPickProbeCompareModeState(mode);
+        refreshSelectedTargetSnapshot();
+    }, [pickProbeBaseline, pickProbeValues, refreshSelectedTargetSnapshot]);
+    const updatePickProbeValue = useCallback((key, value) => {
+        const element = selectedElementRef.current;
+        if (!element || !pickProbeBaseline || !pickProbeValues) {
+            return;
+        }
+        const nextValues = {
+            ...pickProbeValues,
+            [key]: value,
+        };
+        setPickProbeValues(nextValues);
+        if (pickProbeCompareMode === "after") {
+            applyPickProbeValues(element, nextValues);
+            refreshSelectedTargetSnapshot();
+        }
+    }, [pickProbeBaseline, pickProbeCompareMode, pickProbeValues, refreshSelectedTargetSnapshot]);
+    const resetPickProbeValues = useCallback(() => {
+        const element = selectedElementRef.current;
+        if (!element || !pickProbeBaseline) {
+            return;
+        }
+        setPickProbeValues(pickProbeBaseline);
+        applyPickProbeCompareMode(element, pickProbeCompareMode, pickProbeBaseline, pickProbeBaseline);
+        refreshSelectedTargetSnapshot();
+    }, [pickProbeBaseline, pickProbeCompareMode, refreshSelectedTargetSnapshot]);
     const stopEditing = () => {
         setEditingReportId(null);
         setEditableDraft(null);
@@ -770,6 +885,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             return;
         }
         clearOverlayHoverLeaveTimeout();
+        setHoverPointer({ clientX: event.clientX, clientY: event.clientY });
         const snapshot = toFeedbackHoverSnapshot(targetElement);
         setHoveredTarget((previous) => (isSameHoverTarget(previous, snapshot) ? previous : snapshot));
     };
@@ -777,6 +893,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         if (mode !== "report") {
             return;
         }
+        resetPickProbeState();
         const targetElement = findPickTargetByPoint(overlayRef.current, event.clientX, event.clientY);
         if (!targetElement) {
             setErrorMessage(messages.errors.clickPickTarget);
@@ -791,6 +908,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         }
         hoveredElementRef.current = targetElement;
         selectedElementRef.current = targetElement;
+        setHoverPointer(null);
         setHoveredTarget(snapshot);
         setSelectedTarget(snapshot);
         setErrorMessage("");
@@ -820,8 +938,10 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         });
     };
     const cancelDraft = () => {
+        resetPickProbeState();
         setDraft(null);
         setSelectedTarget(null);
+        setHoverPointer(null);
     };
     const updateDraftCase = (caseId, text) => {
         setDraft((current) => {
@@ -834,6 +954,26 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             };
         });
     };
+    const insertPickProbeSummaryToDraft = useCallback(() => {
+        if (!draft || pickProbeChanges.length === 0) {
+            return;
+        }
+        const summary = formatProposedChanges(pickProbeChanges, messages);
+        const firstCase = draft.cases[0];
+        if (!firstCase) {
+            return;
+        }
+        const nextText = firstCase.text.trim() ? `${firstCase.text.trim()}\n\n${summary}` : summary;
+        setDraft((current) => {
+            if (!current) {
+                return current;
+            }
+            return {
+                ...current,
+                cases: current.cases.map((item) => (item.id === firstCase.id ? { ...item, text: nextText } : item)),
+            };
+        });
+    }, [draft, messages, pickProbeChanges]);
     const addDraftCase = () => {
         setDraft((current) => current
             ? {
@@ -922,9 +1062,11 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         };
     };
     const finalizeDraftCreate = () => {
+        resetPickProbeState();
         setDraft(null);
         setSelectedTarget(null);
         setHoveredTarget(null);
+        setHoverPointer(null);
         setErrorMessage("");
         setMode("view");
     };
@@ -1297,7 +1439,18 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         setErrorMessage,
         draft,
         hoveredTarget,
+        hoverPointer,
         selectedTarget,
+        pickProbeOpen,
+        pickProbeValues,
+        pickProbeCompareMode,
+        pickProbeHasEdits,
+        togglePickProbe,
+        closePickProbe,
+        setPickProbeCompareMode,
+        updatePickProbeValue,
+        resetPickProbeValues,
+        insertPickProbeSummaryToDraft,
         markers,
         selectedReport,
         editingReportId,
