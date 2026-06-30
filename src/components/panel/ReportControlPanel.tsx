@@ -18,6 +18,7 @@ import { PanelSettings } from "./PanelSettings.js";
 import { CornerResizeGhost } from "@/components/ui/CornerResizeGhost.js";
 import { CornerResizeHandle } from "@/components/ui/CornerResizeHandle.js";
 import { PanelSizeResetButton } from "./PanelSizeResetButton.js";
+import { ProbeEditModeBanner } from "./ProbeEditModeBanner.js";
 import { formatStatCount } from "@/utils/formatStatCount.js";
 import { panelNumericClassName } from "@/utils/panelTypography.js";
 import type { ReportPanelTab } from "@/types/report-ui.js";
@@ -231,7 +232,12 @@ export function ReportControlPanel() {
                 activeCorner={activeCorner}
             />
 
-            {isResizing ? <CornerResizeGhost ghostRef={ghostRef} zIndexClassName="z-[1000001]" /> : null}
+            {isResizing ? (
+                <CornerResizeGhost
+                    ghostRef={ghostRef}
+                    zIndexClassName="z-[1000001]"
+                />
+            ) : null}
 
             {/* 임시 주석 */}
             {/* {isRecording && statusText ? (
@@ -258,10 +264,10 @@ export function ReportControlPanel() {
                 onDrop={handleDrop}
                 className={`pointer-events-auto z-[1000000] flex ${
                     isRecording
-                        ? "min-h-[40px] bg-[var(--adaptive-surface-overlay)] p-[4px] backdrop-blur-[50px] rounded-[12px] shadow-[0_0_120px_0_var(--adaptive-blackOpacity500)]"
+                        ? "min-h-[40px] bg-[var(--adaptive-surface-overlay)] rounded-[12px] shadow-[0_0_120px_0_var(--adaptive-blackOpacity500)]"
                         : panelCollapsed
                           ? ""
-                          : "relative bg-[var(--adaptive-surface-overlay)] backdrop-blur-[50px] rounded-[12px] border-0 shadow-[0_0_120px_0_var(--adaptive-blackOpacity500)]"
+                          : "relative bg-[var(--adaptive-surface-overlay)] rounded-[12px] border-0 shadow-[0_0_120px_0_var(--adaptive-blackOpacity500)]"
                 }`}
                 style={{ ...resolvedPanelStyle, ...resolvedSizeStyle, fontSize: "14px" }}
             >
@@ -274,6 +280,7 @@ export function ReportControlPanel() {
                     />
                 ) : null}
                 <div className={panelCollapsed && !isRecording ? "flex shrink-0" : `flex w-full min-w-0 flex-col ${applyFixedHeight ? "h-full min-h-0" : ""}`}>
+                    {panelCollapsed && !isRecording ? null : <ProbeEditModeBanner />}
                     {isRecording ? (
                         <section className="flex items-center justify-between gap-[16px] px-[12px] py-[8px]">
                             <section className="flex items-center gap-[4px] justify-start shrink-0">
@@ -400,9 +407,7 @@ export function ReportControlPanel() {
                                     </div>
                                 </section>
 
-                                {errorMessage && importStep === "none" && commandStep === "none" && !activeReplyReportId ? (
-                                    <p className="px-[8px] text-[12px] text-rose-700">{errorMessage}</p>
-                                ) : null}
+                                {errorMessage && importStep === "none" && commandStep === "none" && !activeReplyReportId ? <p className="px-[8px] text-[12px] text-rose-700">{errorMessage}</p> : null}
                                 {personalKeyNotice ? <p className="px-[8px] py-[4px] text-[12px] text-[var(--adaptive-green500)]">{personalKeyNotice}</p> : null}
                                 {personalKeyPendingRegistration ? <p className="px-[8px] py-[4px] text-[12px] text-amber-700">{messages.personalKey.registrationPending}</p> : null}
 

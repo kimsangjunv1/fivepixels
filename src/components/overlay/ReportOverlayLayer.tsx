@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { useReport } from "@/providers/reportContext.js";
 import { PickTargetContextMenu } from "./PickTargetContextMenu.js";
 import { PickTargetProbePanel } from "./PickTargetProbePanel.js";
+import { PickTargetSavedBadges } from "./PickTargetSavedBadges.js";
 import { TargetHighlights } from "./TargetHighlights.js";
 
 type ReportOverlayLayerProps = {
@@ -18,6 +19,8 @@ export function ReportOverlayLayer({ children }: ReportOverlayLayerProps) {
         pickProbeOpen,
         pickProbeHasEdits,
         pickTargetContextMenu,
+        contextMenuElementKey,
+        savedProbeEdits,
         selectableTargets,
         showTargetPreview,
         markerPreviewTargets,
@@ -69,8 +72,13 @@ export function ReportOverlayLayer({ children }: ReportOverlayLayerProps) {
                 activeMarkerTarget={activeMarkerTarget}
             />
             <PickTargetProbePanel />
+            <PickTargetSavedBadges />
             {pickTargetContextMenu ? (
-                <PickTargetContextMenu clientX={pickTargetContextMenu.clientX} clientY={pickTargetContextMenu.clientY} />
+                <PickTargetContextMenu
+                    clientX={pickTargetContextMenu.clientX}
+                    clientY={pickTargetContextMenu.clientY}
+                    showRevert={Boolean(contextMenuElementKey && savedProbeEdits[contextMenuElementKey])}
+                />
             ) : null}
             {children}
         </div>

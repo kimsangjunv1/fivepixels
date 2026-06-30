@@ -7,10 +7,17 @@ const MENU_SURFACE_CLASS =
 type PickTargetContextMenuProps = {
     clientX: number;
     clientY: number;
+    showRevert: boolean;
 };
 
-export function PickTargetContextMenu({ clientX, clientY }: PickTargetContextMenuProps) {
-    const { messages, closePickTargetContextMenu, handlePickTargetEdit, handlePickTargetDelete } = useReport();
+export function PickTargetContextMenu({ clientX, clientY, showRevert }: PickTargetContextMenuProps) {
+    const {
+        messages,
+        closePickTargetContextMenu,
+        handlePickTargetEdit,
+        handlePickTargetDelete,
+        handlePickTargetRevert,
+    } = useReport();
 
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
@@ -29,7 +36,7 @@ export function PickTargetContextMenu({ clientX, clientY }: PickTargetContextMen
     const viewportWidth = typeof window !== "undefined" ? window.innerWidth : 0;
     const viewportHeight = typeof window !== "undefined" ? window.innerHeight : 0;
     const left = Math.min(clientX, Math.max(8, viewportWidth - 160));
-    const top = Math.min(clientY, Math.max(8, viewportHeight - 96));
+    const top = Math.min(clientY, Math.max(8, viewportHeight - (showRevert ? 128 : 96)));
 
     return (
         <div
@@ -50,6 +57,16 @@ export function PickTargetContextMenu({ clientX, clientY }: PickTargetContextMen
             >
                 {messages.pickTarget.contextEdit}
             </button>
+            {showRevert ? (
+                <button
+                    type="button"
+                    data-fivepixels-interactive=""
+                    onClick={() => handlePickTargetRevert()}
+                    className="block w-full px-[12px] py-[8px] text-left text-[12px] font-medium text-[var(--adaptive-black900)] hover:bg-[var(--adaptive-black100)]"
+                >
+                    {messages.pickTarget.contextRevert}
+                </button>
+            ) : null}
             <button
                 type="button"
                 data-fivepixels-interactive=""

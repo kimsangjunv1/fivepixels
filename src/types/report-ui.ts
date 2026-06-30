@@ -35,7 +35,15 @@ export type HoverPointer = {
     clientY: number;
 };
 
-export type PickProbeFieldKey = "textContent" | "fontSize" | "padding" | "margin" | "lineHeight";
+export type PickProbeFieldKey =
+    | "textContent"
+    | "fontSize"
+    | "padding"
+    | "margin"
+    | "lineHeight"
+    | "textColor"
+    | "backgroundColor"
+    | "borderColor";
 
 export type PickProbeValues = Record<PickProbeFieldKey, string>;
 
@@ -45,6 +53,23 @@ export type ProposedChange = {
     key: PickProbeFieldKey;
     before: string;
     after: string;
+};
+
+export type SavedProbeEntry = {
+    elementKey: string;
+    baseline: PickProbeValues;
+    applied: PickProbeValues;
+    originalStyle: string | null;
+    originalTextContent: string | null;
+    originalInnerHTML: string | null;
+    originalInputValue: string | null;
+};
+
+export type ProbeOriginalSnapshot = {
+    style: string | null;
+    innerHTML: string;
+    textContent: string;
+    inputValue: string | null;
 };
 
 export type TargetSnapshot = {

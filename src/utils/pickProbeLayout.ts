@@ -54,3 +54,21 @@ export function getPickProbeCompareChipLayout(anchorRect: DOMRect, chipWidth: nu
 
     return { top, left };
 }
+
+export function getPickProbeSavedBadgeLayout(anchorRect: DOMRect, badgeWidth: number, badgeHeight: number) {
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const margin = 6;
+    const gap = 4;
+    let top = anchorRect.top + gap;
+    let left = anchorRect.right - badgeWidth - gap;
+
+    if (left < margin) {
+        left = anchorRect.right - badgeWidth;
+    }
+
+    left = Math.min(Math.max(left, margin), Math.max(margin, viewportWidth - margin - badgeWidth));
+    top = Math.min(Math.max(top, margin), Math.max(margin, viewportHeight - margin - badgeHeight));
+
+    return { top, left };
+}

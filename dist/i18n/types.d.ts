@@ -40,6 +40,8 @@ export type ReportMessages = {
         resizeAriaLabel: string;
         resetSize: string;
         resetSizeTitle: string;
+        probeEditModeActive: string;
+        probeEditModeReset: string;
     };
     feedbackList: {
         scopeAriaLabel: string;
@@ -96,6 +98,8 @@ export type ReportMessages = {
         casePlaceholder: string;
         addCase: string;
         removeCaseAriaLabel: (index: number) => string;
+        probeSummaryPrompt: string;
+        probeSummaryApply: string;
     };
     fieldEditor: {
         messagePlaceholder: string;
@@ -253,18 +257,27 @@ export type ReportMessages = {
         probePadding: string;
         probeMargin: string;
         probeLineHeight: string;
+        probeTextColor: string;
+        probeBackgroundColor: string;
+        probeBorderColor: string;
         probeBefore: string;
         probeAfter: string;
         probeReset: string;
-        probeInsertSummary: string;
         probeSummaryTitle: string;
+        probeSummaryElement: (label: string) => string;
         probeChangeText: (before: string, after: string) => string;
         probeChangeFontSize: (before: string, after: string) => string;
         probeChangePadding: (before: string, after: string) => string;
         probeChangeMargin: (before: string, after: string) => string;
         probeChangeLineHeight: (before: string, after: string) => string;
+        probeChangeTextColor: (before: string, after: string) => string;
+        probeChangeBackgroundColor: (before: string, after: string) => string;
+        probeChangeBorderColor: (before: string, after: string) => string;
         contextEdit: string;
         contextDelete: string;
+        contextRevert: string;
+        probeApply: string;
+        probeModifiedBadge: string;
     };
     marker: {
         detachedAriaLabel: string;

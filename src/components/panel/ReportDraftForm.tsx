@@ -3,6 +3,7 @@ import { useTooltipLayout } from "@/hooks/useTooltipLayout.js";
 import { useReport } from "@/providers/reportContext.js";
 import { getDraftMarkerPosition } from "@/utils/coordinates.js";
 import { FeedbackComposer } from "./feedback/FeedbackComposer.js";
+import { DraftProbeSummaryBanner } from "./DraftProbeSummaryBanner.js";
 import { PickTargetSnippet } from "./feedback/PickTargetSnippet.js";
 
 const TOOLTIP_SURFACE_CLASS =
@@ -124,6 +125,7 @@ function ReportDraftFormContent({
                 {draft.targetSelector && draft.suggestedReportId ? (
                     <PickTargetSnippet suggestedReportId={draft.suggestedReportId} reportType={draft.reportType} />
                 ) : null}
+                <DraftProbeSummaryBanner />
                 <FeedbackComposer
                     cases={draft.cases}
                     onCaseChange={updateDraftCase}

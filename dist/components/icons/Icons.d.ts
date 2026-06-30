@@ -29,6 +29,9 @@ export declare function SearchIcon({ className }: {
 export declare function CopyIcon({ className }: {
     className?: string;
 }): import("react/jsx-runtime").JSX.Element;
+export declare function CheckIcon({ className }: {
+    className?: string;
+}): import("react/jsx-runtime").JSX.Element;
 export declare function TrashIcon({ className }: {
     className?: string;
 }): import("react/jsx-runtime").JSX.Element;

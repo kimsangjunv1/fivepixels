@@ -9,4 +9,8 @@ export declare function getPickProbeCompareChipLayout(anchorRect: DOMRect, chipW
     top: number;
     left: number;
 };
+export declare function getPickProbeSavedBadgeLayout(anchorRect: DOMRect, badgeWidth: number, badgeHeight: number): {
+    top: number;
+    left: number;
+};
 //# sourceMappingURL=pickProbeLayout.d.ts.map

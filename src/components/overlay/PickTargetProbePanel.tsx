@@ -1,8 +1,11 @@
-import { useCallback, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { CheckIcon, CopyIcon } from "@/components/icons/Icons.js";
 import { useReport } from "@/providers/reportContext.js";
 import type { PickProbeFieldKey, PickProbeValues } from "@/types/report-ui.js";
 import { isSteppableCssValue, stepCssBoxSides, stepCssPixel } from "@/utils/cssStepper.js";
+import { copyTextToClipboard } from "@/utils/feedbackDataTransfer.js";
 import { getPickProbePanelLayout } from "@/utils/pickProbeLayout.js";
+import { getProbeColorPreview, isValidProbeHexColor, probeHexToColorInputValue, sanitizeProbeHexInput } from "@/utils/probeColor.js";
 import { PickTargetCompareSegment } from "./PickTargetCompareSegment.js";
 
 const PANEL_SURFACE_CLASS =
@@ -27,6 +30,104 @@ function ProbeTextField({ label, value, onChange }: ProbeTextFieldProps) {
                 onChange={(event) => onChange(event.target.value)}
                 className="w-full rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] px-[8px] py-[6px] font-[var(--coding-font)] text-[12px] text-[var(--adaptive-black900)] outline-none focus:border-[var(--adaptive-blue500)]"
             />
+        </label>
+    );
+}
+
+type ProbeColorFieldProps = {
+    label: string;
+    value: string;
+    onChange: (value: string) => void;
+};
+
+function ProbeColorField({ label, value, onChange }: ProbeColorFieldProps) {
+    const { messages } = useReport();
+    const colorInputRef = useRef<HTMLInputElement | null>(null);
+    const copyTimeoutRef = useRef<number | null>(null);
+    const [copied, setCopied] = useState(false);
+    const preview = getProbeColorPreview(value);
+    const canCopy = isValidProbeHexColor(value);
+
+    useEffect(() => {
+        return () => {
+            if (copyTimeoutRef.current !== null) {
+                window.clearTimeout(copyTimeoutRef.current);
+            }
+        };
+    }, []);
+
+    const handleCopy = () => {
+        if (!preview) {
+            return;
+        }
+
+        void copyTextToClipboard(preview)
+            .then(() => {
+                setCopied(true);
+
+                if (copyTimeoutRef.current !== null) {
+                    window.clearTimeout(copyTimeoutRef.current);
+                }
+
+                copyTimeoutRef.current = window.setTimeout(() => {
+                    setCopied(false);
+                    copyTimeoutRef.current = null;
+                }, 1000);
+            })
+            .catch(() => {
+                setCopied(false);
+            });
+    };
+
+    return (
+        <label className="flex flex-col gap-[4px] text-[11px]">
+            <span className="font-medium text-[var(--adaptive-black500)]">{label}</span>
+            <div className="flex items-center gap-[6px]">
+                <button
+                    type="button"
+                    data-fivepixels-interactive=""
+                    onClick={() => colorInputRef.current?.click()}
+                    className="relative h-[30px] w-[30px] shrink-0 overflow-hidden rounded-[8px] border border-[var(--adaptive-border-subtle)]"
+                    aria-label={label}
+                >
+                    <span
+                        className="absolute inset-0"
+                        style={{ backgroundColor: preview ?? "transparent" }}
+                        aria-hidden
+                    />
+                    <input
+                        ref={colorInputRef}
+                        type="color"
+                        data-fivepixels-interactive=""
+                        value={probeHexToColorInputValue(value)}
+                        onChange={(event) => onChange(event.target.value)}
+                        className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                        tabIndex={-1}
+                    />
+                </button>
+                <input
+                    type="text"
+                    data-fivepixels-interactive=""
+                    value={value}
+                    onChange={(event) => onChange(sanitizeProbeHexInput(event.target.value))}
+                    placeholder="#ededed"
+                    className="min-w-0 flex-1 rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] px-[8px] py-[6px] font-[var(--coding-font)] text-[12px] text-[var(--adaptive-black900)] outline-none focus:border-[var(--adaptive-blue500)]"
+                />
+                <button
+                    type="button"
+                    data-fivepixels-interactive=""
+                    onClick={handleCopy}
+                    disabled={!canCopy}
+                    aria-label={copied ? messages.common.copied : messages.common.copy}
+                    className="inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] text-[var(--adaptive-black700)] disabled:opacity-40"
+                >
+                    {copied ? (
+                        <CheckIcon className="h-[14px] w-[14px] text-[var(--adaptive-green500)]" />
+                    ) : (
+                        <CopyIcon className="h-[14px] w-[14px]" />
+                    )}
+                </button>
+            </div>
         </label>
     );
 }
@@ -87,13 +188,13 @@ export function PickTargetProbePanel() {
         selectedTarget,
         pickProbeOpen,
         pickProbeValues,
+        pickProbeSupportsTextFields,
         pickProbeCompareMode,
         pickProbeHasEdits,
-        draft,
         setPickProbeCompareMode,
         updatePickProbeValue,
         resetPickProbeValues,
-        insertPickProbeSummaryToDraft,
+        commitPickProbeEdits,
     } = useReport();
 
     const panelRef = useRef<HTMLDivElement | null>(null);
@@ -168,11 +269,19 @@ export function PickTargetProbePanel() {
                     ) : null}
                 </div>
 
-                <ProbeTextField label={messages.pickTarget.probeText} value={values.textContent} onChange={handleChange("textContent")} />
-                <ProbeStepperField label={messages.pickTarget.probeFontSize} value={values.fontSize} onChange={handleChange("fontSize")} />
+                {pickProbeSupportsTextFields ? (
+                    <>
+                        <ProbeTextField label={messages.pickTarget.probeText} value={values.textContent} onChange={handleChange("textContent")} />
+                        <ProbeStepperField label={messages.pickTarget.probeFontSize} value={values.fontSize} onChange={handleChange("fontSize")} />
+                        <ProbeTextField label={messages.pickTarget.probeLineHeight} value={values.lineHeight} onChange={handleChange("lineHeight")} />
+                    </>
+                ) : null}
+
                 <ProbeStepperField label={messages.pickTarget.probePadding} value={values.padding} onChange={handleChange("padding")} />
                 <ProbeStepperField label={messages.pickTarget.probeMargin} value={values.margin} onChange={handleChange("margin")} />
-                <ProbeTextField label={messages.pickTarget.probeLineHeight} value={values.lineHeight} onChange={handleChange("lineHeight")} />
+                <ProbeColorField label={messages.pickTarget.probeTextColor} value={values.textColor} onChange={handleChange("textColor")} />
+                <ProbeColorField label={messages.pickTarget.probeBackgroundColor} value={values.backgroundColor} onChange={handleChange("backgroundColor")} />
+                <ProbeColorField label={messages.pickTarget.probeBorderColor} value={values.borderColor} onChange={handleChange("borderColor")} />
 
                 <div className="flex flex-wrap items-center justify-end gap-[6px] border-t border-[var(--adaptive-border-subtle)] pt-[8px]">
                     <button
@@ -186,11 +295,11 @@ export function PickTargetProbePanel() {
                     <button
                         type="button"
                         data-fivepixels-interactive=""
-                        disabled={!pickProbeHasEdits || !draft}
-                        onClick={() => insertPickProbeSummaryToDraft()}
+                        disabled={!pickProbeHasEdits}
+                        onClick={() => commitPickProbeEdits()}
                         className="rounded-[8px] bg-[var(--adaptive-blue500)] px-[10px] py-[5px] text-[11px] font-semibold text-white disabled:opacity-50"
                     >
-                        {messages.pickTarget.probeInsertSummary}
+                        {messages.pickTarget.probeApply}
                     </button>
                 </div>
             </div>
