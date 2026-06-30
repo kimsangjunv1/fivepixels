@@ -1,4 +1,5 @@
 import type { PickProbeCompareMode, PickProbeValues, ProbeOriginalSnapshot, SavedProbeDeletion, SavedProbeEntry } from "../types/report-ui.js";
+export declare function createProbeDeletionId(): string;
 export declare function getPickProbeElementKey(element: HTMLElement): string;
 export declare function findElementByProbeKey(elementKey: string): HTMLElement | null;
 export declare function captureProbeOriginalSnapshot(element: HTMLElement): ProbeOriginalSnapshot;

@@ -27,7 +27,7 @@ import type {
     QuestionThreadDisplay,
     UpdateReportFeedbackPayload,
 } from "@/types/report.js";
-import type { DraftReport, EditableDraft, HoverPointer, Marker, PendingFeedbackComposer, PickProbeCompareMode, PickProbeFieldKey, PickProbeValues, PickTargetContextMenuState, ReportMode, ReportPanelTab, SavedProbeDeletion, SavedProbeEntry, TargetSnapshot } from "@/types/report-ui.js";
+import type { DraftReport, EditableDraft, HoverPointer, Marker, PendingFeedbackComposer, PickProbeCompareMode, PickProbeFieldKey, PickProbeLayoutMode, PickProbeValues, PickTargetContextMenuState, ProbeSessionAction, ReportMode, ReportPanelTab, SavedProbeDeletion, SavedProbeEntry, TargetSnapshot } from "@/types/report-ui.js";
 import { createReplyStatusForSubmit, getFeedbackDisplayStatus, getLatestBranchRootForCase, getReportReplies, ISSUE_ROOT_PARENT_ID, resolveOriginalFeedbackAuthorName, resolveParentReplyIdForCaseQuestion } from "@/utils/feedbackThread.js";
 import { clampRatio, getMarkerFromReport, resolveTooltipAnchor } from "@/utils/coordinates.js";
 import { getFeedbackTargetElement, isFeedbackTargetVisible, scrollToFeedbackTarget, waitForTargetRevealResync } from "@/utils/locateFeedback.js";
@@ -54,6 +54,8 @@ import {
     restoreSavedProbeDeletion,
 } from "@/utils/pickProbeSession.js";
 import { playPickTargetDeleteAnimation } from "@/utils/pickTargetDeleteAnimation.js";
+import { applyProbeSessionActionBackward, applyProbeSessionActionForward } from "@/utils/probeSessionHistory.js";
+import { getPickProbeLayoutMode } from "@/utils/probeLayout.js";
 import { markerToTargetSnapshot } from "@/utils/markerTarget.js";
 import { createInitialFieldValues, getFieldError, getFieldTags } from "@/utils/fields.js";
 import { canEditReportCases, claimCaseAssignee, createReportCase, buildResolvedCasesUpdate, canActOnCase, getCaseAssigneeName, isValidFocusedCase, resolveDefaultFocusedCaseId } from "@/utils/reportCases.js";
@@ -312,11 +314,18 @@ export function useReportState({
     const [pickProbeBaseline, setPickProbeBaseline] = useState<PickProbeValues | null>(null);
     const [pickProbeValues, setPickProbeValues] = useState<PickProbeValues | null>(null);
     const [pickProbeSupportsTextFields, setPickProbeSupportsTextFields] = useState(false);
+    const [pickProbeLayoutMode, setPickProbeLayoutMode] = useState<PickProbeLayoutMode>(null);
     const [pickProbeCompareMode, setPickProbeCompareModeState] = useState<PickProbeCompareMode>("after");
     const [pickTargetContextMenu, setPickTargetContextMenu] = useState<PickTargetContextMenuState | null>(null);
     const [contextMenuElementKey, setContextMenuElementKey] = useState<string | null>(null);
     const [savedProbeEdits, setSavedProbeEdits] = useState<Record<string, SavedProbeEntry>>({});
-    const [savedProbeDeletions, setSavedProbeDeletions] = useState<Record<string, SavedProbeDeletion>>({});
+    const [savedProbeDeletions, setSavedProbeDeletions] = useState<SavedProbeDeletion[]>([]);
+    const savedProbeDeletionsRef = useRef(savedProbeDeletions);
+    savedProbeDeletionsRef.current = savedProbeDeletions;
+    const [probeSessionHistoryState, setProbeSessionHistoryState] = useState<{
+        actions: ProbeSessionAction[];
+        index: number;
+    }>({ actions: [], index: -1 });
     const [savedProbeCompareMode, setSavedProbeCompareModeState] = useState<PickProbeCompareMode>("after");
     const pickProbeRestoreRef = useRef<{
         style: string | null;
@@ -784,6 +793,7 @@ export function useReportState({
         setPickProbeBaseline(null);
         setPickProbeValues(null);
         setPickProbeSupportsTextFields(false);
+        setPickProbeLayoutMode(null);
         setPickProbeCompareModeState("after");
         pickProbeElementKeyRef.current = null;
     }, []);
@@ -822,13 +832,77 @@ export function useReportState({
         [closePickProbePanelOnly],
     );
 
+    const pushProbeSessionAction = useCallback((action: ProbeSessionAction) => {
+        setProbeSessionHistoryState((current) => {
+            const actions = current.actions.slice(0, current.index + 1);
+            actions.push(action);
+
+            return {
+                actions,
+                index: actions.length - 1,
+            };
+        });
+    }, []);
+
+    const undoProbeSessionAction = useCallback(() => {
+        setProbeSessionHistoryState((current) => {
+            if (current.index < 0) {
+                return current;
+            }
+
+            const action = current.actions[current.index];
+
+            setSavedProbeEdits((edits) => {
+                const next = applyProbeSessionActionBackward(action, {
+                    edits,
+                    deletions: savedProbeDeletionsRef.current,
+                });
+                setSavedProbeDeletions(next.deletions);
+
+                return next.edits;
+            });
+
+            return {
+                actions: current.actions,
+                index: current.index - 1,
+            };
+        });
+    }, []);
+
+    const redoProbeSessionAction = useCallback(() => {
+        setProbeSessionHistoryState((current) => {
+            if (current.index >= current.actions.length - 1) {
+                return current;
+            }
+
+            const action = current.actions[current.index + 1];
+
+            setSavedProbeEdits((edits) => {
+                const next = applyProbeSessionActionForward(action, {
+                    edits,
+                    deletions: savedProbeDeletionsRef.current,
+                });
+                setSavedProbeDeletions(next.deletions);
+
+                return next.edits;
+            });
+
+            return {
+                actions: current.actions,
+                index: current.index + 1,
+            };
+        });
+    }, []);
+
     const revertAllSavedProbeEdits = useCallback(() => {
+        setProbeSessionHistoryState({ actions: [], index: -1 });
+
         setSavedProbeDeletions((deletions) => {
-            for (const entry of Object.values(deletions)) {
+            for (const entry of [...deletions].reverse()) {
                 restoreSavedProbeDeletion(entry);
             }
 
-            return {};
+            return [];
         });
 
         setSavedProbeEdits((current) => {
@@ -845,9 +919,12 @@ export function useReportState({
         setSavedProbeCompareModeState("after");
     }, []);
 
+    const canUndoProbeSession = probeSessionHistoryState.index >= 0;
+    const canRedoProbeSession = probeSessionHistoryState.index < probeSessionHistoryState.actions.length - 1;
+
     const hasProbeSessionChanges = useMemo(
-        () => Object.keys(savedProbeEdits).length > 0 || Object.keys(savedProbeDeletions).length > 0,
-        [savedProbeDeletions, savedProbeEdits],
+        () => probeSessionHistoryState.index >= 0,
+        [probeSessionHistoryState.index],
     );
 
     const setSavedProbeCompareMode = useCallback((compareMode: PickProbeCompareMode) => {
@@ -863,8 +940,8 @@ export function useReportState({
             return [];
         }
 
-        return getProposedChanges(pickProbeBaseline, pickProbeValues, pickProbeSupportsTextFields);
-    }, [pickProbeBaseline, pickProbeSupportsTextFields, pickProbeValues]);
+        return getProposedChanges(pickProbeBaseline, pickProbeValues, pickProbeSupportsTextFields, pickProbeLayoutMode);
+    }, [pickProbeBaseline, pickProbeLayoutMode, pickProbeSupportsTextFields, pickProbeValues]);
 
     const pickProbeHasEdits = pickProbeChanges.length > 0;
 
@@ -877,23 +954,33 @@ export function useReportState({
 
         const elementKey = getPickProbeElementKey(element);
         const existing = savedProbeEdits[elementKey];
+        const previousEntry = existing ?? null;
         const originalSnapshot = pickProbeOriginalSnapshotRef.current;
 
         applyPickProbeCompareMode(element, savedProbeCompareMode, pickProbeBaseline, pickProbeValues);
 
+        const nextEntry = createSavedProbeEntry(
+            elementKey,
+            pickProbeBaseline,
+            pickProbeValues,
+            originalSnapshot?.style ?? pickProbeRestoreRef.current?.style ?? null,
+            originalSnapshot?.textContent ?? pickProbeRestoreRef.current?.textContent ?? pickProbeBaseline.textContent,
+            existing,
+            originalSnapshot?.innerHTML ?? null,
+            originalSnapshot?.inputValue ?? null,
+        );
+
         setSavedProbeEdits((current) => ({
             ...current,
-            [elementKey]: createSavedProbeEntry(
-                elementKey,
-                pickProbeBaseline,
-                pickProbeValues,
-                originalSnapshot?.style ?? pickProbeRestoreRef.current?.style ?? null,
-                originalSnapshot?.textContent ?? pickProbeRestoreRef.current?.textContent ?? pickProbeBaseline.textContent,
-                existing,
-                originalSnapshot?.innerHTML ?? null,
-                originalSnapshot?.inputValue ?? null,
-            ),
+            [elementKey]: nextEntry,
         }));
+
+        pushProbeSessionAction({
+            kind: "style-apply",
+            elementKey,
+            previousEntry,
+            nextEntry,
+        });
 
         pickProbeRestoreRef.current = null;
         pickProbeOriginalSnapshotRef.current = null;
@@ -907,6 +994,7 @@ export function useReportState({
         refreshSelectedTargetSnapshot,
         savedProbeCompareMode,
         savedProbeEdits,
+        pushProbeSessionAction,
     ]);
 
     const openPickProbe = useCallback(() => {
@@ -925,7 +1013,9 @@ export function useReportState({
 
         pickProbeElementKeyRef.current = elementKey;
         const supportsTextFields = shouldInspectFontStyle(element);
+        const layoutMode = getPickProbeLayoutMode(element);
         setPickProbeSupportsTextFields(supportsTextFields);
+        setPickProbeLayoutMode(layoutMode);
         const freshBaseline = capturePickProbeValues(element);
 
         if (!saved) {
@@ -978,8 +1068,19 @@ export function useReportState({
             return;
         }
 
+        const entry = savedProbeEdits[elementKey];
+
+        if (!entry) {
+            return;
+        }
+
         revertSavedProbeEdit(elementKey);
-    }, [closePickTargetContextMenu, contextMenuElementKey, revertSavedProbeEdit]);
+        pushProbeSessionAction({
+            kind: "style-revert",
+            elementKey,
+            revertedEntry: entry,
+        });
+    }, [closePickTargetContextMenu, contextMenuElementKey, pushProbeSessionAction, revertSavedProbeEdit, savedProbeEdits]);
 
     const handlePickTargetEdit = useCallback(() => {
         const element = contextMenuElementRef.current;
@@ -1019,6 +1120,7 @@ export function useReportState({
         const shouldClearDraft = draftElementRef.current === element;
         const rect = element.getBoundingClientRect();
         const deletion = elementKey ? captureSavedProbeDeletion(element, elementKey) : null;
+        const previousStyleEntry = elementKey ? savedProbeEdits[elementKey] ?? null : null;
 
         contextMenuElementRef.current = null;
 
@@ -1038,10 +1140,22 @@ export function useReportState({
             element.remove();
 
             if (deletion) {
-                setSavedProbeDeletions((current) => ({
-                    ...current,
-                    [deletion.elementKey]: deletion,
-                }));
+                setSavedProbeDeletions((current) => [...current, deletion]);
+
+                if (previousStyleEntry) {
+                    setSavedProbeEdits((current) => {
+                        const next = { ...current };
+                        delete next[deletion.elementKey];
+
+                        return next;
+                    });
+                }
+
+                pushProbeSessionAction({
+                    kind: "delete",
+                    deletion,
+                    previousStyleEntry,
+                });
             }
 
             if (shouldClearDraft) {
@@ -1049,7 +1163,7 @@ export function useReportState({
                 setDraft(null);
             }
         });
-    }, [closePickTargetContextMenu, resetPickProbeState]);
+    }, [closePickTargetContextMenu, pushProbeSessionAction, resetPickProbeState, savedProbeEdits]);
 
     useEffect(() => {
         if (mode !== "report") {
@@ -2220,6 +2334,7 @@ export function useReportState({
         selectedTarget,
         pickProbeOpen,
         pickProbeSupportsTextFields,
+        pickProbeLayoutMode,
         pickProbeValues,
         pickProbeCompareMode,
         pickProbeHasEdits,
@@ -2228,6 +2343,10 @@ export function useReportState({
         savedProbeEdits,
         savedProbeDeletions,
         hasProbeSessionChanges,
+        canUndoProbeSession,
+        canRedoProbeSession,
+        undoProbeSessionAction,
+        redoProbeSessionAction,
         savedProbeCompareMode,
         closePickProbe,
         closePickTargetContextMenu,

@@ -42,6 +42,8 @@ export type ReportMessages = {
         resetSizeTitle: string;
         probeEditModeActive: string;
         probeEditModeReset: string;
+        probeEditModeUndo: string;
+        probeEditModeRedo: string;
     };
     feedbackList: {
         scopeAriaLabel: string;
@@ -260,6 +262,26 @@ export type ReportMessages = {
         probeTextColor: string;
         probeBackgroundColor: string;
         probeBorderColor: string;
+        probeMainAlign: string;
+        probeCrossAlign: string;
+        probeDirection: string;
+        probeDirectionRow: string;
+        probeDirectionColumn: string;
+        probeDirectionReverse: string;
+        probeGap: string;
+        probeGridColumns: string;
+        probeGridRows: string;
+        probeJustifyOptions: {
+            "flex-start": string;
+            center: string;
+            "flex-end": string;
+            "space-between": string;
+        };
+        probeAlignOptions: {
+            "flex-start": string;
+            center: string;
+            "flex-end": string;
+        };
         probeBefore: string;
         probeAfter: string;
         probeReset: string;
@@ -273,6 +295,12 @@ export type ReportMessages = {
         probeChangeTextColor: (before: string, after: string) => string;
         probeChangeBackgroundColor: (before: string, after: string) => string;
         probeChangeBorderColor: (before: string, after: string) => string;
+        probeChangeJustifyContent: (before: string, after: string) => string;
+        probeChangeAlignItems: (before: string, after: string) => string;
+        probeChangeFlexDirection: (before: string, after: string) => string;
+        probeChangeGap: (before: string, after: string) => string;
+        probeChangeGridColumns: (before: string, after: string) => string;
+        probeChangeGridRows: (before: string, after: string) => string;
         contextEdit: string;
         contextDelete: string;
         contextRevert: string;

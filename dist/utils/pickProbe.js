@@ -1,10 +1,28 @@
 import { cssColorToProbeHex, isValidProbeHexColor } from "./probeColor.js";
+import { captureProbeGap, formatGridTrackCount, getPickProbeLayoutMode, inferLayoutModeFromProbeValues, parseGridTrackCount, } from "./probeLayout.js";
 import { findElementByProbeKey } from "./pickProbeSession.js";
 import { getPickTargetBoxStyle, getPickTargetFontStyle, shouldInspectFontStyle } from "./pickTargetInspect.js";
 const TEXT_PROBE_FIELD_KEYS = ["textContent", "fontSize", "lineHeight"];
 const STYLE_PROBE_FIELD_KEYS = ["padding", "margin", "textColor", "backgroundColor", "borderColor"];
-export function getProbeFieldKeys(supportsTextFields) {
-    return supportsTextFields ? [...TEXT_PROBE_FIELD_KEYS, ...STYLE_PROBE_FIELD_KEYS] : STYLE_PROBE_FIELD_KEYS;
+const FLEX_PROBE_FIELD_KEYS = ["justifyContent", "alignItems", "flexDirection", "gap"];
+const GRID_PROBE_FIELD_KEYS = ["gridColumnCount", "gridRowCount", "gap"];
+export const EMPTY_PROBE_LAYOUT_VALUES = {
+    justifyContent: "",
+    alignItems: "",
+    flexDirection: "",
+    gap: "",
+    gridColumnCount: "",
+    gridRowCount: "",
+};
+export function getProbeFieldKeys(supportsTextFields, layoutMode = null) {
+    const keys = supportsTextFields ? [...TEXT_PROBE_FIELD_KEYS, ...STYLE_PROBE_FIELD_KEYS] : [...STYLE_PROBE_FIELD_KEYS];
+    if (layoutMode === "flex") {
+        return [...keys, ...FLEX_PROBE_FIELD_KEYS];
+    }
+    if (layoutMode === "grid") {
+        return [...keys, ...GRID_PROBE_FIELD_KEYS];
+    }
+    return keys;
 }
 export function getProbeTextContent(element) {
     if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement) {
@@ -12,11 +30,34 @@ export function getProbeTextContent(element) {
     }
     return element.textContent?.trim() ?? "";
 }
+function captureLayoutProbeValues(element, layoutMode) {
+    if (!layoutMode) {
+        return { ...EMPTY_PROBE_LAYOUT_VALUES };
+    }
+    const style = window.getComputedStyle(element);
+    const gap = captureProbeGap(style);
+    if (layoutMode === "flex") {
+        return {
+            ...EMPTY_PROBE_LAYOUT_VALUES,
+            justifyContent: style.justifyContent,
+            alignItems: style.alignItems,
+            flexDirection: style.flexDirection,
+            gap,
+        };
+    }
+    return {
+        ...EMPTY_PROBE_LAYOUT_VALUES,
+        gridColumnCount: String(parseGridTrackCount(style.gridTemplateColumns)),
+        gridRowCount: String(parseGridTrackCount(style.gridTemplateRows)),
+        gap,
+    };
+}
 export function capturePickProbeValues(element) {
     const style = window.getComputedStyle(element);
     const boxStyle = getPickTargetBoxStyle(element);
     const fontStyle = getPickTargetFontStyle(element);
     const supportsTextFields = shouldInspectFontStyle(element);
+    const layoutMode = getPickProbeLayoutMode(element);
     return {
         textContent: supportsTextFields ? getProbeTextContent(element) : "",
         fontSize: supportsTextFields ? (fontStyle?.fontSize ?? style.fontSize) : "",
@@ -26,6 +67,7 @@ export function capturePickProbeValues(element) {
         textColor: cssColorToProbeHex(style.color),
         backgroundColor: cssColorToProbeHex(style.backgroundColor),
         borderColor: cssColorToProbeHex(style.borderColor),
+        ...captureLayoutProbeValues(element, layoutMode),
     };
 }
 function applyProbeColorProperty(element, property, value) {
@@ -37,13 +79,41 @@ function applyProbeColorProperty(element, property, value) {
         element.style[property] = value;
     }
 }
+function applyLayoutProbeValues(element, values, layoutMode) {
+    if (!layoutMode) {
+        return;
+    }
+    if (values.gap) {
+        element.style.gap = values.gap;
+    }
+    if (layoutMode === "flex") {
+        if (values.justifyContent) {
+            element.style.justifyContent = values.justifyContent;
+        }
+        if (values.alignItems) {
+            element.style.alignItems = values.alignItems;
+        }
+        if (values.flexDirection) {
+            element.style.flexDirection = values.flexDirection;
+        }
+        return;
+    }
+    if (values.gridColumnCount) {
+        element.style.gridTemplateColumns = formatGridTrackCount(Number.parseInt(values.gridColumnCount, 10));
+    }
+    if (values.gridRowCount) {
+        element.style.gridTemplateRows = formatGridTrackCount(Number.parseInt(values.gridRowCount, 10));
+    }
+}
 export function applyPickProbeValues(element, values) {
     const supportsTextFields = shouldInspectFontStyle(element);
+    const layoutMode = getPickProbeLayoutMode(element);
     element.style.padding = values.padding;
     element.style.margin = values.margin;
     applyProbeColorProperty(element, "color", values.textColor);
     applyProbeColorProperty(element, "backgroundColor", values.backgroundColor);
     applyProbeColorProperty(element, "borderColor", values.borderColor);
+    applyLayoutProbeValues(element, values, layoutMode);
     if (!supportsTextFields) {
         return;
     }
@@ -55,8 +125,8 @@ export function applyPickProbeValues(element, values) {
     }
     element.textContent = values.textContent;
 }
-export function getProposedChanges(baseline, current, supportsTextFields = true) {
-    return getProbeFieldKeys(supportsTextFields)
+export function getProposedChanges(baseline, current, supportsTextFields = true, layoutMode = null) {
+    return getProbeFieldKeys(supportsTextFields, layoutMode)
         .filter((key) => baseline[key] !== current[key])
         .map((key) => ({
         key,
@@ -95,6 +165,18 @@ function formatProposedChangeLine(change, messages) {
             return messages.pickTarget.probeChangeBackgroundColor(change.before, change.after);
         case "borderColor":
             return messages.pickTarget.probeChangeBorderColor(change.before, change.after);
+        case "justifyContent":
+            return messages.pickTarget.probeChangeJustifyContent(change.before, change.after);
+        case "alignItems":
+            return messages.pickTarget.probeChangeAlignItems(change.before, change.after);
+        case "flexDirection":
+            return messages.pickTarget.probeChangeFlexDirection(change.before, change.after);
+        case "gap":
+            return messages.pickTarget.probeChangeGap(change.before, change.after);
+        case "gridColumnCount":
+            return messages.pickTarget.probeChangeGridColumns(change.before, change.after);
+        case "gridRowCount":
+            return messages.pickTarget.probeChangeGridRows(change.before, change.after);
     }
 }
 export function formatProposedChanges(changes, messages) {
@@ -111,7 +193,8 @@ export function formatSavedProbeEditsSummary(edits, messages) {
         const supportsTextFields = element
             ? shouldInspectFontStyle(element)
             : Boolean(entry.baseline.textContent || entry.baseline.fontSize || entry.baseline.lineHeight);
-        const changes = getProposedChanges(entry.baseline, entry.applied, supportsTextFields);
+        const layoutMode = element ? getPickProbeLayoutMode(element) : inferLayoutModeFromProbeValues(entry.baseline);
+        const changes = getProposedChanges(entry.baseline, entry.applied, supportsTextFields, layoutMode);
         if (changes.length === 0) {
             return null;
         }

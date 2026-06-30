@@ -182,6 +182,7 @@ describe("pickProbeSession", () => {
         const deletion = captureSavedProbeDeletion(element, "selector:#target");
 
         expect(deletion).not.toBeNull();
+        expect(deletion?.id).toBeTruthy();
 
         element.remove();
 

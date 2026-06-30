@@ -35,6 +35,8 @@ export type HoverPointer = {
     clientY: number;
 };
 
+export type PickProbeLayoutMode = "flex" | "grid" | null;
+
 export type PickProbeFieldKey =
     | "textContent"
     | "fontSize"
@@ -43,7 +45,13 @@ export type PickProbeFieldKey =
     | "lineHeight"
     | "textColor"
     | "backgroundColor"
-    | "borderColor";
+    | "borderColor"
+    | "justifyContent"
+    | "alignItems"
+    | "flexDirection"
+    | "gap"
+    | "gridColumnCount"
+    | "gridRowCount";
 
 export type PickProbeValues = Record<PickProbeFieldKey, string>;
 
@@ -66,11 +74,33 @@ export type SavedProbeEntry = {
 };
 
 export type SavedProbeDeletion = {
+    id: string;
     elementKey: string;
     outerHTML: string;
     parentSelector: string;
     childIndex: number;
 };
+
+export type ProbeSessionStyleApplyAction = {
+    kind: "style-apply";
+    elementKey: string;
+    previousEntry: SavedProbeEntry | null;
+    nextEntry: SavedProbeEntry;
+};
+
+export type ProbeSessionStyleRevertAction = {
+    kind: "style-revert";
+    elementKey: string;
+    revertedEntry: SavedProbeEntry;
+};
+
+export type ProbeSessionDeleteAction = {
+    kind: "delete";
+    deletion: SavedProbeDeletion;
+    previousStyleEntry: SavedProbeEntry | null;
+};
+
+export type ProbeSessionAction = ProbeSessionStyleApplyAction | ProbeSessionStyleRevertAction | ProbeSessionDeleteAction;
 
 export type ProbeOriginalSnapshot = {
     style: string | null;

@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { en } from "@/i18n/en.js";
-import { getProposedChanges, formatProposedChanges, formatSavedProbeEditsSummary } from "./pickProbe.js";
+import { EMPTY_PROBE_LAYOUT_VALUES, getProposedChanges, formatProposedChanges, formatSavedProbeEditsSummary } from "./pickProbe.js";
+
+const layoutValues = { ...EMPTY_PROBE_LAYOUT_VALUES };
 
 describe("pickProbe", () => {
     it("formats proposed changes into a summary block", () => {
@@ -13,6 +15,7 @@ describe("pickProbe", () => {
             textColor: "#111111",
             backgroundColor: "#ffffff",
             borderColor: "#cccccc",
+            ...layoutValues,
         };
         const current = {
             ...baseline,
@@ -39,6 +42,7 @@ describe("pickProbe", () => {
             textColor: "#111111",
             backgroundColor: "#ffffff",
             borderColor: "#cccccc",
+            ...layoutValues,
         };
         const current = {
             ...baseline,
@@ -73,6 +77,7 @@ describe("pickProbe", () => {
                         textColor: "#111111",
                         backgroundColor: "#ffffff",
                         borderColor: "#cccccc",
+                        ...layoutValues,
                     },
                     applied: {
                         textContent: "Hello",
@@ -83,6 +88,7 @@ describe("pickProbe", () => {
                         textColor: "#111111",
                         backgroundColor: "#ffffff",
                         borderColor: "#cccccc",
+                        ...layoutValues,
                     },
                     originalStyle: null,
                     originalTextContent: "Hello",
@@ -100,6 +106,7 @@ describe("pickProbe", () => {
                         textColor: "#111111",
                         backgroundColor: "#ffffff",
                         borderColor: "#cccccc",
+                        ...layoutValues,
                     },
                     applied: {
                         textContent: "",
@@ -110,6 +117,7 @@ describe("pickProbe", () => {
                         textColor: "#111111",
                         backgroundColor: "#ff0000",
                         borderColor: "#cccccc",
+                        ...layoutValues,
                     },
                     originalStyle: null,
                     originalTextContent: null,

@@ -1,6 +1,9 @@
 import { applyPickProbeCompareMode, applyPickProbeValues } from "./pickProbe.js";
 import { getFeedbackTargetSelector, resolveReportType } from "./dom.js";
 import { findElementByTargetSelector, generateCssSelector } from "./targetSelector.js";
+export function createProbeDeletionId() {
+    return `probe-del-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`;
+}
 export function getPickProbeElementKey(element) {
     const reportId = element.dataset.reportId?.trim();
     if (reportId) {
@@ -40,6 +43,7 @@ export function captureSavedProbeDeletion(element, elementKey) {
         return null;
     }
     return {
+        id: createProbeDeletionId(),
         elementKey,
         outerHTML: element.outerHTML,
         parentSelector: generateCssSelector(parent),

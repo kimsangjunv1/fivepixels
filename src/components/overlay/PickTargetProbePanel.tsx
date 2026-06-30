@@ -7,6 +7,7 @@ import { copyTextToClipboard } from "@/utils/feedbackDataTransfer.js";
 import { getPickProbePanelLayout } from "@/utils/pickProbeLayout.js";
 import { getProbeColorPreview, isValidProbeHexColor, probeHexToColorInputValue, sanitizeProbeHexInput } from "@/utils/probeColor.js";
 import { PickTargetCompareSegment } from "./PickTargetCompareSegment.js";
+import { ProbeLayoutControls } from "./ProbeLayoutControls.js";
 
 const PANEL_SURFACE_CLASS =
     "pointer-events-auto fixed z-[1000002] w-[min(320px,calc(100vw-16px))] overflow-hidden rounded-[12px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface-overlay)] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[20px]";
@@ -121,11 +122,7 @@ function ProbeColorField({ label, value, onChange }: ProbeColorFieldProps) {
                     aria-label={copied ? messages.common.copied : messages.common.copy}
                     className="inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] text-[var(--adaptive-black700)] disabled:opacity-40"
                 >
-                    {copied ? (
-                        <CheckIcon className="h-[14px] w-[14px] text-[var(--adaptive-green500)]" />
-                    ) : (
-                        <CopyIcon className="h-[14px] w-[14px]" />
-                    )}
+                    {copied ? <CheckIcon className="h-[14px] w-[14px] text-[var(--adaptive-green500)]" /> : <CopyIcon className="h-[14px] w-[14px]" />}
                 </button>
             </div>
         </label>
@@ -189,6 +186,7 @@ export function PickTargetProbePanel() {
         pickProbeOpen,
         pickProbeValues,
         pickProbeSupportsTextFields,
+        pickProbeLayoutMode,
         pickProbeCompareMode,
         pickProbeHasEdits,
         setPickProbeCompareMode,
@@ -256,7 +254,7 @@ export function PickTargetProbePanel() {
                 opacity: layout ? 1 : 0,
             }}
         >
-            <div className="flex flex-col gap-[10px] px-[12px] py-[10px]">
+            <div className="flex max-h-[min(70vh,560px)] flex-col gap-[10px] overflow-y-auto px-[12px] py-[10px]">
                 <div className="flex items-center justify-between gap-[8px]">
                     <p className="text-[12px] font-semibold text-[var(--adaptive-black900)]">{messages.pickTarget.probeTitle}</p>
                     {pickProbeHasEdits ? (
@@ -271,17 +269,59 @@ export function PickTargetProbePanel() {
 
                 {pickProbeSupportsTextFields ? (
                     <>
-                        <ProbeTextField label={messages.pickTarget.probeText} value={values.textContent} onChange={handleChange("textContent")} />
-                        <ProbeStepperField label={messages.pickTarget.probeFontSize} value={values.fontSize} onChange={handleChange("fontSize")} />
-                        <ProbeTextField label={messages.pickTarget.probeLineHeight} value={values.lineHeight} onChange={handleChange("lineHeight")} />
+                        <ProbeTextField
+                            label={messages.pickTarget.probeText}
+                            value={values.textContent}
+                            onChange={handleChange("textContent")}
+                        />
+                        <ProbeStepperField
+                            label={messages.pickTarget.probeFontSize}
+                            value={values.fontSize}
+                            onChange={handleChange("fontSize")}
+                        />
+                        <ProbeTextField
+                            label={messages.pickTarget.probeLineHeight}
+                            value={values.lineHeight}
+                            onChange={handleChange("lineHeight")}
+                        />
                     </>
                 ) : null}
 
-                <ProbeStepperField label={messages.pickTarget.probePadding} value={values.padding} onChange={handleChange("padding")} />
-                <ProbeStepperField label={messages.pickTarget.probeMargin} value={values.margin} onChange={handleChange("margin")} />
-                <ProbeColorField label={messages.pickTarget.probeTextColor} value={values.textColor} onChange={handleChange("textColor")} />
-                <ProbeColorField label={messages.pickTarget.probeBackgroundColor} value={values.backgroundColor} onChange={handleChange("backgroundColor")} />
-                <ProbeColorField label={messages.pickTarget.probeBorderColor} value={values.borderColor} onChange={handleChange("borderColor")} />
+                <section className="flex">
+                    <ProbeStepperField
+                        label={messages.pickTarget.probePadding}
+                        value={values.padding}
+                        onChange={handleChange("padding")}
+                    />
+                    <ProbeStepperField
+                        label={messages.pickTarget.probeMargin}
+                        value={values.margin}
+                        onChange={handleChange("margin")}
+                    />
+                </section>
+
+                <ProbeColorField
+                    label={messages.pickTarget.probeTextColor}
+                    value={values.textColor}
+                    onChange={handleChange("textColor")}
+                />
+                <ProbeColorField
+                    label={messages.pickTarget.probeBackgroundColor}
+                    value={values.backgroundColor}
+                    onChange={handleChange("backgroundColor")}
+                />
+                <ProbeColorField
+                    label={messages.pickTarget.probeBorderColor}
+                    value={values.borderColor}
+                    onChange={handleChange("borderColor")}
+                />
+
+                <ProbeLayoutControls
+                    layoutMode={pickProbeLayoutMode}
+                    values={values}
+                    messages={messages}
+                    onChange={(key, value) => handleChange(key)(value)}
+                />
 
                 <div className="flex flex-wrap items-center justify-end gap-[6px] border-t border-[var(--adaptive-border-subtle)] pt-[8px]">
                     <button

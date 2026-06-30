@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+import { ChevronLeftIcon, ChevronRightIcon } from "@/components/icons/Icons.js";
 import { PickTargetCompareSegment } from "@/components/overlay/PickTargetCompareSegment.js";
 import { useReport } from "@/providers/reportContext.js";
 
@@ -14,6 +16,32 @@ function ProbeEditModeDivider() {
     return <span className="shrink-0 text-[11px] text-white/50">|</span>;
 }
 
+function ProbeEditModeHistoryButton({
+    label,
+    disabled,
+    onClick,
+    children,
+}: {
+    label: string;
+    disabled: boolean;
+    onClick: () => void;
+    children: ReactNode;
+}) {
+    return (
+        <button
+            type="button"
+            data-fivepixels-interactive=""
+            aria-label={label}
+            title={label}
+            disabled={disabled}
+            onClick={onClick}
+            className="inline-flex shrink-0 items-center justify-center rounded-[4px] p-[2px] text-white transition-opacity enabled:hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-35"
+        >
+            {children}
+        </button>
+    );
+}
+
 export function ProbeEditModeBanner() {
     const {
         hasProbeSessionChanges,
@@ -21,6 +49,10 @@ export function ProbeEditModeBanner() {
         setSavedProbeCompareMode,
         revertAllSavedProbeEdits,
         savedProbeEdits,
+        canUndoProbeSession,
+        canRedoProbeSession,
+        undoProbeSessionAction,
+        redoProbeSessionAction,
         messages,
     } = useReport();
 
@@ -48,6 +80,23 @@ export function ProbeEditModeBanner() {
             >
                 {messages.panel.probeEditModeReset}
             </button>
+            <ProbeEditModeDivider />
+            <div className="flex shrink-0 items-center gap-[2px]">
+                <ProbeEditModeHistoryButton
+                    label={messages.panel.probeEditModeUndo}
+                    disabled={!canUndoProbeSession}
+                    onClick={() => undoProbeSessionAction()}
+                >
+                    <ChevronLeftIcon className="h-[14px] w-[14px]" />
+                </ProbeEditModeHistoryButton>
+                <ProbeEditModeHistoryButton
+                    label={messages.panel.probeEditModeRedo}
+                    disabled={!canRedoProbeSession}
+                    onClick={() => redoProbeSessionAction()}
+                >
+                    <ChevronRightIcon className="h-[14px] w-[14px]" />
+                </ProbeEditModeHistoryButton>
+            </div>
             {showCompare ? (
                 <>
                     <ProbeEditModeDivider />
