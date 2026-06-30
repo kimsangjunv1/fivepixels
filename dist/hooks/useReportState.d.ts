@@ -2,7 +2,7 @@ import { type MouseEvent } from "react";
 import type { DeepPartialReportMessages } from "../i18n/types.js";
 import type { ReportLocale } from "../i18n/types.js";
 import type { CreateReportFeedbackPayload, CreateReplyPayload, ReportAppearance, ReportAuthor, ReportEvent, ReportFeedback, ReportField, ReportGitHubConfig, ReportIdentify, ReportListAllParams, ReportListAllResult, ReportReply, QuestionThreadDisplay, UpdateReportFeedbackPayload } from "../types/report.js";
-import type { DraftReport, EditableDraft, HoverPointer, Marker, PendingFeedbackComposer, PickProbeCompareMode, PickProbeFieldKey, PickProbeValues, ReportMode, ReportPanelTab, TargetSnapshot } from "../types/report-ui.js";
+import type { DraftReport, EditableDraft, HoverPointer, Marker, PendingFeedbackComposer, PickProbeCompareMode, PickProbeFieldKey, PickProbeValues, PickTargetContextMenuState, ReportMode, ReportPanelTab, TargetSnapshot } from "../types/report-ui.js";
 export type ReportStateConfig = {
     projectId: string;
     environment?: string;
@@ -123,8 +123,11 @@ export declare function useReportState({ projectId, environment, appVersion, app
     pickProbeValues: PickProbeValues | null;
     pickProbeCompareMode: PickProbeCompareMode;
     pickProbeHasEdits: boolean;
-    togglePickProbe: () => void;
+    pickTargetContextMenu: PickTargetContextMenuState | null;
     closePickProbe: () => void;
+    closePickTargetContextMenu: () => void;
+    handlePickTargetEdit: () => void;
+    handlePickTargetDelete: () => void;
     setPickProbeCompareMode: (mode: PickProbeCompareMode) => void;
     updatePickProbeValue: (key: PickProbeFieldKey, value: string) => void;
     resetPickProbeValues: () => void;
@@ -195,6 +198,7 @@ export declare function useReportState({ projectId, environment, appVersion, app
     scheduleHoverLeave: (markerId: string) => void;
     setHoveredMarkerId: import("react").Dispatch<import("react").SetStateAction<string | null>>;
     handleOverlayMove: (event: MouseEvent<HTMLDivElement>) => void;
+    handleOverlayContextMenu: (event: MouseEvent<HTMLDivElement>) => void;
     handleOverlayClick: (event: MouseEvent<HTMLDivElement>) => void;
     cancelDraft: () => void;
     updateDraftCase: (caseId: string, text: string) => void;

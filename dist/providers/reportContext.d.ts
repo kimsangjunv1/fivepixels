@@ -86,8 +86,11 @@ declare const ReportContext: import("react").Context<{
     pickProbeValues: import("../types/report-ui").PickProbeValues | null;
     pickProbeCompareMode: import("../types/report-ui").PickProbeCompareMode;
     pickProbeHasEdits: boolean;
-    togglePickProbe: () => void;
+    pickTargetContextMenu: import("../types/report-ui").PickTargetContextMenuState | null;
     closePickProbe: () => void;
+    closePickTargetContextMenu: () => void;
+    handlePickTargetEdit: () => void;
+    handlePickTargetDelete: () => void;
     setPickProbeCompareMode: (mode: import("../types/report-ui").PickProbeCompareMode) => void;
     updatePickProbeValue: (key: import("../types/report-ui").PickProbeFieldKey, value: string) => void;
     resetPickProbeValues: () => void;
@@ -158,6 +161,7 @@ declare const ReportContext: import("react").Context<{
     scheduleHoverLeave: (markerId: string) => void;
     setHoveredMarkerId: import("react").Dispatch<import("react").SetStateAction<string | null>>;
     handleOverlayMove: (event: import("react").MouseEvent<HTMLDivElement>) => void;
+    handleOverlayContextMenu: (event: import("react").MouseEvent<HTMLDivElement>) => void;
     handleOverlayClick: (event: import("react").MouseEvent<HTMLDivElement>) => void;
     cancelDraft: () => void;
     updateDraftCase: (caseId: string, text: string) => void;
@@ -263,8 +267,11 @@ export declare function useReport(): {
     pickProbeValues: import("../types/report-ui").PickProbeValues | null;
     pickProbeCompareMode: import("../types/report-ui").PickProbeCompareMode;
     pickProbeHasEdits: boolean;
-    togglePickProbe: () => void;
+    pickTargetContextMenu: import("../types/report-ui").PickTargetContextMenuState | null;
     closePickProbe: () => void;
+    closePickTargetContextMenu: () => void;
+    handlePickTargetEdit: () => void;
+    handlePickTargetDelete: () => void;
     setPickProbeCompareMode: (mode: import("../types/report-ui").PickProbeCompareMode) => void;
     updatePickProbeValue: (key: import("../types/report-ui").PickProbeFieldKey, value: string) => void;
     resetPickProbeValues: () => void;
@@ -335,6 +342,7 @@ export declare function useReport(): {
     scheduleHoverLeave: (markerId: string) => void;
     setHoveredMarkerId: import("react").Dispatch<import("react").SetStateAction<string | null>>;
     handleOverlayMove: (event: import("react").MouseEvent<HTMLDivElement>) => void;
+    handleOverlayContextMenu: (event: import("react").MouseEvent<HTMLDivElement>) => void;
     handleOverlayClick: (event: import("react").MouseEvent<HTMLDivElement>) => void;
     cancelDraft: () => void;
     updateDraftCase: (caseId: string, text: string) => void;

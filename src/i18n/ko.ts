@@ -285,6 +285,8 @@ export const ko: ReportMessages = {
         probeChangePadding: (before, after) => `padding: ${before} → ${after}`,
         probeChangeMargin: (before, after) => `margin: ${before} → ${after}`,
         probeChangeLineHeight: (before, after) => `lineHeight: ${before} → ${after}`,
+        contextEdit: "수정하기",
+        contextDelete: "지우기",
     },
     marker: {
         detachedAriaLabel: "원본 요소가 현재 화면에 없는 피드백",

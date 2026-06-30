@@ -283,6 +283,8 @@ export const en = {
         probeChangePadding: (before, after) => `padding: ${before} → ${after}`,
         probeChangeMargin: (before, after) => `margin: ${before} → ${after}`,
         probeChangeLineHeight: (before, after) => `lineHeight: ${before} → ${after}`,
+        contextEdit: "Edit",
+        contextDelete: "Delete",
     },
     marker: {
         detachedAriaLabel: "Feedback whose source element is not currently visible",

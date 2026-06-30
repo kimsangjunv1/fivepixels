@@ -1,19 +1,22 @@
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import { useReport } from "@/providers/reportContext.js";
 import type { PickProbeFieldKey, PickProbeValues } from "@/types/report-ui.js";
+import { isSteppableCssValue, stepCssBoxSides, stepCssPixel } from "@/utils/cssStepper.js";
 import { getPickProbePanelLayout } from "@/utils/pickProbeLayout.js";
 import { PickTargetCompareSegment } from "./PickTargetCompareSegment.js";
 
 const PANEL_SURFACE_CLASS =
     "pointer-events-auto fixed z-[1000002] w-[min(320px,calc(100vw-16px))] overflow-hidden rounded-[12px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface-overlay)] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[20px]";
 
-type ProbeFieldProps = {
+const STEPPER_STEP_PX = 1;
+
+type ProbeTextFieldProps = {
     label: string;
     value: string;
     onChange: (value: string) => void;
 };
 
-function ProbeField({ label, value, onChange }: ProbeFieldProps) {
+function ProbeTextField({ label, value, onChange }: ProbeTextFieldProps) {
     return (
         <label className="flex flex-col gap-[4px] text-[11px]">
             <span className="font-medium text-[var(--adaptive-black500)]">{label}</span>
@@ -28,6 +31,56 @@ function ProbeField({ label, value, onChange }: ProbeFieldProps) {
     );
 }
 
+type ProbeStepperFieldProps = {
+    label: string;
+    value: string;
+    onChange: (value: string) => void;
+};
+
+function ProbeStepperField({ label, value, onChange }: ProbeStepperFieldProps) {
+    const steppable = isSteppableCssValue(value);
+    const isSinglePixel = /^\d/.test(value.trim()) && !value.trim().includes(" ");
+
+    const handleStep = (delta: number) => {
+        if (!steppable) {
+            return;
+        }
+
+        onChange(isSinglePixel ? stepCssPixel(value, delta * STEPPER_STEP_PX) : stepCssBoxSides(value, delta * STEPPER_STEP_PX));
+    };
+
+    return (
+        <div className="flex flex-col gap-[4px] text-[11px]">
+            <span className="font-medium text-[var(--adaptive-black500)]">{label}</span>
+            <div className="flex items-center gap-[6px]">
+                <button
+                    type="button"
+                    data-fivepixels-interactive=""
+                    disabled={!steppable}
+                    onClick={() => handleStep(-1)}
+                    className="inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] text-[14px] font-semibold text-[var(--adaptive-black900)] disabled:opacity-40"
+                    aria-label={`Decrease ${label}`}
+                >
+                    −
+                </button>
+                <div className="min-w-0 flex-1 rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] px-[8px] py-[6px] text-center font-[var(--coding-font)] text-[12px] text-[var(--adaptive-black900)]">
+                    {value}
+                </div>
+                <button
+                    type="button"
+                    data-fivepixels-interactive=""
+                    disabled={!steppable}
+                    onClick={() => handleStep(1)}
+                    className="inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] text-[14px] font-semibold text-[var(--adaptive-black900)] disabled:opacity-40"
+                    aria-label={`Increase ${label}`}
+                >
+                    +
+                </button>
+            </div>
+        </div>
+    );
+}
+
 export function PickTargetProbePanel() {
     const {
         messages,
@@ -36,6 +89,7 @@ export function PickTargetProbePanel() {
         pickProbeValues,
         pickProbeCompareMode,
         pickProbeHasEdits,
+        draft,
         setPickProbeCompareMode,
         updatePickProbeValue,
         resetPickProbeValues,
@@ -90,6 +144,10 @@ export function PickTargetProbePanel() {
             ref={panelRef}
             data-fivepixels-interactive=""
             onClick={(event) => event.stopPropagation()}
+            onContextMenu={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+            }}
             className={PANEL_SURFACE_CLASS}
             style={{
                 top: layout?.top ?? selectedTarget.rect.bottom + 8,
@@ -110,11 +168,11 @@ export function PickTargetProbePanel() {
                     ) : null}
                 </div>
 
-                <ProbeField label={messages.pickTarget.probeText} value={values.textContent} onChange={handleChange("textContent")} />
-                <ProbeField label={messages.pickTarget.probeFontSize} value={values.fontSize} onChange={handleChange("fontSize")} />
-                <ProbeField label={messages.pickTarget.probePadding} value={values.padding} onChange={handleChange("padding")} />
-                <ProbeField label={messages.pickTarget.probeMargin} value={values.margin} onChange={handleChange("margin")} />
-                <ProbeField label={messages.pickTarget.probeLineHeight} value={values.lineHeight} onChange={handleChange("lineHeight")} />
+                <ProbeTextField label={messages.pickTarget.probeText} value={values.textContent} onChange={handleChange("textContent")} />
+                <ProbeStepperField label={messages.pickTarget.probeFontSize} value={values.fontSize} onChange={handleChange("fontSize")} />
+                <ProbeStepperField label={messages.pickTarget.probePadding} value={values.padding} onChange={handleChange("padding")} />
+                <ProbeStepperField label={messages.pickTarget.probeMargin} value={values.margin} onChange={handleChange("margin")} />
+                <ProbeTextField label={messages.pickTarget.probeLineHeight} value={values.lineHeight} onChange={handleChange("lineHeight")} />
 
                 <div className="flex flex-wrap items-center justify-end gap-[6px] border-t border-[var(--adaptive-border-subtle)] pt-[8px]">
                     <button
@@ -128,7 +186,7 @@ export function PickTargetProbePanel() {
                     <button
                         type="button"
                         data-fivepixels-interactive=""
-                        disabled={!pickProbeHasEdits}
+                        disabled={!pickProbeHasEdits || !draft}
                         onClick={() => insertPickProbeSummaryToDraft()}
                         className="rounded-[8px] bg-[var(--adaptive-blue500)] px-[10px] py-[5px] text-[11px] font-semibold text-white disabled:opacity-50"
                     >

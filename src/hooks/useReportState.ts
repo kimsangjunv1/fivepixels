@@ -27,7 +27,7 @@ import type {
     QuestionThreadDisplay,
     UpdateReportFeedbackPayload,
 } from "@/types/report.js";
-import type { DraftReport, EditableDraft, HoverPointer, Marker, PendingFeedbackComposer, PickProbeCompareMode, PickProbeFieldKey, PickProbeValues, ReportMode, ReportPanelTab, TargetSnapshot } from "@/types/report-ui.js";
+import type { DraftReport, EditableDraft, HoverPointer, Marker, PendingFeedbackComposer, PickProbeCompareMode, PickProbeFieldKey, PickProbeValues, PickTargetContextMenuState, ReportMode, ReportPanelTab, TargetSnapshot } from "@/types/report-ui.js";
 import { createReplyStatusForSubmit, getFeedbackDisplayStatus, getLatestBranchRootForCase, getReportReplies, ISSUE_ROOT_PARENT_ID, resolveOriginalFeedbackAuthorName, resolveParentReplyIdForCaseQuestion } from "@/utils/feedbackThread.js";
 import { clampRatio, getMarkerFromReport, resolveTooltipAnchor } from "@/utils/coordinates.js";
 import { getFeedbackTargetElement, isFeedbackTargetVisible, scrollToFeedbackTarget, waitForTargetRevealResync } from "@/utils/locateFeedback.js";
@@ -300,7 +300,10 @@ export function useReportState({
     const [pickProbeBaseline, setPickProbeBaseline] = useState<PickProbeValues | null>(null);
     const [pickProbeValues, setPickProbeValues] = useState<PickProbeValues | null>(null);
     const [pickProbeCompareMode, setPickProbeCompareModeState] = useState<PickProbeCompareMode>("after");
+    const [pickTargetContextMenu, setPickTargetContextMenu] = useState<PickTargetContextMenuState | null>(null);
     const pickProbeRestoreRef = useRef<{ style: string | null; textContent: string | null } | null>(null);
+    const draftElementRef = useRef<HTMLElement | null>(null);
+    const contextMenuElementRef = useRef<HTMLElement | null>(null);
     const [markers, setMarkers] = useState<Marker[]>([]);
     const [hoveredMarkerId, setHoveredMarkerId] = useState<string | null>(null);
     const [activeReplyReportId, setActiveReplyReportId] = useState<string | null>(null);
@@ -773,6 +776,10 @@ export function useReportState({
             return;
         }
 
+        if (pickProbeOpen) {
+            restorePickProbeElement();
+        }
+
         pickProbeRestoreRef.current = {
             style: element.getAttribute("style"),
             textContent: element.textContent,
@@ -783,20 +790,68 @@ export function useReportState({
         setPickProbeValues(baseline);
         setPickProbeCompareModeState("after");
         setPickProbeOpen(true);
-    }, []);
+    }, [pickProbeOpen, restorePickProbeElement]);
 
     const closePickProbe = useCallback(() => {
         resetPickProbeState();
     }, [resetPickProbeState]);
 
-    const togglePickProbe = useCallback(() => {
-        if (pickProbeOpen) {
-            closePickProbe();
+    const closePickTargetContextMenu = useCallback(() => {
+        setPickTargetContextMenu(null);
+    }, []);
+
+    const handlePickTargetEdit = useCallback(() => {
+        const element = contextMenuElementRef.current;
+
+        closePickTargetContextMenu();
+
+        if (!element) {
             return;
         }
 
+        if (pickProbeOpen) {
+            resetPickProbeState();
+        }
+
+        selectedElementRef.current = element;
+        hoveredElementRef.current = element;
+        const snapshot = toFeedbackHoverSnapshot(element);
+
+        if (snapshot) {
+            setSelectedTarget(snapshot);
+        }
+
         openPickProbe();
-    }, [closePickProbe, openPickProbe, pickProbeOpen]);
+    }, [closePickTargetContextMenu, openPickProbe, pickProbeOpen, resetPickProbeState]);
+
+    const handlePickTargetDelete = useCallback(() => {
+        const element = contextMenuElementRef.current;
+
+        closePickTargetContextMenu();
+        resetPickProbeState();
+
+        if (!element) {
+            return;
+        }
+
+        const shouldClearDraft = draftElementRef.current === element;
+
+        element.remove();
+        contextMenuElementRef.current = null;
+
+        if (selectedElementRef.current === element) {
+            selectedElementRef.current = null;
+            hoveredElementRef.current = null;
+            setSelectedTarget(null);
+            setHoveredTarget(null);
+            setHoverPointer(null);
+        }
+
+        if (shouldClearDraft) {
+            draftElementRef.current = null;
+            setDraft(null);
+        }
+    }, [closePickTargetContextMenu, resetPickProbeState]);
 
     useEffect(() => {
         if (mode !== "report") {
@@ -1277,11 +1332,47 @@ export function useReportState({
         setHoveredTarget((previous) => (isSameHoverTarget(previous, snapshot) ? previous : snapshot));
     };
 
+    const handleOverlayContextMenu = (event: MouseEvent<HTMLDivElement>) => {
+        if (mode !== "report") {
+            return;
+        }
+
+        event.preventDefault();
+
+        const targetElement = findPickTargetByPoint(overlayRef.current, event.clientX, event.clientY);
+
+        if (!targetElement) {
+            closePickTargetContextMenu();
+            return;
+        }
+
+        const snapshot = toFeedbackHoverSnapshot(targetElement);
+
+        if (!snapshot) {
+            closePickTargetContextMenu();
+            return;
+        }
+
+        contextMenuElementRef.current = targetElement;
+
+        if (!draft) {
+            selectedElementRef.current = targetElement;
+            hoveredElementRef.current = targetElement;
+            setSelectedTarget(snapshot);
+        }
+
+        setPickTargetContextMenu({
+            clientX: event.clientX,
+            clientY: event.clientY,
+        });
+    };
+
     const handleOverlayClick = (event: MouseEvent<HTMLDivElement>) => {
         if (mode !== "report") {
             return;
         }
 
+        closePickTargetContextMenu();
         resetPickProbeState();
 
         const targetElement = findPickTargetByPoint(overlayRef.current, event.clientX, event.clientY);
@@ -1302,6 +1393,7 @@ export function useReportState({
 
         hoveredElementRef.current = targetElement;
         selectedElementRef.current = targetElement;
+        draftElementRef.current = targetElement;
         setHoverPointer(null);
         setHoveredTarget(null);
         setSelectedTarget(snapshot);
@@ -1334,6 +1426,8 @@ export function useReportState({
 
     const cancelDraft = () => {
         resetPickProbeState();
+        draftElementRef.current = null;
+        contextMenuElementRef.current = null;
         setDraft(null);
         setSelectedTarget(null);
         setHoverPointer(null);
@@ -1482,6 +1576,8 @@ export function useReportState({
 
     const finalizeDraftCreate = () => {
         resetPickProbeState();
+        draftElementRef.current = null;
+        contextMenuElementRef.current = null;
         setDraft(null);
         setSelectedTarget(null);
         setHoveredTarget(null);
@@ -1925,8 +2021,11 @@ export function useReportState({
         pickProbeValues,
         pickProbeCompareMode,
         pickProbeHasEdits,
-        togglePickProbe,
+        pickTargetContextMenu,
         closePickProbe,
+        closePickTargetContextMenu,
+        handlePickTargetEdit,
+        handlePickTargetDelete,
         setPickProbeCompareMode,
         updatePickProbeValue,
         resetPickProbeValues,
@@ -1990,6 +2089,7 @@ export function useReportState({
         scheduleHoverLeave,
         setHoveredMarkerId,
         handleOverlayMove,
+        handleOverlayContextMenu,
         handleOverlayClick,
         cancelDraft,
         updateDraftCase,

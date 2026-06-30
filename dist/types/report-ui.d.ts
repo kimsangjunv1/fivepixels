@@ -20,6 +20,10 @@ export type PickTargetBoxStyle = {
     padding: string;
     margin: string;
 };
+export type PickTargetContextMenuState = {
+    clientX: number;
+    clientY: number;
+};
 export type HoverPointer = {
     clientX: number;
     clientY: number;

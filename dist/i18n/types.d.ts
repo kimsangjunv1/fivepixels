@@ -263,6 +263,8 @@ export type ReportMessages = {
         probeChangePadding: (before: string, after: string) => string;
         probeChangeMargin: (before: string, after: string) => string;
         probeChangeLineHeight: (before: string, after: string) => string;
+        contextEdit: string;
+        contextDelete: string;
     };
     marker: {
         detachedAriaLabel: string;
