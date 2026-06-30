@@ -175,6 +175,12 @@ export type ReportMessages = {
     localeOption: Record<ReportLocale, string>;
     appearance: Record<ReportAppearance, string>;
     questionThreadOption: Record<QuestionThreadDisplay, string>;
+    settings: {
+        sectionMarker: string;
+        markerTargetsOff: string;
+        markerTargetsOn: string;
+        markerTargetsAriaLabel: string;
+    };
     command: {
         title: string;
         description: string;
@@ -216,8 +222,25 @@ export type ReportMessages = {
         loadingFeedback: string;
         showingSelectableTargets: (count: number) => string;
         noSelectableTargets: string;
+        showingMarkerTargets: (count: number) => string;
         selectedItem: string;
         selectedGroup: string;
+        reportReady: string;
+        selectedUntaggedTarget: string;
+    };
+    pickTarget: {
+        snippetTitle: string;
+        snippetDescription: string;
+        bindingSelector: string;
+        bindingReportId: string;
+        bindingCoordinates: string;
+        tooltipTag: string;
+        tooltipSize: string;
+        tooltipFontSize: string;
+        tooltipFontWeight: string;
+        tooltipLineHeight: string;
+        tooltipReportId: string;
+        tooltipNoReportId: string;
     };
     marker: {
         detachedAriaLabel: string;
@@ -281,6 +304,7 @@ export type ReportMessages = {
         feedbackNotFound: string;
         deleteHandlerMissing: string;
         clickSelectableArea: string;
+        clickPickTarget: string;
         saveFeedbackFailed: string;
         archivedReadOnly: string;
         archivedNotEditable: string;

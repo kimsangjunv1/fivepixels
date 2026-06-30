@@ -163,7 +163,13 @@
         left 0.44s cubic-bezier(0.22, 1, 0.36, 1),
         top 0.44s cubic-bezier(0.22, 1, 0.36, 1),
         width 0.44s cubic-bezier(0.22, 1, 0.36, 1),
-        height 0.44s cubic-bezier(0.22, 1, 0.36, 1);
+        height 0.44s cubic-bezier(0.22, 1, 0.36, 1),
+        outline-color 0.32s cubic-bezier(0.22, 1, 0.36, 1),
+        background-color 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+[data-fivepixels-mount] .fivepixels-target-highlight__label {
+    transition: background-color 0.32s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 [data-fivepixels-mount] .fivepixels-dock-guide-layer {

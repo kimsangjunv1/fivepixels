@@ -15,7 +15,7 @@ import { normalizeReportCase, normalizeReplyCaseIds } from "@/utils/reportCases.
 import { getActiveReportMessages } from "@/i18n/index.js";
 
 const STRING_FIELDS = ["id", "pathname", "report_id", "created_at"] as const;
-const OPTIONAL_STRING_FIELDS = ["environment", "app_version", "author_id", "author_name"] as const;
+const OPTIONAL_STRING_FIELDS = ["environment", "app_version", "author_id", "author_name", "target_selector"] as const;
 const REPORT_TYPES = new Set<ReportTargetType>(["group", "item"]);
 const REPORT_STATUSES = new Set<ReportStatus>(["open", "git_issued", "resolved", "archived"]);
 const REPLY_STATUSES = new Set(["suggested", "additional_question", "found_error", "recheck_requested", "resolved"]);
@@ -320,6 +320,7 @@ export function validateFeedbackRecord(item: unknown, index: number): ReportFeed
         app_version: record.app_version as string | undefined,
         author_id: record.author_id as string | undefined,
         author_name: record.author_name as string | undefined,
+        target_selector: record.target_selector as string | undefined,
         integrations: validateIntegrations(record.integrations, index),
     };
 }

@@ -9,10 +9,21 @@ export type ReportFilters = {
     status: RouteDetailStatus | "all";
     reportType: ReportTargetType | "all";
 };
+export type PickTargetFontStyle = {
+    fontSize: string;
+    fontWeight: string;
+    lineHeight: string;
+};
 export type TargetSnapshot = {
     id: string;
     type: ReportTargetType;
     rect: DOMRect;
+    isTagged: boolean;
+    targetSelector?: string | null;
+    suggestedReportId?: string | null;
+    tagName?: string;
+    reportIdAttribute?: string | null;
+    fontStyle?: PickTargetFontStyle | null;
 };
 export type DraftReport = {
     clientX: number;
@@ -29,6 +40,8 @@ export type DraftReport = {
     documentY: number;
     reportId: string;
     reportType: ReportTargetType;
+    targetSelector: string | null;
+    suggestedReportId: string | null;
     cases: ReportCase[];
     fieldValues: ReportFieldValues;
 };

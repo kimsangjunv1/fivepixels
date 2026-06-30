@@ -7,8 +7,8 @@ import { ReportMarkersLayer } from "@/components/point/ReportMarkersLayer.js";
 import { ShadowReportRoot } from "./ShadowReportRoot.js";
 
 export function ReportView() {
-    const { mode, showTargetPreview, resolvedAppearance } = useReport();
-    const showOverlay = mode !== "idle" || showTargetPreview;
+    const { mode, showTargetPreview, showMarkerTargetPreview, resolvedAppearance } = useReport();
+    const showOverlay = mode !== "idle" || showTargetPreview || showMarkerTargetPreview;
 
     return (
         <ShadowReportRoot appearance={resolvedAppearance}>

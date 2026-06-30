@@ -1,6 +1,7 @@
 import { DOT_SIZE } from "../constants/report.js";
 import { getFeedbackTargetSelector, getNearestScrollContainer, getScrollContainerClampId, hasFixedPositionAncestor, isFeedbackTargetVisible } from "./dom.js";
-import { getFeedbackAnchorElement } from "./locateFeedback.js";
+import { getFeedbackAnchorElement, getFeedbackTargetElement } from "./locateFeedback.js";
+import { findElementByTargetSelector } from "./targetSelector.js";
 import { resolveDetachedKind } from "./markerContext.js";
 import { getDocumentY } from "./reportPosition.js";
 function applyScrollContainerClamp(left, top, element) {
@@ -98,8 +99,7 @@ function getDetachedMarkerPosition(report, currentScrollY, targetElement) {
     return { left, top, clampedEdge: null, clampBounds: null, clampContainerId: null };
 }
 export function getMarkerFromReport(report, currentScrollY) {
-    const selector = getFeedbackTargetSelector(report.report_id, report.report_type);
-    const targetElement = document.querySelector(selector);
+    const targetElement = getFeedbackTargetElement(report);
     const { target, viewport } = report.position;
     if (targetElement && isFeedbackTargetVisible(targetElement)) {
         const rect = targetElement.getBoundingClientRect();
@@ -135,8 +135,8 @@ export function getMarkerFromReport(report, currentScrollY) {
 }
 export function getDraftMarkerPosition(draft, selectedTarget) {
     if (selectedTarget) {
-        const selector = getFeedbackTargetSelector(selectedTarget.id, selectedTarget.type);
-        const targetElement = document.querySelector(selector);
+        const targetElement = (draft.targetSelector ? findElementByTargetSelector(draft.targetSelector) : null) ??
+            document.querySelector(getFeedbackTargetSelector(selectedTarget.id, selectedTarget.type));
         return applyScrollContainerClamp(selectedTarget.rect.left + selectedTarget.rect.width * draft.elementXRatio - DOT_SIZE / 2, selectedTarget.rect.top + selectedTarget.rect.height * draft.elementYRatio - DOT_SIZE / 2, targetElement);
     }
     return {

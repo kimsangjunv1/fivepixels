@@ -8,6 +8,6 @@ type FeedbackCaseEditorProps = {
     placeholder?: string;
     onSubmitShortcut?: () => void;
 };
-export declare function FeedbackCaseEditor({ cases, onCaseChange, onAddCase, onRemoveCase, autoFocus, placeholder, onSubmitShortcut, }: FeedbackCaseEditorProps): import("react/jsx-runtime").JSX.Element;
+export declare function FeedbackCaseEditor({ cases, onCaseChange, onAddCase, onRemoveCase, autoFocus, placeholder, onSubmitShortcut }: FeedbackCaseEditorProps): import("react/jsx-runtime").JSX.Element;
 export {};
 //# sourceMappingURL=FeedbackCaseEditor.d.ts.map

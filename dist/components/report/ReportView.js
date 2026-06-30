@@ -7,8 +7,8 @@ import { ReportDraftMarker } from "../../components/point/ReportDraftMarker.js";
 import { ReportMarkersLayer } from "../../components/point/ReportMarkersLayer.js";
 import { ShadowReportRoot } from "./ShadowReportRoot.js";
 export function ReportView() {
-    const { mode, showTargetPreview, resolvedAppearance } = useReport();
-    const showOverlay = mode !== "idle" || showTargetPreview;
+    const { mode, showTargetPreview, showMarkerTargetPreview, resolvedAppearance } = useReport();
+    const showOverlay = mode !== "idle" || showTargetPreview || showMarkerTargetPreview;
     return (_jsxs(ShadowReportRoot, { appearance: resolvedAppearance, children: [_jsx(ReportControlPanel, {}), showOverlay ? (_jsx(ReportOverlayLayer, { children: mode !== "idle" ? (_jsxs(_Fragment, { children: [_jsx(ReportMarkersLayer, {}), _jsx(ReportDraftMarker, {}), _jsx(ReportDraftForm, {})] })) : null })) : null] }));
 }
 //# sourceMappingURL=ReportView.js.map

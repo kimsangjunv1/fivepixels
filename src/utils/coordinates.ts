@@ -2,7 +2,8 @@ import { DOT_SIZE } from "@/constants/report.js";
 import type { ReportFeedback } from "@/types/report.js";
 import type { DraftReport, Marker, MarkerClampBounds, MarkerClampEdge, MarkerOverflowHint, TargetSnapshot } from "@/types/report-ui.js";
 import { getFeedbackTargetSelector, getNearestScrollContainer, getScrollContainerClampId, hasFixedPositionAncestor, isFeedbackTargetVisible } from "./dom.js";
-import { getFeedbackAnchorElement } from "./locateFeedback.js";
+import { getFeedbackAnchorElement, getFeedbackTargetElement } from "./locateFeedback.js";
+import { findElementByTargetSelector } from "./targetSelector.js";
 import { resolveDetachedKind } from "./markerContext.js";
 import { getDocumentY } from "./reportPosition.js";
 
@@ -139,8 +140,7 @@ function getDetachedMarkerPosition(report: ReportFeedback, currentScrollY: numbe
 }
 
 export function getMarkerFromReport(report: ReportFeedback, currentScrollY: number): Marker {
-    const selector = getFeedbackTargetSelector(report.report_id, report.report_type);
-    const targetElement = document.querySelector<HTMLElement>(selector);
+    const targetElement = getFeedbackTargetElement(report);
     const { target, viewport } = report.position;
 
     if (targetElement && isFeedbackTargetVisible(targetElement)) {
@@ -183,10 +183,14 @@ export function getMarkerFromReport(report: ReportFeedback, currentScrollY: numb
     };
 }
 
-export function getDraftMarkerPosition(draft: Pick<DraftReport, "clientX" | "clientY" | "elementXRatio" | "elementYRatio">, selectedTarget: TargetSnapshot | null): MarkerPosition {
+export function getDraftMarkerPosition(
+    draft: Pick<DraftReport, "clientX" | "clientY" | "elementXRatio" | "elementYRatio" | "targetSelector">,
+    selectedTarget: TargetSnapshot | null,
+): MarkerPosition {
     if (selectedTarget) {
-        const selector = getFeedbackTargetSelector(selectedTarget.id, selectedTarget.type);
-        const targetElement = document.querySelector<HTMLElement>(selector);
+        const targetElement =
+            (draft.targetSelector ? findElementByTargetSelector(draft.targetSelector) : null) ??
+            document.querySelector<HTMLElement>(getFeedbackTargetSelector(selectedTarget.id, selectedTarget.type));
 
         return applyScrollContainerClamp(
             selectedTarget.rect.left + selectedTarget.rect.width * draft.elementXRatio - DOT_SIZE / 2,

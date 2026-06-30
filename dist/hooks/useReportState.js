@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ensureReportLocaleMessages, getReportMessages, setActiveReportMessages } from "../i18n/index.js";
 import { useReportShortcuts } from "./useReportShortcuts.js";
+import { useMarkerTargetPreviewPreference } from "./useMarkerTargetPreviewPreference.js";
 import { useReportPersistence } from "./useReportPersistence.js";
 import { useIsMobileViewport } from "./useIsMobileViewport.js";
 import { useAppearancePreference } from "./useAppearancePreference.js";
@@ -13,7 +14,8 @@ import { clampRatio, getMarkerFromReport, resolveTooltipAnchor } from "../utils/
 import { getFeedbackTargetElement, isFeedbackTargetVisible, scrollToFeedbackTarget, waitForTargetRevealResync } from "../utils/locateFeedback.js";
 const MARKER_HOVER_LEAVE_MS = 250;
 const OVERLAY_HOVER_LEAVE_MS = 100;
-import { findTargetByPoint, getSelectableTargets, isSameHoverTarget, resolveFeedbackDocumentAnchor, toSnapshot } from "../utils/dom.js";
+import { findPickTargetByPoint, getSelectableTargets, isSameHoverTarget, resolveFeedbackDocumentAnchor, toFeedbackHoverSnapshot, toPickSnapshot, toSnapshot, hasDirectReportId } from "../utils/dom.js";
+import { markerToTargetSnapshot } from "../utils/markerTarget.js";
 import { createInitialFieldValues, getFieldError, getFieldTags } from "../utils/fields.js";
 import { canEditReportCases, claimCaseAssignee, createReportCase, buildResolvedCasesUpdate, canActOnCase, getCaseAssigneeName, isValidFocusedCase, resolveDefaultFocusedCaseId } from "../utils/reportCases.js";
 import { createReplyId } from "../utils/format.js";
@@ -27,6 +29,7 @@ function resolveDefaultAuthorName(identify, authors) {
 }
 export function useReportState({ projectId, environment, appVersion, appearance, questionThreadDefault = "expanded", fields, authors = [], requireReviewerKey = false, shortcut: _shortcut, identify, onList, onListAll, onListReplies, onNavigate, onRevealTarget, onCreate, onCreateReply, onUpdate, onDelete, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys = false, initialLocale, messageOverrides, }) {
     const { appearance: activeAppearance, setAppearance } = useAppearancePreference(appearance);
+    const { showMarkerTargetPreview, setShowMarkerTargetPreview, toggleMarkerTargetPreview } = useMarkerTargetPreviewPreference();
     const { questionThreadDisplay, setQuestionThreadDisplay } = useQuestionThreadPreference(questionThreadDefault);
     const { locale, setLocale } = useLocalePreference(initialLocale);
     const [localeMessagesReady, setLocaleMessagesReady] = useState(locale !== "ko");
@@ -178,26 +181,6 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             inProgress,
         };
     }, [currentPageFilteredReports]);
-    const statusText = useMemo(() => {
-        if (mode === "report") {
-            const focusTarget = selectedTarget ?? hoveredTarget;
-            if (!focusTarget) {
-                return "";
-            }
-            const typeLabel = focusTarget.type === "item" ? messages.statusText.selectedItem : messages.statusText.selectedGroup;
-            return `${typeLabel}\n${focusTarget.id}`;
-        }
-        if (mode === "view") {
-            return isFetching ? messages.statusText.loadingFeedback : messages.statusText.ready;
-        }
-        if (showTargetPreview) {
-            return messages.statusText.showingSelectableTargets(selectableTargets.length);
-        }
-        if (selectableTargets.length === 0) {
-            return messages.statusText.noSelectableTargets;
-        }
-        return messages.statusText.ready;
-    }, [filteredReports.length, isFetching, hoveredTarget, messages.statusText, mode, selectableTargets.length, selectedTarget, showTargetPreview]);
     useEffect(() => {
         setDraft(null);
         setErrorMessage("");
@@ -269,8 +252,72 @@ export function useReportState({ projectId, environment, appVersion, appearance,
     const syncMarkers = useCallback(() => {
         setMarkers(currentPageFilteredReports.map((report) => getMarkerFromReport(report, window.scrollY)));
     }, [currentPageFilteredReports]);
+    const activeMarkerReportId = useMemo(() => {
+        if (activeReplyReportId) {
+            return activeReplyReportId;
+        }
+        if (hoveredMarkerId) {
+            return hoveredMarkerId;
+        }
+        return null;
+    }, [activeReplyReportId, hoveredMarkerId]);
+    const activeMarkerTarget = useMemo(() => {
+        if (mode === "report" && selectedTarget) {
+            return selectedTarget;
+        }
+        if (!activeMarkerReportId) {
+            return null;
+        }
+        const marker = markers.find((item) => item.report.id === activeMarkerReportId);
+        if (!marker) {
+            return null;
+        }
+        return markerToTargetSnapshot(marker);
+    }, [activeMarkerReportId, markers, mode, selectedTarget]);
+    const markerPreviewTargets = useMemo(() => {
+        if (!showMarkerTargetPreview) {
+            return [];
+        }
+        return markers.flatMap((marker) => {
+            const snapshot = markerToTargetSnapshot(marker);
+            if (!snapshot) {
+                return [];
+            }
+            if (activeMarkerTarget && snapshot.id === activeMarkerTarget.id) {
+                return [];
+            }
+            return [snapshot];
+        });
+    }, [activeMarkerTarget, markers, showMarkerTargetPreview]);
+    const statusText = useMemo(() => {
+        if (mode === "report") {
+            const focusTarget = selectedTarget ?? hoveredTarget;
+            if (!focusTarget) {
+                return messages.statusText.reportReady;
+            }
+            if (focusTarget.isTagged) {
+                const typeLabel = focusTarget.type === "item" ? messages.statusText.selectedItem : messages.statusText.selectedGroup;
+                return `${typeLabel}\n${focusTarget.id}`;
+            }
+            return `${messages.statusText.selectedUntaggedTarget}\n${focusTarget.suggestedReportId ?? focusTarget.id}`;
+        }
+        if (mode === "view") {
+            return isFetching ? messages.statusText.loadingFeedback : messages.statusText.ready;
+        }
+        if (showTargetPreview) {
+            return messages.statusText.showingSelectableTargets(selectableTargets.length);
+        }
+        if (showMarkerTargetPreview) {
+            return messages.statusText.showingMarkerTargets(markerPreviewTargets.length + (activeMarkerTarget ? 1 : 0));
+        }
+        if (selectableTargets.length === 0) {
+            return messages.statusText.noSelectableTargets;
+        }
+        return messages.statusText.ready;
+    }, [activeMarkerTarget, filteredReports.length, hoveredTarget, isFetching, markerPreviewTargets.length, messages.statusText, mode, selectableTargets.length, selectedTarget, showMarkerTargetPreview, showTargetPreview]);
     useEffect(() => {
-        if (mode !== "view") {
+        const shouldSyncMarkers = mode === "view" || showMarkerTargetPreview;
+        if (!shouldSyncMarkers) {
             setMarkers([]);
             return;
         }
@@ -314,7 +361,21 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             window.removeEventListener("scroll", syncMarkers, { capture: true });
             window.removeEventListener("resize", syncMarkers);
         };
-    }, [currentPathname, mode, syncMarkers]);
+    }, [currentPathname, mode, showMarkerTargetPreview, syncMarkers]);
+    useEffect(() => {
+        if (!showMarkerTargetPreview) {
+            return;
+        }
+        const syncPreviewRects = () => {
+            syncMarkers();
+        };
+        window.addEventListener("scroll", syncPreviewRects, { passive: true, capture: true });
+        window.addEventListener("resize", syncPreviewRects);
+        return () => {
+            window.removeEventListener("scroll", syncPreviewRects, { capture: true });
+            window.removeEventListener("resize", syncPreviewRects);
+        };
+    }, [showMarkerTargetPreview, syncMarkers]);
     const prepareFeedbackLocation = useCallback(async (report) => {
         const targetElement = getFeedbackTargetElement(report);
         if (targetElement && isFeedbackTargetVisible(targetElement)) {
@@ -687,7 +748,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         closeReplyComposer();
         setMode((current) => (current === "view" ? "idle" : "view"));
         stopEditing();
-        setSelectedReportId(filteredReports[0]?.id ?? null);
+        setSelectedReportId(null);
     };
     const toggleTargetPreview = () => {
         setShowTargetPreview((current) => {
@@ -698,29 +759,34 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             return next;
         });
     };
-    // overlay (target pick, create draft, edit)
     const handleOverlayMove = (event) => {
         if (mode !== "report" || draft) {
             return;
         }
-        const targetElement = findTargetByPoint(overlayRef.current, event.clientX, event.clientY);
+        const targetElement = findPickTargetByPoint(overlayRef.current, event.clientX, event.clientY);
         hoveredElementRef.current = targetElement;
         if (!targetElement) {
             scheduleOverlayHoverLeave();
             return;
         }
         clearOverlayHoverLeaveTimeout();
-        const snapshot = toSnapshot(targetElement);
+        const snapshot = toFeedbackHoverSnapshot(targetElement);
         setHoveredTarget((previous) => (isSameHoverTarget(previous, snapshot) ? previous : snapshot));
     };
     const handleOverlayClick = (event) => {
         if (mode !== "report") {
             return;
         }
-        const targetElement = findTargetByPoint(overlayRef.current, event.clientX, event.clientY);
-        const snapshot = toSnapshot(targetElement);
-        if (!targetElement || !snapshot) {
-            setErrorMessage(messages.errors.clickSelectableArea);
+        const targetElement = findPickTargetByPoint(overlayRef.current, event.clientX, event.clientY);
+        if (!targetElement) {
+            setErrorMessage(messages.errors.clickPickTarget);
+            return;
+        }
+        const anchorSnapshot = resolveFeedbackDocumentAnchor(targetElement);
+        const isTagged = hasDirectReportId(targetElement);
+        const snapshot = isTagged ? toSnapshot(targetElement) : toPickSnapshot(targetElement);
+        if (!snapshot) {
+            setErrorMessage(messages.errors.clickPickTarget);
             return;
         }
         hoveredElementRef.current = targetElement;
@@ -728,7 +794,6 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         setHoveredTarget(snapshot);
         setSelectedTarget(snapshot);
         setErrorMessage("");
-        const anchorSnapshot = resolveFeedbackDocumentAnchor(targetElement);
         setDraft({
             clientX: event.clientX,
             clientY: event.clientY,
@@ -748,6 +813,8 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             documentY: Math.round(window.scrollY + event.clientY),
             reportId: snapshot.id,
             reportType: snapshot.type,
+            targetSelector: isTagged ? null : snapshot.targetSelector ?? null,
+            suggestedReportId: isTagged ? null : snapshot.suggestedReportId ?? snapshot.id,
             cases: [createReportCase("")],
             fieldValues: createInitialFieldValues(fields),
         });
@@ -819,6 +886,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             pathname: currentPathname,
             report_id: draft.reportId,
             report_type: draft.reportType,
+            ...(draft.targetSelector ? { target_selector: draft.targetSelector } : {}),
             cases,
             status: "open",
             field_values: draft.fieldValues,
@@ -1203,6 +1271,11 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         isMobileViewport,
         mode,
         showTargetPreview,
+        showMarkerTargetPreview,
+        setShowMarkerTargetPreview,
+        toggleMarkerTargetPreview,
+        activeMarkerTarget,
+        markerPreviewTargets,
         selectableTargets,
         filters,
         setFilters,

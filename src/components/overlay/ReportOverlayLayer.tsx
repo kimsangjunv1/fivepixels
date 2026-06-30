@@ -12,8 +12,9 @@ export function ReportOverlayLayer({ children }: ReportOverlayLayerProps) {
         mode,
         hoveredTarget,
         selectableTargets,
-        selectedTarget,
         showTargetPreview,
+        markerPreviewTargets,
+        activeMarkerTarget,
         handleOverlayMove,
         handleOverlayClick,
     } = useReport();
@@ -33,7 +34,12 @@ export function ReportOverlayLayer({ children }: ReportOverlayLayerProps) {
             className={overlayClassName}
             data-overlay-mode={isReportMode ? "report" : isViewMode ? "view" : isPreviewMode ? "preview" : "idle"}
         >
-            <TargetHighlights hoveredTarget={hoveredTarget} previewTargets={isPreviewMode ? selectableTargets : undefined} selectedTarget={selectedTarget} />
+            <TargetHighlights
+                hoveredTarget={hoveredTarget}
+                previewTargets={isPreviewMode ? selectableTargets : undefined}
+                markerPreviewTargets={markerPreviewTargets}
+                activeMarkerTarget={activeMarkerTarget}
+            />
             {children}
         </div>
     );

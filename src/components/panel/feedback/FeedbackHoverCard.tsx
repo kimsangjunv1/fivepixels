@@ -3,6 +3,7 @@ import type { MarkerDetachedKind } from "@/types/report-ui.js";
 import { getDetachedMarkerHint } from "@/utils/markerContext.js";
 import { getIssueSummary } from "@/utils/reportCases.js";
 import { getFeedbackDisplayStatus, getLatestReply, getRemainingReplyCount } from "@/utils/feedbackThread.js";
+import { resolveTargetBinding, type TargetBindingKind } from "@/utils/targetSelector.js";
 import { useReport } from "@/providers/reportContext.js";
 import { CaseProgressLabel } from "./CaseProgressLabel.js";
 import { FeedbackCreatorBadge } from "./FeedbackCreatorBadge.js";
@@ -18,12 +19,25 @@ type FeedbackHoverCardProps = {
     detachedModalHint?: string;
 };
 
+function getTargetBindingHint(kind: TargetBindingKind, messages: ReturnType<typeof useReport>["messages"]) {
+    switch (kind) {
+        case "selector":
+            return messages.pickTarget.bindingSelector;
+        case "report-id":
+            return messages.pickTarget.bindingReportId;
+        case "coordinates":
+            return messages.pickTarget.bindingCoordinates;
+    }
+}
+
 export function FeedbackHoverCard({ report, fieldTags, detached = false, detachedKind = null, detachedHint, detachedModalHint }: FeedbackHoverCardProps) {
     const { messages } = useReport();
     const displayStatus = getFeedbackDisplayStatus(report, true);
     const latestReply = getLatestReply(report);
     const remainingReplyCount = getRemainingReplyCount(report);
     const resolvedDetachedHint = detached && detachedHint && detachedModalHint ? getDetachedMarkerHint(detachedKind, { detachedHint, detachedModalHint }) : null;
+    const targetBinding = report.target_selector || detached ? resolveTargetBinding(report) : null;
+    const targetBindingHint = targetBinding && (report.target_selector || targetBinding.kind === "coordinates") ? getTargetBindingHint(targetBinding.kind, messages) : null;
 
     return (
         // <div className="flex w-[260px] flex-col gap-[10px] bg-transparent p-[16px]">
@@ -31,6 +45,8 @@ export function FeedbackHoverCard({ report, fieldTags, detached = false, detache
             <FeedbackStatusBadge status={displayStatus} />
 
             {resolvedDetachedHint ? <p className="text-[12px] leading-[1.4] text-[var(--adaptive-black500)]">{resolvedDetachedHint}</p> : null}
+
+            {targetBindingHint ? <p className="text-[12px] leading-[1.4] text-[var(--adaptive-black500)]">{targetBindingHint}</p> : null}
 
             <p className="line-clamp-2 leading-[1.5] text-[14px] text-[var(--adaptive-text-primary)]">
                 {getIssueSummary(report, { summaryMore: messages.cases.summaryMore })}

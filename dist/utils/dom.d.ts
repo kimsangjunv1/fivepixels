@@ -6,6 +6,8 @@ export declare function getFeedbackTargetSelector(reportId: string, reportType: 
 export declare function hasFixedPositionAncestor(element: HTMLElement): boolean;
 export declare function isFeedbackTargetVisible(element: HTMLElement): boolean;
 export declare function isSameHoverTarget(previous: TargetSnapshot | null, next: TargetSnapshot | null): boolean;
+export declare function hasDirectReportId(element: HTMLElement): boolean;
+export declare function toFeedbackHoverSnapshot(element: HTMLElement | null): TargetSnapshot | null;
 export declare function toSnapshot(element: HTMLElement | null): TargetSnapshot | null;
 export declare function resolveFeedbackDocumentAnchor(targetElement: HTMLElement): TargetSnapshot | null;
 export declare function findTargetElement(baseElement: HTMLElement | null): HTMLElement | null;
@@ -14,6 +16,8 @@ export declare function getScrollContainerClampId(scrollContainer: HTMLElement):
 export declare function getScrollContainerByClampId(containerId: string): HTMLElement | null;
 export declare function scrollContainerTowardEdge(containerId: string, edge: "top" | "bottom" | "left" | "right"): void;
 export declare function getSelectableTargets(): TargetSnapshot[];
+export declare function toPickSnapshot(element: HTMLElement | null): TargetSnapshot | null;
+export declare function findPickTargetByPoint(overlay: HTMLDivElement | null, clientX: number, clientY: number): HTMLElement | null;
 export declare function findTargetByPoint(overlay: HTMLDivElement | null, clientX: number, clientY: number): HTMLElement | null;
 export declare function getReportPortalRoot(): HTMLElement;
 export declare function ensureReportTooltipLayer(): HTMLElement;

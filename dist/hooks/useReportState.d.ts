@@ -91,6 +91,11 @@ export declare function useReportState({ projectId, environment, appVersion, app
     isMobileViewport: boolean;
     mode: ReportMode;
     showTargetPreview: boolean;
+    showMarkerTargetPreview: boolean;
+    setShowMarkerTargetPreview: (enabled: boolean) => void;
+    toggleMarkerTargetPreview: () => void;
+    activeMarkerTarget: TargetSnapshot | null;
+    markerPreviewTargets: TargetSnapshot[];
     selectableTargets: TargetSnapshot[];
     filters: import("../types/report-ui.js").ReportFilters;
     setFilters: import("react").Dispatch<import("react").SetStateAction<import("../types/report-ui.js").ReportFilters>>;

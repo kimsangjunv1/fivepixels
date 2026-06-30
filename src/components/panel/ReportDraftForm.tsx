@@ -3,6 +3,7 @@ import { useTooltipLayout } from "@/hooks/useTooltipLayout.js";
 import { useReport } from "@/providers/reportContext.js";
 import { getDraftMarkerPosition } from "@/utils/coordinates.js";
 import { FeedbackComposer } from "./feedback/FeedbackComposer.js";
+import { PickTargetSnippet } from "./feedback/PickTargetSnippet.js";
 
 const TOOLTIP_SURFACE_CLASS =
     "overflow-hidden rounded-[12px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface-overlay)] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[20px]";
@@ -122,6 +123,9 @@ function ReportDraftFormContent({
                     pointerEvents: "auto",
                 }}
             >
+                {draft.targetSelector && draft.suggestedReportId ? (
+                    <PickTargetSnippet suggestedReportId={draft.suggestedReportId} reportType={draft.reportType} />
+                ) : null}
                 <FeedbackComposer
                     cases={draft.cases}
                     onCaseChange={updateDraftCase}

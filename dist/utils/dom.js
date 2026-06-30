@@ -1,4 +1,6 @@
 import { TARGET_SELECTOR } from "../constants/report.js";
+import { getPickTargetFontStyle, getPickTargetReportIdAttribute, getPickTargetTagName } from "./pickTargetInspect.js";
+import { createAutoPickReportId, generateCssSelector, generateSuggestedReportId, isPickableElement, } from "./targetSelector.js";
 export function escapeAttribute(value) {
     return value.split("\\").join("\\\\").split('"').join('\\"');
 }
@@ -61,6 +63,25 @@ export function isFeedbackTargetVisible(element) {
     }
     return true;
 }
+function isSamePickTargetFontStyle(previous, next) {
+    if (previous === next) {
+        return true;
+    }
+    if (!previous || !next) {
+        return !previous && !next;
+    }
+    return (previous.fontSize === next.fontSize &&
+        previous.fontWeight === next.fontWeight &&
+        previous.lineHeight === next.lineHeight);
+}
+function enrichPickTargetInspect(element, snapshot) {
+    return {
+        ...snapshot,
+        tagName: getPickTargetTagName(element),
+        reportIdAttribute: getPickTargetReportIdAttribute(element),
+        fontStyle: getPickTargetFontStyle(element),
+    };
+}
 export function isSameHoverTarget(previous, next) {
     if (previous === next) {
         return true;
@@ -68,7 +89,42 @@ export function isSameHoverTarget(previous, next) {
     if (!previous || !next) {
         return false;
     }
-    return previous.id === next.id && previous.type === next.type;
+    if (previous.id !== next.id || previous.type !== next.type || previous.isTagged !== next.isTagged) {
+        return false;
+    }
+    return (previous.rect.left === next.rect.left &&
+        previous.rect.top === next.rect.top &&
+        previous.rect.width === next.rect.width &&
+        previous.rect.height === next.rect.height &&
+        previous.tagName === next.tagName &&
+        previous.reportIdAttribute === next.reportIdAttribute &&
+        isSamePickTargetFontStyle(previous.fontStyle, next.fontStyle));
+}
+export function hasDirectReportId(element) {
+    return Boolean(element.dataset.reportId?.trim());
+}
+export function toFeedbackHoverSnapshot(element) {
+    if (!element) {
+        return null;
+    }
+    if (hasDirectReportId(element)) {
+        const snapshot = toSnapshot(element);
+        if (!snapshot) {
+            return null;
+        }
+        return enrichPickTargetInspect(element, {
+            ...snapshot,
+            isTagged: true,
+        });
+    }
+    const snapshot = toPickSnapshot(element);
+    if (!snapshot) {
+        return null;
+    }
+    return enrichPickTargetInspect(element, {
+        ...snapshot,
+        isTagged: false,
+    });
 }
 export function toSnapshot(element) {
     if (!element) {
@@ -82,6 +138,7 @@ export function toSnapshot(element) {
         id: reportId,
         type: resolveReportType(element),
         rect: element.getBoundingClientRect(),
+        isTagged: true,
     };
 }
 export function resolveFeedbackDocumentAnchor(targetElement) {
@@ -209,6 +266,44 @@ function isPointerEventBlockingLayer(element) {
     }
     const rect = element.getBoundingClientRect();
     return rect.width > 0 && rect.height > 0;
+}
+export function toPickSnapshot(element) {
+    if (!element) {
+        return null;
+    }
+    const selector = generateCssSelector(element);
+    const reportId = element.dataset.reportId?.trim();
+    const suggestedReportId = generateSuggestedReportId(element);
+    return {
+        id: reportId ?? createAutoPickReportId(selector),
+        type: reportId ? resolveReportType(element) : "item",
+        rect: element.getBoundingClientRect(),
+        isTagged: Boolean(reportId),
+        targetSelector: selector,
+        suggestedReportId,
+    };
+}
+export function findPickTargetByPoint(overlay, clientX, clientY) {
+    if (!overlay) {
+        return null;
+    }
+    const previousPointerEvents = overlay.style.pointerEvents;
+    overlay.style.pointerEvents = "none";
+    const elements = getElementsFromPoint(clientX, clientY);
+    overlay.style.pointerEvents = previousPointerEvents;
+    for (const element of elements) {
+        if (!isPickableElement(element)) {
+            if (isPointerEventBlockingLayer(element)) {
+                return null;
+            }
+            continue;
+        }
+        if (!isSelectableFeedbackTarget(element)) {
+            continue;
+        }
+        return element;
+    }
+    return null;
 }
 export function findTargetByPoint(overlay, clientX, clientY) {
     if (!overlay) {

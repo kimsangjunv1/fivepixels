@@ -4,7 +4,9 @@ export function FieldTagSelector({ fields, fieldValues, onFieldChange }) {
     if (tagFields.length === 0) {
         return null;
     }
-    return (_jsx("div", { className: "flex flex-wrap items-center gap-[8px] border-t border-[var(--adaptive-blackOpacity100)] p-[8px]", children: tagFields.map((field) => {
+    return (
+    // <div className="flex flex-wrap items-center gap-[8px] border-t border-[var(--adaptive-blackOpacity100)] p-[8px]">
+    _jsx("div", { className: "flex flex-wrap items-center gap-[8px] border-t border-[var(--adaptive-blackOpacity100)] p-[4px]", children: tagFields.map((field) => {
             const selected = fieldValues[field.key] === true;
             return (_jsx("button", { type: "button", onClick: () => onFieldChange(field.key, !selected), className: "rounded-[8px] border px-[12px] py-[4px] text-[12px] font-semibold uppercase " +
                     (selected

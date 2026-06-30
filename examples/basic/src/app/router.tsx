@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 
 import { LandingPageProvider } from "../features/landing/model/LandingContext";
 import { ModalDemoProvider } from "../features/modals/model/ModalDemoContext";
+import { PulseEdgecasePage } from "../widgets/landing/pages/PulseEdgecasePage";
 import { PulseIssuesPage } from "../widgets/landing/pages/PulseIssuesPage";
 import { PulseOverviewPage } from "../widgets/landing/pages/PulseOverviewPage";
 import { PulseReleasePage } from "../widgets/landing/pages/PulseReleasePage";
@@ -22,6 +23,7 @@ export function AppRouter() {
                         <Route path="reviews" element={<PulseReviewsPage />} />
                         <Route path="release" element={<PulseReleasePage />} />
                         <Route path="settings" element={<PulseSettingsPage />} />
+                        <Route path="edgecase" element={<PulseEdgecasePage />} />
                     </Route>
                     <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>

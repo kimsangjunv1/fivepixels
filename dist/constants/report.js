@@ -10,5 +10,10 @@ export const TARGET_SURFACE = {
     group: "#0ed1b41c",
     item: "#0ed1b41c",
 };
+export const FEEDBACK_HIGHLIGHT = {
+    outline: "#8b5cf6",
+    surface: "#8b5cf61c",
+    label: "#8b5cf6",
+};
 export const DEFAULT_FIELDS = getDefaultFields(en);
 //# sourceMappingURL=report.js.map

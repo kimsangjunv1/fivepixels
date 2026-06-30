@@ -54,6 +54,11 @@ declare const ReportContext: import("react").Context<{
     isMobileViewport: boolean;
     mode: import("../types/report-ui").ReportMode;
     showTargetPreview: boolean;
+    showMarkerTargetPreview: boolean;
+    setShowMarkerTargetPreview: (enabled: boolean) => void;
+    toggleMarkerTargetPreview: () => void;
+    activeMarkerTarget: import("../types/report-ui").TargetSnapshot | null;
+    markerPreviewTargets: import("../types/report-ui").TargetSnapshot[];
     selectableTargets: import("../types/report-ui").TargetSnapshot[];
     filters: import("../types/report-ui").ReportFilters;
     setFilters: import("react").Dispatch<import("react").SetStateAction<import("../types/report-ui").ReportFilters>>;
@@ -215,6 +220,11 @@ export declare function useReport(): {
     isMobileViewport: boolean;
     mode: import("../types/report-ui").ReportMode;
     showTargetPreview: boolean;
+    showMarkerTargetPreview: boolean;
+    setShowMarkerTargetPreview: (enabled: boolean) => void;
+    toggleMarkerTargetPreview: () => void;
+    activeMarkerTarget: import("../types/report-ui").TargetSnapshot | null;
+    markerPreviewTargets: import("../types/report-ui").TargetSnapshot[];
     selectableTargets: import("../types/report-ui").TargetSnapshot[];
     filters: import("../types/report-ui").ReportFilters;
     setFilters: import("react").Dispatch<import("react").SetStateAction<import("../types/report-ui").ReportFilters>>;

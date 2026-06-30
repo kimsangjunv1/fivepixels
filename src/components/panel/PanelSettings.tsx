@@ -60,7 +60,7 @@ export function PanelSettings({
     onKeyInsert,
     onKeyRotate,
 }: PanelSettingsProps) {
-    const { locale, setLocale, messages } = useReport();
+    const { locale, setLocale, messages, showMarkerTargetPreview, setShowMarkerTargetPreview } = useReport();
     const appearanceOptions = (["system", "light", "dark"] as const).map((value) => ({
         value,
         label: messages.appearance[value],
@@ -142,6 +142,20 @@ export function PanelSettings({
                         value={questionThreadDisplay}
                         onChange={onQuestionThreadDisplayChange}
                         ariaLabel={messages.moreMenu.questionThreadAriaLabel}
+                    />
+                </div>
+            </SettingsSection>
+
+            <SettingsSection label={messages.settings.sectionMarker}>
+                <div className="px-[12px] pb-[10px]">
+                    <PanelOptionSwitch
+                        options={[
+                            { value: "off", label: messages.settings.markerTargetsOff },
+                            { value: "on", label: messages.settings.markerTargetsOn },
+                        ]}
+                        value={showMarkerTargetPreview ? "on" : "off"}
+                        onChange={(value) => setShowMarkerTargetPreview(value === "on")}
+                        ariaLabel={messages.settings.markerTargetsAriaLabel}
                     />
                 </div>
             </SettingsSection>

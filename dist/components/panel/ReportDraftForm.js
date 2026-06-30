@@ -1,10 +1,13 @@
-import { jsx as _jsx } from "react/jsx-runtime";
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useMemo } from "react";
 import { useTooltipLayout } from "../../hooks/useTooltipLayout.js";
 import { useReport } from "../../providers/reportContext.js";
 import { getDraftMarkerPosition } from "../../utils/coordinates.js";
 import { FeedbackComposer } from "./feedback/FeedbackComposer.js";
-const TOOLTIP_SURFACE_CLASS = "overflow-hidden rounded-[12px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-blackOpacity700)] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[20px]";
+import { PickTargetSnippet } from "./feedback/PickTargetSnippet.js";
+const TOOLTIP_SURFACE_CLASS = "overflow-hidden rounded-[12px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface-overlay)] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[20px]";
+// ("overflow-hidden rounded-[12px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface-overlay)] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[20px]");
+// "overflow-hidden rounded-[12px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-blackOpacity700)] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[20px]";
 const EXPANDED_TOOLTIP_ANCHOR_CLASS = "pointer-events-auto fixed z-[1000001]";
 export function ReportDraftForm() {
     const { draft, fields, authors, isCreating, selectedTarget, updateDraftCase, addDraftCase, removeDraftCase, updateDraftField, handleCreateSubmit, handleCreateSubmitWithGitHubIssue, canCreateGitHubIssueOnCreate, isDraftGitHubIssueSubmitting, draftAuthorName, setDraftAuthorName, errorMessage, } = useReport();
@@ -27,8 +30,8 @@ function ReportDraftFormContent({ draft, fields, authors, isCreating, selectedTa
             width: tooltipPosition.width,
             minWidth: 320,
             ...tooltipAnchorStyle,
-        }, children: _jsx("div", { className: TOOLTIP_SURFACE_CLASS, style: {
+        }, children: _jsxs("div", { className: TOOLTIP_SURFACE_CLASS, style: {
                 pointerEvents: "auto",
-            }, children: _jsx(FeedbackComposer, { cases: draft.cases, onCaseChange: updateDraftCase, onAddCase: addDraftCase, onRemoveCase: removeDraftCase, authorName: draftAuthorName, onAuthorNameChange: setDraftAuthorName, authors: authors, fields: fields, fieldValues: draft.fieldValues, onFieldChange: updateDraftField, showTags: true, onSubmit: () => void handleCreateSubmit(), isSubmitting: isCreating, showGitHubIssueOnCreate: canCreateGitHubIssueOnCreate, onGitHubIssueSubmit: () => void handleCreateSubmitWithGitHubIssue(), isGitHubIssueSubmitting: isDraftGitHubIssueSubmitting, autoFocus: true, errorMessage: errorMessage }) }) }));
+            }, children: [draft.targetSelector && draft.suggestedReportId ? (_jsx(PickTargetSnippet, { suggestedReportId: draft.suggestedReportId, reportType: draft.reportType })) : null, _jsx(FeedbackComposer, { cases: draft.cases, onCaseChange: updateDraftCase, onAddCase: addDraftCase, onRemoveCase: removeDraftCase, authorName: draftAuthorName, onAuthorNameChange: setDraftAuthorName, authors: authors, fields: fields, fieldValues: draft.fieldValues, onFieldChange: updateDraftField, showTags: true, onSubmit: () => void handleCreateSubmit(), isSubmitting: isCreating, showGitHubIssueOnCreate: canCreateGitHubIssueOnCreate, onGitHubIssueSubmit: () => void handleCreateSubmitWithGitHubIssue(), isGitHubIssueSubmitting: isDraftGitHubIssueSubmitting, autoFocus: true, errorMessage: errorMessage })] }) }));
 }
 //# sourceMappingURL=ReportDraftForm.js.map

@@ -12,10 +12,30 @@ export type ReportFilters = {
     reportType: ReportTargetType | "all";
 };
 
+export type PickTargetFontStyle = {
+    fontFamily: string;
+    fontSize: string;
+    fontWeight: string;
+    lineHeight: string;
+};
+
+export type PickTargetBoxStyle = {
+    display: string;
+    padding: string;
+    margin: string;
+};
+
 export type TargetSnapshot = {
     id: string;
     type: ReportTargetType;
     rect: DOMRect;
+    isTagged: boolean;
+    targetSelector?: string | null;
+    suggestedReportId?: string | null;
+    tagName?: string;
+    reportIdAttribute?: string | null;
+    boxStyle?: PickTargetBoxStyle;
+    fontStyle?: PickTargetFontStyle | null;
 };
 
 export type DraftReport = {
@@ -33,6 +53,8 @@ export type DraftReport = {
     documentY: number;
     reportId: string;
     reportType: ReportTargetType;
+    targetSelector: string | null;
+    suggestedReportId: string | null;
     cases: ReportCase[];
     fieldValues: ReportFieldValues;
 };

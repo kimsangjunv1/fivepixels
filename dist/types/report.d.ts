@@ -137,6 +137,7 @@ export type ReportFeedback = {
     pathname: string;
     report_id: string;
     report_type: ReportTargetType;
+    target_selector?: string;
     cases: ReportCase[];
     status: ReportStatus;
     field_values: ReportFieldValues;
