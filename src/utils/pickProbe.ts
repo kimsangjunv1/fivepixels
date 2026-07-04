@@ -104,64 +104,142 @@ function applyProbeColorProperty(element: HTMLElement, property: "color" | "back
     }
 }
 
-function applyLayoutProbeValues(element: HTMLElement, values: PickProbeValues, layoutMode: PickProbeLayoutMode) {
-    if (!layoutMode) {
+function applyProbeTextContent(element: HTMLElement, value: string) {
+    if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement) {
+        element.value = value;
         return;
     }
 
-    if (values.gap) {
-        element.style.gap = values.gap;
-    }
+    element.textContent = value;
+}
 
-    if (layoutMode === "flex") {
-        if (values.justifyContent) {
-            element.style.justifyContent = values.justifyContent;
-        }
+function removeProbeFieldInlineStyle(element: HTMLElement, key: PickProbeFieldKey) {
+    const propertyMap: Partial<Record<PickProbeFieldKey, string>> = {
+        padding: "padding",
+        margin: "margin",
+        textColor: "color",
+        backgroundColor: "background-color",
+        borderColor: "border-color",
+        fontSize: "font-size",
+        lineHeight: "line-height",
+        justifyContent: "justify-content",
+        alignItems: "align-items",
+        flexDirection: "flex-direction",
+        gap: "gap",
+        gridColumnCount: "grid-template-columns",
+        gridRowCount: "grid-template-rows",
+    };
 
-        if (values.alignItems) {
-            element.style.alignItems = values.alignItems;
-        }
+    const property = propertyMap[key];
 
-        if (values.flexDirection) {
-            element.style.flexDirection = values.flexDirection;
-        }
-
-        return;
-    }
-
-    if (values.gridColumnCount) {
-        element.style.gridTemplateColumns = formatGridTrackCount(Number.parseInt(values.gridColumnCount, 10));
-    }
-
-    if (values.gridRowCount) {
-        element.style.gridTemplateRows = formatGridTrackCount(Number.parseInt(values.gridRowCount, 10));
+    if (property) {
+        element.style.removeProperty(property);
     }
 }
 
-export function applyPickProbeValues(element: HTMLElement, values: PickProbeValues) {
+function applyProbeFieldValue(element: HTMLElement, key: PickProbeFieldKey, value: string, layoutMode: PickProbeLayoutMode) {
+    switch (key) {
+        case "padding":
+            element.style.padding = value;
+            return;
+        case "margin":
+            element.style.margin = value;
+            return;
+        case "textColor":
+            applyProbeColorProperty(element, "color", value);
+            return;
+        case "backgroundColor":
+            applyProbeColorProperty(element, "backgroundColor", value);
+            return;
+        case "borderColor":
+            applyProbeColorProperty(element, "borderColor", value);
+            return;
+        case "fontSize":
+            element.style.fontSize = value;
+            return;
+        case "lineHeight":
+            element.style.lineHeight = value;
+            return;
+        case "justifyContent":
+            element.style.justifyContent = value;
+            return;
+        case "alignItems":
+            element.style.alignItems = value;
+            return;
+        case "flexDirection":
+            element.style.flexDirection = value;
+            return;
+        case "gap":
+            if (value) {
+                element.style.gap = value;
+            } else {
+                element.style.removeProperty("gap");
+            }
+
+            return;
+        case "gridColumnCount":
+            if (layoutMode === "grid" && value) {
+                element.style.gridTemplateColumns = formatGridTrackCount(Number.parseInt(value, 10));
+            }
+
+            return;
+        case "gridRowCount":
+            if (layoutMode === "grid" && value) {
+                element.style.gridTemplateRows = formatGridTrackCount(Number.parseInt(value, 10));
+            }
+
+            return;
+        case "textContent":
+            applyProbeTextContent(element, value);
+            return;
+    }
+}
+
+export function applyPickProbeValueDiff(
+    element: HTMLElement,
+    baseline: PickProbeValues,
+    current: PickProbeValues,
+    mode: PickProbeCompareMode = "after",
+) {
     const supportsTextFields = shouldInspectFontStyle(element);
     const layoutMode = getPickProbeLayoutMode(element);
 
-    element.style.padding = values.padding;
-    element.style.margin = values.margin;
-    applyProbeColorProperty(element, "color", values.textColor);
-    applyProbeColorProperty(element, "backgroundColor", values.backgroundColor);
-    applyProbeColorProperty(element, "borderColor", values.borderColor);
-    applyLayoutProbeValues(element, values, layoutMode);
+    for (const key of getProbeFieldKeys(supportsTextFields, layoutMode)) {
+        const baselineValue = baseline[key];
+        const currentValue = current[key];
+        const targetValue = mode === "before" ? baselineValue : currentValue;
 
-    if (!supportsTextFields) {
-        return;
+        if (baselineValue === currentValue) {
+            if (key === "textContent") {
+                if (supportsTextFields) {
+                    applyProbeTextContent(element, baselineValue);
+                }
+            } else {
+                removeProbeFieldInlineStyle(element, key);
+            }
+
+            continue;
+        }
+
+        if (key === "textContent") {
+            if (supportsTextFields) {
+                applyProbeTextContent(element, targetValue);
+            }
+
+            continue;
+        }
+
+        if (mode === "before") {
+            removeProbeFieldInlineStyle(element, key);
+            continue;
+        }
+
+        applyProbeFieldValue(element, key, targetValue, layoutMode);
     }
+}
 
-    element.style.fontSize = values.fontSize;
-    element.style.lineHeight = values.lineHeight;
-
-    if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement) {
-        element.value = values.textContent;
-        return;
-    }
-
-    element.textContent = values.textContent;
+export function applyPickProbeValues(element: HTMLElement, values: PickProbeValues, baseline?: PickProbeValues) {
+    applyPickProbeValueDiff(element, baseline ?? capturePickProbeValues(element), values, "after");
 }
 
 export function getProposedChanges(
@@ -185,7 +263,7 @@ export function applyPickProbeCompareMode(
     baseline: PickProbeValues,
     current: PickProbeValues,
 ) {
-    applyPickProbeValues(element, mode === "before" ? baseline : current);
+    applyPickProbeValueDiff(element, baseline, current, mode);
 }
 
 export function formatProbeElementKeyLabel(elementKey: string) {

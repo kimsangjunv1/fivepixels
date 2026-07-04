@@ -57,11 +57,15 @@ describe("pickProbe layout", () => {
         expect(captured.flexDirection).toBe("column");
         expect(captured.gap).toBe("12px");
 
-        applyPickProbeValues(element, {
-            ...captured,
-            justifyContent: "flex-start",
-            gap: "20px",
-        });
+        applyPickProbeValues(
+            element,
+            {
+                ...captured,
+                justifyContent: "flex-start",
+                gap: "20px",
+            },
+            captured,
+        );
 
         const style = window.getComputedStyle(element);
         expect(style.justifyContent).toBe("flex-start");
@@ -77,11 +81,15 @@ describe("pickProbe layout", () => {
         expect(captured.gridRowCount).toBe("3");
         expect(captured.gap).toBe("16px");
 
-        applyPickProbeValues(element, {
-            ...captured,
-            gridColumnCount: "4",
-            gridRowCount: "2",
-        });
+        applyPickProbeValues(
+            element,
+            {
+                ...captured,
+                gridColumnCount: "4",
+                gridRowCount: "2",
+            },
+            captured,
+        );
 
         const style = window.getComputedStyle(element);
         expect(style.gridTemplateColumns).toBe(formatGridTrackCount(4));

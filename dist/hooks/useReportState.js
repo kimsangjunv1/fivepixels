@@ -5,6 +5,7 @@ import { useMarkerTargetPreviewPreference } from "./useMarkerTargetPreviewPrefer
 import { useReportPersistence } from "./useReportPersistence.js";
 import { useIsMobileViewport } from "./useIsMobileViewport.js";
 import { useAppearancePreference } from "./useAppearancePreference.js";
+import { PANEL_APPEARANCE_STORAGE_KEY, TOOLTIP_APPEARANCE_STORAGE_KEY } from "../constants/appearance.js";
 import { useLocalePreference } from "./useLocalePreference.js";
 import { useQuestionThreadPreference } from "./useQuestionThreadPreference.js";
 import { usePersonalKey } from "./usePersonalKey.js";
@@ -16,8 +17,8 @@ const MARKER_HOVER_LEAVE_MS = 250;
 const OVERLAY_HOVER_LEAVE_MS = 100;
 import { findPickTargetByPoint, getSelectableTargets, isSameHoverTarget, resolveFeedbackDocumentAnchor, toFeedbackHoverSnapshot, toPickSnapshot, toSnapshot, hasDirectReportId } from "../utils/dom.js";
 import { shouldInspectFontStyle } from "../utils/pickTargetInspect.js";
-import { applyPickProbeCompareMode, applyPickProbeValues, capturePickProbeValues, formatSavedProbeEditsSummary, getProposedChanges, } from "../utils/pickProbe.js";
-import { applySavedProbeEditsCompareMode, captureProbeOriginalSnapshot, captureSavedProbeDeletion, createSavedProbeEntry, findElementByProbeKey, getPickProbeElementKey, restoreProbeElementOriginal, restoreSavedProbeDeletion, } from "../utils/pickProbeSession.js";
+import { applyPickProbeCompareMode, applyPickProbeValueDiff, capturePickProbeValues, formatSavedProbeEditsSummary, getProposedChanges, } from "../utils/pickProbe.js";
+import { applySavedProbeEditsCompareMode, captureProbeOriginalSnapshot, captureSavedProbeDeletion, createSavedProbeEntry, restoreProbeElementFromSnapshot, findElementByProbeKey, getPickProbeElementKey, restoreProbeElementOriginal, restoreSavedProbeDeletion, } from "../utils/pickProbeSession.js";
 import { playPickTargetDeleteAnimation } from "../utils/pickTargetDeleteAnimation.js";
 import { applyProbeSessionActionBackward, applyProbeSessionActionForward } from "../utils/probeSessionHistory.js";
 import { getPickProbeLayoutMode } from "../utils/probeLayout.js";
@@ -33,8 +34,9 @@ function resolveDefaultAuthorName(identify, authors) {
     }
     return authors[0]?.name ?? "";
 }
-export function useReportState({ projectId, environment, appVersion, appearance, questionThreadDefault = "expanded", fields, authors = [], requireReviewerKey = false, shortcut: _shortcut, identify, onList, onListAll, onListReplies, onNavigate, onRevealTarget, onCreate, onCreateReply, onUpdate, onDelete, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys = false, initialLocale, messageOverrides, }) {
-    const { appearance: activeAppearance, setAppearance } = useAppearancePreference(appearance);
+export function useReportState({ projectId, environment, appVersion, panelAppearance, tooltipAppearance, questionThreadDefault = "expanded", fields, authors = [], requireReviewerKey = false, shortcut: _shortcut, identify, onList, onListAll, onListReplies, onNavigate, onRevealTarget, onCreate, onCreateReply, onUpdate, onDelete, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys = false, initialLocale, messageOverrides, }) {
+    const { appearance: activePanelAppearance, setAppearance: setPanelAppearance } = useAppearancePreference(PANEL_APPEARANCE_STORAGE_KEY, panelAppearance);
+    const { appearance: activeTooltipAppearance, setAppearance: setTooltipAppearance } = useAppearancePreference(TOOLTIP_APPEARANCE_STORAGE_KEY, tooltipAppearance);
     const { showMarkerTargetPreview, setShowMarkerTargetPreview, toggleMarkerTargetPreview } = useMarkerTargetPreviewPreference();
     const { questionThreadDisplay, setQuestionThreadDisplay } = useQuestionThreadPreference(questionThreadDefault);
     const { locale, setLocale } = useLocalePreference(initialLocale);
@@ -65,7 +67,8 @@ export function useReportState({ projectId, environment, appVersion, appearance,
     const selectedElementRef = useRef(null);
     const hoverLeaveTimeoutRef = useRef(null);
     const overlayHoverLeaveTimeoutRef = useRef(null);
-    const resolvedAppearance = useResolvedAppearance(activeAppearance);
+    const resolvedPanelAppearance = useResolvedAppearance(activePanelAppearance);
+    const resolvedTooltipAppearance = useResolvedAppearance(activeTooltipAppearance);
     const isMobileViewport = useIsMobileViewport();
     const { canTransferFeedback, canListAllFeedback, currentPathname, listScope, setListScope, filters, setFilters, selectedReportId, setSelectedReportId, reports, filteredReports, currentPageFilteredReports, routeDetailsStats, selectedReport, isError, isFetching, hasNextPage, isFetchingNextPage, fetchNextPage, isCreating, isUpdating, isDeleting, queryErrorMessage, refetch, createFeedback, updateFeedback, deleteFeedback, loadRepliesIfNeeded, createReply, usesCreateReply, } = useReportPersistence({
         projectId,
@@ -487,30 +490,6 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         setSelectedTarget(snapshot);
         setHoveredTarget(snapshot);
     }, []);
-    const restorePickProbeElement = useCallback(() => {
-        const element = selectedElementRef.current;
-        const restore = pickProbeRestoreRef.current;
-        if (!element || !restore) {
-            return;
-        }
-        if (restore.style === null) {
-            element.removeAttribute("style");
-        }
-        else {
-            element.setAttribute("style", restore.style);
-        }
-        if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement) {
-            if (restore.inputValue !== null) {
-                element.value = restore.inputValue;
-            }
-        }
-        else if (restore.textContent !== null) {
-            element.textContent = restore.textContent;
-        }
-        pickProbeRestoreRef.current = null;
-        pickProbeOriginalSnapshotRef.current = null;
-        refreshSelectedTargetSnapshot();
-    }, [refreshSelectedTargetSnapshot]);
     const closePickProbePanelOnly = useCallback(() => {
         setPickProbeOpen(false);
         setPickProbeBaseline(null);
@@ -521,9 +500,8 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         pickProbeElementKeyRef.current = null;
     }, []);
     const resetPickProbeState = useCallback(() => {
-        restorePickProbeElement();
         closePickProbePanelOnly();
-    }, [closePickProbePanelOnly, restorePickProbeElement]);
+    }, [closePickProbePanelOnly]);
     const revertSavedProbeEdit = useCallback((elementKey) => {
         setSavedProbeEdits((current) => {
             const entry = current[elementKey];
@@ -630,48 +608,84 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         return getProposedChanges(pickProbeBaseline, pickProbeValues, pickProbeSupportsTextFields, pickProbeLayoutMode);
     }, [pickProbeBaseline, pickProbeLayoutMode, pickProbeSupportsTextFields, pickProbeValues]);
     const pickProbeHasEdits = pickProbeChanges.length > 0;
-    const commitPickProbeEdits = useCallback(() => {
+    const persistPickProbeEdits = useCallback((options) => {
         const element = selectedElementRef.current;
-        if (!element || !pickProbeBaseline || !pickProbeValues || pickProbeChanges.length === 0) {
+        const values = options?.values ?? pickProbeValues;
+        if (!element || !pickProbeBaseline || !values) {
+            if (options?.closePanel) {
+                closePickProbePanelOnly();
+            }
             return;
         }
         const elementKey = getPickProbeElementKey(element);
+        const changes = getProposedChanges(pickProbeBaseline, values, pickProbeSupportsTextFields, pickProbeLayoutMode);
         const existing = savedProbeEdits[elementKey];
+        if (changes.length === 0) {
+            if (existing) {
+                pushProbeSessionAction({
+                    kind: "style-revert",
+                    elementKey,
+                    revertedEntry: existing,
+                });
+                setSavedProbeEdits((current) => {
+                    const next = { ...current };
+                    delete next[elementKey];
+                    return next;
+                });
+            }
+            if (options?.closePanel) {
+                pickProbeRestoreRef.current = null;
+                pickProbeOriginalSnapshotRef.current = null;
+                closePickProbePanelOnly();
+            }
+            refreshSelectedTargetSnapshot();
+            return;
+        }
         const previousEntry = existing ?? null;
         const originalSnapshot = pickProbeOriginalSnapshotRef.current;
-        applyPickProbeCompareMode(element, savedProbeCompareMode, pickProbeBaseline, pickProbeValues);
-        const nextEntry = createSavedProbeEntry(elementKey, pickProbeBaseline, pickProbeValues, originalSnapshot?.style ?? pickProbeRestoreRef.current?.style ?? null, originalSnapshot?.textContent ?? pickProbeRestoreRef.current?.textContent ?? pickProbeBaseline.textContent, existing, originalSnapshot?.innerHTML ?? null, originalSnapshot?.inputValue ?? null);
+        applyPickProbeCompareMode(element, savedProbeCompareMode, pickProbeBaseline, values);
+        const nextEntry = createSavedProbeEntry(elementKey, pickProbeBaseline, values, originalSnapshot?.style ?? pickProbeRestoreRef.current?.style ?? null, originalSnapshot?.textContent ?? pickProbeRestoreRef.current?.textContent ?? pickProbeBaseline.textContent, existing, originalSnapshot?.innerHTML ?? null, originalSnapshot?.inputValue ?? null);
+        const appliedChanged = !existing ||
+            getProposedChanges(existing.applied, values, pickProbeSupportsTextFields, pickProbeLayoutMode).length > 0;
         setSavedProbeEdits((current) => ({
             ...current,
             [elementKey]: nextEntry,
         }));
-        pushProbeSessionAction({
-            kind: "style-apply",
-            elementKey,
-            previousEntry,
-            nextEntry,
-        });
-        pickProbeRestoreRef.current = null;
-        pickProbeOriginalSnapshotRef.current = null;
-        closePickProbePanelOnly();
+        if (appliedChanged) {
+            pushProbeSessionAction({
+                kind: "style-apply",
+                elementKey,
+                previousEntry,
+                nextEntry,
+            });
+        }
+        if (options?.closePanel) {
+            pickProbeRestoreRef.current = null;
+            pickProbeOriginalSnapshotRef.current = null;
+            closePickProbePanelOnly();
+        }
         refreshSelectedTargetSnapshot();
     }, [
         closePickProbePanelOnly,
         pickProbeBaseline,
-        pickProbeChanges.length,
+        pickProbeLayoutMode,
+        pickProbeSupportsTextFields,
         pickProbeValues,
+        pushProbeSessionAction,
         refreshSelectedTargetSnapshot,
         savedProbeCompareMode,
         savedProbeEdits,
-        pushProbeSessionAction,
     ]);
+    const commitPickProbeEdits = useCallback(() => {
+        persistPickProbeEdits({ closePanel: true });
+    }, [persistPickProbeEdits]);
     const openPickProbe = useCallback(() => {
         const element = selectedElementRef.current;
         if (!element) {
             return;
         }
         if (pickProbeOpen) {
-            restorePickProbeElement();
+            closePickProbePanelOnly();
         }
         const elementKey = getPickProbeElementKey(element);
         const saved = savedProbeEdits[elementKey];
@@ -681,27 +695,19 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         setPickProbeSupportsTextFields(supportsTextFields);
         setPickProbeLayoutMode(layoutMode);
         const freshBaseline = capturePickProbeValues(element);
-        if (!saved) {
-            pickProbeOriginalSnapshotRef.current = captureProbeOriginalSnapshot(element);
-        }
+        const sessionSnapshot = captureProbeOriginalSnapshot(element);
+        pickProbeOriginalSnapshotRef.current = sessionSnapshot;
+        pickProbeRestoreRef.current = {
+            style: sessionSnapshot.style,
+            textContent: sessionSnapshot.textContent,
+            inputValue: sessionSnapshot.inputValue,
+        };
         if (saved) {
             applyPickProbeCompareMode(element, savedProbeCompareMode, saved.baseline, saved.applied);
-            pickProbeRestoreRef.current = {
-                style: element.getAttribute("style"),
-                textContent: element.textContent,
-                inputValue: element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement ? element.value : null,
-            };
             setPickProbeBaseline({ ...freshBaseline, ...saved.baseline });
             setPickProbeValues({ ...freshBaseline, ...saved.applied });
         }
         else {
-            const snapshot = pickProbeOriginalSnapshotRef.current ?? captureProbeOriginalSnapshot(element);
-            pickProbeOriginalSnapshotRef.current = snapshot;
-            pickProbeRestoreRef.current = {
-                style: snapshot.style,
-                textContent: snapshot.textContent,
-                inputValue: snapshot.inputValue,
-            };
             const baseline = capturePickProbeValues(element);
             setPickProbeBaseline(baseline);
             setPickProbeValues(baseline);
@@ -709,7 +715,7 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         setPickProbeCompareModeState("after");
         setPickProbeOpen(true);
         refreshSelectedTargetSnapshot();
-    }, [pickProbeOpen, refreshSelectedTargetSnapshot, restorePickProbeElement, savedProbeCompareMode, savedProbeEdits]);
+    }, [closePickProbePanelOnly, pickProbeOpen, refreshSelectedTargetSnapshot, savedProbeCompareMode, savedProbeEdits]);
     const closePickProbe = useCallback(() => {
         resetPickProbeState();
     }, [resetPickProbeState]);
@@ -803,15 +809,18 @@ export function useReportState({ projectId, environment, appVersion, appearance,
             closePickTargetContextMenu();
         }
     }, [closePickTargetContextMenu, mode, resetPickProbeState]);
-    const setPickProbeCompareMode = useCallback((mode) => {
+    const setPickProbeCompareMode = useCallback((compareMode) => {
         const element = selectedElementRef.current;
         if (!element || !pickProbeBaseline || !pickProbeValues) {
             return;
         }
-        applyPickProbeCompareMode(element, mode, pickProbeBaseline, pickProbeValues);
-        setPickProbeCompareModeState(mode);
+        applyPickProbeCompareMode(element, compareMode, pickProbeBaseline, pickProbeValues);
+        setPickProbeCompareModeState(compareMode);
         refreshSelectedTargetSnapshot();
-    }, [pickProbeBaseline, pickProbeValues, refreshSelectedTargetSnapshot]);
+        if (compareMode === "after") {
+            persistPickProbeEdits();
+        }
+    }, [persistPickProbeEdits, pickProbeBaseline, pickProbeValues, refreshSelectedTargetSnapshot]);
     const updatePickProbeValue = useCallback((key, value) => {
         const element = selectedElementRef.current;
         if (!element || !pickProbeBaseline || !pickProbeValues) {
@@ -823,19 +832,34 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         };
         setPickProbeValues(nextValues);
         if (pickProbeCompareMode === "after") {
-            applyPickProbeValues(element, nextValues);
+            applyPickProbeValueDiff(element, pickProbeBaseline, nextValues, "after");
             refreshSelectedTargetSnapshot();
+            persistPickProbeEdits({ values: nextValues });
         }
-    }, [pickProbeBaseline, pickProbeCompareMode, pickProbeValues, refreshSelectedTargetSnapshot]);
+    }, [pickProbeBaseline, pickProbeCompareMode, pickProbeValues, persistPickProbeEdits, refreshSelectedTargetSnapshot]);
     const resetPickProbeValues = useCallback(() => {
         const element = selectedElementRef.current;
-        if (!element || !pickProbeBaseline) {
+        if (!element || !pickProbeBaseline || !pickProbeValues) {
             return;
         }
         setPickProbeValues(pickProbeBaseline);
-        applyPickProbeCompareMode(element, pickProbeCompareMode, pickProbeBaseline, pickProbeBaseline);
+        const snapshot = pickProbeOriginalSnapshotRef.current;
+        if (snapshot) {
+            restoreProbeElementFromSnapshot(element, snapshot);
+        }
+        else if (pickProbeHasEdits) {
+            applyPickProbeCompareMode(element, pickProbeCompareMode, pickProbeBaseline, pickProbeBaseline);
+        }
+        persistPickProbeEdits({ values: pickProbeBaseline });
         refreshSelectedTargetSnapshot();
-    }, [pickProbeBaseline, pickProbeCompareMode, refreshSelectedTargetSnapshot]);
+    }, [
+        pickProbeBaseline,
+        pickProbeCompareMode,
+        pickProbeHasEdits,
+        pickProbeValues,
+        persistPickProbeEdits,
+        refreshSelectedTargetSnapshot,
+    ]);
     const stopEditing = () => {
         setEditingReportId(null);
         setEditableDraft(null);
@@ -1674,11 +1698,13 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         showTargetPreview,
         activeReplyReportId,
         pendingComposer,
+        pickProbeOpen,
         toggleReportMode,
         toggleTargetPreview,
         toggleIssueMode,
         cancelDraft,
         cancelPendingComposer,
+        closePickProbe,
         closeReplyComposer,
         handleCreateSubmit,
         stopEditing,
@@ -1687,8 +1713,10 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         selectAdjacentReport,
     });
     return {
-        appearance: activeAppearance,
-        setAppearance,
+        panelAppearance: activePanelAppearance,
+        setPanelAppearance,
+        tooltipAppearance: activeTooltipAppearance,
+        setTooltipAppearance,
         questionThreadDisplay,
         setQuestionThreadDisplay,
         locale,
@@ -1715,7 +1743,8 @@ export function useReportState({ projectId, environment, appVersion, appearance,
         canListAllFeedback,
         visibleShortcutKeys,
         searchInputRef,
-        resolvedAppearance,
+        resolvedPanelAppearance,
+        resolvedTooltipAppearance,
         isMobileViewport,
         mode,
         showTargetPreview,

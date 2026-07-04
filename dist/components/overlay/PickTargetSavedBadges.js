@@ -3,7 +3,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useReport } from "../../providers/reportContext.js";
 import { findElementByProbeKey } from "../../utils/pickProbeSession.js";
 import { getPickProbeSavedBadgeLayout } from "../../utils/pickProbeLayout.js";
-function SavedProbeBadge({ elementKey, label }) {
+function SavedProbeBadge({ elementKey, label, badgeOpacity }) {
     const badgeRef = useRef(null);
     const [layout, setLayout] = useState(null);
     useLayoutEffect(() => {
@@ -35,14 +35,16 @@ function SavedProbeBadge({ elementKey, label }) {
     return (_jsx("span", { ref: badgeRef, className: "pointer-events-none fixed z-[1000003] rounded-[4px] bg-[#8b5cf6] px-[5px] py-[1px] text-[12px] font-semibold leading-[1.3] text-white shadow-[0_1px_4px_rgba(0,0,0,0.18)]", style: {
             top: layout?.top ?? element.getBoundingClientRect().top,
             left: layout?.left ?? element.getBoundingClientRect().right,
-            opacity: layout ? 1 : 0,
+            opacity: layout ? badgeOpacity : 0,
         }, children: label }));
 }
 export function PickTargetSavedBadges() {
     const { savedProbeEdits, messages, mode } = useReport();
     const [, setTick] = useState(0);
+    const savedElementKeys = Object.keys(savedProbeEdits);
+    const badgeOpacity = mode === "report" ? 1 : 0.5;
     useEffect(() => {
-        if (mode !== "report" || Object.keys(savedProbeEdits).length === 0) {
+        if (savedElementKeys.length === 0) {
             return;
         }
         const update = () => setTick((value) => value + 1);
@@ -52,10 +54,10 @@ export function PickTargetSavedBadges() {
             window.removeEventListener("resize", update);
             window.removeEventListener("scroll", update, true);
         };
-    }, [mode, savedProbeEdits]);
-    if (mode !== "report") {
+    }, [savedElementKeys.length]);
+    if (savedElementKeys.length === 0) {
         return null;
     }
-    return (_jsx(_Fragment, { children: Object.keys(savedProbeEdits).map((elementKey) => (_jsx(SavedProbeBadge, { elementKey: elementKey, label: messages.pickTarget.probeModifiedBadge }, elementKey))) }));
+    return (_jsx(_Fragment, { children: savedElementKeys.map((elementKey) => (_jsx(SavedProbeBadge, { elementKey: elementKey, label: messages.pickTarget.probeModifiedBadge, badgeOpacity: badgeOpacity }, elementKey))) }));
 }
 //# sourceMappingURL=PickTargetSavedBadges.js.map

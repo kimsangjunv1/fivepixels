@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
     captureProbeOriginalSnapshot,
     createSavedProbeEntry,
+    restoreProbeElementFromSnapshot,
     restoreProbeElementOriginal,
     restoreSavedProbeDeletion,
     captureSavedProbeDeletion,
@@ -190,5 +191,40 @@ describe("pickProbeSession", () => {
 
         expect(restored?.textContent).toBe("Remove me");
         expect(document.getElementById("target")).not.toBeNull();
+    });
+
+    it("restores container innerHTML instead of flattening text nodes", () => {
+        document.body.innerHTML = `
+            <article id="card" data-report-id="edge-search-field">
+                <h3 class="title">Filter input</h3>
+                <p class="desc">태깅된 입력 필드입니다.</p>
+                <button type="button">Tagged action</button>
+            </article>
+        `;
+        const element = document.getElementById("card") as HTMLElement;
+        const snapshot = captureProbeOriginalSnapshot(element);
+
+        element.textContent = "broken flat text";
+
+        restoreProbeElementFromSnapshot(element, snapshot);
+
+        expect(element.querySelector("h3.title")?.textContent).toBe("Filter input");
+        expect(element.querySelector("p.desc")?.textContent).toBe("태깅된 입력 필드입니다.");
+        expect(element.querySelector("button")?.textContent).toBe("Tagged action");
+        expect(element.getAttribute("style")).toBeNull();
+    });
+
+    it("does not add inline styles when restoring a container with no original style", () => {
+        document.body.innerHTML = `<article id="card"><p>Content</p></article>`;
+        const element = document.getElementById("card") as HTMLElement;
+        const snapshot = captureProbeOriginalSnapshot(element);
+
+        element.style.padding = "16px";
+        element.style.gridTemplateColumns = "repeat(1, minmax(0px, 1fr))";
+
+        restoreProbeElementFromSnapshot(element, snapshot);
+
+        expect(element.getAttribute("style")).toBeNull();
+        expect(element.querySelector("p")?.textContent).toBe("Content");
     });
 });

@@ -98,7 +98,11 @@ export type ReportMessages = {
         gitIssueSendLabel: string;
         gitIssueSendingLabel: string;
         casePlaceholder: string;
+        caseTabLabel: (index: number) => string;
+        caseInputPlaceholder: (index: number) => string;
         addCase: string;
+        addCaseTabAriaLabel: string;
+        selectCaseTabAriaLabel: (index: number) => string;
         removeCaseAriaLabel: (index: number) => string;
         probeSummaryPrompt: string;
         probeSummaryApply: string;
@@ -109,6 +113,8 @@ export type ReportMessages = {
     cases: {
         title: string;
         edit: string;
+        allTabLabel: string;
+        allTabAriaLabel: string;
         save: string;
         saving: string;
         open: string;
@@ -153,6 +159,10 @@ export type ReportMessages = {
         keyRotate: string;
         theme: string;
         themeAriaLabel: string;
+        panelTheme: string;
+        panelThemeAriaLabel: string;
+        tooltipTheme: string;
+        tooltipThemeAriaLabel: string;
         language: string;
         languageAriaLabel: string;
         questionThread: string;

@@ -4,7 +4,7 @@
 
 [한국어](./README.md) | English
 
-`fivepixels` is a React library for **DOM element-level feedback** on staging, QA, and internal tool screens. Drop markers by clicking targets, collaborate with replies and reviews, and optionally escalate to GitHub Issues. The UI renders in a **Shadow Root**, so **no CSS import** is required in the host app.
+`fivepixels` is a React library for **DOM element-level feedback** on staging, QA, and internal tool screens. Drop markers by clicking targets, collaborate with replies and reviews, and optionally escalate to GitHub Issues. **UI Edit mode** lets you tweak styles and layout on the live page so stakeholders can show—not just describe—desired changes. The UI renders in a **Shadow Root**, so **no CSS import** is required in the host app.
 
 📖 **Full guide:** [library.codi-agit.com/fivepixels/guide](https://library.codi-agit.com/fivepixels/guide)
 
@@ -76,15 +76,68 @@ Omit handlers to use **localStorage**. Pass persistence handlers for API-backed 
 
 | Attribute | Required | Description |
 | --------- | -------- | ----------- |
-| `data-report-id` | ✅ | Element identifier used to restore marker position. |
+| `data-report-id` | Recommended | Element identifier for marker restore. Without it, targets fall back to a CSS selector. |
 | `data-report-type` | | `item` (default) or `group` for section-level targets. |
 
 ## UI modes
 
 | Mode | Shortcut | Description |
 | ---- | -------- | ----------- |
-| **report** | `⌘⇧M` | Click elements to create feedback |
+| **report** | `⌘⇧M` | Click elements to create feedback. Right-click for design probe and delete. |
 | **view** | `⌘⇧L` | Browse markers, replies, and reviews |
+
+## UI Edit mode (design probe)
+
+In feedback mode you can **edit the real DOM live** for the current browser session—useful when PMs and designers need to align on spacing, color, or layout on staging without mockups.
+
+### Getting started
+
+1. Enter **Add feedback** mode and select an element.
+2. **Right-click → Edit** to open the design probe panel.
+3. Change values and click **Apply** to update the DOM. Applied elements show a **Modified** badge.
+
+Applied edits **stay on the page** after you stop feedback (**Stop feedback**).
+
+### What you can adjust
+
+| Area | Fields |
+| ---- | ------ |
+| Text | `textContent`, `fontSize`, `lineHeight` — hidden on non-text elements (e.g. images, plain buttons) |
+| Box | `padding`, `margin` (− / + stepper) |
+| Color | `textColor`, `backgroundColor`, `borderColor` — hex input, native color picker, copy button |
+| **flex** | Main/cross alignment (icons), horizontal/vertical direction + reverse, `gap` |
+| **grid** | Column/row count (− / +, 1–12), `gap` |
+
+Layout controls appear only when `display` is `flex` / `inline-flex` or `grid` / `inline-grid`. Alignment icons use **screen-relative** labels (left/center/right, top/center/bottom) and swap axes when direction is column.
+
+### Right-click context menu
+
+| Action | Effect |
+| ------ | ------ |
+| **Edit** | Open the design probe panel |
+| **Revert** | Undo style changes for that element only (recorded in undo history) |
+| **Delete** | Highlight animation, then remove from the DOM (restorable in-session) |
+
+### Panel banner (UI Edit active)
+
+When any edit or deletion exists, the panel shows **「UI Edit mode is active」**.
+
+| Control | Effect |
+| ------- | ------ |
+| **Reset** | Restore all session style edits and deletions at once |
+| **◀ / ▶** | Step **undo** / **redo** for apply, revert, and delete actions |
+| **Before / After** | Compare saved style changes (shown when style edits exist) |
+
+### Reflect changes in feedback
+
+While drafting feedback, if design probe changes exist, a banner asks whether to **insert the style change summary**. **Apply** creates a **new case** with a formatted summary of edits.
+
+### Behavior and limits
+
+- Changes apply via **inline `element.style`**, overriding class-based CSS (e.g. Tailwind) while the session lasts.
+- Edits persist only for the **current browser tab session**. A **full page reload** returns to the app’s original markup.
+- UI Edit is for QA and design communication—not automatic commits to your codebase.
+- Grid editing is simplified to **track count** and **gap**; uneven templates and cell spanning are not supported in the probe UI.
 
 ## Contributing
 

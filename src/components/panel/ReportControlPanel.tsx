@@ -94,8 +94,10 @@ export function ReportControlPanel() {
         showTargetPreview,
         isMobileViewport,
         panelTab,
-        appearance,
-        setAppearance,
+        panelAppearance,
+        setPanelAppearance,
+        tooltipAppearance,
+        setTooltipAppearance,
         questionThreadDisplay,
         setQuestionThreadDisplay,
         canTransferFeedback,
@@ -264,10 +266,10 @@ export function ReportControlPanel() {
                 onDrop={handleDrop}
                 className={`pointer-events-auto z-[1000000] flex ${
                     isRecording
-                        ? "min-h-[40px] bg-[var(--adaptive-surface-overlay)] rounded-[12px] shadow-[0_0_120px_0_var(--adaptive-blackOpacity500)]"
+                        ? "min-h-[40px] bg-[var(--adaptive-blackOpacity700)] backdrop-blur-[10px] rounded-[12px] shadow-[0_0_120px_0_var(--adaptive-blackOpacity500)]"
                         : panelCollapsed
                           ? ""
-                          : "relative bg-[var(--adaptive-surface-overlay)] rounded-[12px] border-0 shadow-[0_0_120px_0_var(--adaptive-blackOpacity500)]"
+                          : "relative bg-[var(--adaptive-blackOpacity700)] backdrop-blur-[10px] rounded-[12px] border-0 shadow-[0_0_120px_0_var(--adaptive-blackOpacity500)]"
                 }`}
                 style={{ ...resolvedPanelStyle, ...resolvedSizeStyle, fontSize: "14px" }}
             >
@@ -333,21 +335,22 @@ export function ReportControlPanel() {
                                                     <p className="text-[12px] text-[var(--adaptive-black900)]">{messages.panel.addFeedback}</p>
                                                 </button>
 
-                                                <IconTooltipButton
+                                                {/* <IconTooltipButton
                                                     label={messages.panel.viewSelectableElements}
                                                     active={showTargetPreview}
                                                     disabled={mode !== "idle"}
                                                     onClick={toggleTargetPreview}
                                                 >
                                                     <EyeOpenIcon className="h-[16px] w-[16px]" />
-                                                </IconTooltipButton>
+                                                </IconTooltipButton> */}
 
                                                 <IconTooltipButton
                                                     label={messages.panel.viewFeedbacks}
                                                     active={isIssueMode}
                                                     onClick={toggleIssueMode}
                                                 >
-                                                    <RouteWaitStatusIcon className="h-[16px] w-[16px]" />
+                                                    <EyeOpenIcon className="h-[16px] w-[16px]" />
+                                                    {/* <RouteWaitStatusIcon className="h-[16px] w-[16px]" /> */}
                                                 </IconTooltipButton>
                                             </section>
                                         </section>
@@ -449,8 +452,10 @@ export function ReportControlPanel() {
                                         {panelTab === "settings" && commandStep === "none" ? (
                                             <PanelSettings
                                                 transferDisabled={!canTransferFeedback}
-                                                appearance={appearance}
-                                                onAppearanceChange={setAppearance}
+                                                panelAppearance={panelAppearance}
+                                                onPanelAppearanceChange={setPanelAppearance}
+                                                tooltipAppearance={tooltipAppearance}
+                                                onTooltipAppearanceChange={setTooltipAppearance}
                                                 questionThreadDisplay={questionThreadDisplay}
                                                 onQuestionThreadDisplayChange={setQuestionThreadDisplay}
                                                 onExport={handleExport}

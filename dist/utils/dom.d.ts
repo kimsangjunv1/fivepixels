@@ -21,5 +21,6 @@ export declare function findPickTargetByPoint(overlay: HTMLDivElement | null, cl
 export declare function findTargetByPoint(overlay: HTMLDivElement | null, clientX: number, clientY: number): HTMLElement | null;
 export declare function getReportPortalRoot(): HTMLElement;
 export declare function ensureReportTooltipLayer(): HTMLElement;
+export declare function syncReportTooltipLayerTheme(appearance: "light" | "dark"): void;
 export declare function getReportTooltipRoot(): HTMLElement;
 //# sourceMappingURL=dom.d.ts.map

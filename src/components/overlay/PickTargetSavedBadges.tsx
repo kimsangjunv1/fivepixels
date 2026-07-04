@@ -6,9 +6,10 @@ import { getPickProbeSavedBadgeLayout } from "@/utils/pickProbeLayout.js";
 type SavedProbeBadgeProps = {
     elementKey: string;
     label: string;
+    badgeOpacity: number;
 };
 
-function SavedProbeBadge({ elementKey, label }: SavedProbeBadgeProps) {
+function SavedProbeBadge({ elementKey, label, badgeOpacity }: SavedProbeBadgeProps) {
     const badgeRef = useRef<HTMLSpanElement | null>(null);
     const [layout, setLayout] = useState<{ top: number; left: number } | null>(null);
 
@@ -53,7 +54,7 @@ function SavedProbeBadge({ elementKey, label }: SavedProbeBadgeProps) {
             style={{
                 top: layout?.top ?? element.getBoundingClientRect().top,
                 left: layout?.left ?? element.getBoundingClientRect().right,
-                opacity: layout ? 1 : 0,
+                opacity: layout ? badgeOpacity : 0,
             }}
         >
             {label}
@@ -64,9 +65,11 @@ function SavedProbeBadge({ elementKey, label }: SavedProbeBadgeProps) {
 export function PickTargetSavedBadges() {
     const { savedProbeEdits, messages, mode } = useReport();
     const [, setTick] = useState(0);
+    const savedElementKeys = Object.keys(savedProbeEdits);
+    const badgeOpacity = mode === "report" ? 1 : 0.5;
 
     useEffect(() => {
-        if (mode !== "report" || Object.keys(savedProbeEdits).length === 0) {
+        if (savedElementKeys.length === 0) {
             return;
         }
 
@@ -79,19 +82,20 @@ export function PickTargetSavedBadges() {
             window.removeEventListener("resize", update);
             window.removeEventListener("scroll", update, true);
         };
-    }, [mode, savedProbeEdits]);
+    }, [savedElementKeys.length]);
 
-    if (mode !== "report") {
+    if (savedElementKeys.length === 0) {
         return null;
     }
 
     return (
         <>
-            {Object.keys(savedProbeEdits).map((elementKey) => (
+            {savedElementKeys.map((elementKey) => (
                 <SavedProbeBadge
                     key={elementKey}
                     elementKey={elementKey}
                     label={messages.pickTarget.probeModifiedBadge}
+                    badgeOpacity={badgeOpacity}
                 />
             ))}
         </>

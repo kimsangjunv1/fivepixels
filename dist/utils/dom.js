@@ -348,6 +348,8 @@ export function findTargetByPoint(overlay, clientX, clientY) {
 const REPORT_HOST_ID = "fivepixels-root";
 const REPORT_MOUNT_ATTR = "data-fivepixels-mount";
 const REPORT_TOOLTIP_LAYER_ATTR = "data-fivepixels-tooltip-layer";
+const REPORT_THEME_SCOPE_ATTR = "data-fivepixels-theme-scope";
+const REPORT_THEME_ATTR = "data-fivepixels-theme";
 export function getReportPortalRoot() {
     const mount = document.getElementById(REPORT_HOST_ID)?.shadowRoot?.querySelector(`[${REPORT_MOUNT_ATTR}]`);
     if (mount instanceof HTMLElement) {
@@ -364,6 +366,7 @@ export function ensureReportTooltipLayer() {
     if (!(layer instanceof HTMLElement)) {
         const newLayer = document.createElement("div");
         newLayer.setAttribute(REPORT_TOOLTIP_LAYER_ATTR, "");
+        newLayer.setAttribute(REPORT_THEME_SCOPE_ATTR, "");
         newLayer.style.cssText = "position:fixed;inset:0;z-index:2147483647;pointer-events:none;overflow:visible;";
         shadowRoot.append(newLayer);
         return newLayer;
@@ -372,6 +375,14 @@ export function ensureReportTooltipLayer() {
         shadowRoot.append(layer);
     }
     return layer;
+}
+export function syncReportTooltipLayerTheme(appearance) {
+    const layer = document.getElementById(REPORT_HOST_ID)?.shadowRoot?.querySelector(`[${REPORT_TOOLTIP_LAYER_ATTR}]`);
+    if (!(layer instanceof HTMLElement)) {
+        return;
+    }
+    layer.setAttribute(REPORT_THEME_SCOPE_ATTR, "");
+    layer.setAttribute(REPORT_THEME_ATTR, appearance);
 }
 export function getReportTooltipRoot() {
     return ensureReportTooltipLayer();

@@ -18,7 +18,9 @@ import { CornerResizeGhost } from "@/components/ui/CornerResizeGhost.js";
 import { CornerResizeHandle } from "@/components/ui/CornerResizeHandle.js";
 import { TOOLTIP_EXPANDED_DEFAULT_MAX_HEIGHT } from "@/utils/coordinates.js";
 
-const TOOLTIP_SURFACE_CLASS = "overflow-hidden rounded-[12px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] shadow-[var(--adaptive-popup-shadow)]";
+const TOOLTIP_SURFACE_CLASS =
+    "overflow-hidden rounded-[24px] border-[3px] border-[var(--adaptive-black200)] bg-[var(--adaptive-blackOpacity800)] backdrop-blur-[5px] shadow-[var(--adaptive-popup-shadow)]";
+// "overflow-hidden rounded-[12px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-blackOpacity500)] backdrop-blur-[10px] shadow-[var(--adaptive-popup-shadow)]";
 const TOOLTIP_FIXED_CLASS = `fixed z-[1000001] ${TOOLTIP_SURFACE_CLASS}`;
 const EXPANDED_TOOLTIP_ANCHOR_CLASS = "pointer-events-auto fixed z-[1000001]";
 
@@ -108,10 +110,9 @@ function MarkerButton({ markerItem, isSelected, detachedAriaLabel, detachedModal
     });
     const replyCount = getReplyCount(markerItem.report);
     const markerBadgeLabel = getMarkerDisplayLabel(markerItem.report, replyCount);
-    const markerLabel =
-        markerBadgeLabel
-            ? `${markerItem.report.report_type} · ${markerItem.report.report_id} · ${markerBadgeLabel}`
-            : `${markerItem.report.report_type} · ${markerItem.report.report_id}`;
+    const markerLabel = markerBadgeLabel
+        ? `${markerItem.report.report_type} · ${markerItem.report.report_id} · ${markerBadgeLabel}`
+        : `${markerItem.report.report_type} · ${markerItem.report.report_id}`;
     const isDetached = markerItem.detached;
     const isModalDetached = markerItem.detachedKind === "modal";
     const resolvedDetachedAriaLabel = getDetachedMarkerAriaLabel(markerItem.detachedKind, {
@@ -472,60 +473,60 @@ export function ReportMarkersLayer() {
                                     height: customSize?.height,
                                 }}
                             >
-                            <FeedbackIssuePinnedHeader
-                                report={activeReplyReport}
-                                locale={locale}
-                            />
-
-                            {tooltipAnchor?.detached && resolvedDetachedHint ? (
-                                <p className="shrink-0 border-b border-[var(--adaptive-border-subtle)] px-[12px] pb-[10px] text-[12px] leading-[1.4] text-[var(--adaptive-black500)]">
-                                    {resolvedDetachedHint}
-                                </p>
-                            ) : null}
-
-                            <div className="flex min-h-0 flex-1 flex-col">
-                                <FeedbackThread
+                                {/* <FeedbackIssuePinnedHeader
                                     report={activeReplyReport}
-                                    authors={authors}
-                                    pendingComposer={pendingComposer}
-                                    confirmAuthorName={confirmAuthorName}
-                                    showConfirmAuthorSelect={showConfirmAuthorSelect}
-                                    onConfirmAuthorNameChange={setConfirmAuthorName}
-                                    onToggleConfirmAuthorSelect={toggleConfirmAuthorSelect}
-                                    onStartDeny={startDenyReview}
-                                    onStartCheckout={startCheckoutReview}
-                                    onStartAskQuestion={startAskQuestion}
-                                    onConfirm={() => void handleConfirmResolution()}
-                                    isUpdating={isUpdating}
-                                />
+                                    locale={locale}
+                                /> */}
 
-                                {showComposer ? (
-                                    <section className="relative shrink-0 overflow-visible border-t border-[var(--adaptive-border-subtle)] bg-transparent">
-                                        <FeedbackComposer
-                                            message={replyDraft}
-                                            onMessageChange={(value) => {
-                                                setReplyDraft(value);
-
-                                                if (errorMessage) {
-                                                    setErrorMessage("");
-                                                }
-                                            }}
-                                            authorName={isCreatorQuestionComposer ? confirmAuthorName : replyAuthorName}
-                                            onAuthorNameChange={isCreatorQuestionComposer ? setConfirmAuthorName : setReplyAuthorName}
-                                            authors={composerAuthors}
-                                            fields={fields}
-                                            fieldValues={activeReplyReport.field_values}
-                                            onFieldChange={() => undefined}
-                                            showTags={false}
-                                            onSubmit={() => void handleReplySubmit()}
-                                            isSubmitting={isUpdating}
-                                            autoFocus={pendingComposer !== null}
-                                            askQuestionForced={isCreatorQuestionComposer}
-                                            errorMessage={errorMessage}
-                                        />
-                                    </section>
+                                {tooltipAnchor?.detached && resolvedDetachedHint ? (
+                                    <p className="shrink-0 border-b border-[var(--adaptive-border-subtle)] px-[12px] pb-[10px] text-[12px] leading-[1.4] text-[var(--adaptive-black500)]">
+                                        {resolvedDetachedHint}
+                                    </p>
                                 ) : null}
-                            </div>
+
+                                <div className="flex min-h-0 flex-1 flex-col">
+                                    <FeedbackThread
+                                        report={activeReplyReport}
+                                        authors={authors}
+                                        pendingComposer={pendingComposer}
+                                        confirmAuthorName={confirmAuthorName}
+                                        showConfirmAuthorSelect={showConfirmAuthorSelect}
+                                        onConfirmAuthorNameChange={setConfirmAuthorName}
+                                        onToggleConfirmAuthorSelect={toggleConfirmAuthorSelect}
+                                        onStartDeny={startDenyReview}
+                                        onStartCheckout={startCheckoutReview}
+                                        onStartAskQuestion={startAskQuestion}
+                                        onConfirm={() => void handleConfirmResolution()}
+                                        isUpdating={isUpdating}
+                                    />
+
+                                    {showComposer ? (
+                                        <section className="relative shrink-0 overflow-visible border-t border-[var(--adaptive-border-subtle)] bg-transparent">
+                                            <FeedbackComposer
+                                                message={replyDraft}
+                                                onMessageChange={(value) => {
+                                                    setReplyDraft(value);
+
+                                                    if (errorMessage) {
+                                                        setErrorMessage("");
+                                                    }
+                                                }}
+                                                authorName={isCreatorQuestionComposer ? confirmAuthorName : replyAuthorName}
+                                                onAuthorNameChange={isCreatorQuestionComposer ? setConfirmAuthorName : setReplyAuthorName}
+                                                authors={composerAuthors}
+                                                fields={fields}
+                                                fieldValues={activeReplyReport.field_values}
+                                                onFieldChange={() => undefined}
+                                                showTags={false}
+                                                onSubmit={() => void handleReplySubmit()}
+                                                isSubmitting={isUpdating}
+                                                autoFocus={pendingComposer !== null}
+                                                askQuestionForced={isCreatorQuestionComposer}
+                                                errorMessage={errorMessage}
+                                            />
+                                        </section>
+                                    ) : null}
+                                </div>
                             </div>
 
                             <CornerResizeHandle

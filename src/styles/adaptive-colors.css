@@ -14,7 +14,8 @@
     --coding-font: Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace;
 }
 
-[data-fivepixels-mount][data-fivepixels-theme="light"] {
+[data-fivepixels-mount][data-fivepixels-theme="light"],
+[data-fivepixels-theme-scope][data-fivepixels-theme="light"] {
     color-scheme: light;
 
     --adaptive-surface: #ffffff;
@@ -60,16 +61,21 @@
     --adaptive-black800: #424242;
     --adaptive-black900: #212121;
 
-    --adaptive-blackOpacity50: rgba(0, 0, 0, 0.02);
-    --adaptive-blackOpacity100: rgba(0, 0, 0, 0.05);
-    --adaptive-blackOpacity200: rgba(0, 0, 0, 0.1);
-    --adaptive-blackOpacity300: rgba(0, 0, 0, 0.18);
-    --adaptive-blackOpacity400: rgba(0, 0, 0, 0.31);
-    --adaptive-blackOpacity500: rgba(0, 0, 0, 0.46);
-    --adaptive-blackOpacity600: rgba(0, 0, 0, 0.58);
-    --adaptive-blackOpacity700: rgba(0, 0, 0, 0.7);
-    --adaptive-blackOpacity800: rgba(0, 0, 0, 0.8);
-    --adaptive-blackOpacity900: rgba(0, 0, 0, 0.91);
+    /* 
+      Opacity black variables behave differently from normal black vars:
+      - In LIGHT mode, show white (rgba(255,255,255,opacity)) 
+      - In DARK mode, show black (rgba(0,0,0,opacity)) 
+    */
+    --adaptive-blackOpacity50: rgba(255, 255, 255, 0.02);
+    --adaptive-blackOpacity100: rgba(255, 255, 255, 0.05);
+    --adaptive-blackOpacity200: rgba(255, 255, 255, 0.1);
+    --adaptive-blackOpacity300: rgba(255, 255, 255, 0.18);
+    --adaptive-blackOpacity400: rgba(255, 255, 255, 0.31);
+    --adaptive-blackOpacity500: rgba(255, 255, 255, 0.46);
+    --adaptive-blackOpacity600: rgba(255, 255, 255, 0.58);
+    --adaptive-blackOpacity700: rgba(255, 255, 255, 0.7);
+    --adaptive-blackOpacity800: rgba(255, 255, 255, 0.9);
+    --adaptive-blackOpacity900: rgba(255, 255, 255, 1);
 
     --adaptive-greyOpacity50: rgba(0, 23, 51, 0.02);
     --adaptive-greyOpacity100: rgba(2, 32, 71, 0.05);
@@ -198,7 +204,8 @@
     --adaptive-__internal__focusRing: rgba(255, 255, 255, 0.5);
 }
 
-[data-fivepixels-mount][data-fivepixels-theme="dark"] {
+[data-fivepixels-mount][data-fivepixels-theme="dark"],
+[data-fivepixels-theme-scope][data-fivepixels-theme="dark"] {
     color-scheme: dark;
 
     --adaptive-surface: #212121;
@@ -245,6 +252,11 @@
     --adaptive-black800: #f5f5f5;
     --adaptive-black900: #fafafa;
 
+    /* 
+      Opacity black variables behave differently from normal black vars:
+      - In LIGHT mode, show white (rgba(255,255,255,opacity)) 
+      - In DARK mode, show black (rgba(0,0,0,opacity)) 
+    */
     --adaptive-blackOpacity50: rgba(0, 0, 0, 0.05);
     --adaptive-blackOpacity100: rgba(0, 0, 0, 0.11);
     --adaptive-blackOpacity200: rgba(0, 0, 0, 0.19);
@@ -253,8 +265,8 @@
     --adaptive-blackOpacity500: rgba(0, 0, 0, 0.47);
     --adaptive-blackOpacity600: rgba(0, 0, 0, 0.6);
     --adaptive-blackOpacity700: rgba(0, 0, 0, 0.75);
-    --adaptive-blackOpacity800: rgba(0, 0, 0, 0.89);
-    --adaptive-blackOpacity900: #000000;
+    --adaptive-blackOpacity800: rgba(0, 0, 0, 0.85);
+    --adaptive-blackOpacity900: rgba(0, 0, 0, 1);
 
     --adaptive-greyOpacity50: rgba(209, 209, 253, 0.05);
     --adaptive-greyOpacity100: rgba(217, 217, 255, 0.11);

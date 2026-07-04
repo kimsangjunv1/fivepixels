@@ -67,9 +67,7 @@ export function FeedbackComposer({
     const [isGitHubIssueConfirming, setIsGitHubIssueConfirming] = useState(false);
     const isQuestionMode = askQuestionForced || askQuestionChecked;
     const usesCaseEditor = Boolean(cases && onCaseChange && onAddCase && onRemoveCase);
-    const resolvedPlaceholder = isQuestionMode
-        ? messages.composer.questionPlaceholder
-        : (placeholder ?? (usesCaseEditor ? messages.fieldEditor.messagePlaceholder : messages.composer.placeholder));
+    const resolvedPlaceholder = isQuestionMode ? messages.composer.questionPlaceholder : (placeholder ?? (usesCaseEditor ? messages.fieldEditor.messagePlaceholder : messages.composer.placeholder));
 
     const isActionDisabled = isSubmitting || isGitHubIssueSubmitting;
 
@@ -106,8 +104,8 @@ export function FeedbackComposer({
     };
 
     return (
-        <div className="flex w-full flex-col">
-            <div className="relative">
+        <div className={`flex w-full flex-col ${usesCaseEditor ? "min-h-0 flex-1" : ""}`}>
+            <div className={`relative ${usesCaseEditor ? "min-h-0 flex-1" : ""}`}>
                 {errorMessage ? (
                     <p
                         role="alert"
@@ -123,7 +121,6 @@ export function FeedbackComposer({
                         onAddCase={onAddCase!}
                         onRemoveCase={onRemoveCase!}
                         autoFocus={autoFocus}
-                        placeholder={resolvedPlaceholder}
                         onSubmitShortcut={handleSubmit}
                     />
                 ) : (
@@ -193,8 +190,8 @@ export function FeedbackComposer({
                             className="inline-flex px-[8px_4px] gap-[4px] shrink-0 items-center justify-center rounded-full bg-[var(--adaptive-blue500)] text-[var(--adaptive-overlay-text)] disabled:opacity-50"
                             aria-label={messages.composer.sendAriaLabel}
                         >
-                            Send
-                            <SendIcon className="w-[16px] invert" />
+                            {/* Send */}
+                            <SendIcon className="w-[20px]" />
                         </button>
                     </HoverTooltip>
                 </div>

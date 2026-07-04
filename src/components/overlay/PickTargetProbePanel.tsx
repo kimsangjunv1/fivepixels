@@ -12,6 +12,9 @@ import { ProbeLayoutControls } from "./ProbeLayoutControls.js";
 const PANEL_SURFACE_CLASS =
     "pointer-events-auto fixed z-[1000002] w-[min(320px,calc(100vw-16px))] overflow-hidden rounded-[12px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface-overlay)] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[20px]";
 
+const PROBE_HEADER_ACTION_CLASS =
+    "shrink-0 rounded-[6px] border border-[var(--adaptive-border-subtle)] px-[8px] py-[3px] text-[11px] font-medium text-[var(--adaptive-black700)] hover:bg-[var(--adaptive-black100)]";
+
 const STEPPER_STEP_PX = 1;
 
 type ProbeTextFieldProps = {
@@ -192,7 +195,7 @@ export function PickTargetProbePanel() {
         setPickProbeCompareMode,
         updatePickProbeValue,
         resetPickProbeValues,
-        commitPickProbeEdits,
+        closePickProbe,
     } = useReport();
 
     const panelRef = useRef<HTMLDivElement | null>(null);
@@ -256,15 +259,33 @@ export function PickTargetProbePanel() {
         >
             <div className="flex max-h-[min(70vh,560px)] flex-col gap-[10px] overflow-y-auto px-[12px] py-[10px]">
                 <div className="flex items-center justify-between gap-[8px]">
-                    <p className="text-[12px] font-semibold text-[var(--adaptive-black900)]">{messages.pickTarget.probeTitle}</p>
-                    {pickProbeHasEdits ? (
-                        <PickTargetCompareSegment
-                            mode={pickProbeCompareMode}
-                            onChange={setPickProbeCompareMode}
-                            beforeLabel={messages.pickTarget.probeBefore}
-                            afterLabel={messages.pickTarget.probeAfter}
-                        />
-                    ) : null}
+                    <p className="min-w-0 shrink text-[12px] font-semibold text-[var(--adaptive-black900)]">{messages.pickTarget.probeTitle}</p>
+                    <div className="flex shrink-0 items-center gap-[6px]">
+                        {pickProbeHasEdits ? (
+                            <PickTargetCompareSegment
+                                mode={pickProbeCompareMode}
+                                onChange={setPickProbeCompareMode}
+                                beforeLabel={messages.pickTarget.probeBefore}
+                                afterLabel={messages.pickTarget.probeAfter}
+                            />
+                        ) : null}
+                        <button
+                            type="button"
+                            data-fivepixels-interactive=""
+                            onClick={resetPickProbeValues}
+                            className={PROBE_HEADER_ACTION_CLASS}
+                        >
+                            {messages.pickTarget.probeReset}
+                        </button>
+                        <button
+                            type="button"
+                            data-fivepixels-interactive=""
+                            onClick={closePickProbe}
+                            className={PROBE_HEADER_ACTION_CLASS}
+                        >
+                            {messages.pickTarget.probeClose}
+                        </button>
+                    </div>
                 </div>
 
                 {pickProbeSupportsTextFields ? (
@@ -322,26 +343,6 @@ export function PickTargetProbePanel() {
                     messages={messages}
                     onChange={(key, value) => handleChange(key)(value)}
                 />
-
-                <div className="flex flex-wrap items-center justify-end gap-[6px] border-t border-[var(--adaptive-border-subtle)] pt-[8px]">
-                    <button
-                        type="button"
-                        data-fivepixels-interactive=""
-                        onClick={resetPickProbeValues}
-                        className="rounded-[8px] border border-[var(--adaptive-border-subtle)] px-[10px] py-[5px] text-[11px] font-medium text-[var(--adaptive-black700)]"
-                    >
-                        {messages.pickTarget.probeReset}
-                    </button>
-                    <button
-                        type="button"
-                        data-fivepixels-interactive=""
-                        disabled={!pickProbeHasEdits}
-                        onClick={() => commitPickProbeEdits()}
-                        className="rounded-[8px] bg-[var(--adaptive-blue500)] px-[10px] py-[5px] text-[11px] font-semibold text-white disabled:opacity-50"
-                    >
-                        {messages.pickTarget.probeApply}
-                    </button>
-                </div>
             </div>
         </div>
     );

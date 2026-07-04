@@ -5,25 +5,38 @@ import { ReportDraftForm } from "@/components/panel/ReportDraftForm.js";
 import { ReportDraftMarker } from "@/components/point/ReportDraftMarker.js";
 import { ReportMarkersLayer } from "@/components/point/ReportMarkersLayer.js";
 import { ShadowReportRoot } from "./ShadowReportRoot.js";
+import { ThemeScope } from "./ThemeScope.js";
 
 export function ReportView() {
-    const { mode, showTargetPreview, showMarkerTargetPreview, resolvedAppearance } = useReport();
-    const showOverlay = mode !== "idle" || showTargetPreview || showMarkerTargetPreview;
+    const {
+        mode,
+        showTargetPreview,
+        showMarkerTargetPreview,
+        resolvedPanelAppearance,
+        resolvedTooltipAppearance,
+        savedProbeEdits,
+    } = useReport();
+    const hasSavedProbeEdits = Object.keys(savedProbeEdits).length > 0;
+    const showOverlay = mode !== "idle" || showTargetPreview || showMarkerTargetPreview || hasSavedProbeEdits;
 
     return (
-        <ShadowReportRoot appearance={resolvedAppearance}>
-            <ReportControlPanel />
+        <ShadowReportRoot panelAppearance={resolvedPanelAppearance}>
+            <ThemeScope appearance={resolvedPanelAppearance}>
+                <ReportControlPanel />
+            </ThemeScope>
 
             {showOverlay ? (
-                <ReportOverlayLayer>
-                    {mode !== "idle" ? (
-                        <>
-                            <ReportMarkersLayer />
-                            <ReportDraftMarker />
-                            <ReportDraftForm />
-                        </>
-                    ) : null}
-                </ReportOverlayLayer>
+                <ThemeScope appearance={resolvedTooltipAppearance}>
+                    <ReportOverlayLayer>
+                        {mode !== "idle" ? (
+                            <>
+                                <ReportMarkersLayer />
+                                <ReportDraftMarker />
+                                <ReportDraftForm />
+                            </>
+                        ) : null}
+                    </ReportOverlayLayer>
+                </ThemeScope>
             ) : null}
         </ShadowReportRoot>
     );

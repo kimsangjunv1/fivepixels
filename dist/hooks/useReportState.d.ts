@@ -7,7 +7,8 @@ export type ReportStateConfig = {
     projectId: string;
     environment?: string;
     appVersion?: string;
-    appearance: ReportAppearance;
+    panelAppearance: ReportAppearance;
+    tooltipAppearance: ReportAppearance;
     questionThreadDefault?: QuestionThreadDisplay;
     fields: ReportField[];
     authors?: ReportAuthor[];
@@ -37,9 +38,11 @@ export type ReportStateConfig = {
     initialLocale: ReportLocale;
     messageOverrides?: DeepPartialReportMessages;
 };
-export declare function useReportState({ projectId, environment, appVersion, appearance, questionThreadDefault, fields, authors, requireReviewerKey, shortcut: _shortcut, identify, onList, onListAll, onListReplies, onNavigate, onRevealTarget, onCreate, onCreateReply, onUpdate, onDelete, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys, initialLocale, messageOverrides, }: ReportStateConfig): {
-    appearance: ReportAppearance;
-    setAppearance: (nextAppearance: ReportAppearance) => void;
+export declare function useReportState({ projectId, environment, appVersion, panelAppearance, tooltipAppearance, questionThreadDefault, fields, authors, requireReviewerKey, shortcut: _shortcut, identify, onList, onListAll, onListReplies, onNavigate, onRevealTarget, onCreate, onCreateReply, onUpdate, onDelete, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys, initialLocale, messageOverrides, }: ReportStateConfig): {
+    panelAppearance: ReportAppearance;
+    setPanelAppearance: (nextAppearance: ReportAppearance) => void;
+    tooltipAppearance: ReportAppearance;
+    setTooltipAppearance: (nextAppearance: ReportAppearance) => void;
     questionThreadDisplay: QuestionThreadDisplay;
     setQuestionThreadDisplay: (nextDisplay: QuestionThreadDisplay) => void;
     locale: ReportLocale;
@@ -87,7 +90,8 @@ export declare function useReportState({ projectId, environment, appVersion, app
     canListAllFeedback: boolean;
     visibleShortcutKeys: boolean;
     searchInputRef: import("react").MutableRefObject<HTMLInputElement | null>;
-    resolvedAppearance: import("../types/report-ui.js").ResolvedAppearance;
+    resolvedPanelAppearance: import("../types/report-ui.js").ResolvedAppearance;
+    resolvedTooltipAppearance: import("../types/report-ui.js").ResolvedAppearance;
     isMobileViewport: boolean;
     mode: ReportMode;
     showTargetPreview: boolean;
@@ -144,7 +148,7 @@ export declare function useReportState({ projectId, environment, appVersion, app
     revertSavedProbeEdit: (elementKey: string) => void;
     revertAllSavedProbeEdits: () => void;
     setSavedProbeCompareMode: (compareMode: PickProbeCompareMode) => void;
-    setPickProbeCompareMode: (mode: PickProbeCompareMode) => void;
+    setPickProbeCompareMode: (compareMode: PickProbeCompareMode) => void;
     updatePickProbeValue: (key: PickProbeFieldKey, value: string) => void;
     resetPickProbeValues: () => void;
     appendSavedProbeSummaryAsNewDraftCase: () => void;

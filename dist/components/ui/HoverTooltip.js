@@ -4,16 +4,7 @@ import { createPortal } from "react-dom";
 import { useNativeHover } from "../../hooks/useNativeHover.js";
 import { getReportTooltipRoot, ensureReportTooltipLayer } from "../../utils/dom.js";
 import { getHoverTooltipLayout } from "../../utils/hoverTooltipLayout.js";
-const TOOLTIP_STYLE = {
-    position: "fixed",
-    pointerEvents: "none",
-    whiteSpace: "nowrap",
-    borderRadius: "100px",
-    backgroundColor: "#00000090",
-    padding: "4px 10px",
-    fontSize: "14px",
-    color: "#ffffff",
-};
+const TOOLTIP_CLASS_NAME = "pointer-events-none fixed whitespace-nowrap rounded-[100px] bg-[var(--adaptive-overlay-surface)] px-[10px] py-[4px] text-[14px] text-[var(--adaptive-overlay-text)]";
 export function HoverTooltip({ label, disabled = false, children, className = "" }) {
     const [hovered, setHovered] = useState(false);
     const [layout, setLayout] = useState(null);
@@ -53,8 +44,7 @@ export function HoverTooltip({ label, disabled = false, children, className = ""
     }, [disabled, hovered, label, updateLayout]);
     const showTooltip = hovered && !disabled;
     return (_jsxs(_Fragment, { children: [_jsx("span", { ref: setAnchorRef, className: `inline-flex ${className}`.trim(), children: children }), showTooltip
-                ? createPortal(_jsx("span", { ref: tooltipRef, role: "tooltip", style: {
-                        ...TOOLTIP_STYLE,
+                ? createPortal(_jsx("span", { ref: tooltipRef, role: "tooltip", className: TOOLTIP_CLASS_NAME, style: {
                         top: layout?.top ?? 0,
                         left: layout?.left ?? 0,
                         opacity: layout ? 1 : 0,

@@ -15,8 +15,10 @@ type ReportShortcutHandlers = Pick<
     | "toggleReportMode"
     | "toggleTargetPreview"
     | "toggleIssueMode"
+    | "pickProbeOpen"
     | "cancelDraft"
     | "cancelPendingComposer"
+    | "closePickProbe"
     | "closeReplyComposer"
     | "handleCreateSubmit"
     | "stopEditing"
@@ -34,11 +36,13 @@ export function useReportShortcuts(handlers: ReportShortcutHandlers) {
         showTargetPreview,
         activeReplyReportId,
         pendingComposer,
+        pickProbeOpen,
         toggleReportMode,
         toggleTargetPreview,
         toggleIssueMode,
         cancelDraft,
         cancelPendingComposer,
+        closePickProbe,
         closeReplyComposer,
         handleCreateSubmit,
         stopEditing,
@@ -69,6 +73,12 @@ export function useReportShortcuts(handlers: ReportShortcutHandlers) {
             }
 
             if (matchesShortcut(event, REPORT_SHORTCUTS.cancel)) {
+                if (pickProbeOpen) {
+                    event.preventDefault();
+                    closePickProbe();
+                    return;
+                }
+
                 if (draft) {
                     event.preventDefault();
                     cancelDraft();
@@ -165,11 +175,13 @@ export function useReportShortcuts(handlers: ReportShortcutHandlers) {
         showTargetPreview,
         activeReplyReportId,
         pendingComposer,
+        pickProbeOpen,
         toggleReportMode,
         toggleTargetPreview,
         toggleIssueMode,
         cancelDraft,
         cancelPendingComposer,
+        closePickProbe,
         closeReplyComposer,
         handleCreateSubmit,
         stopEditing,

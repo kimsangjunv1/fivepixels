@@ -1,8 +1,10 @@
 import type { useReportState } from "../hooks/useReportState.js";
 export type ReportContextValue = ReturnType<typeof useReportState>;
 declare const ReportContext: import("react").Context<{
-    appearance: import("..").ReportAppearance;
-    setAppearance: (nextAppearance: import("..").ReportAppearance) => void;
+    panelAppearance: import("..").ReportAppearance;
+    setPanelAppearance: (nextAppearance: import("..").ReportAppearance) => void;
+    tooltipAppearance: import("..").ReportAppearance;
+    setTooltipAppearance: (nextAppearance: import("..").ReportAppearance) => void;
     questionThreadDisplay: import("..").QuestionThreadDisplay;
     setQuestionThreadDisplay: (nextDisplay: import("..").QuestionThreadDisplay) => void;
     locale: import("..").ReportLocale;
@@ -50,7 +52,8 @@ declare const ReportContext: import("react").Context<{
     canListAllFeedback: boolean;
     visibleShortcutKeys: boolean;
     searchInputRef: import("react").MutableRefObject<HTMLInputElement | null>;
-    resolvedAppearance: import("../types/report-ui").ResolvedAppearance;
+    resolvedPanelAppearance: import("../types/report-ui").ResolvedAppearance;
+    resolvedTooltipAppearance: import("../types/report-ui").ResolvedAppearance;
     isMobileViewport: boolean;
     mode: import("../types/report-ui").ReportMode;
     showTargetPreview: boolean;
@@ -107,7 +110,7 @@ declare const ReportContext: import("react").Context<{
     revertSavedProbeEdit: (elementKey: string) => void;
     revertAllSavedProbeEdits: () => void;
     setSavedProbeCompareMode: (compareMode: import("../types/report-ui").PickProbeCompareMode) => void;
-    setPickProbeCompareMode: (mode: import("../types/report-ui").PickProbeCompareMode) => void;
+    setPickProbeCompareMode: (compareMode: import("../types/report-ui").PickProbeCompareMode) => void;
     updatePickProbeValue: (key: import("../types/report-ui").PickProbeFieldKey, value: string) => void;
     resetPickProbeValues: () => void;
     appendSavedProbeSummaryAsNewDraftCase: () => void;
@@ -198,8 +201,10 @@ declare const ReportContext: import("react").Context<{
     isDraftGitHubIssueSubmitting: boolean;
 } | null>;
 export declare function useReport(): {
-    appearance: import("..").ReportAppearance;
-    setAppearance: (nextAppearance: import("..").ReportAppearance) => void;
+    panelAppearance: import("..").ReportAppearance;
+    setPanelAppearance: (nextAppearance: import("..").ReportAppearance) => void;
+    tooltipAppearance: import("..").ReportAppearance;
+    setTooltipAppearance: (nextAppearance: import("..").ReportAppearance) => void;
     questionThreadDisplay: import("..").QuestionThreadDisplay;
     setQuestionThreadDisplay: (nextDisplay: import("..").QuestionThreadDisplay) => void;
     locale: import("..").ReportLocale;
@@ -247,7 +252,8 @@ export declare function useReport(): {
     canListAllFeedback: boolean;
     visibleShortcutKeys: boolean;
     searchInputRef: import("react").MutableRefObject<HTMLInputElement | null>;
-    resolvedAppearance: import("../types/report-ui").ResolvedAppearance;
+    resolvedPanelAppearance: import("../types/report-ui").ResolvedAppearance;
+    resolvedTooltipAppearance: import("../types/report-ui").ResolvedAppearance;
     isMobileViewport: boolean;
     mode: import("../types/report-ui").ReportMode;
     showTargetPreview: boolean;
@@ -304,7 +310,7 @@ export declare function useReport(): {
     revertSavedProbeEdit: (elementKey: string) => void;
     revertAllSavedProbeEdits: () => void;
     setSavedProbeCompareMode: (compareMode: import("../types/report-ui").PickProbeCompareMode) => void;
-    setPickProbeCompareMode: (mode: import("../types/report-ui").PickProbeCompareMode) => void;
+    setPickProbeCompareMode: (compareMode: import("../types/report-ui").PickProbeCompareMode) => void;
     updatePickProbeValue: (key: import("../types/report-ui").PickProbeFieldKey, value: string) => void;
     resetPickProbeValues: () => void;
     appendSavedProbeSummaryAsNewDraftCase: () => void;

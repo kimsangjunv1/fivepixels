@@ -1,7 +1,8 @@
 import type { DeepPartialReportMessages, ReportLocale, ReportMessages } from "../i18n/index.js";
-import type { QuestionThreadDisplay, ReportUi } from "../types/report.js";
+import type { QuestionThreadDisplay, ReportAppearance, ReportUi } from "../types/report.js";
 export type ResolvedReportUi = {
-    appearance: NonNullable<ReportUi["appearance"]>;
+    panelAppearance: ReportAppearance;
+    tooltipAppearance: ReportAppearance;
     showFeedbackList: boolean;
     visibleShortcutKeys: boolean;
     questionThreadDefault: QuestionThreadDisplay;

@@ -1,7 +1,7 @@
 import { useLayoutEffect, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import type { ResolvedAppearance } from "@/types/report-ui.js";
-import { ensureReportTooltipLayer } from "@/utils/dom.js";
+import { ensureReportTooltipLayer, syncReportTooltipLayerTheme } from "@/utils/dom.js";
 
 const HOST_ID = "fivepixels-root";
 const STYLE_ELEMENT_ID = "fivepixels-report-styles";
@@ -76,11 +76,11 @@ hot?.accept("../../styles/reportStylesheet.js", (module) => {
 });
 
 type ShadowReportRootProps = {
-    appearance: ResolvedAppearance;
+    panelAppearance: ResolvedAppearance;
     children: ReactNode;
 };
 
-export function ShadowReportRoot({ appearance, children }: ShadowReportRootProps) {
+export function ShadowReportRoot({ panelAppearance, children }: ShadowReportRootProps) {
     const [mount, setMount] = useState<HTMLElement | null>(null);
 
     useLayoutEffect(() => {
@@ -104,12 +104,8 @@ export function ShadowReportRoot({ appearance, children }: ShadowReportRootProps
     }, []);
 
     useLayoutEffect(() => {
-        if (!mount) {
-            return;
-        }
-
-        mount.setAttribute("data-fivepixels-theme", appearance);
-    }, [appearance, mount]);
+        syncReportTooltipLayerTheme(panelAppearance);
+    }, [panelAppearance]);
 
     if (!mount) {
         return null;

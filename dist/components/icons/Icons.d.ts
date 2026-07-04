@@ -32,6 +32,15 @@ export declare function CopyIcon({ className }: {
 export declare function CheckIcon({ className }: {
     className?: string;
 }): import("react/jsx-runtime").JSX.Element;
+export declare function EditIcon({ className, fill }: {
+    className?: string;
+} & Pick<MaterialIconProps, "fill">): import("react/jsx-runtime").JSX.Element;
+export declare function DeleteIcon({ className, fill }: {
+    className?: string;
+} & Pick<MaterialIconProps, "fill">): import("react/jsx-runtime").JSX.Element;
+export declare function RevertIcon({ className, fill }: {
+    className?: string;
+} & Pick<MaterialIconProps, "fill">): import("react/jsx-runtime").JSX.Element;
 export declare function TrashIcon({ className }: {
     className?: string;
 }): import("react/jsx-runtime").JSX.Element;

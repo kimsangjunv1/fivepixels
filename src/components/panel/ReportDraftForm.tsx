@@ -1,13 +1,18 @@
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 import { useTooltipLayout } from "@/hooks/useTooltipLayout.js";
+import { useTooltipResize } from "@/hooks/useTooltipResize.js";
 import { useReport } from "@/providers/reportContext.js";
-import { getDraftMarkerPosition } from "@/utils/coordinates.js";
+import { getDraftMarkerPosition, TOOLTIP_EXPANDED_DEFAULT_MAX_HEIGHT } from "@/utils/coordinates.js";
 import { FeedbackComposer } from "./feedback/FeedbackComposer.js";
 import { DraftProbeSummaryBanner } from "./DraftProbeSummaryBanner.js";
 import { PickTargetSnippet } from "./feedback/PickTargetSnippet.js";
+import { CornerResizeGhost } from "@/components/ui/CornerResizeGhost.js";
+import { CornerResizeHandle } from "@/components/ui/CornerResizeHandle.js";
 
 const TOOLTIP_SURFACE_CLASS =
-    "overflow-hidden rounded-[12px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface-overlay)] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[20px]";
+    "overflow-hidden rounded-[24px] border-[3px] border-[var(--adaptive-black200)] shadow-[var(--adaptive-popup-shadow)] bg-[var(--adaptive-blackOpacity800)] backdrop-blur-[5px]";
+// const TOOLTIP_SURFACE_CLASS = "overflow-hidden rounded-[24px] border-[3px] border-[var(--adaptive-black200)] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[20px]";
+// "overflow-hidden rounded-[24px] border-[3px] border-[var(--adaptive-black200)] bg-[var(--adaptive-blackOpacity700)] backdrop-blur-[1px] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[20px]";
 const EXPANDED_TOOLTIP_ANCHOR_CLASS = "pointer-events-auto fixed z-[1000001]";
 
 export function ReportDraftForm() {
@@ -93,8 +98,17 @@ function ReportDraftFormContent({
     setDraftAuthorName,
     errorMessage,
 }: ReportDraftFormContentProps) {
+    const { messages } = useReport();
+    const tooltipSurfaceRef = useRef<HTMLDivElement | null>(null);
     const anchor = useMemo(() => getDraftMarkerPosition(draft, selectedTarget), [draft, selectedTarget]);
-    const { layout: tooltipLayout, setTooltipElement } = useTooltipLayout(anchor, true, true);
+    const { customSize, isResizing, ghostRef, handleResizePointerDown } = useTooltipResize({
+        enabled: true,
+        tooltipRef: tooltipSurfaceRef,
+    });
+    const { layout: tooltipLayout, setTooltipElement } = useTooltipLayout(anchor, true, true, {
+        customWidth: customSize?.width,
+        customHeight: customSize?.height,
+    });
     const tooltipPosition = tooltipLayout?.position ?? null;
     const tooltipAnchorStyle = tooltipLayout?.anchorStyle;
 
@@ -103,50 +117,74 @@ function ReportDraftFormContent({
     }
 
     return (
-        <div
-            ref={setTooltipElement}
-            data-fivepixels-interactive=""
-            onClick={(event) => event.stopPropagation()}
-            className={EXPANDED_TOOLTIP_ANCHOR_CLASS}
-            style={{
-                left: tooltipPosition.left,
-                top: tooltipPosition.top,
-                width: tooltipPosition.width,
-                minWidth: 320,
-                ...tooltipAnchorStyle,
-            }}
-        >
+        <>
+            {isResizing ? <CornerResizeGhost ghostRef={ghostRef} /> : null}
+
             <div
-                className={TOOLTIP_SURFACE_CLASS}
+                ref={setTooltipElement}
+                data-fivepixels-interactive=""
+                onClick={(event) => event.stopPropagation()}
+                className={EXPANDED_TOOLTIP_ANCHOR_CLASS}
                 style={{
-                    pointerEvents: "auto",
+                    left: tooltipPosition.left,
+                    top: tooltipPosition.top,
+                    width: tooltipPosition.width,
+                    minWidth: 320,
+                    ...(customSize?.height !== undefined ? { height: customSize.height } : null),
+                    ...tooltipAnchorStyle,
                 }}
             >
-                {draft.targetSelector && draft.suggestedReportId ? (
-                    <PickTargetSnippet suggestedReportId={draft.suggestedReportId} reportType={draft.reportType} />
-                ) : null}
-                <DraftProbeSummaryBanner />
-                <FeedbackComposer
-                    cases={draft.cases}
-                    onCaseChange={updateDraftCase}
-                    onAddCase={addDraftCase}
-                    onRemoveCase={removeDraftCase}
-                    authorName={draftAuthorName}
-                    onAuthorNameChange={setDraftAuthorName}
-                    authors={authors}
-                    fields={fields}
-                    fieldValues={draft.fieldValues}
-                    onFieldChange={updateDraftField}
-                    showTags
-                    onSubmit={() => void handleCreateSubmit()}
-                    isSubmitting={isCreating}
-                    showGitHubIssueOnCreate={canCreateGitHubIssueOnCreate}
-                    onGitHubIssueSubmit={() => void handleCreateSubmitWithGitHubIssue()}
-                    isGitHubIssueSubmitting={isDraftGitHubIssueSubmitting}
-                    autoFocus
-                    errorMessage={errorMessage}
-                />
+                <div
+                    ref={tooltipSurfaceRef}
+                    className={`relative ${TOOLTIP_SURFACE_CLASS}`}
+                    style={{
+                        pointerEvents: "auto",
+                        height: customSize?.height,
+                    }}
+                >
+                    <div
+                        className="flex min-h-0 flex-col"
+                        style={{
+                            maxHeight: customSize?.height ?? TOOLTIP_EXPANDED_DEFAULT_MAX_HEIGHT,
+                            height: customSize?.height,
+                        }}
+                    >
+                        {draft.targetSelector && draft.suggestedReportId ? (
+                            <PickTargetSnippet
+                                suggestedReportId={draft.suggestedReportId}
+                                reportType={draft.reportType}
+                            />
+                        ) : null}
+                        <DraftProbeSummaryBanner />
+                        <FeedbackComposer
+                            cases={draft.cases}
+                            onCaseChange={updateDraftCase}
+                            onAddCase={addDraftCase}
+                            onRemoveCase={removeDraftCase}
+                            authorName={draftAuthorName}
+                            onAuthorNameChange={setDraftAuthorName}
+                            authors={authors}
+                            fields={fields}
+                            fieldValues={draft.fieldValues}
+                            onFieldChange={updateDraftField}
+                            showTags
+                            onSubmit={() => void handleCreateSubmit()}
+                            isSubmitting={isCreating}
+                            showGitHubIssueOnCreate={canCreateGitHubIssueOnCreate}
+                            onGitHubIssueSubmit={() => void handleCreateSubmitWithGitHubIssue()}
+                            isGitHubIssueSubmitting={isDraftGitHubIssueSubmitting}
+                            autoFocus
+                            errorMessage={errorMessage}
+                        />
+                    </div>
+
+                    <CornerResizeHandle
+                        corner="bottom-right"
+                        ariaLabel={messages.marker.resizeAriaLabel}
+                        onPointerDown={handleResizePointerDown}
+                    />
+                </div>
             </div>
-        </div>
+        </>
     );
 }

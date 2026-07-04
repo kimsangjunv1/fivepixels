@@ -1,6 +1,7 @@
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { ReportCase } from "@/types/report.js";
 import { useReport } from "@/providers/reportContext.js";
+import { FeedbackCaseTabBar } from "./FeedbackCaseTabBar.js";
 
 type FeedbackCaseEditorProps = {
     cases: ReportCase[];
@@ -8,17 +9,105 @@ type FeedbackCaseEditorProps = {
     onAddCase: () => void;
     onRemoveCase: (caseId: string) => void;
     autoFocus?: boolean;
-    placeholder?: string;
     onSubmitShortcut?: () => void;
 };
 
-const CASE_INPUT_CLASS =
-    "min-h-[56px] w-full flex-1 resize-none rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-transparent px-[8px] py-[6px] text-[14px] leading-[1.4] text-[var(--adaptive-text-primary)] outline-none placeholder:text-[var(--adaptive-text-muted)] focus:border-[var(--adaptive-blue500)]";
+const CASE_INPUT_MIN_HEIGHT = 56;
 
-export function FeedbackCaseEditor({ cases, onCaseChange, onAddCase, onRemoveCase, autoFocus = false, placeholder, onSubmitShortcut }: FeedbackCaseEditorProps) {
+const CASE_INPUT_CLASS =
+    "min-h-[56px] w-full flex-1 resize-none overflow-hidden px-[12px] py-[6px] text-[16px] leading-[1.5] text-[var(--adaptive-text-primary)] outline-none placeholder:text-[var(--adaptive-text-muted)] focus:border-[var(--adaptive-blue500)]";
+
+function syncCaseTextareaHeight(textarea: HTMLTextAreaElement) {
+    textarea.style.height = "auto";
+    textarea.style.height = `${Math.max(CASE_INPUT_MIN_HEIGHT, textarea.scrollHeight)}px`;
+}
+
+type CaseTextareaProps = {
+    id: string;
+    value: string;
+    autoFocus: boolean;
+    placeholder: string;
+    onChange: (value: string) => void;
+    onSubmitShortcut?: () => void;
+};
+
+function CaseTextarea({ id, value, autoFocus, placeholder, onChange, onSubmitShortcut }: CaseTextareaProps) {
+    const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+    const syncHeight = useCallback(() => {
+        const textarea = textareaRef.current;
+
+        if (!textarea) {
+            return;
+        }
+
+        syncCaseTextareaHeight(textarea);
+    }, []);
+
+    useLayoutEffect(() => {
+        syncHeight();
+    }, [syncHeight, value]);
+
+    return (
+        <textarea
+            ref={textareaRef}
+            id={id}
+            autoFocus={autoFocus}
+            value={value}
+            onChange={(event) => {
+                onChange(event.target.value);
+                syncCaseTextareaHeight(event.target);
+            }}
+            placeholder={placeholder}
+            rows={1}
+            className={CASE_INPUT_CLASS}
+            onKeyDown={(event) => {
+                if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
+                    event.preventDefault();
+                    onSubmitShortcut?.();
+                    return;
+                }
+
+                if (event.key === "Enter") {
+                    const textarea = event.currentTarget;
+                    window.requestAnimationFrame(() => {
+                        syncCaseTextareaHeight(textarea);
+                    });
+                }
+            }}
+        />
+    );
+}
+
+function resolveActiveCaseId(cases: ReportCase[], activeCaseId: string | null) {
+    if (cases.length === 0) {
+        return null;
+    }
+
+    if (activeCaseId && cases.some((item) => item.id === activeCaseId)) {
+        return activeCaseId;
+    }
+
+    return cases[cases.length - 1]?.id ?? cases[0].id;
+}
+
+export function FeedbackCaseEditor({ cases, onCaseChange, onAddCase, onRemoveCase, autoFocus = false, onSubmitShortcut }: FeedbackCaseEditorProps) {
     const { messages } = useReport();
     const previousCaseCountRef = useRef(cases.length);
-    const resolvedPlaceholder = placeholder ?? messages.composer.casePlaceholder;
+    const [activeCaseId, setActiveCaseId] = useState<string | null>(() => cases[0]?.id ?? null);
+    const resolvedActiveCaseId = resolveActiveCaseId(cases, activeCaseId);
+    const activeCase = cases.find((item) => item.id === resolvedActiveCaseId) ?? null;
+    const activeCaseIndex = activeCase ? cases.findIndex((item) => item.id === activeCase.id) : -1;
+
+    const getCaseInputPlaceholder = useCallback((index: number) => messages.composer.caseInputPlaceholder(index), [messages.composer]);
+
+    useEffect(() => {
+        const nextActiveCaseId = resolveActiveCaseId(cases, activeCaseId);
+
+        if (nextActiveCaseId !== activeCaseId) {
+            setActiveCaseId(nextActiveCaseId);
+        }
+    }, [activeCaseId, cases]);
 
     useEffect(() => {
         if (cases.length <= previousCaseCountRef.current) {
@@ -29,66 +118,61 @@ export function FeedbackCaseEditor({ cases, onCaseChange, onAddCase, onRemoveCas
         const lastCase = cases[cases.length - 1];
 
         if (lastCase) {
-            document.getElementById(`fivepixels-case-input-${lastCase.id}`)?.focus();
+            setActiveCaseId(lastCase.id);
+            window.requestAnimationFrame(() => {
+                document.getElementById(`fivepixels-case-input-${lastCase.id}`)?.focus();
+            });
         }
 
         previousCaseCountRef.current = cases.length;
     }, [cases]);
 
+    const handleRemoveCase = (caseId: string) => {
+        const removeIndex = cases.findIndex((item) => item.id === caseId);
+
+        if (removeIndex < 0) {
+            return;
+        }
+
+        const fallbackCase = cases[removeIndex + 1] ?? cases[removeIndex - 1];
+
+        if (activeCaseId === caseId && fallbackCase) {
+            setActiveCaseId(fallbackCase.id);
+        }
+
+        onRemoveCase(caseId);
+    };
+
+    if (!activeCase || activeCaseIndex < 0) {
+        return null;
+    }
+
     return (
-        <div className="flex max-h-[280px] flex-col gap-[8px] overflow-y-auto px-[4px] pt-[4px]">
-            {cases.map((item, index) => (
-                <div
-                    key={item.id}
-                    className="flex flex-col gap-[4px] rounded-[12px] p-[4px] bg-white border border-[var(--adaptive-black300)]"
-                >
-                    <section className="flex justify-between items-center px-[8px]">
-                        <span className="shrink-0 text-[12px] font-medium tabular-nums text-[var(--adaptive-black500)]">{index + 1}. ISSUE</span>
+        <div className="flex h-full min-h-0 flex-1 flex-col">
+            <FeedbackCaseTabBar
+                variant="editor"
+                cases={cases}
+                activeCaseId={resolvedActiveCaseId}
+                onSelectCase={setActiveCaseId}
+                onAddCase={onAddCase}
+                onRemoveCase={handleRemoveCase}
+            />
 
-                        {cases.length > 1 ? (
-                            <button
-                                type="button"
-                                data-fivepixels-interactive=""
-                                onClick={() => onRemoveCase(item.id)}
-                                aria-label={messages.composer.removeCaseAriaLabel(index + 1)}
-                                className="inline-flex bg-[var(--adaptive-black200)] h-[16px] w-[16px] shrink-0 items-center justify-center rounded-full text-[18px] leading-none text-[var(--adaptive-black500)] hover:bg-[var(--adaptive-blackOpacity100)]"
-                            >
-                                ×
-                            </button>
-                        ) : (
-                            <span
-                                className="w-[28px] shrink-0"
-                                aria-hidden
-                            />
-                        )}
-                    </section>
-
-                    <textarea
-                        id={`fivepixels-case-input-${item.id}`}
-                        autoFocus={autoFocus && index === 0}
-                        value={item.text}
-                        onChange={(event) => onCaseChange(item.id, event.target.value)}
-                        placeholder={resolvedPlaceholder}
-                        rows={2}
-                        className={CASE_INPUT_CLASS}
-                        onKeyDown={(event) => {
-                            if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
-                                event.preventDefault();
-                                onSubmitShortcut?.();
-                            }
-                        }}
-                    />
-                </div>
-            ))}
-
-            <button
-                type="button"
-                data-fivepixels-interactive=""
-                onClick={onAddCase}
-                className="self-start rounded-full border border-dashed border-[var(--adaptive-border-subtle)] px-[10px] py-[4px] text-[12px] font-semibold text-[var(--adaptive-blue500)] hover:bg-[var(--adaptive-blue100)]"
+            <div
+                role="tabpanel"
+                id={`fivepixels-case-panel-${activeCase.id}`}
+                aria-labelledby={`fivepixels-case-tab-${activeCase.id}`}
+                className="flex min-h-0 flex-1 flex-col overflow-y-auto px-[4px] py-[4px]"
             >
-                + {messages.composer.addCase}
-            </button>
+                <CaseTextarea
+                    id={`fivepixels-case-input-${activeCase.id}`}
+                    autoFocus={autoFocus && activeCaseIndex === 0}
+                    value={activeCase.text}
+                    placeholder={getCaseInputPlaceholder(activeCaseIndex + 1)}
+                    onChange={(text) => onCaseChange(activeCase.id, text)}
+                    onSubmitShortcut={onSubmitShortcut}
+                />
+            </div>
         </div>
     );
 }

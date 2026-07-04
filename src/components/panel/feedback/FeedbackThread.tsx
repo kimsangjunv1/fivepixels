@@ -385,6 +385,7 @@ export function FeedbackThread({
         errorMessage,
     } = useReport();
     const scrollRef = useRef<HTMLElement>(null);
+    const [isAllCasesView, setIsAllCasesView] = useState(false);
     const [scrollOverflow, setScrollOverflow] = useState<ScrollOverflowState>({
         canScrollUp: false,
         canScrollDown: false,
@@ -392,14 +393,16 @@ export function FeedbackThread({
 
     const isEditingCases = caseEditReportId === report.id && caseEditCases !== null;
     const casesForEditor = isEditingCases ? caseEditCases : report.cases;
-    const hasOpenCases = casesForEditor.some((item) => item.status === "open");
-    const caseSelectionEnabled = !isEditingCases && report.status !== "archived" && casesForEditor.length > 0;
     const replies = getReportReplies(report);
     const timeline = useMemo(() => (focusedCaseId ? buildCaseThreadTimeline(report, focusedCaseId) : { issueChildren: [], branches: [] }), [focusedCaseId, report, replies]);
     const originalAuthorName = resolveOriginalFeedbackAuthorName(report);
     const issueUrl = getGitHubIssueUrl(report);
     const canAct = focusedCaseId ? canShowCaseThreadActions(report, focusedCaseId, replyAuthorName, confirmAuthorName) : false;
     const systemBranches = useMemo(() => buildThreadTimeline(report).branches.filter((branch) => isGitIssuedSystemReply(branch.root, report)), [report, replies]);
+
+    useEffect(() => {
+        setIsAllCasesView(false);
+    }, [report.id]);
 
     const refreshScrollOverflow = useCallback(() => {
         const element = scrollRef.current;
@@ -454,9 +457,9 @@ export function FeedbackThread({
             ) : null}
             <section
                 ref={scrollRef}
-                className="flex h-full max-h-[360px] flex-col overflow-auto bg-transparent"
+                className="flex h-full max-h-[360px] flex-col overflow-auto gap-[16px]"
             >
-                <article className="flex flex-col gap-[4px] border-t border-[var(--adaptive-border-subtle)] p-[8px]">
+                <article className="flex flex-col gap-[4px] border-t border-[var(--adaptive-border-subtle)]">
                     <FeedbackCaseList
                         report={report}
                         cases={casesForEditor}
@@ -464,9 +467,9 @@ export function FeedbackThread({
                         canEdit={canEditReportCases(report) && !isEditingCases}
                         isSaving={isUpdating}
                         errorMessage={isEditingCases ? errorMessage : ""}
-                        selectable={caseSelectionEnabled}
                         focusedCaseId={focusedCaseId}
                         onSelectCase={selectCase}
+                        onAllTabActiveChange={setIsAllCasesView}
                         onBeginEdit={() => beginCaseEdit(report)}
                         onCancelEdit={cancelCaseEdit}
                         onSaveEdit={() => void handleCaseEditSave()}
@@ -475,14 +478,14 @@ export function FeedbackThread({
                         onRemoveCase={removeCaseEditDraftCase}
                     />
                     {report.author_name ? (
-                        <div className="flex items-center gap-[6px] px-[8px]">
+                        <div className="flex items-center gap-[6px] px-[16px]">
                             <p className="text-[12px] text-[var(--adaptive-black500)]">{report.author_name}</p>
                             <FeedbackCreatorBadge />
                         </div>
                     ) : null}
                 </article>
 
-                {focusedCaseId ? (
+                {focusedCaseId && !isAllCasesView ? (
                     <>
                         <QuestionThreadGroup
                             questions={timeline.issueChildren}

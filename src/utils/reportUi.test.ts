@@ -15,7 +15,8 @@ describe("resolveReportUi", () => {
                 },
             }),
         ).toEqual({
-            appearance: "dark",
+            panelAppearance: "dark",
+            tooltipAppearance: "dark",
             showFeedbackList: false,
             visibleShortcutKeys: true,
             questionThreadDefault: "expanded",
@@ -25,9 +26,30 @@ describe("resolveReportUi", () => {
         });
     });
 
+    it("resolves scoped appearance values independently", () => {
+        expect(
+            resolveReportUi({
+                ui: {
+                    panelAppearance: "light",
+                    tooltipAppearance: "dark",
+                },
+            }),
+        ).toEqual({
+            panelAppearance: "light",
+            tooltipAppearance: "dark",
+            showFeedbackList: true,
+            visibleShortcutKeys: false,
+            questionThreadDefault: "expanded",
+            shortcut: undefined,
+            locale: "en",
+            messages: getReportMessages("en"),
+        });
+    });
+
     it("uses defaults when ui is omitted", () => {
         expect(resolveReportUi({})).toEqual({
-            appearance: "system",
+            panelAppearance: "system",
+            tooltipAppearance: "system",
             showFeedbackList: true,
             visibleShortcutKeys: false,
             questionThreadDefault: "expanded",

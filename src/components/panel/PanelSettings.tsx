@@ -1,13 +1,16 @@
 import type { ReactNode } from "react";
 import type { ReportAppearance, QuestionThreadDisplay } from "@/types/report.js";
 import type { ReportLocale } from "@/i18n/types.js";
+import { APPEARANCE_OPTION_VALUES } from "@/constants/appearance.js";
 import { useReport } from "@/providers/reportContext.js";
 import { PanelOptionSwitch } from "./PanelOptionSwitch.js";
 
 type PanelSettingsProps = {
     transferDisabled?: boolean;
-    appearance: ReportAppearance;
-    onAppearanceChange: (appearance: ReportAppearance) => void;
+    panelAppearance: ReportAppearance;
+    onPanelAppearanceChange: (appearance: ReportAppearance) => void;
+    tooltipAppearance: ReportAppearance;
+    onTooltipAppearanceChange: (appearance: ReportAppearance) => void;
     questionThreadDisplay: QuestionThreadDisplay;
     onQuestionThreadDisplayChange: (display: QuestionThreadDisplay) => void;
     onExport: () => void;
@@ -47,8 +50,10 @@ function SettingsActionButton({ disabled = false, onClick, children }: { disable
 
 export function PanelSettings({
     transferDisabled = false,
-    appearance,
-    onAppearanceChange,
+    panelAppearance,
+    onPanelAppearanceChange,
+    tooltipAppearance,
+    onTooltipAppearanceChange,
     questionThreadDisplay,
     onQuestionThreadDisplayChange,
     onExport,
@@ -61,7 +66,7 @@ export function PanelSettings({
     onKeyRotate,
 }: PanelSettingsProps) {
     const { locale, setLocale, messages, showMarkerTargetPreview, setShowMarkerTargetPreview } = useReport();
-    const appearanceOptions = (["system", "light", "dark"] as const).map((value) => ({
+    const appearanceOptions = APPEARANCE_OPTION_VALUES.map((value) => ({
         value,
         label: messages.appearance[value],
     }));
@@ -113,13 +118,24 @@ export function PanelSettings({
                 </SettingsActionButton>
             </SettingsSection>
 
-            <SettingsSection label={messages.moreMenu.theme}>
+            <SettingsSection label={messages.moreMenu.panelTheme}>
                 <div className="px-[12px] pb-[10px]">
                     <PanelOptionSwitch
                         options={appearanceOptions}
-                        value={appearance}
-                        onChange={onAppearanceChange}
-                        ariaLabel={messages.moreMenu.themeAriaLabel}
+                        value={panelAppearance}
+                        onChange={onPanelAppearanceChange}
+                        ariaLabel={messages.moreMenu.panelThemeAriaLabel}
+                    />
+                </div>
+            </SettingsSection>
+
+            <SettingsSection label={messages.moreMenu.tooltipTheme}>
+                <div className="px-[12px] pb-[10px]">
+                    <PanelOptionSwitch
+                        options={appearanceOptions}
+                        value={tooltipAppearance}
+                        onChange={onTooltipAppearanceChange}
+                        ariaLabel={messages.moreMenu.tooltipThemeAriaLabel}
                     />
                 </div>
             </SettingsSection>

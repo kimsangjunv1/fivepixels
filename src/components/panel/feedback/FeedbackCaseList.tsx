@@ -1,18 +1,20 @@
+import { useEffect, useState } from "react";
 import type { ReportCase, ReportFeedback } from "@/types/report.js";
 import { useReport } from "@/providers/reportContext.js";
-import { getCaseHandlerName, getIssueProgressLabel } from "@/utils/reportCases.js";
+import { getCaseHandlerName } from "@/utils/reportCases.js";
 import { FeedbackCaseEditor } from "./FeedbackCaseEditor.js";
+import { CASE_SELECTOR_ALL_TAB, CaseResolvedBadge, FeedbackCaseTabBar, type CaseSelectorTab } from "./FeedbackCaseTabBar.js";
 
 type FeedbackCaseListProps = {
-    report: Pick<ReportFeedback, "cases" | "replies" | "author_name">;
+    report: Pick<ReportFeedback, "id" | "cases" | "replies" | "author_name">;
     cases: ReportCase[];
     isEditing?: boolean;
     canEdit?: boolean;
     isSaving?: boolean;
     errorMessage?: string;
-    selectable?: boolean;
     focusedCaseId?: string | null;
     onSelectCase?: (caseId: string) => void;
+    onAllTabActiveChange?: (active: boolean) => void;
     onBeginEdit?: () => void;
     onCancelEdit?: () => void;
     onSaveEdit?: () => void;
@@ -21,6 +23,61 @@ type FeedbackCaseListProps = {
     onRemoveCase?: (caseId: string) => void;
 };
 
+function resolveFocusedCaseId(cases: ReportCase[], focusedCaseId: string | null | undefined) {
+    if (focusedCaseId && cases.some((item) => item.id === focusedCaseId)) {
+        return focusedCaseId;
+    }
+
+    return cases[0]?.id ?? null;
+}
+
+type AllCasesListProps = {
+    report: Pick<ReportFeedback, "id" | "cases" | "replies" | "author_name">;
+    cases: ReportCase[];
+    onSelectCase: (caseId: string) => void;
+};
+
+function AllCasesList({ report, cases, onSelectCase }: AllCasesListProps) {
+    const { messages } = useReport();
+
+    return (
+        <ul className="flex flex-col gap-[6px] px-[8px] py-[4px]">
+            {cases.map((item, index) => {
+                const isOpen = item.status === "open";
+                const handlerName = getCaseHandlerName(report, item.id);
+
+                return (
+                    <li key={item.id}>
+                        <button
+                            type="button"
+                            data-fivepixels-interactive=""
+                            onClick={() => onSelectCase(item.id)}
+                            className="flex w-full items-start gap-[6px] rounded-[8px] px-[4px] py-[6px] text-left hover:bg-[var(--adaptive-surface-muted)]/60"
+                        >
+                            <span className="w-[20px] shrink-0 tabular-nums text-[12px] text-[var(--adaptive-black500)]">{index + 1}.</span>
+                            <div className="min-w-0 flex-1">
+                                <span className={`text-[14px] leading-[1.5] text-[var(--adaptive-text-primary)] ${item.status === "resolved" ? "text-[var(--adaptive-black600)] line-through" : ""}`}>
+                                    {item.text}
+                                </span>
+                                {isOpen ? (
+                                    <p className="mt-[2px] text-[11px] text-[var(--adaptive-black500)]">
+                                        {messages.cases.assignee}: {handlerName ?? messages.cases.unassigned}
+                                    </p>
+                                ) : null}
+                            </div>
+                            <CaseResolvedBadge
+                                resolved={item.status === "resolved"}
+                                resolvedLabel={messages.cases.resolved}
+                                openLabel={messages.cases.open}
+                            />
+                        </button>
+                    </li>
+                );
+            })}
+        </ul>
+    );
+}
+
 export function FeedbackCaseList({
     report,
     cases,
@@ -28,9 +85,9 @@ export function FeedbackCaseList({
     canEdit = false,
     isSaving = false,
     errorMessage = "",
-    selectable = false,
     focusedCaseId = null,
     onSelectCase,
+    onAllTabActiveChange,
     onBeginEdit,
     onCancelEdit,
     onSaveEdit,
@@ -39,8 +96,30 @@ export function FeedbackCaseList({
     onRemoveCase,
 }: FeedbackCaseListProps) {
     const { messages } = useReport();
-    const progressLabel = getIssueProgressLabel({ cases });
-    const hasOpenCases = cases.some((item) => item.status === "open");
+    const resolvedFocusedCaseId = resolveFocusedCaseId(cases, focusedCaseId);
+    const [selectorTab, setSelectorTab] = useState<CaseSelectorTab>(() => resolvedFocusedCaseId ?? CASE_SELECTOR_ALL_TAB);
+    const focusedCase = cases.find((item) => item.id === resolvedFocusedCaseId) ?? null;
+    const isAllTabActive = selectorTab === CASE_SELECTOR_ALL_TAB;
+
+    useEffect(() => {
+        if (!resolvedFocusedCaseId) {
+            return;
+        }
+
+        setSelectorTab(resolvedFocusedCaseId);
+        onAllTabActiveChange?.(false);
+    }, [onAllTabActiveChange, report.id, resolvedFocusedCaseId]);
+
+    const handleSelectAll = () => {
+        setSelectorTab(CASE_SELECTOR_ALL_TAB);
+        onAllTabActiveChange?.(true);
+    };
+
+    const handleSelectCase = (caseId: string) => {
+        setSelectorTab(caseId);
+        onAllTabActiveChange?.(false);
+        onSelectCase?.(caseId);
+    };
 
     if (isEditing && onCaseChange && onAddCase && onRemoveCase) {
         return (
@@ -86,72 +165,49 @@ export function FeedbackCaseList({
 
     return (
         <div className="flex flex-col gap-[8px]">
-            <div className="flex items-center justify-between gap-[8px] px-[8px]">
-                <p className="text-[12px] font-medium text-[var(--adaptive-black600)]">
-                    {messages.cases.title}
-                    {progressLabel ? <span className="ml-[6px] tabular-nums text-[var(--adaptive-black500)]">({progressLabel})</span> : null}
-                </p>
-                {canEdit && onBeginEdit ? (
-                    <button
-                        type="button"
-                        data-fivepixels-interactive=""
-                        onClick={onBeginEdit}
-                        className="rounded-full border border-[var(--adaptive-border-subtle)] px-[8px] py-[2px] text-[11px] font-semibold text-[var(--adaptive-blue500)] hover:bg-[var(--adaptive-blue100)]"
-                    >
-                        {messages.cases.edit}
-                    </button>
-                ) : null}
-            </div>
-            {selectable && hasOpenCases ? (
-                <p className="px-[8px] text-[11px] text-[var(--adaptive-black500)]">{messages.cases.selectToView}</p>
-            ) : null}
-            <ul className="flex flex-col gap-[6px] px-[8px]">
-                {cases.map((item, index) => {
-                    const isOpen = item.status === "open";
-                    const isSelected = focusedCaseId === item.id;
-                    const handlerName = getCaseHandlerName(report, item.id);
-
-                    return (
-                        <li
-                            key={item.id}
-                            className={`flex items-start gap-[6px] text-[14px] leading-[1.5] text-[var(--adaptive-text-primary)] ${selectable && isSelected ? "rounded-[8px] bg-[var(--adaptive-blue100)]/60 px-[4px] py-[2px]" : ""}`}
+            <FeedbackCaseTabBar
+                variant="selector"
+                cases={cases}
+                activeTab={selectorTab}
+                onSelectAll={handleSelectAll}
+                onSelectCase={handleSelectCase}
+                showResolvedStatus
+                idPrefix="fivepixels-thread-case"
+                trailing={
+                    canEdit && onBeginEdit ? (
+                        <button
+                            type="button"
+                            data-fivepixels-interactive=""
+                            onClick={onBeginEdit}
+                            className="rounded-full border border-[var(--adaptive-border-subtle)] px-[8px] py-[4px] text-[11px] font-semibold whitespace-nowrap text-[var(--adaptive-blue500)] hover:bg-[var(--adaptive-blue100)]"
                         >
-                            {selectable ? (
-                                <input
-                                    type="radio"
-                                    name="focused-case"
-                                    data-fivepixels-interactive=""
-                                    checked={isSelected}
-                                    onChange={() => onSelectCase?.(item.id)}
-                                    aria-label={item.text}
-                                    className="mt-[6px] h-[14px] w-[14px] shrink-0 accent-[var(--adaptive-blue500)]"
-                                />
-                            ) : (
-                                <span className="w-[14px] shrink-0" aria-hidden />
-                            )}
-                            <span className="w-[20px] shrink-0 tabular-nums text-[12px] text-[var(--adaptive-black500)]">{index + 1}.</span>
-                            <span
-                                className={`mt-[2px] inline-flex h-[16px] w-[16px] shrink-0 items-center justify-center rounded-full text-[10px] font-bold ${
-                                    item.status === "resolved"
-                                        ? "bg-[var(--adaptive-green500)] text-white"
-                                        : "border border-[var(--adaptive-border-subtle)] text-[var(--adaptive-black400)]"
-                                }`}
-                                aria-label={item.status === "resolved" ? messages.cases.resolved : messages.cases.open}
-                            >
-                                {item.status === "resolved" ? "✓" : ""}
-                            </span>
-                            <div className="min-w-0 flex-1">
-                                <span className={item.status === "resolved" ? "text-[var(--adaptive-black600)] line-through" : undefined}>{item.text}</span>
-                                {isOpen ? (
-                                    <p className="mt-[2px] text-[11px] text-[var(--adaptive-black500)]">
-                                        {messages.cases.assignee}: {handlerName ?? messages.cases.unassigned}
-                                    </p>
-                                ) : null}
-                            </div>
-                        </li>
-                    );
-                })}
-            </ul>
+                            {messages.cases.edit}
+                        </button>
+                    ) : null
+                }
+            />
+
+            {isAllTabActive ? (
+                <AllCasesList
+                    report={report}
+                    cases={cases}
+                    onSelectCase={handleSelectCase}
+                />
+            ) : focusedCase ? (
+                <div className="flex flex-col gap-[4px] px-[16px]">
+                    <p
+                        className={`text-[16px] font-semibold leading-[1.5] text-[var(--adaptive-text-primary)] ${focusedCase.status === "resolved" ? "text-[var(--adaptive-black600)] line-through" : ""}`}
+                    >
+                        {focusedCase.text}
+                    </p>
+
+                    {focusedCase.status === "open" ? (
+                        <p className="text-[14px] text-[var(--adaptive-black500)]">
+                            {messages.cases.assignee}: {getCaseHandlerName(report, focusedCase.id) ?? messages.cases.unassigned}
+                        </p>
+                    ) : null}
+                </div>
+            ) : null}
         </div>
     );
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { en } from "@/i18n/en.js";
-import { EMPTY_PROBE_LAYOUT_VALUES, getProposedChanges, formatProposedChanges, formatSavedProbeEditsSummary } from "./pickProbe.js";
+import { EMPTY_PROBE_LAYOUT_VALUES, applyPickProbeValueDiff, capturePickProbeValues, getProposedChanges, formatProposedChanges, formatSavedProbeEditsSummary } from "./pickProbe.js";
 
 const layoutValues = { ...EMPTY_PROBE_LAYOUT_VALUES };
 
@@ -61,6 +61,27 @@ describe("pickProbe", () => {
                 after: "#000000",
             },
         ]);
+    });
+
+    it("only applies changed style properties as inline overrides", () => {
+        document.body.innerHTML = `
+            <article
+                id="card"
+                style="display:grid;grid-template-columns:repeat(1,minmax(0,1fr));grid-template-rows:repeat(4,minmax(0,1fr));gap:10px;padding:16px"
+            >
+                <p>child</p>
+            </article>
+        `;
+        const element = document.getElementById("card") as HTMLElement;
+        const baseline = capturePickProbeValues(element);
+
+        applyPickProbeValueDiff(element, baseline, { ...baseline, margin: "1px" }, "after");
+
+        expect(element.style.margin).toBe("1px");
+        expect(element.style.padding).toBe("");
+        expect(element.style.gridTemplateColumns).toBe("");
+        expect(element.style.gridTemplateRows).toBe("");
+        expect(element.style.gap).toBe("");
     });
 
     it("formats saved probe edits across multiple elements", () => {

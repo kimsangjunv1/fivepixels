@@ -1,4 +1,4 @@
-import { useCallback, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { useCallback, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { useNativeHover } from "@/hooks/useNativeHover.js";
 import { getReportTooltipRoot, ensureReportTooltipLayer } from "@/utils/dom.js";
@@ -11,16 +11,8 @@ type HoverTooltipProps = {
     className?: string;
 };
 
-const TOOLTIP_STYLE: CSSProperties = {
-    position: "fixed",
-    pointerEvents: "none",
-    whiteSpace: "nowrap",
-    borderRadius: "100px",
-    backgroundColor: "#00000090",
-    padding: "4px 10px",
-    fontSize: "14px",
-    color: "#ffffff",
-};
+const TOOLTIP_CLASS_NAME =
+    "pointer-events-none fixed whitespace-nowrap rounded-[100px] bg-[var(--adaptive-overlay-surface)] px-[10px] py-[4px] text-[14px] text-[var(--adaptive-overlay-text)]";
 
 export function HoverTooltip({ label, disabled = false, children, className = "" }: HoverTooltipProps) {
     const [hovered, setHovered] = useState(false);
@@ -88,8 +80,8 @@ export function HoverTooltip({ label, disabled = false, children, className = ""
                       <span
                           ref={tooltipRef}
                           role="tooltip"
+                          className={TOOLTIP_CLASS_NAME}
                           style={{
-                              ...TOOLTIP_STYLE,
                               top: layout?.top ?? 0,
                               left: layout?.left ?? 0,
                               opacity: layout ? 1 : 0,

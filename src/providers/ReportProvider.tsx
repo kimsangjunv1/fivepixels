@@ -52,7 +52,8 @@ type ReportProviderEnabledProps = Omit<ReportProviderProps, "project" | "ui" | "
     projectId: string;
     environment?: string;
     appVersion?: string;
-    appearance: NonNullable<ReportUi["appearance"]>;
+    panelAppearance: NonNullable<ReportUi["panelAppearance"]>;
+    tooltipAppearance: NonNullable<ReportUi["tooltipAppearance"]>;
     showFeedbackList: boolean;
     visibleShortcutKeys: boolean;
     questionThreadDefault: NonNullable<ReportUi["questionThreadDefault"]>;
@@ -70,7 +71,8 @@ function ReportProviderEnabled({
     projectId,
     environment,
     appVersion,
-    appearance,
+    panelAppearance,
+    tooltipAppearance,
     questionThreadDefault,
     fields,
     authors,
@@ -100,7 +102,8 @@ function ReportProviderEnabled({
         projectId,
         environment,
         appVersion,
-        appearance,
+        panelAppearance,
+        tooltipAppearance,
         questionThreadDefault,
         fields,
         authors,
@@ -164,7 +167,8 @@ export function ReportProvider({
             projectId={resolvedProject.projectId}
             environment={resolvedProject.environment}
             appVersion={resolvedProject.appVersion}
-            appearance={resolvedUi.appearance}
+            panelAppearance={resolvedUi.panelAppearance}
+            tooltipAppearance={resolvedUi.tooltipAppearance}
             showFeedbackList={resolvedUi.showFeedbackList}
             visibleShortcutKeys={resolvedUi.visibleShortcutKeys}
             questionThreadDefault={resolvedUi.questionThreadDefault}

@@ -10,13 +10,13 @@ import { getDetachedMarkerAriaLabel, getDetachedMarkerHint, getModalGhostFrame }
 import { getMarkerColor, getMarkerDisplayLabel } from "../../utils/reportVisual.js";
 import { FeedbackComposer } from "../../components/panel/feedback/FeedbackComposer.js";
 import { FeedbackHoverCard } from "../../components/panel/feedback/FeedbackHoverCard.js";
-import { FeedbackIssuePinnedHeader } from "../../components/panel/feedback/FeedbackIssuePinnedHeader.js";
 import { buildConfirmAuthorOptions, getReplyCount, shouldShowCaseReplyComposer } from "../../utils/feedbackThread.js";
 import { FeedbackThread } from "../../components/panel/feedback/FeedbackThread.js";
 import { CornerResizeGhost } from "../../components/ui/CornerResizeGhost.js";
 import { CornerResizeHandle } from "../../components/ui/CornerResizeHandle.js";
 import { TOOLTIP_EXPANDED_DEFAULT_MAX_HEIGHT } from "../../utils/coordinates.js";
-const TOOLTIP_SURFACE_CLASS = "overflow-hidden rounded-[12px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] shadow-[var(--adaptive-popup-shadow)]";
+const TOOLTIP_SURFACE_CLASS = "overflow-hidden rounded-[24px] border-[3px] border-[var(--adaptive-black200)] bg-[var(--adaptive-blackOpacity800)] backdrop-blur-[5px] shadow-[var(--adaptive-popup-shadow)]";
+// "overflow-hidden rounded-[12px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-blackOpacity500)] backdrop-blur-[10px] shadow-[var(--adaptive-popup-shadow)]";
 const TOOLTIP_FIXED_CLASS = `fixed z-[1000001] ${TOOLTIP_SURFACE_CLASS}`;
 const EXPANDED_TOOLTIP_ANCHOR_CLASS = "pointer-events-auto fixed z-[1000001]";
 const MARKER_ANCHOR_CLASS = "pointer-events-none fixed z-[1000000] -translate-x-1/2 -translate-y-1/2";
@@ -229,7 +229,7 @@ export function ReportMarkersLayer() {
                             }, children: [_jsxs("div", { onClick: (event) => event.stopPropagation(), onPointerDown: (event) => event.stopPropagation(), className: "flex min-h-0 flex-col", style: {
                                         maxHeight: customSize?.height ?? TOOLTIP_EXPANDED_DEFAULT_MAX_HEIGHT,
                                         height: customSize?.height,
-                                    }, children: [_jsx(FeedbackIssuePinnedHeader, { report: activeReplyReport, locale: locale }), tooltipAnchor?.detached && resolvedDetachedHint ? (_jsx("p", { className: "shrink-0 border-b border-[var(--adaptive-border-subtle)] px-[12px] pb-[10px] text-[12px] leading-[1.4] text-[var(--adaptive-black500)]", children: resolvedDetachedHint })) : null, _jsxs("div", { className: "flex min-h-0 flex-1 flex-col", children: [_jsx(FeedbackThread, { report: activeReplyReport, authors: authors, pendingComposer: pendingComposer, confirmAuthorName: confirmAuthorName, showConfirmAuthorSelect: showConfirmAuthorSelect, onConfirmAuthorNameChange: setConfirmAuthorName, onToggleConfirmAuthorSelect: toggleConfirmAuthorSelect, onStartDeny: startDenyReview, onStartCheckout: startCheckoutReview, onStartAskQuestion: startAskQuestion, onConfirm: () => void handleConfirmResolution(), isUpdating: isUpdating }), showComposer ? (_jsx("section", { className: "relative shrink-0 overflow-visible border-t border-[var(--adaptive-border-subtle)] bg-transparent", children: _jsx(FeedbackComposer, { message: replyDraft, onMessageChange: (value) => {
+                                    }, children: [tooltipAnchor?.detached && resolvedDetachedHint ? (_jsx("p", { className: "shrink-0 border-b border-[var(--adaptive-border-subtle)] px-[12px] pb-[10px] text-[12px] leading-[1.4] text-[var(--adaptive-black500)]", children: resolvedDetachedHint })) : null, _jsxs("div", { className: "flex min-h-0 flex-1 flex-col", children: [_jsx(FeedbackThread, { report: activeReplyReport, authors: authors, pendingComposer: pendingComposer, confirmAuthorName: confirmAuthorName, showConfirmAuthorSelect: showConfirmAuthorSelect, onConfirmAuthorNameChange: setConfirmAuthorName, onToggleConfirmAuthorSelect: toggleConfirmAuthorSelect, onStartDeny: startDenyReview, onStartCheckout: startCheckoutReview, onStartAskQuestion: startAskQuestion, onConfirm: () => void handleConfirmResolution(), isUpdating: isUpdating }), showComposer ? (_jsx("section", { className: "relative shrink-0 overflow-visible border-t border-[var(--adaptive-border-subtle)] bg-transparent", children: _jsx(FeedbackComposer, { message: replyDraft, onMessageChange: (value) => {
                                                             setReplyDraft(value);
                                                             if (errorMessage) {
                                                                 setErrorMessage("");

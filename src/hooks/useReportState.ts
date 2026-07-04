@@ -7,6 +7,7 @@ import { useMarkerTargetPreviewPreference } from "./useMarkerTargetPreviewPrefer
 import { useReportPersistence } from "./useReportPersistence.js";
 import { useIsMobileViewport } from "./useIsMobileViewport.js";
 import { useAppearancePreference } from "./useAppearancePreference.js";
+import { PANEL_APPEARANCE_STORAGE_KEY, TOOLTIP_APPEARANCE_STORAGE_KEY } from "@/constants/appearance.js";
 import { useLocalePreference } from "./useLocalePreference.js";
 import { useQuestionThreadPreference } from "./useQuestionThreadPreference.js";
 import { usePersonalKey } from "./usePersonalKey.js";
@@ -38,7 +39,7 @@ import { findPickTargetByPoint, getSelectableTargets, isSameHoverTarget, resolve
 import { shouldInspectFontStyle } from "@/utils/pickTargetInspect.js";
 import {
     applyPickProbeCompareMode,
-    applyPickProbeValues,
+    applyPickProbeValueDiff,
     capturePickProbeValues,
     formatSavedProbeEditsSummary,
     getProposedChanges,
@@ -48,6 +49,7 @@ import {
     captureProbeOriginalSnapshot,
     captureSavedProbeDeletion,
     createSavedProbeEntry,
+    restoreProbeElementFromSnapshot,
     findElementByProbeKey,
     getPickProbeElementKey,
     restoreProbeElementOriginal,
@@ -88,7 +90,8 @@ export type ReportStateConfig = {
     projectId: string;
     environment?: string;
     appVersion?: string;
-    appearance: ReportAppearance;
+    panelAppearance: ReportAppearance;
+    tooltipAppearance: ReportAppearance;
     questionThreadDefault?: QuestionThreadDisplay;
     fields: ReportField[];
     authors?: ReportAuthor[];
@@ -118,7 +121,8 @@ export function useReportState({
     projectId,
     environment,
     appVersion,
-    appearance,
+    panelAppearance,
+    tooltipAppearance,
     questionThreadDefault = "expanded",
     fields,
     authors = [],
@@ -143,7 +147,14 @@ export function useReportState({
     initialLocale,
     messageOverrides,
 }: ReportStateConfig) {
-    const { appearance: activeAppearance, setAppearance } = useAppearancePreference(appearance);
+    const { appearance: activePanelAppearance, setAppearance: setPanelAppearance } = useAppearancePreference(
+        PANEL_APPEARANCE_STORAGE_KEY,
+        panelAppearance,
+    );
+    const { appearance: activeTooltipAppearance, setAppearance: setTooltipAppearance } = useAppearancePreference(
+        TOOLTIP_APPEARANCE_STORAGE_KEY,
+        tooltipAppearance,
+    );
     const { showMarkerTargetPreview, setShowMarkerTargetPreview, toggleMarkerTargetPreview } = useMarkerTargetPreviewPreference();
     const { questionThreadDisplay, setQuestionThreadDisplay } = useQuestionThreadPreference(questionThreadDefault);
     const { locale, setLocale } = useLocalePreference(initialLocale);
@@ -180,7 +191,8 @@ export function useReportState({
     const hoverLeaveTimeoutRef = useRef<number | null>(null);
     const overlayHoverLeaveTimeoutRef = useRef<number | null>(null);
 
-    const resolvedAppearance = useResolvedAppearance(activeAppearance);
+    const resolvedPanelAppearance = useResolvedAppearance(activePanelAppearance);
+    const resolvedTooltipAppearance = useResolvedAppearance(activeTooltipAppearance);
     const isMobileViewport = useIsMobileViewport();
     const {
         canTransferFeedback,
@@ -761,33 +773,6 @@ export function useReportState({
         setHoveredTarget(snapshot);
     }, []);
 
-    const restorePickProbeElement = useCallback(() => {
-        const element = selectedElementRef.current;
-        const restore = pickProbeRestoreRef.current;
-
-        if (!element || !restore) {
-            return;
-        }
-
-        if (restore.style === null) {
-            element.removeAttribute("style");
-        } else {
-            element.setAttribute("style", restore.style);
-        }
-
-        if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement) {
-            if (restore.inputValue !== null) {
-                element.value = restore.inputValue;
-            }
-        } else if (restore.textContent !== null) {
-            element.textContent = restore.textContent;
-        }
-
-        pickProbeRestoreRef.current = null;
-        pickProbeOriginalSnapshotRef.current = null;
-        refreshSelectedTargetSnapshot();
-    }, [refreshSelectedTargetSnapshot]);
-
     const closePickProbePanelOnly = useCallback(() => {
         setPickProbeOpen(false);
         setPickProbeBaseline(null);
@@ -799,9 +784,8 @@ export function useReportState({
     }, []);
 
     const resetPickProbeState = useCallback(() => {
-        restorePickProbeElement();
         closePickProbePanelOnly();
-    }, [closePickProbePanelOnly, restorePickProbeElement]);
+    }, [closePickProbePanelOnly]);
 
     const revertSavedProbeEdit = useCallback(
         (elementKey: string) => {
@@ -945,57 +929,111 @@ export function useReportState({
 
     const pickProbeHasEdits = pickProbeChanges.length > 0;
 
-    const commitPickProbeEdits = useCallback(() => {
-        const element = selectedElementRef.current;
+    const persistPickProbeEdits = useCallback(
+        (options?: { closePanel?: boolean; values?: PickProbeValues }) => {
+            const element = selectedElementRef.current;
+            const values = options?.values ?? pickProbeValues;
 
-        if (!element || !pickProbeBaseline || !pickProbeValues || pickProbeChanges.length === 0) {
-            return;
-        }
+            if (!element || !pickProbeBaseline || !values) {
+                if (options?.closePanel) {
+                    closePickProbePanelOnly();
+                }
 
-        const elementKey = getPickProbeElementKey(element);
-        const existing = savedProbeEdits[elementKey];
-        const previousEntry = existing ?? null;
-        const originalSnapshot = pickProbeOriginalSnapshotRef.current;
+                return;
+            }
 
-        applyPickProbeCompareMode(element, savedProbeCompareMode, pickProbeBaseline, pickProbeValues);
+            const elementKey = getPickProbeElementKey(element);
+            const changes = getProposedChanges(
+                pickProbeBaseline,
+                values,
+                pickProbeSupportsTextFields,
+                pickProbeLayoutMode,
+            );
+            const existing = savedProbeEdits[elementKey];
 
-        const nextEntry = createSavedProbeEntry(
-            elementKey,
+            if (changes.length === 0) {
+                if (existing) {
+                    pushProbeSessionAction({
+                        kind: "style-revert",
+                        elementKey,
+                        revertedEntry: existing,
+                    });
+
+                    setSavedProbeEdits((current) => {
+                        const next = { ...current };
+                        delete next[elementKey];
+                        return next;
+                    });
+                }
+
+                if (options?.closePanel) {
+                    pickProbeRestoreRef.current = null;
+                    pickProbeOriginalSnapshotRef.current = null;
+                    closePickProbePanelOnly();
+                }
+
+                refreshSelectedTargetSnapshot();
+                return;
+            }
+
+            const previousEntry = existing ?? null;
+            const originalSnapshot = pickProbeOriginalSnapshotRef.current;
+
+            applyPickProbeCompareMode(element, savedProbeCompareMode, pickProbeBaseline, values);
+
+            const nextEntry = createSavedProbeEntry(
+                elementKey,
+                pickProbeBaseline,
+                values,
+                originalSnapshot?.style ?? pickProbeRestoreRef.current?.style ?? null,
+                originalSnapshot?.textContent ?? pickProbeRestoreRef.current?.textContent ?? pickProbeBaseline.textContent,
+                existing,
+                originalSnapshot?.innerHTML ?? null,
+                originalSnapshot?.inputValue ?? null,
+            );
+
+            const appliedChanged =
+                !existing ||
+                getProposedChanges(existing.applied, values, pickProbeSupportsTextFields, pickProbeLayoutMode).length > 0;
+
+            setSavedProbeEdits((current) => ({
+                ...current,
+                [elementKey]: nextEntry,
+            }));
+
+            if (appliedChanged) {
+                pushProbeSessionAction({
+                    kind: "style-apply",
+                    elementKey,
+                    previousEntry,
+                    nextEntry,
+                });
+            }
+
+            if (options?.closePanel) {
+                pickProbeRestoreRef.current = null;
+                pickProbeOriginalSnapshotRef.current = null;
+                closePickProbePanelOnly();
+            }
+
+            refreshSelectedTargetSnapshot();
+        },
+        [
+            closePickProbePanelOnly,
             pickProbeBaseline,
+            pickProbeLayoutMode,
+            pickProbeSupportsTextFields,
             pickProbeValues,
-            originalSnapshot?.style ?? pickProbeRestoreRef.current?.style ?? null,
-            originalSnapshot?.textContent ?? pickProbeRestoreRef.current?.textContent ?? pickProbeBaseline.textContent,
-            existing,
-            originalSnapshot?.innerHTML ?? null,
-            originalSnapshot?.inputValue ?? null,
-        );
+            pushProbeSessionAction,
+            refreshSelectedTargetSnapshot,
+            savedProbeCompareMode,
+            savedProbeEdits,
+        ],
+    );
 
-        setSavedProbeEdits((current) => ({
-            ...current,
-            [elementKey]: nextEntry,
-        }));
-
-        pushProbeSessionAction({
-            kind: "style-apply",
-            elementKey,
-            previousEntry,
-            nextEntry,
-        });
-
-        pickProbeRestoreRef.current = null;
-        pickProbeOriginalSnapshotRef.current = null;
-        closePickProbePanelOnly();
-        refreshSelectedTargetSnapshot();
-    }, [
-        closePickProbePanelOnly,
-        pickProbeBaseline,
-        pickProbeChanges.length,
-        pickProbeValues,
-        refreshSelectedTargetSnapshot,
-        savedProbeCompareMode,
-        savedProbeEdits,
-        pushProbeSessionAction,
-    ]);
+    const commitPickProbeEdits = useCallback(() => {
+        persistPickProbeEdits({ closePanel: true });
+    }, [persistPickProbeEdits]);
 
     const openPickProbe = useCallback(() => {
         const element = selectedElementRef.current;
@@ -1005,7 +1043,7 @@ export function useReportState({
         }
 
         if (pickProbeOpen) {
-            restorePickProbeElement();
+            closePickProbePanelOnly();
         }
 
         const elementKey = getPickProbeElementKey(element);
@@ -1018,28 +1056,19 @@ export function useReportState({
         setPickProbeLayoutMode(layoutMode);
         const freshBaseline = capturePickProbeValues(element);
 
-        if (!saved) {
-            pickProbeOriginalSnapshotRef.current = captureProbeOriginalSnapshot(element);
-        }
+        const sessionSnapshot = captureProbeOriginalSnapshot(element);
+        pickProbeOriginalSnapshotRef.current = sessionSnapshot;
+        pickProbeRestoreRef.current = {
+            style: sessionSnapshot.style,
+            textContent: sessionSnapshot.textContent,
+            inputValue: sessionSnapshot.inputValue,
+        };
 
         if (saved) {
             applyPickProbeCompareMode(element, savedProbeCompareMode, saved.baseline, saved.applied);
-            pickProbeRestoreRef.current = {
-                style: element.getAttribute("style"),
-                textContent: element.textContent,
-                inputValue:
-                    element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement ? element.value : null,
-            };
             setPickProbeBaseline({ ...freshBaseline, ...saved.baseline });
             setPickProbeValues({ ...freshBaseline, ...saved.applied });
         } else {
-            const snapshot = pickProbeOriginalSnapshotRef.current ?? captureProbeOriginalSnapshot(element);
-            pickProbeOriginalSnapshotRef.current = snapshot;
-            pickProbeRestoreRef.current = {
-                style: snapshot.style,
-                textContent: snapshot.textContent,
-                inputValue: snapshot.inputValue,
-            };
             const baseline = capturePickProbeValues(element);
             setPickProbeBaseline(baseline);
             setPickProbeValues(baseline);
@@ -1048,7 +1077,7 @@ export function useReportState({
         setPickProbeCompareModeState("after");
         setPickProbeOpen(true);
         refreshSelectedTargetSnapshot();
-    }, [pickProbeOpen, refreshSelectedTargetSnapshot, restorePickProbeElement, savedProbeCompareMode, savedProbeEdits]);
+    }, [closePickProbePanelOnly, pickProbeOpen, refreshSelectedTargetSnapshot, savedProbeCompareMode, savedProbeEdits]);
 
     const closePickProbe = useCallback(() => {
         resetPickProbeState();
@@ -1173,18 +1202,22 @@ export function useReportState({
     }, [closePickTargetContextMenu, mode, resetPickProbeState]);
 
     const setPickProbeCompareMode = useCallback(
-        (mode: PickProbeCompareMode) => {
+        (compareMode: PickProbeCompareMode) => {
             const element = selectedElementRef.current;
 
             if (!element || !pickProbeBaseline || !pickProbeValues) {
                 return;
             }
 
-            applyPickProbeCompareMode(element, mode, pickProbeBaseline, pickProbeValues);
-            setPickProbeCompareModeState(mode);
+            applyPickProbeCompareMode(element, compareMode, pickProbeBaseline, pickProbeValues);
+            setPickProbeCompareModeState(compareMode);
             refreshSelectedTargetSnapshot();
+
+            if (compareMode === "after") {
+                persistPickProbeEdits();
+            }
         },
-        [pickProbeBaseline, pickProbeValues, refreshSelectedTargetSnapshot],
+        [persistPickProbeEdits, pickProbeBaseline, pickProbeValues, refreshSelectedTargetSnapshot],
     );
 
     const updatePickProbeValue = useCallback(
@@ -1203,24 +1236,41 @@ export function useReportState({
             setPickProbeValues(nextValues);
 
             if (pickProbeCompareMode === "after") {
-                applyPickProbeValues(element, nextValues);
+                applyPickProbeValueDiff(element, pickProbeBaseline, nextValues, "after");
                 refreshSelectedTargetSnapshot();
+                persistPickProbeEdits({ values: nextValues });
             }
         },
-        [pickProbeBaseline, pickProbeCompareMode, pickProbeValues, refreshSelectedTargetSnapshot],
+        [pickProbeBaseline, pickProbeCompareMode, pickProbeValues, persistPickProbeEdits, refreshSelectedTargetSnapshot],
     );
 
     const resetPickProbeValues = useCallback(() => {
         const element = selectedElementRef.current;
 
-        if (!element || !pickProbeBaseline) {
+        if (!element || !pickProbeBaseline || !pickProbeValues) {
             return;
         }
 
         setPickProbeValues(pickProbeBaseline);
-        applyPickProbeCompareMode(element, pickProbeCompareMode, pickProbeBaseline, pickProbeBaseline);
+
+        const snapshot = pickProbeOriginalSnapshotRef.current;
+
+        if (snapshot) {
+            restoreProbeElementFromSnapshot(element, snapshot);
+        } else if (pickProbeHasEdits) {
+            applyPickProbeCompareMode(element, pickProbeCompareMode, pickProbeBaseline, pickProbeBaseline);
+        }
+
+        persistPickProbeEdits({ values: pickProbeBaseline });
         refreshSelectedTargetSnapshot();
-    }, [pickProbeBaseline, pickProbeCompareMode, refreshSelectedTargetSnapshot]);
+    }, [
+        pickProbeBaseline,
+        pickProbeCompareMode,
+        pickProbeHasEdits,
+        pickProbeValues,
+        persistPickProbeEdits,
+        refreshSelectedTargetSnapshot,
+    ]);
 
     const stopEditing = () => {
         setEditingReportId(null);
@@ -2258,11 +2308,13 @@ export function useReportState({
         showTargetPreview,
         activeReplyReportId,
         pendingComposer,
+        pickProbeOpen,
         toggleReportMode,
         toggleTargetPreview,
         toggleIssueMode,
         cancelDraft,
         cancelPendingComposer,
+        closePickProbe,
         closeReplyComposer,
         handleCreateSubmit,
         stopEditing,
@@ -2272,8 +2324,10 @@ export function useReportState({
     });
 
     return {
-        appearance: activeAppearance,
-        setAppearance,
+        panelAppearance: activePanelAppearance,
+        setPanelAppearance,
+        tooltipAppearance: activeTooltipAppearance,
+        setTooltipAppearance,
         questionThreadDisplay,
         setQuestionThreadDisplay,
         locale,
@@ -2300,7 +2354,8 @@ export function useReportState({
         canListAllFeedback,
         visibleShortcutKeys,
         searchInputRef,
-        resolvedAppearance,
+        resolvedPanelAppearance,
+        resolvedTooltipAppearance,
         isMobileViewport,
         mode,
         showTargetPreview,

@@ -2,7 +2,33 @@ import type { ReportTargetType } from "@/types/report.js";
 import type { PickProbeCompareMode, PickProbeValues, ProbeOriginalSnapshot, SavedProbeDeletion, SavedProbeEntry } from "@/types/report-ui.js";
 import { applyPickProbeCompareMode, applyPickProbeValues } from "./pickProbe.js";
 import { getFeedbackTargetSelector, resolveReportType } from "./dom.js";
+import { shouldInspectFontStyle } from "./pickTargetInspect.js";
 import { findElementByTargetSelector, generateCssSelector } from "./targetSelector.js";
+
+export type ProbeRestoreSnapshot = Pick<ProbeOriginalSnapshot, "style" | "innerHTML" | "textContent" | "inputValue">;
+
+export function restoreProbeElementFromSnapshot(element: HTMLElement, snapshot: ProbeRestoreSnapshot) {
+    if (snapshot.style === null) {
+        element.removeAttribute("style");
+    } else {
+        element.setAttribute("style", snapshot.style);
+    }
+
+    if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement) {
+        if (snapshot.inputValue !== null) {
+            element.value = snapshot.inputValue;
+        }
+
+        return;
+    }
+
+    if (shouldInspectFontStyle(element)) {
+        element.textContent = snapshot.textContent;
+        return;
+    }
+
+    element.innerHTML = snapshot.innerHTML;
+}
 
 export function createProbeDeletionId() {
     return `probe-del-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`;

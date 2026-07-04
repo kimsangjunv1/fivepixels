@@ -11,9 +11,7 @@ export function FeedbackComposer({ message = "", onMessageChange, cases, onCaseC
     const [isGitHubIssueConfirming, setIsGitHubIssueConfirming] = useState(false);
     const isQuestionMode = askQuestionForced || askQuestionChecked;
     const usesCaseEditor = Boolean(cases && onCaseChange && onAddCase && onRemoveCase);
-    const resolvedPlaceholder = isQuestionMode
-        ? messages.composer.questionPlaceholder
-        : (placeholder ?? (usesCaseEditor ? messages.fieldEditor.messagePlaceholder : messages.composer.placeholder));
+    const resolvedPlaceholder = isQuestionMode ? messages.composer.questionPlaceholder : (placeholder ?? (usesCaseEditor ? messages.fieldEditor.messagePlaceholder : messages.composer.placeholder));
     const isActionDisabled = isSubmitting || isGitHubIssueSubmitting;
     useEffect(() => {
         if (!isGitHubIssueConfirming) {
@@ -39,7 +37,7 @@ export function FeedbackComposer({ message = "", onMessageChange, cases, onCaseC
         setIsGitHubIssueConfirming(false);
         onGitHubIssueSubmit();
     };
-    return (_jsxs("div", { className: "flex w-full flex-col", children: [_jsxs("div", { className: "relative", children: [errorMessage ? (_jsx("p", { role: "alert", className: "absolute bottom-full left-[8px] right-[8px] z-10 mb-[6px] rounded-[8px] border border-rose-200 bg-rose-50 px-[8px] py-[4px] text-[12px] leading-[1.4] text-rose-700 shadow-[0_2px_8px_rgba(0,0,0,0.08)]", children: errorMessage })) : null, usesCaseEditor ? (_jsx(FeedbackCaseEditor, { cases: cases, onCaseChange: onCaseChange, onAddCase: onAddCase, onRemoveCase: onRemoveCase, autoFocus: autoFocus, placeholder: resolvedPlaceholder, onSubmitShortcut: handleSubmit })) : (_jsx("textarea", { autoFocus: autoFocus, value: message, onChange: (event) => onMessageChange?.(event.target.value), placeholder: resolvedPlaceholder, rows: 3, className: "min-h-[72px] w-full resize-none bg-transparent px-[8px] pt-[8px] text-[14px] leading-[1.4] text-[var(--adaptive-text-primary)] outline-none placeholder:text-[var(--adaptive-text-muted)]", onKeyDown: (event) => {
+    return (_jsxs("div", { className: `flex w-full flex-col ${usesCaseEditor ? "min-h-0 flex-1" : ""}`, children: [_jsxs("div", { className: `relative ${usesCaseEditor ? "min-h-0 flex-1" : ""}`, children: [errorMessage ? (_jsx("p", { role: "alert", className: "absolute bottom-full left-[8px] right-[8px] z-10 mb-[6px] rounded-[8px] border border-rose-200 bg-rose-50 px-[8px] py-[4px] text-[12px] leading-[1.4] text-rose-700 shadow-[0_2px_8px_rgba(0,0,0,0.08)]", children: errorMessage })) : null, usesCaseEditor ? (_jsx(FeedbackCaseEditor, { cases: cases, onCaseChange: onCaseChange, onAddCase: onAddCase, onRemoveCase: onRemoveCase, autoFocus: autoFocus, onSubmitShortcut: handleSubmit })) : (_jsx("textarea", { autoFocus: autoFocus, value: message, onChange: (event) => onMessageChange?.(event.target.value), placeholder: resolvedPlaceholder, rows: 3, className: "min-h-[72px] w-full resize-none bg-transparent px-[8px] pt-[8px] text-[14px] leading-[1.4] text-[var(--adaptive-text-primary)] outline-none placeholder:text-[var(--adaptive-text-muted)]", onKeyDown: (event) => {
                             if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
                                 event.preventDefault();
                                 handleSubmit();
@@ -48,6 +46,6 @@ export function FeedbackComposer({ message = "", onMessageChange, cases, onCaseC
                                             ? messages.composer.gitIssueSendingLabel
                                             : isGitHubIssueConfirming
                                                 ? messages.feedbackList.gitIssueConfirmLabel
-                                                : messages.composer.gitIssueSendLabel] }) })) : null, _jsx(HoverTooltip, { label: messages.composer.sendAriaLabel, children: _jsxs("button", { type: "button", "data-fivepixels-interactive": "", disabled: isActionDisabled, onClick: handleSubmit, className: "inline-flex px-[8px_4px] gap-[4px] shrink-0 items-center justify-center rounded-full bg-[var(--adaptive-blue500)] text-[var(--adaptive-overlay-text)] disabled:opacity-50", "aria-label": messages.composer.sendAriaLabel, children: ["Send", _jsx(SendIcon, { className: "w-[16px] invert" })] }) })] })] }), showTags ? (_jsx(FieldTagSelector, { fields: fields, fieldValues: fieldValues, onFieldChange: (key, value) => onFieldChange(key, value) })) : null] }));
+                                                : messages.composer.gitIssueSendLabel] }) })) : null, _jsx(HoverTooltip, { label: messages.composer.sendAriaLabel, children: _jsx("button", { type: "button", "data-fivepixels-interactive": "", disabled: isActionDisabled, onClick: handleSubmit, className: "inline-flex px-[8px_4px] gap-[4px] shrink-0 items-center justify-center rounded-full bg-[var(--adaptive-blue500)] text-[var(--adaptive-overlay-text)] disabled:opacity-50", "aria-label": messages.composer.sendAriaLabel, children: _jsx(SendIcon, { className: "w-[20px]" }) }) })] })] }), showTags ? (_jsx(FieldTagSelector, { fields: fields, fieldValues: fieldValues, onFieldChange: (key, value) => onFieldChange(key, value) })) : null] }));
 }
 //# sourceMappingURL=FeedbackComposer.js.map
