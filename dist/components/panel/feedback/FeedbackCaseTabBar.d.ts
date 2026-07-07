@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import type { ReportCase } from "../../../types/report.js";
-export declare const CASE_TAB_ACTIVE_CLASS = "border-[var(--adaptive-border-subtle)] border-b-transparent bg-[var(--adaptive-blue500)] text-[var(--adaptive-overlay-text)]";
+export declare const CASE_TAB_ACTIVE_CLASS = "bg-[var(--adaptive-blue100)] text-[var(--adaptive-blue500)]";
 export declare const CASE_TAB_INACTIVE_CLASS = "border-transparent bg-[var(--adaptive-surface-muted)]/60 text-[var(--adaptive-text-muted)] hover:bg-[var(--adaptive-surface-muted)] hover:text-[var(--adaptive-text-primary)]";
 export declare const CASE_SELECTOR_ALL_TAB: "all";
 export type CaseSelectorTab = typeof CASE_SELECTOR_ALL_TAB | string;

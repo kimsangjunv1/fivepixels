@@ -1,25 +1,17 @@
 import { useEffect, useState } from "react";
 import type { ReportReply } from "@/types/report.js";
-import type { ReportLocale } from "@/i18n/types.js";
 import { useReport } from "@/providers/reportContext.js";
 import { ChevronDownIcon } from "@/components/icons/Icons.js";
 import { ThreadChildReply } from "./ThreadChildReply.js";
+import { ThreadTimelineRow } from "./ThreadTimelineRow.js";
 
 type QuestionThreadGroupProps = {
     questions: ReportReply[];
     originalAuthorName: string;
-    locale: ReportLocale;
-    threadReplyPrefix: string;
     forceExpanded?: boolean;
 };
 
-export function QuestionThreadGroup({
-    questions,
-    originalAuthorName,
-    locale,
-    threadReplyPrefix,
-    forceExpanded = false,
-}: QuestionThreadGroupProps) {
+export function QuestionThreadGroup({ questions, originalAuthorName, forceExpanded = false }: QuestionThreadGroupProps) {
     const { messages, questionThreadDisplay } = useReport();
     const [isExpanded, setIsExpanded] = useState(() => questionThreadDisplay === "expanded");
 
@@ -45,17 +37,19 @@ export function QuestionThreadGroup({
 
     return (
         <div className="flex flex-col">
-            <button
-                type="button"
-                data-fivepixels-interactive=""
-                aria-expanded={isExpanded}
-                aria-label={messages.thread.questionsToggleAriaLabel(questions.length, isExpanded)}
-                onClick={() => setIsExpanded((current) => !current)}
-                className="flex w-full items-center gap-[6px] border-t border-[var(--adaptive-border-subtle)] px-[12px] py-[8px] text-left text-[12px] font-medium text-[var(--adaptive-blue500)] hover:bg-[var(--adaptive-black100)]"
-            >
-                <ChevronDownIcon className={`h-[14px] w-[14px] shrink-0 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
-                <span>{toggleLabel}</span>
-            </button>
+            <ThreadTimelineRow>
+                <button
+                    type="button"
+                    data-fivepixels-interactive=""
+                    aria-expanded={isExpanded}
+                    aria-label={messages.thread.questionsToggleAriaLabel(questions.length, isExpanded)}
+                    onClick={() => setIsExpanded((current) => !current)}
+                    className="flex items-center gap-[4px] rounded-[6px] py-[2px] text-left text-[12px] text-[var(--adaptive-black500)] hover:opacity-80"
+                >
+                    <ChevronDownIcon className={`h-[12px] w-[12px] shrink-0 text-[var(--adaptive-black400)] transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+                    <span className="text-[12px] text-[var(--adaptive-black500)] font-medium">{toggleLabel}</span>
+                </button>
+            </ThreadTimelineRow>
 
             {isExpanded
                 ? questions.map((question) => (
@@ -63,8 +57,6 @@ export function QuestionThreadGroup({
                           key={question.id}
                           reply={question}
                           originalAuthorName={originalAuthorName}
-                          locale={locale}
-                          threadReplyPrefix={threadReplyPrefix}
                       />
                   ))
                 : null}

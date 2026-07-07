@@ -1,8 +1,10 @@
+import { FEEDBACK_STORAGE_CHANGED_EVENT } from "../constants/feedbackStorageEvents.js";
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useCreateReportMutation, useDeleteReportMutation, useReportsQuery, useUpdateReportMutation } from "./report.query.js";
 import { useCurrentPathname } from "./useCurrentPathname.js";
 import { createReply as createReplyApi, listReplies as listRepliesApi } from "./report.api.js";
 import { casesToSearchText, getReportCases } from "../utils/reportCases.js";
+import { toDateKey } from "../utils/heatmapActivity.js";
 import { getRouteDetailStatus, isCreatedToday } from "../utils/routeDetailStatus.js";
 import { getFeedbackDisplayStatus, getLatestReply } from "../utils/feedbackThread.js";
 import { FEEDBACK_DISPLAY_STATUS_ORDER } from "../constants/feedbackStatus.js";
@@ -29,6 +31,12 @@ function filterReports(reports, filters) {
         }
         if (filters.reportType !== "all" && report.report_type !== filters.reportType) {
             return false;
+        }
+        if (filters.dateKey) {
+            const createdAt = new Date(report.created_at);
+            if (Number.isNaN(createdAt.getTime()) || toDateKey(createdAt) !== filters.dateKey) {
+                return false;
+            }
         }
         if (!filters.keyword.trim()) {
             return true;
@@ -68,6 +76,7 @@ export function useReportPersistence({ projectId, environment, appVersion, field
         keyword: "",
         status: "all",
         reportType: "all",
+        dateKey: null,
     });
     const [selectedReportId, setSelectedReportId] = useState(null);
     const [listScope, setListScope] = useState("current");
@@ -80,6 +89,20 @@ export function useReportPersistence({ projectId, environment, appVersion, field
     const rawReports = activeReportsQuery.data;
     const reports = useMemo(() => enrichReports(rawReports, repliesByReportId), [rawReports, repliesByReportId]);
     const { error, isError, isFetching, hasNextPage, isFetchingNextPage, fetchNextPage, refetch } = activeReportsQuery;
+    useEffect(() => {
+        if (typeof window === "undefined" || !usesLocalStorage) {
+            return;
+        }
+        const handleExternalStorageChange = () => {
+            clearLoadedReplies();
+            void refetch();
+            void currentReportsQuery.refetch();
+        };
+        window.addEventListener(FEEDBACK_STORAGE_CHANGED_EVENT, handleExternalStorageChange);
+        return () => {
+            window.removeEventListener(FEEDBACK_STORAGE_CHANGED_EVENT, handleExternalStorageChange);
+        };
+    }, [clearLoadedReplies, currentReportsQuery, refetch, usesLocalStorage]);
     const { mutateAsync: createFeedback, isPending: isCreating } = useCreateReportMutation(storageAdapterInstance, () => {
         void refetch();
         if (listScope === "all") {
@@ -126,10 +149,10 @@ export function useReportPersistence({ projectId, environment, appVersion, field
         }
         return created;
     }, [currentReportsQuery, listScope, refetch, storageAdapterInstance, usesLazyReplies]);
+    const currentPageReports = useMemo(() => enrichReports(currentReportsQuery.data, repliesByReportId), [currentReportsQuery.data, repliesByReportId]);
     const filteredReports = useMemo(() => filterReports(reports, filters), [filters, reports]);
-    const currentPageFilteredReports = useMemo(() => filterReports(enrichReports(currentReportsQuery.data, repliesByReportId), filters), [currentReportsQuery.data, filters, repliesByReportId]);
+    const currentPageFilteredReports = useMemo(() => filterReports(currentPageReports, filters), [currentPageReports, filters]);
     const routeDetailsStats = useMemo(() => {
-        const currentPageReports = enrichReports(currentReportsQuery.data, repliesByReportId);
         const statusRows = FEEDBACK_DISPLAY_STATUS_ORDER.map((status) => ({
             status,
             all: 0,
@@ -168,7 +191,7 @@ export function useReportPersistence({ projectId, environment, appVersion, field
             statusRows,
             fieldCounts,
         };
-    }, [currentPathname, currentReportsQuery.data, fields, repliesByReportId]);
+    }, [currentPathname, currentPageReports, fields]);
     const selectedReport = useMemo(() => {
         return filteredReports.find((report) => report.id === selectedReportId) ?? filteredReports[0] ?? null;
     }, [filteredReports, selectedReportId]);
@@ -194,6 +217,7 @@ export function useReportPersistence({ projectId, environment, appVersion, field
         selectedReportId,
         setSelectedReportId,
         reports,
+        currentPageReports,
         filteredReports,
         currentPageFilteredReports,
         routeDetailsStats,

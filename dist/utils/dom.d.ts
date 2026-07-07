@@ -20,6 +20,7 @@ export declare function toPickSnapshot(element: HTMLElement | null): TargetSnaps
 export declare function findPickTargetByPoint(overlay: HTMLDivElement | null, clientX: number, clientY: number): HTMLElement | null;
 export declare function findTargetByPoint(overlay: HTMLDivElement | null, clientX: number, clientY: number): HTMLElement | null;
 export declare function getReportPortalRoot(): HTMLElement;
+export declare function getReportStyleInjectionRoot(): Document | ShadowRoot;
 export declare function ensureReportTooltipLayer(): HTMLElement;
 export declare function syncReportTooltipLayerTheme(appearance: "light" | "dark"): void;
 export declare function getReportTooltipRoot(): HTMLElement;

@@ -30,6 +30,7 @@ export declare function useReportPersistence({ projectId, environment, appVersio
     selectedReportId: string | null;
     setSelectedReportId: import("react").Dispatch<import("react").SetStateAction<string | null>>;
     reports: ReportFeedback[];
+    currentPageReports: ReportFeedback[];
     filteredReports: ReportFeedback[];
     currentPageFilteredReports: ReportFeedback[];
     routeDetailsStats: {

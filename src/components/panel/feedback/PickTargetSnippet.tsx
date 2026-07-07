@@ -1,6 +1,9 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { CopyIcon, InfoIcon, StarIcon } from "@/components/icons/Icons.js";
+import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
 import { useReport } from "@/providers/reportContext.js";
 import { buildReportIdAttributeSnippet } from "@/utils/targetSelector.js";
+import { Text } from "@/components/ui/Text";
 
 type PickTargetSnippetProps = {
     suggestedReportId: string;
@@ -11,6 +14,7 @@ export function PickTargetSnippet({ suggestedReportId, reportType = "item" }: Pi
     const { messages, setErrorMessage } = useReport();
     const [copied, setCopied] = useState(false);
     const snippet = buildReportIdAttributeSnippet(suggestedReportId, reportType);
+    const infoTooltipContent = useMemo(() => `${messages.pickTarget.snippetTooltipIntro}\n${snippet}`, [messages.pickTarget.snippetTooltipIntro, snippet]);
 
     const handleCopy = async () => {
         try {
@@ -28,20 +32,48 @@ export function PickTargetSnippet({ suggestedReportId, reportType = "item" }: Pi
     };
 
     return (
-        <section className="flex flex-col gap-[6px] border-b border-[var(--adaptive-border-subtle)] px-[12px] py-[10px]">
-            <p className="text-[12px] font-medium text-[var(--adaptive-black900)]">{messages.pickTarget.snippetTitle}</p>
-            <p className="text-[11px] leading-[1.4] text-[var(--adaptive-black500)]">{messages.pickTarget.snippetDescription}</p>
-            <div className="flex items-start gap-[8px] rounded-[8px] bg-[var(--adaptive-black100)] p-[8px]">
-                <code className="min-w-0 flex-1 break-all font-[var(--coding-font)] text-[11px] text-[var(--adaptive-black900)]">{snippet}</code>
-                <button
-                    type="button"
-                    data-fivepixels-interactive=""
-                    onClick={() => void handleCopy()}
-                    className="shrink-0 rounded-[6px] bg-[var(--adaptive-black200)] px-[8px] py-[4px] text-[11px] font-medium text-[var(--adaptive-black900)]"
+        <section className="flex items-center justify-between gap-[6px] px-[12px] py-[4px]">
+            <section className="flex gap-[4px]">
+                <StarIcon className="h-[12px] w-[12px] shrink-0 text-emerald-600 dark:text-emerald-300" />
+                <section className="flex flex-col gap-[4px]">
+                    {/* <span className="min-w-0 flex-1 text-[12px] font-medium text-[var(--adaptive-black900)]">{messages.pickTarget.snippetTitle}</span> */}
+                    <Text.Shimmer
+                        className="text-[12px]"
+                        color={{ start: "#ffffff", end: "#000000" }}
+                        duration={10}
+                    >
+                        현재 요소에 ID를 설정하면 추적이 더 쉬워집니다
+                    </Text.Shimmer>
+                </section>
+            </section>
+
+            <section className="flex">
+                <HoverTooltip
+                    multiline
+                    content={infoTooltipContent}
                 >
-                    {copied ? messages.common.copied : messages.common.copy}
-                </button>
-            </div>
+                    <button
+                        type="button"
+                        data-fivepixels-interactive=""
+                        aria-label={messages.pickTarget.snippetInfoAriaLabel}
+                        className="flex h-[20px] w-[20px] shrink-0 items-center justify-center text-[var(--adaptive-black500)] hover:text-[var(--adaptive-black900)]"
+                    >
+                        <InfoIcon className="h-[14px] w-[14px]" />
+                    </button>
+                </HoverTooltip>
+
+                <HoverTooltip label={copied ? messages.common.copied : messages.common.copy}>
+                    <button
+                        type="button"
+                        data-fivepixels-interactive=""
+                        onClick={() => void handleCopy()}
+                        aria-label={messages.pickTarget.snippetCopyAriaLabel}
+                        className="flex h-[20px] w-[20px] shrink-0 items-center justify-center text-[var(--adaptive-black500)] hover:text-[var(--adaptive-black900)]"
+                    >
+                        {copied ? <span className="text-[9px] font-semibold">{messages.common.ok}</span> : <CopyIcon className="h-[12px] w-[12px]" />}
+                    </button>
+                </HoverTooltip>
+            </section>
         </section>
     );
 }

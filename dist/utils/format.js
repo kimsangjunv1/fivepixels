@@ -24,6 +24,12 @@ export function formatDateOnly(value, locale = "en") {
         day: "2-digit",
     }).format(date);
 }
+export function formatClockTime(value) {
+    const date = new Date(value);
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    return `${hours}:${minutes}`;
+}
 export function formatTimeOnly(value, locale = "en") {
     const date = new Date(value);
     if (locale === "ko") {

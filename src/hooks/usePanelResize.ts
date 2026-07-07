@@ -12,7 +12,7 @@ export type PanelResizeEdge = "top" | "bottom" | "left" | "right";
 
 const STORAGE_KEY = "fivepixels:panel-size";
 
-export const PANEL_WIDTH_MIN = 375;
+export const PANEL_WIDTH_MIN = 342;
 export const PANEL_DEFAULT_WIDTH = PANEL_WIDTH_MIN;
 export const PANEL_CONTENT_MIN_HEIGHT = 220;
 export const PANEL_HEADER_ESTIMATE_HEIGHT = 132;
@@ -85,12 +85,7 @@ function normalizeStoredWidth(width: number | null): number {
 }
 
 function isLegacyPanelSize(value: unknown): value is { width: number; height: number } {
-    return (
-        typeof value === "object" &&
-        value !== null &&
-        typeof (value as { width: number }).width === "number" &&
-        typeof (value as { height: number }).height === "number"
-    );
+    return typeof value === "object" && value !== null && typeof (value as { width: number }).width === "number" && typeof (value as { height: number }).height === "number";
 }
 
 function isPanelSizeState(value: unknown): value is { width: number | null; height: number | null } {
@@ -208,10 +203,7 @@ export function usePanelResize({
         return panelRef.current?.getBoundingClientRect().height ?? PANEL_CHROME_MIN_HEIGHT;
     }, [heightResizeEnabled, panelRef]);
 
-    const clampResizeBox = useCallback(
-        (width: number, height: number) => clampPanelBoxSize(width, height, resolveMinHeight()),
-        [resolveMinHeight],
-    );
+    const clampResizeBox = useCallback((width: number, height: number) => clampPanelBoxSize(width, height, resolveMinHeight()), [resolveMinHeight]);
 
     useEffect(() => {
         if (!enabled) {

@@ -177,7 +177,23 @@ export function getLatestReplyAuthorForCase(report, caseId) {
     return null;
 }
 export function getCaseHandlerName(report, caseId) {
-    return getCaseAssigneeName(report, caseId) ?? getLatestReplyAuthorForCase(report, caseId);
+    return getCaseAssigneeName(report, caseId);
+}
+export function resolveAuthorDepartment(authors, authorName) {
+    const normalizedName = authorName.trim();
+    if (!normalizedName) {
+        return null;
+    }
+    const author = authors.find((item) => item.name.trim() === normalizedName);
+    return author?.department?.trim() || null;
+}
+export function formatAssigneeLabel(authorName, department) {
+    const name = authorName.trim();
+    const dept = department?.trim();
+    if (name && dept) {
+        return `${name}, ${dept}`;
+    }
+    return name;
 }
 export function hasCaseDiscussion(report, caseId) {
     return getRepliesForCase(report, caseId).length > 0;
@@ -217,6 +233,22 @@ export function claimCaseAssignee(cases, caseId, assigneeName, claimedAt = new D
             ...item,
             assignee_name: normalizedName,
             updated_at: claimedAt,
+        };
+    });
+}
+export function transferCaseAssignee(cases, caseId, assigneeName, transferredAt = new Date().toISOString()) {
+    const normalizedName = assigneeName.trim();
+    if (!normalizedName) {
+        return cases;
+    }
+    return cases.map((item) => {
+        if (item.id !== caseId) {
+            return item;
+        }
+        return {
+            ...item,
+            assignee_name: normalizedName,
+            updated_at: transferredAt,
         };
     });
 }

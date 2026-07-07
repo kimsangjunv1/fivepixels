@@ -1,0 +1,1 @@
+{"version":3,"file":"useTypographyPreference.d.ts","sourceRoot":"","sources":["../../src/hooks/useTypographyPreference.ts"],"names":[],"mappings":"AACA,OAAO,EAKH,KAAK,qBAAqB,EAC1B,KAAK,cAAc,EACtB,MAAM,iCAAiC,CAAC;AAkCzC,wBAAgB,uBAAuB;;0BAGM,qBAAqB,GAAG,CAAC,CAAC,OAAO,EAAE,qBAAqB,KAAK,qBAAqB,CAAC;4BAS7G,cAAc;gCAUZ,MAAM;EAe1B"}

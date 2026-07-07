@@ -48,6 +48,7 @@ export function getPickTargetBoxStyle(element) {
         display: style.display,
         padding: formatBoxSides(style, "padding"),
         margin: formatBoxSides(style, "margin"),
+        borderRadius: style.borderRadius,
     };
 }
 export function shouldInspectFontStyle(element) {

@@ -34,6 +34,14 @@ export function formatDateOnly(value: string, locale: ReportLocale = "en") {
     }).format(date);
 }
 
+export function formatClockTime(value: string) {
+    const date = new Date(value);
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+
+    return `${hours}:${minutes}`;
+}
+
 export function formatTimeOnly(value: string, locale: ReportLocale = "en") {
     const date = new Date(value);
 

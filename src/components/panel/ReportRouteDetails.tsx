@@ -3,6 +3,7 @@ import { formatStatCount } from "@/utils/formatStatCount.js";
 import { panelNumericClassName } from "@/utils/panelTypography.js";
 import { ChevronDownIcon } from "@/components/icons/Icons.js";
 import { FeedbackStatusBadge } from "./feedback/FeedbackStatusBadge.js";
+import { FeedbackActivityHeatmap } from "./FeedbackActivityHeatmap.js";
 
 export function ReportRouteDetails() {
     const { routeDetailsStats, projectId, environment, appVersion, messages } = useReport();
@@ -10,6 +11,8 @@ export function ReportRouteDetails() {
 
     return (
         <section className="flex min-h-0 flex-1 flex-col overflow-y-auto bg-[var(--adaptive-black50)] rounded-[0_0_24px_24px]">
+            <FeedbackActivityHeatmap />
+
             <article className="flex flex-col px-[16px]">
                 <section className="flex items-center text-[12px] py-[8px]">
                     <div className="flex-1">

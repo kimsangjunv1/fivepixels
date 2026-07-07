@@ -26,6 +26,9 @@ export type {
     ReportIntegrations,
     ReportListAllParams,
     ReportListAllResult,
+    ReportActivitySummaryParams,
+    ReportActivitySummaryResult,
+    ReportActivitySummaryBucket,
     ReportPersistenceHandlers,
     ReportPosition,
     ReportPositionAnchor,
@@ -33,6 +36,7 @@ export type {
     ReportPositionViewport,
     ReportProject,
     QuestionThreadDisplay,
+    FivePixelsMode,
     ReportTeam,
     ReportUi,
     ReportVisibility,
@@ -79,3 +83,14 @@ export {
 } from "@/utils/githubIntegration.js";
 export type { DeepPartialReportMessages, ReportLocale, ReportMessages } from "@/i18n/index.js";
 export { en as reportMessagesEn, ensureReportLocaleMessages, getDefaultFields, getReportMessages, resolveReportLocale } from "@/i18n/index.js";
+export { FEEDBACK_STORAGE_CHANGED_EVENT, dispatchFeedbackStorageChanged } from "@/constants/feedbackStorageEvents.js";
+export {
+    findFeedbackInsertConflicts,
+    getFeedbackStorageKey,
+    insertFeedbackItems,
+    readAllFeedback,
+    upsertFeedbackItems,
+    writeAllFeedback,
+    type FeedbackInsertResult,
+    type FeedbackTransferScope,
+} from "@/utils/feedbackDataTransfer.js";

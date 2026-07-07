@@ -3,6 +3,7 @@ export declare function getPickTargetBoxStyle(element: HTMLElement): {
     display: string;
     padding: string;
     margin: string;
+    borderRadius: string;
 };
 export declare function shouldInspectFontStyle(element: HTMLElement): boolean;
 export declare function getPickTargetFontStyle(element: HTMLElement): PickTargetFontStyle | null;

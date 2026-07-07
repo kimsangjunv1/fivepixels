@@ -9,8 +9,8 @@ import { PickTargetSnippet } from "./feedback/PickTargetSnippet.js";
 import { CornerResizeGhost } from "@/components/ui/CornerResizeGhost.js";
 import { CornerResizeHandle } from "@/components/ui/CornerResizeHandle.js";
 
-const TOOLTIP_SURFACE_CLASS =
-    "overflow-hidden rounded-[24px] border-[3px] border-[var(--adaptive-black200)] shadow-[var(--adaptive-popup-shadow)] bg-[var(--adaptive-blackOpacity800)] backdrop-blur-[5px]";
+const TOOLTIP_SURFACE_CLASS = "overflow-hidden rounded-[16px] shadow-[var(--adaptive-popup-shadow)] bg-[var(--adaptive-blackOpacity500)] backdrop-blur-[5px]";
+// "overflow-hidden rounded-[24px] border-[3px] border-[var(--adaptive-black200)] shadow-[var(--adaptive-popup-shadow)] bg-[var(--adaptive-blackOpacity500)] backdrop-blur-[5px]";
 // const TOOLTIP_SURFACE_CLASS = "overflow-hidden rounded-[24px] border-[3px] border-[var(--adaptive-black200)] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[20px]";
 // "overflow-hidden rounded-[24px] border-[3px] border-[var(--adaptive-black200)] bg-[var(--adaptive-blackOpacity700)] backdrop-blur-[1px] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[20px]";
 const EXPANDED_TOOLTIP_ANCHOR_CLASS = "pointer-events-auto fixed z-[1000001]";
@@ -33,6 +33,7 @@ export function ReportDraftForm() {
         draftAuthorName,
         setDraftAuthorName,
         errorMessage,
+        isPresentationMode,
     } = useReport();
 
     if (!draft) {
@@ -57,6 +58,7 @@ export function ReportDraftForm() {
             draftAuthorName={draftAuthorName}
             setDraftAuthorName={setDraftAuthorName}
             errorMessage={errorMessage}
+            isPresentationMode={isPresentationMode}
         />
     );
 }
@@ -78,6 +80,7 @@ type ReportDraftFormContentProps = {
     draftAuthorName: string;
     setDraftAuthorName: (name: string) => void;
     errorMessage: string;
+    isPresentationMode: boolean;
 };
 
 function ReportDraftFormContent({
@@ -97,6 +100,7 @@ function ReportDraftFormContent({
     draftAuthorName,
     setDraftAuthorName,
     errorMessage,
+    isPresentationMode,
 }: ReportDraftFormContentProps) {
     const { messages } = useReport();
     const tooltipSurfaceRef = useRef<HTMLDivElement | null>(null);
@@ -149,12 +153,6 @@ function ReportDraftFormContent({
                             height: customSize?.height,
                         }}
                     >
-                        {draft.targetSelector && draft.suggestedReportId ? (
-                            <PickTargetSnippet
-                                suggestedReportId={draft.suggestedReportId}
-                                reportType={draft.reportType}
-                            />
-                        ) : null}
                         <DraftProbeSummaryBanner />
                         <FeedbackComposer
                             cases={draft.cases}
@@ -168,6 +166,7 @@ function ReportDraftFormContent({
                             fieldValues={draft.fieldValues}
                             onFieldChange={updateDraftField}
                             showTags
+                            hideAuthorSelector={isPresentationMode}
                             onSubmit={() => void handleCreateSubmit()}
                             isSubmitting={isCreating}
                             showGitHubIssueOnCreate={canCreateGitHubIssueOnCreate}
@@ -176,6 +175,12 @@ function ReportDraftFormContent({
                             autoFocus
                             errorMessage={errorMessage}
                         />
+                        {draft.targetSelector && draft.suggestedReportId ? (
+                            <PickTargetSnippet
+                                suggestedReportId={draft.suggestedReportId}
+                                reportType={draft.reportType}
+                            />
+                        ) : null}
                     </div>
 
                     <CornerResizeHandle

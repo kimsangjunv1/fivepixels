@@ -3,7 +3,7 @@ import { panelAnchorSide, placementToCollapsedPanelStyle, usePanelDock } from "@
 import { usePanelResize, panelSizeToStyle } from "@/hooks/usePanelResize.js";
 import { usePanelFeedbackTransfer } from "@/hooks/usePanelFeedbackTransfer.js";
 import { useReport } from "@/providers/reportContext.js";
-import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, EyeOpenIcon, LogoIcon, RouteWaitStatusIcon, SelectIcon } from "@/components/icons/Icons.js";
+import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, EyeOpenIcon, LogoIcon, SelectIcon, SettingsIcon } from "@/components/icons/Icons.js";
 import { IconTooltipButton } from "@/components/ui/IconTooltipButton.js";
 import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
 import { PanelDockGuides } from "./PanelDockGuides.js";
@@ -17,7 +17,6 @@ import { ReportPersonalKeyDialog } from "./ReportPersonalKeyDialog.js";
 import { PanelSettings } from "./PanelSettings.js";
 import { CornerResizeGhost } from "@/components/ui/CornerResizeGhost.js";
 import { CornerResizeHandle } from "@/components/ui/CornerResizeHandle.js";
-import { PanelSizeResetButton } from "./PanelSizeResetButton.js";
 import { ProbeEditModeBanner } from "./ProbeEditModeBanner.js";
 import { formatStatCount } from "@/utils/formatStatCount.js";
 import { panelNumericClassName } from "@/utils/panelTypography.js";
@@ -28,7 +27,10 @@ function PanelCollapseTab({ collapsed, anchorSide, onClick, messages }: { collap
     const expandIcon = anchorSide === "right" ? <ChevronLeftIcon className="h-4 w-4" /> : <ChevronRightIcon className="h-4 w-4" />;
 
     return (
-        <HoverTooltip label={collapsed ? messages.panel.expand : messages.panel.collapse}>
+        <HoverTooltip
+            label={collapsed ? messages.panel.expand : messages.panel.collapse}
+            className="h-full"
+        >
             <button
                 type="button"
                 onClick={onClick}
@@ -39,7 +41,7 @@ function PanelCollapseTab({ collapsed, anchorSide, onClick, messages }: { collap
                         ? anchorSide === "right"
                             ? "flex h-[105px] w-[32px] items-center justify-center rounded-l-[12px] rounded-r-none bg-[var(--adaptive-black200)] text-[var(--adaptive-blue500)] shadow-[0_0_24px_0_rgba(0,0,0,0.35)]"
                             : "flex h-[105px] w-[32px] items-center justify-center rounded-r-[12px] rounded-l-none bg-[var(--adaptive-black200)] text-[var(--adaptive-blue500)] shadow-[0_0_24px_0_rgba(0,0,0,0.35)]"
-                        : "flex items-center justify-center px-[4px] py-[8px] text-[var(--adaptive-text-muted)]"
+                        : "flex items-center justify-center py-[8px] text-[var(--adaptive-text-muted)]"
                 }
             >
                 {collapsed ? expandIcon : hideIcon}
@@ -53,9 +55,9 @@ function PanelTabButton({ label, active, onClick }: { label: string; active: boo
         <button
             type="button"
             onClick={onClick}
-            className={`flex flex-1 items-center justify-center gap-[6px] px-[10px] py-[2px] ${active ? "bg-[var(--adaptive-black100)] text-[var(--adaptive-black900)]" : "text-[var(--adaptive-black600)]"}`}
+            className={`flex flex-1 items-center justify-center gap-[6px] px-[10px] py-[2px] hover:bg-[var(--adaptive-black200)] ${active ? "bg-[var(--adaptive-black50)] text-[var(--adaptive-black900)]" : "text-[var(--adaptive-black600)]"}`}
         >
-            <p className="font-[500]">{label}</p>
+            <p className="font-[500] text-[var(--adaptive-black500)]">{label}</p>
 
             <ChevronDownIcon className={`h-4 w-4 shrink-0 transition-transform ${active ? "rotate-180" : ""}`} />
         </button>
@@ -211,18 +213,12 @@ export function ReportControlPanel() {
     const resolvedSizeStyle = panelExpanded ? panelSizeToStyle(panelSize, applyFixedHeight) : undefined;
 
     const panelSideControls = panelExpanded ? (
-        <div className="flex shrink-0 flex-col items-center">
+        <div className="flex shrink-0 flex-col items-center border-l border-l-[var(--adaptive-border-subtle)] h-full">
             <PanelCollapseTab
                 collapsed={panelCollapsed}
                 anchorSide={anchorSide}
                 onClick={handleTogglePanelCollapsed}
                 messages={messages}
-            />
-            <PanelSizeResetButton
-                collapsed={panelCollapsed}
-                disabled={isDefaultSize}
-                label={messages.panel.resetSizeTitle}
-                onClick={resetPanelSize}
             />
         </div>
     ) : null;
@@ -266,12 +262,12 @@ export function ReportControlPanel() {
                 onDrop={handleDrop}
                 className={`pointer-events-auto z-[1000000] flex ${
                     isRecording
-                        ? "min-h-[40px] bg-[var(--adaptive-blackOpacity700)] backdrop-blur-[10px] rounded-[12px] shadow-[0_0_120px_0_var(--adaptive-blackOpacity500)]"
+                        ? "min-h-[40px] bg-[var(--adaptive-fillOpacity800)] backdrop-blur-[10px] rounded-[12px] shadow-[0_0_120px_0_var(--adaptive-black500)]"
                         : panelCollapsed
                           ? ""
-                          : "relative bg-[var(--adaptive-blackOpacity700)] backdrop-blur-[10px] rounded-[12px] border-0 shadow-[0_0_120px_0_var(--adaptive-blackOpacity500)]"
+                          : "relative bg-[var(--adaptive-fillOpacity800)] backdrop-blur-[10px] rounded-[12px] border-0 shadow-[0_0_120px_0_var(--adaptive-black500)]"
                 }`}
-                style={{ ...resolvedPanelStyle, ...resolvedSizeStyle, fontSize: "14px" }}
+                style={{ ...resolvedPanelStyle, ...resolvedSizeStyle }}
             >
                 {panelExpanded ? (
                     <CornerResizeHandle
@@ -317,8 +313,11 @@ export function ReportControlPanel() {
                                 <section className="flex shrink-0">
                                     {anchorSide === "left" ? panelSideControls : null}
 
-                                    <div className="flex flex-1 flex-col gap-[8px] p-[8px_8px_8px_12px]">
-                                        <section className="flex items-center justify-between gap-[8px]">
+                                    <div className="flex flex-1 flex-col">
+                                        <section
+                                            className="flex items-center justify-between gap-[8px] cursor-move border-b border-b-[var(--adaptive-border-subtle)] p-[4px_12px]"
+                                            onPointerDown={handleDragHandlePointerDown}
+                                        >
                                             <section className="flex min-w-0 items-center gap-[4px]">
                                                 <LogoIcon className="w-[94px] shrink-0" />
 
@@ -326,39 +325,46 @@ export function ReportControlPanel() {
                                             </section>
 
                                             <section className="flex shrink-0 items-center gap-[4px]">
-                                                <button
-                                                    type="button"
-                                                    onClick={toggleReportMode}
-                                                    className="flex items-center gap-[4px] rounded-[8px] bg-[var(--adaptive-black100)] p-[0_8px] h-[24px]"
-                                                >
-                                                    <SelectIcon className="w-[16px]" />
-                                                    <p className="text-[12px] text-[var(--adaptive-black900)]">{messages.panel.addFeedback}</p>
-                                                </button>
-
-                                                {/* <IconTooltipButton
-                                                    label={messages.panel.viewSelectableElements}
-                                                    active={showTargetPreview}
-                                                    disabled={mode !== "idle"}
-                                                    onClick={toggleTargetPreview}
-                                                >
-                                                    <EyeOpenIcon className="h-[16px] w-[16px]" />
-                                                </IconTooltipButton> */}
-
                                                 <IconTooltipButton
                                                     label={messages.panel.viewFeedbacks}
                                                     active={isIssueMode}
                                                     onClick={toggleIssueMode}
                                                 >
                                                     <EyeOpenIcon className="h-[16px] w-[16px]" />
-                                                    {/* <RouteWaitStatusIcon className="h-[16px] w-[16px]" /> */}
+                                                </IconTooltipButton>
+
+                                                <IconTooltipButton
+                                                    label={messages.panel.tabSettings}
+                                                    active={panelTab === "settings" || panelTab === "command"}
+                                                    onClick={() => handlePanelTabClick("settings")}
+                                                >
+                                                    <SettingsIcon className="h-[16px] w-[16px]" />
+                                                </IconTooltipButton>
+
+                                                <IconTooltipButton
+                                                    label={messages.panel.resetSizeTitle}
+                                                    disabled={isDefaultSize}
+                                                    onClick={resetPanelSize}
+                                                >
+                                                    <span className="inline-flex h-[16px] w-[16px] items-center justify-center rounded-[4px] border border-[var(--adaptive-border-subtle)] text-[10px] font-bold leading-none">
+                                                        ↺
+                                                    </span>
                                                 </IconTooltipButton>
                                             </section>
                                         </section>
 
-                                        <section className="flex gap-[12px]">
+                                        <section className="flex items-center h-full">
+                                            <button
+                                                type="button"
+                                                onClick={toggleReportMode}
+                                                className="flex flex-col shrink-0 justify-center items-center gap-[4px] p-[0_16px] border-r border-r-[var(--adaptive-border-subtle)] h-full hover:bg-[#f6572d]"
+                                            >
+                                                <SelectIcon className="w-[24px]" />
+                                                {/* <p className="text-[12px] text-[var(--adaptive-black900)]">{messages.panel.addFeedback}</p> */}
+                                            </button>
+
                                             <section
-                                                className="flex flex-1 cursor-move touch-none select-none"
-                                                onPointerDown={handleDragHandlePointerDown}
+                                                className="flex min-w-0 flex-1 px-[16px] py-[8px]"
                                                 aria-label={messages.panel.repositionAriaLabel}
                                                 title={messages.panel.repositionTitle}
                                                 style={isDragging ? { opacity: 0.8 } : undefined}
@@ -385,7 +391,7 @@ export function ReportControlPanel() {
                                 </section>
 
                                 <section className="flex shrink-0 items-stretch border-t border-[var(--adaptive-border-subtle)]">
-                                    <div className="flex min-w-0 flex-1 overflow-hidden">
+                                    <div className="flex min-w-0 flex-1 overflow-hidden border-b border-b-[var(--adaptive-border-subtle)]">
                                         <PanelTabButton
                                             label={messages.panel.tabPageDetails}
                                             active={panelTab === "route-details"}
@@ -402,11 +408,6 @@ export function ReportControlPanel() {
                                                 <div className="h-full w-[1px] bg-[var(--adaptive-border-subtle)]" />
                                             </>
                                         ) : null}
-                                        <PanelTabButton
-                                            label={messages.panel.tabSettings}
-                                            active={panelTab === "settings" || panelTab === "command"}
-                                            onClick={() => handlePanelTabClick("settings")}
-                                        />
                                     </div>
                                 </section>
 

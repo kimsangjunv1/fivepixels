@@ -18,7 +18,15 @@ const STRING_FIELDS = ["id", "pathname", "report_id", "created_at"] as const;
 const OPTIONAL_STRING_FIELDS = ["environment", "app_version", "author_id", "author_name", "target_selector"] as const;
 const REPORT_TYPES = new Set<ReportTargetType>(["group", "item"]);
 const REPORT_STATUSES = new Set<ReportStatus>(["open", "git_issued", "resolved", "archived"]);
-const REPLY_STATUSES = new Set(["suggested", "additional_question", "found_error", "recheck_requested", "resolved"]);
+const REPLY_STATUSES = new Set([
+    "suggested",
+    "additional_question",
+    "found_error",
+    "recheck_requested",
+    "resolved",
+    "assignee_assigned",
+    "assignee_transferred",
+]);
 
 function importError(index: number, detail: string) {
     const { errors } = getActiveReportMessages();

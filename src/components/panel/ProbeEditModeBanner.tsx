@@ -16,17 +16,7 @@ function ProbeEditModeDivider() {
     return <span className="shrink-0 text-[11px] text-white/50">|</span>;
 }
 
-function ProbeEditModeHistoryButton({
-    label,
-    disabled,
-    onClick,
-    children,
-}: {
-    label: string;
-    disabled: boolean;
-    onClick: () => void;
-    children: ReactNode;
-}) {
+function ProbeEditModeHistoryButton({ label, disabled, onClick, children }: { label: string; disabled: boolean; onClick: () => void; children: ReactNode }) {
     return (
         <button
             type="button"
@@ -68,9 +58,7 @@ export function ProbeEditModeBanner() {
             data-fivepixels-interactive=""
         >
             <ProbeEditModeSpinner />
-            <p className="min-w-0 flex-1 truncate text-[11px] font-semibold leading-[1.3]">
-                {messages.panel.probeEditModeActive}
-            </p>
+            <p className="min-w-0 flex-1 truncate text-[11px] font-semibold leading-[1.3]">{messages.panel.probeEditModeActive}</p>
             <ProbeEditModeDivider />
             <button
                 type="button"

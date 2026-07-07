@@ -1,3 +1,5 @@
+import { useEdgecaseFeedbackSeed, EDGECASE_FEEDBACK_SEED_IDS } from "../../../features/edgecase/hooks/useEdgecaseFeedbackSeed";
+
 type EdgecaseItem = {
     id: string;
     title: string;
@@ -219,6 +221,8 @@ function EdgecaseGridLayouts() {
 }
 
 export function PulseEdgecasePage() {
+    useEdgecaseFeedbackSeed();
+
     const allProbes = [...edgecaseItems, ...layoutProbes];
     const taggedCount = allProbes.filter((item) => item.tagged).length;
     const untaggedCount = allProbes.length - taggedCount;
@@ -228,7 +232,7 @@ export function PulseEdgecasePage() {
             <header className="pulse-page-section__header">
                 <h2 className="pulse-page-section__title">Edgecase · Report ID Mix</h2>
                 <p className="pulse-page-section__desc">
-                    이 페이지는 요소 {allProbes.length}개 중 {taggedCount}개는 <code>data-report-id</code>가 있고, {untaggedCount}개는 없습니다. 카드뿐 아니라 flex·grid 레이아웃 요소에서도 피드백 추가 모드 hover 시 보라색 하이라이트와 라벨로 태깅 여부를 확인해 보세요.
+                    이 페이지는 요소 {allProbes.length}개 중 {taggedCount}개는 <code>data-report-id</code>가 있고, {untaggedCount}개는 없습니다. 방문 시 localStorage에 데모 피드백 {EDGECASE_FEEDBACK_SEED_IDS.length}건이 자동으로 준비됩니다. 카드뿐 아니라 flex·grid 레이아웃 요소에서도 피드백 추가 모드 hover 시 보라색 하이라이트와 라벨로 태깅 여부를 확인해 보세요.
                 </p>
             </header>
 

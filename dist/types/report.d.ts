@@ -25,7 +25,7 @@ export type ReportField = (ReportFieldBase & {
 });
 export type ReportFieldValues = Record<string, string | boolean>;
 /** Stored on each timeline reply. Hover-only states use helpers, not storage. */
-export type ReportReplyStatus = "suggested" | "additional_question" | "found_error" | "recheck_requested" | "resolved";
+export type ReportReplyStatus = "suggested" | "additional_question" | "found_error" | "recheck_requested" | "resolved" | "assignee_assigned" | "assignee_transferred";
 export type ReportReply = {
     id: string;
     comment_id?: string;
@@ -59,6 +59,8 @@ export type ReportProject = {
     version?: string;
 };
 export type QuestionThreadDisplay = "expanded" | "collapsed";
+/** Runtime mode for `<FivePixels />`. Presentation mode enables viewer switching in settings. */
+export type FivePixelsMode = "default" | "presentation";
 /** UI options passed to `<FivePixels ui={{ appearance, panelAppearance, tooltipAppearance, showFeedbackList, visibleShortcutKeys, shortcut, locale, messages }} />`. */
 export type ReportUi = {
     /** @deprecated Use `panelAppearance` and `tooltipAppearance` instead. Sets both when they are omitted. */
@@ -87,6 +89,7 @@ export type ReportVisibility = {
 export type ReportAuthor = {
     id: string;
     name: string;
+    department?: string;
     publicKey?: string;
 };
 export type ReportAuthAction = "feedback:create" | "feedback:update" | "reply:create";
@@ -168,6 +171,25 @@ export type ReportListAllResult = {
     items: ReportFeedback[];
     nextCursor?: string;
 };
+export type ReportActivitySummaryParams = {
+    year: number;
+    month?: number;
+    pathname?: string;
+    listScope?: "current" | "all";
+    actorScope?: "team" | "me";
+    metric?: "created" | "activity";
+    actorName?: string | null;
+};
+export type ReportActivitySummaryBucket = {
+    dateKey: string;
+    count: number;
+};
+export type ReportActivitySummaryResult = {
+    year: number;
+    month?: number;
+    buckets: ReportActivitySummaryBucket[];
+    totalCount: number;
+};
 export interface ReportStorageAdapter {
     list(params: {
         pathname: string;
@@ -185,6 +207,7 @@ export type ReportPersistenceHandlers = {
         pathname: string;
     }) => Promise<ReportFeedback[]>;
     onListAll?: (params: ReportListAllParams) => Promise<ReportListAllResult>;
+    onActivitySummary?: (params: ReportActivitySummaryParams) => Promise<ReportActivitySummaryResult>;
     onListReplies?: (commentId: string) => Promise<ReportReply[]>;
     onCreate: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
     onCreateReply?: (commentId: string, payload: CreateReplyPayload) => Promise<ReportReply>;

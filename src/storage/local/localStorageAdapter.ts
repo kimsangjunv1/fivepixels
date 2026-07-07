@@ -55,7 +55,15 @@ function normalizeFieldValues(value: unknown): ReportFieldValues {
 }
 
 function isReplyStatus(value: unknown): value is ReportReplyStatus {
-    return value === "suggested" || value === "additional_question" || value === "found_error" || value === "recheck_requested" || value === "resolved";
+    return (
+        value === "suggested" ||
+        value === "additional_question" ||
+        value === "found_error" ||
+        value === "recheck_requested" ||
+        value === "resolved" ||
+        value === "assignee_assigned" ||
+        value === "assignee_transferred"
+    );
 }
 
 function normalizeReplyStatus(value: unknown): ReportReplyStatus {

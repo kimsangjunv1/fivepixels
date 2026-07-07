@@ -34,6 +34,7 @@ type FeedbackComposerProps = {
     askQuestionChecked?: boolean;
     onAskQuestionChange?: (checked: boolean) => void;
     askQuestionForced?: boolean;
+    hideAuthorSelector?: boolean;
 };
 
 export function FeedbackComposer({
@@ -62,6 +63,7 @@ export function FeedbackComposer({
     askQuestionChecked = false,
     onAskQuestionChange,
     askQuestionForced = false,
+    hideAuthorSelector = false,
 }: FeedbackComposerProps) {
     const { messages } = useReport();
     const [isGitHubIssueConfirming, setIsGitHubIssueConfirming] = useState(false);
@@ -104,7 +106,7 @@ export function FeedbackComposer({
     };
 
     return (
-        <div className={`flex w-full flex-col ${usesCaseEditor ? "min-h-0 flex-1" : ""}`}>
+        <div className={`flex w-full flex-col bg-[var(--adaptive-blackOpacity900)] backdrop-blur-sm rounded-[16px] shadow-[0_20px_20px_0_#00000020] ${usesCaseEditor ? "min-h-0 flex-1" : ""}`}>
             <div className={`relative ${usesCaseEditor ? "min-h-0 flex-1" : ""}`}>
                 {errorMessage ? (
                     <p
@@ -130,7 +132,7 @@ export function FeedbackComposer({
                         onChange={(event) => onMessageChange?.(event.target.value)}
                         placeholder={resolvedPlaceholder}
                         rows={3}
-                        className="min-h-[72px] w-full resize-none bg-transparent px-[8px] pt-[8px] text-[14px] leading-[1.4] text-[var(--adaptive-text-primary)] outline-none placeholder:text-[var(--adaptive-text-muted)]"
+                        className="min-h-[72px] w-full resize-none bg-transparent px-[12px] pt-[12px] text-[14px] leading-[1.5] text-[var(--adaptive-text-primary)] outline-none placeholder:text-[var(--adaptive-text-muted)]"
                         onKeyDown={(event) => {
                             if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
                                 event.preventDefault();
@@ -141,12 +143,14 @@ export function FeedbackComposer({
                 )}
             </div>
 
-            <div className="flex items-center justify-between gap-[8px] px-[8px] pb-[8px]">
-                <AuthorSelector
-                    authors={authors}
-                    value={authorName}
-                    onChange={onAuthorNameChange}
-                />
+            <div className={`flex items-center gap-[8px] px-[8px] pb-[8px] ${hideAuthorSelector ? "justify-end" : "justify-between"}`}>
+                {hideAuthorSelector ? null : (
+                    <AuthorSelector
+                        authors={authors}
+                        value={authorName}
+                        onChange={onAuthorNameChange}
+                    />
+                )}
                 <div className="flex shrink-0 items-center gap-[6px]">
                     {showAskQuestionToggle ? (
                         <label className="inline-flex items-center gap-[4px] px-[2px] text-[12px] text-[var(--adaptive-black600)]">
@@ -187,11 +191,10 @@ export function FeedbackComposer({
                             data-fivepixels-interactive=""
                             disabled={isActionDisabled}
                             onClick={handleSubmit}
-                            className="inline-flex px-[8px_4px] gap-[4px] shrink-0 items-center justify-center rounded-full bg-[var(--adaptive-blue500)] text-[var(--adaptive-overlay-text)] disabled:opacity-50"
+                            className="inline-flex h-[32px] w-[32px] shrink-0 items-center justify-center rounded-full bg-[var(--adaptive-blue500)] text-white disabled:opacity-50"
                             aria-label={messages.composer.sendAriaLabel}
                         >
-                            {/* Send */}
-                            <SendIcon className="w-[20px]" />
+                            <SendIcon className="h-[16px] w-[16px]" />
                         </button>
                     </HoverTooltip>
                 </div>

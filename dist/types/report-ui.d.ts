@@ -4,10 +4,14 @@ export type ReportMode = "idle" | "report" | "view";
 export type ResolvedAppearance = "light" | "dark";
 export type ReportPanelTab = "route-details" | "feedback-list" | "settings" | "command";
 export type ReportListScope = "current" | "all";
+export type HeatmapActorScope = "team" | "me";
+export type HeatmapMetric = "created" | "activity";
+export type HeatmapViewMode = "daily" | "weekly" | "cumulative";
 export type ReportFilters = {
     keyword: string;
     status: RouteDetailStatus | "all";
     reportType: ReportTargetType | "all";
+    dateKey: string | null;
 };
 export type PickTargetFontStyle = {
     fontFamily: string;
@@ -19,6 +23,7 @@ export type PickTargetBoxStyle = {
     display: string;
     padding: string;
     margin: string;
+    borderRadius: string;
 };
 export type PickTargetContextMenuState = {
     clientX: number;

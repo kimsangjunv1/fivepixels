@@ -4,7 +4,18 @@ export type ReportLocale = "en" | "ko";
 
 type RouteDetailStatus = "wait" | "suggested" | "git_issued" | "resolved";
 
-type FeedbackDisplayStatus = "currently_wait" | "wait_for_reply" | "git_issued" | "suggested" | "additional_question" | "found_error" | "recheck_requested" | "resolved";
+type FeedbackDisplayStatus =
+    | "currently_wait"
+    | "wait_for_reply"
+    | "issue_apply"
+    | "git_issued"
+    | "suggested"
+    | "additional_question"
+    | "found_error"
+    | "recheck_requested"
+    | "resolved"
+    | "assignee_assigned"
+    | "assignee_transferred";
 
 export type ReportMessages = {
     common: {
@@ -110,6 +121,7 @@ export type ReportMessages = {
         removeCaseAriaLabel: (index: number) => string;
         probeSummaryPrompt: string;
         probeSummaryApply: string;
+        resolvedCaseDisabled: string;
     };
     fieldEditor: {
         messagePlaceholder: string;
@@ -140,14 +152,55 @@ export type ReportMessages = {
         select: string;
         leaveResult: string;
         askQuestion: string;
+        reply: string;
         questionsShow: (count: number) => string;
         questionsHide: (count: number) => string;
         questionsPending: (count: number) => string;
         questionsToggleAriaLabel: (count: number, expanded: boolean) => string;
+        issueResolvedDivider: string;
+        claimAssignee: string;
+        takeOverAssignee: string;
+        assigneeAssigned: string;
+        assigneeTransferred: string;
+        fixComplete: string;
     };
     routeDetails: {
         all: string;
         today: string;
+    };
+    activityHeatmap: {
+        title: string;
+        viewDaily: string;
+        viewWeekly: string;
+        viewCumulative: string;
+        actorTeam: string;
+        actorMe: string;
+        metricCreated: string;
+        metricActivity: string;
+        scopeCurrentPage: string;
+        scopeAllPages: string;
+        totalCount: string;
+        cellAriaLabel: string;
+        cellTooltip: string;
+        cellTooltipEmpty: string;
+        legendLess: string;
+        legendMore: string;
+        dateFilterLabel: string;
+        clearDateFilter: string;
+        viewModeAriaLabel: string;
+        actorAriaLabel: string;
+        metricAriaLabel: string;
+        scopeAriaLabel: string;
+        monthNavAriaLabel: string;
+        prevMonth: string;
+        nextMonth: string;
+        yearNavAriaLabel: string;
+        prevYear: string;
+        nextYear: string;
+        backToYear: string;
+        monthBucketAriaLabel: string;
+        monthBucketTooltip: string;
+        monthBucketTooltipEmpty: string;
     };
     moreMenu: {
         settings: string;
@@ -200,6 +253,40 @@ export type ReportMessages = {
         markerTargetsOff: string;
         markerTargetsOn: string;
         markerTargetsAriaLabel: string;
+        sectionViewerSwitch: string;
+        viewerSwitchAriaLabel: string;
+        viewerSwitchHint: string;
+        hubTitle: string;
+        categoryAppearance: string;
+        categoryDisplay: string;
+        categoryDataAndKeys: string;
+        categoryDataAndKeysSummary: string;
+        categoryPreview: string;
+        categoryAdvanced: string;
+        backAriaLabel: string;
+        sectionTheme: string;
+        sectionMarkerAppearance: string;
+        sectionTypography: string;
+        markerSize: string;
+        markerSizeAriaLabel: string;
+        markerShape: string;
+        markerShapeAriaLabel: string;
+        markerColorOpen: string;
+        markerColorResolved: string;
+        markerColorGitIssued: string;
+        markerFontSize: string;
+        markerFontSizeAriaLabel: string;
+        fontFamily: string;
+        fontFamilyAriaLabel: string;
+        scaleNone: string;
+        scaleSm: string;
+        scaleMd: string;
+        scaleLg: string;
+        scaleXl: string;
+        markerShapeCircle: string;
+        markerShapeSquare: string;
+        markerShapePill: string;
+        markerShapePin: string;
     };
     command: {
         title: string;
@@ -250,7 +337,9 @@ export type ReportMessages = {
     };
     pickTarget: {
         snippetTitle: string;
-        snippetDescription: string;
+        snippetTooltipIntro: string;
+        snippetInfoAriaLabel: string;
+        snippetCopyAriaLabel: string;
         bindingSelector: string;
         bindingReportId: string;
         bindingCoordinates: string;
@@ -333,6 +422,16 @@ export type ReportMessages = {
         moreIssuesLeft: (count: number) => string;
         moreIssuesRight: (count: number) => string;
         resizeAriaLabel: string;
+        windowDragAriaLabel: string;
+        windowCloseAriaLabel: string;
+        windowMinimizeAriaLabel: string;
+        windowRestoreAriaLabel: string;
+        windowMaximizeAriaLabel: string;
+        sidebarCollapseAriaLabel: string;
+        sidebarExpandAriaLabel: string;
+        assigneeAssigned: string;
+        assigneeUnassigned: string;
+        viewMoreCases: string;
     };
     defaults: {
         fields: {

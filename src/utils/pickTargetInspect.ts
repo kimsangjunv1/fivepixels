@@ -56,6 +56,7 @@ export function getPickTargetBoxStyle(element: HTMLElement) {
         display: style.display,
         padding: formatBoxSides(style, "padding"),
         margin: formatBoxSides(style, "margin"),
+        borderRadius: style.borderRadius,
     };
 }
 

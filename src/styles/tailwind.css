@@ -104,6 +104,62 @@
     }
 }
 
+@keyframes fivepixels-marker-window-in {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes fivepixels-marker-window-out {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    to {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+}
+
+[data-fivepixels-mount] .fivepixels-marker-window-enter {
+    animation: fivepixels-marker-window-in 220ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+[data-fivepixels-mount] .fivepixels-marker-window-exit {
+    animation: fivepixels-marker-window-out 180ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    pointer-events: none;
+}
+
+@keyframes fivepixels-heatmap-dot-in {
+    0% {
+        opacity: 0;
+        transform: scale(0);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+[data-fivepixels-mount] .fivepixels-heatmap-dot {
+    transform-origin: center;
+    animation: fivepixels-heatmap-dot-in 320ms cubic-bezier(0.34, 1.28, 0.64, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    [data-fivepixels-mount] .fivepixels-heatmap-dot {
+        animation: none;
+    }
+}
+
 @keyframes fivepixels-spin {
     to {
         transform: rotate(360deg);
@@ -112,6 +168,24 @@
 
 [data-fivepixels-mount] .fivepixels-spin {
     animation: fivepixels-spin 0.8s linear infinite;
+}
+
+@keyframes fivepixels-processing-dot-pulse {
+    0%,
+    100% {
+        opacity: 0.16;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+[data-fivepixels-mount] .fivepixels-processing-dots__dot {
+    opacity: 0.16;
+    animation-name: fivepixels-processing-dot-pulse;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
 }
 
 @keyframes fivepixels-pick-target-delete-fade {
@@ -222,7 +296,8 @@
         top 0.44s cubic-bezier(0.22, 1, 0.36, 1),
         width 0.44s cubic-bezier(0.22, 1, 0.36, 1),
         height 0.44s cubic-bezier(0.22, 1, 0.36, 1),
-        outline-color 0.32s cubic-bezier(0.22, 1, 0.36, 1),
+        border-radius 0.32s cubic-bezier(0.22, 1, 0.36, 1),
+        box-shadow 0.32s cubic-bezier(0.22, 1, 0.36, 1),
         background-color 0.32s cubic-bezier(0.22, 1, 0.36, 1);
 }
 

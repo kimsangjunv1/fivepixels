@@ -5,13 +5,17 @@ export declare function getReplyCount(report: ReportFeedback): number;
 export declare function getLatestReply(report: ReportFeedback): ReportReply | null;
 export declare function getRemainingReplyCount(report: ReportFeedback): number;
 export declare function getFeedbackDisplayStatus(report: ReportFeedback, expanded?: boolean): FeedbackDisplayStatus;
+export declare function getCaseLatestStatus(report: ReportFeedback, caseId: string): FeedbackDisplayStatus;
 export declare function getCheckboxFieldsFromValues(fieldValues: ReportFeedback["field_values"], labels: Map<string, string>): {
     key: string;
     label: string;
 }[];
+export declare function isAssigneeEventStatus(status: ReportReplyStatus): boolean;
 export declare function isBranchRootStatus(status: ReportReplyStatus): boolean;
 export declare function getLatestBranchRoot(replies: ReportReply[]): ReportReply | null;
 export declare function isActiveBranchRoot(report: ReportFeedback, reply: ReportReply): boolean;
+export declare function isBranchReplyAuthor(reply: ReportReply, actorName: string): boolean;
+export declare function canShowAdjudicationActionsOnBranchReply(reply: ReportReply, actorName: string): boolean;
 export declare function canShowSuggestedBranchActions(report: ReportFeedback, reply: ReportReply): boolean;
 export declare function canShowCheckoutBranchActions(report: ReportFeedback, reply: ReportReply): boolean;
 export declare function canReviewLatestSuggestion(report: ReportFeedback): boolean;
@@ -42,6 +46,11 @@ export declare function getLatestBranchRootForCase(report: ReportFeedback, caseI
 export declare function isActiveCaseBranchRoot(report: ReportFeedback, reply: ReportReply, caseId: string): boolean;
 export declare function canShowSuggestedBranchActionsForCase(report: ReportFeedback, reply: ReportReply, caseId: string): boolean;
 export declare function canShowCheckoutBranchActionsForCase(report: ReportFeedback, reply: ReportReply, caseId: string): boolean;
+export declare function getLatestAssigneeEventForCase(report: ReportFeedback, caseId: string): ReportReply | null;
+export declare function isActiveAssigneeEvent(report: ReportFeedback, reply: ReportReply, caseId: string): boolean;
+export type AssigneeEntryActionRole = "assignee" | "takeover";
+export declare function resolveAssigneeEntryActionRole(report: ReportFeedback, reply: ReportReply, caseId: string, actorName: string): AssigneeEntryActionRole | null;
+export declare function canShowCaseClaimAction(report: ReportFeedback, caseId: string, actorName: string): boolean;
 export declare function canShowCaseEntryActions(report: ReportFeedback, caseId: string): boolean;
 export declare function shouldShowCaseReplyComposer(_report: ReportFeedback, caseId: string, pendingComposer: {
     type: string;

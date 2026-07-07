@@ -11,6 +11,7 @@ import {
     canShowCaseEntryActions,
     canShowCheckoutBranchActions,
     canShowIssueEntryActions,
+    canShowAdjudicationActionsOnBranchReply,
     canShowSuggestedBranchActions,
     canShowSuggestedBranchActionsForCase,
     createReplyStatusForSubmit,
@@ -18,6 +19,8 @@ import {
     groupRepliesIntoBranches,
     inferParentReplyId,
     isActiveCaseBranchRoot,
+    isActiveAssigneeEvent,
+    isBranchReplyAuthor,
     ISSUE_ROOT_PARENT_ID,
     normalizeReplyParents,
     resolveParentReplyIdForQuestion,
@@ -342,6 +345,47 @@ describe("feedbackThread", () => {
         const timelineB = buildCaseThreadTimeline(report, caseB.id);
         expect(timelineB.branches).toHaveLength(1);
         expect(timelineB.branches[0]?.root.id).toBe("r-b");
+    });
+
+    it("hides adjudication actions on branch replies authored by the current actor", () => {
+        const suggested = {
+            id: "r-suggested",
+            message: "나 고쳤다",
+            created_at: "2026-01-02T00:00:00.000Z",
+            status: "suggested" as const,
+            author_name: "Alex",
+        };
+
+        expect(canShowAdjudicationActionsOnBranchReply(suggested, "Alex")).toBe(false);
+        expect(canShowAdjudicationActionsOnBranchReply(suggested, "김상준")).toBe(true);
+        expect(isBranchReplyAuthor(suggested, "Alex")).toBe(true);
+    });
+
+    it("hides assignee entry actions after a branch root reply is added", () => {
+        const caseA = createReportCase("A", { assignee_name: "김상준" });
+        const assigneeTransferred = {
+            id: "r-assignee",
+            message: "담당자가 전환되었습니다.",
+            created_at: "2026-01-02T00:00:00.000Z",
+            status: "assignee_transferred" as const,
+            case_ids: [caseA.id],
+            author_name: "김상준",
+        };
+        const foundError = {
+            id: "r-deny",
+            message: "음 이거 오류가 아닌데용?",
+            created_at: "2026-01-02T00:00:01.000Z",
+            status: "found_error" as const,
+            case_ids: [caseA.id],
+            author_name: "김상준",
+        };
+        const report = createReport({
+            cases: [caseA],
+            replies: [assigneeTransferred, foundError],
+        });
+
+        expect(isActiveAssigneeEvent(report, assigneeTransferred, caseA.id)).toBe(false);
+        expect(isActiveCaseBranchRoot(report, foundError, caseA.id)).toBe(true);
     });
 
     it("hides branch actions after the focused case is resolved", () => {

@@ -22,6 +22,7 @@ import {
     resolveDefaultFocusedCaseId,
     shouldShowCaseProgress,
     syncIssueStatusFromCases,
+    transferCaseAssignee,
     validateCasesForSubmit,
     canEditReportCases,
 } from "@/utils/reportCases.js";
@@ -144,6 +145,7 @@ describe("reportCases", () => {
         expect(getRepliesForCase(report, cases[0].id)).toHaveLength(1);
         expect(getRepliesForCase(report, cases[1].id)).toHaveLength(0);
         expect(getCaseHandlerName(report, cases[1].id)).toBe("Dev A");
+        expect(getCaseHandlerName(report, cases[0].id)).toBeNull();
         expect(canActOnCase(report, cases[1].id, "Dev B")).toBe(false);
         expect(canActOnCase(report, cases[1].id, "Dev A")).toBe(true);
         expect(canActOnCase(report, cases[1].id, "QA")).toBe(true);
@@ -152,6 +154,8 @@ describe("reportCases", () => {
         const claimed = claimCaseAssignee(cases, cases[0].id, "Dev B");
         expect(claimed[0]?.assignee_name).toBe("Dev B");
         expect(claimCaseAssignee(cases, cases[1].id, "Dev C")[1]?.assignee_name).toBe("Dev A");
+        const transferred = transferCaseAssignee(claimed, cases[0].id, "Dev C");
+        expect(transferred[0]?.assignee_name).toBe("Dev C");
         expect(resolveDefaultFocusedCaseId(report)).toBe(cases[0].id);
     });
 

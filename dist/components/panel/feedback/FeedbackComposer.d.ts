@@ -26,7 +26,8 @@ type FeedbackComposerProps = {
     askQuestionChecked?: boolean;
     onAskQuestionChange?: (checked: boolean) => void;
     askQuestionForced?: boolean;
+    hideAuthorSelector?: boolean;
 };
-export declare function FeedbackComposer({ message, onMessageChange, cases, onCaseChange, onAddCase, onRemoveCase, authorName, onAuthorNameChange, authors, fields, fieldValues, onFieldChange, showTags, onSubmit, isSubmitting, showGitHubIssueOnCreate, onGitHubIssueSubmit, isGitHubIssueSubmitting, placeholder, autoFocus, errorMessage, showAskQuestionToggle, askQuestionChecked, onAskQuestionChange, askQuestionForced, }: FeedbackComposerProps): import("react/jsx-runtime").JSX.Element;
+export declare function FeedbackComposer({ message, onMessageChange, cases, onCaseChange, onAddCase, onRemoveCase, authorName, onAuthorNameChange, authors, fields, fieldValues, onFieldChange, showTags, onSubmit, isSubmitting, showGitHubIssueOnCreate, onGitHubIssueSubmit, isGitHubIssueSubmitting, placeholder, autoFocus, errorMessage, showAskQuestionToggle, askQuestionChecked, onAskQuestionChange, askQuestionForced, hideAuthorSelector, }: FeedbackComposerProps): import("react/jsx-runtime").JSX.Element;
 export {};
 //# sourceMappingURL=FeedbackComposer.d.ts.map

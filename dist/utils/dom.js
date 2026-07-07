@@ -82,7 +82,10 @@ function isSamePickTargetBoxStyle(previous, next) {
     if (!previous || !next) {
         return !previous && !next;
     }
-    return previous.padding === next.padding && previous.margin === next.margin && previous.display === next.display;
+    return (previous.padding === next.padding &&
+        previous.margin === next.margin &&
+        previous.display === next.display &&
+        previous.borderRadius === next.borderRadius);
 }
 function enrichPickTargetInspect(element, snapshot) {
     return {
@@ -356,6 +359,9 @@ export function getReportPortalRoot() {
         return mount;
     }
     return document.body;
+}
+export function getReportStyleInjectionRoot() {
+    return document.getElementById(REPORT_HOST_ID)?.shadowRoot ?? document;
 }
 export function ensureReportTooltipLayer() {
     const shadowRoot = document.getElementById(REPORT_HOST_ID)?.shadowRoot;

@@ -33,11 +33,17 @@ export declare function replyBelongsToCase(reply: ReportReply, caseId: string, r
 export declare function getRepliesForCase(report: Pick<ReportFeedback, "cases" | "replies">, caseId: string): ReportReply[];
 export declare function getCaseAssigneeName(report: Pick<ReportFeedback, "cases">, caseId: string): string | null;
 export declare function getLatestReplyAuthorForCase(report: Pick<ReportFeedback, "cases" | "replies">, caseId: string): string | null;
-export declare function getCaseHandlerName(report: Pick<ReportFeedback, "cases" | "replies" | "author_name">, caseId: string): string | null;
+export declare function getCaseHandlerName(report: Pick<ReportFeedback, "cases">, caseId: string): string | null;
+export declare function resolveAuthorDepartment(authors: Array<{
+    name: string;
+    department?: string;
+}>, authorName: string): string | null;
+export declare function formatAssigneeLabel(authorName: string, department?: string | null): string;
 export declare function hasCaseDiscussion(report: Pick<ReportFeedback, "cases" | "replies">, caseId: string): boolean;
 export declare function isCaseInProgress(report: Pick<ReportFeedback, "cases" | "replies" | "status">, caseId: string): boolean;
 export declare function canActOnCase(report: Pick<ReportFeedback, "cases" | "author_name">, caseId: string, actorName: string): boolean;
 export declare function claimCaseAssignee(cases: ReportCase[], caseId: string, assigneeName: string, claimedAt?: string): ReportCase[];
+export declare function transferCaseAssignee(cases: ReportCase[], caseId: string, assigneeName: string, transferredAt?: string): ReportCase[];
 export declare function resolveDefaultFocusedCaseId(report: Pick<ReportFeedback, "cases">): string | null;
 export declare function isValidFocusedCase(report: Pick<ReportFeedback, "cases">, caseId: string | null): boolean;
 export declare function isValidCaseSelection(report: Pick<ReportFeedback, "cases">, selectedCaseIds: string[]): boolean;

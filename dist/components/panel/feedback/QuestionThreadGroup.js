@@ -3,7 +3,8 @@ import { useEffect, useState } from "react";
 import { useReport } from "../../../providers/reportContext.js";
 import { ChevronDownIcon } from "../../../components/icons/Icons.js";
 import { ThreadChildReply } from "./ThreadChildReply.js";
-export function QuestionThreadGroup({ questions, originalAuthorName, locale, threadReplyPrefix, forceExpanded = false, }) {
+import { ThreadTimelineRow } from "./ThreadTimelineRow.js";
+export function QuestionThreadGroup({ questions, originalAuthorName, forceExpanded = false }) {
     const { messages, questionThreadDisplay } = useReport();
     const [isExpanded, setIsExpanded] = useState(() => questionThreadDisplay === "expanded");
     useEffect(() => {
@@ -22,8 +23,8 @@ export function QuestionThreadGroup({ questions, originalAuthorName, locale, thr
             ? messages.thread.questionsPending(questions.length)
             : messages.thread.questionsHide(questions.length)
         : messages.thread.questionsShow(questions.length);
-    return (_jsxs("div", { className: "flex flex-col", children: [_jsxs("button", { type: "button", "data-fivepixels-interactive": "", "aria-expanded": isExpanded, "aria-label": messages.thread.questionsToggleAriaLabel(questions.length, isExpanded), onClick: () => setIsExpanded((current) => !current), className: "flex w-full items-center gap-[6px] border-t border-[var(--adaptive-border-subtle)] px-[12px] py-[8px] text-left text-[12px] font-medium text-[var(--adaptive-blue500)] hover:bg-[var(--adaptive-black100)]", children: [_jsx(ChevronDownIcon, { className: `h-[14px] w-[14px] shrink-0 transition-transform ${isExpanded ? "rotate-180" : ""}` }), _jsx("span", { children: toggleLabel })] }), isExpanded
-                ? questions.map((question) => (_jsx(ThreadChildReply, { reply: question, originalAuthorName: originalAuthorName, locale: locale, threadReplyPrefix: threadReplyPrefix }, question.id)))
+    return (_jsxs("div", { className: "flex flex-col", children: [_jsx(ThreadTimelineRow, { children: _jsxs("button", { type: "button", "data-fivepixels-interactive": "", "aria-expanded": isExpanded, "aria-label": messages.thread.questionsToggleAriaLabel(questions.length, isExpanded), onClick: () => setIsExpanded((current) => !current), className: "flex items-center gap-[4px] rounded-[6px] py-[2px] text-left text-[12px] text-[var(--adaptive-black500)] hover:opacity-80", children: [_jsx(ChevronDownIcon, { className: `h-[12px] w-[12px] shrink-0 text-[var(--adaptive-black400)] transition-transform ${isExpanded ? "rotate-180" : ""}` }), _jsx("span", { className: "text-[12px] text-[var(--adaptive-black500)] font-medium", children: toggleLabel })] }) }), isExpanded
+                ? questions.map((question) => (_jsx(ThreadChildReply, { reply: question, originalAuthorName: originalAuthorName }, question.id)))
                 : null] }));
 }
 //# sourceMappingURL=QuestionThreadGroup.js.map

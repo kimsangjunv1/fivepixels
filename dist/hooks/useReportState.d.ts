@@ -1,7 +1,7 @@
 import { type MouseEvent } from "react";
 import type { DeepPartialReportMessages } from "../i18n/types.js";
 import type { ReportLocale } from "../i18n/types.js";
-import type { CreateReportFeedbackPayload, CreateReplyPayload, ReportAppearance, ReportAuthor, ReportEvent, ReportFeedback, ReportField, ReportGitHubConfig, ReportIdentify, ReportListAllParams, ReportListAllResult, ReportReply, QuestionThreadDisplay, UpdateReportFeedbackPayload } from "../types/report.js";
+import type { CreateReportFeedbackPayload, CreateReplyPayload, ReportAppearance, ReportAuthor, ReportActivitySummaryParams, ReportActivitySummaryResult, ReportEvent, ReportFeedback, ReportField, ReportGitHubConfig, FivePixelsMode, ReportIdentify, ReportListAllParams, ReportListAllResult, ReportReply, QuestionThreadDisplay, UpdateReportFeedbackPayload } from "../types/report.js";
 import type { DraftReport, EditableDraft, HoverPointer, Marker, PendingFeedbackComposer, PickProbeCompareMode, PickProbeFieldKey, PickProbeLayoutMode, PickProbeValues, PickTargetContextMenuState, ReportMode, ReportPanelTab, SavedProbeDeletion, SavedProbeEntry, TargetSnapshot } from "../types/report-ui.js";
 export type ReportStateConfig = {
     projectId: string;
@@ -19,6 +19,7 @@ export type ReportStateConfig = {
         pathname: string;
     }) => Promise<ReportFeedback[]>;
     onListAll?: (params: ReportListAllParams) => Promise<ReportListAllResult>;
+    onActivitySummary?: (params: ReportActivitySummaryParams) => Promise<ReportActivitySummaryResult>;
     onListReplies?: (commentId: string) => Promise<ReportReply[]>;
     onNavigate?: (pathname: string) => void | Promise<void>;
     onRevealTarget?: (report: ReportFeedback) => boolean | Promise<boolean>;
@@ -37,8 +38,9 @@ export type ReportStateConfig = {
     visibleShortcutKeys?: boolean;
     initialLocale: ReportLocale;
     messageOverrides?: DeepPartialReportMessages;
+    pixelsMode?: FivePixelsMode;
 };
-export declare function useReportState({ projectId, environment, appVersion, panelAppearance, tooltipAppearance, questionThreadDefault, fields, authors, requireReviewerKey, shortcut: _shortcut, identify, onList, onListAll, onListReplies, onNavigate, onRevealTarget, onCreate, onCreateReply, onUpdate, onDelete, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys, initialLocale, messageOverrides, }: ReportStateConfig): {
+export declare function useReportState({ projectId, environment, appVersion, panelAppearance, tooltipAppearance, questionThreadDefault, fields, authors, requireReviewerKey, shortcut: _shortcut, identify, onList, onListAll, onActivitySummary, onListReplies, onNavigate, onRevealTarget, onCreate, onCreateReply, onUpdate, onDelete, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys, initialLocale, messageOverrides, pixelsMode, }: ReportStateConfig): {
     panelAppearance: ReportAppearance;
     setPanelAppearance: (nextAppearance: ReportAppearance) => void;
     tooltipAppearance: ReportAppearance;
@@ -88,6 +90,7 @@ export declare function useReportState({ projectId, environment, appVersion, pan
         authorized: boolean;
     } | null>;
     canListAllFeedback: boolean;
+    onActivitySummary: ((params: ReportActivitySummaryParams) => Promise<ReportActivitySummaryResult>) | undefined;
     visibleShortcutKeys: boolean;
     searchInputRef: import("react").MutableRefObject<HTMLInputElement | null>;
     resolvedPanelAppearance: import("../types/report-ui.js").ResolvedAppearance;
@@ -98,6 +101,16 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     showMarkerTargetPreview: boolean;
     setShowMarkerTargetPreview: (enabled: boolean) => void;
     toggleMarkerTargetPreview: () => void;
+    markerAppearance: import("../constants/markerAppearance.js").MarkerAppearancePreferences;
+    setMarkerAppearance: (next: import("../constants/markerAppearance.js").MarkerAppearancePreferences | ((current: import("../constants/markerAppearance.js").MarkerAppearancePreferences) => import("../constants/markerAppearance.js").MarkerAppearancePreferences)) => void;
+    setMarkerSize: (size: import("../constants/markerAppearance.js").AppearanceScale) => void;
+    setMarkerShape: (shape: import("../constants/markerAppearance.js").MarkerShape) => void;
+    setMarkerColors: (colors: import("../constants/markerAppearance.js").MarkerColorPreferences) => void;
+    setMarkerColor: (key: keyof import("../constants/markerAppearance.js").MarkerColorPreferences, color: string) => void;
+    typography: import("../constants/markerAppearance.js").TypographyPreferences;
+    setTypography: (next: import("../constants/markerAppearance.js").TypographyPreferences | ((current: import("../constants/markerAppearance.js").TypographyPreferences) => import("../constants/markerAppearance.js").TypographyPreferences)) => void;
+    setFontSize: (fontSize: import("../constants/markerAppearance.js").MarkerFontSize) => void;
+    setFontFamily: (fontFamily: string) => void;
     activeMarkerTarget: TargetSnapshot | null;
     markerPreviewTargets: TargetSnapshot[];
     selectableTargets: TargetSnapshot[];
@@ -106,6 +119,7 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     listScope: import("../types/report-ui.js").ReportListScope;
     setListScope: import("react").Dispatch<import("react").SetStateAction<import("../types/report-ui.js").ReportListScope>>;
     reports: ReportFeedback[];
+    currentPageReports: ReportFeedback[];
     filteredReports: ReportFeedback[];
     isError: boolean;
     isFetching: boolean;
@@ -114,6 +128,8 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     fetchNextPage: () => Promise<void>;
     isCreating: boolean;
     isUpdating: boolean;
+    isSubmittingReply: boolean;
+    isClaimingAssignee: boolean;
     isDeleting: boolean;
     queryErrorMessage: string | undefined;
     refetch: () => Promise<ReportFeedback[]>;
@@ -174,10 +190,17 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     setDraftAuthorName: import("react").Dispatch<import("react").SetStateAction<string>>;
     replyAuthorName: string;
     setReplyAuthorName: import("react").Dispatch<import("react").SetStateAction<string>>;
+    isPresentationMode: boolean;
+    sessionActor: import("../utils/reportTeam.js").SessionActor | null;
+    presentationViewers: import("../utils/reportTeam.js").PresentationViewer[];
+    presentationViewerId: string | null;
+    setPresentationViewerId: (viewerId: string | null) => void;
     pendingComposer: PendingFeedbackComposer;
-    startDenyReview: () => void;
+    startDenyReview: (targetReplyId?: string) => void;
     startCheckoutReview: (replyId: string) => void;
     startAskQuestion: () => void;
+    handleClaimAssignee: () => Promise<void>;
+    handleTransferAssignee: () => Promise<void>;
     cancelPendingComposer: () => void;
     confirmAuthorName: string;
     setConfirmAuthorName: import("react").Dispatch<import("react").SetStateAction<string>>;

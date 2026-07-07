@@ -4,6 +4,8 @@ import type { DeepPartialReportMessages } from "@/i18n/types.js";
 import type { ReportLocale } from "@/i18n/types.js";
 import { useReportShortcuts } from "./useReportShortcuts.js";
 import { useMarkerTargetPreviewPreference } from "./useMarkerTargetPreviewPreference.js";
+import { useMarkerAppearancePreference } from "./useMarkerAppearancePreference.js";
+import { useTypographyPreference } from "./useTypographyPreference.js";
 import { useReportPersistence } from "./useReportPersistence.js";
 import { useIsMobileViewport } from "./useIsMobileViewport.js";
 import { useAppearancePreference } from "./useAppearancePreference.js";
@@ -17,10 +19,13 @@ import type {
     CreateReplyPayload,
     ReportAppearance,
     ReportAuthor,
+    ReportActivitySummaryParams,
+    ReportActivitySummaryResult,
     ReportEvent,
     ReportFeedback,
     ReportField,
     ReportGitHubConfig,
+    FivePixelsMode,
     ReportIdentify,
     ReportListAllParams,
     ReportListAllResult,
@@ -29,13 +34,13 @@ import type {
     UpdateReportFeedbackPayload,
 } from "@/types/report.js";
 import type { DraftReport, EditableDraft, HoverPointer, Marker, PendingFeedbackComposer, PickProbeCompareMode, PickProbeFieldKey, PickProbeLayoutMode, PickProbeValues, PickTargetContextMenuState, ProbeSessionAction, ReportMode, ReportPanelTab, SavedProbeDeletion, SavedProbeEntry, TargetSnapshot } from "@/types/report-ui.js";
-import { createReplyStatusForSubmit, getFeedbackDisplayStatus, getLatestBranchRootForCase, getReportReplies, ISSUE_ROOT_PARENT_ID, resolveOriginalFeedbackAuthorName, resolveParentReplyIdForCaseQuestion } from "@/utils/feedbackThread.js";
+import { canShowCaseClaimAction, createReplyStatusForSubmit, getFeedbackDisplayStatus, getLatestBranchRootForCase, getReportReplies, ISSUE_ROOT_PARENT_ID, resolveOriginalFeedbackAuthorName, resolveParentReplyIdForCaseQuestion } from "@/utils/feedbackThread.js";
 import { clampRatio, getMarkerFromReport, resolveTooltipAnchor } from "@/utils/coordinates.js";
 import { getFeedbackTargetElement, isFeedbackTargetVisible, scrollToFeedbackTarget, waitForTargetRevealResync } from "@/utils/locateFeedback.js";
 
 const MARKER_HOVER_LEAVE_MS = 250;
 const OVERLAY_HOVER_LEAVE_MS = 100;
-import { findPickTargetByPoint, getSelectableTargets, isSameHoverTarget, resolveFeedbackDocumentAnchor, toFeedbackHoverSnapshot, toPickSnapshot, toSnapshot, hasDirectReportId } from "@/utils/dom.js";
+import { findPickTargetByPoint, getSelectableTargets, isSameHoverTarget, resolveFeedbackDocumentAnchor, toFeedbackHoverSnapshot } from "@/utils/dom.js";
 import { shouldInspectFontStyle } from "@/utils/pickTargetInspect.js";
 import {
     applyPickProbeCompareMode,
@@ -60,7 +65,7 @@ import { applyProbeSessionActionBackward, applyProbeSessionActionForward } from 
 import { getPickProbeLayoutMode } from "@/utils/probeLayout.js";
 import { markerToTargetSnapshot } from "@/utils/markerTarget.js";
 import { createInitialFieldValues, getFieldError, getFieldTags } from "@/utils/fields.js";
-import { canEditReportCases, claimCaseAssignee, createReportCase, buildResolvedCasesUpdate, canActOnCase, getCaseAssigneeName, isValidFocusedCase, resolveDefaultFocusedCaseId } from "@/utils/reportCases.js";
+import { canEditReportCases, claimCaseAssignee, createReportCase, buildResolvedCasesUpdate, canActOnCase, getCaseAssigneeName, isValidFocusedCase, resolveDefaultFocusedCaseId, transferCaseAssignee } from "@/utils/reportCases.js";
 import { createReplyId } from "@/utils/format.js";
 import {
     notifyFeedbackCreate,
@@ -77,6 +82,7 @@ import {
     canCreateGitHubIssueOnCreate,
     isGitIssued,
 } from "@/utils/githubIntegration.js";
+import { buildPresentationViewers, resolveSessionActor } from "@/utils/reportTeam.js";
 
 function resolveDefaultAuthorName(identify: ReportIdentify | undefined, authors: ReportAuthor[]) {
     if (identify?.name) {
@@ -100,6 +106,7 @@ export type ReportStateConfig = {
     identify?: ReportIdentify;
     onList?: (params: { pathname: string }) => Promise<ReportFeedback[]>;
     onListAll?: (params: ReportListAllParams) => Promise<ReportListAllResult>;
+    onActivitySummary?: (params: ReportActivitySummaryParams) => Promise<ReportActivitySummaryResult>;
     onListReplies?: (commentId: string) => Promise<ReportReply[]>;
     onNavigate?: (pathname: string) => void | Promise<void>;
     onRevealTarget?: (report: ReportFeedback) => boolean | Promise<boolean>;
@@ -115,6 +122,7 @@ export type ReportStateConfig = {
     visibleShortcutKeys?: boolean;
     initialLocale: ReportLocale;
     messageOverrides?: DeepPartialReportMessages;
+    pixelsMode?: FivePixelsMode;
 };
 
 export function useReportState({
@@ -131,6 +139,7 @@ export function useReportState({
     identify,
     onList,
     onListAll,
+    onActivitySummary,
     onListReplies,
     onNavigate,
     onRevealTarget,
@@ -146,6 +155,7 @@ export function useReportState({
     visibleShortcutKeys = false,
     initialLocale,
     messageOverrides,
+    pixelsMode = "default",
 }: ReportStateConfig) {
     const { appearance: activePanelAppearance, setAppearance: setPanelAppearance } = useAppearancePreference(
         PANEL_APPEARANCE_STORAGE_KEY,
@@ -156,6 +166,8 @@ export function useReportState({
         tooltipAppearance,
     );
     const { showMarkerTargetPreview, setShowMarkerTargetPreview, toggleMarkerTargetPreview } = useMarkerTargetPreviewPreference();
+    const { markerAppearance, setMarkerAppearance, setMarkerSize, setMarkerShape, setMarkerColors, setMarkerColor } = useMarkerAppearancePreference();
+    const { typography, setTypography, setFontSize, setFontFamily } = useTypographyPreference();
     const { questionThreadDisplay, setQuestionThreadDisplay } = useQuestionThreadPreference(questionThreadDefault);
     const { locale, setLocale } = useLocalePreference(initialLocale);
     const [localeMessagesReady, setLocaleMessagesReady] = useState(locale !== "ko");
@@ -205,6 +217,7 @@ export function useReportState({
         selectedReportId,
         setSelectedReportId,
         reports,
+        currentPageReports,
         filteredReports,
         currentPageFilteredReports,
         routeDetailsStats,
@@ -265,6 +278,34 @@ export function useReportState({
         authors,
     });
     const activeIdentify = authorizedAuthors[0] ?? (personalKeyRequired ? undefined : identify);
+    const isPresentationMode = pixelsMode === "presentation";
+    const presentationViewers = useMemo(() => buildPresentationViewers(identify, authors), [authors, identify]);
+    const [presentationViewerId, setPresentationViewerId] = useState<string | null>(null);
+
+    const resolvedPresentationViewerId = useMemo(() => {
+        if (!isPresentationMode || presentationViewers.length === 0) {
+            return null;
+        }
+
+        if (presentationViewerId && presentationViewers.some((viewer) => viewer.id === presentationViewerId)) {
+            return presentationViewerId;
+        }
+
+        return presentationViewers[0]?.id ?? null;
+    }, [isPresentationMode, presentationViewerId, presentationViewers]);
+
+    const effectivePersonalKeyRequired = personalKeyRequired && !isPresentationMode;
+
+    const sessionActor = useMemo(
+        () =>
+            resolveSessionActor({
+                isPresentationMode,
+                presentationViewers,
+                presentationViewerId: resolvedPresentationViewerId,
+                activeIdentify,
+            }),
+        [activeIdentify, isPresentationMode, presentationViewers, resolvedPresentationViewerId],
+    );
 
     const signCreatePayload = async (payload: CreateReportFeedbackPayload) => {
         const auth = await signPayload("feedback:create", payload);
@@ -272,7 +313,7 @@ export function useReportState({
     };
 
     const signUpdatePayload = async (payload: UpdateReportFeedbackPayload) => {
-        if (personalKeyRequired) {
+        if (effectivePersonalKeyRequired) {
             throw new Error(messages.errors.personalKeyRequired);
         }
 
@@ -281,7 +322,7 @@ export function useReportState({
     };
 
     const signReplyPayload = async (payload: CreateReplyPayload) => {
-        if (personalKeyRequired) {
+        if (effectivePersonalKeyRequired) {
             throw new Error(messages.errors.personalKeyRequired);
         }
 
@@ -355,6 +396,34 @@ export function useReportState({
     const [replySubmitAsQuestion, setReplySubmitAsQuestion] = useState(false);
     const [draftAuthorName, setDraftAuthorName] = useState(() => resolveDefaultAuthorName(activeIdentify, authorizedAuthors));
     const [replyAuthorName, setReplyAuthorName] = useState(() => resolveDefaultAuthorName(activeIdentify, authorizedAuthors));
+
+    const applyPresentationViewer = useCallback(
+        (viewerId: string | null) => {
+            if (!isPresentationMode) {
+                return;
+            }
+
+            const viewer = presentationViewers.find((item) => item.id === viewerId) ?? presentationViewers[0];
+
+            if (!viewer) {
+                return;
+            }
+
+            setPresentationViewerId(viewer.id);
+        },
+        [isPresentationMode, presentationViewers],
+    );
+
+    useEffect(() => {
+        if (!sessionActor?.name) {
+            return;
+        }
+
+        setReplyAuthorName(sessionActor.name);
+        setDraftAuthorName(sessionActor.name);
+    }, [sessionActor?.id, sessionActor?.name]);
+    const [isSubmittingReply, setIsSubmittingReply] = useState(false);
+    const [isClaimingAssignee, setIsClaimingAssignee] = useState(false);
     const [pendingComposer, setPendingComposer] = useState<PendingFeedbackComposer>(null);
     const [confirmAuthorName, setConfirmAuthorName] = useState("");
     const [showConfirmAuthorSelect, setShowConfirmAuthorSelect] = useState(false);
@@ -428,8 +497,10 @@ export function useReportState({
         setPendingComposer(null);
         setShowConfirmAuthorSelect(false);
         setConfirmAuthorName("");
-        setDraftAuthorName(resolveDefaultAuthorName(activeIdentify, authorizedAuthors));
-        setReplyAuthorName(resolveDefaultAuthorName(activeIdentify, authorizedAuthors));
+        setDraftAuthorName(sessionActor?.name ?? resolveDefaultAuthorName(activeIdentify, authorizedAuthors));
+        if (!isPresentationMode) {
+            setReplyAuthorName(sessionActor?.name ?? resolveDefaultAuthorName(activeIdentify, authorizedAuthors));
+        }
         setEditingReportId(null);
         setEditableDraft(null);
         if (mode !== "idle") {
@@ -445,7 +516,15 @@ export function useReportState({
             window.clearTimeout(overlayHoverLeaveTimeoutRef.current);
             overlayHoverLeaveTimeoutRef.current = null;
         }
-    }, [currentPathname, mode]);
+    }, [currentPathname, mode, activeIdentify, authorizedAuthors, isPresentationMode, sessionActor?.name]);
+
+    useEffect(() => {
+        if (!isPresentationMode || presentationViewers.length === 0 || !resolvedPresentationViewerId) {
+            return;
+        }
+
+        applyPresentationViewer(resolvedPresentationViewerId);
+    }, [applyPresentationViewer, isPresentationMode, presentationViewers.length, resolvedPresentationViewerId]);
 
     useEffect(() => {
         setShowTargetPreview(false);
@@ -497,7 +576,7 @@ export function useReportState({
 
     const syncMarkers = useCallback(() => {
         setMarkers(currentPageFilteredReports.map((report) => getMarkerFromReport(report, window.scrollY)));
-    }, [currentPageFilteredReports]);
+    }, [currentPageFilteredReports, markerAppearance.size]);
 
     const activeMarkerReportId = useMemo(() => {
         if (activeReplyReportId) {
@@ -698,8 +777,8 @@ export function useReportState({
         }
 
         const syncTargetRects = () => {
-            setHoveredTarget(toSnapshot(hoveredElementRef.current));
-            setSelectedTarget(toSnapshot(selectedElementRef.current));
+            setHoveredTarget(toFeedbackHoverSnapshot(hoveredElementRef.current));
+            setSelectedTarget(toFeedbackHoverSnapshot(selectedElementRef.current));
         };
 
         window.addEventListener("scroll", syncTargetRects, { passive: true, capture: true });
@@ -1326,16 +1405,16 @@ export function useReportState({
                 return false;
             }
 
-            const actorCandidates = [replyAuthorName.trim(), confirmAuthorName.trim(), resolveOriginalFeedbackAuthorName(report)].filter(Boolean);
+            const actorName = sessionActor?.name?.trim() ?? "";
 
-            if (actorCandidates.some((actorName) => canActOnCase(report, focusedCaseId, actorName))) {
+            if (actorName && canActOnCase(report, focusedCaseId, actorName)) {
                 return true;
             }
 
             setErrorMessage(messages.errors.caseAssigneeOnly);
             return false;
         },
-        [confirmAuthorName, ensureFocusedCase, focusedCaseId, messages.errors.caseAssigneeOnly, replyAuthorName],
+        [ensureFocusedCase, focusedCaseId, messages.errors.caseAssigneeOnly, sessionActor?.name],
     );
 
     const beginCaseEdit = useCallback(
@@ -1526,7 +1605,7 @@ export function useReportState({
         setReplyDraft("");
         setReplySubmitAsQuestion(false);
         setPendingComposer(null);
-        setReplyAuthorName(resolveDefaultAuthorName(activeIdentify, authorizedAuthors));
+        setReplyAuthorName(sessionActor?.name ?? resolveDefaultAuthorName(activeIdentify, authorizedAuthors));
         setConfirmAuthorName(resolveOriginalFeedbackAuthorName(report));
         setShowConfirmAuthorSelect(false);
         setFocusedCaseId(resolveDefaultFocusedCaseId(report));
@@ -1545,7 +1624,7 @@ export function useReportState({
         setShowConfirmAuthorSelect((current) => !current);
     };
 
-    const startDenyReview = () => {
+    const startDenyReview = (targetReplyId?: string) => {
         if (!activeReplyReport || !focusedCaseId) {
             return;
         }
@@ -1557,6 +1636,12 @@ export function useReportState({
         const latestRoot = getLatestBranchRootForCase(activeReplyReport, focusedCaseId);
 
         if (!latestRoot) {
+            setPendingComposer({
+                type: "deny",
+                targetReplyId: targetReplyId ?? ISSUE_ROOT_PARENT_ID,
+            });
+            setReplyDraft("");
+            setReplySubmitAsQuestion(false);
             return;
         }
 
@@ -1620,7 +1705,7 @@ export function useReportState({
     };
 
     const toggleReportMode = () => {
-        if (personalKeyRequired) {
+        if (effectivePersonalKeyRequired) {
             setErrorMessage(messages.errors.personalKeyRequired);
             return;
         }
@@ -1749,8 +1834,8 @@ export function useReportState({
         }
 
         const anchorSnapshot = resolveFeedbackDocumentAnchor(targetElement);
-        const isTagged = hasDirectReportId(targetElement);
-        const snapshot = isTagged ? toSnapshot(targetElement) : toPickSnapshot(targetElement);
+        const snapshot = toFeedbackHoverSnapshot(targetElement);
+        const isTagged = snapshot?.isTagged ?? false;
 
         if (!snapshot) {
             setErrorMessage(messages.errors.clickPickTarget);
@@ -1880,7 +1965,7 @@ export function useReportState({
             return null;
         }
 
-        if (personalKeyRequired) {
+        if (effectivePersonalKeyRequired) {
             setErrorMessage(messages.errors.personalKeyRequired);
             return null;
         }
@@ -1889,6 +1974,11 @@ export function useReportState({
 
         if (nextError) {
             setErrorMessage(nextError);
+            return null;
+        }
+
+        if (!sessionActor) {
+            setErrorMessage(messages.errors.authorRequired);
             return null;
         }
 
@@ -1930,10 +2020,10 @@ export function useReportState({
             },
             ...(environment ? { environment } : {}),
             ...(appVersion ? { app_version: appVersion } : {}),
-            ...(activeIdentify || draftAuthorName.trim()
+            ...(sessionActor
                 ? {
-                      ...(activeIdentify ? { author_id: activeIdentify.id } : {}),
-                      author_name: draftAuthorName.trim() || activeIdentify?.name,
+                      author_id: sessionActor.id,
+                      author_name: sessionActor.name,
                   }
                 : {}),
         };
@@ -2085,7 +2175,7 @@ export function useReportState({
             return;
         }
 
-        if (personalKeyRequired) {
+        if (effectivePersonalKeyRequired) {
             setErrorMessage(messages.errors.personalKeyRequired);
             return;
         }
@@ -2099,19 +2189,18 @@ export function useReportState({
             return;
         }
 
-        const pendingType = pendingComposer?.type ?? null;
-        const isCreatorSubmit = pendingType === "deny" || pendingType === "recheck" || pendingType === "question";
-        const isQuestionSubmit = pendingType === "question";
-        const authorName = isCreatorSubmit
-            ? (confirmAuthorName.trim() || resolveOriginalFeedbackAuthorName(activeReplyReport))
-            : replyAuthorName.trim();
+        const actorName = sessionActor?.name?.trim() ?? "";
 
-        if (!authorName) {
-            setErrorMessage(isCreatorSubmit ? messages.errors.reviewerRequired : messages.errors.authorRequired);
+        if (!actorName) {
+            setErrorMessage(messages.errors.authorRequired);
             return;
         }
 
-        if (!canActOnCase(activeReplyReport, focusedCaseId, authorName)) {
+        const pendingType = pendingComposer?.type ?? null;
+        const isCreatorSubmit = pendingType === "deny" || pendingType === "recheck" || pendingType === "question";
+        const isQuestionSubmit = pendingType === "question";
+
+        if (!canActOnCase(activeReplyReport, focusedCaseId, actorName)) {
             setErrorMessage(messages.errors.caseAssigneeOnly);
             return;
         }
@@ -2130,22 +2219,13 @@ export function useReportState({
             case_ids: [focusedCaseId],
             ...(parentReplyId ? { parent_reply_id: parentReplyId } : {}),
             author_type: isCreatorSubmit ? "user" : "manager",
-            author_name: authorName,
+            author_name: actorName,
         };
 
         try {
+            setIsSubmittingReply(true);
+
             await appendReply(activeReplyReport, reply);
-
-            if (replyStatus === "suggested" && !getCaseAssigneeName(activeReplyReport, focusedCaseId)) {
-                const nextCases = claimCaseAssignee(activeReplyReport.cases, focusedCaseId, authorName);
-
-                await updateFeedback(
-                    activeReplyReport.id,
-                    await signUpdatePayload({
-                        cases: nextCases,
-                    }),
-                );
-            }
 
             setErrorMessage("");
             setReplyDraft("");
@@ -2167,6 +2247,131 @@ export function useReportState({
             }
         } catch (nextError) {
             setErrorMessage(nextError instanceof Error ? nextError.message : messages.errors.saveReplyFailed);
+        } finally {
+            setIsSubmittingReply(false);
+        }
+    };
+
+    const handleClaimAssignee = async () => {
+        if (!activeReplyReport) {
+            return;
+        }
+
+        if (effectivePersonalKeyRequired) {
+            setErrorMessage(messages.errors.personalKeyRequired);
+            return;
+        }
+
+        if (!ensureFocusedCase(activeReplyReport) || !focusedCaseId) {
+            return;
+        }
+
+        const assigneeName = sessionActor?.name?.trim() ?? "";
+
+        if (!assigneeName) {
+            setErrorMessage(messages.errors.authorRequired);
+            return;
+        }
+
+        if (!canShowCaseClaimAction(activeReplyReport, focusedCaseId, assigneeName)) {
+            setErrorMessage(messages.errors.caseAssigneeOnly);
+            return;
+        }
+
+        const reply: ReportReply = {
+            id: createReplyId(),
+            message: messages.thread.assigneeAssigned,
+            created_at: new Date().toISOString(),
+            status: "assignee_assigned",
+            case_ids: [focusedCaseId],
+            author_type: "manager",
+            author_name: assigneeName,
+        };
+
+        try {
+            setIsClaimingAssignee(true);
+            await appendReply(activeReplyReport, reply);
+
+            const nextCases = claimCaseAssignee(activeReplyReport.cases, focusedCaseId, assigneeName);
+
+            await updateFeedback(
+                activeReplyReport.id,
+                await signUpdatePayload({
+                    cases: nextCases,
+                }),
+            );
+
+            setErrorMessage("");
+        } catch (nextError) {
+            setErrorMessage(nextError instanceof Error ? nextError.message : messages.errors.saveReplyFailed);
+        } finally {
+            setIsClaimingAssignee(false);
+        }
+    };
+
+    const handleTransferAssignee = async () => {
+        if (!activeReplyReport) {
+            return;
+        }
+
+        if (effectivePersonalKeyRequired) {
+            setErrorMessage(messages.errors.personalKeyRequired);
+            return;
+        }
+
+        if (!ensureFocusedCase(activeReplyReport) || !focusedCaseId) {
+            return;
+        }
+
+        const assigneeName = sessionActor?.name?.trim() ?? "";
+
+        if (!assigneeName) {
+            setErrorMessage(messages.errors.authorRequired);
+            return;
+        }
+
+        const currentAssignee = getCaseAssigneeName(activeReplyReport, focusedCaseId);
+
+        if (!currentAssignee || currentAssignee === assigneeName) {
+            setErrorMessage(messages.errors.caseAssigneeOnly);
+            return;
+        }
+
+        const authorName = resolveOriginalFeedbackAuthorName(activeReplyReport);
+
+        if (authorName && assigneeName === authorName) {
+            setErrorMessage(messages.errors.caseAssigneeOnly);
+            return;
+        }
+
+        const reply: ReportReply = {
+            id: createReplyId(),
+            message: messages.thread.assigneeTransferred,
+            created_at: new Date().toISOString(),
+            status: "assignee_transferred",
+            case_ids: [focusedCaseId],
+            author_type: "manager",
+            author_name: assigneeName,
+        };
+
+        try {
+            setIsClaimingAssignee(true);
+            await appendReply(activeReplyReport, reply);
+
+            const nextCases = transferCaseAssignee(activeReplyReport.cases, focusedCaseId, assigneeName);
+
+            await updateFeedback(
+                activeReplyReport.id,
+                await signUpdatePayload({
+                    cases: nextCases,
+                }),
+            );
+
+            setErrorMessage("");
+        } catch (nextError) {
+            setErrorMessage(nextError instanceof Error ? nextError.message : messages.errors.saveReplyFailed);
+        } finally {
+            setIsClaimingAssignee(false);
         }
     };
 
@@ -2179,7 +2384,7 @@ export function useReportState({
             return;
         }
 
-        const resolverName = confirmAuthorName.trim() || resolveOriginalFeedbackAuthorName(activeReplyReport);
+        const resolverName = sessionActor?.name?.trim() ?? "";
 
         if (!resolverName) {
             setErrorMessage(messages.errors.reviewerRequired);
@@ -2352,6 +2557,7 @@ export function useReportState({
         rotatePersonalKey,
         insertPersonalKey,
         canListAllFeedback,
+        onActivitySummary,
         visibleShortcutKeys,
         searchInputRef,
         resolvedPanelAppearance,
@@ -2362,6 +2568,16 @@ export function useReportState({
         showMarkerTargetPreview,
         setShowMarkerTargetPreview,
         toggleMarkerTargetPreview,
+        markerAppearance,
+        setMarkerAppearance,
+        setMarkerSize,
+        setMarkerShape,
+        setMarkerColors,
+        setMarkerColor,
+        typography,
+        setTypography,
+        setFontSize,
+        setFontFamily,
         activeMarkerTarget,
         markerPreviewTargets,
         selectableTargets,
@@ -2370,6 +2586,7 @@ export function useReportState({
         listScope,
         setListScope,
         reports,
+        currentPageReports,
         filteredReports,
         isError,
         isFetching,
@@ -2378,6 +2595,8 @@ export function useReportState({
         fetchNextPage,
         isCreating,
         isUpdating,
+        isSubmittingReply,
+        isClaimingAssignee,
         isDeleting,
         queryErrorMessage,
         refetch,
@@ -2435,10 +2654,17 @@ export function useReportState({
         setDraftAuthorName,
         replyAuthorName,
         setReplyAuthorName,
+        isPresentationMode,
+        sessionActor,
+        presentationViewers,
+        presentationViewerId: resolvedPresentationViewerId,
+        setPresentationViewerId: applyPresentationViewer,
         pendingComposer,
         startDenyReview,
         startCheckoutReview,
         startAskQuestion,
+        handleClaimAssignee,
+        handleTransferAssignee,
         cancelPendingComposer,
         confirmAuthorName,
         setConfirmAuthorName,

@@ -7,12 +7,15 @@ import { resolveReportVisibility } from "@/utils/reportVisibility.js";
 import type {
     CreateReportFeedbackPayload,
     CreateReplyPayload,
+    FivePixelsMode,
     ReportEvent,
     ReportFeedback,
     ReportField,
     ReportGitHubConfig,
     ReportListAllParams,
     ReportListAllResult,
+    ReportActivitySummaryParams,
+    ReportActivitySummaryResult,
     ReportProject,
     ReportReply,
     ReportTeam,
@@ -27,9 +30,11 @@ export type FivePixelsProps = {
     ui?: ReportUi;
     visibility?: ReportVisibility;
     team?: ReportTeam;
+    mode?: FivePixelsMode;
     fields?: ReportField[];
     onList?: (params: { pathname: string }) => Promise<ReportFeedback[]>;
     onListAll?: (params: ReportListAllParams) => Promise<ReportListAllResult>;
+    onActivitySummary?: (params: ReportActivitySummaryParams) => Promise<ReportActivitySummaryResult>;
     onListReplies?: (commentId: string) => Promise<ReportReply[]>;
     onNavigate?: (pathname: string) => void | Promise<void>;
     onRevealTarget?: (report: ReportFeedback) => boolean | Promise<boolean>;
@@ -47,9 +52,11 @@ export function FivePixels({
     ui,
     visibility,
     team,
+    mode = "default",
     fields = DEFAULT_FIELDS,
     onList,
     onListAll,
+    onActivitySummary,
     onListReplies,
     onNavigate,
     onRevealTarget,
@@ -73,9 +80,11 @@ export function FivePixels({
             ui={ui}
             visibility={visibility}
             team={team}
+            mode={mode}
             fields={fields}
             onList={onList}
             onListAll={onListAll}
+            onActivitySummary={onActivitySummary}
             onListReplies={onListReplies}
             onNavigate={onNavigate}
             onRevealTarget={onRevealTarget}

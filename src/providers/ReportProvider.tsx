@@ -9,10 +9,13 @@ import type {
     ReportFeedback,
     ReportField,
     ReportAuthor,
+    FivePixelsMode,
     ReportGitHubConfig,
     ReportIdentify,
     ReportListAllParams,
     ReportListAllResult,
+    ReportActivitySummaryParams,
+    ReportActivitySummaryResult,
     ReportProject,
     ReportReply,
     ReportTeam,
@@ -32,9 +35,11 @@ export type ReportProviderProps = {
     ui?: ReportUi;
     visibility?: ReportVisibility;
     team?: ReportTeam;
+    mode?: FivePixelsMode;
     fields?: ReportField[];
     onList?: (params: { pathname: string }) => Promise<ReportFeedback[]>;
     onListAll?: (params: ReportListAllParams) => Promise<ReportListAllResult>;
+    onActivitySummary?: (params: ReportActivitySummaryParams) => Promise<ReportActivitySummaryResult>;
     onListReplies?: (commentId: string) => Promise<ReportReply[]>;
     onNavigate?: (pathname: string) => void | Promise<void>;
     onRevealTarget?: (report: ReportFeedback) => boolean | Promise<boolean>;
@@ -65,6 +70,7 @@ type ReportProviderEnabledProps = Omit<ReportProviderProps, "project" | "ui" | "
     requireReviewerKey: boolean;
     locale: ReportLocale;
     messageOverrides?: DeepPartialReportMessages;
+    pixelsMode: FivePixelsMode;
 };
 
 function ReportProviderEnabled({
@@ -81,6 +87,7 @@ function ReportProviderEnabled({
     identify,
     onList,
     onListAll,
+    onActivitySummary,
     onListReplies,
     onNavigate,
     onRevealTarget,
@@ -96,6 +103,7 @@ function ReportProviderEnabled({
     visibleShortcutKeys,
     locale,
     messageOverrides,
+    pixelsMode,
     children,
 }: ReportProviderEnabledProps) {
     const value = useReportState({
@@ -110,8 +118,10 @@ function ReportProviderEnabled({
         requireReviewerKey,
         shortcut,
         identify,
+        pixelsMode,
         onList,
         onListAll,
+        onActivitySummary,
         onListReplies,
         onNavigate,
         onRevealTarget,
@@ -137,9 +147,11 @@ export function ReportProvider({
     ui,
     visibility,
     team,
+    mode = "default",
     fields,
     onList,
     onListAll,
+    onActivitySummary,
     onListReplies,
     onNavigate,
     onRevealTarget,
@@ -179,6 +191,7 @@ export function ReportProvider({
             identify={resolvedTeam.user}
             onList={onList}
             onListAll={onListAll}
+            onActivitySummary={onActivitySummary}
             onListReplies={onListReplies}
             onNavigate={onNavigate}
             onRevealTarget={onRevealTarget}
@@ -192,6 +205,7 @@ export function ReportProvider({
             routeKey={resolvedVisibility.routeKey}
             locale={resolvedUi.locale}
             messageOverrides={ui?.messages}
+            pixelsMode={mode}
         >
             {children}
         </ReportProviderEnabled>

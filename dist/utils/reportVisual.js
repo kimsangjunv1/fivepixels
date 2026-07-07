@@ -1,6 +1,6 @@
+import { DEFAULT_MARKER_COLORS } from "../constants/markerAppearance.js";
 import { getReplyCount } from "../utils/feedbackThread.js";
 import { getIssueProgressLabel, getReportCases } from "../utils/reportCases.js";
-import { TARGET_COLOR } from "../constants/report.js";
 export function hasReply(report) {
     return getReplyCount(report) > 0;
 }
@@ -9,14 +9,14 @@ export function getReplyStatusTone(hasCompletedReply) {
         ? { backgroundColor: "#e8f5e9", color: "#2e7d32" }
         : { backgroundColor: "#ffebee", color: "#c62828" };
 }
-export function getMarkerColor(report) {
+export function getMarkerColor(report, colors = DEFAULT_MARKER_COLORS) {
     if (report.status === "resolved") {
-        return "var(--adaptive-green500)";
+        return colors.resolved;
     }
     if (report.status === "git_issued") {
-        return "var(--adaptive-blue500)";
+        return colors.gitIssued;
     }
-    return TARGET_COLOR.item;
+    return colors.open;
 }
 export function getMarkerDisplayLabel(report, replyCount = getReplyCount(report)) {
     if (getReportCases(report).length > 1) {

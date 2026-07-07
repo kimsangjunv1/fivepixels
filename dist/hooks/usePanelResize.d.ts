@@ -7,8 +7,8 @@ export type PanelSizeState = {
 };
 /** @deprecated Edge resize replaced by corner ghost resize. */
 export type PanelResizeEdge = "top" | "bottom" | "left" | "right";
-export declare const PANEL_WIDTH_MIN = 375;
-export declare const PANEL_DEFAULT_WIDTH = 375;
+export declare const PANEL_WIDTH_MIN = 342;
+export declare const PANEL_DEFAULT_WIDTH = 342;
 export declare const PANEL_CONTENT_MIN_HEIGHT = 220;
 export declare const PANEL_HEADER_ESTIMATE_HEIGHT = 132;
 export declare const PANEL_TAB_BAR_HEIGHT = 36;

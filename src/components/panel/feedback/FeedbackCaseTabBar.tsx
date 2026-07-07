@@ -2,8 +2,7 @@ import type { ReactNode } from "react";
 import type { ReportCase } from "@/types/report.js";
 import { useReport } from "@/providers/reportContext.js";
 
-export const CASE_TAB_ACTIVE_CLASS =
-    "border-[var(--adaptive-border-subtle)] border-b-transparent bg-[var(--adaptive-blue500)] text-[var(--adaptive-overlay-text)]";
+export const CASE_TAB_ACTIVE_CLASS = "bg-[var(--adaptive-blue100)] text-[var(--adaptive-blue500)]";
 export const CASE_TAB_INACTIVE_CLASS =
     "border-transparent bg-[var(--adaptive-surface-muted)]/60 text-[var(--adaptive-text-muted)] hover:bg-[var(--adaptive-surface-muted)] hover:text-[var(--adaptive-text-primary)]";
 
@@ -60,9 +59,7 @@ export function FeedbackCaseTabBar(props: FeedbackCaseTabBarProps) {
     const tabList = (
         <>
             {!isEditor ? (
-                <div
-                    className={`flex shrink-0 items-stretch rounded-[8px] border border-b-0 ${props.activeTab === CASE_SELECTOR_ALL_TAB ? CASE_TAB_ACTIVE_CLASS : CASE_TAB_INACTIVE_CLASS}`}
-                >
+                <div className={`flex shrink-0 items-stretch rounded-[8px] border border-b-0 ${props.activeTab === CASE_SELECTOR_ALL_TAB ? CASE_TAB_ACTIVE_CLASS : CASE_TAB_INACTIVE_CLASS}`}>
                     <button
                         type="button"
                         role="tab"
@@ -87,7 +84,7 @@ export function FeedbackCaseTabBar(props: FeedbackCaseTabBarProps) {
                 return (
                     <div
                         key={item.id}
-                        className={`flex max-w-[180px] shrink-0 items-stretch rounded-[8px] border border-b-0 ${isActive ? CASE_TAB_ACTIVE_CLASS : CASE_TAB_INACTIVE_CLASS}`}
+                        className={`flex max-w-[180px] shrink-0 items-stretch rounded-[8px] ${isActive ? CASE_TAB_ACTIVE_CLASS : CASE_TAB_INACTIVE_CLASS}`}
                     >
                         <button
                             type="button"
@@ -98,10 +95,12 @@ export function FeedbackCaseTabBar(props: FeedbackCaseTabBarProps) {
                             id={tabId}
                             onClick={() => onSelectCase(item.id)}
                             aria-label={messages.composer.selectCaseTabAriaLabel(index + 1)}
-                            className="inline-flex min-w-0 flex-1 items-center gap-[4px] truncate px-[10px] py-[6px] text-left text-[12px] font-medium leading-none"
+                            className={` inline-flex min-w-0 flex-1 items-center gap-[4px] truncate px-[10px] py-[6px] text-left leading-none`}
                             title={messages.composer.caseTabLabel(index + 1)}
                         >
-                            <span className="min-w-0 truncate">{messages.composer.caseTabLabel(index + 1)}</span>
+                            <span className={`${isActive ? "text-[var(--adaptive-blue500)]" : "text-[var(--adaptive-black700)]"} font-medium text-[12px] min-w-0 truncate`}>
+                                {messages.composer.caseTabLabel(index + 1)}
+                            </span>
                             {!isEditor && props.showResolvedStatus !== false ? (
                                 <CaseResolvedBadge
                                     resolved={item.status === "resolved"}
@@ -143,7 +142,7 @@ export function FeedbackCaseTabBar(props: FeedbackCaseTabBarProps) {
     if (isEditor) {
         return (
             <div
-                className="mx-[4px] flex min-h-0 shrink-0 items-end gap-[2px] overflow-x-auto border-b border-[var(--adaptive-border-subtle)] p-[4px]"
+                className="flex min-h-0 shrink-0 items-end gap-[2px] overflow-x-auto border-b border-[var(--adaptive-border-subtle)] p-[4px]"
                 role="tablist"
                 aria-label={messages.cases.title}
             >

@@ -88,9 +88,14 @@ export function ReportFeedbackList() {
 
     useEffect(() => {
         setVisibleCount(FEEDBACK_PAGE_SIZE);
-    }, [filters.keyword, filters.reportType, filters.status, listScope, reports.length]);
+    }, [filters.dateKey, filters.keyword, filters.reportType, filters.status, listScope, reports.length]);
 
     useEffect(() => {
+        if (filters.dateKey) {
+            setExpandedGroups(new Set([filters.dateKey]));
+            return;
+        }
+
         const firstGroupKey = groupedReports[0]?.dateKey;
 
         if (firstGroupKey) {
@@ -98,7 +103,7 @@ export function ReportFeedbackList() {
         } else {
             setExpandedGroups(new Set());
         }
-    }, [filters.keyword, filters.reportType, filters.status, listScope, reports.length]);
+    }, [filters.dateKey, filters.keyword, filters.reportType, filters.status, groupedReports, listScope, reports.length]);
 
     const toggleGroup = (dateKey: string) => {
         setExpandedGroups((current) => {
@@ -142,8 +147,22 @@ export function ReportFeedbackList() {
     }, [fetchNextPage, filteredReports.length, hasNextPage, visibleCount]);
 
     return (
-        <section className="flex min-h-0 flex-1 flex-col bg-[var(--adaptive-black50)]">
-            <div className="shrink-0 border-y border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)]">
+        <section className="flex min-h-0 flex-1 flex-col bg-[var(--adaptive-black50)] rounded-[0_0_24px_24px] overflow-hidden">
+            <div className="shrink-0 border-b border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)]">
+                {filters.dateKey ? (
+                    <div className="flex items-center justify-between gap-[8px] border-b border-[var(--adaptive-border-subtle)] px-[8px] py-[6px]">
+                        <p className="text-[11px] font-[600] text-[var(--adaptive-blue500)]">
+                            {messages.activityHeatmap.dateFilterLabel.replace("{date}", formatDateOnly(`${filters.dateKey}T12:00:00`, locale))}
+                        </p>
+                        <button
+                            type="button"
+                            onClick={() => setFilters((current) => ({ ...current, dateKey: null }))}
+                            className="text-[11px] font-[600] text-[var(--adaptive-black500)] hover:text-[var(--adaptive-black900)]"
+                        >
+                            {messages.activityHeatmap.clearDateFilter}
+                        </button>
+                    </div>
+                ) : null}
                 <div className="relative">
                     <input
                         ref={searchInputRef}

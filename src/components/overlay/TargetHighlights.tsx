@@ -35,9 +35,8 @@ function HighlightBox({ target, showLabel }: { target: TargetSnapshot; showLabel
                 top: target.rect.top,
                 width: target.rect.width,
                 height: target.rect.height,
-                outlineWidth: 2,
-                outlineStyle: "solid",
-                outlineColor: FEEDBACK_HIGHLIGHT.outline,
+                borderRadius: target.boxStyle?.borderRadius ?? "0",
+                boxShadow: `0 0 0 2px ${FEEDBACK_HIGHLIGHT.outline}`,
                 backgroundColor: FEEDBACK_HIGHLIGHT.surface,
             }}
         >

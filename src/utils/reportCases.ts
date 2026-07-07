@@ -246,8 +246,31 @@ export function getLatestReplyAuthorForCase(report: Pick<ReportFeedback, "cases"
     return null;
 }
 
-export function getCaseHandlerName(report: Pick<ReportFeedback, "cases" | "replies" | "author_name">, caseId: string): string | null {
-    return getCaseAssigneeName(report, caseId) ?? getLatestReplyAuthorForCase(report, caseId);
+export function getCaseHandlerName(report: Pick<ReportFeedback, "cases">, caseId: string): string | null {
+    return getCaseAssigneeName(report, caseId);
+}
+
+export function resolveAuthorDepartment(authors: Array<{ name: string; department?: string }>, authorName: string): string | null {
+    const normalizedName = authorName.trim();
+
+    if (!normalizedName) {
+        return null;
+    }
+
+    const author = authors.find((item) => item.name.trim() === normalizedName);
+
+    return author?.department?.trim() || null;
+}
+
+export function formatAssigneeLabel(authorName: string, department?: string | null): string {
+    const name = authorName.trim();
+    const dept = department?.trim();
+
+    if (name && dept) {
+        return `${name}, ${dept}`;
+    }
+
+    return name;
 }
 
 export function hasCaseDiscussion(report: Pick<ReportFeedback, "cases" | "replies">, caseId: string): boolean {
@@ -302,6 +325,26 @@ export function claimCaseAssignee(cases: ReportCase[], caseId: string, assigneeN
             ...item,
             assignee_name: normalizedName,
             updated_at: claimedAt,
+        };
+    });
+}
+
+export function transferCaseAssignee(cases: ReportCase[], caseId: string, assigneeName: string, transferredAt = new Date().toISOString()): ReportCase[] {
+    const normalizedName = assigneeName.trim();
+
+    if (!normalizedName) {
+        return cases;
+    }
+
+    return cases.map((item) => {
+        if (item.id !== caseId) {
+            return item;
+        }
+
+        return {
+            ...item,
+            assignee_name: normalizedName,
+            updated_at: transferredAt,
         };
     });
 }

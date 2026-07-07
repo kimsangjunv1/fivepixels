@@ -1,0 +1,1 @@
+{"version":3,"file":"ThemePreviewSkeleton.d.ts","sourceRoot":"","sources":["../../../src/components/panel/ThemePreviewSkeleton.tsx"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,gBAAgB,EAAE,MAAM,mBAAmB,CAAC;AAE1D,KAAK,yBAAyB,GAAG;IAC7B,OAAO,EAAE,gBAAgB,CAAC;CAC7B,CAAC;AAgCF,wBAAgB,oBAAoB,CAAC,EAAE,OAAO,EAAE,EAAE,yBAAyB,2CAe1E"}

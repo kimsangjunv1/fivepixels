@@ -8,7 +8,7 @@ function ProbeEditModeSpinner() {
 function ProbeEditModeDivider() {
     return _jsx("span", { className: "shrink-0 text-[11px] text-white/50", children: "|" });
 }
-function ProbeEditModeHistoryButton({ label, disabled, onClick, children, }) {
+function ProbeEditModeHistoryButton({ label, disabled, onClick, children }) {
     return (_jsx("button", { type: "button", "data-fivepixels-interactive": "", "aria-label": label, title: label, disabled: disabled, onClick: onClick, className: "inline-flex shrink-0 items-center justify-center rounded-[4px] p-[2px] text-white transition-opacity enabled:hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-35", children: children }));
 }
 export function ProbeEditModeBanner() {

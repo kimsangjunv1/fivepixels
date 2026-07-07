@@ -17,9 +17,8 @@ function HighlightBox({ target, showLabel }) {
             top: target.rect.top,
             width: target.rect.width,
             height: target.rect.height,
-            outlineWidth: 2,
-            outlineStyle: "solid",
-            outlineColor: FEEDBACK_HIGHLIGHT.outline,
+            borderRadius: target.boxStyle?.borderRadius ?? "0",
+            boxShadow: `0 0 0 2px ${FEEDBACK_HIGHLIGHT.outline}`,
             backgroundColor: FEEDBACK_HIGHLIGHT.surface,
         }, children: showLabel ? (_jsx("span", { className: "fivepixels-target-highlight__label absolute left-0 top-0 -translate-y-full px-1 py-0.5 font-[var(--coding-font)] text-[12px] font-medium text-white", style: { backgroundColor: FEEDBACK_HIGHLIGHT.label }, children: highlightLabel(target) })) : null }));
 }

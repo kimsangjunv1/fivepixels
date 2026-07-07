@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useGhostCornerResize } from "../hooks/useGhostCornerResize.js";
 const STORAGE_KEY = "fivepixels:panel-size";
-export const PANEL_WIDTH_MIN = 375;
+export const PANEL_WIDTH_MIN = 342;
 export const PANEL_DEFAULT_WIDTH = PANEL_WIDTH_MIN;
 export const PANEL_CONTENT_MIN_HEIGHT = 220;
 export const PANEL_HEADER_ESTIMATE_HEIGHT = 132;
@@ -61,10 +61,7 @@ function normalizeStoredWidth(width) {
     return width;
 }
 function isLegacyPanelSize(value) {
-    return (typeof value === "object" &&
-        value !== null &&
-        typeof value.width === "number" &&
-        typeof value.height === "number");
+    return typeof value === "object" && value !== null && typeof value.width === "number" && typeof value.height === "number";
 }
 function isPanelSizeState(value) {
     return (typeof value === "object" &&

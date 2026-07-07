@@ -30,6 +30,7 @@ function AppContent() {
     return (
         <>
             <FivePixels
+                mode="presentation"
                 project={{
                     id: "fivepixels-basic-example",
                     env: "STAGED",
@@ -45,11 +46,12 @@ function AppContent() {
                     devOnly: true,
                 }}
                 team={{
-                    user: { id: "demo-user", name: "김아영 주임" },
+                    user: { id: "demo-user", name: "Alex" },
                     reviewers: [
-                        { id: "1", name: "김아영 주임" },
-                        { id: "2", name: "최민호 전임" },
-                        { id: "3", name: "john doe" },
+                        { id: "1", name: "김상준", department: "FrontEnd 2실", publicKey: "" },
+                        { id: "2", name: "Sophia", department: "QA", publicKey: "" },
+                        { id: "3", name: "William", department: "Engineering", publicKey: "" },
+                        { id: "4", name: "Emma", department: "Design", publicKey: "" },
                     ],
                 }}
                 github={{

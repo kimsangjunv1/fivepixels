@@ -24,7 +24,13 @@ function normalizeFieldValues(value) {
     }, {});
 }
 function isReplyStatus(value) {
-    return value === "suggested" || value === "additional_question" || value === "found_error" || value === "recheck_requested" || value === "resolved";
+    return (value === "suggested" ||
+        value === "additional_question" ||
+        value === "found_error" ||
+        value === "recheck_requested" ||
+        value === "resolved" ||
+        value === "assignee_assigned" ||
+        value === "assignee_transferred");
 }
 function normalizeReplyStatus(value) {
     if (isReplyStatus(value)) {
