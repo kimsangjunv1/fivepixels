@@ -18,20 +18,10 @@ declare const ReportContext: import("react").Context<{
     currentPathname: string;
     showFeedbackList: boolean;
     panelTab: import("../types/report-ui").ReportPanelTab | null;
-    routeDetailsStats: {
-        pathname: string;
-        statusRows: {
-            status: import("../constants/feedbackStatus").FeedbackDisplayStatus;
-            all: number;
-            today: number;
-        }[];
-        fieldCounts: {
-            key: string;
-            label: string;
-            type: "textarea" | "checkbox";
-            count: number;
-        }[];
-    };
+    routeDetailsStats: import("..").ReportRouteDetailsSummary;
+    panelCollapsed: boolean;
+    setPanelCollapsed: import("react").Dispatch<import("react").SetStateAction<boolean>>;
+    onPanelBootstrap: ((params: import("..").ReportPanelBootstrapParams) => Promise<import("..").ReportPanelBootstrapResult>) | undefined;
     canTransferFeedback: boolean;
     personalKey: string | null;
     publicKey: string | null;
@@ -179,11 +169,7 @@ declare const ReportContext: import("react").Context<{
     isCaseEditing: boolean;
     caseEditReportId: string | null;
     caseEditCases: import("..").ReportCase[] | null;
-    targetStats: {
-        found: number;
-        resolved: number;
-        inProgress: number;
-    };
+    targetStats: import("..").ReportPanelStats;
     statusText: string;
     toggleReportMode: () => void;
     toggleTargetPreview: () => void;
@@ -239,20 +225,10 @@ export declare function useReport(): {
     currentPathname: string;
     showFeedbackList: boolean;
     panelTab: import("../types/report-ui").ReportPanelTab | null;
-    routeDetailsStats: {
-        pathname: string;
-        statusRows: {
-            status: import("../constants/feedbackStatus").FeedbackDisplayStatus;
-            all: number;
-            today: number;
-        }[];
-        fieldCounts: {
-            key: string;
-            label: string;
-            type: "textarea" | "checkbox";
-            count: number;
-        }[];
-    };
+    routeDetailsStats: import("..").ReportRouteDetailsSummary;
+    panelCollapsed: boolean;
+    setPanelCollapsed: import("react").Dispatch<import("react").SetStateAction<boolean>>;
+    onPanelBootstrap: ((params: import("..").ReportPanelBootstrapParams) => Promise<import("..").ReportPanelBootstrapResult>) | undefined;
     canTransferFeedback: boolean;
     personalKey: string | null;
     publicKey: string | null;
@@ -400,11 +376,7 @@ export declare function useReport(): {
     isCaseEditing: boolean;
     caseEditReportId: string | null;
     caseEditCases: import("..").ReportCase[] | null;
-    targetStats: {
-        found: number;
-        resolved: number;
-        inProgress: number;
-    };
+    targetStats: import("..").ReportPanelStats;
     statusText: string;
     toggleReportMode: () => void;
     toggleTargetPreview: () => void;

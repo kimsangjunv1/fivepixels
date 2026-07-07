@@ -28,6 +28,8 @@ export const ko = {
         statsFound: "발견",
         statsResolved: "해결됨",
         statsInProgress: "진행중",
+        tabOverview: "개요",
+        tabThisPage: "이 페이지",
         tabPageDetails: "페이지 상세",
         tabFeedbackList: "피드백 목록",
         tabSettings: "설정",

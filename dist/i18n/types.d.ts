@@ -32,6 +32,8 @@ export type ReportMessages = {
         statsFound: string;
         statsResolved: string;
         statsInProgress: string;
+        tabOverview: string;
+        tabThisPage: string;
         tabPageDetails: string;
         tabFeedbackList: string;
         tabSettings: string;

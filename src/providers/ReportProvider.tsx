@@ -16,6 +16,8 @@ import type {
     ReportListAllResult,
     ReportActivitySummaryParams,
     ReportActivitySummaryResult,
+    ReportPanelBootstrapParams,
+    ReportPanelBootstrapResult,
     ReportProject,
     ReportReply,
     ReportTeam,
@@ -39,6 +41,7 @@ export type ReportProviderProps = {
     fields?: ReportField[];
     onList?: (params: { pathname: string }) => Promise<ReportFeedback[]>;
     onListAll?: (params: ReportListAllParams) => Promise<ReportListAllResult>;
+    onPanelBootstrap?: (params: ReportPanelBootstrapParams) => Promise<ReportPanelBootstrapResult>;
     onActivitySummary?: (params: ReportActivitySummaryParams) => Promise<ReportActivitySummaryResult>;
     onListReplies?: (commentId: string) => Promise<ReportReply[]>;
     onNavigate?: (pathname: string) => void | Promise<void>;
@@ -87,6 +90,7 @@ function ReportProviderEnabled({
     identify,
     onList,
     onListAll,
+    onPanelBootstrap,
     onActivitySummary,
     onListReplies,
     onNavigate,
@@ -121,6 +125,7 @@ function ReportProviderEnabled({
         pixelsMode,
         onList,
         onListAll,
+        onPanelBootstrap,
         onActivitySummary,
         onListReplies,
         onNavigate,
@@ -151,6 +156,7 @@ export function ReportProvider({
     fields,
     onList,
     onListAll,
+    onPanelBootstrap,
     onActivitySummary,
     onListReplies,
     onNavigate,
@@ -191,6 +197,7 @@ export function ReportProvider({
             identify={resolvedTeam.user}
             onList={onList}
             onListAll={onListAll}
+            onPanelBootstrap={onPanelBootstrap}
             onActivitySummary={onActivitySummary}
             onListReplies={onListReplies}
             onNavigate={onNavigate}

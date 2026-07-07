@@ -13,7 +13,9 @@ import { PANEL_APPEARANCE_STORAGE_KEY, TOOLTIP_APPEARANCE_STORAGE_KEY } from "@/
 import { useLocalePreference } from "./useLocalePreference.js";
 import { useQuestionThreadPreference } from "./useQuestionThreadPreference.js";
 import { usePersonalKey } from "./usePersonalKey.js";
+import { usePanelBootstrap } from "./usePanelBootstrap.js";
 import { useResolvedAppearance } from "./useResolvedAppearance.js";
+import { buildPanelStats } from "@/utils/panelBootstrap.js";
 import type {
     CreateReportFeedbackPayload,
     CreateReplyPayload,
@@ -29,6 +31,8 @@ import type {
     ReportIdentify,
     ReportListAllParams,
     ReportListAllResult,
+    ReportPanelBootstrapParams,
+    ReportPanelBootstrapResult,
     ReportReply,
     QuestionThreadDisplay,
     UpdateReportFeedbackPayload,
@@ -106,6 +110,7 @@ export type ReportStateConfig = {
     identify?: ReportIdentify;
     onList?: (params: { pathname: string }) => Promise<ReportFeedback[]>;
     onListAll?: (params: ReportListAllParams) => Promise<ReportListAllResult>;
+    onPanelBootstrap?: (params: ReportPanelBootstrapParams) => Promise<ReportPanelBootstrapResult>;
     onActivitySummary?: (params: ReportActivitySummaryParams) => Promise<ReportActivitySummaryResult>;
     onListReplies?: (commentId: string) => Promise<ReportReply[]>;
     onNavigate?: (pathname: string) => void | Promise<void>;
@@ -139,6 +144,7 @@ export function useReportState({
     identify,
     onList,
     onListAll,
+    onPanelBootstrap,
     onActivitySummary,
     onListReplies,
     onNavigate,
@@ -203,6 +209,16 @@ export function useReportState({
     const hoverLeaveTimeoutRef = useRef<number | null>(null);
     const overlayHoverLeaveTimeoutRef = useRef<number | null>(null);
 
+    const [mode, setMode] = useState<ReportMode>("idle");
+    const [panelCollapsed, setPanelCollapsed] = useState(false);
+    const [panelTab, setPanelTab] = useState<ReportPanelTab | null>(null);
+
+    const panelExpanded = !panelCollapsed && mode !== "report";
+    const fetchEnabled = panelExpanded || mode === "view";
+    const needsFullReportList = mode === "view" || panelTab === "feedback-list" || (!onPanelBootstrap && fetchEnabled);
+    const listFetchEnabled = fetchEnabled && needsFullReportList;
+    const bootstrapEnabled = fetchEnabled && panelExpanded && Boolean(onPanelBootstrap);
+
     const resolvedPanelAppearance = useResolvedAppearance(activePanelAppearance);
     const resolvedTooltipAppearance = useResolvedAppearance(activeTooltipAppearance);
     const isMobileViewport = useIsMobileViewport();
@@ -251,7 +267,19 @@ export function useReportState({
         onUpdate,
         onDelete,
         routeKey,
+        fetchEnabled,
+        listFetchEnabled,
     });
+    const bootstrapParams = useMemo(() => ({ pathname: currentPathname }), [currentPathname]);
+    const { bootstrap: panelBootstrap } = usePanelBootstrap({
+        enabled: bootstrapEnabled,
+        params: bootstrapParams,
+        fields,
+        reports: currentPageReports,
+        pathname: currentPathname,
+        onPanelBootstrap,
+    });
+    const resolvedRouteDetailsStats = useMemo(() => panelBootstrap?.routeDetails ?? routeDetailsStats, [panelBootstrap, routeDetailsStats]);
     const eventCallbacks = useMemo<ReportSideEffectCallbacks>(
         () => ({
             onEvent,
@@ -355,7 +383,6 @@ export function useReportState({
         );
     };
 
-    const [mode, setMode] = useState<ReportMode>("idle");
     const [showTargetPreview, setShowTargetPreview] = useState(false);
     const [selectableTargets, setSelectableTargets] = useState<TargetSnapshot[]>([]);
     const [errorMessage, setErrorMessage] = useState("");
@@ -430,7 +457,6 @@ export function useReportState({
     const pendingLocateReportIdRef = useRef<string | null>(null);
     const [editingReportId, setEditingReportId] = useState<string | null>(null);
     const [editableDraft, setEditableDraft] = useState<EditableDraft | null>(null);
-    const [panelTab, setPanelTab] = useState<ReportPanelTab | null>(null);
     const [creatingGitHubIssueId, setCreatingGitHubIssueId] = useState<string | null>(null);
     const [caseEditReportId, setCaseEditReportId] = useState<string | null>(null);
     const [caseEditDraft, setCaseEditDraft] = useState<ReportFeedback["cases"] | null>(null);
@@ -458,33 +484,12 @@ export function useReportState({
     const tooltipFieldTags = useMemo(() => (tooltipReport ? getFieldTags(fields, tooltipReport.field_values) : []), [fields, tooltipReport]);
 
     const targetStats = useMemo(() => {
-        let resolved = 0;
-        let inProgress = 0;
-
-        for (const report of currentPageFilteredReports) {
-            const status = getFeedbackDisplayStatus(report, true);
-
-            if (status === "resolved") {
-                resolved += 1;
-            } else if (
-                status === "wait_for_reply" ||
-                status === "additional_question" ||
-                status === "suggested" ||
-                status === "found_error" ||
-                status === "recheck_requested"
-            ) {
-                inProgress += 1;
-            }
+        if (panelBootstrap?.stats) {
+            return panelBootstrap.stats;
         }
 
-        const foundCount = currentPageFilteredReports.length;
-
-        return {
-            found: foundCount,
-            resolved,
-            inProgress,
-        };
-    }, [currentPageFilteredReports]);
+        return buildPanelStats(currentPageFilteredReports);
+    }, [currentPageFilteredReports, panelBootstrap]);
 
     useEffect(() => {
         setDraft(null);
@@ -2546,7 +2551,10 @@ export function useReportState({
         currentPathname,
         showFeedbackList,
         panelTab,
-        routeDetailsStats,
+        routeDetailsStats: resolvedRouteDetailsStats,
+        panelCollapsed,
+        setPanelCollapsed,
+        onPanelBootstrap,
         canTransferFeedback,
         personalKey,
         publicKey,

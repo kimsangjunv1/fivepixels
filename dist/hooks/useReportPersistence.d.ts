@@ -15,8 +15,10 @@ export type ReportPersistenceConfig = {
     onUpdate?: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
     onDelete?: (id: string) => Promise<void>;
     routeKey?: string;
+    fetchEnabled?: boolean;
+    listFetchEnabled?: boolean;
 };
-export declare function useReportPersistence({ projectId, environment, appVersion, fields, onList, onListAll, onListReplies, onCreate, onCreateReply, onUpdate, onDelete, routeKey, }: ReportPersistenceConfig): {
+export declare function useReportPersistence({ projectId, environment, appVersion, fields, onList, onListAll, onListReplies, onCreate, onCreateReply, onUpdate, onDelete, routeKey, fetchEnabled, listFetchEnabled, }: ReportPersistenceConfig): {
     storageAdapterInstance: ReportStorageAdapter;
     canTransferFeedback: boolean;
     canListAllFeedback: boolean;
@@ -33,20 +35,7 @@ export declare function useReportPersistence({ projectId, environment, appVersio
     currentPageReports: ReportFeedback[];
     filteredReports: ReportFeedback[];
     currentPageFilteredReports: ReportFeedback[];
-    routeDetailsStats: {
-        pathname: string;
-        statusRows: {
-            status: import("../constants/feedbackStatus.js").FeedbackDisplayStatus;
-            all: number;
-            today: number;
-        }[];
-        fieldCounts: {
-            key: string;
-            label: string;
-            type: "textarea" | "checkbox";
-            count: number;
-        }[];
-    };
+    routeDetailsStats: import("../utils/panelBootstrap.js").RouteDetailsSummary;
     selectedReport: ReportFeedback;
     isError: boolean;
     isFetching: boolean;

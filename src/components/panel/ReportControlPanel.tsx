@@ -8,6 +8,7 @@ import { IconTooltipButton } from "@/components/ui/IconTooltipButton.js";
 import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
 import { PanelDockGuides } from "./PanelDockGuides.js";
 import { ReportFeedbackList } from "./ReportFeedbackList.js";
+import { ReportOverview } from "./ReportOverview.js";
 import { ReportRouteDetails } from "./ReportRouteDetails.js";
 import { ReportCommandPanel } from "./ReportCommandPanel.js";
 import { ReportCommandReplaceConfirmDialog } from "./ReportCommandReplaceConfirmDialog.js";
@@ -114,8 +115,9 @@ export function ReportControlPanel() {
         openPanelTab,
         setErrorMessage,
         refetch,
+        panelCollapsed,
+        setPanelCollapsed,
     } = useReport();
-    const [panelCollapsed, setPanelCollapsed] = useState(false);
     const [personalKeyStep, setPersonalKeyStep] = useState<"none" | "required" | "insert" | "rotate">("none");
     const [personalKeyNotice, setPersonalKeyNotice] = useState("");
     const isRecording = mode === "report";
@@ -393,7 +395,13 @@ export function ReportControlPanel() {
                                 <section className="flex shrink-0 items-stretch border-t border-[var(--adaptive-border-subtle)]">
                                     <div className="flex min-w-0 flex-1 overflow-hidden border-b border-b-[var(--adaptive-border-subtle)]">
                                         <PanelTabButton
-                                            label={messages.panel.tabPageDetails}
+                                            label={messages.panel.tabOverview}
+                                            active={panelTab === "overview"}
+                                            onClick={() => handlePanelTabClick("overview")}
+                                        />
+                                        <div className="h-full w-[1px] bg-[var(--adaptive-border-subtle)]" />
+                                        <PanelTabButton
+                                            label={messages.panel.tabThisPage}
                                             active={panelTab === "route-details"}
                                             onClick={() => handlePanelTabClick("route-details")}
                                         />
@@ -446,6 +454,8 @@ export function ReportControlPanel() {
 
                                 {contentSectionOpen ? (
                                     <div className={applyFixedHeight ? "flex min-h-0 flex-1 flex-col overflow-hidden" : "flex flex-col"}>
+                                        {panelTab === "overview" && commandStep === "none" ? <ReportOverview /> : null}
+
                                         {panelTab === "route-details" && commandStep === "none" ? <ReportRouteDetails /> : null}
 
                                         {panelTab === "feedback-list" && showFeedbackList && commandStep === "none" ? <ReportFeedbackList /> : null}

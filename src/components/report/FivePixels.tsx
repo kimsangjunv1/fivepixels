@@ -16,6 +16,8 @@ import type {
     ReportListAllResult,
     ReportActivitySummaryParams,
     ReportActivitySummaryResult,
+    ReportPanelBootstrapParams,
+    ReportPanelBootstrapResult,
     ReportProject,
     ReportReply,
     ReportTeam,
@@ -34,6 +36,7 @@ export type FivePixelsProps = {
     fields?: ReportField[];
     onList?: (params: { pathname: string }) => Promise<ReportFeedback[]>;
     onListAll?: (params: ReportListAllParams) => Promise<ReportListAllResult>;
+    onPanelBootstrap?: (params: ReportPanelBootstrapParams) => Promise<ReportPanelBootstrapResult>;
     onActivitySummary?: (params: ReportActivitySummaryParams) => Promise<ReportActivitySummaryResult>;
     onListReplies?: (commentId: string) => Promise<ReportReply[]>;
     onNavigate?: (pathname: string) => void | Promise<void>;
@@ -56,6 +59,7 @@ export function FivePixels({
     fields = DEFAULT_FIELDS,
     onList,
     onListAll,
+    onPanelBootstrap,
     onActivitySummary,
     onListReplies,
     onNavigate,
@@ -84,6 +88,7 @@ export function FivePixels({
             fields={fields}
             onList={onList}
             onListAll={onListAll}
+            onPanelBootstrap={onPanelBootstrap}
             onActivitySummary={onActivitySummary}
             onListReplies={onListReplies}
             onNavigate={onNavigate}

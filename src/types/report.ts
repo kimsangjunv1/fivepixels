@@ -1,3 +1,5 @@
+import type { FeedbackDisplayStatus } from "@/constants/feedbackStatus.js";
+
 export type ReportTargetType = "group" | "item";
 export type ReportStatus = "open" | "git_issued" | "resolved" | "archived";
 export type ReportAppearance = "light" | "dark" | "system";
@@ -234,6 +236,40 @@ export type ReportActivitySummaryResult = {
     totalCount: number;
 };
 
+export type ReportPanelStats = {
+    found: number;
+    resolved: number;
+    inProgress: number;
+};
+
+export type ReportRouteDetailsStatusRow = {
+    status: FeedbackDisplayStatus;
+    all: number;
+    today: number;
+};
+
+export type ReportRouteDetailsFieldCount = {
+    key: string;
+    label: string;
+    type: ReportField["type"];
+    count: number;
+};
+
+export type ReportRouteDetailsSummary = {
+    pathname: string;
+    statusRows: ReportRouteDetailsStatusRow[];
+    fieldCounts: ReportRouteDetailsFieldCount[];
+};
+
+export type ReportPanelBootstrapParams = {
+    pathname: string;
+};
+
+export type ReportPanelBootstrapResult = {
+    stats: ReportPanelStats;
+    routeDetails: ReportRouteDetailsSummary;
+};
+
 export interface ReportStorageAdapter {
     list(params: { pathname: string }): Promise<ReportFeedback[]>;
     listAll?(params: ReportListAllParams): Promise<ReportListAllResult>;
@@ -248,6 +284,7 @@ export interface ReportStorageAdapter {
 export type ReportPersistenceHandlers = {
     onList: (params: { pathname: string }) => Promise<ReportFeedback[]>;
     onListAll?: (params: ReportListAllParams) => Promise<ReportListAllResult>;
+    onPanelBootstrap?: (params: ReportPanelBootstrapParams) => Promise<ReportPanelBootstrapResult>;
     onActivitySummary?: (params: ReportActivitySummaryParams) => Promise<ReportActivitySummaryResult>;
     onListReplies?: (commentId: string) => Promise<ReportReply[]>;
     onCreate: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;

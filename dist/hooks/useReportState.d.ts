@@ -1,7 +1,7 @@
 import { type MouseEvent } from "react";
 import type { DeepPartialReportMessages } from "../i18n/types.js";
 import type { ReportLocale } from "../i18n/types.js";
-import type { CreateReportFeedbackPayload, CreateReplyPayload, ReportAppearance, ReportAuthor, ReportActivitySummaryParams, ReportActivitySummaryResult, ReportEvent, ReportFeedback, ReportField, ReportGitHubConfig, FivePixelsMode, ReportIdentify, ReportListAllParams, ReportListAllResult, ReportReply, QuestionThreadDisplay, UpdateReportFeedbackPayload } from "../types/report.js";
+import type { CreateReportFeedbackPayload, CreateReplyPayload, ReportAppearance, ReportAuthor, ReportActivitySummaryParams, ReportActivitySummaryResult, ReportEvent, ReportFeedback, ReportField, ReportGitHubConfig, FivePixelsMode, ReportIdentify, ReportListAllParams, ReportListAllResult, ReportPanelBootstrapParams, ReportPanelBootstrapResult, ReportReply, QuestionThreadDisplay, UpdateReportFeedbackPayload } from "../types/report.js";
 import type { DraftReport, EditableDraft, HoverPointer, Marker, PendingFeedbackComposer, PickProbeCompareMode, PickProbeFieldKey, PickProbeLayoutMode, PickProbeValues, PickTargetContextMenuState, ReportMode, ReportPanelTab, SavedProbeDeletion, SavedProbeEntry, TargetSnapshot } from "../types/report-ui.js";
 export type ReportStateConfig = {
     projectId: string;
@@ -19,6 +19,7 @@ export type ReportStateConfig = {
         pathname: string;
     }) => Promise<ReportFeedback[]>;
     onListAll?: (params: ReportListAllParams) => Promise<ReportListAllResult>;
+    onPanelBootstrap?: (params: ReportPanelBootstrapParams) => Promise<ReportPanelBootstrapResult>;
     onActivitySummary?: (params: ReportActivitySummaryParams) => Promise<ReportActivitySummaryResult>;
     onListReplies?: (commentId: string) => Promise<ReportReply[]>;
     onNavigate?: (pathname: string) => void | Promise<void>;
@@ -40,7 +41,7 @@ export type ReportStateConfig = {
     messageOverrides?: DeepPartialReportMessages;
     pixelsMode?: FivePixelsMode;
 };
-export declare function useReportState({ projectId, environment, appVersion, panelAppearance, tooltipAppearance, questionThreadDefault, fields, authors, requireReviewerKey, shortcut: _shortcut, identify, onList, onListAll, onActivitySummary, onListReplies, onNavigate, onRevealTarget, onCreate, onCreateReply, onUpdate, onDelete, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys, initialLocale, messageOverrides, pixelsMode, }: ReportStateConfig): {
+export declare function useReportState({ projectId, environment, appVersion, panelAppearance, tooltipAppearance, questionThreadDefault, fields, authors, requireReviewerKey, shortcut: _shortcut, identify, onList, onListAll, onPanelBootstrap, onActivitySummary, onListReplies, onNavigate, onRevealTarget, onCreate, onCreateReply, onUpdate, onDelete, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys, initialLocale, messageOverrides, pixelsMode, }: ReportStateConfig): {
     panelAppearance: ReportAppearance;
     setPanelAppearance: (nextAppearance: ReportAppearance) => void;
     tooltipAppearance: ReportAppearance;
@@ -58,20 +59,10 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     currentPathname: string;
     showFeedbackList: boolean;
     panelTab: ReportPanelTab | null;
-    routeDetailsStats: {
-        pathname: string;
-        statusRows: {
-            status: import("../constants/feedbackStatus.js").FeedbackDisplayStatus;
-            all: number;
-            today: number;
-        }[];
-        fieldCounts: {
-            key: string;
-            label: string;
-            type: "textarea" | "checkbox";
-            count: number;
-        }[];
-    };
+    routeDetailsStats: import("../types/report.js").ReportRouteDetailsSummary;
+    panelCollapsed: boolean;
+    setPanelCollapsed: import("react").Dispatch<import("react").SetStateAction<boolean>>;
+    onPanelBootstrap: ((params: ReportPanelBootstrapParams) => Promise<ReportPanelBootstrapResult>) | undefined;
     canTransferFeedback: boolean;
     personalKey: string | null;
     publicKey: string | null;
@@ -219,11 +210,7 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     isCaseEditing: boolean;
     caseEditReportId: string | null;
     caseEditCases: import("../types/report.js").ReportCase[] | null;
-    targetStats: {
-        found: number;
-        resolved: number;
-        inProgress: number;
-    };
+    targetStats: import("../types/report.js").ReportPanelStats;
     statusText: string;
     toggleReportMode: () => void;
     toggleTargetPreview: () => void;

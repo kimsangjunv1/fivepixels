@@ -28,6 +28,8 @@ export const en = {
         statsFound: "Found",
         statsResolved: "Resolved",
         statsInProgress: "In progress",
+        tabOverview: "Overview",
+        tabThisPage: "This page",
         tabPageDetails: "Page details",
         tabFeedbackList: "Feedback list",
         tabSettings: "Settings",
