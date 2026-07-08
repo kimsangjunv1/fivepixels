@@ -28,4 +28,8 @@ export declare function createFeedbackBackupFilename(projectId: string, environm
 export declare function pickFeedbackJsonFile(): Promise<File | null>;
 export declare function downloadFeedbackJson(filename: string, project: ReportProject, items: ReportFeedback[]): Promise<FeedbackDownloadResult>;
 export declare function readFeedbackJsonFile(file: File): Promise<FeedbackImportPayload>;
+export declare function createPersonalKeyBackupFilename(projectId: string, environment?: string, appVersion?: string): string;
+export declare function downloadPersonalKeyBackup(filename: string, key: string): Promise<FeedbackDownloadResult>;
+export declare function isPersonalKeyFile(file: File): boolean;
+export declare function readPersonalKeyFile(file: File): Promise<string>;
 //# sourceMappingURL=feedbackDataTransfer.d.ts.map

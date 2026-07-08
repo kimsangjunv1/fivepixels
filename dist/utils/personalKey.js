@@ -69,6 +69,17 @@ export function parsePublicKey(key) {
         return null;
     }
 }
+export function publicKeysMatch(left, right) {
+    if (left.trim() === right.trim()) {
+        return true;
+    }
+    const leftJwk = parsePublicKey(left);
+    const rightJwk = parsePublicKey(right);
+    if (!leftJwk || !rightJwk) {
+        return false;
+    }
+    return leftJwk.kty === rightJwk.kty && leftJwk.crv === rightJwk.crv && leftJwk.x === rightJwk.x && leftJwk.y === rightJwk.y;
+}
 export function serializePrivateKeyBundle(bundle) {
     return `${PRIVATE_KEY_PREFIX}.${encodeBase64Url(JSON.stringify(bundle))}`;
 }
@@ -88,12 +99,14 @@ export function parsePrivateKeyBundle(key) {
 export function resolvePersonalKeyOwner(identify, authors) {
     return identify ?? (authors.length === 1 ? authors[0] : undefined);
 }
-export async function createReviewerKeyPair(projectId, environment, authorId) {
+export async function createReviewerKeyPair(projectId, environment, authorId, authorName) {
     const keyPair = (await crypto.subtle.generateKey(ALGORITHM, true, ["sign", "verify"]));
+    const trimmedName = authorName?.trim();
     const bundle = {
         projectId,
         ...(environment ? { environment } : {}),
         authorId,
+        ...(trimmedName ? { authorName: trimmedName } : {}),
         privateKey: await crypto.subtle.exportKey("jwk", keyPair.privateKey),
         publicKey: await crypto.subtle.exportKey("jwk", keyPair.publicKey),
     };
@@ -106,7 +119,7 @@ export function resolvePersonalKeyAuthor(bundle, identify, authors) {
     const author = identify?.id === bundle.authorId ? identify : authors.find((item) => item.id === bundle.authorId);
     const configuredAuthor = authors.find((item) => item.id === bundle.authorId);
     const publicKey = serializePublicKey(bundle.publicKey);
-    if (!author || !configuredAuthor?.publicKey || configuredAuthor.publicKey !== publicKey) {
+    if (!author || !configuredAuthor?.publicKey || !publicKeysMatch(configuredAuthor.publicKey, publicKey)) {
         return undefined;
     }
     return author;
@@ -129,9 +142,28 @@ export function readPersonalKey(projectId, environment) {
     }
     return key;
 }
+export function hasStoredPersonalKey(projectId, environment) {
+    if (typeof localStorage === "undefined") {
+        return false;
+    }
+    try {
+        return Boolean(localStorage.getItem(getPersonalKeyStorageKey(projectId, environment)));
+    }
+    catch {
+        return false;
+    }
+}
 export function getPublicKeyFromPrivateKey(key) {
     const bundle = parsePrivateKeyBundle(key);
     return bundle ? serializePublicKey(bundle.publicKey) : null;
+}
+export function getAuthorIdFromPrivateKey(key) {
+    const bundle = parsePrivateKeyBundle(key);
+    return bundle ? bundle.authorId : null;
+}
+export function getAuthorNameFromPrivateKey(key) {
+    const bundle = parsePrivateKeyBundle(key);
+    return bundle?.authorName?.trim() || null;
 }
 export async function signReportPayload(key, params) {
     const bundle = parsePrivateKeyBundle(key);

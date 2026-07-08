@@ -3,6 +3,22 @@ import type { DeepPartialReportMessages } from "../i18n/types.js";
 import type { ReportLocale } from "../i18n/types.js";
 import type { CreateReportFeedbackPayload, CreateReplyPayload, ReportAppearance, ReportAuthor, ReportActivitySummaryParams, ReportActivitySummaryResult, ReportEvent, ReportFeedback, ReportField, ReportGitHubConfig, FivePixelsMode, ReportIdentify, ReportListAllParams, ReportListAllResult, ReportPanelBootstrapParams, ReportPanelBootstrapResult, ReportReply, QuestionThreadDisplay, UpdateReportFeedbackPayload } from "../types/report.js";
 import type { DraftReport, EditableDraft, HoverPointer, Marker, PendingFeedbackComposer, PickProbeCompareMode, PickProbeFieldKey, PickProbeLayoutMode, PickProbeValues, PickTargetContextMenuState, ReportMode, ReportPanelTab, SavedProbeDeletion, SavedProbeEntry, TargetSnapshot } from "../types/report-ui.js";
+type AuthDiagnosticsField = "projectId" | "environment" | "authorId" | "publicKey";
+type AuthDiagnosticsStatus = "matched" | "failed" | "disabled";
+type AuthDiagnosticsReason = "reviewer-key-not-enforced" | "missing-personal-key" | "invalid-personal-key-format" | "project-mismatch" | "environment-mismatch" | "missing-team-author" | "author-id-mismatch" | "missing-team-public-key" | "public-key-mismatch" | "matched";
+type AuthDiagnosticsItem = {
+    field: AuthDiagnosticsField;
+    expected: string | null;
+    actual: string | null;
+    matched: boolean;
+};
+type AuthDiagnostics = {
+    status: AuthDiagnosticsStatus;
+    reason: AuthDiagnosticsReason;
+    items: AuthDiagnosticsItem[];
+    expected: Record<AuthDiagnosticsField, string | null>;
+    actual: Record<AuthDiagnosticsField, string | null>;
+};
 export type ReportStateConfig = {
     projectId: string;
     environment?: string;
@@ -67,8 +83,39 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     personalKey: string | null;
     publicKey: string | null;
     personalKeyRequired: boolean;
+    effectivePersonalKeyRequired: boolean;
     personalKeyPendingRegistration: boolean;
     personalKeyCandidates: ReportAuthor[];
+    authDiagnostics: AuthDiagnostics;
+    authorSelectionLocked: boolean;
+    onboardingActive: boolean;
+    keyGateActive: boolean;
+    keyGateMode: "setup-complete" | "key-issue" | null;
+    completeOnboarding: ({ name }: {
+        name: string;
+    }) => Promise<{
+        authorId: string;
+        privateKey: string;
+        publicKey: string;
+    }>;
+    restoreFromBackup: (backupKey: string) => Promise<{
+        restored: false;
+        reason: "project-mismatch" | "invalid";
+        name?: undefined;
+        authorized?: undefined;
+    } | {
+        restored: false;
+        reason: "unauthorized";
+        name?: undefined;
+        authorized?: undefined;
+    } | {
+        restored: true;
+        name: string | null;
+        authorized: boolean;
+        reason?: undefined;
+    }>;
+    skipOnboarding: () => void;
+    selfProfile: import("./useSelfProfile.js").SelfProfile | null;
     issuePersonalKey: (authorId?: string) => Promise<{
         privateKey: string;
         publicKey: string;
@@ -78,8 +125,18 @@ export declare function useReportState({ projectId, environment, appVersion, pan
         publicKey: string;
     } | null>;
     insertPersonalKey: (key: string) => Promise<{
+        saved: false;
+        reason: "invalid";
+        authorized?: undefined;
+    } | {
+        saved: false;
+        reason: "project-mismatch";
+        authorized?: undefined;
+    } | {
+        saved: true;
         authorized: boolean;
-    } | null>;
+        reason?: undefined;
+    }>;
     canListAllFeedback: boolean;
     onActivitySummary: ((params: ReportActivitySummaryParams) => Promise<ReportActivitySummaryResult>) | undefined;
     visibleShortcutKeys: boolean;
@@ -178,9 +235,9 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     replySubmitAsQuestion: boolean;
     setReplySubmitAsQuestion: import("react").Dispatch<import("react").SetStateAction<boolean>>;
     draftAuthorName: string;
-    setDraftAuthorName: import("react").Dispatch<import("react").SetStateAction<string>>;
+    setDraftAuthorName: (name: string) => void;
     replyAuthorName: string;
-    setReplyAuthorName: import("react").Dispatch<import("react").SetStateAction<string>>;
+    setReplyAuthorName: (name: string) => void;
     isPresentationMode: boolean;
     sessionActor: import("../utils/reportTeam.js").SessionActor | null;
     presentationViewers: import("../utils/reportTeam.js").PresentationViewer[];
@@ -211,6 +268,9 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     caseEditReportId: string | null;
     caseEditCases: import("../types/report.js").ReportCase[] | null;
     targetStats: import("../types/report.js").ReportPanelStats;
+    roleStatItems: import("../utils/panelRoleStats.js").PanelRoleStatItem[];
+    panelRole: "general" | "qa" | "developer" | "designer" | "planner" | "general-user";
+    setPanelRole: (nextRole: import("../constants/panelRole.js").PanelRole) => void;
     statusText: string;
     toggleReportMode: () => void;
     toggleTargetPreview: () => void;
@@ -248,4 +308,5 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     handleCreateSubmitWithGitHubIssue: () => Promise<void>;
     isDraftGitHubIssueSubmitting: boolean;
 };
+export {};
 //# sourceMappingURL=useReportState.d.ts.map

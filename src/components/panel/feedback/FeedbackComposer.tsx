@@ -35,6 +35,7 @@ type FeedbackComposerProps = {
     onAskQuestionChange?: (checked: boolean) => void;
     askQuestionForced?: boolean;
     hideAuthorSelector?: boolean;
+    lockedAuthorName?: string;
 };
 
 export function FeedbackComposer({
@@ -64,6 +65,7 @@ export function FeedbackComposer({
     onAskQuestionChange,
     askQuestionForced = false,
     hideAuthorSelector = false,
+    lockedAuthorName,
 }: FeedbackComposerProps) {
     const { messages } = useReport();
     const [isGitHubIssueConfirming, setIsGitHubIssueConfirming] = useState(false);
@@ -143,8 +145,14 @@ export function FeedbackComposer({
                 )}
             </div>
 
-            <div className={`flex items-center gap-[8px] px-[8px] pb-[8px] ${hideAuthorSelector ? "justify-end" : "justify-between"}`}>
-                {hideAuthorSelector ? null : (
+            <div className={`flex items-center gap-[8px] px-[8px] pb-[8px] ${hideAuthorSelector && !lockedAuthorName ? "justify-end" : "justify-between"}`}>
+                {hideAuthorSelector ? (
+                    lockedAuthorName ? (
+                        <span className="flex h-[24px] min-w-0 max-w-[50%] items-center truncate rounded-full bg-[var(--adaptive-surface-muted)] px-[12px] text-[12px] text-[var(--adaptive-black500)]">
+                            {lockedAuthorName}
+                        </span>
+                    ) : null
+                ) : (
                     <AuthorSelector
                         authors={authors}
                         value={authorName}

@@ -26,8 +26,50 @@ declare const ReportContext: import("react").Context<{
     personalKey: string | null;
     publicKey: string | null;
     personalKeyRequired: boolean;
+    effectivePersonalKeyRequired: boolean;
     personalKeyPendingRegistration: boolean;
     personalKeyCandidates: import("..").ReportAuthor[];
+    authDiagnostics: {
+        status: "disabled" | "matched" | "failed";
+        reason: "matched" | "reviewer-key-not-enforced" | "missing-personal-key" | "invalid-personal-key-format" | "project-mismatch" | "environment-mismatch" | "missing-team-author" | "author-id-mismatch" | "missing-team-public-key" | "public-key-mismatch";
+        items: {
+            field: "environment" | "projectId" | "publicKey" | "authorId";
+            expected: string | null;
+            actual: string | null;
+            matched: boolean;
+        }[];
+        expected: Record<"environment" | "projectId" | "publicKey" | "authorId", string | null>;
+        actual: Record<"environment" | "projectId" | "publicKey" | "authorId", string | null>;
+    };
+    authorSelectionLocked: boolean;
+    onboardingActive: boolean;
+    keyGateActive: boolean;
+    keyGateMode: "setup-complete" | "key-issue" | null;
+    completeOnboarding: ({ name }: {
+        name: string;
+    }) => Promise<{
+        authorId: string;
+        privateKey: string;
+        publicKey: string;
+    }>;
+    restoreFromBackup: (backupKey: string) => Promise<{
+        restored: false;
+        reason: "project-mismatch" | "invalid";
+        name?: undefined;
+        authorized?: undefined;
+    } | {
+        restored: false;
+        reason: "unauthorized";
+        name?: undefined;
+        authorized?: undefined;
+    } | {
+        restored: true;
+        name: string | null;
+        authorized: boolean;
+        reason?: undefined;
+    }>;
+    skipOnboarding: () => void;
+    selfProfile: import("../hooks/useSelfProfile").SelfProfile | null;
     issuePersonalKey: (authorId?: string) => Promise<{
         privateKey: string;
         publicKey: string;
@@ -37,8 +79,18 @@ declare const ReportContext: import("react").Context<{
         publicKey: string;
     } | null>;
     insertPersonalKey: (key: string) => Promise<{
+        saved: false;
+        reason: "invalid";
+        authorized?: undefined;
+    } | {
+        saved: false;
+        reason: "project-mismatch";
+        authorized?: undefined;
+    } | {
+        saved: true;
         authorized: boolean;
-    } | null>;
+        reason?: undefined;
+    }>;
     canListAllFeedback: boolean;
     onActivitySummary: ((params: import("..").ReportActivitySummaryParams) => Promise<import("..").ReportActivitySummaryResult>) | undefined;
     visibleShortcutKeys: boolean;
@@ -137,9 +189,9 @@ declare const ReportContext: import("react").Context<{
     replySubmitAsQuestion: boolean;
     setReplySubmitAsQuestion: import("react").Dispatch<import("react").SetStateAction<boolean>>;
     draftAuthorName: string;
-    setDraftAuthorName: import("react").Dispatch<import("react").SetStateAction<string>>;
+    setDraftAuthorName: (name: string) => void;
     replyAuthorName: string;
-    setReplyAuthorName: import("react").Dispatch<import("react").SetStateAction<string>>;
+    setReplyAuthorName: (name: string) => void;
     isPresentationMode: boolean;
     sessionActor: import("../utils/reportTeam").SessionActor | null;
     presentationViewers: import("../utils/reportTeam").PresentationViewer[];
@@ -170,6 +222,9 @@ declare const ReportContext: import("react").Context<{
     caseEditReportId: string | null;
     caseEditCases: import("..").ReportCase[] | null;
     targetStats: import("..").ReportPanelStats;
+    roleStatItems: import("../utils/panelRoleStats").PanelRoleStatItem[];
+    panelRole: "general" | "qa" | "developer" | "designer" | "planner" | "general-user";
+    setPanelRole: (nextRole: import("../constants/panelRole").PanelRole) => void;
     statusText: string;
     toggleReportMode: () => void;
     toggleTargetPreview: () => void;
@@ -233,8 +288,50 @@ export declare function useReport(): {
     personalKey: string | null;
     publicKey: string | null;
     personalKeyRequired: boolean;
+    effectivePersonalKeyRequired: boolean;
     personalKeyPendingRegistration: boolean;
     personalKeyCandidates: import("..").ReportAuthor[];
+    authDiagnostics: {
+        status: "disabled" | "matched" | "failed";
+        reason: "matched" | "reviewer-key-not-enforced" | "missing-personal-key" | "invalid-personal-key-format" | "project-mismatch" | "environment-mismatch" | "missing-team-author" | "author-id-mismatch" | "missing-team-public-key" | "public-key-mismatch";
+        items: {
+            field: "environment" | "projectId" | "publicKey" | "authorId";
+            expected: string | null;
+            actual: string | null;
+            matched: boolean;
+        }[];
+        expected: Record<"environment" | "projectId" | "publicKey" | "authorId", string | null>;
+        actual: Record<"environment" | "projectId" | "publicKey" | "authorId", string | null>;
+    };
+    authorSelectionLocked: boolean;
+    onboardingActive: boolean;
+    keyGateActive: boolean;
+    keyGateMode: "setup-complete" | "key-issue" | null;
+    completeOnboarding: ({ name }: {
+        name: string;
+    }) => Promise<{
+        authorId: string;
+        privateKey: string;
+        publicKey: string;
+    }>;
+    restoreFromBackup: (backupKey: string) => Promise<{
+        restored: false;
+        reason: "project-mismatch" | "invalid";
+        name?: undefined;
+        authorized?: undefined;
+    } | {
+        restored: false;
+        reason: "unauthorized";
+        name?: undefined;
+        authorized?: undefined;
+    } | {
+        restored: true;
+        name: string | null;
+        authorized: boolean;
+        reason?: undefined;
+    }>;
+    skipOnboarding: () => void;
+    selfProfile: import("../hooks/useSelfProfile").SelfProfile | null;
     issuePersonalKey: (authorId?: string) => Promise<{
         privateKey: string;
         publicKey: string;
@@ -244,8 +341,18 @@ export declare function useReport(): {
         publicKey: string;
     } | null>;
     insertPersonalKey: (key: string) => Promise<{
+        saved: false;
+        reason: "invalid";
+        authorized?: undefined;
+    } | {
+        saved: false;
+        reason: "project-mismatch";
+        authorized?: undefined;
+    } | {
+        saved: true;
         authorized: boolean;
-    } | null>;
+        reason?: undefined;
+    }>;
     canListAllFeedback: boolean;
     onActivitySummary: ((params: import("..").ReportActivitySummaryParams) => Promise<import("..").ReportActivitySummaryResult>) | undefined;
     visibleShortcutKeys: boolean;
@@ -344,9 +451,9 @@ export declare function useReport(): {
     replySubmitAsQuestion: boolean;
     setReplySubmitAsQuestion: import("react").Dispatch<import("react").SetStateAction<boolean>>;
     draftAuthorName: string;
-    setDraftAuthorName: import("react").Dispatch<import("react").SetStateAction<string>>;
+    setDraftAuthorName: (name: string) => void;
     replyAuthorName: string;
-    setReplyAuthorName: import("react").Dispatch<import("react").SetStateAction<string>>;
+    setReplyAuthorName: (name: string) => void;
     isPresentationMode: boolean;
     sessionActor: import("../utils/reportTeam").SessionActor | null;
     presentationViewers: import("../utils/reportTeam").PresentationViewer[];
@@ -377,6 +484,9 @@ export declare function useReport(): {
     caseEditReportId: string | null;
     caseEditCases: import("..").ReportCase[] | null;
     targetStats: import("..").ReportPanelStats;
+    roleStatItems: import("../utils/panelRoleStats").PanelRoleStatItem[];
+    panelRole: "general" | "qa" | "developer" | "designer" | "planner" | "general-user";
+    setPanelRole: (nextRole: import("../constants/panelRole").PanelRole) => void;
     statusText: string;
     toggleReportMode: () => void;
     toggleTargetPreview: () => void;

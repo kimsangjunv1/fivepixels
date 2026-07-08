@@ -96,7 +96,7 @@
     --adaptive-neutralTintOpacity600: rgba(237, 237, 237, 0.6);
     --adaptive-neutralTintOpacity700: rgba(237, 237, 237, 0.7);
     --adaptive-neutralTintOpacity800: rgba(237, 237, 237, 0.8);
-    --adaptive-neutralTintOpacity900: rgba(237, 237, 237, 1);
+    --adaptive-neutralTintOpacity900: rgba(237, 237, 237, 0.9);
 
     /* @deprecated Use --adaptive-fillOpacity* instead */
     --adaptive-blackOpacity50: var(--adaptive-fillOpacity50);
@@ -319,7 +319,7 @@
     --adaptive-neutralTintOpacity600: rgba(51, 51, 51, 0.6);
     --adaptive-neutralTintOpacity700: rgba(51, 51, 51, 0.75);
     --adaptive-neutralTintOpacity800: rgba(51, 51, 51, 0.85);
-    --adaptive-neutralTintOpacity900: rgba(51, 51, 51, 1);
+    --adaptive-neutralTintOpacity900: rgba(51, 51, 51, 0.9);
 
     /* @deprecated Use --adaptive-fillOpacity* instead */
     --adaptive-blackOpacity50: var(--adaptive-fillOpacity50);

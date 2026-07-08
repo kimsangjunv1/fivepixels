@@ -38,8 +38,8 @@ export function ReportPersonalKeyDialog({ mode, onCancel, onComplete }) {
             return;
         }
         const inserted = await insertPersonalKey(key);
-        if (!inserted) {
-            setError(messages.personalKey.invalidKey);
+        if (!inserted.saved) {
+            setError(inserted.reason === "project-mismatch" ? messages.personalKey.restoreProjectMismatch : messages.personalKey.invalidKey);
             return;
         }
         onComplete(inserted.authorized ? messages.personalKey.setupSuccess : messages.personalKey.registrationPending);

@@ -3,7 +3,7 @@ import type { RouteDetailStatus } from "@/utils/routeDetailStatus.js";
 
 export type ReportMode = "idle" | "report" | "view";
 export type ResolvedAppearance = "light" | "dark";
-export type ReportPanelTab = "overview" | "route-details" | "feedback-list" | "settings" | "command";
+export type ReportPanelTab = "overview" | "route-details" | "feedback-list" | "diagnostics" | "settings" | "command";
 export type ReportListScope = "current" | "all";
 export type HeatmapActorScope = "team" | "me";
 export type HeatmapMetric = "created" | "activity";

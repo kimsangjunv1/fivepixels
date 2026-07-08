@@ -34,6 +34,8 @@ export function ReportDraftForm() {
         setDraftAuthorName,
         errorMessage,
         isPresentationMode,
+        authorSelectionLocked,
+        sessionActor,
     } = useReport();
 
     if (!draft) {
@@ -59,6 +61,8 @@ export function ReportDraftForm() {
             setDraftAuthorName={setDraftAuthorName}
             errorMessage={errorMessage}
             isPresentationMode={isPresentationMode}
+            authorSelectionLocked={authorSelectionLocked}
+            sessionActor={sessionActor}
         />
     );
 }
@@ -81,6 +85,8 @@ type ReportDraftFormContentProps = {
     setDraftAuthorName: (name: string) => void;
     errorMessage: string;
     isPresentationMode: boolean;
+    authorSelectionLocked: boolean;
+    sessionActor: ReturnType<typeof useReport>["sessionActor"];
 };
 
 function ReportDraftFormContent({
@@ -101,6 +107,8 @@ function ReportDraftFormContent({
     setDraftAuthorName,
     errorMessage,
     isPresentationMode,
+    authorSelectionLocked,
+    sessionActor,
 }: ReportDraftFormContentProps) {
     const { messages } = useReport();
     const tooltipSurfaceRef = useRef<HTMLDivElement | null>(null);
@@ -166,7 +174,8 @@ function ReportDraftFormContent({
                             fieldValues={draft.fieldValues}
                             onFieldChange={updateDraftField}
                             showTags
-                            hideAuthorSelector={isPresentationMode}
+                            hideAuthorSelector={isPresentationMode || authorSelectionLocked}
+                            lockedAuthorName={authorSelectionLocked ? (sessionActor?.name ?? draftAuthorName) : undefined}
                             onSubmit={() => void handleCreateSubmit()}
                             isSubmitting={isCreating}
                             showGitHubIssueOnCreate={canCreateGitHubIssueOnCreate}

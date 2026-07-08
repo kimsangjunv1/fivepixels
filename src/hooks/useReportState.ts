@@ -12,10 +12,14 @@ import { useAppearancePreference } from "./useAppearancePreference.js";
 import { PANEL_APPEARANCE_STORAGE_KEY, TOOLTIP_APPEARANCE_STORAGE_KEY } from "@/constants/appearance.js";
 import { useLocalePreference } from "./useLocalePreference.js";
 import { useQuestionThreadPreference } from "./useQuestionThreadPreference.js";
+import { usePanelRolePreference } from "./usePanelRolePreference.js";
 import { usePersonalKey } from "./usePersonalKey.js";
+import { useSelfProfile } from "./useSelfProfile.js";
+import { hasStoredPersonalKey, getAuthorIdFromPrivateKey, getAuthorNameFromPrivateKey, parsePrivateKeyBundle, publicKeysMatch, serializePublicKey } from "@/utils/personalKey.js";
 import { usePanelBootstrap } from "./usePanelBootstrap.js";
 import { useResolvedAppearance } from "./useResolvedAppearance.js";
 import { buildPanelStats } from "@/utils/panelBootstrap.js";
+import { buildPanelRoleStats } from "@/utils/panelRoleStats.js";
 import type {
     CreateReportFeedbackPayload,
     CreateReplyPayload,
@@ -37,8 +41,34 @@ import type {
     QuestionThreadDisplay,
     UpdateReportFeedbackPayload,
 } from "@/types/report.js";
-import type { DraftReport, EditableDraft, HoverPointer, Marker, PendingFeedbackComposer, PickProbeCompareMode, PickProbeFieldKey, PickProbeLayoutMode, PickProbeValues, PickTargetContextMenuState, ProbeSessionAction, ReportMode, ReportPanelTab, SavedProbeDeletion, SavedProbeEntry, TargetSnapshot } from "@/types/report-ui.js";
-import { canShowCaseClaimAction, createReplyStatusForSubmit, getFeedbackDisplayStatus, getLatestBranchRootForCase, getReportReplies, ISSUE_ROOT_PARENT_ID, resolveOriginalFeedbackAuthorName, resolveParentReplyIdForCaseQuestion } from "@/utils/feedbackThread.js";
+import type {
+    DraftReport,
+    EditableDraft,
+    HoverPointer,
+    Marker,
+    PendingFeedbackComposer,
+    PickProbeCompareMode,
+    PickProbeFieldKey,
+    PickProbeLayoutMode,
+    PickProbeValues,
+    PickTargetContextMenuState,
+    ProbeSessionAction,
+    ReportMode,
+    ReportPanelTab,
+    SavedProbeDeletion,
+    SavedProbeEntry,
+    TargetSnapshot,
+} from "@/types/report-ui.js";
+import {
+    canShowCaseClaimAction,
+    createReplyStatusForSubmit,
+    getFeedbackDisplayStatus,
+    getLatestBranchRootForCase,
+    getReportReplies,
+    ISSUE_ROOT_PARENT_ID,
+    resolveOriginalFeedbackAuthorName,
+    resolveParentReplyIdForCaseQuestion,
+} from "@/utils/feedbackThread.js";
 import { clampRatio, getMarkerFromReport, resolveTooltipAnchor } from "@/utils/coordinates.js";
 import { getFeedbackTargetElement, isFeedbackTargetVisible, scrollToFeedbackTarget, waitForTargetRevealResync } from "@/utils/locateFeedback.js";
 
@@ -46,13 +76,7 @@ const MARKER_HOVER_LEAVE_MS = 250;
 const OVERLAY_HOVER_LEAVE_MS = 100;
 import { findPickTargetByPoint, getSelectableTargets, isSameHoverTarget, resolveFeedbackDocumentAnchor, toFeedbackHoverSnapshot } from "@/utils/dom.js";
 import { shouldInspectFontStyle } from "@/utils/pickTargetInspect.js";
-import {
-    applyPickProbeCompareMode,
-    applyPickProbeValueDiff,
-    capturePickProbeValues,
-    formatSavedProbeEditsSummary,
-    getProposedChanges,
-} from "@/utils/pickProbe.js";
+import { applyPickProbeCompareMode, applyPickProbeValueDiff, capturePickProbeValues, formatSavedProbeEditsSummary, getProposedChanges } from "@/utils/pickProbe.js";
 import {
     applySavedProbeEditsCompareMode,
     captureProbeOriginalSnapshot,
@@ -69,32 +93,58 @@ import { applyProbeSessionActionBackward, applyProbeSessionActionForward } from 
 import { getPickProbeLayoutMode } from "@/utils/probeLayout.js";
 import { markerToTargetSnapshot } from "@/utils/markerTarget.js";
 import { createInitialFieldValues, getFieldError, getFieldTags } from "@/utils/fields.js";
-import { canEditReportCases, claimCaseAssignee, createReportCase, buildResolvedCasesUpdate, canActOnCase, getCaseAssigneeName, isValidFocusedCase, resolveDefaultFocusedCaseId, transferCaseAssignee } from "@/utils/reportCases.js";
+import {
+    canEditReportCases,
+    claimCaseAssignee,
+    createReportCase,
+    buildResolvedCasesUpdate,
+    canActOnCase,
+    getCaseAssigneeName,
+    isValidFocusedCase,
+    resolveDefaultFocusedCaseId,
+    transferCaseAssignee,
+} from "@/utils/reportCases.js";
 import { createReplyId } from "@/utils/format.js";
-import {
-    notifyFeedbackCreate,
-    notifyFeedbackDelete,
-    notifyFeedbackReply,
-    notifyFeedbackUpdate,
-    notifyGitHubIssueCreated,
-    type ReportSideEffectCallbacks,
-} from "@/utils/reportCallbacks.js";
-import {
-    buildGitHubIssueStatusUpdate,
-    buildGitHubIssueUpdate,
-    canCreateGitHubIssueFromList,
-    canCreateGitHubIssueOnCreate,
-    isGitIssued,
-} from "@/utils/githubIntegration.js";
+import { notifyFeedbackCreate, notifyFeedbackDelete, notifyFeedbackReply, notifyFeedbackUpdate, notifyGitHubIssueCreated, type ReportSideEffectCallbacks } from "@/utils/reportCallbacks.js";
+import { buildGitHubIssueStatusUpdate, buildGitHubIssueUpdate, canCreateGitHubIssueFromList, canCreateGitHubIssueOnCreate, isGitIssued } from "@/utils/githubIntegration.js";
 import { buildPresentationViewers, resolveSessionActor } from "@/utils/reportTeam.js";
 
-function resolveDefaultAuthorName(identify: ReportIdentify | undefined, authors: ReportAuthor[]) {
+function resolveDefaultAuthorName(identify: ReportIdentify | undefined, authors: ReportAuthor[], selfName?: string) {
     if (identify?.name) {
         return identify.name;
     }
 
-    return authors[0]?.name ?? "";
+    return authors[0]?.name ?? selfName ?? "";
 }
+
+type AuthDiagnosticsField = "projectId" | "environment" | "authorId" | "publicKey";
+type AuthDiagnosticsStatus = "matched" | "failed" | "disabled";
+type AuthDiagnosticsReason =
+    | "reviewer-key-not-enforced"
+    | "missing-personal-key"
+    | "invalid-personal-key-format"
+    | "project-mismatch"
+    | "environment-mismatch"
+    | "missing-team-author"
+    | "author-id-mismatch"
+    | "missing-team-public-key"
+    | "public-key-mismatch"
+    | "matched";
+
+type AuthDiagnosticsItem = {
+    field: AuthDiagnosticsField;
+    expected: string | null;
+    actual: string | null;
+    matched: boolean;
+};
+
+type AuthDiagnostics = {
+    status: AuthDiagnosticsStatus;
+    reason: AuthDiagnosticsReason;
+    items: AuthDiagnosticsItem[];
+    expected: Record<AuthDiagnosticsField, string | null>;
+    actual: Record<AuthDiagnosticsField, string | null>;
+};
 
 export type ReportStateConfig = {
     projectId: string;
@@ -163,18 +213,13 @@ export function useReportState({
     messageOverrides,
     pixelsMode = "default",
 }: ReportStateConfig) {
-    const { appearance: activePanelAppearance, setAppearance: setPanelAppearance } = useAppearancePreference(
-        PANEL_APPEARANCE_STORAGE_KEY,
-        panelAppearance,
-    );
-    const { appearance: activeTooltipAppearance, setAppearance: setTooltipAppearance } = useAppearancePreference(
-        TOOLTIP_APPEARANCE_STORAGE_KEY,
-        tooltipAppearance,
-    );
+    const { appearance: activePanelAppearance, setAppearance: setPanelAppearance } = useAppearancePreference(PANEL_APPEARANCE_STORAGE_KEY, panelAppearance);
+    const { appearance: activeTooltipAppearance, setAppearance: setTooltipAppearance } = useAppearancePreference(TOOLTIP_APPEARANCE_STORAGE_KEY, tooltipAppearance);
     const { showMarkerTargetPreview, setShowMarkerTargetPreview, toggleMarkerTargetPreview } = useMarkerTargetPreviewPreference();
     const { markerAppearance, setMarkerAppearance, setMarkerSize, setMarkerShape, setMarkerColors, setMarkerColor } = useMarkerAppearancePreference();
     const { typography, setTypography, setFontSize, setFontFamily } = useTypographyPreference();
     const { questionThreadDisplay, setQuestionThreadDisplay } = useQuestionThreadPreference(questionThreadDefault);
+    const { panelRole, setPanelRole } = usePanelRolePreference();
     const { locale, setLocale } = useLocalePreference(initialLocale);
     const [localeMessagesReady, setLocaleMessagesReady] = useState(locale !== "ko");
     const messages = useMemo(() => getReportMessages(locale, messageOverrides), [locale, localeMessagesReady, messageOverrides]);
@@ -287,6 +332,8 @@ export function useReportState({
         }),
         [onEvent, onReply],
     );
+    const { selfProfile, saveSelfProfile, markOnboardingComplete } = useSelfProfile(projectId, environment);
+    const reviewerKeyEnforced = !(requireReviewerKey || authors.some((author) => Boolean(author.publicKey)));
     const {
         personalKey,
         publicKey,
@@ -295,17 +342,20 @@ export function useReportState({
         personalKeyCandidates,
         authorizedAuthors,
         issuePersonalKey,
+        issueSelfKey,
         rotatePersonalKey,
         insertPersonalKey,
         signPayload,
     } = usePersonalKey({
-        enabled: requireReviewerKey || authors.some((author) => Boolean(author.publicKey)),
+        enabled: reviewerKeyEnforced || hasStoredPersonalKey(projectId, environment),
+        requireKey: reviewerKeyEnforced,
         projectId,
         environment,
         identify,
         authors,
     });
-    const activeIdentify = authorizedAuthors[0] ?? (personalKeyRequired ? undefined : identify);
+    const activeIdentify =
+        authorizedAuthors[0] ?? (selfProfile?.authorId && selfProfile.name ? { id: selfProfile.authorId, name: selfProfile.name } : undefined) ?? (personalKeyRequired ? undefined : identify);
     const isPresentationMode = pixelsMode === "presentation";
     const presentationViewers = useMemo(() => buildPresentationViewers(identify, authors), [authors, identify]);
     const [presentationViewerId, setPresentationViewerId] = useState<string | null>(null);
@@ -323,6 +373,117 @@ export function useReportState({
     }, [isPresentationMode, presentationViewerId, presentationViewers]);
 
     const effectivePersonalKeyRequired = personalKeyRequired && !isPresentationMode;
+    const authorSelectionLocked = Boolean(personalKey);
+
+    const hasPersistedPersonalKey = hasStoredPersonalKey(projectId, environment);
+    const isSelfAuthenticated = hasPersistedPersonalKey;
+    const authDiagnostics = useMemo<AuthDiagnostics>(() => {
+        const parsedBundle = personalKey ? parsePrivateKeyBundle(personalKey) : null;
+        const fallbackReviewer = authors.length === 1 ? authors[0] : null;
+        const configuredReviewer = parsedBundle ? (authors.find((author) => author.id === parsedBundle.authorId) ?? fallbackReviewer) : fallbackReviewer;
+        const expected: Record<AuthDiagnosticsField, string | null> = {
+            projectId,
+            environment: environment ?? "",
+            authorId: configuredReviewer?.id ?? null,
+            publicKey: configuredReviewer?.publicKey?.trim() || null,
+        };
+        const actual: Record<AuthDiagnosticsField, string | null> = {
+            projectId: parsedBundle?.projectId ?? null,
+            environment: parsedBundle?.environment ?? "",
+            authorId: parsedBundle?.authorId ?? null,
+            publicKey: parsedBundle ? serializePublicKey(parsedBundle.publicKey) : null,
+        };
+        const items: AuthDiagnosticsItem[] = [
+            { field: "projectId", expected: expected.projectId, actual: actual.projectId, matched: expected.projectId === actual.projectId },
+            { field: "environment", expected: expected.environment, actual: actual.environment, matched: (expected.environment ?? "") === (actual.environment ?? "") },
+            { field: "authorId", expected: expected.authorId, actual: actual.authorId, matched: expected.authorId === actual.authorId },
+            {
+                field: "publicKey",
+                expected: expected.publicKey,
+                actual: actual.publicKey,
+                matched: Boolean(expected.publicKey && actual.publicKey && publicKeysMatch(expected.publicKey, actual.publicKey)),
+            },
+        ];
+
+        if (!reviewerKeyEnforced) {
+            return { status: "disabled", reason: "reviewer-key-not-enforced", items, expected, actual };
+        }
+        if (!personalKey) {
+            return { status: "failed", reason: "missing-personal-key", items, expected, actual };
+        }
+        if (!parsedBundle) {
+            return { status: "failed", reason: "invalid-personal-key-format", items, expected, actual };
+        }
+        if (parsedBundle.projectId !== projectId) {
+            return { status: "failed", reason: "project-mismatch", items, expected, actual };
+        }
+        if ((parsedBundle.environment ?? "") !== (environment ?? "")) {
+            return { status: "failed", reason: "environment-mismatch", items, expected, actual };
+        }
+        if (!configuredReviewer) {
+            return { status: "failed", reason: "missing-team-author", items, expected, actual };
+        }
+        if (parsedBundle.authorId !== configuredReviewer.id) {
+            return { status: "failed", reason: "author-id-mismatch", items, expected, actual };
+        }
+        if (!configuredReviewer.publicKey?.trim()) {
+            return { status: "failed", reason: "missing-team-public-key", items, expected, actual };
+        }
+        if (!actual.publicKey || !publicKeysMatch(configuredReviewer.publicKey, actual.publicKey)) {
+            return { status: "failed", reason: "public-key-mismatch", items, expected, actual };
+        }
+
+        return { status: "matched", reason: "matched", items, expected, actual };
+    }, [authors, environment, personalKey, projectId, reviewerKeyEnforced]);
+
+    const onboardingActive = !hasPersistedPersonalKey || (selfProfile !== null && !selfProfile.completed && personalKeyPendingRegistration);
+    // const onboardingActive = !isPresentationMode && (!hasPersistedPersonalKey || (selfProfile !== null && !selfProfile.completed && personalKeyPendingRegistration));
+
+    useEffect(() => {
+        if (selfProfile && !selfProfile.completed && hasPersistedPersonalKey && !personalKeyPendingRegistration) {
+            markOnboardingComplete();
+        }
+    }, [hasPersistedPersonalKey, markOnboardingComplete, personalKeyPendingRegistration, selfProfile]);
+
+    const completeOnboarding = useCallback(
+        async ({ name }: { name: string }) => {
+            const trimmedName = name.trim();
+            const authorId = typeof crypto !== "undefined" && typeof crypto.randomUUID === "function" ? crypto.randomUUID() : `self-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+            const issued = await issueSelfKey(authorId, trimmedName);
+            saveSelfProfile({ name: trimmedName, authorId, completed: false });
+            return { ...issued, authorId };
+        },
+        [issueSelfKey, saveSelfProfile],
+    );
+
+    const restoreFromBackup = useCallback(
+        async (backupKey: string) => {
+            const result = await insertPersonalKey(backupKey);
+
+            if (!result.saved) {
+                return { restored: false as const, reason: result.reason };
+            }
+
+            if (reviewerKeyEnforced && !result.authorized) {
+                return { restored: false as const, reason: "unauthorized" as const };
+            }
+
+            const authorId = getAuthorIdFromPrivateKey(backupKey);
+            const restoredName = getAuthorNameFromPrivateKey(backupKey);
+            saveSelfProfile({
+                name: restoredName ?? "",
+                authorId: authorId ?? "",
+                completed: result.authorized || !reviewerKeyEnforced,
+            });
+
+            return { restored: true as const, name: restoredName, authorized: result.authorized };
+        },
+        [insertPersonalKey, reviewerKeyEnforced, saveSelfProfile],
+    );
+
+    const skipOnboarding = useCallback(() => {
+        markOnboardingComplete();
+    }, [markOnboardingComplete]);
 
     const sessionActor = useMemo(
         () =>
@@ -345,6 +506,10 @@ export function useReportState({
             throw new Error(messages.errors.personalKeyRequired);
         }
 
+        if (personalKeyPendingRegistration) {
+            throw new Error(messages.personalKey.registrationPending);
+        }
+
         const auth = await signPayload("feedback:update", payload);
         return auth ? { ...payload, auth } : payload;
     };
@@ -354,16 +519,17 @@ export function useReportState({
             throw new Error(messages.errors.personalKeyRequired);
         }
 
+        if (personalKeyPendingRegistration) {
+            throw new Error(messages.personalKey.registrationPending);
+        }
+
         const auth = await signPayload("reply:create", payload);
         return auth ? { ...payload, auth } : payload;
     };
 
     const applyGitHubIssueUpdate = async (report: ReportFeedback, result: { issueNumber: number; issueUrl: string }) => {
         if (usesCreateReply) {
-            const updatedFeedback = await updateFeedback(
-                report.id,
-                await signUpdatePayload(buildGitHubIssueStatusUpdate(report, result)),
-            );
+            const updatedFeedback = await updateFeedback(report.id, await signUpdatePayload(buildGitHubIssueStatusUpdate(report, result)));
 
             await createReply(
                 report.id,
@@ -377,10 +543,7 @@ export function useReportState({
             return updatedFeedback;
         }
 
-        return updateFeedback(
-            report.id,
-            await signUpdatePayload(buildGitHubIssueUpdate(report, result, messages.resolution.gitIssuedMessage)),
-        );
+        return updateFeedback(report.id, await signUpdatePayload(buildGitHubIssueUpdate(report, result, messages.resolution.gitIssuedMessage)));
     };
 
     const [showTargetPreview, setShowTargetPreview] = useState(false);
@@ -421,8 +584,8 @@ export function useReportState({
     const [activeReplyReportId, setActiveReplyReportId] = useState<string | null>(null);
     const [replyDraft, setReplyDraft] = useState("");
     const [replySubmitAsQuestion, setReplySubmitAsQuestion] = useState(false);
-    const [draftAuthorName, setDraftAuthorName] = useState(() => resolveDefaultAuthorName(activeIdentify, authorizedAuthors));
-    const [replyAuthorName, setReplyAuthorName] = useState(() => resolveDefaultAuthorName(activeIdentify, authorizedAuthors));
+    const [draftAuthorName, setDraftAuthorName] = useState(() => resolveDefaultAuthorName(activeIdentify, authorizedAuthors, selfProfile?.name));
+    const [replyAuthorName, setReplyAuthorName] = useState(() => resolveDefaultAuthorName(activeIdentify, authorizedAuthors, selfProfile?.name));
 
     const applyPresentationViewer = useCallback(
         (viewerId: string | null) => {
@@ -449,6 +612,30 @@ export function useReportState({
         setReplyAuthorName(sessionActor.name);
         setDraftAuthorName(sessionActor.name);
     }, [sessionActor?.id, sessionActor?.name]);
+
+    const setDraftAuthorNameSafe = useCallback(
+        (name: string) => {
+            if (authorSelectionLocked && sessionActor?.name) {
+                setDraftAuthorName(sessionActor.name);
+                return;
+            }
+
+            setDraftAuthorName(name);
+        },
+        [authorSelectionLocked, sessionActor?.name],
+    );
+
+    const setReplyAuthorNameSafe = useCallback(
+        (name: string) => {
+            if (authorSelectionLocked && sessionActor?.name) {
+                setReplyAuthorName(sessionActor.name);
+                return;
+            }
+
+            setReplyAuthorName(name);
+        },
+        [authorSelectionLocked, sessionActor?.name],
+    );
     const [isSubmittingReply, setIsSubmittingReply] = useState(false);
     const [isClaimingAssignee, setIsClaimingAssignee] = useState(false);
     const [pendingComposer, setPendingComposer] = useState<PendingFeedbackComposer>(null);
@@ -491,6 +678,18 @@ export function useReportState({
         return buildPanelStats(currentPageFilteredReports);
     }, [currentPageFilteredReports, panelBootstrap]);
 
+    const roleStatItems = useMemo(
+        () =>
+            buildPanelRoleStats({
+                role: panelRole,
+                reports: currentPageFilteredReports,
+                actorName: sessionActor?.name ?? null,
+                fallbackStats: targetStats,
+                messages,
+            }),
+        [panelRole, currentPageFilteredReports, sessionActor?.name, targetStats, messages],
+    );
+
     useEffect(() => {
         setDraft(null);
         setErrorMessage("");
@@ -502,9 +701,9 @@ export function useReportState({
         setPendingComposer(null);
         setShowConfirmAuthorSelect(false);
         setConfirmAuthorName("");
-        setDraftAuthorName(sessionActor?.name ?? resolveDefaultAuthorName(activeIdentify, authorizedAuthors));
+        setDraftAuthorName(sessionActor?.name ?? resolveDefaultAuthorName(activeIdentify, authorizedAuthors, selfProfile?.name));
         if (!isPresentationMode) {
-            setReplyAuthorName(sessionActor?.name ?? resolveDefaultAuthorName(activeIdentify, authorizedAuthors));
+            setReplyAuthorName(sessionActor?.name ?? resolveDefaultAuthorName(activeIdentify, authorizedAuthors, selfProfile?.name));
         }
         setEditingReportId(null);
         setEditableDraft(null);
@@ -521,7 +720,7 @@ export function useReportState({
             window.clearTimeout(overlayHoverLeaveTimeoutRef.current);
             overlayHoverLeaveTimeoutRef.current = null;
         }
-    }, [currentPathname, mode, activeIdentify, authorizedAuthors, isPresentationMode, sessionActor?.name]);
+    }, [currentPathname, mode, activeIdentify, authorizedAuthors, isPresentationMode, sessionActor?.name, selfProfile?.name]);
 
     useEffect(() => {
         if (!isPresentationMode || presentationViewers.length === 0 || !resolvedPresentationViewerId) {
@@ -666,7 +865,19 @@ export function useReportState({
         }
 
         return messages.statusText.ready;
-    }, [activeMarkerTarget, filteredReports.length, hoveredTarget, isFetching, markerPreviewTargets.length, messages.statusText, mode, selectableTargets.length, selectedTarget, showMarkerTargetPreview, showTargetPreview]);
+    }, [
+        activeMarkerTarget,
+        filteredReports.length,
+        hoveredTarget,
+        isFetching,
+        markerPreviewTargets.length,
+        messages.statusText,
+        mode,
+        selectableTargets.length,
+        selectedTarget,
+        showMarkerTargetPreview,
+        showTargetPreview,
+    ]);
 
     useEffect(() => {
         const shouldSyncMarkers = mode === "view" || showMarkerTargetPreview;
@@ -990,10 +1201,7 @@ export function useReportState({
     const canUndoProbeSession = probeSessionHistoryState.index >= 0;
     const canRedoProbeSession = probeSessionHistoryState.index < probeSessionHistoryState.actions.length - 1;
 
-    const hasProbeSessionChanges = useMemo(
-        () => probeSessionHistoryState.index >= 0,
-        [probeSessionHistoryState.index],
-    );
+    const hasProbeSessionChanges = useMemo(() => probeSessionHistoryState.index >= 0, [probeSessionHistoryState.index]);
 
     const setSavedProbeCompareMode = useCallback((compareMode: PickProbeCompareMode) => {
         setSavedProbeCompareModeState(compareMode);
@@ -1027,12 +1235,7 @@ export function useReportState({
             }
 
             const elementKey = getPickProbeElementKey(element);
-            const changes = getProposedChanges(
-                pickProbeBaseline,
-                values,
-                pickProbeSupportsTextFields,
-                pickProbeLayoutMode,
-            );
+            const changes = getProposedChanges(pickProbeBaseline, values, pickProbeSupportsTextFields, pickProbeLayoutMode);
             const existing = savedProbeEdits[elementKey];
 
             if (changes.length === 0) {
@@ -1076,9 +1279,7 @@ export function useReportState({
                 originalSnapshot?.inputValue ?? null,
             );
 
-            const appliedChanged =
-                !existing ||
-                getProposedChanges(existing.applied, values, pickProbeSupportsTextFields, pickProbeLayoutMode).length > 0;
+            const appliedChanged = !existing || getProposedChanges(existing.applied, values, pickProbeSupportsTextFields, pickProbeLayoutMode).length > 0;
 
             setSavedProbeEdits((current) => ({
                 ...current,
@@ -1233,7 +1434,7 @@ export function useReportState({
         const shouldClearDraft = draftElementRef.current === element;
         const rect = element.getBoundingClientRect();
         const deletion = elementKey ? captureSavedProbeDeletion(element, elementKey) : null;
-        const previousStyleEntry = elementKey ? savedProbeEdits[elementKey] ?? null : null;
+        const previousStyleEntry = elementKey ? (savedProbeEdits[elementKey] ?? null) : null;
 
         contextMenuElementRef.current = null;
 
@@ -1347,14 +1548,7 @@ export function useReportState({
 
         persistPickProbeEdits({ values: pickProbeBaseline });
         refreshSelectedTargetSnapshot();
-    }, [
-        pickProbeBaseline,
-        pickProbeCompareMode,
-        pickProbeHasEdits,
-        pickProbeValues,
-        persistPickProbeEdits,
-        refreshSelectedTargetSnapshot,
-    ]);
+    }, [pickProbeBaseline, pickProbeCompareMode, pickProbeHasEdits, pickProbeValues, persistPickProbeEdits, refreshSelectedTargetSnapshot]);
 
     const stopEditing = () => {
         setEditingReportId(null);
@@ -1610,7 +1804,7 @@ export function useReportState({
         setReplyDraft("");
         setReplySubmitAsQuestion(false);
         setPendingComposer(null);
-        setReplyAuthorName(sessionActor?.name ?? resolveDefaultAuthorName(activeIdentify, authorizedAuthors));
+        setReplyAuthorName(sessionActor?.name ?? resolveDefaultAuthorName(activeIdentify, authorizedAuthors, selfProfile?.name));
         setConfirmAuthorName(resolveOriginalFeedbackAuthorName(report));
         setShowConfirmAuthorSelect(false);
         setFocusedCaseId(resolveDefaultFocusedCaseId(report));
@@ -1690,11 +1884,7 @@ export function useReportState({
             return;
         }
 
-        if (
-            latestRoot.status === "suggested" ||
-            latestRoot.status === "found_error" ||
-            latestRoot.status === "recheck_requested"
-        ) {
+        if (latestRoot.status === "suggested" || latestRoot.status === "found_error" || latestRoot.status === "recheck_requested") {
             setPendingComposer({
                 type: "question",
                 targetReplyId: latestRoot.id,
@@ -1863,18 +2053,14 @@ export function useReportState({
             elementYRatio: clampRatio((event.clientY - snapshot.rect.top) / Math.max(snapshot.rect.height, 1)),
             anchorReportId: anchorSnapshot?.id ?? null,
             anchorReportType: anchorSnapshot?.type ?? null,
-            anchorXRatio: anchorSnapshot
-                ? clampRatio((event.clientX - anchorSnapshot.rect.left) / Math.max(anchorSnapshot.rect.width, 1))
-                : null,
-            anchorYRatio: anchorSnapshot
-                ? clampRatio((event.clientY - anchorSnapshot.rect.top) / Math.max(anchorSnapshot.rect.height, 1))
-                : null,
+            anchorXRatio: anchorSnapshot ? clampRatio((event.clientX - anchorSnapshot.rect.left) / Math.max(anchorSnapshot.rect.width, 1)) : null,
+            anchorYRatio: anchorSnapshot ? clampRatio((event.clientY - anchorSnapshot.rect.top) / Math.max(anchorSnapshot.rect.height, 1)) : null,
             scrollY: window.scrollY,
             documentY: Math.round(window.scrollY + event.clientY),
             reportId: snapshot.id,
             reportType: snapshot.type,
-            targetSelector: isTagged ? null : snapshot.targetSelector ?? null,
-            suggestedReportId: isTagged ? null : snapshot.suggestedReportId ?? snapshot.id,
+            targetSelector: isTagged ? null : (snapshot.targetSelector ?? null),
+            suggestedReportId: isTagged ? null : (snapshot.suggestedReportId ?? snapshot.id),
             cases: [createReportCase("")],
             fieldValues: createInitialFieldValues(fields),
         });
@@ -1975,6 +2161,11 @@ export function useReportState({
             return null;
         }
 
+        if (personalKeyPendingRegistration) {
+            setErrorMessage(messages.personalKey.registrationPending);
+            return null;
+        }
+
         const nextError = getFieldError(draft.cases, draft.fieldValues, fields, messages.errors);
 
         if (nextError) {
@@ -2050,6 +2241,16 @@ export function useReportState({
         const payload = buildCreatePayloadFromDraft();
 
         if (!payload) {
+            return;
+        }
+
+        if (effectivePersonalKeyRequired) {
+            setErrorMessage(messages.errors.personalKeyRequired);
+            return;
+        }
+
+        if (personalKeyPendingRegistration) {
+            setErrorMessage(messages.personalKey.registrationPending);
             return;
         }
 
@@ -2134,11 +2335,14 @@ export function useReportState({
                 text: item.text.trim(),
                 updated_at: new Date().toISOString(),
             }));
-            const updatedFeedback = await updateFeedback(selectedReport.id, await signUpdatePayload({
-                cases,
-                status: editableDraft.status,
-                field_values: editableDraft.fieldValues,
-            }));
+            const updatedFeedback = await updateFeedback(
+                selectedReport.id,
+                await signUpdatePayload({
+                    cases,
+                    status: editableDraft.status,
+                    field_values: editableDraft.fieldValues,
+                }),
+            );
 
             await notifyFeedbackUpdate(eventCallbacks, updatedFeedback);
 
@@ -2185,6 +2389,11 @@ export function useReportState({
             return;
         }
 
+        if (personalKeyPendingRegistration) {
+            setErrorMessage(messages.personalKey.registrationPending);
+            return;
+        }
+
         if (!replyDraft.trim()) {
             setErrorMessage(messages.errors.replyContentRequired);
             return;
@@ -2212,10 +2421,7 @@ export function useReportState({
 
         const replyMessage = replyDraft.trim();
         const replyStatus = createReplyStatusForSubmit(pendingType, isQuestionSubmit);
-        const parentReplyId =
-            replyStatus === "additional_question"
-                ? resolveParentReplyIdForCaseQuestion(activeReplyReport, focusedCaseId, pendingComposer)
-                : null;
+        const parentReplyId = replyStatus === "additional_question" ? resolveParentReplyIdForCaseQuestion(activeReplyReport, focusedCaseId, pendingComposer) : null;
         const reply: ReportReply = {
             id: createReplyId(),
             message: replyMessage,
@@ -2264,6 +2470,11 @@ export function useReportState({
 
         if (effectivePersonalKeyRequired) {
             setErrorMessage(messages.errors.personalKeyRequired);
+            return;
+        }
+
+        if (personalKeyPendingRegistration) {
+            setErrorMessage(messages.personalKey.registrationPending);
             return;
         }
 
@@ -2321,6 +2532,11 @@ export function useReportState({
 
         if (effectivePersonalKeyRequired) {
             setErrorMessage(messages.errors.personalKeyRequired);
+            return;
+        }
+
+        if (personalKeyPendingRegistration) {
+            setErrorMessage(messages.personalKey.registrationPending);
             return;
         }
 
@@ -2559,8 +2775,16 @@ export function useReportState({
         personalKey,
         publicKey,
         personalKeyRequired,
+        effectivePersonalKeyRequired,
         personalKeyPendingRegistration,
         personalKeyCandidates,
+        authDiagnostics,
+        authorSelectionLocked,
+        onboardingActive,
+        completeOnboarding,
+        restoreFromBackup,
+        skipOnboarding,
+        selfProfile,
         issuePersonalKey,
         rotatePersonalKey,
         insertPersonalKey,
@@ -2659,9 +2883,9 @@ export function useReportState({
         replySubmitAsQuestion,
         setReplySubmitAsQuestion,
         draftAuthorName,
-        setDraftAuthorName,
+        setDraftAuthorName: setDraftAuthorNameSafe,
         replyAuthorName,
-        setReplyAuthorName,
+        setReplyAuthorName: setReplyAuthorNameSafe,
         isPresentationMode,
         sessionActor,
         presentationViewers,
@@ -2692,6 +2916,9 @@ export function useReportState({
         caseEditReportId,
         caseEditCases,
         targetStats,
+        roleStatItems,
+        panelRole,
+        setPanelRole,
         statusText,
         toggleReportMode,
         toggleTargetPreview,

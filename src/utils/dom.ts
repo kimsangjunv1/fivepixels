@@ -370,7 +370,7 @@ function isSelectableFeedbackTarget(target: HTMLElement) {
     return true;
 }
 
-function isPointerEventBlockingLayer(element: HTMLElement) {
+function isPointerEventBlockingLayer(element: HTMLElement, clientX: number, clientY: number) {
     const style = window.getComputedStyle(element);
 
     if (style.pointerEvents === "none" || isStyleHidden(style)) {
@@ -382,8 +382,21 @@ function isPointerEventBlockingLayer(element: HTMLElement) {
     }
 
     const rect = element.getBoundingClientRect();
+    const isPointInside = clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom;
 
-    return rect.width > 0 && rect.height > 0;
+    if (!isPointInside) {
+        return false;
+    }
+
+    const viewportArea = window.innerWidth * window.innerHeight;
+    const elementArea = rect.width * rect.height;
+    const coverageRatio = viewportArea > 0 ? elementArea / viewportArea : 0;
+    const nearlyFullscreen = rect.width >= window.innerWidth * 0.9 && rect.height >= window.innerHeight * 0.9;
+    const looksModalLayer = element.getAttribute("aria-modal") === "true" || element.getAttribute("role") === "dialog";
+
+    // Treat only broad overlays/modal shells as blockers.
+    // Small fixed headers/toolbars should not block target picking.
+    return (rect.width > 0 && rect.height > 0 && coverageRatio >= 0.35) || nearlyFullscreen || looksModalLayer;
 }
 
 export function toPickSnapshot(element: HTMLElement | null): TargetSnapshot | null {
@@ -417,7 +430,7 @@ export function findPickTargetByPoint(overlay: HTMLDivElement | null, clientX: n
 
     for (const element of elements) {
         if (!isPickableElement(element)) {
-            if (isPointerEventBlockingLayer(element)) {
+            if (isPointerEventBlockingLayer(element, clientX, clientY)) {
                 return null;
             }
 
@@ -450,7 +463,7 @@ export function findTargetByPoint(overlay: HTMLDivElement | null, clientX: numbe
         const target = findTargetElement(element);
 
         if (!target) {
-            if (isPointerEventBlockingLayer(element)) {
+            if (isPointerEventBlockingLayer(element, clientX, clientY)) {
                 return null;
             }
 
