@@ -285,6 +285,8 @@ export const ko: ReportMessages = {
         back: "이전",
         doneTitle: "세팅 완료",
         doneDescription: "아래 키를 복사 후 개발자에게 전달하여 세팅이 완료될 때까지 잠시만 기다려주세요.",
+        issueTitle: "키에 문제가 발견됨",
+        issueDescription: "아래 키를 복사 후 개발자에게 전달하여 세팅이 완료될 때까지 잠시만 기다려주세요.",
         reviewerSnippetHint: "team.reviewers 에 추가할 정보입니다.",
         keyInfoToggle: "키 정보",
         copySnippet: "키 복사",

@@ -291,6 +291,8 @@ export const en = {
         copied: "Copied",
         done: "Done",
         refresh: "Refresh",
+        pendingTitle: "Waiting for developer registration",
+        pendingDescription: "Please wait until your developer registers the key you shared. After registration, refresh to communicate under your own name.",
     },
     authDiagnostics: {
         title: "Auth diagnostics",

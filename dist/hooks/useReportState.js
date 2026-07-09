@@ -121,10 +121,10 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         onReply,
     }), [onEvent, onReply]);
     const { selfProfile, saveSelfProfile, markOnboardingComplete } = useSelfProfile(projectId, environment);
-    const reviewerKeyEnforced = requireReviewerKey || authors.some((author) => Boolean(author.publicKey));
+    const requiresReviewerKey = requireReviewerKey || authors.some((author) => Boolean(author.publicKey));
     const { personalKey, publicKey, personalKeyRequired, personalKeyPendingRegistration, personalKeyCandidates, authorizedAuthors, issuePersonalKey, issueSelfKey, rotatePersonalKey, insertPersonalKey, signPayload, } = usePersonalKey({
-        enabled: reviewerKeyEnforced || hasStoredPersonalKey(projectId, environment),
-        requireKey: reviewerKeyEnforced,
+        enabled: !requiresReviewerKey || hasStoredPersonalKey(projectId, environment),
+        requireKey: requiresReviewerKey,
         projectId,
         environment,
         identify,
@@ -143,19 +143,17 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         }
         return presentationViewers[0]?.id ?? null;
     }, [isPresentationMode, presentationViewerId, presentationViewers]);
-    const effectivePersonalKeyRequired = personalKeyRequired && !isPresentationMode;
     const authorSelectionLocked = Boolean(personalKey);
     const hasPersistedPersonalKey = hasStoredPersonalKey(projectId, environment);
     const isSelfAuthenticated = hasPersistedPersonalKey;
     const authDiagnostics = useMemo(() => {
         const parsedBundle = personalKey ? parsePrivateKeyBundle(personalKey) : null;
-        const fallbackReviewer = authors.length === 1 ? authors[0] : null;
-        const configuredReviewer = parsedBundle ? (authors.find((author) => author.id === parsedBundle.authorId) ?? fallbackReviewer) : fallbackReviewer;
+        const teamReviewer = parsedBundle ? authors.find((author) => author.id === parsedBundle.authorId) : null;
         const expected = {
             projectId,
             environment: environment ?? "",
-            authorId: configuredReviewer?.id ?? null,
-            publicKey: configuredReviewer?.publicKey?.trim() || null,
+            authorId: teamReviewer?.id ?? null,
+            publicKey: teamReviewer?.publicKey?.trim() || null,
         };
         const actual = {
             projectId: parsedBundle?.projectId ?? null,
@@ -174,7 +172,7 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
                 matched: Boolean(expected.publicKey && actual.publicKey && publicKeysMatch(expected.publicKey, actual.publicKey)),
             },
         ];
-        if (!reviewerKeyEnforced) {
+        if (!requiresReviewerKey) {
             return { status: "disabled", reason: "reviewer-key-not-enforced", items, expected, actual };
         }
         if (!personalKey) {
@@ -189,41 +187,46 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         if ((parsedBundle.environment ?? "") !== (environment ?? "")) {
             return { status: "failed", reason: "environment-mismatch", items, expected, actual };
         }
-        if (!configuredReviewer) {
+        if (!teamReviewer) {
             return { status: "failed", reason: "missing-team-author", items, expected, actual };
         }
-        if (parsedBundle.authorId !== configuredReviewer.id) {
-            return { status: "failed", reason: "author-id-mismatch", items, expected, actual };
-        }
-        if (!configuredReviewer.publicKey?.trim()) {
+        if (!teamReviewer.publicKey?.trim()) {
             return { status: "failed", reason: "missing-team-public-key", items, expected, actual };
         }
-        if (!actual.publicKey || !publicKeysMatch(configuredReviewer.publicKey, actual.publicKey)) {
+        if (!actual.publicKey || !publicKeysMatch(teamReviewer.publicKey, actual.publicKey)) {
             return { status: "failed", reason: "public-key-mismatch", items, expected, actual };
         }
         return { status: "matched", reason: "matched", items, expected, actual };
-    }, [authors, environment, personalKey, projectId, reviewerKeyEnforced]);
-    const onboardingActive = !isPresentationMode &&
-        (!hasPersistedPersonalKey || (selfProfile !== null && !selfProfile.completed && personalKeyPendingRegistration));
-    const keyProblemActive = !isPresentationMode && reviewerKeyEnforced && authDiagnostics.status === "failed" && Boolean(personalKey);
-    const keyGateMode = (() => {
-        if (isPresentationMode || !reviewerKeyEnforced) {
-            return null;
+    }, [authors, environment, personalKey, projectId, requiresReviewerKey]);
+    const panelView = useMemo(() => {
+        if (isPresentationMode || !requiresReviewerKey) {
+            return "ready";
         }
-        if (keyProblemActive) {
-            return "key-issue";
+        if (!hasPersistedPersonalKey) {
+            return "onboarding";
         }
-        if (!onboardingActive && personalKeyPendingRegistration) {
+        if (selfProfile && !selfProfile.completed) {
             return "setup-complete";
         }
-        return null;
-    })();
-    const keyGateActive = onboardingActive || keyGateMode !== null;
+        if (personalKeyPendingRegistration) {
+            return "setup-complete";
+        }
+        if (authDiagnostics.status === "failed") {
+            if (authDiagnostics.reason === "public-key-mismatch" ||
+                authDiagnostics.reason === "project-mismatch" ||
+                authDiagnostics.reason === "environment-mismatch" ||
+                authDiagnostics.reason === "invalid-personal-key-format") {
+                return "key-issue";
+            }
+            return "setup-complete";
+        }
+        return "ready";
+    }, [authDiagnostics.reason, authDiagnostics.status, hasPersistedPersonalKey, isPresentationMode, personalKeyPendingRegistration, requiresReviewerKey, selfProfile]);
     useEffect(() => {
-        if (selfProfile && !selfProfile.completed && hasPersistedPersonalKey && !personalKeyPendingRegistration) {
+        if (selfProfile && !selfProfile.completed && hasPersistedPersonalKey && authorizedAuthors.length > 0) {
             markOnboardingComplete();
         }
-    }, [hasPersistedPersonalKey, markOnboardingComplete, personalKeyPendingRegistration, selfProfile]);
+    }, [authorizedAuthors.length, hasPersistedPersonalKey, markOnboardingComplete, selfProfile]);
     const completeOnboarding = useCallback(async ({ name }) => {
         const trimmedName = name.trim();
         const authorId = typeof crypto !== "undefined" && typeof crypto.randomUUID === "function" ? crypto.randomUUID() : `self-${Date.now()}-${Math.random().toString(16).slice(2)}`;
@@ -236,7 +239,7 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         if (!result.saved) {
             return { restored: false, reason: result.reason };
         }
-        if (reviewerKeyEnforced && !result.authorized) {
+        if (!requiresReviewerKey && !result.authorized) {
             return { restored: false, reason: "unauthorized" };
         }
         const authorId = getAuthorIdFromPrivateKey(backupKey);
@@ -244,10 +247,10 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         saveSelfProfile({
             name: restoredName ?? "",
             authorId: authorId ?? "",
-            completed: result.authorized || !reviewerKeyEnforced,
+            completed: result.authorized || !requiresReviewerKey,
         });
         return { restored: true, name: restoredName, authorized: result.authorized };
-    }, [insertPersonalKey, reviewerKeyEnforced, saveSelfProfile]);
+    }, [insertPersonalKey, requiresReviewerKey, saveSelfProfile]);
     const skipOnboarding = useCallback(() => {
         markOnboardingComplete();
     }, [markOnboardingComplete]);
@@ -262,22 +265,10 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         return auth ? { ...payload, auth } : payload;
     };
     const signUpdatePayload = async (payload) => {
-        if (effectivePersonalKeyRequired) {
-            throw new Error(messages.errors.personalKeyRequired);
-        }
-        if (personalKeyPendingRegistration) {
-            throw new Error(messages.personalKey.registrationPending);
-        }
         const auth = await signPayload("feedback:update", payload);
         return auth ? { ...payload, auth } : payload;
     };
     const signReplyPayload = async (payload) => {
-        if (effectivePersonalKeyRequired) {
-            throw new Error(messages.errors.personalKeyRequired);
-        }
-        if (personalKeyPendingRegistration) {
-            throw new Error(messages.personalKey.registrationPending);
-        }
         const auth = await signPayload("reply:create", payload);
         return auth ? { ...payload, auth } : payload;
     };
@@ -398,6 +389,9 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         fallbackStats: targetStats,
         messages,
     }), [panelRole, currentPageFilteredReports, sessionActor?.name, targetStats, messages]);
+    const authorizedAuthorId = authorizedAuthors[0]?.id ?? null;
+    const activeIdentifyId = activeIdentify?.id ?? null;
+    const activeIdentifyName = activeIdentify?.name ?? null;
     useEffect(() => {
         setDraft(null);
         setErrorMessage("");
@@ -428,7 +422,7 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
             window.clearTimeout(overlayHoverLeaveTimeoutRef.current);
             overlayHoverLeaveTimeoutRef.current = null;
         }
-    }, [currentPathname, mode, activeIdentify, authorizedAuthors, isPresentationMode, sessionActor?.name, selfProfile?.name]);
+    }, [currentPathname, mode, activeIdentifyId, activeIdentifyName, authorizedAuthorId, isPresentationMode, sessionActor?.name, selfProfile?.authorId, selfProfile?.name]);
     useEffect(() => {
         if (!isPresentationMode || presentationViewers.length === 0 || !resolvedPresentationViewerId) {
             return;
@@ -1331,10 +1325,6 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         setReplySubmitAsQuestion(false);
     };
     const toggleReportMode = () => {
-        if (effectivePersonalKeyRequired || keyGateActive) {
-            setErrorMessage(messages.errors.personalKeyRequired);
-            return;
-        }
         setShowTargetPreview(false);
         setMode((current) => (current === "report" ? "idle" : "report"));
     };
@@ -1536,14 +1526,6 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         if (!draft) {
             return null;
         }
-        if (effectivePersonalKeyRequired) {
-            setErrorMessage(messages.errors.personalKeyRequired);
-            return null;
-        }
-        if (personalKeyPendingRegistration) {
-            setErrorMessage(messages.personalKey.registrationPending);
-            return null;
-        }
         const nextError = getFieldError(draft.cases, draft.fieldValues, fields, messages.errors);
         if (nextError) {
             setErrorMessage(nextError);
@@ -1611,14 +1593,6 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
     const handleCreateSubmit = async () => {
         const payload = buildCreatePayloadFromDraft();
         if (!payload) {
-            return;
-        }
-        if (effectivePersonalKeyRequired) {
-            setErrorMessage(messages.errors.personalKeyRequired);
-            return;
-        }
-        if (personalKeyPendingRegistration) {
-            setErrorMessage(messages.personalKey.registrationPending);
             return;
         }
         try {
@@ -1730,14 +1704,6 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         if (!activeReplyReport) {
             return;
         }
-        if (effectivePersonalKeyRequired) {
-            setErrorMessage(messages.errors.personalKeyRequired);
-            return;
-        }
-        if (personalKeyPendingRegistration) {
-            setErrorMessage(messages.personalKey.registrationPending);
-            return;
-        }
         if (!replyDraft.trim()) {
             setErrorMessage(messages.errors.replyContentRequired);
             return;
@@ -1803,14 +1769,6 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         if (!activeReplyReport) {
             return;
         }
-        if (effectivePersonalKeyRequired) {
-            setErrorMessage(messages.errors.personalKeyRequired);
-            return;
-        }
-        if (personalKeyPendingRegistration) {
-            setErrorMessage(messages.personalKey.registrationPending);
-            return;
-        }
         if (!ensureFocusedCase(activeReplyReport) || !focusedCaseId) {
             return;
         }
@@ -1850,14 +1808,6 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
     };
     const handleTransferAssignee = async () => {
         if (!activeReplyReport) {
-            return;
-        }
-        if (effectivePersonalKeyRequired) {
-            setErrorMessage(messages.errors.personalKeyRequired);
-            return;
-        }
-        if (personalKeyPendingRegistration) {
-            setErrorMessage(messages.personalKey.registrationPending);
             return;
         }
         if (!ensureFocusedCase(activeReplyReport) || !focusedCaseId) {
@@ -1986,10 +1936,6 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         }
     };
     const handleDelete = async (id) => {
-        if (personalKeyRequired) {
-            setErrorMessage(messages.errors.personalKeyRequired);
-            return;
-        }
         try {
             await deleteFeedback(id);
             await notifyFeedbackDelete(eventCallbacks, id);
@@ -2056,14 +2002,10 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         personalKey,
         publicKey,
         personalKeyRequired,
-        effectivePersonalKeyRequired,
-        personalKeyPendingRegistration,
         personalKeyCandidates,
         authDiagnostics,
         authorSelectionLocked,
-        onboardingActive,
-        keyGateActive,
-        keyGateMode,
+        panelView,
         completeOnboarding,
         restoreFromBackup,
         skipOnboarding,

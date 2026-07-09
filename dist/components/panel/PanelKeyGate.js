@@ -1,20 +1,20 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useState } from "react";
-import { useReport } from "../../providers/reportContext.js";
 import { ChevronDownIcon } from "../../components/icons/Icons.js";
+import { useReport } from "../../providers/reportContext.js";
 function buildReviewerSnippet({ name, authorId, publicKey }) {
     return `{ id: "${authorId}", name: "${name}", publicKey: "${publicKey}" }`;
 }
-export function PanelKeyGate() {
-    const { messages, keyGateMode, selfProfile, publicKey, setErrorMessage } = useReport();
+export function PanelKeyGate({ mode }) {
+    const { messages, selfProfile, publicKey, setErrorMessage } = useReport();
     const onboarding = messages.onboarding;
     const [copied, setCopied] = useState(false);
     const [keyInfoOpen, setKeyInfoOpen] = useState(false);
     const name = selfProfile?.name?.trim() || "reviewer";
     const authorId = selfProfile?.authorId?.trim() || "";
     const canShowSnippet = Boolean(authorId && publicKey);
-    const title = keyGateMode === "key-issue" ? onboarding.issueTitle : onboarding.doneTitle;
-    const description = keyGateMode === "key-issue" ? onboarding.issueDescription : onboarding.doneDescription;
+    const title = mode === "key-issue" ? onboarding.issueTitle : onboarding.doneTitle;
+    const description = mode === "key-issue" ? onboarding.issueDescription : onboarding.doneDescription;
     const handleCopySnippet = async () => {
         if (!canShowSnippet || !publicKey) {
             return;

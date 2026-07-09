@@ -19,6 +19,7 @@ type AuthDiagnostics = {
     expected: Record<AuthDiagnosticsField, string | null>;
     actual: Record<AuthDiagnosticsField, string | null>;
 };
+export type PanelView = "onboarding" | "setup-complete" | "key-issue" | "ready";
 export type ReportStateConfig = {
     projectId: string;
     environment?: string;
@@ -83,14 +84,10 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     personalKey: string | null;
     publicKey: string | null;
     personalKeyRequired: boolean;
-    effectivePersonalKeyRequired: boolean;
-    personalKeyPendingRegistration: boolean;
     personalKeyCandidates: ReportAuthor[];
     authDiagnostics: AuthDiagnostics;
     authorSelectionLocked: boolean;
-    onboardingActive: boolean;
-    keyGateActive: boolean;
-    keyGateMode: "setup-complete" | "key-issue" | null;
+    panelView: PanelView;
     completeOnboarding: ({ name }: {
         name: string;
     }) => Promise<{

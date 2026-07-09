@@ -11,6 +11,8 @@ import {
     signReportPayload,
 } from "@/utils/personalKey.js";
 
+const EMPTY_AUTHORIZED_AUTHORS: ReportAuthor[] = [];
+
 type UsePersonalKeyOptions = {
     enabled: boolean;
     requireKey: boolean;
@@ -124,13 +126,18 @@ export function usePersonalKey({ enabled, requireKey, projectId, environment, id
         [authorizedAuthor, environment, personalKey, projectId],
     );
 
+    const authorizedAuthors = useMemo(
+        () => (requireKey ? (authorizedAuthor ? [authorizedAuthor] : EMPTY_AUTHORIZED_AUTHORS) : authors),
+        [authorizedAuthor, authors, requireKey],
+    );
+
     return {
         personalKey,
         publicKey: personalKey ? getPublicKeyFromPrivateKey(personalKey) : null,
         personalKeyRequired: requireKey && !personalKey,
         personalKeyPendingRegistration: requireKey && Boolean(personalKey) && !authorizedAuthor,
         personalKeyCandidates: authors,
-        authorizedAuthors: requireKey ? (authorizedAuthor ? [authorizedAuthor] : []) : authors,
+        authorizedAuthors,
         issuePersonalKey,
         issueSelfKey,
         rotatePersonalKey,

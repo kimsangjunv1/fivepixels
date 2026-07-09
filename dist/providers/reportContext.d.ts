@@ -26,8 +26,6 @@ declare const ReportContext: import("react").Context<{
     personalKey: string | null;
     publicKey: string | null;
     personalKeyRequired: boolean;
-    effectivePersonalKeyRequired: boolean;
-    personalKeyPendingRegistration: boolean;
     personalKeyCandidates: import("..").ReportAuthor[];
     authDiagnostics: {
         status: "disabled" | "matched" | "failed";
@@ -42,9 +40,7 @@ declare const ReportContext: import("react").Context<{
         actual: Record<"environment" | "projectId" | "publicKey" | "authorId", string | null>;
     };
     authorSelectionLocked: boolean;
-    onboardingActive: boolean;
-    keyGateActive: boolean;
-    keyGateMode: "setup-complete" | "key-issue" | null;
+    panelView: import("../hooks/useReportState.js").PanelView;
     completeOnboarding: ({ name }: {
         name: string;
     }) => Promise<{
@@ -288,8 +284,6 @@ export declare function useReport(): {
     personalKey: string | null;
     publicKey: string | null;
     personalKeyRequired: boolean;
-    effectivePersonalKeyRequired: boolean;
-    personalKeyPendingRegistration: boolean;
     personalKeyCandidates: import("..").ReportAuthor[];
     authDiagnostics: {
         status: "disabled" | "matched" | "failed";
@@ -304,9 +298,7 @@ export declare function useReport(): {
         actual: Record<"environment" | "projectId" | "publicKey" | "authorId", string | null>;
     };
     authorSelectionLocked: boolean;
-    onboardingActive: boolean;
-    keyGateActive: boolean;
-    keyGateMode: "setup-complete" | "key-issue" | null;
+    panelView: import("../hooks/useReportState.js").PanelView;
     completeOnboarding: ({ name }: {
         name: string;
     }) => Promise<{

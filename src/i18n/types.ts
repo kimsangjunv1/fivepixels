@@ -302,6 +302,8 @@ export type ReportMessages = {
         back: string;
         doneTitle: string;
         doneDescription: string;
+        issueTitle: string;
+        issueDescription: string;
         reviewerSnippetHint: string;
         keyInfoToggle: string;
         copySnippet: string;

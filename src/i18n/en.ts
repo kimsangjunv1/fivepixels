@@ -285,6 +285,8 @@ export const en: ReportMessages = {
         back: "Back",
         doneTitle: "Setup complete",
         doneDescription: "Copy the key below and share it with your developer, then wait until the setup is complete.",
+        issueTitle: "A problem was found with your key",
+        issueDescription: "Copy the key below and share it with your developer, then wait until the setup is complete.",
         reviewerSnippetHint: "Add this to team.reviewers.",
         keyInfoToggle: "Key details",
         copySnippet: "Copy key",

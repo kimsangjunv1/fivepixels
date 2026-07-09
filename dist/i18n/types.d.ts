@@ -295,6 +295,8 @@ export type ReportMessages = {
         copied: string;
         done: string;
         refresh: string;
+        pendingTitle: string;
+        pendingDescription: string;
     };
     authDiagnostics: {
         title: string;

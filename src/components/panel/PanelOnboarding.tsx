@@ -1,63 +1,17 @@
 import { useState, type DragEvent } from "react";
 import { PANEL_ROLE_VALUES, type PanelRole } from "@/constants/panelRole.js";
 import { useReport } from "@/providers/reportContext.js";
-import { ChevronDownIcon } from "@/components/icons/Icons.js";
 import { PanelDropdownMenuItem } from "./PanelDropdownMenu.js";
 import { isPersonalKeyFile, readPersonalKeyFile } from "@/utils/feedbackDataTransfer.js";
 
-type OnboardingStep = "intro" | "restore" | "role" | "key" | "done";
-
-type CompletedInfo = {
-    name: string;
-    authorId: string;
-    publicKey: string;
-};
-
-function buildReviewerSnippet(info: CompletedInfo) {
-    return `{ id: "${info.authorId}", name: "${info.name}", publicKey: "${info.publicKey}" }`;
-}
-
-function resolveOnboardingResumeState({
-    selfProfile,
-    personalKey,
-    publicKey,
-}: {
-    selfProfile: { name: string; authorId: string; completed: boolean } | null;
-    personalKey: string | null;
-    publicKey: string | null;
-}): { step: OnboardingStep; completed: CompletedInfo | null; name: string } {
-    if (selfProfile && !selfProfile.completed && personalKey && publicKey) {
-        return {
-            step: "done",
-            completed: { name: selfProfile.name, authorId: selfProfile.authorId, publicKey },
-            name: selfProfile.name,
-        };
-    }
-
-    return { step: "intro", completed: null, name: selfProfile?.name ?? "" };
-}
+type OnboardingStep = "intro" | "restore" | "role" | "key";
 
 export function PanelOnboarding() {
-    const {
-        messages,
-        panelRole,
-        setPanelRole,
-        completeOnboarding,
-        restoreFromBackup,
-        skipOnboarding,
-        setErrorMessage,
-        selfProfile,
-        personalKey,
-        publicKey,
-    } = useReport();
+    const { messages, panelRole, setPanelRole, completeOnboarding, restoreFromBackup, setErrorMessage, selfProfile } = useReport();
     const onboarding = messages.onboarding;
-    const resumeState = resolveOnboardingResumeState({ selfProfile, personalKey, publicKey });
-    const [step, setStep] = useState<OnboardingStep>(resumeState.step);
-    const [name, setName] = useState(resumeState.name);
+    const [step, setStep] = useState<OnboardingStep>("intro");
+    const [name, setName] = useState(selfProfile?.name ?? "");
     const [isCreating, setIsCreating] = useState(false);
-    const [completed, setCompleted] = useState<CompletedInfo | null>(resumeState.completed);
-    const [copied, setCopied] = useState(false);
-    const [keyInfoOpen, setKeyInfoOpen] = useState(false);
     const [backupKey, setBackupKey] = useState("");
     const [isRestoring, setIsRestoring] = useState(false);
     const [restoreError, setRestoreError] = useState("");
@@ -75,9 +29,7 @@ export function PanelOnboarding() {
         setIsCreating(true);
 
         try {
-            const issued = await completeOnboarding({ name: name.trim() });
-            setCompleted({ name: name.trim(), authorId: issued.authorId, publicKey: issued.publicKey });
-            setStep("done");
+            await completeOnboarding({ name: name.trim() });
         } catch {
             setErrorMessage(messages.errors.clipboardCopyFailed);
         } finally {
@@ -155,28 +107,6 @@ export function PanelOnboarding() {
             setRestoreError("");
         } catch {
             setRestoreError(onboarding.restoreDropFailed);
-        }
-    };
-
-    const handleFinish = () => {
-        skipOnboarding();
-
-        if (typeof window !== "undefined") {
-            window.location.reload();
-        }
-    };
-
-    const handleCopySnippet = async () => {
-        if (!completed) {
-            return;
-        }
-
-        try {
-            await navigator.clipboard.writeText(buildReviewerSnippet(completed));
-            setCopied(true);
-            window.setTimeout(() => setCopied(false), 1500);
-        } catch {
-            setErrorMessage(messages.errors.clipboardCopyFailed);
         }
     };
 
@@ -295,7 +225,7 @@ export function PanelOnboarding() {
                         </button>
                     </div>
                 </>
-            ) : step === "key" ? (
+            ) : (
                 <>
                     <div>
                         <h6 className="text-[14px] font-bold text-[var(--adaptive-black900)]">{onboarding.keyStepTitle}</h6>
@@ -325,53 +255,6 @@ export function PanelOnboarding() {
                             className="rounded-[8px] bg-[var(--adaptive-blue100)] px-[12px] py-[6px] text-[12px] font-bold text-[var(--adaptive-blue500)] disabled:opacity-50"
                         >
                             {onboarding.createKey}
-                        </button>
-                    </div>
-                </>
-            ) : (
-                <>
-                    <div>
-                        <h6 className="text-[14px] font-bold text-[var(--adaptive-black900)]">{onboarding.doneTitle}</h6>
-                        <p className="mt-[4px] text-[12px] leading-[1.5] text-[var(--adaptive-black600)]">{onboarding.doneDescription}</p>
-                    </div>
-
-                    {completed ? (
-                        <div className="flex flex-col gap-[6px] overflow-hidden rounded-[8px] border border-[var(--adaptive-black200)]">
-                            <button
-                                type="button"
-                                onClick={() => setKeyInfoOpen((current) => !current)}
-                                aria-expanded={keyInfoOpen}
-                                className="flex items-center justify-between gap-[8px] px-[10px] py-[8px] text-left text-[12px] font-semibold text-[var(--adaptive-black700)] hover:bg-[var(--adaptive-black100)]"
-                            >
-                                <span>{onboarding.keyInfoToggle}</span>
-                                <ChevronDownIcon className={`h-[14px] w-[14px] shrink-0 transition-transform ${keyInfoOpen ? "rotate-180" : ""}`} />
-                            </button>
-
-                            {keyInfoOpen ? (
-                                <div className="flex flex-col gap-[6px] px-[10px] pb-[10px]">
-                                    <p className="text-[11px] font-semibold text-[var(--adaptive-black500)]">{onboarding.reviewerSnippetHint}</p>
-                                    <pre className="max-h-[120px] overflow-auto whitespace-pre-wrap break-all rounded-[8px] bg-[var(--adaptive-black100)] p-[10px] text-[11px] leading-[1.5] text-[var(--adaptive-black800)]">
-                                        {buildReviewerSnippet(completed)}
-                                    </pre>
-                                </div>
-                            ) : null}
-                        </div>
-                    ) : null}
-
-                    <div className="flex items-center justify-end gap-[10px]">
-                        <button
-                            type="button"
-                            onClick={() => void handleCopySnippet()}
-                            className="rounded-[8px] bg-[var(--adaptive-grey300)] px-[12px] py-[6px] text-[12px] font-semibold text-[var(--adaptive-black700)]"
-                        >
-                            {copied ? onboarding.copied : onboarding.copySnippet}
-                        </button>
-                        <button
-                            type="button"
-                            onClick={handleFinish}
-                            className="rounded-[8px] bg-[var(--adaptive-blue100)] px-[12px] py-[6px] text-[12px] font-bold text-[var(--adaptive-blue500)]"
-                        >
-                            {onboarding.refresh}
                         </button>
                     </div>
                 </>

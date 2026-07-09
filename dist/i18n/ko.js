@@ -291,6 +291,8 @@ export const ko = {
         copied: "복사됨",
         done: "완료",
         refresh: "새로고침",
+        pendingTitle: "개발자 등록 대기 중",
+        pendingDescription: "개발자가 전달받은 키를 등록하기 전까지 잠시만 기다려주세요. 등록 후 새로고침하면 본인 이름으로 소통할 수 있습니다.",
     },
     authDiagnostics: {
         title: "인증 실패 진단",

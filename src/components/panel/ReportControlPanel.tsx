@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { panelAnchorSide, placementToCollapsedPanelStyle, usePanelDock } from "@/hooks/usePanelDock.js";
 import { usePanelResize, panelSizeToStyle } from "@/hooks/usePanelResize.js";
 import { usePanelFeedbackTransfer } from "@/hooks/usePanelFeedbackTransfer.js";
@@ -22,6 +22,7 @@ import { CornerResizeHandle } from "@/components/ui/CornerResizeHandle.js";
 import { ProbeEditModeBanner } from "./ProbeEditModeBanner.js";
 import { PanelRoleSwitch } from "./PanelRoleSwitch.js";
 import { PanelOnboarding } from "./PanelOnboarding.js";
+import { PanelKeyGate } from "./PanelKeyGate.js";
 import { panelNumericClassName } from "@/utils/panelTypography.js";
 import { createPersonalKeyBackupFilename, downloadPersonalKeyBackup } from "@/utils/feedbackDataTransfer.js";
 import type { ReportPanelTab } from "@/types/report-ui.js";
@@ -68,36 +69,16 @@ function PanelTabButton({ label, active, onClick }: { label: string; active: boo
     );
 }
 
-function EnvironmentBadge({ environment }: { environment?: string }) {
-    if (!environment) {
-        return null;
-    }
-
-    return (
-        <span className="inline-flex items-center gap-[4px] rounded-full border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] px-[4px] py-[2px]">
-            <span className="text-[12px] text-[var(--adaptive-black500)]">{environment}</span>
-            <span
-                className="inline-flex h-[4px] w-[4px] rounded-full bg-[var(--adaptive-green500)]"
-                aria-hidden
-            />
-        </span>
-    );
-}
-
-const RECORDING_STATUS_SHADOW = "drop-shadow(0 1px 2px rgba(0,0,0,0.95)) drop-shadow(0 2px 6px rgba(0,0,0,0.9)) drop-shadow(0 4px 16px rgba(0,0,0,0.85)) drop-shadow(0 0 24px rgba(0,0,0,0.75))";
-
 export function ReportControlPanel() {
     const {
         mode,
         roleStatItems,
-        statusText,
         errorMessage,
         environment,
         projectId,
         appVersion,
         activeReplyReportId,
         showFeedbackList,
-        showTargetPreview,
         isMobileViewport,
         panelTab,
         panelAppearance,
@@ -109,13 +90,9 @@ export function ReportControlPanel() {
         canTransferFeedback,
         personalKey,
         publicKey,
-        personalKeyRequired,
-        effectivePersonalKeyRequired,
-        personalKeyPendingRegistration,
-        onboardingActive,
+        panelView,
         messages,
         toggleReportMode,
-        toggleTargetPreview,
         toggleIssueMode,
         openPanelTab,
         setErrorMessage,
@@ -127,7 +104,7 @@ export function ReportControlPanel() {
     const [personalKeyNotice, setPersonalKeyNotice] = useState("");
     const isRecording = mode === "report";
     const isIssueMode = mode === "view";
-    const feedbackBlocked = effectivePersonalKeyRequired || onboardingActive;
+    const isGateView = panelView !== "ready";
     const transferScope = { projectId, environment, appVersion };
     const {
         isDragOver,
@@ -164,10 +141,10 @@ export function ReportControlPanel() {
     });
     const { panelRef, panelStyle, placementCorner, isDragging, activeCorner, handleDragHandlePointerDown } = usePanelDock({
         enabled: !isMobileViewport,
-        measureKey: `${panelCollapsed}-${isRecording}-${panelTab ?? "none"}-${isIssueMode}-${importStep !== "none" ? "import" : "none"}-${commandStep !== "none" ? "command" : "none"}-${onboardingActive ? "onboarding" : "ready"}`,
+        measureKey: `${panelCollapsed}-${isRecording}-${panelTab ?? "none"}-${isIssueMode}-${importStep !== "none" ? "import" : "none"}-${commandStep !== "none" ? "command" : "none"}-${panelView}`,
     });
     const panelExpanded = !panelCollapsed && !isRecording;
-    const contentSectionOpen = panelTab !== null && personalKeyStep === "none" && importStep === "none" && !onboardingActive;
+    const contentSectionOpen = panelTab !== null && personalKeyStep === "none" && importStep === "none" && !isGateView;
     const { panelSize, resizeCorner, handleResizePointerDown, resetPanelSize, isDefaultSize, isResizing, ghostRef } = usePanelResize({
         enabled: !isMobileViewport && panelExpanded,
         corner: placementCorner,
@@ -176,12 +153,6 @@ export function ReportControlPanel() {
     });
     const applyFixedHeight = contentSectionOpen && panelSize.height !== null;
     const anchorSide = panelAnchorSide(placementCorner);
-
-    useEffect(() => {
-        if (personalKeyRequired && !personalKey && !onboardingActive) {
-            setPersonalKeyStep("required");
-        }
-    }, [personalKey, personalKeyRequired, onboardingActive]);
 
     const handleKeyCopy = async () => {
         if (!personalKey) {
@@ -222,7 +193,7 @@ export function ReportControlPanel() {
     };
 
     const resolvedPanelStyle = panelCollapsed && !isRecording ? placementToCollapsedPanelStyle({ corner: placementCorner }) : panelStyle;
-    const resolvedSizeStyle = panelExpanded ? panelSizeToStyle(panelSize, applyFixedHeight) : undefined;
+    const resolvedSizeStyle = panelExpanded ? panelSizeToStyle(panelSize, applyFixedHeight || isGateView) : undefined;
 
     const panelSideControls = panelExpanded ? (
         <div className="flex shrink-0 flex-col items-center border-l border-l-[var(--adaptive-border-subtle)] h-full">
@@ -234,6 +205,13 @@ export function ReportControlPanel() {
             />
         </div>
     ) : null;
+
+    const gateBody =
+        panelView === "onboarding" ? (
+            <PanelOnboarding />
+        ) : panelView === "setup-complete" || panelView === "key-issue" ? (
+            <PanelKeyGate mode={panelView} />
+        ) : null;
 
     return (
         <>
@@ -249,29 +227,12 @@ export function ReportControlPanel() {
                 />
             ) : null}
 
-            {/* 임시 주석 */}
-            {/* {isRecording && statusText ? (
-                <div
-                    className="pointer-events-none fixed bottom-[52px] left-0 right-0 z-[1000000] flex flex-col items-center gap-[4px] px-4 text-center text-white"
-                    style={{ filter: RECORDING_STATUS_SHADOW }}
-                >
-                    {statusText.split("\n").map((line, index) => (
-                        <p
-                            key={`${index}-${line}`}
-                            className={index === 0 ? "text-[12px] font-medium" : "text-[18px] font-bold"}
-                        >
-                            {line}
-                        </p>
-                    ))}
-                </div>
-            ) : null} */}
-
             <div
                 ref={panelRef}
-                onDragEnter={handleDragEnter}
-                onDragLeave={handleDragLeave}
-                onDragOver={handleDragOver}
-                onDrop={handleDrop}
+                onDragEnter={isGateView ? undefined : handleDragEnter}
+                onDragLeave={isGateView ? undefined : handleDragLeave}
+                onDragOver={isGateView ? undefined : handleDragOver}
+                onDrop={isGateView ? undefined : handleDrop}
                 className={`pointer-events-auto z-[1000000] flex ${
                     isRecording
                         ? "min-h-[40px] bg-[var(--adaptive-neutralTintOpacity900)] backdrop-blur-[10px] rounded-[12px] shadow-[0_0_120px_0_var(--adaptive-black500)]"
@@ -289,13 +250,12 @@ export function ReportControlPanel() {
                         onPointerDown={handleResizePointerDown}
                     />
                 ) : null}
-                <div className={panelCollapsed && !isRecording ? "flex shrink-0" : `flex w-full min-w-0 flex-col ${applyFixedHeight || onboardingActive ? "h-full min-h-0" : ""}`}>
+                <div className={panelCollapsed && !isRecording ? "flex shrink-0" : `flex w-full min-w-0 flex-col ${applyFixedHeight || isGateView ? "h-full min-h-0" : ""}`}>
                     {panelCollapsed && !isRecording ? null : <ProbeEditModeBanner />}
                     {isRecording ? (
                         <section className="flex items-center justify-between gap-[16px] px-[12px] py-[8px]">
                             <section className="flex items-center gap-[4px] justify-start shrink-0">
                                 <LogoIcon className="w-[94px]" />
-                                {/* <p className="text-[var(--adaptive-black900)] text-[14px]">Fivepixels°</p> */}
                             </section>
 
                             <button
@@ -313,9 +273,28 @@ export function ReportControlPanel() {
                             onClick={handleTogglePanelCollapsed}
                             messages={messages}
                         />
+                    ) : isGateView ? (
+                        <section className="relative flex h-full min-h-0 flex-1 flex-col">
+                            <section className="flex shrink-0">
+                                {anchorSide === "left" ? panelSideControls : null}
+
+                                <div className="flex flex-1 flex-col">
+                                    <section
+                                        className="flex items-center justify-between gap-[8px] cursor-move border-b border-b-[var(--adaptive-border-subtle)] p-[4px_12px]"
+                                        onPointerDown={handleDragHandlePointerDown}
+                                    >
+                                        <LogoIcon className="w-[94px] shrink-0" />
+                                    </section>
+                                </div>
+
+                                {anchorSide === "right" ? panelSideControls : null}
+                            </section>
+
+                            <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">{gateBody}</div>
+                        </section>
                     ) : (
                         <>
-                            <section className={`relative flex min-w-0 flex-col ${applyFixedHeight || onboardingActive ? "h-full min-h-0 flex-1" : "shrink-0"}`}>
+                            <section className={`relative flex min-w-0 flex-col ${applyFixedHeight ? "h-full min-h-0 flex-1" : "shrink-0"}`}>
                                 {isDragOver ? (
                                     <div className="pointer-events-none absolute inset-0 z-[30] flex items-center justify-center rounded-[12px] bg-[#dbeafe]/90 px-[16px] text-center backdrop-blur-[2px]">
                                         <p className="text-[14px] font-bold text-[var(--adaptive-blue500)]">{messages.panel.importDragOverlay}</p>
@@ -332,138 +311,108 @@ export function ReportControlPanel() {
                                         >
                                             <section className="flex min-w-0 items-center gap-[4px]">
                                                 <LogoIcon className="w-[94px] shrink-0" />
-
-                                                {/* <EnvironmentBadge environment={environment} /> */}
                                             </section>
 
                                             <section className="flex shrink-0 items-center gap-[4px]">
-                                                {onboardingActive ? null : (
-                                                    <>
-                                                        <PanelRoleSwitch />
+                                                <PanelRoleSwitch />
 
-                                                        <IconTooltipButton
-                                                            label={messages.panel.viewFeedbacks}
-                                                            active={isIssueMode}
-                                                            onClick={toggleIssueMode}
-                                                        >
-                                                            <EyeOpenIcon className="h-[16px] w-[16px]" />
-                                                        </IconTooltipButton>
+                                                <IconTooltipButton
+                                                    label={messages.panel.viewFeedbacks}
+                                                    active={isIssueMode}
+                                                    onClick={toggleIssueMode}
+                                                >
+                                                    <EyeOpenIcon className="h-[16px] w-[16px]" />
+                                                </IconTooltipButton>
 
-                                                        <IconTooltipButton
-                                                            label={messages.panel.tabSettings}
-                                                            active={panelTab === "settings" || panelTab === "command"}
-                                                            onClick={() => handlePanelTabClick("settings")}
-                                                        >
-                                                            <SettingsIcon className="h-[16px] w-[16px]" />
-                                                        </IconTooltipButton>
+                                                <IconTooltipButton
+                                                    label={messages.panel.tabSettings}
+                                                    active={panelTab === "settings" || panelTab === "command"}
+                                                    onClick={() => handlePanelTabClick("settings")}
+                                                >
+                                                    <SettingsIcon className="h-[16px] w-[16px]" />
+                                                </IconTooltipButton>
 
-                                                        <IconTooltipButton
-                                                            label={messages.panel.resetSizeTitle}
-                                                            disabled={isDefaultSize}
-                                                            onClick={resetPanelSize}
-                                                        >
-                                                            <span className="inline-flex h-[16px] w-[16px] items-center justify-center rounded-[4px] border border-[var(--adaptive-border-subtle)] text-[10px] font-bold leading-none">
-                                                                ↺
-                                                            </span>
-                                                        </IconTooltipButton>
-                                                    </>
-                                                )}
+                                                <IconTooltipButton
+                                                    label={messages.panel.resetSizeTitle}
+                                                    disabled={isDefaultSize}
+                                                    onClick={resetPanelSize}
+                                                >
+                                                    <span className="inline-flex h-[16px] w-[16px] items-center justify-center rounded-[4px] border border-[var(--adaptive-border-subtle)] text-[10px] font-bold leading-none">
+                                                        ↺
+                                                    </span>
+                                                </IconTooltipButton>
                                             </section>
                                         </section>
 
-                                        {onboardingActive ? null : (
-                                            <section className="flex items-center h-full">
-                                                <button
-                                                    type="button"
-                                                    disabled={feedbackBlocked}
-                                                    onClick={toggleReportMode}
-                                                    className="flex flex-col shrink-0 justify-center items-center gap-[4px] p-[0_16px] border-r border-r-[var(--adaptive-border-subtle)] h-full hover:bg-[#f6572d] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent"
-                                                >
-                                                    <SelectIcon className="w-[24px]" />
-                                                    {/* <p className="text-[12px] text-[var(--adaptive-black900)]">{messages.panel.addFeedback}</p> */}
-                                                </button>
+                                        <section className="flex items-center h-full">
+                                            <button
+                                                type="button"
+                                                onClick={toggleReportMode}
+                                                className="flex flex-col shrink-0 justify-center items-center gap-[4px] p-[0_16px] border-r border-r-[var(--adaptive-border-subtle)] h-full hover:bg-[#f6572d]"
+                                            >
+                                                <SelectIcon className="w-[24px]" />
+                                            </button>
 
-                                                <section
-                                                    className="flex min-w-0 flex-1 px-[16px] py-[8px]"
-                                                    aria-label={messages.panel.repositionAriaLabel}
-                                                    title={messages.panel.repositionTitle}
-                                                    style={isDragging ? { opacity: 0.8 } : undefined}
-                                                >
-                                                    {roleStatItems.map((item) =>
-                                                        item.kind === "cta" ? (
-                                                            <p
-                                                                key={item.key}
-                                                                className="flex-1 self-center text-[12px] font-medium text-[var(--adaptive-black600)]"
-                                                            >
-                                                                {item.display}
-                                                            </p>
-                                                        ) : (
-                                                            <section
-                                                                key={item.key}
-                                                                className="flex flex-col items-start gap-[4px] flex-1"
-                                                            >
-                                                                <p className="text-[12px] text-[var(--adaptive-black500)]">{item.label}</p>
-                                                                <p className={`text-[14px] font-semibold text-[var(--adaptive-black900)] ${panelNumericClassName}`}>{item.display}</p>
-                                                            </section>
-                                                        ),
-                                                    )}
-                                                </section>
+                                            <section
+                                                className="flex min-w-0 flex-1 px-[16px] py-[8px]"
+                                                aria-label={messages.panel.repositionAriaLabel}
+                                                title={messages.panel.repositionTitle}
+                                                style={isDragging ? { opacity: 0.8 } : undefined}
+                                            >
+                                                {roleStatItems.map((item) =>
+                                                    item.kind === "cta" ? (
+                                                        <p
+                                                            key={item.key}
+                                                            className="flex-1 self-center text-[12px] font-medium text-[var(--adaptive-black600)]"
+                                                        >
+                                                            {item.display}
+                                                        </p>
+                                                    ) : (
+                                                        <section
+                                                            key={item.key}
+                                                            className="flex flex-col items-start gap-[4px] flex-1"
+                                                        >
+                                                            <p className="text-[12px] text-[var(--adaptive-black500)]">{item.label}</p>
+                                                            <p className={`text-[14px] font-semibold text-[var(--adaptive-black900)] ${panelNumericClassName}`}>{item.display}</p>
+                                                        </section>
+                                                    ),
+                                                )}
                                             </section>
-                                        )}
+                                        </section>
                                     </div>
 
                                     {anchorSide === "right" ? panelSideControls : null}
                                 </section>
 
-                                {onboardingActive ? null : (
-                                    <section className="flex shrink-0 items-stretch border-t border-[var(--adaptive-border-subtle)]">
-                                        <div className="flex min-w-0 flex-1 overflow-hidden border-b border-b-[var(--adaptive-border-subtle)]">
-                                            {/* <PanelTabButton
-                                            label={messages.panel.tabOverview}
-                                            active={panelTab === "overview"}
-                                            onClick={() => handlePanelTabClick("overview")}
+                                <section className="flex shrink-0 items-stretch border-t border-[var(--adaptive-border-subtle)]">
+                                    <div className="flex min-w-0 flex-1 overflow-hidden border-b border-b-[var(--adaptive-border-subtle)]">
+                                        <PanelTabButton
+                                            label={messages.panel.tabThisPage}
+                                            active={panelTab === "route-details"}
+                                            onClick={() => handlePanelTabClick("route-details")}
                                         />
-                                        <div className="h-full w-[1px] bg-[var(--adaptive-border-subtle)]" /> */}
-                                            <PanelTabButton
-                                                label={messages.panel.tabThisPage}
-                                                active={panelTab === "route-details"}
-                                                onClick={() => handlePanelTabClick("route-details")}
-                                            />
-                                            <div className="h-full w-[1px] bg-[var(--adaptive-border-subtle)]" />
-                                            {showFeedbackList ? (
-                                                <>
-                                                    <PanelTabButton
-                                                        label={messages.panel.tabFeedbackList}
-                                                        active={panelTab === "feedback-list"}
-                                                        onClick={() => handlePanelTabClick("feedback-list")}
-                                                    />
-                                                    <div className="h-full w-[1px] bg-[var(--adaptive-border-subtle)]" />
-                                                </>
-                                            ) : null}
-                                            <PanelTabButton
-                                                label={messages.panel.tabDiagnostics}
-                                                active={panelTab === "diagnostics"}
-                                                onClick={() => handlePanelTabClick("diagnostics")}
-                                            />
-                                            <div className="h-full w-[1px] bg-[var(--adaptive-border-subtle)]" />
-                                        </div>
-                                    </section>
-                                )}
-
-                                {onboardingActive ? (
-                                    <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
-                                        <PanelOnboarding />
+                                        <div className="h-full w-[1px] bg-[var(--adaptive-border-subtle)]" />
+                                        {showFeedbackList ? (
+                                            <>
+                                                <PanelTabButton
+                                                    label={messages.panel.tabFeedbackList}
+                                                    active={panelTab === "feedback-list"}
+                                                    onClick={() => handlePanelTabClick("feedback-list")}
+                                                />
+                                                <div className="h-full w-[1px] bg-[var(--adaptive-border-subtle)]" />
+                                            </>
+                                        ) : null}
+                                        <PanelTabButton
+                                            label={messages.panel.tabDiagnostics}
+                                            active={panelTab === "diagnostics"}
+                                            onClick={() => handlePanelTabClick("diagnostics")}
+                                        />
+                                        <div className="h-full w-[1px] bg-[var(--adaptive-border-subtle)]" />
                                     </div>
-                                ) : null}
+                                </section>
 
                                 {errorMessage && importStep === "none" && commandStep === "none" && !activeReplyReportId ? <p className="px-[8px] text-[12px] text-rose-700">{errorMessage}</p> : null}
                                 {personalKeyNotice ? <p className="px-[8px] py-[4px] text-[12px] text-[var(--adaptive-green500)]">{personalKeyNotice}</p> : null}
-                                {!onboardingActive && personalKeyPendingRegistration ? (
-                                    <div className="px-[12px] py-[8px]">
-                                        <p className="text-[12px] font-semibold text-amber-700">{messages.onboarding.pendingTitle}</p>
-                                        <p className="mt-[2px] text-[12px] leading-[1.5] text-amber-700">{messages.onboarding.pendingDescription}</p>
-                                    </div>
-                                ) : null}
 
                                 {personalKeyStep !== "none" ? (
                                     <ReportPersonalKeyDialog
