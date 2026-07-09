@@ -18,7 +18,7 @@ import { usePanelBootstrap } from "./usePanelBootstrap.js";
 import { useResolvedAppearance } from "./useResolvedAppearance.js";
 import { buildPanelStats } from "../utils/panelBootstrap.js";
 import { buildPanelRoleStats } from "../utils/panelRoleStats.js";
-import { canShowCaseClaimAction, createReplyStatusForSubmit, getLatestBranchRootForCase, getReportReplies, ISSUE_ROOT_PARENT_ID, resolveOriginalFeedbackAuthorName, resolveParentReplyIdForCaseQuestion, } from "../utils/feedbackThread.js";
+import { canShowCaseClaimAction, createReplyStatusForSubmit, getLatestBranchRootForCase, getReportReplies, ISSUE_ROOT_PARENT_ID, requiresCaseActorPermissionForComposer, resolveOriginalFeedbackAuthorName, resolveParentReplyIdForCaseQuestion, } from "../utils/feedbackThread.js";
 import { clampRatio, getMarkerFromReport, resolveTooltipAnchor } from "../utils/coordinates.js";
 import { getFeedbackTargetElement, isFeedbackTargetVisible, scrollToFeedbackTarget, waitForTargetRevealResync } from "../utils/locateFeedback.js";
 const MARKER_HOVER_LEAVE_MS = 250;
@@ -122,8 +122,9 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
     }), [onEvent, onReply]);
     const { selfProfile, saveSelfProfile, markOnboardingComplete } = useSelfProfile(projectId, environment);
     const requiresReviewerKey = requireReviewerKey || authors.some((author) => Boolean(author.publicKey));
-    const { personalKey, publicKey, personalKeyRequired, personalKeyPendingRegistration, personalKeyCandidates, authorizedAuthors, issuePersonalKey, issueSelfKey, rotatePersonalKey, insertPersonalKey, signPayload, } = usePersonalKey({
-        enabled: !requiresReviewerKey || hasStoredPersonalKey(projectId, environment),
+    const isPresentationMode = pixelsMode === "presentation";
+    const { personalKey, publicKey, personalKeyRequired, personalKeyPendingRegistration, personalKeyCandidates, authorizedAuthors, issuePersonalKey, issueSelfKey, rotatePersonalKey, insertPersonalKey, clearPersonalKey, signPayload, } = usePersonalKey({
+        enabled: isPresentationMode || !requiresReviewerKey || hasStoredPersonalKey(projectId, environment),
         requireKey: requiresReviewerKey,
         projectId,
         environment,
@@ -131,7 +132,6 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         authors,
     });
     const activeIdentify = authorizedAuthors[0] ?? (selfProfile?.authorId && selfProfile.name ? { id: selfProfile.authorId, name: selfProfile.name } : undefined) ?? (personalKeyRequired ? undefined : identify);
-    const isPresentationMode = pixelsMode === "presentation";
     const presentationViewers = useMemo(() => buildPresentationViewers(identify, authors), [authors, identify]);
     const [presentationViewerId, setPresentationViewerId] = useState(null);
     const resolvedPresentationViewerId = useMemo(() => {
@@ -149,22 +149,31 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
     const authDiagnostics = useMemo(() => {
         const parsedBundle = personalKey ? parsePrivateKeyBundle(personalKey) : null;
         const teamReviewer = parsedBundle ? authors.find((author) => author.id === parsedBundle.authorId) : null;
+        const localAuthorName = (parsedBundle?.authorName ?? selfProfile?.name ?? "").trim();
         const expected = {
             projectId,
             environment: environment ?? "",
             authorId: teamReviewer?.id ?? null,
+            authorName: teamReviewer?.name?.trim() || null,
             publicKey: teamReviewer?.publicKey?.trim() || null,
         };
         const actual = {
             projectId: parsedBundle?.projectId ?? null,
             environment: parsedBundle?.environment ?? "",
             authorId: parsedBundle?.authorId ?? null,
+            authorName: localAuthorName || null,
             publicKey: parsedBundle ? serializePublicKey(parsedBundle.publicKey) : null,
         };
         const items = [
             { field: "projectId", expected: expected.projectId, actual: actual.projectId, matched: expected.projectId === actual.projectId },
             { field: "environment", expected: expected.environment, actual: actual.environment, matched: (expected.environment ?? "") === (actual.environment ?? "") },
             { field: "authorId", expected: expected.authorId, actual: actual.authorId, matched: expected.authorId === actual.authorId },
+            {
+                field: "authorName",
+                expected: expected.authorName,
+                actual: actual.authorName,
+                matched: Boolean(expected.authorName && actual.authorName && expected.authorName === actual.authorName),
+            },
             {
                 field: "publicKey",
                 expected: expected.publicKey,
@@ -190,6 +199,9 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         if (!teamReviewer) {
             return { status: "failed", reason: "missing-team-author", items, expected, actual };
         }
+        if (expected.authorName && actual.authorName && expected.authorName !== actual.authorName) {
+            return { status: "failed", reason: "author-name-mismatch", items, expected, actual };
+        }
         if (!teamReviewer.publicKey?.trim()) {
             return { status: "failed", reason: "missing-team-public-key", items, expected, actual };
         }
@@ -197,7 +209,7 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
             return { status: "failed", reason: "public-key-mismatch", items, expected, actual };
         }
         return { status: "matched", reason: "matched", items, expected, actual };
-    }, [authors, environment, personalKey, projectId, requiresReviewerKey]);
+    }, [authors, environment, personalKey, projectId, requiresReviewerKey, selfProfile?.name]);
     const panelView = useMemo(() => {
         if (isPresentationMode || !requiresReviewerKey) {
             return "ready";
@@ -208,20 +220,16 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         if (selfProfile && !selfProfile.completed) {
             return "setup-complete";
         }
-        if (personalKeyPendingRegistration) {
+        const parsedBundle = personalKey ? parsePrivateKeyBundle(personalKey) : null;
+        const teamReviewer = parsedBundle ? authors.find((author) => author.id === parsedBundle.authorId) : null;
+        if (!teamReviewer) {
             return "setup-complete";
         }
-        if (authDiagnostics.status === "failed") {
-            if (authDiagnostics.reason === "public-key-mismatch" ||
-                authDiagnostics.reason === "project-mismatch" ||
-                authDiagnostics.reason === "environment-mismatch" ||
-                authDiagnostics.reason === "invalid-personal-key-format") {
-                return "key-issue";
-            }
-            return "setup-complete";
+        if (authDiagnostics.status === "matched") {
+            return "ready";
         }
-        return "ready";
-    }, [authDiagnostics.reason, authDiagnostics.status, hasPersistedPersonalKey, isPresentationMode, personalKeyPendingRegistration, requiresReviewerKey, selfProfile]);
+        return "key-issue";
+    }, [authDiagnostics.status, authors, hasPersistedPersonalKey, isPresentationMode, personalKey, requiresReviewerKey, selfProfile]);
     useEffect(() => {
         if (selfProfile && !selfProfile.completed && hasPersistedPersonalKey && authorizedAuthors.length > 0) {
             markOnboardingComplete();
@@ -317,7 +325,7 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
     const [replySubmitAsQuestion, setReplySubmitAsQuestion] = useState(false);
     const [draftAuthorName, setDraftAuthorName] = useState(() => resolveDefaultAuthorName(activeIdentify, authorizedAuthors, selfProfile?.name));
     const [replyAuthorName, setReplyAuthorName] = useState(() => resolveDefaultAuthorName(activeIdentify, authorizedAuthors, selfProfile?.name));
-    const applyPresentationViewer = useCallback((viewerId) => {
+    const applyPresentationViewer = useCallback(async (viewerId) => {
         if (!isPresentationMode) {
             return;
         }
@@ -326,7 +334,17 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
             return;
         }
         setPresentationViewerId(viewer.id);
-    }, [isPresentationMode, presentationViewers]);
+        saveSelfProfile({
+            name: viewer.name,
+            authorId: viewer.id,
+            completed: true,
+        });
+        if (viewer.privateKey) {
+            await insertPersonalKey(viewer.privateKey);
+            return;
+        }
+        clearPersonalKey();
+    }, [clearPersonalKey, insertPersonalKey, isPresentationMode, presentationViewers, saveSelfProfile]);
     useEffect(() => {
         if (!sessionActor?.name) {
             return;
@@ -427,7 +445,7 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         if (!isPresentationMode || presentationViewers.length === 0 || !resolvedPresentationViewerId) {
             return;
         }
-        applyPresentationViewer(resolvedPresentationViewerId);
+        void applyPresentationViewer(resolvedPresentationViewerId);
     }, [applyPresentationViewer, isPresentationMode, presentationViewers.length, resolvedPresentationViewerId]);
     useEffect(() => {
         setShowTargetPreview(false);
@@ -1295,13 +1313,11 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         setReplySubmitAsQuestion(false);
     };
     const startAskQuestion = () => {
-        if (!activeReplyReport || !focusedCaseId) {
-            return;
-        }
-        if (!ensureCanActOnFocusedCase(activeReplyReport)) {
+        if (!activeReplyReport || !focusedCaseId || !ensureFocusedCase(activeReplyReport)) {
             return;
         }
         const latestRoot = getLatestBranchRootForCase(activeReplyReport, focusedCaseId);
+        setErrorMessage("");
         setReplyDraft("");
         if (!latestRoot) {
             setPendingComposer({
@@ -1719,7 +1735,7 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         const pendingType = pendingComposer?.type ?? null;
         const isCreatorSubmit = pendingType === "deny" || pendingType === "recheck" || pendingType === "question";
         const isQuestionSubmit = pendingType === "question";
-        if (!canActOnCase(activeReplyReport, focusedCaseId, actorName)) {
+        if (requiresCaseActorPermissionForComposer(pendingType) && !canActOnCase(activeReplyReport, focusedCaseId, actorName)) {
             setErrorMessage(messages.errors.caseAssigneeOnly);
             return;
         }

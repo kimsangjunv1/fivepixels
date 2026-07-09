@@ -1,4 +1,4 @@
-import { getCaseAssigneeName, getCaseById, getRepliesForCase } from "../utils/reportCases.js";
+import { getCaseAssigneeName, getCaseById, getRepliesForCase, canActOnCase } from "../utils/reportCases.js";
 import { summaryToReply } from "../utils/reportSummary.js";
 export function getReportReplies(report) {
     return report.replies ?? [];
@@ -84,6 +84,16 @@ export function isBranchReplyAuthor(reply, actorName) {
 }
 export function canShowAdjudicationActionsOnBranchReply(reply, actorName) {
     return !isBranchReplyAuthor(reply, actorName);
+}
+export function canShowCaseThreadActions(report, caseId, actorName) {
+    const actor = actorName.trim();
+    if (!actor) {
+        return false;
+    }
+    return canActOnCase(report, caseId, actor);
+}
+export function requiresCaseActorPermissionForComposer(pendingType) {
+    return pendingType !== "question";
 }
 export function canShowSuggestedBranchActions(report, reply) {
     return reply.status === "suggested" && isActiveBranchRoot(report, reply);

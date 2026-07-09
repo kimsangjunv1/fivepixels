@@ -9,6 +9,7 @@ import {
     resolvePersonalKeyOwner,
     savePersonalKey,
     signReportPayload,
+    removePersonalKey,
 } from "@/utils/personalKey.js";
 
 const EMPTY_AUTHORIZED_AUTHORS: ReportAuthor[] = [];
@@ -110,6 +111,11 @@ export function usePersonalKey({ enabled, requireKey, projectId, environment, id
         [authors, environment, identify, projectId],
     );
 
+    const clearPersonalKey = useCallback(() => {
+        removePersonalKey(projectId, environment);
+        setPersonalKey(null);
+    }, [environment, projectId]);
+
     const signPayload = useCallback(
         async (action: ReportAuthAction, payload: unknown) => {
             if (!personalKey || !authorizedAuthor) {
@@ -142,6 +148,7 @@ export function usePersonalKey({ enabled, requireKey, projectId, environment, id
         issueSelfKey,
         rotatePersonalKey,
         insertPersonalKey,
+        clearPersonalKey,
         signPayload,
     };
 }

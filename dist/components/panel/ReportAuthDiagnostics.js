@@ -5,6 +5,7 @@ const FIELD_LABELS = {
     projectId: "projectId",
     environment: "environment",
     authorId: "authorId",
+    authorName: "name",
     publicKey: "publicKey",
 };
 function maskValue(value, field) {
@@ -28,6 +29,7 @@ function reasonToDescription(reason) {
         "environment-mismatch": "개인키의 environment가 현재 환경과 다릅니다.",
         "missing-team-author": "team.reviewers에서 개인키 authorId에 해당하는 작성자를 찾지 못했습니다.",
         "author-id-mismatch": "개인키 authorId와 team reviewer id가 다릅니다.",
+        "author-name-mismatch": "개인키 이름과 team reviewer name이 다릅니다.",
         "missing-team-public-key": "team reviewer에 공개키가 비어 있습니다.",
         "public-key-mismatch": "team 공개키와 개인키에서 계산한 공개키가 다릅니다.",
         matched: "인증이 정상적으로 일치합니다.",

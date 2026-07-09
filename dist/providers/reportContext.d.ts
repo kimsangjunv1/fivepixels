@@ -29,15 +29,15 @@ declare const ReportContext: import("react").Context<{
     personalKeyCandidates: import("..").ReportAuthor[];
     authDiagnostics: {
         status: "disabled" | "matched" | "failed";
-        reason: "matched" | "reviewer-key-not-enforced" | "missing-personal-key" | "invalid-personal-key-format" | "project-mismatch" | "environment-mismatch" | "missing-team-author" | "author-id-mismatch" | "missing-team-public-key" | "public-key-mismatch";
+        reason: "matched" | "reviewer-key-not-enforced" | "missing-personal-key" | "invalid-personal-key-format" | "project-mismatch" | "environment-mismatch" | "missing-team-author" | "author-id-mismatch" | "author-name-mismatch" | "missing-team-public-key" | "public-key-mismatch";
         items: {
-            field: "environment" | "projectId" | "publicKey" | "authorId";
+            field: "environment" | "projectId" | "publicKey" | "authorId" | "authorName";
             expected: string | null;
             actual: string | null;
             matched: boolean;
         }[];
-        expected: Record<"environment" | "projectId" | "publicKey" | "authorId", string | null>;
-        actual: Record<"environment" | "projectId" | "publicKey" | "authorId", string | null>;
+        expected: Record<"environment" | "projectId" | "publicKey" | "authorId" | "authorName", string | null>;
+        actual: Record<"environment" | "projectId" | "publicKey" | "authorId" | "authorName", string | null>;
     };
     authorSelectionLocked: boolean;
     panelView: import("../hooks/useReportState.js").PanelView;
@@ -192,7 +192,7 @@ declare const ReportContext: import("react").Context<{
     sessionActor: import("../utils/reportTeam").SessionActor | null;
     presentationViewers: import("../utils/reportTeam").PresentationViewer[];
     presentationViewerId: string | null;
-    setPresentationViewerId: (viewerId: string | null) => void;
+    setPresentationViewerId: (viewerId: string | null) => Promise<void>;
     pendingComposer: import("../types/report-ui").PendingFeedbackComposer;
     startDenyReview: (targetReplyId?: string) => void;
     startCheckoutReview: (replyId: string) => void;
@@ -287,15 +287,15 @@ export declare function useReport(): {
     personalKeyCandidates: import("..").ReportAuthor[];
     authDiagnostics: {
         status: "disabled" | "matched" | "failed";
-        reason: "matched" | "reviewer-key-not-enforced" | "missing-personal-key" | "invalid-personal-key-format" | "project-mismatch" | "environment-mismatch" | "missing-team-author" | "author-id-mismatch" | "missing-team-public-key" | "public-key-mismatch";
+        reason: "matched" | "reviewer-key-not-enforced" | "missing-personal-key" | "invalid-personal-key-format" | "project-mismatch" | "environment-mismatch" | "missing-team-author" | "author-id-mismatch" | "author-name-mismatch" | "missing-team-public-key" | "public-key-mismatch";
         items: {
-            field: "environment" | "projectId" | "publicKey" | "authorId";
+            field: "environment" | "projectId" | "publicKey" | "authorId" | "authorName";
             expected: string | null;
             actual: string | null;
             matched: boolean;
         }[];
-        expected: Record<"environment" | "projectId" | "publicKey" | "authorId", string | null>;
-        actual: Record<"environment" | "projectId" | "publicKey" | "authorId", string | null>;
+        expected: Record<"environment" | "projectId" | "publicKey" | "authorId" | "authorName", string | null>;
+        actual: Record<"environment" | "projectId" | "publicKey" | "authorId" | "authorName", string | null>;
     };
     authorSelectionLocked: boolean;
     panelView: import("../hooks/useReportState.js").PanelView;
@@ -450,7 +450,7 @@ export declare function useReport(): {
     sessionActor: import("../utils/reportTeam").SessionActor | null;
     presentationViewers: import("../utils/reportTeam").PresentationViewer[];
     presentationViewerId: string | null;
-    setPresentationViewerId: (viewerId: string | null) => void;
+    setPresentationViewerId: (viewerId: string | null) => Promise<void>;
     pendingComposer: import("../types/report-ui").PendingFeedbackComposer;
     startDenyReview: (targetReplyId?: string) => void;
     startCheckoutReview: (replyId: string) => void;

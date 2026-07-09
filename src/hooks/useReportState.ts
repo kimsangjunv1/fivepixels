@@ -66,6 +66,7 @@ import {
     getLatestBranchRootForCase,
     getReportReplies,
     ISSUE_ROOT_PARENT_ID,
+    requiresCaseActorPermissionForComposer,
     resolveOriginalFeedbackAuthorName,
     resolveParentReplyIdForCaseQuestion,
 } from "@/utils/feedbackThread.js";
@@ -117,7 +118,7 @@ function resolveDefaultAuthorName(identify: ReportIdentify | undefined, authors:
     return authors[0]?.name ?? selfName ?? "";
 }
 
-type AuthDiagnosticsField = "projectId" | "environment" | "authorId" | "publicKey";
+type AuthDiagnosticsField = "projectId" | "environment" | "authorId" | "authorName" | "publicKey";
 type AuthDiagnosticsStatus = "matched" | "failed" | "disabled";
 type AuthDiagnosticsReason =
     | "reviewer-key-not-enforced"
@@ -127,6 +128,7 @@ type AuthDiagnosticsReason =
     | "environment-mismatch"
     | "missing-team-author"
     | "author-id-mismatch"
+    | "author-name-mismatch"
     | "missing-team-public-key"
     | "public-key-mismatch"
     | "matched";
@@ -336,6 +338,7 @@ export function useReportState({
     );
     const { selfProfile, saveSelfProfile, markOnboardingComplete } = useSelfProfile(projectId, environment);
     const requiresReviewerKey = requireReviewerKey || authors.some((author) => Boolean(author.publicKey));
+    const isPresentationMode = pixelsMode === "presentation";
     const {
         personalKey,
         publicKey,
@@ -347,9 +350,10 @@ export function useReportState({
         issueSelfKey,
         rotatePersonalKey,
         insertPersonalKey,
+        clearPersonalKey,
         signPayload,
     } = usePersonalKey({
-        enabled: !requiresReviewerKey || hasStoredPersonalKey(projectId, environment),
+        enabled: isPresentationMode || !requiresReviewerKey || hasStoredPersonalKey(projectId, environment),
         requireKey: requiresReviewerKey,
         projectId,
         environment,
@@ -358,7 +362,6 @@ export function useReportState({
     });
     const activeIdentify =
         authorizedAuthors[0] ?? (selfProfile?.authorId && selfProfile.name ? { id: selfProfile.authorId, name: selfProfile.name } : undefined) ?? (personalKeyRequired ? undefined : identify);
-    const isPresentationMode = pixelsMode === "presentation";
     const presentationViewers = useMemo(() => buildPresentationViewers(identify, authors), [authors, identify]);
     const [presentationViewerId, setPresentationViewerId] = useState<string | null>(null);
 
@@ -381,22 +384,31 @@ export function useReportState({
     const authDiagnostics = useMemo<AuthDiagnostics>(() => {
         const parsedBundle = personalKey ? parsePrivateKeyBundle(personalKey) : null;
         const teamReviewer = parsedBundle ? authors.find((author) => author.id === parsedBundle.authorId) : null;
+        const localAuthorName = (parsedBundle?.authorName ?? selfProfile?.name ?? "").trim();
         const expected: Record<AuthDiagnosticsField, string | null> = {
             projectId,
             environment: environment ?? "",
             authorId: teamReviewer?.id ?? null,
+            authorName: teamReviewer?.name?.trim() || null,
             publicKey: teamReviewer?.publicKey?.trim() || null,
         };
         const actual: Record<AuthDiagnosticsField, string | null> = {
             projectId: parsedBundle?.projectId ?? null,
             environment: parsedBundle?.environment ?? "",
             authorId: parsedBundle?.authorId ?? null,
+            authorName: localAuthorName || null,
             publicKey: parsedBundle ? serializePublicKey(parsedBundle.publicKey) : null,
         };
         const items: AuthDiagnosticsItem[] = [
             { field: "projectId", expected: expected.projectId, actual: actual.projectId, matched: expected.projectId === actual.projectId },
             { field: "environment", expected: expected.environment, actual: actual.environment, matched: (expected.environment ?? "") === (actual.environment ?? "") },
             { field: "authorId", expected: expected.authorId, actual: actual.authorId, matched: expected.authorId === actual.authorId },
+            {
+                field: "authorName",
+                expected: expected.authorName,
+                actual: actual.authorName,
+                matched: Boolean(expected.authorName && actual.authorName && expected.authorName === actual.authorName),
+            },
             {
                 field: "publicKey",
                 expected: expected.publicKey,
@@ -423,6 +435,9 @@ export function useReportState({
         if (!teamReviewer) {
             return { status: "failed", reason: "missing-team-author", items, expected, actual };
         }
+        if (expected.authorName && actual.authorName && expected.authorName !== actual.authorName) {
+            return { status: "failed", reason: "author-name-mismatch", items, expected, actual };
+        }
         if (!teamReviewer.publicKey?.trim()) {
             return { status: "failed", reason: "missing-team-public-key", items, expected, actual };
         }
@@ -431,7 +446,7 @@ export function useReportState({
         }
 
         return { status: "matched", reason: "matched", items, expected, actual };
-    }, [authors, environment, personalKey, projectId, requiresReviewerKey]);
+    }, [authors, environment, personalKey, projectId, requiresReviewerKey, selfProfile?.name]);
 
     const panelView = useMemo<PanelView>(() => {
         if (isPresentationMode || !requiresReviewerKey) {
@@ -446,25 +461,19 @@ export function useReportState({
             return "setup-complete";
         }
 
-        if (personalKeyPendingRegistration) {
+        const parsedBundle = personalKey ? parsePrivateKeyBundle(personalKey) : null;
+        const teamReviewer = parsedBundle ? authors.find((author) => author.id === parsedBundle.authorId) : null;
+
+        if (!teamReviewer) {
             return "setup-complete";
         }
 
-        if (authDiagnostics.status === "failed") {
-            if (
-                authDiagnostics.reason === "public-key-mismatch" ||
-                authDiagnostics.reason === "project-mismatch" ||
-                authDiagnostics.reason === "environment-mismatch" ||
-                authDiagnostics.reason === "invalid-personal-key-format"
-            ) {
-                return "key-issue";
-            }
-
-            return "setup-complete";
+        if (authDiagnostics.status === "matched") {
+            return "ready";
         }
 
-        return "ready";
-    }, [authDiagnostics.reason, authDiagnostics.status, hasPersistedPersonalKey, isPresentationMode, personalKeyPendingRegistration, requiresReviewerKey, selfProfile]);
+        return "key-issue";
+    }, [authDiagnostics.status, authors, hasPersistedPersonalKey, isPresentationMode, personalKey, requiresReviewerKey, selfProfile]);
 
     useEffect(() => {
         if (selfProfile && !selfProfile.completed && hasPersistedPersonalKey && authorizedAuthors.length > 0) {
@@ -599,7 +608,7 @@ export function useReportState({
     const [replyAuthorName, setReplyAuthorName] = useState(() => resolveDefaultAuthorName(activeIdentify, authorizedAuthors, selfProfile?.name));
 
     const applyPresentationViewer = useCallback(
-        (viewerId: string | null) => {
+        async (viewerId: string | null) => {
             if (!isPresentationMode) {
                 return;
             }
@@ -611,8 +620,20 @@ export function useReportState({
             }
 
             setPresentationViewerId(viewer.id);
+            saveSelfProfile({
+                name: viewer.name,
+                authorId: viewer.id,
+                completed: true,
+            });
+
+            if (viewer.privateKey) {
+                await insertPersonalKey(viewer.privateKey);
+                return;
+            }
+
+            clearPersonalKey();
         },
-        [isPresentationMode, presentationViewers],
+        [clearPersonalKey, insertPersonalKey, isPresentationMode, presentationViewers, saveSelfProfile],
     );
 
     useEffect(() => {
@@ -742,7 +763,7 @@ export function useReportState({
             return;
         }
 
-        applyPresentationViewer(resolvedPresentationViewerId);
+        void applyPresentationViewer(resolvedPresentationViewerId);
     }, [applyPresentationViewer, isPresentationMode, presentationViewers.length, resolvedPresentationViewerId]);
 
     useEffect(() => {
@@ -1878,16 +1899,13 @@ export function useReportState({
     };
 
     const startAskQuestion = () => {
-        if (!activeReplyReport || !focusedCaseId) {
-            return;
-        }
-
-        if (!ensureCanActOnFocusedCase(activeReplyReport)) {
+        if (!activeReplyReport || !focusedCaseId || !ensureFocusedCase(activeReplyReport)) {
             return;
         }
 
         const latestRoot = getLatestBranchRootForCase(activeReplyReport, focusedCaseId);
 
+        setErrorMessage("");
         setReplyDraft("");
 
         if (!latestRoot) {
@@ -2394,7 +2412,7 @@ export function useReportState({
         const isCreatorSubmit = pendingType === "deny" || pendingType === "recheck" || pendingType === "question";
         const isQuestionSubmit = pendingType === "question";
 
-        if (!canActOnCase(activeReplyReport, focusedCaseId, actorName)) {
+        if (requiresCaseActorPermissionForComposer(pendingType) && !canActOnCase(activeReplyReport, focusedCaseId, actorName)) {
             setErrorMessage(messages.errors.caseAssigneeOnly);
             return;
         }

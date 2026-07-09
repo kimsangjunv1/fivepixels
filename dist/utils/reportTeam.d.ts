@@ -9,6 +9,7 @@ export type PresentationViewer = {
     name: string;
     department?: string;
     isCreator?: boolean;
+    privateKey?: string;
 };
 export type ResolveReportTeamOptions = {
     team?: ReportTeam;

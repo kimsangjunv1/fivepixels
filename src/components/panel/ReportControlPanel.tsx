@@ -21,6 +21,7 @@ import { CornerResizeGhost } from "@/components/ui/CornerResizeGhost.js";
 import { CornerResizeHandle } from "@/components/ui/CornerResizeHandle.js";
 import { ProbeEditModeBanner } from "./ProbeEditModeBanner.js";
 import { PanelRoleSwitch } from "./PanelRoleSwitch.js";
+import { PanelPresentationSwitch } from "./PanelPresentationSwitch.js";
 import { PanelOnboarding } from "./PanelOnboarding.js";
 import { PanelKeyGate } from "./PanelKeyGate.js";
 import { panelNumericClassName } from "@/utils/panelTypography.js";
@@ -314,6 +315,7 @@ export function ReportControlPanel() {
                                             </section>
 
                                             <section className="flex shrink-0 items-center gap-[4px]">
+                                                <PanelPresentationSwitch />
                                                 <PanelRoleSwitch />
 
                                                 <IconTooltipButton

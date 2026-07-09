@@ -33,6 +33,7 @@ export type ReportMessages = {
         statsResolved: string;
         statsInProgress: string;
         roleSwitchAriaLabel: string;
+        presentationSwitchAriaLabel: string;
         roleStatsCta: string;
         roles: {
             general: string;
@@ -282,6 +283,7 @@ export type ReportMessages = {
         keyStepTitle: string;
         keyStepDescription: string;
         namePlaceholder: string;
+        duplicateNameError: string;
         createKey: string;
         next: string;
         back: string;

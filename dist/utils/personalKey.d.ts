@@ -29,6 +29,7 @@ export declare function resolvePersonalKeyAuthor(bundle: ReviewerKeyBundle, iden
 export declare function savePersonalKey(projectId: string, environment: string | undefined, key: string): boolean;
 export declare function readPersonalKey(projectId: string, environment: string | undefined): string | null;
 export declare function hasStoredPersonalKey(projectId: string, environment: string | undefined): boolean;
+export declare function removePersonalKey(projectId: string, environment: string | undefined): void;
 export declare function getPublicKeyFromPrivateKey(key: string): string | null;
 export declare function getAuthorIdFromPrivateKey(key: string): string | null;
 export declare function getAuthorNameFromPrivateKey(key: string): string | null;

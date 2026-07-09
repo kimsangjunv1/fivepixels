@@ -31,6 +31,7 @@ export const en: ReportMessages = {
         statsResolved: "Resolved",
         statsInProgress: "In progress",
         roleSwitchAriaLabel: "Select role",
+        presentationSwitchAriaLabel: "Select preview viewer",
         roleStatsCta: "Use the button on the left to leave feedback",
         roles: {
             general: "Default",
@@ -172,7 +173,8 @@ export const en: ReportMessages = {
         issueResolvedDivider: "Issue Resolved",
         claimAssignee: "Take ownership",
         takeOverAssignee: "Take over",
-        assigneeAssigned: "An assignee has been assigned.",
+        assigneeAssigned: "Assigned and Review Started.",
+
         assigneeTransferred: "The assignee has been changed.",
         fixComplete: "Mark as fixed",
     },
@@ -280,6 +282,7 @@ export const en: ReportMessages = {
         keyStepTitle: "Set your name and key",
         keyStepDescription: "Generate a personal key in this browser and share the public key with your developer.",
         namePlaceholder: "Enter the name to display",
+        duplicateNameError: "A user with this name already exists. Please contact your administrator for details.",
         createKey: "Create key",
         next: "Next",
         back: "Back",

@@ -12,6 +12,7 @@ export type PresentationViewer = {
     name: string;
     department?: string;
     isCreator?: boolean;
+    privateKey?: string;
 };
 
 export type ResolveReportTeamOptions = {
@@ -34,6 +35,7 @@ export function buildPresentationViewers(user: ReportIdentify | undefined, revie
             id: user.id,
             name: user.name.trim(),
             isCreator: true,
+            privateKey: user.privateKey?.trim() || undefined,
         });
     }
 
@@ -50,6 +52,7 @@ export function buildPresentationViewers(user: ReportIdentify | undefined, revie
             byId.set(reviewer.id, {
                 ...existing,
                 department: reviewer.department?.trim() || existing.department,
+                privateKey: reviewer.privateKey?.trim() || existing.privateKey,
             });
             continue;
         }
@@ -58,6 +61,7 @@ export function buildPresentationViewers(user: ReportIdentify | undefined, revie
             id: reviewer.id,
             name,
             department: reviewer.department?.trim() || undefined,
+            privateKey: reviewer.privateKey?.trim() || undefined,
         });
     }
 

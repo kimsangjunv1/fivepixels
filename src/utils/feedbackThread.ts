@@ -1,6 +1,6 @@
 import type { FeedbackDisplayStatus } from "@/constants/feedbackStatus.js";
 import type { ReportAuthor, ReportFeedback, ReportReply, ReportReplyStatus } from "@/types/report.js";
-import { getCaseAssigneeName, getCaseById, getRepliesForCase } from "@/utils/reportCases.js";
+import { getCaseAssigneeName, getCaseById, getRepliesForCase, canActOnCase } from "@/utils/reportCases.js";
 import { summaryToReply } from "@/utils/reportSummary.js";
 
 export function getReportReplies(report: ReportFeedback): ReportReply[] {
@@ -116,6 +116,20 @@ export function isBranchReplyAuthor(reply: ReportReply, actorName: string): bool
 
 export function canShowAdjudicationActionsOnBranchReply(reply: ReportReply, actorName: string): boolean {
     return !isBranchReplyAuthor(reply, actorName);
+}
+
+export function canShowCaseThreadActions(report: ReportFeedback, caseId: string, actorName: string): boolean {
+    const actor = actorName.trim();
+
+    if (!actor) {
+        return false;
+    }
+
+    return canActOnCase(report, caseId, actor);
+}
+
+export function requiresCaseActorPermissionForComposer(pendingType: "deny" | "recheck" | "checkout" | "question" | null): boolean {
+    return pendingType !== "question";
 }
 
 export function canShowSuggestedBranchActions(report: ReportFeedback, reply: ReportReply): boolean {

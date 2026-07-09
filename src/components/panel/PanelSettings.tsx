@@ -173,6 +173,7 @@ export function PanelSettings({
     const viewerOptions = presentationViewers.map((viewer) => ({
         value: viewer.id,
         label: viewer.isCreator ? `${formatPresentationViewerLabel(viewer)} (${messages.author.creatorLabel})` : formatPresentationViewerLabel(viewer),
+        disabled: !viewer.privateKey,
     }));
     const showPreviewCategory = isPresentationMode && viewerOptions.length > 0;
     const activeViewerLabel = viewerOptions.find((option) => option.value === (presentationViewerId ?? viewerOptions[0]?.value))?.label ?? "";
@@ -209,8 +210,15 @@ export function PanelSettings({
                                             type="button"
                                             role="radio"
                                             aria-checked={active}
-                                            onClick={() => setPresentationViewerId(option.value)}
-                                            className={`rounded-[8px] px-[12px] py-[8px] text-left text-[13px] transition-colors ${
+                                            disabled={option.disabled}
+                                            onClick={() => {
+                                                if (option.disabled) {
+                                                    return;
+                                                }
+
+                                                void setPresentationViewerId(option.value);
+                                            }}
+                                            className={`rounded-[8px] px-[12px] py-[8px] text-left text-[13px] transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
                                                 active
                                                     ? "bg-[var(--adaptive-blue50)] font-semibold text-[var(--adaptive-blue500)]"
                                                     : "text-[var(--adaptive-black800)] hover:bg-[var(--adaptive-black100)]"

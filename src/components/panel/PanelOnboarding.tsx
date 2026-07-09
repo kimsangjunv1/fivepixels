@@ -1,4 +1,4 @@
-import { useState, type DragEvent } from "react";
+import { useMemo, useState, type DragEvent } from "react";
 import { PANEL_ROLE_VALUES, type PanelRole } from "@/constants/panelRole.js";
 import { useReport } from "@/providers/reportContext.js";
 import { PanelDropdownMenuItem } from "./PanelDropdownMenu.js";
@@ -7,7 +7,7 @@ import { isPersonalKeyFile, readPersonalKeyFile } from "@/utils/feedbackDataTran
 type OnboardingStep = "intro" | "restore" | "role" | "key";
 
 export function PanelOnboarding() {
-    const { messages, panelRole, setPanelRole, completeOnboarding, restoreFromBackup, setErrorMessage, selfProfile } = useReport();
+    const { messages, panelRole, setPanelRole, completeOnboarding, restoreFromBackup, setErrorMessage, selfProfile, personalKeyCandidates } = useReport();
     const onboarding = messages.onboarding;
     const [step, setStep] = useState<OnboardingStep>("intro");
     const [name, setName] = useState(selfProfile?.name ?? "");
@@ -16,20 +16,25 @@ export function PanelOnboarding() {
     const [isRestoring, setIsRestoring] = useState(false);
     const [restoreError, setRestoreError] = useState("");
     const [isDragOver, setIsDragOver] = useState(false);
+    const trimmedName = name.trim();
+    const hasDuplicateName = useMemo(
+        () => Boolean(trimmedName) && personalKeyCandidates.some((author) => author.name.trim() === trimmedName),
+        [personalKeyCandidates, trimmedName],
+    );
 
     const handleSelectRole = (role: PanelRole) => {
         setPanelRole(role);
     };
 
     const handleCreateKey = async () => {
-        if (!name.trim() || isCreating) {
+        if (!trimmedName || isCreating || hasDuplicateName) {
             return;
         }
 
         setIsCreating(true);
 
         try {
-            await completeOnboarding({ name: name.trim() });
+            await completeOnboarding({ name: trimmedName });
         } catch {
             setErrorMessage(messages.errors.clipboardCopyFailed);
         } finally {
@@ -240,6 +245,8 @@ export function PanelOnboarding() {
                         className="w-full rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface)] px-[10px] py-[8px] text-[12px] text-[var(--adaptive-text-primary)] outline-none"
                     />
 
+                    {hasDuplicateName ? <p className="text-[12px] text-rose-700">{onboarding.duplicateNameError}</p> : null}
+
                     <div className="flex items-center justify-between">
                         <button
                             type="button"
@@ -250,7 +257,7 @@ export function PanelOnboarding() {
                         </button>
                         <button
                             type="button"
-                            disabled={!name.trim() || isCreating}
+                            disabled={!trimmedName || isCreating || hasDuplicateName}
                             onClick={() => void handleCreateKey()}
                             className="rounded-[8px] bg-[var(--adaptive-blue100)] px-[12px] py-[6px] text-[12px] font-bold text-[var(--adaptive-blue500)] disabled:opacity-50"
                         >

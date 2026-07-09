@@ -52,6 +52,10 @@ export type CreateReplyPayload = {
 export type ReportIdentify = {
     id: string;
     name: string;
+    /** Presentation-only public key for the team creator. */
+    publicKey?: string;
+    /** Presentation-only private key matching `publicKey`. */
+    privateKey?: string;
 };
 /** Project scope passed to `<FivePixels project={{ id, env, version }} />`. */
 export type ReportProject = {
@@ -92,6 +96,8 @@ export type ReportAuthor = {
     name: string;
     department?: string;
     publicKey?: string;
+    /** Presentation-only private key matching `publicKey`. */
+    privateKey?: string;
 };
 export type ReportAuthAction = "feedback:create" | "feedback:update" | "reply:create";
 export type ReportAuthProof = {

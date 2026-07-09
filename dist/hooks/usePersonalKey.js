@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { createReviewerKeyPair, getPublicKeyFromPrivateKey, parsePrivateKeyBundle, readPersonalKey, resolvePersonalKeyAuthor, resolvePersonalKeyOwner, savePersonalKey, signReportPayload, } from "../utils/personalKey.js";
+import { createReviewerKeyPair, getPublicKeyFromPrivateKey, parsePrivateKeyBundle, readPersonalKey, resolvePersonalKeyAuthor, resolvePersonalKeyOwner, savePersonalKey, signReportPayload, removePersonalKey, } from "../utils/personalKey.js";
 const EMPTY_AUTHORIZED_AUTHORS = [];
 export function usePersonalKey({ enabled, requireKey, projectId, environment, identify, authors }) {
     const [personalKey, setPersonalKey] = useState(() => (enabled ? readPersonalKey(projectId, environment) : null));
@@ -65,6 +65,10 @@ export function usePersonalKey({ enabled, requireKey, projectId, environment, id
             authorized: Boolean(resolvePersonalKeyAuthor(bundle, identify, authors)),
         };
     }, [authors, environment, identify, projectId]);
+    const clearPersonalKey = useCallback(() => {
+        removePersonalKey(projectId, environment);
+        setPersonalKey(null);
+    }, [environment, projectId]);
     const signPayload = useCallback(async (action, payload) => {
         if (!personalKey || !authorizedAuthor) {
             return null;
@@ -88,6 +92,7 @@ export function usePersonalKey({ enabled, requireKey, projectId, environment, id
         issueSelfKey,
         rotatePersonalKey,
         insertPersonalKey,
+        clearPersonalKey,
         signPayload,
     };
 }

@@ -119,7 +119,12 @@ export function resolvePersonalKeyAuthor(bundle, identify, authors) {
     const author = identify?.id === bundle.authorId ? identify : authors.find((item) => item.id === bundle.authorId);
     const configuredAuthor = authors.find((item) => item.id === bundle.authorId);
     const publicKey = serializePublicKey(bundle.publicKey);
+    const localAuthorName = bundle.authorName?.trim() ?? "";
+    const configuredAuthorName = configuredAuthor?.name?.trim() ?? "";
     if (!author || !configuredAuthor?.publicKey || !publicKeysMatch(configuredAuthor.publicKey, publicKey)) {
+        return undefined;
+    }
+    if (localAuthorName && configuredAuthorName && localAuthorName !== configuredAuthorName) {
         return undefined;
     }
     return author;
@@ -151,6 +156,17 @@ export function hasStoredPersonalKey(projectId, environment) {
     }
     catch {
         return false;
+    }
+}
+export function removePersonalKey(projectId, environment) {
+    if (typeof localStorage === "undefined") {
+        return;
+    }
+    try {
+        localStorage.removeItem(getPersonalKeyStorageKey(projectId, environment));
+    }
+    catch {
+        // Ignore storage failures in restricted environments.
     }
 }
 export function getPublicKeyFromPrivateKey(key) {

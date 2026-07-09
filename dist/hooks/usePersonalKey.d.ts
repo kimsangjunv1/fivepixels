@@ -39,6 +39,7 @@ export declare function usePersonalKey({ enabled, requireKey, projectId, environ
         authorized: boolean;
         reason?: undefined;
     }>;
+    clearPersonalKey: () => void;
     signPayload: (action: ReportAuthAction, payload: unknown) => Promise<import("../types/report.js").ReportAuthProof | null>;
 };
 export {};

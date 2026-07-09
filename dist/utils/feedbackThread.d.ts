@@ -16,6 +16,8 @@ export declare function getLatestBranchRoot(replies: ReportReply[]): ReportReply
 export declare function isActiveBranchRoot(report: ReportFeedback, reply: ReportReply): boolean;
 export declare function isBranchReplyAuthor(reply: ReportReply, actorName: string): boolean;
 export declare function canShowAdjudicationActionsOnBranchReply(reply: ReportReply, actorName: string): boolean;
+export declare function canShowCaseThreadActions(report: ReportFeedback, caseId: string, actorName: string): boolean;
+export declare function requiresCaseActorPermissionForComposer(pendingType: "deny" | "recheck" | "checkout" | "question" | null): boolean;
 export declare function canShowSuggestedBranchActions(report: ReportFeedback, reply: ReportReply): boolean;
 export declare function canShowCheckoutBranchActions(report: ReportFeedback, reply: ReportReply): boolean;
 export declare function canReviewLatestSuggestion(report: ReportFeedback): boolean;

@@ -12,6 +12,7 @@ import {
     canShowCheckoutBranchActions,
     canShowIssueEntryActions,
     canShowAdjudicationActionsOnBranchReply,
+    canShowCaseThreadActions,
     canShowSuggestedBranchActions,
     canShowSuggestedBranchActionsForCase,
     createReplyStatusForSubmit,
@@ -23,6 +24,7 @@ import {
     isBranchReplyAuthor,
     ISSUE_ROOT_PARENT_ID,
     normalizeReplyParents,
+    requiresCaseActorPermissionForComposer,
     resolveParentReplyIdForQuestion,
     shouldShowCaseReplyComposer,
     shouldShowReplyComposer,
@@ -359,6 +361,25 @@ describe("feedbackThread", () => {
         expect(canShowAdjudicationActionsOnBranchReply(suggested, "Alex")).toBe(false);
         expect(canShowAdjudicationActionsOnBranchReply(suggested, "김상준")).toBe(true);
         expect(isBranchReplyAuthor(suggested, "Alex")).toBe(true);
+    });
+
+    it("checks case thread actions only for the current actor, not the issue author", () => {
+        const caseA = createReportCase("A", { assignee_name: "Emily Johnson" });
+        const report = createReport({
+            author_name: "John Smith",
+            cases: [caseA],
+        });
+
+        expect(canShowCaseThreadActions(report, caseA.id, "John Smith")).toBe(true);
+        expect(canShowCaseThreadActions(report, caseA.id, "Emily Johnson")).toBe(true);
+        expect(canShowCaseThreadActions(report, caseA.id, "Michael Lee")).toBe(false);
+    });
+
+    it("allows question replies without case actor permission", () => {
+        expect(requiresCaseActorPermissionForComposer("question")).toBe(false);
+        expect(requiresCaseActorPermissionForComposer("deny")).toBe(true);
+        expect(requiresCaseActorPermissionForComposer("checkout")).toBe(true);
+        expect(requiresCaseActorPermissionForComposer(null)).toBe(true);
     });
 
     it("hides assignee entry actions after a branch root reply is added", () => {

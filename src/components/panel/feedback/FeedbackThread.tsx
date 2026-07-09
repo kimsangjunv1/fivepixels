@@ -2,12 +2,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ReportAuthor, ReportFeedback, ReportReply } from "@/types/report.js";
 import { useReport } from "@/providers/reportContext.js";
 import { formatClockTime } from "@/utils/format.js";
-import { canActOnCase, canEditReportCases, getCaseById } from "@/utils/reportCases.js";
+import { canEditReportCases, getCaseById } from "@/utils/reportCases.js";
 import {
     buildCaseThreadTimeline,
     buildConfirmAuthorOptions,
     buildThreadTimeline,
     canShowAdjudicationActionsOnBranchReply,
+    canShowCaseThreadActions,
     canShowCaseClaimAction,
     canShowCheckoutBranchActionsForCase,
     canShowSuggestedBranchActionsForCase,
@@ -80,12 +81,6 @@ function getScrollOverflowState(element: HTMLElement): ScrollOverflowState {
 
 const SCROLL_HINT_CLASS = "pointer-events-none absolute left-0 right-0 z-10 px-[16px] py-[12px] text-center text-[12px] text-[var(--adaptive-black600)]";
 
-function canShowCaseThreadActions(report: ReportFeedback, caseId: string, replyAuthorName: string, confirmAuthorName: string) {
-    const actorCandidates = [replyAuthorName.trim(), confirmAuthorName.trim(), resolveOriginalFeedbackAuthorName(report)].filter(Boolean);
-
-    return actorCandidates.some((actorName) => canActOnCase(report, caseId, actorName));
-}
-
 function ThreadEntryActions({
     reply,
     report,
@@ -126,7 +121,7 @@ function ThreadEntryActions({
     const showCheckout = canShowCheckoutBranchActionsForCase(report, reply, caseId);
     const showAdjudication = canShowAdjudicationActionsOnBranchReply(reply, actorName);
     const isOwnBranchReply = isBranchReplyAuthor(reply, actorName);
-    const canUseReplyAction = canAct || isOwnBranchReply;
+    const canUseReplyAction = Boolean(actorName.trim()) && (canAct || isOwnBranchReply || showAdjudication);
     const denyActive = (pendingComposer?.type === "deny" || pendingComposer?.type === "recheck") && pendingComposer.targetReplyId === reply.id;
     const checkoutActive = pendingComposer?.type === "checkout" && pendingComposer.targetReplyId === reply.id;
     const askQuestionActive = pendingComposer?.type === "question" && pendingComposer.targetReplyId === reply.id;
@@ -264,7 +259,7 @@ function ThreadEntryActions({
                 ) : null}
             </div>
 
-            {!canAct && !isOwnBranchReply ? <p className="text-[11px] text-[var(--adaptive-black500)]">{messages.errors.caseAssigneeOnly}</p> : null}
+            {!canAct && !isOwnBranchReply && !showAdjudication ? <p className="text-[11px] text-[var(--adaptive-black500)]">{messages.errors.caseAssigneeOnly}</p> : null}
 
             {showReview && showAdjudication && showConfirmAuthorSelect ? (
                 <AuthorSelector
@@ -489,7 +484,7 @@ function ThreadRootReply({
     }
 
     const showBranchActions = canShowSuggestedBranchActionsForCase(report, reply, caseId) || canShowCheckoutBranchActionsForCase(report, reply, caseId);
-    const canAct = canShowCaseThreadActions(report, caseId, actorName, confirmAuthorName);
+    const canAct = canShowCaseThreadActions(report, caseId, actorName);
     const isOwnBranchReply = isBranchReplyAuthor(reply, actorName);
     const hasActions =
         showBranchActions &&
@@ -586,8 +581,8 @@ export function FeedbackThread({
     const originalAuthorName = resolveOriginalFeedbackAuthorName(report);
     const focusedCase = focusedCaseId ? getCaseById(report, focusedCaseId) : undefined;
     const issueUrl = getGitHubIssueUrl(report);
-    const canAct = focusedCaseId ? canShowCaseThreadActions(report, focusedCaseId, replyAuthorName, confirmAuthorName) : false;
     const actorName = replyAuthorName.trim() || confirmAuthorName.trim();
+    const canAct = focusedCaseId ? canShowCaseThreadActions(report, focusedCaseId, actorName) : false;
     const systemBranches = useMemo(() => buildThreadTimeline(report).branches.filter((branch) => isGitIssuedSystemReply(branch.root, report)), [report, replies]);
     const showTimelineRail = Boolean((focusedCaseId && !isAllCasesView) || systemBranches.length > 0);
 

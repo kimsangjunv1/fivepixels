@@ -13,6 +13,7 @@ export function buildPresentationViewers(user, reviewers) {
             id: user.id,
             name: user.name.trim(),
             isCreator: true,
+            privateKey: user.privateKey?.trim() || undefined,
         });
     }
     for (const reviewer of reviewers) {
@@ -25,6 +26,7 @@ export function buildPresentationViewers(user, reviewers) {
             byId.set(reviewer.id, {
                 ...existing,
                 department: reviewer.department?.trim() || existing.department,
+                privateKey: reviewer.privateKey?.trim() || existing.privateKey,
             });
             continue;
         }
@@ -32,6 +34,7 @@ export function buildPresentationViewers(user, reviewers) {
             id: reviewer.id,
             name,
             department: reviewer.department?.trim() || undefined,
+            privateKey: reviewer.privateKey?.trim() || undefined,
         });
     }
     return Array.from(byId.values());
