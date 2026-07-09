@@ -21,8 +21,15 @@ import { buildPanelRoleStats } from "../utils/panelRoleStats.js";
 import { canShowCaseClaimAction, createReplyStatusForSubmit, getLatestBranchRootForCase, getReportReplies, ISSUE_ROOT_PARENT_ID, requiresCaseActorPermissionForComposer, resolveOriginalFeedbackAuthorName, resolveParentReplyIdForCaseQuestion, } from "../utils/feedbackThread.js";
 import { clampRatio, getMarkerFromReport, resolveTooltipAnchor } from "../utils/coordinates.js";
 import { getFeedbackTargetElement, isFeedbackTargetVisible, scrollToFeedbackTarget, waitForTargetRevealResync } from "../utils/locateFeedback.js";
+import { clearFeedbackDeepLinkFromUrl, parseFeedbackDeepLink } from "../utils/feedbackDeepLink.js";
 const MARKER_HOVER_LEAVE_MS = 250;
 const OVERLAY_HOVER_LEAVE_MS = 100;
+function getInitialDeepLinkFeedbackId() {
+    if (typeof window === "undefined") {
+        return null;
+    }
+    return parseFeedbackDeepLink()?.feedbackId ?? null;
+}
 import { findPickTargetByPoint, getSelectableTargets, isSameHoverTarget, resolveFeedbackDocumentAnchor, toFeedbackHoverSnapshot } from "../utils/dom.js";
 import { shouldInspectFontStyle } from "../utils/pickTargetInspect.js";
 import { applyPickProbeCompareMode, applyPickProbeValueDiff, capturePickProbeValues, formatSavedProbeEditsSummary, getProposedChanges } from "../utils/pickProbe.js";
@@ -79,7 +86,7 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
     const selectedElementRef = useRef(null);
     const hoverLeaveTimeoutRef = useRef(null);
     const overlayHoverLeaveTimeoutRef = useRef(null);
-    const [mode, setMode] = useState("idle");
+    const [mode, setMode] = useState(() => (getInitialDeepLinkFeedbackId() ? "view" : "idle"));
     const [panelCollapsed, setPanelCollapsed] = useState(false);
     const [panelTab, setPanelTab] = useState(null);
     const panelExpanded = !panelCollapsed && mode !== "report";
@@ -90,7 +97,7 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
     const resolvedPanelAppearance = useResolvedAppearance(activePanelAppearance);
     const resolvedTooltipAppearance = useResolvedAppearance(activeTooltipAppearance);
     const isMobileViewport = useIsMobileViewport();
-    const { canTransferFeedback, canListAllFeedback, currentPathname, listScope, setListScope, filters, setFilters, selectedReportId, setSelectedReportId, reports, currentPageReports, filteredReports, currentPageFilteredReports, routeDetailsStats, selectedReport, isError, isFetching, hasNextPage, isFetchingNextPage, fetchNextPage, isCreating, isUpdating, isDeleting, queryErrorMessage, refetch, createFeedback, updateFeedback, deleteFeedback, loadRepliesIfNeeded, createReply, usesCreateReply, replyHistoryByReportId, loadOlderReplies, goToOlderPaginationPage, goToNewerPaginationPage, } = useReportPersistence({
+    const { canTransferFeedback, canListAllFeedback, currentPathname, listScope, setListScope, filters, setFilters, selectedReportId, setSelectedReportId, reports, currentPageReports, filteredReports, currentPageFilteredReports, routeDetailsStats, selectedReport, isError, isReportsLoading, isFetching, hasNextPage, isFetchingNextPage, fetchNextPage, isCreating, isUpdating, isDeleting, queryErrorMessage, refetch, createFeedback, updateFeedback, deleteFeedback, loadRepliesIfNeeded, createReply, usesCreateReply, replyHistoryByReportId, loadOlderReplies, goToOlderPaginationPage, goToNewerPaginationPage, } = useReportPersistence({
         projectId,
         environment,
         appVersion,
@@ -373,6 +380,8 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
     const [confirmAuthorName, setConfirmAuthorName] = useState("");
     const [showConfirmAuthorSelect, setShowConfirmAuthorSelect] = useState(false);
     const pendingLocateReportIdRef = useRef(null);
+    const pendingDeepLinkFeedbackIdRef = useRef(getInitialDeepLinkFeedbackId());
+    const deepLinkHandledRef = useRef(false);
     const [editingReportId, setEditingReportId] = useState(null);
     const [editableDraft, setEditableDraft] = useState(null);
     const [creatingGitHubIssueId, setCreatingGitHubIssueId] = useState(null);
@@ -1278,6 +1287,23 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         await prepareFeedbackLocation(enrichedReport);
         openReplyComposer(enrichedReport);
     }, [loadRepliesIfNeeded, openReplyComposer, prepareFeedbackLocation]);
+    useEffect(() => {
+        const feedbackId = pendingDeepLinkFeedbackIdRef.current;
+        if (!feedbackId || deepLinkHandledRef.current || isReportsLoading || isFetching) {
+            return;
+        }
+        const report = reports.find((item) => item.id === feedbackId);
+        if (!report) {
+            pendingDeepLinkFeedbackIdRef.current = null;
+            clearFeedbackDeepLinkFromUrl();
+            return;
+        }
+        deepLinkHandledRef.current = true;
+        pendingDeepLinkFeedbackIdRef.current = null;
+        void activateFeedbackMarker(report).finally(() => {
+            clearFeedbackDeepLinkFromUrl();
+        });
+    }, [activateFeedbackMarker, isFetching, isReportsLoading, reports]);
     const toggleConfirmAuthorSelect = () => {
         setShowConfirmAuthorSelect((current) => !current);
     };

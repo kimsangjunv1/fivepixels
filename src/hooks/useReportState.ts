@@ -72,9 +72,18 @@ import {
 } from "@/utils/feedbackThread.js";
 import { clampRatio, getMarkerFromReport, resolveTooltipAnchor } from "@/utils/coordinates.js";
 import { getFeedbackTargetElement, isFeedbackTargetVisible, scrollToFeedbackTarget, waitForTargetRevealResync } from "@/utils/locateFeedback.js";
+import { clearFeedbackDeepLinkFromUrl, parseFeedbackDeepLink } from "@/utils/feedbackDeepLink.js";
 
 const MARKER_HOVER_LEAVE_MS = 250;
 const OVERLAY_HOVER_LEAVE_MS = 100;
+
+function getInitialDeepLinkFeedbackId() {
+    if (typeof window === "undefined") {
+        return null;
+    }
+
+    return parseFeedbackDeepLink()?.feedbackId ?? null;
+}
 import { findPickTargetByPoint, getSelectableTargets, isSameHoverTarget, resolveFeedbackDocumentAnchor, toFeedbackHoverSnapshot } from "@/utils/dom.js";
 import { shouldInspectFontStyle } from "@/utils/pickTargetInspect.js";
 import { applyPickProbeCompareMode, applyPickProbeValueDiff, capturePickProbeValues, formatSavedProbeEditsSummary, getProposedChanges } from "@/utils/pickProbe.js";
@@ -260,7 +269,7 @@ export function useReportState({
     const hoverLeaveTimeoutRef = useRef<number | null>(null);
     const overlayHoverLeaveTimeoutRef = useRef<number | null>(null);
 
-    const [mode, setMode] = useState<ReportMode>("idle");
+    const [mode, setMode] = useState<ReportMode>(() => (getInitialDeepLinkFeedbackId() ? "view" : "idle"));
     const [panelCollapsed, setPanelCollapsed] = useState(false);
     const [panelTab, setPanelTab] = useState<ReportPanelTab | null>(null);
 
@@ -290,6 +299,7 @@ export function useReportState({
         routeDetailsStats,
         selectedReport,
         isError,
+        isReportsLoading,
         isFetching,
         hasNextPage,
         isFetchingNextPage,
@@ -681,6 +691,8 @@ export function useReportState({
     const [confirmAuthorName, setConfirmAuthorName] = useState("");
     const [showConfirmAuthorSelect, setShowConfirmAuthorSelect] = useState(false);
     const pendingLocateReportIdRef = useRef<string | null>(null);
+    const pendingDeepLinkFeedbackIdRef = useRef<string | null>(getInitialDeepLinkFeedbackId());
+    const deepLinkHandledRef = useRef(false);
     const [editingReportId, setEditingReportId] = useState<string | null>(null);
     const [editableDraft, setEditableDraft] = useState<EditableDraft | null>(null);
     const [creatingGitHubIssueId, setCreatingGitHubIssueId] = useState<string | null>(null);
@@ -1861,6 +1873,29 @@ export function useReportState({
         },
         [loadRepliesIfNeeded, openReplyComposer, prepareFeedbackLocation],
     );
+
+    useEffect(() => {
+        const feedbackId = pendingDeepLinkFeedbackIdRef.current;
+
+        if (!feedbackId || deepLinkHandledRef.current || isReportsLoading || isFetching) {
+            return;
+        }
+
+        const report = reports.find((item) => item.id === feedbackId);
+
+        if (!report) {
+            pendingDeepLinkFeedbackIdRef.current = null;
+            clearFeedbackDeepLinkFromUrl();
+            return;
+        }
+
+        deepLinkHandledRef.current = true;
+        pendingDeepLinkFeedbackIdRef.current = null;
+
+        void activateFeedbackMarker(report).finally(() => {
+            clearFeedbackDeepLinkFromUrl();
+        });
+    }, [activateFeedbackMarker, isFetching, isReportsLoading, reports]);
 
     const toggleConfirmAuthorSelect = () => {
         setShowConfirmAuthorSelect((current) => !current);

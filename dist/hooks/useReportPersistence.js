@@ -89,7 +89,7 @@ export function useReportPersistence({ projectId, environment, appVersion, field
     const activeReportsQuery = listScope === "all" ? allReportsQuery : currentReportsQuery;
     const rawReports = activeReportsQuery.data;
     const reports = useMemo(() => enrichReports(rawReports, replyHistoryByReportId), [rawReports, replyHistoryByReportId]);
-    const { error, isError, isFetching, hasNextPage, isFetchingNextPage, fetchNextPage, refetch } = activeReportsQuery;
+    const { error, isError, isLoading, isFetching, hasNextPage, isFetchingNextPage, fetchNextPage, refetch } = activeReportsQuery;
     useEffect(() => {
         if (typeof window === "undefined" || !usesLocalStorage) {
             return;
@@ -197,6 +197,7 @@ export function useReportPersistence({ projectId, environment, appVersion, field
         routeDetailsStats,
         selectedReport,
         isError,
+        isReportsLoading: isLoading,
         isFetching,
         hasNextPage,
         isFetchingNextPage,

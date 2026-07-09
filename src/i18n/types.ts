@@ -516,6 +516,9 @@ export type ReportMessages = {
         windowMaximizeAriaLabel: string;
         sidebarCollapseAriaLabel: string;
         sidebarExpandAriaLabel: string;
+        shareLinkAriaLabel: string;
+        shareLinkTitle: string;
+        shareLinkCopiedTitle: string;
         assigneeAssigned: string;
         assigneeUnassigned: string;
         previousAssignee: string;

@@ -41,6 +41,7 @@ export declare function useReportPersistence({ projectId, environment, appVersio
     routeDetailsStats: import("../utils/panelBootstrap.js").RouteDetailsSummary;
     selectedReport: ReportFeedback;
     isError: boolean;
+    isReportsLoading: boolean;
     isFetching: boolean;
     hasNextPage: boolean;
     isFetchingNextPage: boolean;

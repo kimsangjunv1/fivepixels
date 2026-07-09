@@ -6,10 +6,13 @@ import { useNativeHover } from "@/hooks/useNativeHover.js";
 import { useReport } from "@/providers/reportContext.js";
 import type { Marker } from "@/types/report-ui.js";
 import type { ReportFeedback } from "@/types/report.js";
+import type { ReportMessages } from "@/i18n/types.js";
 import { shouldShowCaseReplyComposer } from "@/utils/feedbackThread.js";
 import { getCaseAssigneeName, getCaseById } from "@/utils/reportCases.js";
 import { getFieldTags } from "@/utils/fields.js";
-import { CloseIcon, MaximizeIcon, MinimizeIcon, RestoreIcon, SendIcon, SidePanelIcon } from "@/components/icons/Icons.js";
+import { copyTextToClipboard } from "@/utils/feedbackDataTransfer.js";
+import { buildFeedbackShareUrl } from "@/utils/feedbackDeepLink.js";
+import { CloseIcon, LinkIcon, MaximizeIcon, MinimizeIcon, RestoreIcon, SendIcon, SidePanelIcon } from "@/components/icons/Icons.js";
 import { FeedbackFieldTags } from "@/components/panel/feedback/FeedbackFieldTags.js";
 import { CornerResizeGhost } from "@/components/ui/CornerResizeGhost.js";
 import { CornerResizeHandle } from "@/components/ui/CornerResizeHandle.js";
@@ -67,7 +70,7 @@ function clampSidebarWidth(width: number, windowWidth: number): number {
     return Math.min(Math.max(width, SIDEBAR_MIN_WIDTH), maxWidth);
 }
 
-function WindowControlButton({ onClick, ariaLabel, className = "", children }: { onClick: () => void; ariaLabel: string; className?: string; children: ReactNode }) {
+function WindowControlButton({ onClick, ariaLabel, title, className = "", children }: { onClick: () => void; ariaLabel: string; title?: string; className?: string; children: ReactNode }) {
     return (
         <button
             type="button"
@@ -75,10 +78,36 @@ function WindowControlButton({ onClick, ariaLabel, className = "", children }: {
             onPointerDown={(event) => event.stopPropagation()}
             onClick={onClick}
             aria-label={ariaLabel}
+            title={title}
             className={`${HEADER_BUTTON_CLASS} ${className}`}
         >
             {children}
         </button>
+    );
+}
+
+function MarkerWindowShareButton({ report, messages }: { report: ReportFeedback; messages: ReportMessages }) {
+    const [copied, setCopied] = useState(false);
+
+    const handleCopy = () => {
+        void copyTextToClipboard(buildFeedbackShareUrl(report))
+            .then(() => {
+                setCopied(true);
+                window.setTimeout(() => setCopied(false), 1500);
+            })
+            .catch(() => {
+                setCopied(false);
+            });
+    };
+
+    return (
+        <WindowControlButton
+            onClick={handleCopy}
+            ariaLabel={messages.marker.shareLinkAriaLabel}
+            title={copied ? messages.marker.shareLinkCopiedTitle : messages.marker.shareLinkTitle}
+        >
+            <LinkIcon className="h-[15px] w-[15px]" />
+        </WindowControlButton>
     );
 }
 
@@ -378,6 +407,13 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
         </WindowControlButton>
     );
 
+    const shareButton = (
+        <MarkerWindowShareButton
+            report={report}
+            messages={messages}
+        />
+    );
+
     const rightSection = (
         <div className="flex min-w-0 flex-1 flex-col bg-[var(--adaptive-black50)]">
             <div className="shrink-0 border-b border-[var(--adaptive-border-subtle)] px-[16px] py-[8px]">
@@ -518,6 +554,7 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
                         >
                             {leftControls}
                         </div>
+                        {shareButton}
                         {sidebarToggleButton}
                     </div>
                 ) : (
@@ -532,6 +569,7 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
                                 style={{ width: COLLAPSED_SIDEBAR_WIDTH }}
                             >
                                 {leftControls}
+                                {shareButton}
                                 {sidebarToggleButton}
                             </div>
                         ) : (
@@ -544,7 +582,10 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
                                     className="flex shrink-0 cursor-move touch-none select-none items-center justify-between gap-[8px] px-[10px] py-[8px]"
                                 >
                                     <div className="flex items-center gap-[2px]">{leftControls}</div>
-                                    {sidebarToggleButton}
+                                    <div className="flex items-center gap-[2px]">
+                                        {shareButton}
+                                        {sidebarToggleButton}
+                                    </div>
                                 </header>
 
                                 <MarkerCaseSidebar
