@@ -2,7 +2,7 @@ import { FEEDBACK_STORAGE_CHANGED_EVENT } from "@/constants/feedbackStorageEvent
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useCreateReportMutation, useDeleteReportMutation, useReportsQuery, useUpdateReportMutation } from "./report.query.js";
 import { useCurrentPathname } from "./useCurrentPathname.js";
-import { createReply as createReplyApi, listReplies as listRepliesApi } from "./report.api.js";
+import { createReply as createReplyApi } from "./report.api.js";
 import type {
     CreateReportFeedbackPayload,
     CreateReplyPayload,
@@ -19,8 +19,10 @@ import { toDateKey } from "@/utils/heatmapActivity.js";
 import { buildRouteDetailsSummary } from "@/utils/panelBootstrap.js";
 import { getRouteDetailStatus } from "@/utils/routeDetailStatus.js";
 import { getFeedbackDisplayStatus, getLatestReply } from "@/utils/feedbackThread.js";
-import { mergeRepliesIntoReport, needsReplyLoad } from "@/utils/reportSummary.js";
+import { mergeRepliesIntoReport } from "@/utils/reportSummary.js";
 import { resolveStorageAdapter } from "@/utils/storage.js";
+import type { ResolvedReplyHistoryConfig } from "@/utils/reportUi.js";
+import { createReplyHistoryActions, EMPTY_REPLY_HISTORY_STATE, type ReplyHistoryState } from "./replyHistoryActions.js";
 
 export type ReportPersistenceConfig = {
     projectId: string;
@@ -37,6 +39,7 @@ export type ReportPersistenceConfig = {
     routeKey?: string;
     fetchEnabled?: boolean;
     listFetchEnabled?: boolean;
+    replyHistory: ResolvedReplyHistoryConfig;
 };
 
 function buildReportSearchHaystack(report: ReportFeedback) {
@@ -83,15 +86,15 @@ function filterReports(reports: ReportFeedback[], filters: ReportFilters) {
     });
 }
 
-function enrichReports(reports: ReportFeedback[], repliesByReportId: Record<string, ReportReply[]>) {
+function enrichReports(reports: ReportFeedback[], replyHistoryByReportId: Record<string, ReplyHistoryState>) {
     return reports.map((report) => {
-        const loadedReplies = repliesByReportId[report.id];
+        const history = replyHistoryByReportId[report.id];
 
-        if (!loadedReplies) {
+        if (!history?.initialized) {
             return report;
         }
 
-        return mergeRepliesIntoReport(report, loadedReplies);
+        return mergeRepliesIntoReport(report, history.items);
     });
 }
 
@@ -110,6 +113,7 @@ export function useReportPersistence({
     routeKey,
     fetchEnabled = true,
     listFetchEnabled = true,
+    replyHistory,
 }: ReportPersistenceConfig) {
     const { adapter: storageAdapterInstance, usesLocalStorage } = useMemo(
         () =>
@@ -131,7 +135,7 @@ export function useReportPersistence({
     const usesLazyReplies = Boolean(storageAdapterInstance.listReplies);
     const usesCreateReply = Boolean(storageAdapterInstance.createReply);
     const currentPathname = useCurrentPathname(routeKey);
-    const [repliesByReportId, setRepliesByReportId] = useState<Record<string, ReportReply[]>>({});
+    const [replyHistoryByReportId, setReplyHistoryByReportId] = useState<Record<string, ReplyHistoryState>>({});
 
     const [filters, setFilters] = useState<ReportFilters>({
         keyword: "",
@@ -143,7 +147,7 @@ export function useReportPersistence({
     const [listScope, setListScope] = useState<ReportListScope>("current");
 
     const clearLoadedReplies = useCallback(() => {
-        setRepliesByReportId({});
+        setReplyHistoryByReportId({});
     }, []);
 
     const currentReportsQuery = useReportsQuery(storageAdapterInstance, currentPathname, "current", fetchEnabled && listFetchEnabled, clearLoadedReplies);
@@ -156,7 +160,7 @@ export function useReportPersistence({
     );
     const activeReportsQuery = listScope === "all" ? allReportsQuery : currentReportsQuery;
     const rawReports = activeReportsQuery.data;
-    const reports = useMemo(() => enrichReports(rawReports, repliesByReportId), [rawReports, repliesByReportId]);
+    const reports = useMemo(() => enrichReports(rawReports, replyHistoryByReportId), [rawReports, replyHistoryByReportId]);
     const { error, isError, isFetching, hasNextPage, isFetchingNextPage, fetchNextPage, refetch } = activeReportsQuery;
 
     useEffect(() => {
@@ -198,33 +202,44 @@ export function useReportPersistence({
         }
     });
 
+    const getReportById = useCallback(
+        (reportId: string) => rawReports.find((report) => report.id === reportId),
+        [rawReports],
+    );
+
+    const {
+        initReplyHistory,
+        loadOlderReplies,
+        goToOlderPaginationPage,
+        goToNewerPaginationPage,
+        appendReplyToHistory,
+        resetReplyHistory,
+    } = createReplyHistoryActions({
+        adapter: storageAdapterInstance,
+        usesLazyReplies,
+        getReportById,
+        replyHistoryByReportId,
+        setReplyHistoryByReportId,
+    });
+
     const loadRepliesIfNeeded = useCallback(
-        async (report: ReportFeedback): Promise<ReportFeedback> => {
-            if (!needsReplyLoad(report, usesLazyReplies)) {
-                return report;
-            }
-
-            const replies = await listRepliesApi(storageAdapterInstance, report.id);
-            setRepliesByReportId((current) => ({
-                ...current,
-                [report.id]: replies,
-            }));
-
-            return mergeRepliesIntoReport(report, replies);
-        },
-        [storageAdapterInstance, usesLazyReplies],
+        async (report: ReportFeedback): Promise<ReportFeedback> => initReplyHistory(report, replyHistory),
+        [initReplyHistory, replyHistory],
     );
 
     const createReply = useCallback(
         async (commentId: string, payload: CreateReplyPayload) => {
             const created = await createReplyApi(storageAdapterInstance, commentId, payload);
+            const history = replyHistoryByReportId[commentId];
 
-            if (usesLazyReplies) {
-                const replies = await listRepliesApi(storageAdapterInstance, commentId);
-                setRepliesByReportId((current) => ({
-                    ...current,
-                    [commentId]: replies,
-                }));
+            if (history?.initialized) {
+                appendReplyToHistory(commentId, created);
+            } else if (usesLazyReplies) {
+                const report = getReportById(commentId);
+
+                if (report) {
+                    await initReplyHistory(report, replyHistory);
+                }
             }
 
             void refetch();
@@ -234,12 +249,23 @@ export function useReportPersistence({
 
             return created;
         },
-        [currentReportsQuery, listScope, refetch, storageAdapterInstance, usesLazyReplies],
+        [
+            appendReplyToHistory,
+            currentReportsQuery,
+            getReportById,
+            initReplyHistory,
+            listScope,
+            refetch,
+            replyHistory,
+            replyHistoryByReportId,
+            storageAdapterInstance,
+            usesLazyReplies,
+        ],
     );
 
     const currentPageReports = useMemo(
-        () => enrichReports(currentReportsQuery.data, repliesByReportId),
-        [currentReportsQuery.data, repliesByReportId],
+        () => enrichReports(currentReportsQuery.data, replyHistoryByReportId),
+        [currentReportsQuery.data, replyHistoryByReportId],
     );
     const filteredReports = useMemo(() => filterReports(reports, filters), [filters, reports]);
     const currentPageFilteredReports = useMemo(
@@ -300,6 +326,13 @@ export function useReportPersistence({
         deleteFeedback,
         loadRepliesIfNeeded,
         createReply,
+        replyHistory,
+        replyHistoryByReportId,
+        initReplyHistory,
+        loadOlderReplies,
+        goToOlderPaginationPage,
+        goToNewerPaginationPage,
+        resetReplyHistory,
     };
 }
 

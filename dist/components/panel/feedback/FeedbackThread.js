@@ -4,6 +4,8 @@ import { useReport } from "../../../providers/reportContext.js";
 import { formatClockTime } from "../../../utils/format.js";
 import { canEditReportCases, getCaseById } from "../../../utils/reportCases.js";
 import { buildCaseThreadTimeline, buildConfirmAuthorOptions, buildThreadTimeline, canShowAdjudicationActionsOnBranchReply, canShowCaseThreadActions, canShowCaseClaimAction, canShowCheckoutBranchActionsForCase, canShowSuggestedBranchActionsForCase, getReportReplies, isAssigneeEventStatus, isBranchReplyAuthor, ISSUE_ROOT_PARENT_ID, resolveOriginalFeedbackAuthorName, shouldForceExpandQuestionGroup, } from "../../../utils/feedbackThread.js";
+import { usesReplyInfiniteScroll } from "../../../constants/replyHistory.js";
+import { REPLY_HISTORY_SCROLL_THRESHOLD_PX } from "../../../utils/replyHistory.js";
 import { getGitHubIssueUrl, isGitIssuedSystemReply } from "../../../utils/githubIntegration.js";
 import { CheckIcon, CloseIcon, ResolvedStatusIcon, RevertIcon } from "../../../components/icons/Icons.js";
 import { FEEDBACK_STATUS_COLOR } from "../../../constants/feedbackStatus.js";
@@ -14,6 +16,7 @@ import { FeedbackCreatorBadge } from "./FeedbackCreatorBadge.js";
 import { FeedbackStatusBadge } from "./FeedbackStatusBadge.js";
 import { GitIssuedThreadEntry } from "./GitIssuedThreadEntry.js";
 import { QuestionThreadGroup } from "./QuestionThreadGroup.js";
+import { ReplyHistoryControls } from "./ReplyHistoryControls.js";
 import { ThreadAuthorMeta } from "./ThreadAuthorMeta.js";
 import { ThreadTimelineRow } from "./ThreadTimelineRow.js";
 const THREAD_ACTION_BUTTON_BASE = "flex items-center gap-[4px] rounded-[6px] px-[8px] py-[4px] text-[12px] font-semibold transition-colors";
@@ -105,8 +108,9 @@ function ThreadRootReply({ reply, report, caseId, authors, pendingComposer, conf
     return (_jsx(ThreadTimelineRow, { time: formatClockTime(reply.created_at), children: _jsx("div", { className: hasActions ? THREAD_ACTION_ENTRY_SURFACE_CLASS : THREAD_CASE_ENTRY_SURFACE_CLASS, children: entryBody }) }));
 }
 export function FeedbackThread({ report, authors, pendingComposer, confirmAuthorName, showConfirmAuthorSelect, onConfirmAuthorNameChange, onToggleConfirmAuthorSelect: _onToggleConfirmAuthorSelect, onStartDeny, onStartCheckout, onStartAskQuestion, onClaimAssignee, onTransferAssignee, onConfirm, isUpdating, isClaimingAssignee, hideCaseSelector = false, }) {
-    const { messages, fields, caseEditReportId, caseEditCases, beginCaseEdit, cancelCaseEdit, handleCaseEditSave, updateCaseEditDraftCase, addCaseEditDraftCase, removeCaseEditDraftCase, focusedCaseId, selectCase, replyAuthorName, errorMessage, } = useReport();
+    const { messages, fields, caseEditReportId, caseEditCases, beginCaseEdit, cancelCaseEdit, handleCaseEditSave, updateCaseEditDraftCase, addCaseEditDraftCase, removeCaseEditDraftCase, focusedCaseId, selectCase, replyAuthorName, errorMessage, replyHistory, replyHistoryByReportId, loadOlderReplies, loadRepliesIfNeeded, } = useReport();
     const scrollRef = useRef(null);
+    const loadingOlderRef = useRef(false);
     const [isAllCasesView, setIsAllCasesView] = useState(false);
     const [scrollOverflow, setScrollOverflow] = useState({
         canScrollUp: false,
@@ -123,6 +127,37 @@ export function FeedbackThread({ report, authors, pendingComposer, confirmAuthor
     const canAct = focusedCaseId ? canShowCaseThreadActions(report, focusedCaseId, actorName) : false;
     const systemBranches = useMemo(() => buildThreadTimeline(report).branches.filter((branch) => isGitIssuedSystemReply(branch.root, report)), [report, replies]);
     const showTimelineRail = Boolean((focusedCaseId && !isAllCasesView) || systemBranches.length > 0);
+    const replyHistoryState = replyHistoryByReportId[report.id];
+    useEffect(() => {
+        void loadRepliesIfNeeded(report);
+    }, [loadRepliesIfNeeded, report.id]);
+    const triggerLoadOlderReplies = useCallback(async () => {
+        const element = scrollRef.current;
+        if (!element || loadingOlderRef.current) {
+            return;
+        }
+        const history = replyHistoryByReportId[report.id];
+        if (!history?.hasMoreOlder || history.isLoadingOlder) {
+            return;
+        }
+        loadingOlderRef.current = true;
+        const previousHeight = element.scrollHeight;
+        const previousTop = element.scrollTop;
+        try {
+            await loadOlderReplies(report.id, replyHistory);
+            requestAnimationFrame(() => {
+                const nextElement = scrollRef.current;
+                if (!nextElement) {
+                    return;
+                }
+                const heightDelta = nextElement.scrollHeight - previousHeight;
+                nextElement.scrollTop = previousTop + heightDelta;
+            });
+        }
+        finally {
+            loadingOlderRef.current = false;
+        }
+    }, [loadOlderReplies, replyHistory, replyHistoryByReportId, report.id]);
     useEffect(() => {
         setIsAllCasesView(false);
     }, [report.id]);
@@ -132,7 +167,14 @@ export function FeedbackThread({ report, authors, pendingComposer, confirmAuthor
             return;
         }
         setScrollOverflow(getScrollOverflowState(element));
-    }, []);
+        if (!usesReplyInfiniteScroll(replyHistory.mode)) {
+            return;
+        }
+        if (element.scrollTop > REPLY_HISTORY_SCROLL_THRESHOLD_PX) {
+            return;
+        }
+        void triggerLoadOlderReplies();
+    }, [replyHistory.mode, triggerLoadOlderReplies]);
     const scrollToBottom = useCallback(() => {
         const element = scrollRef.current;
         if (!element) {
@@ -158,7 +200,7 @@ export function FeedbackThread({ report, authors, pendingComposer, confirmAuthor
     useEffect(() => {
         scrollToBottom();
     }, [focusedCaseId, replies.length, scrollToBottom]);
-    return (_jsxs("div", { className: "relative min-h-0 flex-1", children: [scrollOverflow.canScrollUp ? _jsx("p", { className: `${SCROLL_HINT_CLASS} top-0 bg-[linear-gradient(0deg,transparent,var(--adaptive-black50))]`, children: messages.thread.scrollHintUp }) : null, scrollOverflow.canScrollDown ? (_jsx("p", { className: `${SCROLL_HINT_CLASS} bottom-[57px] bg-[linear-gradient(180deg,transparent,var(--adaptive-black50))]`, children: messages.thread.scrollHintDown })) : null, _jsxs("section", { ref: scrollRef, className: `flex h-full flex-col overflow-auto px-[12px] ${hideCaseSelector ? "" : "gap-[16px] max-h-[360px]"}`, children: [hideCaseSelector ? null : (_jsxs("article", { className: "flex flex-col gap-[4px] border-t border-[var(--adaptive-border-subtle)]", children: [_jsx(FeedbackCaseList, { report: report, cases: casesForEditor, isEditing: isEditingCases, canEdit: canEditReportCases(report) && !isEditingCases, isSaving: isUpdating, errorMessage: isEditingCases ? errorMessage : "", focusedCaseId: focusedCaseId, onSelectCase: selectCase, onAllTabActiveChange: setIsAllCasesView, onBeginEdit: () => beginCaseEdit(report), onCancelEdit: cancelCaseEdit, onSaveEdit: () => void handleCaseEditSave(), onCaseChange: updateCaseEditDraftCase, onAddCase: addCaseEditDraftCase, onRemoveCase: removeCaseEditDraftCase }), report.author_name ? (_jsxs("div", { className: "flex items-center gap-[6px] px-[16px]", children: [_jsx("p", { className: "text-[12px] text-[var(--adaptive-black500)]", children: report.author_name }), _jsx(FeedbackCreatorBadge, {})] })) : null] })), _jsxs("div", { className: "relative flex flex-col pt-[12px] pb-[57px]", children: [showTimelineRail ? _jsx("div", { className: "pointer-events-none absolute bottom-[12px] left-[20px] top-[12px] w-px bg-[var(--adaptive-border-subtle)]" }) : null, focusedCaseId && !isAllCasesView ? (_jsxs(_Fragment, { children: [focusedCase ? (_jsx(CaseThreadEntry, { report: report, caseId: focusedCaseId, caseText: focusedCase.text, caseCreatedAt: focusedCase.created_at, caseStatus: focusedCase.status, actorName: actorName, onClaimAssignee: onClaimAssignee, isUpdating: isUpdating, isClaimingAssignee: isClaimingAssignee, isEditingCases: isEditingCases })) : null, _jsx(QuestionThreadGroup, { questions: timeline.issueChildren, originalAuthorName: originalAuthorName, forceExpanded: shouldForceExpandQuestionGroup(report, focusedCaseId, timeline.issueChildren, {
+    return (_jsxs("div", { className: "relative min-h-0 flex-1", children: [scrollOverflow.canScrollUp ? _jsx("p", { className: `${SCROLL_HINT_CLASS} top-0 bg-[linear-gradient(0deg,transparent,var(--adaptive-black50))]`, children: messages.thread.scrollHintUp }) : null, scrollOverflow.canScrollDown ? (_jsx("p", { className: `${SCROLL_HINT_CLASS} bottom-[57px] bg-[linear-gradient(180deg,transparent,var(--adaptive-black50))]`, children: messages.thread.scrollHintDown })) : null, _jsxs("section", { ref: scrollRef, className: `flex h-full flex-col overflow-auto px-[12px] ${hideCaseSelector ? "" : "gap-[16px] max-h-[360px]"}`, children: [hideCaseSelector ? null : (_jsxs("article", { className: "flex flex-col gap-[4px] border-t border-[var(--adaptive-border-subtle)]", children: [_jsx(FeedbackCaseList, { report: report, cases: casesForEditor, isEditing: isEditingCases, canEdit: canEditReportCases(report) && !isEditingCases, isSaving: isUpdating, errorMessage: isEditingCases ? errorMessage : "", focusedCaseId: focusedCaseId, onSelectCase: selectCase, onAllTabActiveChange: setIsAllCasesView, onBeginEdit: () => beginCaseEdit(report), onCancelEdit: cancelCaseEdit, onSaveEdit: () => void handleCaseEditSave(), onCaseChange: updateCaseEditDraftCase, onAddCase: addCaseEditDraftCase, onRemoveCase: removeCaseEditDraftCase }), report.author_name ? (_jsxs("div", { className: "flex items-center gap-[6px] px-[16px]", children: [_jsx("p", { className: "text-[12px] text-[var(--adaptive-black500)]", children: report.author_name }), _jsx(FeedbackCreatorBadge, {})] })) : null] })), _jsxs("div", { className: "relative flex flex-col pt-[12px] pb-[57px]", children: [_jsx(ReplyHistoryControls, { reportId: report.id, history: replyHistoryState }), showTimelineRail ? _jsx("div", { className: "pointer-events-none absolute bottom-[12px] left-[20px] top-[12px] w-px bg-[var(--adaptive-border-subtle)]" }) : null, focusedCaseId && !isAllCasesView ? (_jsxs(_Fragment, { children: [focusedCase ? (_jsx(CaseThreadEntry, { report: report, caseId: focusedCaseId, caseText: focusedCase.text, caseCreatedAt: focusedCase.created_at, caseStatus: focusedCase.status, actorName: actorName, onClaimAssignee: onClaimAssignee, isUpdating: isUpdating, isClaimingAssignee: isClaimingAssignee, isEditingCases: isEditingCases })) : null, _jsx(QuestionThreadGroup, { questions: timeline.issueChildren, originalAuthorName: originalAuthorName, forceExpanded: shouldForceExpandQuestionGroup(report, focusedCaseId, timeline.issueChildren, {
                                             composerTargetsGroup: pendingComposer?.type === "question" && pendingComposer.targetReplyId === ISSUE_ROOT_PARENT_ID,
                                         }) }), timeline.branches.map((branch) => (_jsxs("div", { className: "flex flex-col", children: [_jsx(ThreadRootReply, { reply: branch.root, report: report, caseId: focusedCaseId, authors: authors, pendingComposer: pendingComposer, confirmAuthorName: confirmAuthorName, showConfirmAuthorSelect: showConfirmAuthorSelect, originalAuthorName: originalAuthorName, issueUrl: issueUrl, onConfirmAuthorNameChange: onConfirmAuthorNameChange, onStartDeny: onStartDeny, onStartCheckout: onStartCheckout, onStartAskQuestion: onStartAskQuestion, onTransferAssignee: onTransferAssignee, onConfirm: onConfirm, isUpdating: isUpdating, isClaimingAssignee: isClaimingAssignee, actorName: actorName }), _jsx(QuestionThreadGroup, { questions: branch.children, originalAuthorName: originalAuthorName, forceExpanded: shouldForceExpandQuestionGroup(report, focusedCaseId, branch.children, {
                                                     composerTargetsGroup: pendingComposer?.type === "question" && pendingComposer.targetReplyId === branch.root.id,

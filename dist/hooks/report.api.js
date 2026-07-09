@@ -1,5 +1,6 @@
 import { getActiveReportMessages } from "../i18n/index.js";
 import { normalizeListReport } from "../utils/reportSummary.js";
+import { normalizeListRepliesResult } from "../utils/replyHistory.js";
 export async function listReports(adapter, pathname) {
     const items = await adapter.list({ pathname });
     return items.map(normalizeListReport);
@@ -14,11 +15,12 @@ export async function listAllReports(adapter, params) {
         items: result.items.map(normalizeListReport),
     };
 }
-export async function listReplies(adapter, commentId) {
+export async function listReplies(adapter, commentId, params) {
     if (!adapter.listReplies) {
         throw new Error(getActiveReportMessages().errors.loadRepliesFailed);
     }
-    return adapter.listReplies(commentId);
+    const result = await adapter.listReplies(commentId, params);
+    return normalizeListRepliesResult(result, params);
 }
 export async function createReport(adapter, payload) {
     return normalizeListReport(await adapter.create(payload));

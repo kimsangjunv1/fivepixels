@@ -1,5 +1,5 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 const MENU_GAP = 6;
 const VIEWPORT_PADDING = 8;
 function computeDropdownPlacement(triggerRect, menuWidth, menuHeight, preferredAlign) {
@@ -61,11 +61,20 @@ function toRelativePlacement(viewportPlacement, rootRect) {
         left: viewportPlacement.left - rootRect.left,
     };
 }
+function isSamePlacement(current, next) {
+    if (current === next) {
+        return true;
+    }
+    if (!current || !next) {
+        return false;
+    }
+    return current.top === next.top && current.left === next.left;
+}
 export function PanelDropdownMenu({ open, onClose, trigger, children, menuClassName, align = "right" }) {
     const rootRef = useRef(null);
     const menuRef = useRef(null);
     const [menuPlacement, setMenuPlacement] = useState(null);
-    const updateMenuPlacement = () => {
+    const updateMenuPlacement = useCallback(() => {
         const root = rootRef.current;
         const menu = menuRef.current;
         if (!root || !menu) {
@@ -75,11 +84,12 @@ export function PanelDropdownMenu({ open, onClose, trigger, children, menuClassN
         const triggerRect = rootRect;
         const menuRect = menu.getBoundingClientRect();
         const viewportPlacement = computeDropdownPlacement(triggerRect, menuRect.width, menuRect.height, align);
-        setMenuPlacement(toRelativePlacement(viewportPlacement, rootRect));
-    };
+        const nextPlacement = toRelativePlacement(viewportPlacement, rootRect);
+        setMenuPlacement((current) => (isSamePlacement(current, nextPlacement) ? current : nextPlacement));
+    }, [align]);
     useLayoutEffect(() => {
         if (!open) {
-            setMenuPlacement(null);
+            setMenuPlacement((current) => (current === null ? current : null));
             return;
         }
         updateMenuPlacement();
@@ -97,7 +107,7 @@ export function PanelDropdownMenu({ open, onClose, trigger, children, menuClassN
             window.removeEventListener("scroll", updateMenuPlacement, true);
             resizeObserver?.disconnect();
         };
-    }, [align, open, children]);
+    }, [open, updateMenuPlacement]);
     useEffect(() => {
         if (!open) {
             return;

@@ -108,7 +108,7 @@ export function FeedbackComposer({
     };
 
     return (
-        <div className={`flex w-full flex-col bg-[var(--adaptive-blackOpacity900)] backdrop-blur-sm rounded-[16px] shadow-[0_20px_20px_0_#00000020] ${usesCaseEditor ? "min-h-0 flex-1" : ""}`}>
+        <div className={`flex w-full flex-col bg-[var(--adaptive-blackOpacity400)] backdrop-blur-sm ${usesCaseEditor ? "min-h-0 flex-1" : ""}`}>
             <div className={`relative ${usesCaseEditor ? "min-h-0 flex-1" : ""}`}>
                 {errorMessage ? (
                     <p

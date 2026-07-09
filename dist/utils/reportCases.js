@@ -108,6 +108,7 @@ export function normalizeReportCase(value, fallbackTimestamp) {
         text: item.text,
         status: isCaseStatus(item.status) ? item.status : "open",
         assignee_name: item.assignee_name === null || typeof item.assignee_name === "string" ? (item.assignee_name ?? null) : null,
+        previous_assignee_name: item.previous_assignee_name === null || typeof item.previous_assignee_name === "string" ? (item.previous_assignee_name ?? null) : null,
         created_at: createdAt,
         updated_at: updatedAt,
     };
@@ -245,9 +246,11 @@ export function transferCaseAssignee(cases, caseId, assigneeName, transferredAt 
         if (item.id !== caseId) {
             return item;
         }
+        const previousAssignee = item.assignee_name?.trim() || null;
         return {
             ...item,
             assignee_name: normalizedName,
+            previous_assignee_name: previousAssignee,
             updated_at: transferredAt,
         };
     });

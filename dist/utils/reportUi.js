@@ -1,4 +1,5 @@
 import { getReportMessages, resolveReportLocale } from "../i18n/index.js";
+import { DEFAULT_REPLY_HISTORY_MODE, DEFAULT_REPLY_HISTORY_PAGE_SIZE } from "../utils/replyHistory.js";
 const DEFAULT_UI = {
     panelAppearance: "system",
     tooltipAppearance: "system",
@@ -21,6 +22,10 @@ export function resolveReportUi({ ui }) {
         showFeedbackList: ui?.showFeedbackList ?? DEFAULT_UI.showFeedbackList,
         visibleShortcutKeys: ui?.visibleShortcutKeys ?? DEFAULT_UI.visibleShortcutKeys,
         questionThreadDefault: ui?.questionThreadDefault ?? DEFAULT_UI.questionThreadDefault,
+        replyHistory: {
+            mode: ui?.replyHistory?.mode ?? DEFAULT_REPLY_HISTORY_MODE,
+            pageSize: ui?.replyHistory?.pageSize ?? DEFAULT_REPLY_HISTORY_PAGE_SIZE,
+        },
         shortcut: ui?.shortcut,
         locale,
         messages: getReportMessages(locale, ui?.messages),

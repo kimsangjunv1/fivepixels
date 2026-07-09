@@ -28,7 +28,7 @@ import type {
 import { resolveReportEnabled } from "@/utils/env.js";
 import { resolveReportProject } from "@/utils/reportProject.js";
 import { resolveReportTeam } from "@/utils/reportTeam.js";
-import { resolveReportUi } from "@/utils/reportUi.js";
+import { resolveReportUi, type ResolvedReportUi } from "@/utils/reportUi.js";
 import { resolveReportVisibility } from "@/utils/reportVisibility.js";
 import { ReportContext } from "./reportContext.js";
 
@@ -43,7 +43,7 @@ export type ReportProviderProps = {
     onListAll?: (params: ReportListAllParams) => Promise<ReportListAllResult>;
     onPanelBootstrap?: (params: ReportPanelBootstrapParams) => Promise<ReportPanelBootstrapResult>;
     onActivitySummary?: (params: ReportActivitySummaryParams) => Promise<ReportActivitySummaryResult>;
-    onListReplies?: (commentId: string) => Promise<ReportReply[]>;
+    onListReplies?: (commentId: string, params?: import("@/types/report.js").ListRepliesParams) => Promise<import("@/types/report.js").ListRepliesResult | ReportReply[]>;
     onNavigate?: (pathname: string) => void | Promise<void>;
     onRevealTarget?: (report: ReportFeedback) => boolean | Promise<boolean>;
     onCreate?: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
@@ -65,6 +65,7 @@ type ReportProviderEnabledProps = Omit<ReportProviderProps, "project" | "ui" | "
     showFeedbackList: boolean;
     visibleShortcutKeys: boolean;
     questionThreadDefault: NonNullable<ReportUi["questionThreadDefault"]>;
+    replyHistory: NonNullable<ResolvedReportUi["replyHistory"]>;
     shortcut?: string;
     fields: ReportField[];
     routeKey?: string;
@@ -83,6 +84,7 @@ function ReportProviderEnabled({
     panelAppearance,
     tooltipAppearance,
     questionThreadDefault,
+    replyHistory,
     fields,
     authors,
     requireReviewerKey,
@@ -117,6 +119,7 @@ function ReportProviderEnabled({
         panelAppearance,
         tooltipAppearance,
         questionThreadDefault,
+        replyHistory,
         fields,
         authors,
         requireReviewerKey,
@@ -190,6 +193,7 @@ export function ReportProvider({
             showFeedbackList={resolvedUi.showFeedbackList}
             visibleShortcutKeys={resolvedUi.visibleShortcutKeys}
             questionThreadDefault={resolvedUi.questionThreadDefault}
+            replyHistory={resolvedUi.replyHistory}
             shortcut={resolvedUi.shortcut}
             fields={resolvedFields}
             authors={resolvedTeam.reviewers}

@@ -1,6 +1,12 @@
 import type { DeepPartialReportMessages, ReportLocale, ReportMessages } from "@/i18n/index.js";
 import { getReportMessages, resolveReportLocale } from "@/i18n/index.js";
-import type { QuestionThreadDisplay, ReportAppearance, ReportUi } from "@/types/report.js";
+import type { QuestionThreadDisplay, ReplyHistoryConfig, ReplyHistoryLoadMode, ReportAppearance, ReportUi } from "@/types/report.js";
+import { DEFAULT_REPLY_HISTORY_MODE, DEFAULT_REPLY_HISTORY_PAGE_SIZE } from "@/utils/replyHistory.js";
+
+export type ResolvedReplyHistoryConfig = {
+    mode: ReplyHistoryLoadMode;
+    pageSize: number;
+};
 
 export type ResolvedReportUi = {
     panelAppearance: ReportAppearance;
@@ -8,6 +14,7 @@ export type ResolvedReportUi = {
     showFeedbackList: boolean;
     visibleShortcutKeys: boolean;
     questionThreadDefault: QuestionThreadDisplay;
+    replyHistory: ResolvedReplyHistoryConfig;
     shortcut?: string;
     locale: ReportLocale;
     messages: ReportMessages;
@@ -45,6 +52,10 @@ export function resolveReportUi({ ui }: ResolveReportUiOptions): ResolvedReportU
         showFeedbackList: ui?.showFeedbackList ?? DEFAULT_UI.showFeedbackList,
         visibleShortcutKeys: ui?.visibleShortcutKeys ?? DEFAULT_UI.visibleShortcutKeys,
         questionThreadDefault: ui?.questionThreadDefault ?? DEFAULT_UI.questionThreadDefault,
+        replyHistory: {
+            mode: ui?.replyHistory?.mode ?? DEFAULT_REPLY_HISTORY_MODE,
+            pageSize: ui?.replyHistory?.pageSize ?? DEFAULT_REPLY_HISTORY_PAGE_SIZE,
+        },
         shortcut: ui?.shortcut,
         locale,
         messages: getReportMessages(locale, ui?.messages),

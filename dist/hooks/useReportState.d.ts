@@ -38,7 +38,7 @@ export type ReportStateConfig = {
     onListAll?: (params: ReportListAllParams) => Promise<ReportListAllResult>;
     onPanelBootstrap?: (params: ReportPanelBootstrapParams) => Promise<ReportPanelBootstrapResult>;
     onActivitySummary?: (params: ReportActivitySummaryParams) => Promise<ReportActivitySummaryResult>;
-    onListReplies?: (commentId: string) => Promise<ReportReply[]>;
+    onListReplies?: (commentId: string, params?: import("../types/report.js").ListRepliesParams) => Promise<import("../types/report.js").ListRepliesResult | ReportReply[]>;
     onNavigate?: (pathname: string) => void | Promise<void>;
     onRevealTarget?: (report: ReportFeedback) => boolean | Promise<boolean>;
     onCreate?: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
@@ -57,8 +57,9 @@ export type ReportStateConfig = {
     initialLocale: ReportLocale;
     messageOverrides?: DeepPartialReportMessages;
     pixelsMode?: FivePixelsMode;
+    replyHistory: import("../utils/reportUi.js").ResolvedReplyHistoryConfig;
 };
-export declare function useReportState({ projectId, environment, appVersion, panelAppearance, tooltipAppearance, questionThreadDefault, fields, authors, requireReviewerKey, shortcut: _shortcut, identify, onList, onListAll, onPanelBootstrap, onActivitySummary, onListReplies, onNavigate, onRevealTarget, onCreate, onCreateReply, onUpdate, onDelete, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys, initialLocale, messageOverrides, pixelsMode, }: ReportStateConfig): {
+export declare function useReportState({ projectId, environment, appVersion, panelAppearance, tooltipAppearance, questionThreadDefault, fields, authors, requireReviewerKey, shortcut: _shortcut, identify, onList, onListAll, onPanelBootstrap, onActivitySummary, onListReplies, onNavigate, onRevealTarget, onCreate, onCreateReply, onUpdate, onDelete, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys, initialLocale, messageOverrides, pixelsMode, replyHistory, }: ReportStateConfig): {
     panelAppearance: ReportAppearance;
     setPanelAppearance: (nextAppearance: ReportAppearance) => void;
     tooltipAppearance: ReportAppearance;
@@ -178,6 +179,12 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     isDeleting: boolean;
     queryErrorMessage: string | undefined;
     refetch: () => Promise<ReportFeedback[]>;
+    replyHistory: import("../utils/reportUi.js").ResolvedReplyHistoryConfig;
+    replyHistoryByReportId: Record<string, import("./replyHistoryActions.js").ReplyHistoryState>;
+    loadRepliesIfNeeded: (report: ReportFeedback) => Promise<ReportFeedback>;
+    loadOlderReplies: (reportId: string, config: import("../utils/reportUi.js").ResolvedReplyHistoryConfig) => Promise<void>;
+    goToOlderPaginationPage: (reportId: string, config: import("../utils/reportUi.js").ResolvedReplyHistoryConfig) => Promise<void>;
+    goToNewerPaginationPage: (reportId: string, config: import("../utils/reportUi.js").ResolvedReplyHistoryConfig) => void;
     errorMessage: string;
     setErrorMessage: import("react").Dispatch<import("react").SetStateAction<string>>;
     draft: DraftReport | null;

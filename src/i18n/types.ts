@@ -193,6 +193,10 @@ export type ReportMessages = {
         assigneeAssigned: string;
         assigneeTransferred: string;
         fixComplete: string;
+        loadMoreReplies: (count: number) => string;
+        replyPaginationOlder: string;
+        replyPaginationNewer: string;
+        replyPaginationStatus: (current: number, total: number) => string;
     };
     routeDetails: {
         all: string;
@@ -514,6 +518,9 @@ export type ReportMessages = {
         sidebarExpandAriaLabel: string;
         assigneeAssigned: string;
         assigneeUnassigned: string;
+        previousAssignee: string;
+        currentAssignee: string;
+        assigneeInfoAriaLabel: string;
         viewMoreCases: string;
     };
     defaults: {

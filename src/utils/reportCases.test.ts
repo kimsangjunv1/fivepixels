@@ -17,6 +17,7 @@ import {
     isValidCaseSelection,
     isValidFocusedCase,
     normalizeFeedbackCases,
+    normalizeReportCase,
     normalizeReplyCaseIds,
     resolveCases,
     resolveDefaultFocusedCaseId,
@@ -156,7 +157,23 @@ describe("reportCases", () => {
         expect(claimCaseAssignee(cases, cases[1].id, "Dev C")[1]?.assignee_name).toBe("Dev A");
         const transferred = transferCaseAssignee(claimed, cases[0].id, "Dev C");
         expect(transferred[0]?.assignee_name).toBe("Dev C");
+        expect(transferred[0]?.previous_assignee_name).toBe("Dev B");
         expect(resolveDefaultFocusedCaseId(report)).toBe(cases[0].id);
+    });
+
+    it("normalizes previous assignee name on report cases", () => {
+        const normalized = normalizeReportCase(
+            {
+                id: "case-1",
+                text: "A",
+                assignee_name: "Dev C",
+                previous_assignee_name: "Dev B",
+            },
+            "2026-01-01T00:00:00.000Z",
+        );
+
+        expect(normalized?.assignee_name).toBe("Dev C");
+        expect(normalized?.previous_assignee_name).toBe("Dev B");
     });
 
     it("builds partial resolve updates and case labels", () => {

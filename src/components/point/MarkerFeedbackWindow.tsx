@@ -14,6 +14,7 @@ import { FeedbackFieldTags } from "@/components/panel/feedback/FeedbackFieldTags
 import { CornerResizeGhost } from "@/components/ui/CornerResizeGhost.js";
 import { CornerResizeHandle } from "@/components/ui/CornerResizeHandle.js";
 import { FeedbackComposer } from "@/components/panel/feedback/FeedbackComposer.js";
+import { CaseAssigneeInfo } from "@/components/panel/feedback/CaseAssigneeInfo.js";
 import { FeedbackThread } from "@/components/panel/feedback/FeedbackThread.js";
 import { MarkerCaseSidebar } from "./MarkerCaseSidebar.js";
 import { ProcessingDots } from "@/components/ui/ProcessingDots.js";
@@ -408,8 +409,14 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
                                     <p className="min-w-0 truncate text-[12px] leading-[1.4] text-[var(--adaptive-black500)]">{messages.marker.assigneeUnassigned}</p>
                                 )}
                             </div>
-                            <div className="shrink-0">
+                            <div className="flex min-w-0 shrink-0 items-center gap-[8px]">
                                 <FeedbackFieldTags tags={fieldTags} />
+                                {showAssigneeAssigned && focusedCase ? (
+                                    <CaseAssigneeInfo
+                                        caseItem={focusedCase}
+                                        authors={authors}
+                                    />
+                                ) : null}
                             </div>
                         </div>
                     </Fragment>

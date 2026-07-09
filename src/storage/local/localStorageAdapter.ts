@@ -2,6 +2,7 @@ import { getActiveReportMessages } from "@/i18n/index.js";
 import type {
     CreateReportFeedbackPayload,
     CreateReplyPayload,
+    ListRepliesParams,
     ReportFeedback,
     ReportFieldValues,
     ReportGitHubIntegrationState,
@@ -16,6 +17,7 @@ import type {
 import { DEFAULT_PROJECT_ID } from "@/constants/project.js";
 import { getReportsStorageKey } from "@/constants/storageKeys.js";
 import { parseFeedbackStorageEnvelope, serializeFeedbackStorageEnvelope } from "@/utils/feedbackTransferSchema.js";
+import { paginateSortedReplies, sortRepliesChronologically } from "@/utils/replyHistory.js";
 import {
     applyCaseStatusSync,
     normalizeFeedbackCases,
@@ -228,14 +230,20 @@ export function createLocalStorageReportAdapter({ projectId, environment, appVer
                 nextCursor: nextOffset < items.length ? String(nextOffset) : undefined,
             };
         },
-        async listReplies(commentId) {
+        async listReplies(commentId, params?: ListRepliesParams) {
             const item = readAll(storageKey).find((entry) => entry.id === commentId);
 
             if (!item) {
                 throw new Error(getActiveReportMessages().errors.feedbackNotFound);
             }
 
-            return normalizeReplies(item.replies);
+            const sorted = sortRepliesChronologically(normalizeReplies(item.replies));
+
+            if (!params) {
+                return sorted;
+            }
+
+            return paginateSortedReplies(sorted, params);
         },
         async create(payload) {
             const nextItem: ReportFeedback = {

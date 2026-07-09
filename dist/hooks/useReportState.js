@@ -43,7 +43,7 @@ function resolveDefaultAuthorName(identify, authors, selfName) {
     }
     return authors[0]?.name ?? selfName ?? "";
 }
-export function useReportState({ projectId, environment, appVersion, panelAppearance, tooltipAppearance, questionThreadDefault = "expanded", fields, authors = [], requireReviewerKey = false, shortcut: _shortcut, identify, onList, onListAll, onPanelBootstrap, onActivitySummary, onListReplies, onNavigate, onRevealTarget, onCreate, onCreateReply, onUpdate, onDelete, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys = false, initialLocale, messageOverrides, pixelsMode = "default", }) {
+export function useReportState({ projectId, environment, appVersion, panelAppearance, tooltipAppearance, questionThreadDefault = "expanded", fields, authors = [], requireReviewerKey = false, shortcut: _shortcut, identify, onList, onListAll, onPanelBootstrap, onActivitySummary, onListReplies, onNavigate, onRevealTarget, onCreate, onCreateReply, onUpdate, onDelete, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys = false, initialLocale, messageOverrides, pixelsMode = "default", replyHistory, }) {
     const { appearance: activePanelAppearance, setAppearance: setPanelAppearance } = useAppearancePreference(PANEL_APPEARANCE_STORAGE_KEY, panelAppearance);
     const { appearance: activeTooltipAppearance, setAppearance: setTooltipAppearance } = useAppearancePreference(TOOLTIP_APPEARANCE_STORAGE_KEY, tooltipAppearance);
     const { showMarkerTargetPreview, setShowMarkerTargetPreview, toggleMarkerTargetPreview } = useMarkerTargetPreviewPreference();
@@ -90,7 +90,7 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
     const resolvedPanelAppearance = useResolvedAppearance(activePanelAppearance);
     const resolvedTooltipAppearance = useResolvedAppearance(activeTooltipAppearance);
     const isMobileViewport = useIsMobileViewport();
-    const { canTransferFeedback, canListAllFeedback, currentPathname, listScope, setListScope, filters, setFilters, selectedReportId, setSelectedReportId, reports, currentPageReports, filteredReports, currentPageFilteredReports, routeDetailsStats, selectedReport, isError, isFetching, hasNextPage, isFetchingNextPage, fetchNextPage, isCreating, isUpdating, isDeleting, queryErrorMessage, refetch, createFeedback, updateFeedback, deleteFeedback, loadRepliesIfNeeded, createReply, usesCreateReply, } = useReportPersistence({
+    const { canTransferFeedback, canListAllFeedback, currentPathname, listScope, setListScope, filters, setFilters, selectedReportId, setSelectedReportId, reports, currentPageReports, filteredReports, currentPageFilteredReports, routeDetailsStats, selectedReport, isError, isFetching, hasNextPage, isFetchingNextPage, fetchNextPage, isCreating, isUpdating, isDeleting, queryErrorMessage, refetch, createFeedback, updateFeedback, deleteFeedback, loadRepliesIfNeeded, createReply, usesCreateReply, replyHistoryByReportId, loadOlderReplies, goToOlderPaginationPage, goToNewerPaginationPage, } = useReportPersistence({
         projectId,
         environment,
         appVersion,
@@ -105,6 +105,7 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         routeKey,
         fetchEnabled,
         listFetchEnabled,
+        replyHistory,
     });
     const bootstrapParams = useMemo(() => ({ pathname: currentPathname }), [currentPathname]);
     const { bootstrap: panelBootstrap } = usePanelBootstrap({
@@ -2073,6 +2074,12 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         isDeleting,
         queryErrorMessage,
         refetch,
+        replyHistory,
+        replyHistoryByReportId,
+        loadRepliesIfNeeded,
+        loadOlderReplies,
+        goToOlderPaginationPage,
+        goToNewerPaginationPage,
         errorMessage,
         setErrorMessage,
         draft,

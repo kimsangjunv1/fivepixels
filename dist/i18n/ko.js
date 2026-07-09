@@ -174,6 +174,10 @@ export const ko = {
         assigneeAssigned: "담당자 배정 및 검토가 시작되었습니다.",
         assigneeTransferred: "담당자 배정 및 검토가 시작되었습니다.",
         fixComplete: "수정완료",
+        loadMoreReplies: (count) => `${count}개 더보기`,
+        replyPaginationOlder: "이전",
+        replyPaginationNewer: "다음",
+        replyPaginationStatus: (current, total) => `${current} / ${total}`,
     },
     routeDetails: {
         all: "전체",
@@ -522,6 +526,9 @@ export const ko = {
         sidebarExpandAriaLabel: "케이스 목록 펼치기",
         assigneeAssigned: "담당자 검토 중",
         assigneeUnassigned: "아직 배정된 담당자가 없습니다",
+        previousAssignee: "이전 담당자",
+        currentAssignee: "현재 담당자",
+        assigneeInfoAriaLabel: "담당자 변경 정보",
         viewMoreCases: "클릭하여 더 많은 케이스 확인",
     },
     defaults: {

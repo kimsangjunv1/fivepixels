@@ -10,8 +10,25 @@ export type ReportCase = {
     text: string;
     status: ReportCaseStatus;
     assignee_name?: string | null;
+    previous_assignee_name?: string | null;
     created_at: string;
     updated_at: string;
+};
+export type ReplyHistoryLoadMode = "pagination" | "infinite-scroll" | "load-more-button" | "button-and-scroll";
+export type ReplyHistoryConfig = {
+    mode?: ReplyHistoryLoadMode;
+    pageSize?: number;
+};
+export type ListRepliesParams = {
+    limit?: number;
+    cursor?: string;
+    direction?: "older";
+};
+export type ListRepliesResult = {
+    items: ReportReply[];
+    hasMore: boolean;
+    nextCursor?: string;
+    totalCount?: number;
 };
 export type ReportFieldType = "textarea" | "checkbox";
 export type ReportFieldBase = {
@@ -66,7 +83,7 @@ export type ReportProject = {
 export type QuestionThreadDisplay = "expanded" | "collapsed";
 /** Runtime mode for `<FivePixels />`. Presentation mode enables viewer switching in settings. */
 export type FivePixelsMode = "default" | "presentation";
-/** UI options passed to `<FivePixels ui={{ appearance, panelAppearance, tooltipAppearance, showFeedbackList, visibleShortcutKeys, shortcut, locale, messages }} />`. */
+/** UI options passed to `<FivePixels ui={{ appearance, panelAppearance, tooltipAppearance, showFeedbackList, visibleShortcutKeys, shortcut, locale, messages, replyHistory }} />`. */
 export type ReportUi = {
     /** @deprecated Use `panelAppearance` and `tooltipAppearance` instead. Sets both when they are omitted. */
     appearance?: ReportAppearance;
@@ -75,6 +92,7 @@ export type ReportUi = {
     showFeedbackList?: boolean;
     visibleShortcutKeys?: boolean;
     questionThreadDefault?: QuestionThreadDisplay;
+    replyHistory?: ReplyHistoryConfig;
     shortcut?: string;
     locale?: import("../i18n/types.js").ReportLocale;
     messages?: import("../i18n/types.js").DeepPartialReportMessages;
@@ -230,7 +248,7 @@ export interface ReportStorageAdapter {
         pathname: string;
     }): Promise<ReportFeedback[]>;
     listAll?(params: ReportListAllParams): Promise<ReportListAllResult>;
-    listReplies?(commentId: string): Promise<ReportReply[]>;
+    listReplies?(commentId: string, params?: ListRepliesParams): Promise<ListRepliesResult | ReportReply[]>;
     create(payload: CreateReportFeedbackPayload): Promise<ReportFeedback>;
     createReply?(commentId: string, payload: CreateReplyPayload): Promise<ReportReply>;
     update(id: string, payload: UpdateReportFeedbackPayload): Promise<ReportFeedback>;
@@ -244,7 +262,7 @@ export type ReportPersistenceHandlers = {
     onListAll?: (params: ReportListAllParams) => Promise<ReportListAllResult>;
     onPanelBootstrap?: (params: ReportPanelBootstrapParams) => Promise<ReportPanelBootstrapResult>;
     onActivitySummary?: (params: ReportActivitySummaryParams) => Promise<ReportActivitySummaryResult>;
-    onListReplies?: (commentId: string) => Promise<ReportReply[]>;
+    onListReplies?: (commentId: string, params?: ListRepliesParams) => Promise<ListRepliesResult | ReportReply[]>;
     onCreate: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
     onCreateReply?: (commentId: string, payload: CreateReplyPayload) => Promise<ReportReply>;
     onUpdate: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;

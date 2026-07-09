@@ -19,6 +19,8 @@ import {
     resolveOriginalFeedbackAuthorName,
     shouldForceExpandQuestionGroup,
 } from "@/utils/feedbackThread.js";
+import { usesReplyInfiniteScroll } from "@/constants/replyHistory.js";
+import { REPLY_HISTORY_SCROLL_THRESHOLD_PX } from "@/utils/replyHistory.js";
 import { getGitHubIssueUrl, isGitIssuedSystemReply } from "@/utils/githubIntegration.js";
 import { CheckIcon, CloseIcon, ResolvedStatusIcon, RevertIcon } from "@/components/icons/Icons.js";
 import { FEEDBACK_STATUS_COLOR } from "@/constants/feedbackStatus.js";
@@ -29,6 +31,7 @@ import { FeedbackCreatorBadge } from "./FeedbackCreatorBadge.js";
 import { FeedbackStatusBadge } from "./FeedbackStatusBadge.js";
 import { GitIssuedThreadEntry } from "./GitIssuedThreadEntry.js";
 import { QuestionThreadGroup } from "./QuestionThreadGroup.js";
+import { ReplyHistoryControls } from "./ReplyHistoryControls.js";
 import { ThreadAuthorMeta } from "./ThreadAuthorMeta.js";
 import { ThreadTimelineRow } from "./ThreadTimelineRow.js";
 
@@ -566,8 +569,13 @@ export function FeedbackThread({
         selectCase,
         replyAuthorName,
         errorMessage,
+        replyHistory,
+        replyHistoryByReportId,
+        loadOlderReplies,
+        loadRepliesIfNeeded,
     } = useReport();
     const scrollRef = useRef<HTMLElement>(null);
+    const loadingOlderRef = useRef(false);
     const [isAllCasesView, setIsAllCasesView] = useState(false);
     const [scrollOverflow, setScrollOverflow] = useState<ScrollOverflowState>({
         canScrollUp: false,
@@ -585,6 +593,45 @@ export function FeedbackThread({
     const canAct = focusedCaseId ? canShowCaseThreadActions(report, focusedCaseId, actorName) : false;
     const systemBranches = useMemo(() => buildThreadTimeline(report).branches.filter((branch) => isGitIssuedSystemReply(branch.root, report)), [report, replies]);
     const showTimelineRail = Boolean((focusedCaseId && !isAllCasesView) || systemBranches.length > 0);
+    const replyHistoryState = replyHistoryByReportId[report.id];
+
+    useEffect(() => {
+        void loadRepliesIfNeeded(report);
+    }, [loadRepliesIfNeeded, report.id]);
+
+    const triggerLoadOlderReplies = useCallback(async () => {
+        const element = scrollRef.current;
+
+        if (!element || loadingOlderRef.current) {
+            return;
+        }
+
+        const history = replyHistoryByReportId[report.id];
+
+        if (!history?.hasMoreOlder || history.isLoadingOlder) {
+            return;
+        }
+
+        loadingOlderRef.current = true;
+        const previousHeight = element.scrollHeight;
+        const previousTop = element.scrollTop;
+
+        try {
+            await loadOlderReplies(report.id, replyHistory);
+            requestAnimationFrame(() => {
+                const nextElement = scrollRef.current;
+
+                if (!nextElement) {
+                    return;
+                }
+
+                const heightDelta = nextElement.scrollHeight - previousHeight;
+                nextElement.scrollTop = previousTop + heightDelta;
+            });
+        } finally {
+            loadingOlderRef.current = false;
+        }
+    }, [loadOlderReplies, replyHistory, replyHistoryByReportId, report.id]);
 
     useEffect(() => {
         setIsAllCasesView(false);
@@ -598,7 +645,17 @@ export function FeedbackThread({
         }
 
         setScrollOverflow(getScrollOverflowState(element));
-    }, []);
+
+        if (!usesReplyInfiniteScroll(replyHistory.mode)) {
+            return;
+        }
+
+        if (element.scrollTop > REPLY_HISTORY_SCROLL_THRESHOLD_PX) {
+            return;
+        }
+
+        void triggerLoadOlderReplies();
+    }, [replyHistory.mode, triggerLoadOlderReplies]);
 
     const scrollToBottom = useCallback(() => {
         const element = scrollRef.current;
@@ -674,6 +731,10 @@ export function FeedbackThread({
                 )}
 
                 <div className="relative flex flex-col pt-[12px] pb-[57px]">
+                    <ReplyHistoryControls
+                        reportId={report.id}
+                        history={replyHistoryState}
+                    />
                     {showTimelineRail ? <div className="pointer-events-none absolute bottom-[12px] left-[20px] top-[12px] w-px bg-[var(--adaptive-border-subtle)]" /> : null}
 
                     {focusedCaseId && !isAllCasesView ? (

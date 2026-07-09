@@ -166,7 +166,7 @@ export type ReportStateConfig = {
     onListAll?: (params: ReportListAllParams) => Promise<ReportListAllResult>;
     onPanelBootstrap?: (params: ReportPanelBootstrapParams) => Promise<ReportPanelBootstrapResult>;
     onActivitySummary?: (params: ReportActivitySummaryParams) => Promise<ReportActivitySummaryResult>;
-    onListReplies?: (commentId: string) => Promise<ReportReply[]>;
+    onListReplies?: (commentId: string, params?: import("@/types/report.js").ListRepliesParams) => Promise<import("@/types/report.js").ListRepliesResult | ReportReply[]>;
     onNavigate?: (pathname: string) => void | Promise<void>;
     onRevealTarget?: (report: ReportFeedback) => boolean | Promise<boolean>;
     onCreate?: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
@@ -182,6 +182,7 @@ export type ReportStateConfig = {
     initialLocale: ReportLocale;
     messageOverrides?: DeepPartialReportMessages;
     pixelsMode?: FivePixelsMode;
+    replyHistory: import("@/utils/reportUi.js").ResolvedReplyHistoryConfig;
 };
 
 export function useReportState({
@@ -216,6 +217,7 @@ export function useReportState({
     initialLocale,
     messageOverrides,
     pixelsMode = "default",
+    replyHistory,
 }: ReportStateConfig) {
     const { appearance: activePanelAppearance, setAppearance: setPanelAppearance } = useAppearancePreference(PANEL_APPEARANCE_STORAGE_KEY, panelAppearance);
     const { appearance: activeTooltipAppearance, setAppearance: setTooltipAppearance } = useAppearancePreference(TOOLTIP_APPEARANCE_STORAGE_KEY, tooltipAppearance);
@@ -303,6 +305,10 @@ export function useReportState({
         loadRepliesIfNeeded,
         createReply,
         usesCreateReply,
+        replyHistoryByReportId,
+        loadOlderReplies,
+        goToOlderPaginationPage,
+        goToNewerPaginationPage,
     } = useReportPersistence({
         projectId,
         environment,
@@ -318,6 +324,7 @@ export function useReportState({
         routeKey,
         fetchEnabled,
         listFetchEnabled,
+        replyHistory,
     });
     const bootstrapParams = useMemo(() => ({ pathname: currentPathname }), [currentPathname]);
     const { bootstrap: panelBootstrap } = usePanelBootstrap({
@@ -2803,6 +2810,12 @@ export function useReportState({
         isDeleting,
         queryErrorMessage,
         refetch,
+        replyHistory,
+        replyHistoryByReportId,
+        loadRepliesIfNeeded,
+        loadOlderReplies,
+        goToOlderPaginationPage,
+        goToNewerPaginationPage,
         errorMessage,
         setErrorMessage,
         draft,

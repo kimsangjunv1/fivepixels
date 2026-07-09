@@ -131,6 +131,12 @@ declare const ReportContext: import("react").Context<{
     isDeleting: boolean;
     queryErrorMessage: string | undefined;
     refetch: () => Promise<import("..").ReportFeedback[]>;
+    replyHistory: import("../utils/reportUi").ResolvedReplyHistoryConfig;
+    replyHistoryByReportId: Record<string, import("../hooks/replyHistoryActions").ReplyHistoryState>;
+    loadRepliesIfNeeded: (report: import("..").ReportFeedback) => Promise<import("..").ReportFeedback>;
+    loadOlderReplies: (reportId: string, config: import("../utils/reportUi").ResolvedReplyHistoryConfig) => Promise<void>;
+    goToOlderPaginationPage: (reportId: string, config: import("../utils/reportUi").ResolvedReplyHistoryConfig) => Promise<void>;
+    goToNewerPaginationPage: (reportId: string, config: import("../utils/reportUi").ResolvedReplyHistoryConfig) => void;
     errorMessage: string;
     setErrorMessage: import("react").Dispatch<import("react").SetStateAction<string>>;
     draft: import("../types/report-ui").DraftReport | null;
@@ -389,6 +395,12 @@ export declare function useReport(): {
     isDeleting: boolean;
     queryErrorMessage: string | undefined;
     refetch: () => Promise<import("..").ReportFeedback[]>;
+    replyHistory: import("../utils/reportUi").ResolvedReplyHistoryConfig;
+    replyHistoryByReportId: Record<string, import("../hooks/replyHistoryActions").ReplyHistoryState>;
+    loadRepliesIfNeeded: (report: import("..").ReportFeedback) => Promise<import("..").ReportFeedback>;
+    loadOlderReplies: (reportId: string, config: import("../utils/reportUi").ResolvedReplyHistoryConfig) => Promise<void>;
+    goToOlderPaginationPage: (reportId: string, config: import("../utils/reportUi").ResolvedReplyHistoryConfig) => Promise<void>;
+    goToNewerPaginationPage: (reportId: string, config: import("../utils/reportUi").ResolvedReplyHistoryConfig) => void;
     errorMessage: string;
     setErrorMessage: import("react").Dispatch<import("react").SetStateAction<string>>;
     draft: import("../types/report-ui").DraftReport | null;

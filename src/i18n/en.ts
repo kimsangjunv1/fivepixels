@@ -177,6 +177,10 @@ export const en: ReportMessages = {
 
         assigneeTransferred: "The assignee has been changed.",
         fixComplete: "Mark as fixed",
+        loadMoreReplies: (count) => `Load ${count} more`,
+        replyPaginationOlder: "Older",
+        replyPaginationNewer: "Newer",
+        replyPaginationStatus: (current, total) => `${current} / ${total}`,
     },
     routeDetails: {
         all: "All",
@@ -525,6 +529,9 @@ export const en: ReportMessages = {
         sidebarExpandAriaLabel: "Expand case list",
         assigneeAssigned: "An assignee has been assigned",
         assigneeUnassigned: "No assignee has been assigned yet",
+        previousAssignee: "Previous assignee",
+        currentAssignee: "Current assignee",
+        assigneeInfoAriaLabel: "Assignee transfer details",
         viewMoreCases: "Click to view more cases",
     },
     defaults: {
