@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getPanelRoleTabPreset, PANEL_ROLE_TAB_PRESETS } from "@/constants/panelTabPresets.js";
-import { PANEL_USER_TAB_IDS } from "@/constants/panelTabRegistry.js";
+import { getPanelTabDefinition, PANEL_USER_TAB_IDS } from "@/constants/panelTabRegistry.js";
 import {
     createRoleDefaultPreference,
     getDefaultVisibleTabsForRole,
@@ -78,6 +78,19 @@ describe("panelTabPresets", () => {
 
             for (const tabId of [...preset.recommended, ...preset.defaultVisible, preset.defaultTab]) {
                 expect(PANEL_USER_TAB_IDS).toContain(tabId);
+            }
+        }
+    });
+
+    it("keeps experimental tabs out of role defaults", () => {
+        const experimentalIds = PANEL_USER_TAB_IDS.filter((tabId) => getPanelTabDefinition(tabId).experimental);
+
+        for (const role of Object.keys(PANEL_ROLE_TAB_PRESETS) as Array<keyof typeof PANEL_ROLE_TAB_PRESETS>) {
+            const preset = getPanelRoleTabPreset(role);
+
+            for (const tabId of experimentalIds) {
+                expect(preset.defaultVisible).not.toContain(tabId);
+                expect(preset.recommended).not.toContain(tabId);
             }
         }
     });

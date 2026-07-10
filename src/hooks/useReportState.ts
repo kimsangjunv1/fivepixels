@@ -330,7 +330,9 @@ export function useReportState({
             return false;
         }
 
-        return roleTabPreset.headerStatsScope === "all" || visiblePanelTabs.includes("overview");
+        const needsAllScopeTabs: UserSelectablePanelTab[] = ["overview", "my-tasks", "needs-attention", "project-health", "today-digest"];
+
+        return roleTabPreset.headerStatsScope === "all" || visiblePanelTabs.some((tabId) => needsAllScopeTabs.includes(tabId));
     }, [fetchEnabled, needsFullReportList, roleTabPreset.headerStatsScope, visiblePanelTabs]);
 
     const listFetchEnabled = fetchEnabled && needsFullReportList;
@@ -2991,6 +2993,7 @@ export function useReportState({
         setListScope,
         reports,
         currentPageReports,
+        allPageReports,
         filteredReports,
         isError,
         isFetching,

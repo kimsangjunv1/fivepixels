@@ -118,6 +118,7 @@ declare const ReportContext: import("react").Context<{
     setListScope: import("react").Dispatch<import("react").SetStateAction<import("../types/report-ui").ReportListScope>>;
     reports: import("..").ReportFeedback[];
     currentPageReports: import("..").ReportFeedback[];
+    allPageReports: import("..").ReportFeedback[];
     filteredReports: import("..").ReportFeedback[];
     isError: boolean;
     isFetching: boolean;
@@ -393,6 +394,7 @@ export declare function useReport(): {
     setListScope: import("react").Dispatch<import("react").SetStateAction<import("../types/report-ui").ReportListScope>>;
     reports: import("..").ReportFeedback[];
     currentPageReports: import("..").ReportFeedback[];
+    allPageReports: import("..").ReportFeedback[];
     filteredReports: import("..").ReportFeedback[];
     isError: boolean;
     isFetching: boolean;

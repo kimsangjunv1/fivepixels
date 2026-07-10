@@ -168,6 +168,7 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     setListScope: import("react").Dispatch<import("react").SetStateAction<import("../types/report-ui.js").ReportListScope>>;
     reports: ReportFeedback[];
     currentPageReports: ReportFeedback[];
+    allPageReports: ReportFeedback[];
     filteredReports: ReportFeedback[];
     isError: boolean;
     isFetching: boolean;

@@ -11,6 +11,11 @@ import { ReportFeedbackList } from "./ReportFeedbackList.js";
 import { ReportOverview } from "./ReportOverview.js";
 import { ReportRouteDetails } from "./ReportRouteDetails.js";
 import { ReportAuthDiagnostics } from "./ReportAuthDiagnostics.js";
+import { ReportMyTasksPanel } from "./experimental/ReportMyTasksPanel.js";
+import { ReportPageBriefPanel } from "./experimental/ReportPageBriefPanel.js";
+import { ReportNeedsAttentionPanel } from "./experimental/ReportNeedsAttentionPanel.js";
+import { ReportProjectHealthPanel } from "./experimental/ReportProjectHealthPanel.js";
+import { ReportTodayDigestPanel } from "./experimental/ReportTodayDigestPanel.js";
 import { ReportCommandPanel } from "./ReportCommandPanel.js";
 import { ReportCommandReplaceConfirmDialog } from "./ReportCommandReplaceConfirmDialog.js";
 import { ReportImportConfirmDialog } from "./ReportImportConfirmDialog.js";
@@ -447,6 +452,11 @@ export function ReportControlPanel() {
 
                                         {panelTab === "feedback-list" && showFeedbackList && commandStep === "none" ? <ReportFeedbackList /> : null}
                                         {panelTab === "diagnostics" && commandStep === "none" ? <ReportAuthDiagnostics /> : null}
+                                        {panelTab === "my-tasks" && commandStep === "none" ? <ReportMyTasksPanel /> : null}
+                                        {panelTab === "page-brief" && commandStep === "none" ? <ReportPageBriefPanel /> : null}
+                                        {panelTab === "needs-attention" && commandStep === "none" ? <ReportNeedsAttentionPanel /> : null}
+                                        {panelTab === "project-health" && commandStep === "none" ? <ReportProjectHealthPanel /> : null}
+                                        {panelTab === "today-digest" && commandStep === "none" ? <ReportTodayDigestPanel /> : null}
 
                                         {panelTab === "settings" && commandStep === "none" ? (
                                             <PanelSettings
