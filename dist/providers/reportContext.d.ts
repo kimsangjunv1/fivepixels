@@ -227,6 +227,17 @@ declare const ReportContext: import("react").Context<{
     roleStatItems: import("../utils/panelRoleStats").PanelRoleStatItem[];
     panelRole: "general" | "qa" | "developer" | "designer" | "planner" | "general-user";
     setPanelRole: (nextRole: import("../constants/panelRole").PanelRole) => void;
+    visiblePanelTabs: import("../constants/panelTabRegistry").UserSelectablePanelTab[];
+    visiblePanelTabsSummary: string;
+    resolvedTabAvailabilityContext: {
+        showFeedbackList: boolean;
+        canListAllFeedback: boolean;
+    };
+    setVisiblePanelTabs: (nextTabs: import("../constants/panelTabRegistry").UserSelectablePanelTab[]) => void;
+    resetVisibleTabsToRoleDefault: () => void;
+    applyRoleDefaultTabsForOnboarding: (role: "general" | "qa" | "developer" | "designer" | "planner" | "general-user") => void;
+    savePanelTabPreference: (preference: import("../utils/panelTabPreference").PanelTabPreference) => void;
+    storedPanelTabPreference: import("../utils/panelTabPreference").PanelTabPreference | null;
     statusText: string;
     toggleReportMode: () => void;
     toggleTargetPreview: () => void;
@@ -491,6 +502,17 @@ export declare function useReport(): {
     roleStatItems: import("../utils/panelRoleStats").PanelRoleStatItem[];
     panelRole: "general" | "qa" | "developer" | "designer" | "planner" | "general-user";
     setPanelRole: (nextRole: import("../constants/panelRole").PanelRole) => void;
+    visiblePanelTabs: import("../constants/panelTabRegistry").UserSelectablePanelTab[];
+    visiblePanelTabsSummary: string;
+    resolvedTabAvailabilityContext: {
+        showFeedbackList: boolean;
+        canListAllFeedback: boolean;
+    };
+    setVisiblePanelTabs: (nextTabs: import("../constants/panelTabRegistry").UserSelectablePanelTab[]) => void;
+    resetVisibleTabsToRoleDefault: () => void;
+    applyRoleDefaultTabsForOnboarding: (role: "general" | "qa" | "developer" | "designer" | "planner" | "general-user") => void;
+    savePanelTabPreference: (preference: import("../utils/panelTabPreference").PanelTabPreference) => void;
+    storedPanelTabPreference: import("../utils/panelTabPreference").PanelTabPreference | null;
     statusText: string;
     toggleReportMode: () => void;
     toggleTargetPreview: () => void;

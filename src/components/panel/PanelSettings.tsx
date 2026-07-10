@@ -12,6 +12,7 @@ import { DiscreteScaleDial } from "./DiscreteScaleDial.js";
 import { HexColorField } from "./HexColorField.js";
 import { MarkerShapePicker } from "./MarkerShapePicker.js";
 import { PanelOptionSwitch } from "./PanelOptionSwitch.js";
+import { PanelTabSelector } from "./PanelTabSelector.js";
 
 type PanelSettingsProps = {
     transferDisabled?: boolean;
@@ -31,7 +32,7 @@ type PanelSettingsProps = {
     onKeyRotate: () => void;
 };
 
-type SettingsCategory = "preview" | "appearance" | "display" | "data-and-keys" | "advanced";
+type SettingsCategory = "preview" | "appearance" | "display" | "tabs" | "data-and-keys" | "advanced";
 
 const LOCALE_OPTIONS = ["en", "ko"] as const satisfies readonly ReportLocale[];
 const QUESTION_THREAD_OPTIONS = ["expanded", "collapsed"] as const satisfies readonly QuestionThreadDisplay[];
@@ -99,6 +100,8 @@ function getCategoryTitle(category: SettingsCategory, messages: ReturnType<typeo
             return messages.settings.categoryAppearance;
         case "display":
             return messages.settings.categoryDisplay;
+        case "tabs":
+            return messages.settings.categoryTabs;
         case "data-and-keys":
             return messages.settings.categoryDataAndKeys;
         case "advanced":
@@ -141,6 +144,12 @@ export function PanelSettings({
         typography,
         setFontSize,
         setFontFamily,
+        panelRole,
+        visiblePanelTabs,
+        visiblePanelTabsSummary,
+        resolvedTabAvailabilityContext,
+        setVisiblePanelTabs,
+        resetVisibleTabsToRoleDefault,
     } = useReport();
     const scaleLabels: Record<AppearanceScale, string> = {
         sm: messages.settings.scaleSm,
@@ -179,6 +188,7 @@ export function PanelSettings({
     const activeViewerLabel = viewerOptions.find((option) => option.value === (presentationViewerId ?? viewerOptions[0]?.value))?.label ?? "";
     const appearanceSummary = `${messages.appearance[panelAppearance]} · ${messages.localeOption[locale]}`;
     const displaySummary = `${messages.questionThreadOption[questionThreadDisplay]} · ${showMarkerTargetPreview ? messages.settings.markerTargetsOn : messages.settings.markerTargetsOff}`;
+    const tabsSummary = visiblePanelTabsSummary || messages.settings.categoryTabsSummary;
 
     if (activeCategory) {
         return (
@@ -370,6 +380,21 @@ export function PanelSettings({
                         </>
                     ) : null}
 
+                    {activeCategory === "tabs" ? (
+                        <SettingsSection label={messages.settings.categoryTabs}>
+                            <div className="flex flex-col gap-[12px] px-[12px] pb-[10px]">
+                                <PanelTabSelector
+                                    role={panelRole}
+                                    selectedTabs={visiblePanelTabs}
+                                    context={resolvedTabAvailabilityContext}
+                                    messages={messages}
+                                    onChange={setVisiblePanelTabs}
+                                />
+                                <SettingsActionButton onClick={resetVisibleTabsToRoleDefault}>{messages.settings.resetTabsToRoleDefault}</SettingsActionButton>
+                            </div>
+                        </SettingsSection>
+                    ) : null}
+
                     {activeCategory === "data-and-keys" ? (
                         <>
                             <SettingsSection label={messages.moreMenu.sectionTransfer}>
@@ -448,6 +473,12 @@ export function PanelSettings({
                 title={messages.settings.categoryDisplay}
                 subtitle={displaySummary}
                 onClick={() => setActiveCategory("display")}
+            />
+
+            <SettingsHubRow
+                title={messages.settings.categoryTabs}
+                subtitle={tabsSummary}
+                onClick={() => setActiveCategory("tabs")}
             />
 
             <SettingsHubRow

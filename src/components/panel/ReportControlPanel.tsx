@@ -26,6 +26,7 @@ import { PanelOnboarding } from "./PanelOnboarding.js";
 import { PanelKeyGate } from "./PanelKeyGate.js";
 import { panelNumericClassName } from "@/utils/panelTypography.js";
 import { createPersonalKeyBackupFilename, downloadPersonalKeyBackup } from "@/utils/feedbackDataTransfer.js";
+import { getPanelTabDefinition } from "@/constants/panelTabRegistry.js";
 import type { ReportPanelTab } from "@/types/report-ui.js";
 
 function PanelCollapseTab({ collapsed, anchorSide, onClick, messages }: { collapsed: boolean; anchorSide: "left" | "right"; onClick: () => void; messages: ReturnType<typeof useReport>["messages"] }) {
@@ -80,6 +81,7 @@ export function ReportControlPanel() {
         appVersion,
         activeReplyReportId,
         showFeedbackList,
+        visiblePanelTabs,
         isMobileViewport,
         panelTab,
         panelAppearance,
@@ -388,28 +390,20 @@ export function ReportControlPanel() {
 
                                 <section className="flex shrink-0 items-stretch border-t border-[var(--adaptive-border-subtle)]">
                                     <div className="flex min-w-0 flex-1 overflow-hidden border-b border-b-[var(--adaptive-border-subtle)]">
-                                        <PanelTabButton
-                                            label={messages.panel.tabThisPage}
-                                            active={panelTab === "route-details"}
-                                            onClick={() => handlePanelTabClick("route-details")}
-                                        />
-                                        <div className="h-full w-[1px] bg-[var(--adaptive-border-subtle)]" />
-                                        {showFeedbackList ? (
-                                            <>
+                                        {visiblePanelTabs.map((tabId, index) => (
+                                            <div
+                                                key={tabId}
+                                                className="contents"
+                                            >
+                                                {index > 0 ? <div className="h-full w-[1px] bg-[var(--adaptive-border-subtle)]" /> : null}
                                                 <PanelTabButton
-                                                    label={messages.panel.tabFeedbackList}
-                                                    active={panelTab === "feedback-list"}
-                                                    onClick={() => handlePanelTabClick("feedback-list")}
+                                                    label={messages.panel[getPanelTabDefinition(tabId).labelKey]}
+                                                    active={panelTab === tabId}
+                                                    onClick={() => handlePanelTabClick(tabId)}
                                                 />
-                                                <div className="h-full w-[1px] bg-[var(--adaptive-border-subtle)]" />
-                                            </>
-                                        ) : null}
-                                        <PanelTabButton
-                                            label={messages.panel.tabDiagnostics}
-                                            active={panelTab === "diagnostics"}
-                                            onClick={() => handlePanelTabClick("diagnostics")}
-                                        />
-                                        <div className="h-full w-[1px] bg-[var(--adaptive-border-subtle)]" />
+                                            </div>
+                                        ))}
+                                        {visiblePanelTabs.length > 0 ? <div className="h-full w-[1px] bg-[var(--adaptive-border-subtle)]" /> : null}
                                     </div>
                                 </section>
 

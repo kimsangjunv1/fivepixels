@@ -19,9 +19,10 @@ export type ReportPersistenceConfig = {
     routeKey?: string;
     fetchEnabled?: boolean;
     listFetchEnabled?: boolean;
+    allReportsFetchEnabled?: boolean;
     replyHistory: ResolvedReplyHistoryConfig;
 };
-export declare function useReportPersistence({ projectId, environment, appVersion, fields, onList, onListAll, onListReplies, onCreate, onCreateReply, onUpdate, onDelete, routeKey, fetchEnabled, listFetchEnabled, replyHistory, }: ReportPersistenceConfig): {
+export declare function useReportPersistence({ projectId, environment, appVersion, fields, onList, onListAll, onListReplies, onCreate, onCreateReply, onUpdate, onDelete, routeKey, fetchEnabled, listFetchEnabled, allReportsFetchEnabled, replyHistory, }: ReportPersistenceConfig): {
     storageAdapterInstance: ReportStorageAdapter;
     canTransferFeedback: boolean;
     canListAllFeedback: boolean;
@@ -36,8 +37,10 @@ export declare function useReportPersistence({ projectId, environment, appVersio
     setSelectedReportId: import("react").Dispatch<import("react").SetStateAction<string | null>>;
     reports: ReportFeedback[];
     currentPageReports: ReportFeedback[];
+    allPageReports: ReportFeedback[];
     filteredReports: ReportFeedback[];
     currentPageFilteredReports: ReportFeedback[];
+    allPageFilteredReports: ReportFeedback[];
     routeDetailsStats: import("../utils/panelBootstrap.js").RouteDetailsSummary;
     selectedReport: ReportFeedback;
     isError: boolean;

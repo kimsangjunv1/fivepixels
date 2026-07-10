@@ -55,7 +55,7 @@ export function ReportCommandPanel({ onExecute, onClose, notice = null, onNotice
     };
 
     return (
-        <section className="flex min-h-0 flex-1 flex-col bg-[var(--adaptive-black50)] rounded-[0_0_24px_24px] overflow-hidden">
+        <section className="flex min-h-0 max-h-[51.2rem] flex-1 flex-col bg-[var(--adaptive-black50)] rounded-[0_0_24px_24px] overflow-hidden">
             <div className="border-b border-[var(--adaptive-black200)] p-[12px]">
                 <p className="text-[14px] font-bold text-[var(--adaptive-black900)]">{messages.command.title}</p>
                 <p className="mt-[4px] text-[12px] leading-[1.5] text-[var(--adaptive-black500)]">{messages.command.description}</p>

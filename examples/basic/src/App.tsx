@@ -35,7 +35,7 @@ function AppContent() {
                     env: "STAGED",
                     version: "1.0.0",
                 }}
-                mode="presentation"
+                // mode="presentation"
                 team={{
                     reviewers: [
                         {
@@ -61,6 +61,12 @@ function AppContent() {
                                 "stpub1.eyJrZXlfb3BzIjpbInZlcmlmeSJdLCJleHQiOnRydWUsImt0eSI6IkVDIiwieCI6Im5USWFPQWZvZC12WDV0b0VnRXkwZ1dOV1JsWUE5S3RsZmdrc0ZzZDJnV2MiLCJ5IjoiNzdyZ2tJX0xtSlFNRV9mU1QxaGh0ZmZKY1IwenBIOWNrQk5YbUtuM08xRSIsImNydiI6IlAtMjU2In0",
                             privateKey:
                                 "stpk2.eyJwcm9qZWN0SWQiOiJmaXZlcGl4ZWxzLWJhc2ljLWV4YW1wbGUiLCJlbnZpcm9ubWVudCI6IlNUQUdFRCIsImF1dGhvcklkIjoiNDE3OGM1MjktZGJkMS00YWRkLWFkNjctNjBlNzdiMDk5MDQzIiwiYXV0aG9yTmFtZSI6Iuq5gOyDgeykgCIsInByaXZhdGVLZXkiOnsia2V5X29wcyI6WyJzaWduIl0sImV4dCI6dHJ1ZSwia3R5IjoiRUMiLCJ4IjoiblRJYU9BZm9kLXZYNXRvRWdFeTBnV05XUmxZQTlLdGxmZ2tzRnNkMmdXYyIsInkiOiI3N3Jna0lfTG1KUU1FX2ZTVDFoaHRmZkpjUjB6cEg5Y2tCTlhtS24zTzFFIiwiY3J2IjoiUC0yNTYiLCJkIjoiWWpOclFyalRNQS1xRjNaVkdnU0t1Ymw2aFNjbXU4S1FFd09GNWJQR3Y5QSJ9LCJwdWJsaWNLZXkiOnsia2V5X29wcyI6WyJ2ZXJpZnkiXSwiZXh0Ijp0cnVlLCJrdHkiOiJFQyIsIngiOiJuVElhT0Fmb2Qtdlg1dG9FZ0V5MGdXTldSbFlBOUt0bGZna3NGc2QyZ1djIiwieSI6Ijc3cmdrSV9MbUpRTUVfZlNUMWhodGZmSmNSMHpwSDlja0JOWG1LbjNPMUUiLCJjcnYiOiJQLTI1NiJ9fQ",
+                        },
+                        {
+                            id: "20324849-57db-4664-9359-60cd270fc598",
+                            name: "김상준",
+                            publicKey:
+                                "stpub1.eyJjcnYiOiJQLTI1NiIsImV4dCI6dHJ1ZSwia2V5X29wcyI6WyJ2ZXJpZnkiXSwia3R5IjoiRUMiLCJ4IjoiVGo3LS14UTB2eEJjMjd4OHZpb1BmNGpWTW5naVYzVFJoM0MwOXZDWDJ4byIsInkiOiJkdndHZkNfcDdnVDJYM2ZXYzNqVEI4WHlPaGRVVXNwdW1oQzBhNlNQVEJVIn0",
                         },
                     ],
                 }}

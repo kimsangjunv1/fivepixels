@@ -147,7 +147,7 @@ export function ReportFeedbackList() {
     }, [fetchNextPage, filteredReports.length, hasNextPage, visibleCount]);
 
     return (
-        <section className="flex min-h-0 flex-1 flex-col bg-[var(--adaptive-black50)] rounded-[0_0_24px_24px] overflow-hidden">
+        <section className="flex min-h-0 max-h-[51.2rem] flex-1 flex-col bg-[var(--adaptive-black50)] rounded-[0_0_24px_24px] overflow-hidden">
             <div className="shrink-0 border-b border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)]">
                 {filters.dateKey ? (
                     <div className="flex items-center justify-between gap-[8px] border-b border-[var(--adaptive-border-subtle)] px-[8px] py-[6px]">

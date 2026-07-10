@@ -80,6 +80,14 @@ export type ReportMessages = {
         tabFeedbackList: string;
         tabDiagnostics: string;
         tabSettings: string;
+        tabsSectionLabel: string;
+        tabsOrderHint: string;
+        tabMoveUpAriaLabel: string;
+        tabMoveDownAriaLabel: string;
+        tabRecommendedBadge: string;
+        headerSummaryAriaLabel: string;
+        yearViewTitle: string;
+        yearViewBack: string;
         resizeWidthAriaLabel: string;
         resizeHeightAriaLabel: string;
         resizeAriaLabel: string;
@@ -299,6 +307,7 @@ export type ReportMessages = {
         restoreNotAuthorized: string;
         roleStepTitle: string;
         roleStepDescription: string;
+        roleStepTabsHint: string;
         keyStepTitle: string;
         keyStepDescription: string;
         namePlaceholder: string;
@@ -350,6 +359,9 @@ export type ReportMessages = {
         categoryDataAndKeysSummary: string;
         categoryPreview: string;
         categoryAdvanced: string;
+        categoryTabs: string;
+        categoryTabsSummary: string;
+        resetTabsToRoleDefault: string;
         backAriaLabel: string;
         sectionTheme: string;
         sectionMarkerAppearance: string;

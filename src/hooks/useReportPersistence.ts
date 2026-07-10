@@ -39,6 +39,7 @@ export type ReportPersistenceConfig = {
     routeKey?: string;
     fetchEnabled?: boolean;
     listFetchEnabled?: boolean;
+    allReportsFetchEnabled?: boolean;
     replyHistory: ResolvedReplyHistoryConfig;
 };
 
@@ -113,6 +114,7 @@ export function useReportPersistence({
     routeKey,
     fetchEnabled = true,
     listFetchEnabled = true,
+    allReportsFetchEnabled = false,
     replyHistory,
 }: ReportPersistenceConfig) {
     const { adapter: storageAdapterInstance, usesLocalStorage } = useMemo(
@@ -151,13 +153,9 @@ export function useReportPersistence({
     }, []);
 
     const currentReportsQuery = useReportsQuery(storageAdapterInstance, currentPathname, "current", fetchEnabled && listFetchEnabled, clearLoadedReplies);
-    const allReportsQuery = useReportsQuery(
-        storageAdapterInstance,
-        currentPathname,
-        "all",
-        fetchEnabled && listFetchEnabled && listScope === "all" && Boolean(storageAdapterInstance.listAll),
-        clearLoadedReplies,
-    );
+    const canFetchAllReports = Boolean(storageAdapterInstance.listAll);
+    const shouldFetchAllReports = fetchEnabled && listFetchEnabled && canFetchAllReports && (allReportsFetchEnabled || listScope === "all");
+    const allReportsQuery = useReportsQuery(storageAdapterInstance, currentPathname, "all", shouldFetchAllReports, clearLoadedReplies);
     const activeReportsQuery = listScope === "all" ? allReportsQuery : currentReportsQuery;
     const rawReports = activeReportsQuery.data;
     const reports = useMemo(() => enrichReports(rawReports, replyHistoryByReportId), [rawReports, replyHistoryByReportId]);
@@ -172,6 +170,9 @@ export function useReportPersistence({
             clearLoadedReplies();
             void refetch();
             void currentReportsQuery.refetch();
+            if (shouldFetchAllReports) {
+                void allReportsQuery.refetch();
+            }
         };
 
         window.addEventListener(FEEDBACK_STORAGE_CHANGED_EVENT, handleExternalStorageChange);
@@ -179,26 +180,29 @@ export function useReportPersistence({
         return () => {
             window.removeEventListener(FEEDBACK_STORAGE_CHANGED_EVENT, handleExternalStorageChange);
         };
-    }, [clearLoadedReplies, currentReportsQuery, refetch, usesLocalStorage]);
+    }, [allReportsQuery, clearLoadedReplies, currentReportsQuery, refetch, shouldFetchAllReports, usesLocalStorage]);
 
     const { mutateAsync: createFeedback, isPending: isCreating } = useCreateReportMutation(storageAdapterInstance, () => {
         void refetch();
-        if (listScope === "all") {
-            void currentReportsQuery.refetch();
+        void currentReportsQuery.refetch();
+        if (listScope === "all" || shouldFetchAllReports) {
+            void allReportsQuery.refetch();
         }
     });
     const { mutateAsync: updateFeedback, isPending: isUpdating } = useUpdateReportMutation(storageAdapterInstance, () => {
         clearLoadedReplies();
         void refetch();
-        if (listScope === "all") {
-            void currentReportsQuery.refetch();
+        void currentReportsQuery.refetch();
+        if (listScope === "all" || shouldFetchAllReports) {
+            void allReportsQuery.refetch();
         }
     });
     const { mutateAsync: deleteFeedback, isPending: isDeleting } = useDeleteReportMutation(storageAdapterInstance, () => {
         clearLoadedReplies();
         void refetch();
-        if (listScope === "all") {
-            void currentReportsQuery.refetch();
+        void currentReportsQuery.refetch();
+        if (listScope === "all" || shouldFetchAllReports) {
+            void allReportsQuery.refetch();
         }
     });
 
@@ -243,13 +247,15 @@ export function useReportPersistence({
             }
 
             void refetch();
-            if (listScope === "all") {
-                void currentReportsQuery.refetch();
+            void currentReportsQuery.refetch();
+            if (listScope === "all" || shouldFetchAllReports) {
+                void allReportsQuery.refetch();
             }
 
             return created;
         },
         [
+            allReportsQuery,
             appendReplyToHistory,
             currentReportsQuery,
             getReportById,
@@ -258,6 +264,7 @@ export function useReportPersistence({
             refetch,
             replyHistory,
             replyHistoryByReportId,
+            shouldFetchAllReports,
             storageAdapterInstance,
             usesLazyReplies,
         ],
@@ -267,11 +274,16 @@ export function useReportPersistence({
         () => enrichReports(currentReportsQuery.data, replyHistoryByReportId),
         [currentReportsQuery.data, replyHistoryByReportId],
     );
+    const allPageReports = useMemo(
+        () => enrichReports(allReportsQuery.data ?? [], replyHistoryByReportId),
+        [allReportsQuery.data, replyHistoryByReportId],
+    );
     const filteredReports = useMemo(() => filterReports(reports, filters), [filters, reports]);
     const currentPageFilteredReports = useMemo(
         () => filterReports(currentPageReports, filters),
         [currentPageReports, filters],
     );
+    const allPageFilteredReports = useMemo(() => filterReports(allPageReports, filters), [allPageReports, filters]);
 
     const routeDetailsStats = useMemo(
         () => buildRouteDetailsSummary(currentPageReports, fields, currentPathname),
@@ -307,8 +319,10 @@ export function useReportPersistence({
         setSelectedReportId,
         reports,
         currentPageReports,
+        allPageReports,
         filteredReports,
         currentPageFilteredReports,
+        allPageFilteredReports,
         routeDetailsStats,
         selectedReport,
         isError,

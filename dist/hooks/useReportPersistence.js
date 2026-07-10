@@ -55,7 +55,7 @@ function enrichReports(reports, replyHistoryByReportId) {
         return mergeRepliesIntoReport(report, history.items);
     });
 }
-export function useReportPersistence({ projectId, environment, appVersion, fields, onList, onListAll, onListReplies, onCreate, onCreateReply, onUpdate, onDelete, routeKey, fetchEnabled = true, listFetchEnabled = true, replyHistory, }) {
+export function useReportPersistence({ projectId, environment, appVersion, fields, onList, onListAll, onListReplies, onCreate, onCreateReply, onUpdate, onDelete, routeKey, fetchEnabled = true, listFetchEnabled = true, allReportsFetchEnabled = false, replyHistory, }) {
     const { adapter: storageAdapterInstance, usesLocalStorage } = useMemo(() => resolveStorageAdapter({
         projectId,
         environment,
@@ -85,7 +85,9 @@ export function useReportPersistence({ projectId, environment, appVersion, field
         setReplyHistoryByReportId({});
     }, []);
     const currentReportsQuery = useReportsQuery(storageAdapterInstance, currentPathname, "current", fetchEnabled && listFetchEnabled, clearLoadedReplies);
-    const allReportsQuery = useReportsQuery(storageAdapterInstance, currentPathname, "all", fetchEnabled && listFetchEnabled && listScope === "all" && Boolean(storageAdapterInstance.listAll), clearLoadedReplies);
+    const canFetchAllReports = Boolean(storageAdapterInstance.listAll);
+    const shouldFetchAllReports = fetchEnabled && listFetchEnabled && canFetchAllReports && (allReportsFetchEnabled || listScope === "all");
+    const allReportsQuery = useReportsQuery(storageAdapterInstance, currentPathname, "all", shouldFetchAllReports, clearLoadedReplies);
     const activeReportsQuery = listScope === "all" ? allReportsQuery : currentReportsQuery;
     const rawReports = activeReportsQuery.data;
     const reports = useMemo(() => enrichReports(rawReports, replyHistoryByReportId), [rawReports, replyHistoryByReportId]);
@@ -98,30 +100,36 @@ export function useReportPersistence({ projectId, environment, appVersion, field
             clearLoadedReplies();
             void refetch();
             void currentReportsQuery.refetch();
+            if (shouldFetchAllReports) {
+                void allReportsQuery.refetch();
+            }
         };
         window.addEventListener(FEEDBACK_STORAGE_CHANGED_EVENT, handleExternalStorageChange);
         return () => {
             window.removeEventListener(FEEDBACK_STORAGE_CHANGED_EVENT, handleExternalStorageChange);
         };
-    }, [clearLoadedReplies, currentReportsQuery, refetch, usesLocalStorage]);
+    }, [allReportsQuery, clearLoadedReplies, currentReportsQuery, refetch, shouldFetchAllReports, usesLocalStorage]);
     const { mutateAsync: createFeedback, isPending: isCreating } = useCreateReportMutation(storageAdapterInstance, () => {
         void refetch();
-        if (listScope === "all") {
-            void currentReportsQuery.refetch();
+        void currentReportsQuery.refetch();
+        if (listScope === "all" || shouldFetchAllReports) {
+            void allReportsQuery.refetch();
         }
     });
     const { mutateAsync: updateFeedback, isPending: isUpdating } = useUpdateReportMutation(storageAdapterInstance, () => {
         clearLoadedReplies();
         void refetch();
-        if (listScope === "all") {
-            void currentReportsQuery.refetch();
+        void currentReportsQuery.refetch();
+        if (listScope === "all" || shouldFetchAllReports) {
+            void allReportsQuery.refetch();
         }
     });
     const { mutateAsync: deleteFeedback, isPending: isDeleting } = useDeleteReportMutation(storageAdapterInstance, () => {
         clearLoadedReplies();
         void refetch();
-        if (listScope === "all") {
-            void currentReportsQuery.refetch();
+        void currentReportsQuery.refetch();
+        if (listScope === "all" || shouldFetchAllReports) {
+            void allReportsQuery.refetch();
         }
     });
     const getReportById = useCallback((reportId) => rawReports.find((report) => report.id === reportId), [rawReports]);
@@ -146,11 +154,13 @@ export function useReportPersistence({ projectId, environment, appVersion, field
             }
         }
         void refetch();
-        if (listScope === "all") {
-            void currentReportsQuery.refetch();
+        void currentReportsQuery.refetch();
+        if (listScope === "all" || shouldFetchAllReports) {
+            void allReportsQuery.refetch();
         }
         return created;
     }, [
+        allReportsQuery,
         appendReplyToHistory,
         currentReportsQuery,
         getReportById,
@@ -159,12 +169,15 @@ export function useReportPersistence({ projectId, environment, appVersion, field
         refetch,
         replyHistory,
         replyHistoryByReportId,
+        shouldFetchAllReports,
         storageAdapterInstance,
         usesLazyReplies,
     ]);
     const currentPageReports = useMemo(() => enrichReports(currentReportsQuery.data, replyHistoryByReportId), [currentReportsQuery.data, replyHistoryByReportId]);
+    const allPageReports = useMemo(() => enrichReports(allReportsQuery.data ?? [], replyHistoryByReportId), [allReportsQuery.data, replyHistoryByReportId]);
     const filteredReports = useMemo(() => filterReports(reports, filters), [filters, reports]);
     const currentPageFilteredReports = useMemo(() => filterReports(currentPageReports, filters), [currentPageReports, filters]);
+    const allPageFilteredReports = useMemo(() => filterReports(allPageReports, filters), [allPageReports, filters]);
     const routeDetailsStats = useMemo(() => buildRouteDetailsSummary(currentPageReports, fields, currentPathname), [currentPathname, currentPageReports, fields]);
     const selectedReport = useMemo(() => {
         return filteredReports.find((report) => report.id === selectedReportId) ?? filteredReports[0] ?? null;
@@ -192,8 +205,10 @@ export function useReportPersistence({ projectId, environment, appVersion, field
         setSelectedReportId,
         reports,
         currentPageReports,
+        allPageReports,
         filteredReports,
         currentPageFilteredReports,
+        allPageFilteredReports,
         routeDetailsStats,
         selectedReport,
         isError,

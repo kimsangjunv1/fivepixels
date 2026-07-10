@@ -1,6 +1,8 @@
 import { type MouseEvent } from "react";
 import type { DeepPartialReportMessages } from "../i18n/types.js";
 import type { ReportLocale } from "../i18n/types.js";
+import { type UserSelectablePanelTab } from "../constants/panelTabRegistry.js";
+import { type PanelTabPreference } from "../utils/panelTabPreference.js";
 import type { CreateReportFeedbackPayload, CreateReplyPayload, ReportAppearance, ReportAuthor, ReportActivitySummaryParams, ReportActivitySummaryResult, ReportEvent, ReportFeedback, ReportField, ReportGitHubConfig, FivePixelsMode, ReportIdentify, ReportListAllParams, ReportListAllResult, ReportPanelBootstrapParams, ReportPanelBootstrapResult, ReportReply, QuestionThreadDisplay, UpdateReportFeedbackPayload } from "../types/report.js";
 import type { DraftReport, EditableDraft, HoverPointer, Marker, PendingFeedbackComposer, PickProbeCompareMode, PickProbeFieldKey, PickProbeLayoutMode, PickProbeValues, PickTargetContextMenuState, ReportMode, ReportPanelTab, SavedProbeDeletion, SavedProbeEntry, TargetSnapshot } from "../types/report-ui.js";
 type AuthDiagnosticsField = "projectId" | "environment" | "authorId" | "authorName" | "publicKey";
@@ -275,6 +277,17 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     roleStatItems: import("../utils/panelRoleStats.js").PanelRoleStatItem[];
     panelRole: "general" | "qa" | "developer" | "designer" | "planner" | "general-user";
     setPanelRole: (nextRole: import("../constants/panelRole.js").PanelRole) => void;
+    visiblePanelTabs: UserSelectablePanelTab[];
+    visiblePanelTabsSummary: string;
+    resolvedTabAvailabilityContext: {
+        showFeedbackList: boolean;
+        canListAllFeedback: boolean;
+    };
+    setVisiblePanelTabs: (nextTabs: UserSelectablePanelTab[]) => void;
+    resetVisibleTabsToRoleDefault: () => void;
+    applyRoleDefaultTabsForOnboarding: (role: "general" | "qa" | "developer" | "designer" | "planner" | "general-user") => void;
+    savePanelTabPreference: (preference: PanelTabPreference) => void;
+    storedPanelTabPreference: PanelTabPreference | null;
     statusText: string;
     toggleReportMode: () => void;
     toggleTargetPreview: () => void;

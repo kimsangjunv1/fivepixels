@@ -11,6 +11,7 @@ import { PANEL_APPEARANCE_STORAGE_KEY, TOOLTIP_APPEARANCE_STORAGE_KEY } from "..
 import { useLocalePreference } from "./useLocalePreference.js";
 import { useQuestionThreadPreference } from "./useQuestionThreadPreference.js";
 import { usePanelRolePreference } from "./usePanelRolePreference.js";
+import { usePanelTabPreference } from "./usePanelTabPreference.js";
 import { usePersonalKey } from "./usePersonalKey.js";
 import { useSelfProfile } from "./useSelfProfile.js";
 import { hasStoredPersonalKey, getAuthorIdFromPrivateKey, getAuthorNameFromPrivateKey, parsePrivateKeyBundle, publicKeysMatch, serializePublicKey } from "../utils/personalKey.js";
@@ -18,6 +19,9 @@ import { usePanelBootstrap } from "./usePanelBootstrap.js";
 import { useResolvedAppearance } from "./useResolvedAppearance.js";
 import { buildPanelStats } from "../utils/panelBootstrap.js";
 import { buildPanelRoleStats } from "../utils/panelRoleStats.js";
+import { getPanelRoleTabPreset } from "../constants/panelTabPresets.js";
+import { getPanelTabDefinition, isUserSelectablePanelTab } from "../constants/panelTabRegistry.js";
+import { formatVisibleTabSummary, resolveDefaultPanelTab, resolveVisibleTabs, } from "../utils/panelTabPreference.js";
 import { canShowCaseClaimAction, createReplyStatusForSubmit, getLatestBranchRootForCase, getReportReplies, ISSUE_ROOT_PARENT_ID, requiresCaseActorPermissionForComposer, resolveOriginalFeedbackAuthorName, resolveParentReplyIdForCaseQuestion, } from "../utils/feedbackThread.js";
 import { clampRatio, getMarkerFromReport, resolveTooltipAnchor } from "../utils/coordinates.js";
 import { getFeedbackTargetElement, isFeedbackTargetVisible, scrollToFeedbackTarget, waitForTargetRevealResync } from "../utils/locateFeedback.js";
@@ -58,6 +62,7 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
     const { typography, setTypography, setFontSize, setFontFamily } = useTypographyPreference();
     const { questionThreadDisplay, setQuestionThreadDisplay } = useQuestionThreadPreference(questionThreadDefault);
     const { panelRole, setPanelRole } = usePanelRolePreference();
+    const { storedPreference, setPanelTabPreference, setVisibleTabs, resetTabsToRoleDefault, applyRoleDefaultTabs } = usePanelTabPreference();
     const { locale, setLocale } = useLocalePreference(initialLocale);
     const [localeMessagesReady, setLocaleMessagesReady] = useState(locale !== "ko");
     const messages = useMemo(() => getReportMessages(locale, messageOverrides), [locale, localeMessagesReady, messageOverrides]);
@@ -91,13 +96,42 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
     const [panelTab, setPanelTab] = useState(null);
     const panelExpanded = !panelCollapsed && mode !== "report";
     const fetchEnabled = panelExpanded || mode === "view";
-    const needsFullReportList = mode === "view" || panelTab === "feedback-list" || (!onPanelBootstrap && fetchEnabled);
+    const tabAvailabilityContext = useMemo(() => ({
+        showFeedbackList,
+        canListAllFeedback: true,
+    }), [showFeedbackList]);
+    const visiblePanelTabs = useMemo(() => resolveVisibleTabs({ role: panelRole, preference: storedPreference, context: tabAvailabilityContext }), [panelRole, storedPreference, tabAvailabilityContext]);
+    const roleTabPreset = useMemo(() => getPanelRoleTabPreset(panelRole), [panelRole]);
+    const needsFullReportList = useMemo(() => {
+        if (mode === "view") {
+            return true;
+        }
+        if (!fetchEnabled) {
+            return false;
+        }
+        if (!onPanelBootstrap) {
+            return true;
+        }
+        if (panelTab === "feedback-list" || panelTab === "overview") {
+            return true;
+        }
+        if (roleTabPreset.headerStatsScope === "all") {
+            return true;
+        }
+        return visiblePanelTabs.some((tabId) => getPanelTabDefinition(tabId).needsFullReportList);
+    }, [fetchEnabled, mode, onPanelBootstrap, panelTab, roleTabPreset.headerStatsScope, visiblePanelTabs]);
+    const allReportsFetchEnabled = useMemo(() => {
+        if (!fetchEnabled || !needsFullReportList) {
+            return false;
+        }
+        return roleTabPreset.headerStatsScope === "all" || visiblePanelTabs.includes("overview");
+    }, [fetchEnabled, needsFullReportList, roleTabPreset.headerStatsScope, visiblePanelTabs]);
     const listFetchEnabled = fetchEnabled && needsFullReportList;
     const bootstrapEnabled = fetchEnabled && panelExpanded && Boolean(onPanelBootstrap);
     const resolvedPanelAppearance = useResolvedAppearance(activePanelAppearance);
     const resolvedTooltipAppearance = useResolvedAppearance(activeTooltipAppearance);
     const isMobileViewport = useIsMobileViewport();
-    const { canTransferFeedback, canListAllFeedback, currentPathname, listScope, setListScope, filters, setFilters, selectedReportId, setSelectedReportId, reports, currentPageReports, filteredReports, currentPageFilteredReports, routeDetailsStats, selectedReport, isError, isReportsLoading, isFetching, hasNextPage, isFetchingNextPage, fetchNextPage, isCreating, isUpdating, isDeleting, queryErrorMessage, refetch, createFeedback, updateFeedback, deleteFeedback, loadRepliesIfNeeded, createReply, usesCreateReply, replyHistoryByReportId, loadOlderReplies, goToOlderPaginationPage, goToNewerPaginationPage, } = useReportPersistence({
+    const { canTransferFeedback, canListAllFeedback, currentPathname, listScope, setListScope, filters, setFilters, selectedReportId, setSelectedReportId, reports, currentPageReports, filteredReports, currentPageFilteredReports, allPageReports, allPageFilteredReports, routeDetailsStats, selectedReport, isError, isReportsLoading, isFetching, hasNextPage, isFetchingNextPage, fetchNextPage, isCreating, isUpdating, isDeleting, queryErrorMessage, refetch, createFeedback, updateFeedback, deleteFeedback, loadRepliesIfNeeded, createReply, usesCreateReply, replyHistoryByReportId, loadOlderReplies, goToOlderPaginationPage, goToNewerPaginationPage, } = useReportPersistence({
         projectId,
         environment,
         appVersion,
@@ -112,6 +146,7 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         routeKey,
         fetchEnabled,
         listFetchEnabled,
+        allReportsFetchEnabled,
         replyHistory,
     });
     const bootstrapParams = useMemo(() => ({ pathname: currentPathname }), [currentPathname]);
@@ -404,6 +439,18 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
     }, [activeReplyAnchor, activeReplyReportId, hoveredMarkerId, markers]);
     const tooltipReport = tooltipAnchor?.report ?? null;
     const tooltipFieldTags = useMemo(() => (tooltipReport ? getFieldTags(fields, tooltipReport.field_values) : []), [fields, tooltipReport]);
+    const roleStatsReports = useMemo(() => {
+        if (roleTabPreset.headerStatsScope !== "all") {
+            return currentPageFilteredReports;
+        }
+        if (listScope === "all") {
+            return filteredReports;
+        }
+        if (allPageFilteredReports.length > 0) {
+            return allPageFilteredReports;
+        }
+        return currentPageFilteredReports;
+    }, [allPageFilteredReports, currentPageFilteredReports, filteredReports, listScope, roleTabPreset.headerStatsScope]);
     const targetStats = useMemo(() => {
         if (panelBootstrap?.stats) {
             return panelBootstrap.stats;
@@ -412,11 +459,64 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
     }, [currentPageFilteredReports, panelBootstrap]);
     const roleStatItems = useMemo(() => buildPanelRoleStats({
         role: panelRole,
-        reports: currentPageFilteredReports,
+        reports: roleStatsReports,
         actorName: sessionActor?.name ?? null,
         fallbackStats: targetStats,
         messages,
-    }), [panelRole, currentPageFilteredReports, sessionActor?.name, targetStats, messages]);
+    }), [panelRole, roleStatsReports, sessionActor?.name, targetStats, messages]);
+    const listScopeInitializedRef = useRef(false);
+    useEffect(() => {
+        if (listScopeInitializedRef.current) {
+            return;
+        }
+        if (storedPreference?.customized) {
+            listScopeInitializedRef.current = true;
+            return;
+        }
+        setListScope(roleTabPreset.defaultListScope);
+        listScopeInitializedRef.current = true;
+    }, [roleTabPreset.defaultListScope, setListScope, storedPreference?.customized]);
+    useEffect(() => {
+        if (!panelTab) {
+            return;
+        }
+        if (panelTab === "settings" || panelTab === "command") {
+            return;
+        }
+        if (!isUserSelectablePanelTab(panelTab)) {
+            return;
+        }
+        if (visiblePanelTabs.includes(panelTab)) {
+            return;
+        }
+        setPanelTab(resolveDefaultPanelTab(panelRole, visiblePanelTabs));
+    }, [panelRole, panelTab, visiblePanelTabs]);
+    const resolvedTabAvailabilityContext = useMemo(() => ({
+        showFeedbackList,
+        canListAllFeedback,
+    }), [canListAllFeedback, showFeedbackList]);
+    const visiblePanelTabLabels = useMemo(() => {
+        const labels = {};
+        for (const tabId of visiblePanelTabs) {
+            labels[tabId] = messages.panel[getPanelTabDefinition(tabId).labelKey];
+        }
+        return labels;
+    }, [messages.panel, visiblePanelTabs]);
+    const visiblePanelTabsSummary = useMemo(() => formatVisibleTabSummary(visiblePanelTabs, visiblePanelTabLabels), [visiblePanelTabLabels, visiblePanelTabs]);
+    const setVisiblePanelTabs = useCallback((nextTabs) => {
+        setVisibleTabs(nextTabs, resolvedTabAvailabilityContext, true);
+    }, [resolvedTabAvailabilityContext, setVisibleTabs]);
+    const resetVisibleTabsToRoleDefault = useCallback(() => {
+        resetTabsToRoleDefault(panelRole, resolvedTabAvailabilityContext);
+        setListScope(getPanelRoleTabPreset(panelRole).defaultListScope);
+    }, [panelRole, resetTabsToRoleDefault, resolvedTabAvailabilityContext, setListScope]);
+    const applyRoleDefaultTabsForOnboarding = useCallback((role) => {
+        applyRoleDefaultTabs(role, resolvedTabAvailabilityContext);
+    }, [applyRoleDefaultTabs, resolvedTabAvailabilityContext]);
+    const savePanelTabPreference = useCallback((preference) => {
+        setPanelTabPreference(preference);
+        setListScope(getPanelRoleTabPreset(panelRole).defaultListScope);
+    }, [panelRole, setListScope, setPanelTabPreference]);
     const authorizedAuthorId = authorizedAuthors[0]?.id ?? null;
     const activeIdentifyId = activeIdentify?.id ?? null;
     const activeIdentifyName = activeIdentify?.name ?? null;
@@ -2193,6 +2293,14 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         roleStatItems,
         panelRole,
         setPanelRole,
+        visiblePanelTabs,
+        visiblePanelTabsSummary,
+        resolvedTabAvailabilityContext,
+        setVisiblePanelTabs,
+        resetVisibleTabsToRoleDefault,
+        applyRoleDefaultTabsForOnboarding,
+        savePanelTabPreference,
+        storedPanelTabPreference: storedPreference,
         statusText,
         toggleReportMode,
         toggleTargetPreview,

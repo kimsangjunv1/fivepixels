@@ -1,16 +1,31 @@
 import { useMemo, useState, type DragEvent } from "react";
 import { PANEL_ROLE_VALUES, type PanelRole } from "@/constants/panelRole.js";
+import { getDefaultVisibleTabsForRole } from "@/utils/panelTabPreference.js";
+import type { UserSelectablePanelTab } from "@/constants/panelTabRegistry.js";
 import { useReport } from "@/providers/reportContext.js";
 import { PanelDropdownMenuItem } from "./PanelDropdownMenu.js";
+import { PanelTabSelector } from "./PanelTabSelector.js";
 import { isPersonalKeyFile, readPersonalKeyFile } from "@/utils/feedbackDataTransfer.js";
 
 type OnboardingStep = "intro" | "restore" | "role" | "key";
 
 export function PanelOnboarding() {
-    const { messages, panelRole, setPanelRole, completeOnboarding, restoreFromBackup, setErrorMessage, selfProfile, personalKeyCandidates } = useReport();
+    const {
+        messages,
+        panelRole,
+        setPanelRole,
+        completeOnboarding,
+        restoreFromBackup,
+        setErrorMessage,
+        selfProfile,
+        personalKeyCandidates,
+        resolvedTabAvailabilityContext,
+        savePanelTabPreference,
+    } = useReport();
     const onboarding = messages.onboarding;
     const [step, setStep] = useState<OnboardingStep>("intro");
     const [name, setName] = useState(selfProfile?.name ?? "");
+    const [selectedTabs, setSelectedTabs] = useState<UserSelectablePanelTab[]>(() => getDefaultVisibleTabsForRole(panelRole, resolvedTabAvailabilityContext));
     const [isCreating, setIsCreating] = useState(false);
     const [backupKey, setBackupKey] = useState("");
     const [isRestoring, setIsRestoring] = useState(false);
@@ -21,9 +36,11 @@ export function PanelOnboarding() {
         () => Boolean(trimmedName) && personalKeyCandidates.some((author) => author.name.trim() === trimmedName),
         [personalKeyCandidates, trimmedName],
     );
+    const canProceedFromRoleStep = selectedTabs.length > 0;
 
     const handleSelectRole = (role: PanelRole) => {
         setPanelRole(role);
+        setSelectedTabs(getDefaultVisibleTabsForRole(role, resolvedTabAvailabilityContext));
     };
 
     const handleCreateKey = async () => {
@@ -34,6 +51,10 @@ export function PanelOnboarding() {
         setIsCreating(true);
 
         try {
+            savePanelTabPreference({
+                visibleTabs: selectedTabs,
+                customized: true,
+            });
             await completeOnboarding({ name: trimmedName });
         } catch {
             setErrorMessage(messages.errors.clipboardCopyFailed);
@@ -213,6 +234,16 @@ export function PanelOnboarding() {
                         ))}
                     </div>
 
+                    <PanelTabSelector
+                        role={panelRole}
+                        selectedTabs={selectedTabs}
+                        context={resolvedTabAvailabilityContext}
+                        messages={messages}
+                        onChange={setSelectedTabs}
+                    />
+
+                    <p className="text-[11px] text-[var(--adaptive-black500)]">{onboarding.roleStepTabsHint}</p>
+
                     <div className="flex items-center justify-between">
                         <button
                             type="button"
@@ -223,8 +254,9 @@ export function PanelOnboarding() {
                         </button>
                         <button
                             type="button"
+                            disabled={!canProceedFromRoleStep}
                             onClick={() => setStep("key")}
-                            className="rounded-[8px] bg-[var(--adaptive-blue100)] px-[12px] py-[6px] text-[12px] font-bold text-[var(--adaptive-blue500)]"
+                            className="rounded-[8px] bg-[var(--adaptive-blue100)] px-[12px] py-[6px] text-[12px] font-bold text-[var(--adaptive-blue500)] disabled:opacity-50"
                         >
                             {onboarding.next}
                         </button>
