@@ -56,7 +56,7 @@ export const ko = {
             incomplete: "미완료",
         },
         tabOverview: "개요",
-        tabThisPage: "이 페이지",
+        tabThisPage: "Route Details",
         tabPageDetails: "페이지 상세",
         tabFeedbackList: "피드백 목록",
         tabDiagnostics: "진단",
@@ -201,8 +201,11 @@ export const ko = {
         replyPaginationStatus: (current, total) => `${current} / ${total}`,
     },
     routeDetails: {
-        all: "전체",
-        today: "오늘",
+        current: "Current",
+        selected: "Selected",
+        basedOnThisMonth: "이번달 기준",
+        timelineAriaLabel: "이번 달 일별 활동",
+        timelineDayAriaLabel: "{day}일, 피드백 {count}건",
     },
     activityHeatmap: {
         title: "피드백 활동",

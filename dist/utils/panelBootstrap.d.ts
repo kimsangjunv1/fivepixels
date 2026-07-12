@@ -10,12 +10,18 @@ export type RouteDetailsSummary = {
     pathname: string;
     statusRows: Array<{
         status: FeedbackDisplayStatus;
-        all: number;
-        today: number;
+        current: number;
+        selected: number;
+        delta: number;
     }>;
     fieldCounts: RouteDetailsFieldCount[];
+    selectedDateKey: string;
+};
+export type BuildRouteDetailsSummaryOptions = {
+    selectedDateKey?: string;
+    referenceDate?: Date;
 };
 export declare function buildPanelStats(reports: ReportFeedback[]): ReportPanelStats;
-export declare function buildRouteDetailsSummary(reports: ReportFeedback[], fields: ReportField[], pathname: string): RouteDetailsSummary;
+export declare function buildRouteDetailsSummary(reports: ReportFeedback[], fields: ReportField[], pathname: string, options?: BuildRouteDetailsSummaryOptions): RouteDetailsSummary;
 export declare function buildPanelBootstrapFromReports(reports: ReportFeedback[], fields: ReportField[], pathname: string): ReportPanelBootstrapResult;
 //# sourceMappingURL=panelBootstrap.d.ts.map

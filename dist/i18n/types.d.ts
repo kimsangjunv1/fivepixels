@@ -205,8 +205,11 @@ export type ReportMessages = {
         replyPaginationStatus: (current: number, total: number) => string;
     };
     routeDetails: {
-        all: string;
-        today: string;
+        current: string;
+        selected: string;
+        basedOnThisMonth: string;
+        timelineAriaLabel: string;
+        timelineDayAriaLabel: string;
     };
     activityHeatmap: {
         title: string;

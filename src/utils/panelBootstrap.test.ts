@@ -31,19 +31,38 @@ describe("panelBootstrap", () => {
         });
     });
 
-    it("builds route details and bootstrap payload", () => {
-        const reports = [createFeedback({ created_at: "2026-07-01T12:00:00.000Z" })];
+    it("builds route details with current/selected/delta", () => {
+        const referenceDate = new Date(2026, 6, 12);
+        const selectedAt = new Date(2026, 6, 12, 12, 0, 0).toISOString();
+        const previousAt = new Date(2026, 6, 11, 12, 0, 0).toISOString();
+        const reports = [
+            createFeedback({ created_at: selectedAt }),
+            createFeedback({ id: "feedback-2", created_at: selectedAt }),
+            createFeedback({ id: "feedback-3", created_at: previousAt }),
+        ];
         const fields = [
             { key: "message", label: "Message", type: "textarea" as const },
             { key: "bug", label: "Bug", type: "checkbox" as const },
         ];
 
-        const routeDetails = buildRouteDetailsSummary(reports, fields, "/edgecase");
+        const routeDetails = buildRouteDetailsSummary(reports, fields, "/edgecase?test=1", {
+            selectedDateKey: "2026-07-12",
+            referenceDate,
+        });
         const bootstrap = buildPanelBootstrapFromReports(reports, fields, "/edgecase");
+        const activeRow = routeDetails.statusRows.find((row) => row.current > 0);
 
-        expect(routeDetails.pathname).toBe("/edgecase");
-        expect(routeDetails.statusRows.some((row) => row.all > 0)).toBe(true);
-        expect(bootstrap.stats.found).toBe(1);
+        expect(routeDetails.pathname).toBe("/edgecase?test=1");
+        expect(routeDetails.selectedDateKey).toBe("2026-07-12");
+        expect(activeRow).toEqual(
+            expect.objectContaining({
+                current: 3,
+                selected: 2,
+                delta: 1,
+            }),
+        );
+        expect(bootstrap.stats.found).toBe(3);
         expect(bootstrap.routeDetails.pathname).toBe("/edgecase");
+        expect(bootstrap.routeDetails.selectedDateKey).toBeTruthy();
     });
 });

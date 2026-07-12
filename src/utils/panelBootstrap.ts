@@ -2,7 +2,7 @@ import { FEEDBACK_DISPLAY_STATUS_ORDER } from "@/constants/feedbackStatus.js";
 import type { FeedbackDisplayStatus } from "@/constants/feedbackStatus.js";
 import type { ReportFeedback, ReportField, ReportPanelBootstrapResult, ReportPanelStats } from "@/types/report.js";
 import { getFeedbackDisplayStatus } from "@/utils/feedbackThread.js";
-import { isCreatedToday } from "@/utils/routeDetailStatus.js";
+import { toDateKey } from "@/utils/heatmapActivity.js";
 
 export type RouteDetailsFieldCount = {
     key: string;
@@ -13,9 +13,22 @@ export type RouteDetailsFieldCount = {
 
 export type RouteDetailsSummary = {
     pathname: string;
-    statusRows: Array<{ status: FeedbackDisplayStatus; all: number; today: number }>;
+    statusRows: Array<{ status: FeedbackDisplayStatus; current: number; selected: number; delta: number }>;
     fieldCounts: RouteDetailsFieldCount[];
+    selectedDateKey: string;
 };
+
+export type BuildRouteDetailsSummaryOptions = {
+    selectedDateKey?: string;
+    referenceDate?: Date;
+};
+
+function shiftDateKey(dateKey: string, deltaDays: number) {
+    const [year, month, day] = dateKey.split("-").map(Number);
+    const date = new Date(year, month - 1, day);
+    date.setDate(date.getDate() + deltaDays);
+    return toDateKey(date);
+}
 
 export function buildPanelStats(reports: ReportFeedback[]): ReportPanelStats {
     let resolved = 0;
@@ -44,11 +57,22 @@ export function buildPanelStats(reports: ReportFeedback[]): ReportPanelStats {
     };
 }
 
-export function buildRouteDetailsSummary(reports: ReportFeedback[], fields: ReportField[], pathname: string): RouteDetailsSummary {
+export function buildRouteDetailsSummary(
+    reports: ReportFeedback[],
+    fields: ReportField[],
+    pathname: string,
+    options: BuildRouteDetailsSummaryOptions = {},
+): RouteDetailsSummary {
+    const referenceDate = options.referenceDate ?? new Date();
+    const selectedDateKey = options.selectedDateKey ?? toDateKey(referenceDate);
+    const previousDateKey = shiftDateKey(selectedDateKey, -1);
+
     const statusRows = FEEDBACK_DISPLAY_STATUS_ORDER.map((status) => ({
         status,
-        all: 0,
-        today: 0,
+        current: 0,
+        selected: 0,
+        delta: 0,
+        previous: 0,
     }));
     const statusIndex = new Map(statusRows.map((row, index) => [row.status, index]));
 
@@ -60,10 +84,22 @@ export function buildRouteDetailsSummary(reports: ReportFeedback[], fields: Repo
             continue;
         }
 
-        statusRows[index].all += 1;
+        statusRows[index].current += 1;
 
-        if (isCreatedToday(report.created_at)) {
-            statusRows[index].today += 1;
+        const created = new Date(report.created_at);
+
+        if (Number.isNaN(created.getTime())) {
+            continue;
+        }
+
+        const createdKey = toDateKey(created);
+
+        if (createdKey === selectedDateKey) {
+            statusRows[index].selected += 1;
+        }
+
+        if (createdKey === previousDateKey) {
+            statusRows[index].previous += 1;
         }
     }
 
@@ -88,7 +124,13 @@ export function buildRouteDetailsSummary(reports: ReportFeedback[], fields: Repo
 
     return {
         pathname,
-        statusRows,
+        selectedDateKey,
+        statusRows: statusRows.map(({ status, current, selected, previous }) => ({
+            status,
+            current,
+            selected,
+            delta: selected - previous,
+        })),
         fieldCounts,
     };
 }

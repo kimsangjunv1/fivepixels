@@ -56,7 +56,7 @@ export const en = {
             incomplete: "Incomplete",
         },
         tabOverview: "Overview",
-        tabThisPage: "This page",
+        tabThisPage: "Route Details",
         tabPageDetails: "Page details",
         tabFeedbackList: "Feedback list",
         tabDiagnostics: "Diagnostics",
@@ -201,8 +201,11 @@ export const en = {
         replyPaginationStatus: (current, total) => `${current} / ${total}`,
     },
     routeDetails: {
-        all: "All",
-        today: "Today",
+        current: "Current",
+        selected: "Selected",
+        basedOnThisMonth: "Based on this month",
+        timelineAriaLabel: "Daily activity this month",
+        timelineDayAriaLabel: "Day {day}, {count} feedback",
     },
     activityHeatmap: {
         title: "Feedback activity",
