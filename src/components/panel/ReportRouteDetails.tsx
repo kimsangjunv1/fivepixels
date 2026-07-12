@@ -34,7 +34,7 @@ function resolveDefaultDateKey(buckets: Array<{ dateKey: string }>, todayKey: st
 }
 
 export function ReportRouteDetails() {
-    const { currentPageReports, fields, currentPathname, projectId, environment, appVersion, messages } = useReport();
+    const { currentPageReports, fields, currentPathname, messages } = useReport();
     const browserPathname = useSyncExternalStore(subscribeToPathnameChanges, getCurrentPathname, () => "/");
     const browserPathLabel = useSyncExternalStore(subscribeToPathnameChanges, getCurrentPathLabel, () => currentPathname);
     const displayPath = browserPathname === currentPathname ? browserPathLabel : currentPathname;
@@ -43,9 +43,7 @@ export function ReportRouteDetails() {
     const defaultDateKey = resolveDefaultDateKey(sparkline.buckets, todayKey);
     const [selectedDateKey, setSelectedDateKey] = useState(defaultDateKey);
 
-    const resolvedSelectedDateKey = sparkline.buckets.some((bucket) => bucket.dateKey === selectedDateKey)
-        ? selectedDateKey
-        : defaultDateKey;
+    const resolvedSelectedDateKey = sparkline.buckets.some((bucket) => bucket.dateKey === selectedDateKey) ? selectedDateKey : defaultDateKey;
 
     const summary = useMemo(
         () => buildRouteDetailsSummary(currentPageReports, fields, displayPath, { selectedDateKey: resolvedSelectedDateKey }),
@@ -53,7 +51,7 @@ export function ReportRouteDetails() {
     );
 
     return (
-        <section className="flex min-h-0 flex-1 flex-col overflow-y-auto bg-[var(--adaptive-black50)] rounded-[0_0_24px_24px]">
+        <section className="flex min-h-0 flex-1 flex-col overflow-y-auto bg-[var(--adaptive-black50)]">
             <RouteDetailsTimeline
                 sparkline={sparkline}
                 selectedDateKey={resolvedSelectedDateKey}
@@ -107,14 +105,6 @@ export function ReportRouteDetails() {
                         </section>
                     );
                 })}
-            </article>
-
-            <article className="mt-auto flex justify-center gap-[8px] border-t border-[var(--adaptive-black200)] text-[12px] text-[var(--adaptive-black500)] bg-[var(--adaptive-black100)] uppercase">
-                <p className="py-[4px] font-[500] text-[var(--adaptive-black500)]">{projectId}</p>
-                <div className="h-full w-[1px] bg-[var(--adaptive-black300)]" />
-                <p className="py-[4px] font-[500] text-[var(--adaptive-black500)]">{appVersion ?? "-"}</p>
-                <div className="h-full w-[1px] bg-[var(--adaptive-black300)]" />
-                <p className="py-[4px] font-[500] text-[var(--adaptive-black500)]">{environment ?? "-"}</p>
             </article>
         </section>
     );

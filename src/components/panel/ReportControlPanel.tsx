@@ -29,6 +29,7 @@ import { PanelRoleSwitch } from "./PanelRoleSwitch.js";
 import { PanelPresentationSwitch } from "./PanelPresentationSwitch.js";
 import { PanelOnboarding } from "./PanelOnboarding.js";
 import { PanelKeyGate } from "./PanelKeyGate.js";
+import { PanelProjectFooter } from "./PanelProjectFooter.js";
 import { panelNumericClassName } from "@/utils/panelTypography.js";
 import { createPersonalKeyBackupFilename, downloadPersonalKeyBackup } from "@/utils/feedbackDataTransfer.js";
 import { getPanelTabDefinition } from "@/constants/panelTabRegistry.js";
@@ -69,7 +70,7 @@ function PanelTabButton({ label, active, onClick }: { label: string; active: boo
             onClick={onClick}
             className={`flex flex-1 items-center justify-center gap-[6px] px-[10px] py-[2px] hover:bg-[var(--adaptive-black200)] ${active ? "bg-[var(--adaptive-black50)] text-[var(--adaptive-black900)]" : "text-[var(--adaptive-black600)]"}`}
         >
-            <p className="font-[500] text-[var(--adaptive-black500)]">{label}</p>
+            <p className="font-[500] text-[var(--adaptive-black500)] text-[12px]">{label}</p>
 
             <ChevronDownIcon className={`h-4 w-4 shrink-0 transition-transform ${active ? "rotate-180" : ""}`} />
         </button>
@@ -214,12 +215,7 @@ export function ReportControlPanel() {
         </div>
     ) : null;
 
-    const gateBody =
-        panelView === "onboarding" ? (
-            <PanelOnboarding />
-        ) : panelView === "setup-complete" || panelView === "key-issue" ? (
-            <PanelKeyGate mode={panelView} />
-        ) : null;
+    const gateBody = panelView === "onboarding" ? <PanelOnboarding /> : panelView === "setup-complete" || panelView === "key-issue" ? <PanelKeyGate mode={panelView} /> : null;
 
     return (
         <>
@@ -502,6 +498,8 @@ export function ReportControlPanel() {
                                         onCancel={handleCancelCommandReplace}
                                     />
                                 ) : null}
+
+                                <PanelProjectFooter />
                             </section>
                         </>
                     )}

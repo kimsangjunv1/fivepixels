@@ -149,7 +149,7 @@ export function ReportFeedbackList() {
     };
 
     return (
-        <section className="flex min-h-0 max-h-[51.2rem] flex-1 flex-col overflow-hidden rounded-[0_0_24px_24px] bg-[var(--adaptive-black50)]">
+        <section className="flex min-h-0 max-h-[51.2rem] flex-1 flex-col overflow-hidden bg-[var(--adaptive-black50)]">
             <div className="shrink-0 border-b border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)]">
                 {filters.dateKey ? (
                     <div className="flex items-center justify-between gap-[8px] border-b border-[var(--adaptive-border-subtle)] px-[8px] py-[6px]">

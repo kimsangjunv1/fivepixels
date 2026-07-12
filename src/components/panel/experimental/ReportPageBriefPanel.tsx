@@ -12,7 +12,7 @@ export function ReportPageBriefPanel() {
     const [expanded, setExpanded] = useState(false);
 
     return (
-        <section className="flex min-h-0 flex-1 flex-col overflow-y-auto bg-[var(--adaptive-black50)] rounded-[0_0_24px_24px]">
+        <section className="flex min-h-0 flex-1 flex-col overflow-y-auto bg-[var(--adaptive-black50)]">
             <div className="border-b border-[var(--adaptive-border-subtle)] px-[12px] py-[8px]">
                 <p className="text-[12px] font-bold text-[var(--adaptive-black900)]">{messages.panel.tabPageBrief}</p>
                 <p className="mt-[2px] truncate text-[11px] text-[var(--adaptive-black500)]">
