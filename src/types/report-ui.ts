@@ -1,4 +1,4 @@
-import type { ReportCase, ReportFeedback, ReportFieldValues, ReportStatus, ReportTargetType } from "./report.js";
+import type { FeedbackCategory, ReportCase, ReportFeedback, ReportFieldValues, ReportStatus, ReportTargetType } from "./report.js";
 import type { RouteDetailStatus } from "@/utils/routeDetailStatus.js";
 
 export type ReportMode = "idle" | "report" | "view";
@@ -156,6 +156,7 @@ export type DraftReport = {
     targetSelector: string | null;
     suggestedReportId: string | null;
     cases: ReportCase[];
+    category: FeedbackCategory | null;
     fieldValues: ReportFieldValues;
 };
 

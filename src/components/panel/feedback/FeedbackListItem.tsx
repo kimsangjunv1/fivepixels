@@ -1,12 +1,13 @@
-import { useEffect, useState, type MouseEvent, type ReactNode } from "react";
+import { useEffect, useState, type MouseEvent } from "react";
 import type { ReportFeedback } from "@/types/report.js";
 import type { ReportLocale, ReportMessages } from "@/i18n/types.js";
 import { formatTimeOnly } from "@/utils/format.js";
 import { getIssueSummary } from "@/utils/reportCases.js";
-import { getFeedbackDisplayStatus, getLatestReply, getRemainingReplyCount } from "@/utils/feedbackThread.js";
+import { getReplyCount } from "@/utils/feedbackThread.js";
+import { getFeedbackCaseId } from "@/utils/feedbackCaseId.js";
+import { getFeedbackListStatusTag } from "@/utils/feedbackListStatus.js";
+import { isFeedbackCategory } from "@/constants/feedbackCategory.js";
 import { copyTextToClipboard, serializeFeedbackItem } from "@/utils/feedbackDataTransfer.js";
-import { CaseProgressLabel } from "./CaseProgressLabel.js";
-import { FeedbackStatusBadge } from "./FeedbackStatusBadge.js";
 import { GitIssueButton } from "./GitIssueButton.js";
 import { CopyIcon, TrashIcon } from "@/components/icons/Icons.js";
 import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
@@ -23,6 +24,45 @@ type FeedbackListItemProps = {
     onDelete: (id: string) => Promise<void>;
     onCreateGitHubIssue?: (report: ReportFeedback) => Promise<void>;
 };
+
+function ClockIcon({ className }: { className?: string }) {
+    return (
+        <svg
+            viewBox="0 0 16 16"
+            fill="none"
+            aria-hidden
+            className={className}
+        >
+            <circle
+                cx="8"
+                cy="8"
+                r="6.25"
+                stroke="currentColor"
+                strokeWidth="1.5"
+            />
+            <path
+                d="M8 4.5V8l2.25 1.5"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+        </svg>
+    );
+}
+
+function CategoryShieldIcon({ className }: { className?: string }) {
+    return (
+        <svg
+            viewBox="0 0 16 16"
+            fill="currentColor"
+            aria-hidden
+            className={className}
+        >
+            <path d="M8 1.5 3.5 3.4v3.7c0 3.1 2.1 5.9 4.5 6.9 2.4-1 4.5-3.8 4.5-6.9V3.4L8 1.5Zm0 1.7 3.2 1.3v2.6c0 2.2-1.4 4.2-3.2 5.1-1.8-.9-3.2-2.9-3.2-5.1V4.5L8 3.2Z" />
+        </svg>
+    );
+}
 
 function FeedbackListCopyAction({ report, messages }: { report: ReportFeedback; messages: ReportMessages }) {
     const [copied, setCopied] = useState(false);
@@ -130,28 +170,6 @@ function FeedbackListGitIssueAction({
     );
 }
 
-function FeedbackListDottedDash() {
-    return (
-        <span
-            className="h-px min-w-[10px] flex-1 self-center bg-[length:5px_1px] bg-repeat-x bg-center"
-            style={{
-                backgroundImage: "radial-gradient(circle, var(--adaptive-black900) 0.9px, transparent 0.9px)",
-            }}
-            aria-hidden
-        />
-    );
-}
-
-function FeedbackListRow({ text, trailing }: { text: ReactNode; trailing: ReactNode }) {
-    return (
-        <div className="flex min-w-0 items-center">
-            <div className="min-w-0 shrink truncate">{text}</div>
-            <FeedbackListDottedDash />
-            <div className="shrink-0">{trailing}</div>
-        </div>
-    );
-}
-
 export function FeedbackListItem({
     report,
     locale,
@@ -165,10 +183,12 @@ export function FeedbackListItem({
     onCreateGitHubIssue,
 }: FeedbackListItemProps) {
     const [hovered, setHovered] = useState(false);
-    const latestReply = getLatestReply(report);
-    const remainingReplyCount = getRemainingReplyCount(report);
-    const displayStatus = getFeedbackDisplayStatus(report, false);
-    const activityAt = latestReply?.created_at ?? report.created_at;
+    const caseId = getFeedbackCaseId(report);
+    const replyCount = getReplyCount(report);
+    const statusTag = getFeedbackListStatusTag(report);
+    const category = isFeedbackCategory(report.category) ? report.category : null;
+    const summary = getIssueSummary(report, { summaryMore: messages.cases.summaryMore });
+    const activityAt = report.created_at;
 
     return (
         <div
@@ -179,75 +199,66 @@ export function FeedbackListItem({
             <button
                 type="button"
                 onClick={() => onLocate(report.id)}
-                className="flex w-full flex-col gap-[6px] p-[10px_12px] text-left"
+                className="flex w-full flex-col gap-[6px] px-[12px] py-[10px] text-left"
             >
-                <FeedbackListRow
-                    text={
-                        <p className="truncate text-[13px] leading-[1.4] text-[var(--adaptive-black900)]">
-                            {getIssueSummary(report, { summaryMore: messages.cases.summaryMore })}
-                            <CaseProgressLabel report={report} />
-                        </p>
-                    }
-                    trailing={
-                        hovered ? (
-                            <div
-                                className="flex items-center gap-[2px] rounded-full bg-[var(--adaptive-black900)] px-[6px] py-[2px]"
-                                onClick={(event) => event.stopPropagation()}
-                            >
-                                <FeedbackListCopyAction
-                                    report={report}
-                                    messages={messages}
-                                />
-                                {canCreateGitHubIssue && onCreateGitHubIssue ? (
-                                    <FeedbackListGitIssueAction
-                                        report={report}
-                                        messages={messages}
-                                        disabled={disabled}
-                                        isSubmitting={creatingGitHubIssueId === report.id}
-                                        onCreateIssue={onCreateGitHubIssue}
-                                    />
-                                ) : null}
-                                <FeedbackListDeleteAction
-                                    report={report}
-                                    onDelete={onDelete}
-                                    disabled={disabled}
-                                    messages={messages}
-                                />
-                            </div>
-                        ) : (
-                            <span className="rounded-full bg-[var(--adaptive-black900)] px-[8px] py-[2px] text-[12px] tabular-nums text-[var(--adaptive-black50)]">
-                                {formatTimeOnly(activityAt, locale)}
+                <div className="flex min-w-0 items-center justify-between gap-[8px]">
+                    <div className="flex min-w-0 items-center gap-[6px]">
+                        <span className="truncate text-[13px] font-bold leading-[1.3] text-[var(--adaptive-black900)]">{caseId ?? "#FC-—"}</span>
+                        {replyCount > 0 ? (
+                            <span className="rounded-[4px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black100)] px-[5px] py-[1px] text-[11px] font-semibold tabular-nums text-[var(--adaptive-black700)]">
+                                {messages.feedbackList.replyCountBadge(replyCount)}
                             </span>
-                        )
-                    }
-                />
+                        ) : null}
+                    </div>
 
-                <div className="pl-[10px]">
-                    <FeedbackListRow
-                        text={
-                            latestReply ? (
-                                <p className="truncate text-[12px] leading-[1.4] text-[var(--adaptive-black600)]">
-                                    <span className="text-[var(--adaptive-black400)]">{messages.feedbackList.threadReplyPrefix}</span> {latestReply.message}
-                                </p>
-                            ) : (
-                                <span className="block h-[17px]" />
-                            )
-                        }
-                        trailing={
-                            <div className="flex shrink-0 items-center gap-[6px]">
-                                <FeedbackStatusBadge status={displayStatus} />
-                                {remainingReplyCount > 0 ? (
-                                    <>
-                                        <span className="text-[11px] text-[var(--adaptive-black400)]">|</span>
-                                        <span className="text-[11px] tabular-nums text-[var(--adaptive-black500)]">+{remainingReplyCount}</span>
-                                    </>
-                                ) : null}
-                            </div>
-                        }
-                    />
+                    {hovered ? (
+                        <div
+                            className="flex shrink-0 items-center gap-[2px] rounded-full bg-[var(--adaptive-black900)] px-[6px] py-[2px]"
+                            onClick={(event) => event.stopPropagation()}
+                        >
+                            <FeedbackListCopyAction
+                                report={report}
+                                messages={messages}
+                            />
+                            {canCreateGitHubIssue && onCreateGitHubIssue ? (
+                                <FeedbackListGitIssueAction
+                                    report={report}
+                                    messages={messages}
+                                    disabled={disabled}
+                                    isSubmitting={creatingGitHubIssueId === report.id}
+                                    onCreateIssue={onCreateGitHubIssue}
+                                />
+                            ) : null}
+                            <FeedbackListDeleteAction
+                                report={report}
+                                onDelete={onDelete}
+                                disabled={disabled}
+                                messages={messages}
+                            />
+                        </div>
+                    ) : (
+                        <span className="flex shrink-0 items-center gap-[4px] text-[12px] tabular-nums text-[var(--adaptive-black500)]">
+                            <ClockIcon className="h-[12px] w-[12px]" />
+                            {formatTimeOnly(activityAt, locale)}
+                        </span>
+                    )}
                 </div>
 
-                {listScope === "all" ? <p className="truncate pl-[10px] text-[11px] text-[var(--adaptive-black400)]">{report.pathname}</p> : null}
+                <p className="line-clamp-2 text-[12px] leading-[1.45] text-[var(--adaptive-black600)]">{summary}</p>
+
+                <div className="flex flex-wrap items-center gap-[6px]">
+                    {category ? (
+                        <span className="inline-flex items-center gap-[4px] rounded-[6px] bg-[var(--adaptive-black100)] px-[8px] py-[3px] text-[11px] font-medium text-[var(--adaptive-black700)]">
+                            <CategoryShieldIcon className="h-[11px] w-[11px] text-[var(--adaptive-black500)]" />
+                            {messages.feedbackList.categoryTag[category]}
+                        </span>
+                    ) : null}
+                    <span className="inline-flex items-center rounded-[6px] bg-[var(--adaptive-black100)] px-[8px] py-[3px] text-[11px] font-medium text-[var(--adaptive-black700)]">
+                        {messages.feedbackList.statusTag[statusTag]}
+                    </span>
+                </div>
+
+                {listScope === "all" ? <p className="truncate text-[11px] text-[var(--adaptive-black400)]">{report.pathname}</p> : null}
             </button>
         </div>
     );

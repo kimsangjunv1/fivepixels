@@ -1,0 +1,1 @@
+{"version":3,"file":"feedbackCategory.js","sourceRoot":"","sources":["../../src/constants/feedbackCategory.ts"],"names":[],"mappings":"AAAA,MAAM,CAAC,MAAM,mBAAmB,GAAG,CAAC,UAAU,EAAE,SAAS,EAAE,YAAY,EAAE,UAAU,CAAU,CAAC;AAI9F,MAAM,UAAU,kBAAkB,CAAC,KAAc;IAC7C,OAAO,OAAO,KAAK,KAAK,QAAQ,IAAK,mBAAyC,CAAC,QAAQ,CAAC,KAAK,CAAC,CAAC;AACnG,CAAC"}

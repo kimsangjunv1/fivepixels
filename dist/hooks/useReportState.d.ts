@@ -5,6 +5,7 @@ import { type UserSelectablePanelTab } from "../constants/panelTabRegistry.js";
 import { type PanelTabPreference } from "../utils/panelTabPreference.js";
 import type { CreateReportFeedbackPayload, CreateReplyPayload, ReportAppearance, ReportAuthor, ReportActivitySummaryParams, ReportActivitySummaryResult, ReportEvent, ReportFeedback, ReportField, ReportGitHubConfig, FivePixelsMode, ReportIdentify, ReportListAllParams, ReportListAllResult, ReportPanelBootstrapParams, ReportPanelBootstrapResult, ReportReply, QuestionThreadDisplay, UpdateReportFeedbackPayload } from "../types/report.js";
 import type { DraftReport, EditableDraft, HoverPointer, Marker, PendingFeedbackComposer, PickProbeCompareMode, PickProbeFieldKey, PickProbeLayoutMode, PickProbeValues, PickTargetContextMenuState, ReportMode, ReportPanelTab, SavedProbeDeletion, SavedProbeEntry, TargetSnapshot } from "../types/report-ui.js";
+import type { FeedbackCategory } from "../constants/feedbackCategory.js";
 type AuthDiagnosticsField = "projectId" | "environment" | "authorId" | "authorName" | "publicKey";
 type AuthDiagnosticsStatus = "matched" | "failed" | "disabled";
 type AuthDiagnosticsReason = "reviewer-key-not-enforced" | "missing-personal-key" | "invalid-personal-key-format" | "project-mismatch" | "environment-mismatch" | "missing-team-author" | "author-id-mismatch" | "author-name-mismatch" | "missing-team-public-key" | "public-key-mismatch" | "matched";
@@ -313,6 +314,7 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     addDraftCase: () => void;
     removeDraftCase: (caseId: string) => void;
     updateDraftField: (key: string, nextValue: string | boolean) => void;
+    updateDraftCategory: (category: FeedbackCategory | null) => void;
     handleCreateSubmit: () => Promise<void>;
     startEditing: (report: ReportFeedback) => void;
     stopEditing: () => void;

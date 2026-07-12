@@ -1595,6 +1595,7 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
             targetSelector: isTagged ? null : (snapshot.targetSelector ?? null),
             suggestedReportId: isTagged ? null : (snapshot.suggestedReportId ?? snapshot.id),
             cases: [createReportCase("")],
+            category: null,
             fieldValues: createInitialFieldValues(fields),
         });
     };
@@ -1625,17 +1626,39 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         if (!summary) {
             return;
         }
-        const newCase = createReportCase(summary);
         setDraft((current) => {
             if (!current) {
                 return current;
             }
+            const cases = current.cases.map((item) => ({ ...item }));
+            const emptyIndex = cases.findIndex((item) => !item.text.trim());
+            const targetIndex = emptyIndex >= 0 ? emptyIndex : 0;
+            const target = cases[targetIndex];
+            if (!target) {
+                return {
+                    ...current,
+                    cases: [createReportCase(summary)],
+                };
+            }
+            cases[targetIndex] = {
+                ...target,
+                text: target.text.trim() ? `${target.text.trim()}\n\n${summary}` : summary,
+                updated_at: new Date().toISOString(),
+            };
             return {
                 ...current,
-                cases: [...current.cases, newCase],
+                cases,
             };
         });
     }, [draft, messages, savedProbeEdits]);
+    const updateDraftCategory = (category) => {
+        setDraft((current) => current
+            ? {
+                ...current,
+                category,
+            }
+            : current);
+    };
     const addDraftCase = () => {
         setDraft((current) => current
             ? {
@@ -1675,6 +1698,10 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
             setErrorMessage(nextError);
             return null;
         }
+        if (!draft.category) {
+            setErrorMessage(messages.errors.categoryRequired);
+            return null;
+        }
         if (!sessionActor) {
             setErrorMessage(messages.errors.authorRequired);
             return null;
@@ -1691,6 +1718,7 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
             ...(draft.targetSelector ? { target_selector: draft.targetSelector } : {}),
             cases,
             status: "open",
+            category: draft.category,
             field_values: draft.fieldValues,
             position: {
                 target: {
@@ -2327,6 +2355,7 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         addDraftCase,
         removeDraftCase,
         updateDraftField,
+        updateDraftCategory,
         handleCreateSubmit,
         startEditing,
         stopEditing,

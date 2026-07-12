@@ -1,3 +1,4 @@
+import type { FeedbackCategory } from "@/constants/feedbackCategory.js";
 import type { ReportAppearance, QuestionThreadDisplay } from "@/types/report.js";
 
 export type ReportLocale = "en" | "ko";
@@ -123,6 +124,14 @@ export type ReportMessages = {
         filterStatusAriaLabel: string;
         filterTypeAriaLabel: string;
         searchPlaceholder: string;
+        caseIdLabel: (fcNumber: number) => string;
+        replyCountBadge: (count: number) => string;
+        statusTag: {
+            no_assignee: string;
+            processed: string;
+            resolved: string;
+        };
+        categoryTag: Record<FeedbackCategory, string>;
         loadFailedTitle: string;
         loadFailedRetry: string;
         emptyTitle: string;
@@ -170,6 +179,9 @@ export type ReportMessages = {
         addCaseTabAriaLabel: string;
         selectCaseTabAriaLabel: (index: number) => string;
         removeCaseAriaLabel: (index: number) => string;
+        categoryLabel: string;
+        categoryAriaLabel: string;
+        categoryOption: Record<FeedbackCategory, string>;
         probeSummaryPrompt: string;
         probeSummaryApply: string;
         resolvedCaseDisabled: string;
@@ -639,6 +651,7 @@ export type ReportMessages = {
         importInvalidFormat: (index: number, detail: string) => string;
         fieldRequiredInput: (label: string) => string;
         fieldRequiredConfirm: (label: string) => string;
+        categoryRequired: string;
         casesRequired: string;
         caseTextRequired: (index: number) => string;
         caseSelectionRequired: string;

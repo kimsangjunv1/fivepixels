@@ -28,14 +28,14 @@ function computeDropdownPlacement(triggerRect: DOMRect, menuWidth: number, menuH
 
     let vertical: "top" | "bottom";
 
-    if (fitsAbove && !fitsBelow) {
-        vertical = "top";
-    } else if (!fitsAbove && fitsBelow) {
+    if (fitsBelow && !fitsAbove) {
         vertical = "bottom";
-    } else if (fitsAbove && fitsBelow) {
+    } else if (!fitsBelow && fitsAbove) {
         vertical = "top";
+    } else if (fitsAbove && fitsBelow) {
+        vertical = "bottom";
     } else {
-        vertical = spaceAbove >= spaceBelow ? "top" : "bottom";
+        vertical = spaceBelow >= spaceAbove ? "bottom" : "top";
     }
 
     const viewportTop = vertical === "top" ? triggerRect.top - menuHeight - MENU_GAP : triggerRect.bottom + MENU_GAP;

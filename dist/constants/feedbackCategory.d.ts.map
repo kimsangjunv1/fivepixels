@@ -1,0 +1,1 @@
+{"version":3,"file":"feedbackCategory.d.ts","sourceRoot":"","sources":["../../src/constants/feedbackCategory.ts"],"names":[],"mappings":"AAAA,eAAO,MAAM,mBAAmB,4DAA6D,CAAC;AAE9F,MAAM,MAAM,gBAAgB,GAAG,CAAC,OAAO,mBAAmB,CAAC,CAAC,MAAM,CAAC,CAAC;AAEpE,wBAAgB,kBAAkB,CAAC,KAAK,EAAE,OAAO,GAAG,KAAK,IAAI,gBAAgB,CAE5E;AAED,MAAM,MAAM,qBAAqB,GAAG,aAAa,GAAG,WAAW,GAAG,UAAU,CAAC"}

@@ -1,7 +1,9 @@
 import { getActiveReportMessages } from "../../i18n/index.js";
+import { isFeedbackCategory } from "../../constants/feedbackCategory.js";
 import { DEFAULT_PROJECT_ID } from "../../constants/project.js";
 import { getReportsStorageKey } from "../../constants/storageKeys.js";
 import { parseFeedbackStorageEnvelope, serializeFeedbackStorageEnvelope } from "../../utils/feedbackTransferSchema.js";
+import { allocateNextFcNumber, backfillFcNumbers } from "../../utils/feedbackCaseId.js";
 import { paginateSortedReplies, sortRepliesChronologically } from "../../utils/replyHistory.js";
 import { applyCaseStatusSync, normalizeFeedbackCases, normalizeReplyCaseIds, } from "../../utils/reportCases.js";
 function createId() {
@@ -97,10 +99,14 @@ function normalizeIntegrations(value) {
 }
 function normalizeReport(item) {
     const cases = normalizeFeedbackCases(item);
+    const fcNumber = typeof item.fc_number === "number" && Number.isFinite(item.fc_number) && item.fc_number > 0 ? Math.trunc(item.fc_number) : undefined;
+    const category = isFeedbackCategory(item.category) ? item.category : null;
     return applyCaseStatusSync({
         ...item,
         cases,
         status: isReportStatus(item.status) ? item.status : "open",
+        ...(fcNumber !== undefined ? { fc_number: fcNumber } : {}),
+        category,
         field_values: normalizeFieldValues(item.field_values),
         replies: normalizeReplies(item.replies),
         integrations: normalizeIntegrations(item.integrations),
@@ -116,14 +122,24 @@ export function readAllReportsFromStorage(storageKey) {
     }
     try {
         const parsed = JSON.parse(raw);
+        let items = [];
+        let project;
         if (Array.isArray(parsed)) {
-            return parsed.map(normalizeReport);
+            items = parsed.map(normalizeReport);
         }
-        const envelope = parseFeedbackStorageEnvelope(raw);
-        if (envelope) {
-            return envelope.items.map(normalizeReport);
+        else {
+            const envelope = parseFeedbackStorageEnvelope(raw);
+            if (envelope) {
+                items = envelope.items.map(normalizeReport);
+                project = envelope.project;
+            }
         }
-        return [];
+        const backfilled = backfillFcNumbers(items);
+        const needsPersist = backfilled.some((item, index) => item.fc_number !== items[index]?.fc_number);
+        if (needsPersist) {
+            writeAllReportsToStorage(storageKey, backfilled, project);
+        }
+        return backfilled;
     }
     catch {
         return [];
@@ -175,13 +191,16 @@ export function createLocalStorageReportAdapter({ projectId, environment, appVer
             return paginateSortedReplies(sorted, params);
         },
         async create(payload) {
+            const items = readAll(storageKey);
+            const fcNumber = typeof payload.fc_number === "number" && payload.fc_number > 0 ? Math.trunc(payload.fc_number) : allocateNextFcNumber(items);
             const nextItem = {
                 ...payload,
                 id: createId(),
+                fc_number: fcNumber,
+                category: isFeedbackCategory(payload.category) ? payload.category : null,
                 created_at: new Date().toISOString(),
                 replies: payload.replies ?? [],
             };
-            const items = readAll(storageKey);
             const normalized = normalizeReport(nextItem);
             writeAll(storageKey, [normalized, ...items], project);
             return normalized;

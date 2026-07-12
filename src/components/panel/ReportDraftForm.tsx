@@ -1,4 +1,5 @@
 import { useMemo, useRef } from "react";
+import type { FeedbackCategory } from "@/constants/feedbackCategory.js";
 import { useTooltipLayout } from "@/hooks/useTooltipLayout.js";
 import { useTooltipResize } from "@/hooks/useTooltipResize.js";
 import { useReport } from "@/providers/reportContext.js";
@@ -26,6 +27,7 @@ export function ReportDraftForm() {
         addDraftCase,
         removeDraftCase,
         updateDraftField,
+        updateDraftCategory,
         handleCreateSubmit,
         handleCreateSubmitWithGitHubIssue,
         canCreateGitHubIssueOnCreate,
@@ -53,6 +55,7 @@ export function ReportDraftForm() {
             addDraftCase={addDraftCase}
             removeDraftCase={removeDraftCase}
             updateDraftField={updateDraftField}
+            updateDraftCategory={updateDraftCategory}
             handleCreateSubmit={handleCreateSubmit}
             handleCreateSubmitWithGitHubIssue={handleCreateSubmitWithGitHubIssue}
             canCreateGitHubIssueOnCreate={canCreateGitHubIssueOnCreate}
@@ -77,6 +80,7 @@ type ReportDraftFormContentProps = {
     addDraftCase: () => void;
     removeDraftCase: (caseId: string) => void;
     updateDraftField: (key: string, value: string | boolean) => void;
+    updateDraftCategory: (value: FeedbackCategory | null) => void;
     handleCreateSubmit: () => Promise<void>;
     handleCreateSubmitWithGitHubIssue: () => Promise<void>;
     canCreateGitHubIssueOnCreate: boolean;
@@ -99,6 +103,7 @@ function ReportDraftFormContent({
     addDraftCase,
     removeDraftCase,
     updateDraftField,
+    updateDraftCategory,
     handleCreateSubmit,
     handleCreateSubmitWithGitHubIssue,
     canCreateGitHubIssueOnCreate,
@@ -173,6 +178,9 @@ function ReportDraftFormContent({
                             fields={fields}
                             fieldValues={draft.fieldValues}
                             onFieldChange={updateDraftField}
+                            category={draft.category}
+                            onCategoryChange={updateDraftCategory}
+                            showCategory
                             showTags
                             hideAuthorSelector={isPresentationMode || authorSelectionLocked}
                             lockedAuthorName={authorSelectionLocked ? (sessionActor?.name ?? draftAuthorName) : undefined}

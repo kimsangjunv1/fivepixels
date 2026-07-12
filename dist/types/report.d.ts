@@ -1,4 +1,6 @@
+import type { FeedbackCategory } from "../constants/feedbackCategory.js";
 import type { FeedbackDisplayStatus } from "../constants/feedbackStatus.js";
+export type { FeedbackCategory } from "../constants/feedbackCategory.js";
 export type ReportTargetType = "group" | "item";
 export type ReportStatus = "open" | "git_issued" | "resolved" | "archived";
 export type ReportAppearance = "light" | "dark" | "system";
@@ -171,6 +173,10 @@ export type ReportFeedback = {
     target_selector?: string;
     cases: ReportCase[];
     status: ReportStatus;
+    /** Human-readable Feedback Case number shown as `#FC-{n}`. */
+    fc_number?: number;
+    /** Fixed feedback category selected when creating feedback. */
+    category?: FeedbackCategory | null;
     field_values: ReportFieldValues;
     replies?: ReportReply[];
     reply_count?: number;
@@ -187,7 +193,7 @@ export type ReportFeedback = {
 export type CreateReportFeedbackPayload = Omit<ReportFeedback, "id" | "created_at" | "replies"> & {
     replies?: ReportReply[];
 };
-export type UpdateReportFeedbackPayload = Partial<Pick<ReportFeedback, "cases" | "status" | "field_values" | "replies" | "report_id" | "report_type" | "integrations" | "auth">>;
+export type UpdateReportFeedbackPayload = Partial<Pick<ReportFeedback, "cases" | "status" | "category" | "field_values" | "replies" | "report_id" | "report_type" | "integrations" | "auth">>;
 export type ReportListAllParams = {
     cursor?: string;
     limit: number;

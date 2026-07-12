@@ -13,12 +13,15 @@ import { resolveStorageAdapter } from "../utils/storage.js";
 import { createReplyHistoryActions } from "./replyHistoryActions.js";
 function buildReportSearchHaystack(report) {
     const latestReply = getLatestReply(report);
+    const caseId = typeof report.fc_number === "number" ? `#fc-${report.fc_number} fc-${report.fc_number} ${report.fc_number}` : "";
     return [
         casesToSearchText(getReportCases(report)),
         report.author_name ?? "",
         report.report_id,
         report.status,
         report.pathname,
+        report.category ?? "",
+        caseId,
         latestReply?.message ?? "",
         latestReply?.author_name ?? "",
     ]

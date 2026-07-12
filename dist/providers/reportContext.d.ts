@@ -263,6 +263,7 @@ declare const ReportContext: import("react").Context<{
     addDraftCase: () => void;
     removeDraftCase: (caseId: string) => void;
     updateDraftField: (key: string, nextValue: string | boolean) => void;
+    updateDraftCategory: (category: import("../constants/feedbackCategory").FeedbackCategory | null) => void;
     handleCreateSubmit: () => Promise<void>;
     startEditing: (report: import("..").ReportFeedback) => void;
     stopEditing: () => void;
@@ -539,6 +540,7 @@ export declare function useReport(): {
     addDraftCase: () => void;
     removeDraftCase: (caseId: string) => void;
     updateDraftField: (key: string, nextValue: string | boolean) => void;
+    updateDraftCategory: (category: import("../constants/feedbackCategory").FeedbackCategory | null) => void;
     handleCreateSubmit: () => Promise<void>;
     startEditing: (report: import("..").ReportFeedback) => void;
     stopEditing: () => void;

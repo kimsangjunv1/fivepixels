@@ -12,6 +12,8 @@ import type {
     ReportTargetType,
 } from "@/types/report.js";
 import { normalizeReportCase, normalizeReplyCaseIds } from "@/utils/reportCases.js";
+import { isFeedbackCategory } from "@/constants/feedbackCategory.js";
+import type { FeedbackCategory } from "@/constants/feedbackCategory.js";
 import { getActiveReportMessages } from "@/i18n/index.js";
 
 const STRING_FIELDS = ["id", "pathname", "report_id", "created_at"] as const;
@@ -320,6 +322,10 @@ export function validateFeedbackRecord(item: unknown, index: number): ReportFeed
         report_type: record.report_type as ReportTargetType,
         cases: validateCases(record.cases, index, record.created_at as string),
         status: record.status as ReportStatus,
+        ...(typeof record.fc_number === "number" && Number.isFinite(record.fc_number) && record.fc_number > 0
+            ? { fc_number: Math.trunc(record.fc_number) }
+            : {}),
+        category: isFeedbackCategory(record.category) ? (record.category as FeedbackCategory) : null,
         field_values: validateFieldValues(record.field_values, index),
         replies: validateReplies(record.replies, index),
         position: validatePosition(record.position, index),

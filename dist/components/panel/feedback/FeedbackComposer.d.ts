@@ -1,5 +1,6 @@
 import type { ReportField, ReportFieldValues, ReportCase } from "../../../types/report.js";
 import type { ReportAuthor } from "../../../types/report.js";
+import type { FeedbackCategory } from "../../../constants/feedbackCategory.js";
 type FeedbackComposerProps = {
     message?: string;
     onMessageChange?: (value: string) => void;
@@ -13,6 +14,9 @@ type FeedbackComposerProps = {
     fields: ReportField[];
     fieldValues: ReportFieldValues;
     onFieldChange: (key: string, value: string | boolean) => void;
+    category?: FeedbackCategory | null;
+    onCategoryChange?: (value: FeedbackCategory) => void;
+    showCategory?: boolean;
     showTags?: boolean;
     onSubmit: () => void;
     isSubmitting?: boolean;
@@ -29,6 +33,6 @@ type FeedbackComposerProps = {
     hideAuthorSelector?: boolean;
     lockedAuthorName?: string;
 };
-export declare function FeedbackComposer({ message, onMessageChange, cases, onCaseChange, onAddCase, onRemoveCase, authorName, onAuthorNameChange, authors, fields, fieldValues, onFieldChange, showTags, onSubmit, isSubmitting, showGitHubIssueOnCreate, onGitHubIssueSubmit, isGitHubIssueSubmitting, placeholder, autoFocus, errorMessage, showAskQuestionToggle, askQuestionChecked, onAskQuestionChange, askQuestionForced, hideAuthorSelector, lockedAuthorName, }: FeedbackComposerProps): import("react/jsx-runtime").JSX.Element;
+export declare function FeedbackComposer({ message, onMessageChange, cases, onCaseChange, onAddCase, onRemoveCase, authorName, onAuthorNameChange, authors, fields, fieldValues, onFieldChange, category, onCategoryChange, showCategory, showTags, onSubmit, isSubmitting, showGitHubIssueOnCreate, onGitHubIssueSubmit, isGitHubIssueSubmitting, placeholder, autoFocus, errorMessage, showAskQuestionToggle, askQuestionChecked, onAskQuestionChange, askQuestionForced, hideAuthorSelector, lockedAuthorName, }: FeedbackComposerProps): import("react/jsx-runtime").JSX.Element;
 export {};
 //# sourceMappingURL=FeedbackComposer.d.ts.map

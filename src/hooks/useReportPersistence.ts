@@ -45,6 +45,7 @@ export type ReportPersistenceConfig = {
 
 function buildReportSearchHaystack(report: ReportFeedback) {
     const latestReply = getLatestReply(report);
+    const caseId = typeof report.fc_number === "number" ? `#fc-${report.fc_number} fc-${report.fc_number} ${report.fc_number}` : "";
 
     return [
         casesToSearchText(getReportCases(report)),
@@ -52,6 +53,8 @@ function buildReportSearchHaystack(report: ReportFeedback) {
         report.report_id,
         report.status,
         report.pathname,
+        report.category ?? "",
+        caseId,
         latestReply?.message ?? "",
         latestReply?.author_name ?? "",
     ]

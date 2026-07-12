@@ -1,11 +1,13 @@
 import type { ReportField, ReportFieldValues, ReportCase } from "@/types/report.js";
 import type { ReportAuthor } from "@/types/report.js";
+import type { FeedbackCategory } from "@/constants/feedbackCategory.js";
 import { useEffect, useState } from "react";
 import { useReport } from "@/providers/reportContext.js";
 import { GitHubIssueIcon, SendIcon } from "@/components/icons/Icons.js";
 import { AuthorSelector } from "./AuthorSelector.js";
 import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
 import { FieldTagSelector } from "./FieldTagSelector.js";
+import { FeedbackCategorySelector } from "./FeedbackCategorySelector.js";
 import { FeedbackCaseEditor } from "./FeedbackCaseEditor.js";
 
 type FeedbackComposerProps = {
@@ -21,6 +23,9 @@ type FeedbackComposerProps = {
     fields: ReportField[];
     fieldValues: ReportFieldValues;
     onFieldChange: (key: string, value: string | boolean) => void;
+    category?: FeedbackCategory | null;
+    onCategoryChange?: (value: FeedbackCategory) => void;
+    showCategory?: boolean;
     showTags?: boolean;
     onSubmit: () => void;
     isSubmitting?: boolean;
@@ -51,6 +56,9 @@ export function FeedbackComposer({
     fields,
     fieldValues,
     onFieldChange,
+    category = null,
+    onCategoryChange,
+    showCategory = false,
     showTags = false,
     onSubmit,
     isSubmitting = false,
@@ -207,6 +215,14 @@ export function FeedbackComposer({
                     </HoverTooltip>
                 </div>
             </div>
+
+            {showCategory && onCategoryChange ? (
+                <FeedbackCategorySelector
+                    value={category}
+                    onChange={onCategoryChange}
+                    messages={messages}
+                />
+            ) : null}
 
             {showTags ? (
                 <FieldTagSelector
