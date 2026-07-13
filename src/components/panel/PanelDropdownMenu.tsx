@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 
-const MENU_GAP = 6;
+const MENU_GAP = 0;
+// const MENU_GAP = 6;
 const VIEWPORT_PADDING = 8;
 
 type PanelDropdownMenuProps = {
@@ -176,7 +177,7 @@ export function PanelDropdownMenu({ open, onClose, trigger, children, menuClassN
     return (
         <div
             ref={rootRef}
-            className="relative shrink-0"
+            className="relative shrink-0 h-[inherit]"
         >
             {trigger}
 
@@ -185,7 +186,7 @@ export function PanelDropdownMenu({ open, onClose, trigger, children, menuClassN
                     ref={menuRef}
                     role="menu"
                     style={menuStyle}
-                    className={`absolute z-[20] min-w-[120px] overflow-hidden rounded-[12px] border border-[var(--adaptive-black200)] bg-[var(--adaptive-black50)] shadow-[0_0_100px_rgba(0,0,0,0.2)] ${menuClassName ?? ""}`}
+                    className={`${open ? "border-[#f6562f]" : ""} absolute z-[20] min-w-[120px] overflow-hidden bg-[var(--adaptive-black50)] border shadow-[0_0_100px_rgba(0,0,0,0.2)] ${menuClassName ?? ""}`}
                 >
                     {children}
                 </div>

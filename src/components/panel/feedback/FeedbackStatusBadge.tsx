@@ -14,7 +14,7 @@ export function FeedbackStatusBadge({ status, className = "", isNeedGray = false
     const color = FEEDBACK_STATUS_COLOR[status];
 
     return (
-        <div className={`flex items-center gap-[6px] text-[12px] font-bold ${isNeedGray ? "normal-case" : "uppercase"} ${className}`}>
+        <div className={`flex items-center gap-[6px] ${isNeedGray ? "normal-case" : "uppercase"} ${className}`}>
             <span
                 className="inline-flex w-[14px]"
                 // className="inline-flex h-[14px] w-[14px] shrink-0 items-center justify-center [&_svg]:h-[14px] [&_svg]:w-[14px]"
@@ -27,7 +27,7 @@ export function FeedbackStatusBadge({ status, className = "", isNeedGray = false
             </span>
             <span
                 style={{ color: isNeedGray ? "var(--adaptive-black900)" : color }}
-                className="text-[12px]"
+                className="text-[14px]"
             >
                 {messages.status.feedback[status]}
             </span>

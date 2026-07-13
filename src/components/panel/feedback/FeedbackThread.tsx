@@ -205,9 +205,10 @@ function ThreadEntryActions({
                                     disabled={isUpdating}
                                     onClick={handleResolvedClick}
                                     aria-label={isResolvedConfirming ? messages.thread.resolvedConfirmAriaLabel : messages.thread.resolved}
-                                    className={`${THREAD_ACTION_BUTTON_BASE} px-[6px] ${isResolvedConfirming ? "bg-[#D94A22] text-white" : THREAD_ACTION_GHOST}`}
+                                    className={`${THREAD_ACTION_BUTTON_BASE} ${isResolvedConfirming ? "bg-[#D94A22] px-[8px] text-white" : `px-[6px] ${THREAD_ACTION_GHOST}`}`}
                                 >
                                     <CheckIcon className="h-[13px] w-[13px]" />
+                                    {isResolvedConfirming ? messages.thread.resolvedConfirmLabel : null}
                                 </button>
                             </>
                         ) : null}
@@ -489,10 +490,7 @@ function ThreadRootReply({
     const showBranchActions = canShowSuggestedBranchActionsForCase(report, reply, caseId) || canShowCheckoutBranchActionsForCase(report, reply, caseId);
     const canAct = canShowCaseThreadActions(report, caseId, actorName);
     const isOwnBranchReply = isBranchReplyAuthor(reply, actorName);
-    const hasActions =
-        showBranchActions &&
-        (canAct || isOwnBranchReply) &&
-        (canShowAdjudicationActionsOnBranchReply(reply, actorName) ? canAct : true);
+    const hasActions = showBranchActions && (canAct || isOwnBranchReply) && (canShowAdjudicationActionsOnBranchReply(reply, actorName) ? canAct : true);
 
     const entryBody = (
         <>
@@ -695,9 +693,7 @@ export function FeedbackThread({
     return (
         <div className="relative min-h-0 flex-1">
             {scrollOverflow.canScrollUp ? <p className={`${SCROLL_HINT_CLASS} top-0 bg-[linear-gradient(0deg,transparent,var(--adaptive-black50))]`}>{messages.thread.scrollHintUp}</p> : null}
-            {scrollOverflow.canScrollDown ? (
-                <p className={`${SCROLL_HINT_CLASS} bottom-[57px] bg-[linear-gradient(180deg,transparent,var(--adaptive-black50))]`}>{messages.thread.scrollHintDown}</p>
-            ) : null}
+            {scrollOverflow.canScrollDown ? <p className={`${SCROLL_HINT_CLASS} bottom-0 bg-[linear-gradient(180deg,transparent,var(--adaptive-black50))]`}>{messages.thread.scrollHintDown}</p> : null}
             <section
                 ref={scrollRef}
                 className={`flex h-full flex-col overflow-auto px-[12px] ${hideCaseSelector ? "" : "gap-[16px] max-h-[360px]"}`}
@@ -731,11 +727,15 @@ export function FeedbackThread({
                 )}
 
                 <div className="relative flex flex-col pt-[12px] pb-[57px]">
-                    <ReplyHistoryControls
+                    {/* <div className="relative flex flex-col pt-[12px] pb-[57px]"> */}
+                    {/* <ReplyHistoryControls
                         reportId={report.id}
                         history={replyHistoryState}
-                    />
-                    {showTimelineRail ? <div className="pointer-events-none absolute bottom-[12px] left-[20px] top-[12px] w-px bg-[var(--adaptive-border-subtle)]" /> : null}
+                    /> */}
+                    {showTimelineRail ? (
+                        <div className="pointer-events-none absolute bottom-[12px] left-[20px] top-[12px] w-px bg-[linear-gradient(180deg,_var(--adaptive-black900)_60%,transparent_90%)]" />
+                    ) : null}
+                    {/* {showTimelineRail ? <div className="pointer-events-none absolute bottom-[12px] left-[20px] top-[12px] w-px bg-[var(--adaptive-border-subtle)]" /> : null} */}
 
                     {focusedCaseId && !isAllCasesView ? (
                         <>

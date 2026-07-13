@@ -199,61 +199,64 @@ export function FeedbackListItem({
             <button
                 type="button"
                 onClick={() => onLocate(report.id)}
-                className="flex w-full flex-col gap-[6px] px-[12px] py-[10px] text-left"
+                className="flex w-full flex-col gap-[8px] px-[16px] py-[8px] text-left"
             >
-                <div className="flex min-w-0 items-center justify-between gap-[8px]">
-                    <div className="flex min-w-0 items-center gap-[6px]">
-                        <span className="truncate text-[13px] font-bold leading-[1.3] text-[var(--adaptive-black900)]">{caseId ?? "#FC-—"}</span>
-                        {replyCount > 0 ? (
-                            <span className="rounded-[4px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black100)] px-[5px] py-[1px] text-[11px] font-semibold tabular-nums text-[var(--adaptive-black700)]">
-                                {messages.feedbackList.replyCountBadge(replyCount)}
-                            </span>
-                        ) : null}
-                    </div>
+                <section className="flex flex-col gap-[4px]">
+                    <div className="flex min-w-0 items-center justify-between gap-[4px]">
+                        <div className="flex min-w-0 items-center gap-[4px]">
+                            <span className="truncate text-[14px] font-semibold text-[var(--adaptive-black900)]">{caseId ?? "#FC-—"}</span>
 
-                    {hovered ? (
-                        <div
-                            className="flex shrink-0 items-center gap-[2px] rounded-full bg-[var(--adaptive-black900)] px-[6px] py-[2px]"
-                            onClick={(event) => event.stopPropagation()}
-                        >
-                            <FeedbackListCopyAction
-                                report={report}
-                                messages={messages}
-                            />
-                            {canCreateGitHubIssue && onCreateGitHubIssue ? (
-                                <FeedbackListGitIssueAction
+                            {replyCount > 0 ? (
+                                <span className="rounded-[4px] border-[1.5px] border-[var(--adaptive-black900)] px-[2px] text-[10px] font-bold text-[var(--adaptive-black900)]">
+                                    {messages.feedbackList.replyCountBadge(replyCount)}
+                                </span>
+                            ) : null}
+                        </div>
+
+                        {/* {hovered ? (
+                            <div
+                                className="flex shrink-0 items-center gap-[2px] rounded-full bg-[var(--adaptive-black900)] px-[6px] py-[2px]"
+                                onClick={(event) => event.stopPropagation()}
+                            >
+                                <FeedbackListCopyAction
                                     report={report}
                                     messages={messages}
-                                    disabled={disabled}
-                                    isSubmitting={creatingGitHubIssueId === report.id}
-                                    onCreateIssue={onCreateGitHubIssue}
                                 />
-                            ) : null}
-                            <FeedbackListDeleteAction
-                                report={report}
-                                onDelete={onDelete}
-                                disabled={disabled}
-                                messages={messages}
-                            />
-                        </div>
-                    ) : (
+                                {canCreateGitHubIssue && onCreateGitHubIssue ? (
+                                    <FeedbackListGitIssueAction
+                                        report={report}
+                                        messages={messages}
+                                        disabled={disabled}
+                                        isSubmitting={creatingGitHubIssueId === report.id}
+                                        onCreateIssue={onCreateGitHubIssue}
+                                    />
+                                ) : null}
+                                <FeedbackListDeleteAction
+                                    report={report}
+                                    onDelete={onDelete}
+                                    disabled={disabled}
+                                    messages={messages}
+                                />
+                            </div>
+                        ) : (
+                        )} */}
                         <span className="flex shrink-0 items-center gap-[4px] text-[12px] tabular-nums text-[var(--adaptive-black500)]">
                             <ClockIcon className="h-[12px] w-[12px]" />
                             {formatTimeOnly(activityAt, locale)}
                         </span>
-                    )}
-                </div>
+                    </div>
 
-                <p className="line-clamp-2 text-[12px] leading-[1.45] text-[var(--adaptive-black600)]">{summary}</p>
+                    <p className="line-clamp-2 text-[14px] text-[var(--adaptive-black900)]">{summary}</p>
+                </section>
 
                 <div className="flex flex-wrap items-center gap-[6px]">
                     {category ? (
-                        <span className="inline-flex items-center gap-[4px] rounded-[6px] bg-[var(--adaptive-black100)] px-[8px] py-[3px] text-[11px] font-medium text-[var(--adaptive-black700)]">
+                        <span className="inline-flex items-center gap-[4px] rounded-[4px] bg-[var(--adaptive-black300)] px-[4px] py-[1px] text-[12px] font-medium text-[var(--adaptive-black700)]">
                             <CategoryShieldIcon className="h-[11px] w-[11px] text-[var(--adaptive-black500)]" />
                             {messages.feedbackList.categoryTag[category]}
                         </span>
                     ) : null}
-                    <span className="inline-flex items-center rounded-[6px] bg-[var(--adaptive-black100)] px-[8px] py-[3px] text-[11px] font-medium text-[var(--adaptive-black700)]">
+                    <span className="inline-flex items-center rounded-[4px] bg-[var(--adaptive-black300)] px-[4px] py-[1px] text-[12px] font-medium text-[var(--adaptive-black700)]">
                         {messages.feedbackList.statusTag[statusTag]}
                     </span>
                 </div>

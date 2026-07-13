@@ -201,7 +201,10 @@ export function FeedbackComposer({
                             </span>
                         </button>
                     ) : null}
-                    <HoverTooltip label={messages.composer.sendAriaLabel}>
+                    <HoverTooltip
+                        label={messages.composer.sendAriaLabel}
+                        disabled={isActionDisabled}
+                    >
                         <button
                             type="button"
                             data-fivepixels-interactive=""
@@ -224,13 +227,13 @@ export function FeedbackComposer({
                 />
             ) : null}
 
-            {showTags ? (
+            {/* {showTags ? (
                 <FieldTagSelector
                     fields={fields}
                     fieldValues={fieldValues}
                     onFieldChange={(key, value) => onFieldChange(key, value)}
                 />
-            ) : null}
+            ) : null} */}
         </div>
     );
 }

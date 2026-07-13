@@ -12,7 +12,7 @@ import { getCaseAssigneeName, getCaseById } from "@/utils/reportCases.js";
 import { getFieldTags } from "@/utils/fields.js";
 import { copyTextToClipboard } from "@/utils/feedbackDataTransfer.js";
 import { buildFeedbackShareUrl } from "@/utils/feedbackDeepLink.js";
-import { CloseIcon, LinkIcon, MaximizeIcon, MinimizeIcon, RestoreIcon, SendIcon, SidePanelIcon } from "@/components/icons/Icons.js";
+import { CloseIcon, LinkIcon, MaximizeIcon, MinimizeIcon, RestoreIcon, SidePanelIcon } from "@/components/icons/Icons.js";
 import { FeedbackFieldTags } from "@/components/panel/feedback/FeedbackFieldTags.js";
 import { CornerResizeGhost } from "@/components/ui/CornerResizeGhost.js";
 import { CornerResizeHandle } from "@/components/ui/CornerResizeHandle.js";
@@ -306,7 +306,6 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
     const focusedCaseAssigneeName = focusedCaseId ? getCaseAssigneeName(report, focusedCaseId) : null;
     const showAssigneeAssigned = Boolean(focusedCaseAssigneeName) || isClaimingAssignee;
     const fieldTags = useMemo(() => getFieldTags(fields, report.field_values), [fields, report.field_values]);
-    const isCaseWritingDisabled = report.status === "resolved" || report.status === "archived" || focusedCase?.status === "resolved";
 
     const viewport = getViewportSize();
     const maximizedSize: BoxSize = {
@@ -507,21 +506,7 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
                             errorMessage={errorMessage}
                         />
                     </section>
-                ) : (
-                    <div className="absolute bottom-0 left-0 w-full bg-[var(--adaptive-neutralTintOpacity700)] backdrop-blur-[5px] shrink-0 border-t border-[var(--adaptive-border-subtle)] px-[14px] py-[12px]">
-                        <div className="flex items-center gap-[8px]">
-                            <p className="min-w-0 flex-1 truncate text-[14px] leading-[1.4] text-[var(--adaptive-text-muted)]">
-                                {isCaseWritingDisabled ? messages.composer.resolvedCaseDisabled : messages.composer.placeholder}
-                            </p>
-                            <span
-                                aria-hidden
-                                className="flex h-[32px] w-[32px] shrink-0 items-center justify-center rounded-full bg-[var(--adaptive-black300)] opacity-60"
-                            >
-                                <SendIcon className="h-[16px] w-[16px] text-white" />
-                            </span>
-                        </div>
-                    </div>
-                )}
+                ) : null}
             </div>
         </div>
     );
@@ -560,7 +545,7 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
                 ) : (
                     <div
                         ref={surfaceRef}
-                        className="flex h-full w-full flex-row overflow-hidden rounded-[16px] shadow-[var(--adaptive-popup-shadow)]"
+                        className="flex h-full w-full flex-row overflow-hidden rounded-[16px] shadow-[var(--adaptive-popup-shadow)] border border-[var(--adaptive-border-subtle)]"
                     >
                         {isSidebarCollapsed ? (
                             <div

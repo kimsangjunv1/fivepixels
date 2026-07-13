@@ -68,9 +68,9 @@ function PanelTabButton({ label, active, onClick }: { label: string; active: boo
         <button
             type="button"
             onClick={onClick}
-            className={`flex flex-1 items-center justify-center gap-[6px] px-[10px] py-[2px] hover:bg-[var(--adaptive-black200)] ${active ? "bg-[var(--adaptive-black50)] text-[var(--adaptive-black900)]" : "text-[var(--adaptive-black600)]"}`}
+            className={`flex flex-1 items-center justify-center gap-[6px] px-[10px] py-[4px] hover:bg-[var(--adaptive-black200)] ${active ? "bg-[var(--adaptive-black50)]" : ""}`}
         >
-            <p className="font-[500] text-[var(--adaptive-black500)] text-[12px]">{label}</p>
+            <p className={`${active ? "text-[var(--adaptive-black900)]" : "text-[var(--adaptive-black500)]"} font-[500] text-[14px]`}>{label}</p>
 
             <ChevronDownIcon className={`h-4 w-4 shrink-0 transition-transform ${active ? "rotate-180" : ""}`} />
         </button>
@@ -237,12 +237,12 @@ export function ReportControlPanel() {
                 onDragLeave={isGateView ? undefined : handleDragLeave}
                 onDragOver={isGateView ? undefined : handleDragOver}
                 onDrop={isGateView ? undefined : handleDrop}
-                className={`pointer-events-auto z-[1000000] flex ${
+                className={`pointer-events-auto z-[1000000] border border-[var(--adaptive-border-subtle)] flex ${
                     isRecording
                         ? "min-h-[40px] bg-[var(--adaptive-neutralTintOpacity900)] backdrop-blur-[10px] rounded-[12px] shadow-[0_0_120px_0_var(--adaptive-black500)]"
                         : panelCollapsed
                           ? ""
-                          : "relative bg-[var(--adaptive-neutralTintOpacity900)] backdrop-blur-[10px] rounded-[12px] border-0 shadow-[0_0_120px_0_var(--adaptive-black500)]"
+                          : "relative bg-[var(--adaptive-neutralTintOpacity900)] backdrop-blur-[10px] rounded-[12px] shadow-[0_0_120px_0_var(--adaptive-black500)]"
                 }`}
                 style={{ ...resolvedPanelStyle, ...resolvedSizeStyle }}
             >
@@ -310,14 +310,15 @@ export function ReportControlPanel() {
 
                                     <div className="flex flex-1 flex-col">
                                         <section
-                                            className="flex items-center justify-between gap-[8px] cursor-move border-b border-b-[var(--adaptive-border-subtle)] p-[4px_12px]"
+                                            // className="flex items-center justify-between gap-[8px] cursor-move border-b border-b-[var(--adaptive-border-subtle)] p-[4px_12px]"
+                                            className="flex items-center justify-between gap-[8px] cursor-move border-b border-b-[var(--adaptive-border-subtle)]"
                                             onPointerDown={handleDragHandlePointerDown}
                                         >
-                                            <section className="flex min-w-0 items-center gap-[4px]">
+                                            <section className="flex min-w-0 items-center gap-[4px] py-[4px] pl-[12px]">
                                                 <LogoIcon className="w-[94px] shrink-0" />
                                             </section>
 
-                                            <section className="flex shrink-0 items-center gap-[4px]">
+                                            <section className="flex shrink-0 items-center h-full">
                                                 <PanelPresentationSwitch />
                                                 <PanelRoleSwitch />
 
@@ -337,7 +338,7 @@ export function ReportControlPanel() {
                                                     <SettingsIcon className="h-[16px] w-[16px]" />
                                                 </IconTooltipButton>
 
-                                                <IconTooltipButton
+                                                {/* <IconTooltipButton
                                                     label={messages.panel.resetSizeTitle}
                                                     disabled={isDefaultSize}
                                                     onClick={resetPanelSize}
@@ -345,7 +346,7 @@ export function ReportControlPanel() {
                                                     <span className="inline-flex h-[16px] w-[16px] items-center justify-center rounded-[4px] border border-[var(--adaptive-border-subtle)] text-[10px] font-bold leading-none">
                                                         ↺
                                                     </span>
-                                                </IconTooltipButton>
+                                                </IconTooltipButton> */}
                                             </section>
                                         </section>
 
@@ -377,7 +378,7 @@ export function ReportControlPanel() {
                                                             key={item.key}
                                                             className="flex flex-col items-start gap-[4px] flex-1"
                                                         >
-                                                            <p className="text-[12px] text-[var(--adaptive-black500)]">{item.label}</p>
+                                                            <p className="text-[14px] text-[var(--adaptive-black500)]">{item.label}</p>
                                                             <p className={`text-[14px] font-semibold text-[var(--adaptive-black900)] ${panelNumericClassName}`}>{item.display}</p>
                                                         </section>
                                                     ),
@@ -404,7 +405,7 @@ export function ReportControlPanel() {
                                                 />
                                             </div>
                                         ))}
-                                        {visiblePanelTabs.length > 0 ? <div className="h-full w-[1px] bg-[var(--adaptive-border-subtle)]" /> : null}
+                                        {/* {visiblePanelTabs.length > 0 ? <div className="h-full w-[1px] bg-[var(--adaptive-border-subtle)]" /> : null} */}
                                     </div>
                                 </section>
 

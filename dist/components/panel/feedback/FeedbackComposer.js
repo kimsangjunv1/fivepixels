@@ -4,7 +4,6 @@ import { useReport } from "../../../providers/reportContext.js";
 import { SendIcon } from "../../../components/icons/Icons.js";
 import { AuthorSelector } from "./AuthorSelector.js";
 import { HoverTooltip } from "../../../components/ui/HoverTooltip.js";
-import { FieldTagSelector } from "./FieldTagSelector.js";
 import { FeedbackCategorySelector } from "./FeedbackCategorySelector.js";
 import { FeedbackCaseEditor } from "./FeedbackCaseEditor.js";
 export function FeedbackComposer({ message = "", onMessageChange, cases, onCaseChange, onAddCase, onRemoveCase, authorName, onAuthorNameChange, authors, fields, fieldValues, onFieldChange, category = null, onCategoryChange, showCategory = false, showTags = false, onSubmit, isSubmitting = false, showGitHubIssueOnCreate = false, onGitHubIssueSubmit, isGitHubIssueSubmitting = false, placeholder, autoFocus = false, errorMessage = "", showAskQuestionToggle = false, askQuestionChecked = false, onAskQuestionChange, askQuestionForced = false, hideAuthorSelector = false, lockedAuthorName, }) {
@@ -47,6 +46,6 @@ export function FeedbackComposer({ message = "", onMessageChange, cases, onCaseC
                                             ? messages.composer.gitIssueSendingLabel
                                             : isGitHubIssueConfirming
                                                 ? messages.feedbackList.gitIssueConfirmLabel
-                                                : messages.composer.gitIssueSendLabel] }) })) : null, _jsx(HoverTooltip, { label: messages.composer.sendAriaLabel, children: _jsx("button", { type: "button", "data-fivepixels-interactive": "", disabled: isActionDisabled, onClick: handleSubmit, className: "inline-flex h-[32px] w-[32px] shrink-0 items-center justify-center rounded-full bg-[var(--adaptive-blue500)] text-white disabled:opacity-50", "aria-label": messages.composer.sendAriaLabel, children: _jsx(SendIcon, { className: "h-[16px] w-[16px]" }) }) })] })] }), showCategory && onCategoryChange ? (_jsx(FeedbackCategorySelector, { value: category, onChange: onCategoryChange, messages: messages })) : null, showTags ? (_jsx(FieldTagSelector, { fields: fields, fieldValues: fieldValues, onFieldChange: (key, value) => onFieldChange(key, value) })) : null] }));
+                                                : messages.composer.gitIssueSendLabel] }) })) : null, _jsx(HoverTooltip, { label: messages.composer.sendAriaLabel, disabled: isActionDisabled, children: _jsx("button", { type: "button", "data-fivepixels-interactive": "", disabled: isActionDisabled, onClick: handleSubmit, className: "inline-flex h-[32px] w-[32px] shrink-0 items-center justify-center rounded-full bg-[var(--adaptive-blue500)] text-white disabled:opacity-50", "aria-label": messages.composer.sendAriaLabel, children: _jsx(SendIcon, { className: "h-[16px] w-[16px]" }) }) })] })] }), showCategory && onCategoryChange ? (_jsx(FeedbackCategorySelector, { value: category, onChange: onCategoryChange, messages: messages })) : null] }));
 }
 //# sourceMappingURL=FeedbackComposer.js.map

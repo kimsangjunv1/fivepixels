@@ -172,7 +172,7 @@ export const en = {
             suggestion: "Suggestion",
             question: "Question",
         },
-        probeSummaryPrompt: "Add the current style change summary to a new case?",
+        probeSummaryPrompt: "Apply the current style change summary to this case?",
         probeSummaryApply: "Apply",
         resolvedCaseDisabled: "Resolved cases can't be edited",
     },

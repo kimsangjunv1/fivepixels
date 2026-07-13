@@ -20,7 +20,10 @@ export function PanelRoleSwitch() {
             open={open}
             onClose={() => setOpen(false)}
             trigger={
-                <HoverTooltip label={messages.panel.roleSwitchAriaLabel}>
+                <HoverTooltip
+                    label={messages.panel.roleSwitchAriaLabel}
+                    className="h-full"
+                >
                     <button
                         type="button"
                         aria-haspopup="menu"
@@ -30,9 +33,9 @@ export function PanelRoleSwitch() {
                             event.stopPropagation();
                             setOpen((current) => !current);
                         }}
-                        className={`flex h-[24px] shrink-0 items-center gap-[2px] rounded-[8px] px-[8px] text-[12px] font-semibold text-[var(--adaptive-black900)] ${open ? "bg-[var(--adaptive-black100)]" : "bg-[var(--adaptive-black300)]"}`}
+                        className={`flex h-full shrink-0 items-center gap-[2px] px-[8px] text-[12px] font-semibold ${open ? "hover:bg-[#bc3110] bg-[#f6562f]" : "hover:bg-[var(--adaptive-black50)]"}`}
                     >
-                        <span className="max-w-[72px] truncate">{roleLabels[panelRole]}</span>
+                        <span className={`${open ? "text-[var(--adaptive-black50)]" : "text-[var(--adaptive-black900)]"} max-w-[72px] truncate`}>{roleLabels[panelRole]}</span>
                         <ChevronDownIcon className={`h-[14px] w-[14px] shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
                     </button>
                 </HoverTooltip>

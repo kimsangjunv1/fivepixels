@@ -166,91 +166,99 @@ export function ReportFeedbackList() {
                     </div>
                 ) : null}
 
-                <div className="flex items-center gap-[6px] px-[8px] py-[8px]">
-                    {canListAllFeedback ? (
+                <div className="flex items-center">
+                    <section className="h-[32px] flex items-center">
+                        {canListAllFeedback ? (
+                            <PanelDropdownMenu
+                                open={scopeMenuOpen}
+                                onClose={() => setScopeMenuOpen(false)}
+                                align="left"
+                                trigger={
+                                    <button
+                                        type="button"
+                                        onClick={() => setScopeMenuOpen((current) => !current)}
+                                        aria-expanded={scopeMenuOpen}
+                                        aria-haspopup="menu"
+                                        aria-label={messages.feedbackList.scopeAriaLabel}
+                                        className={`${scopeMenuOpen ? "bg-[#f6562f] hover:bg-[#bc3110]" : "hover:bg-[var(--adaptive-black50)]"} flex h-full min-w-[72px] items-center justify-center gap-[4px] px-[8px] text-[14px] text-[var(--adaptive-black800)] outline-none hover:bg-[var(--adaptive-black100)]`}
+                                    >
+                                        <span className={`${scopeMenuOpen ? "text-white" : ""} truncate`}>{scopeLabel}</span>
+                                        <ChevronDownIcon className={`h-[14px] w-[14px] shrink-0 text-[var(--adaptive-black600)] transition-transform ${scopeMenuOpen ? "rotate-180" : ""}`} />
+                                    </button>
+                                }
+                            >
+                                {(["current", "all"] as const).map((scope) => (
+                                    <PanelDropdownMenuItem
+                                        key={scope}
+                                        active={listScope === scope}
+                                        onClick={() => {
+                                            setScopeMenuOpen(false);
+                                            setListScope(scope);
+                                        }}
+                                    >
+                                        {scope === "current" ? messages.feedbackList.scopeCurrentPage : messages.feedbackList.scopeAllPages}
+                                    </PanelDropdownMenuItem>
+                                ))}
+                            </PanelDropdownMenu>
+                        ) : null}
+
+                        <div className="h-full w-[1px] bg-[var(--adaptive-border-subtle)]" />
+
                         <PanelDropdownMenu
-                            open={scopeMenuOpen}
-                            onClose={() => setScopeMenuOpen(false)}
+                            open={statusMenuOpen}
+                            onClose={() => setStatusMenuOpen(false)}
                             align="left"
                             trigger={
                                 <button
                                     type="button"
-                                    onClick={() => setScopeMenuOpen((current) => !current)}
-                                    aria-expanded={scopeMenuOpen}
+                                    onClick={() => setStatusMenuOpen((current) => !current)}
+                                    aria-expanded={statusMenuOpen}
                                     aria-haspopup="menu"
-                                    aria-label={messages.feedbackList.scopeAriaLabel}
-                                    className="flex h-[28px] min-w-[72px] items-center justify-between gap-[4px] rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] px-[8px] text-[12px] text-[var(--adaptive-black800)] outline-none hover:bg-[var(--adaptive-black100)]"
+                                    aria-label={messages.feedbackList.filterStatusAriaLabel}
+                                    className={`${statusMenuOpen ? "bg-[#f6562f] hover:bg-[#bc3110]" : "hover:bg-[var(--adaptive-black50)]"} flex h-full min-w-[72px] items-center justify-center px-[8px] text-[14px] text-[var(--adaptive-black800)] outline-none`}
                                 >
-                                    <span className="truncate">{scopeLabel}</span>
-                                    <ChevronDownIcon className={`h-[14px] w-[14px] shrink-0 text-[var(--adaptive-black600)] transition-transform ${scopeMenuOpen ? "rotate-180" : ""}`} />
+                                    <span className={`${statusMenuOpen ? "text-white" : ""} truncate`}>{statusLabel}</span>
+                                    <ChevronDownIcon className={`h-[14px] w-[14px] shrink-0 text-[var(--adaptive-black600)] transition-transform ${statusMenuOpen ? "rotate-180" : ""}`} />
                                 </button>
                             }
                         >
-                            {(["current", "all"] as const).map((scope) => (
+                            <PanelDropdownMenuItem
+                                active={filters.status === "all"}
+                                onClick={() => {
+                                    setStatusMenuOpen(false);
+                                    setFilters((current) => ({ ...current, status: "all" }));
+                                }}
+                            >
+                                {messages.feedbackList.filterStatusAll}
+                            </PanelDropdownMenuItem>
+
+                            {(Object.keys(messages.status.routeDetail) as RouteDetailStatus[]).map((status) => (
                                 <PanelDropdownMenuItem
-                                    key={scope}
-                                    active={listScope === scope}
+                                    key={status}
+                                    active={filters.status === status}
                                     onClick={() => {
-                                        setScopeMenuOpen(false);
-                                        setListScope(scope);
+                                        setStatusMenuOpen(false);
+                                        setFilters((current) => ({ ...current, status }));
                                     }}
                                 >
-                                    {scope === "current" ? messages.feedbackList.scopeCurrentPage : messages.feedbackList.scopeAllPages}
+                                    {messages.status.routeDetail[status]}
                                 </PanelDropdownMenuItem>
                             ))}
                         </PanelDropdownMenu>
-                    ) : null}
+                    </section>
 
-                    <PanelDropdownMenu
-                        open={statusMenuOpen}
-                        onClose={() => setStatusMenuOpen(false)}
-                        align="left"
-                        trigger={
-                            <button
-                                type="button"
-                                onClick={() => setStatusMenuOpen((current) => !current)}
-                                aria-expanded={statusMenuOpen}
-                                aria-haspopup="menu"
-                                aria-label={messages.feedbackList.filterStatusAriaLabel}
-                                className="flex h-[28px] min-w-[72px] items-center justify-between gap-[4px] rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] px-[8px] text-[12px] text-[var(--adaptive-black800)] outline-none hover:bg-[var(--adaptive-black100)]"
-                            >
-                                <span className="truncate">{statusLabel}</span>
-                                <ChevronDownIcon className={`h-[14px] w-[14px] shrink-0 text-[var(--adaptive-black600)] transition-transform ${statusMenuOpen ? "rotate-180" : ""}`} />
-                            </button>
-                        }
-                    >
-                        <PanelDropdownMenuItem
-                            active={filters.status === "all"}
-                            onClick={() => {
-                                setStatusMenuOpen(false);
-                                setFilters((current) => ({ ...current, status: "all" }));
-                            }}
-                        >
-                            {messages.feedbackList.filterStatusAll}
-                        </PanelDropdownMenuItem>
-                        {(Object.keys(messages.status.routeDetail) as RouteDetailStatus[]).map((status) => (
-                            <PanelDropdownMenuItem
-                                key={status}
-                                active={filters.status === status}
-                                onClick={() => {
-                                    setStatusMenuOpen(false);
-                                    setFilters((current) => ({ ...current, status }));
-                                }}
-                            >
-                                {messages.status.routeDetail[status]}
-                            </PanelDropdownMenuItem>
-                        ))}
-                    </PanelDropdownMenu>
+                    <div className="h-[32px] w-[1px] bg-[var(--adaptive-border-subtle)]" />
 
-                    <div className="relative min-w-0 flex-1">
+                    <div className="relative w-full">
                         <input
                             ref={searchInputRef}
                             value={filters.keyword}
                             onChange={(event) => setFilters((current) => ({ ...current, keyword: event.target.value }))}
                             placeholder={messages.feedbackList.searchPlaceholder}
-                            className="h-[28px] w-full rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] px-[8px] pr-[30px] text-[12px] text-[var(--adaptive-black800)] outline-none"
+                            className="h-[32px] w-full px-[8px] pr-[30px] text-[14px] text-[var(--adaptive-black800)] outline-none"
                         />
-                        <SearchIcon className="pointer-events-none absolute right-[8px] top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--adaptive-black500)]" />
+                        <SearchIcon className="pointer-events-none absolute right-[8px] top-[25%] h-4 w-4 -translate-y-1/2 text-[var(--adaptive-black500)]" />
+
                         <div className="absolute right-[30px] top-1/2 -translate-y-1/2">
                             <ShortcutHint
                                 binding={REPORT_SHORTCUTS.focusSearch}
@@ -298,9 +306,9 @@ export function ReportFeedbackList() {
                                     type="button"
                                     onClick={() => toggleGroup(dateKey)}
                                     aria-expanded={isExpanded}
-                                    className="sticky top-0 z-10 flex w-full items-center justify-between bg-[var(--adaptive-black100)] p-[4px_8px]"
+                                    className="sticky top-0 z-10 flex w-full items-center justify-between border-b border-b-[var(--adaptive-border-subtle)] p-[8px_16px]"
                                 >
-                                    <p className="text-[12px] font-[600] text-[var(--adaptive-black700)]">{label}</p>
+                                    <p className="text-[12px] text-[var(--adaptive-black900)]">{label}</p>
                                     <ChevronDownIcon className={`h-4 w-4 shrink-0 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
                                 </button>
 

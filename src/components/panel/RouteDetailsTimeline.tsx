@@ -2,7 +2,8 @@ import { useLayoutEffect, useRef, useState } from "react";
 import type { DailySparklineBucket, MonthlySparkline } from "@/utils/monthlySparkline.js";
 import { toDateKey } from "@/utils/heatmapActivity.js";
 
-const CELL_WIDTH_PX = 18;
+const CELL_WIDTH_PX = 10;
+// const CELL_WIDTH_PX = 18;
 const PILL_WIDTH_PX = 10;
 const BAR_AREA_HEIGHT_PX = 22;
 const DAY_LABEL_HEIGHT_PX = 16;
@@ -131,10 +132,10 @@ export function RouteDetailsTimeline({
     return (
         <section className="flex flex-col gap-[4px]">
             <div className="relative border-b border-b-[var(--adaptive-border-subtle)] pt-[10px]">
-                <div
+                {/* <div
                     aria-hidden
                     className="pointer-events-none absolute inset-y-[0px] left-1/2 z-[2] w-[1px] -translate-x-1/2 bg-[#F6572E]"
-                />
+                /> */}
 
                 <div
                     ref={scrollRef}
@@ -143,17 +144,17 @@ export function RouteDetailsTimeline({
                     aria-label={timelineAriaLabel}
                 >
                     <div
-                        className="flex items-end"
-                        style={{
-                            width: `${trackWidthPx}px`,
-                            minWidth: `${trackWidthPx}px`,
-                        }}
+                        className="flex items-end gap-[1px]"
+                        // style={{
+                        //     width: `${trackWidthPx}px`,
+                        //     minWidth: `${trackWidthPx}px`,
+                        // }}
                     >
-                        <div
+                        {/* <div
                             aria-hidden
                             className="shrink-0"
                             style={{ width: `${sideSpacerPx}px`, height: `${TRACK_HEIGHT_PX}px` }}
-                        />
+                        /> */}
 
                         {sparkline.buckets.map((bucket) => {
                             const isSelected = bucket.dateKey === selectedDateKey;
@@ -172,7 +173,7 @@ export function RouteDetailsTimeline({
                                     aria-label={formatMessage(dayAriaLabelTemplate, { day: bucket.day, count: bucket.count })}
                                     disabled={isFuture}
                                     onClick={() => onSelectDateKey(bucket.dateKey)}
-                                    className={`relative z-[1] flex shrink-0 flex-col items-center gap-[4px] ${isFuture ? "cursor-default" : "cursor-pointer"}`}
+                                    className={`relative z-[1] flex flex-1 shrink-0 flex-col items-center gap-[4px] ${isFuture ? "cursor-default" : "cursor-pointer"}`}
                                     style={{ width: `${CELL_WIDTH_PX}px` }}
                                 >
                                     <span
@@ -181,8 +182,9 @@ export function RouteDetailsTimeline({
                                     >
                                         <span
                                             aria-hidden
-                                            className={`rounded-full ${pillColor}`}
-                                            style={{ width: `${PILL_WIDTH_PX}px`, height: `${heightPx}px`, minHeight: "10px" }}
+                                            className={`${pillColor}`}
+                                            style={{ width: `100%`, height: `${heightPx}px`, minHeight: "10px" }}
+                                            // style={{ width: `${PILL_WIDTH_PX}px`, height: `${heightPx}px`, minHeight: "10px" }}
                                         />
                                     </span>
 
@@ -197,11 +199,11 @@ export function RouteDetailsTimeline({
                             );
                         })}
 
-                        <div
+                        {/* <div
                             aria-hidden
                             className="shrink-0"
                             style={{ width: `${sideSpacerPx}px`, height: `${TRACK_HEIGHT_PX}px` }}
-                        />
+                        /> */}
                     </div>
                 </div>
             </div>
