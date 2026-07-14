@@ -10,6 +10,9 @@ type FeedbackCaseEditorProps = {
     onRemoveCase: (caseId: string) => void;
     autoFocus?: boolean;
     onSubmitShortcut?: () => void;
+    needsAttention?: boolean;
+    attentionKey?: number;
+    emptyCaseIds?: string[];
 };
 
 const CASE_INPUT_MIN_HEIGHT = 56;
@@ -29,9 +32,10 @@ type CaseTextareaProps = {
     placeholder: string;
     onChange: (value: string) => void;
     onSubmitShortcut?: () => void;
+    needsAttention?: boolean;
 };
 
-function CaseTextarea({ id, value, autoFocus, placeholder, onChange, onSubmitShortcut }: CaseTextareaProps) {
+function CaseTextarea({ id, value, autoFocus, placeholder, onChange, onSubmitShortcut, needsAttention = false }: CaseTextareaProps) {
     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
     const syncHeight = useCallback(() => {
@@ -60,7 +64,8 @@ function CaseTextarea({ id, value, autoFocus, placeholder, onChange, onSubmitSho
             }}
             placeholder={placeholder}
             rows={1}
-            className={CASE_INPUT_CLASS}
+            aria-invalid={needsAttention || undefined}
+            className={`${CASE_INPUT_CLASS}${needsAttention ? " fivepixels-validation-attention rounded-[8px] bg-rose-500/10" : ""}`}
             onKeyDown={(event) => {
                 if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
                     event.preventDefault();
@@ -91,13 +96,25 @@ function resolveActiveCaseId(cases: ReportCase[], activeCaseId: string | null) {
     return cases[cases.length - 1]?.id ?? cases[0].id;
 }
 
-export function FeedbackCaseEditor({ cases, onCaseChange, onAddCase, onRemoveCase, autoFocus = false, onSubmitShortcut }: FeedbackCaseEditorProps) {
+export function FeedbackCaseEditor({
+    cases,
+    onCaseChange,
+    onAddCase,
+    onRemoveCase,
+    autoFocus = false,
+    onSubmitShortcut,
+    needsAttention = false,
+    attentionKey = 0,
+    emptyCaseIds = [],
+}: FeedbackCaseEditorProps) {
     const { messages } = useReport();
     const previousCaseCountRef = useRef(cases.length);
+    const containerRef = useRef<HTMLDivElement | null>(null);
     const [activeCaseId, setActiveCaseId] = useState<string | null>(() => cases[0]?.id ?? null);
     const resolvedActiveCaseId = resolveActiveCaseId(cases, activeCaseId);
     const activeCase = cases.find((item) => item.id === resolvedActiveCaseId) ?? null;
     const activeCaseIndex = activeCase ? cases.findIndex((item) => item.id === activeCase.id) : -1;
+    const activeCaseNeedsAttention = Boolean(activeCase && needsAttention && emptyCaseIds.includes(activeCase.id));
 
     const getCaseInputPlaceholder = useCallback((index: number) => messages.composer.caseInputPlaceholder(index), [messages.composer]);
 
@@ -127,6 +144,27 @@ export function FeedbackCaseEditor({ cases, onCaseChange, onAddCase, onRemoveCas
         previousCaseCountRef.current = cases.length;
     }, [cases]);
 
+    useEffect(() => {
+        if (!needsAttention || attentionKey <= 0 || emptyCaseIds.length === 0) {
+            return;
+        }
+
+        const targetCaseId = emptyCaseIds.includes(resolvedActiveCaseId ?? "") ? resolvedActiveCaseId : emptyCaseIds[0];
+
+        if (!targetCaseId) {
+            return;
+        }
+
+        if (targetCaseId !== resolvedActiveCaseId) {
+            setActiveCaseId(targetCaseId);
+        }
+
+        containerRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        window.requestAnimationFrame(() => {
+            document.getElementById(`fivepixels-case-input-${targetCaseId}`)?.focus();
+        });
+    }, [needsAttention, attentionKey, emptyCaseIds, resolvedActiveCaseId]);
+
     const handleRemoveCase = (caseId: string) => {
         const removeIndex = cases.findIndex((item) => item.id === caseId);
 
@@ -148,7 +186,10 @@ export function FeedbackCaseEditor({ cases, onCaseChange, onAddCase, onRemoveCas
     }
 
     return (
-        <div className="flex h-full min-h-0 flex-1 flex-col">
+        <div
+            ref={containerRef}
+            className="flex h-full min-h-0 flex-1 flex-col"
+        >
             <FeedbackCaseTabBar
                 variant="editor"
                 cases={cases}
@@ -156,6 +197,7 @@ export function FeedbackCaseEditor({ cases, onCaseChange, onAddCase, onRemoveCas
                 onSelectCase={setActiveCaseId}
                 onAddCase={onAddCase}
                 onRemoveCase={handleRemoveCase}
+                invalidCaseIds={needsAttention ? emptyCaseIds : []}
             />
 
             <div
@@ -171,6 +213,7 @@ export function FeedbackCaseEditor({ cases, onCaseChange, onAddCase, onRemoveCas
                     placeholder={getCaseInputPlaceholder(activeCaseIndex + 1)}
                     onChange={(text) => onCaseChange(activeCase.id, text)}
                     onSubmitShortcut={onSubmitShortcut}
+                    needsAttention={activeCaseNeedsAttention}
                 />
             </div>
         </div>

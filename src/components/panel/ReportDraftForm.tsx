@@ -1,10 +1,11 @@
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useState } from "react";
 import type { FeedbackCategory } from "@/constants/feedbackCategory.js";
 import { useTooltipLayout } from "@/hooks/useTooltipLayout.js";
 import { useTooltipResize } from "@/hooks/useTooltipResize.js";
 import { useReport } from "@/providers/reportContext.js";
 import { getDraftMarkerPosition, TOOLTIP_EXPANDED_DEFAULT_MAX_HEIGHT } from "@/utils/coordinates.js";
 import { FeedbackComposer } from "./feedback/FeedbackComposer.js";
+import { ComposerFooterWarning } from "./feedback/ComposerFooterWarning.js";
 import { DraftProbeSummaryBanner } from "./DraftProbeSummaryBanner.js";
 import { PickTargetSnippet } from "./feedback/PickTargetSnippet.js";
 import { CornerResizeGhost } from "@/components/ui/CornerResizeGhost.js";
@@ -117,6 +118,7 @@ function ReportDraftFormContent({
 }: ReportDraftFormContentProps) {
     const { messages } = useReport();
     const tooltipSurfaceRef = useRef<HTMLDivElement | null>(null);
+    const [footerWarningMessage, setFooterWarningMessage] = useState<string | null>(null);
     const anchor = useMemo(() => getDraftMarkerPosition(draft, selectedTarget), [draft, selectedTarget]);
     const { customSize, isResizing, ghostRef, handleResizePointerDown } = useTooltipResize({
         enabled: true,
@@ -191,6 +193,7 @@ function ReportDraftFormContent({
                             isGitHubIssueSubmitting={isDraftGitHubIssueSubmitting}
                             autoFocus
                             errorMessage={errorMessage}
+                            onFooterWarningChange={setFooterWarningMessage}
                         />
                         {draft.targetSelector && draft.suggestedReportId ? (
                             <PickTargetSnippet
@@ -198,6 +201,7 @@ function ReportDraftFormContent({
                                 reportType={draft.reportType}
                             />
                         ) : null}
+                        {footerWarningMessage ? <ComposerFooterWarning message={footerWarningMessage} /> : null}
                     </div>
 
                     <CornerResizeHandle

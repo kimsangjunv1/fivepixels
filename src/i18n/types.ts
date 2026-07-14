@@ -655,6 +655,7 @@ export type ReportMessages = {
         categoryRequired: string;
         casesRequired: string;
         caseTextRequired: (index: number) => string;
+        emptyCaseMessageRequired: string;
         caseSelectionRequired: string;
         selectCaseFirst: string;
         caseAssigneeOnly: string;

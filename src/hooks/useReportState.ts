@@ -2319,6 +2319,7 @@ export function useReportState({
                 cases: current.cases.map((item) => (item.id === caseId ? { ...item, text } : item)),
             };
         });
+        setErrorMessage("");
     };
 
     const appendSavedProbeSummaryAsNewDraftCase = useCallback(() => {
@@ -2371,6 +2372,10 @@ export function useReportState({
                   }
                 : current,
         );
+
+        if (category) {
+            setErrorMessage("");
+        }
     };
 
     const addDraftCase = () => {

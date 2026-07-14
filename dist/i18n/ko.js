@@ -672,6 +672,7 @@ export const ko = {
         categoryRequired: "카테고리를 선택해주세요.",
         casesRequired: "케이스를 1개 이상 입력해주세요.",
         caseTextRequired: (index) => `${index}번째 케이스 내용을 입력해주세요.`,
+        emptyCaseMessageRequired: "피드백 메세지가 작성안된 케이스가 있어요",
         caseSelectionRequired: "논의할 케이스를 1개 이상 선택해주세요.",
         selectCaseFirst: "케이스를 선택해주세요.",
         caseAssigneeOnly: "이 케이스는 담당자 또는 이슈 작성자만 처리할 수 있습니다.",

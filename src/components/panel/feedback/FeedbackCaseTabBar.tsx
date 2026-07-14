@@ -13,6 +13,7 @@ type FeedbackCaseTabBarBaseProps = {
     cases: ReportCase[];
     onSelectCase: (caseId: string) => void;
     idPrefix?: string;
+    invalidCaseIds?: string[];
 };
 
 type FeedbackCaseTabBarEditorProps = FeedbackCaseTabBarBaseProps & {
@@ -48,9 +49,10 @@ export function CaseResolvedBadge({ resolvedLabel, openLabel, resolved }: { reso
 }
 
 export function FeedbackCaseTabBar(props: FeedbackCaseTabBarProps) {
-    const { cases, onSelectCase, idPrefix = "fivepixels-case" } = props;
+    const { cases, onSelectCase, idPrefix = "fivepixels-case", invalidCaseIds = [] } = props;
     const { messages } = useReport();
     const isEditor = props.variant === "editor";
+    const invalidCaseIdSet = new Set(invalidCaseIds);
 
     if (cases.length === 0) {
         return null;
@@ -78,13 +80,21 @@ export function FeedbackCaseTabBar(props: FeedbackCaseTabBarProps) {
 
             {cases.map((item, index) => {
                 const isActive = isEditor ? item.id === props.activeCaseId : item.id === props.activeTab;
+                const isInvalid = invalidCaseIdSet.has(item.id);
                 const tabId = `${idPrefix}-tab-${item.id}`;
                 const panelId = `${idPrefix}-panel-${item.id}`;
 
                 return (
                     <div
                         key={item.id}
-                        className={`flex max-w-[180px] shrink-0 items-stretch rounded-[8px] ${isActive ? CASE_TAB_ACTIVE_CLASS : CASE_TAB_INACTIVE_CLASS}`}
+                        className={
+                            `flex max-w-[180px] shrink-0 items-stretch rounded-[8px] ` +
+                            (isInvalid
+                                ? "fivepixels-validation-attention border border-rose-400 bg-rose-500/10 text-rose-500"
+                                : isActive
+                                  ? CASE_TAB_ACTIVE_CLASS
+                                  : CASE_TAB_INACTIVE_CLASS)
+                        }
                     >
                         <button
                             type="button"
@@ -92,13 +102,18 @@ export function FeedbackCaseTabBar(props: FeedbackCaseTabBarProps) {
                             data-fivepixels-interactive=""
                             aria-selected={isActive}
                             aria-controls={panelId}
+                            aria-invalid={isInvalid || undefined}
                             id={tabId}
                             onClick={() => onSelectCase(item.id)}
                             aria-label={messages.composer.selectCaseTabAriaLabel(index + 1)}
                             className={` inline-flex min-w-0 flex-1 items-center gap-[4px] truncate px-[10px] py-[6px] text-left leading-none`}
                             title={messages.composer.caseTabLabel(index + 1)}
                         >
-                            <span className={`${isActive ? "text-[var(--adaptive-blue500)]" : "text-[var(--adaptive-black700)]"} font-medium text-[12px] min-w-0 truncate`}>
+                            <span
+                                className={`${
+                                    isInvalid ? "text-rose-500" : isActive ? "text-[var(--adaptive-blue500)]" : "text-[var(--adaptive-black700)]"
+                                } font-medium text-[12px] min-w-0 truncate`}
+                            >
                                 {messages.composer.caseTabLabel(index + 1)}
                             </span>
                             {!isEditor && props.showResolvedStatus !== false ? (

@@ -1617,6 +1617,7 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
                 cases: current.cases.map((item) => (item.id === caseId ? { ...item, text } : item)),
             };
         });
+        setErrorMessage("");
     };
     const appendSavedProbeSummaryAsNewDraftCase = useCallback(() => {
         if (!draft || Object.keys(savedProbeEdits).length === 0) {
@@ -1658,6 +1659,9 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
                 category,
             }
             : current);
+        if (category) {
+            setErrorMessage("");
+        }
     };
     const addDraftCase = () => {
         setDraft((current) => current

@@ -1,10 +1,11 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useTooltipLayout } from "../../hooks/useTooltipLayout.js";
 import { useTooltipResize } from "../../hooks/useTooltipResize.js";
 import { useReport } from "../../providers/reportContext.js";
 import { getDraftMarkerPosition, TOOLTIP_EXPANDED_DEFAULT_MAX_HEIGHT } from "../../utils/coordinates.js";
 import { FeedbackComposer } from "./feedback/FeedbackComposer.js";
+import { ComposerFooterWarning } from "./feedback/ComposerFooterWarning.js";
 import { DraftProbeSummaryBanner } from "./DraftProbeSummaryBanner.js";
 import { PickTargetSnippet } from "./feedback/PickTargetSnippet.js";
 import { CornerResizeGhost } from "../../components/ui/CornerResizeGhost.js";
@@ -24,6 +25,7 @@ export function ReportDraftForm() {
 function ReportDraftFormContent({ draft, fields, authors, isCreating, selectedTarget, updateDraftCase, addDraftCase, removeDraftCase, updateDraftField, updateDraftCategory, handleCreateSubmit, handleCreateSubmitWithGitHubIssue, canCreateGitHubIssueOnCreate, isDraftGitHubIssueSubmitting, draftAuthorName, setDraftAuthorName, errorMessage, isPresentationMode, authorSelectionLocked, sessionActor, }) {
     const { messages } = useReport();
     const tooltipSurfaceRef = useRef(null);
+    const [footerWarningMessage, setFooterWarningMessage] = useState(null);
     const anchor = useMemo(() => getDraftMarkerPosition(draft, selectedTarget), [draft, selectedTarget]);
     const { customSize, isResizing, ghostRef, handleResizePointerDown } = useTooltipResize({
         enabled: true,
@@ -51,6 +53,6 @@ function ReportDraftFormContent({ draft, fields, authors, isCreating, selectedTa
                     }, children: [_jsxs("div", { className: "flex min-h-0 flex-col", style: {
                                 maxHeight: customSize?.height ?? TOOLTIP_EXPANDED_DEFAULT_MAX_HEIGHT,
                                 height: customSize?.height,
-                            }, children: [_jsx(DraftProbeSummaryBanner, {}), _jsx(FeedbackComposer, { cases: draft.cases, onCaseChange: updateDraftCase, onAddCase: addDraftCase, onRemoveCase: removeDraftCase, authorName: draftAuthorName, onAuthorNameChange: setDraftAuthorName, authors: authors, fields: fields, fieldValues: draft.fieldValues, onFieldChange: updateDraftField, category: draft.category, onCategoryChange: updateDraftCategory, showCategory: true, showTags: true, hideAuthorSelector: isPresentationMode || authorSelectionLocked, lockedAuthorName: authorSelectionLocked ? (sessionActor?.name ?? draftAuthorName) : undefined, onSubmit: () => void handleCreateSubmit(), isSubmitting: isCreating, showGitHubIssueOnCreate: canCreateGitHubIssueOnCreate, onGitHubIssueSubmit: () => void handleCreateSubmitWithGitHubIssue(), isGitHubIssueSubmitting: isDraftGitHubIssueSubmitting, autoFocus: true, errorMessage: errorMessage }), draft.targetSelector && draft.suggestedReportId ? (_jsx(PickTargetSnippet, { suggestedReportId: draft.suggestedReportId, reportType: draft.reportType })) : null] }), _jsx(CornerResizeHandle, { corner: "bottom-right", ariaLabel: messages.marker.resizeAriaLabel, onPointerDown: handleResizePointerDown })] }) })] }));
+                            }, children: [_jsx(DraftProbeSummaryBanner, {}), _jsx(FeedbackComposer, { cases: draft.cases, onCaseChange: updateDraftCase, onAddCase: addDraftCase, onRemoveCase: removeDraftCase, authorName: draftAuthorName, onAuthorNameChange: setDraftAuthorName, authors: authors, fields: fields, fieldValues: draft.fieldValues, onFieldChange: updateDraftField, category: draft.category, onCategoryChange: updateDraftCategory, showCategory: true, showTags: true, hideAuthorSelector: isPresentationMode || authorSelectionLocked, lockedAuthorName: authorSelectionLocked ? (sessionActor?.name ?? draftAuthorName) : undefined, onSubmit: () => void handleCreateSubmit(), isSubmitting: isCreating, showGitHubIssueOnCreate: canCreateGitHubIssueOnCreate, onGitHubIssueSubmit: () => void handleCreateSubmitWithGitHubIssue(), isGitHubIssueSubmitting: isDraftGitHubIssueSubmitting, autoFocus: true, errorMessage: errorMessage, onFooterWarningChange: setFooterWarningMessage }), draft.targetSelector && draft.suggestedReportId ? (_jsx(PickTargetSnippet, { suggestedReportId: draft.suggestedReportId, reportType: draft.reportType })) : null, footerWarningMessage ? _jsx(ComposerFooterWarning, { message: footerWarningMessage }) : null] }), _jsx(CornerResizeHandle, { corner: "bottom-right", ariaLabel: messages.marker.resizeAriaLabel, onPointerDown: handleResizePointerDown })] }) })] }));
 }
 //# sourceMappingURL=ReportDraftForm.js.map

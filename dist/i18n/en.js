@@ -672,6 +672,7 @@ export const en = {
         categoryRequired: "Select a category.",
         casesRequired: "Add at least one case.",
         caseTextRequired: (index) => `Enter case ${index}.`,
+        emptyCaseMessageRequired: "There is a case without a feedback message",
         caseSelectionRequired: "Select at least one case to discuss.",
         selectCaseFirst: "Select a case to continue.",
         caseAssigneeOnly: "Only the assignee or issue author can act on this case.",

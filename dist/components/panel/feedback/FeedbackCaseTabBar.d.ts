@@ -8,6 +8,7 @@ type FeedbackCaseTabBarBaseProps = {
     cases: ReportCase[];
     onSelectCase: (caseId: string) => void;
     idPrefix?: string;
+    invalidCaseIds?: string[];
 };
 type FeedbackCaseTabBarEditorProps = FeedbackCaseTabBarBaseProps & {
     variant: "editor";
