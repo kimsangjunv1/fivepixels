@@ -2,23 +2,35 @@ import { describe, expect, it } from "vitest";
 import type { ReportFeedback } from "@/types/report.js";
 import { createReportFeedback } from "./reportFixtures.js";
 import {
+    buildCaseThreadTimeline,
     buildThreadTimeline,
     canAskQuestionOnLatest,
     canCheckoutReply,
     canManagerAskQuestionOnLatest,
     canReviewLatestSuggestion,
+    canShowCaseEntryActions,
     canShowCheckoutBranchActions,
     canShowIssueEntryActions,
+    canShowAdjudicationActionsOnBranchReply,
+    canShowCaseThreadActions,
     canShowSuggestedBranchActions,
+    canShowSuggestedBranchActionsForCase,
     createReplyStatusForSubmit,
     getFeedbackDisplayStatus,
     groupRepliesIntoBranches,
     inferParentReplyId,
+    isActiveCaseBranchRoot,
+    isActiveAssigneeEvent,
+    isBranchReplyAuthor,
     ISSUE_ROOT_PARENT_ID,
     normalizeReplyParents,
+    requiresCaseActorPermissionForComposer,
     resolveParentReplyIdForQuestion,
+    shouldShowCaseReplyComposer,
     shouldShowReplyComposer,
+    shouldForceExpandQuestionGroup,
 } from "./feedbackThread.js";
+import { createReportCase } from "./reportCases.js";
 
 function createReport(overrides: Partial<ReportFeedback> = {}): ReportFeedback {
     return createReportFeedback({
@@ -292,5 +304,225 @@ describe("feedbackThread", () => {
         expect(timeline.issueChildren[0]?.id).toBe("q1");
         expect(timeline.branches).toHaveLength(0);
         expect(resolveParentReplyIdForQuestion(createReport(), null)).toBe(ISSUE_ROOT_PARENT_ID);
+    });
+
+    it("builds case-scoped timelines and entry actions", () => {
+        const caseA = createReportCase("A");
+        const caseB = createReportCase("B");
+        const report = createReport({
+            cases: [caseA, caseB],
+            replies: [
+                {
+                    id: "r-a",
+                    message: "result for A",
+                    created_at: "2026-01-02T00:00:00.000Z",
+                    status: "suggested",
+                    case_ids: [caseA.id],
+                },
+                {
+                    id: "r-b",
+                    message: "result for B",
+                    created_at: "2026-01-03T00:00:00.000Z",
+                    status: "suggested",
+                    case_ids: [caseB.id],
+                },
+            ],
+        });
+
+        expect(canShowCaseEntryActions(report, caseA.id)).toBe(false);
+        expect(canShowCaseEntryActions(report, caseB.id)).toBe(false);
+
+        const emptyCaseReport = createReport({
+            cases: [caseA, caseB],
+            replies: [],
+        });
+
+        expect(canShowCaseEntryActions(emptyCaseReport, caseA.id)).toBe(true);
+        expect(canShowCaseEntryActions(emptyCaseReport, caseB.id)).toBe(true);
+
+        const timelineA = buildCaseThreadTimeline(report, caseA.id);
+        expect(timelineA.branches).toHaveLength(1);
+        expect(timelineA.branches[0]?.root.id).toBe("r-a");
+
+        const timelineB = buildCaseThreadTimeline(report, caseB.id);
+        expect(timelineB.branches).toHaveLength(1);
+        expect(timelineB.branches[0]?.root.id).toBe("r-b");
+    });
+
+    it("hides adjudication actions on branch replies authored by the current actor", () => {
+        const suggested = {
+            id: "r-suggested",
+            message: "나 고쳤다",
+            created_at: "2026-01-02T00:00:00.000Z",
+            status: "suggested" as const,
+            author_name: "Alex",
+        };
+
+        expect(canShowAdjudicationActionsOnBranchReply(suggested, "Alex")).toBe(false);
+        expect(canShowAdjudicationActionsOnBranchReply(suggested, "김상준")).toBe(true);
+        expect(isBranchReplyAuthor(suggested, "Alex")).toBe(true);
+    });
+
+    it("checks case thread actions only for the current actor, not the issue author", () => {
+        const caseA = createReportCase("A", { assignee_name: "Emily Johnson" });
+        const report = createReport({
+            author_name: "John Smith",
+            cases: [caseA],
+        });
+
+        expect(canShowCaseThreadActions(report, caseA.id, "John Smith")).toBe(true);
+        expect(canShowCaseThreadActions(report, caseA.id, "Emily Johnson")).toBe(true);
+        expect(canShowCaseThreadActions(report, caseA.id, "Michael Lee")).toBe(false);
+    });
+
+    it("allows question replies without case actor permission", () => {
+        expect(requiresCaseActorPermissionForComposer("question")).toBe(false);
+        expect(requiresCaseActorPermissionForComposer("deny")).toBe(true);
+        expect(requiresCaseActorPermissionForComposer("checkout")).toBe(true);
+        expect(requiresCaseActorPermissionForComposer(null)).toBe(true);
+    });
+
+    it("hides assignee entry actions after a branch root reply is added", () => {
+        const caseA = createReportCase("A", { assignee_name: "김상준" });
+        const assigneeTransferred = {
+            id: "r-assignee",
+            message: "담당자가 전환되었습니다.",
+            created_at: "2026-01-02T00:00:00.000Z",
+            status: "assignee_transferred" as const,
+            case_ids: [caseA.id],
+            author_name: "김상준",
+        };
+        const foundError = {
+            id: "r-deny",
+            message: "음 이거 오류가 아닌데용?",
+            created_at: "2026-01-02T00:00:01.000Z",
+            status: "found_error" as const,
+            case_ids: [caseA.id],
+            author_name: "김상준",
+        };
+        const report = createReport({
+            cases: [caseA],
+            replies: [assigneeTransferred, foundError],
+        });
+
+        expect(isActiveAssigneeEvent(report, assigneeTransferred, caseA.id)).toBe(false);
+        expect(isActiveCaseBranchRoot(report, foundError, caseA.id)).toBe(true);
+    });
+
+    it("hides branch actions after the focused case is resolved", () => {
+        const caseA = createReportCase("A");
+        const report = createReport({
+            status: "open",
+            cases: [{ ...caseA, status: "resolved" }],
+            replies: [
+                {
+                    id: "r-suggested",
+                    message: "굿",
+                    created_at: "2026-01-02T00:00:00.000Z",
+                    status: "suggested",
+                    case_ids: [caseA.id],
+                },
+                {
+                    id: "r-resolved",
+                    message: "이슈가 해결되었습니다.",
+                    created_at: "2026-01-02T00:00:01.000Z",
+                    status: "resolved",
+                    case_ids: [caseA.id],
+                },
+            ],
+        });
+        const suggested = report.replies[0]!;
+
+        expect(isActiveCaseBranchRoot(report, suggested, caseA.id)).toBe(false);
+        expect(canShowSuggestedBranchActionsForCase(report, suggested, caseA.id)).toBe(false);
+        expect(canShowCaseEntryActions(report, caseA.id)).toBe(false);
+    });
+
+    it("shows case composer only after action or when a response is required", () => {
+        const caseA = createReportCase("A");
+        const caseB = createReportCase("B");
+        const report = createReport({
+            cases: [caseA, caseB],
+            reply_count: 2,
+            latest_reply: {
+                id: "r-b",
+                message: "result for B",
+                created_at: "2026-01-03T00:00:00.000Z",
+                status: "suggested",
+                case_ids: [caseB.id],
+            },
+            replies: [
+                {
+                    id: "r-b",
+                    message: "result for B",
+                    created_at: "2026-01-03T00:00:00.000Z",
+                    status: "suggested",
+                    case_ids: [caseB.id],
+                },
+            ],
+        });
+
+        expect(shouldShowCaseReplyComposer(report, caseA.id, null)).toBe(false);
+        expect(shouldShowCaseReplyComposer(report, caseA.id, { type: "checkout", targetReplyId: ISSUE_ROOT_PARENT_ID })).toBe(true);
+        expect(shouldShowCaseReplyComposer(report, caseB.id, null)).toBe(false);
+
+        const questionReport = createReport({
+            cases: [caseA],
+            replies: [
+                {
+                    id: "q1",
+                    message: "need detail",
+                    created_at: "2026-01-02T00:00:00.000Z",
+                    status: "additional_question",
+                    case_ids: [caseA.id],
+                },
+            ],
+        });
+
+        expect(shouldShowCaseReplyComposer(questionReport, caseA.id, null)).toBe(false);
+        expect(shouldShowCaseReplyComposer(questionReport, caseA.id, { type: "question", targetReplyId: ISSUE_ROOT_PARENT_ID })).toBe(true);
+    });
+
+    it("forces question groups open when awaiting reply or composing a question", () => {
+        const caseA = { id: "case-a", text: "Case A", status: "open" as const, created_at: "2026-01-01T00:00:00.000Z" };
+        const questions = [
+            {
+                id: "q1",
+                message: "need detail",
+                created_at: "2026-01-02T00:00:00.000Z",
+                status: "additional_question" as const,
+                case_ids: [caseA.id],
+            },
+        ];
+        const report = createReport({
+            cases: [caseA],
+            replies: questions,
+        });
+
+        expect(shouldForceExpandQuestionGroup(report, caseA.id, questions)).toBe(true);
+        expect(
+            shouldForceExpandQuestionGroup(report, caseA.id, questions, {
+                composerTargetsGroup: true,
+            }),
+        ).toBe(true);
+        expect(
+            shouldForceExpandQuestionGroup(
+                {
+                    ...report,
+                    replies: [
+                        ...questions,
+                        {
+                            id: "r1",
+                            message: "answered",
+                            created_at: "2026-01-03T00:00:00.000Z",
+                            status: "suggested",
+                            case_ids: [caseA.id],
+                        },
+                    ],
+                },
+                caseA.id,
+                questions,
+            ),
+        ).toBe(false);
     });
 });

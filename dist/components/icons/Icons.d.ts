@@ -29,6 +29,24 @@ export declare function SearchIcon({ className }: {
 export declare function CopyIcon({ className }: {
     className?: string;
 }): import("react/jsx-runtime").JSX.Element;
+export declare function StarIcon({ className }: {
+    className?: string;
+}): import("react/jsx-runtime").JSX.Element;
+export declare function InfoIcon({ className }: {
+    className?: string;
+}): import("react/jsx-runtime").JSX.Element;
+export declare function CheckIcon({ className }: {
+    className?: string;
+}): import("react/jsx-runtime").JSX.Element;
+export declare function EditIcon({ className, fill }: {
+    className?: string;
+} & Pick<MaterialIconProps, "fill">): import("react/jsx-runtime").JSX.Element;
+export declare function DeleteIcon({ className, fill }: {
+    className?: string;
+} & Pick<MaterialIconProps, "fill">): import("react/jsx-runtime").JSX.Element;
+export declare function RevertIcon({ className, fill }: {
+    className?: string;
+} & Pick<MaterialIconProps, "fill">): import("react/jsx-runtime").JSX.Element;
 export declare function TrashIcon({ className }: {
     className?: string;
 }): import("react/jsx-runtime").JSX.Element;
@@ -60,6 +78,21 @@ export declare function ArrowBelowIcon({ className }: {
     className?: string;
 }): import("react/jsx-runtime").JSX.Element;
 export declare function GitHubIcon({ className }: {
+    className?: string;
+}): import("react/jsx-runtime").JSX.Element;
+export declare function CloseIcon({ className }: {
+    className?: string;
+}): import("react/jsx-runtime").JSX.Element;
+export declare function MinimizeIcon({ className }: {
+    className?: string;
+}): import("react/jsx-runtime").JSX.Element;
+export declare function MaximizeIcon({ className }: {
+    className?: string;
+}): import("react/jsx-runtime").JSX.Element;
+export declare function RestoreIcon({ className }: {
+    className?: string;
+}): import("react/jsx-runtime").JSX.Element;
+export declare function SidePanelIcon({ className }: {
     className?: string;
 }): import("react/jsx-runtime").JSX.Element;
 export declare const LogoIcon: ({ className }: {

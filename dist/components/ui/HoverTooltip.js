@@ -4,23 +4,28 @@ import { createPortal } from "react-dom";
 import { useNativeHover } from "../../hooks/useNativeHover.js";
 import { getReportTooltipRoot, ensureReportTooltipLayer } from "../../utils/dom.js";
 import { getHoverTooltipLayout } from "../../utils/hoverTooltipLayout.js";
-const TOOLTIP_STYLE = {
-    position: "fixed",
-    pointerEvents: "none",
-    whiteSpace: "nowrap",
-    borderRadius: "100px",
-    backgroundColor: "#00000090",
-    padding: "4px 10px",
-    fontSize: "14px",
-    color: "#ffffff",
-};
-export function HoverTooltip({ label, disabled = false, children, className = "" }) {
+const SINGLE_LINE_TOOLTIP_CLASS_NAME = "pointer-events-none fixed whitespace-nowrap rounded-[100px] bg-[var(--adaptive-overlay-surface)] px-[10px] py-[4px] text-[14px] text-[var(--adaptive-overlay-text)]";
+const MULTILINE_TOOLTIP_CLASS_NAME = "pointer-events-none fixed max-w-[min(280px,calc(100vw-16px))] whitespace-pre-wrap rounded-[8px] bg-[var(--adaptive-overlay-surface)] px-[10px] py-[6px] text-[12px] leading-[1.4] text-[var(--adaptive-overlay-text)]";
+function isSameLayout(current, next) {
+    if (current === next) {
+        return true;
+    }
+    if (!current || !next) {
+        return false;
+    }
+    return current.top === next.top && current.left === next.left;
+}
+export function HoverTooltip({ label, content, multiline = false, disabled = false, children, className = "" }) {
     const [hovered, setHovered] = useState(false);
     const [layout, setLayout] = useState(null);
     const anchorRef = useRef(null);
     const tooltipRef = useRef(null);
     const hoverRef = useNativeHover({
-        onEnter: () => setHovered(true),
+        onEnter: () => {
+            if (!disabled) {
+                setHovered(true);
+            }
+        },
         onLeave: () => setHovered(false),
     });
     const setAnchorRef = useCallback((node) => {
@@ -33,11 +38,17 @@ export function HoverTooltip({ label, disabled = false, children, className = ""
         if (!anchor || !tooltip) {
             return;
         }
-        setLayout(getHoverTooltipLayout(anchor.getBoundingClientRect(), tooltip.getBoundingClientRect()));
+        const nextLayout = getHoverTooltipLayout(anchor.getBoundingClientRect(), tooltip.getBoundingClientRect());
+        setLayout((current) => (isSameLayout(current, nextLayout) ? current : nextLayout));
     }, []);
     useLayoutEffect(() => {
+        if (disabled) {
+            setHovered(false);
+        }
+    }, [disabled]);
+    useLayoutEffect(() => {
         if (!hovered || disabled) {
-            setLayout(null);
+            setLayout((current) => (current === null ? current : null));
             return;
         }
         updateLayout();
@@ -52,13 +63,13 @@ export function HoverTooltip({ label, disabled = false, children, className = ""
         };
     }, [disabled, hovered, label, updateLayout]);
     const showTooltip = hovered && !disabled;
+    const tooltipClassName = multiline ? MULTILINE_TOOLTIP_CLASS_NAME : SINGLE_LINE_TOOLTIP_CLASS_NAME;
     return (_jsxs(_Fragment, { children: [_jsx("span", { ref: setAnchorRef, className: `inline-flex ${className}`.trim(), children: children }), showTooltip
-                ? createPortal(_jsx("span", { ref: tooltipRef, role: "tooltip", style: {
-                        ...TOOLTIP_STYLE,
+                ? createPortal(_jsx("span", { ref: tooltipRef, role: "tooltip", className: tooltipClassName, style: {
                         top: layout?.top ?? 0,
                         left: layout?.left ?? 0,
                         opacity: layout ? 1 : 0,
-                    }, children: label }), getReportTooltipRoot())
+                    }, children: content ?? label }), getReportTooltipRoot())
                 : null] }));
 }
 //# sourceMappingURL=HoverTooltip.js.map

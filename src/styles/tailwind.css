@@ -104,6 +104,153 @@
     }
 }
 
+@keyframes fivepixels-marker-window-in {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes fivepixels-marker-window-out {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    to {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+}
+
+[data-fivepixels-mount] .fivepixels-marker-window-enter {
+    animation: fivepixels-marker-window-in 220ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+[data-fivepixels-mount] .fivepixels-marker-window-exit {
+    animation: fivepixels-marker-window-out 180ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    pointer-events: none;
+}
+
+@keyframes fivepixels-heatmap-dot-in {
+    0% {
+        opacity: 0;
+        transform: scale(0);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+[data-fivepixels-mount] .fivepixels-heatmap-dot {
+    transform-origin: center;
+    animation: fivepixels-heatmap-dot-in 320ms cubic-bezier(0.34, 1.28, 0.64, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    [data-fivepixels-mount] .fivepixels-heatmap-dot {
+        animation: none;
+    }
+}
+
+@keyframes fivepixels-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+[data-fivepixels-mount] .fivepixels-spin {
+    animation: fivepixels-spin 0.8s linear infinite;
+}
+
+@keyframes fivepixels-processing-dot-pulse {
+    0%,
+    100% {
+        opacity: 0.16;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+[data-fivepixels-mount] .fivepixels-processing-dots__dot {
+    opacity: 0.16;
+    animation-name: fivepixels-processing-dot-pulse;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+}
+
+@keyframes fivepixels-pick-target-delete-fade {
+    0% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+@keyframes fivepixels-pick-target-delete-wave {
+    0% {
+        background-position: 120% 0;
+        opacity: 0.35;
+    }
+
+    35% {
+        opacity: 1;
+    }
+
+    100% {
+        background-position: -120% 0;
+        opacity: 0;
+    }
+}
+
+.fivepixels-pick-target-delete-overlay {
+    position: fixed;
+    z-index: 1000004;
+    pointer-events: none;
+    overflow: hidden;
+    border-radius: 4px;
+    box-shadow: inset 0 0 0 1px rgba(246, 87, 46, 0.7);
+    /* box-shadow:
+        inset 0 0 0 1px rgba(246, 87, 46, 0.7),
+        0 0 28px rgba(246, 87, 46, 0.45); */
+    background: rgba(246, 87, 46, 0.28);
+    animation: fivepixels-pick-target-delete-fade 550ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.fivepixels-pick-target-delete-wave {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(100deg, transparent 0%, rgba(246, 87, 46, 0.35) 28%, #f6572e 50%, rgba(246, 87, 46, 0.85) 64%, transparent 100%);
+    background-size: 240% 100%;
+    animation: fivepixels-pick-target-delete-wave 550ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes fivepixels-validation-attention-pulse {
+    0%,
+    100% {
+        box-shadow: inset 0 0 0 2px rgba(251, 113, 133, 0.85);
+    }
+
+    50% {
+        box-shadow: inset 0 0 0 2px rgba(251, 113, 133, 0.35);
+    }
+}
+
+[data-fivepixels-mount] .fivepixels-validation-attention {
+    animation: fivepixels-validation-attention-pulse 900ms ease-in-out 2;
+}
+
 [data-fivepixels-mount] .fivepixels-locate-pulse-ring {
     transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -163,7 +310,14 @@
         left 0.44s cubic-bezier(0.22, 1, 0.36, 1),
         top 0.44s cubic-bezier(0.22, 1, 0.36, 1),
         width 0.44s cubic-bezier(0.22, 1, 0.36, 1),
-        height 0.44s cubic-bezier(0.22, 1, 0.36, 1);
+        height 0.44s cubic-bezier(0.22, 1, 0.36, 1),
+        border-radius 0.32s cubic-bezier(0.22, 1, 0.36, 1),
+        box-shadow 0.32s cubic-bezier(0.22, 1, 0.36, 1),
+        background-color 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+[data-fivepixels-mount] .fivepixels-target-highlight__label {
+    transition: background-color 0.32s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 [data-fivepixels-mount] .fivepixels-dock-guide-layer {

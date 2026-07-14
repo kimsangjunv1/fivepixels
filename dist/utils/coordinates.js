@@ -1,6 +1,7 @@
-import { DOT_SIZE } from "../constants/report.js";
+import { getMarkerDotSize } from "../utils/markerRuntime.js";
 import { getFeedbackTargetSelector, getNearestScrollContainer, getScrollContainerClampId, hasFixedPositionAncestor, isFeedbackTargetVisible } from "./dom.js";
-import { getFeedbackAnchorElement } from "./locateFeedback.js";
+import { getFeedbackAnchorElement, getFeedbackTargetElement } from "./locateFeedback.js";
+import { findElementByTargetSelector } from "./targetSelector.js";
 import { resolveDetachedKind } from "./markerContext.js";
 import { getDocumentY } from "./reportPosition.js";
 function applyScrollContainerClamp(left, top, element) {
@@ -19,8 +20,9 @@ function applyScrollContainerClamp(left, top, element) {
         bottom: bounds.bottom,
     };
     const clampContainerId = getScrollContainerClampId(scrollContainer);
-    const anchorX = left + DOT_SIZE / 2;
-    const anchorY = top + DOT_SIZE / 2;
+    const dotSize = getMarkerDotSize();
+    const anchorX = left + dotSize / 2;
+    const anchorY = top + dotSize / 2;
     let clampedX = anchorX;
     let clampedY = anchorY;
     let clampedEdge = null;
@@ -45,8 +47,8 @@ function applyScrollContainerClamp(left, top, element) {
         }
     }
     return {
-        left: clampedX - DOT_SIZE / 2,
-        top: clampedY - DOT_SIZE / 2,
+        left: clampedX - getMarkerDotSize() / 2,
+        top: clampedY - getMarkerDotSize() / 2,
         clampedEdge,
         clampBounds: clampedEdge ? clampBounds : null,
         clampContainerId: clampedEdge ? clampContainerId : null,
@@ -71,7 +73,7 @@ function getAnchorMarkerPosition(report) {
     if (rect.width <= 0 || rect.height <= 0) {
         return null;
     }
-    return applyScrollContainerClamp(rect.left + rect.width * anchor.x - DOT_SIZE / 2, rect.top + rect.height * anchor.y - DOT_SIZE / 2, anchorElement);
+    return applyScrollContainerClamp(rect.left + rect.width * anchor.x - getMarkerDotSize() / 2, rect.top + rect.height * anchor.y - getMarkerDotSize() / 2, anchorElement);
 }
 function shouldUseViewportDetachedCoords(report, targetElement) {
     if (targetElement) {
@@ -87,25 +89,24 @@ function getDetachedMarkerPosition(report, currentScrollY, targetElement) {
     }
     const { viewport } = report.position;
     const widthScale = viewport.width > 0 ? window.innerWidth / viewport.width : 1;
-    const left = viewport.width * viewport.x * widthScale - DOT_SIZE / 2;
+    const left = viewport.width * viewport.x * widthScale - getMarkerDotSize() / 2;
     const useViewportCoords = shouldUseViewportDetachedCoords(report, targetElement);
     if (useViewportCoords) {
         const heightScale = viewport.height > 0 ? window.innerHeight / viewport.height : 1;
-        const top = viewport.height * viewport.y * heightScale - DOT_SIZE / 2;
+        const top = viewport.height * viewport.y * heightScale - getMarkerDotSize() / 2;
         return { left, top, clampedEdge: null, clampBounds: null, clampContainerId: null };
     }
-    const top = getDocumentY(report.position) - currentScrollY - DOT_SIZE / 2;
+    const top = getDocumentY(report.position) - currentScrollY - getMarkerDotSize() / 2;
     return { left, top, clampedEdge: null, clampBounds: null, clampContainerId: null };
 }
 export function getMarkerFromReport(report, currentScrollY) {
-    const selector = getFeedbackTargetSelector(report.report_id, report.report_type);
-    const targetElement = document.querySelector(selector);
+    const targetElement = getFeedbackTargetElement(report);
     const { target, viewport } = report.position;
     if (targetElement && isFeedbackTargetVisible(targetElement)) {
         const rect = targetElement.getBoundingClientRect();
         const targetX = target?.x ?? viewport.x;
         const targetY = target?.y ?? viewport.y;
-        const position = applyScrollContainerClamp(rect.left + rect.width * targetX - DOT_SIZE / 2, rect.top + rect.height * targetY - DOT_SIZE / 2, targetElement);
+        const position = applyScrollContainerClamp(rect.left + rect.width * targetX - getMarkerDotSize() / 2, rect.top + rect.height * targetY - getMarkerDotSize() / 2, targetElement);
         return {
             id: report.id,
             report,
@@ -135,13 +136,13 @@ export function getMarkerFromReport(report, currentScrollY) {
 }
 export function getDraftMarkerPosition(draft, selectedTarget) {
     if (selectedTarget) {
-        const selector = getFeedbackTargetSelector(selectedTarget.id, selectedTarget.type);
-        const targetElement = document.querySelector(selector);
-        return applyScrollContainerClamp(selectedTarget.rect.left + selectedTarget.rect.width * draft.elementXRatio - DOT_SIZE / 2, selectedTarget.rect.top + selectedTarget.rect.height * draft.elementYRatio - DOT_SIZE / 2, targetElement);
+        const targetElement = (draft.targetSelector ? findElementByTargetSelector(draft.targetSelector) : null) ??
+            document.querySelector(getFeedbackTargetSelector(selectedTarget.id, selectedTarget.type));
+        return applyScrollContainerClamp(selectedTarget.rect.left + selectedTarget.rect.width * draft.elementXRatio - getMarkerDotSize() / 2, selectedTarget.rect.top + selectedTarget.rect.height * draft.elementYRatio - getMarkerDotSize() / 2, targetElement);
     }
     return {
-        left: draft.clientX - DOT_SIZE / 2,
-        top: draft.clientY - DOT_SIZE / 2,
+        left: draft.clientX - getMarkerDotSize() / 2,
+        top: draft.clientY - getMarkerDotSize() / 2,
         clampedEdge: null,
         clampBounds: null,
         clampContainerId: null,
@@ -197,18 +198,46 @@ export function resolveTooltipAnchor(markers, reportId) {
     return markers.find((marker) => marker.report.id === reportId) ?? null;
 }
 const TOOLTIP_PREVIEW_WIDTH = 260;
-const TOOLTIP_EXPANDED_WIDTH = 320;
+export const TOOLTIP_EXPANDED_WIDTH = 320;
+export const TOOLTIP_EXPANDED_MIN_WIDTH = 260;
+export const TOOLTIP_EXPANDED_MIN_HEIGHT = 180;
+export const TOOLTIP_EXPANDED_DEFAULT_MAX_HEIGHT = 512;
 export const TOOLTIP_MARGIN = 16;
 const TOOLTIP_PREVIEW_HEIGHT_ESTIMATE = 140;
 const TOOLTIP_EXPANDED_HEIGHT_ESTIMATE = 320;
+export function getTooltipExpandedSizeLimits() {
+    if (typeof window === "undefined") {
+        return {
+            minWidth: TOOLTIP_EXPANDED_MIN_WIDTH,
+            minHeight: TOOLTIP_EXPANDED_MIN_HEIGHT,
+            maxWidth: 600,
+            maxHeight: TOOLTIP_EXPANDED_DEFAULT_MAX_HEIGHT,
+        };
+    }
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    return {
+        minWidth: TOOLTIP_EXPANDED_MIN_WIDTH,
+        minHeight: TOOLTIP_EXPANDED_MIN_HEIGHT,
+        maxWidth: Math.max(TOOLTIP_EXPANDED_MIN_WIDTH, viewportWidth - TOOLTIP_MARGIN * 2),
+        maxHeight: Math.max(TOOLTIP_EXPANDED_MIN_HEIGHT, viewportHeight - TOOLTIP_MARGIN * 2),
+    };
+}
+export function clampTooltipExpandedSize(width, height) {
+    const limits = getTooltipExpandedSizeLimits();
+    return {
+        width: Math.min(Math.max(width, limits.minWidth), limits.maxWidth),
+        height: Math.min(Math.max(height, limits.minHeight), limits.maxHeight),
+    };
+}
 function getTooltipHeightEstimate(expanded) {
     return expanded ? TOOLTIP_EXPANDED_HEIGHT_ESTIMATE : TOOLTIP_PREVIEW_HEIGHT_ESTIMATE;
 }
 function getTooltipAboveTop(anchor) {
-    return anchor.top - DOT_SIZE / 2 - TOOLTIP_MARGIN;
+    return anchor.top - getMarkerDotSize() / 2 - TOOLTIP_MARGIN;
 }
 function getTooltipBelowTop(anchor) {
-    return anchor.top + DOT_SIZE / 2 + TOOLTIP_MARGIN;
+    return anchor.top + getMarkerDotSize() / 2 + TOOLTIP_MARGIN;
 }
 export function resolveTooltipPlacement(anchor, height, viewportHeight = window.innerHeight) {
     const aboveAnchorTop = getTooltipAboveTop(anchor);
@@ -248,7 +277,7 @@ export function getTooltipAnchorStyle(placement) {
     };
 }
 export function getTooltipPosition(anchor, expanded, options) {
-    const width = expanded ? TOOLTIP_EXPANDED_WIDTH : TOOLTIP_PREVIEW_WIDTH;
+    const width = options?.width ?? (expanded ? TOOLTIP_EXPANDED_WIDTH : TOOLTIP_PREVIEW_WIDTH);
     const viewportWidth = options?.viewportWidth ?? window.innerWidth;
     const viewportHeight = options?.viewportHeight ?? window.innerHeight;
     const hasMeasuredHeight = options?.height !== undefined;
@@ -276,7 +305,7 @@ export const DRAFT_POPOVER_HEIGHT = 260;
 export const DRAFT_POPOVER_GAP = 10;
 export const DRAFT_POPOVER_MARGIN = 16;
 /** Horizontal line from bubble edge to marker center. */
-export const DRAFT_POPOVER_CONNECTOR_WIDTH = DRAFT_POPOVER_GAP + DOT_SIZE / 2;
+export const DRAFT_POPOVER_CONNECTOR_WIDTH = DRAFT_POPOVER_GAP + getMarkerDotSize() / 2;
 /** Nudge popover upward when vertically centered on the marker. */
 export const DRAFT_POPOVER_VERTICAL_NUDGE = 6;
 const DRAFT_POPOVER_PLACEMENTS = ["right", "left", "bottom", "top"];
@@ -285,8 +314,8 @@ function getDraftPopoverWidth(viewportWidth) {
 }
 function getAnchorCenter(anchor) {
     return {
-        x: anchor.left + DOT_SIZE / 2,
-        y: anchor.top + DOT_SIZE / 2,
+        x: anchor.left + getMarkerDotSize() / 2,
+        y: anchor.top + getMarkerDotSize() / 2,
     };
 }
 function getTailCornerForPlacement(placement) {
@@ -305,7 +334,7 @@ function isHorizontallyAlignedPlacement(placement) {
     return placement === "right" || placement === "left";
 }
 function computeDraftPopoverCandidate(placement, center, width, height) {
-    const markerRadius = DOT_SIZE / 2;
+    const markerRadius = getMarkerDotSize() / 2;
     switch (placement) {
         case "right":
             return {

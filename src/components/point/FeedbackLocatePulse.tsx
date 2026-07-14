@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { DOT_SIZE } from "@/constants/report.js";
+import { getMarkerDotSize } from "@/utils/markerRuntime.js";
 import { LOCATE_PULSE_DURATION_MS } from "@/utils/locateFeedback.js";
 
 export const LOCATE_PULSE_TRANSITION_MS = 650;
@@ -43,8 +43,9 @@ type MarkerLocatePulseProps = {
 
 export function MarkerLocatePulse({ left, top, tick, accentColor }: MarkerLocatePulseProps) {
     const isPeak = tick % 2 === 0;
-    const centerX = left + DOT_SIZE / 2;
-    const centerY = top + DOT_SIZE / 2;
+    const dotSize = getMarkerDotSize();
+    const centerX = left + dotSize / 2;
+    const centerY = top + dotSize / 2;
 
     return (
         <>

@@ -5,11 +5,11 @@ import { ReportProvider } from "../../providers/ReportProvider.js";
 import { resolveReportEnabled } from "../../utils/env.js";
 import { resolveReportVisibility } from "../../utils/reportVisibility.js";
 import { ReportView } from "./ReportView.js";
-export function FivePixels({ project, ui, visibility, team, fields = DEFAULT_FIELDS, onList, onListAll, onListReplies, onNavigate, onRevealTarget, onCreate, onCreateReply, onUpdate, onDelete, onEvent, onReply, github, }) {
+export function FivePixels({ project, ui, visibility, team, mode = "default", fields = DEFAULT_FIELDS, onList, onListAll, onPanelBootstrap, onActivitySummary, onListReplies, onNavigate, onRevealTarget, onCreate, onCreateReply, onUpdate, onDelete, onEvent, onReply, github, }) {
     const resolvedVisibility = resolveReportVisibility({ visibility });
     if (!resolveReportEnabled(resolvedVisibility)) {
         return null;
     }
-    return (_jsx(ReportProvider, { project: project, ui: ui, visibility: visibility, team: team, fields: fields, onList: onList, onListAll: onListAll, onListReplies: onListReplies, onNavigate: onNavigate, onRevealTarget: onRevealTarget, onCreate: onCreate, onCreateReply: onCreateReply, onUpdate: onUpdate, onDelete: onDelete, onEvent: onEvent, onReply: onReply, github: github, children: _jsx(ReportView, {}) }));
+    return (_jsx(ReportProvider, { project: project, ui: ui, visibility: visibility, team: team, mode: mode, fields: fields, onList: onList, onListAll: onListAll, onPanelBootstrap: onPanelBootstrap, onActivitySummary: onActivitySummary, onListReplies: onListReplies, onNavigate: onNavigate, onRevealTarget: onRevealTarget, onCreate: onCreate, onCreateReply: onCreateReply, onUpdate: onUpdate, onDelete: onDelete, onEvent: onEvent, onReply: onReply, github: github, children: _jsx(ReportView, {}) }));
 }
 //# sourceMappingURL=FivePixels.js.map

@@ -1,16 +1,31 @@
 import { getReportMessages, resolveReportLocale } from "../i18n/index.js";
+import { DEFAULT_REPLY_HISTORY_MODE, DEFAULT_REPLY_HISTORY_PAGE_SIZE } from "../utils/replyHistory.js";
 const DEFAULT_UI = {
-    appearance: "system",
+    panelAppearance: "system",
+    tooltipAppearance: "system",
     showFeedbackList: true,
     visibleShortcutKeys: false,
+    questionThreadDefault: "expanded",
     locale: "en",
 };
+function resolveScopedAppearance(ui, specific) {
+    return specific ?? ui?.appearance ?? DEFAULT_UI.panelAppearance;
+}
 export function resolveReportUi({ ui }) {
     const locale = resolveReportLocale(ui?.locale);
+    const sharedAppearance = ui?.appearance;
+    const panelAppearance = ui?.panelAppearance ?? sharedAppearance ?? DEFAULT_UI.panelAppearance;
+    const tooltipAppearance = ui?.tooltipAppearance ?? sharedAppearance ?? DEFAULT_UI.tooltipAppearance;
     return {
-        appearance: ui?.appearance ?? DEFAULT_UI.appearance,
+        panelAppearance,
+        tooltipAppearance,
         showFeedbackList: ui?.showFeedbackList ?? DEFAULT_UI.showFeedbackList,
         visibleShortcutKeys: ui?.visibleShortcutKeys ?? DEFAULT_UI.visibleShortcutKeys,
+        questionThreadDefault: ui?.questionThreadDefault ?? DEFAULT_UI.questionThreadDefault,
+        replyHistory: {
+            mode: ui?.replyHistory?.mode ?? DEFAULT_REPLY_HISTORY_MODE,
+            pageSize: ui?.replyHistory?.pageSize ?? DEFAULT_REPLY_HISTORY_PAGE_SIZE,
+        },
         shortcut: ui?.shortcut,
         locale,
         messages: getReportMessages(locale, ui?.messages),

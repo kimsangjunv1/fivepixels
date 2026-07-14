@@ -1,14 +1,22 @@
-import type { ReportField, ReportFieldValues } from "../../../types/report.js";
+import type { ReportField, ReportFieldValues, ReportCase } from "../../../types/report.js";
 import type { ReportAuthor } from "../../../types/report.js";
+import type { FeedbackCategory } from "../../../constants/feedbackCategory.js";
 type FeedbackComposerProps = {
-    message: string;
-    onMessageChange: (value: string) => void;
+    message?: string;
+    onMessageChange?: (value: string) => void;
+    cases?: ReportCase[];
+    onCaseChange?: (caseId: string, text: string) => void;
+    onAddCase?: () => void;
+    onRemoveCase?: (caseId: string) => void;
     authorName: string;
     onAuthorNameChange: (value: string) => void;
     authors: ReportAuthor[];
     fields: ReportField[];
     fieldValues: ReportFieldValues;
     onFieldChange: (key: string, value: string | boolean) => void;
+    category?: FeedbackCategory | null;
+    onCategoryChange?: (value: FeedbackCategory) => void;
+    showCategory?: boolean;
     showTags?: boolean;
     onSubmit: () => void;
     isSubmitting?: boolean;
@@ -22,7 +30,10 @@ type FeedbackComposerProps = {
     askQuestionChecked?: boolean;
     onAskQuestionChange?: (checked: boolean) => void;
     askQuestionForced?: boolean;
+    hideAuthorSelector?: boolean;
+    lockedAuthorName?: string;
+    onFooterWarningChange?: (message: string | null) => void;
 };
-export declare function FeedbackComposer({ message, onMessageChange, authorName, onAuthorNameChange, authors, fields, fieldValues, onFieldChange, showTags, onSubmit, isSubmitting, showGitHubIssueOnCreate, onGitHubIssueSubmit, isGitHubIssueSubmitting, placeholder, autoFocus, errorMessage, showAskQuestionToggle, askQuestionChecked, onAskQuestionChange, askQuestionForced, }: FeedbackComposerProps): import("react/jsx-runtime").JSX.Element;
+export declare function FeedbackComposer({ message, onMessageChange, cases, onCaseChange, onAddCase, onRemoveCase, authorName, onAuthorNameChange, authors, fields: _fields, fieldValues: _fieldValues, onFieldChange: _onFieldChange, category, onCategoryChange, showCategory, showTags: _showTags, onSubmit, isSubmitting, showGitHubIssueOnCreate, onGitHubIssueSubmit, isGitHubIssueSubmitting, placeholder, autoFocus, errorMessage, showAskQuestionToggle, askQuestionChecked, onAskQuestionChange, askQuestionForced, hideAuthorSelector, lockedAuthorName, onFooterWarningChange, }: FeedbackComposerProps): import("react/jsx-runtime").JSX.Element;
 export {};
 //# sourceMappingURL=FeedbackComposer.d.ts.map

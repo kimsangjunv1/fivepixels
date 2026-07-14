@@ -1,6 +1,7 @@
-import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 
-const MENU_GAP = 6;
+const MENU_GAP = 0;
+// const MENU_GAP = 6;
 const VIEWPORT_PADDING = 8;
 
 type PanelDropdownMenuProps = {
@@ -28,14 +29,14 @@ function computeDropdownPlacement(triggerRect: DOMRect, menuWidth: number, menuH
 
     let vertical: "top" | "bottom";
 
-    if (fitsAbove && !fitsBelow) {
-        vertical = "top";
-    } else if (!fitsAbove && fitsBelow) {
+    if (fitsBelow && !fitsAbove) {
         vertical = "bottom";
-    } else if (fitsAbove && fitsBelow) {
+    } else if (!fitsBelow && fitsAbove) {
         vertical = "top";
+    } else if (fitsAbove && fitsBelow) {
+        vertical = "bottom";
     } else {
-        vertical = spaceAbove >= spaceBelow ? "top" : "bottom";
+        vertical = spaceBelow >= spaceAbove ? "bottom" : "top";
     }
 
     const viewportTop = vertical === "top" ? triggerRect.top - menuHeight - MENU_GAP : triggerRect.bottom + MENU_GAP;
@@ -79,12 +80,24 @@ function toRelativePlacement(viewportPlacement: MenuPlacement, rootRect: DOMRect
     };
 }
 
+function isSamePlacement(current: MenuPlacement | null, next: MenuPlacement | null): boolean {
+    if (current === next) {
+        return true;
+    }
+
+    if (!current || !next) {
+        return false;
+    }
+
+    return current.top === next.top && current.left === next.left;
+}
+
 export function PanelDropdownMenu({ open, onClose, trigger, children, menuClassName, align = "right" }: PanelDropdownMenuProps) {
     const rootRef = useRef<HTMLDivElement | null>(null);
     const menuRef = useRef<HTMLDivElement | null>(null);
     const [menuPlacement, setMenuPlacement] = useState<MenuPlacement | null>(null);
 
-    const updateMenuPlacement = () => {
+    const updateMenuPlacement = useCallback(() => {
         const root = rootRef.current;
         const menu = menuRef.current;
 
@@ -96,13 +109,14 @@ export function PanelDropdownMenu({ open, onClose, trigger, children, menuClassN
         const triggerRect = rootRect;
         const menuRect = menu.getBoundingClientRect();
         const viewportPlacement = computeDropdownPlacement(triggerRect, menuRect.width, menuRect.height, align);
+        const nextPlacement = toRelativePlacement(viewportPlacement, rootRect);
 
-        setMenuPlacement(toRelativePlacement(viewportPlacement, rootRect));
-    };
+        setMenuPlacement((current) => (isSamePlacement(current, nextPlacement) ? current : nextPlacement));
+    }, [align]);
 
     useLayoutEffect(() => {
         if (!open) {
-            setMenuPlacement(null);
+            setMenuPlacement((current) => (current === null ? current : null));
             return;
         }
 
@@ -126,7 +140,7 @@ export function PanelDropdownMenu({ open, onClose, trigger, children, menuClassN
             window.removeEventListener("scroll", updateMenuPlacement, true);
             resizeObserver?.disconnect();
         };
-    }, [align, open, children]);
+    }, [open, updateMenuPlacement]);
 
     useEffect(() => {
         if (!open) {
@@ -163,7 +177,7 @@ export function PanelDropdownMenu({ open, onClose, trigger, children, menuClassN
     return (
         <div
             ref={rootRef}
-            className="relative shrink-0"
+            className="relative shrink-0 h-[inherit]"
         >
             {trigger}
 
@@ -172,7 +186,7 @@ export function PanelDropdownMenu({ open, onClose, trigger, children, menuClassN
                     ref={menuRef}
                     role="menu"
                     style={menuStyle}
-                    className={`absolute z-[20] min-w-[120px] overflow-hidden rounded-[12px] border border-[var(--adaptive-black200)] bg-[var(--adaptive-black50)] shadow-[0_0_100px_rgba(0,0,0,0.2)] ${menuClassName ?? ""}`}
+                    className={`${open ? "border-[#f6562f]" : ""} absolute z-[20] min-w-[120px] overflow-hidden bg-[var(--adaptive-black50)] border shadow-[0_0_100px_rgba(0,0,0,0.2)] ${menuClassName ?? ""}`}
                 >
                     {children}
                 </div>

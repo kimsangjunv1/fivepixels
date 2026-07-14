@@ -2,6 +2,8 @@ import { getActiveReportMessages } from "@/i18n/index.js";
 import type {
     CreateReportFeedbackPayload,
     CreateReplyPayload,
+    ListRepliesParams,
+    ListRepliesResult,
     ReportFeedback,
     ReportListAllParams,
     ReportListAllResult,
@@ -10,6 +12,7 @@ import type {
     UpdateReportFeedbackPayload,
 } from "@/types/report.js";
 import { normalizeListReport } from "@/utils/reportSummary.js";
+import { normalizeListRepliesResult } from "@/utils/replyHistory.js";
 
 export async function listReports(adapter: ReportStorageAdapter, pathname: string) {
     const items = await adapter.list({ pathname });
@@ -29,12 +32,14 @@ export async function listAllReports(adapter: ReportStorageAdapter, params: Repo
     };
 }
 
-export async function listReplies(adapter: ReportStorageAdapter, commentId: string): Promise<ReportReply[]> {
+export async function listReplies(adapter: ReportStorageAdapter, commentId: string, params?: ListRepliesParams): Promise<ListRepliesResult> {
     if (!adapter.listReplies) {
         throw new Error(getActiveReportMessages().errors.loadRepliesFailed);
     }
 
-    return adapter.listReplies(commentId);
+    const result = await adapter.listReplies(commentId, params);
+
+    return normalizeListRepliesResult(result, params);
 }
 
 export async function createReport(adapter: ReportStorageAdapter, payload: CreateReportFeedbackPayload) {

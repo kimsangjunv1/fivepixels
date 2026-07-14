@@ -1,5 +1,6 @@
 export const REPORTS_STORAGE_KEY = "fivepixels:reports:v1";
 export const PERSONAL_KEY_STORAGE_KEY = "fivepixels:personal-key:v1";
+export const SELF_PROFILE_STORAGE_KEY = "fivepixels:self-profile:v1";
 
 export function getReportsStorageKey(projectId: string, environment?: string, appVersion?: string) {
     const segments = [REPORTS_STORAGE_KEY, projectId];
@@ -17,4 +18,8 @@ export function getReportsStorageKey(projectId: string, environment?: string, ap
 
 export function getPersonalKeyStorageKey(projectId: string, environment?: string) {
     return [PERSONAL_KEY_STORAGE_KEY, projectId, environment].filter(Boolean).join(":");
+}
+
+export function getSelfProfileStorageKey(projectId: string, environment?: string) {
+    return [SELF_PROFILE_STORAGE_KEY, projectId, environment].filter(Boolean).join(":");
 }

@@ -1,19 +1,23 @@
-import { useCallback, useEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent, type RefObject } from "react";
+import { useCallback, useEffect, useState, type CSSProperties, type RefObject } from "react";
 import type { PanelCorner } from "@/hooks/usePanelDock.js";
+import { useGhostCornerResize, type ResizeCorner } from "@/hooks/useGhostCornerResize.js";
 
 export type PanelSizeState = {
     width: number;
     height: number | null;
 };
 
+/** @deprecated Edge resize replaced by corner ghost resize. */
 export type PanelResizeEdge = "top" | "bottom" | "left" | "right";
 
 const STORAGE_KEY = "fivepixels:panel-size";
 
-export const PANEL_WIDTH_MIN = 375;
+export const PANEL_WIDTH_MIN = 342;
 export const PANEL_DEFAULT_WIDTH = PANEL_WIDTH_MIN;
 export const PANEL_CONTENT_MIN_HEIGHT = 220;
 export const PANEL_HEADER_ESTIMATE_HEIGHT = 132;
+export const PANEL_TAB_BAR_HEIGHT = 36;
+export const PANEL_CHROME_MIN_HEIGHT = PANEL_HEADER_ESTIMATE_HEIGHT + PANEL_TAB_BAR_HEIGHT;
 export const PANEL_HEIGHT_MIN = PANEL_HEADER_ESTIMATE_HEIGHT + PANEL_CONTENT_MIN_HEIGHT;
 /** @deprecated Used only for migrating legacy stored sizes. */
 export const PANEL_DEFAULT_HEIGHT = 480;
@@ -63,6 +67,15 @@ function clampPanelSize(size: PanelSizeState): PanelSizeState {
     };
 }
 
+function clampPanelBoxSize(width: number, height: number, minHeight: number) {
+    const { maxHeight } = getPanelSizeLimits();
+
+    return {
+        width: clampWidth(width),
+        height: Math.min(Math.max(height, minHeight), maxHeight),
+    };
+}
+
 function normalizeStoredWidth(width: number | null): number {
     if (width === null || width === LEGACY_PANEL_DEFAULT_WIDTH) {
         return PANEL_DEFAULT_WIDTH;
@@ -72,12 +85,7 @@ function normalizeStoredWidth(width: number | null): number {
 }
 
 function isLegacyPanelSize(value: unknown): value is { width: number; height: number } {
-    return (
-        typeof value === "object" &&
-        value !== null &&
-        typeof (value as { width: number }).width === "number" &&
-        typeof (value as { height: number }).height === "number"
-    );
+    return typeof value === "object" && value !== null && typeof (value as { width: number }).width === "number" && typeof (value as { height: number }).height === "number";
 }
 
 function isPanelSizeState(value: unknown): value is { width: number | null; height: number | null } {
@@ -131,6 +139,20 @@ function persistPanelSize(size: PanelSizeState) {
     }
 }
 
+export function getOppositeResizeCorner(corner: PanelCorner): ResizeCorner {
+    switch (corner) {
+        case "top-left":
+            return "bottom-right";
+        case "top-right":
+            return "bottom-left";
+        case "bottom-left":
+            return "top-right";
+        case "bottom-right":
+            return "top-left";
+    }
+}
+
+/** @deprecated Edge resize replaced by corner ghost resize. */
 export function getResizeEdgesForCorner(corner: PanelCorner): { widthEdge: "left" | "right"; heightEdge: "top" | "bottom" } {
     switch (corner) {
         case "bottom-right":
@@ -159,17 +181,6 @@ export function panelSizeToStyle(size: PanelSizeState, applyFixedHeight = false)
     return style;
 }
 
-type ResizeSession = {
-    edge: PanelResizeEdge;
-    pointerId: number;
-    startX: number;
-    startY: number;
-    startSize: PanelSizeState;
-    corner: PanelCorner;
-};
-
-const RESIZE_LISTENER_OPTIONS = { capture: true } as const;
-
 export function usePanelResize({
     enabled,
     corner,
@@ -182,33 +193,17 @@ export function usePanelResize({
     panelRef: RefObject<HTMLDivElement | null>;
 }) {
     const [size, setSize] = useState<PanelSizeState>(() => readStoredPanelSize());
-    const [isResizing, setIsResizing] = useState(false);
-    const resizeSessionRef = useRef<ResizeSession | null>(null);
-    const resizeListenersRef = useRef<{ move: (event: PointerEvent) => void; up: (event: PointerEvent) => void } | null>(null);
-    const { widthEdge, heightEdge } = getResizeEdgesForCorner(corner);
+    const resizeCorner = getOppositeResizeCorner(corner);
 
-    const detachResizeListeners = useCallback(() => {
-        const listeners = resizeListenersRef.current;
-
-        if (!listeners) {
-            return;
+    const resolveMinHeight = useCallback(() => {
+        if (heightResizeEnabled) {
+            return PANEL_HEIGHT_MIN;
         }
 
-        window.removeEventListener("pointermove", listeners.move, RESIZE_LISTENER_OPTIONS);
-        window.removeEventListener("pointerup", listeners.up, RESIZE_LISTENER_OPTIONS);
-        window.removeEventListener("pointercancel", listeners.up, RESIZE_LISTENER_OPTIONS);
-        resizeListenersRef.current = null;
-    }, []);
+        return panelRef.current?.getBoundingClientRect().height ?? PANEL_CHROME_MIN_HEIGHT;
+    }, [heightResizeEnabled, panelRef]);
 
-    useEffect(() => {
-        if (enabled) {
-            return;
-        }
-
-        detachResizeListeners();
-        resizeSessionRef.current = null;
-        setIsResizing(false);
-    }, [detachResizeListeners, enabled]);
+    const clampResizeBox = useCallback((width: number, height: number) => clampPanelBoxSize(width, height, resolveMinHeight()), [resolveMinHeight]);
 
     useEffect(() => {
         if (!enabled) {
@@ -223,145 +218,72 @@ export function usePanelResize({
         return () => window.removeEventListener("resize", handleWindowResize);
     }, [enabled]);
 
-    useEffect(() => () => detachResizeListeners(), [detachResizeListeners]);
+    useEffect(() => {
+        if (!enabled || heightResizeEnabled) {
+            return;
+        }
 
-    const resolveResizeSizeForEdge = useCallback(
-        (edge: PanelResizeEdge): PanelSizeState => {
-            if (edge !== "top" && edge !== "bottom") {
-                return size;
+        setSize((current) => {
+            if (current.height === null) {
+                return current;
             }
 
-            if (size.height !== null) {
-                return size;
-            }
+            const next = { ...current, height: null };
+            persistPanelSize(next);
+            return next;
+        });
+    }, [enabled, heightResizeEnabled]);
 
+    const resolveStartSize = useCallback(() => {
+        if (!heightResizeEnabled) {
             const measuredHeight = panelRef.current?.getBoundingClientRect().height;
 
             return {
-                ...size,
-                height: measuredHeight ? clampHeight(measuredHeight) : PANEL_HEIGHT_MIN,
+                width: size.width,
+                height: measuredHeight ?? PANEL_CHROME_MIN_HEIGHT,
             };
+        }
+
+        if (size.height !== null) {
+            return { width: size.width, height: size.height };
+        }
+
+        const measuredHeight = panelRef.current?.getBoundingClientRect().height;
+
+        return {
+            width: size.width,
+            height: measuredHeight ? clampHeight(measuredHeight) : PANEL_HEIGHT_MIN,
+        };
+    }, [heightResizeEnabled, panelRef, size]);
+
+    const handleResizeComplete = useCallback(
+        (next: { width: number; height: number }) => {
+            let height: number | null;
+
+            if (!heightResizeEnabled || next.height <= PANEL_CHROME_MIN_HEIGHT + 16) {
+                height = null;
+            } else {
+                height = clampHeight(next.height);
+            }
+
+            const nextState = clampPanelSize({
+                width: next.width,
+                height,
+            });
+            setSize(nextState);
+            persistPanelSize(nextState);
         },
-        [panelRef, size],
+        [heightResizeEnabled],
     );
 
-    const applyResize = useCallback((session: ResizeSession, clientX: number, clientY: number) => {
-        const deltaX = clientX - session.startX;
-        const deltaY = clientY - session.startY;
-        const startHeight = session.startSize.height ?? PANEL_HEIGHT_MIN;
-        let nextWidth = session.startSize.width;
-        let nextHeight = startHeight;
-
-        if (session.edge === "left") {
-            if (session.corner.endsWith("right")) {
-                nextWidth = session.startSize.width - deltaX;
-            } else {
-                nextWidth = session.startSize.width + deltaX;
-            }
-        }
-
-        if (session.edge === "right") {
-            if (session.corner.endsWith("left")) {
-                nextWidth = session.startSize.width + deltaX;
-            } else {
-                nextWidth = session.startSize.width - deltaX;
-            }
-        }
-
-        if (session.edge === "top") {
-            if (session.corner.startsWith("bottom")) {
-                nextHeight = startHeight - deltaY;
-            } else {
-                nextHeight = startHeight + deltaY;
-            }
-        }
-
-        if (session.edge === "bottom") {
-            if (session.corner.startsWith("top")) {
-                nextHeight = startHeight + deltaY;
-            } else {
-                nextHeight = startHeight - deltaY;
-            }
-        }
-
-        setSize(
-            clampPanelSize({
-                width: nextWidth,
-                height: session.edge === "top" || session.edge === "bottom" ? nextHeight : session.startSize.height,
-            }),
-        );
-    }, []);
-
-    const finishResize = useCallback(() => {
-        detachResizeListeners();
-        setSize((current) => {
-            const clamped = clampPanelSize(current);
-            persistPanelSize(clamped);
-            return clamped;
-        });
-        resizeSessionRef.current = null;
-        setIsResizing(false);
-    }, [detachResizeListeners]);
-
-    const handleResizePointerDown = useCallback(
-        (edge: PanelResizeEdge) => (event: ReactPointerEvent<HTMLElement>) => {
-            if (!enabled || event.button !== 0) {
-                return;
-            }
-
-            if ((edge === "top" || edge === "bottom") && !heightResizeEnabled) {
-                return;
-            }
-
-            event.preventDefault();
-            event.stopPropagation();
-
-            detachResizeListeners();
-            event.currentTarget.setPointerCapture(event.pointerId);
-
-            const startSize = resolveResizeSizeForEdge(edge);
-
-            if (startSize.height !== size.height) {
-                setSize(startSize);
-            }
-
-            resizeSessionRef.current = {
-                edge,
-                pointerId: event.pointerId,
-                startX: event.clientX,
-                startY: event.clientY,
-                startSize,
-                corner,
-            };
-            setIsResizing(true);
-
-            const handlePointerMove = (moveEvent: PointerEvent) => {
-                const session = resizeSessionRef.current;
-
-                if (!session || session.pointerId !== moveEvent.pointerId) {
-                    return;
-                }
-
-                applyResize(session, moveEvent.clientX, moveEvent.clientY);
-            };
-
-            const handlePointerUp = (upEvent: PointerEvent) => {
-                const session = resizeSessionRef.current;
-
-                if (!session || session.pointerId !== upEvent.pointerId) {
-                    return;
-                }
-
-                finishResize();
-            };
-
-            resizeListenersRef.current = { move: handlePointerMove, up: handlePointerUp };
-            window.addEventListener("pointermove", handlePointerMove, RESIZE_LISTENER_OPTIONS);
-            window.addEventListener("pointerup", handlePointerUp, RESIZE_LISTENER_OPTIONS);
-            window.addEventListener("pointercancel", handlePointerUp, RESIZE_LISTENER_OPTIONS);
-        },
-        [applyResize, corner, detachResizeListeners, enabled, finishResize, heightResizeEnabled, resolveResizeSizeForEdge, size],
-    );
+    const { isResizing, ghostRef, handleResizePointerDown } = useGhostCornerResize({
+        enabled,
+        targetRef: panelRef,
+        handleCorner: resizeCorner,
+        clampSize: clampResizeBox,
+        onResizeComplete: handleResizeComplete,
+        resolveStartSize,
+    });
 
     const resetPanelSize = useCallback(() => {
         const next = clampPanelSize(DEFAULT_PANEL_SIZE);
@@ -372,11 +294,10 @@ export function usePanelResize({
     return {
         panelSize: size,
         isResizing,
-        widthEdge,
-        heightEdge,
-        heightResizeEnabled,
+        resizeCorner,
         handleResizePointerDown,
         resetPanelSize,
+        ghostRef,
         isDefaultSize: size.width === PANEL_DEFAULT_WIDTH && size.height === null,
     };
 }

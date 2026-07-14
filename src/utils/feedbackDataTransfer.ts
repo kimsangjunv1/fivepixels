@@ -296,3 +296,85 @@ export async function readFeedbackJsonFile(file: File): Promise<FeedbackImportPa
     const raw = await file.text();
     return parseFeedbackImportJson(raw);
 }
+
+const FPKEY_EXTENSION = ".fpkey";
+
+const FPKEY_FILE_TYPES = [
+    {
+        description: "fivepixels key",
+        accept: { "text/plain": [FPKEY_EXTENSION] },
+    },
+];
+
+export function createPersonalKeyBackupFilename(projectId: string, environment?: string, appVersion?: string) {
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+    const envSuffix = environment ? `-${environment}` : "";
+    const versionSuffix = appVersion ? `-${appVersion}` : "";
+
+    return `fivepixels-key-${projectId}${envSuffix}${versionSuffix}-${timestamp}${FPKEY_EXTENSION}`;
+}
+
+function downloadTextWithAnchor(filename: string, content: string, mimeType: string) {
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+
+    anchor.href = url;
+    anchor.download = filename;
+    anchor.rel = "noopener";
+    getFileTransferParent().appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    URL.revokeObjectURL(url);
+}
+
+export function downloadPersonalKeyBackup(filename: string, key: string): Promise<FeedbackDownloadResult> {
+    if (typeof window === "undefined") {
+        return Promise.resolve("failed");
+    }
+
+    const pickerWindow = window as FilePickerWindow;
+
+    if (typeof pickerWindow.showSaveFilePicker === "function") {
+        return pickerWindow
+            .showSaveFilePicker({
+                suggestedName: filename,
+                types: FPKEY_FILE_TYPES,
+            })
+            .then(async (handle): Promise<FeedbackDownloadResult> => {
+                const writable = await handle.createWritable();
+
+                await writable.write(key);
+                await writable.close();
+                return "saved";
+            })
+            .catch((error): FeedbackDownloadResult => {
+                if (isAbortError(error)) {
+                    return "cancelled";
+                }
+
+                try {
+                    downloadTextWithAnchor(filename, key, "text/plain");
+                    return "downloaded";
+                } catch {
+                    return "failed";
+                }
+            });
+    }
+
+    try {
+        downloadTextWithAnchor(filename, key, "text/plain");
+        return Promise.resolve("downloaded");
+    } catch {
+        return Promise.resolve("failed");
+    }
+}
+
+export function isPersonalKeyFile(file: File) {
+    return file.name.toLowerCase().endsWith(FPKEY_EXTENSION);
+}
+
+export async function readPersonalKeyFile(file: File): Promise<string> {
+    const raw = await file.text();
+    return raw.trim();
+}

@@ -4,9 +4,20 @@ import { getTooltipAnchorStyle, getTooltipPosition } from "@/utils/coordinates.j
 
 export type TooltipAnchor = Pick<Marker, "left" | "top">;
 
-export function useTooltipLayout(anchor: TooltipAnchor | null, expanded: boolean, visible: boolean) {
+export type TooltipLayoutOptions = {
+    customWidth?: number;
+    customHeight?: number;
+};
+
+export function useTooltipLayout(
+    anchor: TooltipAnchor | null,
+    expanded: boolean,
+    visible: boolean,
+    layoutOptions?: TooltipLayoutOptions,
+) {
     const elementRef = useRef<HTMLElement | null>(null);
     const [measuredHeight, setMeasuredHeight] = useState<number | null>(null);
+    const hasFixedHeight = layoutOptions?.customHeight !== undefined;
 
     const setTooltipElement = useCallback((node: HTMLElement | null) => {
         elementRef.current = node;
@@ -15,6 +26,10 @@ export function useTooltipLayout(anchor: TooltipAnchor | null, expanded: boolean
     useLayoutEffect(() => {
         if (!visible) {
             setMeasuredHeight(null);
+            return;
+        }
+
+        if (hasFixedHeight) {
             return;
         }
 
@@ -36,7 +51,7 @@ export function useTooltipLayout(anchor: TooltipAnchor | null, expanded: boolean
         return () => {
             resizeObserver.disconnect();
         };
-    }, [visible, anchor?.left, anchor?.top, expanded]);
+    }, [hasFixedHeight, visible, anchor?.left, anchor?.top, expanded, layoutOptions?.customWidth]);
 
     const layout = useMemo(() => {
         if (!anchor || !visible) {
@@ -44,14 +59,15 @@ export function useTooltipLayout(anchor: TooltipAnchor | null, expanded: boolean
         }
 
         const position = getTooltipPosition(anchor, expanded, {
-            height: measuredHeight ?? undefined,
+            width: layoutOptions?.customWidth,
+            height: layoutOptions?.customHeight ?? measuredHeight ?? undefined,
         });
 
         return {
             position,
             anchorStyle: getTooltipAnchorStyle(position.placement),
         };
-    }, [anchor, expanded, measuredHeight, visible]);
+    }, [anchor, expanded, layoutOptions?.customHeight, layoutOptions?.customWidth, measuredHeight, visible]);
 
     return {
         layout,

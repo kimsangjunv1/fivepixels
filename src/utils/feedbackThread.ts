@@ -1,5 +1,6 @@
 import type { FeedbackDisplayStatus } from "@/constants/feedbackStatus.js";
 import type { ReportAuthor, ReportFeedback, ReportReply, ReportReplyStatus } from "@/types/report.js";
+import { getCaseAssigneeName, getCaseById, getRepliesForCase, canActOnCase } from "@/utils/reportCases.js";
 import { summaryToReply } from "@/utils/reportSummary.js";
 
 export function getReportReplies(report: ReportFeedback): ReportReply[] {
@@ -50,6 +51,23 @@ export function getFeedbackDisplayStatus(report: ReportFeedback, expanded = fals
     return latest.status;
 }
 
+export function getCaseLatestStatus(report: ReportFeedback, caseId: string): FeedbackDisplayStatus {
+    const caseItem = getCaseById(report, caseId);
+
+    if (caseItem?.status === "resolved") {
+        return "resolved";
+    }
+
+    const replies = getRepliesForCase(report, caseId);
+    const latest = replies[replies.length - 1] ?? null;
+
+    if (!latest) {
+        return "issue_apply";
+    }
+
+    return latest.status;
+}
+
 export function getCheckboxFieldsFromValues(fieldValues: ReportFeedback["field_values"], labels: Map<string, string>): { key: string; label: string }[] {
     return Object.entries(fieldValues).flatMap(([key, value]) => {
         if (key === "message" || value !== true) {
@@ -58,6 +76,10 @@ export function getCheckboxFieldsFromValues(fieldValues: ReportFeedback["field_v
 
         return [{ key, label: labels.get(key) ?? key }];
     });
+}
+
+export function isAssigneeEventStatus(status: ReportReplyStatus): boolean {
+    return status === "assignee_assigned" || status === "assignee_transferred";
 }
 
 export function isBranchRootStatus(status: ReportReplyStatus): boolean {
@@ -83,6 +105,31 @@ export function isActiveBranchRoot(report: ReportFeedback, reply: ReportReply): 
 
     const latestRoot = getLatestBranchRoot(getReportReplies(report));
     return latestRoot?.id === reply.id;
+}
+
+export function isBranchReplyAuthor(reply: ReportReply, actorName: string): boolean {
+    const actor = actorName.trim();
+    const author = reply.author_name?.trim() ?? "";
+
+    return Boolean(actor && author && actor === author);
+}
+
+export function canShowAdjudicationActionsOnBranchReply(reply: ReportReply, actorName: string): boolean {
+    return !isBranchReplyAuthor(reply, actorName);
+}
+
+export function canShowCaseThreadActions(report: ReportFeedback, caseId: string, actorName: string): boolean {
+    const actor = actorName.trim();
+
+    if (!actor) {
+        return false;
+    }
+
+    return canActOnCase(report, caseId, actor);
+}
+
+export function requiresCaseActorPermissionForComposer(pendingType: "deny" | "recheck" | "checkout" | "question" | null): boolean {
+    return pendingType !== "question";
 }
 
 export function canShowSuggestedBranchActions(report: ReportFeedback, reply: ReportReply): boolean {
@@ -261,6 +308,162 @@ export function buildThreadTimeline(report: ReportFeedback): FeedbackThreadTimel
     return { issueChildren, branches };
 }
 
+export function buildCaseThreadTimeline(report: ReportFeedback, caseId: string): FeedbackThreadTimeline {
+    return buildThreadTimeline({
+        ...report,
+        replies: getRepliesForCase(report, caseId),
+    });
+}
+
+export function getLatestBranchRootForCase(report: ReportFeedback, caseId: string): ReportReply | null {
+    return getLatestBranchRoot(getRepliesForCase(report, caseId));
+}
+
+export function isActiveCaseBranchRoot(report: ReportFeedback, reply: ReportReply, caseId: string): boolean {
+    const caseItem = report.cases?.find((item) => item.id === caseId);
+
+    if (report.status !== "open" || !caseItem || caseItem.status === "resolved") {
+        return false;
+    }
+
+    const latestRoot = getLatestBranchRootForCase(report, caseId);
+
+    return latestRoot?.id === reply.id;
+}
+
+export function canShowSuggestedBranchActionsForCase(report: ReportFeedback, reply: ReportReply, caseId: string): boolean {
+    return reply.status === "suggested" && isActiveCaseBranchRoot(report, reply, caseId);
+}
+
+export function canShowCheckoutBranchActionsForCase(report: ReportFeedback, reply: ReportReply, caseId: string): boolean {
+    return (reply.status === "found_error" || reply.status === "recheck_requested") && isActiveCaseBranchRoot(report, reply, caseId);
+}
+
+export function getLatestAssigneeEventForCase(report: ReportFeedback, caseId: string): ReportReply | null {
+    const replies = getRepliesForCase(report, caseId);
+
+    for (let index = replies.length - 1; index >= 0; index -= 1) {
+        const reply = replies[index];
+
+        if (isAssigneeEventStatus(reply.status)) {
+            return reply;
+        }
+    }
+
+    return null;
+}
+
+export function isActiveAssigneeEvent(report: ReportFeedback, reply: ReportReply, caseId: string): boolean {
+    if (getLatestAssigneeEventForCase(report, caseId)?.id !== reply.id) {
+        return false;
+    }
+
+    return getLatestBranchRootForCase(report, caseId) === null;
+}
+
+export type AssigneeEntryActionRole = "assignee" | "takeover";
+
+export function resolveAssigneeEntryActionRole(
+    report: ReportFeedback,
+    reply: ReportReply,
+    caseId: string,
+    actorName: string,
+): AssigneeEntryActionRole | null {
+    if (!isAssigneeEventStatus(reply.status) || !isActiveAssigneeEvent(report, reply, caseId)) {
+        return null;
+    }
+
+    const actor = actorName.trim();
+
+    if (!actor) {
+        return null;
+    }
+
+    const authorName = resolveOriginalFeedbackAuthorName(report);
+
+    if (authorName && actor === authorName) {
+        return null;
+    }
+
+    const assigneeName = getCaseAssigneeName(report, caseId);
+
+    if (!assigneeName) {
+        return null;
+    }
+
+    if (actor === assigneeName) {
+        return "assignee";
+    }
+
+    return "takeover";
+}
+
+export function canShowCaseClaimAction(report: ReportFeedback, caseId: string, actorName: string): boolean {
+    if (!canShowCaseEntryActions(report, caseId)) {
+        return false;
+    }
+
+    const actor = actorName.trim();
+
+    if (!actor) {
+        return false;
+    }
+
+    const authorName = resolveOriginalFeedbackAuthorName(report);
+
+    if (authorName && actor === authorName) {
+        return false;
+    }
+
+    return true;
+}
+
+export function canShowCaseEntryActions(report: ReportFeedback, caseId: string): boolean {
+    if (report.status !== "open") {
+        return false;
+    }
+
+    const caseItem = report.cases?.find((item) => item.id === caseId);
+
+    if (!caseItem || caseItem.status === "resolved") {
+        return false;
+    }
+
+    if (getCaseAssigneeName(report, caseId)) {
+        return false;
+    }
+
+    return getLatestBranchRootForCase(report, caseId) === null;
+}
+
+export function shouldShowCaseReplyComposer(_report: ReportFeedback, caseId: string, pendingComposer: { type: string } | null) {
+    if (!caseId || pendingComposer === null) {
+        return false;
+    }
+
+    const caseItem = _report.cases?.find((item) => item.id === caseId);
+
+    if (!caseItem || caseItem.status === "resolved" || _report.status === "resolved") {
+        return false;
+    }
+
+    return true;
+}
+
+export function resolveParentReplyIdForCaseQuestion(
+    report: ReportFeedback,
+    caseId: string,
+    pendingComposer: { type: string; targetReplyId: string } | null,
+): string | null {
+    return resolveParentReplyIdForQuestion(
+        {
+            ...report,
+            replies: getRepliesForCase(report, caseId),
+        },
+        pendingComposer,
+    );
+}
+
 /** @deprecated Use buildThreadTimeline instead. */
 export function groupRepliesIntoBranches(replies: ReportReply[]): FeedbackReplyBranch[] {
     return buildThreadTimeline({ replies } as ReportFeedback).branches;
@@ -311,4 +514,28 @@ export function resolveParentReplyIdForQuestion(
     }
 
     return ISSUE_ROOT_PARENT_ID;
+}
+
+export function shouldForceExpandQuestionGroup(
+    report: ReportFeedback,
+    caseId: string,
+    questions: ReportReply[],
+    options?: { composerTargetsGroup?: boolean },
+): boolean {
+    if (options?.composerTargetsGroup) {
+        return true;
+    }
+
+    if (questions.length === 0) {
+        return false;
+    }
+
+    const caseReplies = getRepliesForCase(report, caseId);
+    const latestReply = caseReplies[caseReplies.length - 1];
+
+    if (!latestReply || latestReply.status !== "additional_question") {
+        return false;
+    }
+
+    return questions.some((question) => question.id === latestReply.id);
 }

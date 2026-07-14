@@ -101,6 +101,7 @@ const landingValue: LandingContextValue = {
         { id: "nav-reviews", label: "Reviews", icon: "review", to: "/reviews" },
         { id: "nav-releases", label: "Releases", icon: "release", to: "/release" },
         { id: "nav-settings", label: "Settings", icon: "settings", to: "/settings" },
+        { id: "nav-edgecase", label: "Edgecase", icon: "edgecase", to: "/edgecase" },
     ],
 };
 

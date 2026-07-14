@@ -1,18 +1,30 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { useMemo, useSyncExternalStore } from "react";
 import { useReport } from "../../providers/reportContext.js";
-import { formatStatCount } from "../../utils/formatStatCount.js";
+import { buildRouteDetailsSummary } from "../../utils/panelBootstrap.js";
+import { buildHourlyCompareSparkline } from "../../utils/hourlyCompareSparkline.js";
+import { getCurrentPathLabel, getCurrentPathname } from "../../utils/pathname.js";
+import { subscribeToPathnameChanges } from "../../utils/pathnameNavigation.js";
 import { panelNumericClassName } from "../../utils/panelTypography.js";
-import { ChevronDownIcon } from "../../components/icons/Icons.js";
 import { FeedbackStatusBadge } from "./feedback/FeedbackStatusBadge.js";
+import { RouteDetailsTimeline } from "./RouteDetailsTimeline.js";
+function formatDelta(delta) {
+    if (delta <= 0) {
+        return null;
+    }
+    return `+${delta.toLocaleString()}`;
+}
 export function ReportRouteDetails() {
-    const { routeDetailsStats, projectId, environment, appVersion, messages } = useReport();
-    const { pathname, statusRows, fieldCounts } = routeDetailsStats;
-    return (_jsxs("section", { className: "flex min-h-0 flex-1 flex-col overflow-y-auto bg-[var(--adaptive-black50)] rounded-[0_0_24px_24px]", children: [_jsxs("article", { className: "flex flex-col px-[16px]", children: [_jsxs("section", { className: "flex items-center text-[12px] py-[8px]", children: [_jsx("div", { className: "flex-1", children: _jsx("p", { className: "text-[var(--adaptive-black500)] font-[500]", children: pathname }) }), _jsxs("div", { className: "flex-1 flex", children: [_jsx("p", { className: "flex-1 text-[var(--adaptive-black500)] font-[500]", children: messages.routeDetails.all }), _jsx("p", { className: "flex-1 text-[var(--adaptive-black500)] font-[500]", children: messages.routeDetails.today })] })] }), _jsx("div", { className: "w-full h-[1px] bg-[var(--adaptive-black200)]" }), statusRows.map((row, mappedIdx) => {
-                        const IS_NOT_LAST = mappedIdx + 1 !== statusRows.length;
-                        return (_jsxs("section", { className: "flex flex-col", children: [_jsxs("section", { className: "flex items-center gap-x-[8px] py-[8px]", children: [_jsx("div", { className: "flex-1", children: _jsx(FeedbackStatusBadge, { status: row.status }) }), _jsxs("div", { className: "flex-1 flex", children: [_jsx("p", { className: `flex-1 text-[14px] font-bold text-[var(--adaptive-black900)] ${panelNumericClassName}`, children: row.all.toLocaleString() }), _jsx("p", { className: `flex-1 text-[14px] font-bold text-[var(--adaptive-black900)] ${panelNumericClassName}`, children: row.today.toLocaleString() })] })] }), IS_NOT_LAST ? _jsx("div", { className: "w-full h-[1px] bg-[var(--adaptive-black200)]" }) : null] }, row.status));
-                    })] }), fieldCounts.length > 0 ? (_jsx("article", { className: "flex border-t border-[var(--adaptive-black200)]", children: fieldCounts.map((field, mappedIdx) => {
-                    const IS_NOT_LAST = mappedIdx + 1 !== fieldCounts.length;
-                    return (_jsxs("section", { className: "contents", children: [_jsxs("section", { className: "flex-1 flex flex-col items-center gap-[4px] text-center py-[0.4rem]", children: [_jsx(ChevronDownIcon, { className: `h-4 w-4 transition-transform` }), _jsx("span", { className: "text-[var(--adaptive-black500)]", children: field.label }), _jsx("p", { className: `font-normal text-[var(--adaptive-black900)] ${panelNumericClassName}`, children: formatStatCount(field.count) })] }), IS_NOT_LAST ? _jsx("div", { className: "w-[1px] h-full bg-[var(--adaptive-black200)]" }) : null] }, field.key));
-                }) })) : null, _jsxs("article", { className: "flex justify-center gap-[8px] border-t border-[var(--adaptive-black200)] text-[12px] text-[var(--adaptive-black500)] bg-[var(--adaptive-black100)] uppercase", children: [_jsx("p", { className: "py-[4px] font-[500] text-[var(--adaptive-black500)]", children: projectId }), _jsx("div", { className: "h-full w-[1px] bg-[var(--adaptive-black300)]" }), _jsx("p", { className: "py-[4px] font-[500] text-[var(--adaptive-black500)]", children: appVersion ?? "-" }), _jsx("div", { className: "h-full w-[1px] bg-[var(--adaptive-black300)]" }), _jsx("p", { className: "py-[4px] font-[500] text-[var(--adaptive-black500)]", children: environment ?? "-" })] })] }));
+    const { currentPageReports, fields, currentPathname, messages } = useReport();
+    const browserPathname = useSyncExternalStore(subscribeToPathnameChanges, getCurrentPathname, () => "/");
+    const browserPathLabel = useSyncExternalStore(subscribeToPathnameChanges, getCurrentPathLabel, () => currentPathname);
+    const displayPath = browserPathname === currentPathname ? browserPathLabel : currentPathname;
+    const sparkline = useMemo(() => buildHourlyCompareSparkline(currentPageReports), [currentPageReports]);
+    const summary = useMemo(() => buildRouteDetailsSummary(currentPageReports, fields, displayPath), [currentPageReports, displayPath, fields]);
+    return (_jsxs("section", { className: "flex min-h-0 flex-1 flex-col overflow-y-auto bg-[var(--adaptive-black50)]", children: [_jsx(RouteDetailsTimeline, { sparkline: sparkline, todayLabel: messages.routeDetails.today, yesterdayLabel: messages.routeDetails.yesterday, timelineAriaLabel: messages.routeDetails.timelineAriaLabel, hourAriaLabelTemplate: messages.routeDetails.timelineHourAriaLabel, tooltipTodayTemplate: messages.routeDetails.tooltipToday, tooltipYesterdayTemplate: messages.routeDetails.tooltipYesterday }), _jsxs("article", { className: "flex flex-col px-[16px]", children: [_jsxs("section", { className: "flex items-center text-[12px] py-[8px]", children: [_jsx("div", { className: "min-w-0 flex-1", children: _jsx("p", { className: "truncate text-[var(--adaptive-black500)] font-[500]", children: summary.pathname }) }), _jsxs("div", { className: "flex w-[132px] shrink-0", children: [_jsx("p", { className: "flex-1 text-[var(--adaptive-black500)] font-[500]", children: messages.routeDetails.today }), _jsx("p", { className: "flex-1 text-right text-[var(--adaptive-black500)] font-[500]", children: messages.routeDetails.yesterday })] })] }), _jsx("div", { className: "w-full h-[1px] bg-[var(--adaptive-black200)]" }), summary.statusRows.map((row, mappedIdx) => {
+                        const IS_NOT_LAST = mappedIdx + 1 !== summary.statusRows.length;
+                        const deltaLabel = formatDelta(row.delta);
+                        return (_jsxs("section", { className: "flex flex-col", children: [_jsxs("section", { className: "flex items-center gap-x-[8px] py-[8px]", children: [_jsx("div", { className: "min-w-0 flex-1", children: _jsx(FeedbackStatusBadge, { status: row.status, isNeedGray: true }) }), _jsxs("div", { className: "flex w-[132px] shrink-0 items-baseline", children: [_jsxs("div", { className: "flex flex-1 items-baseline gap-[4px]", children: [_jsx("p", { className: `text-[14px] font-bold text-[var(--adaptive-black900)] ${panelNumericClassName}`, children: row.today.toLocaleString() }), deltaLabel ? _jsx("span", { className: `text-[11px] font-[600] text-[var(--adaptive-green500)] ${panelNumericClassName}`, children: deltaLabel }) : null] }), _jsx("p", { className: `flex-1 text-right text-[14px] font-bold text-[var(--adaptive-black900)] ${panelNumericClassName}`, children: row.yesterday.toLocaleString() })] })] }), IS_NOT_LAST ? _jsx("div", { className: "w-full h-[1px] bg-[var(--adaptive-black200)]" }) : null] }, row.status));
+                    })] })] }));
 }
 //# sourceMappingURL=ReportRouteDetails.js.map

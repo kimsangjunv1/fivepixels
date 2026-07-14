@@ -15,4 +15,10 @@ export const TARGET_SURFACE: Record<ReportTargetType, string> = {
     item: "#0ed1b41c",
 };
 
+export const FEEDBACK_HIGHLIGHT = {
+    outline: "#8b5cf6",
+    surface: "#8b5cf61c",
+    label: "#8b5cf6",
+} as const;
+
 export const DEFAULT_FIELDS: ReportField[] = getDefaultFields(en);

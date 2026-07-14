@@ -9,6 +9,7 @@ function NavIcon({ type }: { type: string }) {
         review: "M7 8h10M7 12h6M5 4h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z",
         release: "M12 3v18M5 8l7-5 7 5M5 16l7 5 7-5",
         settings: "M12 8a4 4 0 100 8 4 4 0 000-8zm8-2l-1.5 2.5L16 7.5 17.5 5 20 6zM4 6l1.5 2.5L8 7.5 6.5 5 4 6z",
+        edgecase: "M4 7h6v6H4V7zm10 0h6v6h-6V7zM4 15h6v2H4v-2zm10 0h6v2h-6v-2z",
     };
 
     return (

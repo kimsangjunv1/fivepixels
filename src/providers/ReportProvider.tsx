@@ -9,10 +9,15 @@ import type {
     ReportFeedback,
     ReportField,
     ReportAuthor,
+    FivePixelsMode,
     ReportGitHubConfig,
     ReportIdentify,
     ReportListAllParams,
     ReportListAllResult,
+    ReportActivitySummaryParams,
+    ReportActivitySummaryResult,
+    ReportPanelBootstrapParams,
+    ReportPanelBootstrapResult,
     ReportProject,
     ReportReply,
     ReportTeam,
@@ -23,7 +28,7 @@ import type {
 import { resolveReportEnabled } from "@/utils/env.js";
 import { resolveReportProject } from "@/utils/reportProject.js";
 import { resolveReportTeam } from "@/utils/reportTeam.js";
-import { resolveReportUi } from "@/utils/reportUi.js";
+import { resolveReportUi, type ResolvedReportUi } from "@/utils/reportUi.js";
 import { resolveReportVisibility } from "@/utils/reportVisibility.js";
 import { ReportContext } from "./reportContext.js";
 
@@ -32,10 +37,13 @@ export type ReportProviderProps = {
     ui?: ReportUi;
     visibility?: ReportVisibility;
     team?: ReportTeam;
+    mode?: FivePixelsMode;
     fields?: ReportField[];
     onList?: (params: { pathname: string }) => Promise<ReportFeedback[]>;
     onListAll?: (params: ReportListAllParams) => Promise<ReportListAllResult>;
-    onListReplies?: (commentId: string) => Promise<ReportReply[]>;
+    onPanelBootstrap?: (params: ReportPanelBootstrapParams) => Promise<ReportPanelBootstrapResult>;
+    onActivitySummary?: (params: ReportActivitySummaryParams) => Promise<ReportActivitySummaryResult>;
+    onListReplies?: (commentId: string, params?: import("@/types/report.js").ListRepliesParams) => Promise<import("@/types/report.js").ListRepliesResult | ReportReply[]>;
     onNavigate?: (pathname: string) => void | Promise<void>;
     onRevealTarget?: (report: ReportFeedback) => boolean | Promise<boolean>;
     onCreate?: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
@@ -52,9 +60,12 @@ type ReportProviderEnabledProps = Omit<ReportProviderProps, "project" | "ui" | "
     projectId: string;
     environment?: string;
     appVersion?: string;
-    appearance: NonNullable<ReportUi["appearance"]>;
+    panelAppearance: NonNullable<ReportUi["panelAppearance"]>;
+    tooltipAppearance: NonNullable<ReportUi["tooltipAppearance"]>;
     showFeedbackList: boolean;
     visibleShortcutKeys: boolean;
+    questionThreadDefault: NonNullable<ReportUi["questionThreadDefault"]>;
+    replyHistory: NonNullable<ResolvedReportUi["replyHistory"]>;
     shortcut?: string;
     fields: ReportField[];
     routeKey?: string;
@@ -63,13 +74,17 @@ type ReportProviderEnabledProps = Omit<ReportProviderProps, "project" | "ui" | "
     requireReviewerKey: boolean;
     locale: ReportLocale;
     messageOverrides?: DeepPartialReportMessages;
+    pixelsMode: FivePixelsMode;
 };
 
 function ReportProviderEnabled({
     projectId,
     environment,
     appVersion,
-    appearance,
+    panelAppearance,
+    tooltipAppearance,
+    questionThreadDefault,
+    replyHistory,
     fields,
     authors,
     requireReviewerKey,
@@ -77,6 +92,8 @@ function ReportProviderEnabled({
     identify,
     onList,
     onListAll,
+    onPanelBootstrap,
+    onActivitySummary,
     onListReplies,
     onNavigate,
     onRevealTarget,
@@ -92,20 +109,27 @@ function ReportProviderEnabled({
     visibleShortcutKeys,
     locale,
     messageOverrides,
+    pixelsMode,
     children,
 }: ReportProviderEnabledProps) {
     const value = useReportState({
         projectId,
         environment,
         appVersion,
-        appearance,
+        panelAppearance,
+        tooltipAppearance,
+        questionThreadDefault,
+        replyHistory,
         fields,
         authors,
         requireReviewerKey,
         shortcut,
         identify,
+        pixelsMode,
         onList,
         onListAll,
+        onPanelBootstrap,
+        onActivitySummary,
         onListReplies,
         onNavigate,
         onRevealTarget,
@@ -131,9 +155,12 @@ export function ReportProvider({
     ui,
     visibility,
     team,
+    mode = "default",
     fields,
     onList,
     onListAll,
+    onPanelBootstrap,
+    onActivitySummary,
     onListReplies,
     onNavigate,
     onRevealTarget,
@@ -161,9 +188,12 @@ export function ReportProvider({
             projectId={resolvedProject.projectId}
             environment={resolvedProject.environment}
             appVersion={resolvedProject.appVersion}
-            appearance={resolvedUi.appearance}
+            panelAppearance={resolvedUi.panelAppearance}
+            tooltipAppearance={resolvedUi.tooltipAppearance}
             showFeedbackList={resolvedUi.showFeedbackList}
             visibleShortcutKeys={resolvedUi.visibleShortcutKeys}
+            questionThreadDefault={resolvedUi.questionThreadDefault}
+            replyHistory={resolvedUi.replyHistory}
             shortcut={resolvedUi.shortcut}
             fields={resolvedFields}
             authors={resolvedTeam.reviewers}
@@ -171,6 +201,8 @@ export function ReportProvider({
             identify={resolvedTeam.user}
             onList={onList}
             onListAll={onListAll}
+            onPanelBootstrap={onPanelBootstrap}
+            onActivitySummary={onActivitySummary}
             onListReplies={onListReplies}
             onNavigate={onNavigate}
             onRevealTarget={onRevealTarget}
@@ -184,6 +216,7 @@ export function ReportProvider({
             routeKey={resolvedVisibility.routeKey}
             locale={resolvedUi.locale}
             messageOverrides={ui?.messages}
+            pixelsMode={mode}
         >
             {children}
         </ReportProviderEnabled>

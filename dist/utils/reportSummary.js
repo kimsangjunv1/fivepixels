@@ -4,6 +4,7 @@ export function toReplySummary(reply) {
         message: reply.message,
         created_at: reply.created_at,
         status: reply.status,
+        case_ids: reply.case_ids,
         author_type: reply.author_type,
         author_name: reply.author_name,
     };
@@ -12,6 +13,7 @@ export function summaryToReply(summary, commentId) {
     return {
         ...summary,
         comment_id: commentId,
+        case_ids: summary.case_ids ?? [],
     };
 }
 export function normalizeListReport(item) {

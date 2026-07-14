@@ -1,19 +1,18 @@
 import { useCallback, useState } from "react";
+import { LEGACY_APPEARANCE_STORAGE_KEY } from "@/constants/appearance.js";
 import type { ReportAppearance } from "@/types/report.js";
-
-const STORAGE_KEY = "fivepixels:appearance-preference";
 
 function isReportAppearance(value: unknown): value is ReportAppearance {
     return value === "system" || value === "light" || value === "dark";
 }
 
-function readStoredAppearance(fallback: ReportAppearance): ReportAppearance {
+function readStoredValue(storageKey: string): ReportAppearance | null {
     if (typeof window === "undefined") {
-        return fallback;
+        return null;
     }
 
     try {
-        const stored = window.sessionStorage.getItem(STORAGE_KEY);
+        const stored = window.sessionStorage.getItem(storageKey);
 
         if (isReportAppearance(stored)) {
             return stored;
@@ -22,24 +21,31 @@ function readStoredAppearance(fallback: ReportAppearance): ReportAppearance {
         // Ignore storage failures in restricted environments.
     }
 
-    return fallback;
+    return null;
 }
 
-function persistAppearance(appearance: ReportAppearance) {
+function readStoredAppearance(storageKey: string, fallback: ReportAppearance): ReportAppearance {
+    return readStoredValue(storageKey) ?? readStoredValue(LEGACY_APPEARANCE_STORAGE_KEY) ?? fallback;
+}
+
+function persistAppearance(storageKey: string, appearance: ReportAppearance) {
     try {
-        window.sessionStorage.setItem(STORAGE_KEY, appearance);
+        window.sessionStorage.setItem(storageKey, appearance);
     } catch {
         // Ignore storage failures in restricted environments.
     }
 }
 
-export function useAppearancePreference(initialAppearance: ReportAppearance) {
-    const [appearance, setAppearanceState] = useState<ReportAppearance>(() => readStoredAppearance(initialAppearance));
+export function useAppearancePreference(storageKey: string, initialAppearance: ReportAppearance) {
+    const [appearance, setAppearanceState] = useState<ReportAppearance>(() => readStoredAppearance(storageKey, initialAppearance));
 
-    const setAppearance = useCallback((nextAppearance: ReportAppearance) => {
-        setAppearanceState(nextAppearance);
-        persistAppearance(nextAppearance);
-    }, []);
+    const setAppearance = useCallback(
+        (nextAppearance: ReportAppearance) => {
+            setAppearanceState(nextAppearance);
+            persistAppearance(storageKey, nextAppearance);
+        },
+        [storageKey],
+    );
 
     return {
         appearance,

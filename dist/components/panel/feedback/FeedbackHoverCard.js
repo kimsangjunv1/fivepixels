@@ -1,16 +1,25 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { FEEDBACK_STATUS_COLOR } from "../../../constants/feedbackStatus.js";
 import { getDetachedMarkerHint } from "../../../utils/markerContext.js";
-import { getFeedbackDisplayStatus, getLatestReply, getRemainingReplyCount } from "../../../utils/feedbackThread.js";
+import { getCaseLatestStatus } from "../../../utils/feedbackThread.js";
+import { getReportCases } from "../../../utils/reportCases.js";
+import { useReport } from "../../../providers/reportContext.js";
 import { FeedbackCreatorBadge } from "./FeedbackCreatorBadge.js";
-import { FeedbackFieldTags } from "./FeedbackFieldTags.js";
-import { FeedbackStatusBadge } from "./FeedbackStatusBadge.js";
-export function FeedbackHoverCard({ report, fieldTags, detached = false, detachedKind = null, detachedHint, detachedModalHint }) {
-    const displayStatus = getFeedbackDisplayStatus(report, true);
-    const latestReply = getLatestReply(report);
-    const remainingReplyCount = getRemainingReplyCount(report);
+const MAX_TOOLTIP_CASES = 5;
+function CaseStatusLabel({ status }) {
+    const { messages } = useReport();
+    const color = FEEDBACK_STATUS_COLOR[status];
+    return (_jsx("span", { className: "shrink-0 whitespace-nowrap text-[11px] font-semibold leading-none", style: { color }, children: messages.status.feedback[status] }));
+}
+export function FeedbackHoverCard({ report, detached = false, detachedKind = null, detachedHint, detachedModalHint }) {
+    const { messages } = useReport();
+    const cases = getReportCases(report);
+    const visibleCases = cases.slice(0, MAX_TOOLTIP_CASES);
+    const hasMoreCases = cases.length > MAX_TOOLTIP_CASES;
     const resolvedDetachedHint = detached && detachedHint && detachedModalHint ? getDetachedMarkerHint(detachedKind, { detachedHint, detachedModalHint }) : null;
-    return (
-    // <div className="flex w-[260px] flex-col gap-[10px] bg-transparent p-[16px]">
-    _jsxs("div", { className: "flex w-[260px] flex-col gap-[4px] bg-transparent p-[8px_8px]", children: [_jsx(FeedbackStatusBadge, { status: displayStatus }), resolvedDetachedHint ? _jsx("p", { className: "text-[12px] leading-[1.4] text-[var(--adaptive-black500)]", children: resolvedDetachedHint }) : null, _jsx("p", { className: "line-clamp-2 leading-[1.5] text-[14px] text-[var(--adaptive-text-primary)]", children: report.message }), report.author_name ? (_jsxs("div", { className: "flex items-center gap-[6px]", children: [_jsx("p", { className: "text-[12px] text-[var(--adaptive-black500)]", children: report.author_name }), _jsx(FeedbackCreatorBadge, {})] })) : null, _jsx(FeedbackFieldTags, { tags: fieldTags }), latestReply ? (_jsxs("div", { className: "flex min-w-0 items-center gap-[6px] border-t border-[var(--adaptive-border-subtle)] pt-[10px] text-[12px] text-[var(--adaptive-text-muted)]", children: [_jsx("span", { className: "text-[var(--adaptive-black900)]", children: "\u21B3" }), _jsx("span", { className: "min-w-0 flex-1 truncate text-[var(--adaptive-black900)] text-[14px]", children: latestReply.message }), remainingReplyCount > 0 ? _jsxs("span", { className: "text-[12px] bg-[var(--adaptive-black500)] rounded-full p-[2px_4px] text-white", children: ["+", remainingReplyCount] }) : null] })) : null] }));
+    return (_jsxs("div", { className: "flex w-[260px] flex-col gap-[6px] bg-transparent p-[8px_8px]", children: [resolvedDetachedHint ? _jsx("p", { className: "text-[12px] leading-[1.4] text-[var(--adaptive-black500)]", children: resolvedDetachedHint }) : null, _jsx("ul", { className: "flex flex-col gap-[4px]", children: visibleCases.map((item) => {
+                    const status = getCaseLatestStatus(report, item.id);
+                    return (_jsxs("li", { className: "flex min-w-0 items-center gap-[6px] text-[12px] leading-[1.4]", children: [_jsx("span", { className: `min-w-0 flex-1 truncate text-[var(--adaptive-text-primary)] ${item.status === "resolved" ? "text-[var(--adaptive-black500)] line-through" : ""}`, title: item.text, children: item.text }), _jsx("span", { className: "shrink-0 text-[var(--adaptive-black400)]", "aria-hidden": true, children: "|" }), _jsx(CaseStatusLabel, { status: status })] }, item.id));
+                }) }), hasMoreCases ? _jsx("p", { className: "text-[11px] leading-[1.4] text-[var(--adaptive-black500)]", children: messages.marker.viewMoreCases }) : null, report.author_name ? (_jsxs("div", { className: "flex items-center gap-[6px] border-t border-[var(--adaptive-border-subtle)] pt-[6px]", children: [_jsx("p", { className: "text-[12px] text-[var(--adaptive-black500)]", children: report.author_name }), _jsx(FeedbackCreatorBadge, {})] })) : null] }));
 }
 //# sourceMappingURL=FeedbackHoverCard.js.map

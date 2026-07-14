@@ -15,20 +15,56 @@ describe("resolveReportUi", () => {
                 },
             }),
         ).toEqual({
-            appearance: "dark",
+            panelAppearance: "dark",
+            tooltipAppearance: "dark",
             showFeedbackList: false,
             visibleShortcutKeys: true,
+            questionThreadDefault: "expanded",
+            replyHistory: {
+                mode: "button-and-scroll",
+                pageSize: 10,
+            },
             shortcut: "mod+shift+m",
             locale: "ko",
             messages: getReportMessages("ko"),
         });
     });
 
-    it("uses defaults when ui is omitted", () => {
-        expect(resolveReportUi({})).toEqual({
-            appearance: "system",
+    it("resolves scoped appearance values independently", () => {
+        expect(
+            resolveReportUi({
+                ui: {
+                    panelAppearance: "light",
+                    tooltipAppearance: "dark",
+                },
+            }),
+        ).toEqual({
+            panelAppearance: "light",
+            tooltipAppearance: "dark",
             showFeedbackList: true,
             visibleShortcutKeys: false,
+            questionThreadDefault: "expanded",
+            replyHistory: {
+                mode: "button-and-scroll",
+                pageSize: 10,
+            },
+            shortcut: undefined,
+            locale: "en",
+            messages: getReportMessages("en"),
+        });
+    });
+
+    it("uses defaults when ui is omitted", () => {
+        expect(resolveReportUi({})).toEqual({
+            panelAppearance: "system",
+            tooltipAppearance: "system",
+            showFeedbackList: true,
+            visibleShortcutKeys: false,
+            questionThreadDefault: "expanded",
+            replyHistory: {
+                mode: "button-and-scroll",
+                pageSize: 10,
+            },
             shortcut: undefined,
             locale: "en",
             messages: getReportMessages("en"),

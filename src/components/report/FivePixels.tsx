@@ -7,12 +7,17 @@ import { resolveReportVisibility } from "@/utils/reportVisibility.js";
 import type {
     CreateReportFeedbackPayload,
     CreateReplyPayload,
+    FivePixelsMode,
     ReportEvent,
     ReportFeedback,
     ReportField,
     ReportGitHubConfig,
     ReportListAllParams,
     ReportListAllResult,
+    ReportActivitySummaryParams,
+    ReportActivitySummaryResult,
+    ReportPanelBootstrapParams,
+    ReportPanelBootstrapResult,
     ReportProject,
     ReportReply,
     ReportTeam,
@@ -27,10 +32,13 @@ export type FivePixelsProps = {
     ui?: ReportUi;
     visibility?: ReportVisibility;
     team?: ReportTeam;
+    mode?: FivePixelsMode;
     fields?: ReportField[];
     onList?: (params: { pathname: string }) => Promise<ReportFeedback[]>;
     onListAll?: (params: ReportListAllParams) => Promise<ReportListAllResult>;
-    onListReplies?: (commentId: string) => Promise<ReportReply[]>;
+    onPanelBootstrap?: (params: ReportPanelBootstrapParams) => Promise<ReportPanelBootstrapResult>;
+    onActivitySummary?: (params: ReportActivitySummaryParams) => Promise<ReportActivitySummaryResult>;
+    onListReplies?: (commentId: string, params?: import("@/types/report.js").ListRepliesParams) => Promise<import("@/types/report.js").ListRepliesResult | ReportReply[]>;
     onNavigate?: (pathname: string) => void | Promise<void>;
     onRevealTarget?: (report: ReportFeedback) => boolean | Promise<boolean>;
     onCreate?: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
@@ -47,9 +55,12 @@ export function FivePixels({
     ui,
     visibility,
     team,
+    mode = "default",
     fields = DEFAULT_FIELDS,
     onList,
     onListAll,
+    onPanelBootstrap,
+    onActivitySummary,
     onListReplies,
     onNavigate,
     onRevealTarget,
@@ -73,9 +84,12 @@ export function FivePixels({
             ui={ui}
             visibility={visibility}
             team={team}
+            mode={mode}
             fields={fields}
             onList={onList}
             onListAll={onListAll}
+            onPanelBootstrap={onPanelBootstrap}
+            onActivitySummary={onActivitySummary}
             onListReplies={onListReplies}
             onNavigate={onNavigate}
             onRevealTarget={onRevealTarget}

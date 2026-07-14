@@ -1,0 +1,1 @@
+{"version":3,"file":"feedbackStorageEvents.js","sourceRoot":"","sources":["../../src/constants/feedbackStorageEvents.ts"],"names":[],"mappings":"AAAA,MAAM,CAAC,MAAM,8BAA8B,GAAG,qCAAqC,CAAC;AAEpF,MAAM,UAAU,8BAA8B;IAC1C,IAAI,OAAO,MAAM,KAAK,WAAW,EAAE,CAAC;QAChC,OAAO;IACX,CAAC;IAED,MAAM,CAAC,aAAa,CAAC,IAAI,WAAW,CAAC,8BAA8B,CAAC,CAAC,CAAC;AAC1E,CAAC"}

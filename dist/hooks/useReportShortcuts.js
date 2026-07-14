@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { REPORT_SHORTCUTS } from "../constants/reportShortcuts.js";
 import { isEditableTarget, matchesShortcut } from "../utils/shortcuts.js";
 export function useReportShortcuts(handlers) {
-    const { mode, draft, editingReportId, panelTab, showTargetPreview, activeReplyReportId, pendingComposer, toggleReportMode, toggleTargetPreview, toggleIssueMode, cancelDraft, cancelPendingComposer, closeReplyComposer, handleCreateSubmit, stopEditing, handleUpdateSubmit, focusSearchInput, selectAdjacentReport, } = handlers;
+    const { mode, draft, editingReportId, panelTab, showTargetPreview, activeReplyReportId, pendingComposer, pickProbeOpen, toggleReportMode, toggleTargetPreview, toggleIssueMode, cancelDraft, cancelPendingComposer, closePickProbe, closeReplyComposer, handleCreateSubmit, stopEditing, handleUpdateSubmit, focusSearchInput, selectAdjacentReport, } = handlers;
     useEffect(() => {
         const handleKeyDown = (event) => {
             const inEditable = isEditableTarget(event.target);
@@ -21,6 +21,11 @@ export function useReportShortcuts(handlers) {
                 return;
             }
             if (matchesShortcut(event, REPORT_SHORTCUTS.cancel)) {
+                if (pickProbeOpen) {
+                    event.preventDefault();
+                    closePickProbe();
+                    return;
+                }
                 if (draft) {
                     event.preventDefault();
                     cancelDraft();
@@ -101,11 +106,13 @@ export function useReportShortcuts(handlers) {
         showTargetPreview,
         activeReplyReportId,
         pendingComposer,
+        pickProbeOpen,
         toggleReportMode,
         toggleTargetPreview,
         toggleIssueMode,
         cancelDraft,
         cancelPendingComposer,
+        closePickProbe,
         closeReplyComposer,
         handleCreateSubmit,
         stopEditing,

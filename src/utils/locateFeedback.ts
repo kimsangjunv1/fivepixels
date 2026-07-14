@@ -1,12 +1,21 @@
 import type { ReportFeedback } from "@/types/report.js";
 import { getFeedbackTargetSelector, isFeedbackTargetVisible } from "./dom.js";
+import { findElementByTargetSelector } from "./targetSelector.js";
 
 export { isFeedbackTargetVisible } from "./dom.js";
 
 export const LOCATE_PULSE_DURATION_MS = 2400;
 export const TARGET_REVEAL_RESYNC_DELAY_MS = 50;
 
-export function getFeedbackTargetElement(report: Pick<ReportFeedback, "report_id" | "report_type">) {
+export function getFeedbackTargetElement(report: Pick<ReportFeedback, "report_id" | "report_type" | "target_selector">) {
+    if (report.target_selector) {
+        const bySelector = findElementByTargetSelector(report.target_selector);
+
+        if (bySelector) {
+            return bySelector;
+        }
+    }
+
     const selector = getFeedbackTargetSelector(report.report_id, report.report_type);
 
     return document.querySelector<HTMLElement>(selector);

@@ -1,15 +1,29 @@
-import { TARGET_COLOR } from "@/constants/report.js";
-import type { ReportTargetType } from "@/types/report.js";
+import { FEEDBACK_HIGHLIGHT } from "@/constants/report.js";
 import type { TargetSnapshot } from "@/types/report-ui.js";
+import { PickTargetCompareChip } from "./PickTargetCompareChip.js";
+import { PickTargetHoverTooltip } from "./PickTargetHoverTooltip.js";
 
 type TargetHighlightsProps = {
     hoveredTarget: TargetSnapshot | null;
+    selectedTarget?: TargetSnapshot | null;
+    showHoverInspect?: boolean;
+    showSelectionHighlight?: boolean;
+    showPickProbeCompare?: boolean;
     previewTargets?: TargetSnapshot[];
-    selectedTarget: TargetSnapshot | null;
+    markerPreviewTargets?: TargetSnapshot[];
+    activeMarkerTarget: TargetSnapshot | null;
 };
 
-function highlightPresenceKey(type: ReportTargetType) {
-    return `hover-${type}`;
+const HOVER_HIGHLIGHT_KEY = "hover-active";
+const SELECTION_HIGHLIGHT_KEY = "selection-active";
+const ACTIVE_MARKER_HIGHLIGHT_KEY = "marker-active";
+
+function highlightLabel(target: TargetSnapshot) {
+    if (target.isTagged) {
+        return `${target.type} · ${target.id}`;
+    }
+
+    return `suggested · ${target.suggestedReportId ?? target.id}`;
 }
 
 function HighlightBox({ target, showLabel }: { target: TargetSnapshot; showLabel?: boolean }) {
@@ -21,50 +35,76 @@ function HighlightBox({ target, showLabel }: { target: TargetSnapshot; showLabel
                 top: target.rect.top,
                 width: target.rect.width,
                 height: target.rect.height,
-                outline: `2px solid #0ed1b4`,
-                backgroundColor: "#0ed1b41c",
+                borderRadius: target.boxStyle?.borderRadius ?? "0",
+                boxShadow: `0 0 0 2px ${FEEDBACK_HIGHLIGHT.outline}`,
+                backgroundColor: FEEDBACK_HIGHLIGHT.surface,
             }}
         >
             {showLabel ? (
                 <span
-                    className="absolute left-0 top-0 -translate-y-full px-1 py-0.5 font-[var(--coding-font)] text-[12px] font-medium text-white"
-                    style={{ backgroundColor: TARGET_COLOR[target.type] }}
+                    className="fivepixels-target-highlight__label absolute left-0 top-0 -translate-y-full px-1 py-0.5 font-[var(--coding-font)] text-[12px] font-medium text-white"
+                    style={{ backgroundColor: FEEDBACK_HIGHLIGHT.label }}
                 >
-                    {target.type} · {target.id}
+                    {highlightLabel(target)}
                 </span>
             ) : null}
         </div>
     );
 }
 
-export function TargetHighlights({ hoveredTarget, previewTargets = [], selectedTarget }: TargetHighlightsProps) {
+export function TargetHighlights({
+    hoveredTarget,
+    selectedTarget = null,
+    showHoverInspect = false,
+    showSelectionHighlight = false,
+    showPickProbeCompare = false,
+    previewTargets = [],
+    markerPreviewTargets = [],
+    activeMarkerTarget,
+}: TargetHighlightsProps) {
     return (
         <>
             {previewTargets.map((target) => (
                 <HighlightBox
-                    key={`${target.type}-${target.id}`}
+                    key={`preview-${target.type}-${target.id}`}
                     target={target}
                     showLabel
                 />
             ))}
 
-            {hoveredTarget ? (
+            {markerPreviewTargets.map((target) => (
                 <HighlightBox
-                    key={highlightPresenceKey(hoveredTarget.type)}
-                    target={hoveredTarget}
+                    key={`marker-preview-${target.id}`}
+                    target={target}
                     showLabel
                 />
+            ))}
+
+            {showHoverInspect && hoveredTarget ? (
+                <>
+                    <HighlightBox
+                        key={HOVER_HIGHLIGHT_KEY}
+                        target={hoveredTarget}
+                    />
+                    <PickTargetHoverTooltip target={hoveredTarget} />
+                </>
             ) : null}
 
-            {selectedTarget ? (
-                <div
-                    className="pointer-events-none fixed box-border rounded-sm"
-                    style={{
-                        left: selectedTarget.rect.left,
-                        top: selectedTarget.rect.top,
-                        width: selectedTarget.rect.width,
-                        height: selectedTarget.rect.height,
-                    }}
+            {showSelectionHighlight && selectedTarget ? (
+                <>
+                    <HighlightBox
+                        key={SELECTION_HIGHLIGHT_KEY}
+                        target={selectedTarget}
+                    />
+                    {showPickProbeCompare ? <PickTargetCompareChip target={selectedTarget} /> : null}
+                </>
+            ) : null}
+
+            {activeMarkerTarget ? (
+                <HighlightBox
+                    key={ACTIVE_MARKER_HIGHLIGHT_KEY}
+                    target={activeMarkerTarget}
+                    showLabel
                 />
             ) : null}
         </>
