@@ -10,16 +10,7 @@ export type PanelTabAvailabilityContext = {
     canListAllFeedback: boolean;
 };
 
-export type PanelTabLabelKey =
-    | "tabThisPage"
-    | "tabFeedbackList"
-    | "tabOverview"
-    | "tabDiagnostics"
-    | "tabMyTasks"
-    | "tabPageBrief"
-    | "tabNeedsAttention"
-    | "tabProjectHealth"
-    | "tabTodayDigest";
+export type PanelTabLabelKey = "tabThisPage" | "tabFeedbackList" | "tabOverview" | "tabDiagnostics" | "tabMyTasks" | "tabPageBrief" | "tabNeedsAttention" | "tabProjectHealth" | "tabTodayDigest";
 
 export type PanelTabDefinition = {
     id: UserSelectablePanelTab;
@@ -51,7 +42,7 @@ export const PANEL_USER_TAB_REGISTRY: PanelTabDefinition[] = [
         id: "overview",
         labelKey: "tabOverview",
         userSelectable: true,
-        experimental: false,
+        experimental: true,
         needsFullReportList: true,
         isAvailable: () => true,
     },
