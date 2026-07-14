@@ -1,13 +1,13 @@
-import type { MonthlySparkline } from "../../utils/monthlySparkline.js";
+import { type HourlyCompareSparkline } from "../../utils/hourlyCompareSparkline.js";
 type RouteDetailsTimelineProps = {
-    sparkline: MonthlySparkline;
-    selectedDateKey: string;
-    onSelectDateKey: (dateKey: string) => void;
-    basedOnThisMonthLabel: string;
+    sparkline: HourlyCompareSparkline;
+    todayLabel: string;
+    yesterdayLabel: string;
     timelineAriaLabel: string;
-    dayAriaLabelTemplate: string;
-    referenceDate?: Date;
+    hourAriaLabelTemplate: string;
+    tooltipTodayTemplate: string;
+    tooltipYesterdayTemplate: string;
 };
-export declare function RouteDetailsTimeline({ sparkline, selectedDateKey, onSelectDateKey, basedOnThisMonthLabel, timelineAriaLabel, dayAriaLabelTemplate, referenceDate, }: RouteDetailsTimelineProps): import("react/jsx-runtime").JSX.Element;
+export declare function RouteDetailsTimeline({ sparkline, todayLabel, yesterdayLabel, timelineAriaLabel, hourAriaLabelTemplate, tooltipTodayTemplate, tooltipYesterdayTemplate, }: RouteDetailsTimelineProps): import("react/jsx-runtime").JSX.Element;
 export {};
 //# sourceMappingURL=RouteDetailsTimeline.d.ts.map

@@ -224,11 +224,12 @@ export const ko: ReportMessages = {
         replyPaginationStatus: (current, total) => `${current} / ${total}`,
     },
     routeDetails: {
-        current: "Current",
-        selected: "Selected",
-        basedOnThisMonth: "이번달 기준",
-        timelineAriaLabel: "이번 달 일별 활동",
-        timelineDayAriaLabel: "{day}일, 피드백 {count}건",
+        today: "Today",
+        yesterday: "Yesterday",
+        timelineAriaLabel: "오늘과 어제 시간대별 이슈",
+        timelineHourAriaLabel: "{hour}, 오늘 {todayCount}건, 어제 {yesterdayCount}건",
+        tooltipToday: "Today, {hour}",
+        tooltipYesterday: "Yesterday, {hour}",
     },
     activityHeatmap: {
         title: "피드백 활동",

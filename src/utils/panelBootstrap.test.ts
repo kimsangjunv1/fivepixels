@@ -31,14 +31,14 @@ describe("panelBootstrap", () => {
         });
     });
 
-    it("builds route details with current/selected/delta", () => {
+    it("builds route details with today/yesterday/delta", () => {
         const referenceDate = new Date(2026, 6, 12);
-        const selectedAt = new Date(2026, 6, 12, 12, 0, 0).toISOString();
-        const previousAt = new Date(2026, 6, 11, 12, 0, 0).toISOString();
+        const todayAt = new Date(2026, 6, 12, 12, 0, 0).toISOString();
+        const yesterdayAt = new Date(2026, 6, 11, 12, 0, 0).toISOString();
         const reports = [
-            createFeedback({ created_at: selectedAt }),
-            createFeedback({ id: "feedback-2", created_at: selectedAt }),
-            createFeedback({ id: "feedback-3", created_at: previousAt }),
+            createFeedback({ created_at: todayAt }),
+            createFeedback({ id: "feedback-2", created_at: todayAt }),
+            createFeedback({ id: "feedback-3", created_at: yesterdayAt }),
         ];
         const fields = [
             { key: "message", label: "Message", type: "textarea" as const },
@@ -46,23 +46,24 @@ describe("panelBootstrap", () => {
         ];
 
         const routeDetails = buildRouteDetailsSummary(reports, fields, "/edgecase?test=1", {
-            selectedDateKey: "2026-07-12",
             referenceDate,
         });
         const bootstrap = buildPanelBootstrapFromReports(reports, fields, "/edgecase");
-        const activeRow = routeDetails.statusRows.find((row) => row.current > 0);
+        const activeRow = routeDetails.statusRows.find((row) => row.today > 0 || row.yesterday > 0);
 
         expect(routeDetails.pathname).toBe("/edgecase?test=1");
-        expect(routeDetails.selectedDateKey).toBe("2026-07-12");
+        expect(routeDetails.todayDateKey).toBe("2026-07-12");
+        expect(routeDetails.yesterdayDateKey).toBe("2026-07-11");
         expect(activeRow).toEqual(
             expect.objectContaining({
-                current: 3,
-                selected: 2,
+                today: 2,
+                yesterday: 1,
                 delta: 1,
             }),
         );
         expect(bootstrap.stats.found).toBe(3);
         expect(bootstrap.routeDetails.pathname).toBe("/edgecase");
-        expect(bootstrap.routeDetails.selectedDateKey).toBeTruthy();
+        expect(bootstrap.routeDetails.todayDateKey).toBeTruthy();
+        expect(bootstrap.routeDetails.yesterdayDateKey).toBeTruthy();
     });
 });

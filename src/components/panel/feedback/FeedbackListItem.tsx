@@ -199,7 +199,7 @@ export function FeedbackListItem({
             <button
                 type="button"
                 onClick={() => onLocate(report.id)}
-                className="flex w-full flex-col gap-[8px] px-[16px] py-[8px] text-left"
+                className="flex w-full flex-col gap-[8px] px-[16px] py-[8px] text-left hover:bg-[var(--adaptive-neutralTintOpacity900)]"
             >
                 <section className="flex flex-col gap-[4px]">
                     <div className="flex min-w-0 items-center justify-between gap-[4px]">
@@ -251,12 +251,12 @@ export function FeedbackListItem({
 
                 <div className="flex flex-wrap items-center gap-[6px]">
                     {category ? (
-                        <span className="inline-flex items-center gap-[4px] rounded-[4px] bg-[var(--adaptive-black300)] px-[4px] py-[1px] text-[12px] font-medium text-[var(--adaptive-black700)]">
+                        <span className="inline-flex items-center gap-[4px] rounded-[4px] bg-[var(--adaptive-black200)] px-[4px] py-[1px] text-[12px] font-medium text-[var(--adaptive-black700)]">
                             <CategoryShieldIcon className="h-[11px] w-[11px] text-[var(--adaptive-black500)]" />
                             {messages.feedbackList.categoryTag[category]}
                         </span>
                     ) : null}
-                    <span className="inline-flex items-center rounded-[4px] bg-[var(--adaptive-black300)] px-[4px] py-[1px] text-[12px] font-medium text-[var(--adaptive-black700)]">
+                    <span className="inline-flex items-center rounded-[4px] bg-[var(--adaptive-black200)] px-[4px] py-[1px] text-[12px] font-medium text-[var(--adaptive-black700)]">
                         {messages.feedbackList.statusTag[statusTag]}
                     </span>
                 </div>

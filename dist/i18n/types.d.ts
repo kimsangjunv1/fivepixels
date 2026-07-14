@@ -217,11 +217,12 @@ export type ReportMessages = {
         replyPaginationStatus: (current: number, total: number) => string;
     };
     routeDetails: {
-        current: string;
-        selected: string;
-        basedOnThisMonth: string;
+        today: string;
+        yesterday: string;
         timelineAriaLabel: string;
-        timelineDayAriaLabel: string;
+        timelineHourAriaLabel: string;
+        tooltipToday: string;
+        tooltipYesterday: string;
     };
     activityHeatmap: {
         title: string;

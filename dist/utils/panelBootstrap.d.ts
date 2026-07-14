@@ -10,15 +10,15 @@ export type RouteDetailsSummary = {
     pathname: string;
     statusRows: Array<{
         status: FeedbackDisplayStatus;
-        current: number;
-        selected: number;
+        today: number;
+        yesterday: number;
         delta: number;
     }>;
     fieldCounts: RouteDetailsFieldCount[];
-    selectedDateKey: string;
+    todayDateKey: string;
+    yesterdayDateKey: string;
 };
 export type BuildRouteDetailsSummaryOptions = {
-    selectedDateKey?: string;
     referenceDate?: Date;
 };
 export declare function buildPanelStats(reports: ReportFeedback[]): ReportPanelStats;

@@ -278,8 +278,8 @@ export type ReportPanelStats = {
 
 export type ReportRouteDetailsStatusRow = {
     status: FeedbackDisplayStatus;
-    current: number;
-    selected: number;
+    today: number;
+    yesterday: number;
     delta: number;
 };
 
@@ -294,7 +294,8 @@ export type ReportRouteDetailsSummary = {
     pathname: string;
     statusRows: ReportRouteDetailsStatusRow[];
     fieldCounts: ReportRouteDetailsFieldCount[];
-    selectedDateKey: string;
+    todayDateKey: string;
+    yesterdayDateKey: string;
 };
 
 export type ReportPanelBootstrapParams = {

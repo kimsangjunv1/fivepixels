@@ -31,14 +31,12 @@ export function buildPanelStats(reports) {
 }
 export function buildRouteDetailsSummary(reports, fields, pathname, options = {}) {
     const referenceDate = options.referenceDate ?? new Date();
-    const selectedDateKey = options.selectedDateKey ?? toDateKey(referenceDate);
-    const previousDateKey = shiftDateKey(selectedDateKey, -1);
+    const todayDateKey = toDateKey(referenceDate);
+    const yesterdayDateKey = shiftDateKey(todayDateKey, -1);
     const statusRows = FEEDBACK_DISPLAY_STATUS_ORDER.map((status) => ({
         status,
-        current: 0,
-        selected: 0,
-        delta: 0,
-        previous: 0,
+        today: 0,
+        yesterday: 0,
     }));
     const statusIndex = new Map(statusRows.map((row, index) => [row.status, index]));
     for (const report of reports) {
@@ -47,17 +45,16 @@ export function buildRouteDetailsSummary(reports, fields, pathname, options = {}
         if (index === undefined) {
             continue;
         }
-        statusRows[index].current += 1;
         const created = new Date(report.created_at);
         if (Number.isNaN(created.getTime())) {
             continue;
         }
         const createdKey = toDateKey(created);
-        if (createdKey === selectedDateKey) {
-            statusRows[index].selected += 1;
+        if (createdKey === todayDateKey) {
+            statusRows[index].today += 1;
         }
-        if (createdKey === previousDateKey) {
-            statusRows[index].previous += 1;
+        else if (createdKey === yesterdayDateKey) {
+            statusRows[index].yesterday += 1;
         }
     }
     const fieldCounts = fields
@@ -78,12 +75,13 @@ export function buildRouteDetailsSummary(reports, fields, pathname, options = {}
     });
     return {
         pathname,
-        selectedDateKey,
-        statusRows: statusRows.map(({ status, current, selected, previous }) => ({
+        todayDateKey,
+        yesterdayDateKey,
+        statusRows: statusRows.map(({ status, today, yesterday }) => ({
             status,
-            current,
-            selected,
-            delta: selected - previous,
+            today,
+            yesterday,
+            delta: today - yesterday,
         })),
         fieldCounts,
     };

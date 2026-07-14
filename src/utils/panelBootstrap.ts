@@ -13,13 +13,13 @@ export type RouteDetailsFieldCount = {
 
 export type RouteDetailsSummary = {
     pathname: string;
-    statusRows: Array<{ status: FeedbackDisplayStatus; current: number; selected: number; delta: number }>;
+    statusRows: Array<{ status: FeedbackDisplayStatus; today: number; yesterday: number; delta: number }>;
     fieldCounts: RouteDetailsFieldCount[];
-    selectedDateKey: string;
+    todayDateKey: string;
+    yesterdayDateKey: string;
 };
 
 export type BuildRouteDetailsSummaryOptions = {
-    selectedDateKey?: string;
     referenceDate?: Date;
 };
 
@@ -64,15 +64,13 @@ export function buildRouteDetailsSummary(
     options: BuildRouteDetailsSummaryOptions = {},
 ): RouteDetailsSummary {
     const referenceDate = options.referenceDate ?? new Date();
-    const selectedDateKey = options.selectedDateKey ?? toDateKey(referenceDate);
-    const previousDateKey = shiftDateKey(selectedDateKey, -1);
+    const todayDateKey = toDateKey(referenceDate);
+    const yesterdayDateKey = shiftDateKey(todayDateKey, -1);
 
     const statusRows = FEEDBACK_DISPLAY_STATUS_ORDER.map((status) => ({
         status,
-        current: 0,
-        selected: 0,
-        delta: 0,
-        previous: 0,
+        today: 0,
+        yesterday: 0,
     }));
     const statusIndex = new Map(statusRows.map((row, index) => [row.status, index]));
 
@@ -84,8 +82,6 @@ export function buildRouteDetailsSummary(
             continue;
         }
 
-        statusRows[index].current += 1;
-
         const created = new Date(report.created_at);
 
         if (Number.isNaN(created.getTime())) {
@@ -94,12 +90,10 @@ export function buildRouteDetailsSummary(
 
         const createdKey = toDateKey(created);
 
-        if (createdKey === selectedDateKey) {
-            statusRows[index].selected += 1;
-        }
-
-        if (createdKey === previousDateKey) {
-            statusRows[index].previous += 1;
+        if (createdKey === todayDateKey) {
+            statusRows[index].today += 1;
+        } else if (createdKey === yesterdayDateKey) {
+            statusRows[index].yesterday += 1;
         }
     }
 
@@ -124,12 +118,13 @@ export function buildRouteDetailsSummary(
 
     return {
         pathname,
-        selectedDateKey,
-        statusRows: statusRows.map(({ status, current, selected, previous }) => ({
+        todayDateKey,
+        yesterdayDateKey,
+        statusRows: statusRows.map(({ status, today, yesterday }) => ({
             status,
-            current,
-            selected,
-            delta: selected - previous,
+            today,
+            yesterday,
+            delta: today - yesterday,
         })),
         fieldCounts,
     };

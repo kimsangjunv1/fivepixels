@@ -1,10 +1,9 @@
-import { useMemo, useState, useSyncExternalStore } from "react";
+import { useMemo, useSyncExternalStore } from "react";
 import { useReport } from "@/providers/reportContext.js";
 import { buildRouteDetailsSummary } from "@/utils/panelBootstrap.js";
-import { buildMonthlySparkline } from "@/utils/monthlySparkline.js";
+import { buildHourlyCompareSparkline } from "@/utils/hourlyCompareSparkline.js";
 import { getCurrentPathLabel, getCurrentPathname } from "@/utils/pathname.js";
 import { subscribeToPathnameChanges } from "@/utils/pathnameNavigation.js";
-import { toDateKey } from "@/utils/heatmapActivity.js";
 import { panelNumericClassName } from "@/utils/panelTypography.js";
 import { FeedbackStatusBadge } from "./feedback/FeedbackStatusBadge.js";
 import { RouteDetailsTimeline } from "./RouteDetailsTimeline.js";
@@ -17,48 +16,24 @@ function formatDelta(delta: number) {
     return `+${delta.toLocaleString()}`;
 }
 
-function resolveDefaultDateKey(buckets: Array<{ dateKey: string }>, todayKey: string) {
-    if (buckets.some((bucket) => bucket.dateKey === todayKey)) {
-        return todayKey;
-    }
-
-    for (let index = buckets.length - 1; index >= 0; index -= 1) {
-        const dateKey = buckets[index]?.dateKey;
-
-        if (dateKey && dateKey <= todayKey) {
-            return dateKey;
-        }
-    }
-
-    return buckets[buckets.length - 1]?.dateKey ?? todayKey;
-}
-
 export function ReportRouteDetails() {
     const { currentPageReports, fields, currentPathname, messages } = useReport();
     const browserPathname = useSyncExternalStore(subscribeToPathnameChanges, getCurrentPathname, () => "/");
     const browserPathLabel = useSyncExternalStore(subscribeToPathnameChanges, getCurrentPathLabel, () => currentPathname);
     const displayPath = browserPathname === currentPathname ? browserPathLabel : currentPathname;
-    const sparkline = useMemo(() => buildMonthlySparkline(currentPageReports), [currentPageReports]);
-    const todayKey = toDateKey(new Date());
-    const defaultDateKey = resolveDefaultDateKey(sparkline.buckets, todayKey);
-    const [selectedDateKey, setSelectedDateKey] = useState(defaultDateKey);
-
-    const resolvedSelectedDateKey = sparkline.buckets.some((bucket) => bucket.dateKey === selectedDateKey) ? selectedDateKey : defaultDateKey;
-
-    const summary = useMemo(
-        () => buildRouteDetailsSummary(currentPageReports, fields, displayPath, { selectedDateKey: resolvedSelectedDateKey }),
-        [currentPageReports, displayPath, fields, resolvedSelectedDateKey],
-    );
+    const sparkline = useMemo(() => buildHourlyCompareSparkline(currentPageReports), [currentPageReports]);
+    const summary = useMemo(() => buildRouteDetailsSummary(currentPageReports, fields, displayPath), [currentPageReports, displayPath, fields]);
 
     return (
         <section className="flex min-h-0 flex-1 flex-col overflow-y-auto bg-[var(--adaptive-black50)]">
             <RouteDetailsTimeline
                 sparkline={sparkline}
-                selectedDateKey={resolvedSelectedDateKey}
-                onSelectDateKey={setSelectedDateKey}
-                basedOnThisMonthLabel={messages.routeDetails.basedOnThisMonth}
+                todayLabel={messages.routeDetails.today}
+                yesterdayLabel={messages.routeDetails.yesterday}
                 timelineAriaLabel={messages.routeDetails.timelineAriaLabel}
-                dayAriaLabelTemplate={messages.routeDetails.timelineDayAriaLabel}
+                hourAriaLabelTemplate={messages.routeDetails.timelineHourAriaLabel}
+                tooltipTodayTemplate={messages.routeDetails.tooltipToday}
+                tooltipYesterdayTemplate={messages.routeDetails.tooltipYesterday}
             />
 
             <article className="flex flex-col px-[16px]">
@@ -68,8 +43,8 @@ export function ReportRouteDetails() {
                     </div>
 
                     <div className="flex w-[132px] shrink-0">
-                        <p className="flex-1 text-[var(--adaptive-black500)] font-[500]">{messages.routeDetails.current}</p>
-                        <p className="flex-1 text-right text-[var(--adaptive-black500)] font-[500]">{messages.routeDetails.selected}</p>
+                        <p className="flex-1 text-[var(--adaptive-black500)] font-[500]">{messages.routeDetails.today}</p>
+                        <p className="flex-1 text-right text-[var(--adaptive-black500)] font-[500]">{messages.routeDetails.yesterday}</p>
                     </div>
                 </section>
 
@@ -94,10 +69,10 @@ export function ReportRouteDetails() {
 
                                 <div className="flex w-[132px] shrink-0 items-baseline">
                                     <div className="flex flex-1 items-baseline gap-[4px]">
-                                        <p className={`text-[14px] font-bold text-[var(--adaptive-black900)] ${panelNumericClassName}`}>{row.current.toLocaleString()}</p>
+                                        <p className={`text-[14px] font-bold text-[var(--adaptive-black900)] ${panelNumericClassName}`}>{row.today.toLocaleString()}</p>
                                         {deltaLabel ? <span className={`text-[11px] font-[600] text-[var(--adaptive-green500)] ${panelNumericClassName}`}>{deltaLabel}</span> : null}
                                     </div>
-                                    <p className={`flex-1 text-right text-[14px] font-bold text-[var(--adaptive-black900)] ${panelNumericClassName}`}>{row.selected.toLocaleString()}</p>
+                                    <p className={`flex-1 text-right text-[14px] font-bold text-[var(--adaptive-black900)] ${panelNumericClassName}`}>{row.yesterday.toLocaleString()}</p>
                                 </div>
                             </section>
 

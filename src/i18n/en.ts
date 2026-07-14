@@ -225,11 +225,12 @@ export const en: ReportMessages = {
         replyPaginationStatus: (current, total) => `${current} / ${total}`,
     },
     routeDetails: {
-        current: "Current",
-        selected: "Selected",
-        basedOnThisMonth: "Based on this month",
-        timelineAriaLabel: "Daily activity this month",
-        timelineDayAriaLabel: "Day {day}, {count} feedback",
+        today: "Today",
+        yesterday: "Yesterday",
+        timelineAriaLabel: "Hourly issues today vs yesterday",
+        timelineHourAriaLabel: "{hour}, today {todayCount}, yesterday {yesterdayCount}",
+        tooltipToday: "Today, {hour}",
+        tooltipYesterday: "Yesterday, {hour}",
     },
     activityHeatmap: {
         title: "Feedback activity",
