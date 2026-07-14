@@ -1,23 +1,34 @@
 import type { ReportFeedback } from "@/types/report.js";
 import { getFeedbackTargetSelector, isFeedbackTargetVisible } from "./dom.js";
+import { findElementByTargetSelector } from "./targetSelector.js";
 
 export { isFeedbackTargetVisible } from "./dom.js";
 
 export const LOCATE_PULSE_DURATION_MS = 2400;
 export const TARGET_REVEAL_RESYNC_DELAY_MS = 50;
 
-export function getFeedbackTargetElement(report: Pick<ReportFeedback, "report_id" | "report_type">) {
+export function getFeedbackTargetElement(report: Pick<ReportFeedback, "report_id" | "report_type" | "target_selector">) {
+    if (report.target_selector) {
+        const bySelector = findElementByTargetSelector(report.target_selector);
+
+        if (bySelector) {
+            return bySelector;
+        }
+    }
+
     const selector = getFeedbackTargetSelector(report.report_id, report.report_type);
 
     return document.querySelector<HTMLElement>(selector);
 }
 
-export function getFeedbackAnchorElement(report: Pick<ReportFeedback, "anchor_report_id" | "anchor_report_type">) {
-    if (!report.anchor_report_id || !report.anchor_report_type) {
+export function getFeedbackAnchorElement(report: Pick<ReportFeedback, "position">) {
+    const anchor = report.position.anchor;
+
+    if (!anchor) {
         return null;
     }
 
-    const selector = getFeedbackTargetSelector(report.anchor_report_id, report.anchor_report_type);
+    const selector = getFeedbackTargetSelector(anchor.reportId, anchor.reportType);
 
     return document.querySelector<HTMLElement>(selector);
 }
@@ -42,7 +53,7 @@ export function waitForTargetRevealResync() {
     });
 }
 
-export function scrollToFeedbackTarget(report: Pick<ReportFeedback, "report_id" | "report_type" | "scroll_y" | "anchor_report_id" | "anchor_report_type">) {
+export function scrollToFeedbackTarget(report: Pick<ReportFeedback, "report_id" | "report_type" | "position">) {
     const targetElement = getFeedbackTargetElement(report);
 
     if (targetElement) {
@@ -57,6 +68,6 @@ export function scrollToFeedbackTarget(report: Pick<ReportFeedback, "report_id" 
         return { foundElement: true as const, targetElement: anchorElement };
     }
 
-    window.scrollTo({ top: report.scroll_y, behavior: "smooth" });
+    window.scrollTo({ top: report.position.scrollY, behavior: "smooth" });
     return { foundElement: false as const, targetElement: null };
 }

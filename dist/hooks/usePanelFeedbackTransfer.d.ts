@@ -14,11 +14,11 @@ type UsePanelFeedbackTransferOptions = {
     messages: ReportMessages;
     setErrorMessage: (message: string) => void;
     refetch: () => Promise<unknown>;
-    openPanelTab: (tab: "command") => void;
-    onMoreMenuClose?: () => void;
+    openPanelTab: (tab: "command" | "settings") => void;
+    onPanelOverlayClose?: () => void;
     isRecording: boolean;
 };
-export declare function usePanelFeedbackTransfer({ transferScope, canTransferFeedback, messages, setErrorMessage, refetch, openPanelTab, onMoreMenuClose, isRecording, }: UsePanelFeedbackTransferOptions): {
+export declare function usePanelFeedbackTransfer({ transferScope, canTransferFeedback, messages, setErrorMessage, refetch, openPanelTab, onPanelOverlayClose, isRecording, }: UsePanelFeedbackTransferOptions): {
     isDragOver: boolean;
     pendingImport: FeedbackImportPayload | null;
     importStep: ImportStep;

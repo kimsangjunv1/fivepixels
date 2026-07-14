@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { createReport, deleteReport, listAllReports, listReports, updateReport } from "./report.api.js";
 const EMPTY_REPORTS = [];
 const REPORT_LIST_PAGE_SIZE = 100;
-export const useReportsQuery = (adapter, pathname, scope, enabled = true) => {
+export const useReportsQuery = (adapter, pathname, scope, enabled = true, onRefetch) => {
     const [data, setData] = useState(EMPTY_REPORTS);
     const [isLoading, setIsLoading] = useState(enabled);
     const [isFetching, setIsFetching] = useState(false);
@@ -24,6 +24,7 @@ export const useReportsQuery = (adapter, pathname, scope, enabled = true) => {
                 ? await listAllReports(adapter, { limit: REPORT_LIST_PAGE_SIZE })
                 : { items: await listReports(adapter, pathname), nextCursor: undefined };
             const reports = result.items;
+            onRefetch?.();
             setData(reports);
             setNextCursor(result.nextCursor);
             setIsFetched(true);
@@ -37,7 +38,7 @@ export const useReportsQuery = (adapter, pathname, scope, enabled = true) => {
             setIsLoading(false);
             setIsFetching(false);
         }
-    }, [adapter, enabled, pathname, scope]);
+    }, [adapter, enabled, onRefetch, pathname, scope]);
     const fetchNextPage = useCallback(async () => {
         if (scope !== "all" || !nextCursor || isFetchingNextPage) {
             return;

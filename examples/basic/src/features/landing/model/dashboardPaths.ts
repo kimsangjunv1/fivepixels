@@ -1,4 +1,4 @@
-export const DASHBOARD_PATHS = ["/", "/issues", "/reviews", "/release", "/settings"] as const;
+export const DASHBOARD_PATHS = ["/", "/issues", "/reviews", "/release", "/settings", "/edgecase"] as const;
 
 export type DashboardPath = (typeof DASHBOARD_PATHS)[number];
 

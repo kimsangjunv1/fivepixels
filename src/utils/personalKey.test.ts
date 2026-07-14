@@ -27,6 +27,14 @@ describe("reviewer key signature", () => {
         expect(resolvePersonalKeyAuthor(bundle, identify, [{ ...identify, publicKey: "stpub1.invalid" }])).toBeUndefined();
     });
 
+    it("rejects reviewer name mismatches when the personal key stores authorName", async () => {
+        const issued = await createReviewerKeyPair("demo", "stage", identify.id, identify.name);
+        const bundle = parsePrivateKeyBundle(issued.privateKey)!;
+
+        expect(resolvePersonalKeyAuthor(bundle, identify, [{ ...identify, publicKey: issued.publicKey }])).toEqual(identify);
+        expect(resolvePersonalKeyAuthor(bundle, identify, [{ ...identify, name: "다른이름", publicKey: issued.publicKey }])).toBeUndefined();
+    });
+
     it("stores only a key scoped to the current project and environment", async () => {
         const issued = await createReviewerKeyPair("demo", "stage", identify.id);
 

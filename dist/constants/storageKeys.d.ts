@@ -1,5 +1,7 @@
 export declare const REPORTS_STORAGE_KEY = "fivepixels:reports:v1";
 export declare const PERSONAL_KEY_STORAGE_KEY = "fivepixels:personal-key:v1";
+export declare const SELF_PROFILE_STORAGE_KEY = "fivepixels:self-profile:v1";
 export declare function getReportsStorageKey(projectId: string, environment?: string, appVersion?: string): string;
 export declare function getPersonalKeyStorageKey(projectId: string, environment?: string): string;
+export declare function getSelfProfileStorageKey(projectId: string, environment?: string): string;
 //# sourceMappingURL=storageKeys.d.ts.map

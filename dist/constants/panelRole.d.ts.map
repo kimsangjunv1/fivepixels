@@ -1,0 +1,1 @@
+{"version":3,"file":"panelRole.d.ts","sourceRoot":"","sources":["../../src/constants/panelRole.ts"],"names":[],"mappings":"AAAA,eAAO,MAAM,iBAAiB,gFAAiF,CAAC;AAEhH,MAAM,MAAM,SAAS,GAAG,CAAC,OAAO,iBAAiB,CAAC,CAAC,MAAM,CAAC,CAAC;AAE3D,eAAO,MAAM,kBAAkB,EAAE,SAAqB,CAAC;AAEvD,wBAAgB,WAAW,CAAC,KAAK,EAAE,OAAO,GAAG,KAAK,IAAI,SAAS,CAE9D"}

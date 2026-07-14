@@ -1,7 +1,11 @@
 import { getActiveReportMessages } from "../../i18n/index.js";
+import { isFeedbackCategory } from "../../constants/feedbackCategory.js";
 import { DEFAULT_PROJECT_ID } from "../../constants/project.js";
 import { getReportsStorageKey } from "../../constants/storageKeys.js";
 import { parseFeedbackStorageEnvelope, serializeFeedbackStorageEnvelope } from "../../utils/feedbackTransferSchema.js";
+import { allocateNextFcNumber, backfillFcNumbers } from "../../utils/feedbackCaseId.js";
+import { paginateSortedReplies, sortRepliesChronologically } from "../../utils/replyHistory.js";
+import { applyCaseStatusSync, normalizeFeedbackCases, normalizeReplyCaseIds, } from "../../utils/reportCases.js";
 function createId() {
     if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
         return crypto.randomUUID();
@@ -23,7 +27,13 @@ function normalizeFieldValues(value) {
     }, {});
 }
 function isReplyStatus(value) {
-    return value === "suggested" || value === "found_error" || value === "recheck_requested" || value === "resolved";
+    return (value === "suggested" ||
+        value === "additional_question" ||
+        value === "found_error" ||
+        value === "recheck_requested" ||
+        value === "resolved" ||
+        value === "assignee_assigned" ||
+        value === "assignee_transferred");
 }
 function normalizeReplyStatus(value) {
     if (isReplyStatus(value)) {
@@ -49,6 +59,8 @@ function normalizeReplies(value) {
                 message: reply.message,
                 created_at: reply.created_at,
                 status: normalizeReplyStatus(reply.status),
+                case_ids: normalizeReplyCaseIds(reply.case_ids),
+                parent_reply_id: typeof reply.parent_reply_id === "string" ? reply.parent_reply_id : null,
                 author_type: reply.author_type,
                 author_name: reply.author_name ?? null,
                 auth: reply.auth,
@@ -86,13 +98,19 @@ function normalizeIntegrations(value) {
     return { github };
 }
 function normalizeReport(item) {
-    return {
+    const cases = normalizeFeedbackCases(item);
+    const fcNumber = typeof item.fc_number === "number" && Number.isFinite(item.fc_number) && item.fc_number > 0 ? Math.trunc(item.fc_number) : undefined;
+    const category = isFeedbackCategory(item.category) ? item.category : null;
+    return applyCaseStatusSync({
         ...item,
+        cases,
         status: isReportStatus(item.status) ? item.status : "open",
+        ...(fcNumber !== undefined ? { fc_number: fcNumber } : {}),
+        category,
         field_values: normalizeFieldValues(item.field_values),
         replies: normalizeReplies(item.replies),
         integrations: normalizeIntegrations(item.integrations),
-    };
+    });
 }
 export function readAllReportsFromStorage(storageKey) {
     if (typeof window === "undefined") {
@@ -104,14 +122,24 @@ export function readAllReportsFromStorage(storageKey) {
     }
     try {
         const parsed = JSON.parse(raw);
+        let items = [];
+        let project;
         if (Array.isArray(parsed)) {
-            return parsed.map(normalizeReport);
+            items = parsed.map(normalizeReport);
         }
-        const envelope = parseFeedbackStorageEnvelope(raw);
-        if (envelope) {
-            return envelope.items.map(normalizeReport);
+        else {
+            const envelope = parseFeedbackStorageEnvelope(raw);
+            if (envelope) {
+                items = envelope.items.map(normalizeReport);
+                project = envelope.project;
+            }
         }
-        return [];
+        const backfilled = backfillFcNumbers(items);
+        const needsPersist = backfilled.some((item, index) => item.fc_number !== items[index]?.fc_number);
+        if (needsPersist) {
+            writeAllReportsToStorage(storageKey, backfilled, project);
+        }
+        return backfilled;
     }
     catch {
         return [];
@@ -151,17 +179,58 @@ export function createLocalStorageReportAdapter({ projectId, environment, appVer
                 nextCursor: nextOffset < items.length ? String(nextOffset) : undefined,
             };
         },
+        async listReplies(commentId, params) {
+            const item = readAll(storageKey).find((entry) => entry.id === commentId);
+            if (!item) {
+                throw new Error(getActiveReportMessages().errors.feedbackNotFound);
+            }
+            const sorted = sortRepliesChronologically(normalizeReplies(item.replies));
+            if (!params) {
+                return sorted;
+            }
+            return paginateSortedReplies(sorted, params);
+        },
         async create(payload) {
+            const items = readAll(storageKey);
+            const fcNumber = typeof payload.fc_number === "number" && payload.fc_number > 0 ? Math.trunc(payload.fc_number) : allocateNextFcNumber(items);
             const nextItem = {
                 ...payload,
                 id: createId(),
+                fc_number: fcNumber,
+                category: isFeedbackCategory(payload.category) ? payload.category : null,
                 created_at: new Date().toISOString(),
                 replies: payload.replies ?? [],
             };
-            const items = readAll(storageKey);
             const normalized = normalizeReport(nextItem);
             writeAll(storageKey, [normalized, ...items], project);
             return normalized;
+        },
+        async createReply(commentId, payload) {
+            const items = readAll(storageKey);
+            const index = items.findIndex((item) => item.id === commentId);
+            if (index < 0) {
+                throw new Error(getActiveReportMessages().errors.feedbackNotFound);
+            }
+            const reply = {
+                id: createId(),
+                comment_id: commentId,
+                message: payload.message,
+                created_at: new Date().toISOString(),
+                status: normalizeReplyStatus(payload.status),
+                case_ids: normalizeReplyCaseIds(payload.case_ids),
+                parent_reply_id: typeof payload.parent_reply_id === "string" ? payload.parent_reply_id : null,
+                author_type: payload.author_type,
+                author_name: payload.author_name ?? null,
+                auth: payload.auth,
+            };
+            const currentReplies = normalizeReplies(items[index].replies);
+            const nextItem = normalizeReport({
+                ...items[index],
+                replies: [...currentReplies, reply],
+            });
+            items[index] = nextItem;
+            writeAll(storageKey, items, project);
+            return reply;
         },
         async update(id, payload) {
             const items = readAll(storageKey);

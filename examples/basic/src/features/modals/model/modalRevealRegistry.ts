@@ -10,7 +10,7 @@ export function registerModalRevealHandler(handler: ModalRevealHandler | null) {
     revealHandler = handler;
 }
 
-const modalRevealPaths = new Set<string>(["/", "/issues", "/reviews", "/release", "/settings"]);
+const modalRevealPaths = new Set<string>(["/", "/issues", "/reviews", "/release", "/settings", "/edgecase"]);
 
 export async function invokeModalRevealHandler(report: ReportFeedback) {
     if (!report.pathname || !modalRevealPaths.has(report.pathname)) {

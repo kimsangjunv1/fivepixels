@@ -663,6 +663,321 @@
     color: var(--pulse-text-muted);
 }
 
+.pulse-edgecase-page {
+    gap: 20px;
+}
+
+.pulse-edgecase-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.pulse-edgecase-legend__item {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.pulse-edgecase-legend__item--tagged {
+    background: #ecfdf5;
+    color: #047857;
+}
+
+.pulse-edgecase-legend__item--untagged {
+    background: #eef2ff;
+    color: #4338ca;
+}
+
+.pulse-edgecase-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 14px;
+}
+
+.pulse-edgecase-card {
+    display: grid;
+    gap: 10px;
+    padding: 16px;
+    border: 1px solid var(--pulse-border);
+    border-radius: 8px;
+    background: var(--pulse-card);
+}
+
+.pulse-edgecase-card--tagged {
+    border-color: #6ee7b7;
+    box-shadow: inset 0 0 0 1px #a7f3d0;
+}
+
+.pulse-edgecase-card--untagged {
+    border-color: #c7d2fe;
+    box-shadow: inset 0 0 0 1px #e0e7ff;
+}
+
+.pulse-edgecase-card__meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.pulse-edgecase-card__badge {
+    display: inline-flex;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+}
+
+.pulse-edgecase-card__badge--tagged {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.pulse-edgecase-card__badge--untagged {
+    background: #e0e7ff;
+    color: #3730a3;
+}
+
+.pulse-edgecase-card__id {
+    font-size: 11px;
+    color: var(--pulse-text-muted);
+}
+
+.pulse-edgecase-card__title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.pulse-edgecase-card__desc {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--pulse-text-muted);
+}
+
+.pulse-edgecase-card__action {
+    justify-self: start;
+    padding: 8px 12px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.pulse-edgecase-card__action--tagged {
+    background: #10b981;
+    color: #fff;
+}
+
+.pulse-edgecase-card__action--untagged {
+    background: #6366f1;
+    color: #fff;
+}
+
+.pulse-edgecase-layouts {
+    display: grid;
+    gap: 20px;
+    margin-top: 8px;
+    padding-top: 20px;
+    border-top: 1px solid var(--pulse-border);
+}
+
+.pulse-edgecase-layouts__heading {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.pulse-edgecase-layouts__desc {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--pulse-text-muted);
+}
+
+.pulse-edgecase-layout-group {
+    display: grid;
+    gap: 14px;
+}
+
+.pulse-edgecase-layout-group__title {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.pulse-edgecase-layout-demo {
+    display: grid;
+    gap: 8px;
+}
+
+.pulse-edgecase-layout-demo__label {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--pulse-text-muted);
+}
+
+.pulse-edgecase-flex-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    border: 1px solid #6ee7b7;
+    border-radius: 8px;
+    background: #ecfdf5;
+    box-shadow: inset 0 0 0 1px #a7f3d0;
+}
+
+.pulse-edgecase-flex-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid transparent;
+}
+
+.pulse-edgecase-flex-chip--tagged {
+    background: #10b981;
+    color: #fff;
+}
+
+.pulse-edgecase-flex-chip--untagged {
+    background: #6366f1;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+}
+
+.pulse-edgecase-flex-chip--ghost {
+    background: transparent;
+    color: #4338ca;
+    border-color: #c7d2fe;
+}
+
+.pulse-edgecase-flex-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 14px;
+    border: 1px solid #c7d2fe;
+    border-radius: 8px;
+    background: #eef2ff;
+    box-shadow: inset 0 0 0 1px #e0e7ff;
+}
+
+.pulse-edgecase-flex-stack__title {
+    font-size: 14px;
+    color: #065f46;
+}
+
+.pulse-edgecase-flex-stack__body {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--pulse-text-muted);
+}
+
+.pulse-edgecase-flex-nested {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px;
+    border: 1px solid #6ee7b7;
+    border-radius: 8px;
+    background: var(--pulse-card);
+    box-shadow: inset 0 0 0 1px #a7f3d0;
+}
+
+.pulse-edgecase-flex-nested__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+.pulse-edgecase-flex-nested__note {
+    font-size: 13px;
+    color: #3730a3;
+}
+
+.pulse-edgecase-grid-board {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    padding: 12px;
+    border: 1px solid #6ee7b7;
+    border-radius: 8px;
+    background: #ecfdf5;
+    box-shadow: inset 0 0 0 1px #a7f3d0;
+}
+
+.pulse-edgecase-grid-board--single {
+    grid-template-columns: 1fr;
+}
+
+.pulse-edgecase-grid-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 72px;
+    padding: 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.pulse-edgecase-grid-cell--tagged {
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #6ee7b7;
+}
+
+.pulse-edgecase-grid-cell--untagged {
+    background: #e0e7ff;
+    color: #3730a3;
+    border: 1px solid #c7d2fe;
+}
+
+.pulse-edgecase-grid-cell--span {
+    grid-column: span 2;
+}
+
+.pulse-edgecase-grid-cell--nested {
+    min-height: auto;
+    justify-content: stretch;
+}
+
+.pulse-edgecase-grid-nested-flex {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #6ee7b7;
+    border-radius: 6px;
+    background: #ecfdf5;
+    box-shadow: inset 0 0 0 1px #a7f3d0;
+}
+
+.pulse-edgecase-grid-nested-flex__caption {
+    font-size: 13px;
+    color: #3730a3;
+}
+
 .pulse-reviews-scroll {
     overflow-x: auto;
     border: 1px solid var(--pulse-border);

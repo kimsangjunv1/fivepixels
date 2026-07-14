@@ -10,6 +10,8 @@ export type {
     ReportAuthAction,
     ReportAuthProof,
     ReportEvent,
+    ReportCase,
+    ReportCaseStatus,
     ReportFeedback,
     ReportField,
     ReportFieldBase,
@@ -24,8 +26,21 @@ export type {
     ReportIntegrations,
     ReportListAllParams,
     ReportListAllResult,
+    ReportActivitySummaryParams,
+    ReportActivitySummaryResult,
+    ReportActivitySummaryBucket,
+    ReportPanelBootstrapParams,
+    ReportPanelBootstrapResult,
+    ReportPanelStats,
+    ReportRouteDetailsSummary,
     ReportPersistenceHandlers,
+    ReportPosition,
+    ReportPositionAnchor,
+    ReportPositionRatio,
+    ReportPositionViewport,
     ReportProject,
+    QuestionThreadDisplay,
+    FivePixelsMode,
     ReportTeam,
     ReportUi,
     ReportVisibility,
@@ -38,6 +53,21 @@ export type {
     SerializedReportReply,
     UpdateReportFeedbackPayload,
 } from "@/types/report.js";
+export {
+    allCasesResolved,
+    applyCaseStatusSync,
+    createCaseId,
+    createReportCase,
+    getIssueProgressLabel,
+    getIssueSummary,
+    getOpenCases,
+    getReportCases,
+    shouldShowCaseProgress,
+    getResolvedCaseCount,
+    resolveCases,
+    syncIssueStatusFromCases,
+    canEditReportCases,
+} from "@/utils/reportCases.js";
 export {
     createReportAuthMessage,
     parsePublicKey,
@@ -57,3 +87,14 @@ export {
 } from "@/utils/githubIntegration.js";
 export type { DeepPartialReportMessages, ReportLocale, ReportMessages } from "@/i18n/index.js";
 export { en as reportMessagesEn, ensureReportLocaleMessages, getDefaultFields, getReportMessages, resolveReportLocale } from "@/i18n/index.js";
+export { FEEDBACK_STORAGE_CHANGED_EVENT, dispatchFeedbackStorageChanged } from "@/constants/feedbackStorageEvents.js";
+export {
+    findFeedbackInsertConflicts,
+    getFeedbackStorageKey,
+    insertFeedbackItems,
+    readAllFeedback,
+    upsertFeedbackItems,
+    writeAllFeedback,
+    type FeedbackInsertResult,
+    type FeedbackTransferScope,
+} from "@/utils/feedbackDataTransfer.js";

@@ -1,5 +1,7 @@
-import type { CreateReportFeedbackPayload, ReportFeedback, ReportField, ReportPersistenceHandlers, ReportStorageAdapter, UpdateReportFeedbackPayload } from "../types/report.js";
+import type { CreateReportFeedbackPayload, CreateReplyPayload, ReportFeedback, ReportField, ReportPersistenceHandlers, ReportReply, ReportStorageAdapter, UpdateReportFeedbackPayload } from "../types/report.js";
 import type { ReportFilters, ReportListScope } from "../types/report-ui.js";
+import type { ResolvedReplyHistoryConfig } from "../utils/reportUi.js";
+import { type ReplyHistoryState } from "./replyHistoryActions.js";
 export type ReportPersistenceConfig = {
     projectId: string;
     environment?: string;
@@ -9,15 +11,23 @@ export type ReportPersistenceConfig = {
         pathname: string;
     }) => Promise<ReportFeedback[]>;
     onListAll?: ReportPersistenceHandlers["onListAll"];
+    onListReplies?: ReportPersistenceHandlers["onListReplies"];
     onCreate?: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
+    onCreateReply?: ReportPersistenceHandlers["onCreateReply"];
     onUpdate?: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
     onDelete?: (id: string) => Promise<void>;
     routeKey?: string;
+    fetchEnabled?: boolean;
+    listFetchEnabled?: boolean;
+    allReportsFetchEnabled?: boolean;
+    replyHistory: ResolvedReplyHistoryConfig;
 };
-export declare function useReportPersistence({ projectId, environment, appVersion, fields, onList, onListAll, onCreate, onUpdate, onDelete, routeKey, }: ReportPersistenceConfig): {
+export declare function useReportPersistence({ projectId, environment, appVersion, fields, onList, onListAll, onListReplies, onCreate, onCreateReply, onUpdate, onDelete, routeKey, fetchEnabled, listFetchEnabled, allReportsFetchEnabled, replyHistory, }: ReportPersistenceConfig): {
     storageAdapterInstance: ReportStorageAdapter;
     canTransferFeedback: boolean;
     canListAllFeedback: boolean;
+    usesLazyReplies: boolean;
+    usesCreateReply: boolean;
     currentPathname: string;
     listScope: ReportListScope;
     setListScope: import("react").Dispatch<import("react").SetStateAction<ReportListScope>>;
@@ -26,24 +36,15 @@ export declare function useReportPersistence({ projectId, environment, appVersio
     selectedReportId: string | null;
     setSelectedReportId: import("react").Dispatch<import("react").SetStateAction<string | null>>;
     reports: ReportFeedback[];
+    currentPageReports: ReportFeedback[];
+    allPageReports: ReportFeedback[];
     filteredReports: ReportFeedback[];
     currentPageFilteredReports: ReportFeedback[];
-    routeDetailsStats: {
-        pathname: string;
-        statusRows: {
-            status: import("../constants/feedbackStatus.js").FeedbackDisplayStatus;
-            all: number;
-            today: number;
-        }[];
-        fieldCounts: {
-            key: string;
-            label: string;
-            type: "textarea" | "checkbox";
-            count: number;
-        }[];
-    };
+    allPageFilteredReports: ReportFeedback[];
+    routeDetailsStats: import("../utils/panelBootstrap.js").RouteDetailsSummary;
     selectedReport: ReportFeedback;
     isError: boolean;
+    isReportsLoading: boolean;
     isFetching: boolean;
     hasNextPage: boolean;
     isFetchingNextPage: boolean;
@@ -56,6 +57,15 @@ export declare function useReportPersistence({ projectId, environment, appVersio
     createFeedback: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
     updateFeedback: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
     deleteFeedback: (id: string) => Promise<void>;
+    loadRepliesIfNeeded: (report: ReportFeedback) => Promise<ReportFeedback>;
+    createReply: (commentId: string, payload: CreateReplyPayload) => Promise<ReportReply>;
+    replyHistory: ResolvedReplyHistoryConfig;
+    replyHistoryByReportId: Record<string, ReplyHistoryState>;
+    initReplyHistory: (report: ReportFeedback, config: ResolvedReplyHistoryConfig) => Promise<ReportFeedback>;
+    loadOlderReplies: (reportId: string, config: ResolvedReplyHistoryConfig) => Promise<void>;
+    goToOlderPaginationPage: (reportId: string, config: ResolvedReplyHistoryConfig) => Promise<void>;
+    goToNewerPaginationPage: (reportId: string, config: ResolvedReplyHistoryConfig) => void;
+    resetReplyHistory: (reportId?: string) => void;
 };
 export type ReportPersistenceState = ReturnType<typeof useReportPersistence> & {
     storageAdapterInstance: ReportStorageAdapter;

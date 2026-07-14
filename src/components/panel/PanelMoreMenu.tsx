@@ -1,16 +1,20 @@
 import type { ReportAppearance } from "@/types/report.js";
 import type { ReportLocale } from "@/i18n/types.js";
+import { APPEARANCE_OPTION_VALUES } from "@/constants/appearance.js";
 import { useReport } from "@/providers/reportContext.js";
 import { SettingsIcon } from "@/components/icons/Icons.js";
 import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
 import { PanelDropdownMenu, PanelDropdownMenuItem } from "./PanelDropdownMenu.js";
+import { AppearanceThemePicker } from "./AppearanceThemePicker.js";
 import { PanelOptionSwitch } from "./PanelOptionSwitch.js";
 
 type PanelMoreMenuProps = {
     open: boolean;
     transferDisabled?: boolean;
-    appearance: ReportAppearance;
-    onAppearanceChange: (appearance: ReportAppearance) => void;
+    panelAppearance: ReportAppearance;
+    onPanelAppearanceChange: (appearance: ReportAppearance) => void;
+    tooltipAppearance: ReportAppearance;
+    onTooltipAppearanceChange: (appearance: ReportAppearance) => void;
     onToggle: () => void;
     onClose: () => void;
     onExport: () => void;
@@ -28,8 +32,10 @@ const LOCALE_OPTIONS = ["en", "ko"] as const satisfies readonly ReportLocale[];
 export function PanelMoreMenu({
     open,
     transferDisabled = false,
-    appearance,
-    onAppearanceChange,
+    panelAppearance,
+    onPanelAppearanceChange,
+    tooltipAppearance,
+    onTooltipAppearanceChange,
     onToggle,
     onClose,
     onExport,
@@ -42,7 +48,7 @@ export function PanelMoreMenu({
     onKeyRotate,
 }: PanelMoreMenuProps) {
     const { locale, setLocale, messages } = useReport();
-    const appearanceOptions = (["system", "light", "dark"] as const).map((value) => ({
+    const appearanceOptions = APPEARANCE_OPTION_VALUES.map((value) => ({
         value,
         label: messages.appearance[value],
     }));
@@ -89,13 +95,22 @@ export function PanelMoreMenu({
                 {messages.moreMenu.keyRotate}
             </PanelDropdownMenuItem>
             <div className="w-full h-[1px] bg-[var(--adaptive-black300)]" />
-            <div className="px-[12px] py-[8px]">
-                <p className="mb-[6px] text-[11px] font-semibold uppercase tracking-[0.02em] text-[var(--adaptive-black500)]">{messages.moreMenu.theme}</p>
-                <PanelOptionSwitch
+            <div className="w-[min(100%,300px)] px-[12px] py-[8px]">
+                <p className="mb-[6px] text-[11px] font-semibold uppercase tracking-[0.02em] text-[var(--adaptive-black500)]">{messages.moreMenu.panelTheme}</p>
+                <AppearanceThemePicker
                     options={appearanceOptions}
-                    value={appearance}
-                    onChange={onAppearanceChange}
-                    ariaLabel={messages.moreMenu.themeAriaLabel}
+                    value={panelAppearance}
+                    onChange={onPanelAppearanceChange}
+                    ariaLabel={messages.moreMenu.panelThemeAriaLabel}
+                />
+            </div>
+            <div className="w-[min(100%,300px)] px-[12px] py-[8px]">
+                <p className="mb-[6px] text-[11px] font-semibold uppercase tracking-[0.02em] text-[var(--adaptive-black500)]">{messages.moreMenu.tooltipTheme}</p>
+                <AppearanceThemePicker
+                    options={appearanceOptions}
+                    value={tooltipAppearance}
+                    onChange={onTooltipAppearanceChange}
+                    ariaLabel={messages.moreMenu.tooltipThemeAriaLabel}
                 />
             </div>
             <div className="px-[12px] py-[8px]">

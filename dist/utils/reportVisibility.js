@@ -2,11 +2,11 @@ const DEFAULT_VISIBILITY = {
     enabled: true,
     devOnly: false,
 };
-export function resolveReportVisibility({ visibility, enabled, devOnly, routeKey, pathname, }) {
+export function resolveReportVisibility({ visibility }) {
     return {
-        enabled: visibility?.enabled ?? enabled ?? DEFAULT_VISIBILITY.enabled,
-        devOnly: visibility?.devOnly ?? devOnly ?? DEFAULT_VISIBILITY.devOnly,
-        routeKey: visibility?.routeKey ?? routeKey ?? pathname,
+        enabled: visibility?.enabled ?? DEFAULT_VISIBILITY.enabled,
+        devOnly: visibility?.devOnly ?? DEFAULT_VISIBILITY.devOnly,
+        routeKey: visibility?.routeKey,
     };
 }
 //# sourceMappingURL=reportVisibility.js.map

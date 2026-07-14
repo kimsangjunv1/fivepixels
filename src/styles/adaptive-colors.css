@@ -14,7 +14,8 @@
     --coding-font: Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace;
 }
 
-[data-fivepixels-mount][data-fivepixels-theme="light"] {
+[data-fivepixels-mount][data-fivepixels-theme="light"],
+[data-fivepixels-theme-scope][data-fivepixels-theme="light"] {
     color-scheme: light;
 
     --adaptive-surface: #ffffff;
@@ -49,6 +50,7 @@
     --adaptive-grey800: #333d4b;
     --adaptive-grey900: #191f28;
 
+    --adaptive-black: #ffffff;
     --adaptive-black50: #fafafa;
     --adaptive-black100: #f5f5f5;
     --adaptive-black200: #eeeeee;
@@ -60,16 +62,53 @@
     --adaptive-black800: #424242;
     --adaptive-black900: #212121;
 
-    --adaptive-blackOpacity50: rgba(0, 0, 0, 0.02);
-    --adaptive-blackOpacity100: rgba(0, 0, 0, 0.05);
-    --adaptive-blackOpacity200: rgba(0, 0, 0, 0.1);
-    --adaptive-blackOpacity300: rgba(0, 0, 0, 0.18);
-    --adaptive-blackOpacity400: rgba(0, 0, 0, 0.31);
-    --adaptive-blackOpacity500: rgba(0, 0, 0, 0.46);
-    --adaptive-blackOpacity600: rgba(0, 0, 0, 0.58);
-    --adaptive-blackOpacity700: rgba(0, 0, 0, 0.7);
-    --adaptive-blackOpacity800: rgba(0, 0, 0, 0.8);
-    --adaptive-blackOpacity900: rgba(0, 0, 0, 0.91);
+    /* Surface/glass fill: white in light, black in dark */
+    --adaptive-fillOpacity50: rgba(255, 255, 255, 0.02);
+    --adaptive-fillOpacity100: rgba(255, 255, 255, 0.05);
+    --adaptive-fillOpacity200: rgba(255, 255, 255, 0.1);
+    --adaptive-fillOpacity300: rgba(255, 255, 255, 0.18);
+    --adaptive-fillOpacity400: rgba(255, 255, 255, 0.31);
+    --adaptive-fillOpacity500: rgba(255, 255, 255, 0.46);
+    --adaptive-fillOpacity600: rgba(255, 255, 255, 0.58);
+    --adaptive-fillOpacity700: rgba(255, 255, 255, 0.7);
+    --adaptive-fillOpacity800: rgba(255, 255, 255, 0.9);
+    --adaptive-fillOpacity900: rgba(255, 255, 255, 1);
+
+    /* Interactive tint: black in light, white in dark */
+    --adaptive-tintOpacity50: rgba(0, 0, 0, 0.05);
+    --adaptive-tintOpacity100: rgba(0, 0, 0, 0.11);
+    --adaptive-tintOpacity200: rgba(0, 0, 0, 0.19);
+    --adaptive-tintOpacity300: rgba(0, 0, 0, 0.27);
+    --adaptive-tintOpacity400: rgba(0, 0, 0, 0.36);
+    --adaptive-tintOpacity500: rgba(0, 0, 0, 0.47);
+    --adaptive-tintOpacity600: rgba(0, 0, 0, 0.6);
+    --adaptive-tintOpacity700: rgba(0, 0, 0, 0.75);
+    --adaptive-tintOpacity800: rgba(0, 0, 0, 0.85);
+    --adaptive-tintOpacity900: rgba(0, 0, 0, 1);
+
+    /* Neutral tint for focus/selected: #ededed in light, #333333 in dark */
+    --adaptive-neutral-tint: #ededed;
+    --adaptive-neutralTintOpacity100: rgba(237, 237, 237, 0.05);
+    --adaptive-neutralTintOpacity200: rgba(237, 237, 237, 0.2);
+    --adaptive-neutralTintOpacity300: rgba(237, 237, 237, 0.3);
+    --adaptive-neutralTintOpacity400: rgba(237, 237, 237, 0.4);
+    --adaptive-neutralTintOpacity500: rgba(237, 237, 237, 0.5);
+    --adaptive-neutralTintOpacity600: rgba(237, 237, 237, 0.6);
+    --adaptive-neutralTintOpacity700: rgba(237, 237, 237, 0.7);
+    --adaptive-neutralTintOpacity800: rgba(237, 237, 237, 0.8);
+    --adaptive-neutralTintOpacity900: rgba(237, 237, 237, 0.9);
+
+    /* @deprecated Use --adaptive-fillOpacity* instead */
+    --adaptive-blackOpacity50: var(--adaptive-fillOpacity50);
+    --adaptive-blackOpacity100: var(--adaptive-fillOpacity100);
+    --adaptive-blackOpacity200: var(--adaptive-fillOpacity200);
+    --adaptive-blackOpacity300: var(--adaptive-fillOpacity300);
+    --adaptive-blackOpacity400: var(--adaptive-fillOpacity400);
+    --adaptive-blackOpacity500: var(--adaptive-fillOpacity500);
+    --adaptive-blackOpacity600: var(--adaptive-fillOpacity600);
+    --adaptive-blackOpacity700: var(--adaptive-fillOpacity700);
+    --adaptive-blackOpacity800: var(--adaptive-fillOpacity800);
+    --adaptive-blackOpacity900: var(--adaptive-fillOpacity900);
 
     --adaptive-greyOpacity50: rgba(0, 23, 51, 0.02);
     --adaptive-greyOpacity100: rgba(2, 32, 71, 0.05);
@@ -198,7 +237,8 @@
     --adaptive-__internal__focusRing: rgba(255, 255, 255, 0.5);
 }
 
-[data-fivepixels-mount][data-fivepixels-theme="dark"] {
+[data-fivepixels-mount][data-fivepixels-theme="dark"],
+[data-fivepixels-theme-scope][data-fivepixels-theme="dark"] {
     color-scheme: dark;
 
     --adaptive-surface: #212121;
@@ -245,16 +285,53 @@
     --adaptive-black800: #f5f5f5;
     --adaptive-black900: #fafafa;
 
-    --adaptive-blackOpacity50: rgba(0, 0, 0, 0.05);
-    --adaptive-blackOpacity100: rgba(0, 0, 0, 0.11);
-    --adaptive-blackOpacity200: rgba(0, 0, 0, 0.19);
-    --adaptive-blackOpacity300: rgba(0, 0, 0, 0.27);
-    --adaptive-blackOpacity400: rgba(0, 0, 0, 0.36);
-    --adaptive-blackOpacity500: rgba(0, 0, 0, 0.47);
-    --adaptive-blackOpacity600: rgba(0, 0, 0, 0.6);
-    --adaptive-blackOpacity700: rgba(0, 0, 0, 0.75);
-    --adaptive-blackOpacity800: rgba(0, 0, 0, 0.89);
-    --adaptive-blackOpacity900: #000000;
+    /* Surface/glass fill: white in light, black in dark */
+    --adaptive-fillOpacity50: rgba(0, 0, 0, 0.05);
+    --adaptive-fillOpacity100: rgba(0, 0, 0, 0.11);
+    --adaptive-fillOpacity200: rgba(0, 0, 0, 0.19);
+    --adaptive-fillOpacity300: rgba(0, 0, 0, 0.27);
+    --adaptive-fillOpacity400: rgba(0, 0, 0, 0.36);
+    --adaptive-fillOpacity500: rgba(0, 0, 0, 0.47);
+    --adaptive-fillOpacity600: rgba(0, 0, 0, 0.6);
+    --adaptive-fillOpacity700: rgba(0, 0, 0, 0.75);
+    --adaptive-fillOpacity800: rgba(0, 0, 0, 0.85);
+    --adaptive-fillOpacity900: rgba(0, 0, 0, 1);
+
+    /* Interactive tint: black in light, white in dark */
+    --adaptive-tintOpacity50: rgba(255, 255, 255, 0.02);
+    --adaptive-tintOpacity100: rgba(255, 255, 255, 0.05);
+    --adaptive-tintOpacity200: rgba(255, 255, 255, 0.1);
+    --adaptive-tintOpacity300: rgba(255, 255, 255, 0.18);
+    --adaptive-tintOpacity400: rgba(255, 255, 255, 0.31);
+    --adaptive-tintOpacity500: rgba(255, 255, 255, 0.46);
+    --adaptive-tintOpacity600: rgba(255, 255, 255, 0.58);
+    --adaptive-tintOpacity700: rgba(255, 255, 255, 0.7);
+    --adaptive-tintOpacity800: rgba(255, 255, 255, 0.9);
+    --adaptive-tintOpacity900: rgba(255, 255, 255, 1);
+
+    /* Neutral tint for focus/selected: #ededed in light, #333333 in dark */
+    --adaptive-neutral-tint: #333333;
+    --adaptive-neutralTintOpacity100: rgba(51, 51, 51, 0.11);
+    --adaptive-neutralTintOpacity200: rgba(51, 51, 51, 0.19);
+    --adaptive-neutralTintOpacity300: rgba(51, 51, 51, 0.27);
+    --adaptive-neutralTintOpacity400: rgba(51, 51, 51, 0.36);
+    --adaptive-neutralTintOpacity500: rgba(51, 51, 51, 0.47);
+    --adaptive-neutralTintOpacity600: rgba(51, 51, 51, 0.6);
+    --adaptive-neutralTintOpacity700: rgba(51, 51, 51, 0.75);
+    --adaptive-neutralTintOpacity800: rgba(51, 51, 51, 0.85);
+    --adaptive-neutralTintOpacity900: rgba(51, 51, 51, 0.9);
+
+    /* @deprecated Use --adaptive-fillOpacity* instead */
+    --adaptive-blackOpacity50: var(--adaptive-fillOpacity50);
+    --adaptive-blackOpacity100: var(--adaptive-fillOpacity100);
+    --adaptive-blackOpacity200: var(--adaptive-fillOpacity200);
+    --adaptive-blackOpacity300: var(--adaptive-fillOpacity300);
+    --adaptive-blackOpacity400: var(--adaptive-fillOpacity400);
+    --adaptive-blackOpacity500: var(--adaptive-fillOpacity500);
+    --adaptive-blackOpacity600: var(--adaptive-fillOpacity600);
+    --adaptive-blackOpacity700: var(--adaptive-fillOpacity700);
+    --adaptive-blackOpacity800: var(--adaptive-fillOpacity800);
+    --adaptive-blackOpacity900: var(--adaptive-fillOpacity900);
 
     --adaptive-greyOpacity50: rgba(209, 209, 253, 0.05);
     --adaptive-greyOpacity100: rgba(217, 217, 255, 0.11);

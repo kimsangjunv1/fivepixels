@@ -1,6 +1,10 @@
 import type { Marker } from "../types/report-ui.js";
 export type TooltipAnchor = Pick<Marker, "left" | "top">;
-export declare function useTooltipLayout(anchor: TooltipAnchor | null, expanded: boolean, visible: boolean): {
+export type TooltipLayoutOptions = {
+    customWidth?: number;
+    customHeight?: number;
+};
+export declare function useTooltipLayout(anchor: TooltipAnchor | null, expanded: boolean, visible: boolean, layoutOptions?: TooltipLayoutOptions): {
     layout: {
         position: {
             left: number;

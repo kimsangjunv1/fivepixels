@@ -1,10 +1,19 @@
+import { normalizeReportCase, normalizeReplyCaseIds } from "../utils/reportCases.js";
+import { isFeedbackCategory } from "../constants/feedbackCategory.js";
 import { getActiveReportMessages } from "../i18n/index.js";
-const STRING_FIELDS = ["id", "pathname", "report_id", "message", "created_at"];
-const NUMBER_FIELDS = ["x_ratio", "y_ratio", "scroll_y", "document_y", "viewport_width", "viewport_height", "design_width", "design_height"];
-const OPTIONAL_STRING_FIELDS = ["environment", "app_version", "author_id", "author_name"];
+const STRING_FIELDS = ["id", "pathname", "report_id", "created_at"];
+const OPTIONAL_STRING_FIELDS = ["environment", "app_version", "author_id", "author_name", "target_selector"];
 const REPORT_TYPES = new Set(["group", "item"]);
 const REPORT_STATUSES = new Set(["open", "git_issued", "resolved", "archived"]);
-const REPLY_STATUSES = new Set(["suggested", "found_error", "recheck_requested", "resolved"]);
+const REPLY_STATUSES = new Set([
+    "suggested",
+    "additional_question",
+    "found_error",
+    "recheck_requested",
+    "resolved",
+    "assignee_assigned",
+    "assignee_transferred",
+]);
 function importError(index, detail) {
     const { errors } = getActiveReportMessages();
     return new Error(errors.importInvalidFormat(index, detail));
@@ -15,11 +24,82 @@ function isNonEmptyString(value) {
 function isFiniteNumber(value) {
     return typeof value === "number" && Number.isFinite(value);
 }
-function isNullableFiniteNumber(value) {
-    return value === null || isFiniteNumber(value);
-}
 function isIsoDateString(value) {
     return !Number.isNaN(Date.parse(value));
+}
+function validatePositionRatio(value, index, label) {
+    const validation = getActiveReportMessages().importValidation;
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
+        throw importError(index, validation.positionRatioInvalid(label));
+    }
+    const ratio = value;
+    if (!isFiniteNumber(ratio.x) || !isFiniteNumber(ratio.y)) {
+        throw importError(index, validation.positionRatioInvalid(label));
+    }
+    return {
+        x: ratio.x,
+        y: ratio.y,
+    };
+}
+function validatePositionViewport(value, index) {
+    const validation = getActiveReportMessages().importValidation;
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
+        throw importError(index, validation.positionViewportInvalid);
+    }
+    const viewport = value;
+    if (!isFiniteNumber(viewport.x) || !isFiniteNumber(viewport.y) || !isFiniteNumber(viewport.width) || !isFiniteNumber(viewport.height)) {
+        throw importError(index, validation.positionViewportInvalid);
+    }
+    return {
+        x: viewport.x,
+        y: viewport.y,
+        width: viewport.width,
+        height: viewport.height,
+    };
+}
+function validatePositionAnchor(value, index) {
+    const validation = getActiveReportMessages().importValidation;
+    if (value === null) {
+        return null;
+    }
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
+        throw importError(index, validation.positionAnchorInvalid);
+    }
+    const anchor = value;
+    if (!isNonEmptyString(anchor.reportId)) {
+        throw importError(index, validation.positionAnchorInvalid);
+    }
+    if (!REPORT_TYPES.has(anchor.reportType)) {
+        throw importError(index, validation.positionAnchorInvalid);
+    }
+    if (!isFiniteNumber(anchor.x) || !isFiniteNumber(anchor.y)) {
+        throw importError(index, validation.positionAnchorInvalid);
+    }
+    return {
+        reportId: anchor.reportId,
+        reportType: anchor.reportType,
+        x: anchor.x,
+        y: anchor.y,
+    };
+}
+function validatePosition(value, index) {
+    const validation = getActiveReportMessages().importValidation;
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
+        throw importError(index, validation.positionObjectRequired);
+    }
+    const position = value;
+    if (position.target !== null && position.target !== undefined) {
+        validatePositionRatio(position.target, index, "position.target");
+    }
+    if (!isFiniteNumber(position.scrollY)) {
+        throw importError(index, validation.positionScrollYInvalid);
+    }
+    return {
+        target: position.target === null || position.target === undefined ? null : validatePositionRatio(position.target, index, "position.target"),
+        viewport: validatePositionViewport(position.viewport, index),
+        scrollY: position.scrollY,
+        anchor: position.anchor === undefined ? null : validatePositionAnchor(position.anchor, index),
+    };
 }
 function validateFieldValues(value, index) {
     const validation = getActiveReportMessages().importValidation;
@@ -53,11 +133,14 @@ function validateReply(value, index, replyIndex) {
         throw importError(index, validation.replyStatusInvalid(replyIndex));
     }
     const authorName = reply.author_name;
+    const parentReplyId = reply.parent_reply_id;
     return {
         id: reply.id,
         message: reply.message,
         created_at: reply.created_at,
         status: reply.status ?? "suggested",
+        case_ids: normalizeReplyCaseIds(reply.case_ids),
+        ...(typeof parentReplyId === "string" ? { parent_reply_id: parentReplyId } : {}),
         author_type: reply.author_type,
         author_name: authorName === null || typeof authorName === "string" ? authorName : undefined,
     };
@@ -103,6 +186,23 @@ function validateReplies(value, index) {
     }
     return value.map((reply, replyIndex) => validateReply(reply, index, replyIndex));
 }
+export function validateCases(value, index, createdAt) {
+    const validation = getActiveReportMessages().importValidation;
+    if (!Array.isArray(value) || value.length === 0) {
+        throw importError(index, validation.casesRequired);
+    }
+    const cases = value.flatMap((item, caseIndex) => {
+        const normalized = normalizeReportCase(item, createdAt);
+        if (!normalized) {
+            throw importError(index, validation.caseInvalid(caseIndex));
+        }
+        if (!normalized.text.trim()) {
+            throw importError(index, validation.caseTextRequired(caseIndex));
+        }
+        return [normalized];
+    });
+    return cases;
+}
 export function validateFeedbackRecord(item, index) {
     const validation = getActiveReportMessages().importValidation;
     if (!item || typeof item !== "object" || Array.isArray(item)) {
@@ -123,29 +223,6 @@ export function validateFeedbackRecord(item, index) {
     if (!REPORT_STATUSES.has(record.status)) {
         throw importError(index, validation.statusInvalid);
     }
-    for (const field of NUMBER_FIELDS) {
-        if (!isFiniteNumber(record[field])) {
-            throw importError(index, validation.numberFieldRequired(field));
-        }
-    }
-    if (!isNullableFiniteNumber(record.element_x_ratio)) {
-        throw importError(index, validation.elementXRatioInvalid);
-    }
-    if (!isNullableFiniteNumber(record.element_y_ratio)) {
-        throw importError(index, validation.elementYRatioInvalid);
-    }
-    if (record.anchor_x_ratio !== undefined && !isNullableFiniteNumber(record.anchor_x_ratio)) {
-        throw importError(index, validation.anchorXRatioInvalid);
-    }
-    if (record.anchor_y_ratio !== undefined && !isNullableFiniteNumber(record.anchor_y_ratio)) {
-        throw importError(index, validation.anchorYRatioInvalid);
-    }
-    if (record.anchor_report_id !== undefined && record.anchor_report_id !== null && typeof record.anchor_report_id !== "string") {
-        throw importError(index, validation.anchorReportIdInvalid);
-    }
-    if (record.anchor_report_type !== undefined && record.anchor_report_type !== null && !REPORT_TYPES.has(record.anchor_report_type)) {
-        throw importError(index, validation.anchorReportTypeInvalid);
-    }
     for (const field of OPTIONAL_STRING_FIELDS) {
         if (record[field] !== undefined && typeof record[field] !== "string") {
             throw importError(index, validation.optionalStringFieldInvalid(field));
@@ -156,29 +233,21 @@ export function validateFeedbackRecord(item, index) {
         pathname: record.pathname,
         report_id: record.report_id,
         report_type: record.report_type,
-        message: record.message,
+        cases: validateCases(record.cases, index, record.created_at),
         status: record.status,
+        ...(typeof record.fc_number === "number" && Number.isFinite(record.fc_number) && record.fc_number > 0
+            ? { fc_number: Math.trunc(record.fc_number) }
+            : {}),
+        category: isFeedbackCategory(record.category) ? record.category : null,
         field_values: validateFieldValues(record.field_values, index),
         replies: validateReplies(record.replies, index),
-        x_ratio: record.x_ratio,
-        y_ratio: record.y_ratio,
-        element_x_ratio: record.element_x_ratio,
-        element_y_ratio: record.element_y_ratio,
-        anchor_report_id: record.anchor_report_id,
-        anchor_report_type: record.anchor_report_type,
-        anchor_x_ratio: record.anchor_x_ratio,
-        anchor_y_ratio: record.anchor_y_ratio,
-        scroll_y: record.scroll_y,
-        document_y: record.document_y,
-        viewport_width: record.viewport_width,
-        viewport_height: record.viewport_height,
-        design_width: record.design_width,
-        design_height: record.design_height,
+        position: validatePosition(record.position, index),
         created_at: record.created_at,
         environment: record.environment,
         app_version: record.app_version,
         author_id: record.author_id,
         author_name: record.author_name,
+        target_selector: record.target_selector,
         integrations: validateIntegrations(record.integrations, index),
     };
 }

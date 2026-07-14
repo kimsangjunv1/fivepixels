@@ -1,5 +1,6 @@
 import type { FeedbackInsertConflict } from "@/utils/feedbackDataTransfer.js";
 import { useReport } from "@/providers/reportContext.js";
+import { getIssueSummary } from "@/utils/reportCases.js";
 
 type ReportCommandReplaceConfirmDialogProps = {
     conflicts: FeedbackInsertConflict[];
@@ -31,12 +32,16 @@ export function ReportCommandReplaceConfirmDialog({ conflicts, onConfirm, onCanc
 
                     <section className="flex flex-col gap-[4px]">
                         <p className="text-[12px] text-[var(--adaptive-black700)]">{messages.commandReplace.existingMessage}</p>
-                        <p className="rounded-[8px] bg-[var(--adaptive-surface)] p-[8px] text-[12px] leading-[1.5] text-[var(--adaptive-text-secondary)]">{conflict.existing.message}</p>
+                        <p className="rounded-[8px] bg-[var(--adaptive-surface)] p-[8px] text-[12px] leading-[1.5] text-[var(--adaptive-text-secondary)]">
+                            {getIssueSummary(conflict.existing, { summaryMore: messages.cases.summaryMore })}
+                        </p>
                     </section>
 
                     <section className="mt-[8px] flex flex-col gap-[4px]">
                         <p className="text-[12px] text-[var(--adaptive-black700)]">{messages.commandReplace.replacementMessage}</p>
-                        <p className="rounded-[8px] bg-[var(--adaptive-surface)] p-[8px] text-[12px] leading-[1.5] text-[var(--adaptive-blue500)]">{conflict.incoming.message}</p>
+                        <p className="rounded-[8px] bg-[var(--adaptive-surface)] p-[8px] text-[12px] leading-[1.5] text-[var(--adaptive-blue500)]">
+                            {getIssueSummary(conflict.incoming, { summaryMore: messages.cases.summaryMore })}
+                        </p>
                     </section>
                 </section>
             ))}

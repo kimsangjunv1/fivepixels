@@ -1,21 +1,30 @@
-import type { ReportField, ReportFieldValues } from "@/types/report.js";
+import type { ReportField, ReportFieldValues, ReportCase } from "@/types/report.js";
 import type { ReportAuthor } from "@/types/report.js";
-import { useEffect, useState } from "react";
+import type { FeedbackCategory } from "@/constants/feedbackCategory.js";
+import { useEffect, useMemo, useState } from "react";
 import { useReport } from "@/providers/reportContext.js";
-import { GitHubIssueIcon, SendIcon } from "@/components/icons/Icons.js";
+import { SendIcon } from "@/components/icons/Icons.js";
 import { AuthorSelector } from "./AuthorSelector.js";
 import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
-import { FieldTagSelector } from "./FieldTagSelector.js";
+import { FeedbackCategorySelector } from "./FeedbackCategorySelector.js";
+import { FeedbackCaseEditor } from "./FeedbackCaseEditor.js";
 
 type FeedbackComposerProps = {
-    message: string;
-    onMessageChange: (value: string) => void;
+    message?: string;
+    onMessageChange?: (value: string) => void;
+    cases?: ReportCase[];
+    onCaseChange?: (caseId: string, text: string) => void;
+    onAddCase?: () => void;
+    onRemoveCase?: (caseId: string) => void;
     authorName: string;
     onAuthorNameChange: (value: string) => void;
     authors: ReportAuthor[];
     fields: ReportField[];
     fieldValues: ReportFieldValues;
     onFieldChange: (key: string, value: string | boolean) => void;
+    category?: FeedbackCategory | null;
+    onCategoryChange?: (value: FeedbackCategory) => void;
+    showCategory?: boolean;
     showTags?: boolean;
     onSubmit: () => void;
     isSubmitting?: boolean;
@@ -24,18 +33,51 @@ type FeedbackComposerProps = {
     isGitHubIssueSubmitting?: boolean;
     placeholder?: string;
     autoFocus?: boolean;
+    errorMessage?: string;
+    showAskQuestionToggle?: boolean;
+    askQuestionChecked?: boolean;
+    onAskQuestionChange?: (checked: boolean) => void;
+    askQuestionForced?: boolean;
+    hideAuthorSelector?: boolean;
+    lockedAuthorName?: string;
+    onFooterWarningChange?: (message: string | null) => void;
 };
 
+function isCaseTextErrorMessage(errorMessage: string, caseCount: number, caseTextRequired: (index: number) => string, casesRequired: string) {
+    if (!errorMessage) {
+        return false;
+    }
+
+    if (errorMessage === casesRequired) {
+        return true;
+    }
+
+    for (let index = 1; index <= Math.max(caseCount, 1); index += 1) {
+        if (errorMessage === caseTextRequired(index)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 export function FeedbackComposer({
-    message,
+    message = "",
     onMessageChange,
+    cases,
+    onCaseChange,
+    onAddCase,
+    onRemoveCase,
     authorName,
     onAuthorNameChange,
     authors,
-    fields,
-    fieldValues,
-    onFieldChange,
-    showTags = false,
+    fields: _fields,
+    fieldValues: _fieldValues,
+    onFieldChange: _onFieldChange,
+    category = null,
+    onCategoryChange,
+    showCategory = false,
+    showTags: _showTags = false,
     onSubmit,
     isSubmitting = false,
     showGitHubIssueOnCreate = false,
@@ -43,12 +85,40 @@ export function FeedbackComposer({
     isGitHubIssueSubmitting = false,
     placeholder,
     autoFocus = false,
+    errorMessage = "",
+    showAskQuestionToggle = false,
+    askQuestionChecked = false,
+    onAskQuestionChange,
+    askQuestionForced = false,
+    hideAuthorSelector = false,
+    lockedAuthorName,
+    onFooterWarningChange,
 }: FeedbackComposerProps) {
     const { messages } = useReport();
     const [isGitHubIssueConfirming, setIsGitHubIssueConfirming] = useState(false);
-    const resolvedPlaceholder = placeholder ?? messages.composer.placeholder;
+    const [categoryAttentionKey, setCategoryAttentionKey] = useState(0);
+    const [caseAttentionKey, setCaseAttentionKey] = useState(0);
+    const isQuestionMode = askQuestionForced || askQuestionChecked;
+    const usesCaseEditor = Boolean(cases && onCaseChange && onAddCase && onRemoveCase);
+    const resolvedPlaceholder = isQuestionMode ? messages.composer.questionPlaceholder : (placeholder ?? (usesCaseEditor ? messages.fieldEditor.messagePlaceholder : messages.composer.placeholder));
+    const emptyCaseIds = useMemo(() => (cases ?? []).filter((item) => !item.text.trim()).map((item) => item.id), [cases]);
+    const hasEmptyCase = emptyCaseIds.length > 0;
+    const isCategoryRequiredError = errorMessage === messages.errors.categoryRequired;
+    const isEmptyCaseError = isCaseTextErrorMessage(errorMessage, cases?.length ?? 0, messages.errors.caseTextRequired, messages.errors.casesRequired);
+    const categoryNeedsAttention = showCategory && !category && !hasEmptyCase && (categoryAttentionKey > 0 || isCategoryRequiredError);
+    const caseNeedsAttention = usesCaseEditor && hasEmptyCase && (caseAttentionKey > 0 || isEmptyCaseError);
+    const footerWarning = caseNeedsAttention
+        ? messages.errors.emptyCaseMessageRequired
+        : categoryNeedsAttention
+          ? messages.errors.categoryRequired
+          : null;
+    const isFooterHandledError = isCategoryRequiredError || isEmptyCaseError;
 
     const isActionDisabled = isSubmitting || isGitHubIssueSubmitting;
+
+    useEffect(() => {
+        onFooterWarningChange?.(footerWarning);
+    }, [footerWarning, onFooterWarningChange]);
 
     useEffect(() => {
         if (!isGitHubIssueConfirming) {
@@ -60,11 +130,51 @@ export function FeedbackComposer({
         return () => window.clearTimeout(timer);
     }, [isGitHubIssueConfirming]);
 
+    useEffect(() => {
+        if (!isEmptyCaseError || !usesCaseEditor || !hasEmptyCase) {
+            return;
+        }
+
+        setCaseAttentionKey((current) => current + 1);
+    }, [isEmptyCaseError, usesCaseEditor, hasEmptyCase, errorMessage]);
+
+    useEffect(() => {
+        if (!isCategoryRequiredError || !showCategory || category || hasEmptyCase) {
+            return;
+        }
+
+        setCategoryAttentionKey((current) => current + 1);
+    }, [isCategoryRequiredError, showCategory, category, hasEmptyCase, errorMessage]);
+
+    useEffect(() => {
+        if (!hasEmptyCase && caseAttentionKey > 0) {
+            setCaseAttentionKey(0);
+        }
+    }, [hasEmptyCase, caseAttentionKey]);
+
+    useEffect(() => {
+        if (category && categoryAttentionKey > 0) {
+            setCategoryAttentionKey(0);
+        }
+    }, [category, categoryAttentionKey]);
+
+    const bumpValidationAttention = () => {
+        if (usesCaseEditor && hasEmptyCase) {
+            setCaseAttentionKey((current) => current + 1);
+            return;
+        }
+
+        if (showCategory && !category) {
+            setCategoryAttentionKey((current) => current + 1);
+        }
+    };
+
     const handleSubmit = () => {
         if (isActionDisabled) {
             return;
         }
 
+        bumpValidationAttention();
         onSubmit();
     };
 
@@ -78,34 +188,80 @@ export function FeedbackComposer({
             return;
         }
 
+        bumpValidationAttention();
         setIsGitHubIssueConfirming(false);
         onGitHubIssueSubmit();
     };
 
     return (
-        <div className="flex w-full flex-col">
-            <textarea
-                autoFocus={autoFocus}
-                value={message}
-                onChange={(event) => onMessageChange(event.target.value)}
-                placeholder={resolvedPlaceholder}
-                rows={3}
-                className="min-h-[72px] w-full resize-none bg-transparent px-[16px] pt-[16px] text-[14px] leading-[1.4] text-[var(--adaptive-text-primary)] outline-none placeholder:text-[var(--adaptive-text-muted)]"
-                onKeyDown={(event) => {
-                    if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
-                        event.preventDefault();
-                        handleSubmit();
-                    }
-                }}
-            />
+        <div className={`flex w-full flex-col bg-[var(--adaptive-blackOpacity400)] backdrop-blur-sm ${usesCaseEditor ? "min-h-0 flex-1" : ""}`}>
+            <div className={`relative ${usesCaseEditor ? "min-h-0 flex-1" : ""}`}>
+                {errorMessage && !isFooterHandledError ? (
+                    <p
+                        role="alert"
+                        className="absolute bottom-full left-[8px] right-[8px] z-10 mb-[6px] rounded-[8px] border border-rose-200 bg-rose-50 px-[8px] py-[4px] text-[12px] leading-[1.4] text-rose-700 shadow-[0_2px_8px_rgba(0,0,0,0.08)]"
+                    >
+                        {errorMessage}
+                    </p>
+                ) : null}
+                {usesCaseEditor ? (
+                    <FeedbackCaseEditor
+                        cases={cases!}
+                        onCaseChange={onCaseChange!}
+                        onAddCase={onAddCase!}
+                        onRemoveCase={onRemoveCase!}
+                        autoFocus={autoFocus}
+                        onSubmitShortcut={handleSubmit}
+                        needsAttention={caseNeedsAttention}
+                        attentionKey={caseAttentionKey}
+                        emptyCaseIds={emptyCaseIds}
+                    />
+                ) : (
+                    <textarea
+                        autoFocus={autoFocus}
+                        value={message}
+                        onChange={(event) => onMessageChange?.(event.target.value)}
+                        placeholder={resolvedPlaceholder}
+                        rows={3}
+                        className="min-h-[72px] w-full resize-none bg-transparent px-[12px] pt-[12px] text-[14px] leading-[1.5] text-[var(--adaptive-text-primary)] outline-none placeholder:text-[var(--adaptive-text-muted)]"
+                        onKeyDown={(event) => {
+                            if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
+                                event.preventDefault();
+                                handleSubmit();
+                            }
+                        }}
+                    />
+                )}
+            </div>
 
-            <div className="flex items-center justify-between gap-[8px] px-[12px] pb-[12px]">
-                <AuthorSelector
-                    authors={authors}
-                    value={authorName}
-                    onChange={onAuthorNameChange}
-                />
+            <div className={`flex items-center gap-[8px] px-[8px] pb-[8px] ${hideAuthorSelector && !lockedAuthorName ? "justify-end" : "justify-between"}`}>
+                {hideAuthorSelector ? (
+                    lockedAuthorName ? (
+                        <span className="flex h-[24px] min-w-0 max-w-[50%] items-center truncate rounded-full bg-[var(--adaptive-surface-muted)] px-[12px] text-[12px] text-[var(--adaptive-black500)]">
+                            {lockedAuthorName}
+                        </span>
+                    ) : null
+                ) : (
+                    <AuthorSelector
+                        authors={authors}
+                        value={authorName}
+                        onChange={onAuthorNameChange}
+                    />
+                )}
                 <div className="flex shrink-0 items-center gap-[6px]">
+                    {showAskQuestionToggle ? (
+                        <label className="inline-flex items-center gap-[4px] px-[2px] text-[12px] text-[var(--adaptive-black600)]">
+                            <input
+                                type="checkbox"
+                                data-fivepixels-interactive=""
+                                checked={isQuestionMode}
+                                disabled={askQuestionForced || isActionDisabled}
+                                onChange={(event) => onAskQuestionChange?.(event.target.checked)}
+                                className="h-[14px] w-[14px] accent-[var(--adaptive-blue500)]"
+                            />
+                            <span>{messages.composer.askQuestionLabel}</span>
+                        </label>
+                    ) : null}
                     {showGitHubIssueOnCreate ? (
                         <button
                             type="button"
@@ -117,7 +273,8 @@ export function FeedbackComposer({
                             title={isGitHubIssueConfirming ? messages.feedbackList.gitIssueConfirmTitle : messages.composer.gitIssueSendTitle}
                         >
                             <span className="text-[12px] font-semibold text-[var(--adaptive-black500)]">
-                                + {isGitHubIssueSubmitting
+                                +{" "}
+                                {isGitHubIssueSubmitting
                                     ? messages.composer.gitIssueSendingLabel
                                     : isGitHubIssueConfirming
                                       ? messages.feedbackList.gitIssueConfirmLabel
@@ -125,28 +282,30 @@ export function FeedbackComposer({
                             </span>
                         </button>
                     ) : null}
-                    <HoverTooltip label={messages.composer.sendAriaLabel}>
+                    <HoverTooltip
+                        label={messages.composer.sendAriaLabel}
+                        disabled={isActionDisabled}
+                    >
                         <button
                             type="button"
                             data-fivepixels-interactive=""
                             disabled={isActionDisabled}
                             onClick={handleSubmit}
-                            className="inline-flex px-[12px] shrink-0 items-center justify-center rounded-full bg-[var(--adaptive-blue500)] text-[var(--adaptive-overlay-text)] disabled:opacity-50"
+                            className="inline-flex h-[32px] w-[32px] shrink-0 items-center justify-center rounded-full bg-[var(--adaptive-blue500)] text-white disabled:opacity-50"
                             aria-label={messages.composer.sendAriaLabel}
                         >
-                            <SendIcon className="w-[16px]" />
+                            <SendIcon className="h-[16px] w-[16px]" />
                         </button>
                     </HoverTooltip>
                 </div>
             </div>
-
-            {/* <div className="w-full h-[1px] bg-[var(--adaptive-whiteOpacity200)]" /> */}
-
-            {showTags ? (
-                <FieldTagSelector
-                    fields={fields}
-                    fieldValues={fieldValues}
-                    onFieldChange={(key, value) => onFieldChange(key, value)}
+            {showCategory && onCategoryChange ? (
+                <FeedbackCategorySelector
+                    value={category}
+                    onChange={onCategoryChange}
+                    messages={messages}
+                    needsAttention={categoryNeedsAttention}
+                    attentionKey={categoryAttentionKey}
                 />
             ) : null}
         </div>

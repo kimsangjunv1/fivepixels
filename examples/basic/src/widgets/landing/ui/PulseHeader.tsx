@@ -8,6 +8,7 @@ const pageTitleByPath: Record<string, string> = {
     "/reviews": "Reviews",
     "/release": "Releases",
     "/settings": "Settings",
+    "/edgecase": "Edgecase",
 };
 
 export function PulseHeader() {

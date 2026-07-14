@@ -1,6 +1,6 @@
 import { useLayoutEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { ensureReportTooltipLayer } from "../../utils/dom.js";
+import { ensureReportTooltipLayer, syncReportTooltipLayerTheme } from "../../utils/dom.js";
 const HOST_ID = "fivepixels-root";
 const STYLE_ELEMENT_ID = "fivepixels-report-styles";
 const MOUNT_ATTR = "data-fivepixels-mount";
@@ -48,7 +48,7 @@ hot?.accept("../../styles/reportStylesheet.js", (module) => {
         applyReportStyles(host, module.REPORT_STYLESHEET);
     }
 });
-export function ShadowReportRoot({ appearance, children }) {
+export function ShadowReportRoot({ panelAppearance, children }) {
     const [mount, setMount] = useState(null);
     useLayoutEffect(() => {
         let cancelled = false;
@@ -67,11 +67,8 @@ export function ShadowReportRoot({ appearance, children }) {
         };
     }, []);
     useLayoutEffect(() => {
-        if (!mount) {
-            return;
-        }
-        mount.setAttribute("data-fivepixels-theme", appearance);
-    }, [appearance, mount]);
+        syncReportTooltipLayerTheme(panelAppearance);
+    }, [panelAppearance]);
     if (!mount) {
         return null;
     }

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { escapeAttribute, findTargetByPoint, findTargetElement, getFeedbackTargetSelector, getNearestScrollContainer, hasFixedPositionAncestor, isFeedbackTargetVisible, resolveFeedbackDocumentAnchor, resolveReportType, toSnapshot } from "./dom.js";
+import { escapeAttribute, findTargetByPoint, findTargetElement, getFeedbackTargetSelector, getNearestScrollContainer, hasFixedPositionAncestor, hasDirectReportId, isFeedbackTargetVisible, resolveFeedbackDocumentAnchor, resolveReportType, toFeedbackHoverSnapshot, toSnapshot } from "./dom.js";
 
 describe("escapeAttribute", () => {
     it("escapes backslashes and double quotes for selector safety", () => {
@@ -92,11 +92,30 @@ describe("toSnapshot", () => {
         const withoutType = document.createElement("div");
         withoutType.dataset.reportId = "hero";
         expect(toSnapshot(withoutType)?.type).toBe("item");
+        expect(toSnapshot(withoutType)?.isTagged).toBe(true);
 
         const invalid = document.createElement("div");
         invalid.dataset.reportId = "hero";
         invalid.dataset.reportType = "invalid";
         expect(toSnapshot(invalid)?.type).toBe("item");
+    });
+});
+
+describe("toFeedbackHoverSnapshot", () => {
+    it("marks tagged and untagged targets", () => {
+        const tagged = document.createElement("button");
+        tagged.dataset.reportId = "hero-cta";
+        tagged.dataset.reportType = "item";
+        document.body.append(tagged);
+
+        const untagged = document.createElement("button");
+        untagged.textContent = "Checkout";
+        document.body.append(untagged);
+
+        expect(toFeedbackHoverSnapshot(tagged)?.isTagged).toBe(true);
+        expect(toFeedbackHoverSnapshot(untagged)?.isTagged).toBe(false);
+        expect(hasDirectReportId(tagged)).toBe(true);
+        expect(hasDirectReportId(untagged)).toBe(false);
     });
 });
 

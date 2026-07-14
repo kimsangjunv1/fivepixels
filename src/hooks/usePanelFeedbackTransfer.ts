@@ -54,8 +54,8 @@ type UsePanelFeedbackTransferOptions = {
     messages: ReportMessages;
     setErrorMessage: (message: string) => void;
     refetch: () => Promise<unknown>;
-    openPanelTab: (tab: "command") => void;
-    onMoreMenuClose?: () => void;
+    openPanelTab: (tab: "command" | "settings") => void;
+    onPanelOverlayClose?: () => void;
     isRecording: boolean;
 };
 
@@ -66,7 +66,7 @@ export function usePanelFeedbackTransfer({
     setErrorMessage,
     refetch,
     openPanelTab,
-    onMoreMenuClose,
+    onPanelOverlayClose,
     isRecording,
 }: UsePanelFeedbackTransferOptions) {
     const { projectId, environment, appVersion } = transferScope;
@@ -79,18 +79,18 @@ export function usePanelFeedbackTransfer({
     const [commandNotice, setCommandNotice] = useState<{ message: string; isError: boolean } | null>(null);
     const dragDepthRef = useRef(0);
 
-    const closeMoreMenu = useCallback(() => {
-        onMoreMenuClose?.();
-    }, [onMoreMenuClose]);
+    const closePanelOverlay = useCallback(() => {
+        onPanelOverlayClose?.();
+    }, [onPanelOverlayClose]);
 
     const queueImport = useCallback(
         (payload: FeedbackImportPayload) => {
-            closeMoreMenu();
+            closePanelOverlay();
             setPendingImport(payload);
             setImportStep(isImportProjectCompatible(transferScope, payload.project) ? "confirm" : "project-mismatch");
             setErrorMessage("");
         },
-        [closeMoreMenu, setErrorMessage, transferScope],
+        [closePanelOverlay, setErrorMessage, transferScope],
     );
 
     const handleImportFile = useCallback(
@@ -116,7 +116,7 @@ export function usePanelFeedbackTransfer({
             return;
         }
 
-        closeMoreMenu();
+        closePanelOverlay();
         const items = readAllFeedback(transferScope);
 
         void downloadFeedbackJson(createFeedbackBackupFilename(projectId, environment, appVersion), toReportProject(transferScope), items).then((result) => {
@@ -131,7 +131,7 @@ export function usePanelFeedbackTransfer({
 
             setErrorMessage("");
         });
-    }, [canTransferFeedback, closeMoreMenu, environment, messages.errors, projectId, setErrorMessage, transferScope, appVersion]);
+    }, [canTransferFeedback, closePanelOverlay, environment, messages.errors, projectId, setErrorMessage, transferScope, appVersion]);
 
     const handleImportFromMenu = useCallback(() => {
         if (!canTransferFeedback) {
@@ -139,7 +139,7 @@ export function usePanelFeedbackTransfer({
             return;
         }
 
-        closeMoreMenu();
+        closePanelOverlay();
 
         void pickFeedbackJsonFile()
             .then((file) => {
@@ -152,7 +152,7 @@ export function usePanelFeedbackTransfer({
             .catch((error) => {
                 setErrorMessage(error instanceof Error ? error.message : messages.errors.jsonImportFailed);
             });
-    }, [canTransferFeedback, closeMoreMenu, handleImportFile, messages.errors, setErrorMessage]);
+    }, [canTransferFeedback, closePanelOverlay, handleImportFile, messages.errors, setErrorMessage]);
 
     const handleOpenCommand = useCallback(() => {
         if (!canTransferFeedback) {
@@ -160,16 +160,16 @@ export function usePanelFeedbackTransfer({
             return;
         }
 
-        closeMoreMenu();
+        closePanelOverlay();
         setErrorMessage("");
         openPanelTab("command");
-    }, [canTransferFeedback, closeMoreMenu, messages.errors, openPanelTab, setErrorMessage]);
+    }, [canTransferFeedback, closePanelOverlay, messages.errors, openPanelTab, setErrorMessage]);
 
     const handleCloseCommand = useCallback(() => {
         setCommandStep("none");
         setPendingCommand(null);
         setCommandConflicts([]);
-        openPanelTab("command");
+        openPanelTab("settings");
     }, [openPanelTab]);
 
     const handleCommandExecute = useCallback(

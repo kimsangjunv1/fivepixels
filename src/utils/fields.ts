@@ -1,5 +1,7 @@
+import type { ReportCase } from "@/types/report.js";
 import type { ReportField, ReportFieldValues } from "@/types/report.js";
 import type { ReportMessages } from "@/i18n/types.js";
+import { validateCasesForSubmit } from "@/utils/reportCases.js";
 
 export function createInitialFieldValues(fields: ReportField[], source?: ReportFieldValues) {
     return fields.reduce<ReportFieldValues>((acc, field) => {
@@ -17,16 +19,21 @@ export function createInitialFieldValues(fields: ReportField[], source?: ReportF
     }, {});
 }
 
-type FieldErrorMessages = Pick<ReportMessages["errors"], "fieldRequiredInput" | "fieldRequiredConfirm">;
+type FieldErrorMessages = Pick<ReportMessages["errors"], "fieldRequiredInput" | "fieldRequiredConfirm" | "casesRequired" | "caseTextRequired">;
 
-export function getFieldError(message: string, fieldValues: ReportFieldValues, fields: ReportField[], fieldErrors: FieldErrorMessages) {
+export function getFieldError(cases: ReportCase[], fieldValues: ReportFieldValues, fields: ReportField[], fieldErrors: FieldErrorMessages) {
+    const caseError = validateCasesForSubmit(cases, {
+        casesRequired: fieldErrors.casesRequired,
+        caseTextRequired: fieldErrors.caseTextRequired,
+    });
+
+    if (caseError) {
+        return caseError;
+    }
+
     for (const field of fields) {
         if (!field.required) {
             continue;
-        }
-
-        if (field.key === "message" && !message.trim()) {
-            return fieldErrors.fieldRequiredInput(field.label);
         }
 
         if (field.type === "checkbox" && fieldValues[field.key] !== true) {

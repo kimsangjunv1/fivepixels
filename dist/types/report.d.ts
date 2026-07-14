@@ -1,8 +1,37 @@
+import type { FeedbackCategory } from "../constants/feedbackCategory.js";
+import type { FeedbackDisplayStatus } from "../constants/feedbackStatus.js";
+export type { FeedbackCategory } from "../constants/feedbackCategory.js";
 export type ReportTargetType = "group" | "item";
 export type ReportStatus = "open" | "git_issued" | "resolved" | "archived";
 export type ReportAppearance = "light" | "dark" | "system";
 export declare const REPORT_STATUS_FLOW: readonly ["open", "git_issued", "resolved", "archived"];
 export declare const REPORT_STATUS_TRANSITIONS: Record<ReportStatus, ReportStatus[]>;
+export type ReportCaseStatus = "open" | "resolved";
+export type ReportCase = {
+    id: string;
+    text: string;
+    status: ReportCaseStatus;
+    assignee_name?: string | null;
+    previous_assignee_name?: string | null;
+    created_at: string;
+    updated_at: string;
+};
+export type ReplyHistoryLoadMode = "pagination" | "infinite-scroll" | "load-more-button" | "button-and-scroll";
+export type ReplyHistoryConfig = {
+    mode?: ReplyHistoryLoadMode;
+    pageSize?: number;
+};
+export type ListRepliesParams = {
+    limit?: number;
+    cursor?: string;
+    direction?: "older";
+};
+export type ListRepliesResult = {
+    items: ReportReply[];
+    hasMore: boolean;
+    nextCursor?: string;
+    totalCount?: number;
+};
 export type ReportFieldType = "textarea" | "checkbox";
 export type ReportFieldBase = {
     key: string;
@@ -16,19 +45,36 @@ export type ReportField = (ReportFieldBase & {
 });
 export type ReportFieldValues = Record<string, string | boolean>;
 /** Stored on each timeline reply. Hover-only states use helpers, not storage. */
-export type ReportReplyStatus = "suggested" | "found_error" | "recheck_requested" | "resolved";
+export type ReportReplyStatus = "suggested" | "additional_question" | "found_error" | "recheck_requested" | "resolved" | "assignee_assigned" | "assignee_transferred";
 export type ReportReply = {
     id: string;
+    comment_id?: string;
     message: string;
     created_at: string;
     status: ReportReplyStatus;
+    case_ids: string[];
+    parent_reply_id?: string | null;
     author_type?: "user" | "manager" | "system";
+    author_name?: string | null;
+    auth?: ReportAuthProof;
+};
+export type ReportReplySummary = Pick<ReportReply, "id" | "message" | "created_at" | "status" | "author_type" | "author_name" | "case_ids">;
+export type CreateReplyPayload = {
+    message: string;
+    status: ReportReplyStatus;
+    case_ids?: string[];
+    parent_reply_id?: string | null;
+    author_type: NonNullable<ReportReply["author_type"]>;
     author_name?: string | null;
     auth?: ReportAuthProof;
 };
 export type ReportIdentify = {
     id: string;
     name: string;
+    /** Presentation-only public key for the team creator. */
+    publicKey?: string;
+    /** Presentation-only private key matching `publicKey`. */
+    privateKey?: string;
 };
 /** Project scope passed to `<FivePixels project={{ id, env, version }} />`. */
 export type ReportProject = {
@@ -36,11 +82,19 @@ export type ReportProject = {
     env?: string;
     version?: string;
 };
-/** UI options passed to `<FivePixels ui={{ appearance, showFeedbackList, visibleShortcutKeys, shortcut, locale, messages }} />`. */
+export type QuestionThreadDisplay = "expanded" | "collapsed";
+/** Runtime mode for `<FivePixels />`. Presentation mode enables viewer switching in settings. */
+export type FivePixelsMode = "default" | "presentation";
+/** UI options passed to `<FivePixels ui={{ appearance, panelAppearance, tooltipAppearance, showFeedbackList, visibleShortcutKeys, shortcut, locale, messages, replyHistory }} />`. */
 export type ReportUi = {
+    /** @deprecated Use `panelAppearance` and `tooltipAppearance` instead. Sets both when they are omitted. */
     appearance?: ReportAppearance;
+    panelAppearance?: ReportAppearance;
+    tooltipAppearance?: ReportAppearance;
     showFeedbackList?: boolean;
     visibleShortcutKeys?: boolean;
+    questionThreadDefault?: QuestionThreadDisplay;
+    replyHistory?: ReplyHistoryConfig;
     shortcut?: string;
     locale?: import("../i18n/types.js").ReportLocale;
     messages?: import("../i18n/types.js").DeepPartialReportMessages;
@@ -60,9 +114,12 @@ export type ReportVisibility = {
 export type ReportAuthor = {
     id: string;
     name: string;
+    department?: string;
     publicKey?: string;
+    /** Presentation-only private key matching `publicKey`. */
+    privateKey?: string;
 };
-export type ReportAuthAction = "feedback:create" | "feedback:update";
+export type ReportAuthAction = "feedback:create" | "feedback:update" | "reply:create";
 export type ReportAuthProof = {
     author_id: string;
     algorithm: "ECDSA-P256-SHA256";
@@ -88,29 +145,43 @@ export type ReportGitHubConfig = {
     modes?: ReportGitHubIntegrationMode[];
     onCreate?: (feedback: ReportFeedback) => Promise<ReportGitHubIssueCreateResult>;
 };
+export type ReportPositionRatio = {
+    x: number;
+    y: number;
+};
+export type ReportPositionViewport = ReportPositionRatio & {
+    width: number;
+    height: number;
+};
+export type ReportPositionAnchor = {
+    reportId: string;
+    reportType: ReportTargetType;
+    x: number;
+    y: number;
+};
+export type ReportPosition = {
+    target: ReportPositionRatio | null;
+    viewport: ReportPositionViewport;
+    scrollY: number;
+    anchor: ReportPositionAnchor | null;
+};
 export type ReportFeedback = {
     id: string;
     pathname: string;
     report_id: string;
     report_type: ReportTargetType;
-    message: string;
+    target_selector?: string;
+    cases: ReportCase[];
     status: ReportStatus;
+    /** Human-readable Feedback Case number shown as `#FC-{n}`. */
+    fc_number?: number;
+    /** Fixed feedback category selected when creating feedback. */
+    category?: FeedbackCategory | null;
     field_values: ReportFieldValues;
-    replies: ReportReply[];
-    x_ratio: number;
-    y_ratio: number;
-    element_x_ratio: number | null;
-    element_y_ratio: number | null;
-    anchor_report_id?: string | null;
-    anchor_report_type?: ReportTargetType | null;
-    anchor_x_ratio?: number | null;
-    anchor_y_ratio?: number | null;
-    scroll_y: number;
-    document_y: number;
-    viewport_width: number;
-    viewport_height: number;
-    design_width: number;
-    design_height: number;
+    replies?: ReportReply[];
+    reply_count?: number;
+    latest_reply?: ReportReplySummary | null;
+    position: ReportPosition;
     created_at: string;
     environment?: string;
     app_version?: string;
@@ -122,7 +193,7 @@ export type ReportFeedback = {
 export type CreateReportFeedbackPayload = Omit<ReportFeedback, "id" | "created_at" | "replies"> & {
     replies?: ReportReply[];
 };
-export type UpdateReportFeedbackPayload = Partial<Pick<ReportFeedback, "message" | "status" | "field_values" | "replies" | "report_id" | "report_type" | "integrations" | "auth">>;
+export type UpdateReportFeedbackPayload = Partial<Pick<ReportFeedback, "cases" | "status" | "category" | "field_values" | "replies" | "report_id" | "report_type" | "integrations" | "auth">>;
 export type ReportListAllParams = {
     cursor?: string;
     limit: number;
@@ -131,12 +202,64 @@ export type ReportListAllResult = {
     items: ReportFeedback[];
     nextCursor?: string;
 };
+export type ReportActivitySummaryParams = {
+    year: number;
+    month?: number;
+    pathname?: string;
+    listScope?: "current" | "all";
+    actorScope?: "team" | "me";
+    metric?: "created" | "activity";
+    actorName?: string | null;
+};
+export type ReportActivitySummaryBucket = {
+    dateKey: string;
+    count: number;
+};
+export type ReportActivitySummaryResult = {
+    year: number;
+    month?: number;
+    buckets: ReportActivitySummaryBucket[];
+    totalCount: number;
+};
+export type ReportPanelStats = {
+    found: number;
+    resolved: number;
+    inProgress: number;
+};
+export type ReportRouteDetailsStatusRow = {
+    status: FeedbackDisplayStatus;
+    today: number;
+    yesterday: number;
+    delta: number;
+};
+export type ReportRouteDetailsFieldCount = {
+    key: string;
+    label: string;
+    type: ReportField["type"];
+    count: number;
+};
+export type ReportRouteDetailsSummary = {
+    pathname: string;
+    statusRows: ReportRouteDetailsStatusRow[];
+    fieldCounts: ReportRouteDetailsFieldCount[];
+    todayDateKey: string;
+    yesterdayDateKey: string;
+};
+export type ReportPanelBootstrapParams = {
+    pathname: string;
+};
+export type ReportPanelBootstrapResult = {
+    stats: ReportPanelStats;
+    routeDetails: ReportRouteDetailsSummary;
+};
 export interface ReportStorageAdapter {
     list(params: {
         pathname: string;
     }): Promise<ReportFeedback[]>;
     listAll?(params: ReportListAllParams): Promise<ReportListAllResult>;
+    listReplies?(commentId: string, params?: ListRepliesParams): Promise<ListRepliesResult | ReportReply[]>;
     create(payload: CreateReportFeedbackPayload): Promise<ReportFeedback>;
+    createReply?(commentId: string, payload: CreateReplyPayload): Promise<ReportReply>;
     update(id: string, payload: UpdateReportFeedbackPayload): Promise<ReportFeedback>;
     remove?(id: string): Promise<void>;
 }
@@ -146,7 +269,11 @@ export type ReportPersistenceHandlers = {
         pathname: string;
     }) => Promise<ReportFeedback[]>;
     onListAll?: (params: ReportListAllParams) => Promise<ReportListAllResult>;
+    onPanelBootstrap?: (params: ReportPanelBootstrapParams) => Promise<ReportPanelBootstrapResult>;
+    onActivitySummary?: (params: ReportActivitySummaryParams) => Promise<ReportActivitySummaryResult>;
+    onListReplies?: (commentId: string, params?: ListRepliesParams) => Promise<ListRepliesResult | ReportReply[]>;
     onCreate: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
+    onCreateReply?: (commentId: string, payload: CreateReplyPayload) => Promise<ReportReply>;
     onUpdate: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
     onDelete?: (id: string) => Promise<void>;
 };

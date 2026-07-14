@@ -1,28 +1,14 @@
 import { describe, expect, it, vi } from "vitest";
+import { createReportFeedback } from "@/utils/reportFixtures.js";
 import type { CreateReportFeedbackPayload, ReportFeedback } from "@/types/report.js";
 import { hasCustomPersistenceHandlers, resolveStorageAdapter } from "./storage.js";
 
-const sampleFeedback = {
+const sampleFeedback = createReportFeedback({
     id: "1",
     pathname: "/demo",
-    report_id: "hero",
-    report_type: "group" as const,
     message: "hello",
-    status: "open" as const,
-    field_values: {},
-    replies: [],
-    x_ratio: 0.5,
-    y_ratio: 0.5,
-    element_x_ratio: null,
-    element_y_ratio: null,
-    scroll_y: 0,
-    document_y: 0,
-    viewport_width: 1000,
-    viewport_height: 800,
-    design_width: 1000,
-    design_height: 800,
     created_at: "2026-01-01T00:00:00.000Z",
-};
+});
 
 describe("resolveStorageAdapter", () => {
     it("uses localStorage when no custom handlers are provided", () => {

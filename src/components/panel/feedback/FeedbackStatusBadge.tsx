@@ -6,24 +6,28 @@ import { useReport } from "@/providers/reportContext.js";
 type FeedbackStatusBadgeProps = {
     status: FeedbackDisplayStatus;
     className?: string;
+    isNeedGray?: boolean;
 };
 
-export function FeedbackStatusBadge({ status, className = "" }: FeedbackStatusBadgeProps) {
+export function FeedbackStatusBadge({ status, className = "", isNeedGray = false }: FeedbackStatusBadgeProps) {
     const { messages } = useReport();
     const color = FEEDBACK_STATUS_COLOR[status];
 
     return (
-        <div className={`flex items-center gap-[6px] text-[12px] font-bold uppercase ${className}`}>
+        <div className={`flex items-center gap-[6px] ${isNeedGray ? "normal-case" : "uppercase"} ${className}`}>
             <span
-                className="inline-flex h-[14px] w-[14px] items-center justify-center rounded-full [&_svg]:h-[10px] [&_svg]:w-[10px]"
-                style={{ backgroundColor: color, color: "var(--adaptive-black900)" }}
+                className="inline-flex w-[14px]"
+                // className="inline-flex h-[14px] w-[14px] shrink-0 items-center justify-center [&_svg]:h-[14px] [&_svg]:w-[14px]"
                 aria-hidden
             >
-                <FeedbackStatusIcon status={status} />
+                <FeedbackStatusIcon
+                    status={status}
+                    fill={isNeedGray ? "var(--adaptive-black900)" : color}
+                />
             </span>
             <span
-                style={{ color }}
-                className="text-[12px]"
+                style={{ color: isNeedGray ? "var(--adaptive-black900)" : color }}
+                className="text-[14px]"
             >
                 {messages.status.feedback[status]}
             </span>

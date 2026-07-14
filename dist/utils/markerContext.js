@@ -7,7 +7,7 @@ export function isModalReportId(reportId) {
     return MODAL_REPORT_ID_PATTERN.test(reportId);
 }
 export function usesViewportDetachedCoords(report) {
-    return !report.anchor_report_id && report.viewport_width > 0;
+    return !report.position.anchor && report.position.viewport.width > 0;
 }
 export function resolveDetachedKind(report, targetElement, detached) {
     if (!detached) {
@@ -35,10 +35,11 @@ export function formatModalReportLabel(reportId) {
     return name ? `${name} modal` : "Modal";
 }
 export function getModalGhostFrame(report) {
-    const widthScale = report.viewport_width > 0 ? window.innerWidth / report.viewport_width : 1;
-    const heightScale = report.viewport_height > 0 ? window.innerHeight / report.viewport_height : 1;
-    const centerX = report.viewport_width * report.x_ratio * widthScale;
-    const centerY = report.viewport_height * report.y_ratio * heightScale;
+    const { viewport } = report.position;
+    const widthScale = viewport.width > 0 ? window.innerWidth / viewport.width : 1;
+    const heightScale = viewport.height > 0 ? window.innerHeight / viewport.height : 1;
+    const centerX = viewport.width * viewport.x * widthScale;
+    const centerY = viewport.height * viewport.y * heightScale;
     const dialogWidth = Math.min(MODAL_GHOST_DIALOG_WIDTH * widthScale, window.innerWidth * MODAL_GHOST_DIALOG_MAX_WIDTH_RATIO);
     const dialogHeight = MODAL_GHOST_DIALOG_HEIGHT * heightScale;
     return {

@@ -1,16 +1,25 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { createReviewerKeyPair, getPublicKeyFromPrivateKey, parsePrivateKeyBundle, readPersonalKey, resolvePersonalKeyAuthor, resolvePersonalKeyOwner, savePersonalKey, signReportPayload, } from "../utils/personalKey.js";
-export function usePersonalKey({ enabled, projectId, environment, identify, authors }) {
-    const [personalKey, setPersonalKey] = useState(null);
-    const [isReady, setIsReady] = useState(!enabled);
+import { createReviewerKeyPair, getPublicKeyFromPrivateKey, parsePrivateKeyBundle, readPersonalKey, resolvePersonalKeyAuthor, resolvePersonalKeyOwner, savePersonalKey, signReportPayload, removePersonalKey, } from "../utils/personalKey.js";
+const EMPTY_AUTHORIZED_AUTHORS = [];
+export function usePersonalKey({ enabled, requireKey, projectId, environment, identify, authors }) {
+    const [personalKey, setPersonalKey] = useState(() => (enabled ? readPersonalKey(projectId, environment) : null));
     useEffect(() => {
         if (!enabled) {
             setPersonalKey(null);
-            setIsReady(true);
             return;
         }
-        setPersonalKey(readPersonalKey(projectId, environment));
-        setIsReady(true);
+        const sync = () => {
+            setPersonalKey(readPersonalKey(projectId, environment));
+        };
+        sync();
+        window.addEventListener("focus", sync);
+        window.addEventListener("storage", sync);
+        document.addEventListener("visibilitychange", sync);
+        return () => {
+            window.removeEventListener("focus", sync);
+            window.removeEventListener("storage", sync);
+            document.removeEventListener("visibilitychange", sync);
+        };
     }, [enabled, environment, projectId]);
     const keyBundle = useMemo(() => (personalKey ? parsePrivateKeyBundle(personalKey) : null), [personalKey]);
     const authorizedAuthor = useMemo(() => (keyBundle ? resolvePersonalKeyAuthor(keyBundle, identify, authors) : undefined), [authors, identify, keyBundle]);
@@ -24,6 +33,12 @@ export function usePersonalKey({ enabled, projectId, environment, identify, auth
         setPersonalKey(issued.privateKey);
         return issued;
     }, [authors, environment, identify, projectId]);
+    const issueSelfKey = useCallback(async (authorId, authorName) => {
+        const issued = await createReviewerKeyPair(projectId, environment, authorId, authorName);
+        savePersonalKey(projectId, environment, issued.privateKey);
+        setPersonalKey(issued.privateKey);
+        return issued;
+    }, [environment, projectId]);
     const rotatePersonalKey = useCallback(async () => {
         if (!authorizedAuthor) {
             return null;
@@ -34,17 +49,26 @@ export function usePersonalKey({ enabled, projectId, environment, identify, auth
         return issued;
     }, [authorizedAuthor, environment, projectId]);
     const insertPersonalKey = useCallback(async (key) => {
+        const bundle = parsePrivateKeyBundle(key);
+        if (!bundle) {
+            return { saved: false, reason: "invalid" };
+        }
+        if (bundle.projectId !== projectId || (bundle.environment ?? "") !== (environment ?? "")) {
+            return { saved: false, reason: "project-mismatch" };
+        }
         const saved = savePersonalKey(projectId, environment, key);
         if (saved) {
             setPersonalKey(key.trim());
         }
-        const bundle = saved ? parsePrivateKeyBundle(key) : null;
-        return bundle
-            ? {
-                authorized: Boolean(resolvePersonalKeyAuthor(bundle, identify, authors)),
-            }
-            : null;
+        return {
+            saved: true,
+            authorized: Boolean(resolvePersonalKeyAuthor(bundle, identify, authors)),
+        };
     }, [authors, environment, identify, projectId]);
+    const clearPersonalKey = useCallback(() => {
+        removePersonalKey(projectId, environment);
+        setPersonalKey(null);
+    }, [environment, projectId]);
     const signPayload = useCallback(async (action, payload) => {
         if (!personalKey || !authorizedAuthor) {
             return null;
@@ -56,16 +80,19 @@ export function usePersonalKey({ enabled, projectId, environment, identify, auth
             payload,
         });
     }, [authorizedAuthor, environment, personalKey, projectId]);
+    const authorizedAuthors = useMemo(() => (requireKey ? (authorizedAuthor ? [authorizedAuthor] : EMPTY_AUTHORIZED_AUTHORS) : authors), [authorizedAuthor, authors, requireKey]);
     return {
         personalKey,
         publicKey: personalKey ? getPublicKeyFromPrivateKey(personalKey) : null,
-        personalKeyRequired: enabled && isReady && !authorizedAuthor,
-        personalKeyPendingRegistration: enabled && Boolean(personalKey) && !authorizedAuthor,
+        personalKeyRequired: requireKey && !personalKey,
+        personalKeyPendingRegistration: requireKey && Boolean(personalKey) && !authorizedAuthor,
         personalKeyCandidates: authors,
-        authorizedAuthors: enabled ? (authorizedAuthor ? [authorizedAuthor] : []) : authors,
+        authorizedAuthors,
         issuePersonalKey,
+        issueSelfKey,
         rotatePersonalKey,
         insertPersonalKey,
+        clearPersonalKey,
         signPayload,
     };
 }
