@@ -22,7 +22,7 @@ import { useResolvedAppearance } from "./useResolvedAppearance.js";
 import { buildPanelStats } from "@/utils/panelBootstrap.js";
 import { buildPanelRoleStats } from "@/utils/panelRoleStats.js";
 import { getPanelRoleTabPreset } from "@/constants/panelTabPresets.js";
-import { getPanelTabDefinition, isUserSelectablePanelTab, type UserSelectablePanelTab } from "@/constants/panelTabRegistry.js";
+import { getPanelTabDefinition, isUserSelectablePanelTab, shouldEnableAllReportsFetch, type UserSelectablePanelTab } from "@/constants/panelTabRegistry.js";
 import {
     formatVisibleTabSummary,
     resolveDefaultPanelTab,
@@ -319,22 +319,22 @@ export function useReportState({
             return true;
         }
 
-        if (roleTabPreset.headerStatsScope === "all") {
+        if (panelTab && isUserSelectablePanelTab(panelTab) && getPanelTabDefinition(panelTab).needsFullReportList) {
             return true;
         }
 
         return visiblePanelTabs.some((tabId) => getPanelTabDefinition(tabId).needsFullReportList);
-    }, [fetchEnabled, mode, onPanelBootstrap, panelTab, roleTabPreset.headerStatsScope, visiblePanelTabs]);
+    }, [fetchEnabled, mode, onPanelBootstrap, panelTab, visiblePanelTabs]);
 
-    const allReportsFetchEnabled = useMemo(() => {
-        if (!fetchEnabled || !needsFullReportList) {
-            return false;
-        }
-
-        const needsAllScopeTabs: UserSelectablePanelTab[] = ["overview", "my-tasks", "needs-attention", "project-health", "today-digest"];
-
-        return roleTabPreset.headerStatsScope === "all" || visiblePanelTabs.some((tabId) => needsAllScopeTabs.includes(tabId));
-    }, [fetchEnabled, needsFullReportList, roleTabPreset.headerStatsScope, visiblePanelTabs]);
+    const allReportsFetchEnabled = useMemo(
+        () =>
+            shouldEnableAllReportsFetch({
+                fetchEnabled,
+                needsFullReportList,
+                activePanelTab: panelTab,
+            }),
+        [fetchEnabled, needsFullReportList, panelTab],
+    );
 
     const listFetchEnabled = fetchEnabled && needsFullReportList;
     const bootstrapEnabled = fetchEnabled && panelExpanded && Boolean(onPanelBootstrap);

@@ -95,45 +95,38 @@ export function useReportPersistence({ projectId, environment, appVersion, field
     const rawReports = activeReportsQuery.data;
     const reports = useMemo(() => enrichReports(rawReports, replyHistoryByReportId), [rawReports, replyHistoryByReportId]);
     const { error, isError, isLoading, isFetching, hasNextPage, isFetchingNextPage, fetchNextPage, refetch } = activeReportsQuery;
+    const refreshReportsAfterMutation = useCallback((options) => {
+        if (options?.clearReplyHistory) {
+            clearLoadedReplies();
+        }
+        if (!(fetchEnabled && listFetchEnabled)) {
+            return;
+        }
+        void currentReportsQuery.refetch();
+        if (shouldFetchAllReports) {
+            void allReportsQuery.refetch();
+        }
+    }, [allReportsQuery, clearLoadedReplies, currentReportsQuery, fetchEnabled, listFetchEnabled, shouldFetchAllReports]);
     useEffect(() => {
         if (typeof window === "undefined" || !usesLocalStorage) {
             return;
         }
         const handleExternalStorageChange = () => {
-            clearLoadedReplies();
-            void refetch();
-            void currentReportsQuery.refetch();
-            if (shouldFetchAllReports) {
-                void allReportsQuery.refetch();
-            }
+            refreshReportsAfterMutation({ clearReplyHistory: true });
         };
         window.addEventListener(FEEDBACK_STORAGE_CHANGED_EVENT, handleExternalStorageChange);
         return () => {
             window.removeEventListener(FEEDBACK_STORAGE_CHANGED_EVENT, handleExternalStorageChange);
         };
-    }, [allReportsQuery, clearLoadedReplies, currentReportsQuery, refetch, shouldFetchAllReports, usesLocalStorage]);
+    }, [refreshReportsAfterMutation, usesLocalStorage]);
     const { mutateAsync: createFeedback, isPending: isCreating } = useCreateReportMutation(storageAdapterInstance, () => {
-        void refetch();
-        void currentReportsQuery.refetch();
-        if (listScope === "all" || shouldFetchAllReports) {
-            void allReportsQuery.refetch();
-        }
+        refreshReportsAfterMutation();
     });
     const { mutateAsync: updateFeedback, isPending: isUpdating } = useUpdateReportMutation(storageAdapterInstance, () => {
-        clearLoadedReplies();
-        void refetch();
-        void currentReportsQuery.refetch();
-        if (listScope === "all" || shouldFetchAllReports) {
-            void allReportsQuery.refetch();
-        }
+        refreshReportsAfterMutation({ clearReplyHistory: true });
     });
     const { mutateAsync: deleteFeedback, isPending: isDeleting } = useDeleteReportMutation(storageAdapterInstance, () => {
-        clearLoadedReplies();
-        void refetch();
-        void currentReportsQuery.refetch();
-        if (listScope === "all" || shouldFetchAllReports) {
-            void allReportsQuery.refetch();
-        }
+        refreshReportsAfterMutation({ clearReplyHistory: true });
     });
     const getReportById = useCallback((reportId) => rawReports.find((report) => report.id === reportId), [rawReports]);
     const { initReplyHistory, loadOlderReplies, goToOlderPaginationPage, goToNewerPaginationPage, appendReplyToHistory, resetReplyHistory, } = createReplyHistoryActions({
@@ -156,23 +149,15 @@ export function useReportPersistence({ projectId, environment, appVersion, field
                 await initReplyHistory(report, replyHistory);
             }
         }
-        void refetch();
-        void currentReportsQuery.refetch();
-        if (listScope === "all" || shouldFetchAllReports) {
-            void allReportsQuery.refetch();
-        }
+        refreshReportsAfterMutation();
         return created;
     }, [
-        allReportsQuery,
         appendReplyToHistory,
-        currentReportsQuery,
         getReportById,
         initReplyHistory,
-        listScope,
-        refetch,
+        refreshReportsAfterMutation,
         replyHistory,
         replyHistoryByReportId,
-        shouldFetchAllReports,
         storageAdapterInstance,
         usesLazyReplies,
     ]);

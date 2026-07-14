@@ -68,6 +68,12 @@ function AppContent() {
                             publicKey:
                                 "stpub1.eyJjcnYiOiJQLTI1NiIsImV4dCI6dHJ1ZSwia2V5X29wcyI6WyJ2ZXJpZnkiXSwia3R5IjoiRUMiLCJ4IjoiVGo3LS14UTB2eEJjMjd4OHZpb1BmNGpWTW5naVYzVFJoM0MwOXZDWDJ4byIsInkiOiJkdndHZkNfcDdnVDJYM2ZXYzNqVEI4WHlPaGRVVXNwdW1oQzBhNlNQVEJVIn0",
                         },
+                        {
+                            id: "e6eae915-4e8a-4c7e-a504-4fec2a50618a",
+                            name: "김민호",
+                            publicKey:
+                                "stpub1.eyJjcnYiOiJQLTI1NiIsImV4dCI6dHJ1ZSwia2V5X29wcyI6WyJ2ZXJpZnkiXSwia3R5IjoiRUMiLCJ4IjoiUDJZOXNDdlpvLS1ILVh6SmZMcl9YVFMtLTFPZTBvNEJZclBnRlJsR0tPdyIsInkiOiJ1VHhJU1V2VlJ3eFJoUkV5WFZsT0xhQS11RjkzdnZtcW91ZktxZ3RpcGpzIn0",
+                        },
                     ],
                 }}
             />

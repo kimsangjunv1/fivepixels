@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { getPanelRoleTabPreset, PANEL_ROLE_TAB_PRESETS } from "@/constants/panelTabPresets.js";
-import { getPanelTabDefinition, PANEL_USER_TAB_IDS } from "@/constants/panelTabRegistry.js";
+import {
+    ALL_SCOPE_PANEL_TABS,
+    getPanelTabDefinition,
+    PANEL_USER_TAB_IDS,
+    shouldEnableAllReportsFetch,
+} from "@/constants/panelTabRegistry.js";
 import {
     createRoleDefaultPreference,
     getDefaultVisibleTabsForRole,
@@ -50,7 +55,7 @@ describe("panelTabPreference", () => {
     });
 
     it("resolves default panel tab from visible tabs", () => {
-        expect(resolveDefaultPanelTab("planner", ["feedback-list", "overview"])).toBe("overview");
+        expect(resolveDefaultPanelTab("planner", ["feedback-list", "overview"])).toBe("feedback-list");
         expect(resolveDefaultPanelTab("planner", ["diagnostics"])).toBe("diagnostics");
     });
 
@@ -92,6 +97,25 @@ describe("panelTabPresets", () => {
                 expect(preset.defaultVisible).not.toContain(tabId);
                 expect(preset.recommended).not.toContain(tabId);
             }
+        }
+    });
+
+    it("marks all-scope aggregation tabs and enables deferred listAll only when active", () => {
+        for (const tabId of ALL_SCOPE_PANEL_TABS) {
+            expect(shouldEnableAllReportsFetch({ fetchEnabled: true, needsFullReportList: true, activePanelTab: tabId })).toBe(true);
+        }
+
+        expect(shouldEnableAllReportsFetch({ fetchEnabled: true, needsFullReportList: true, activePanelTab: "feedback-list" })).toBe(false);
+        expect(shouldEnableAllReportsFetch({ fetchEnabled: true, needsFullReportList: true, activePanelTab: "overview" })).toBe(true);
+        expect(shouldEnableAllReportsFetch({ fetchEnabled: true, needsFullReportList: false, activePanelTab: "overview" })).toBe(false);
+        expect(shouldEnableAllReportsFetch({ fetchEnabled: false, needsFullReportList: true, activePanelTab: "my-tasks" })).toBe(false);
+    });
+
+    it("defaults every role to current-page header stats and current list scope", () => {
+        for (const role of Object.keys(PANEL_ROLE_TAB_PRESETS) as Array<keyof typeof PANEL_ROLE_TAB_PRESETS>) {
+            const preset = getPanelRoleTabPreset(role);
+            expect(preset.headerStatsScope).toBe("current-page");
+            expect(preset.defaultListScope).toBe("current");
         }
     });
 });

@@ -21,6 +21,28 @@ export type PanelTabDefinition = {
     isAvailable: (context: PanelTabAvailabilityContext) => boolean;
 };
 
+/**
+ * Tabs that need cross-page aggregation via listAll.
+ * Fetched only while the tab is **active** (not merely visible in the tab bar).
+ */
+export const ALL_SCOPE_PANEL_TABS = ["overview", "my-tasks", "needs-attention", "project-health", "today-digest"] as const satisfies readonly UserSelectablePanelTab[];
+
+/** @deprecated Use ALL_SCOPE_PANEL_TABS. Kept for older imports. */
+export const HIGH_API_RISK_PANEL_TABS = ALL_SCOPE_PANEL_TABS;
+
+export function isAllScopePanelTab(tabId: string | null | undefined): tabId is (typeof ALL_SCOPE_PANEL_TABS)[number] {
+    return typeof tabId === "string" && (ALL_SCOPE_PANEL_TABS as readonly string[]).includes(tabId);
+}
+
+/** True when the active panel tab requires fetching listAll (deferred until selected). */
+export function shouldEnableAllReportsFetch(params: {
+    fetchEnabled: boolean;
+    needsFullReportList: boolean;
+    activePanelTab: string | null;
+}): boolean {
+    return params.fetchEnabled && params.needsFullReportList && isAllScopePanelTab(params.activePanelTab);
+}
+
 export const PANEL_USER_TAB_REGISTRY: PanelTabDefinition[] = [
     {
         id: "route-details",
