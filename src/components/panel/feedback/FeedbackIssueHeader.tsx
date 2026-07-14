@@ -1,6 +1,6 @@
 import type { ReportFeedback } from "@/types/report.js";
-import { getIssueSummary } from "@/utils/reportCases.js";
-import { useReport } from "@/providers/reportContext.js";
+import { getIssueSummary } from "@/utils/report/reportCases.js";
+import { useReportPreferences } from "@/providers/reportContext.js";
 import { CaseProgressLabel } from "./CaseProgressLabel.js";
 import { FeedbackCreatorBadge } from "./FeedbackCreatorBadge.js";
 import { FeedbackFieldTags } from "./FeedbackFieldTags.js";
@@ -11,7 +11,7 @@ type FeedbackIssueHeaderProps = {
 };
 
 export function FeedbackIssueHeader({ report, fieldTags }: FeedbackIssueHeaderProps) {
-    const { messages } = useReport();
+    const { messages } = useReportPreferences();
 
     return (
         <section className="flex flex-col gap-[12px] bg-transparent p-[8px]">

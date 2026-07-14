@@ -1,13 +1,14 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import { useMemo, useState } from "react";
 import { PANEL_ROLE_VALUES } from "../../constants/panelRole.js";
-import { getDefaultVisibleTabsForRole } from "../../utils/panelTabPreference.js";
-import { useReport } from "../../providers/reportContext.js";
+import { getDefaultVisibleTabsForRole } from "../../utils/panel/panelTabPreference.js";
+import { useReportPreferences, useReportSession } from "../../providers/reportContext.js";
 import { PanelDropdownMenuItem } from "./PanelDropdownMenu.js";
 import { PanelTabSelector } from "./PanelTabSelector.js";
-import { isPersonalKeyFile, readPersonalKeyFile } from "../../utils/feedbackDataTransfer.js";
+import { isPersonalKeyFile, readPersonalKeyFile } from "../../utils/feedback/feedbackDataTransfer.js";
 export function PanelOnboarding() {
-    const { messages, panelRole, setPanelRole, completeOnboarding, restoreFromBackup, setErrorMessage, selfProfile, personalKeyCandidates, resolvedTabAvailabilityContext, savePanelTabPreference, } = useReport();
+    const { messages, panelRole, setPanelRole, completeOnboarding, restoreFromBackup, selfProfile, personalKeyCandidates, resolvedTabAvailabilityContext, savePanelTabPreference } = useReportPreferences();
+    const { setErrorMessage } = useReportSession();
     const onboarding = messages.onboarding;
     const [step, setStep] = useState("intro");
     const [name, setName] = useState(selfProfile?.name ?? "");

@@ -1,7 +1,7 @@
 import type { DeepPartialReportMessages, ReportLocale, ReportMessages } from "@/i18n/index.js";
 import { getReportMessages, resolveReportLocale } from "@/i18n/index.js";
 import type { QuestionThreadDisplay, ReplyHistoryLoadMode, ReportAppearance, ReportUi } from "@/types/report.js";
-import { DEFAULT_REPLY_HISTORY_MODE, DEFAULT_REPLY_HISTORY_PAGE_SIZE } from "@/utils/replyHistory.js";
+import { DEFAULT_REPLY_HISTORY_MODE, DEFAULT_REPLY_HISTORY_PAGE_SIZE } from "@/utils/feedback/replyHistory.js";
 
 export type ResolvedReplyHistoryConfig = {
     mode: ReplyHistoryLoadMode;

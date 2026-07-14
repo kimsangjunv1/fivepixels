@@ -14,14 +14,14 @@ import type {
     UpdateReportFeedbackPayload,
 } from "@/types/report.js";
 import type { ReportFilters, ReportListScope } from "@/types/report-ui.js";
-import { casesToSearchText, getReportCases } from "@/utils/reportCases.js";
-import { toDateKey } from "@/utils/heatmapActivity.js";
-import { buildRouteDetailsSummary } from "@/utils/panelBootstrap.js";
-import { getRouteDetailStatus } from "@/utils/routeDetailStatus.js";
-import { getFeedbackDisplayStatus, getLatestReply } from "@/utils/feedbackThread.js";
-import { mergeRepliesIntoReport } from "@/utils/reportSummary.js";
-import { resolveStorageAdapter } from "@/utils/storage.js";
-import type { ResolvedReplyHistoryConfig } from "@/utils/reportUi.js";
+import { casesToSearchText, getReportCases } from "@/utils/report/reportCases.js";
+import { toDateKey } from "@/utils/panel/heatmapActivity.js";
+import { buildRouteDetailsSummary } from "@/utils/panel/panelBootstrap.js";
+import { getRouteDetailStatus } from "@/utils/panel/routeDetailStatus.js";
+import { getFeedbackDisplayStatus, getLatestReply } from "@/utils/feedback/feedbackThread.js";
+import { mergeRepliesIntoReport } from "@/utils/report/reportSummary.js";
+import { resolveStorageAdapter } from "@/utils/shared/storage.js";
+import type { ResolvedReplyHistoryConfig } from "@/utils/report/reportUi.js";
 import { createReplyHistoryActions, EMPTY_REPLY_HISTORY_STATE, type ReplyHistoryState } from "./replyHistoryActions.js";
 
 export type ReportPersistenceConfig = {

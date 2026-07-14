@@ -1,0 +1,54 @@
+import { type Dispatch, type RefObject, type SetStateAction } from "react";
+import type { ReportMessages } from "../../i18n/types.js";
+import type { ReportFeedback, ReportField } from "../../types/report.js";
+import type { Marker, ReportMode, TargetSnapshot } from "../../types/report-ui.js";
+export type UseReportMarkersParams = {
+    mode: ReportMode;
+    messages: ReportMessages;
+    fields: ReportField[];
+    currentPathname: string;
+    currentPageFilteredReports: ReportFeedback[];
+    filteredReports: ReportFeedback[];
+    reports: ReportFeedback[];
+    selectedReportId: string | null;
+    markerAppearanceSize: string;
+    showMarkerTargetPreview: boolean;
+    showTargetPreview: boolean;
+    selectableTargetsLength: number;
+    selectedTarget: TargetSnapshot | null;
+    hoveredTarget: TargetSnapshot | null;
+    isFetching: boolean;
+    isReportsLoading: boolean;
+    activeReplyReportId: string | null;
+    setErrorMessage: Dispatch<SetStateAction<string>>;
+    onNavigate?: (pathname: string) => void | Promise<void>;
+    onRevealTarget?: (report: ReportFeedback) => boolean | Promise<boolean>;
+    selectReport: (reportId: string) => void;
+    closeReplyComposer: () => void;
+    openReplyComposer: (report: ReportFeedback) => void;
+    loadRepliesIfNeeded: (report: ReportFeedback) => Promise<ReportFeedback>;
+    searchInputRef: RefObject<HTMLInputElement | null>;
+};
+export declare function useReportMarkers({ mode, messages, fields, currentPathname, currentPageFilteredReports, filteredReports, reports, selectedReportId, markerAppearanceSize, showMarkerTargetPreview, showTargetPreview, selectableTargetsLength, selectedTarget, hoveredTarget, isFetching, isReportsLoading, activeReplyReportId, setErrorMessage, onNavigate, onRevealTarget, selectReport, closeReplyComposer, openReplyComposer, loadRepliesIfNeeded, searchInputRef, }: UseReportMarkersParams): {
+    markers: Marker[];
+    hoveredMarkerId: string | null;
+    setHoveredMarkerId: Dispatch<SetStateAction<string | null>>;
+    activeMarkerTarget: TargetSnapshot | null;
+    markerPreviewTargets: TargetSnapshot[];
+    tooltipAnchor: Marker | null;
+    tooltipReport: ReportFeedback | null;
+    tooltipFieldTags: {
+        key: string;
+        label: string;
+    }[];
+    statusText: string;
+    clearHoverLeaveTimeout: () => void;
+    scheduleHoverLeave: (markerId: string) => void;
+    prepareFeedbackLocation: (report: ReportFeedback) => Promise<void>;
+    showFeedbackTooltip: (report: ReportFeedback) => Promise<void>;
+    locateFeedback: (reportId: string) => Promise<void>;
+    focusSearchInput: () => void;
+    selectAdjacentReport: (direction: "up" | "down") => void;
+    activateFeedbackMarker: (report: ReportFeedback) => Promise<void>;
+};
+//# sourceMappingURL=useReportMarkers.d.ts.map

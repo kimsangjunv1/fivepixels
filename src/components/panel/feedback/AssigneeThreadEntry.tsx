@@ -1,8 +1,8 @@
 import type { ReportAuthor, ReportFeedback, ReportReply } from "@/types/report.js";
-import { useReport } from "@/providers/reportContext.js";
-import { formatClockTime } from "@/utils/format.js";
-import { formatAssigneeLabel, resolveAuthorDepartment } from "@/utils/reportCases.js";
-import { resolveAssigneeEntryActionRole } from "@/utils/feedbackThread.js";
+import { useReportPreferences } from "@/providers/reportContext.js";
+import { formatClockTime } from "@/utils/shared/format.js";
+import { formatAssigneeLabel, resolveAuthorDepartment } from "@/utils/report/reportCases.js";
+import { resolveAssigneeEntryActionRole } from "@/utils/feedback/feedbackThread.js";
 import { CheckIcon, CloseIcon } from "@/components/icons/Icons.js";
 import { ThreadTimelineRow } from "./ThreadTimelineRow.js";
 
@@ -42,7 +42,7 @@ export function AssigneeThreadEntry({
     isUpdating,
     isClaimingAssignee,
 }: AssigneeThreadEntryProps) {
-    const { messages } = useReport();
+    const { messages } = useReportPreferences();
     const assigneeName = reply.author_name?.trim() ?? "";
     const department = resolveAuthorDepartment(authors, assigneeName);
     const actionRole = resolveAssigneeEntryActionRole(report, reply, caseId, actorName);

@@ -3,10 +3,10 @@ import { describe, expect, it } from "vitest";
 import { createEdgecaseFeedbackSeed } from "../../../examples/basic/src/features/edgecase/model/createEdgecaseFeedbackSeed.js";
 import { FEEDBACK_DISPLAY_STATUS_ORDER } from "@/constants/feedbackStatus.js";
 import type { ReportReplyStatus, ReportStatus } from "@/types/report.js";
-import { getFeedbackDisplayStatus } from "@/utils/feedbackThread.js";
-import { getCaseLatestStatus } from "@/utils/feedbackThread.js";
-import { parseFeedbackImportJson } from "@/utils/feedbackTransferSchema.js";
-import { getRouteDetailStatus } from "@/utils/routeDetailStatus.js";
+import { getFeedbackDisplayStatus } from "@/utils/feedback/feedbackThread.js";
+import { getCaseLatestStatus } from "@/utils/feedback/feedbackThread.js";
+import { parseFeedbackImportJson } from "@/utils/feedback/feedbackTransferSchema.js";
+import { getRouteDetailStatus } from "@/utils/panel/routeDetailStatus.js";
 
 describe("edgecase feedback seed", () => {
     it("parses every seed item through the import schema", () => {

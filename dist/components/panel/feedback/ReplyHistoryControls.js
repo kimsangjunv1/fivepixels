@@ -1,9 +1,10 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { ProcessingDots } from "../../../components/ui/ProcessingDots.js";
 import { usesReplyInfiniteScroll, usesReplyLoadMoreButton, usesReplyPaginationMode } from "../../../constants/replyHistory.js";
-import { useReport } from "../../../providers/reportContext.js";
+import { useReportPreferences, useReportData } from "../../../providers/reportContext.js";
 export function ReplyHistoryControls({ reportId, history }) {
-    const { messages, replyHistory, loadOlderReplies, goToOlderPaginationPage, goToNewerPaginationPage } = useReport();
+    const { messages } = useReportPreferences();
+    const { replyHistory, loadOlderReplies, goToOlderPaginationPage, goToNewerPaginationPage } = useReportData();
     if (!history?.initialized) {
         return history?.isLoadingOlder ? (_jsxs("div", { className: "flex items-center justify-center gap-[6px] py-[8px] text-[12px] text-[var(--adaptive-black500)]", children: [_jsx(ProcessingDots, {}), _jsx("span", { children: messages.feedbackList.loadingMore })] })) : null;
     }

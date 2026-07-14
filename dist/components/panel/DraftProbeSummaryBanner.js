@@ -1,7 +1,8 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import { useReport } from "../../providers/reportContext.js";
+import { useReportPreferences, useReportSession } from "../../providers/reportContext.js";
 export function DraftProbeSummaryBanner() {
-    const { savedProbeEdits, appendSavedProbeSummaryAsNewDraftCase, messages } = useReport();
+    const { messages } = useReportPreferences();
+    const { savedProbeEdits, appendSavedProbeSummaryAsNewDraftCase } = useReportSession();
     if (Object.keys(savedProbeEdits).length === 0) {
         return null;
     }

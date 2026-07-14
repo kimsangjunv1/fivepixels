@@ -1,5 +1,5 @@
 import { jsx as _jsx } from "react/jsx-runtime";
-import { formatShortcutLabel } from "../utils/shortcuts.js";
+import { formatShortcutLabel } from "../utils/shared/shortcuts.js";
 export function ShortcutHint({ binding, visible }) {
     if (!visible) {
         return null;

@@ -1,5 +1,5 @@
 import type { ReportFeedback } from "@/types/report.js";
-import { toDateKey } from "@/utils/heatmapActivity.js";
+import { toDateKey } from "@/utils/panel/heatmapActivity.js";
 
 export type HourlyCompareBucket = {
     hour: number;

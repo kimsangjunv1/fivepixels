@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useReport } from "@/providers/reportContext.js";
+import { useReportPreferences } from "@/providers/reportContext.js";
 import { ChevronDownIcon } from "@/components/icons/Icons.js";
 import { PanelDropdownMenu, PanelDropdownMenuItem } from "@/components/panel/PanelDropdownMenu.js";
 import type { ReportAuthor } from "@/types/report.js";
@@ -11,7 +11,7 @@ type AuthorSelectorProps = {
 };
 
 export function AuthorSelector({ authors, value, onChange }: AuthorSelectorProps) {
-    const { messages } = useReport();
+    const { messages } = useReportPreferences();
     const [menuOpen, setMenuOpen] = useState(false);
 
     if (authors.length === 0) {

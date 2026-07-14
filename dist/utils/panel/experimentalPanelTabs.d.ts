@@ -1,5 +1,5 @@
 import type { ReportFeedback } from "../../types/report.js";
-import { getFeedbackDisplayStatus } from "../../utils/feedbackThread.js";
+import { getFeedbackDisplayStatus } from "../../utils/feedback/feedbackThread.js";
 export declare function getCaseCount(report: ReportFeedback): number;
 export declare function filterMyTasks(reports: ReportFeedback[], actorName: string | null): ReportFeedback[];
 export declare function filterNeedsAttention(reports: ReportFeedback[]): ReportFeedback[];

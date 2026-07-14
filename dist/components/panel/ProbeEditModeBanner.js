@@ -1,7 +1,7 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import { ChevronLeftIcon, ChevronRightIcon } from "../../components/icons/Icons.js";
 import { PickTargetCompareSegment } from "../../components/overlay/PickTargetCompareSegment.js";
-import { useReport } from "../../providers/reportContext.js";
+import { useReportPreferences, useReportSession } from "../../providers/reportContext.js";
 function ProbeEditModeSpinner() {
     return (_jsx("span", { className: "fivepixels-spin inline-block h-[12px] w-[12px] shrink-0 rounded-full border-2 border-white/30 border-t-white", "aria-hidden": true }));
 }
@@ -12,7 +12,8 @@ function ProbeEditModeHistoryButton({ label, disabled, onClick, children }) {
     return (_jsx("button", { type: "button", "data-fivepixels-interactive": "", "aria-label": label, title: label, disabled: disabled, onClick: onClick, className: "inline-flex shrink-0 items-center justify-center rounded-[4px] p-[2px] text-white transition-opacity enabled:hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-35", children: children }));
 }
 export function ProbeEditModeBanner() {
-    const { hasProbeSessionChanges, savedProbeCompareMode, setSavedProbeCompareMode, revertAllSavedProbeEdits, savedProbeEdits, canUndoProbeSession, canRedoProbeSession, undoProbeSessionAction, redoProbeSessionAction, messages, } = useReport();
+    const { messages } = useReportPreferences();
+    const { hasProbeSessionChanges, savedProbeCompareMode, setSavedProbeCompareMode, revertAllSavedProbeEdits, savedProbeEdits, canUndoProbeSession, canRedoProbeSession, undoProbeSessionAction, redoProbeSessionAction } = useReportSession();
     if (!hasProbeSessionChanges) {
         return null;
     }

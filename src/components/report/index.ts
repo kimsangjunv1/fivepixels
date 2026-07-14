@@ -68,12 +68,12 @@ export {
     resolveCases,
     syncIssueStatusFromCases,
     canEditReportCases,
-} from "@/utils/reportCases.js";
+} from "@/utils/report/reportCases.js";
 export {
     createReportAuthMessage,
     parsePublicKey,
     verifyReportAuthProof,
-} from "@/utils/personalKey.js";
+} from "@/utils/auth/personalKey.js";
 export { REPORT_STATUS_FLOW, REPORT_STATUS_TRANSITIONS } from "@/types/report.js";
 export {
     buildGitHubIssueUpdate,
@@ -85,7 +85,7 @@ export {
     isGitIssued,
     isGitIssuedSystemReply,
     isGitHubIssueIntegrationEnabled,
-} from "@/utils/githubIntegration.js";
+} from "@/utils/github/githubIntegration.js";
 export type { DeepPartialReportMessages, ReportLocale, ReportMessages } from "@/i18n/index.js";
 export { en as reportMessagesEn, ensureReportLocaleMessages, getDefaultFields, getReportMessages, resolveReportLocale } from "@/i18n/index.js";
 export { FEEDBACK_STORAGE_CHANGED_EVENT, dispatchFeedbackStorageChanged } from "@/constants/feedbackStorageEvents.js";
@@ -98,4 +98,4 @@ export {
     writeAllFeedback,
     type FeedbackInsertResult,
     type FeedbackTransferScope,
-} from "@/utils/feedbackDataTransfer.js";
+} from "@/utils/feedback/feedbackDataTransfer.js";

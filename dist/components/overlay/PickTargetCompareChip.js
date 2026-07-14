@@ -1,10 +1,11 @@
 import { jsx as _jsx } from "react/jsx-runtime";
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
-import { useReport } from "../../providers/reportContext.js";
-import { getPickProbeCompareChipLayout } from "../../utils/pickProbeLayout.js";
+import { useReportPreferences, useReportSession } from "../../providers/reportContext.js";
+import { getPickProbeCompareChipLayout } from "../../utils/probe/pickProbeLayout.js";
 import { PickTargetCompareSegment } from "./PickTargetCompareSegment.js";
 export function PickTargetCompareChip({ target }) {
-    const { messages, pickProbeCompareMode, setPickProbeCompareMode } = useReport();
+    const { messages } = useReportPreferences();
+    const { pickProbeCompareMode, setPickProbeCompareMode } = useReportSession();
     const chipRef = useRef(null);
     const [layout, setLayout] = useState(null);
     const updateLayout = useCallback(() => {

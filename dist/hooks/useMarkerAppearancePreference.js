@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import { DEFAULT_MARKER_APPEARANCE, DEFAULT_MARKER_COLORS, isAppearanceScale, isMarkerShape, MARKER_APPEARANCE_STORAGE_KEY, } from "../constants/markerAppearance.js";
-import { isValidHexColor } from "../utils/hexColor.js";
-import { setMarkerDotSizeFromScale } from "../utils/markerRuntime.js";
+import { isValidHexColor } from "../utils/shared/hexColor.js";
+import { setMarkerDotSizeFromScale } from "../utils/marker/markerRuntime.js";
 function normalizeMarkerColors(value) {
     if (!value || typeof value !== "object") {
         return DEFAULT_MARKER_COLORS;

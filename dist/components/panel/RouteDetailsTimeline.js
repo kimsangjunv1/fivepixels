@@ -1,8 +1,8 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useMemo, useState } from "react";
 import { PointerFollowTooltip } from "../../components/ui/PointerFollowTooltip.js";
-import { panelNumericClassName } from "../../utils/panelTypography.js";
-import { formatHourLabel, resolveHourlyBarHeightPx, } from "../../utils/hourlyCompareSparkline.js";
+import { panelNumericClassName } from "../../utils/panel/panelTypography.js";
+import { formatHourLabel, resolveHourlyBarHeightPx, } from "../../utils/panel/hourlyCompareSparkline.js";
 const BAR_MAX_HEIGHT_PX = 36;
 const BAR_MIN_HEIGHT_PX = 3;
 const BAR_IDLE_CLASS = "bg-[var(--adaptive-blue200)]";

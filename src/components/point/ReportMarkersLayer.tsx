@@ -4,16 +4,16 @@ import { useTooltipLayout } from "@/hooks/useTooltipLayout.js";
 import { useReport } from "@/providers/reportContext.js";
 import type { Marker, MarkerOverflowHint } from "@/types/report-ui.js";
 import type { ReportFeedback } from "@/types/report.js";
-import { resolveMarkerOverflowHints } from "@/utils/coordinates.js";
-import { scrollContainerTowardEdge } from "@/utils/dom.js";
-import { getDetachedMarkerAriaLabel, getModalGhostFrame } from "@/utils/markerContext.js";
-import { getMarkerDotSize } from "@/utils/markerRuntime.js";
-import { resolveMarkerShapeStyle } from "@/utils/markerShape.js";
+import { resolveMarkerOverflowHints } from "@/utils/marker/coordinates.js";
+import { scrollContainerTowardEdge } from "@/utils/shared/dom.js";
+import { getDetachedMarkerAriaLabel, getModalGhostFrame } from "@/utils/marker/markerContext.js";
+import { getMarkerDotSize } from "@/utils/marker/markerRuntime.js";
+import { resolveMarkerShapeStyle } from "@/utils/marker/markerShape.js";
 import type { MarkerAppearancePreferences, TypographyPreferences } from "@/constants/markerAppearance.js";
 import { getMarkerLabelFontSizePx } from "@/constants/markerAppearance.js";
-import { getMarkerColor, getMarkerDisplayLabel } from "@/utils/reportVisual.js";
+import { getMarkerColor, getMarkerDisplayLabel } from "@/utils/report/reportVisual.js";
 import { FeedbackHoverCard } from "@/components/panel/feedback/FeedbackHoverCard.js";
-import { getReplyCount } from "@/utils/feedbackThread.js";
+import { getReplyCount } from "@/utils/feedback/feedbackThread.js";
 import { MarkerFeedbackWindow } from "./MarkerFeedbackWindow.js";
 
 const TOOLTIP_SURFACE_CLASS =

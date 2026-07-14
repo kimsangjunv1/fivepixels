@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useReportPreferences, useReportSession } from "../../providers/reportContext.js";
 import { ChevronDownIcon } from "../../components/icons/Icons.js";
 import { HoverTooltip } from "../../components/ui/HoverTooltip.js";
-import { formatPresentationViewerLabel } from "../../utils/reportTeam.js";
+import { formatPresentationViewerLabel } from "../../utils/report/reportTeam.js";
 import { PanelDropdownMenu, PanelDropdownMenuItem } from "./PanelDropdownMenu.js";
 export function PanelPresentationSwitch() {
     const { isPresentationMode, presentationViewers, messages } = useReportPreferences();

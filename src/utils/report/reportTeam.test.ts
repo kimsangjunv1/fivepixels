@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildPresentationViewers, formatPresentationViewerLabel, resolveSessionActor } from "@/utils/reportTeam.js";
+import { buildPresentationViewers, formatPresentationViewerLabel, resolveSessionActor } from "@/utils/report/reportTeam.js";
 
 describe("reportTeam", () => {
     it("builds presentation viewers from user and reviewers without duplicates", () => {

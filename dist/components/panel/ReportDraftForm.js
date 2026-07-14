@@ -2,8 +2,8 @@ import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-run
 import { useMemo, useRef, useState } from "react";
 import { useTooltipLayout } from "../../hooks/useTooltipLayout.js";
 import { useTooltipResize } from "../../hooks/useTooltipResize.js";
-import { useReport } from "../../providers/reportContext.js";
-import { getDraftMarkerPosition, TOOLTIP_EXPANDED_DEFAULT_MAX_HEIGHT } from "../../utils/coordinates.js";
+import { useReport, useReportPreferences } from "../../providers/reportContext.js";
+import { getDraftMarkerPosition, TOOLTIP_EXPANDED_DEFAULT_MAX_HEIGHT } from "../../utils/marker/coordinates.js";
 import { FeedbackComposer } from "./feedback/FeedbackComposer.js";
 import { ComposerFooterWarning } from "./feedback/ComposerFooterWarning.js";
 import { DraftProbeSummaryBanner } from "./DraftProbeSummaryBanner.js";
@@ -23,7 +23,7 @@ export function ReportDraftForm() {
     return (_jsx(ReportDraftFormContent, { draft: draft, fields: fields, authors: authors, isCreating: isCreating, selectedTarget: selectedTarget, updateDraftCase: updateDraftCase, addDraftCase: addDraftCase, removeDraftCase: removeDraftCase, updateDraftField: updateDraftField, updateDraftCategory: updateDraftCategory, handleCreateSubmit: handleCreateSubmit, handleCreateSubmitWithGitHubIssue: handleCreateSubmitWithGitHubIssue, canCreateGitHubIssueOnCreate: canCreateGitHubIssueOnCreate, isDraftGitHubIssueSubmitting: isDraftGitHubIssueSubmitting, draftAuthorName: draftAuthorName, setDraftAuthorName: setDraftAuthorName, errorMessage: errorMessage, isPresentationMode: isPresentationMode, authorSelectionLocked: authorSelectionLocked, sessionActor: sessionActor }));
 }
 function ReportDraftFormContent({ draft, fields, authors, isCreating, selectedTarget, updateDraftCase, addDraftCase, removeDraftCase, updateDraftField, updateDraftCategory, handleCreateSubmit, handleCreateSubmitWithGitHubIssue, canCreateGitHubIssueOnCreate, isDraftGitHubIssueSubmitting, draftAuthorName, setDraftAuthorName, errorMessage, isPresentationMode, authorSelectionLocked, sessionActor, }) {
-    const { messages } = useReport();
+    const { messages } = useReportPreferences();
     const tooltipSurfaceRef = useRef(null);
     const [footerWarningMessage, setFooterWarningMessage] = useState(null);
     const anchor = useMemo(() => getDraftMarkerPosition(draft, selectedTarget), [draft, selectedTarget]);

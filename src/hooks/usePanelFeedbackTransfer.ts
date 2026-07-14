@@ -15,7 +15,7 @@ import {
     writeAllFeedback,
     type FeedbackImportPayload,
     type FeedbackInsertConflict,
-} from "@/utils/feedbackDataTransfer.js";
+} from "@/utils/feedback/feedbackDataTransfer.js";
 
 export type FeedbackTransferScope = {
     projectId: string;

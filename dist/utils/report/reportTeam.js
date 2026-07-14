@@ -1,4 +1,4 @@
-import { formatAssigneeLabel } from "../../utils/reportCases.js";
+import { formatAssigneeLabel } from "../../utils/report/reportCases.js";
 export function resolveReportTeam({ team }) {
     return {
         user: team?.user,

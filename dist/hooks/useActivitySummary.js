@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { buildActivitySummaryFromReports } from "../utils/heatmapActivity.js";
+import { buildActivitySummaryFromReports } from "../utils/panel/heatmapActivity.js";
 export function useActivitySummary({ reports, params, onActivitySummary }) {
     const clientSummary = useMemo(() => buildActivitySummaryFromReports(reports, params), [params, reports]);
     const [remoteSummary, setRemoteSummary] = useState(null);

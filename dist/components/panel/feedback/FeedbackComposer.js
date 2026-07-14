@@ -1,6 +1,6 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useEffect, useMemo, useState } from "react";
-import { useReport } from "../../../providers/reportContext.js";
+import { useReportPreferences } from "../../../providers/reportContext.js";
 import { SendIcon } from "../../../components/icons/Icons.js";
 import { AuthorSelector } from "./AuthorSelector.js";
 import { HoverTooltip } from "../../../components/ui/HoverTooltip.js";
@@ -21,7 +21,7 @@ function isCaseTextErrorMessage(errorMessage, caseCount, caseTextRequired, cases
     return false;
 }
 export function FeedbackComposer({ message = "", onMessageChange, cases, onCaseChange, onAddCase, onRemoveCase, authorName, onAuthorNameChange, authors, fields: _fields, fieldValues: _fieldValues, onFieldChange: _onFieldChange, category = null, onCategoryChange, showCategory = false, showTags: _showTags = false, onSubmit, isSubmitting = false, showGitHubIssueOnCreate = false, onGitHubIssueSubmit, isGitHubIssueSubmitting = false, placeholder, autoFocus = false, errorMessage = "", showAskQuestionToggle = false, askQuestionChecked = false, onAskQuestionChange, askQuestionForced = false, hideAuthorSelector = false, lockedAuthorName, onFooterWarningChange, }) {
-    const { messages } = useReport();
+    const { messages } = useReportPreferences();
     const [isGitHubIssueConfirming, setIsGitHubIssueConfirming] = useState(false);
     const [categoryAttentionKey, setCategoryAttentionKey] = useState(0);
     const [caseAttentionKey, setCaseAttentionKey] = useState(0);

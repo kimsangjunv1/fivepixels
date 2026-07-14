@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ChevronDownIcon } from "@/components/icons/Icons.js";
-import { useReport } from "@/providers/reportContext.js";
+import { useReportPreferences, useReportSession } from "@/providers/reportContext.js";
 import type { PanelView } from "@/hooks/useReportState.js";
 
 type PanelKeyGateMode = Extract<PanelView, "setup-complete" | "key-issue">;
@@ -10,7 +10,8 @@ function buildReviewerSnippet({ name, authorId, publicKey }: { name: string; aut
 }
 
 export function PanelKeyGate({ mode }: { mode: PanelKeyGateMode }) {
-    const { messages, selfProfile, publicKey, setErrorMessage } = useReport();
+    const { messages, selfProfile, publicKey } = useReportPreferences();
+    const { setErrorMessage } = useReportSession();
     const onboarding = messages.onboarding;
     const [copied, setCopied] = useState(false);
     const [keyInfoOpen, setKeyInfoOpen] = useState(false);

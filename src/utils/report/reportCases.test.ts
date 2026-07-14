@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createReportFeedback } from "@/utils/reportFixtures.js";
+import { createReportFeedback } from "@/utils/report/reportFixtures.js";
 import {
     allCasesResolved,
     applyCaseStatusSync,
@@ -26,7 +26,7 @@ import {
     transferCaseAssignee,
     validateCasesForSubmit,
     canEditReportCases,
-} from "@/utils/reportCases.js";
+} from "@/utils/report/reportCases.js";
 
 describe("reportCases", () => {
     it("creates and summarizes cases", () => {

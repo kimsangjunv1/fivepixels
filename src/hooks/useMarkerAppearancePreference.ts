@@ -10,8 +10,8 @@ import {
     type MarkerShape,
     type AppearanceScale,
 } from "@/constants/markerAppearance.js";
-import { isValidHexColor } from "@/utils/hexColor.js";
-import { setMarkerDotSizeFromScale } from "@/utils/markerRuntime.js";
+import { isValidHexColor } from "@/utils/shared/hexColor.js";
+import { setMarkerDotSizeFromScale } from "@/utils/marker/markerRuntime.js";
 
 function normalizeMarkerColors(value: unknown): MarkerColorPreferences {
     if (!value || typeof value !== "object") {

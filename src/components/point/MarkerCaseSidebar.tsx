@@ -1,10 +1,10 @@
 import { FEEDBACK_STATUS_COLOR, type FeedbackDisplayStatus } from "@/constants/feedbackStatus.js";
 import { CheckIcon } from "@/components/icons/Icons.js";
-import { useReport } from "@/providers/reportContext.js";
+import { useReportPreferences } from "@/providers/reportContext.js";
 import type { ReportCaseStatus } from "@/types/report.js";
 import type { ReportFeedback } from "@/types/report.js";
-import { getCaseLatestStatus } from "@/utils/feedbackThread.js";
-import { getReportCases } from "@/utils/reportCases.js";
+import { getCaseLatestStatus } from "@/utils/feedback/feedbackThread.js";
+import { getReportCases } from "@/utils/report/reportCases.js";
 
 type MarkerCaseSidebarProps = {
     report: ReportFeedback;
@@ -34,7 +34,7 @@ function CaseStatusIndicator({ caseStatus }: { caseStatus: ReportCaseStatus }) {
 }
 
 function CaseStatusLabel({ status, isNeedGray }: { status: FeedbackDisplayStatus; isNeedGray?: boolean }) {
-    const { messages } = useReport();
+    const { messages } = useReportPreferences();
     const color = FEEDBACK_STATUS_COLOR[status];
 
     return (
@@ -48,7 +48,7 @@ function CaseStatusLabel({ status, isNeedGray }: { status: FeedbackDisplayStatus
 }
 
 export function MarkerCaseSidebar({ report, focusedCaseId, onSelectCase }: MarkerCaseSidebarProps) {
-    const { messages } = useReport();
+    const { messages } = useReportPreferences();
     const cases = getReportCases(report);
 
     return (

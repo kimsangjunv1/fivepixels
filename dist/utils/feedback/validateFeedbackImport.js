@@ -1,4 +1,4 @@
-import { normalizeReportCase, normalizeReplyCaseIds } from "../../utils/reportCases.js";
+import { normalizeReportCase, normalizeReplyCaseIds } from "../../utils/report/reportCases.js";
 import { isFeedbackCategory } from "../../constants/feedbackCategory.js";
 import { getActiveReportMessages } from "../../i18n/index.js";
 const STRING_FIELDS = ["id", "pathname", "report_id", "created_at"];

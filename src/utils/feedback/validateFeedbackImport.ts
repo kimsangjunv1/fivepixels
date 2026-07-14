@@ -11,7 +11,7 @@ import type {
     ReportStatus,
     ReportTargetType,
 } from "@/types/report.js";
-import { normalizeReportCase, normalizeReplyCaseIds } from "@/utils/reportCases.js";
+import { normalizeReportCase, normalizeReplyCaseIds } from "@/utils/report/reportCases.js";
 import { isFeedbackCategory } from "@/constants/feedbackCategory.js";
 import type { FeedbackCategory } from "@/constants/feedbackCategory.js";
 import { getActiveReportMessages } from "@/i18n/index.js";

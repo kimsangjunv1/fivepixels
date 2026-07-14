@@ -1,6 +1,6 @@
 import type { ReportFeedback, ReportField } from "@/types/report.js";
-import { getReportReplies } from "@/utils/feedbackThread.js";
-import { getCaseLabels, getReportCases, getResolvedCaseCount } from "@/utils/reportCases.js";
+import { getReportReplies } from "@/utils/feedback/feedbackThread.js";
+import { getCaseLabels, getReportCases, getResolvedCaseCount } from "@/utils/report/reportCases.js";
 
 function escapeMarkdownTableCell(value: string) {
     return value.replace(/\|/g, "\\|").replace(/\n/g, " ");

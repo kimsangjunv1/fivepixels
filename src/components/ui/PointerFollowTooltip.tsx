@@ -1,7 +1,7 @@
 import { useCallback, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { getReportTooltipRoot } from "@/utils/dom.js";
-import { HOVER_TOOLTIP_MARGIN } from "@/utils/hoverTooltipLayout.js";
+import { getReportTooltipRoot } from "@/utils/shared/dom.js";
+import { HOVER_TOOLTIP_MARGIN } from "@/utils/marker/hoverTooltipLayout.js";
 
 const POINTER_OFFSET = 12;
 

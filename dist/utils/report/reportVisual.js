@@ -1,6 +1,6 @@
 import { DEFAULT_MARKER_COLORS } from "../../constants/markerAppearance.js";
-import { getReplyCount } from "../../utils/feedbackThread.js";
-import { getIssueProgressLabel, getReportCases } from "../../utils/reportCases.js";
+import { getReplyCount } from "../../utils/feedback/feedbackThread.js";
+import { getIssueProgressLabel, getReportCases } from "../../utils/report/reportCases.js";
 export function hasReply(report) {
     return getReplyCount(report) > 0;
 }

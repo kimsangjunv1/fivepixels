@@ -31,8 +31,8 @@ import { PanelPresentationSwitch } from "./PanelPresentationSwitch.js";
 import { PanelOnboarding } from "./PanelOnboarding.js";
 import { PanelKeyGate } from "./PanelKeyGate.js";
 import { PanelProjectFooter } from "./PanelProjectFooter.js";
-import { panelNumericClassName } from "../../utils/panelTypography.js";
-import { createPersonalKeyBackupFilename, downloadPersonalKeyBackup } from "../../utils/feedbackDataTransfer.js";
+import { panelNumericClassName } from "../../utils/panel/panelTypography.js";
+import { createPersonalKeyBackupFilename, downloadPersonalKeyBackup } from "../../utils/feedback/feedbackDataTransfer.js";
 import { getPanelTabDefinition } from "../../constants/panelTabRegistry.js";
 function PanelCollapseTab({ collapsed, anchorSide, onClick, messages }) {
     const hideIcon = anchorSide === "right" ? _jsx(ChevronRightIcon, { className: "h-4 w-4" }) : _jsx(ChevronLeftIcon, { className: "h-4 w-4" });

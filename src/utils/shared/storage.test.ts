@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { createReportFeedback } from "@/utils/reportFixtures.js";
+import { createReportFeedback } from "@/utils/report/reportFixtures.js";
 import type { CreateReportFeedbackPayload, ReportFeedback } from "@/types/report.js";
 import { hasCustomPersistenceHandlers, resolveStorageAdapter } from "./storage.js";
 

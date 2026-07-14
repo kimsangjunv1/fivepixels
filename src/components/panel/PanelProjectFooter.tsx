@@ -1,7 +1,7 @@
-import { useReport } from "@/providers/reportContext.js";
+import { useReportPreferences } from "@/providers/reportContext.js";
 
 export function PanelProjectFooter() {
-    const { projectId, environment, appVersion } = useReport();
+    const { projectId, environment, appVersion } = useReportPreferences();
 
     return (
         <footer className="mt-auto flex shrink-0 justify-center gap-[8px] border-t border-[var(--adaptive-black200)] bg-[var(--adaptive-black100)] text-[12px] uppercase text-[var(--adaptive-black500)] rounded-b-[12px_12px]">

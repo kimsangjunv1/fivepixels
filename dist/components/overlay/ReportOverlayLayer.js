@@ -1,11 +1,11 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import { useReport } from "../../providers/reportContext.js";
+import { useReportSession } from "../../providers/reportContext.js";
 import { PickTargetContextMenu } from "./PickTargetContextMenu.js";
 import { PickTargetProbePanel } from "./PickTargetProbePanel.js";
 import { PickTargetSavedBadges } from "./PickTargetSavedBadges.js";
 import { TargetHighlights } from "./TargetHighlights.js";
 export function ReportOverlayLayer({ children }) {
-    const { overlayRef, mode, draft, hoveredTarget, selectedTarget, pickProbeOpen, pickProbeHasEdits, pickTargetContextMenu, contextMenuElementKey, savedProbeEdits, selectableTargets, showTargetPreview, markerPreviewTargets, activeMarkerTarget, handleOverlayMove, handleOverlayContextMenu, handleOverlayClick, closePickTargetContextMenu, } = useReport();
+    const { overlayRef, mode, draft, hoveredTarget, selectedTarget, pickProbeOpen, pickProbeHasEdits, pickTargetContextMenu, contextMenuElementKey, savedProbeEdits, selectableTargets, showTargetPreview, markerPreviewTargets, activeMarkerTarget, handleOverlayMove, handleOverlayContextMenu, handleOverlayClick, closePickTargetContextMenu } = useReportSession();
     const isReportMode = mode === "report";
     const isViewMode = mode === "view";
     const isPreviewMode = showTargetPreview && mode === "idle";

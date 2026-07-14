@@ -1,4 +1,4 @@
-import type { FeedbackInsertConflict } from "../../utils/feedbackDataTransfer.js";
+import type { FeedbackInsertConflict } from "../../utils/feedback/feedbackDataTransfer.js";
 type ReportCommandReplaceConfirmDialogProps = {
     conflicts: FeedbackInsertConflict[];
     onConfirm: () => void;

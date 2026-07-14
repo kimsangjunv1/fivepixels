@@ -8,7 +8,7 @@ import {
     type PanelTabDefinition,
     type UserSelectablePanelTab,
 } from "@/constants/panelTabRegistry.js";
-import { isTabRecommendedForRole, moveVisibleTab } from "@/utils/panelTabPreference.js";
+import { isTabRecommendedForRole, moveVisibleTab } from "@/utils/panel/panelTabPreference.js";
 import type { ReportMessages } from "@/i18n/types.js";
 import { ChevronDownIcon } from "@/components/icons/Icons.js";
 

@@ -35,18 +35,7 @@ declare const ReportContext: Context<{
     publicKey: string | null;
     personalKeyRequired: boolean;
     personalKeyCandidates: import("../index.js").ReportAuthor[];
-    authDiagnostics: {
-        status: "disabled" | "matched" | "failed";
-        reason: "matched" | "reviewer-key-not-enforced" | "missing-personal-key" | "invalid-personal-key-format" | "project-mismatch" | "environment-mismatch" | "missing-team-author" | "author-id-mismatch" | "author-name-mismatch" | "missing-team-public-key" | "public-key-mismatch";
-        items: {
-            field: "environment" | "projectId" | "publicKey" | "authorId" | "authorName";
-            expected: string | null;
-            actual: string | null;
-            matched: boolean;
-        }[];
-        expected: Record<"environment" | "projectId" | "publicKey" | "authorId" | "authorName", string | null>;
-        actual: Record<"environment" | "projectId" | "publicKey" | "authorId" | "authorName", string | null>;
-    };
+    authDiagnostics: import("../hooks/report/useReportAuthSession.js").AuthDiagnostics;
     authorSelectionLocked: boolean;
     panelView: import("../hooks/useReportState.js").PanelView;
     completeOnboarding: ({ name }: {
@@ -140,12 +129,12 @@ declare const ReportContext: Context<{
     isDeleting: boolean;
     queryErrorMessage: string | undefined;
     refetch: () => Promise<import("../index.js").ReportFeedback[]>;
-    replyHistory: import("../utils/reportUi.js").ResolvedReplyHistoryConfig;
+    replyHistory: import("../utils/report/reportUi.js").ResolvedReplyHistoryConfig;
     replyHistoryByReportId: Record<string, import("../hooks/replyHistoryActions.js").ReplyHistoryState>;
     loadRepliesIfNeeded: (report: import("../index.js").ReportFeedback) => Promise<import("../index.js").ReportFeedback>;
-    loadOlderReplies: (reportId: string, config: import("../utils/reportUi.js").ResolvedReplyHistoryConfig) => Promise<void>;
-    goToOlderPaginationPage: (reportId: string, config: import("../utils/reportUi.js").ResolvedReplyHistoryConfig) => Promise<void>;
-    goToNewerPaginationPage: (reportId: string, config: import("../utils/reportUi.js").ResolvedReplyHistoryConfig) => void;
+    loadOlderReplies: (reportId: string, config: import("../utils/report/reportUi.js").ResolvedReplyHistoryConfig) => Promise<void>;
+    goToOlderPaginationPage: (reportId: string, config: import("../utils/report/reportUi.js").ResolvedReplyHistoryConfig) => Promise<void>;
+    goToNewerPaginationPage: (reportId: string, config: import("../utils/report/reportUi.js").ResolvedReplyHistoryConfig) => void;
     errorMessage: string;
     setErrorMessage: import("react").Dispatch<import("react").SetStateAction<string>>;
     draft: import("../types/report-ui.js").DraftReport | null;
@@ -204,8 +193,8 @@ declare const ReportContext: Context<{
     replyAuthorName: string;
     setReplyAuthorName: (name: string) => void;
     isPresentationMode: boolean;
-    sessionActor: import("../utils/reportTeam.js").SessionActor | null;
-    presentationViewers: import("../utils/reportTeam.js").PresentationViewer[];
+    sessionActor: import("../utils/report/reportTeam.js").SessionActor | null;
+    presentationViewers: import("../utils/report/reportTeam.js").PresentationViewer[];
     presentationViewerId: string | null;
     setPresentationViewerId: (viewerId: string | null) => Promise<void>;
     pendingComposer: import("../types/report-ui.js").PendingFeedbackComposer;
@@ -233,7 +222,7 @@ declare const ReportContext: Context<{
     caseEditReportId: string | null;
     caseEditCases: import("../index.js").ReportCase[] | null;
     targetStats: import("../index.js").ReportPanelStats;
-    roleStatItems: import("../utils/panelRoleStats.js").PanelRoleStatItem[];
+    roleStatItems: import("../utils/panel/panelRoleStats.js").PanelRoleStatItem[];
     panelRole: "general" | "qa" | "developer" | "designer" | "planner" | "general-user";
     setPanelRole: (nextRole: import("../constants/panelRole.js").PanelRole) => void;
     visiblePanelTabs: import("../constants/panelTabRegistry.js").UserSelectablePanelTab[];
@@ -244,9 +233,9 @@ declare const ReportContext: Context<{
     };
     setVisiblePanelTabs: (nextTabs: import("../constants/panelTabRegistry.js").UserSelectablePanelTab[]) => void;
     resetVisibleTabsToRoleDefault: () => void;
-    applyRoleDefaultTabsForOnboarding: (role: "general" | "qa" | "developer" | "designer" | "planner" | "general-user") => void;
-    savePanelTabPreference: (preference: import("../utils/panelTabPreference.js").PanelTabPreference) => void;
-    storedPanelTabPreference: import("../utils/panelTabPreference.js").PanelTabPreference | null;
+    applyRoleDefaultTabsForOnboarding: (role: import("../constants/panelRole.js").PanelRole) => void;
+    savePanelTabPreference: (preference: import("../utils/panel/panelTabPreference.js").PanelTabPreference) => void;
+    storedPanelTabPreference: import("../utils/panel/panelTabPreference.js").PanelTabPreference | null;
     statusText: string;
     toggleReportMode: () => void;
     toggleTargetPreview: () => void;
@@ -316,18 +305,7 @@ export declare function useReport(): {
     publicKey: string | null;
     personalKeyRequired: boolean;
     personalKeyCandidates: import("../index.js").ReportAuthor[];
-    authDiagnostics: {
-        status: "disabled" | "matched" | "failed";
-        reason: "matched" | "reviewer-key-not-enforced" | "missing-personal-key" | "invalid-personal-key-format" | "project-mismatch" | "environment-mismatch" | "missing-team-author" | "author-id-mismatch" | "author-name-mismatch" | "missing-team-public-key" | "public-key-mismatch";
-        items: {
-            field: "environment" | "projectId" | "publicKey" | "authorId" | "authorName";
-            expected: string | null;
-            actual: string | null;
-            matched: boolean;
-        }[];
-        expected: Record<"environment" | "projectId" | "publicKey" | "authorId" | "authorName", string | null>;
-        actual: Record<"environment" | "projectId" | "publicKey" | "authorId" | "authorName", string | null>;
-    };
+    authDiagnostics: import("../hooks/report/useReportAuthSession.js").AuthDiagnostics;
     authorSelectionLocked: boolean;
     panelView: import("../hooks/useReportState.js").PanelView;
     completeOnboarding: ({ name }: {
@@ -421,12 +399,12 @@ export declare function useReport(): {
     isDeleting: boolean;
     queryErrorMessage: string | undefined;
     refetch: () => Promise<import("../index.js").ReportFeedback[]>;
-    replyHistory: import("../utils/reportUi.js").ResolvedReplyHistoryConfig;
+    replyHistory: import("../utils/report/reportUi.js").ResolvedReplyHistoryConfig;
     replyHistoryByReportId: Record<string, import("../hooks/replyHistoryActions.js").ReplyHistoryState>;
     loadRepliesIfNeeded: (report: import("../index.js").ReportFeedback) => Promise<import("../index.js").ReportFeedback>;
-    loadOlderReplies: (reportId: string, config: import("../utils/reportUi.js").ResolvedReplyHistoryConfig) => Promise<void>;
-    goToOlderPaginationPage: (reportId: string, config: import("../utils/reportUi.js").ResolvedReplyHistoryConfig) => Promise<void>;
-    goToNewerPaginationPage: (reportId: string, config: import("../utils/reportUi.js").ResolvedReplyHistoryConfig) => void;
+    loadOlderReplies: (reportId: string, config: import("../utils/report/reportUi.js").ResolvedReplyHistoryConfig) => Promise<void>;
+    goToOlderPaginationPage: (reportId: string, config: import("../utils/report/reportUi.js").ResolvedReplyHistoryConfig) => Promise<void>;
+    goToNewerPaginationPage: (reportId: string, config: import("../utils/report/reportUi.js").ResolvedReplyHistoryConfig) => void;
     errorMessage: string;
     setErrorMessage: import("react").Dispatch<import("react").SetStateAction<string>>;
     draft: import("../types/report-ui.js").DraftReport | null;
@@ -485,8 +463,8 @@ export declare function useReport(): {
     replyAuthorName: string;
     setReplyAuthorName: (name: string) => void;
     isPresentationMode: boolean;
-    sessionActor: import("../utils/reportTeam.js").SessionActor | null;
-    presentationViewers: import("../utils/reportTeam.js").PresentationViewer[];
+    sessionActor: import("../utils/report/reportTeam.js").SessionActor | null;
+    presentationViewers: import("../utils/report/reportTeam.js").PresentationViewer[];
     presentationViewerId: string | null;
     setPresentationViewerId: (viewerId: string | null) => Promise<void>;
     pendingComposer: import("../types/report-ui.js").PendingFeedbackComposer;
@@ -514,7 +492,7 @@ export declare function useReport(): {
     caseEditReportId: string | null;
     caseEditCases: import("../index.js").ReportCase[] | null;
     targetStats: import("../index.js").ReportPanelStats;
-    roleStatItems: import("../utils/panelRoleStats.js").PanelRoleStatItem[];
+    roleStatItems: import("../utils/panel/panelRoleStats.js").PanelRoleStatItem[];
     panelRole: "general" | "qa" | "developer" | "designer" | "planner" | "general-user";
     setPanelRole: (nextRole: import("../constants/panelRole.js").PanelRole) => void;
     visiblePanelTabs: import("../constants/panelTabRegistry.js").UserSelectablePanelTab[];
@@ -525,9 +503,9 @@ export declare function useReport(): {
     };
     setVisiblePanelTabs: (nextTabs: import("../constants/panelTabRegistry.js").UserSelectablePanelTab[]) => void;
     resetVisibleTabsToRoleDefault: () => void;
-    applyRoleDefaultTabsForOnboarding: (role: "general" | "qa" | "developer" | "designer" | "planner" | "general-user") => void;
-    savePanelTabPreference: (preference: import("../utils/panelTabPreference.js").PanelTabPreference) => void;
-    storedPanelTabPreference: import("../utils/panelTabPreference.js").PanelTabPreference | null;
+    applyRoleDefaultTabsForOnboarding: (role: import("../constants/panelRole.js").PanelRole) => void;
+    savePanelTabPreference: (preference: import("../utils/panel/panelTabPreference.js").PanelTabPreference) => void;
+    storedPanelTabPreference: import("../utils/panel/panelTabPreference.js").PanelTabPreference | null;
     statusText: string;
     toggleReportMode: () => void;
     toggleTargetPreview: () => void;
@@ -600,18 +578,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         publicKey: string | null;
         personalKeyRequired: boolean;
         personalKeyCandidates: import("../index.js").ReportAuthor[];
-        authDiagnostics: {
-            status: "disabled" | "matched" | "failed";
-            reason: "matched" | "reviewer-key-not-enforced" | "missing-personal-key" | "invalid-personal-key-format" | "project-mismatch" | "environment-mismatch" | "missing-team-author" | "author-id-mismatch" | "author-name-mismatch" | "missing-team-public-key" | "public-key-mismatch";
-            items: {
-                field: "environment" | "projectId" | "publicKey" | "authorId" | "authorName";
-                expected: string | null;
-                actual: string | null;
-                matched: boolean;
-            }[];
-            expected: Record<"environment" | "projectId" | "publicKey" | "authorId" | "authorName", string | null>;
-            actual: Record<"environment" | "projectId" | "publicKey" | "authorId" | "authorName", string | null>;
-        };
+        authDiagnostics: import("../hooks/report/useReportAuthSession.js").AuthDiagnostics;
         authorSelectionLocked: boolean;
         panelView: import("../hooks/useReportState.js").PanelView;
         completeOnboarding: ({ name }: {
@@ -705,12 +672,12 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         isDeleting: boolean;
         queryErrorMessage: string | undefined;
         refetch: () => Promise<import("../index.js").ReportFeedback[]>;
-        replyHistory: import("../utils/reportUi.js").ResolvedReplyHistoryConfig;
+        replyHistory: import("../utils/report/reportUi.js").ResolvedReplyHistoryConfig;
         replyHistoryByReportId: Record<string, import("../hooks/replyHistoryActions.js").ReplyHistoryState>;
         loadRepliesIfNeeded: (report: import("../index.js").ReportFeedback) => Promise<import("../index.js").ReportFeedback>;
-        loadOlderReplies: (reportId: string, config: import("../utils/reportUi.js").ResolvedReplyHistoryConfig) => Promise<void>;
-        goToOlderPaginationPage: (reportId: string, config: import("../utils/reportUi.js").ResolvedReplyHistoryConfig) => Promise<void>;
-        goToNewerPaginationPage: (reportId: string, config: import("../utils/reportUi.js").ResolvedReplyHistoryConfig) => void;
+        loadOlderReplies: (reportId: string, config: import("../utils/report/reportUi.js").ResolvedReplyHistoryConfig) => Promise<void>;
+        goToOlderPaginationPage: (reportId: string, config: import("../utils/report/reportUi.js").ResolvedReplyHistoryConfig) => Promise<void>;
+        goToNewerPaginationPage: (reportId: string, config: import("../utils/report/reportUi.js").ResolvedReplyHistoryConfig) => void;
         errorMessage: string;
         setErrorMessage: import("react").Dispatch<import("react").SetStateAction<string>>;
         draft: import("../types/report-ui.js").DraftReport | null;
@@ -769,8 +736,8 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         replyAuthorName: string;
         setReplyAuthorName: (name: string) => void;
         isPresentationMode: boolean;
-        sessionActor: import("../utils/reportTeam.js").SessionActor | null;
-        presentationViewers: import("../utils/reportTeam.js").PresentationViewer[];
+        sessionActor: import("../utils/report/reportTeam.js").SessionActor | null;
+        presentationViewers: import("../utils/report/reportTeam.js").PresentationViewer[];
         presentationViewerId: string | null;
         setPresentationViewerId: (viewerId: string | null) => Promise<void>;
         pendingComposer: import("../types/report-ui.js").PendingFeedbackComposer;
@@ -798,7 +765,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         caseEditReportId: string | null;
         caseEditCases: import("../index.js").ReportCase[] | null;
         targetStats: import("../index.js").ReportPanelStats;
-        roleStatItems: import("../utils/panelRoleStats.js").PanelRoleStatItem[];
+        roleStatItems: import("../utils/panel/panelRoleStats.js").PanelRoleStatItem[];
         panelRole: "general" | "qa" | "developer" | "designer" | "planner" | "general-user";
         setPanelRole: (nextRole: import("../constants/panelRole.js").PanelRole) => void;
         visiblePanelTabs: import("../constants/panelTabRegistry.js").UserSelectablePanelTab[];
@@ -809,9 +776,9 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         };
         setVisiblePanelTabs: (nextTabs: import("../constants/panelTabRegistry.js").UserSelectablePanelTab[]) => void;
         resetVisibleTabsToRoleDefault: () => void;
-        applyRoleDefaultTabsForOnboarding: (role: "general" | "qa" | "developer" | "designer" | "planner" | "general-user") => void;
-        savePanelTabPreference: (preference: import("../utils/panelTabPreference.js").PanelTabPreference) => void;
-        storedPanelTabPreference: import("../utils/panelTabPreference.js").PanelTabPreference | null;
+        applyRoleDefaultTabsForOnboarding: (role: import("../constants/panelRole.js").PanelRole) => void;
+        savePanelTabPreference: (preference: import("../utils/panel/panelTabPreference.js").PanelTabPreference) => void;
+        storedPanelTabPreference: import("../utils/panel/panelTabPreference.js").PanelTabPreference | null;
         statusText: string;
         toggleReportMode: () => void;
         toggleTargetPreview: () => void;
@@ -849,7 +816,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         handleCreateGitHubIssue: (report: import("../index.js").ReportFeedback) => Promise<void>;
         handleCreateSubmitWithGitHubIssue: () => Promise<void>;
         isDraftGitHubIssueSubmitting: boolean;
-    }, "personalKey" | "environment" | "projectId" | "fields" | "personalKeyRequired" | "questionThreadDisplay" | "setQuestionThreadDisplay" | "locale" | "setLocale" | "authors" | "appVersion" | "showFeedbackList" | "publicKey" | "personalKeyCandidates" | "selfProfile" | "insertPersonalKey" | "issuePersonalKey" | "rotatePersonalKey" | "visibleShortcutKeys" | "showMarkerTargetPreview" | "setShowMarkerTargetPreview" | "toggleMarkerTargetPreview" | "markerAppearance" | "setMarkerAppearance" | "setMarkerSize" | "setMarkerShape" | "setMarkerColors" | "setMarkerColor" | "typography" | "setTypography" | "setFontSize" | "setFontFamily" | "authorSelectionLocked" | "messages" | "panelRole" | "setPanelRole" | "panelAppearance" | "setPanelAppearance" | "tooltipAppearance" | "setTooltipAppearance" | "panelView" | "completeOnboarding" | "restoreFromBackup" | "skipOnboarding" | "resolvedPanelAppearance" | "resolvedTooltipAppearance" | "isMobileViewport" | "isPresentationMode" | "presentationViewers" | "visiblePanelTabs" | "visiblePanelTabsSummary" | "resolvedTabAvailabilityContext" | "setVisiblePanelTabs" | "resetVisibleTabsToRoleDefault" | "applyRoleDefaultTabsForOnboarding" | "savePanelTabPreference" | "storedPanelTabPreference">;
+    }, "personalKey" | "environment" | "projectId" | "fields" | "personalKeyRequired" | "questionThreadDisplay" | "setQuestionThreadDisplay" | "locale" | "setLocale" | "showMarkerTargetPreview" | "setShowMarkerTargetPreview" | "toggleMarkerTargetPreview" | "markerAppearance" | "setMarkerAppearance" | "setMarkerSize" | "setMarkerShape" | "setMarkerColors" | "setMarkerColor" | "typography" | "setTypography" | "setFontSize" | "setFontFamily" | "panelRole" | "setPanelRole" | "appVersion" | "showFeedbackList" | "selfProfile" | "authors" | "publicKey" | "personalKeyCandidates" | "issuePersonalKey" | "rotatePersonalKey" | "insertPersonalKey" | "visibleShortcutKeys" | "authorSelectionLocked" | "messages" | "panelAppearance" | "setPanelAppearance" | "tooltipAppearance" | "setTooltipAppearance" | "panelView" | "completeOnboarding" | "restoreFromBackup" | "skipOnboarding" | "resolvedPanelAppearance" | "resolvedTooltipAppearance" | "isMobileViewport" | "isPresentationMode" | "presentationViewers" | "visiblePanelTabs" | "visiblePanelTabsSummary" | "resolvedTabAvailabilityContext" | "setVisiblePanelTabs" | "resetVisibleTabsToRoleDefault" | "applyRoleDefaultTabsForOnboarding" | "savePanelTabPreference" | "storedPanelTabPreference">;
     session: Pick<{
         panelAppearance: import("../index.js").ReportAppearance;
         setPanelAppearance: (nextAppearance: import("../index.js").ReportAppearance) => void;
@@ -877,18 +844,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         publicKey: string | null;
         personalKeyRequired: boolean;
         personalKeyCandidates: import("../index.js").ReportAuthor[];
-        authDiagnostics: {
-            status: "disabled" | "matched" | "failed";
-            reason: "matched" | "reviewer-key-not-enforced" | "missing-personal-key" | "invalid-personal-key-format" | "project-mismatch" | "environment-mismatch" | "missing-team-author" | "author-id-mismatch" | "author-name-mismatch" | "missing-team-public-key" | "public-key-mismatch";
-            items: {
-                field: "environment" | "projectId" | "publicKey" | "authorId" | "authorName";
-                expected: string | null;
-                actual: string | null;
-                matched: boolean;
-            }[];
-            expected: Record<"environment" | "projectId" | "publicKey" | "authorId" | "authorName", string | null>;
-            actual: Record<"environment" | "projectId" | "publicKey" | "authorId" | "authorName", string | null>;
-        };
+        authDiagnostics: import("../hooks/report/useReportAuthSession.js").AuthDiagnostics;
         authorSelectionLocked: boolean;
         panelView: import("../hooks/useReportState.js").PanelView;
         completeOnboarding: ({ name }: {
@@ -982,12 +938,12 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         isDeleting: boolean;
         queryErrorMessage: string | undefined;
         refetch: () => Promise<import("../index.js").ReportFeedback[]>;
-        replyHistory: import("../utils/reportUi.js").ResolvedReplyHistoryConfig;
+        replyHistory: import("../utils/report/reportUi.js").ResolvedReplyHistoryConfig;
         replyHistoryByReportId: Record<string, import("../hooks/replyHistoryActions.js").ReplyHistoryState>;
         loadRepliesIfNeeded: (report: import("../index.js").ReportFeedback) => Promise<import("../index.js").ReportFeedback>;
-        loadOlderReplies: (reportId: string, config: import("../utils/reportUi.js").ResolvedReplyHistoryConfig) => Promise<void>;
-        goToOlderPaginationPage: (reportId: string, config: import("../utils/reportUi.js").ResolvedReplyHistoryConfig) => Promise<void>;
-        goToNewerPaginationPage: (reportId: string, config: import("../utils/reportUi.js").ResolvedReplyHistoryConfig) => void;
+        loadOlderReplies: (reportId: string, config: import("../utils/report/reportUi.js").ResolvedReplyHistoryConfig) => Promise<void>;
+        goToOlderPaginationPage: (reportId: string, config: import("../utils/report/reportUi.js").ResolvedReplyHistoryConfig) => Promise<void>;
+        goToNewerPaginationPage: (reportId: string, config: import("../utils/report/reportUi.js").ResolvedReplyHistoryConfig) => void;
         errorMessage: string;
         setErrorMessage: import("react").Dispatch<import("react").SetStateAction<string>>;
         draft: import("../types/report-ui.js").DraftReport | null;
@@ -1046,8 +1002,8 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         replyAuthorName: string;
         setReplyAuthorName: (name: string) => void;
         isPresentationMode: boolean;
-        sessionActor: import("../utils/reportTeam.js").SessionActor | null;
-        presentationViewers: import("../utils/reportTeam.js").PresentationViewer[];
+        sessionActor: import("../utils/report/reportTeam.js").SessionActor | null;
+        presentationViewers: import("../utils/report/reportTeam.js").PresentationViewer[];
         presentationViewerId: string | null;
         setPresentationViewerId: (viewerId: string | null) => Promise<void>;
         pendingComposer: import("../types/report-ui.js").PendingFeedbackComposer;
@@ -1075,7 +1031,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         caseEditReportId: string | null;
         caseEditCases: import("../index.js").ReportCase[] | null;
         targetStats: import("../index.js").ReportPanelStats;
-        roleStatItems: import("../utils/panelRoleStats.js").PanelRoleStatItem[];
+        roleStatItems: import("../utils/panel/panelRoleStats.js").PanelRoleStatItem[];
         panelRole: "general" | "qa" | "developer" | "designer" | "planner" | "general-user";
         setPanelRole: (nextRole: import("../constants/panelRole.js").PanelRole) => void;
         visiblePanelTabs: import("../constants/panelTabRegistry.js").UserSelectablePanelTab[];
@@ -1086,9 +1042,9 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         };
         setVisiblePanelTabs: (nextTabs: import("../constants/panelTabRegistry.js").UserSelectablePanelTab[]) => void;
         resetVisibleTabsToRoleDefault: () => void;
-        applyRoleDefaultTabsForOnboarding: (role: "general" | "qa" | "developer" | "designer" | "planner" | "general-user") => void;
-        savePanelTabPreference: (preference: import("../utils/panelTabPreference.js").PanelTabPreference) => void;
-        storedPanelTabPreference: import("../utils/panelTabPreference.js").PanelTabPreference | null;
+        applyRoleDefaultTabsForOnboarding: (role: import("../constants/panelRole.js").PanelRole) => void;
+        savePanelTabPreference: (preference: import("../utils/panel/panelTabPreference.js").PanelTabPreference) => void;
+        storedPanelTabPreference: import("../utils/panel/panelTabPreference.js").PanelTabPreference | null;
         statusText: string;
         toggleReportMode: () => void;
         toggleTargetPreview: () => void;
@@ -1126,7 +1082,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         handleCreateGitHubIssue: (report: import("../index.js").ReportFeedback) => Promise<void>;
         handleCreateSubmitWithGitHubIssue: () => Promise<void>;
         isDraftGitHubIssueSubmitting: boolean;
-    }, "statusText" | "toggleReportMode" | "toggleTargetPreview" | "currentPathname" | "markers" | "sessionActor" | "activeReplyReportId" | "draft" | "pickProbeOpen" | "pickProbeSupportsTextFields" | "pickProbeLayoutMode" | "pickProbeValues" | "pickProbeCompareMode" | "pickProbeHasEdits" | "pickTargetContextMenu" | "contextMenuElementKey" | "savedProbeEdits" | "savedProbeDeletions" | "hasProbeSessionChanges" | "canUndoProbeSession" | "canRedoProbeSession" | "undoProbeSessionAction" | "redoProbeSessionAction" | "savedProbeCompareMode" | "closePickProbe" | "closePickTargetContextMenu" | "handlePickTargetEdit" | "handlePickTargetDelete" | "handlePickTargetRevert" | "commitPickProbeEdits" | "revertSavedProbeEdit" | "revertAllSavedProbeEdits" | "setSavedProbeCompareMode" | "setPickProbeCompareMode" | "updatePickProbeValue" | "resetPickProbeValues" | "appendSavedProbeSummaryAsNewDraftCase" | "activeReplyReport" | "replyDraft" | "setReplyDraft" | "replySubmitAsQuestion" | "setReplySubmitAsQuestion" | "replyAuthorName" | "setReplyAuthorName" | "pendingComposer" | "startDenyReview" | "startCheckoutReview" | "startAskQuestion" | "cancelPendingComposer" | "confirmAuthorName" | "setConfirmAuthorName" | "showConfirmAuthorSelect" | "toggleConfirmAuthorSelect" | "beginCaseEdit" | "cancelCaseEdit" | "updateCaseEditDraftCase" | "addCaseEditDraftCase" | "removeCaseEditDraftCase" | "focusedCaseId" | "selectCase" | "clearFocusedCase" | "isCaseEditing" | "caseEditReportId" | "caseEditCases" | "openReplyComposer" | "closeReplyComposer" | "mode" | "editingReportId" | "panelTab" | "showTargetPreview" | "toggleIssueMode" | "cancelDraft" | "stopEditing" | "focusSearchInput" | "selectAdjacentReport" | "panelCollapsed" | "setPanelCollapsed" | "searchInputRef" | "activeMarkerTarget" | "markerPreviewTargets" | "selectableTargets" | "errorMessage" | "setErrorMessage" | "hoveredTarget" | "hoverPointer" | "selectedTarget" | "editableDraft" | "setEditableDraft" | "overlayRef" | "tooltipReport" | "tooltipAnchor" | "tooltipFieldTags" | "draftAuthorName" | "setDraftAuthorName" | "presentationViewerId" | "setPresentationViewerId" | "openPanelTab" | "togglePanelTab" | "selectReport" | "locateFeedback" | "activateFeedbackMarker" | "clearHoverLeaveTimeout" | "scheduleHoverLeave" | "setHoveredMarkerId" | "handleOverlayMove" | "handleOverlayContextMenu" | "handleOverlayClick" | "updateDraftCase" | "addDraftCase" | "removeDraftCase" | "updateDraftField" | "updateDraftCategory" | "startEditing">;
+    }, "statusText" | "toggleReportMode" | "toggleTargetPreview" | "currentPathname" | "sessionActor" | "draft" | "pickProbeOpen" | "pickProbeSupportsTextFields" | "pickProbeLayoutMode" | "pickProbeValues" | "pickProbeCompareMode" | "pickProbeHasEdits" | "pickTargetContextMenu" | "contextMenuElementKey" | "savedProbeEdits" | "savedProbeDeletions" | "hasProbeSessionChanges" | "canUndoProbeSession" | "canRedoProbeSession" | "undoProbeSessionAction" | "redoProbeSessionAction" | "savedProbeCompareMode" | "closePickProbe" | "closePickTargetContextMenu" | "handlePickTargetEdit" | "handlePickTargetDelete" | "handlePickTargetRevert" | "commitPickProbeEdits" | "revertSavedProbeEdit" | "revertAllSavedProbeEdits" | "setSavedProbeCompareMode" | "setPickProbeCompareMode" | "updatePickProbeValue" | "resetPickProbeValues" | "appendSavedProbeSummaryAsNewDraftCase" | "activeReplyReportId" | "mode" | "selectedTarget" | "hoveredTarget" | "showTargetPreview" | "closeReplyComposer" | "openReplyComposer" | "editingReportId" | "panelTab" | "pendingComposer" | "toggleIssueMode" | "cancelDraft" | "cancelPendingComposer" | "stopEditing" | "focusSearchInput" | "selectAdjacentReport" | "panelCollapsed" | "setPanelCollapsed" | "searchInputRef" | "activeMarkerTarget" | "markerPreviewTargets" | "selectableTargets" | "errorMessage" | "setErrorMessage" | "hoverPointer" | "markers" | "editableDraft" | "setEditableDraft" | "overlayRef" | "activeReplyReport" | "tooltipReport" | "tooltipAnchor" | "tooltipFieldTags" | "replyDraft" | "setReplyDraft" | "replySubmitAsQuestion" | "setReplySubmitAsQuestion" | "draftAuthorName" | "setDraftAuthorName" | "replyAuthorName" | "setReplyAuthorName" | "presentationViewerId" | "setPresentationViewerId" | "startDenyReview" | "startCheckoutReview" | "startAskQuestion" | "confirmAuthorName" | "setConfirmAuthorName" | "showConfirmAuthorSelect" | "toggleConfirmAuthorSelect" | "beginCaseEdit" | "cancelCaseEdit" | "updateCaseEditDraftCase" | "addCaseEditDraftCase" | "removeCaseEditDraftCase" | "focusedCaseId" | "selectCase" | "clearFocusedCase" | "isCaseEditing" | "caseEditReportId" | "caseEditCases" | "openPanelTab" | "togglePanelTab" | "selectReport" | "locateFeedback" | "activateFeedbackMarker" | "clearHoverLeaveTimeout" | "scheduleHoverLeave" | "setHoveredMarkerId" | "handleOverlayMove" | "handleOverlayContextMenu" | "handleOverlayClick" | "updateDraftCase" | "addDraftCase" | "removeDraftCase" | "updateDraftField" | "updateDraftCategory" | "startEditing">;
     data: Pick<{
         panelAppearance: import("../index.js").ReportAppearance;
         setPanelAppearance: (nextAppearance: import("../index.js").ReportAppearance) => void;
@@ -1154,18 +1110,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         publicKey: string | null;
         personalKeyRequired: boolean;
         personalKeyCandidates: import("../index.js").ReportAuthor[];
-        authDiagnostics: {
-            status: "disabled" | "matched" | "failed";
-            reason: "matched" | "reviewer-key-not-enforced" | "missing-personal-key" | "invalid-personal-key-format" | "project-mismatch" | "environment-mismatch" | "missing-team-author" | "author-id-mismatch" | "author-name-mismatch" | "missing-team-public-key" | "public-key-mismatch";
-            items: {
-                field: "environment" | "projectId" | "publicKey" | "authorId" | "authorName";
-                expected: string | null;
-                actual: string | null;
-                matched: boolean;
-            }[];
-            expected: Record<"environment" | "projectId" | "publicKey" | "authorId" | "authorName", string | null>;
-            actual: Record<"environment" | "projectId" | "publicKey" | "authorId" | "authorName", string | null>;
-        };
+        authDiagnostics: import("../hooks/report/useReportAuthSession.js").AuthDiagnostics;
         authorSelectionLocked: boolean;
         panelView: import("../hooks/useReportState.js").PanelView;
         completeOnboarding: ({ name }: {
@@ -1259,12 +1204,12 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         isDeleting: boolean;
         queryErrorMessage: string | undefined;
         refetch: () => Promise<import("../index.js").ReportFeedback[]>;
-        replyHistory: import("../utils/reportUi.js").ResolvedReplyHistoryConfig;
+        replyHistory: import("../utils/report/reportUi.js").ResolvedReplyHistoryConfig;
         replyHistoryByReportId: Record<string, import("../hooks/replyHistoryActions.js").ReplyHistoryState>;
         loadRepliesIfNeeded: (report: import("../index.js").ReportFeedback) => Promise<import("../index.js").ReportFeedback>;
-        loadOlderReplies: (reportId: string, config: import("../utils/reportUi.js").ResolvedReplyHistoryConfig) => Promise<void>;
-        goToOlderPaginationPage: (reportId: string, config: import("../utils/reportUi.js").ResolvedReplyHistoryConfig) => Promise<void>;
-        goToNewerPaginationPage: (reportId: string, config: import("../utils/reportUi.js").ResolvedReplyHistoryConfig) => void;
+        loadOlderReplies: (reportId: string, config: import("../utils/report/reportUi.js").ResolvedReplyHistoryConfig) => Promise<void>;
+        goToOlderPaginationPage: (reportId: string, config: import("../utils/report/reportUi.js").ResolvedReplyHistoryConfig) => Promise<void>;
+        goToNewerPaginationPage: (reportId: string, config: import("../utils/report/reportUi.js").ResolvedReplyHistoryConfig) => void;
         errorMessage: string;
         setErrorMessage: import("react").Dispatch<import("react").SetStateAction<string>>;
         draft: import("../types/report-ui.js").DraftReport | null;
@@ -1323,8 +1268,8 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         replyAuthorName: string;
         setReplyAuthorName: (name: string) => void;
         isPresentationMode: boolean;
-        sessionActor: import("../utils/reportTeam.js").SessionActor | null;
-        presentationViewers: import("../utils/reportTeam.js").PresentationViewer[];
+        sessionActor: import("../utils/report/reportTeam.js").SessionActor | null;
+        presentationViewers: import("../utils/report/reportTeam.js").PresentationViewer[];
         presentationViewerId: string | null;
         setPresentationViewerId: (viewerId: string | null) => Promise<void>;
         pendingComposer: import("../types/report-ui.js").PendingFeedbackComposer;
@@ -1352,7 +1297,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         caseEditReportId: string | null;
         caseEditCases: import("../index.js").ReportCase[] | null;
         targetStats: import("../index.js").ReportPanelStats;
-        roleStatItems: import("../utils/panelRoleStats.js").PanelRoleStatItem[];
+        roleStatItems: import("../utils/panel/panelRoleStats.js").PanelRoleStatItem[];
         panelRole: "general" | "qa" | "developer" | "designer" | "planner" | "general-user";
         setPanelRole: (nextRole: import("../constants/panelRole.js").PanelRole) => void;
         visiblePanelTabs: import("../constants/panelTabRegistry.js").UserSelectablePanelTab[];
@@ -1363,9 +1308,9 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         };
         setVisiblePanelTabs: (nextTabs: import("../constants/panelTabRegistry.js").UserSelectablePanelTab[]) => void;
         resetVisibleTabsToRoleDefault: () => void;
-        applyRoleDefaultTabsForOnboarding: (role: "general" | "qa" | "developer" | "designer" | "planner" | "general-user") => void;
-        savePanelTabPreference: (preference: import("../utils/panelTabPreference.js").PanelTabPreference) => void;
-        storedPanelTabPreference: import("../utils/panelTabPreference.js").PanelTabPreference | null;
+        applyRoleDefaultTabsForOnboarding: (role: import("../constants/panelRole.js").PanelRole) => void;
+        savePanelTabPreference: (preference: import("../utils/panel/panelTabPreference.js").PanelTabPreference) => void;
+        storedPanelTabPreference: import("../utils/panel/panelTabPreference.js").PanelTabPreference | null;
         statusText: string;
         toggleReportMode: () => void;
         toggleTargetPreview: () => void;
@@ -1403,7 +1348,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         handleCreateGitHubIssue: (report: import("../index.js").ReportFeedback) => Promise<void>;
         handleCreateSubmitWithGitHubIssue: () => Promise<void>;
         isDraftGitHubIssueSubmitting: boolean;
-    }, "authDiagnostics" | "isError" | "isFetching" | "hasNextPage" | "isFetchingNextPage" | "fetchNextPage" | "refetch" | "replyHistoryByReportId" | "replyHistory" | "loadOlderReplies" | "goToOlderPaginationPage" | "goToNewerPaginationPage" | "onPanelBootstrap" | "reports" | "routeDetailsStats" | "canTransferFeedback" | "canListAllFeedback" | "onActivitySummary" | "filters" | "setFilters" | "listScope" | "setListScope" | "currentPageReports" | "allPageReports" | "filteredReports" | "isCreating" | "isUpdating" | "isSubmittingReply" | "isClaimingAssignee" | "isDeleting" | "queryErrorMessage" | "loadRepliesIfNeeded" | "selectedReport" | "handleClaimAssignee" | "handleTransferAssignee" | "handleConfirmResolution" | "handleCaseEditSave" | "handleReplySubmit" | "handleCreateSubmit" | "handleUpdateSubmit" | "targetStats" | "roleStatItems" | "handleDelete" | "canCreateGitHubIssueFromList" | "canCreateGitHubIssueOnCreate" | "creatingGitHubIssueId" | "handleCreateGitHubIssue" | "handleCreateSubmitWithGitHubIssue" | "isDraftGitHubIssueSubmitting">;
+    }, "authDiagnostics" | "isError" | "isFetching" | "hasNextPage" | "isFetchingNextPage" | "fetchNextPage" | "refetch" | "replyHistoryByReportId" | "replyHistory" | "loadOlderReplies" | "goToOlderPaginationPage" | "goToNewerPaginationPage" | "canTransferFeedback" | "canListAllFeedback" | "listScope" | "setListScope" | "filters" | "setFilters" | "reports" | "currentPageReports" | "filteredReports" | "allPageReports" | "onPanelBootstrap" | "routeDetailsStats" | "selectedReport" | "isCreating" | "isUpdating" | "isDeleting" | "queryErrorMessage" | "loadRepliesIfNeeded" | "onActivitySummary" | "handleCreateSubmit" | "handleUpdateSubmit" | "isSubmittingReply" | "isClaimingAssignee" | "handleClaimAssignee" | "handleTransferAssignee" | "handleConfirmResolution" | "handleCaseEditSave" | "targetStats" | "roleStatItems" | "handleReplySubmit" | "handleDelete" | "canCreateGitHubIssueFromList" | "canCreateGitHubIssueOnCreate" | "creatingGitHubIssueId" | "handleCreateGitHubIssue" | "handleCreateSubmitWithGitHubIssue" | "isDraftGitHubIssueSubmitting">;
 };
 export { ReportContext, ReportPreferencesContext, ReportSessionContext, ReportDataContext };
 //# sourceMappingURL=reportContext.d.ts.map

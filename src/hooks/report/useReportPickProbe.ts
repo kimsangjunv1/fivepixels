@@ -14,9 +14,9 @@ import type {
     SavedProbeEntry,
     TargetSnapshot,
 } from "@/types/report-ui.js";
-import { toFeedbackHoverSnapshot } from "@/utils/dom.js";
-import { shouldInspectFontStyle } from "@/utils/pickTargetInspect.js";
-import { applyPickProbeCompareMode, applyPickProbeValueDiff, capturePickProbeValues, formatSavedProbeEditsSummary, getProposedChanges } from "@/utils/pickProbe.js";
+import { toFeedbackHoverSnapshot } from "@/utils/shared/dom.js";
+import { shouldInspectFontStyle } from "@/utils/probe/pickTargetInspect.js";
+import { applyPickProbeCompareMode, applyPickProbeValueDiff, capturePickProbeValues, formatSavedProbeEditsSummary, getProposedChanges } from "@/utils/probe/pickProbe.js";
 import {
     applySavedProbeEditsCompareMode,
     captureProbeOriginalSnapshot,
@@ -27,11 +27,11 @@ import {
     getPickProbeElementKey,
     restoreProbeElementOriginal,
     restoreSavedProbeDeletion,
-} from "@/utils/pickProbeSession.js";
-import { playPickTargetDeleteAnimation } from "@/utils/pickTargetDeleteAnimation.js";
-import { applyProbeSessionActionBackward, applyProbeSessionActionForward } from "@/utils/probeSessionHistory.js";
-import { getPickProbeLayoutMode } from "@/utils/probeLayout.js";
-import { createReportCase } from "@/utils/reportCases.js";
+} from "@/utils/probe/pickProbeSession.js";
+import { playPickTargetDeleteAnimation } from "@/utils/probe/pickTargetDeleteAnimation.js";
+import { applyProbeSessionActionBackward, applyProbeSessionActionForward } from "@/utils/probe/probeSessionHistory.js";
+import { getPickProbeLayoutMode } from "@/utils/probe/probeLayout.js";
+import { createReportCase } from "@/utils/report/reportCases.js";
 
 export type UseReportPickProbeParams = {
     mode: ReportMode;

@@ -1,6 +1,6 @@
-import { getFeedbackDisplayStatus } from "../../utils/feedbackThread.js";
-import { getReportCases } from "../../utils/reportCases.js";
-import { isCreatedToday } from "../../utils/routeDetailStatus.js";
+import { getFeedbackDisplayStatus } from "../../utils/feedback/feedbackThread.js";
+import { getReportCases } from "../../utils/report/reportCases.js";
+import { isCreatedToday } from "../../utils/panel/routeDetailStatus.js";
 const NEEDS_REPLY_STATUSES = new Set(["wait_for_reply", "additional_question"]);
 const ATTENTION_STATUSES = new Set(["found_error", "recheck_requested", "wait_for_reply", "additional_question"]);
 const IN_PROGRESS_STATUSES = new Set(["wait_for_reply", "additional_question", "suggested", "found_error", "recheck_requested"]);

@@ -1,1526 +1,453 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ensureReportLocaleMessages, getReportMessages, setActiveReportMessages } from "../../i18n/index.js";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useReportShortcuts } from "../useReportShortcuts.js";
-import { useMarkerTargetPreviewPreference } from "../useMarkerTargetPreviewPreference.js";
-import { useMarkerAppearancePreference } from "../useMarkerAppearancePreference.js";
-import { useTypographyPreference } from "../useTypographyPreference.js";
-import { useReportPersistence } from "../useReportPersistence.js";
-import { useIsMobileViewport } from "../useIsMobileViewport.js";
-import { useAppearancePreference } from "../useAppearancePreference.js";
-import { PANEL_APPEARANCE_STORAGE_KEY, TOOLTIP_APPEARANCE_STORAGE_KEY } from "../../constants/appearance.js";
-import { useLocalePreference } from "../useLocalePreference.js";
-import { useQuestionThreadPreference } from "../useQuestionThreadPreference.js";
-import { usePanelRolePreference } from "../usePanelRolePreference.js";
-import { usePanelTabPreference } from "../usePanelTabPreference.js";
-import { usePersonalKey } from "../usePersonalKey.js";
-import { useSelfProfile } from "../useSelfProfile.js";
-import { hasStoredPersonalKey, getAuthorIdFromPrivateKey, getAuthorNameFromPrivateKey, parsePrivateKeyBundle, publicKeysMatch, serializePublicKey } from "../../utils/personalKey.js";
-import { usePanelBootstrap } from "../usePanelBootstrap.js";
-import { useResolvedAppearance } from "../useResolvedAppearance.js";
-import { useReportPickProbe } from "./useReportPickProbe.js";
+import { useReportAuthSession } from "./useReportAuthSession.js";
+import { useReportDraftSession } from "./useReportDraftSession.js";
+import { useReportMarkers } from "./useReportMarkers.js";
+import { useReportMutations } from "./useReportMutations.js";
+import { useReportPanelShell } from "./useReportPanelShell.js";
 import { useReportReplyReview } from "./useReportReplyReview.js";
-import { buildPanelStats } from "../../utils/panelBootstrap.js";
-import { buildPanelRoleStats } from "../../utils/panelRoleStats.js";
-import { getPanelRoleTabPreset } from "../../constants/panelTabPresets.js";
-import { getPanelTabDefinition, isUserSelectablePanelTab, shouldEnableAllReportsFetch } from "../../constants/panelTabRegistry.js";
-import { formatVisibleTabSummary, resolveDefaultPanelTab, resolveVisibleTabs, } from "../../utils/panelTabPreference.js";
-import { clampRatio, getMarkerFromReport, resolveTooltipAnchor } from "../../utils/coordinates.js";
-import { getFeedbackTargetElement, isFeedbackTargetVisible, scrollToFeedbackTarget, waitForTargetRevealResync } from "../../utils/locateFeedback.js";
-import { clearFeedbackDeepLinkFromUrl, parseFeedbackDeepLink } from "../../utils/feedbackDeepLink.js";
-const MARKER_HOVER_LEAVE_MS = 250;
-const OVERLAY_HOVER_LEAVE_MS = 100;
-function getInitialDeepLinkFeedbackId() {
-    if (typeof window === "undefined") {
-        return null;
-    }
-    return parseFeedbackDeepLink()?.feedbackId ?? null;
-}
-import { findPickTargetByPoint, getSelectableTargets, isSameHoverTarget, resolveFeedbackDocumentAnchor, toFeedbackHoverSnapshot } from "../../utils/dom.js";
-import { getPickProbeElementKey } from "../../utils/pickProbeSession.js";
-import { markerToTargetSnapshot } from "../../utils/markerTarget.js";
-import { createInitialFieldValues, getFieldError, getFieldTags } from "../../utils/fields.js";
-import { createReportCase } from "../../utils/reportCases.js";
-import { notifyFeedbackCreate, notifyFeedbackDelete, notifyFeedbackUpdate, notifyGitHubIssueCreated } from "../../utils/reportCallbacks.js";
-import { buildGitHubIssueStatusUpdate, buildGitHubIssueUpdate, canCreateGitHubIssueFromList, canCreateGitHubIssueOnCreate, isGitIssued } from "../../utils/githubIntegration.js";
-import { buildPresentationViewers, resolveSessionActor } from "../../utils/reportTeam.js";
-function resolveDefaultAuthorName(identify, authors, selfName) {
-    if (identify?.name) {
-        return identify.name;
-    }
-    return authors[0]?.name ?? selfName ?? "";
-}
+import { resolveDefaultAuthorName } from "../../utils/report/resolveDefaultAuthorName.js";
 export function useReportState({ projectId, environment, appVersion, panelAppearance, tooltipAppearance, questionThreadDefault = "expanded", fields, authors = [], requireReviewerKey = false, shortcut: _shortcut, identify, onList, onListAll, onPanelBootstrap, onActivitySummary, onListReplies, onNavigate, onRevealTarget, onCreate, onCreateReply, onUpdate, onDelete, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys = false, initialLocale, messageOverrides, pixelsMode = "default", replyHistory, }) {
-    const { appearance: activePanelAppearance, setAppearance: setPanelAppearance } = useAppearancePreference(PANEL_APPEARANCE_STORAGE_KEY, panelAppearance);
-    const { appearance: activeTooltipAppearance, setAppearance: setTooltipAppearance } = useAppearancePreference(TOOLTIP_APPEARANCE_STORAGE_KEY, tooltipAppearance);
-    const { showMarkerTargetPreview, setShowMarkerTargetPreview, toggleMarkerTargetPreview } = useMarkerTargetPreviewPreference();
-    const { markerAppearance, setMarkerAppearance, setMarkerSize, setMarkerShape, setMarkerColors, setMarkerColor } = useMarkerAppearancePreference();
-    const { typography, setTypography, setFontSize, setFontFamily } = useTypographyPreference();
-    const { questionThreadDisplay, setQuestionThreadDisplay } = useQuestionThreadPreference(questionThreadDefault);
-    const { panelRole, setPanelRole } = usePanelRolePreference();
-    const { storedPreference, setPanelTabPreference, setVisibleTabs, resetTabsToRoleDefault, applyRoleDefaultTabs } = usePanelTabPreference();
-    const { locale, setLocale } = useLocalePreference(initialLocale);
-    const [localeMessagesReady, setLocaleMessagesReady] = useState(locale !== "ko");
-    const messages = useMemo(() => getReportMessages(locale, messageOverrides), [locale, localeMessagesReady, messageOverrides]);
-    useEffect(() => {
-        if (locale !== "ko") {
-            setLocaleMessagesReady(true);
-            return;
-        }
-        let cancelled = false;
-        setLocaleMessagesReady(false);
-        void ensureReportLocaleMessages("ko").then(() => {
-            if (!cancelled) {
-                setLocaleMessagesReady(true);
-            }
-        });
-        return () => {
-            cancelled = true;
-        };
-    }, [locale]);
-    useEffect(() => {
-        setActiveReportMessages(messages);
-    }, [messages]);
     const overlayRef = useRef(null);
-    const searchInputRef = useRef(null);
     const hoveredElementRef = useRef(null);
     const selectedElementRef = useRef(null);
-    const hoverLeaveTimeoutRef = useRef(null);
     const overlayHoverLeaveTimeoutRef = useRef(null);
-    const [mode, setMode] = useState(() => (getInitialDeepLinkFeedbackId() ? "view" : "idle"));
-    const [panelCollapsed, setPanelCollapsed] = useState(false);
-    const [panelTab, setPanelTab] = useState(null);
-    const panelExpanded = !panelCollapsed && mode !== "report";
-    const fetchEnabled = panelExpanded || mode === "view";
-    const tabAvailabilityContext = useMemo(() => ({
-        showFeedbackList,
-        canListAllFeedback: true,
-    }), [showFeedbackList]);
-    const visiblePanelTabs = useMemo(() => resolveVisibleTabs({ role: panelRole, preference: storedPreference, context: tabAvailabilityContext }), [panelRole, storedPreference, tabAvailabilityContext]);
-    const roleTabPreset = useMemo(() => getPanelRoleTabPreset(panelRole), [panelRole]);
-    const needsFullReportList = useMemo(() => {
-        if (mode === "view") {
-            return true;
-        }
-        if (!fetchEnabled) {
-            return false;
-        }
-        if (!onPanelBootstrap) {
-            return true;
-        }
-        if (panelTab && isUserSelectablePanelTab(panelTab) && getPanelTabDefinition(panelTab).needsFullReportList) {
-            return true;
-        }
-        return visiblePanelTabs.some((tabId) => getPanelTabDefinition(tabId).needsFullReportList);
-    }, [fetchEnabled, mode, onPanelBootstrap, panelTab, visiblePanelTabs]);
-    const allReportsFetchEnabled = useMemo(() => shouldEnableAllReportsFetch({
-        fetchEnabled,
-        needsFullReportList,
-        activePanelTab: panelTab,
-    }), [fetchEnabled, needsFullReportList, panelTab]);
-    const listFetchEnabled = fetchEnabled && needsFullReportList;
-    const bootstrapEnabled = fetchEnabled && panelExpanded && Boolean(onPanelBootstrap);
-    const resolvedPanelAppearance = useResolvedAppearance(activePanelAppearance);
-    const resolvedTooltipAppearance = useResolvedAppearance(activeTooltipAppearance);
-    const isMobileViewport = useIsMobileViewport();
-    const { canTransferFeedback, canListAllFeedback, currentPathname, listScope, setListScope, filters, setFilters, selectedReportId, setSelectedReportId, reports, currentPageReports, filteredReports, currentPageFilteredReports, allPageReports, allPageFilteredReports, routeDetailsStats, selectedReport, isError, isReportsLoading, isFetching, hasNextPage, isFetchingNextPage, fetchNextPage, isCreating, isUpdating, isDeleting, queryErrorMessage, refetch, createFeedback, updateFeedback, deleteFeedback, loadRepliesIfNeeded, createReply, usesCreateReply, replyHistoryByReportId, loadOlderReplies, goToOlderPaginationPage, goToNewerPaginationPage, } = useReportPersistence({
+    const panelShellBridgesRef = useRef({
+        setShowTargetPreview: () => undefined,
+        closeReplyComposer: () => undefined,
+        stopEditing: () => undefined,
+    });
+    const auth = useReportAuthSession({
+        projectId,
+        environment,
+        authors,
+        identify,
+        requireReviewerKey,
+        pixelsMode,
+    });
+    const panel = useReportPanelShell({
         projectId,
         environment,
         appVersion,
+        panelAppearance,
+        tooltipAppearance,
+        questionThreadDefault,
         fields,
+        showFeedbackList,
+        initialLocale,
+        messageOverrides,
         onList,
         onListAll,
+        onPanelBootstrap,
+        onActivitySummary,
         onListReplies,
         onCreate,
         onCreateReply,
         onUpdate,
         onDelete,
         routeKey,
-        fetchEnabled,
-        listFetchEnabled,
-        allReportsFetchEnabled,
         replyHistory,
+        sessionActorName: auth.sessionActor?.name ?? null,
+        bridgesRef: panelShellBridgesRef,
     });
-    const bootstrapParams = useMemo(() => ({ pathname: currentPathname }), [currentPathname]);
-    const { bootstrap: panelBootstrap } = usePanelBootstrap({
-        enabled: bootstrapEnabled,
-        params: bootstrapParams,
-        fields,
-        reports: currentPageReports,
-        pathname: currentPathname,
-        onPanelBootstrap,
-    });
-    const resolvedRouteDetailsStats = useMemo(() => panelBootstrap?.routeDetails ?? routeDetailsStats, [panelBootstrap, routeDetailsStats]);
     const eventCallbacks = useMemo(() => ({
         onEvent,
         onReply,
     }), [onEvent, onReply]);
-    const { selfProfile, saveSelfProfile, markOnboardingComplete } = useSelfProfile(projectId, environment);
-    const requiresReviewerKey = requireReviewerKey || authors.some((author) => Boolean(author.publicKey));
-    const isPresentationMode = pixelsMode === "presentation";
-    const { personalKey, publicKey, personalKeyRequired, personalKeyPendingRegistration, personalKeyCandidates, authorizedAuthors, issuePersonalKey, issueSelfKey, rotatePersonalKey, insertPersonalKey, clearPersonalKey, signPayload, } = usePersonalKey({
-        enabled: isPresentationMode || !requiresReviewerKey || hasStoredPersonalKey(projectId, environment),
-        requireKey: requiresReviewerKey,
-        projectId,
-        environment,
-        identify,
-        authors,
-    });
-    const activeIdentify = authorizedAuthors[0] ?? (selfProfile?.authorId && selfProfile.name ? { id: selfProfile.authorId, name: selfProfile.name } : undefined) ?? (personalKeyRequired ? undefined : identify);
-    const presentationViewers = useMemo(() => buildPresentationViewers(identify, authors), [authors, identify]);
-    const [presentationViewerId, setPresentationViewerId] = useState(null);
-    const resolvedPresentationViewerId = useMemo(() => {
-        if (!isPresentationMode || presentationViewers.length === 0) {
-            return null;
-        }
-        if (presentationViewerId && presentationViewers.some((viewer) => viewer.id === presentationViewerId)) {
-            return presentationViewerId;
-        }
-        return presentationViewers[0]?.id ?? null;
-    }, [isPresentationMode, presentationViewerId, presentationViewers]);
-    const authorSelectionLocked = Boolean(personalKey);
-    const hasPersistedPersonalKey = hasStoredPersonalKey(projectId, environment);
-    const isSelfAuthenticated = hasPersistedPersonalKey;
-    const authDiagnostics = useMemo(() => {
-        const parsedBundle = personalKey ? parsePrivateKeyBundle(personalKey) : null;
-        const teamReviewer = parsedBundle ? authors.find((author) => author.id === parsedBundle.authorId) : null;
-        const localAuthorName = (parsedBundle?.authorName ?? selfProfile?.name ?? "").trim();
-        const expected = {
-            projectId,
-            environment: environment ?? "",
-            authorId: teamReviewer?.id ?? null,
-            authorName: teamReviewer?.name?.trim() || null,
-            publicKey: teamReviewer?.publicKey?.trim() || null,
-        };
-        const actual = {
-            projectId: parsedBundle?.projectId ?? null,
-            environment: parsedBundle?.environment ?? "",
-            authorId: parsedBundle?.authorId ?? null,
-            authorName: localAuthorName || null,
-            publicKey: parsedBundle ? serializePublicKey(parsedBundle.publicKey) : null,
-        };
-        const items = [
-            { field: "projectId", expected: expected.projectId, actual: actual.projectId, matched: expected.projectId === actual.projectId },
-            { field: "environment", expected: expected.environment, actual: actual.environment, matched: (expected.environment ?? "") === (actual.environment ?? "") },
-            { field: "authorId", expected: expected.authorId, actual: actual.authorId, matched: expected.authorId === actual.authorId },
-            {
-                field: "authorName",
-                expected: expected.authorName,
-                actual: actual.authorName,
-                matched: Boolean(expected.authorName && actual.authorName && expected.authorName === actual.authorName),
-            },
-            {
-                field: "publicKey",
-                expected: expected.publicKey,
-                actual: actual.publicKey,
-                matched: Boolean(expected.publicKey && actual.publicKey && publicKeysMatch(expected.publicKey, actual.publicKey)),
-            },
-        ];
-        if (!requiresReviewerKey) {
-            return { status: "disabled", reason: "reviewer-key-not-enforced", items, expected, actual };
-        }
-        if (!personalKey) {
-            return { status: "failed", reason: "missing-personal-key", items, expected, actual };
-        }
-        if (!parsedBundle) {
-            return { status: "failed", reason: "invalid-personal-key-format", items, expected, actual };
-        }
-        if (parsedBundle.projectId !== projectId) {
-            return { status: "failed", reason: "project-mismatch", items, expected, actual };
-        }
-        if ((parsedBundle.environment ?? "") !== (environment ?? "")) {
-            return { status: "failed", reason: "environment-mismatch", items, expected, actual };
-        }
-        if (!teamReviewer) {
-            return { status: "failed", reason: "missing-team-author", items, expected, actual };
-        }
-        if (expected.authorName && actual.authorName && expected.authorName !== actual.authorName) {
-            return { status: "failed", reason: "author-name-mismatch", items, expected, actual };
-        }
-        if (!teamReviewer.publicKey?.trim()) {
-            return { status: "failed", reason: "missing-team-public-key", items, expected, actual };
-        }
-        if (!actual.publicKey || !publicKeysMatch(teamReviewer.publicKey, actual.publicKey)) {
-            return { status: "failed", reason: "public-key-mismatch", items, expected, actual };
-        }
-        return { status: "matched", reason: "matched", items, expected, actual };
-    }, [authors, environment, personalKey, projectId, requiresReviewerKey, selfProfile?.name]);
-    const panelView = useMemo(() => {
-        if (isPresentationMode || !requiresReviewerKey) {
-            return "ready";
-        }
-        if (!hasPersistedPersonalKey) {
-            return "onboarding";
-        }
-        if (selfProfile && !selfProfile.completed) {
-            return "setup-complete";
-        }
-        const parsedBundle = personalKey ? parsePrivateKeyBundle(personalKey) : null;
-        const teamReviewer = parsedBundle ? authors.find((author) => author.id === parsedBundle.authorId) : null;
-        if (!teamReviewer) {
-            return "setup-complete";
-        }
-        if (authDiagnostics.status === "matched") {
-            return "ready";
-        }
-        return "key-issue";
-    }, [authDiagnostics.status, authors, hasPersistedPersonalKey, isPresentationMode, personalKey, requiresReviewerKey, selfProfile]);
-    useEffect(() => {
-        if (selfProfile && !selfProfile.completed && hasPersistedPersonalKey && authorizedAuthors.length > 0) {
-            markOnboardingComplete();
-        }
-    }, [authorizedAuthors.length, hasPersistedPersonalKey, markOnboardingComplete, selfProfile]);
-    const completeOnboarding = useCallback(async ({ name }) => {
-        const trimmedName = name.trim();
-        const authorId = typeof crypto !== "undefined" && typeof crypto.randomUUID === "function" ? crypto.randomUUID() : `self-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-        const issued = await issueSelfKey(authorId, trimmedName);
-        saveSelfProfile({ name: trimmedName, authorId, completed: false });
-        return { ...issued, authorId };
-    }, [issueSelfKey, saveSelfProfile]);
-    const restoreFromBackup = useCallback(async (backupKey) => {
-        const result = await insertPersonalKey(backupKey);
-        if (!result.saved) {
-            return { restored: false, reason: result.reason };
-        }
-        if (!requiresReviewerKey && !result.authorized) {
-            return { restored: false, reason: "unauthorized" };
-        }
-        const authorId = getAuthorIdFromPrivateKey(backupKey);
-        const restoredName = getAuthorNameFromPrivateKey(backupKey);
-        saveSelfProfile({
-            name: restoredName ?? "",
-            authorId: authorId ?? "",
-            completed: result.authorized || !requiresReviewerKey,
-        });
-        return { restored: true, name: restoredName, authorized: result.authorized };
-    }, [insertPersonalKey, requiresReviewerKey, saveSelfProfile]);
-    const skipOnboarding = useCallback(() => {
-        markOnboardingComplete();
-    }, [markOnboardingComplete]);
-    const sessionActor = useMemo(() => resolveSessionActor({
-        isPresentationMode,
-        presentationViewers,
-        presentationViewerId: resolvedPresentationViewerId,
-        activeIdentify,
-    }), [activeIdentify, isPresentationMode, presentationViewers, resolvedPresentationViewerId]);
-    const signCreatePayload = async (payload) => {
-        const auth = await signPayload("feedback:create", payload);
-        return auth ? { ...payload, auth } : payload;
-    };
-    const signUpdatePayload = async (payload) => {
-        const auth = await signPayload("feedback:update", payload);
-        return auth ? { ...payload, auth } : payload;
-    };
-    const signReplyPayload = async (payload) => {
-        const auth = await signPayload("reply:create", payload);
-        return auth ? { ...payload, auth } : payload;
-    };
-    const applyGitHubIssueUpdate = async (report, result) => {
-        if (usesCreateReply) {
-            const updatedFeedback = await updateFeedback(report.id, await signUpdatePayload(buildGitHubIssueStatusUpdate(report, result)));
-            await createReply(report.id, await signReplyPayload({
-                message: messages.resolution.gitIssuedMessage,
-                status: "suggested",
-                author_type: "system",
-            }));
-            return updatedFeedback;
-        }
-        return updateFeedback(report.id, await signUpdatePayload(buildGitHubIssueUpdate(report, result, messages.resolution.gitIssuedMessage)));
-    };
-    const [showTargetPreview, setShowTargetPreview] = useState(false);
-    const [selectableTargets, setSelectableTargets] = useState([]);
-    const [errorMessage, setErrorMessage] = useState("");
-    const [draft, setDraft] = useState(null);
-    const [hoveredTarget, setHoveredTarget] = useState(null);
-    const [hoverPointer, setHoverPointer] = useState(null);
-    const [selectedTarget, setSelectedTarget] = useState(null);
-    const draftElementRef = useRef(null);
-    const { pickProbeOpen, pickProbeSupportsTextFields, pickProbeLayoutMode, pickProbeValues, pickProbeCompareMode, pickProbeHasEdits, pickTargetContextMenu, setPickTargetContextMenu, contextMenuElementKey, setContextMenuElementKey, contextMenuElementRef, savedProbeEdits, savedProbeDeletions, hasProbeSessionChanges, canUndoProbeSession, canRedoProbeSession, undoProbeSessionAction, redoProbeSessionAction, savedProbeCompareMode, closePickProbe, closePickTargetContextMenu, handlePickTargetEdit, handlePickTargetDelete, handlePickTargetRevert, commitPickProbeEdits, revertSavedProbeEdit, revertAllSavedProbeEdits, setSavedProbeCompareMode, setPickProbeCompareMode, updatePickProbeValue, resetPickProbeValues, resetPickProbeState, appendSavedProbeSummaryAsNewDraftCase, } = useReportPickProbe({
-        mode,
-        selectedElementRef,
-        hoveredElementRef,
-        draftElementRef,
-        setSelectedTarget,
-        setHoveredTarget,
-        setHoverPointer,
-        setDraft,
-        draft,
-        messages,
-    });
-    const [markers, setMarkers] = useState([]);
-    const [hoveredMarkerId, setHoveredMarkerId] = useState(null);
-    const [draftAuthorName, setDraftAuthorName] = useState(() => resolveDefaultAuthorName(activeIdentify, authorizedAuthors, selfProfile?.name));
-    const applyPresentationViewer = useCallback(async (viewerId) => {
-        if (!isPresentationMode) {
-            return;
-        }
-        const viewer = presentationViewers.find((item) => item.id === viewerId) ?? presentationViewers[0];
-        if (!viewer) {
-            return;
-        }
-        setPresentationViewerId(viewer.id);
-        saveSelfProfile({
-            name: viewer.name,
-            authorId: viewer.id,
-            completed: true,
-        });
-        if (viewer.privateKey) {
-            await insertPersonalKey(viewer.privateKey);
-            return;
-        }
-        clearPersonalKey();
-    }, [clearPersonalKey, insertPersonalKey, isPresentationMode, presentationViewers, saveSelfProfile]);
-    useEffect(() => {
-        if (!sessionActor?.name) {
-            return;
-        }
-        setDraftAuthorName(sessionActor.name);
-    }, [sessionActor?.id, sessionActor?.name]);
-    const setDraftAuthorNameSafe = useCallback((name) => {
-        if (authorSelectionLocked && sessionActor?.name) {
-            setDraftAuthorName(sessionActor.name);
-            return;
-        }
-        setDraftAuthorName(name);
-    }, [authorSelectionLocked, sessionActor?.name]);
-    const pendingLocateReportIdRef = useRef(null);
-    const pendingDeepLinkFeedbackIdRef = useRef(getInitialDeepLinkFeedbackId());
-    const deepLinkHandledRef = useRef(false);
-    const [editingReportId, setEditingReportId] = useState(null);
-    const [editableDraft, setEditableDraft] = useState(null);
-    const [creatingGitHubIssueId, setCreatingGitHubIssueId] = useState(null);
-    const stopEditing = () => {
-        setEditingReportId(null);
-        setEditableDraft(null);
-    };
-    const selectReport = (reportId) => {
-        setSelectedReportId(reportId);
-        if (editingReportId && editingReportId !== reportId) {
-            stopEditing();
-        }
-    };
-    const { activeReplyReportId, setActiveReplyReportId, activeReplyReport, activeReplyAnchor, replyDraft, setReplyDraft, replySubmitAsQuestion, setReplySubmitAsQuestion, replyAuthorName, setReplyAuthorName: setReplyAuthorNameSafe, setReplyAuthorNameRaw, isSubmittingReply, isClaimingAssignee, pendingComposer, setPendingComposer, confirmAuthorName, setConfirmAuthorName, showConfirmAuthorSelect, setShowConfirmAuthorSelect, toggleConfirmAuthorSelect, startDenyReview, startCheckoutReview, startAskQuestion, cancelPendingComposer, handleClaimAssignee, handleTransferAssignee, handleConfirmResolution, beginCaseEdit, cancelCaseEdit, handleCaseEditSave, updateCaseEditDraftCase, addCaseEditDraftCase, removeCaseEditDraftCase, focusedCaseId, selectCase, clearFocusedCase, isCaseEditing, caseEditReportId, caseEditCases, openReplyComposer, closeReplyComposer, handleReplySubmit, } = useReportReplyReview({
-        markers,
-        reports,
-        messages,
+    const draft = useReportDraftSession({
+        mode: panel.mode,
+        setMode: panel.setMode,
         fields,
-        sessionActor,
-        authorSelectionLocked,
-        activeIdentify,
-        authorizedAuthors,
-        selfName: selfProfile?.name,
+        messages: panel.messages,
+        currentPathname: panel.currentPathname,
+        environment,
+        appVersion,
+        sessionActor: auth.sessionActor,
+        authorSelectionLocked: auth.authorSelectionLocked,
+        activeIdentify: auth.activeIdentify,
+        authorizedAuthors: auth.authorizedAuthors,
+        selfName: auth.selfProfile?.name,
+        setErrorMessage: panel.setErrorMessage,
+        hoveredElementRef,
+        selectedElementRef,
+        overlayRef,
+        overlayHoverLeaveTimeoutRef,
+    });
+    const replyBridgeRef = useRef({
+        activeReplyReportId: null,
+        closeReplyComposer: () => undefined,
+        openReplyComposer: () => undefined,
+    });
+    const closeReplyComposerBridge = useCallback(() => {
+        replyBridgeRef.current.closeReplyComposer();
+    }, []);
+    const openReplyComposerBridge = useCallback((report) => {
+        replyBridgeRef.current.openReplyComposer(report);
+    }, []);
+    const mutations = useReportMutations({
+        messages: panel.messages,
+        fields,
+        github,
         eventCallbacks,
-        createReply,
-        updateFeedback,
-        usesCreateReply,
-        signReplyPayload,
-        signUpdatePayload,
-        setErrorMessage,
+        selectedReport: panel.selectedReport,
+        selectedReportId: panel.selectedReportId,
+        setSelectedReportId: panel.setSelectedReportId,
+        getActiveReplyReportId: () => replyBridgeRef.current.activeReplyReportId,
+        closeReplyComposer: closeReplyComposerBridge,
+        isCreating: panel.isCreating,
+        createFeedback: panel.createFeedback,
+        updateFeedback: panel.updateFeedback,
+        deleteFeedback: panel.deleteFeedback,
+        createReply: panel.createReply,
+        usesCreateReply: panel.usesCreateReply,
+        signCreatePayload: auth.signCreatePayload,
+        signUpdatePayload: auth.signUpdatePayload,
+        signReplyPayload: auth.signReplyPayload,
+        setErrorMessage: panel.setErrorMessage,
+        buildCreatePayloadFromDraft: draft.buildCreatePayloadFromDraft,
+        finalizeDraftCreate: draft.finalizeDraftCreate,
+    });
+    const selectReport = (reportId) => {
+        panel.setSelectedReportId(reportId);
+        if (mutations.editingReportId && mutations.editingReportId !== reportId) {
+            mutations.stopEditing();
+        }
+    };
+    const reply = useReportReplyReview({
+        reports: panel.reports,
+        messages: panel.messages,
+        fields,
+        sessionActor: auth.sessionActor,
+        authorSelectionLocked: auth.authorSelectionLocked,
+        activeIdentify: auth.activeIdentify,
+        authorizedAuthors: auth.authorizedAuthors,
+        selfName: auth.selfProfile?.name,
+        eventCallbacks,
+        createReply: panel.createReply,
+        updateFeedback: panel.updateFeedback,
+        usesCreateReply: panel.usesCreateReply,
+        signReplyPayload: auth.signReplyPayload,
+        signUpdatePayload: auth.signUpdatePayload,
+        setErrorMessage: panel.setErrorMessage,
         onSelectReport: selectReport,
     });
-    const canCreateGitHubIssueFromListValue = useMemo(() => canCreateGitHubIssueFromList(github), [github]);
-    const canCreateGitHubIssueOnCreateValue = useMemo(() => canCreateGitHubIssueOnCreate(github), [github]);
-    const tooltipAnchor = useMemo(() => {
-        const hoveredAnchor = resolveTooltipAnchor(markers, hoveredMarkerId);
-        if (!activeReplyReportId) {
-            return hoveredAnchor;
-        }
-        if (hoveredMarkerId && hoveredMarkerId !== activeReplyReportId) {
-            return hoveredAnchor;
-        }
-        return activeReplyAnchor ?? hoveredAnchor;
-    }, [activeReplyAnchor, activeReplyReportId, hoveredMarkerId, markers]);
-    const tooltipReport = tooltipAnchor?.report ?? null;
-    const tooltipFieldTags = useMemo(() => (tooltipReport ? getFieldTags(fields, tooltipReport.field_values) : []), [fields, tooltipReport]);
-    const roleStatsReports = useMemo(() => {
-        if (roleTabPreset.headerStatsScope !== "all") {
-            return currentPageFilteredReports;
-        }
-        if (listScope === "all") {
-            return filteredReports;
-        }
-        if (allPageFilteredReports.length > 0) {
-            return allPageFilteredReports;
-        }
-        return currentPageFilteredReports;
-    }, [allPageFilteredReports, currentPageFilteredReports, filteredReports, listScope, roleTabPreset.headerStatsScope]);
-    const targetStats = useMemo(() => {
-        if (panelBootstrap?.stats) {
-            return panelBootstrap.stats;
-        }
-        return buildPanelStats(currentPageFilteredReports);
-    }, [currentPageFilteredReports, panelBootstrap]);
-    const roleStatItems = useMemo(() => buildPanelRoleStats({
-        role: panelRole,
-        reports: roleStatsReports,
-        actorName: sessionActor?.name ?? null,
-        fallbackStats: targetStats,
-        messages,
-    }), [panelRole, roleStatsReports, sessionActor?.name, targetStats, messages]);
-    const listScopeInitializedRef = useRef(false);
+    replyBridgeRef.current = {
+        activeReplyReportId: reply.activeReplyReportId,
+        closeReplyComposer: reply.closeReplyComposer,
+        openReplyComposer: reply.openReplyComposer,
+    };
+    panelShellBridgesRef.current = {
+        setShowTargetPreview: draft.setShowTargetPreview,
+        closeReplyComposer: reply.closeReplyComposer,
+        stopEditing: mutations.stopEditing,
+    };
+    const markers = useReportMarkers({
+        mode: panel.mode,
+        messages: panel.messages,
+        fields,
+        currentPathname: panel.currentPathname,
+        currentPageFilteredReports: panel.currentPageFilteredReports,
+        filteredReports: panel.filteredReports,
+        reports: panel.reports,
+        selectedReportId: panel.selectedReportId,
+        markerAppearanceSize: panel.markerAppearance.size,
+        showMarkerTargetPreview: panel.showMarkerTargetPreview,
+        showTargetPreview: draft.showTargetPreview,
+        selectableTargetsLength: draft.selectableTargets.length,
+        selectedTarget: draft.selectedTarget,
+        hoveredTarget: draft.hoveredTarget,
+        isFetching: panel.isFetching,
+        isReportsLoading: panel.isReportsLoading,
+        activeReplyReportId: reply.activeReplyReportId,
+        setErrorMessage: panel.setErrorMessage,
+        onNavigate,
+        onRevealTarget,
+        selectReport,
+        closeReplyComposer: closeReplyComposerBridge,
+        openReplyComposer: openReplyComposerBridge,
+        loadRepliesIfNeeded: panel.loadRepliesIfNeeded,
+        searchInputRef: panel.searchInputRef,
+    });
+    const authorizedAuthorId = auth.authorizedAuthors[0]?.id ?? null;
+    const activeIdentifyId = auth.activeIdentify?.id ?? null;
+    const activeIdentifyName = auth.activeIdentify?.name ?? null;
     useEffect(() => {
-        if (listScopeInitializedRef.current) {
-            return;
+        draft.setDraft(null);
+        panel.setErrorMessage("");
+        draft.setHoveredTarget(null);
+        draft.setSelectedTarget(null);
+        markers.setHoveredMarkerId(null);
+        reply.setActiveReplyReportId(null);
+        reply.setReplyDraft("");
+        reply.setPendingComposer(null);
+        reply.setShowConfirmAuthorSelect(false);
+        reply.setConfirmAuthorName("");
+        draft.setDraftAuthorName(auth.sessionActor?.name ?? resolveDefaultAuthorName(auth.activeIdentify, auth.authorizedAuthors, auth.selfProfile?.name));
+        if (!auth.isPresentationMode) {
+            reply.setReplyAuthorNameRaw(auth.sessionActor?.name ?? resolveDefaultAuthorName(auth.activeIdentify, auth.authorizedAuthors, auth.selfProfile?.name));
         }
-        if (storedPreference?.customized) {
-            listScopeInitializedRef.current = true;
-            return;
-        }
-        setListScope(roleTabPreset.defaultListScope);
-        listScopeInitializedRef.current = true;
-    }, [roleTabPreset.defaultListScope, setListScope, storedPreference?.customized]);
-    useEffect(() => {
-        if (!panelTab) {
-            return;
-        }
-        if (panelTab === "settings" || panelTab === "command") {
-            return;
-        }
-        if (!isUserSelectablePanelTab(panelTab)) {
-            return;
-        }
-        if (visiblePanelTabs.includes(panelTab)) {
-            return;
-        }
-        setPanelTab(resolveDefaultPanelTab(panelRole, visiblePanelTabs));
-    }, [panelRole, panelTab, visiblePanelTabs]);
-    const resolvedTabAvailabilityContext = useMemo(() => ({
-        showFeedbackList,
-        canListAllFeedback,
-    }), [canListAllFeedback, showFeedbackList]);
-    const visiblePanelTabLabels = useMemo(() => {
-        const labels = {};
-        for (const tabId of visiblePanelTabs) {
-            labels[tabId] = messages.panel[getPanelTabDefinition(tabId).labelKey];
-        }
-        return labels;
-    }, [messages.panel, visiblePanelTabs]);
-    const visiblePanelTabsSummary = useMemo(() => formatVisibleTabSummary(visiblePanelTabs, visiblePanelTabLabels), [visiblePanelTabLabels, visiblePanelTabs]);
-    const setVisiblePanelTabs = useCallback((nextTabs) => {
-        setVisibleTabs(nextTabs, resolvedTabAvailabilityContext, true);
-    }, [resolvedTabAvailabilityContext, setVisibleTabs]);
-    const resetVisibleTabsToRoleDefault = useCallback(() => {
-        resetTabsToRoleDefault(panelRole, resolvedTabAvailabilityContext);
-        setListScope(getPanelRoleTabPreset(panelRole).defaultListScope);
-    }, [panelRole, resetTabsToRoleDefault, resolvedTabAvailabilityContext, setListScope]);
-    const applyRoleDefaultTabsForOnboarding = useCallback((role) => {
-        applyRoleDefaultTabs(role, resolvedTabAvailabilityContext);
-    }, [applyRoleDefaultTabs, resolvedTabAvailabilityContext]);
-    const savePanelTabPreference = useCallback((preference) => {
-        setPanelTabPreference(preference);
-        setListScope(getPanelRoleTabPreset(panelRole).defaultListScope);
-    }, [panelRole, setListScope, setPanelTabPreference]);
-    const authorizedAuthorId = authorizedAuthors[0]?.id ?? null;
-    const activeIdentifyId = activeIdentify?.id ?? null;
-    const activeIdentifyName = activeIdentify?.name ?? null;
-    useEffect(() => {
-        setDraft(null);
-        setErrorMessage("");
-        setHoveredTarget(null);
-        setSelectedTarget(null);
-        setHoveredMarkerId(null);
-        setActiveReplyReportId(null);
-        setReplyDraft("");
-        setPendingComposer(null);
-        setShowConfirmAuthorSelect(false);
-        setConfirmAuthorName("");
-        setDraftAuthorName(sessionActor?.name ?? resolveDefaultAuthorName(activeIdentify, authorizedAuthors, selfProfile?.name));
-        if (!isPresentationMode) {
-            setReplyAuthorNameRaw(sessionActor?.name ?? resolveDefaultAuthorName(activeIdentify, authorizedAuthors, selfProfile?.name));
-        }
-        setEditingReportId(null);
-        setEditableDraft(null);
-        if (mode !== "idle") {
-            setShowTargetPreview(false);
+        mutations.setEditingReportId(null);
+        mutations.setEditableDraft(null);
+        if (panel.mode !== "idle") {
+            draft.setShowTargetPreview(false);
         }
         hoveredElementRef.current = null;
         selectedElementRef.current = null;
-        if (hoverLeaveTimeoutRef.current) {
-            window.clearTimeout(hoverLeaveTimeoutRef.current);
-            hoverLeaveTimeoutRef.current = null;
-        }
+        markers.clearHoverLeaveTimeout();
         if (overlayHoverLeaveTimeoutRef.current) {
             window.clearTimeout(overlayHoverLeaveTimeoutRef.current);
             overlayHoverLeaveTimeoutRef.current = null;
         }
-    }, [currentPathname, mode, activeIdentifyId, activeIdentifyName, authorizedAuthorId, isPresentationMode, sessionActor?.name, selfProfile?.authorId, selfProfile?.name]);
-    useEffect(() => {
-        if (!isPresentationMode || presentationViewers.length === 0 || !resolvedPresentationViewerId) {
-            return;
-        }
-        void applyPresentationViewer(resolvedPresentationViewerId);
-    }, [applyPresentationViewer, isPresentationMode, presentationViewers.length, resolvedPresentationViewerId]);
-    useEffect(() => {
-        setShowTargetPreview(false);
-    }, [currentPathname]);
+    }, [panel.currentPathname, panel.mode, activeIdentifyId, activeIdentifyName, authorizedAuthorId, auth.isPresentationMode, auth.sessionActor?.name, auth.selfProfile?.authorId, auth.selfProfile?.name]);
     useEffect(() => {
         return () => {
-            if (hoverLeaveTimeoutRef.current) {
-                window.clearTimeout(hoverLeaveTimeoutRef.current);
-            }
             if (overlayHoverLeaveTimeoutRef.current) {
                 window.clearTimeout(overlayHoverLeaveTimeoutRef.current);
             }
         };
     }, []);
-    useEffect(() => {
-        const syncSelectableTargets = () => {
-            setSelectableTargets(getSelectableTargets());
-        };
-        syncSelectableTargets();
-        window.addEventListener("scroll", syncSelectableTargets, { passive: true, capture: true });
-        window.addEventListener("resize", syncSelectableTargets);
-        return () => {
-            window.removeEventListener("scroll", syncSelectableTargets, { capture: true });
-            window.removeEventListener("resize", syncSelectableTargets);
-        };
-    }, [currentPathname]);
-    useEffect(() => {
-        if (!showTargetPreview) {
-            return;
-        }
-        const syncPreviewRects = () => {
-            setSelectableTargets(getSelectableTargets());
-        };
-        window.addEventListener("scroll", syncPreviewRects, { passive: true, capture: true });
-        window.addEventListener("resize", syncPreviewRects);
-        return () => {
-            window.removeEventListener("scroll", syncPreviewRects, { capture: true });
-            window.removeEventListener("resize", syncPreviewRects);
-        };
-    }, [showTargetPreview]);
-    const syncMarkers = useCallback(() => {
-        setMarkers(currentPageFilteredReports.map((report) => getMarkerFromReport(report, window.scrollY)));
-    }, [currentPageFilteredReports, markerAppearance.size]);
-    const activeMarkerReportId = useMemo(() => {
-        if (activeReplyReportId) {
-            return activeReplyReportId;
-        }
-        if (hoveredMarkerId) {
-            return hoveredMarkerId;
-        }
-        return null;
-    }, [activeReplyReportId, hoveredMarkerId]);
-    const activeMarkerTarget = useMemo(() => {
-        if (mode === "report") {
-            return null;
-        }
-        if (!activeMarkerReportId) {
-            return null;
-        }
-        const marker = markers.find((item) => item.report.id === activeMarkerReportId);
-        if (!marker) {
-            return null;
-        }
-        return markerToTargetSnapshot(marker);
-    }, [activeMarkerReportId, markers, mode]);
-    const markerPreviewTargets = useMemo(() => {
-        if (!showMarkerTargetPreview) {
-            return [];
-        }
-        return markers.flatMap((marker) => {
-            const snapshot = markerToTargetSnapshot(marker);
-            if (!snapshot) {
-                return [];
-            }
-            if (activeMarkerTarget && snapshot.id === activeMarkerTarget.id) {
-                return [];
-            }
-            return [snapshot];
-        });
-    }, [activeMarkerTarget, markers, showMarkerTargetPreview]);
-    const statusText = useMemo(() => {
-        if (mode === "report") {
-            const focusTarget = selectedTarget ?? hoveredTarget;
-            if (!focusTarget) {
-                return messages.statusText.reportReady;
-            }
-            if (focusTarget.isTagged) {
-                const typeLabel = focusTarget.type === "item" ? messages.statusText.selectedItem : messages.statusText.selectedGroup;
-                return `${typeLabel}\n${focusTarget.id}`;
-            }
-            return `${messages.statusText.selectedUntaggedTarget}\n${focusTarget.suggestedReportId ?? focusTarget.id}`;
-        }
-        if (mode === "view") {
-            return isFetching ? messages.statusText.loadingFeedback : messages.statusText.ready;
-        }
-        if (showTargetPreview) {
-            return messages.statusText.showingSelectableTargets(selectableTargets.length);
-        }
-        if (showMarkerTargetPreview) {
-            return messages.statusText.showingMarkerTargets(markerPreviewTargets.length + (activeMarkerTarget ? 1 : 0));
-        }
-        if (selectableTargets.length === 0) {
-            return messages.statusText.noSelectableTargets;
-        }
-        return messages.statusText.ready;
-    }, [
-        activeMarkerTarget,
-        filteredReports.length,
-        hoveredTarget,
-        isFetching,
-        markerPreviewTargets.length,
-        messages.statusText,
-        mode,
-        selectableTargets.length,
-        selectedTarget,
-        showMarkerTargetPreview,
-        showTargetPreview,
-    ]);
-    useEffect(() => {
-        const shouldSyncMarkers = mode === "view" || showMarkerTargetPreview;
-        if (!shouldSyncMarkers) {
-            setMarkers([]);
-            return;
-        }
-        let cancelled = false;
-        const runSync = () => {
-            if (!cancelled) {
-                syncMarkers();
-            }
-        };
-        runSync();
-        void waitForTargetRevealResync().then(runSync);
-        let mutationSyncTimeout = null;
-        const scheduleMutationSync = () => {
-            if (mutationSyncTimeout !== null) {
-                window.clearTimeout(mutationSyncTimeout);
-            }
-            mutationSyncTimeout = window.setTimeout(() => {
-                mutationSyncTimeout = null;
-                runSync();
-            }, 50);
-        };
-        const mutationObserver = new MutationObserver((mutations) => {
-            if (mutations.some((mutation) => mutation.type === "attributes" || mutation.type === "childList")) {
-                scheduleMutationSync();
-            }
-        });
-        mutationObserver.observe(document.body, {
-            attributes: true,
-            attributeFilter: ["class", "style", "aria-hidden"],
-            childList: true,
-            subtree: true,
-        });
-        window.addEventListener("scroll", syncMarkers, { passive: true, capture: true });
-        window.addEventListener("resize", syncMarkers);
-        return () => {
-            cancelled = true;
-            if (mutationSyncTimeout !== null) {
-                window.clearTimeout(mutationSyncTimeout);
-            }
-            mutationObserver.disconnect();
-            window.removeEventListener("scroll", syncMarkers, { capture: true });
-            window.removeEventListener("resize", syncMarkers);
-        };
-    }, [currentPathname, mode, showMarkerTargetPreview, syncMarkers]);
-    useEffect(() => {
-        if (!showMarkerTargetPreview) {
-            return;
-        }
-        const syncPreviewRects = () => {
-            syncMarkers();
-        };
-        window.addEventListener("scroll", syncPreviewRects, { passive: true, capture: true });
-        window.addEventListener("resize", syncPreviewRects);
-        return () => {
-            window.removeEventListener("scroll", syncPreviewRects, { capture: true });
-            window.removeEventListener("resize", syncPreviewRects);
-        };
-    }, [showMarkerTargetPreview, syncMarkers]);
-    const prepareFeedbackLocation = useCallback(async (report) => {
-        const targetElement = getFeedbackTargetElement(report);
-        if (targetElement && isFeedbackTargetVisible(targetElement)) {
-            scrollToFeedbackTarget(report);
-            return;
-        }
-        let revealed = false;
-        if (onRevealTarget) {
-            try {
-                revealed = Boolean(await onRevealTarget(report));
-            }
-            catch {
-                revealed = false;
-            }
-        }
-        if (revealed) {
-            await waitForTargetRevealResync();
-            syncMarkers();
-        }
-        scrollToFeedbackTarget(report);
-    }, [onRevealTarget, syncMarkers]);
-    useEffect(() => {
-        if (mode !== "report") {
-            return;
-        }
-        const syncTargetRects = () => {
-            setHoveredTarget(toFeedbackHoverSnapshot(hoveredElementRef.current));
-            setSelectedTarget(toFeedbackHoverSnapshot(selectedElementRef.current));
-        };
-        window.addEventListener("scroll", syncTargetRects, { passive: true, capture: true });
-        window.addEventListener("resize", syncTargetRects);
-        return () => {
-            window.removeEventListener("scroll", syncTargetRects, { capture: true });
-            window.removeEventListener("resize", syncTargetRects);
-        };
-    }, [mode]);
-    useEffect(() => {
-        if (hoveredMarkerId && !markers.some((marker) => marker.report.id === hoveredMarkerId)) {
-            setHoveredMarkerId(null);
-        }
-    }, [hoveredMarkerId, markers]);
-    // markers (points, tooltip, reply)
-    const clearHoverLeaveTimeout = () => {
-        if (hoverLeaveTimeoutRef.current) {
-            window.clearTimeout(hoverLeaveTimeoutRef.current);
-            hoverLeaveTimeoutRef.current = null;
-        }
-    };
-    const scheduleHoverLeave = (markerId) => {
-        clearHoverLeaveTimeout();
-        hoverLeaveTimeoutRef.current = window.setTimeout(() => {
-            setHoveredMarkerId((current) => (current === markerId ? null : current));
-            hoverLeaveTimeoutRef.current = null;
-        }, MARKER_HOVER_LEAVE_MS);
-    };
-    const clearOverlayHoverLeaveTimeout = () => {
-        if (overlayHoverLeaveTimeoutRef.current) {
-            window.clearTimeout(overlayHoverLeaveTimeoutRef.current);
-            overlayHoverLeaveTimeoutRef.current = null;
-        }
-    };
-    const scheduleOverlayHoverLeave = () => {
-        if (overlayHoverLeaveTimeoutRef.current) {
-            return;
-        }
-        overlayHoverLeaveTimeoutRef.current = window.setTimeout(() => {
-            if (!hoveredElementRef.current) {
-                setHoveredTarget(null);
-                setHoverPointer(null);
-            }
-            overlayHoverLeaveTimeoutRef.current = null;
-        }, OVERLAY_HOVER_LEAVE_MS);
-    };
-    const showFeedbackTooltip = useCallback(async (report) => {
-        await prepareFeedbackLocation(report);
-        clearHoverLeaveTimeout();
-        closeReplyComposer();
-        setHoveredMarkerId(report.id);
-    }, [clearHoverLeaveTimeout, closeReplyComposer, prepareFeedbackLocation]);
-    const locateFeedback = async (reportId) => {
-        const report = filteredReports.find((item) => item.id === reportId);
-        if (!report) {
-            return;
-        }
-        selectReport(reportId);
-        if (report.pathname !== currentPathname) {
-            pendingLocateReportIdRef.current = reportId;
-            try {
-                if (onNavigate) {
-                    await onNavigate(report.pathname);
-                }
-                else if (typeof window !== "undefined") {
-                    window.location.assign(report.pathname);
-                }
-            }
-            catch (nextError) {
-                pendingLocateReportIdRef.current = null;
-                setErrorMessage(nextError instanceof Error ? nextError.message : messages.errors.loadFeedbackFailed);
-            }
-            return;
-        }
-        showFeedbackTooltip(report);
-    };
-    useEffect(() => {
-        const pendingReportId = pendingLocateReportIdRef.current;
-        if (!pendingReportId) {
-            return;
-        }
-        const report = reports.find((item) => item.id === pendingReportId && item.pathname === currentPathname);
-        if (!report) {
-            return;
-        }
-        pendingLocateReportIdRef.current = null;
-        window.setTimeout(() => showFeedbackTooltip(report), 0);
-    }, [currentPathname, reports, showFeedbackTooltip]);
-    const focusSearchInput = () => {
-        searchInputRef.current?.focus();
-        searchInputRef.current?.select();
-    };
-    const selectAdjacentReport = (direction) => {
-        if (filteredReports.length === 0) {
-            return;
-        }
-        const currentIndex = filteredReports.findIndex((report) => report.id === selectedReportId);
-        let nextIndex;
-        if (currentIndex === -1) {
-            nextIndex = direction === "down" ? 0 : filteredReports.length - 1;
-        }
-        else {
-            nextIndex = direction === "down" ? Math.min(currentIndex + 1, filteredReports.length - 1) : Math.max(currentIndex - 1, 0);
-        }
-        void locateFeedback(filteredReports[nextIndex].id);
-    };
-    const activateFeedbackMarker = useCallback(async (report) => {
-        const enrichedReport = await loadRepliesIfNeeded(report);
-        await prepareFeedbackLocation(enrichedReport);
-        openReplyComposer(enrichedReport);
-    }, [loadRepliesIfNeeded, openReplyComposer, prepareFeedbackLocation]);
-    useEffect(() => {
-        const feedbackId = pendingDeepLinkFeedbackIdRef.current;
-        if (!feedbackId || deepLinkHandledRef.current || isReportsLoading || isFetching) {
-            return;
-        }
-        const report = reports.find((item) => item.id === feedbackId);
-        if (!report) {
-            pendingDeepLinkFeedbackIdRef.current = null;
-            clearFeedbackDeepLinkFromUrl();
-            return;
-        }
-        deepLinkHandledRef.current = true;
-        pendingDeepLinkFeedbackIdRef.current = null;
-        void activateFeedbackMarker(report).finally(() => {
-            clearFeedbackDeepLinkFromUrl();
-        });
-    }, [activateFeedbackMarker, isFetching, isReportsLoading, reports]);
-    const toggleReportMode = () => {
-        setShowTargetPreview(false);
-        setMode((current) => (current === "report" ? "idle" : "report"));
-    };
-    const togglePanelTab = (nextTab) => {
-        setPanelTab((current) => {
-            if (current === nextTab) {
-                return null;
-            }
-            return nextTab;
-        });
-    };
-    const enableIssueMode = () => {
-        setShowTargetPreview(false);
-        closeReplyComposer();
-        stopEditing();
-        setMode("view");
-    };
-    const openPanelTab = (nextTab) => {
-        const isClosing = panelTab === nextTab;
-        setPanelTab(isClosing ? null : nextTab);
-        if (!isClosing && nextTab === "feedback-list") {
-            enableIssueMode();
-        }
-    };
-    const toggleIssueMode = () => {
-        setShowTargetPreview(false);
-        closeReplyComposer();
-        setMode((current) => (current === "view" ? "idle" : "view"));
-        stopEditing();
-        setSelectedReportId(null);
-    };
-    const toggleTargetPreview = () => {
-        setShowTargetPreview((current) => {
-            const next = !current;
-            if (next) {
-                setMode("idle");
-            }
-            return next;
-        });
-    };
-    const handleOverlayMove = (event) => {
-        if (mode !== "report" || draft) {
-            return;
-        }
-        const targetElement = findPickTargetByPoint(overlayRef.current, event.clientX, event.clientY);
-        hoveredElementRef.current = targetElement;
-        if (!targetElement) {
-            scheduleOverlayHoverLeave();
-            return;
-        }
-        clearOverlayHoverLeaveTimeout();
-        setHoverPointer({ clientX: event.clientX, clientY: event.clientY });
-        const snapshot = toFeedbackHoverSnapshot(targetElement);
-        setHoveredTarget((previous) => (isSameHoverTarget(previous, snapshot) ? previous : snapshot));
-    };
-    const handleOverlayContextMenu = (event) => {
-        if (mode !== "report") {
-            return;
-        }
-        event.preventDefault();
-        const targetElement = findPickTargetByPoint(overlayRef.current, event.clientX, event.clientY);
-        if (!targetElement) {
-            closePickTargetContextMenu();
-            return;
-        }
-        const snapshot = toFeedbackHoverSnapshot(targetElement);
-        if (!snapshot) {
-            closePickTargetContextMenu();
-            return;
-        }
-        const elementKey = getPickProbeElementKey(targetElement);
-        contextMenuElementRef.current = targetElement;
-        setContextMenuElementKey(elementKey);
-        if (!draft) {
-            selectedElementRef.current = targetElement;
-            hoveredElementRef.current = targetElement;
-            setSelectedTarget(snapshot);
-        }
-        setPickTargetContextMenu({
-            clientX: event.clientX,
-            clientY: event.clientY,
-        });
-    };
-    const handleOverlayClick = (event) => {
-        if (mode !== "report") {
-            return;
-        }
-        closePickTargetContextMenu();
-        resetPickProbeState();
-        const targetElement = findPickTargetByPoint(overlayRef.current, event.clientX, event.clientY);
-        if (!targetElement) {
-            setErrorMessage(messages.errors.clickPickTarget);
-            return;
-        }
-        const anchorSnapshot = resolveFeedbackDocumentAnchor(targetElement);
-        const snapshot = toFeedbackHoverSnapshot(targetElement);
-        const isTagged = snapshot?.isTagged ?? false;
-        if (!snapshot) {
-            setErrorMessage(messages.errors.clickPickTarget);
-            return;
-        }
-        hoveredElementRef.current = targetElement;
-        selectedElementRef.current = targetElement;
-        draftElementRef.current = targetElement;
-        setHoverPointer(null);
-        setHoveredTarget(null);
-        setSelectedTarget(snapshot);
-        setErrorMessage("");
-        setDraft({
-            clientX: event.clientX,
-            clientY: event.clientY,
-            xRatio: clampRatio(event.clientX / window.innerWidth),
-            yRatio: clampRatio(event.clientY / window.innerHeight),
-            elementXRatio: clampRatio((event.clientX - snapshot.rect.left) / Math.max(snapshot.rect.width, 1)),
-            elementYRatio: clampRatio((event.clientY - snapshot.rect.top) / Math.max(snapshot.rect.height, 1)),
-            anchorReportId: anchorSnapshot?.id ?? null,
-            anchorReportType: anchorSnapshot?.type ?? null,
-            anchorXRatio: anchorSnapshot ? clampRatio((event.clientX - anchorSnapshot.rect.left) / Math.max(anchorSnapshot.rect.width, 1)) : null,
-            anchorYRatio: anchorSnapshot ? clampRatio((event.clientY - anchorSnapshot.rect.top) / Math.max(anchorSnapshot.rect.height, 1)) : null,
-            scrollY: window.scrollY,
-            documentY: Math.round(window.scrollY + event.clientY),
-            reportId: snapshot.id,
-            reportType: snapshot.type,
-            targetSelector: isTagged ? null : (snapshot.targetSelector ?? null),
-            suggestedReportId: isTagged ? null : (snapshot.suggestedReportId ?? snapshot.id),
-            cases: [createReportCase("")],
-            category: null,
-            fieldValues: createInitialFieldValues(fields),
-        });
-    };
-    const cancelDraft = () => {
-        resetPickProbeState();
-        draftElementRef.current = null;
-        contextMenuElementRef.current = null;
-        setDraft(null);
-        setSelectedTarget(null);
-        setHoverPointer(null);
-    };
-    const updateDraftCase = (caseId, text) => {
-        setDraft((current) => {
-            if (!current) {
-                return current;
-            }
-            return {
-                ...current,
-                cases: current.cases.map((item) => (item.id === caseId ? { ...item, text } : item)),
-            };
-        });
-        setErrorMessage("");
-    };
-    const updateDraftCategory = (category) => {
-        setDraft((current) => current
-            ? {
-                ...current,
-                category,
-            }
-            : current);
-        if (category) {
-            setErrorMessage("");
-        }
-    };
-    const addDraftCase = () => {
-        setDraft((current) => current
-            ? {
-                ...current,
-                cases: [...current.cases, createReportCase("")],
-            }
-            : current);
-    };
-    const removeDraftCase = (caseId) => {
-        setDraft((current) => {
-            if (!current || current.cases.length <= 1) {
-                return current;
-            }
-            return {
-                ...current,
-                cases: current.cases.filter((item) => item.id !== caseId),
-            };
-        });
-    };
-    const updateDraftField = (key, nextValue) => {
-        setDraft((current) => current
-            ? {
-                ...current,
-                fieldValues: {
-                    ...current.fieldValues,
-                    [key]: nextValue,
-                },
-            }
-            : current);
-    };
-    const buildCreatePayloadFromDraft = () => {
-        if (!draft) {
-            return null;
-        }
-        const nextError = getFieldError(draft.cases, draft.fieldValues, fields, messages.errors);
-        if (nextError) {
-            setErrorMessage(nextError);
-            return null;
-        }
-        if (!draft.category) {
-            setErrorMessage(messages.errors.categoryRequired);
-            return null;
-        }
-        if (!sessionActor) {
-            setErrorMessage(messages.errors.authorRequired);
-            return null;
-        }
-        const cases = draft.cases.map((item) => ({
-            ...item,
-            text: item.text.trim(),
-            updated_at: new Date().toISOString(),
-        }));
-        return {
-            pathname: currentPathname,
-            report_id: draft.reportId,
-            report_type: draft.reportType,
-            ...(draft.targetSelector ? { target_selector: draft.targetSelector } : {}),
-            cases,
-            status: "open",
-            category: draft.category,
-            field_values: draft.fieldValues,
-            position: {
-                target: {
-                    x: draft.elementXRatio,
-                    y: draft.elementYRatio,
-                },
-                viewport: {
-                    x: draft.xRatio,
-                    y: draft.yRatio,
-                    width: window.innerWidth,
-                    height: window.innerHeight,
-                },
-                scrollY: draft.scrollY,
-                anchor: draft.anchorReportId && draft.anchorReportType && draft.anchorXRatio !== null && draft.anchorYRatio !== null
-                    ? {
-                        reportId: draft.anchorReportId,
-                        reportType: draft.anchorReportType,
-                        x: draft.anchorXRatio,
-                        y: draft.anchorYRatio,
-                    }
-                    : null,
-            },
-            ...(environment ? { environment } : {}),
-            ...(appVersion ? { app_version: appVersion } : {}),
-            ...(sessionActor
-                ? {
-                    author_id: sessionActor.id,
-                    author_name: sessionActor.name,
-                }
-                : {}),
-        };
-    };
-    const finalizeDraftCreate = () => {
-        resetPickProbeState();
-        draftElementRef.current = null;
-        contextMenuElementRef.current = null;
-        setDraft(null);
-        setSelectedTarget(null);
-        setHoveredTarget(null);
-        setHoverPointer(null);
-        setErrorMessage("");
-        setMode("view");
-    };
-    const handleCreateSubmit = async () => {
-        const payload = buildCreatePayloadFromDraft();
-        if (!payload) {
-            return;
-        }
-        try {
-            const savedFeedback = await createFeedback(await signCreatePayload(payload));
-            await notifyFeedbackCreate(eventCallbacks, savedFeedback);
-            finalizeDraftCreate();
-        }
-        catch (nextError) {
-            setErrorMessage(nextError instanceof Error ? nextError.message : messages.errors.saveFeedbackFailed);
-        }
-    };
-    const handleCreateSubmitWithGitHubIssue = async () => {
-        if (!github?.onCreate || !canCreateGitHubIssueOnCreateValue || creatingGitHubIssueId || isCreating) {
-            return;
-        }
-        const payload = buildCreatePayloadFromDraft();
-        if (!payload) {
-            return;
-        }
-        setCreatingGitHubIssueId("draft");
-        setErrorMessage("");
-        try {
-            const savedFeedback = await createFeedback(await signCreatePayload(payload));
-            await notifyFeedbackCreate(eventCallbacks, savedFeedback);
-            const result = await github.onCreate(savedFeedback);
-            const updatedFeedback = await applyGitHubIssueUpdate(savedFeedback, result);
-            await notifyGitHubIssueCreated(eventCallbacks, {
-                feedback: updatedFeedback,
-                issueUrl: result.issueUrl,
-            });
-            finalizeDraftCreate();
-        }
-        catch (nextError) {
-            setErrorMessage(nextError instanceof Error ? nextError.message : messages.errors.createGitHubIssueFailed);
-        }
-        finally {
-            setCreatingGitHubIssueId(null);
-        }
-    };
-    const startEditing = (report) => {
-        if (report.status === "archived") {
-            setErrorMessage(messages.errors.archivedReadOnly);
-            setSelectedReportId(report.id);
-            return;
-        }
-        setEditingReportId(report.id);
-        setEditableDraft({
-            cases: report.cases.map((item) => ({ ...item })),
-            status: report.status,
-            fieldValues: createInitialFieldValues(fields, report.field_values),
-        });
-        setSelectedReportId(report.id);
-    };
-    const handleUpdateSubmit = async () => {
-        if (!selectedReport || !editableDraft) {
-            return;
-        }
-        if (selectedReport.status === "archived") {
-            setErrorMessage(messages.errors.archivedNotEditable);
-            return;
-        }
-        const nextError = getFieldError(editableDraft.cases, editableDraft.fieldValues, fields, messages.errors);
-        if (nextError) {
-            setErrorMessage(nextError);
-            return;
-        }
-        try {
-            const cases = editableDraft.cases.map((item) => ({
-                ...item,
-                text: item.text.trim(),
-                updated_at: new Date().toISOString(),
-            }));
-            const updatedFeedback = await updateFeedback(selectedReport.id, await signUpdatePayload({
-                cases,
-                status: editableDraft.status,
-                field_values: editableDraft.fieldValues,
-            }));
-            await notifyFeedbackUpdate(eventCallbacks, updatedFeedback);
-            stopEditing();
-            setErrorMessage("");
-        }
-        catch (nextError) {
-            setErrorMessage(nextError instanceof Error ? nextError.message : messages.errors.updateFeedbackFailed);
-        }
-    };
-    const handleCreateGitHubIssue = async (report) => {
-        if (!github?.onCreate || !canCreateGitHubIssueFromListValue || creatingGitHubIssueId) {
-            return;
-        }
-        if (isGitIssued(report)) {
-            return;
-        }
-        setCreatingGitHubIssueId(report.id);
-        setErrorMessage("");
-        try {
-            const result = await github.onCreate(report);
-            const updatedFeedback = await applyGitHubIssueUpdate(report, result);
-            await notifyGitHubIssueCreated(eventCallbacks, {
-                feedback: updatedFeedback,
-                issueUrl: result.issueUrl,
-            });
-            setErrorMessage("");
-        }
-        catch (nextError) {
-            setErrorMessage(nextError instanceof Error ? nextError.message : messages.errors.createGitHubIssueFailed);
-        }
-        finally {
-            setCreatingGitHubIssueId(null);
-        }
-    };
-    const handleDelete = async (id) => {
-        try {
-            await deleteFeedback(id);
-            await notifyFeedbackDelete(eventCallbacks, id);
-            if (selectedReportId === id) {
-                setSelectedReportId(null);
-            }
-            if (editingReportId === id) {
-                stopEditing();
-            }
-            if (activeReplyReportId === id) {
-                closeReplyComposer();
-            }
-            setErrorMessage("");
-        }
-        catch (nextError) {
-            setErrorMessage(nextError instanceof Error ? nextError.message : messages.errors.deleteFeedbackFailed);
-        }
-    };
     useReportShortcuts({
-        mode,
-        draft,
-        editingReportId,
-        panelTab,
-        showTargetPreview,
-        activeReplyReportId,
-        pendingComposer,
-        pickProbeOpen,
-        toggleReportMode,
-        toggleTargetPreview,
-        toggleIssueMode,
-        cancelDraft,
-        cancelPendingComposer,
-        closePickProbe,
-        closeReplyComposer,
-        handleCreateSubmit,
-        stopEditing,
-        handleUpdateSubmit,
-        focusSearchInput,
-        selectAdjacentReport,
+        mode: panel.mode,
+        draft: draft.draft,
+        editingReportId: mutations.editingReportId,
+        panelTab: panel.panelTab,
+        showTargetPreview: draft.showTargetPreview,
+        activeReplyReportId: reply.activeReplyReportId,
+        pendingComposer: reply.pendingComposer,
+        pickProbeOpen: draft.pickProbeOpen,
+        toggleReportMode: panel.toggleReportMode,
+        toggleTargetPreview: draft.toggleTargetPreview,
+        toggleIssueMode: panel.toggleIssueMode,
+        cancelDraft: draft.cancelDraft,
+        cancelPendingComposer: reply.cancelPendingComposer,
+        closePickProbe: draft.closePickProbe,
+        closeReplyComposer: reply.closeReplyComposer,
+        handleCreateSubmit: mutations.handleCreateSubmit,
+        stopEditing: mutations.stopEditing,
+        handleUpdateSubmit: mutations.handleUpdateSubmit,
+        focusSearchInput: markers.focusSearchInput,
+        selectAdjacentReport: markers.selectAdjacentReport,
     });
     return {
-        panelAppearance: activePanelAppearance,
-        setPanelAppearance,
-        tooltipAppearance: activeTooltipAppearance,
-        setTooltipAppearance,
-        questionThreadDisplay,
-        setQuestionThreadDisplay,
-        locale,
-        setLocale,
-        messages,
+        panelAppearance: panel.panelAppearance,
+        setPanelAppearance: panel.setPanelAppearance,
+        tooltipAppearance: panel.tooltipAppearance,
+        setTooltipAppearance: panel.setTooltipAppearance,
+        questionThreadDisplay: panel.questionThreadDisplay,
+        setQuestionThreadDisplay: panel.setQuestionThreadDisplay,
+        locale: panel.locale,
+        setLocale: panel.setLocale,
+        messages: panel.messages,
         fields,
-        authors: authorizedAuthors,
+        authors: auth.authorizedAuthors,
         projectId,
         environment,
         appVersion,
-        currentPathname,
+        currentPathname: panel.currentPathname,
         showFeedbackList,
-        panelTab,
-        routeDetailsStats: resolvedRouteDetailsStats,
-        panelCollapsed,
-        setPanelCollapsed,
+        panelTab: panel.panelTab,
+        routeDetailsStats: panel.routeDetailsStats,
+        panelCollapsed: panel.panelCollapsed,
+        setPanelCollapsed: panel.setPanelCollapsed,
         onPanelBootstrap,
-        canTransferFeedback,
-        personalKey,
-        publicKey,
-        personalKeyRequired,
-        personalKeyCandidates,
-        authDiagnostics,
-        authorSelectionLocked,
-        panelView,
-        completeOnboarding,
-        restoreFromBackup,
-        skipOnboarding,
-        selfProfile,
-        issuePersonalKey,
-        rotatePersonalKey,
-        insertPersonalKey,
-        canListAllFeedback,
+        canTransferFeedback: panel.canTransferFeedback,
+        personalKey: auth.personalKey,
+        publicKey: auth.publicKey,
+        personalKeyRequired: auth.personalKeyRequired,
+        personalKeyCandidates: auth.personalKeyCandidates,
+        authDiagnostics: auth.authDiagnostics,
+        authorSelectionLocked: auth.authorSelectionLocked,
+        panelView: auth.panelView,
+        completeOnboarding: auth.completeOnboarding,
+        restoreFromBackup: auth.restoreFromBackup,
+        skipOnboarding: auth.skipOnboarding,
+        selfProfile: auth.selfProfile,
+        issuePersonalKey: auth.issuePersonalKey,
+        rotatePersonalKey: auth.rotatePersonalKey,
+        insertPersonalKey: auth.insertPersonalKey,
+        canListAllFeedback: panel.canListAllFeedback,
         onActivitySummary,
         visibleShortcutKeys,
-        searchInputRef,
-        resolvedPanelAppearance,
-        resolvedTooltipAppearance,
-        isMobileViewport,
-        mode,
-        showTargetPreview,
-        showMarkerTargetPreview,
-        setShowMarkerTargetPreview,
-        toggleMarkerTargetPreview,
-        markerAppearance,
-        setMarkerAppearance,
-        setMarkerSize,
-        setMarkerShape,
-        setMarkerColors,
-        setMarkerColor,
-        typography,
-        setTypography,
-        setFontSize,
-        setFontFamily,
-        activeMarkerTarget,
-        markerPreviewTargets,
-        selectableTargets,
-        filters,
-        setFilters,
-        listScope,
-        setListScope,
-        reports,
-        currentPageReports,
-        allPageReports,
-        filteredReports,
-        isError,
-        isFetching,
-        hasNextPage,
-        isFetchingNextPage,
-        fetchNextPage,
-        isCreating,
-        isUpdating,
-        isSubmittingReply,
-        isClaimingAssignee,
-        isDeleting,
-        queryErrorMessage,
-        refetch,
+        searchInputRef: panel.searchInputRef,
+        resolvedPanelAppearance: panel.resolvedPanelAppearance,
+        resolvedTooltipAppearance: panel.resolvedTooltipAppearance,
+        isMobileViewport: panel.isMobileViewport,
+        mode: panel.mode,
+        showTargetPreview: draft.showTargetPreview,
+        showMarkerTargetPreview: panel.showMarkerTargetPreview,
+        setShowMarkerTargetPreview: panel.setShowMarkerTargetPreview,
+        toggleMarkerTargetPreview: panel.toggleMarkerTargetPreview,
+        markerAppearance: panel.markerAppearance,
+        setMarkerAppearance: panel.setMarkerAppearance,
+        setMarkerSize: panel.setMarkerSize,
+        setMarkerShape: panel.setMarkerShape,
+        setMarkerColors: panel.setMarkerColors,
+        setMarkerColor: panel.setMarkerColor,
+        typography: panel.typography,
+        setTypography: panel.setTypography,
+        setFontSize: panel.setFontSize,
+        setFontFamily: panel.setFontFamily,
+        activeMarkerTarget: markers.activeMarkerTarget,
+        markerPreviewTargets: markers.markerPreviewTargets,
+        selectableTargets: draft.selectableTargets,
+        filters: panel.filters,
+        setFilters: panel.setFilters,
+        listScope: panel.listScope,
+        setListScope: panel.setListScope,
+        reports: panel.reports,
+        currentPageReports: panel.currentPageReports,
+        allPageReports: panel.allPageReports,
+        filteredReports: panel.filteredReports,
+        isError: panel.isError,
+        isFetching: panel.isFetching,
+        hasNextPage: panel.hasNextPage,
+        isFetchingNextPage: panel.isFetchingNextPage,
+        fetchNextPage: panel.fetchNextPage,
+        isCreating: panel.isCreating,
+        isUpdating: panel.isUpdating,
+        isSubmittingReply: reply.isSubmittingReply,
+        isClaimingAssignee: reply.isClaimingAssignee,
+        isDeleting: panel.isDeleting,
+        queryErrorMessage: panel.queryErrorMessage,
+        refetch: panel.refetch,
         replyHistory,
-        replyHistoryByReportId,
-        loadRepliesIfNeeded,
-        loadOlderReplies,
-        goToOlderPaginationPage,
-        goToNewerPaginationPage,
-        errorMessage,
-        setErrorMessage,
-        draft,
-        hoveredTarget,
-        hoverPointer,
-        selectedTarget,
-        pickProbeOpen,
-        pickProbeSupportsTextFields,
-        pickProbeLayoutMode,
-        pickProbeValues,
-        pickProbeCompareMode,
-        pickProbeHasEdits,
-        pickTargetContextMenu,
-        contextMenuElementKey,
-        savedProbeEdits,
-        savedProbeDeletions,
-        hasProbeSessionChanges,
-        canUndoProbeSession,
-        canRedoProbeSession,
-        undoProbeSessionAction,
-        redoProbeSessionAction,
-        savedProbeCompareMode,
-        closePickProbe,
-        closePickTargetContextMenu,
-        handlePickTargetEdit,
-        handlePickTargetDelete,
-        handlePickTargetRevert,
-        commitPickProbeEdits,
-        revertSavedProbeEdit,
-        revertAllSavedProbeEdits,
-        setSavedProbeCompareMode,
-        setPickProbeCompareMode,
-        updatePickProbeValue,
-        resetPickProbeValues,
-        appendSavedProbeSummaryAsNewDraftCase,
-        markers,
-        selectedReport,
-        editingReportId,
-        editableDraft,
-        setEditableDraft,
+        replyHistoryByReportId: panel.replyHistoryByReportId,
+        loadRepliesIfNeeded: panel.loadRepliesIfNeeded,
+        loadOlderReplies: panel.loadOlderReplies,
+        goToOlderPaginationPage: panel.goToOlderPaginationPage,
+        goToNewerPaginationPage: panel.goToNewerPaginationPage,
+        errorMessage: panel.errorMessage,
+        setErrorMessage: panel.setErrorMessage,
+        draft: draft.draft,
+        hoveredTarget: draft.hoveredTarget,
+        hoverPointer: draft.hoverPointer,
+        selectedTarget: draft.selectedTarget,
+        pickProbeOpen: draft.pickProbeOpen,
+        pickProbeSupportsTextFields: draft.pickProbeSupportsTextFields,
+        pickProbeLayoutMode: draft.pickProbeLayoutMode,
+        pickProbeValues: draft.pickProbeValues,
+        pickProbeCompareMode: draft.pickProbeCompareMode,
+        pickProbeHasEdits: draft.pickProbeHasEdits,
+        pickTargetContextMenu: draft.pickTargetContextMenu,
+        contextMenuElementKey: draft.contextMenuElementKey,
+        savedProbeEdits: draft.savedProbeEdits,
+        savedProbeDeletions: draft.savedProbeDeletions,
+        hasProbeSessionChanges: draft.hasProbeSessionChanges,
+        canUndoProbeSession: draft.canUndoProbeSession,
+        canRedoProbeSession: draft.canRedoProbeSession,
+        undoProbeSessionAction: draft.undoProbeSessionAction,
+        redoProbeSessionAction: draft.redoProbeSessionAction,
+        savedProbeCompareMode: draft.savedProbeCompareMode,
+        closePickProbe: draft.closePickProbe,
+        closePickTargetContextMenu: draft.closePickTargetContextMenu,
+        handlePickTargetEdit: draft.handlePickTargetEdit,
+        handlePickTargetDelete: draft.handlePickTargetDelete,
+        handlePickTargetRevert: draft.handlePickTargetRevert,
+        commitPickProbeEdits: draft.commitPickProbeEdits,
+        revertSavedProbeEdit: draft.revertSavedProbeEdit,
+        revertAllSavedProbeEdits: draft.revertAllSavedProbeEdits,
+        setSavedProbeCompareMode: draft.setSavedProbeCompareMode,
+        setPickProbeCompareMode: draft.setPickProbeCompareMode,
+        updatePickProbeValue: draft.updatePickProbeValue,
+        resetPickProbeValues: draft.resetPickProbeValues,
+        appendSavedProbeSummaryAsNewDraftCase: draft.appendSavedProbeSummaryAsNewDraftCase,
+        markers: markers.markers,
+        selectedReport: panel.selectedReport,
+        editingReportId: mutations.editingReportId,
+        editableDraft: mutations.editableDraft,
+        setEditableDraft: mutations.setEditableDraft,
         overlayRef,
-        activeReplyReportId,
-        activeReplyReport,
-        tooltipReport,
-        tooltipAnchor,
-        tooltipFieldTags,
-        replyDraft,
-        setReplyDraft,
-        replySubmitAsQuestion,
-        setReplySubmitAsQuestion,
-        draftAuthorName,
-        setDraftAuthorName: setDraftAuthorNameSafe,
-        replyAuthorName,
-        setReplyAuthorName: setReplyAuthorNameSafe,
-        isPresentationMode,
-        sessionActor,
-        presentationViewers,
-        presentationViewerId: resolvedPresentationViewerId,
-        setPresentationViewerId: applyPresentationViewer,
-        pendingComposer,
-        startDenyReview,
-        startCheckoutReview,
-        startAskQuestion,
-        handleClaimAssignee,
-        handleTransferAssignee,
-        cancelPendingComposer,
-        confirmAuthorName,
-        setConfirmAuthorName,
-        showConfirmAuthorSelect,
-        toggleConfirmAuthorSelect,
-        handleConfirmResolution,
-        beginCaseEdit,
-        cancelCaseEdit,
-        handleCaseEditSave,
-        updateCaseEditDraftCase,
-        addCaseEditDraftCase,
-        removeCaseEditDraftCase,
-        focusedCaseId,
-        selectCase,
-        clearFocusedCase,
-        isCaseEditing,
-        caseEditReportId,
-        caseEditCases,
-        targetStats,
-        roleStatItems,
-        panelRole,
-        setPanelRole,
-        visiblePanelTabs,
-        visiblePanelTabsSummary,
-        resolvedTabAvailabilityContext,
-        setVisiblePanelTabs,
-        resetVisibleTabsToRoleDefault,
-        applyRoleDefaultTabsForOnboarding,
-        savePanelTabPreference,
-        storedPanelTabPreference: storedPreference,
-        statusText,
-        toggleReportMode,
-        toggleTargetPreview,
-        toggleIssueMode,
-        openPanelTab,
-        togglePanelTab,
+        activeReplyReportId: reply.activeReplyReportId,
+        activeReplyReport: reply.activeReplyReport,
+        tooltipReport: markers.tooltipReport,
+        tooltipAnchor: markers.tooltipAnchor,
+        tooltipFieldTags: markers.tooltipFieldTags,
+        replyDraft: reply.replyDraft,
+        setReplyDraft: reply.setReplyDraft,
+        replySubmitAsQuestion: reply.replySubmitAsQuestion,
+        setReplySubmitAsQuestion: reply.setReplySubmitAsQuestion,
+        draftAuthorName: draft.draftAuthorName,
+        setDraftAuthorName: draft.setDraftAuthorNameSafe,
+        replyAuthorName: reply.replyAuthorName,
+        setReplyAuthorName: reply.setReplyAuthorName,
+        isPresentationMode: auth.isPresentationMode,
+        sessionActor: auth.sessionActor,
+        presentationViewers: auth.presentationViewers,
+        presentationViewerId: auth.resolvedPresentationViewerId,
+        setPresentationViewerId: auth.applyPresentationViewer,
+        pendingComposer: reply.pendingComposer,
+        startDenyReview: reply.startDenyReview,
+        startCheckoutReview: reply.startCheckoutReview,
+        startAskQuestion: reply.startAskQuestion,
+        handleClaimAssignee: reply.handleClaimAssignee,
+        handleTransferAssignee: reply.handleTransferAssignee,
+        cancelPendingComposer: reply.cancelPendingComposer,
+        confirmAuthorName: reply.confirmAuthorName,
+        setConfirmAuthorName: reply.setConfirmAuthorName,
+        showConfirmAuthorSelect: reply.showConfirmAuthorSelect,
+        toggleConfirmAuthorSelect: reply.toggleConfirmAuthorSelect,
+        handleConfirmResolution: reply.handleConfirmResolution,
+        beginCaseEdit: reply.beginCaseEdit,
+        cancelCaseEdit: reply.cancelCaseEdit,
+        handleCaseEditSave: reply.handleCaseEditSave,
+        updateCaseEditDraftCase: reply.updateCaseEditDraftCase,
+        addCaseEditDraftCase: reply.addCaseEditDraftCase,
+        removeCaseEditDraftCase: reply.removeCaseEditDraftCase,
+        focusedCaseId: reply.focusedCaseId,
+        selectCase: reply.selectCase,
+        clearFocusedCase: reply.clearFocusedCase,
+        isCaseEditing: reply.isCaseEditing,
+        caseEditReportId: reply.caseEditReportId,
+        caseEditCases: reply.caseEditCases,
+        targetStats: panel.targetStats,
+        roleStatItems: panel.roleStatItems,
+        panelRole: panel.panelRole,
+        setPanelRole: panel.setPanelRole,
+        visiblePanelTabs: panel.visiblePanelTabs,
+        visiblePanelTabsSummary: panel.visiblePanelTabsSummary,
+        resolvedTabAvailabilityContext: panel.resolvedTabAvailabilityContext,
+        setVisiblePanelTabs: panel.setVisiblePanelTabs,
+        resetVisibleTabsToRoleDefault: panel.resetVisibleTabsToRoleDefault,
+        applyRoleDefaultTabsForOnboarding: panel.applyRoleDefaultTabsForOnboarding,
+        savePanelTabPreference: panel.savePanelTabPreference,
+        storedPanelTabPreference: panel.storedPanelTabPreference,
+        statusText: markers.statusText,
+        toggleReportMode: panel.toggleReportMode,
+        toggleTargetPreview: draft.toggleTargetPreview,
+        toggleIssueMode: panel.toggleIssueMode,
+        openPanelTab: panel.openPanelTab,
+        togglePanelTab: panel.togglePanelTab,
         selectReport,
-        locateFeedback,
-        focusSearchInput,
-        selectAdjacentReport,
-        openReplyComposer,
-        activateFeedbackMarker,
-        closeReplyComposer,
-        clearHoverLeaveTimeout,
-        scheduleHoverLeave,
-        setHoveredMarkerId,
-        handleOverlayMove,
-        handleOverlayContextMenu,
-        handleOverlayClick,
-        cancelDraft,
-        updateDraftCase,
-        addDraftCase,
-        removeDraftCase,
-        updateDraftField,
-        updateDraftCategory,
-        handleCreateSubmit,
-        startEditing,
-        stopEditing,
-        handleUpdateSubmit,
-        handleReplySubmit,
-        handleDelete,
-        canCreateGitHubIssueFromList: canCreateGitHubIssueFromListValue,
-        canCreateGitHubIssueOnCreate: canCreateGitHubIssueOnCreateValue,
-        creatingGitHubIssueId,
-        handleCreateGitHubIssue,
-        handleCreateSubmitWithGitHubIssue,
-        isDraftGitHubIssueSubmitting: creatingGitHubIssueId === "draft",
+        locateFeedback: markers.locateFeedback,
+        focusSearchInput: markers.focusSearchInput,
+        selectAdjacentReport: markers.selectAdjacentReport,
+        openReplyComposer: reply.openReplyComposer,
+        activateFeedbackMarker: markers.activateFeedbackMarker,
+        closeReplyComposer: reply.closeReplyComposer,
+        clearHoverLeaveTimeout: markers.clearHoverLeaveTimeout,
+        scheduleHoverLeave: markers.scheduleHoverLeave,
+        setHoveredMarkerId: markers.setHoveredMarkerId,
+        handleOverlayMove: draft.handleOverlayMove,
+        handleOverlayContextMenu: draft.handleOverlayContextMenu,
+        handleOverlayClick: draft.handleOverlayClick,
+        cancelDraft: draft.cancelDraft,
+        updateDraftCase: draft.updateDraftCase,
+        addDraftCase: draft.addDraftCase,
+        removeDraftCase: draft.removeDraftCase,
+        updateDraftField: draft.updateDraftField,
+        updateDraftCategory: draft.updateDraftCategory,
+        handleCreateSubmit: mutations.handleCreateSubmit,
+        startEditing: mutations.startEditing,
+        stopEditing: mutations.stopEditing,
+        handleUpdateSubmit: mutations.handleUpdateSubmit,
+        handleReplySubmit: reply.handleReplySubmit,
+        handleDelete: mutations.handleDelete,
+        canCreateGitHubIssueFromList: mutations.canCreateGitHubIssueFromList,
+        canCreateGitHubIssueOnCreate: mutations.canCreateGitHubIssueOnCreate,
+        creatingGitHubIssueId: mutations.creatingGitHubIssueId,
+        handleCreateGitHubIssue: mutations.handleCreateGitHubIssue,
+        handleCreateSubmitWithGitHubIssue: mutations.handleCreateSubmitWithGitHubIssue,
+        isDraftGitHubIssueSubmitting: mutations.isDraftGitHubIssueSubmitting,
     };
 }
 //# sourceMappingURL=useReportState.js.map

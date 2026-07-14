@@ -10,7 +10,7 @@ export declare function useTooltipLayout(anchor: TooltipAnchor | null, expanded:
             left: number;
             top: number;
             width: number;
-            placement: import("../utils/coordinates.js").TooltipPlacement;
+            placement: import("../utils/marker/coordinates.js").TooltipPlacement;
         };
         anchorStyle: {
             readonly transform: "translateY(-100%)";

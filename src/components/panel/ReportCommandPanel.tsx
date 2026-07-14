@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useReport } from "@/providers/reportContext.js";
+import { useReportPreferences } from "@/providers/reportContext.js";
 
 export type CommandExecuteResult = { status: "success"; message: string } | { status: "pending" };
 
@@ -11,7 +11,7 @@ type ReportCommandPanelProps = {
 };
 
 export function ReportCommandPanel({ onExecute, onClose, notice = null, onNoticeClear }: ReportCommandPanelProps) {
-    const { messages } = useReport();
+    const { messages } = useReportPreferences();
     const [raw, setRaw] = useState("");
     const [statusMessage, setStatusMessage] = useState("");
     const [isError, setIsError] = useState(false);

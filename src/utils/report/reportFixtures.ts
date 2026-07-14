@@ -1,5 +1,5 @@
 import type { CreateReportFeedbackPayload, ReportCase, ReportFeedback } from "@/types/report.js";
-import { createReportCase } from "@/utils/reportCases.js";
+import { createReportCase } from "@/utils/report/reportCases.js";
 import { createReportPosition } from "./reportPosition.js";
 
 export { createReportCase };

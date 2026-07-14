@@ -1,7 +1,7 @@
 import { jsxs as _jsxs, jsx as _jsx } from "react/jsx-runtime";
 import { useEffect, useState } from "react";
-import { useReport } from "../../../providers/reportContext.js";
-import { getCaseHandlerName } from "../../../utils/reportCases.js";
+import { useReportPreferences } from "../../../providers/reportContext.js";
+import { getCaseHandlerName } from "../../../utils/report/reportCases.js";
 import { FeedbackCaseEditor } from "./FeedbackCaseEditor.js";
 import { CASE_SELECTOR_ALL_TAB, CaseResolvedBadge, FeedbackCaseTabBar } from "./FeedbackCaseTabBar.js";
 function resolveFocusedCaseId(cases, focusedCaseId) {
@@ -11,7 +11,7 @@ function resolveFocusedCaseId(cases, focusedCaseId) {
     return cases[0]?.id ?? null;
 }
 function AllCasesList({ report, cases, onSelectCase }) {
-    const { messages } = useReport();
+    const { messages } = useReportPreferences();
     return (_jsx("ul", { className: "flex flex-col gap-[6px] px-[8px] py-[4px]", children: cases.map((item, index) => {
             const isOpen = item.status === "open";
             const handlerName = getCaseHandlerName(report, item.id);
@@ -19,7 +19,7 @@ function AllCasesList({ report, cases, onSelectCase }) {
         }) }));
 }
 export function FeedbackCaseList({ report, cases, isEditing = false, canEdit = false, isSaving = false, errorMessage = "", focusedCaseId = null, onSelectCase, onAllTabActiveChange, onBeginEdit, onCancelEdit, onSaveEdit, onCaseChange, onAddCase, onRemoveCase, }) {
-    const { messages } = useReport();
+    const { messages } = useReportPreferences();
     const resolvedFocusedCaseId = resolveFocusedCaseId(cases, focusedCaseId);
     const [selectorTab, setSelectorTab] = useState(() => resolvedFocusedCaseId ?? CASE_SELECTOR_ALL_TAB);
     const focusedCase = cases.find((item) => item.id === resolvedFocusedCaseId) ?? null;

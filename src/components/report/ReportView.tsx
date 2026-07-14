@@ -1,4 +1,4 @@
-import { useReport } from "@/providers/reportContext.js";
+import { useReportPreferences, useReportSession } from "@/providers/reportContext.js";
 import { ReportOverlayLayer } from "@/components/overlay/ReportOverlayLayer.js";
 import { ReportControlPanel } from "@/components/panel/ReportControlPanel.js";
 import { ReportDraftForm } from "@/components/panel/ReportDraftForm.js";
@@ -8,14 +8,8 @@ import { ShadowReportRoot } from "./ShadowReportRoot.js";
 import { ThemeScope } from "./ThemeScope.js";
 
 export function ReportView() {
-    const {
-        mode,
-        showTargetPreview,
-        showMarkerTargetPreview,
-        resolvedPanelAppearance,
-        resolvedTooltipAppearance,
-        savedProbeEdits,
-    } = useReport();
+    const { showMarkerTargetPreview, resolvedPanelAppearance, resolvedTooltipAppearance } = useReportPreferences();
+    const { mode, showTargetPreview, savedProbeEdits } = useReportSession();
     const hasSavedProbeEdits = Object.keys(savedProbeEdits).length > 0;
     const showOverlay = mode !== "idle" || showTargetPreview || showMarkerTargetPreview || hasSavedProbeEdits;
 

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { createReviewerKeyPair, getPublicKeyFromPrivateKey, parsePrivateKeyBundle, readPersonalKey, resolvePersonalKeyAuthor, resolvePersonalKeyOwner, savePersonalKey, signReportPayload, removePersonalKey, } from "../utils/personalKey.js";
+import { createReviewerKeyPair, getPublicKeyFromPrivateKey, parsePrivateKeyBundle, readPersonalKey, resolvePersonalKeyAuthor, resolvePersonalKeyOwner, savePersonalKey, signReportPayload, removePersonalKey, } from "../utils/auth/personalKey.js";
 const EMPTY_AUTHORIZED_AUTHORS = [];
 export function usePersonalKey({ enabled, requireKey, projectId, environment, identify, authors }) {
     const [personalKey, setPersonalKey] = useState(() => (enabled ? readPersonalKey(projectId, environment) : null));

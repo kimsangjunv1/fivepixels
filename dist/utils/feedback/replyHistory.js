@@ -1,4 +1,4 @@
-import { getReportReplies } from "../../utils/feedbackThread.js";
+import { getReportReplies } from "../../utils/feedback/feedbackThread.js";
 export const DEFAULT_REPLY_HISTORY_PAGE_SIZE = 10;
 export const DEFAULT_REPLY_HISTORY_MODE = "button-and-scroll";
 export const REPLY_HISTORY_SCROLL_THRESHOLD_PX = 80;

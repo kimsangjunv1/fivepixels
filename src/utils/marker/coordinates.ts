@@ -1,4 +1,4 @@
-import { getMarkerDotSize } from "@/utils/markerRuntime.js";
+import { getMarkerDotSize } from "@/utils/marker/markerRuntime.js";
 import type { ReportFeedback } from "@/types/report.js";
 import type { DraftReport, Marker, MarkerClampBounds, MarkerClampEdge, MarkerOverflowHint, TargetSnapshot } from "@/types/report-ui.js";
 import { getFeedbackTargetSelector, getNearestScrollContainer, getScrollContainerClampId, hasFixedPositionAncestor, isFeedbackTargetVisible } from "../shared/dom.js";

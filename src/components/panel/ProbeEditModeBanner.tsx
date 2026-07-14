@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { ChevronLeftIcon, ChevronRightIcon } from "@/components/icons/Icons.js";
 import { PickTargetCompareSegment } from "@/components/overlay/PickTargetCompareSegment.js";
-import { useReport } from "@/providers/reportContext.js";
+import { useReportPreferences, useReportSession } from "@/providers/reportContext.js";
 
 function ProbeEditModeSpinner() {
     return (
@@ -33,18 +33,8 @@ function ProbeEditModeHistoryButton({ label, disabled, onClick, children }: { la
 }
 
 export function ProbeEditModeBanner() {
-    const {
-        hasProbeSessionChanges,
-        savedProbeCompareMode,
-        setSavedProbeCompareMode,
-        revertAllSavedProbeEdits,
-        savedProbeEdits,
-        canUndoProbeSession,
-        canRedoProbeSession,
-        undoProbeSessionAction,
-        redoProbeSessionAction,
-        messages,
-    } = useReport();
+    const { messages } = useReportPreferences();
+    const { hasProbeSessionChanges, savedProbeCompareMode, setSavedProbeCompareMode, revertAllSavedProbeEdits, savedProbeEdits, canUndoProbeSession, canRedoProbeSession, undoProbeSessionAction, redoProbeSessionAction } = useReportSession();
 
     if (!hasProbeSessionChanges) {
         return null;

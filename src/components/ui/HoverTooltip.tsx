@@ -1,8 +1,8 @@
 import { useCallback, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { useNativeHover } from "@/hooks/useNativeHover.js";
-import { getReportTooltipRoot, ensureReportTooltipLayer } from "@/utils/dom.js";
-import { getHoverTooltipLayout, type HoverTooltipLayout } from "@/utils/hoverTooltipLayout.js";
+import { getReportTooltipRoot, ensureReportTooltipLayer } from "@/utils/shared/dom.js";
+import { getHoverTooltipLayout, type HoverTooltipLayout } from "@/utils/marker/hoverTooltipLayout.js";
 
 type HoverTooltipProps = {
     label?: string;

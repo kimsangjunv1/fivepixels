@@ -16,14 +16,14 @@ import type {
 } from "@/types/report.js";
 import { isFeedbackCategory } from "@/constants/feedbackCategory.js";
 import { getReportsStorageKey } from "@/constants/storageKeys.js";
-import { parseFeedbackStorageEnvelope, serializeFeedbackStorageEnvelope } from "@/utils/feedbackTransferSchema.js";
-import { allocateNextFcNumber, backfillFcNumbers } from "@/utils/feedbackCaseId.js";
-import { paginateSortedReplies, sortRepliesChronologically } from "@/utils/replyHistory.js";
+import { parseFeedbackStorageEnvelope, serializeFeedbackStorageEnvelope } from "@/utils/feedback/feedbackTransferSchema.js";
+import { allocateNextFcNumber, backfillFcNumbers } from "@/utils/feedback/feedbackCaseId.js";
+import { paginateSortedReplies, sortRepliesChronologically } from "@/utils/feedback/replyHistory.js";
 import {
     applyCaseStatusSync,
     normalizeFeedbackCases,
     normalizeReplyCaseIds,
-} from "@/utils/reportCases.js";
+} from "@/utils/report/reportCases.js";
 
 export type LocalStorageReportAdapterOptions = {
     projectId: string;

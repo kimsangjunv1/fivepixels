@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ReportAuthor, ReportFeedback, ReportReply } from "@/types/report.js";
-import { useReport } from "@/providers/reportContext.js";
-import { formatClockTime } from "@/utils/format.js";
-import { canEditReportCases, getCaseById } from "@/utils/reportCases.js";
+import { useReport, useReportPreferences } from "@/providers/reportContext.js";
+import { formatClockTime } from "@/utils/shared/format.js";
+import { canEditReportCases, getCaseById } from "@/utils/report/reportCases.js";
 import {
     buildCaseThreadTimeline,
     buildConfirmAuthorOptions,
@@ -18,10 +18,10 @@ import {
     ISSUE_ROOT_PARENT_ID,
     resolveOriginalFeedbackAuthorName,
     shouldForceExpandQuestionGroup,
-} from "@/utils/feedbackThread.js";
+} from "@/utils/feedback/feedbackThread.js";
 import { usesReplyInfiniteScroll } from "@/constants/replyHistory.js";
-import { REPLY_HISTORY_SCROLL_THRESHOLD_PX } from "@/utils/replyHistory.js";
-import { getGitHubIssueUrl, isGitIssuedSystemReply } from "@/utils/githubIntegration.js";
+import { REPLY_HISTORY_SCROLL_THRESHOLD_PX } from "@/utils/feedback/replyHistory.js";
+import { getGitHubIssueUrl, isGitIssuedSystemReply } from "@/utils/github/githubIntegration.js";
 import { CheckIcon, CloseIcon, ResolvedStatusIcon, RevertIcon } from "@/components/icons/Icons.js";
 import { FEEDBACK_STATUS_COLOR } from "@/constants/feedbackStatus.js";
 import { AssigneeThreadEntry } from "./AssigneeThreadEntry.js";
@@ -117,7 +117,7 @@ function ThreadEntryActions({
     canAct: boolean;
     actorName: string;
 }) {
-    const { messages } = useReport();
+    const { messages } = useReportPreferences();
     const [isResolvedConfirming, setIsResolvedConfirming] = useState(false);
     const confirmAuthorOptions = useMemo(() => buildConfirmAuthorOptions(report, authors), [authors, report]);
     const showReview = canShowSuggestedBranchActionsForCase(report, reply, caseId);
@@ -291,7 +291,7 @@ function CaseThreadEntryActions({
     isUpdating?: boolean;
     isClaimingAssignee?: boolean;
 }) {
-    const { messages } = useReport();
+    const { messages } = useReportPreferences();
 
     if (!canShowCaseClaimAction(report, caseId, actorName)) {
         return null;
@@ -313,7 +313,7 @@ function CaseThreadEntryActions({
 }
 
 function ThreadResolvedDivider() {
-    const { messages } = useReport();
+    const { messages } = useReportPreferences();
     const resolvedColor = FEEDBACK_STATUS_COLOR.resolved;
 
     return (

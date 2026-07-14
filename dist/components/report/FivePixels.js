@@ -2,8 +2,8 @@
 import { jsx as _jsx } from "react/jsx-runtime";
 import { DEFAULT_FIELDS } from "../../constants/report.js";
 import { ReportProvider } from "../../providers/ReportProvider.js";
-import { resolveReportEnabled } from "../../utils/env.js";
-import { resolveReportVisibility } from "../../utils/reportVisibility.js";
+import { resolveReportEnabled } from "../../utils/shared/env.js";
+import { resolveReportVisibility } from "../../utils/report/reportVisibility.js";
 import { ReportView } from "./ReportView.js";
 export function FivePixels({ project, ui, visibility, team, mode = "default", fields = DEFAULT_FIELDS, onList, onListAll, onPanelBootstrap, onActivitySummary, onListReplies, onNavigate, onRevealTarget, onCreate, onCreateReply, onUpdate, onDelete, onEvent, onReply, github, }) {
     const resolvedVisibility = resolveReportVisibility({ visibility });

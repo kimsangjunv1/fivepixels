@@ -9,7 +9,7 @@ import type {
     ReportReply,
     UpdateReportFeedbackPayload,
 } from "@/types/report.js";
-import type { Marker, PendingFeedbackComposer } from "@/types/report-ui.js";
+import type { PendingFeedbackComposer } from "@/types/report-ui.js";
 import {
     canShowCaseClaimAction,
     createReplyStatusForSubmit,
@@ -19,9 +19,8 @@ import {
     requiresCaseActorPermissionForComposer,
     resolveOriginalFeedbackAuthorName,
     resolveParentReplyIdForCaseQuestion,
-} from "@/utils/feedbackThread.js";
-import { resolveTooltipAnchor } from "@/utils/coordinates.js";
-import { getFieldError } from "@/utils/fields.js";
+} from "@/utils/feedback/feedbackThread.js";
+import { getFieldError } from "@/utils/report/fields.js";
 import {
     canEditReportCases,
     claimCaseAssignee,
@@ -32,21 +31,13 @@ import {
     isValidFocusedCase,
     resolveDefaultFocusedCaseId,
     transferCaseAssignee,
-} from "@/utils/reportCases.js";
-import { createReplyId } from "@/utils/format.js";
-import { notifyFeedbackReply, notifyFeedbackUpdate, type ReportSideEffectCallbacks } from "@/utils/reportCallbacks.js";
-import type { SessionActor } from "@/utils/reportTeam.js";
-
-function resolveDefaultAuthorName(identify: ReportIdentify | undefined, authors: ReportAuthor[], selfName?: string) {
-    if (identify?.name) {
-        return identify.name;
-    }
-
-    return authors[0]?.name ?? selfName ?? "";
-}
+} from "@/utils/report/reportCases.js";
+import { createReplyId } from "@/utils/shared/format.js";
+import { notifyFeedbackReply, notifyFeedbackUpdate, type ReportSideEffectCallbacks } from "@/utils/report/reportCallbacks.js";
+import type { SessionActor } from "@/utils/report/reportTeam.js";
+import { resolveDefaultAuthorName } from "@/utils/report/resolveDefaultAuthorName.js";
 
 export type UseReportReplyReviewParams = {
-    markers: Marker[];
     reports: ReportFeedback[];
     messages: ReportMessages;
     fields: ReportField[];
@@ -66,7 +57,6 @@ export type UseReportReplyReviewParams = {
 };
 
 export function useReportReplyReview({
-    markers,
     reports,
     messages,
     fields,
@@ -117,8 +107,14 @@ export function useReportReplyReview({
         [authorSelectionLocked, sessionActor?.name],
     );
 
-    const activeReplyAnchor = useMemo(() => resolveTooltipAnchor(markers, activeReplyReportId), [activeReplyReportId, markers]);
-    const activeReplyReport = activeReplyAnchor?.report ?? null;
+    const activeReplyReport = useMemo(
+        () => (activeReplyReportId ? (reports.find((item) => item.id === activeReplyReportId) ?? null) : null),
+        [activeReplyReportId, reports],
+    );
+    const activeReplyAnchor = useMemo(
+        () => (activeReplyReport ? ({ report: activeReplyReport } as { report: ReportFeedback }) : null),
+        [activeReplyReport],
+    );
 
     const cancelCaseEdit = useCallback(() => {
         setCaseEditReportId(null);

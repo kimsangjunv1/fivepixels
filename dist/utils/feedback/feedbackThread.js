@@ -1,5 +1,5 @@
-import { getCaseAssigneeName, getCaseById, getRepliesForCase, canActOnCase } from "../../utils/reportCases.js";
-import { summaryToReply } from "../../utils/reportSummary.js";
+import { getCaseAssigneeName, getCaseById, getRepliesForCase, canActOnCase } from "../../utils/report/reportCases.js";
+import { summaryToReply } from "../../utils/report/reportSummary.js";
 export function getReportReplies(report) {
     return report.replies ?? [];
 }

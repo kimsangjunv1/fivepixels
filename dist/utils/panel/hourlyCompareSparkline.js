@@ -1,4 +1,4 @@
-import { toDateKey } from "../../utils/heatmapActivity.js";
+import { toDateKey } from "../../utils/panel/heatmapActivity.js";
 function shiftDateKey(dateKey, deltaDays) {
     const [year, month, day] = dateKey.split("-").map(Number);
     const date = new Date(year, month - 1, day);

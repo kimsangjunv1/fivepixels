@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { useReport } from "@/providers/reportContext.js";
+import { useReportSession } from "@/providers/reportContext.js";
 import { PickTargetContextMenu } from "./PickTargetContextMenu.js";
 import { PickTargetProbePanel } from "./PickTargetProbePanel.js";
 import { PickTargetSavedBadges } from "./PickTargetSavedBadges.js";
@@ -10,26 +10,7 @@ type ReportOverlayLayerProps = {
 };
 
 export function ReportOverlayLayer({ children }: ReportOverlayLayerProps) {
-    const {
-        overlayRef,
-        mode,
-        draft,
-        hoveredTarget,
-        selectedTarget,
-        pickProbeOpen,
-        pickProbeHasEdits,
-        pickTargetContextMenu,
-        contextMenuElementKey,
-        savedProbeEdits,
-        selectableTargets,
-        showTargetPreview,
-        markerPreviewTargets,
-        activeMarkerTarget,
-        handleOverlayMove,
-        handleOverlayContextMenu,
-        handleOverlayClick,
-        closePickTargetContextMenu,
-    } = useReport();
+    const { overlayRef, mode, draft, hoveredTarget, selectedTarget, pickProbeOpen, pickProbeHasEdits, pickTargetContextMenu, contextMenuElementKey, savedProbeEdits, selectableTargets, showTargetPreview, markerPreviewTargets, activeMarkerTarget, handleOverlayMove, handleOverlayContextMenu, handleOverlayClick, closePickTargetContextMenu } = useReportSession();
 
     const isReportMode = mode === "report";
     const isViewMode = mode === "view";

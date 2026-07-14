@@ -13,7 +13,7 @@ import {
     resolveDefaultPanelTab,
     resolveVisibleTabs,
     sanitizeVisibleTabs,
-} from "@/utils/panelTabPreference.js";
+} from "@/utils/panel/panelTabPreference.js";
 
 const defaultContext = {
     showFeedbackList: true,

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { ReportCase } from "@/types/report.js";
-import { useReport } from "@/providers/reportContext.js";
+import { useReportPreferences } from "@/providers/reportContext.js";
 import { FeedbackCaseTabBar } from "./FeedbackCaseTabBar.js";
 
 type FeedbackCaseEditorProps = {
@@ -107,7 +107,7 @@ export function FeedbackCaseEditor({
     attentionKey = 0,
     emptyCaseIds = [],
 }: FeedbackCaseEditorProps) {
-    const { messages } = useReport();
+    const { messages } = useReportPreferences();
     const previousCaseCountRef = useRef(cases.length);
     const containerRef = useRef<HTMLDivElement | null>(null);
     const [activeCaseId, setActiveCaseId] = useState<string | null>(() => cases[0]?.id ?? null);

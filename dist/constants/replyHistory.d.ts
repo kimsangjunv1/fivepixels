@@ -1,5 +1,5 @@
 import type { ReplyHistoryLoadMode } from "../types/report.js";
-import { DEFAULT_REPLY_HISTORY_MODE, DEFAULT_REPLY_HISTORY_PAGE_SIZE } from "../utils/replyHistory.js";
+import { DEFAULT_REPLY_HISTORY_MODE, DEFAULT_REPLY_HISTORY_PAGE_SIZE } from "../utils/feedback/replyHistory.js";
 export { DEFAULT_REPLY_HISTORY_MODE, DEFAULT_REPLY_HISTORY_PAGE_SIZE };
 export declare function usesReplyLoadMoreButton(mode: ReplyHistoryLoadMode): boolean;
 export declare function usesReplyInfiniteScroll(mode: ReplyHistoryLoadMode): boolean;

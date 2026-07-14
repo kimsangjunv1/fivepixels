@@ -25,11 +25,11 @@ import type {
     ReportVisibility,
     UpdateReportFeedbackPayload,
 } from "@/types/report.js";
-import { resolveReportEnabled } from "@/utils/env.js";
-import { resolveReportProject } from "@/utils/reportProject.js";
-import { resolveReportTeam } from "@/utils/reportTeam.js";
-import { resolveReportUi, type ResolvedReportUi } from "@/utils/reportUi.js";
-import { resolveReportVisibility } from "@/utils/reportVisibility.js";
+import { resolveReportEnabled } from "@/utils/shared/env.js";
+import { resolveReportProject } from "@/utils/report/reportProject.js";
+import { resolveReportTeam } from "@/utils/report/reportTeam.js";
+import { resolveReportUi, type ResolvedReportUi } from "@/utils/report/reportUi.js";
+import { resolveReportVisibility } from "@/utils/report/reportVisibility.js";
 import {
     ReportContext,
     ReportDataContext,

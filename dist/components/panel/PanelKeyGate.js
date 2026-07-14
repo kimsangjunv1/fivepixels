@@ -1,12 +1,13 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useState } from "react";
 import { ChevronDownIcon } from "../../components/icons/Icons.js";
-import { useReport } from "../../providers/reportContext.js";
+import { useReportPreferences, useReportSession } from "../../providers/reportContext.js";
 function buildReviewerSnippet({ name, authorId, publicKey }) {
     return `{ id: "${authorId}", name: "${name}", publicKey: "${publicKey}" }`;
 }
 export function PanelKeyGate({ mode }) {
-    const { messages, selfProfile, publicKey, setErrorMessage } = useReport();
+    const { messages, selfProfile, publicKey } = useReportPreferences();
+    const { setErrorMessage } = useReportSession();
     const onboarding = messages.onboarding;
     const [copied, setCopied] = useState(false);
     const [keyInfoOpen, setKeyInfoOpen] = useState(false);

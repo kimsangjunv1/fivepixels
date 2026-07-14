@@ -55,7 +55,8 @@
         "typecheck": "node scripts/build-report-styles.mjs && tsc -p tsconfig.json --noEmit && tsc -p examples/basic/tsconfig.json --noEmit",
         "test": "vitest run",
         "test:watch": "vitest",
-        "lint": "npm run typecheck && npm run test",
+        "check:utils": "node scripts/check-no-flat-utils.mjs",
+        "lint": "npm run check:utils && npm run typecheck && npm run test",
         "example": "npm run dev"
     },
     "peerDependencies": {

@@ -1,4 +1,4 @@
-import { getMarkerDotSize } from "../../utils/markerRuntime.js";
+import { getMarkerDotSize } from "../../utils/marker/markerRuntime.js";
 import { getFeedbackTargetSelector, getNearestScrollContainer, getScrollContainerClampId, hasFixedPositionAncestor, isFeedbackTargetVisible } from "../shared/dom.js";
 import { getFeedbackAnchorElement, getFeedbackTargetElement } from "./locateFeedback.js";
 import { findElementByTargetSelector } from "./targetSelector.js";

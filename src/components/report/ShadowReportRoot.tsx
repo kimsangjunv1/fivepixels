@@ -1,7 +1,7 @@
 import { useLayoutEffect, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import type { ResolvedAppearance } from "@/types/report-ui.js";
-import { ensureReportTooltipLayer, syncReportTooltipLayerTheme } from "@/utils/dom.js";
+import { ensureReportTooltipLayer, syncReportTooltipLayerTheme } from "@/utils/shared/dom.js";
 
 const HOST_ID = "fivepixels-root";
 const STYLE_ELEMENT_ID = "fivepixels-report-styles";

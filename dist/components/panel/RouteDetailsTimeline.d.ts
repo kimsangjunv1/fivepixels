@@ -1,4 +1,4 @@
-import { type HourlyCompareSparkline } from "../../utils/hourlyCompareSparkline.js";
+import { type HourlyCompareSparkline } from "../../utils/panel/hourlyCompareSparkline.js";
 type RouteDetailsTimelineProps = {
     sparkline: HourlyCompareSparkline;
     todayLabel: string;

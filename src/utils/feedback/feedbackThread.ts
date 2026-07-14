@@ -1,7 +1,7 @@
 import type { FeedbackDisplayStatus } from "@/constants/feedbackStatus.js";
 import type { ReportAuthor, ReportFeedback, ReportReply, ReportReplyStatus } from "@/types/report.js";
-import { getCaseAssigneeName, getCaseById, getRepliesForCase, canActOnCase } from "@/utils/reportCases.js";
-import { summaryToReply } from "@/utils/reportSummary.js";
+import { getCaseAssigneeName, getCaseById, getRepliesForCase, canActOnCase } from "@/utils/report/reportCases.js";
+import { summaryToReply } from "@/utils/report/reportSummary.js";
 
 export function getReportReplies(report: ReportFeedback): ReportReply[] {
     return report.replies ?? [];

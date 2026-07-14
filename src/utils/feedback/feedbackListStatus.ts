@@ -1,7 +1,7 @@
 import type { FeedbackListStatusTag } from "@/constants/feedbackCategory.js";
 import type { ReportFeedback } from "@/types/report.js";
-import { allCasesResolved, getReportCases } from "@/utils/reportCases.js";
-import { getReportReplies } from "@/utils/feedbackThread.js";
+import { allCasesResolved, getReportCases } from "@/utils/report/reportCases.js";
+import { getReportReplies } from "@/utils/feedback/feedbackThread.js";
 
 export function getFeedbackListStatusTag(report: ReportFeedback): FeedbackListStatusTag {
     if (report.status === "resolved" || allCasesResolved(report)) {

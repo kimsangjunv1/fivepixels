@@ -1,5 +1,5 @@
 import type { ReportAuthor, ReportIdentify, ReportTeam } from "@/types/report.js";
-import { formatAssigneeLabel } from "@/utils/reportCases.js";
+import { formatAssigneeLabel } from "@/utils/report/reportCases.js";
 
 export type ResolvedReportTeam = {
     user?: ReportIdentify;

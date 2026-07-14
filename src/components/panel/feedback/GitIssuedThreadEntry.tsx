@@ -1,8 +1,8 @@
 import { useState, type MouseEvent } from "react";
 import type { ReportReply } from "@/types/report.js";
-import { useReport } from "@/providers/reportContext.js";
-import { formatDate } from "@/utils/format.js";
-import { copyTextToClipboard } from "@/utils/feedbackDataTransfer.js";
+import { useReportPreferences } from "@/providers/reportContext.js";
+import { formatDate } from "@/utils/shared/format.js";
+import { copyTextToClipboard } from "@/utils/feedback/feedbackDataTransfer.js";
 import { FeedbackStatusBadge } from "./FeedbackStatusBadge.js";
 // import { CopyIcon } from "@/components/icons/Icons.js";
 import { LinkIcon, ArrowTRIcon } from "@/components/icons/Icons.js";
@@ -13,7 +13,7 @@ type GitIssuedThreadEntryProps = {
 };
 
 export function GitIssuedThreadEntry({ reply, issueUrl }: GitIssuedThreadEntryProps) {
-    const { locale, messages } = useReport();
+    const { locale, messages } = useReportPreferences();
     const [copied, setCopied] = useState(false);
 
     const handleCopy = (event: MouseEvent<HTMLButtonElement>) => {

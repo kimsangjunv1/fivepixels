@@ -1,4 +1,4 @@
-import { validateCasesForSubmit } from "../../utils/reportCases.js";
+import { validateCasesForSubmit } from "../../utils/report/reportCases.js";
 export function createInitialFieldValues(fields, source) {
     return fields.reduce((acc, field) => {
         if (field.key === "message") {

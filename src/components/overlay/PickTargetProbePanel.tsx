@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { CheckIcon, CopyIcon } from "@/components/icons/Icons.js";
-import { useReport } from "@/providers/reportContext.js";
+import { useReportPreferences, useReportSession } from "@/providers/reportContext.js";
 import type { PickProbeFieldKey, PickProbeValues } from "@/types/report-ui.js";
-import { isSteppableCssValue, stepCssBoxSides, stepCssPixel } from "@/utils/cssStepper.js";
-import { copyTextToClipboard } from "@/utils/feedbackDataTransfer.js";
-import { getPickProbePanelLayout } from "@/utils/pickProbeLayout.js";
-import { getProbeColorPreview, isValidProbeHexColor, probeHexToColorInputValue, sanitizeProbeHexInput } from "@/utils/probeColor.js";
+import { isSteppableCssValue, stepCssBoxSides, stepCssPixel } from "@/utils/probe/cssStepper.js";
+import { copyTextToClipboard } from "@/utils/feedback/feedbackDataTransfer.js";
+import { getPickProbePanelLayout } from "@/utils/probe/pickProbeLayout.js";
+import { getProbeColorPreview, isValidProbeHexColor, probeHexToColorInputValue, sanitizeProbeHexInput } from "@/utils/probe/probeColor.js";
 import { PickTargetCompareSegment } from "./PickTargetCompareSegment.js";
 import { ProbeLayoutControls } from "./ProbeLayoutControls.js";
 
@@ -45,7 +45,7 @@ type ProbeColorFieldProps = {
 };
 
 function ProbeColorField({ label, value, onChange }: ProbeColorFieldProps) {
-    const { messages } = useReport();
+    const { messages } = useReportPreferences();
     const colorInputRef = useRef<HTMLInputElement | null>(null);
     const copyTimeoutRef = useRef<number | null>(null);
     const [copied, setCopied] = useState(false);
@@ -183,20 +183,8 @@ function ProbeStepperField({ label, value, onChange }: ProbeStepperFieldProps) {
 }
 
 export function PickTargetProbePanel() {
-    const {
-        messages,
-        selectedTarget,
-        pickProbeOpen,
-        pickProbeValues,
-        pickProbeSupportsTextFields,
-        pickProbeLayoutMode,
-        pickProbeCompareMode,
-        pickProbeHasEdits,
-        setPickProbeCompareMode,
-        updatePickProbeValue,
-        resetPickProbeValues,
-        closePickProbe,
-    } = useReport();
+    const { messages } = useReportPreferences();
+    const { selectedTarget, pickProbeOpen, pickProbeValues, pickProbeSupportsTextFields, pickProbeLayoutMode, pickProbeCompareMode, pickProbeHasEdits, setPickProbeCompareMode, updatePickProbeValue, resetPickProbeValues, closePickProbe } = useReportSession();
 
     const panelRef = useRef<HTMLDivElement | null>(null);
     const [layout, setLayout] = useState<ReturnType<typeof getPickProbePanelLayout> | null>(null);

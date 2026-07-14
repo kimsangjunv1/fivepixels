@@ -1,7 +1,7 @@
-import { getFeedbackDisplayStatus } from "../../utils/feedbackThread.js";
-import { getReportCases } from "../../utils/reportCases.js";
-import { formatStatCount } from "../../utils/formatStatCount.js";
-import { isCreatedToday } from "../../utils/routeDetailStatus.js";
+import { getFeedbackDisplayStatus } from "../../utils/feedback/feedbackThread.js";
+import { getReportCases } from "../../utils/report/reportCases.js";
+import { formatStatCount } from "../../utils/panel/formatStatCount.js";
+import { isCreatedToday } from "../../utils/panel/routeDetailStatus.js";
 const IN_PROGRESS_STATUSES = new Set(["wait_for_reply", "additional_question", "suggested", "found_error", "recheck_requested"]);
 function isAssignedTo(report, actorName) {
     if (!actorName) {

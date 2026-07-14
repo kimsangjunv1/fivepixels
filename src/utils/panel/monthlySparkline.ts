@@ -1,7 +1,7 @@
 import type { ReportFeedback } from "@/types/report.js";
 import type { ReportPanelStats } from "@/types/report.js";
-import { getFeedbackDisplayStatus } from "@/utils/feedbackThread.js";
-import { toDateKey } from "@/utils/heatmapActivity.js";
+import { getFeedbackDisplayStatus } from "@/utils/feedback/feedbackThread.js";
+import { toDateKey } from "@/utils/panel/heatmapActivity.js";
 
 export type DailySparklineBucket = {
     dateKey: string;

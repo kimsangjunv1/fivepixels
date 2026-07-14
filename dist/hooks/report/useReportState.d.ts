@@ -1,28 +1,8 @@
-import { type MouseEvent } from "react";
 import type { DeepPartialReportMessages } from "../../i18n/types.js";
 import type { ReportLocale } from "../../i18n/types.js";
-import { type UserSelectablePanelTab } from "../../constants/panelTabRegistry.js";
-import { type PanelTabPreference } from "../../utils/panelTabPreference.js";
+import { type PanelView } from "./useReportAuthSession.js";
 import type { CreateReportFeedbackPayload, CreateReplyPayload, ReportAppearance, ReportAuthor, ReportActivitySummaryParams, ReportActivitySummaryResult, ReportEvent, ReportFeedback, ReportField, ReportGitHubConfig, FivePixelsMode, ReportIdentify, ReportListAllParams, ReportListAllResult, ReportPanelBootstrapParams, ReportPanelBootstrapResult, ReportReply, QuestionThreadDisplay, UpdateReportFeedbackPayload } from "../../types/report.js";
-import type { DraftReport, EditableDraft, HoverPointer, Marker, ReportMode, ReportPanelTab, TargetSnapshot } from "../../types/report-ui.js";
-import type { FeedbackCategory } from "../../constants/feedbackCategory.js";
-type AuthDiagnosticsField = "projectId" | "environment" | "authorId" | "authorName" | "publicKey";
-type AuthDiagnosticsStatus = "matched" | "failed" | "disabled";
-type AuthDiagnosticsReason = "reviewer-key-not-enforced" | "missing-personal-key" | "invalid-personal-key-format" | "project-mismatch" | "environment-mismatch" | "missing-team-author" | "author-id-mismatch" | "author-name-mismatch" | "missing-team-public-key" | "public-key-mismatch" | "matched";
-type AuthDiagnosticsItem = {
-    field: AuthDiagnosticsField;
-    expected: string | null;
-    actual: string | null;
-    matched: boolean;
-};
-type AuthDiagnostics = {
-    status: AuthDiagnosticsStatus;
-    reason: AuthDiagnosticsReason;
-    items: AuthDiagnosticsItem[];
-    expected: Record<AuthDiagnosticsField, string | null>;
-    actual: Record<AuthDiagnosticsField, string | null>;
-};
-export type PanelView = "onboarding" | "setup-complete" | "key-issue" | "ready";
+export type { PanelView };
 export type ReportStateConfig = {
     projectId: string;
     environment?: string;
@@ -60,7 +40,7 @@ export type ReportStateConfig = {
     initialLocale: ReportLocale;
     messageOverrides?: DeepPartialReportMessages;
     pixelsMode?: FivePixelsMode;
-    replyHistory: import("../../utils/reportUi.js").ResolvedReplyHistoryConfig;
+    replyHistory: import("../../utils/report/reportUi.js").ResolvedReplyHistoryConfig;
 };
 export declare function useReportState({ projectId, environment, appVersion, panelAppearance, tooltipAppearance, questionThreadDefault, fields, authors, requireReviewerKey, shortcut: _shortcut, identify, onList, onListAll, onPanelBootstrap, onActivitySummary, onListReplies, onNavigate, onRevealTarget, onCreate, onCreateReply, onUpdate, onDelete, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys, initialLocale, messageOverrides, pixelsMode, replyHistory, }: ReportStateConfig): {
     panelAppearance: ReportAppearance;
@@ -79,7 +59,7 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     appVersion: string | undefined;
     currentPathname: string;
     showFeedbackList: boolean;
-    panelTab: ReportPanelTab | null;
+    panelTab: import("../../types/report-ui.js").ReportPanelTab | null;
     routeDetailsStats: import("../../types/report.js").ReportRouteDetailsSummary;
     panelCollapsed: boolean;
     setPanelCollapsed: import("react").Dispatch<import("react").SetStateAction<boolean>>;
@@ -89,7 +69,7 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     publicKey: string | null;
     personalKeyRequired: boolean;
     personalKeyCandidates: ReportAuthor[];
-    authDiagnostics: AuthDiagnostics;
+    authDiagnostics: import("./useReportAuthSession.js").AuthDiagnostics;
     authorSelectionLocked: boolean;
     panelView: PanelView;
     completeOnboarding: ({ name }: {
@@ -145,7 +125,7 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     resolvedPanelAppearance: import("../../types/report-ui.js").ResolvedAppearance;
     resolvedTooltipAppearance: import("../../types/report-ui.js").ResolvedAppearance;
     isMobileViewport: boolean;
-    mode: ReportMode;
+    mode: import("../../types/report-ui.js").ReportMode;
     showTargetPreview: boolean;
     showMarkerTargetPreview: boolean;
     setShowMarkerTargetPreview: (enabled: boolean) => void;
@@ -160,9 +140,9 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     setTypography: (next: import("../../constants/markerAppearance.js").TypographyPreferences | ((current: import("../../constants/markerAppearance.js").TypographyPreferences) => import("../../constants/markerAppearance.js").TypographyPreferences)) => void;
     setFontSize: (fontSize: import("../../constants/markerAppearance.js").MarkerFontSize) => void;
     setFontFamily: (fontFamily: string) => void;
-    activeMarkerTarget: TargetSnapshot | null;
-    markerPreviewTargets: TargetSnapshot[];
-    selectableTargets: TargetSnapshot[];
+    activeMarkerTarget: import("../../types/report-ui.js").TargetSnapshot | null;
+    markerPreviewTargets: import("../../types/report-ui.js").TargetSnapshot[];
+    selectableTargets: import("../../types/report-ui.js").TargetSnapshot[];
     filters: import("../../types/report-ui.js").ReportFilters;
     setFilters: import("react").Dispatch<import("react").SetStateAction<import("../../types/report-ui.js").ReportFilters>>;
     listScope: import("../../types/report-ui.js").ReportListScope;
@@ -183,18 +163,18 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     isDeleting: boolean;
     queryErrorMessage: string | undefined;
     refetch: () => Promise<ReportFeedback[]>;
-    replyHistory: import("../../utils/reportUi.js").ResolvedReplyHistoryConfig;
+    replyHistory: import("../../utils/report/reportUi.js").ResolvedReplyHistoryConfig;
     replyHistoryByReportId: Record<string, import("../replyHistoryActions.js").ReplyHistoryState>;
     loadRepliesIfNeeded: (report: ReportFeedback) => Promise<ReportFeedback>;
-    loadOlderReplies: (reportId: string, config: import("../../utils/reportUi.js").ResolvedReplyHistoryConfig) => Promise<void>;
-    goToOlderPaginationPage: (reportId: string, config: import("../../utils/reportUi.js").ResolvedReplyHistoryConfig) => Promise<void>;
-    goToNewerPaginationPage: (reportId: string, config: import("../../utils/reportUi.js").ResolvedReplyHistoryConfig) => void;
+    loadOlderReplies: (reportId: string, config: import("../../utils/report/reportUi.js").ResolvedReplyHistoryConfig) => Promise<void>;
+    goToOlderPaginationPage: (reportId: string, config: import("../../utils/report/reportUi.js").ResolvedReplyHistoryConfig) => Promise<void>;
+    goToNewerPaginationPage: (reportId: string, config: import("../../utils/report/reportUi.js").ResolvedReplyHistoryConfig) => void;
     errorMessage: string;
     setErrorMessage: import("react").Dispatch<import("react").SetStateAction<string>>;
-    draft: DraftReport | null;
-    hoveredTarget: TargetSnapshot | null;
-    hoverPointer: HoverPointer | null;
-    selectedTarget: TargetSnapshot | null;
+    draft: import("../../types/report-ui.js").DraftReport | null;
+    hoveredTarget: import("../../types/report-ui.js").TargetSnapshot | null;
+    hoverPointer: import("../../types/report-ui.js").HoverPointer | null;
+    selectedTarget: import("../../types/report-ui.js").TargetSnapshot | null;
     pickProbeOpen: boolean;
     pickProbeSupportsTextFields: boolean;
     pickProbeLayoutMode: import("../../types/report-ui.js").PickProbeLayoutMode;
@@ -224,16 +204,16 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     updatePickProbeValue: (key: import("../../types/report-ui.js").PickProbeFieldKey, value: string) => void;
     resetPickProbeValues: () => void;
     appendSavedProbeSummaryAsNewDraftCase: () => void;
-    markers: Marker[];
+    markers: import("../../types/report-ui.js").Marker[];
     selectedReport: ReportFeedback;
     editingReportId: string | null;
-    editableDraft: EditableDraft | null;
-    setEditableDraft: import("react").Dispatch<import("react").SetStateAction<EditableDraft | null>>;
+    editableDraft: import("../../types/report-ui.js").EditableDraft | null;
+    setEditableDraft: import("react").Dispatch<import("react").SetStateAction<import("../../types/report-ui.js").EditableDraft | null>>;
     overlayRef: import("react").MutableRefObject<HTMLDivElement | null>;
     activeReplyReportId: string | null;
     activeReplyReport: ReportFeedback | null;
     tooltipReport: ReportFeedback | null;
-    tooltipAnchor: Marker | null;
+    tooltipAnchor: import("../../types/report-ui.js").Marker | null;
     tooltipFieldTags: {
         key: string;
         label: string;
@@ -247,8 +227,8 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     replyAuthorName: string;
     setReplyAuthorName: (name: string) => void;
     isPresentationMode: boolean;
-    sessionActor: import("../../utils/reportTeam.js").SessionActor | null;
-    presentationViewers: import("../../utils/reportTeam.js").PresentationViewer[];
+    sessionActor: import("../../utils/report/reportTeam.js").SessionActor | null;
+    presentationViewers: import("../../utils/report/reportTeam.js").PresentationViewer[];
     presentationViewerId: string | null;
     setPresentationViewerId: (viewerId: string | null) => Promise<void>;
     pendingComposer: import("../../types/report-ui.js").PendingFeedbackComposer;
@@ -276,26 +256,26 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     caseEditReportId: string | null;
     caseEditCases: import("../../types/report.js").ReportCase[] | null;
     targetStats: import("../../types/report.js").ReportPanelStats;
-    roleStatItems: import("../../utils/panelRoleStats.js").PanelRoleStatItem[];
+    roleStatItems: import("../../utils/panel/panelRoleStats.js").PanelRoleStatItem[];
     panelRole: "general" | "qa" | "developer" | "designer" | "planner" | "general-user";
     setPanelRole: (nextRole: import("../../constants/panelRole.js").PanelRole) => void;
-    visiblePanelTabs: UserSelectablePanelTab[];
+    visiblePanelTabs: import("../../constants/panelTabRegistry.js").UserSelectablePanelTab[];
     visiblePanelTabsSummary: string;
     resolvedTabAvailabilityContext: {
         showFeedbackList: boolean;
         canListAllFeedback: boolean;
     };
-    setVisiblePanelTabs: (nextTabs: UserSelectablePanelTab[]) => void;
+    setVisiblePanelTabs: (nextTabs: import("../../constants/panelTabRegistry.js").UserSelectablePanelTab[]) => void;
     resetVisibleTabsToRoleDefault: () => void;
-    applyRoleDefaultTabsForOnboarding: (role: "general" | "qa" | "developer" | "designer" | "planner" | "general-user") => void;
-    savePanelTabPreference: (preference: PanelTabPreference) => void;
-    storedPanelTabPreference: PanelTabPreference | null;
+    applyRoleDefaultTabsForOnboarding: (role: import("../../constants/panelRole.js").PanelRole) => void;
+    savePanelTabPreference: (preference: import("../../utils/panel/panelTabPreference.js").PanelTabPreference) => void;
+    storedPanelTabPreference: import("../../utils/panel/panelTabPreference.js").PanelTabPreference | null;
     statusText: string;
     toggleReportMode: () => void;
     toggleTargetPreview: () => void;
     toggleIssueMode: () => void;
-    openPanelTab: (nextTab: ReportPanelTab) => void;
-    togglePanelTab: (nextTab: ReportPanelTab) => void;
+    openPanelTab: (nextTab: import("../../types/report-ui.js").ReportPanelTab) => void;
+    togglePanelTab: (nextTab: import("../../types/report-ui.js").ReportPanelTab) => void;
     selectReport: (reportId: string) => void;
     locateFeedback: (reportId: string) => Promise<void>;
     focusSearchInput: () => void;
@@ -306,15 +286,15 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     clearHoverLeaveTimeout: () => void;
     scheduleHoverLeave: (markerId: string) => void;
     setHoveredMarkerId: import("react").Dispatch<import("react").SetStateAction<string | null>>;
-    handleOverlayMove: (event: MouseEvent<HTMLDivElement>) => void;
-    handleOverlayContextMenu: (event: MouseEvent<HTMLDivElement>) => void;
-    handleOverlayClick: (event: MouseEvent<HTMLDivElement>) => void;
+    handleOverlayMove: (event: import("react").MouseEvent<HTMLDivElement>) => void;
+    handleOverlayContextMenu: (event: import("react").MouseEvent<HTMLDivElement>) => void;
+    handleOverlayClick: (event: import("react").MouseEvent<HTMLDivElement>) => void;
     cancelDraft: () => void;
     updateDraftCase: (caseId: string, text: string) => void;
     addDraftCase: () => void;
     removeDraftCase: (caseId: string) => void;
     updateDraftField: (key: string, nextValue: string | boolean) => void;
-    updateDraftCategory: (category: FeedbackCategory | null) => void;
+    updateDraftCategory: (category: import("../../types/report.js").FeedbackCategory | null) => void;
     handleCreateSubmit: () => Promise<void>;
     startEditing: (report: ReportFeedback) => void;
     stopEditing: () => void;
@@ -328,5 +308,4 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     handleCreateSubmitWithGitHubIssue: () => Promise<void>;
     isDraftGitHubIssueSubmitting: boolean;
 };
-export {};
 //# sourceMappingURL=useReportState.d.ts.map

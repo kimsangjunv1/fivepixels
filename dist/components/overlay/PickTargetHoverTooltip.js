@@ -1,7 +1,7 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
-import { useReport } from "../../providers/reportContext.js";
-import { HOVER_TOOLTIP_MARGIN } from "../../utils/hoverTooltipLayout.js";
+import { useReportPreferences, useReportSession } from "../../providers/reportContext.js";
+import { HOVER_TOOLTIP_MARGIN } from "../../utils/marker/hoverTooltipLayout.js";
 const TOOLTIP_SURFACE_CLASS = "pointer-events-none fixed z-[1000002] min-w-[220px] max-w-[min(320px,calc(100vw-16px))] overflow-hidden rounded-[12px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface-overlay)] px-[12px] py-[10px] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[20px]";
 const POINTER_OFFSET = 12;
 function InspectRow({ label, value, valueClassName = "" }) {
@@ -29,7 +29,8 @@ function getPointerTooltipLayout(clientX, clientY, tooltipRect) {
     return { top, left };
 }
 export function PickTargetHoverTooltip({ target }) {
-    const { messages, hoverPointer } = useReport();
+    const { messages } = useReportPreferences();
+    const { hoverPointer } = useReportSession();
     const tooltipRef = useRef(null);
     const [layout, setLayout] = useState(null);
     const updateLayout = useCallback(() => {

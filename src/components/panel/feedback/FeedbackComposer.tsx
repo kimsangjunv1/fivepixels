@@ -2,7 +2,7 @@ import type { ReportField, ReportFieldValues, ReportCase } from "@/types/report.
 import type { ReportAuthor } from "@/types/report.js";
 import type { FeedbackCategory } from "@/constants/feedbackCategory.js";
 import { useEffect, useMemo, useState } from "react";
-import { useReport } from "@/providers/reportContext.js";
+import { useReportPreferences } from "@/providers/reportContext.js";
 import { SendIcon } from "@/components/icons/Icons.js";
 import { AuthorSelector } from "./AuthorSelector.js";
 import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
@@ -94,7 +94,7 @@ export function FeedbackComposer({
     lockedAuthorName,
     onFooterWarningChange,
 }: FeedbackComposerProps) {
-    const { messages } = useReport();
+    const { messages } = useReportPreferences();
     const [isGitHubIssueConfirming, setIsGitHubIssueConfirming] = useState(false);
     const [categoryAttentionKey, setCategoryAttentionKey] = useState(0);
     const [caseAttentionKey, setCaseAttentionKey] = useState(0);

@@ -1,8 +1,8 @@
 import { jsx as _jsx, Fragment as _Fragment } from "react/jsx-runtime";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { useReport } from "../../providers/reportContext.js";
-import { findElementByProbeKey } from "../../utils/pickProbeSession.js";
-import { getPickProbeSavedBadgeLayout } from "../../utils/pickProbeLayout.js";
+import { useReportPreferences, useReportSession } from "../../providers/reportContext.js";
+import { findElementByProbeKey } from "../../utils/probe/pickProbeSession.js";
+import { getPickProbeSavedBadgeLayout } from "../../utils/probe/pickProbeLayout.js";
 function SavedProbeBadge({ elementKey, label, badgeOpacity }) {
     const badgeRef = useRef(null);
     const [layout, setLayout] = useState(null);
@@ -39,7 +39,8 @@ function SavedProbeBadge({ elementKey, label, badgeOpacity }) {
         }, children: label }));
 }
 export function PickTargetSavedBadges() {
-    const { savedProbeEdits, messages, mode } = useReport();
+    const { messages } = useReportPreferences();
+    const { savedProbeEdits, mode } = useReportSession();
     const [, setTick] = useState(0);
     const savedElementKeys = Object.keys(savedProbeEdits);
     const badgeOpacity = mode === "report" ? 1 : 0.5;

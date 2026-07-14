@@ -1,17 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { canShowCaseClaimAction, createReplyStatusForSubmit, getLatestBranchRootForCase, getReportReplies, ISSUE_ROOT_PARENT_ID, requiresCaseActorPermissionForComposer, resolveOriginalFeedbackAuthorName, resolveParentReplyIdForCaseQuestion, } from "../../utils/feedbackThread.js";
-import { resolveTooltipAnchor } from "../../utils/coordinates.js";
-import { getFieldError } from "../../utils/fields.js";
-import { canEditReportCases, claimCaseAssignee, createReportCase, buildResolvedCasesUpdate, canActOnCase, getCaseAssigneeName, isValidFocusedCase, resolveDefaultFocusedCaseId, transferCaseAssignee, } from "../../utils/reportCases.js";
-import { createReplyId } from "../../utils/format.js";
-import { notifyFeedbackReply, notifyFeedbackUpdate } from "../../utils/reportCallbacks.js";
-function resolveDefaultAuthorName(identify, authors, selfName) {
-    if (identify?.name) {
-        return identify.name;
-    }
-    return authors[0]?.name ?? selfName ?? "";
-}
-export function useReportReplyReview({ markers, reports, messages, fields, sessionActor, authorSelectionLocked, activeIdentify, authorizedAuthors, selfName, eventCallbacks, createReply, updateFeedback, usesCreateReply, signReplyPayload, signUpdatePayload, setErrorMessage, onSelectReport, }) {
+import { canShowCaseClaimAction, createReplyStatusForSubmit, getLatestBranchRootForCase, getReportReplies, ISSUE_ROOT_PARENT_ID, requiresCaseActorPermissionForComposer, resolveOriginalFeedbackAuthorName, resolveParentReplyIdForCaseQuestion, } from "../../utils/feedback/feedbackThread.js";
+import { getFieldError } from "../../utils/report/fields.js";
+import { canEditReportCases, claimCaseAssignee, createReportCase, buildResolvedCasesUpdate, canActOnCase, getCaseAssigneeName, isValidFocusedCase, resolveDefaultFocusedCaseId, transferCaseAssignee, } from "../../utils/report/reportCases.js";
+import { createReplyId } from "../../utils/shared/format.js";
+import { notifyFeedbackReply, notifyFeedbackUpdate } from "../../utils/report/reportCallbacks.js";
+import { resolveDefaultAuthorName } from "../../utils/report/resolveDefaultAuthorName.js";
+export function useReportReplyReview({ reports, messages, fields, sessionActor, authorSelectionLocked, activeIdentify, authorizedAuthors, selfName, eventCallbacks, createReply, updateFeedback, usesCreateReply, signReplyPayload, signUpdatePayload, setErrorMessage, onSelectReport, }) {
     const [activeReplyReportId, setActiveReplyReportId] = useState(null);
     const [replyDraft, setReplyDraft] = useState("");
     const [replySubmitAsQuestion, setReplySubmitAsQuestion] = useState(false);
@@ -37,8 +31,8 @@ export function useReportReplyReview({ markers, reports, messages, fields, sessi
         }
         setReplyAuthorName(name);
     }, [authorSelectionLocked, sessionActor?.name]);
-    const activeReplyAnchor = useMemo(() => resolveTooltipAnchor(markers, activeReplyReportId), [activeReplyReportId, markers]);
-    const activeReplyReport = activeReplyAnchor?.report ?? null;
+    const activeReplyReport = useMemo(() => (activeReplyReportId ? (reports.find((item) => item.id === activeReplyReportId) ?? null) : null), [activeReplyReportId, reports]);
+    const activeReplyAnchor = useMemo(() => (activeReplyReport ? { report: activeReplyReport } : null), [activeReplyReport]);
     const cancelCaseEdit = useCallback(() => {
         setCaseEditReportId(null);
         setCaseEditDraft(null);

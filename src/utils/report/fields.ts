@@ -1,7 +1,7 @@
 import type { ReportCase } from "@/types/report.js";
 import type { ReportField, ReportFieldValues } from "@/types/report.js";
 import type { ReportMessages } from "@/i18n/types.js";
-import { validateCasesForSubmit } from "@/utils/reportCases.js";
+import { validateCasesForSubmit } from "@/utils/report/reportCases.js";
 
 export function createInitialFieldValues(fields: ReportField[], source?: ReportFieldValues) {
     return fields.reduce<ReportFieldValues>((acc, field) => {

@@ -1,10 +1,12 @@
 import { useMemo } from "react";
-import { useReport } from "@/providers/reportContext.js";
-import { filterNeedsAttention } from "@/utils/experimentalPanelTabs.js";
+import { useReportPreferences, useReportSession, useReportData } from "@/providers/reportContext.js";
+import { filterNeedsAttention } from "@/utils/panel/experimentalPanelTabs.js";
 import { ExperimentalFeedbackRow } from "./ExperimentalFeedbackRow.js";
 
 export function ReportNeedsAttentionPanel() {
-    const { reports, allPageReports, listScope, messages, locateFeedback, openPanelTab } = useReport();
+    const { messages } = useReportPreferences();
+    const { locateFeedback, openPanelTab } = useReportSession();
+    const { reports, allPageReports, listScope } = useReportData();
     const source = listScope === "all" || allPageReports.length > 0 ? (allPageReports.length > 0 ? allPageReports : reports) : reports;
     const items = useMemo(() => filterNeedsAttention(source), [source]);
 

@@ -1,7 +1,7 @@
 import type { ReportProject } from "@/types/report.js";
-import { useReport } from "@/providers/reportContext.js";
-import { buildProjectComparisonLines } from "@/utils/feedbackTransferSchema.js";
-import type { ResolvedReportProject } from "@/utils/reportProject.js";
+import { useReportPreferences } from "@/providers/reportContext.js";
+import { buildProjectComparisonLines } from "@/utils/feedback/feedbackTransferSchema.js";
+import type { ResolvedReportProject } from "@/utils/report/reportProject.js";
 
 type ReportImportProjectMismatchDialogProps = {
     currentProject: ResolvedReportProject;
@@ -26,7 +26,7 @@ function formatExportedAt(value: string | undefined, noneLabel: string, locale: 
 }
 
 export function ReportImportProjectMismatchDialog({ currentProject, importedProject, exportedAt, onProceed, onCancel }: ReportImportProjectMismatchDialogProps) {
-    const { locale, messages } = useReport();
+    const { locale, messages } = useReportPreferences();
     const comparisonLines = buildProjectComparisonLines(currentProject, importedProject);
 
     return (

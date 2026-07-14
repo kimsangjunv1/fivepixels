@@ -1,4 +1,4 @@
-import { useReport } from "@/providers/reportContext.js";
+import { useReportPreferences } from "@/providers/reportContext.js";
 
 type ReportImportConfirmDialogProps = {
     onApply: () => void;
@@ -7,7 +7,7 @@ type ReportImportConfirmDialogProps = {
 };
 
 export function ReportImportConfirmDialog({ onApply, onCancel, onBackupAndApply }: ReportImportConfirmDialogProps) {
-    const { messages } = useReport();
+    const { messages } = useReportPreferences();
 
     return (
         <section className="bg-[var(--adaptive-grey100)] p-[16px]">

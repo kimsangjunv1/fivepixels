@@ -1,12 +1,12 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useEffect, useState } from "react";
-import { formatTimeOnly } from "../../../utils/format.js";
-import { getIssueSummary } from "../../../utils/reportCases.js";
-import { getReplyCount } from "../../../utils/feedbackThread.js";
-import { getFeedbackCaseId } from "../../../utils/feedbackCaseId.js";
-import { getFeedbackListStatusTag } from "../../../utils/feedbackListStatus.js";
+import { formatTimeOnly } from "../../../utils/shared/format.js";
+import { getIssueSummary } from "../../../utils/report/reportCases.js";
+import { getReplyCount } from "../../../utils/feedback/feedbackThread.js";
+import { getFeedbackCaseId } from "../../../utils/feedback/feedbackCaseId.js";
+import { getFeedbackListStatusTag } from "../../../utils/feedback/feedbackListStatus.js";
 import { isFeedbackCategory } from "../../../constants/feedbackCategory.js";
-import { copyTextToClipboard, serializeFeedbackItem } from "../../../utils/feedbackDataTransfer.js";
+import { copyTextToClipboard, serializeFeedbackItem } from "../../../utils/feedback/feedbackDataTransfer.js";
 import { GitIssueButton } from "./GitIssueButton.js";
 import { CopyIcon, TrashIcon } from "../../../components/icons/Icons.js";
 import { HoverTooltip } from "../../../components/ui/HoverTooltip.js";

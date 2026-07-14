@@ -1,11 +1,10 @@
 import { type Dispatch, type SetStateAction } from "react";
 import type { ReportMessages } from "../../i18n/types.js";
 import type { CreateReplyPayload, ReportAuthor, ReportFeedback, ReportField, ReportIdentify, UpdateReportFeedbackPayload } from "../../types/report.js";
-import type { Marker, PendingFeedbackComposer } from "../../types/report-ui.js";
-import { type ReportSideEffectCallbacks } from "../../utils/reportCallbacks.js";
-import type { SessionActor } from "../../utils/reportTeam.js";
+import type { PendingFeedbackComposer } from "../../types/report-ui.js";
+import { type ReportSideEffectCallbacks } from "../../utils/report/reportCallbacks.js";
+import type { SessionActor } from "../../utils/report/reportTeam.js";
 export type UseReportReplyReviewParams = {
-    markers: Marker[];
     reports: ReportFeedback[];
     messages: ReportMessages;
     fields: ReportField[];
@@ -23,11 +22,13 @@ export type UseReportReplyReviewParams = {
     setErrorMessage: Dispatch<SetStateAction<string>>;
     onSelectReport: (reportId: string) => void;
 };
-export declare function useReportReplyReview({ markers, reports, messages, fields, sessionActor, authorSelectionLocked, activeIdentify, authorizedAuthors, selfName, eventCallbacks, createReply, updateFeedback, usesCreateReply, signReplyPayload, signUpdatePayload, setErrorMessage, onSelectReport, }: UseReportReplyReviewParams): {
+export declare function useReportReplyReview({ reports, messages, fields, sessionActor, authorSelectionLocked, activeIdentify, authorizedAuthors, selfName, eventCallbacks, createReply, updateFeedback, usesCreateReply, signReplyPayload, signUpdatePayload, setErrorMessage, onSelectReport, }: UseReportReplyReviewParams): {
     activeReplyReportId: string | null;
     setActiveReplyReportId: Dispatch<SetStateAction<string | null>>;
     activeReplyReport: ReportFeedback | null;
-    activeReplyAnchor: Marker | null;
+    activeReplyAnchor: {
+        report: ReportFeedback;
+    } | null;
     replyDraft: string;
     setReplyDraft: Dispatch<SetStateAction<string>>;
     replySubmitAsQuestion: boolean;

@@ -2,8 +2,8 @@ import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-run
 import { useState } from "react";
 import { APPEARANCE_OPTION_VALUES } from "../../constants/appearance.js";
 import { FONT_FAMILY_SUGGESTIONS, APPEARANCE_SCALE_VALUES, MARKER_FONT_SIZE_VALUES } from "../../constants/markerAppearance.js";
-import { useReport } from "../../providers/reportContext.js";
-import { formatPresentationViewerLabel } from "../../utils/reportTeam.js";
+import { useReportPreferences, useReportSession } from "../../providers/reportContext.js";
+import { formatPresentationViewerLabel } from "../../utils/report/reportTeam.js";
 import { ChevronLeftIcon, ChevronRightIcon } from "../../components/icons/Icons.js";
 import { AppearanceThemePicker } from "./AppearanceThemePicker.js";
 import { DiscreteScaleDial } from "./DiscreteScaleDial.js";
@@ -43,7 +43,8 @@ function getCategoryTitle(category, messages) {
 }
 export function PanelSettings({ transferDisabled = false, panelAppearance, onPanelAppearanceChange, tooltipAppearance, onTooltipAppearanceChange, questionThreadDisplay, onQuestionThreadDisplayChange, onExport, onImport, onCommand, hasPersonalKey, onKeyCopy, onPublicKeyCopy, onKeyInsert, onKeyRotate, }) {
     const [activeCategory, setActiveCategory] = useState(null);
-    const { locale, setLocale, messages, showMarkerTargetPreview, setShowMarkerTargetPreview, isPresentationMode, presentationViewers, presentationViewerId, setPresentationViewerId, markerAppearance, setMarkerSize, setMarkerShape, setMarkerColor, typography, setFontSize, setFontFamily, panelRole, visiblePanelTabs, visiblePanelTabsSummary, resolvedTabAvailabilityContext, setVisiblePanelTabs, resetVisibleTabsToRoleDefault, } = useReport();
+    const { locale, setLocale, messages, showMarkerTargetPreview, setShowMarkerTargetPreview, isPresentationMode, presentationViewers, markerAppearance, setMarkerSize, setMarkerShape, setMarkerColor, typography, setFontSize, setFontFamily, panelRole, visiblePanelTabs, visiblePanelTabsSummary, resolvedTabAvailabilityContext, setVisiblePanelTabs, resetVisibleTabsToRoleDefault } = useReportPreferences();
+    const { presentationViewerId, setPresentationViewerId } = useReportSession();
     const scaleLabels = {
         sm: messages.settings.scaleSm,
         md: messages.settings.scaleMd,

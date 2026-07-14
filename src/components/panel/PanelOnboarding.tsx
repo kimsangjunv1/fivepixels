@@ -1,27 +1,17 @@
 import { useMemo, useState, type DragEvent } from "react";
 import { PANEL_ROLE_VALUES, type PanelRole } from "@/constants/panelRole.js";
-import { getDefaultVisibleTabsForRole } from "@/utils/panelTabPreference.js";
+import { getDefaultVisibleTabsForRole } from "@/utils/panel/panelTabPreference.js";
 import type { UserSelectablePanelTab } from "@/constants/panelTabRegistry.js";
-import { useReport } from "@/providers/reportContext.js";
+import { useReportPreferences, useReportSession } from "@/providers/reportContext.js";
 import { PanelDropdownMenuItem } from "./PanelDropdownMenu.js";
 import { PanelTabSelector } from "./PanelTabSelector.js";
-import { isPersonalKeyFile, readPersonalKeyFile } from "@/utils/feedbackDataTransfer.js";
+import { isPersonalKeyFile, readPersonalKeyFile } from "@/utils/feedback/feedbackDataTransfer.js";
 
 type OnboardingStep = "intro" | "restore" | "role" | "key";
 
 export function PanelOnboarding() {
-    const {
-        messages,
-        panelRole,
-        setPanelRole,
-        completeOnboarding,
-        restoreFromBackup,
-        setErrorMessage,
-        selfProfile,
-        personalKeyCandidates,
-        resolvedTabAvailabilityContext,
-        savePanelTabPreference,
-    } = useReport();
+    const { messages, panelRole, setPanelRole, completeOnboarding, restoreFromBackup, selfProfile, personalKeyCandidates, resolvedTabAvailabilityContext, savePanelTabPreference } = useReportPreferences();
+    const { setErrorMessage } = useReportSession();
     const onboarding = messages.onboarding;
     const [step, setStep] = useState<OnboardingStep>("intro");
     const [name, setName] = useState(selfProfile?.name ?? "");

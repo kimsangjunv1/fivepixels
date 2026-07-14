@@ -30,8 +30,8 @@ import { PanelPresentationSwitch } from "./PanelPresentationSwitch.js";
 import { PanelOnboarding } from "./PanelOnboarding.js";
 import { PanelKeyGate } from "./PanelKeyGate.js";
 import { PanelProjectFooter } from "./PanelProjectFooter.js";
-import { panelNumericClassName } from "@/utils/panelTypography.js";
-import { createPersonalKeyBackupFilename, downloadPersonalKeyBackup } from "@/utils/feedbackDataTransfer.js";
+import { panelNumericClassName } from "@/utils/panel/panelTypography.js";
+import { createPersonalKeyBackupFilename, downloadPersonalKeyBackup } from "@/utils/feedback/feedbackDataTransfer.js";
 import { getPanelTabDefinition } from "@/constants/panelTabRegistry.js";
 import type { ReportPanelTab } from "@/types/report-ui.js";
 

@@ -1,7 +1,7 @@
 import type { ReportAppearance } from "@/types/report.js";
 import type { ReportLocale } from "@/i18n/types.js";
 import { APPEARANCE_OPTION_VALUES } from "@/constants/appearance.js";
-import { useReport } from "@/providers/reportContext.js";
+import { useReportPreferences } from "@/providers/reportContext.js";
 import { SettingsIcon } from "@/components/icons/Icons.js";
 import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
 import { PanelDropdownMenu, PanelDropdownMenuItem } from "./PanelDropdownMenu.js";
@@ -47,7 +47,7 @@ export function PanelMoreMenu({
     onKeyInsert,
     onKeyRotate,
 }: PanelMoreMenuProps) {
-    const { locale, setLocale, messages } = useReport();
+    const { locale, setLocale, messages } = useReportPreferences();
     const appearanceOptions = APPEARANCE_OPTION_VALUES.map((value) => ({
         value,
         label: messages.appearance[value],

@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import type { FeedbackDisplayStatus } from "@/constants/feedbackStatus.js";
-import type { RouteDetailStatus } from "@/utils/routeDetailStatus.js";
+import type { RouteDetailStatus } from "@/utils/panel/routeDetailStatus.js";
 import { MaterialIcon, type MaterialIconProps } from "@/components/icons/MaterialIcon.js";
 
 const FLAG_PATH =

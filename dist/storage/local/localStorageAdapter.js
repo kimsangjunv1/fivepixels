@@ -1,10 +1,10 @@
 import { getActiveReportMessages } from "../../i18n/index.js";
 import { isFeedbackCategory } from "../../constants/feedbackCategory.js";
 import { getReportsStorageKey } from "../../constants/storageKeys.js";
-import { parseFeedbackStorageEnvelope, serializeFeedbackStorageEnvelope } from "../../utils/feedbackTransferSchema.js";
-import { allocateNextFcNumber, backfillFcNumbers } from "../../utils/feedbackCaseId.js";
-import { paginateSortedReplies, sortRepliesChronologically } from "../../utils/replyHistory.js";
-import { applyCaseStatusSync, normalizeFeedbackCases, normalizeReplyCaseIds, } from "../../utils/reportCases.js";
+import { parseFeedbackStorageEnvelope, serializeFeedbackStorageEnvelope } from "../../utils/feedback/feedbackTransferSchema.js";
+import { allocateNextFcNumber, backfillFcNumbers } from "../../utils/feedback/feedbackCaseId.js";
+import { paginateSortedReplies, sortRepliesChronologically } from "../../utils/feedback/replyHistory.js";
+import { applyCaseStatusSync, normalizeFeedbackCases, normalizeReplyCaseIds, } from "../../utils/report/reportCases.js";
 function createId() {
     if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
         return crypto.randomUUID();

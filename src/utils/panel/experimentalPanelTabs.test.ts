@@ -5,7 +5,7 @@ import {
     filterMyTasks,
     filterNeedsAttention,
     filterTodayDigest,
-} from "@/utils/experimentalPanelTabs.js";
+} from "@/utils/panel/experimentalPanelTabs.js";
 import type { ReportFeedback } from "@/types/report.js";
 
 function createReport(overrides: Partial<ReportFeedback> & Pick<ReportFeedback, "id" | "status">): ReportFeedback {

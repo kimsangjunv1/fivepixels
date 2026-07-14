@@ -2,8 +2,8 @@ import { useMemo, useRef, useState } from "react";
 import type { FeedbackCategory } from "@/constants/feedbackCategory.js";
 import { useTooltipLayout } from "@/hooks/useTooltipLayout.js";
 import { useTooltipResize } from "@/hooks/useTooltipResize.js";
-import { useReport } from "@/providers/reportContext.js";
-import { getDraftMarkerPosition, TOOLTIP_EXPANDED_DEFAULT_MAX_HEIGHT } from "@/utils/coordinates.js";
+import { useReport, useReportPreferences } from "@/providers/reportContext.js";
+import { getDraftMarkerPosition, TOOLTIP_EXPANDED_DEFAULT_MAX_HEIGHT } from "@/utils/marker/coordinates.js";
 import { FeedbackComposer } from "./feedback/FeedbackComposer.js";
 import { ComposerFooterWarning } from "./feedback/ComposerFooterWarning.js";
 import { DraftProbeSummaryBanner } from "./DraftProbeSummaryBanner.js";
@@ -116,7 +116,7 @@ function ReportDraftFormContent({
     authorSelectionLocked,
     sessionActor,
 }: ReportDraftFormContentProps) {
-    const { messages } = useReport();
+    const { messages } = useReportPreferences();
     const tooltipSurfaceRef = useRef<HTMLDivElement | null>(null);
     const [footerWarningMessage, setFooterWarningMessage] = useState<string | null>(null);
     const anchor = useMemo(() => getDraftMarkerPosition(draft, selectedTarget), [draft, selectedTarget]);

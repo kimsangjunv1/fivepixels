@@ -1,10 +1,10 @@
 import type { PanelRole } from "@/constants/panelRole.js";
 import type { ReportMessages } from "@/i18n/types.js";
 import type { ReportFeedback, ReportPanelStats } from "@/types/report.js";
-import { getFeedbackDisplayStatus } from "@/utils/feedbackThread.js";
-import { getReportCases } from "@/utils/reportCases.js";
-import { formatStatCount } from "@/utils/formatStatCount.js";
-import { isCreatedToday } from "@/utils/routeDetailStatus.js";
+import { getFeedbackDisplayStatus } from "@/utils/feedback/feedbackThread.js";
+import { getReportCases } from "@/utils/report/reportCases.js";
+import { formatStatCount } from "@/utils/panel/formatStatCount.js";
+import { isCreatedToday } from "@/utils/panel/routeDetailStatus.js";
 
 export type PanelRoleStatItem = {
     key: string;

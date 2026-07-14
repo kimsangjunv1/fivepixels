@@ -1,12 +1,12 @@
 import { FeedbackActivityHeatmap } from "./FeedbackActivityHeatmap.js";
-import { useReport } from "@/providers/reportContext.js";
+import { useReportPreferences } from "@/providers/reportContext.js";
 
 type FeedbackActivityYearViewProps = {
     onClose: () => void;
 };
 
 export function FeedbackActivityYearView({ onClose }: FeedbackActivityYearViewProps) {
-    const { messages } = useReport();
+    const { messages } = useReportPreferences();
 
     return (
         <div className="absolute inset-0 z-[40] flex min-h-0 flex-col overflow-hidden rounded-[0_0_12px_12px] bg-[var(--adaptive-black50)]">

@@ -2,11 +2,12 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useMemo, useState } from "react";
 import { CopyIcon, InfoIcon, StarIcon } from "../../../components/icons/Icons.js";
 import { HoverTooltip } from "../../../components/ui/HoverTooltip.js";
-import { useReport } from "../../../providers/reportContext.js";
-import { buildReportIdAttributeSnippet } from "../../../utils/targetSelector.js";
+import { useReportPreferences, useReportSession } from "../../../providers/reportContext.js";
+import { buildReportIdAttributeSnippet } from "../../../utils/marker/targetSelector.js";
 import { Text } from "../../../components/ui/Text";
 export function PickTargetSnippet({ suggestedReportId, reportType = "item" }) {
-    const { messages, setErrorMessage } = useReport();
+    const { messages } = useReportPreferences();
+    const { setErrorMessage } = useReportSession();
     const [copied, setCopied] = useState(false);
     const snippet = buildReportIdAttributeSnippet(suggestedReportId, reportType);
     const infoTooltipContent = useMemo(() => `${messages.pickTarget.snippetTooltipIntro}\n${snippet}`, [messages.pickTarget.snippetTooltipIntro, snippet]);

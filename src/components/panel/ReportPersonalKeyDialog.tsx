@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useReport } from "@/providers/reportContext.js";
+import { useReportPreferences } from "@/providers/reportContext.js";
 
 type ReportPersonalKeyDialogProps = {
     mode: "required" | "insert" | "rotate";
@@ -8,7 +8,7 @@ type ReportPersonalKeyDialogProps = {
 };
 
 export function ReportPersonalKeyDialog({ mode, onCancel, onComplete }: ReportPersonalKeyDialogProps) {
-    const { issuePersonalKey, rotatePersonalKey, insertPersonalKey, personalKeyCandidates, messages } = useReport();
+    const { issuePersonalKey, rotatePersonalKey, insertPersonalKey, personalKeyCandidates, messages } = useReportPreferences();
     const [key, setKey] = useState("");
     const [authorId, setAuthorId] = useState(personalKeyCandidates.length === 1 ? personalKeyCandidates[0]!.id : "");
     const [error, setError] = useState("");

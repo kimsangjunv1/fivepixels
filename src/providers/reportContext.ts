@@ -21,10 +21,20 @@ type AssertNoUnknownPreferenceKeys = Exclude<(typeof REPORT_PREFERENCE_KEYS)[num
 type AssertNoUnknownSessionKeys = Exclude<(typeof REPORT_SESSION_KEYS)[number], keyof ReportContextValue>;
 type AssertNoUnknownDataKeys = Exclude<(typeof REPORT_DATA_KEYS)[number], keyof ReportContextValue>;
 
+type PartitionKey = PreferenceKey | SessionKey | DataKey;
+type AssertNoUncoveredKeys = Exclude<keyof ReportContextValue, PartitionKey>;
+type AssertNoPreferenceSessionOverlap = Extract<PreferenceKey, SessionKey>;
+type AssertNoPreferenceDataOverlap = Extract<PreferenceKey, DataKey>;
+type AssertNoSessionDataOverlap = Extract<SessionKey, DataKey>;
+
 type AssertNever<T extends never> = T;
 type _AssertPreferenceKeys = AssertNever<AssertNoUnknownPreferenceKeys>;
 type _AssertSessionKeys = AssertNever<AssertNoUnknownSessionKeys>;
 type _AssertDataKeys = AssertNever<AssertNoUnknownDataKeys>;
+type _AssertPartitionComplete = AssertNever<AssertNoUncoveredKeys>;
+type _AssertPreferenceSessionDisjoint = AssertNever<AssertNoPreferenceSessionOverlap>;
+type _AssertPreferenceDataDisjoint = AssertNever<AssertNoPreferenceDataOverlap>;
+type _AssertSessionDataDisjoint = AssertNever<AssertNoSessionDataOverlap>;
 
 const ReportContext = createContext<ReportContextValue | null>(null);
 const ReportPreferencesContext = createContext<ReportPreferencesValue | null>(null);
@@ -81,3 +91,7 @@ export { ReportContext, ReportPreferencesContext, ReportSessionContext, ReportDa
 void 0 as unknown as _AssertPreferenceKeys;
 void 0 as unknown as _AssertSessionKeys;
 void 0 as unknown as _AssertDataKeys;
+void 0 as unknown as _AssertPartitionComplete;
+void 0 as unknown as _AssertPreferenceSessionDisjoint;
+void 0 as unknown as _AssertPreferenceDataDisjoint;
+void 0 as unknown as _AssertSessionDataDisjoint;

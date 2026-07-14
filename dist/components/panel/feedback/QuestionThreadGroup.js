@@ -1,11 +1,11 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useEffect, useState } from "react";
-import { useReport } from "../../../providers/reportContext.js";
+import { useReportPreferences } from "../../../providers/reportContext.js";
 import { ChevronDownIcon } from "../../../components/icons/Icons.js";
 import { ThreadChildReply } from "./ThreadChildReply.js";
 import { ThreadTimelineRow } from "./ThreadTimelineRow.js";
 export function QuestionThreadGroup({ questions, originalAuthorName, forceExpanded = false }) {
-    const { messages, questionThreadDisplay } = useReport();
+    const { messages, questionThreadDisplay } = useReportPreferences();
     const [isExpanded, setIsExpanded] = useState(() => questionThreadDisplay === "expanded");
     useEffect(() => {
         setIsExpanded(questionThreadDisplay === "expanded");

@@ -1,8 +1,8 @@
 import { FEEDBACK_DISPLAY_STATUS_ORDER } from "@/constants/feedbackStatus.js";
 import type { FeedbackDisplayStatus } from "@/constants/feedbackStatus.js";
 import type { ReportFeedback, ReportField, ReportPanelBootstrapResult, ReportPanelStats } from "@/types/report.js";
-import { getFeedbackDisplayStatus } from "@/utils/feedbackThread.js";
-import { toDateKey } from "@/utils/heatmapActivity.js";
+import { getFeedbackDisplayStatus } from "@/utils/feedback/feedbackThread.js";
+import { toDateKey } from "@/utils/panel/heatmapActivity.js";
 
 export type RouteDetailsFieldCount = {
     key: string;
