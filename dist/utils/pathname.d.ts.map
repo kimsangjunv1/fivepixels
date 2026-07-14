@@ -1,1 +1,1 @@
-{"version":3,"file":"pathname.d.ts","sourceRoot":"","sources":["../../src/utils/pathname.ts"],"names":[],"mappings":"AAAA,wBAAgB,kBAAkB,CAAC,QAAQ,CAAC,EAAE,MAAM,UAUnD;AAED,6EAA6E;AAC7E,wBAAgB,mBAAmB,CAAC,SAAS,CAAC,EAAE,MAAM,UAUrD"}
+{"version":3,"file":"pathname.d.ts","sourceRoot":"","sources":["../../src/utils/pathname.ts"],"names":[],"mappings":"AAAA,cAAc,sBAAsB,CAAC"}

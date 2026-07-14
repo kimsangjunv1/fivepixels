@@ -1,9 +1,2 @@
-import { resolveProjectId } from "./projectId.js";
-export function resolveReportProject({ project }) {
-    return {
-        projectId: resolveProjectId(project?.id),
-        environment: project?.env,
-        appVersion: project?.version,
-    };
-}
+export * from "./report/reportProject.js";
 //# sourceMappingURL=reportProject.js.map

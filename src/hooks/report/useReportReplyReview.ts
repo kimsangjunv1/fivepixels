@@ -1,0 +1,699 @@
+import { useCallback, useEffect, useMemo, useState, type Dispatch, type SetStateAction } from "react";
+import type { ReportMessages } from "@/i18n/types.js";
+import type {
+    CreateReplyPayload,
+    ReportAuthor,
+    ReportFeedback,
+    ReportField,
+    ReportIdentify,
+    ReportReply,
+    UpdateReportFeedbackPayload,
+} from "@/types/report.js";
+import type { Marker, PendingFeedbackComposer } from "@/types/report-ui.js";
+import {
+    canShowCaseClaimAction,
+    createReplyStatusForSubmit,
+    getLatestBranchRootForCase,
+    getReportReplies,
+    ISSUE_ROOT_PARENT_ID,
+    requiresCaseActorPermissionForComposer,
+    resolveOriginalFeedbackAuthorName,
+    resolveParentReplyIdForCaseQuestion,
+} from "@/utils/feedbackThread.js";
+import { resolveTooltipAnchor } from "@/utils/coordinates.js";
+import { getFieldError } from "@/utils/fields.js";
+import {
+    canEditReportCases,
+    claimCaseAssignee,
+    createReportCase,
+    buildResolvedCasesUpdate,
+    canActOnCase,
+    getCaseAssigneeName,
+    isValidFocusedCase,
+    resolveDefaultFocusedCaseId,
+    transferCaseAssignee,
+} from "@/utils/reportCases.js";
+import { createReplyId } from "@/utils/format.js";
+import { notifyFeedbackReply, notifyFeedbackUpdate, type ReportSideEffectCallbacks } from "@/utils/reportCallbacks.js";
+import type { SessionActor } from "@/utils/reportTeam.js";
+
+function resolveDefaultAuthorName(identify: ReportIdentify | undefined, authors: ReportAuthor[], selfName?: string) {
+    if (identify?.name) {
+        return identify.name;
+    }
+
+    return authors[0]?.name ?? selfName ?? "";
+}
+
+export type UseReportReplyReviewParams = {
+    markers: Marker[];
+    reports: ReportFeedback[];
+    messages: ReportMessages;
+    fields: ReportField[];
+    sessionActor: SessionActor | null;
+    authorSelectionLocked: boolean;
+    activeIdentify: ReportIdentify | undefined;
+    authorizedAuthors: ReportAuthor[];
+    selfName?: string;
+    eventCallbacks: ReportSideEffectCallbacks;
+    createReply: (commentId: string, payload: CreateReplyPayload) => Promise<unknown>;
+    updateFeedback: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
+    usesCreateReply: boolean;
+    signReplyPayload: (payload: CreateReplyPayload) => Promise<CreateReplyPayload>;
+    signUpdatePayload: (payload: UpdateReportFeedbackPayload) => Promise<UpdateReportFeedbackPayload>;
+    setErrorMessage: Dispatch<SetStateAction<string>>;
+    onSelectReport: (reportId: string) => void;
+};
+
+export function useReportReplyReview({
+    markers,
+    reports,
+    messages,
+    fields,
+    sessionActor,
+    authorSelectionLocked,
+    activeIdentify,
+    authorizedAuthors,
+    selfName,
+    eventCallbacks,
+    createReply,
+    updateFeedback,
+    usesCreateReply,
+    signReplyPayload,
+    signUpdatePayload,
+    setErrorMessage,
+    onSelectReport,
+}: UseReportReplyReviewParams) {
+    const [activeReplyReportId, setActiveReplyReportId] = useState<string | null>(null);
+    const [replyDraft, setReplyDraft] = useState("");
+    const [replySubmitAsQuestion, setReplySubmitAsQuestion] = useState(false);
+    const [replyAuthorName, setReplyAuthorName] = useState(() => resolveDefaultAuthorName(activeIdentify, authorizedAuthors, selfName));
+    const [isSubmittingReply, setIsSubmittingReply] = useState(false);
+    const [isClaimingAssignee, setIsClaimingAssignee] = useState(false);
+    const [pendingComposer, setPendingComposer] = useState<PendingFeedbackComposer>(null);
+    const [confirmAuthorName, setConfirmAuthorName] = useState("");
+    const [showConfirmAuthorSelect, setShowConfirmAuthorSelect] = useState(false);
+    const [caseEditReportId, setCaseEditReportId] = useState<string | null>(null);
+    const [caseEditDraft, setCaseEditDraft] = useState<ReportFeedback["cases"] | null>(null);
+    const [focusedCaseId, setFocusedCaseId] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (!sessionActor?.name) {
+            return;
+        }
+
+        setReplyAuthorName(sessionActor.name);
+    }, [sessionActor?.id, sessionActor?.name]);
+
+    const setReplyAuthorNameSafe = useCallback(
+        (name: string) => {
+            if (authorSelectionLocked && sessionActor?.name) {
+                setReplyAuthorName(sessionActor.name);
+                return;
+            }
+
+            setReplyAuthorName(name);
+        },
+        [authorSelectionLocked, sessionActor?.name],
+    );
+
+    const activeReplyAnchor = useMemo(() => resolveTooltipAnchor(markers, activeReplyReportId), [activeReplyReportId, markers]);
+    const activeReplyReport = activeReplyAnchor?.report ?? null;
+
+    const cancelCaseEdit = useCallback(() => {
+        setCaseEditReportId(null);
+        setCaseEditDraft(null);
+    }, []);
+
+    useEffect(() => {
+        if (!activeReplyReport) {
+            return;
+        }
+
+        setFocusedCaseId((current) => {
+            if (current && isValidFocusedCase(activeReplyReport, current)) {
+                return current;
+            }
+
+            return resolveDefaultFocusedCaseId(activeReplyReport);
+        });
+    }, [activeReplyReport]);
+
+    const clearFocusedCase = useCallback(() => {
+        setFocusedCaseId(null);
+    }, []);
+
+    const selectCase = useCallback((caseId: string) => {
+        setFocusedCaseId(caseId);
+        setPendingComposer(null);
+        setReplyDraft("");
+        setReplySubmitAsQuestion(false);
+        setErrorMessage("");
+    }, []);
+
+    const ensureFocusedCase = useCallback(
+        (report: ReportFeedback) => {
+            if (isValidFocusedCase(report, focusedCaseId)) {
+                return true;
+            }
+
+            setErrorMessage(messages.errors.selectCaseFirst);
+            return false;
+        },
+        [focusedCaseId, messages.errors.selectCaseFirst],
+    );
+
+    const ensureCanActOnFocusedCase = useCallback(
+        (report: ReportFeedback) => {
+            if (!ensureFocusedCase(report) || !focusedCaseId) {
+                return false;
+            }
+
+            const actorName = sessionActor?.name?.trim() ?? "";
+
+            if (actorName && canActOnCase(report, focusedCaseId, actorName)) {
+                return true;
+            }
+
+            setErrorMessage(messages.errors.caseAssigneeOnly);
+            return false;
+        },
+        [ensureFocusedCase, focusedCaseId, messages.errors.caseAssigneeOnly, sessionActor?.name],
+    );
+
+    const beginCaseEdit = useCallback(
+        (report: ReportFeedback) => {
+            if (!canEditReportCases(report)) {
+                setErrorMessage(messages.errors.archivedReadOnly);
+                return;
+            }
+
+            setCaseEditReportId(report.id);
+            setCaseEditDraft(report.cases.map((item) => ({ ...item })));
+            setErrorMessage("");
+        },
+        [messages.errors.archivedReadOnly],
+    );
+
+    const updateCaseEditDraftCase = useCallback((caseId: string, text: string) => {
+        setCaseEditDraft((current) => {
+            if (!current) {
+                return current;
+            }
+
+            return current.map((item) => (item.id === caseId ? { ...item, text } : item));
+        });
+    }, []);
+
+    const addCaseEditDraftCase = useCallback(() => {
+        setCaseEditDraft((current) => (current ? [...current, createReportCase("")] : current));
+    }, []);
+
+    const removeCaseEditDraftCase = useCallback((caseId: string) => {
+        setCaseEditDraft((current) => {
+            if (!current || current.length <= 1) {
+                return current;
+            }
+
+            return current.filter((item) => item.id !== caseId);
+        });
+    }, []);
+
+    const handleCaseEditSave = async () => {
+        if (!caseEditReportId || !caseEditDraft) {
+            return;
+        }
+
+        const report = reports.find((item) => item.id === caseEditReportId) ?? activeReplyReport;
+
+        if (!report) {
+            return;
+        }
+
+        if (!canEditReportCases(report)) {
+            setErrorMessage(messages.errors.archivedNotEditable);
+            return;
+        }
+
+        const nextError = getFieldError(caseEditDraft, report.field_values, fields, messages.errors);
+
+        if (nextError) {
+            setErrorMessage(nextError);
+            return;
+        }
+
+        try {
+            const cases = caseEditDraft.map((item) => ({
+                ...item,
+                text: item.text.trim(),
+                updated_at: new Date().toISOString(),
+            }));
+            const updatedFeedback = await updateFeedback(report.id, await signUpdatePayload({ cases }));
+
+            await notifyFeedbackUpdate(eventCallbacks, updatedFeedback);
+            cancelCaseEdit();
+            setErrorMessage("");
+        } catch (nextError) {
+            setErrorMessage(nextError instanceof Error ? nextError.message : messages.errors.updateFeedbackFailed);
+        }
+    };
+
+    const isCaseEditing = Boolean(caseEditReportId && caseEditDraft);
+    const caseEditCases = caseEditReportId === activeReplyReport?.id ? caseEditDraft : null;
+
+    useEffect(() => {
+        if (caseEditReportId && activeReplyReportId && caseEditReportId !== activeReplyReportId) {
+            cancelCaseEdit();
+        }
+    }, [activeReplyReportId, cancelCaseEdit, caseEditReportId]);
+
+    const closeReplyComposer = () => {
+        setActiveReplyReportId(null);
+        setReplyDraft("");
+        setReplySubmitAsQuestion(false);
+        setPendingComposer(null);
+        setShowConfirmAuthorSelect(false);
+        cancelCaseEdit();
+        clearFocusedCase();
+    };
+
+    const openReplyComposer = (report: ReportFeedback) => {
+        onSelectReport(report.id);
+        setActiveReplyReportId(report.id);
+        setReplyDraft("");
+        setReplySubmitAsQuestion(false);
+        setPendingComposer(null);
+        setReplyAuthorName(sessionActor?.name ?? resolveDefaultAuthorName(activeIdentify, authorizedAuthors, selfName));
+        setConfirmAuthorName(resolveOriginalFeedbackAuthorName(report));
+        setShowConfirmAuthorSelect(false);
+        setFocusedCaseId(resolveDefaultFocusedCaseId(report));
+    };
+
+    const toggleConfirmAuthorSelect = () => {
+        setShowConfirmAuthorSelect((current) => !current);
+    };
+
+    const startDenyReview = (targetReplyId?: string) => {
+        if (!activeReplyReport || !focusedCaseId) {
+            return;
+        }
+
+        if (!ensureCanActOnFocusedCase(activeReplyReport)) {
+            return;
+        }
+
+        const latestRoot = getLatestBranchRootForCase(activeReplyReport, focusedCaseId);
+
+        if (!latestRoot) {
+            setPendingComposer({
+                type: "deny",
+                targetReplyId: targetReplyId ?? ISSUE_ROOT_PARENT_ID,
+            });
+            setReplyDraft("");
+            setReplySubmitAsQuestion(false);
+            return;
+        }
+
+        setPendingComposer({
+            type: latestRoot.status === "found_error" ? "recheck" : "deny",
+            targetReplyId: latestRoot.id,
+        });
+        setReplyDraft("");
+        setReplySubmitAsQuestion(false);
+    };
+
+    const startCheckoutReview = (replyId: string) => {
+        if (!activeReplyReport || !focusedCaseId || !ensureCanActOnFocusedCase(activeReplyReport)) {
+            return;
+        }
+
+        setPendingComposer({ type: "checkout", targetReplyId: replyId });
+        setReplyDraft("");
+        setReplySubmitAsQuestion(false);
+    };
+
+    const startAskQuestion = () => {
+        if (!activeReplyReport || !focusedCaseId || !ensureFocusedCase(activeReplyReport)) {
+            return;
+        }
+
+        const latestRoot = getLatestBranchRootForCase(activeReplyReport, focusedCaseId);
+
+        setErrorMessage("");
+        setReplyDraft("");
+
+        if (!latestRoot) {
+            setPendingComposer({
+                type: "question",
+                targetReplyId: ISSUE_ROOT_PARENT_ID,
+            });
+            setReplySubmitAsQuestion(true);
+            return;
+        }
+
+        if (latestRoot.status === "suggested" || latestRoot.status === "found_error" || latestRoot.status === "recheck_requested") {
+            setPendingComposer({
+                type: "question",
+                targetReplyId: latestRoot.id,
+            });
+            setReplySubmitAsQuestion(true);
+        }
+    };
+
+    const cancelPendingComposer = () => {
+        setPendingComposer(null);
+        setReplyDraft("");
+        setReplySubmitAsQuestion(false);
+    };
+    const appendReply = async (report: ReportFeedback, reply: ReportReply) => {
+        if (usesCreateReply) {
+            await createReply(
+                report.id,
+                await signReplyPayload({
+                    message: reply.message,
+                    status: reply.status,
+                    case_ids: reply.case_ids,
+                    parent_reply_id: reply.parent_reply_id,
+                    author_type: reply.author_type ?? "manager",
+                    author_name: reply.author_name,
+                }),
+            );
+        } else {
+            const payload = await signUpdatePayload({
+                replies: [...getReportReplies(report), reply],
+            });
+            await updateFeedback(report.id, payload);
+        }
+
+        await notifyFeedbackReply(eventCallbacks, {
+            feedbackId: report.id,
+            message: reply.message,
+        });
+    };
+
+    const handleReplySubmit = async () => {
+        if (!activeReplyReport) {
+            return;
+        }
+
+        if (!replyDraft.trim()) {
+            setErrorMessage(messages.errors.replyContentRequired);
+            return;
+        }
+
+        if (!ensureFocusedCase(activeReplyReport) || !focusedCaseId) {
+            return;
+        }
+
+        const actorName = sessionActor?.name?.trim() ?? "";
+
+        if (!actorName) {
+            setErrorMessage(messages.errors.authorRequired);
+            return;
+        }
+
+        const pendingType = pendingComposer?.type ?? null;
+        const isCreatorSubmit = pendingType === "deny" || pendingType === "recheck" || pendingType === "question";
+        const isQuestionSubmit = pendingType === "question";
+
+        if (requiresCaseActorPermissionForComposer(pendingType) && !canActOnCase(activeReplyReport, focusedCaseId, actorName)) {
+            setErrorMessage(messages.errors.caseAssigneeOnly);
+            return;
+        }
+
+        const replyMessage = replyDraft.trim();
+        const replyStatus = createReplyStatusForSubmit(pendingType, isQuestionSubmit);
+        const parentReplyId = replyStatus === "additional_question" ? resolveParentReplyIdForCaseQuestion(activeReplyReport, focusedCaseId, pendingComposer) : null;
+        const reply: ReportReply = {
+            id: createReplyId(),
+            message: replyMessage,
+            created_at: new Date().toISOString(),
+            status: replyStatus,
+            case_ids: [focusedCaseId],
+            ...(parentReplyId ? { parent_reply_id: parentReplyId } : {}),
+            author_type: isCreatorSubmit ? "user" : "manager",
+            author_name: actorName,
+        };
+
+        try {
+            setIsSubmittingReply(true);
+
+            await appendReply(activeReplyReport, reply);
+
+            setErrorMessage("");
+            setReplyDraft("");
+
+            if (replyStatus === "additional_question") {
+                setReplySubmitAsQuestion(true);
+
+                if (pendingType === "question" && pendingComposer) {
+                    setPendingComposer({
+                        type: "question",
+                        targetReplyId: pendingComposer.targetReplyId,
+                    });
+                } else {
+                    setPendingComposer(null);
+                }
+            } else {
+                setReplySubmitAsQuestion(false);
+                setPendingComposer(null);
+            }
+        } catch (nextError) {
+            setErrorMessage(nextError instanceof Error ? nextError.message : messages.errors.saveReplyFailed);
+        } finally {
+            setIsSubmittingReply(false);
+        }
+    };
+
+    const handleClaimAssignee = async () => {
+        if (!activeReplyReport) {
+            return;
+        }
+
+        if (!ensureFocusedCase(activeReplyReport) || !focusedCaseId) {
+            return;
+        }
+
+        const assigneeName = sessionActor?.name?.trim() ?? "";
+
+        if (!assigneeName) {
+            setErrorMessage(messages.errors.authorRequired);
+            return;
+        }
+
+        if (!canShowCaseClaimAction(activeReplyReport, focusedCaseId, assigneeName)) {
+            setErrorMessage(messages.errors.caseAssigneeOnly);
+            return;
+        }
+
+        const reply: ReportReply = {
+            id: createReplyId(),
+            message: messages.thread.assigneeAssigned,
+            created_at: new Date().toISOString(),
+            status: "assignee_assigned",
+            case_ids: [focusedCaseId],
+            author_type: "manager",
+            author_name: assigneeName,
+        };
+
+        try {
+            setIsClaimingAssignee(true);
+            await appendReply(activeReplyReport, reply);
+
+            const nextCases = claimCaseAssignee(activeReplyReport.cases, focusedCaseId, assigneeName);
+
+            await updateFeedback(
+                activeReplyReport.id,
+                await signUpdatePayload({
+                    cases: nextCases,
+                }),
+            );
+
+            setErrorMessage("");
+        } catch (nextError) {
+            setErrorMessage(nextError instanceof Error ? nextError.message : messages.errors.saveReplyFailed);
+        } finally {
+            setIsClaimingAssignee(false);
+        }
+    };
+
+    const handleTransferAssignee = async () => {
+        if (!activeReplyReport) {
+            return;
+        }
+
+        if (!ensureFocusedCase(activeReplyReport) || !focusedCaseId) {
+            return;
+        }
+
+        const assigneeName = sessionActor?.name?.trim() ?? "";
+
+        if (!assigneeName) {
+            setErrorMessage(messages.errors.authorRequired);
+            return;
+        }
+
+        const currentAssignee = getCaseAssigneeName(activeReplyReport, focusedCaseId);
+
+        if (!currentAssignee || currentAssignee === assigneeName) {
+            setErrorMessage(messages.errors.caseAssigneeOnly);
+            return;
+        }
+
+        const authorName = resolveOriginalFeedbackAuthorName(activeReplyReport);
+
+        if (authorName && assigneeName === authorName) {
+            setErrorMessage(messages.errors.caseAssigneeOnly);
+            return;
+        }
+
+        const reply: ReportReply = {
+            id: createReplyId(),
+            message: messages.thread.assigneeTransferred,
+            created_at: new Date().toISOString(),
+            status: "assignee_transferred",
+            case_ids: [focusedCaseId],
+            author_type: "manager",
+            author_name: assigneeName,
+        };
+
+        try {
+            setIsClaimingAssignee(true);
+            await appendReply(activeReplyReport, reply);
+
+            const nextCases = transferCaseAssignee(activeReplyReport.cases, focusedCaseId, assigneeName);
+
+            await updateFeedback(
+                activeReplyReport.id,
+                await signUpdatePayload({
+                    cases: nextCases,
+                }),
+            );
+
+            setErrorMessage("");
+        } catch (nextError) {
+            setErrorMessage(nextError instanceof Error ? nextError.message : messages.errors.saveReplyFailed);
+        } finally {
+            setIsClaimingAssignee(false);
+        }
+    };
+
+    const handleConfirmResolution = async () => {
+        if (!activeReplyReport) {
+            return;
+        }
+
+        if (!ensureFocusedCase(activeReplyReport) || !focusedCaseId) {
+            return;
+        }
+
+        const resolverName = sessionActor?.name?.trim() ?? "";
+
+        if (!resolverName) {
+            setErrorMessage(messages.errors.reviewerRequired);
+            return;
+        }
+
+        if (!canActOnCase(activeReplyReport, focusedCaseId, resolverName)) {
+            setErrorMessage(messages.errors.caseAssigneeOnly);
+            return;
+        }
+
+        const nextCases = buildResolvedCasesUpdate(activeReplyReport, [focusedCaseId]);
+
+        try {
+            if (usesCreateReply) {
+                await createReply(
+                    activeReplyReport.id,
+                    await signReplyPayload({
+                        message: messages.resolution.issueResolvedMessage,
+                        status: "resolved",
+                        case_ids: [focusedCaseId],
+                        author_type: "user",
+                        author_name: resolverName,
+                    }),
+                );
+                const updatedFeedback = await updateFeedback(
+                    activeReplyReport.id,
+                    await signUpdatePayload({
+                        cases: nextCases,
+                    }),
+                );
+
+                await notifyFeedbackUpdate(eventCallbacks, updatedFeedback);
+            } else {
+                const reply: ReportReply = {
+                    id: createReplyId(),
+                    message: messages.resolution.issueResolvedMessage,
+                    created_at: new Date().toISOString(),
+                    status: "resolved",
+                    case_ids: [focusedCaseId],
+                    author_type: "user",
+                    author_name: resolverName,
+                };
+                const updatedFeedback = await updateFeedback(
+                    activeReplyReport.id,
+                    await signUpdatePayload({
+                        cases: nextCases,
+                        replies: [...getReportReplies(activeReplyReport), reply],
+                    }),
+                );
+
+                await notifyFeedbackUpdate(eventCallbacks, updatedFeedback);
+            }
+
+            setFocusedCaseId(resolveDefaultFocusedCaseId({ ...activeReplyReport, cases: nextCases }));
+            setErrorMessage("");
+            setPendingComposer(null);
+            setReplyDraft("");
+            setShowConfirmAuthorSelect(false);
+        } catch (nextError) {
+            setErrorMessage(nextError instanceof Error ? nextError.message : messages.errors.confirmResolutionFailed);
+        }
+    };
+
+    return {
+        activeReplyReportId,
+        setActiveReplyReportId,
+        activeReplyReport,
+        activeReplyAnchor,
+        replyDraft,
+        setReplyDraft,
+        replySubmitAsQuestion,
+        setReplySubmitAsQuestion,
+        replyAuthorName,
+        setReplyAuthorName: setReplyAuthorNameSafe,
+        setReplyAuthorNameRaw: setReplyAuthorName,
+        isSubmittingReply,
+        isClaimingAssignee,
+        pendingComposer,
+        setPendingComposer,
+        confirmAuthorName,
+        setConfirmAuthorName,
+        showConfirmAuthorSelect,
+        setShowConfirmAuthorSelect,
+        toggleConfirmAuthorSelect,
+        startDenyReview,
+        startCheckoutReview,
+        startAskQuestion,
+        cancelPendingComposer,
+        handleClaimAssignee,
+        handleTransferAssignee,
+        handleConfirmResolution,
+        beginCaseEdit,
+        cancelCaseEdit,
+        handleCaseEditSave,
+        updateCaseEditDraftCase,
+        addCaseEditDraftCase,
+        removeCaseEditDraftCase,
+        focusedCaseId,
+        selectCase,
+        clearFocusedCase,
+        isCaseEditing,
+        caseEditReportId,
+        caseEditCases,
+        openReplyComposer,
+        closeReplyComposer,
+        handleReplySubmit,
+    };
+}

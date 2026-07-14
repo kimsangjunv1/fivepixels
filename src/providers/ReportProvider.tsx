@@ -30,7 +30,13 @@ import { resolveReportProject } from "@/utils/reportProject.js";
 import { resolveReportTeam } from "@/utils/reportTeam.js";
 import { resolveReportUi, type ResolvedReportUi } from "@/utils/reportUi.js";
 import { resolveReportVisibility } from "@/utils/reportVisibility.js";
-import { ReportContext } from "./reportContext.js";
+import {
+    ReportContext,
+    ReportDataContext,
+    ReportPreferencesContext,
+    ReportSessionContext,
+    useReportContextSlices,
+} from "./reportContext.js";
 
 export type ReportProviderProps = {
     project?: ReportProject;
@@ -146,8 +152,17 @@ function ReportProviderEnabled({
         initialLocale: locale,
         messageOverrides,
     });
+    const { preferences, session, data } = useReportContextSlices(value);
 
-    return <ReportContext.Provider value={value}>{children}</ReportContext.Provider>;
+    return (
+        <ReportContext.Provider value={value}>
+            <ReportPreferencesContext.Provider value={preferences}>
+                <ReportSessionContext.Provider value={session}>
+                    <ReportDataContext.Provider value={data}>{children}</ReportDataContext.Provider>
+                </ReportSessionContext.Provider>
+            </ReportPreferencesContext.Provider>
+        </ReportContext.Provider>
+    );
 }
 
 export function ReportProvider({

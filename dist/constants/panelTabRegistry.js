@@ -3,8 +3,6 @@
  * Fetched only while the tab is **active** (not merely visible in the tab bar).
  */
 export const ALL_SCOPE_PANEL_TABS = ["overview", "my-tasks", "needs-attention", "project-health", "today-digest"];
-/** @deprecated Use ALL_SCOPE_PANEL_TABS. Kept for older imports. */
-export const HIGH_API_RISK_PANEL_TABS = ALL_SCOPE_PANEL_TABS;
 export function isAllScopePanelTab(tabId) {
     return typeof tabId === "string" && ALL_SCOPE_PANEL_TABS.includes(tabId);
 }

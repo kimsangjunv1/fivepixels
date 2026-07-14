@@ -1,2 +1,2 @@
-export declare function formatStatCount(count: number): string;
+export * from "./panel/formatStatCount.js";
 //# sourceMappingURL=formatStatCount.d.ts.map

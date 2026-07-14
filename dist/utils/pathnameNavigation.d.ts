@@ -1,4 +1,2 @@
-type PathnameListener = () => void;
-export declare function subscribeToPathnameChanges(listener: PathnameListener): () => void;
-export {};
+export * from "./shared/pathnameNavigation.js";
 //# sourceMappingURL=pathnameNavigation.d.ts.map

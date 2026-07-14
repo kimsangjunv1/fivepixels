@@ -194,7 +194,7 @@ export function FeedbackComposer({
     };
 
     return (
-        <div className={`flex w-full flex-col bg-[var(--adaptive-blackOpacity400)] backdrop-blur-sm ${usesCaseEditor ? "min-h-0 flex-1" : ""}`}>
+        <div className={`flex w-full flex-col bg-[var(--adaptive-fillOpacity400)] backdrop-blur-sm ${usesCaseEditor ? "min-h-0 flex-1" : ""}`}>
             <div className={`relative ${usesCaseEditor ? "min-h-0 flex-1" : ""}`}>
                 {errorMessage && !isFooterHandledError ? (
                     <p

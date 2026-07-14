@@ -111,8 +111,6 @@ export type FivePixelsMode = "default" | "presentation";
 
 /** UI options passed to `<FivePixels ui={{ appearance, panelAppearance, tooltipAppearance, showFeedbackList, visibleShortcutKeys, shortcut, locale, messages, replyHistory }} />`. */
 export type ReportUi = {
-    /** @deprecated Use `panelAppearance` and `tooltipAppearance` instead. Sets both when they are omitted. */
-    appearance?: ReportAppearance;
     panelAppearance?: ReportAppearance;
     tooltipAppearance?: ReportAppearance;
     showFeedbackList?: boolean;

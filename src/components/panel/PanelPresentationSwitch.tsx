@@ -1,12 +1,13 @@
 import { useState } from "react";
-import { useReport } from "@/providers/reportContext.js";
+import { useReportPreferences, useReportSession } from "@/providers/reportContext.js";
 import { ChevronDownIcon } from "@/components/icons/Icons.js";
 import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
 import { formatPresentationViewerLabel } from "@/utils/reportTeam.js";
 import { PanelDropdownMenu, PanelDropdownMenuItem } from "./PanelDropdownMenu.js";
 
 export function PanelPresentationSwitch() {
-    const { isPresentationMode, presentationViewers, presentationViewerId, setPresentationViewerId, messages } = useReport();
+    const { isPresentationMode, presentationViewers, messages } = useReportPreferences();
+    const { presentationViewerId, setPresentationViewerId } = useReportSession();
     const [open, setOpen] = useState(false);
 
     if (!isPresentationMode || presentationViewers.length === 0) {

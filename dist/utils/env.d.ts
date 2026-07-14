@@ -1,6 +1,2 @@
-export declare function isProductionEnv(): boolean;
-export declare function resolveReportEnabled(options?: {
-    enabled?: boolean;
-    devOnly?: boolean;
-}): boolean;
+export * from "./shared/env.js";
 //# sourceMappingURL=env.d.ts.map

@@ -18,8 +18,6 @@ export type PanelTabDefinition = {
  * Fetched only while the tab is **active** (not merely visible in the tab bar).
  */
 export declare const ALL_SCOPE_PANEL_TABS: readonly ["overview", "my-tasks", "needs-attention", "project-health", "today-digest"];
-/** @deprecated Use ALL_SCOPE_PANEL_TABS. Kept for older imports. */
-export declare const HIGH_API_RISK_PANEL_TABS: readonly ["overview", "my-tasks", "needs-attention", "project-health", "today-digest"];
 export declare function isAllScopePanelTab(tabId: string | null | undefined): tabId is (typeof ALL_SCOPE_PANEL_TABS)[number];
 /** True when the active panel tab requires fetching listAll (deferred until selected). */
 export declare function shouldEnableAllReportsFetch(params: {

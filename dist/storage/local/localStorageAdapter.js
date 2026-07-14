@@ -1,6 +1,5 @@
 import { getActiveReportMessages } from "../../i18n/index.js";
 import { isFeedbackCategory } from "../../constants/feedbackCategory.js";
-import { DEFAULT_PROJECT_ID } from "../../constants/project.js";
 import { getReportsStorageKey } from "../../constants/storageKeys.js";
 import { parseFeedbackStorageEnvelope, serializeFeedbackStorageEnvelope } from "../../utils/feedbackTransferSchema.js";
 import { allocateNextFcNumber, backfillFcNumbers } from "../../utils/feedbackCaseId.js";
@@ -251,6 +250,4 @@ export function createLocalStorageReportAdapter({ projectId, environment, appVer
         },
     };
 }
-/** @deprecated Use createLocalStorageReportAdapter({ projectId }) instead. */
-export const localStorageReportAdapter = createLocalStorageReportAdapter({ projectId: DEFAULT_PROJECT_ID });
 //# sourceMappingURL=localStorageAdapter.js.map

@@ -2,8 +2,9 @@ export { FivePixels } from "./FivePixels.js";
 export type { FivePixelsProps } from "./FivePixels.js";
 export { ReportProvider } from "@/providers/ReportProvider.js";
 export type { ReportProviderProps } from "@/providers/ReportProvider.js";
-export { useReport } from "@/providers/reportContext.js";
-export { createLocalStorageReportAdapter, localStorageReportAdapter } from "@/storage/local/localStorageAdapter.js";
+export { useReport, useReportPreferences, useReportSession, useReportData } from "@/providers/reportContext.js";
+export type { ReportPreferencesValue, ReportSessionValue, ReportDataValue } from "@/providers/reportContext.js";
+export { createLocalStorageReportAdapter } from "@/storage/local/localStorageAdapter.js";
 export type {
     CreateReportFeedbackPayload,
     ReportAppearance,

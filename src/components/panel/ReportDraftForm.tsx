@@ -11,10 +11,10 @@ import { PickTargetSnippet } from "./feedback/PickTargetSnippet.js";
 import { CornerResizeGhost } from "@/components/ui/CornerResizeGhost.js";
 import { CornerResizeHandle } from "@/components/ui/CornerResizeHandle.js";
 
-const TOOLTIP_SURFACE_CLASS = "overflow-hidden rounded-[16px] shadow-[var(--adaptive-popup-shadow)] bg-[var(--adaptive-blackOpacity500)] backdrop-blur-[5px]";
-// "overflow-hidden rounded-[24px] border-[3px] border-[var(--adaptive-black200)] shadow-[var(--adaptive-popup-shadow)] bg-[var(--adaptive-blackOpacity500)] backdrop-blur-[5px]";
+const TOOLTIP_SURFACE_CLASS = "overflow-hidden rounded-[16px] shadow-[var(--adaptive-popup-shadow)] bg-[var(--adaptive-fillOpacity500)] backdrop-blur-[5px]";
+// "overflow-hidden rounded-[24px] border-[3px] border-[var(--adaptive-black200)] shadow-[var(--adaptive-popup-shadow)] bg-[var(--adaptive-fillOpacity500)] backdrop-blur-[5px]";
 // const TOOLTIP_SURFACE_CLASS = "overflow-hidden rounded-[24px] border-[3px] border-[var(--adaptive-black200)] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[20px]";
-// "overflow-hidden rounded-[24px] border-[3px] border-[var(--adaptive-black200)] bg-[var(--adaptive-blackOpacity700)] backdrop-blur-[1px] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[20px]";
+// "overflow-hidden rounded-[24px] border-[3px] border-[var(--adaptive-black200)] bg-[var(--adaptive-fillOpacity700)] backdrop-blur-[1px] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[20px]";
 const EXPANDED_TOOLTIP_ANCHOR_CLASS = "pointer-events-auto fixed z-[1000001]";
 
 export function ReportDraftForm() {

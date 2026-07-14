@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { PANEL_ROLE_VALUES, type PanelRole } from "@/constants/panelRole.js";
-import { useReport } from "@/providers/reportContext.js";
+import { useReportPreferences } from "@/providers/reportContext.js";
 import { ChevronDownIcon } from "@/components/icons/Icons.js";
 import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
 import { PanelDropdownMenu, PanelDropdownMenuItem } from "./PanelDropdownMenu.js";
 
 export function PanelRoleSwitch() {
-    const { panelRole, setPanelRole, messages } = useReport();
+    const { panelRole, setPanelRole, messages } = useReportPreferences();
     const [open, setOpen] = useState(false);
     const roleLabels = messages.panel.roles;
 
