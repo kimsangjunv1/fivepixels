@@ -28,7 +28,7 @@ export declare function CaseResolvedBadge({ resolvedLabel, openLabel, resolved }
     resolvedLabel: string;
     openLabel: string;
     resolved: boolean;
-}): import("react/jsx-runtime").JSX.Element | null;
-export declare function FeedbackCaseTabBar(props: FeedbackCaseTabBarProps): import("react/jsx-runtime").JSX.Element | null;
+}): import("react").JSX.Element | null;
+export declare function FeedbackCaseTabBar(props: FeedbackCaseTabBarProps): import("react").JSX.Element | null;
 export {};
 //# sourceMappingURL=FeedbackCaseTabBar.d.ts.map

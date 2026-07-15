@@ -7,6 +7,6 @@ type ReportImportProjectMismatchDialogProps = {
     onProceed: () => void;
     onCancel: () => void;
 };
-export declare function ReportImportProjectMismatchDialog({ currentProject, importedProject, exportedAt, onProceed, onCancel }: ReportImportProjectMismatchDialogProps): import("react/jsx-runtime").JSX.Element;
+export declare function ReportImportProjectMismatchDialog({ currentProject, importedProject, exportedAt, onProceed, onCancel }: ReportImportProjectMismatchDialogProps): import("react").JSX.Element;
 export {};
 //# sourceMappingURL=ReportImportProjectMismatchDialog.d.ts.map

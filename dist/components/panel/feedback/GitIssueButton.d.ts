@@ -7,6 +7,6 @@ type GitIssueButtonProps = {
     isSubmitting?: boolean;
     onCreateIssue: (report: ReportFeedback) => Promise<void>;
 };
-export declare function GitIssueButton({ report, messages, disabled, isSubmitting, onCreateIssue }: GitIssueButtonProps): import("react/jsx-runtime").JSX.Element;
+export declare function GitIssueButton({ report, messages, disabled, isSubmitting, onCreateIssue }: GitIssueButtonProps): import("react").JSX.Element;
 export {};
 //# sourceMappingURL=GitIssueButton.d.ts.map

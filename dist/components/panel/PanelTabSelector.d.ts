@@ -8,6 +8,6 @@ type PanelTabSelectorProps = {
     messages: ReportMessages;
     onChange: (nextTabs: UserSelectablePanelTab[]) => void;
 };
-export declare function PanelTabSelector({ role, selectedTabs, context, messages, onChange }: PanelTabSelectorProps): import("react/jsx-runtime").JSX.Element;
+export declare function PanelTabSelector({ role, selectedTabs, context, messages, onChange }: PanelTabSelectorProps): import("react").JSX.Element;
 export {};
 //# sourceMappingURL=PanelTabSelector.d.ts.map

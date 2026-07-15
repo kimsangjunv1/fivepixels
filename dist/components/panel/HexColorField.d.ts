@@ -4,6 +4,6 @@ type HexColorFieldProps = {
     onChange: (value: string) => void;
     placeholder?: string;
 };
-export declare function HexColorField({ label, value, onChange, placeholder }: HexColorFieldProps): import("react/jsx-runtime").JSX.Element;
+export declare function HexColorField({ label, value, onChange, placeholder }: HexColorFieldProps): import("react").JSX.Element;
 export {};
 //# sourceMappingURL=HexColorField.d.ts.map

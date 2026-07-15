@@ -3,6 +3,6 @@ type CaseAssigneeInfoProps = {
     caseItem: ReportCase;
     authors: ReportAuthor[];
 };
-export declare function CaseAssigneeInfo({ caseItem, authors }: CaseAssigneeInfoProps): import("react/jsx-runtime").JSX.Element | null;
+export declare function CaseAssigneeInfo({ caseItem, authors }: CaseAssigneeInfoProps): import("react").JSX.Element | null;
 export {};
 //# sourceMappingURL=CaseAssigneeInfo.d.ts.map

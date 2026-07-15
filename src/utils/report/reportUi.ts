@@ -24,8 +24,8 @@ const DEFAULT_UI: Pick<
     ResolvedReportUi,
     "panelAppearance" | "tooltipAppearance" | "showFeedbackList" | "visibleShortcutKeys" | "questionThreadDefault" | "locale"
 > = {
-    panelAppearance: "system",
-    tooltipAppearance: "system",
+    panelAppearance: "light",
+    tooltipAppearance: "light",
     showFeedbackList: true,
     visibleShortcutKeys: false,
     questionThreadDefault: "expanded",

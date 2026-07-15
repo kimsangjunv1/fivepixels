@@ -4,6 +4,6 @@ type FeedbackFieldTagsProps = {
         label: string;
     }[];
 };
-export declare function FeedbackFieldTags({ tags }: FeedbackFieldTagsProps): import("react/jsx-runtime").JSX.Element | null;
+export declare function FeedbackFieldTags({ tags }: FeedbackFieldTagsProps): import("react").JSX.Element | null;
 export {};
 //# sourceMappingURL=FeedbackFieldTags.d.ts.map

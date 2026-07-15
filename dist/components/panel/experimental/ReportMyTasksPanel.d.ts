@@ -1,2 +1,2 @@
-export declare function ReportMyTasksPanel(): import("react/jsx-runtime").JSX.Element;
+export declare function ReportMyTasksPanel(): import("react").JSX.Element;
 //# sourceMappingURL=ReportMyTasksPanel.d.ts.map

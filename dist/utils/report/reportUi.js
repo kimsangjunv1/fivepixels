@@ -1,8 +1,8 @@
 import { getReportMessages, resolveReportLocale } from "../../i18n/index.js";
 import { DEFAULT_REPLY_HISTORY_MODE, DEFAULT_REPLY_HISTORY_PAGE_SIZE } from "../../utils/feedback/replyHistory.js";
 const DEFAULT_UI = {
-    panelAppearance: "system",
-    tooltipAppearance: "system",
+    panelAppearance: "light",
+    tooltipAppearance: "light",
     showFeedbackList: true,
     visibleShortcutKeys: false,
     questionThreadDefault: "expanded",

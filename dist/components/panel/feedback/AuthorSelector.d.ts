@@ -4,6 +4,6 @@ type AuthorSelectorProps = {
     value: string;
     onChange: (value: string) => void;
 };
-export declare function AuthorSelector({ authors, value, onChange }: AuthorSelectorProps): import("react/jsx-runtime").JSX.Element;
+export declare function AuthorSelector({ authors, value, onChange }: AuthorSelectorProps): import("react").JSX.Element;
 export {};
 //# sourceMappingURL=AuthorSelector.d.ts.map

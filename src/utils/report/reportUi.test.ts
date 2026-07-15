@@ -57,8 +57,8 @@ describe("resolveReportUi", () => {
 
     it("uses defaults when ui is omitted", () => {
         expect(resolveReportUi({})).toEqual({
-            panelAppearance: "system",
-            tooltipAppearance: "system",
+            panelAppearance: "light",
+            tooltipAppearance: "light",
             showFeedbackList: true,
             visibleShortcutKeys: false,
             questionThreadDefault: "expanded",

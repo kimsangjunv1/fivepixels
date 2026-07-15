@@ -22,6 +22,6 @@ type FeedbackThreadProps = {
     /** Hide the built-in case tab selector when the case list is rendered elsewhere (e.g. the marker window sidebar). */
     hideCaseSelector?: boolean;
 };
-export declare function FeedbackThread({ report, authors, pendingComposer, confirmAuthorName, showConfirmAuthorSelect, onConfirmAuthorNameChange, onToggleConfirmAuthorSelect: _onToggleConfirmAuthorSelect, onStartDeny, onStartCheckout, onStartAskQuestion, onClaimAssignee, onTransferAssignee, onConfirm, isUpdating, isClaimingAssignee, hideCaseSelector, }: FeedbackThreadProps): import("react/jsx-runtime").JSX.Element;
+export declare function FeedbackThread({ report, authors, pendingComposer, confirmAuthorName, showConfirmAuthorSelect, onConfirmAuthorNameChange, onToggleConfirmAuthorSelect: _onToggleConfirmAuthorSelect, onStartDeny, onStartCheckout, onStartAskQuestion, onClaimAssignee, onTransferAssignee, onConfirm, isUpdating, isClaimingAssignee, hideCaseSelector, }: FeedbackThreadProps): import("react").JSX.Element;
 export {};
 //# sourceMappingURL=FeedbackThread.d.ts.map

@@ -10,6 +10,6 @@ type FeedbackCaseEditorProps = {
     attentionKey?: number;
     emptyCaseIds?: string[];
 };
-export declare function FeedbackCaseEditor({ cases, onCaseChange, onAddCase, onRemoveCase, autoFocus, onSubmitShortcut, needsAttention, attentionKey, emptyCaseIds, }: FeedbackCaseEditorProps): import("react/jsx-runtime").JSX.Element | null;
+export declare function FeedbackCaseEditor({ cases, onCaseChange, onAddCase, onRemoveCase, autoFocus, onSubmitShortcut, needsAttention, attentionKey, emptyCaseIds, }: FeedbackCaseEditorProps): import("react").JSX.Element | null;
 export {};
 //# sourceMappingURL=FeedbackCaseEditor.d.ts.map

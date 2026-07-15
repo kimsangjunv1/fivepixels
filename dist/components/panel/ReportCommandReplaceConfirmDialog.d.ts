@@ -4,6 +4,6 @@ type ReportCommandReplaceConfirmDialogProps = {
     onConfirm: () => void;
     onCancel: () => void;
 };
-export declare function ReportCommandReplaceConfirmDialog({ conflicts, onConfirm, onCancel }: ReportCommandReplaceConfirmDialogProps): import("react/jsx-runtime").JSX.Element;
+export declare function ReportCommandReplaceConfirmDialog({ conflicts, onConfirm, onCancel }: ReportCommandReplaceConfirmDialogProps): import("react").JSX.Element;
 export {};
 //# sourceMappingURL=ReportCommandReplaceConfirmDialog.d.ts.map

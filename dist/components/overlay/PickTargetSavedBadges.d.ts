@@ -1,2 +1,2 @@
-export declare function PickTargetSavedBadges(): import("react/jsx-runtime").JSX.Element | null;
+export declare function PickTargetSavedBadges(): import("react").JSX.Element | null;
 //# sourceMappingURL=PickTargetSavedBadges.d.ts.map

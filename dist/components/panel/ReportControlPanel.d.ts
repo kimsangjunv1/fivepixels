@@ -1,2 +1,2 @@
-export declare function ReportControlPanel(): import("react/jsx-runtime").JSX.Element;
+export declare function ReportControlPanel(): import("react").JSX.Element;
 //# sourceMappingURL=ReportControlPanel.d.ts.map

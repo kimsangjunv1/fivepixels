@@ -34,6 +34,6 @@ type FeedbackComposerProps = {
     lockedAuthorName?: string;
     onFooterWarningChange?: (message: string | null) => void;
 };
-export declare function FeedbackComposer({ message, onMessageChange, cases, onCaseChange, onAddCase, onRemoveCase, authorName, onAuthorNameChange, authors, fields: _fields, fieldValues: _fieldValues, onFieldChange: _onFieldChange, category, onCategoryChange, showCategory, showTags: _showTags, onSubmit, isSubmitting, showGitHubIssueOnCreate, onGitHubIssueSubmit, isGitHubIssueSubmitting, placeholder, autoFocus, errorMessage, showAskQuestionToggle, askQuestionChecked, onAskQuestionChange, askQuestionForced, hideAuthorSelector, lockedAuthorName, onFooterWarningChange, }: FeedbackComposerProps): import("react/jsx-runtime").JSX.Element;
+export declare function FeedbackComposer({ message, onMessageChange, cases, onCaseChange, onAddCase, onRemoveCase, authorName, onAuthorNameChange, authors, fields: _fields, fieldValues: _fieldValues, onFieldChange: _onFieldChange, category, onCategoryChange, showCategory, showTags: _showTags, onSubmit, isSubmitting, showGitHubIssueOnCreate, onGitHubIssueSubmit, isGitHubIssueSubmitting, placeholder, autoFocus, errorMessage, showAskQuestionToggle, askQuestionChecked, onAskQuestionChange, askQuestionForced, hideAuthorSelector, lockedAuthorName, onFooterWarningChange, }: FeedbackComposerProps): import("react").JSX.Element;
 export {};
 //# sourceMappingURL=FeedbackComposer.d.ts.map

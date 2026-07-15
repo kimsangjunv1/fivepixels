@@ -8,6 +8,6 @@ type RouteDetailsTimelineProps = {
     tooltipTodayTemplate: string;
     tooltipYesterdayTemplate: string;
 };
-export declare function RouteDetailsTimeline({ sparkline, todayLabel, yesterdayLabel, timelineAriaLabel, hourAriaLabelTemplate, tooltipTodayTemplate, tooltipYesterdayTemplate, }: RouteDetailsTimelineProps): import("react/jsx-runtime").JSX.Element;
+export declare function RouteDetailsTimeline({ sparkline, todayLabel, yesterdayLabel, timelineAriaLabel, hourAriaLabelTemplate, tooltipTodayTemplate, tooltipYesterdayTemplate, }: RouteDetailsTimelineProps): import("react").JSX.Element;
 export {};
 //# sourceMappingURL=RouteDetailsTimeline.d.ts.map
