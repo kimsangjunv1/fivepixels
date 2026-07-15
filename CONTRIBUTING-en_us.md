@@ -24,6 +24,8 @@ Open PRs against `develop` when possible.
 npm run lint
 ```
 
+`lint` runs `check:utils` (bans flat `@/utils/X.js` imports), `typecheck`, and `test`.
+
 If needed, also run:
 
 ```bash
@@ -32,6 +34,15 @@ npm run dev
 ```
 
 CI runs `typecheck`, `test`, `build`, bundle size checks, and the example build.
+
+## Documentation
+
+| Doc | Audience |
+| --- | -------- |
+| [docs/architecture-hooks.md](./docs/architecture-hooks.md) | hooks/utils/providers layering |
+| [docs/backend-api-route.md](./docs/backend-api-route.md) | Backend persistence handler integration |
+
+Import utils from `@/utils/<domain>/<name>.js` in `components` and `hooks`.
 
 ## Pull requests
 

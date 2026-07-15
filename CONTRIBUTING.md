@@ -24,6 +24,8 @@ PR은 가능하면 `develop`을 대상으로 보내 주세요.
 npm run lint
 ```
 
+`lint`는 `check:utils`(flat `@/utils/X.js` import 금지), `typecheck`, `test`를 포함합니다.
+
 필요하면 아래도 실행해 주세요.
 
 ```bash
@@ -32,6 +34,15 @@ npm run dev
 ```
 
 CI에서 `typecheck`, `test`, `build`, 번들 크기, example 빌드를 검사합니다.
+
+## 문서
+
+| 문서 | 대상 |
+| ---- | ---- |
+| [docs/architecture-hooks.md](./docs/architecture-hooks.md) | hooks/utils/providers 레이어 규칙 |
+| [docs/backend-api-route.md](./docs/backend-api-route.md) | 백엔드 persistence handler 연동 |
+
+`components` / `hooks`에서는 utils를 `@/utils/<domain>/<name>.js` 경로로 import합니다.
 
 ## PR 작성
 
