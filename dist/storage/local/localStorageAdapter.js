@@ -5,6 +5,7 @@ import { parseFeedbackStorageEnvelope, serializeFeedbackStorageEnvelope } from "
 import { allocateNextFcNumber, backfillFcNumbers } from "../../utils/feedback/feedbackCaseId.js";
 import { paginateSortedReplies, sortRepliesChronologically } from "../../utils/feedback/replyHistory.js";
 import { applyCaseStatusSync, normalizeFeedbackCases, normalizeReplyCaseIds, } from "../../utils/report/reportCases.js";
+import { normalizeReportPosition } from "../../utils/report/reportPosition.js";
 function createId() {
     if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
         return crypto.randomUUID();
@@ -107,6 +108,7 @@ function normalizeReport(item) {
         ...(fcNumber !== undefined ? { fc_number: fcNumber } : {}),
         category,
         field_values: normalizeFieldValues(item.field_values),
+        position: normalizeReportPosition(item.position),
         replies: normalizeReplies(item.replies),
         integrations: normalizeIntegrations(item.integrations),
     });

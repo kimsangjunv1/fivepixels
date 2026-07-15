@@ -1,6 +1,7 @@
 import type { ReportFeedback } from "@/types/report.js";
 import type { MarkerDetachedKind } from "@/types/report-ui.js";
 import { hasFixedPositionAncestor } from "../shared/dom.js";
+import { normalizeReportPosition } from "../report/reportPosition.js";
 
 const MODAL_REPORT_ID_PATTERN = /(?:^|-)(modal|overlay|dialog)(?:-|$)/i;
 
@@ -28,7 +29,8 @@ export function isModalReportId(reportId: string) {
 }
 
 export function usesViewportDetachedCoords(report: Pick<ReportFeedback, "position">) {
-    return !report.position.anchor && report.position.viewport.width > 0;
+    const position = normalizeReportPosition(report.position);
+    return !position.anchor && position.viewport.width > 0;
 }
 
 export function resolveDetachedKind(
@@ -68,7 +70,7 @@ export function formatModalReportLabel(reportId: string) {
 }
 
 export function getModalGhostFrame(report: Pick<ReportFeedback, "position">): ModalGhostFrame {
-    const { viewport } = report.position;
+    const { viewport } = normalizeReportPosition(report.position);
     const widthScale = viewport.width > 0 ? window.innerWidth / viewport.width : 1;
     const heightScale = viewport.height > 0 ? window.innerHeight / viewport.height : 1;
     const centerX = viewport.width * viewport.x * widthScale;

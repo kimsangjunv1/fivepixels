@@ -1,3 +1,4 @@
+import { normalizeReportPosition } from "./reportPosition.js";
 export function toReplySummary(reply) {
     return {
         id: reply.id,
@@ -23,6 +24,7 @@ export function normalizeListReport(item) {
         (embeddedReplies && embeddedReplies.length > 0 ? toReplySummary(embeddedReplies[embeddedReplies.length - 1]) : null);
     return {
         ...item,
+        position: normalizeReportPosition(item.position),
         replies: embeddedReplies ?? [],
         reply_count,
         latest_reply,

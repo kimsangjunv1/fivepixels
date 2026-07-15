@@ -49,10 +49,7 @@ export function PanelOnboarding() {
     const [restoreError, setRestoreError] = useState("");
     const [isDragOver, setIsDragOver] = useState(false);
     const trimmedName = name.trim();
-    const hasDuplicateName = useMemo(
-        () => Boolean(trimmedName) && personalKeyCandidates.some((author) => author.name.trim() === trimmedName),
-        [personalKeyCandidates, trimmedName],
-    );
+    const hasDuplicateName = useMemo(() => Boolean(trimmedName) && personalKeyCandidates.some((author) => author.name.trim() === trimmedName), [personalKeyCandidates, trimmedName]);
     const canProceedFromRoleStep = selectedTabs.length > 0;
     const localeOptions = LOCALE_OPTIONS.map((value) => ({
         value,
@@ -377,7 +374,6 @@ export function PanelOnboarding() {
                         fontFamily={typography.fontFamily}
                         ariaLabel={onboarding.displayPreviewAriaLabel}
                     />
-
                     <div className="flex flex-col gap-[12px]">
                         <div>
                             <p className="mb-[6px] text-[11px] font-medium text-[var(--adaptive-black600)]">{messages.settings.markerSize}</p>
@@ -400,7 +396,6 @@ export function PanelOnboarding() {
                             />
                         </div>
                     </div>
-
                     <div className="flex items-center justify-between">
                         <button
                             type="button"
@@ -424,7 +419,6 @@ export function PanelOnboarding() {
                         <h6 className="text-[14px] font-bold text-[var(--adaptive-black900)]">{onboarding.keyStepTitle}</h6>
                         <p className="mt-[4px] text-[12px] leading-[1.5] text-[var(--adaptive-black600)]">{onboarding.keyStepDescription}</p>
                     </div>
-
                     <input
                         autoFocus
                         value={name}
@@ -443,6 +437,7 @@ export function PanelOnboarding() {
                         >
                             {onboarding.back}
                         </button>
+
                         <button
                             type="button"
                             disabled={!trimmedName || isCreating || hasDuplicateName}

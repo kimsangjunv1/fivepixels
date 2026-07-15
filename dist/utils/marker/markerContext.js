@@ -1,4 +1,5 @@
 import { hasFixedPositionAncestor } from "../shared/dom.js";
+import { normalizeReportPosition } from "../report/reportPosition.js";
 const MODAL_REPORT_ID_PATTERN = /(?:^|-)(modal|overlay|dialog)(?:-|$)/i;
 const MODAL_GHOST_DIALOG_WIDTH = 480;
 const MODAL_GHOST_DIALOG_HEIGHT = 280;
@@ -7,7 +8,8 @@ export function isModalReportId(reportId) {
     return MODAL_REPORT_ID_PATTERN.test(reportId);
 }
 export function usesViewportDetachedCoords(report) {
-    return !report.position.anchor && report.position.viewport.width > 0;
+    const position = normalizeReportPosition(report.position);
+    return !position.anchor && position.viewport.width > 0;
 }
 export function resolveDetachedKind(report, targetElement, detached) {
     if (!detached) {
@@ -35,7 +37,7 @@ export function formatModalReportLabel(reportId) {
     return name ? `${name} modal` : "Modal";
 }
 export function getModalGhostFrame(report) {
-    const { viewport } = report.position;
+    const { viewport } = normalizeReportPosition(report.position);
     const widthScale = viewport.width > 0 ? window.innerWidth / viewport.width : 1;
     const heightScale = viewport.height > 0 ? window.innerHeight / viewport.height : 1;
     const centerX = viewport.width * viewport.x * widthScale;

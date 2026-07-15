@@ -55,6 +55,21 @@ describe("getMarkerFromReport", () => {
         vi.unstubAllGlobals();
     });
 
+    it("does not crash when report.position is missing", () => {
+        const report = { ...createStoredReport(), position: undefined } as ReportFeedback;
+
+        const marker = getMarkerFromReport(report, 0);
+
+        expect(marker.detached).toBe(true);
+        expect(marker.report.position).toMatchObject({
+            target: null,
+            viewport: expect.objectContaining({ x: 0.5, y: 0.5 }),
+            anchor: null,
+        });
+        expect(Number.isFinite(marker.left)).toBe(true);
+        expect(Number.isFinite(marker.top)).toBe(true);
+    });
+
     it("anchors to the matched element when data-report attributes exist", () => {
         const target = document.createElement("section");
         target.dataset.reportId = "hero";

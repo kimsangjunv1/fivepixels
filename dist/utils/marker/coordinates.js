@@ -3,7 +3,7 @@ import { getFeedbackTargetSelector, getNearestScrollContainer, getScrollContaine
 import { getFeedbackAnchorElement, getFeedbackTargetElement } from "./locateFeedback.js";
 import { findElementByTargetSelector } from "./targetSelector.js";
 import { resolveDetachedKind } from "./markerContext.js";
-import { getDocumentY } from "../report/reportPosition.js";
+import { getDocumentY, normalizeReportPosition } from "../report/reportPosition.js";
 function applyScrollContainerClamp(left, top, element) {
     if (!element) {
         return { left, top, clampedEdge: null, clampBounds: null, clampContainerId: null };
@@ -61,11 +61,13 @@ export function clampRatio(value) {
     return Math.min(1, Math.max(0, value));
 }
 function getAnchorMarkerPosition(report) {
-    const anchor = report.position.anchor;
+    const position = normalizeReportPosition(report.position);
+    const anchor = position.anchor;
     if (!anchor) {
         return null;
     }
-    const anchorElement = getFeedbackAnchorElement(report);
+    const anchoredReport = { ...report, position };
+    const anchorElement = getFeedbackAnchorElement(anchoredReport);
     if (!anchorElement) {
         return null;
     }
@@ -80,55 +82,59 @@ function shouldUseViewportDetachedCoords(report, targetElement) {
         const rect = targetElement.getBoundingClientRect();
         return hasFixedPositionAncestor(targetElement) && rect.width > 0 && rect.height > 0;
     }
-    return !report.position.anchor;
+    return !normalizeReportPosition(report.position).anchor;
 }
 function getDetachedMarkerPosition(report, currentScrollY, targetElement) {
-    const anchorPosition = getAnchorMarkerPosition(report);
+    const position = normalizeReportPosition(report.position);
+    const anchoredReport = { ...report, position };
+    const anchorPosition = getAnchorMarkerPosition(anchoredReport);
     if (anchorPosition) {
         return anchorPosition;
     }
-    const { viewport } = report.position;
+    const { viewport } = position;
     const widthScale = viewport.width > 0 ? window.innerWidth / viewport.width : 1;
     const left = viewport.width * viewport.x * widthScale - getMarkerDotSize() / 2;
-    const useViewportCoords = shouldUseViewportDetachedCoords(report, targetElement);
+    const useViewportCoords = shouldUseViewportDetachedCoords(anchoredReport, targetElement);
     if (useViewportCoords) {
         const heightScale = viewport.height > 0 ? window.innerHeight / viewport.height : 1;
         const top = viewport.height * viewport.y * heightScale - getMarkerDotSize() / 2;
         return { left, top, clampedEdge: null, clampBounds: null, clampContainerId: null };
     }
-    const top = getDocumentY(report.position) - currentScrollY - getMarkerDotSize() / 2;
+    const top = getDocumentY(position) - currentScrollY - getMarkerDotSize() / 2;
     return { left, top, clampedEdge: null, clampBounds: null, clampContainerId: null };
 }
 export function getMarkerFromReport(report, currentScrollY) {
-    const targetElement = getFeedbackTargetElement(report);
-    const { target, viewport } = report.position;
+    const position = normalizeReportPosition(report.position);
+    const normalizedReport = { ...report, position };
+    const targetElement = getFeedbackTargetElement(normalizedReport);
+    const { target, viewport } = position;
     if (targetElement && isFeedbackTargetVisible(targetElement)) {
         const rect = targetElement.getBoundingClientRect();
         const targetX = target?.x ?? viewport.x;
         const targetY = target?.y ?? viewport.y;
-        const position = applyScrollContainerClamp(rect.left + rect.width * targetX - getMarkerDotSize() / 2, rect.top + rect.height * targetY - getMarkerDotSize() / 2, targetElement);
+        const markerPosition = applyScrollContainerClamp(rect.left + rect.width * targetX - getMarkerDotSize() / 2, rect.top + rect.height * targetY - getMarkerDotSize() / 2, targetElement);
         return {
-            id: report.id,
-            report,
-            left: position.left,
-            top: position.top,
+            id: normalizedReport.id,
+            report: normalizedReport,
+            left: markerPosition.left,
+            top: markerPosition.top,
             rect,
             detached: false,
             detachedKind: null,
-            clampedEdge: position.clampedEdge,
-            clampBounds: position.clampBounds,
-            clampContainerId: position.clampContainerId,
+            clampedEdge: markerPosition.clampedEdge,
+            clampBounds: markerPosition.clampBounds,
+            clampContainerId: markerPosition.clampContainerId,
         };
     }
-    const detachedPosition = getDetachedMarkerPosition(report, currentScrollY, targetElement);
+    const detachedPosition = getDetachedMarkerPosition(normalizedReport, currentScrollY, targetElement);
     return {
-        id: report.id,
-        report,
+        id: normalizedReport.id,
+        report: normalizedReport,
         left: detachedPosition.left,
         top: detachedPosition.top,
         rect: null,
         detached: true,
-        detachedKind: resolveDetachedKind(report, targetElement, true),
+        detachedKind: resolveDetachedKind(normalizedReport, targetElement, true),
         clampedEdge: detachedPosition.clampedEdge,
         clampBounds: detachedPosition.clampBounds,
         clampContainerId: detachedPosition.clampContainerId,

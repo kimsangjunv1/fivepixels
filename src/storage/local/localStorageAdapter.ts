@@ -24,6 +24,7 @@ import {
     normalizeFeedbackCases,
     normalizeReplyCaseIds,
 } from "@/utils/report/reportCases.js";
+import { normalizeReportPosition } from "@/utils/report/reportPosition.js";
 
 export type LocalStorageReportAdapterOptions = {
     projectId: string;
@@ -160,6 +161,7 @@ function normalizeReport(item: ReportFeedback & { message?: string }): ReportFee
         ...(fcNumber !== undefined ? { fc_number: fcNumber } : {}),
         category,
         field_values: normalizeFieldValues(item.field_values),
+        position: normalizeReportPosition(item.position),
         replies: normalizeReplies(item.replies),
         integrations: normalizeIntegrations(item.integrations),
     });

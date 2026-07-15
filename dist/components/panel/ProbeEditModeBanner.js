@@ -13,7 +13,7 @@ function ProbeEditModeHistoryButton({ label, disabled, onClick, children }) {
 }
 export function ProbeEditModeBanner() {
     const { messages } = useReportPreferences();
-    const { hasProbeSessionChanges, savedProbeCompareMode, setSavedProbeCompareMode, revertAllSavedProbeEdits, savedProbeEdits, canUndoProbeSession, canRedoProbeSession, undoProbeSessionAction, redoProbeSessionAction } = useReportSession();
+    const { hasProbeSessionChanges, savedProbeCompareMode, setSavedProbeCompareMode, revertAllSavedProbeEdits, savedProbeEdits, canUndoProbeSession, canRedoProbeSession, undoProbeSessionAction, redoProbeSessionAction, } = useReportSession();
     if (!hasProbeSessionChanges) {
         return null;
     }

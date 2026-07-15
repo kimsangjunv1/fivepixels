@@ -1,4 +1,5 @@
 import { getFeedbackTargetSelector, isFeedbackTargetVisible } from "../shared/dom.js";
+import { normalizeReportPosition } from "../report/reportPosition.js";
 import { findElementByTargetSelector } from "./targetSelector.js";
 export { isFeedbackTargetVisible } from "../shared/dom.js";
 export const LOCATE_PULSE_DURATION_MS = 2400;
@@ -14,7 +15,7 @@ export function getFeedbackTargetElement(report) {
     return document.querySelector(selector);
 }
 export function getFeedbackAnchorElement(report) {
-    const anchor = report.position.anchor;
+    const anchor = normalizeReportPosition(report.position).anchor;
     if (!anchor) {
         return null;
     }
@@ -48,7 +49,7 @@ export function scrollToFeedbackTarget(report) {
         anchorElement.scrollIntoView({ block: "center", inline: "nearest", behavior: "smooth" });
         return { foundElement: true, targetElement: anchorElement };
     }
-    window.scrollTo({ top: report.position.scrollY, behavior: "smooth" });
+    window.scrollTo({ top: normalizeReportPosition(report.position).scrollY, behavior: "smooth" });
     return { foundElement: false, targetElement: null };
 }
 //# sourceMappingURL=locateFeedback.js.map

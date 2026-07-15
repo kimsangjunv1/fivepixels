@@ -1,4 +1,5 @@
 import type { ReportFeedback, ReportReply, ReportReplySummary } from "@/types/report.js";
+import { normalizeReportPosition } from "./reportPosition.js";
 
 export function toReplySummary(reply: ReportReply): ReportReplySummary {
     return {
@@ -29,6 +30,7 @@ export function normalizeListReport(item: ReportFeedback): ReportFeedback {
 
     return {
         ...item,
+        position: normalizeReportPosition(item.position),
         replies: embeddedReplies ?? [],
         reply_count,
         latest_reply,
