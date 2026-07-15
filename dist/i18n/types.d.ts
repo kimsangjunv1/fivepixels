@@ -306,6 +306,8 @@ export type ReportMessages = {
         ownerRequired: string;
     };
     onboarding: {
+        languageStepTitle: string;
+        languageStepDescription: string;
         introTitle: string;
         introDescription: string;
         newUser: string;
@@ -322,6 +324,11 @@ export type ReportMessages = {
         roleStepTitle: string;
         roleStepDescription: string;
         roleStepTabsHint: string;
+        appearanceStepTitle: string;
+        appearanceStepDescription: string;
+        displayStepTitle: string;
+        displayStepDescription: string;
+        displayPreviewAriaLabel: string;
         keyStepTitle: string;
         keyStepDescription: string;
         namePlaceholder: string;

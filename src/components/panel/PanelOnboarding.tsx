@@ -1,19 +1,46 @@
 import { useMemo, useState, type DragEvent } from "react";
+import { APPEARANCE_OPTION_VALUES } from "@/constants/appearance.js";
+import { APPEARANCE_SCALE_VALUES, MARKER_FONT_SIZE_VALUES, type AppearanceScale, type MarkerFontSize } from "@/constants/markerAppearance.js";
 import { PANEL_ROLE_VALUES, type PanelRole } from "@/constants/panelRole.js";
-import { getDefaultVisibleTabsForRole } from "@/utils/panel/panelTabPreference.js";
 import type { UserSelectablePanelTab } from "@/constants/panelTabRegistry.js";
+import type { ReportLocale } from "@/i18n/types.js";
 import { useReportPreferences, useReportSession } from "@/providers/reportContext.js";
-import { PanelDropdownMenuItem } from "./PanelDropdownMenu.js";
-import { PanelTabSelector } from "./PanelTabSelector.js";
+import { getDefaultVisibleTabsForRole } from "@/utils/panel/panelTabPreference.js";
 import { isPersonalKeyFile, readPersonalKeyFile } from "@/utils/feedback/feedbackDataTransfer.js";
+import { AppearanceThemePicker } from "./AppearanceThemePicker.js";
+import { DiscreteScaleDial } from "./DiscreteScaleDial.js";
+import { MarkerSizePreview } from "./MarkerSizePreview.js";
+import { PanelDropdownMenuItem } from "./PanelDropdownMenu.js";
+import { PanelOptionSwitch } from "./PanelOptionSwitch.js";
+import { PanelTabSelector } from "./PanelTabSelector.js";
 
-type OnboardingStep = "intro" | "restore" | "role" | "key";
+type OnboardingStep = "language" | "intro" | "restore" | "role" | "appearance" | "display" | "key";
+
+const LOCALE_OPTIONS = ["en", "ko"] as const satisfies readonly ReportLocale[];
 
 export function PanelOnboarding() {
-    const { messages, panelRole, setPanelRole, completeOnboarding, restoreFromBackup, selfProfile, personalKeyCandidates, resolvedTabAvailabilityContext, savePanelTabPreference } = useReportPreferences();
+    const {
+        messages,
+        locale,
+        setLocale,
+        panelAppearance,
+        setPanelAppearance,
+        markerAppearance,
+        setMarkerSize,
+        typography,
+        setFontSize,
+        panelRole,
+        setPanelRole,
+        completeOnboarding,
+        restoreFromBackup,
+        selfProfile,
+        personalKeyCandidates,
+        resolvedTabAvailabilityContext,
+        savePanelTabPreference,
+    } = useReportPreferences();
     const { setErrorMessage } = useReportSession();
     const onboarding = messages.onboarding;
-    const [step, setStep] = useState<OnboardingStep>("intro");
+    const [step, setStep] = useState<OnboardingStep>("language");
     const [name, setName] = useState(selfProfile?.name ?? "");
     const [selectedTabs, setSelectedTabs] = useState<UserSelectablePanelTab[]>(() => getDefaultVisibleTabsForRole(panelRole, resolvedTabAvailabilityContext));
     const [isCreating, setIsCreating] = useState(false);
@@ -27,6 +54,24 @@ export function PanelOnboarding() {
         [personalKeyCandidates, trimmedName],
     );
     const canProceedFromRoleStep = selectedTabs.length > 0;
+    const localeOptions = LOCALE_OPTIONS.map((value) => ({
+        value,
+        label: messages.localeOption[value],
+    }));
+    const appearanceOptions = APPEARANCE_OPTION_VALUES.map((value) => ({
+        value,
+        label: messages.appearance[value],
+    }));
+    const scaleLabels: Record<AppearanceScale, string> = {
+        sm: messages.settings.scaleSm,
+        md: messages.settings.scaleMd,
+        lg: messages.settings.scaleLg,
+        xl: messages.settings.scaleXl,
+    };
+    const markerFontSizeLabels: Record<MarkerFontSize, string> = {
+        none: messages.settings.scaleNone,
+        ...scaleLabels,
+    };
 
     const handleSelectRole = (role: PanelRole) => {
         setPanelRole(role);
@@ -128,7 +173,31 @@ export function PanelOnboarding() {
 
     return (
         <section className="flex flex-col gap-[12px] bg-[var(--adaptive-black50)] p-[16px]">
-            {step === "intro" ? (
+            {step === "language" ? (
+                <>
+                    <div>
+                        <h6 className="text-[14px] font-bold text-[var(--adaptive-black900)]">{onboarding.languageStepTitle}</h6>
+                        <p className="mt-[4px] text-[12px] leading-[1.5] text-[var(--adaptive-black600)]">{onboarding.languageStepDescription}</p>
+                    </div>
+
+                    <PanelOptionSwitch
+                        options={localeOptions}
+                        value={locale}
+                        onChange={setLocale}
+                        ariaLabel={messages.moreMenu.languageAriaLabel}
+                    />
+
+                    <div className="flex items-center justify-end">
+                        <button
+                            type="button"
+                            onClick={() => setStep("intro")}
+                            className="rounded-[8px] bg-[var(--adaptive-blue100)] px-[12px] py-[6px] text-[12px] font-bold text-[var(--adaptive-blue500)]"
+                        >
+                            {onboarding.next}
+                        </button>
+                    </div>
+                </>
+            ) : step === "intro" ? (
                 <>
                     <div>
                         <h6 className="text-[14px] font-bold text-[var(--adaptive-black900)]">{onboarding.introTitle}</h6>
@@ -149,6 +218,16 @@ export function PanelOnboarding() {
                             className="rounded-[8px] border border-[var(--adaptive-black200)] px-[12px] py-[10px] text-[12px] font-semibold text-[var(--adaptive-black700)] hover:bg-[var(--adaptive-black100)]"
                         >
                             {onboarding.existingUser}
+                        </button>
+                    </div>
+
+                    <div className="flex items-center justify-start">
+                        <button
+                            type="button"
+                            onClick={() => setStep("language")}
+                            className="text-[12px] font-semibold text-[var(--adaptive-black500)] hover:text-[var(--adaptive-black700)]"
+                        >
+                            {onboarding.back}
                         </button>
                     </div>
                 </>
@@ -245,8 +324,95 @@ export function PanelOnboarding() {
                         <button
                             type="button"
                             disabled={!canProceedFromRoleStep}
-                            onClick={() => setStep("key")}
+                            onClick={() => setStep("appearance")}
                             className="rounded-[8px] bg-[var(--adaptive-blue100)] px-[12px] py-[6px] text-[12px] font-bold text-[var(--adaptive-blue500)] disabled:opacity-50"
+                        >
+                            {onboarding.next}
+                        </button>
+                    </div>
+                </>
+            ) : step === "appearance" ? (
+                <>
+                    <div>
+                        <h6 className="text-[14px] font-bold text-[var(--adaptive-black900)]">{onboarding.appearanceStepTitle}</h6>
+                        <p className="mt-[4px] text-[12px] leading-[1.5] text-[var(--adaptive-black600)]">{onboarding.appearanceStepDescription}</p>
+                    </div>
+
+                    <AppearanceThemePicker
+                        options={appearanceOptions}
+                        value={panelAppearance}
+                        onChange={setPanelAppearance}
+                        ariaLabel={messages.moreMenu.panelThemeAriaLabel}
+                    />
+
+                    <div className="flex items-center justify-between">
+                        <button
+                            type="button"
+                            onClick={() => setStep("role")}
+                            className="text-[12px] font-semibold text-[var(--adaptive-black500)] hover:text-[var(--adaptive-black700)]"
+                        >
+                            {onboarding.back}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setStep("display")}
+                            className="rounded-[8px] bg-[var(--adaptive-blue100)] px-[12px] py-[6px] text-[12px] font-bold text-[var(--adaptive-blue500)]"
+                        >
+                            {onboarding.next}
+                        </button>
+                    </div>
+                </>
+            ) : step === "display" ? (
+                <>
+                    <div>
+                        <h6 className="text-[14px] font-bold text-[var(--adaptive-black900)]">{onboarding.displayStepTitle}</h6>
+                        <p className="mt-[4px] text-[12px] leading-[1.5] text-[var(--adaptive-black600)]">{onboarding.displayStepDescription}</p>
+                    </div>
+
+                    <MarkerSizePreview
+                        size={markerAppearance.size}
+                        fontSize={typography.fontSize}
+                        shape={markerAppearance.shape}
+                        color={markerAppearance.colors.open}
+                        fontFamily={typography.fontFamily}
+                        ariaLabel={onboarding.displayPreviewAriaLabel}
+                    />
+
+                    <div className="flex flex-col gap-[12px]">
+                        <div>
+                            <p className="mb-[6px] text-[11px] font-medium text-[var(--adaptive-black600)]">{messages.settings.markerSize}</p>
+                            <DiscreteScaleDial
+                                values={APPEARANCE_SCALE_VALUES}
+                                value={markerAppearance.size}
+                                onChange={setMarkerSize}
+                                labels={scaleLabels}
+                                ariaLabel={messages.settings.markerSizeAriaLabel}
+                            />
+                        </div>
+                        <div>
+                            <p className="mb-[6px] text-[11px] font-medium text-[var(--adaptive-black600)]">{messages.settings.markerFontSize}</p>
+                            <DiscreteScaleDial
+                                values={MARKER_FONT_SIZE_VALUES}
+                                value={typography.fontSize}
+                                onChange={setFontSize}
+                                labels={markerFontSizeLabels}
+                                ariaLabel={messages.settings.markerFontSizeAriaLabel}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                        <button
+                            type="button"
+                            onClick={() => setStep("appearance")}
+                            className="text-[12px] font-semibold text-[var(--adaptive-black500)] hover:text-[var(--adaptive-black700)]"
+                        >
+                            {onboarding.back}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setStep("key")}
+                            className="rounded-[8px] bg-[var(--adaptive-blue100)] px-[12px] py-[6px] text-[12px] font-bold text-[var(--adaptive-blue500)]"
                         >
                             {onboarding.next}
                         </button>
@@ -272,7 +438,7 @@ export function PanelOnboarding() {
                     <div className="flex items-center justify-between">
                         <button
                             type="button"
-                            onClick={() => setStep("role")}
+                            onClick={() => setStep("display")}
                             className="text-[12px] font-semibold text-[var(--adaptive-black500)] hover:text-[var(--adaptive-black700)]"
                         >
                             {onboarding.back}
