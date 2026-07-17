@@ -1,4 +1,5 @@
 export { FivePixels } from "./FivePixels.js";
+export { DotWaveOverlay } from "../../components/overlay/DotWaveOverlay.js";
 export { ReportProvider } from "../../providers/ReportProvider.js";
 export { useReport, useReportPreferences, useReportSession, useReportData } from "../../providers/reportContext.js";
 export { createLocalStorageReportAdapter } from "../../storage/local/localStorageAdapter.js";

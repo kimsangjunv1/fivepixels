@@ -124,6 +124,8 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     setMarkerShape: (shape: import("../../constants/markerAppearance.js").MarkerShape) => void;
     setMarkerColors: (colors: import("../../constants/markerAppearance.js").MarkerColorPreferences) => void;
     setMarkerColor: (key: keyof import("../../constants/markerAppearance.js").MarkerColorPreferences, color: string) => void;
+    setFeedbackModeDotColors: (colors: import("../../constants/markerAppearance.js").FeedbackModeDotColors) => void;
+    setFeedbackModeDotColor: (appearance: keyof import("../../constants/markerAppearance.js").FeedbackModeDotColors, color: string) => void;
     typography: import("../../constants/markerAppearance.js").TypographyPreferences;
     setTypography: (next: import("../../constants/markerAppearance.js").TypographyPreferences | ((current: import("../../constants/markerAppearance.js").TypographyPreferences) => import("../../constants/markerAppearance.js").TypographyPreferences)) => void;
     setFontSize: (fontSize: import("../../constants/markerAppearance.js").MarkerFontSize) => void;

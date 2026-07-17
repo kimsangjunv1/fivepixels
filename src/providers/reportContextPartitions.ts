@@ -27,6 +27,8 @@ export const REPORT_PREFERENCE_KEYS = [
     "setMarkerShape",
     "setMarkerColors",
     "setMarkerColor",
+    "setFeedbackModeDotColors",
+    "setFeedbackModeDotColor",
     "typography",
     "setTypography",
     "setFontSize",

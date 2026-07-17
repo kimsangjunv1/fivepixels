@@ -58,6 +58,8 @@ export function assembleReportContextValue({ panel, auth, draft, markers, mutati
         setMarkerShape: panel.setMarkerShape,
         setMarkerColors: panel.setMarkerColors,
         setMarkerColor: panel.setMarkerColor,
+        setFeedbackModeDotColors: panel.setFeedbackModeDotColors,
+        setFeedbackModeDotColor: panel.setFeedbackModeDotColor,
         typography: panel.typography,
         setTypography: panel.setTypography,
         setFontSize: panel.setFontSize,

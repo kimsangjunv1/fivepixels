@@ -2,7 +2,7 @@ import { useState, type ReactNode } from "react";
 import type { ReportAppearance, QuestionThreadDisplay } from "@/types/report.js";
 import type { ReportLocale } from "@/i18n/types.js";
 import { APPEARANCE_OPTION_VALUES } from "@/constants/appearance.js";
-import { FONT_FAMILY_SUGGESTIONS } from "@/constants/markerAppearance.js";
+import { DEFAULT_FEEDBACK_MODE_DOT_COLORS, FONT_FAMILY_SUGGESTIONS } from "@/constants/markerAppearance.js";
 import type { AppearanceScale, MarkerFontSize, MarkerShape } from "@/constants/markerAppearance.js";
 import { useReportPreferences, useReportSession } from "@/providers/reportContext.js";
 import { formatPresentationViewerLabel } from "@/utils/report/reportTeam.js";
@@ -127,7 +127,7 @@ export function PanelSettings({
     onKeyRotate,
 }: PanelSettingsProps) {
     const [activeCategory, setActiveCategory] = useState<SettingsCategory | null>(null);
-    const { locale, setLocale, messages, showMarkerTargetPreview, setShowMarkerTargetPreview, isPresentationMode, presentationViewers, markerAppearance, setMarkerSize, setMarkerShape, setMarkerColor, typography, setFontSize, setFontFamily, panelRole, visiblePanelTabs, visiblePanelTabsSummary, resolvedTabAvailabilityContext, setVisiblePanelTabs, resetVisibleTabsToRoleDefault } = useReportPreferences();
+    const { locale, setLocale, messages, showMarkerTargetPreview, setShowMarkerTargetPreview, isPresentationMode, presentationViewers, markerAppearance, setMarkerSize, setMarkerShape, setMarkerColor, setFeedbackModeDotColors, setFeedbackModeDotColor, typography, setFontSize, setFontFamily, panelRole, visiblePanelTabs, visiblePanelTabsSummary, resolvedTabAvailabilityContext, setVisiblePanelTabs, resetVisibleTabsToRoleDefault } = useReportPreferences();
     const { presentationViewerId, setPresentationViewerId } = useReportSession();
     const scaleLabels: Record<AppearanceScale, string> = {
         sm: messages.settings.scaleSm,
@@ -251,6 +251,24 @@ export function PanelSettings({
                                             ariaLabel={messages.moreMenu.languageAriaLabel}
                                         />
                                     </div>
+                                </div>
+                            </SettingsSection>
+
+                            <SettingsSection label={messages.settings.sectionFeedbackMode}>
+                                <div className="flex flex-col gap-[12px] px-[12px] pb-[10px]">
+                                    <HexColorField
+                                        label={messages.settings.feedbackModeDotColorLight}
+                                        value={markerAppearance.feedbackModeDotColors.light}
+                                        onChange={(color) => setFeedbackModeDotColor("light", color)}
+                                    />
+                                    <HexColorField
+                                        label={messages.settings.feedbackModeDotColorDark}
+                                        value={markerAppearance.feedbackModeDotColors.dark}
+                                        onChange={(color) => setFeedbackModeDotColor("dark", color)}
+                                    />
+                                    <SettingsActionButton onClick={() => setFeedbackModeDotColors(DEFAULT_FEEDBACK_MODE_DOT_COLORS)}>
+                                        {messages.settings.resetFeedbackModeDotColors}
+                                    </SettingsActionButton>
                                 </div>
                             </SettingsSection>
 

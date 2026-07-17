@@ -102,6 +102,8 @@ declare const ReportContext: Context<{
     setMarkerShape: (shape: import("../constants/markerAppearance.js").MarkerShape) => void;
     setMarkerColors: (colors: import("../constants/markerAppearance.js").MarkerColorPreferences) => void;
     setMarkerColor: (key: keyof import("../constants/markerAppearance.js").MarkerColorPreferences, color: string) => void;
+    setFeedbackModeDotColors: (colors: import("../constants/markerAppearance.js").FeedbackModeDotColors) => void;
+    setFeedbackModeDotColor: (appearance: keyof import("../constants/markerAppearance.js").FeedbackModeDotColors, color: string) => void;
     typography: import("../constants/markerAppearance.js").TypographyPreferences;
     setTypography: (next: import("../constants/markerAppearance.js").TypographyPreferences | ((current: import("../constants/markerAppearance.js").TypographyPreferences) => import("../constants/markerAppearance.js").TypographyPreferences)) => void;
     setFontSize: (fontSize: import("../constants/markerAppearance.js").MarkerFontSize) => void;
@@ -372,6 +374,8 @@ export declare function useReport(): {
     setMarkerShape: (shape: import("../constants/markerAppearance.js").MarkerShape) => void;
     setMarkerColors: (colors: import("../constants/markerAppearance.js").MarkerColorPreferences) => void;
     setMarkerColor: (key: keyof import("../constants/markerAppearance.js").MarkerColorPreferences, color: string) => void;
+    setFeedbackModeDotColors: (colors: import("../constants/markerAppearance.js").FeedbackModeDotColors) => void;
+    setFeedbackModeDotColor: (appearance: keyof import("../constants/markerAppearance.js").FeedbackModeDotColors, color: string) => void;
     typography: import("../constants/markerAppearance.js").TypographyPreferences;
     setTypography: (next: import("../constants/markerAppearance.js").TypographyPreferences | ((current: import("../constants/markerAppearance.js").TypographyPreferences) => import("../constants/markerAppearance.js").TypographyPreferences)) => void;
     setFontSize: (fontSize: import("../constants/markerAppearance.js").MarkerFontSize) => void;
@@ -645,6 +649,8 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         setMarkerShape: (shape: import("../constants/markerAppearance.js").MarkerShape) => void;
         setMarkerColors: (colors: import("../constants/markerAppearance.js").MarkerColorPreferences) => void;
         setMarkerColor: (key: keyof import("../constants/markerAppearance.js").MarkerColorPreferences, color: string) => void;
+        setFeedbackModeDotColors: (colors: import("../constants/markerAppearance.js").FeedbackModeDotColors) => void;
+        setFeedbackModeDotColor: (appearance: keyof import("../constants/markerAppearance.js").FeedbackModeDotColors, color: string) => void;
         typography: import("../constants/markerAppearance.js").TypographyPreferences;
         setTypography: (next: import("../constants/markerAppearance.js").TypographyPreferences | ((current: import("../constants/markerAppearance.js").TypographyPreferences) => import("../constants/markerAppearance.js").TypographyPreferences)) => void;
         setFontSize: (fontSize: import("../constants/markerAppearance.js").MarkerFontSize) => void;
@@ -816,7 +822,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         handleCreateGitHubIssue: (report: import("../index.js").ReportFeedback) => Promise<void>;
         handleCreateSubmitWithGitHubIssue: () => Promise<void>;
         isDraftGitHubIssueSubmitting: boolean;
-    }, "personalKey" | "environment" | "projectId" | "fields" | "personalKeyRequired" | "questionThreadDisplay" | "setQuestionThreadDisplay" | "locale" | "setLocale" | "showMarkerTargetPreview" | "setShowMarkerTargetPreview" | "toggleMarkerTargetPreview" | "markerAppearance" | "setMarkerAppearance" | "setMarkerSize" | "setMarkerShape" | "setMarkerColors" | "setMarkerColor" | "typography" | "setTypography" | "setFontSize" | "setFontFamily" | "panelRole" | "setPanelRole" | "appVersion" | "showFeedbackList" | "selfProfile" | "authors" | "publicKey" | "personalKeyCandidates" | "issuePersonalKey" | "rotatePersonalKey" | "insertPersonalKey" | "authorSelectionLocked" | "messages" | "visibleShortcutKeys" | "panelAppearance" | "setPanelAppearance" | "tooltipAppearance" | "setTooltipAppearance" | "panelView" | "completeOnboarding" | "restoreFromBackup" | "skipOnboarding" | "resolvedPanelAppearance" | "resolvedTooltipAppearance" | "isMobileViewport" | "isPresentationMode" | "presentationViewers" | "visiblePanelTabs" | "visiblePanelTabsSummary" | "resolvedTabAvailabilityContext" | "setVisiblePanelTabs" | "resetVisibleTabsToRoleDefault" | "applyRoleDefaultTabsForOnboarding" | "savePanelTabPreference" | "storedPanelTabPreference">;
+    }, "personalKey" | "environment" | "projectId" | "fields" | "personalKeyRequired" | "questionThreadDisplay" | "setQuestionThreadDisplay" | "locale" | "setLocale" | "showMarkerTargetPreview" | "setShowMarkerTargetPreview" | "toggleMarkerTargetPreview" | "markerAppearance" | "setMarkerAppearance" | "setMarkerSize" | "setMarkerShape" | "setMarkerColors" | "setMarkerColor" | "setFeedbackModeDotColors" | "setFeedbackModeDotColor" | "typography" | "setTypography" | "setFontSize" | "setFontFamily" | "panelRole" | "setPanelRole" | "appVersion" | "showFeedbackList" | "selfProfile" | "authors" | "publicKey" | "personalKeyCandidates" | "issuePersonalKey" | "rotatePersonalKey" | "insertPersonalKey" | "authorSelectionLocked" | "messages" | "visibleShortcutKeys" | "panelAppearance" | "setPanelAppearance" | "tooltipAppearance" | "setTooltipAppearance" | "panelView" | "completeOnboarding" | "restoreFromBackup" | "skipOnboarding" | "resolvedPanelAppearance" | "resolvedTooltipAppearance" | "isMobileViewport" | "isPresentationMode" | "presentationViewers" | "visiblePanelTabs" | "visiblePanelTabsSummary" | "resolvedTabAvailabilityContext" | "setVisiblePanelTabs" | "resetVisibleTabsToRoleDefault" | "applyRoleDefaultTabsForOnboarding" | "savePanelTabPreference" | "storedPanelTabPreference">;
     session: Pick<{
         panelAppearance: import("../index.js").ReportAppearance;
         setPanelAppearance: (nextAppearance: import("../index.js").ReportAppearance) => void;
@@ -911,6 +917,8 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         setMarkerShape: (shape: import("../constants/markerAppearance.js").MarkerShape) => void;
         setMarkerColors: (colors: import("../constants/markerAppearance.js").MarkerColorPreferences) => void;
         setMarkerColor: (key: keyof import("../constants/markerAppearance.js").MarkerColorPreferences, color: string) => void;
+        setFeedbackModeDotColors: (colors: import("../constants/markerAppearance.js").FeedbackModeDotColors) => void;
+        setFeedbackModeDotColor: (appearance: keyof import("../constants/markerAppearance.js").FeedbackModeDotColors, color: string) => void;
         typography: import("../constants/markerAppearance.js").TypographyPreferences;
         setTypography: (next: import("../constants/markerAppearance.js").TypographyPreferences | ((current: import("../constants/markerAppearance.js").TypographyPreferences) => import("../constants/markerAppearance.js").TypographyPreferences)) => void;
         setFontSize: (fontSize: import("../constants/markerAppearance.js").MarkerFontSize) => void;
@@ -1177,6 +1185,8 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         setMarkerShape: (shape: import("../constants/markerAppearance.js").MarkerShape) => void;
         setMarkerColors: (colors: import("../constants/markerAppearance.js").MarkerColorPreferences) => void;
         setMarkerColor: (key: keyof import("../constants/markerAppearance.js").MarkerColorPreferences, color: string) => void;
+        setFeedbackModeDotColors: (colors: import("../constants/markerAppearance.js").FeedbackModeDotColors) => void;
+        setFeedbackModeDotColor: (appearance: keyof import("../constants/markerAppearance.js").FeedbackModeDotColors, color: string) => void;
         typography: import("../constants/markerAppearance.js").TypographyPreferences;
         setTypography: (next: import("../constants/markerAppearance.js").TypographyPreferences | ((current: import("../constants/markerAppearance.js").TypographyPreferences) => import("../constants/markerAppearance.js").TypographyPreferences)) => void;
         setFontSize: (fontSize: import("../constants/markerAppearance.js").MarkerFontSize) => void;

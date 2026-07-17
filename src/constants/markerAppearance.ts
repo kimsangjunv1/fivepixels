@@ -16,10 +16,16 @@ export type MarkerColorPreferences = {
     gitIssued: string;
 };
 
+export type FeedbackModeDotColors = {
+    light: string;
+    dark: string;
+};
+
 export type MarkerAppearancePreferences = {
     size: AppearanceScale;
     shape: MarkerShape;
     colors: MarkerColorPreferences;
+    feedbackModeDotColors: FeedbackModeDotColors;
 };
 
 export type TypographyPreferences = {
@@ -50,10 +56,16 @@ export const DEFAULT_MARKER_COLORS: MarkerColorPreferences = {
     gitIssued: "#3182f6",
 };
 
+export const DEFAULT_FEEDBACK_MODE_DOT_COLORS: FeedbackModeDotColors = {
+    light: "#111827",
+    dark: "#f8fafc",
+};
+
 export const DEFAULT_MARKER_APPEARANCE: MarkerAppearancePreferences = {
     size: "md",
     shape: "circle",
     colors: DEFAULT_MARKER_COLORS,
+    feedbackModeDotColors: DEFAULT_FEEDBACK_MODE_DOT_COLORS,
 };
 
 export const DEFAULT_FONT_FAMILY = 'system-ui, -apple-system, "Segoe UI", sans-serif';

@@ -409,6 +409,10 @@ export type ReportMessages = {
         markerColorOpen: string;
         markerColorResolved: string;
         markerColorGitIssued: string;
+        sectionFeedbackMode: string;
+        feedbackModeDotColorLight: string;
+        feedbackModeDotColorDark: string;
+        resetFeedbackModeDotColors: string;
         markerFontSize: string;
         markerFontSizeAriaLabel: string;
         fontFamily: string;

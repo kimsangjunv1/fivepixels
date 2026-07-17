@@ -113,7 +113,7 @@ export function useReportPanelShell({
     const { appearance: activePanelAppearance, setAppearance: setPanelAppearance } = useAppearancePreference(PANEL_APPEARANCE_STORAGE_KEY, panelAppearance);
     const { appearance: activeTooltipAppearance, setAppearance: setTooltipAppearance } = useAppearancePreference(TOOLTIP_APPEARANCE_STORAGE_KEY, tooltipAppearance);
     const { showMarkerTargetPreview, setShowMarkerTargetPreview, toggleMarkerTargetPreview } = useMarkerTargetPreviewPreference();
-    const { markerAppearance, setMarkerAppearance, setMarkerSize, setMarkerShape, setMarkerColors, setMarkerColor } = useMarkerAppearancePreference();
+    const { markerAppearance, setMarkerAppearance, setMarkerSize, setMarkerShape, setMarkerColors, setMarkerColor, setFeedbackModeDotColors, setFeedbackModeDotColor } = useMarkerAppearancePreference();
     const { typography, setTypography, setFontSize, setFontFamily } = useTypographyPreference();
     const { questionThreadDisplay, setQuestionThreadDisplay } = useQuestionThreadPreference(questionThreadDefault);
     const { panelRole, setPanelRole } = usePanelRolePreference();
@@ -455,6 +455,8 @@ export function useReportPanelShell({
         setMarkerShape,
         setMarkerColors,
         setMarkerColor,
+        setFeedbackModeDotColors,
+        setFeedbackModeDotColor,
         typography,
         setTypography,
         setFontSize,
