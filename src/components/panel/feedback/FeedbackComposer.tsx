@@ -107,11 +107,7 @@ export function FeedbackComposer({
     const isEmptyCaseError = isCaseTextErrorMessage(errorMessage, cases?.length ?? 0, messages.errors.caseTextRequired, messages.errors.casesRequired);
     const categoryNeedsAttention = showCategory && !category && !hasEmptyCase && (categoryAttentionKey > 0 || isCategoryRequiredError);
     const caseNeedsAttention = usesCaseEditor && hasEmptyCase && (caseAttentionKey > 0 || isEmptyCaseError);
-    const footerWarning = caseNeedsAttention
-        ? messages.errors.emptyCaseMessageRequired
-        : categoryNeedsAttention
-          ? messages.errors.categoryRequired
-          : null;
+    const footerWarning = caseNeedsAttention ? messages.errors.emptyCaseMessageRequired : categoryNeedsAttention ? messages.errors.categoryRequired : null;
     const isFooterHandledError = isCategoryRequiredError || isEmptyCaseError;
 
     const isActionDisabled = isSubmitting || isGitHubIssueSubmitting;
@@ -194,7 +190,7 @@ export function FeedbackComposer({
     };
 
     return (
-        <div className={`flex w-full flex-col bg-[var(--adaptive-fillOpacity400)] backdrop-blur-sm ${usesCaseEditor ? "min-h-0 flex-1" : ""}`}>
+        <div className={`flex w-full flex-col border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-neutralTintOpacity900)] backdrop-blur-sm ${usesCaseEditor ? "min-h-0 flex-1" : ""}`}>
             <div className={`relative ${usesCaseEditor ? "min-h-0 flex-1" : ""}`}>
                 {errorMessage && !isFooterHandledError ? (
                     <p
@@ -235,7 +231,7 @@ export function FeedbackComposer({
             </div>
 
             <div className={`flex items-center gap-[8px] px-[8px] pb-[8px] ${hideAuthorSelector && !lockedAuthorName ? "justify-end" : "justify-between"}`}>
-                {hideAuthorSelector ? (
+                {/* {hideAuthorSelector ? (
                     lockedAuthorName ? (
                         <span className="flex h-[24px] min-w-0 max-w-[50%] items-center truncate rounded-full bg-[var(--adaptive-surface-muted)] px-[12px] text-[12px] text-[var(--adaptive-black500)]">
                             {lockedAuthorName}
@@ -247,7 +243,8 @@ export function FeedbackComposer({
                         value={authorName}
                         onChange={onAuthorNameChange}
                     />
-                )}
+                )} */}
+
                 <div className="flex shrink-0 items-center gap-[6px]">
                     {showAskQuestionToggle ? (
                         <label className="inline-flex items-center gap-[4px] px-[2px] text-[12px] text-[var(--adaptive-black600)]">
@@ -291,7 +288,7 @@ export function FeedbackComposer({
                             data-fivepixels-interactive=""
                             disabled={isActionDisabled}
                             onClick={handleSubmit}
-                            className="inline-flex h-[32px] w-[32px] shrink-0 items-center justify-center rounded-full bg-[var(--adaptive-blue500)] text-white disabled:opacity-50"
+                            className="inline-flex h-[32px] w-[32px] shrink-0 items-center justify-center rounded-full bg-[#f6562f] text-white disabled:opacity-50"
                             aria-label={messages.composer.sendAriaLabel}
                         >
                             <SendIcon className="h-[16px] w-[16px]" />

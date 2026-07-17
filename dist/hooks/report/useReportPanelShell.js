@@ -62,7 +62,7 @@ export function useReportPanelShell({ projectId, environment, appVersion, panelA
     const [panelTab, setPanelTab] = useState(null);
     const [errorMessage, setErrorMessage] = useState("");
     const panelExpanded = !panelCollapsed && mode !== "report";
-    const fetchEnabled = panelExpanded || mode === "view";
+    const fetchEnabled = panelExpanded || mode === "view" || mode === "report";
     const tabAvailabilityContext = useMemo(() => ({
         showFeedbackList,
         canListAllFeedback: true,

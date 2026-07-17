@@ -1,4 +1,6 @@
 import type { Marker, TargetSnapshot } from "@/types/report-ui.js";
+import { toFeedbackHoverSnapshot } from "@/utils/shared/dom.js";
+import { getFeedbackTargetElement } from "./locateFeedback.js";
 
 export function markerToTargetSnapshot(marker: Marker): TargetSnapshot | null {
     if (!marker.rect) {
@@ -6,6 +8,12 @@ export function markerToTargetSnapshot(marker: Marker): TargetSnapshot | null {
     }
 
     const { report, rect } = marker;
+    const inspectedTarget = toFeedbackHoverSnapshot(getFeedbackTargetElement(report));
+
+    if (inspectedTarget) {
+        return inspectedTarget;
+    }
+
     const isTagged = !report.target_selector;
 
     return {

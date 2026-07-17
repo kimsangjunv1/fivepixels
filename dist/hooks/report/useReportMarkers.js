@@ -31,9 +31,6 @@ export function useReportMarkers({ mode, messages, fields, currentPathname, curr
         return null;
     }, [activeReplyReportId, hoveredMarkerId]);
     const activeMarkerTarget = useMemo(() => {
-        if (mode === "report") {
-            return null;
-        }
         if (!activeMarkerReportId) {
             return null;
         }
@@ -42,7 +39,7 @@ export function useReportMarkers({ mode, messages, fields, currentPathname, curr
             return null;
         }
         return markerToTargetSnapshot(marker);
-    }, [activeMarkerReportId, markers, mode]);
+    }, [activeMarkerReportId, markers]);
     const markerPreviewTargets = useMemo(() => {
         if (!showMarkerTargetPreview) {
             return [];
@@ -109,7 +106,7 @@ export function useReportMarkers({ mode, messages, fields, currentPathname, curr
         showTargetPreview,
     ]);
     useEffect(() => {
-        const shouldSyncMarkers = mode === "view" || showMarkerTargetPreview;
+        const shouldSyncMarkers = mode === "view" || mode === "report" || showMarkerTargetPreview;
         if (!shouldSyncMarkers) {
             setMarkers([]);
             return;

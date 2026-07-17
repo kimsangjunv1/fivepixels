@@ -76,6 +76,7 @@ export const REPORT_SESSION_KEYS = [
     "draft",
     "hoveredTarget",
     "hoverPointer",
+    "setHoverPointer",
     "selectedTarget",
     "pickProbeOpen",
     "pickProbeSupportsTextFields",

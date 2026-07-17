@@ -101,11 +101,13 @@ export function TargetHighlights({
             ) : null}
 
             {activeMarkerTarget ? (
-                <HighlightBox
-                    key={ACTIVE_MARKER_HIGHLIGHT_KEY}
-                    target={activeMarkerTarget}
-                    showLabel
-                />
+                <>
+                    <HighlightBox
+                        key={ACTIVE_MARKER_HIGHLIGHT_KEY}
+                        target={activeMarkerTarget}
+                    />
+                    <PickTargetHoverTooltip target={activeMarkerTarget} />
+                </>
             ) : null}
         </>
     );

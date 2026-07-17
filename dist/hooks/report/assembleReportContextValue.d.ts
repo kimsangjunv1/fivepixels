@@ -164,6 +164,7 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     draft: import("../../types/report-ui.js").DraftReport | null;
     hoveredTarget: import("../../types/report-ui.js").TargetSnapshot | null;
     hoverPointer: import("../../types/report-ui.js").HoverPointer | null;
+    setHoverPointer: import("react").Dispatch<import("react").SetStateAction<import("../../types/report-ui.js").HoverPointer | null>>;
     selectedTarget: import("../../types/report-ui.js").TargetSnapshot | null;
     pickProbeOpen: boolean;
     pickProbeSupportsTextFields: boolean;

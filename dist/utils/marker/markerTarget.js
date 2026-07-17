@@ -1,8 +1,14 @@
+import { toFeedbackHoverSnapshot } from "../../utils/shared/dom.js";
+import { getFeedbackTargetElement } from "./locateFeedback.js";
 export function markerToTargetSnapshot(marker) {
     if (!marker.rect) {
         return null;
     }
     const { report, rect } = marker;
+    const inspectedTarget = toFeedbackHoverSnapshot(getFeedbackTargetElement(report));
+    if (inspectedTarget) {
+        return inspectedTarget;
+    }
     const isTagged = !report.target_selector;
     return {
         id: report.report_id,

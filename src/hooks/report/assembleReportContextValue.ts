@@ -152,6 +152,7 @@ export function assembleReportContextValue({
         draft: draft.draft,
         hoveredTarget: draft.hoveredTarget,
         hoverPointer: draft.hoverPointer,
+        setHoverPointer: draft.setHoverPointer,
         selectedTarget: draft.selectedTarget,
         pickProbeOpen: draft.pickProbeOpen,
         pickProbeSupportsTextFields: draft.pickProbeSupportsTextFields,
