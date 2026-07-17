@@ -1,6 +1,6 @@
 import { type Dispatch, type MutableRefObject, type SetStateAction } from "react";
 import type { ReportMessages } from "../../i18n/types.js";
-import type { DraftReport, HoverPointer, PickProbeCompareMode, PickProbeFieldKey, PickProbeLayoutMode, PickProbeValues, PickTargetContextMenuState, ReportMode, SavedProbeDeletion, SavedProbeEntry, TargetSnapshot } from "../../types/report-ui.js";
+import type { DraftReport, HoverPointer, PickProbeCompareMode, PickProbeFieldKey, PickProbeLayoutMode, PickProbeValues, PickTargetContextMenuState, ReportMode, SavedProbeEntry, TargetSnapshot } from "../../types/report-ui.js";
 export type UseReportPickProbeParams = {
     mode: ReportMode;
     selectedElementRef: MutableRefObject<HTMLElement | null>;
@@ -26,7 +26,7 @@ export declare function useReportPickProbe({ mode, selectedElementRef, hoveredEl
     setContextMenuElementKey: Dispatch<SetStateAction<string | null>>;
     contextMenuElementRef: MutableRefObject<HTMLElement | null>;
     savedProbeEdits: Record<string, SavedProbeEntry>;
-    savedProbeDeletions: SavedProbeDeletion[];
+    savedProbeDeletions: import("../../types/report-ui.js").SavedProbeDeletion[];
     hasProbeSessionChanges: boolean;
     canUndoProbeSession: boolean;
     canRedoProbeSession: boolean;

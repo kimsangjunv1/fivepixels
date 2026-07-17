@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { REPORT_SHORTCUTS } from "@/constants/reportShortcuts.js";
 import { isEditableTarget, matchesShortcut } from "@/utils/shared/shortcuts.js";
-import type { useReportState } from "./useReportState.js";
+import type { useReportState } from "./report/useReportState.js";
 
 type ReportShortcutHandlers = Pick<
     ReturnType<typeof useReportState>,

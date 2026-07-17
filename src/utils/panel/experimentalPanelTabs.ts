@@ -7,6 +7,15 @@ const NEEDS_REPLY_STATUSES = new Set(["wait_for_reply", "additional_question"]);
 const ATTENTION_STATUSES = new Set(["found_error", "recheck_requested", "wait_for_reply", "additional_question"]);
 const IN_PROGRESS_STATUSES = new Set(["wait_for_reply", "additional_question", "suggested", "found_error", "recheck_requested"]);
 
+/** Prefer all-page reports when list scope is "all" or an all-page list is already loaded. */
+export function resolveExperimentalListSource(reports: ReportFeedback[], allPageReports: ReportFeedback[], listScope: string) {
+    if (listScope === "all" || allPageReports.length > 0) {
+        return allPageReports.length > 0 ? allPageReports : reports;
+    }
+
+    return reports;
+}
+
 function isAssignedTo(report: ReportFeedback, actorName: string | null) {
     if (!actorName) {
         return false;

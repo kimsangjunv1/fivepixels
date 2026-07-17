@@ -1,6 +1,6 @@
 import { useMemo, useState, type DragEvent } from "react";
 import { APPEARANCE_OPTION_VALUES } from "@/constants/appearance.js";
-import { APPEARANCE_SCALE_VALUES, MARKER_FONT_SIZE_VALUES, type AppearanceScale, type MarkerFontSize } from "@/constants/markerAppearance.js";
+import { type AppearanceScale, type MarkerFontSize } from "@/constants/markerAppearance.js";
 import { PANEL_ROLE_VALUES, type PanelRole } from "@/constants/panelRole.js";
 import type { UserSelectablePanelTab } from "@/constants/panelTabRegistry.js";
 import type { ReportLocale } from "@/i18n/types.js";
@@ -8,9 +8,16 @@ import { useReportPreferences, useReportSession } from "@/providers/reportContex
 import { getDefaultVisibleTabsForRole } from "@/utils/panel/panelTabPreference.js";
 import { isPersonalKeyFile, readPersonalKeyFile } from "@/utils/feedback/feedbackDataTransfer.js";
 import { AppearanceThemePicker } from "./AppearanceThemePicker.js";
-import { DiscreteScaleDial } from "./DiscreteScaleDial.js";
 import { MarkerSizePreview } from "./MarkerSizePreview.js";
 import { PanelDropdownMenuItem } from "./PanelDropdownMenu.js";
+import {
+    PANEL_GATE_BACK_BUTTON_CLASS,
+    PANEL_GATE_DESCRIPTION_CLASS,
+    PANEL_GATE_PRIMARY_BUTTON_CLASS,
+    PANEL_GATE_SECTION_CLASS,
+    PANEL_GATE_TITLE_CLASS,
+} from "./PanelGateShell.js";
+import { PanelMarkerDisplayControls } from "./PanelMarkerDisplayControls.js";
 import { PanelOptionSwitch } from "./PanelOptionSwitch.js";
 import { PanelTabSelector } from "./PanelTabSelector.js";
 
@@ -169,12 +176,12 @@ export function PanelOnboarding() {
     };
 
     return (
-        <section className="flex flex-col gap-[12px] bg-[var(--adaptive-black50)] p-[16px]">
+        <section className={PANEL_GATE_SECTION_CLASS}>
             {step === "language" ? (
                 <>
                     <div>
-                        <h6 className="text-[14px] font-bold text-[var(--adaptive-black900)]">{onboarding.languageStepTitle}</h6>
-                        <p className="mt-[4px] text-[12px] leading-[1.5] text-[var(--adaptive-black600)]">{onboarding.languageStepDescription}</p>
+                        <h6 className={PANEL_GATE_TITLE_CLASS}>{onboarding.languageStepTitle}</h6>
+                        <p className={PANEL_GATE_DESCRIPTION_CLASS}>{onboarding.languageStepDescription}</p>
                     </div>
 
                     <PanelOptionSwitch
@@ -188,7 +195,7 @@ export function PanelOnboarding() {
                         <button
                             type="button"
                             onClick={() => setStep("intro")}
-                            className="rounded-[8px] bg-[var(--adaptive-blue100)] px-[12px] py-[6px] text-[12px] font-bold text-[var(--adaptive-blue500)]"
+                            className={PANEL_GATE_PRIMARY_BUTTON_CLASS}
                         >
                             {onboarding.next}
                         </button>
@@ -197,15 +204,15 @@ export function PanelOnboarding() {
             ) : step === "intro" ? (
                 <>
                     <div>
-                        <h6 className="text-[14px] font-bold text-[var(--adaptive-black900)]">{onboarding.introTitle}</h6>
-                        <p className="mt-[4px] text-[12px] leading-[1.5] text-[var(--adaptive-black600)]">{onboarding.introDescription}</p>
+                        <h6 className={PANEL_GATE_TITLE_CLASS}>{onboarding.introTitle}</h6>
+                        <p className={PANEL_GATE_DESCRIPTION_CLASS}>{onboarding.introDescription}</p>
                     </div>
 
                     <div className="flex flex-col gap-[8px]">
                         <button
                             type="button"
                             onClick={() => setStep("role")}
-                            className="rounded-[8px] bg-[var(--adaptive-blue100)] px-[12px] py-[10px] text-[12px] font-bold text-[var(--adaptive-blue500)]"
+                            className={`${PANEL_GATE_PRIMARY_BUTTON_CLASS} py-[10px]`}
                         >
                             {onboarding.newUser}
                         </button>
@@ -222,7 +229,7 @@ export function PanelOnboarding() {
                         <button
                             type="button"
                             onClick={() => setStep("language")}
-                            className="text-[12px] font-semibold text-[var(--adaptive-black500)] hover:text-[var(--adaptive-black700)]"
+                            className={PANEL_GATE_BACK_BUTTON_CLASS}
                         >
                             {onboarding.back}
                         </button>
@@ -231,8 +238,8 @@ export function PanelOnboarding() {
             ) : step === "restore" ? (
                 <>
                     <div>
-                        <h6 className="text-[14px] font-bold text-[var(--adaptive-black900)]">{onboarding.restoreTitle}</h6>
-                        <p className="mt-[4px] text-[12px] leading-[1.5] text-[var(--adaptive-black600)]">{onboarding.restoreDescription}</p>
+                        <h6 className={PANEL_GATE_TITLE_CLASS}>{onboarding.restoreTitle}</h6>
+                        <p className={PANEL_GATE_DESCRIPTION_CLASS}>{onboarding.restoreDescription}</p>
                     </div>
 
                     <div
@@ -267,7 +274,7 @@ export function PanelOnboarding() {
                         <button
                             type="button"
                             onClick={() => setStep("intro")}
-                            className="text-[12px] font-semibold text-[var(--adaptive-black500)] hover:text-[var(--adaptive-black700)]"
+                            className={PANEL_GATE_BACK_BUTTON_CLASS}
                         >
                             {onboarding.back}
                         </button>
@@ -275,7 +282,7 @@ export function PanelOnboarding() {
                             type="button"
                             disabled={!backupKey.trim() || isRestoring}
                             onClick={() => void handleRestore()}
-                            className="rounded-[8px] bg-[var(--adaptive-blue100)] px-[12px] py-[6px] text-[12px] font-bold text-[var(--adaptive-blue500)] disabled:opacity-50"
+                            className={PANEL_GATE_PRIMARY_BUTTON_CLASS}
                         >
                             {onboarding.restoreAction}
                         </button>
@@ -284,8 +291,8 @@ export function PanelOnboarding() {
             ) : step === "role" ? (
                 <>
                     <div>
-                        <h6 className="text-[14px] font-bold text-[var(--adaptive-black900)]">{onboarding.roleStepTitle}</h6>
-                        <p className="mt-[4px] text-[12px] leading-[1.5] text-[var(--adaptive-black600)]">{onboarding.roleStepDescription}</p>
+                        <h6 className={PANEL_GATE_TITLE_CLASS}>{onboarding.roleStepTitle}</h6>
+                        <p className={PANEL_GATE_DESCRIPTION_CLASS}>{onboarding.roleStepDescription}</p>
                     </div>
 
                     <div className="overflow-hidden rounded-[10px] border border-[var(--adaptive-black200)]">
@@ -314,7 +321,7 @@ export function PanelOnboarding() {
                         <button
                             type="button"
                             onClick={() => setStep("intro")}
-                            className="text-[12px] font-semibold text-[var(--adaptive-black500)] hover:text-[var(--adaptive-black700)]"
+                            className={PANEL_GATE_BACK_BUTTON_CLASS}
                         >
                             {onboarding.back}
                         </button>
@@ -322,7 +329,7 @@ export function PanelOnboarding() {
                             type="button"
                             disabled={!canProceedFromRoleStep}
                             onClick={() => setStep("appearance")}
-                            className="rounded-[8px] bg-[var(--adaptive-blue100)] px-[12px] py-[6px] text-[12px] font-bold text-[var(--adaptive-blue500)] disabled:opacity-50"
+                            className={PANEL_GATE_PRIMARY_BUTTON_CLASS}
                         >
                             {onboarding.next}
                         </button>
@@ -331,8 +338,8 @@ export function PanelOnboarding() {
             ) : step === "appearance" ? (
                 <>
                     <div>
-                        <h6 className="text-[14px] font-bold text-[var(--adaptive-black900)]">{onboarding.appearanceStepTitle}</h6>
-                        <p className="mt-[4px] text-[12px] leading-[1.5] text-[var(--adaptive-black600)]">{onboarding.appearanceStepDescription}</p>
+                        <h6 className={PANEL_GATE_TITLE_CLASS}>{onboarding.appearanceStepTitle}</h6>
+                        <p className={PANEL_GATE_DESCRIPTION_CLASS}>{onboarding.appearanceStepDescription}</p>
                     </div>
 
                     <AppearanceThemePicker
@@ -346,14 +353,14 @@ export function PanelOnboarding() {
                         <button
                             type="button"
                             onClick={() => setStep("role")}
-                            className="text-[12px] font-semibold text-[var(--adaptive-black500)] hover:text-[var(--adaptive-black700)]"
+                            className={PANEL_GATE_BACK_BUTTON_CLASS}
                         >
                             {onboarding.back}
                         </button>
                         <button
                             type="button"
                             onClick={() => setStep("display")}
-                            className="rounded-[8px] bg-[var(--adaptive-blue100)] px-[12px] py-[6px] text-[12px] font-bold text-[var(--adaptive-blue500)]"
+                            className={PANEL_GATE_PRIMARY_BUTTON_CLASS}
                         >
                             {onboarding.next}
                         </button>
@@ -362,8 +369,8 @@ export function PanelOnboarding() {
             ) : step === "display" ? (
                 <>
                     <div>
-                        <h6 className="text-[14px] font-bold text-[var(--adaptive-black900)]">{onboarding.displayStepTitle}</h6>
-                        <p className="mt-[4px] text-[12px] leading-[1.5] text-[var(--adaptive-black600)]">{onboarding.displayStepDescription}</p>
+                        <h6 className={PANEL_GATE_TITLE_CLASS}>{onboarding.displayStepTitle}</h6>
+                        <p className={PANEL_GATE_DESCRIPTION_CLASS}>{onboarding.displayStepDescription}</p>
                     </div>
 
                     <MarkerSizePreview
@@ -374,40 +381,30 @@ export function PanelOnboarding() {
                         fontFamily={typography.fontFamily}
                         ariaLabel={onboarding.displayPreviewAriaLabel}
                     />
-                    <div className="flex flex-col gap-[12px]">
-                        <div>
-                            <p className="mb-[6px] text-[11px] font-medium text-[var(--adaptive-black600)]">{messages.settings.markerSize}</p>
-                            <DiscreteScaleDial
-                                values={APPEARANCE_SCALE_VALUES}
-                                value={markerAppearance.size}
-                                onChange={setMarkerSize}
-                                labels={scaleLabels}
-                                ariaLabel={messages.settings.markerSizeAriaLabel}
-                            />
-                        </div>
-                        <div>
-                            <p className="mb-[6px] text-[11px] font-medium text-[var(--adaptive-black600)]">{messages.settings.markerFontSize}</p>
-                            <DiscreteScaleDial
-                                values={MARKER_FONT_SIZE_VALUES}
-                                value={typography.fontSize}
-                                onChange={setFontSize}
-                                labels={markerFontSizeLabels}
-                                ariaLabel={messages.settings.markerFontSizeAriaLabel}
-                            />
-                        </div>
-                    </div>
+                    <PanelMarkerDisplayControls
+                        markerSize={markerAppearance.size}
+                        fontSize={typography.fontSize}
+                        onMarkerSizeChange={setMarkerSize}
+                        onFontSizeChange={setFontSize}
+                        scaleLabels={scaleLabels}
+                        markerFontSizeLabels={markerFontSizeLabels}
+                        markerSizeLabel={messages.settings.markerSize}
+                        markerFontSizeLabel={messages.settings.markerFontSize}
+                        markerSizeAriaLabel={messages.settings.markerSizeAriaLabel}
+                        markerFontSizeAriaLabel={messages.settings.markerFontSizeAriaLabel}
+                    />
                     <div className="flex items-center justify-between">
                         <button
                             type="button"
                             onClick={() => setStep("appearance")}
-                            className="text-[12px] font-semibold text-[var(--adaptive-black500)] hover:text-[var(--adaptive-black700)]"
+                            className={PANEL_GATE_BACK_BUTTON_CLASS}
                         >
                             {onboarding.back}
                         </button>
                         <button
                             type="button"
                             onClick={() => setStep("key")}
-                            className="rounded-[8px] bg-[var(--adaptive-blue100)] px-[12px] py-[6px] text-[12px] font-bold text-[var(--adaptive-blue500)]"
+                            className={PANEL_GATE_PRIMARY_BUTTON_CLASS}
                         >
                             {onboarding.next}
                         </button>
@@ -416,8 +413,8 @@ export function PanelOnboarding() {
             ) : (
                 <>
                     <div>
-                        <h6 className="text-[14px] font-bold text-[var(--adaptive-black900)]">{onboarding.keyStepTitle}</h6>
-                        <p className="mt-[4px] text-[12px] leading-[1.5] text-[var(--adaptive-black600)]">{onboarding.keyStepDescription}</p>
+                        <h6 className={PANEL_GATE_TITLE_CLASS}>{onboarding.keyStepTitle}</h6>
+                        <p className={PANEL_GATE_DESCRIPTION_CLASS}>{onboarding.keyStepDescription}</p>
                     </div>
                     <input
                         autoFocus
@@ -433,7 +430,7 @@ export function PanelOnboarding() {
                         <button
                             type="button"
                             onClick={() => setStep("display")}
-                            className="text-[12px] font-semibold text-[var(--adaptive-black500)] hover:text-[var(--adaptive-black700)]"
+                            className={PANEL_GATE_BACK_BUTTON_CLASS}
                         >
                             {onboarding.back}
                         </button>
@@ -442,7 +439,7 @@ export function PanelOnboarding() {
                             type="button"
                             disabled={!trimmedName || isCreating || hasDuplicateName}
                             onClick={() => void handleCreateKey()}
-                            className="rounded-[8px] bg-[var(--adaptive-blue100)] px-[12px] py-[6px] text-[12px] font-bold text-[var(--adaptive-blue500)] disabled:opacity-50"
+                            className={PANEL_GATE_PRIMARY_BUTTON_CLASS}
                         >
                             {onboarding.createKey}
                         </button>

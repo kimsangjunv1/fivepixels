@@ -2,15 +2,15 @@ import { useState, type ReactNode } from "react";
 import type { ReportAppearance, QuestionThreadDisplay } from "@/types/report.js";
 import type { ReportLocale } from "@/i18n/types.js";
 import { APPEARANCE_OPTION_VALUES } from "@/constants/appearance.js";
-import { FONT_FAMILY_SUGGESTIONS, APPEARANCE_SCALE_VALUES, MARKER_FONT_SIZE_VALUES } from "@/constants/markerAppearance.js";
+import { FONT_FAMILY_SUGGESTIONS } from "@/constants/markerAppearance.js";
 import type { AppearanceScale, MarkerFontSize, MarkerShape } from "@/constants/markerAppearance.js";
 import { useReportPreferences, useReportSession } from "@/providers/reportContext.js";
 import { formatPresentationViewerLabel } from "@/utils/report/reportTeam.js";
 import { ChevronLeftIcon, ChevronRightIcon } from "@/components/icons/Icons.js";
 import { AppearanceThemePicker } from "./AppearanceThemePicker.js";
-import { DiscreteScaleDial } from "./DiscreteScaleDial.js";
 import { HexColorField } from "./HexColorField.js";
 import { MarkerShapePicker } from "./MarkerShapePicker.js";
+import { PanelMarkerDisplayControls } from "./PanelMarkerDisplayControls.js";
 import { PanelOptionSwitch } from "./PanelOptionSwitch.js";
 import { PanelTabSelector } from "./PanelTabSelector.js";
 
@@ -256,16 +256,18 @@ export function PanelSettings({
 
                             <SettingsSection label={messages.settings.sectionMarkerAppearance}>
                                 <div className="flex flex-col gap-[12px] px-[12px] pb-[10px]">
-                                    <div>
-                                        <p className="mb-[6px] text-[11px] font-medium text-[var(--adaptive-black600)]">{messages.settings.markerSize}</p>
-                                        <DiscreteScaleDial
-                                            values={APPEARANCE_SCALE_VALUES}
-                                            value={markerAppearance.size}
-                                            onChange={setMarkerSize}
-                                            labels={scaleLabels}
-                                            ariaLabel={messages.settings.markerSizeAriaLabel}
-                                        />
-                                    </div>
+                                    <PanelMarkerDisplayControls
+                                        markerSize={markerAppearance.size}
+                                        fontSize={typography.fontSize}
+                                        onMarkerSizeChange={setMarkerSize}
+                                        onFontSizeChange={setFontSize}
+                                        scaleLabels={scaleLabels}
+                                        markerFontSizeLabels={markerFontSizeLabels}
+                                        markerSizeLabel={messages.settings.markerSize}
+                                        markerFontSizeLabel={messages.settings.markerFontSize}
+                                        markerSizeAriaLabel={messages.settings.markerSizeAriaLabel}
+                                        markerFontSizeAriaLabel={messages.settings.markerFontSizeAriaLabel}
+                                    />
                                     <div>
                                         <p className="mb-[6px] text-[11px] font-medium text-[var(--adaptive-black600)]">{messages.settings.markerShape}</p>
                                         <MarkerShapePicker
@@ -295,16 +297,6 @@ export function PanelSettings({
 
                             <SettingsSection label={messages.settings.sectionTypography}>
                                 <div className="flex flex-col gap-[12px] px-[12px] pb-[10px]">
-                                    <div>
-                                        <p className="mb-[6px] text-[11px] font-medium text-[var(--adaptive-black600)]">{messages.settings.markerFontSize}</p>
-                                        <DiscreteScaleDial
-                                            values={MARKER_FONT_SIZE_VALUES}
-                                            value={typography.fontSize}
-                                            onChange={setFontSize}
-                                            labels={markerFontSizeLabels}
-                                            ariaLabel={messages.settings.markerFontSizeAriaLabel}
-                                        />
-                                    </div>
                                     <label className="flex flex-col gap-[4px] text-[11px]">
                                         <span className="font-medium text-[var(--adaptive-black500)]">{messages.settings.fontFamily}</span>
                                         <input

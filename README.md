@@ -92,6 +92,8 @@ REST 경로·Phase·호출 순서는 [docs/backend-api-route.md](./docs/backend-
 
 > `onList`, `onCreate`, `onUpdate`는 **함께** 넘기거나 **모두 생략**해야 합니다. 생략 시 localStorage adapter가 사용됩니다.
 
+**타입 찾는 법:** 공개 props → `FivePixelsProps` (`src/types/publicApi.ts`) · handler 입·출력 → `ReportPersistenceHandlers` · payload/엔티티 → `CreateReportFeedbackPayload` / `ReportFeedback` 등 (`src/types/report.ts`). 새 prop 추가 → [docs/add-props.md](./docs/add-props.md). fetch 예시 → [docs/snippets/createFeedbackHandlers.ts](./docs/snippets/createFeedbackHandlers.ts).
+
 ## 커스텀 UI 확장
 
 기본 `<FivePixels />` 대신 `ReportProvider`와 Context 훅으로 패널·오버레이를 직접 조립할 수 있습니다 (`@fivepixels-js/react/report`).

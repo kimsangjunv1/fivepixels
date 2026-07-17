@@ -23,6 +23,21 @@ export type UseReportReplyReviewParams = {
     onSelectReport: (reportId: string) => void;
 };
 export declare function useReportReplyReview({ reports, messages, fields, sessionActor, authorSelectionLocked, activeIdentify, authorizedAuthors, selfName, eventCallbacks, createReply, updateFeedback, usesCreateReply, signReplyPayload, signUpdatePayload, setErrorMessage, onSelectReport, }: UseReportReplyReviewParams): {
+    focusedCaseId: string | null;
+    selectCase: (caseId: string) => void;
+    clearFocusedCase: () => void;
+    openReplyComposer: (report: ReportFeedback) => void;
+    closeReplyComposer: () => void;
+    handleReplySubmit: () => Promise<void>;
+    beginCaseEdit: (report: ReportFeedback) => void;
+    cancelCaseEdit: () => void;
+    handleCaseEditSave: () => Promise<void>;
+    updateCaseEditDraftCase: (caseId: string, text: string) => void;
+    addCaseEditDraftCase: () => void;
+    removeCaseEditDraftCase: (caseId: string) => void;
+    isCaseEditing: boolean;
+    caseEditReportId: string | null;
+    caseEditCases: import("../../types/report.js").ReportCase[] | null;
     activeReplyReportId: string | null;
     setActiveReplyReportId: Dispatch<SetStateAction<string | null>>;
     activeReplyReport: ReportFeedback | null;
@@ -52,20 +67,5 @@ export declare function useReportReplyReview({ reports, messages, fields, sessio
     handleClaimAssignee: () => Promise<void>;
     handleTransferAssignee: () => Promise<void>;
     handleConfirmResolution: () => Promise<void>;
-    beginCaseEdit: (report: ReportFeedback) => void;
-    cancelCaseEdit: () => void;
-    handleCaseEditSave: () => Promise<void>;
-    updateCaseEditDraftCase: (caseId: string, text: string) => void;
-    addCaseEditDraftCase: () => void;
-    removeCaseEditDraftCase: (caseId: string) => void;
-    focusedCaseId: string | null;
-    selectCase: (caseId: string) => void;
-    clearFocusedCase: () => void;
-    isCaseEditing: boolean;
-    caseEditReportId: string | null;
-    caseEditCases: import("../../types/report.js").ReportCase[] | null;
-    openReplyComposer: (report: ReportFeedback) => void;
-    closeReplyComposer: () => void;
-    handleReplySubmit: () => Promise<void>;
 };
 //# sourceMappingURL=useReportReplyReview.d.ts.map

@@ -8,9 +8,7 @@ import type {
     PickProbeLayoutMode,
     PickProbeValues,
     PickTargetContextMenuState,
-    ProbeSessionAction,
     ReportMode,
-    SavedProbeDeletion,
     SavedProbeEntry,
     TargetSnapshot,
 } from "@/types/report-ui.js";
@@ -26,12 +24,11 @@ import {
     findElementByProbeKey,
     getPickProbeElementKey,
     restoreProbeElementOriginal,
-    restoreSavedProbeDeletion,
 } from "@/utils/probe/pickProbeSession.js";
 import { playPickTargetDeleteAnimation } from "@/utils/probe/pickTargetDeleteAnimation.js";
-import { applyProbeSessionActionBackward, applyProbeSessionActionForward } from "@/utils/probe/probeSessionHistory.js";
 import { getPickProbeLayoutMode } from "@/utils/probe/probeLayout.js";
 import { createReportCase } from "@/utils/report/reportCases.js";
+import { usePickProbeSessionHistory } from "./usePickProbeSessionHistory.js";
 
 export type UseReportPickProbeParams = {
     mode: ReportMode;
@@ -67,14 +64,21 @@ export function useReportPickProbe({
     const [pickTargetContextMenu, setPickTargetContextMenu] = useState<PickTargetContextMenuState | null>(null);
     const [contextMenuElementKey, setContextMenuElementKey] = useState<string | null>(null);
     const [savedProbeEdits, setSavedProbeEdits] = useState<Record<string, SavedProbeEntry>>({});
-    const [savedProbeDeletions, setSavedProbeDeletions] = useState<SavedProbeDeletion[]>([]);
-    const savedProbeDeletionsRef = useRef(savedProbeDeletions);
-    savedProbeDeletionsRef.current = savedProbeDeletions;
-    const [probeSessionHistoryState, setProbeSessionHistoryState] = useState<{
-        actions: ProbeSessionAction[];
-        index: number;
-    }>({ actions: [], index: -1 });
     const [savedProbeCompareMode, setSavedProbeCompareModeState] = useState<PickProbeCompareMode>("after");
+    const {
+        savedProbeDeletions,
+        setSavedProbeDeletions,
+        pushProbeSessionAction,
+        undoProbeSessionAction,
+        redoProbeSessionAction,
+        revertAllSavedProbeEdits,
+        canUndoProbeSession,
+        canRedoProbeSession,
+        hasProbeSessionChanges,
+    } = usePickProbeSessionHistory({
+        setSavedProbeEdits,
+        setSavedProbeCompareModeState,
+    });
     const pickProbeRestoreRef = useRef<{
         style: string | null;
         textContent: string | null;
@@ -143,98 +147,6 @@ export function useReportPickProbe({
         },
         [closePickProbePanelOnly],
     );
-
-    const pushProbeSessionAction = useCallback((action: ProbeSessionAction) => {
-        setProbeSessionHistoryState((current) => {
-            const actions = current.actions.slice(0, current.index + 1);
-            actions.push(action);
-
-            return {
-                actions,
-                index: actions.length - 1,
-            };
-        });
-    }, []);
-
-    const undoProbeSessionAction = useCallback(() => {
-        setProbeSessionHistoryState((current) => {
-            if (current.index < 0) {
-                return current;
-            }
-
-            const action = current.actions[current.index];
-
-            setSavedProbeEdits((edits) => {
-                const next = applyProbeSessionActionBackward(action, {
-                    edits,
-                    deletions: savedProbeDeletionsRef.current,
-                });
-                setSavedProbeDeletions(next.deletions);
-
-                return next.edits;
-            });
-
-            return {
-                actions: current.actions,
-                index: current.index - 1,
-            };
-        });
-    }, []);
-
-    const redoProbeSessionAction = useCallback(() => {
-        setProbeSessionHistoryState((current) => {
-            if (current.index >= current.actions.length - 1) {
-                return current;
-            }
-
-            const action = current.actions[current.index + 1];
-
-            setSavedProbeEdits((edits) => {
-                const next = applyProbeSessionActionForward(action, {
-                    edits,
-                    deletions: savedProbeDeletionsRef.current,
-                });
-                setSavedProbeDeletions(next.deletions);
-
-                return next.edits;
-            });
-
-            return {
-                actions: current.actions,
-                index: current.index + 1,
-            };
-        });
-    }, []);
-
-    const revertAllSavedProbeEdits = useCallback(() => {
-        setProbeSessionHistoryState({ actions: [], index: -1 });
-
-        setSavedProbeDeletions((deletions) => {
-            for (const entry of [...deletions].reverse()) {
-                restoreSavedProbeDeletion(entry);
-            }
-
-            return [];
-        });
-
-        setSavedProbeEdits((current) => {
-            for (const entry of Object.values(current)) {
-                const element = findElementByProbeKey(entry.elementKey);
-
-                if (element) {
-                    restoreProbeElementOriginal(element, entry);
-                }
-            }
-
-            return {};
-        });
-        setSavedProbeCompareModeState("after");
-    }, []);
-
-    const canUndoProbeSession = probeSessionHistoryState.index >= 0;
-    const canRedoProbeSession = probeSessionHistoryState.index < probeSessionHistoryState.actions.length - 1;
-
-    const hasProbeSessionChanges = useMemo(() => probeSessionHistoryState.index >= 0, [probeSessionHistoryState.index]);
 
     const setSavedProbeCompareMode = useCallback((compareMode: PickProbeCompareMode) => {
         setSavedProbeCompareModeState(compareMode);

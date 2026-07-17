@@ -1,13 +1,13 @@
 import { useMemo } from "react";
 import { useReportPreferences, useReportData } from "@/providers/reportContext.js";
-import { buildProjectHealthSummary } from "@/utils/panel/experimentalPanelTabs.js";
+import { buildProjectHealthSummary, resolveExperimentalListSource } from "@/utils/panel/experimentalPanelTabs.js";
 import { formatStatCount } from "@/utils/panel/formatStatCount.js";
 import { panelNumericClassName } from "@/utils/panel/panelTypography.js";
 
 export function ReportProjectHealthPanel() {
     const { messages } = useReportPreferences();
     const { reports, allPageReports, listScope } = useReportData();
-    const source = listScope === "all" || allPageReports.length > 0 ? (allPageReports.length > 0 ? allPageReports : reports) : reports;
+    const source = resolveExperimentalListSource(reports, allPageReports, listScope);
     const summary = useMemo(() => buildProjectHealthSummary(source), [source]);
 
     const rows = [

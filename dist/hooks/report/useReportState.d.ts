@@ -4,6 +4,7 @@ import { type PanelView } from "./useReportAuthSession.js";
 import type { CreateReportFeedbackPayload, CreateReplyPayload, ReportAppearance, ReportAuthor, ReportActivitySummaryParams, ReportActivitySummaryResult, ReportEvent, ReportFeedback, ReportField, ReportGitHubConfig, FivePixelsMode, ReportIdentify, ReportListAllParams, ReportListAllResult, ReportPanelBootstrapParams, ReportPanelBootstrapResult, ReportReply, QuestionThreadDisplay, UpdateReportFeedbackPayload } from "../../types/report.js";
 export type { PanelView };
 export type ReportStateConfig = {
+    /** Internal resolved config (not public props). Public surface: `FivePixelsProps` in `src/types/publicApi.ts`. */
     projectId: string;
     environment?: string;
     appVersion?: string;
@@ -209,7 +210,7 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     editingReportId: string | null;
     editableDraft: import("../../types/report-ui.js").EditableDraft | null;
     setEditableDraft: import("react").Dispatch<import("react").SetStateAction<import("../../types/report-ui.js").EditableDraft | null>>;
-    overlayRef: import("react").MutableRefObject<HTMLDivElement | null>;
+    overlayRef: import("react").RefObject<HTMLDivElement>;
     activeReplyReportId: string | null;
     activeReplyReport: ReportFeedback | null;
     tooltipReport: ReportFeedback | null;

@@ -1,6 +1,6 @@
 import { jsx as _jsx, Fragment as _Fragment } from "react/jsx-runtime";
 import { getDefaultFields } from "../i18n/index.js";
-import { useReportState } from "../hooks/useReportState.js";
+import { useReportState } from "../hooks/report/useReportState.js";
 import { resolveReportEnabled } from "../utils/shared/env.js";
 import { resolveReportProject } from "../utils/report/reportProject.js";
 import { resolveReportTeam } from "../utils/report/reportTeam.js";

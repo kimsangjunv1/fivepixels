@@ -1,5 +1,5 @@
 import { type Context } from "react";
-import type { useReportState } from "../hooks/useReportState.js";
+import type { useReportState } from "../hooks/report/useReportState.js";
 import { REPORT_DATA_KEYS, REPORT_PREFERENCE_KEYS, REPORT_SESSION_KEYS } from "./reportContextPartitions.js";
 export type ReportContextValue = ReturnType<typeof useReportState>;
 type PreferenceKey = (typeof REPORT_PREFERENCE_KEYS)[number] & keyof ReportContextValue;
@@ -37,7 +37,7 @@ declare const ReportContext: Context<{
     personalKeyCandidates: import("../index.js").ReportAuthor[];
     authDiagnostics: import("../hooks/report/useReportAuthSession.js").AuthDiagnostics;
     authorSelectionLocked: boolean;
-    panelView: import("../hooks/useReportState.js").PanelView;
+    panelView: import("../hooks/report/useReportState.js").PanelView;
     completeOnboarding: ({ name }: {
         name: string;
     }) => Promise<{
@@ -175,7 +175,7 @@ declare const ReportContext: Context<{
     editingReportId: string | null;
     editableDraft: import("../types/report-ui.js").EditableDraft | null;
     setEditableDraft: import("react").Dispatch<import("react").SetStateAction<import("../types/report-ui.js").EditableDraft | null>>;
-    overlayRef: import("react").MutableRefObject<HTMLDivElement | null>;
+    overlayRef: import("react").RefObject<HTMLDivElement>;
     activeReplyReportId: string | null;
     activeReplyReport: import("../index.js").ReportFeedback | null;
     tooltipReport: import("../index.js").ReportFeedback | null;
@@ -307,7 +307,7 @@ export declare function useReport(): {
     personalKeyCandidates: import("../index.js").ReportAuthor[];
     authDiagnostics: import("../hooks/report/useReportAuthSession.js").AuthDiagnostics;
     authorSelectionLocked: boolean;
-    panelView: import("../hooks/useReportState.js").PanelView;
+    panelView: import("../hooks/report/useReportState.js").PanelView;
     completeOnboarding: ({ name }: {
         name: string;
     }) => Promise<{
@@ -445,7 +445,7 @@ export declare function useReport(): {
     editingReportId: string | null;
     editableDraft: import("../types/report-ui.js").EditableDraft | null;
     setEditableDraft: import("react").Dispatch<import("react").SetStateAction<import("../types/report-ui.js").EditableDraft | null>>;
-    overlayRef: import("react").MutableRefObject<HTMLDivElement | null>;
+    overlayRef: import("react").RefObject<HTMLDivElement>;
     activeReplyReportId: string | null;
     activeReplyReport: import("../index.js").ReportFeedback | null;
     tooltipReport: import("../index.js").ReportFeedback | null;
@@ -580,7 +580,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         personalKeyCandidates: import("../index.js").ReportAuthor[];
         authDiagnostics: import("../hooks/report/useReportAuthSession.js").AuthDiagnostics;
         authorSelectionLocked: boolean;
-        panelView: import("../hooks/useReportState.js").PanelView;
+        panelView: import("../hooks/report/useReportState.js").PanelView;
         completeOnboarding: ({ name }: {
             name: string;
         }) => Promise<{
@@ -718,7 +718,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         editingReportId: string | null;
         editableDraft: import("../types/report-ui.js").EditableDraft | null;
         setEditableDraft: import("react").Dispatch<import("react").SetStateAction<import("../types/report-ui.js").EditableDraft | null>>;
-        overlayRef: import("react").MutableRefObject<HTMLDivElement | null>;
+        overlayRef: import("react").RefObject<HTMLDivElement>;
         activeReplyReportId: string | null;
         activeReplyReport: import("../index.js").ReportFeedback | null;
         tooltipReport: import("../index.js").ReportFeedback | null;
@@ -816,7 +816,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         handleCreateGitHubIssue: (report: import("../index.js").ReportFeedback) => Promise<void>;
         handleCreateSubmitWithGitHubIssue: () => Promise<void>;
         isDraftGitHubIssueSubmitting: boolean;
-    }, "personalKey" | "environment" | "projectId" | "fields" | "personalKeyRequired" | "questionThreadDisplay" | "setQuestionThreadDisplay" | "locale" | "setLocale" | "showMarkerTargetPreview" | "setShowMarkerTargetPreview" | "toggleMarkerTargetPreview" | "markerAppearance" | "setMarkerAppearance" | "setMarkerSize" | "setMarkerShape" | "setMarkerColors" | "setMarkerColor" | "typography" | "setTypography" | "setFontSize" | "setFontFamily" | "panelRole" | "setPanelRole" | "appVersion" | "showFeedbackList" | "selfProfile" | "authors" | "publicKey" | "personalKeyCandidates" | "issuePersonalKey" | "rotatePersonalKey" | "insertPersonalKey" | "visibleShortcutKeys" | "authorSelectionLocked" | "messages" | "panelAppearance" | "setPanelAppearance" | "tooltipAppearance" | "setTooltipAppearance" | "panelView" | "completeOnboarding" | "restoreFromBackup" | "skipOnboarding" | "resolvedPanelAppearance" | "resolvedTooltipAppearance" | "isMobileViewport" | "isPresentationMode" | "presentationViewers" | "visiblePanelTabs" | "visiblePanelTabsSummary" | "resolvedTabAvailabilityContext" | "setVisiblePanelTabs" | "resetVisibleTabsToRoleDefault" | "applyRoleDefaultTabsForOnboarding" | "savePanelTabPreference" | "storedPanelTabPreference">;
+    }, "personalKey" | "environment" | "projectId" | "fields" | "personalKeyRequired" | "questionThreadDisplay" | "setQuestionThreadDisplay" | "locale" | "setLocale" | "showMarkerTargetPreview" | "setShowMarkerTargetPreview" | "toggleMarkerTargetPreview" | "markerAppearance" | "setMarkerAppearance" | "setMarkerSize" | "setMarkerShape" | "setMarkerColors" | "setMarkerColor" | "typography" | "setTypography" | "setFontSize" | "setFontFamily" | "panelRole" | "setPanelRole" | "appVersion" | "showFeedbackList" | "selfProfile" | "authors" | "publicKey" | "personalKeyCandidates" | "issuePersonalKey" | "rotatePersonalKey" | "insertPersonalKey" | "authorSelectionLocked" | "messages" | "visibleShortcutKeys" | "panelAppearance" | "setPanelAppearance" | "tooltipAppearance" | "setTooltipAppearance" | "panelView" | "completeOnboarding" | "restoreFromBackup" | "skipOnboarding" | "resolvedPanelAppearance" | "resolvedTooltipAppearance" | "isMobileViewport" | "isPresentationMode" | "presentationViewers" | "visiblePanelTabs" | "visiblePanelTabsSummary" | "resolvedTabAvailabilityContext" | "setVisiblePanelTabs" | "resetVisibleTabsToRoleDefault" | "applyRoleDefaultTabsForOnboarding" | "savePanelTabPreference" | "storedPanelTabPreference">;
     session: Pick<{
         panelAppearance: import("../index.js").ReportAppearance;
         setPanelAppearance: (nextAppearance: import("../index.js").ReportAppearance) => void;
@@ -846,7 +846,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         personalKeyCandidates: import("../index.js").ReportAuthor[];
         authDiagnostics: import("../hooks/report/useReportAuthSession.js").AuthDiagnostics;
         authorSelectionLocked: boolean;
-        panelView: import("../hooks/useReportState.js").PanelView;
+        panelView: import("../hooks/report/useReportState.js").PanelView;
         completeOnboarding: ({ name }: {
             name: string;
         }) => Promise<{
@@ -984,7 +984,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         editingReportId: string | null;
         editableDraft: import("../types/report-ui.js").EditableDraft | null;
         setEditableDraft: import("react").Dispatch<import("react").SetStateAction<import("../types/report-ui.js").EditableDraft | null>>;
-        overlayRef: import("react").MutableRefObject<HTMLDivElement | null>;
+        overlayRef: import("react").RefObject<HTMLDivElement>;
         activeReplyReportId: string | null;
         activeReplyReport: import("../index.js").ReportFeedback | null;
         tooltipReport: import("../index.js").ReportFeedback | null;
@@ -1082,7 +1082,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         handleCreateGitHubIssue: (report: import("../index.js").ReportFeedback) => Promise<void>;
         handleCreateSubmitWithGitHubIssue: () => Promise<void>;
         isDraftGitHubIssueSubmitting: boolean;
-    }, "statusText" | "toggleReportMode" | "toggleTargetPreview" | "currentPathname" | "sessionActor" | "draft" | "pickProbeOpen" | "pickProbeSupportsTextFields" | "pickProbeLayoutMode" | "pickProbeValues" | "pickProbeCompareMode" | "pickProbeHasEdits" | "pickTargetContextMenu" | "contextMenuElementKey" | "savedProbeEdits" | "savedProbeDeletions" | "hasProbeSessionChanges" | "canUndoProbeSession" | "canRedoProbeSession" | "undoProbeSessionAction" | "redoProbeSessionAction" | "savedProbeCompareMode" | "closePickProbe" | "closePickTargetContextMenu" | "handlePickTargetEdit" | "handlePickTargetDelete" | "handlePickTargetRevert" | "commitPickProbeEdits" | "revertSavedProbeEdit" | "revertAllSavedProbeEdits" | "setSavedProbeCompareMode" | "setPickProbeCompareMode" | "updatePickProbeValue" | "resetPickProbeValues" | "appendSavedProbeSummaryAsNewDraftCase" | "activeReplyReportId" | "mode" | "selectedTarget" | "hoveredTarget" | "showTargetPreview" | "closeReplyComposer" | "openReplyComposer" | "editingReportId" | "panelTab" | "pendingComposer" | "toggleIssueMode" | "cancelDraft" | "cancelPendingComposer" | "stopEditing" | "focusSearchInput" | "selectAdjacentReport" | "panelCollapsed" | "setPanelCollapsed" | "searchInputRef" | "activeMarkerTarget" | "markerPreviewTargets" | "selectableTargets" | "errorMessage" | "setErrorMessage" | "hoverPointer" | "markers" | "editableDraft" | "setEditableDraft" | "overlayRef" | "activeReplyReport" | "tooltipReport" | "tooltipAnchor" | "tooltipFieldTags" | "replyDraft" | "setReplyDraft" | "replySubmitAsQuestion" | "setReplySubmitAsQuestion" | "draftAuthorName" | "setDraftAuthorName" | "replyAuthorName" | "setReplyAuthorName" | "presentationViewerId" | "setPresentationViewerId" | "startDenyReview" | "startCheckoutReview" | "startAskQuestion" | "confirmAuthorName" | "setConfirmAuthorName" | "showConfirmAuthorSelect" | "toggleConfirmAuthorSelect" | "beginCaseEdit" | "cancelCaseEdit" | "updateCaseEditDraftCase" | "addCaseEditDraftCase" | "removeCaseEditDraftCase" | "focusedCaseId" | "selectCase" | "clearFocusedCase" | "isCaseEditing" | "caseEditReportId" | "caseEditCases" | "openPanelTab" | "togglePanelTab" | "selectReport" | "locateFeedback" | "activateFeedbackMarker" | "clearHoverLeaveTimeout" | "scheduleHoverLeave" | "setHoveredMarkerId" | "handleOverlayMove" | "handleOverlayContextMenu" | "handleOverlayClick" | "updateDraftCase" | "addDraftCase" | "removeDraftCase" | "updateDraftField" | "updateDraftCategory" | "startEditing">;
+    }, "statusText" | "toggleReportMode" | "toggleTargetPreview" | "currentPathname" | "sessionActor" | "savedProbeDeletions" | "hasProbeSessionChanges" | "canUndoProbeSession" | "canRedoProbeSession" | "undoProbeSessionAction" | "redoProbeSessionAction" | "revertAllSavedProbeEdits" | "draft" | "pickProbeOpen" | "pickProbeSupportsTextFields" | "pickProbeLayoutMode" | "pickProbeValues" | "pickProbeCompareMode" | "pickProbeHasEdits" | "pickTargetContextMenu" | "contextMenuElementKey" | "savedProbeEdits" | "savedProbeCompareMode" | "closePickProbe" | "closePickTargetContextMenu" | "handlePickTargetEdit" | "handlePickTargetDelete" | "handlePickTargetRevert" | "commitPickProbeEdits" | "revertSavedProbeEdit" | "setSavedProbeCompareMode" | "setPickProbeCompareMode" | "updatePickProbeValue" | "resetPickProbeValues" | "appendSavedProbeSummaryAsNewDraftCase" | "activeReplyReportId" | "mode" | "selectedTarget" | "hoveredTarget" | "showTargetPreview" | "closeReplyComposer" | "openReplyComposer" | "setErrorMessage" | "activeReplyReport" | "markers" | "overlayRef" | "selectReport" | "editingReportId" | "panelTab" | "pendingComposer" | "toggleIssueMode" | "cancelDraft" | "cancelPendingComposer" | "stopEditing" | "focusSearchInput" | "selectAdjacentReport" | "panelCollapsed" | "setPanelCollapsed" | "searchInputRef" | "activeMarkerTarget" | "markerPreviewTargets" | "selectableTargets" | "errorMessage" | "hoverPointer" | "editableDraft" | "setEditableDraft" | "tooltipReport" | "tooltipAnchor" | "tooltipFieldTags" | "replyDraft" | "setReplyDraft" | "replySubmitAsQuestion" | "setReplySubmitAsQuestion" | "draftAuthorName" | "setDraftAuthorName" | "replyAuthorName" | "setReplyAuthorName" | "presentationViewerId" | "setPresentationViewerId" | "startDenyReview" | "startCheckoutReview" | "startAskQuestion" | "confirmAuthorName" | "setConfirmAuthorName" | "showConfirmAuthorSelect" | "toggleConfirmAuthorSelect" | "beginCaseEdit" | "cancelCaseEdit" | "updateCaseEditDraftCase" | "addCaseEditDraftCase" | "removeCaseEditDraftCase" | "focusedCaseId" | "selectCase" | "clearFocusedCase" | "isCaseEditing" | "caseEditReportId" | "caseEditCases" | "openPanelTab" | "togglePanelTab" | "locateFeedback" | "activateFeedbackMarker" | "clearHoverLeaveTimeout" | "scheduleHoverLeave" | "setHoveredMarkerId" | "handleOverlayMove" | "handleOverlayContextMenu" | "handleOverlayClick" | "updateDraftCase" | "addDraftCase" | "removeDraftCase" | "updateDraftField" | "updateDraftCategory" | "startEditing">;
     data: Pick<{
         panelAppearance: import("../index.js").ReportAppearance;
         setPanelAppearance: (nextAppearance: import("../index.js").ReportAppearance) => void;
@@ -1112,7 +1112,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         personalKeyCandidates: import("../index.js").ReportAuthor[];
         authDiagnostics: import("../hooks/report/useReportAuthSession.js").AuthDiagnostics;
         authorSelectionLocked: boolean;
-        panelView: import("../hooks/useReportState.js").PanelView;
+        panelView: import("../hooks/report/useReportState.js").PanelView;
         completeOnboarding: ({ name }: {
             name: string;
         }) => Promise<{
@@ -1250,7 +1250,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         editingReportId: string | null;
         editableDraft: import("../types/report-ui.js").EditableDraft | null;
         setEditableDraft: import("react").Dispatch<import("react").SetStateAction<import("../types/report-ui.js").EditableDraft | null>>;
-        overlayRef: import("react").MutableRefObject<HTMLDivElement | null>;
+        overlayRef: import("react").RefObject<HTMLDivElement>;
         activeReplyReportId: string | null;
         activeReplyReport: import("../index.js").ReportFeedback | null;
         tooltipReport: import("../index.js").ReportFeedback | null;

@@ -1,5 +1,7 @@
 import type { ReportFeedback } from "../../types/report.js";
 import { getFeedbackDisplayStatus } from "../../utils/feedback/feedbackThread.js";
+/** Prefer all-page reports when list scope is "all" or an all-page list is already loaded. */
+export declare function resolveExperimentalListSource(reports: ReportFeedback[], allPageReports: ReportFeedback[], listScope: string): ReportFeedback[];
 export declare function getCaseCount(report: ReportFeedback): number;
 export declare function filterMyTasks(reports: ReportFeedback[], actorName: string | null): ReportFeedback[];
 export declare function filterNeedsAttention(reports: ReportFeedback[]): ReportFeedback[];

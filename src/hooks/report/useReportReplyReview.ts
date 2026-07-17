@@ -20,11 +20,8 @@ import {
     resolveOriginalFeedbackAuthorName,
     resolveParentReplyIdForCaseQuestion,
 } from "@/utils/feedback/feedbackThread.js";
-import { getFieldError } from "@/utils/report/fields.js";
 import {
-    canEditReportCases,
     claimCaseAssignee,
-    createReportCase,
     buildResolvedCasesUpdate,
     canActOnCase,
     getCaseAssigneeName,
@@ -36,6 +33,7 @@ import { createReplyId } from "@/utils/shared/format.js";
 import { notifyFeedbackReply, notifyFeedbackUpdate, type ReportSideEffectCallbacks } from "@/utils/report/reportCallbacks.js";
 import type { SessionActor } from "@/utils/report/reportTeam.js";
 import { resolveDefaultAuthorName } from "@/utils/report/resolveDefaultAuthorName.js";
+import { useReplyCaseEdit } from "./useReplyCaseEdit.js";
 
 export type UseReportReplyReviewParams = {
     reports: ReportFeedback[];
@@ -83,8 +81,6 @@ export function useReportReplyReview({
     const [pendingComposer, setPendingComposer] = useState<PendingFeedbackComposer>(null);
     const [confirmAuthorName, setConfirmAuthorName] = useState("");
     const [showConfirmAuthorSelect, setShowConfirmAuthorSelect] = useState(false);
-    const [caseEditReportId, setCaseEditReportId] = useState<string | null>(null);
-    const [caseEditDraft, setCaseEditDraft] = useState<ReportFeedback["cases"] | null>(null);
     const [focusedCaseId, setFocusedCaseId] = useState<string | null>(null);
 
     useEffect(() => {
@@ -116,10 +112,18 @@ export function useReportReplyReview({
         [activeReplyReport],
     );
 
-    const cancelCaseEdit = useCallback(() => {
-        setCaseEditReportId(null);
-        setCaseEditDraft(null);
-    }, []);
+    const caseEdit = useReplyCaseEdit({
+        reports,
+        activeReplyReport,
+        activeReplyReportId,
+        fields,
+        messages,
+        updateFeedback,
+        signUpdatePayload,
+        eventCallbacks,
+        setErrorMessage,
+    });
+    const { cancelCaseEdit } = caseEdit;
 
     useEffect(() => {
         if (!activeReplyReport) {
@@ -176,92 +180,6 @@ export function useReportReplyReview({
         },
         [ensureFocusedCase, focusedCaseId, messages.errors.caseAssigneeOnly, sessionActor?.name],
     );
-
-    const beginCaseEdit = useCallback(
-        (report: ReportFeedback) => {
-            if (!canEditReportCases(report)) {
-                setErrorMessage(messages.errors.archivedReadOnly);
-                return;
-            }
-
-            setCaseEditReportId(report.id);
-            setCaseEditDraft(report.cases.map((item) => ({ ...item })));
-            setErrorMessage("");
-        },
-        [messages.errors.archivedReadOnly],
-    );
-
-    const updateCaseEditDraftCase = useCallback((caseId: string, text: string) => {
-        setCaseEditDraft((current) => {
-            if (!current) {
-                return current;
-            }
-
-            return current.map((item) => (item.id === caseId ? { ...item, text } : item));
-        });
-    }, []);
-
-    const addCaseEditDraftCase = useCallback(() => {
-        setCaseEditDraft((current) => (current ? [...current, createReportCase("")] : current));
-    }, []);
-
-    const removeCaseEditDraftCase = useCallback((caseId: string) => {
-        setCaseEditDraft((current) => {
-            if (!current || current.length <= 1) {
-                return current;
-            }
-
-            return current.filter((item) => item.id !== caseId);
-        });
-    }, []);
-
-    const handleCaseEditSave = async () => {
-        if (!caseEditReportId || !caseEditDraft) {
-            return;
-        }
-
-        const report = reports.find((item) => item.id === caseEditReportId) ?? activeReplyReport;
-
-        if (!report) {
-            return;
-        }
-
-        if (!canEditReportCases(report)) {
-            setErrorMessage(messages.errors.archivedNotEditable);
-            return;
-        }
-
-        const nextError = getFieldError(caseEditDraft, report.field_values, fields, messages.errors);
-
-        if (nextError) {
-            setErrorMessage(nextError);
-            return;
-        }
-
-        try {
-            const cases = caseEditDraft.map((item) => ({
-                ...item,
-                text: item.text.trim(),
-                updated_at: new Date().toISOString(),
-            }));
-            const updatedFeedback = await updateFeedback(report.id, await signUpdatePayload({ cases }));
-
-            await notifyFeedbackUpdate(eventCallbacks, updatedFeedback);
-            cancelCaseEdit();
-            setErrorMessage("");
-        } catch (nextError) {
-            setErrorMessage(nextError instanceof Error ? nextError.message : messages.errors.updateFeedbackFailed);
-        }
-    };
-
-    const isCaseEditing = Boolean(caseEditReportId && caseEditDraft);
-    const caseEditCases = caseEditReportId === activeReplyReport?.id ? caseEditDraft : null;
-
-    useEffect(() => {
-        if (caseEditReportId && activeReplyReportId && caseEditReportId !== activeReplyReportId) {
-            cancelCaseEdit();
-        }
-    }, [activeReplyReportId, cancelCaseEdit, caseEditReportId]);
 
     const closeReplyComposer = () => {
         setActiveReplyReportId(null);
@@ -676,18 +594,10 @@ export function useReportReplyReview({
         handleClaimAssignee,
         handleTransferAssignee,
         handleConfirmResolution,
-        beginCaseEdit,
-        cancelCaseEdit,
-        handleCaseEditSave,
-        updateCaseEditDraftCase,
-        addCaseEditDraftCase,
-        removeCaseEditDraftCase,
+        ...caseEdit,
         focusedCaseId,
         selectCase,
         clearFocusedCase,
-        isCaseEditing,
-        caseEditReportId,
-        caseEditCases,
         openReplyComposer,
         closeReplyComposer,
         handleReplySubmit,

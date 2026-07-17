@@ -1,7 +1,6 @@
+export type { FivePixelsProps, ReportProviderProps } from "@/types/publicApi.js";
 export { FivePixels } from "./FivePixels.js";
-export type { FivePixelsProps } from "./FivePixels.js";
 export { ReportProvider } from "@/providers/ReportProvider.js";
-export type { ReportProviderProps } from "@/providers/ReportProvider.js";
 export { useReport, useReportPreferences, useReportSession, useReportData } from "@/providers/reportContext.js";
 export type { ReportPreferencesValue, ReportSessionValue, ReportDataValue } from "@/providers/reportContext.js";
 export { createLocalStorageReportAdapter } from "@/storage/local/localStorageAdapter.js";
@@ -54,6 +53,7 @@ export type {
     SerializedReportReply,
     UpdateReportFeedbackPayload,
 } from "@/types/report.js";
+
 export {
     allCasesResolved,
     applyCaseStatusSync,
@@ -69,11 +69,7 @@ export {
     syncIssueStatusFromCases,
     canEditReportCases,
 } from "@/utils/report/reportCases.js";
-export {
-    createReportAuthMessage,
-    parsePublicKey,
-    verifyReportAuthProof,
-} from "@/utils/auth/personalKey.js";
+export { createReportAuthMessage, parsePublicKey, verifyReportAuthProof } from "@/utils/auth/personalKey.js";
 export { REPORT_STATUS_FLOW, REPORT_STATUS_TRANSITIONS } from "@/types/report.js";
 export {
     buildGitHubIssueUpdate,

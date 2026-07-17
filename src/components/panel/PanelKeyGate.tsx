@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { ChevronDownIcon } from "@/components/icons/Icons.js";
 import { useReportPreferences, useReportSession } from "@/providers/reportContext.js";
-import type { PanelView } from "@/hooks/useReportState.js";
+import type { PanelView } from "@/hooks/report/useReportState.js";
+import { PanelGateButton, PanelGateShell } from "./PanelGateShell.js";
 
 type PanelKeyGateMode = Extract<PanelView, "setup-complete" | "key-issue">;
 
@@ -42,12 +43,23 @@ export function PanelKeyGate({ mode }: { mode: PanelKeyGateMode }) {
     };
 
     return (
-        <section className="flex flex-col gap-[12px] bg-[var(--adaptive-black50)] p-[16px]">
-            <div>
-                <h6 className="text-[14px] font-bold text-[var(--adaptive-black900)]">{title}</h6>
-                <p className="mt-[4px] text-[12px] leading-[1.5] text-[var(--adaptive-black600)]">{description}</p>
-            </div>
-
+        <PanelGateShell
+            title={title}
+            description={description}
+            footer={
+                <div className="flex items-center justify-end gap-[10px]">
+                    {canShowSnippet ? (
+                        <PanelGateButton
+                            variant="secondary"
+                            onClick={() => void handleCopySnippet()}
+                        >
+                            {copied ? onboarding.copied : onboarding.copySnippet}
+                        </PanelGateButton>
+                    ) : null}
+                    <PanelGateButton onClick={handleRefresh}>{onboarding.refresh}</PanelGateButton>
+                </div>
+            }
+        >
             {canShowSnippet && publicKey ? (
                 <div className="flex flex-col gap-[6px] overflow-hidden rounded-[8px] border border-[var(--adaptive-black200)]">
                     <button
@@ -70,25 +82,6 @@ export function PanelKeyGate({ mode }: { mode: PanelKeyGateMode }) {
                     ) : null}
                 </div>
             ) : null}
-
-            <div className="flex items-center justify-end gap-[10px]">
-                {canShowSnippet ? (
-                    <button
-                        type="button"
-                        onClick={() => void handleCopySnippet()}
-                        className="rounded-[8px] bg-[var(--adaptive-grey300)] px-[12px] py-[6px] text-[12px] font-semibold text-[var(--adaptive-black700)]"
-                    >
-                        {copied ? onboarding.copied : onboarding.copySnippet}
-                    </button>
-                ) : null}
-                <button
-                    type="button"
-                    onClick={handleRefresh}
-                    className="rounded-[8px] bg-[var(--adaptive-blue100)] px-[12px] py-[6px] text-[12px] font-bold text-[var(--adaptive-blue500)]"
-                >
-                    {onboarding.refresh}
-                </button>
-            </div>
-        </section>
+        </PanelGateShell>
     );
 }
