@@ -59,6 +59,7 @@ export function useReportDraftSession({
     const [hoveredTarget, setHoveredTarget] = useState<TargetSnapshot | null>(null);
     const [hoverPointer, setHoverPointer] = useState<HoverPointer | null>(null);
     const [selectedTarget, setSelectedTarget] = useState<TargetSnapshot | null>(null);
+    const [draftStep, setDraftStep] = useState<"content" | "category">("content");
     const draftElementRef = useRef<HTMLElement | null>(null);
 
     const {
@@ -315,6 +316,7 @@ export function useReportDraftSession({
         setHoverPointer(null);
         setHoveredTarget(null);
         setSelectedTarget(snapshot);
+        setDraftStep("content");
         setErrorMessage("");
         setDraft({
             clientX: event.clientX,
@@ -344,6 +346,7 @@ export function useReportDraftSession({
         draftElementRef.current = null;
         contextMenuElementRef.current = null;
         setDraft(null);
+        setDraftStep("content");
         setSelectedTarget(null);
         setHoverPointer(null);
     };
@@ -386,6 +389,7 @@ export function useReportDraftSession({
                   }
                 : current,
         );
+        setErrorMessage("");
     };
 
     const removeDraftCase = (caseId: string) => {
@@ -399,6 +403,7 @@ export function useReportDraftSession({
                 cases: current.cases.filter((item) => item.id !== caseId),
             };
         });
+        setErrorMessage("");
     };
 
     const updateDraftField = (key: string, nextValue: string | boolean) => {
@@ -413,6 +418,7 @@ export function useReportDraftSession({
                   }
                 : current,
         );
+        setErrorMessage("");
     };
 
     const buildCreatePayloadFromDraft = (): CreateReportFeedbackPayload | null => {
@@ -490,6 +496,7 @@ export function useReportDraftSession({
         draftElementRef.current = null;
         contextMenuElementRef.current = null;
         setDraft(null);
+        setDraftStep("content");
         setSelectedTarget(null);
         setHoveredTarget(null);
         setHoverPointer(null);
@@ -509,6 +516,8 @@ export function useReportDraftSession({
         setHoverPointer,
         selectedTarget,
         setSelectedTarget,
+        draftStep,
+        setDraftStep,
         draftElementRef,
         draftAuthorName,
         setDraftAuthorName,

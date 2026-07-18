@@ -73,6 +73,8 @@ export const REPORT_SESSION_KEYS = [
     "errorMessage",
     "setErrorMessage",
     "draft",
+    "draftStep",
+    "setDraftStep",
     "hoveredTarget",
     "hoverPointer",
     "setHoverPointer",

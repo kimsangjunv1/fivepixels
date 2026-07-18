@@ -35,6 +35,8 @@ export declare function useReportDraftSession({ mode, setMode, fields, messages,
     setHoverPointer: Dispatch<SetStateAction<HoverPointer | null>>;
     selectedTarget: TargetSnapshot | null;
     setSelectedTarget: Dispatch<SetStateAction<TargetSnapshot | null>>;
+    draftStep: "category" | "content";
+    setDraftStep: Dispatch<SetStateAction<"category" | "content">>;
     draftElementRef: MutableRefObject<HTMLElement | null>;
     draftAuthorName: string;
     setDraftAuthorName: Dispatch<SetStateAction<string>>;

@@ -13,6 +13,7 @@ export type DotWaveOverlayProps = {
     maxOpacity?: number;
     waveDuration?: number;
     fadeOutDuration?: number;
+    deactivateDelay?: number;
     color?: string;
     origin?: DotWaveOrigin;
     className?: string;
@@ -37,7 +38,8 @@ const BLINK_BLEND_DURATION = 720;
 const DOT_EXIT_DURATION = 300;
 
 type DotWaveController = {
-    setActive: (active: boolean) => void;
+    setActive: (active: boolean, delay: number) => void;
+    setColor: (color: string) => void;
 };
 
 function clamp(value: number, min: number, max: number) {
@@ -56,6 +58,7 @@ export function DotWaveOverlay({
     maxOpacity = 0.8,
     waveDuration = 1_400,
     fadeOutDuration = 2_200,
+    deactivateDelay = 0,
     color = "#94a3b8",
     origin = DEFAULT_ORIGIN,
     className = "",
@@ -63,6 +66,10 @@ export function DotWaveOverlay({
 }: DotWaveOverlayProps) {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const controllerRef = useRef<DotWaveController | null>(null);
+    const activeRef = useRef(active);
+    const colorRef = useRef(color);
+    activeRef.current = active;
+    colorRef.current = color;
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -88,10 +95,12 @@ export function DotWaveOverlay({
         let height = 0;
         let frameId: number | null = null;
         let resizeFrameId: number | null = null;
-        let isActive = active;
+        let isActive = activeRef.current;
+        let currentColor = colorRef.current;
         let startedAt = performance.now();
         let stoppedAt: number | null = null;
         let maxExitEnd = 0;
+        let deactivateTimeout: number | null = null;
 
         const buildDots = () => {
             dots.length = 0;
@@ -153,7 +162,7 @@ export function DotWaveOverlay({
             const elapsed = now - startedAt;
             const exitElapsed = stoppedAt === null ? null : now - stoppedAt;
 
-            drawingContext.fillStyle = color;
+            drawingContext.fillStyle = currentColor;
 
             for (const dot of dots) {
                 const timeSinceReveal = elapsed - dot.revealAt;
@@ -209,14 +218,19 @@ export function DotWaveOverlay({
         }
 
         const controller: DotWaveController = {
-            setActive(nextActive) {
-                if (nextActive === isActive) {
-                    return;
+            setActive(nextActive, delay) {
+                if (deactivateTimeout !== null) {
+                    window.clearTimeout(deactivateTimeout);
+                    deactivateTimeout = null;
                 }
 
-                isActive = nextActive;
-
                 if (nextActive) {
+                    if (isActive) {
+                        requestDraw();
+                        return;
+                    }
+
+                    isActive = true;
                     startedAt = performance.now();
                     stoppedAt = null;
                     buildDots();
@@ -224,14 +238,41 @@ export function DotWaveOverlay({
                     return;
                 }
 
-                stoppedAt = performance.now();
-
-                if (reducedMotion) {
-                    drawingContext.clearRect(0, 0, width, height);
+                if (!isActive) {
                     return;
                 }
 
-                requestDraw();
+                const deactivate = () => {
+                    deactivateTimeout = null;
+                    isActive = false;
+                    stoppedAt = performance.now();
+
+                    if (reducedMotion) {
+                        drawingContext.clearRect(0, 0, width, height);
+                        return;
+                    }
+
+                    requestDraw();
+                };
+
+                const safeDelay = reducedMotion ? 0 : Math.max(0, delay);
+                if (safeDelay > 0) {
+                    deactivateTimeout = window.setTimeout(deactivate, safeDelay);
+                    requestDraw();
+                    return;
+                }
+
+                deactivate();
+            },
+            setColor(nextColor) {
+                if (!isActive && stoppedAt !== null) {
+                    return;
+                }
+
+                currentColor = nextColor;
+                if (isActive) {
+                    requestDraw();
+                }
             },
         };
         controllerRef.current = controller;
@@ -247,6 +288,9 @@ export function DotWaveOverlay({
             if (resizeFrameId !== null) {
                 window.cancelAnimationFrame(resizeFrameId);
             }
+            if (deactivateTimeout !== null) {
+                window.clearTimeout(deactivateTimeout);
+            }
 
             resizeObserver?.disconnect();
             window.removeEventListener("resize", scheduleResize);
@@ -255,11 +299,23 @@ export function DotWaveOverlay({
                 controllerRef.current = null;
             }
         };
-    }, [color, dotSize, fadeOutDuration, gap, maxOpacity, minOpacity, origin.x, origin.y, waveDuration]);
+    }, [dotSize, fadeOutDuration, gap, maxOpacity, minOpacity, origin.x, origin.y, waveDuration]);
 
     useEffect(() => {
-        controllerRef.current?.setActive(active);
-    }, [active]);
+        const controller = controllerRef.current;
+        if (!controller) {
+            return;
+        }
+
+        if (active) {
+            controller.setActive(true, deactivateDelay);
+            controller.setColor(color);
+            return;
+        }
+
+        controller.setColor(color);
+        controller.setActive(false, deactivateDelay);
+    }, [active, color, deactivateDelay]);
 
     return (
         <canvas

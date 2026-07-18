@@ -140,6 +140,8 @@ declare const ReportContext: Context<{
     errorMessage: string;
     setErrorMessage: import("react").Dispatch<import("react").SetStateAction<string>>;
     draft: import("../types/report-ui.js").DraftReport | null;
+    draftStep: "category" | "content";
+    setDraftStep: import("react").Dispatch<import("react").SetStateAction<"category" | "content">>;
     hoveredTarget: import("../types/report-ui.js").TargetSnapshot | null;
     hoverPointer: import("../types/report-ui.js").HoverPointer | null;
     setHoverPointer: import("react").Dispatch<import("react").SetStateAction<import("../types/report-ui.js").HoverPointer | null>>;
@@ -413,6 +415,8 @@ export declare function useReport(): {
     errorMessage: string;
     setErrorMessage: import("react").Dispatch<import("react").SetStateAction<string>>;
     draft: import("../types/report-ui.js").DraftReport | null;
+    draftStep: "category" | "content";
+    setDraftStep: import("react").Dispatch<import("react").SetStateAction<"category" | "content">>;
     hoveredTarget: import("../types/report-ui.js").TargetSnapshot | null;
     hoverPointer: import("../types/report-ui.js").HoverPointer | null;
     setHoverPointer: import("react").Dispatch<import("react").SetStateAction<import("../types/report-ui.js").HoverPointer | null>>;
@@ -689,6 +693,8 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         errorMessage: string;
         setErrorMessage: import("react").Dispatch<import("react").SetStateAction<string>>;
         draft: import("../types/report-ui.js").DraftReport | null;
+        draftStep: "category" | "content";
+        setDraftStep: import("react").Dispatch<import("react").SetStateAction<"category" | "content">>;
         hoveredTarget: import("../types/report-ui.js").TargetSnapshot | null;
         hoverPointer: import("../types/report-ui.js").HoverPointer | null;
         setHoverPointer: import("react").Dispatch<import("react").SetStateAction<import("../types/report-ui.js").HoverPointer | null>>;
@@ -958,6 +964,8 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         errorMessage: string;
         setErrorMessage: import("react").Dispatch<import("react").SetStateAction<string>>;
         draft: import("../types/report-ui.js").DraftReport | null;
+        draftStep: "category" | "content";
+        setDraftStep: import("react").Dispatch<import("react").SetStateAction<"category" | "content">>;
         hoveredTarget: import("../types/report-ui.js").TargetSnapshot | null;
         hoverPointer: import("../types/report-ui.js").HoverPointer | null;
         setHoverPointer: import("react").Dispatch<import("react").SetStateAction<import("../types/report-ui.js").HoverPointer | null>>;
@@ -1094,7 +1102,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         handleCreateGitHubIssue: (report: import("../index.js").ReportFeedback) => Promise<void>;
         handleCreateSubmitWithGitHubIssue: () => Promise<void>;
         isDraftGitHubIssueSubmitting: boolean;
-    }, "statusText" | "toggleReportMode" | "toggleTargetPreview" | "currentPathname" | "sessionActor" | "savedProbeDeletions" | "hasProbeSessionChanges" | "canUndoProbeSession" | "canRedoProbeSession" | "undoProbeSessionAction" | "redoProbeSessionAction" | "revertAllSavedProbeEdits" | "draft" | "pickProbeOpen" | "pickProbeSupportsTextFields" | "pickProbeLayoutMode" | "pickProbeValues" | "pickProbeCompareMode" | "pickProbeHasEdits" | "pickTargetContextMenu" | "contextMenuElementKey" | "savedProbeEdits" | "savedProbeCompareMode" | "closePickProbe" | "closePickTargetContextMenu" | "handlePickTargetEdit" | "handlePickTargetDelete" | "handlePickTargetRevert" | "commitPickProbeEdits" | "revertSavedProbeEdit" | "setSavedProbeCompareMode" | "setPickProbeCompareMode" | "updatePickProbeValue" | "resetPickProbeValues" | "appendSavedProbeSummaryAsNewDraftCase" | "activeReplyReportId" | "selectedTarget" | "hoveredTarget" | "mode" | "showTargetPreview" | "closeReplyComposer" | "openReplyComposer" | "setErrorMessage" | "activeReplyReport" | "markers" | "overlayRef" | "selectReport" | "editingReportId" | "panelTab" | "pendingComposer" | "toggleIssueMode" | "cancelDraft" | "cancelPendingComposer" | "stopEditing" | "focusSearchInput" | "selectAdjacentReport" | "panelCollapsed" | "setPanelCollapsed" | "searchInputRef" | "activeMarkerTarget" | "markerPreviewTargets" | "selectableTargets" | "errorMessage" | "hoverPointer" | "setHoverPointer" | "editableDraft" | "setEditableDraft" | "tooltipReport" | "tooltipAnchor" | "tooltipFieldTags" | "replyDraft" | "setReplyDraft" | "replySubmitAsQuestion" | "setReplySubmitAsQuestion" | "draftAuthorName" | "setDraftAuthorName" | "replyAuthorName" | "setReplyAuthorName" | "presentationViewerId" | "setPresentationViewerId" | "startDenyReview" | "startCheckoutReview" | "startAskQuestion" | "confirmAuthorName" | "setConfirmAuthorName" | "showConfirmAuthorSelect" | "toggleConfirmAuthorSelect" | "beginCaseEdit" | "cancelCaseEdit" | "updateCaseEditDraftCase" | "addCaseEditDraftCase" | "removeCaseEditDraftCase" | "focusedCaseId" | "selectCase" | "clearFocusedCase" | "isCaseEditing" | "caseEditReportId" | "caseEditCases" | "openPanelTab" | "togglePanelTab" | "locateFeedback" | "activateFeedbackMarker" | "clearHoverLeaveTimeout" | "scheduleHoverLeave" | "setHoveredMarkerId" | "handleOverlayMove" | "handleOverlayContextMenu" | "handleOverlayClick" | "updateDraftCase" | "addDraftCase" | "removeDraftCase" | "updateDraftField" | "updateDraftCategory" | "startEditing">;
+    }, "statusText" | "toggleReportMode" | "toggleTargetPreview" | "currentPathname" | "sessionActor" | "savedProbeDeletions" | "hasProbeSessionChanges" | "canUndoProbeSession" | "canRedoProbeSession" | "undoProbeSessionAction" | "redoProbeSessionAction" | "revertAllSavedProbeEdits" | "draft" | "pickProbeOpen" | "pickProbeSupportsTextFields" | "pickProbeLayoutMode" | "pickProbeValues" | "pickProbeCompareMode" | "pickProbeHasEdits" | "pickTargetContextMenu" | "contextMenuElementKey" | "savedProbeEdits" | "savedProbeCompareMode" | "closePickProbe" | "closePickTargetContextMenu" | "handlePickTargetEdit" | "handlePickTargetDelete" | "handlePickTargetRevert" | "commitPickProbeEdits" | "revertSavedProbeEdit" | "setSavedProbeCompareMode" | "setPickProbeCompareMode" | "updatePickProbeValue" | "resetPickProbeValues" | "appendSavedProbeSummaryAsNewDraftCase" | "activeReplyReportId" | "selectedTarget" | "hoveredTarget" | "mode" | "showTargetPreview" | "closeReplyComposer" | "openReplyComposer" | "setErrorMessage" | "activeReplyReport" | "markers" | "overlayRef" | "selectReport" | "editingReportId" | "panelTab" | "pendingComposer" | "toggleIssueMode" | "cancelDraft" | "cancelPendingComposer" | "stopEditing" | "focusSearchInput" | "selectAdjacentReport" | "panelCollapsed" | "setPanelCollapsed" | "searchInputRef" | "activeMarkerTarget" | "markerPreviewTargets" | "selectableTargets" | "errorMessage" | "draftStep" | "setDraftStep" | "hoverPointer" | "setHoverPointer" | "editableDraft" | "setEditableDraft" | "tooltipReport" | "tooltipAnchor" | "tooltipFieldTags" | "replyDraft" | "setReplyDraft" | "replySubmitAsQuestion" | "setReplySubmitAsQuestion" | "draftAuthorName" | "setDraftAuthorName" | "replyAuthorName" | "setReplyAuthorName" | "presentationViewerId" | "setPresentationViewerId" | "startDenyReview" | "startCheckoutReview" | "startAskQuestion" | "confirmAuthorName" | "setConfirmAuthorName" | "showConfirmAuthorSelect" | "toggleConfirmAuthorSelect" | "beginCaseEdit" | "cancelCaseEdit" | "updateCaseEditDraftCase" | "addCaseEditDraftCase" | "removeCaseEditDraftCase" | "focusedCaseId" | "selectCase" | "clearFocusedCase" | "isCaseEditing" | "caseEditReportId" | "caseEditCases" | "openPanelTab" | "togglePanelTab" | "locateFeedback" | "activateFeedbackMarker" | "clearHoverLeaveTimeout" | "scheduleHoverLeave" | "setHoveredMarkerId" | "handleOverlayMove" | "handleOverlayContextMenu" | "handleOverlayClick" | "updateDraftCase" | "addDraftCase" | "removeDraftCase" | "updateDraftField" | "updateDraftCategory" | "startEditing">;
     data: Pick<{
         panelAppearance: import("../index.js").ReportAppearance;
         setPanelAppearance: (nextAppearance: import("../index.js").ReportAppearance) => void;
@@ -1227,6 +1235,8 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         errorMessage: string;
         setErrorMessage: import("react").Dispatch<import("react").SetStateAction<string>>;
         draft: import("../types/report-ui.js").DraftReport | null;
+        draftStep: "category" | "content";
+        setDraftStep: import("react").Dispatch<import("react").SetStateAction<"category" | "content">>;
         hoveredTarget: import("../types/report-ui.js").TargetSnapshot | null;
         hoverPointer: import("../types/report-ui.js").HoverPointer | null;
         setHoverPointer: import("react").Dispatch<import("react").SetStateAction<import("../types/report-ui.js").HoverPointer | null>>;

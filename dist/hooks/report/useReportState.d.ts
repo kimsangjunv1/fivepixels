@@ -175,6 +175,8 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     errorMessage: string;
     setErrorMessage: import("react").Dispatch<import("react").SetStateAction<string>>;
     draft: import("../../types/report-ui.js").DraftReport | null;
+    draftStep: "category" | "content";
+    setDraftStep: import("react").Dispatch<import("react").SetStateAction<"category" | "content">>;
     hoveredTarget: import("../../types/report-ui.js").TargetSnapshot | null;
     hoverPointer: import("../../types/report-ui.js").HoverPointer | null;
     setHoverPointer: import("react").Dispatch<import("react").SetStateAction<import("../../types/report-ui.js").HoverPointer | null>>;

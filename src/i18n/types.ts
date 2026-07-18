@@ -168,6 +168,11 @@ export type ReportMessages = {
         questionPlaceholder: string;
         askQuestionLabel: string;
         sendAriaLabel: string;
+        draftPrevious: string;
+        draftNext: string;
+        draftComplete: string;
+        draftCompleting: string;
+        draftCategoryPrompt: (count: number) => string;
         gitIssueSendAriaLabel: string;
         gitIssueSendTitle: string;
         gitIssueSendLabel: string;

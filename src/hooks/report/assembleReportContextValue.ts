@@ -150,6 +150,8 @@ export function assembleReportContextValue({
         errorMessage: panel.errorMessage,
         setErrorMessage: panel.setErrorMessage,
         draft: draft.draft,
+        draftStep: draft.draftStep,
+        setDraftStep: draft.setDraftStep,
         hoveredTarget: draft.hoveredTarget,
         hoverPointer: draft.hoverPointer,
         setHoverPointer: draft.setHoverPointer,

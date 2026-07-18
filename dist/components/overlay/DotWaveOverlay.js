@@ -11,9 +11,13 @@ function clamp(value, min, max) {
 function easeOutCubic(value) {
     return 1 - Math.pow(1 - value, 3);
 }
-export function DotWaveOverlay({ active = true, dotSize = 2, gap = 20, minOpacity = 0.2, maxOpacity = 0.8, waveDuration = 1400, fadeOutDuration = 2200, color = "#94a3b8", origin = DEFAULT_ORIGIN, className = "", style, }) {
+export function DotWaveOverlay({ active = true, dotSize = 2, gap = 20, minOpacity = 0.2, maxOpacity = 0.8, waveDuration = 1400, fadeOutDuration = 2200, deactivateDelay = 0, color = "#94a3b8", origin = DEFAULT_ORIGIN, className = "", style, }) {
     const canvasRef = useRef(null);
     const controllerRef = useRef(null);
+    const activeRef = useRef(active);
+    const colorRef = useRef(color);
+    activeRef.current = active;
+    colorRef.current = color;
     useEffect(() => {
         const canvas = canvasRef.current;
         if (!canvas) {
@@ -36,10 +40,12 @@ export function DotWaveOverlay({ active = true, dotSize = 2, gap = 20, minOpacit
         let height = 0;
         let frameId = null;
         let resizeFrameId = null;
-        let isActive = active;
+        let isActive = activeRef.current;
+        let currentColor = colorRef.current;
         let startedAt = performance.now();
         let stoppedAt = null;
         let maxExitEnd = 0;
+        let deactivateTimeout = null;
         const buildDots = () => {
             dots.length = 0;
             maxExitEnd = 0;
@@ -90,7 +96,7 @@ export function DotWaveOverlay({ active = true, dotSize = 2, gap = 20, minOpacit
             }
             const elapsed = now - startedAt;
             const exitElapsed = stoppedAt === null ? null : now - stoppedAt;
-            drawingContext.fillStyle = color;
+            drawingContext.fillStyle = currentColor;
             for (const dot of dots) {
                 const timeSinceReveal = elapsed - dot.revealAt;
                 if (!reducedMotion && timeSinceReveal < 0) {
@@ -133,24 +139,52 @@ export function DotWaveOverlay({ active = true, dotSize = 2, gap = 20, minOpacit
             requestDraw();
         }
         const controller = {
-            setActive(nextActive) {
-                if (nextActive === isActive) {
-                    return;
+            setActive(nextActive, delay) {
+                if (deactivateTimeout !== null) {
+                    window.clearTimeout(deactivateTimeout);
+                    deactivateTimeout = null;
                 }
-                isActive = nextActive;
                 if (nextActive) {
+                    if (isActive) {
+                        requestDraw();
+                        return;
+                    }
+                    isActive = true;
                     startedAt = performance.now();
                     stoppedAt = null;
                     buildDots();
                     requestDraw();
                     return;
                 }
-                stoppedAt = performance.now();
-                if (reducedMotion) {
-                    drawingContext.clearRect(0, 0, width, height);
+                if (!isActive) {
                     return;
                 }
-                requestDraw();
+                const deactivate = () => {
+                    deactivateTimeout = null;
+                    isActive = false;
+                    stoppedAt = performance.now();
+                    if (reducedMotion) {
+                        drawingContext.clearRect(0, 0, width, height);
+                        return;
+                    }
+                    requestDraw();
+                };
+                const safeDelay = reducedMotion ? 0 : Math.max(0, delay);
+                if (safeDelay > 0) {
+                    deactivateTimeout = window.setTimeout(deactivate, safeDelay);
+                    requestDraw();
+                    return;
+                }
+                deactivate();
+            },
+            setColor(nextColor) {
+                if (!isActive && stoppedAt !== null) {
+                    return;
+                }
+                currentColor = nextColor;
+                if (isActive) {
+                    requestDraw();
+                }
             },
         };
         controllerRef.current = controller;
@@ -164,16 +198,29 @@ export function DotWaveOverlay({ active = true, dotSize = 2, gap = 20, minOpacit
             if (resizeFrameId !== null) {
                 window.cancelAnimationFrame(resizeFrameId);
             }
+            if (deactivateTimeout !== null) {
+                window.clearTimeout(deactivateTimeout);
+            }
             resizeObserver?.disconnect();
             window.removeEventListener("resize", scheduleResize);
             if (controllerRef.current === controller) {
                 controllerRef.current = null;
             }
         };
-    }, [color, dotSize, fadeOutDuration, gap, maxOpacity, minOpacity, origin.x, origin.y, waveDuration]);
+    }, [dotSize, fadeOutDuration, gap, maxOpacity, minOpacity, origin.x, origin.y, waveDuration]);
     useEffect(() => {
-        controllerRef.current?.setActive(active);
-    }, [active]);
+        const controller = controllerRef.current;
+        if (!controller) {
+            return;
+        }
+        if (active) {
+            controller.setActive(true, deactivateDelay);
+            controller.setColor(color);
+            return;
+        }
+        controller.setColor(color);
+        controller.setActive(false, deactivateDelay);
+    }, [active, color, deactivateDelay]);
     return (_jsx("canvas", { ref: canvasRef, "aria-hidden": "true", className: `pointer-events-none absolute inset-0 h-full w-full ${className}`, style: style }));
 }
 //# sourceMappingURL=DotWaveOverlay.js.map

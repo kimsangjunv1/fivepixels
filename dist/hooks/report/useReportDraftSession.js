@@ -14,6 +14,7 @@ export function useReportDraftSession({ mode, setMode, fields, messages, current
     const [hoveredTarget, setHoveredTarget] = useState(null);
     const [hoverPointer, setHoverPointer] = useState(null);
     const [selectedTarget, setSelectedTarget] = useState(null);
+    const [draftStep, setDraftStep] = useState("content");
     const draftElementRef = useRef(null);
     const { pickProbeOpen, pickProbeSupportsTextFields, pickProbeLayoutMode, pickProbeValues, pickProbeCompareMode, pickProbeHasEdits, pickTargetContextMenu, setPickTargetContextMenu, contextMenuElementKey, setContextMenuElementKey, contextMenuElementRef, savedProbeEdits, savedProbeDeletions, hasProbeSessionChanges, canUndoProbeSession, canRedoProbeSession, undoProbeSessionAction, redoProbeSessionAction, savedProbeCompareMode, closePickProbe, closePickTargetContextMenu, handlePickTargetEdit, handlePickTargetDelete, handlePickTargetRevert, commitPickProbeEdits, revertSavedProbeEdit, revertAllSavedProbeEdits, setSavedProbeCompareMode, setPickProbeCompareMode, updatePickProbeValue, resetPickProbeValues, resetPickProbeState, appendSavedProbeSummaryAsNewDraftCase, } = useReportPickProbe({
         mode,
@@ -186,6 +187,7 @@ export function useReportDraftSession({ mode, setMode, fields, messages, current
         setHoverPointer(null);
         setHoveredTarget(null);
         setSelectedTarget(snapshot);
+        setDraftStep("content");
         setErrorMessage("");
         setDraft({
             clientX: event.clientX,
@@ -214,6 +216,7 @@ export function useReportDraftSession({ mode, setMode, fields, messages, current
         draftElementRef.current = null;
         contextMenuElementRef.current = null;
         setDraft(null);
+        setDraftStep("content");
         setSelectedTarget(null);
         setHoverPointer(null);
     };
@@ -247,6 +250,7 @@ export function useReportDraftSession({ mode, setMode, fields, messages, current
                 cases: [...current.cases, createReportCase("")],
             }
             : current);
+        setErrorMessage("");
     };
     const removeDraftCase = (caseId) => {
         setDraft((current) => {
@@ -258,6 +262,7 @@ export function useReportDraftSession({ mode, setMode, fields, messages, current
                 cases: current.cases.filter((item) => item.id !== caseId),
             };
         });
+        setErrorMessage("");
     };
     const updateDraftField = (key, nextValue) => {
         setDraft((current) => current
@@ -269,6 +274,7 @@ export function useReportDraftSession({ mode, setMode, fields, messages, current
                 },
             }
             : current);
+        setErrorMessage("");
     };
     const buildCreatePayloadFromDraft = () => {
         if (!draft) {
@@ -337,6 +343,7 @@ export function useReportDraftSession({ mode, setMode, fields, messages, current
         draftElementRef.current = null;
         contextMenuElementRef.current = null;
         setDraft(null);
+        setDraftStep("content");
         setSelectedTarget(null);
         setHoveredTarget(null);
         setHoverPointer(null);
@@ -355,6 +362,8 @@ export function useReportDraftSession({ mode, setMode, fields, messages, current
         setHoverPointer,
         selectedTarget,
         setSelectedTarget,
+        draftStep,
+        setDraftStep,
         draftElementRef,
         draftAuthorName,
         setDraftAuthorName,
