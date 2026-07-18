@@ -91,6 +91,12 @@ export const en = {
         probeEditModeReset: "Reset",
         probeEditModeUndo: "Undo",
         probeEditModeRedo: "Redo",
+        persistenceStatusAriaLabel: "Storage status details",
+        persistenceConflictTitle: "Props conflict — using localStorage",
+        persistenceConflictDescription: "The API connection is incomplete, so feedback is currently stored in this browser.",
+        persistenceRequiredForApi: "Required for API",
+        persistenceProvidedButIgnored: "Provided but ignored",
+        persistenceConflictFix: "Pass onList, onCreate, and onUpdate together to use API storage.",
     },
     feedbackList: {
         scopeAriaLabel: "Feedback scope",

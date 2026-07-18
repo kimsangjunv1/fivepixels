@@ -120,7 +120,7 @@ export function useReportPersistence({
     allReportsFetchEnabled = false,
     replyHistory,
 }: ReportPersistenceConfig) {
-    const { adapter: storageAdapterInstance, usesLocalStorage } = useMemo(
+    const { adapter: storageAdapterInstance, usesLocalStorage, persistenceStatus } = useMemo(
         () =>
             resolveStorageAdapter({
                 projectId,
@@ -301,6 +301,7 @@ export function useReportPersistence({
 
     return {
         storageAdapterInstance,
+        persistenceStatus,
         canTransferFeedback,
         canListAllFeedback: Boolean(storageAdapterInstance.listAll),
         usesLazyReplies,

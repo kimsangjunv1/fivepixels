@@ -18,6 +18,7 @@ export function assembleReportContextValue({ panel, auth, draft, markers, mutati
         projectId,
         environment,
         appVersion,
+        persistenceStatus: panel.persistenceStatus,
         currentPathname: panel.currentPathname,
         showFeedbackList,
         panelTab: panel.panelTab,

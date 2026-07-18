@@ -45,6 +45,7 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     projectId: string;
     environment: string | undefined;
     appVersion: string | undefined;
+    persistenceStatus: import("../../utils/shared/storage.js").PersistenceStatus;
     currentPathname: string;
     showFeedbackList: boolean;
     panelTab: import("../../types/report-ui.js").ReportPanelTab | null;

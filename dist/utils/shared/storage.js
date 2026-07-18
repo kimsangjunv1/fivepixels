@@ -1,6 +1,31 @@
 import { createLocalStorageReportAdapter } from "../../storage/local/localStorageAdapter.js";
+const REQUIRED_PERSISTENCE_HANDLER_NAMES = ["onList", "onCreate", "onUpdate"];
+const PERSISTENCE_HANDLER_NAMES = [
+    "onList",
+    "onListAll",
+    "onListReplies",
+    "onCreate",
+    "onCreateReply",
+    "onUpdate",
+    "onDelete",
+];
 export function hasCustomPersistenceHandlers(options) {
     return Boolean(options.onList && options.onCreate && options.onUpdate);
+}
+export function resolvePersistenceStatus(options) {
+    const providedHandlers = PERSISTENCE_HANDLER_NAMES.filter((name) => Boolean(options[name]));
+    if (providedHandlers.length === 0) {
+        return { mode: "localStorage", missingHandlers: [], ignoredHandlers: [] };
+    }
+    const missingHandlers = REQUIRED_PERSISTENCE_HANDLER_NAMES.filter((name) => !options[name]);
+    if (missingHandlers.length === 0) {
+        return { mode: "API", missingHandlers: [], ignoredHandlers: [] };
+    }
+    return {
+        mode: "conflict",
+        missingHandlers,
+        ignoredHandlers: providedHandlers,
+    };
 }
 function createStorageAdapterFromHandlers(handlers) {
     return {
@@ -14,8 +39,16 @@ function createStorageAdapterFromHandlers(handlers) {
     };
 }
 export function resolveStorageAdapter({ projectId, environment, appVersion, onList, onListAll, onListReplies, onCreate, onCreateReply, onUpdate, onDelete, }) {
-    const hasPartialCustom = Boolean(onList || onListAll || onListReplies || onCreate || onCreateReply || onUpdate || onDelete);
-    if (hasPartialCustom && !hasCustomPersistenceHandlers({ onList, onCreate, onUpdate })) {
+    const persistenceStatus = resolvePersistenceStatus({
+        onList,
+        onListAll,
+        onListReplies,
+        onCreate,
+        onCreateReply,
+        onUpdate,
+        onDelete,
+    });
+    if (persistenceStatus.mode === "conflict") {
         console.warn("[fivepixels] Custom persistence requires onList, onCreate, and onUpdate together. Falling back to localStorage.");
     }
     if (hasCustomPersistenceHandlers({ onList, onCreate, onUpdate })) {
@@ -30,11 +63,13 @@ export function resolveStorageAdapter({ projectId, environment, appVersion, onLi
                 onDelete,
             }),
             usesLocalStorage: false,
+            persistenceStatus,
         };
     }
     return {
         adapter: createLocalStorageReportAdapter({ projectId, environment, appVersion }),
         usesLocalStorage: true,
+        persistenceStatus,
     };
 }
 //# sourceMappingURL=storage.js.map

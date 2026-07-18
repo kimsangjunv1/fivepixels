@@ -93,6 +93,12 @@ export const ko: ReportMessages = {
         probeEditModeReset: "초기화",
         probeEditModeUndo: "뒤로",
         probeEditModeRedo: "앞으로",
+        persistenceStatusAriaLabel: "저장 상태 상세",
+        persistenceConflictTitle: "Props 충돌 — localStorage 사용 중",
+        persistenceConflictDescription: "API 연동이 완성되지 않아 현재 피드백을 이 브라우저에 저장합니다.",
+        persistenceRequiredForApi: "API 필수 Props",
+        persistenceProvidedButIgnored: "전달됐지만 사용되지 않는 Props",
+        persistenceConflictFix: "API 저장을 사용하려면 onList, onCreate, onUpdate를 함께 전달하세요.",
     },
     feedbackList: {
         scopeAriaLabel: "피드백 조회 범위",

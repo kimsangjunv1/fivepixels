@@ -12,9 +12,14 @@ const sampleFeedback = createReportFeedback({
 
 describe("resolveStorageAdapter", () => {
     it("uses localStorage when no custom handlers are provided", () => {
-        const { usesLocalStorage } = resolveStorageAdapter({ projectId: "demo-app" });
+        const { usesLocalStorage, persistenceStatus } = resolveStorageAdapter({ projectId: "demo-app" });
 
         expect(usesLocalStorage).toBe(true);
+        expect(persistenceStatus).toEqual({
+            mode: "localStorage",
+            missingHandlers: [],
+            ignoredHandlers: [],
+        });
     });
 
     it("wraps custom handlers as an adapter", async () => {
@@ -34,7 +39,7 @@ describe("resolveStorageAdapter", () => {
 
         expect(hasCustomPersistenceHandlers({ onList, onCreate, onUpdate })).toBe(true);
 
-        const { adapter, usesLocalStorage } = resolveStorageAdapter({
+        const { adapter, usesLocalStorage, persistenceStatus } = resolveStorageAdapter({
             projectId: "demo-app",
             onList,
             onListAll,
@@ -44,9 +49,45 @@ describe("resolveStorageAdapter", () => {
         });
 
         expect(usesLocalStorage).toBe(false);
+        expect(persistenceStatus).toEqual({
+            mode: "API",
+            missingHandlers: [],
+            ignoredHandlers: [],
+        });
         await expect(adapter.list({ pathname: "/demo" })).resolves.toEqual([sampleFeedback]);
         expect(onList).toHaveBeenCalledWith({ pathname: "/demo" });
         await expect(adapter.listAll?.({ limit: 100 })).resolves.toEqual({ items: [sampleFeedback] });
         expect(onListAll).toHaveBeenCalledWith({ limit: 100 });
+    });
+
+    it("reports a conflict and falls back to localStorage when required handlers are missing", () => {
+        const onList = vi.fn(async () => [sampleFeedback]);
+        const onCreate = vi.fn(async (payload: CreateReportFeedbackPayload) => ({
+            ...payload,
+            id: "created-id",
+            created_at: "2026-01-02T00:00:00.000Z",
+            replies: payload.replies ?? [],
+        }));
+        const onDelete = vi.fn(async () => undefined);
+        const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+
+        const { usesLocalStorage, persistenceStatus } = resolveStorageAdapter({
+            projectId: "demo-app",
+            onList,
+            onCreate,
+            onDelete,
+        });
+
+        expect(usesLocalStorage).toBe(true);
+        expect(persistenceStatus).toEqual({
+            mode: "conflict",
+            missingHandlers: ["onUpdate"],
+            ignoredHandlers: ["onList", "onCreate", "onDelete"],
+        });
+        expect(warn).toHaveBeenCalledWith(
+            "[fivepixels] Custom persistence requires onList, onCreate, and onUpdate together. Falling back to localStorage.",
+        );
+
+        warn.mockRestore();
     });
 });

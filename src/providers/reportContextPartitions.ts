@@ -13,6 +13,7 @@ export const REPORT_PREFERENCE_KEYS = [
     "projectId",
     "environment",
     "appVersion",
+    "persistenceStatus",
     "showFeedbackList",
     "visibleShortcutKeys",
     "resolvedPanelAppearance",

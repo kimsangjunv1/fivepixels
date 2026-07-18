@@ -72,6 +72,7 @@ export function assembleReportContextValue({
         projectId,
         environment,
         appVersion,
+        persistenceStatus: panel.persistenceStatus,
         currentPathname: panel.currentPathname,
         showFeedbackList,
         panelTab: panel.panelTab,

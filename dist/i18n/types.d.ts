@@ -96,6 +96,12 @@ export type ReportMessages = {
         probeEditModeReset: string;
         probeEditModeUndo: string;
         probeEditModeRedo: string;
+        persistenceStatusAriaLabel: string;
+        persistenceConflictTitle: string;
+        persistenceConflictDescription: string;
+        persistenceRequiredForApi: string;
+        persistenceProvidedButIgnored: string;
+        persistenceConflictFix: string;
     };
     feedbackList: {
         scopeAriaLabel: string;

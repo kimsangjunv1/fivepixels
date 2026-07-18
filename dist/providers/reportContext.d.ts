@@ -23,6 +23,7 @@ declare const ReportContext: Context<{
     projectId: string;
     environment: string | undefined;
     appVersion: string | undefined;
+    persistenceStatus: import("../utils/shared/storage.js").PersistenceStatus;
     currentPathname: string;
     showFeedbackList: boolean;
     panelTab: import("../types/report-ui.js").ReportPanelTab | null;
@@ -298,6 +299,7 @@ export declare function useReport(): {
     projectId: string;
     environment: string | undefined;
     appVersion: string | undefined;
+    persistenceStatus: import("../utils/shared/storage.js").PersistenceStatus;
     currentPathname: string;
     showFeedbackList: boolean;
     panelTab: import("../types/report-ui.js").ReportPanelTab | null;
@@ -576,6 +578,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         projectId: string;
         environment: string | undefined;
         appVersion: string | undefined;
+        persistenceStatus: import("../utils/shared/storage.js").PersistenceStatus;
         currentPathname: string;
         showFeedbackList: boolean;
         panelTab: import("../types/report-ui.js").ReportPanelTab | null;
@@ -831,7 +834,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         handleCreateGitHubIssue: (report: import("../index.js").ReportFeedback) => Promise<void>;
         handleCreateSubmitWithGitHubIssue: () => Promise<void>;
         isDraftGitHubIssueSubmitting: boolean;
-    }, "personalKey" | "environment" | "projectId" | "fields" | "personalKeyRequired" | "questionThreadDisplay" | "setQuestionThreadDisplay" | "locale" | "setLocale" | "showMarkerTargetPreview" | "setShowMarkerTargetPreview" | "toggleMarkerTargetPreview" | "markerAppearance" | "setMarkerAppearance" | "setMarkerSize" | "setMarkerShape" | "setMarkerColors" | "setMarkerColor" | "setFeedbackModeDotColors" | "setFeedbackModeDotColor" | "typography" | "setTypography" | "setFontSize" | "setFontFamily" | "panelRole" | "setPanelRole" | "appVersion" | "showFeedbackList" | "selfProfile" | "authors" | "publicKey" | "personalKeyCandidates" | "issuePersonalKey" | "rotatePersonalKey" | "insertPersonalKey" | "authorSelectionLocked" | "messages" | "visibleShortcutKeys" | "panelAppearance" | "setPanelAppearance" | "tooltipAppearance" | "setTooltipAppearance" | "panelView" | "completeOnboarding" | "restoreFromBackup" | "skipOnboarding" | "resolvedPanelAppearance" | "resolvedTooltipAppearance" | "isMobileViewport" | "isPresentationMode" | "presentationViewers" | "visiblePanelTabs" | "visiblePanelTabsSummary" | "resolvedTabAvailabilityContext" | "setVisiblePanelTabs" | "resetVisibleTabsToRoleDefault" | "applyRoleDefaultTabsForOnboarding" | "savePanelTabPreference" | "storedPanelTabPreference">;
+    }, "personalKey" | "environment" | "projectId" | "fields" | "personalKeyRequired" | "questionThreadDisplay" | "setQuestionThreadDisplay" | "locale" | "setLocale" | "showMarkerTargetPreview" | "setShowMarkerTargetPreview" | "toggleMarkerTargetPreview" | "markerAppearance" | "setMarkerAppearance" | "setMarkerSize" | "setMarkerShape" | "setMarkerColors" | "setMarkerColor" | "setFeedbackModeDotColors" | "setFeedbackModeDotColor" | "typography" | "setTypography" | "setFontSize" | "setFontFamily" | "panelRole" | "setPanelRole" | "persistenceStatus" | "appVersion" | "showFeedbackList" | "selfProfile" | "authors" | "publicKey" | "personalKeyCandidates" | "issuePersonalKey" | "rotatePersonalKey" | "insertPersonalKey" | "authorSelectionLocked" | "messages" | "visibleShortcutKeys" | "panelAppearance" | "setPanelAppearance" | "tooltipAppearance" | "setTooltipAppearance" | "panelView" | "completeOnboarding" | "restoreFromBackup" | "skipOnboarding" | "resolvedPanelAppearance" | "resolvedTooltipAppearance" | "isMobileViewport" | "isPresentationMode" | "presentationViewers" | "visiblePanelTabs" | "visiblePanelTabsSummary" | "resolvedTabAvailabilityContext" | "setVisiblePanelTabs" | "resetVisibleTabsToRoleDefault" | "applyRoleDefaultTabsForOnboarding" | "savePanelTabPreference" | "storedPanelTabPreference">;
     session: Pick<{
         panelAppearance: import("../index.js").ReportAppearance;
         setPanelAppearance: (nextAppearance: import("../index.js").ReportAppearance) => void;
@@ -847,6 +850,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         projectId: string;
         environment: string | undefined;
         appVersion: string | undefined;
+        persistenceStatus: import("../utils/shared/storage.js").PersistenceStatus;
         currentPathname: string;
         showFeedbackList: boolean;
         panelTab: import("../types/report-ui.js").ReportPanelTab | null;
@@ -1118,6 +1122,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         projectId: string;
         environment: string | undefined;
         appVersion: string | undefined;
+        persistenceStatus: import("../utils/shared/storage.js").PersistenceStatus;
         currentPathname: string;
         showFeedbackList: boolean;
         panelTab: import("../types/report-ui.js").ReportPanelTab | null;

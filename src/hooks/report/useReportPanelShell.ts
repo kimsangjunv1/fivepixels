@@ -247,6 +247,7 @@ export function useReportPanelShell({
         loadOlderReplies,
         goToOlderPaginationPage,
         goToNewerPaginationPage,
+        persistenceStatus,
     } = useReportPersistence({
         projectId,
         environment,
@@ -476,6 +477,7 @@ export function useReportPanelShell({
         resolvedPanelAppearance,
         resolvedTooltipAppearance,
         isMobileViewport,
+        persistenceStatus,
         canTransferFeedback,
         canListAllFeedback,
         currentPathname,

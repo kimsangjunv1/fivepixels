@@ -58,6 +58,7 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     projectId: string;
     environment: string | undefined;
     appVersion: string | undefined;
+    persistenceStatus: import("../../utils/shared/storage.js").PersistenceStatus;
     currentPathname: string;
     showFeedbackList: boolean;
     panelTab: import("../../types/report-ui.js").ReportPanelTab | null;

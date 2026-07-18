@@ -14,10 +14,54 @@ export type ResolveStorageAdapterOptions = {
     onDelete?: ReportPersistenceHandlers["onDelete"];
 };
 
+const REQUIRED_PERSISTENCE_HANDLER_NAMES = ["onList", "onCreate", "onUpdate"] as const;
+const PERSISTENCE_HANDLER_NAMES = [
+    "onList",
+    "onListAll",
+    "onListReplies",
+    "onCreate",
+    "onCreateReply",
+    "onUpdate",
+    "onDelete",
+] as const;
+
+export type RequiredPersistenceHandlerName = (typeof REQUIRED_PERSISTENCE_HANDLER_NAMES)[number];
+export type PersistenceHandlerName = (typeof PERSISTENCE_HANDLER_NAMES)[number];
+export type PersistenceStatus =
+    | { mode: "localStorage"; missingHandlers: []; ignoredHandlers: [] }
+    | { mode: "API"; missingHandlers: []; ignoredHandlers: [] }
+    | {
+          mode: "conflict";
+          missingHandlers: RequiredPersistenceHandlerName[];
+          ignoredHandlers: PersistenceHandlerName[];
+      };
+
 export function hasCustomPersistenceHandlers(
     options: Pick<ResolveStorageAdapterOptions, "onList" | "onCreate" | "onUpdate">,
 ): options is Required<Pick<ResolveStorageAdapterOptions, "onList" | "onCreate" | "onUpdate">> {
     return Boolean(options.onList && options.onCreate && options.onUpdate);
+}
+
+export function resolvePersistenceStatus(
+    options: Pick<ResolveStorageAdapterOptions, PersistenceHandlerName>,
+): PersistenceStatus {
+    const providedHandlers = PERSISTENCE_HANDLER_NAMES.filter((name) => Boolean(options[name]));
+
+    if (providedHandlers.length === 0) {
+        return { mode: "localStorage", missingHandlers: [], ignoredHandlers: [] };
+    }
+
+    const missingHandlers = REQUIRED_PERSISTENCE_HANDLER_NAMES.filter((name) => !options[name]);
+
+    if (missingHandlers.length === 0) {
+        return { mode: "API", missingHandlers: [], ignoredHandlers: [] };
+    }
+
+    return {
+        mode: "conflict",
+        missingHandlers,
+        ignoredHandlers: providedHandlers,
+    };
 }
 
 function createStorageAdapterFromHandlers(
@@ -49,10 +93,19 @@ export function resolveStorageAdapter({
 }: ResolveStorageAdapterOptions): {
     adapter: ReportStorageAdapter;
     usesLocalStorage: boolean;
+    persistenceStatus: PersistenceStatus;
 } {
-    const hasPartialCustom = Boolean(onList || onListAll || onListReplies || onCreate || onCreateReply || onUpdate || onDelete);
+    const persistenceStatus = resolvePersistenceStatus({
+        onList,
+        onListAll,
+        onListReplies,
+        onCreate,
+        onCreateReply,
+        onUpdate,
+        onDelete,
+    });
 
-    if (hasPartialCustom && !hasCustomPersistenceHandlers({ onList, onCreate, onUpdate })) {
+    if (persistenceStatus.mode === "conflict") {
         console.warn(
             "[fivepixels] Custom persistence requires onList, onCreate, and onUpdate together. Falling back to localStorage.",
         );
@@ -70,11 +123,13 @@ export function resolveStorageAdapter({
                 onDelete,
             }),
             usesLocalStorage: false,
+            persistenceStatus,
         };
     }
 
     return {
         adapter: createLocalStorageReportAdapter({ projectId, environment, appVersion }),
         usesLocalStorage: true,
+        persistenceStatus,
     };
 }

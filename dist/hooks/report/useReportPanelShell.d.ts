@@ -78,6 +78,7 @@ export declare function useReportPanelShell({ projectId, environment, appVersion
     resolvedPanelAppearance: import("../../types/report-ui.js").ResolvedAppearance;
     resolvedTooltipAppearance: import("../../types/report-ui.js").ResolvedAppearance;
     isMobileViewport: boolean;
+    persistenceStatus: import("../../utils/shared/storage.js").PersistenceStatus;
     canTransferFeedback: boolean;
     canListAllFeedback: boolean;
     currentPathname: string;

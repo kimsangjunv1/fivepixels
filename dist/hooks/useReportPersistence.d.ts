@@ -24,6 +24,7 @@ export type ReportPersistenceConfig = {
 };
 export declare function useReportPersistence({ projectId, environment, appVersion, fields, onList, onListAll, onListReplies, onCreate, onCreateReply, onUpdate, onDelete, routeKey, fetchEnabled, listFetchEnabled, allReportsFetchEnabled, replyHistory, }: ReportPersistenceConfig): {
     storageAdapterInstance: ReportStorageAdapter;
+    persistenceStatus: import("../utils/shared/storage.js").PersistenceStatus;
     canTransferFeedback: boolean;
     canListAllFeedback: boolean;
     usesLazyReplies: boolean;

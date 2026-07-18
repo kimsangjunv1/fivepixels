@@ -59,7 +59,7 @@ function enrichReports(reports, replyHistoryByReportId) {
     });
 }
 export function useReportPersistence({ projectId, environment, appVersion, fields, onList, onListAll, onListReplies, onCreate, onCreateReply, onUpdate, onDelete, routeKey, fetchEnabled = true, listFetchEnabled = true, allReportsFetchEnabled = false, replyHistory, }) {
-    const { adapter: storageAdapterInstance, usesLocalStorage } = useMemo(() => resolveStorageAdapter({
+    const { adapter: storageAdapterInstance, usesLocalStorage, persistenceStatus } = useMemo(() => resolveStorageAdapter({
         projectId,
         environment,
         appVersion,
@@ -180,6 +180,7 @@ export function useReportPersistence({ projectId, environment, appVersion, field
     }, [filteredReports, selectedReportId]);
     return {
         storageAdapterInstance,
+        persistenceStatus,
         canTransferFeedback,
         canListAllFeedback: Boolean(storageAdapterInstance.listAll),
         usesLazyReplies,
