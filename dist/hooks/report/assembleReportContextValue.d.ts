@@ -264,6 +264,11 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     applyRoleDefaultTabsForOnboarding: (role: import("../../constants/panelRole.js").PanelRole) => void;
     savePanelTabPreference: (preference: import("../../utils/panel/panelTabPreference.js").PanelTabPreference) => void;
     storedPanelTabPreference: import("../../utils/panel/panelTabPreference.js").PanelTabPreference | null;
+    pinnedFeedbackItems: import("../../types/pinnedFeedback.js").PinnedFeedbackItem[];
+    pinRailCollapsed: boolean;
+    togglePinnedFeedback: (item: import("../../types/pinnedFeedback.js").PinnedFeedbackItem) => void;
+    unpinFeedback: (reportId: string) => void;
+    setPinRailCollapsed: (railCollapsed: boolean) => void;
     statusText: string;
     toggleReportMode: () => void;
     toggleTargetPreview: () => void;
@@ -275,7 +280,11 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     focusSearchInput: () => void;
     selectAdjacentReport: (direction: "up" | "down") => void;
     openReplyComposer: (report: import("../../types/report.js").ReportFeedback) => void;
-    activateFeedbackMarker: (report: import("../../types/report.js").ReportFeedback) => Promise<void>;
+    activateFeedbackMarker: (report: import("../../types/report.js").ReportFeedback, caseId?: string | null) => Promise<void>;
+    openPinnedFeedback: (reportId: string, options?: {
+        caseId?: string | null;
+        pathname?: string;
+    }) => Promise<void>;
     closeReplyComposer: () => void;
     clearHoverLeaveTimeout: () => void;
     scheduleHoverLeave: (markerId: string) => void;

@@ -9,6 +9,7 @@ import { getFeedbackListStatusTag } from "@/utils/feedback/feedbackListStatus.js
 import { isFeedbackCategory } from "@/constants/feedbackCategory.js";
 import { copyTextToClipboard, serializeFeedbackItem } from "@/utils/feedback/feedbackDataTransfer.js";
 import { GitIssueButton } from "./GitIssueButton.js";
+import { FeedbackPinToggleButton } from "./FeedbackPinToggleButton.js";
 import { CopyIcon, TrashIcon } from "@/components/icons/Icons.js";
 import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
 
@@ -182,7 +183,6 @@ export function FeedbackListItem({
     onDelete,
     onCreateGitHubIssue,
 }: FeedbackListItemProps) {
-    const [hovered, setHovered] = useState(false);
     const caseId = getFeedbackCaseId(report);
     const replyCount = getReplyCount(report);
     const statusTag = getFeedbackListStatusTag(report);
@@ -191,11 +191,7 @@ export function FeedbackListItem({
     const activityAt = report.created_at;
 
     return (
-        <div
-            className="group border-b border-[var(--adaptive-border-subtle)] last:border-b-0"
-            onMouseEnter={() => setHovered(true)}
-            onMouseLeave={() => setHovered(false)}
-        >
+        <div className="group relative border-b border-[var(--adaptive-border-subtle)] last:border-b-0">
             <button
                 type="button"
                 onClick={() => onLocate(report.id)}
@@ -213,34 +209,7 @@ export function FeedbackListItem({
                             ) : null}
                         </div>
 
-                        {/* {hovered ? (
-                            <div
-                                className="flex shrink-0 items-center gap-[2px] rounded-full bg-[var(--adaptive-black900)] px-[6px] py-[2px]"
-                                onClick={(event) => event.stopPropagation()}
-                            >
-                                <FeedbackListCopyAction
-                                    report={report}
-                                    messages={messages}
-                                />
-                                {canCreateGitHubIssue && onCreateGitHubIssue ? (
-                                    <FeedbackListGitIssueAction
-                                        report={report}
-                                        messages={messages}
-                                        disabled={disabled}
-                                        isSubmitting={creatingGitHubIssueId === report.id}
-                                        onCreateIssue={onCreateGitHubIssue}
-                                    />
-                                ) : null}
-                                <FeedbackListDeleteAction
-                                    report={report}
-                                    onDelete={onDelete}
-                                    disabled={disabled}
-                                    messages={messages}
-                                />
-                            </div>
-                        ) : (
-                        )} */}
-                        <span className="flex shrink-0 items-center gap-[4px] text-[12px] tabular-nums text-[var(--adaptive-black500)]">
+                        <span className="flex shrink-0 items-center gap-[4px] pr-[22px] text-[12px] tabular-nums text-[var(--adaptive-black500)]">
                             <ClockIcon className="h-[12px] w-[12px]" />
                             {formatTimeOnly(activityAt, locale)}
                         </span>
@@ -263,6 +232,14 @@ export function FeedbackListItem({
 
                 {listScope === "all" ? <p className="truncate text-[11px] text-[var(--adaptive-black400)]">{report.pathname}</p> : null}
             </button>
+
+            <div className="absolute right-[10px] top-[6px] z-[1]">
+                <FeedbackPinToggleButton
+                    report={report}
+                    className="h-[20px] w-[20px]"
+                    iconClassName="h-[12px] w-[12px]"
+                />
+            </div>
         </div>
     );
 }

@@ -700,5 +700,18 @@ export const en = {
         caseAssigneeOnly: "Only the assignee or issue author can act on this case.",
         personalKeyRequired: "Set a personal key before writing feedback.",
     },
+    pins: {
+        railTitle: "Pinned",
+        railCountLabel: (count) => `${count}`,
+        railExpandAriaLabel: "Expand pinned feedback",
+        railCollapseAriaLabel: "Collapse pinned feedback",
+        pinAriaLabel: "Pin feedback",
+        unpinAriaLabel: "Unpin feedback",
+        openPinAriaLabel: "Open pinned feedback",
+        removePinAriaLabel: "Remove pin",
+        sectionTitle: "Pinned",
+        empty: "No pinned feedback yet.",
+        notFound: "Pinned feedback was not found. It may have been deleted.",
+    },
 };
 //# sourceMappingURL=en.js.map

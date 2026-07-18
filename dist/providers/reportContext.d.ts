@@ -242,6 +242,11 @@ declare const ReportContext: Context<{
     applyRoleDefaultTabsForOnboarding: (role: import("../constants/panelRole.js").PanelRole) => void;
     savePanelTabPreference: (preference: import("../utils/panel/panelTabPreference.js").PanelTabPreference) => void;
     storedPanelTabPreference: import("../utils/panel/panelTabPreference.js").PanelTabPreference | null;
+    pinnedFeedbackItems: import("../types/pinnedFeedback.js").PinnedFeedbackItem[];
+    pinRailCollapsed: boolean;
+    togglePinnedFeedback: (item: import("../types/pinnedFeedback.js").PinnedFeedbackItem) => void;
+    unpinFeedback: (reportId: string) => void;
+    setPinRailCollapsed: (railCollapsed: boolean) => void;
     statusText: string;
     toggleReportMode: () => void;
     toggleTargetPreview: () => void;
@@ -253,7 +258,11 @@ declare const ReportContext: Context<{
     focusSearchInput: () => void;
     selectAdjacentReport: (direction: "up" | "down") => void;
     openReplyComposer: (report: import("../index.js").ReportFeedback) => void;
-    activateFeedbackMarker: (report: import("../index.js").ReportFeedback) => Promise<void>;
+    activateFeedbackMarker: (report: import("../index.js").ReportFeedback, caseId?: string | null) => Promise<void>;
+    openPinnedFeedback: (reportId: string, options?: {
+        caseId?: string | null;
+        pathname?: string;
+    }) => Promise<void>;
     closeReplyComposer: () => void;
     clearHoverLeaveTimeout: () => void;
     scheduleHoverLeave: (markerId: string) => void;
@@ -518,6 +527,11 @@ export declare function useReport(): {
     applyRoleDefaultTabsForOnboarding: (role: import("../constants/panelRole.js").PanelRole) => void;
     savePanelTabPreference: (preference: import("../utils/panel/panelTabPreference.js").PanelTabPreference) => void;
     storedPanelTabPreference: import("../utils/panel/panelTabPreference.js").PanelTabPreference | null;
+    pinnedFeedbackItems: import("../types/pinnedFeedback.js").PinnedFeedbackItem[];
+    pinRailCollapsed: boolean;
+    togglePinnedFeedback: (item: import("../types/pinnedFeedback.js").PinnedFeedbackItem) => void;
+    unpinFeedback: (reportId: string) => void;
+    setPinRailCollapsed: (railCollapsed: boolean) => void;
     statusText: string;
     toggleReportMode: () => void;
     toggleTargetPreview: () => void;
@@ -529,7 +543,11 @@ export declare function useReport(): {
     focusSearchInput: () => void;
     selectAdjacentReport: (direction: "up" | "down") => void;
     openReplyComposer: (report: import("../index.js").ReportFeedback) => void;
-    activateFeedbackMarker: (report: import("../index.js").ReportFeedback) => Promise<void>;
+    activateFeedbackMarker: (report: import("../index.js").ReportFeedback, caseId?: string | null) => Promise<void>;
+    openPinnedFeedback: (reportId: string, options?: {
+        caseId?: string | null;
+        pathname?: string;
+    }) => Promise<void>;
     closeReplyComposer: () => void;
     clearHoverLeaveTimeout: () => void;
     scheduleHoverLeave: (markerId: string) => void;
@@ -797,6 +815,11 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         applyRoleDefaultTabsForOnboarding: (role: import("../constants/panelRole.js").PanelRole) => void;
         savePanelTabPreference: (preference: import("../utils/panel/panelTabPreference.js").PanelTabPreference) => void;
         storedPanelTabPreference: import("../utils/panel/panelTabPreference.js").PanelTabPreference | null;
+        pinnedFeedbackItems: import("../types/pinnedFeedback.js").PinnedFeedbackItem[];
+        pinRailCollapsed: boolean;
+        togglePinnedFeedback: (item: import("../types/pinnedFeedback.js").PinnedFeedbackItem) => void;
+        unpinFeedback: (reportId: string) => void;
+        setPinRailCollapsed: (railCollapsed: boolean) => void;
         statusText: string;
         toggleReportMode: () => void;
         toggleTargetPreview: () => void;
@@ -808,7 +831,11 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         focusSearchInput: () => void;
         selectAdjacentReport: (direction: "up" | "down") => void;
         openReplyComposer: (report: import("../index.js").ReportFeedback) => void;
-        activateFeedbackMarker: (report: import("../index.js").ReportFeedback) => Promise<void>;
+        activateFeedbackMarker: (report: import("../index.js").ReportFeedback, caseId?: string | null) => Promise<void>;
+        openPinnedFeedback: (reportId: string, options?: {
+            caseId?: string | null;
+            pathname?: string;
+        }) => Promise<void>;
         closeReplyComposer: () => void;
         clearHoverLeaveTimeout: () => void;
         scheduleHoverLeave: (markerId: string) => void;
@@ -834,7 +861,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         handleCreateGitHubIssue: (report: import("../index.js").ReportFeedback) => Promise<void>;
         handleCreateSubmitWithGitHubIssue: () => Promise<void>;
         isDraftGitHubIssueSubmitting: boolean;
-    }, "personalKey" | "environment" | "projectId" | "fields" | "personalKeyRequired" | "questionThreadDisplay" | "setQuestionThreadDisplay" | "locale" | "setLocale" | "showMarkerTargetPreview" | "setShowMarkerTargetPreview" | "toggleMarkerTargetPreview" | "markerAppearance" | "setMarkerAppearance" | "setMarkerSize" | "setMarkerShape" | "setMarkerColors" | "setMarkerColor" | "setFeedbackModeDotColors" | "setFeedbackModeDotColor" | "typography" | "setTypography" | "setFontSize" | "setFontFamily" | "panelRole" | "setPanelRole" | "persistenceStatus" | "appVersion" | "showFeedbackList" | "selfProfile" | "authors" | "publicKey" | "personalKeyCandidates" | "issuePersonalKey" | "rotatePersonalKey" | "insertPersonalKey" | "authorSelectionLocked" | "messages" | "visibleShortcutKeys" | "panelAppearance" | "setPanelAppearance" | "tooltipAppearance" | "setTooltipAppearance" | "panelView" | "completeOnboarding" | "restoreFromBackup" | "skipOnboarding" | "resolvedPanelAppearance" | "resolvedTooltipAppearance" | "isMobileViewport" | "isPresentationMode" | "presentationViewers" | "visiblePanelTabs" | "visiblePanelTabsSummary" | "resolvedTabAvailabilityContext" | "setVisiblePanelTabs" | "resetVisibleTabsToRoleDefault" | "applyRoleDefaultTabsForOnboarding" | "savePanelTabPreference" | "storedPanelTabPreference">;
+    }, "personalKey" | "environment" | "projectId" | "fields" | "personalKeyRequired" | "questionThreadDisplay" | "setQuestionThreadDisplay" | "locale" | "setLocale" | "showMarkerTargetPreview" | "setShowMarkerTargetPreview" | "toggleMarkerTargetPreview" | "markerAppearance" | "setMarkerAppearance" | "setMarkerSize" | "setMarkerShape" | "setMarkerColors" | "setMarkerColor" | "setFeedbackModeDotColors" | "setFeedbackModeDotColor" | "typography" | "setTypography" | "setFontSize" | "setFontFamily" | "panelRole" | "setPanelRole" | "persistenceStatus" | "appVersion" | "showFeedbackList" | "pinnedFeedbackItems" | "pinRailCollapsed" | "togglePinnedFeedback" | "unpinFeedback" | "setPinRailCollapsed" | "selfProfile" | "authors" | "publicKey" | "personalKeyCandidates" | "issuePersonalKey" | "rotatePersonalKey" | "insertPersonalKey" | "authorSelectionLocked" | "messages" | "visibleShortcutKeys" | "panelAppearance" | "setPanelAppearance" | "tooltipAppearance" | "setTooltipAppearance" | "panelView" | "completeOnboarding" | "restoreFromBackup" | "skipOnboarding" | "resolvedPanelAppearance" | "resolvedTooltipAppearance" | "isMobileViewport" | "isPresentationMode" | "presentationViewers" | "visiblePanelTabs" | "visiblePanelTabsSummary" | "resolvedTabAvailabilityContext" | "setVisiblePanelTabs" | "resetVisibleTabsToRoleDefault" | "applyRoleDefaultTabsForOnboarding" | "savePanelTabPreference" | "storedPanelTabPreference">;
     session: Pick<{
         panelAppearance: import("../index.js").ReportAppearance;
         setPanelAppearance: (nextAppearance: import("../index.js").ReportAppearance) => void;
@@ -1069,6 +1096,11 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         applyRoleDefaultTabsForOnboarding: (role: import("../constants/panelRole.js").PanelRole) => void;
         savePanelTabPreference: (preference: import("../utils/panel/panelTabPreference.js").PanelTabPreference) => void;
         storedPanelTabPreference: import("../utils/panel/panelTabPreference.js").PanelTabPreference | null;
+        pinnedFeedbackItems: import("../types/pinnedFeedback.js").PinnedFeedbackItem[];
+        pinRailCollapsed: boolean;
+        togglePinnedFeedback: (item: import("../types/pinnedFeedback.js").PinnedFeedbackItem) => void;
+        unpinFeedback: (reportId: string) => void;
+        setPinRailCollapsed: (railCollapsed: boolean) => void;
         statusText: string;
         toggleReportMode: () => void;
         toggleTargetPreview: () => void;
@@ -1080,7 +1112,11 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         focusSearchInput: () => void;
         selectAdjacentReport: (direction: "up" | "down") => void;
         openReplyComposer: (report: import("../index.js").ReportFeedback) => void;
-        activateFeedbackMarker: (report: import("../index.js").ReportFeedback) => Promise<void>;
+        activateFeedbackMarker: (report: import("../index.js").ReportFeedback, caseId?: string | null) => Promise<void>;
+        openPinnedFeedback: (reportId: string, options?: {
+            caseId?: string | null;
+            pathname?: string;
+        }) => Promise<void>;
         closeReplyComposer: () => void;
         clearHoverLeaveTimeout: () => void;
         scheduleHoverLeave: (markerId: string) => void;
@@ -1106,7 +1142,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         handleCreateGitHubIssue: (report: import("../index.js").ReportFeedback) => Promise<void>;
         handleCreateSubmitWithGitHubIssue: () => Promise<void>;
         isDraftGitHubIssueSubmitting: boolean;
-    }, "statusText" | "toggleReportMode" | "toggleTargetPreview" | "currentPathname" | "sessionActor" | "savedProbeDeletions" | "hasProbeSessionChanges" | "canUndoProbeSession" | "canRedoProbeSession" | "undoProbeSessionAction" | "redoProbeSessionAction" | "revertAllSavedProbeEdits" | "draft" | "pickProbeOpen" | "pickProbeSupportsTextFields" | "pickProbeLayoutMode" | "pickProbeValues" | "pickProbeCompareMode" | "pickProbeHasEdits" | "pickTargetContextMenu" | "contextMenuElementKey" | "savedProbeEdits" | "savedProbeCompareMode" | "closePickProbe" | "closePickTargetContextMenu" | "handlePickTargetEdit" | "handlePickTargetDelete" | "handlePickTargetRevert" | "commitPickProbeEdits" | "revertSavedProbeEdit" | "setSavedProbeCompareMode" | "setPickProbeCompareMode" | "updatePickProbeValue" | "resetPickProbeValues" | "appendSavedProbeSummaryAsNewDraftCase" | "activeReplyReportId" | "selectedTarget" | "hoveredTarget" | "mode" | "showTargetPreview" | "closeReplyComposer" | "openReplyComposer" | "setErrorMessage" | "activeReplyReport" | "markers" | "overlayRef" | "selectReport" | "editingReportId" | "panelTab" | "pendingComposer" | "toggleIssueMode" | "cancelDraft" | "cancelPendingComposer" | "stopEditing" | "focusSearchInput" | "selectAdjacentReport" | "panelCollapsed" | "setPanelCollapsed" | "searchInputRef" | "activeMarkerTarget" | "markerPreviewTargets" | "selectableTargets" | "errorMessage" | "draftStep" | "setDraftStep" | "hoverPointer" | "setHoverPointer" | "editableDraft" | "setEditableDraft" | "tooltipReport" | "tooltipAnchor" | "tooltipFieldTags" | "replyDraft" | "setReplyDraft" | "replySubmitAsQuestion" | "setReplySubmitAsQuestion" | "draftAuthorName" | "setDraftAuthorName" | "replyAuthorName" | "setReplyAuthorName" | "presentationViewerId" | "setPresentationViewerId" | "startDenyReview" | "startCheckoutReview" | "startAskQuestion" | "confirmAuthorName" | "setConfirmAuthorName" | "showConfirmAuthorSelect" | "toggleConfirmAuthorSelect" | "beginCaseEdit" | "cancelCaseEdit" | "updateCaseEditDraftCase" | "addCaseEditDraftCase" | "removeCaseEditDraftCase" | "focusedCaseId" | "selectCase" | "clearFocusedCase" | "isCaseEditing" | "caseEditReportId" | "caseEditCases" | "openPanelTab" | "togglePanelTab" | "locateFeedback" | "activateFeedbackMarker" | "clearHoverLeaveTimeout" | "scheduleHoverLeave" | "setHoveredMarkerId" | "handleOverlayMove" | "handleOverlayContextMenu" | "handleOverlayClick" | "updateDraftCase" | "addDraftCase" | "removeDraftCase" | "updateDraftField" | "updateDraftCategory" | "startEditing">;
+    }, "statusText" | "toggleReportMode" | "toggleTargetPreview" | "currentPathname" | "sessionActor" | "savedProbeDeletions" | "hasProbeSessionChanges" | "canUndoProbeSession" | "canRedoProbeSession" | "undoProbeSessionAction" | "redoProbeSessionAction" | "revertAllSavedProbeEdits" | "draft" | "pickProbeOpen" | "pickProbeSupportsTextFields" | "pickProbeLayoutMode" | "pickProbeValues" | "pickProbeCompareMode" | "pickProbeHasEdits" | "pickTargetContextMenu" | "contextMenuElementKey" | "savedProbeEdits" | "savedProbeCompareMode" | "closePickProbe" | "closePickTargetContextMenu" | "handlePickTargetEdit" | "handlePickTargetDelete" | "handlePickTargetRevert" | "commitPickProbeEdits" | "revertSavedProbeEdit" | "setSavedProbeCompareMode" | "setPickProbeCompareMode" | "updatePickProbeValue" | "resetPickProbeValues" | "appendSavedProbeSummaryAsNewDraftCase" | "activeReplyReportId" | "selectedTarget" | "hoveredTarget" | "mode" | "showTargetPreview" | "closeReplyComposer" | "openReplyComposer" | "selectCase" | "setErrorMessage" | "activeReplyReport" | "markers" | "overlayRef" | "selectReport" | "editingReportId" | "panelTab" | "pendingComposer" | "toggleIssueMode" | "cancelDraft" | "cancelPendingComposer" | "stopEditing" | "focusSearchInput" | "selectAdjacentReport" | "panelCollapsed" | "setPanelCollapsed" | "searchInputRef" | "activeMarkerTarget" | "markerPreviewTargets" | "selectableTargets" | "errorMessage" | "draftStep" | "setDraftStep" | "hoverPointer" | "setHoverPointer" | "editableDraft" | "setEditableDraft" | "tooltipReport" | "tooltipAnchor" | "tooltipFieldTags" | "replyDraft" | "setReplyDraft" | "replySubmitAsQuestion" | "setReplySubmitAsQuestion" | "draftAuthorName" | "setDraftAuthorName" | "replyAuthorName" | "setReplyAuthorName" | "presentationViewerId" | "setPresentationViewerId" | "startDenyReview" | "startCheckoutReview" | "startAskQuestion" | "confirmAuthorName" | "setConfirmAuthorName" | "showConfirmAuthorSelect" | "toggleConfirmAuthorSelect" | "beginCaseEdit" | "cancelCaseEdit" | "updateCaseEditDraftCase" | "addCaseEditDraftCase" | "removeCaseEditDraftCase" | "focusedCaseId" | "clearFocusedCase" | "isCaseEditing" | "caseEditReportId" | "caseEditCases" | "openPanelTab" | "togglePanelTab" | "locateFeedback" | "activateFeedbackMarker" | "openPinnedFeedback" | "clearHoverLeaveTimeout" | "scheduleHoverLeave" | "setHoveredMarkerId" | "handleOverlayMove" | "handleOverlayContextMenu" | "handleOverlayClick" | "updateDraftCase" | "addDraftCase" | "removeDraftCase" | "updateDraftField" | "updateDraftCategory" | "startEditing">;
     data: Pick<{
         panelAppearance: import("../index.js").ReportAppearance;
         setPanelAppearance: (nextAppearance: import("../index.js").ReportAppearance) => void;
@@ -1341,6 +1377,11 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         applyRoleDefaultTabsForOnboarding: (role: import("../constants/panelRole.js").PanelRole) => void;
         savePanelTabPreference: (preference: import("../utils/panel/panelTabPreference.js").PanelTabPreference) => void;
         storedPanelTabPreference: import("../utils/panel/panelTabPreference.js").PanelTabPreference | null;
+        pinnedFeedbackItems: import("../types/pinnedFeedback.js").PinnedFeedbackItem[];
+        pinRailCollapsed: boolean;
+        togglePinnedFeedback: (item: import("../types/pinnedFeedback.js").PinnedFeedbackItem) => void;
+        unpinFeedback: (reportId: string) => void;
+        setPinRailCollapsed: (railCollapsed: boolean) => void;
         statusText: string;
         toggleReportMode: () => void;
         toggleTargetPreview: () => void;
@@ -1352,7 +1393,11 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         focusSearchInput: () => void;
         selectAdjacentReport: (direction: "up" | "down") => void;
         openReplyComposer: (report: import("../index.js").ReportFeedback) => void;
-        activateFeedbackMarker: (report: import("../index.js").ReportFeedback) => Promise<void>;
+        activateFeedbackMarker: (report: import("../index.js").ReportFeedback, caseId?: string | null) => Promise<void>;
+        openPinnedFeedback: (reportId: string, options?: {
+            caseId?: string | null;
+            pathname?: string;
+        }) => Promise<void>;
         closeReplyComposer: () => void;
         clearHoverLeaveTimeout: () => void;
         scheduleHoverLeave: (markerId: string) => void;

@@ -683,6 +683,19 @@ export type ReportMessages = {
         caseAssigneeOnly: string;
         personalKeyRequired: string;
     };
+    pins: {
+        railTitle: string;
+        railCountLabel: (count: number) => string;
+        railExpandAriaLabel: string;
+        railCollapseAriaLabel: string;
+        pinAriaLabel: string;
+        unpinAriaLabel: string;
+        openPinAriaLabel: string;
+        removePinAriaLabel: string;
+        sectionTitle: string;
+        empty: string;
+        notFound: string;
+    };
 };
 
 export type DeepPartialReportMessages = {

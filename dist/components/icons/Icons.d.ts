@@ -32,6 +32,10 @@ export declare function CopyIcon({ className }: {
 export declare function StarIcon({ className }: {
     className?: string;
 }): import("react").JSX.Element;
+export declare function FavoritePinIcon({ className, filled }: {
+    className?: string;
+    filled?: boolean;
+}): import("react").JSX.Element;
 export declare function InfoIcon({ className }: {
     className?: string;
 }): import("react").JSX.Element;

@@ -150,6 +150,7 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         currentPageFilteredReports: panel.currentPageFilteredReports,
         filteredReports: panel.filteredReports,
         reports: panel.reports,
+        allPageReports: panel.allPageReports,
         selectedReportId: panel.selectedReportId,
         markerAppearanceSize: panel.markerAppearance.size,
         showMarkerTargetPreview: panel.showMarkerTargetPreview,
@@ -166,6 +167,8 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         selectReport,
         closeReplyComposer: closeReplyComposerBridge,
         openReplyComposer: openReplyComposerBridge,
+        selectCase: reply.selectCase,
+        ensureIssueMode: panel.enableIssueMode,
         loadRepliesIfNeeded: panel.loadRepliesIfNeeded,
         searchInputRef: panel.searchInputRef,
     });

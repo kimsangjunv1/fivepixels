@@ -5,6 +5,7 @@ import { ReportDraftForm } from "@/components/panel/ReportDraftForm.js";
 import { ReportDraftMarker } from "@/components/point/ReportDraftMarker.js";
 import { ReportMarkersLayer } from "@/components/point/ReportMarkersLayer.js";
 import { DotWaveOverlay } from "@/components/overlay/DotWaveOverlay.js";
+import { FloatingPinRail } from "@/components/overlay/FloatingPinRail.js";
 import { ShadowReportRoot } from "./ShadowReportRoot.js";
 import { ThemeScope } from "./ThemeScope.js";
 
@@ -37,6 +38,7 @@ export function ReportView() {
 
             <ThemeScope appearance={resolvedPanelAppearance}>
                 <ReportControlPanel />
+                <FloatingPinRail />
             </ThemeScope>
 
             {showOverlay ? (

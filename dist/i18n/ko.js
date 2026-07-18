@@ -700,5 +700,18 @@ export const ko = {
         caseAssigneeOnly: "이 케이스는 담당자 또는 이슈 작성자만 처리할 수 있습니다.",
         personalKeyRequired: "피드백을 작성하려면 개인 키 설정이 필요합니다.",
     },
+    pins: {
+        railTitle: "핀",
+        railCountLabel: (count) => `${count}`,
+        railExpandAriaLabel: "핀 목록 펼치기",
+        railCollapseAriaLabel: "핀 목록 접기",
+        pinAriaLabel: "피드백 핀하기",
+        unpinAriaLabel: "핀 해제",
+        openPinAriaLabel: "핀한 피드백 열기",
+        removePinAriaLabel: "핀 제거",
+        sectionTitle: "핀한 항목",
+        empty: "핀한 피드백이 없어요.",
+        notFound: "핀한 피드백을 찾을 수 없어요. 삭제되었을 수 있어요.",
+    },
 };
 //# sourceMappingURL=ko.js.map

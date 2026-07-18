@@ -14,6 +14,7 @@ import { copyTextToClipboard } from "@/utils/feedback/feedbackDataTransfer.js";
 import { buildFeedbackShareUrl } from "@/utils/feedback/feedbackDeepLink.js";
 import { CloseIcon, LinkIcon, MaximizeIcon, MinimizeIcon, RestoreIcon, SidePanelIcon } from "@/components/icons/Icons.js";
 import { FeedbackFieldTags } from "@/components/panel/feedback/FeedbackFieldTags.js";
+import { FeedbackPinToggleButton } from "@/components/panel/feedback/FeedbackPinToggleButton.js";
 import { CornerResizeGhost } from "@/components/ui/CornerResizeGhost.js";
 import { CornerResizeHandle } from "@/components/ui/CornerResizeHandle.js";
 import { FeedbackComposer } from "@/components/panel/feedback/FeedbackComposer.js";
@@ -413,6 +414,15 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
         />
     );
 
+    const pinButton = (
+        <FeedbackPinToggleButton
+            report={report}
+            caseId={focusedCaseId}
+            className={HEADER_BUTTON_CLASS}
+            iconClassName="h-[14px] w-[14px]"
+        />
+    );
+
     const rightSection = (
         <div className="flex min-w-0 flex-1 flex-col bg-[var(--adaptive-black50)]">
             <div className="shrink-0 border-b border-[var(--adaptive-border-subtle)] px-[16px] py-[8px]">
@@ -555,6 +565,7 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
                             >
                                 {leftControls}
                                 {shareButton}
+                                {pinButton}
                                 {sidebarToggleButton}
                             </div>
                         ) : (
@@ -569,6 +580,7 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
                                     <div className="flex items-center gap-[2px]">{leftControls}</div>
                                     <div className="flex items-center gap-[2px]">
                                         {shareButton}
+                                        {pinButton}
                                         {sidebarToggleButton}
                                     </div>
                                 </header>
