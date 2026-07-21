@@ -1,12 +1,12 @@
 import { jsx as _jsx, Fragment as _Fragment } from "react/jsx-runtime";
 import { getDefaultFields } from "../i18n/index.js";
-import { useReportState } from "../hooks/useReportState.js";
-import { resolveReportEnabled } from "../utils/env.js";
-import { resolveReportProject } from "../utils/reportProject.js";
-import { resolveReportTeam } from "../utils/reportTeam.js";
-import { resolveReportUi } from "../utils/reportUi.js";
-import { resolveReportVisibility } from "../utils/reportVisibility.js";
-import { ReportContext } from "./reportContext.js";
+import { useReportState } from "../hooks/report/useReportState.js";
+import { resolveReportEnabled } from "../utils/shared/env.js";
+import { resolveReportProject } from "../utils/report/reportProject.js";
+import { resolveReportTeam } from "../utils/report/reportTeam.js";
+import { resolveReportUi } from "../utils/report/reportUi.js";
+import { resolveReportVisibility } from "../utils/report/reportVisibility.js";
+import { ReportContext, ReportDataContext, ReportPreferencesContext, ReportSessionContext, useReportContextSlices, } from "./reportContext.js";
 function ReportProviderEnabled({ projectId, environment, appVersion, panelAppearance, tooltipAppearance, questionThreadDefault, replyHistory, fields, authors, requireReviewerKey, shortcut, identify, onList, onListAll, onPanelBootstrap, onActivitySummary, onListReplies, onNavigate, onRevealTarget, onCreate, onCreateReply, onUpdate, onDelete, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys, locale, messageOverrides, pixelsMode, children, }) {
     const value = useReportState({
         projectId,
@@ -42,7 +42,8 @@ function ReportProviderEnabled({ projectId, environment, appVersion, panelAppear
         initialLocale: locale,
         messageOverrides,
     });
-    return _jsx(ReportContext.Provider, { value: value, children: children });
+    const { preferences, session, data } = useReportContextSlices(value);
+    return (_jsx(ReportContext.Provider, { value: value, children: _jsx(ReportPreferencesContext.Provider, { value: preferences, children: _jsx(ReportSessionContext.Provider, { value: session, children: _jsx(ReportDataContext.Provider, { value: data, children: children }) }) }) }));
 }
 export function ReportProvider({ project, ui, visibility, team, mode = "default", fields, onList, onListAll, onPanelBootstrap, onActivitySummary, onListReplies, onNavigate, onRevealTarget, onCreate, onCreateReply, onUpdate, onDelete, onEvent, onReply, github, children, }) {
     const resolvedProject = resolveReportProject({ project });

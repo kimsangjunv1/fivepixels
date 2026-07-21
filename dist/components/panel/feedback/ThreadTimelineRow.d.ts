@@ -6,6 +6,6 @@ type ThreadTimelineRowProps = {
     children: ReactNode;
     className?: string;
 };
-export declare function ThreadTimelineRow({ time, children, className }: ThreadTimelineRowProps): import("react/jsx-runtime").JSX.Element;
+export declare function ThreadTimelineRow({ time, children, className }: ThreadTimelineRowProps): import("react").JSX.Element;
 export {};
 //# sourceMappingURL=ThreadTimelineRow.d.ts.map

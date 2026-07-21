@@ -4,6 +4,6 @@ type MarkerCaseSidebarProps = {
     focusedCaseId: string | null;
     onSelectCase: (caseId: string) => void;
 };
-export declare function MarkerCaseSidebar({ report, focusedCaseId, onSelectCase }: MarkerCaseSidebarProps): import("react/jsx-runtime").JSX.Element;
+export declare function MarkerCaseSidebar({ report, focusedCaseId, onSelectCase }: MarkerCaseSidebarProps): import("react").JSX.Element;
 export {};
 //# sourceMappingURL=MarkerCaseSidebar.d.ts.map

@@ -1,2 +1,2 @@
-export declare function ReportRouteDetails(): import("react/jsx-runtime").JSX.Element;
+export declare function ReportRouteDetails(): import("react").JSX.Element;
 //# sourceMappingURL=ReportRouteDetails.d.ts.map

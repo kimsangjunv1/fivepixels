@@ -2,15 +2,15 @@ import { useState, type ReactNode } from "react";
 import type { ReportAppearance, QuestionThreadDisplay } from "@/types/report.js";
 import type { ReportLocale } from "@/i18n/types.js";
 import { APPEARANCE_OPTION_VALUES } from "@/constants/appearance.js";
-import { FONT_FAMILY_SUGGESTIONS, APPEARANCE_SCALE_VALUES, MARKER_FONT_SIZE_VALUES } from "@/constants/markerAppearance.js";
+import { DEFAULT_FEEDBACK_MODE_DOT_COLORS, FONT_FAMILY_SUGGESTIONS } from "@/constants/markerAppearance.js";
 import type { AppearanceScale, MarkerFontSize, MarkerShape } from "@/constants/markerAppearance.js";
-import { useReport } from "@/providers/reportContext.js";
-import { formatPresentationViewerLabel } from "@/utils/reportTeam.js";
+import { useReportPreferences, useReportSession } from "@/providers/reportContext.js";
+import { formatPresentationViewerLabel } from "@/utils/report/reportTeam.js";
 import { ChevronLeftIcon, ChevronRightIcon } from "@/components/icons/Icons.js";
 import { AppearanceThemePicker } from "./AppearanceThemePicker.js";
-import { DiscreteScaleDial } from "./DiscreteScaleDial.js";
 import { HexColorField } from "./HexColorField.js";
 import { MarkerShapePicker } from "./MarkerShapePicker.js";
+import { PanelMarkerDisplayControls } from "./PanelMarkerDisplayControls.js";
 import { PanelOptionSwitch } from "./PanelOptionSwitch.js";
 import { PanelTabSelector } from "./PanelTabSelector.js";
 
@@ -92,7 +92,7 @@ function SettingsDetailHeader({ title, backAriaLabel, onBack }: { title: string;
     );
 }
 
-function getCategoryTitle(category: SettingsCategory, messages: ReturnType<typeof useReport>["messages"]) {
+function getCategoryTitle(category: SettingsCategory, messages: ReturnType<typeof useReportPreferences>["messages"]) {
     switch (category) {
         case "preview":
             return messages.settings.categoryPreview;
@@ -127,30 +127,8 @@ export function PanelSettings({
     onKeyRotate,
 }: PanelSettingsProps) {
     const [activeCategory, setActiveCategory] = useState<SettingsCategory | null>(null);
-    const {
-        locale,
-        setLocale,
-        messages,
-        showMarkerTargetPreview,
-        setShowMarkerTargetPreview,
-        isPresentationMode,
-        presentationViewers,
-        presentationViewerId,
-        setPresentationViewerId,
-        markerAppearance,
-        setMarkerSize,
-        setMarkerShape,
-        setMarkerColor,
-        typography,
-        setFontSize,
-        setFontFamily,
-        panelRole,
-        visiblePanelTabs,
-        visiblePanelTabsSummary,
-        resolvedTabAvailabilityContext,
-        setVisiblePanelTabs,
-        resetVisibleTabsToRoleDefault,
-    } = useReport();
+    const { locale, setLocale, messages, showMarkerTargetPreview, setShowMarkerTargetPreview, isPresentationMode, presentationViewers, markerAppearance, setMarkerSize, setMarkerShape, setMarkerColor, setFeedbackModeDotColors, setFeedbackModeDotColor, typography, setFontSize, setFontFamily, panelRole, visiblePanelTabs, visiblePanelTabsSummary, resolvedTabAvailabilityContext, setVisiblePanelTabs, resetVisibleTabsToRoleDefault } = useReportPreferences();
+    const { presentationViewerId, setPresentationViewerId } = useReportSession();
     const scaleLabels: Record<AppearanceScale, string> = {
         sm: messages.settings.scaleSm,
         md: messages.settings.scaleMd,
@@ -276,18 +254,38 @@ export function PanelSettings({
                                 </div>
                             </SettingsSection>
 
+                            <SettingsSection label={messages.settings.sectionFeedbackMode}>
+                                <div className="flex flex-col gap-[12px] px-[12px] pb-[10px]">
+                                    <HexColorField
+                                        label={messages.settings.feedbackModeDotColorLight}
+                                        value={markerAppearance.feedbackModeDotColors.light}
+                                        onChange={(color) => setFeedbackModeDotColor("light", color)}
+                                    />
+                                    <HexColorField
+                                        label={messages.settings.feedbackModeDotColorDark}
+                                        value={markerAppearance.feedbackModeDotColors.dark}
+                                        onChange={(color) => setFeedbackModeDotColor("dark", color)}
+                                    />
+                                    <SettingsActionButton onClick={() => setFeedbackModeDotColors(DEFAULT_FEEDBACK_MODE_DOT_COLORS)}>
+                                        {messages.settings.resetFeedbackModeDotColors}
+                                    </SettingsActionButton>
+                                </div>
+                            </SettingsSection>
+
                             <SettingsSection label={messages.settings.sectionMarkerAppearance}>
                                 <div className="flex flex-col gap-[12px] px-[12px] pb-[10px]">
-                                    <div>
-                                        <p className="mb-[6px] text-[11px] font-medium text-[var(--adaptive-black600)]">{messages.settings.markerSize}</p>
-                                        <DiscreteScaleDial
-                                            values={APPEARANCE_SCALE_VALUES}
-                                            value={markerAppearance.size}
-                                            onChange={setMarkerSize}
-                                            labels={scaleLabels}
-                                            ariaLabel={messages.settings.markerSizeAriaLabel}
-                                        />
-                                    </div>
+                                    <PanelMarkerDisplayControls
+                                        markerSize={markerAppearance.size}
+                                        fontSize={typography.fontSize}
+                                        onMarkerSizeChange={setMarkerSize}
+                                        onFontSizeChange={setFontSize}
+                                        scaleLabels={scaleLabels}
+                                        markerFontSizeLabels={markerFontSizeLabels}
+                                        markerSizeLabel={messages.settings.markerSize}
+                                        markerFontSizeLabel={messages.settings.markerFontSize}
+                                        markerSizeAriaLabel={messages.settings.markerSizeAriaLabel}
+                                        markerFontSizeAriaLabel={messages.settings.markerFontSizeAriaLabel}
+                                    />
                                     <div>
                                         <p className="mb-[6px] text-[11px] font-medium text-[var(--adaptive-black600)]">{messages.settings.markerShape}</p>
                                         <MarkerShapePicker
@@ -317,16 +315,6 @@ export function PanelSettings({
 
                             <SettingsSection label={messages.settings.sectionTypography}>
                                 <div className="flex flex-col gap-[12px] px-[12px] pb-[10px]">
-                                    <div>
-                                        <p className="mb-[6px] text-[11px] font-medium text-[var(--adaptive-black600)]">{messages.settings.markerFontSize}</p>
-                                        <DiscreteScaleDial
-                                            values={MARKER_FONT_SIZE_VALUES}
-                                            value={typography.fontSize}
-                                            onChange={setFontSize}
-                                            labels={markerFontSizeLabels}
-                                            ariaLabel={messages.settings.markerFontSizeAriaLabel}
-                                        />
-                                    </div>
                                     <label className="flex flex-col gap-[4px] text-[11px]">
                                         <span className="font-medium text-[var(--adaptive-black500)]">{messages.settings.fontFamily}</span>
                                         <input

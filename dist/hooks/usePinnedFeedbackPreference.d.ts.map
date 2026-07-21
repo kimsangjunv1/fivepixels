@@ -1,0 +1,1 @@
+{"version":3,"file":"usePinnedFeedbackPreference.d.ts","sourceRoot":"","sources":["../../src/hooks/usePinnedFeedbackPreference.ts"],"names":[],"mappings":"AACA,OAAO,KAAK,EAAE,kBAAkB,EAA4B,MAAM,2BAA2B,CAAC;AAC9F,OAAO,KAAK,EAAE,cAAc,EAAE,MAAM,mBAAmB,CAAC;AAkCxD,wBAAgB,2BAA2B,CAAC,SAAS,EAAE,MAAM,EAAE,WAAW,CAAC,EAAE,MAAM;;;iCAqBpE,kBAAkB;8BAWd,MAAM;yCAUD,OAAO;yCAUb,cAAc,EAAE;EA6DjC"}

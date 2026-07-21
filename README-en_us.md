@@ -36,20 +36,34 @@ export default function App() {
 }
 ```
 
-Omit handlers to use **localStorage**. Pass persistence handlers for API-backed storage.
+Omit handlers to use **localStorage**. Pass persistence handlers for API-backed storage. **Stabilize handlers with `useCallback`**—inline functions can trigger repeated list fetches.
 
 ```tsx
-<FivePixels
-    project={{ id: "my-app", env: "stage" }}
-    onList={({ pathname }) => fetch(`/api/feedbacks?pathname=${pathname}`).then((r) => r.json())}
-    onCreate={(payload) =>
-        fetch("/api/feedbacks", { method: "POST", body: JSON.stringify(payload) }).then((r) => r.json())
-    }
-    onUpdate={(id, payload) =>
-        fetch(`/api/feedbacks/${id}`, { method: "PATCH", body: JSON.stringify(payload) }).then((r) => r.json())
-    }
-/>
+import { useCallback } from "react";
+import { FivePixels } from "@fivepixels-js/react";
+
+const onList = useCallback(
+    ({ pathname }) => fetch(`/api/feedbacks?pathname=${pathname}`).then((r) => r.json()),
+    [],
+);
+
+export function App() {
+    return (
+        <FivePixels
+            project={{ id: "my-app", env: "stage" }}
+            onList={onList}
+            onCreate={(payload) =>
+                fetch("/api/feedbacks", { method: "POST", body: JSON.stringify(payload) }).then((r) => r.json())
+            }
+            onUpdate={(id, payload) =>
+                fetch(`/api/feedbacks/${id}`, { method: "PATCH", body: JSON.stringify(payload) }).then((r) => r.json())
+            }
+        />
+    );
+}
 ```
+
+For REST routes, rollout phases, and call sequencing, see [docs/backend-api-route.md](./docs/backend-api-route.md).
 
 ## Props
 
@@ -59,18 +73,37 @@ Omit handlers to use **localStorage**. Pass persistence handlers for API-backed 
 | `ui` | `{ appearance?, showFeedbackList?, visibleShortcutKeys?, shortcut?, locale?, messages? }` | UI options. `appearance`: `light` \| `dark` \| `system`. |
 | `visibility` | `{ enabled?, devOnly?, routeKey? }` | Mount control. `devOnly` limits to dev environments. |
 | `team` | `{ user?, reviewers?, requireReviewerKey? }` | Author and reviewers. `user`: `{ id, name }`. |
+| `mode` | `"default"` \| `"presentation"` | Presentation mode for demos and viewer switching. |
 | `fields` | `ReportField[]` | Custom fields (`textarea`, `checkbox`). |
 | `onList` | `(params) => Promise<ReportFeedback[]>` | List feedback by pathname. |
 | `onCreate` | `(payload) => Promise<ReportFeedback>` | Create feedback. |
 | `onUpdate` | `(id, payload) => Promise<ReportFeedback>` | Update feedback, replies, and review state. |
 | `onDelete` | `(id) => Promise<void>` | Delete feedback. |
 | `onListAll` | `(params) => Promise<{ items, nextCursor? }>` | Paginated cross-page list. |
+| `onListReplies` | `(commentId, params?) => Promise<...>` | Lazy reply loading (P2). |
+| `onCreateReply` | `(commentId, payload) => Promise<ReportReply>` | Create reply (P2). |
+| `onPanelBootstrap` | `(params) => Promise<...>` | Panel stats bootstrap (P3, optional). |
+| `onActivitySummary` | `(params) => Promise<...>` | Activity heatmap summary (P3, optional). |
 | `onNavigate` | `(pathname) => void` | Navigate from View mode. |
+| `onRevealTarget` | `(report) => boolean \| Promise<boolean>` | Reveal a cross-page feedback target. |
 | `onEvent` | `(event) => void` | create/update/delete/reply/github events. |
 | `onReply` | `({ feedbackId, message }) => void` | Reply side effect hook. |
 | `github` | `{ enabled?, modes?, onCreate? }` | GitHub Issue integration. |
 
 > Pass `onList`, `onCreate`, and `onUpdate` **together**, or omit all three to use the localStorage adapter.
+
+## Custom UI extension
+
+Instead of `<FivePixels />`, compose panel and overlay UI with `ReportProvider` and context hooks from `@fivepixels-js/react/report`.
+
+| Hook | Scope |
+| ---- | ----- |
+| `useReport()` | Full state (backward compatible) |
+| `useReportPreferences()` | appearance, locale, role, messages, … |
+| `useReportSession()` | mode, draft, markers, pickProbe, composers |
+| `useReportData()` | lists, filters, CRUD, stats, reply history |
+
+Layering rules: [docs/architecture-hooks.md](./docs/architecture-hooks.md).
 
 ## DOM attributes
 

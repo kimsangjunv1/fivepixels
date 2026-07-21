@@ -111,6 +111,12 @@ export type ReportMessages = {
         probeEditModeReset: string;
         probeEditModeUndo: string;
         probeEditModeRedo: string;
+        persistenceStatusAriaLabel: string;
+        persistenceConflictTitle: string;
+        persistenceConflictDescription: string;
+        persistenceRequiredForApi: string;
+        persistenceProvidedButIgnored: string;
+        persistenceConflictFix: string;
     };
     feedbackList: {
         scopeAriaLabel: string;
@@ -168,6 +174,11 @@ export type ReportMessages = {
         questionPlaceholder: string;
         askQuestionLabel: string;
         sendAriaLabel: string;
+        draftPrevious: string;
+        draftNext: string;
+        draftComplete: string;
+        draftCompleting: string;
+        draftCategoryPrompt: (count: number) => string;
         gitIssueSendAriaLabel: string;
         gitIssueSendTitle: string;
         gitIssueSendLabel: string;
@@ -321,6 +332,8 @@ export type ReportMessages = {
         ownerRequired: string;
     };
     onboarding: {
+        languageStepTitle: string;
+        languageStepDescription: string;
         introTitle: string;
         introDescription: string;
         newUser: string;
@@ -337,6 +350,11 @@ export type ReportMessages = {
         roleStepTitle: string;
         roleStepDescription: string;
         roleStepTabsHint: string;
+        appearanceStepTitle: string;
+        appearanceStepDescription: string;
+        displayStepTitle: string;
+        displayStepDescription: string;
+        displayPreviewAriaLabel: string;
         keyStepTitle: string;
         keyStepDescription: string;
         namePlaceholder: string;
@@ -402,6 +420,10 @@ export type ReportMessages = {
         markerColorOpen: string;
         markerColorResolved: string;
         markerColorGitIssued: string;
+        sectionFeedbackMode: string;
+        feedbackModeDotColorLight: string;
+        feedbackModeDotColorDark: string;
+        resetFeedbackModeDotColors: string;
         markerFontSize: string;
         markerFontSizeAriaLabel: string;
         fontFamily: string;
@@ -660,6 +682,22 @@ export type ReportMessages = {
         selectCaseFirst: string;
         caseAssigneeOnly: string;
         personalKeyRequired: string;
+    };
+    pins: {
+        railTitle: string;
+        railCountLabel: (count: number) => string;
+        railExpandAriaLabel: string;
+        railCollapseAriaLabel: string;
+        pinAriaLabel: string;
+        unpinAriaLabel: string;
+        openPinAriaLabel: string;
+        removePinAriaLabel: string;
+        routeToggleAriaLabel: (pathname: string) => string;
+        progressAriaLabel: (resolved: number, total: number, percentage: number) => string;
+        completedCasesLabel: (resolved: number, total: number) => string;
+        sectionTitle: string;
+        empty: string;
+        notFound: string;
     };
 };
 

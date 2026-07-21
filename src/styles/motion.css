@@ -1,0 +1,791 @@
+/* =============================================================================
+ * fivepixels motion tokens & utilities
+ * Edit this file to add/tune animations. Components only apply class names.
+ * ============================================================================= */
+
+[data-fivepixels-mount] {
+    --fp-ease-spring: cubic-bezier(0.34, 1.28, 0.64, 1);
+    --fp-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+    --fp-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+    --fp-dur-xs: 140ms;
+    --fp-dur-sm: 180ms;
+    --fp-dur-md: 240ms;
+    --fp-dur-lg: 300ms;
+    --fp-dur-xl: 360ms;
+}
+
+/* ---------------------------------------------------------------------------
+ * Keyframes
+ * --------------------------------------------------------------------------- */
+
+@keyframes fivepixels-fade-scale-in {
+    from {
+        opacity: 0;
+        transform: translateY(6px) scale(0.96);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes fivepixels-fade-scale-out {
+    from {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+
+    to {
+        opacity: 0;
+        transform: translateY(4px) scale(0.97);
+    }
+}
+
+@keyframes fivepixels-tooltip-in {
+    from {
+        opacity: 0;
+        transform: translateY(5px) scale(0.97);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes fivepixels-tooltip-fade-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fivepixels-tooltip-out {
+    from {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+
+    to {
+        opacity: 0;
+        transform: translateY(3px) scale(0.98);
+    }
+}
+
+@keyframes fivepixels-tab-pane-fade-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fivepixels-tab-pane-fade-out {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes fivepixels-tab-pane-in-from-left {
+    from {
+        opacity: 0;
+        transform: translateX(-12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes fivepixels-tab-pane-in-from-right {
+    from {
+        opacity: 0;
+        transform: translateX(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes fivepixels-tab-pane-out-to-left {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    to {
+        opacity: 0;
+        transform: translateX(-12px);
+    }
+}
+
+@keyframes fivepixels-tab-pane-out-to-right {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    to {
+        opacity: 0;
+        transform: translateX(12px);
+    }
+}
+
+@keyframes fivepixels-marker-window-in {
+    from {
+        opacity: 0;
+        transform: scale(0.94);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes fivepixels-marker-window-out {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    to {
+        opacity: 0;
+        transform: scale(0.96);
+    }
+}
+
+@keyframes fivepixels-slide-from-right {
+    from {
+        opacity: 0;
+        transform: translateX(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes fivepixels-slide-from-left {
+    from {
+        opacity: 0;
+        transform: translateX(-12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes fivepixels-slide-up-in {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fivepixels-panel-collapse-in-left {
+    from {
+        opacity: 0;
+        transform: translateX(-10px) scale(0.96);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
+
+@keyframes fivepixels-panel-collapse-in-right {
+    from {
+        opacity: 0;
+        transform: translateX(10px) scale(0.96);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
+
+@keyframes fivepixels-notice-in {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fivepixels-heatmap-dot-in {
+    0% {
+        opacity: 0;
+        transform: scale(0);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes fivepixels-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes fivepixels-processing-dot-pulse {
+    0%,
+    100% {
+        opacity: 0.16;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+@keyframes fivepixels-pick-target-delete-fade {
+    0% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+@keyframes fivepixels-pick-target-delete-wave {
+    0% {
+        background-position: 120% 0;
+        opacity: 0.35;
+    }
+
+    35% {
+        opacity: 1;
+    }
+
+    100% {
+        background-position: -120% 0;
+        opacity: 0;
+    }
+}
+
+@keyframes fivepixels-validation-attention-pulse {
+    0%,
+    100% {
+        box-shadow: inset 0 0 0 2px rgba(251, 113, 133, 0.85);
+    }
+
+    50% {
+        box-shadow: inset 0 0 0 2px rgba(251, 113, 133, 0.35);
+    }
+}
+
+@keyframes fivepixels-pin-rail-in {
+    from {
+        opacity: 0;
+        transform: translateX(12px) scale(0.92);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
+
+@keyframes fivepixels-pin-card-in {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fivepixels-pin-star-pop {
+    0% {
+        transform: scale(1);
+    }
+
+    45% {
+        transform: scale(1.18);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes fivepixels-pin-card-pulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    40% {
+        transform: scale(0.97);
+        opacity: 0.88;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes fivepixels-ghost-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fivepixels-dock-guide-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 0.82;
+    }
+}
+
+/* ---------------------------------------------------------------------------
+ * Shared enter / exit
+ * --------------------------------------------------------------------------- */
+
+[data-fivepixels-mount] .fivepixels-motion-fade-scale-in {
+    animation: fivepixels-fade-scale-in var(--fp-dur-lg) var(--fp-ease-spring) both;
+}
+
+[data-fivepixels-mount] .fivepixels-motion-fade-scale-out {
+    animation: fivepixels-fade-scale-out var(--fp-dur-sm) var(--fp-ease-out) both;
+    pointer-events: none;
+}
+
+[data-fivepixels-mount] .fivepixels-motion-tooltip-in {
+    animation: fivepixels-tooltip-in var(--fp-dur-md) var(--fp-ease-spring) both;
+}
+
+/* Opacity-only: safe for tooltips that use transform for above/below anchoring */
+[data-fivepixels-mount] .fivepixels-motion-tooltip-fade-in {
+    animation: fivepixels-tooltip-fade-in var(--fp-dur-md) var(--fp-ease-out) both;
+}
+
+[data-fivepixels-mount] .fivepixels-motion-tooltip-out {
+    animation: fivepixels-tooltip-out var(--fp-dur-xs) var(--fp-ease-out) both;
+    pointer-events: none;
+}
+
+[data-fivepixels-mount] .fivepixels-motion-slide-up-in {
+    animation: fivepixels-slide-up-in var(--fp-dur-md) var(--fp-ease-spring) both;
+}
+
+[data-fivepixels-mount] .fivepixels-motion-slide-from-left {
+    animation: fivepixels-slide-from-left var(--fp-dur-md) var(--fp-ease-out) both;
+}
+
+[data-fivepixels-mount] .fivepixels-motion-slide-from-right {
+    animation: fivepixels-slide-from-right var(--fp-dur-md) var(--fp-ease-out) both;
+}
+
+[data-fivepixels-mount] .fivepixels-motion-notice-in {
+    animation: fivepixels-notice-in var(--fp-dur-md) var(--fp-ease-spring) both;
+}
+
+[data-fivepixels-mount] .fivepixels-motion-dialog-in {
+    animation: fivepixels-fade-scale-in var(--fp-dur-md) var(--fp-ease-spring) both;
+}
+
+[data-fivepixels-mount] .fivepixels-motion-menu-in {
+    animation: fivepixels-tooltip-in var(--fp-dur-sm) var(--fp-ease-spring) both;
+}
+
+[data-fivepixels-mount] .fivepixels-motion-ghost-in {
+    animation: fivepixels-ghost-in var(--fp-dur-sm) var(--fp-ease-out) both;
+}
+
+/* ---------------------------------------------------------------------------
+ * Panel shell
+ * --------------------------------------------------------------------------- */
+
+[data-fivepixels-mount] .fivepixels-panel-enter {
+    animation: fivepixels-fade-scale-in var(--fp-dur-lg) var(--fp-ease-spring) both;
+}
+
+[data-fivepixels-mount] .fivepixels-panel-dock {
+    transition:
+        top var(--fp-dur-xl) var(--fp-ease-out),
+        right var(--fp-dur-xl) var(--fp-ease-out),
+        bottom var(--fp-dur-xl) var(--fp-ease-out),
+        left var(--fp-dur-xl) var(--fp-ease-out);
+}
+
+[data-fivepixels-mount] .fivepixels-panel-dock--dragging {
+    transition: none;
+}
+
+[data-fivepixels-mount] .fivepixels-panel-collapse-in--left {
+    animation: fivepixels-panel-collapse-in-left var(--fp-dur-md) var(--fp-ease-spring) both;
+}
+
+[data-fivepixels-mount] .fivepixels-panel-collapse-in--right {
+    animation: fivepixels-panel-collapse-in-right var(--fp-dur-md) var(--fp-ease-spring) both;
+}
+
+[data-fivepixels-mount] .fivepixels-panel-mode-swap {
+    animation: fivepixels-tab-pane-fade-in var(--fp-dur-md) var(--fp-ease-out) both;
+}
+
+[data-fivepixels-mount] .fivepixels-panel-tab-shell {
+    display: grid;
+    transition:
+        grid-template-rows var(--fp-dur-lg) var(--fp-ease-out),
+        opacity var(--fp-dur-md) var(--fp-ease-out);
+}
+
+[data-fivepixels-mount] .fivepixels-panel-tab-shell[data-open="true"] {
+    grid-template-rows: 1fr;
+    opacity: 1;
+}
+
+[data-fivepixels-mount] .fivepixels-panel-tab-shell[data-open="false"] {
+    grid-template-rows: 0fr;
+    opacity: 0;
+}
+
+[data-fivepixels-mount] .fivepixels-panel-tab-shell-inner {
+    overflow: hidden;
+    min-height: 0;
+}
+
+[data-fivepixels-mount] .fivepixels-panel-tab-pane {
+    animation: fivepixels-tab-pane-fade-in var(--fp-dur-md) var(--fp-ease-out) both;
+}
+
+[data-fivepixels-mount] .fivepixels-panel-tab-pane--fade-out {
+    animation: fivepixels-tab-pane-fade-out var(--fp-dur-sm) var(--fp-ease-out) both;
+}
+
+[data-fivepixels-mount] .fivepixels-panel-tab-pane--from-left {
+    animation: fivepixels-tab-pane-in-from-left var(--fp-dur-md) var(--fp-ease-out) both;
+}
+
+[data-fivepixels-mount] .fivepixels-panel-tab-pane--from-right {
+    animation: fivepixels-tab-pane-in-from-right var(--fp-dur-md) var(--fp-ease-out) both;
+}
+
+[data-fivepixels-mount] .fivepixels-panel-tab-pane--out-to-left {
+    animation: fivepixels-tab-pane-out-to-left var(--fp-dur-sm) var(--fp-ease-out) both;
+}
+
+[data-fivepixels-mount] .fivepixels-panel-tab-pane--out-to-right {
+    animation: fivepixels-tab-pane-out-to-right var(--fp-dur-sm) var(--fp-ease-out) both;
+}
+
+[data-fivepixels-mount] .fivepixels-panel-tab-height {
+    overflow: hidden;
+}
+
+[data-fivepixels-mount] .fivepixels-panel-tab-height--animate {
+    transition: height var(--fp-dur-lg) var(--fp-ease-out);
+}
+
+/* ---------------------------------------------------------------------------
+ * Marker window (legacy class names kept for animationend matching)
+ * --------------------------------------------------------------------------- */
+
+[data-fivepixels-mount] .fivepixels-marker-window-enter {
+    animation: fivepixels-marker-window-in var(--fp-dur-md) var(--fp-ease-spring) forwards;
+}
+
+[data-fivepixels-mount] .fivepixels-marker-window-exit {
+    animation: fivepixels-marker-window-out var(--fp-dur-sm) var(--fp-ease-out) forwards;
+    pointer-events: none;
+}
+
+/* ---------------------------------------------------------------------------
+ * Heatmap / spinners / validation
+ * --------------------------------------------------------------------------- */
+
+[data-fivepixels-mount] .fivepixels-heatmap-dot {
+    transform-origin: center;
+    animation: fivepixels-heatmap-dot-in var(--fp-dur-xl) var(--fp-ease-spring) both;
+}
+
+[data-fivepixels-mount] .fivepixels-spin {
+    animation: fivepixels-spin 0.8s linear infinite;
+}
+
+[data-fivepixels-mount] .fivepixels-processing-dots__dot {
+    opacity: 0.16;
+    animation-name: fivepixels-processing-dot-pulse;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+}
+
+[data-fivepixels-mount] .fivepixels-validation-attention {
+    animation: fivepixels-validation-attention-pulse 900ms ease-in-out 2;
+}
+
+/* ---------------------------------------------------------------------------
+ * Locate pulse / target highlight
+ * --------------------------------------------------------------------------- */
+
+[data-fivepixels-mount] .fivepixels-locate-pulse-ring {
+    transition: opacity 0.8s var(--fp-ease-out);
+}
+
+[data-fivepixels-mount] .fivepixels-locate-pulse-ring--peak {
+    opacity: 0;
+}
+
+[data-fivepixels-mount] .fivepixels-locate-pulse-ring--valley {
+    opacity: 0.8;
+}
+
+[data-fivepixels-mount] .fivepixels-locate-pulse-core {
+    transition:
+        transform 0.65s var(--fp-ease-out),
+        opacity 0.65s var(--fp-ease-out);
+}
+
+[data-fivepixels-mount] .fivepixels-locate-pulse-core--peak {
+    opacity: 1;
+    transform: scale(1.45);
+}
+
+[data-fivepixels-mount] .fivepixels-locate-pulse-core--valley {
+    opacity: 0.4;
+    transform: scale(0.9);
+}
+
+[data-fivepixels-mount] .fivepixels-locate-pulse-target-outline {
+    transition: opacity 0.65s var(--fp-ease-out);
+}
+
+[data-fivepixels-mount] .fivepixels-locate-pulse-target-outline--peak {
+    opacity: 1;
+}
+
+[data-fivepixels-mount] .fivepixels-locate-pulse-target-outline--valley {
+    opacity: 0.35;
+}
+
+[data-fivepixels-mount] .fivepixels-locate-pulse-target-surface {
+    transition: opacity 0.65s var(--fp-ease-out);
+}
+
+[data-fivepixels-mount] .fivepixels-locate-pulse-target-surface--peak {
+    opacity: 1;
+}
+
+[data-fivepixels-mount] .fivepixels-locate-pulse-target-surface--valley {
+    opacity: 0.55;
+}
+
+[data-fivepixels-mount] .fivepixels-target-highlight {
+    opacity: 1;
+    transition:
+        opacity 0.14s ease-out,
+        left 0.44s var(--fp-ease-out),
+        top 0.44s var(--fp-ease-out),
+        width 0.44s var(--fp-ease-out),
+        height 0.44s var(--fp-ease-out),
+        border-radius 0.32s var(--fp-ease-out),
+        box-shadow 0.32s var(--fp-ease-out),
+        background-color 0.32s var(--fp-ease-out);
+}
+
+[data-fivepixels-mount] .fivepixels-target-highlight__label {
+    transition: background-color 0.32s var(--fp-ease-out);
+}
+
+/* ---------------------------------------------------------------------------
+ * Pick-target delete overlay
+ * --------------------------------------------------------------------------- */
+
+.fivepixels-pick-target-delete-overlay {
+    position: fixed;
+    z-index: 1000004;
+    pointer-events: none;
+    overflow: hidden;
+    border-radius: 4px;
+    box-shadow: inset 0 0 0 1px rgba(246, 87, 46, 0.7);
+    background: rgba(246, 87, 46, 0.28);
+    animation: fivepixels-pick-target-delete-fade 550ms var(--fp-ease-in-out, cubic-bezier(0.4, 0, 0.2, 1)) forwards;
+}
+
+.fivepixels-pick-target-delete-wave {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(100deg, transparent 0%, rgba(246, 87, 46, 0.35) 28%, #f6572e 50%, rgba(246, 87, 46, 0.85) 64%, transparent 100%);
+    background-size: 240% 100%;
+    animation: fivepixels-pick-target-delete-wave 550ms var(--fp-ease-in-out, cubic-bezier(0.4, 0, 0.2, 1)) forwards;
+}
+
+/* ---------------------------------------------------------------------------
+ * Dock guides — motion layer (structure stays in tailwind.css)
+ * --------------------------------------------------------------------------- */
+
+[data-fivepixels-mount] .fivepixels-dock-guide {
+    transition:
+        opacity var(--fp-dur-sm) var(--fp-ease-out),
+        transform var(--fp-dur-md) var(--fp-ease-spring);
+    animation: fivepixels-dock-guide-in var(--fp-dur-md) var(--fp-ease-spring) both;
+}
+
+[data-fivepixels-mount] .fivepixels-dock-guide::before,
+[data-fivepixels-mount] .fivepixels-dock-guide::after {
+    transition: background var(--fp-dur-sm) var(--fp-ease-out);
+}
+
+[data-fivepixels-mount] .fivepixels-dock-guide--active {
+    opacity: 1;
+    transform: scale(1.04);
+}
+
+/* ---------------------------------------------------------------------------
+ * Pinned feedback rail
+ * --------------------------------------------------------------------------- */
+
+[data-fivepixels-mount] .fivepixels-pin-rail-enter {
+    animation: fivepixels-pin-rail-in var(--fp-dur-lg) var(--fp-ease-spring) both;
+}
+
+[data-fivepixels-mount] .fivepixels-pin-rail-shell {
+    transition:
+        width var(--fp-dur-lg) var(--fp-ease-out),
+        max-height var(--fp-dur-lg) var(--fp-ease-out),
+        transform var(--fp-dur-lg) var(--fp-ease-spring),
+        opacity var(--fp-dur-md) var(--fp-ease-out);
+}
+
+[data-fivepixels-mount] .fivepixels-pin-rail-shell[data-expanded="true"] {
+    transform: scale(1);
+}
+
+[data-fivepixels-mount] .fivepixels-pin-rail-shell[data-expanded="false"] {
+    transform: scale(0.98);
+}
+
+[data-fivepixels-mount] .fivepixels-pin-rail-body {
+    display: grid;
+    transition:
+        grid-template-rows var(--fp-dur-lg) var(--fp-ease-out),
+        opacity var(--fp-dur-md) var(--fp-ease-out);
+}
+
+[data-fivepixels-mount] .fivepixels-pin-rail-body[data-expanded="true"] {
+    grid-template-rows: 1fr;
+    opacity: 1;
+}
+
+[data-fivepixels-mount] .fivepixels-pin-rail-body[data-expanded="false"] {
+    grid-template-rows: 0fr;
+    opacity: 0;
+}
+
+[data-fivepixels-mount] .fivepixels-pin-rail-body-inner {
+    overflow: hidden;
+    min-height: 0;
+}
+
+[data-fivepixels-mount] .fivepixels-pin-card-enter {
+    animation: fivepixels-pin-card-in var(--fp-dur-md) var(--fp-ease-out) both;
+}
+
+[data-fivepixels-mount] .fivepixels-pin-star-pop {
+    animation: fivepixels-pin-star-pop var(--fp-dur-xs) var(--fp-ease-spring);
+}
+
+[data-fivepixels-mount] .fivepixels-pin-card-pulse {
+    animation: fivepixels-pin-card-pulse var(--fp-dur-sm) var(--fp-ease-out);
+}
+
+/* ---------------------------------------------------------------------------
+ * Reduced motion
+ * --------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+    [data-fivepixels-mount] .fivepixels-motion-fade-scale-in,
+    [data-fivepixels-mount] .fivepixels-motion-fade-scale-out,
+    [data-fivepixels-mount] .fivepixels-motion-tooltip-in,
+    [data-fivepixels-mount] .fivepixels-motion-tooltip-fade-in,
+    [data-fivepixels-mount] .fivepixels-motion-tooltip-out,
+    [data-fivepixels-mount] .fivepixels-motion-slide-up-in,
+    [data-fivepixels-mount] .fivepixels-motion-slide-from-left,
+    [data-fivepixels-mount] .fivepixels-motion-slide-from-right,
+    [data-fivepixels-mount] .fivepixels-motion-notice-in,
+    [data-fivepixels-mount] .fivepixels-motion-dialog-in,
+    [data-fivepixels-mount] .fivepixels-motion-menu-in,
+    [data-fivepixels-mount] .fivepixels-motion-ghost-in,
+    [data-fivepixels-mount] .fivepixels-panel-enter,
+    [data-fivepixels-mount] .fivepixels-panel-collapse-in--left,
+    [data-fivepixels-mount] .fivepixels-panel-collapse-in--right,
+    [data-fivepixels-mount] .fivepixels-panel-mode-swap,
+    [data-fivepixels-mount] .fivepixels-panel-tab-pane,
+    [data-fivepixels-mount] .fivepixels-panel-tab-pane--fade-out,
+    [data-fivepixels-mount] .fivepixels-panel-tab-pane--from-left,
+    [data-fivepixels-mount] .fivepixels-panel-tab-pane--from-right,
+    [data-fivepixels-mount] .fivepixels-panel-tab-pane--out-to-left,
+    [data-fivepixels-mount] .fivepixels-panel-tab-pane--out-to-right,
+    [data-fivepixels-mount] .fivepixels-marker-window-enter,
+    [data-fivepixels-mount] .fivepixels-marker-window-exit,
+    [data-fivepixels-mount] .fivepixels-heatmap-dot,
+    [data-fivepixels-mount] .fivepixels-pin-rail-enter,
+    [data-fivepixels-mount] .fivepixels-pin-card-enter,
+    [data-fivepixels-mount] .fivepixels-pin-star-pop,
+    [data-fivepixels-mount] .fivepixels-pin-card-pulse,
+    [data-fivepixels-mount] .fivepixels-dock-guide,
+    .fivepixels-pick-target-delete-overlay,
+    .fivepixels-pick-target-delete-wave {
+        animation: none;
+    }
+
+    [data-fivepixels-mount] .fivepixels-panel-dock,
+    [data-fivepixels-mount] .fivepixels-panel-tab-shell,
+    [data-fivepixels-mount] .fivepixels-panel-tab-height--animate,
+    [data-fivepixels-mount] .fivepixels-pin-rail-shell,
+    [data-fivepixels-mount] .fivepixels-pin-rail-body,
+    [data-fivepixels-mount] .fivepixels-dock-guide,
+    [data-fivepixels-mount] .fivepixels-locate-pulse-ring,
+    [data-fivepixels-mount] .fivepixels-locate-pulse-core,
+    [data-fivepixels-mount] .fivepixels-locate-pulse-target-outline,
+    [data-fivepixels-mount] .fivepixels-locate-pulse-target-surface,
+    [data-fivepixels-mount] .fivepixels-target-highlight,
+    [data-fivepixels-mount] .fivepixels-target-highlight__label {
+        transition: none;
+    }
+}

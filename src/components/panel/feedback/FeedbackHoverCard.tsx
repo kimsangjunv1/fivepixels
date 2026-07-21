@@ -1,10 +1,10 @@
 import { FEEDBACK_STATUS_COLOR, type FeedbackDisplayStatus } from "@/constants/feedbackStatus.js";
 import type { ReportFeedback } from "@/types/report.js";
 import type { MarkerDetachedKind } from "@/types/report-ui.js";
-import { getDetachedMarkerHint } from "@/utils/markerContext.js";
-import { getCaseLatestStatus } from "@/utils/feedbackThread.js";
-import { getReportCases } from "@/utils/reportCases.js";
-import { useReport } from "@/providers/reportContext.js";
+import { getDetachedMarkerHint } from "@/utils/marker/markerContext.js";
+import { getCaseLatestStatus } from "@/utils/feedback/feedbackThread.js";
+import { getReportCases } from "@/utils/report/reportCases.js";
+import { useReportPreferences } from "@/providers/reportContext.js";
 import { FeedbackCreatorBadge } from "./FeedbackCreatorBadge.js";
 
 const MAX_TOOLTIP_CASES = 5;
@@ -18,7 +18,7 @@ type FeedbackHoverCardProps = {
 };
 
 function CaseStatusLabel({ status }: { status: FeedbackDisplayStatus }) {
-    const { messages } = useReport();
+    const { messages } = useReportPreferences();
     const color = FEEDBACK_STATUS_COLOR[status];
 
     return (
@@ -32,7 +32,7 @@ function CaseStatusLabel({ status }: { status: FeedbackDisplayStatus }) {
 }
 
 export function FeedbackHoverCard({ report, detached = false, detachedKind = null, detachedHint, detachedModalHint }: FeedbackHoverCardProps) {
-    const { messages } = useReport();
+    const { messages } = useReportPreferences();
     const cases = getReportCases(report);
     const visibleCases = cases.slice(0, MAX_TOOLTIP_CASES);
     const hasMoreCases = cases.length > MAX_TOOLTIP_CASES;

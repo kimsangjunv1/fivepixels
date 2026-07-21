@@ -1,2 +1,2 @@
-export declare function PickTargetProbePanel(): import("react/jsx-runtime").JSX.Element | null;
+export declare function PickTargetProbePanel(): import("react").JSX.Element | null;
 //# sourceMappingURL=PickTargetProbePanel.d.ts.map

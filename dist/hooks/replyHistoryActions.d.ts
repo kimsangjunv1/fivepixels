@@ -1,6 +1,6 @@
 import { type Dispatch, type SetStateAction } from "react";
 import type { ReportFeedback, ReportReply } from "../types/report.js";
-import type { ResolvedReplyHistoryConfig } from "../utils/reportUi.js";
+import type { ResolvedReplyHistoryConfig } from "../utils/report/reportUi.js";
 import type { ReportStorageAdapter } from "../types/report.js";
 export type ReplyHistoryState = {
     items: ReportReply[];

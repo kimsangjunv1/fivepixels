@@ -1,4 +1,4 @@
-import { DEFAULT_REPLY_HISTORY_MODE, DEFAULT_REPLY_HISTORY_PAGE_SIZE } from "../utils/replyHistory.js";
+import { DEFAULT_REPLY_HISTORY_MODE, DEFAULT_REPLY_HISTORY_PAGE_SIZE } from "../utils/feedback/replyHistory.js";
 export { DEFAULT_REPLY_HISTORY_MODE, DEFAULT_REPLY_HISTORY_PAGE_SIZE };
 export function usesReplyLoadMoreButton(mode) {
     return mode === "load-more-button" || mode === "button-and-scroll";

@@ -1,8 +1,9 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
-import { useReport } from "../../providers/reportContext.js";
-import { HOVER_TOOLTIP_MARGIN } from "../../utils/hoverTooltipLayout.js";
-const TOOLTIP_SURFACE_CLASS = "pointer-events-none fixed z-[1000002] min-w-[220px] max-w-[min(320px,calc(100vw-16px))] overflow-hidden rounded-[12px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface-overlay)] px-[12px] py-[10px] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[20px]";
+import { useReportPreferences, useReportSession } from "../../providers/reportContext.js";
+import { MOTION } from "../../constants/motionClasses.js";
+import { HOVER_TOOLTIP_MARGIN } from "../../utils/marker/hoverTooltipLayout.js";
+const TOOLTIP_SURFACE_CLASS = `pointer-events-none fixed z-[1000002] min-w-[220px] max-w-[min(320px,calc(100vw-16px))] overflow-hidden rounded-[12px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface-overlay)] px-[12px] py-[10px] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[20px] ${MOTION.tooltipIn}`;
 const POINTER_OFFSET = 12;
 function InspectRow({ label, value, valueClassName = "" }) {
     return (_jsxs("div", { className: "flex items-start justify-between gap-[12px] text-[11px] leading-[1.45]", children: [_jsx("span", { className: "shrink-0 text-[var(--adaptive-black500)]", children: label }), _jsx("span", { className: `min-w-0 break-all text-right font-[var(--coding-font)] text-[var(--adaptive-black900)] ${valueClassName}`.trim(), children: value })] }));
@@ -29,7 +30,8 @@ function getPointerTooltipLayout(clientX, clientY, tooltipRect) {
     return { top, left };
 }
 export function PickTargetHoverTooltip({ target }) {
-    const { messages, hoverPointer } = useReport();
+    const { messages } = useReportPreferences();
+    const { hoverPointer } = useReportSession();
     const tooltipRef = useRef(null);
     const [layout, setLayout] = useState(null);
     const updateLayout = useCallback(() => {
@@ -63,7 +65,7 @@ export function PickTargetHoverTooltip({ target }) {
     return (_jsx("div", { ref: tooltipRef, className: TOOLTIP_SURFACE_CLASS, style: {
             top: layout?.top ?? hoverPointer.clientY + POINTER_OFFSET,
             left: layout?.left ?? hoverPointer.clientX + POINTER_OFFSET,
-            opacity: layout ? 1 : 0,
+            visibility: layout ? "visible" : "hidden",
         }, children: _jsxs("div", { className: "flex flex-col gap-[6px]", children: [_jsx(InspectRow, { label: messages.pickTarget.tooltipTag, value: `<${tagName}>` }), _jsx(InspectRow, { label: messages.pickTarget.tooltipSize, value: sizeLabel }), target.boxStyle ? (_jsxs(_Fragment, { children: [_jsx(InspectRow, { label: messages.pickTarget.tooltipDisplay, value: target.boxStyle.display }), _jsx(InspectRow, { label: messages.pickTarget.tooltipPadding, value: target.boxStyle.padding }), _jsx(InspectRow, { label: messages.pickTarget.tooltipMargin, value: target.boxStyle.margin })] })) : null, target.fontStyle ? (_jsxs(_Fragment, { children: [_jsx(InspectRow, { label: messages.pickTarget.tooltipFontFamily, value: target.fontStyle.fontFamily }), _jsx(InspectRow, { label: messages.pickTarget.tooltipFontSize, value: target.fontStyle.fontSize }), _jsx(InspectRow, { label: messages.pickTarget.tooltipFontWeight, value: target.fontStyle.fontWeight }), _jsx(InspectRow, { label: messages.pickTarget.tooltipLineHeight, value: target.fontStyle.lineHeight })] })) : null, _jsx("div", { className: "mt-[2px] border-t border-[var(--adaptive-border-subtle)] pt-[6px]", children: _jsxs("div", { className: "flex items-start justify-between gap-[8px] text-[11px] leading-[1.45]", children: [_jsx("span", { className: "shrink-0 text-[var(--adaptive-black500)]", children: messages.pickTarget.tooltipReportId }), _jsxs("div", { className: "flex min-w-0 items-start justify-end gap-[6px]", children: [_jsx(ReportIdStatusIcon, { tagged: target.isTagged }), _jsx("span", { className: "min-w-0 break-all text-right font-[var(--coding-font)] text-[var(--adaptive-black900)]", children: reportIdValue })] })] }) })] }) }));
 }
 //# sourceMappingURL=PickTargetHoverTooltip.js.map

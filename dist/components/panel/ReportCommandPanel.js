@@ -1,8 +1,8 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useEffect, useState } from "react";
-import { useReport } from "../../providers/reportContext.js";
+import { useReportPreferences } from "../../providers/reportContext.js";
 export function ReportCommandPanel({ onExecute, onClose, notice = null, onNoticeClear }) {
-    const { messages } = useReport();
+    const { messages } = useReportPreferences();
     const [raw, setRaw] = useState("");
     const [statusMessage, setStatusMessage] = useState("");
     const [isError, setIsError] = useState(false);

@@ -5,6 +5,6 @@ type MarkerShapePickerProps = {
     labels: Record<MarkerShape, string>;
     ariaLabel: string;
 };
-export declare function MarkerShapePicker({ value, onChange, labels, ariaLabel }: MarkerShapePickerProps): import("react/jsx-runtime").JSX.Element;
+export declare function MarkerShapePicker({ value, onChange, labels, ariaLabel }: MarkerShapePickerProps): import("react").JSX.Element;
 export {};
 //# sourceMappingURL=MarkerShapePicker.d.ts.map

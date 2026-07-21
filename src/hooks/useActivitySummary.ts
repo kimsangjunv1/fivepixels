@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { ReportActivitySummaryParams, ReportActivitySummaryResult, ReportFeedback } from "@/types/report.js";
-import { buildActivitySummaryFromReports } from "@/utils/heatmapActivity.js";
+import { buildActivitySummaryFromReports } from "@/utils/panel/heatmapActivity.js";
 
 type UseActivitySummaryOptions = {
     reports: ReportFeedback[];

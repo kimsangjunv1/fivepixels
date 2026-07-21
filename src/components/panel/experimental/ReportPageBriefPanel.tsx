@@ -1,13 +1,15 @@
 import { useMemo, useState } from "react";
-import { useReport } from "@/providers/reportContext.js";
-import { buildPageBriefSummary } from "@/utils/experimentalPanelTabs.js";
+import { useReportPreferences, useReportSession, useReportData } from "@/providers/reportContext.js";
+import { buildPageBriefSummary } from "@/utils/panel/experimentalPanelTabs.js";
 import { FeedbackStatusBadge } from "@/components/panel/feedback/FeedbackStatusBadge.js";
-import { formatStatCount } from "@/utils/formatStatCount.js";
-import { panelNumericClassName } from "@/utils/panelTypography.js";
+import { formatStatCount } from "@/utils/panel/formatStatCount.js";
+import { panelNumericClassName } from "@/utils/panel/panelTypography.js";
 import { ChevronDownIcon } from "@/components/icons/Icons.js";
 
 export function ReportPageBriefPanel() {
-    const { currentPageReports, currentPathname, messages } = useReport();
+    const { messages } = useReportPreferences();
+    const { currentPathname } = useReportSession();
+    const { currentPageReports } = useReportData();
     const summary = useMemo(() => buildPageBriefSummary(currentPageReports), [currentPageReports]);
     const [expanded, setExpanded] = useState(false);
 

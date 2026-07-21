@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { getMarkerDotSize } from "@/utils/markerRuntime.js";
-import { LOCATE_PULSE_DURATION_MS } from "@/utils/locateFeedback.js";
+import { getMarkerDotSize } from "@/utils/marker/markerRuntime.js";
+import { LOCATE_PULSE_DURATION_MS } from "@/utils/marker/locateFeedback.js";
 
 export const LOCATE_PULSE_TRANSITION_MS = 650;
 export const LOCATE_PULSE_RIPPLE_TRANSITION_MS = 800;

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { ReportField, ReportFeedback, ReportPanelBootstrapParams, ReportPanelBootstrapResult } from "@/types/report.js";
-import { buildPanelBootstrapFromReports } from "@/utils/panelBootstrap.js";
+import { buildPanelBootstrapFromReports } from "@/utils/panel/panelBootstrap.js";
 
 type UsePanelBootstrapOptions = {
     enabled: boolean;

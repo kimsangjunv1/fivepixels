@@ -7,6 +7,6 @@ type IconTooltipButtonProps = {
     children: ReactNode;
     className?: string;
 };
-export declare function IconTooltipButton({ label, active, disabled, onClick, children, className }: IconTooltipButtonProps): import("react/jsx-runtime").JSX.Element;
+export declare function IconTooltipButton({ label, active, disabled, onClick, children, className }: IconTooltipButtonProps): import("react").JSX.Element;
 export {};
 //# sourceMappingURL=IconTooltipButton.d.ts.map

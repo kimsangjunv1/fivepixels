@@ -1,3 +1,15 @@
+/**
+ * Tabs that need cross-page aggregation via listAll.
+ * Fetched only while the tab is **active** (not merely visible in the tab bar).
+ */
+export const ALL_SCOPE_PANEL_TABS = ["overview", "my-tasks", "needs-attention", "project-health", "today-digest"];
+export function isAllScopePanelTab(tabId) {
+    return typeof tabId === "string" && ALL_SCOPE_PANEL_TABS.includes(tabId);
+}
+/** True when the active panel tab requires fetching listAll (deferred until selected). */
+export function shouldEnableAllReportsFetch(params) {
+    return params.fetchEnabled && params.needsFullReportList && isAllScopePanelTab(params.activePanelTab);
+}
 export const PANEL_USER_TAB_REGISTRY = [
     {
         id: "route-details",
@@ -19,7 +31,7 @@ export const PANEL_USER_TAB_REGISTRY = [
         id: "overview",
         labelKey: "tabOverview",
         userSelectable: true,
-        experimental: false,
+        experimental: true,
         needsFullReportList: true,
         isAvailable: () => true,
     },

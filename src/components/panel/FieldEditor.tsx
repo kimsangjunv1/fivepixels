@@ -1,5 +1,5 @@
 import type { ReportField, ReportFieldValues } from "@/types/report.js";
-import { useReport } from "@/providers/reportContext.js";
+import { useReportPreferences } from "@/providers/reportContext.js";
 
 type FieldEditorProps = {
     fields: ReportField[];
@@ -61,7 +61,7 @@ function renderNonCheckboxField(
 }
 
 export function FieldEditor({ fields, message, fieldValues, onMessageChange, onFieldChange, variant = "default" }: FieldEditorProps) {
-    const { messages } = useReport();
+    const { messages } = useReportPreferences();
     const isDraftBubble = variant === "draft-bubble";
     const fieldsToRender = isDraftBubble ? fields.filter((field) => field.type !== "checkbox") : fields;
 

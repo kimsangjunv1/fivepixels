@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { createRoleDefaultPreference, resolveVisibleTabs, sanitizeVisibleTabs, } from "../utils/panelTabPreference.js";
+import { createRoleDefaultPreference, resolveVisibleTabs, sanitizeVisibleTabs, } from "../utils/panel/panelTabPreference.js";
 const STORAGE_KEY = "fivepixels:panel-tab-preference";
 function readStoredPanelTabPreference() {
     if (typeof window === "undefined") {

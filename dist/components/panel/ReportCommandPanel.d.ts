@@ -13,6 +13,6 @@ type ReportCommandPanelProps = {
     } | null;
     onNoticeClear?: () => void;
 };
-export declare function ReportCommandPanel({ onExecute, onClose, notice, onNoticeClear }: ReportCommandPanelProps): import("react/jsx-runtime").JSX.Element;
+export declare function ReportCommandPanel({ onExecute, onClose, notice, onNoticeClear }: ReportCommandPanelProps): import("react").JSX.Element;
 export {};
 //# sourceMappingURL=ReportCommandPanel.d.ts.map

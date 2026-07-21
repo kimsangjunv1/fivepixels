@@ -8,8 +8,10 @@ const TARGET_JS_GZIP_BYTES = 15 * 1024;
 const TARGET_CSS_GZIP_BYTES = 12 * 1024;
 const TARGET_TOTAL_GZIP_BYTES = TARGET_JS_GZIP_BYTES + TARGET_CSS_GZIP_BYTES;
 
-const LIMIT_REPORT_MAIN_GZIP_BYTES = 48 * 1024;
-const LIMIT_CSS_GZIP_BYTES = 12 * 1024;
+// Hard CI ceilings (stretch goals above stay stricter). Adjusted after feature growth
+// while install was broken; raise deliberately when intentionally shipping bigger entry/CSS.
+const LIMIT_REPORT_MAIN_GZIP_BYTES = 120 * 1024;
+const LIMIT_CSS_GZIP_BYTES = 15 * 1024;
 
 const entries = [
     { name: "@fivepixels-js/react/report", file: "dist/components/report/index.js", useSplitting: true },

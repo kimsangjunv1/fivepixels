@@ -1,60 +1,28 @@
-import type { ReactNode } from "react";
 import { getDefaultFields } from "@/i18n/index.js";
 import type { DeepPartialReportMessages, ReportLocale } from "@/i18n/types.js";
-import { useReportState } from "@/hooks/useReportState.js";
+import { useReportState } from "@/hooks/report/useReportState.js";
+import type { ReportProviderProps } from "@/types/publicApi.js";
 import type {
-    CreateReportFeedbackPayload,
-    CreateReplyPayload,
-    ReportEvent,
-    ReportFeedback,
-    ReportField,
     ReportAuthor,
+    ReportField,
     FivePixelsMode,
-    ReportGitHubConfig,
     ReportIdentify,
-    ReportListAllParams,
-    ReportListAllResult,
-    ReportActivitySummaryParams,
-    ReportActivitySummaryResult,
-    ReportPanelBootstrapParams,
-    ReportPanelBootstrapResult,
-    ReportProject,
-    ReportReply,
-    ReportTeam,
     ReportUi,
-    ReportVisibility,
-    UpdateReportFeedbackPayload,
 } from "@/types/report.js";
-import { resolveReportEnabled } from "@/utils/env.js";
-import { resolveReportProject } from "@/utils/reportProject.js";
-import { resolveReportTeam } from "@/utils/reportTeam.js";
-import { resolveReportUi, type ResolvedReportUi } from "@/utils/reportUi.js";
-import { resolveReportVisibility } from "@/utils/reportVisibility.js";
-import { ReportContext } from "./reportContext.js";
+import { resolveReportEnabled } from "@/utils/shared/env.js";
+import { resolveReportProject } from "@/utils/report/reportProject.js";
+import { resolveReportTeam } from "@/utils/report/reportTeam.js";
+import { resolveReportUi, type ResolvedReportUi } from "@/utils/report/reportUi.js";
+import { resolveReportVisibility } from "@/utils/report/reportVisibility.js";
+import {
+    ReportContext,
+    ReportDataContext,
+    ReportPreferencesContext,
+    ReportSessionContext,
+    useReportContextSlices,
+} from "./reportContext.js";
 
-export type ReportProviderProps = {
-    project?: ReportProject;
-    ui?: ReportUi;
-    visibility?: ReportVisibility;
-    team?: ReportTeam;
-    mode?: FivePixelsMode;
-    fields?: ReportField[];
-    onList?: (params: { pathname: string }) => Promise<ReportFeedback[]>;
-    onListAll?: (params: ReportListAllParams) => Promise<ReportListAllResult>;
-    onPanelBootstrap?: (params: ReportPanelBootstrapParams) => Promise<ReportPanelBootstrapResult>;
-    onActivitySummary?: (params: ReportActivitySummaryParams) => Promise<ReportActivitySummaryResult>;
-    onListReplies?: (commentId: string, params?: import("@/types/report.js").ListRepliesParams) => Promise<import("@/types/report.js").ListRepliesResult | ReportReply[]>;
-    onNavigate?: (pathname: string) => void | Promise<void>;
-    onRevealTarget?: (report: ReportFeedback) => boolean | Promise<boolean>;
-    onCreate?: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
-    onCreateReply?: (commentId: string, payload: CreateReplyPayload) => Promise<ReportReply>;
-    onUpdate?: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
-    onDelete?: (id: string) => Promise<void>;
-    onEvent?: (event: ReportEvent) => void | Promise<void>;
-    onReply?: (params: { feedbackId: string; message: string }) => void | Promise<void>;
-    github?: ReportGitHubConfig;
-    children: ReactNode;
-};
+export type { ReportProviderProps } from "@/types/publicApi.js";
 
 type ReportProviderEnabledProps = Omit<ReportProviderProps, "project" | "ui" | "visibility" | "team"> & {
     projectId: string;
@@ -146,8 +114,17 @@ function ReportProviderEnabled({
         initialLocale: locale,
         messageOverrides,
     });
+    const { preferences, session, data } = useReportContextSlices(value);
 
-    return <ReportContext.Provider value={value}>{children}</ReportContext.Provider>;
+    return (
+        <ReportContext.Provider value={value}>
+            <ReportPreferencesContext.Provider value={preferences}>
+                <ReportSessionContext.Provider value={session}>
+                    <ReportDataContext.Provider value={data}>{children}</ReportDataContext.Provider>
+                </ReportSessionContext.Provider>
+            </ReportPreferencesContext.Provider>
+        </ReportContext.Provider>
+    );
 }
 
 export function ReportProvider({

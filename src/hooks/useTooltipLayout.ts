@@ -1,6 +1,6 @@
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { Marker } from "@/types/report-ui.js";
-import { getTooltipAnchorStyle, getTooltipPosition } from "@/utils/coordinates.js";
+import { getTooltipAnchorStyle, getTooltipPosition } from "@/utils/marker/coordinates.js";
 
 export type TooltipAnchor = Pick<Marker, "left" | "top">;
 

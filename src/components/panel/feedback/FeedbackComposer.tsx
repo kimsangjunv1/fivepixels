@@ -2,7 +2,7 @@ import type { ReportField, ReportFieldValues, ReportCase } from "@/types/report.
 import type { ReportAuthor } from "@/types/report.js";
 import type { FeedbackCategory } from "@/constants/feedbackCategory.js";
 import { useEffect, useMemo, useState } from "react";
-import { useReport } from "@/providers/reportContext.js";
+import { useReportPreferences } from "@/providers/reportContext.js";
 import { SendIcon } from "@/components/icons/Icons.js";
 import { AuthorSelector } from "./AuthorSelector.js";
 import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
@@ -41,6 +41,10 @@ type FeedbackComposerProps = {
     hideAuthorSelector?: boolean;
     lockedAuthorName?: string;
     onFooterWarningChange?: (message: string | null) => void;
+    hideEditor?: boolean;
+    hideActions?: boolean;
+    hidePrimarySubmitAction?: boolean;
+    categoryPrompt?: string;
 };
 
 function isCaseTextErrorMessage(errorMessage: string, caseCount: number, caseTextRequired: (index: number) => string, casesRequired: string) {
@@ -93,13 +97,18 @@ export function FeedbackComposer({
     hideAuthorSelector = false,
     lockedAuthorName,
     onFooterWarningChange,
+    hideEditor = false,
+    hideActions = false,
+    hidePrimarySubmitAction = false,
+    categoryPrompt,
 }: FeedbackComposerProps) {
-    const { messages } = useReport();
+    const { messages } = useReportPreferences();
     const [isGitHubIssueConfirming, setIsGitHubIssueConfirming] = useState(false);
     const [categoryAttentionKey, setCategoryAttentionKey] = useState(0);
     const [caseAttentionKey, setCaseAttentionKey] = useState(0);
     const isQuestionMode = askQuestionForced || askQuestionChecked;
     const usesCaseEditor = Boolean(cases && onCaseChange && onAddCase && onRemoveCase);
+    const showActionRow = !hideActions && (showAskQuestionToggle || showGitHubIssueOnCreate || !hidePrimarySubmitAction);
     const resolvedPlaceholder = isQuestionMode ? messages.composer.questionPlaceholder : (placeholder ?? (usesCaseEditor ? messages.fieldEditor.messagePlaceholder : messages.composer.placeholder));
     const emptyCaseIds = useMemo(() => (cases ?? []).filter((item) => !item.text.trim()).map((item) => item.id), [cases]);
     const hasEmptyCase = emptyCaseIds.length > 0;
@@ -107,11 +116,7 @@ export function FeedbackComposer({
     const isEmptyCaseError = isCaseTextErrorMessage(errorMessage, cases?.length ?? 0, messages.errors.caseTextRequired, messages.errors.casesRequired);
     const categoryNeedsAttention = showCategory && !category && !hasEmptyCase && (categoryAttentionKey > 0 || isCategoryRequiredError);
     const caseNeedsAttention = usesCaseEditor && hasEmptyCase && (caseAttentionKey > 0 || isEmptyCaseError);
-    const footerWarning = caseNeedsAttention
-        ? messages.errors.emptyCaseMessageRequired
-        : categoryNeedsAttention
-          ? messages.errors.categoryRequired
-          : null;
+    const footerWarning = caseNeedsAttention ? messages.errors.emptyCaseMessageRequired : categoryNeedsAttention ? messages.errors.categoryRequired : null;
     const isFooterHandledError = isCategoryRequiredError || isEmptyCaseError;
 
     const isActionDisabled = isSubmitting || isGitHubIssueSubmitting;
@@ -194,7 +199,8 @@ export function FeedbackComposer({
     };
 
     return (
-        <div className={`flex w-full flex-col bg-[var(--adaptive-blackOpacity400)] backdrop-blur-sm ${usesCaseEditor ? "min-h-0 flex-1" : ""}`}>
+        <div className={`flex w-full flex-col border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-neutralTintOpacity900)] backdrop-blur-sm ${usesCaseEditor && !hideEditor ? "min-h-0 flex-1" : ""}`}>
+            {!hideEditor ? (
             <div className={`relative ${usesCaseEditor ? "min-h-0 flex-1" : ""}`}>
                 {errorMessage && !isFooterHandledError ? (
                     <p
@@ -233,9 +239,11 @@ export function FeedbackComposer({
                     />
                 )}
             </div>
+            ) : null}
 
+            {showActionRow ? (
             <div className={`flex items-center gap-[8px] px-[8px] pb-[8px] ${hideAuthorSelector && !lockedAuthorName ? "justify-end" : "justify-between"}`}>
-                {hideAuthorSelector ? (
+                {/* {hideAuthorSelector ? (
                     lockedAuthorName ? (
                         <span className="flex h-[24px] min-w-0 max-w-[50%] items-center truncate rounded-full bg-[var(--adaptive-surface-muted)] px-[12px] text-[12px] text-[var(--adaptive-black500)]">
                             {lockedAuthorName}
@@ -247,7 +255,8 @@ export function FeedbackComposer({
                         value={authorName}
                         onChange={onAuthorNameChange}
                     />
-                )}
+                )} */}
+
                 <div className="flex shrink-0 items-center gap-[6px]">
                     {showAskQuestionToggle ? (
                         <label className="inline-flex items-center gap-[4px] px-[2px] text-[12px] text-[var(--adaptive-black600)]">
@@ -282,23 +291,31 @@ export function FeedbackComposer({
                             </span>
                         </button>
                     ) : null}
-                    <HoverTooltip
-                        label={messages.composer.sendAriaLabel}
-                        disabled={isActionDisabled}
-                    >
-                        <button
-                            type="button"
-                            data-fivepixels-interactive=""
+                    {!hidePrimarySubmitAction ? (
+                        <HoverTooltip
+                            label={messages.composer.sendAriaLabel}
                             disabled={isActionDisabled}
-                            onClick={handleSubmit}
-                            className="inline-flex h-[32px] w-[32px] shrink-0 items-center justify-center rounded-full bg-[var(--adaptive-blue500)] text-white disabled:opacity-50"
-                            aria-label={messages.composer.sendAriaLabel}
                         >
-                            <SendIcon className="h-[16px] w-[16px]" />
-                        </button>
-                    </HoverTooltip>
+                            <button
+                                type="button"
+                                data-fivepixels-interactive=""
+                                disabled={isActionDisabled}
+                                onClick={handleSubmit}
+                                className="inline-flex h-[32px] w-[32px] shrink-0 items-center justify-center rounded-full bg-[#f6562f] text-white disabled:opacity-50"
+                                aria-label={messages.composer.sendAriaLabel}
+                            >
+                                <SendIcon className="h-[16px] w-[16px]" />
+                            </button>
+                        </HoverTooltip>
+                    ) : null}
                 </div>
             </div>
+            ) : null}
+            {showCategory && categoryPrompt ? (
+                <div className="border-t border-[var(--adaptive-tintOpacity100)] px-[12px] py-[14px] text-[14px] font-semibold leading-[1.5] text-[var(--adaptive-text-primary)]">
+                    {categoryPrompt}
+                </div>
+            ) : null}
             {showCategory && onCategoryChange ? (
                 <FeedbackCategorySelector
                     value={category}

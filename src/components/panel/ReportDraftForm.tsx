@@ -2,24 +2,28 @@ import { useMemo, useRef, useState } from "react";
 import type { FeedbackCategory } from "@/constants/feedbackCategory.js";
 import { useTooltipLayout } from "@/hooks/useTooltipLayout.js";
 import { useTooltipResize } from "@/hooks/useTooltipResize.js";
-import { useReport } from "@/providers/reportContext.js";
-import { getDraftMarkerPosition, TOOLTIP_EXPANDED_DEFAULT_MAX_HEIGHT } from "@/utils/coordinates.js";
+import { useReport, useReportPreferences } from "@/providers/reportContext.js";
+import { getDraftMarkerPosition, TOOLTIP_EXPANDED_DEFAULT_MAX_HEIGHT } from "@/utils/marker/coordinates.js";
+import { getFieldError } from "@/utils/report/fields.js";
 import { FeedbackComposer } from "./feedback/FeedbackComposer.js";
 import { ComposerFooterWarning } from "./feedback/ComposerFooterWarning.js";
 import { DraftProbeSummaryBanner } from "./DraftProbeSummaryBanner.js";
 import { PickTargetSnippet } from "./feedback/PickTargetSnippet.js";
 import { CornerResizeGhost } from "@/components/ui/CornerResizeGhost.js";
+import { MOTION } from "@/constants/motionClasses.js";
 import { CornerResizeHandle } from "@/components/ui/CornerResizeHandle.js";
 
-const TOOLTIP_SURFACE_CLASS = "overflow-hidden rounded-[16px] shadow-[var(--adaptive-popup-shadow)] bg-[var(--adaptive-blackOpacity500)] backdrop-blur-[5px]";
-// "overflow-hidden rounded-[24px] border-[3px] border-[var(--adaptive-black200)] shadow-[var(--adaptive-popup-shadow)] bg-[var(--adaptive-blackOpacity500)] backdrop-blur-[5px]";
+const TOOLTIP_SURFACE_CLASS = "overflow-hidden rounded-[16px] shadow-[var(--adaptive-popup-shadow)] bg-[var(--adaptive-fillOpacity500)] backdrop-blur-[5px]";
+// "overflow-hidden rounded-[24px] border-[3px] border-[var(--adaptive-black200)] shadow-[var(--adaptive-popup-shadow)] bg-[var(--adaptive-fillOpacity500)] backdrop-blur-[5px]";
 // const TOOLTIP_SURFACE_CLASS = "overflow-hidden rounded-[24px] border-[3px] border-[var(--adaptive-black200)] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[20px]";
-// "overflow-hidden rounded-[24px] border-[3px] border-[var(--adaptive-black200)] bg-[var(--adaptive-blackOpacity700)] backdrop-blur-[1px] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[20px]";
+// "overflow-hidden rounded-[24px] border-[3px] border-[var(--adaptive-black200)] bg-[var(--adaptive-fillOpacity700)] backdrop-blur-[1px] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[20px]";
 const EXPANDED_TOOLTIP_ANCHOR_CLASS = "pointer-events-auto fixed z-[1000001]";
 
 export function ReportDraftForm() {
     const {
         draft,
+        draftStep,
+        setDraftStep,
         fields,
         authors,
         isCreating,
@@ -36,6 +40,8 @@ export function ReportDraftForm() {
         draftAuthorName,
         setDraftAuthorName,
         errorMessage,
+        setErrorMessage,
+        cancelDraft,
         isPresentationMode,
         authorSelectionLocked,
         sessionActor,
@@ -48,6 +54,8 @@ export function ReportDraftForm() {
     return (
         <ReportDraftFormContent
             draft={draft}
+            draftStep={draftStep}
+            setDraftStep={setDraftStep}
             fields={fields}
             authors={authors}
             isCreating={isCreating}
@@ -64,6 +72,8 @@ export function ReportDraftForm() {
             draftAuthorName={draftAuthorName}
             setDraftAuthorName={setDraftAuthorName}
             errorMessage={errorMessage}
+            setErrorMessage={setErrorMessage}
+            cancelDraft={cancelDraft}
             isPresentationMode={isPresentationMode}
             authorSelectionLocked={authorSelectionLocked}
             sessionActor={sessionActor}
@@ -73,6 +83,8 @@ export function ReportDraftForm() {
 
 type ReportDraftFormContentProps = {
     draft: NonNullable<ReturnType<typeof useReport>["draft"]>;
+    draftStep: ReturnType<typeof useReport>["draftStep"];
+    setDraftStep: ReturnType<typeof useReport>["setDraftStep"];
     fields: ReturnType<typeof useReport>["fields"];
     authors: ReturnType<typeof useReport>["authors"];
     isCreating: boolean;
@@ -89,6 +101,8 @@ type ReportDraftFormContentProps = {
     draftAuthorName: string;
     setDraftAuthorName: (name: string) => void;
     errorMessage: string;
+    setErrorMessage: (message: string) => void;
+    cancelDraft: () => void;
     isPresentationMode: boolean;
     authorSelectionLocked: boolean;
     sessionActor: ReturnType<typeof useReport>["sessionActor"];
@@ -96,6 +110,8 @@ type ReportDraftFormContentProps = {
 
 function ReportDraftFormContent({
     draft,
+    draftStep,
+    setDraftStep,
     fields,
     authors,
     isCreating,
@@ -112,11 +128,13 @@ function ReportDraftFormContent({
     draftAuthorName,
     setDraftAuthorName,
     errorMessage,
+    setErrorMessage,
+    cancelDraft,
     isPresentationMode,
     authorSelectionLocked,
     sessionActor,
 }: ReportDraftFormContentProps) {
-    const { messages } = useReport();
+    const { messages } = useReportPreferences();
     const tooltipSurfaceRef = useRef<HTMLDivElement | null>(null);
     const [footerWarningMessage, setFooterWarningMessage] = useState<string | null>(null);
     const anchor = useMemo(() => getDraftMarkerPosition(draft, selectedTarget), [draft, selectedTarget]);
@@ -130,6 +148,31 @@ function ReportDraftFormContent({
     });
     const tooltipPosition = tooltipLayout?.position ?? null;
     const tooltipAnchorStyle = tooltipLayout?.anchorStyle;
+    const isCategoryStep = draftStep === "category";
+    const isSubmitting = isCreating || isDraftGitHubIssueSubmitting;
+
+    const handlePrevious = () => {
+        setErrorMessage("");
+
+        if (isCategoryStep) {
+            setDraftStep("content");
+            return;
+        }
+
+        cancelDraft();
+    };
+
+    const handleNext = () => {
+        const nextError = getFieldError(draft.cases, draft.fieldValues, fields, messages.errors);
+
+        if (nextError) {
+            setErrorMessage(nextError);
+            return;
+        }
+
+        setErrorMessage("");
+        setDraftStep("category");
+    };
 
     if (!tooltipPosition || !tooltipAnchorStyle) {
         return null;
@@ -155,7 +198,7 @@ function ReportDraftFormContent({
             >
                 <div
                     ref={tooltipSurfaceRef}
-                    className={`relative ${TOOLTIP_SURFACE_CLASS}`}
+                    className={`relative ${TOOLTIP_SURFACE_CLASS} ${MOTION.tooltipFadeIn}`}
                     style={{
                         pointerEvents: "auto",
                         height: customSize?.height,
@@ -182,19 +225,43 @@ function ReportDraftFormContent({
                             onFieldChange={updateDraftField}
                             category={draft.category}
                             onCategoryChange={updateDraftCategory}
-                            showCategory
+                            showCategory={isCategoryStep}
                             showTags
                             hideAuthorSelector={isPresentationMode || authorSelectionLocked}
                             lockedAuthorName={authorSelectionLocked ? (sessionActor?.name ?? draftAuthorName) : undefined}
-                            onSubmit={() => void handleCreateSubmit()}
+                            onSubmit={isCategoryStep ? () => void handleCreateSubmit() : handleNext}
                             isSubmitting={isCreating}
-                            showGitHubIssueOnCreate={canCreateGitHubIssueOnCreate}
+                            showGitHubIssueOnCreate={isCategoryStep && canCreateGitHubIssueOnCreate}
                             onGitHubIssueSubmit={() => void handleCreateSubmitWithGitHubIssue()}
                             isGitHubIssueSubmitting={isDraftGitHubIssueSubmitting}
-                            autoFocus
+                            autoFocus={!isCategoryStep}
                             errorMessage={errorMessage}
                             onFooterWarningChange={setFooterWarningMessage}
+                            hideEditor={isCategoryStep}
+                            hideActions={!isCategoryStep || !canCreateGitHubIssueOnCreate}
+                            hidePrimarySubmitAction
+                            categoryPrompt={isCategoryStep ? messages.composer.draftCategoryPrompt(draft.cases.length) : undefined}
                         />
+                        <div className="grid grid-cols-2 border-x border-b border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-neutralTintOpacity900)]">
+                            <button
+                                type="button"
+                                data-fivepixels-interactive=""
+                                disabled={isSubmitting}
+                                onClick={handlePrevious}
+                                className="flex min-h-[24px] items-center justify-center border-r border-[var(--adaptive-border-subtle)] px-[16px] text-[14px] font-semibold text-[var(--adaptive-text-primary)] transition-colors hover:bg-[var(--adaptive-fillOpacity500)] disabled:opacity-50"
+                            >
+                                {messages.composer.draftPrevious}
+                            </button>
+                            <button
+                                type="button"
+                                data-fivepixels-interactive=""
+                                disabled={isSubmitting}
+                                onClick={isCategoryStep ? () => void handleCreateSubmit() : handleNext}
+                                className="flex min-h-[24px] items-center justify-center bg-[#f6562f] px-[16px] text-[14px] font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                            >
+                                {isCategoryStep ? (isSubmitting ? messages.composer.draftCompleting : messages.composer.draftComplete) : messages.composer.draftNext}
+                            </button>
+                        </div>
                         {draft.targetSelector && draft.suggestedReportId ? (
                             <PickTargetSnippet
                                 suggestedReportId={draft.suggestedReportId}

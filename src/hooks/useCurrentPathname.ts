@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from "react";
-import { getCurrentPathname } from "@/utils/pathname.js";
-import { subscribeToPathnameChanges } from "@/utils/pathnameNavigation.js";
+import { getCurrentPathname } from "@/utils/shared/pathname.js";
+import { subscribeToPathnameChanges } from "@/utils/shared/pathnameNavigation.js";
 
 function getServerPathname() {
     return "/";

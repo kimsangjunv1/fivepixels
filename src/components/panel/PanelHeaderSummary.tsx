@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
-import { useReport } from "@/providers/reportContext.js";
-import { formatDateOnly } from "@/utils/format.js";
-import { formatStatCount } from "@/utils/formatStatCount.js";
-import { buildMonthlySparkline, resolveSparklineBarHeight, resolveSparklineBarTone, type DailySparklineBucket } from "@/utils/monthlySparkline.js";
-import { panelNumericClassName } from "@/utils/panelTypography.js";
+import { useReportPreferences, useReportSession, useReportData } from "@/providers/reportContext.js";
+import { formatDateOnly } from "@/utils/shared/format.js";
+import { formatStatCount } from "@/utils/panel/formatStatCount.js";
+import { buildMonthlySparkline, resolveSparklineBarHeight, resolveSparklineBarTone, type DailySparklineBucket } from "@/utils/panel/monthlySparkline.js";
+import { panelNumericClassName } from "@/utils/panel/panelTypography.js";
 import { PointerFollowTooltip } from "@/components/ui/PointerFollowTooltip.js";
 
 const SPARKLINE_MAX_HEIGHT_PX = 14;
@@ -26,7 +26,9 @@ type PanelHeaderSummaryProps = {
 };
 
 export function PanelHeaderSummary({ onOpenYearView }: PanelHeaderSummaryProps) {
-    const { targetStats, currentPathname, currentPageReports, locale, messages, setFilters, openPanelTab, panelTab } = useReport();
+    const { locale, messages } = useReportPreferences();
+    const { currentPathname, openPanelTab, panelTab } = useReportSession();
+    const { targetStats, currentPageReports, setFilters } = useReportData();
     const sparkline = useMemo(() => buildMonthlySparkline(currentPageReports), [currentPageReports]);
     const panelMessages = messages.panel;
     const [hoveredBucket, setHoveredBucket] = useState<DailySparklineBucket | null>(null);

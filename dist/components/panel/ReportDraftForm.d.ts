@@ -1,2 +1,2 @@
-export declare function ReportDraftForm(): import("react/jsx-runtime").JSX.Element | null;
+export declare function ReportDraftForm(): import("react").JSX.Element | null;
 //# sourceMappingURL=ReportDraftForm.d.ts.map

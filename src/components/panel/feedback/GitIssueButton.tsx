@@ -3,7 +3,7 @@ import { GitHubIcon } from "@/components/icons/Icons.js";
 import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
 import type { ReportFeedback } from "@/types/report.js";
 import type { ReportMessages } from "@/i18n/types.js";
-import { getGitHubIssueUrl, hasGitHubIssue } from "@/utils/githubIntegration.js";
+import { getGitHubIssueUrl, hasGitHubIssue } from "@/utils/github/githubIntegration.js";
 
 type GitIssueButtonProps = {
     report: ReportFeedback;

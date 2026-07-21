@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { useReport } from "@/providers/reportContext.js";
-import { findElementByProbeKey } from "@/utils/pickProbeSession.js";
-import { getPickProbeSavedBadgeLayout } from "@/utils/pickProbeLayout.js";
+import { useReportPreferences, useReportSession } from "@/providers/reportContext.js";
+import { findElementByProbeKey } from "@/utils/probe/pickProbeSession.js";
+import { getPickProbeSavedBadgeLayout } from "@/utils/probe/pickProbeLayout.js";
 
 type SavedProbeBadgeProps = {
     elementKey: string;
@@ -63,7 +63,8 @@ function SavedProbeBadge({ elementKey, label, badgeOpacity }: SavedProbeBadgePro
 }
 
 export function PickTargetSavedBadges() {
-    const { savedProbeEdits, messages, mode } = useReport();
+    const { messages } = useReportPreferences();
+    const { savedProbeEdits, mode } = useReportSession();
     const [, setTick] = useState(0);
     const savedElementKeys = Object.keys(savedProbeEdits);
     const badgeOpacity = mode === "report" ? 1 : 0.5;

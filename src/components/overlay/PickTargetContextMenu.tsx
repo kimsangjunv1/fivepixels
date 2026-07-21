@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { DeleteIcon, EditIcon, RevertIcon } from "@/components/icons/Icons.js";
-import { useReport } from "@/providers/reportContext.js";
+import { useReportPreferences, useReportSession } from "@/providers/reportContext.js";
 
 const MENU_SURFACE_CLASS =
     "pointer-events-auto fixed z-[1000004] min-w-[140px] overflow-hidden rounded-[10px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface-overlay)] py-[4px] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[20px]";
@@ -15,13 +15,13 @@ type PickTargetContextMenuProps = {
 };
 
 export function PickTargetContextMenu({ clientX, clientY, showRevert }: PickTargetContextMenuProps) {
+    const { messages } = useReportPreferences();
     const {
-        messages,
         closePickTargetContextMenu,
         handlePickTargetEdit,
         handlePickTargetDelete,
         handlePickTargetRevert,
-    } = useReport();
+    } = useReportSession();
 
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {

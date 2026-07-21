@@ -1,8 +1,8 @@
 import type { ReportFeedback } from "@/types/report.js";
 import type { ReportLocale } from "@/i18n/types.js";
-import { formatDate } from "@/utils/format.js";
-import { getIssueSummary } from "@/utils/reportCases.js";
-import { useReport } from "@/providers/reportContext.js";
+import { formatDate } from "@/utils/shared/format.js";
+import { getIssueSummary } from "@/utils/report/reportCases.js";
+import { useReportPreferences } from "@/providers/reportContext.js";
 import { CaseProgressLabel } from "./CaseProgressLabel.js";
 import { FeedbackCreatorBadge } from "./FeedbackCreatorBadge.js";
 
@@ -12,7 +12,7 @@ type FeedbackIssuePinnedHeaderProps = {
 };
 
 export function FeedbackIssuePinnedHeader({ report, locale }: FeedbackIssuePinnedHeaderProps) {
-    const { messages } = useReport();
+    const { messages } = useReportPreferences();
 
     return (
         <section className="shrink-0 border-b border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] px-[12px] py-[8px]">

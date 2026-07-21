@@ -1,8 +1,8 @@
 import type { ReportAuthor, ReportCase } from "@/types/report.js";
-import { useReport } from "@/providers/reportContext.js";
+import { useReportPreferences } from "@/providers/reportContext.js";
 import { InfoIcon } from "@/components/icons/Icons.js";
 import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
-import { formatAssigneeLabel, resolveAuthorDepartment } from "@/utils/reportCases.js";
+import { formatAssigneeLabel, resolveAuthorDepartment } from "@/utils/report/reportCases.js";
 
 type CaseAssigneeInfoProps = {
     caseItem: ReportCase;
@@ -10,7 +10,7 @@ type CaseAssigneeInfoProps = {
 };
 
 export function CaseAssigneeInfo({ caseItem, authors }: CaseAssigneeInfoProps) {
-    const { messages } = useReport();
+    const { messages } = useReportPreferences();
     const currentAssignee = caseItem.assignee_name?.trim() ?? "";
     const previousAssignee = caseItem.previous_assignee_name?.trim() ?? "";
 

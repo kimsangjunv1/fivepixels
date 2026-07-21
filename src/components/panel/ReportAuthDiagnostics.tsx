@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useReport } from "@/providers/reportContext.js";
+import { useReportPreferences, useReportData } from "@/providers/reportContext.js";
 
 const FIELD_LABELS: Record<"projectId" | "environment" | "authorId" | "authorName" | "publicKey", string> = {
     projectId: "projectId",
@@ -44,7 +44,8 @@ function reasonToDescription(reason: string) {
 }
 
 export function ReportAuthDiagnostics() {
-    const { messages, authDiagnostics } = useReport();
+    const { messages } = useReportPreferences();
+    const { authDiagnostics } = useReportData();
     const diagnostics = messages.authDiagnostics;
     const [copied, setCopied] = useState(false);
     const reasonText = useMemo(() => reasonToDescription(authDiagnostics.reason), [authDiagnostics.reason]);

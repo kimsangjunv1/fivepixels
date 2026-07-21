@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import type { ReportCase, ReportFeedback } from "@/types/report.js";
-import { useReport } from "@/providers/reportContext.js";
-import { getCaseHandlerName } from "@/utils/reportCases.js";
+import { useReportPreferences } from "@/providers/reportContext.js";
+import { getCaseHandlerName } from "@/utils/report/reportCases.js";
 import { FeedbackCaseEditor } from "./FeedbackCaseEditor.js";
 import { CASE_SELECTOR_ALL_TAB, CaseResolvedBadge, FeedbackCaseTabBar, type CaseSelectorTab } from "./FeedbackCaseTabBar.js";
 
@@ -38,7 +38,7 @@ type AllCasesListProps = {
 };
 
 function AllCasesList({ report, cases, onSelectCase }: AllCasesListProps) {
-    const { messages } = useReport();
+    const { messages } = useReportPreferences();
 
     return (
         <ul className="flex flex-col gap-[6px] px-[8px] py-[4px]">
@@ -95,7 +95,7 @@ export function FeedbackCaseList({
     onAddCase,
     onRemoveCase,
 }: FeedbackCaseListProps) {
-    const { messages } = useReport();
+    const { messages } = useReportPreferences();
     const resolvedFocusedCaseId = resolveFocusedCaseId(cases, focusedCaseId);
     const [selectorTab, setSelectorTab] = useState<CaseSelectorTab>(() => resolvedFocusedCaseId ?? CASE_SELECTOR_ALL_TAB);
     const focusedCase = cases.find((item) => item.id === resolvedFocusedCaseId) ?? null;

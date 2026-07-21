@@ -5,6 +5,6 @@ type ThemeScopeProps = {
     children: ReactNode;
     className?: string;
 };
-export declare function ThemeScope({ appearance, children, className }: ThemeScopeProps): import("react/jsx-runtime").JSX.Element;
+export declare function ThemeScope({ appearance, children, className }: ThemeScopeProps): import("react").JSX.Element;
 export {};
 //# sourceMappingURL=ThemeScope.d.ts.map

@@ -11,8 +11,8 @@ import type {
     ReportStorageAdapter,
     UpdateReportFeedbackPayload,
 } from "@/types/report.js";
-import { normalizeListReport } from "@/utils/reportSummary.js";
-import { normalizeListRepliesResult } from "@/utils/replyHistory.js";
+import { normalizeListReport } from "@/utils/report/reportSummary.js";
+import { normalizeListRepliesResult } from "@/utils/feedback/replyHistory.js";
 
 export async function listReports(adapter: ReportStorageAdapter, pathname: string) {
     const items = await adapter.list({ pathname });

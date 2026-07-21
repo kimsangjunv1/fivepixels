@@ -1,7 +1,7 @@
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
-import { useReport } from "@/providers/reportContext.js";
+import { useReportPreferences, useReportSession } from "@/providers/reportContext.js";
 import type { TargetSnapshot } from "@/types/report-ui.js";
-import { getPickProbeCompareChipLayout } from "@/utils/pickProbeLayout.js";
+import { getPickProbeCompareChipLayout } from "@/utils/probe/pickProbeLayout.js";
 import { PickTargetCompareSegment } from "./PickTargetCompareSegment.js";
 
 type PickTargetCompareChipProps = {
@@ -9,7 +9,8 @@ type PickTargetCompareChipProps = {
 };
 
 export function PickTargetCompareChip({ target }: PickTargetCompareChipProps) {
-    const { messages, pickProbeCompareMode, setPickProbeCompareMode } = useReport();
+    const { messages } = useReportPreferences();
+    const { pickProbeCompareMode, setPickProbeCompareMode } = useReportSession();
     const chipRef = useRef<HTMLDivElement | null>(null);
     const [layout, setLayout] = useState<{ top: number; left: number } | null>(null);
 

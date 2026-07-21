@@ -7,6 +7,6 @@ type FeedbackCategorySelectorProps = {
     needsAttention?: boolean;
     attentionKey?: number;
 };
-export declare function FeedbackCategorySelector({ value, onChange, messages, needsAttention, attentionKey }: FeedbackCategorySelectorProps): import("react/jsx-runtime").JSX.Element;
+export declare function FeedbackCategorySelector({ value, onChange, messages, needsAttention, attentionKey }: FeedbackCategorySelectorProps): import("react").JSX.Element;
 export {};
 //# sourceMappingURL=FeedbackCategorySelector.d.ts.map

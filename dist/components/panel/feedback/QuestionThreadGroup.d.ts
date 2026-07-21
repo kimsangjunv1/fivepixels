@@ -4,6 +4,6 @@ type QuestionThreadGroupProps = {
     originalAuthorName: string;
     forceExpanded?: boolean;
 };
-export declare function QuestionThreadGroup({ questions, originalAuthorName, forceExpanded }: QuestionThreadGroupProps): import("react/jsx-runtime").JSX.Element | null;
+export declare function QuestionThreadGroup({ questions, originalAuthorName, forceExpanded }: QuestionThreadGroupProps): import("react").JSX.Element | null;
 export {};
 //# sourceMappingURL=QuestionThreadGroup.d.ts.map

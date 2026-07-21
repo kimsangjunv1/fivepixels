@@ -1,6 +1,6 @@
 import { useCallback, useState, type RefObject } from "react";
 import { useGhostCornerResize } from "@/hooks/useGhostCornerResize.js";
-import { clampTooltipExpandedSize } from "@/utils/coordinates.js";
+import { clampTooltipExpandedSize } from "@/utils/marker/coordinates.js";
 
 export type TooltipCustomSize = {
     width: number;

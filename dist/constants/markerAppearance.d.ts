@@ -9,10 +9,15 @@ export type MarkerColorPreferences = {
     resolved: string;
     gitIssued: string;
 };
+export type FeedbackModeDotColors = {
+    light: string;
+    dark: string;
+};
 export type MarkerAppearancePreferences = {
     size: AppearanceScale;
     shape: MarkerShape;
     colors: MarkerColorPreferences;
+    feedbackModeDotColors: FeedbackModeDotColors;
 };
 export type TypographyPreferences = {
     fontSize: MarkerFontSize;
@@ -23,6 +28,7 @@ export declare const TYPOGRAPHY_STORAGE_KEY = "fivepixels:typography";
 export declare const MARKER_SIZE_PX: Record<AppearanceScale, number>;
 export declare const MARKER_LABEL_FONT_SIZE_PX: Record<AppearanceScale, number>;
 export declare const DEFAULT_MARKER_COLORS: MarkerColorPreferences;
+export declare const DEFAULT_FEEDBACK_MODE_DOT_COLORS: FeedbackModeDotColors;
 export declare const DEFAULT_MARKER_APPEARANCE: MarkerAppearancePreferences;
 export declare const DEFAULT_FONT_FAMILY = "system-ui, -apple-system, \"Segoe UI\", sans-serif";
 export declare const DEFAULT_TYPOGRAPHY: TypographyPreferences;

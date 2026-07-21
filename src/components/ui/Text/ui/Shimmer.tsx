@@ -1,5 +1,5 @@
 import { useEffect, useId, type CSSProperties, type ElementType } from "react";
-import { getReportStyleInjectionRoot } from "@/utils/dom.js";
+import { getReportStyleInjectionRoot } from "@/utils/shared/dom.js";
 
 export type TextShimmerProps = {
     children: string;

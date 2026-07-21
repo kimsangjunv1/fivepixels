@@ -1,4 +1,4 @@
-import type { DraftPopoverTailCorner } from "@/utils/coordinates.js";
+import type { DraftPopoverTailCorner } from "@/utils/marker/coordinates.js";
 
 /** iMessage-style tail (bottom-left anchor on the bubble). */
 const TAIL_PATH_BOTTOM_LEFT = "M17.5 16.5c-1.4 0-2.5-1.1-2.5-2.5V0h5c0 3.9 3.1 7 7 7v9.5H17.5z";

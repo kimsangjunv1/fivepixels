@@ -1,10 +1,10 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import { getFeedbackDisplayStatus } from "../../../utils/feedbackThread.js";
-import { getCaseCount } from "../../../utils/experimentalPanelTabs.js";
+import { getFeedbackDisplayStatus } from "../../../utils/feedback/feedbackThread.js";
+import { getCaseCount } from "../../../utils/panel/experimentalPanelTabs.js";
 import { FeedbackStatusBadge } from "../../../components/panel/feedback/FeedbackStatusBadge.js";
-import { useReport } from "../../../providers/reportContext.js";
+import { useReportPreferences } from "../../../providers/reportContext.js";
 export function ExperimentalFeedbackRow({ report, onOpen }) {
-    const { messages } = useReport();
+    const { messages } = useReportPreferences();
     const status = getFeedbackDisplayStatus(report, true);
     const caseCount = getCaseCount(report);
     const preview = report.cases[0]?.text?.trim() || report.latest_reply?.message?.trim() || report.report_id;
