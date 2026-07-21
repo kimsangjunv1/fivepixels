@@ -1,6 +1,7 @@
 import { useCallback, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { useNativeHover } from "@/hooks/useNativeHover.js";
+import { MOTION } from "@/constants/motionClasses.js";
 import { getReportTooltipRoot, ensureReportTooltipLayer } from "@/utils/shared/dom.js";
 import { getHoverTooltipLayout, type HoverTooltipLayout } from "@/utils/marker/hoverTooltipLayout.js";
 
@@ -93,7 +94,7 @@ export function HoverTooltip({ label, content, multiline = false, disabled = fal
     }, [disabled, hovered, label, updateLayout]);
 
     const showTooltip = hovered && !disabled;
-    const tooltipClassName = multiline ? MULTILINE_TOOLTIP_CLASS_NAME : SINGLE_LINE_TOOLTIP_CLASS_NAME;
+    const tooltipClassName = `${multiline ? MULTILINE_TOOLTIP_CLASS_NAME : SINGLE_LINE_TOOLTIP_CLASS_NAME} ${MOTION.tooltipIn}`;
 
     return (
         <>
@@ -113,7 +114,7 @@ export function HoverTooltip({ label, content, multiline = false, disabled = fal
                           style={{
                               top: layout?.top ?? 0,
                               left: layout?.left ?? 0,
-                              opacity: layout ? 1 : 0,
+                              visibility: layout ? "visible" : "hidden",
                           }}
                       >
                           {content ?? label}

@@ -14,6 +14,7 @@ import { CloseIcon, LinkIcon, MaximizeIcon, MinimizeIcon, RestoreIcon, SidePanel
 import { FeedbackFieldTags } from "../../components/panel/feedback/FeedbackFieldTags.js";
 import { FeedbackPinToggleButton } from "../../components/panel/feedback/FeedbackPinToggleButton.js";
 import { CornerResizeGhost } from "../../components/ui/CornerResizeGhost.js";
+import { MOTION } from "../../constants/motionClasses.js";
 import { CornerResizeHandle } from "../../components/ui/CornerResizeHandle.js";
 import { FeedbackComposer } from "../../components/panel/feedback/FeedbackComposer.js";
 import { CaseAssigneeInfo } from "../../components/panel/feedback/CaseAssigneeInfo.js";
@@ -204,7 +205,7 @@ export function MarkerFeedbackWindow({ report, anchor }) {
     const initialPosition = useMemo(() => clampWindowPosition(anchor.left + getMarkerDotSize() / 2 - size.width / 2, anchor.top + getMarkerDotSize() / 2 - size.height / 2, size.width, size.height), [anchor.left, anchor.top, size.height, size.width]);
     const resolvedPosition = isMaximized ? { left: WINDOW_MARGIN, top: WINDOW_MARGIN } : (position ?? initialPosition);
     const leftSectionClass = getLeftSectionClass(windowSurfacePhase);
-    const windowAnimationClass = windowSurfacePhase === "exiting" ? "fivepixels-marker-window-exit" : windowSurfacePhase === "entering" ? "fivepixels-marker-window-enter pointer-events-auto" : "pointer-events-auto";
+    const windowAnimationClass = windowSurfacePhase === "exiting" ? MOTION.markerWindowExit : windowSurfacePhase === "entering" ? `${MOTION.markerWindowEnter} pointer-events-auto` : "pointer-events-auto";
     const handleSplitPointerDown = useCallback((event) => {
         if (event.button !== 0) {
             return;

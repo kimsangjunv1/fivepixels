@@ -12,6 +12,7 @@ export function ReportOverlayLayer({ children }) {
     const showHoverInspect = isReportMode && !draft && !pickProbeOpen && Boolean(hoveredTarget) && !activeMarkerTarget;
     const showSelectionHighlight = isReportMode && Boolean(selectedTarget) && (Boolean(draft) || pickProbeOpen);
     const showPickProbeCompare = pickProbeOpen && pickProbeHasEdits;
+    const showActiveMarkerInspect = isReportMode && Boolean(activeMarkerTarget);
     const overlayClassName = isReportMode
         ? "pointer-events-auto fixed inset-0 z-[999999] cursor-crosshair"
         : "pointer-events-none fixed inset-0 z-[999999]";
@@ -23,6 +24,6 @@ export function ReportOverlayLayer({ children }) {
                 }
                 handleOverlayClick(event);
             }
-            : undefined, className: overlayClassName, "data-overlay-mode": isReportMode ? "report" : isViewMode ? "view" : isPreviewMode ? "preview" : "idle", children: [_jsx(TargetHighlights, { hoveredTarget: hoveredTarget, selectedTarget: selectedTarget, showHoverInspect: showHoverInspect, showSelectionHighlight: showSelectionHighlight, showPickProbeCompare: showPickProbeCompare, previewTargets: isPreviewMode ? selectableTargets : undefined, markerPreviewTargets: markerPreviewTargets, activeMarkerTarget: activeMarkerTarget }), _jsx(PickTargetProbePanel, {}), _jsx(PickTargetSavedBadges, {}), pickTargetContextMenu ? (_jsx(PickTargetContextMenu, { clientX: pickTargetContextMenu.clientX, clientY: pickTargetContextMenu.clientY, showRevert: Boolean(contextMenuElementKey && savedProbeEdits[contextMenuElementKey]) })) : null, children] }));
+            : undefined, className: overlayClassName, "data-overlay-mode": isReportMode ? "report" : isViewMode ? "view" : isPreviewMode ? "preview" : "idle", children: [_jsx(TargetHighlights, { hoveredTarget: hoveredTarget, selectedTarget: selectedTarget, showHoverInspect: showHoverInspect, showSelectionHighlight: showSelectionHighlight, showPickProbeCompare: showPickProbeCompare, showActiveMarkerInspect: showActiveMarkerInspect, previewTargets: isPreviewMode ? selectableTargets : undefined, markerPreviewTargets: markerPreviewTargets, activeMarkerTarget: activeMarkerTarget }), _jsx(PickTargetProbePanel, {}), _jsx(PickTargetSavedBadges, {}), pickTargetContextMenu ? (_jsx(PickTargetContextMenu, { clientX: pickTargetContextMenu.clientX, clientY: pickTargetContextMenu.clientY, showRevert: Boolean(contextMenuElementKey && savedProbeEdits[contextMenuElementKey]) })) : null, children] }));
 }
 //# sourceMappingURL=ReportOverlayLayer.js.map

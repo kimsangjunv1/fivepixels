@@ -1,6 +1,7 @@
 import { jsx as _jsx } from "react/jsx-runtime";
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { MOTION } from "../../constants/motionClasses.js";
 import { getReportTooltipRoot } from "../../utils/shared/dom.js";
 import { HOVER_TOOLTIP_MARGIN } from "../../utils/marker/hoverTooltipLayout.js";
 const POINTER_OFFSET = 12;
@@ -51,8 +52,8 @@ export function PointerFollowTooltip({ open, pointer, children, className = "" }
     const style = {
         top: layout?.top ?? pointer.clientY + POINTER_OFFSET,
         left: layout?.left ?? pointer.clientX + POINTER_OFFSET,
-        opacity: layout ? 1 : 0,
+        visibility: layout ? "visible" : "hidden",
     };
-    return createPortal(_jsx("div", { ref: tooltipRef, role: "tooltip", className: `${POINTER_TOOLTIP_SURFACE_CLASS} ${className}`.trim(), style: style, children: children }), getReportTooltipRoot());
+    return createPortal(_jsx("div", { ref: tooltipRef, role: "tooltip", className: `${POINTER_TOOLTIP_SURFACE_CLASS} ${MOTION.tooltipIn} ${className}`.trim(), style: style, children: children }), getReportTooltipRoot());
 }
 //# sourceMappingURL=PointerFollowTooltip.js.map

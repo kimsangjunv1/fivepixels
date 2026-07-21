@@ -197,6 +197,7 @@ export function assembleReportContextValue({ panel, auth, draft, markers, mutati
         togglePinnedFeedback: panel.togglePinnedFeedback,
         unpinFeedback: panel.unpinFeedback,
         setPinRailCollapsed: panel.setPinRailCollapsed,
+        syncPinnedFeedbackReports: panel.syncPinnedFeedbackReports,
         statusText: markers.statusText,
         toggleReportMode: panel.toggleReportMode,
         toggleTargetPreview: draft.toggleTargetPreview,

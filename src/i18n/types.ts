@@ -692,6 +692,9 @@ export type ReportMessages = {
         unpinAriaLabel: string;
         openPinAriaLabel: string;
         removePinAriaLabel: string;
+        routeToggleAriaLabel: (pathname: string) => string;
+        progressAriaLabel: (resolved: number, total: number, percentage: number) => string;
+        completedCasesLabel: (resolved: number, total: number) => string;
         sectionTitle: string;
         empty: string;
         notFound: string;

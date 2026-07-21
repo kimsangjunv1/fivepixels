@@ -64,6 +64,7 @@ export const REPORT_PREFERENCE_KEYS = [
     "togglePinnedFeedback",
     "unpinFeedback",
     "setPinRailCollapsed",
+    "syncPinnedFeedbackReports",
 ] as const;
 
 export const REPORT_SESSION_KEYS = [

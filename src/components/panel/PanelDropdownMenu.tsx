@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { MOTION } from "@/constants/motionClasses.js";
 
 const MENU_GAP = 0;
 // const MENU_GAP = 6;
@@ -186,7 +187,7 @@ export function PanelDropdownMenu({ open, onClose, trigger, children, menuClassN
                     ref={menuRef}
                     role="menu"
                     style={menuStyle}
-                    className={`${open ? "border-[#f6562f]" : ""} absolute z-[20] min-w-[120px] overflow-hidden bg-[var(--adaptive-black50)] border shadow-[0_0_100px_rgba(0,0,0,0.2)] ${menuClassName ?? ""}`}
+                    className={`${open ? "border-[#f6562f]" : ""} absolute z-[20] min-w-[120px] overflow-hidden bg-[var(--adaptive-black50)] border shadow-[0_0_100px_rgba(0,0,0,0.2)] ${MOTION.menuIn} ${menuClassName ?? ""}`}
                 >
                     {children}
                 </div>

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useReportPreferences } from "@/providers/reportContext.js";
+import { MOTION } from "@/constants/motionClasses.js";
 
 type ReportPersonalKeyDialogProps = {
     mode: "required" | "insert" | "rotate";
@@ -59,7 +60,7 @@ export function ReportPersonalKeyDialog({ mode, onCancel, onComplete }: ReportPe
     };
 
     return (
-        <section className="bg-[var(--adaptive-grey100)] p-[16px]">
+        <section className={`bg-[var(--adaptive-grey100)] p-[16px] ${MOTION.dialogIn}`}>
             <h6 className="text-[14px] font-bold text-[var(--adaptive-black900)]">
                 {mode === "required"
                     ? messages.personalKey.requiredTitle

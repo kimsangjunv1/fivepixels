@@ -21,17 +21,58 @@ function isPinnedFeedbackItem(value: unknown): value is PinnedFeedbackItem {
     return typeof item.reportId === "string" && typeof item.pathname === "string" && typeof item.summary === "string" && typeof item.pinnedAt === "string";
 }
 
+function sanitizePinnedFeedbackItem(item: PinnedFeedbackItem): PinnedFeedbackItem {
+    const fcNumber = typeof item.fcNumber === "number" && Number.isFinite(item.fcNumber) && item.fcNumber > 0
+        ? Math.trunc(item.fcNumber)
+        : null;
+    const cases = Array.isArray(item.cases)
+        ? item.cases.filter(
+              (caseItem) =>
+                  Boolean(caseItem) &&
+                  typeof caseItem.id === "string" &&
+                  (caseItem.status === "open" || caseItem.status === "resolved"),
+          )
+        : [];
+
+    return {
+        ...item,
+        caseId: typeof item.caseId === "string" ? item.caseId : null,
+        fcNumber,
+        cases,
+    };
+}
+
 export function sanitizePinnedFeedbackPreference(value: unknown): PinnedFeedbackPreference {
     if (!value || typeof value !== "object") {
         return EMPTY_PREFERENCE;
     }
 
     const raw = value as Partial<PinnedFeedbackPreference>;
-    const items = Array.isArray(raw.items) ? raw.items.filter(isPinnedFeedbackItem).slice(0, MAX_PINNED_FEEDBACK) : [];
+    const items = Array.isArray(raw.items)
+        ? raw.items.filter(isPinnedFeedbackItem).map(sanitizePinnedFeedbackItem).slice(0, MAX_PINNED_FEEDBACK)
+        : [];
 
     return {
         items,
         railCollapsed: Boolean(raw.railCollapsed),
+    };
+}
+
+export type PinnedFeedbackCaseProgress = {
+    resolved: number;
+    total: number;
+    percentage: number;
+};
+
+export function getPinnedFeedbackCaseProgress(items: PinnedFeedbackItem[]): PinnedFeedbackCaseProgress {
+    const cases = items.flatMap((item) => item.cases ?? []);
+    const resolved = cases.filter((item) => item.status === "resolved").length;
+    const total = cases.length;
+
+    return {
+        resolved,
+        total,
+        percentage: total > 0 ? Math.round((resolved / total) * 100) : 0,
     };
 }
 
@@ -49,8 +90,13 @@ export function createPinnedFeedbackItem(
     return {
         reportId: report.id,
         caseId,
+        fcNumber: report.fc_number ?? null,
         pathname: report.pathname,
         summary: summary.slice(0, 120),
+        cases: report.cases.map((item) => ({
+            id: item.id,
+            status: item.status,
+        })),
         pinnedAt: new Date().toISOString(),
     };
 }

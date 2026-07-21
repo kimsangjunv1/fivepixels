@@ -1,5 +1,6 @@
 import type { FeedbackInsertConflict } from "@/utils/feedback/feedbackDataTransfer.js";
 import { useReportPreferences } from "@/providers/reportContext.js";
+import { MOTION } from "@/constants/motionClasses.js";
 import { getIssueSummary } from "@/utils/report/reportCases.js";
 
 type ReportCommandReplaceConfirmDialogProps = {
@@ -12,7 +13,7 @@ export function ReportCommandReplaceConfirmDialog({ conflicts, onConfirm, onCanc
     const { messages } = useReportPreferences();
 
     return (
-        <article className="bg-[var(--adaptive-grey100)]">
+        <article className={`bg-[var(--adaptive-grey100)] ${MOTION.dialogIn}`}>
             <section className="flex flex-col gap-[4px] p-[16px]">
                 <h6 className="text-[14px] font-bold text-[var(--adaptive-black900)]">{messages.commandReplace.title}</h6>
                 <p className="leading-[1.5] text-[var(--adaptive-black500)]">{messages.commandReplace.description}</p>

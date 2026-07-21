@@ -269,6 +269,7 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     togglePinnedFeedback: (item: import("../../types/pinnedFeedback.js").PinnedFeedbackItem) => void;
     unpinFeedback: (reportId: string) => void;
     setPinRailCollapsed: (railCollapsed: boolean) => void;
+    syncPinnedFeedbackReports: (reports: import("../../types/report.js").ReportFeedback[]) => void;
     statusText: string;
     toggleReportMode: () => void;
     toggleTargetPreview: () => void;

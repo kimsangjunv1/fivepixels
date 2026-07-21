@@ -2,6 +2,7 @@ import { jsx as _jsx, Fragment as _Fragment, jsxs as _jsxs } from "react/jsx-run
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useNativeHover } from "../../hooks/useNativeHover.js";
+import { MOTION } from "../../constants/motionClasses.js";
 import { getReportTooltipRoot, ensureReportTooltipLayer } from "../../utils/shared/dom.js";
 import { getHoverTooltipLayout } from "../../utils/marker/hoverTooltipLayout.js";
 const SINGLE_LINE_TOOLTIP_CLASS_NAME = "pointer-events-none fixed whitespace-nowrap rounded-[100px] bg-[var(--adaptive-overlay-surface)] px-[10px] py-[4px] text-[14px] text-[var(--adaptive-overlay-text)]";
@@ -63,12 +64,12 @@ export function HoverTooltip({ label, content, multiline = false, disabled = fal
         };
     }, [disabled, hovered, label, updateLayout]);
     const showTooltip = hovered && !disabled;
-    const tooltipClassName = multiline ? MULTILINE_TOOLTIP_CLASS_NAME : SINGLE_LINE_TOOLTIP_CLASS_NAME;
+    const tooltipClassName = `${multiline ? MULTILINE_TOOLTIP_CLASS_NAME : SINGLE_LINE_TOOLTIP_CLASS_NAME} ${MOTION.tooltipIn}`;
     return (_jsxs(_Fragment, { children: [_jsx("span", { ref: setAnchorRef, className: `inline-flex ${className}`.trim(), children: children }), showTooltip
                 ? createPortal(_jsx("span", { ref: tooltipRef, role: "tooltip", className: tooltipClassName, style: {
                         top: layout?.top ?? 0,
                         left: layout?.left ?? 0,
-                        opacity: layout ? 1 : 0,
+                        visibility: layout ? "visible" : "hidden",
                     }, children: content ?? label }), getReportTooltipRoot())
                 : null] }));
 }

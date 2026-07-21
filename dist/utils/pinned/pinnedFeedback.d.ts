@@ -2,6 +2,12 @@ import type { ReportFeedback } from "../../types/report.js";
 import { type PinnedFeedbackItem, type PinnedFeedbackPreference } from "../../types/pinnedFeedback.js";
 export declare function getPinnedFeedbackStorageKey(projectId: string, environment?: string): string;
 export declare function sanitizePinnedFeedbackPreference(value: unknown): PinnedFeedbackPreference;
+export type PinnedFeedbackCaseProgress = {
+    resolved: number;
+    total: number;
+    percentage: number;
+};
+export declare function getPinnedFeedbackCaseProgress(items: PinnedFeedbackItem[]): PinnedFeedbackCaseProgress;
 export declare function createPinnedFeedbackItem(report: ReportFeedback, options?: {
     caseId?: string | null;
     summaryMore?: (count: number) => string;

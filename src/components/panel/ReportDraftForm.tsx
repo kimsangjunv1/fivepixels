@@ -10,6 +10,7 @@ import { ComposerFooterWarning } from "./feedback/ComposerFooterWarning.js";
 import { DraftProbeSummaryBanner } from "./DraftProbeSummaryBanner.js";
 import { PickTargetSnippet } from "./feedback/PickTargetSnippet.js";
 import { CornerResizeGhost } from "@/components/ui/CornerResizeGhost.js";
+import { MOTION } from "@/constants/motionClasses.js";
 import { CornerResizeHandle } from "@/components/ui/CornerResizeHandle.js";
 
 const TOOLTIP_SURFACE_CLASS = "overflow-hidden rounded-[16px] shadow-[var(--adaptive-popup-shadow)] bg-[var(--adaptive-fillOpacity500)] backdrop-blur-[5px]";
@@ -197,7 +198,7 @@ function ReportDraftFormContent({
             >
                 <div
                     ref={tooltipSurfaceRef}
-                    className={`relative ${TOOLTIP_SURFACE_CLASS}`}
+                    className={`relative ${TOOLTIP_SURFACE_CLASS} ${MOTION.tooltipFadeIn}`}
                     style={{
                         pointerEvents: "auto",
                         height: customSize?.height,

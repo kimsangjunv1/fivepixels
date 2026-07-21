@@ -282,6 +282,7 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     togglePinnedFeedback: (item: import("../../types/pinnedFeedback.js").PinnedFeedbackItem) => void;
     unpinFeedback: (reportId: string) => void;
     setPinRailCollapsed: (railCollapsed: boolean) => void;
+    syncPinnedFeedbackReports: (reports: ReportFeedback[]) => void;
     statusText: string;
     toggleReportMode: () => void;
     toggleTargetPreview: () => void;

@@ -9,6 +9,7 @@ type TargetHighlightsProps = {
     showHoverInspect?: boolean;
     showSelectionHighlight?: boolean;
     showPickProbeCompare?: boolean;
+    showActiveMarkerInspect?: boolean;
     previewTargets?: TargetSnapshot[];
     markerPreviewTargets?: TargetSnapshot[];
     activeMarkerTarget: TargetSnapshot | null;
@@ -58,6 +59,7 @@ export function TargetHighlights({
     showHoverInspect = false,
     showSelectionHighlight = false,
     showPickProbeCompare = false,
+    showActiveMarkerInspect = false,
     previewTargets = [],
     markerPreviewTargets = [],
     activeMarkerTarget,
@@ -106,7 +108,7 @@ export function TargetHighlights({
                         key={ACTIVE_MARKER_HIGHLIGHT_KEY}
                         target={activeMarkerTarget}
                     />
-                    <PickTargetHoverTooltip target={activeMarkerTarget} />
+                    {showActiveMarkerInspect ? <PickTargetHoverTooltip target={activeMarkerTarget} /> : null}
                 </>
             ) : null}
         </>

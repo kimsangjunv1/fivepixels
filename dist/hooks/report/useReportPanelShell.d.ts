@@ -134,6 +134,7 @@ export declare function useReportPanelShell({ projectId, environment, appVersion
     togglePinnedFeedback: (item: import("../../types/pinnedFeedback.js").PinnedFeedbackItem) => void;
     unpinFeedback: (reportId: string) => void;
     setPinRailCollapsed: (railCollapsed: boolean) => void;
+    syncPinnedFeedbackReports: (reports: ReportFeedback[]) => void;
     targetStats: import("../../types/report.js").ReportPanelStats;
     roleStatItems: import("../../utils/panel/panelRoleStats.js").PanelRoleStatItem[];
     toggleReportMode: () => void;

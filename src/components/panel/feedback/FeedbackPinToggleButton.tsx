@@ -2,6 +2,7 @@ import { useState, type MouseEvent } from "react";
 import type { ReportFeedback } from "@/types/report.js";
 import { FavoritePinIcon } from "@/components/icons/Icons.js";
 import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
+import { MOTION } from "@/constants/motionClasses.js";
 import { useReportPreferences } from "@/providers/reportContext.js";
 import { createPinnedFeedbackItem, isFeedbackPinned } from "@/utils/pinned/pinnedFeedback.js";
 
@@ -46,7 +47,7 @@ export function FeedbackPinToggleButton({ report, caseId = null, className = "",
                     pinned ? "text-[var(--adaptive-blue500)]" : "text-[var(--adaptive-black500)] hover:text-[var(--adaptive-black900)]"
                 } ${className}`}
             >
-                <span className={popping ? "fivepixels-pin-star-pop inline-flex" : "inline-flex"}>
+                <span className={popping ? `${MOTION.pinStarPop} inline-flex` : "inline-flex"}>
                     <FavoritePinIcon
                         filled={pinned}
                         className={iconClassName}

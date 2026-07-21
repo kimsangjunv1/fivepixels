@@ -16,6 +16,7 @@ import { CloseIcon, LinkIcon, MaximizeIcon, MinimizeIcon, RestoreIcon, SidePanel
 import { FeedbackFieldTags } from "@/components/panel/feedback/FeedbackFieldTags.js";
 import { FeedbackPinToggleButton } from "@/components/panel/feedback/FeedbackPinToggleButton.js";
 import { CornerResizeGhost } from "@/components/ui/CornerResizeGhost.js";
+import { MOTION } from "@/constants/motionClasses.js";
 import { CornerResizeHandle } from "@/components/ui/CornerResizeHandle.js";
 import { FeedbackComposer } from "@/components/panel/feedback/FeedbackComposer.js";
 import { CaseAssigneeInfo } from "@/components/panel/feedback/CaseAssigneeInfo.js";
@@ -327,7 +328,7 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
     const resolvedPosition = isMaximized ? { left: WINDOW_MARGIN, top: WINDOW_MARGIN } : (position ?? initialPosition);
     const leftSectionClass = getLeftSectionClass(windowSurfacePhase);
     const windowAnimationClass =
-        windowSurfacePhase === "exiting" ? "fivepixels-marker-window-exit" : windowSurfacePhase === "entering" ? "fivepixels-marker-window-enter pointer-events-auto" : "pointer-events-auto";
+        windowSurfacePhase === "exiting" ? MOTION.markerWindowExit : windowSurfacePhase === "entering" ? `${MOTION.markerWindowEnter} pointer-events-auto` : "pointer-events-auto";
 
     const handleSplitPointerDown = useCallback(
         (event: ReactPointerEvent<HTMLElement>) => {

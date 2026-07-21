@@ -10,6 +10,7 @@ import { ComposerFooterWarning } from "./feedback/ComposerFooterWarning.js";
 import { DraftProbeSummaryBanner } from "./DraftProbeSummaryBanner.js";
 import { PickTargetSnippet } from "./feedback/PickTargetSnippet.js";
 import { CornerResizeGhost } from "../../components/ui/CornerResizeGhost.js";
+import { MOTION } from "../../constants/motionClasses.js";
 import { CornerResizeHandle } from "../../components/ui/CornerResizeHandle.js";
 const TOOLTIP_SURFACE_CLASS = "overflow-hidden rounded-[16px] shadow-[var(--adaptive-popup-shadow)] bg-[var(--adaptive-fillOpacity500)] backdrop-blur-[5px]";
 // "overflow-hidden rounded-[24px] border-[3px] border-[var(--adaptive-black200)] shadow-[var(--adaptive-popup-shadow)] bg-[var(--adaptive-fillOpacity500)] backdrop-blur-[5px]";
@@ -67,7 +68,7 @@ function ReportDraftFormContent({ draft, draftStep, setDraftStep, fields, author
                     minWidth: 320,
                     ...(customSize?.height !== undefined ? { height: customSize.height } : null),
                     ...tooltipAnchorStyle,
-                }, children: _jsxs("div", { ref: tooltipSurfaceRef, className: `relative ${TOOLTIP_SURFACE_CLASS}`, style: {
+                }, children: _jsxs("div", { ref: tooltipSurfaceRef, className: `relative ${TOOLTIP_SURFACE_CLASS} ${MOTION.tooltipFadeIn}`, style: {
                         pointerEvents: "auto",
                         height: customSize?.height,
                     }, children: [_jsxs("div", { className: "flex min-h-0 flex-col", style: {
