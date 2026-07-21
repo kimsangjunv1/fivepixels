@@ -1,7 +1,7 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useMemo } from "react";
 import { getExperimentalUserTabs, getPanelTabDefinition, getStableUserTabs, } from "../../constants/panelTabRegistry.js";
-import { isTabRecommendedForRole, moveVisibleTab } from "../../utils/panelTabPreference.js";
+import { isTabRecommendedForRole, moveVisibleTab } from "../../utils/panel/panelTabPreference.js";
 import { ChevronDownIcon } from "../../components/icons/Icons.js";
 function buildOrderedSectionTabs(sectionTabs, selectedTabs) {
     const sectionIds = new Set(sectionTabs.map((tab) => tab.id));

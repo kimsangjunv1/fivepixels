@@ -1,5 +1,5 @@
 import type { ReportFeedback } from "@/types/report.js";
-import { getIssueProgressLabel, shouldShowCaseProgress } from "@/utils/reportCases.js";
+import { getIssueProgressLabel, shouldShowCaseProgress } from "@/utils/report/reportCases.js";
 
 type CaseProgressLabelProps = {
     report: Pick<ReportFeedback, "cases">;

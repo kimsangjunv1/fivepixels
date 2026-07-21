@@ -1,6 +1,6 @@
 import { jsx as _jsx } from "react/jsx-runtime";
 import { useEffect, useId } from "react";
-import { getReportStyleInjectionRoot } from "../../../../utils/dom.js";
+import { getReportStyleInjectionRoot } from "../../../../utils/shared/dom.js";
 export function Shimmer({ children, as: Component = "span", className = "", style = {}, color = {
     start: "var(--color-brand-500)",
     end: "rgba(0,0,0,1)",

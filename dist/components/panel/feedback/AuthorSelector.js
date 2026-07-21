@@ -1,10 +1,10 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useState } from "react";
-import { useReport } from "../../../providers/reportContext.js";
+import { useReportPreferences } from "../../../providers/reportContext.js";
 import { ChevronDownIcon } from "../../../components/icons/Icons.js";
 import { PanelDropdownMenu, PanelDropdownMenuItem } from "../../../components/panel/PanelDropdownMenu.js";
 export function AuthorSelector({ authors, value, onChange }) {
-    const { messages } = useReport();
+    const { messages } = useReportPreferences();
     const [menuOpen, setMenuOpen] = useState(false);
     if (authors.length === 0) {
         return (_jsx("input", { type: "text", value: value, onChange: (event) => onChange(event.target.value), placeholder: messages.author.placeholder, className: "h-[24px] min-w-0 flex-1 rounded-full bg-[var(--adaptive-surface-muted)] px-[12px] py-[4px] text-[12px] text-[var(--adaptive-text-primary)] outline-none placeholder:text-[var(--adaptive-text-muted)]" }));

@@ -1,11 +1,11 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useMemo, useSyncExternalStore } from "react";
-import { useReport } from "../../providers/reportContext.js";
-import { buildRouteDetailsSummary } from "../../utils/panelBootstrap.js";
-import { buildHourlyCompareSparkline } from "../../utils/hourlyCompareSparkline.js";
-import { getCurrentPathLabel, getCurrentPathname } from "../../utils/pathname.js";
-import { subscribeToPathnameChanges } from "../../utils/pathnameNavigation.js";
-import { panelNumericClassName } from "../../utils/panelTypography.js";
+import { useReportPreferences, useReportSession, useReportData } from "../../providers/reportContext.js";
+import { buildRouteDetailsSummary } from "../../utils/panel/panelBootstrap.js";
+import { buildHourlyCompareSparkline } from "../../utils/panel/hourlyCompareSparkline.js";
+import { getCurrentPathLabel, getCurrentPathname } from "../../utils/shared/pathname.js";
+import { subscribeToPathnameChanges } from "../../utils/shared/pathnameNavigation.js";
+import { panelNumericClassName } from "../../utils/panel/panelTypography.js";
 import { FeedbackStatusBadge } from "./feedback/FeedbackStatusBadge.js";
 import { RouteDetailsTimeline } from "./RouteDetailsTimeline.js";
 function formatDelta(delta) {
@@ -15,7 +15,9 @@ function formatDelta(delta) {
     return `+${delta.toLocaleString()}`;
 }
 export function ReportRouteDetails() {
-    const { currentPageReports, fields, currentPathname, messages } = useReport();
+    const { fields, messages } = useReportPreferences();
+    const { currentPathname } = useReportSession();
+    const { currentPageReports } = useReportData();
     const browserPathname = useSyncExternalStore(subscribeToPathnameChanges, getCurrentPathname, () => "/");
     const browserPathLabel = useSyncExternalStore(subscribeToPathnameChanges, getCurrentPathLabel, () => currentPathname);
     const displayPath = browserPathname === currentPathname ? browserPathLabel : currentPathname;

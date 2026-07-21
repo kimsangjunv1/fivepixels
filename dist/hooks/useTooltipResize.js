@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { useGhostCornerResize } from "../hooks/useGhostCornerResize.js";
-import { clampTooltipExpandedSize } from "../utils/coordinates.js";
+import { clampTooltipExpandedSize } from "../utils/marker/coordinates.js";
 export function useTooltipResize({ enabled, tooltipRef, }) {
     const [customSize, setCustomSize] = useState(null);
     const handleResizeComplete = useCallback((size) => {

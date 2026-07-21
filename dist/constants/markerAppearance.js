@@ -20,10 +20,15 @@ export const DEFAULT_MARKER_COLORS = {
     resolved: "#03b26c",
     gitIssued: "#3182f6",
 };
+export const DEFAULT_FEEDBACK_MODE_DOT_COLORS = {
+    light: "#111827",
+    dark: "#f8fafc",
+};
 export const DEFAULT_MARKER_APPEARANCE = {
     size: "md",
     shape: "circle",
     colors: DEFAULT_MARKER_COLORS,
+    feedbackModeDotColors: DEFAULT_FEEDBACK_MODE_DOT_COLORS,
 };
 export const DEFAULT_FONT_FAMILY = 'system-ui, -apple-system, "Segoe UI", sans-serif';
 export const DEFAULT_TYPOGRAPHY = {

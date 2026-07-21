@@ -2,8 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProp
 
 export type PanelCorner = "top-left" | "top-right" | "bottom-left" | "bottom-right";
 
-/** @deprecated Edge docking replaced by corner placement; kept for storage migration. */
-export type PanelEdge = "top" | "bottom" | "left" | "right";
+type PanelEdge = "top" | "bottom" | "left" | "right";
 
 export type PanelPlacement = {
     corner: PanelCorner;

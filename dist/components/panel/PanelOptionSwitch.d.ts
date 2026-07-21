@@ -9,6 +9,6 @@ type PanelOptionSwitchProps<T extends string> = {
     disabled?: boolean;
     ariaLabel?: string;
 };
-export declare function PanelOptionSwitch<T extends string>({ options, value, onChange, disabled, ariaLabel, }: PanelOptionSwitchProps<T>): import("react/jsx-runtime").JSX.Element;
+export declare function PanelOptionSwitch<T extends string>({ options, value, onChange, disabled, ariaLabel, }: PanelOptionSwitchProps<T>): import("react").JSX.Element;
 export {};
 //# sourceMappingURL=PanelOptionSwitch.d.ts.map

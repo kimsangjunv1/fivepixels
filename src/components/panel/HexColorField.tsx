@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { displayToHex, getHexColorPreview, hexToColorInputValue, hexToDisplay, sanitizeHexDisplayInput } from "@/utils/hexColor.js";
+import { displayToHex, getHexColorPreview, hexToColorInputValue, hexToDisplay, sanitizeHexDisplayInput } from "@/utils/shared/hexColor.js";
 
 type HexColorFieldProps = {
     label: string;

@@ -1,6 +1,6 @@
 import type { CreateReportFeedbackPayload, CreateReplyPayload, ReportFeedback, ReportField, ReportPersistenceHandlers, ReportReply, ReportStorageAdapter, UpdateReportFeedbackPayload } from "../types/report.js";
 import type { ReportFilters, ReportListScope } from "../types/report-ui.js";
-import type { ResolvedReplyHistoryConfig } from "../utils/reportUi.js";
+import type { ResolvedReplyHistoryConfig } from "../utils/report/reportUi.js";
 import { type ReplyHistoryState } from "./replyHistoryActions.js";
 export type ReportPersistenceConfig = {
     projectId: string;
@@ -24,6 +24,7 @@ export type ReportPersistenceConfig = {
 };
 export declare function useReportPersistence({ projectId, environment, appVersion, fields, onList, onListAll, onListReplies, onCreate, onCreateReply, onUpdate, onDelete, routeKey, fetchEnabled, listFetchEnabled, allReportsFetchEnabled, replyHistory, }: ReportPersistenceConfig): {
     storageAdapterInstance: ReportStorageAdapter;
+    persistenceStatus: import("../utils/shared/storage.js").PersistenceStatus;
     canTransferFeedback: boolean;
     canListAllFeedback: boolean;
     usesLazyReplies: boolean;
@@ -41,7 +42,7 @@ export declare function useReportPersistence({ projectId, environment, appVersio
     filteredReports: ReportFeedback[];
     currentPageFilteredReports: ReportFeedback[];
     allPageFilteredReports: ReportFeedback[];
-    routeDetailsStats: import("../utils/panelBootstrap.js").RouteDetailsSummary;
+    routeDetailsStats: import("../utils/panel/panelBootstrap.js").RouteDetailsSummary;
     selectedReport: ReportFeedback;
     isError: boolean;
     isReportsLoading: boolean;

@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import type { FeedbackDisplayStatus } from "@/constants/feedbackStatus.js";
-import type { RouteDetailStatus } from "@/utils/routeDetailStatus.js";
+import type { RouteDetailStatus } from "@/utils/panel/routeDetailStatus.js";
 import { MaterialIcon, type MaterialIconProps } from "@/components/icons/MaterialIcon.js";
 
 const FLAG_PATH =
@@ -310,6 +310,25 @@ export function StarIcon({ className }: { className?: string }) {
             <path
                 d="M13.949 13.684a1 1 0 0 0-1.898 0l-.184.551a1 1 0 0 1-.632.633l-.551.183a1 1 0 0 0 0 1.898l.551.183a1 1 0 0 1 .633.633l.183.551a1 1 0 0 0 1.898 0l.184-.551a1 1 0 0 1 .632-.633l.551-.183a1 1 0 0 0 0-1.898l-.551-.184a1 1 0 0 1-.633-.632l-.183-.551Z"
                 opacity="0.5"
+            />
+        </svg>
+    );
+}
+
+export function FavoritePinIcon({ className, filled = false }: { className?: string; filled?: boolean }) {
+    return (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 16 16"
+            fill={filled ? "currentColor" : "none"}
+            stroke="currentColor"
+            strokeWidth="1.5"
+            className={className}
+            aria-hidden
+        >
+            <path
+                strokeLinejoin="round"
+                d="M8 1.75 9.76 5.4l4.01.34-3.04 2.66.92 3.9L8 10.4l-3.65 2.1.92-3.9L2.23 5.74l4.01-.34L8 1.75Z"
             />
         </svg>
     );

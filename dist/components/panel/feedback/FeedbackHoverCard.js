@@ -1,18 +1,18 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { FEEDBACK_STATUS_COLOR } from "../../../constants/feedbackStatus.js";
-import { getDetachedMarkerHint } from "../../../utils/markerContext.js";
-import { getCaseLatestStatus } from "../../../utils/feedbackThread.js";
-import { getReportCases } from "../../../utils/reportCases.js";
-import { useReport } from "../../../providers/reportContext.js";
+import { getDetachedMarkerHint } from "../../../utils/marker/markerContext.js";
+import { getCaseLatestStatus } from "../../../utils/feedback/feedbackThread.js";
+import { getReportCases } from "../../../utils/report/reportCases.js";
+import { useReportPreferences } from "../../../providers/reportContext.js";
 import { FeedbackCreatorBadge } from "./FeedbackCreatorBadge.js";
 const MAX_TOOLTIP_CASES = 5;
 function CaseStatusLabel({ status }) {
-    const { messages } = useReport();
+    const { messages } = useReportPreferences();
     const color = FEEDBACK_STATUS_COLOR[status];
     return (_jsx("span", { className: "shrink-0 whitespace-nowrap text-[11px] font-semibold leading-none", style: { color }, children: messages.status.feedback[status] }));
 }
 export function FeedbackHoverCard({ report, detached = false, detachedKind = null, detachedHint, detachedModalHint }) {
-    const { messages } = useReport();
+    const { messages } = useReportPreferences();
     const cases = getReportCases(report);
     const visibleCases = cases.slice(0, MAX_TOOLTIP_CASES);
     const hasMoreCases = cases.length > MAX_TOOLTIP_CASES;

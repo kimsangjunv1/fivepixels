@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { REPORT_SHORTCUTS } from "@/constants/reportShortcuts.js";
 import { useReport } from "@/providers/reportContext.js";
-import { formatDateOnly } from "@/utils/format.js";
-import { type RouteDetailStatus } from "@/utils/routeDetailStatus.js";
+import { formatDateOnly } from "@/utils/shared/format.js";
+import { type RouteDetailStatus } from "@/utils/panel/routeDetailStatus.js";
 import { ShortcutHint } from "@/components/ShortcutHint.js";
 import { SearchIcon, ChevronDownIcon } from "@/components/icons/Icons.js";
 import type { ReportFeedback } from "@/types/report.js";

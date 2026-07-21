@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
 import {
+    DEFAULT_FEEDBACK_MODE_DOT_COLORS,
     DEFAULT_MARKER_APPEARANCE,
     DEFAULT_MARKER_COLORS,
     isAppearanceScale,
@@ -7,11 +8,12 @@ import {
     MARKER_APPEARANCE_STORAGE_KEY,
     type MarkerAppearancePreferences,
     type MarkerColorPreferences,
+    type FeedbackModeDotColors,
     type MarkerShape,
     type AppearanceScale,
 } from "@/constants/markerAppearance.js";
-import { isValidHexColor } from "@/utils/hexColor.js";
-import { setMarkerDotSizeFromScale } from "@/utils/markerRuntime.js";
+import { isValidHexColor } from "@/utils/shared/hexColor.js";
+import { setMarkerDotSizeFromScale } from "@/utils/marker/markerRuntime.js";
 
 function normalizeMarkerColors(value: unknown): MarkerColorPreferences {
     if (!value || typeof value !== "object") {
@@ -24,6 +26,19 @@ function normalizeMarkerColors(value: unknown): MarkerColorPreferences {
         open: isValidHexColor(colors.open ?? "") ? colors.open! : DEFAULT_MARKER_COLORS.open,
         resolved: isValidHexColor(colors.resolved ?? "") ? colors.resolved! : DEFAULT_MARKER_COLORS.resolved,
         gitIssued: isValidHexColor(colors.gitIssued ?? "") ? colors.gitIssued! : DEFAULT_MARKER_COLORS.gitIssued,
+    };
+}
+
+function normalizeFeedbackModeDotColors(value: unknown): FeedbackModeDotColors {
+    if (!value || typeof value !== "object") {
+        return DEFAULT_FEEDBACK_MODE_DOT_COLORS;
+    }
+
+    const colors = value as Partial<FeedbackModeDotColors>;
+
+    return {
+        light: isValidHexColor(colors.light ?? "") ? colors.light! : DEFAULT_FEEDBACK_MODE_DOT_COLORS.light,
+        dark: isValidHexColor(colors.dark ?? "") ? colors.dark! : DEFAULT_FEEDBACK_MODE_DOT_COLORS.dark,
     };
 }
 
@@ -45,6 +60,7 @@ function readStoredMarkerAppearance(): MarkerAppearancePreferences {
             size: isAppearanceScale(parsed.size) ? parsed.size : DEFAULT_MARKER_APPEARANCE.size,
             shape: isMarkerShape(parsed.shape) ? parsed.shape : DEFAULT_MARKER_APPEARANCE.shape,
             colors: normalizeMarkerColors(parsed.colors),
+            feedbackModeDotColors: normalizeFeedbackModeDotColors(parsed.feedbackModeDotColors),
         };
     } catch {
         return DEFAULT_MARKER_APPEARANCE;
@@ -118,6 +134,29 @@ export function useMarkerAppearancePreference() {
         [setMarkerAppearance],
     );
 
+    const setFeedbackModeDotColors = useCallback(
+        (colors: FeedbackModeDotColors) => {
+            setMarkerAppearance((current) => ({
+                ...current,
+                feedbackModeDotColors: colors,
+            }));
+        },
+        [setMarkerAppearance],
+    );
+
+    const setFeedbackModeDotColor = useCallback(
+        (appearance: keyof FeedbackModeDotColors, color: string) => {
+            setMarkerAppearance((current) => ({
+                ...current,
+                feedbackModeDotColors: {
+                    ...current.feedbackModeDotColors,
+                    [appearance]: color,
+                },
+            }));
+        },
+        [setMarkerAppearance],
+    );
+
     return {
         markerAppearance,
         setMarkerAppearance,
@@ -125,5 +164,7 @@ export function useMarkerAppearancePreference() {
         setMarkerShape,
         setMarkerColors,
         setMarkerColor,
+        setFeedbackModeDotColors,
+        setFeedbackModeDotColor,
     };
 }

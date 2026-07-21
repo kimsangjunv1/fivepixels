@@ -68,6 +68,12 @@ function AppContent() {
                             publicKey:
                                 "stpub1.eyJjcnYiOiJQLTI1NiIsImV4dCI6dHJ1ZSwia2V5X29wcyI6WyJ2ZXJpZnkiXSwia3R5IjoiRUMiLCJ4IjoiVGo3LS14UTB2eEJjMjd4OHZpb1BmNGpWTW5naVYzVFJoM0MwOXZDWDJ4byIsInkiOiJkdndHZkNfcDdnVDJYM2ZXYzNqVEI4WHlPaGRVVXNwdW1oQzBhNlNQVEJVIn0",
                         },
+                        {
+                            id: "79fd6371-8a58-4075-bc50-cf0abac5be08",
+                            name: "asd",
+                            publicKey:
+                                "stpub1.eyJjcnYiOiJQLTI1NiIsImV4dCI6dHJ1ZSwia2V5X29wcyI6WyJ2ZXJpZnkiXSwia3R5IjoiRUMiLCJ4IjoiUEZ0VWMtSmp5c09nTkdFR3JlbE9tLUdPcHVCRGtRZDlVc2JPU3ZNOHNiQSIsInkiOiJUaHZmd2RJOE02dWRXNnhOLVVkeVk2UGxGRktub2g3dlZWeFppNlNZWXdZIn0",
+                        },
                     ],
                 }}
             />

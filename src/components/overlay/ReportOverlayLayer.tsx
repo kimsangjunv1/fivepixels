@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { useReport } from "@/providers/reportContext.js";
+import { useReportSession } from "@/providers/reportContext.js";
 import { PickTargetContextMenu } from "./PickTargetContextMenu.js";
 import { PickTargetProbePanel } from "./PickTargetProbePanel.js";
 import { PickTargetSavedBadges } from "./PickTargetSavedBadges.js";
@@ -10,26 +10,7 @@ type ReportOverlayLayerProps = {
 };
 
 export function ReportOverlayLayer({ children }: ReportOverlayLayerProps) {
-    const {
-        overlayRef,
-        mode,
-        draft,
-        hoveredTarget,
-        selectedTarget,
-        pickProbeOpen,
-        pickProbeHasEdits,
-        pickTargetContextMenu,
-        contextMenuElementKey,
-        savedProbeEdits,
-        selectableTargets,
-        showTargetPreview,
-        markerPreviewTargets,
-        activeMarkerTarget,
-        handleOverlayMove,
-        handleOverlayContextMenu,
-        handleOverlayClick,
-        closePickTargetContextMenu,
-    } = useReport();
+    const { overlayRef, mode, draft, hoveredTarget, selectedTarget, pickProbeOpen, pickProbeHasEdits, pickTargetContextMenu, contextMenuElementKey, savedProbeEdits, selectableTargets, showTargetPreview, markerPreviewTargets, activeMarkerTarget, handleOverlayMove, handleOverlayContextMenu, handleOverlayClick, closePickTargetContextMenu } = useReportSession();
 
     const isReportMode = mode === "report";
     const isViewMode = mode === "view";
@@ -37,6 +18,7 @@ export function ReportOverlayLayer({ children }: ReportOverlayLayerProps) {
     const showHoverInspect = isReportMode && !draft && !pickProbeOpen && Boolean(hoveredTarget) && !activeMarkerTarget;
     const showSelectionHighlight = isReportMode && Boolean(selectedTarget) && (Boolean(draft) || pickProbeOpen);
     const showPickProbeCompare = pickProbeOpen && pickProbeHasEdits;
+    const showActiveMarkerInspect = isReportMode && Boolean(activeMarkerTarget);
     const overlayClassName = isReportMode
         ? "pointer-events-auto fixed inset-0 z-[999999] cursor-crosshair"
         : "pointer-events-none fixed inset-0 z-[999999]";
@@ -67,6 +49,7 @@ export function ReportOverlayLayer({ children }: ReportOverlayLayerProps) {
                 showHoverInspect={showHoverInspect}
                 showSelectionHighlight={showSelectionHighlight}
                 showPickProbeCompare={showPickProbeCompare}
+                showActiveMarkerInspect={showActiveMarkerInspect}
                 previewTargets={isPreviewMode ? selectableTargets : undefined}
                 markerPreviewTargets={markerPreviewTargets}
                 activeMarkerTarget={activeMarkerTarget}

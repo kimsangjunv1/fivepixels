@@ -1,5 +1,5 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
-import { useReport } from "../../../providers/reportContext.js";
+import { useReportPreferences } from "../../../providers/reportContext.js";
 export const CASE_TAB_ACTIVE_CLASS = "bg-[var(--adaptive-blue100)] text-[var(--adaptive-blue500)]";
 export const CASE_TAB_INACTIVE_CLASS = "border-transparent bg-[var(--adaptive-surface-muted)]/60 text-[var(--adaptive-text-muted)] hover:bg-[var(--adaptive-surface-muted)] hover:text-[var(--adaptive-text-primary)]";
 export const CASE_SELECTOR_ALL_TAB = "all";
@@ -11,7 +11,7 @@ export function CaseResolvedBadge({ resolvedLabel, openLabel, resolved }) {
 }
 export function FeedbackCaseTabBar(props) {
     const { cases, onSelectCase, idPrefix = "fivepixels-case", invalidCaseIds = [] } = props;
-    const { messages } = useReport();
+    const { messages } = useReportPreferences();
     const isEditor = props.variant === "editor";
     const invalidCaseIdSet = new Set(invalidCaseIds);
     if (cases.length === 0) {

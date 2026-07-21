@@ -27,8 +27,8 @@ import {
     stepGridTrackCount,
     stepProbeGap,
     toggleFlexReverse,
-} from "@/utils/probeLayout.js";
-import type { FlexAlignValue, FlexJustifyValue } from "@/utils/probeLayout.js";
+} from "@/utils/probe/probeLayout.js";
+import type { FlexAlignValue, FlexJustifyValue } from "@/utils/probe/probeLayout.js";
 
 type ProbeLayoutControlsProps = {
     layoutMode: PickProbeLayoutMode;

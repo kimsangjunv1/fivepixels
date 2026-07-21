@@ -15,6 +15,6 @@ type AssigneeThreadEntryProps = {
     isUpdating?: boolean;
     isClaimingAssignee?: boolean;
 };
-export declare function AssigneeThreadEntry({ reply, report, caseId, authors, actorName, pendingComposer, onStartDeny, onStartCheckout, onTransferAssignee, isUpdating, isClaimingAssignee, }: AssigneeThreadEntryProps): import("react/jsx-runtime").JSX.Element;
+export declare function AssigneeThreadEntry({ reply, report, caseId, authors, actorName, pendingComposer, onStartDeny, onStartCheckout, onTransferAssignee, isUpdating, isClaimingAssignee, }: AssigneeThreadEntryProps): import("react").JSX.Element;
 export {};
 //# sourceMappingURL=AssigneeThreadEntry.d.ts.map

@@ -7,7 +7,6 @@ export type PanelSizeState = {
     height: number | null;
 };
 
-/** @deprecated Edge resize replaced by corner ghost resize. */
 export type PanelResizeEdge = "top" | "bottom" | "left" | "right";
 
 const STORAGE_KEY = "fivepixels:panel-size";
@@ -19,9 +18,7 @@ export const PANEL_HEADER_ESTIMATE_HEIGHT = 132;
 export const PANEL_TAB_BAR_HEIGHT = 36;
 export const PANEL_CHROME_MIN_HEIGHT = PANEL_HEADER_ESTIMATE_HEIGHT + PANEL_TAB_BAR_HEIGHT;
 export const PANEL_HEIGHT_MIN = PANEL_HEADER_ESTIMATE_HEIGHT + PANEL_CONTENT_MIN_HEIGHT;
-/** @deprecated Used only for migrating legacy stored sizes. */
-export const PANEL_DEFAULT_HEIGHT = 480;
-/** @deprecated Used only for migrating legacy stored sizes. */
+const PANEL_DEFAULT_HEIGHT = 480;
 const LEGACY_PANEL_DEFAULT_WIDTH = 420;
 
 const DEFAULT_PANEL_SIZE: PanelSizeState = {
@@ -149,20 +146,6 @@ export function getOppositeResizeCorner(corner: PanelCorner): ResizeCorner {
             return "top-right";
         case "bottom-right":
             return "top-left";
-    }
-}
-
-/** @deprecated Edge resize replaced by corner ghost resize. */
-export function getResizeEdgesForCorner(corner: PanelCorner): { widthEdge: "left" | "right"; heightEdge: "top" | "bottom" } {
-    switch (corner) {
-        case "bottom-right":
-            return { widthEdge: "left", heightEdge: "top" };
-        case "bottom-left":
-            return { widthEdge: "right", heightEdge: "top" };
-        case "top-right":
-            return { widthEdge: "left", heightEdge: "bottom" };
-        case "top-left":
-            return { widthEdge: "right", heightEdge: "bottom" };
     }
 }
 

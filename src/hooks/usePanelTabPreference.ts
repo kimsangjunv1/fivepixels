@@ -6,7 +6,7 @@ import {
     resolveVisibleTabs,
     sanitizeVisibleTabs,
     type PanelTabPreference,
-} from "@/utils/panelTabPreference.js";
+} from "@/utils/panel/panelTabPreference.js";
 import type { UserSelectablePanelTab } from "@/constants/panelTabRegistry.js";
 
 const STORAGE_KEY = "fivepixels:panel-tab-preference";

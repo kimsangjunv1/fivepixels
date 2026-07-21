@@ -1,7 +1,7 @@
 import type { ReportFeedback, ReportPosition, ReportReply, ReportTargetType } from "@/types/report.js";
-import { createReportCase } from "@/utils/reportCases.js";
-import { ISSUE_ROOT_PARENT_ID } from "@/utils/feedbackThread.js";
-import { createAutoPickReportId } from "@/utils/targetSelector.js";
+import { createReportCase } from "@/utils/report/reportCases.js";
+import { ISSUE_ROOT_PARENT_ID } from "@/utils/feedback/feedbackThread.js";
+import { createAutoPickReportId } from "@/utils/marker/targetSelector.js";
 import { EDGECASE_PATHNAME } from "./reportProjectScope.js";
 
 /** Mirrors `team` in examples/basic/src/App.tsx */

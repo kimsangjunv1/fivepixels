@@ -1,8 +1,8 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import { useReport } from "../../../providers/reportContext.js";
-import { formatClockTime } from "../../../utils/format.js";
-import { formatAssigneeLabel, resolveAuthorDepartment } from "../../../utils/reportCases.js";
-import { resolveAssigneeEntryActionRole } from "../../../utils/feedbackThread.js";
+import { useReportPreferences } from "../../../providers/reportContext.js";
+import { formatClockTime } from "../../../utils/shared/format.js";
+import { formatAssigneeLabel, resolveAuthorDepartment } from "../../../utils/report/reportCases.js";
+import { resolveAssigneeEntryActionRole } from "../../../utils/feedback/feedbackThread.js";
 import { CheckIcon, CloseIcon } from "../../../components/icons/Icons.js";
 import { ThreadTimelineRow } from "./ThreadTimelineRow.js";
 const THREAD_ACTION_BUTTON_BASE = "flex items-center gap-[4px] rounded-[6px] px-[8px] py-[4px] text-[12px] font-semibold transition-colors";
@@ -11,7 +11,7 @@ const THREAD_ACTION_DIVIDER = "mx-[2px] h-[12px] w-px bg-[var(--adaptive-border-
 const THREAD_ACTION_ENTRY_SURFACE_CLASS = "flex flex-col gap-[4px] rounded-[12px] border-[2px] border-[var(--adaptive-grey900)] bg-[var(--adaptive-surface-overlay)] p-[8px_12px]";
 const THREAD_CASE_ENTRY_SURFACE_CLASS = "flex flex-col gap-[4px] rounded-[12px]";
 export function AssigneeThreadEntry({ reply, report, caseId, authors, actorName, pendingComposer, onStartDeny, onStartCheckout, onTransferAssignee, isUpdating, isClaimingAssignee, }) {
-    const { messages } = useReport();
+    const { messages } = useReportPreferences();
     const assigneeName = reply.author_name?.trim() ?? "";
     const department = resolveAuthorDepartment(authors, assigneeName);
     const actionRole = resolveAssigneeEntryActionRole(report, reply, caseId, actorName);

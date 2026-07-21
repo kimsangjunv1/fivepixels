@@ -1,6 +1,6 @@
 import { type DragEvent } from "react";
 import type { ReportMessages } from "../i18n/types.js";
-import { type FeedbackImportPayload, type FeedbackInsertConflict } from "../utils/feedbackDataTransfer.js";
+import { type FeedbackImportPayload, type FeedbackInsertConflict } from "../utils/feedback/feedbackDataTransfer.js";
 export type FeedbackTransferScope = {
     projectId: string;
     environment?: string;

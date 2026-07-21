@@ -1,4 +1,4 @@
-import { type HourlyCompareSparkline } from "../../utils/hourlyCompareSparkline.js";
+import { type HourlyCompareSparkline } from "../../utils/panel/hourlyCompareSparkline.js";
 type RouteDetailsTimelineProps = {
     sparkline: HourlyCompareSparkline;
     todayLabel: string;
@@ -8,6 +8,6 @@ type RouteDetailsTimelineProps = {
     tooltipTodayTemplate: string;
     tooltipYesterdayTemplate: string;
 };
-export declare function RouteDetailsTimeline({ sparkline, todayLabel, yesterdayLabel, timelineAriaLabel, hourAriaLabelTemplate, tooltipTodayTemplate, tooltipYesterdayTemplate, }: RouteDetailsTimelineProps): import("react/jsx-runtime").JSX.Element;
+export declare function RouteDetailsTimeline({ sparkline, todayLabel, yesterdayLabel, timelineAriaLabel, hourAriaLabelTemplate, tooltipTodayTemplate, tooltipYesterdayTemplate, }: RouteDetailsTimelineProps): import("react").JSX.Element;
 export {};
 //# sourceMappingURL=RouteDetailsTimeline.d.ts.map

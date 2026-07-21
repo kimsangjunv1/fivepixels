@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { buildPanelBootstrapFromReports } from "../utils/panelBootstrap.js";
+import { buildPanelBootstrapFromReports } from "../utils/panel/panelBootstrap.js";
 export function usePanelBootstrap({ enabled, params, fields, reports, pathname, onPanelBootstrap }) {
     const clientBootstrap = useMemo(() => {
         if (!enabled || onPanelBootstrap) {

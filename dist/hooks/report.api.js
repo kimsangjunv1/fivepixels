@@ -1,6 +1,6 @@
 import { getActiveReportMessages } from "../i18n/index.js";
-import { normalizeListReport } from "../utils/reportSummary.js";
-import { normalizeListRepliesResult } from "../utils/replyHistory.js";
+import { normalizeListReport } from "../utils/report/reportSummary.js";
+import { normalizeListRepliesResult } from "../utils/feedback/replyHistory.js";
 export async function listReports(adapter, pathname) {
     const items = await adapter.list({ pathname });
     return items.map(normalizeListReport);

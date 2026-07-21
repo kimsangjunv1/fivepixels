@@ -5,6 +5,6 @@ type ThreadAuthorMetaProps = {
     showCreator?: boolean;
     trailing?: ReactNode;
 };
-export declare function ThreadAuthorMeta({ authorName, createdAt, showCreator, trailing }: ThreadAuthorMetaProps): import("react/jsx-runtime").JSX.Element | null;
+export declare function ThreadAuthorMeta({ authorName, createdAt, showCreator, trailing }: ThreadAuthorMetaProps): import("react").JSX.Element | null;
 export {};
 //# sourceMappingURL=ThreadAuthorMeta.d.ts.map

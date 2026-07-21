@@ -7,6 +7,4 @@ export type LocalStorageReportAdapterOptions = {
 export declare function readAllReportsFromStorage(storageKey: string): ReportFeedback[];
 export declare function writeAllReportsToStorage(storageKey: string, items: ReportFeedback[], project?: ReportProject): void;
 export declare function createLocalStorageReportAdapter({ projectId, environment, appVersion }: LocalStorageReportAdapterOptions): ReportStorageAdapter;
-/** @deprecated Use createLocalStorageReportAdapter({ projectId }) instead. */
-export declare const localStorageReportAdapter: ReportStorageAdapter;
 //# sourceMappingURL=localStorageAdapter.d.ts.map

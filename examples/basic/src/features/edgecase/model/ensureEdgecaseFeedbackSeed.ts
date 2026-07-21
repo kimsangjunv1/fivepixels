@@ -1,5 +1,5 @@
 import { dispatchFeedbackStorageChanged } from "@/constants/feedbackStorageEvents.js";
-import { upsertFeedbackItems } from "@/utils/feedbackDataTransfer.js";
+import { upsertFeedbackItems } from "@/utils/feedback/feedbackDataTransfer.js";
 import { createEdgecaseFeedbackSeed } from "./createEdgecaseFeedbackSeed.js";
 import { BASIC_EXAMPLE_PROJECT_SCOPE } from "./reportProjectScope.js";
 

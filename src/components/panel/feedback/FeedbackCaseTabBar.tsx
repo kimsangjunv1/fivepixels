@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import type { ReportCase } from "@/types/report.js";
-import { useReport } from "@/providers/reportContext.js";
+import { useReportPreferences } from "@/providers/reportContext.js";
 
 export const CASE_TAB_ACTIVE_CLASS = "bg-[var(--adaptive-blue100)] text-[var(--adaptive-blue500)]";
 export const CASE_TAB_INACTIVE_CLASS =
@@ -50,7 +50,7 @@ export function CaseResolvedBadge({ resolvedLabel, openLabel, resolved }: { reso
 
 export function FeedbackCaseTabBar(props: FeedbackCaseTabBarProps) {
     const { cases, onSelectCase, idPrefix = "fivepixels-case", invalidCaseIds = [] } = props;
-    const { messages } = useReport();
+    const { messages } = useReportPreferences();
     const isEditor = props.variant === "editor";
     const invalidCaseIdSet = new Set(invalidCaseIds);
 

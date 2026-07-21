@@ -10,5 +10,5 @@ export type TextShimmerProps = {
         end: string;
     };
 };
-export declare function Shimmer({ children, as: Component, className, style, color, duration, }: TextShimmerProps): import("react/jsx-runtime").JSX.Element;
+export declare function Shimmer({ children, as: Component, className, style, color, duration, }: TextShimmerProps): import("react").JSX.Element;
 //# sourceMappingURL=Shimmer.d.ts.map

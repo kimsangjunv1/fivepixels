@@ -4,6 +4,6 @@ type MarkerFeedbackWindowProps = {
     report: ReportFeedback;
     anchor: Pick<Marker, "left" | "top">;
 };
-export declare function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowProps): import("react/jsx-runtime").JSX.Element;
+export declare function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowProps): import("react").JSX.Element;
 export {};
 //# sourceMappingURL=MarkerFeedbackWindow.d.ts.map

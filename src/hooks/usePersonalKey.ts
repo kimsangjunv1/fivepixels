@@ -10,7 +10,7 @@ import {
     savePersonalKey,
     signReportPayload,
     removePersonalKey,
-} from "@/utils/personalKey.js";
+} from "@/utils/auth/personalKey.js";
 
 const EMPTY_AUTHORIZED_AUTHORS: ReportAuthor[] = [];
 

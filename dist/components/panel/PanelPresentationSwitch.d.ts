@@ -1,2 +1,2 @@
-export declare function PanelPresentationSwitch(): import("react/jsx-runtime").JSX.Element | null;
+export declare function PanelPresentationSwitch(): import("react").JSX.Element | null;
 //# sourceMappingURL=PanelPresentationSwitch.d.ts.map

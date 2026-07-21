@@ -1,12 +1,12 @@
 import { useMemo, useState } from "react";
 import { PointerFollowTooltip } from "@/components/ui/PointerFollowTooltip.js";
-import { panelNumericClassName } from "@/utils/panelTypography.js";
+import { panelNumericClassName } from "@/utils/panel/panelTypography.js";
 import {
     formatHourLabel,
     resolveHourlyBarHeightPx,
     type HourlyCompareBucket,
     type HourlyCompareSparkline,
-} from "@/utils/hourlyCompareSparkline.js";
+} from "@/utils/panel/hourlyCompareSparkline.js";
 
 const BAR_MAX_HEIGHT_PX = 36;
 const BAR_MIN_HEIGHT_PX = 3;

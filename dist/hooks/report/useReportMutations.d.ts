@@ -1,0 +1,46 @@
+import { type Dispatch, type SetStateAction } from "react";
+import type { ReportMessages } from "../../i18n/types.js";
+import type { CreateReportFeedbackPayload, CreateReplyPayload, ReportFeedback, ReportField, ReportGitHubConfig, UpdateReportFeedbackPayload } from "../../types/report.js";
+import type { EditableDraft } from "../../types/report-ui.js";
+import { type ReportSideEffectCallbacks } from "../../utils/report/reportCallbacks.js";
+export type UseReportMutationsParams = {
+    messages: ReportMessages;
+    fields: ReportField[];
+    github?: ReportGitHubConfig;
+    eventCallbacks: ReportSideEffectCallbacks;
+    selectedReport: ReportFeedback | null;
+    selectedReportId: string | null;
+    setSelectedReportId: Dispatch<SetStateAction<string | null>>;
+    getActiveReplyReportId: () => string | null;
+    closeReplyComposer: () => void;
+    isCreating: boolean;
+    createFeedback: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
+    updateFeedback: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
+    deleteFeedback: (id: string) => Promise<void>;
+    createReply: (commentId: string, payload: CreateReplyPayload) => Promise<unknown>;
+    usesCreateReply: boolean;
+    signCreatePayload: (payload: CreateReportFeedbackPayload) => Promise<CreateReportFeedbackPayload>;
+    signUpdatePayload: (payload: UpdateReportFeedbackPayload) => Promise<UpdateReportFeedbackPayload>;
+    signReplyPayload: (payload: CreateReplyPayload) => Promise<CreateReplyPayload>;
+    setErrorMessage: Dispatch<SetStateAction<string>>;
+    buildCreatePayloadFromDraft: () => CreateReportFeedbackPayload | null;
+    finalizeDraftCreate: () => void;
+};
+export declare function useReportMutations({ messages, fields, github, eventCallbacks, selectedReport, selectedReportId, setSelectedReportId, getActiveReplyReportId, closeReplyComposer, isCreating, createFeedback, updateFeedback, deleteFeedback, createReply, usesCreateReply, signCreatePayload, signUpdatePayload, signReplyPayload, setErrorMessage, buildCreatePayloadFromDraft, finalizeDraftCreate, }: UseReportMutationsParams): {
+    editingReportId: string | null;
+    setEditingReportId: Dispatch<SetStateAction<string | null>>;
+    editableDraft: EditableDraft | null;
+    setEditableDraft: Dispatch<SetStateAction<EditableDraft | null>>;
+    creatingGitHubIssueId: string | null;
+    stopEditing: () => void;
+    startEditing: (report: ReportFeedback) => void;
+    handleCreateSubmit: () => Promise<void>;
+    handleCreateSubmitWithGitHubIssue: () => Promise<void>;
+    handleUpdateSubmit: () => Promise<void>;
+    handleCreateGitHubIssue: (report: ReportFeedback) => Promise<void>;
+    handleDelete: (id: string) => Promise<void>;
+    canCreateGitHubIssueFromList: boolean;
+    canCreateGitHubIssueOnCreate: boolean;
+    isDraftGitHubIssueSubmitting: boolean;
+};
+//# sourceMappingURL=useReportMutations.d.ts.map

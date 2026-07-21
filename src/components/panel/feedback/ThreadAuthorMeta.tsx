@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { formatClockTime } from "@/utils/format.js";
+import { formatClockTime } from "@/utils/shared/format.js";
 import { FeedbackCreatorBadge } from "./FeedbackCreatorBadge.js";
 
 type ThreadAuthorMetaProps = {

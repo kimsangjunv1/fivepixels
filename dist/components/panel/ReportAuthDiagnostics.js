@@ -1,6 +1,6 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useMemo, useState } from "react";
-import { useReport } from "../../providers/reportContext.js";
+import { useReportPreferences, useReportData } from "../../providers/reportContext.js";
 const FIELD_LABELS = {
     projectId: "projectId",
     environment: "environment",
@@ -37,7 +37,8 @@ function reasonToDescription(reason) {
     return reasonMap[reason] ?? reason;
 }
 export function ReportAuthDiagnostics() {
-    const { messages, authDiagnostics } = useReport();
+    const { messages } = useReportPreferences();
+    const { authDiagnostics } = useReportData();
     const diagnostics = messages.authDiagnostics;
     const [copied, setCopied] = useState(false);
     const reasonText = useMemo(() => reasonToDescription(authDiagnostics.reason), [authDiagnostics.reason]);

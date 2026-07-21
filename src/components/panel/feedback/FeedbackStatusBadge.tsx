@@ -1,7 +1,7 @@
 import type { FeedbackDisplayStatus } from "@/constants/feedbackStatus.js";
 import { FEEDBACK_STATUS_COLOR } from "@/constants/feedbackStatus.js";
 import { FeedbackStatusIcon } from "@/components/icons/Icons.js";
-import { useReport } from "@/providers/reportContext.js";
+import { useReportPreferences } from "@/providers/reportContext.js";
 
 type FeedbackStatusBadgeProps = {
     status: FeedbackDisplayStatus;
@@ -10,7 +10,7 @@ type FeedbackStatusBadgeProps = {
 };
 
 export function FeedbackStatusBadge({ status, className = "", isNeedGray = false }: FeedbackStatusBadgeProps) {
-    const { messages } = useReport();
+    const { messages } = useReportPreferences();
     const color = FEEDBACK_STATUS_COLOR[status];
 
     return (

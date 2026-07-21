@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { usesReplyAppendHistory, usesReplyPaginationMode } from "../constants/replyHistory.js";
-import { appendReplyUnique, getEmbeddedRepliesForHistory, getPaginationWindow, getTotalReplyCount, paginateSortedReplies, prependReplies, sortRepliesChronologically, } from "../utils/replyHistory.js";
+import { appendReplyUnique, getEmbeddedRepliesForHistory, getPaginationWindow, getTotalReplyCount, paginateSortedReplies, prependReplies, sortRepliesChronologically, } from "../utils/feedback/replyHistory.js";
 import { listReplies as listRepliesApi } from "../hooks/report.api.js";
 export const EMPTY_REPLY_HISTORY_STATE = {
     items: [],

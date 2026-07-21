@@ -5,6 +5,6 @@ type DiscreteScaleDialProps<T extends string> = {
     labels: Record<T, string>;
     ariaLabel: string;
 };
-export declare function DiscreteScaleDial<T extends string>({ values, value, onChange, labels, ariaLabel }: DiscreteScaleDialProps<T>): import("react/jsx-runtime").JSX.Element;
+export declare function DiscreteScaleDial<T extends string>({ values, value, onChange, labels, ariaLabel }: DiscreteScaleDialProps<T>): import("react").JSX.Element;
 export {};
 //# sourceMappingURL=DiscreteScaleDial.d.ts.map

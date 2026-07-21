@@ -1,10 +1,10 @@
 import { jsxs as _jsxs, jsx as _jsx } from "react/jsx-runtime";
-import { useReport } from "../../../providers/reportContext.js";
+import { useReportPreferences } from "../../../providers/reportContext.js";
 import { InfoIcon } from "../../../components/icons/Icons.js";
 import { HoverTooltip } from "../../../components/ui/HoverTooltip.js";
-import { formatAssigneeLabel, resolveAuthorDepartment } from "../../../utils/reportCases.js";
+import { formatAssigneeLabel, resolveAuthorDepartment } from "../../../utils/report/reportCases.js";
 export function CaseAssigneeInfo({ caseItem, authors }) {
-    const { messages } = useReport();
+    const { messages } = useReportPreferences();
     const currentAssignee = caseItem.assignee_name?.trim() ?? "";
     const previousAssignee = caseItem.previous_assignee_name?.trim() ?? "";
     if (!currentAssignee) {

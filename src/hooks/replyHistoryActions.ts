@@ -1,6 +1,6 @@
 import { useCallback, type Dispatch, type SetStateAction } from "react";
 import type { ListRepliesResult, ReportFeedback, ReportReply } from "@/types/report.js";
-import type { ResolvedReplyHistoryConfig } from "@/utils/reportUi.js";
+import type { ResolvedReplyHistoryConfig } from "@/utils/report/reportUi.js";
 import { usesReplyAppendHistory, usesReplyPaginationMode } from "@/constants/replyHistory.js";
 import {
     appendReplyUnique,
@@ -10,7 +10,7 @@ import {
     paginateSortedReplies,
     prependReplies,
     sortRepliesChronologically,
-} from "@/utils/replyHistory.js";
+} from "@/utils/feedback/replyHistory.js";
 import { listReplies as listRepliesApi } from "@/hooks/report.api.js";
 import type { ReportStorageAdapter } from "@/types/report.js";
 

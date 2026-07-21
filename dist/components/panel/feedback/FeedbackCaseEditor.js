@@ -1,6 +1,6 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { useReport } from "../../../providers/reportContext.js";
+import { useReportPreferences } from "../../../providers/reportContext.js";
 import { FeedbackCaseTabBar } from "./FeedbackCaseTabBar.js";
 const CASE_INPUT_MIN_HEIGHT = 56;
 const CASE_INPUT_CLASS = "min-h-[56px] w-full flex-1 resize-none overflow-hidden px-[12px] py-[6px] text-[16px] leading-[1.5] text-[var(--adaptive-text-primary)] outline-none placeholder:text-[var(--adaptive-text-muted)] focus:border-[var(--adaptive-blue500)]";
@@ -47,7 +47,7 @@ function resolveActiveCaseId(cases, activeCaseId) {
     return cases[cases.length - 1]?.id ?? cases[0].id;
 }
 export function FeedbackCaseEditor({ cases, onCaseChange, onAddCase, onRemoveCase, autoFocus = false, onSubmitShortcut, needsAttention = false, attentionKey = 0, emptyCaseIds = [], }) {
-    const { messages } = useReport();
+    const { messages } = useReportPreferences();
     const previousCaseCountRef = useRef(cases.length);
     const containerRef = useRef(null);
     const [activeCaseId, setActiveCaseId] = useState(() => cases[0]?.id ?? null);

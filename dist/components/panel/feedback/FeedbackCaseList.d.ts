@@ -16,6 +16,6 @@ type FeedbackCaseListProps = {
     onAddCase?: () => void;
     onRemoveCase?: (caseId: string) => void;
 };
-export declare function FeedbackCaseList({ report, cases, isEditing, canEdit, isSaving, errorMessage, focusedCaseId, onSelectCase, onAllTabActiveChange, onBeginEdit, onCancelEdit, onSaveEdit, onCaseChange, onAddCase, onRemoveCase, }: FeedbackCaseListProps): import("react/jsx-runtime").JSX.Element;
+export declare function FeedbackCaseList({ report, cases, isEditing, canEdit, isSaving, errorMessage, focusedCaseId, onSelectCase, onAllTabActiveChange, onBeginEdit, onCancelEdit, onSaveEdit, onCaseChange, onAddCase, onRemoveCase, }: FeedbackCaseListProps): import("react").JSX.Element;
 export {};
 //# sourceMappingURL=FeedbackCaseList.d.ts.map

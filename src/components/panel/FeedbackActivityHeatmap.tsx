@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useActivitySummary } from "@/hooks/useActivitySummary.js";
 import { useReport } from "@/providers/reportContext.js";
-import { formatDateOnly } from "@/utils/format.js";
+import { formatDateOnly } from "@/utils/shared/format.js";
 import {
     buildHeatmapGrid,
     formatHeatmapMonthLabel,
@@ -11,7 +11,7 @@ import {
     getYearEntranceDuration,
     getYearMonthCellDelay,
     resolveHeatmapLevel,
-} from "@/utils/heatmapActivity.js";
+} from "@/utils/panel/heatmapActivity.js";
 import type { HeatmapActorScope, HeatmapMetric, HeatmapViewMode } from "@/types/report-ui.js";
 import { ChevronLeftIcon, ChevronRightIcon } from "@/components/icons/Icons.js";
 import { HoverTooltip } from "@/components/ui/HoverTooltip.js";

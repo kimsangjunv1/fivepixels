@@ -1,7 +1,8 @@
 import type { ReportProject } from "@/types/report.js";
-import { useReport } from "@/providers/reportContext.js";
-import { buildProjectComparisonLines } from "@/utils/feedbackTransferSchema.js";
-import type { ResolvedReportProject } from "@/utils/reportProject.js";
+import { useReportPreferences } from "@/providers/reportContext.js";
+import { MOTION } from "@/constants/motionClasses.js";
+import { buildProjectComparisonLines } from "@/utils/feedback/feedbackTransferSchema.js";
+import type { ResolvedReportProject } from "@/utils/report/reportProject.js";
 
 type ReportImportProjectMismatchDialogProps = {
     currentProject: ResolvedReportProject;
@@ -26,11 +27,11 @@ function formatExportedAt(value: string | undefined, noneLabel: string, locale: 
 }
 
 export function ReportImportProjectMismatchDialog({ currentProject, importedProject, exportedAt, onProceed, onCancel }: ReportImportProjectMismatchDialogProps) {
-    const { locale, messages } = useReport();
+    const { locale, messages } = useReportPreferences();
     const comparisonLines = buildProjectComparisonLines(currentProject, importedProject);
 
     return (
-        <article className="bg-[var(--adaptive-grey100)]">
+        <article className={`bg-[var(--adaptive-grey100)] ${MOTION.dialogIn}`}>
             <section className="flex flex-col gap-[4px] p-[16px]">
                 <h6 className="text-[14px] font-bold text-[var(--adaptive-black900)]">{messages.importMismatch.title}</h6>
                 <p className="leading-[1.5] text-[var(--adaptive-black500)]">{messages.importMismatch.description}</p>

@@ -1,12 +1,13 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useEffect } from "react";
 import { DeleteIcon, EditIcon, RevertIcon } from "../../components/icons/Icons.js";
-import { useReport } from "../../providers/reportContext.js";
+import { useReportPreferences, useReportSession } from "../../providers/reportContext.js";
 const MENU_SURFACE_CLASS = "pointer-events-auto fixed z-[1000004] min-w-[140px] overflow-hidden rounded-[10px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface-overlay)] py-[4px] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[20px]";
 const MENU_ITEM_CLASS = "flex w-full items-center gap-[8px] px-[12px] py-[8px] text-left text-[14px] font-medium hover:bg-[var(--adaptive-black100)]";
 const MENU_DIVIDER_CLASS = "my-[4px] h-px bg-[var(--adaptive-border-subtle)]";
 export function PickTargetContextMenu({ clientX, clientY, showRevert }) {
-    const { messages, closePickTargetContextMenu, handlePickTargetEdit, handlePickTargetDelete, handlePickTargetRevert, } = useReport();
+    const { messages } = useReportPreferences();
+    const { closePickTargetContextMenu, handlePickTargetEdit, handlePickTargetDelete, handlePickTargetRevert, } = useReportSession();
     useEffect(() => {
         const handleKeyDown = (event) => {
             if (event.key === "Escape") {

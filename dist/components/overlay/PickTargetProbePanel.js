@@ -1,11 +1,11 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { CheckIcon, CopyIcon } from "../../components/icons/Icons.js";
-import { useReport } from "../../providers/reportContext.js";
-import { isSteppableCssValue, stepCssBoxSides, stepCssPixel } from "../../utils/cssStepper.js";
-import { copyTextToClipboard } from "../../utils/feedbackDataTransfer.js";
-import { getPickProbePanelLayout } from "../../utils/pickProbeLayout.js";
-import { getProbeColorPreview, isValidProbeHexColor, probeHexToColorInputValue, sanitizeProbeHexInput } from "../../utils/probeColor.js";
+import { useReportPreferences, useReportSession } from "../../providers/reportContext.js";
+import { isSteppableCssValue, stepCssBoxSides, stepCssPixel } from "../../utils/probe/cssStepper.js";
+import { copyTextToClipboard } from "../../utils/feedback/feedbackDataTransfer.js";
+import { getPickProbePanelLayout } from "../../utils/probe/pickProbeLayout.js";
+import { getProbeColorPreview, isValidProbeHexColor, probeHexToColorInputValue, sanitizeProbeHexInput } from "../../utils/probe/probeColor.js";
 import { PickTargetCompareSegment } from "./PickTargetCompareSegment.js";
 import { ProbeLayoutControls } from "./ProbeLayoutControls.js";
 const PANEL_SURFACE_CLASS = "pointer-events-auto fixed z-[1000002] w-[min(320px,calc(100vw-16px))] overflow-hidden rounded-[12px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface-overlay)] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[20px]";
@@ -15,7 +15,7 @@ function ProbeTextField({ label, value, onChange }) {
     return (_jsxs("label", { className: "flex flex-col gap-[4px] text-[11px]", children: [_jsx("span", { className: "font-medium text-[var(--adaptive-black500)]", children: label }), _jsx("input", { type: "text", "data-fivepixels-interactive": "", value: value, onChange: (event) => onChange(event.target.value), className: "w-full rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] px-[8px] py-[6px] font-[var(--coding-font)] text-[12px] text-[var(--adaptive-black900)] outline-none focus:border-[var(--adaptive-blue500)]" })] }));
 }
 function ProbeColorField({ label, value, onChange }) {
-    const { messages } = useReport();
+    const { messages } = useReportPreferences();
     const colorInputRef = useRef(null);
     const copyTimeoutRef = useRef(null);
     const [copied, setCopied] = useState(false);
@@ -61,7 +61,8 @@ function ProbeStepperField({ label, value, onChange }) {
     return (_jsxs("div", { className: "flex flex-col gap-[4px] text-[11px]", children: [_jsx("span", { className: "font-medium text-[var(--adaptive-black500)]", children: label }), _jsxs("div", { className: "flex items-center gap-[6px]", children: [_jsx("button", { type: "button", "data-fivepixels-interactive": "", disabled: !steppable, onClick: () => handleStep(-1), className: "inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] text-[14px] font-semibold text-[var(--adaptive-black900)] disabled:opacity-40", "aria-label": `Decrease ${label}`, children: "\u2212" }), _jsx("div", { className: "min-w-0 flex-1 rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] px-[8px] py-[6px] text-center font-[var(--coding-font)] text-[12px] text-[var(--adaptive-black900)]", children: value }), _jsx("button", { type: "button", "data-fivepixels-interactive": "", disabled: !steppable, onClick: () => handleStep(1), className: "inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] text-[14px] font-semibold text-[var(--adaptive-black900)] disabled:opacity-40", "aria-label": `Increase ${label}`, children: "+" })] })] }));
 }
 export function PickTargetProbePanel() {
-    const { messages, selectedTarget, pickProbeOpen, pickProbeValues, pickProbeSupportsTextFields, pickProbeLayoutMode, pickProbeCompareMode, pickProbeHasEdits, setPickProbeCompareMode, updatePickProbeValue, resetPickProbeValues, closePickProbe, } = useReport();
+    const { messages } = useReportPreferences();
+    const { selectedTarget, pickProbeOpen, pickProbeValues, pickProbeSupportsTextFields, pickProbeLayoutMode, pickProbeCompareMode, pickProbeHasEdits, setPickProbeCompareMode, updatePickProbeValue, resetPickProbeValues, closePickProbe } = useReportSession();
     const panelRef = useRef(null);
     const [layout, setLayout] = useState(null);
     const updateLayout = useCallback(() => {

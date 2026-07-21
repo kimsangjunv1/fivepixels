@@ -2,53 +2,12 @@
 
 import { DEFAULT_FIELDS } from "@/constants/report.js";
 import { ReportProvider } from "@/providers/ReportProvider.js";
-import { resolveReportEnabled } from "@/utils/env.js";
-import { resolveReportVisibility } from "@/utils/reportVisibility.js";
-import type {
-    CreateReportFeedbackPayload,
-    CreateReplyPayload,
-    FivePixelsMode,
-    ReportEvent,
-    ReportFeedback,
-    ReportField,
-    ReportGitHubConfig,
-    ReportListAllParams,
-    ReportListAllResult,
-    ReportActivitySummaryParams,
-    ReportActivitySummaryResult,
-    ReportPanelBootstrapParams,
-    ReportPanelBootstrapResult,
-    ReportProject,
-    ReportReply,
-    ReportTeam,
-    ReportUi,
-    ReportVisibility,
-    UpdateReportFeedbackPayload,
-} from "@/types/report.js";
+import { resolveReportEnabled } from "@/utils/shared/env.js";
+import { resolveReportVisibility } from "@/utils/report/reportVisibility.js";
+import type { FivePixelsProps } from "@/types/publicApi.js";
 import { ReportView } from "./ReportView.js";
 
-export type FivePixelsProps = {
-    project?: ReportProject;
-    ui?: ReportUi;
-    visibility?: ReportVisibility;
-    team?: ReportTeam;
-    mode?: FivePixelsMode;
-    fields?: ReportField[];
-    onList?: (params: { pathname: string }) => Promise<ReportFeedback[]>;
-    onListAll?: (params: ReportListAllParams) => Promise<ReportListAllResult>;
-    onPanelBootstrap?: (params: ReportPanelBootstrapParams) => Promise<ReportPanelBootstrapResult>;
-    onActivitySummary?: (params: ReportActivitySummaryParams) => Promise<ReportActivitySummaryResult>;
-    onListReplies?: (commentId: string, params?: import("@/types/report.js").ListRepliesParams) => Promise<import("@/types/report.js").ListRepliesResult | ReportReply[]>;
-    onNavigate?: (pathname: string) => void | Promise<void>;
-    onRevealTarget?: (report: ReportFeedback) => boolean | Promise<boolean>;
-    onCreate?: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
-    onCreateReply?: (commentId: string, payload: CreateReplyPayload) => Promise<ReportReply>;
-    onUpdate?: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
-    onDelete?: (id: string) => Promise<void>;
-    onEvent?: (event: ReportEvent) => void | Promise<void>;
-    onReply?: (params: { feedbackId: string; message: string }) => void | Promise<void>;
-    github?: ReportGitHubConfig;
-};
+export type { FivePixelsProps } from "@/types/publicApi.js";
 
 export function FivePixels({
     project,

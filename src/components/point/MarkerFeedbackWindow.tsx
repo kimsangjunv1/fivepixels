@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type AnimationEvent as ReactAnimationEvent, type PointerEvent as ReactPointerEvent, type ReactNode, Fragment } from "react";
-import { getMarkerDotSize } from "@/utils/markerRuntime.js";
+import { getMarkerDotSize } from "@/utils/marker/markerRuntime.js";
 import { useDraggableWindow, clampWindowPosition } from "@/hooks/useDraggableWindow.js";
 import { useGhostCornerResize, type BoxSize } from "@/hooks/useGhostCornerResize.js";
 import { useNativeHover } from "@/hooks/useNativeHover.js";
@@ -7,14 +7,16 @@ import { useReport } from "@/providers/reportContext.js";
 import type { Marker } from "@/types/report-ui.js";
 import type { ReportFeedback } from "@/types/report.js";
 import type { ReportMessages } from "@/i18n/types.js";
-import { shouldShowCaseReplyComposer } from "@/utils/feedbackThread.js";
-import { getCaseAssigneeName, getCaseById } from "@/utils/reportCases.js";
-import { getFieldTags } from "@/utils/fields.js";
-import { copyTextToClipboard } from "@/utils/feedbackDataTransfer.js";
-import { buildFeedbackShareUrl } from "@/utils/feedbackDeepLink.js";
+import { shouldShowCaseReplyComposer } from "@/utils/feedback/feedbackThread.js";
+import { getCaseAssigneeName, getCaseById } from "@/utils/report/reportCases.js";
+import { getFieldTags } from "@/utils/report/fields.js";
+import { copyTextToClipboard } from "@/utils/feedback/feedbackDataTransfer.js";
+import { buildFeedbackShareUrl } from "@/utils/feedback/feedbackDeepLink.js";
 import { CloseIcon, LinkIcon, MaximizeIcon, MinimizeIcon, RestoreIcon, SidePanelIcon } from "@/components/icons/Icons.js";
 import { FeedbackFieldTags } from "@/components/panel/feedback/FeedbackFieldTags.js";
+import { FeedbackPinToggleButton } from "@/components/panel/feedback/FeedbackPinToggleButton.js";
 import { CornerResizeGhost } from "@/components/ui/CornerResizeGhost.js";
+import { MOTION } from "@/constants/motionClasses.js";
 import { CornerResizeHandle } from "@/components/ui/CornerResizeHandle.js";
 import { FeedbackComposer } from "@/components/panel/feedback/FeedbackComposer.js";
 import { CaseAssigneeInfo } from "@/components/panel/feedback/CaseAssigneeInfo.js";
@@ -326,7 +328,7 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
     const resolvedPosition = isMaximized ? { left: WINDOW_MARGIN, top: WINDOW_MARGIN } : (position ?? initialPosition);
     const leftSectionClass = getLeftSectionClass(windowSurfacePhase);
     const windowAnimationClass =
-        windowSurfacePhase === "exiting" ? "fivepixels-marker-window-exit" : windowSurfacePhase === "entering" ? "fivepixels-marker-window-enter pointer-events-auto" : "pointer-events-auto";
+        windowSurfacePhase === "exiting" ? MOTION.markerWindowExit : windowSurfacePhase === "entering" ? `${MOTION.markerWindowEnter} pointer-events-auto` : "pointer-events-auto";
 
     const handleSplitPointerDown = useCallback(
         (event: ReactPointerEvent<HTMLElement>) => {
@@ -410,6 +412,15 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
         <MarkerWindowShareButton
             report={report}
             messages={messages}
+        />
+    );
+
+    const pinButton = (
+        <FeedbackPinToggleButton
+            report={report}
+            caseId={focusedCaseId}
+            className={HEADER_BUTTON_CLASS}
+            iconClassName="h-[14px] w-[14px]"
         />
     );
 
@@ -555,6 +566,7 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
                             >
                                 {leftControls}
                                 {shareButton}
+                                {pinButton}
                                 {sidebarToggleButton}
                             </div>
                         ) : (
@@ -569,6 +581,7 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
                                     <div className="flex items-center gap-[2px]">{leftControls}</div>
                                     <div className="flex items-center gap-[2px]">
                                         {shareButton}
+                                        {pinButton}
                                         {sidebarToggleButton}
                                     </div>
                                 </header>

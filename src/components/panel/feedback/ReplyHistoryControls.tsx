@@ -1,6 +1,6 @@
 import { ProcessingDots } from "@/components/ui/ProcessingDots.js";
 import { usesReplyInfiniteScroll, usesReplyLoadMoreButton, usesReplyPaginationMode } from "@/constants/replyHistory.js";
-import { useReport } from "@/providers/reportContext.js";
+import { useReportPreferences, useReportData } from "@/providers/reportContext.js";
 import type { ReplyHistoryState } from "@/hooks/replyHistoryActions.js";
 
 type ReplyHistoryControlsProps = {
@@ -9,7 +9,8 @@ type ReplyHistoryControlsProps = {
 };
 
 export function ReplyHistoryControls({ reportId, history }: ReplyHistoryControlsProps) {
-    const { messages, replyHistory, loadOlderReplies, goToOlderPaginationPage, goToNewerPaginationPage } = useReport();
+    const { messages } = useReportPreferences();
+    const { replyHistory, loadOlderReplies, goToOlderPaginationPage, goToNewerPaginationPage } = useReportData();
 
     if (!history?.initialized) {
         return history?.isLoadingOlder ? (

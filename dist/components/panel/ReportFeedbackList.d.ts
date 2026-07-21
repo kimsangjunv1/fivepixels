@@ -1,2 +1,2 @@
-export declare function ReportFeedbackList(): import("react/jsx-runtime").JSX.Element;
+export declare function ReportFeedbackList(): import("react").JSX.Element;
 //# sourceMappingURL=ReportFeedbackList.d.ts.map

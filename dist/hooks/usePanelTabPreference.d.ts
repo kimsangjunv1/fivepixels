@@ -1,6 +1,6 @@
 import type { PanelRole } from "../constants/panelRole.js";
 import type { PanelTabAvailabilityContext } from "../constants/panelTabRegistry.js";
-import { type PanelTabPreference } from "../utils/panelTabPreference.js";
+import { type PanelTabPreference } from "../utils/panel/panelTabPreference.js";
 import type { UserSelectablePanelTab } from "../constants/panelTabRegistry.js";
 export declare function usePanelTabPreference(): {
     storedPreference: PanelTabPreference | null;

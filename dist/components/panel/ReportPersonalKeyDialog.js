@@ -1,8 +1,9 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import { useState } from "react";
-import { useReport } from "../../providers/reportContext.js";
+import { useReportPreferences } from "../../providers/reportContext.js";
+import { MOTION } from "../../constants/motionClasses.js";
 export function ReportPersonalKeyDialog({ mode, onCancel, onComplete }) {
-    const { issuePersonalKey, rotatePersonalKey, insertPersonalKey, personalKeyCandidates, messages } = useReport();
+    const { issuePersonalKey, rotatePersonalKey, insertPersonalKey, personalKeyCandidates, messages } = useReportPreferences();
     const [key, setKey] = useState("");
     const [authorId, setAuthorId] = useState(personalKeyCandidates.length === 1 ? personalKeyCandidates[0].id : "");
     const [error, setError] = useState("");
@@ -44,7 +45,7 @@ export function ReportPersonalKeyDialog({ mode, onCancel, onComplete }) {
         }
         onComplete(inserted.authorized ? messages.personalKey.setupSuccess : messages.personalKey.registrationPending);
     };
-    return (_jsxs("section", { className: "bg-[var(--adaptive-grey100)] p-[16px]", children: [_jsx("h6", { className: "text-[14px] font-bold text-[var(--adaptive-black900)]", children: mode === "required"
+    return (_jsxs("section", { className: `bg-[var(--adaptive-grey100)] p-[16px] ${MOTION.dialogIn}`, children: [_jsx("h6", { className: "text-[14px] font-bold text-[var(--adaptive-black900)]", children: mode === "required"
                     ? messages.personalKey.requiredTitle
                     : mode === "rotate"
                         ? messages.personalKey.rotateTitle

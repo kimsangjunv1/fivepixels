@@ -6,6 +6,6 @@ type ProbeLayoutControlsProps = {
     messages: ReportMessages;
     onChange: (key: PickProbeFieldKey, value: string) => void;
 };
-export declare function ProbeLayoutControls({ layoutMode, values, messages, onChange }: ProbeLayoutControlsProps): import("react/jsx-runtime").JSX.Element | null;
+export declare function ProbeLayoutControls({ layoutMode, values, messages, onChange }: ProbeLayoutControlsProps): import("react").JSX.Element | null;
 export {};
 //# sourceMappingURL=ProbeLayoutControls.d.ts.map

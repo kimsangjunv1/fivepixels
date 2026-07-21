@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { REPORT_SHORTCUTS } from "../constants/reportShortcuts.js";
-import { isEditableTarget, matchesShortcut } from "../utils/shortcuts.js";
+import { isEditableTarget, matchesShortcut } from "../utils/shared/shortcuts.js";
 export function useReportShortcuts(handlers) {
     const { mode, draft, editingReportId, panelTab, showTargetPreview, activeReplyReportId, pendingComposer, pickProbeOpen, toggleReportMode, toggleTargetPreview, toggleIssueMode, cancelDraft, cancelPendingComposer, closePickProbe, closeReplyComposer, handleCreateSubmit, stopEditing, handleUpdateSubmit, focusSearchInput, selectAdjacentReport, } = handlers;
     useEffect(() => {

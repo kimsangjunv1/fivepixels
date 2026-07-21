@@ -15,16 +15,16 @@ import type {
     UpdateReportFeedbackPayload,
 } from "@/types/report.js";
 import { isFeedbackCategory } from "@/constants/feedbackCategory.js";
-import { DEFAULT_PROJECT_ID } from "@/constants/project.js";
 import { getReportsStorageKey } from "@/constants/storageKeys.js";
-import { parseFeedbackStorageEnvelope, serializeFeedbackStorageEnvelope } from "@/utils/feedbackTransferSchema.js";
-import { allocateNextFcNumber, backfillFcNumbers } from "@/utils/feedbackCaseId.js";
-import { paginateSortedReplies, sortRepliesChronologically } from "@/utils/replyHistory.js";
+import { parseFeedbackStorageEnvelope, serializeFeedbackStorageEnvelope } from "@/utils/feedback/feedbackTransferSchema.js";
+import { allocateNextFcNumber, backfillFcNumbers } from "@/utils/feedback/feedbackCaseId.js";
+import { paginateSortedReplies, sortRepliesChronologically } from "@/utils/feedback/replyHistory.js";
 import {
     applyCaseStatusSync,
     normalizeFeedbackCases,
     normalizeReplyCaseIds,
-} from "@/utils/reportCases.js";
+} from "@/utils/report/reportCases.js";
+import { normalizeReportPosition } from "@/utils/report/reportPosition.js";
 
 export type LocalStorageReportAdapterOptions = {
     projectId: string;
@@ -161,6 +161,7 @@ function normalizeReport(item: ReportFeedback & { message?: string }): ReportFee
         ...(fcNumber !== undefined ? { fc_number: fcNumber } : {}),
         category,
         field_values: normalizeFieldValues(item.field_values),
+        position: normalizeReportPosition(item.position),
         replies: normalizeReplies(item.replies),
         integrations: normalizeIntegrations(item.integrations),
     });
@@ -335,6 +336,3 @@ export function createLocalStorageReportAdapter({ projectId, environment, appVer
         },
     };
 }
-
-/** @deprecated Use createLocalStorageReportAdapter({ projectId }) instead. */
-export const localStorageReportAdapter = createLocalStorageReportAdapter({ projectId: DEFAULT_PROJECT_ID });

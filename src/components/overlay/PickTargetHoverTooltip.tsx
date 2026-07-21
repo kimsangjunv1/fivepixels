@@ -1,10 +1,11 @@
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
-import { useReport } from "@/providers/reportContext.js";
+import { useReportPreferences, useReportSession } from "@/providers/reportContext.js";
+import { MOTION } from "@/constants/motionClasses.js";
 import type { TargetSnapshot } from "@/types/report-ui.js";
-import { HOVER_TOOLTIP_MARGIN } from "@/utils/hoverTooltipLayout.js";
+import { HOVER_TOOLTIP_MARGIN } from "@/utils/marker/hoverTooltipLayout.js";
 
 const TOOLTIP_SURFACE_CLASS =
-    "pointer-events-none fixed z-[1000002] min-w-[220px] max-w-[min(320px,calc(100vw-16px))] overflow-hidden rounded-[12px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface-overlay)] px-[12px] py-[10px] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[20px]";
+    `pointer-events-none fixed z-[1000002] min-w-[220px] max-w-[min(320px,calc(100vw-16px))] overflow-hidden rounded-[12px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface-overlay)] px-[12px] py-[10px] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[20px] ${MOTION.tooltipIn}`;
 
 const POINTER_OFFSET = 12;
 
@@ -66,7 +67,8 @@ function getPointerTooltipLayout(clientX: number, clientY: number, tooltipRect: 
 }
 
 export function PickTargetHoverTooltip({ target }: PickTargetHoverTooltipProps) {
-    const { messages, hoverPointer } = useReport();
+    const { messages } = useReportPreferences();
+    const { hoverPointer } = useReportSession();
     const tooltipRef = useRef<HTMLDivElement | null>(null);
     const [layout, setLayout] = useState<{ top: number; left: number } | null>(null);
 
@@ -114,7 +116,7 @@ export function PickTargetHoverTooltip({ target }: PickTargetHoverTooltipProps) 
             style={{
                 top: layout?.top ?? hoverPointer.clientY + POINTER_OFFSET,
                 left: layout?.left ?? hoverPointer.clientX + POINTER_OFFSET,
-                opacity: layout ? 1 : 0,
+                visibility: layout ? "visible" : "hidden",
             }}
         >
             <div className="flex flex-col gap-[6px]">

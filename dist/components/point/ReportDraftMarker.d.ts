@@ -1,2 +1,2 @@
-export declare function ReportDraftMarker(): import("react/jsx-runtime").JSX.Element | null;
+export declare function ReportDraftMarker(): import("react").JSX.Element | null;
 //# sourceMappingURL=ReportDraftMarker.d.ts.map

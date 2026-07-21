@@ -1,4 +1,5 @@
-import { useReport } from "@/providers/reportContext.js";
+import { useReportPreferences } from "@/providers/reportContext.js";
+import { MOTION } from "@/constants/motionClasses.js";
 
 type ReportImportConfirmDialogProps = {
     onApply: () => void;
@@ -7,10 +8,10 @@ type ReportImportConfirmDialogProps = {
 };
 
 export function ReportImportConfirmDialog({ onApply, onCancel, onBackupAndApply }: ReportImportConfirmDialogProps) {
-    const { messages } = useReport();
+    const { messages } = useReportPreferences();
 
     return (
-        <section className="bg-[var(--adaptive-grey100)] p-[16px]">
+        <section className={`bg-[var(--adaptive-grey100)] p-[16px] ${MOTION.dialogIn}`}>
             <p className="text-[14px] font-bold text-[var(--adaptive-black900)]">{messages.importConfirm.title}</p>
             <p className="mt-[8px] leading-[1.4] text-[var(--adaptive-black700)]">{messages.importConfirm.description}</p>
             <div className="mt-[14px] flex items-center justify-end gap-[10px]">
