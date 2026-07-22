@@ -130,22 +130,38 @@ export function resolvePersonalKeyAuthor(bundle, identify, authors) {
     return author;
 }
 export function savePersonalKey(projectId, environment, key) {
+    if (typeof localStorage === "undefined") {
+        return false;
+    }
     const bundle = parsePrivateKeyBundle(key);
     if (!bundle ||
         bundle.projectId !== projectId ||
         (bundle.environment ?? "") !== (environment ?? "")) {
         return false;
     }
-    localStorage.setItem(getPersonalKeyStorageKey(projectId, environment), key.trim());
-    return true;
+    try {
+        localStorage.setItem(getPersonalKeyStorageKey(projectId, environment), key.trim());
+        return true;
+    }
+    catch {
+        return false;
+    }
 }
 export function readPersonalKey(projectId, environment) {
-    const key = localStorage.getItem(getPersonalKeyStorageKey(projectId, environment));
-    if (!key || !savePersonalKey(projectId, environment, key)) {
-        localStorage.removeItem(getPersonalKeyStorageKey(projectId, environment));
+    if (typeof localStorage === "undefined") {
         return null;
     }
-    return key;
+    try {
+        const key = localStorage.getItem(getPersonalKeyStorageKey(projectId, environment));
+        if (!key || !savePersonalKey(projectId, environment, key)) {
+            localStorage.removeItem(getPersonalKeyStorageKey(projectId, environment));
+            return null;
+        }
+        return key;
+    }
+    catch {
+        return null;
+    }
 }
 export function hasStoredPersonalKey(projectId, environment) {
     if (typeof localStorage === "undefined") {
