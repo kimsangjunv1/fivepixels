@@ -199,51 +199,53 @@ export function FeedbackComposer({
     };
 
     return (
-        <div className={`flex w-full flex-col border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-neutralTintOpacity900)] backdrop-blur-sm ${usesCaseEditor && !hideEditor ? "min-h-0 flex-1" : ""}`}>
+        <div
+            className={`flex w-full flex-col border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-neutralTintOpacity50)] backdrop-blur-sm ${usesCaseEditor && !hideEditor ? "min-h-0 flex-1" : ""}`}
+        >
             {!hideEditor ? (
-            <div className={`relative ${usesCaseEditor ? "min-h-0 flex-1" : ""}`}>
-                {errorMessage && !isFooterHandledError ? (
-                    <p
-                        role="alert"
-                        className="absolute bottom-full left-[8px] right-[8px] z-10 mb-[6px] rounded-[8px] border border-rose-200 bg-rose-50 px-[8px] py-[4px] text-[12px] leading-[1.4] text-rose-700 shadow-[0_2px_8px_rgba(0,0,0,0.08)]"
-                    >
-                        {errorMessage}
-                    </p>
-                ) : null}
-                {usesCaseEditor ? (
-                    <FeedbackCaseEditor
-                        cases={cases!}
-                        onCaseChange={onCaseChange!}
-                        onAddCase={onAddCase!}
-                        onRemoveCase={onRemoveCase!}
-                        autoFocus={autoFocus}
-                        onSubmitShortcut={handleSubmit}
-                        needsAttention={caseNeedsAttention}
-                        attentionKey={caseAttentionKey}
-                        emptyCaseIds={emptyCaseIds}
-                    />
-                ) : (
-                    <textarea
-                        autoFocus={autoFocus}
-                        value={message}
-                        onChange={(event) => onMessageChange?.(event.target.value)}
-                        placeholder={resolvedPlaceholder}
-                        rows={3}
-                        className="min-h-[72px] w-full resize-none bg-transparent px-[12px] pt-[12px] text-[14px] leading-[1.5] text-[var(--adaptive-text-primary)] outline-none placeholder:text-[var(--adaptive-text-muted)]"
-                        onKeyDown={(event) => {
-                            if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
-                                event.preventDefault();
-                                handleSubmit();
-                            }
-                        }}
-                    />
-                )}
-            </div>
+                <div className={`relative ${usesCaseEditor ? "min-h-0 flex-1" : ""}`}>
+                    {errorMessage && !isFooterHandledError ? (
+                        <p
+                            role="alert"
+                            className="absolute bottom-full left-[8px] right-[8px] z-10 mb-[6px] rounded-[8px] border border-rose-200 bg-rose-50 px-[8px] py-[4px] text-[12px] leading-[1.4] text-rose-700 shadow-[0_2px_8px_rgba(0,0,0,0.08)]"
+                        >
+                            {errorMessage}
+                        </p>
+                    ) : null}
+                    {usesCaseEditor ? (
+                        <FeedbackCaseEditor
+                            cases={cases!}
+                            onCaseChange={onCaseChange!}
+                            onAddCase={onAddCase!}
+                            onRemoveCase={onRemoveCase!}
+                            autoFocus={autoFocus}
+                            onSubmitShortcut={handleSubmit}
+                            needsAttention={caseNeedsAttention}
+                            attentionKey={caseAttentionKey}
+                            emptyCaseIds={emptyCaseIds}
+                        />
+                    ) : (
+                        <textarea
+                            autoFocus={autoFocus}
+                            value={message}
+                            onChange={(event) => onMessageChange?.(event.target.value)}
+                            placeholder={resolvedPlaceholder}
+                            rows={3}
+                            className="min-h-[72px] w-full resize-none bg-transparent px-[12px] pt-[12px] text-[14px] leading-[1.5] text-[var(--adaptive-text-primary)] outline-none placeholder:text-[var(--adaptive-text-muted)]"
+                            onKeyDown={(event) => {
+                                if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
+                                    event.preventDefault();
+                                    handleSubmit();
+                                }
+                            }}
+                        />
+                    )}
+                </div>
             ) : null}
 
             {showActionRow ? (
-            <div className={`flex items-center gap-[8px] px-[8px] pb-[8px] ${hideAuthorSelector && !lockedAuthorName ? "justify-end" : "justify-between"}`}>
-                {/* {hideAuthorSelector ? (
+                <div className={`flex items-center gap-[8px] px-[8px] pb-[8px] ${hideAuthorSelector && !lockedAuthorName ? "justify-end" : "justify-between"}`}>
+                    {/* {hideAuthorSelector ? (
                     lockedAuthorName ? (
                         <span className="flex h-[24px] min-w-0 max-w-[50%] items-center truncate rounded-full bg-[var(--adaptive-surface-muted)] px-[12px] text-[12px] text-[var(--adaptive-black500)]">
                             {lockedAuthorName}
@@ -257,64 +259,62 @@ export function FeedbackComposer({
                     />
                 )} */}
 
-                <div className="flex shrink-0 items-center gap-[6px]">
-                    {showAskQuestionToggle ? (
-                        <label className="inline-flex items-center gap-[4px] px-[2px] text-[12px] text-[var(--adaptive-black600)]">
-                            <input
-                                type="checkbox"
-                                data-fivepixels-interactive=""
-                                checked={isQuestionMode}
-                                disabled={askQuestionForced || isActionDisabled}
-                                onChange={(event) => onAskQuestionChange?.(event.target.checked)}
-                                className="h-[14px] w-[14px] accent-[var(--adaptive-blue500)]"
-                            />
-                            <span>{messages.composer.askQuestionLabel}</span>
-                        </label>
-                    ) : null}
-                    {showGitHubIssueOnCreate ? (
-                        <button
-                            type="button"
-                            data-fivepixels-interactive=""
-                            disabled={isActionDisabled}
-                            onClick={handleGitHubIssueSubmit}
-                            className="inline-flex h-[24px] items-center justify-center gap-[4px] rounded-full border border-[var(--adaptive-border-subtle)] px-[12px] py-[4px] disabled:opacity-50"
-                            aria-label={isGitHubIssueConfirming ? messages.feedbackList.gitIssueConfirmAriaLabel : messages.composer.gitIssueSendAriaLabel}
-                            title={isGitHubIssueConfirming ? messages.feedbackList.gitIssueConfirmTitle : messages.composer.gitIssueSendTitle}
-                        >
-                            <span className="text-[12px] font-semibold text-[var(--adaptive-black500)]">
-                                +{" "}
-                                {isGitHubIssueSubmitting
-                                    ? messages.composer.gitIssueSendingLabel
-                                    : isGitHubIssueConfirming
-                                      ? messages.feedbackList.gitIssueConfirmLabel
-                                      : messages.composer.gitIssueSendLabel}
-                            </span>
-                        </button>
-                    ) : null}
-                    {!hidePrimarySubmitAction ? (
-                        <HoverTooltip
-                            label={messages.composer.sendAriaLabel}
-                            disabled={isActionDisabled}
-                        >
+                    <div className="flex shrink-0 items-center gap-[6px]">
+                        {showAskQuestionToggle ? (
+                            <label className="inline-flex items-center gap-[4px] px-[2px] text-[12px] text-[var(--adaptive-black600)]">
+                                <input
+                                    type="checkbox"
+                                    data-fivepixels-interactive=""
+                                    checked={isQuestionMode}
+                                    disabled={askQuestionForced || isActionDisabled}
+                                    onChange={(event) => onAskQuestionChange?.(event.target.checked)}
+                                    className="h-[14px] w-[14px] accent-[var(--adaptive-blue500)]"
+                                />
+                                <span>{messages.composer.askQuestionLabel}</span>
+                            </label>
+                        ) : null}
+                        {showGitHubIssueOnCreate ? (
                             <button
                                 type="button"
                                 data-fivepixels-interactive=""
                                 disabled={isActionDisabled}
-                                onClick={handleSubmit}
-                                className="inline-flex h-[32px] w-[32px] shrink-0 items-center justify-center rounded-full bg-[#f6562f] text-white disabled:opacity-50"
-                                aria-label={messages.composer.sendAriaLabel}
+                                onClick={handleGitHubIssueSubmit}
+                                className="inline-flex h-[24px] items-center justify-center gap-[4px] rounded-full border border-[var(--adaptive-border-subtle)] px-[12px] py-[4px] disabled:opacity-50"
+                                aria-label={isGitHubIssueConfirming ? messages.feedbackList.gitIssueConfirmAriaLabel : messages.composer.gitIssueSendAriaLabel}
+                                title={isGitHubIssueConfirming ? messages.feedbackList.gitIssueConfirmTitle : messages.composer.gitIssueSendTitle}
                             >
-                                <SendIcon className="h-[16px] w-[16px]" />
+                                <span className="text-[12px] font-semibold text-[var(--adaptive-black500)]">
+                                    +{" "}
+                                    {isGitHubIssueSubmitting
+                                        ? messages.composer.gitIssueSendingLabel
+                                        : isGitHubIssueConfirming
+                                          ? messages.feedbackList.gitIssueConfirmLabel
+                                          : messages.composer.gitIssueSendLabel}
+                                </span>
                             </button>
-                        </HoverTooltip>
-                    ) : null}
+                        ) : null}
+                        {!hidePrimarySubmitAction ? (
+                            <HoverTooltip
+                                label={messages.composer.sendAriaLabel}
+                                disabled={isActionDisabled}
+                            >
+                                <button
+                                    type="button"
+                                    data-fivepixels-interactive=""
+                                    disabled={isActionDisabled}
+                                    onClick={handleSubmit}
+                                    className="inline-flex h-[32px] w-[32px] shrink-0 items-center justify-center rounded-full bg-[#f6562f] text-white disabled:opacity-50"
+                                    aria-label={messages.composer.sendAriaLabel}
+                                >
+                                    <SendIcon className="h-[16px] w-[16px]" />
+                                </button>
+                            </HoverTooltip>
+                        ) : null}
+                    </div>
                 </div>
-            </div>
             ) : null}
             {showCategory && categoryPrompt ? (
-                <div className="border-t border-[var(--adaptive-tintOpacity100)] px-[12px] py-[14px] text-[14px] font-semibold leading-[1.5] text-[var(--adaptive-text-primary)]">
-                    {categoryPrompt}
-                </div>
+                <div className="border-t border-[var(--adaptive-tintOpacity100)] px-[12px] py-[14px] text-[14px] font-semibold leading-[1.5] text-[var(--adaptive-text-primary)]">{categoryPrompt}</div>
             ) : null}
             {showCategory && onCategoryChange ? (
                 <FeedbackCategorySelector

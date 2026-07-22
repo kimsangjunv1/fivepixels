@@ -178,6 +178,7 @@ export type ReportMessages = {
         categoryLabel: string;
         categoryAriaLabel: string;
         categoryOption: Record<FeedbackCategory, string>;
+        categoryTooltip: Record<FeedbackCategory, string>;
         probeSummaryPrompt: string;
         probeSummaryApply: string;
         resolvedCaseDisabled: string;

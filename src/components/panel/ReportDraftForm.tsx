@@ -242,7 +242,7 @@ function ReportDraftFormContent({
                             hidePrimarySubmitAction
                             categoryPrompt={isCategoryStep ? messages.composer.draftCategoryPrompt(draft.cases.length) : undefined}
                         />
-                        <div className="grid grid-cols-2 border-x border-b border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-neutralTintOpacity900)]">
+                        <div className="grid grid-cols-2 border-x border-b border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-neutralTintOpacity50)]">
                             <button
                                 type="button"
                                 data-fivepixels-interactive=""
@@ -257,7 +257,7 @@ function ReportDraftFormContent({
                                 data-fivepixels-interactive=""
                                 disabled={isSubmitting}
                                 onClick={isCategoryStep ? () => void handleCreateSubmit() : handleNext}
-                                className="flex min-h-[24px] items-center justify-center bg-[#f6562f] px-[16px] text-[14px] font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                                className="flex min-h-[24px] items-center justify-center bg-[var(--adaptive-blue100)] text-[var(--adaptive-blue500)] px-[16px] text-[14px] font-semibold transition-opacity hover:opacity-90 disabled:opacity-50"
                             >
                                 {isCategoryStep ? (isSubmitting ? messages.composer.draftCompleting : messages.composer.draftComplete) : messages.composer.draftNext}
                             </button>

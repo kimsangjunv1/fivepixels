@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
 import { FEEDBACK_CATEGORIES, type FeedbackCategory } from "@/constants/feedbackCategory.js";
 import type { ReportMessages } from "@/i18n/types.js";
 
@@ -38,24 +39,26 @@ export function FeedbackCategorySelector({ value, onChange, messages, needsAtten
                 const selected = value === category;
 
                 return (
-                    <button
-                        key={category}
-                        ref={index === 0 ? firstButtonRef : undefined}
-                        type="button"
-                        data-fivepixels-interactive=""
-                        aria-pressed={selected}
-                        onClick={() => onChange(category)}
-                        className={
-                            "rounded-[8px] border px-[12px] py-[4px] text-[12px] font-semibold " +
-                            (selected
-                                ? "border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface-inverse)] text-[var(--adaptive-text-inverse)]"
-                                : needsAttention
-                                  ? "border-rose-400 text-[var(--adaptive-text-primary)]"
-                                  : "border-[var(--adaptive-border-subtle)] text-[var(--adaptive-text-muted)]")
-                        }
-                    >
-                        {messages.composer.categoryOption[category]}
-                    </button>
+                    <HoverTooltip key={category} label={messages.composer.categoryTooltip[category]} multiline>
+                        <button
+                            ref={index === 0 ? firstButtonRef : undefined}
+                            type="button"
+                            data-fivepixels-interactive=""
+                            aria-pressed={selected}
+                            aria-label={`${messages.composer.categoryOption[category]}. ${messages.composer.categoryTooltip[category]}`}
+                            onClick={() => onChange(category)}
+                            className={
+                                "rounded-[8px] border px-[12px] py-[4px] text-[12px] font-semibold " +
+                                (selected
+                                    ? "border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface-inverse)] text-[var(--adaptive-text-inverse)]"
+                                    : needsAttention
+                                      ? "border-rose-400 text-[var(--adaptive-text-primary)]"
+                                      : "border-[var(--adaptive-border-subtle)] text-[var(--adaptive-text-muted)]")
+                            }
+                        >
+                            {messages.composer.categoryOption[category]}
+                        </button>
+                    </HoverTooltip>
                 );
             })}
         </div>

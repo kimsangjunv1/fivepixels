@@ -120,7 +120,7 @@ export const en: ReportMessages = {
             resolved: "Resolved",
         },
         categoryTag: {
-            incident: "Incident",
+            incident: "Urgent",
             problem: "Problem",
             suggestion: "Suggestion",
             question: "Question",
@@ -180,10 +180,16 @@ export const en: ReportMessages = {
         categoryLabel: "Category",
         categoryAriaLabel: "Select feedback category",
         categoryOption: {
-            incident: "Incident",
+            incident: "Urgent",
             problem: "Problem",
             suggestion: "Suggestion",
             question: "Question",
+        },
+        categoryTooltip: {
+            incident: "Needs immediate attention — outage or critical error",
+            problem: "Ordinary bug, broken behavior, or friction",
+            suggestion: "Improvement idea or design/UX proposal",
+            question: "Clarifying question about behavior or specs",
         },
         probeSummaryPrompt: "Apply the current style change summary to this case?",
         probeSummaryApply: "Apply",
