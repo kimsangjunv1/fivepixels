@@ -15,6 +15,7 @@ import { buildFeedbackShareUrl } from "@/utils/feedback/feedbackDeepLink.js";
 import { CloseIcon, LinkIcon, MaximizeIcon, MinimizeIcon, RestoreIcon, SidePanelIcon } from "@/components/icons/Icons.js";
 import { FeedbackFieldTags } from "@/components/panel/feedback/FeedbackFieldTags.js";
 import { FeedbackPinToggleButton } from "@/components/panel/feedback/FeedbackPinToggleButton.js";
+import { FeedbackDeleteAction } from "@/components/panel/feedback/FeedbackDeleteAction.js";
 import { CornerResizeGhost } from "@/components/ui/CornerResizeGhost.js";
 import { MOTION } from "@/constants/motionClasses.js";
 import { CornerResizeHandle } from "@/components/ui/CornerResizeHandle.js";
@@ -150,6 +151,8 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
         handleClaimAssignee,
         handleTransferAssignee,
         handleConfirmResolution,
+        handleDelete,
+        isDeleting,
     } = useReport();
 
     const windowRef = useRef<HTMLDivElement | null>(null);
@@ -424,6 +427,25 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
         />
     );
 
+    const deleteButton = (
+        <FeedbackDeleteAction
+            reportId={report.id}
+            onDelete={handleDelete}
+            disabled={isDeleting}
+            messages={messages}
+            className={`${HEADER_BUTTON_CLASS} disabled:opacity-50`}
+            iconClassName="h-[15px] w-[15px]"
+        />
+    );
+
+    const headerUtilityButtons = (
+        <>
+            {shareButton}
+            {deleteButton}
+            {pinButton}
+        </>
+    );
+
     const rightSection = (
         <div className="flex min-w-0 flex-1 flex-col bg-[var(--adaptive-black50)]">
             <div className="shrink-0 border-b border-[var(--adaptive-border-subtle)] px-[16px] py-[8px]">
@@ -551,6 +573,7 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
                             {leftControls}
                         </div>
                         {shareButton}
+                        {deleteButton}
                         {sidebarToggleButton}
                     </div>
                 ) : (
@@ -566,6 +589,7 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
                             >
                                 {leftControls}
                                 {shareButton}
+                                {deleteButton}
                                 {pinButton}
                                 {sidebarToggleButton}
                             </div>
@@ -580,8 +604,7 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
                                 >
                                     <div className="flex items-center gap-[2px]">{leftControls}</div>
                                     <div className="flex items-center gap-[2px]">
-                                        {shareButton}
-                                        {pinButton}
+                                        {headerUtilityButtons}
                                         {sidebarToggleButton}
                                     </div>
                                 </header>

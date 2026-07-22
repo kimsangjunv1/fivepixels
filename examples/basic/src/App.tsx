@@ -35,7 +35,7 @@ function AppContent() {
                     env: "STAGED",
                     version: "1.0.0",
                 }}
-                // mode="presentation"
+                mode="presentation"
                 team={{
                     reviewers: [
                         {
