@@ -28,7 +28,8 @@ export function FeedbackCategorySelector({ value, onChange, messages, needsAtten
         <div
             ref={containerRef}
             className={
-                "flex flex-wrap items-center gap-[4px] border-t border-[var(--adaptive-tintOpacity100)] p-[4px] transition-[box-shadow,background-color] duration-200 " +
+                // "flex flex-wrap items-center gap-[4px] border-t border-[var(--adaptive-tintOpacity100)] p-[4px] transition-[box-shadow,background-color] duration-200 " +
+                "flex flex-wrap items-center gap-[4px] p-[4px] transition-[box-shadow,background-color] duration-200 " +
                 (needsAttention ? "fivepixels-validation-attention rounded-b-[12px] bg-rose-500/10" : "")
             }
             role="group"
@@ -39,7 +40,11 @@ export function FeedbackCategorySelector({ value, onChange, messages, needsAtten
                 const selected = value === category;
 
                 return (
-                    <HoverTooltip key={category} label={messages.composer.categoryTooltip[category]} multiline>
+                    <HoverTooltip
+                        key={category}
+                        label={messages.composer.categoryTooltip[category]}
+                        multiline
+                    >
                         <button
                             ref={index === 0 ? firstButtonRef : undefined}
                             type="button"

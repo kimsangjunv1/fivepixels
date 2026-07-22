@@ -314,8 +314,9 @@ export function FeedbackComposer({
                 </div>
             ) : null}
             {showCategory && categoryPrompt ? (
-                <div className="border-t border-[var(--adaptive-tintOpacity100)] px-[12px] py-[14px] text-[14px] font-semibold leading-[1.5] text-[var(--adaptive-text-primary)]">{categoryPrompt}</div>
-            ) : null}
+                <div className="px-[12px] py-[8px] text-[16px] font-bold leading-[1.5] text-[var(--adaptive-text-primary)]">{categoryPrompt}</div>
+            ) : // <div className="border-t border-[var(--adaptive-tintOpacity100)] px-[12px] py-[14px] text-[14px] font-semibold leading-[1.5] text-[var(--adaptive-text-primary)]">{categoryPrompt}</div>
+            null}
             {showCategory && onCategoryChange ? (
                 <FeedbackCategorySelector
                     value={category}
