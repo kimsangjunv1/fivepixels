@@ -155,6 +155,7 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
         handleDelete,
         isDeleting,
         sessionActor,
+        cancelPendingComposer,
     } = useReport();
 
     const windowRef = useRef<HTMLDivElement | null>(null);
@@ -495,28 +496,30 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
                 )}
             </div>
 
-            <div className="flex min-h-0 flex-1 flex-col relative">
-                <FeedbackThread
-                    report={report}
-                    authors={authors}
-                    pendingComposer={pendingComposer}
-                    confirmAuthorName={confirmAuthorName}
-                    showConfirmAuthorSelect={showConfirmAuthorSelect}
-                    onConfirmAuthorNameChange={setConfirmAuthorName}
-                    onToggleConfirmAuthorSelect={toggleConfirmAuthorSelect}
-                    onStartDeny={startDenyReview}
-                    onStartCheckout={startCheckoutReview}
-                    onStartAskQuestion={startAskQuestion}
-                    onClaimAssignee={() => void handleClaimAssignee()}
-                    onTransferAssignee={() => void handleTransferAssignee()}
-                    onConfirm={() => void handleConfirmResolution()}
-                    isUpdating={isUpdating}
-                    isClaimingAssignee={isClaimingAssignee}
-                    hideCaseSelector
-                />
+            <div className="flex min-h-0 flex-1 flex-col">
+                <div className="min-h-0 flex-1 overflow-hidden">
+                    <FeedbackThread
+                        report={report}
+                        authors={authors}
+                        pendingComposer={pendingComposer}
+                        confirmAuthorName={confirmAuthorName}
+                        showConfirmAuthorSelect={showConfirmAuthorSelect}
+                        onConfirmAuthorNameChange={setConfirmAuthorName}
+                        onToggleConfirmAuthorSelect={toggleConfirmAuthorSelect}
+                        onStartDeny={startDenyReview}
+                        onStartCheckout={startCheckoutReview}
+                        onStartAskQuestion={startAskQuestion}
+                        onClaimAssignee={() => void handleClaimAssignee()}
+                        onTransferAssignee={() => void handleTransferAssignee()}
+                        onConfirm={() => void handleConfirmResolution()}
+                        isUpdating={isUpdating}
+                        isClaimingAssignee={isClaimingAssignee}
+                        hideCaseSelector
+                    />
+                </div>
 
                 {showComposer ? (
-                    <section className="relative shrink-0 overflow-visible p-[4px] absolute bottom-0 left-0 w-full">
+                    <section className="shrink-0 overflow-visible border-t border-[var(--adaptive-border-subtle)]">
                         <FeedbackComposer
                             message={replyDraft}
                             onMessageChange={(value) => {
@@ -538,6 +541,8 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
                             isSubmitting={isSubmittingReply || isUpdating}
                             autoFocus={pendingComposer !== null}
                             askQuestionForced={isCreatorQuestionComposer}
+                            composerMode={pendingComposer?.type ?? null}
+                            onCancelComposerMode={cancelPendingComposer}
                             errorMessage={errorMessage}
                         />
                     </section>
@@ -624,9 +629,9 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
                                 role="separator"
                                 aria-orientation="vertical"
                                 onPointerDown={handleSplitPointerDown}
-                                className="group relative w-[1px] shrink-0 cursor-col-resize touch-none self-stretch bg-[var(--adaptive-black50)] group-hover:bg-[var(--adaptive-blue500)] transition-colors"
+                                className="group relative w-[3px] shrink-0 cursor-col-resize touch-none self-stretch bg-[var(--adaptive-black50)] group-hover:bg-[var(--adaptive-blue500)] transition-colors"
                             >
-                                {/* <span className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-[var(--adaptive-border-subtle)] transition-colors group-hover:bg-[var(--adaptive-blue500)]" /> */}
+                                <span className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-[var(--adaptive-border-subtle)] transition-colors group-hover:bg-[var(--adaptive-blue500)] touch-none pointer-events-none" />
                             </div>
                         )}
 

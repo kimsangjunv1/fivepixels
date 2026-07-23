@@ -51,6 +51,15 @@ export declare function DeleteIcon({ className, fill }: {
 export declare function RevertIcon({ className, fill }: {
     className?: string;
 } & Pick<MaterialIconProps, "fill">): import("react").JSX.Element;
+export declare function AskActionIcon({ className, fill }: {
+    className?: string;
+} & Pick<MaterialIconProps, "fill">): import("react").JSX.Element;
+export declare function DeniedActionIcon({ className, fill }: {
+    className?: string;
+} & Pick<MaterialIconProps, "fill">): import("react").JSX.Element;
+export declare function CompleteActionIcon({ className, fill }: {
+    className?: string;
+} & Pick<MaterialIconProps, "fill">): import("react").JSX.Element;
 export declare function TrashIcon({ className }: {
     className?: string;
 }): import("react").JSX.Element;

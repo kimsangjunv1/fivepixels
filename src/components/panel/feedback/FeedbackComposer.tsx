@@ -1,13 +1,16 @@
 import type { ReportField, ReportFieldValues, ReportCase } from "@/types/report.js";
 import type { ReportAuthor } from "@/types/report.js";
 import type { FeedbackCategory } from "@/constants/feedbackCategory.js";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useReportPreferences } from "@/providers/reportContext.js";
-import { SendIcon } from "@/components/icons/Icons.js";
-import { AuthorSelector } from "./AuthorSelector.js";
+import type { ReportMessages } from "@/i18n/types.js";
+import { CloseIcon, AskActionIcon, DeniedActionIcon, CompleteActionIcon, SendIcon } from "@/components/icons/Icons.js";
 import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
 import { FeedbackCategorySelector } from "./FeedbackCategorySelector.js";
 import { FeedbackCaseEditor } from "./FeedbackCaseEditor.js";
+import { resolveComposerModeActionKind, THREAD_ACTION_STYLE } from "@/constants/threadActionStyles.js";
+
+export type ComposerMode = "deny" | "recheck" | "checkout" | "question";
 
 type FeedbackComposerProps = {
     message?: string;
@@ -38,6 +41,8 @@ type FeedbackComposerProps = {
     askQuestionChecked?: boolean;
     onAskQuestionChange?: (checked: boolean) => void;
     askQuestionForced?: boolean;
+    composerMode?: ComposerMode | null;
+    onCancelComposerMode?: () => void;
     hideAuthorSelector?: boolean;
     lockedAuthorName?: string;
     onFooterWarningChange?: (message: string | null) => void;
@@ -46,6 +51,9 @@ type FeedbackComposerProps = {
     hidePrimarySubmitAction?: boolean;
     categoryPrompt?: string;
 };
+
+const REPLY_TEXTAREA_MIN_HEIGHT = 56;
+const REPLY_TEXTAREA_MAX_HEIGHT = 200;
 
 function isCaseTextErrorMessage(errorMessage: string, caseCount: number, caseTextRequired: (index: number) => string, casesRequired: string) {
     if (!errorMessage) {
@@ -63,6 +71,131 @@ function isCaseTextErrorMessage(errorMessage: string, caseCount: number, caseTex
     }
 
     return false;
+}
+
+function getComposerModeLabel(mode: ComposerMode, messages: ReportMessages) {
+    const kind = resolveComposerModeActionKind(mode);
+
+    if (kind === "ask") {
+        return messages.composer.modeTag.ask;
+    }
+
+    if (kind === "denied") {
+        return messages.composer.modeTag.denied;
+    }
+
+    return messages.composer.modeTag.complete;
+}
+
+function ComposerModeIcon({ mode, className }: { mode: ComposerMode; className?: string }) {
+    const kind = resolveComposerModeActionKind(mode);
+    const color = THREAD_ACTION_STYLE[kind].color;
+
+    if (kind === "ask") {
+        return (
+            <AskActionIcon
+                className={className}
+                fill={color}
+            />
+        );
+    }
+
+    if (kind === "denied") {
+        return (
+            <DeniedActionIcon
+                className={className}
+                fill={color}
+            />
+        );
+    }
+
+    return (
+        <CompleteActionIcon
+            className={className}
+            fill={color}
+        />
+    );
+}
+
+function ComposerModeTag({ mode, messages, onDismiss }: { mode: ComposerMode; messages: ReportMessages; onDismiss?: () => void }) {
+    const kind = resolveComposerModeActionKind(mode);
+    const style = THREAD_ACTION_STYLE[kind];
+
+    return (
+        <span
+            className={`inline-flex h-[22px] shrink-0 items-center gap-[4px] rounded-full px-[8px] text-[12px] font-semibold ${style.tagBg} ${style.tagText}`}
+            style={{ color: style.color }}
+        >
+            <ComposerModeIcon
+                mode={mode}
+                className="h-[12px] w-[12px]"
+            />
+            <span style={{ color: style.color }}>{getComposerModeLabel(mode, messages)}</span>
+            {onDismiss ? (
+                <button
+                    type="button"
+                    data-fivepixels-interactive=""
+                    onClick={onDismiss}
+                    aria-label={messages.composer.modeTagDismissAriaLabel}
+                    className={`ml-[2px] inline-flex h-[14px] w-[14px] items-center justify-center rounded-full ${style.tagDismissHoverBg}`}
+                    style={{ color: style.color }}
+                >
+                    <CloseIcon className="h-[10px] w-[10px]" />
+                </button>
+            ) : null}
+        </span>
+    );
+}
+
+function ReplyTextarea({
+    value,
+    onChange,
+    placeholder,
+    autoFocus,
+    onSubmitShortcut,
+}: {
+    value: string;
+    onChange: (value: string) => void;
+    placeholder: string;
+    autoFocus: boolean;
+    onSubmitShortcut: () => void;
+}) {
+    const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+    const syncHeight = useCallback(() => {
+        const textarea = textareaRef.current;
+
+        if (!textarea) {
+            return;
+        }
+
+        textarea.style.height = "auto";
+        const nextHeight = Math.min(Math.max(REPLY_TEXTAREA_MIN_HEIGHT, textarea.scrollHeight), REPLY_TEXTAREA_MAX_HEIGHT);
+        textarea.style.height = `${nextHeight}px`;
+        textarea.style.overflowY = textarea.scrollHeight > REPLY_TEXTAREA_MAX_HEIGHT ? "auto" : "hidden";
+    }, []);
+
+    useLayoutEffect(() => {
+        syncHeight();
+    }, [syncHeight, value]);
+
+    return (
+        <textarea
+            ref={textareaRef}
+            autoFocus={autoFocus}
+            value={value}
+            onChange={(event) => onChange(event.target.value)}
+            placeholder={placeholder}
+            rows={1}
+            className="min-h-[56px] max-h-[200px] w-full resize-none overflow-hidden bg-transparent px-[12px] py-[8px] text-[14px] leading-[1.5] text-[var(--adaptive-text-primary)] outline-none placeholder:text-[var(--adaptive-text-muted)]"
+            onKeyDown={(event) => {
+                if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
+                    event.preventDefault();
+                    onSubmitShortcut();
+                }
+            }}
+        />
+    );
 }
 
 export function FeedbackComposer({
@@ -94,6 +227,8 @@ export function FeedbackComposer({
     askQuestionChecked = false,
     onAskQuestionChange,
     askQuestionForced = false,
+    composerMode = null,
+    onCancelComposerMode,
     hideAuthorSelector = false,
     lockedAuthorName,
     onFooterWarningChange,
@@ -106,7 +241,8 @@ export function FeedbackComposer({
     const [isGitHubIssueConfirming, setIsGitHubIssueConfirming] = useState(false);
     const [categoryAttentionKey, setCategoryAttentionKey] = useState(0);
     const [caseAttentionKey, setCaseAttentionKey] = useState(0);
-    const isQuestionMode = askQuestionForced || askQuestionChecked;
+    const resolvedComposerMode = composerMode ?? (askQuestionForced ? ("question" as const) : null);
+    const isQuestionMode = askQuestionForced || askQuestionChecked || resolvedComposerMode === "question";
     const usesCaseEditor = Boolean(cases && onCaseChange && onAddCase && onRemoveCase);
     const showActionRow = !hideActions && (showAskQuestionToggle || showGitHubIssueOnCreate || !hidePrimarySubmitAction);
     const resolvedPlaceholder = isQuestionMode ? messages.composer.questionPlaceholder : (placeholder ?? (usesCaseEditor ? messages.fieldEditor.messagePlaceholder : messages.composer.placeholder));
@@ -199,9 +335,7 @@ export function FeedbackComposer({
     };
 
     return (
-        <div
-            className={`flex w-full flex-col border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-neutralTintOpacity50)] backdrop-blur-sm ${usesCaseEditor && !hideEditor ? "min-h-0 flex-1" : ""}`}
-        >
+        <div className={`flex w-full flex-col bg-[var(--adaptive-neutralTintOpacity50)] backdrop-blur-sm ${usesCaseEditor && !hideEditor ? "min-h-0 flex-1" : ""}`}>
             {!hideEditor ? (
                 <div className={`relative ${usesCaseEditor ? "min-h-0 flex-1" : ""}`}>
                     {errorMessage && !isFooterHandledError ? (
@@ -225,20 +359,24 @@ export function FeedbackComposer({
                             emptyCaseIds={emptyCaseIds}
                         />
                     ) : (
-                        <textarea
-                            autoFocus={autoFocus}
-                            value={message}
-                            onChange={(event) => onMessageChange?.(event.target.value)}
-                            placeholder={resolvedPlaceholder}
-                            rows={3}
-                            className="min-h-[72px] w-full resize-none bg-transparent px-[12px] pt-[12px] text-[14px] leading-[1.5] text-[var(--adaptive-text-primary)] outline-none placeholder:text-[var(--adaptive-text-muted)]"
-                            onKeyDown={(event) => {
-                                if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
-                                    event.preventDefault();
-                                    handleSubmit();
-                                }
-                            }}
-                        />
+                        <div className="flex flex-col gap-[4px] px-[8px] pt-[8px]">
+                            {resolvedComposerMode ? (
+                                <div className="flex items-center px-[4px]">
+                                    <ComposerModeTag
+                                        mode={resolvedComposerMode}
+                                        messages={messages}
+                                        onDismiss={onCancelComposerMode}
+                                    />
+                                </div>
+                            ) : null}
+                            <ReplyTextarea
+                                value={message}
+                                onChange={(value) => onMessageChange?.(value)}
+                                placeholder={resolvedPlaceholder}
+                                autoFocus={autoFocus}
+                                onSubmitShortcut={handleSubmit}
+                            />
+                        </div>
                     )}
                 </div>
             ) : null}
@@ -313,10 +451,7 @@ export function FeedbackComposer({
                     </div>
                 </div>
             ) : null}
-            {showCategory && categoryPrompt ? (
-                <div className="px-[12px] py-[8px] text-[16px] font-bold leading-[1.5] text-[var(--adaptive-text-primary)]">{categoryPrompt}</div>
-            ) : // <div className="border-t border-[var(--adaptive-tintOpacity100)] px-[12px] py-[14px] text-[14px] font-semibold leading-[1.5] text-[var(--adaptive-text-primary)]">{categoryPrompt}</div>
-            null}
+            {showCategory && categoryPrompt ? <div className="px-[12px] py-[8px] text-[16px] font-bold leading-[1.5] text-[var(--adaptive-text-primary)]">{categoryPrompt}</div> : null}
             {showCategory && onCategoryChange ? (
                 <FeedbackCategorySelector
                     value={category}

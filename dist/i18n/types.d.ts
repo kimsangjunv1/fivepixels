@@ -158,6 +158,12 @@ export type ReportMessages = {
         placeholder: string;
         questionPlaceholder: string;
         askQuestionLabel: string;
+        modeTag: {
+            ask: string;
+            denied: string;
+            complete: string;
+        };
+        modeTagDismissAriaLabel: string;
         sendAriaLabel: string;
         draftPrevious: string;
         draftNext: string;
@@ -209,14 +215,17 @@ export type ReportMessages = {
     thread: {
         scrollHintUp: string;
         scrollHintDown: string;
+        ask: string;
+        askTooltip: string;
         denied: string;
+        deniedTooltip: string;
+        complete: string;
+        completeTooltip: string;
         resolved: string;
         resolvedConfirmLabel: string;
         resolvedConfirmAriaLabel: string;
         select: string;
-        leaveResult: string;
         askQuestion: string;
-        reply: string;
         questionsShow: (count: number) => string;
         questionsHide: (count: number) => string;
         questionsPending: (count: number) => string;
@@ -226,7 +235,6 @@ export type ReportMessages = {
         takeOverAssignee: string;
         assigneeAssigned: string;
         assigneeTransferred: string;
-        fixComplete: string;
         loadMoreReplies: (count: number) => string;
         replyPaginationOlder: string;
         replyPaginationNewer: string;

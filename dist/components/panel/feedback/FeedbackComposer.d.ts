@@ -1,6 +1,7 @@
 import type { ReportField, ReportFieldValues, ReportCase } from "../../../types/report.js";
 import type { ReportAuthor } from "../../../types/report.js";
 import type { FeedbackCategory } from "../../../constants/feedbackCategory.js";
+export type ComposerMode = "deny" | "recheck" | "checkout" | "question";
 type FeedbackComposerProps = {
     message?: string;
     onMessageChange?: (value: string) => void;
@@ -30,6 +31,8 @@ type FeedbackComposerProps = {
     askQuestionChecked?: boolean;
     onAskQuestionChange?: (checked: boolean) => void;
     askQuestionForced?: boolean;
+    composerMode?: ComposerMode | null;
+    onCancelComposerMode?: () => void;
     hideAuthorSelector?: boolean;
     lockedAuthorName?: string;
     onFooterWarningChange?: (message: string | null) => void;
@@ -38,6 +41,6 @@ type FeedbackComposerProps = {
     hidePrimarySubmitAction?: boolean;
     categoryPrompt?: string;
 };
-export declare function FeedbackComposer({ message, onMessageChange, cases, onCaseChange, onAddCase, onRemoveCase, authorName, onAuthorNameChange, authors, fields: _fields, fieldValues: _fieldValues, onFieldChange: _onFieldChange, category, onCategoryChange, showCategory, showTags: _showTags, onSubmit, isSubmitting, showGitHubIssueOnCreate, onGitHubIssueSubmit, isGitHubIssueSubmitting, placeholder, autoFocus, errorMessage, showAskQuestionToggle, askQuestionChecked, onAskQuestionChange, askQuestionForced, hideAuthorSelector, lockedAuthorName, onFooterWarningChange, hideEditor, hideActions, hidePrimarySubmitAction, categoryPrompt, }: FeedbackComposerProps): import("react").JSX.Element;
+export declare function FeedbackComposer({ message, onMessageChange, cases, onCaseChange, onAddCase, onRemoveCase, authorName, onAuthorNameChange, authors, fields: _fields, fieldValues: _fieldValues, onFieldChange: _onFieldChange, category, onCategoryChange, showCategory, showTags: _showTags, onSubmit, isSubmitting, showGitHubIssueOnCreate, onGitHubIssueSubmit, isGitHubIssueSubmitting, placeholder, autoFocus, errorMessage, showAskQuestionToggle, askQuestionChecked, onAskQuestionChange, askQuestionForced, composerMode, onCancelComposerMode, hideAuthorSelector, lockedAuthorName, onFooterWarningChange, hideEditor, hideActions, hidePrimarySubmitAction, categoryPrompt, }: FeedbackComposerProps): import("react").JSX.Element;
 export {};
 //# sourceMappingURL=FeedbackComposer.d.ts.map

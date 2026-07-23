@@ -125,6 +125,7 @@ function CaseThreadEntry({
     caseCreatedAt,
     caseStatus,
     actorName,
+    pendingComposer,
     onStartAskQuestion,
     onClaimAssignee,
     isUpdating,
@@ -137,6 +138,7 @@ function CaseThreadEntry({
     caseCreatedAt: string;
     caseStatus: "open" | "resolved";
     actorName: string;
+    pendingComposer: PendingComposer;
     onStartAskQuestion: () => void;
     onClaimAssignee: () => void;
     isUpdating?: boolean;
@@ -145,6 +147,12 @@ function CaseThreadEntry({
 }) {
     const showPreClaimDiscussion = !isEditingCases && canShowCaseEntryActions(report, caseId);
     const hasActions = showPreClaimDiscussion && (Boolean(actorName.trim()) || canShowCaseClaimAction(report, caseId, actorName));
+    const isComposerTarget = pendingComposer?.type === "question" && pendingComposer.targetReplyId === ISSUE_ROOT_PARENT_ID;
+    const surfaceClass = isComposerTarget
+        ? `${THREAD_ACTION_ENTRY_SURFACE_CLASS} border-[#10B981] bg-[rgba(16,185,129,0.08)]`
+        : hasActions
+          ? THREAD_ACTION_ENTRY_SURFACE_CLASS
+          : THREAD_CASE_ENTRY_SURFACE_CLASS;
 
     const entryBody = (
         <>
@@ -170,6 +178,7 @@ function CaseThreadEntry({
                     report={report}
                     caseId={caseId}
                     actorName={actorName}
+                    pendingComposer={pendingComposer}
                     onStartAskQuestion={onStartAskQuestion}
                     onClaimAssignee={onClaimAssignee}
                     isUpdating={isUpdating}
@@ -181,7 +190,7 @@ function CaseThreadEntry({
 
     return (
         <ThreadTimelineRow time={formatClockTime(caseCreatedAt)}>
-            <div className={hasActions ? THREAD_ACTION_ENTRY_SURFACE_CLASS : THREAD_CASE_ENTRY_SURFACE_CLASS}>{entryBody}</div>
+            <div className={surfaceClass}>{entryBody}</div>
         </ThreadTimelineRow>
     );
 }
@@ -262,6 +271,12 @@ function ThreadRootReply({
     const canAct = canShowCaseThreadActions(report, caseId, actorName);
     const isOwnBranchReply = isBranchReplyAuthor(reply, actorName);
     const hasActions = showBranchActions && (canAct || isOwnBranchReply) && (canShowAdjudicationActionsOnBranchReply(reply, actorName) ? canAct : true);
+    const isComposerTarget = pendingComposer?.type === "question" && pendingComposer.targetReplyId === reply.id;
+    const surfaceClass = isComposerTarget
+        ? `${THREAD_ACTION_ENTRY_SURFACE_CLASS} border-[#10B981] bg-[rgba(16,185,129,0.08)]`
+        : hasActions
+          ? THREAD_ACTION_ENTRY_SURFACE_CLASS
+          : THREAD_CASE_ENTRY_SURFACE_CLASS;
 
     const entryBody = (
         <>
@@ -300,7 +315,7 @@ function ThreadRootReply({
 
     return (
         <ThreadTimelineRow time={formatClockTime(reply.created_at)}>
-            <div className={hasActions ? THREAD_ACTION_ENTRY_SURFACE_CLASS : THREAD_CASE_ENTRY_SURFACE_CLASS}>{entryBody}</div>
+            <div className={surfaceClass}>{entryBody}</div>
         </ThreadTimelineRow>
     );
 }
@@ -497,8 +512,7 @@ export function FeedbackThread({
                     </article>
                 )}
 
-                <div className="relative flex flex-col pt-[12px] pb-[57px]">
-                    {/* <div className="relative flex flex-col pt-[12px] pb-[57px]"> */}
+                <div className={`relative flex flex-col pt-[12px] ${hideCaseSelector ? "pb-[12px]" : "pb-[57px]"}`}>
                     {/* <ReplyHistoryControls
                         reportId={report.id}
                         history={replyHistoryState}
@@ -506,7 +520,6 @@ export function FeedbackThread({
                     {showTimelineRail ? (
                         <div className="pointer-events-none absolute bottom-[12px] left-[20px] top-[12px] w-px bg-[linear-gradient(180deg,_var(--adaptive-black900)_60%,transparent_90%)]" />
                     ) : null}
-                    {/* {showTimelineRail ? <div className="pointer-events-none absolute bottom-[12px] left-[20px] top-[12px] w-px bg-[var(--adaptive-border-subtle)]" /> : null} */}
 
                     {focusedCaseId && !isAllCasesView ? (
                         <>
@@ -518,6 +531,7 @@ export function FeedbackThread({
                                     caseCreatedAt={focusedCase.created_at}
                                     caseStatus={focusedCase.status}
                                     actorName={actorName}
+                                    pendingComposer={pendingComposer}
                                     onStartAskQuestion={onStartAskQuestion}
                                     onClaimAssignee={onClaimAssignee}
                                     isUpdating={isUpdating}

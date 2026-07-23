@@ -10,8 +10,10 @@ import {
     canShowSuggestedBranchActionsForCase,
     isBranchReplyAuthor,
 } from "@/utils/feedback/feedbackThread.js";
-import { CheckIcon, CloseIcon, RevertIcon } from "@/components/icons/Icons.js";
+import { getThreadActionButtonClass, THREAD_ACTION_STYLE, type ThreadActionKind } from "@/constants/threadActionStyles.js";
+import { AskActionIcon, CheckIcon, CompleteActionIcon, DeniedActionIcon } from "@/components/icons/Icons.js";
 import { AuthorSelector } from "./AuthorSelector.js";
+import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
 
 export const THREAD_ACTION_BUTTON_BASE = "flex items-center gap-[4px] rounded-[6px] px-[8px] py-[4px] text-[12px] font-semibold transition-colors";
 export const THREAD_ACTION_GHOST = "text-[var(--adaptive-text-primary)] hover:bg-[var(--adaptive-black100)]";
@@ -23,6 +25,75 @@ type PendingComposer = {
     type: "deny" | "recheck" | "checkout" | "question";
     targetReplyId: string;
 } | null;
+
+function ThreadActionIcon({ kind, className }: { kind: ThreadActionKind; className?: string }) {
+    const color = THREAD_ACTION_STYLE[kind].color;
+
+    if (kind === "ask") {
+        return (
+            <AskActionIcon
+                className={className}
+                fill={color}
+            />
+        );
+    }
+
+    if (kind === "denied") {
+        return (
+            <DeniedActionIcon
+                className={className}
+                fill={color}
+            />
+        );
+    }
+
+    return (
+        <CompleteActionIcon
+            className={className}
+            fill={color}
+        />
+    );
+}
+
+function ThreadActionButton({
+    label,
+    tooltip,
+    active,
+    kind,
+    disabled,
+    onClick,
+    showLabel = false,
+}: {
+    label: string;
+    tooltip: string;
+    active: boolean;
+    kind: ThreadActionKind;
+    disabled?: boolean;
+    onClick: () => void;
+    showLabel?: boolean;
+}) {
+    const color = THREAD_ACTION_STYLE[kind].color;
+
+    return (
+        <HoverTooltip label={tooltip}>
+            <button
+                type="button"
+                data-fivepixels-interactive=""
+                disabled={disabled}
+                onClick={onClick}
+                aria-label={label}
+                className={`${THREAD_ACTION_BUTTON_BASE} ${showLabel ? "" : "px-[6px]"} ${getThreadActionButtonClass(kind, active)}`}
+                style={{ color }}
+            >
+                <ThreadActionIcon
+                    kind={kind}
+                    className="h-[13px] w-[13px]"
+                />
+                {showLabel ? <span style={{ color }}>{label}</span> : null}
+            </button>
+        </HoverTooltip>
+    );
+}
 
 export function ThreadEntryActions({
     reply,
@@ -107,16 +178,15 @@ export function ThreadEntryActions({
                 {showReview ? (
                     <>
                         {canUseReplyAction ? (
-                            <button
-                                type="button"
-                                data-fivepixels-interactive=""
+                            <ThreadActionButton
+                                label={messages.thread.ask}
+                                tooltip={messages.thread.askTooltip}
+                                active={askQuestionActive}
+                                kind="ask"
                                 disabled={isUpdating}
                                 onClick={onStartAskQuestion}
-                                className={`${THREAD_ACTION_BUTTON_BASE} ${askQuestionActive ? "bg-[var(--adaptive-blue50)] text-[var(--adaptive-blue500)]" : THREAD_ACTION_GHOST}`}
-                            >
-                                <RevertIcon className="h-[13px] w-[13px]" />
-                                {messages.thread.reply}
-                            </button>
+                                showLabel
+                            />
                         ) : null}
 
                         {showAdjudication && canAct ? (
@@ -128,16 +198,14 @@ export function ThreadEntryActions({
                                     />
                                 ) : null}
 
-                                <button
-                                    type="button"
-                                    data-fivepixels-interactive=""
+                                <ThreadActionButton
+                                    label={messages.thread.denied}
+                                    tooltip={messages.thread.deniedTooltip}
+                                    active={denyActive}
+                                    kind="denied"
                                     disabled={isUpdating}
                                     onClick={() => onStartDeny()}
-                                    aria-label={messages.thread.denied}
-                                    className={`${THREAD_ACTION_BUTTON_BASE} px-[6px] ${denyActive ? "bg-[#FF2B6A] text-white" : THREAD_ACTION_GHOST}`}
-                                >
-                                    <CloseIcon className="h-[13px] w-[13px]" />
-                                </button>
+                                />
 
                                 <button
                                     type="button"
@@ -158,16 +226,15 @@ export function ThreadEntryActions({
                 {showCheckout ? (
                     <>
                         {canUseReplyAction ? (
-                            <button
-                                type="button"
-                                data-fivepixels-interactive=""
+                            <ThreadActionButton
+                                label={messages.thread.ask}
+                                tooltip={messages.thread.askTooltip}
+                                active={askQuestionActive}
+                                kind="ask"
                                 disabled={isUpdating}
                                 onClick={onStartAskQuestion}
-                                className={`${THREAD_ACTION_BUTTON_BASE} ${askQuestionActive ? "bg-[var(--adaptive-blue50)] text-[var(--adaptive-blue500)]" : THREAD_ACTION_GHOST}`}
-                            >
-                                <RevertIcon className="h-[13px] w-[13px]" />
-                                {messages.thread.reply}
-                            </button>
+                                showLabel
+                            />
                         ) : null}
                         {showAdjudication && canAct ? (
                             <>
@@ -177,26 +244,23 @@ export function ThreadEntryActions({
                                         aria-hidden
                                     />
                                 ) : null}
-                                <button
-                                    type="button"
-                                    data-fivepixels-interactive=""
+                                <ThreadActionButton
+                                    label={messages.thread.denied}
+                                    tooltip={messages.thread.deniedTooltip}
+                                    active={denyActive}
+                                    kind="denied"
                                     disabled={isUpdating}
                                     onClick={() => onStartDeny()}
-                                    aria-label={messages.thread.denied}
-                                    className={`${THREAD_ACTION_BUTTON_BASE} px-[6px] ${denyActive ? "bg-[#FF2B6A] text-white" : THREAD_ACTION_GHOST}`}
-                                >
-                                    <CloseIcon className="h-[13px] w-[13px]" />
-                                </button>
-                                <button
-                                    type="button"
-                                    data-fivepixels-interactive=""
+                                />
+                                <ThreadActionButton
+                                    label={messages.thread.complete}
+                                    tooltip={messages.thread.completeTooltip}
+                                    active={checkoutActive}
+                                    kind="complete"
                                     disabled={isUpdating}
                                     onClick={() => onStartCheckout(reply.id)}
-                                    aria-label={messages.thread.leaveResult}
-                                    className={`${THREAD_ACTION_BUTTON_BASE} px-[6px] ${checkoutActive ? "bg-[#F6572E] text-white" : THREAD_ACTION_GHOST}`}
-                                >
-                                    <CheckIcon className="h-[13px] w-[13px]" />
-                                </button>
+                                    showLabel
+                                />
                             </>
                         ) : null}
                     </>
@@ -220,6 +284,7 @@ export function CaseThreadEntryActions({
     report,
     caseId,
     actorName,
+    pendingComposer,
     onStartAskQuestion,
     onClaimAssignee,
     isUpdating,
@@ -228,6 +293,7 @@ export function CaseThreadEntryActions({
     report: ReportFeedback;
     caseId: string;
     actorName: string;
+    pendingComposer: PendingComposer;
     onStartAskQuestion: () => void;
     onClaimAssignee: () => void;
     isUpdating?: boolean;
@@ -237,6 +303,7 @@ export function CaseThreadEntryActions({
     const showPreClaimDiscussion = canShowCaseEntryActions(report, caseId);
     const showClaim = canShowCaseClaimAction(report, caseId, actorName);
     const canReply = showPreClaimDiscussion && Boolean(actorName.trim());
+    const replyActive = pendingComposer?.type === "question";
 
     if (!showPreClaimDiscussion) {
         return null;
@@ -245,16 +312,15 @@ export function CaseThreadEntryActions({
     return (
         <div className="mt-[10px] flex flex-wrap items-center justify-end gap-[4px]">
             {canReply ? (
-                <button
-                    type="button"
-                    data-fivepixels-interactive=""
+                <ThreadActionButton
+                    label={messages.thread.ask}
+                    tooltip={messages.thread.askTooltip}
+                    active={replyActive}
+                    kind="ask"
                     disabled={isUpdating}
                     onClick={onStartAskQuestion}
-                    className={`${THREAD_ACTION_BUTTON_BASE} ${THREAD_ACTION_GHOST}`}
-                >
-                    <RevertIcon className="h-[13px] w-[13px]" />
-                    {messages.thread.reply}
-                </button>
+                    showLabel
+                />
             ) : null}
             {showClaim ? (
                 <button
@@ -270,4 +336,3 @@ export function CaseThreadEntryActions({
         </div>
     );
 }
-
