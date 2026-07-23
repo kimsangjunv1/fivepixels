@@ -2,6 +2,7 @@ import { getActiveReportMessages } from "@/i18n/index.js";
 import { getReportsStorageKey } from "@/constants/storageKeys.js";
 import { readAllReportsFromStorage, writeAllReportsToStorage } from "@/storage/local/localStorageAdapter.js";
 import type { ReportFeedback, ReportProject } from "@/types/report.js";
+import { mergeFeedbackCollections, type FeedbackMergeStats } from "./feedbackImportMerge.js";
 import {
     parseFeedbackCommandJson,
     parseFeedbackImportJson,
@@ -17,6 +18,8 @@ export type FeedbackTransferScope = {
     appVersion?: string;
 };
 
+export type FeedbackImportMode = "merge" | "replace";
+
 export type { FeedbackImportPayload } from "./feedbackTransferSchema.js";
 export {
     buildProjectComparisonLines,
@@ -27,6 +30,8 @@ export {
     serializeFeedbackItem,
     toReportProject,
 } from "./feedbackTransferSchema.js";
+export { mergeFeedbackCollections, mergeFeedbackItem, mergeReplyCollections } from "./feedbackImportMerge.js";
+export type { FeedbackMergeResult, FeedbackMergeStats } from "./feedbackImportMerge.js";
 
 export type FeedbackDownloadResult = "saved" | "downloaded" | "cancelled" | "failed";
 
@@ -66,8 +71,8 @@ export function writeAllFeedback(scope: FeedbackTransferScope, items: ReportFeed
     writeAllReportsToStorage(getFeedbackStorageKey(scope), items, toReportProject(scope));
 }
 
-export type FeedbackInsertResult = {
-    inserted: number;
+export type FeedbackInsertResult = FeedbackMergeStats & {
+    /** @deprecated Prefer `updated`. Kept for command success message compatibility. */
     replaced: number;
 };
 
@@ -103,33 +108,41 @@ export function insertFeedbackItems(scope: FeedbackTransferScope, incoming: Repo
 
     return {
         inserted: incoming.length,
+        updated: 0,
+        kept: existing.length,
+        localRepliesPreserved: 0,
         replaced: 0,
     };
 }
 
+/** Upsert by id while merging replies so local-only replies are preserved. */
 export function upsertFeedbackItems(scope: FeedbackTransferScope, incoming: ReportFeedback[]): FeedbackInsertResult {
     const existing = readAllFeedback(scope);
-    const existingIds = new Set(existing.map((item) => item.id));
-    const incomingById = new Map(incoming.map((item) => [item.id, item]));
-    let replaced = 0;
-    let inserted = 0;
+    const merged = mergeFeedbackCollections(existing, incoming);
 
-    for (const item of incoming) {
-        if (existingIds.has(item.id)) {
-            replaced += 1;
-        } else {
-            inserted += 1;
-        }
-    }
-
-    const kept = existing.filter((item) => !incomingById.has(item.id));
-
-    writeAllFeedback(scope, [...kept, ...incoming]);
+    writeAllFeedback(scope, merged.items);
 
     return {
-        inserted,
-        replaced,
+        ...merged,
+        replaced: merged.updated,
     };
+}
+
+/** Apply an import payload with merge (default) or full replace. */
+export function applyFeedbackImport(scope: FeedbackTransferScope, incoming: ReportFeedback[], mode: FeedbackImportMode = "merge"): FeedbackInsertResult {
+    if (mode === "replace") {
+        writeAllFeedback(scope, incoming);
+
+        return {
+            inserted: incoming.length,
+            updated: 0,
+            kept: 0,
+            localRepliesPreserved: 0,
+            replaced: incoming.length,
+        };
+    }
+
+    return upsertFeedbackItems(scope, incoming);
 }
 
 export async function copyTextToClipboard(text: string) {

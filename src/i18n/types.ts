@@ -460,6 +460,10 @@ export type ReportMessages = {
     importConfirm: {
         title: string;
         description: string;
+        mergeMode: string;
+        replaceMode: string;
+        mergeDescription: string;
+        replaceDescription: string;
         applyDirectly: string;
         backupAndApply: string;
     };
@@ -680,6 +684,7 @@ export type ReportMessages = {
         commandSuccessInsertedReplaced: (inserted: number, replaced: number) => string;
         commandSuccessReplaced: (count: number) => string;
         commandSuccessInserted: (count: number) => string;
+        commandSuccessLocalRepliesPreserved: (count: number) => string;
         duplicateIdIncluded: string;
         clipboardCopyFailed: string;
         invalidJson: string;

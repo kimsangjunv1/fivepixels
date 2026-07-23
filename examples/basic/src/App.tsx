@@ -35,7 +35,7 @@ function AppContent() {
                     env: "STAGED",
                     version: "1.0.0",
                 }}
-                mode="presentation"
+                // mode="presentation"
                 team={{
                     reviewers: [
                         {
@@ -73,6 +73,18 @@ function AppContent() {
                             name: "asd",
                             publicKey:
                                 "stpub1.eyJjcnYiOiJQLTI1NiIsImV4dCI6dHJ1ZSwia2V5X29wcyI6WyJ2ZXJpZnkiXSwia3R5IjoiRUMiLCJ4IjoiUEZ0VWMtSmp5c09nTkdFR3JlbE9tLUdPcHVCRGtRZDlVc2JPU3ZNOHNiQSIsInkiOiJUaHZmd2RJOE02dWRXNnhOLVVkeVk2UGxGRktub2g3dlZWeFppNlNZWXdZIn0",
+                        },
+                        {
+                            id: "5dd00308-acf1-45d9-b145-9eb3ce31b3bd",
+                            name: "전QA임",
+                            publicKey:
+                                "stpub1.eyJjcnYiOiJQLTI1NiIsImV4dCI6dHJ1ZSwia2V5X29wcyI6WyJ2ZXJpZnkiXSwia3R5IjoiRUMiLCJ4IjoickwtUzJxNHNDYkg2NFJ4TE0tZEx4UnctX2hnSjBTTTNxSHFTUGhpN0Z2dyIsInkiOiJic1NYNWtBSWlxajRfN0Frd1ZXM1VQTUNFTlFKUlFxMzFDWTRmWTVvZmowIn0",
+                        },
+                        {
+                            id: "a1bdc245-a152-472a-a566-4ef6f34dd879",
+                            name: "프론트개발자임ㅋ",
+                            publicKey:
+                                "stpub1.eyJjcnYiOiJQLTI1NiIsImV4dCI6dHJ1ZSwia2V5X29wcyI6WyJ2ZXJpZnkiXSwia3R5IjoiRUMiLCJ4Ijoic0ZaaXkwYmVteU9YY0Ziam8zeE5RVGlqWUk4RzhMdmtTNXd2bThOQzY4SSIsInkiOiJFc0YxRHNGa2o0WnRfNXY0Si14VDAweTdvajZiaGN1YnhUMDJBTkxhTzJNIn0",
                         },
                     ],
                 }}

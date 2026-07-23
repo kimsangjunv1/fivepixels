@@ -466,7 +466,12 @@ export const ko: ReportMessages = {
     },
     importConfirm: {
         title: "확인 필요",
-        description: "현재 localStorage에 저장된 데이터를 JSON으로 백업한 뒤, 선택한 JSON을 가져올까요?",
+        description: "선택한 JSON을 localStorage에 가져옵니다. 기본은 병합이며, 필요하면 전체 교체를 선택할 수 있어요.",
+        mergeMode: "병합 가져오기",
+        replaceMode: "전체 교체",
+        mergeDescription:
+            "기존 피드백과 내가 작성한 답변은 유지하고, 가져온 JSON의 새 피드백·변경된 본문만 반영합니다. 백업 후 반영을 권장해요.",
+        replaceDescription: "현재 localStorage 데이터를 가져온 JSON으로 완전히 덮어씁니다. 내가 작성한 답변과 로컬 전용 피드백이 사라질 수 있어요.",
         applyDirectly: "바로 반영",
         backupAndApply: "백업 후 반영",
     },
@@ -479,7 +484,8 @@ export const ko: ReportMessages = {
     },
     commandReplace: {
         title: "이미 등록된 id가 있습니다",
-        description: "입력한 데이터의 id가 localStorage에 이미 저장되어 있어요. 확인을 누르면 기존 피드백을 아래 내용으로 교체합니다.",
+        description:
+            "입력한 데이터의 id가 localStorage에 이미 저장되어 있어요. 확인을 누르면 본문은 가져온 내용으로 갱신하고, 내가 작성한 답변은 유지한 채 병합합니다.",
         existingMessage: "기존 메시지",
         replacementMessage: "교체 메시지",
         idLabel: "ID",
@@ -701,9 +707,10 @@ export const ko: ReportMessages = {
         backupExportFailedAbortImport: "백업 내보내기에 실패해서 가져오기를 중단했어요.",
         jsonFileOnly: "JSON 파일만 가져올 수 있어요.",
         commandInsertFailed: "데이터 삽입에 실패했어요.",
-        commandSuccessInsertedReplaced: (inserted, replaced) => `${inserted}건 삽입, ${replaced}건 교체가 완료되었어요.`,
-        commandSuccessReplaced: (count) => `${count}건의 피드백 데이터가 교체되었어요.`,
+        commandSuccessInsertedReplaced: (inserted, replaced) => `${inserted}건 삽입, ${replaced}건 갱신이 완료되었어요.`,
+        commandSuccessReplaced: (count) => `${count}건의 피드백 데이터가 갱신되었어요.`,
         commandSuccessInserted: (count) => `${count}건의 피드백 데이터가 삽입되었어요.`,
+        commandSuccessLocalRepliesPreserved: (count) => `로컬 답변 ${count}건을 유지했어요.`,
         duplicateIdIncluded: "이미 등록된 id가 포함되어 있어요.",
         clipboardCopyFailed: "클립보드 복사에 실패했어요.",
         invalidJson: "JSON 형식이 올바르지 않아요.",
