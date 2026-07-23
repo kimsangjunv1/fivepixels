@@ -52,8 +52,10 @@ type FeedbackComposerProps = {
     categoryPrompt?: string;
 };
 
-const REPLY_TEXTAREA_MIN_HEIGHT = 56;
+const REPLY_TEXTAREA_MIN_HEIGHT = 32;
 const REPLY_TEXTAREA_MAX_HEIGHT = 200;
+const REPLY_LINE_HEIGHT_PX = 21;
+const COMPOSER_MODE_TAG_INLINE_RESERVE_PX = 96;
 
 function isCaseTextErrorMessage(errorMessage: string, caseCount: number, caseTextRequired: (index: number) => string, casesRequired: string) {
     if (!errorMessage) {
@@ -153,14 +155,21 @@ function ReplyTextarea({
     placeholder,
     autoFocus,
     onSubmitShortcut,
+    onMultilineChange,
+    compact = false,
+    reserveInlineStart = 0,
 }: {
     value: string;
     onChange: (value: string) => void;
     placeholder: string;
     autoFocus: boolean;
     onSubmitShortcut: () => void;
+    onMultilineChange?: (isMultiline: boolean) => void;
+    compact?: boolean;
+    reserveInlineStart?: number;
 }) {
     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+    const measureFrameRef = useRef<number | null>(null);
 
     const syncHeight = useCallback(() => {
         const textarea = textareaRef.current;
@@ -169,15 +178,55 @@ function ReplyTextarea({
             return;
         }
 
+        const parentWidth = textarea.parentElement?.clientWidth ?? textarea.clientWidth;
+        const measureWidth = reserveInlineStart > 0 ? Math.max(80, parentWidth - reserveInlineStart) : parentWidth;
+
+        textarea.style.width = `${measureWidth}px`;
         textarea.style.height = "auto";
-        const nextHeight = Math.min(Math.max(REPLY_TEXTAREA_MIN_HEIGHT, textarea.scrollHeight), REPLY_TEXTAREA_MAX_HEIGHT);
+
+        const measureScrollHeight = textarea.scrollHeight;
+        const styles = window.getComputedStyle(textarea);
+        const paddingY = (Number.parseFloat(styles.paddingTop) || 0) + (Number.parseFloat(styles.paddingBottom) || 0);
+        const lineHeight = Number.parseFloat(styles.lineHeight) || REPLY_LINE_HEIGHT_PX;
+        const contentHeight = Math.max(0, measureScrollHeight - paddingY);
+        const lineCount = Math.max(1, Math.round(contentHeight / lineHeight));
+        const isMultiline = value.includes("\n") || lineCount > 1;
+
+        textarea.style.width = "";
+        textarea.style.height = "auto";
+        const displayScrollHeight = textarea.scrollHeight;
+        const nextHeight = Math.min(Math.max(REPLY_TEXTAREA_MIN_HEIGHT, displayScrollHeight), REPLY_TEXTAREA_MAX_HEIGHT);
         textarea.style.height = `${nextHeight}px`;
-        textarea.style.overflowY = textarea.scrollHeight > REPLY_TEXTAREA_MAX_HEIGHT ? "auto" : "hidden";
-    }, []);
+        textarea.style.overflowY = displayScrollHeight > REPLY_TEXTAREA_MAX_HEIGHT ? "auto" : "hidden";
+
+        onMultilineChange?.(isMultiline);
+    }, [onMultilineChange, reserveInlineStart, value]);
 
     useLayoutEffect(() => {
         syncHeight();
-    }, [syncHeight, value]);
+    }, [syncHeight, value, compact, reserveInlineStart]);
+
+    useEffect(() => {
+        const handleResize = () => {
+            if (measureFrameRef.current !== null) {
+                window.cancelAnimationFrame(measureFrameRef.current);
+            }
+
+            measureFrameRef.current = window.requestAnimationFrame(() => {
+                syncHeight();
+            });
+        };
+
+        window.addEventListener("resize", handleResize);
+
+        return () => {
+            window.removeEventListener("resize", handleResize);
+
+            if (measureFrameRef.current !== null) {
+                window.cancelAnimationFrame(measureFrameRef.current);
+            }
+        };
+    }, [syncHeight]);
 
     return (
         <textarea
@@ -187,7 +236,11 @@ function ReplyTextarea({
             onChange={(event) => onChange(event.target.value)}
             placeholder={placeholder}
             rows={1}
-            className="min-h-[56px] max-h-[200px] w-full resize-none overflow-hidden bg-transparent px-[12px] py-[8px] text-[14px] leading-[1.5] text-[var(--adaptive-text-primary)] outline-none placeholder:text-[var(--adaptive-text-muted)]"
+            // className={`max-h-[200px] w-full min-w-0 flex-1 resize-none overflow-hidden bg-transparent py-[6px] text-[14px] leading-[1.5] text-[var(--adaptive-text-primary)] outline-none placeholder:text-[var(--adaptive-text-muted)] ${
+            //     compact ? "px-[4px]" : "px-[8px]"
+            // }`}
+            className={`max-h-[200px] w-full min-w-0 flex-1 resize-none overflow-hidden bg-transparent py-[6px] text-[14px] leading-[1.5] text-[var(--adaptive-text-primary)] outline-none placeholder:text-[var(--adaptive-text-muted)]`}
+            style={{ minHeight: REPLY_TEXTAREA_MIN_HEIGHT }}
             onKeyDown={(event) => {
                 if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
                     event.preventDefault();
@@ -241,10 +294,13 @@ export function FeedbackComposer({
     const [isGitHubIssueConfirming, setIsGitHubIssueConfirming] = useState(false);
     const [categoryAttentionKey, setCategoryAttentionKey] = useState(0);
     const [caseAttentionKey, setCaseAttentionKey] = useState(0);
+    const [isReplyMultiline, setIsReplyMultiline] = useState(false);
     const resolvedComposerMode = composerMode ?? (askQuestionForced ? ("question" as const) : null);
     const isQuestionMode = askQuestionForced || askQuestionChecked || resolvedComposerMode === "question";
     const usesCaseEditor = Boolean(cases && onCaseChange && onAddCase && onRemoveCase);
-    const showActionRow = !hideActions && (showAskQuestionToggle || showGitHubIssueOnCreate || !hidePrimarySubmitAction);
+    const showInlineComposerModeTag = Boolean(resolvedComposerMode && !isReplyMultiline);
+    const showFooterComposerModeTag = Boolean(resolvedComposerMode && isReplyMultiline);
+    const showActionRow = !hideActions && (showAskQuestionToggle || showGitHubIssueOnCreate || !hidePrimarySubmitAction || showFooterComposerModeTag);
     const resolvedPlaceholder = isQuestionMode ? messages.composer.questionPlaceholder : (placeholder ?? (usesCaseEditor ? messages.fieldEditor.messagePlaceholder : messages.composer.placeholder));
     const emptyCaseIds = useMemo(() => (cases ?? []).filter((item) => !item.text.trim()).map((item) => item.id), [cases]);
     const hasEmptyCase = emptyCaseIds.length > 0;
@@ -298,6 +354,12 @@ export function FeedbackComposer({
             setCategoryAttentionKey(0);
         }
     }, [category, categoryAttentionKey]);
+
+    useEffect(() => {
+        if (!resolvedComposerMode) {
+            setIsReplyMultiline(false);
+        }
+    }, [resolvedComposerMode]);
 
     const bumpValidationAttention = () => {
         if (usesCaseEditor && hasEmptyCase) {
@@ -359,30 +421,35 @@ export function FeedbackComposer({
                             emptyCaseIds={emptyCaseIds}
                         />
                     ) : (
-                        <div className="flex flex-col gap-[4px] px-[8px] pt-[8px]">
-                            {resolvedComposerMode ? (
-                                <div className="flex items-center px-[4px]">
-                                    <ComposerModeTag
-                                        mode={resolvedComposerMode}
-                                        messages={messages}
-                                        onDismiss={onCancelComposerMode}
-                                    />
-                                </div>
-                            ) : null}
-                            <ReplyTextarea
-                                value={message}
-                                onChange={(value) => onMessageChange?.(value)}
-                                placeholder={resolvedPlaceholder}
-                                autoFocus={autoFocus}
-                                onSubmitShortcut={handleSubmit}
-                            />
+                        <div className="px-[8px] pt-[8px]">
+                            <div className={showInlineComposerModeTag ? "flex items-start gap-[6px]" : undefined}>
+                                {showInlineComposerModeTag && resolvedComposerMode ? (
+                                    <div className="flex h-[32px] shrink-0 items-center">
+                                        <ComposerModeTag
+                                            mode={resolvedComposerMode}
+                                            messages={messages}
+                                            onDismiss={onCancelComposerMode}
+                                        />
+                                    </div>
+                                ) : null}
+                                <ReplyTextarea
+                                    value={message}
+                                    onChange={(value) => onMessageChange?.(value)}
+                                    placeholder={resolvedPlaceholder}
+                                    autoFocus={autoFocus}
+                                    onSubmitShortcut={handleSubmit}
+                                    onMultilineChange={setIsReplyMultiline}
+                                    compact={showInlineComposerModeTag}
+                                    reserveInlineStart={resolvedComposerMode ? COMPOSER_MODE_TAG_INLINE_RESERVE_PX : 0}
+                                />
+                            </div>
                         </div>
                     )}
                 </div>
             ) : null}
 
             {showActionRow ? (
-                <div className={`flex items-center gap-[8px] px-[8px] pb-[8px] ${hideAuthorSelector && !lockedAuthorName ? "justify-end" : "justify-between"}`}>
+                <div className={`flex items-center gap-[8px] px-[8px] pb-[8px] ${showFooterComposerModeTag || !(hideAuthorSelector && !lockedAuthorName) ? "justify-between" : "justify-end"}`}>
                     {/* {hideAuthorSelector ? (
                     lockedAuthorName ? (
                         <span className="flex h-[24px] min-w-0 max-w-[50%] items-center truncate rounded-full bg-[var(--adaptive-surface-muted)] px-[12px] text-[12px] text-[var(--adaptive-black500)]">
@@ -396,6 +463,16 @@ export function FeedbackComposer({
                         onChange={onAuthorNameChange}
                     />
                 )} */}
+
+                    {showFooterComposerModeTag && resolvedComposerMode ? (
+                        <ComposerModeTag
+                            mode={resolvedComposerMode}
+                            messages={messages}
+                            onDismiss={onCancelComposerMode}
+                        />
+                    ) : (
+                        <div className="min-w-0 flex-1" />
+                    )}
 
                     <div className="flex shrink-0 items-center gap-[6px]">
                         {showAskQuestionToggle ? (

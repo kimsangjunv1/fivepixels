@@ -6,8 +6,10 @@ import { HoverTooltip } from "../../../components/ui/HoverTooltip.js";
 import { FeedbackCategorySelector } from "./FeedbackCategorySelector.js";
 import { FeedbackCaseEditor } from "./FeedbackCaseEditor.js";
 import { resolveComposerModeActionKind, THREAD_ACTION_STYLE } from "../../../constants/threadActionStyles.js";
-const REPLY_TEXTAREA_MIN_HEIGHT = 56;
+const REPLY_TEXTAREA_MIN_HEIGHT = 32;
 const REPLY_TEXTAREA_MAX_HEIGHT = 200;
+const REPLY_LINE_HEIGHT_PX = 21;
+const COMPOSER_MODE_TAG_INLINE_RESERVE_PX = 96;
 function isCaseTextErrorMessage(errorMessage, caseCount, caseTextRequired, casesRequired) {
     if (!errorMessage) {
         return false;
@@ -48,22 +50,54 @@ function ComposerModeTag({ mode, messages, onDismiss }) {
     const style = THREAD_ACTION_STYLE[kind];
     return (_jsxs("span", { className: `inline-flex h-[22px] shrink-0 items-center gap-[4px] rounded-full px-[8px] text-[12px] font-semibold ${style.tagBg} ${style.tagText}`, style: { color: style.color }, children: [_jsx(ComposerModeIcon, { mode: mode, className: "h-[12px] w-[12px]" }), _jsx("span", { style: { color: style.color }, children: getComposerModeLabel(mode, messages) }), onDismiss ? (_jsx("button", { type: "button", "data-fivepixels-interactive": "", onClick: onDismiss, "aria-label": messages.composer.modeTagDismissAriaLabel, className: `ml-[2px] inline-flex h-[14px] w-[14px] items-center justify-center rounded-full ${style.tagDismissHoverBg}`, style: { color: style.color }, children: _jsx(CloseIcon, { className: "h-[10px] w-[10px]" }) })) : null] }));
 }
-function ReplyTextarea({ value, onChange, placeholder, autoFocus, onSubmitShortcut, }) {
+function ReplyTextarea({ value, onChange, placeholder, autoFocus, onSubmitShortcut, onMultilineChange, compact = false, reserveInlineStart = 0, }) {
     const textareaRef = useRef(null);
+    const measureFrameRef = useRef(null);
     const syncHeight = useCallback(() => {
         const textarea = textareaRef.current;
         if (!textarea) {
             return;
         }
+        const parentWidth = textarea.parentElement?.clientWidth ?? textarea.clientWidth;
+        const measureWidth = reserveInlineStart > 0 ? Math.max(80, parentWidth - reserveInlineStart) : parentWidth;
+        textarea.style.width = `${measureWidth}px`;
         textarea.style.height = "auto";
-        const nextHeight = Math.min(Math.max(REPLY_TEXTAREA_MIN_HEIGHT, textarea.scrollHeight), REPLY_TEXTAREA_MAX_HEIGHT);
+        const measureScrollHeight = textarea.scrollHeight;
+        const styles = window.getComputedStyle(textarea);
+        const paddingY = (Number.parseFloat(styles.paddingTop) || 0) + (Number.parseFloat(styles.paddingBottom) || 0);
+        const lineHeight = Number.parseFloat(styles.lineHeight) || REPLY_LINE_HEIGHT_PX;
+        const contentHeight = Math.max(0, measureScrollHeight - paddingY);
+        const lineCount = Math.max(1, Math.round(contentHeight / lineHeight));
+        const isMultiline = value.includes("\n") || lineCount > 1;
+        textarea.style.width = "";
+        textarea.style.height = "auto";
+        const displayScrollHeight = textarea.scrollHeight;
+        const nextHeight = Math.min(Math.max(REPLY_TEXTAREA_MIN_HEIGHT, displayScrollHeight), REPLY_TEXTAREA_MAX_HEIGHT);
         textarea.style.height = `${nextHeight}px`;
-        textarea.style.overflowY = textarea.scrollHeight > REPLY_TEXTAREA_MAX_HEIGHT ? "auto" : "hidden";
-    }, []);
+        textarea.style.overflowY = displayScrollHeight > REPLY_TEXTAREA_MAX_HEIGHT ? "auto" : "hidden";
+        onMultilineChange?.(isMultiline);
+    }, [onMultilineChange, reserveInlineStart, value]);
     useLayoutEffect(() => {
         syncHeight();
-    }, [syncHeight, value]);
-    return (_jsx("textarea", { ref: textareaRef, autoFocus: autoFocus, value: value, onChange: (event) => onChange(event.target.value), placeholder: placeholder, rows: 1, className: "min-h-[56px] max-h-[200px] w-full resize-none overflow-hidden bg-transparent px-[12px] py-[8px] text-[14px] leading-[1.5] text-[var(--adaptive-text-primary)] outline-none placeholder:text-[var(--adaptive-text-muted)]", onKeyDown: (event) => {
+    }, [syncHeight, value, compact, reserveInlineStart]);
+    useEffect(() => {
+        const handleResize = () => {
+            if (measureFrameRef.current !== null) {
+                window.cancelAnimationFrame(measureFrameRef.current);
+            }
+            measureFrameRef.current = window.requestAnimationFrame(() => {
+                syncHeight();
+            });
+        };
+        window.addEventListener("resize", handleResize);
+        return () => {
+            window.removeEventListener("resize", handleResize);
+            if (measureFrameRef.current !== null) {
+                window.cancelAnimationFrame(measureFrameRef.current);
+            }
+        };
+    }, [syncHeight]);
+    return (_jsx("textarea", { ref: textareaRef, autoFocus: autoFocus, value: value, onChange: (event) => onChange(event.target.value), placeholder: placeholder, rows: 1, className: `max-h-[200px] w-full min-w-0 flex-1 resize-none overflow-hidden bg-transparent py-[6px] text-[14px] leading-[1.5] text-[var(--adaptive-text-primary)] outline-none placeholder:text-[var(--adaptive-text-muted)] ${compact ? "px-[4px]" : "px-[8px]"}`, style: { minHeight: REPLY_TEXTAREA_MIN_HEIGHT }, onKeyDown: (event) => {
             if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
                 event.preventDefault();
                 onSubmitShortcut();
@@ -75,10 +109,13 @@ export function FeedbackComposer({ message = "", onMessageChange, cases, onCaseC
     const [isGitHubIssueConfirming, setIsGitHubIssueConfirming] = useState(false);
     const [categoryAttentionKey, setCategoryAttentionKey] = useState(0);
     const [caseAttentionKey, setCaseAttentionKey] = useState(0);
+    const [isReplyMultiline, setIsReplyMultiline] = useState(false);
     const resolvedComposerMode = composerMode ?? (askQuestionForced ? "question" : null);
     const isQuestionMode = askQuestionForced || askQuestionChecked || resolvedComposerMode === "question";
     const usesCaseEditor = Boolean(cases && onCaseChange && onAddCase && onRemoveCase);
-    const showActionRow = !hideActions && (showAskQuestionToggle || showGitHubIssueOnCreate || !hidePrimarySubmitAction);
+    const showInlineComposerModeTag = Boolean(resolvedComposerMode && !isReplyMultiline);
+    const showFooterComposerModeTag = Boolean(resolvedComposerMode && isReplyMultiline);
+    const showActionRow = !hideActions && (showAskQuestionToggle || showGitHubIssueOnCreate || !hidePrimarySubmitAction || showFooterComposerModeTag);
     const resolvedPlaceholder = isQuestionMode ? messages.composer.questionPlaceholder : (placeholder ?? (usesCaseEditor ? messages.fieldEditor.messagePlaceholder : messages.composer.placeholder));
     const emptyCaseIds = useMemo(() => (cases ?? []).filter((item) => !item.text.trim()).map((item) => item.id), [cases]);
     const hasEmptyCase = emptyCaseIds.length > 0;
@@ -121,6 +158,11 @@ export function FeedbackComposer({ message = "", onMessageChange, cases, onCaseC
             setCategoryAttentionKey(0);
         }
     }, [category, categoryAttentionKey]);
+    useEffect(() => {
+        if (!resolvedComposerMode) {
+            setIsReplyMultiline(false);
+        }
+    }, [resolvedComposerMode]);
     const bumpValidationAttention = () => {
         if (usesCaseEditor && hasEmptyCase) {
             setCaseAttentionKey((current) => current + 1);
@@ -149,10 +191,10 @@ export function FeedbackComposer({ message = "", onMessageChange, cases, onCaseC
         setIsGitHubIssueConfirming(false);
         onGitHubIssueSubmit();
     };
-    return (_jsxs("div", { className: `flex w-full flex-col bg-[var(--adaptive-neutralTintOpacity50)] backdrop-blur-sm ${usesCaseEditor && !hideEditor ? "min-h-0 flex-1" : ""}`, children: [!hideEditor ? (_jsxs("div", { className: `relative ${usesCaseEditor ? "min-h-0 flex-1" : ""}`, children: [errorMessage && !isFooterHandledError ? (_jsx("p", { role: "alert", className: "absolute bottom-full left-[8px] right-[8px] z-10 mb-[6px] rounded-[8px] border border-rose-200 bg-rose-50 px-[8px] py-[4px] text-[12px] leading-[1.4] text-rose-700 shadow-[0_2px_8px_rgba(0,0,0,0.08)]", children: errorMessage })) : null, usesCaseEditor ? (_jsx(FeedbackCaseEditor, { cases: cases, onCaseChange: onCaseChange, onAddCase: onAddCase, onRemoveCase: onRemoveCase, autoFocus: autoFocus, onSubmitShortcut: handleSubmit, needsAttention: caseNeedsAttention, attentionKey: caseAttentionKey, emptyCaseIds: emptyCaseIds })) : (_jsxs("div", { className: "flex flex-col gap-[4px] px-[8px] pt-[8px]", children: [resolvedComposerMode ? (_jsx("div", { className: "flex items-center px-[4px]", children: _jsx(ComposerModeTag, { mode: resolvedComposerMode, messages: messages, onDismiss: onCancelComposerMode }) })) : null, _jsx(ReplyTextarea, { value: message, onChange: (value) => onMessageChange?.(value), placeholder: resolvedPlaceholder, autoFocus: autoFocus, onSubmitShortcut: handleSubmit })] }))] })) : null, showActionRow ? (_jsx("div", { className: `flex items-center gap-[8px] px-[8px] pb-[8px] ${hideAuthorSelector && !lockedAuthorName ? "justify-end" : "justify-between"}`, children: _jsxs("div", { className: "flex shrink-0 items-center gap-[6px]", children: [showAskQuestionToggle ? (_jsxs("label", { className: "inline-flex items-center gap-[4px] px-[2px] text-[12px] text-[var(--adaptive-black600)]", children: [_jsx("input", { type: "checkbox", "data-fivepixels-interactive": "", checked: isQuestionMode, disabled: askQuestionForced || isActionDisabled, onChange: (event) => onAskQuestionChange?.(event.target.checked), className: "h-[14px] w-[14px] accent-[var(--adaptive-blue500)]" }), _jsx("span", { children: messages.composer.askQuestionLabel })] })) : null, showGitHubIssueOnCreate ? (_jsx("button", { type: "button", "data-fivepixels-interactive": "", disabled: isActionDisabled, onClick: handleGitHubIssueSubmit, className: "inline-flex h-[24px] items-center justify-center gap-[4px] rounded-full border border-[var(--adaptive-border-subtle)] px-[12px] py-[4px] disabled:opacity-50", "aria-label": isGitHubIssueConfirming ? messages.feedbackList.gitIssueConfirmAriaLabel : messages.composer.gitIssueSendAriaLabel, title: isGitHubIssueConfirming ? messages.feedbackList.gitIssueConfirmTitle : messages.composer.gitIssueSendTitle, children: _jsxs("span", { className: "text-[12px] font-semibold text-[var(--adaptive-black500)]", children: ["+", " ", isGitHubIssueSubmitting
-                                        ? messages.composer.gitIssueSendingLabel
-                                        : isGitHubIssueConfirming
-                                            ? messages.feedbackList.gitIssueConfirmLabel
-                                            : messages.composer.gitIssueSendLabel] }) })) : null, !hidePrimarySubmitAction ? (_jsx(HoverTooltip, { label: messages.composer.sendAriaLabel, disabled: isActionDisabled, children: _jsx("button", { type: "button", "data-fivepixels-interactive": "", disabled: isActionDisabled, onClick: handleSubmit, className: "inline-flex h-[32px] w-[32px] shrink-0 items-center justify-center rounded-full bg-[#f6562f] text-white disabled:opacity-50", "aria-label": messages.composer.sendAriaLabel, children: _jsx(SendIcon, { className: "h-[16px] w-[16px]" }) }) })) : null] }) })) : null, showCategory && categoryPrompt ? _jsx("div", { className: "px-[12px] py-[8px] text-[16px] font-bold leading-[1.5] text-[var(--adaptive-text-primary)]", children: categoryPrompt }) : null, showCategory && onCategoryChange ? (_jsx(FeedbackCategorySelector, { value: category, onChange: onCategoryChange, messages: messages, needsAttention: categoryNeedsAttention, attentionKey: categoryAttentionKey })) : null] }));
+    return (_jsxs("div", { className: `flex w-full flex-col bg-[var(--adaptive-neutralTintOpacity50)] backdrop-blur-sm ${usesCaseEditor && !hideEditor ? "min-h-0 flex-1" : ""}`, children: [!hideEditor ? (_jsxs("div", { className: `relative ${usesCaseEditor ? "min-h-0 flex-1" : ""}`, children: [errorMessage && !isFooterHandledError ? (_jsx("p", { role: "alert", className: "absolute bottom-full left-[8px] right-[8px] z-10 mb-[6px] rounded-[8px] border border-rose-200 bg-rose-50 px-[8px] py-[4px] text-[12px] leading-[1.4] text-rose-700 shadow-[0_2px_8px_rgba(0,0,0,0.08)]", children: errorMessage })) : null, usesCaseEditor ? (_jsx(FeedbackCaseEditor, { cases: cases, onCaseChange: onCaseChange, onAddCase: onAddCase, onRemoveCase: onRemoveCase, autoFocus: autoFocus, onSubmitShortcut: handleSubmit, needsAttention: caseNeedsAttention, attentionKey: caseAttentionKey, emptyCaseIds: emptyCaseIds })) : (_jsx("div", { className: "px-[8px] pt-[8px]", children: _jsxs("div", { className: showInlineComposerModeTag ? "flex items-start gap-[6px]" : undefined, children: [showInlineComposerModeTag && resolvedComposerMode ? (_jsx("div", { className: "flex h-[32px] shrink-0 items-center", children: _jsx(ComposerModeTag, { mode: resolvedComposerMode, messages: messages, onDismiss: onCancelComposerMode }) })) : null, _jsx(ReplyTextarea, { value: message, onChange: (value) => onMessageChange?.(value), placeholder: resolvedPlaceholder, autoFocus: autoFocus, onSubmitShortcut: handleSubmit, onMultilineChange: setIsReplyMultiline, compact: showInlineComposerModeTag, reserveInlineStart: resolvedComposerMode ? COMPOSER_MODE_TAG_INLINE_RESERVE_PX : 0 })] }) }))] })) : null, showActionRow ? (_jsxs("div", { className: `flex items-center gap-[8px] px-[8px] pb-[8px] ${showFooterComposerModeTag || !(hideAuthorSelector && !lockedAuthorName) ? "justify-between" : "justify-end"}`, children: [showFooterComposerModeTag && resolvedComposerMode ? (_jsx(ComposerModeTag, { mode: resolvedComposerMode, messages: messages, onDismiss: onCancelComposerMode })) : (_jsx("div", { className: "min-w-0 flex-1" })), _jsxs("div", { className: "flex shrink-0 items-center gap-[6px]", children: [showAskQuestionToggle ? (_jsxs("label", { className: "inline-flex items-center gap-[4px] px-[2px] text-[12px] text-[var(--adaptive-black600)]", children: [_jsx("input", { type: "checkbox", "data-fivepixels-interactive": "", checked: isQuestionMode, disabled: askQuestionForced || isActionDisabled, onChange: (event) => onAskQuestionChange?.(event.target.checked), className: "h-[14px] w-[14px] accent-[var(--adaptive-blue500)]" }), _jsx("span", { children: messages.composer.askQuestionLabel })] })) : null, showGitHubIssueOnCreate ? (_jsx("button", { type: "button", "data-fivepixels-interactive": "", disabled: isActionDisabled, onClick: handleGitHubIssueSubmit, className: "inline-flex h-[24px] items-center justify-center gap-[4px] rounded-full border border-[var(--adaptive-border-subtle)] px-[12px] py-[4px] disabled:opacity-50", "aria-label": isGitHubIssueConfirming ? messages.feedbackList.gitIssueConfirmAriaLabel : messages.composer.gitIssueSendAriaLabel, title: isGitHubIssueConfirming ? messages.feedbackList.gitIssueConfirmTitle : messages.composer.gitIssueSendTitle, children: _jsxs("span", { className: "text-[12px] font-semibold text-[var(--adaptive-black500)]", children: ["+", " ", isGitHubIssueSubmitting
+                                            ? messages.composer.gitIssueSendingLabel
+                                            : isGitHubIssueConfirming
+                                                ? messages.feedbackList.gitIssueConfirmLabel
+                                                : messages.composer.gitIssueSendLabel] }) })) : null, !hidePrimarySubmitAction ? (_jsx(HoverTooltip, { label: messages.composer.sendAriaLabel, disabled: isActionDisabled, children: _jsx("button", { type: "button", "data-fivepixels-interactive": "", disabled: isActionDisabled, onClick: handleSubmit, className: "inline-flex h-[32px] w-[32px] shrink-0 items-center justify-center rounded-full bg-[#f6562f] text-white disabled:opacity-50", "aria-label": messages.composer.sendAriaLabel, children: _jsx(SendIcon, { className: "h-[16px] w-[16px]" }) }) })) : null] })] })) : null, showCategory && categoryPrompt ? _jsx("div", { className: "px-[12px] py-[8px] text-[16px] font-bold leading-[1.5] text-[var(--adaptive-text-primary)]", children: categoryPrompt }) : null, showCategory && onCategoryChange ? (_jsx(FeedbackCategorySelector, { value: category, onChange: onCategoryChange, messages: messages, needsAttention: categoryNeedsAttention, attentionKey: categoryAttentionKey })) : null] }));
 }
 //# sourceMappingURL=FeedbackComposer.js.map
