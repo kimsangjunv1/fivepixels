@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ReportAuthor, ReportFeedback, ReportReply } from "@/types/report.js";
 import { useReport, useReportPreferences } from "@/providers/reportContext.js";
-import { formatClockTime } from "@/utils/shared/format.js";
+import { formatClockTime, formatDateOnly } from "@/utils/shared/format.js";
 import { canEditReportCases, getCaseById } from "@/utils/report/reportCases.js";
 import {
     buildCaseThreadTimeline,
@@ -107,6 +107,37 @@ function ThreadResolvedDivider() {
                         style={{ color: resolvedColor }}
                     >
                         {messages.thread.issueResolvedDivider}
+                    </span>
+                </span>
+                <span
+                    aria-hidden
+                    className="h-px flex-1 bg-[var(--adaptive-border-subtle)]"
+                />
+            </div>
+        </ThreadTimelineRow>
+    );
+}
+
+function ThreadStartedDivider({ createdAt }: { createdAt: string }) {
+    const { locale } = useReportPreferences();
+    const dateColor = "var(--adaptive-black500)";
+
+    return (
+        <ThreadTimelineRow>
+            <div
+                className="flex items-center gap-[8px]"
+                role="status"
+            >
+                <span
+                    aria-hidden
+                    className="h-px flex-1 bg-[var(--adaptive-border-subtle)]"
+                />
+                <span className="inline-flex shrink-0 items-center gap-[6px]">
+                    <span
+                        className="text-[13px] font-bold leading-none tabular-nums"
+                        style={{ color: dateColor }}
+                    >
+                        {formatDateOnly(createdAt, locale)}
                     </span>
                 </span>
                 <span
@@ -517,27 +548,31 @@ export function FeedbackThread({
                         reportId={report.id}
                         history={replyHistoryState}
                     /> */}
-                    {showTimelineRail ? (
+
+                    {/* {showTimelineRail ? (
                         <div className="pointer-events-none absolute bottom-[12px] left-[20px] top-[12px] w-px bg-[linear-gradient(180deg,_var(--adaptive-black900)_60%,transparent_90%)]" />
-                    ) : null}
+                    ) : null} */}
 
                     {focusedCaseId && !isAllCasesView ? (
                         <>
                             {focusedCase ? (
-                                <CaseThreadEntry
-                                    report={report}
-                                    caseId={focusedCaseId}
-                                    caseText={focusedCase.text}
-                                    caseCreatedAt={focusedCase.created_at}
-                                    caseStatus={focusedCase.status}
-                                    actorName={actorName}
-                                    pendingComposer={pendingComposer}
-                                    onStartAskQuestion={onStartAskQuestion}
-                                    onClaimAssignee={onClaimAssignee}
-                                    isUpdating={isUpdating}
-                                    isClaimingAssignee={isClaimingAssignee}
-                                    isEditingCases={isEditingCases}
-                                />
+                                <>
+                                    <ThreadStartedDivider createdAt={focusedCase.created_at} />
+                                    <CaseThreadEntry
+                                        report={report}
+                                        caseId={focusedCaseId}
+                                        caseText={focusedCase.text}
+                                        caseCreatedAt={focusedCase.created_at}
+                                        caseStatus={focusedCase.status}
+                                        actorName={actorName}
+                                        pendingComposer={pendingComposer}
+                                        onStartAskQuestion={onStartAskQuestion}
+                                        onClaimAssignee={onClaimAssignee}
+                                        isUpdating={isUpdating}
+                                        isClaimingAssignee={isClaimingAssignee}
+                                        isEditingCases={isEditingCases}
+                                    />
+                                </>
                             ) : null}
 
                             <QuestionThreadGroup

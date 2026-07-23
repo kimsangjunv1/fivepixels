@@ -6,6 +6,7 @@ import type { ReportFeedback } from "@/types/report.js";
 import { getCaseLatestStatus } from "@/utils/feedback/feedbackThread.js";
 import { getReportCases } from "@/utils/report/reportCases.js";
 import { canRemoveCase } from "@/utils/feedback/feedbackPermissions.js";
+import { formatDateOnly } from "@/utils/shared/format.js";
 import { FeedbackDeleteAction } from "@/components/panel/feedback/FeedbackDeleteAction.js";
 
 type MarkerCaseSidebarProps = {
@@ -50,7 +51,7 @@ function CaseStatusLabel({ status, isNeedGray }: { status: FeedbackDisplayStatus
 }
 
 export function MarkerCaseSidebar({ report, focusedCaseId, onSelectCase }: MarkerCaseSidebarProps) {
-    const { messages } = useReportPreferences();
+    const { messages, locale } = useReportPreferences();
     const { sessionActor, removePersistedCase, isUpdating } = useReport();
     const cases = getReportCases(report);
 
@@ -87,10 +88,15 @@ export function MarkerCaseSidebar({ report, focusedCaseId, onSelectCase }: Marke
                                         {item.text}
                                     </span>
                                 </section>
-                                <CaseStatusLabel
-                                    status={status}
-                                    isNeedGray
-                                />
+                                <div className="flex w-full min-w-0 items-center justify-between gap-[8px]">
+                                    <CaseStatusLabel
+                                        status={status}
+                                        isNeedGray
+                                    />
+                                    <span className="min-w-0 truncate text-[11px] tabular-nums leading-none text-[var(--adaptive-black500)]">
+                                        {formatDateOnly(item.created_at, locale)}
+                                    </span>
+                                </div>
                             </button>
 
                             {showRemove ? (
