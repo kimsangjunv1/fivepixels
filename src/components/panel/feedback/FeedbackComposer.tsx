@@ -56,6 +56,7 @@ const REPLY_TEXTAREA_MIN_HEIGHT = 32;
 const REPLY_TEXTAREA_MAX_HEIGHT = 200;
 const REPLY_LINE_HEIGHT_PX = 21;
 const COMPOSER_MODE_TAG_INLINE_RESERVE_PX = 96;
+const REPLY_MEASURE_ROOT_ATTR = "data-reply-measure-root";
 
 function isCaseTextErrorMessage(errorMessage: string, caseCount: number, caseTextRequired: (index: number) => string, casesRequired: string) {
     if (!errorMessage) {
@@ -156,7 +157,6 @@ function ReplyTextarea({
     autoFocus,
     onSubmitShortcut,
     onMultilineChange,
-    compact = false,
     reserveInlineStart = 0,
 }: {
     value: string;
@@ -165,11 +165,11 @@ function ReplyTextarea({
     autoFocus: boolean;
     onSubmitShortcut: () => void;
     onMultilineChange?: (isMultiline: boolean) => void;
-    compact?: boolean;
     reserveInlineStart?: number;
 }) {
     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
     const measureFrameRef = useRef<number | null>(null);
+    const lastMultilineRef = useRef<boolean | null>(null);
 
     const syncHeight = useCallback(() => {
         const textarea = textareaRef.current;
@@ -178,9 +178,17 @@ function ReplyTextarea({
             return;
         }
 
-        const parentWidth = textarea.parentElement?.clientWidth ?? textarea.clientWidth;
-        const measureWidth = reserveInlineStart > 0 ? Math.max(80, parentWidth - reserveInlineStart) : parentWidth;
+        const measureRoot = textarea.closest(`[${REPLY_MEASURE_ROOT_ATTR}]`);
+        const rootWidth = measureRoot instanceof HTMLElement ? measureRoot.clientWidth : (textarea.parentElement?.clientWidth ?? textarea.clientWidth);
+        const measureWidth = reserveInlineStart > 0 ? Math.max(80, rootWidth - reserveInlineStart) : rootWidth;
 
+        const previousWidth = textarea.style.width;
+        const previousFlex = textarea.style.flex;
+        const previousMinWidth = textarea.style.minWidth;
+
+        // Isolate measurement from flex siblings (mode tag) so wrap detection stays stable across layouts.
+        textarea.style.flex = "none";
+        textarea.style.minWidth = "0";
         textarea.style.width = `${measureWidth}px`;
         textarea.style.height = "auto";
 
@@ -188,23 +196,34 @@ function ReplyTextarea({
         const styles = window.getComputedStyle(textarea);
         const paddingY = (Number.parseFloat(styles.paddingTop) || 0) + (Number.parseFloat(styles.paddingBottom) || 0);
         const lineHeight = Number.parseFloat(styles.lineHeight) || REPLY_LINE_HEIGHT_PX;
-        const contentHeight = Math.max(0, measureScrollHeight - paddingY);
-        const lineCount = Math.max(1, Math.round(contentHeight / lineHeight));
-        const isMultiline = value.includes("\n") || lineCount > 1;
+        const singleLineHeight = lineHeight + paddingY;
+        const isMultiline = value.includes("\n") || measureScrollHeight > singleLineHeight + 1;
 
-        textarea.style.width = "";
+        textarea.style.flex = previousFlex;
+        textarea.style.minWidth = previousMinWidth;
+        textarea.style.width = previousWidth;
         textarea.style.height = "auto";
+
         const displayScrollHeight = textarea.scrollHeight;
         const nextHeight = Math.min(Math.max(REPLY_TEXTAREA_MIN_HEIGHT, displayScrollHeight), REPLY_TEXTAREA_MAX_HEIGHT);
         textarea.style.height = `${nextHeight}px`;
         textarea.style.overflowY = displayScrollHeight > REPLY_TEXTAREA_MAX_HEIGHT ? "auto" : "hidden";
 
+        if (lastMultilineRef.current === isMultiline) {
+            return;
+        }
+
+        lastMultilineRef.current = isMultiline;
         onMultilineChange?.(isMultiline);
     }, [onMultilineChange, reserveInlineStart, value]);
 
     useLayoutEffect(() => {
+        lastMultilineRef.current = null;
+    }, [reserveInlineStart]);
+
+    useLayoutEffect(() => {
         syncHeight();
-    }, [syncHeight, value, compact, reserveInlineStart]);
+    }, [syncHeight]);
 
     useEffect(() => {
         const handleResize = () => {
@@ -236,10 +255,7 @@ function ReplyTextarea({
             onChange={(event) => onChange(event.target.value)}
             placeholder={placeholder}
             rows={1}
-            // className={`max-h-[200px] w-full min-w-0 flex-1 resize-none overflow-hidden bg-transparent py-[6px] text-[14px] leading-[1.5] text-[var(--adaptive-text-primary)] outline-none placeholder:text-[var(--adaptive-text-muted)] ${
-            //     compact ? "px-[4px]" : "px-[8px]"
-            // }`}
-            className={`max-h-[200px] w-full min-w-0 flex-1 resize-none overflow-hidden bg-transparent py-[6px] text-[14px] leading-[1.5] text-[var(--adaptive-text-primary)] outline-none placeholder:text-[var(--adaptive-text-muted)]`}
+            className="max-h-[200px] w-full min-w-0 flex-1 resize-none overflow-hidden bg-transparent px-[4px] py-[6px] text-[14px] leading-[1.5] text-[var(--adaptive-text-primary)] outline-none placeholder:text-[var(--adaptive-text-muted)]"
             style={{ minHeight: REPLY_TEXTAREA_MIN_HEIGHT }}
             onKeyDown={(event) => {
                 if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
@@ -361,6 +377,10 @@ export function FeedbackComposer({
         }
     }, [resolvedComposerMode]);
 
+    const handleReplyMultilineChange = useCallback((next: boolean) => {
+        setIsReplyMultiline((current) => (current === next ? current : next));
+    }, []);
+
     const bumpValidationAttention = () => {
         if (usesCaseEditor && hasEmptyCase) {
             setCaseAttentionKey((current) => current + 1);
@@ -421,7 +441,10 @@ export function FeedbackComposer({
                             emptyCaseIds={emptyCaseIds}
                         />
                     ) : (
-                        <div className="px-[8px] pt-[8px]">
+                        <div
+                            data-reply-measure-root=""
+                            className="px-[8px] pt-[8px]"
+                        >
                             <div className={showInlineComposerModeTag ? "flex items-start gap-[6px]" : undefined}>
                                 {showInlineComposerModeTag && resolvedComposerMode ? (
                                     <div className="flex h-[32px] shrink-0 items-center">
@@ -438,8 +461,7 @@ export function FeedbackComposer({
                                     placeholder={resolvedPlaceholder}
                                     autoFocus={autoFocus}
                                     onSubmitShortcut={handleSubmit}
-                                    onMultilineChange={setIsReplyMultiline}
-                                    compact={showInlineComposerModeTag}
+                                    onMultilineChange={handleReplyMultilineChange}
                                     reserveInlineStart={resolvedComposerMode ? COMPOSER_MODE_TAG_INLINE_RESERVE_PX : 0}
                                 />
                             </div>

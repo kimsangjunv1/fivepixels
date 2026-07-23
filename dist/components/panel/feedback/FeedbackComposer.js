@@ -10,6 +10,7 @@ const REPLY_TEXTAREA_MIN_HEIGHT = 32;
 const REPLY_TEXTAREA_MAX_HEIGHT = 200;
 const REPLY_LINE_HEIGHT_PX = 21;
 const COMPOSER_MODE_TAG_INLINE_RESERVE_PX = 96;
+const REPLY_MEASURE_ROOT_ATTR = "data-reply-measure-root";
 function isCaseTextErrorMessage(errorMessage, caseCount, caseTextRequired, casesRequired) {
     if (!errorMessage) {
         return false;
@@ -50,36 +51,52 @@ function ComposerModeTag({ mode, messages, onDismiss }) {
     const style = THREAD_ACTION_STYLE[kind];
     return (_jsxs("span", { className: `inline-flex h-[22px] shrink-0 items-center gap-[4px] rounded-full px-[8px] text-[12px] font-semibold ${style.tagBg} ${style.tagText}`, style: { color: style.color }, children: [_jsx(ComposerModeIcon, { mode: mode, className: "h-[12px] w-[12px]" }), _jsx("span", { style: { color: style.color }, children: getComposerModeLabel(mode, messages) }), onDismiss ? (_jsx("button", { type: "button", "data-fivepixels-interactive": "", onClick: onDismiss, "aria-label": messages.composer.modeTagDismissAriaLabel, className: `ml-[2px] inline-flex h-[14px] w-[14px] items-center justify-center rounded-full ${style.tagDismissHoverBg}`, style: { color: style.color }, children: _jsx(CloseIcon, { className: "h-[10px] w-[10px]" }) })) : null] }));
 }
-function ReplyTextarea({ value, onChange, placeholder, autoFocus, onSubmitShortcut, onMultilineChange, compact = false, reserveInlineStart = 0, }) {
+function ReplyTextarea({ value, onChange, placeholder, autoFocus, onSubmitShortcut, onMultilineChange, reserveInlineStart = 0, }) {
     const textareaRef = useRef(null);
     const measureFrameRef = useRef(null);
+    const lastMultilineRef = useRef(null);
     const syncHeight = useCallback(() => {
         const textarea = textareaRef.current;
         if (!textarea) {
             return;
         }
-        const parentWidth = textarea.parentElement?.clientWidth ?? textarea.clientWidth;
-        const measureWidth = reserveInlineStart > 0 ? Math.max(80, parentWidth - reserveInlineStart) : parentWidth;
+        const measureRoot = textarea.closest(`[${REPLY_MEASURE_ROOT_ATTR}]`);
+        const rootWidth = measureRoot instanceof HTMLElement ? measureRoot.clientWidth : (textarea.parentElement?.clientWidth ?? textarea.clientWidth);
+        const measureWidth = reserveInlineStart > 0 ? Math.max(80, rootWidth - reserveInlineStart) : rootWidth;
+        const previousWidth = textarea.style.width;
+        const previousFlex = textarea.style.flex;
+        const previousMinWidth = textarea.style.minWidth;
+        // Isolate measurement from flex siblings (mode tag) so wrap detection stays stable across layouts.
+        textarea.style.flex = "none";
+        textarea.style.minWidth = "0";
         textarea.style.width = `${measureWidth}px`;
         textarea.style.height = "auto";
         const measureScrollHeight = textarea.scrollHeight;
         const styles = window.getComputedStyle(textarea);
         const paddingY = (Number.parseFloat(styles.paddingTop) || 0) + (Number.parseFloat(styles.paddingBottom) || 0);
         const lineHeight = Number.parseFloat(styles.lineHeight) || REPLY_LINE_HEIGHT_PX;
-        const contentHeight = Math.max(0, measureScrollHeight - paddingY);
-        const lineCount = Math.max(1, Math.round(contentHeight / lineHeight));
-        const isMultiline = value.includes("\n") || lineCount > 1;
-        textarea.style.width = "";
+        const singleLineHeight = lineHeight + paddingY;
+        const isMultiline = value.includes("\n") || measureScrollHeight > singleLineHeight + 1;
+        textarea.style.flex = previousFlex;
+        textarea.style.minWidth = previousMinWidth;
+        textarea.style.width = previousWidth;
         textarea.style.height = "auto";
         const displayScrollHeight = textarea.scrollHeight;
         const nextHeight = Math.min(Math.max(REPLY_TEXTAREA_MIN_HEIGHT, displayScrollHeight), REPLY_TEXTAREA_MAX_HEIGHT);
         textarea.style.height = `${nextHeight}px`;
         textarea.style.overflowY = displayScrollHeight > REPLY_TEXTAREA_MAX_HEIGHT ? "auto" : "hidden";
+        if (lastMultilineRef.current === isMultiline) {
+            return;
+        }
+        lastMultilineRef.current = isMultiline;
         onMultilineChange?.(isMultiline);
     }, [onMultilineChange, reserveInlineStart, value]);
     useLayoutEffect(() => {
+        lastMultilineRef.current = null;
+    }, [reserveInlineStart]);
+    useLayoutEffect(() => {
         syncHeight();
-    }, [syncHeight, value, compact, reserveInlineStart]);
+    }, [syncHeight]);
     useEffect(() => {
         const handleResize = () => {
             if (measureFrameRef.current !== null) {
@@ -97,7 +114,7 @@ function ReplyTextarea({ value, onChange, placeholder, autoFocus, onSubmitShortc
             }
         };
     }, [syncHeight]);
-    return (_jsx("textarea", { ref: textareaRef, autoFocus: autoFocus, value: value, onChange: (event) => onChange(event.target.value), placeholder: placeholder, rows: 1, className: `max-h-[200px] w-full min-w-0 flex-1 resize-none overflow-hidden bg-transparent py-[6px] text-[14px] leading-[1.5] text-[var(--adaptive-text-primary)] outline-none placeholder:text-[var(--adaptive-text-muted)] ${compact ? "px-[4px]" : "px-[8px]"}`, style: { minHeight: REPLY_TEXTAREA_MIN_HEIGHT }, onKeyDown: (event) => {
+    return (_jsx("textarea", { ref: textareaRef, autoFocus: autoFocus, value: value, onChange: (event) => onChange(event.target.value), placeholder: placeholder, rows: 1, className: "max-h-[200px] w-full min-w-0 flex-1 resize-none overflow-hidden bg-transparent px-[4px] py-[6px] text-[14px] leading-[1.5] text-[var(--adaptive-text-primary)] outline-none placeholder:text-[var(--adaptive-text-muted)]", style: { minHeight: REPLY_TEXTAREA_MIN_HEIGHT }, onKeyDown: (event) => {
             if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
                 event.preventDefault();
                 onSubmitShortcut();
@@ -163,6 +180,9 @@ export function FeedbackComposer({ message = "", onMessageChange, cases, onCaseC
             setIsReplyMultiline(false);
         }
     }, [resolvedComposerMode]);
+    const handleReplyMultilineChange = useCallback((next) => {
+        setIsReplyMultiline((current) => (current === next ? current : next));
+    }, []);
     const bumpValidationAttention = () => {
         if (usesCaseEditor && hasEmptyCase) {
             setCaseAttentionKey((current) => current + 1);
@@ -191,7 +211,7 @@ export function FeedbackComposer({ message = "", onMessageChange, cases, onCaseC
         setIsGitHubIssueConfirming(false);
         onGitHubIssueSubmit();
     };
-    return (_jsxs("div", { className: `flex w-full flex-col bg-[var(--adaptive-neutralTintOpacity50)] backdrop-blur-sm ${usesCaseEditor && !hideEditor ? "min-h-0 flex-1" : ""}`, children: [!hideEditor ? (_jsxs("div", { className: `relative ${usesCaseEditor ? "min-h-0 flex-1" : ""}`, children: [errorMessage && !isFooterHandledError ? (_jsx("p", { role: "alert", className: "absolute bottom-full left-[8px] right-[8px] z-10 mb-[6px] rounded-[8px] border border-rose-200 bg-rose-50 px-[8px] py-[4px] text-[12px] leading-[1.4] text-rose-700 shadow-[0_2px_8px_rgba(0,0,0,0.08)]", children: errorMessage })) : null, usesCaseEditor ? (_jsx(FeedbackCaseEditor, { cases: cases, onCaseChange: onCaseChange, onAddCase: onAddCase, onRemoveCase: onRemoveCase, autoFocus: autoFocus, onSubmitShortcut: handleSubmit, needsAttention: caseNeedsAttention, attentionKey: caseAttentionKey, emptyCaseIds: emptyCaseIds })) : (_jsx("div", { className: "px-[8px] pt-[8px]", children: _jsxs("div", { className: showInlineComposerModeTag ? "flex items-start gap-[6px]" : undefined, children: [showInlineComposerModeTag && resolvedComposerMode ? (_jsx("div", { className: "flex h-[32px] shrink-0 items-center", children: _jsx(ComposerModeTag, { mode: resolvedComposerMode, messages: messages, onDismiss: onCancelComposerMode }) })) : null, _jsx(ReplyTextarea, { value: message, onChange: (value) => onMessageChange?.(value), placeholder: resolvedPlaceholder, autoFocus: autoFocus, onSubmitShortcut: handleSubmit, onMultilineChange: setIsReplyMultiline, compact: showInlineComposerModeTag, reserveInlineStart: resolvedComposerMode ? COMPOSER_MODE_TAG_INLINE_RESERVE_PX : 0 })] }) }))] })) : null, showActionRow ? (_jsxs("div", { className: `flex items-center gap-[8px] px-[8px] pb-[8px] ${showFooterComposerModeTag || !(hideAuthorSelector && !lockedAuthorName) ? "justify-between" : "justify-end"}`, children: [showFooterComposerModeTag && resolvedComposerMode ? (_jsx(ComposerModeTag, { mode: resolvedComposerMode, messages: messages, onDismiss: onCancelComposerMode })) : (_jsx("div", { className: "min-w-0 flex-1" })), _jsxs("div", { className: "flex shrink-0 items-center gap-[6px]", children: [showAskQuestionToggle ? (_jsxs("label", { className: "inline-flex items-center gap-[4px] px-[2px] text-[12px] text-[var(--adaptive-black600)]", children: [_jsx("input", { type: "checkbox", "data-fivepixels-interactive": "", checked: isQuestionMode, disabled: askQuestionForced || isActionDisabled, onChange: (event) => onAskQuestionChange?.(event.target.checked), className: "h-[14px] w-[14px] accent-[var(--adaptive-blue500)]" }), _jsx("span", { children: messages.composer.askQuestionLabel })] })) : null, showGitHubIssueOnCreate ? (_jsx("button", { type: "button", "data-fivepixels-interactive": "", disabled: isActionDisabled, onClick: handleGitHubIssueSubmit, className: "inline-flex h-[24px] items-center justify-center gap-[4px] rounded-full border border-[var(--adaptive-border-subtle)] px-[12px] py-[4px] disabled:opacity-50", "aria-label": isGitHubIssueConfirming ? messages.feedbackList.gitIssueConfirmAriaLabel : messages.composer.gitIssueSendAriaLabel, title: isGitHubIssueConfirming ? messages.feedbackList.gitIssueConfirmTitle : messages.composer.gitIssueSendTitle, children: _jsxs("span", { className: "text-[12px] font-semibold text-[var(--adaptive-black500)]", children: ["+", " ", isGitHubIssueSubmitting
+    return (_jsxs("div", { className: `flex w-full flex-col bg-[var(--adaptive-neutralTintOpacity50)] backdrop-blur-sm ${usesCaseEditor && !hideEditor ? "min-h-0 flex-1" : ""}`, children: [!hideEditor ? (_jsxs("div", { className: `relative ${usesCaseEditor ? "min-h-0 flex-1" : ""}`, children: [errorMessage && !isFooterHandledError ? (_jsx("p", { role: "alert", className: "absolute bottom-full left-[8px] right-[8px] z-10 mb-[6px] rounded-[8px] border border-rose-200 bg-rose-50 px-[8px] py-[4px] text-[12px] leading-[1.4] text-rose-700 shadow-[0_2px_8px_rgba(0,0,0,0.08)]", children: errorMessage })) : null, usesCaseEditor ? (_jsx(FeedbackCaseEditor, { cases: cases, onCaseChange: onCaseChange, onAddCase: onAddCase, onRemoveCase: onRemoveCase, autoFocus: autoFocus, onSubmitShortcut: handleSubmit, needsAttention: caseNeedsAttention, attentionKey: caseAttentionKey, emptyCaseIds: emptyCaseIds })) : (_jsx("div", { "data-reply-measure-root": "", className: "px-[8px] pt-[8px]", children: _jsxs("div", { className: showInlineComposerModeTag ? "flex items-start gap-[6px]" : undefined, children: [showInlineComposerModeTag && resolvedComposerMode ? (_jsx("div", { className: "flex h-[32px] shrink-0 items-center", children: _jsx(ComposerModeTag, { mode: resolvedComposerMode, messages: messages, onDismiss: onCancelComposerMode }) })) : null, _jsx(ReplyTextarea, { value: message, onChange: (value) => onMessageChange?.(value), placeholder: resolvedPlaceholder, autoFocus: autoFocus, onSubmitShortcut: handleSubmit, onMultilineChange: handleReplyMultilineChange, reserveInlineStart: resolvedComposerMode ? COMPOSER_MODE_TAG_INLINE_RESERVE_PX : 0 })] }) }))] })) : null, showActionRow ? (_jsxs("div", { className: `flex items-center gap-[8px] px-[8px] pb-[8px] ${showFooterComposerModeTag || !(hideAuthorSelector && !lockedAuthorName) ? "justify-between" : "justify-end"}`, children: [showFooterComposerModeTag && resolvedComposerMode ? (_jsx(ComposerModeTag, { mode: resolvedComposerMode, messages: messages, onDismiss: onCancelComposerMode })) : (_jsx("div", { className: "min-w-0 flex-1" })), _jsxs("div", { className: "flex shrink-0 items-center gap-[6px]", children: [showAskQuestionToggle ? (_jsxs("label", { className: "inline-flex items-center gap-[4px] px-[2px] text-[12px] text-[var(--adaptive-black600)]", children: [_jsx("input", { type: "checkbox", "data-fivepixels-interactive": "", checked: isQuestionMode, disabled: askQuestionForced || isActionDisabled, onChange: (event) => onAskQuestionChange?.(event.target.checked), className: "h-[14px] w-[14px] accent-[var(--adaptive-blue500)]" }), _jsx("span", { children: messages.composer.askQuestionLabel })] })) : null, showGitHubIssueOnCreate ? (_jsx("button", { type: "button", "data-fivepixels-interactive": "", disabled: isActionDisabled, onClick: handleGitHubIssueSubmit, className: "inline-flex h-[24px] items-center justify-center gap-[4px] rounded-full border border-[var(--adaptive-border-subtle)] px-[12px] py-[4px] disabled:opacity-50", "aria-label": isGitHubIssueConfirming ? messages.feedbackList.gitIssueConfirmAriaLabel : messages.composer.gitIssueSendAriaLabel, title: isGitHubIssueConfirming ? messages.feedbackList.gitIssueConfirmTitle : messages.composer.gitIssueSendTitle, children: _jsxs("span", { className: "text-[12px] font-semibold text-[var(--adaptive-black500)]", children: ["+", " ", isGitHubIssueSubmitting
                                             ? messages.composer.gitIssueSendingLabel
                                             : isGitHubIssueConfirming
                                                 ? messages.feedbackList.gitIssueConfirmLabel
