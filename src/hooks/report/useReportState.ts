@@ -202,6 +202,8 @@ export function useReportState({
         fields,
         github,
         eventCallbacks,
+        reports: panel.reports,
+        sessionActor: auth.sessionActor,
         selectedReport: panel.selectedReport,
         selectedReportId: panel.selectedReportId,
         setSelectedReportId: panel.setSelectedReportId,

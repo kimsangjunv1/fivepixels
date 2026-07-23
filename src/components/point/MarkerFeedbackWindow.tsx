@@ -16,6 +16,7 @@ import { CloseIcon, LinkIcon, MaximizeIcon, MinimizeIcon, RestoreIcon, SidePanel
 import { FeedbackFieldTags } from "@/components/panel/feedback/FeedbackFieldTags.js";
 import { FeedbackPinToggleButton } from "@/components/panel/feedback/FeedbackPinToggleButton.js";
 import { FeedbackDeleteAction } from "@/components/panel/feedback/FeedbackDeleteAction.js";
+import { canDeleteFeedback } from "@/utils/feedback/feedbackPermissions.js";
 import { CornerResizeGhost } from "@/components/ui/CornerResizeGhost.js";
 import { MOTION } from "@/constants/motionClasses.js";
 import { CornerResizeHandle } from "@/components/ui/CornerResizeHandle.js";
@@ -153,6 +154,7 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
         handleConfirmResolution,
         handleDelete,
         isDeleting,
+        sessionActor,
     } = useReport();
 
     const windowRef = useRef<HTMLDivElement | null>(null);
@@ -427,7 +429,7 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
         />
     );
 
-    const deleteButton = (
+    const deleteButton = canDeleteFeedback(report, sessionActor) ? (
         <FeedbackDeleteAction
             reportId={report.id}
             onDelete={handleDelete}
@@ -436,7 +438,7 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
             className={`${HEADER_BUTTON_CLASS} disabled:opacity-50`}
             iconClassName="h-[15px] w-[15px]"
         />
-    );
+    ) : null;
 
     const headerUtilityButtons = (
         <>

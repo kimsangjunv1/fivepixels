@@ -9,6 +9,7 @@ import {
     canShowAdjudicationActionsOnBranchReply,
     canShowCaseThreadActions,
     canShowCaseClaimAction,
+    canShowCaseEntryActions,
     canShowCheckoutBranchActionsForCase,
     canShowSuggestedBranchActionsForCase,
     getReportReplies,
@@ -32,12 +33,7 @@ import { QuestionThreadGroup } from "./QuestionThreadGroup.js";
 import { ReplyHistoryControls } from "./ReplyHistoryControls.js";
 import { ThreadAuthorMeta } from "./ThreadAuthorMeta.js";
 import { ThreadTimelineRow } from "./ThreadTimelineRow.js";
-import {
-    CaseThreadEntryActions,
-    ThreadEntryActions,
-    THREAD_ACTION_ENTRY_SURFACE_CLASS,
-    THREAD_CASE_ENTRY_SURFACE_CLASS,
-} from "./ThreadEntryActions.js";
+import { CaseThreadEntryActions, ThreadEntryActions, THREAD_ACTION_ENTRY_SURFACE_CLASS, THREAD_CASE_ENTRY_SURFACE_CLASS } from "./ThreadEntryActions.js";
 
 type PendingComposer = {
     type: "deny" | "recheck" | "checkout" | "question";
@@ -129,6 +125,7 @@ function CaseThreadEntry({
     caseCreatedAt,
     caseStatus,
     actorName,
+    onStartAskQuestion,
     onClaimAssignee,
     isUpdating,
     isClaimingAssignee,
@@ -140,12 +137,14 @@ function CaseThreadEntry({
     caseCreatedAt: string;
     caseStatus: "open" | "resolved";
     actorName: string;
+    onStartAskQuestion: () => void;
     onClaimAssignee: () => void;
     isUpdating?: boolean;
     isClaimingAssignee?: boolean;
     isEditingCases?: boolean;
 }) {
-    const hasActions = !isEditingCases && canShowCaseClaimAction(report, caseId, actorName);
+    const showPreClaimDiscussion = !isEditingCases && canShowCaseEntryActions(report, caseId);
+    const hasActions = showPreClaimDiscussion && (Boolean(actorName.trim()) || canShowCaseClaimAction(report, caseId, actorName));
 
     const entryBody = (
         <>
@@ -154,7 +153,9 @@ function CaseThreadEntry({
                 isNeedGray
             />
 
-            <p className={`leading-[1.5] text-[14px] text-[var(--adaptive-text-primary)] ${caseStatus === "resolved" ? "text-[var(--adaptive-black500)] line-through" : ""}`}>{caseText}</p>
+            <p className={`leading-[1.5] text-[14px] text-[var(--adaptive-text-primary)] whitespace-break-spaces ${caseStatus === "resolved" ? "text-[var(--adaptive-black500)] line-through" : ""}`}>
+                {caseText}
+            </p>
 
             {report.author_name ? (
                 <ThreadAuthorMeta
@@ -169,6 +170,7 @@ function CaseThreadEntry({
                     report={report}
                     caseId={caseId}
                     actorName={actorName}
+                    onStartAskQuestion={onStartAskQuestion}
                     onClaimAssignee={onClaimAssignee}
                     isUpdating={isUpdating}
                     isClaimingAssignee={isClaimingAssignee}
@@ -268,7 +270,7 @@ function ThreadRootReply({
                 isNeedGray
             />
 
-            <p className="leading-[1.5] text-[14px] text-[var(--adaptive-text-primary)]">{reply.message}</p>
+            <p className="leading-[1.5] text-[14px] text-[var(--adaptive-text-primary)] whitespace-break-spaces">{reply.message}</p>
             {reply.author_name ? (
                 <ThreadAuthorMeta
                     authorName={reply.author_name}
@@ -516,6 +518,7 @@ export function FeedbackThread({
                                     caseCreatedAt={focusedCase.created_at}
                                     caseStatus={focusedCase.status}
                                     actorName={actorName}
+                                    onStartAskQuestion={onStartAskQuestion}
                                     onClaimAssignee={onClaimAssignee}
                                     isUpdating={isUpdating}
                                     isClaimingAssignee={isClaimingAssignee}

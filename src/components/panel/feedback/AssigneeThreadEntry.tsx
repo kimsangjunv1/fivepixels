@@ -53,7 +53,7 @@ export function AssigneeThreadEntry({
     return (
         <ThreadTimelineRow time={formatClockTime(reply.created_at)}>
             <div className={hasActions ? THREAD_ACTION_ENTRY_SURFACE_CLASS : THREAD_CASE_ENTRY_SURFACE_CLASS}>
-                <p className="leading-[1.5] text-[14px] text-[var(--adaptive-text-primary)]">{reply.message}</p>
+                <p className="leading-[1.5] text-[14px] text-[var(--adaptive-text-primary)] whitespace-break-spaces">{reply.message}</p>
                 {assigneeName ? <p className="text-[12px] text-[var(--adaptive-black500)]">{formatAssigneeLabel(assigneeName, department)}</p> : null}
 
                 {actionRole === "assignee" ? (
@@ -82,7 +82,6 @@ export function AssigneeThreadEntry({
                         >
                             <CheckIcon className="h-[13px] w-[13px]" />
                             {messages.thread.fixComplete}
-                            <p>asd</p>
                         </button>
                     </div>
                 ) : null}

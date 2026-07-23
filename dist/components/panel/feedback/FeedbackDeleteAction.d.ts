@@ -6,7 +6,11 @@ type FeedbackDeleteActionProps = {
     messages: ReportMessages;
     className?: string;
     iconClassName?: string;
+    deleteTitle?: string;
+    deleteConfirmTitle?: string;
+    deleteAriaLabel?: string;
+    deleteConfirmAriaLabel?: string;
 };
-export declare function FeedbackDeleteAction({ reportId, onDelete, disabled, messages, className, iconClassName, }: FeedbackDeleteActionProps): import("react").JSX.Element;
+export declare function FeedbackDeleteAction({ reportId, onDelete, disabled, messages, className, iconClassName, deleteTitle, deleteConfirmTitle, deleteAriaLabel, deleteConfirmAriaLabel, }: FeedbackDeleteActionProps): import("react").JSX.Element;
 export {};
 //# sourceMappingURL=FeedbackDeleteAction.d.ts.map

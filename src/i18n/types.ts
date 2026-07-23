@@ -216,6 +216,10 @@ export type ReportMessages = {
         assignee: string;
         summaryMore: (count: number) => string;
         progressResolved: (resolved: number, total: number) => string;
+        removeCaseTitle: string;
+        removeCaseConfirmTitle: string;
+        removeCaseAriaLabel: string;
+        removeCaseConfirmAriaLabel: string;
     };
     thread: {
         scrollHintUp: string;
@@ -650,6 +654,9 @@ export type ReportMessages = {
         reviewerRequired: string;
         confirmResolutionFailed: string;
         deleteFeedbackFailed: string;
+        deleteFeedbackNotAllowed: string;
+        removeCaseNotAllowed: string;
+        removeCaseFailed: string;
         createGitHubIssueFailed: string;
         loadFeedbackFailed: string;
         loadRepliesFailed: string;

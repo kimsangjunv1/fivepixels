@@ -228,6 +228,7 @@ export function assembleReportContextValue({
         updateCaseEditDraftCase: reply.updateCaseEditDraftCase,
         addCaseEditDraftCase: reply.addCaseEditDraftCase,
         removeCaseEditDraftCase: reply.removeCaseEditDraftCase,
+        removePersistedCase: reply.removePersistedCase,
         focusedCaseId: reply.focusedCaseId,
         selectCase: reply.selectCase,
         clearFocusedCase: reply.clearFocusedCase,

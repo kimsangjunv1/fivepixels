@@ -5,6 +5,7 @@ import {
     buildConfirmAuthorOptions,
     canShowAdjudicationActionsOnBranchReply,
     canShowCaseClaimAction,
+    canShowCaseEntryActions,
     canShowCheckoutBranchActionsForCase,
     canShowSuggestedBranchActionsForCase,
     isBranchReplyAuthor,
@@ -219,6 +220,7 @@ export function CaseThreadEntryActions({
     report,
     caseId,
     actorName,
+    onStartAskQuestion,
     onClaimAssignee,
     isUpdating,
     isClaimingAssignee,
@@ -226,27 +228,45 @@ export function CaseThreadEntryActions({
     report: ReportFeedback;
     caseId: string;
     actorName: string;
+    onStartAskQuestion: () => void;
     onClaimAssignee: () => void;
     isUpdating?: boolean;
     isClaimingAssignee?: boolean;
 }) {
     const { messages } = useReportPreferences();
+    const showPreClaimDiscussion = canShowCaseEntryActions(report, caseId);
+    const showClaim = canShowCaseClaimAction(report, caseId, actorName);
+    const canReply = showPreClaimDiscussion && Boolean(actorName.trim());
 
-    if (!canShowCaseClaimAction(report, caseId, actorName)) {
+    if (!showPreClaimDiscussion) {
         return null;
     }
 
     return (
-        <div className="mt-[10px] flex flex-wrap items-center justify-end">
-            <button
-                type="button"
-                data-fivepixels-interactive=""
-                disabled={isUpdating || isClaimingAssignee}
-                onClick={onClaimAssignee}
-                className={`${THREAD_ACTION_BUTTON_BASE} ${THREAD_ACTION_GHOST}`}
-            >
-                {messages.thread.claimAssignee}
-            </button>
+        <div className="mt-[10px] flex flex-wrap items-center justify-end gap-[4px]">
+            {canReply ? (
+                <button
+                    type="button"
+                    data-fivepixels-interactive=""
+                    disabled={isUpdating}
+                    onClick={onStartAskQuestion}
+                    className={`${THREAD_ACTION_BUTTON_BASE} ${THREAD_ACTION_GHOST}`}
+                >
+                    <RevertIcon className="h-[13px] w-[13px]" />
+                    {messages.thread.reply}
+                </button>
+            ) : null}
+            {showClaim ? (
+                <button
+                    type="button"
+                    data-fivepixels-interactive=""
+                    disabled={isUpdating || isClaimingAssignee}
+                    onClick={onClaimAssignee}
+                    className={`${THREAD_ACTION_BUTTON_BASE} ${THREAD_ACTION_GHOST}`}
+                >
+                    {messages.thread.claimAssignee}
+                </button>
+            ) : null}
         </div>
     );
 }

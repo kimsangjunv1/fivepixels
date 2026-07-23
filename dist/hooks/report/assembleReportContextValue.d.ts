@@ -243,6 +243,7 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     updateCaseEditDraftCase: (caseId: string, text: string) => void;
     addCaseEditDraftCase: () => void;
     removeCaseEditDraftCase: (caseId: string) => void;
+    removePersistedCase: (report: import("../../types/report.js").ReportFeedback, caseId: string) => Promise<void>;
     focusedCaseId: string | null;
     selectCase: (caseId: string) => void;
     clearFocusedCase: () => void;

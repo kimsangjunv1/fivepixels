@@ -256,6 +256,7 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     updateCaseEditDraftCase: (caseId: string, text: string) => void;
     addCaseEditDraftCase: () => void;
     removeCaseEditDraftCase: (caseId: string) => void;
+    removePersistedCase: (report: ReportFeedback, caseId: string) => Promise<void>;
     focusedCaseId: string | null;
     selectCase: (caseId: string) => void;
     clearFocusedCase: () => void;

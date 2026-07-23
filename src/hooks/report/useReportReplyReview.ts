@@ -112,10 +112,28 @@ export function useReportReplyReview({
         [activeReplyReport],
     );
 
+    const clearFocusedCase = useCallback(() => {
+        setFocusedCaseId(null);
+    }, []);
+
+    const selectCase = useCallback(
+        (caseId: string) => {
+            setFocusedCaseId(caseId);
+            setPendingComposer(null);
+            setReplyDraft("");
+            setReplySubmitAsQuestion(false);
+            setErrorMessage("");
+        },
+        [setErrorMessage],
+    );
+
     const caseEdit = useReplyCaseEdit({
         reports,
         activeReplyReport,
         activeReplyReportId,
+        focusedCaseId,
+        selectCase,
+        sessionActor,
         fields,
         messages,
         updateFeedback,
@@ -138,18 +156,6 @@ export function useReportReplyReview({
             return resolveDefaultFocusedCaseId(activeReplyReport);
         });
     }, [activeReplyReport]);
-
-    const clearFocusedCase = useCallback(() => {
-        setFocusedCaseId(null);
-    }, []);
-
-    const selectCase = useCallback((caseId: string) => {
-        setFocusedCaseId(caseId);
-        setPendingComposer(null);
-        setReplyDraft("");
-        setReplySubmitAsQuestion(false);
-        setErrorMessage("");
-    }, []);
 
     const ensureFocusedCase = useCallback(
         (report: ReportFeedback) => {

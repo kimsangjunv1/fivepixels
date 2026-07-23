@@ -174,6 +174,7 @@ export function assembleReportContextValue({ panel, auth, draft, markers, mutati
         updateCaseEditDraftCase: reply.updateCaseEditDraftCase,
         addCaseEditDraftCase: reply.addCaseEditDraftCase,
         removeCaseEditDraftCase: reply.removeCaseEditDraftCase,
+        removePersistedCase: reply.removePersistedCase,
         focusedCaseId: reply.focusedCaseId,
         selectCase: reply.selectCase,
         clearFocusedCase: reply.clearFocusedCase,

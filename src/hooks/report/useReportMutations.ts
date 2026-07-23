@@ -12,12 +12,15 @@ import type { EditableDraft } from "@/types/report-ui.js";
 import { createInitialFieldValues, getFieldError } from "@/utils/report/fields.js";
 import { buildGitHubIssueStatusUpdate, buildGitHubIssueUpdate, canCreateGitHubIssueFromList, canCreateGitHubIssueOnCreate, isGitIssued } from "@/utils/github/githubIntegration.js";
 import { notifyFeedbackCreate, notifyFeedbackDelete, notifyFeedbackUpdate, notifyGitHubIssueCreated, type ReportSideEffectCallbacks } from "@/utils/report/reportCallbacks.js";
+import { canDeleteFeedback, type FeedbackActor } from "@/utils/feedback/feedbackPermissions.js";
 
 export type UseReportMutationsParams = {
     messages: ReportMessages;
     fields: ReportField[];
     github?: ReportGitHubConfig;
     eventCallbacks: ReportSideEffectCallbacks;
+    reports: ReportFeedback[];
+    sessionActor: FeedbackActor;
     selectedReport: ReportFeedback | null;
     selectedReportId: string | null;
     setSelectedReportId: Dispatch<SetStateAction<string | null>>;
@@ -42,6 +45,8 @@ export function useReportMutations({
     fields,
     github,
     eventCallbacks,
+    reports,
+    sessionActor,
     selectedReport,
     selectedReportId,
     setSelectedReportId,
@@ -226,6 +231,18 @@ export function useReportMutations({
     };
 
     const handleDelete = async (id: string) => {
+        const report = reports.find((item) => item.id === id) ?? (selectedReport?.id === id ? selectedReport : null);
+
+        if (!report) {
+            setErrorMessage(messages.errors.feedbackNotFound);
+            return;
+        }
+
+        if (!canDeleteFeedback(report, sessionActor)) {
+            setErrorMessage(messages.errors.deleteFeedbackNotAllowed);
+            return;
+        }
+
         try {
             await deleteFeedback(id);
             await notifyFeedbackDelete(eventCallbacks, id);

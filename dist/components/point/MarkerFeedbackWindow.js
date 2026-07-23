@@ -14,6 +14,7 @@ import { CloseIcon, LinkIcon, MaximizeIcon, MinimizeIcon, RestoreIcon, SidePanel
 import { FeedbackFieldTags } from "../../components/panel/feedback/FeedbackFieldTags.js";
 import { FeedbackPinToggleButton } from "../../components/panel/feedback/FeedbackPinToggleButton.js";
 import { FeedbackDeleteAction } from "../../components/panel/feedback/FeedbackDeleteAction.js";
+import { canDeleteFeedback } from "../../utils/feedback/feedbackPermissions.js";
 import { CornerResizeGhost } from "../../components/ui/CornerResizeGhost.js";
 import { MOTION } from "../../constants/motionClasses.js";
 import { CornerResizeHandle } from "../../components/ui/CornerResizeHandle.js";
@@ -76,7 +77,7 @@ function MarkerWindowShareButton({ report, messages }) {
     return (_jsx(WindowControlButton, { onClick: handleCopy, ariaLabel: messages.marker.shareLinkAriaLabel, title: copied ? messages.marker.shareLinkCopiedTitle : messages.marker.shareLinkTitle, children: _jsx(LinkIcon, { className: "h-[15px] w-[15px]" }) }));
 }
 export function MarkerFeedbackWindow({ report, anchor }) {
-    const { messages, fields, authors, pendingComposer, replyDraft, replyAuthorName, confirmAuthorName, showConfirmAuthorSelect, errorMessage, setErrorMessage, isUpdating, isSubmittingReply, isClaimingAssignee, focusedCaseId, selectCase, closeReplyComposer, clearHoverLeaveTimeout, scheduleHoverLeave, setHoveredMarkerId, setReplyDraft, setReplyAuthorName, setConfirmAuthorName, toggleConfirmAuthorSelect, handleReplySubmit, startDenyReview, startCheckoutReview, startAskQuestion, handleClaimAssignee, handleTransferAssignee, handleConfirmResolution, handleDelete, isDeleting, } = useReport();
+    const { messages, fields, authors, pendingComposer, replyDraft, replyAuthorName, confirmAuthorName, showConfirmAuthorSelect, errorMessage, setErrorMessage, isUpdating, isSubmittingReply, isClaimingAssignee, focusedCaseId, selectCase, closeReplyComposer, clearHoverLeaveTimeout, scheduleHoverLeave, setHoveredMarkerId, setReplyDraft, setReplyAuthorName, setConfirmAuthorName, toggleConfirmAuthorSelect, handleReplySubmit, startDenyReview, startCheckoutReview, startAskQuestion, handleClaimAssignee, handleTransferAssignee, handleConfirmResolution, handleDelete, isDeleting, sessionActor, } = useReport();
     const windowRef = useRef(null);
     const surfaceRef = useRef(null);
     const closeRequestedRef = useRef(false);
@@ -242,7 +243,7 @@ export function MarkerFeedbackWindow({ report, anchor }) {
     const sidebarToggleButton = (_jsx(WindowControlButton, { onClick: () => setIsSidebarCollapsed((current) => !current), ariaLabel: isSidebarCollapsed ? messages.marker.sidebarExpandAriaLabel : messages.marker.sidebarCollapseAriaLabel, className: isSidebarCollapsed ? "" : "text-[var(--adaptive-blue500)]", children: _jsx(SidePanelIcon, { className: "h-[16px] w-[16px]" }) }));
     const shareButton = (_jsx(MarkerWindowShareButton, { report: report, messages: messages }));
     const pinButton = (_jsx(FeedbackPinToggleButton, { report: report, caseId: focusedCaseId, className: HEADER_BUTTON_CLASS, iconClassName: "h-[14px] w-[14px]" }));
-    const deleteButton = (_jsx(FeedbackDeleteAction, { reportId: report.id, onDelete: handleDelete, disabled: isDeleting, messages: messages, className: `${HEADER_BUTTON_CLASS} disabled:opacity-50`, iconClassName: "h-[15px] w-[15px]" }));
+    const deleteButton = canDeleteFeedback(report, sessionActor) ? (_jsx(FeedbackDeleteAction, { reportId: report.id, onDelete: handleDelete, disabled: isDeleting, messages: messages, className: `${HEADER_BUTTON_CLASS} disabled:opacity-50`, iconClassName: "h-[15px] w-[15px]" })) : null;
     const headerUtilityButtons = (_jsxs(_Fragment, { children: [shareButton, deleteButton, pinButton] }));
     const rightSection = (_jsxs("div", { className: "flex min-w-0 flex-1 flex-col bg-[var(--adaptive-black50)]", children: [_jsx("div", { className: "shrink-0 border-b border-[var(--adaptive-border-subtle)] px-[16px] py-[8px]", children: focusedCase ? (_jsxs(Fragment, { children: [_jsx("p", { className: `truncate text-[15px] font-semibold leading-[1.4] text-[var(--adaptive-black900)] ${focusedCase.status === "resolved" ? "text-[var(--adaptive-black500)] line-through" : ""}`, title: focusedCase.text, children: focusedCase.text }), _jsxs("div", { className: "mt-[2px] flex min-w-0 items-center justify-between gap-[8px]", children: [_jsx("div", { className: "flex min-w-0 flex-1 items-center gap-[6px]", children: showAssigneeAssigned ? (_jsxs(_Fragment, { children: [_jsx(ProcessingDots, {}), _jsx(Text.Shimmer, { className: "min-w-0 truncate text-[12px] leading-[1.4]", color: {
                                                     start: "var(--adaptive-black900)",

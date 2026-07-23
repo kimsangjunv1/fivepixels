@@ -10,6 +10,10 @@ type FeedbackDeleteActionProps = {
     messages: ReportMessages;
     className?: string;
     iconClassName?: string;
+    deleteTitle?: string;
+    deleteConfirmTitle?: string;
+    deleteAriaLabel?: string;
+    deleteConfirmAriaLabel?: string;
 };
 
 export function FeedbackDeleteAction({
@@ -19,6 +23,10 @@ export function FeedbackDeleteAction({
     messages,
     className = "flex h-[20px] w-[20px] items-center justify-center disabled:opacity-50",
     iconClassName = "h-[12px] w-[12px]",
+    deleteTitle = messages.feedbackList.deleteTitle,
+    deleteConfirmTitle = messages.feedbackList.deleteConfirmTitle,
+    deleteAriaLabel = messages.feedbackList.deleteAriaLabel,
+    deleteConfirmAriaLabel = messages.feedbackList.deleteConfirmAriaLabel,
 }: FeedbackDeleteActionProps) {
     const [confirming, setConfirming] = useState(false);
 
@@ -48,13 +56,13 @@ export function FeedbackDeleteAction({
     };
 
     return (
-        <HoverTooltip label={confirming ? messages.feedbackList.deleteConfirmTitle : messages.feedbackList.deleteTitle}>
+        <HoverTooltip label={confirming ? deleteConfirmTitle : deleteTitle}>
             <button
                 type="button"
                 data-fivepixels-interactive=""
                 onClick={handleDelete}
                 disabled={disabled}
-                aria-label={confirming ? messages.feedbackList.deleteConfirmAriaLabel : messages.feedbackList.deleteAriaLabel}
+                aria-label={confirming ? deleteConfirmAriaLabel : deleteAriaLabel}
                 className={`${className} ${confirming ? "text-rose-200 hover:text-white" : "text-[var(--adaptive-black50)] hover:text-white"}`}
             >
                 {confirming ? <span className="text-[9px] font-semibold">!</span> : <TrashIcon className={iconClassName} />}

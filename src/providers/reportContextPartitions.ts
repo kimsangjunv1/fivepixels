@@ -151,6 +151,7 @@ export const REPORT_SESSION_KEYS = [
     "updateCaseEditDraftCase",
     "addCaseEditDraftCase",
     "removeCaseEditDraftCase",
+    "removePersistedCase",
     "focusedCaseId",
     "selectCase",
     "clearFocusedCase",

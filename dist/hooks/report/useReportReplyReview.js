@@ -31,10 +31,23 @@ export function useReportReplyReview({ reports, messages, fields, sessionActor, 
     }, [authorSelectionLocked, sessionActor?.name]);
     const activeReplyReport = useMemo(() => (activeReplyReportId ? (reports.find((item) => item.id === activeReplyReportId) ?? null) : null), [activeReplyReportId, reports]);
     const activeReplyAnchor = useMemo(() => (activeReplyReport ? { report: activeReplyReport } : null), [activeReplyReport]);
+    const clearFocusedCase = useCallback(() => {
+        setFocusedCaseId(null);
+    }, []);
+    const selectCase = useCallback((caseId) => {
+        setFocusedCaseId(caseId);
+        setPendingComposer(null);
+        setReplyDraft("");
+        setReplySubmitAsQuestion(false);
+        setErrorMessage("");
+    }, [setErrorMessage]);
     const caseEdit = useReplyCaseEdit({
         reports,
         activeReplyReport,
         activeReplyReportId,
+        focusedCaseId,
+        selectCase,
+        sessionActor,
         fields,
         messages,
         updateFeedback,
@@ -54,16 +67,6 @@ export function useReportReplyReview({ reports, messages, fields, sessionActor, 
             return resolveDefaultFocusedCaseId(activeReplyReport);
         });
     }, [activeReplyReport]);
-    const clearFocusedCase = useCallback(() => {
-        setFocusedCaseId(null);
-    }, []);
-    const selectCase = useCallback((caseId) => {
-        setFocusedCaseId(caseId);
-        setPendingComposer(null);
-        setReplyDraft("");
-        setReplySubmitAsQuestion(false);
-        setErrorMessage("");
-    }, []);
     const ensureFocusedCase = useCallback((report) => {
         if (isValidFocusedCase(report, focusedCaseId)) {
             return true;

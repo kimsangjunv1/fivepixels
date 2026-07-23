@@ -90,6 +90,8 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         fields,
         github,
         eventCallbacks,
+        reports: panel.reports,
+        sessionActor: auth.sessionActor,
         selectedReport: panel.selectedReport,
         selectedReportId: panel.selectedReportId,
         setSelectedReportId: panel.setSelectedReportId,

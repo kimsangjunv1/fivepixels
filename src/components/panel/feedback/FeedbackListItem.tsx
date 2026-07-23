@@ -11,6 +11,8 @@ import { copyTextToClipboard, serializeFeedbackItem } from "@/utils/feedback/fee
 import { GitIssueButton } from "./GitIssueButton.js";
 import { FeedbackPinToggleButton } from "./FeedbackPinToggleButton.js";
 import { FeedbackDeleteAction } from "./FeedbackDeleteAction.js";
+import { canDeleteFeedback } from "@/utils/feedback/feedbackPermissions.js";
+import { useReport } from "@/providers/reportContext.js";
 import { CopyIcon } from "@/components/icons/Icons.js";
 import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
 
@@ -138,6 +140,8 @@ export function FeedbackListItem({
     onDelete,
     onCreateGitHubIssue,
 }: FeedbackListItemProps) {
+    const { sessionActor } = useReport();
+    const canDelete = canDeleteFeedback(report, sessionActor);
     const caseId = getFeedbackCaseId(report);
     const replyCount = getReplyCount(report);
     const statusTag = getFeedbackListStatusTag(report);
@@ -203,12 +207,14 @@ export function FeedbackListItem({
                         report={report}
                         messages={messages}
                     />
-                    <FeedbackDeleteAction
-                        reportId={report.id}
-                        onDelete={onDelete}
-                        disabled={disabled}
-                        messages={messages}
-                    />
+                    {canDelete ? (
+                        <FeedbackDeleteAction
+                            reportId={report.id}
+                            onDelete={onDelete}
+                            disabled={disabled}
+                            messages={messages}
+                        />
+                    ) : null}
                 </div>
                 <FeedbackPinToggleButton
                     report={report}

@@ -36,7 +36,7 @@ export function GitIssuedThreadEntry({ reply, issueUrl }: GitIssuedThreadEntryPr
                 <span className="text-[12px] text-[var(--adaptive-black500)]">{formatDate(reply.created_at, locale)}</span>
             </div>
 
-            <p className="leading-[1.5] text-[14px] text-[var(--adaptive-text-primary)]">{reply.message}</p>
+            <p className="leading-[1.5] text-[14px] text-[var(--adaptive-text-primary)] whitespace-break-spaces">{reply.message}</p>
 
             <div className="flex flex-wrap items-center gap-[8px]">
                 <a

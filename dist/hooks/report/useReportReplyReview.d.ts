@@ -35,6 +35,7 @@ export declare function useReportReplyReview({ reports, messages, fields, sessio
     updateCaseEditDraftCase: (caseId: string, text: string) => void;
     addCaseEditDraftCase: () => void;
     removeCaseEditDraftCase: (caseId: string) => void;
+    removePersistedCase: (report: ReportFeedback, caseId: string) => Promise<void>;
     isCaseEditing: boolean;
     caseEditReportId: string | null;
     caseEditCases: import("../../types/report.js").ReportCase[] | null;
