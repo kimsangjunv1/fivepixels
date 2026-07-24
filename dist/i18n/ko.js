@@ -170,6 +170,7 @@ export const ko = {
         draftComplete: "완료",
         draftCompleting: "완료 중",
         draftCategoryPrompt: (count) => `${count}개의 피드백에 가장 적합한 카테고리를 선택해 주세요.`,
+        draftTooltipHeader: "피드백 작성",
         gitIssueSendAriaLabel: "GitHub 이슈로 바로 전송",
         gitIssueSendTitle: "Git Issue",
         gitIssueSendLabel: "Git Issue",
@@ -627,6 +628,7 @@ export const ko = {
         currentAssignee: "현재 담당자",
         assigneeInfoAriaLabel: "담당자 변경 정보",
         viewMoreCases: "클릭하여 더 많은 케이스 확인",
+        hoverTooltipHeader: "피드백 요약",
     },
     defaults: {
         fields: {

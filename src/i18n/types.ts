@@ -185,6 +185,7 @@ export type ReportMessages = {
         draftComplete: string;
         draftCompleting: string;
         draftCategoryPrompt: (count: number) => string;
+        draftTooltipHeader: string;
         gitIssueSendAriaLabel: string;
         gitIssueSendTitle: string;
         gitIssueSendLabel: string;
@@ -605,6 +606,7 @@ export type ReportMessages = {
         currentAssignee: string;
         assigneeInfoAriaLabel: string;
         viewMoreCases: string;
+        hoverTooltipHeader: string;
     };
     defaults: {
         fields: {

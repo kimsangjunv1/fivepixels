@@ -18,7 +18,7 @@ import { MOTION } from "@/constants/motionClasses.js";
 import { MarkerFeedbackWindow } from "./MarkerFeedbackWindow.js";
 
 const TOOLTIP_SURFACE_CLASS =
-    "overflow-hidden rounded-[12px] border-[3px] border-[var(--adaptive-black200)] bg-[var(--adaptive-fillOpacity800)] backdrop-blur-[5px] shadow-[var(--adaptive-popup-shadow)]";
+    "overflow-hidden rounded-[12px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-fillOpacity800)] backdrop-blur-[5px] shadow-[var(--adaptive-popup-shadow)]";
 // "overflow-hidden rounded-[12px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-fillOpacity500)] backdrop-blur-[10px] shadow-[var(--adaptive-popup-shadow)]";
 const TOOLTIP_FIXED_CLASS = `fixed z-[1000001] ${TOOLTIP_SURFACE_CLASS} ${MOTION.tooltipFadeIn}`;
 
@@ -186,9 +186,7 @@ function MarkerButton({
                     }
                     className={`${MARKER_BUTTON_BASE_CLASS} border-[2px] border-white shadow-[0_4px_10px_#00000090] transition-transform duration-150 ${shapeStyle.shapeClass} ${
                         isSelected ? "scale-[1.4]" : ""
-                    } ${isDetached ? "border-dashed" : ""} ${
-                        isReportMode ? (isProximityHighlighted ? "scale-110" : "") : isDetached ? "opacity-75" : ""
-                    } ${showMarkerLabel ? "text-white" : ""}`}
+                    } ${isDetached ? "border-dashed" : ""} ${isReportMode ? (isProximityHighlighted ? "scale-110" : "") : isDetached ? "opacity-75" : ""} ${showMarkerLabel ? "text-white" : ""}`}
                     style={{
                         backgroundColor: getMarkerColor(markerItem.report, markerAppearance.colors),
                         pointerEvents: isReportMode ? "none" : "auto",

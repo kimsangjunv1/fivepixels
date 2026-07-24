@@ -172,6 +172,7 @@ export const en: ReportMessages = {
         draftComplete: "Complete",
         draftCompleting: "Completing",
         draftCategoryPrompt: (count) => `Choose the category that best fits ${count} feedback ${count === 1 ? "item" : "items"}.`,
+        draftTooltipHeader: "Leave feedback",
         gitIssueSendAriaLabel: "Send directly to GitHub issue",
         gitIssueSendTitle: "Git Issue",
         gitIssueSendLabel: "Git Issue",
@@ -633,6 +634,7 @@ export const en: ReportMessages = {
         currentAssignee: "Current assignee",
         assigneeInfoAriaLabel: "Assignee transfer details",
         viewMoreCases: "Click to view more cases",
+        hoverTooltipHeader: "Feedback summary",
     },
     defaults: {
         fields: {

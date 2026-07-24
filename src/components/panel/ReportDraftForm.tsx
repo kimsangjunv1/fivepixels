@@ -198,7 +198,7 @@ function ReportDraftFormContent({
             >
                 <div
                     ref={tooltipSurfaceRef}
-                    className={`relative ${TOOLTIP_SURFACE_CLASS} ${MOTION.tooltipFadeIn}`}
+                    className={`relative border border-[var(--adaptive-border-subtle)] ${TOOLTIP_SURFACE_CLASS} ${MOTION.tooltipFadeIn}`}
                     style={{
                         pointerEvents: "auto",
                         height: customSize?.height,
@@ -211,6 +211,11 @@ function ReportDraftFormContent({
                             height: customSize?.height,
                         }}
                     >
+                        <div className="shrink-0 border-b border-b-[var(--adaptive-border-subtle)] bg-[var(--adaptive-neutralTintOpacity900)] px-[12px] py-[4px] flex items-center justify-between">
+                            <div className="w-[3px] h-[3px] bg-[var(--adaptive-black400)] rounded-full" />
+                            <p className="text-[12px] font-bold text-center leading-none text-[var(--adaptive-black600)]">{messages.composer.draftTooltipHeader}</p>
+                            <div className="w-[3px] h-[3px] bg-[var(--adaptive-black400)] rounded-full" />
+                        </div>
                         <DraftProbeSummaryBanner />
                         <FeedbackComposer
                             cases={draft.cases}
@@ -242,7 +247,7 @@ function ReportDraftFormContent({
                             hidePrimarySubmitAction
                             categoryPrompt={isCategoryStep ? messages.composer.draftCategoryPrompt(draft.cases.length) : undefined}
                         />
-                        <div className="grid grid-cols-2 border-x border-b border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-neutralTintOpacity50)]">
+                        <div className="grid grid-cols-2 border-y border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-neutralTintOpacity50)]">
                             <button
                                 type="button"
                                 data-fivepixels-interactive=""
@@ -262,6 +267,7 @@ function ReportDraftFormContent({
                                 {isCategoryStep ? (isSubmitting ? messages.composer.draftCompleting : messages.composer.draftComplete) : messages.composer.draftNext}
                             </button>
                         </div>
+
                         {draft.targetSelector && draft.suggestedReportId ? (
                             <PickTargetSnippet
                                 suggestedReportId={draft.suggestedReportId}

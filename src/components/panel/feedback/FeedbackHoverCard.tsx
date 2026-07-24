@@ -39,44 +39,52 @@ export function FeedbackHoverCard({ report, detached = false, detachedKind = nul
     const resolvedDetachedHint = detached && detachedHint && detachedModalHint ? getDetachedMarkerHint(detachedKind, { detachedHint, detachedModalHint }) : null;
 
     return (
-        <div className="flex w-[260px] flex-col gap-[6px] bg-transparent p-[8px_8px]">
-            {resolvedDetachedHint ? <p className="text-[12px] leading-[1.4] text-[var(--adaptive-black500)]">{resolvedDetachedHint}</p> : null}
+        <div className="flex w-[260px] flex-col bg-transparent">
+            <div className="shrink-0 border-b border-b-[var(--adaptive-border-subtle)] bg-[var(--adaptive-neutralTintOpacity900)] px-[12px] py-[4px] flex items-center justify-between">
+                <div className="w-[3px] h-[3px] bg-[var(--adaptive-black400)] rounded-full" />
+                <p className="text-[12px] font-semibold leading-none text-[var(--adaptive-black900)]">{messages.marker.hoverTooltipHeader}</p>
+                <div className="w-[3px] h-[3px] bg-[var(--adaptive-black400)] rounded-full" />
+            </div>
 
-            <ul className="flex flex-col gap-[4px]">
-                {visibleCases.map((item) => {
-                    const status = getCaseLatestStatus(report, item.id);
+            <div className="flex flex-col gap-[6px] p-[8px]">
+                {resolvedDetachedHint ? <p className="text-[12px] leading-[1.4] text-[var(--adaptive-black500)]">{resolvedDetachedHint}</p> : null}
 
-                    return (
-                        <li
-                            key={item.id}
-                            className="flex min-w-0 items-center gap-[6px] text-[12px] leading-[1.4]"
-                        >
-                            <span
-                                className={`min-w-0 flex-1 truncate text-[var(--adaptive-text-primary)] ${item.status === "resolved" ? "text-[var(--adaptive-black500)] line-through" : ""}`}
-                                title={item.text}
+                <ul className="flex flex-col gap-[4px]">
+                    {visibleCases.map((item) => {
+                        const status = getCaseLatestStatus(report, item.id);
+
+                        return (
+                            <li
+                                key={item.id}
+                                className="flex min-w-0 items-center gap-[6px] text-[12px] leading-[1.4]"
                             >
-                                {item.text}
-                            </span>
-                            <span
-                                className="shrink-0 text-[var(--adaptive-black400)]"
-                                aria-hidden
-                            >
-                                |
-                            </span>
-                            <CaseStatusLabel status={status} />
-                        </li>
-                    );
-                })}
-            </ul>
+                                <span
+                                    className={`min-w-0 flex-1 truncate text-[var(--adaptive-text-primary)] ${item.status === "resolved" ? "text-[var(--adaptive-black500)] line-through" : ""}`}
+                                    title={item.text}
+                                >
+                                    {item.text}
+                                </span>
+                                <span
+                                    className="shrink-0 text-[var(--adaptive-black400)]"
+                                    aria-hidden
+                                >
+                                    |
+                                </span>
+                                <CaseStatusLabel status={status} />
+                            </li>
+                        );
+                    })}
+                </ul>
 
-            {hasMoreCases ? <p className="text-[11px] leading-[1.4] text-[var(--adaptive-black500)]">{messages.marker.viewMoreCases}</p> : null}
+                {hasMoreCases ? <p className="text-[11px] leading-[1.4] text-[var(--adaptive-black500)]">{messages.marker.viewMoreCases}</p> : null}
 
-            {report.author_name ? (
-                <div className="flex items-center gap-[6px] border-t border-[var(--adaptive-border-subtle)] pt-[6px]">
-                    <p className="text-[12px] text-[var(--adaptive-black500)]">{report.author_name}</p>
-                    <FeedbackCreatorBadge />
-                </div>
-            ) : null}
+                {report.author_name ? (
+                    <div className="flex items-center gap-[6px] border-t border-[var(--adaptive-border-subtle)] pt-[6px]">
+                        <p className="text-[12px] text-[var(--adaptive-black500)]">{report.author_name}</p>
+                        <FeedbackCreatorBadge />
+                    </div>
+                ) : null}
+            </div>
         </div>
     );
 }
