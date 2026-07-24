@@ -144,7 +144,6 @@ function ReportDraftFormContent({
     });
     const { layout: tooltipLayout, setTooltipElement } = useTooltipLayout(anchor, true, true, {
         customWidth: customSize?.width,
-        customHeight: customSize?.height,
     });
     const tooltipPosition = tooltipLayout?.position ?? null;
     const tooltipAnchorStyle = tooltipLayout?.anchorStyle;
@@ -186,16 +185,24 @@ function ReportDraftFormContent({
                 ref={setTooltipElement}
                 data-fivepixels-interactive=""
                 onClick={(event) => event.stopPropagation()}
-                className={EXPANDED_TOOLTIP_ANCHOR_CLASS}
+                className={`${EXPANDED_TOOLTIP_ANCHOR_CLASS} flex flex-col gap-[8px]`}
                 style={{
                     left: tooltipPosition.left,
                     top: tooltipPosition.top,
                     width: tooltipPosition.width,
                     minWidth: 320,
-                    ...(customSize?.height !== undefined ? { height: customSize.height } : null),
                     ...tooltipAnchorStyle,
                 }}
             >
+                {draft.targetSelector && draft.suggestedReportId ? (
+                    <div className={`shrink-0 border border-[var(--adaptive-border-subtle)] ${TOOLTIP_SURFACE_CLASS} ${MOTION.tooltipFadeIn}`}>
+                        <PickTargetSnippet
+                            suggestedReportId={draft.suggestedReportId}
+                            reportType={draft.reportType}
+                        />
+                    </div>
+                ) : null}
+
                 <div
                     ref={tooltipSurfaceRef}
                     className={`relative border border-[var(--adaptive-border-subtle)] ${TOOLTIP_SURFACE_CLASS} ${MOTION.tooltipFadeIn}`}
@@ -247,7 +254,7 @@ function ReportDraftFormContent({
                             hidePrimarySubmitAction
                             categoryPrompt={isCategoryStep ? messages.composer.draftCategoryPrompt(draft.cases.length) : undefined}
                         />
-                        <div className="grid grid-cols-2 border-y border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-neutralTintOpacity50)]">
+                        <div className="grid grid-cols-2 border-t border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-neutralTintOpacity50)]">
                             <button
                                 type="button"
                                 data-fivepixels-interactive=""
@@ -268,12 +275,6 @@ function ReportDraftFormContent({
                             </button>
                         </div>
 
-                        {draft.targetSelector && draft.suggestedReportId ? (
-                            <PickTargetSnippet
-                                suggestedReportId={draft.suggestedReportId}
-                                reportType={draft.reportType}
-                            />
-                        ) : null}
                         {footerWarningMessage ? <ComposerFooterWarning message={footerWarningMessage} /> : null}
                     </div>
 
