@@ -11,12 +11,14 @@ type DraftComposerToolbarProps = {
     categoryNeedsAttention?: boolean;
     onSubmit: () => void;
     isSubmitting?: boolean;
+    submitLabel?: string;
+    submittingLabel?: string;
     showGitHubIssueOnCreate?: boolean;
     onGitHubIssueSubmit?: () => void;
     isGitHubIssueSubmitting?: boolean;
     isGitHubIssueConfirming?: boolean;
     onGitHubIssueConfirmingChange?: (confirming: boolean) => void;
 };
-export declare function DraftComposerToolbar({ cases, activeCaseId, onSelectCase, onAddCase, onRemoveCase, category, onCategoryChange, categoryNeedsAttention, onSubmit, isSubmitting, showGitHubIssueOnCreate, onGitHubIssueSubmit, isGitHubIssueSubmitting, isGitHubIssueConfirming, onGitHubIssueConfirmingChange, }: DraftComposerToolbarProps): import("react").JSX.Element;
+export declare function DraftComposerToolbar({ cases, activeCaseId, onSelectCase, onAddCase, onRemoveCase, category, onCategoryChange, categoryNeedsAttention, onSubmit, isSubmitting, submitLabel, submittingLabel, showGitHubIssueOnCreate, onGitHubIssueSubmit, isGitHubIssueSubmitting, isGitHubIssueConfirming, onGitHubIssueConfirmingChange, }: DraftComposerToolbarProps): import("react").JSX.Element;
 export {};
 //# sourceMappingURL=DraftComposerToolbar.d.ts.map

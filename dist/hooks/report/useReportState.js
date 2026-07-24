@@ -97,6 +97,7 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         setSelectedReportId: panel.setSelectedReportId,
         getActiveReplyReportId: () => replyBridgeRef.current.activeReplyReportId,
         closeReplyComposer: closeReplyComposerBridge,
+        openReplyComposer: openReplyComposerBridge,
         isCreating: panel.isCreating,
         createFeedback: panel.createFeedback,
         updateFeedback: panel.updateFeedback,
@@ -114,6 +115,18 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         panel.setSelectedReportId(reportId);
         if (mutations.editingReportId && mutations.editingReportId !== reportId) {
             mutations.stopEditing();
+        }
+    };
+    const cancelDraft = () => {
+        const editingId = mutations.editingReportId;
+        draft.cancelDraft();
+        mutations.stopEditing();
+        if (!editingId) {
+            return;
+        }
+        const editingReport = panel.reports.find((item) => item.id === editingId);
+        if (editingReport) {
+            openReplyComposerBridge(editingReport);
         }
     };
     const reply = useReportReplyReview({
@@ -174,6 +187,16 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         loadRepliesIfNeeded: panel.loadRepliesIfNeeded,
         searchInputRef: panel.searchInputRef,
     });
+    const beginFeedbackEdit = (report) => {
+        closeReplyComposerBridge();
+        markers.setHoveredMarkerId(null);
+        if (!mutations.beginDraftReportEdit(report)) {
+            return;
+        }
+        if (!draft.beginDraftEdit(report)) {
+            mutations.stopEditing();
+        }
+    };
     const authorizedAuthorId = auth.authorizedAuthors[0]?.id ?? null;
     const activeIdentifyId = auth.activeIdentify?.id ?? null;
     const activeIdentifyName = auth.activeIdentify?.name ?? null;
@@ -226,7 +249,7 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         toggleReportMode: panel.toggleReportMode,
         toggleTargetPreview: draft.toggleTargetPreview,
         toggleIssueMode: panel.toggleIssueMode,
-        cancelDraft: draft.cancelDraft,
+        cancelDraft,
         cancelPendingComposer: reply.cancelPendingComposer,
         closePickProbe: draft.closePickProbe,
         closeReplyComposer: reply.closeReplyComposer,
@@ -254,6 +277,8 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         overlayRef,
         replyHistory,
         selectReport,
+        beginFeedbackEdit,
+        cancelDraft,
     });
 }
 //# sourceMappingURL=useReportState.js.map

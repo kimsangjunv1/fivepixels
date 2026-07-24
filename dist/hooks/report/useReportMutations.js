@@ -3,7 +3,8 @@ import { createInitialFieldValues, getFieldError } from "../../utils/report/fiel
 import { buildGitHubIssueStatusUpdate, buildGitHubIssueUpdate, canCreateGitHubIssueFromList, canCreateGitHubIssueOnCreate, isGitIssued } from "../../utils/github/githubIntegration.js";
 import { notifyFeedbackCreate, notifyFeedbackDelete, notifyFeedbackUpdate, notifyGitHubIssueCreated } from "../../utils/report/reportCallbacks.js";
 import { canDeleteFeedback } from "../../utils/feedback/feedbackPermissions.js";
-export function useReportMutations({ messages, fields, github, eventCallbacks, reports, sessionActor, selectedReport, selectedReportId, setSelectedReportId, getActiveReplyReportId, closeReplyComposer, isCreating, createFeedback, updateFeedback, deleteFeedback, createReply, usesCreateReply, signCreatePayload, signUpdatePayload, signReplyPayload, setErrorMessage, buildCreatePayloadFromDraft, finalizeDraftCreate, }) {
+import { syncIssueStatusFromCases } from "../../utils/report/reportCases.js";
+export function useReportMutations({ messages, fields, github, eventCallbacks, reports, sessionActor, selectedReport, selectedReportId, setSelectedReportId, getActiveReplyReportId, closeReplyComposer, openReplyComposer, isCreating, createFeedback, updateFeedback, deleteFeedback, createReply, usesCreateReply, signCreatePayload, signUpdatePayload, signReplyPayload, setErrorMessage, buildCreatePayloadFromDraft, finalizeDraftCreate, }) {
     const [editingReportId, setEditingReportId] = useState(null);
     const [editableDraft, setEditableDraft] = useState(null);
     const [creatingGitHubIssueId, setCreatingGitHubIssueId] = useState(null);
@@ -31,6 +32,23 @@ export function useReportMutations({ messages, fields, github, eventCallbacks, r
             return;
         }
         try {
+            if (editingReportId) {
+                const editingReport = reports.find((item) => item.id === editingReportId) ?? selectedReport;
+                const updatedFeedback = await updateFeedback(editingReportId, await signUpdatePayload({
+                    cases: payload.cases,
+                    category: payload.category,
+                    field_values: payload.field_values,
+                    status: syncIssueStatusFromCases({
+                        cases: payload.cases,
+                        status: editingReport?.status ?? "open",
+                    }),
+                }));
+                await notifyFeedbackUpdate(eventCallbacks, updatedFeedback);
+                finalizeDraftCreate();
+                stopEditing();
+                openReplyComposer(updatedFeedback);
+                return;
+            }
             const savedFeedback = await createFeedback(await signCreatePayload(payload));
             await notifyFeedbackCreate(eventCallbacks, savedFeedback);
             finalizeDraftCreate();
@@ -40,7 +58,7 @@ export function useReportMutations({ messages, fields, github, eventCallbacks, r
         }
     };
     const handleCreateSubmitWithGitHubIssue = async () => {
-        if (!github?.onCreate || !canCreateGitHubIssueOnCreateValue || creatingGitHubIssueId || isCreating) {
+        if (editingReportId || !github?.onCreate || !canCreateGitHubIssueOnCreateValue || creatingGitHubIssueId || isCreating) {
             return;
         }
         const payload = buildCreatePayloadFromDraft();
@@ -80,6 +98,18 @@ export function useReportMutations({ messages, fields, github, eventCallbacks, r
             fieldValues: createInitialFieldValues(fields, report.field_values),
         });
         setSelectedReportId(report.id);
+    };
+    /** Mark a report as being edited via the draft tooltip (no EditableDraft panel). */
+    const beginDraftReportEdit = (report) => {
+        if (report.status === "archived") {
+            setErrorMessage(messages.errors.archivedReadOnly);
+            setSelectedReportId(report.id);
+            return false;
+        }
+        setEditableDraft(null);
+        setEditingReportId(report.id);
+        setSelectedReportId(report.id);
+        return true;
     };
     const handleUpdateSubmit = async () => {
         if (!selectedReport || !editableDraft) {
@@ -174,6 +204,7 @@ export function useReportMutations({ messages, fields, github, eventCallbacks, r
         creatingGitHubIssueId,
         stopEditing,
         startEditing,
+        beginDraftReportEdit,
         handleCreateSubmit,
         handleCreateSubmitWithGitHubIssue,
         handleUpdateSubmit,

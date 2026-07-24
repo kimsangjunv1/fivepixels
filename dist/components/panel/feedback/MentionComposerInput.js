@@ -1,83 +1,13 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { mentionPlainLabel, serializeMentionToken } from "../../../types/mention.js";
-import { findElementMentionCandidates, parseMentionMessage, toStoredMention, } from "../../../utils/mention/elementMentions.js";
+import { createPortal } from "react-dom";
+import { findElementMentionCandidates, getAtQuery, replaceActiveMentionQuery, toStoredMention } from "../../../utils/mention/elementMentions.js";
+import { deleteMentionChipBeforeCaret, getCaretClientRect, getEditorCaretPoint, placeCaretAfterMention, renderMentionEditorContent, serializeMentionEditor, serializeMentionEditorBeforeCaret, } from "../../../utils/mention/mentionComposerDom.js";
 import { useReportPreferences, useReportSession } from "../../../providers/reportContext.js";
+import { ensureReportTooltipLayer } from "../../../utils/shared/dom.js";
 const EDITOR_MIN_HEIGHT = 32;
 const EDITOR_MAX_HEIGHT = 200;
-const MENTION_CHIP_CLASS = "mx-[1px] inline-flex items-center rounded-[6px] bg-[var(--adaptive-blue100)] px-[6px] py-[1px] text-[13px] font-semibold text-[var(--adaptive-blue600)] align-baseline";
-function getAtQuery(textBeforeCursor) {
-    const match = textBeforeCursor.match(/(^|[\s([{])@([^\s@{}]*)$/);
-    if (!match) {
-        return null;
-    }
-    return {
-        query: match[2] ?? "",
-        atOffsetInBefore: textBeforeCursor.length - (match[2]?.length ?? 0) - 1,
-    };
-}
-function serializeEditor(root, mentions) {
-    const mentionById = new Map(mentions.map((item) => [item.id, item]));
-    const used = [];
-    let message = "";
-    const visit = (node) => {
-        if (node.nodeType === Node.TEXT_NODE) {
-            message += node.textContent ?? "";
-            return;
-        }
-        if (!(node instanceof HTMLElement)) {
-            return;
-        }
-        const mentionId = node.dataset.mentionId;
-        if (mentionId) {
-            const mention = mentionById.get(mentionId);
-            if (mention) {
-                message += serializeMentionToken(mention.id);
-                used.push(mention);
-            }
-            else {
-                message += node.textContent ?? "";
-            }
-            return;
-        }
-        if (node.tagName === "BR") {
-            message += "\n";
-            return;
-        }
-        for (const child of Array.from(node.childNodes)) {
-            visit(child);
-        }
-    };
-    for (const child of Array.from(root.childNodes)) {
-        visit(child);
-    }
-    const uniqueUsed = Array.from(new Map(used.map((item) => [item.id, item])).values());
-    return { message, mentions: uniqueUsed };
-}
-function renderEditorContent(root, message, mentions) {
-    root.replaceChildren();
-    const parts = parseMentionMessage(message, mentions);
-    for (const part of parts) {
-        if (part.type === "text") {
-            const lines = part.value.split("\n");
-            lines.forEach((line, index) => {
-                if (line) {
-                    root.appendChild(document.createTextNode(line));
-                }
-                if (index < lines.length - 1) {
-                    root.appendChild(document.createElement("br"));
-                }
-            });
-            continue;
-        }
-        const chip = document.createElement("span");
-        chip.contentEditable = "false";
-        chip.dataset.mentionId = part.mention.id;
-        chip.className = MENTION_CHIP_CLASS;
-        chip.textContent = mentionPlainLabel(part.mention);
-        root.appendChild(chip);
-    }
-}
+const MENU_GAP = 6;
 function placeCaretAtEnd(element) {
     const selection = window.getSelection();
     if (!selection) {
@@ -89,25 +19,20 @@ function placeCaretAtEnd(element) {
     selection.removeAllRanges();
     selection.addRange(range);
 }
-function getTextBeforeCaret(root) {
-    const selection = window.getSelection();
-    if (!selection || selection.rangeCount === 0) {
-        return "";
-    }
-    const range = selection.getRangeAt(0).cloneRange();
-    range.selectNodeContents(root);
-    range.setEnd(selection.getRangeAt(0).endContainer, selection.getRangeAt(0).endOffset);
-    return range.toString();
-}
-export function MentionComposerInput({ value, mentions, onChange, placeholder, autoFocus = false, onSubmitShortcut, onMultilineChange, reserveInlineStart = 0, }) {
+export function MentionComposerInput({ value, mentions, onChange, placeholder, autoFocus = false, onSubmitShortcut, onMultilineChange }) {
     const { messages } = useReportPreferences();
     const { setMentionHighlightTarget } = useReportSession();
     const editorRef = useRef(null);
+    const rootRef = useRef(null);
     const mentionsRef = useRef(mentions);
     const skipSyncRef = useRef(false);
+    const isComposingRef = useRef(false);
+    const activeAtOffsetRef = useRef(null);
     const [query, setQuery] = useState(null);
     const [candidates, setCandidates] = useState([]);
     const [activeIndex, setActiveIndex] = useState(0);
+    const [menuPlacement, setMenuPlacement] = useState(null);
+    const [portalRoot, setPortalRoot] = useState(null);
     const lastMultilineRef = useRef(null);
     mentionsRef.current = mentions;
     const syncHeight = useCallback(() => {
@@ -126,19 +51,37 @@ export function MentionComposerInput({ value, mentions, onChange, placeholder, a
         lastMultilineRef.current = isMultiline;
         onMultilineChange?.(isMultiline);
     }, [onMultilineChange]);
+    const refreshMentionQuery = useCallback(() => {
+        const editor = editorRef.current;
+        if (!editor) {
+            return;
+        }
+        const caret = getEditorCaretPoint(editor);
+        const before = serializeMentionEditorBeforeCaret(editor, mentionsRef.current, caret);
+        const resolved = before ? getAtQuery(before.message) : getAtQuery(serializeMentionEditor(editor, mentionsRef.current).message);
+        activeAtOffsetRef.current = resolved?.atOffsetInBefore ?? null;
+        setQuery(resolved ? resolved.query : null);
+    }, []);
     useLayoutEffect(() => {
         const editor = editorRef.current;
-        if (!editor || skipSyncRef.current) {
+        if (!editor) {
+            return;
+        }
+        if (skipSyncRef.current) {
             skipSyncRef.current = false;
             syncHeight();
             return;
         }
-        const serialized = serializeEditor(editor, mentionsRef.current);
+        if (isComposingRef.current) {
+            syncHeight();
+            return;
+        }
+        const serialized = serializeMentionEditor(editor, mentionsRef.current);
         if (serialized.message === value) {
             syncHeight();
             return;
         }
-        renderEditorContent(editor, value, mentions);
+        renderMentionEditorContent(editor, value, mentions);
         syncHeight();
     }, [value, mentions, syncHeight]);
     useEffect(() => {
@@ -153,6 +96,9 @@ export function MentionComposerInput({ value, mentions, onChange, placeholder, a
         placeCaretAtEnd(editor);
     }, [autoFocus]);
     useEffect(() => {
+        setPortalRoot(ensureReportTooltipLayer());
+    }, []);
+    useEffect(() => {
         if (query === null) {
             setCandidates([]);
             setMentionHighlightTarget(null);
@@ -162,13 +108,49 @@ export function MentionComposerInput({ value, mentions, onChange, placeholder, a
         setCandidates(nextCandidates);
         setActiveIndex(0);
     }, [query, setMentionHighlightTarget]);
+    useLayoutEffect(() => {
+        if (query === null || !rootRef.current) {
+            setMenuPlacement(null);
+            return;
+        }
+        const updatePlacement = () => {
+            const anchor = rootRef.current;
+            const editor = editorRef.current;
+            if (!anchor) {
+                return;
+            }
+            const caretRect = editor ? getCaretClientRect(editor) : null;
+            const rootRect = anchor.getBoundingClientRect();
+            const width = Math.min(280, Math.max(200, rootRect.width));
+            const anchorTop = caretRect?.top ?? rootRect.top;
+            const anchorBottom = caretRect?.bottom ?? rootRect.bottom;
+            const anchorLeft = caretRect?.left ?? rootRect.left;
+            const spaceAbove = anchorTop - 8;
+            const placeAbove = spaceAbove >= 96;
+            const left = Math.min(Math.max(8, anchorLeft), window.innerWidth - width - 8);
+            setMenuPlacement({
+                top: placeAbove ? Math.max(8, anchorTop - MENU_GAP) : anchorBottom + MENU_GAP,
+                left,
+                width,
+                placeAbove,
+            });
+        };
+        updatePlacement();
+        window.addEventListener("resize", updatePlacement);
+        window.addEventListener("scroll", updatePlacement, true);
+        return () => {
+            window.removeEventListener("resize", updatePlacement);
+            window.removeEventListener("scroll", updatePlacement, true);
+        };
+    }, [query, candidates.length]);
     useEffect(() => {
+        if (query === null) {
+            setMentionHighlightTarget(null);
+            return;
+        }
         const active = candidates[activeIndex];
         setMentionHighlightTarget(active?.snapshot ?? null);
-        return () => {
-            setMentionHighlightTarget(null);
-        };
-    }, [activeIndex, candidates, setMentionHighlightTarget]);
+    }, [activeIndex, candidates, query, setMentionHighlightTarget]);
     useEffect(() => {
         return () => {
             setMentionHighlightTarget(null);
@@ -180,63 +162,97 @@ export function MentionComposerInput({ value, mentions, onChange, placeholder, a
             return;
         }
         skipSyncRef.current = true;
-        const next = serializeEditor(editor, mentionsRef.current);
+        const next = serializeMentionEditor(editor, mentionsRef.current);
         onChange(next);
         syncHeight();
-        const before = getTextBeforeCaret(editor);
-        const atQuery = getAtQuery(before);
-        setQuery(atQuery ? atQuery.query : null);
+        refreshMentionQuery();
     };
     const insertCandidate = (candidate) => {
         const editor = editorRef.current;
-        const selection = window.getSelection();
-        if (!editor || !selection || selection.rangeCount === 0) {
+        if (!editor) {
             return;
         }
-        const before = getTextBeforeCaret(editor);
-        const atQuery = getAtQuery(before);
-        if (!atQuery) {
+        const current = serializeMentionEditor(editor, mentionsRef.current);
+        const caret = getEditorCaretPoint(editor);
+        const before = serializeMentionEditorBeforeCaret(editor, mentionsRef.current, caret);
+        const resolved = (before ? getAtQuery(before.message) : null) ??
+            (query !== null && activeAtOffsetRef.current !== null ? { query, atOffsetInBefore: activeAtOffsetRef.current } : getAtQuery(current.message));
+        if (!resolved) {
             return;
-        }
-        const range = selection.getRangeAt(0);
-        const deleteCount = (atQuery.query?.length ?? 0) + 1;
-        for (let index = 0; index < deleteCount; index += 1) {
-            range.setStart(range.endContainer, Math.max(0, range.endOffset - 1));
-            range.deleteContents();
         }
         const mention = toStoredMention(candidate);
-        const chip = document.createElement("span");
-        chip.contentEditable = "false";
-        chip.dataset.mentionId = mention.id;
-        chip.className = MENTION_CHIP_CLASS;
-        chip.textContent = mentionPlainLabel(mention);
-        range.insertNode(document.createTextNode(" "));
-        range.insertNode(chip);
-        const after = document.createRange();
-        after.setStartAfter(chip.nextSibling ?? chip);
-        after.collapse(true);
-        selection.removeAllRanges();
-        selection.addRange(after);
-        mentionsRef.current = [...mentionsRef.current.filter((item) => item.id !== mention.id), mention];
+        const nextMessage = replaceActiveMentionQuery(current.message, resolved.query, mention, resolved.atOffsetInBefore);
+        if (!nextMessage) {
+            return;
+        }
+        const nextMentions = [...current.mentions.filter((item) => item.id !== mention.id), mention];
+        mentionsRef.current = nextMentions;
+        activeAtOffsetRef.current = null;
         setQuery(null);
         setMentionHighlightTarget(null);
-        emitFromEditor();
+        setMenuPlacement(null);
+        renderMentionEditorContent(editor, nextMessage, nextMentions);
+        skipSyncRef.current = true;
+        onChange({ message: nextMessage, mentions: nextMentions });
+        syncHeight();
         editor.focus();
+        placeCaretAfterMention(editor, mention.id);
     };
     const showPlaceholder = useMemo(() => value.trim().length === 0 && query === null, [value, query]);
-    return (_jsxs("div", { className: "relative min-w-0 flex-1", children: [showPlaceholder ? (_jsx("span", { className: "pointer-events-none absolute left-[4px] top-[6px] text-[14px] leading-[1.5] text-[var(--adaptive-text-muted)]", style: reserveInlineStart > 0 ? { left: reserveInlineStart + 4 } : undefined, children: placeholder })) : null, _jsx("div", { ref: editorRef, contentEditable: true, role: "textbox", "aria-multiline": "true", "aria-label": placeholder, "data-fivepixels-interactive": "", suppressContentEditableWarning: true, className: "max-h-[200px] w-full min-w-0 flex-1 resize-none overflow-hidden bg-transparent px-[4px] py-[6px] text-[14px] leading-[1.5] text-[var(--adaptive-text-primary)] outline-none", style: { minHeight: EDITOR_MIN_HEIGHT }, onInput: () => emitFromEditor(), onKeyDown: (event) => {
-                    if (query !== null && candidates.length > 0) {
-                        if (event.key === "ArrowDown") {
+    const showMenu = query !== null && Boolean(portalRoot);
+    const menu = showMenu && portalRoot
+        ? createPortal(_jsx("div", { role: "listbox", "aria-label": messages.composer.mentionListAriaLabel, "data-fivepixels-interactive": "", className: "fixed z-[1000002] max-h-[180px] overflow-y-auto rounded-[12px] border border-[var(--adaptive-border-subtle)]  bg-[var(--adaptive-neutralTintOpacity500)] shadow-[0_8px_24px_rgba(0,0,0,0.16)]", style: menuPlacement
+                ? menuPlacement.placeAbove
+                    ? {
+                        bottom: window.innerHeight - menuPlacement.top,
+                        left: menuPlacement.left,
+                        width: menuPlacement.width,
+                    }
+                    : {
+                        top: menuPlacement.top,
+                        left: menuPlacement.left,
+                        width: menuPlacement.width,
+                    }
+                : {
+                    // Fallback before first layout measure so the menu never "fails to open".
+                    bottom: 24,
+                    left: 24,
+                    width: 280,
+                }, children: candidates.length === 0 ? (_jsx("p", { className: "px-[12px] py-[8px] text-[12px] text-[var(--adaptive-black500)]", children: messages.composer.mentionEmpty })) : (candidates.map((candidate, index) => {
+                const active = index === activeIndex;
+                return (_jsxs("button", { type: "button", role: "option", "aria-selected": active, "data-fivepixels-interactive": "", className: "flex w-full flex-col gap-[2px] px-[4px] py-[2px] text-left border-none " + (active ? "bg-[var(--adaptive-blue100)]" : "hover:bg-[var(--adaptive-black100)]"), onMouseEnter: () => setActiveIndex(index), onMouseDown: (event) => {
+                        event.preventDefault();
+                        insertCandidate(candidate);
+                    }, children: [_jsx("span", { className: "truncate text-[12px] font-semibold text-[var(--adaptive-black900)]", children: candidate.label }), _jsx("span", { className: "truncate text-[11px] text-[var(--adaptive-black500)]", children: candidate.reportId ?? candidate.suggestedReportId ?? candidate.element.tagName.toLowerCase() })] }, `${candidate.targetSelector}-${candidate.label}-${index}`));
+            })) }), portalRoot)
+        : null;
+    return (_jsxs("div", { ref: rootRef, className: "relative min-w-0 flex-1", children: [showPlaceholder ? _jsx("span", { className: "pointer-events-none absolute left-[4px] top-[6px] text-[14px] leading-[1.5] text-[var(--adaptive-text-muted)]", children: placeholder }) : null, _jsx("div", { ref: editorRef, contentEditable: true, role: "textbox", "aria-multiline": "true", "aria-label": placeholder, "data-fivepixels-interactive": "", suppressContentEditableWarning: true, className: "max-h-[200px] w-full min-w-0 flex-1 resize-none overflow-hidden bg-transparent px-[4px] py-[6px] text-[14px] leading-[1.5] text-[var(--adaptive-text-primary)] outline-none", style: { minHeight: EDITOR_MIN_HEIGHT }, onInput: () => {
+                    if (isComposingRef.current) {
+                        refreshMentionQuery();
+                        syncHeight();
+                        return;
+                    }
+                    emitFromEditor();
+                }, onKeyUp: () => refreshMentionQuery(), onClick: () => refreshMentionQuery(), onCompositionStart: () => {
+                    isComposingRef.current = true;
+                }, onCompositionUpdate: () => {
+                    refreshMentionQuery();
+                }, onCompositionEnd: () => {
+                    isComposingRef.current = false;
+                    emitFromEditor();
+                }, onKeyDown: (event) => {
+                    if (query !== null) {
+                        if (event.key === "ArrowDown" && candidates.length > 0) {
                             event.preventDefault();
                             setActiveIndex((current) => (current + 1) % candidates.length);
                             return;
                         }
-                        if (event.key === "ArrowUp") {
+                        if (event.key === "ArrowUp" && candidates.length > 0) {
                             event.preventDefault();
                             setActiveIndex((current) => (current - 1 + candidates.length) % candidates.length);
                             return;
                         }
-                        if (event.key === "Enter" && !event.metaKey && !event.ctrlKey) {
+                        if (event.key === "Enter" && !event.metaKey && !event.ctrlKey && candidates.length > 0) {
                             event.preventDefault();
                             const active = candidates[activeIndex];
                             if (active) {
@@ -247,21 +263,30 @@ export function MentionComposerInput({ value, mentions, onChange, placeholder, a
                         if (event.key === "Escape") {
                             event.preventDefault();
                             setQuery(null);
+                            activeAtOffsetRef.current = null;
                             setMentionHighlightTarget(null);
                             return;
+                        }
+                    }
+                    if (event.key === "Backspace" && !event.metaKey && !event.ctrlKey && !event.altKey) {
+                        const editor = editorRef.current;
+                        if (editor) {
+                            const deleted = deleteMentionChipBeforeCaret(editor, mentionsRef.current);
+                            if (deleted) {
+                                event.preventDefault();
+                                mentionsRef.current = deleted.mentions;
+                                skipSyncRef.current = true;
+                                onChange(deleted);
+                                syncHeight();
+                                refreshMentionQuery();
+                                return;
+                            }
                         }
                     }
                     if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
                         event.preventDefault();
                         onSubmitShortcut?.();
                     }
-                } }), query !== null ? (_jsx("div", { role: "listbox", "aria-label": messages.composer.mentionListAriaLabel, className: "absolute bottom-full left-0 z-20 mb-[6px] max-h-[180px] w-[min(280px,100%)] overflow-y-auto rounded-[10px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] shadow-[0_8px_24px_rgba(0,0,0,0.16)]", children: candidates.length === 0 ? (_jsx("p", { className: "px-[12px] py-[8px] text-[12px] text-[var(--adaptive-black500)]", children: messages.composer.mentionEmpty })) : (candidates.map((candidate, index) => {
-                    const active = index === activeIndex;
-                    return (_jsxs("button", { type: "button", role: "option", "aria-selected": active, "data-fivepixels-interactive": "", className: "flex w-full flex-col gap-[2px] px-[12px] py-[8px] text-left " +
-                            (active ? "bg-[var(--adaptive-blue100)]" : "hover:bg-[var(--adaptive-black100)]"), onMouseEnter: () => setActiveIndex(index), onMouseDown: (event) => {
-                            event.preventDefault();
-                            insertCandidate(candidate);
-                        }, children: [_jsx("span", { className: "truncate text-[12px] font-semibold text-[var(--adaptive-black900)]", children: candidate.label }), _jsx("span", { className: "truncate text-[11px] text-[var(--adaptive-black500)]", children: candidate.reportId ?? candidate.suggestedReportId ?? candidate.element.tagName.toLowerCase() })] }, `${candidate.targetSelector}-${candidate.label}-${index}`));
-                })) })) : null] }));
+                } }), menu] }));
 }
 //# sourceMappingURL=MentionComposerInput.js.map

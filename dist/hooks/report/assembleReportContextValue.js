@@ -2,7 +2,7 @@
  * Flat context value for ReportProvider slices.
  * Keys stay flat (see reportContextPartitions). Domain hooks → this assembler → UI.
  */
-export function assembleReportContextValue({ panel, auth, draft, markers, mutations, reply, fields, projectId, environment, appVersion, showFeedbackList, onPanelBootstrap, onActivitySummary, visibleShortcutKeys, overlayRef, replyHistory, selectReport, }) {
+export function assembleReportContextValue({ panel, auth, draft, markers, mutations, reply, fields, projectId, environment, appVersion, showFeedbackList, onPanelBootstrap, onActivitySummary, visibleShortcutKeys, overlayRef, replyHistory, selectReport, beginFeedbackEdit, cancelDraft, }) {
     return {
         panelAppearance: panel.panelAppearance,
         setPanelAppearance: panel.setPanelAppearance,
@@ -223,7 +223,8 @@ export function assembleReportContextValue({ panel, auth, draft, markers, mutati
         handleOverlayMove: draft.handleOverlayMove,
         handleOverlayContextMenu: draft.handleOverlayContextMenu,
         handleOverlayClick: draft.handleOverlayClick,
-        cancelDraft: draft.cancelDraft,
+        cancelDraft,
+        beginFeedbackEdit,
         updateDraftCase: draft.updateDraftCase,
         addDraftCase: draft.addDraftCase,
         removeDraftCase: draft.removeDraftCase,

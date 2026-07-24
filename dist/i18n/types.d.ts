@@ -134,6 +134,8 @@ export type ReportMessages = {
         deleteTitle: string;
         deleteConfirmTitle: string;
         deleteConfirmLabel: string;
+        editAriaLabel: string;
+        editTitle: string;
         copyAriaLabel: string;
         copyTitle: string;
         copiedTitle: string;
@@ -171,6 +173,7 @@ export type ReportMessages = {
         draftCompleting: string;
         draftCategoryPrompt: (count: number) => string;
         draftTooltipHeader: string;
+        draftTooltipHeaderEdit: string;
         gitIssueSendAriaLabel: string;
         gitIssueSendTitle: string;
         gitIssueSendLabel: string;
