@@ -127,6 +127,7 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
         authors,
         pendingComposer,
         replyDraft,
+        replyMentions,
         replyAuthorName,
         confirmAuthorName,
         showConfirmAuthorSelect,
@@ -142,6 +143,7 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
         scheduleHoverLeave,
         setHoveredMarkerId,
         setReplyDraft,
+        setReplyMentions,
         setReplyAuthorName,
         setConfirmAuthorName,
         toggleConfirmAuthorSelect,
@@ -529,6 +531,9 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
                                     setErrorMessage("");
                                 }
                             }}
+                            mentions={replyMentions}
+                            onMentionsChange={setReplyMentions}
+                            enableElementMentions
                             authorName={replyAuthorName}
                             onAuthorNameChange={setReplyAuthorName}
                             authors={authors}

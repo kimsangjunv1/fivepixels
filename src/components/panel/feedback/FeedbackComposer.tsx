@@ -8,13 +8,18 @@ import { CloseIcon, AskActionIcon, DeniedActionIcon, CompleteActionIcon, SendIco
 import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
 import { FeedbackCategorySelector } from "./FeedbackCategorySelector.js";
 import { FeedbackCaseEditor } from "./FeedbackCaseEditor.js";
+import { MentionComposerInput } from "./MentionComposerInput.js";
 import { resolveComposerModeActionKind, THREAD_ACTION_STYLE } from "@/constants/threadActionStyles.js";
+import type { ElementMention } from "@/types/mention.js";
 
 export type ComposerMode = "deny" | "recheck" | "checkout" | "question";
 
 type FeedbackComposerProps = {
     message?: string;
     onMessageChange?: (value: string) => void;
+    mentions?: ElementMention[];
+    onMentionsChange?: (mentions: ElementMention[]) => void;
+    enableElementMentions?: boolean;
     cases?: ReportCase[];
     onCaseChange?: (caseId: string, text: string) => void;
     onAddCase?: () => void;
@@ -273,6 +278,9 @@ function ReplyTextarea({
 export function FeedbackComposer({
     message = "",
     onMessageChange,
+    mentions = [],
+    onMentionsChange,
+    enableElementMentions = false,
     cases,
     onCaseChange,
     onAddCase,
@@ -450,6 +458,36 @@ export function FeedbackComposer({
                             activeCaseId={activeCaseId}
                             onActiveCaseIdChange={onActiveCaseIdChange}
                         />
+                    ) : enableElementMentions ? (
+                        <div
+                            data-reply-measure-root=""
+                            className="px-[8px] pt-[8px]"
+                        >
+                            <div className={showInlineComposerModeTag ? "flex items-start gap-[6px]" : undefined}>
+                                {showInlineComposerModeTag && resolvedComposerMode ? (
+                                    <div className="flex h-[32px] shrink-0 items-center">
+                                        <ComposerModeTag
+                                            mode={resolvedComposerMode}
+                                            messages={messages}
+                                            onDismiss={onCancelComposerMode}
+                                        />
+                                    </div>
+                                ) : null}
+                                <MentionComposerInput
+                                    value={message}
+                                    mentions={mentions}
+                                    onChange={({ message: nextMessage, mentions: nextMentions }) => {
+                                        onMessageChange?.(nextMessage);
+                                        onMentionsChange?.(nextMentions);
+                                    }}
+                                    placeholder={resolvedPlaceholder}
+                                    autoFocus={autoFocus}
+                                    onSubmitShortcut={handleSubmit}
+                                    onMultilineChange={handleReplyMultilineChange}
+                                    reserveInlineStart={resolvedComposerMode ? COMPOSER_MODE_TAG_INLINE_RESERVE_PX : 0}
+                                />
+                            </div>
+                        </div>
                     ) : (
                         <div
                             data-reply-measure-root=""

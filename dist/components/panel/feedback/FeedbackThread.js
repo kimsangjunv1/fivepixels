@@ -18,6 +18,7 @@ import { QuestionThreadGroup } from "./QuestionThreadGroup.js";
 import { ThreadAuthorMeta } from "./ThreadAuthorMeta.js";
 import { ThreadTimelineRow } from "./ThreadTimelineRow.js";
 import { CaseThreadEntryActions, ThreadEntryActions, THREAD_ACTION_ENTRY_SURFACE_CLASS, THREAD_CASE_ENTRY_SURFACE_CLASS } from "./ThreadEntryActions.js";
+import { MentionMessage } from "./MentionMessage.js";
 function getScrollOverflowState(element) {
     const { scrollTop, scrollHeight, clientHeight } = element;
     const hasOverflow = scrollHeight > clientHeight + 1;
@@ -69,7 +70,7 @@ function ThreadRootReply({ reply, report, caseId, authors, pendingComposer, conf
         : hasActions
             ? THREAD_ACTION_ENTRY_SURFACE_CLASS
             : THREAD_CASE_ENTRY_SURFACE_CLASS;
-    const entryBody = (_jsxs(_Fragment, { children: [_jsx(FeedbackStatusBadge, { status: reply.status, isNeedGray: true }), _jsx("p", { className: "leading-[1.5] text-[14px] text-[var(--adaptive-text-primary)] whitespace-break-spaces", children: reply.message }), reply.author_name ? (_jsx(ThreadAuthorMeta, { authorName: reply.author_name, createdAt: reply.created_at, showCreator: reply.author_name.trim() === originalAuthorName })) : null, _jsx(ThreadEntryActions, { reply: reply, report: report, caseId: caseId, authors: authors, pendingComposer: pendingComposer, confirmAuthorName: confirmAuthorName, showConfirmAuthorSelect: showConfirmAuthorSelect, onConfirmAuthorNameChange: onConfirmAuthorNameChange, onStartDeny: onStartDeny, onStartCheckout: onStartCheckout, onStartAskQuestion: onStartAskQuestion, onConfirm: onConfirm, isUpdating: isUpdating, canAct: canAct, actorName: actorName })] }));
+    const entryBody = (_jsxs(_Fragment, { children: [_jsx(FeedbackStatusBadge, { status: reply.status, isNeedGray: true }), _jsx("p", { className: "leading-[1.5] text-[14px] text-[var(--adaptive-text-primary)] whitespace-break-spaces", children: _jsx(MentionMessage, { message: reply.message, mentions: reply.mentions }) }), reply.author_name ? (_jsx(ThreadAuthorMeta, { authorName: reply.author_name, createdAt: reply.created_at, showCreator: reply.author_name.trim() === originalAuthorName })) : null, _jsx(ThreadEntryActions, { reply: reply, report: report, caseId: caseId, authors: authors, pendingComposer: pendingComposer, confirmAuthorName: confirmAuthorName, showConfirmAuthorSelect: showConfirmAuthorSelect, onConfirmAuthorNameChange: onConfirmAuthorNameChange, onStartDeny: onStartDeny, onStartCheckout: onStartCheckout, onStartAskQuestion: onStartAskQuestion, onConfirm: onConfirm, isUpdating: isUpdating, canAct: canAct, actorName: actorName })] }));
     return (_jsx(ThreadTimelineRow, { time: formatClockTime(reply.created_at), children: _jsx("div", { className: surfaceClass, children: entryBody }) }));
 }
 export function FeedbackThread({ report, authors, pendingComposer, confirmAuthorName, showConfirmAuthorSelect, onConfirmAuthorNameChange, onToggleConfirmAuthorSelect: _onToggleConfirmAuthorSelect, onStartDeny, onStartCheckout, onStartAskQuestion, onClaimAssignee, onTransferAssignee, onConfirm, isUpdating, isClaimingAssignee, hideCaseSelector = false, }) {

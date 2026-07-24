@@ -186,6 +186,8 @@ export const ko = {
         categoryAriaLabel: "피드백 카테고리 선택",
         casesDropdownLabel: "케이스",
         casesDropdownAriaLabel: "생성된 케이스 목록",
+        mentionListAriaLabel: "화면 요소 멘션 목록",
+        mentionEmpty: "일치하는 요소가 없습니다",
         categoryOption: {
             incident: "긴급",
             problem: "문제",

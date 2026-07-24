@@ -227,6 +227,10 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     }[];
     replyDraft: string;
     setReplyDraft: import("react").Dispatch<import("react").SetStateAction<string>>;
+    replyMentions: import("../../types/report.js").ElementMention[];
+    setReplyMentions: import("react").Dispatch<import("react").SetStateAction<import("../../types/report.js").ElementMention[]>>;
+    mentionHighlightTarget: import("../../types/report-ui.js").TargetSnapshot | null;
+    setMentionHighlightTarget: import("react").Dispatch<import("react").SetStateAction<import("../../types/report-ui.js").TargetSnapshot | null>>;
     replySubmitAsQuestion: boolean;
     setReplySubmitAsQuestion: import("react").Dispatch<import("react").SetStateAction<boolean>>;
     draftAuthorName: string;

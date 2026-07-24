@@ -34,6 +34,7 @@ import { ReplyHistoryControls } from "./ReplyHistoryControls.js";
 import { ThreadAuthorMeta } from "./ThreadAuthorMeta.js";
 import { ThreadTimelineRow } from "./ThreadTimelineRow.js";
 import { CaseThreadEntryActions, ThreadEntryActions, THREAD_ACTION_ENTRY_SURFACE_CLASS, THREAD_CASE_ENTRY_SURFACE_CLASS } from "./ThreadEntryActions.js";
+import { MentionMessage } from "./MentionMessage.js";
 
 type PendingComposer = {
     type: "deny" | "recheck" | "checkout" | "question";
@@ -316,7 +317,12 @@ function ThreadRootReply({
                 isNeedGray
             />
 
-            <p className="leading-[1.5] text-[14px] text-[var(--adaptive-text-primary)] whitespace-break-spaces">{reply.message}</p>
+            <p className="leading-[1.5] text-[14px] text-[var(--adaptive-text-primary)] whitespace-break-spaces">
+                <MentionMessage
+                    message={reply.message}
+                    mentions={reply.mentions}
+                />
+            </p>
             {reply.author_name ? (
                 <ThreadAuthorMeta
                     authorName={reply.author_name}

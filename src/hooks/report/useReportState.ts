@@ -305,6 +305,8 @@ export function useReportState({
         markers.setHoveredMarkerId(null);
         reply.setActiveReplyReportId(null);
         reply.setReplyDraft("");
+        reply.setReplyMentions([]);
+        reply.setMentionHighlightTarget(null);
         reply.setPendingComposer(null);
         reply.setShowConfirmAuthorSelect(false);
         reply.setConfirmAuthorName("");

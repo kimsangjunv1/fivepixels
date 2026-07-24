@@ -10,12 +10,12 @@ type ReportOverlayLayerProps = {
 };
 
 export function ReportOverlayLayer({ children }: ReportOverlayLayerProps) {
-    const { overlayRef, mode, draft, hoveredTarget, selectedTarget, pickProbeOpen, pickProbeHasEdits, pickTargetContextMenu, contextMenuElementKey, savedProbeEdits, selectableTargets, showTargetPreview, markerPreviewTargets, activeMarkerTarget, handleOverlayMove, handleOverlayContextMenu, handleOverlayClick, closePickTargetContextMenu } = useReportSession();
+    const { overlayRef, mode, draft, hoveredTarget, selectedTarget, pickProbeOpen, pickProbeHasEdits, pickTargetContextMenu, contextMenuElementKey, savedProbeEdits, selectableTargets, showTargetPreview, markerPreviewTargets, activeMarkerTarget, mentionHighlightTarget, handleOverlayMove, handleOverlayContextMenu, handleOverlayClick, closePickTargetContextMenu } = useReportSession();
 
     const isReportMode = mode === "report";
     const isViewMode = mode === "view";
     const isPreviewMode = showTargetPreview && mode === "idle";
-    const showHoverInspect = isReportMode && !draft && !pickProbeOpen && Boolean(hoveredTarget) && !activeMarkerTarget;
+    const showHoverInspect = isReportMode && !draft && !pickProbeOpen && Boolean(hoveredTarget) && !activeMarkerTarget && !mentionHighlightTarget;
     const showSelectionHighlight = isReportMode && Boolean(selectedTarget) && (Boolean(draft) || pickProbeOpen);
     const showPickProbeCompare = pickProbeOpen && pickProbeHasEdits;
     const showActiveMarkerInspect = isReportMode && Boolean(activeMarkerTarget);
@@ -53,6 +53,7 @@ export function ReportOverlayLayer({ children }: ReportOverlayLayerProps) {
                 previewTargets={isPreviewMode ? selectableTargets : undefined}
                 markerPreviewTargets={markerPreviewTargets}
                 activeMarkerTarget={activeMarkerTarget}
+                mentionHighlightTarget={mentionHighlightTarget}
             />
             <PickTargetProbePanel />
             <PickTargetSavedBadges />

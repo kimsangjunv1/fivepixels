@@ -4,10 +4,13 @@ import { claimCaseAssignee, buildResolvedCasesUpdate, canActOnCase, getCaseAssig
 import { createReplyId } from "../../utils/shared/format.js";
 import { notifyFeedbackReply, notifyFeedbackUpdate } from "../../utils/report/reportCallbacks.js";
 import { resolveDefaultAuthorName } from "../../utils/report/resolveDefaultAuthorName.js";
+import { stripMentionTokensForEmptyCheck } from "../../utils/mention/elementMentions.js";
 import { useReplyCaseEdit } from "./useReplyCaseEdit.js";
 export function useReportReplyReview({ reports, messages, fields, sessionActor, authorSelectionLocked, activeIdentify, authorizedAuthors, selfName, eventCallbacks, createReply, updateFeedback, usesCreateReply, signReplyPayload, signUpdatePayload, setErrorMessage, onSelectReport, }) {
     const [activeReplyReportId, setActiveReplyReportId] = useState(null);
     const [replyDraft, setReplyDraft] = useState("");
+    const [replyMentions, setReplyMentions] = useState([]);
+    const [mentionHighlightTarget, setMentionHighlightTarget] = useState(null);
     const [replySubmitAsQuestion, setReplySubmitAsQuestion] = useState(false);
     const [replyAuthorName, setReplyAuthorName] = useState(() => resolveDefaultAuthorName(activeIdentify, authorizedAuthors, selfName));
     const [isSubmittingReply, setIsSubmittingReply] = useState(false);
@@ -34,13 +37,18 @@ export function useReportReplyReview({ reports, messages, fields, sessionActor, 
     const clearFocusedCase = useCallback(() => {
         setFocusedCaseId(null);
     }, []);
+    const clearReplyComposerDraft = useCallback(() => {
+        setReplyDraft("");
+        setReplyMentions([]);
+        setMentionHighlightTarget(null);
+    }, []);
     const selectCase = useCallback((caseId) => {
         setFocusedCaseId(caseId);
         setPendingComposer(null);
-        setReplyDraft("");
+        clearReplyComposerDraft();
         setReplySubmitAsQuestion(false);
         setErrorMessage("");
-    }, [setErrorMessage]);
+    }, [clearReplyComposerDraft, setErrorMessage]);
     const caseEdit = useReplyCaseEdit({
         reports,
         activeReplyReport,
@@ -87,7 +95,7 @@ export function useReportReplyReview({ reports, messages, fields, sessionActor, 
     }, [ensureFocusedCase, focusedCaseId, messages.errors.caseAssigneeOnly, sessionActor?.name]);
     const closeReplyComposer = () => {
         setActiveReplyReportId(null);
-        setReplyDraft("");
+        clearReplyComposerDraft();
         setReplySubmitAsQuestion(false);
         setPendingComposer(null);
         setShowConfirmAuthorSelect(false);
@@ -97,7 +105,7 @@ export function useReportReplyReview({ reports, messages, fields, sessionActor, 
     const openReplyComposer = (report) => {
         onSelectReport(report.id);
         setActiveReplyReportId(report.id);
-        setReplyDraft("");
+        clearReplyComposerDraft();
         setReplySubmitAsQuestion(false);
         setPendingComposer(null);
         setReplyAuthorName(sessionActor?.name ?? resolveDefaultAuthorName(activeIdentify, authorizedAuthors, selfName));
@@ -121,7 +129,7 @@ export function useReportReplyReview({ reports, messages, fields, sessionActor, 
                 type: "deny",
                 targetReplyId: targetReplyId ?? ISSUE_ROOT_PARENT_ID,
             });
-            setReplyDraft("");
+            clearReplyComposerDraft();
             setReplySubmitAsQuestion(false);
             return;
         }
@@ -129,7 +137,7 @@ export function useReportReplyReview({ reports, messages, fields, sessionActor, 
             type: latestRoot.status === "found_error" ? "recheck" : "deny",
             targetReplyId: latestRoot.id,
         });
-        setReplyDraft("");
+        clearReplyComposerDraft();
         setReplySubmitAsQuestion(false);
     };
     const startCheckoutReview = (replyId) => {
@@ -137,7 +145,7 @@ export function useReportReplyReview({ reports, messages, fields, sessionActor, 
             return;
         }
         setPendingComposer({ type: "checkout", targetReplyId: replyId });
-        setReplyDraft("");
+        clearReplyComposerDraft();
         setReplySubmitAsQuestion(false);
     };
     const startAskQuestion = () => {
@@ -146,7 +154,7 @@ export function useReportReplyReview({ reports, messages, fields, sessionActor, 
         }
         const latestRoot = getLatestBranchRootForCase(activeReplyReport, focusedCaseId);
         setErrorMessage("");
-        setReplyDraft("");
+        clearReplyComposerDraft();
         if (!latestRoot) {
             setPendingComposer({
                 type: "question",
@@ -165,7 +173,7 @@ export function useReportReplyReview({ reports, messages, fields, sessionActor, 
     };
     const cancelPendingComposer = () => {
         setPendingComposer(null);
-        setReplyDraft("");
+        clearReplyComposerDraft();
         setReplySubmitAsQuestion(false);
     };
     const appendReply = async (report, reply) => {
@@ -177,6 +185,7 @@ export function useReportReplyReview({ reports, messages, fields, sessionActor, 
                 parent_reply_id: reply.parent_reply_id,
                 author_type: reply.author_type ?? "manager",
                 author_name: reply.author_name,
+                ...(reply.mentions && reply.mentions.length > 0 ? { mentions: reply.mentions } : {}),
             }));
         }
         else {
@@ -194,7 +203,7 @@ export function useReportReplyReview({ reports, messages, fields, sessionActor, 
         if (!activeReplyReport) {
             return;
         }
-        if (!replyDraft.trim()) {
+        if (!stripMentionTokensForEmptyCheck(replyDraft, replyMentions)) {
             setErrorMessage(messages.errors.replyContentRequired);
             return;
         }
@@ -225,12 +234,13 @@ export function useReportReplyReview({ reports, messages, fields, sessionActor, 
             ...(parentReplyId ? { parent_reply_id: parentReplyId } : {}),
             author_type: isCreatorSubmit ? "user" : "manager",
             author_name: actorName,
+            ...(replyMentions.length > 0 ? { mentions: replyMentions } : {}),
         };
         try {
             setIsSubmittingReply(true);
             await appendReply(activeReplyReport, reply);
             setErrorMessage("");
-            setReplyDraft("");
+            clearReplyComposerDraft();
             if (replyStatus === "additional_question") {
                 setReplySubmitAsQuestion(true);
                 if (pendingType === "question" && pendingComposer) {
@@ -393,7 +403,7 @@ export function useReportReplyReview({ reports, messages, fields, sessionActor, 
             setFocusedCaseId(resolveDefaultFocusedCaseId({ ...activeReplyReport, cases: nextCases }));
             setErrorMessage("");
             setPendingComposer(null);
-            setReplyDraft("");
+            clearReplyComposerDraft();
             setShowConfirmAuthorSelect(false);
         }
         catch (nextError) {
@@ -407,6 +417,10 @@ export function useReportReplyReview({ reports, messages, fields, sessionActor, 
         activeReplyAnchor,
         replyDraft,
         setReplyDraft,
+        replyMentions,
+        setReplyMentions,
+        mentionHighlightTarget,
+        setMentionHighlightTarget,
         replySubmitAsQuestion,
         setReplySubmitAsQuestion,
         replyAuthorName,

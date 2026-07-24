@@ -186,6 +186,8 @@ export const en = {
         categoryAriaLabel: "Select feedback category",
         casesDropdownLabel: "Cases",
         casesDropdownAriaLabel: "Generated cases",
+        mentionListAriaLabel: "Page element mentions",
+        mentionEmpty: "No matching elements",
         categoryOption: {
             incident: "Urgent",
             problem: "Problem",
