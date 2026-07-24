@@ -199,6 +199,8 @@ export type ReportMessages = {
         removeCaseAriaLabel: (index: number) => string;
         categoryLabel: string;
         categoryAriaLabel: string;
+        casesDropdownLabel: string;
+        casesDropdownAriaLabel: string;
         categoryOption: Record<FeedbackCategory, string>;
         categoryTooltip: Record<FeedbackCategory, string>;
         probeSummaryPrompt: string;

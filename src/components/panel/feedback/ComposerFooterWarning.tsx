@@ -12,7 +12,7 @@ export function ComposerFooterWarning({ message }: ComposerFooterWarningProps) {
         >
             <Text.Shimmer
                 className="text-[12px] font-medium"
-                color={{ start: "#fb7185", end: "#ffffff" }}
+                color={{ start: "#000000", end: "#ef4444" }}
                 duration={4}
             >
                 {message}

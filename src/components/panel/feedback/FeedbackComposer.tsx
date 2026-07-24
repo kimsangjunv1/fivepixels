@@ -50,6 +50,9 @@ type FeedbackComposerProps = {
     hideActions?: boolean;
     hidePrimarySubmitAction?: boolean;
     categoryPrompt?: string;
+    showCaseTabBar?: boolean;
+    activeCaseId?: string | null;
+    onActiveCaseIdChange?: (caseId: string) => void;
 };
 
 const REPLY_TEXTAREA_MIN_HEIGHT = 32;
@@ -305,6 +308,9 @@ export function FeedbackComposer({
     hideActions = false,
     hidePrimarySubmitAction = false,
     categoryPrompt,
+    showCaseTabBar = true,
+    activeCaseId,
+    onActiveCaseIdChange,
 }: FeedbackComposerProps) {
     const { messages } = useReportPreferences();
     const [isGitHubIssueConfirming, setIsGitHubIssueConfirming] = useState(false);
@@ -322,7 +328,8 @@ export function FeedbackComposer({
     const hasEmptyCase = emptyCaseIds.length > 0;
     const isCategoryRequiredError = errorMessage === messages.errors.categoryRequired;
     const isEmptyCaseError = isCaseTextErrorMessage(errorMessage, cases?.length ?? 0, messages.errors.caseTextRequired, messages.errors.casesRequired);
-    const categoryNeedsAttention = showCategory && !category && !hasEmptyCase && (categoryAttentionKey > 0 || isCategoryRequiredError);
+    const canSelectCategory = Boolean(onCategoryChange);
+    const categoryNeedsAttention = canSelectCategory && !category && !hasEmptyCase && (categoryAttentionKey > 0 || isCategoryRequiredError);
     const caseNeedsAttention = usesCaseEditor && hasEmptyCase && (caseAttentionKey > 0 || isEmptyCaseError);
     const footerWarning = caseNeedsAttention ? messages.errors.emptyCaseMessageRequired : categoryNeedsAttention ? messages.errors.categoryRequired : null;
     const isFooterHandledError = isCategoryRequiredError || isEmptyCaseError;
@@ -352,12 +359,12 @@ export function FeedbackComposer({
     }, [isEmptyCaseError, usesCaseEditor, hasEmptyCase, errorMessage]);
 
     useEffect(() => {
-        if (!isCategoryRequiredError || !showCategory || category || hasEmptyCase) {
+        if (!isCategoryRequiredError || !canSelectCategory || category || hasEmptyCase) {
             return;
         }
 
         setCategoryAttentionKey((current) => current + 1);
-    }, [isCategoryRequiredError, showCategory, category, hasEmptyCase, errorMessage]);
+    }, [isCategoryRequiredError, canSelectCategory, category, hasEmptyCase, errorMessage]);
 
     useEffect(() => {
         if (!hasEmptyCase && caseAttentionKey > 0) {
@@ -387,7 +394,7 @@ export function FeedbackComposer({
             return;
         }
 
-        if (showCategory && !category) {
+        if (canSelectCategory && !category) {
             setCategoryAttentionKey((current) => current + 1);
         }
     };
@@ -439,6 +446,9 @@ export function FeedbackComposer({
                             needsAttention={caseNeedsAttention}
                             attentionKey={caseAttentionKey}
                             emptyCaseIds={emptyCaseIds}
+                            showTabBar={showCaseTabBar}
+                            activeCaseId={activeCaseId}
+                            onActiveCaseIdChange={onActiveCaseIdChange}
                         />
                     ) : (
                         <div

@@ -9,19 +9,16 @@ import { FloatingPinRail } from "@/components/overlay/FloatingPinRail.js";
 import { ShadowReportRoot } from "./ShadowReportRoot.js";
 import { ThemeScope } from "./ThemeScope.js";
 
-const FEEDBACK_SUCCESS_DOT_COLOR = "#22c55e";
 const FEEDBACK_ERROR_DOT_COLOR = "#ef4444";
-const FEEDBACK_SUCCESS_HOLD_MS = 250;
 
 export function ReportView() {
     const { showMarkerTargetPreview, resolvedPanelAppearance, resolvedTooltipAppearance, markerAppearance } = useReportPreferences();
-    const { mode, showTargetPreview, savedProbeEdits, draft, draftStep, errorMessage } = useReportSession();
+    const { mode, showTargetPreview, savedProbeEdits, draft, errorMessage } = useReportSession();
     const hasSavedProbeEdits = Object.keys(savedProbeEdits).length > 0;
     const showOverlay = mode !== "idle" || showTargetPreview || showMarkerTargetPreview || hasSavedProbeEdits;
     const feedbackModeDotColor = markerAppearance.feedbackModeDotColors[resolvedPanelAppearance];
-    const isDraftCategoryStep = mode === "report" && Boolean(draft) && draftStep === "category";
-    const hasDraftContentError = mode === "report" && Boolean(draft) && draftStep === "content" && Boolean(errorMessage);
-    const resolvedFeedbackModeDotColor = isDraftCategoryStep ? FEEDBACK_SUCCESS_DOT_COLOR : hasDraftContentError ? FEEDBACK_ERROR_DOT_COLOR : feedbackModeDotColor;
+    const hasDraftContentError = mode === "report" && Boolean(draft) && Boolean(errorMessage);
+    const resolvedFeedbackModeDotColor = hasDraftContentError ? FEEDBACK_ERROR_DOT_COLOR : feedbackModeDotColor;
 
     return (
         <ShadowReportRoot panelAppearance={resolvedPanelAppearance}>
@@ -30,9 +27,8 @@ export function ReportView() {
                 className="pointer-events-none fixed inset-0 z-[999998]"
             >
                 <DotWaveOverlay
-                    active={mode === "report" && !isDraftCategoryStep}
+                    active={mode === "report"}
                     color={resolvedFeedbackModeDotColor}
-                    deactivateDelay={isDraftCategoryStep ? FEEDBACK_SUCCESS_HOLD_MS : 0}
                 />
             </ThemeScope>
 

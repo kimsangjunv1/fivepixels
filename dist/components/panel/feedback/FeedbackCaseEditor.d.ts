@@ -9,7 +9,10 @@ type FeedbackCaseEditorProps = {
     needsAttention?: boolean;
     attentionKey?: number;
     emptyCaseIds?: string[];
+    showTabBar?: boolean;
+    activeCaseId?: string | null;
+    onActiveCaseIdChange?: (caseId: string) => void;
 };
-export declare function FeedbackCaseEditor({ cases, onCaseChange, onAddCase, onRemoveCase, autoFocus, onSubmitShortcut, needsAttention, attentionKey, emptyCaseIds, }: FeedbackCaseEditorProps): import("react").JSX.Element | null;
+export declare function FeedbackCaseEditor({ cases, onCaseChange, onAddCase, onRemoveCase, autoFocus, onSubmitShortcut, needsAttention, attentionKey, emptyCaseIds, showTabBar, activeCaseId: controlledActiveCaseId, onActiveCaseIdChange, }: FeedbackCaseEditorProps): import("react").JSX.Element | null;
 export {};
 //# sourceMappingURL=FeedbackCaseEditor.d.ts.map

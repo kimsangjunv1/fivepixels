@@ -40,7 +40,10 @@ type FeedbackComposerProps = {
     hideActions?: boolean;
     hidePrimarySubmitAction?: boolean;
     categoryPrompt?: string;
+    showCaseTabBar?: boolean;
+    activeCaseId?: string | null;
+    onActiveCaseIdChange?: (caseId: string) => void;
 };
-export declare function FeedbackComposer({ message, onMessageChange, cases, onCaseChange, onAddCase, onRemoveCase, authorName, onAuthorNameChange, authors, fields: _fields, fieldValues: _fieldValues, onFieldChange: _onFieldChange, category, onCategoryChange, showCategory, showTags: _showTags, onSubmit, isSubmitting, showGitHubIssueOnCreate, onGitHubIssueSubmit, isGitHubIssueSubmitting, placeholder, autoFocus, errorMessage, showAskQuestionToggle, askQuestionChecked, onAskQuestionChange, askQuestionForced, composerMode, onCancelComposerMode, hideAuthorSelector, lockedAuthorName, onFooterWarningChange, hideEditor, hideActions, hidePrimarySubmitAction, categoryPrompt, }: FeedbackComposerProps): import("react").JSX.Element;
+export declare function FeedbackComposer({ message, onMessageChange, cases, onCaseChange, onAddCase, onRemoveCase, authorName, onAuthorNameChange, authors, fields: _fields, fieldValues: _fieldValues, onFieldChange: _onFieldChange, category, onCategoryChange, showCategory, showTags: _showTags, onSubmit, isSubmitting, showGitHubIssueOnCreate, onGitHubIssueSubmit, isGitHubIssueSubmitting, placeholder, autoFocus, errorMessage, showAskQuestionToggle, askQuestionChecked, onAskQuestionChange, askQuestionForced, composerMode, onCancelComposerMode, hideAuthorSelector, lockedAuthorName, onFooterWarningChange, hideEditor, hideActions, hidePrimarySubmitAction, categoryPrompt, showCaseTabBar, activeCaseId, onActiveCaseIdChange, }: FeedbackComposerProps): import("react").JSX.Element;
 export {};
 //# sourceMappingURL=FeedbackComposer.d.ts.map

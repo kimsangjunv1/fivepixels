@@ -186,6 +186,8 @@ export const en: ReportMessages = {
         removeCaseAriaLabel: (index) => `Remove case ${index}`,
         categoryLabel: "Category",
         categoryAriaLabel: "Select feedback category",
+        casesDropdownLabel: "Cases",
+        casesDropdownAriaLabel: "Generated cases",
         categoryOption: {
             incident: "Urgent",
             problem: "Problem",

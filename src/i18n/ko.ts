@@ -186,6 +186,8 @@ export const ko: ReportMessages = {
         removeCaseAriaLabel: (index) => `${index}번째 케이스 삭제`,
         categoryLabel: "카테고리",
         categoryAriaLabel: "피드백 카테고리 선택",
+        casesDropdownLabel: "케이스",
+        casesDropdownAriaLabel: "생성된 케이스 목록",
         categoryOption: {
             incident: "긴급",
             problem: "문제",

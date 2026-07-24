@@ -13,6 +13,9 @@ type FeedbackCaseEditorProps = {
     needsAttention?: boolean;
     attentionKey?: number;
     emptyCaseIds?: string[];
+    showTabBar?: boolean;
+    activeCaseId?: string | null;
+    onActiveCaseIdChange?: (caseId: string) => void;
 };
 
 const CASE_INPUT_MIN_HEIGHT = 56;
@@ -106,11 +109,33 @@ export function FeedbackCaseEditor({
     needsAttention = false,
     attentionKey = 0,
     emptyCaseIds = [],
+    showTabBar = true,
+    activeCaseId: controlledActiveCaseId,
+    onActiveCaseIdChange,
 }: FeedbackCaseEditorProps) {
     const { messages } = useReportPreferences();
     const previousCaseCountRef = useRef(cases.length);
     const containerRef = useRef<HTMLDivElement | null>(null);
-    const [activeCaseId, setActiveCaseId] = useState<string | null>(() => cases[0]?.id ?? null);
+    const [uncontrolledActiveCaseId, setUncontrolledActiveCaseId] = useState<string | null>(() => cases[0]?.id ?? null);
+    const isActiveCaseControlled = controlledActiveCaseId !== undefined;
+    const activeCaseId = isActiveCaseControlled ? controlledActiveCaseId : uncontrolledActiveCaseId;
+
+    const setActiveCaseId = useCallback(
+        (caseId: string | null) => {
+            if (!caseId) {
+                return;
+            }
+
+            if (isActiveCaseControlled) {
+                onActiveCaseIdChange?.(caseId);
+                return;
+            }
+
+            setUncontrolledActiveCaseId(caseId);
+        },
+        [isActiveCaseControlled, onActiveCaseIdChange],
+    );
+
     const resolvedActiveCaseId = resolveActiveCaseId(cases, activeCaseId);
     const activeCase = cases.find((item) => item.id === resolvedActiveCaseId) ?? null;
     const activeCaseIndex = activeCase ? cases.findIndex((item) => item.id === activeCase.id) : -1;
@@ -121,10 +146,10 @@ export function FeedbackCaseEditor({
     useEffect(() => {
         const nextActiveCaseId = resolveActiveCaseId(cases, activeCaseId);
 
-        if (nextActiveCaseId !== activeCaseId) {
+        if (nextActiveCaseId && nextActiveCaseId !== activeCaseId) {
             setActiveCaseId(nextActiveCaseId);
         }
-    }, [activeCaseId, cases]);
+    }, [activeCaseId, cases, setActiveCaseId]);
 
     useEffect(() => {
         if (cases.length <= previousCaseCountRef.current) {
@@ -142,7 +167,7 @@ export function FeedbackCaseEditor({
         }
 
         previousCaseCountRef.current = cases.length;
-    }, [cases]);
+    }, [cases, setActiveCaseId]);
 
     useEffect(() => {
         if (!needsAttention || attentionKey <= 0 || emptyCaseIds.length === 0) {
@@ -163,7 +188,7 @@ export function FeedbackCaseEditor({
         window.requestAnimationFrame(() => {
             document.getElementById(`fivepixels-case-input-${targetCaseId}`)?.focus();
         });
-    }, [needsAttention, attentionKey, emptyCaseIds, resolvedActiveCaseId]);
+    }, [needsAttention, attentionKey, emptyCaseIds, resolvedActiveCaseId, setActiveCaseId]);
 
     const handleRemoveCase = (caseId: string) => {
         const removeIndex = cases.findIndex((item) => item.id === caseId);
@@ -190,15 +215,17 @@ export function FeedbackCaseEditor({
             ref={containerRef}
             className="flex h-full min-h-0 flex-1 flex-col"
         >
-            <FeedbackCaseTabBar
-                variant="editor"
-                cases={cases}
-                activeCaseId={resolvedActiveCaseId}
-                onSelectCase={setActiveCaseId}
-                onAddCase={onAddCase}
-                onRemoveCase={handleRemoveCase}
-                invalidCaseIds={needsAttention ? emptyCaseIds : []}
-            />
+            {showTabBar ? (
+                <FeedbackCaseTabBar
+                    variant="editor"
+                    cases={cases}
+                    activeCaseId={resolvedActiveCaseId}
+                    onSelectCase={setActiveCaseId}
+                    onAddCase={onAddCase}
+                    onRemoveCase={handleRemoveCase}
+                    invalidCaseIds={needsAttention ? emptyCaseIds : []}
+                />
+            ) : null}
 
             <div
                 role="tabpanel"
