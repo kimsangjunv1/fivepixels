@@ -2,7 +2,8 @@ import { useMemo, useState } from "react";
 import { createInitialFieldValues, getFieldError } from "../../utils/report/fields.js";
 import { buildGitHubIssueStatusUpdate, buildGitHubIssueUpdate, canCreateGitHubIssueFromList, canCreateGitHubIssueOnCreate, isGitIssued } from "../../utils/github/githubIntegration.js";
 import { notifyFeedbackCreate, notifyFeedbackDelete, notifyFeedbackUpdate, notifyGitHubIssueCreated } from "../../utils/report/reportCallbacks.js";
-export function useReportMutations({ messages, fields, github, eventCallbacks, selectedReport, selectedReportId, setSelectedReportId, getActiveReplyReportId, closeReplyComposer, isCreating, createFeedback, updateFeedback, deleteFeedback, createReply, usesCreateReply, signCreatePayload, signUpdatePayload, signReplyPayload, setErrorMessage, buildCreatePayloadFromDraft, finalizeDraftCreate, }) {
+import { canDeleteFeedback } from "../../utils/feedback/feedbackPermissions.js";
+export function useReportMutations({ messages, fields, github, eventCallbacks, reports, sessionActor, selectedReport, selectedReportId, setSelectedReportId, getActiveReplyReportId, closeReplyComposer, isCreating, createFeedback, updateFeedback, deleteFeedback, createReply, usesCreateReply, signCreatePayload, signUpdatePayload, signReplyPayload, setErrorMessage, buildCreatePayloadFromDraft, finalizeDraftCreate, }) {
     const [editingReportId, setEditingReportId] = useState(null);
     const [editableDraft, setEditableDraft] = useState(null);
     const [creatingGitHubIssueId, setCreatingGitHubIssueId] = useState(null);
@@ -138,6 +139,15 @@ export function useReportMutations({ messages, fields, github, eventCallbacks, s
         }
     };
     const handleDelete = async (id) => {
+        const report = reports.find((item) => item.id === id) ?? (selectedReport?.id === id ? selectedReport : null);
+        if (!report) {
+            setErrorMessage(messages.errors.feedbackNotFound);
+            return;
+        }
+        if (!canDeleteFeedback(report, sessionActor)) {
+            setErrorMessage(messages.errors.deleteFeedbackNotAllowed);
+            return;
+        }
         try {
             await deleteFeedback(id);
             await notifyFeedbackDelete(eventCallbacks, id);

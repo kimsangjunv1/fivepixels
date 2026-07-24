@@ -1,10 +1,13 @@
 import { FEEDBACK_STATUS_COLOR, type FeedbackDisplayStatus } from "@/constants/feedbackStatus.js";
 import { CheckIcon } from "@/components/icons/Icons.js";
-import { useReportPreferences } from "@/providers/reportContext.js";
+import { useReport, useReportPreferences } from "@/providers/reportContext.js";
 import type { ReportCaseStatus } from "@/types/report.js";
 import type { ReportFeedback } from "@/types/report.js";
 import { getCaseLatestStatus } from "@/utils/feedback/feedbackThread.js";
 import { getReportCases } from "@/utils/report/reportCases.js";
+import { canRemoveCase } from "@/utils/feedback/feedbackPermissions.js";
+import { formatDateOnly } from "@/utils/shared/format.js";
+import { FeedbackDeleteAction } from "@/components/panel/feedback/FeedbackDeleteAction.js";
 
 type MarkerCaseSidebarProps = {
     report: ReportFeedback;
@@ -48,7 +51,8 @@ function CaseStatusLabel({ status, isNeedGray }: { status: FeedbackDisplayStatus
 }
 
 export function MarkerCaseSidebar({ report, focusedCaseId, onSelectCase }: MarkerCaseSidebarProps) {
-    const { messages } = useReportPreferences();
+    const { messages, locale } = useReportPreferences();
+    const { sessionActor, removePersistedCase, isUpdating } = useReport();
     const cases = getReportCases(report);
 
     return (
@@ -59,32 +63,57 @@ export function MarkerCaseSidebar({ report, focusedCaseId, onSelectCase }: Marke
                 {cases.map((item) => {
                     const isActive = item.id === focusedCaseId;
                     const status = getCaseLatestStatus(report, item.id);
+                    const showRemove = canRemoveCase(report, item.id, sessionActor);
 
                     return (
-                        <li key={item.id}>
+                        <li
+                            key={item.id}
+                            className="group relative"
+                        >
                             <button
                                 type="button"
                                 data-fivepixels-interactive=""
                                 aria-current={isActive}
                                 onClick={() => onSelectCase(item.id)}
-                                className={`flex flex-col w-full items-start justify-center gap-[8px] rounded-[8px] px-[8px] py-[8px] text-left transition-colors ${
+                                className={`flex w-full flex-col items-start justify-center gap-[8px] rounded-[8px] px-[8px] py-[8px] text-left transition-colors ${
                                     isActive ? "bg-[var(--adaptive-neutralTintOpacity900)] text-[var(--adaptive-black900)]" : "text-[var(--adaptive-black700)] hover:bg-[var(--adaptive-tintOpacity100)]"
-                                }`}
+                                } ${showRemove ? "pr-[28px]" : ""}`}
                             >
-                                <section className="flex items-center gap-[4px] w-full">
+                                <section className="flex w-full items-center gap-[4px]">
                                     <CaseStatusIndicator caseStatus={item.status} />
                                     <span
-                                        className={`min-w-0 flex-1 w-full truncate text-[14px] leading-[1] ${item.status === "resolved" ? "text-[var(--adaptive-black500)] line-through" : ""}`}
+                                        className={`min-w-0 flex-1 truncate text-[14px] leading-[1] ${item.status === "resolved" ? "text-[var(--adaptive-black500)] line-through" : ""}`}
                                         title={item.text}
                                     >
                                         {item.text}
                                     </span>
                                 </section>
-                                <CaseStatusLabel
-                                    status={status}
-                                    isNeedGray
-                                />
+                                <div className="flex w-full min-w-0 items-center justify-between gap-[8px]">
+                                    <CaseStatusLabel
+                                        status={status}
+                                        isNeedGray
+                                    />
+                                    <span className="min-w-0 truncate text-[11px] tabular-nums leading-none text-[var(--adaptive-black500)]">
+                                        {formatDateOnly(item.created_at, locale)}
+                                    </span>
+                                </div>
                             </button>
+
+                            {showRemove ? (
+                                <div className="absolute right-[6px] top-[10px] z-[1] opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
+                                    <FeedbackDeleteAction
+                                        reportId={item.id}
+                                        onDelete={async () => removePersistedCase(report, item.id)}
+                                        disabled={isUpdating}
+                                        messages={messages}
+                                        deleteTitle={messages.cases.removeCaseTitle}
+                                        deleteConfirmTitle={messages.cases.removeCaseConfirmTitle}
+                                        deleteAriaLabel={messages.cases.removeCaseAriaLabel}
+                                        deleteConfirmAriaLabel={messages.cases.removeCaseConfirmAriaLabel}
+                                        className="flex h-[20px] w-[20px] items-center justify-center disabled:opacity-50 text-[var(--adaptive-black400)] hover:text-[var(--adaptive-black900)]"
+                                    />
+                                </div>
+                            ) : null}
                         </li>
                     );
                 })}

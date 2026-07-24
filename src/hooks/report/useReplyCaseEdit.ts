@@ -2,13 +2,17 @@ import { useCallback, useEffect, useState, type Dispatch, type SetStateAction } 
 import type { ReportMessages } from "@/i18n/types.js";
 import type { ReportFeedback, ReportField, UpdateReportFeedbackPayload } from "@/types/report.js";
 import { getFieldError } from "@/utils/report/fields.js";
-import { canEditReportCases, createReportCase } from "@/utils/report/reportCases.js";
+import { canEditReportCases, createReportCase, getReportCases, resolveDefaultFocusedCaseId, syncIssueStatusFromCases } from "@/utils/report/reportCases.js";
 import { notifyFeedbackUpdate, type ReportSideEffectCallbacks } from "@/utils/report/reportCallbacks.js";
+import { canRemoveCase, type FeedbackActor } from "@/utils/feedback/feedbackPermissions.js";
 
 export type UseReplyCaseEditParams = {
     reports: ReportFeedback[];
     activeReplyReport: ReportFeedback | null;
     activeReplyReportId: string | null;
+    focusedCaseId: string | null;
+    selectCase: (caseId: string) => void;
+    sessionActor: FeedbackActor;
     fields: ReportField[];
     messages: ReportMessages;
     updateFeedback: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
@@ -21,6 +25,9 @@ export function useReplyCaseEdit({
     reports,
     activeReplyReport,
     activeReplyReportId,
+    focusedCaseId,
+    selectCase,
+    sessionActor,
     fields,
     messages,
     updateFeedback,
@@ -73,6 +80,42 @@ export function useReplyCaseEdit({
             return current.filter((item) => item.id !== caseId);
         });
     }, []);
+
+    const removePersistedCase = useCallback(
+        async (report: ReportFeedback, caseId: string) => {
+            if (!canRemoveCase(report, caseId, sessionActor)) {
+                setErrorMessage(messages.errors.removeCaseNotAllowed);
+                return;
+            }
+
+            const nextCases = getReportCases(report).filter((item) => item.id !== caseId);
+
+            try {
+                const updatedFeedback = await updateFeedback(
+                    report.id,
+                    await signUpdatePayload({
+                        cases: nextCases,
+                        status: syncIssueStatusFromCases({ ...report, cases: nextCases }),
+                    }),
+                );
+
+                await notifyFeedbackUpdate(eventCallbacks, updatedFeedback);
+
+                if (focusedCaseId === caseId) {
+                    const nextFocusedCaseId = resolveDefaultFocusedCaseId(updatedFeedback);
+
+                    if (nextFocusedCaseId) {
+                        selectCase(nextFocusedCaseId);
+                    }
+                }
+
+                setErrorMessage("");
+            } catch (nextError) {
+                setErrorMessage(nextError instanceof Error ? nextError.message : messages.errors.removeCaseFailed);
+            }
+        },
+        [eventCallbacks, focusedCaseId, messages.errors.removeCaseFailed, messages.errors.removeCaseNotAllowed, selectCase, sessionActor, setErrorMessage, signUpdatePayload, updateFeedback],
+    );
 
     const handleCaseEditSave = async () => {
         if (!caseEditReportId || !caseEditDraft) {
@@ -129,6 +172,7 @@ export function useReplyCaseEdit({
         updateCaseEditDraftCase,
         addCaseEditDraftCase,
         removeCaseEditDraftCase,
+        removePersistedCase,
         isCaseEditing,
         caseEditReportId,
         caseEditCases,

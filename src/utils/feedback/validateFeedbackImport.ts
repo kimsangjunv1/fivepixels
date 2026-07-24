@@ -200,6 +200,7 @@ function validateReply(value: unknown, index: number, replyIndex: number): Repor
         ...(typeof parentReplyId === "string" ? { parent_reply_id: parentReplyId } : {}),
         author_type: reply.author_type as ReportReply["author_type"],
         author_name: authorName === null || typeof authorName === "string" ? authorName : undefined,
+        ...(Array.isArray(reply.mentions) ? { mentions: reply.mentions as ReportReply["mentions"] } : {}),
     };
 }
 

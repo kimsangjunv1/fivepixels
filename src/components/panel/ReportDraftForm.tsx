@@ -1,32 +1,29 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { FeedbackCategory } from "@/constants/feedbackCategory.js";
 import { useTooltipLayout } from "@/hooks/useTooltipLayout.js";
 import { useTooltipResize } from "@/hooks/useTooltipResize.js";
 import { useReport, useReportPreferences } from "@/providers/reportContext.js";
 import { getDraftMarkerPosition, TOOLTIP_EXPANDED_DEFAULT_MAX_HEIGHT } from "@/utils/marker/coordinates.js";
-import { getFieldError } from "@/utils/report/fields.js";
 import { FeedbackComposer } from "./feedback/FeedbackComposer.js";
-import { ComposerFooterWarning } from "./feedback/ComposerFooterWarning.js";
+import { DraftComposerToolbar } from "./feedback/DraftComposerToolbar.js";
 import { DraftProbeSummaryBanner } from "./DraftProbeSummaryBanner.js";
 import { PickTargetSnippet } from "./feedback/PickTargetSnippet.js";
 import { CornerResizeGhost } from "@/components/ui/CornerResizeGhost.js";
 import { MOTION } from "@/constants/motionClasses.js";
 import { CornerResizeHandle } from "@/components/ui/CornerResizeHandle.js";
 
-const TOOLTIP_SURFACE_CLASS = "overflow-hidden rounded-[16px] shadow-[var(--adaptive-popup-shadow)] bg-[var(--adaptive-fillOpacity500)] backdrop-blur-[5px]";
-// "overflow-hidden rounded-[24px] border-[3px] border-[var(--adaptive-black200)] shadow-[var(--adaptive-popup-shadow)] bg-[var(--adaptive-fillOpacity500)] backdrop-blur-[5px]";
-// const TOOLTIP_SURFACE_CLASS = "overflow-hidden rounded-[24px] border-[3px] border-[var(--adaptive-black200)] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[20px]";
-// "overflow-hidden rounded-[24px] border-[3px] border-[var(--adaptive-black200)] bg-[var(--adaptive-fillOpacity700)] backdrop-blur-[1px] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[20px]";
+const TOOLTIP_SURFACE_CLASS = "rounded-[16px] shadow-[var(--adaptive-popup-shadow)] bg-[var(--adaptive-fillOpacity500)] backdrop-blur-[5px]";
 const EXPANDED_TOOLTIP_ANCHOR_CLASS = "pointer-events-auto fixed z-[1000001]";
 
 export function ReportDraftForm() {
     const {
         draft,
-        draftStep,
-        setDraftStep,
         fields,
         authors,
         isCreating,
+        isUpdating,
+        editingReportId,
+        markers,
         selectedTarget,
         updateDraftCase,
         addDraftCase,
@@ -40,8 +37,6 @@ export function ReportDraftForm() {
         draftAuthorName,
         setDraftAuthorName,
         errorMessage,
-        setErrorMessage,
-        cancelDraft,
         isPresentationMode,
         authorSelectionLocked,
         sessionActor,
@@ -51,14 +46,18 @@ export function ReportDraftForm() {
         return null;
     }
 
+    const isEditing = Boolean(editingReportId);
+    const editingMarker = isEditing ? (markers.find((marker) => marker.report.id === editingReportId) ?? null) : null;
+
     return (
         <ReportDraftFormContent
             draft={draft}
-            draftStep={draftStep}
-            setDraftStep={setDraftStep}
             fields={fields}
             authors={authors}
             isCreating={isCreating}
+            isUpdating={isUpdating}
+            isEditing={isEditing}
+            editingMarker={editingMarker}
             selectedTarget={selectedTarget}
             updateDraftCase={updateDraftCase}
             addDraftCase={addDraftCase}
@@ -67,13 +66,11 @@ export function ReportDraftForm() {
             updateDraftCategory={updateDraftCategory}
             handleCreateSubmit={handleCreateSubmit}
             handleCreateSubmitWithGitHubIssue={handleCreateSubmitWithGitHubIssue}
-            canCreateGitHubIssueOnCreate={canCreateGitHubIssueOnCreate}
+            canCreateGitHubIssueOnCreate={canCreateGitHubIssueOnCreate && !isEditing}
             isDraftGitHubIssueSubmitting={isDraftGitHubIssueSubmitting}
             draftAuthorName={draftAuthorName}
             setDraftAuthorName={setDraftAuthorName}
             errorMessage={errorMessage}
-            setErrorMessage={setErrorMessage}
-            cancelDraft={cancelDraft}
             isPresentationMode={isPresentationMode}
             authorSelectionLocked={authorSelectionLocked}
             sessionActor={sessionActor}
@@ -83,11 +80,12 @@ export function ReportDraftForm() {
 
 type ReportDraftFormContentProps = {
     draft: NonNullable<ReturnType<typeof useReport>["draft"]>;
-    draftStep: ReturnType<typeof useReport>["draftStep"];
-    setDraftStep: ReturnType<typeof useReport>["setDraftStep"];
     fields: ReturnType<typeof useReport>["fields"];
     authors: ReturnType<typeof useReport>["authors"];
     isCreating: boolean;
+    isUpdating: boolean;
+    isEditing: boolean;
+    editingMarker: { left: number; top: number } | null;
     selectedTarget: ReturnType<typeof useReport>["selectedTarget"];
     updateDraftCase: (caseId: string, text: string) => void;
     addDraftCase: () => void;
@@ -101,8 +99,6 @@ type ReportDraftFormContentProps = {
     draftAuthorName: string;
     setDraftAuthorName: (name: string) => void;
     errorMessage: string;
-    setErrorMessage: (message: string) => void;
-    cancelDraft: () => void;
     isPresentationMode: boolean;
     authorSelectionLocked: boolean;
     sessionActor: ReturnType<typeof useReport>["sessionActor"];
@@ -110,11 +106,12 @@ type ReportDraftFormContentProps = {
 
 function ReportDraftFormContent({
     draft,
-    draftStep,
-    setDraftStep,
     fields,
     authors,
     isCreating,
+    isUpdating,
+    isEditing,
+    editingMarker,
     selectedTarget,
     updateDraftCase,
     addDraftCase,
@@ -128,8 +125,6 @@ function ReportDraftFormContent({
     draftAuthorName,
     setDraftAuthorName,
     errorMessage,
-    setErrorMessage,
-    cancelDraft,
     isPresentationMode,
     authorSelectionLocked,
     sessionActor,
@@ -137,41 +132,62 @@ function ReportDraftFormContent({
     const { messages } = useReportPreferences();
     const tooltipSurfaceRef = useRef<HTMLDivElement | null>(null);
     const [footerWarningMessage, setFooterWarningMessage] = useState<string | null>(null);
-    const anchor = useMemo(() => getDraftMarkerPosition(draft, selectedTarget), [draft, selectedTarget]);
+    const [activeCaseId, setActiveCaseId] = useState<string | null>(() => draft.cases[0]?.id ?? null);
+    const [isGitHubIssueConfirming, setIsGitHubIssueConfirming] = useState(false);
+    const anchor = useMemo(() => {
+        if (editingMarker) {
+            return { left: editingMarker.left, top: editingMarker.top };
+        }
+
+        return getDraftMarkerPosition(draft, selectedTarget);
+    }, [draft, editingMarker, selectedTarget]);
     const { customSize, isResizing, ghostRef, handleResizePointerDown } = useTooltipResize({
         enabled: true,
         tooltipRef: tooltipSurfaceRef,
     });
     const { layout: tooltipLayout, setTooltipElement } = useTooltipLayout(anchor, true, true, {
         customWidth: customSize?.width,
-        customHeight: customSize?.height,
     });
     const tooltipPosition = tooltipLayout?.position ?? null;
     const tooltipAnchorStyle = tooltipLayout?.anchorStyle;
-    const isCategoryStep = draftStep === "category";
-    const isSubmitting = isCreating || isDraftGitHubIssueSubmitting;
+    const isSubmitting = isCreating || isUpdating || isDraftGitHubIssueSubmitting;
+    const categoryNeedsAttention = errorMessage === messages.errors.categoryRequired && !draft.category;
+    const showStatusChip = Boolean(footerWarningMessage) || Boolean(draft.targetSelector && draft.suggestedReportId);
+    const submitLabel = isEditing ? messages.cases.save : messages.composer.draftComplete;
+    const submittingLabel = isEditing ? messages.cases.saving : messages.composer.draftCompleting;
 
-    const handlePrevious = () => {
-        setErrorMessage("");
-
-        if (isCategoryStep) {
-            setDraftStep("content");
+    useEffect(() => {
+        if (!isGitHubIssueConfirming) {
             return;
         }
 
-        cancelDraft();
-    };
+        const timer = window.setTimeout(() => setIsGitHubIssueConfirming(false), 1500);
 
-    const handleNext = () => {
-        const nextError = getFieldError(draft.cases, draft.fieldValues, fields, messages.errors);
+        return () => window.clearTimeout(timer);
+    }, [isGitHubIssueConfirming]);
 
-        if (nextError) {
-            setErrorMessage(nextError);
+    useEffect(() => {
+        if (activeCaseId && draft.cases.some((item) => item.id === activeCaseId)) {
             return;
         }
 
-        setErrorMessage("");
-        setDraftStep("category");
+        setActiveCaseId(draft.cases[draft.cases.length - 1]?.id ?? draft.cases[0]?.id ?? null);
+    }, [activeCaseId, draft.cases]);
+
+    const handleRemoveCase = (caseId: string) => {
+        const removeIndex = draft.cases.findIndex((item) => item.id === caseId);
+
+        if (removeIndex < 0) {
+            return;
+        }
+
+        const fallbackCase = draft.cases[removeIndex + 1] ?? draft.cases[removeIndex - 1];
+
+        if (activeCaseId === caseId && fallbackCase) {
+            setActiveCaseId(fallbackCase.id);
+        }
+
+        removeDraftCase(caseId);
     };
 
     if (!tooltipPosition || !tooltipAnchorStyle) {
@@ -186,19 +202,28 @@ function ReportDraftFormContent({
                 ref={setTooltipElement}
                 data-fivepixels-interactive=""
                 onClick={(event) => event.stopPropagation()}
-                className={EXPANDED_TOOLTIP_ANCHOR_CLASS}
+                className={`${EXPANDED_TOOLTIP_ANCHOR_CLASS} flex flex-col gap-[8px]`}
                 style={{
                     left: tooltipPosition.left,
                     top: tooltipPosition.top,
                     width: tooltipPosition.width,
                     minWidth: 320,
-                    ...(customSize?.height !== undefined ? { height: customSize.height } : null),
                     ...tooltipAnchorStyle,
                 }}
             >
+                {showStatusChip ? (
+                    <div className={`shrink-0 border border-[var(--adaptive-border-subtle)] ${TOOLTIP_SURFACE_CLASS} ${MOTION.tooltipFadeIn}`}>
+                        <PickTargetSnippet
+                            suggestedReportId={draft.suggestedReportId ?? undefined}
+                            reportType={draft.reportType}
+                            alertMessage={footerWarningMessage}
+                        />
+                    </div>
+                ) : null}
+
                 <div
                     ref={tooltipSurfaceRef}
-                    className={`relative ${TOOLTIP_SURFACE_CLASS} ${MOTION.tooltipFadeIn}`}
+                    className={`relative border border-[var(--adaptive-border-subtle)] ${TOOLTIP_SURFACE_CLASS} ${MOTION.tooltipFadeIn}`}
                     style={{
                         pointerEvents: "auto",
                         height: customSize?.height,
@@ -211,6 +236,12 @@ function ReportDraftFormContent({
                             height: customSize?.height,
                         }}
                     >
+                        {/* <div className="shrink-0 border-b border-b-[var(--adaptive-border-subtle)] bg-[var(--adaptive-neutralTintOpacity900)] px-[12px] py-[4px] flex items-center justify-between">
+                            <div className="w-[3px] h-[3px] bg-[var(--adaptive-black400)] rounded-full" />
+                            <p className="text-[12px] font-bold text-center leading-none text-[var(--adaptive-black600)]">{messages.composer.draftTooltipHeader}</p>
+                            <div className="w-[3px] h-[3px] bg-[var(--adaptive-black400)] rounded-full" />
+                        </div> */}
+
                         <DraftProbeSummaryBanner />
                         <FeedbackComposer
                             cases={draft.cases}
@@ -225,50 +256,41 @@ function ReportDraftFormContent({
                             onFieldChange={updateDraftField}
                             category={draft.category}
                             onCategoryChange={updateDraftCategory}
-                            showCategory={isCategoryStep}
+                            showCategory={false}
                             showTags
                             hideAuthorSelector={isPresentationMode || authorSelectionLocked}
                             lockedAuthorName={authorSelectionLocked ? (sessionActor?.name ?? draftAuthorName) : undefined}
-                            onSubmit={isCategoryStep ? () => void handleCreateSubmit() : handleNext}
+                            onSubmit={() => void handleCreateSubmit()}
                             isSubmitting={isCreating}
-                            showGitHubIssueOnCreate={isCategoryStep && canCreateGitHubIssueOnCreate}
-                            onGitHubIssueSubmit={() => void handleCreateSubmitWithGitHubIssue()}
-                            isGitHubIssueSubmitting={isDraftGitHubIssueSubmitting}
-                            autoFocus={!isCategoryStep}
+                            autoFocus
                             errorMessage={errorMessage}
                             onFooterWarningChange={setFooterWarningMessage}
-                            hideEditor={isCategoryStep}
-                            hideActions={!isCategoryStep || !canCreateGitHubIssueOnCreate}
+                            hideActions
                             hidePrimarySubmitAction
-                            categoryPrompt={isCategoryStep ? messages.composer.draftCategoryPrompt(draft.cases.length) : undefined}
+                            showCaseTabBar={false}
+                            activeCaseId={activeCaseId}
+                            onActiveCaseIdChange={setActiveCaseId}
                         />
-                        <div className="grid grid-cols-2 border-x border-b border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-neutralTintOpacity900)]">
-                            <button
-                                type="button"
-                                data-fivepixels-interactive=""
-                                disabled={isSubmitting}
-                                onClick={handlePrevious}
-                                className="flex min-h-[24px] items-center justify-center border-r border-[var(--adaptive-border-subtle)] px-[16px] text-[14px] font-semibold text-[var(--adaptive-text-primary)] transition-colors hover:bg-[var(--adaptive-fillOpacity500)] disabled:opacity-50"
-                            >
-                                {messages.composer.draftPrevious}
-                            </button>
-                            <button
-                                type="button"
-                                data-fivepixels-interactive=""
-                                disabled={isSubmitting}
-                                onClick={isCategoryStep ? () => void handleCreateSubmit() : handleNext}
-                                className="flex min-h-[24px] items-center justify-center bg-[#f6562f] px-[16px] text-[14px] font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
-                            >
-                                {isCategoryStep ? (isSubmitting ? messages.composer.draftCompleting : messages.composer.draftComplete) : messages.composer.draftNext}
-                            </button>
-                        </div>
-                        {draft.targetSelector && draft.suggestedReportId ? (
-                            <PickTargetSnippet
-                                suggestedReportId={draft.suggestedReportId}
-                                reportType={draft.reportType}
-                            />
-                        ) : null}
-                        {footerWarningMessage ? <ComposerFooterWarning message={footerWarningMessage} /> : null}
+                        <DraftComposerToolbar
+                            cases={draft.cases}
+                            activeCaseId={activeCaseId}
+                            onSelectCase={setActiveCaseId}
+                            onAddCase={addDraftCase}
+                            onRemoveCase={handleRemoveCase}
+                            category={draft.category}
+                            onCategoryChange={updateDraftCategory}
+                            categoryNeedsAttention={categoryNeedsAttention}
+                            onSubmit={() => void handleCreateSubmit()}
+                            isSubmitting={isSubmitting}
+                            submitLabel={submitLabel}
+                            submittingLabel={submittingLabel}
+                            showGitHubIssueOnCreate={canCreateGitHubIssueOnCreate}
+                            onGitHubIssueSubmit={() => void handleCreateSubmitWithGitHubIssue()}
+                            isGitHubIssueSubmitting={isDraftGitHubIssueSubmitting}
+                            isGitHubIssueConfirming={isGitHubIssueConfirming}
+                            onGitHubIssueConfirmingChange={setIsGitHubIssueConfirming}
+                        />
+
                     </div>
 
                     <CornerResizeHandle

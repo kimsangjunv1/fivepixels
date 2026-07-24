@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState, type DragEvent } from "react";
 import type { ReportMessages } from "@/i18n/types.js";
 import {
+    applyFeedbackImport,
     createFeedbackBackupFilename,
     downloadFeedbackJson,
     findFeedbackInsertConflicts,
@@ -12,7 +13,7 @@ import {
     readFeedbackJsonFile,
     toReportProject,
     upsertFeedbackItems,
-    writeAllFeedback,
+    type FeedbackImportMode,
     type FeedbackImportPayload,
     type FeedbackInsertConflict,
 } from "@/utils/feedback/feedbackDataTransfer.js";
@@ -25,17 +26,26 @@ export type FeedbackTransferScope = {
 
 export type ImportStep = "none" | "project-mismatch" | "confirm";
 export type CommandStep = "none" | "replace-confirm";
+export type { FeedbackImportMode };
 
-function buildCommandSuccessMessage(messages: ReportMessages, inserted: number, replaced: number) {
-    if (replaced > 0 && inserted > 0) {
-        return messages.errors.commandSuccessInsertedReplaced(inserted, replaced);
+function buildCommandSuccessMessage(messages: ReportMessages, inserted: number, replaced: number, localRepliesPreserved = 0) {
+    const base = (() => {
+        if (replaced > 0 && inserted > 0) {
+            return messages.errors.commandSuccessInsertedReplaced(inserted, replaced);
+        }
+
+        if (replaced > 0) {
+            return messages.errors.commandSuccessReplaced(replaced);
+        }
+
+        return messages.errors.commandSuccessInserted(inserted);
+    })();
+
+    if (localRepliesPreserved > 0) {
+        return `${base} ${messages.errors.commandSuccessLocalRepliesPreserved(localRepliesPreserved)}`;
     }
 
-    if (replaced > 0) {
-        return messages.errors.commandSuccessReplaced(replaced);
-    }
-
-    return messages.errors.commandSuccessInserted(inserted);
+    return base;
 }
 
 function isJsonDragEvent(event: DragEvent) {
@@ -195,7 +205,7 @@ export function usePanelFeedbackTransfer({
 
             return {
                 status: "success" as const,
-                message: buildCommandSuccessMessage(messages, result.inserted, result.replaced),
+                message: buildCommandSuccessMessage(messages, result.inserted, result.replaced, result.localRepliesPreserved),
             };
         },
         [canTransferFeedback, messages, refetch, setErrorMessage, transferScope],
@@ -223,20 +233,21 @@ export function usePanelFeedbackTransfer({
             setCommandConflicts([]);
             setCommandStep("none");
             setCommandNotice({
-                message: buildCommandSuccessMessage(messages, result.inserted, result.replaced),
+                message: buildCommandSuccessMessage(messages, result.inserted, result.replaced, result.localRepliesPreserved),
                 isError: false,
             });
         })();
     }, [messages, pendingCommand, refetch, setErrorMessage, transferScope]);
 
     const applyImport = useCallback(
-        async (payload: FeedbackImportPayload) => {
-            writeAllFeedback(transferScope, payload.items);
+        async (payload: FeedbackImportPayload, mode: FeedbackImportMode) => {
+            applyFeedbackImport(transferScope, payload.items, mode);
             setPendingImport(null);
             setImportStep("none");
+            setErrorMessage("");
             await refetch();
         },
-        [refetch, transferScope],
+        [refetch, setErrorMessage, transferScope],
     );
 
     const handleCancelImport = useCallback(() => {
@@ -248,35 +259,40 @@ export function usePanelFeedbackTransfer({
         setImportStep("confirm");
     }, []);
 
-    const handleApplyImport = useCallback(() => {
-        if (!pendingImport) {
-            return;
-        }
-
-        void applyImport(pendingImport);
-    }, [applyImport, pendingImport]);
-
-    const handleBackupAndApplyImport = useCallback(() => {
-        if (!pendingImport) {
-            return;
-        }
-
-        const currentItems = readAllFeedback(transferScope);
-        const pending = pendingImport;
-
-        void downloadFeedbackJson(createFeedbackBackupFilename(projectId, environment, appVersion), toReportProject(transferScope), currentItems).then((result) => {
-            if (result === "cancelled" || result === "failed") {
-                if (result === "failed") {
-                    setErrorMessage(messages.errors.backupExportFailedAbortImport);
-                }
-
+    const handleApplyImport = useCallback(
+        (mode: FeedbackImportMode) => {
+            if (!pendingImport) {
                 return;
             }
 
-            void applyImport(pending);
-        });
-    }, [applyImport, environment, messages.errors, pendingImport, projectId, setErrorMessage, transferScope, appVersion]);
+            void applyImport(pendingImport, mode);
+        },
+        [applyImport, pendingImport],
+    );
 
+    const handleBackupAndApplyImport = useCallback(
+        (mode: FeedbackImportMode) => {
+            if (!pendingImport) {
+                return;
+            }
+
+            const currentItems = readAllFeedback(transferScope);
+            const pending = pendingImport;
+
+            void downloadFeedbackJson(createFeedbackBackupFilename(projectId, environment, appVersion), toReportProject(transferScope), currentItems).then((result) => {
+                if (result === "cancelled" || result === "failed") {
+                    if (result === "failed") {
+                        setErrorMessage(messages.errors.backupExportFailedAbortImport);
+                    }
+
+                    return;
+                }
+
+                void applyImport(pending, mode);
+            });
+        },
+        [applyImport, environment, messages.errors, pendingImport, projectId, setErrorMessage, transferScope, appVersion],
+    );
     const handleDragEnter = useCallback(
         (event: DragEvent<HTMLDivElement>) => {
             if (isRecording || !canTransferFeedback || importStep !== "none" || commandStep !== "none") {

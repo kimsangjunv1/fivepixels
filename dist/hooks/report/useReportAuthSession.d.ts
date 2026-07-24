@@ -100,7 +100,7 @@ export declare function useReportAuthSession({ projectId, environment, authors, 
     skipOnboarding: () => void;
     sessionActor: import("../../utils/report/reportTeam.js").SessionActor | null;
     signCreatePayload: (payload: CreateReportFeedbackPayload) => Promise<CreateReportFeedbackPayload>;
-    signUpdatePayload: (payload: UpdateReportFeedbackPayload) => Promise<Partial<Pick<import("../../types/report.js").ReportFeedback, "cases" | "status" | "auth" | "replies" | "report_id" | "report_type" | "category" | "field_values" | "integrations">>>;
+    signUpdatePayload: (payload: UpdateReportFeedbackPayload) => Promise<Partial<Pick<import("../../types/report.js").ReportFeedback, "status" | "cases" | "report_id" | "report_type" | "category" | "field_values" | "replies" | "auth" | "integrations">>>;
     signReplyPayload: (payload: CreateReplyPayload) => Promise<CreateReplyPayload>;
 };
 export {};

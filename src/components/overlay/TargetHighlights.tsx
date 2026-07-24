@@ -13,11 +13,13 @@ type TargetHighlightsProps = {
     previewTargets?: TargetSnapshot[];
     markerPreviewTargets?: TargetSnapshot[];
     activeMarkerTarget: TargetSnapshot | null;
+    mentionHighlightTarget?: TargetSnapshot | null;
 };
 
 const HOVER_HIGHLIGHT_KEY = "hover-active";
 const SELECTION_HIGHLIGHT_KEY = "selection-active";
 const ACTIVE_MARKER_HIGHLIGHT_KEY = "marker-active";
+const MENTION_HIGHLIGHT_KEY = "mention-active";
 
 function highlightLabel(target: TargetSnapshot) {
     if (target.isTagged) {
@@ -63,6 +65,7 @@ export function TargetHighlights({
     previewTargets = [],
     markerPreviewTargets = [],
     activeMarkerTarget,
+    mentionHighlightTarget = null,
 }: TargetHighlightsProps) {
     return (
         <>
@@ -81,6 +84,14 @@ export function TargetHighlights({
                     showLabel
                 />
             ))}
+
+            {mentionHighlightTarget ? (
+                <HighlightBox
+                    key={MENTION_HIGHLIGHT_KEY}
+                    target={mentionHighlightTarget}
+                    showLabel
+                />
+            ) : null}
 
             {showHoverInspect && hoveredTarget ? (
                 <>

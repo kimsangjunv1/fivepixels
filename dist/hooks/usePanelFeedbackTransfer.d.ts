@@ -1,6 +1,6 @@
 import { type DragEvent } from "react";
 import type { ReportMessages } from "../i18n/types.js";
-import { type FeedbackImportPayload, type FeedbackInsertConflict } from "../utils/feedback/feedbackDataTransfer.js";
+import { type FeedbackImportMode, type FeedbackImportPayload, type FeedbackInsertConflict } from "../utils/feedback/feedbackDataTransfer.js";
 export type FeedbackTransferScope = {
     projectId: string;
     environment?: string;
@@ -8,6 +8,7 @@ export type FeedbackTransferScope = {
 };
 export type ImportStep = "none" | "project-mismatch" | "confirm";
 export type CommandStep = "none" | "replace-confirm";
+export type { FeedbackImportMode };
 type UsePanelFeedbackTransferOptions = {
     transferScope: FeedbackTransferScope;
     canTransferFeedback: boolean;
@@ -48,12 +49,11 @@ export declare function usePanelFeedbackTransfer({ transferScope, canTransferFee
     handleConfirmCommandReplace: () => void;
     handleCancelImport: () => void;
     handleProceedImportAfterMismatch: () => void;
-    handleApplyImport: () => void;
-    handleBackupAndApplyImport: () => void;
+    handleApplyImport: (mode: FeedbackImportMode) => void;
+    handleBackupAndApplyImport: (mode: FeedbackImportMode) => void;
     handleDragEnter: (event: DragEvent<HTMLDivElement>) => void;
     handleDragLeave: (event: DragEvent<HTMLDivElement>) => void;
     handleDragOver: (event: DragEvent<HTMLDivElement>) => void;
     handleDrop: (event: DragEvent<HTMLDivElement>) => void;
 };
-export {};
 //# sourceMappingURL=usePanelFeedbackTransfer.d.ts.map

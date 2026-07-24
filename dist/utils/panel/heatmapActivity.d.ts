@@ -64,5 +64,5 @@ export declare function buildYearMonthSummary(reports: ReportFeedback[], options
 export declare function buildActivitySummaryFromReports(reports: ReportFeedback[], params: ReportActivitySummaryParams): ReportActivitySummaryResult;
 export declare function getYearMonthCellDelay(monthIndex: number, staggerMs?: number): number;
 export declare function getYearEntranceDuration(staggerMs?: number, cellDurationMs?: number): number;
-export declare function resolveHeatmapLevel(count: number, maxCount: number): 1 | 0 | 2 | 3 | 4;
+export declare function resolveHeatmapLevel(count: number, maxCount: number): 2 | 0 | 1 | 3 | 4;
 //# sourceMappingURL=heatmapActivity.d.ts.map

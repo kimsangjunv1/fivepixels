@@ -1,4 +1,4 @@
-import { useEffect, useState, type MouseEvent } from "react";
+import { useState, type MouseEvent } from "react";
 import type { ReportFeedback } from "@/types/report.js";
 import type { ReportLocale, ReportMessages } from "@/i18n/types.js";
 import { formatTimeOnly } from "@/utils/shared/format.js";
@@ -10,7 +10,10 @@ import { isFeedbackCategory } from "@/constants/feedbackCategory.js";
 import { copyTextToClipboard, serializeFeedbackItem } from "@/utils/feedback/feedbackDataTransfer.js";
 import { GitIssueButton } from "./GitIssueButton.js";
 import { FeedbackPinToggleButton } from "./FeedbackPinToggleButton.js";
-import { CopyIcon, TrashIcon } from "@/components/icons/Icons.js";
+import { FeedbackDeleteAction } from "./FeedbackDeleteAction.js";
+import { canDeleteFeedback } from "@/utils/feedback/feedbackPermissions.js";
+import { useReport } from "@/providers/reportContext.js";
+import { CopyIcon } from "@/components/icons/Icons.js";
 import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
 
 type FeedbackListItemProps = {
@@ -96,52 +99,6 @@ function FeedbackListCopyAction({ report, messages }: { report: ReportFeedback; 
     );
 }
 
-function FeedbackListDeleteAction({ report, onDelete, disabled = false, messages }: { report: ReportFeedback; onDelete: (id: string) => Promise<void>; disabled?: boolean; messages: ReportMessages }) {
-    const [confirming, setConfirming] = useState(false);
-
-    useEffect(() => {
-        if (!confirming) {
-            return;
-        }
-
-        const timer = window.setTimeout(() => setConfirming(false), 1500);
-
-        return () => {
-            window.clearTimeout(timer);
-        };
-    }, [confirming]);
-
-    const handleDelete = (event: MouseEvent<HTMLButtonElement>) => {
-        event.stopPropagation();
-
-        if (!confirming) {
-            setConfirming(true);
-            return;
-        }
-
-        void onDelete(report.id).finally(() => {
-            setConfirming(false);
-        });
-    };
-
-    return (
-        <HoverTooltip label={confirming ? messages.feedbackList.deleteConfirmTitle : messages.feedbackList.deleteTitle}>
-            <button
-                type="button"
-                data-fivepixels-interactive=""
-                onClick={handleDelete}
-                disabled={disabled}
-                aria-label={confirming ? messages.feedbackList.deleteConfirmAriaLabel : messages.feedbackList.deleteAriaLabel}
-                className={`flex h-[20px] w-[20px] items-center justify-center disabled:opacity-50 ${
-                    confirming ? "text-rose-200 hover:text-white" : "text-[var(--adaptive-black50)] hover:text-white"
-                }`}
-            >
-                {confirming ? <span className="text-[9px] font-semibold">!</span> : <TrashIcon className="h-[12px] w-[12px]" />}
-            </button>
-        </HoverTooltip>
-    );
-}
-
 function FeedbackListGitIssueAction({
     report,
     messages,
@@ -183,6 +140,8 @@ export function FeedbackListItem({
     onDelete,
     onCreateGitHubIssue,
 }: FeedbackListItemProps) {
+    const { sessionActor } = useReport();
+    const canDelete = canDeleteFeedback(report, sessionActor);
     const caseId = getFeedbackCaseId(report);
     const replyCount = getReplyCount(report);
     const statusTag = getFeedbackListStatusTag(report);
@@ -233,7 +192,30 @@ export function FeedbackListItem({
                 {listScope === "all" ? <p className="truncate text-[11px] text-[var(--adaptive-black400)]">{report.pathname}</p> : null}
             </button>
 
-            <div className="absolute right-[10px] top-[6px] z-[1]">
+            <div className="absolute right-[10px] top-[6px] z-[1] flex items-center gap-[2px]">
+                <div className="flex items-center gap-[2px] opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
+                    {canCreateGitHubIssue && onCreateGitHubIssue ? (
+                        <FeedbackListGitIssueAction
+                            report={report}
+                            messages={messages}
+                            disabled={disabled}
+                            isSubmitting={creatingGitHubIssueId === report.id}
+                            onCreateIssue={onCreateGitHubIssue}
+                        />
+                    ) : null}
+                    <FeedbackListCopyAction
+                        report={report}
+                        messages={messages}
+                    />
+                    {canDelete ? (
+                        <FeedbackDeleteAction
+                            reportId={report.id}
+                            onDelete={onDelete}
+                            disabled={disabled}
+                            messages={messages}
+                        />
+                    ) : null}
+                </div>
                 <FeedbackPinToggleButton
                     report={report}
                     className="h-[20px] w-[20px]"

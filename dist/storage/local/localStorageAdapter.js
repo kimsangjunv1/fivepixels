@@ -64,6 +64,7 @@ function normalizeReplies(value) {
                 author_type: reply.author_type,
                 author_name: reply.author_name ?? null,
                 auth: reply.auth,
+                ...(Array.isArray(reply.mentions) && reply.mentions.length > 0 ? { mentions: reply.mentions } : {}),
             },
         ];
     });
@@ -223,6 +224,7 @@ export function createLocalStorageReportAdapter({ projectId, environment, appVer
                 author_type: payload.author_type,
                 author_name: payload.author_name ?? null,
                 auth: payload.auth,
+                ...(payload.mentions && payload.mentions.length > 0 ? { mentions: payload.mentions } : {}),
             };
             const currentReplies = normalizeReplies(items[index].replies);
             const nextItem = normalizeReport({

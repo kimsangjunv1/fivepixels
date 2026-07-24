@@ -1,6 +1,8 @@
 import type { FeedbackCategory } from "../constants/feedbackCategory.js";
 import type { FeedbackDisplayStatus } from "../constants/feedbackStatus.js";
+import type { ElementMention } from "./mention.js";
 export type { FeedbackCategory } from "../constants/feedbackCategory.js";
+export type { ElementMention } from "./mention.js";
 export type ReportTargetType = "group" | "item";
 export type ReportStatus = "open" | "git_issued" | "resolved" | "archived";
 export type ReportAppearance = "light" | "dark" | "system";
@@ -57,6 +59,7 @@ export type ReportReply = {
     author_type?: "user" | "manager" | "system";
     author_name?: string | null;
     auth?: ReportAuthProof;
+    mentions?: ElementMention[];
 };
 export type ReportReplySummary = Pick<ReportReply, "id" | "message" | "created_at" | "status" | "author_type" | "author_name" | "case_ids">;
 export type CreateReplyPayload = {
@@ -67,6 +70,7 @@ export type CreateReplyPayload = {
     author_type: NonNullable<ReportReply["author_type"]>;
     author_name?: string | null;
     auth?: ReportAuthProof;
+    mentions?: ElementMention[];
 };
 export type ReportIdentify = {
     id: string;
