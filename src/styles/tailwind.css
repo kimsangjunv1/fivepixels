@@ -4,6 +4,7 @@
 @import "./motion.css";
 
 @source "../components/**/*.tsx";
+@source "../constants/**/*.ts";
 
 @theme {
     /* Use absolute units so host html font-size does not scale library spacing/text. */

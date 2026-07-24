@@ -227,6 +227,10 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     }[];
     replyDraft: string;
     setReplyDraft: import("react").Dispatch<import("react").SetStateAction<string>>;
+    replyMentions: import("../../types/report.js").ElementMention[];
+    setReplyMentions: import("react").Dispatch<import("react").SetStateAction<import("../../types/report.js").ElementMention[]>>;
+    mentionHighlightTarget: import("../../types/report-ui.js").TargetSnapshot | null;
+    setMentionHighlightTarget: import("react").Dispatch<import("react").SetStateAction<import("../../types/report-ui.js").TargetSnapshot | null>>;
     replySubmitAsQuestion: boolean;
     setReplySubmitAsQuestion: import("react").Dispatch<import("react").SetStateAction<boolean>>;
     draftAuthorName: string;
@@ -256,6 +260,7 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     updateCaseEditDraftCase: (caseId: string, text: string) => void;
     addCaseEditDraftCase: () => void;
     removeCaseEditDraftCase: (caseId: string) => void;
+    removePersistedCase: (report: ReportFeedback, caseId: string) => Promise<void>;
     focusedCaseId: string | null;
     selectCase: (caseId: string) => void;
     clearFocusedCase: () => void;
@@ -307,6 +312,7 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     handleOverlayContextMenu: (event: import("react").MouseEvent<HTMLDivElement>) => void;
     handleOverlayClick: (event: import("react").MouseEvent<HTMLDivElement>) => void;
     cancelDraft: () => void;
+    beginFeedbackEdit: (report: ReportFeedback) => void;
     updateDraftCase: (caseId: string, text: string) => void;
     addDraftCase: () => void;
     removeDraftCase: (caseId: string) => void;

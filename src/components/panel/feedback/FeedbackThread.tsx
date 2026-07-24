@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ReportAuthor, ReportFeedback, ReportReply } from "@/types/report.js";
 import { useReport, useReportPreferences } from "@/providers/reportContext.js";
-import { formatClockTime } from "@/utils/shared/format.js";
+import { formatClockTime, formatDateOnly } from "@/utils/shared/format.js";
 import { canEditReportCases, getCaseById } from "@/utils/report/reportCases.js";
 import {
     buildCaseThreadTimeline,
@@ -9,6 +9,7 @@ import {
     canShowAdjudicationActionsOnBranchReply,
     canShowCaseThreadActions,
     canShowCaseClaimAction,
+    canShowCaseEntryActions,
     canShowCheckoutBranchActionsForCase,
     canShowSuggestedBranchActionsForCase,
     getReportReplies,
@@ -32,12 +33,8 @@ import { QuestionThreadGroup } from "./QuestionThreadGroup.js";
 import { ReplyHistoryControls } from "./ReplyHistoryControls.js";
 import { ThreadAuthorMeta } from "./ThreadAuthorMeta.js";
 import { ThreadTimelineRow } from "./ThreadTimelineRow.js";
-import {
-    CaseThreadEntryActions,
-    ThreadEntryActions,
-    THREAD_ACTION_ENTRY_SURFACE_CLASS,
-    THREAD_CASE_ENTRY_SURFACE_CLASS,
-} from "./ThreadEntryActions.js";
+import { CaseThreadEntryActions, ThreadEntryActions, THREAD_ACTION_ENTRY_SURFACE_CLASS, THREAD_CASE_ENTRY_SURFACE_CLASS } from "./ThreadEntryActions.js";
+import { MentionMessage } from "./MentionMessage.js";
 
 type PendingComposer = {
     type: "deny" | "recheck" | "checkout" | "question";
@@ -122,6 +119,37 @@ function ThreadResolvedDivider() {
     );
 }
 
+function ThreadStartedDivider({ createdAt }: { createdAt: string }) {
+    const { locale } = useReportPreferences();
+    const dateColor = "var(--adaptive-black500)";
+
+    return (
+        <ThreadTimelineRow>
+            <div
+                className="flex items-center gap-[8px]"
+                role="status"
+            >
+                <span
+                    aria-hidden
+                    className="h-px flex-1 bg-[var(--adaptive-border-subtle)]"
+                />
+                <span className="inline-flex shrink-0 items-center gap-[6px]">
+                    <span
+                        className="text-[13px] font-bold leading-none tabular-nums"
+                        style={{ color: dateColor }}
+                    >
+                        {formatDateOnly(createdAt, locale)}
+                    </span>
+                </span>
+                <span
+                    aria-hidden
+                    className="h-px flex-1 bg-[var(--adaptive-border-subtle)]"
+                />
+            </div>
+        </ThreadTimelineRow>
+    );
+}
+
 function CaseThreadEntry({
     report,
     caseId,
@@ -129,6 +157,8 @@ function CaseThreadEntry({
     caseCreatedAt,
     caseStatus,
     actorName,
+    pendingComposer,
+    onStartAskQuestion,
     onClaimAssignee,
     isUpdating,
     isClaimingAssignee,
@@ -140,12 +170,21 @@ function CaseThreadEntry({
     caseCreatedAt: string;
     caseStatus: "open" | "resolved";
     actorName: string;
+    pendingComposer: PendingComposer;
+    onStartAskQuestion: () => void;
     onClaimAssignee: () => void;
     isUpdating?: boolean;
     isClaimingAssignee?: boolean;
     isEditingCases?: boolean;
 }) {
-    const hasActions = !isEditingCases && canShowCaseClaimAction(report, caseId, actorName);
+    const showPreClaimDiscussion = !isEditingCases && canShowCaseEntryActions(report, caseId);
+    const hasActions = showPreClaimDiscussion && (Boolean(actorName.trim()) || canShowCaseClaimAction(report, caseId, actorName));
+    const isComposerTarget = pendingComposer?.type === "question" && pendingComposer.targetReplyId === ISSUE_ROOT_PARENT_ID;
+    const surfaceClass = isComposerTarget
+        ? `${THREAD_ACTION_ENTRY_SURFACE_CLASS} border-[#10B981] bg-[rgba(16,185,129,0.08)]`
+        : hasActions
+          ? THREAD_ACTION_ENTRY_SURFACE_CLASS
+          : THREAD_CASE_ENTRY_SURFACE_CLASS;
 
     const entryBody = (
         <>
@@ -154,7 +193,9 @@ function CaseThreadEntry({
                 isNeedGray
             />
 
-            <p className={`leading-[1.5] text-[14px] text-[var(--adaptive-text-primary)] ${caseStatus === "resolved" ? "text-[var(--adaptive-black500)] line-through" : ""}`}>{caseText}</p>
+            <p className={`leading-[1.5] text-[14px] text-[var(--adaptive-text-primary)] whitespace-break-spaces ${caseStatus === "resolved" ? "text-[var(--adaptive-black500)] line-through" : ""}`}>
+                {caseText}
+            </p>
 
             {report.author_name ? (
                 <ThreadAuthorMeta
@@ -169,6 +210,8 @@ function CaseThreadEntry({
                     report={report}
                     caseId={caseId}
                     actorName={actorName}
+                    pendingComposer={pendingComposer}
+                    onStartAskQuestion={onStartAskQuestion}
                     onClaimAssignee={onClaimAssignee}
                     isUpdating={isUpdating}
                     isClaimingAssignee={isClaimingAssignee}
@@ -179,7 +222,7 @@ function CaseThreadEntry({
 
     return (
         <ThreadTimelineRow time={formatClockTime(caseCreatedAt)}>
-            <div className={hasActions ? THREAD_ACTION_ENTRY_SURFACE_CLASS : THREAD_CASE_ENTRY_SURFACE_CLASS}>{entryBody}</div>
+            <div className={surfaceClass}>{entryBody}</div>
         </ThreadTimelineRow>
     );
 }
@@ -260,6 +303,12 @@ function ThreadRootReply({
     const canAct = canShowCaseThreadActions(report, caseId, actorName);
     const isOwnBranchReply = isBranchReplyAuthor(reply, actorName);
     const hasActions = showBranchActions && (canAct || isOwnBranchReply) && (canShowAdjudicationActionsOnBranchReply(reply, actorName) ? canAct : true);
+    const isComposerTarget = pendingComposer?.type === "question" && pendingComposer.targetReplyId === reply.id;
+    const surfaceClass = isComposerTarget
+        ? `${THREAD_ACTION_ENTRY_SURFACE_CLASS} border-[#10B981] bg-[rgba(16,185,129,0.08)]`
+        : hasActions
+          ? THREAD_ACTION_ENTRY_SURFACE_CLASS
+          : THREAD_CASE_ENTRY_SURFACE_CLASS;
 
     const entryBody = (
         <>
@@ -268,7 +317,12 @@ function ThreadRootReply({
                 isNeedGray
             />
 
-            <p className="leading-[1.5] text-[14px] text-[var(--adaptive-text-primary)]">{reply.message}</p>
+            <p className="leading-[1.5] text-[14px] text-[var(--adaptive-text-primary)] whitespace-break-spaces">
+                <MentionMessage
+                    message={reply.message}
+                    mentions={reply.mentions}
+                />
+            </p>
             {reply.author_name ? (
                 <ThreadAuthorMeta
                     authorName={reply.author_name}
@@ -298,7 +352,7 @@ function ThreadRootReply({
 
     return (
         <ThreadTimelineRow time={formatClockTime(reply.created_at)}>
-            <div className={hasActions ? THREAD_ACTION_ENTRY_SURFACE_CLASS : THREAD_CASE_ENTRY_SURFACE_CLASS}>{entryBody}</div>
+            <div className={surfaceClass}>{entryBody}</div>
         </ThreadTimelineRow>
     );
 }
@@ -495,32 +549,36 @@ export function FeedbackThread({
                     </article>
                 )}
 
-                <div className="relative flex flex-col pt-[12px] pb-[57px]">
-                    {/* <div className="relative flex flex-col pt-[12px] pb-[57px]"> */}
+                <div className={`relative flex flex-col pt-[12px] ${hideCaseSelector ? "pb-[12px]" : "pb-[57px]"}`}>
                     {/* <ReplyHistoryControls
                         reportId={report.id}
                         history={replyHistoryState}
                     /> */}
-                    {showTimelineRail ? (
+
+                    {/* {showTimelineRail ? (
                         <div className="pointer-events-none absolute bottom-[12px] left-[20px] top-[12px] w-px bg-[linear-gradient(180deg,_var(--adaptive-black900)_60%,transparent_90%)]" />
-                    ) : null}
-                    {/* {showTimelineRail ? <div className="pointer-events-none absolute bottom-[12px] left-[20px] top-[12px] w-px bg-[var(--adaptive-border-subtle)]" /> : null} */}
+                    ) : null} */}
 
                     {focusedCaseId && !isAllCasesView ? (
                         <>
                             {focusedCase ? (
-                                <CaseThreadEntry
-                                    report={report}
-                                    caseId={focusedCaseId}
-                                    caseText={focusedCase.text}
-                                    caseCreatedAt={focusedCase.created_at}
-                                    caseStatus={focusedCase.status}
-                                    actorName={actorName}
-                                    onClaimAssignee={onClaimAssignee}
-                                    isUpdating={isUpdating}
-                                    isClaimingAssignee={isClaimingAssignee}
-                                    isEditingCases={isEditingCases}
-                                />
+                                <>
+                                    <ThreadStartedDivider createdAt={focusedCase.created_at} />
+                                    <CaseThreadEntry
+                                        report={report}
+                                        caseId={focusedCaseId}
+                                        caseText={focusedCase.text}
+                                        caseCreatedAt={focusedCase.created_at}
+                                        caseStatus={focusedCase.status}
+                                        actorName={actorName}
+                                        pendingComposer={pendingComposer}
+                                        onStartAskQuestion={onStartAskQuestion}
+                                        onClaimAssignee={onClaimAssignee}
+                                        isUpdating={isUpdating}
+                                        isClaimingAssignee={isClaimingAssignee}
+                                        isEditingCases={isEditingCases}
+                                    />
+                                </>
                             ) : null}
 
                             <QuestionThreadGroup

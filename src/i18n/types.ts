@@ -149,6 +149,8 @@ export type ReportMessages = {
         deleteTitle: string;
         deleteConfirmTitle: string;
         deleteConfirmLabel: string;
+        editAriaLabel: string;
+        editTitle: string;
         copyAriaLabel: string;
         copyTitle: string;
         copiedTitle: string;
@@ -173,12 +175,20 @@ export type ReportMessages = {
         placeholder: string;
         questionPlaceholder: string;
         askQuestionLabel: string;
+        modeTag: {
+            ask: string;
+            denied: string;
+            complete: string;
+        };
+        modeTagDismissAriaLabel: string;
         sendAriaLabel: string;
         draftPrevious: string;
         draftNext: string;
         draftComplete: string;
         draftCompleting: string;
         draftCategoryPrompt: (count: number) => string;
+        draftTooltipHeader: string;
+        draftTooltipHeaderEdit: string;
         gitIssueSendAriaLabel: string;
         gitIssueSendTitle: string;
         gitIssueSendLabel: string;
@@ -192,7 +202,12 @@ export type ReportMessages = {
         removeCaseAriaLabel: (index: number) => string;
         categoryLabel: string;
         categoryAriaLabel: string;
+        casesDropdownLabel: string;
+        casesDropdownAriaLabel: string;
+        mentionListAriaLabel: string;
+        mentionEmpty: string;
         categoryOption: Record<FeedbackCategory, string>;
+        categoryTooltip: Record<FeedbackCategory, string>;
         probeSummaryPrompt: string;
         probeSummaryApply: string;
         resolvedCaseDisabled: string;
@@ -215,18 +230,25 @@ export type ReportMessages = {
         assignee: string;
         summaryMore: (count: number) => string;
         progressResolved: (resolved: number, total: number) => string;
+        removeCaseTitle: string;
+        removeCaseConfirmTitle: string;
+        removeCaseAriaLabel: string;
+        removeCaseConfirmAriaLabel: string;
     };
     thread: {
         scrollHintUp: string;
         scrollHintDown: string;
+        ask: string;
+        askTooltip: string;
         denied: string;
+        deniedTooltip: string;
+        complete: string;
+        completeTooltip: string;
         resolved: string;
         resolvedConfirmLabel: string;
         resolvedConfirmAriaLabel: string;
         select: string;
-        leaveResult: string;
         askQuestion: string;
-        reply: string;
         questionsShow: (count: number) => string;
         questionsHide: (count: number) => string;
         questionsPending: (count: number) => string;
@@ -236,7 +258,6 @@ export type ReportMessages = {
         takeOverAssignee: string;
         assigneeAssigned: string;
         assigneeTransferred: string;
-        fixComplete: string;
         loadMoreReplies: (count: number) => string;
         replyPaginationOlder: string;
         replyPaginationNewer: string;
@@ -447,6 +468,10 @@ export type ReportMessages = {
     importConfirm: {
         title: string;
         description: string;
+        mergeMode: string;
+        replaceMode: string;
+        mergeDescription: string;
+        replaceDescription: string;
         applyDirectly: string;
         backupAndApply: string;
     };
@@ -588,6 +613,7 @@ export type ReportMessages = {
         currentAssignee: string;
         assigneeInfoAriaLabel: string;
         viewMoreCases: string;
+        hoverTooltipHeader: string;
     };
     defaults: {
         fields: {
@@ -649,6 +675,9 @@ export type ReportMessages = {
         reviewerRequired: string;
         confirmResolutionFailed: string;
         deleteFeedbackFailed: string;
+        deleteFeedbackNotAllowed: string;
+        removeCaseNotAllowed: string;
+        removeCaseFailed: string;
         createGitHubIssueFailed: string;
         loadFeedbackFailed: string;
         loadRepliesFailed: string;
@@ -664,6 +693,7 @@ export type ReportMessages = {
         commandSuccessInsertedReplaced: (inserted: number, replaced: number) => string;
         commandSuccessReplaced: (count: number) => string;
         commandSuccessInserted: (count: number) => string;
+        commandSuccessLocalRepliesPreserved: (count: number) => string;
         duplicateIdIncluded: string;
         clipboardCopyFailed: string;
         invalidJson: string;

@@ -12,7 +12,17 @@ import {
     serializeFeedbackItem,
     serializeFeedbackStorageEnvelope,
 } from "./feedbackTransferSchema.js";
-import { findFeedbackInsertConflicts, insertFeedbackItems, parseFeedbackImportJson as parseFromTransfer, readAllFeedback, upsertFeedbackItems, writeAllFeedback } from "./feedbackDataTransfer.js";
+import {
+    applyFeedbackImport,
+    findFeedbackInsertConflicts,
+    insertFeedbackItems,
+    parseFeedbackImportJson as parseFromTransfer,
+    readAllFeedback,
+    upsertFeedbackItems,
+    writeAllFeedback,
+} from "./feedbackDataTransfer.js";
+import type { ReportReply } from "@/types/report.js";
+import { createReportCase } from "@/utils/report/reportCases.js";
 
 const scope = { projectId: "transfer-test", environment: "stage", appVersion: "1.0.0" };
 
@@ -136,19 +146,87 @@ describe("feedbackDataTransfer", () => {
         expect(() => insertFeedbackItems(scope, [duplicate])).toThrow("이미 등록된 id");
     });
 
-    it("replaces existing feedback when upserting duplicate ids", () => {
-        const first = { ...createReportPayload({ message: "first" }), id: "dup", created_at: "2026-01-01T00:00:00.000Z", replies: [] };
-        const duplicate = { ...createReportPayload({ message: "duplicate" }), id: "dup", created_at: "2026-01-02T00:00:00.000Z", replies: [] };
+    it("updates existing feedback content when upserting duplicate ids", () => {
+        const first = {
+            ...createReportPayload({ cases: [createReportCase("first", { id: "c1" })] }),
+            id: "dup",
+            created_at: "2026-01-01T00:00:00.000Z",
+            replies: [] as ReportReply[],
+        };
+        const duplicate = {
+            ...createReportPayload({ cases: [createReportCase("duplicate", { id: "c1" })] }),
+            id: "dup",
+            created_at: "2026-01-02T00:00:00.000Z",
+            replies: [] as ReportReply[],
+        };
 
         writeAllFeedback(scope, [first]);
         const result = upsertFeedbackItems(scope, [duplicate]);
 
         expect(result.inserted).toBe(0);
         expect(result.replaced).toBe(1);
+        expect(result.updated).toBe(1);
 
         const items = readAllFeedback(scope);
         expect(items).toHaveLength(1);
         expect(items[0]?.id).toBe("dup");
-        expect(items[0]?.message).toBe("duplicate");
+        expect(items[0]?.cases[0]?.text).toBe("duplicate");
+    });
+
+    it("preserves local-only replies when upserting the same feedback id", () => {
+        const localReply: ReportReply = {
+            id: "local-reply",
+            message: "my answer",
+            created_at: "2026-01-02T00:00:00.000Z",
+            status: "resolved",
+            case_ids: [],
+            author_type: "user",
+        };
+        const existing = {
+            ...createReportPayload({ cases: [createReportCase("old", { id: "c1" })] }),
+            id: "shared",
+            created_at: "2026-01-01T00:00:00.000Z",
+            replies: [localReply],
+        };
+        const incoming = {
+            ...createReportPayload({ cases: [createReportCase("updated", { id: "c1" })] }),
+            id: "shared",
+            created_at: "2026-01-03T00:00:00.000Z",
+            replies: [] as ReportReply[],
+        };
+
+        writeAllFeedback(scope, [existing]);
+        const result = upsertFeedbackItems(scope, [incoming]);
+
+        expect(result.updated).toBe(1);
+        expect(result.localRepliesPreserved).toBe(1);
+
+        const items = readAllFeedback(scope);
+        expect(items[0]?.cases[0]?.text).toBe("updated");
+        expect(items[0]?.replies?.map((reply) => reply.id)).toEqual(["local-reply"]);
+    });
+
+    it("merges by default on import and fully replaces when mode is replace", () => {
+        const localOnly = {
+            ...createReportPayload({ cases: [createReportCase("keep me", { id: "c-local" })] }),
+            id: "local-only",
+            created_at: "2026-01-01T00:00:00.000Z",
+            replies: [] as ReportReply[],
+        };
+        const incoming = {
+            ...createReportPayload({ cases: [createReportCase("from A", { id: "c-new" })] }),
+            id: "incoming-only",
+            created_at: "2026-01-02T00:00:00.000Z",
+            replies: [] as ReportReply[],
+        };
+
+        writeAllFeedback(scope, [localOnly]);
+        applyFeedbackImport(scope, [incoming], "merge");
+
+        expect(readAllFeedback(scope).map((item) => item.id).sort()).toEqual(["incoming-only", "local-only"]);
+
+        applyFeedbackImport(scope, [incoming], "replace");
+
+        expect(readAllFeedback(scope).map((item) => item.id)).toEqual(["incoming-only"]);
     });
 });

@@ -3,7 +3,9 @@ import { useReportPreferences } from "@/providers/reportContext.js";
 import { formatClockTime } from "@/utils/shared/format.js";
 import { formatAssigneeLabel, resolveAuthorDepartment } from "@/utils/report/reportCases.js";
 import { resolveAssigneeEntryActionRole } from "@/utils/feedback/feedbackThread.js";
-import { CheckIcon, CloseIcon } from "@/components/icons/Icons.js";
+import { getThreadActionButtonClass, THREAD_ACTION_STYLE } from "@/constants/threadActionStyles.js";
+import { CompleteActionIcon, DeniedActionIcon } from "@/components/icons/Icons.js";
+import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
 import { ThreadTimelineRow } from "./ThreadTimelineRow.js";
 
 const THREAD_ACTION_BUTTON_BASE = "flex items-center gap-[4px] rounded-[6px] px-[8px] py-[4px] text-[12px] font-semibold transition-colors";
@@ -49,41 +51,60 @@ export function AssigneeThreadEntry({
     const denyActive = (pendingComposer?.type === "deny" || pendingComposer?.type === "recheck") && pendingComposer.targetReplyId === reply.id;
     const checkoutActive = pendingComposer?.type === "checkout" && pendingComposer.targetReplyId === reply.id;
     const hasActions = actionRole !== null;
+    const deniedStyle = THREAD_ACTION_STYLE.denied;
+    const completeStyle = THREAD_ACTION_STYLE.complete;
+    const surfaceClass =
+        denyActive || checkoutActive
+            ? `${THREAD_ACTION_ENTRY_SURFACE_CLASS} ${denyActive ? deniedStyle.cardHighlight : completeStyle.cardHighlight}`
+            : hasActions
+              ? THREAD_ACTION_ENTRY_SURFACE_CLASS
+              : THREAD_CASE_ENTRY_SURFACE_CLASS;
 
     return (
         <ThreadTimelineRow time={formatClockTime(reply.created_at)}>
-            <div className={hasActions ? THREAD_ACTION_ENTRY_SURFACE_CLASS : THREAD_CASE_ENTRY_SURFACE_CLASS}>
-                <p className="leading-[1.5] text-[14px] text-[var(--adaptive-text-primary)]">{reply.message}</p>
+            <div className={surfaceClass}>
+                <p className="leading-[1.5] text-[14px] text-[var(--adaptive-text-primary)] whitespace-break-spaces">{reply.message}</p>
                 {assigneeName ? <p className="text-[12px] text-[var(--adaptive-black500)]">{formatAssigneeLabel(assigneeName, department)}</p> : null}
 
                 {actionRole === "assignee" ? (
                     <div className="mt-[10px] flex flex-wrap items-center justify-end">
-                        <button
-                            type="button"
-                            data-fivepixels-interactive=""
-                            disabled={isUpdating || isClaimingAssignee}
-                            onClick={onStartDeny}
-                            aria-label={messages.thread.denied}
-                            className={`${THREAD_ACTION_BUTTON_BASE} px-[6px] ${denyActive ? "bg-[#FF2B6A] text-white" : THREAD_ACTION_GHOST}`}
-                        >
-                            <CloseIcon className="h-[13px] w-[13px]" />
-                        </button>
+                        <HoverTooltip label={messages.thread.deniedTooltip}>
+                            <button
+                                type="button"
+                                data-fivepixels-interactive=""
+                                disabled={isUpdating || isClaimingAssignee}
+                                onClick={onStartDeny}
+                                aria-label={messages.thread.denied}
+                                className={`${THREAD_ACTION_BUTTON_BASE} px-[6px] ${getThreadActionButtonClass("denied", denyActive)}`}
+                                style={{ color: deniedStyle.color }}
+                            >
+                                <DeniedActionIcon
+                                    className="h-[13px] w-[13px]"
+                                    fill={deniedStyle.color}
+                                />
+                            </button>
+                        </HoverTooltip>
                         <span
                             className={THREAD_ACTION_DIVIDER}
                             aria-hidden
                         />
-                        <button
-                            type="button"
-                            data-fivepixels-interactive=""
-                            disabled={isUpdating || isClaimingAssignee}
-                            onClick={() => onStartCheckout(reply.id)}
-                            aria-label={messages.thread.fixComplete}
-                            className={`${THREAD_ACTION_BUTTON_BASE} ${checkoutActive ? "bg-[#F6572E] text-white" : THREAD_ACTION_GHOST}`}
-                        >
-                            <CheckIcon className="h-[13px] w-[13px]" />
-                            {messages.thread.fixComplete}
-                            <p>asd</p>
-                        </button>
+                        <HoverTooltip label={messages.thread.completeTooltip}>
+                            <button
+                                type="button"
+                                data-fivepixels-interactive=""
+                                disabled={isUpdating || isClaimingAssignee}
+                                onClick={() => onStartCheckout(reply.id)}
+                                aria-label={messages.thread.complete}
+                                className={`${THREAD_ACTION_BUTTON_BASE} ${getThreadActionButtonClass("complete", checkoutActive)}`}
+                                style={{ color: completeStyle.color }}
+                            >
+                                <CompleteActionIcon
+                                    className="h-[13px] w-[13px]"
+                                    fill={completeStyle.color}
+                                />
+                                <span style={{ color: completeStyle.color }}>{messages.thread.complete}</span>
+                            </button>
+                        </HoverTooltip>
                     </div>
                 ) : null}
 

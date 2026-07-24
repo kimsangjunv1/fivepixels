@@ -8,6 +8,7 @@ import type { useReportReplyReview } from "./useReportReplyReview.js";
 import type {
     ReportActivitySummaryParams,
     ReportActivitySummaryResult,
+    ReportFeedback,
     ReportField,
     ReportPanelBootstrapParams,
     ReportPanelBootstrapResult,
@@ -32,6 +33,8 @@ type AssembleArgs = {
     overlayRef: RefObject<HTMLDivElement>;
     replyHistory: ResolvedReplyHistoryConfig;
     selectReport: (reportId: string) => void;
+    beginFeedbackEdit: (report: ReportFeedback) => void;
+    cancelDraft: () => void;
 };
 
 /**
@@ -56,6 +59,8 @@ export function assembleReportContextValue({
     overlayRef,
     replyHistory,
     selectReport,
+    beginFeedbackEdit,
+    cancelDraft,
 }: AssembleArgs) {
     return {
         panelAppearance: panel.panelAppearance,
@@ -199,6 +204,10 @@ export function assembleReportContextValue({
         tooltipFieldTags: markers.tooltipFieldTags,
         replyDraft: reply.replyDraft,
         setReplyDraft: reply.setReplyDraft,
+        replyMentions: reply.replyMentions,
+        setReplyMentions: reply.setReplyMentions,
+        mentionHighlightTarget: reply.mentionHighlightTarget,
+        setMentionHighlightTarget: reply.setMentionHighlightTarget,
         replySubmitAsQuestion: reply.replySubmitAsQuestion,
         setReplySubmitAsQuestion: reply.setReplySubmitAsQuestion,
         draftAuthorName: draft.draftAuthorName,
@@ -228,6 +237,7 @@ export function assembleReportContextValue({
         updateCaseEditDraftCase: reply.updateCaseEditDraftCase,
         addCaseEditDraftCase: reply.addCaseEditDraftCase,
         removeCaseEditDraftCase: reply.removeCaseEditDraftCase,
+        removePersistedCase: reply.removePersistedCase,
         focusedCaseId: reply.focusedCaseId,
         selectCase: reply.selectCase,
         clearFocusedCase: reply.clearFocusedCase,
@@ -272,7 +282,8 @@ export function assembleReportContextValue({
         handleOverlayMove: draft.handleOverlayMove,
         handleOverlayContextMenu: draft.handleOverlayContextMenu,
         handleOverlayClick: draft.handleOverlayClick,
-        cancelDraft: draft.cancelDraft,
+        cancelDraft,
+        beginFeedbackEdit,
         updateDraftCase: draft.updateDraftCase,
         addDraftCase: draft.addDraftCase,
         removeDraftCase: draft.removeDraftCase,

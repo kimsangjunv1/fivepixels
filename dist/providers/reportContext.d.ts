@@ -192,6 +192,10 @@ declare const ReportContext: Context<{
     }[];
     replyDraft: string;
     setReplyDraft: import("react").Dispatch<import("react").SetStateAction<string>>;
+    replyMentions: import("../types/mention.js").ElementMention[];
+    setReplyMentions: import("react").Dispatch<import("react").SetStateAction<import("../types/mention.js").ElementMention[]>>;
+    mentionHighlightTarget: import("../types/report-ui.js").TargetSnapshot | null;
+    setMentionHighlightTarget: import("react").Dispatch<import("react").SetStateAction<import("../types/report-ui.js").TargetSnapshot | null>>;
     replySubmitAsQuestion: boolean;
     setReplySubmitAsQuestion: import("react").Dispatch<import("react").SetStateAction<boolean>>;
     draftAuthorName: string;
@@ -221,6 +225,7 @@ declare const ReportContext: Context<{
     updateCaseEditDraftCase: (caseId: string, text: string) => void;
     addCaseEditDraftCase: () => void;
     removeCaseEditDraftCase: (caseId: string) => void;
+    removePersistedCase: (report: import("../index.js").ReportFeedback, caseId: string) => Promise<void>;
     focusedCaseId: string | null;
     selectCase: (caseId: string) => void;
     clearFocusedCase: () => void;
@@ -272,6 +277,7 @@ declare const ReportContext: Context<{
     handleOverlayContextMenu: (event: import("react").MouseEvent<HTMLDivElement>) => void;
     handleOverlayClick: (event: import("react").MouseEvent<HTMLDivElement>) => void;
     cancelDraft: () => void;
+    beginFeedbackEdit: (report: import("../index.js").ReportFeedback) => void;
     updateDraftCase: (caseId: string, text: string) => void;
     addDraftCase: () => void;
     removeDraftCase: (caseId: string) => void;
@@ -478,6 +484,10 @@ export declare function useReport(): {
     }[];
     replyDraft: string;
     setReplyDraft: import("react").Dispatch<import("react").SetStateAction<string>>;
+    replyMentions: import("../types/mention.js").ElementMention[];
+    setReplyMentions: import("react").Dispatch<import("react").SetStateAction<import("../types/mention.js").ElementMention[]>>;
+    mentionHighlightTarget: import("../types/report-ui.js").TargetSnapshot | null;
+    setMentionHighlightTarget: import("react").Dispatch<import("react").SetStateAction<import("../types/report-ui.js").TargetSnapshot | null>>;
     replySubmitAsQuestion: boolean;
     setReplySubmitAsQuestion: import("react").Dispatch<import("react").SetStateAction<boolean>>;
     draftAuthorName: string;
@@ -507,6 +517,7 @@ export declare function useReport(): {
     updateCaseEditDraftCase: (caseId: string, text: string) => void;
     addCaseEditDraftCase: () => void;
     removeCaseEditDraftCase: (caseId: string) => void;
+    removePersistedCase: (report: import("../index.js").ReportFeedback, caseId: string) => Promise<void>;
     focusedCaseId: string | null;
     selectCase: (caseId: string) => void;
     clearFocusedCase: () => void;
@@ -558,6 +569,7 @@ export declare function useReport(): {
     handleOverlayContextMenu: (event: import("react").MouseEvent<HTMLDivElement>) => void;
     handleOverlayClick: (event: import("react").MouseEvent<HTMLDivElement>) => void;
     cancelDraft: () => void;
+    beginFeedbackEdit: (report: import("../index.js").ReportFeedback) => void;
     updateDraftCase: (caseId: string, text: string) => void;
     addDraftCase: () => void;
     removeDraftCase: (caseId: string) => void;
@@ -767,6 +779,10 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         }[];
         replyDraft: string;
         setReplyDraft: import("react").Dispatch<import("react").SetStateAction<string>>;
+        replyMentions: import("../types/mention.js").ElementMention[];
+        setReplyMentions: import("react").Dispatch<import("react").SetStateAction<import("../types/mention.js").ElementMention[]>>;
+        mentionHighlightTarget: import("../types/report-ui.js").TargetSnapshot | null;
+        setMentionHighlightTarget: import("react").Dispatch<import("react").SetStateAction<import("../types/report-ui.js").TargetSnapshot | null>>;
         replySubmitAsQuestion: boolean;
         setReplySubmitAsQuestion: import("react").Dispatch<import("react").SetStateAction<boolean>>;
         draftAuthorName: string;
@@ -796,6 +812,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         updateCaseEditDraftCase: (caseId: string, text: string) => void;
         addCaseEditDraftCase: () => void;
         removeCaseEditDraftCase: (caseId: string) => void;
+        removePersistedCase: (report: import("../index.js").ReportFeedback, caseId: string) => Promise<void>;
         focusedCaseId: string | null;
         selectCase: (caseId: string) => void;
         clearFocusedCase: () => void;
@@ -847,6 +864,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         handleOverlayContextMenu: (event: import("react").MouseEvent<HTMLDivElement>) => void;
         handleOverlayClick: (event: import("react").MouseEvent<HTMLDivElement>) => void;
         cancelDraft: () => void;
+        beginFeedbackEdit: (report: import("../index.js").ReportFeedback) => void;
         updateDraftCase: (caseId: string, text: string) => void;
         addDraftCase: () => void;
         removeDraftCase: (caseId: string) => void;
@@ -864,7 +882,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         handleCreateGitHubIssue: (report: import("../index.js").ReportFeedback) => Promise<void>;
         handleCreateSubmitWithGitHubIssue: () => Promise<void>;
         isDraftGitHubIssueSubmitting: boolean;
-    }, "personalKey" | "environment" | "projectId" | "fields" | "personalKeyRequired" | "questionThreadDisplay" | "setQuestionThreadDisplay" | "locale" | "setLocale" | "showMarkerTargetPreview" | "setShowMarkerTargetPreview" | "toggleMarkerTargetPreview" | "markerAppearance" | "setMarkerAppearance" | "setMarkerSize" | "setMarkerShape" | "setMarkerColors" | "setMarkerColor" | "setFeedbackModeDotColors" | "setFeedbackModeDotColor" | "typography" | "setTypography" | "setFontSize" | "setFontFamily" | "panelRole" | "setPanelRole" | "persistenceStatus" | "appVersion" | "showFeedbackList" | "pinnedFeedbackItems" | "pinRailCollapsed" | "togglePinnedFeedback" | "unpinFeedback" | "setPinRailCollapsed" | "syncPinnedFeedbackReports" | "selfProfile" | "authors" | "publicKey" | "personalKeyCandidates" | "issuePersonalKey" | "rotatePersonalKey" | "insertPersonalKey" | "authorSelectionLocked" | "messages" | "visibleShortcutKeys" | "panelAppearance" | "setPanelAppearance" | "tooltipAppearance" | "setTooltipAppearance" | "panelView" | "completeOnboarding" | "restoreFromBackup" | "skipOnboarding" | "resolvedPanelAppearance" | "resolvedTooltipAppearance" | "isMobileViewport" | "isPresentationMode" | "presentationViewers" | "visiblePanelTabs" | "visiblePanelTabsSummary" | "resolvedTabAvailabilityContext" | "setVisiblePanelTabs" | "resetVisibleTabsToRoleDefault" | "applyRoleDefaultTabsForOnboarding" | "savePanelTabPreference" | "storedPanelTabPreference">;
+    }, "environment" | "personalKey" | "projectId" | "fields" | "personalKeyRequired" | "questionThreadDisplay" | "setQuestionThreadDisplay" | "locale" | "setLocale" | "showMarkerTargetPreview" | "setShowMarkerTargetPreview" | "toggleMarkerTargetPreview" | "markerAppearance" | "setMarkerAppearance" | "setMarkerSize" | "setMarkerShape" | "setMarkerColors" | "setMarkerColor" | "setFeedbackModeDotColors" | "setFeedbackModeDotColor" | "typography" | "setTypography" | "setFontSize" | "setFontFamily" | "panelRole" | "setPanelRole" | "persistenceStatus" | "appVersion" | "showFeedbackList" | "pinnedFeedbackItems" | "pinRailCollapsed" | "togglePinnedFeedback" | "unpinFeedback" | "setPinRailCollapsed" | "syncPinnedFeedbackReports" | "selfProfile" | "authors" | "publicKey" | "personalKeyCandidates" | "issuePersonalKey" | "rotatePersonalKey" | "insertPersonalKey" | "authorSelectionLocked" | "messages" | "visibleShortcutKeys" | "panelAppearance" | "setPanelAppearance" | "tooltipAppearance" | "setTooltipAppearance" | "panelView" | "completeOnboarding" | "restoreFromBackup" | "skipOnboarding" | "resolvedPanelAppearance" | "resolvedTooltipAppearance" | "isMobileViewport" | "isPresentationMode" | "presentationViewers" | "visiblePanelTabs" | "visiblePanelTabsSummary" | "resolvedTabAvailabilityContext" | "setVisiblePanelTabs" | "resetVisibleTabsToRoleDefault" | "applyRoleDefaultTabsForOnboarding" | "savePanelTabPreference" | "storedPanelTabPreference">;
     session: Pick<{
         panelAppearance: import("../index.js").ReportAppearance;
         setPanelAppearance: (nextAppearance: import("../index.js").ReportAppearance) => void;
@@ -1049,6 +1067,10 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         }[];
         replyDraft: string;
         setReplyDraft: import("react").Dispatch<import("react").SetStateAction<string>>;
+        replyMentions: import("../types/mention.js").ElementMention[];
+        setReplyMentions: import("react").Dispatch<import("react").SetStateAction<import("../types/mention.js").ElementMention[]>>;
+        mentionHighlightTarget: import("../types/report-ui.js").TargetSnapshot | null;
+        setMentionHighlightTarget: import("react").Dispatch<import("react").SetStateAction<import("../types/report-ui.js").TargetSnapshot | null>>;
         replySubmitAsQuestion: boolean;
         setReplySubmitAsQuestion: import("react").Dispatch<import("react").SetStateAction<boolean>>;
         draftAuthorName: string;
@@ -1078,6 +1100,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         updateCaseEditDraftCase: (caseId: string, text: string) => void;
         addCaseEditDraftCase: () => void;
         removeCaseEditDraftCase: (caseId: string) => void;
+        removePersistedCase: (report: import("../index.js").ReportFeedback, caseId: string) => Promise<void>;
         focusedCaseId: string | null;
         selectCase: (caseId: string) => void;
         clearFocusedCase: () => void;
@@ -1129,6 +1152,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         handleOverlayContextMenu: (event: import("react").MouseEvent<HTMLDivElement>) => void;
         handleOverlayClick: (event: import("react").MouseEvent<HTMLDivElement>) => void;
         cancelDraft: () => void;
+        beginFeedbackEdit: (report: import("../index.js").ReportFeedback) => void;
         updateDraftCase: (caseId: string, text: string) => void;
         addDraftCase: () => void;
         removeDraftCase: (caseId: string) => void;
@@ -1146,7 +1170,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         handleCreateGitHubIssue: (report: import("../index.js").ReportFeedback) => Promise<void>;
         handleCreateSubmitWithGitHubIssue: () => Promise<void>;
         isDraftGitHubIssueSubmitting: boolean;
-    }, "statusText" | "toggleReportMode" | "toggleTargetPreview" | "currentPathname" | "sessionActor" | "savedProbeDeletions" | "hasProbeSessionChanges" | "canUndoProbeSession" | "canRedoProbeSession" | "undoProbeSessionAction" | "redoProbeSessionAction" | "revertAllSavedProbeEdits" | "draft" | "pickProbeOpen" | "pickProbeSupportsTextFields" | "pickProbeLayoutMode" | "pickProbeValues" | "pickProbeCompareMode" | "pickProbeHasEdits" | "pickTargetContextMenu" | "contextMenuElementKey" | "savedProbeEdits" | "savedProbeCompareMode" | "closePickProbe" | "closePickTargetContextMenu" | "handlePickTargetEdit" | "handlePickTargetDelete" | "handlePickTargetRevert" | "commitPickProbeEdits" | "revertSavedProbeEdit" | "setSavedProbeCompareMode" | "setPickProbeCompareMode" | "updatePickProbeValue" | "resetPickProbeValues" | "appendSavedProbeSummaryAsNewDraftCase" | "activeReplyReportId" | "selectedTarget" | "hoveredTarget" | "mode" | "showTargetPreview" | "closeReplyComposer" | "openReplyComposer" | "selectCase" | "setErrorMessage" | "activeReplyReport" | "markers" | "overlayRef" | "selectReport" | "editingReportId" | "panelTab" | "pendingComposer" | "toggleIssueMode" | "cancelDraft" | "cancelPendingComposer" | "stopEditing" | "focusSearchInput" | "selectAdjacentReport" | "panelCollapsed" | "setPanelCollapsed" | "searchInputRef" | "activeMarkerTarget" | "markerPreviewTargets" | "selectableTargets" | "errorMessage" | "draftStep" | "setDraftStep" | "hoverPointer" | "setHoverPointer" | "editableDraft" | "setEditableDraft" | "tooltipReport" | "tooltipAnchor" | "tooltipFieldTags" | "replyDraft" | "setReplyDraft" | "replySubmitAsQuestion" | "setReplySubmitAsQuestion" | "draftAuthorName" | "setDraftAuthorName" | "replyAuthorName" | "setReplyAuthorName" | "presentationViewerId" | "setPresentationViewerId" | "startDenyReview" | "startCheckoutReview" | "startAskQuestion" | "confirmAuthorName" | "setConfirmAuthorName" | "showConfirmAuthorSelect" | "toggleConfirmAuthorSelect" | "beginCaseEdit" | "cancelCaseEdit" | "updateCaseEditDraftCase" | "addCaseEditDraftCase" | "removeCaseEditDraftCase" | "focusedCaseId" | "clearFocusedCase" | "isCaseEditing" | "caseEditReportId" | "caseEditCases" | "openPanelTab" | "togglePanelTab" | "locateFeedback" | "activateFeedbackMarker" | "openPinnedFeedback" | "clearHoverLeaveTimeout" | "scheduleHoverLeave" | "setHoveredMarkerId" | "handleOverlayMove" | "handleOverlayContextMenu" | "handleOverlayClick" | "updateDraftCase" | "addDraftCase" | "removeDraftCase" | "updateDraftField" | "updateDraftCategory" | "startEditing">;
+    }, "statusText" | "toggleReportMode" | "toggleTargetPreview" | "currentPathname" | "sessionActor" | "savedProbeDeletions" | "hasProbeSessionChanges" | "canUndoProbeSession" | "canRedoProbeSession" | "undoProbeSessionAction" | "redoProbeSessionAction" | "revertAllSavedProbeEdits" | "draft" | "pickProbeOpen" | "pickProbeSupportsTextFields" | "pickProbeLayoutMode" | "pickProbeValues" | "pickProbeCompareMode" | "pickProbeHasEdits" | "pickTargetContextMenu" | "contextMenuElementKey" | "savedProbeEdits" | "savedProbeCompareMode" | "closePickProbe" | "closePickTargetContextMenu" | "handlePickTargetEdit" | "handlePickTargetDelete" | "handlePickTargetRevert" | "commitPickProbeEdits" | "revertSavedProbeEdit" | "setSavedProbeCompareMode" | "setPickProbeCompareMode" | "updatePickProbeValue" | "resetPickProbeValues" | "appendSavedProbeSummaryAsNewDraftCase" | "activeReplyReportId" | "selectedTarget" | "hoveredTarget" | "mode" | "showTargetPreview" | "closeReplyComposer" | "openReplyComposer" | "selectCase" | "setErrorMessage" | "focusedCaseId" | "activeReplyReport" | "markers" | "overlayRef" | "selectReport" | "cancelDraft" | "beginFeedbackEdit" | "editingReportId" | "panelTab" | "pendingComposer" | "toggleIssueMode" | "cancelPendingComposer" | "stopEditing" | "focusSearchInput" | "selectAdjacentReport" | "panelCollapsed" | "setPanelCollapsed" | "searchInputRef" | "activeMarkerTarget" | "markerPreviewTargets" | "selectableTargets" | "errorMessage" | "draftStep" | "setDraftStep" | "hoverPointer" | "setHoverPointer" | "editableDraft" | "setEditableDraft" | "tooltipReport" | "tooltipAnchor" | "tooltipFieldTags" | "replyDraft" | "setReplyDraft" | "replyMentions" | "setReplyMentions" | "mentionHighlightTarget" | "setMentionHighlightTarget" | "replySubmitAsQuestion" | "setReplySubmitAsQuestion" | "draftAuthorName" | "setDraftAuthorName" | "replyAuthorName" | "setReplyAuthorName" | "presentationViewerId" | "setPresentationViewerId" | "startDenyReview" | "startCheckoutReview" | "startAskQuestion" | "confirmAuthorName" | "setConfirmAuthorName" | "showConfirmAuthorSelect" | "toggleConfirmAuthorSelect" | "beginCaseEdit" | "cancelCaseEdit" | "updateCaseEditDraftCase" | "addCaseEditDraftCase" | "removeCaseEditDraftCase" | "removePersistedCase" | "clearFocusedCase" | "isCaseEditing" | "caseEditReportId" | "caseEditCases" | "openPanelTab" | "togglePanelTab" | "locateFeedback" | "activateFeedbackMarker" | "openPinnedFeedback" | "clearHoverLeaveTimeout" | "scheduleHoverLeave" | "setHoveredMarkerId" | "handleOverlayMove" | "handleOverlayContextMenu" | "handleOverlayClick" | "updateDraftCase" | "addDraftCase" | "removeDraftCase" | "updateDraftField" | "updateDraftCategory" | "startEditing">;
     data: Pick<{
         panelAppearance: import("../index.js").ReportAppearance;
         setPanelAppearance: (nextAppearance: import("../index.js").ReportAppearance) => void;
@@ -1331,6 +1355,10 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         }[];
         replyDraft: string;
         setReplyDraft: import("react").Dispatch<import("react").SetStateAction<string>>;
+        replyMentions: import("../types/mention.js").ElementMention[];
+        setReplyMentions: import("react").Dispatch<import("react").SetStateAction<import("../types/mention.js").ElementMention[]>>;
+        mentionHighlightTarget: import("../types/report-ui.js").TargetSnapshot | null;
+        setMentionHighlightTarget: import("react").Dispatch<import("react").SetStateAction<import("../types/report-ui.js").TargetSnapshot | null>>;
         replySubmitAsQuestion: boolean;
         setReplySubmitAsQuestion: import("react").Dispatch<import("react").SetStateAction<boolean>>;
         draftAuthorName: string;
@@ -1360,6 +1388,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         updateCaseEditDraftCase: (caseId: string, text: string) => void;
         addCaseEditDraftCase: () => void;
         removeCaseEditDraftCase: (caseId: string) => void;
+        removePersistedCase: (report: import("../index.js").ReportFeedback, caseId: string) => Promise<void>;
         focusedCaseId: string | null;
         selectCase: (caseId: string) => void;
         clearFocusedCase: () => void;
@@ -1411,6 +1440,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         handleOverlayContextMenu: (event: import("react").MouseEvent<HTMLDivElement>) => void;
         handleOverlayClick: (event: import("react").MouseEvent<HTMLDivElement>) => void;
         cancelDraft: () => void;
+        beginFeedbackEdit: (report: import("../index.js").ReportFeedback) => void;
         updateDraftCase: (caseId: string, text: string) => void;
         addDraftCase: () => void;
         removeDraftCase: (caseId: string) => void;

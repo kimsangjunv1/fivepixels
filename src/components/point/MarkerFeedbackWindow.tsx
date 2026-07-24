@@ -12,9 +12,13 @@ import { getCaseAssigneeName, getCaseById } from "@/utils/report/reportCases.js"
 import { getFieldTags } from "@/utils/report/fields.js";
 import { copyTextToClipboard } from "@/utils/feedback/feedbackDataTransfer.js";
 import { buildFeedbackShareUrl } from "@/utils/feedback/feedbackDeepLink.js";
-import { CloseIcon, LinkIcon, MaximizeIcon, MinimizeIcon, RestoreIcon, SidePanelIcon } from "@/components/icons/Icons.js";
+import { CloseIcon, EditIcon, LinkIcon, MaximizeIcon, MinimizeIcon, RestoreIcon, SidePanelIcon } from "@/components/icons/Icons.js";
 import { FeedbackFieldTags } from "@/components/panel/feedback/FeedbackFieldTags.js";
 import { FeedbackPinToggleButton } from "@/components/panel/feedback/FeedbackPinToggleButton.js";
+import { FeedbackDeleteAction } from "@/components/panel/feedback/FeedbackDeleteAction.js";
+import { canDeleteFeedback } from "@/utils/feedback/feedbackPermissions.js";
+import { canEditReportCases } from "@/utils/report/reportCases.js";
+import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
 import { CornerResizeGhost } from "@/components/ui/CornerResizeGhost.js";
 import { MOTION } from "@/constants/motionClasses.js";
 import { CornerResizeHandle } from "@/components/ui/CornerResizeHandle.js";
@@ -125,6 +129,7 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
         authors,
         pendingComposer,
         replyDraft,
+        replyMentions,
         replyAuthorName,
         confirmAuthorName,
         showConfirmAuthorSelect,
@@ -140,6 +145,7 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
         scheduleHoverLeave,
         setHoveredMarkerId,
         setReplyDraft,
+        setReplyMentions,
         setReplyAuthorName,
         setConfirmAuthorName,
         toggleConfirmAuthorSelect,
@@ -150,6 +156,11 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
         handleClaimAssignee,
         handleTransferAssignee,
         handleConfirmResolution,
+        handleDelete,
+        isDeleting,
+        sessionActor,
+        cancelPendingComposer,
+        beginFeedbackEdit,
     } = useReport();
 
     const windowRef = useRef<HTMLDivElement | null>(null);
@@ -424,6 +435,42 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
         />
     );
 
+    const deleteButton = canDeleteFeedback(report, sessionActor) ? (
+        <FeedbackDeleteAction
+            reportId={report.id}
+            onDelete={handleDelete}
+            disabled={isDeleting}
+            messages={messages}
+            className={`${HEADER_BUTTON_CLASS} disabled:opacity-50`}
+            iconClassName="h-[15px] w-[15px]"
+        />
+    ) : null;
+
+    const editButton = canEditReportCases(report) ? (
+        <HoverTooltip label={messages.feedbackList.editTitle}>
+            <button
+                type="button"
+                data-fivepixels-interactive=""
+                className={HEADER_BUTTON_CLASS}
+                aria-label={messages.feedbackList.editAriaLabel}
+                title={messages.feedbackList.editTitle}
+                onPointerDown={(event) => event.stopPropagation()}
+                onClick={() => beginFeedbackEdit(report)}
+            >
+                <EditIcon className="h-[14px] w-[14px]" />
+            </button>
+        </HoverTooltip>
+    ) : null;
+
+    const headerUtilityButtons = (
+        <>
+            {shareButton}
+            {editButton}
+            {deleteButton}
+            {pinButton}
+        </>
+    );
+
     const rightSection = (
         <div className="flex min-w-0 flex-1 flex-col bg-[var(--adaptive-black50)]">
             <div className="shrink-0 border-b border-[var(--adaptive-border-subtle)] px-[16px] py-[8px]">
@@ -471,28 +518,30 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
                 )}
             </div>
 
-            <div className="flex min-h-0 flex-1 flex-col relative">
-                <FeedbackThread
-                    report={report}
-                    authors={authors}
-                    pendingComposer={pendingComposer}
-                    confirmAuthorName={confirmAuthorName}
-                    showConfirmAuthorSelect={showConfirmAuthorSelect}
-                    onConfirmAuthorNameChange={setConfirmAuthorName}
-                    onToggleConfirmAuthorSelect={toggleConfirmAuthorSelect}
-                    onStartDeny={startDenyReview}
-                    onStartCheckout={startCheckoutReview}
-                    onStartAskQuestion={startAskQuestion}
-                    onClaimAssignee={() => void handleClaimAssignee()}
-                    onTransferAssignee={() => void handleTransferAssignee()}
-                    onConfirm={() => void handleConfirmResolution()}
-                    isUpdating={isUpdating}
-                    isClaimingAssignee={isClaimingAssignee}
-                    hideCaseSelector
-                />
+            <div className="flex min-h-0 flex-1 flex-col">
+                <div className="min-h-0 flex-1 overflow-hidden">
+                    <FeedbackThread
+                        report={report}
+                        authors={authors}
+                        pendingComposer={pendingComposer}
+                        confirmAuthorName={confirmAuthorName}
+                        showConfirmAuthorSelect={showConfirmAuthorSelect}
+                        onConfirmAuthorNameChange={setConfirmAuthorName}
+                        onToggleConfirmAuthorSelect={toggleConfirmAuthorSelect}
+                        onStartDeny={startDenyReview}
+                        onStartCheckout={startCheckoutReview}
+                        onStartAskQuestion={startAskQuestion}
+                        onClaimAssignee={() => void handleClaimAssignee()}
+                        onTransferAssignee={() => void handleTransferAssignee()}
+                        onConfirm={() => void handleConfirmResolution()}
+                        isUpdating={isUpdating}
+                        isClaimingAssignee={isClaimingAssignee}
+                        hideCaseSelector
+                    />
+                </div>
 
                 {showComposer ? (
-                    <section className="relative shrink-0 overflow-visible p-[4px] absolute bottom-0 left-0 w-full">
+                    <section className="shrink-0 overflow-visible border-t border-[var(--adaptive-border-subtle)]">
                         <FeedbackComposer
                             message={replyDraft}
                             onMessageChange={(value) => {
@@ -502,6 +551,9 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
                                     setErrorMessage("");
                                 }
                             }}
+                            mentions={replyMentions}
+                            onMentionsChange={setReplyMentions}
+                            enableElementMentions
                             authorName={replyAuthorName}
                             onAuthorNameChange={setReplyAuthorName}
                             authors={authors}
@@ -514,6 +566,8 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
                             isSubmitting={isSubmittingReply || isUpdating}
                             autoFocus={pendingComposer !== null}
                             askQuestionForced={isCreatorQuestionComposer}
+                            composerMode={pendingComposer?.type ?? null}
+                            onCancelComposerMode={cancelPendingComposer}
                             errorMessage={errorMessage}
                         />
                     </section>
@@ -551,6 +605,8 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
                             {leftControls}
                         </div>
                         {shareButton}
+                        {editButton}
+                        {deleteButton}
                         {sidebarToggleButton}
                     </div>
                 ) : (
@@ -566,6 +622,8 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
                             >
                                 {leftControls}
                                 {shareButton}
+                                {editButton}
+                                {deleteButton}
                                 {pinButton}
                                 {sidebarToggleButton}
                             </div>
@@ -580,8 +638,7 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
                                 >
                                     <div className="flex items-center gap-[2px]">{leftControls}</div>
                                     <div className="flex items-center gap-[2px]">
-                                        {shareButton}
-                                        {pinButton}
+                                        {headerUtilityButtons}
                                         {sidebarToggleButton}
                                     </div>
                                 </header>
@@ -599,9 +656,9 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
                                 role="separator"
                                 aria-orientation="vertical"
                                 onPointerDown={handleSplitPointerDown}
-                                className="group relative w-[1px] shrink-0 cursor-col-resize touch-none self-stretch bg-[var(--adaptive-black50)] group-hover:bg-[var(--adaptive-blue500)] transition-colors"
+                                className="group relative w-[3px] shrink-0 cursor-col-resize touch-none self-stretch bg-[var(--adaptive-black50)] group-hover:bg-[var(--adaptive-blue500)] transition-colors"
                             >
-                                {/* <span className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-[var(--adaptive-border-subtle)] transition-colors group-hover:bg-[var(--adaptive-blue500)]" /> */}
+                                <span className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-[var(--adaptive-border-subtle)] transition-colors group-hover:bg-[var(--adaptive-blue500)] touch-none pointer-events-none" />
                             </div>
                         )}
 

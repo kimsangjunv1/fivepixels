@@ -5,7 +5,7 @@ import type { useReportMarkers } from "./useReportMarkers.js";
 import type { useReportMutations } from "./useReportMutations.js";
 import type { useReportPanelShell } from "./useReportPanelShell.js";
 import type { useReportReplyReview } from "./useReportReplyReview.js";
-import type { ReportActivitySummaryParams, ReportActivitySummaryResult, ReportField, ReportPanelBootstrapParams, ReportPanelBootstrapResult } from "../../types/report.js";
+import type { ReportActivitySummaryParams, ReportActivitySummaryResult, ReportFeedback, ReportField, ReportPanelBootstrapParams, ReportPanelBootstrapResult } from "../../types/report.js";
 import type { ResolvedReplyHistoryConfig } from "../../utils/report/reportUi.js";
 type AssembleArgs = {
     panel: ReturnType<typeof useReportPanelShell>;
@@ -25,12 +25,14 @@ type AssembleArgs = {
     overlayRef: RefObject<HTMLDivElement>;
     replyHistory: ResolvedReplyHistoryConfig;
     selectReport: (reportId: string) => void;
+    beginFeedbackEdit: (report: ReportFeedback) => void;
+    cancelDraft: () => void;
 };
 /**
  * Flat context value for ReportProvider slices.
  * Keys stay flat (see reportContextPartitions). Domain hooks → this assembler → UI.
  */
-export declare function assembleReportContextValue({ panel, auth, draft, markers, mutations, reply, fields, projectId, environment, appVersion, showFeedbackList, onPanelBootstrap, onActivitySummary, visibleShortcutKeys, overlayRef, replyHistory, selectReport, }: AssembleArgs): {
+export declare function assembleReportContextValue({ panel, auth, draft, markers, mutations, reply, fields, projectId, environment, appVersion, showFeedbackList, onPanelBootstrap, onActivitySummary, visibleShortcutKeys, overlayRef, replyHistory, selectReport, beginFeedbackEdit, cancelDraft, }: AssembleArgs): {
     panelAppearance: import("../../types/report.js").ReportAppearance;
     setPanelAppearance: (nextAppearance: import("../../types/report.js").ReportAppearance) => void;
     tooltipAppearance: import("../../types/report.js").ReportAppearance;
@@ -138,10 +140,10 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     setFilters: import("react").Dispatch<import("react").SetStateAction<import("../../types/report-ui.js").ReportFilters>>;
     listScope: import("../../types/report-ui.js").ReportListScope;
     setListScope: import("react").Dispatch<import("react").SetStateAction<import("../../types/report-ui.js").ReportListScope>>;
-    reports: import("../../types/report.js").ReportFeedback[];
-    currentPageReports: import("../../types/report.js").ReportFeedback[];
-    allPageReports: import("../../types/report.js").ReportFeedback[];
-    filteredReports: import("../../types/report.js").ReportFeedback[];
+    reports: ReportFeedback[];
+    currentPageReports: ReportFeedback[];
+    allPageReports: ReportFeedback[];
+    filteredReports: ReportFeedback[];
     isError: boolean;
     isFetching: boolean;
     hasNextPage: boolean;
@@ -153,10 +155,10 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     isClaimingAssignee: boolean;
     isDeleting: boolean;
     queryErrorMessage: string | undefined;
-    refetch: () => Promise<import("../../types/report.js").ReportFeedback[]>;
+    refetch: () => Promise<ReportFeedback[]>;
     replyHistory: ResolvedReplyHistoryConfig;
     replyHistoryByReportId: Record<string, import("../replyHistoryActions.js").ReplyHistoryState>;
-    loadRepliesIfNeeded: (report: import("../../types/report.js").ReportFeedback) => Promise<import("../../types/report.js").ReportFeedback>;
+    loadRepliesIfNeeded: (report: ReportFeedback) => Promise<ReportFeedback>;
     loadOlderReplies: (reportId: string, config: ResolvedReplyHistoryConfig) => Promise<void>;
     goToOlderPaginationPage: (reportId: string, config: ResolvedReplyHistoryConfig) => Promise<void>;
     goToNewerPaginationPage: (reportId: string, config: ResolvedReplyHistoryConfig) => void;
@@ -199,14 +201,14 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     resetPickProbeValues: () => void;
     appendSavedProbeSummaryAsNewDraftCase: () => void;
     markers: import("../../types/report-ui.js").Marker[];
-    selectedReport: import("../../types/report.js").ReportFeedback;
+    selectedReport: ReportFeedback;
     editingReportId: string | null;
     editableDraft: import("../../types/report-ui.js").EditableDraft | null;
     setEditableDraft: import("react").Dispatch<import("react").SetStateAction<import("../../types/report-ui.js").EditableDraft | null>>;
     overlayRef: RefObject<HTMLDivElement>;
     activeReplyReportId: string | null;
-    activeReplyReport: import("../../types/report.js").ReportFeedback | null;
-    tooltipReport: import("../../types/report.js").ReportFeedback | null;
+    activeReplyReport: ReportFeedback | null;
+    tooltipReport: ReportFeedback | null;
     tooltipAnchor: import("../../types/report-ui.js").Marker | null;
     tooltipFieldTags: {
         key: string;
@@ -214,6 +216,10 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     }[];
     replyDraft: string;
     setReplyDraft: import("react").Dispatch<import("react").SetStateAction<string>>;
+    replyMentions: import("../../types/report.js").ElementMention[];
+    setReplyMentions: import("react").Dispatch<import("react").SetStateAction<import("../../types/report.js").ElementMention[]>>;
+    mentionHighlightTarget: import("../../types/report-ui.js").TargetSnapshot | null;
+    setMentionHighlightTarget: import("react").Dispatch<import("react").SetStateAction<import("../../types/report-ui.js").TargetSnapshot | null>>;
     replySubmitAsQuestion: boolean;
     setReplySubmitAsQuestion: import("react").Dispatch<import("react").SetStateAction<boolean>>;
     draftAuthorName: string;
@@ -237,12 +243,13 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     showConfirmAuthorSelect: boolean;
     toggleConfirmAuthorSelect: () => void;
     handleConfirmResolution: () => Promise<void>;
-    beginCaseEdit: (report: import("../../types/report.js").ReportFeedback) => void;
+    beginCaseEdit: (report: ReportFeedback) => void;
     cancelCaseEdit: () => void;
     handleCaseEditSave: () => Promise<void>;
     updateCaseEditDraftCase: (caseId: string, text: string) => void;
     addCaseEditDraftCase: () => void;
     removeCaseEditDraftCase: (caseId: string) => void;
+    removePersistedCase: (report: ReportFeedback, caseId: string) => Promise<void>;
     focusedCaseId: string | null;
     selectCase: (caseId: string) => void;
     clearFocusedCase: () => void;
@@ -269,7 +276,7 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     togglePinnedFeedback: (item: import("../../types/pinnedFeedback.js").PinnedFeedbackItem) => void;
     unpinFeedback: (reportId: string) => void;
     setPinRailCollapsed: (railCollapsed: boolean) => void;
-    syncPinnedFeedbackReports: (reports: import("../../types/report.js").ReportFeedback[]) => void;
+    syncPinnedFeedbackReports: (reports: ReportFeedback[]) => void;
     statusText: string;
     toggleReportMode: () => void;
     toggleTargetPreview: () => void;
@@ -280,8 +287,8 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     locateFeedback: (reportId: string) => Promise<void>;
     focusSearchInput: () => void;
     selectAdjacentReport: (direction: "up" | "down") => void;
-    openReplyComposer: (report: import("../../types/report.js").ReportFeedback) => void;
-    activateFeedbackMarker: (report: import("../../types/report.js").ReportFeedback, caseId?: string | null) => Promise<void>;
+    openReplyComposer: (report: ReportFeedback) => void;
+    activateFeedbackMarker: (report: ReportFeedback, caseId?: string | null) => Promise<void>;
     openPinnedFeedback: (reportId: string, options?: {
         caseId?: string | null;
         pathname?: string;
@@ -294,13 +301,14 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     handleOverlayContextMenu: (event: import("react").MouseEvent<HTMLDivElement>) => void;
     handleOverlayClick: (event: import("react").MouseEvent<HTMLDivElement>) => void;
     cancelDraft: () => void;
+    beginFeedbackEdit: (report: ReportFeedback) => void;
     updateDraftCase: (caseId: string, text: string) => void;
     addDraftCase: () => void;
     removeDraftCase: (caseId: string) => void;
     updateDraftField: (key: string, nextValue: string | boolean) => void;
     updateDraftCategory: (category: import("../../types/report.js").FeedbackCategory | null) => void;
     handleCreateSubmit: () => Promise<void>;
-    startEditing: (report: import("../../types/report.js").ReportFeedback) => void;
+    startEditing: (report: ReportFeedback) => void;
     stopEditing: () => void;
     handleUpdateSubmit: () => Promise<void>;
     handleReplySubmit: () => Promise<void>;
@@ -308,7 +316,7 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     canCreateGitHubIssueFromList: boolean;
     canCreateGitHubIssueOnCreate: boolean;
     creatingGitHubIssueId: string | null;
-    handleCreateGitHubIssue: (report: import("../../types/report.js").ReportFeedback) => Promise<void>;
+    handleCreateGitHubIssue: (report: ReportFeedback) => Promise<void>;
     handleCreateSubmitWithGitHubIssue: () => Promise<void>;
     isDraftGitHubIssueSubmitting: boolean;
 };

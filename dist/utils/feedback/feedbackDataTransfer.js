@@ -1,8 +1,10 @@
 import { getActiveReportMessages } from "../../i18n/index.js";
 import { getReportsStorageKey } from "../../constants/storageKeys.js";
 import { readAllReportsFromStorage, writeAllReportsToStorage } from "../../storage/local/localStorageAdapter.js";
+import { mergeFeedbackCollections } from "./feedbackImportMerge.js";
 import { parseFeedbackImportJson, serializeFeedbackExport, toReportProject, } from "./feedbackTransferSchema.js";
 export { buildProjectComparisonLines, isImportProjectCompatible, parseFeedbackCommandJson, parseFeedbackImportJson, serializeFeedbackExport, serializeFeedbackItem, toReportProject, } from "./feedbackTransferSchema.js";
+export { mergeFeedbackCollections, mergeFeedbackItem, mergeReplyCollections } from "./feedbackImportMerge.js";
 const JSON_FILE_TYPES = [
     {
         description: "JSON",
@@ -37,29 +39,35 @@ export function insertFeedbackItems(scope, incoming) {
     writeAllFeedback(scope, [...existing, ...incoming]);
     return {
         inserted: incoming.length,
+        updated: 0,
+        kept: existing.length,
+        localRepliesPreserved: 0,
         replaced: 0,
     };
 }
+/** Upsert by id while merging replies so local-only replies are preserved. */
 export function upsertFeedbackItems(scope, incoming) {
     const existing = readAllFeedback(scope);
-    const existingIds = new Set(existing.map((item) => item.id));
-    const incomingById = new Map(incoming.map((item) => [item.id, item]));
-    let replaced = 0;
-    let inserted = 0;
-    for (const item of incoming) {
-        if (existingIds.has(item.id)) {
-            replaced += 1;
-        }
-        else {
-            inserted += 1;
-        }
-    }
-    const kept = existing.filter((item) => !incomingById.has(item.id));
-    writeAllFeedback(scope, [...kept, ...incoming]);
+    const merged = mergeFeedbackCollections(existing, incoming);
+    writeAllFeedback(scope, merged.items);
     return {
-        inserted,
-        replaced,
+        ...merged,
+        replaced: merged.updated,
     };
+}
+/** Apply an import payload with merge (default) or full replace. */
+export function applyFeedbackImport(scope, incoming, mode = "merge") {
+    if (mode === "replace") {
+        writeAllFeedback(scope, incoming);
+        return {
+            inserted: incoming.length,
+            updated: 0,
+            kept: 0,
+            localRepliesPreserved: 0,
+            replaced: incoming.length,
+        };
+    }
+    return upsertFeedbackItems(scope, incoming);
 }
 export async function copyTextToClipboard(text) {
     if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {

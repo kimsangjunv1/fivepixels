@@ -12,17 +12,22 @@ import type { EditableDraft } from "@/types/report-ui.js";
 import { createInitialFieldValues, getFieldError } from "@/utils/report/fields.js";
 import { buildGitHubIssueStatusUpdate, buildGitHubIssueUpdate, canCreateGitHubIssueFromList, canCreateGitHubIssueOnCreate, isGitIssued } from "@/utils/github/githubIntegration.js";
 import { notifyFeedbackCreate, notifyFeedbackDelete, notifyFeedbackUpdate, notifyGitHubIssueCreated, type ReportSideEffectCallbacks } from "@/utils/report/reportCallbacks.js";
+import { canDeleteFeedback, type FeedbackActor } from "@/utils/feedback/feedbackPermissions.js";
+import { syncIssueStatusFromCases } from "@/utils/report/reportCases.js";
 
 export type UseReportMutationsParams = {
     messages: ReportMessages;
     fields: ReportField[];
     github?: ReportGitHubConfig;
     eventCallbacks: ReportSideEffectCallbacks;
+    reports: ReportFeedback[];
+    sessionActor: FeedbackActor;
     selectedReport: ReportFeedback | null;
     selectedReportId: string | null;
     setSelectedReportId: Dispatch<SetStateAction<string | null>>;
     getActiveReplyReportId: () => string | null;
     closeReplyComposer: () => void;
+    openReplyComposer: (report: ReportFeedback) => void;
     isCreating: boolean;
     createFeedback: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
     updateFeedback: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
@@ -42,11 +47,14 @@ export function useReportMutations({
     fields,
     github,
     eventCallbacks,
+    reports,
+    sessionActor,
     selectedReport,
     selectedReportId,
     setSelectedReportId,
     getActiveReplyReportId,
     closeReplyComposer,
+    openReplyComposer,
     isCreating,
     createFeedback,
     updateFeedback,
@@ -99,6 +107,28 @@ export function useReportMutations({
         }
 
         try {
+            if (editingReportId) {
+                const editingReport = reports.find((item) => item.id === editingReportId) ?? selectedReport;
+                const updatedFeedback = await updateFeedback(
+                    editingReportId,
+                    await signUpdatePayload({
+                        cases: payload.cases,
+                        category: payload.category,
+                        field_values: payload.field_values,
+                        status: syncIssueStatusFromCases({
+                            cases: payload.cases,
+                            status: editingReport?.status ?? "open",
+                        }),
+                    }),
+                );
+
+                await notifyFeedbackUpdate(eventCallbacks, updatedFeedback);
+                finalizeDraftCreate();
+                stopEditing();
+                openReplyComposer(updatedFeedback);
+                return;
+            }
+
             const savedFeedback = await createFeedback(await signCreatePayload(payload));
             await notifyFeedbackCreate(eventCallbacks, savedFeedback);
             finalizeDraftCreate();
@@ -108,7 +138,7 @@ export function useReportMutations({
     };
 
     const handleCreateSubmitWithGitHubIssue = async () => {
-        if (!github?.onCreate || !canCreateGitHubIssueOnCreateValue || creatingGitHubIssueId || isCreating) {
+        if (editingReportId || !github?.onCreate || !canCreateGitHubIssueOnCreateValue || creatingGitHubIssueId || isCreating) {
             return;
         }
 
@@ -154,6 +184,20 @@ export function useReportMutations({
             fieldValues: createInitialFieldValues(fields, report.field_values),
         });
         setSelectedReportId(report.id);
+    };
+
+    /** Mark a report as being edited via the draft tooltip (no EditableDraft panel). */
+    const beginDraftReportEdit = (report: ReportFeedback) => {
+        if (report.status === "archived") {
+            setErrorMessage(messages.errors.archivedReadOnly);
+            setSelectedReportId(report.id);
+            return false;
+        }
+
+        setEditableDraft(null);
+        setEditingReportId(report.id);
+        setSelectedReportId(report.id);
+        return true;
     };
 
     const handleUpdateSubmit = async () => {
@@ -226,6 +270,18 @@ export function useReportMutations({
     };
 
     const handleDelete = async (id: string) => {
+        const report = reports.find((item) => item.id === id) ?? (selectedReport?.id === id ? selectedReport : null);
+
+        if (!report) {
+            setErrorMessage(messages.errors.feedbackNotFound);
+            return;
+        }
+
+        if (!canDeleteFeedback(report, sessionActor)) {
+            setErrorMessage(messages.errors.deleteFeedbackNotAllowed);
+            return;
+        }
+
         try {
             await deleteFeedback(id);
             await notifyFeedbackDelete(eventCallbacks, id);
@@ -256,6 +312,7 @@ export function useReportMutations({
         creatingGitHubIssueId,
         stopEditing,
         startEditing,
+        beginDraftReportEdit,
         handleCreateSubmit,
         handleCreateSubmitWithGitHubIssue,
         handleUpdateSubmit,

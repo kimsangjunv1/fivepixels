@@ -1,13 +1,19 @@
 import { useCallback, useRef, useState } from "react";
-import { createFeedbackBackupFilename, downloadFeedbackJson, findFeedbackInsertConflicts, insertFeedbackItems, isImportProjectCompatible, parseFeedbackCommandJson, pickFeedbackJsonFile, readAllFeedback, readFeedbackJsonFile, toReportProject, upsertFeedbackItems, writeAllFeedback, } from "../utils/feedback/feedbackDataTransfer.js";
-function buildCommandSuccessMessage(messages, inserted, replaced) {
-    if (replaced > 0 && inserted > 0) {
-        return messages.errors.commandSuccessInsertedReplaced(inserted, replaced);
+import { applyFeedbackImport, createFeedbackBackupFilename, downloadFeedbackJson, findFeedbackInsertConflicts, insertFeedbackItems, isImportProjectCompatible, parseFeedbackCommandJson, pickFeedbackJsonFile, readAllFeedback, readFeedbackJsonFile, toReportProject, upsertFeedbackItems, } from "../utils/feedback/feedbackDataTransfer.js";
+function buildCommandSuccessMessage(messages, inserted, replaced, localRepliesPreserved = 0) {
+    const base = (() => {
+        if (replaced > 0 && inserted > 0) {
+            return messages.errors.commandSuccessInsertedReplaced(inserted, replaced);
+        }
+        if (replaced > 0) {
+            return messages.errors.commandSuccessReplaced(replaced);
+        }
+        return messages.errors.commandSuccessInserted(inserted);
+    })();
+    if (localRepliesPreserved > 0) {
+        return `${base} ${messages.errors.commandSuccessLocalRepliesPreserved(localRepliesPreserved)}`;
     }
-    if (replaced > 0) {
-        return messages.errors.commandSuccessReplaced(replaced);
-    }
-    return messages.errors.commandSuccessInserted(inserted);
+    return base;
 }
 function isJsonDragEvent(event) {
     const types = Array.from(event.dataTransfer.types);
@@ -115,7 +121,7 @@ export function usePanelFeedbackTransfer({ transferScope, canTransferFeedback, m
         setErrorMessage("");
         return {
             status: "success",
-            message: buildCommandSuccessMessage(messages, result.inserted, result.replaced),
+            message: buildCommandSuccessMessage(messages, result.inserted, result.replaced, result.localRepliesPreserved),
         };
     }, [canTransferFeedback, messages, refetch, setErrorMessage, transferScope]);
     const handleCancelCommandReplace = useCallback(() => {
@@ -136,17 +142,18 @@ export function usePanelFeedbackTransfer({ transferScope, canTransferFeedback, m
             setCommandConflicts([]);
             setCommandStep("none");
             setCommandNotice({
-                message: buildCommandSuccessMessage(messages, result.inserted, result.replaced),
+                message: buildCommandSuccessMessage(messages, result.inserted, result.replaced, result.localRepliesPreserved),
                 isError: false,
             });
         })();
     }, [messages, pendingCommand, refetch, setErrorMessage, transferScope]);
-    const applyImport = useCallback(async (payload) => {
-        writeAllFeedback(transferScope, payload.items);
+    const applyImport = useCallback(async (payload, mode) => {
+        applyFeedbackImport(transferScope, payload.items, mode);
         setPendingImport(null);
         setImportStep("none");
+        setErrorMessage("");
         await refetch();
-    }, [refetch, transferScope]);
+    }, [refetch, setErrorMessage, transferScope]);
     const handleCancelImport = useCallback(() => {
         setPendingImport(null);
         setImportStep("none");
@@ -154,13 +161,13 @@ export function usePanelFeedbackTransfer({ transferScope, canTransferFeedback, m
     const handleProceedImportAfterMismatch = useCallback(() => {
         setImportStep("confirm");
     }, []);
-    const handleApplyImport = useCallback(() => {
+    const handleApplyImport = useCallback((mode) => {
         if (!pendingImport) {
             return;
         }
-        void applyImport(pendingImport);
+        void applyImport(pendingImport, mode);
     }, [applyImport, pendingImport]);
-    const handleBackupAndApplyImport = useCallback(() => {
+    const handleBackupAndApplyImport = useCallback((mode) => {
         if (!pendingImport) {
             return;
         }
@@ -173,7 +180,7 @@ export function usePanelFeedbackTransfer({ transferScope, canTransferFeedback, m
                 }
                 return;
             }
-            void applyImport(pending);
+            void applyImport(pending, mode);
         });
     }, [applyImport, environment, messages.errors, pendingImport, projectId, setErrorMessage, transferScope, appVersion]);
     const handleDragEnter = useCallback((event) => {

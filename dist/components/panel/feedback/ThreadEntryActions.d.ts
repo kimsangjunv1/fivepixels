@@ -25,10 +25,12 @@ export declare function ThreadEntryActions({ reply, report, caseId, authors, pen
     canAct: boolean;
     actorName: string;
 }): import("react").JSX.Element | null;
-export declare function CaseThreadEntryActions({ report, caseId, actorName, onClaimAssignee, isUpdating, isClaimingAssignee, }: {
+export declare function CaseThreadEntryActions({ report, caseId, actorName, pendingComposer, onStartAskQuestion, onClaimAssignee, isUpdating, isClaimingAssignee, }: {
     report: ReportFeedback;
     caseId: string;
     actorName: string;
+    pendingComposer: PendingComposer;
+    onStartAskQuestion: () => void;
     onClaimAssignee: () => void;
     isUpdating?: boolean;
     isClaimingAssignee?: boolean;

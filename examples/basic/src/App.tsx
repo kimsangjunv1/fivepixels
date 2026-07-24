@@ -63,16 +63,10 @@ function AppContent() {
                                 "stpk2.eyJwcm9qZWN0SWQiOiJmaXZlcGl4ZWxzLWJhc2ljLWV4YW1wbGUiLCJlbnZpcm9ubWVudCI6IlNUQUdFRCIsImF1dGhvcklkIjoiNDE3OGM1MjktZGJkMS00YWRkLWFkNjctNjBlNzdiMDk5MDQzIiwiYXV0aG9yTmFtZSI6Iuq5gOyDgeykgCIsInByaXZhdGVLZXkiOnsia2V5X29wcyI6WyJzaWduIl0sImV4dCI6dHJ1ZSwia3R5IjoiRUMiLCJ4IjoiblRJYU9BZm9kLXZYNXRvRWdFeTBnV05XUmxZQTlLdGxmZ2tzRnNkMmdXYyIsInkiOiI3N3Jna0lfTG1KUU1FX2ZTVDFoaHRmZkpjUjB6cEg5Y2tCTlhtS24zTzFFIiwiY3J2IjoiUC0yNTYiLCJkIjoiWWpOclFyalRNQS1xRjNaVkdnU0t1Ymw2aFNjbXU4S1FFd09GNWJQR3Y5QSJ9LCJwdWJsaWNLZXkiOnsia2V5X29wcyI6WyJ2ZXJpZnkiXSwiZXh0Ijp0cnVlLCJrdHkiOiJFQyIsIngiOiJuVElhT0Fmb2Qtdlg1dG9FZ0V5MGdXTldSbFlBOUt0bGZna3NGc2QyZ1djIiwieSI6Ijc3cmdrSV9MbUpRTUVfZlNUMWhodGZmSmNSMHpwSDlja0JOWG1LbjNPMUUiLCJjcnYiOiJQLTI1NiJ9fQ",
                         },
                         {
-                            id: "20324849-57db-4664-9359-60cd270fc598",
+                            id: "c11211ad-2d5a-48cb-a15b-9935df415380",
                             name: "김상준",
                             publicKey:
-                                "stpub1.eyJjcnYiOiJQLTI1NiIsImV4dCI6dHJ1ZSwia2V5X29wcyI6WyJ2ZXJpZnkiXSwia3R5IjoiRUMiLCJ4IjoiVGo3LS14UTB2eEJjMjd4OHZpb1BmNGpWTW5naVYzVFJoM0MwOXZDWDJ4byIsInkiOiJkdndHZkNfcDdnVDJYM2ZXYzNqVEI4WHlPaGRVVXNwdW1oQzBhNlNQVEJVIn0",
-                        },
-                        {
-                            id: "79fd6371-8a58-4075-bc50-cf0abac5be08",
-                            name: "asd",
-                            publicKey:
-                                "stpub1.eyJjcnYiOiJQLTI1NiIsImV4dCI6dHJ1ZSwia2V5X29wcyI6WyJ2ZXJpZnkiXSwia3R5IjoiRUMiLCJ4IjoiUEZ0VWMtSmp5c09nTkdFR3JlbE9tLUdPcHVCRGtRZDlVc2JPU3ZNOHNiQSIsInkiOiJUaHZmd2RJOE02dWRXNnhOLVVkeVk2UGxGRktub2g3dlZWeFppNlNZWXdZIn0",
+                                "stpub1.eyJjcnYiOiJQLTI1NiIsImV4dCI6dHJ1ZSwia2V5X29wcyI6WyJ2ZXJpZnkiXSwia3R5IjoiRUMiLCJ4IjoiS1draFJrZ3h5bzdsN1lZT3J1MW43VmpNRE5GaF92QXA3al94SWtZV09JTSIsInkiOiJva21EODMzYTdMaklMazByNFExMFNaNVhxY0ZXRXI1OTdRU2pxdFdOR0ZRIn0",
                         },
                     ],
                 }}

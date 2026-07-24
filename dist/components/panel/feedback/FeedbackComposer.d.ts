@@ -1,9 +1,14 @@
 import type { ReportField, ReportFieldValues, ReportCase } from "../../../types/report.js";
 import type { ReportAuthor } from "../../../types/report.js";
 import type { FeedbackCategory } from "../../../constants/feedbackCategory.js";
+import type { ElementMention } from "../../../types/mention.js";
+export type ComposerMode = "deny" | "recheck" | "checkout" | "question";
 type FeedbackComposerProps = {
     message?: string;
     onMessageChange?: (value: string) => void;
+    mentions?: ElementMention[];
+    onMentionsChange?: (mentions: ElementMention[]) => void;
+    enableElementMentions?: boolean;
     cases?: ReportCase[];
     onCaseChange?: (caseId: string, text: string) => void;
     onAddCase?: () => void;
@@ -30,6 +35,8 @@ type FeedbackComposerProps = {
     askQuestionChecked?: boolean;
     onAskQuestionChange?: (checked: boolean) => void;
     askQuestionForced?: boolean;
+    composerMode?: ComposerMode | null;
+    onCancelComposerMode?: () => void;
     hideAuthorSelector?: boolean;
     lockedAuthorName?: string;
     onFooterWarningChange?: (message: string | null) => void;
@@ -37,7 +44,10 @@ type FeedbackComposerProps = {
     hideActions?: boolean;
     hidePrimarySubmitAction?: boolean;
     categoryPrompt?: string;
+    showCaseTabBar?: boolean;
+    activeCaseId?: string | null;
+    onActiveCaseIdChange?: (caseId: string) => void;
 };
-export declare function FeedbackComposer({ message, onMessageChange, cases, onCaseChange, onAddCase, onRemoveCase, authorName, onAuthorNameChange, authors, fields: _fields, fieldValues: _fieldValues, onFieldChange: _onFieldChange, category, onCategoryChange, showCategory, showTags: _showTags, onSubmit, isSubmitting, showGitHubIssueOnCreate, onGitHubIssueSubmit, isGitHubIssueSubmitting, placeholder, autoFocus, errorMessage, showAskQuestionToggle, askQuestionChecked, onAskQuestionChange, askQuestionForced, hideAuthorSelector, lockedAuthorName, onFooterWarningChange, hideEditor, hideActions, hidePrimarySubmitAction, categoryPrompt, }: FeedbackComposerProps): import("react").JSX.Element;
+export declare function FeedbackComposer({ message, onMessageChange, mentions, onMentionsChange, enableElementMentions, cases, onCaseChange, onAddCase, onRemoveCase, authorName, onAuthorNameChange, authors, fields: _fields, fieldValues: _fieldValues, onFieldChange: _onFieldChange, category, onCategoryChange, showCategory, showTags: _showTags, onSubmit, isSubmitting, showGitHubIssueOnCreate, onGitHubIssueSubmit, isGitHubIssueSubmitting, placeholder, autoFocus, errorMessage, showAskQuestionToggle, askQuestionChecked, onAskQuestionChange, askQuestionForced, composerMode, onCancelComposerMode, hideAuthorSelector, lockedAuthorName, onFooterWarningChange, hideEditor, hideActions, hidePrimarySubmitAction, categoryPrompt, showCaseTabBar, activeCaseId, onActiveCaseIdChange, }: FeedbackComposerProps): import("react").JSX.Element;
 export {};
 //# sourceMappingURL=FeedbackComposer.d.ts.map

@@ -5,9 +5,10 @@ import { getDraftMarkerPosition } from "@/utils/marker/coordinates.js";
 const DRAFT_MARKER_CLASS = "pointer-events-none fixed z-[1000000000] flex h-4 w-4 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 border-white shadow-lg";
 
 export function ReportDraftMarker() {
-    const { mode, draft, selectedTarget } = useReportSession();
+    const { draft, selectedTarget, editingReportId } = useReportSession();
 
-    if (mode !== "report" || !draft) {
+    // Edit mode reuses the existing report marker — do not paint a second "create" draft dot.
+    if (!draft || editingReportId) {
         return null;
     }
 

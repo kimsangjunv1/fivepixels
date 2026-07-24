@@ -49,4 +49,23 @@ export function formatTimeOnly(value, locale = "en") {
         minute: "2-digit",
     }).format(date);
 }
+/** Compact clock for thread meta, e.g. `오후 01:30` / `1:30 PM`. */
+export function formatTimeCompact(value, locale = "en") {
+    const date = new Date(value);
+    if (locale === "ko") {
+        let hours = date.getHours();
+        const minutes = String(date.getMinutes()).padStart(2, "0");
+        const isAM = hours < 12;
+        const period = isAM ? "오전" : "오후";
+        hours = hours % 12;
+        if (hours === 0) {
+            hours = 12;
+        }
+        return `${period} ${String(hours).padStart(2, "0")}:${minutes}`;
+    }
+    return new Intl.DateTimeFormat("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+    }).format(date);
+}
 //# sourceMappingURL=format.js.map

@@ -202,11 +202,14 @@ export function useReportState({
         fields,
         github,
         eventCallbacks,
+        reports: panel.reports,
+        sessionActor: auth.sessionActor,
         selectedReport: panel.selectedReport,
         selectedReportId: panel.selectedReportId,
         setSelectedReportId: panel.setSelectedReportId,
         getActiveReplyReportId: () => replyBridgeRef.current.activeReplyReportId,
         closeReplyComposer: closeReplyComposerBridge,
+        openReplyComposer: openReplyComposerBridge,
         isCreating: panel.isCreating,
         createFeedback: panel.createFeedback,
         updateFeedback: panel.updateFeedback,
@@ -226,6 +229,22 @@ export function useReportState({
 
         if (mutations.editingReportId && mutations.editingReportId !== reportId) {
             mutations.stopEditing();
+        }
+    };
+
+    const cancelDraft = () => {
+        const editingId = mutations.editingReportId;
+        draft.cancelDraft();
+        mutations.stopEditing();
+
+        if (!editingId) {
+            return;
+        }
+
+        const editingReport = panel.reports.find((item) => item.id === editingId);
+
+        if (editingReport) {
+            openReplyComposerBridge(editingReport);
         }
     };
 
@@ -291,6 +310,19 @@ export function useReportState({
         searchInputRef: panel.searchInputRef,
     });
 
+    const beginFeedbackEdit = (report: ReportFeedback) => {
+        closeReplyComposerBridge();
+        markers.setHoveredMarkerId(null);
+
+        if (!mutations.beginDraftReportEdit(report)) {
+            return;
+        }
+
+        if (!draft.beginDraftEdit(report)) {
+            mutations.stopEditing();
+        }
+    };
+
     const authorizedAuthorId = auth.authorizedAuthors[0]?.id ?? null;
     const activeIdentifyId = auth.activeIdentify?.id ?? null;
     const activeIdentifyName = auth.activeIdentify?.name ?? null;
@@ -303,6 +335,8 @@ export function useReportState({
         markers.setHoveredMarkerId(null);
         reply.setActiveReplyReportId(null);
         reply.setReplyDraft("");
+        reply.setReplyMentions([]);
+        reply.setMentionHighlightTarget(null);
         reply.setPendingComposer(null);
         reply.setShowConfirmAuthorSelect(false);
         reply.setConfirmAuthorName("");
@@ -344,7 +378,7 @@ export function useReportState({
         toggleReportMode: panel.toggleReportMode,
         toggleTargetPreview: draft.toggleTargetPreview,
         toggleIssueMode: panel.toggleIssueMode,
-        cancelDraft: draft.cancelDraft,
+        cancelDraft,
         cancelPendingComposer: reply.cancelPendingComposer,
         closePickProbe: draft.closePickProbe,
         closeReplyComposer: reply.closeReplyComposer,
@@ -373,6 +407,8 @@ export function useReportState({
         overlayRef,
         replyHistory,
         selectReport,
+        beginFeedbackEdit,
+        cancelDraft,
     });
 
 }
