@@ -337,11 +337,16 @@ export function resolveActiveMentionQuery(options: { textBeforeCaret?: string | 
     return null;
 }
 
-export function replaceActiveMentionQuery(message: string, query: string, mention: ElementMention) {
+export function replaceActiveMentionQuery(message: string, query: string, mention: ElementMention, atOffsetInBefore?: number) {
     const needle = `@${query}`;
-    const replaceAt = message.lastIndexOf(needle);
+    const replaceAt = atOffsetInBefore ?? message.lastIndexOf(needle);
 
-    if (replaceAt < 0) {
+    if (replaceAt < 0 || message.slice(replaceAt, replaceAt + needle.length) !== needle) {
+        return null;
+    }
+
+    // Avoid replacing the `@` inside an existing `@{id}` token when offset is omitted.
+    if (atOffsetInBefore === undefined && message[replaceAt + 1] === "{") {
         return null;
     }
 

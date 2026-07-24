@@ -1,14 +1,16 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { ElementMention, ElementMentionCandidate } from "@/types/mention.js";
-import { mentionPlainLabel, serializeMentionToken } from "@/types/mention.js";
+import { findElementMentionCandidates, getAtQuery, replaceActiveMentionQuery, toStoredMention } from "@/utils/mention/elementMentions.js";
 import {
-    findElementMentionCandidates,
-    parseMentionMessage,
-    replaceActiveMentionQuery,
-    resolveActiveMentionQuery,
-    toStoredMention,
-} from "@/utils/mention/elementMentions.js";
+    deleteMentionChipBeforeCaret,
+    getCaretClientRect,
+    getEditorCaretPoint,
+    placeCaretAfterMention,
+    renderMentionEditorContent,
+    serializeMentionEditor,
+    serializeMentionEditorBeforeCaret,
+} from "@/utils/mention/mentionComposerDom.js";
 import { useReportPreferences, useReportSession } from "@/providers/reportContext.js";
 import { ensureReportTooltipLayer } from "@/utils/shared/dom.js";
 
@@ -26,8 +28,6 @@ type MentionComposerInputProps = {
 const EDITOR_MIN_HEIGHT = 32;
 const EDITOR_MAX_HEIGHT = 200;
 const MENU_GAP = 6;
-const MENTION_CHIP_CLASS =
-    "mx-[1px] inline-flex items-center rounded-[6px] bg-[var(--adaptive-blue100)] px-[6px] py-[1px] text-[13px] font-semibold text-[var(--adaptive-blue600)] align-baseline";
 
 type MenuPlacement = {
     top: number;
@@ -35,84 +35,6 @@ type MenuPlacement = {
     width: number;
     placeAbove: boolean;
 };
-
-function serializeEditor(root: HTMLElement, mentions: ElementMention[]) {
-    const mentionById = new Map(mentions.map((item) => [item.id, item]));
-    const used: ElementMention[] = [];
-    let message = "";
-
-    const visit = (node: Node) => {
-        if (node.nodeType === Node.TEXT_NODE) {
-            message += node.textContent ?? "";
-            return;
-        }
-
-        if (!(node instanceof HTMLElement)) {
-            return;
-        }
-
-        const mentionId = node.dataset.mentionId;
-
-        if (mentionId) {
-            const mention = mentionById.get(mentionId);
-
-            if (mention) {
-                message += serializeMentionToken(mention.id);
-                used.push(mention);
-            } else {
-                message += node.textContent ?? "";
-            }
-
-            return;
-        }
-
-        if (node.tagName === "BR") {
-            message += "\n";
-            return;
-        }
-
-        for (const child of Array.from(node.childNodes)) {
-            visit(child);
-        }
-    };
-
-    for (const child of Array.from(root.childNodes)) {
-        visit(child);
-    }
-
-    const uniqueUsed = Array.from(new Map(used.map((item) => [item.id, item])).values());
-
-    return { message, mentions: uniqueUsed };
-}
-
-function renderEditorContent(root: HTMLElement, message: string, mentions: ElementMention[]) {
-    root.replaceChildren();
-    const parts = parseMentionMessage(message, mentions);
-
-    for (const part of parts) {
-        if (part.type === "text") {
-            const lines = part.value.split("\n");
-
-            lines.forEach((line, index) => {
-                if (line) {
-                    root.appendChild(document.createTextNode(line));
-                }
-
-                if (index < lines.length - 1) {
-                    root.appendChild(document.createElement("br"));
-                }
-            });
-            continue;
-        }
-
-        const chip = document.createElement("span");
-        chip.contentEditable = "false";
-        chip.dataset.mentionId = part.mention.id;
-        chip.className = MENTION_CHIP_CLASS;
-        chip.textContent = mentionPlainLabel(part.mention);
-        root.appendChild(chip);
-    }
-}
 
 function placeCaretAtEnd(element: HTMLElement) {
     const selection = window.getSelection();
@@ -128,61 +50,15 @@ function placeCaretAtEnd(element: HTMLElement) {
     selection.addRange(range);
 }
 
-function getTextBeforeCaret(root: HTMLElement) {
-    const selection = window.getSelection();
-
-    if (!selection || selection.rangeCount === 0 || !selection.anchorNode || !root.contains(selection.anchorNode)) {
-        return null;
-    }
-
-    const range = selection.getRangeAt(0).cloneRange();
-    range.selectNodeContents(root);
-    range.setEnd(selection.getRangeAt(0).endContainer, selection.getRangeAt(0).endOffset);
-
-    return range.toString();
-}
-
-function placeCaretAfterMention(editor: HTMLElement, mentionId: string) {
-    const selection = window.getSelection();
-    const chip = editor.querySelector(`[data-mention-id="${CSS.escape(mentionId)}"]`);
-
-    if (!selection) {
-        return;
-    }
-
-    const range = document.createRange();
-
-    if (chip?.nextSibling) {
-        range.setStart(chip.nextSibling, chip.nextSibling.nodeType === Node.TEXT_NODE ? (chip.nextSibling.textContent?.length ?? 0) : 0);
-        range.collapse(true);
-    } else if (chip) {
-        range.setStartAfter(chip);
-        range.collapse(true);
-    } else {
-        range.selectNodeContents(editor);
-        range.collapse(false);
-    }
-
-    selection.removeAllRanges();
-    selection.addRange(range);
-}
-
-export function MentionComposerInput({
-    value,
-    mentions,
-    onChange,
-    placeholder,
-    autoFocus = false,
-    onSubmitShortcut,
-    onMultilineChange,
-    reserveInlineStart = 0,
-}: MentionComposerInputProps) {
+export function MentionComposerInput({ value, mentions, onChange, placeholder, autoFocus = false, onSubmitShortcut, onMultilineChange }: MentionComposerInputProps) {
     const { messages } = useReportPreferences();
     const { setMentionHighlightTarget } = useReportSession();
     const editorRef = useRef<HTMLDivElement | null>(null);
     const rootRef = useRef<HTMLDivElement | null>(null);
     const mentionsRef = useRef(mentions);
     const skipSyncRef = useRef(false);
+    const isComposingRef = useRef(false);
+    const activeAtOffsetRef = useRef<number | null>(null);
     const [query, setQuery] = useState<string | null>(null);
     const [candidates, setCandidates] = useState<ElementMentionCandidate[]>([]);
     const [activeIndex, setActiveIndex] = useState(0);
@@ -221,34 +97,40 @@ export function MentionComposerInput({
             return;
         }
 
-        const serialized = serializeEditor(editor, mentionsRef.current).message;
-        const textBeforeCaret = getTextBeforeCaret(editor);
-        const resolved = resolveActiveMentionQuery({
-            textBeforeCaret,
-            // When Selection briefly leaves the editor (keyup / IME / portal), still detect `@query` from draft.
-            serializedMessage: textBeforeCaret === null ? serialized : null,
-        });
+        const caret = getEditorCaretPoint(editor);
+        const before = serializeMentionEditorBeforeCaret(editor, mentionsRef.current, caret);
+        const resolved = before ? getAtQuery(before.message) : getAtQuery(serializeMentionEditor(editor, mentionsRef.current).message);
 
+        activeAtOffsetRef.current = resolved?.atOffsetInBefore ?? null;
         setQuery(resolved ? resolved.query : null);
     }, []);
 
     useLayoutEffect(() => {
         const editor = editorRef.current;
 
-        if (!editor || skipSyncRef.current) {
+        if (!editor) {
+            return;
+        }
+
+        if (skipSyncRef.current) {
             skipSyncRef.current = false;
             syncHeight();
             return;
         }
 
-        const serialized = serializeEditor(editor, mentionsRef.current);
+        if (isComposingRef.current) {
+            syncHeight();
+            return;
+        }
+
+        const serialized = serializeMentionEditor(editor, mentionsRef.current);
 
         if (serialized.message === value) {
             syncHeight();
             return;
         }
 
-        renderEditorContent(editor, value, mentions);
+        renderMentionEditorContent(editor, value, mentions);
         syncHeight();
     }, [value, mentions, syncHeight]);
 
@@ -291,19 +173,24 @@ export function MentionComposerInput({
 
         const updatePlacement = () => {
             const anchor = rootRef.current;
+            const editor = editorRef.current;
 
             if (!anchor) {
                 return;
             }
 
-            const rect = anchor.getBoundingClientRect();
-            const width = Math.min(280, Math.max(200, rect.width));
-            const spaceAbove = rect.top - 8;
+            const caretRect = editor ? getCaretClientRect(editor) : null;
+            const rootRect = anchor.getBoundingClientRect();
+            const width = Math.min(280, Math.max(200, rootRect.width));
+            const anchorTop = caretRect?.top ?? rootRect.top;
+            const anchorBottom = caretRect?.bottom ?? rootRect.bottom;
+            const anchorLeft = caretRect?.left ?? rootRect.left;
+            const spaceAbove = anchorTop - 8;
             const placeAbove = spaceAbove >= 96;
-            const left = Math.min(Math.max(8, rect.left), window.innerWidth - width - 8);
+            const left = Math.min(Math.max(8, anchorLeft), window.innerWidth - width - 8);
 
             setMenuPlacement({
-                top: placeAbove ? Math.max(8, rect.top - MENU_GAP) : rect.bottom + MENU_GAP,
+                top: placeAbove ? Math.max(8, anchorTop - MENU_GAP) : anchorBottom + MENU_GAP,
                 left,
                 width,
                 placeAbove,
@@ -344,7 +231,7 @@ export function MentionComposerInput({
         }
 
         skipSyncRef.current = true;
-        const next = serializeEditor(editor, mentionsRef.current);
+        const next = serializeMentionEditor(editor, mentionsRef.current);
         onChange(next);
         syncHeight();
         refreshMentionQuery();
@@ -357,20 +244,19 @@ export function MentionComposerInput({
             return;
         }
 
-        const current = serializeEditor(editor, mentionsRef.current);
-        const activeQuery =
-            query ??
-            resolveActiveMentionQuery({
-                textBeforeCaret: getTextBeforeCaret(editor),
-                serializedMessage: current.message,
-            })?.query;
+        const current = serializeMentionEditor(editor, mentionsRef.current);
+        const caret = getEditorCaretPoint(editor);
+        const before = serializeMentionEditorBeforeCaret(editor, mentionsRef.current, caret);
+        const resolved =
+            (before ? getAtQuery(before.message) : null) ??
+            (query !== null && activeAtOffsetRef.current !== null ? { query, atOffsetInBefore: activeAtOffsetRef.current } : getAtQuery(current.message));
 
-        if (activeQuery === null || activeQuery === undefined) {
+        if (!resolved) {
             return;
         }
 
         const mention = toStoredMention(candidate);
-        const nextMessage = replaceActiveMentionQuery(current.message, activeQuery, mention);
+        const nextMessage = replaceActiveMentionQuery(current.message, resolved.query, mention, resolved.atOffsetInBefore);
 
         if (!nextMessage) {
             return;
@@ -379,11 +265,12 @@ export function MentionComposerInput({
         const nextMentions = [...current.mentions.filter((item) => item.id !== mention.id), mention];
 
         mentionsRef.current = nextMentions;
+        activeAtOffsetRef.current = null;
         setQuery(null);
         setMentionHighlightTarget(null);
         setMenuPlacement(null);
 
-        renderEditorContent(editor, nextMessage, nextMentions);
+        renderMentionEditorContent(editor, nextMessage, nextMentions);
         skipSyncRef.current = true;
         onChange({ message: nextMessage, mentions: nextMentions });
         syncHeight();
@@ -402,7 +289,7 @@ export function MentionComposerInput({
                       role="listbox"
                       aria-label={messages.composer.mentionListAriaLabel}
                       data-fivepixels-interactive=""
-                      className="fixed z-[1000002] max-h-[180px] overflow-y-auto rounded-[10px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] shadow-[0_8px_24px_rgba(0,0,0,0.16)]"
+                      className="fixed z-[1000002] max-h-[180px] overflow-y-auto rounded-[12px] border border-[var(--adaptive-border-subtle)]  bg-[var(--adaptive-neutralTintOpacity500)] shadow-[0_8px_24px_rgba(0,0,0,0.16)]"
                       style={
                           menuPlacement
                               ? menuPlacement.placeAbove
@@ -438,8 +325,7 @@ export function MentionComposerInput({
                                       aria-selected={active}
                                       data-fivepixels-interactive=""
                                       className={
-                                          "flex w-full flex-col gap-[2px] px-[12px] py-[8px] text-left " +
-                                          (active ? "bg-[var(--adaptive-blue100)]" : "hover:bg-[var(--adaptive-black100)]")
+                                          "flex w-full flex-col gap-[2px] px-[4px] py-[2px] text-left border-none " + (active ? "bg-[var(--adaptive-blue100)]" : "hover:bg-[var(--adaptive-black100)]")
                                       }
                                       onMouseEnter={() => setActiveIndex(index)}
                                       onMouseDown={(event) => {
@@ -465,14 +351,7 @@ export function MentionComposerInput({
             ref={rootRef}
             className="relative min-w-0 flex-1"
         >
-            {showPlaceholder ? (
-                <span
-                    className="pointer-events-none absolute left-[4px] top-[6px] text-[14px] leading-[1.5] text-[var(--adaptive-text-muted)]"
-                    style={reserveInlineStart > 0 ? { left: reserveInlineStart + 4 } : undefined}
-                >
-                    {placeholder}
-                </span>
-            ) : null}
+            {showPlaceholder ? <span className="pointer-events-none absolute left-[4px] top-[6px] text-[14px] leading-[1.5] text-[var(--adaptive-text-muted)]">{placeholder}</span> : null}
 
             <div
                 ref={editorRef}
@@ -484,12 +363,26 @@ export function MentionComposerInput({
                 suppressContentEditableWarning
                 className="max-h-[200px] w-full min-w-0 flex-1 resize-none overflow-hidden bg-transparent px-[4px] py-[6px] text-[14px] leading-[1.5] text-[var(--adaptive-text-primary)] outline-none"
                 style={{ minHeight: EDITOR_MIN_HEIGHT }}
-                onInput={() => emitFromEditor()}
+                onInput={() => {
+                    if (isComposingRef.current) {
+                        refreshMentionQuery();
+                        syncHeight();
+                        return;
+                    }
+
+                    emitFromEditor();
+                }}
                 onKeyUp={() => refreshMentionQuery()}
                 onClick={() => refreshMentionQuery()}
-                onCompositionEnd={() => {
-                    emitFromEditor();
+                onCompositionStart={() => {
+                    isComposingRef.current = true;
+                }}
+                onCompositionUpdate={() => {
                     refreshMentionQuery();
+                }}
+                onCompositionEnd={() => {
+                    isComposingRef.current = false;
+                    emitFromEditor();
                 }}
                 onKeyDown={(event) => {
                     if (query !== null) {
@@ -519,8 +412,27 @@ export function MentionComposerInput({
                         if (event.key === "Escape") {
                             event.preventDefault();
                             setQuery(null);
+                            activeAtOffsetRef.current = null;
                             setMentionHighlightTarget(null);
                             return;
+                        }
+                    }
+
+                    if (event.key === "Backspace" && !event.metaKey && !event.ctrlKey && !event.altKey) {
+                        const editor = editorRef.current;
+
+                        if (editor) {
+                            const deleted = deleteMentionChipBeforeCaret(editor, mentionsRef.current);
+
+                            if (deleted) {
+                                event.preventDefault();
+                                mentionsRef.current = deleted.mentions;
+                                skipSyncRef.current = true;
+                                onChange(deleted);
+                                syncHeight();
+                                refreshMentionQuery();
+                                return;
+                            }
                         }
                     }
 

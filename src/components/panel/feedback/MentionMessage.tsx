@@ -10,7 +10,7 @@ type MentionMessageProps = {
 };
 
 const MENTION_CHIP_CLASS =
-    "mx-[1px] inline-flex cursor-pointer items-center rounded-[6px] bg-[var(--adaptive-blue100)] px-[6px] py-[1px] text-[13px] font-semibold text-[var(--adaptive-blue600)] align-baseline transition-opacity hover:opacity-90";
+    "mx-[1px] inline-flex cursor-pointer items-center rounded-[6px] bg-[var(--adaptive-blue100)] px-[6px] py-[4px] text-[12px] font-semibold text-[var(--adaptive-blue600)] align-baseline transition-opacity hover:opacity-90";
 
 export function MentionMessage({ message, mentions = [], className = "" }: MentionMessageProps) {
     const { setMentionHighlightTarget } = useReportSession();

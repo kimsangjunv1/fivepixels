@@ -71,5 +71,8 @@ describe("elementMentions", () => {
         expect(replaceActiveMentionQuery("체크 @hero", "hero", mention)).toBe(`체크 ${serializeMentionToken("m_hero")} `);
         expect(replaceActiveMentionQuery("체크 @", "", mention)).toBe(`체크 ${serializeMentionToken("m_hero")} `);
         expect(replaceActiveMentionQuery("체크", "hero", mention)).toBeNull();
+        expect(replaceActiveMentionQuery(`체크 ${serializeMentionToken("m_old")} @x`, "x", mention, `체크 ${serializeMentionToken("m_old")} `.length)).toBe(
+            `체크 ${serializeMentionToken("m_old")} ${serializeMentionToken("m_hero")} `,
+        );
     });
 });
