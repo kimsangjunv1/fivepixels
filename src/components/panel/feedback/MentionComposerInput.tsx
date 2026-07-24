@@ -1,12 +1,16 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import type { ElementMention, ElementMentionCandidate } from "@/types/mention.js";
 import { mentionPlainLabel, serializeMentionToken } from "@/types/mention.js";
 import {
     findElementMentionCandidates,
     parseMentionMessage,
+    replaceActiveMentionQuery,
+    resolveActiveMentionQuery,
     toStoredMention,
 } from "@/utils/mention/elementMentions.js";
 import { useReportPreferences, useReportSession } from "@/providers/reportContext.js";
+import { ensureReportTooltipLayer } from "@/utils/shared/dom.js";
 
 type MentionComposerInputProps = {
     value: string;
@@ -21,21 +25,16 @@ type MentionComposerInputProps = {
 
 const EDITOR_MIN_HEIGHT = 32;
 const EDITOR_MAX_HEIGHT = 200;
+const MENU_GAP = 6;
 const MENTION_CHIP_CLASS =
     "mx-[1px] inline-flex items-center rounded-[6px] bg-[var(--adaptive-blue100)] px-[6px] py-[1px] text-[13px] font-semibold text-[var(--adaptive-blue600)] align-baseline";
 
-function getAtQuery(textBeforeCursor: string) {
-    const match = textBeforeCursor.match(/(^|[\s([{])@([^\s@{}]*)$/);
-
-    if (!match) {
-        return null;
-    }
-
-    return {
-        query: match[2] ?? "",
-        atOffsetInBefore: textBeforeCursor.length - (match[2]?.length ?? 0) - 1,
-    };
-}
+type MenuPlacement = {
+    top: number;
+    left: number;
+    width: number;
+    placeAbove: boolean;
+};
 
 function serializeEditor(root: HTMLElement, mentions: ElementMention[]) {
     const mentionById = new Map(mentions.map((item) => [item.id, item]));
@@ -132,8 +131,8 @@ function placeCaretAtEnd(element: HTMLElement) {
 function getTextBeforeCaret(root: HTMLElement) {
     const selection = window.getSelection();
 
-    if (!selection || selection.rangeCount === 0) {
-        return "";
+    if (!selection || selection.rangeCount === 0 || !selection.anchorNode || !root.contains(selection.anchorNode)) {
+        return null;
     }
 
     const range = selection.getRangeAt(0).cloneRange();
@@ -141,6 +140,31 @@ function getTextBeforeCaret(root: HTMLElement) {
     range.setEnd(selection.getRangeAt(0).endContainer, selection.getRangeAt(0).endOffset);
 
     return range.toString();
+}
+
+function placeCaretAfterMention(editor: HTMLElement, mentionId: string) {
+    const selection = window.getSelection();
+    const chip = editor.querySelector(`[data-mention-id="${CSS.escape(mentionId)}"]`);
+
+    if (!selection) {
+        return;
+    }
+
+    const range = document.createRange();
+
+    if (chip?.nextSibling) {
+        range.setStart(chip.nextSibling, chip.nextSibling.nodeType === Node.TEXT_NODE ? (chip.nextSibling.textContent?.length ?? 0) : 0);
+        range.collapse(true);
+    } else if (chip) {
+        range.setStartAfter(chip);
+        range.collapse(true);
+    } else {
+        range.selectNodeContents(editor);
+        range.collapse(false);
+    }
+
+    selection.removeAllRanges();
+    selection.addRange(range);
 }
 
 export function MentionComposerInput({
@@ -156,11 +180,14 @@ export function MentionComposerInput({
     const { messages } = useReportPreferences();
     const { setMentionHighlightTarget } = useReportSession();
     const editorRef = useRef<HTMLDivElement | null>(null);
+    const rootRef = useRef<HTMLDivElement | null>(null);
     const mentionsRef = useRef(mentions);
     const skipSyncRef = useRef(false);
     const [query, setQuery] = useState<string | null>(null);
     const [candidates, setCandidates] = useState<ElementMentionCandidate[]>([]);
     const [activeIndex, setActiveIndex] = useState(0);
+    const [menuPlacement, setMenuPlacement] = useState<MenuPlacement | null>(null);
+    const [portalRoot, setPortalRoot] = useState<HTMLElement | null>(null);
     const lastMultilineRef = useRef<boolean | null>(null);
 
     mentionsRef.current = mentions;
@@ -186,6 +213,24 @@ export function MentionComposerInput({
         lastMultilineRef.current = isMultiline;
         onMultilineChange?.(isMultiline);
     }, [onMultilineChange]);
+
+    const refreshMentionQuery = useCallback(() => {
+        const editor = editorRef.current;
+
+        if (!editor) {
+            return;
+        }
+
+        const serialized = serializeEditor(editor, mentionsRef.current).message;
+        const textBeforeCaret = getTextBeforeCaret(editor);
+        const resolved = resolveActiveMentionQuery({
+            textBeforeCaret,
+            // When Selection briefly leaves the editor (keyup / IME / portal), still detect `@query` from draft.
+            serializedMessage: textBeforeCaret === null ? serialized : null,
+        });
+
+        setQuery(resolved ? resolved.query : null);
+    }, []);
 
     useLayoutEffect(() => {
         const editor = editorRef.current;
@@ -223,6 +268,10 @@ export function MentionComposerInput({
     }, [autoFocus]);
 
     useEffect(() => {
+        setPortalRoot(ensureReportTooltipLayer());
+    }, []);
+
+    useEffect(() => {
         if (query === null) {
             setCandidates([]);
             setMentionHighlightTarget(null);
@@ -234,15 +283,52 @@ export function MentionComposerInput({
         setActiveIndex(0);
     }, [query, setMentionHighlightTarget]);
 
-    useEffect(() => {
-        const active = candidates[activeIndex];
+    useLayoutEffect(() => {
+        if (query === null || !rootRef.current) {
+            setMenuPlacement(null);
+            return;
+        }
 
-        setMentionHighlightTarget(active?.snapshot ?? null);
+        const updatePlacement = () => {
+            const anchor = rootRef.current;
+
+            if (!anchor) {
+                return;
+            }
+
+            const rect = anchor.getBoundingClientRect();
+            const width = Math.min(280, Math.max(200, rect.width));
+            const spaceAbove = rect.top - 8;
+            const placeAbove = spaceAbove >= 96;
+            const left = Math.min(Math.max(8, rect.left), window.innerWidth - width - 8);
+
+            setMenuPlacement({
+                top: placeAbove ? Math.max(8, rect.top - MENU_GAP) : rect.bottom + MENU_GAP,
+                left,
+                width,
+                placeAbove,
+            });
+        };
+
+        updatePlacement();
+        window.addEventListener("resize", updatePlacement);
+        window.addEventListener("scroll", updatePlacement, true);
 
         return () => {
-            setMentionHighlightTarget(null);
+            window.removeEventListener("resize", updatePlacement);
+            window.removeEventListener("scroll", updatePlacement, true);
         };
-    }, [activeIndex, candidates, setMentionHighlightTarget]);
+    }, [query, candidates.length]);
+
+    useEffect(() => {
+        if (query === null) {
+            setMentionHighlightTarget(null);
+            return;
+        }
+
+        const active = candidates[activeIndex];
+        setMentionHighlightTarget(active?.snapshot ?? null);
+    }, [activeIndex, candidates, query, setMentionHighlightTarget]);
 
     useEffect(() => {
         return () => {
@@ -261,62 +347,124 @@ export function MentionComposerInput({
         const next = serializeEditor(editor, mentionsRef.current);
         onChange(next);
         syncHeight();
-
-        const before = getTextBeforeCaret(editor);
-        const atQuery = getAtQuery(before);
-        setQuery(atQuery ? atQuery.query : null);
+        refreshMentionQuery();
     };
 
     const insertCandidate = (candidate: ElementMentionCandidate) => {
         const editor = editorRef.current;
-        const selection = window.getSelection();
 
-        if (!editor || !selection || selection.rangeCount === 0) {
+        if (!editor) {
             return;
         }
 
-        const before = getTextBeforeCaret(editor);
-        const atQuery = getAtQuery(before);
+        const current = serializeEditor(editor, mentionsRef.current);
+        const activeQuery =
+            query ??
+            resolveActiveMentionQuery({
+                textBeforeCaret: getTextBeforeCaret(editor),
+                serializedMessage: current.message,
+            })?.query;
 
-        if (!atQuery) {
+        if (activeQuery === null || activeQuery === undefined) {
             return;
-        }
-
-        const range = selection.getRangeAt(0);
-        const deleteCount = (atQuery.query?.length ?? 0) + 1;
-
-        for (let index = 0; index < deleteCount; index += 1) {
-            range.setStart(range.endContainer, Math.max(0, range.endOffset - 1));
-            range.deleteContents();
         }
 
         const mention = toStoredMention(candidate);
-        const chip = document.createElement("span");
-        chip.contentEditable = "false";
-        chip.dataset.mentionId = mention.id;
-        chip.className = MENTION_CHIP_CLASS;
-        chip.textContent = mentionPlainLabel(mention);
+        const nextMessage = replaceActiveMentionQuery(current.message, activeQuery, mention);
 
-        range.insertNode(document.createTextNode(" "));
-        range.insertNode(chip);
+        if (!nextMessage) {
+            return;
+        }
 
-        const after = document.createRange();
-        after.setStartAfter(chip.nextSibling ?? chip);
-        after.collapse(true);
-        selection.removeAllRanges();
-        selection.addRange(after);
+        const nextMentions = [...current.mentions.filter((item) => item.id !== mention.id), mention];
 
-        mentionsRef.current = [...mentionsRef.current.filter((item) => item.id !== mention.id), mention];
+        mentionsRef.current = nextMentions;
         setQuery(null);
         setMentionHighlightTarget(null);
-        emitFromEditor();
+        setMenuPlacement(null);
+
+        renderEditorContent(editor, nextMessage, nextMentions);
+        skipSyncRef.current = true;
+        onChange({ message: nextMessage, mentions: nextMentions });
+        syncHeight();
+
         editor.focus();
+        placeCaretAfterMention(editor, mention.id);
     };
 
     const showPlaceholder = useMemo(() => value.trim().length === 0 && query === null, [value, query]);
+    const showMenu = query !== null && Boolean(portalRoot);
+
+    const menu =
+        showMenu && portalRoot
+            ? createPortal(
+                  <div
+                      role="listbox"
+                      aria-label={messages.composer.mentionListAriaLabel}
+                      data-fivepixels-interactive=""
+                      className="fixed z-[1000002] max-h-[180px] overflow-y-auto rounded-[10px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] shadow-[0_8px_24px_rgba(0,0,0,0.16)]"
+                      style={
+                          menuPlacement
+                              ? menuPlacement.placeAbove
+                                  ? {
+                                        bottom: window.innerHeight - menuPlacement.top,
+                                        left: menuPlacement.left,
+                                        width: menuPlacement.width,
+                                    }
+                                  : {
+                                        top: menuPlacement.top,
+                                        left: menuPlacement.left,
+                                        width: menuPlacement.width,
+                                    }
+                              : {
+                                    // Fallback before first layout measure so the menu never "fails to open".
+                                    bottom: 24,
+                                    left: 24,
+                                    width: 280,
+                                }
+                      }
+                  >
+                      {candidates.length === 0 ? (
+                          <p className="px-[12px] py-[8px] text-[12px] text-[var(--adaptive-black500)]">{messages.composer.mentionEmpty}</p>
+                      ) : (
+                          candidates.map((candidate, index) => {
+                              const active = index === activeIndex;
+
+                              return (
+                                  <button
+                                      key={`${candidate.targetSelector}-${candidate.label}-${index}`}
+                                      type="button"
+                                      role="option"
+                                      aria-selected={active}
+                                      data-fivepixels-interactive=""
+                                      className={
+                                          "flex w-full flex-col gap-[2px] px-[12px] py-[8px] text-left " +
+                                          (active ? "bg-[var(--adaptive-blue100)]" : "hover:bg-[var(--adaptive-black100)]")
+                                      }
+                                      onMouseEnter={() => setActiveIndex(index)}
+                                      onMouseDown={(event) => {
+                                          event.preventDefault();
+                                          insertCandidate(candidate);
+                                      }}
+                                  >
+                                      <span className="truncate text-[12px] font-semibold text-[var(--adaptive-black900)]">{candidate.label}</span>
+                                      <span className="truncate text-[11px] text-[var(--adaptive-black500)]">
+                                          {candidate.reportId ?? candidate.suggestedReportId ?? candidate.element.tagName.toLowerCase()}
+                                      </span>
+                                  </button>
+                              );
+                          })
+                      )}
+                  </div>,
+                  portalRoot,
+              )
+            : null;
 
     return (
-        <div className="relative min-w-0 flex-1">
+        <div
+            ref={rootRef}
+            className="relative min-w-0 flex-1"
+        >
             {showPlaceholder ? (
                 <span
                     className="pointer-events-none absolute left-[4px] top-[6px] text-[14px] leading-[1.5] text-[var(--adaptive-text-muted)]"
@@ -337,21 +485,27 @@ export function MentionComposerInput({
                 className="max-h-[200px] w-full min-w-0 flex-1 resize-none overflow-hidden bg-transparent px-[4px] py-[6px] text-[14px] leading-[1.5] text-[var(--adaptive-text-primary)] outline-none"
                 style={{ minHeight: EDITOR_MIN_HEIGHT }}
                 onInput={() => emitFromEditor()}
+                onKeyUp={() => refreshMentionQuery()}
+                onClick={() => refreshMentionQuery()}
+                onCompositionEnd={() => {
+                    emitFromEditor();
+                    refreshMentionQuery();
+                }}
                 onKeyDown={(event) => {
-                    if (query !== null && candidates.length > 0) {
-                        if (event.key === "ArrowDown") {
+                    if (query !== null) {
+                        if (event.key === "ArrowDown" && candidates.length > 0) {
                             event.preventDefault();
                             setActiveIndex((current) => (current + 1) % candidates.length);
                             return;
                         }
 
-                        if (event.key === "ArrowUp") {
+                        if (event.key === "ArrowUp" && candidates.length > 0) {
                             event.preventDefault();
                             setActiveIndex((current) => (current - 1 + candidates.length) % candidates.length);
                             return;
                         }
 
-                        if (event.key === "Enter" && !event.metaKey && !event.ctrlKey) {
+                        if (event.key === "Enter" && !event.metaKey && !event.ctrlKey && candidates.length > 0) {
                             event.preventDefault();
                             const active = candidates[activeIndex];
 
@@ -377,45 +531,7 @@ export function MentionComposerInput({
                 }}
             />
 
-            {query !== null ? (
-                <div
-                    role="listbox"
-                    aria-label={messages.composer.mentionListAriaLabel}
-                    className="absolute bottom-full left-0 z-20 mb-[6px] max-h-[180px] w-[min(280px,100%)] overflow-y-auto rounded-[10px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] shadow-[0_8px_24px_rgba(0,0,0,0.16)]"
-                >
-                    {candidates.length === 0 ? (
-                        <p className="px-[12px] py-[8px] text-[12px] text-[var(--adaptive-black500)]">{messages.composer.mentionEmpty}</p>
-                    ) : (
-                        candidates.map((candidate, index) => {
-                            const active = index === activeIndex;
-
-                            return (
-                                <button
-                                    key={`${candidate.targetSelector}-${candidate.label}-${index}`}
-                                    type="button"
-                                    role="option"
-                                    aria-selected={active}
-                                    data-fivepixels-interactive=""
-                                    className={
-                                        "flex w-full flex-col gap-[2px] px-[12px] py-[8px] text-left " +
-                                        (active ? "bg-[var(--adaptive-blue100)]" : "hover:bg-[var(--adaptive-black100)]")
-                                    }
-                                    onMouseEnter={() => setActiveIndex(index)}
-                                    onMouseDown={(event) => {
-                                        event.preventDefault();
-                                        insertCandidate(candidate);
-                                    }}
-                                >
-                                    <span className="truncate text-[12px] font-semibold text-[var(--adaptive-black900)]">{candidate.label}</span>
-                                    <span className="truncate text-[11px] text-[var(--adaptive-black500)]">
-                                        {candidate.reportId ?? candidate.suggestedReportId ?? candidate.element.tagName.toLowerCase()}
-                                    </span>
-                                </button>
-                            );
-                        })
-                    )}
-                </div>
-            ) : null}
+            {menu}
         </div>
     );
 }
