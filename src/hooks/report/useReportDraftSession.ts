@@ -1,6 +1,6 @@
 import { type Dispatch, type MouseEvent, type MutableRefObject, type SetStateAction, useCallback, useEffect, useRef, useState } from "react";
 import type { ReportMessages } from "@/i18n/types.js";
-import type { CreateReportFeedbackPayload, ReportAuthor, ReportField, ReportIdentify } from "@/types/report.js";
+import type { CreateReportFeedbackPayload, ReportAuthor, ReportFeedback, ReportField, ReportIdentify } from "@/types/report.js";
 import type { DraftReport, HoverPointer, ReportMode, TargetSnapshot } from "@/types/report-ui.js";
 import type { FeedbackCategory } from "@/constants/feedbackCategory.js";
 import { clampRatio } from "@/utils/marker/coordinates.js";
@@ -10,6 +10,7 @@ import { getPickProbeElementKey } from "@/utils/probe/pickProbeSession.js";
 import { createReportCase } from "@/utils/report/reportCases.js";
 import { resolveDefaultAuthorName } from "@/utils/report/resolveDefaultAuthorName.js";
 import type { SessionActor } from "@/utils/report/reportTeam.js";
+import { buildDraftFromReport } from "@/utils/report/buildDraftFromReport.js";
 import { useReportPickProbe } from "./useReportPickProbe.js";
 
 const OVERLAY_HOVER_LEAVE_MS = 100;
@@ -351,6 +352,24 @@ export function useReportDraftSession({
         setHoverPointer(null);
     };
 
+    const beginDraftEdit = (report: ReportFeedback) => {
+        if (report.status === "archived") {
+            setErrorMessage(messages.errors.archivedReadOnly);
+            return false;
+        }
+
+        resetPickProbeState();
+        draftElementRef.current = null;
+        contextMenuElementRef.current = null;
+        setSelectedTarget(null);
+        setHoveredTarget(null);
+        setHoverPointer(null);
+        setDraftStep("content");
+        setErrorMessage("");
+        setDraft(buildDraftFromReport(report, fields));
+        return true;
+    };
+
     const updateDraftCase = (caseId: string, text: string) => {
         setDraft((current) => {
             if (!current) {
@@ -558,6 +577,7 @@ export function useReportDraftSession({
         handleOverlayContextMenu,
         handleOverlayClick,
         cancelDraft,
+        beginDraftEdit,
         updateDraftCase,
         updateDraftCategory,
         addDraftCase,

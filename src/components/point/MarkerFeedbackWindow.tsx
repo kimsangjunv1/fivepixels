@@ -12,11 +12,13 @@ import { getCaseAssigneeName, getCaseById } from "@/utils/report/reportCases.js"
 import { getFieldTags } from "@/utils/report/fields.js";
 import { copyTextToClipboard } from "@/utils/feedback/feedbackDataTransfer.js";
 import { buildFeedbackShareUrl } from "@/utils/feedback/feedbackDeepLink.js";
-import { CloseIcon, LinkIcon, MaximizeIcon, MinimizeIcon, RestoreIcon, SidePanelIcon } from "@/components/icons/Icons.js";
+import { CloseIcon, EditIcon, LinkIcon, MaximizeIcon, MinimizeIcon, RestoreIcon, SidePanelIcon } from "@/components/icons/Icons.js";
 import { FeedbackFieldTags } from "@/components/panel/feedback/FeedbackFieldTags.js";
 import { FeedbackPinToggleButton } from "@/components/panel/feedback/FeedbackPinToggleButton.js";
 import { FeedbackDeleteAction } from "@/components/panel/feedback/FeedbackDeleteAction.js";
 import { canDeleteFeedback } from "@/utils/feedback/feedbackPermissions.js";
+import { canEditReportCases } from "@/utils/report/reportCases.js";
+import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
 import { CornerResizeGhost } from "@/components/ui/CornerResizeGhost.js";
 import { MOTION } from "@/constants/motionClasses.js";
 import { CornerResizeHandle } from "@/components/ui/CornerResizeHandle.js";
@@ -158,6 +160,7 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
         isDeleting,
         sessionActor,
         cancelPendingComposer,
+        beginFeedbackEdit,
     } = useReport();
 
     const windowRef = useRef<HTMLDivElement | null>(null);
@@ -443,9 +446,26 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
         />
     ) : null;
 
+    const editButton = canEditReportCases(report) ? (
+        <HoverTooltip label={messages.feedbackList.editTitle}>
+            <button
+                type="button"
+                data-fivepixels-interactive=""
+                className={HEADER_BUTTON_CLASS}
+                aria-label={messages.feedbackList.editAriaLabel}
+                title={messages.feedbackList.editTitle}
+                onPointerDown={(event) => event.stopPropagation()}
+                onClick={() => beginFeedbackEdit(report)}
+            >
+                <EditIcon className="h-[14px] w-[14px]" />
+            </button>
+        </HoverTooltip>
+    ) : null;
+
     const headerUtilityButtons = (
         <>
             {shareButton}
+            {editButton}
             {deleteButton}
             {pinButton}
         </>
@@ -585,6 +605,7 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
                             {leftControls}
                         </div>
                         {shareButton}
+                        {editButton}
                         {deleteButton}
                         {sidebarToggleButton}
                     </div>
@@ -601,6 +622,7 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
                             >
                                 {leftControls}
                                 {shareButton}
+                                {editButton}
                                 {deleteButton}
                                 {pinButton}
                                 {sidebarToggleButton}

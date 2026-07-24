@@ -60,6 +60,7 @@ export function FeedbackDeleteAction({
             <button
                 type="button"
                 data-fivepixels-interactive=""
+                onPointerDown={(event) => event.stopPropagation()}
                 onClick={handleDelete}
                 disabled={disabled}
                 aria-label={confirming ? deleteConfirmAriaLabel : deleteAriaLabel}

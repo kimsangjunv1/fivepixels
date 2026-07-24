@@ -17,6 +17,8 @@ type DraftComposerToolbarProps = {
     categoryNeedsAttention?: boolean;
     onSubmit: () => void;
     isSubmitting?: boolean;
+    submitLabel?: string;
+    submittingLabel?: string;
     showGitHubIssueOnCreate?: boolean;
     onGitHubIssueSubmit?: () => void;
     isGitHubIssueSubmitting?: boolean;
@@ -48,6 +50,8 @@ export function DraftComposerToolbar({
     categoryNeedsAttention = false,
     onSubmit,
     isSubmitting = false,
+    submitLabel,
+    submittingLabel,
     showGitHubIssueOnCreate = false,
     onGitHubIssueSubmit,
     isGitHubIssueSubmitting = false,
@@ -58,6 +62,8 @@ export function DraftComposerToolbar({
     const [casesOpen, setCasesOpen] = useState(false);
     const [categoryOpen, setCategoryOpen] = useState(false);
     const isActionDisabled = isSubmitting || isGitHubIssueSubmitting;
+    const resolvedSubmitLabel = submitLabel ?? messages.composer.draftComplete;
+    const resolvedSubmittingLabel = submittingLabel ?? messages.composer.draftCompleting;
     const activeCaseIndex = Math.max(
         0,
         cases.findIndex((item) => item.id === activeCaseId),
@@ -216,7 +222,7 @@ export function DraftComposerToolbar({
             ) : null}
 
             <HoverTooltip
-                label={messages.composer.draftComplete}
+                label={resolvedSubmitLabel}
                 disabled={isActionDisabled}
             >
                 <button
@@ -225,7 +231,7 @@ export function DraftComposerToolbar({
                     disabled={isActionDisabled}
                     onClick={onSubmit}
                     className="inline-flex h-[32px] w-[32px] shrink-0 items-center justify-center rounded-full bg-[var(--adaptive-black900)] text-[var(--adaptive-black50)] disabled:opacity-50"
-                    aria-label={isSubmitting ? messages.composer.draftCompleting : messages.composer.draftComplete}
+                    aria-label={isSubmitting ? resolvedSubmittingLabel : resolvedSubmitLabel}
                 >
                     <SendIcon className="h-[14px] w-[14px]" />
                 </button>

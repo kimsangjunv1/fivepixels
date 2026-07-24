@@ -21,6 +21,9 @@ export function ReportDraftForm() {
         fields,
         authors,
         isCreating,
+        isUpdating,
+        editingReportId,
+        markers,
         selectedTarget,
         updateDraftCase,
         addDraftCase,
@@ -43,12 +46,18 @@ export function ReportDraftForm() {
         return null;
     }
 
+    const isEditing = Boolean(editingReportId);
+    const editingMarker = isEditing ? (markers.find((marker) => marker.report.id === editingReportId) ?? null) : null;
+
     return (
         <ReportDraftFormContent
             draft={draft}
             fields={fields}
             authors={authors}
             isCreating={isCreating}
+            isUpdating={isUpdating}
+            isEditing={isEditing}
+            editingMarker={editingMarker}
             selectedTarget={selectedTarget}
             updateDraftCase={updateDraftCase}
             addDraftCase={addDraftCase}
@@ -57,7 +66,7 @@ export function ReportDraftForm() {
             updateDraftCategory={updateDraftCategory}
             handleCreateSubmit={handleCreateSubmit}
             handleCreateSubmitWithGitHubIssue={handleCreateSubmitWithGitHubIssue}
-            canCreateGitHubIssueOnCreate={canCreateGitHubIssueOnCreate}
+            canCreateGitHubIssueOnCreate={canCreateGitHubIssueOnCreate && !isEditing}
             isDraftGitHubIssueSubmitting={isDraftGitHubIssueSubmitting}
             draftAuthorName={draftAuthorName}
             setDraftAuthorName={setDraftAuthorName}
@@ -74,6 +83,9 @@ type ReportDraftFormContentProps = {
     fields: ReturnType<typeof useReport>["fields"];
     authors: ReturnType<typeof useReport>["authors"];
     isCreating: boolean;
+    isUpdating: boolean;
+    isEditing: boolean;
+    editingMarker: { left: number; top: number } | null;
     selectedTarget: ReturnType<typeof useReport>["selectedTarget"];
     updateDraftCase: (caseId: string, text: string) => void;
     addDraftCase: () => void;
@@ -97,6 +109,9 @@ function ReportDraftFormContent({
     fields,
     authors,
     isCreating,
+    isUpdating,
+    isEditing,
+    editingMarker,
     selectedTarget,
     updateDraftCase,
     addDraftCase,
@@ -119,7 +134,13 @@ function ReportDraftFormContent({
     const [footerWarningMessage, setFooterWarningMessage] = useState<string | null>(null);
     const [activeCaseId, setActiveCaseId] = useState<string | null>(() => draft.cases[0]?.id ?? null);
     const [isGitHubIssueConfirming, setIsGitHubIssueConfirming] = useState(false);
-    const anchor = useMemo(() => getDraftMarkerPosition(draft, selectedTarget), [draft, selectedTarget]);
+    const anchor = useMemo(() => {
+        if (editingMarker) {
+            return { left: editingMarker.left, top: editingMarker.top };
+        }
+
+        return getDraftMarkerPosition(draft, selectedTarget);
+    }, [draft, editingMarker, selectedTarget]);
     const { customSize, isResizing, ghostRef, handleResizePointerDown } = useTooltipResize({
         enabled: true,
         tooltipRef: tooltipSurfaceRef,
@@ -129,9 +150,11 @@ function ReportDraftFormContent({
     });
     const tooltipPosition = tooltipLayout?.position ?? null;
     const tooltipAnchorStyle = tooltipLayout?.anchorStyle;
-    const isSubmitting = isCreating || isDraftGitHubIssueSubmitting;
+    const isSubmitting = isCreating || isUpdating || isDraftGitHubIssueSubmitting;
     const categoryNeedsAttention = errorMessage === messages.errors.categoryRequired && !draft.category;
     const showStatusChip = Boolean(footerWarningMessage) || Boolean(draft.targetSelector && draft.suggestedReportId);
+    const submitLabel = isEditing ? messages.cases.save : messages.composer.draftComplete;
+    const submittingLabel = isEditing ? messages.cases.saving : messages.composer.draftCompleting;
 
     useEffect(() => {
         if (!isGitHubIssueConfirming) {
@@ -259,6 +282,8 @@ function ReportDraftFormContent({
                             categoryNeedsAttention={categoryNeedsAttention}
                             onSubmit={() => void handleCreateSubmit()}
                             isSubmitting={isSubmitting}
+                            submitLabel={submitLabel}
+                            submittingLabel={submittingLabel}
                             showGitHubIssueOnCreate={canCreateGitHubIssueOnCreate}
                             onGitHubIssueSubmit={() => void handleCreateSubmitWithGitHubIssue()}
                             isGitHubIssueSubmitting={isDraftGitHubIssueSubmitting}
