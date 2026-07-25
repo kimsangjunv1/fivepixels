@@ -486,7 +486,7 @@
 }
 
 [data-fivepixels-mount] .fivepixels-panel-tab-shell-inner {
-    overflow: hidden;
+    /* overflow: hidden; */
     min-height: 0;
 }
 

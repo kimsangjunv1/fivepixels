@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { ReportCase } from "@/types/report.js";
+import type { ElementMention } from "@/types/mention.js";
 import { useReportPreferences } from "@/providers/reportContext.js";
 import { FeedbackCaseTabBar } from "./FeedbackCaseTabBar.js";
+import { MentionComposerInput } from "./MentionComposerInput.js";
 
 type FeedbackCaseEditorProps = {
     cases: ReportCase[];
-    onCaseChange: (caseId: string, text: string) => void;
+    onCaseChange: (caseId: string, text: string, mentions?: ElementMention[]) => void;
     onAddCase: () => void;
     onRemoveCase: (caseId: string) => void;
     autoFocus?: boolean;
@@ -16,6 +18,7 @@ type FeedbackCaseEditorProps = {
     showTabBar?: boolean;
     activeCaseId?: string | null;
     onActiveCaseIdChange?: (caseId: string) => void;
+    enableElementMentions?: boolean;
 };
 
 const CASE_INPUT_MIN_HEIGHT = 56;
@@ -99,6 +102,14 @@ function resolveActiveCaseId(cases: ReportCase[], activeCaseId: string | null) {
     return cases[cases.length - 1]?.id ?? cases[0].id;
 }
 
+function focusCaseInput(caseId: string) {
+    const root =
+        document.getElementById(`fivepixels-case-input-${caseId}`) ??
+        document.querySelector<HTMLElement>(`[data-fivepixels-case-input="${CSS.escape(caseId)}"]`);
+    const editable = root?.querySelector<HTMLElement>("[contenteditable='true']");
+    (editable ?? (root instanceof HTMLElement ? root : null))?.focus();
+}
+
 export function FeedbackCaseEditor({
     cases,
     onCaseChange,
@@ -112,6 +123,7 @@ export function FeedbackCaseEditor({
     showTabBar = true,
     activeCaseId: controlledActiveCaseId,
     onActiveCaseIdChange,
+    enableElementMentions = false,
 }: FeedbackCaseEditorProps) {
     const { messages } = useReportPreferences();
     const previousCaseCountRef = useRef(cases.length);
@@ -162,7 +174,7 @@ export function FeedbackCaseEditor({
         if (lastCase) {
             setActiveCaseId(lastCase.id);
             window.requestAnimationFrame(() => {
-                document.getElementById(`fivepixels-case-input-${lastCase.id}`)?.focus();
+                focusCaseInput(lastCase.id);
             });
         }
 
@@ -186,7 +198,7 @@ export function FeedbackCaseEditor({
 
         containerRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
         window.requestAnimationFrame(() => {
-            document.getElementById(`fivepixels-case-input-${targetCaseId}`)?.focus();
+            focusCaseInput(targetCaseId);
         });
     }, [needsAttention, attentionKey, emptyCaseIds, resolvedActiveCaseId, setActiveCaseId]);
 
@@ -233,15 +245,32 @@ export function FeedbackCaseEditor({
                 aria-labelledby={`fivepixels-case-tab-${activeCase.id}`}
                 className="flex min-h-0 flex-1 flex-col overflow-y-auto px-[4px] py-[4px]"
             >
-                <CaseTextarea
-                    id={`fivepixels-case-input-${activeCase.id}`}
-                    autoFocus={autoFocus && activeCaseIndex === 0}
-                    value={activeCase.text}
-                    placeholder={getCaseInputPlaceholder(activeCaseIndex + 1)}
-                    onChange={(text) => onCaseChange(activeCase.id, text)}
-                    onSubmitShortcut={onSubmitShortcut}
-                    needsAttention={activeCaseNeedsAttention}
-                />
+                {enableElementMentions ? (
+                    <div
+                        id={`fivepixels-case-input-${activeCase.id}`}
+                        data-fivepixels-case-input={activeCase.id}
+                        className={activeCaseNeedsAttention ? "fivepixels-validation-attention rounded-[8px] bg-rose-500/10" : undefined}
+                    >
+                        <MentionComposerInput
+                            value={activeCase.text}
+                            mentions={activeCase.mentions ?? []}
+                            onChange={({ message, mentions }) => onCaseChange(activeCase.id, message, mentions)}
+                            placeholder={getCaseInputPlaceholder(activeCaseIndex + 1)}
+                            autoFocus={autoFocus && activeCaseIndex === 0}
+                            onSubmitShortcut={onSubmitShortcut}
+                        />
+                    </div>
+                ) : (
+                    <CaseTextarea
+                        id={`fivepixels-case-input-${activeCase.id}`}
+                        autoFocus={autoFocus && activeCaseIndex === 0}
+                        value={activeCase.text}
+                        placeholder={getCaseInputPlaceholder(activeCaseIndex + 1)}
+                        onChange={(text) => onCaseChange(activeCase.id, text)}
+                        onSubmitShortcut={onSubmitShortcut}
+                        needsAttention={activeCaseNeedsAttention}
+                    />
+                )}
             </div>
         </div>
     );

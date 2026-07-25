@@ -1,6 +1,7 @@
 import { type Dispatch, type MouseEvent, type MutableRefObject, type SetStateAction } from "react";
 import type { ReportMessages } from "../../i18n/types.js";
 import type { CreateReportFeedbackPayload, ReportAuthor, ReportFeedback, ReportField, ReportIdentify } from "../../types/report.js";
+import type { ElementMention } from "../../types/mention.js";
 import type { DraftReport, HoverPointer, ReportMode, TargetSnapshot } from "../../types/report-ui.js";
 import type { FeedbackCategory } from "../../constants/feedbackCategory.js";
 import type { SessionActor } from "../../utils/report/reportTeam.js";
@@ -78,7 +79,7 @@ export declare function useReportDraftSession({ mode, setMode, fields, messages,
     handleOverlayClick: (event: MouseEvent<HTMLDivElement>) => void;
     cancelDraft: () => void;
     beginDraftEdit: (report: ReportFeedback) => boolean;
-    updateDraftCase: (caseId: string, text: string) => void;
+    updateDraftCase: (caseId: string, text: string, mentions?: ElementMention[]) => void;
     updateDraftCategory: (category: FeedbackCategory | null) => void;
     addDraftCase: () => void;
     removeDraftCase: (caseId: string) => void;

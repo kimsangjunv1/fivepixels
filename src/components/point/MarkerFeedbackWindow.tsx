@@ -18,6 +18,7 @@ import { FeedbackPinToggleButton } from "@/components/panel/feedback/FeedbackPin
 import { FeedbackDeleteAction } from "@/components/panel/feedback/FeedbackDeleteAction.js";
 import { canDeleteFeedback } from "@/utils/feedback/feedbackPermissions.js";
 import { canEditReportCases } from "@/utils/report/reportCases.js";
+import { mentionMessageToPlainText } from "@/utils/mention/elementMentions.js";
 import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
 import { CornerResizeGhost } from "@/components/ui/CornerResizeGhost.js";
 import { MOTION } from "@/constants/motionClasses.js";
@@ -478,9 +479,9 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
                     <Fragment>
                         <p
                             className={`truncate text-[15px] font-semibold leading-[1.4] text-[var(--adaptive-black900)] ${focusedCase.status === "resolved" ? "text-[var(--adaptive-black500)] line-through" : ""}`}
-                            title={focusedCase.text}
+                            title={mentionMessageToPlainText(focusedCase.text, focusedCase.mentions)}
                         >
-                            {focusedCase.text}
+                            {mentionMessageToPlainText(focusedCase.text, focusedCase.mentions)}
                         </p>
                         <div className="mt-[2px] flex min-w-0 items-center justify-between gap-[8px]">
                             <div className="flex min-w-0 flex-1 items-center gap-[6px]">

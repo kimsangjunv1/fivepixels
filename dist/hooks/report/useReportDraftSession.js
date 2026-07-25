@@ -237,14 +237,24 @@ export function useReportDraftSession({ mode, setMode, fields, messages, current
         setDraft(buildDraftFromReport(report, fields));
         return true;
     };
-    const updateDraftCase = (caseId, text) => {
+    const updateDraftCase = (caseId, text, mentions) => {
         setDraft((current) => {
             if (!current) {
                 return current;
             }
             return {
                 ...current,
-                cases: current.cases.map((item) => (item.id === caseId ? { ...item, text } : item)),
+                cases: current.cases.map((item) => {
+                    if (item.id !== caseId) {
+                        return item;
+                    }
+                    const nextMentions = mentions === undefined ? item.mentions : mentions.length > 0 ? mentions : undefined;
+                    return {
+                        ...item,
+                        text,
+                        ...(nextMentions ? { mentions: nextMentions } : { mentions: undefined }),
+                    };
+                }),
             };
         });
         setErrorMessage("");

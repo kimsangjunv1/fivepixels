@@ -191,6 +191,8 @@ export const en = {
         casesDropdownAriaLabel: "Generated cases",
         mentionListAriaLabel: "Page element mentions",
         mentionEmpty: "No matching elements",
+        mentionInsertLabel: "Mention element",
+        mentionInsertAriaLabel: "Insert element mention",
         categoryOption: {
             incident: "Urgent",
             problem: "Problem",

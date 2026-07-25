@@ -19,12 +19,22 @@ export function useReplyCaseEdit({ reports, activeReplyReport, activeReplyReport
         setCaseEditDraft(report.cases.map((item) => ({ ...item })));
         setErrorMessage("");
     }, [messages.errors.archivedReadOnly, setErrorMessage]);
-    const updateCaseEditDraftCase = useCallback((caseId, text) => {
+    const updateCaseEditDraftCase = useCallback((caseId, text, mentions) => {
         setCaseEditDraft((current) => {
             if (!current) {
                 return current;
             }
-            return current.map((item) => (item.id === caseId ? { ...item, text } : item));
+            return current.map((item) => {
+                if (item.id !== caseId) {
+                    return item;
+                }
+                const nextMentions = mentions === undefined ? item.mentions : mentions.length > 0 ? mentions : undefined;
+                return {
+                    ...item,
+                    text,
+                    ...(nextMentions ? { mentions: nextMentions } : { mentions: undefined }),
+                };
+            });
         });
     }, []);
     const addCaseEditDraftCase = useCallback(() => {

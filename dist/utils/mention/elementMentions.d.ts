@@ -19,11 +19,17 @@ export declare function insertMentionToken(message: string, cursor: number, atSt
     message: string;
     cursor: number;
 };
-/** Detect an in-progress `@query` at the end of caret text or serialized draft. */
+/**
+ * Detect an in-progress `@query` at the end of caret text or serialized draft.
+ * Single spaces are allowed so multi-word labels (e.g. "Staged feedback") can be typed.
+ * Two or more consecutive spaces end the mention query (caller should dismiss the menu).
+ */
 export declare function getAtQuery(textBeforeCursor: string): {
     query: string;
     atOffsetInBefore: number;
 } | null;
+/** True when the active query already ends with a space (next Space should dismiss). */
+export declare function mentionQueryEndsWithSpace(query: string): boolean;
 /**
  * Resolve the active mention query using caret text when available,
  * otherwise fall back to the serialized editor message (safe with chips / shadow DOM).
