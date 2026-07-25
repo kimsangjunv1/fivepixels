@@ -30,7 +30,7 @@
     },
     "type": "module",
     "engines": {
-        "node": ">=22.11.0"
+        "node": ">=18"
     },
     "files": [
         "dist"

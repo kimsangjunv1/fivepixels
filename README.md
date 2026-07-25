@@ -14,6 +14,8 @@
 npm install @fivepixels-js/react react react-dom
 ```
 
+**요구 사항:** React 18+ · Node.js 18+(패키지 설치 시). 브라우저에서 동작하므로 호스트 앱의 Node 버전이 런타임에 쓰이지는 않습니다. 이 레포를 clone해 빌드·테스트할 때는 **Node.js 22**를 권장합니다(CI와 동일).
+
 ## 사용 예시
 
 피드백 대상 요소에 `data-report-id`를 붙이고, 화면에 `<FivePixels />`를 한 번 렌더링합니다.
