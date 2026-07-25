@@ -5,6 +5,7 @@ import type { ReportCaseStatus } from "@/types/report.js";
 import type { ReportFeedback } from "@/types/report.js";
 import { getCaseLatestStatus } from "@/utils/feedback/feedbackThread.js";
 import { getReportCases } from "@/utils/report/reportCases.js";
+import { mentionMessageToPlainText } from "@/utils/mention/elementMentions.js";
 import { canRemoveCase } from "@/utils/feedback/feedbackPermissions.js";
 import { formatDateOnly } from "@/utils/shared/format.js";
 import { FeedbackDeleteAction } from "@/components/panel/feedback/FeedbackDeleteAction.js";
@@ -83,9 +84,9 @@ export function MarkerCaseSidebar({ report, focusedCaseId, onSelectCase }: Marke
                                     <CaseStatusIndicator caseStatus={item.status} />
                                     <span
                                         className={`min-w-0 flex-1 truncate text-[14px] leading-[1] ${item.status === "resolved" ? "text-[var(--adaptive-black500)] line-through" : ""}`}
-                                        title={item.text}
+                                        title={mentionMessageToPlainText(item.text, item.mentions)}
                                     >
-                                        {item.text}
+                                        {mentionMessageToPlainText(item.text, item.mentions)}
                                     </span>
                                 </section>
                                 <div className="flex w-full min-w-0 items-center justify-between gap-[8px]">

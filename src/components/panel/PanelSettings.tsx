@@ -66,9 +66,9 @@ function SettingsHubRow({ title, subtitle, onClick }: { title: string; subtitle:
             onClick={onClick}
             className="flex w-full items-center gap-[10px] border-b border-[var(--adaptive-border-subtle)] px-[12px] py-[10px] text-left last:border-b-0 hover:bg-[var(--adaptive-black100)]"
         >
-            <div className="min-w-0 flex-1">
+            <div className="min-w-0 flex-1 flex flex-col gap-[4px]">
                 <p className="text-[13px] font-semibold text-[var(--adaptive-black900)]">{title}</p>
-                <p className="mt-[2px] truncate text-[11px] text-[var(--adaptive-black500)]">{subtitle}</p>
+                <p className="truncate text-[10px] text-[var(--adaptive-black700)]">{subtitle}</p>
             </div>
             <ChevronRightIcon className="h-[14px] w-[14px] shrink-0 text-[var(--adaptive-black400)]" />
         </button>
@@ -127,7 +127,30 @@ export function PanelSettings({
     onKeyRotate,
 }: PanelSettingsProps) {
     const [activeCategory, setActiveCategory] = useState<SettingsCategory | null>(null);
-    const { locale, setLocale, messages, showMarkerTargetPreview, setShowMarkerTargetPreview, isPresentationMode, presentationViewers, markerAppearance, setMarkerSize, setMarkerShape, setMarkerColor, setFeedbackModeDotColors, setFeedbackModeDotColor, typography, setFontSize, setFontFamily, panelRole, visiblePanelTabs, visiblePanelTabsSummary, resolvedTabAvailabilityContext, setVisiblePanelTabs, resetVisibleTabsToRoleDefault } = useReportPreferences();
+    const {
+        locale,
+        setLocale,
+        messages,
+        showMarkerTargetPreview,
+        setShowMarkerTargetPreview,
+        isPresentationMode,
+        presentationViewers,
+        markerAppearance,
+        setMarkerSize,
+        setMarkerShape,
+        setMarkerColor,
+        setFeedbackModeDotColors,
+        setFeedbackModeDotColor,
+        typography,
+        setFontSize,
+        setFontFamily,
+        panelRole,
+        visiblePanelTabs,
+        visiblePanelTabsSummary,
+        resolvedTabAvailabilityContext,
+        setVisiblePanelTabs,
+        resetVisibleTabsToRoleDefault,
+    } = useReportPreferences();
     const { presentationViewerId, setPresentationViewerId } = useReportSession();
     const scaleLabels: Record<AppearanceScale, string> = {
         sm: messages.settings.scaleSm,

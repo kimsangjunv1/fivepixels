@@ -5,6 +5,7 @@ import {
     mentionMessageToPlainText,
     stripMentionTokensForEmptyCheck,
     getAtQuery,
+    mentionQueryEndsWithSpace,
     resolveActiveMentionQuery,
     replaceActiveMentionQuery,
 } from "@/utils/mention/elementMentions.js";
@@ -47,6 +48,17 @@ describe("elementMentions", () => {
         expect(getAtQuery(`안녕 ${serializeMentionToken("m_1")} @`)).toEqual({ query: "", atOffsetInBefore: `안녕 ${serializeMentionToken("m_1")} `.length });
     });
 
+    it("allows single spaces in @query and ends on double space", () => {
+        expect(getAtQuery("@staged ")).toEqual({ query: "staged ", atOffsetInBefore: 0 });
+        expect(getAtQuery("@staged feedback")).toEqual({ query: "staged feedback", atOffsetInBefore: 0 });
+        expect(getAtQuery("체크 @staged feedback")).toEqual({ query: "staged feedback", atOffsetInBefore: 3 });
+        expect(getAtQuery("@staged  ")).toBeNull();
+        expect(getAtQuery("@staged  feedback")).toBeNull();
+        expect(mentionQueryEndsWithSpace("staged ")).toBe(true);
+        expect(mentionQueryEndsWithSpace("staged")).toBe(false);
+        expect(mentionQueryEndsWithSpace("")).toBe(false);
+    });
+
     it("falls back to serialized message when caret text is unavailable", () => {
         expect(resolveActiveMentionQuery({ textBeforeCaret: null, serializedMessage: "hello @" })).toEqual({
             query: "",
@@ -70,6 +82,7 @@ describe("elementMentions", () => {
 
         expect(replaceActiveMentionQuery("체크 @hero", "hero", mention)).toBe(`체크 ${serializeMentionToken("m_hero")} `);
         expect(replaceActiveMentionQuery("체크 @", "", mention)).toBe(`체크 ${serializeMentionToken("m_hero")} `);
+        expect(replaceActiveMentionQuery("체크 @staged feedback", "staged feedback", mention)).toBe(`체크 ${serializeMentionToken("m_hero")} `);
         expect(replaceActiveMentionQuery("체크", "hero", mention)).toBeNull();
         expect(replaceActiveMentionQuery(`체크 ${serializeMentionToken("m_old")} @x`, "x", mention, `체크 ${serializeMentionToken("m_old")} `.length)).toBe(
             `체크 ${serializeMentionToken("m_old")} ${serializeMentionToken("m_hero")} `,

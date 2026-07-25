@@ -49,6 +49,6 @@ export declare function isValidFocusedCase(report: Pick<ReportFeedback, "cases">
 export declare function isValidCaseSelection(report: Pick<ReportFeedback, "cases">, selectedCaseIds: string[]): boolean;
 export declare function getCaseLabels(report: Pick<ReportFeedback, "cases">, caseIds: string[]): string[];
 export declare function buildResolvedCasesUpdate(report: ReportFeedback, caseIds: string[]): ReportCase[];
-export declare function validateCasesForSubmit(cases: Array<Pick<ReportCase, "text">>, messages: CaseValidationMessages): string;
+export declare function validateCasesForSubmit(cases: Array<Pick<ReportCase, "text" | "mentions">>, messages: CaseValidationMessages): string;
 export {};
 //# sourceMappingURL=reportCases.d.ts.map

@@ -34,7 +34,7 @@ export declare function useReportReplyReview({ reports, messages, fields, sessio
     beginCaseEdit: (report: ReportFeedback) => void;
     cancelCaseEdit: () => void;
     handleCaseEditSave: () => Promise<void>;
-    updateCaseEditDraftCase: (caseId: string, text: string) => void;
+    updateCaseEditDraftCase: (caseId: string, text: string, mentions?: ElementMention[]) => void;
     addCaseEditDraftCase: () => void;
     removeCaseEditDraftCase: (caseId: string) => void;
     removePersistedCase: (report: ReportFeedback, caseId: string) => Promise<void>;

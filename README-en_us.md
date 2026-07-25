@@ -14,6 +14,8 @@
 npm install @fivepixels-js/react react react-dom
 ```
 
+**Requirements:** React 18+ · Node.js 18+ (for installing the package). The library runs in the browser, so the host app’s Node version is not used at runtime. To clone this repo and build or test locally, **Node.js 22** is recommended (same as CI).
+
 ## Usage
 
 Add `data-report-id` to target elements and render `<FivePixels />` once on the page.

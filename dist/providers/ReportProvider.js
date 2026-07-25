@@ -1,3 +1,4 @@
+"use client";
 import { jsx as _jsx, Fragment as _Fragment } from "react/jsx-runtime";
 import { getDefaultFields } from "../i18n/index.js";
 import { useReportState } from "../hooks/report/useReportState.js";

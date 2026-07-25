@@ -15,7 +15,7 @@ export function FeedbackIssuePinnedHeader({ report, locale }: FeedbackIssuePinne
     const { messages } = useReportPreferences();
 
     return (
-        <section className="shrink-0 border-b border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] px-[12px] py-[8px]">
+        <section className="shrink-0 border-b border-b-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] px-[12px] py-[8px]">
             <div className="flex flex-col items-center gap-[8px]">
                 {report.author_name ? (
                     <div className="flex shrink-0 items-center justify-between gap-[4px] w-full">

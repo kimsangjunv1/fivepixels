@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import type { ReportCase, ReportFeedback } from "@/types/report.js";
+import type { ElementMention } from "@/types/mention.js";
 import { useReportPreferences } from "@/providers/reportContext.js";
 import { getCaseHandlerName } from "@/utils/report/reportCases.js";
+import { mentionMessageToPlainText } from "@/utils/mention/elementMentions.js";
 import { FeedbackCaseEditor } from "./FeedbackCaseEditor.js";
 import { CASE_SELECTOR_ALL_TAB, CaseResolvedBadge, FeedbackCaseTabBar, type CaseSelectorTab } from "./FeedbackCaseTabBar.js";
 
@@ -18,9 +20,10 @@ type FeedbackCaseListProps = {
     onBeginEdit?: () => void;
     onCancelEdit?: () => void;
     onSaveEdit?: () => void;
-    onCaseChange?: (caseId: string, text: string) => void;
+    onCaseChange?: (caseId: string, text: string, mentions?: ElementMention[]) => void;
     onAddCase?: () => void;
     onRemoveCase?: (caseId: string) => void;
+    enableElementMentions?: boolean;
 };
 
 function resolveFocusedCaseId(cases: ReportCase[], focusedCaseId: string | null | undefined) {
@@ -57,7 +60,7 @@ function AllCasesList({ report, cases, onSelectCase }: AllCasesListProps) {
                             <span className="w-[20px] shrink-0 tabular-nums text-[12px] text-[var(--adaptive-black500)]">{index + 1}.</span>
                             <div className="min-w-0 flex-1">
                                 <span className={`text-[14px] leading-[1.5] text-[var(--adaptive-text-primary)] ${item.status === "resolved" ? "text-[var(--adaptive-black600)] line-through" : ""}`}>
-                                    {item.text}
+                                    {mentionMessageToPlainText(item.text, item.mentions)}
                                 </span>
                                 {isOpen ? (
                                     <p className="mt-[2px] text-[11px] text-[var(--adaptive-black500)]">
@@ -94,6 +97,7 @@ export function FeedbackCaseList({
     onCaseChange,
     onAddCase,
     onRemoveCase,
+    enableElementMentions = false,
 }: FeedbackCaseListProps) {
     const { messages } = useReportPreferences();
     const resolvedFocusedCaseId = resolveFocusedCaseId(cases, focusedCaseId);
@@ -138,6 +142,7 @@ export function FeedbackCaseList({
                     onAddCase={onAddCase}
                     onRemoveCase={onRemoveCase}
                     onSubmitShortcut={onSaveEdit}
+                    enableElementMentions={enableElementMentions}
                 />
                 <div className="flex justify-end gap-[6px] px-[8px] pb-[4px]">
                     <button
@@ -198,7 +203,7 @@ export function FeedbackCaseList({
                     <p
                         className={`text-[16px] font-semibold leading-[1.5] text-[var(--adaptive-text-primary)] ${focusedCase.status === "resolved" ? "text-[var(--adaptive-black600)] line-through" : ""}`}
                     >
-                        {focusedCase.text}
+                        {mentionMessageToPlainText(focusedCase.text, focusedCase.mentions)}
                     </p>
 
                     {focusedCase.status === "open" ? (

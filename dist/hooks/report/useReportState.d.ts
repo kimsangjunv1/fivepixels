@@ -257,7 +257,7 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     beginCaseEdit: (report: ReportFeedback) => void;
     cancelCaseEdit: () => void;
     handleCaseEditSave: () => Promise<void>;
-    updateCaseEditDraftCase: (caseId: string, text: string) => void;
+    updateCaseEditDraftCase: (caseId: string, text: string, mentions?: import("../../types/report.js").ElementMention[]) => void;
     addCaseEditDraftCase: () => void;
     removeCaseEditDraftCase: (caseId: string) => void;
     removePersistedCase: (report: ReportFeedback, caseId: string) => Promise<void>;
@@ -313,7 +313,7 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     handleOverlayClick: (event: import("react").MouseEvent<HTMLDivElement>) => void;
     cancelDraft: () => void;
     beginFeedbackEdit: (report: ReportFeedback) => void;
-    updateDraftCase: (caseId: string, text: string) => void;
+    updateDraftCase: (caseId: string, text: string, mentions?: import("../../types/report.js").ElementMention[]) => void;
     addDraftCase: () => void;
     removeDraftCase: (caseId: string) => void;
     updateDraftField: (key: string, nextValue: string | boolean) => void;

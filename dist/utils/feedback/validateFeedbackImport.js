@@ -1,4 +1,5 @@
 import { normalizeReportCase, normalizeReplyCaseIds } from "../../utils/report/reportCases.js";
+import { stripMentionTokensForEmptyCheck } from "../../utils/mention/elementMentions.js";
 import { isFeedbackCategory } from "../../constants/feedbackCategory.js";
 import { getActiveReportMessages } from "../../i18n/index.js";
 const STRING_FIELDS = ["id", "pathname", "report_id", "created_at"];
@@ -197,7 +198,7 @@ export function validateCases(value, index, createdAt) {
         if (!normalized) {
             throw importError(index, validation.caseInvalid(caseIndex));
         }
-        if (!normalized.text.trim()) {
+        if (!stripMentionTokensForEmptyCheck(normalized.text, normalized.mentions).trim()) {
             throw importError(index, validation.caseTextRequired(caseIndex));
         }
         return [normalized];
