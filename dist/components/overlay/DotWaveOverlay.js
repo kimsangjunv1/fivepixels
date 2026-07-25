@@ -1,3 +1,4 @@
+"use client";
 import { jsx as _jsx } from "react/jsx-runtime";
 import { useEffect, useRef } from "react";
 const DEFAULT_ORIGIN = { x: 0.5, y: 0.5 };

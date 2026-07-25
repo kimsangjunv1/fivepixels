@@ -85,8 +85,7 @@ function ReportDraftFormContent({ draft, fields, authors, isCreating, isUpdating
         const nextText = trimmed.length === 0 ? "@" : /(?:^|[\s([{])@$/.test(trimmed) ? trimmed : `${trimmed.replace(/\s+$/, "")} @`;
         updateDraftCase(targetCaseId, nextText, targetCase.mentions);
         window.requestAnimationFrame(() => {
-            const root = document.getElementById(`fivepixels-case-input-${targetCaseId}`) ??
-                document.querySelector(`[data-fivepixels-case-input="${CSS.escape(targetCaseId)}"]`);
+            const root = document.getElementById(`fivepixels-case-input-${targetCaseId}`) ?? document.querySelector(`[data-fivepixels-case-input="${CSS.escape(targetCaseId)}"]`);
             const editor = root?.querySelector("[contenteditable='true']");
             if (!editor) {
                 return;

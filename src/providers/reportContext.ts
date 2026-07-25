@@ -1,3 +1,5 @@
+"use client";
+
 import { createContext, useContext, useMemo, type Context, type DependencyList } from "react";
 import type { useReportState } from "@/hooks/report/useReportState.js";
 import {

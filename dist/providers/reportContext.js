@@ -1,3 +1,4 @@
+"use client";
 import { createContext, useContext, useMemo } from "react";
 import { pickReportSlice, REPORT_DATA_KEYS, REPORT_PREFERENCE_KEYS, REPORT_SESSION_KEYS, } from "./reportContextPartitions.js";
 const ReportContext = createContext(null);
