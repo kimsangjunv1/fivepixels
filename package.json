@@ -29,6 +29,7 @@
         "url": "https://github.com/kimsangjunv1/fivepixels/issues"
     },
     "type": "module",
+    "sideEffects": false,
     "engines": {
         "node": ">=18"
     },

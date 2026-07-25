@@ -1,3 +1,5 @@
+"use client";
+
 import { getDefaultFields } from "@/i18n/index.js";
 import type { DeepPartialReportMessages, ReportLocale } from "@/i18n/types.js";
 import { useReportState } from "@/hooks/report/useReportState.js";
