@@ -1,3 +1,4 @@
+import { mentionMessageToPlainText, stripMentionTokensForEmptyCheck } from "../../utils/mention/elementMentions.js";
 export function createCaseId() {
     if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
         return crypto.randomUUID();
@@ -13,6 +14,8 @@ export function createReportCase(text, overrides = {}) {
         assignee_name: overrides.assignee_name ?? null,
         created_at: timestamp,
         updated_at: overrides.updated_at ?? timestamp,
+        ...(overrides.mentions && overrides.mentions.length > 0 ? { mentions: overrides.mentions } : {}),
+        ...(overrides.previous_assignee_name !== undefined ? { previous_assignee_name: overrides.previous_assignee_name } : {}),
     };
 }
 export function getReportCases(report) {
@@ -88,7 +91,7 @@ export function getIssueProgressLabel(report) {
     return `${resolved}/${total}`;
 }
 export function casesToSearchText(cases) {
-    return cases.map((item) => item.text).join(" ");
+    return cases.map((item) => mentionMessageToPlainText(item.text, item.mentions)).join(" ");
 }
 function isCaseStatus(value) {
     return value === "open" || value === "resolved";
@@ -111,6 +114,7 @@ export function normalizeReportCase(value, fallbackTimestamp) {
         previous_assignee_name: item.previous_assignee_name === null || typeof item.previous_assignee_name === "string" ? (item.previous_assignee_name ?? null) : null,
         created_at: createdAt,
         updated_at: updatedAt,
+        ...(Array.isArray(item.mentions) && item.mentions.length > 0 ? { mentions: item.mentions } : {}),
     };
 }
 export function normalizeReportCases(value, fallbackTimestamp) {
@@ -288,7 +292,7 @@ export function validateCasesForSubmit(cases, messages) {
         return messages.casesRequired;
     }
     for (const [index, item] of cases.entries()) {
-        if (!item.text.trim()) {
+        if (!stripMentionTokensForEmptyCheck(item.text, item.mentions).trim()) {
             return messages.caseTextRequired(index + 1);
         }
     }

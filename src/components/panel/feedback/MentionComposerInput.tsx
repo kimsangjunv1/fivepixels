@@ -1,7 +1,13 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { ElementMention, ElementMentionCandidate } from "@/types/mention.js";
-import { findElementMentionCandidates, getAtQuery, replaceActiveMentionQuery, toStoredMention } from "@/utils/mention/elementMentions.js";
+import {
+    findElementMentionCandidates,
+    getAtQuery,
+    mentionQueryEndsWithSpace,
+    replaceActiveMentionQuery,
+    toStoredMention,
+} from "@/utils/mention/elementMentions.js";
 import {
     deleteMentionChipBeforeCaret,
     getCaretClientRect,
@@ -59,6 +65,8 @@ export function MentionComposerInput({ value, mentions, onChange, placeholder, a
     const skipSyncRef = useRef(false);
     const isComposingRef = useRef(false);
     const activeAtOffsetRef = useRef<number | null>(null);
+    /** Once dismissed (Esc / double-space), keep this `@` closed until it is removed. */
+    const dismissedAtOffsetRef = useRef<number | null>(null);
     const [query, setQuery] = useState<string | null>(null);
     const [candidates, setCandidates] = useState<ElementMentionCandidate[]>([]);
     const [activeIndex, setActiveIndex] = useState(0);
@@ -90,6 +98,17 @@ export function MentionComposerInput({ value, mentions, onChange, placeholder, a
         onMultilineChange?.(isMultiline);
     }, [onMultilineChange]);
 
+    const dismissActiveMention = useCallback((atOffset: number | null) => {
+        if (atOffset !== null) {
+            dismissedAtOffsetRef.current = atOffset;
+        }
+
+        activeAtOffsetRef.current = null;
+        setQuery(null);
+        setMentionHighlightTarget(null);
+        setMenuPlacement(null);
+    }, [setMentionHighlightTarget]);
+
     const refreshMentionQuery = useCallback(() => {
         const editor = editorRef.current;
 
@@ -101,8 +120,22 @@ export function MentionComposerInput({ value, mentions, onChange, placeholder, a
         const before = serializeMentionEditorBeforeCaret(editor, mentionsRef.current, caret);
         const resolved = before ? getAtQuery(before.message) : getAtQuery(serializeMentionEditor(editor, mentionsRef.current).message);
 
-        activeAtOffsetRef.current = resolved?.atOffsetInBefore ?? null;
-        setQuery(resolved ? resolved.query : null);
+        if (!resolved) {
+            dismissedAtOffsetRef.current = null;
+            activeAtOffsetRef.current = null;
+            setQuery(null);
+            return;
+        }
+
+        if (dismissedAtOffsetRef.current === resolved.atOffsetInBefore) {
+            activeAtOffsetRef.current = null;
+            setQuery(null);
+            return;
+        }
+
+        dismissedAtOffsetRef.current = null;
+        activeAtOffsetRef.current = resolved.atOffsetInBefore;
+        setQuery(resolved.query);
     }, []);
 
     useLayoutEffect(() => {
@@ -164,6 +197,21 @@ export function MentionComposerInput({ value, mentions, onChange, placeholder, a
         setCandidates(nextCandidates);
         setActiveIndex(0);
     }, [query, setMentionHighlightTarget]);
+
+    // IME-safe: Korean composition uses the first Space to commit text, so keydown
+    // alone cannot reliably dismiss. When the query already ends with a space and
+    // nothing matches, close mention mode (works for both IME and Latin input).
+    useEffect(() => {
+        if (query === null || !mentionQueryEndsWithSpace(query)) {
+            return;
+        }
+
+        if (findElementMentionCandidates(query).length > 0) {
+            return;
+        }
+
+        dismissActiveMention(activeAtOffsetRef.current);
+    }, [query, dismissActiveMention]);
 
     useLayoutEffect(() => {
         if (query === null || !rootRef.current) {
@@ -265,6 +313,7 @@ export function MentionComposerInput({ value, mentions, onChange, placeholder, a
         const nextMentions = [...current.mentions.filter((item) => item.id !== mention.id), mention];
 
         mentionsRef.current = nextMentions;
+        dismissedAtOffsetRef.current = null;
         activeAtOffsetRef.current = null;
         setQuery(null);
         setMentionHighlightTarget(null);
@@ -409,11 +458,30 @@ export function MentionComposerInput({ value, mentions, onChange, placeholder, a
                             return;
                         }
 
+                        if (event.key === " " && !event.metaKey && !event.ctrlKey && !event.altKey) {
+                            // Empty results: dismiss on the first Space even while IME is composing
+                            // (Hangul often uses Space only to commit, without inserting a space char).
+                            if (candidates.length === 0) {
+                                dismissActiveMention(activeAtOffsetRef.current);
+                                return;
+                            }
+
+                            // Candidates present: a second consecutive space confirms the highlighted one.
+                            if (!isComposingRef.current && mentionQueryEndsWithSpace(query)) {
+                                event.preventDefault();
+                                const active = candidates[activeIndex];
+
+                                if (active) {
+                                    insertCandidate(active);
+                                }
+
+                                return;
+                            }
+                        }
+
                         if (event.key === "Escape") {
                             event.preventDefault();
-                            setQuery(null);
-                            activeAtOffsetRef.current = null;
-                            setMentionHighlightTarget(null);
+                            dismissActiveMention(activeAtOffsetRef.current);
                             return;
                         }
                     }

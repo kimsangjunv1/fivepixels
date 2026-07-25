@@ -1,7 +1,7 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { findElementMentionCandidates, getAtQuery, replaceActiveMentionQuery, toStoredMention } from "../../../utils/mention/elementMentions.js";
+import { findElementMentionCandidates, getAtQuery, mentionQueryEndsWithSpace, replaceActiveMentionQuery, toStoredMention, } from "../../../utils/mention/elementMentions.js";
 import { deleteMentionChipBeforeCaret, getCaretClientRect, getEditorCaretPoint, placeCaretAfterMention, renderMentionEditorContent, serializeMentionEditor, serializeMentionEditorBeforeCaret, } from "../../../utils/mention/mentionComposerDom.js";
 import { useReportPreferences, useReportSession } from "../../../providers/reportContext.js";
 import { ensureReportTooltipLayer } from "../../../utils/shared/dom.js";
@@ -28,6 +28,8 @@ export function MentionComposerInput({ value, mentions, onChange, placeholder, a
     const skipSyncRef = useRef(false);
     const isComposingRef = useRef(false);
     const activeAtOffsetRef = useRef(null);
+    /** Once dismissed (Esc / double-space), keep this `@` closed until it is removed. */
+    const dismissedAtOffsetRef = useRef(null);
     const [query, setQuery] = useState(null);
     const [candidates, setCandidates] = useState([]);
     const [activeIndex, setActiveIndex] = useState(0);
@@ -51,6 +53,15 @@ export function MentionComposerInput({ value, mentions, onChange, placeholder, a
         lastMultilineRef.current = isMultiline;
         onMultilineChange?.(isMultiline);
     }, [onMultilineChange]);
+    const dismissActiveMention = useCallback((atOffset) => {
+        if (atOffset !== null) {
+            dismissedAtOffsetRef.current = atOffset;
+        }
+        activeAtOffsetRef.current = null;
+        setQuery(null);
+        setMentionHighlightTarget(null);
+        setMenuPlacement(null);
+    }, [setMentionHighlightTarget]);
     const refreshMentionQuery = useCallback(() => {
         const editor = editorRef.current;
         if (!editor) {
@@ -59,8 +70,20 @@ export function MentionComposerInput({ value, mentions, onChange, placeholder, a
         const caret = getEditorCaretPoint(editor);
         const before = serializeMentionEditorBeforeCaret(editor, mentionsRef.current, caret);
         const resolved = before ? getAtQuery(before.message) : getAtQuery(serializeMentionEditor(editor, mentionsRef.current).message);
-        activeAtOffsetRef.current = resolved?.atOffsetInBefore ?? null;
-        setQuery(resolved ? resolved.query : null);
+        if (!resolved) {
+            dismissedAtOffsetRef.current = null;
+            activeAtOffsetRef.current = null;
+            setQuery(null);
+            return;
+        }
+        if (dismissedAtOffsetRef.current === resolved.atOffsetInBefore) {
+            activeAtOffsetRef.current = null;
+            setQuery(null);
+            return;
+        }
+        dismissedAtOffsetRef.current = null;
+        activeAtOffsetRef.current = resolved.atOffsetInBefore;
+        setQuery(resolved.query);
     }, []);
     useLayoutEffect(() => {
         const editor = editorRef.current;
@@ -187,6 +210,7 @@ export function MentionComposerInput({ value, mentions, onChange, placeholder, a
         }
         const nextMentions = [...current.mentions.filter((item) => item.id !== mention.id), mention];
         mentionsRef.current = nextMentions;
+        dismissedAtOffsetRef.current = null;
         activeAtOffsetRef.current = null;
         setQuery(null);
         setMentionHighlightTarget(null);
@@ -260,11 +284,20 @@ export function MentionComposerInput({ value, mentions, onChange, placeholder, a
                             }
                             return;
                         }
+                        // Second consecutive space ends mention mode without selecting.
+                        if (event.key === " " &&
+                            !event.metaKey &&
+                            !event.ctrlKey &&
+                            !event.altKey &&
+                            !isComposingRef.current &&
+                            mentionQueryEndsWithSpace(query)) {
+                            event.preventDefault();
+                            dismissActiveMention(activeAtOffsetRef.current);
+                            return;
+                        }
                         if (event.key === "Escape") {
                             event.preventDefault();
-                            setQuery(null);
-                            activeAtOffsetRef.current = null;
-                            setMentionHighlightTarget(null);
+                            dismissActiveMention(activeAtOffsetRef.current);
                             return;
                         }
                     }

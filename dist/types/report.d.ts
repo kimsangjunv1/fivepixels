@@ -17,6 +17,8 @@ export type ReportCase = {
     previous_assignee_name?: string | null;
     created_at: string;
     updated_at: string;
+    /** Element @mentions embedded in `text` via `@{mentionId}` tokens. */
+    mentions?: ElementMention[];
 };
 export type ReplyHistoryLoadMode = "pagination" | "infinite-scroll" | "load-more-button" | "button-and-scroll";
 export type ReplyHistoryConfig = {

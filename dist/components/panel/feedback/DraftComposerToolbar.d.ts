@@ -6,6 +6,7 @@ type DraftComposerToolbarProps = {
     onSelectCase: (caseId: string) => void;
     onAddCase: () => void;
     onRemoveCase: (caseId: string) => void;
+    onInsertAtMention?: () => void;
     category: FeedbackCategory | null;
     onCategoryChange: (value: FeedbackCategory) => void;
     categoryNeedsAttention?: boolean;
@@ -19,6 +20,6 @@ type DraftComposerToolbarProps = {
     isGitHubIssueConfirming?: boolean;
     onGitHubIssueConfirmingChange?: (confirming: boolean) => void;
 };
-export declare function DraftComposerToolbar({ cases, activeCaseId, onSelectCase, onAddCase, onRemoveCase, category, onCategoryChange, categoryNeedsAttention, onSubmit, isSubmitting, submitLabel, submittingLabel, showGitHubIssueOnCreate, onGitHubIssueSubmit, isGitHubIssueSubmitting, isGitHubIssueConfirming, onGitHubIssueConfirmingChange, }: DraftComposerToolbarProps): import("react").JSX.Element;
+export declare function DraftComposerToolbar({ cases, activeCaseId, onSelectCase, onAddCase, onRemoveCase, onInsertAtMention, category, onCategoryChange, categoryNeedsAttention, onSubmit, isSubmitting, submitLabel, submittingLabel, showGitHubIssueOnCreate, onGitHubIssueSubmit, isGitHubIssueSubmitting, isGitHubIssueConfirming, onGitHubIssueConfirmingChange, }: DraftComposerToolbarProps): import("react").JSX.Element;
 export {};
 //# sourceMappingURL=DraftComposerToolbar.d.ts.map

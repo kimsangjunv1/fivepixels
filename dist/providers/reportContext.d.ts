@@ -222,7 +222,7 @@ declare const ReportContext: Context<{
     beginCaseEdit: (report: import("../index.js").ReportFeedback) => void;
     cancelCaseEdit: () => void;
     handleCaseEditSave: () => Promise<void>;
-    updateCaseEditDraftCase: (caseId: string, text: string) => void;
+    updateCaseEditDraftCase: (caseId: string, text: string, mentions?: import("../types/mention.js").ElementMention[]) => void;
     addCaseEditDraftCase: () => void;
     removeCaseEditDraftCase: (caseId: string) => void;
     removePersistedCase: (report: import("../index.js").ReportFeedback, caseId: string) => Promise<void>;
@@ -278,7 +278,7 @@ declare const ReportContext: Context<{
     handleOverlayClick: (event: import("react").MouseEvent<HTMLDivElement>) => void;
     cancelDraft: () => void;
     beginFeedbackEdit: (report: import("../index.js").ReportFeedback) => void;
-    updateDraftCase: (caseId: string, text: string) => void;
+    updateDraftCase: (caseId: string, text: string, mentions?: import("../types/mention.js").ElementMention[]) => void;
     addDraftCase: () => void;
     removeDraftCase: (caseId: string) => void;
     updateDraftField: (key: string, nextValue: string | boolean) => void;
@@ -514,7 +514,7 @@ export declare function useReport(): {
     beginCaseEdit: (report: import("../index.js").ReportFeedback) => void;
     cancelCaseEdit: () => void;
     handleCaseEditSave: () => Promise<void>;
-    updateCaseEditDraftCase: (caseId: string, text: string) => void;
+    updateCaseEditDraftCase: (caseId: string, text: string, mentions?: import("../types/mention.js").ElementMention[]) => void;
     addCaseEditDraftCase: () => void;
     removeCaseEditDraftCase: (caseId: string) => void;
     removePersistedCase: (report: import("../index.js").ReportFeedback, caseId: string) => Promise<void>;
@@ -570,7 +570,7 @@ export declare function useReport(): {
     handleOverlayClick: (event: import("react").MouseEvent<HTMLDivElement>) => void;
     cancelDraft: () => void;
     beginFeedbackEdit: (report: import("../index.js").ReportFeedback) => void;
-    updateDraftCase: (caseId: string, text: string) => void;
+    updateDraftCase: (caseId: string, text: string, mentions?: import("../types/mention.js").ElementMention[]) => void;
     addDraftCase: () => void;
     removeDraftCase: (caseId: string) => void;
     updateDraftField: (key: string, nextValue: string | boolean) => void;
@@ -809,7 +809,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         beginCaseEdit: (report: import("../index.js").ReportFeedback) => void;
         cancelCaseEdit: () => void;
         handleCaseEditSave: () => Promise<void>;
-        updateCaseEditDraftCase: (caseId: string, text: string) => void;
+        updateCaseEditDraftCase: (caseId: string, text: string, mentions?: import("../types/mention.js").ElementMention[]) => void;
         addCaseEditDraftCase: () => void;
         removeCaseEditDraftCase: (caseId: string) => void;
         removePersistedCase: (report: import("../index.js").ReportFeedback, caseId: string) => Promise<void>;
@@ -865,7 +865,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         handleOverlayClick: (event: import("react").MouseEvent<HTMLDivElement>) => void;
         cancelDraft: () => void;
         beginFeedbackEdit: (report: import("../index.js").ReportFeedback) => void;
-        updateDraftCase: (caseId: string, text: string) => void;
+        updateDraftCase: (caseId: string, text: string, mentions?: import("../types/mention.js").ElementMention[]) => void;
         addDraftCase: () => void;
         removeDraftCase: (caseId: string) => void;
         updateDraftField: (key: string, nextValue: string | boolean) => void;
@@ -882,7 +882,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         handleCreateGitHubIssue: (report: import("../index.js").ReportFeedback) => Promise<void>;
         handleCreateSubmitWithGitHubIssue: () => Promise<void>;
         isDraftGitHubIssueSubmitting: boolean;
-    }, "environment" | "personalKey" | "projectId" | "fields" | "personalKeyRequired" | "questionThreadDisplay" | "setQuestionThreadDisplay" | "locale" | "setLocale" | "showMarkerTargetPreview" | "setShowMarkerTargetPreview" | "toggleMarkerTargetPreview" | "markerAppearance" | "setMarkerAppearance" | "setMarkerSize" | "setMarkerShape" | "setMarkerColors" | "setMarkerColor" | "setFeedbackModeDotColors" | "setFeedbackModeDotColor" | "typography" | "setTypography" | "setFontSize" | "setFontFamily" | "panelRole" | "setPanelRole" | "persistenceStatus" | "appVersion" | "showFeedbackList" | "pinnedFeedbackItems" | "pinRailCollapsed" | "togglePinnedFeedback" | "unpinFeedback" | "setPinRailCollapsed" | "syncPinnedFeedbackReports" | "selfProfile" | "authors" | "publicKey" | "personalKeyCandidates" | "issuePersonalKey" | "rotatePersonalKey" | "insertPersonalKey" | "authorSelectionLocked" | "messages" | "visibleShortcutKeys" | "panelAppearance" | "setPanelAppearance" | "tooltipAppearance" | "setTooltipAppearance" | "panelView" | "completeOnboarding" | "restoreFromBackup" | "skipOnboarding" | "resolvedPanelAppearance" | "resolvedTooltipAppearance" | "isMobileViewport" | "isPresentationMode" | "presentationViewers" | "visiblePanelTabs" | "visiblePanelTabsSummary" | "resolvedTabAvailabilityContext" | "setVisiblePanelTabs" | "resetVisibleTabsToRoleDefault" | "applyRoleDefaultTabsForOnboarding" | "savePanelTabPreference" | "storedPanelTabPreference">;
+    }, "personalKey" | "projectId" | "fields" | "personalKeyRequired" | "environment" | "questionThreadDisplay" | "setQuestionThreadDisplay" | "locale" | "setLocale" | "showMarkerTargetPreview" | "setShowMarkerTargetPreview" | "toggleMarkerTargetPreview" | "markerAppearance" | "setMarkerAppearance" | "setMarkerSize" | "setMarkerShape" | "setMarkerColors" | "setMarkerColor" | "setFeedbackModeDotColors" | "setFeedbackModeDotColor" | "typography" | "setTypography" | "setFontSize" | "setFontFamily" | "panelRole" | "setPanelRole" | "persistenceStatus" | "appVersion" | "showFeedbackList" | "pinnedFeedbackItems" | "pinRailCollapsed" | "togglePinnedFeedback" | "unpinFeedback" | "setPinRailCollapsed" | "syncPinnedFeedbackReports" | "selfProfile" | "authors" | "publicKey" | "personalKeyCandidates" | "issuePersonalKey" | "rotatePersonalKey" | "insertPersonalKey" | "authorSelectionLocked" | "messages" | "visibleShortcutKeys" | "panelAppearance" | "setPanelAppearance" | "tooltipAppearance" | "setTooltipAppearance" | "panelView" | "completeOnboarding" | "restoreFromBackup" | "skipOnboarding" | "resolvedPanelAppearance" | "resolvedTooltipAppearance" | "isMobileViewport" | "isPresentationMode" | "presentationViewers" | "visiblePanelTabs" | "visiblePanelTabsSummary" | "resolvedTabAvailabilityContext" | "setVisiblePanelTabs" | "resetVisibleTabsToRoleDefault" | "applyRoleDefaultTabsForOnboarding" | "savePanelTabPreference" | "storedPanelTabPreference">;
     session: Pick<{
         panelAppearance: import("../index.js").ReportAppearance;
         setPanelAppearance: (nextAppearance: import("../index.js").ReportAppearance) => void;
@@ -1097,7 +1097,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         beginCaseEdit: (report: import("../index.js").ReportFeedback) => void;
         cancelCaseEdit: () => void;
         handleCaseEditSave: () => Promise<void>;
-        updateCaseEditDraftCase: (caseId: string, text: string) => void;
+        updateCaseEditDraftCase: (caseId: string, text: string, mentions?: import("../types/mention.js").ElementMention[]) => void;
         addCaseEditDraftCase: () => void;
         removeCaseEditDraftCase: (caseId: string) => void;
         removePersistedCase: (report: import("../index.js").ReportFeedback, caseId: string) => Promise<void>;
@@ -1153,7 +1153,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         handleOverlayClick: (event: import("react").MouseEvent<HTMLDivElement>) => void;
         cancelDraft: () => void;
         beginFeedbackEdit: (report: import("../index.js").ReportFeedback) => void;
-        updateDraftCase: (caseId: string, text: string) => void;
+        updateDraftCase: (caseId: string, text: string, mentions?: import("../types/mention.js").ElementMention[]) => void;
         addDraftCase: () => void;
         removeDraftCase: (caseId: string) => void;
         updateDraftField: (key: string, nextValue: string | boolean) => void;
@@ -1385,7 +1385,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         beginCaseEdit: (report: import("../index.js").ReportFeedback) => void;
         cancelCaseEdit: () => void;
         handleCaseEditSave: () => Promise<void>;
-        updateCaseEditDraftCase: (caseId: string, text: string) => void;
+        updateCaseEditDraftCase: (caseId: string, text: string, mentions?: import("../types/mention.js").ElementMention[]) => void;
         addCaseEditDraftCase: () => void;
         removeCaseEditDraftCase: (caseId: string) => void;
         removePersistedCase: (report: import("../index.js").ReportFeedback, caseId: string) => Promise<void>;
@@ -1441,7 +1441,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         handleOverlayClick: (event: import("react").MouseEvent<HTMLDivElement>) => void;
         cancelDraft: () => void;
         beginFeedbackEdit: (report: import("../index.js").ReportFeedback) => void;
-        updateDraftCase: (caseId: string, text: string) => void;
+        updateDraftCase: (caseId: string, text: string, mentions?: import("../types/mention.js").ElementMention[]) => void;
         addDraftCase: () => void;
         removeDraftCase: (caseId: string) => void;
         updateDraftField: (key: string, nextValue: string | boolean) => void;
