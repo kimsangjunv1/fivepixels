@@ -5,6 +5,7 @@ import { ChevronDownIcon, SendIcon } from "@/components/icons/Icons.js";
 import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
 import { PanelDropdownMenu, PanelDropdownMenuItem } from "@/components/panel/PanelDropdownMenu.js";
 import { useReportPreferences } from "@/providers/reportContext.js";
+import { mentionMessageToPlainText } from "@/utils/mention/elementMentions.js";
 
 type DraftComposerToolbarProps = {
     cases: ReportCase[];
@@ -12,6 +13,7 @@ type DraftComposerToolbarProps = {
     onSelectCase: (caseId: string) => void;
     onAddCase: () => void;
     onRemoveCase: (caseId: string) => void;
+    onInsertAtMention?: () => void;
     category: FeedbackCategory | null;
     onCategoryChange: (value: FeedbackCategory) => void;
     categoryNeedsAttention?: boolean;
@@ -27,7 +29,7 @@ type DraftComposerToolbarProps = {
 };
 
 const TOOLBAR_TRIGGER_CLASS =
-    "inline-flex h-[28px] max-w-[140px] items-center gap-[4px] rounded-[8px] px-[8px] text-[12px] font-semibold text-[var(--adaptive-black600)] transition-colors hover:bg-[var(--adaptive-tintOpacity100)] hover:text-[var(--adaptive-black900)]";
+    "inline-flex max-w-[140px] items-center gap-[4px] rounded-[8px] py-[2px] px-[4px] text-[12px] font-semibold text-[var(--adaptive-black600)] transition-colors hover:bg-[var(--adaptive-tintOpacity100)] hover:text-[var(--adaptive-black900)]";
 
 function truncateLabel(text: string, fallback: string) {
     const trimmed = text.trim();
@@ -45,6 +47,7 @@ export function DraftComposerToolbar({
     onSelectCase,
     onAddCase,
     onRemoveCase,
+    onInsertAtMention,
     category,
     onCategoryChange,
     categoryNeedsAttention = false,
@@ -69,7 +72,9 @@ export function DraftComposerToolbar({
         cases.findIndex((item) => item.id === activeCaseId),
     );
     const activeCase = cases[activeCaseIndex] ?? cases[0] ?? null;
-    const casesLabel = activeCase ? truncateLabel(activeCase.text, messages.composer.caseTabLabel(activeCaseIndex + 1)) : messages.composer.casesDropdownLabel;
+    const casesLabel = activeCase
+        ? truncateLabel(mentionMessageToPlainText(activeCase.text, activeCase.mentions), messages.composer.caseTabLabel(activeCaseIndex + 1))
+        : messages.composer.casesDropdownLabel;
     const categoryLabel = category ? messages.composer.categoryOption[category] : messages.composer.categoryLabel;
 
     const handleGitHubIssueClick = () => {
@@ -101,109 +106,134 @@ export function DraftComposerToolbar({
                 </button>
             </HoverTooltip>
 
-            <span
+            {/* {onInsertAtMention ? (
+                <HoverTooltip label={messages.composer.mentionInsertLabel}>
+                    <button
+                        type="button"
+                        data-fivepixels-interactive=""
+                        onClick={onInsertAtMention}
+                        disabled={isActionDisabled}
+                        aria-label={messages.composer.mentionInsertAriaLabel}
+                        className="inline-flex h-[28px] items-center gap-[2px] rounded-[8px] px-[8px] text-[12px] font-semibold text-[var(--adaptive-black600)] transition-colors hover:bg-[var(--adaptive-tintOpacity100)] hover:text-[var(--adaptive-black900)] disabled:opacity-50"
+                    >
+                        @
+                        <ChevronDownIcon className="h-[12px] w-[12px] shrink-0" />
+                    </button>
+                </HoverTooltip>
+            ) : null} */}
+
+            {/* <span
                 className="h-[14px] w-px shrink-0 bg-[var(--adaptive-border-subtle)]"
                 aria-hidden
-            />
+            /> */}
+            <section className="flex flex-col gap-[4px]">
+                <section className="flex items-center">
+                    <p className="text-[12px] text-[var(--adaptive-black500)]">case</p>
 
-            <PanelDropdownMenu
-                open={casesOpen}
-                onClose={() => setCasesOpen(false)}
-                align="left"
-                menuClassName="min-w-[180px] rounded-[10px]"
-                trigger={
-                    <button
-                        type="button"
-                        data-fivepixels-interactive=""
-                        aria-expanded={casesOpen}
-                        aria-label={messages.composer.casesDropdownAriaLabel}
-                        disabled={isActionDisabled}
-                        onClick={() => {
-                            setCategoryOpen(false);
-                            setCasesOpen((current) => !current);
-                        }}
-                        className={`${TOOLBAR_TRIGGER_CLASS} disabled:opacity-50`}
-                    >
-                        <span className="min-w-0 truncate">{casesLabel}</span>
-                        <ChevronDownIcon className="h-[12px] w-[12px] shrink-0" />
-                    </button>
-                }
-            >
-                {cases.map((item, index) => {
-                    const isActive = item.id === activeCaseId;
-
-                    return (
-                        <div
-                            key={item.id}
-                            className="flex items-stretch"
-                        >
-                            <PanelDropdownMenuItem
-                                active={isActive}
+                    <PanelDropdownMenu
+                        open={casesOpen}
+                        onClose={() => setCasesOpen(false)}
+                        align="left"
+                        menuClassName="min-w-[180px] rounded-[10px]"
+                        trigger={
+                            <button
+                                type="button"
+                                data-fivepixels-interactive=""
+                                aria-expanded={casesOpen}
+                                aria-label={messages.composer.casesDropdownAriaLabel}
+                                disabled={isActionDisabled}
                                 onClick={() => {
-                                    onSelectCase(item.id);
+                                    setCategoryOpen(false);
+                                    setCasesOpen((current) => !current);
+                                }}
+                                className={`${TOOLBAR_TRIGGER_CLASS} disabled:opacity-50`}
+                            >
+                                <span className="min-w-0 truncate text-[12px]">{casesLabel}</span>
+                                <ChevronDownIcon className="h-[12px] w-[12px] shrink-0" />
+                            </button>
+                        }
+                    >
+                        {cases.map((item, index) => {
+                            const isActive = item.id === activeCaseId;
+
+                            return (
+                                <div
+                                    key={item.id}
+                                    className="flex items-stretch"
+                                >
+                                    <PanelDropdownMenuItem
+                                        active={isActive}
+                                        onClick={() => {
+                                            onSelectCase(item.id);
+                                            setCasesOpen(false);
+                                        }}
+                                    >
+                                        <span className="min-w-0 flex-1 truncate">{truncateLabel(mentionMessageToPlainText(item.text, item.mentions), messages.composer.caseTabLabel(index + 1))}</span>
+                                    </PanelDropdownMenuItem>
+                                    {cases.length > 1 ? (
+                                        <button
+                                            type="button"
+                                            data-fivepixels-interactive=""
+                                            onClick={() => {
+                                                onRemoveCase(item.id);
+                                                if (cases.length <= 2) {
+                                                    setCasesOpen(false);
+                                                }
+                                            }}
+                                            aria-label={messages.composer.removeCaseAriaLabel(index + 1)}
+                                            className="inline-flex w-[28px] shrink-0 items-center justify-center text-[14px] text-[var(--adaptive-black500)] hover:bg-[var(--adaptive-black100)] hover:text-[var(--adaptive-black900)]"
+                                        >
+                                            ×
+                                        </button>
+                                    ) : null}
+                                </div>
+                            );
+                        })}
+                    </PanelDropdownMenu>
+                </section>
+
+                <section className="flex items-center">
+                    <p className="text-[12px] text-[var(--adaptive-black500)]">category</p>
+
+                    <PanelDropdownMenu
+                        open={categoryOpen}
+                        onClose={() => setCategoryOpen(false)}
+                        align="left"
+                        menuClassName="min-w-[140px] rounded-[10px]"
+                        trigger={
+                            <button
+                                type="button"
+                                data-fivepixels-interactive=""
+                                aria-expanded={categoryOpen}
+                                aria-label={messages.composer.categoryAriaLabel}
+                                aria-invalid={categoryNeedsAttention || undefined}
+                                disabled={isActionDisabled}
+                                onClick={() => {
                                     setCasesOpen(false);
+                                    setCategoryOpen((current) => !current);
+                                }}
+                                className={`${TOOLBAR_TRIGGER_CLASS} disabled:opacity-50 ` + (categoryNeedsAttention ? "fivepixels-validation-attention text-rose-500 hover:text-rose-600" : "")}
+                            >
+                                <span className="min-w-0 truncate text-[12px]">{categoryLabel}</span>
+                                <ChevronDownIcon className="h-[12px] w-[12px] shrink-0" />
+                            </button>
+                        }
+                    >
+                        {FEEDBACK_CATEGORIES.map((item) => (
+                            <PanelDropdownMenuItem
+                                key={item}
+                                active={category === item}
+                                onClick={() => {
+                                    onCategoryChange(item);
+                                    setCategoryOpen(false);
                                 }}
                             >
-                                <span className="min-w-0 flex-1 truncate">{truncateLabel(item.text, messages.composer.caseTabLabel(index + 1))}</span>
+                                {messages.composer.categoryOption[item]}
                             </PanelDropdownMenuItem>
-                            {cases.length > 1 ? (
-                                <button
-                                    type="button"
-                                    data-fivepixels-interactive=""
-                                    onClick={() => {
-                                        onRemoveCase(item.id);
-                                        if (cases.length <= 2) {
-                                            setCasesOpen(false);
-                                        }
-                                    }}
-                                    aria-label={messages.composer.removeCaseAriaLabel(index + 1)}
-                                    className="inline-flex w-[28px] shrink-0 items-center justify-center text-[14px] text-[var(--adaptive-black500)] hover:bg-[var(--adaptive-black100)] hover:text-[var(--adaptive-black900)]"
-                                >
-                                    ×
-                                </button>
-                            ) : null}
-                        </div>
-                    );
-                })}
-            </PanelDropdownMenu>
-
-            <PanelDropdownMenu
-                open={categoryOpen}
-                onClose={() => setCategoryOpen(false)}
-                align="left"
-                menuClassName="min-w-[140px] rounded-[10px]"
-                trigger={
-                    <button
-                        type="button"
-                        data-fivepixels-interactive=""
-                        aria-expanded={categoryOpen}
-                        aria-label={messages.composer.categoryAriaLabel}
-                        aria-invalid={categoryNeedsAttention || undefined}
-                        disabled={isActionDisabled}
-                        onClick={() => {
-                            setCasesOpen(false);
-                            setCategoryOpen((current) => !current);
-                        }}
-                        className={`${TOOLBAR_TRIGGER_CLASS} disabled:opacity-50 ` + (categoryNeedsAttention ? "fivepixels-validation-attention text-rose-500 hover:text-rose-600" : "")}
-                    >
-                        <span className="min-w-0 truncate">{categoryLabel}</span>
-                        <ChevronDownIcon className="h-[12px] w-[12px] shrink-0" />
-                    </button>
-                }
-            >
-                {FEEDBACK_CATEGORIES.map((item) => (
-                    <PanelDropdownMenuItem
-                        key={item}
-                        active={category === item}
-                        onClick={() => {
-                            onCategoryChange(item);
-                            setCategoryOpen(false);
-                        }}
-                    >
-                        {messages.composer.categoryOption[item]}
-                    </PanelDropdownMenuItem>
-                ))}
-            </PanelDropdownMenu>
+                        ))}
+                    </PanelDropdownMenu>
+                </section>
+            </section>
 
             <div className="min-w-[8px] flex-1" />
 

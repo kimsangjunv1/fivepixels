@@ -4,6 +4,7 @@ import type { MarkerDetachedKind } from "@/types/report-ui.js";
 import { getDetachedMarkerHint } from "@/utils/marker/markerContext.js";
 import { getCaseLatestStatus } from "@/utils/feedback/feedbackThread.js";
 import { getReportCases } from "@/utils/report/reportCases.js";
+import { mentionMessageToPlainText } from "@/utils/mention/elementMentions.js";
 import { useReportPreferences } from "@/providers/reportContext.js";
 import { FeedbackCreatorBadge } from "./FeedbackCreatorBadge.js";
 
@@ -60,9 +61,9 @@ export function FeedbackHoverCard({ report, detached = false, detachedKind = nul
                             >
                                 <span
                                     className={`min-w-0 flex-1 text-[16px] leading-[1.5] truncate text-[var(--adaptive-text-primary)] ${item.status === "resolved" ? "text-[var(--adaptive-black500)] line-through" : ""}`}
-                                    title={item.text}
+                                    title={mentionMessageToPlainText(item.text, item.mentions)}
                                 >
-                                    {item.text}
+                                    {mentionMessageToPlainText(item.text, item.mentions)}
                                 </span>
                                 {/* <span
                                     className="shrink-0 text-[var(--adaptive-black400)]"

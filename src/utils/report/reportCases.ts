@@ -1,4 +1,5 @@
 import type { ReportCase, ReportCaseStatus, ReportFeedback, ReportReply, ReportStatus } from "@/types/report.js";
+import { mentionMessageToPlainText, stripMentionTokensForEmptyCheck } from "@/utils/mention/elementMentions.js";
 
 export function createCaseId() {
     if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
@@ -18,6 +19,8 @@ export function createReportCase(text: string, overrides: Partial<Omit<ReportCas
         assignee_name: overrides.assignee_name ?? null,
         created_at: timestamp,
         updated_at: overrides.updated_at ?? timestamp,
+        ...(overrides.mentions && overrides.mentions.length > 0 ? { mentions: overrides.mentions } : {}),
+        ...(overrides.previous_assignee_name !== undefined ? { previous_assignee_name: overrides.previous_assignee_name } : {}),
     };
 }
 
@@ -118,7 +121,7 @@ export function getIssueProgressLabel(report: Pick<ReportFeedback, "cases">): st
 }
 
 export function casesToSearchText(cases: ReportCase[]): string {
-    return cases.map((item) => item.text).join(" ");
+    return cases.map((item) => mentionMessageToPlainText(item.text, item.mentions)).join(" ");
 }
 
 function isCaseStatus(value: unknown): value is ReportCaseStatus {
@@ -148,6 +151,7 @@ export function normalizeReportCase(value: unknown, fallbackTimestamp: string): 
             item.previous_assignee_name === null || typeof item.previous_assignee_name === "string" ? (item.previous_assignee_name ?? null) : null,
         created_at: createdAt,
         updated_at: updatedAt,
+        ...(Array.isArray(item.mentions) && item.mentions.length > 0 ? { mentions: item.mentions } : {}),
     };
 }
 
@@ -393,13 +397,13 @@ export function buildResolvedCasesUpdate(report: ReportFeedback, caseIds: string
     return resolveCases(getReportCases(report), caseIds);
 }
 
-export function validateCasesForSubmit(cases: Array<Pick<ReportCase, "text">>, messages: CaseValidationMessages): string {
+export function validateCasesForSubmit(cases: Array<Pick<ReportCase, "text" | "mentions">>, messages: CaseValidationMessages): string {
     if (cases.length === 0) {
         return messages.casesRequired;
     }
 
     for (const [index, item] of cases.entries()) {
-        if (!item.text.trim()) {
+        if (!stripMentionTokensForEmptyCheck(item.text, item.mentions).trim()) {
             return messages.caseTextRequired(index + 1);
         }
     }

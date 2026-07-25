@@ -1,6 +1,7 @@
 import { type Dispatch, type MouseEvent, type MutableRefObject, type SetStateAction, useCallback, useEffect, useRef, useState } from "react";
 import type { ReportMessages } from "@/i18n/types.js";
 import type { CreateReportFeedbackPayload, ReportAuthor, ReportFeedback, ReportField, ReportIdentify } from "@/types/report.js";
+import type { ElementMention } from "@/types/mention.js";
 import type { DraftReport, HoverPointer, ReportMode, TargetSnapshot } from "@/types/report-ui.js";
 import type { FeedbackCategory } from "@/constants/feedbackCategory.js";
 import { clampRatio } from "@/utils/marker/coordinates.js";
@@ -370,7 +371,7 @@ export function useReportDraftSession({
         return true;
     };
 
-    const updateDraftCase = (caseId: string, text: string) => {
+    const updateDraftCase = (caseId: string, text: string, mentions?: ElementMention[]) => {
         setDraft((current) => {
             if (!current) {
                 return current;
@@ -378,7 +379,19 @@ export function useReportDraftSession({
 
             return {
                 ...current,
-                cases: current.cases.map((item) => (item.id === caseId ? { ...item, text } : item)),
+                cases: current.cases.map((item) => {
+                    if (item.id !== caseId) {
+                        return item;
+                    }
+
+                    const nextMentions = mentions === undefined ? item.mentions : mentions.length > 0 ? mentions : undefined;
+
+                    return {
+                        ...item,
+                        text,
+                        ...(nextMentions ? { mentions: nextMentions } : { mentions: undefined }),
+                    };
+                }),
             };
         });
         setErrorMessage("");

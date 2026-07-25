@@ -193,6 +193,8 @@ export const ko: ReportMessages = {
         casesDropdownAriaLabel: "생성된 케이스 목록",
         mentionListAriaLabel: "화면 요소 멘션 목록",
         mentionEmpty: "일치하는 요소가 없습니다",
+        mentionInsertLabel: "요소 멘션",
+        mentionInsertAriaLabel: "요소 멘션 삽입",
         categoryOption: {
             incident: "긴급",
             problem: "문제",

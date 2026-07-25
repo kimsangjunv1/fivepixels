@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ReportAuthor, ReportFeedback, ReportReply } from "@/types/report.js";
+import type { ElementMention } from "@/types/mention.js";
 import { useReport, useReportPreferences } from "@/providers/reportContext.js";
 import { formatClockTime, formatDateOnly } from "@/utils/shared/format.js";
 import { canEditReportCases, getCaseById } from "@/utils/report/reportCases.js";
@@ -154,6 +155,7 @@ function CaseThreadEntry({
     report,
     caseId,
     caseText,
+    caseMentions = [],
     caseCreatedAt,
     caseStatus,
     actorName,
@@ -167,6 +169,7 @@ function CaseThreadEntry({
     report: ReportFeedback;
     caseId: string;
     caseText: string;
+    caseMentions?: ElementMention[];
     caseCreatedAt: string;
     caseStatus: "open" | "resolved";
     actorName: string;
@@ -193,9 +196,11 @@ function CaseThreadEntry({
                 isNeedGray
             />
 
-            <p className={`leading-[1.5] text-[14px] text-[var(--adaptive-text-primary)] whitespace-break-spaces ${caseStatus === "resolved" ? "text-[var(--adaptive-black500)] line-through" : ""}`}>
-                {caseText}
-            </p>
+            <MentionMessage
+                message={caseText}
+                mentions={caseMentions}
+                className={`leading-[1.5] text-[14px] text-[var(--adaptive-text-primary)] whitespace-break-spaces ${caseStatus === "resolved" ? "text-[var(--adaptive-black500)] line-through" : ""}`}
+            />
 
             {report.author_name ? (
                 <ThreadAuthorMeta
@@ -539,6 +544,7 @@ export function FeedbackThread({
                             onCaseChange={updateCaseEditDraftCase}
                             onAddCase={addCaseEditDraftCase}
                             onRemoveCase={removeCaseEditDraftCase}
+                            enableElementMentions
                         />
                         {report.author_name ? (
                             <div className="flex items-center gap-[6px] px-[16px]">
@@ -568,6 +574,7 @@ export function FeedbackThread({
                                         report={report}
                                         caseId={focusedCaseId}
                                         caseText={focusedCase.text}
+                                        caseMentions={focusedCase.mentions}
                                         caseCreatedAt={focusedCase.created_at}
                                         caseStatus={focusedCase.status}
                                         actorName={actorName}

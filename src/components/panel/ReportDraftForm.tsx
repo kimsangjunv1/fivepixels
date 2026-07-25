@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { FeedbackCategory } from "@/constants/feedbackCategory.js";
+import type { ElementMention } from "@/types/mention.js";
 import { useTooltipLayout } from "@/hooks/useTooltipLayout.js";
 import { useTooltipResize } from "@/hooks/useTooltipResize.js";
 import { useReport, useReportPreferences } from "@/providers/reportContext.js";
@@ -87,7 +88,7 @@ type ReportDraftFormContentProps = {
     isEditing: boolean;
     editingMarker: { left: number; top: number } | null;
     selectedTarget: ReturnType<typeof useReport>["selectedTarget"];
-    updateDraftCase: (caseId: string, text: string) => void;
+    updateDraftCase: (caseId: string, text: string, mentions?: ElementMention[]) => void;
     addDraftCase: () => void;
     removeDraftCase: (caseId: string) => void;
     updateDraftField: (key: string, value: string | boolean) => void;
@@ -190,6 +191,44 @@ function ReportDraftFormContent({
         removeDraftCase(caseId);
     };
 
+    const handleInsertAtMention = () => {
+        const targetCaseId = activeCaseId ?? draft.cases[0]?.id;
+
+        if (!targetCaseId) {
+            return;
+        }
+
+        const targetCase = draft.cases.find((item) => item.id === targetCaseId);
+
+        if (!targetCase) {
+            return;
+        }
+
+        const trimmed = targetCase.text;
+        const nextText = trimmed.length === 0 ? "@" : /(?:^|[\s([{])@$/.test(trimmed) ? trimmed : `${trimmed.replace(/\s+$/, "")} @`;
+        updateDraftCase(targetCaseId, nextText, targetCase.mentions);
+
+        window.requestAnimationFrame(() => {
+            const root =
+                document.getElementById(`fivepixels-case-input-${targetCaseId}`) ??
+                document.querySelector<HTMLElement>(`[data-fivepixels-case-input="${CSS.escape(targetCaseId)}"]`);
+            const editor = root?.querySelector<HTMLElement>("[contenteditable='true']");
+
+            if (!editor) {
+                return;
+            }
+
+            editor.focus();
+            const selection = window.getSelection();
+            const range = document.createRange();
+            range.selectNodeContents(editor);
+            range.collapse(false);
+            selection?.removeAllRanges();
+            selection?.addRange(range);
+            editor.dispatchEvent(new Event("input", { bubbles: true }));
+        });
+    };
+
     if (!tooltipPosition || !tooltipAnchorStyle) {
         return null;
     }
@@ -270,6 +309,7 @@ function ReportDraftFormContent({
                             showCaseTabBar={false}
                             activeCaseId={activeCaseId}
                             onActiveCaseIdChange={setActiveCaseId}
+                            enableElementMentions
                         />
                         <DraftComposerToolbar
                             cases={draft.cases}
@@ -277,6 +317,7 @@ function ReportDraftFormContent({
                             onSelectCase={setActiveCaseId}
                             onAddCase={addDraftCase}
                             onRemoveCase={handleRemoveCase}
+                            onInsertAtMention={handleInsertAtMention}
                             category={draft.category}
                             onCategoryChange={updateDraftCategory}
                             categoryNeedsAttention={categoryNeedsAttention}
