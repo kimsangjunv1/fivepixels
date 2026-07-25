@@ -12,6 +12,6 @@ type MentionComposerInputProps = {
     onMultilineChange?: (isMultiline: boolean) => void;
     reserveInlineStart?: number;
 };
-export declare function MentionComposerInput({ value, mentions, onChange, placeholder, autoFocus, onSubmitShortcut, onMultilineChange, reserveInlineStart, }: MentionComposerInputProps): import("react").JSX.Element;
+export declare function MentionComposerInput({ value, mentions, onChange, placeholder, autoFocus, onSubmitShortcut, onMultilineChange }: MentionComposerInputProps): import("react").JSX.Element;
 export {};
 //# sourceMappingURL=MentionComposerInput.d.ts.map

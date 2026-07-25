@@ -1,9 +1,13 @@
 import { createMentionId, MENTION_TOKEN_PATTERN, mentionPlainLabel, serializeMentionToken } from "../../types/mention.js";
+import { TARGET_SELECTOR } from "../../constants/report.js";
 import { isFeedbackTargetVisible, toPickSnapshot } from "../../utils/shared/dom.js";
 const REPORT_HOST_ID = "fivepixels-root";
 const SKIP_TAGS = new Set(["SCRIPT", "STYLE", "NOSCRIPT", "TEXTAREA", "INPUT", "SELECT", "OPTION", "SVG", "PATH"]);
 const MAX_LABEL_LENGTH = 48;
 const MAX_CANDIDATES = 12;
+function normalizeSearch(text) {
+    return text.replace(/\s+/g, " ").trim().toLowerCase();
+}
 function normalizeLabel(text) {
     return text.replace(/\s+/g, " ").trim();
 }
@@ -35,14 +39,51 @@ function isUsefulMentionElement(element) {
     }
     return true;
 }
-function collectDirectText(element) {
-    let text = "";
+function collectVisibleLabel(element) {
+    const directParts = [];
     for (const node of element.childNodes) {
         if (node.nodeType === Node.TEXT_NODE) {
-            text += node.textContent ?? "";
+            const value = normalizeLabel(node.textContent ?? "");
+            if (value) {
+                directParts.push(value);
+            }
         }
     }
-    return normalizeLabel(text);
+    if (directParts.length > 0) {
+        return truncateLabel(directParts.join(" "));
+    }
+    const aria = element.getAttribute("aria-label")?.trim();
+    if (aria) {
+        return truncateLabel(aria);
+    }
+    const title = element.getAttribute("title")?.trim();
+    if (title) {
+        return truncateLabel(title);
+    }
+    const inner = normalizeLabel(element.innerText || element.textContent || "");
+    if (!inner) {
+        return "";
+    }
+    // Prefer short leaf labels; skip huge containers.
+    if (inner.length > MAX_LABEL_LENGTH * 2) {
+        return "";
+    }
+    return truncateLabel(inner);
+}
+function matchesQuery(candidate, normalizedQuery) {
+    if (!normalizedQuery) {
+        return true;
+    }
+    const haystacks = [candidate.label, candidate.reportId ?? "", candidate.suggestedReportId ?? "", candidate.element.tagName].map(normalizeSearch);
+    return haystacks.some((value) => value.includes(normalizedQuery));
+}
+function candidateSortKey(candidate, normalizedQuery) {
+    const label = normalizeSearch(candidate.label);
+    const reportId = normalizeSearch(candidate.reportId ?? "");
+    const suggested = normalizeSearch(candidate.suggestedReportId ?? "");
+    const taggedBoost = candidate.reportId ? 0 : 1;
+    const startsBoost = normalizedQuery && (label.startsWith(normalizedQuery) || reportId.startsWith(normalizedQuery) || suggested.startsWith(normalizedQuery)) ? 0 : 1;
+    return [taggedBoost, startsBoost, label.length];
 }
 export function buildElementMentionFromElement(element, labelOverride) {
     if (!isUsefulMentionElement(element)) {
@@ -52,7 +93,7 @@ export function buildElementMentionFromElement(element, labelOverride) {
     if (!snapshot) {
         return null;
     }
-    const label = truncateLabel(labelOverride ?? collectDirectText(element) ?? normalizeLabel(element.innerText || element.textContent || ""));
+    const label = truncateLabel(labelOverride || collectVisibleLabel(element) || snapshot.suggestedReportId || snapshot.id);
     if (!label) {
         return null;
     }
@@ -66,41 +107,53 @@ export function buildElementMentionFromElement(element, labelOverride) {
         snapshot,
     };
 }
+function pushCandidate(matches, seen, candidate, normalizedQuery) {
+    if (!candidate) {
+        return;
+    }
+    const key = `${candidate.targetSelector ?? ""}::${candidate.reportId ?? ""}::${candidate.label}`;
+    if (seen.has(key) || !matchesQuery(candidate, normalizedQuery)) {
+        return;
+    }
+    seen.add(key);
+    matches.push(candidate);
+}
 export function findElementMentionCandidates(query, limit = MAX_CANDIDATES) {
-    const normalizedQuery = normalizeLabel(query).toLowerCase();
+    const normalizedQuery = normalizeSearch(query);
     const matches = [];
     const seen = new Set();
+    // Prioritize tagged feedback targets (data-report-id).
+    for (const element of Array.from(document.querySelectorAll(TARGET_SELECTOR))) {
+        const reportId = element.dataset.reportId?.trim() ?? "";
+        const visibleLabel = collectVisibleLabel(element);
+        const label = visibleLabel || reportId;
+        pushCandidate(matches, seen, buildElementMentionFromElement(element, label), normalizedQuery);
+    }
+    // Also index visible text leaves for untagged UI copy.
     const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_ELEMENT);
     let node = walker.nextNode();
     while (node) {
         const element = node;
-        const directText = collectDirectText(element);
-        if (directText) {
-            const candidate = buildElementMentionFromElement(element, directText);
-            if (candidate) {
-                const key = `${candidate.targetSelector ?? ""}::${candidate.reportId ?? ""}::${candidate.label}`;
-                if (!seen.has(key) && (!normalizedQuery || candidate.label.toLowerCase().includes(normalizedQuery))) {
-                    seen.add(key);
-                    matches.push(candidate);
-                    if (matches.length >= limit * 3) {
-                        break;
-                    }
-                }
+        if (!element.dataset.reportId) {
+            const label = collectVisibleLabel(element);
+            if (label) {
+                pushCandidate(matches, seen, buildElementMentionFromElement(element, label), normalizedQuery);
             }
         }
         node = walker.nextNode();
     }
-    const ranked = matches.sort((left, right) => {
-        const leftLabel = left.label.toLowerCase();
-        const rightLabel = right.label.toLowerCase();
-        const leftStarts = normalizedQuery && leftLabel.startsWith(normalizedQuery) ? 0 : 1;
-        const rightStarts = normalizedQuery && rightLabel.startsWith(normalizedQuery) ? 0 : 1;
-        if (leftStarts !== rightStarts) {
-            return leftStarts - rightStarts;
+    return matches
+        .sort((left, right) => {
+        const leftKey = candidateSortKey(left, normalizedQuery);
+        const rightKey = candidateSortKey(right, normalizedQuery);
+        for (let index = 0; index < leftKey.length; index += 1) {
+            if (leftKey[index] !== rightKey[index]) {
+                return leftKey[index] - rightKey[index];
+            }
         }
-        return leftLabel.length - rightLabel.length;
-    });
-    return ranked.slice(0, limit);
+        return 0;
+    })
+        .slice(0, limit);
 }
 export function resolveMentionElement(mention) {
     if (mention.reportId) {
@@ -179,5 +232,42 @@ export function insertMentionToken(message, cursor, atStart, mention) {
         message: nextMessage,
         cursor: atStart + token.length + 1,
     };
+}
+/** Detect an in-progress `@query` at the end of caret text or serialized draft. */
+export function getAtQuery(textBeforeCursor) {
+    const match = textBeforeCursor.match(/(^|[\s([{])@([^\s@{}]*)$/);
+    if (!match) {
+        return null;
+    }
+    return {
+        query: match[2] ?? "",
+        atOffsetInBefore: textBeforeCursor.length - (match[2]?.length ?? 0) - 1,
+    };
+}
+/**
+ * Resolve the active mention query using caret text when available,
+ * otherwise fall back to the serialized editor message (safe with chips / shadow DOM).
+ */
+export function resolveActiveMentionQuery(options) {
+    if (options.textBeforeCaret !== null && options.textBeforeCaret !== undefined) {
+        return getAtQuery(options.textBeforeCaret);
+    }
+    if (options.serializedMessage !== null && options.serializedMessage !== undefined) {
+        return getAtQuery(options.serializedMessage);
+    }
+    return null;
+}
+export function replaceActiveMentionQuery(message, query, mention, atOffsetInBefore) {
+    const needle = `@${query}`;
+    const replaceAt = atOffsetInBefore ?? message.lastIndexOf(needle);
+    if (replaceAt < 0 || message.slice(replaceAt, replaceAt + needle.length) !== needle) {
+        return null;
+    }
+    // Avoid replacing the `@` inside an existing `@{id}` token when offset is omitted.
+    if (atOffsetInBefore === undefined && message[replaceAt + 1] === "{") {
+        return null;
+    }
+    const token = serializeMentionToken(mention.id);
+    return `${message.slice(0, replaceAt)}${token} ${message.slice(replaceAt + needle.length)}`;
 }
 //# sourceMappingURL=elementMentions.js.map

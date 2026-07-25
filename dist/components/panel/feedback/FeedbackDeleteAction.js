@@ -23,6 +23,6 @@ export function FeedbackDeleteAction({ reportId, onDelete, disabled = false, mes
             setConfirming(false);
         });
     };
-    return (_jsx(HoverTooltip, { label: confirming ? deleteConfirmTitle : deleteTitle, children: _jsx("button", { type: "button", "data-fivepixels-interactive": "", onClick: handleDelete, disabled: disabled, "aria-label": confirming ? deleteConfirmAriaLabel : deleteAriaLabel, className: `${className} ${confirming ? "text-rose-200 hover:text-white" : "text-[var(--adaptive-black50)] hover:text-white"}`, children: confirming ? _jsx("span", { className: "text-[9px] font-semibold", children: "!" }) : _jsx(TrashIcon, { className: iconClassName }) }) }));
+    return (_jsx(HoverTooltip, { label: confirming ? deleteConfirmTitle : deleteTitle, children: _jsx("button", { type: "button", "data-fivepixels-interactive": "", onPointerDown: (event) => event.stopPropagation(), onClick: handleDelete, disabled: disabled, "aria-label": confirming ? deleteConfirmAriaLabel : deleteAriaLabel, className: `${className} ${confirming ? "text-rose-200 hover:text-white" : "text-[var(--adaptive-black50)] hover:text-white"}`, children: confirming ? _jsx("span", { className: "text-[9px] font-semibold", children: "!" }) : _jsx(TrashIcon, { className: iconClassName }) }) }));
 }
 //# sourceMappingURL=FeedbackDeleteAction.js.map

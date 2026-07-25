@@ -312,6 +312,7 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     handleOverlayContextMenu: (event: import("react").MouseEvent<HTMLDivElement>) => void;
     handleOverlayClick: (event: import("react").MouseEvent<HTMLDivElement>) => void;
     cancelDraft: () => void;
+    beginFeedbackEdit: (report: ReportFeedback) => void;
     updateDraftCase: (caseId: string, text: string) => void;
     addDraftCase: () => void;
     removeDraftCase: (caseId: string) => void;

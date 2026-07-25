@@ -14,7 +14,7 @@ import { FeedbackHoverCard } from "../../components/panel/feedback/FeedbackHover
 import { getReplyCount } from "../../utils/feedback/feedbackThread.js";
 import { MOTION } from "../../constants/motionClasses.js";
 import { MarkerFeedbackWindow } from "./MarkerFeedbackWindow.js";
-const TOOLTIP_SURFACE_CLASS = "overflow-hidden rounded-[12px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-fillOpacity800)] backdrop-blur-[5px] shadow-[var(--adaptive-popup-shadow)]";
+const TOOLTIP_SURFACE_CLASS = "overflow-hidden rounded-[16px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-fillOpacity800)] backdrop-blur-[5px] shadow-[var(--adaptive-popup-shadow)]";
 // "overflow-hidden rounded-[12px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-fillOpacity500)] backdrop-blur-[10px] shadow-[var(--adaptive-popup-shadow)]";
 const TOOLTIP_FIXED_CLASS = `fixed z-[1000001] ${TOOLTIP_SURFACE_CLASS} ${MOTION.tooltipFadeIn}`;
 const MARKER_ANCHOR_BASE_CLASS = "pointer-events-none fixed z-[1000000]";
@@ -162,7 +162,7 @@ export function ReportMarkersLayer() {
     const handleOverflowHintActivate = useCallback((hint) => {
         scrollContainerTowardEdge(hint.containerId, hint.edge);
     }, []);
-    const showTooltip = Boolean(tooltipReport && tooltipAnchor);
+    const showTooltip = Boolean(tooltipReport && tooltipAnchor) && (!editingReportId || tooltipReport?.id !== editingReportId);
     const { layout: tooltipLayout, setTooltipElement } = useTooltipLayout(tooltipAnchor, isExpandedTooltip, showTooltip);
     const tooltipPosition = tooltipLayout?.position ?? null;
     const tooltipAnchorStyle = tooltipLayout?.anchorStyle;

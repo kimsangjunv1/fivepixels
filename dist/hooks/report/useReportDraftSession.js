@@ -5,6 +5,7 @@ import { createInitialFieldValues, getFieldError } from "../../utils/report/fiel
 import { getPickProbeElementKey } from "../../utils/probe/pickProbeSession.js";
 import { createReportCase } from "../../utils/report/reportCases.js";
 import { resolveDefaultAuthorName } from "../../utils/report/resolveDefaultAuthorName.js";
+import { buildDraftFromReport } from "../../utils/report/buildDraftFromReport.js";
 import { useReportPickProbe } from "./useReportPickProbe.js";
 const OVERLAY_HOVER_LEAVE_MS = 100;
 export function useReportDraftSession({ mode, setMode, fields, messages, currentPathname, environment, appVersion, sessionActor, authorSelectionLocked, activeIdentify, authorizedAuthors, selfName, setErrorMessage, hoveredElementRef, selectedElementRef, overlayRef, overlayHoverLeaveTimeoutRef, }) {
@@ -220,6 +221,22 @@ export function useReportDraftSession({ mode, setMode, fields, messages, current
         setSelectedTarget(null);
         setHoverPointer(null);
     };
+    const beginDraftEdit = (report) => {
+        if (report.status === "archived") {
+            setErrorMessage(messages.errors.archivedReadOnly);
+            return false;
+        }
+        resetPickProbeState();
+        draftElementRef.current = null;
+        contextMenuElementRef.current = null;
+        setSelectedTarget(null);
+        setHoveredTarget(null);
+        setHoverPointer(null);
+        setDraftStep("content");
+        setErrorMessage("");
+        setDraft(buildDraftFromReport(report, fields));
+        return true;
+    };
     const updateDraftCase = (caseId, text) => {
         setDraft((current) => {
             if (!current) {
@@ -404,6 +421,7 @@ export function useReportDraftSession({ mode, setMode, fields, messages, current
         handleOverlayContextMenu,
         handleOverlayClick,
         cancelDraft,
+        beginDraftEdit,
         updateDraftCase,
         updateDraftCategory,
         addDraftCase,

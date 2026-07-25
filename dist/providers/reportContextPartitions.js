@@ -182,6 +182,7 @@ export const REPORT_SESSION_KEYS = [
     "handleOverlayContextMenu",
     "handleOverlayClick",
     "cancelDraft",
+    "beginFeedbackEdit",
     "updateDraftCase",
     "addDraftCase",
     "removeDraftCase",
