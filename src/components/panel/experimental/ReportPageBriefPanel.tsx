@@ -17,7 +17,7 @@ export function ReportPageBriefPanel() {
         <section className="flex min-h-0 flex-1 flex-col overflow-y-auto bg-[var(--adaptive-black50)]">
             <div className="border-b border-[var(--adaptive-border-subtle)] px-[12px] py-[8px]">
                 <p className="text-[12px] font-bold text-[var(--adaptive-black900)]">{messages.panel.tabPageBrief}</p>
-                <p className="mt-[2px] truncate text-[11px] text-[var(--adaptive-black500)]">
+                <p className="truncate text-[10px] text-[var(--adaptive-black700)]">
                     {messages.panel.experimentalScopeCurrent} · {currentPathname}
                 </p>
             </div>
