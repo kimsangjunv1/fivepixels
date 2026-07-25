@@ -150,7 +150,7 @@ export function ReportFeedbackList() {
 
     return (
         <section className="flex min-h-0 max-h-[51.2rem] flex-1 flex-col overflow-hidden bg-[var(--adaptive-black50)]">
-            <div className="shrink-0 border-b border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)]">
+            <div className="shrink-0 border-b border-b-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)]">
                 {filters.dateKey ? (
                     <div className="flex items-center justify-between gap-[8px] border-b border-[var(--adaptive-border-subtle)] px-[8px] py-[6px]">
                         <p className="text-[11px] font-[600] text-[var(--adaptive-blue500)]">
@@ -294,8 +294,9 @@ export function ReportFeedbackList() {
                 ) : null}
 
                 <section className="flex flex-col">
-                    {groupedReports.map(({ dateKey, label, reports: groupReports }) => {
+                    {groupedReports.map(({ dateKey, label, reports: groupReports }, index) => {
                         const isExpanded = expandedGroups.has(dateKey);
+                        const isFirst = groupedReports.length - (groupedReports.length - 1) === index + 1;
 
                         return (
                             <div
@@ -306,7 +307,7 @@ export function ReportFeedbackList() {
                                     type="button"
                                     onClick={() => toggleGroup(dateKey)}
                                     aria-expanded={isExpanded}
-                                    className="sticky top-0 z-10 flex w-full items-center justify-between border-b border-b-[var(--adaptive-border-subtle)] p-[8px_16px]"
+                                    className={`${isFirst ? "border-b border-b-[var(--adaptive-border-subtle)]" : "border-y border-y-[var(--adaptive-border-subtle)]"} bg-[var(--adaptive-black300)] sticky top-0 z-10 flex w-full items-center justify-center p-[4px_16px]`}
                                 >
                                     <p className="text-[12px] text-[var(--adaptive-black900)]">{label}</p>
                                     <ChevronDownIcon className={`h-4 w-4 shrink-0 transition-transform ${isExpanded ? "rotate-180" : ""}`} />

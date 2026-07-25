@@ -126,22 +126,22 @@ export function useReportPanelShell({ projectId, environment, appVersion, panelA
     const resolvedRouteDetailsStats = useMemo(() => panelBootstrap?.routeDetails ?? routeDetailsStats, [panelBootstrap, routeDetailsStats]);
     const roleStatsReports = useMemo(() => {
         if (roleTabPreset.headerStatsScope !== "all") {
-            return currentPageFilteredReports;
+            return currentPageReports;
         }
         if (listScope === "all") {
-            return filteredReports;
+            return reports;
         }
-        if (allPageFilteredReports.length > 0) {
-            return allPageFilteredReports;
+        if (allPageReports.length > 0) {
+            return allPageReports;
         }
-        return currentPageFilteredReports;
-    }, [allPageFilteredReports, currentPageFilteredReports, filteredReports, listScope, roleTabPreset.headerStatsScope]);
+        return currentPageReports;
+    }, [allPageReports, currentPageReports, listScope, reports, roleTabPreset.headerStatsScope]);
     const targetStats = useMemo(() => {
         if (panelBootstrap?.stats) {
             return panelBootstrap.stats;
         }
-        return buildPanelStats(currentPageFilteredReports);
-    }, [currentPageFilteredReports, panelBootstrap]);
+        return buildPanelStats(currentPageReports);
+    }, [currentPageReports, panelBootstrap]);
     const roleStatItems = useMemo(() => buildPanelRoleStats({
         role: panelRole,
         reports: roleStatsReports,

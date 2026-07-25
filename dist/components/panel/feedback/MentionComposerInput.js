@@ -131,6 +131,18 @@ export function MentionComposerInput({ value, mentions, onChange, placeholder, a
         setCandidates(nextCandidates);
         setActiveIndex(0);
     }, [query, setMentionHighlightTarget]);
+    // IME-safe: Korean composition uses the first Space to commit text, so keydown
+    // alone cannot reliably dismiss. When the query already ends with a space and
+    // nothing matches, close mention mode (works for both IME and Latin input).
+    useEffect(() => {
+        if (query === null || !mentionQueryEndsWithSpace(query)) {
+            return;
+        }
+        if (findElementMentionCandidates(query).length > 0) {
+            return;
+        }
+        dismissActiveMention(activeAtOffsetRef.current);
+    }, [query, dismissActiveMention]);
     useLayoutEffect(() => {
         if (query === null || !rootRef.current) {
             setMenuPlacement(null);
@@ -284,16 +296,22 @@ export function MentionComposerInput({ value, mentions, onChange, placeholder, a
                             }
                             return;
                         }
-                        // Second consecutive space ends mention mode without selecting.
-                        if (event.key === " " &&
-                            !event.metaKey &&
-                            !event.ctrlKey &&
-                            !event.altKey &&
-                            !isComposingRef.current &&
-                            mentionQueryEndsWithSpace(query)) {
-                            event.preventDefault();
-                            dismissActiveMention(activeAtOffsetRef.current);
-                            return;
+                        if (event.key === " " && !event.metaKey && !event.ctrlKey && !event.altKey) {
+                            // Empty results: dismiss on the first Space even while IME is composing
+                            // (Hangul often uses Space only to commit, without inserting a space char).
+                            if (candidates.length === 0) {
+                                dismissActiveMention(activeAtOffsetRef.current);
+                                return;
+                            }
+                            // Candidates present: a second consecutive space confirms the highlighted one.
+                            if (!isComposingRef.current && mentionQueryEndsWithSpace(query)) {
+                                event.preventDefault();
+                                const active = candidates[activeIndex];
+                                if (active) {
+                                    insertCandidate(active);
+                                }
+                                return;
+                            }
                         }
                         if (event.key === "Escape") {
                             event.preventDefault();
