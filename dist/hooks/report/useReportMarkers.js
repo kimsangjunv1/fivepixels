@@ -11,7 +11,7 @@ function getInitialDeepLinkFeedbackId() {
     }
     return parseFeedbackDeepLink()?.feedbackId ?? null;
 }
-export function useReportMarkers({ mode, messages, fields, currentPathname, currentPageFilteredReports, filteredReports, reports, allPageReports, selectedReportId, markerAppearanceSize, showMarkerTargetPreview, showTargetPreview, selectableTargetsLength, selectedTarget, hoveredTarget, isFetching, isReportsLoading, activeReplyReportId, setErrorMessage, onNavigate, onRevealTarget, selectReport, closeReplyComposer, openReplyComposer, selectCase, ensureIssueMode, loadRepliesIfNeeded, searchInputRef, }) {
+export function useReportMarkers({ mode, messages, fields, currentPathname, currentPageReports, reports, allPageReports, selectedReportId, markerAppearanceSize, showMarkerTargetPreview, showTargetPreview, selectableTargetsLength, selectedTarget, hoveredTarget, isFetching, isReportsLoading, activeReplyReportId, setErrorMessage, onNavigate, onRevealTarget, selectReport, closeReplyComposer, openReplyComposer, selectCase, ensureIssueMode, loadRepliesIfNeeded, searchInputRef, }) {
     const [markers, setMarkers] = useState([]);
     const [hoveredMarkerId, setHoveredMarkerId] = useState(null);
     const hoverLeaveTimeoutRef = useRef(null);
@@ -20,8 +20,8 @@ export function useReportMarkers({ mode, messages, fields, currentPathname, curr
     const pendingDeepLinkFeedbackIdRef = useRef(getInitialDeepLinkFeedbackId());
     const deepLinkHandledRef = useRef(false);
     const syncMarkers = useCallback(() => {
-        setMarkers(currentPageFilteredReports.map((report) => getMarkerFromReport(report, window.scrollY)));
-    }, [currentPageFilteredReports, markerAppearanceSize]);
+        setMarkers(currentPageReports.map((report) => getMarkerFromReport(report, window.scrollY)));
+    }, [currentPageReports, markerAppearanceSize]);
     const activeMarkerReportId = useMemo(() => {
         if (activeReplyReportId) {
             return activeReplyReportId;
@@ -220,7 +220,9 @@ export function useReportMarkers({ mode, messages, fields, currentPathname, curr
         setHoveredMarkerId(report.id);
     }, [clearHoverLeaveTimeout, closeReplyComposer, prepareFeedbackLocation]);
     const locateFeedback = async (reportId) => {
-        const report = filteredReports.find((item) => item.id === reportId);
+        const report = reports.find((item) => item.id === reportId) ??
+            currentPageReports.find((item) => item.id === reportId) ??
+            allPageReports.find((item) => item.id === reportId);
         if (!report) {
             return;
         }
@@ -260,18 +262,18 @@ export function useReportMarkers({ mode, messages, fields, currentPathname, curr
         searchInputRef.current?.select();
     };
     const selectAdjacentReport = (direction) => {
-        if (filteredReports.length === 0) {
+        if (currentPageReports.length === 0) {
             return;
         }
-        const currentIndex = filteredReports.findIndex((report) => report.id === selectedReportId);
+        const currentIndex = currentPageReports.findIndex((report) => report.id === selectedReportId);
         let nextIndex;
         if (currentIndex === -1) {
-            nextIndex = direction === "down" ? 0 : filteredReports.length - 1;
+            nextIndex = direction === "down" ? 0 : currentPageReports.length - 1;
         }
         else {
-            nextIndex = direction === "down" ? Math.min(currentIndex + 1, filteredReports.length - 1) : Math.max(currentIndex - 1, 0);
+            nextIndex = direction === "down" ? Math.min(currentIndex + 1, currentPageReports.length - 1) : Math.max(currentIndex - 1, 0);
         }
-        void locateFeedback(filteredReports[nextIndex].id);
+        void locateFeedback(currentPageReports[nextIndex].id);
     };
     const activateFeedbackMarker = useCallback(async (report, caseId) => {
         const enrichedReport = await loadRepliesIfNeeded(report);

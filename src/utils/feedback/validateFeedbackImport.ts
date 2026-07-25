@@ -12,6 +12,7 @@ import type {
     ReportTargetType,
 } from "@/types/report.js";
 import { normalizeReportCase, normalizeReplyCaseIds } from "@/utils/report/reportCases.js";
+import { stripMentionTokensForEmptyCheck } from "@/utils/mention/elementMentions.js";
 import { isFeedbackCategory } from "@/constants/feedbackCategory.js";
 import type { FeedbackCategory } from "@/constants/feedbackCategory.js";
 import { getActiveReportMessages } from "@/i18n/index.js";
@@ -273,7 +274,7 @@ export function validateCases(value: unknown, index: number, createdAt: string):
             throw importError(index, validation.caseInvalid(caseIndex));
         }
 
-        if (!normalized.text.trim()) {
+        if (!stripMentionTokensForEmptyCheck(normalized.text, normalized.mentions).trim()) {
             throw importError(index, validation.caseTextRequired(caseIndex));
         }
 

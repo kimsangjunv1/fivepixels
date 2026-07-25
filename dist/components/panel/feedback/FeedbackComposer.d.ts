@@ -10,7 +10,7 @@ type FeedbackComposerProps = {
     onMentionsChange?: (mentions: ElementMention[]) => void;
     enableElementMentions?: boolean;
     cases?: ReportCase[];
-    onCaseChange?: (caseId: string, text: string) => void;
+    onCaseChange?: (caseId: string, text: string, mentions?: ElementMention[]) => void;
     onAddCase?: () => void;
     onRemoveCase?: (caseId: string) => void;
     authorName: string;

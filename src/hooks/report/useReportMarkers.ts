@@ -23,8 +23,7 @@ export type UseReportMarkersParams = {
     messages: ReportMessages;
     fields: ReportField[];
     currentPathname: string;
-    currentPageFilteredReports: ReportFeedback[];
-    filteredReports: ReportFeedback[];
+    currentPageReports: ReportFeedback[];
     reports: ReportFeedback[];
     allPageReports: ReportFeedback[];
     selectedReportId: string | null;
@@ -54,8 +53,7 @@ export function useReportMarkers({
     messages,
     fields,
     currentPathname,
-    currentPageFilteredReports,
-    filteredReports,
+    currentPageReports,
     reports,
     allPageReports,
     selectedReportId,
@@ -88,8 +86,8 @@ export function useReportMarkers({
     const deepLinkHandledRef = useRef(false);
 
     const syncMarkers = useCallback(() => {
-        setMarkers(currentPageFilteredReports.map((report) => getMarkerFromReport(report, window.scrollY)));
-    }, [currentPageFilteredReports, markerAppearanceSize]);
+        setMarkers(currentPageReports.map((report) => getMarkerFromReport(report, window.scrollY)));
+    }, [currentPageReports, markerAppearanceSize]);
 
     const activeMarkerReportId = useMemo(() => {
         if (activeReplyReportId) {
@@ -352,7 +350,10 @@ export function useReportMarkers({
     );
 
     const locateFeedback = async (reportId: string) => {
-        const report = filteredReports.find((item) => item.id === reportId);
+        const report =
+            reports.find((item) => item.id === reportId) ??
+            currentPageReports.find((item) => item.id === reportId) ??
+            allPageReports.find((item) => item.id === reportId);
 
         if (!report) {
             return;
@@ -403,20 +404,20 @@ export function useReportMarkers({
     };
 
     const selectAdjacentReport = (direction: "up" | "down") => {
-        if (filteredReports.length === 0) {
+        if (currentPageReports.length === 0) {
             return;
         }
 
-        const currentIndex = filteredReports.findIndex((report) => report.id === selectedReportId);
+        const currentIndex = currentPageReports.findIndex((report) => report.id === selectedReportId);
         let nextIndex: number;
 
         if (currentIndex === -1) {
-            nextIndex = direction === "down" ? 0 : filteredReports.length - 1;
+            nextIndex = direction === "down" ? 0 : currentPageReports.length - 1;
         } else {
-            nextIndex = direction === "down" ? Math.min(currentIndex + 1, filteredReports.length - 1) : Math.max(currentIndex - 1, 0);
+            nextIndex = direction === "down" ? Math.min(currentIndex + 1, currentPageReports.length - 1) : Math.max(currentIndex - 1, 0);
         }
 
-        void locateFeedback(filteredReports[nextIndex].id);
+        void locateFeedback(currentPageReports[nextIndex].id);
     };
 
     const activateFeedbackMarker = useCallback(

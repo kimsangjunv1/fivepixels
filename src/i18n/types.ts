@@ -206,6 +206,8 @@ export type ReportMessages = {
         casesDropdownAriaLabel: string;
         mentionListAriaLabel: string;
         mentionEmpty: string;
+        mentionInsertLabel: string;
+        mentionInsertAriaLabel: string;
         categoryOption: Record<FeedbackCategory, string>;
         categoryTooltip: Record<FeedbackCategory, string>;
         probeSummaryPrompt: string;

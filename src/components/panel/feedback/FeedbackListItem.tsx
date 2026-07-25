@@ -150,44 +150,54 @@ export function FeedbackListItem({
     const activityAt = report.created_at;
 
     return (
-        <div className="group relative border-b border-[var(--adaptive-border-subtle)] last:border-b-0">
+        <div className="group flex flex-col relative border-b border-[var(--adaptive-border-subtle)] last:border-b-0 bg-[var(--adaptive-tintOpacity50)]">
             <button
                 type="button"
                 onClick={() => onLocate(report.id)}
-                className="flex w-full flex-col gap-[8px] px-[16px] py-[8px] text-left hover:bg-[var(--adaptive-neutralTintOpacity900)]"
+                className="flex flex-1 flex-col gap-[8px] text-left hover:bg-[var(--adaptive-black300)]"
             >
-                <section className="flex flex-col gap-[4px]">
-                    <div className="flex min-w-0 items-center justify-between gap-[4px]">
-                        <div className="flex min-w-0 items-center gap-[4px]">
-                            <span className="truncate text-[14px] font-semibold text-[var(--adaptive-black900)]">{caseId ?? "#FC-—"}</span>
-
-                            {replyCount > 0 ? (
-                                <span className="rounded-[4px] border-[1.5px] border-[var(--adaptive-black900)] px-[2px] text-[10px] font-bold text-[var(--adaptive-black900)]">
-                                    {messages.feedbackList.replyCountBadge(replyCount)}
-                                </span>
-                            ) : null}
-                        </div>
-
-                        <span className="flex shrink-0 items-center gap-[4px] pr-[22px] text-[12px] tabular-nums text-[var(--adaptive-black500)]">
-                            <ClockIcon className="h-[12px] w-[12px]" />
-                            {formatTimeOnly(activityAt, locale)}
-                        </span>
-                    </div>
-
-                    <p className="line-clamp-2 text-[14px] text-[var(--adaptive-black900)]">{summary}</p>
-                </section>
-
-                <div className="flex flex-wrap items-center gap-[6px]">
-                    {category ? (
-                        <span className="inline-flex items-center gap-[4px] rounded-[4px] bg-[var(--adaptive-black200)] px-[4px] py-[1px] text-[12px] font-medium text-[var(--adaptive-black700)]">
-                            <CategoryShieldIcon className="h-[11px] w-[11px] text-[var(--adaptive-black500)]" />
-                            {messages.feedbackList.categoryTag[category]}
-                        </span>
-                    ) : null}
-                    <span className="inline-flex items-center rounded-[4px] bg-[var(--adaptive-black200)] px-[4px] py-[1px] text-[12px] font-medium text-[var(--adaptive-black700)]">
-                        {messages.feedbackList.statusTag[statusTag]}
+                <section className="flex">
+                    <span className="truncate text-[14px] font-semibold text-[var(--adaptive-black900)] min-w-[72px] flex items-center justify-center border-r border-r-[var(--adaptive-border-subtle)]">
+                        {caseId ?? "#FC-—"}
                     </span>
-                </div>
+
+                    <section className="flex flex-col gap-[4px] p-[8px_12px] flex-1">
+                        <p className="line-clamp-2 text-[14px] text-[var(--adaptive-black900)] font-medium whitespace-break-spaces leading-[1.5]">{summary}</p>
+
+                        <div className="flex items-center justify-between gap-[6px]">
+                            <section className="flex gap-[4px]">
+                                {category ? (
+                                    <section className="flex items-center rounded-[4px] border-[1px] border-[var(--adaptive-black900)]">
+                                        {/* <CategoryShieldIcon className="h-[11px] w-[11px] text-[var(--adaptive-black500)]" /> */}
+
+                                        <span className="px-[2px] py-[1px] text-[10px] font-medium text-[var(--adaptive-black900)]">{messages.feedbackList.categoryTag[category]}</span>
+                                    </section>
+                                ) : null}
+
+                                <section className="flex items-center rounded-[4px] border-[1px] border-[var(--adaptive-black900)]">
+                                    <span className="px-[4px] py-[1px] text-[10px] font-medium text-[var(--adaptive-black900)]">{messages.feedbackList.statusTag[statusTag]}</span>
+                                </section>
+                                <div className="flex min-w-0 items-center gap-[4px]">
+                                    {replyCount > 0 ? (
+                                        <span className="rounded-[4px] border-[1.5px] border-[var(--adaptive-black900)] px-[1px] text-[10px] font-bold text-[var(--adaptive-black900)]">
+                                            {messages.feedbackList.replyCountBadge(replyCount)}
+                                        </span>
+                                    ) : null}
+                                </div>
+                            </section>
+
+                            <section>
+                                <div className="flex min-w-0 items-center justify-between gap-[4px]">
+                                    <span className="flex shrink-0 items-center gap-[4px] text-[12px] tabular-nums text-[var(--adaptive-black900)]">
+                                        <ClockIcon className="h-[12px] w-[12px]" />
+
+                                        {formatTimeOnly(activityAt, locale)}
+                                    </span>
+                                </div>
+                            </section>
+                        </div>
+                    </section>
+                </section>
 
                 {listScope === "all" ? <p className="truncate text-[11px] text-[var(--adaptive-black400)]">{report.pathname}</p> : null}
             </button>

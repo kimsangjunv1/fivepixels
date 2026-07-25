@@ -307,18 +307,34 @@ export function insertMentionToken(message: string, cursor: number, atStart: num
     };
 }
 
-/** Detect an in-progress `@query` at the end of caret text or serialized draft. */
+/**
+ * Detect an in-progress `@query` at the end of caret text or serialized draft.
+ * Single spaces are allowed so multi-word labels (e.g. "Staged feedback") can be typed.
+ * Two or more consecutive spaces end the mention query (caller should dismiss the menu).
+ */
 export function getAtQuery(textBeforeCursor: string) {
-    const match = textBeforeCursor.match(/(^|[\s([{])@([^\s@{}]*)$/);
+    const match = textBeforeCursor.match(/(^|[\s([{])@([^\n@{}]*)$/);
 
     if (!match) {
         return null;
     }
 
+    const query = match[2] ?? "";
+
+    // Double-space terminator: leave typed text as plain `@…` and close mention mode.
+    if (/\s{2}/.test(query)) {
+        return null;
+    }
+
     return {
-        query: match[2] ?? "",
-        atOffsetInBefore: textBeforeCursor.length - (match[2]?.length ?? 0) - 1,
+        query,
+        atOffsetInBefore: textBeforeCursor.length - query.length - 1,
     };
+}
+
+/** True when the active query already ends with a space (next Space should dismiss). */
+export function mentionQueryEndsWithSpace(query: string) {
+    return /\s$/.test(query);
 }
 
 /**
