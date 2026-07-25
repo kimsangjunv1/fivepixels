@@ -209,9 +209,7 @@ function ReportDraftFormContent({
         updateDraftCase(targetCaseId, nextText, targetCase.mentions);
 
         window.requestAnimationFrame(() => {
-            const root =
-                document.getElementById(`fivepixels-case-input-${targetCaseId}`) ??
-                document.querySelector<HTMLElement>(`[data-fivepixels-case-input="${CSS.escape(targetCaseId)}"]`);
+            const root = document.getElementById(`fivepixels-case-input-${targetCaseId}`) ?? document.querySelector<HTMLElement>(`[data-fivepixels-case-input="${CSS.escape(targetCaseId)}"]`);
             const editor = root?.querySelector<HTMLElement>("[contenteditable='true']");
 
             if (!editor) {
@@ -275,13 +273,8 @@ function ReportDraftFormContent({
                             height: customSize?.height,
                         }}
                     >
-                        {/* <div className="shrink-0 border-b border-b-[var(--adaptive-border-subtle)] bg-[var(--adaptive-neutralTintOpacity900)] px-[12px] py-[4px] flex items-center justify-between">
-                            <div className="w-[3px] h-[3px] bg-[var(--adaptive-black400)] rounded-full" />
-                            <p className="text-[12px] font-bold text-center leading-none text-[var(--adaptive-black600)]">{messages.composer.draftTooltipHeader}</p>
-                            <div className="w-[3px] h-[3px] bg-[var(--adaptive-black400)] rounded-full" />
-                        </div> */}
-
                         <DraftProbeSummaryBanner />
+
                         <FeedbackComposer
                             cases={draft.cases}
                             onCaseChange={updateDraftCase}
@@ -331,7 +324,6 @@ function ReportDraftFormContent({
                             isGitHubIssueConfirming={isGitHubIssueConfirming}
                             onGitHubIssueConfirmingChange={setIsGitHubIssueConfirming}
                         />
-
                     </div>
 
                     <CornerResizeHandle

@@ -41,12 +41,6 @@ export function FeedbackHoverCard({ report, detached = false, detachedKind = nul
 
     return (
         <div className="flex w-[260px] flex-col bg-transparent">
-            {/* <div className="shrink-0 border-b border-b-[var(--adaptive-border-subtle)] bg-[var(--adaptive-neutralTintOpacity900)] px-[12px] py-[4px] flex items-center justify-between">
-                <div className="w-[3px] h-[3px] bg-[var(--adaptive-black400)] rounded-full" />
-                <p className="text-[12px] font-semibold leading-none text-[var(--adaptive-black900)]">{messages.marker.hoverTooltipHeader}</p>
-                <div className="w-[3px] h-[3px] bg-[var(--adaptive-black400)] rounded-full" />
-            </div> */}
-
             <div className="flex flex-col gap-[6px] p-[8px_12px]">
                 {resolvedDetachedHint ? <p className="text-[12px] leading-[1.4] text-[var(--adaptive-black500)]">{resolvedDetachedHint}</p> : null}
 

@@ -149,8 +149,8 @@ export function ReportFeedbackList() {
     };
 
     return (
-        <section className="flex min-h-0 max-h-[51.2rem] flex-1 flex-col overflow-hidden bg-[var(--adaptive-black50)]">
-            <div className="shrink-0 border-b border-b-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)]">
+        <section className="flex min-h-0 max-h-[calc(60dvh-(16px*2))] min-h-[128px] flex-1 flex-col bg-[var(--adaptive-black50)]">
+            <div className="relative z-[20] shrink-0 border-b border-b-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)]">
                 {filters.dateKey ? (
                     <div className="flex items-center justify-between gap-[8px] border-b border-[var(--adaptive-border-subtle)] px-[8px] py-[6px]">
                         <p className="text-[11px] font-[600] text-[var(--adaptive-blue500)]">
@@ -180,7 +180,7 @@ export function ReportFeedbackList() {
                                         aria-expanded={scopeMenuOpen}
                                         aria-haspopup="menu"
                                         aria-label={messages.feedbackList.scopeAriaLabel}
-                                        className={`${scopeMenuOpen ? "bg-[#f6562f] hover:bg-[#bc3110]" : "hover:bg-[var(--adaptive-black50)]"} flex h-full min-w-[72px] items-center justify-center gap-[4px] px-[8px] text-[14px] text-[var(--adaptive-black800)] outline-none hover:bg-[var(--adaptive-black100)]`}
+                                        className={`${scopeMenuOpen ? "bg-[#f6562f] hover:bg-[#bc3110]" : "hover:bg-[var(--adaptive-black50)]"} flex h-full min-w-[72px] items-center justify-center gap-[4px] px-[8px] text-[14px] text-[var(--adaptive-black800)] outline-none`}
                                     >
                                         <span className={`${scopeMenuOpen ? "text-white" : ""} truncate`}>{scopeLabel}</span>
                                         <ChevronDownIcon className={`h-[14px] w-[14px] shrink-0 text-[var(--adaptive-black600)] transition-transform ${scopeMenuOpen ? "rotate-180" : ""}`} />
@@ -215,7 +215,7 @@ export function ReportFeedbackList() {
                                     aria-expanded={statusMenuOpen}
                                     aria-haspopup="menu"
                                     aria-label={messages.feedbackList.filterStatusAriaLabel}
-                                    className={`${statusMenuOpen ? "bg-[#f6562f] hover:bg-[#bc3110]" : "hover:bg-[var(--adaptive-black50)]"} flex h-full min-w-[72px] items-center justify-center px-[8px] text-[14px] text-[var(--adaptive-black800)] outline-none`}
+                                    className={`${statusMenuOpen ? "bg-[#f6562f] hover:bg-[#bc3110]" : "hover:bg-[var(--adaptive-black50)]"} flex h-full min-w-[72px] items-center justify-center gap-[4px] px-[8px] text-[14px] text-[var(--adaptive-black800)] outline-none`}
                                 >
                                     <span className={`${statusMenuOpen ? "text-white" : ""} truncate`}>{statusLabel}</span>
                                     <ChevronDownIcon className={`h-[14px] w-[14px] shrink-0 text-[var(--adaptive-black600)] transition-transform ${statusMenuOpen ? "rotate-180" : ""}`} />
@@ -307,10 +307,14 @@ export function ReportFeedbackList() {
                                     type="button"
                                     onClick={() => toggleGroup(dateKey)}
                                     aria-expanded={isExpanded}
-                                    className={`${isFirst ? "border-b border-b-[var(--adaptive-border-subtle)]" : "border-y border-y-[var(--adaptive-border-subtle)]"} bg-[var(--adaptive-black300)] sticky top-0 z-10 flex w-full items-center justify-center p-[4px_16px]`}
+                                    className={`${isFirst ? "border-b border-b-[var(--adaptive-border-subtle)]" : "border-y border-y-[var(--adaptive-border-subtle)]"} bg-[var(--adaptive-black300)] sticky top-0 z-10 flex w-full items-center justify-between p-[4px_16px]`}
                                 >
-                                    <p className="text-[12px] text-[var(--adaptive-black900)]">{label}</p>
-                                    <ChevronDownIcon className={`h-4 w-4 shrink-0 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+                                    <div className="w-[3px] h-[3px] bg-[var(--adaptive-black500)] rounded-full" />
+                                    <section className="flex items-center">
+                                        <p className="text-[12px] text-[var(--adaptive-black900)]">{label}</p>
+                                        <ChevronDownIcon className={`h-4 w-4 shrink-0 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+                                    </section>
+                                    <div className="w-[3px] h-[3px] bg-[var(--adaptive-black500)] rounded-full" />
                                 </button>
 
                                 {isExpanded
