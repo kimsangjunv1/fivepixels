@@ -8,7 +8,7 @@ import { useReportPanelShell } from "./useReportPanelShell.js";
 import { useReportReplyReview } from "./useReportReplyReview.js";
 import { assembleReportContextValue } from "./assembleReportContextValue.js";
 import { resolveDefaultAuthorName } from "../../utils/report/resolveDefaultAuthorName.js";
-export function useReportState({ projectId, environment, appVersion, panelAppearance, tooltipAppearance, questionThreadDefault = "expanded", fields, authors = [], requireReviewerKey = false, shortcut: _shortcut, identify, onList, onListAll, onPanelBootstrap, onActivitySummary, onListReplies, onNavigate, onRevealTarget, onCreate, onCreateReply, onUpdate, onDelete, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys = false, initialLocale, messageOverrides, pixelsMode = "default", replyHistory, }) {
+export function useReportState({ projectId, environment, appVersion, panelAppearance, tooltipAppearance, questionThreadDefault = "expanded", fields, authors = [], requireReviewerKey = false, shortcut: _shortcut, identify, onList, onListAll, onPanelBootstrap, onActivitySummary, onListReplies, onNavigate, onRevealTarget, onCreate, onCreateReply, onUpdate, onDelete, onListReviewers, onListReviewerRequests, onCreateReviewerRequest, onResolveReviewerRequest, onRegisterReviewer, onUpdateReviewer, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys = false, initialLocale, messageOverrides, pixelsMode = "default", replyHistory, }) {
     const overlayRef = useRef(null);
     const hoveredElementRef = useRef(null);
     const selectedElementRef = useRef(null);
@@ -270,6 +270,13 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         environment,
         appVersion,
         showFeedbackList,
+        teamReviewers: authors,
+        onListReviewers,
+        onListReviewerRequests,
+        onCreateReviewerRequest,
+        onResolveReviewerRequest,
+        onRegisterReviewer,
+        onUpdateReviewer,
         onPanelBootstrap,
         onActivitySummary,
         visibleShortcutKeys,

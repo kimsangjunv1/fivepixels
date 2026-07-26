@@ -5,7 +5,7 @@ import type { useReportMarkers } from "./useReportMarkers.js";
 import type { useReportMutations } from "./useReportMutations.js";
 import type { useReportPanelShell } from "./useReportPanelShell.js";
 import type { useReportReplyReview } from "./useReportReplyReview.js";
-import type { ReportActivitySummaryParams, ReportActivitySummaryResult, ReportFeedback, ReportField, ReportPanelBootstrapParams, ReportPanelBootstrapResult } from "../../types/report.js";
+import type { ReportActivitySummaryParams, ReportActivitySummaryResult, ReportAuthor, ReportFeedback, ReportField, ReportPanelBootstrapParams, ReportPanelBootstrapResult, ReportTeamHandlers } from "../../types/report.js";
 import type { ResolvedReplyHistoryConfig } from "../../utils/report/reportUi.js";
 type AssembleArgs = {
     panel: ReturnType<typeof useReportPanelShell>;
@@ -19,6 +19,13 @@ type AssembleArgs = {
     environment?: string;
     appVersion?: string;
     showFeedbackList: boolean;
+    teamReviewers: ReportAuthor[];
+    onListReviewers?: ReportTeamHandlers["onListReviewers"];
+    onListReviewerRequests?: ReportTeamHandlers["onListReviewerRequests"];
+    onCreateReviewerRequest?: ReportTeamHandlers["onCreateReviewerRequest"];
+    onResolveReviewerRequest?: ReportTeamHandlers["onResolveReviewerRequest"];
+    onRegisterReviewer?: ReportTeamHandlers["onRegisterReviewer"];
+    onUpdateReviewer?: ReportTeamHandlers["onUpdateReviewer"];
     onPanelBootstrap?: (params: ReportPanelBootstrapParams) => Promise<ReportPanelBootstrapResult>;
     onActivitySummary?: (params: ReportActivitySummaryParams) => Promise<ReportActivitySummaryResult>;
     visibleShortcutKeys: boolean;
@@ -32,7 +39,7 @@ type AssembleArgs = {
  * Flat context value for ReportProvider slices.
  * Keys stay flat (see reportContextPartitions). Domain hooks → this assembler → UI.
  */
-export declare function assembleReportContextValue({ panel, auth, draft, markers, mutations, reply, fields, projectId, environment, appVersion, showFeedbackList, onPanelBootstrap, onActivitySummary, visibleShortcutKeys, overlayRef, replyHistory, selectReport, beginFeedbackEdit, cancelDraft, }: AssembleArgs): {
+export declare function assembleReportContextValue({ panel, auth, draft, markers, mutations, reply, fields, projectId, environment, appVersion, showFeedbackList, teamReviewers, onListReviewers, onListReviewerRequests, onCreateReviewerRequest, onResolveReviewerRequest, onRegisterReviewer, onUpdateReviewer, onPanelBootstrap, onActivitySummary, visibleShortcutKeys, overlayRef, replyHistory, selectReport, beginFeedbackEdit, cancelDraft, }: AssembleArgs): {
     panelAppearance: import("../../types/report.js").ReportAppearance;
     setPanelAppearance: (nextAppearance: import("../../types/report.js").ReportAppearance) => void;
     tooltipAppearance: import("../../types/report.js").ReportAppearance;
@@ -44,6 +51,14 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     messages: import("../../utils/report/reportUi.js").ReportMessages;
     fields: ReportField[];
     authors: import("../../types/report.js").ReportIdentify[];
+    teamReviewers: ReportAuthor[];
+    isTeamAdmin: boolean;
+    onListReviewers: (() => Promise<ReportAuthor[]>) | undefined;
+    onListReviewerRequests: (() => Promise<import("../../types/report.js").ReportReviewerRequest[]>) | undefined;
+    onCreateReviewerRequest: ((payload: import("../../types/report.js").CreateReviewerRequestPayload) => Promise<import("../../types/report.js").ReportReviewerRequest>) | undefined;
+    onResolveReviewerRequest: ((id: string, payload: import("../../types/report.js").ResolveReviewerRequestPayload) => Promise<import("../../types/report.js").ReportReviewerRequest>) | undefined;
+    onRegisterReviewer: ((payload: import("../../types/report.js").RegisterReviewerPayload) => Promise<ReportAuthor>) | undefined;
+    onUpdateReviewer: ((id: string, payload: import("../../types/report.js").UpdateReviewerPayload) => Promise<ReportAuthor>) | undefined;
     projectId: string;
     environment: string | undefined;
     appVersion: string | undefined;
@@ -59,7 +74,7 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     personalKey: string | null;
     publicKey: string | null;
     personalKeyRequired: boolean;
-    personalKeyCandidates: import("../../types/report.js").ReportAuthor[];
+    personalKeyCandidates: ReportAuthor[];
     authDiagnostics: import("./useReportAuthSession.js").AuthDiagnostics;
     authorSelectionLocked: boolean;
     panelView: import("./useReportAuthSession.js").PanelView;

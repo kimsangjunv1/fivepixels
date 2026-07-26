@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ChevronDownIcon } from "@/components/icons/Icons.js";
 import { useReportPreferences, useReportSession } from "@/providers/reportContext.js";
 import type { PanelView } from "@/hooks/report/useReportState.js";
+import { hasTeamRequestHandler, isTeamWriteEnabled } from "@/utils/report/teamManagement.js";
 import { PanelGateButton, PanelGateShell } from "./PanelGateShell.js";
 
 type PanelKeyGateMode = Extract<PanelView, "setup-complete" | "key-issue">;
@@ -11,7 +12,7 @@ function buildReviewerSnippet({ name, authorId, publicKey }: { name: string; aut
 }
 
 export function PanelKeyGate({ mode }: { mode: PanelKeyGateMode }) {
-    const { messages, selfProfile, publicKey } = useReportPreferences();
+    const { messages, selfProfile, publicKey, persistenceStatus, onCreateReviewerRequest } = useReportPreferences();
     const { setErrorMessage } = useReportSession();
     const onboarding = messages.onboarding;
     const [copied, setCopied] = useState(false);
@@ -19,8 +20,14 @@ export function PanelKeyGate({ mode }: { mode: PanelKeyGateMode }) {
     const name = selfProfile?.name?.trim() || "reviewer";
     const authorId = selfProfile?.authorId?.trim() || "";
     const canShowSnippet = Boolean(authorId && publicKey);
+    const usesRequestFlow = isTeamWriteEnabled(persistenceStatus) && hasTeamRequestHandler({ onCreateReviewerRequest });
     const title = mode === "key-issue" ? onboarding.issueTitle : onboarding.doneTitle;
-    const description = mode === "key-issue" ? onboarding.issueDescription : onboarding.doneDescription;
+    const description =
+        mode === "key-issue"
+            ? onboarding.issueDescription
+            : usesRequestFlow
+              ? onboarding.doneDescriptionWithRequest
+              : onboarding.doneDescription;
 
     const handleCopySnippet = async () => {
         if (!canShowSnippet || !publicKey) {
@@ -60,6 +67,10 @@ export function PanelKeyGate({ mode }: { mode: PanelKeyGateMode }) {
                 </div>
             }
         >
+            {usesRequestFlow ? (
+                <p className="text-[12px] leading-[1.4] text-[var(--adaptive-black600)]">{onboarding.pendingDescriptionWithRequest}</p>
+            ) : null}
+
             {canShowSnippet && publicKey ? (
                 <div className="flex flex-col gap-[6px] overflow-hidden rounded-[8px] border border-[var(--adaptive-black200)]">
                     <button

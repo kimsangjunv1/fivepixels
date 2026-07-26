@@ -1,8 +1,9 @@
+import { isReportAuthorAdmin } from "../../utils/report/teamManagement.js";
 /**
  * Flat context value for ReportProvider slices.
  * Keys stay flat (see reportContextPartitions). Domain hooks → this assembler → UI.
  */
-export function assembleReportContextValue({ panel, auth, draft, markers, mutations, reply, fields, projectId, environment, appVersion, showFeedbackList, onPanelBootstrap, onActivitySummary, visibleShortcutKeys, overlayRef, replyHistory, selectReport, beginFeedbackEdit, cancelDraft, }) {
+export function assembleReportContextValue({ panel, auth, draft, markers, mutations, reply, fields, projectId, environment, appVersion, showFeedbackList, teamReviewers, onListReviewers, onListReviewerRequests, onCreateReviewerRequest, onResolveReviewerRequest, onRegisterReviewer, onUpdateReviewer, onPanelBootstrap, onActivitySummary, visibleShortcutKeys, overlayRef, replyHistory, selectReport, beginFeedbackEdit, cancelDraft, }) {
     return {
         panelAppearance: panel.panelAppearance,
         setPanelAppearance: panel.setPanelAppearance,
@@ -15,6 +16,14 @@ export function assembleReportContextValue({ panel, auth, draft, markers, mutati
         messages: panel.messages,
         fields,
         authors: auth.authorizedAuthors,
+        teamReviewers,
+        isTeamAdmin: isReportAuthorAdmin(auth.authorizedAuthors[0]),
+        onListReviewers,
+        onListReviewerRequests,
+        onCreateReviewerRequest,
+        onResolveReviewerRequest,
+        onRegisterReviewer,
+        onUpdateReviewer,
         projectId,
         environment,
         appVersion,

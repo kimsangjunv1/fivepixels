@@ -372,6 +372,7 @@ export type ReportMessages = {
         back: string;
         doneTitle: string;
         doneDescription: string;
+        doneDescriptionWithRequest: string;
         issueTitle: string;
         issueDescription: string;
         reviewerSnippetHint: string;
@@ -382,6 +383,7 @@ export type ReportMessages = {
         refresh: string;
         pendingTitle: string;
         pendingDescription: string;
+        pendingDescriptionWithRequest: string;
     };
     authDiagnostics: {
         title: string;
@@ -416,6 +418,8 @@ export type ReportMessages = {
         categoryAdvanced: string;
         categoryTabs: string;
         categoryTabsSummary: string;
+        categoryTeam: string;
+        categoryTeamSummary: string;
         resetTabsToRoleDefault: string;
         backAriaLabel: string;
         sectionTheme: string;
@@ -445,6 +449,39 @@ export type ReportMessages = {
         markerShapeSquare: string;
         markerShapePill: string;
         markerShapePin: string;
+    };
+    team: {
+        localStorageHint: string;
+        apiAdminHint: string;
+        apiMemberHint: string;
+        memberCount: (count: number) => string;
+        sectionMembers: string;
+        sectionRequests: string;
+        sectionMyRequest: string;
+        sectionManual: string;
+        loading: string;
+        emptyMembers: string;
+        emptyRequests: string;
+        roleAdmin: string;
+        roleReviewer: string;
+        inactive: string;
+        activate: string;
+        deactivate: string;
+        requestDescription: string;
+        submitRequest: string;
+        requestSent: string;
+        approve: string;
+        reject: string;
+        register: string;
+        manualNamePlaceholder: string;
+        manualIdPlaceholder: string;
+        manualPublicKeyPlaceholder: string;
+        manualRequired: string;
+        loadFailed: string;
+        requestFailed: string;
+        resolveFailed: string;
+        registerFailed: string;
+        updateFailed: string;
     };
     command: {
         title: string;
