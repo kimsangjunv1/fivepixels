@@ -7,6 +7,7 @@ import type { ReportLocale } from "@/i18n/types.js";
 import { useReportPreferences, useReportSession } from "@/providers/reportContext.js";
 import { getDefaultVisibleTabsForRole } from "@/utils/panel/panelTabPreference.js";
 import { isPersonalKeyFile, readPersonalKeyFile } from "@/utils/feedback/feedbackDataTransfer.js";
+import { hasTeamRequestHandler, isTeamWriteEnabled } from "@/utils/report/teamManagement.js";
 import { AppearanceThemePicker } from "./AppearanceThemePicker.js";
 import { MarkerSizePreview } from "./MarkerSizePreview.js";
 import { PanelDropdownMenuItem } from "./PanelDropdownMenu.js";
@@ -44,9 +45,12 @@ export function PanelOnboarding() {
         personalKeyCandidates,
         resolvedTabAvailabilityContext,
         savePanelTabPreference,
+        persistenceStatus,
+        onCreateReviewerRequest,
     } = useReportPreferences();
     const { setErrorMessage } = useReportSession();
     const onboarding = messages.onboarding;
+    const canSubmitRegistrationRequest = isTeamWriteEnabled(persistenceStatus) && hasTeamRequestHandler({ onCreateReviewerRequest });
     const [step, setStep] = useState<OnboardingStep>("language");
     const [name, setName] = useState(selfProfile?.name ?? "");
     const [selectedTabs, setSelectedTabs] = useState<UserSelectablePanelTab[]>(() => getDefaultVisibleTabsForRole(panelRole, resolvedTabAvailabilityContext));
@@ -94,7 +98,19 @@ export function PanelOnboarding() {
                 visibleTabs: selectedTabs,
                 customized: true,
             });
-            await completeOnboarding({ name: trimmedName });
+            const issued = await completeOnboarding({ name: trimmedName });
+
+            if (canSubmitRegistrationRequest && onCreateReviewerRequest && issued.publicKey && issued.authorId) {
+                try {
+                    await onCreateReviewerRequest({
+                        author_id: issued.authorId,
+                        author_name: trimmedName,
+                        public_key: issued.publicKey,
+                    });
+                } catch {
+                    setErrorMessage(messages.team.requestFailed);
+                }
+            }
         } catch {
             setErrorMessage(messages.errors.clipboardCopyFailed);
         } finally {

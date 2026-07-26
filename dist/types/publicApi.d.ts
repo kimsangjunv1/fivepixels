@@ -1,9 +1,10 @@
-import type { FivePixelsMode, ReportFeedback, ReportField, ReportGitHubConfig, ReportPersistenceHandlers, ReportProject, ReportTeam, ReportUi, ReportVisibility } from "./report.js";
+import type { FivePixelsMode, ReportFeedback, ReportField, ReportGitHubConfig, ReportPersistenceHandlers, ReportProject, ReportTeam, ReportTeamHandlers, ReportUi, ReportVisibility } from "./report.js";
 import type { ReportSideEffectCallbacks } from "../utils/report/reportCallbacks.js";
 /**
  * Public props for `<FivePixels />` — single source of truth.
  *
  * - Persistence shapes: see `ReportPersistenceHandlers` (`onList` / `onCreate` / `onUpdate` must be passed together or all omitted).
+ * - Team management: `ReportTeamHandlers` (optional P3-auth; panel Settings → Team).
  * - Payload / entity shapes: `CreateReportFeedbackPayload`, `ReportFeedback`, `ReportReply`, etc. in `./report.js`.
  * - How to add a prop: `docs/add-props.md`.
  */
@@ -19,7 +20,7 @@ export type FivePixelsProps = {
     /** Attempt to reveal a target that is not on the current page. */
     onRevealTarget?: (report: ReportFeedback) => boolean | Promise<boolean>;
     github?: ReportGitHubConfig;
-} & Partial<ReportPersistenceHandlers> & ReportSideEffectCallbacks;
+} & Partial<ReportPersistenceHandlers> & Partial<ReportTeamHandlers> & ReportSideEffectCallbacks;
 /** `<ReportProvider />` = public props + children (custom UI assembly). */
 export type ReportProviderProps = FivePixelsProps & {
     children: import("react").ReactNode;

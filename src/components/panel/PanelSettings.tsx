@@ -13,6 +13,7 @@ import { MarkerShapePicker } from "./MarkerShapePicker.js";
 import { PanelMarkerDisplayControls } from "./PanelMarkerDisplayControls.js";
 import { PanelOptionSwitch } from "./PanelOptionSwitch.js";
 import { PanelTabSelector } from "./PanelTabSelector.js";
+import { PanelTeamSettings } from "./PanelTeamSettings.js";
 
 type PanelSettingsProps = {
     transferDisabled?: boolean;
@@ -32,7 +33,7 @@ type PanelSettingsProps = {
     onKeyRotate: () => void;
 };
 
-type SettingsCategory = "preview" | "appearance" | "display" | "tabs" | "data-and-keys" | "advanced";
+type SettingsCategory = "preview" | "appearance" | "display" | "tabs" | "team" | "data-and-keys" | "advanced";
 
 const LOCALE_OPTIONS = ["en", "ko"] as const satisfies readonly ReportLocale[];
 const QUESTION_THREAD_OPTIONS = ["expanded", "collapsed"] as const satisfies readonly QuestionThreadDisplay[];
@@ -102,6 +103,8 @@ function getCategoryTitle(category: SettingsCategory, messages: ReturnType<typeo
             return messages.settings.categoryDisplay;
         case "tabs":
             return messages.settings.categoryTabs;
+        case "team":
+            return messages.settings.categoryTeam;
         case "data-and-keys":
             return messages.settings.categoryDataAndKeys;
         case "advanced":
@@ -150,6 +153,7 @@ export function PanelSettings({
         resolvedTabAvailabilityContext,
         setVisiblePanelTabs,
         resetVisibleTabsToRoleDefault,
+        canAccessTeamSettings,
     } = useReportPreferences();
     const { presentationViewerId, setPresentationViewerId } = useReportSession();
     const scaleLabels: Record<AppearanceScale, string> = {
@@ -406,6 +410,8 @@ export function PanelSettings({
                         </SettingsSection>
                     ) : null}
 
+                    {activeCategory === "team" ? <PanelTeamSettings /> : null}
+
                     {activeCategory === "data-and-keys" ? (
                         <>
                             <SettingsSection label={messages.moreMenu.sectionTransfer}>
@@ -491,6 +497,14 @@ export function PanelSettings({
                 subtitle={tabsSummary}
                 onClick={() => setActiveCategory("tabs")}
             />
+
+            {canAccessTeamSettings ? (
+                <SettingsHubRow
+                    title={messages.settings.categoryTeam}
+                    subtitle={messages.settings.categoryTeamSummary}
+                    onClick={() => setActiveCategory("team")}
+                />
+            ) : null}
 
             <SettingsHubRow
                 title={messages.settings.categoryDataAndKeys}

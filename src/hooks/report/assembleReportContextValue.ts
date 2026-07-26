@@ -8,12 +8,15 @@ import type { useReportReplyReview } from "./useReportReplyReview.js";
 import type {
     ReportActivitySummaryParams,
     ReportActivitySummaryResult,
+    ReportAuthor,
     ReportFeedback,
     ReportField,
     ReportPanelBootstrapParams,
     ReportPanelBootstrapResult,
+    ReportTeamHandlers,
 } from "@/types/report.js";
 import type { ResolvedReplyHistoryConfig } from "@/utils/report/reportUi.js";
+import { canAccessTeamSettings, isReportAuthorAdmin, resolveAuthorRole } from "@/utils/report/teamManagement.js";
 
 type AssembleArgs = {
     panel: ReturnType<typeof useReportPanelShell>;
@@ -27,6 +30,13 @@ type AssembleArgs = {
     environment?: string;
     appVersion?: string;
     showFeedbackList: boolean;
+    teamReviewers: ReportAuthor[];
+    onListReviewers?: ReportTeamHandlers["onListReviewers"];
+    onListReviewerRequests?: ReportTeamHandlers["onListReviewerRequests"];
+    onCreateReviewerRequest?: ReportTeamHandlers["onCreateReviewerRequest"];
+    onResolveReviewerRequest?: ReportTeamHandlers["onResolveReviewerRequest"];
+    onRegisterReviewer?: ReportTeamHandlers["onRegisterReviewer"];
+    onUpdateReviewer?: ReportTeamHandlers["onUpdateReviewer"];
     onPanelBootstrap?: (params: ReportPanelBootstrapParams) => Promise<ReportPanelBootstrapResult>;
     onActivitySummary?: (params: ReportActivitySummaryParams) => Promise<ReportActivitySummaryResult>;
     visibleShortcutKeys: boolean;
@@ -53,6 +63,13 @@ export function assembleReportContextValue({
     environment,
     appVersion,
     showFeedbackList,
+    teamReviewers,
+    onListReviewers,
+    onListReviewerRequests,
+    onCreateReviewerRequest,
+    onResolveReviewerRequest,
+    onRegisterReviewer,
+    onUpdateReviewer,
     onPanelBootstrap,
     onActivitySummary,
     visibleShortcutKeys,
@@ -62,6 +79,9 @@ export function assembleReportContextValue({
     beginFeedbackEdit,
     cancelDraft,
 }: AssembleArgs) {
+    const authorizedId = auth.authorizedAuthors[0]?.id;
+    const teamActor = authorizedId ? (teamReviewers.find((reviewer) => reviewer.id === authorizedId) ?? null) : null;
+
     return {
         panelAppearance: panel.panelAppearance,
         setPanelAppearance: panel.setPanelAppearance,
@@ -74,6 +94,17 @@ export function assembleReportContextValue({
         messages: panel.messages,
         fields,
         authors: auth.authorizedAuthors,
+        teamReviewers,
+        teamActor,
+        teamActorRole: teamActor ? resolveAuthorRole(teamActor) : null,
+        isTeamAdmin: isReportAuthorAdmin(teamActor),
+        canAccessTeamSettings: canAccessTeamSettings(teamActor),
+        onListReviewers,
+        onListReviewerRequests,
+        onCreateReviewerRequest,
+        onResolveReviewerRequest,
+        onRegisterReviewer,
+        onUpdateReviewer,
         projectId,
         environment,
         appVersion,

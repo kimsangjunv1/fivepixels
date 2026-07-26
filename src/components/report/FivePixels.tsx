@@ -27,6 +27,12 @@ export function FivePixels({
     onCreateReply,
     onUpdate,
     onDelete,
+    onListReviewers,
+    onListReviewerRequests,
+    onCreateReviewerRequest,
+    onResolveReviewerRequest,
+    onRegisterReviewer,
+    onUpdateReviewer,
     onEvent,
     onReply,
     github,
@@ -56,6 +62,12 @@ export function FivePixels({
             onCreateReply={onCreateReply}
             onUpdate={onUpdate}
             onDelete={onDelete}
+            onListReviewers={onListReviewers}
+            onListReviewerRequests={onListReviewerRequests}
+            onCreateReviewerRequest={onCreateReviewerRequest}
+            onResolveReviewerRequest={onResolveReviewerRequest}
+            onRegisterReviewer={onRegisterReviewer}
+            onUpdateReviewer={onUpdateReviewer}
             onEvent={onEvent}
             onReply={onReply}
             github={github}

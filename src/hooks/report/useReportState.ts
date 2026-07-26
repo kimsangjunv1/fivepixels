@@ -28,6 +28,7 @@ import type {
     ReportPanelBootstrapResult,
     ReportReply,
     QuestionThreadDisplay,
+    ReportTeamHandlers,
     UpdateReportFeedbackPayload,
 } from "@/types/report.js";
 import type { ReportSideEffectCallbacks } from "@/utils/report/reportCallbacks.js";
@@ -59,6 +60,12 @@ export type ReportStateConfig = {
     onCreateReply?: (commentId: string, payload: CreateReplyPayload) => Promise<ReportReply>;
     onUpdate?: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
     onDelete?: (id: string) => Promise<void>;
+    onListReviewers?: ReportTeamHandlers["onListReviewers"];
+    onListReviewerRequests?: ReportTeamHandlers["onListReviewerRequests"];
+    onCreateReviewerRequest?: ReportTeamHandlers["onCreateReviewerRequest"];
+    onResolveReviewerRequest?: ReportTeamHandlers["onResolveReviewerRequest"];
+    onRegisterReviewer?: ReportTeamHandlers["onRegisterReviewer"];
+    onUpdateReviewer?: ReportTeamHandlers["onUpdateReviewer"];
     onEvent?: (event: ReportEvent) => void | Promise<void>;
     onReply?: (params: { feedbackId: string; message: string }) => void | Promise<void>;
     github?: ReportGitHubConfig;
@@ -94,6 +101,12 @@ export function useReportState({
     onCreateReply,
     onUpdate,
     onDelete,
+    onListReviewers,
+    onListReviewerRequests,
+    onCreateReviewerRequest,
+    onResolveReviewerRequest,
+    onRegisterReviewer,
+    onUpdateReviewer,
     onEvent,
     onReply,
     github,
@@ -400,6 +413,13 @@ export function useReportState({
         environment,
         appVersion,
         showFeedbackList,
+        teamReviewers: authors,
+        onListReviewers,
+        onListReviewerRequests,
+        onCreateReviewerRequest,
+        onResolveReviewerRequest,
+        onRegisterReviewer,
+        onUpdateReviewer,
         onPanelBootstrap,
         onActivitySummary,
         visibleShortcutKeys,

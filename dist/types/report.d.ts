@@ -115,6 +115,8 @@ export type ReportVisibility = {
     devOnly?: boolean;
     routeKey?: string;
 };
+/** Server-side team role (not the UI `PanelRole` tab preset). */
+export type ReportAuthorRole = "admin" | "sub_admin" | "member";
 export type ReportAuthor = {
     id: string;
     name: string;
@@ -122,6 +124,59 @@ export type ReportAuthor = {
     publicKey?: string;
     /** Presentation-only private key matching `publicKey`. */
     privateKey?: string;
+    /**
+     * Team permission hierarchy:
+     * - `admin`: sees all; can approve/edit sub_admin + member (not other admins)
+     * - `sub_admin`: sees sub_admin + member; can approve/edit member only
+     * - `member` (default): no Settings → Team tab
+     */
+    role?: ReportAuthorRole;
+    /** Soft-disable without deleting history. Default true when omitted. */
+    isActive?: boolean;
+};
+export type ReportReviewerRequestStatus = "pending" | "approved" | "rejected";
+export type ReportReviewerRequest = {
+    id: string;
+    author_id: string;
+    author_name: string;
+    public_key: string;
+    status: ReportReviewerRequestStatus;
+    created_at: string;
+    resolved_at?: string | null;
+    resolved_by?: string | null;
+};
+export type CreateReviewerRequestPayload = {
+    author_id: string;
+    author_name: string;
+    public_key: string;
+};
+export type RegisterReviewerPayload = {
+    author_id: string;
+    author_name: string;
+    public_key: string;
+    role?: ReportAuthorRole;
+};
+export type UpdateReviewerPayload = {
+    author_name?: string;
+    public_key?: string;
+    role?: ReportAuthorRole;
+    is_active?: boolean;
+};
+export type ResolveReviewerRequestPayload = {
+    status: "approved" | "rejected";
+    role?: ReportAuthorRole;
+};
+/**
+ * Optional team / reviewer management handlers (P3-auth).
+ * Independent of feedback persistence — localStorage mode still shows `team.reviewers` read-only.
+ */
+export type ReportTeamHandlers = {
+    onListReviewers?: () => Promise<ReportAuthor[]>;
+    onListReviewerRequests?: () => Promise<ReportReviewerRequest[]>;
+    onCreateReviewerRequest?: (payload: CreateReviewerRequestPayload) => Promise<ReportReviewerRequest>;
+    onResolveReviewerRequest?: (id: string, payload: ResolveReviewerRequestPayload) => Promise<ReportReviewerRequest>;
+    onRegisterReviewer?: (payload: RegisterReviewerPayload) => Promise<ReportAuthor>;
+    onUpdateReviewer?: (id: string, payload: UpdateReviewerPayload) => Promise<ReportAuthor>;
 };
 export type ReportAuthAction = "feedback:create" | "feedback:update" | "reply:create";
 export type ReportAuthProof = {
