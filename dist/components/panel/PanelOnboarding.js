@@ -5,6 +5,7 @@ import { PANEL_ROLE_VALUES } from "../../constants/panelRole.js";
 import { useReportPreferences, useReportSession } from "../../providers/reportContext.js";
 import { getDefaultVisibleTabsForRole } from "../../utils/panel/panelTabPreference.js";
 import { isPersonalKeyFile, readPersonalKeyFile } from "../../utils/feedback/feedbackDataTransfer.js";
+import { hasTeamRequestHandler, isTeamWriteEnabled } from "../../utils/report/teamManagement.js";
 import { AppearanceThemePicker } from "./AppearanceThemePicker.js";
 import { MarkerSizePreview } from "./MarkerSizePreview.js";
 import { PanelDropdownMenuItem } from "./PanelDropdownMenu.js";
@@ -14,9 +15,10 @@ import { PanelOptionSwitch } from "./PanelOptionSwitch.js";
 import { PanelTabSelector } from "./PanelTabSelector.js";
 const LOCALE_OPTIONS = ["en", "ko"];
 export function PanelOnboarding() {
-    const { messages, locale, setLocale, panelAppearance, setPanelAppearance, markerAppearance, setMarkerSize, typography, setFontSize, panelRole, setPanelRole, completeOnboarding, restoreFromBackup, selfProfile, personalKeyCandidates, resolvedTabAvailabilityContext, savePanelTabPreference, } = useReportPreferences();
+    const { messages, locale, setLocale, panelAppearance, setPanelAppearance, markerAppearance, setMarkerSize, typography, setFontSize, panelRole, setPanelRole, completeOnboarding, restoreFromBackup, selfProfile, personalKeyCandidates, resolvedTabAvailabilityContext, savePanelTabPreference, persistenceStatus, onCreateReviewerRequest, } = useReportPreferences();
     const { setErrorMessage } = useReportSession();
     const onboarding = messages.onboarding;
+    const canSubmitRegistrationRequest = isTeamWriteEnabled(persistenceStatus) && hasTeamRequestHandler({ onCreateReviewerRequest });
     const [step, setStep] = useState("language");
     const [name, setName] = useState(selfProfile?.name ?? "");
     const [selectedTabs, setSelectedTabs] = useState(() => getDefaultVisibleTabsForRole(panelRole, resolvedTabAvailabilityContext));
@@ -60,7 +62,19 @@ export function PanelOnboarding() {
                 visibleTabs: selectedTabs,
                 customized: true,
             });
-            await completeOnboarding({ name: trimmedName });
+            const issued = await completeOnboarding({ name: trimmedName });
+            if (canSubmitRegistrationRequest && onCreateReviewerRequest && issued.publicKey && issued.authorId) {
+                try {
+                    await onCreateReviewerRequest({
+                        author_id: issued.authorId,
+                        author_name: trimmedName,
+                        public_key: issued.publicKey,
+                    });
+                }
+                catch {
+                    setErrorMessage(messages.team.requestFailed);
+                }
+            }
         }
         catch {
             setErrorMessage(messages.errors.clipboardCopyFailed);
