@@ -16,7 +16,7 @@ import type {
     ReportTeamHandlers,
 } from "@/types/report.js";
 import type { ResolvedReplyHistoryConfig } from "@/utils/report/reportUi.js";
-import { isReportAuthorAdmin } from "@/utils/report/teamManagement.js";
+import { canAccessTeamSettings, isReportAuthorAdmin, resolveAuthorRole } from "@/utils/report/teamManagement.js";
 
 type AssembleArgs = {
     panel: ReturnType<typeof useReportPanelShell>;
@@ -79,6 +79,9 @@ export function assembleReportContextValue({
     beginFeedbackEdit,
     cancelDraft,
 }: AssembleArgs) {
+    const authorizedId = auth.authorizedAuthors[0]?.id;
+    const teamActor = authorizedId ? (teamReviewers.find((reviewer) => reviewer.id === authorizedId) ?? null) : null;
+
     return {
         panelAppearance: panel.panelAppearance,
         setPanelAppearance: panel.setPanelAppearance,
@@ -92,7 +95,10 @@ export function assembleReportContextValue({
         fields,
         authors: auth.authorizedAuthors,
         teamReviewers,
-        isTeamAdmin: isReportAuthorAdmin(auth.authorizedAuthors[0]),
+        teamActor,
+        teamActorRole: teamActor ? resolveAuthorRole(teamActor) : null,
+        isTeamAdmin: isReportAuthorAdmin(teamActor),
+        canAccessTeamSettings: canAccessTeamSettings(teamActor),
         onListReviewers,
         onListReviewerRequests,
         onCreateReviewerRequest,

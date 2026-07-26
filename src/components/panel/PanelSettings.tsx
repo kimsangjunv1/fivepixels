@@ -153,6 +153,7 @@ export function PanelSettings({
         resolvedTabAvailabilityContext,
         setVisiblePanelTabs,
         resetVisibleTabsToRoleDefault,
+        canAccessTeamSettings,
     } = useReportPreferences();
     const { presentationViewerId, setPresentationViewerId } = useReportSession();
     const scaleLabels: Record<AppearanceScale, string> = {
@@ -497,11 +498,13 @@ export function PanelSettings({
                 onClick={() => setActiveCategory("tabs")}
             />
 
-            <SettingsHubRow
-                title={messages.settings.categoryTeam}
-                subtitle={messages.settings.categoryTeamSummary}
-                onClick={() => setActiveCategory("team")}
-            />
+            {canAccessTeamSettings ? (
+                <SettingsHubRow
+                    title={messages.settings.categoryTeam}
+                    subtitle={messages.settings.categoryTeamSummary}
+                    onClick={() => setActiveCategory("team")}
+                />
+            ) : null}
 
             <SettingsHubRow
                 title={messages.settings.categoryDataAndKeys}

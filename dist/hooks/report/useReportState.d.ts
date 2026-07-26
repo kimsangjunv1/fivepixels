@@ -62,7 +62,10 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     fields: ReportField[];
     authors: ReportIdentify[];
     teamReviewers: ReportAuthor[];
+    teamActor: ReportAuthor | null;
+    teamActorRole: import("../../types/report.js").ReportAuthorRole | null;
     isTeamAdmin: boolean;
+    canAccessTeamSettings: boolean;
     onListReviewers: (() => Promise<ReportAuthor[]>) | undefined;
     onListReviewerRequests: (() => Promise<import("../../types/report.js").ReportReviewerRequest[]>) | undefined;
     onCreateReviewerRequest: ((payload: import("../../types/report.js").CreateReviewerRequestPayload) => Promise<import("../../types/report.js").ReportReviewerRequest>) | undefined;

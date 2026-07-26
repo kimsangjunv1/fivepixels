@@ -21,7 +21,10 @@ declare const ReportContext: Context<{
     fields: import("../index.js").ReportField[];
     authors: import("../index.js").ReportIdentify[];
     teamReviewers: import("../index.js").ReportAuthor[];
+    teamActor: import("../index.js").ReportAuthor | null;
+    teamActorRole: import("../index.js").ReportAuthorRole | null;
     isTeamAdmin: boolean;
+    canAccessTeamSettings: boolean;
     onListReviewers: (() => Promise<import("../index.js").ReportAuthor[]>) | undefined;
     onListReviewerRequests: (() => Promise<import("../index.js").ReportReviewerRequest[]>) | undefined;
     onCreateReviewerRequest: ((payload: import("../index.js").CreateReviewerRequestPayload) => Promise<import("../index.js").ReportReviewerRequest>) | undefined;
@@ -321,7 +324,10 @@ export declare function useReport(): {
     fields: import("../index.js").ReportField[];
     authors: import("../index.js").ReportIdentify[];
     teamReviewers: import("../index.js").ReportAuthor[];
+    teamActor: import("../index.js").ReportAuthor | null;
+    teamActorRole: import("../index.js").ReportAuthorRole | null;
     isTeamAdmin: boolean;
+    canAccessTeamSettings: boolean;
     onListReviewers: (() => Promise<import("../index.js").ReportAuthor[]>) | undefined;
     onListReviewerRequests: (() => Promise<import("../index.js").ReportReviewerRequest[]>) | undefined;
     onCreateReviewerRequest: ((payload: import("../index.js").CreateReviewerRequestPayload) => Promise<import("../index.js").ReportReviewerRequest>) | undefined;
@@ -624,7 +630,10 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         fields: import("../index.js").ReportField[];
         authors: import("../index.js").ReportIdentify[];
         teamReviewers: import("../index.js").ReportAuthor[];
+        teamActor: import("../index.js").ReportAuthor | null;
+        teamActorRole: import("../index.js").ReportAuthorRole | null;
         isTeamAdmin: boolean;
+        canAccessTeamSettings: boolean;
         onListReviewers: (() => Promise<import("../index.js").ReportAuthor[]>) | undefined;
         onListReviewerRequests: (() => Promise<import("../index.js").ReportReviewerRequest[]>) | undefined;
         onCreateReviewerRequest: ((payload: import("../index.js").CreateReviewerRequestPayload) => Promise<import("../index.js").ReportReviewerRequest>) | undefined;
@@ -906,7 +915,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         handleCreateGitHubIssue: (report: import("../index.js").ReportFeedback) => Promise<void>;
         handleCreateSubmitWithGitHubIssue: () => Promise<void>;
         isDraftGitHubIssueSubmitting: boolean;
-    }, "personalKey" | "projectId" | "fields" | "personalKeyRequired" | "environment" | "questionThreadDisplay" | "setQuestionThreadDisplay" | "locale" | "setLocale" | "showMarkerTargetPreview" | "setShowMarkerTargetPreview" | "toggleMarkerTargetPreview" | "markerAppearance" | "setMarkerAppearance" | "setMarkerSize" | "setMarkerShape" | "setMarkerColors" | "setMarkerColor" | "setFeedbackModeDotColors" | "setFeedbackModeDotColor" | "typography" | "setTypography" | "setFontSize" | "setFontFamily" | "panelRole" | "setPanelRole" | "persistenceStatus" | "appVersion" | "showFeedbackList" | "pinnedFeedbackItems" | "pinRailCollapsed" | "togglePinnedFeedback" | "unpinFeedback" | "setPinRailCollapsed" | "syncPinnedFeedbackReports" | "selfProfile" | "authors" | "publicKey" | "personalKeyCandidates" | "issuePersonalKey" | "rotatePersonalKey" | "insertPersonalKey" | "authorSelectionLocked" | "messages" | "onListReviewers" | "onListReviewerRequests" | "onCreateReviewerRequest" | "onResolveReviewerRequest" | "onRegisterReviewer" | "onUpdateReviewer" | "visibleShortcutKeys" | "teamReviewers" | "panelAppearance" | "setPanelAppearance" | "tooltipAppearance" | "setTooltipAppearance" | "isTeamAdmin" | "panelView" | "completeOnboarding" | "restoreFromBackup" | "skipOnboarding" | "resolvedPanelAppearance" | "resolvedTooltipAppearance" | "isMobileViewport" | "isPresentationMode" | "presentationViewers" | "visiblePanelTabs" | "visiblePanelTabsSummary" | "resolvedTabAvailabilityContext" | "setVisiblePanelTabs" | "resetVisibleTabsToRoleDefault" | "applyRoleDefaultTabsForOnboarding" | "savePanelTabPreference" | "storedPanelTabPreference">;
+    }, "personalKey" | "projectId" | "fields" | "personalKeyRequired" | "environment" | "questionThreadDisplay" | "setQuestionThreadDisplay" | "locale" | "setLocale" | "showMarkerTargetPreview" | "setShowMarkerTargetPreview" | "toggleMarkerTargetPreview" | "markerAppearance" | "setMarkerAppearance" | "setMarkerSize" | "setMarkerShape" | "setMarkerColors" | "setMarkerColor" | "setFeedbackModeDotColors" | "setFeedbackModeDotColor" | "typography" | "setTypography" | "setFontSize" | "setFontFamily" | "panelRole" | "setPanelRole" | "persistenceStatus" | "appVersion" | "showFeedbackList" | "pinnedFeedbackItems" | "pinRailCollapsed" | "togglePinnedFeedback" | "unpinFeedback" | "setPinRailCollapsed" | "syncPinnedFeedbackReports" | "selfProfile" | "authors" | "publicKey" | "personalKeyCandidates" | "issuePersonalKey" | "rotatePersonalKey" | "insertPersonalKey" | "authorSelectionLocked" | "messages" | "onListReviewers" | "onListReviewerRequests" | "onCreateReviewerRequest" | "onResolveReviewerRequest" | "onRegisterReviewer" | "onUpdateReviewer" | "visibleShortcutKeys" | "teamReviewers" | "panelAppearance" | "setPanelAppearance" | "tooltipAppearance" | "setTooltipAppearance" | "teamActor" | "teamActorRole" | "isTeamAdmin" | "canAccessTeamSettings" | "panelView" | "completeOnboarding" | "restoreFromBackup" | "skipOnboarding" | "resolvedPanelAppearance" | "resolvedTooltipAppearance" | "isMobileViewport" | "isPresentationMode" | "presentationViewers" | "visiblePanelTabs" | "visiblePanelTabsSummary" | "resolvedTabAvailabilityContext" | "setVisiblePanelTabs" | "resetVisibleTabsToRoleDefault" | "applyRoleDefaultTabsForOnboarding" | "savePanelTabPreference" | "storedPanelTabPreference">;
     session: Pick<{
         panelAppearance: import("../index.js").ReportAppearance;
         setPanelAppearance: (nextAppearance: import("../index.js").ReportAppearance) => void;
@@ -920,7 +929,10 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         fields: import("../index.js").ReportField[];
         authors: import("../index.js").ReportIdentify[];
         teamReviewers: import("../index.js").ReportAuthor[];
+        teamActor: import("../index.js").ReportAuthor | null;
+        teamActorRole: import("../index.js").ReportAuthorRole | null;
         isTeamAdmin: boolean;
+        canAccessTeamSettings: boolean;
         onListReviewers: (() => Promise<import("../index.js").ReportAuthor[]>) | undefined;
         onListReviewerRequests: (() => Promise<import("../index.js").ReportReviewerRequest[]>) | undefined;
         onCreateReviewerRequest: ((payload: import("../index.js").CreateReviewerRequestPayload) => Promise<import("../index.js").ReportReviewerRequest>) | undefined;
@@ -1216,7 +1228,10 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         fields: import("../index.js").ReportField[];
         authors: import("../index.js").ReportIdentify[];
         teamReviewers: import("../index.js").ReportAuthor[];
+        teamActor: import("../index.js").ReportAuthor | null;
+        teamActorRole: import("../index.js").ReportAuthorRole | null;
         isTeamAdmin: boolean;
+        canAccessTeamSettings: boolean;
         onListReviewers: (() => Promise<import("../index.js").ReportAuthor[]>) | undefined;
         onListReviewerRequests: (() => Promise<import("../index.js").ReportReviewerRequest[]>) | undefined;
         onCreateReviewerRequest: ((payload: import("../index.js").CreateReviewerRequestPayload) => Promise<import("../index.js").ReportReviewerRequest>) | undefined;

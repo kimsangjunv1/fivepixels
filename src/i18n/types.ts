@@ -478,7 +478,8 @@ export type ReportMessages = {
         emptyMembers: string;
         emptyRequests: string;
         roleAdmin: string;
-        roleReviewer: string;
+        roleSubAdmin: string;
+        roleMember: string;
         inactive: string;
         activate: string;
         deactivate: string;
@@ -487,6 +488,8 @@ export type ReportMessages = {
         requestSent: string;
         approve: string;
         reject: string;
+        approveAsRole: string;
+        roleNotAllowed: string;
         register: string;
         manualNamePlaceholder: string;
         manualIdPlaceholder: string;

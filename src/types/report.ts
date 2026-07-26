@@ -143,7 +143,7 @@ export type ReportVisibility = {
 };
 
 /** Server-side team role (not the UI `PanelRole` tab preset). */
-export type ReportAuthorRole = "admin" | "reviewer";
+export type ReportAuthorRole = "admin" | "sub_admin" | "member";
 
 export type ReportAuthor = {
     id: string;
@@ -152,7 +152,12 @@ export type ReportAuthor = {
     publicKey?: string;
     /** Presentation-only private key matching `publicKey`. */
     privateKey?: string;
-    /** Team permission. Omit/`reviewer` = member; `admin` can manage requests in the panel. */
+    /**
+     * Team permission hierarchy:
+     * - `admin`: sees all; can approve/edit sub_admin + member (not other admins)
+     * - `sub_admin`: sees sub_admin + member; can approve/edit member only
+     * - `member` (default): no Settings → Team tab
+     */
     role?: ReportAuthorRole;
     /** Soft-disable without deleting history. Default true when omitted. */
     isActive?: boolean;

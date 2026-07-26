@@ -4,18 +4,33 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useReportPreferences, useReportSession } from "@/providers/reportContext.js";
 import type { ReportAuthor, ReportAuthorRole, ReportReviewerRequest } from "@/types/report.js";
 import {
+    canAssignTeamRole,
+    canEditTeamMember,
+    filterVisibleTeamMembers,
     hasTeamAdminHandlers,
-    hasTeamRequestHandler,
     isTeamWriteEnabled,
+    listAssignableRoles,
     resolveAuthorRole,
     sortTeamReviewers,
 } from "@/utils/report/teamManagement.js";
 
+function roleLabelFor(role: ReportAuthorRole, team: { roleAdmin: string; roleSubAdmin: string; roleMember: string }) {
+    if (role === "admin") {
+        return team.roleAdmin;
+    }
+    if (role === "sub_admin") {
+        return team.roleSubAdmin;
+    }
+    return team.roleMember;
+}
+
 function MemberRow({
     member,
     roleLabel,
+    roleMessages,
     inactiveLabel,
     canEdit,
+    assignableRoles,
     activateLabel,
     deactivateLabel,
     onToggleActive,
@@ -23,8 +38,10 @@ function MemberRow({
 }: {
     member: ReportAuthor;
     roleLabel: string;
+    roleMessages: { roleAdmin: string; roleSubAdmin: string; roleMember: string };
     inactiveLabel: string;
     canEdit: boolean;
+    assignableRoles: ReportAuthorRole[];
     activateLabel: string;
     deactivateLabel: string;
     onToggleActive?: () => void;
@@ -48,24 +65,18 @@ function MemberRow({
             {inactive ? <p className="text-[11px] text-[var(--adaptive-black500)]">{inactiveLabel}</p> : null}
             {canEdit ? (
                 <div className="flex flex-wrap gap-[6px]">
-                    {onChangeRole ? (
-                        <>
-                            <button
-                                type="button"
-                                onClick={() => onChangeRole("reviewer")}
-                                className="rounded-[6px] px-[8px] py-[4px] text-[11px] text-[var(--adaptive-black800)] hover:bg-[var(--adaptive-black100)]"
-                            >
-                                reviewer
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => onChangeRole("admin")}
-                                className="rounded-[6px] px-[8px] py-[4px] text-[11px] text-[var(--adaptive-black800)] hover:bg-[var(--adaptive-black100)]"
-                            >
-                                admin
-                            </button>
-                        </>
-                    ) : null}
+                    {onChangeRole
+                        ? assignableRoles.map((role) => (
+                              <button
+                                  key={role}
+                                  type="button"
+                                  onClick={() => onChangeRole(role)}
+                                  className="rounded-[6px] px-[8px] py-[4px] text-[11px] text-[var(--adaptive-black800)] hover:bg-[var(--adaptive-black100)]"
+                              >
+                                  {roleLabelFor(role, roleMessages)}
+                              </button>
+                          ))
+                        : null}
                     {onToggleActive ? (
                         <button
                             type="button"
@@ -85,17 +96,14 @@ export function PanelTeamSettings() {
     const {
         messages,
         teamReviewers,
-        isTeamAdmin,
+        teamActor,
+        canAccessTeamSettings,
         persistenceStatus,
         onListReviewers,
         onListReviewerRequests,
-        onCreateReviewerRequest,
         onResolveReviewerRequest,
         onRegisterReviewer,
         onUpdateReviewer,
-        publicKey,
-        selfProfile,
-        authors,
     } = useReportPreferences();
     const { setErrorMessage } = useReportSession();
     const team = messages.team;
@@ -106,33 +114,42 @@ export function PanelTeamSettings() {
         onRegisterReviewer,
         onUpdateReviewer,
     });
-    const canRequest = writeEnabled && hasTeamRequestHandler({ onCreateReviewerRequest });
-    const canManage = writeEnabled && isTeamAdmin && adminHandlers;
+    const canManage = writeEnabled && canAccessTeamSettings && adminHandlers;
+    const assignableRoles = useMemo(() => listAssignableRoles(teamActor), [teamActor]);
+    const defaultRegisterRole = assignableRoles.includes("member") ? "member" : assignableRoles[0];
 
-    const [members, setMembers] = useState<ReportAuthor[]>(() => sortTeamReviewers(teamReviewers));
+    const [members, setMembers] = useState<ReportAuthor[]>(() => sortTeamReviewers(filterVisibleTeamMembers(teamActor, teamReviewers)));
     const [requests, setRequests] = useState<ReportReviewerRequest[]>([]);
     const [loading, setLoading] = useState(false);
     const [busyId, setBusyId] = useState<string | null>(null);
     const [manualName, setManualName] = useState("");
     const [manualId, setManualId] = useState("");
     const [manualPublicKey, setManualPublicKey] = useState("");
-    const [requestSent, setRequestSent] = useState(false);
+    const [manualRole, setManualRole] = useState<ReportAuthorRole>("member");
+    const [approveRole, setApproveRole] = useState<ReportAuthorRole>("member");
+
+    useEffect(() => {
+        if (defaultRegisterRole) {
+            setManualRole(defaultRegisterRole);
+            setApproveRole(defaultRegisterRole);
+        }
+    }, [defaultRegisterRole]);
 
     const pendingRequests = useMemo(() => requests.filter((item) => item.status === "pending"), [requests]);
     const memberCountLabel = team.memberCount(members.length);
     const modeHint = writeEnabled ? (canManage ? team.apiAdminHint : team.apiMemberHint) : team.localStorageHint;
 
     const reload = useCallback(async () => {
-        if (!writeEnabled) {
-            setMembers(sortTeamReviewers(teamReviewers));
+        if (!canAccessTeamSettings) {
+            setMembers([]);
             setRequests([]);
             return;
         }
 
         setLoading(true);
         try {
-            const nextMembers = onListReviewers ? await onListReviewers() : teamReviewers;
-            setMembers(sortTeamReviewers(nextMembers.filter((item) => item.isActive !== false || canManage)));
+            const nextMembers = onListReviewers && writeEnabled ? await onListReviewers() : teamReviewers;
+            setMembers(sortTeamReviewers(filterVisibleTeamMembers(teamActor, nextMembers)));
 
             if (canManage && onListReviewerRequests) {
                 setRequests(await onListReviewerRequests());
@@ -144,40 +161,34 @@ export function PanelTeamSettings() {
         } finally {
             setLoading(false);
         }
-    }, [canManage, onListReviewerRequests, onListReviewers, setErrorMessage, team.loadFailed, teamReviewers, writeEnabled]);
+    }, [
+        canAccessTeamSettings,
+        canManage,
+        onListReviewerRequests,
+        onListReviewers,
+        setErrorMessage,
+        team.loadFailed,
+        teamActor,
+        teamReviewers,
+        writeEnabled,
+    ]);
 
     useEffect(() => {
         void reload();
     }, [reload]);
 
-    const handleSubmitRequest = async () => {
-        if (!onCreateReviewerRequest || !publicKey || !selfProfile?.authorId || !selfProfile.name) {
-            return;
-        }
-
-        setBusyId("request");
-        try {
-            await onCreateReviewerRequest({
-                author_id: selfProfile.authorId,
-                author_name: selfProfile.name,
-                public_key: publicKey,
-            });
-            setRequestSent(true);
-        } catch (error) {
-            setErrorMessage(error instanceof Error ? error.message : team.requestFailed);
-        } finally {
-            setBusyId(null);
-        }
-    };
-
     const handleResolve = async (id: string, status: "approved" | "rejected") => {
         if (!onResolveReviewerRequest) {
+            return;
+        }
+        if (status === "approved" && !canAssignTeamRole(teamActor, approveRole)) {
+            setErrorMessage(team.roleNotAllowed);
             return;
         }
 
         setBusyId(id);
         try {
-            await onResolveReviewerRequest(id, { status, role: "reviewer" });
+            await onResolveReviewerRequest(id, { status, role: status === "approved" ? approveRole : undefined });
             await reload();
         } catch (error) {
             setErrorMessage(error instanceof Error ? error.message : team.resolveFailed);
@@ -198,10 +209,14 @@ export function PanelTeamSettings() {
             setErrorMessage(team.manualRequired);
             return;
         }
+        if (!canAssignTeamRole(teamActor, manualRole)) {
+            setErrorMessage(team.roleNotAllowed);
+            return;
+        }
 
         setBusyId("register");
         try {
-            await onRegisterReviewer({ author_id, author_name, public_key, role: "reviewer" });
+            await onRegisterReviewer({ author_id, author_name, public_key, role: manualRole });
             setManualName("");
             setManualId("");
             setManualPublicKey("");
@@ -214,7 +229,11 @@ export function PanelTeamSettings() {
     };
 
     const handleUpdate = async (member: ReportAuthor, patch: { role?: ReportAuthorRole; is_active?: boolean }) => {
-        if (!onUpdateReviewer) {
+        if (!onUpdateReviewer || !canEditTeamMember(teamActor, member)) {
+            return;
+        }
+        if (patch.role && !canAssignTeamRole(teamActor, patch.role)) {
+            setErrorMessage(team.roleNotAllowed);
             return;
         }
 
@@ -229,7 +248,9 @@ export function PanelTeamSettings() {
         }
     };
 
-    const alreadyAuthorized = authors.some((author) => author.id === selfProfile?.authorId);
+    if (!canAccessTeamSettings) {
+        return null;
+    }
 
     return (
         <div className="flex flex-col">
@@ -246,41 +267,25 @@ export function PanelTeamSettings() {
                 {!loading && members.length === 0 ? (
                     <p className="px-[12px] py-[10px] text-[12px] text-[var(--adaptive-black600)]">{team.emptyMembers}</p>
                 ) : null}
-                {members.map((member) => (
-                    <MemberRow
-                        key={member.id}
-                        member={member}
-                        roleLabel={resolveAuthorRole(member) === "admin" ? team.roleAdmin : team.roleReviewer}
-                        inactiveLabel={team.inactive}
-                        canEdit={canManage && Boolean(onUpdateReviewer) && busyId !== member.id}
-                        onChangeRole={canManage && onUpdateReviewer ? (role) => void handleUpdate(member, { role }) : undefined}
-                        onToggleActive={
-                            canManage && onUpdateReviewer
-                                ? () => void handleUpdate(member, { is_active: member.isActive === false })
-                                : undefined
-                        }
-                        activateLabel={team.activate}
-                        deactivateLabel={team.deactivate}
-                    />
-                ))}
+                {members.map((member) => {
+                    const editable = canManage && Boolean(onUpdateReviewer) && canEditTeamMember(teamActor, member) && busyId !== member.id;
+                    return (
+                        <MemberRow
+                            key={member.id}
+                            member={member}
+                            roleLabel={roleLabelFor(resolveAuthorRole(member), team)}
+                            roleMessages={team}
+                            inactiveLabel={team.inactive}
+                            canEdit={editable}
+                            assignableRoles={assignableRoles}
+                            activateLabel={team.activate}
+                            deactivateLabel={team.deactivate}
+                            onChangeRole={editable ? (role) => void handleUpdate(member, { role }) : undefined}
+                            onToggleActive={editable ? () => void handleUpdate(member, { is_active: member.isActive === false }) : undefined}
+                        />
+                    );
+                })}
             </section>
-
-            {canRequest && !alreadyAuthorized ? (
-                <section className="flex flex-col border-b border-[var(--adaptive-border-subtle)] px-[12px] py-[10px]">
-                    <p className="mb-[6px] text-[11px] font-semibold uppercase tracking-[0.02em] text-[var(--adaptive-black500)]">
-                        {team.sectionMyRequest}
-                    </p>
-                    <p className="mb-[8px] text-[12px] leading-[1.4] text-[var(--adaptive-black600)]">{team.requestDescription}</p>
-                    <button
-                        type="button"
-                        disabled={!publicKey || !selfProfile?.authorId || busyId === "request" || requestSent}
-                        onClick={() => void handleSubmitRequest()}
-                        className="w-full rounded-[8px] px-[12px] py-[8px] text-left text-[13px] text-[var(--adaptive-black800)] hover:bg-[var(--adaptive-black100)] disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                        {requestSent ? team.requestSent : team.submitRequest}
-                    </button>
-                </section>
-            ) : null}
 
             {canManage ? (
                 <>
@@ -288,6 +293,25 @@ export function PanelTeamSettings() {
                         <p className="px-[12px] pt-[10px] pb-[4px] text-[11px] font-semibold uppercase tracking-[0.02em] text-[var(--adaptive-black500)]">
                             {team.sectionRequests}
                         </p>
+                        {assignableRoles.length > 0 ? (
+                            <div className="flex flex-wrap gap-[6px] px-[12px] pb-[8px]">
+                                <p className="w-full text-[11px] text-[var(--adaptive-black600)]">{team.approveAsRole}</p>
+                                {assignableRoles.map((role) => (
+                                    <button
+                                        key={role}
+                                        type="button"
+                                        onClick={() => setApproveRole(role)}
+                                        className={`rounded-[6px] px-[8px] py-[4px] text-[11px] ${
+                                            approveRole === role
+                                                ? "bg-[var(--adaptive-blue50)] font-semibold text-[var(--adaptive-blue500)]"
+                                                : "text-[var(--adaptive-black800)] hover:bg-[var(--adaptive-black100)]"
+                                        }`}
+                                    >
+                                        {roleLabelFor(role, team)}
+                                    </button>
+                                ))}
+                            </div>
+                        ) : null}
                         {pendingRequests.length === 0 ? (
                             <p className="px-[12px] py-[10px] text-[12px] text-[var(--adaptive-black600)]">{team.emptyRequests}</p>
                         ) : (
@@ -324,11 +348,27 @@ export function PanelTeamSettings() {
                         )}
                     </section>
 
-                    {onRegisterReviewer ? (
+                    {onRegisterReviewer && assignableRoles.length > 0 ? (
                         <section className="flex flex-col px-[12px] py-[10px]">
                             <p className="mb-[6px] text-[11px] font-semibold uppercase tracking-[0.02em] text-[var(--adaptive-black500)]">
                                 {team.sectionManual}
                             </p>
+                            <div className="mb-[8px] flex flex-wrap gap-[6px]">
+                                {assignableRoles.map((role) => (
+                                    <button
+                                        key={role}
+                                        type="button"
+                                        onClick={() => setManualRole(role)}
+                                        className={`rounded-[6px] px-[8px] py-[4px] text-[11px] ${
+                                            manualRole === role
+                                                ? "bg-[var(--adaptive-blue50)] font-semibold text-[var(--adaptive-blue500)]"
+                                                : "text-[var(--adaptive-black800)] hover:bg-[var(--adaptive-black100)]"
+                                        }`}
+                                    >
+                                        {roleLabelFor(role, team)}
+                                    </button>
+                                ))}
+                            </div>
                             <div className="flex flex-col gap-[6px]">
                                 <input
                                     value={manualName}
