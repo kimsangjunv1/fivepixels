@@ -153,6 +153,18 @@ export function createReplyStatusForSubmit(pending, asQuestion = false) {
     }
     return "suggested";
 }
+/**
+ * Deny 버튼의 composer 모드 결정.
+ * - branch root 없음(담당 직후): 담당자가 "오류 아님"을 주장 → recheck
+ * - latest가 found_error: "오류 아님"으로 반박 → recheck
+ * - 그 외(suggested / recheck_requested): 수정·주장 반려 → deny(found_error)
+ */
+export function resolveDenyComposerType(latestRoot) {
+    if (!latestRoot || latestRoot.status === "found_error") {
+        return "recheck";
+    }
+    return "deny";
+}
 export function shouldShowReplyComposer(report, pendingComposer) {
     if (report.status === "resolved") {
         return false;

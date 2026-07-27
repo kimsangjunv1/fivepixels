@@ -28,6 +28,13 @@ export declare function canShowIssueEntryActions(report: ReportFeedback): boolea
 export declare function resolveOriginalFeedbackAuthorName(report: ReportFeedback): string;
 export declare function buildConfirmAuthorOptions(report: ReportFeedback, authors: ReportAuthor[]): ReportAuthor[];
 export declare function createReplyStatusForSubmit(pending: "deny" | "recheck" | "checkout" | "question" | null, asQuestion?: boolean): ReportReplyStatus;
+/**
+ * Deny 버튼의 composer 모드 결정.
+ * - branch root 없음(담당 직후): 담당자가 "오류 아님"을 주장 → recheck
+ * - latest가 found_error: "오류 아님"으로 반박 → recheck
+ * - 그 외(suggested / recheck_requested): 수정·주장 반려 → deny(found_error)
+ */
+export declare function resolveDenyComposerType(latestRoot: Pick<ReportReply, "status"> | null): "deny" | "recheck";
 export declare function shouldShowReplyComposer(report: ReportFeedback, pendingComposer: {
     type: string;
 } | null): boolean;

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { canShowCaseClaimAction, createReplyStatusForSubmit, getLatestBranchRootForCase, getReportReplies, ISSUE_ROOT_PARENT_ID, requiresCaseActorPermissionForComposer, resolveOriginalFeedbackAuthorName, resolveParentReplyIdForCaseQuestion, } from "../../utils/feedback/feedbackThread.js";
+import { canShowCaseClaimAction, createReplyStatusForSubmit, getLatestBranchRootForCase, resolveDenyComposerType, getReportReplies, ISSUE_ROOT_PARENT_ID, requiresCaseActorPermissionForComposer, resolveOriginalFeedbackAuthorName, resolveParentReplyIdForCaseQuestion, } from "../../utils/feedback/feedbackThread.js";
 import { claimCaseAssignee, buildResolvedCasesUpdate, canActOnCase, getCaseAssigneeName, isValidFocusedCase, resolveDefaultFocusedCaseId, transferCaseAssignee, } from "../../utils/report/reportCases.js";
 import { createReplyId } from "../../utils/shared/format.js";
 import { notifyFeedbackReply, notifyFeedbackUpdate } from "../../utils/report/reportCallbacks.js";
@@ -126,7 +126,7 @@ export function useReportReplyReview({ reports, messages, fields, sessionActor, 
         const latestRoot = getLatestBranchRootForCase(activeReplyReport, focusedCaseId);
         if (!latestRoot) {
             setPendingComposer({
-                type: "deny",
+                type: resolveDenyComposerType(null),
                 targetReplyId: targetReplyId ?? ISSUE_ROOT_PARENT_ID,
             });
             clearReplyComposerDraft();
@@ -134,7 +134,7 @@ export function useReportReplyReview({ reports, messages, fields, sessionActor, 
             return;
         }
         setPendingComposer({
-            type: latestRoot.status === "found_error" ? "recheck" : "deny",
+            type: resolveDenyComposerType(latestRoot),
             targetReplyId: latestRoot.id,
         });
         clearReplyComposerDraft();
