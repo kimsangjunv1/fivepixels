@@ -24,6 +24,7 @@ import {
     ISSUE_ROOT_PARENT_ID,
     normalizeReplyParents,
     requiresCaseActorPermissionForComposer,
+    resolveDenyComposerType,
     resolveParentReplyIdForQuestion,
     shouldShowCaseReplyComposer,
     shouldShowReplyComposer,
@@ -62,6 +63,13 @@ describe("feedbackThread", () => {
         expect(createReplyStatusForSubmit(null)).toBe("suggested");
         expect(createReplyStatusForSubmit(null, true)).toBe("additional_question");
         expect(createReplyStatusForSubmit("question")).toBe("additional_question");
+    });
+
+    it("resolves deny composer type by latest branch root", () => {
+        expect(resolveDenyComposerType(null)).toBe("recheck");
+        expect(resolveDenyComposerType({ status: "found_error" })).toBe("recheck");
+        expect(resolveDenyComposerType({ status: "suggested" })).toBe("deny");
+        expect(resolveDenyComposerType({ status: "recheck_requested" })).toBe("deny");
     });
 
     it("shows review actions only on latest suggested reply", () => {
@@ -391,21 +399,21 @@ describe("feedbackThread", () => {
             case_ids: [caseA.id],
             author_name: "김상준",
         };
-        const foundError = {
+        const recheckRequested = {
             id: "r-deny",
             message: "음 이거 오류가 아닌데용?",
             created_at: "2026-01-02T00:00:01.000Z",
-            status: "found_error" as const,
+            status: "recheck_requested" as const,
             case_ids: [caseA.id],
             author_name: "김상준",
         };
         const report = createReport({
             cases: [caseA],
-            replies: [assigneeTransferred, foundError],
+            replies: [assigneeTransferred, recheckRequested],
         });
 
         expect(isActiveAssigneeEvent(report, assigneeTransferred, caseA.id)).toBe(false);
-        expect(isActiveCaseBranchRoot(report, foundError, caseA.id)).toBe(true);
+        expect(isActiveCaseBranchRoot(report, recheckRequested, caseA.id)).toBe(true);
     });
 
     it("hides branch actions after the focused case is resolved", () => {

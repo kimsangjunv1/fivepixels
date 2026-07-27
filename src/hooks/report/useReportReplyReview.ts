@@ -14,6 +14,7 @@ import {
     canShowCaseClaimAction,
     createReplyStatusForSubmit,
     getLatestBranchRootForCase,
+    resolveDenyComposerType,
     getReportReplies,
     ISSUE_ROOT_PARENT_ID,
     requiresCaseActorPermissionForComposer,
@@ -237,7 +238,7 @@ export function useReportReplyReview({
 
         if (!latestRoot) {
             setPendingComposer({
-                type: "deny",
+                type: resolveDenyComposerType(null),
                 targetReplyId: targetReplyId ?? ISSUE_ROOT_PARENT_ID,
             });
             clearReplyComposerDraft();
@@ -246,7 +247,7 @@ export function useReportReplyReview({
         }
 
         setPendingComposer({
-            type: latestRoot.status === "found_error" ? "recheck" : "deny",
+            type: resolveDenyComposerType(latestRoot),
             targetReplyId: latestRoot.id,
         });
         clearReplyComposerDraft();
