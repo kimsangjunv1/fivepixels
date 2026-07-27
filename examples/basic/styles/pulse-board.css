@@ -692,6 +692,45 @@
     color: #4338ca;
 }
 
+.pulse-edgecase-seed-catalog {
+    display: grid;
+    gap: 10px;
+    padding: 14px 16px;
+    border: 1px solid var(--pulse-border);
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--pulse-surface, #fff) 92%, #64748b 8%);
+}
+
+.pulse-edgecase-seed-catalog__list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.pulse-edgecase-seed-catalog__item {
+    display: grid;
+    gap: 2px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--pulse-border);
+    background: var(--pulse-surface, #fff);
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.pulse-edgecase-seed-catalog__item strong {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--pulse-text, #0f172a);
+}
+
+.pulse-edgecase-seed-catalog__item span {
+    color: var(--pulse-muted, #64748b);
+}
+
 .pulse-edgecase-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
