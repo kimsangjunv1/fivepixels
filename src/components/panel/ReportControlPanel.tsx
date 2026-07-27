@@ -27,6 +27,7 @@ import { CornerResizeHandle } from "@/components/ui/CornerResizeHandle.js";
 import { ProbeEditModeBanner } from "./ProbeEditModeBanner.js";
 import { PanelRoleSwitch } from "./PanelRoleSwitch.js";
 import { PanelPresentationSwitch } from "./PanelPresentationSwitch.js";
+import { PanelAutoRefreshControl } from "./PanelAutoRefreshControl.js";
 import { PanelOnboarding } from "./PanelOnboarding.js";
 import { PanelKeyGate } from "./PanelKeyGate.js";
 import { PanelProjectFooter } from "./PanelProjectFooter.js";
@@ -391,6 +392,8 @@ export function ReportControlPanel() {
                                                 >
                                                     <EyeOpenIcon className="h-[16px] w-[16px]" />
                                                 </IconTooltipButton>
+
+                                                <PanelAutoRefreshControl />
 
                                                 <IconTooltipButton
                                                     label={messages.panel.tabSettings}

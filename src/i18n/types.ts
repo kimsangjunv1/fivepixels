@@ -44,6 +44,12 @@ export type ReportMessages = {
         viewOptionsAriaLabel: string;
         viewSelectableElements: string;
         viewFeedbacks: string;
+        refresh: string;
+        stopAutoRefresh: string;
+        autoRefreshIntervalAriaLabel: string;
+        autoRefreshOff: string;
+        autoRefreshEveryMinute: string;
+        autoRefreshEveryMinutes: (minutes: number) => string;
         importDragOverlay: string;
         statsFound: string;
         statsResolved: string;
