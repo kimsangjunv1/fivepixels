@@ -187,6 +187,7 @@ export function PanelDropdownMenu({ open, onClose, trigger, children, menuClassN
                     ref={menuRef}
                     role="menu"
                     style={menuStyle}
+                    onPointerDown={(event) => event.stopPropagation()}
                     className={`${open ? "border-[#f6562f]" : ""} absolute z-[20] min-w-[120px] overflow-hidden bg-[var(--adaptive-black50)] border shadow-[0_0_100px_rgba(0,0,0,0.2)] ${MOTION.menuIn} ${menuClassName ?? ""}`}
                 >
                     {children}
@@ -208,6 +209,7 @@ export function PanelDropdownMenuItem({ onClick, active = false, disabled = fals
             type="button"
             role="menuitem"
             disabled={disabled}
+            onPointerDown={(event) => event.stopPropagation()}
             onClick={onClick}
             aria-pressed={active}
             className={`flex w-full px-[12px] py-[8px] text-left text-[12px] font-semibold disabled:cursor-not-allowed disabled:opacity-50 ${active ? "bg-[var(--adaptive-black100)] text-[var(--adaptive-black900)]" : "text-[var(--adaptive-black800)] hover:bg-[var(--adaptive-black100)]"}`}

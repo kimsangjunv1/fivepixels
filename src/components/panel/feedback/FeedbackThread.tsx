@@ -191,24 +191,26 @@ function CaseThreadEntry({
 
     const entryBody = (
         <>
-            <FeedbackStatusBadge
-                status="issue_apply"
-                isNeedGray
-            />
+            <div className="flex min-w-0 items-center justify-between gap-[8px]">
+                <FeedbackStatusBadge
+                    status="issue_apply"
+                    isNeedGray
+                    className="shrink-0"
+                />
+                {report.author_name ? (
+                    <ThreadAuthorMeta
+                        authorName={report.author_name}
+                        showMine={report.author_name.trim() === actorName}
+                        showCreator
+                    />
+                ) : null}
+            </div>
 
             <MentionMessage
                 message={caseText}
                 mentions={caseMentions}
                 className={`leading-[1.5] text-[14px] text-[var(--adaptive-text-primary)] whitespace-break-spaces ${caseStatus === "resolved" ? "text-[var(--adaptive-black500)] line-through" : ""}`}
             />
-
-            {report.author_name ? (
-                <ThreadAuthorMeta
-                    authorName={report.author_name}
-                    createdAt={caseCreatedAt}
-                    showCreator
-                />
-            ) : null}
 
             {isEditingCases ? null : (
                 <CaseThreadEntryActions
@@ -317,10 +319,20 @@ function ThreadRootReply({
 
     const entryBody = (
         <>
-            <FeedbackStatusBadge
-                status={reply.status}
-                isNeedGray
-            />
+            <div className="flex min-w-0 items-center justify-between gap-[8px]">
+                <FeedbackStatusBadge
+                    status={reply.status}
+                    isNeedGray
+                    className="shrink-0"
+                />
+                {reply.author_name ? (
+                    <ThreadAuthorMeta
+                        authorName={reply.author_name}
+                        showMine={reply.author_name.trim() === actorName}
+                        showCreator={reply.author_name.trim() === originalAuthorName}
+                    />
+                ) : null}
+            </div>
 
             <p className="leading-[1.5] text-[14px] text-[var(--adaptive-text-primary)] whitespace-break-spaces">
                 <MentionMessage
@@ -328,13 +340,6 @@ function ThreadRootReply({
                     mentions={reply.mentions}
                 />
             </p>
-            {reply.author_name ? (
-                <ThreadAuthorMeta
-                    authorName={reply.author_name}
-                    createdAt={reply.created_at}
-                    showCreator={reply.author_name.trim() === originalAuthorName}
-                />
-            ) : null}
             <ThreadEntryActions
                 reply={reply}
                 report={report}
@@ -519,7 +524,7 @@ export function FeedbackThread({
     }, [focusedCaseId, replies.length, scrollToBottom]);
 
     return (
-        <div className="relative min-h-0 flex-1">
+        <div className="relative min-h-0 h-full">
             {scrollOverflow.canScrollUp ? <p className={`${SCROLL_HINT_CLASS} top-0 bg-[linear-gradient(0deg,transparent,var(--adaptive-black50))]`}>{messages.thread.scrollHintUp}</p> : null}
             {scrollOverflow.canScrollDown ? <p className={`${SCROLL_HINT_CLASS} bottom-0 bg-[linear-gradient(180deg,transparent,var(--adaptive-black50))]`}>{messages.thread.scrollHintDown}</p> : null}
             <section
@@ -591,6 +596,7 @@ export function FeedbackThread({
                             <QuestionThreadGroup
                                 questions={timeline.issueChildren}
                                 originalAuthorName={originalAuthorName}
+                                actorName={actorName}
                                 forceExpanded={shouldForceExpandQuestionGroup(report, focusedCaseId, timeline.issueChildren, {
                                     composerTargetsGroup: pendingComposer?.type === "question" && pendingComposer.targetReplyId === ISSUE_ROOT_PARENT_ID,
                                 })}
@@ -623,6 +629,7 @@ export function FeedbackThread({
                                     <QuestionThreadGroup
                                         questions={branch.children}
                                         originalAuthorName={originalAuthorName}
+                                        actorName={actorName}
                                         forceExpanded={shouldForceExpandQuestionGroup(report, focusedCaseId, branch.children, {
                                             composerTargetsGroup: pendingComposer?.type === "question" && pendingComposer.targetReplyId === branch.root.id,
                                         })}
