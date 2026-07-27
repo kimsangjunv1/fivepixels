@@ -2,15 +2,17 @@ import type { ReactNode } from "react";
 import { useReportPreferences } from "@/providers/reportContext.js";
 import { formatTimeCompact } from "@/utils/shared/format.js";
 import { FeedbackCreatorBadge } from "./FeedbackCreatorBadge.js";
+import { FeedbackMineBadge } from "./FeedbackMineBadge.js";
 
 type ThreadAuthorMetaProps = {
     authorName: string;
     createdAt?: string;
     showCreator?: boolean;
+    showMine?: boolean;
     trailing?: ReactNode;
 };
 
-export function ThreadAuthorMeta({ authorName, createdAt, showCreator = false, trailing }: ThreadAuthorMetaProps) {
+export function ThreadAuthorMeta({ authorName, createdAt, showCreator = false, showMine = false, trailing }: ThreadAuthorMetaProps) {
     const { locale } = useReportPreferences();
 
     if (!authorName.trim()) {
@@ -21,6 +23,7 @@ export function ThreadAuthorMeta({ authorName, createdAt, showCreator = false, t
         <div className="flex min-w-0 items-center gap-[6px]">
             {createdAt ? <span className="shrink-0 text-[12px] tabular-nums text-[var(--adaptive-black500)]">{formatTimeCompact(createdAt, locale)}</span> : null}
             <p className="min-w-0 truncate text-[12px] text-[var(--adaptive-black500)]">{authorName}</p>
+            {showMine ? <FeedbackMineBadge /> : null}
             {showCreator ? <FeedbackCreatorBadge /> : null}
             {trailing}
         </div>

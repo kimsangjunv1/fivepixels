@@ -206,6 +206,7 @@ function CaseThreadEntry({
                 <ThreadAuthorMeta
                     authorName={report.author_name}
                     createdAt={caseCreatedAt}
+                    showMine={report.author_name.trim() === actorName}
                     showCreator
                 />
             ) : null}
@@ -332,6 +333,7 @@ function ThreadRootReply({
                 <ThreadAuthorMeta
                     authorName={reply.author_name}
                     createdAt={reply.created_at}
+                    showMine={reply.author_name.trim() === actorName}
                     showCreator={reply.author_name.trim() === originalAuthorName}
                 />
             ) : null}
@@ -519,7 +521,7 @@ export function FeedbackThread({
     }, [focusedCaseId, replies.length, scrollToBottom]);
 
     return (
-        <div className="relative min-h-0 flex-1">
+        <div className="relative min-h-0 h-full">
             {scrollOverflow.canScrollUp ? <p className={`${SCROLL_HINT_CLASS} top-0 bg-[linear-gradient(0deg,transparent,var(--adaptive-black50))]`}>{messages.thread.scrollHintUp}</p> : null}
             {scrollOverflow.canScrollDown ? <p className={`${SCROLL_HINT_CLASS} bottom-0 bg-[linear-gradient(180deg,transparent,var(--adaptive-black50))]`}>{messages.thread.scrollHintDown}</p> : null}
             <section
@@ -591,6 +593,7 @@ export function FeedbackThread({
                             <QuestionThreadGroup
                                 questions={timeline.issueChildren}
                                 originalAuthorName={originalAuthorName}
+                                actorName={actorName}
                                 forceExpanded={shouldForceExpandQuestionGroup(report, focusedCaseId, timeline.issueChildren, {
                                     composerTargetsGroup: pendingComposer?.type === "question" && pendingComposer.targetReplyId === ISSUE_ROOT_PARENT_ID,
                                 })}
@@ -623,6 +626,7 @@ export function FeedbackThread({
                                     <QuestionThreadGroup
                                         questions={branch.children}
                                         originalAuthorName={originalAuthorName}
+                                        actorName={actorName}
                                         forceExpanded={shouldForceExpandQuestionGroup(report, focusedCaseId, branch.children, {
                                             composerTargetsGroup: pendingComposer?.type === "question" && pendingComposer.targetReplyId === branch.root.id,
                                         })}

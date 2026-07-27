@@ -8,10 +8,11 @@ import { ThreadTimelineRow } from "./ThreadTimelineRow.js";
 type QuestionThreadGroupProps = {
     questions: ReportReply[];
     originalAuthorName: string;
+    actorName: string;
     forceExpanded?: boolean;
 };
 
-export function QuestionThreadGroup({ questions, originalAuthorName, forceExpanded = false }: QuestionThreadGroupProps) {
+export function QuestionThreadGroup({ questions, originalAuthorName, actorName, forceExpanded = false }: QuestionThreadGroupProps) {
     const { messages, questionThreadDisplay } = useReportPreferences();
     const [isExpanded, setIsExpanded] = useState(() => questionThreadDisplay === "expanded");
 
@@ -57,6 +58,7 @@ export function QuestionThreadGroup({ questions, originalAuthorName, forceExpand
                           key={question.id}
                           reply={question}
                           originalAuthorName={originalAuthorName}
+                          actorName={actorName}
                       />
                   ))
                 : null}

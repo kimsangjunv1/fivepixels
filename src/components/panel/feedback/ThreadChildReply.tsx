@@ -6,9 +6,12 @@ import { ThreadTimelineRow } from "./ThreadTimelineRow.js";
 type ThreadChildReplyProps = {
     reply: ReportReply;
     originalAuthorName: string;
+    actorName: string;
 };
 
-export function ThreadChildReply({ reply, originalAuthorName }: ThreadChildReplyProps) {
+export function ThreadChildReply({ reply, originalAuthorName, actorName }: ThreadChildReplyProps) {
+    const authorName = reply.author_name?.trim() ?? "";
+
     return (
         <ThreadTimelineRow>
             <p className="leading-[1.5] text-[13px] text-[var(--adaptive-text-primary)]">
@@ -18,11 +21,12 @@ export function ThreadChildReply({ reply, originalAuthorName }: ThreadChildReply
                 />
             </p>
 
-            {reply.author_name ? (
+            {authorName ? (
                 <ThreadAuthorMeta
-                    authorName={reply.author_name}
+                    authorName={authorName}
                     createdAt={reply.created_at}
-                    showCreator={reply.author_name.trim() === originalAuthorName}
+                    showMine={authorName === actorName}
+                    showCreator={authorName === originalAuthorName}
                 />
             ) : null}
         </ThreadTimelineRow>

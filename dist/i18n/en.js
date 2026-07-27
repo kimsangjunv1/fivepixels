@@ -155,6 +155,7 @@ export const en = {
         selectAriaLabel: "Select author",
         selectPlaceholder: "Select author",
         creatorLabel: "Creator",
+        myLabel: "MY",
     },
     composer: {
         placeholder: "Describe your fix or update",
