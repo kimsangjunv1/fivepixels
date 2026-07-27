@@ -5,6 +5,6 @@ import { useReportPreferences } from "../../../providers/reportContext.js";
 export function FeedbackStatusBadge({ status, className = "", isNeedGray = false }) {
     const { messages } = useReportPreferences();
     const color = FEEDBACK_STATUS_COLOR[status];
-    return (_jsxs("div", { className: `flex items-center gap-[6px] ${isNeedGray ? "normal-case" : "uppercase"} ${className}`, children: [_jsx("span", { className: "inline-flex w-[14px]", "aria-hidden": true, children: _jsx(FeedbackStatusIcon, { status: status, fill: isNeedGray ? "var(--adaptive-black900)" : color }) }), _jsx("span", { style: { color: isNeedGray ? "var(--adaptive-black900)" : color }, className: "text-[14px]", children: messages.status.feedback[status] })] }));
+    return (_jsxs("div", { className: `flex items-center gap-[2px] ${isNeedGray ? "normal-case" : "uppercase"} ${className}`, children: [_jsx("span", { className: "inline-flex w-[12px]", "aria-hidden": true, children: _jsx(FeedbackStatusIcon, { status: status, fill: isNeedGray ? "var(--adaptive-black500)" : color }) }), _jsx("span", { style: { color: isNeedGray ? "var(--adaptive-black500)" : color }, className: "text-[12px] font-semibold", children: messages.status.feedback[status] })] }));
 }
 //# sourceMappingURL=FeedbackStatusBadge.js.map

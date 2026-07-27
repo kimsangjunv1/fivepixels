@@ -5,6 +5,10 @@ const EDGE_MARGIN = 16;
 const DEFAULT_PLACEMENT = { corner: "top-left" };
 const PANEL_CORNERS = ["top-left", "top-right", "bottom-left", "bottom-right"];
 const DRAG_LISTENER_OPTIONS = { capture: true };
+const DRAG_INTERACTIVE_SELECTOR = 'button,a,input,textarea,select,option,[role="button"],[role="menu"],[role="menuitem"],[role="listbox"],[role="option"],[contenteditable="true"],[data-fivepixels-interactive]';
+function isInteractiveDragTarget(target) {
+    return target instanceof Element && Boolean(target.closest(DRAG_INTERACTIVE_SELECTOR));
+}
 function isPanelCorner(value) {
     return value === "top-left" || value === "top-right" || value === "bottom-left" || value === "bottom-right";
 }
@@ -241,7 +245,7 @@ export function usePanelDock({ enabled, measureKey }) {
     }, [enabled]);
     useEffect(() => () => detachDragListeners(), [detachDragListeners]);
     const handleDragHandlePointerDown = useCallback((event) => {
-        if (!enabled || event.button !== 0) {
+        if (!enabled || event.button !== 0 || isInteractiveDragTarget(event.target)) {
             return;
         }
         event.preventDefault();

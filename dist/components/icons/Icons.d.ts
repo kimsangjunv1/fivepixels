@@ -66,6 +66,12 @@ export declare function TrashIcon({ className }: {
 export declare function SettingsIcon({ className }: {
     className?: string;
 }): import("react").JSX.Element;
+export declare function RefreshIcon({ className }: {
+    className?: string;
+}): import("react").JSX.Element;
+export declare function StopIcon({ className }: {
+    className?: string;
+}): import("react").JSX.Element;
 export declare function SelectIcon({ className }: {
     className?: string;
 }): import("react").JSX.Element;

@@ -26,6 +26,13 @@ type DragListenerOptions = {
 
 const DRAG_LISTENER_OPTIONS: DragListenerOptions = { capture: true };
 
+const DRAG_INTERACTIVE_SELECTOR =
+    'button,a,input,textarea,select,option,[role="button"],[role="menu"],[role="menuitem"],[role="listbox"],[role="option"],[contenteditable="true"],[data-fivepixels-interactive]';
+
+function isInteractiveDragTarget(target: EventTarget | null): boolean {
+    return target instanceof Element && Boolean(target.closest(DRAG_INTERACTIVE_SELECTOR));
+}
+
 function isPanelCorner(value: string | null | undefined): value is PanelCorner {
     return value === "top-left" || value === "top-right" || value === "bottom-left" || value === "bottom-right";
 }
@@ -305,7 +312,7 @@ export function usePanelDock({ enabled, measureKey }: { enabled: boolean; measur
 
     const handleDragHandlePointerDown = useCallback(
         (event: ReactPointerEvent<HTMLElement>) => {
-            if (!enabled || event.button !== 0) {
+            if (!enabled || event.button !== 0 || isInteractiveDragTarget(event.target)) {
                 return;
             }
 
