@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { EDGECASE_FEEDBACK_SEED_IDS } from "../model/createEdgecaseFeedbackSeed";
+import { EDGECASE_FEEDBACK_SEED_CATALOG, EDGECASE_FEEDBACK_SEED_IDS } from "../model/createEdgecaseFeedbackSeed";
 import { ensureEdgecaseFeedbackSeed } from "../model/ensureEdgecaseFeedbackSeed";
 
 export function useEdgecaseFeedbackSeed() {
@@ -8,4 +8,4 @@ export function useEdgecaseFeedbackSeed() {
     }, []);
 }
 
-export { EDGECASE_FEEDBACK_SEED_IDS };
+export { EDGECASE_FEEDBACK_SEED_CATALOG, EDGECASE_FEEDBACK_SEED_IDS };

@@ -155,6 +155,7 @@ export const ko = {
         selectAriaLabel: "작성자 선택",
         selectPlaceholder: "작성자 선택",
         creatorLabel: "생성자",
+        myLabel: "MY",
     },
     composer: {
         placeholder: "수정 내용을 입력하세요",
