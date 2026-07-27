@@ -14,20 +14,20 @@ export function FeedbackStatusBadge({ status, className = "", isNeedGray = false
     const color = FEEDBACK_STATUS_COLOR[status];
 
     return (
-        <div className={`flex items-center gap-[6px] ${isNeedGray ? "normal-case" : "uppercase"} ${className}`}>
+        <div className={`flex items-center gap-[2px] ${isNeedGray ? "normal-case" : "uppercase"} ${className}`}>
             <span
-                className="inline-flex w-[14px]"
+                className="inline-flex w-[12px]"
                 // className="inline-flex h-[14px] w-[14px] shrink-0 items-center justify-center [&_svg]:h-[14px] [&_svg]:w-[14px]"
                 aria-hidden
             >
                 <FeedbackStatusIcon
                     status={status}
-                    fill={isNeedGray ? "var(--adaptive-black900)" : color}
+                    fill={isNeedGray ? "var(--adaptive-black500)" : color}
                 />
             </span>
             <span
-                style={{ color: isNeedGray ? "var(--adaptive-black900)" : color }}
-                className="text-[14px]"
+                style={{ color: isNeedGray ? "var(--adaptive-black500)" : color }}
+                className="text-[12px] font-semibold"
             >
                 {messages.status.feedback[status]}
             </span>

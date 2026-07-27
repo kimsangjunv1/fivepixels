@@ -191,25 +191,26 @@ function CaseThreadEntry({
 
     const entryBody = (
         <>
-            <FeedbackStatusBadge
-                status="issue_apply"
-                isNeedGray
-            />
+            <div className="flex min-w-0 items-center justify-between gap-[8px]">
+                <FeedbackStatusBadge
+                    status="issue_apply"
+                    isNeedGray
+                    className="shrink-0"
+                />
+                {report.author_name ? (
+                    <ThreadAuthorMeta
+                        authorName={report.author_name}
+                        showMine={report.author_name.trim() === actorName}
+                        showCreator
+                    />
+                ) : null}
+            </div>
 
             <MentionMessage
                 message={caseText}
                 mentions={caseMentions}
                 className={`leading-[1.5] text-[14px] text-[var(--adaptive-text-primary)] whitespace-break-spaces ${caseStatus === "resolved" ? "text-[var(--adaptive-black500)] line-through" : ""}`}
             />
-
-            {report.author_name ? (
-                <ThreadAuthorMeta
-                    authorName={report.author_name}
-                    createdAt={caseCreatedAt}
-                    showMine={report.author_name.trim() === actorName}
-                    showCreator
-                />
-            ) : null}
 
             {isEditingCases ? null : (
                 <CaseThreadEntryActions
@@ -318,10 +319,20 @@ function ThreadRootReply({
 
     const entryBody = (
         <>
-            <FeedbackStatusBadge
-                status={reply.status}
-                isNeedGray
-            />
+            <div className="flex min-w-0 items-center justify-between gap-[8px]">
+                <FeedbackStatusBadge
+                    status={reply.status}
+                    isNeedGray
+                    className="shrink-0"
+                />
+                {reply.author_name ? (
+                    <ThreadAuthorMeta
+                        authorName={reply.author_name}
+                        showMine={reply.author_name.trim() === actorName}
+                        showCreator={reply.author_name.trim() === originalAuthorName}
+                    />
+                ) : null}
+            </div>
 
             <p className="leading-[1.5] text-[14px] text-[var(--adaptive-text-primary)] whitespace-break-spaces">
                 <MentionMessage
@@ -329,14 +340,6 @@ function ThreadRootReply({
                     mentions={reply.mentions}
                 />
             </p>
-            {reply.author_name ? (
-                <ThreadAuthorMeta
-                    authorName={reply.author_name}
-                    createdAt={reply.created_at}
-                    showMine={reply.author_name.trim() === actorName}
-                    showCreator={reply.author_name.trim() === originalAuthorName}
-                />
-            ) : null}
             <ThreadEntryActions
                 reply={reply}
                 report={report}
