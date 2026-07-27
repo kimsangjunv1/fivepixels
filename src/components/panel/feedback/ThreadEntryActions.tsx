@@ -252,15 +252,29 @@ export function ThreadEntryActions({
                                     disabled={isUpdating}
                                     onClick={() => onStartDeny()}
                                 />
-                                <ThreadActionButton
-                                    label={messages.thread.complete}
-                                    tooltip={messages.thread.completeTooltip}
-                                    active={checkoutActive}
-                                    kind="complete"
-                                    disabled={isUpdating}
-                                    onClick={() => onStartCheckout(reply.id)}
-                                    showLabel
-                                />
+                                {reply.status === "recheck_requested" ? (
+                                    <button
+                                        type="button"
+                                        data-fivepixels-interactive=""
+                                        disabled={isUpdating}
+                                        onClick={handleResolvedClick}
+                                        aria-label={isResolvedConfirming ? messages.thread.resolvedConfirmAriaLabel : messages.thread.resolved}
+                                        className={`${THREAD_ACTION_BUTTON_BASE} ${isResolvedConfirming ? "bg-[#D94A22] px-[8px] text-white" : `px-[6px] ${THREAD_ACTION_GHOST}`}`}
+                                    >
+                                        <CheckIcon className="h-[13px] w-[13px]" />
+                                        {isResolvedConfirming ? messages.thread.resolvedConfirmLabel : null}
+                                    </button>
+                                ) : (
+                                    <ThreadActionButton
+                                        label={messages.thread.complete}
+                                        tooltip={messages.thread.completeTooltip}
+                                        active={checkoutActive}
+                                        kind="complete"
+                                        disabled={isUpdating}
+                                        onClick={() => onStartCheckout(reply.id)}
+                                        showLabel
+                                    />
+                                )}
                             </>
                         ) : null}
                     </>
