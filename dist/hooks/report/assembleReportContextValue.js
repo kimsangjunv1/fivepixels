@@ -55,6 +55,7 @@ export function assembleReportContextValue({ panel, auth, draft, markers, mutati
         issuePersonalKey: auth.issuePersonalKey,
         rotatePersonalKey: auth.rotatePersonalKey,
         insertPersonalKey: auth.insertPersonalKey,
+        clearPersonalKey: auth.clearPersonalKey,
         canListAllFeedback: panel.canListAllFeedback,
         onActivitySummary,
         visibleShortcutKeys,

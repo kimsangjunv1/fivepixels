@@ -58,6 +58,7 @@ export const REPORT_PREFERENCE_KEYS = [
     "issuePersonalKey",
     "rotatePersonalKey",
     "insertPersonalKey",
+    "clearPersonalKey",
     "isPresentationMode",
     "presentationViewers",
     "panelRole",

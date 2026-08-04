@@ -394,6 +394,8 @@ export const en = {
         issueDescription: "Copy the key below and share it with your developer, then wait until the setup is complete.",
         reviewerSnippetHint: "Add this to team.reviewers.",
         keyInfoToggle: "Key details",
+        resetKey: "Reset",
+        resetKeyConfirm: "Are you sure you want to reset the existing key?",
         copySnippet: "Copy key",
         copied: "Copied",
         done: "Done",

@@ -137,6 +137,7 @@ export declare function useReportState({ projectId, environment, appVersion, pan
         authorized: boolean;
         reason?: undefined;
     }>;
+    clearPersonalKey: () => void;
     canListAllFeedback: boolean;
     onActivitySummary: ((params: ReportActivitySummaryParams) => Promise<ReportActivitySummaryResult>) | undefined;
     visibleShortcutKeys: boolean;

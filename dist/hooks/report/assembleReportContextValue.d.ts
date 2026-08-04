@@ -127,6 +127,7 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
         authorized: boolean;
         reason?: undefined;
     }>;
+    clearPersonalKey: () => void;
     canListAllFeedback: boolean;
     onActivitySummary: ((params: ReportActivitySummaryParams) => Promise<ReportActivitySummaryResult>) | undefined;
     visibleShortcutKeys: boolean;

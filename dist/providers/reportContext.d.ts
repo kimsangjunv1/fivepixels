@@ -96,6 +96,7 @@ declare const ReportContext: Context<{
         authorized: boolean;
         reason?: undefined;
     }>;
+    clearPersonalKey: () => void;
     canListAllFeedback: boolean;
     onActivitySummary: ((params: import("../index.js").ReportActivitySummaryParams) => Promise<import("../index.js").ReportActivitySummaryResult>) | undefined;
     visibleShortcutKeys: boolean;
@@ -399,6 +400,7 @@ export declare function useReport(): {
         authorized: boolean;
         reason?: undefined;
     }>;
+    clearPersonalKey: () => void;
     canListAllFeedback: boolean;
     onActivitySummary: ((params: import("../index.js").ReportActivitySummaryParams) => Promise<import("../index.js").ReportActivitySummaryResult>) | undefined;
     visibleShortcutKeys: boolean;
@@ -705,6 +707,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
             authorized: boolean;
             reason?: undefined;
         }>;
+        clearPersonalKey: () => void;
         canListAllFeedback: boolean;
         onActivitySummary: ((params: import("../index.js").ReportActivitySummaryParams) => Promise<import("../index.js").ReportActivitySummaryResult>) | undefined;
         visibleShortcutKeys: boolean;
@@ -915,7 +918,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         handleCreateGitHubIssue: (report: import("../index.js").ReportFeedback) => Promise<void>;
         handleCreateSubmitWithGitHubIssue: () => Promise<void>;
         isDraftGitHubIssueSubmitting: boolean;
-    }, "personalKey" | "projectId" | "fields" | "personalKeyRequired" | "environment" | "questionThreadDisplay" | "setQuestionThreadDisplay" | "locale" | "setLocale" | "showMarkerTargetPreview" | "setShowMarkerTargetPreview" | "toggleMarkerTargetPreview" | "markerAppearance" | "setMarkerAppearance" | "setMarkerSize" | "setMarkerShape" | "setMarkerColors" | "setMarkerColor" | "setFeedbackModeDotColors" | "setFeedbackModeDotColor" | "typography" | "setTypography" | "setFontSize" | "setFontFamily" | "panelRole" | "setPanelRole" | "persistenceStatus" | "appVersion" | "showFeedbackList" | "pinnedFeedbackItems" | "pinRailCollapsed" | "togglePinnedFeedback" | "unpinFeedback" | "setPinRailCollapsed" | "syncPinnedFeedbackReports" | "selfProfile" | "authors" | "publicKey" | "personalKeyCandidates" | "issuePersonalKey" | "rotatePersonalKey" | "insertPersonalKey" | "authorSelectionLocked" | "messages" | "onListReviewers" | "onListReviewerRequests" | "onCreateReviewerRequest" | "onResolveReviewerRequest" | "onRegisterReviewer" | "onUpdateReviewer" | "visibleShortcutKeys" | "teamReviewers" | "panelAppearance" | "setPanelAppearance" | "tooltipAppearance" | "setTooltipAppearance" | "teamActor" | "teamActorRole" | "isTeamAdmin" | "canAccessTeamSettings" | "panelView" | "completeOnboarding" | "restoreFromBackup" | "skipOnboarding" | "resolvedPanelAppearance" | "resolvedTooltipAppearance" | "isMobileViewport" | "isPresentationMode" | "presentationViewers" | "visiblePanelTabs" | "visiblePanelTabsSummary" | "resolvedTabAvailabilityContext" | "setVisiblePanelTabs" | "resetVisibleTabsToRoleDefault" | "applyRoleDefaultTabsForOnboarding" | "savePanelTabPreference" | "storedPanelTabPreference">;
+    }, "personalKey" | "projectId" | "fields" | "personalKeyRequired" | "environment" | "questionThreadDisplay" | "setQuestionThreadDisplay" | "locale" | "setLocale" | "showMarkerTargetPreview" | "setShowMarkerTargetPreview" | "toggleMarkerTargetPreview" | "markerAppearance" | "setMarkerAppearance" | "setMarkerSize" | "setMarkerShape" | "setMarkerColors" | "setMarkerColor" | "setFeedbackModeDotColors" | "setFeedbackModeDotColor" | "typography" | "setTypography" | "setFontSize" | "setFontFamily" | "panelRole" | "setPanelRole" | "persistenceStatus" | "appVersion" | "showFeedbackList" | "pinnedFeedbackItems" | "pinRailCollapsed" | "togglePinnedFeedback" | "unpinFeedback" | "setPinRailCollapsed" | "syncPinnedFeedbackReports" | "selfProfile" | "authors" | "publicKey" | "personalKeyCandidates" | "issuePersonalKey" | "rotatePersonalKey" | "insertPersonalKey" | "clearPersonalKey" | "authorSelectionLocked" | "messages" | "onListReviewers" | "onListReviewerRequests" | "onCreateReviewerRequest" | "onResolveReviewerRequest" | "onRegisterReviewer" | "onUpdateReviewer" | "visibleShortcutKeys" | "teamReviewers" | "panelAppearance" | "setPanelAppearance" | "tooltipAppearance" | "setTooltipAppearance" | "teamActor" | "teamActorRole" | "isTeamAdmin" | "canAccessTeamSettings" | "panelView" | "completeOnboarding" | "restoreFromBackup" | "skipOnboarding" | "resolvedPanelAppearance" | "resolvedTooltipAppearance" | "isMobileViewport" | "isPresentationMode" | "presentationViewers" | "visiblePanelTabs" | "visiblePanelTabsSummary" | "resolvedTabAvailabilityContext" | "setVisiblePanelTabs" | "resetVisibleTabsToRoleDefault" | "applyRoleDefaultTabsForOnboarding" | "savePanelTabPreference" | "storedPanelTabPreference">;
     session: Pick<{
         panelAppearance: import("../index.js").ReportAppearance;
         setPanelAppearance: (nextAppearance: import("../index.js").ReportAppearance) => void;
@@ -1004,6 +1007,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
             authorized: boolean;
             reason?: undefined;
         }>;
+        clearPersonalKey: () => void;
         canListAllFeedback: boolean;
         onActivitySummary: ((params: import("../index.js").ReportActivitySummaryParams) => Promise<import("../index.js").ReportActivitySummaryResult>) | undefined;
         visibleShortcutKeys: boolean;
@@ -1303,6 +1307,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
             authorized: boolean;
             reason?: undefined;
         }>;
+        clearPersonalKey: () => void;
         canListAllFeedback: boolean;
         onActivitySummary: ((params: import("../index.js").ReportActivitySummaryParams) => Promise<import("../index.js").ReportActivitySummaryResult>) | undefined;
         visibleShortcutKeys: boolean;

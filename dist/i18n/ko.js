@@ -394,6 +394,8 @@ export const ko = {
         issueDescription: "아래 키를 복사 후 개발자에게 전달하여 세팅이 완료될 때까지 잠시만 기다려주세요.",
         reviewerSnippetHint: "team.reviewers 에 추가할 정보입니다.",
         keyInfoToggle: "키 정보",
+        resetKey: "초기화",
+        resetKeyConfirm: "정말 기존 키를 초기화할까요?",
         copySnippet: "키 복사",
         copied: "복사됨",
         done: "완료",

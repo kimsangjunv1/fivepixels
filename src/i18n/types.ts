@@ -399,6 +399,8 @@ export type ReportMessages = {
         issueDescription: string;
         reviewerSnippetHint: string;
         keyInfoToggle: string;
+        resetKey: string;
+        resetKeyConfirm: string;
         copySnippet: string;
         copied: string;
         done: string;
