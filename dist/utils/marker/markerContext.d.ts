@@ -18,7 +18,11 @@ export declare function isModalReportId(reportId: string): boolean;
 export declare function usesViewportDetachedCoords(report: Pick<ReportFeedback, "position">): boolean;
 export declare function resolveDetachedKind(report: Pick<ReportFeedback, "report_id" | "position">, targetElement: HTMLElement | null, detached: boolean): MarkerDetachedKind;
 export declare function formatModalReportLabel(reportId: string): string;
-export declare function getModalGhostFrame(report: Pick<ReportFeedback, "position">): ModalGhostFrame;
+/**
+ * Renders a consistent centered modal silhouette. Saved viewport ratios are
+ * intentionally ignored — they drift after scroll/resize and confuse users.
+ */
+export declare function getModalGhostFrame(_report?: Pick<ReportFeedback, "position">): ModalGhostFrame;
 export declare function getDetachedMarkerHint(detachedKind: MarkerDetachedKind, messages: {
     detachedHint: string;
     detachedModalHint: string;

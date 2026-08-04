@@ -58,12 +58,8 @@ function MarkerOverflowHintButton({ hint, label, onActivate }: MarkerOverflowHin
     );
 }
 
-type DetachedModalGhostFrameProps = {
-    markerItem: Marker;
-};
-
-function DetachedModalGhostFrame({ markerItem }: DetachedModalGhostFrameProps) {
-    const frame = useMemo(() => getModalGhostFrame(markerItem.report), [markerItem.report]);
+function DetachedModalGhostFrame() {
+    const frame = useMemo(() => getModalGhostFrame(), []);
 
     return (
         <div
@@ -184,7 +180,7 @@ function MarkerButton({
                                   onPointerMove(event.clientX, event.clientY);
                               }
                     }
-                    className={`${MARKER_BUTTON_BASE_CLASS} border-[2px] border-white shadow-[0_4px_10px_#00000090] transition-transform duration-150 ${shapeStyle.shapeClass} ${
+                    className={`${MARKER_BUTTON_BASE_CLASS} border-[3px] border-white shadow-[0_0_20px_10px_#00000030] transition-transform duration-150 ${shapeStyle.shapeClass} ${
                         isSelected ? "scale-[1.4]" : ""
                     } ${isDetached ? "border-dashed" : ""} ${isReportMode ? (isProximityHighlighted ? "scale-110" : "") : isDetached ? "opacity-75" : ""} ${showMarkerLabel ? "text-white" : ""}`}
                     style={{
@@ -295,8 +291,11 @@ export function ReportMarkersLayer() {
         }
     }, [isReportMode, proximityHighlightedMarkerId, setHoveredMarkerId]);
 
+    // Only show the modal ghost while the marker is actively hovered / reply-open.
+    // Do not key off selectedReport — list selection fallback would flash the
+    // silhouette whenever a modal-classified marker merely scrolled out of view.
     const ghostFrameMarker = useMemo(() => {
-        const activeReportId = tooltipReport?.id ?? selectedReport?.id;
+        const activeReportId = tooltipReport?.id;
 
         if (!activeReportId) {
             return null;
@@ -309,7 +308,7 @@ export function ReportMarkersLayer() {
         }
 
         return marker;
-    }, [selectedReport?.id, tooltipReport?.id, visibleMarkers]);
+    }, [tooltipReport?.id, visibleMarkers]);
 
     const getOverflowHintLabel = useCallback(
         (hint: MarkerOverflowHint) => {
@@ -349,7 +348,7 @@ export function ReportMarkersLayer() {
 
     return (
         <>
-            {isViewMode && ghostFrameMarker ? <DetachedModalGhostFrame markerItem={ghostFrameMarker} /> : null}
+            {isViewMode && ghostFrameMarker ? <DetachedModalGhostFrame /> : null}
 
             {visibleMarkers.map((markerItem) => (
                 <MarkerButton

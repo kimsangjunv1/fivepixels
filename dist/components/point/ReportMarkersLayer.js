@@ -33,8 +33,8 @@ function MarkerOverflowHintButton({ hint, label, onActivate }) {
             transform,
         }, children: isVertical ? _jsx("span", { className: OVERFLOW_HINT_TEXT_CLASS, children: label }) : _jsx("span", { className: OVERFLOW_HINT_ARROW_CLASS, children: hint.edge === "left" ? "←" : "→" }) }));
 }
-function DetachedModalGhostFrame({ markerItem }) {
-    const frame = useMemo(() => getModalGhostFrame(markerItem.report), [markerItem.report]);
+function DetachedModalGhostFrame() {
+    const frame = useMemo(() => getModalGhostFrame(), []);
     return (_jsxs("div", { className: MODAL_GHOST_LAYER_CLASS, "aria-hidden": true, children: [_jsx("div", { className: "absolute bg-[#0f172a]/12", style: {
                     left: frame.backdrop.left,
                     top: frame.backdrop.top,
@@ -136,8 +136,11 @@ export function ReportMarkersLayer() {
             setHoveredMarkerId(proximityHighlightedMarkerId);
         }
     }, [isReportMode, proximityHighlightedMarkerId, setHoveredMarkerId]);
+    // Only show the modal ghost while the marker is actively hovered / reply-open.
+    // Do not key off selectedReport — list selection fallback would flash the
+    // silhouette whenever a modal-classified marker merely scrolled out of view.
     const ghostFrameMarker = useMemo(() => {
-        const activeReportId = tooltipReport?.id ?? selectedReport?.id;
+        const activeReportId = tooltipReport?.id;
         if (!activeReportId) {
             return null;
         }
@@ -146,7 +149,7 @@ export function ReportMarkersLayer() {
             return null;
         }
         return marker;
-    }, [selectedReport?.id, tooltipReport?.id, visibleMarkers]);
+    }, [tooltipReport?.id, visibleMarkers]);
     const getOverflowHintLabel = useCallback((hint) => {
         switch (hint.edge) {
             case "top":
@@ -172,7 +175,7 @@ export function ReportMarkersLayer() {
     if (!isViewMode && !isReportMode) {
         return null;
     }
-    return (_jsxs(_Fragment, { children: [isViewMode && ghostFrameMarker ? _jsx(DetachedModalGhostFrame, { markerItem: ghostFrameMarker }) : null, visibleMarkers.map((markerItem) => (_jsx(MarkerButton, { markerItem: markerItem, isSelected: isViewMode && markerItem.report.id === selectedReport?.id, isReportMode: isReportMode, isProximityHighlighted: markerItem.id === proximityHighlightedMarkerId, detachedAriaLabel: messages.marker.detachedAriaLabel, detachedModalAriaLabel: messages.marker.detachedModalAriaLabel, markerAppearance: markerAppearance, typography: typography, onActivate: activateFeedbackMarker, onHoverStart: () => handleMarkerHoverStart(markerItem.report.id), onHoverEnd: () => handleMarkerHoverEnd(markerItem.report.id), onPointerMove: (clientX, clientY) => setHoverPointer({ clientX, clientY }) }, markerItem.id))), isViewMode
+    return (_jsxs(_Fragment, { children: [isViewMode && ghostFrameMarker ? _jsx(DetachedModalGhostFrame, {}) : null, visibleMarkers.map((markerItem) => (_jsx(MarkerButton, { markerItem: markerItem, isSelected: isViewMode && markerItem.report.id === selectedReport?.id, isReportMode: isReportMode, isProximityHighlighted: markerItem.id === proximityHighlightedMarkerId, detachedAriaLabel: messages.marker.detachedAriaLabel, detachedModalAriaLabel: messages.marker.detachedModalAriaLabel, markerAppearance: markerAppearance, typography: typography, onActivate: activateFeedbackMarker, onHoverStart: () => handleMarkerHoverStart(markerItem.report.id), onHoverEnd: () => handleMarkerHoverEnd(markerItem.report.id), onPointerMove: (clientX, clientY) => setHoverPointer({ clientX, clientY }) }, markerItem.id))), isViewMode
                 ? overflowHints.map((hint) => (_jsx(MarkerOverflowHintButton, { hint: hint, label: getOverflowHintLabel(hint), onActivate: handleOverflowHintActivate }, hint.id)))
                 : null, showTooltip && !isExpandedTooltip && tooltipReport && tooltipPosition && tooltipAnchorStyle ? (_jsx("div", { ref: bindHoverTooltipRef, className: `pointer-events-none ${TOOLTIP_FIXED_CLASS}`, style: {
                     left: tooltipPosition.left,

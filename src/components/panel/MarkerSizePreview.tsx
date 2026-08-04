@@ -1,10 +1,4 @@
-import {
-    getMarkerDotSizePx,
-    getMarkerLabelFontSizePx,
-    type AppearanceScale,
-    type MarkerFontSize,
-    type MarkerShape,
-} from "@/constants/markerAppearance.js";
+import { getMarkerDotSizePx, getMarkerLabelFontSizePx, type AppearanceScale, type MarkerFontSize, type MarkerShape } from "@/constants/markerAppearance.js";
 import { resolveMarkerShapeStyle } from "@/utils/marker/markerShape.js";
 
 type MarkerSizePreviewProps = {
@@ -42,9 +36,7 @@ export function MarkerSizePreview({ size, fontSize, shape, color, fontFamily, la
                             aria-hidden
                         >
                             <div
-                                className={`flex items-center justify-center border-[2px] border-white shadow-[0_4px_10px_#00000090] ${shapeStyle.shapeClass} ${
-                                    showMarkerLabel ? "text-white" : ""
-                                }`}
+                                className={`flex items-center justify-center border-[4px] border-white shadow-[0_4px_10px_#00000090] ${shapeStyle.shapeClass} ${showMarkerLabel ? "text-white" : ""}`}
                                 style={{
                                     backgroundColor: color,
                                     width: shapeStyle.width,

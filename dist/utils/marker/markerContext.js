@@ -4,6 +4,7 @@ const MODAL_REPORT_ID_PATTERN = /(?:^|-)(modal|overlay|dialog)(?:-|$)/i;
 const MODAL_GHOST_DIALOG_WIDTH = 480;
 const MODAL_GHOST_DIALOG_HEIGHT = 280;
 const MODAL_GHOST_DIALOG_MAX_WIDTH_RATIO = 0.92;
+const MODAL_GHOST_DIALOG_MAX_HEIGHT_RATIO = 0.7;
 export function isModalReportId(reportId) {
     return MODAL_REPORT_ID_PATTERN.test(reportId);
 }
@@ -15,10 +16,11 @@ export function resolveDetachedKind(report, targetElement, detached) {
     if (!detached) {
         return null;
     }
+    // Only treat as modal when the report itself looks like an overlay/dialog,
+    // or the target still lives under a fixed-position ancestor (closed modal shell).
+    // Viewport-coordinate fallback alone must not imply modal — that mislabels
+    // ordinary page markers that scrolled out of view.
     if (isModalReportId(report.report_id)) {
-        return "modal";
-    }
-    if (usesViewportDetachedCoords(report)) {
         return "modal";
     }
     if (targetElement && hasFixedPositionAncestor(targetElement)) {
@@ -36,24 +38,25 @@ export function formatModalReportLabel(reportId) {
         .join(" ");
     return name ? `${name} modal` : "Modal";
 }
-export function getModalGhostFrame(report) {
-    const { viewport } = normalizeReportPosition(report.position);
-    const widthScale = viewport.width > 0 ? window.innerWidth / viewport.width : 1;
-    const heightScale = viewport.height > 0 ? window.innerHeight / viewport.height : 1;
-    const centerX = viewport.width * viewport.x * widthScale;
-    const centerY = viewport.height * viewport.y * heightScale;
-    const dialogWidth = Math.min(MODAL_GHOST_DIALOG_WIDTH * widthScale, window.innerWidth * MODAL_GHOST_DIALOG_MAX_WIDTH_RATIO);
-    const dialogHeight = MODAL_GHOST_DIALOG_HEIGHT * heightScale;
+/**
+ * Renders a consistent centered modal silhouette. Saved viewport ratios are
+ * intentionally ignored — they drift after scroll/resize and confuse users.
+ */
+export function getModalGhostFrame(_report) {
+    const viewportWidth = typeof window !== "undefined" ? window.innerWidth : 1000;
+    const viewportHeight = typeof window !== "undefined" ? window.innerHeight : 800;
+    const dialogWidth = Math.min(MODAL_GHOST_DIALOG_WIDTH, viewportWidth * MODAL_GHOST_DIALOG_MAX_WIDTH_RATIO);
+    const dialogHeight = Math.min(MODAL_GHOST_DIALOG_HEIGHT, viewportHeight * MODAL_GHOST_DIALOG_MAX_HEIGHT_RATIO);
     return {
         backdrop: {
             left: 0,
             top: 0,
-            width: window.innerWidth,
-            height: window.innerHeight,
+            width: viewportWidth,
+            height: viewportHeight,
         },
         dialog: {
-            left: centerX - dialogWidth / 2,
-            top: centerY - dialogHeight / 2,
+            left: (viewportWidth - dialogWidth) / 2,
+            top: (viewportHeight - dialogHeight) / 2,
             width: dialogWidth,
             height: dialogHeight,
         },
