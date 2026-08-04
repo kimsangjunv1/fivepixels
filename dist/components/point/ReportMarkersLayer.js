@@ -47,7 +47,7 @@ function DetachedModalGhostFrame() {
                     height: frame.dialog.height,
                 } })] }));
 }
-function MarkerButton({ markerItem, isSelected, isReportMode, isProximityHighlighted, detachedAriaLabel, detachedModalAriaLabel, markerAppearance, typography, onActivate, onHoverStart, onHoverEnd, onPointerMove, }) {
+function MarkerButton({ markerItem, isHovered, isReportMode, isProximityHighlighted, detachedAriaLabel, detachedModalAriaLabel, markerAppearance, typography, onActivate, onHoverStart, onHoverEnd, onPointerMove, }) {
     const hoverRef = useNativeHover({
         onEnter: onHoverStart,
         onLeave: onHoverEnd,
@@ -79,7 +79,7 @@ function MarkerButton({ markerItem, isSelected, isReportMode, isProximityHighlig
                         ? undefined
                         : (event) => {
                             onPointerMove(event.clientX, event.clientY);
-                        }, className: `${MARKER_BUTTON_BASE_CLASS} border-[2px] border-white shadow-[0_4px_10px_#00000090] transition-transform duration-150 ${shapeStyle.shapeClass} ${isSelected ? "scale-[1.4]" : ""} ${isDetached ? "border-dashed" : ""} ${isReportMode ? (isProximityHighlighted ? "scale-110" : "") : isDetached ? "opacity-75" : ""} ${showMarkerLabel ? "text-white" : ""}`, style: {
+                        }, className: `${MARKER_BUTTON_BASE_CLASS} border-[3px] border-white shadow-[0_0_20px_10px_#00000030] transition-transform duration-150 ${shapeStyle.shapeClass} ${isHovered ? "scale-[1.4]" : ""} ${isDetached ? "border-dashed" : ""} ${isReportMode ? (isProximityHighlighted ? "scale-110" : "") : isDetached ? "opacity-75" : ""} ${showMarkerLabel ? "text-white" : ""}`, style: {
                         backgroundColor: getMarkerColor(markerItem.report, markerAppearance.colors),
                         pointerEvents: isReportMode ? "none" : "auto",
                         width: shapeStyle.width,
@@ -94,14 +94,11 @@ function MarkerButton({ markerItem, isSelected, isReportMode, isProximityHighlig
                     }, children: showMarkerLabel ? (markerBadgeLabel) : isModalDetached ? (_jsx("span", { "aria-hidden": true, className: "block h-[7px] w-[9px] border border-white/90 bg-white/15" })) : null }, markerItem.id)] }) }));
 }
 export function ReportMarkersLayer() {
-    const { mode, markers, selectedReport, activeReplyReport, activeReplyReportId, tooltipReport, tooltipAnchor, editingReportId, hoverPointer, setHoverPointer, messages, markerAppearance, typography, selectReport, activateFeedbackMarker, clearHoverLeaveTimeout, scheduleHoverLeave, setHoveredMarkerId, } = useReport();
+    const { mode, markers, activeReplyReport, activeReplyReportId, tooltipReport, tooltipAnchor, editingReportId, hoverPointer, setHoverPointer, messages, markerAppearance, typography, activateFeedbackMarker, clearHoverLeaveTimeout, scheduleHoverLeave, setHoveredMarkerId, } = useReport();
     const handleMarkerHoverStart = useCallback((reportId) => {
         clearHoverLeaveTimeout();
         setHoveredMarkerId(reportId);
-        if (!editingReportId) {
-            selectReport(reportId);
-        }
-    }, [clearHoverLeaveTimeout, editingReportId, selectReport, setHoveredMarkerId]);
+    }, [clearHoverLeaveTimeout, setHoveredMarkerId]);
     const handleMarkerHoverEnd = useCallback((reportId) => {
         setHoverPointer(null);
         if (activeReplyReportId) {
@@ -175,7 +172,7 @@ export function ReportMarkersLayer() {
     if (!isViewMode && !isReportMode) {
         return null;
     }
-    return (_jsxs(_Fragment, { children: [isViewMode && ghostFrameMarker ? _jsx(DetachedModalGhostFrame, {}) : null, visibleMarkers.map((markerItem) => (_jsx(MarkerButton, { markerItem: markerItem, isSelected: isViewMode && markerItem.report.id === selectedReport?.id, isReportMode: isReportMode, isProximityHighlighted: markerItem.id === proximityHighlightedMarkerId, detachedAriaLabel: messages.marker.detachedAriaLabel, detachedModalAriaLabel: messages.marker.detachedModalAriaLabel, markerAppearance: markerAppearance, typography: typography, onActivate: activateFeedbackMarker, onHoverStart: () => handleMarkerHoverStart(markerItem.report.id), onHoverEnd: () => handleMarkerHoverEnd(markerItem.report.id), onPointerMove: (clientX, clientY) => setHoverPointer({ clientX, clientY }) }, markerItem.id))), isViewMode
+    return (_jsxs(_Fragment, { children: [isViewMode && ghostFrameMarker ? _jsx(DetachedModalGhostFrame, {}) : null, visibleMarkers.map((markerItem) => (_jsx(MarkerButton, { markerItem: markerItem, isHovered: isViewMode && tooltipReport?.id === markerItem.report.id && !isExpandedTooltip, isReportMode: isReportMode, isProximityHighlighted: markerItem.id === proximityHighlightedMarkerId, detachedAriaLabel: messages.marker.detachedAriaLabel, detachedModalAriaLabel: messages.marker.detachedModalAriaLabel, markerAppearance: markerAppearance, typography: typography, onActivate: activateFeedbackMarker, onHoverStart: () => handleMarkerHoverStart(markerItem.report.id), onHoverEnd: () => handleMarkerHoverEnd(markerItem.report.id), onPointerMove: (clientX, clientY) => setHoverPointer({ clientX, clientY }) }, markerItem.id))), isViewMode
                 ? overflowHints.map((hint) => (_jsx(MarkerOverflowHintButton, { hint: hint, label: getOverflowHintLabel(hint), onActivate: handleOverflowHintActivate }, hint.id)))
                 : null, showTooltip && !isExpandedTooltip && tooltipReport && tooltipPosition && tooltipAnchorStyle ? (_jsx("div", { ref: bindHoverTooltipRef, className: `pointer-events-none ${TOOLTIP_FIXED_CLASS}`, style: {
                     left: tooltipPosition.left,

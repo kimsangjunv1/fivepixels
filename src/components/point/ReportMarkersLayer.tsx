@@ -90,7 +90,7 @@ function DetachedModalGhostFrame() {
 
 type MarkerButtonProps = {
     markerItem: Marker;
-    isSelected: boolean;
+    isHovered: boolean;
     isReportMode: boolean;
     isProximityHighlighted: boolean;
     detachedAriaLabel: string;
@@ -105,7 +105,7 @@ type MarkerButtonProps = {
 
 function MarkerButton({
     markerItem,
-    isSelected,
+    isHovered,
     isReportMode,
     isProximityHighlighted,
     detachedAriaLabel,
@@ -181,7 +181,7 @@ function MarkerButton({
                               }
                     }
                     className={`${MARKER_BUTTON_BASE_CLASS} border-[3px] border-white shadow-[0_0_20px_10px_#00000030] transition-transform duration-150 ${shapeStyle.shapeClass} ${
-                        isSelected ? "scale-[1.4]" : ""
+                        isHovered ? "scale-[1.4]" : ""
                     } ${isDetached ? "border-dashed" : ""} ${isReportMode ? (isProximityHighlighted ? "scale-110" : "") : isDetached ? "opacity-75" : ""} ${showMarkerLabel ? "text-white" : ""}`}
                     style={{
                         backgroundColor: getMarkerColor(markerItem.report, markerAppearance.colors),
@@ -215,7 +215,6 @@ export function ReportMarkersLayer() {
     const {
         mode,
         markers,
-        selectedReport,
         activeReplyReport,
         activeReplyReportId,
         tooltipReport,
@@ -226,7 +225,6 @@ export function ReportMarkersLayer() {
         messages,
         markerAppearance,
         typography,
-        selectReport,
         activateFeedbackMarker,
         clearHoverLeaveTimeout,
         scheduleHoverLeave,
@@ -237,11 +235,8 @@ export function ReportMarkersLayer() {
         (reportId: string) => {
             clearHoverLeaveTimeout();
             setHoveredMarkerId(reportId);
-            if (!editingReportId) {
-                selectReport(reportId);
-            }
         },
-        [clearHoverLeaveTimeout, editingReportId, selectReport, setHoveredMarkerId],
+        [clearHoverLeaveTimeout, setHoveredMarkerId],
     );
 
     const handleMarkerHoverEnd = useCallback(
@@ -354,7 +349,7 @@ export function ReportMarkersLayer() {
                 <MarkerButton
                     key={markerItem.id}
                     markerItem={markerItem}
-                    isSelected={isViewMode && markerItem.report.id === selectedReport?.id}
+                    isHovered={isViewMode && tooltipReport?.id === markerItem.report.id && !isExpandedTooltip}
                     isReportMode={isReportMode}
                     isProximityHighlighted={markerItem.id === proximityHighlightedMarkerId}
                     detachedAriaLabel={messages.marker.detachedAriaLabel}

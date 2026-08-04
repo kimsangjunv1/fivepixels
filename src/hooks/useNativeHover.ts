@@ -20,19 +20,35 @@ export function useNativeHover<T extends HTMLElement>(handlers: NativeHoverHandl
             return;
         }
 
-        const onEnter = () => handlersRef.current.onEnter();
-        const onLeave = () => handlersRef.current.onLeave();
+        let inside = false;
 
-        node.addEventListener("mouseenter", onEnter);
-        node.addEventListener("mouseleave", onLeave);
+        const onEnter = () => {
+            inside = true;
+            handlersRef.current.onEnter();
+        };
+
+        const onLeave = () => {
+            if (!inside) {
+                return;
+            }
+
+            inside = false;
+            handlersRef.current.onLeave();
+        };
+
+        // Pointer events alone — pairing with mouseenter/leave double-fires and can
+        // leave hover state stuck when one leave is swallowed during remounts.
         node.addEventListener("pointerenter", onEnter);
         node.addEventListener("pointerleave", onLeave);
 
         return () => {
-            node.removeEventListener("mouseenter", onEnter);
-            node.removeEventListener("mouseleave", onLeave);
             node.removeEventListener("pointerenter", onEnter);
             node.removeEventListener("pointerleave", onLeave);
+
+            // Unmount / node swap without a leave event must still clear hover.
+            if (inside) {
+                handlersRef.current.onLeave();
+            }
         };
     }, [node]);
 
