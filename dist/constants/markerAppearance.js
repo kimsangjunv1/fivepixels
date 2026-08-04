@@ -1,14 +1,15 @@
-export const APPEARANCE_SCALE_VALUES = ["sm", "md", "lg", "xl"];
+export const APPEARANCE_SCALE_VALUES = ["xs", "sm", "md", "lg", "xl"];
+export const MARKER_SCALE_FACTOR = {
+    xs: 0.7,
+    sm: 0.85,
+    md: 1,
+    lg: 1.15,
+    xl: 1.3,
+};
 export const MARKER_FONT_SIZE_VALUES = ["none", "sm", "md", "lg", "xl"];
 export const MARKER_SHAPE_VALUES = ["circle", "square", "pill", "pin"];
 export const MARKER_APPEARANCE_STORAGE_KEY = "fivepixels:marker-appearance";
 export const TYPOGRAPHY_STORAGE_KEY = "fivepixels:typography";
-export const MARKER_SIZE_PX = {
-    sm: 10,
-    md: 14,
-    lg: 18,
-    xl: 22,
-};
 export const MARKER_LABEL_FONT_SIZE_PX = {
     sm: 10,
     md: 12,
@@ -44,17 +45,20 @@ export const FONT_FAMILY_SUGGESTIONS = [
     "Georgia, serif",
     '"Courier New", monospace',
 ];
+export function isMarkerLabelFontSize(value) {
+    return value === "sm" || value === "md" || value === "lg" || value === "xl";
+}
 export function isMarkerFontSize(value) {
-    return value === "none" || isAppearanceScale(value);
+    return value === "none" || isMarkerLabelFontSize(value);
 }
 export function isAppearanceScale(value) {
-    return value === "sm" || value === "md" || value === "lg" || value === "xl";
+    return value === "xs" || value === "sm" || value === "md" || value === "lg" || value === "xl";
 }
 export function isMarkerShape(value) {
     return value === "circle" || value === "square" || value === "pill" || value === "pin";
 }
-export function getMarkerDotSizePx(size) {
-    return MARKER_SIZE_PX[size];
+export function getMarkerScaleFactor(size) {
+    return MARKER_SCALE_FACTOR[size];
 }
 export function getMarkerLabelFontSizePx(size) {
     return MARKER_LABEL_FONT_SIZE_PX[size];

@@ -465,6 +465,7 @@ export type ReportMessages = {
         fontFamily: string;
         fontFamilyAriaLabel: string;
         scaleNone: string;
+        scaleXs: string;
         scaleSm: string;
         scaleMd: string;
         scaleLg: string;

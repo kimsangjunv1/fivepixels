@@ -3,13 +3,12 @@ import type { ReportAppearance, QuestionThreadDisplay } from "@/types/report.js"
 import type { ReportLocale } from "@/i18n/types.js";
 import { APPEARANCE_OPTION_VALUES } from "@/constants/appearance.js";
 import { DEFAULT_FEEDBACK_MODE_DOT_COLORS, FONT_FAMILY_SUGGESTIONS } from "@/constants/markerAppearance.js";
-import type { AppearanceScale, MarkerFontSize, MarkerShape } from "@/constants/markerAppearance.js";
+import type { AppearanceScale } from "@/constants/markerAppearance.js";
 import { useReportPreferences, useReportSession } from "@/providers/reportContext.js";
 import { formatPresentationViewerLabel } from "@/utils/report/reportTeam.js";
 import { ChevronLeftIcon, ChevronRightIcon } from "@/components/icons/Icons.js";
 import { AppearanceThemePicker } from "./AppearanceThemePicker.js";
 import { HexColorField } from "./HexColorField.js";
-import { MarkerShapePicker } from "./MarkerShapePicker.js";
 import { PanelMarkerDisplayControls } from "./PanelMarkerDisplayControls.js";
 import { PanelOptionSwitch } from "./PanelOptionSwitch.js";
 import { PanelTabSelector } from "./PanelTabSelector.js";
@@ -140,12 +139,10 @@ export function PanelSettings({
         presentationViewers,
         markerAppearance,
         setMarkerSize,
-        setMarkerShape,
         setMarkerColor,
         setFeedbackModeDotColors,
         setFeedbackModeDotColor,
         typography,
-        setFontSize,
         setFontFamily,
         panelRole,
         visiblePanelTabs,
@@ -157,20 +154,11 @@ export function PanelSettings({
     } = useReportPreferences();
     const { presentationViewerId, setPresentationViewerId } = useReportSession();
     const scaleLabels: Record<AppearanceScale, string> = {
+        xs: messages.settings.scaleXs,
         sm: messages.settings.scaleSm,
         md: messages.settings.scaleMd,
         lg: messages.settings.scaleLg,
         xl: messages.settings.scaleXl,
-    };
-    const markerFontSizeLabels: Record<MarkerFontSize, string> = {
-        none: messages.settings.scaleNone,
-        ...scaleLabels,
-    };
-    const markerShapeLabels: Record<MarkerShape, string> = {
-        circle: messages.settings.markerShapeCircle,
-        square: messages.settings.markerShapeSquare,
-        pill: messages.settings.markerShapePill,
-        pin: messages.settings.markerShapePin,
     };
     const appearanceOptions = APPEARANCE_OPTION_VALUES.map((value) => ({
         value,
@@ -303,25 +291,11 @@ export function PanelSettings({
                                 <div className="flex flex-col gap-[12px] px-[12px] pb-[10px]">
                                     <PanelMarkerDisplayControls
                                         markerSize={markerAppearance.size}
-                                        fontSize={typography.fontSize}
                                         onMarkerSizeChange={setMarkerSize}
-                                        onFontSizeChange={setFontSize}
                                         scaleLabels={scaleLabels}
-                                        markerFontSizeLabels={markerFontSizeLabels}
                                         markerSizeLabel={messages.settings.markerSize}
-                                        markerFontSizeLabel={messages.settings.markerFontSize}
                                         markerSizeAriaLabel={messages.settings.markerSizeAriaLabel}
-                                        markerFontSizeAriaLabel={messages.settings.markerFontSizeAriaLabel}
                                     />
-                                    <div>
-                                        <p className="mb-[6px] text-[11px] font-medium text-[var(--adaptive-black600)]">{messages.settings.markerShape}</p>
-                                        <MarkerShapePicker
-                                            value={markerAppearance.shape}
-                                            onChange={setMarkerShape}
-                                            labels={markerShapeLabels}
-                                            ariaLabel={messages.settings.markerShapeAriaLabel}
-                                        />
-                                    </div>
                                     <HexColorField
                                         label={messages.settings.markerColorOpen}
                                         value={markerAppearance.colors.open}

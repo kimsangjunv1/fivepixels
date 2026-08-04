@@ -10,7 +10,7 @@ import { getDetachedMarkerAriaLabel, getModalGhostFrame } from "@/utils/marker/m
 import { getMarkerDotSize } from "@/utils/marker/markerRuntime.js";
 import { resolveMarkerShapeStyle } from "@/utils/marker/markerShape.js";
 import type { MarkerAppearancePreferences, TypographyPreferences } from "@/constants/markerAppearance.js";
-import { getMarkerLabelFontSizePx } from "@/constants/markerAppearance.js";
+import { resolveMarkerBadgeDisplay } from "@/constants/markerAppearance.js";
 import { getMarkerColor, getMarkerDisplayLabel } from "@/utils/report/reportVisual.js";
 import { FeedbackHoverCard } from "@/components/panel/feedback/FeedbackHoverCard.js";
 import { getReplyCount } from "@/utils/feedback/feedbackThread.js";
@@ -133,10 +133,11 @@ function MarkerButton({
         detachedModalAriaLabel,
     });
     const dotSize = getMarkerDotSize();
-    const showMarkerLabel = typography.fontSize !== "none" && Boolean(markerBadgeLabel);
+    const hasBadgeSource = typography.fontSize !== "none" && Boolean(markerBadgeLabel);
+    const badgeDisplay = hasBadgeSource ? resolveMarkerBadgeDisplay(markerAppearance.size, markerBadgeLabel) : { content: null, fontSizePx: undefined, fontWeight: undefined };
+    const showMarkerLabel = Boolean(badgeDisplay.content);
     const shapeStyle = resolveMarkerShapeStyle(markerAppearance.shape, dotSize, showMarkerLabel, isModalDetached);
     const ringColorClass = isModalDetached ? "border-[#a5b4fc]/90" : "border-white/80";
-    const markerFontSizePx = typography.fontSize === "none" ? undefined : getMarkerLabelFontSizePx(typography.fontSize);
 
     return (
         <div
@@ -193,12 +194,13 @@ function MarkerButton({
                         paddingLeft: shapeStyle.paddingX,
                         paddingRight: shapeStyle.paddingX,
                         clipPath: shapeStyle.clipPath,
-                        fontSize: markerFontSizePx === undefined ? undefined : `${markerFontSizePx}px`,
+                        fontSize: badgeDisplay.fontSizePx === undefined ? undefined : `${badgeDisplay.fontSizePx}px`,
+                        fontWeight: badgeDisplay.fontWeight,
                         fontFamily: showMarkerLabel ? typography.fontFamily : undefined,
                     }}
                 >
                     {showMarkerLabel ? (
-                        markerBadgeLabel
+                        badgeDisplay.content
                     ) : isModalDetached ? (
                         <span
                             aria-hidden

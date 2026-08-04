@@ -1,6 +1,6 @@
 import { useMemo, useState, type DragEvent } from "react";
 import { APPEARANCE_OPTION_VALUES } from "@/constants/appearance.js";
-import { type AppearanceScale, type MarkerFontSize } from "@/constants/markerAppearance.js";
+import { type AppearanceScale } from "@/constants/markerAppearance.js";
 import { PANEL_ROLE_VALUES, type PanelRole } from "@/constants/panelRole.js";
 import type { UserSelectablePanelTab } from "@/constants/panelTabRegistry.js";
 import type { ReportLocale } from "@/i18n/types.js";
@@ -36,7 +36,6 @@ export function PanelOnboarding() {
         markerAppearance,
         setMarkerSize,
         typography,
-        setFontSize,
         panelRole,
         setPanelRole,
         completeOnboarding,
@@ -71,14 +70,11 @@ export function PanelOnboarding() {
         label: messages.appearance[value],
     }));
     const scaleLabels: Record<AppearanceScale, string> = {
+        xs: messages.settings.scaleXs,
         sm: messages.settings.scaleSm,
         md: messages.settings.scaleMd,
         lg: messages.settings.scaleLg,
         xl: messages.settings.scaleXl,
-    };
-    const markerFontSizeLabels: Record<MarkerFontSize, string> = {
-        none: messages.settings.scaleNone,
-        ...scaleLabels,
     };
 
     const handleSelectRole = (role: PanelRole) => {
@@ -399,15 +395,10 @@ export function PanelOnboarding() {
                     />
                     <PanelMarkerDisplayControls
                         markerSize={markerAppearance.size}
-                        fontSize={typography.fontSize}
                         onMarkerSizeChange={setMarkerSize}
-                        onFontSizeChange={setFontSize}
                         scaleLabels={scaleLabels}
-                        markerFontSizeLabels={markerFontSizeLabels}
                         markerSizeLabel={messages.settings.markerSize}
-                        markerFontSizeLabel={messages.settings.markerFontSize}
                         markerSizeAriaLabel={messages.settings.markerSizeAriaLabel}
-                        markerFontSizeAriaLabel={messages.settings.markerFontSizeAriaLabel}
                     />
                     <div className="flex items-center justify-between">
                         <button

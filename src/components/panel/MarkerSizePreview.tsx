@@ -1,4 +1,11 @@
-import { getMarkerDotSizePx, getMarkerLabelFontSizePx, type AppearanceScale, type MarkerFontSize, type MarkerShape } from "@/constants/markerAppearance.js";
+import { DOT_SIZE } from "@/constants/report.js";
+import {
+    getMarkerScaleFactor,
+    resolveMarkerBadgeDisplay,
+    type AppearanceScale,
+    type MarkerFontSize,
+    type MarkerShape,
+} from "@/constants/markerAppearance.js";
 import { resolveMarkerShapeStyle } from "@/utils/marker/markerShape.js";
 
 type MarkerSizePreviewProps = {
@@ -12,10 +19,10 @@ type MarkerSizePreviewProps = {
 };
 
 export function MarkerSizePreview({ size, fontSize, shape, color, fontFamily, label = "1", ariaLabel }: MarkerSizePreviewProps) {
-    const dotSize = getMarkerDotSizePx(size);
-    const showMarkerLabel = fontSize !== "none";
+    const dotSize = DOT_SIZE * getMarkerScaleFactor(size);
+    const badgeDisplay = fontSize === "none" ? { content: null, fontSizePx: undefined, fontWeight: undefined } : resolveMarkerBadgeDisplay(size, label);
+    const showMarkerLabel = Boolean(badgeDisplay.content);
     const shapeStyle = resolveMarkerShapeStyle(shape, dotSize, showMarkerLabel, false);
-    const markerFontSizePx = showMarkerLabel ? getMarkerLabelFontSizePx(fontSize) : undefined;
 
     return (
         <div
@@ -46,13 +53,13 @@ export function MarkerSizePreview({ size, fontSize, shape, color, fontFamily, la
                                     paddingLeft: shapeStyle.paddingX,
                                     paddingRight: shapeStyle.paddingX,
                                     clipPath: shapeStyle.clipPath,
-                                    fontSize: markerFontSizePx === undefined ? undefined : `${markerFontSizePx}px`,
+                                    fontSize: badgeDisplay.fontSizePx === undefined ? undefined : `${badgeDisplay.fontSizePx}px`,
+                                    fontWeight: badgeDisplay.fontWeight,
                                     fontFamily: showMarkerLabel ? fontFamily : undefined,
                                     lineHeight: 1,
-                                    fontWeight: 700,
                                 }}
                             >
-                                {showMarkerLabel ? label : null}
+                                {showMarkerLabel ? badgeDisplay.content : null}
                             </div>
                         </div>
                     </div>

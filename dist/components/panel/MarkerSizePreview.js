@@ -1,8 +1,9 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import { getMarkerDotSizePx, getMarkerLabelFontSizePx } from "../../constants/markerAppearance.js";
+import { DOT_SIZE } from "../../constants/report.js";
+import { getMarkerLabelFontSizePx, getMarkerScaleFactor, } from "../../constants/markerAppearance.js";
 import { resolveMarkerShapeStyle } from "../../utils/marker/markerShape.js";
 export function MarkerSizePreview({ size, fontSize, shape, color, fontFamily, label = "1", ariaLabel }) {
-    const dotSize = getMarkerDotSizePx(size);
+    const dotSize = DOT_SIZE * getMarkerScaleFactor(size);
     const showMarkerLabel = fontSize !== "none";
     const shapeStyle = resolveMarkerShapeStyle(shape, dotSize, showMarkerLabel, false);
     const markerFontSizePx = showMarkerLabel ? getMarkerLabelFontSizePx(fontSize) : undefined;

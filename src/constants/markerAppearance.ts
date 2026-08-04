@@ -1,8 +1,18 @@
-export type AppearanceScale = "sm" | "md" | "lg" | "xl";
+export type AppearanceScale = "xs" | "sm" | "md" | "lg" | "xl";
 
-export const APPEARANCE_SCALE_VALUES = ["sm", "md", "lg", "xl"] as const satisfies readonly AppearanceScale[];
+export const APPEARANCE_SCALE_VALUES = ["xs", "sm", "md", "lg", "xl"] as const satisfies readonly AppearanceScale[];
 
-export type MarkerFontSize = "none" | AppearanceScale;
+export const MARKER_SCALE_FACTOR: Record<AppearanceScale, number> = {
+    xs: 0.7,
+    sm: 0.85,
+    md: 1,
+    lg: 1.15,
+    xl: 1.3,
+};
+
+export type MarkerLabelFontSize = "sm" | "md" | "lg" | "xl";
+
+export type MarkerFontSize = "none" | MarkerLabelFontSize;
 
 export const MARKER_FONT_SIZE_VALUES = ["none", "sm", "md", "lg", "xl"] as const satisfies readonly MarkerFontSize[];
 
@@ -36,14 +46,7 @@ export type TypographyPreferences = {
 export const MARKER_APPEARANCE_STORAGE_KEY = "fivepixels:marker-appearance";
 export const TYPOGRAPHY_STORAGE_KEY = "fivepixels:typography";
 
-export const MARKER_SIZE_PX: Record<AppearanceScale, number> = {
-    sm: 10,
-    md: 14,
-    lg: 18,
-    xl: 22,
-};
-
-export const MARKER_LABEL_FONT_SIZE_PX: Record<AppearanceScale, number> = {
+export const MARKER_LABEL_FONT_SIZE_PX: Record<MarkerLabelFontSize, number> = {
     sm: 10,
     md: 12,
     lg: 14,
@@ -85,22 +88,58 @@ export const FONT_FAMILY_SUGGESTIONS = [
     '"Courier New", monospace',
 ] as const;
 
+export function isMarkerLabelFontSize(value: unknown): value is MarkerLabelFontSize {
+    return value === "sm" || value === "md" || value === "lg" || value === "xl";
+}
+
 export function isMarkerFontSize(value: unknown): value is MarkerFontSize {
-    return value === "none" || isAppearanceScale(value);
+    return value === "none" || isMarkerLabelFontSize(value);
 }
 
 export function isAppearanceScale(value: unknown): value is AppearanceScale {
-    return value === "sm" || value === "md" || value === "lg" || value === "xl";
+    return value === "xs" || value === "sm" || value === "md" || value === "lg" || value === "xl";
 }
 
 export function isMarkerShape(value: unknown): value is MarkerShape {
     return value === "circle" || value === "square" || value === "pill" || value === "pin";
 }
 
-export function getMarkerDotSizePx(size: AppearanceScale) {
-    return MARKER_SIZE_PX[size];
+export function getMarkerScaleFactor(size: AppearanceScale) {
+    return MARKER_SCALE_FACTOR[size];
 }
 
-export function getMarkerLabelFontSizePx(size: AppearanceScale) {
+export const MARKER_COMPACT_LABEL = "·";
+export const MARKER_BADGE_FONT_SIZE_PX = 10;
+export const MARKER_BADGE_FONT_WEIGHT = 900;
+
+export function isCompactMarkerLabelScale(size: AppearanceScale) {
+    return size === "xs" || size === "sm";
+}
+
+export function resolveMarkerBadgeDisplay(size: AppearanceScale, label: string | null) {
+    if (!label) {
+        return {
+            content: null as string | null,
+            fontSizePx: undefined as number | undefined,
+            fontWeight: undefined as number | undefined,
+        };
+    }
+
+    if (isCompactMarkerLabelScale(size)) {
+        return {
+            content: MARKER_COMPACT_LABEL,
+            fontSizePx: undefined,
+            fontWeight: undefined,
+        };
+    }
+
+    return {
+        content: label,
+        fontSizePx: MARKER_BADGE_FONT_SIZE_PX,
+        fontWeight: MARKER_BADGE_FONT_WEIGHT,
+    };
+}
+
+export function getMarkerLabelFontSizePx(size: MarkerLabelFontSize) {
     return MARKER_LABEL_FONT_SIZE_PX[size];
 }
