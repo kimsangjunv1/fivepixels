@@ -1,6 +1,8 @@
 import type { MarkerShape } from "@/constants/markerAppearance.js";
 import { MARKER_SHAPE_VALUES } from "@/constants/markerAppearance.js";
 import { CheckIcon } from "@/components/icons/Icons.js";
+import { MarkerShapeGlyph } from "@/components/point/MarkerShapeGlyph.js";
+import { resolveMarkerShapeStyle } from "@/utils/marker/markerShape.js";
 
 type MarkerShapePickerProps = {
     value: MarkerShape;
@@ -10,24 +12,21 @@ type MarkerShapePickerProps = {
 };
 
 function ShapePreview({ shape }: { shape: MarkerShape }) {
-    if (shape === "square") {
-        return <span className="block h-[14px] w-[14px] rounded-[3px] bg-[var(--adaptive-blue500)]" />;
-    }
+    const preview = resolveMarkerShapeStyle(shape, 12);
+    const width = Math.min(preview.width, 16);
+    const height = Math.min(preview.height, 16);
 
-    if (shape === "pill") {
-        return <span className="block h-[10px] w-[18px] rounded-full bg-[var(--adaptive-blue500)]" />;
-    }
-
-    if (shape === "pin") {
-        return (
-            <span
-                className="block h-[16px] w-[12px] bg-[var(--adaptive-blue500)]"
-                style={{ clipPath: "polygon(50% 100%, 6% 42%, 6% 8%, 94% 8%, 94% 42%)" }}
-            />
-        );
-    }
-
-    return <span className="block h-[14px] w-[14px] rounded-full bg-[var(--adaptive-blue500)]" />;
+    return (
+        <MarkerShapeGlyph
+            shape={shape}
+            fill="var(--adaptive-blue500)"
+            width={width}
+            height={height}
+            stroke="transparent"
+            strokeWidthPx={0}
+            style={{ filter: "none" }}
+        />
+    );
 }
 
 export function MarkerShapePicker({ value, onChange, labels, ariaLabel }: MarkerShapePickerProps) {

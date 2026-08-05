@@ -7,13 +7,15 @@ import { resolveMarkerOverflowHints } from "../../utils/marker/coordinates.js";
 import { scrollContainerTowardEdge } from "../../utils/shared/dom.js";
 import { getDetachedMarkerAriaLabel, getModalGhostFrame } from "../../utils/marker/markerContext.js";
 import { getMarkerDotSize } from "../../utils/marker/markerRuntime.js";
-import { resolveMarkerShapeStyle } from "../../utils/marker/markerShape.js";
-import { getMarkerLabelFontSizePx } from "../../constants/markerAppearance.js";
-import { getMarkerColor, getMarkerDisplayLabel } from "../../utils/report/reportVisual.js";
+import { getMarkerReplyBadgeSize, resolveMarkerShapeStyle } from "../../utils/marker/markerShape.js";
+import { resolveMarkerBadgeDisplay } from "../../constants/markerAppearance.js";
+import { getMarkerColor, getMarkerDisplayLabel, hasMarkerReplyIndicator } from "../../utils/report/reportVisual.js";
 import { FeedbackHoverCard } from "../../components/panel/feedback/FeedbackHoverCard.js";
 import { getReplyCount } from "../../utils/feedback/feedbackThread.js";
 import { MOTION } from "../../constants/motionClasses.js";
 import { MarkerFeedbackWindow } from "./MarkerFeedbackWindow.js";
+import { MarkerReplyBadge } from "./MarkerReplyBadge.js";
+import { MarkerShapeGlyph } from "./MarkerShapeGlyph.js";
 const TOOLTIP_SURFACE_CLASS = "overflow-hidden rounded-[16px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-fillOpacity800)] backdrop-blur-[5px] shadow-[var(--adaptive-popup-shadow)]";
 // "overflow-hidden rounded-[12px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-fillOpacity500)] backdrop-blur-[10px] shadow-[var(--adaptive-popup-shadow)]";
 const TOOLTIP_FIXED_CLASS = `fixed z-[1000001] ${TOOLTIP_SURFACE_CLASS} ${MOTION.tooltipFadeIn}`;
@@ -53,10 +55,15 @@ function MarkerButton({ markerItem, isHovered, isReportMode, isProximityHighligh
         onLeave: onHoverEnd,
     });
     const replyCount = getReplyCount(markerItem.report);
-    const markerBadgeLabel = getMarkerDisplayLabel(markerItem.report, replyCount);
-    const markerLabel = markerBadgeLabel
-        ? `${markerItem.report.report_type} · ${markerItem.report.report_id} · ${markerBadgeLabel}`
-        : `${markerItem.report.report_type} · ${markerItem.report.report_id}`;
+    const markerBadgeLabel = getMarkerDisplayLabel(markerItem.report);
+    const showReplyIndicator = hasMarkerReplyIndicator(markerItem.report, replyCount);
+    const markerLabelParts = [
+        markerItem.report.report_type,
+        markerItem.report.report_id,
+        markerBadgeLabel,
+        showReplyIndicator ? `+${replyCount}` : null,
+    ].filter(Boolean);
+    const markerLabel = markerLabelParts.join(" · ");
     const isDetached = markerItem.detached;
     const isModalDetached = markerItem.detachedKind === "modal";
     const resolvedDetachedAriaLabel = getDetachedMarkerAriaLabel(markerItem.detachedKind, {
@@ -64,34 +71,36 @@ function MarkerButton({ markerItem, isHovered, isReportMode, isProximityHighligh
         detachedModalAriaLabel,
     });
     const dotSize = getMarkerDotSize();
-    const showMarkerLabel = typography.fontSize !== "none" && Boolean(markerBadgeLabel);
+    const hasBadgeSource = typography.fontSize !== "none" && Boolean(markerBadgeLabel);
+    const badgeDisplay = hasBadgeSource ? resolveMarkerBadgeDisplay(markerAppearance.size, markerBadgeLabel) : { content: null, fontSizePx: undefined, fontWeight: undefined };
+    const showMarkerLabel = Boolean(badgeDisplay.content);
     const shapeStyle = resolveMarkerShapeStyle(markerAppearance.shape, dotSize, showMarkerLabel, isModalDetached);
     const ringColorClass = isModalDetached ? "border-[#a5b4fc]/90" : "border-white/80";
-    const markerFontSizePx = typography.fontSize === "none" ? undefined : getMarkerLabelFontSizePx(typography.fontSize);
+    const markerColor = getMarkerColor(markerItem.report, markerAppearance.colors);
+    const replyBadgeSize = getMarkerReplyBadgeSize(dotSize);
+    const scaleClass = isHovered ? "scale-[1.4]" : isReportMode && isProximityHighlighted ? "scale-110" : "";
+    const glyphShape = markerAppearance.shape;
     return (_jsx("div", { className: `${MARKER_ANCHOR_BASE_CLASS} ${shapeStyle.anchorClass}`, style: {
             left: markerItem.left,
             top: markerItem.top,
-        }, children: _jsxs("div", { className: `relative transition-opacity duration-150 ${isReportMode ? (isProximityHighlighted ? "pointer-events-none opacity-100" : "pointer-events-none opacity-50") : "pointer-events-auto"}`, children: [isDetached ? (_jsx("div", { "aria-hidden": true, className: `pointer-events-none absolute -inset-[6px] border border-dashed ${shapeStyle.ringClass} ${ringColorClass}` })) : null, _jsx("button", { ref: hoverRef, type: "button", "data-fivepixels-interactive": "", "data-marker-report-id": markerItem.report.id, "aria-label": isDetached ? `${resolvedDetachedAriaLabel} · ${markerLabel}` : markerLabel, "aria-hidden": isReportMode || undefined, tabIndex: isReportMode ? -1 : undefined, onClick: isReportMode
-                        ? undefined
-                        : () => {
-                            void onActivate(markerItem.report);
-                        }, onPointerMove: isReportMode
-                        ? undefined
-                        : (event) => {
-                            onPointerMove(event.clientX, event.clientY);
-                        }, className: `${MARKER_BUTTON_BASE_CLASS} border-[3px] border-white shadow-[0_0_20px_10px_#00000030] transition-transform duration-150 ${shapeStyle.shapeClass} ${isHovered ? "scale-[1.4]" : ""} ${isDetached ? "border-dashed" : ""} ${isReportMode ? (isProximityHighlighted ? "scale-110" : "") : isDetached ? "opacity-75" : ""} ${showMarkerLabel ? "text-white" : ""}`, style: {
-                        backgroundColor: getMarkerColor(markerItem.report, markerAppearance.colors),
-                        pointerEvents: isReportMode ? "none" : "auto",
-                        width: shapeStyle.width,
-                        height: shapeStyle.height,
-                        minWidth: shapeStyle.width,
-                        minHeight: shapeStyle.height,
-                        paddingLeft: shapeStyle.paddingX,
-                        paddingRight: shapeStyle.paddingX,
-                        clipPath: shapeStyle.clipPath,
-                        fontSize: markerFontSizePx === undefined ? undefined : `${markerFontSizePx}px`,
-                        fontFamily: showMarkerLabel ? typography.fontFamily : undefined,
-                    }, children: showMarkerLabel ? (markerBadgeLabel) : isModalDetached ? (_jsx("span", { "aria-hidden": true, className: "block h-[7px] w-[9px] border border-white/90 bg-white/15" })) : null }, markerItem.id)] }) }));
+        }, children: _jsxs("div", { className: `relative transition-opacity duration-150 ${isReportMode ? (isProximityHighlighted ? "pointer-events-none opacity-100" : "pointer-events-none opacity-50") : "pointer-events-auto"}`, children: [isDetached ? (_jsx("div", { "aria-hidden": true, className: `pointer-events-none absolute -inset-[6px] border border-dashed ${shapeStyle.ringClass} ${ringColorClass}` })) : null, _jsxs("div", { className: `relative transition-transform duration-150 ${scaleClass}`, children: [_jsxs("button", { ref: hoverRef, type: "button", "data-fivepixels-interactive": "", "data-marker-report-id": markerItem.report.id, "aria-label": isDetached ? `${resolvedDetachedAriaLabel} · ${markerLabel}` : markerLabel, "aria-hidden": isReportMode || undefined, tabIndex: isReportMode ? -1 : undefined, onClick: isReportMode
+                                ? undefined
+                                : () => {
+                                    void onActivate(markerItem.report);
+                                }, onPointerMove: isReportMode
+                                ? undefined
+                                : (event) => {
+                                    onPointerMove(event.clientX, event.clientY);
+                                }, className: `${MARKER_BUTTON_BASE_CLASS} relative border-0 bg-transparent p-0 shadow-none ${isReportMode ? "" : isDetached ? "opacity-75" : ""} ${showMarkerLabel ? "text-white" : ""}`, style: {
+                                pointerEvents: isReportMode ? "none" : "auto",
+                                width: shapeStyle.width,
+                                height: shapeStyle.height,
+                                minWidth: shapeStyle.width,
+                                minHeight: shapeStyle.height,
+                                fontSize: badgeDisplay.fontSizePx === undefined ? undefined : `${badgeDisplay.fontSizePx}px`,
+                                fontWeight: badgeDisplay.fontWeight,
+                                fontFamily: showMarkerLabel ? typography.fontFamily : undefined,
+                            }, children: [_jsx("span", { className: "pointer-events-none absolute inset-0 flex items-center justify-center", children: _jsx(MarkerShapeGlyph, { shape: glyphShape, fill: markerColor, width: shapeStyle.width, height: shapeStyle.height, strokeWidthPx: shapeStyle.strokeWidthPx, dashed: isDetached, forceCssBox: shapeStyle.forceCssBox, cssBoxClassName: shapeStyle.shapeClass }) }), _jsx("span", { className: "relative z-[1] flex items-center justify-center", children: showMarkerLabel ? (badgeDisplay.content) : isModalDetached ? (_jsx("span", { "aria-hidden": true, className: "block h-[7px] w-[9px] border border-white/90 bg-white/15" })) : null })] }, markerItem.id), showReplyIndicator ? (_jsx(MarkerReplyBadge, { size: replyBadgeSize, accentColor: markerColor })) : null] })] }) }));
 }
 export function ReportMarkersLayer() {
     const { mode, markers, activeReplyReport, activeReplyReportId, tooltipReport, tooltipAnchor, editingReportId, hoverPointer, setHoverPointer, messages, markerAppearance, typography, activateFeedbackMarker, clearHoverLeaveTimeout, scheduleHoverLeave, setHoveredMarkerId, } = useReport();

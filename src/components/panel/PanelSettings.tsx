@@ -3,12 +3,13 @@ import type { ReportAppearance, QuestionThreadDisplay } from "@/types/report.js"
 import type { ReportLocale } from "@/i18n/types.js";
 import { APPEARANCE_OPTION_VALUES } from "@/constants/appearance.js";
 import { DEFAULT_FEEDBACK_MODE_DOT_COLORS, FONT_FAMILY_SUGGESTIONS } from "@/constants/markerAppearance.js";
-import type { AppearanceScale } from "@/constants/markerAppearance.js";
+import type { AppearanceScale, MarkerShape } from "@/constants/markerAppearance.js";
 import { useReportPreferences, useReportSession } from "@/providers/reportContext.js";
 import { formatPresentationViewerLabel } from "@/utils/report/reportTeam.js";
 import { ChevronLeftIcon, ChevronRightIcon } from "@/components/icons/Icons.js";
 import { AppearanceThemePicker } from "./AppearanceThemePicker.js";
 import { HexColorField } from "./HexColorField.js";
+import { MarkerShapePicker } from "./MarkerShapePicker.js";
 import { PanelMarkerDisplayControls } from "./PanelMarkerDisplayControls.js";
 import { PanelOptionSwitch } from "./PanelOptionSwitch.js";
 import { PanelTabSelector } from "./PanelTabSelector.js";
@@ -139,6 +140,7 @@ export function PanelSettings({
         presentationViewers,
         markerAppearance,
         setMarkerSize,
+        setMarkerShape,
         setMarkerColor,
         setFeedbackModeDotColors,
         setFeedbackModeDotColor,
@@ -159,6 +161,19 @@ export function PanelSettings({
         md: messages.settings.scaleMd,
         lg: messages.settings.scaleLg,
         xl: messages.settings.scaleXl,
+    };
+    const shapeLabels: Record<MarkerShape, string> = {
+        cookie4: messages.settings.markerShapeCookie4,
+        sunny: messages.settings.markerShapeSunny,
+        cookie6: messages.settings.markerShapeCookie6,
+        clover4: messages.settings.markerShapeClover4,
+        flower: messages.settings.markerShapeFlower,
+        ghostish: messages.settings.markerShapeGhostish,
+        bun: messages.settings.markerShapeBun,
+        gem: messages.settings.markerShapeGem,
+        pill: messages.settings.markerShapePill,
+        pentagon: messages.settings.markerShapePentagon,
+        puffy: messages.settings.markerShapePuffy,
     };
     const appearanceOptions = APPEARANCE_OPTION_VALUES.map((value) => ({
         value,
@@ -296,6 +311,15 @@ export function PanelSettings({
                                         markerSizeLabel={messages.settings.markerSize}
                                         markerSizeAriaLabel={messages.settings.markerSizeAriaLabel}
                                     />
+                                    <div>
+                                        <p className="mb-[6px] text-[11px] font-medium text-[var(--adaptive-black600)]">{messages.settings.markerShape}</p>
+                                        <MarkerShapePicker
+                                            value={markerAppearance.shape}
+                                            onChange={setMarkerShape}
+                                            labels={shapeLabels}
+                                            ariaLabel={messages.settings.markerShapeAriaLabel}
+                                        />
+                                    </div>
                                     <HexColorField
                                         label={messages.settings.markerColorOpen}
                                         value={markerAppearance.colors.open}

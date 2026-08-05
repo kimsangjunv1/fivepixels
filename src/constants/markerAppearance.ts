@@ -16,9 +16,21 @@ export type MarkerFontSize = "none" | MarkerLabelFontSize;
 
 export const MARKER_FONT_SIZE_VALUES = ["none", "sm", "md", "lg", "xl"] as const satisfies readonly MarkerFontSize[];
 
-export type MarkerShape = "circle" | "square" | "pill" | "pin";
+export type MarkerShape = "cookie4" | "sunny" | "cookie6" | "clover4" | "flower" | "ghostish" | "bun" | "gem" | "pill" | "pentagon" | "puffy";
 
-export const MARKER_SHAPE_VALUES = ["circle", "square", "pill", "pin"] as const satisfies readonly MarkerShape[];
+export const MARKER_SHAPE_VALUES = [
+    "cookie4",
+    "sunny",
+    "cookie6",
+    "clover4",
+    "flower",
+    "ghostish",
+    "bun",
+    "gem",
+    "pill",
+    "pentagon",
+    "puffy",
+] as const satisfies readonly MarkerShape[];
 
 export type MarkerColorPreferences = {
     open: string;
@@ -66,7 +78,7 @@ export const DEFAULT_FEEDBACK_MODE_DOT_COLORS: FeedbackModeDotColors = {
 
 export const DEFAULT_MARKER_APPEARANCE: MarkerAppearancePreferences = {
     size: "md",
-    shape: "circle",
+    shape: "cookie4",
     colors: DEFAULT_MARKER_COLORS,
     feedbackModeDotColors: DEFAULT_FEEDBACK_MODE_DOT_COLORS,
 };
@@ -101,7 +113,7 @@ export function isAppearanceScale(value: unknown): value is AppearanceScale {
 }
 
 export function isMarkerShape(value: unknown): value is MarkerShape {
-    return value === "circle" || value === "square" || value === "pill" || value === "pin";
+    return (MARKER_SHAPE_VALUES as readonly string[]).includes(value as string);
 }
 
 export function getMarkerScaleFactor(size: AppearanceScale) {

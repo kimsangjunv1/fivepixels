@@ -1,6 +1,6 @@
 import { useMemo, useState, type DragEvent } from "react";
 import { APPEARANCE_OPTION_VALUES } from "@/constants/appearance.js";
-import { type AppearanceScale } from "@/constants/markerAppearance.js";
+import { type AppearanceScale, type MarkerShape } from "@/constants/markerAppearance.js";
 import { PANEL_ROLE_VALUES, type PanelRole } from "@/constants/panelRole.js";
 import type { UserSelectablePanelTab } from "@/constants/panelTabRegistry.js";
 import type { ReportLocale } from "@/i18n/types.js";
@@ -9,6 +9,7 @@ import { getDefaultVisibleTabsForRole } from "@/utils/panel/panelTabPreference.j
 import { isPersonalKeyFile, readPersonalKeyFile } from "@/utils/feedback/feedbackDataTransfer.js";
 import { hasTeamRequestHandler, isTeamWriteEnabled } from "@/utils/report/teamManagement.js";
 import { AppearanceThemePicker } from "./AppearanceThemePicker.js";
+import { MarkerShapePicker } from "./MarkerShapePicker.js";
 import { MarkerSizePreview } from "./MarkerSizePreview.js";
 import { PanelDropdownMenuItem } from "./PanelDropdownMenu.js";
 import {
@@ -35,6 +36,7 @@ export function PanelOnboarding() {
         setPanelAppearance,
         markerAppearance,
         setMarkerSize,
+        setMarkerShape,
         typography,
         panelRole,
         setPanelRole,
@@ -75,6 +77,19 @@ export function PanelOnboarding() {
         md: messages.settings.scaleMd,
         lg: messages.settings.scaleLg,
         xl: messages.settings.scaleXl,
+    };
+    const shapeLabels: Record<MarkerShape, string> = {
+        cookie4: messages.settings.markerShapeCookie4,
+        sunny: messages.settings.markerShapeSunny,
+        cookie6: messages.settings.markerShapeCookie6,
+        clover4: messages.settings.markerShapeClover4,
+        flower: messages.settings.markerShapeFlower,
+        ghostish: messages.settings.markerShapeGhostish,
+        bun: messages.settings.markerShapeBun,
+        gem: messages.settings.markerShapeGem,
+        pill: messages.settings.markerShapePill,
+        pentagon: messages.settings.markerShapePentagon,
+        puffy: messages.settings.markerShapePuffy,
     };
 
     const handleSelectRole = (role: PanelRole) => {
@@ -392,6 +407,7 @@ export function PanelOnboarding() {
                         color={markerAppearance.colors.open}
                         fontFamily={typography.fontFamily}
                         ariaLabel={onboarding.displayPreviewAriaLabel}
+                        showReplyBadge
                     />
                     <PanelMarkerDisplayControls
                         markerSize={markerAppearance.size}
@@ -400,6 +416,15 @@ export function PanelOnboarding() {
                         markerSizeLabel={messages.settings.markerSize}
                         markerSizeAriaLabel={messages.settings.markerSizeAriaLabel}
                     />
+                    <div>
+                        <p className="mb-[6px] text-[11px] font-medium text-[var(--adaptive-black600)]">{messages.settings.markerShape}</p>
+                        <MarkerShapePicker
+                            value={markerAppearance.shape}
+                            onChange={setMarkerShape}
+                            labels={shapeLabels}
+                            ariaLabel={messages.settings.markerShapeAriaLabel}
+                        />
+                    </div>
                     <div className="flex items-center justify-between">
                         <button
                             type="button"

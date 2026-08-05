@@ -6,7 +6,9 @@ import {
     type MarkerFontSize,
     type MarkerShape,
 } from "@/constants/markerAppearance.js";
-import { resolveMarkerShapeStyle } from "@/utils/marker/markerShape.js";
+import { getMarkerReplyBadgeSize, resolveMarkerShapeStyle } from "@/utils/marker/markerShape.js";
+import { MarkerReplyBadge } from "@/components/point/MarkerReplyBadge.js";
+import { MarkerShapeGlyph } from "@/components/point/MarkerShapeGlyph.js";
 
 type MarkerSizePreviewProps = {
     size: AppearanceScale;
@@ -16,13 +18,24 @@ type MarkerSizePreviewProps = {
     fontFamily: string;
     label?: string;
     ariaLabel?: string;
+    showReplyBadge?: boolean;
 };
 
-export function MarkerSizePreview({ size, fontSize, shape, color, fontFamily, label = "1", ariaLabel }: MarkerSizePreviewProps) {
+export function MarkerSizePreview({
+    size,
+    fontSize,
+    shape,
+    color,
+    fontFamily,
+    label = "1",
+    ariaLabel,
+    showReplyBadge = false,
+}: MarkerSizePreviewProps) {
     const dotSize = DOT_SIZE * getMarkerScaleFactor(size);
     const badgeDisplay = fontSize === "none" ? { content: null, fontSizePx: undefined, fontWeight: undefined } : resolveMarkerBadgeDisplay(size, label);
     const showMarkerLabel = Boolean(badgeDisplay.content);
-    const shapeStyle = resolveMarkerShapeStyle(shape, dotSize, showMarkerLabel, false);
+    const shapeStyle = resolveMarkerShapeStyle(shape, dotSize);
+    const replyBadgeSize = getMarkerReplyBadgeSize(dotSize);
 
     return (
         <div
@@ -43,23 +56,36 @@ export function MarkerSizePreview({ size, fontSize, shape, color, fontFamily, la
                             aria-hidden
                         >
                             <div
-                                className={`flex items-center justify-center border-[4px] border-white shadow-[0_4px_10px_#00000090] ${shapeStyle.shapeClass} ${showMarkerLabel ? "text-white" : ""}`}
-                                style={{
-                                    backgroundColor: color,
-                                    width: shapeStyle.width,
-                                    height: shapeStyle.height,
-                                    minWidth: shapeStyle.width,
-                                    minHeight: shapeStyle.height,
-                                    paddingLeft: shapeStyle.paddingX,
-                                    paddingRight: shapeStyle.paddingX,
-                                    clipPath: shapeStyle.clipPath,
-                                    fontSize: badgeDisplay.fontSizePx === undefined ? undefined : `${badgeDisplay.fontSizePx}px`,
-                                    fontWeight: badgeDisplay.fontWeight,
-                                    fontFamily: showMarkerLabel ? fontFamily : undefined,
-                                    lineHeight: 1,
-                                }}
+                                className="relative flex items-center justify-center"
+                                style={{ width: shapeStyle.width, height: shapeStyle.height }}
                             >
-                                {showMarkerLabel ? badgeDisplay.content : null}
+                                <MarkerShapeGlyph
+                                    shape={shape}
+                                    fill={color}
+                                    width={shapeStyle.width}
+                                    height={shapeStyle.height}
+                                    strokeWidthPx={shapeStyle.strokeWidthPx}
+                                    style={{ filter: "drop-shadow(0 4px 10px #00000090)" }}
+                                />
+                                {showMarkerLabel ? (
+                                    <span
+                                        className="absolute inset-0 z-[1] flex items-center justify-center text-white"
+                                        style={{
+                                            fontSize: badgeDisplay.fontSizePx === undefined ? undefined : `${badgeDisplay.fontSizePx}px`,
+                                            fontWeight: badgeDisplay.fontWeight,
+                                            fontFamily,
+                                            lineHeight: 1,
+                                        }}
+                                    >
+                                        {badgeDisplay.content}
+                                    </span>
+                                ) : null}
+                                {showReplyBadge ? (
+                                    <MarkerReplyBadge
+                                        size={replyBadgeSize}
+                                        accentColor={color}
+                                    />
+                                ) : null}
                             </div>
                         </div>
                     </div>

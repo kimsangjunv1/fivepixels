@@ -7,7 +7,18 @@ export const MARKER_SCALE_FACTOR = {
     xl: 1.3,
 };
 export const MARKER_FONT_SIZE_VALUES = ["none", "sm", "md", "lg", "xl"];
-export const MARKER_SHAPE_VALUES = ["circle", "square", "pill", "pin"];
+export const MARKER_SHAPE_VALUES = [
+    "cookie4",
+    "sunny",
+    "cookie6",
+    "clover4",
+    "flower",
+    "ghostish",
+    "bun",
+    "gem",
+    "pill",
+    "pentagon",
+];
 export const MARKER_APPEARANCE_STORAGE_KEY = "fivepixels:marker-appearance";
 export const TYPOGRAPHY_STORAGE_KEY = "fivepixels:typography";
 export const MARKER_LABEL_FONT_SIZE_PX = {
@@ -27,7 +38,7 @@ export const DEFAULT_FEEDBACK_MODE_DOT_COLORS = {
 };
 export const DEFAULT_MARKER_APPEARANCE = {
     size: "md",
-    shape: "circle",
+    shape: "cookie4",
     colors: DEFAULT_MARKER_COLORS,
     feedbackModeDotColors: DEFAULT_FEEDBACK_MODE_DOT_COLORS,
 };
@@ -55,10 +66,37 @@ export function isAppearanceScale(value) {
     return value === "xs" || value === "sm" || value === "md" || value === "lg" || value === "xl";
 }
 export function isMarkerShape(value) {
-    return value === "circle" || value === "square" || value === "pill" || value === "pin";
+    return MARKER_SHAPE_VALUES.includes(value);
 }
 export function getMarkerScaleFactor(size) {
     return MARKER_SCALE_FACTOR[size];
+}
+export const MARKER_COMPACT_LABEL = "·";
+export const MARKER_BADGE_FONT_SIZE_PX = 10;
+export const MARKER_BADGE_FONT_WEIGHT = 900;
+export function isCompactMarkerLabelScale(size) {
+    return size === "xs" || size === "sm";
+}
+export function resolveMarkerBadgeDisplay(size, label) {
+    if (!label) {
+        return {
+            content: null,
+            fontSizePx: undefined,
+            fontWeight: undefined,
+        };
+    }
+    if (isCompactMarkerLabelScale(size)) {
+        return {
+            content: MARKER_COMPACT_LABEL,
+            fontSizePx: undefined,
+            fontWeight: undefined,
+        };
+    }
+    return {
+        content: label,
+        fontSizePx: MARKER_BADGE_FONT_SIZE_PX,
+        fontWeight: MARKER_BADGE_FONT_WEIGHT,
+    };
 }
 export function getMarkerLabelFontSizePx(size) {
     return MARKER_LABEL_FONT_SIZE_PX[size];

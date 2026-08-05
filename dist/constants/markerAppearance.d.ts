@@ -4,8 +4,8 @@ export declare const MARKER_SCALE_FACTOR: Record<AppearanceScale, number>;
 export type MarkerLabelFontSize = "sm" | "md" | "lg" | "xl";
 export type MarkerFontSize = "none" | MarkerLabelFontSize;
 export declare const MARKER_FONT_SIZE_VALUES: readonly ["none", "sm", "md", "lg", "xl"];
-export type MarkerShape = "circle" | "square" | "pill" | "pin";
-export declare const MARKER_SHAPE_VALUES: readonly ["circle", "square", "pill", "pin"];
+export type MarkerShape = "cookie4" | "sunny" | "cookie6" | "clover4" | "flower" | "ghostish" | "bun" | "gem" | "pill" | "pentagon";
+export declare const MARKER_SHAPE_VALUES: readonly ["cookie4", "sunny", "cookie6", "clover4", "flower", "ghostish", "bun", "gem", "pill", "pentagon"];
 export type MarkerColorPreferences = {
     open: string;
     resolved: string;
@@ -39,5 +39,14 @@ export declare function isMarkerFontSize(value: unknown): value is MarkerFontSiz
 export declare function isAppearanceScale(value: unknown): value is AppearanceScale;
 export declare function isMarkerShape(value: unknown): value is MarkerShape;
 export declare function getMarkerScaleFactor(size: AppearanceScale): number;
+export declare const MARKER_COMPACT_LABEL = "\u00B7";
+export declare const MARKER_BADGE_FONT_SIZE_PX = 10;
+export declare const MARKER_BADGE_FONT_WEIGHT = 900;
+export declare function isCompactMarkerLabelScale(size: AppearanceScale): size is "xs" | "sm";
+export declare function resolveMarkerBadgeDisplay(size: AppearanceScale, label: string | null): {
+    content: string | null;
+    fontSizePx: number | undefined;
+    fontWeight: number | undefined;
+};
 export declare function getMarkerLabelFontSizePx(size: MarkerLabelFontSize): number;
 //# sourceMappingURL=markerAppearance.d.ts.map

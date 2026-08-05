@@ -470,10 +470,17 @@ export type ReportMessages = {
         scaleMd: string;
         scaleLg: string;
         scaleXl: string;
-        markerShapeCircle: string;
-        markerShapeSquare: string;
+        markerShapeCookie4: string;
+        markerShapeSunny: string;
+        markerShapeCookie6: string;
+        markerShapeClover4: string;
+        markerShapeFlower: string;
+        markerShapeGhostish: string;
+        markerShapeBun: string;
+        markerShapeGem: string;
         markerShapePill: string;
-        markerShapePin: string;
+        markerShapePentagon: string;
+        markerShapePuffy: string;
     };
     team: {
         localStorageHint: string;

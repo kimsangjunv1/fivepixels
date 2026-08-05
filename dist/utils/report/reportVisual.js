@@ -18,14 +18,14 @@ export function getMarkerColor(report, colors = DEFAULT_MARKER_COLORS) {
     }
     return colors.open;
 }
-export function getMarkerDisplayLabel(report, replyCount = getReplyCount(report)) {
+export function getMarkerDisplayLabel(report) {
     if (getReportCases(report).length > 1) {
         return getIssueProgressLabel(report);
     }
-    if (replyCount > 0) {
-        return `+${replyCount}`;
-    }
     return null;
+}
+export function hasMarkerReplyIndicator(report, replyCount = getReplyCount(report)) {
+    return replyCount > 0;
 }
 export function getStatusTone(status) {
     if (status === "resolved") {
