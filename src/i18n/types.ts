@@ -450,8 +450,13 @@ export type ReportMessages = {
         categoryTeamSummary: string;
         resetTabsToRoleDefault: string;
         backAriaLabel: string;
+        appearanceBackAriaLabel: string;
+        appearanceThemeLanguage: string;
         sectionTheme: string;
+        sectionLanguage: string;
         sectionMarkerAppearance: string;
+        sectionMarkerForm: string;
+        sectionMarkerColors: string;
         sectionTypography: string;
         markerSize: string;
         markerSizeAriaLabel: string;

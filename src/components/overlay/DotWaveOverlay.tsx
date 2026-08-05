@@ -54,7 +54,7 @@ function easeOutCubic(value: number) {
 
 export function DotWaveOverlay({
     active = true,
-    dotSize = 2,
+    dotSize = 3,
     gap = 20,
     minOpacity = 0.2,
     maxOpacity = 0.8,

@@ -12,7 +12,7 @@ function clamp(value, min, max) {
 function easeOutCubic(value) {
     return 1 - Math.pow(1 - value, 3);
 }
-export function DotWaveOverlay({ active = true, dotSize = 2, gap = 20, minOpacity = 0.2, maxOpacity = 0.8, waveDuration = 1400, fadeOutDuration = 2200, deactivateDelay = 0, color = "#94a3b8", origin = DEFAULT_ORIGIN, className = "", style, }) {
+export function DotWaveOverlay({ active = true, dotSize = 3, gap = 20, minOpacity = 0.2, maxOpacity = 0.8, waveDuration = 1400, fadeOutDuration = 2200, deactivateDelay = 0, color = "#94a3b8", origin = DEFAULT_ORIGIN, className = "", style, }) {
     const canvasRef = useRef(null);
     const controllerRef = useRef(null);
     const activeRef = useRef(active);
