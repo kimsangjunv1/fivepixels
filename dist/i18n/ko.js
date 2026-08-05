@@ -427,7 +427,7 @@ export const ko = {
     },
     appearance: {
         system: "시스템",
-        light: "라이트",
+        light: "밝은",
         dark: "다크",
     },
     questionThreadOption: {

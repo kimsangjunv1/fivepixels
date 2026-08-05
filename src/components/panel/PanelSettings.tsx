@@ -318,6 +318,7 @@ export function PanelSettings({
                                             value={panelAppearance}
                                             onChange={onPanelAppearanceChange}
                                             ariaLabel={messages.moreMenu.panelThemeAriaLabel}
+                                            previewKind="panel"
                                         />
                                     </div>
                                     <div>
@@ -327,6 +328,7 @@ export function PanelSettings({
                                             value={tooltipAppearance}
                                             onChange={onTooltipAppearanceChange}
                                             ariaLabel={messages.moreMenu.tooltipThemeAriaLabel}
+                                            previewKind="tooltip"
                                         />
                                     </div>
                                 </div>

@@ -1,7 +1,6 @@
 import { useCallback, type KeyboardEvent } from "react";
 import type { ReportAppearance } from "@/types/report.js";
-import { CheckIcon } from "@/components/icons/Icons.js";
-import { ThemePreviewSkeleton } from "./ThemePreviewSkeleton.js";
+import { ThemePreviewSkeleton, type ThemePreviewKind } from "./ThemePreviewSkeleton.js";
 
 type AppearanceThemeOption = {
     value: ReportAppearance;
@@ -14,9 +13,17 @@ type AppearanceThemePickerProps = {
     onChange: (value: ReportAppearance) => void;
     disabled?: boolean;
     ariaLabel?: string;
+    previewKind?: ThemePreviewKind;
 };
 
-export function AppearanceThemePicker({ options, value, onChange, disabled = false, ariaLabel }: AppearanceThemePickerProps) {
+export function AppearanceThemePicker({
+    options,
+    value,
+    onChange,
+    disabled = false,
+    ariaLabel,
+    previewKind = "panel",
+}: AppearanceThemePickerProps) {
     const handleKeyDown = useCallback(
         (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
             if (disabled) {
@@ -45,7 +52,7 @@ export function AppearanceThemePicker({ options, value, onChange, disabled = fal
         <div
             role="radiogroup"
             aria-label={ariaLabel}
-            className="grid grid-cols-3 gap-[6px]"
+            className="grid grid-cols-3 gap-[8px]"
         >
             {options.map((option, index) => {
                 const active = option.value === value;
@@ -59,23 +66,25 @@ export function AppearanceThemePicker({ options, value, onChange, disabled = fal
                         disabled={disabled}
                         onClick={() => onChange(option.value)}
                         onKeyDown={(event) => handleKeyDown(event, index)}
-                        className={`group relative flex flex-col items-center gap-[5px] rounded-[8px] p-[4px] transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
-                            active
-                                ? "ring-2 ring-[var(--adaptive-blue500)] ring-offset-1 ring-offset-[var(--adaptive-black50)]"
-                                : "ring-1 ring-[var(--adaptive-black200)] hover:ring-[var(--adaptive-black300)]"
-                        }`}
+                        className="group flex flex-col items-center gap-[6px] disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[5px] bg-[var(--adaptive-black100)]">
-                            <ThemePreviewSkeleton variant={option.value} />
-                            {active ? (
-                                <span className="absolute right-[3px] bottom-[3px] flex h-[14px] w-[14px] items-center justify-center rounded-full bg-[var(--adaptive-blue500)] text-white shadow-[0_1px_2px_rgba(15,23,42,0.2)]">
-                                    <CheckIcon className="h-[9px] w-[9px]" />
-                                </span>
-                            ) : null}
+                        <div
+                            className={`aspect-[5/4] w-full overflow-hidden rounded-[12px] transition-[box-shadow] ${
+                                active
+                                    ? "shadow-[0_0_0_1.5px_#111113]"
+                                    : "shadow-[0_0_0_1px_transparent] group-hover:shadow-[0_0_0_1px_var(--adaptive-black300)]"
+                            }`}
+                        >
+                            <ThemePreviewSkeleton
+                                variant={option.value}
+                                kind={previewKind}
+                            />
                         </div>
                         <span
-                            className={`w-full truncate text-center text-[10px] leading-[1.2] ${
-                                active ? "font-semibold text-[var(--adaptive-blue500)]" : "font-medium text-[var(--adaptive-black600)] group-hover:text-[var(--adaptive-black800)]"
+                            className={`w-full truncate text-center text-[11px] leading-[1.2] ${
+                                active
+                                    ? "font-semibold text-[var(--adaptive-black900)]"
+                                    : "font-medium text-[var(--adaptive-black600)] group-hover:text-[var(--adaptive-black800)]"
                             }`}
                         >
                             {option.label}
