@@ -50,6 +50,7 @@ export function CaseAssigneeInfo({ caseItem, authors }: CaseAssigneeInfoProps) {
                     type="button"
                     data-fivepixels-interactive=""
                     aria-label={messages.marker.assigneeInfoAriaLabel}
+                    onPointerDown={(event) => event.stopPropagation()}
                     className="flex h-[18px] w-[18px] shrink-0 items-center justify-center text-[var(--adaptive-black500)] hover:text-[var(--adaptive-black900)]"
                 >
                     <InfoIcon className="h-[13px] w-[13px]" />

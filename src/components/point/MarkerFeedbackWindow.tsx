@@ -474,7 +474,10 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
 
     const rightSection = (
         <div className="flex min-w-0 flex-1 flex-col bg-[var(--adaptive-black50)]">
-            <div className="shrink-0 border-b border-[var(--adaptive-border-subtle)] px-[16px] py-[8px]">
+            <header
+                onPointerDown={handleDragHandlePointerDown}
+                className="shrink-0 cursor-move touch-none select-none border-b border-[var(--adaptive-border-subtle)] px-[16px] py-[8px]"
+            >
                 {focusedCase ? (
                     <Fragment>
                         <p
@@ -517,7 +520,7 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
                 ) : (
                     <p className="text-[13px] text-[var(--adaptive-black500)]">{messages.cases.selectToView}</p>
                 )}
-            </div>
+            </header>
 
             <div className="flex min-h-0 flex-1 flex-col">
                 <div className="min-h-0 flex-1 overflow-hidden">
