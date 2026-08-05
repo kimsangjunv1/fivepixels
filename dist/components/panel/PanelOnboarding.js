@@ -57,6 +57,7 @@ export function PanelOnboarding() {
         gem: messages.settings.markerShapeGem,
         pill: messages.settings.markerShapePill,
         pentagon: messages.settings.markerShapePentagon,
+        puffy: messages.settings.markerShapePuffy,
     };
     const handleSelectRole = (role) => {
         setPanelRole(role);

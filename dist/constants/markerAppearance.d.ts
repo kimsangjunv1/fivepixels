@@ -4,8 +4,8 @@ export declare const MARKER_SCALE_FACTOR: Record<AppearanceScale, number>;
 export type MarkerLabelFontSize = "sm" | "md" | "lg" | "xl";
 export type MarkerFontSize = "none" | MarkerLabelFontSize;
 export declare const MARKER_FONT_SIZE_VALUES: readonly ["none", "sm", "md", "lg", "xl"];
-export type MarkerShape = "cookie4" | "sunny" | "cookie6" | "clover4" | "flower" | "ghostish" | "bun" | "gem" | "pill" | "pentagon";
-export declare const MARKER_SHAPE_VALUES: readonly ["cookie4", "sunny", "cookie6", "clover4", "flower", "ghostish", "bun", "gem", "pill", "pentagon"];
+export type MarkerShape = "cookie4" | "sunny" | "cookie6" | "clover4" | "flower" | "ghostish" | "bun" | "gem" | "pill" | "pentagon" | "puffy";
+export declare const MARKER_SHAPE_VALUES: readonly ["cookie4", "sunny", "cookie6", "clover4", "flower", "ghostish", "bun", "gem", "pill", "pentagon", "puffy"];
 export type MarkerColorPreferences = {
     open: string;
     resolved: string;

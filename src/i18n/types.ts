@@ -117,6 +117,10 @@ export type ReportMessages = {
         probeEditModeReset: string;
         probeEditModeUndo: string;
         probeEditModeRedo: string;
+        hiddenMarkerBannerMessage: string;
+        modalMarkerBannerMessage: string;
+        detachedMarkerHide: string;
+        detachedMarkerShow: string;
         persistenceStatusAriaLabel: string;
         persistenceConflictTitle: string;
         persistenceConflictDescription: string;

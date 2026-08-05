@@ -66,6 +66,7 @@ export function PanelSettings({ transferDisabled = false, panelAppearance, onPan
         gem: messages.settings.markerShapeGem,
         pill: messages.settings.markerShapePill,
         pentagon: messages.settings.markerShapePentagon,
+        puffy: messages.settings.markerShapePuffy,
     };
     const appearanceOptions = APPEARANCE_OPTION_VALUES.map((value) => ({
         value,

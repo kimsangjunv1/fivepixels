@@ -102,6 +102,10 @@ export type ReportMessages = {
         probeEditModeReset: string;
         probeEditModeUndo: string;
         probeEditModeRedo: string;
+        hiddenMarkerBannerMessage: string;
+        modalMarkerBannerMessage: string;
+        detachedMarkerHide: string;
+        detachedMarkerShow: string;
         persistenceStatusAriaLabel: string;
         persistenceConflictTitle: string;
         persistenceConflictDescription: string;
@@ -465,6 +469,7 @@ export type ReportMessages = {
         markerShapeGem: string;
         markerShapePill: string;
         markerShapePentagon: string;
+        markerShapePuffy: string;
     };
     team: {
         localStorageHint: string;

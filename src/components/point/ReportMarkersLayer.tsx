@@ -239,6 +239,8 @@ export function ReportMarkersLayer() {
         messages,
         markerAppearance,
         typography,
+        showHiddenDetachedMarkers,
+        showModalDetachedMarkers,
         activateFeedbackMarker,
         clearHoverLeaveTimeout,
         scheduleHoverLeave,
@@ -272,8 +274,26 @@ export function ReportMarkersLayer() {
 
     const isViewMode = mode === "view";
     const isReportMode = mode === "report";
-    const visibleMarkers = useMemo(() => markers.filter((marker) => marker.clampedEdge === null), [markers]);
-    const overflowHints = useMemo(() => resolveMarkerOverflowHints(markers), [markers]);
+    const visibleMarkers = useMemo(
+        () =>
+            markers.filter((marker) => {
+                if (marker.clampedEdge !== null) {
+                    return false;
+                }
+
+                if (marker.detachedKind === "hidden" && !showHiddenDetachedMarkers) {
+                    return false;
+                }
+
+                if (marker.detachedKind === "modal" && !showModalDetachedMarkers) {
+                    return false;
+                }
+
+                return true;
+            }),
+        [markers, showHiddenDetachedMarkers, showModalDetachedMarkers],
+    );
+    const overflowHints = useMemo(() => resolveMarkerOverflowHints(visibleMarkers), [visibleMarkers]);
     const proximityHighlightedMarkerId = useMemo(() => {
         if (!isReportMode || !hoverPointer) {
             return null;

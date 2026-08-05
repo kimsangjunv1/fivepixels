@@ -1,6 +1,6 @@
 type MarkerReplyBadgeProps = {
     size: number;
-    /** Marker fill color — used for a contrasting ring. */
+    /** Marker fill color — badge background matches the marker. */
     accentColor: string;
 };
 /** Satellite badge on the top-right of a marker when the thread has replies. */

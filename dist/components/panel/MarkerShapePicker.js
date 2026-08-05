@@ -4,7 +4,7 @@ import { CheckIcon } from "../../components/icons/Icons.js";
 import { MarkerShapeGlyph } from "../../components/point/MarkerShapeGlyph.js";
 import { resolveMarkerShapeStyle } from "../../utils/marker/markerShape.js";
 function ShapePreview({ shape }) {
-    const preview = resolveMarkerShapeStyle(shape, 12, false, false);
+    const preview = resolveMarkerShapeStyle(shape, 12);
     const width = Math.min(preview.width, 16);
     const height = Math.min(preview.height, 16);
     return (_jsx(MarkerShapeGlyph, { shape: shape, fill: "var(--adaptive-blue500)", width: width, height: height, stroke: "transparent", strokeWidthPx: 0, style: { filter: "none" } }));

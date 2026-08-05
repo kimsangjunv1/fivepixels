@@ -18,6 +18,7 @@ export const MARKER_SHAPE_VALUES = [
     "gem",
     "pill",
     "pentagon",
+    "puffy",
 ];
 export const MARKER_APPEARANCE_STORAGE_KEY = "fivepixels:marker-appearance";
 export const TYPOGRAPHY_STORAGE_KEY = "fivepixels:typography";

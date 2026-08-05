@@ -4,21 +4,7 @@ import { getMarkerShapeDefinition } from "../../constants/markerShapeRegistry.js
  * Renders a marker silhouette from official Material 3 SVG path data
  * with a non-scaling stroke so the outline stays exactly `strokeWidthPx` (2px).
  */
-export function MarkerShapeGlyph({ shape, fill, width, height, stroke = "#ffffff", strokeWidthPx, dashed = false, forceCssBox = false, cssBoxClassName = "rounded-[5px]", className = "", style, }) {
-    if (forceCssBox) {
-        return (_jsx("span", { "aria-hidden": true, className: `block border-solid ${cssBoxClassName} ${className}`, style: {
-                width,
-                height,
-                minWidth: width,
-                minHeight: height,
-                backgroundColor: fill,
-                borderColor: stroke,
-                borderWidth: strokeWidthPx ?? 2,
-                borderStyle: dashed ? "dashed" : "solid",
-                boxShadow: "0 0 20px 10px #00000030",
-                ...style,
-            } }));
-    }
+export function MarkerShapeGlyph({ shape, fill, width, height, stroke = "#ffffff", strokeWidthPx, dashed = false, className = "", style, }) {
     const definition = getMarkerShapeDefinition(shape);
     const resolvedStrokeWidth = strokeWidthPx ?? definition.strokeWidthPx;
     return (_jsx("svg", { "aria-hidden": true, width: width, height: height, viewBox: "0 0 1 1", className: `pointer-events-none overflow-visible ${className}`, style: {

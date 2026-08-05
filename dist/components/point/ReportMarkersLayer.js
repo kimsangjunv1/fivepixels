@@ -65,7 +65,6 @@ function MarkerButton({ markerItem, isHovered, isReportMode, isProximityHighligh
     ].filter(Boolean);
     const markerLabel = markerLabelParts.join(" · ");
     const isDetached = markerItem.detached;
-    const isModalDetached = markerItem.detachedKind === "modal";
     const resolvedDetachedAriaLabel = getDetachedMarkerAriaLabel(markerItem.detachedKind, {
         detachedAriaLabel,
         detachedModalAriaLabel,
@@ -74,36 +73,35 @@ function MarkerButton({ markerItem, isHovered, isReportMode, isProximityHighligh
     const hasBadgeSource = typography.fontSize !== "none" && Boolean(markerBadgeLabel);
     const badgeDisplay = hasBadgeSource ? resolveMarkerBadgeDisplay(markerAppearance.size, markerBadgeLabel) : { content: null, fontSizePx: undefined, fontWeight: undefined };
     const showMarkerLabel = Boolean(badgeDisplay.content);
-    const shapeStyle = resolveMarkerShapeStyle(markerAppearance.shape, dotSize, showMarkerLabel, isModalDetached);
-    const ringColorClass = isModalDetached ? "border-[#a5b4fc]/90" : "border-white/80";
+    const glyphShape = markerItem.detachedKind === "modal" ? "ghostish" : markerItem.detachedKind === "hidden" ? "puffy" : markerAppearance.shape;
+    const shapeStyle = resolveMarkerShapeStyle(glyphShape, dotSize);
     const markerColor = getMarkerColor(markerItem.report, markerAppearance.colors);
     const replyBadgeSize = getMarkerReplyBadgeSize(dotSize);
     const scaleClass = isHovered ? "scale-[1.4]" : isReportMode && isProximityHighlighted ? "scale-110" : "";
-    const glyphShape = markerAppearance.shape;
     return (_jsx("div", { className: `${MARKER_ANCHOR_BASE_CLASS} ${shapeStyle.anchorClass}`, style: {
             left: markerItem.left,
             top: markerItem.top,
-        }, children: _jsxs("div", { className: `relative transition-opacity duration-150 ${isReportMode ? (isProximityHighlighted ? "pointer-events-none opacity-100" : "pointer-events-none opacity-50") : "pointer-events-auto"}`, children: [isDetached ? (_jsx("div", { "aria-hidden": true, className: `pointer-events-none absolute -inset-[6px] border border-dashed ${shapeStyle.ringClass} ${ringColorClass}` })) : null, _jsxs("div", { className: `relative transition-transform duration-150 ${scaleClass}`, children: [_jsxs("button", { ref: hoverRef, type: "button", "data-fivepixels-interactive": "", "data-marker-report-id": markerItem.report.id, "aria-label": isDetached ? `${resolvedDetachedAriaLabel} · ${markerLabel}` : markerLabel, "aria-hidden": isReportMode || undefined, tabIndex: isReportMode ? -1 : undefined, onClick: isReportMode
-                                ? undefined
-                                : () => {
-                                    void onActivate(markerItem.report);
-                                }, onPointerMove: isReportMode
-                                ? undefined
-                                : (event) => {
-                                    onPointerMove(event.clientX, event.clientY);
-                                }, className: `${MARKER_BUTTON_BASE_CLASS} relative border-0 bg-transparent p-0 shadow-none ${isReportMode ? "" : isDetached ? "opacity-75" : ""} ${showMarkerLabel ? "text-white" : ""}`, style: {
-                                pointerEvents: isReportMode ? "none" : "auto",
-                                width: shapeStyle.width,
-                                height: shapeStyle.height,
-                                minWidth: shapeStyle.width,
-                                minHeight: shapeStyle.height,
-                                fontSize: badgeDisplay.fontSizePx === undefined ? undefined : `${badgeDisplay.fontSizePx}px`,
-                                fontWeight: badgeDisplay.fontWeight,
-                                fontFamily: showMarkerLabel ? typography.fontFamily : undefined,
-                            }, children: [_jsx("span", { className: "pointer-events-none absolute inset-0 flex items-center justify-center", children: _jsx(MarkerShapeGlyph, { shape: glyphShape, fill: markerColor, width: shapeStyle.width, height: shapeStyle.height, strokeWidthPx: shapeStyle.strokeWidthPx, dashed: isDetached, forceCssBox: shapeStyle.forceCssBox, cssBoxClassName: shapeStyle.shapeClass }) }), _jsx("span", { className: "relative z-[1] flex items-center justify-center", children: showMarkerLabel ? (badgeDisplay.content) : isModalDetached ? (_jsx("span", { "aria-hidden": true, className: "block h-[7px] w-[9px] border border-white/90 bg-white/15" })) : null })] }, markerItem.id), showReplyIndicator ? (_jsx(MarkerReplyBadge, { size: replyBadgeSize, accentColor: markerColor })) : null] })] }) }));
+        }, children: _jsx("div", { className: `relative transition-opacity duration-150 ${isReportMode ? (isProximityHighlighted ? "pointer-events-none opacity-100" : "pointer-events-none opacity-50") : "pointer-events-auto"}`, children: _jsxs("div", { className: `relative transition-transform duration-150 ${scaleClass}`, children: [_jsxs("button", { ref: hoverRef, type: "button", "data-fivepixels-interactive": "", "data-marker-report-id": markerItem.report.id, "aria-label": isDetached ? `${resolvedDetachedAriaLabel} · ${markerLabel}` : markerLabel, "aria-hidden": isReportMode || undefined, tabIndex: isReportMode ? -1 : undefined, onClick: isReportMode
+                            ? undefined
+                            : () => {
+                                void onActivate(markerItem.report);
+                            }, onPointerMove: isReportMode
+                            ? undefined
+                            : (event) => {
+                                onPointerMove(event.clientX, event.clientY);
+                            }, className: `${MARKER_BUTTON_BASE_CLASS} relative border-0 bg-transparent p-0 shadow-none ${isReportMode ? "" : isDetached ? "opacity-75" : ""} ${showMarkerLabel ? "text-white" : ""}`, style: {
+                            pointerEvents: isReportMode ? "none" : "auto",
+                            width: shapeStyle.width,
+                            height: shapeStyle.height,
+                            minWidth: shapeStyle.width,
+                            minHeight: shapeStyle.height,
+                            fontSize: badgeDisplay.fontSizePx === undefined ? undefined : `${badgeDisplay.fontSizePx}px`,
+                            fontWeight: badgeDisplay.fontWeight,
+                            fontFamily: showMarkerLabel ? typography.fontFamily : undefined,
+                        }, children: [_jsx("span", { className: "pointer-events-none absolute inset-0 flex items-center justify-center", children: _jsx(MarkerShapeGlyph, { shape: glyphShape, fill: markerColor, width: shapeStyle.width, height: shapeStyle.height, strokeWidthPx: shapeStyle.strokeWidthPx }) }), _jsx("span", { className: "relative z-[1] flex items-center justify-center", children: showMarkerLabel ? badgeDisplay.content : null })] }, markerItem.id), showReplyIndicator ? (_jsx(MarkerReplyBadge, { size: replyBadgeSize, accentColor: markerColor })) : null] }) }) }));
 }
 export function ReportMarkersLayer() {
-    const { mode, markers, activeReplyReport, activeReplyReportId, tooltipReport, tooltipAnchor, editingReportId, hoverPointer, setHoverPointer, messages, markerAppearance, typography, activateFeedbackMarker, clearHoverLeaveTimeout, scheduleHoverLeave, setHoveredMarkerId, } = useReport();
+    const { mode, markers, activeReplyReport, activeReplyReportId, tooltipReport, tooltipAnchor, editingReportId, hoverPointer, setHoverPointer, messages, markerAppearance, typography, showHiddenDetachedMarkers, showModalDetachedMarkers, activateFeedbackMarker, clearHoverLeaveTimeout, scheduleHoverLeave, setHoveredMarkerId, } = useReport();
     const handleMarkerHoverStart = useCallback((reportId) => {
         clearHoverLeaveTimeout();
         setHoveredMarkerId(reportId);
@@ -120,8 +118,19 @@ export function ReportMarkersLayer() {
     const isExpandedTooltip = Boolean(activeReplyReport && tooltipReport && activeReplyReport.id === tooltipReport.id);
     const isViewMode = mode === "view";
     const isReportMode = mode === "report";
-    const visibleMarkers = useMemo(() => markers.filter((marker) => marker.clampedEdge === null), [markers]);
-    const overflowHints = useMemo(() => resolveMarkerOverflowHints(markers), [markers]);
+    const visibleMarkers = useMemo(() => markers.filter((marker) => {
+        if (marker.clampedEdge !== null) {
+            return false;
+        }
+        if (marker.detachedKind === "hidden" && !showHiddenDetachedMarkers) {
+            return false;
+        }
+        if (marker.detachedKind === "modal" && !showModalDetachedMarkers) {
+            return false;
+        }
+        return true;
+    }), [markers, showHiddenDetachedMarkers, showModalDetachedMarkers]);
+    const overflowHints = useMemo(() => resolveMarkerOverflowHints(visibleMarkers), [visibleMarkers]);
     const proximityHighlightedMarkerId = useMemo(() => {
         if (!isReportMode || !hoverPointer) {
             return null;

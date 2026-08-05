@@ -51,6 +51,10 @@ export declare function useReportPanelShell({ projectId, environment, appVersion
     showMarkerTargetPreview: boolean;
     setShowMarkerTargetPreview: (enabled: boolean) => void;
     toggleMarkerTargetPreview: () => void;
+    showHiddenDetachedMarkers: boolean;
+    setShowHiddenDetachedMarkers: (enabled: boolean) => void;
+    showModalDetachedMarkers: boolean;
+    setShowModalDetachedMarkers: (enabled: boolean) => void;
     markerAppearance: import("../../constants/markerAppearance.js").MarkerAppearancePreferences;
     setMarkerAppearance: (next: import("../../constants/markerAppearance.js").MarkerAppearancePreferences | ((current: import("../../constants/markerAppearance.js").MarkerAppearancePreferences) => import("../../constants/markerAppearance.js").MarkerAppearancePreferences)) => void;
     setMarkerSize: (size: import("../../constants/markerAppearance.js").AppearanceScale) => void;

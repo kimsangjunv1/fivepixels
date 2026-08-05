@@ -7,8 +7,8 @@ export function MarkerReplyBadge({ size, accentColor }) {
             height: size,
             top: -offset,
             right: -offset,
-            backgroundColor: "#ffffff",
-            boxShadow: `0 0 0 1.5px ${accentColor}88, 0 1px 4px #00000055`,
+            backgroundColor: accentColor,
+            boxShadow: "0 1px 4px #00000040",
         } }));
 }
 //# sourceMappingURL=MarkerReplyBadge.js.map

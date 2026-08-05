@@ -25,6 +25,7 @@ export const MARKER_SHAPE_REGISTRY = {
     gem: svgEntry("gem"),
     pill: svgEntry("pill"),
     pentagon: svgEntry("pentagon"),
+    puffy: svgEntry("puffy"),
 };
 export function getMarkerShapeDefinition(shape) {
     return MARKER_SHAPE_REGISTRY[shape];

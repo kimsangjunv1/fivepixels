@@ -97,6 +97,10 @@ export const en = {
         probeEditModeReset: "Reset",
         probeEditModeUndo: "Undo",
         probeEditModeRedo: "Redo",
+        hiddenMarkerBannerMessage: "Hide markers whose original element is gone?",
+        modalMarkerBannerMessage: "Hide modal markers?",
+        detachedMarkerHide: "Hide",
+        detachedMarkerShow: "Show",
         persistenceStatusAriaLabel: "Storage status details",
         persistenceConflictTitle: "Props conflict — using localStorage",
         persistenceConflictDescription: "The API connection is incomplete, so feedback is currently stored in this browser.",
@@ -485,6 +489,7 @@ export const en = {
         markerShapeGem: "Gem",
         markerShapePill: "Pill",
         markerShapePentagon: "Pentagon",
+        markerShapePuffy: "Puffy",
     },
     team: {
         localStorageHint: "localStorage mode shows visible team.reviewers for admins/sub-admins only. Approvals need API handlers.",

@@ -24,7 +24,7 @@ import { ReportPersonalKeyDialog } from "./ReportPersonalKeyDialog.js";
 import { PanelSettings } from "./PanelSettings.js";
 import { CornerResizeGhost } from "@/components/ui/CornerResizeGhost.js";
 import { CornerResizeHandle } from "@/components/ui/CornerResizeHandle.js";
-import { ProbeEditModeBanner } from "./ProbeEditModeBanner.js";
+import { PanelStatusBannerStack } from "./PanelStatusBannerStack.js";
 import { PanelRoleSwitch } from "./PanelRoleSwitch.js";
 import { PanelPresentationSwitch } from "./PanelPresentationSwitch.js";
 import { PanelAutoRefreshControl } from "./PanelAutoRefreshControl.js";
@@ -316,7 +316,7 @@ export function ReportControlPanel() {
                     key={shellMotionKey}
                     className={`${shellMotionClass} ${panelCollapsed && !isRecording ? "flex shrink-0" : `flex w-full min-w-0 flex-col ${applyFixedHeight || isGateView ? "h-full min-h-0" : ""}`}`.trim()}
                 >
-                    {panelCollapsed && !isRecording ? null : <ProbeEditModeBanner />}
+                    {panelCollapsed && !isRecording ? null : <PanelStatusBannerStack />}
                     {isRecording ? (
                         <section className="flex items-center justify-between gap-[16px] px-[12px] py-[8px]">
                             <section className="flex items-center gap-[4px] justify-start shrink-0">

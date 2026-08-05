@@ -97,6 +97,10 @@ export const ko = {
         probeEditModeReset: "초기화",
         probeEditModeUndo: "뒤로",
         probeEditModeRedo: "앞으로",
+        hiddenMarkerBannerMessage: "원본 요소가 사라진 마커를 숨길까요?",
+        modalMarkerBannerMessage: "모달 마커를 숨길까요?",
+        detachedMarkerHide: "숨기기",
+        detachedMarkerShow: "표기",
         persistenceStatusAriaLabel: "저장 상태 상세",
         persistenceConflictTitle: "Props 충돌 — localStorage 사용 중",
         persistenceConflictDescription: "API 연동이 완성되지 않아 현재 피드백을 이 브라우저에 저장합니다.",
@@ -485,6 +489,7 @@ export const ko = {
         markerShapeGem: "젬",
         markerShapePill: "알약",
         markerShapePentagon: "오각형",
+        markerShapePuffy: "퍼피",
     },
     team: {
         localStorageHint: "localStorage 모드에서는 관리자·부관리자만 볼 수 있는 team.reviewers 목록을 표시합니다. 승인은 API 연동이 필요합니다.",
