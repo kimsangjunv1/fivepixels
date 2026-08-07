@@ -11,7 +11,7 @@ import { useReportPreferences } from "@/providers/reportContext.js";
 import { FeedbackCreatorBadge } from "./FeedbackCreatorBadge.js";
 
 const MAX_TOOLTIP_CASES = 5;
-const RESOLVED_STATUS_COLOR = "#62c229";
+const RESOLVED_STATUS_COLOR = "#baff00";
 
 type FeedbackHoverCardProps = {
     report: ReportFeedback;

@@ -7,8 +7,7 @@ import { buildCaseThreadTimeline, buildThreadTimeline, canShowAdjudicationAction
 import { usesReplyInfiniteScroll } from "../../../constants/replyHistory.js";
 import { REPLY_HISTORY_SCROLL_THRESHOLD_PX } from "../../../utils/feedback/replyHistory.js";
 import { getGitHubIssueUrl, isGitIssuedSystemReply } from "../../../utils/github/githubIntegration.js";
-import { ResolvedStatusIcon } from "../../../components/icons/Icons.js";
-import { FEEDBACK_STATUS_COLOR } from "../../../constants/feedbackStatus.js";
+import { CheckCircleIcon } from "../../../components/icons/Icons.js";
 import { AssigneeThreadEntry } from "./AssigneeThreadEntry.js";
 import { FeedbackCaseList } from "./FeedbackCaseList.js";
 import { FeedbackCreatorBadge } from "./FeedbackCreatorBadge.js";
@@ -30,8 +29,8 @@ function getScrollOverflowState(element) {
 const SCROLL_HINT_CLASS = "pointer-events-none absolute left-0 right-0 z-10 px-[16px] py-[12px] text-center text-[12px] text-[var(--adaptive-black600)]";
 function ThreadResolvedDivider() {
     const { messages } = useReportPreferences();
-    const resolvedColor = FEEDBACK_STATUS_COLOR.resolved;
-    return (_jsx(ThreadTimelineRow, { children: _jsxs("div", { className: "flex items-center gap-[8px]", role: "status", children: [_jsx("span", { "aria-hidden": true, className: "h-px flex-1 bg-[var(--adaptive-border-subtle)]" }), _jsxs("span", { className: "inline-flex shrink-0 items-center gap-[6px]", children: [_jsx("span", { "aria-hidden": true, className: "inline-flex h-[18px] w-[18px] items-center justify-center rounded-full", style: { backgroundColor: resolvedColor }, children: _jsx(ResolvedStatusIcon, { className: "h-[11px] w-[11px]", fill: "#ffffff" }) }), _jsx("span", { className: "text-[13px] font-bold leading-none", style: { color: resolvedColor }, children: messages.thread.issueResolvedDivider })] }), _jsx("span", { "aria-hidden": true, className: "h-px flex-1 bg-[var(--adaptive-border-subtle)]" })] }) }));
+    const resolvedColor = "#baff00";
+    return (_jsx(ThreadTimelineRow, { children: _jsxs("div", { className: "flex items-center gap-[8px]", role: "status", children: [_jsx("span", { "aria-hidden": true, className: "h-px flex-1 bg-[var(--adaptive-border-subtle)]" }), _jsxs("span", { className: "inline-flex shrink-0 items-center gap-[6px]", children: [_jsx(CheckCircleIcon, { className: "h-[16px] w-[16px] shrink-0", fill: resolvedColor }), _jsx("span", { className: "text-[13px] font-bold leading-none", style: { color: resolvedColor }, children: messages.thread.issueResolvedDivider })] }), _jsx("span", { "aria-hidden": true, className: "h-px flex-1 bg-[var(--adaptive-border-subtle)]" })] }) }));
 }
 function ThreadStartedDivider({ createdAt }) {
     const { locale } = useReportPreferences();

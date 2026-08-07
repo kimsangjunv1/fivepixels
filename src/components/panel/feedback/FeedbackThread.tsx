@@ -23,8 +23,7 @@ import {
 import { usesReplyInfiniteScroll } from "@/constants/replyHistory.js";
 import { REPLY_HISTORY_SCROLL_THRESHOLD_PX } from "@/utils/feedback/replyHistory.js";
 import { getGitHubIssueUrl, isGitIssuedSystemReply } from "@/utils/github/githubIntegration.js";
-import { ResolvedStatusIcon } from "@/components/icons/Icons.js";
-import { FEEDBACK_STATUS_COLOR } from "@/constants/feedbackStatus.js";
+import { CheckCircleIcon } from "@/components/icons/Icons.js";
 import { AssigneeThreadEntry } from "./AssigneeThreadEntry.js";
 import { FeedbackCaseList } from "./FeedbackCaseList.js";
 import { FeedbackCreatorBadge } from "./FeedbackCreatorBadge.js";
@@ -81,7 +80,7 @@ const SCROLL_HINT_CLASS = "pointer-events-none absolute left-0 right-0 z-10 px-[
 
 function ThreadResolvedDivider() {
     const { messages } = useReportPreferences();
-    const resolvedColor = FEEDBACK_STATUS_COLOR.resolved;
+    const resolvedColor = "#baff00";
 
     return (
         <ThreadTimelineRow>
@@ -94,16 +93,10 @@ function ThreadResolvedDivider() {
                     className="h-px flex-1 bg-[var(--adaptive-border-subtle)]"
                 />
                 <span className="inline-flex shrink-0 items-center gap-[6px]">
-                    <span
-                        aria-hidden
-                        className="inline-flex h-[18px] w-[18px] items-center justify-center rounded-full"
-                        style={{ backgroundColor: resolvedColor }}
-                    >
-                        <ResolvedStatusIcon
-                            className="h-[11px] w-[11px]"
-                            fill="#ffffff"
-                        />
-                    </span>
+                    <CheckCircleIcon
+                        className="h-[16px] w-[16px] shrink-0"
+                        fill={resolvedColor}
+                    />
                     <span
                         className="text-[13px] font-bold leading-none"
                         style={{ color: resolvedColor }}

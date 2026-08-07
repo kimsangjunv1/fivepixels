@@ -12,7 +12,7 @@ import { getCaseAssigneeName, getCaseById } from "@/utils/report/reportCases.js"
 import { getFieldTags } from "@/utils/report/fields.js";
 import { copyTextToClipboard } from "@/utils/feedback/feedbackDataTransfer.js";
 import { buildFeedbackShareUrl } from "@/utils/feedback/feedbackDeepLink.js";
-import { CloseIcon, EditIcon, LinkIcon, MaximizeIcon, MinimizeIcon, RestoreIcon, SidePanelIcon } from "@/components/icons/Icons.js";
+import { CloseIcon, CheckCircleIcon, EditIcon, LinkIcon, MaximizeIcon, MinimizeIcon, RestoreIcon, SidePanelIcon } from "@/components/icons/Icons.js";
 import { FeedbackFieldTags } from "@/components/panel/feedback/FeedbackFieldTags.js";
 import { FeedbackPinToggleButton } from "@/components/panel/feedback/FeedbackPinToggleButton.js";
 import { FeedbackDeleteAction } from "@/components/panel/feedback/FeedbackDeleteAction.js";
@@ -38,6 +38,7 @@ const DEFAULT_WINDOW_SIZE: BoxSize = { width: 600, height: 460 };
 const MIN_WINDOW_WIDTH = 420;
 const MIN_WINDOW_HEIGHT = 280;
 const DEFAULT_SIDEBAR_WIDTH = 208;
+const RESOLVED_STATUS_COLOR = "#baff00";
 const SIDEBAR_MIN_WIDTH = 150;
 const RIGHT_MIN_WIDTH = 280;
 const COLLAPSED_SIDEBAR_WIDTH = 46;
@@ -481,14 +482,27 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
                 {focusedCase ? (
                     <Fragment>
                         <p
-                            className={`truncate text-[15px] font-semibold leading-[1.4] text-[var(--adaptive-black900)] ${focusedCase.status === "resolved" ? "text-[var(--adaptive-black500)] line-through" : ""}`}
+                            className="truncate text-[15px] font-semibold leading-[1.4] text-[var(--adaptive-black900)]"
                             title={mentionMessageToPlainText(focusedCase.text, focusedCase.mentions)}
                         >
                             {mentionMessageToPlainText(focusedCase.text, focusedCase.mentions)}
                         </p>
                         <div className="mt-[2px] flex min-w-0 items-center justify-between gap-[8px]">
                             <div className="flex min-w-0 flex-1 items-center gap-[6px]">
-                                {showAssigneeAssigned ? (
+                                {focusedCase.status === "resolved" ? (
+                                    <>
+                                        <CheckCircleIcon
+                                            className="h-[14px] w-[14px] shrink-0"
+                                            fill={RESOLVED_STATUS_COLOR}
+                                        />
+                                        <p
+                                            className="min-w-0 truncate text-[12px] font-semibold leading-[1.4]"
+                                            style={{ color: RESOLVED_STATUS_COLOR }}
+                                        >
+                                            {messages.thread.issueResolvedDivider}
+                                        </p>
+                                    </>
+                                ) : showAssigneeAssigned ? (
                                     <>
                                         <ProcessingDots />
                                         <Text.Shimmer

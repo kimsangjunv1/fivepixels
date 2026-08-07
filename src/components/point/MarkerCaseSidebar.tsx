@@ -1,5 +1,5 @@
 import { FEEDBACK_STATUS_COLOR, type FeedbackDisplayStatus } from "@/constants/feedbackStatus.js";
-import { CheckIcon } from "@/components/icons/Icons.js";
+import { CheckCircleIcon } from "@/components/icons/Icons.js";
 import { useReport, useReportPreferences } from "@/providers/reportContext.js";
 import type { ReportCaseStatus } from "@/types/report.js";
 import type { ReportFeedback } from "@/types/report.js";
@@ -10,6 +10,8 @@ import { canRemoveCase } from "@/utils/feedback/feedbackPermissions.js";
 import { formatRelativeTime } from "@/utils/shared/format.js";
 import { FeedbackDeleteAction } from "@/components/panel/feedback/FeedbackDeleteAction.js";
 
+const RESOLVED_STATUS_COLOR = "#baff00";
+
 type MarkerCaseSidebarProps = {
     report: ReportFeedback;
     focusedCaseId: string | null;
@@ -19,13 +21,10 @@ type MarkerCaseSidebarProps = {
 function CaseStatusIndicator({ caseStatus }: { caseStatus: ReportCaseStatus }) {
     if (caseStatus === "resolved") {
         return (
-            <span
-                aria-hidden
-                className="inline-flex h-[12px] w-[12px] shrink-0 items-center justify-center rounded-full"
-                style={{ backgroundColor: FEEDBACK_STATUS_COLOR.resolved }}
-            >
-                <CheckIcon className="h-[8px] w-[8px] text-white" />
-            </span>
+            <CheckCircleIcon
+                className="h-[12px] w-[12px] shrink-0"
+                fill={RESOLVED_STATUS_COLOR}
+            />
         );
     }
 
@@ -84,7 +83,7 @@ export function MarkerCaseSidebar({ report, focusedCaseId, onSelectCase }: Marke
                                 <section className="flex w-full items-center gap-[4px]">
                                     <CaseStatusIndicator caseStatus={item.status} />
                                     <span
-                                        className={`min-w-0 flex-1 truncate text-[14px] leading-[1] ${item.status === "resolved" ? "text-[var(--adaptive-black500)] line-through" : ""}`}
+                                        className="min-w-0 flex-1 truncate text-[14px] leading-[1]"
                                         title={mentionMessageToPlainText(item.text, item.mentions)}
                                     >
                                         {mentionMessageToPlainText(item.text, item.mentions)}
