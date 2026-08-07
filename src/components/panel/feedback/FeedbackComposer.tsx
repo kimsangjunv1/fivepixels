@@ -264,7 +264,7 @@ function ReplyTextarea({
             onChange={(event) => onChange(event.target.value)}
             placeholder={placeholder}
             rows={1}
-            className="max-h-[200px] w-full min-w-0 flex-1 resize-none overflow-hidden bg-transparent px-[4px] py-[6px] text-[14px] leading-[1.5] text-[var(--adaptive-text-primary)] outline-none placeholder:text-[var(--adaptive-text-muted)]"
+            className="max-h-[200px] w-full min-w-0 flex-1 resize-none overflow-hidden bg-transparent px-[4px] py-[6px] text-[14px] leading-[1.5] text-[var(--adaptive-black100)] outline-none placeholder:text-[var(--adaptive-text-muted)]"
             style={{ minHeight: REPLY_TEXTAREA_MIN_HEIGHT }}
             onKeyDown={(event) => {
                 if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
@@ -333,10 +333,7 @@ export function FeedbackComposer({
     const showFooterComposerModeTag = Boolean(resolvedComposerMode && isReplyMultiline);
     const showActionRow = !hideActions && (showAskQuestionToggle || showGitHubIssueOnCreate || !hidePrimarySubmitAction || showFooterComposerModeTag);
     const resolvedPlaceholder = isQuestionMode ? messages.composer.questionPlaceholder : (placeholder ?? (usesCaseEditor ? messages.fieldEditor.messagePlaceholder : messages.composer.placeholder));
-    const emptyCaseIds = useMemo(
-        () => (cases ?? []).filter((item) => !stripMentionTokensForEmptyCheck(item.text, item.mentions).trim()).map((item) => item.id),
-        [cases],
-    );
+    const emptyCaseIds = useMemo(() => (cases ?? []).filter((item) => !stripMentionTokensForEmptyCheck(item.text, item.mentions).trim()).map((item) => item.id), [cases]);
     const hasEmptyCase = emptyCaseIds.length > 0;
     const isCategoryRequiredError = errorMessage === messages.errors.categoryRequired;
     const isEmptyCaseError = isCaseTextErrorMessage(errorMessage, cases?.length ?? 0, messages.errors.caseTextRequired, messages.errors.casesRequired);
@@ -436,7 +433,7 @@ export function FeedbackComposer({
     };
 
     return (
-        <div className={`flex w-full flex-col bg-[var(--adaptive-neutralTintOpacity50)] backdrop-blur-sm ${usesCaseEditor && !hideEditor ? "min-h-0 flex-1" : ""}`}>
+        <div className={`flex w-full flex-col ${usesCaseEditor && !hideEditor ? "min-h-0 flex-1" : ""}`}>
             {!hideEditor ? (
                 <div className={`relative ${usesCaseEditor ? "min-h-0 flex-1" : ""}`}>
                     {errorMessage && !isFooterHandledError ? (

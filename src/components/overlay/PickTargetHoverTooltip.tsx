@@ -4,8 +4,7 @@ import { MOTION } from "@/constants/motionClasses.js";
 import type { TargetSnapshot } from "@/types/report-ui.js";
 import { HOVER_TOOLTIP_MARGIN } from "@/utils/marker/hoverTooltipLayout.js";
 
-const TOOLTIP_SURFACE_CLASS =
-    `pointer-events-none fixed z-[1000002] min-w-[220px] max-w-[min(320px,calc(100vw-16px))] overflow-hidden rounded-[12px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface-overlay)] px-[12px] py-[10px] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[20px] ${MOTION.tooltipIn}`;
+const TOOLTIP_SURFACE_CLASS = `pointer-events-none fixed z-[1000002] min-w-[220px] max-w-[min(320px,calc(100vw-16px))] overflow-hidden rounded-[16px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-neutralTintOpacity900)] px-[12px] py-[10px] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[20px] ${MOTION.tooltipIn}`;
 
 const POINTER_OFFSET = 12;
 
@@ -17,9 +16,7 @@ function InspectRow({ label, value, valueClassName = "" }: { label: string; valu
     return (
         <div className="flex items-start justify-between gap-[12px] text-[11px] leading-[1.45]">
             <span className="shrink-0 text-[var(--adaptive-black500)]">{label}</span>
-            <span className={`min-w-0 break-all text-right font-[var(--coding-font)] text-[var(--adaptive-black900)] ${valueClassName}`.trim()}>
-                {value}
-            </span>
+            <span className={`min-w-0 break-all text-right font-[var(--coding-font)] text-[var(--adaptive-black900)] ${valueClassName}`.trim()}>{value}</span>
         </div>
     );
 }
@@ -120,22 +117,49 @@ export function PickTargetHoverTooltip({ target }: PickTargetHoverTooltipProps) 
             }}
         >
             <div className="flex flex-col gap-[6px]">
-                <InspectRow label={messages.pickTarget.tooltipTag} value={`<${tagName}>`} />
-                <InspectRow label={messages.pickTarget.tooltipSize} value={sizeLabel} />
+                <InspectRow
+                    label={messages.pickTarget.tooltipTag}
+                    value={`<${tagName}>`}
+                />
+                <InspectRow
+                    label={messages.pickTarget.tooltipSize}
+                    value={sizeLabel}
+                />
                 {target.boxStyle ? (
                     <>
-                        <InspectRow label={messages.pickTarget.tooltipDisplay} value={target.boxStyle.display} />
-                        <InspectRow label={messages.pickTarget.tooltipPadding} value={target.boxStyle.padding} />
-                        <InspectRow label={messages.pickTarget.tooltipMargin} value={target.boxStyle.margin} />
+                        <InspectRow
+                            label={messages.pickTarget.tooltipDisplay}
+                            value={target.boxStyle.display}
+                        />
+                        <InspectRow
+                            label={messages.pickTarget.tooltipPadding}
+                            value={target.boxStyle.padding}
+                        />
+                        <InspectRow
+                            label={messages.pickTarget.tooltipMargin}
+                            value={target.boxStyle.margin}
+                        />
                     </>
                 ) : null}
 
                 {target.fontStyle ? (
                     <>
-                        <InspectRow label={messages.pickTarget.tooltipFontFamily} value={target.fontStyle.fontFamily} />
-                        <InspectRow label={messages.pickTarget.tooltipFontSize} value={target.fontStyle.fontSize} />
-                        <InspectRow label={messages.pickTarget.tooltipFontWeight} value={target.fontStyle.fontWeight} />
-                        <InspectRow label={messages.pickTarget.tooltipLineHeight} value={target.fontStyle.lineHeight} />
+                        <InspectRow
+                            label={messages.pickTarget.tooltipFontFamily}
+                            value={target.fontStyle.fontFamily}
+                        />
+                        <InspectRow
+                            label={messages.pickTarget.tooltipFontSize}
+                            value={target.fontStyle.fontSize}
+                        />
+                        <InspectRow
+                            label={messages.pickTarget.tooltipFontWeight}
+                            value={target.fontStyle.fontWeight}
+                        />
+                        <InspectRow
+                            label={messages.pickTarget.tooltipLineHeight}
+                            value={target.fontStyle.lineHeight}
+                        />
                     </>
                 ) : null}
 
@@ -144,9 +168,7 @@ export function PickTargetHoverTooltip({ target }: PickTargetHoverTooltipProps) 
                         <span className="shrink-0 text-[var(--adaptive-black500)]">{messages.pickTarget.tooltipReportId}</span>
                         <div className="flex min-w-0 items-start justify-end gap-[6px]">
                             <ReportIdStatusIcon tagged={target.isTagged} />
-                            <span className="min-w-0 break-all text-right font-[var(--coding-font)] text-[var(--adaptive-black900)]">
-                                {reportIdValue}
-                            </span>
+                            <span className="min-w-0 break-all text-right font-[var(--coding-font)] text-[var(--adaptive-black900)]">{reportIdValue}</span>
                         </div>
                     </div>
                 </div>

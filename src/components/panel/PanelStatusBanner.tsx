@@ -31,11 +31,11 @@ function BannerDivider() {
 export function PanelStatusBanner({ message, actions, leading, trailing, roundedTop = false }: PanelStatusBannerProps) {
     return (
         <section
-            className={`flex shrink-0 items-center gap-[8px] bg-[var(--adaptive-black900)] px-[10px] py-[6px] text-[var(--adaptive-black50)] ${roundedTop ? "rounded-t-[12px]" : ""}`}
+            className={`flex shrink-0 items-center gap-[8px] bg-[var(--adaptive-black100)] border-b border-b-[var(--adaptive-border-subtle)] px-[10px] py-[6px] ${roundedTop ? "rounded-t-[12px]" : ""}`}
             data-fivepixels-interactive=""
         >
             {leading}
-            <p className="min-w-0 flex-1 truncate text-[11px] font-semibold leading-[1.3] text-[var(--adaptive-black50)]">{message}</p>
+            <p className="min-w-0 flex-1 truncate text-[11px] font-semibold leading-[1.3] text-[var(--adaptive-black900)]">{message}</p>
             {actions.length > 0 ? (
                 <>
                     <BannerDivider />
@@ -54,7 +54,7 @@ export function PanelStatusBanner({ message, actions, leading, trailing, rounded
                                     disabled={action.disabled}
                                     aria-pressed={action.active}
                                     onClick={action.onClick}
-                                    className={`inline-flex shrink-0 items-center justify-center rounded-[4px] text-[var(--adaptive-black50)] text-[11px] font-semibold transition-opacity enabled:hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-35 ${
+                                    className={`inline-flex shrink-0 items-center justify-center rounded-[4px] text-[var(--adaptive-black900)] text-[11px] font-semibold transition-opacity enabled:hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-35 ${
                                         action.children ? "p-[2px]" : "px-[4px] py-[1px]"
                                     } ${action.active ? "bg-white/20 underline underline-offset-2" : "underline-offset-2 hover:underline"}`}
                                 >

@@ -54,10 +54,11 @@ function easeOutCubic(value: number) {
 
 export function DotWaveOverlay({
     active = true,
-    dotSize = 3,
-    gap = 20,
+    dotSize = 2,
+    gap = 12,
+    // gap = 20,
     minOpacity = 0.2,
-    maxOpacity = 0.8,
+    maxOpacity = 1,
     waveDuration = 1_400,
     fadeOutDuration = 2_200,
     deactivateDelay = 0,
@@ -84,7 +85,6 @@ export function DotWaveOverlay({
             return;
         }
         const drawingContext = context;
-
         const safeDotSize = Math.max(0.5, dotSize);
         const safeGap = Math.max(safeDotSize + 1, gap);
         const safeMinOpacity = clamp(minOpacity, 0, 1);

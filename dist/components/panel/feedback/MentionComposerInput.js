@@ -1,7 +1,7 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { findElementMentionCandidates, getAtQuery, mentionQueryEndsWithSpace, replaceActiveMentionQuery, toStoredMention, } from "../../../utils/mention/elementMentions.js";
+import { findElementMentionCandidates, getAtQuery, mentionQueryEndsWithSpace, replaceActiveMentionQuery, toStoredMention } from "../../../utils/mention/elementMentions.js";
 import { deleteMentionChipBeforeCaret, getCaretClientRect, getEditorCaretPoint, placeCaretAfterMention, renderMentionEditorContent, serializeMentionEditor, serializeMentionEditorBeforeCaret, } from "../../../utils/mention/mentionComposerDom.js";
 import { useReportPreferences, useReportSession } from "../../../providers/reportContext.js";
 import { ensureReportTooltipLayer } from "../../../utils/shared/dom.js";

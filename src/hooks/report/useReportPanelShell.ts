@@ -285,20 +285,16 @@ export function useReportPanelShell({
     const resolvedRouteDetailsStats = useMemo(() => panelBootstrap?.routeDetails ?? routeDetailsStats, [panelBootstrap, routeDetailsStats]);
 
     const roleStatsReports = useMemo(() => {
-        if (roleTabPreset.headerStatsScope !== "all") {
-            return currentPageReports;
-        }
-
         if (listScope === "all") {
+            if (allPageReports.length > 0) {
+                return allPageReports;
+            }
+
             return reports;
         }
 
-        if (allPageReports.length > 0) {
-            return allPageReports;
-        }
-
         return currentPageReports;
-    }, [allPageReports, currentPageReports, listScope, reports, roleTabPreset.headerStatsScope]);
+    }, [allPageReports, currentPageReports, listScope, reports]);
 
     const targetStats = useMemo(() => {
         if (panelBootstrap?.stats) {
@@ -311,13 +307,11 @@ export function useReportPanelShell({
     const roleStatItems = useMemo(
         () =>
             buildPanelRoleStats({
-                role: panelRole,
                 reports: roleStatsReports,
                 actorName: sessionActorName,
-                fallbackStats: targetStats,
                 messages,
             }),
-        [panelRole, roleStatsReports, sessionActorName, targetStats, messages],
+        [roleStatsReports, sessionActorName, messages],
     );
 
     const listScopeInitializedRef = useRef(false);

@@ -51,6 +51,8 @@ export const en = {
             open: "Open",
             errors: "Errors",
             recheck: "Recheck",
+            created: "Created by me",
+            replied: "Replied by me",
             mine: "Assigned to me",
             needsReply: "Needs reply",
             reReview: "Re-review",

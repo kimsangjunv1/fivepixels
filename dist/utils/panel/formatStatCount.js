@@ -1,4 +1,4 @@
 export function formatStatCount(count) {
-    return count > 0 ? `${count}+` : `${count}`;
+    return `${count}`;
 }
 //# sourceMappingURL=formatStatCount.js.map

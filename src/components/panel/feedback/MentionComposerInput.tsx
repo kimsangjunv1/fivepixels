@@ -1,13 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { ElementMention, ElementMentionCandidate } from "@/types/mention.js";
-import {
-    findElementMentionCandidates,
-    getAtQuery,
-    mentionQueryEndsWithSpace,
-    replaceActiveMentionQuery,
-    toStoredMention,
-} from "@/utils/mention/elementMentions.js";
+import { findElementMentionCandidates, getAtQuery, mentionQueryEndsWithSpace, replaceActiveMentionQuery, toStoredMention } from "@/utils/mention/elementMentions.js";
 import {
     deleteMentionChipBeforeCaret,
     getCaretClientRect,
@@ -98,16 +92,19 @@ export function MentionComposerInput({ value, mentions, onChange, placeholder, a
         onMultilineChange?.(isMultiline);
     }, [onMultilineChange]);
 
-    const dismissActiveMention = useCallback((atOffset: number | null) => {
-        if (atOffset !== null) {
-            dismissedAtOffsetRef.current = atOffset;
-        }
+    const dismissActiveMention = useCallback(
+        (atOffset: number | null) => {
+            if (atOffset !== null) {
+                dismissedAtOffsetRef.current = atOffset;
+            }
 
-        activeAtOffsetRef.current = null;
-        setQuery(null);
-        setMentionHighlightTarget(null);
-        setMenuPlacement(null);
-    }, [setMentionHighlightTarget]);
+            activeAtOffsetRef.current = null;
+            setQuery(null);
+            setMentionHighlightTarget(null);
+            setMenuPlacement(null);
+        },
+        [setMentionHighlightTarget],
+    );
 
     const refreshMentionQuery = useCallback(() => {
         const editor = editorRef.current;

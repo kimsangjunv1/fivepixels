@@ -31,7 +31,6 @@ import { PanelAutoRefreshControl } from "./PanelAutoRefreshControl.js";
 import { PanelOnboarding } from "./PanelOnboarding.js";
 import { PanelKeyGate } from "./PanelKeyGate.js";
 import { PanelProjectFooter } from "./PanelProjectFooter.js";
-import { panelNumericClassName } from "@/utils/panel/panelTypography.js";
 import { createPersonalKeyBackupFilename, downloadPersonalKeyBackup } from "@/utils/feedback/feedbackDataTransfer.js";
 import { getPanelTabDefinition } from "@/constants/panelTabRegistry.js";
 import { MOTION, PANEL_TAB_FADE_MS, panelCollapseInClass } from "@/constants/motionClasses.js";
@@ -297,10 +296,10 @@ export function ReportControlPanel() {
                 onDrop={isGateView ? undefined : handleDrop}
                 className={`pointer-events-auto z-[1000000] border border-[var(--adaptive-border-subtle)] flex ${MOTION.panelEnter} ${MOTION.panelDock} ${isDragging ? MOTION.panelDockDragging : ""} ${
                     isRecording
-                        ? "min-h-[40px] bg-[var(--adaptive-neutralTintOpacity900)] backdrop-blur-[10px] rounded-[12px] shadow-[0_0_120px_0_var(--adaptive-black500)]"
+                        ? "min-h-[40px] bg-[var(--adaptive-neutralTintOpacity900)] backdrop-blur-[10px] rounded-[16px] shadow-[0_0_120px_0_var(--adaptive-black500)]"
                         : panelCollapsed
                           ? ""
-                          : "relative bg-[var(--adaptive-neutralTintOpacity900)] backdrop-blur-[10px] rounded-[12px] shadow-[0_0_120px_0_var(--adaptive-black500)]"
+                          : "relative bg-[var(--adaptive-neutralTintOpacity900)] backdrop-blur-[10px] rounded-[16px] shadow-[0_0_120px_0_var(--adaptive-black500)]"
                 }`}
                 style={{ ...resolvedPanelStyle, ...resolvedSizeStyle }}
             >
@@ -442,7 +441,7 @@ export function ReportControlPanel() {
                                                             className="flex flex-col items-start gap-[4px] flex-1"
                                                         >
                                                             <p className="text-[14px] text-[var(--adaptive-black500)]">{item.label}</p>
-                                                            <p className={`text-[14px] font-semibold text-[var(--adaptive-black900)] ${panelNumericClassName}`}>{item.display}</p>
+                                                            <p className="text-[14px] font-semibold text-[var(--adaptive-black900)]">{item.display}</p>
                                                         </section>
                                                     ),
                                                 )}

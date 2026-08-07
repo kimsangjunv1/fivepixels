@@ -13,7 +13,7 @@ import { CornerResizeGhost } from "@/components/ui/CornerResizeGhost.js";
 import { MOTION } from "@/constants/motionClasses.js";
 import { CornerResizeHandle } from "@/components/ui/CornerResizeHandle.js";
 
-const TOOLTIP_SURFACE_CLASS = "rounded-[16px] shadow-[var(--adaptive-popup-shadow)] bg-[var(--adaptive-fillOpacity500)] backdrop-blur-[5px]";
+const TOOLTIP_SURFACE_CLASS = "rounded-[16px] shadow-[var(--adaptive-popup-shadow)] bg-[var(--adaptive-neutralTintOpacity900)] backdrop-blur-[5px]";
 const EXPANDED_TOOLTIP_ANCHOR_CLASS = "pointer-events-auto fixed z-[1000001]";
 
 export function ReportDraftForm() {
@@ -239,7 +239,7 @@ function ReportDraftFormContent({
                 ref={setTooltipElement}
                 data-fivepixels-interactive=""
                 onClick={(event) => event.stopPropagation()}
-                className={`${EXPANDED_TOOLTIP_ANCHOR_CLASS} flex flex-col gap-[8px]`}
+                className={`${EXPANDED_TOOLTIP_ANCHOR_CLASS} flex flex-col gap-[4px]`}
                 style={{
                     left: tooltipPosition.left,
                     top: tooltipPosition.top,

@@ -56,6 +56,8 @@ export type ReportMessages = {
             open: string;
             errors: string;
             recheck: string;
+            created: string;
+            replied: string;
             mine: string;
             needsReply: string;
             reReview: string;
