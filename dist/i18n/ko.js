@@ -13,6 +13,14 @@ export const ko = {
         retry: "다시 시도",
         none: "(없음)",
         all: "전체",
+        relativeTime: {
+            secondsAgo: (count) => `${count}초 전`,
+            minutesAgo: (count) => `${count}분 전`,
+            hoursAgo: (count) => `${count}시간 전`,
+            daysAgo: (count) => `${count}일 전`,
+            monthsAgo: (count) => `${count}개월 전`,
+            yearsAgo: (count) => `${count}년 전`,
+        },
     },
     panel: {
         expand: "패널 펼치기",

@@ -33,6 +33,14 @@ export type ReportMessages = {
         retry: string;
         none: string;
         all: string;
+        relativeTime: {
+            secondsAgo: (count: number) => string;
+            minutesAgo: (count: number) => string;
+            hoursAgo: (count: number) => string;
+            daysAgo: (count: number) => string;
+            monthsAgo: (count: number) => string;
+            yearsAgo: (count: number) => string;
+        };
     };
     panel: {
         expand: string;

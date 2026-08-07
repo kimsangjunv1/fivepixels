@@ -13,6 +13,14 @@ export const en = {
         retry: "Retry",
         none: "(none)",
         all: "All",
+        relativeTime: {
+            secondsAgo: (count) => (count === 1 ? "1 second ago" : `${count} seconds ago`),
+            minutesAgo: (count) => (count === 1 ? "1 minute ago" : `${count} minutes ago`),
+            hoursAgo: (count) => (count === 1 ? "1 hour ago" : `${count} hours ago`),
+            daysAgo: (count) => (count === 1 ? "1 day ago" : `${count} days ago`),
+            monthsAgo: (count) => (count === 1 ? "1 month ago" : `${count} months ago`),
+            yearsAgo: (count) => (count === 1 ? "1 year ago" : `${count} years ago`),
+        },
     },
     panel: {
         expand: "Expand panel",
