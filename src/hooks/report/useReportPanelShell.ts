@@ -117,7 +117,17 @@ export function useReportPanelShell({
     const { showMarkerTargetPreview, setShowMarkerTargetPreview, toggleMarkerTargetPreview } = useMarkerTargetPreviewPreference();
     const { showHiddenDetachedMarkers, setShowHiddenDetachedMarkers, showModalDetachedMarkers, setShowModalDetachedMarkers } =
         useDetachedMarkerVisibilityPreference();
-    const { markerAppearance, setMarkerAppearance, setMarkerSize, setMarkerShape, setMarkerColors, setMarkerColor, setFeedbackModeDotColors, setFeedbackModeDotColor } = useMarkerAppearancePreference();
+    const {
+        markerAppearance,
+        setMarkerAppearance,
+        setMarkerSize,
+        setMarkerShape,
+        setMarkerFillStyle,
+        setMarkerColors,
+        setMarkerColor,
+        setFeedbackModeDotColors,
+        setFeedbackModeDotColor,
+    } = useMarkerAppearancePreference();
     const { typography, setTypography, setFontSize, setFontFamily } = useTypographyPreference();
     const { questionThreadDisplay, setQuestionThreadDisplay } = useQuestionThreadPreference(questionThreadDefault);
     const { panelRole, setPanelRole } = usePanelRolePreference();
@@ -458,6 +468,7 @@ export function useReportPanelShell({
         setMarkerAppearance,
         setMarkerSize,
         setMarkerShape,
+        setMarkerFillStyle,
         setMarkerColors,
         setMarkerColor,
         setFeedbackModeDotColors,

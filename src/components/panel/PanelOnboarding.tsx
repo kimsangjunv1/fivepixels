@@ -1,6 +1,6 @@
 import { useMemo, useState, type DragEvent } from "react";
 import { APPEARANCE_OPTION_VALUES } from "@/constants/appearance.js";
-import { type AppearanceScale, type MarkerShape } from "@/constants/markerAppearance.js";
+import { MARKER_FILL_STYLE_VALUES, type AppearanceScale, type MarkerFillStyle, type MarkerShape } from "@/constants/markerAppearance.js";
 import { PANEL_ROLE_VALUES, type PanelRole } from "@/constants/panelRole.js";
 import type { UserSelectablePanelTab } from "@/constants/panelTabRegistry.js";
 import type { ReportLocale } from "@/i18n/types.js";
@@ -37,6 +37,7 @@ export function PanelOnboarding() {
         markerAppearance,
         setMarkerSize,
         setMarkerShape,
+        setMarkerFillStyle,
         typography,
         panelRole,
         setPanelRole,
@@ -79,6 +80,8 @@ export function PanelOnboarding() {
         xl: messages.settings.scaleXl,
     };
     const shapeLabels: Record<MarkerShape, string> = {
+        circle: messages.settings.markerShapeCircle,
+        square: messages.settings.markerShapeSquare,
         cookie4: messages.settings.markerShapeCookie4,
         sunny: messages.settings.markerShapeSunny,
         cookie6: messages.settings.markerShapeCookie6,
@@ -90,6 +93,10 @@ export function PanelOnboarding() {
         pill: messages.settings.markerShapePill,
         pentagon: messages.settings.markerShapePentagon,
         puffy: messages.settings.markerShapePuffy,
+    };
+    const fillStyleLabels: Record<MarkerFillStyle, string> = {
+        filled: messages.settings.markerFillStyleFilled,
+        outlined: messages.settings.markerFillStyleOutlined,
     };
 
     const handleSelectRole = (role: PanelRole) => {
@@ -405,6 +412,7 @@ export function PanelOnboarding() {
                         fontSize={typography.fontSize}
                         shape={markerAppearance.shape}
                         color={markerAppearance.colors.open}
+                        fillStyle={markerAppearance.fillStyle}
                         fontFamily={typography.fontFamily}
                         ariaLabel={onboarding.displayPreviewAriaLabel}
                         showReplyBadge
@@ -417,12 +425,26 @@ export function PanelOnboarding() {
                         markerSizeAriaLabel={messages.settings.markerSizeAriaLabel}
                     />
                     <div>
+                        <p className="mb-[6px] text-[11px] font-medium text-[var(--adaptive-black600)]">{messages.settings.markerFillStyle}</p>
+                        <PanelOptionSwitch
+                            options={MARKER_FILL_STYLE_VALUES.map((value) => ({
+                                value,
+                                label: fillStyleLabels[value],
+                            }))}
+                            value={markerAppearance.fillStyle}
+                            onChange={setMarkerFillStyle}
+                            ariaLabel={messages.settings.markerFillStyleAriaLabel}
+                        />
+                    </div>
+                    <div>
                         <p className="mb-[6px] text-[11px] font-medium text-[var(--adaptive-black600)]">{messages.settings.markerShape}</p>
                         <MarkerShapePicker
                             value={markerAppearance.shape}
                             onChange={setMarkerShape}
                             labels={shapeLabels}
                             ariaLabel={messages.settings.markerShapeAriaLabel}
+                            previewColor={markerAppearance.colors.open}
+                            fillStyle={markerAppearance.fillStyle}
                         />
                     </div>
                     <div className="flex items-center justify-between">

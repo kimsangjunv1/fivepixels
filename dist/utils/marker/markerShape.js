@@ -9,6 +9,22 @@ export function resolveMarkerShapeStyle(shape, dotSize) {
         strokeWidthPx: definition.strokeWidthPx,
     };
 }
+export function resolveMarkerGlyphPaint(color, fillStyle, strokeWidthPx) {
+    if (fillStyle === "outlined") {
+        return {
+            fill: "transparent",
+            stroke: color,
+            strokeWidthPx: Math.max(strokeWidthPx, 2.5),
+            labelColor: color,
+        };
+    }
+    return {
+        fill: color,
+        stroke: "#ffffff",
+        strokeWidthPx,
+        labelColor: "#ffffff",
+    };
+}
 export function getMarkerReplyBadgeSize(dotSize) {
     return Math.max(8, Math.round(dotSize * 0.42)) + 2;
 }

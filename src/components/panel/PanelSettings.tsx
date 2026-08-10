@@ -2,8 +2,8 @@ import { useState, type ReactNode } from "react";
 import type { ReportAppearance, QuestionThreadDisplay } from "@/types/report.js";
 import type { ReportLocale } from "@/i18n/types.js";
 import { APPEARANCE_OPTION_VALUES } from "@/constants/appearance.js";
-import { DEFAULT_FEEDBACK_MODE_DOT_COLORS, FONT_FAMILY_SUGGESTIONS } from "@/constants/markerAppearance.js";
-import type { AppearanceScale, MarkerShape } from "@/constants/markerAppearance.js";
+import { DEFAULT_FEEDBACK_MODE_DOT_COLORS, FONT_FAMILY_SUGGESTIONS, MARKER_FILL_STYLE_VALUES } from "@/constants/markerAppearance.js";
+import type { AppearanceScale, MarkerFillStyle, MarkerShape } from "@/constants/markerAppearance.js";
 import { useReportPreferences, useReportSession } from "@/providers/reportContext.js";
 import { formatPresentationViewerLabel } from "@/utils/report/reportTeam.js";
 import { ChevronLeftIcon, ChevronRightIcon } from "@/components/icons/Icons.js";
@@ -154,6 +154,7 @@ export function PanelSettings({
         markerAppearance,
         setMarkerSize,
         setMarkerShape,
+        setMarkerFillStyle,
         setMarkerColor,
         setFeedbackModeDotColors,
         setFeedbackModeDotColor,
@@ -176,6 +177,8 @@ export function PanelSettings({
         xl: messages.settings.scaleXl,
     };
     const shapeLabels: Record<MarkerShape, string> = {
+        circle: messages.settings.markerShapeCircle,
+        square: messages.settings.markerShapeSquare,
         cookie4: messages.settings.markerShapeCookie4,
         sunny: messages.settings.markerShapeSunny,
         cookie6: messages.settings.markerShapeCookie6,
@@ -187,6 +190,10 @@ export function PanelSettings({
         pill: messages.settings.markerShapePill,
         pentagon: messages.settings.markerShapePentagon,
         puffy: messages.settings.markerShapePuffy,
+    };
+    const fillStyleLabels: Record<MarkerFillStyle, string> = {
+        filled: messages.settings.markerFillStyleFilled,
+        outlined: messages.settings.markerFillStyleOutlined,
     };
     const appearanceOptions = APPEARANCE_OPTION_VALUES.map((value) => ({
         value,
@@ -209,7 +216,7 @@ export function PanelSettings({
     const activeViewerLabel = viewerOptions.find((option) => option.value === (presentationViewerId ?? viewerOptions[0]?.value))?.label ?? "";
     const appearanceSummary = `${messages.appearance[panelAppearance]} · ${messages.localeOption[locale]}`;
     const feedbackModeSummary = `${markerAppearance.feedbackModeDotColors.light} · ${markerAppearance.feedbackModeDotColors.dark}`;
-    const markerSummary = `${scaleLabels[markerAppearance.size]} · ${shapeLabels[markerAppearance.shape]}`;
+    const markerSummary = `${scaleLabels[markerAppearance.size]} · ${shapeLabels[markerAppearance.shape]} · ${fillStyleLabels[markerAppearance.fillStyle]}`;
     const displaySummary = `${messages.questionThreadOption[questionThreadDisplay]} · ${showMarkerTargetPreview ? messages.settings.markerTargetsOn : messages.settings.markerTargetsOff}`;
     const tabsSummary = visiblePanelTabsSummary || messages.settings.categoryTabsSummary;
 
@@ -379,12 +386,26 @@ export function PanelSettings({
                                         markerSizeAriaLabel={messages.settings.markerSizeAriaLabel}
                                     />
                                     <div>
+                                        <p className="mb-[6px] text-[11px] font-medium text-[var(--adaptive-black600)]">{messages.settings.markerFillStyle}</p>
+                                        <PanelOptionSwitch
+                                            options={MARKER_FILL_STYLE_VALUES.map((value) => ({
+                                                value,
+                                                label: fillStyleLabels[value],
+                                            }))}
+                                            value={markerAppearance.fillStyle}
+                                            onChange={setMarkerFillStyle}
+                                            ariaLabel={messages.settings.markerFillStyleAriaLabel}
+                                        />
+                                    </div>
+                                    <div>
                                         <p className="mb-[6px] text-[11px] font-medium text-[var(--adaptive-black600)]">{messages.settings.markerShape}</p>
                                         <MarkerShapePicker
                                             value={markerAppearance.shape}
                                             onChange={setMarkerShape}
                                             labels={shapeLabels}
                                             ariaLabel={messages.settings.markerShapeAriaLabel}
+                                            previewColor={markerAppearance.colors.open}
+                                            fillStyle={markerAppearance.fillStyle}
                                         />
                                     </div>
                                 </div>

@@ -8,7 +8,7 @@ import { resolveMarkerOverflowHints } from "@/utils/marker/coordinates.js";
 import { scrollContainerTowardEdge } from "@/utils/shared/dom.js";
 import { getDetachedMarkerAriaLabel, getModalGhostFrame } from "@/utils/marker/markerContext.js";
 import { getMarkerDotSize } from "@/utils/marker/markerRuntime.js";
-import { getMarkerReplyBadgeSize, resolveMarkerShapeStyle } from "@/utils/marker/markerShape.js";
+import { getMarkerReplyBadgeSize, resolveMarkerGlyphPaint, resolveMarkerShapeStyle } from "@/utils/marker/markerShape.js";
 import type { MarkerAppearancePreferences, TypographyPreferences } from "@/constants/markerAppearance.js";
 import { resolveMarkerBadgeDisplay } from "@/constants/markerAppearance.js";
 import { getMarkerColor, getMarkerDisplayLabel, hasMarkerReplyIndicator } from "@/utils/report/reportVisual.js";
@@ -145,6 +145,7 @@ function MarkerButton({
         markerItem.detachedKind === "modal" ? "ghostish" : markerItem.detachedKind === "hidden" ? "puffy" : markerAppearance.shape;
     const shapeStyle = resolveMarkerShapeStyle(glyphShape, dotSize);
     const markerColor = getMarkerColor(markerItem.report, markerAppearance.colors);
+    const paint = resolveMarkerGlyphPaint(markerColor, markerAppearance.fillStyle, shapeStyle.strokeWidthPx);
     const replyBadgeSize = getMarkerReplyBadgeSize(dotSize);
     const scaleClass = isHovered ? "scale-[1.4]" : isReportMode && isProximityHighlighted ? "scale-110" : "";
 
@@ -187,13 +188,14 @@ function MarkerButton({
                         }
                         className={`${MARKER_BUTTON_BASE_CLASS} relative border-0 bg-transparent p-0 shadow-none ${
                             isReportMode ? "" : isDetached ? "opacity-75" : ""
-                        } ${showMarkerLabel ? "text-white" : ""}`}
+                        }`}
                         style={{
                             pointerEvents: isReportMode ? "none" : "auto",
                             width: shapeStyle.width,
                             height: shapeStyle.height,
                             minWidth: shapeStyle.width,
                             minHeight: shapeStyle.height,
+                            color: showMarkerLabel ? paint.labelColor : undefined,
                             fontSize: badgeDisplay.fontSizePx === undefined ? undefined : `${badgeDisplay.fontSizePx}px`,
                             fontWeight: badgeDisplay.fontWeight,
                             fontFamily: showMarkerLabel ? typography.fontFamily : undefined,
@@ -202,10 +204,11 @@ function MarkerButton({
                         <span className="pointer-events-none absolute inset-0 flex items-center justify-center">
                             <MarkerShapeGlyph
                                 shape={glyphShape}
-                                fill={markerColor}
+                                fill={paint.fill}
                                 width={shapeStyle.width}
                                 height={shapeStyle.height}
-                                strokeWidthPx={shapeStyle.strokeWidthPx}
+                                stroke={paint.stroke}
+                                strokeWidthPx={paint.strokeWidthPx}
                             />
                         </span>
                         <span className="relative z-[1] flex items-center justify-center">

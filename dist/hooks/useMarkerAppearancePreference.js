@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { DEFAULT_FEEDBACK_MODE_DOT_COLORS, DEFAULT_MARKER_APPEARANCE, DEFAULT_MARKER_COLORS, isAppearanceScale, isMarkerShape, MARKER_APPEARANCE_STORAGE_KEY, } from "../constants/markerAppearance.js";
+import { DEFAULT_FEEDBACK_MODE_DOT_COLORS, DEFAULT_MARKER_APPEARANCE, DEFAULT_MARKER_COLORS, isAppearanceScale, isMarkerFillStyle, isMarkerShape, MARKER_APPEARANCE_STORAGE_KEY, } from "../constants/markerAppearance.js";
 import { isValidHexColor } from "../utils/shared/hexColor.js";
 import { setMarkerDotSizeFromScale } from "../utils/marker/markerRuntime.js";
 function normalizeMarkerColors(value) {
@@ -36,6 +36,7 @@ function readStoredMarkerAppearance() {
         return {
             size: isAppearanceScale(parsed.size) ? parsed.size : DEFAULT_MARKER_APPEARANCE.size,
             shape: isMarkerShape(parsed.shape) ? parsed.shape : DEFAULT_MARKER_APPEARANCE.shape,
+            fillStyle: isMarkerFillStyle(parsed.fillStyle) ? parsed.fillStyle : DEFAULT_MARKER_APPEARANCE.fillStyle,
             colors: normalizeMarkerColors(parsed.colors),
             feedbackModeDotColors: normalizeFeedbackModeDotColors(parsed.feedbackModeDotColors),
         };
@@ -78,6 +79,12 @@ export function useMarkerAppearancePreference() {
             shape,
         }));
     }, [setMarkerAppearance]);
+    const setMarkerFillStyle = useCallback((fillStyle) => {
+        setMarkerAppearance((current) => ({
+            ...current,
+            fillStyle,
+        }));
+    }, [setMarkerAppearance]);
     const setMarkerColors = useCallback((colors) => {
         setMarkerAppearance((current) => ({
             ...current,
@@ -113,6 +120,7 @@ export function useMarkerAppearancePreference() {
         setMarkerAppearance,
         setMarkerSize,
         setMarkerShape,
+        setMarkerFillStyle,
         setMarkerColors,
         setMarkerColor,
         setFeedbackModeDotColors,

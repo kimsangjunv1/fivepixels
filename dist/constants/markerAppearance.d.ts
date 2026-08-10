@@ -4,8 +4,10 @@ export declare const MARKER_SCALE_FACTOR: Record<AppearanceScale, number>;
 export type MarkerLabelFontSize = "sm" | "md" | "lg" | "xl";
 export type MarkerFontSize = "none" | MarkerLabelFontSize;
 export declare const MARKER_FONT_SIZE_VALUES: readonly ["none", "sm", "md", "lg", "xl"];
-export type MarkerShape = "cookie4" | "sunny" | "cookie6" | "clover4" | "flower" | "ghostish" | "bun" | "gem" | "pill" | "pentagon" | "puffy";
-export declare const MARKER_SHAPE_VALUES: readonly ["cookie4", "sunny", "cookie6", "clover4", "flower", "ghostish", "bun", "gem", "pill", "pentagon", "puffy"];
+export type MarkerShape = "circle" | "square" | "cookie4" | "sunny" | "cookie6" | "clover4" | "flower" | "ghostish" | "bun" | "gem" | "pill" | "pentagon" | "puffy";
+export declare const MARKER_SHAPE_VALUES: readonly ["circle", "square", "cookie4", "sunny", "cookie6", "clover4", "flower", "ghostish", "bun", "gem", "pill", "pentagon", "puffy"];
+export type MarkerFillStyle = "filled" | "outlined";
+export declare const MARKER_FILL_STYLE_VALUES: readonly ["filled", "outlined"];
 export type MarkerColorPreferences = {
     open: string;
     resolved: string;
@@ -18,6 +20,7 @@ export type FeedbackModeDotColors = {
 export type MarkerAppearancePreferences = {
     size: AppearanceScale;
     shape: MarkerShape;
+    fillStyle: MarkerFillStyle;
     colors: MarkerColorPreferences;
     feedbackModeDotColors: FeedbackModeDotColors;
 };
@@ -38,6 +41,7 @@ export declare function isMarkerLabelFontSize(value: unknown): value is MarkerLa
 export declare function isMarkerFontSize(value: unknown): value is MarkerFontSize;
 export declare function isAppearanceScale(value: unknown): value is AppearanceScale;
 export declare function isMarkerShape(value: unknown): value is MarkerShape;
+export declare function isMarkerFillStyle(value: unknown): value is MarkerFillStyle;
 export declare function getMarkerScaleFactor(size: AppearanceScale): number;
 export declare const MARKER_COMPACT_LABEL = "\u00B7";
 export declare const MARKER_BADGE_FONT_SIZE_PX = 10;

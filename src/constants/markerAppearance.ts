@@ -18,9 +18,24 @@ export type MarkerFontSize = "none" | MarkerLabelFontSize;
 
 export const MARKER_FONT_SIZE_VALUES = ["none", "sm", "md", "lg", "xl"] as const satisfies readonly MarkerFontSize[];
 
-export type MarkerShape = "cookie4" | "sunny" | "cookie6" | "clover4" | "flower" | "ghostish" | "bun" | "gem" | "pill" | "pentagon" | "puffy";
+export type MarkerShape =
+    | "circle"
+    | "square"
+    | "cookie4"
+    | "sunny"
+    | "cookie6"
+    | "clover4"
+    | "flower"
+    | "ghostish"
+    | "bun"
+    | "gem"
+    | "pill"
+    | "pentagon"
+    | "puffy";
 
 export const MARKER_SHAPE_VALUES = [
+    "circle",
+    "square",
     "cookie4",
     "sunny",
     "cookie6",
@@ -33,6 +48,10 @@ export const MARKER_SHAPE_VALUES = [
     "pentagon",
     "puffy",
 ] as const satisfies readonly MarkerShape[];
+
+export type MarkerFillStyle = "filled" | "outlined";
+
+export const MARKER_FILL_STYLE_VALUES = ["filled", "outlined"] as const satisfies readonly MarkerFillStyle[];
 
 export type MarkerColorPreferences = {
     open: string;
@@ -48,6 +67,7 @@ export type FeedbackModeDotColors = {
 export type MarkerAppearancePreferences = {
     size: AppearanceScale;
     shape: MarkerShape;
+    fillStyle: MarkerFillStyle;
     colors: MarkerColorPreferences;
     feedbackModeDotColors: FeedbackModeDotColors;
 };
@@ -81,6 +101,7 @@ export const DEFAULT_FEEDBACK_MODE_DOT_COLORS: FeedbackModeDotColors = {
 export const DEFAULT_MARKER_APPEARANCE: MarkerAppearancePreferences = {
     size: "md",
     shape: "cookie4",
+    fillStyle: "filled",
     colors: DEFAULT_MARKER_COLORS,
     feedbackModeDotColors: DEFAULT_FEEDBACK_MODE_DOT_COLORS,
 };
@@ -116,6 +137,10 @@ export function isAppearanceScale(value: unknown): value is AppearanceScale {
 
 export function isMarkerShape(value: unknown): value is MarkerShape {
     return (MARKER_SHAPE_VALUES as readonly string[]).includes(value as string);
+}
+
+export function isMarkerFillStyle(value: unknown): value is MarkerFillStyle {
+    return (MARKER_FILL_STYLE_VALUES as readonly string[]).includes(value as string);
 }
 
 export function getMarkerScaleFactor(size: AppearanceScale) {

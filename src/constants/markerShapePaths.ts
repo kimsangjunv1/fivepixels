@@ -7,6 +7,15 @@
  * Exact path strings — do not hand-edit. Regenerate from MaterialShapes.*.toSvgPathData().
  */
 export const MATERIAL_SHAPE_PATHS = {
+    circle: {
+        materialName: "Circle",
+        pathD:
+            "M1 0.5C1 0.77614 0.77614 1 0.5 1C0.22386 1 0 0.77614 0 0.5C0 0.22386 0.22386 0 0.5 0C0.77614 0 1 0.22386 1 0.5Z",
+    },
+    square: {
+        materialName: "Square",
+        pathD: "M0.08 0.08H0.92V0.92H0.08Z",
+    },
     cookie4: {
         materialName: "Cookie4Sided",
         pathD:

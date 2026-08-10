@@ -3,10 +3,11 @@ import {
     getMarkerScaleFactor,
     resolveMarkerBadgeDisplay,
     type AppearanceScale,
+    type MarkerFillStyle,
     type MarkerFontSize,
     type MarkerShape,
 } from "@/constants/markerAppearance.js";
-import { getMarkerReplyBadgeSize, resolveMarkerShapeStyle } from "@/utils/marker/markerShape.js";
+import { getMarkerReplyBadgeSize, resolveMarkerGlyphPaint, resolveMarkerShapeStyle } from "@/utils/marker/markerShape.js";
 import { MarkerReplyBadge } from "@/components/point/MarkerReplyBadge.js";
 import { MarkerShapeGlyph } from "@/components/point/MarkerShapeGlyph.js";
 
@@ -16,6 +17,7 @@ type MarkerSizePreviewProps = {
     shape: MarkerShape;
     color: string;
     fontFamily: string;
+    fillStyle?: MarkerFillStyle;
     label?: string;
     ariaLabel?: string;
     showReplyBadge?: boolean;
@@ -27,6 +29,7 @@ export function MarkerSizePreview({
     shape,
     color,
     fontFamily,
+    fillStyle = "filled",
     label = "1",
     ariaLabel,
     showReplyBadge = false,
@@ -35,6 +38,7 @@ export function MarkerSizePreview({
     const badgeDisplay = fontSize === "none" ? { content: null, fontSizePx: undefined, fontWeight: undefined } : resolveMarkerBadgeDisplay(size, label);
     const showMarkerLabel = Boolean(badgeDisplay.content);
     const shapeStyle = resolveMarkerShapeStyle(shape, dotSize);
+    const paint = resolveMarkerGlyphPaint(color, fillStyle, shapeStyle.strokeWidthPx);
     const replyBadgeSize = getMarkerReplyBadgeSize(dotSize);
 
     return (
@@ -61,16 +65,18 @@ export function MarkerSizePreview({
                             >
                                 <MarkerShapeGlyph
                                     shape={shape}
-                                    fill={color}
+                                    fill={paint.fill}
                                     width={shapeStyle.width}
                                     height={shapeStyle.height}
-                                    strokeWidthPx={shapeStyle.strokeWidthPx}
+                                    stroke={paint.stroke}
+                                    strokeWidthPx={paint.strokeWidthPx}
                                     style={{ filter: "drop-shadow(0 4px 10px #00000090)" }}
                                 />
                                 {showMarkerLabel ? (
                                     <span
-                                        className="absolute inset-0 z-[1] flex items-center justify-center text-white"
+                                        className="absolute inset-0 z-[1] flex items-center justify-center"
                                         style={{
+                                            color: paint.labelColor,
                                             fontSize: badgeDisplay.fontSizePx === undefined ? undefined : `${badgeDisplay.fontSizePx}px`,
                                             fontWeight: badgeDisplay.fontWeight,
                                             fontFamily,

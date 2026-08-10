@@ -472,6 +472,10 @@ export type ReportMessages = {
         markerSizeAriaLabel: string;
         markerShape: string;
         markerShapeAriaLabel: string;
+        markerFillStyle: string;
+        markerFillStyleAriaLabel: string;
+        markerFillStyleFilled: string;
+        markerFillStyleOutlined: string;
         markerColorOpen: string;
         markerColorResolved: string;
         markerColorGitIssued: string;
@@ -489,6 +493,8 @@ export type ReportMessages = {
         scaleMd: string;
         scaleLg: string;
         scaleXl: string;
+        markerShapeCircle: string;
+        markerShapeSquare: string;
         markerShapeCookie4: string;
         markerShapeSunny: string;
         markerShapeCookie6: string;

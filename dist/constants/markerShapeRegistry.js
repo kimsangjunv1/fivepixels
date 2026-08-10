@@ -15,6 +15,8 @@ function svgEntry(id) {
  * Add a shape later: extend `MarkerShape` + `MATERIAL_SHAPE_PATHS` + this map (+ i18n).
  */
 export const MARKER_SHAPE_REGISTRY = {
+    circle: svgEntry("circle"),
+    square: svgEntry("square"),
     cookie4: svgEntry("cookie4"),
     sunny: svgEntry("sunny"),
     cookie6: svgEntry("cookie6"),

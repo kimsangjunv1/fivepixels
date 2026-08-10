@@ -9,6 +9,8 @@ export const MARKER_SCALE_FACTOR = {
 };
 export const MARKER_FONT_SIZE_VALUES = ["none", "sm", "md", "lg", "xl"];
 export const MARKER_SHAPE_VALUES = [
+    "circle",
+    "square",
     "cookie4",
     "sunny",
     "cookie6",
@@ -21,6 +23,7 @@ export const MARKER_SHAPE_VALUES = [
     "pentagon",
     "puffy",
 ];
+export const MARKER_FILL_STYLE_VALUES = ["filled", "outlined"];
 export const MARKER_APPEARANCE_STORAGE_KEY = "fivepixels:marker-appearance";
 export const TYPOGRAPHY_STORAGE_KEY = "fivepixels:typography";
 export const MARKER_LABEL_FONT_SIZE_PX = {
@@ -41,6 +44,7 @@ export const DEFAULT_FEEDBACK_MODE_DOT_COLORS = {
 export const DEFAULT_MARKER_APPEARANCE = {
     size: "md",
     shape: "cookie4",
+    fillStyle: "filled",
     colors: DEFAULT_MARKER_COLORS,
     feedbackModeDotColors: DEFAULT_FEEDBACK_MODE_DOT_COLORS,
 };
@@ -69,6 +73,9 @@ export function isAppearanceScale(value) {
 }
 export function isMarkerShape(value) {
     return MARKER_SHAPE_VALUES.includes(value);
+}
+export function isMarkerFillStyle(value) {
+    return MARKER_FILL_STYLE_VALUES.includes(value);
 }
 export function getMarkerScaleFactor(size) {
     return MARKER_SCALE_FACTOR[size];

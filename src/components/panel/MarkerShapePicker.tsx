@@ -1,35 +1,45 @@
-import type { MarkerShape } from "@/constants/markerAppearance.js";
+import type { MarkerFillStyle, MarkerShape } from "@/constants/markerAppearance.js";
 import { MARKER_SHAPE_VALUES } from "@/constants/markerAppearance.js";
 import { CheckIcon } from "@/components/icons/Icons.js";
 import { MarkerShapeGlyph } from "@/components/point/MarkerShapeGlyph.js";
-import { resolveMarkerShapeStyle } from "@/utils/marker/markerShape.js";
+import { resolveMarkerGlyphPaint, resolveMarkerShapeStyle } from "@/utils/marker/markerShape.js";
 
 type MarkerShapePickerProps = {
     value: MarkerShape;
     onChange: (value: MarkerShape) => void;
     labels: Record<MarkerShape, string>;
     ariaLabel: string;
+    previewColor: string;
+    fillStyle?: MarkerFillStyle;
 };
 
-function ShapePreview({ shape }: { shape: MarkerShape }) {
+function ShapePreview({ shape, previewColor, fillStyle }: { shape: MarkerShape; previewColor: string; fillStyle: MarkerFillStyle }) {
     const preview = resolveMarkerShapeStyle(shape, 12);
+    const paint = resolveMarkerGlyphPaint(previewColor, fillStyle, preview.strokeWidthPx);
     const width = Math.min(preview.width, 16);
     const height = Math.min(preview.height, 16);
 
     return (
         <MarkerShapeGlyph
             shape={shape}
-            fill="var(--adaptive-blue500)"
+            fill={paint.fill}
             width={width}
             height={height}
-            stroke="transparent"
-            strokeWidthPx={0}
+            stroke={paint.stroke}
+            strokeWidthPx={paint.strokeWidthPx}
             style={{ filter: "none" }}
         />
     );
 }
 
-export function MarkerShapePicker({ value, onChange, labels, ariaLabel }: MarkerShapePickerProps) {
+export function MarkerShapePicker({
+    value,
+    onChange,
+    labels,
+    ariaLabel,
+    previewColor,
+    fillStyle = "filled",
+}: MarkerShapePickerProps) {
     return (
         <div
             role="radiogroup"
@@ -53,7 +63,11 @@ export function MarkerShapePicker({ value, onChange, labels, ariaLabel }: Marker
                         }`}
                     >
                         <div className="relative flex h-[28px] w-full items-center justify-center rounded-[5px] bg-[var(--adaptive-black100)]">
-                            <ShapePreview shape={shape} />
+                            <ShapePreview
+                                shape={shape}
+                                previewColor={previewColor}
+                                fillStyle={fillStyle}
+                            />
                             {active ? (
                                 <span className="absolute right-[2px] bottom-[2px] flex h-[12px] w-[12px] items-center justify-center rounded-full bg-[var(--adaptive-blue500)] text-white">
                                     <CheckIcon className="h-[7px] w-[7px]" />

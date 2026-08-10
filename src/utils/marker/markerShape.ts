@@ -1,4 +1,4 @@
-import type { MarkerShape } from "@/constants/markerAppearance.js";
+import type { MarkerFillStyle, MarkerShape } from "@/constants/markerAppearance.js";
 import { getMarkerShapeDefinition, MARKER_SHAPE_STROKE_WIDTH_PX } from "@/constants/markerShapeRegistry.js";
 
 type MarkerShapeStyle = {
@@ -6,6 +6,13 @@ type MarkerShapeStyle = {
     width: number;
     height: number;
     strokeWidthPx: number;
+};
+
+export type MarkerGlyphPaint = {
+    fill: string;
+    stroke: string;
+    strokeWidthPx: number;
+    labelColor: string;
 };
 
 export function resolveMarkerShapeStyle(shape: MarkerShape, dotSize: number): MarkerShapeStyle {
@@ -17,6 +24,24 @@ export function resolveMarkerShapeStyle(shape: MarkerShape, dotSize: number): Ma
         width: size,
         height: size,
         strokeWidthPx: definition.strokeWidthPx,
+    };
+}
+
+export function resolveMarkerGlyphPaint(color: string, fillStyle: MarkerFillStyle, strokeWidthPx: number): MarkerGlyphPaint {
+    if (fillStyle === "outlined") {
+        return {
+            fill: "transparent",
+            stroke: color,
+            strokeWidthPx: Math.max(strokeWidthPx, 2.5),
+            labelColor: color,
+        };
+    }
+
+    return {
+        fill: color,
+        stroke: "#ffffff",
+        strokeWidthPx,
+        labelColor: "#ffffff",
     };
 }
 
