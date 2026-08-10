@@ -23,6 +23,7 @@ import {
 import { usesReplyInfiniteScroll } from "@/constants/replyHistory.js";
 import { REPLY_HISTORY_SCROLL_THRESHOLD_PX } from "@/utils/feedback/replyHistory.js";
 import { getGitHubIssueUrl, isGitIssuedSystemReply } from "@/utils/github/githubIntegration.js";
+import { ACCENT_COLOR } from "@/constants/accentColors.js";
 import { CheckCircleIcon } from "@/components/icons/Icons.js";
 import { AssigneeThreadEntry } from "./AssigneeThreadEntry.js";
 import { FeedbackCaseList } from "./FeedbackCaseList.js";
@@ -80,7 +81,7 @@ const SCROLL_HINT_CLASS = "pointer-events-none absolute left-0 right-0 z-10 px-[
 
 function ThreadResolvedDivider() {
     const { messages } = useReportPreferences();
-    const resolvedColor = "#baff00";
+    const resolvedColor = ACCENT_COLOR.green;
 
     return (
         <ThreadTimelineRow>

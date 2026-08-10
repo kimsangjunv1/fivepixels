@@ -8,9 +8,10 @@ import { getReportCases } from "@/utils/report/reportCases.js";
 import { mentionMessageToPlainText } from "@/utils/mention/elementMentions.js";
 import { canRemoveCase } from "@/utils/feedback/feedbackPermissions.js";
 import { formatRelativeTime } from "@/utils/shared/format.js";
+import { ACCENT_COLOR } from "@/constants/accentColors.js";
 import { FeedbackDeleteAction } from "@/components/panel/feedback/FeedbackDeleteAction.js";
 
-const RESOLVED_STATUS_COLOR = "#baff00";
+const RESOLVED_STATUS_COLOR = ACCENT_COLOR.green;
 
 type MarkerCaseSidebarProps = {
     report: ReportFeedback;

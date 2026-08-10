@@ -5,6 +5,6 @@ export function IconTooltipButton({ label, active = false, disabled = false, onC
     return (_jsx(HoverTooltip, { label: label, disabled: disabled, className: "h-[inherit]", children: _jsx("button", { type: "button", "aria-label": label, "aria-pressed": active, disabled: disabled, onPointerDown: (e) => {
                 e.stopPropagation();
                 onClick();
-            }, className: `${ICON_BUTTON_BASE_CLASS} shrink-0 ${active ? "hover:bg-[#bc3110] bg-[#f6562f]" : "hover:bg-[var(--adaptive-black50)]"} ${className}`, children: children }) }));
+            }, className: `${ICON_BUTTON_BASE_CLASS} shrink-0 ${active ? "hover:bg-[var(--adaptive-accent-coral-hover)] bg-[var(--adaptive-accent-coral)]" : "hover:bg-[var(--adaptive-black50)]"} ${className}`, children: children }) }));
 }
 //# sourceMappingURL=IconTooltipButton.js.map

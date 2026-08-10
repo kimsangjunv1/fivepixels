@@ -209,6 +209,14 @@
     --adaptive-purple800: #73228e;
     --adaptive-purple900: #65237b;
 
+    /* Brand accents: darker on light for contrast; bright neon kept for dark */
+    --adaptive-accent-green: #92b522;
+    --adaptive-accent-red: #e04848;
+    --adaptive-accent-blue: #3b8eeb;
+    --adaptive-accent-coral: #e0552f;
+    --adaptive-accent-coral-hover: #c4431f;
+    --adaptive-accent-pink: #e03a8a;
+
     --adaptive-backgroundDimmed: rgba(0, 0, 0, 0.2);
     --adaptive-backgroundLevelB01: #f2f4f6;
     --adaptive-backgroundLevel01: #ffffff;
@@ -419,6 +427,14 @@
     --adaptive-purple700: #d77cf2;
     --adaptive-purple800: #eaacfc;
     --adaptive-purple900: #f6d9ff;
+
+    /* Brand accents: bright neon for dark backgrounds */
+    --adaptive-accent-green: #baff00;
+    --adaptive-accent-red: #ff3b30;
+    --adaptive-accent-blue: #4dabff;
+    --adaptive-accent-coral: #f6562f;
+    --adaptive-accent-coral-hover: #bc3110;
+    --adaptive-accent-pink: #fb328b;
 
     --adaptive-backgroundDimmed: rgba(0, 0, 0, 0.56);
     --adaptive-backgroundLevelB01: #101013;

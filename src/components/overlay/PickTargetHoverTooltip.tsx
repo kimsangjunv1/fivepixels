@@ -1,6 +1,7 @@
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import { CheckCircleIcon } from "@/components/icons/Icons.js";
 import { useReportPreferences, useReportSession } from "@/providers/reportContext.js";
+import { ACCENT_COLOR } from "@/constants/accentColors.js";
 import { MOTION } from "@/constants/motionClasses.js";
 import type { TargetSnapshot } from "@/types/report-ui.js";
 import { HOVER_TOOLTIP_MARGIN } from "@/utils/marker/hoverTooltipLayout.js";
@@ -8,7 +9,7 @@ import { HOVER_TOOLTIP_MARGIN } from "@/utils/marker/hoverTooltipLayout.js";
 const TOOLTIP_SURFACE_CLASS = `pointer-events-none fixed z-[1000002] min-w-[220px] max-w-[min(320px,calc(100vw-16px))] overflow-hidden rounded-[16px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-neutralTintOpacity900)] px-[12px] py-[10px] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[20px] ${MOTION.tooltipIn}`;
 
 const POINTER_OFFSET = 12;
-const TAGGED_REPORT_ID_COLOR = "#baff00";
+const TAGGED_REPORT_ID_COLOR = ACCENT_COLOR.green;
 
 type PickTargetHoverTooltipProps = {
     target: TargetSnapshot;

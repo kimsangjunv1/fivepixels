@@ -1,15 +1,18 @@
 import { dispatchFeedbackStorageChanged } from "@/constants/feedbackStorageEvents.js";
 import { readAllFeedback, writeAllFeedback } from "@/utils/feedback/feedbackDataTransfer.js";
 import { createEdgecaseFeedbackSeed } from "./createEdgecaseFeedbackSeed.js";
-import { BASIC_EXAMPLE_PROJECT_SCOPE } from "./reportProjectScope.js";
+import { createSettingsFeedbackSeed } from "./createSettingsFeedbackSeed.js";
+import { BASIC_EXAMPLE_PROJECT_SCOPE, DEMO_FEEDBACK_SEED_PREFIXES } from "./reportProjectScope.js";
 
-const EDGECASE_SEED_ID_PREFIX = "edgecase-seed-";
+function isDemoSeedItem(id: string) {
+    return DEMO_FEEDBACK_SEED_PREFIXES.some((prefix) => id.startsWith(prefix));
+}
 
-/** Replace all `edgecase-seed-*` items so story data stays in sync with the current catalog. */
-export function ensureEdgecaseFeedbackSeed() {
-    const items = createEdgecaseFeedbackSeed();
+/** Replace all demo seed items so story data stays in sync with the current catalog. */
+export function ensureDemoFeedbackSeed() {
+    const items = [...createEdgecaseFeedbackSeed(), ...createSettingsFeedbackSeed()];
     const existing = readAllFeedback(BASIC_EXAMPLE_PROJECT_SCOPE);
-    const nonSeedItems = existing.filter((item) => !item.id.startsWith(EDGECASE_SEED_ID_PREFIX));
+    const nonSeedItems = existing.filter((item) => !isDemoSeedItem(item.id));
 
     writeAllFeedback(BASIC_EXAMPLE_PROJECT_SCOPE, [...nonSeedItems, ...items]);
     dispatchFeedbackStorageChanged();
@@ -22,3 +25,6 @@ export function ensureEdgecaseFeedbackSeed() {
         replaced: existing.length - nonSeedItems.length,
     };
 }
+
+/** @deprecated Use ensureDemoFeedbackSeed */
+export const ensureEdgecaseFeedbackSeed = ensureDemoFeedbackSeed;

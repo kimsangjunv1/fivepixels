@@ -5,3 +5,6 @@ export const BASIC_EXAMPLE_PROJECT_SCOPE = {
 };
 
 export const EDGECASE_PATHNAME = "/edgecase";
+export const SETTINGS_PATHNAME = "/settings";
+
+export const DEMO_FEEDBACK_SEED_PREFIXES = ["edgecase-seed-", "settings-seed-"] as const;

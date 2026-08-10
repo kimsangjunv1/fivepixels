@@ -42,7 +42,7 @@ export function DraftBubbleTailSvg({ corner }: DraftBubbleTailSvgProps) {
         >
             <path
                 d="M19 24C7.6 24 1.9 22 0 20C7.6 14 9.5 10 11.4 0C11.4 10 11.4 16 19 24Z"
-                fill="#0074FB"
+                fill="var(--adaptive-accent-blue)"
                 // transform={transform}
             />
         </svg>

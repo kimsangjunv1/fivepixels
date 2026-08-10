@@ -1,3 +1,5 @@
+import { ACCENT_COLOR_DARK } from "@/constants/accentColors.js";
+
 export type AppearanceScale = "xs" | "sm" | "md" | "lg" | "xl";
 
 export const APPEARANCE_SCALE_VALUES = ["xs", "sm", "md", "lg", "xl"] as const satisfies readonly AppearanceScale[];
@@ -66,9 +68,9 @@ export const MARKER_LABEL_FONT_SIZE_PX: Record<MarkerLabelFontSize, number> = {
 };
 
 export const DEFAULT_MARKER_COLORS: MarkerColorPreferences = {
-    open: "#f6572d",
+    open: ACCENT_COLOR_DARK.coral,
     resolved: "#03b26c",
-    gitIssued: "#3182f6",
+    gitIssued: ACCENT_COLOR_DARK.blue,
 };
 
 export const DEFAULT_FEEDBACK_MODE_DOT_COLORS: FeedbackModeDotColors = {

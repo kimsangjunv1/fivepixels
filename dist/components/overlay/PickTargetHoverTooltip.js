@@ -2,11 +2,12 @@ import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-run
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import { CheckCircleIcon } from "../../components/icons/Icons.js";
 import { useReportPreferences, useReportSession } from "../../providers/reportContext.js";
+import { ACCENT_COLOR } from "../../constants/accentColors.js";
 import { MOTION } from "../../constants/motionClasses.js";
 import { HOVER_TOOLTIP_MARGIN } from "../../utils/marker/hoverTooltipLayout.js";
 const TOOLTIP_SURFACE_CLASS = `pointer-events-none fixed z-[1000002] min-w-[220px] max-w-[min(320px,calc(100vw-16px))] overflow-hidden rounded-[16px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-neutralTintOpacity900)] px-[12px] py-[10px] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[20px] ${MOTION.tooltipIn}`;
 const POINTER_OFFSET = 12;
-const TAGGED_REPORT_ID_COLOR = "#baff00";
+const TAGGED_REPORT_ID_COLOR = ACCENT_COLOR.green;
 function InspectRow({ label, value, valueClassName = "" }) {
     return (_jsxs("div", { className: "flex items-start justify-between gap-[12px] text-[11px] leading-[1.45]", children: [_jsx("span", { className: "shrink-0 text-[var(--adaptive-black500)]", children: label }), _jsx("span", { className: `min-w-0 break-all text-right font-[var(--coding-font)] text-[var(--adaptive-black900)] ${valueClassName}`.trim(), children: value })] }));
 }

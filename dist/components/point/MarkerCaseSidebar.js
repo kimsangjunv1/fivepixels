@@ -7,8 +7,9 @@ import { getReportCases } from "../../utils/report/reportCases.js";
 import { mentionMessageToPlainText } from "../../utils/mention/elementMentions.js";
 import { canRemoveCase } from "../../utils/feedback/feedbackPermissions.js";
 import { formatRelativeTime } from "../../utils/shared/format.js";
+import { ACCENT_COLOR } from "../../constants/accentColors.js";
 import { FeedbackDeleteAction } from "../../components/panel/feedback/FeedbackDeleteAction.js";
-const RESOLVED_STATUS_COLOR = "#baff00";
+const RESOLVED_STATUS_COLOR = ACCENT_COLOR.green;
 function CaseStatusIndicator({ caseStatus }) {
     if (caseStatus === "resolved") {
         return (_jsx(CheckCircleIcon, { className: "h-[12px] w-[12px] shrink-0", fill: RESOLVED_STATUS_COLOR }));

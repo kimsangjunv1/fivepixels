@@ -20,6 +20,7 @@ import { mentionMessageToPlainText } from "../../utils/mention/elementMentions.j
 import { HoverTooltip } from "../../components/ui/HoverTooltip.js";
 import { CornerResizeGhost } from "../../components/ui/CornerResizeGhost.js";
 import { MOTION } from "../../constants/motionClasses.js";
+import { ACCENT_COLOR } from "../../constants/accentColors.js";
 import { CornerResizeHandle } from "../../components/ui/CornerResizeHandle.js";
 import { FeedbackComposer } from "../../components/panel/feedback/FeedbackComposer.js";
 import { CaseAssigneeInfo } from "../../components/panel/feedback/CaseAssigneeInfo.js";
@@ -32,7 +33,7 @@ const DEFAULT_WINDOW_SIZE = { width: 600, height: 460 };
 const MIN_WINDOW_WIDTH = 420;
 const MIN_WINDOW_HEIGHT = 280;
 const DEFAULT_SIDEBAR_WIDTH = 208;
-const RESOLVED_STATUS_COLOR = "#baff00";
+const RESOLVED_STATUS_COLOR = ACCENT_COLOR.green;
 const SIDEBAR_MIN_WIDTH = 150;
 const RIGHT_MIN_WIDTH = 280;
 const COLLAPSED_SIDEBAR_WIDTH = 46;

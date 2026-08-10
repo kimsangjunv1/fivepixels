@@ -590,7 +590,7 @@ export function FeedbackComposer({
                                     data-fivepixels-interactive=""
                                     disabled={isActionDisabled}
                                     onClick={handleSubmit}
-                                    className="inline-flex h-[32px] w-[32px] shrink-0 items-center justify-center rounded-full bg-[#f6562f] text-white disabled:opacity-50"
+                                    className="inline-flex h-[32px] w-[32px] shrink-0 items-center justify-center rounded-full bg-[var(--adaptive-accent-coral)] text-white disabled:opacity-50"
                                     aria-label={messages.composer.sendAriaLabel}
                                 >
                                     <SendIcon className="h-[16px] w-[16px]" />

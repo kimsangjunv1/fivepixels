@@ -6,9 +6,10 @@ import { getReportCases } from "../../../utils/report/reportCases.js";
 import { mentionMessageToPlainText } from "../../../utils/mention/elementMentions.js";
 import { formatRelativeTime } from "../../../utils/shared/format.js";
 import { useReportPreferences } from "../../../providers/reportContext.js";
+import { ACCENT_COLOR } from "../../../constants/accentColors.js";
 import { FeedbackCreatorBadge } from "./FeedbackCreatorBadge.js";
 const MAX_TOOLTIP_CASES = 5;
-const RESOLVED_STATUS_COLOR = "#baff00";
+const RESOLVED_STATUS_COLOR = ACCENT_COLOR.green;
 function CaseStatusLabel({ status }) {
     const { messages } = useReportPreferences();
     const isResolved = status === "resolved";

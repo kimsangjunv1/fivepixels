@@ -1,3 +1,4 @@
+import { ACCENT_COLOR_DARK } from "../constants/accentColors.js";
 export const APPEARANCE_SCALE_VALUES = ["xs", "sm", "md", "lg", "xl"];
 export const MARKER_SCALE_FACTOR = {
     xs: 0.7,
@@ -29,9 +30,9 @@ export const MARKER_LABEL_FONT_SIZE_PX = {
     xl: 16,
 };
 export const DEFAULT_MARKER_COLORS = {
-    open: "#f6572d",
+    open: ACCENT_COLOR_DARK.coral,
     resolved: "#03b26c",
-    gitIssued: "#3182f6",
+    gitIssued: ACCENT_COLOR_DARK.blue,
 };
 export const DEFAULT_FEEDBACK_MODE_DOT_COLORS = {
     light: "#111827",
