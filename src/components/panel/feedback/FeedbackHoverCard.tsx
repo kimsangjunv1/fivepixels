@@ -9,7 +9,6 @@ import { mentionMessageToPlainText } from "@/utils/mention/elementMentions.js";
 import { formatRelativeTime } from "@/utils/shared/format.js";
 import { useReportPreferences } from "@/providers/reportContext.js";
 import { ACCENT_COLOR } from "@/constants/accentColors.js";
-import { FeedbackCreatorBadge } from "./FeedbackCreatorBadge.js";
 
 const MAX_TOOLTIP_CASES = 5;
 const RESOLVED_STATUS_COLOR = ACCENT_COLOR.green;
@@ -84,7 +83,6 @@ export function FeedbackHoverCard({ report, detached = false, detachedKind = nul
                     <div className="flex items-center gap-[6px] pt-[6px]">
                         {report.author_name ? <p className="text-[14px] text-[var(--adaptive-black500)]">{report.author_name}</p> : null}
                         {reportRelativeTime ? <p className="text-[14px] text-[var(--adaptive-black500)]">{reportRelativeTime}</p> : null}
-                        {report.author_name ? <FeedbackCreatorBadge /> : null}
                     </div>
                 ) : null}
             </div>
