@@ -27,7 +27,7 @@ export const en = {
         collapse: "Collapse panel",
         repositionAriaLabel: "Reposition panel",
         repositionTitle: "Drag to reposition",
-        stopFeedback: "Stop feedback",
+        stopFeedback: "Complete Feedback",
         addFeedback: "Add feedback",
         viewOptionsAriaLabel: "View options",
         viewSelectableElements: "View selectable elements",

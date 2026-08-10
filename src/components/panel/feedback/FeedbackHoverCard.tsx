@@ -4,10 +4,10 @@ import type { MarkerDetachedKind } from "@/types/report-ui.js";
 import { CheckCircleIcon } from "@/components/icons/Icons.js";
 import { getDetachedMarkerHint } from "@/utils/marker/markerContext.js";
 import { getCaseLatestStatus } from "@/utils/feedback/feedbackThread.js";
-import { getReportCases } from "@/utils/report/reportCases.js";
+import { formatAssigneeLabel, getReportCases, resolveAuthorDepartment } from "@/utils/report/reportCases.js";
 import { mentionMessageToPlainText } from "@/utils/mention/elementMentions.js";
 import { formatRelativeTime } from "@/utils/shared/format.js";
-import { useReportPreferences } from "@/providers/reportContext.js";
+import { useReport, useReportPreferences } from "@/providers/reportContext.js";
 import { ACCENT_COLOR } from "@/constants/accentColors.js";
 
 const MAX_TOOLTIP_CASES = 5;
@@ -37,11 +37,15 @@ function CaseStatusLabel({ status }: { status: FeedbackDisplayStatus }) {
 
 export function FeedbackHoverCard({ report, detached = false, detachedKind = null, detachedHint, detachedModalHint }: FeedbackHoverCardProps) {
     const { messages } = useReportPreferences();
+    const { authors } = useReport();
     const cases = getReportCases(report);
     const visibleCases = cases.slice(0, MAX_TOOLTIP_CASES);
     const hasMoreCases = cases.length > MAX_TOOLTIP_CASES;
     const resolvedDetachedHint = detached && detachedHint && detachedModalHint ? getDetachedMarkerHint(detachedKind, { detachedHint, detachedModalHint }) : null;
     const reportRelativeTime = formatRelativeTime(report.created_at, messages.common.relativeTime);
+    const authorLabel = report.author_name
+        ? formatAssigneeLabel(report.author_name, resolveAuthorDepartment(authors, report.author_name))
+        : null;
 
     return (
         <div className="flex w-[260px] flex-col bg-transparent">
@@ -79,10 +83,17 @@ export function FeedbackHoverCard({ report, detached = false, detachedKind = nul
 
                 {hasMoreCases ? <p className="text-[12px] leading-[1.4] text-[var(--adaptive-black500)]">{messages.marker.viewMoreCases}</p> : null}
 
-                {report.author_name || reportRelativeTime ? (
+                {authorLabel || reportRelativeTime ? (
                     <div className="flex items-center gap-[6px] pt-[6px]">
-                        {report.author_name ? <p className="text-[14px] text-[var(--adaptive-black500)]">{report.author_name}</p> : null}
-                        {reportRelativeTime ? <p className="text-[14px] text-[var(--adaptive-black500)]">{reportRelativeTime}</p> : null}
+                        {authorLabel ? (
+                            <p
+                                className="min-w-0 truncate text-[14px] text-[var(--adaptive-black500)]"
+                                title={authorLabel}
+                            >
+                                {authorLabel}
+                            </p>
+                        ) : null}
+                        {reportRelativeTime ? <p className="shrink-0 text-[14px] text-[var(--adaptive-black500)]">{reportRelativeTime}</p> : null}
                     </div>
                 ) : null}
             </div>

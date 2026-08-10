@@ -152,6 +152,7 @@ function CaseThreadEntry({
     caseMentions = [],
     caseCreatedAt,
     caseStatus,
+    authors,
     actorName,
     pendingComposer,
     onStartAskQuestion,
@@ -166,6 +167,7 @@ function CaseThreadEntry({
     caseMentions?: ElementMention[];
     caseCreatedAt: string;
     caseStatus: "open" | "resolved";
+    authors: ReportAuthor[];
     actorName: string;
     pendingComposer: PendingComposer;
     onStartAskQuestion: () => void;
@@ -194,6 +196,7 @@ function CaseThreadEntry({
                 {report.author_name ? (
                     <ThreadAuthorMeta
                         authorName={report.author_name}
+                        authors={authors}
                         showMine={report.author_name.trim() === actorName}
                         showCreator
                     />
@@ -322,6 +325,7 @@ function ThreadRootReply({
                 {reply.author_name ? (
                     <ThreadAuthorMeta
                         authorName={reply.author_name}
+                        authors={authors}
                         showMine={reply.author_name.trim() === actorName}
                         showCreator={reply.author_name.trim() === originalAuthorName}
                     />
@@ -576,6 +580,7 @@ export function FeedbackThread({
                                         caseMentions={focusedCase.mentions}
                                         caseCreatedAt={focusedCase.created_at}
                                         caseStatus={focusedCase.status}
+                                        authors={authors}
                                         actorName={actorName}
                                         pendingComposer={pendingComposer}
                                         onStartAskQuestion={onStartAskQuestion}
@@ -589,6 +594,7 @@ export function FeedbackThread({
 
                             <QuestionThreadGroup
                                 questions={timeline.issueChildren}
+                                authors={authors}
                                 originalAuthorName={originalAuthorName}
                                 actorName={actorName}
                                 forceExpanded={shouldForceExpandQuestionGroup(report, focusedCaseId, timeline.issueChildren, {
@@ -622,6 +628,7 @@ export function FeedbackThread({
                                     />
                                     <QuestionThreadGroup
                                         questions={branch.children}
+                                        authors={authors}
                                         originalAuthorName={originalAuthorName}
                                         actorName={actorName}
                                         forceExpanded={shouldForceExpandQuestionGroup(report, focusedCaseId, branch.children, {

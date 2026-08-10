@@ -4,7 +4,7 @@ import { useReportPreferences } from "../../../providers/reportContext.js";
 import { ChevronDownIcon } from "../../../components/icons/Icons.js";
 import { ThreadChildReply } from "./ThreadChildReply.js";
 import { ThreadTimelineRow } from "./ThreadTimelineRow.js";
-export function QuestionThreadGroup({ questions, originalAuthorName, actorName, forceExpanded = false }) {
+export function QuestionThreadGroup({ questions, authors, originalAuthorName, actorName, forceExpanded = false }) {
     const { messages, questionThreadDisplay } = useReportPreferences();
     const [isExpanded, setIsExpanded] = useState(() => questionThreadDisplay === "expanded");
     useEffect(() => {
@@ -24,7 +24,7 @@ export function QuestionThreadGroup({ questions, originalAuthorName, actorName, 
             : messages.thread.questionsHide(questions.length)
         : messages.thread.questionsShow(questions.length);
     return (_jsxs("div", { className: "flex flex-col", children: [_jsx(ThreadTimelineRow, { children: _jsxs("button", { type: "button", "data-fivepixels-interactive": "", "aria-expanded": isExpanded, "aria-label": messages.thread.questionsToggleAriaLabel(questions.length, isExpanded), onClick: () => setIsExpanded((current) => !current), className: "flex items-center gap-[4px] rounded-[6px] py-[2px] text-left text-[12px] text-[var(--adaptive-black500)] hover:opacity-80", children: [_jsx(ChevronDownIcon, { className: `h-[12px] w-[12px] shrink-0 text-[var(--adaptive-black400)] transition-transform ${isExpanded ? "rotate-180" : ""}` }), _jsx("span", { className: "text-[12px] text-[var(--adaptive-black500)] font-medium", children: toggleLabel })] }) }), isExpanded
-                ? questions.map((question) => (_jsx(ThreadChildReply, { reply: question, originalAuthorName: originalAuthorName, actorName: actorName }, question.id)))
+                ? questions.map((question) => (_jsx(ThreadChildReply, { reply: question, authors: authors, originalAuthorName: originalAuthorName, actorName: actorName }, question.id)))
                 : null] }));
 }
 //# sourceMappingURL=QuestionThreadGroup.js.map

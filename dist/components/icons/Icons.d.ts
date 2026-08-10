@@ -63,6 +63,9 @@ export declare function DeniedActionIcon({ className, fill }: {
 export declare function CompleteActionIcon({ className, fill }: {
     className?: string;
 } & Pick<MaterialIconProps, "fill">): import("react").JSX.Element;
+export declare function KeyboardReturnIcon({ className, fill }: {
+    className?: string;
+} & Pick<MaterialIconProps, "fill">): import("react").JSX.Element;
 export declare function TrashIcon({ className }: {
     className?: string;
 }): import("react").JSX.Element;
