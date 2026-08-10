@@ -5,7 +5,7 @@ import { useDraggableWindow, clampWindowPosition } from "../../hooks/useDraggabl
 import { useGhostCornerResize } from "../../hooks/useGhostCornerResize.js";
 import { useNativeHover } from "../../hooks/useNativeHover.js";
 import { useReport } from "../../providers/reportContext.js";
-import { shouldShowCaseReplyComposer } from "../../utils/feedback/feedbackThread.js";
+import { resolvePendingComposerTargetPreview, shouldShowCaseReplyComposer } from "../../utils/feedback/feedbackThread.js";
 import { getCaseAssigneeName, getCaseById } from "../../utils/report/reportCases.js";
 import { getFieldTags } from "../../utils/report/fields.js";
 import { copyTextToClipboard } from "../../utils/feedback/feedbackDataTransfer.js";
@@ -196,6 +196,12 @@ export function MarkerFeedbackWindow({ report, anchor }) {
         }
         return shouldShowCaseReplyComposer(report, focusedCaseId, pendingComposer);
     }, [focusedCaseId, pendingComposer, report]);
+    const replyTargetPreview = useMemo(() => {
+        if (pendingComposer?.type !== "question") {
+            return null;
+        }
+        return resolvePendingComposerTargetPreview(report, focusedCaseId, pendingComposer);
+    }, [focusedCaseId, pendingComposer, report]);
     const focusedCase = focusedCaseId ? getCaseById(report, focusedCaseId) : undefined;
     const focusedCaseAssigneeName = focusedCaseId ? getCaseAssigneeName(report, focusedCaseId) : null;
     const showAssigneeAssigned = Boolean(focusedCaseAssigneeName) || isClaimingAssignee;
@@ -259,7 +265,7 @@ export function MarkerFeedbackWindow({ report, anchor }) {
                                 if (errorMessage) {
                                     setErrorMessage("");
                                 }
-                            }, mentions: replyMentions, onMentionsChange: setReplyMentions, enableElementMentions: true, authorName: replyAuthorName, onAuthorNameChange: setReplyAuthorName, authors: authors, fields: fields, fieldValues: report.field_values, onFieldChange: () => undefined, showTags: false, hideAuthorSelector: true, onSubmit: () => void handleReplySubmit(), isSubmitting: isSubmittingReply || isUpdating, autoFocus: pendingComposer !== null, askQuestionForced: isCreatorQuestionComposer, composerMode: pendingComposer?.type ?? null, onCancelComposerMode: cancelPendingComposer, errorMessage: errorMessage }) })) : null] })] }));
+                            }, mentions: replyMentions, onMentionsChange: setReplyMentions, enableElementMentions: true, authorName: replyAuthorName, onAuthorNameChange: setReplyAuthorName, authors: authors, fields: fields, fieldValues: report.field_values, onFieldChange: () => undefined, showTags: false, hideAuthorSelector: true, onSubmit: () => void handleReplySubmit(), isSubmitting: isSubmittingReply || isUpdating, autoFocus: pendingComposer !== null, askQuestionForced: isCreatorQuestionComposer, composerMode: pendingComposer?.type ?? null, onCancelComposerMode: cancelPendingComposer, replyTargetPreview: replyTargetPreview, errorMessage: errorMessage }) })) : null] })] }));
     return (_jsxs(_Fragment, { children: [isResizing ? _jsx(CornerResizeGhost, { ghostRef: ghostRef }) : null, _jsx("div", { ref: bindWindowRef, "data-fivepixels-interactive": "", onClick: (event) => event.stopPropagation(), onAnimationEnd: handleWindowAnimationEnd, className: `fixed z-[1000001] ${windowAnimationClass}`, style: {
                     left: resolvedPosition.left,
                     top: resolvedPosition.top,

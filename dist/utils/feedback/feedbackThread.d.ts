@@ -68,6 +68,10 @@ export declare function resolveParentReplyIdForCaseQuestion(report: ReportFeedba
     type: string;
     targetReplyId: string;
 } | null): string | null;
+export declare function resolvePendingComposerTargetPreview(report: ReportFeedback, caseId: string | null | undefined, pendingComposer: {
+    type: string;
+    targetReplyId: string;
+} | null): string | null;
 export declare function resolveParentReplyIdForQuestion(report: ReportFeedback, pendingComposer: {
     type: string;
     targetReplyId: string;

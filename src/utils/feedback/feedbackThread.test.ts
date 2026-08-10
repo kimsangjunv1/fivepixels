@@ -29,6 +29,7 @@ import {
     shouldShowCaseReplyComposer,
     shouldShowReplyComposer,
     shouldForceExpandQuestionGroup,
+    resolvePendingComposerTargetPreview,
 } from "./feedbackThread.js";
 import { createReportCase } from "../report/reportCases.js";
 
@@ -531,5 +532,41 @@ describe("feedbackThread", () => {
                 questions,
             ),
         ).toBe(false);
+    });
+
+    it("resolves pending composer target preview text", () => {
+        const caseA = createReportCase("Submit disabled state has no accessible label.");
+        const report = createReport({
+            cases: [caseA],
+            replies: [
+                {
+                    id: "r1",
+                    message: "Please check the button aria-label.",
+                    created_at: "2026-01-02T00:00:00.000Z",
+                    status: "suggested",
+                    case_ids: [caseA.id],
+                },
+            ],
+        });
+
+        expect(resolvePendingComposerTargetPreview(report, caseA.id, null)).toBeNull();
+        expect(
+            resolvePendingComposerTargetPreview(report, caseA.id, {
+                type: "question",
+                targetReplyId: ISSUE_ROOT_PARENT_ID,
+            }),
+        ).toBe("Submit disabled state has no accessible label.");
+        expect(
+            resolvePendingComposerTargetPreview(report, caseA.id, {
+                type: "question",
+                targetReplyId: "r1",
+            }),
+        ).toBe("Please check the button aria-label.");
+        expect(
+            resolvePendingComposerTargetPreview(report, caseA.id, {
+                type: "question",
+                targetReplyId: "missing",
+            }),
+        ).toBeNull();
     });
 });

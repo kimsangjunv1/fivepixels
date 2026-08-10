@@ -37,6 +37,7 @@ type FeedbackComposerProps = {
     askQuestionForced?: boolean;
     composerMode?: ComposerMode | null;
     onCancelComposerMode?: () => void;
+    replyTargetPreview?: string | null;
     hideAuthorSelector?: boolean;
     lockedAuthorName?: string;
     onFooterWarningChange?: (message: string | null) => void;
@@ -48,6 +49,6 @@ type FeedbackComposerProps = {
     activeCaseId?: string | null;
     onActiveCaseIdChange?: (caseId: string) => void;
 };
-export declare function FeedbackComposer({ message, onMessageChange, mentions, onMentionsChange, enableElementMentions, cases, onCaseChange, onAddCase, onRemoveCase, authorName, onAuthorNameChange, authors, fields: _fields, fieldValues: _fieldValues, onFieldChange: _onFieldChange, category, onCategoryChange, showCategory, showTags: _showTags, onSubmit, isSubmitting, showGitHubIssueOnCreate, onGitHubIssueSubmit, isGitHubIssueSubmitting, placeholder, autoFocus, errorMessage, showAskQuestionToggle, askQuestionChecked, onAskQuestionChange, askQuestionForced, composerMode, onCancelComposerMode, hideAuthorSelector, lockedAuthorName, onFooterWarningChange, hideEditor, hideActions, hidePrimarySubmitAction, categoryPrompt, showCaseTabBar, activeCaseId, onActiveCaseIdChange, }: FeedbackComposerProps): import("react").JSX.Element;
+export declare function FeedbackComposer({ message, onMessageChange, mentions, onMentionsChange, enableElementMentions, cases, onCaseChange, onAddCase, onRemoveCase, authorName, onAuthorNameChange, authors, fields: _fields, fieldValues: _fieldValues, onFieldChange: _onFieldChange, category, onCategoryChange, showCategory, showTags: _showTags, onSubmit, isSubmitting, showGitHubIssueOnCreate, onGitHubIssueSubmit, isGitHubIssueSubmitting, placeholder, autoFocus, errorMessage, showAskQuestionToggle, askQuestionChecked, onAskQuestionChange, askQuestionForced, composerMode, onCancelComposerMode, replyTargetPreview, hideAuthorSelector, lockedAuthorName, onFooterWarningChange, hideEditor, hideActions, hidePrimarySubmitAction, categoryPrompt, showCaseTabBar, activeCaseId, onActiveCaseIdChange, }: FeedbackComposerProps): import("react").JSX.Element;
 export {};
 //# sourceMappingURL=FeedbackComposer.d.ts.map

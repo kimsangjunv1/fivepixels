@@ -4,7 +4,7 @@ import type { FeedbackCategory } from "@/constants/feedbackCategory.js";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useReportPreferences } from "@/providers/reportContext.js";
 import type { ReportMessages } from "@/i18n/types.js";
-import { CloseIcon, AskActionIcon, DeniedActionIcon, CompleteActionIcon, SendIcon } from "@/components/icons/Icons.js";
+import { CloseIcon, AskActionIcon, DeniedActionIcon, CompleteActionIcon, SendIcon, KeyboardReturnIcon } from "@/components/icons/Icons.js";
 import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
 import { FeedbackCategorySelector } from "./FeedbackCategorySelector.js";
 import { FeedbackCaseEditor } from "./FeedbackCaseEditor.js";
@@ -49,6 +49,7 @@ type FeedbackComposerProps = {
     askQuestionForced?: boolean;
     composerMode?: ComposerMode | null;
     onCancelComposerMode?: () => void;
+    replyTargetPreview?: string | null;
     hideAuthorSelector?: boolean;
     lockedAuthorName?: string;
     onFooterWarningChange?: (message: string | null) => void;
@@ -310,6 +311,7 @@ export function FeedbackComposer({
     askQuestionForced = false,
     composerMode = null,
     onCancelComposerMode,
+    replyTargetPreview = null,
     hideAuthorSelector = false,
     lockedAuthorName,
     onFooterWarningChange,
@@ -432,8 +434,21 @@ export function FeedbackComposer({
         onGitHubIssueSubmit();
     };
 
+    const trimmedReplyTargetPreview = replyTargetPreview?.trim() || null;
+
     return (
         <div className={`flex w-full flex-col ${usesCaseEditor && !hideEditor ? "min-h-0 flex-1" : ""}`}>
+            {trimmedReplyTargetPreview ? (
+                <div
+                    className="px-[8px] pt-[8px]"
+                    title={trimmedReplyTargetPreview}
+                >
+                    <div className="flex min-w-0 items-center gap-[6px] rounded-[8px] bg-[var(--adaptive-black100)] px-[8px] py-[5px] text-[12px] leading-[1.4] text-[var(--adaptive-black500)]">
+                        <KeyboardReturnIcon className="h-[14px] w-[14px] shrink-0" />
+                        <span className="min-w-0 truncate">{`"${trimmedReplyTargetPreview}"`}</span>
+                    </div>
+                </div>
+            ) : null}
             {!hideEditor ? (
                 <div className={`relative ${usesCaseEditor ? "min-h-0 flex-1" : ""}`}>
                     {errorMessage && !isFooterHandledError ? (
@@ -463,7 +478,7 @@ export function FeedbackComposer({
                     ) : enableElementMentions ? (
                         <div
                             data-reply-measure-root=""
-                            className="px-[8px] pt-[8px]"
+                            className={trimmedReplyTargetPreview ? "px-[8px] pt-[6px]" : "px-[8px] pt-[8px]"}
                         >
                             <div className={showInlineComposerModeTag ? "flex items-start gap-[6px]" : undefined}>
                                 {showInlineComposerModeTag && resolvedComposerMode ? (
@@ -493,7 +508,7 @@ export function FeedbackComposer({
                     ) : (
                         <div
                             data-reply-measure-root=""
-                            className="px-[8px] pt-[8px]"
+                            className={trimmedReplyTargetPreview ? "px-[8px] pt-[6px]" : "px-[8px] pt-[8px]"}
                         >
                             <div className={showInlineComposerModeTag ? "flex items-start gap-[6px]" : undefined}>
                                 {showInlineComposerModeTag && resolvedComposerMode ? (

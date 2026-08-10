@@ -1,5 +1,6 @@
 import type { FeedbackDisplayStatus } from "@/constants/feedbackStatus.js";
 import type { ReportAuthor, ReportFeedback, ReportReply, ReportReplyStatus } from "@/types/report.js";
+import { mentionMessageToPlainText } from "@/utils/mention/elementMentions.js";
 import { getCaseAssigneeName, getCaseById, getRepliesForCase, canActOnCase } from "@/utils/report/reportCases.js";
 import { summaryToReply } from "@/utils/report/reportSummary.js";
 
@@ -476,6 +477,36 @@ export function resolveParentReplyIdForCaseQuestion(
         },
         pendingComposer,
     );
+}
+
+export function resolvePendingComposerTargetPreview(
+    report: ReportFeedback,
+    caseId: string | null | undefined,
+    pendingComposer: { type: string; targetReplyId: string } | null,
+): string | null {
+    if (!pendingComposer || !caseId) {
+        return null;
+    }
+
+    if (pendingComposer.targetReplyId === ISSUE_ROOT_PARENT_ID) {
+        const caseItem = getCaseById(report, caseId);
+
+        if (!caseItem) {
+            return null;
+        }
+
+        const text = mentionMessageToPlainText(caseItem.text, caseItem.mentions).trim();
+        return text || null;
+    }
+
+    const target = getRepliesForCase(report, caseId).find((reply) => reply.id === pendingComposer.targetReplyId);
+
+    if (!target) {
+        return null;
+    }
+
+    const text = mentionMessageToPlainText(target.message, target.mentions).trim();
+    return text || null;
 }
 
 export function resolveParentReplyIdForQuestion(

@@ -29,6 +29,7 @@ const DENIED_ACTION_PATH =
     "M280-440h400v-80H280v80ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z";
 const COMPLETE_ACTION_PATH =
     "m424-296 282-282-56-56-226 226-114-114-56 56 170 170Zm56 216q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z";
+const KEYBOARD_RETURN_PATH = "M360-240 120-480l240-240 56 56-144 144h488v-160h80v240H272l144 144-56 56Z";
 const TRASH_PATH =
     "M280-120q-33 0-56.5-23.5T200-200v-520q-17 0-28.5-11.5T160-760q0-17 11.5-28.5T200-800h160q0-17 11.5-28.5T400-840h160q17 0 28.5 11.5T600-800h160q17 0 28.5 11.5T800-760q0 17-11.5 28.5T760-720v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM400-280q17 0 28.5-11.5T440-320v-280q0-17-11.5-28.5T400-640q-17 0-28.5 11.5T360-600v280q0 17 11.5 28.5T400-280Zm160 0q17 0 28.5-11.5T600-320v-280q0-17-11.5-28.5T560-640q-17 0-28.5 11.5T520-600v280q0 17 11.5 28.5T560-280ZM240-720h480v-80H240v80Zm0 0v-80 80Z";
 const SETTINGS_PATH =
@@ -430,6 +431,19 @@ export function CompleteActionIcon({ className, fill }: { className?: string } &
             className={className}
             fill={fill}
         />
+    );
+}
+
+export function KeyboardReturnIcon({ className, fill }: { className?: string } & Pick<MaterialIconProps, "fill">) {
+    return (
+        <MaterialIcon
+            className={className}
+            fill={fill}
+        >
+            <g transform="translate(960 0) scale(-1 1)">
+                <path d={KEYBOARD_RETURN_PATH} />
+            </g>
+        </MaterialIcon>
     );
 }
 

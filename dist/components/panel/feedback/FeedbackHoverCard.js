@@ -7,7 +7,6 @@ import { mentionMessageToPlainText } from "../../../utils/mention/elementMention
 import { formatRelativeTime } from "../../../utils/shared/format.js";
 import { useReportPreferences } from "../../../providers/reportContext.js";
 import { ACCENT_COLOR } from "../../../constants/accentColors.js";
-import { FeedbackCreatorBadge } from "./FeedbackCreatorBadge.js";
 const MAX_TOOLTIP_CASES = 5;
 const RESOLVED_STATUS_COLOR = ACCENT_COLOR.green;
 function CaseStatusLabel({ status }) {
@@ -27,6 +26,6 @@ export function FeedbackHoverCard({ report, detached = false, detachedKind = nul
                         const isResolved = status === "resolved";
                         const caseText = mentionMessageToPlainText(item.text, item.mentions);
                         return (_jsxs("li", { className: "flex min-w-0 items-center gap-[6px]", children: [_jsx("span", { className: "min-w-0 flex-1 text-[14px] leading-[1.5] truncate text-[var(--adaptive-text-primary)]", title: caseText, children: caseText }), isResolved ? (_jsx(CheckCircleIcon, { className: "h-[16px] w-[16px] shrink-0", fill: RESOLVED_STATUS_COLOR })) : null, _jsx(CaseStatusLabel, { status: status })] }, item.id));
-                    }) }), hasMoreCases ? _jsx("p", { className: "text-[12px] leading-[1.4] text-[var(--adaptive-black500)]", children: messages.marker.viewMoreCases }) : null, report.author_name || reportRelativeTime ? (_jsxs("div", { className: "flex items-center gap-[6px] pt-[6px]", children: [report.author_name ? _jsx("p", { className: "text-[14px] text-[var(--adaptive-black500)]", children: report.author_name }) : null, reportRelativeTime ? _jsx("p", { className: "text-[14px] text-[var(--adaptive-black500)]", children: reportRelativeTime }) : null, report.author_name ? _jsx(FeedbackCreatorBadge, {}) : null] })) : null] }) }));
+                    }) }), hasMoreCases ? _jsx("p", { className: "text-[12px] leading-[1.4] text-[var(--adaptive-black500)]", children: messages.marker.viewMoreCases }) : null, report.author_name || reportRelativeTime ? (_jsxs("div", { className: "flex items-center gap-[6px] pt-[6px]", children: [report.author_name ? _jsx("p", { className: "text-[14px] text-[var(--adaptive-black500)]", children: report.author_name }) : null, reportRelativeTime ? _jsx("p", { className: "text-[14px] text-[var(--adaptive-black500)]", children: reportRelativeTime }) : null] })) : null] }) }));
 }
 //# sourceMappingURL=FeedbackHoverCard.js.map

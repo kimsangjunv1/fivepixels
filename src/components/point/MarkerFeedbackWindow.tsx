@@ -7,7 +7,7 @@ import { useReport } from "@/providers/reportContext.js";
 import type { Marker } from "@/types/report-ui.js";
 import type { ReportFeedback } from "@/types/report.js";
 import type { ReportMessages } from "@/i18n/types.js";
-import { shouldShowCaseReplyComposer } from "@/utils/feedback/feedbackThread.js";
+import { resolvePendingComposerTargetPreview, shouldShowCaseReplyComposer } from "@/utils/feedback/feedbackThread.js";
 import { getCaseAssigneeName, getCaseById } from "@/utils/report/reportCases.js";
 import { getFieldTags } from "@/utils/report/fields.js";
 import { copyTextToClipboard } from "@/utils/feedback/feedbackDataTransfer.js";
@@ -318,6 +318,14 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
         return shouldShowCaseReplyComposer(report, focusedCaseId, pendingComposer);
     }, [focusedCaseId, pendingComposer, report]);
 
+    const replyTargetPreview = useMemo(() => {
+        if (pendingComposer?.type !== "question") {
+            return null;
+        }
+
+        return resolvePendingComposerTargetPreview(report, focusedCaseId, pendingComposer);
+    }, [focusedCaseId, pendingComposer, report]);
+
     const focusedCase = focusedCaseId ? getCaseById(report, focusedCaseId) : undefined;
     const focusedCaseAssigneeName = focusedCaseId ? getCaseAssigneeName(report, focusedCaseId) : null;
     const showAssigneeAssigned = Boolean(focusedCaseAssigneeName) || isClaimingAssignee;
@@ -587,6 +595,7 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
                             askQuestionForced={isCreatorQuestionComposer}
                             composerMode={pendingComposer?.type ?? null}
                             onCancelComposerMode={cancelPendingComposer}
+                            replyTargetPreview={replyTargetPreview}
                             errorMessage={errorMessage}
                         />
                     </section>

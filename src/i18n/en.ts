@@ -29,7 +29,7 @@ export const en: ReportMessages = {
         collapse: "Collapse panel",
         repositionAriaLabel: "Reposition panel",
         repositionTitle: "Drag to reposition",
-        stopFeedback: "Stop feedback",
+        stopFeedback: "Complete Feedback",
         addFeedback: "Add feedback",
         viewOptionsAriaLabel: "View options",
         viewSelectableElements: "View selectable elements",
@@ -562,10 +562,8 @@ export const en: ReportMessages = {
         description: "Import the selected JSON into localStorage. Merge is the default; choose full replace only when you need a reset.",
         mergeMode: "Merge import",
         replaceMode: "Full replace",
-        mergeDescription:
-            "Keep existing feedback and your local replies, then apply new or updated items from the imported JSON. Backing up first is recommended.",
-        replaceDescription:
-            "Replace the entire localStorage dataset with the imported JSON. Your replies and local-only feedback may be lost.",
+        mergeDescription: "Keep existing feedback and your local replies, then apply new or updated items from the imported JSON. Backing up first is recommended.",
+        replaceDescription: "Replace the entire localStorage dataset with the imported JSON. Your replies and local-only feedback may be lost.",
         applyDirectly: "Apply directly",
         backupAndApply: "Back up and apply",
     },
@@ -578,8 +576,7 @@ export const en: ReportMessages = {
     },
     commandReplace: {
         title: "Some ids already exist",
-        description:
-            "The input data includes ids already stored in localStorage. Confirming updates the feedback body from the import while keeping your local replies.",
+        description: "The input data includes ids already stored in localStorage. Confirming updates the feedback body from the import while keeping your local replies.",
         existingMessage: "Existing message",
         replacementMessage: "Replacement message",
         idLabel: "ID",

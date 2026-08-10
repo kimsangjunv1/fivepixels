@@ -325,9 +325,9 @@ export function ReportControlPanel() {
                             <button
                                 type="button"
                                 onClick={toggleReportMode}
-                                className="flex items-center shrink-0"
+                                className="flex items-center shrink-0 bg-[#F6572E] p-[4px_8px] rounded-[6px]"
                             >
-                                <p className="text-[14px] font-bold text-[var(--adaptive-blue500)]">{messages.panel.stopFeedback}</p>
+                                <p className="text-[14px] font-bold text-[var(--adaptive-black50)]">{messages.panel.stopFeedback}</p>
                             </button>
                         </section>
                     ) : panelCollapsed ? (
@@ -422,29 +422,33 @@ export function ReportControlPanel() {
                                             </button>
 
                                             <section
-                                                className="flex min-w-0 flex-1 px-[16px] py-[8px]"
+                                                className="flex flex-col min-w-0 flex-1 px-[16px] py-[8px] gap-[4px]"
                                                 aria-label={messages.panel.repositionAriaLabel}
                                                 title={messages.panel.repositionTitle}
                                                 style={isDragging ? { opacity: 0.8 } : undefined}
                                             >
-                                                {roleStatItems.map((item) =>
-                                                    item.kind === "cta" ? (
-                                                        <p
-                                                            key={item.key}
-                                                            className="flex-1 self-center text-[12px] font-medium text-[var(--adaptive-black600)]"
-                                                        >
-                                                            {item.display}
-                                                        </p>
-                                                    ) : (
-                                                        <section
-                                                            key={item.key}
-                                                            className="flex flex-col items-start gap-[4px] flex-1"
-                                                        >
-                                                            <p className="text-[14px] text-[var(--adaptive-black500)]">{item.label}</p>
-                                                            <p className="text-[14px] font-semibold text-[var(--adaptive-black900)]">{item.display}</p>
-                                                        </section>
-                                                    ),
-                                                )}
+                                                <p className="text-[12px] text-[var(--adaptive-black500)] font-bold">내 모든 활동</p>
+
+                                                <section className="flex">
+                                                    {roleStatItems.map((item) =>
+                                                        item.kind === "cta" ? (
+                                                            <p
+                                                                key={item.key}
+                                                                className="flex-1 self-center text-[12px] font-medium text-[var(--adaptive-black600)]"
+                                                            >
+                                                                {item.display}
+                                                            </p>
+                                                        ) : (
+                                                            <section
+                                                                key={item.key}
+                                                                className="flex items-start gap-[4px] flex-1"
+                                                            >
+                                                                <p className="text-[14px] text-[var(--adaptive-black500)]">{item.label}</p>
+                                                                <p className="text-[14px] font-semibold text-[var(--adaptive-black900)]">{item.display}개</p>
+                                                            </section>
+                                                        ),
+                                                    )}
+                                                </section>
                                             </section>
                                         </section>
                                     </div>
