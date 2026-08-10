@@ -1,15 +1,16 @@
-import type { ReportReply } from "@/types/report.js";
+import type { ReportAuthor, ReportReply } from "@/types/report.js";
 import { MentionMessage } from "./MentionMessage.js";
 import { ThreadAuthorMeta } from "./ThreadAuthorMeta.js";
 import { ThreadTimelineRow } from "./ThreadTimelineRow.js";
 
 type ThreadChildReplyProps = {
     reply: ReportReply;
+    authors: ReportAuthor[];
     originalAuthorName: string;
     actorName: string;
 };
 
-export function ThreadChildReply({ reply, originalAuthorName, actorName }: ThreadChildReplyProps) {
+export function ThreadChildReply({ reply, authors, originalAuthorName, actorName }: ThreadChildReplyProps) {
     const authorName = reply.author_name?.trim() ?? "";
 
     return (
@@ -24,6 +25,7 @@ export function ThreadChildReply({ reply, originalAuthorName, actorName }: Threa
             {authorName ? (
                 <ThreadAuthorMeta
                     authorName={authorName}
+                    authors={authors}
                     createdAt={reply.created_at}
                     showMine={authorName === actorName}
                     showCreator={authorName === originalAuthorName}

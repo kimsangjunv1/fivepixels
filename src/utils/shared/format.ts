@@ -90,3 +90,112 @@ export function formatTimeCompact(value: string, locale: ReportLocale = "en") {
         minute: "2-digit",
     }).format(date);
 }
+
+export type RelativeTimeUnit = "second" | "minute" | "hour" | "day" | "month" | "year";
+
+export type RelativeTimeParts = {
+    unit: RelativeTimeUnit;
+    count: number;
+};
+
+export type RelativeTimeLabels = {
+    secondsAgo: (count: number) => string;
+    minutesAgo: (count: number) => string;
+    hoursAgo: (count: number) => string;
+    daysAgo: (count: number) => string;
+    monthsAgo: (count: number) => string;
+    yearsAgo: (count: number) => string;
+};
+
+const MS_PER_SECOND = 1000;
+const MS_PER_MINUTE = 60 * MS_PER_SECOND;
+const MS_PER_HOUR = 60 * MS_PER_MINUTE;
+const MS_PER_DAY = 24 * MS_PER_HOUR;
+
+function daysInMonth(year: number, monthIndex: number) {
+    return new Date(year, monthIndex + 1, 0).getDate();
+}
+
+/** Add calendar months while clamping day to the target month's last day. */
+function addCalendarMonths(date: Date, months: number) {
+    const year = date.getFullYear();
+    const month = date.getMonth() + months;
+    const targetYear = year + Math.floor(month / 12);
+    const targetMonth = ((month % 12) + 12) % 12;
+    const day = Math.min(date.getDate(), daysInMonth(targetYear, targetMonth));
+
+    return new Date(targetYear, targetMonth, day, date.getHours(), date.getMinutes(), date.getSeconds(), date.getMilliseconds());
+}
+
+function getCalendarMonthsDiff(from: Date, to: Date) {
+    let months = (to.getFullYear() - from.getFullYear()) * 12 + (to.getMonth() - from.getMonth());
+
+    if (months <= 0) {
+        return 0;
+    }
+
+    const anniversary = addCalendarMonths(from, months);
+
+    if (to.getTime() < anniversary.getTime()) {
+        months -= 1;
+    }
+
+    return Math.max(0, months);
+}
+
+export function getRelativeTimeParts(value: string, now: Date = new Date()): RelativeTimeParts | null {
+    const then = new Date(value);
+
+    if (Number.isNaN(then.getTime()) || Number.isNaN(now.getTime())) {
+        return null;
+    }
+
+    const diffMs = Math.max(0, now.getTime() - then.getTime());
+
+    if (diffMs < MS_PER_MINUTE) {
+        return { unit: "second", count: Math.max(1, Math.floor(diffMs / MS_PER_SECOND)) };
+    }
+
+    if (diffMs < MS_PER_HOUR) {
+        return { unit: "minute", count: Math.floor(diffMs / MS_PER_MINUTE) };
+    }
+
+    if (diffMs < MS_PER_DAY) {
+        return { unit: "hour", count: Math.floor(diffMs / MS_PER_HOUR) };
+    }
+
+    const months = getCalendarMonthsDiff(then, now);
+
+    if (months < 1) {
+        return { unit: "day", count: Math.max(1, Math.floor(diffMs / MS_PER_DAY)) };
+    }
+
+    if (months < 12) {
+        return { unit: "month", count: months };
+    }
+
+    return { unit: "year", count: Math.floor(months / 12) };
+}
+
+export function formatRelativeTime(value: string, labels: RelativeTimeLabels, now: Date = new Date()) {
+    const parts = getRelativeTimeParts(value, now);
+
+    if (!parts) {
+        return "";
+    }
+
+    switch (parts.unit) {
+        case "second":
+            return labels.secondsAgo(parts.count);
+        case "minute":
+            return labels.minutesAgo(parts.count);
+        case "hour":
+            return labels.hoursAgo(parts.count);
+        case "day":
+            return labels.daysAgo(parts.count);
+        case "month":
+            return labels.monthsAgo(parts.count);
+        case "year":
+            return labels.yearsAgo(parts.count);
+    }
+}

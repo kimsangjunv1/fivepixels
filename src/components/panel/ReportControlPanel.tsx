@@ -24,14 +24,13 @@ import { ReportPersonalKeyDialog } from "./ReportPersonalKeyDialog.js";
 import { PanelSettings } from "./PanelSettings.js";
 import { CornerResizeGhost } from "@/components/ui/CornerResizeGhost.js";
 import { CornerResizeHandle } from "@/components/ui/CornerResizeHandle.js";
-import { ProbeEditModeBanner } from "./ProbeEditModeBanner.js";
+import { PanelStatusBannerStack } from "./PanelStatusBannerStack.js";
 import { PanelRoleSwitch } from "./PanelRoleSwitch.js";
 import { PanelPresentationSwitch } from "./PanelPresentationSwitch.js";
 import { PanelAutoRefreshControl } from "./PanelAutoRefreshControl.js";
 import { PanelOnboarding } from "./PanelOnboarding.js";
 import { PanelKeyGate } from "./PanelKeyGate.js";
 import { PanelProjectFooter } from "./PanelProjectFooter.js";
-import { panelNumericClassName } from "@/utils/panel/panelTypography.js";
 import { createPersonalKeyBackupFilename, downloadPersonalKeyBackup } from "@/utils/feedback/feedbackDataTransfer.js";
 import { getPanelTabDefinition } from "@/constants/panelTabRegistry.js";
 import { MOTION, PANEL_TAB_FADE_MS, panelCollapseInClass } from "@/constants/motionClasses.js";
@@ -297,10 +296,10 @@ export function ReportControlPanel() {
                 onDrop={isGateView ? undefined : handleDrop}
                 className={`pointer-events-auto z-[1000000] border border-[var(--adaptive-border-subtle)] flex ${MOTION.panelEnter} ${MOTION.panelDock} ${isDragging ? MOTION.panelDockDragging : ""} ${
                     isRecording
-                        ? "min-h-[40px] bg-[var(--adaptive-neutralTintOpacity900)] backdrop-blur-[10px] rounded-[12px] shadow-[0_0_120px_0_var(--adaptive-black500)]"
+                        ? "min-h-[40px] bg-[var(--adaptive-neutralTintOpacity900)] backdrop-blur-[10px] rounded-[16px] shadow-[0_0_120px_0_var(--adaptive-black500)]"
                         : panelCollapsed
                           ? ""
-                          : "relative bg-[var(--adaptive-neutralTintOpacity900)] backdrop-blur-[10px] rounded-[12px] shadow-[0_0_120px_0_var(--adaptive-black500)]"
+                          : "relative bg-[var(--adaptive-neutralTintOpacity900)] backdrop-blur-[10px] rounded-[16px] shadow-[0_0_120px_0_var(--adaptive-black500)]"
                 }`}
                 style={{ ...resolvedPanelStyle, ...resolvedSizeStyle }}
             >
@@ -316,7 +315,7 @@ export function ReportControlPanel() {
                     key={shellMotionKey}
                     className={`${shellMotionClass} ${panelCollapsed && !isRecording ? "flex shrink-0" : `flex w-full min-w-0 flex-col ${applyFixedHeight || isGateView ? "h-full min-h-0" : ""}`}`.trim()}
                 >
-                    {panelCollapsed && !isRecording ? null : <ProbeEditModeBanner />}
+                    {panelCollapsed && !isRecording ? null : <PanelStatusBannerStack />}
                     {isRecording ? (
                         <section className="flex items-center justify-between gap-[16px] px-[12px] py-[8px]">
                             <section className="flex items-center gap-[4px] justify-start shrink-0">
@@ -326,9 +325,9 @@ export function ReportControlPanel() {
                             <button
                                 type="button"
                                 onClick={toggleReportMode}
-                                className="flex items-center shrink-0"
+                                className="flex items-center shrink-0 bg-[#F6572E] p-[4px_8px] rounded-[6px]"
                             >
-                                <p className="text-[14px] font-bold text-[var(--adaptive-blue500)]">{messages.panel.stopFeedback}</p>
+                                <p className="text-[14px] font-bold text-[var(--adaptive-black50)]">{messages.panel.stopFeedback}</p>
                             </button>
                         </section>
                     ) : panelCollapsed ? (
@@ -423,29 +422,33 @@ export function ReportControlPanel() {
                                             </button>
 
                                             <section
-                                                className="flex min-w-0 flex-1 px-[16px] py-[8px]"
+                                                className="flex flex-col min-w-0 flex-1 px-[16px] py-[8px] gap-[4px]"
                                                 aria-label={messages.panel.repositionAriaLabel}
                                                 title={messages.panel.repositionTitle}
                                                 style={isDragging ? { opacity: 0.8 } : undefined}
                                             >
-                                                {roleStatItems.map((item) =>
-                                                    item.kind === "cta" ? (
-                                                        <p
-                                                            key={item.key}
-                                                            className="flex-1 self-center text-[12px] font-medium text-[var(--adaptive-black600)]"
-                                                        >
-                                                            {item.display}
-                                                        </p>
-                                                    ) : (
-                                                        <section
-                                                            key={item.key}
-                                                            className="flex flex-col items-start gap-[4px] flex-1"
-                                                        >
-                                                            <p className="text-[14px] text-[var(--adaptive-black500)]">{item.label}</p>
-                                                            <p className={`text-[14px] font-semibold text-[var(--adaptive-black900)] ${panelNumericClassName}`}>{item.display}</p>
-                                                        </section>
-                                                    ),
-                                                )}
+                                                <p className="text-[12px] text-[var(--adaptive-black500)] font-bold">내 모든 활동</p>
+
+                                                <section className="flex">
+                                                    {roleStatItems.map((item) =>
+                                                        item.kind === "cta" ? (
+                                                            <p
+                                                                key={item.key}
+                                                                className="flex-1 self-center text-[12px] font-medium text-[var(--adaptive-black600)]"
+                                                            >
+                                                                {item.display}
+                                                            </p>
+                                                        ) : (
+                                                            <section
+                                                                key={item.key}
+                                                                className="flex items-start gap-[4px] flex-1"
+                                                            >
+                                                                <p className="text-[14px] text-[var(--adaptive-black500)]">{item.label}</p>
+                                                                <p className="text-[14px] font-semibold text-[var(--adaptive-black900)]">{item.display}개</p>
+                                                            </section>
+                                                        ),
+                                                    )}
+                                                </section>
                                             </section>
                                         </section>
                                     </div>

@@ -2,8 +2,8 @@ import { useState, type ReactNode } from "react";
 import type { ReportAppearance, QuestionThreadDisplay } from "@/types/report.js";
 import type { ReportLocale } from "@/i18n/types.js";
 import { APPEARANCE_OPTION_VALUES } from "@/constants/appearance.js";
-import { DEFAULT_FEEDBACK_MODE_DOT_COLORS, FONT_FAMILY_SUGGESTIONS } from "@/constants/markerAppearance.js";
-import type { AppearanceScale, MarkerFontSize, MarkerShape } from "@/constants/markerAppearance.js";
+import { DEFAULT_FEEDBACK_MODE_DOT_COLORS, FONT_FAMILY_SUGGESTIONS, MARKER_FILL_STYLE_VALUES } from "@/constants/markerAppearance.js";
+import type { AppearanceScale, MarkerFillStyle, MarkerShape } from "@/constants/markerAppearance.js";
 import { useReportPreferences, useReportSession } from "@/providers/reportContext.js";
 import { formatPresentationViewerLabel } from "@/utils/report/reportTeam.js";
 import { ChevronLeftIcon, ChevronRightIcon } from "@/components/icons/Icons.js";
@@ -34,6 +34,7 @@ type PanelSettingsProps = {
 };
 
 type SettingsCategory = "preview" | "appearance" | "display" | "tabs" | "team" | "data-and-keys" | "advanced";
+type AppearanceSection = "theme-language" | "feedback-mode" | "marker";
 
 const LOCALE_OPTIONS = ["en", "ko"] as const satisfies readonly ReportLocale[];
 const QUESTION_THREAD_OPTIONS = ["expanded", "collapsed"] as const satisfies readonly QuestionThreadDisplay[];
@@ -112,6 +113,17 @@ function getCategoryTitle(category: SettingsCategory, messages: ReturnType<typeo
     }
 }
 
+function getAppearanceSectionTitle(section: AppearanceSection, messages: ReturnType<typeof useReportPreferences>["messages"]) {
+    switch (section) {
+        case "theme-language":
+            return messages.settings.appearanceThemeLanguage;
+        case "feedback-mode":
+            return messages.settings.sectionFeedbackMode;
+        case "marker":
+            return messages.settings.sectionMarkerAppearance;
+    }
+}
+
 export function PanelSettings({
     transferDisabled = false,
     panelAppearance,
@@ -130,6 +142,7 @@ export function PanelSettings({
     onKeyRotate,
 }: PanelSettingsProps) {
     const [activeCategory, setActiveCategory] = useState<SettingsCategory | null>(null);
+    const [activeAppearanceSection, setActiveAppearanceSection] = useState<AppearanceSection | null>(null);
     const {
         locale,
         setLocale,
@@ -141,11 +154,11 @@ export function PanelSettings({
         markerAppearance,
         setMarkerSize,
         setMarkerShape,
+        setMarkerFillStyle,
         setMarkerColor,
         setFeedbackModeDotColors,
         setFeedbackModeDotColor,
         typography,
-        setFontSize,
         setFontFamily,
         panelRole,
         visiblePanelTabs,
@@ -157,20 +170,30 @@ export function PanelSettings({
     } = useReportPreferences();
     const { presentationViewerId, setPresentationViewerId } = useReportSession();
     const scaleLabels: Record<AppearanceScale, string> = {
+        xs: messages.settings.scaleXs,
         sm: messages.settings.scaleSm,
         md: messages.settings.scaleMd,
         lg: messages.settings.scaleLg,
         xl: messages.settings.scaleXl,
     };
-    const markerFontSizeLabels: Record<MarkerFontSize, string> = {
-        none: messages.settings.scaleNone,
-        ...scaleLabels,
-    };
-    const markerShapeLabels: Record<MarkerShape, string> = {
+    const shapeLabels: Record<MarkerShape, string> = {
         circle: messages.settings.markerShapeCircle,
         square: messages.settings.markerShapeSquare,
+        cookie4: messages.settings.markerShapeCookie4,
+        sunny: messages.settings.markerShapeSunny,
+        cookie6: messages.settings.markerShapeCookie6,
+        clover4: messages.settings.markerShapeClover4,
+        flower: messages.settings.markerShapeFlower,
+        ghostish: messages.settings.markerShapeGhostish,
+        bun: messages.settings.markerShapeBun,
+        gem: messages.settings.markerShapeGem,
         pill: messages.settings.markerShapePill,
-        pin: messages.settings.markerShapePin,
+        pentagon: messages.settings.markerShapePentagon,
+        puffy: messages.settings.markerShapePuffy,
+    };
+    const fillStyleLabels: Record<MarkerFillStyle, string> = {
+        filled: messages.settings.markerFillStyleFilled,
+        outlined: messages.settings.markerFillStyleOutlined,
     };
     const appearanceOptions = APPEARANCE_OPTION_VALUES.map((value) => ({
         value,
@@ -192,23 +215,67 @@ export function PanelSettings({
     const showPreviewCategory = isPresentationMode && viewerOptions.length > 0;
     const activeViewerLabel = viewerOptions.find((option) => option.value === (presentationViewerId ?? viewerOptions[0]?.value))?.label ?? "";
     const appearanceSummary = `${messages.appearance[panelAppearance]} · ${messages.localeOption[locale]}`;
+    const feedbackModeSummary = `${markerAppearance.feedbackModeDotColors.light} · ${markerAppearance.feedbackModeDotColors.dark}`;
+    const markerSummary = `${scaleLabels[markerAppearance.size]} · ${shapeLabels[markerAppearance.shape]} · ${fillStyleLabels[markerAppearance.fillStyle]}`;
     const displaySummary = `${messages.questionThreadOption[questionThreadDisplay]} · ${showMarkerTargetPreview ? messages.settings.markerTargetsOn : messages.settings.markerTargetsOff}`;
     const tabsSummary = visiblePanelTabsSummary || messages.settings.categoryTabsSummary;
 
-    if (activeCategory) {
+    if (activeCategory === "appearance" && !activeAppearanceSection) {
         return (
             <section className="flex min-h-0 flex-1 flex-col overflow-hidden bg-[var(--adaptive-black50)]">
                 <SettingsDetailHeader
-                    title={getCategoryTitle(activeCategory, messages)}
+                    title={messages.settings.categoryAppearance}
                     backAriaLabel={messages.settings.backAriaLabel}
                     onBack={() => setActiveCategory(null)}
                 />
 
                 <div className="min-h-0 flex-1 overflow-y-auto">
+                    <SettingsHubRow
+                        title={messages.settings.appearanceThemeLanguage}
+                        subtitle={appearanceSummary}
+                        onClick={() => setActiveAppearanceSection("theme-language")}
+                    />
+                    <SettingsHubRow
+                        title={messages.settings.sectionFeedbackMode}
+                        subtitle={feedbackModeSummary}
+                        onClick={() => setActiveAppearanceSection("feedback-mode")}
+                    />
+                    <SettingsHubRow
+                        title={messages.settings.sectionMarkerAppearance}
+                        subtitle={markerSummary}
+                        onClick={() => setActiveAppearanceSection("marker")}
+                    />
+                </div>
+            </section>
+        );
+    }
+
+    if (activeCategory) {
+        const isAppearanceDetail = activeCategory === "appearance" && activeAppearanceSection != null;
+        const detailTitle =
+            activeCategory === "appearance" && activeAppearanceSection
+                ? getAppearanceSectionTitle(activeAppearanceSection, messages)
+                : getCategoryTitle(activeCategory, messages);
+        const detailBackAriaLabel = isAppearanceDetail ? messages.settings.appearanceBackAriaLabel : messages.settings.backAriaLabel;
+
+        return (
+            <section className="flex min-h-0 flex-1 flex-col overflow-hidden bg-[var(--adaptive-black50)]">
+                <SettingsDetailHeader
+                    title={detailTitle}
+                    backAriaLabel={detailBackAriaLabel}
+                    onBack={() => {
+                        if (isAppearanceDetail) {
+                            setActiveAppearanceSection(null);
+                            return;
+                        }
+
+                        setActiveCategory(null);
+                    }}
+                />
+
+                <div className="min-h-0 flex-1 overflow-y-auto">
                     {activeCategory === "preview" ? (
                         <SettingsSection label={messages.settings.sectionViewerSwitch}>
-                            {/* <div className="px-[12px] pb-[10px]">
-                            </div> */}
                             <p className="mb-[8px] text-[12px] leading-[1.4] text-[var(--adaptive-black600)]">{messages.settings.viewerSwitchHint}</p>
 
                             <div
@@ -247,7 +314,7 @@ export function PanelSettings({
                         </SettingsSection>
                     ) : null}
 
-                    {activeCategory === "appearance" ? (
+                    {activeAppearanceSection === "theme-language" ? (
                         <>
                             <SettingsSection label={messages.settings.sectionTheme}>
                                 <div className="flex flex-col gap-[10px] px-[12px] pb-[10px]">
@@ -258,6 +325,7 @@ export function PanelSettings({
                                             value={panelAppearance}
                                             onChange={onPanelAppearanceChange}
                                             ariaLabel={messages.moreMenu.panelThemeAriaLabel}
+                                            previewKind="panel"
                                         />
                                     </div>
                                     <div>
@@ -267,61 +335,84 @@ export function PanelSettings({
                                             value={tooltipAppearance}
                                             onChange={onTooltipAppearanceChange}
                                             ariaLabel={messages.moreMenu.tooltipThemeAriaLabel}
-                                        />
-                                    </div>
-                                    <div>
-                                        <p className="mb-[6px] text-[11px] font-medium text-[var(--adaptive-black600)]">{messages.moreMenu.language}</p>
-                                        <PanelOptionSwitch
-                                            options={localeOptions}
-                                            value={locale}
-                                            onChange={setLocale}
-                                            ariaLabel={messages.moreMenu.languageAriaLabel}
+                                            previewKind="tooltip"
                                         />
                                     </div>
                                 </div>
                             </SettingsSection>
 
-                            <SettingsSection label={messages.settings.sectionFeedbackMode}>
-                                <div className="flex flex-col gap-[12px] px-[12px] pb-[10px]">
-                                    <HexColorField
-                                        label={messages.settings.feedbackModeDotColorLight}
-                                        value={markerAppearance.feedbackModeDotColors.light}
-                                        onChange={(color) => setFeedbackModeDotColor("light", color)}
+                            <SettingsSection label={messages.settings.sectionLanguage}>
+                                <div className="px-[12px] pb-[10px]">
+                                    <PanelOptionSwitch
+                                        options={localeOptions}
+                                        value={locale}
+                                        onChange={setLocale}
+                                        ariaLabel={messages.moreMenu.languageAriaLabel}
                                     />
-                                    <HexColorField
-                                        label={messages.settings.feedbackModeDotColorDark}
-                                        value={markerAppearance.feedbackModeDotColors.dark}
-                                        onChange={(color) => setFeedbackModeDotColor("dark", color)}
-                                    />
-                                    <SettingsActionButton onClick={() => setFeedbackModeDotColors(DEFAULT_FEEDBACK_MODE_DOT_COLORS)}>
-                                        {messages.settings.resetFeedbackModeDotColors}
-                                    </SettingsActionButton>
                                 </div>
                             </SettingsSection>
+                        </>
+                    ) : null}
 
-                            <SettingsSection label={messages.settings.sectionMarkerAppearance}>
+                    {activeAppearanceSection === "feedback-mode" ? (
+                        <SettingsSection label={messages.settings.sectionFeedbackMode}>
+                            <div className="flex flex-col gap-[12px] px-[12px] pb-[10px]">
+                                <HexColorField
+                                    label={messages.settings.feedbackModeDotColorLight}
+                                    value={markerAppearance.feedbackModeDotColors.light}
+                                    onChange={(color) => setFeedbackModeDotColor("light", color)}
+                                />
+                                <HexColorField
+                                    label={messages.settings.feedbackModeDotColorDark}
+                                    value={markerAppearance.feedbackModeDotColors.dark}
+                                    onChange={(color) => setFeedbackModeDotColor("dark", color)}
+                                />
+                                <SettingsActionButton onClick={() => setFeedbackModeDotColors(DEFAULT_FEEDBACK_MODE_DOT_COLORS)}>
+                                    {messages.settings.resetFeedbackModeDotColors}
+                                </SettingsActionButton>
+                            </div>
+                        </SettingsSection>
+                    ) : null}
+
+                    {activeAppearanceSection === "marker" ? (
+                        <>
+                            <SettingsSection label={messages.settings.sectionMarkerForm}>
                                 <div className="flex flex-col gap-[12px] px-[12px] pb-[10px]">
                                     <PanelMarkerDisplayControls
                                         markerSize={markerAppearance.size}
-                                        fontSize={typography.fontSize}
                                         onMarkerSizeChange={setMarkerSize}
-                                        onFontSizeChange={setFontSize}
                                         scaleLabels={scaleLabels}
-                                        markerFontSizeLabels={markerFontSizeLabels}
                                         markerSizeLabel={messages.settings.markerSize}
-                                        markerFontSizeLabel={messages.settings.markerFontSize}
                                         markerSizeAriaLabel={messages.settings.markerSizeAriaLabel}
-                                        markerFontSizeAriaLabel={messages.settings.markerFontSizeAriaLabel}
                                     />
+                                    <div>
+                                        <p className="mb-[6px] text-[11px] font-medium text-[var(--adaptive-black600)]">{messages.settings.markerFillStyle}</p>
+                                        <PanelOptionSwitch
+                                            options={MARKER_FILL_STYLE_VALUES.map((value) => ({
+                                                value,
+                                                label: fillStyleLabels[value],
+                                            }))}
+                                            value={markerAppearance.fillStyle}
+                                            onChange={setMarkerFillStyle}
+                                            ariaLabel={messages.settings.markerFillStyleAriaLabel}
+                                        />
+                                    </div>
                                     <div>
                                         <p className="mb-[6px] text-[11px] font-medium text-[var(--adaptive-black600)]">{messages.settings.markerShape}</p>
                                         <MarkerShapePicker
                                             value={markerAppearance.shape}
                                             onChange={setMarkerShape}
-                                            labels={markerShapeLabels}
+                                            labels={shapeLabels}
                                             ariaLabel={messages.settings.markerShapeAriaLabel}
+                                            previewColor={markerAppearance.colors.open}
+                                            fillStyle={markerAppearance.fillStyle}
                                         />
                                     </div>
+                                </div>
+                            </SettingsSection>
+
+                            <SettingsSection label={messages.settings.sectionMarkerColors}>
+                                <div className="flex flex-col gap-[12px] px-[12px] pb-[10px]">
                                     <HexColorField
                                         label={messages.settings.markerColorOpen}
                                         value={markerAppearance.colors.open}
@@ -483,7 +574,10 @@ export function PanelSettings({
             <SettingsHubRow
                 title={messages.settings.categoryAppearance}
                 subtitle={appearanceSummary}
-                onClick={() => setActiveCategory("appearance")}
+                onClick={() => {
+                    setActiveAppearanceSection(null);
+                    setActiveCategory("appearance");
+                }}
             />
 
             <SettingsHubRow

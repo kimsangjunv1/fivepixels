@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ensureReportLocaleMessages, getReportMessages, setActiveReportMessages } from "../../i18n/index.js";
 import { useMarkerTargetPreviewPreference } from "../useMarkerTargetPreviewPreference.js";
+import { useDetachedMarkerVisibilityPreference } from "../useDetachedMarkerVisibilityPreference.js";
 import { useMarkerAppearancePreference } from "../useMarkerAppearancePreference.js";
 import { useTypographyPreference } from "../useTypographyPreference.js";
 import { useReportPersistence } from "../useReportPersistence.js";
@@ -30,7 +31,8 @@ export function useReportPanelShell({ projectId, environment, appVersion, panelA
     const { appearance: activePanelAppearance, setAppearance: setPanelAppearance } = useAppearancePreference(PANEL_APPEARANCE_STORAGE_KEY, panelAppearance);
     const { appearance: activeTooltipAppearance, setAppearance: setTooltipAppearance } = useAppearancePreference(TOOLTIP_APPEARANCE_STORAGE_KEY, tooltipAppearance);
     const { showMarkerTargetPreview, setShowMarkerTargetPreview, toggleMarkerTargetPreview } = useMarkerTargetPreviewPreference();
-    const { markerAppearance, setMarkerAppearance, setMarkerSize, setMarkerShape, setMarkerColors, setMarkerColor, setFeedbackModeDotColors, setFeedbackModeDotColor } = useMarkerAppearancePreference();
+    const { showHiddenDetachedMarkers, setShowHiddenDetachedMarkers, showModalDetachedMarkers, setShowModalDetachedMarkers } = useDetachedMarkerVisibilityPreference();
+    const { markerAppearance, setMarkerAppearance, setMarkerSize, setMarkerShape, setMarkerFillStyle, setMarkerColors, setMarkerColor, setFeedbackModeDotColors, setFeedbackModeDotColor, } = useMarkerAppearancePreference();
     const { typography, setTypography, setFontSize, setFontFamily } = useTypographyPreference();
     const { questionThreadDisplay, setQuestionThreadDisplay } = useQuestionThreadPreference(questionThreadDefault);
     const { panelRole, setPanelRole } = usePanelRolePreference();
@@ -125,17 +127,14 @@ export function useReportPanelShell({ projectId, environment, appVersion, panelA
     });
     const resolvedRouteDetailsStats = useMemo(() => panelBootstrap?.routeDetails ?? routeDetailsStats, [panelBootstrap, routeDetailsStats]);
     const roleStatsReports = useMemo(() => {
-        if (roleTabPreset.headerStatsScope !== "all") {
-            return currentPageReports;
-        }
         if (listScope === "all") {
+            if (allPageReports.length > 0) {
+                return allPageReports;
+            }
             return reports;
         }
-        if (allPageReports.length > 0) {
-            return allPageReports;
-        }
         return currentPageReports;
-    }, [allPageReports, currentPageReports, listScope, reports, roleTabPreset.headerStatsScope]);
+    }, [allPageReports, currentPageReports, listScope, reports]);
     const targetStats = useMemo(() => {
         if (panelBootstrap?.stats) {
             return panelBootstrap.stats;
@@ -143,12 +142,10 @@ export function useReportPanelShell({ projectId, environment, appVersion, panelA
         return buildPanelStats(currentPageReports);
     }, [currentPageReports, panelBootstrap]);
     const roleStatItems = useMemo(() => buildPanelRoleStats({
-        role: panelRole,
         reports: roleStatsReports,
         actorName: sessionActorName,
-        fallbackStats: targetStats,
         messages,
-    }), [panelRole, roleStatsReports, sessionActorName, targetStats, messages]);
+    }), [roleStatsReports, sessionActorName, messages]);
     const listScopeInitializedRef = useRef(false);
     useEffect(() => {
         if (listScopeInitializedRef.current) {
@@ -247,10 +244,15 @@ export function useReportPanelShell({ projectId, environment, appVersion, panelA
         showMarkerTargetPreview,
         setShowMarkerTargetPreview,
         toggleMarkerTargetPreview,
+        showHiddenDetachedMarkers,
+        setShowHiddenDetachedMarkers,
+        showModalDetachedMarkers,
+        setShowModalDetachedMarkers,
         markerAppearance,
         setMarkerAppearance,
         setMarkerSize,
         setMarkerShape,
+        setMarkerFillStyle,
         setMarkerColors,
         setMarkerColor,
         setFeedbackModeDotColors,

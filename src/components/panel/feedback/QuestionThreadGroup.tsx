@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { ReportReply } from "@/types/report.js";
+import type { ReportAuthor, ReportReply } from "@/types/report.js";
 import { useReportPreferences } from "@/providers/reportContext.js";
 import { ChevronDownIcon } from "@/components/icons/Icons.js";
 import { ThreadChildReply } from "./ThreadChildReply.js";
@@ -7,12 +7,13 @@ import { ThreadTimelineRow } from "./ThreadTimelineRow.js";
 
 type QuestionThreadGroupProps = {
     questions: ReportReply[];
+    authors: ReportAuthor[];
     originalAuthorName: string;
     actorName: string;
     forceExpanded?: boolean;
 };
 
-export function QuestionThreadGroup({ questions, originalAuthorName, actorName, forceExpanded = false }: QuestionThreadGroupProps) {
+export function QuestionThreadGroup({ questions, authors, originalAuthorName, actorName, forceExpanded = false }: QuestionThreadGroupProps) {
     const { messages, questionThreadDisplay } = useReportPreferences();
     const [isExpanded, setIsExpanded] = useState(() => questionThreadDisplay === "expanded");
 
@@ -57,6 +58,7 @@ export function QuestionThreadGroup({ questions, originalAuthorName, actorName, 
                       <ThreadChildReply
                           key={question.id}
                           reply={question}
+                          authors={authors}
                           originalAuthorName={originalAuthorName}
                           actorName={actorName}
                       />

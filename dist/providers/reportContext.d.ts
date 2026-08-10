@@ -96,6 +96,7 @@ declare const ReportContext: Context<{
         authorized: boolean;
         reason?: undefined;
     }>;
+    clearPersonalKey: () => void;
     canListAllFeedback: boolean;
     onActivitySummary: ((params: import("../index.js").ReportActivitySummaryParams) => Promise<import("../index.js").ReportActivitySummaryResult>) | undefined;
     visibleShortcutKeys: boolean;
@@ -108,10 +109,15 @@ declare const ReportContext: Context<{
     showMarkerTargetPreview: boolean;
     setShowMarkerTargetPreview: (enabled: boolean) => void;
     toggleMarkerTargetPreview: () => void;
+    showHiddenDetachedMarkers: boolean;
+    setShowHiddenDetachedMarkers: (enabled: boolean) => void;
+    showModalDetachedMarkers: boolean;
+    setShowModalDetachedMarkers: (enabled: boolean) => void;
     markerAppearance: import("../constants/markerAppearance.js").MarkerAppearancePreferences;
     setMarkerAppearance: (next: import("../constants/markerAppearance.js").MarkerAppearancePreferences | ((current: import("../constants/markerAppearance.js").MarkerAppearancePreferences) => import("../constants/markerAppearance.js").MarkerAppearancePreferences)) => void;
     setMarkerSize: (size: import("../constants/markerAppearance.js").AppearanceScale) => void;
     setMarkerShape: (shape: import("../constants/markerAppearance.js").MarkerShape) => void;
+    setMarkerFillStyle: (fillStyle: import("../constants/markerAppearance.js").MarkerFillStyle) => void;
     setMarkerColors: (colors: import("../constants/markerAppearance.js").MarkerColorPreferences) => void;
     setMarkerColor: (key: keyof import("../constants/markerAppearance.js").MarkerColorPreferences, color: string) => void;
     setFeedbackModeDotColors: (colors: import("../constants/markerAppearance.js").FeedbackModeDotColors) => void;
@@ -399,6 +405,7 @@ export declare function useReport(): {
         authorized: boolean;
         reason?: undefined;
     }>;
+    clearPersonalKey: () => void;
     canListAllFeedback: boolean;
     onActivitySummary: ((params: import("../index.js").ReportActivitySummaryParams) => Promise<import("../index.js").ReportActivitySummaryResult>) | undefined;
     visibleShortcutKeys: boolean;
@@ -411,10 +418,15 @@ export declare function useReport(): {
     showMarkerTargetPreview: boolean;
     setShowMarkerTargetPreview: (enabled: boolean) => void;
     toggleMarkerTargetPreview: () => void;
+    showHiddenDetachedMarkers: boolean;
+    setShowHiddenDetachedMarkers: (enabled: boolean) => void;
+    showModalDetachedMarkers: boolean;
+    setShowModalDetachedMarkers: (enabled: boolean) => void;
     markerAppearance: import("../constants/markerAppearance.js").MarkerAppearancePreferences;
     setMarkerAppearance: (next: import("../constants/markerAppearance.js").MarkerAppearancePreferences | ((current: import("../constants/markerAppearance.js").MarkerAppearancePreferences) => import("../constants/markerAppearance.js").MarkerAppearancePreferences)) => void;
     setMarkerSize: (size: import("../constants/markerAppearance.js").AppearanceScale) => void;
     setMarkerShape: (shape: import("../constants/markerAppearance.js").MarkerShape) => void;
+    setMarkerFillStyle: (fillStyle: import("../constants/markerAppearance.js").MarkerFillStyle) => void;
     setMarkerColors: (colors: import("../constants/markerAppearance.js").MarkerColorPreferences) => void;
     setMarkerColor: (key: keyof import("../constants/markerAppearance.js").MarkerColorPreferences, color: string) => void;
     setFeedbackModeDotColors: (colors: import("../constants/markerAppearance.js").FeedbackModeDotColors) => void;
@@ -705,6 +717,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
             authorized: boolean;
             reason?: undefined;
         }>;
+        clearPersonalKey: () => void;
         canListAllFeedback: boolean;
         onActivitySummary: ((params: import("../index.js").ReportActivitySummaryParams) => Promise<import("../index.js").ReportActivitySummaryResult>) | undefined;
         visibleShortcutKeys: boolean;
@@ -717,10 +730,15 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         showMarkerTargetPreview: boolean;
         setShowMarkerTargetPreview: (enabled: boolean) => void;
         toggleMarkerTargetPreview: () => void;
+        showHiddenDetachedMarkers: boolean;
+        setShowHiddenDetachedMarkers: (enabled: boolean) => void;
+        showModalDetachedMarkers: boolean;
+        setShowModalDetachedMarkers: (enabled: boolean) => void;
         markerAppearance: import("../constants/markerAppearance.js").MarkerAppearancePreferences;
         setMarkerAppearance: (next: import("../constants/markerAppearance.js").MarkerAppearancePreferences | ((current: import("../constants/markerAppearance.js").MarkerAppearancePreferences) => import("../constants/markerAppearance.js").MarkerAppearancePreferences)) => void;
         setMarkerSize: (size: import("../constants/markerAppearance.js").AppearanceScale) => void;
         setMarkerShape: (shape: import("../constants/markerAppearance.js").MarkerShape) => void;
+        setMarkerFillStyle: (fillStyle: import("../constants/markerAppearance.js").MarkerFillStyle) => void;
         setMarkerColors: (colors: import("../constants/markerAppearance.js").MarkerColorPreferences) => void;
         setMarkerColor: (key: keyof import("../constants/markerAppearance.js").MarkerColorPreferences, color: string) => void;
         setFeedbackModeDotColors: (colors: import("../constants/markerAppearance.js").FeedbackModeDotColors) => void;
@@ -915,7 +933,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         handleCreateGitHubIssue: (report: import("../index.js").ReportFeedback) => Promise<void>;
         handleCreateSubmitWithGitHubIssue: () => Promise<void>;
         isDraftGitHubIssueSubmitting: boolean;
-    }, "personalKey" | "projectId" | "fields" | "personalKeyRequired" | "environment" | "questionThreadDisplay" | "setQuestionThreadDisplay" | "locale" | "setLocale" | "showMarkerTargetPreview" | "setShowMarkerTargetPreview" | "toggleMarkerTargetPreview" | "markerAppearance" | "setMarkerAppearance" | "setMarkerSize" | "setMarkerShape" | "setMarkerColors" | "setMarkerColor" | "setFeedbackModeDotColors" | "setFeedbackModeDotColor" | "typography" | "setTypography" | "setFontSize" | "setFontFamily" | "panelRole" | "setPanelRole" | "persistenceStatus" | "appVersion" | "showFeedbackList" | "pinnedFeedbackItems" | "pinRailCollapsed" | "togglePinnedFeedback" | "unpinFeedback" | "setPinRailCollapsed" | "syncPinnedFeedbackReports" | "selfProfile" | "authors" | "publicKey" | "personalKeyCandidates" | "issuePersonalKey" | "rotatePersonalKey" | "insertPersonalKey" | "authorSelectionLocked" | "messages" | "onListReviewers" | "onListReviewerRequests" | "onCreateReviewerRequest" | "onResolveReviewerRequest" | "onRegisterReviewer" | "onUpdateReviewer" | "visibleShortcutKeys" | "teamReviewers" | "panelAppearance" | "setPanelAppearance" | "tooltipAppearance" | "setTooltipAppearance" | "teamActor" | "teamActorRole" | "isTeamAdmin" | "canAccessTeamSettings" | "panelView" | "completeOnboarding" | "restoreFromBackup" | "skipOnboarding" | "resolvedPanelAppearance" | "resolvedTooltipAppearance" | "isMobileViewport" | "isPresentationMode" | "presentationViewers" | "visiblePanelTabs" | "visiblePanelTabsSummary" | "resolvedTabAvailabilityContext" | "setVisiblePanelTabs" | "resetVisibleTabsToRoleDefault" | "applyRoleDefaultTabsForOnboarding" | "savePanelTabPreference" | "storedPanelTabPreference">;
+    }, "personalKey" | "projectId" | "fields" | "personalKeyRequired" | "environment" | "questionThreadDisplay" | "setQuestionThreadDisplay" | "locale" | "setLocale" | "showMarkerTargetPreview" | "setShowMarkerTargetPreview" | "toggleMarkerTargetPreview" | "showHiddenDetachedMarkers" | "setShowHiddenDetachedMarkers" | "showModalDetachedMarkers" | "setShowModalDetachedMarkers" | "markerAppearance" | "setMarkerAppearance" | "setMarkerSize" | "setMarkerShape" | "setMarkerFillStyle" | "setMarkerColors" | "setMarkerColor" | "setFeedbackModeDotColors" | "setFeedbackModeDotColor" | "typography" | "setTypography" | "setFontSize" | "setFontFamily" | "panelRole" | "setPanelRole" | "persistenceStatus" | "appVersion" | "showFeedbackList" | "pinnedFeedbackItems" | "pinRailCollapsed" | "togglePinnedFeedback" | "unpinFeedback" | "setPinRailCollapsed" | "syncPinnedFeedbackReports" | "selfProfile" | "authors" | "publicKey" | "personalKeyCandidates" | "issuePersonalKey" | "rotatePersonalKey" | "insertPersonalKey" | "clearPersonalKey" | "authorSelectionLocked" | "messages" | "onListReviewers" | "onListReviewerRequests" | "onCreateReviewerRequest" | "onResolveReviewerRequest" | "onRegisterReviewer" | "onUpdateReviewer" | "visibleShortcutKeys" | "teamReviewers" | "panelAppearance" | "setPanelAppearance" | "tooltipAppearance" | "setTooltipAppearance" | "teamActor" | "teamActorRole" | "isTeamAdmin" | "canAccessTeamSettings" | "panelView" | "completeOnboarding" | "restoreFromBackup" | "skipOnboarding" | "resolvedPanelAppearance" | "resolvedTooltipAppearance" | "isMobileViewport" | "isPresentationMode" | "presentationViewers" | "visiblePanelTabs" | "visiblePanelTabsSummary" | "resolvedTabAvailabilityContext" | "setVisiblePanelTabs" | "resetVisibleTabsToRoleDefault" | "applyRoleDefaultTabsForOnboarding" | "savePanelTabPreference" | "storedPanelTabPreference">;
     session: Pick<{
         panelAppearance: import("../index.js").ReportAppearance;
         setPanelAppearance: (nextAppearance: import("../index.js").ReportAppearance) => void;
@@ -1004,6 +1022,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
             authorized: boolean;
             reason?: undefined;
         }>;
+        clearPersonalKey: () => void;
         canListAllFeedback: boolean;
         onActivitySummary: ((params: import("../index.js").ReportActivitySummaryParams) => Promise<import("../index.js").ReportActivitySummaryResult>) | undefined;
         visibleShortcutKeys: boolean;
@@ -1016,10 +1035,15 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         showMarkerTargetPreview: boolean;
         setShowMarkerTargetPreview: (enabled: boolean) => void;
         toggleMarkerTargetPreview: () => void;
+        showHiddenDetachedMarkers: boolean;
+        setShowHiddenDetachedMarkers: (enabled: boolean) => void;
+        showModalDetachedMarkers: boolean;
+        setShowModalDetachedMarkers: (enabled: boolean) => void;
         markerAppearance: import("../constants/markerAppearance.js").MarkerAppearancePreferences;
         setMarkerAppearance: (next: import("../constants/markerAppearance.js").MarkerAppearancePreferences | ((current: import("../constants/markerAppearance.js").MarkerAppearancePreferences) => import("../constants/markerAppearance.js").MarkerAppearancePreferences)) => void;
         setMarkerSize: (size: import("../constants/markerAppearance.js").AppearanceScale) => void;
         setMarkerShape: (shape: import("../constants/markerAppearance.js").MarkerShape) => void;
+        setMarkerFillStyle: (fillStyle: import("../constants/markerAppearance.js").MarkerFillStyle) => void;
         setMarkerColors: (colors: import("../constants/markerAppearance.js").MarkerColorPreferences) => void;
         setMarkerColor: (key: keyof import("../constants/markerAppearance.js").MarkerColorPreferences, color: string) => void;
         setFeedbackModeDotColors: (colors: import("../constants/markerAppearance.js").FeedbackModeDotColors) => void;
@@ -1303,6 +1327,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
             authorized: boolean;
             reason?: undefined;
         }>;
+        clearPersonalKey: () => void;
         canListAllFeedback: boolean;
         onActivitySummary: ((params: import("../index.js").ReportActivitySummaryParams) => Promise<import("../index.js").ReportActivitySummaryResult>) | undefined;
         visibleShortcutKeys: boolean;
@@ -1315,10 +1340,15 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         showMarkerTargetPreview: boolean;
         setShowMarkerTargetPreview: (enabled: boolean) => void;
         toggleMarkerTargetPreview: () => void;
+        showHiddenDetachedMarkers: boolean;
+        setShowHiddenDetachedMarkers: (enabled: boolean) => void;
+        showModalDetachedMarkers: boolean;
+        setShowModalDetachedMarkers: (enabled: boolean) => void;
         markerAppearance: import("../constants/markerAppearance.js").MarkerAppearancePreferences;
         setMarkerAppearance: (next: import("../constants/markerAppearance.js").MarkerAppearancePreferences | ((current: import("../constants/markerAppearance.js").MarkerAppearancePreferences) => import("../constants/markerAppearance.js").MarkerAppearancePreferences)) => void;
         setMarkerSize: (size: import("../constants/markerAppearance.js").AppearanceScale) => void;
         setMarkerShape: (shape: import("../constants/markerAppearance.js").MarkerShape) => void;
+        setMarkerFillStyle: (fillStyle: import("../constants/markerAppearance.js").MarkerFillStyle) => void;
         setMarkerColors: (colors: import("../constants/markerAppearance.js").MarkerColorPreferences) => void;
         setMarkerColor: (key: keyof import("../constants/markerAppearance.js").MarkerColorPreferences, color: string) => void;
         setFeedbackModeDotColors: (colors: import("../constants/markerAppearance.js").FeedbackModeDotColors) => void;

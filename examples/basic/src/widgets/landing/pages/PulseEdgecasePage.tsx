@@ -1,5 +1,5 @@
 import {
-    useEdgecaseFeedbackSeed,
+    useDemoFeedbackSeed,
     EDGECASE_FEEDBACK_SEED_CATALOG,
     EDGECASE_FEEDBACK_SEED_IDS,
 } from "../../../features/edgecase/hooks/useEdgecaseFeedbackSeed";
@@ -225,7 +225,7 @@ function EdgecaseGridLayouts() {
 }
 
 export function PulseEdgecasePage() {
-    useEdgecaseFeedbackSeed();
+    useDemoFeedbackSeed();
 
     const allProbes = [...edgecaseItems, ...layoutProbes];
     const taggedCount = allProbes.filter((item) => item.tagged).length;

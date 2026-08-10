@@ -5,12 +5,12 @@ import { useDraggableWindow, clampWindowPosition } from "../../hooks/useDraggabl
 import { useGhostCornerResize } from "../../hooks/useGhostCornerResize.js";
 import { useNativeHover } from "../../hooks/useNativeHover.js";
 import { useReport } from "../../providers/reportContext.js";
-import { shouldShowCaseReplyComposer } from "../../utils/feedback/feedbackThread.js";
+import { resolvePendingComposerTargetPreview, shouldShowCaseReplyComposer } from "../../utils/feedback/feedbackThread.js";
 import { getCaseAssigneeName, getCaseById } from "../../utils/report/reportCases.js";
 import { getFieldTags } from "../../utils/report/fields.js";
 import { copyTextToClipboard } from "../../utils/feedback/feedbackDataTransfer.js";
 import { buildFeedbackShareUrl } from "../../utils/feedback/feedbackDeepLink.js";
-import { CloseIcon, EditIcon, LinkIcon, MaximizeIcon, MinimizeIcon, RestoreIcon, SidePanelIcon } from "../../components/icons/Icons.js";
+import { CloseIcon, CheckCircleIcon, EditIcon, LinkIcon, MaximizeIcon, MinimizeIcon, RestoreIcon, SidePanelIcon } from "../../components/icons/Icons.js";
 import { FeedbackFieldTags } from "../../components/panel/feedback/FeedbackFieldTags.js";
 import { FeedbackPinToggleButton } from "../../components/panel/feedback/FeedbackPinToggleButton.js";
 import { FeedbackDeleteAction } from "../../components/panel/feedback/FeedbackDeleteAction.js";
@@ -20,6 +20,7 @@ import { mentionMessageToPlainText } from "../../utils/mention/elementMentions.j
 import { HoverTooltip } from "../../components/ui/HoverTooltip.js";
 import { CornerResizeGhost } from "../../components/ui/CornerResizeGhost.js";
 import { MOTION } from "../../constants/motionClasses.js";
+import { ACCENT_COLOR } from "../../constants/accentColors.js";
 import { CornerResizeHandle } from "../../components/ui/CornerResizeHandle.js";
 import { FeedbackComposer } from "../../components/panel/feedback/FeedbackComposer.js";
 import { CaseAssigneeInfo } from "../../components/panel/feedback/CaseAssigneeInfo.js";
@@ -32,13 +33,14 @@ const DEFAULT_WINDOW_SIZE = { width: 600, height: 460 };
 const MIN_WINDOW_WIDTH = 420;
 const MIN_WINDOW_HEIGHT = 280;
 const DEFAULT_SIDEBAR_WIDTH = 208;
+const RESOLVED_STATUS_COLOR = ACCENT_COLOR.green;
 const SIDEBAR_MIN_WIDTH = 150;
 const RIGHT_MIN_WIDTH = 280;
 const COLLAPSED_SIDEBAR_WIDTH = 46;
 const WINDOW_CLOSE_ANIMATION_MS = 220;
 const LEFT_SECTION_TRANSITION = "transition-[background-color,backdrop-filter] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]";
 const LEFT_SECTION_FLAT_CLASS = `${LEFT_SECTION_TRANSITION} bg-[var(--adaptive-black50)]`;
-const LEFT_SECTION_BLUR_CLASS = `${LEFT_SECTION_TRANSITION} bg-[var(--adaptive-fillOpacity500)] backdrop-blur-[20px] shadow-[inset_0_20px_0_20px_var(--adaptive-black500)]]`;
+const LEFT_SECTION_BLUR_CLASS = `${LEFT_SECTION_TRANSITION} bg-[var(--adaptive-neutralTintOpacity900)] backdrop-blur-[20px] shadow-[inset_0_20px_0_20px_var(--adaptive-black500)]]`;
 function getLeftSectionClass(phase) {
     return phase === "idle" ? LEFT_SECTION_BLUR_CLASS : LEFT_SECTION_FLAT_CLASS;
 }
@@ -194,6 +196,12 @@ export function MarkerFeedbackWindow({ report, anchor }) {
         }
         return shouldShowCaseReplyComposer(report, focusedCaseId, pendingComposer);
     }, [focusedCaseId, pendingComposer, report]);
+    const replyTargetPreview = useMemo(() => {
+        if (pendingComposer?.type !== "question") {
+            return null;
+        }
+        return resolvePendingComposerTargetPreview(report, focusedCaseId, pendingComposer);
+    }, [focusedCaseId, pendingComposer, report]);
     const focusedCase = focusedCaseId ? getCaseById(report, focusedCaseId) : undefined;
     const focusedCaseAssigneeName = focusedCaseId ? getCaseAssigneeName(report, focusedCaseId) : null;
     const showAssigneeAssigned = Boolean(focusedCaseAssigneeName) || isClaimingAssignee;
@@ -249,7 +257,7 @@ export function MarkerFeedbackWindow({ report, anchor }) {
     const deleteButton = canDeleteFeedback(report, sessionActor) ? (_jsx(FeedbackDeleteAction, { reportId: report.id, onDelete: handleDelete, disabled: isDeleting, messages: messages, className: `${HEADER_BUTTON_CLASS} disabled:opacity-50`, iconClassName: "h-[15px] w-[15px]" })) : null;
     const editButton = canEditReportCases(report) ? (_jsx(HoverTooltip, { label: messages.feedbackList.editTitle, children: _jsx("button", { type: "button", "data-fivepixels-interactive": "", className: HEADER_BUTTON_CLASS, "aria-label": messages.feedbackList.editAriaLabel, title: messages.feedbackList.editTitle, onPointerDown: (event) => event.stopPropagation(), onClick: () => beginFeedbackEdit(report), children: _jsx(EditIcon, { className: "h-[14px] w-[14px]" }) }) })) : null;
     const headerUtilityButtons = (_jsxs(_Fragment, { children: [shareButton, editButton, deleteButton, pinButton] }));
-    const rightSection = (_jsxs("div", { className: "flex min-w-0 flex-1 flex-col bg-[var(--adaptive-black50)]", children: [_jsx("div", { className: "shrink-0 border-b border-[var(--adaptive-border-subtle)] px-[16px] py-[8px]", children: focusedCase ? (_jsxs(Fragment, { children: [_jsx("p", { className: `truncate text-[15px] font-semibold leading-[1.4] text-[var(--adaptive-black900)] ${focusedCase.status === "resolved" ? "text-[var(--adaptive-black500)] line-through" : ""}`, title: mentionMessageToPlainText(focusedCase.text, focusedCase.mentions), children: mentionMessageToPlainText(focusedCase.text, focusedCase.mentions) }), _jsxs("div", { className: "mt-[2px] flex min-w-0 items-center justify-between gap-[8px]", children: [_jsx("div", { className: "flex min-w-0 flex-1 items-center gap-[6px]", children: showAssigneeAssigned ? (_jsxs(_Fragment, { children: [_jsx(ProcessingDots, {}), _jsx(Text.Shimmer, { className: "min-w-0 truncate text-[12px] leading-[1.4]", color: {
+    const rightSection = (_jsxs("div", { className: "flex min-w-0 flex-1 flex-col bg-[var(--adaptive-black50)]", children: [_jsx("header", { onPointerDown: handleDragHandlePointerDown, className: "shrink-0 cursor-move touch-none select-none border-b border-[var(--adaptive-border-subtle)] px-[16px] py-[8px]", children: focusedCase ? (_jsxs(Fragment, { children: [_jsx("p", { className: "truncate text-[15px] font-semibold leading-[1.4] text-[var(--adaptive-black900)]", title: mentionMessageToPlainText(focusedCase.text, focusedCase.mentions), children: mentionMessageToPlainText(focusedCase.text, focusedCase.mentions) }), _jsxs("div", { className: "mt-[2px] flex min-w-0 items-center justify-between gap-[8px]", children: [_jsx("div", { className: "flex min-w-0 flex-1 items-center gap-[6px]", children: focusedCase.status === "resolved" ? (_jsxs(_Fragment, { children: [_jsx(CheckCircleIcon, { className: "h-[14px] w-[14px] shrink-0", fill: RESOLVED_STATUS_COLOR }), _jsx("p", { className: "min-w-0 truncate text-[12px] font-semibold leading-[1.4]", style: { color: RESOLVED_STATUS_COLOR }, children: messages.thread.issueResolvedDivider })] })) : showAssigneeAssigned ? (_jsxs(_Fragment, { children: [_jsx(ProcessingDots, {}), _jsx(Text.Shimmer, { className: "min-w-0 truncate text-[12px] leading-[1.4]", color: {
                                                     start: "var(--adaptive-black900)",
                                                     end: "var(--adaptive-blue400)",
                                                 }, duration: 5, children: messages.marker.assigneeAssigned })] })) : (_jsx("p", { className: "min-w-0 truncate text-[12px] leading-[1.4] text-[var(--adaptive-black500)]", children: messages.marker.assigneeUnassigned })) }), _jsxs("div", { className: "flex min-w-0 shrink-0 items-center gap-[8px]", children: [_jsx(FeedbackFieldTags, { tags: fieldTags }), showAssigneeAssigned && focusedCase ? (_jsx(CaseAssigneeInfo, { caseItem: focusedCase, authors: authors })) : null] })] })] })) : (_jsx("p", { className: "text-[13px] text-[var(--adaptive-black500)]", children: messages.cases.selectToView })) }), _jsxs("div", { className: "flex min-h-0 flex-1 flex-col", children: [_jsx("div", { className: "min-h-0 flex-1 overflow-hidden", children: _jsx(FeedbackThread, { report: report, authors: authors, pendingComposer: pendingComposer, confirmAuthorName: confirmAuthorName, showConfirmAuthorSelect: showConfirmAuthorSelect, onConfirmAuthorNameChange: setConfirmAuthorName, onToggleConfirmAuthorSelect: toggleConfirmAuthorSelect, onStartDeny: startDenyReview, onStartCheckout: startCheckoutReview, onStartAskQuestion: startAskQuestion, onClaimAssignee: () => void handleClaimAssignee(), onTransferAssignee: () => void handleTransferAssignee(), onConfirm: () => void handleConfirmResolution(), isUpdating: isUpdating, isClaimingAssignee: isClaimingAssignee, hideCaseSelector: true }) }), showComposer ? (_jsx("section", { className: "shrink-0 overflow-visible border-t border-[var(--adaptive-border-subtle)]", children: _jsx(FeedbackComposer, { message: replyDraft, onMessageChange: (value) => {
@@ -257,7 +265,7 @@ export function MarkerFeedbackWindow({ report, anchor }) {
                                 if (errorMessage) {
                                     setErrorMessage("");
                                 }
-                            }, mentions: replyMentions, onMentionsChange: setReplyMentions, enableElementMentions: true, authorName: replyAuthorName, onAuthorNameChange: setReplyAuthorName, authors: authors, fields: fields, fieldValues: report.field_values, onFieldChange: () => undefined, showTags: false, hideAuthorSelector: true, onSubmit: () => void handleReplySubmit(), isSubmitting: isSubmittingReply || isUpdating, autoFocus: pendingComposer !== null, askQuestionForced: isCreatorQuestionComposer, composerMode: pendingComposer?.type ?? null, onCancelComposerMode: cancelPendingComposer, errorMessage: errorMessage }) })) : null] })] }));
+                            }, mentions: replyMentions, onMentionsChange: setReplyMentions, enableElementMentions: true, authorName: replyAuthorName, onAuthorNameChange: setReplyAuthorName, authors: authors, fields: fields, fieldValues: report.field_values, onFieldChange: () => undefined, showTags: false, hideAuthorSelector: true, onSubmit: () => void handleReplySubmit(), isSubmitting: isSubmittingReply || isUpdating, autoFocus: pendingComposer !== null, askQuestionForced: isCreatorQuestionComposer, composerMode: pendingComposer?.type ?? null, onCancelComposerMode: cancelPendingComposer, replyTargetPreview: replyTargetPreview, errorMessage: errorMessage }) })) : null] })] }));
     return (_jsxs(_Fragment, { children: [isResizing ? _jsx(CornerResizeGhost, { ghostRef: ghostRef }) : null, _jsx("div", { ref: bindWindowRef, "data-fivepixels-interactive": "", onClick: (event) => event.stopPropagation(), onAnimationEnd: handleWindowAnimationEnd, className: `fixed z-[1000001] ${windowAnimationClass}`, style: {
                     left: resolvedPosition.left,
                     top: resolvedPosition.top,

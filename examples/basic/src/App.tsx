@@ -63,11 +63,17 @@ function AppContent() {
                                 "stpk2.eyJwcm9qZWN0SWQiOiJmaXZlcGl4ZWxzLWJhc2ljLWV4YW1wbGUiLCJlbnZpcm9ubWVudCI6IlNUQUdFRCIsImF1dGhvcklkIjoiNDE3OGM1MjktZGJkMS00YWRkLWFkNjctNjBlNzdiMDk5MDQzIiwiYXV0aG9yTmFtZSI6Iuq5gOyDgeykgCIsInByaXZhdGVLZXkiOnsia2V5X29wcyI6WyJzaWduIl0sImV4dCI6dHJ1ZSwia3R5IjoiRUMiLCJ4IjoiblRJYU9BZm9kLXZYNXRvRWdFeTBnV05XUmxZQTlLdGxmZ2tzRnNkMmdXYyIsInkiOiI3N3Jna0lfTG1KUU1FX2ZTVDFoaHRmZkpjUjB6cEg5Y2tCTlhtS24zTzFFIiwiY3J2IjoiUC0yNTYiLCJkIjoiWWpOclFyalRNQS1xRjNaVkdnU0t1Ymw2aFNjbXU4S1FFd09GNWJQR3Y5QSJ9LCJwdWJsaWNLZXkiOnsia2V5X29wcyI6WyJ2ZXJpZnkiXSwiZXh0Ijp0cnVlLCJrdHkiOiJFQyIsIngiOiJuVElhT0Fmb2Qtdlg1dG9FZ0V5MGdXTldSbFlBOUt0bGZna3NGc2QyZ1djIiwieSI6Ijc3cmdrSV9MbUpRTUVfZlNUMWhodGZmSmNSMHpwSDlja0JOWG1LbjNPMUUiLCJjcnYiOiJQLTI1NiJ9fQ",
                         },
                         {
-                            id: "c11211ad-2d5a-48cb-a15b-9935df415380",
+                            id: "228a82fe-7445-4240-8ff9-23f62dea9f51",
                             name: "김상준",
                             publicKey:
-                                "stpub1.eyJjcnYiOiJQLTI1NiIsImV4dCI6dHJ1ZSwia2V5X29wcyI6WyJ2ZXJpZnkiXSwia3R5IjoiRUMiLCJ4IjoiS1draFJrZ3h5bzdsN1lZT3J1MW43VmpNRE5GaF92QXA3al94SWtZV09JTSIsInkiOiJva21EODMzYTdMaklMazByNFExMFNaNVhxY0ZXRXI1OTdRU2pxdFdOR0ZRIn0",
+                                "stpub1.eyJjcnYiOiJQLTI1NiIsImV4dCI6dHJ1ZSwia2V5X29wcyI6WyJ2ZXJpZnkiXSwia3R5IjoiRUMiLCJ4IjoiNnp1NlVEX0M0TG9OZHNlYl84SktYX2t2cHF1NlBTV0pIODEzcTZKVTBHNCIsInkiOiJZZEkzYVZVdVdDWUtTUlptRkxrR2Z6RGtxaHVGWGFTUjJQa2tBS2lhc2MwIn0",
                         },
+                        // {
+                        //     id: "8ed4c9fe-c42d-4aec-80d8-977b6c548b1c",
+                        //     name: "John Smith",
+                        //     publicKey:
+                        //         "stpub1.eyJrZXlfb3BzIjpbInZlcmlmeSJdLCJleHQiOnRydWUsImt0eSI6IkVDIiwieCI6InVkb21jcXAzei1jT1BabC1PV1BKQkUxV0JIU2RFaU04S3NpemhBVHRwLUUiLCJ5IjoiTkNhZ19xdmJEMlVxZk5vYnZ2OVExTTZRdEZ1NW1UOVE5eU1GbndhM1k3YyIsImNydiI6IlAtMjU2In0",
+                        // },
                     ],
                 }}
             />

@@ -118,7 +118,7 @@ export function PanelAutoRefreshControl() {
                         aria-hidden="true"
                     >
                         <div
-                            className="h-full bg-[#f6562f]"
+                            className="h-full bg-[var(--adaptive-accent-coral)]"
                             style={{ width: `${Math.round(progress * 100)}%` }}
                         />
                     </div>

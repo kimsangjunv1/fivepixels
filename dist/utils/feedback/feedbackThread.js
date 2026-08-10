@@ -1,3 +1,4 @@
+import { mentionMessageToPlainText } from "../../utils/mention/elementMentions.js";
 import { getCaseAssigneeName, getCaseById, getRepliesForCase, canActOnCase } from "../../utils/report/reportCases.js";
 import { summaryToReply } from "../../utils/report/reportSummary.js";
 export function getReportReplies(report) {
@@ -330,6 +331,25 @@ export function resolveParentReplyIdForCaseQuestion(report, caseId, pendingCompo
         ...report,
         replies: getRepliesForCase(report, caseId),
     }, pendingComposer);
+}
+export function resolvePendingComposerTargetPreview(report, caseId, pendingComposer) {
+    if (!pendingComposer || !caseId) {
+        return null;
+    }
+    if (pendingComposer.targetReplyId === ISSUE_ROOT_PARENT_ID) {
+        const caseItem = getCaseById(report, caseId);
+        if (!caseItem) {
+            return null;
+        }
+        const text = mentionMessageToPlainText(caseItem.text, caseItem.mentions).trim();
+        return text || null;
+    }
+    const target = getRepliesForCase(report, caseId).find((reply) => reply.id === pendingComposer.targetReplyId);
+    if (!target) {
+        return null;
+    }
+    const text = mentionMessageToPlainText(target.message, target.mentions).trim();
+    return text || null;
 }
 export function resolveParentReplyIdForQuestion(report, pendingComposer) {
     if (pendingComposer?.type === "question") {

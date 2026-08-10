@@ -180,7 +180,7 @@ export function ReportFeedbackList() {
                                         aria-expanded={scopeMenuOpen}
                                         aria-haspopup="menu"
                                         aria-label={messages.feedbackList.scopeAriaLabel}
-                                        className={`${scopeMenuOpen ? "bg-[#f6562f] hover:bg-[#bc3110]" : "hover:bg-[var(--adaptive-black50)]"} flex h-full min-w-[72px] items-center justify-center gap-[4px] px-[8px] text-[14px] text-[var(--adaptive-black800)] outline-none`}
+                                        className={`${scopeMenuOpen ? "bg-[var(--adaptive-accent-coral)] hover:bg-[var(--adaptive-accent-coral-hover)]" : "hover:bg-[var(--adaptive-black50)]"} flex h-full min-w-[72px] items-center justify-center gap-[4px] px-[8px] text-[14px] text-[var(--adaptive-black800)] outline-none`}
                                     >
                                         <span className={`${scopeMenuOpen ? "text-white" : ""} truncate`}>{scopeLabel}</span>
                                         <ChevronDownIcon className={`h-[14px] w-[14px] shrink-0 text-[var(--adaptive-black600)] transition-transform ${scopeMenuOpen ? "rotate-180" : ""}`} />
@@ -215,7 +215,7 @@ export function ReportFeedbackList() {
                                     aria-expanded={statusMenuOpen}
                                     aria-haspopup="menu"
                                     aria-label={messages.feedbackList.filterStatusAriaLabel}
-                                    className={`${statusMenuOpen ? "bg-[#f6562f] hover:bg-[#bc3110]" : "hover:bg-[var(--adaptive-black50)]"} flex h-full min-w-[72px] items-center justify-center gap-[4px] px-[8px] text-[14px] text-[var(--adaptive-black800)] outline-none`}
+                                    className={`${statusMenuOpen ? "bg-[var(--adaptive-accent-coral)] hover:bg-[var(--adaptive-accent-coral-hover)]" : "hover:bg-[var(--adaptive-black50)]"} flex h-full min-w-[72px] items-center justify-center gap-[4px] px-[8px] text-[14px] text-[var(--adaptive-black800)] outline-none`}
                                 >
                                     <span className={`${statusMenuOpen ? "text-white" : ""} truncate`}>{statusLabel}</span>
                                     <ChevronDownIcon className={`h-[14px] w-[14px] shrink-0 text-[var(--adaptive-black600)] transition-transform ${statusMenuOpen ? "rotate-180" : ""}`} />

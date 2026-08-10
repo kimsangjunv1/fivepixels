@@ -28,7 +28,7 @@ export function IconTooltipButton({ label, active = false, disabled = false, onC
                     e.stopPropagation();
                     onClick();
                 }}
-                className={`${ICON_BUTTON_BASE_CLASS} shrink-0 ${active ? "hover:bg-[#bc3110] bg-[#f6562f]" : "hover:bg-[var(--adaptive-black50)]"} ${className}`}
+                className={`${ICON_BUTTON_BASE_CLASS} shrink-0 ${active ? "hover:bg-[var(--adaptive-accent-coral-hover)] bg-[var(--adaptive-accent-coral)]" : "hover:bg-[var(--adaptive-black50)]"} ${className}`}
             >
                 {children}
             </button>

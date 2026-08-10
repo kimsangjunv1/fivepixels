@@ -42,6 +42,9 @@ export declare function InfoIcon({ className }: {
 export declare function CheckIcon({ className }: {
     className?: string;
 }): import("react").JSX.Element;
+export declare function CheckCircleIcon({ className, fill }: {
+    className?: string;
+} & Pick<MaterialIconProps, "fill">): import("react").JSX.Element;
 export declare function EditIcon({ className, fill }: {
     className?: string;
 } & Pick<MaterialIconProps, "fill">): import("react").JSX.Element;
@@ -58,6 +61,9 @@ export declare function DeniedActionIcon({ className, fill }: {
     className?: string;
 } & Pick<MaterialIconProps, "fill">): import("react").JSX.Element;
 export declare function CompleteActionIcon({ className, fill }: {
+    className?: string;
+} & Pick<MaterialIconProps, "fill">): import("react").JSX.Element;
+export declare function KeyboardReturnIcon({ className, fill }: {
     className?: string;
 } & Pick<MaterialIconProps, "fill">): import("react").JSX.Element;
 export declare function TrashIcon({ className }: {

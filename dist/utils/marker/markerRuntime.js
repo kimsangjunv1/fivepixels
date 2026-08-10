@@ -1,13 +1,16 @@
 import { DOT_SIZE } from "../../constants/report.js";
-import { getMarkerDotSizePx } from "../../constants/markerAppearance.js";
-let currentDotSize = DOT_SIZE;
+import { getMarkerScaleFactor } from "../../constants/markerAppearance.js";
+let currentScaleFactor = 1;
 export function setMarkerDotSizeFromScale(scale) {
-    currentDotSize = getMarkerDotSizePx(scale);
+    currentScaleFactor = getMarkerScaleFactor(scale);
+}
+export function getMarkerScaleFactorValue() {
+    return currentScaleFactor;
 }
 export function getMarkerDotSize() {
-    return currentDotSize;
+    return DOT_SIZE * currentScaleFactor;
 }
 export function resetMarkerDotSize() {
-    currentDotSize = DOT_SIZE;
+    currentScaleFactor = 1;
 }
 //# sourceMappingURL=markerRuntime.js.map

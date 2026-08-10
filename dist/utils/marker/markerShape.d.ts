@@ -1,13 +1,19 @@
-import type { MarkerShape } from "../../constants/markerAppearance.js";
+import type { MarkerFillStyle, MarkerShape } from "../../constants/markerAppearance.js";
+import { MARKER_SHAPE_STROKE_WIDTH_PX } from "../../constants/markerShapeRegistry.js";
 type MarkerShapeStyle = {
     anchorClass: string;
-    shapeClass: string;
-    ringClass: string;
     width: number;
     height: number;
-    clipPath?: string;
-    paddingX?: number;
+    strokeWidthPx: number;
 };
-export declare function resolveMarkerShapeStyle(shape: MarkerShape, dotSize: number, hasBadge: boolean, isModalDetached: boolean): MarkerShapeStyle;
-export {};
+export type MarkerGlyphPaint = {
+    fill: string;
+    stroke: string;
+    strokeWidthPx: number;
+    labelColor: string;
+};
+export declare function resolveMarkerShapeStyle(shape: MarkerShape, dotSize: number): MarkerShapeStyle;
+export declare function resolveMarkerGlyphPaint(color: string, fillStyle: MarkerFillStyle, strokeWidthPx: number): MarkerGlyphPaint;
+export declare function getMarkerReplyBadgeSize(dotSize: number): number;
+export { MARKER_SHAPE_STROKE_WIDTH_PX };
 //# sourceMappingURL=markerShape.d.ts.map

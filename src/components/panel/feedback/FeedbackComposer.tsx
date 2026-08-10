@@ -4,7 +4,7 @@ import type { FeedbackCategory } from "@/constants/feedbackCategory.js";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useReportPreferences } from "@/providers/reportContext.js";
 import type { ReportMessages } from "@/i18n/types.js";
-import { CloseIcon, AskActionIcon, DeniedActionIcon, CompleteActionIcon, SendIcon } from "@/components/icons/Icons.js";
+import { CloseIcon, AskActionIcon, DeniedActionIcon, CompleteActionIcon, SendIcon, KeyboardReturnIcon } from "@/components/icons/Icons.js";
 import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
 import { FeedbackCategorySelector } from "./FeedbackCategorySelector.js";
 import { FeedbackCaseEditor } from "./FeedbackCaseEditor.js";
@@ -49,6 +49,7 @@ type FeedbackComposerProps = {
     askQuestionForced?: boolean;
     composerMode?: ComposerMode | null;
     onCancelComposerMode?: () => void;
+    replyTargetPreview?: string | null;
     hideAuthorSelector?: boolean;
     lockedAuthorName?: string;
     onFooterWarningChange?: (message: string | null) => void;
@@ -264,7 +265,7 @@ function ReplyTextarea({
             onChange={(event) => onChange(event.target.value)}
             placeholder={placeholder}
             rows={1}
-            className="max-h-[200px] w-full min-w-0 flex-1 resize-none overflow-hidden bg-transparent px-[4px] py-[6px] text-[14px] leading-[1.5] text-[var(--adaptive-text-primary)] outline-none placeholder:text-[var(--adaptive-text-muted)]"
+            className="max-h-[200px] w-full min-w-0 flex-1 resize-none overflow-hidden bg-transparent px-[4px] py-[6px] text-[14px] leading-[1.5] text-[var(--adaptive-black100)] outline-none placeholder:text-[var(--adaptive-text-muted)]"
             style={{ minHeight: REPLY_TEXTAREA_MIN_HEIGHT }}
             onKeyDown={(event) => {
                 if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
@@ -310,6 +311,7 @@ export function FeedbackComposer({
     askQuestionForced = false,
     composerMode = null,
     onCancelComposerMode,
+    replyTargetPreview = null,
     hideAuthorSelector = false,
     lockedAuthorName,
     onFooterWarningChange,
@@ -333,10 +335,7 @@ export function FeedbackComposer({
     const showFooterComposerModeTag = Boolean(resolvedComposerMode && isReplyMultiline);
     const showActionRow = !hideActions && (showAskQuestionToggle || showGitHubIssueOnCreate || !hidePrimarySubmitAction || showFooterComposerModeTag);
     const resolvedPlaceholder = isQuestionMode ? messages.composer.questionPlaceholder : (placeholder ?? (usesCaseEditor ? messages.fieldEditor.messagePlaceholder : messages.composer.placeholder));
-    const emptyCaseIds = useMemo(
-        () => (cases ?? []).filter((item) => !stripMentionTokensForEmptyCheck(item.text, item.mentions).trim()).map((item) => item.id),
-        [cases],
-    );
+    const emptyCaseIds = useMemo(() => (cases ?? []).filter((item) => !stripMentionTokensForEmptyCheck(item.text, item.mentions).trim()).map((item) => item.id), [cases]);
     const hasEmptyCase = emptyCaseIds.length > 0;
     const isCategoryRequiredError = errorMessage === messages.errors.categoryRequired;
     const isEmptyCaseError = isCaseTextErrorMessage(errorMessage, cases?.length ?? 0, messages.errors.caseTextRequired, messages.errors.casesRequired);
@@ -435,8 +434,21 @@ export function FeedbackComposer({
         onGitHubIssueSubmit();
     };
 
+    const trimmedReplyTargetPreview = replyTargetPreview?.trim() || null;
+
     return (
-        <div className={`flex w-full flex-col bg-[var(--adaptive-neutralTintOpacity50)] backdrop-blur-sm ${usesCaseEditor && !hideEditor ? "min-h-0 flex-1" : ""}`}>
+        <div className={`flex w-full flex-col ${usesCaseEditor && !hideEditor ? "min-h-0 flex-1" : ""}`}>
+            {trimmedReplyTargetPreview ? (
+                <div
+                    className="px-[8px] pt-[8px]"
+                    title={trimmedReplyTargetPreview}
+                >
+                    <div className="flex min-w-0 items-center gap-[6px] rounded-[8px] bg-[var(--adaptive-black100)] px-[8px] py-[5px] text-[12px] leading-[1.4] text-[var(--adaptive-black500)]">
+                        <KeyboardReturnIcon className="h-[14px] w-[14px] shrink-0" />
+                        <span className="min-w-0 truncate">{`"${trimmedReplyTargetPreview}"`}</span>
+                    </div>
+                </div>
+            ) : null}
             {!hideEditor ? (
                 <div className={`relative ${usesCaseEditor ? "min-h-0 flex-1" : ""}`}>
                     {errorMessage && !isFooterHandledError ? (
@@ -466,7 +478,7 @@ export function FeedbackComposer({
                     ) : enableElementMentions ? (
                         <div
                             data-reply-measure-root=""
-                            className="px-[8px] pt-[8px]"
+                            className={trimmedReplyTargetPreview ? "px-[8px] pt-[6px]" : "px-[8px] pt-[8px]"}
                         >
                             <div className={showInlineComposerModeTag ? "flex items-start gap-[6px]" : undefined}>
                                 {showInlineComposerModeTag && resolvedComposerMode ? (
@@ -496,7 +508,7 @@ export function FeedbackComposer({
                     ) : (
                         <div
                             data-reply-measure-root=""
-                            className="px-[8px] pt-[8px]"
+                            className={trimmedReplyTargetPreview ? "px-[8px] pt-[6px]" : "px-[8px] pt-[8px]"}
                         >
                             <div className={showInlineComposerModeTag ? "flex items-start gap-[6px]" : undefined}>
                                 {showInlineComposerModeTag && resolvedComposerMode ? (
@@ -593,7 +605,7 @@ export function FeedbackComposer({
                                     data-fivepixels-interactive=""
                                     disabled={isActionDisabled}
                                     onClick={handleSubmit}
-                                    className="inline-flex h-[32px] w-[32px] shrink-0 items-center justify-center rounded-full bg-[#f6562f] text-white disabled:opacity-50"
+                                    className="inline-flex h-[32px] w-[32px] shrink-0 items-center justify-center rounded-full bg-[var(--adaptive-accent-coral)] text-white disabled:opacity-50"
                                     aria-label={messages.composer.sendAriaLabel}
                                 >
                                     <SendIcon className="h-[16px] w-[16px]" />

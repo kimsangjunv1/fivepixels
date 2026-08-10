@@ -260,10 +260,10 @@ export function DraftComposerToolbar({
                     data-fivepixels-interactive=""
                     disabled={isActionDisabled}
                     onClick={onSubmit}
-                    className="inline-flex h-[32px] w-[32px] shrink-0 items-center justify-center rounded-full bg-[var(--adaptive-black900)] text-[var(--adaptive-black50)] disabled:opacity-50"
+                    className="inline-flex h-[32px] w-[32px] shrink-0 items-center justify-center rounded-full bg-[var(--adaptive-black900)] hover:bg-[var(--adaptive-blue400)] text-[var(--adaptive-black50)] disabled:opacity-50"
                     aria-label={isSubmitting ? resolvedSubmittingLabel : resolvedSubmitLabel}
                 >
-                    <SendIcon className="h-[14px] w-[14px]" />
+                    <SendIcon className="h-[18px] w-[18px] invert pointer-events-none" />
                 </button>
             </HoverTooltip>
         </div>

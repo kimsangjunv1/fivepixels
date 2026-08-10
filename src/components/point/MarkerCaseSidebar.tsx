@@ -1,5 +1,5 @@
 import { FEEDBACK_STATUS_COLOR, type FeedbackDisplayStatus } from "@/constants/feedbackStatus.js";
-import { CheckIcon } from "@/components/icons/Icons.js";
+import { CheckCircleIcon } from "@/components/icons/Icons.js";
 import { useReport, useReportPreferences } from "@/providers/reportContext.js";
 import type { ReportCaseStatus } from "@/types/report.js";
 import type { ReportFeedback } from "@/types/report.js";
@@ -7,8 +7,11 @@ import { getCaseLatestStatus } from "@/utils/feedback/feedbackThread.js";
 import { getReportCases } from "@/utils/report/reportCases.js";
 import { mentionMessageToPlainText } from "@/utils/mention/elementMentions.js";
 import { canRemoveCase } from "@/utils/feedback/feedbackPermissions.js";
-import { formatDateOnly } from "@/utils/shared/format.js";
+import { formatRelativeTime } from "@/utils/shared/format.js";
+import { ACCENT_COLOR } from "@/constants/accentColors.js";
 import { FeedbackDeleteAction } from "@/components/panel/feedback/FeedbackDeleteAction.js";
+
+const RESOLVED_STATUS_COLOR = ACCENT_COLOR.green;
 
 type MarkerCaseSidebarProps = {
     report: ReportFeedback;
@@ -19,13 +22,10 @@ type MarkerCaseSidebarProps = {
 function CaseStatusIndicator({ caseStatus }: { caseStatus: ReportCaseStatus }) {
     if (caseStatus === "resolved") {
         return (
-            <span
-                aria-hidden
-                className="inline-flex h-[12px] w-[12px] shrink-0 items-center justify-center rounded-full"
-                style={{ backgroundColor: FEEDBACK_STATUS_COLOR.resolved }}
-            >
-                <CheckIcon className="h-[8px] w-[8px] text-white" />
-            </span>
+            <CheckCircleIcon
+                className="h-[12px] w-[12px] shrink-0"
+                fill={RESOLVED_STATUS_COLOR}
+            />
         );
     }
 
@@ -52,7 +52,7 @@ function CaseStatusLabel({ status, isNeedGray }: { status: FeedbackDisplayStatus
 }
 
 export function MarkerCaseSidebar({ report, focusedCaseId, onSelectCase }: MarkerCaseSidebarProps) {
-    const { messages, locale } = useReportPreferences();
+    const { messages } = useReportPreferences();
     const { sessionActor, removePersistedCase, isUpdating } = useReport();
     const cases = getReportCases(report);
 
@@ -65,6 +65,7 @@ export function MarkerCaseSidebar({ report, focusedCaseId, onSelectCase }: Marke
                     const isActive = item.id === focusedCaseId;
                     const status = getCaseLatestStatus(report, item.id);
                     const showRemove = canRemoveCase(report, item.id, sessionActor);
+                    const caseRelativeTime = formatRelativeTime(item.created_at, messages.common.relativeTime);
 
                     return (
                         <li
@@ -83,7 +84,7 @@ export function MarkerCaseSidebar({ report, focusedCaseId, onSelectCase }: Marke
                                 <section className="flex w-full items-center gap-[4px]">
                                     <CaseStatusIndicator caseStatus={item.status} />
                                     <span
-                                        className={`min-w-0 flex-1 truncate text-[14px] leading-[1] ${item.status === "resolved" ? "text-[var(--adaptive-black500)] line-through" : ""}`}
+                                        className="min-w-0 flex-1 truncate text-[14px] leading-[1]"
                                         title={mentionMessageToPlainText(item.text, item.mentions)}
                                     >
                                         {mentionMessageToPlainText(item.text, item.mentions)}
@@ -94,9 +95,7 @@ export function MarkerCaseSidebar({ report, focusedCaseId, onSelectCase }: Marke
                                         status={status}
                                         isNeedGray
                                     />
-                                    <span className="min-w-0 truncate text-[11px] tabular-nums leading-none text-[var(--adaptive-black500)]">
-                                        {formatDateOnly(item.created_at, locale)}
-                                    </span>
+                                    <span className="min-w-0 truncate text-[11px] tabular-nums leading-none text-[var(--adaptive-black500)]">{caseRelativeTime}</span>
                                 </div>
                             </button>
 

@@ -188,7 +188,7 @@ export function PanelDropdownMenu({ open, onClose, trigger, children, menuClassN
                     role="menu"
                     style={menuStyle}
                     onPointerDown={(event) => event.stopPropagation()}
-                    className={`${open ? "border-[#f6562f]" : ""} absolute z-[20] min-w-[120px] overflow-hidden bg-[var(--adaptive-black50)] border shadow-[0_0_100px_rgba(0,0,0,0.2)] ${MOTION.menuIn} ${menuClassName ?? ""}`}
+                    className={`${open ? "border-[var(--adaptive-accent-coral)]" : ""} absolute z-[20] min-w-[120px] overflow-hidden bg-[var(--adaptive-black50)] border shadow-[0_0_100px_rgba(0,0,0,0.2)] ${MOTION.menuIn} ${menuClassName ?? ""}`}
                 >
                     {children}
                 </div>

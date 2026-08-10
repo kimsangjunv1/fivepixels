@@ -88,11 +88,11 @@ export function PickTargetContextMenu({ clientX, clientY, showRevert }: PickTarg
                 type="button"
                 data-fivepixels-interactive=""
                 onClick={() => handlePickTargetDelete()}
-                className={`${MENU_ITEM_CLASS} text-[#ff1861] hover:bg-[#ff18611a]`}
+                className={`${MENU_ITEM_CLASS} text-[var(--adaptive-accent-red)] hover:bg-[color-mix(in_srgb,var(--adaptive-accent-red)_10%,transparent)]`}
             >
                 <DeleteIcon
                     className="h-[18px] w-[18px] shrink-0"
-                    fill="#ff1861"
+                    fill="var(--adaptive-accent-red)"
                 />
                 {messages.pickTarget.contextDelete}
             </button>
