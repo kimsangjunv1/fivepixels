@@ -279,9 +279,11 @@ declare const ReportContext: Context<{
     storedPanelTabPreference: import("../utils/panel/panelTabPreference.js").PanelTabPreference | null;
     pinnedFeedbackItems: import("../types/pinnedFeedback.js").PinnedFeedbackItem[];
     pinRailCollapsed: boolean;
+    pinRailPlacement: import("../types/pinnedFeedback.js").PinRailPlacement;
     togglePinnedFeedback: (item: import("../types/pinnedFeedback.js").PinnedFeedbackItem) => void;
     unpinFeedback: (reportId: string) => void;
     setPinRailCollapsed: (railCollapsed: boolean) => void;
+    setPinRailPlacement: (placement: import("../types/pinnedFeedback.js").PinRailPlacement) => void;
     syncPinnedFeedbackReports: (reports: import("../index.js").ReportFeedback[]) => void;
     statusText: string;
     toggleReportMode: () => void;
@@ -601,9 +603,11 @@ export declare function useReport(): {
     storedPanelTabPreference: import("../utils/panel/panelTabPreference.js").PanelTabPreference | null;
     pinnedFeedbackItems: import("../types/pinnedFeedback.js").PinnedFeedbackItem[];
     pinRailCollapsed: boolean;
+    pinRailPlacement: import("../types/pinnedFeedback.js").PinRailPlacement;
     togglePinnedFeedback: (item: import("../types/pinnedFeedback.js").PinnedFeedbackItem) => void;
     unpinFeedback: (reportId: string) => void;
     setPinRailCollapsed: (railCollapsed: boolean) => void;
+    setPinRailPlacement: (placement: import("../types/pinnedFeedback.js").PinRailPlacement) => void;
     syncPinnedFeedbackReports: (reports: import("../index.js").ReportFeedback[]) => void;
     statusText: string;
     toggleReportMode: () => void;
@@ -926,9 +930,11 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         storedPanelTabPreference: import("../utils/panel/panelTabPreference.js").PanelTabPreference | null;
         pinnedFeedbackItems: import("../types/pinnedFeedback.js").PinnedFeedbackItem[];
         pinRailCollapsed: boolean;
+        pinRailPlacement: import("../types/pinnedFeedback.js").PinRailPlacement;
         togglePinnedFeedback: (item: import("../types/pinnedFeedback.js").PinnedFeedbackItem) => void;
         unpinFeedback: (reportId: string) => void;
         setPinRailCollapsed: (railCollapsed: boolean) => void;
+        setPinRailPlacement: (placement: import("../types/pinnedFeedback.js").PinRailPlacement) => void;
         syncPinnedFeedbackReports: (reports: import("../index.js").ReportFeedback[]) => void;
         statusText: string;
         toggleReportMode: () => void;
@@ -972,7 +978,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         handleCreateGitHubIssue: (report: import("../index.js").ReportFeedback) => Promise<void>;
         handleCreateSubmitWithGitHubIssue: () => Promise<void>;
         isDraftGitHubIssueSubmitting: boolean;
-    }, "personalKey" | "projectId" | "fields" | "personalKeyRequired" | "environment" | "questionThreadDisplay" | "setQuestionThreadDisplay" | "locale" | "setLocale" | "showMarkerTargetPreview" | "setShowMarkerTargetPreview" | "toggleMarkerTargetPreview" | "devicePreviewUiOpen" | "setDevicePreviewUiOpen" | "devicePreviewDeviceId" | "setDevicePreviewDeviceId" | "devicePreviewScale" | "setDevicePreviewScale" | "devicePreviewImageEnabled" | "setDevicePreviewImageEnabled" | "devicePreviewFitToViewport" | "setDevicePreviewFitToViewport" | "devicePreviewStatusBarEnabled" | "setDevicePreviewStatusBarEnabled" | "devicePreviewPreset" | "showHiddenDetachedMarkers" | "setShowHiddenDetachedMarkers" | "showModalDetachedMarkers" | "setShowModalDetachedMarkers" | "markerAppearance" | "setMarkerAppearance" | "setMarkerSize" | "setMarkerShape" | "setMarkerFillStyle" | "setMarkerColors" | "setMarkerColor" | "setFeedbackModeDotColors" | "setFeedbackModeDotColor" | "typography" | "setTypography" | "setFontSize" | "setFontFamily" | "panelRole" | "setPanelRole" | "persistenceStatus" | "appVersion" | "showFeedbackList" | "pinnedFeedbackItems" | "pinRailCollapsed" | "togglePinnedFeedback" | "unpinFeedback" | "setPinRailCollapsed" | "syncPinnedFeedbackReports" | "selfProfile" | "authors" | "publicKey" | "personalKeyCandidates" | "issuePersonalKey" | "rotatePersonalKey" | "insertPersonalKey" | "clearPersonalKey" | "authorSelectionLocked" | "messages" | "onListReviewers" | "onListReviewerRequests" | "onCreateReviewerRequest" | "onResolveReviewerRequest" | "onRegisterReviewer" | "onUpdateReviewer" | "visibleShortcutKeys" | "teamReviewers" | "panelAppearance" | "setPanelAppearance" | "tooltipAppearance" | "setTooltipAppearance" | "teamActor" | "teamActorRole" | "isTeamAdmin" | "canAccessTeamSettings" | "panelView" | "completeOnboarding" | "restoreFromBackup" | "skipOnboarding" | "resolvedPanelAppearance" | "resolvedTooltipAppearance" | "isMobileViewport" | "isPresentationMode" | "presentationViewers" | "visiblePanelTabs" | "visiblePanelTabsSummary" | "resolvedTabAvailabilityContext" | "setVisiblePanelTabs" | "resetVisibleTabsToRoleDefault" | "applyRoleDefaultTabsForOnboarding" | "savePanelTabPreference" | "storedPanelTabPreference">;
+    }, "personalKey" | "projectId" | "fields" | "personalKeyRequired" | "environment" | "questionThreadDisplay" | "setQuestionThreadDisplay" | "locale" | "setLocale" | "showMarkerTargetPreview" | "setShowMarkerTargetPreview" | "toggleMarkerTargetPreview" | "devicePreviewUiOpen" | "setDevicePreviewUiOpen" | "devicePreviewDeviceId" | "setDevicePreviewDeviceId" | "devicePreviewScale" | "setDevicePreviewScale" | "devicePreviewImageEnabled" | "setDevicePreviewImageEnabled" | "devicePreviewFitToViewport" | "setDevicePreviewFitToViewport" | "devicePreviewStatusBarEnabled" | "setDevicePreviewStatusBarEnabled" | "devicePreviewPreset" | "showHiddenDetachedMarkers" | "setShowHiddenDetachedMarkers" | "showModalDetachedMarkers" | "setShowModalDetachedMarkers" | "markerAppearance" | "setMarkerAppearance" | "setMarkerSize" | "setMarkerShape" | "setMarkerFillStyle" | "setMarkerColors" | "setMarkerColor" | "setFeedbackModeDotColors" | "setFeedbackModeDotColor" | "typography" | "setTypography" | "setFontSize" | "setFontFamily" | "panelRole" | "setPanelRole" | "persistenceStatus" | "appVersion" | "showFeedbackList" | "pinnedFeedbackItems" | "pinRailCollapsed" | "pinRailPlacement" | "togglePinnedFeedback" | "unpinFeedback" | "setPinRailCollapsed" | "setPinRailPlacement" | "syncPinnedFeedbackReports" | "selfProfile" | "authors" | "publicKey" | "personalKeyCandidates" | "issuePersonalKey" | "rotatePersonalKey" | "insertPersonalKey" | "clearPersonalKey" | "authorSelectionLocked" | "messages" | "onListReviewers" | "onListReviewerRequests" | "onCreateReviewerRequest" | "onResolveReviewerRequest" | "onRegisterReviewer" | "onUpdateReviewer" | "visibleShortcutKeys" | "teamReviewers" | "panelAppearance" | "setPanelAppearance" | "tooltipAppearance" | "setTooltipAppearance" | "teamActor" | "teamActorRole" | "isTeamAdmin" | "canAccessTeamSettings" | "panelView" | "completeOnboarding" | "restoreFromBackup" | "skipOnboarding" | "resolvedPanelAppearance" | "resolvedTooltipAppearance" | "isMobileViewport" | "isPresentationMode" | "presentationViewers" | "visiblePanelTabs" | "visiblePanelTabsSummary" | "resolvedTabAvailabilityContext" | "setVisiblePanelTabs" | "resetVisibleTabsToRoleDefault" | "applyRoleDefaultTabsForOnboarding" | "savePanelTabPreference" | "storedPanelTabPreference">;
     session: Pick<{
         panelAppearance: import("../index.js").ReportAppearance;
         setPanelAppearance: (nextAppearance: import("../index.js").ReportAppearance) => void;
@@ -1244,9 +1250,11 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         storedPanelTabPreference: import("../utils/panel/panelTabPreference.js").PanelTabPreference | null;
         pinnedFeedbackItems: import("../types/pinnedFeedback.js").PinnedFeedbackItem[];
         pinRailCollapsed: boolean;
+        pinRailPlacement: import("../types/pinnedFeedback.js").PinRailPlacement;
         togglePinnedFeedback: (item: import("../types/pinnedFeedback.js").PinnedFeedbackItem) => void;
         unpinFeedback: (reportId: string) => void;
         setPinRailCollapsed: (railCollapsed: boolean) => void;
+        setPinRailPlacement: (placement: import("../types/pinnedFeedback.js").PinRailPlacement) => void;
         syncPinnedFeedbackReports: (reports: import("../index.js").ReportFeedback[]) => void;
         statusText: string;
         toggleReportMode: () => void;
@@ -1562,9 +1570,11 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         storedPanelTabPreference: import("../utils/panel/panelTabPreference.js").PanelTabPreference | null;
         pinnedFeedbackItems: import("../types/pinnedFeedback.js").PinnedFeedbackItem[];
         pinRailCollapsed: boolean;
+        pinRailPlacement: import("../types/pinnedFeedback.js").PinRailPlacement;
         togglePinnedFeedback: (item: import("../types/pinnedFeedback.js").PinnedFeedbackItem) => void;
         unpinFeedback: (reportId: string) => void;
         setPinRailCollapsed: (railCollapsed: boolean) => void;
+        setPinRailPlacement: (placement: import("../types/pinnedFeedback.js").PinRailPlacement) => void;
         syncPinnedFeedbackReports: (reports: import("../index.js").ReportFeedback[]) => void;
         statusText: string;
         toggleReportMode: () => void;

@@ -1,7 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { CloseIcon, ChevronDownIcon, FavoritePinIcon } from "@/components/icons/Icons.js";
+import { CloseIcon, ChevronDownIcon } from "@/components/icons/Icons.js";
+import { PinDockGuides } from "@/components/overlay/PinDockGuides.js";
 import { MOTION } from "@/constants/motionClasses.js";
+import { getStoredPanelPlacement } from "@/hooks/usePanelDock.js";
+import { usePinRailDock } from "@/hooks/usePinRailDock.js";
 import { useReportData, useReportPreferences, useReportSession } from "@/providers/reportContext.js";
+import type { PanelPlacement } from "@/hooks/usePanelDock.js";
 import type { PinnedFeedbackItem } from "@/types/pinnedFeedback.js";
 import { formatFeedbackCaseId } from "@/utils/feedback/feedbackCaseId.js";
 import { getPinnedFeedbackCaseProgress, type PinnedFeedbackCaseProgress } from "@/utils/pinned/pinnedFeedback.js";
@@ -176,12 +180,37 @@ function PinnedRouteAccordion({
 }
 
 export function FloatingPinRail() {
-    const { messages, pinnedFeedbackItems, pinRailCollapsed, setPinRailCollapsed, unpinFeedback, syncPinnedFeedbackReports } = useReportPreferences();
+    const {
+        messages,
+        pinnedFeedbackItems,
+        pinRailCollapsed,
+        pinRailPlacement,
+        setPinRailCollapsed,
+        setPinRailPlacement,
+        unpinFeedback,
+        syncPinnedFeedbackReports,
+        isMobileViewport,
+    } = useReportPreferences();
     const { openPinnedFeedback } = useReportSession();
     const { reports, allPageReports } = useReportData();
     const [entered, setEntered] = useState(false);
     const [collapsedRoutes, setCollapsedRoutes] = useState<Set<string>>(() => new Set());
+    const [hovered, setHovered] = useState(false);
+    const [panelPlacement, setPanelPlacement] = useState<PanelPlacement | null>(() => (typeof window === "undefined" ? null : getStoredPanelPlacement()));
     const hasPins = pinnedFeedbackItems.length > 0;
+    const expanded = !pinRailCollapsed;
+    const peeking = !expanded && !hovered;
+
+    const { railRef, railStyle, isDragging, activeEdge, handleDragHandlePointerDown, consumeClickSuppressed } = usePinRailDock({
+        enabled: hasPins && !isMobileViewport,
+        collapsed: !expanded,
+        peeking,
+        placement: pinRailPlacement,
+        onPlacementChange: setPinRailPlacement,
+        onTap: () => setPinRailCollapsed(expanded),
+        panelPlacement,
+    });
+
     const enrichedItems = useMemo(() => {
         const reportById = new Map([...allPageReports, ...reports].map((report) => [report.id, report]));
 
@@ -238,11 +267,30 @@ export function FloatingPinRail() {
         return () => window.cancelAnimationFrame(frame);
     }, [hasPins]);
 
+    useEffect(() => {
+        const syncPlacement = () => setPanelPlacement(getStoredPanelPlacement());
+
+        syncPlacement();
+        window.addEventListener("storage", syncPlacement);
+        window.addEventListener("resize", syncPlacement);
+        window.addEventListener("fivepixels:panel-placement", syncPlacement);
+
+        return () => {
+            window.removeEventListener("storage", syncPlacement);
+            window.removeEventListener("resize", syncPlacement);
+            window.removeEventListener("fivepixels:panel-placement", syncPlacement);
+        };
+    }, []);
+
+    useEffect(() => {
+        if (isDragging) {
+            setPanelPlacement(getStoredPanelPlacement());
+        }
+    }, [isDragging]);
+
     if (!hasPins) {
         return null;
     }
-
-    const expanded = !pinRailCollapsed;
 
     const handleOpen = (item: PinnedFeedbackItem) => {
         void openPinnedFeedback(item.reportId, {
@@ -251,95 +299,120 @@ export function FloatingPinRail() {
         });
     };
 
-    if (!expanded) {
-        return (
-            <div className={`pointer-events-auto fixed right-[16px] top-[20%] z-[1000002] ${entered ? MOTION.pinRailEnter : ""}`}>
-                <button
-                    type="button"
-                    data-fivepixels-interactive=""
-                    onClick={() => setPinRailCollapsed(false)}
-                    aria-expanded={false}
-                    aria-label={messages.pins.railExpandAriaLabel}
-                    className="flex h-[52px] w-[52px] items-center justify-center rounded-full border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-neutralTintOpacity900)] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[10px] transition-transform duration-200 ease-[cubic-bezier(0.34,1.28,0.64,1)] hover:scale-[1.04]"
-                >
-                    <CircularProgress
-                        progress={overallProgress}
-                        size={44}
-                        showPercentLabel
-                    />
-                </button>
-            </div>
-        );
-    }
-
     return (
-        <div
-            className={`pointer-events-auto fixed right-[16px] top-[20%] z-[1000002] flex w-[280px] flex-col backdrop-blur-[10px] rounded-[16px] bg-[var(--adaptive-neutralTintOpacity900)] border border-[var(--adaptive-border-subtle)] shadow-[var(--adaptive-popup-shadow)] ${entered ? MOTION.pinRailEnter : ""}`}
-        >
-            <div
-                className={`${MOTION.pinRailShell} overflow-hidden`}
-                data-expanded="true"
-            >
-                <button
-                    type="button"
-                    data-fivepixels-interactive=""
-                    onClick={() => setPinRailCollapsed(true)}
-                    aria-expanded={true}
-                    aria-label={messages.pins.railCollapseAriaLabel}
-                    className="flex w-full items-center justify-between gap-[8px] border-b border-b-[var(--adaptive-border-subtle)] px-[12px] py-[8px] text-left"
-                >
-                    <span className="flex min-w-0 items-center gap-[7px]">
-                        {/* <FavoritePinIcon
-                            filled
-                            className="h-[14px] w-[14px] shrink-0 text-[var(--adaptive-blue500)]"
-                        /> */}
-                        <span className="truncate text-[12px] font-bold text-[var(--adaptive-black900)]">{messages.pins.railTitle}</span>
-                        <span className="rounded-[4px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black100)] px-[5px] py-[1px] text-[10px] font-semibold tabular-nums text-[var(--adaptive-black600)]">
-                            {messages.pins.railCountLabel(pinnedFeedbackItems.length)}
-                        </span>
+        <>
+            <PinDockGuides
+                visible={isDragging}
+                activeEdge={activeEdge}
+            />
 
+            <div
+                ref={railRef}
+                data-fp-chrome="pin"
+                data-collapsed={expanded ? "false" : "true"}
+                data-dragging={isDragging ? "true" : "false"}
+                onPointerEnter={() => setHovered(true)}
+                onPointerLeave={() => setHovered(false)}
+                className={`pointer-events-auto z-[1000002] ${MOTION.pinRailDock} ${isDragging ? MOTION.pinRailDockDragging : ""} ${entered ? MOTION.pinRailEnter : ""} ${
+                    expanded
+                        ? "flex flex-col backdrop-blur-[10px] rounded-[16px] bg-[var(--adaptive-neutralTintOpacity900)] border border-[var(--adaptive-border-subtle)] shadow-[var(--adaptive-popup-shadow)]"
+                        : ""
+                }`}
+                style={railStyle}
+            >
+                {!expanded ? (
+                    <button
+                        type="button"
+                        data-fivepixels-interactive=""
+                        onClick={() => {
+                            if (consumeClickSuppressed()) {
+                                return;
+                            }
+
+                            setPinRailCollapsed(false);
+                        }}
+                        onPointerDown={handleDragHandlePointerDown}
+                        aria-expanded={false}
+                        aria-label={messages.pins.railExpandAriaLabel}
+                        title={messages.pins.repositionTitle}
+                        className="flex h-[52px] w-[52px] items-center justify-center rounded-full border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-neutralTintOpacity900)] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[10px] transition-transform duration-200 ease-[cubic-bezier(0.34,1.28,0.64,1)] hover:scale-[1.04] cursor-grab active:cursor-grabbing"
+                    >
                         <CircularProgress
                             progress={overallProgress}
-                            size={20}
+                            size={44}
                             showPercentLabel
                         />
-                    </span>
-                    <ChevronDownIcon className="h-[14px] w-[14px] shrink-0 rotate-180 text-[var(--adaptive-black500)] transition-transform duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]" />
-                </button>
+                    </button>
+                ) : (
+                    <div
+                        className={`${MOTION.pinRailShell} overflow-hidden`}
+                        data-expanded="true"
+                    >
+                        <button
+                            type="button"
+                            data-fivepixels-interactive=""
+                            onClick={() => {
+                                if (consumeClickSuppressed()) {
+                                    return;
+                                }
 
-                <div
-                    className={MOTION.pinRailBody}
-                    data-expanded="true"
-                >
-                    <div className={MOTION.pinRailBodyInner}>
-                        <div className="max-h-[min(60vh,520px)] overflow-y-auto">
-                            {routeGroups.map((group, index) => (
-                                <PinnedRouteAccordion
-                                    key={group.pathname}
-                                    group={group}
-                                    isFirst={index === 0}
-                                    collapsed={collapsedRoutes.has(group.pathname)}
-                                    onToggle={() => {
-                                        setCollapsedRoutes((current) => {
-                                            const next = new Set(current);
-
-                                            if (next.has(group.pathname)) {
-                                                next.delete(group.pathname);
-                                            } else {
-                                                next.add(group.pathname);
-                                            }
-
-                                            return next;
-                                        });
-                                    }}
-                                    onOpen={handleOpen}
-                                    onRemove={unpinFeedback}
+                                setPinRailCollapsed(true);
+                            }}
+                            onPointerDown={handleDragHandlePointerDown}
+                            aria-expanded={true}
+                            aria-label={messages.pins.railCollapseAriaLabel}
+                            title={messages.pins.repositionTitle}
+                            className="flex w-full cursor-grab items-center justify-between gap-[8px] border-b border-b-[var(--adaptive-border-subtle)] px-[12px] py-[8px] text-left active:cursor-grabbing"
+                        >
+                            <span className="flex min-w-0 items-center gap-[7px]">
+                                <span className="truncate text-[12px] font-bold text-[var(--adaptive-black900)]">{messages.pins.railTitle}</span>
+                                <span className="rounded-[4px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black100)] px-[5px] py-[1px] text-[10px] font-semibold tabular-nums text-[var(--adaptive-black600)]">
+                                    {messages.pins.railCountLabel(pinnedFeedbackItems.length)}
+                                </span>
+                                <CircularProgress
+                                    progress={overallProgress}
+                                    size={20}
+                                    showPercentLabel
                                 />
-                            ))}
+                            </span>
+                            <ChevronDownIcon className="h-[14px] w-[14px] shrink-0 rotate-180 text-[var(--adaptive-black500)] transition-transform duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]" />
+                        </button>
+
+                        <div
+                            className={MOTION.pinRailBody}
+                            data-expanded="true"
+                        >
+                            <div className={MOTION.pinRailBodyInner}>
+                                <div className="max-h-[min(60vh,520px)] overflow-y-auto">
+                                    {routeGroups.map((group, index) => (
+                                        <PinnedRouteAccordion
+                                            key={group.pathname}
+                                            group={group}
+                                            isFirst={index === 0}
+                                            collapsed={collapsedRoutes.has(group.pathname)}
+                                            onToggle={() => {
+                                                setCollapsedRoutes((current) => {
+                                                    const next = new Set(current);
+
+                                                    if (next.has(group.pathname)) {
+                                                        next.delete(group.pathname);
+                                                    } else {
+                                                        next.add(group.pathname);
+                                                    }
+
+                                                    return next;
+                                                });
+                                            }}
+                                            onOpen={handleOpen}
+                                            onRemove={unpinFeedback}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
+                )}
             </div>
-        </div>
+        </>
     );
 }

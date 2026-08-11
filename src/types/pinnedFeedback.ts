@@ -1,5 +1,13 @@
 import type { ReportCaseStatus } from "./report.js";
 
+export type DockEdge = "left" | "right";
+
+export type PinRailPlacement = {
+    edge: DockEdge;
+    /** 0 = near top, 1 = near bottom within the usable vertical band. */
+    offsetRatio: number;
+};
+
 export type PinnedFeedbackCaseSnapshot = {
     id: string;
     status: ReportCaseStatus;
@@ -18,6 +26,7 @@ export type PinnedFeedbackItem = {
 export type PinnedFeedbackPreference = {
     items: PinnedFeedbackItem[];
     railCollapsed: boolean;
+    placement: PinRailPlacement;
 };
 
 export const MAX_PINNED_FEEDBACK = 7;

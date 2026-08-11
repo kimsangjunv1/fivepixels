@@ -1,15 +1,15 @@
 import { jsx as _jsx } from "react/jsx-runtime";
-import { PANEL_CORNERS } from "../../hooks/usePanelDock.js";
-export function PanelDockGuides({ visible, activeCorner }) {
+export function PanelDockGuides({ visible, activeEdge }) {
     if (!visible) {
         return null;
     }
-    return (_jsx("div", { className: "fivepixels-dock-guide-layer", "aria-hidden": "true", children: PANEL_CORNERS.map((corner) => (_jsx("div", { className: [
+    return (_jsx("div", { className: "fivepixels-dock-guide-layer", "aria-hidden": "true", children: ["left", "right"].map((edge) => (_jsx("div", { className: [
                 "fivepixels-dock-guide",
-                `fivepixels-dock-guide--${corner}`,
-                activeCorner === corner ? "fivepixels-dock-guide--active" : undefined,
+                "fivepixels-dock-guide--edge-rail",
+                `fivepixels-dock-guide--edge-${edge}`,
+                activeEdge === edge ? "fivepixels-dock-guide--active" : undefined,
             ]
                 .filter(Boolean)
-                .join(" ") }, corner))) }));
+                .join(" ") }, edge))) }));
 }
 //# sourceMappingURL=PanelDockGuides.js.map

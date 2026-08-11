@@ -825,6 +825,8 @@ export type ReportMessages = {
         railCountLabel: (count: number) => string;
         railExpandAriaLabel: string;
         railCollapseAriaLabel: string;
+        repositionAriaLabel: string;
+        repositionTitle: string;
         pinAriaLabel: string;
         unpinAriaLabel: string;
         openPinAriaLabel: string;

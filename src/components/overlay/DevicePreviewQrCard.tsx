@@ -144,7 +144,7 @@ export function DevicePreviewQrCard({
         >
             <div className="text-[14px] font-semibold tracking-[0.01em] text-[var(--adaptive-black900)] whitespace-break-spaces leading-[1.5]">{title}</div>
 
-            <div className="overflow-hidden rounded-[10px] bg-white">
+            <div className="overflow-hidden rounded-[16px] bg-white border border-[var(--adaptive-border-subtle)]">
                 {qr ? (
                     <svg
                         xmlns="http://www.w3.org/2000/svg"

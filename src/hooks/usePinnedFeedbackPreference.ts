@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
-import type { PinnedFeedbackItem, PinnedFeedbackPreference } from "@/types/pinnedFeedback.js";
+import type { PinnedFeedbackItem, PinnedFeedbackPreference, PinRailPlacement } from "@/types/pinnedFeedback.js";
 import type { ReportFeedback } from "@/types/report.js";
+import { sanitizePinRailPlacement } from "@/utils/overlay/edgeDock.js";
 import {
     getPinnedFeedbackStorageKey,
     removePinnedFeedbackItem,
@@ -59,7 +60,8 @@ export function usePinnedFeedbackPreference(projectId: string, environment?: str
             setPreference((current) => ({
                 ...current,
                 items: togglePinnedFeedbackItem(current.items, item),
-                railCollapsed: current.items.length === 0 ? false : current.railCollapsed,
+                // First pin arrives as a bubble so the host UI stays readable.
+                railCollapsed: current.items.length === 0 ? true : current.railCollapsed,
             }));
         },
         [setPreference],
@@ -80,6 +82,16 @@ export function usePinnedFeedbackPreference(projectId: string, environment?: str
             setPreference((current) => ({
                 ...current,
                 railCollapsed,
+            }));
+        },
+        [setPreference],
+    );
+
+    const setPinRailPlacement = useCallback(
+        (placement: PinRailPlacement) => {
+            setPreference((current) => ({
+                ...current,
+                placement: sanitizePinRailPlacement(placement),
             }));
         },
         [setPreference],
@@ -142,9 +154,11 @@ export function usePinnedFeedbackPreference(projectId: string, environment?: str
     return {
         pinnedFeedbackItems: preference.items,
         pinRailCollapsed: preference.railCollapsed,
+        pinRailPlacement: preference.placement,
         togglePinnedFeedback,
         unpinFeedback,
         setPinRailCollapsed,
+        setPinRailPlacement,
         syncPinnedFeedbackReports,
     };
 }

@@ -35,6 +35,8 @@ export declare const MOTION: {
     readonly markerWindowEnter: "fivepixels-marker-window-enter";
     readonly markerWindowExit: "fivepixels-marker-window-exit";
     readonly pinRailEnter: "fivepixels-pin-rail-enter";
+    readonly pinRailDock: "fivepixels-pin-rail-dock";
+    readonly pinRailDockDragging: "fivepixels-pin-rail-dock--dragging";
     readonly pinRailShell: "fivepixels-pin-rail-shell";
     readonly pinRailBody: "fivepixels-pin-rail-body";
     readonly pinRailBodyInner: "fivepixels-pin-rail-body-inner";

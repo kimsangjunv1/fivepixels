@@ -38,6 +38,8 @@ export const MOTION = {
     markerWindowExit: "fivepixels-marker-window-exit",
 
     pinRailEnter: "fivepixels-pin-rail-enter",
+    pinRailDock: "fivepixels-pin-rail-dock",
+    pinRailDockDragging: "fivepixels-pin-rail-dock--dragging",
     pinRailShell: "fivepixels-pin-rail-shell",
     pinRailBody: "fivepixels-pin-rail-body",
     pinRailBodyInner: "fivepixels-pin-rail-body-inner",

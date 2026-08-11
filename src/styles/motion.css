@@ -449,11 +449,14 @@
         top var(--fp-dur-xl) var(--fp-ease-out),
         right var(--fp-dur-xl) var(--fp-ease-out),
         bottom var(--fp-dur-xl) var(--fp-ease-out),
-        left var(--fp-dur-xl) var(--fp-ease-out);
+        left var(--fp-dur-xl) var(--fp-ease-out),
+        opacity var(--fp-dur-md) var(--fp-ease-out),
+        transform var(--fp-dur-md) var(--fp-ease-out);
 }
 
 [data-fivepixels-mount] .fivepixels-panel-dock--dragging {
     transition: none;
+    opacity: 0.72;
 }
 
 [data-fivepixels-mount] .fivepixels-panel-collapse-in--left {
@@ -676,12 +679,30 @@
     transform: scale(1.04);
 }
 
+[data-fivepixels-mount] .fivepixels-dock-guide--edge-rail.fivepixels-dock-guide--active {
+    transform: translateY(-50%) scale(1.04);
+}
+
 /* ---------------------------------------------------------------------------
  * Pinned feedback rail
  * --------------------------------------------------------------------------- */
 
 [data-fivepixels-mount] .fivepixels-pin-rail-enter {
     animation: fivepixels-pin-rail-in var(--fp-dur-lg) var(--fp-ease-spring) both;
+}
+
+[data-fivepixels-mount] .fivepixels-pin-rail-dock {
+    transition:
+        top var(--fp-dur-xl) var(--fp-ease-out),
+        right var(--fp-dur-xl) var(--fp-ease-out),
+        left var(--fp-dur-xl) var(--fp-ease-out),
+        opacity var(--fp-dur-md) var(--fp-ease-out),
+        transform var(--fp-dur-md) var(--fp-ease-out);
+}
+
+[data-fivepixels-mount] .fivepixels-pin-rail-dock--dragging {
+    transition: none;
+    opacity: 0.72;
 }
 
 [data-fivepixels-mount] .fivepixels-pin-rail-shell {
@@ -734,6 +755,25 @@
     animation: fivepixels-pin-card-pulse var(--fp-dur-sm) var(--fp-ease-out);
 }
 
+/* Host-page yield: dim floating chrome so the product UI stays primary */
+[data-fivepixels-mount][data-fp-host-yield="true"] [data-fp-chrome] {
+    opacity: 0.42;
+}
+
+[data-fivepixels-mount][data-fp-host-yield="true"] [data-fp-chrome]:hover,
+[data-fivepixels-mount][data-fp-host-yield="true"] [data-fp-chrome][data-dragging="true"] {
+    opacity: 1;
+}
+
+/* Collapsed chrome peeks further off-edge while the host page is active */
+[data-fivepixels-mount][data-fp-host-yield="true"] [data-fp-chrome="panel"][data-collapsed="true"][data-anchor-side="right"] {
+    transform: translateX(14px);
+}
+
+[data-fivepixels-mount][data-fp-host-yield="true"] [data-fp-chrome="panel"][data-collapsed="true"][data-anchor-side="left"] {
+    transform: translateX(-14px);
+}
+
 /* ---------------------------------------------------------------------------
  * Reduced motion
  * --------------------------------------------------------------------------- */
@@ -777,6 +817,7 @@
     [data-fivepixels-mount] .fivepixels-panel-dock,
     [data-fivepixels-mount] .fivepixels-panel-tab-shell,
     [data-fivepixels-mount] .fivepixels-panel-tab-height--animate,
+    [data-fivepixels-mount] .fivepixels-pin-rail-dock,
     [data-fivepixels-mount] .fivepixels-pin-rail-shell,
     [data-fivepixels-mount] .fivepixels-pin-rail-body,
     [data-fivepixels-mount] .fivepixels-dock-guide,

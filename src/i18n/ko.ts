@@ -864,6 +864,8 @@ export const ko: ReportMessages = {
         railCountLabel: (count) => `${count}`,
         railExpandAriaLabel: "핀 목록 펼치기",
         railCollapseAriaLabel: "핀 목록 접기",
+        repositionAriaLabel: "핀 위치 변경",
+        repositionTitle: "드래그해서 가장자리에 두기",
         pinAriaLabel: "피드백 핀하기",
         unpinAriaLabel: "핀 해제",
         openPinAriaLabel: "핀한 피드백 열기",

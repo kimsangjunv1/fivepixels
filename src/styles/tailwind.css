@@ -185,6 +185,44 @@
     bottom: 0;
 }
 
+[data-fivepixels-mount] .fivepixels-dock-guide--edge-rail {
+    width: 28px;
+    height: min(72vh, 520px);
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.55;
+}
+
+[data-fivepixels-mount] .fivepixels-dock-guide--edge-rail::before {
+    display: none;
+}
+
+[data-fivepixels-mount] .fivepixels-dock-guide--edge-rail::after {
+    top: 0;
+    height: 100%;
+    width: 3px;
+    -webkit-mask-image: linear-gradient(to bottom, transparent, #000 10%, #000 90%, transparent), repeating-linear-gradient(to bottom, #000 0 7px, transparent 7px 12px);
+    -webkit-mask-composite: source-in;
+    mask-image: linear-gradient(to bottom, transparent, #000 10%, #000 90%, transparent), repeating-linear-gradient(to bottom, #000 0 7px, transparent 7px 12px);
+    mask-composite: intersect;
+}
+
+[data-fivepixels-mount] .fivepixels-dock-guide--edge-left {
+    left: 8px;
+}
+
+[data-fivepixels-mount] .fivepixels-dock-guide--edge-left::after {
+    left: 0;
+}
+
+[data-fivepixels-mount] .fivepixels-dock-guide--edge-right {
+    right: 8px;
+}
+
+[data-fivepixels-mount] .fivepixels-dock-guide--edge-right::after {
+    right: 0;
+}
+
 [data-fivepixels-mount] .fivepixels-dock-guide--active {
     opacity: 1;
     --fivepixels-dock-guide-line: var(--adaptive-blue500, #3182f6);

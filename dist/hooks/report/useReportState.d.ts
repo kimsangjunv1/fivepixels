@@ -320,9 +320,11 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     storedPanelTabPreference: import("../../utils/panel/panelTabPreference.js").PanelTabPreference | null;
     pinnedFeedbackItems: import("../../types/pinnedFeedback.js").PinnedFeedbackItem[];
     pinRailCollapsed: boolean;
+    pinRailPlacement: import("../../types/pinnedFeedback.js").PinRailPlacement;
     togglePinnedFeedback: (item: import("../../types/pinnedFeedback.js").PinnedFeedbackItem) => void;
     unpinFeedback: (reportId: string) => void;
     setPinRailCollapsed: (railCollapsed: boolean) => void;
+    setPinRailPlacement: (placement: import("../../types/pinnedFeedback.js").PinRailPlacement) => void;
     syncPinnedFeedbackReports: (reports: ReportFeedback[]) => void;
     statusText: string;
     toggleReportMode: () => void;

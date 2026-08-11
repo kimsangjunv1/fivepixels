@@ -22,17 +22,19 @@ const DEVICE_PREVIEW_HOST_CANVAS = {
         screen: "#ffffff", // --adaptive-background
     },
     dark: {
-        background: "#424242", // --adaptive-black100
+        background: "#1F2125",
         line: "rgba(255, 255, 255, 0.04)",
         screen: "#17171c", // --adaptive-background
     },
 };
-const DEVICE_PREVIEW_CANVAS_STYLE = {
-    backgroundColor: "var(--adaptive-black100)",
-    backgroundImage: "linear-gradient(var(--adaptive-tintOpacity50) 1px, transparent 1px), linear-gradient(90deg, var(--adaptive-tintOpacity50) 1px, transparent 1px)",
-    backgroundSize: `${DEVICE_PREVIEW_CANVAS_GRID}px ${DEVICE_PREVIEW_CANVAS_GRID}px`,
-    backgroundAttachment: "fixed",
-};
+function buildDevicePreviewCanvasStyle(hostCanvas) {
+    return {
+        backgroundColor: hostCanvas.background,
+        backgroundImage: `linear-gradient(${hostCanvas.line} 1px, transparent 1px), linear-gradient(90deg, ${hostCanvas.line} 1px, transparent 1px)`,
+        backgroundSize: `${DEVICE_PREVIEW_CANVAS_GRID}px ${DEVICE_PREVIEW_CANVAS_GRID}px`,
+        backgroundAttachment: "fixed",
+    };
+}
 function getPreviewContentRoot() {
     if (typeof document === "undefined") {
         return null;
@@ -178,6 +180,7 @@ export function DevicePreviewChrome() {
         return scaleDeviceChrome(preset, devicePreviewScale);
     }, [devicePreviewImageEnabled, preset, devicePreviewScale]);
     const hostCanvas = DEVICE_PREVIEW_HOST_CANVAS[resolvedPanelAppearance === "dark" ? "dark" : "light"];
+    const canvasStyle = useMemo(() => buildDevicePreviewCanvasStyle(hostCanvas), [hostCanvas]);
     const [metrics, setMetrics] = useState(() => typeof window === "undefined"
         ? {
             scrollY: 0,
@@ -353,13 +356,13 @@ html.${HTML_ACTIVE_CLASS} #root .pulse-content {
     const qrLeft = frameLeft + centered.visualFrameWidth + qrGap;
     const qrMaxWidth = Math.max(0, metrics.viewportWidth - qrLeft - 12);
     const showQrCard = qrMaxWidth >= 140;
-    return (_jsxs(_Fragment, { children: [_jsxs("div", { className: "pointer-events-none fixed inset-0 z-[999997]", "aria-hidden": true, "data-fivepixels-device-preview": "", children: [_jsx("div", { className: "absolute left-0 right-0 top-0", style: { ...DEVICE_PREVIEW_CANVAS_STYLE, height: Math.max(0, frameTop) } }), _jsx("div", { className: "absolute bottom-0 left-0 right-0", style: { ...DEVICE_PREVIEW_CANVAS_STYLE, top: frameTop + centered.visualFrameHeight } }), _jsx("div", { className: "absolute left-0", style: {
-                            ...DEVICE_PREVIEW_CANVAS_STYLE,
+    return (_jsxs(_Fragment, { children: [_jsxs("div", { className: "pointer-events-none fixed inset-0 z-[999997]", "aria-hidden": true, "data-fivepixels-device-preview": "", children: [_jsx("div", { className: "absolute left-0 right-0 top-0", style: { ...canvasStyle, height: Math.max(0, frameTop) } }), _jsx("div", { className: "absolute bottom-0 left-0 right-0", style: { ...canvasStyle, top: frameTop + centered.visualFrameHeight } }), _jsx("div", { className: "absolute left-0", style: {
+                            ...canvasStyle,
                             top: frameTop,
                             height: centered.visualFrameHeight,
                             width: Math.max(0, frameLeft),
                         } }), _jsx("div", { className: "absolute right-0", style: {
-                            ...DEVICE_PREVIEW_CANVAS_STYLE,
+                            ...canvasStyle,
                             top: frameTop,
                             height: centered.visualFrameHeight,
                             width: Math.max(0, metrics.viewportWidth - frameLeft - centered.visualFrameWidth),

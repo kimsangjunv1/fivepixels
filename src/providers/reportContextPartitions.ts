@@ -91,9 +91,11 @@ export const REPORT_PREFERENCE_KEYS = [
     "storedPanelTabPreference",
     "pinnedFeedbackItems",
     "pinRailCollapsed",
+    "pinRailPlacement",
     "togglePinnedFeedback",
     "unpinFeedback",
     "setPinRailCollapsed",
+    "setPinRailPlacement",
     "syncPinnedFeedbackReports",
 ] as const;
 

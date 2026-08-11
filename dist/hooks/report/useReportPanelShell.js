@@ -39,7 +39,7 @@ export function useReportPanelShell({ projectId, environment, appVersion, panelA
     const { questionThreadDisplay, setQuestionThreadDisplay } = useQuestionThreadPreference(questionThreadDefault);
     const { panelRole, setPanelRole } = usePanelRolePreference();
     const { storedPreference, setPanelTabPreference, setVisibleTabs, resetTabsToRoleDefault, applyRoleDefaultTabs } = usePanelTabPreference();
-    const { pinnedFeedbackItems, pinRailCollapsed, togglePinnedFeedback, unpinFeedback, setPinRailCollapsed, syncPinnedFeedbackReports } = usePinnedFeedbackPreference(projectId, environment);
+    const { pinnedFeedbackItems, pinRailCollapsed, pinRailPlacement, togglePinnedFeedback, unpinFeedback, setPinRailCollapsed, setPinRailPlacement, syncPinnedFeedbackReports } = usePinnedFeedbackPreference(projectId, environment);
     const { locale, setLocale } = useLocalePreference(initialLocale);
     const [localeMessagesReady, setLocaleMessagesReady] = useState(locale !== "ko");
     const messages = useMemo(() => getReportMessages(locale, messageOverrides), [locale, localeMessagesReady, messageOverrides]);
@@ -341,9 +341,11 @@ export function useReportPanelShell({ projectId, environment, appVersion, panelA
         savePanelTabPreference,
         pinnedFeedbackItems,
         pinRailCollapsed,
+        pinRailPlacement,
         togglePinnedFeedback,
         unpinFeedback,
         setPinRailCollapsed,
+        setPinRailPlacement,
         syncPinnedFeedbackReports,
         targetStats,
         roleStatItems,

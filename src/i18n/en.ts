@@ -866,6 +866,8 @@ export const en: ReportMessages = {
         railCountLabel: (count) => `${count}`,
         railExpandAriaLabel: "Expand pinned feedback",
         railCollapseAriaLabel: "Collapse pinned feedback",
+        repositionAriaLabel: "Reposition pin rail",
+        repositionTitle: "Drag to dock on an edge",
         pinAriaLabel: "Pin feedback",
         unpinAriaLabel: "Unpin feedback",
         openPinAriaLabel: "Open pinned feedback",
