@@ -51,6 +51,15 @@ export declare function useReportPanelShell({ projectId, environment, appVersion
     showMarkerTargetPreview: boolean;
     setShowMarkerTargetPreview: (enabled: boolean) => void;
     toggleMarkerTargetPreview: () => void;
+    devicePreviewUiOpen: boolean;
+    setDevicePreviewUiOpen: (open: boolean) => void;
+    devicePreviewDeviceId: string;
+    setDevicePreviewDeviceId: (deviceId: string) => void;
+    devicePreviewScale: 1 | 0.5 | 0.75 | 1.25;
+    setDevicePreviewScale: (scale: import("../../constants/devicePreview.js").DevicePreviewScale) => void;
+    devicePreviewImageEnabled: boolean;
+    setDevicePreviewImageEnabled: (enabled: boolean) => void;
+    devicePreviewPreset: import("../../constants/devicePreview.js").DevicePreviewPreset;
     showHiddenDetachedMarkers: boolean;
     setShowHiddenDetachedMarkers: (enabled: boolean) => void;
     showModalDetachedMarkers: boolean;

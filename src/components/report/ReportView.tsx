@@ -1,5 +1,6 @@
 import { useReportPreferences, useReportSession } from "@/providers/reportContext.js";
 import { ReportOverlayLayer } from "@/components/overlay/ReportOverlayLayer.js";
+import { DevicePreviewChrome } from "@/components/overlay/DevicePreviewChrome.js";
 import { ReportControlPanel } from "@/components/panel/ReportControlPanel.js";
 import { ReportDraftForm } from "@/components/panel/ReportDraftForm.js";
 import { ReportDraftMarker } from "@/components/point/ReportDraftMarker.js";
@@ -12,7 +13,7 @@ import { ThemeScope } from "./ThemeScope.js";
 const FEEDBACK_ERROR_DOT_COLOR = "#ef4444";
 
 export function ReportView() {
-    const { showMarkerTargetPreview, resolvedPanelAppearance, resolvedTooltipAppearance, markerAppearance } = useReportPreferences();
+    const { showMarkerTargetPreview, devicePreviewUiOpen, resolvedPanelAppearance, resolvedTooltipAppearance, markerAppearance } = useReportPreferences();
     const { mode, showTargetPreview, savedProbeEdits, draft, errorMessage } = useReportSession();
     const hasSavedProbeEdits = Object.keys(savedProbeEdits).length > 0;
     const showOverlay = mode !== "idle" || showTargetPreview || showMarkerTargetPreview || hasSavedProbeEdits;
@@ -36,6 +37,12 @@ export function ReportView() {
                 <ReportControlPanel />
                 <FloatingPinRail />
             </ThemeScope>
+
+            {devicePreviewUiOpen ? (
+                <ThemeScope appearance={resolvedTooltipAppearance}>
+                    <DevicePreviewChrome />
+                </ThemeScope>
+            ) : null}
 
             {showOverlay ? (
                 <ThemeScope appearance={resolvedTooltipAppearance}>

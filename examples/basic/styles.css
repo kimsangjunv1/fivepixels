@@ -18,6 +18,10 @@ body {
     min-height: 100vh;
 }
 
+html.fivepixels-device-preview-active #root {
+    min-height: 0 !important;
+}
+
 button,
 input,
 textarea {

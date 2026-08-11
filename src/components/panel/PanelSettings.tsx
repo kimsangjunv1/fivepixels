@@ -149,6 +149,8 @@ export function PanelSettings({
         messages,
         showMarkerTargetPreview,
         setShowMarkerTargetPreview,
+        devicePreviewUiOpen,
+        setDevicePreviewUiOpen,
         isPresentationMode,
         presentationViewers,
         markerAppearance,
@@ -217,7 +219,7 @@ export function PanelSettings({
     const appearanceSummary = `${messages.appearance[panelAppearance]} · ${messages.localeOption[locale]}`;
     const feedbackModeSummary = `${markerAppearance.feedbackModeDotColors.light} · ${markerAppearance.feedbackModeDotColors.dark}`;
     const markerSummary = `${scaleLabels[markerAppearance.size]} · ${shapeLabels[markerAppearance.shape]} · ${fillStyleLabels[markerAppearance.fillStyle]}`;
-    const displaySummary = `${messages.questionThreadOption[questionThreadDisplay]} · ${showMarkerTargetPreview ? messages.settings.markerTargetsOn : messages.settings.markerTargetsOff}`;
+    const displaySummary = `${messages.questionThreadOption[questionThreadDisplay]} · ${showMarkerTargetPreview ? messages.settings.markerTargetsOn : messages.settings.markerTargetsOff} · ${devicePreviewUiOpen ? messages.settings.devicePreviewEnabledSummary : messages.settings.devicePreviewDisabledSummary}`;
     const tabsSummary = visiblePanelTabsSummary || messages.settings.categoryTabsSummary;
 
     if (activeCategory === "appearance" && !activeAppearanceSection) {
@@ -481,6 +483,21 @@ export function PanelSettings({
                                         onChange={(value) => setShowMarkerTargetPreview(value === "on")}
                                         ariaLabel={messages.settings.markerTargetsAriaLabel}
                                     />
+                                </div>
+                            </SettingsSection>
+
+                            <SettingsSection label={messages.settings.sectionDevicePreview}>
+                                <div className="flex flex-col gap-[12px] px-[12px] pb-[10px]">
+                                    <label className="flex items-center gap-[8px] text-[12px] text-[var(--adaptive-black800)]">
+                                        <input
+                                            type="checkbox"
+                                            checked={devicePreviewUiOpen}
+                                            onChange={(event) => setDevicePreviewUiOpen(event.target.checked)}
+                                            aria-label={messages.settings.devicePreviewUiOpenAriaLabel}
+                                            className="h-[14px] w-[14px] accent-[var(--adaptive-blue500)]"
+                                        />
+                                        <span className="font-medium">{messages.settings.devicePreviewUiOpenLabel}</span>
+                                    </label>
                                 </div>
                             </SettingsSection>
                         </>
