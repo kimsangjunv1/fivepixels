@@ -23,6 +23,16 @@ const RULER_MINOR_STEP = 50;
 const FLOATING_BAR_RESERVE = 88;
 const LABEL_RESERVE = 34;
 
+const DEVICE_PREVIEW_CANVAS_BG = "#181719";
+const DEVICE_PREVIEW_CANVAS_LINE = "#ffffff10";
+const DEVICE_PREVIEW_CANVAS_GRID = 16;
+const DEVICE_PREVIEW_CANVAS_STYLE = {
+    backgroundColor: DEVICE_PREVIEW_CANVAS_BG,
+    backgroundImage: `linear-gradient(${DEVICE_PREVIEW_CANVAS_LINE} 1px, transparent 1px), linear-gradient(90deg, ${DEVICE_PREVIEW_CANVAS_LINE} 1px, transparent 1px)`,
+    backgroundSize: `${DEVICE_PREVIEW_CANVAS_GRID}px ${DEVICE_PREVIEW_CANVAS_GRID}px`,
+    backgroundAttachment: "fixed",
+} as const;
+
 type ContentMetrics = {
     scrollY: number;
     scrollHeight: number;
@@ -82,39 +92,60 @@ function resolveCenteredLayout(args: {
     bezelLeft: number;
     viewportWidth: number;
     viewportHeight: number;
+    fitToViewport: boolean;
 }) {
-    const { layoutWidth, layoutHeight, bezelTop, bezelRight, bezelBottom, bezelLeft, viewportWidth, viewportHeight } = args;
+    const {
+        layoutWidth,
+        layoutHeight,
+        bezelTop,
+        bezelRight,
+        bezelBottom,
+        bezelLeft,
+        viewportWidth,
+        viewportHeight,
+        fitToViewport,
+    } = args;
     const availableWidth = Math.max(240, viewportWidth - 24);
     const availableHeight = Math.max(240, viewportHeight - FLOATING_BAR_RESERVE - LABEL_RESERVE);
-    const idealFrameWidth = layoutWidth + bezelLeft + bezelRight;
-    const idealFrameHeight = layoutHeight + bezelTop + bezelBottom;
-    const fitScale = Math.min(1, availableWidth / idealFrameWidth, availableHeight / idealFrameHeight);
-    const screenWidth = Math.max(1, Math.round(layoutWidth * fitScale));
-    const screenHeight = Math.max(1, Math.round(layoutHeight * fitScale));
-    const scaledBezel = {
-        top: Math.round(bezelTop * fitScale),
-        right: Math.round(bezelRight * fitScale),
-        bottom: Math.round(bezelBottom * fitScale),
-        left: Math.round(bezelLeft * fitScale),
+
+    // Logical screen stays at the selected device × user scale — never shrink for the viewport.
+    const screenWidth = Math.max(1, Math.round(layoutWidth));
+    const screenHeight = Math.max(1, Math.round(layoutHeight));
+    const bezel = {
+        top: Math.max(0, Math.round(bezelTop)),
+        right: Math.max(0, Math.round(bezelRight)),
+        bottom: Math.max(0, Math.round(bezelBottom)),
+        left: Math.max(0, Math.round(bezelLeft)),
     };
-    const frameWidth = screenWidth + scaledBezel.left + scaledBezel.right;
-    const frameHeight = screenHeight + scaledBezel.top + scaledBezel.bottom;
-    const frameLeft = Math.round((viewportWidth - frameWidth) / 2);
-    const frameTop = Math.round((availableHeight - frameHeight) / 2 + LABEL_RESERVE / 2);
-    const screenLeft = frameLeft + scaledBezel.left;
-    const screenTop = frameTop + scaledBezel.top;
+    const frameWidth = screenWidth + bezel.left + bezel.right;
+    const frameHeight = screenHeight + bezel.top + bezel.bottom;
+
+    // Optional visual-only shrink; CSS size / container queries stay at the real device width.
+    const fitScale = fitToViewport ? Math.min(1, availableWidth / frameWidth, availableHeight / frameHeight) : 1;
+    const visualFrameWidth = frameWidth * fitScale;
+    const visualFrameHeight = frameHeight * fitScale;
+    const visualScreenWidth = screenWidth * fitScale;
+    const visualScreenHeight = screenHeight * fitScale;
+    const frameLeft = Math.round((viewportWidth - visualFrameWidth) / 2);
+    const frameTop = Math.round((availableHeight - visualFrameHeight) / 2 + LABEL_RESERVE / 2);
+    const screenLeft = frameLeft + bezel.left * fitScale;
+    const screenTop = frameTop + bezel.top * fitScale;
 
     return {
         fitScale,
         screenWidth,
         screenHeight,
+        visualScreenWidth,
+        visualScreenHeight,
         frameWidth,
         frameHeight,
+        visualFrameWidth,
+        visualFrameHeight,
         frameLeft,
         frameTop,
         screenLeft,
         screenTop,
-        bezel: scaledBezel,
+        bezel,
     };
 }
 
@@ -143,6 +174,8 @@ function clearRootInlineStyles(root: HTMLElement) {
         "padding",
         "padding-top",
         "border-radius",
+        "transform",
+        "transform-origin",
     ];
 
     for (const prop of props) {
@@ -159,6 +192,8 @@ function DevicePreviewFloatingBar() {
         setDevicePreviewScale,
         devicePreviewImageEnabled,
         setDevicePreviewImageEnabled,
+        devicePreviewFitToViewport,
+        setDevicePreviewFitToViewport,
     } = useReportPreferences();
 
     const selectClassName =
@@ -241,6 +276,19 @@ function DevicePreviewFloatingBar() {
                     ariaLabel={messages.settings.devicePreviewImageAriaLabel}
                 />
             </div>
+
+            <div className="flex min-w-[132px] flex-col gap-[3px]">
+                <span className="text-[9px] font-semibold text-[var(--adaptive-black500)]">{messages.settings.devicePreviewFitViewportLabel}</span>
+                <PanelOptionSwitch
+                    options={[
+                        { value: "off", label: messages.settings.devicePreviewFitViewportOff },
+                        { value: "on", label: messages.settings.devicePreviewFitViewportOn },
+                    ]}
+                    value={devicePreviewFitToViewport ? "on" : "off"}
+                    onChange={(value) => setDevicePreviewFitToViewport(value === "on")}
+                    ariaLabel={messages.settings.devicePreviewFitViewportAriaLabel}
+                />
+            </div>
         </div>
     );
 }
@@ -251,6 +299,7 @@ export function DevicePreviewChrome() {
         devicePreviewDeviceId,
         devicePreviewScale,
         devicePreviewImageEnabled,
+        devicePreviewFitToViewport,
         resolvedPanelAppearance,
         messages,
     } = useReportPreferences();
@@ -294,8 +343,9 @@ export function DevicePreviewChrome() {
                 bezelLeft: chrome.bezel.left,
                 viewportWidth: metrics.viewportWidth || (typeof window !== "undefined" ? window.innerWidth : 1280),
                 viewportHeight: metrics.viewportHeight || (typeof window !== "undefined" ? window.innerHeight : 800),
+                fitToViewport: devicePreviewFitToViewport,
             }),
-        [layout.width, layout.height, chrome.bezel, metrics.viewportWidth, metrics.viewportHeight],
+        [layout.width, layout.height, chrome.bezel, metrics.viewportWidth, metrics.viewportHeight, devicePreviewFitToViewport],
     );
 
     useEffect(() => {
@@ -324,7 +374,9 @@ html.${HTML_ACTIVE_CLASS} body {
   height: 100% !important;
   max-height: 100% !important;
   overflow: hidden !important;
-  background: #0C141C !important;
+  background-color: ${DEVICE_PREVIEW_CANVAS_BG} !important;
+  background-image: linear-gradient(${DEVICE_PREVIEW_CANVAS_LINE} 1px, transparent 1px), linear-gradient(90deg, ${DEVICE_PREVIEW_CANVAS_LINE} 1px, transparent 1px) !important;
+  background-size: ${DEVICE_PREVIEW_CANVAS_GRID}px ${DEVICE_PREVIEW_CANVAS_GRID}px !important;
 }
 
 html.${HTML_ACTIVE_CLASS} #fivepixels-root {
@@ -359,8 +411,7 @@ html.${HTML_ACTIVE_CLASS} #root .pulse-content {
         const root = getPreviewContentRoot();
         const statusBarHeight = getDeviceStatusBarHeight(preset, centered.screenWidth);
         if (root) {
-            // Keep container-query width at logical device width (not fit-scaled),
-            // while the visible box matches the centered screen hole.
+            // Logical CSS size = selected device resolution (× user scale). Viewport fit uses transform only.
             root.style.setProperty("max-width", `${centered.screenWidth}px`, "important");
             root.style.setProperty("width", `${centered.screenWidth}px`, "important");
             root.style.setProperty("height", `${centered.screenHeight}px`, "important");
@@ -382,9 +433,11 @@ html.${HTML_ACTIVE_CLASS} #root .pulse-content {
             root.style.setProperty("box-sizing", "border-box", "important");
             root.style.setProperty(
                 "border-radius",
-                devicePreviewImageEnabled ? `${Math.max(0, Math.round(chrome.screenRadius * centered.fitScale))}px` : "0px",
+                devicePreviewImageEnabled ? `${Math.max(0, Math.round(chrome.screenRadius))}px` : "0px",
                 "important",
             );
+            root.style.setProperty("transform", `scale(${centered.fitScale})`, "important");
+            root.style.setProperty("transform-origin", "top left", "important");
         }
 
         const sync = () => setMetrics(readContentMetrics(centered.screenWidth));
@@ -439,18 +492,17 @@ html.${HTML_ACTIVE_CLASS} #root .pulse-content {
     const screenTop = metrics.top || centered.screenTop;
     const screenWidth = centered.screenWidth;
     const screenHeight = centered.screenHeight;
-    const frameLeft = screenLeft - centered.bezel.left;
-    const frameTop = screenTop - centered.bezel.top;
-    const fittedChrome = {
-        ...chrome,
-        frameRadius: Math.round(chrome.frameRadius * centered.fitScale),
-        screenRadius: Math.round(chrome.screenRadius * centered.fitScale),
-        bezel: centered.bezel,
-    };
+    const visualScreenHeight = centered.visualScreenHeight;
+    const frameLeft = centered.frameLeft;
+    const frameTop = centered.frameTop;
     const ticks = buildRulerTicks(metrics.scrollY, screenHeight, Math.max(metrics.scrollHeight, screenHeight));
     const rulerLeft = screenLeft >= RULER_WIDTH + 8 ? screenLeft - RULER_WIDTH : Math.max(0, screenLeft - 4);
     const sizeLabel = `${preset.label} · ${preset.width}×${preset.height} · ${formatDevicePreviewScale(devicePreviewScale)}`;
     const scrollLabel = messages.settings.devicePreviewScrollLabel(metrics.scrollY);
+    const stageTransform = {
+        transform: `scale(${centered.fitScale})`,
+        transformOrigin: "top left" as const,
+    };
 
     return (
         <>
@@ -465,66 +517,78 @@ html.${HTML_ACTIVE_CLASS} #root .pulse-content {
                   Only mask the area outside the device frame with solid black.
                 */}
                 <div
-                    className="absolute left-0 right-0 top-0 bg-[#0C141C]"
-                    style={{ height: Math.max(0, frameTop) }}
+                    className="absolute left-0 right-0 top-0"
+                    style={{ ...DEVICE_PREVIEW_CANVAS_STYLE, height: Math.max(0, frameTop) }}
                 />
                 <div
-                    className="absolute bottom-0 left-0 right-0 bg-[#0C141C]"
-                    style={{ top: frameTop + centered.frameHeight }}
+                    className="absolute bottom-0 left-0 right-0"
+                    style={{ ...DEVICE_PREVIEW_CANVAS_STYLE, top: frameTop + centered.visualFrameHeight }}
                 />
                 <div
-                    className="absolute left-0 bg-[#0C141C]"
-                    style={{ top: frameTop, height: centered.frameHeight, width: Math.max(0, frameLeft) }}
-                />
-                <div
-                    className="absolute right-0 bg-[#0C141C]"
+                    className="absolute left-0"
                     style={{
+                        ...DEVICE_PREVIEW_CANVAS_STYLE,
                         top: frameTop,
-                        height: centered.frameHeight,
-                        width: Math.max(0, metrics.viewportWidth - frameLeft - centered.frameWidth),
+                        height: centered.visualFrameHeight,
+                        width: Math.max(0, frameLeft),
+                    }}
+                />
+                <div
+                    className="absolute right-0"
+                    style={{
+                        ...DEVICE_PREVIEW_CANVAS_STYLE,
+                        top: frameTop,
+                        height: centered.visualFrameHeight,
+                        width: Math.max(0, metrics.viewportWidth - frameLeft - centered.visualFrameWidth),
                     }}
                 />
 
-                {devicePreviewImageEnabled ? (
-                    <div
-                        className="absolute z-[3]"
-                        style={{ left: frameLeft, top: frameTop }}
-                    >
+                <div
+                    className="absolute z-[3]"
+                    style={{
+                        left: frameLeft,
+                        top: frameTop,
+                        width: centered.frameWidth,
+                        height: centered.frameHeight,
+                        ...stageTransform,
+                    }}
+                >
+                    {devicePreviewImageEnabled ? (
                         <DeviceFrameArtwork
                             preset={preset}
-                            chrome={fittedChrome}
+                            chrome={chrome}
                             screenWidth={screenWidth}
                             screenHeight={screenHeight}
                         />
-                    </div>
-                ) : (
+                    ) : (
+                        <div
+                            className="absolute border border-white/20 bg-transparent"
+                            style={{
+                                left: centered.bezel.left,
+                                top: centered.bezel.top,
+                                width: screenWidth,
+                                height: screenHeight,
+                            }}
+                        />
+                    )}
+
+                    {/* Status bar owns notch / island / punch in its center flex section */}
                     <div
-                        className="absolute z-[3] border border-white/20 bg-transparent"
+                        className="absolute z-[1] overflow-hidden"
                         style={{
-                            left: screenLeft,
-                            top: screenTop,
+                            left: centered.bezel.left,
+                            top: centered.bezel.top,
                             width: screenWidth,
                             height: screenHeight,
+                            borderRadius: devicePreviewImageEnabled ? chrome.screenRadius : 0,
                         }}
-                    />
-                )}
-
-                {/* Status bar owns notch / island / punch in its center flex section */}
-                <div
-                    className="absolute z-[4] overflow-hidden"
-                    style={{
-                        left: screenLeft,
-                        top: screenTop,
-                        width: screenWidth,
-                        height: screenHeight,
-                        borderRadius: devicePreviewImageEnabled ? fittedChrome.screenRadius : 0,
-                    }}
-                >
-                    <DeviceStatusBar
-                        preset={preset}
-                        width={screenWidth}
-                        appearance={resolvedPanelAppearance === "dark" ? "dark" : "light"}
-                    />
+                    >
+                        <DeviceStatusBar
+                            preset={preset}
+                            width={screenWidth}
+                            appearance={resolvedPanelAppearance === "dark" ? "dark" : "light"}
+                        />
+                    </div>
                 </div>
 
                 <div
@@ -536,14 +600,14 @@ html.${HTML_ACTIVE_CLASS} #root .pulse-content {
 
                 <div
                     className="absolute overflow-hidden border-r border-[rgba(148,163,184,0.35)] bg-[rgba(15,23,42,0.9)] text-[rgba(226,232,240,0.92)] backdrop-blur-[4px]"
-                    style={{ left: rulerLeft, top: screenTop, width: RULER_WIDTH, height: screenHeight, borderRadius: 6 }}
+                    style={{ left: rulerLeft, top: screenTop, width: RULER_WIDTH, height: visualScreenHeight, borderRadius: 6 }}
                 >
                     <div className="absolute inset-x-0 top-0 z-[1] border-b border-[rgba(148,163,184,0.35)] bg-[rgba(15,23,42,0.95)] px-[4px] py-[6px] text-center text-[9px] font-semibold leading-tight">
                         {scrollLabel}
                     </div>
                     {ticks.map((tick) => {
-                        const top = tick.documentY - metrics.scrollY;
-                        if (top < 0 || top > screenHeight) {
+                        const top = (tick.documentY - metrics.scrollY) * centered.fitScale;
+                        if (top < 0 || top > visualScreenHeight) {
                             return null;
                         }
 

@@ -59,6 +59,8 @@ export declare function useReportPanelShell({ projectId, environment, appVersion
     setDevicePreviewScale: (scale: import("../../constants/devicePreview.js").DevicePreviewScale) => void;
     devicePreviewImageEnabled: boolean;
     setDevicePreviewImageEnabled: (enabled: boolean) => void;
+    devicePreviewFitToViewport: boolean;
+    setDevicePreviewFitToViewport: (enabled: boolean) => void;
     devicePreviewPreset: import("../../constants/devicePreview.js").DevicePreviewPreset;
     showHiddenDetachedMarkers: boolean;
     setShowHiddenDetachedMarkers: (enabled: boolean) => void;

@@ -76,6 +76,8 @@ export function assembleReportContextValue({ panel, auth, draft, markers, mutati
         setDevicePreviewScale: panel.setDevicePreviewScale,
         devicePreviewImageEnabled: panel.devicePreviewImageEnabled,
         setDevicePreviewImageEnabled: panel.setDevicePreviewImageEnabled,
+        devicePreviewFitToViewport: panel.devicePreviewFitToViewport,
+        setDevicePreviewFitToViewport: panel.setDevicePreviewFitToViewport,
         devicePreviewPreset: panel.devicePreviewPreset,
         showHiddenDetachedMarkers: panel.showHiddenDetachedMarkers,
         setShowHiddenDetachedMarkers: panel.setShowHiddenDetachedMarkers,

@@ -158,6 +158,8 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     setDevicePreviewScale: (scale: import("../../constants/devicePreview.js").DevicePreviewScale) => void;
     devicePreviewImageEnabled: boolean;
     setDevicePreviewImageEnabled: (enabled: boolean) => void;
+    devicePreviewFitToViewport: boolean;
+    setDevicePreviewFitToViewport: (enabled: boolean) => void;
     devicePreviewPreset: import("../../constants/devicePreview.js").DevicePreviewPreset;
     showHiddenDetachedMarkers: boolean;
     setShowHiddenDetachedMarkers: (enabled: boolean) => void;

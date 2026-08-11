@@ -8,6 +8,8 @@ export declare function useDevicePreviewPreference(): {
     setDevicePreviewScale: (scale: DevicePreviewScale) => void;
     devicePreviewImageEnabled: boolean;
     setDevicePreviewImageEnabled: (enabled: boolean) => void;
+    devicePreviewFitToViewport: boolean;
+    setDevicePreviewFitToViewport: (enabled: boolean) => void;
     devicePreviewPreset: import("../constants/devicePreview.js").DevicePreviewPreset;
 };
 //# sourceMappingURL=useDevicePreviewPreference.d.ts.map

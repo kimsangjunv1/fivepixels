@@ -440,6 +440,10 @@ export type ReportMessages = {
         devicePreviewImageAriaLabel: string;
         devicePreviewImageOn: string;
         devicePreviewImageOff: string;
+        devicePreviewFitViewportLabel: string;
+        devicePreviewFitViewportAriaLabel: string;
+        devicePreviewFitViewportOn: string;
+        devicePreviewFitViewportOff: string;
         devicePreviewFloatingAriaLabel: string;
         devicePreviewBrandApple: string;
         devicePreviewBrandSamsung: string;

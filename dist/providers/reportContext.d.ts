@@ -117,6 +117,8 @@ declare const ReportContext: Context<{
     setDevicePreviewScale: (scale: import("../constants/devicePreview.js").DevicePreviewScale) => void;
     devicePreviewImageEnabled: boolean;
     setDevicePreviewImageEnabled: (enabled: boolean) => void;
+    devicePreviewFitToViewport: boolean;
+    setDevicePreviewFitToViewport: (enabled: boolean) => void;
     devicePreviewPreset: import("../constants/devicePreview.js").DevicePreviewPreset;
     showHiddenDetachedMarkers: boolean;
     setShowHiddenDetachedMarkers: (enabled: boolean) => void;
@@ -435,6 +437,8 @@ export declare function useReport(): {
     setDevicePreviewScale: (scale: import("../constants/devicePreview.js").DevicePreviewScale) => void;
     devicePreviewImageEnabled: boolean;
     setDevicePreviewImageEnabled: (enabled: boolean) => void;
+    devicePreviewFitToViewport: boolean;
+    setDevicePreviewFitToViewport: (enabled: boolean) => void;
     devicePreviewPreset: import("../constants/devicePreview.js").DevicePreviewPreset;
     showHiddenDetachedMarkers: boolean;
     setShowHiddenDetachedMarkers: (enabled: boolean) => void;
@@ -756,6 +760,8 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         setDevicePreviewScale: (scale: import("../constants/devicePreview.js").DevicePreviewScale) => void;
         devicePreviewImageEnabled: boolean;
         setDevicePreviewImageEnabled: (enabled: boolean) => void;
+        devicePreviewFitToViewport: boolean;
+        setDevicePreviewFitToViewport: (enabled: boolean) => void;
         devicePreviewPreset: import("../constants/devicePreview.js").DevicePreviewPreset;
         showHiddenDetachedMarkers: boolean;
         setShowHiddenDetachedMarkers: (enabled: boolean) => void;
@@ -960,7 +966,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         handleCreateGitHubIssue: (report: import("../index.js").ReportFeedback) => Promise<void>;
         handleCreateSubmitWithGitHubIssue: () => Promise<void>;
         isDraftGitHubIssueSubmitting: boolean;
-    }, "personalKey" | "projectId" | "fields" | "personalKeyRequired" | "environment" | "questionThreadDisplay" | "setQuestionThreadDisplay" | "locale" | "setLocale" | "showMarkerTargetPreview" | "setShowMarkerTargetPreview" | "toggleMarkerTargetPreview" | "devicePreviewUiOpen" | "setDevicePreviewUiOpen" | "devicePreviewDeviceId" | "setDevicePreviewDeviceId" | "devicePreviewScale" | "setDevicePreviewScale" | "devicePreviewImageEnabled" | "setDevicePreviewImageEnabled" | "devicePreviewPreset" | "showHiddenDetachedMarkers" | "setShowHiddenDetachedMarkers" | "showModalDetachedMarkers" | "setShowModalDetachedMarkers" | "markerAppearance" | "setMarkerAppearance" | "setMarkerSize" | "setMarkerShape" | "setMarkerFillStyle" | "setMarkerColors" | "setMarkerColor" | "setFeedbackModeDotColors" | "setFeedbackModeDotColor" | "typography" | "setTypography" | "setFontSize" | "setFontFamily" | "panelRole" | "setPanelRole" | "persistenceStatus" | "appVersion" | "showFeedbackList" | "pinnedFeedbackItems" | "pinRailCollapsed" | "togglePinnedFeedback" | "unpinFeedback" | "setPinRailCollapsed" | "syncPinnedFeedbackReports" | "selfProfile" | "authors" | "publicKey" | "personalKeyCandidates" | "issuePersonalKey" | "rotatePersonalKey" | "insertPersonalKey" | "clearPersonalKey" | "authorSelectionLocked" | "messages" | "onListReviewers" | "onListReviewerRequests" | "onCreateReviewerRequest" | "onResolveReviewerRequest" | "onRegisterReviewer" | "onUpdateReviewer" | "visibleShortcutKeys" | "teamReviewers" | "panelAppearance" | "setPanelAppearance" | "tooltipAppearance" | "setTooltipAppearance" | "teamActor" | "teamActorRole" | "isTeamAdmin" | "canAccessTeamSettings" | "panelView" | "completeOnboarding" | "restoreFromBackup" | "skipOnboarding" | "resolvedPanelAppearance" | "resolvedTooltipAppearance" | "isMobileViewport" | "isPresentationMode" | "presentationViewers" | "visiblePanelTabs" | "visiblePanelTabsSummary" | "resolvedTabAvailabilityContext" | "setVisiblePanelTabs" | "resetVisibleTabsToRoleDefault" | "applyRoleDefaultTabsForOnboarding" | "savePanelTabPreference" | "storedPanelTabPreference">;
+    }, "personalKey" | "projectId" | "fields" | "personalKeyRequired" | "environment" | "questionThreadDisplay" | "setQuestionThreadDisplay" | "locale" | "setLocale" | "showMarkerTargetPreview" | "setShowMarkerTargetPreview" | "toggleMarkerTargetPreview" | "devicePreviewUiOpen" | "setDevicePreviewUiOpen" | "devicePreviewDeviceId" | "setDevicePreviewDeviceId" | "devicePreviewScale" | "setDevicePreviewScale" | "devicePreviewImageEnabled" | "setDevicePreviewImageEnabled" | "devicePreviewFitToViewport" | "setDevicePreviewFitToViewport" | "devicePreviewPreset" | "showHiddenDetachedMarkers" | "setShowHiddenDetachedMarkers" | "showModalDetachedMarkers" | "setShowModalDetachedMarkers" | "markerAppearance" | "setMarkerAppearance" | "setMarkerSize" | "setMarkerShape" | "setMarkerFillStyle" | "setMarkerColors" | "setMarkerColor" | "setFeedbackModeDotColors" | "setFeedbackModeDotColor" | "typography" | "setTypography" | "setFontSize" | "setFontFamily" | "panelRole" | "setPanelRole" | "persistenceStatus" | "appVersion" | "showFeedbackList" | "pinnedFeedbackItems" | "pinRailCollapsed" | "togglePinnedFeedback" | "unpinFeedback" | "setPinRailCollapsed" | "syncPinnedFeedbackReports" | "selfProfile" | "authors" | "publicKey" | "personalKeyCandidates" | "issuePersonalKey" | "rotatePersonalKey" | "insertPersonalKey" | "clearPersonalKey" | "authorSelectionLocked" | "messages" | "onListReviewers" | "onListReviewerRequests" | "onCreateReviewerRequest" | "onResolveReviewerRequest" | "onRegisterReviewer" | "onUpdateReviewer" | "visibleShortcutKeys" | "teamReviewers" | "panelAppearance" | "setPanelAppearance" | "tooltipAppearance" | "setTooltipAppearance" | "teamActor" | "teamActorRole" | "isTeamAdmin" | "canAccessTeamSettings" | "panelView" | "completeOnboarding" | "restoreFromBackup" | "skipOnboarding" | "resolvedPanelAppearance" | "resolvedTooltipAppearance" | "isMobileViewport" | "isPresentationMode" | "presentationViewers" | "visiblePanelTabs" | "visiblePanelTabsSummary" | "resolvedTabAvailabilityContext" | "setVisiblePanelTabs" | "resetVisibleTabsToRoleDefault" | "applyRoleDefaultTabsForOnboarding" | "savePanelTabPreference" | "storedPanelTabPreference">;
     session: Pick<{
         panelAppearance: import("../index.js").ReportAppearance;
         setPanelAppearance: (nextAppearance: import("../index.js").ReportAppearance) => void;
@@ -1070,6 +1076,8 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         setDevicePreviewScale: (scale: import("../constants/devicePreview.js").DevicePreviewScale) => void;
         devicePreviewImageEnabled: boolean;
         setDevicePreviewImageEnabled: (enabled: boolean) => void;
+        devicePreviewFitToViewport: boolean;
+        setDevicePreviewFitToViewport: (enabled: boolean) => void;
         devicePreviewPreset: import("../constants/devicePreview.js").DevicePreviewPreset;
         showHiddenDetachedMarkers: boolean;
         setShowHiddenDetachedMarkers: (enabled: boolean) => void;
@@ -1384,6 +1392,8 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         setDevicePreviewScale: (scale: import("../constants/devicePreview.js").DevicePreviewScale) => void;
         devicePreviewImageEnabled: boolean;
         setDevicePreviewImageEnabled: (enabled: boolean) => void;
+        devicePreviewFitToViewport: boolean;
+        setDevicePreviewFitToViewport: (enabled: boolean) => void;
         devicePreviewPreset: import("../constants/devicePreview.js").DevicePreviewPreset;
         showHiddenDetachedMarkers: boolean;
         setShowHiddenDetachedMarkers: (enabled: boolean) => void;

@@ -4,6 +4,7 @@ const UI_OPEN_STORAGE_KEY = "fivepixels:device-preview-ui-open";
 const DEVICE_STORAGE_KEY = "fivepixels:device-preview-device";
 const SCALE_STORAGE_KEY = "fivepixels:device-preview-scale";
 const IMAGE_STORAGE_KEY = "fivepixels:device-preview-image";
+const FIT_VIEWPORT_STORAGE_KEY = "fivepixels:device-preview-fit-viewport";
 function readStoredFlag(key, fallback) {
     if (typeof window === "undefined") {
         return fallback;
@@ -74,6 +75,7 @@ export function useDevicePreviewPreference() {
     const [devicePreviewDeviceId, setDevicePreviewDeviceIdState] = useState(() => readStoredDeviceId());
     const [devicePreviewScale, setDevicePreviewScaleState] = useState(() => readStoredScale());
     const [devicePreviewImageEnabled, setDevicePreviewImageEnabledState] = useState(() => readStoredFlag(IMAGE_STORAGE_KEY, true));
+    const [devicePreviewFitToViewport, setDevicePreviewFitToViewportState] = useState(() => readStoredFlag(FIT_VIEWPORT_STORAGE_KEY, false));
     const setDevicePreviewUiOpen = useCallback((open) => {
         setDevicePreviewUiOpenState(open);
         persistFlag(UI_OPEN_STORAGE_KEY, open);
@@ -92,6 +94,10 @@ export function useDevicePreviewPreference() {
         setDevicePreviewImageEnabledState(enabled);
         persistFlag(IMAGE_STORAGE_KEY, enabled);
     }, []);
+    const setDevicePreviewFitToViewport = useCallback((enabled) => {
+        setDevicePreviewFitToViewportState(enabled);
+        persistFlag(FIT_VIEWPORT_STORAGE_KEY, enabled);
+    }, []);
     return {
         devicePreviewUiOpen,
         setDevicePreviewUiOpen,
@@ -101,6 +107,8 @@ export function useDevicePreviewPreference() {
         setDevicePreviewScale,
         devicePreviewImageEnabled,
         setDevicePreviewImageEnabled,
+        devicePreviewFitToViewport,
+        setDevicePreviewFitToViewport,
         devicePreviewPreset: getDevicePreviewPreset(devicePreviewDeviceId),
     };
 }

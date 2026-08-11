@@ -32,7 +32,7 @@ export function useReportPanelShell({ projectId, environment, appVersion, panelA
     const { appearance: activePanelAppearance, setAppearance: setPanelAppearance } = useAppearancePreference(PANEL_APPEARANCE_STORAGE_KEY, panelAppearance);
     const { appearance: activeTooltipAppearance, setAppearance: setTooltipAppearance } = useAppearancePreference(TOOLTIP_APPEARANCE_STORAGE_KEY, tooltipAppearance);
     const { showMarkerTargetPreview, setShowMarkerTargetPreview, toggleMarkerTargetPreview } = useMarkerTargetPreviewPreference();
-    const { devicePreviewUiOpen, setDevicePreviewUiOpen, devicePreviewDeviceId, setDevicePreviewDeviceId, devicePreviewScale, setDevicePreviewScale, devicePreviewImageEnabled, setDevicePreviewImageEnabled, devicePreviewPreset, } = useDevicePreviewPreference();
+    const { devicePreviewUiOpen, setDevicePreviewUiOpen, devicePreviewDeviceId, setDevicePreviewDeviceId, devicePreviewScale, setDevicePreviewScale, devicePreviewImageEnabled, setDevicePreviewImageEnabled, devicePreviewFitToViewport, setDevicePreviewFitToViewport, devicePreviewPreset, } = useDevicePreviewPreference();
     const { showHiddenDetachedMarkers, setShowHiddenDetachedMarkers, showModalDetachedMarkers, setShowModalDetachedMarkers } = useDetachedMarkerVisibilityPreference();
     const { markerAppearance, setMarkerAppearance, setMarkerSize, setMarkerShape, setMarkerFillStyle, setMarkerColors, setMarkerColor, setFeedbackModeDotColors, setFeedbackModeDotColor, } = useMarkerAppearancePreference();
     const { typography, setTypography, setFontSize, setFontFamily } = useTypographyPreference();
@@ -254,6 +254,8 @@ export function useReportPanelShell({ projectId, environment, appVersion, panelA
         setDevicePreviewScale,
         devicePreviewImageEnabled,
         setDevicePreviewImageEnabled,
+        devicePreviewFitToViewport,
+        setDevicePreviewFitToViewport,
         devicePreviewPreset,
         showHiddenDetachedMarkers,
         setShowHiddenDetachedMarkers,

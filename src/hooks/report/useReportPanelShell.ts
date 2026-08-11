@@ -125,6 +125,8 @@ export function useReportPanelShell({
         setDevicePreviewScale,
         devicePreviewImageEnabled,
         setDevicePreviewImageEnabled,
+        devicePreviewFitToViewport,
+        setDevicePreviewFitToViewport,
         devicePreviewPreset,
     } = useDevicePreviewPreference();
     const { showHiddenDetachedMarkers, setShowHiddenDetachedMarkers, showModalDetachedMarkers, setShowModalDetachedMarkers } =
@@ -480,6 +482,8 @@ export function useReportPanelShell({
         setDevicePreviewScale,
         devicePreviewImageEnabled,
         setDevicePreviewImageEnabled,
+        devicePreviewFitToViewport,
+        setDevicePreviewFitToViewport,
         devicePreviewPreset,
         showHiddenDetachedMarkers,
         setShowHiddenDetachedMarkers,
