@@ -4,11 +4,13 @@ import {
     DEFAULT_MARKER_APPEARANCE,
     DEFAULT_MARKER_COLORS,
     isAppearanceScale,
+    isMarkerFillStyle,
     isMarkerShape,
     MARKER_APPEARANCE_STORAGE_KEY,
     type MarkerAppearancePreferences,
     type MarkerColorPreferences,
     type FeedbackModeDotColors,
+    type MarkerFillStyle,
     type MarkerShape,
     type AppearanceScale,
 } from "@/constants/markerAppearance.js";
@@ -59,6 +61,7 @@ function readStoredMarkerAppearance(): MarkerAppearancePreferences {
         return {
             size: isAppearanceScale(parsed.size) ? parsed.size : DEFAULT_MARKER_APPEARANCE.size,
             shape: isMarkerShape(parsed.shape) ? parsed.shape : DEFAULT_MARKER_APPEARANCE.shape,
+            fillStyle: isMarkerFillStyle(parsed.fillStyle) ? parsed.fillStyle : DEFAULT_MARKER_APPEARANCE.fillStyle,
             colors: normalizeMarkerColors(parsed.colors),
             feedbackModeDotColors: normalizeFeedbackModeDotColors(parsed.feedbackModeDotColors),
         };
@@ -106,6 +109,16 @@ export function useMarkerAppearancePreference() {
             setMarkerAppearance((current) => ({
                 ...current,
                 shape,
+            }));
+        },
+        [setMarkerAppearance],
+    );
+
+    const setMarkerFillStyle = useCallback(
+        (fillStyle: MarkerFillStyle) => {
+            setMarkerAppearance((current) => ({
+                ...current,
+                fillStyle,
             }));
         },
         [setMarkerAppearance],
@@ -162,6 +175,7 @@ export function useMarkerAppearancePreference() {
         setMarkerAppearance,
         setMarkerSize,
         setMarkerShape,
+        setMarkerFillStyle,
         setMarkerColors,
         setMarkerColor,
         setFeedbackModeDotColors,

@@ -307,7 +307,15 @@ export function useReportMarkers({
     );
 
     useEffect(() => {
-        if (hoveredMarkerId && !markers.some((marker) => marker.report.id === hoveredMarkerId)) {
+        if (!hoveredMarkerId) {
+            return;
+        }
+
+        const hoveredMarker = markers.find((marker) => marker.report.id === hoveredMarkerId);
+
+        // Clear when the report disappears, or when it is clamped out of the
+        // visible marker layer (unmount skips pointerleave).
+        if (!hoveredMarker || hoveredMarker.clampedEdge !== null) {
             setHoveredMarkerId(null);
         }
     }, [hoveredMarkerId, markers]);

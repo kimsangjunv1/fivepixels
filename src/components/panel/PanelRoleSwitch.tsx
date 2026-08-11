@@ -33,7 +33,7 @@ export function PanelRoleSwitch() {
                             event.stopPropagation();
                             setOpen((current) => !current);
                         }}
-                        className={`flex h-full shrink-0 items-center gap-[2px] px-[8px] text-[12px] font-semibold ${open ? "hover:bg-[#bc3110] bg-[#f6562f]" : "hover:bg-[var(--adaptive-black50)]"}`}
+                        className={`flex h-full shrink-0 items-center gap-[2px] px-[8px] text-[12px] font-semibold ${open ? "hover:bg-[var(--adaptive-accent-coral-hover)] bg-[var(--adaptive-accent-coral)]" : "hover:bg-[var(--adaptive-black50)]"}`}
                     >
                         <span className={`${open ? "text-[var(--adaptive-black50)]" : "text-[var(--adaptive-black900)]"} max-w-[72px] truncate`}>{roleLabels[panelRole]}</span>
                         <ChevronDownIcon className={`h-[14px] w-[14px] shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />

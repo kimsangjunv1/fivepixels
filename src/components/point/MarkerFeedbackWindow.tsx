@@ -7,12 +7,12 @@ import { useReport } from "@/providers/reportContext.js";
 import type { Marker } from "@/types/report-ui.js";
 import type { ReportFeedback } from "@/types/report.js";
 import type { ReportMessages } from "@/i18n/types.js";
-import { shouldShowCaseReplyComposer } from "@/utils/feedback/feedbackThread.js";
+import { resolvePendingComposerTargetPreview, shouldShowCaseReplyComposer } from "@/utils/feedback/feedbackThread.js";
 import { getCaseAssigneeName, getCaseById } from "@/utils/report/reportCases.js";
 import { getFieldTags } from "@/utils/report/fields.js";
 import { copyTextToClipboard } from "@/utils/feedback/feedbackDataTransfer.js";
 import { buildFeedbackShareUrl } from "@/utils/feedback/feedbackDeepLink.js";
-import { CloseIcon, EditIcon, LinkIcon, MaximizeIcon, MinimizeIcon, RestoreIcon, SidePanelIcon } from "@/components/icons/Icons.js";
+import { CloseIcon, CheckCircleIcon, EditIcon, LinkIcon, MaximizeIcon, MinimizeIcon, RestoreIcon, SidePanelIcon } from "@/components/icons/Icons.js";
 import { FeedbackFieldTags } from "@/components/panel/feedback/FeedbackFieldTags.js";
 import { FeedbackPinToggleButton } from "@/components/panel/feedback/FeedbackPinToggleButton.js";
 import { FeedbackDeleteAction } from "@/components/panel/feedback/FeedbackDeleteAction.js";
@@ -22,6 +22,7 @@ import { mentionMessageToPlainText } from "@/utils/mention/elementMentions.js";
 import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
 import { CornerResizeGhost } from "@/components/ui/CornerResizeGhost.js";
 import { MOTION } from "@/constants/motionClasses.js";
+import { ACCENT_COLOR } from "@/constants/accentColors.js";
 import { CornerResizeHandle } from "@/components/ui/CornerResizeHandle.js";
 import { FeedbackComposer } from "@/components/panel/feedback/FeedbackComposer.js";
 import { CaseAssigneeInfo } from "@/components/panel/feedback/CaseAssigneeInfo.js";
@@ -38,13 +39,14 @@ const DEFAULT_WINDOW_SIZE: BoxSize = { width: 600, height: 460 };
 const MIN_WINDOW_WIDTH = 420;
 const MIN_WINDOW_HEIGHT = 280;
 const DEFAULT_SIDEBAR_WIDTH = 208;
+const RESOLVED_STATUS_COLOR = ACCENT_COLOR.green;
 const SIDEBAR_MIN_WIDTH = 150;
 const RIGHT_MIN_WIDTH = 280;
 const COLLAPSED_SIDEBAR_WIDTH = 46;
 const WINDOW_CLOSE_ANIMATION_MS = 220;
 const LEFT_SECTION_TRANSITION = "transition-[background-color,backdrop-filter] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]";
 const LEFT_SECTION_FLAT_CLASS = `${LEFT_SECTION_TRANSITION} bg-[var(--adaptive-black50)]`;
-const LEFT_SECTION_BLUR_CLASS = `${LEFT_SECTION_TRANSITION} bg-[var(--adaptive-fillOpacity500)] backdrop-blur-[20px] shadow-[inset_0_20px_0_20px_var(--adaptive-black500)]]`;
+const LEFT_SECTION_BLUR_CLASS = `${LEFT_SECTION_TRANSITION} bg-[var(--adaptive-neutralTintOpacity900)] backdrop-blur-[20px] shadow-[inset_0_20px_0_20px_var(--adaptive-black500)]]`;
 
 function getLeftSectionClass(phase: WindowSurfacePhase) {
     return phase === "idle" ? LEFT_SECTION_BLUR_CLASS : LEFT_SECTION_FLAT_CLASS;
@@ -316,6 +318,14 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
         return shouldShowCaseReplyComposer(report, focusedCaseId, pendingComposer);
     }, [focusedCaseId, pendingComposer, report]);
 
+    const replyTargetPreview = useMemo(() => {
+        if (pendingComposer?.type !== "question") {
+            return null;
+        }
+
+        return resolvePendingComposerTargetPreview(report, focusedCaseId, pendingComposer);
+    }, [focusedCaseId, pendingComposer, report]);
+
     const focusedCase = focusedCaseId ? getCaseById(report, focusedCaseId) : undefined;
     const focusedCaseAssigneeName = focusedCaseId ? getCaseAssigneeName(report, focusedCaseId) : null;
     const showAssigneeAssigned = Boolean(focusedCaseAssigneeName) || isClaimingAssignee;
@@ -474,18 +484,34 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
 
     const rightSection = (
         <div className="flex min-w-0 flex-1 flex-col bg-[var(--adaptive-black50)]">
-            <div className="shrink-0 border-b border-[var(--adaptive-border-subtle)] px-[16px] py-[8px]">
+            <header
+                onPointerDown={handleDragHandlePointerDown}
+                className="shrink-0 cursor-move touch-none select-none border-b border-[var(--adaptive-border-subtle)] px-[16px] py-[8px]"
+            >
                 {focusedCase ? (
                     <Fragment>
                         <p
-                            className={`truncate text-[15px] font-semibold leading-[1.4] text-[var(--adaptive-black900)] ${focusedCase.status === "resolved" ? "text-[var(--adaptive-black500)] line-through" : ""}`}
+                            className="truncate text-[15px] font-semibold leading-[1.4] text-[var(--adaptive-black900)]"
                             title={mentionMessageToPlainText(focusedCase.text, focusedCase.mentions)}
                         >
                             {mentionMessageToPlainText(focusedCase.text, focusedCase.mentions)}
                         </p>
                         <div className="mt-[2px] flex min-w-0 items-center justify-between gap-[8px]">
                             <div className="flex min-w-0 flex-1 items-center gap-[6px]">
-                                {showAssigneeAssigned ? (
+                                {focusedCase.status === "resolved" ? (
+                                    <>
+                                        <CheckCircleIcon
+                                            className="h-[14px] w-[14px] shrink-0"
+                                            fill={RESOLVED_STATUS_COLOR}
+                                        />
+                                        <p
+                                            className="min-w-0 truncate text-[12px] font-semibold leading-[1.4]"
+                                            style={{ color: RESOLVED_STATUS_COLOR }}
+                                        >
+                                            {messages.thread.issueResolvedDivider}
+                                        </p>
+                                    </>
+                                ) : showAssigneeAssigned ? (
                                     <>
                                         <ProcessingDots />
                                         <Text.Shimmer
@@ -517,7 +543,7 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
                 ) : (
                     <p className="text-[13px] text-[var(--adaptive-black500)]">{messages.cases.selectToView}</p>
                 )}
-            </div>
+            </header>
 
             <div className="flex min-h-0 flex-1 flex-col">
                 <div className="min-h-0 flex-1 overflow-hidden">
@@ -569,6 +595,7 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
                             askQuestionForced={isCreatorQuestionComposer}
                             composerMode={pendingComposer?.type ?? null}
                             onCancelComposerMode={cancelPendingComposer}
+                            replyTargetPreview={replyTargetPreview}
                             errorMessage={errorMessage}
                         />
                     </section>

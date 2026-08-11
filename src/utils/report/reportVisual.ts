@@ -26,17 +26,18 @@ export function getMarkerColor(report: ReportFeedback, colors: MarkerColorPrefer
     return colors.open;
 }
 
-export function getMarkerDisplayLabel(report: ReportFeedback, replyCount = getReplyCount(report)): string | null {
+export function getMarkerDisplayLabel(report: ReportFeedback): string | null {
     if (getReportCases(report).length > 1) {
         return getIssueProgressLabel(report);
     }
 
-    if (replyCount > 0) {
-        return `+${replyCount}`;
-    }
-
     return null;
 }
+
+export function hasMarkerReplyIndicator(report: ReportFeedback, replyCount = getReplyCount(report)) {
+    return replyCount > 0;
+}
+
 
 export function getStatusTone(status: ReportStatus) {
     if (status === "resolved") {

@@ -1,52 +1,32 @@
-export function resolveMarkerShapeStyle(shape, dotSize, hasBadge, isModalDetached) {
-    if (isModalDetached) {
-        const size = dotSize + 2;
+import { getMarkerShapeDefinition, MARKER_SHAPE_STROKE_WIDTH_PX } from "../../constants/markerShapeRegistry.js";
+export function resolveMarkerShapeStyle(shape, dotSize) {
+    const definition = getMarkerShapeDefinition(shape);
+    const size = dotSize + 4;
+    return {
+        anchorClass: "-translate-x-1/2 -translate-y-1/2",
+        width: size,
+        height: size,
+        strokeWidthPx: definition.strokeWidthPx,
+    };
+}
+export function resolveMarkerGlyphPaint(color, fillStyle, strokeWidthPx) {
+    if (fillStyle === "outlined") {
         return {
-            anchorClass: "-translate-x-1/2 -translate-y-1/2",
-            shapeClass: "rounded-[5px]",
-            ringClass: "rounded-[8px]",
-            width: size,
-            height: size,
-        };
-    }
-    const baseSize = dotSize + 2;
-    if (shape === "square") {
-        return {
-            anchorClass: "-translate-x-1/2 -translate-y-1/2",
-            shapeClass: "rounded-[4px]",
-            ringClass: "rounded-[6px]",
-            width: baseSize,
-            height: baseSize,
-        };
-    }
-    if (shape === "pill") {
-        return {
-            anchorClass: "-translate-x-1/2 -translate-y-1/2",
-            shapeClass: "rounded-full",
-            ringClass: "rounded-full",
-            width: hasBadge ? Math.max(baseSize + 10, dotSize + 12) : baseSize + 4,
-            height: baseSize,
-            paddingX: hasBadge ? 8 : 0,
-        };
-    }
-    if (shape === "pin") {
-        const pinHeight = baseSize + 6;
-        const pinWidth = Math.round(baseSize * 0.85);
-        return {
-            anchorClass: "-translate-x-1/2 -translate-y-[92%]",
-            shapeClass: "",
-            ringClass: "rounded-[6px]",
-            width: pinWidth,
-            height: pinHeight,
-            clipPath: "polygon(50% 100%, 6% 42%, 6% 8%, 94% 8%, 94% 42%)",
+            fill: "transparent",
+            stroke: color,
+            strokeWidthPx: Math.max(strokeWidthPx, 2.5),
+            labelColor: color,
         };
     }
     return {
-        anchorClass: "-translate-x-1/2 -translate-y-1/2",
-        shapeClass: "rounded-full",
-        ringClass: "rounded-full",
-        width: baseSize,
-        height: baseSize,
+        fill: color,
+        stroke: "#ffffff",
+        strokeWidthPx,
+        labelColor: "#ffffff",
     };
 }
+export function getMarkerReplyBadgeSize(dotSize) {
+    return Math.max(8, Math.round(dotSize * 0.42)) + 2;
+}
+export { MARKER_SHAPE_STROKE_WIDTH_PX };
 //# sourceMappingURL=markerShape.js.map

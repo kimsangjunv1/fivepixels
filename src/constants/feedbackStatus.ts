@@ -1,4 +1,5 @@
 import type { ReportReplyStatus } from "@/types/report.js";
+import { ACCENT_COLOR } from "@/constants/accentColors.js";
 
 export type FeedbackDisplayStatus = "currently_wait" | "wait_for_reply" | "issue_apply" | "git_issued" | ReportReplyStatus;
 
@@ -19,15 +20,15 @@ export const FEEDBACK_STATUS_LABEL: Record<FeedbackDisplayStatus, string> = {
 export const FEEDBACK_STATUS_COLOR: Record<FeedbackDisplayStatus, string> = {
     currently_wait: "#808080",
     wait_for_reply: "#808080",
-    issue_apply: "#5894CC",
-    git_issued: "#5894CC",
+    issue_apply: ACCENT_COLOR.blue,
+    git_issued: ACCENT_COLOR.blue,
     suggested: "#ED9F18",
-    additional_question: "#5894CC",
-    found_error: "#D62F2F",
+    additional_question: ACCENT_COLOR.blue,
+    found_error: ACCENT_COLOR.red,
     recheck_requested: "#AF2CD6",
-    resolved: "#91B01C",
-    assignee_assigned: "#5894CC",
-    assignee_transferred: "#5894CC",
+    resolved: ACCENT_COLOR.green,
+    assignee_assigned: ACCENT_COLOR.blue,
+    assignee_transferred: ACCENT_COLOR.blue,
 };
 
 export const FEEDBACK_DISPLAY_STATUS_ORDER: FeedbackDisplayStatus[] = [

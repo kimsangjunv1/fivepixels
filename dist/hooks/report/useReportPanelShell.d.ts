@@ -51,10 +51,15 @@ export declare function useReportPanelShell({ projectId, environment, appVersion
     showMarkerTargetPreview: boolean;
     setShowMarkerTargetPreview: (enabled: boolean) => void;
     toggleMarkerTargetPreview: () => void;
+    showHiddenDetachedMarkers: boolean;
+    setShowHiddenDetachedMarkers: (enabled: boolean) => void;
+    showModalDetachedMarkers: boolean;
+    setShowModalDetachedMarkers: (enabled: boolean) => void;
     markerAppearance: import("../../constants/markerAppearance.js").MarkerAppearancePreferences;
     setMarkerAppearance: (next: import("../../constants/markerAppearance.js").MarkerAppearancePreferences | ((current: import("../../constants/markerAppearance.js").MarkerAppearancePreferences) => import("../../constants/markerAppearance.js").MarkerAppearancePreferences)) => void;
     setMarkerSize: (size: import("../../constants/markerAppearance.js").AppearanceScale) => void;
     setMarkerShape: (shape: import("../../constants/markerAppearance.js").MarkerShape) => void;
+    setMarkerFillStyle: (fillStyle: import("../../constants/markerAppearance.js").MarkerFillStyle) => void;
     setMarkerColors: (colors: import("../../constants/markerAppearance.js").MarkerColorPreferences) => void;
     setMarkerColor: (key: keyof import("../../constants/markerAppearance.js").MarkerColorPreferences, color: string) => void;
     setFeedbackModeDotColors: (colors: import("../../constants/markerAppearance.js").FeedbackModeDotColors) => void;

@@ -145,7 +145,7 @@ describe("getMarkerFromReport", () => {
 
         expect(marker.rect).toBeNull();
         expect(marker.detached).toBe(true);
-        expect(marker.detachedKind).toBe("modal");
+        expect(marker.detachedKind).toBe("hidden");
         expect(marker.clampBounds).toBeNull();
         expect(marker.left).toBe(1000 * 0.5 - DOT_SIZE / 2);
         expect(marker.top).toBe(800 * 0.5 - DOT_SIZE / 2);

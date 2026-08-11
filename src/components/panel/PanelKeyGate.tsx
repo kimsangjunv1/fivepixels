@@ -12,11 +12,12 @@ function buildReviewerSnippet({ name, authorId, publicKey }: { name: string; aut
 }
 
 export function PanelKeyGate({ mode }: { mode: PanelKeyGateMode }) {
-    const { messages, selfProfile, publicKey, persistenceStatus, onCreateReviewerRequest } = useReportPreferences();
+    const { messages, selfProfile, publicKey, persistenceStatus, onCreateReviewerRequest, clearPersonalKey } = useReportPreferences();
     const { setErrorMessage } = useReportSession();
     const onboarding = messages.onboarding;
     const [copied, setCopied] = useState(false);
     const [keyInfoOpen, setKeyInfoOpen] = useState(false);
+    const [confirmingReset, setConfirmingReset] = useState(false);
     const name = selfProfile?.name?.trim() || "reviewer";
     const authorId = selfProfile?.authorId?.trim() || "";
     const canShowSnippet = Boolean(authorId && publicKey);
@@ -49,22 +50,50 @@ export function PanelKeyGate({ mode }: { mode: PanelKeyGateMode }) {
         }
     };
 
+    const handleConfirmReset = () => {
+        clearPersonalKey();
+        setConfirmingReset(false);
+    };
+
     return (
         <PanelGateShell
             title={title}
             description={description}
             footer={
-                <div className="flex items-center justify-end gap-[10px]">
-                    {canShowSnippet ? (
-                        <PanelGateButton
-                            variant="secondary"
-                            onClick={() => void handleCopySnippet()}
-                        >
-                            {copied ? onboarding.copied : onboarding.copySnippet}
-                        </PanelGateButton>
-                    ) : null}
-                    <PanelGateButton onClick={handleRefresh}>{onboarding.refresh}</PanelGateButton>
-                </div>
+                confirmingReset && mode === "key-issue" ? (
+                    <div className="flex flex-col gap-[10px]">
+                        <p className="text-[12px] leading-[1.4] text-[var(--adaptive-black700)]">{onboarding.resetKeyConfirm}</p>
+                        <div className="flex items-center justify-end gap-[10px]">
+                            <PanelGateButton
+                                variant="secondary"
+                                onClick={() => setConfirmingReset(false)}
+                            >
+                                {messages.common.cancel}
+                            </PanelGateButton>
+                            <PanelGateButton onClick={handleConfirmReset}>{messages.common.confirm}</PanelGateButton>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="flex items-center justify-end gap-[10px]">
+                        {mode === "key-issue" ? (
+                            <PanelGateButton
+                                variant="secondary"
+                                onClick={() => setConfirmingReset(true)}
+                            >
+                                {onboarding.resetKey}
+                            </PanelGateButton>
+                        ) : null}
+                        {canShowSnippet ? (
+                            <PanelGateButton
+                                variant="secondary"
+                                onClick={() => void handleCopySnippet()}
+                            >
+                                {copied ? onboarding.copied : onboarding.copySnippet}
+                            </PanelGateButton>
+                        ) : null}
+                        <PanelGateButton onClick={handleRefresh}>{onboarding.refresh}</PanelGateButton>
+                    </div>
+                )
             }
         >
             {usesRequestFlow ? (

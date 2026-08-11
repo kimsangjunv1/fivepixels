@@ -8,18 +8,19 @@ import { resolveMarkerOverflowHints } from "@/utils/marker/coordinates.js";
 import { scrollContainerTowardEdge } from "@/utils/shared/dom.js";
 import { getDetachedMarkerAriaLabel, getModalGhostFrame } from "@/utils/marker/markerContext.js";
 import { getMarkerDotSize } from "@/utils/marker/markerRuntime.js";
-import { resolveMarkerShapeStyle } from "@/utils/marker/markerShape.js";
+import { getMarkerReplyBadgeSize, resolveMarkerGlyphPaint, resolveMarkerShapeStyle } from "@/utils/marker/markerShape.js";
 import type { MarkerAppearancePreferences, TypographyPreferences } from "@/constants/markerAppearance.js";
-import { getMarkerLabelFontSizePx } from "@/constants/markerAppearance.js";
-import { getMarkerColor, getMarkerDisplayLabel } from "@/utils/report/reportVisual.js";
+import { resolveMarkerBadgeDisplay } from "@/constants/markerAppearance.js";
+import { getMarkerColor, getMarkerDisplayLabel, hasMarkerReplyIndicator } from "@/utils/report/reportVisual.js";
 import { FeedbackHoverCard } from "@/components/panel/feedback/FeedbackHoverCard.js";
 import { getReplyCount } from "@/utils/feedback/feedbackThread.js";
 import { MOTION } from "@/constants/motionClasses.js";
 import { MarkerFeedbackWindow } from "./MarkerFeedbackWindow.js";
+import { MarkerReplyBadge } from "./MarkerReplyBadge.js";
+import { MarkerShapeGlyph } from "./MarkerShapeGlyph.js";
 
 const TOOLTIP_SURFACE_CLASS =
-    "overflow-hidden rounded-[16px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-fillOpacity800)] backdrop-blur-[5px] shadow-[var(--adaptive-popup-shadow)]";
-// "overflow-hidden rounded-[12px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-fillOpacity500)] backdrop-blur-[10px] shadow-[var(--adaptive-popup-shadow)]";
+    "overflow-hidden rounded-[16px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-neutralTintOpacity800)] backdrop-blur-[5px] shadow-[var(--adaptive-popup-shadow)]";
 const TOOLTIP_FIXED_CLASS = `fixed z-[1000001] ${TOOLTIP_SURFACE_CLASS} ${MOTION.tooltipFadeIn}`;
 
 const MARKER_ANCHOR_BASE_CLASS = "pointer-events-none fixed z-[1000000]";
@@ -58,12 +59,8 @@ function MarkerOverflowHintButton({ hint, label, onActivate }: MarkerOverflowHin
     );
 }
 
-type DetachedModalGhostFrameProps = {
-    markerItem: Marker;
-};
-
-function DetachedModalGhostFrame({ markerItem }: DetachedModalGhostFrameProps) {
-    const frame = useMemo(() => getModalGhostFrame(markerItem.report), [markerItem.report]);
+function DetachedModalGhostFrame() {
+    const frame = useMemo(() => getModalGhostFrame(), []);
 
     return (
         <div
@@ -94,7 +91,7 @@ function DetachedModalGhostFrame({ markerItem }: DetachedModalGhostFrameProps) {
 
 type MarkerButtonProps = {
     markerItem: Marker;
-    isSelected: boolean;
+    isHovered: boolean;
     isReportMode: boolean;
     isProximityHighlighted: boolean;
     detachedAriaLabel: string;
@@ -109,7 +106,7 @@ type MarkerButtonProps = {
 
 function MarkerButton({
     markerItem,
-    isSelected,
+    isHovered,
     isReportMode,
     isProximityHighlighted,
     detachedAriaLabel,
@@ -126,21 +123,31 @@ function MarkerButton({
         onLeave: onHoverEnd,
     });
     const replyCount = getReplyCount(markerItem.report);
-    const markerBadgeLabel = getMarkerDisplayLabel(markerItem.report, replyCount);
-    const markerLabel = markerBadgeLabel
-        ? `${markerItem.report.report_type} · ${markerItem.report.report_id} · ${markerBadgeLabel}`
-        : `${markerItem.report.report_type} · ${markerItem.report.report_id}`;
+    const markerBadgeLabel = getMarkerDisplayLabel(markerItem.report);
+    const showReplyIndicator = hasMarkerReplyIndicator(markerItem.report, replyCount);
+    const markerLabelParts = [
+        markerItem.report.report_type,
+        markerItem.report.report_id,
+        markerBadgeLabel,
+        showReplyIndicator ? `+${replyCount}` : null,
+    ].filter(Boolean);
+    const markerLabel = markerLabelParts.join(" · ");
     const isDetached = markerItem.detached;
-    const isModalDetached = markerItem.detachedKind === "modal";
     const resolvedDetachedAriaLabel = getDetachedMarkerAriaLabel(markerItem.detachedKind, {
         detachedAriaLabel,
         detachedModalAriaLabel,
     });
     const dotSize = getMarkerDotSize();
-    const showMarkerLabel = typography.fontSize !== "none" && Boolean(markerBadgeLabel);
-    const shapeStyle = resolveMarkerShapeStyle(markerAppearance.shape, dotSize, showMarkerLabel, isModalDetached);
-    const ringColorClass = isModalDetached ? "border-[#a5b4fc]/90" : "border-white/80";
-    const markerFontSizePx = typography.fontSize === "none" ? undefined : getMarkerLabelFontSizePx(typography.fontSize);
+    const hasBadgeSource = typography.fontSize !== "none" && Boolean(markerBadgeLabel);
+    const badgeDisplay = hasBadgeSource ? resolveMarkerBadgeDisplay(markerAppearance.size, markerBadgeLabel) : { content: null, fontSizePx: undefined, fontWeight: undefined };
+    const showMarkerLabel = Boolean(badgeDisplay.content);
+    const glyphShape =
+        markerItem.detachedKind === "modal" ? "ghostish" : markerItem.detachedKind === "hidden" ? "puffy" : markerAppearance.shape;
+    const shapeStyle = resolveMarkerShapeStyle(glyphShape, dotSize);
+    const markerColor = getMarkerColor(markerItem.report, markerAppearance.colors);
+    const paint = resolveMarkerGlyphPaint(markerColor, markerAppearance.fillStyle, shapeStyle.strokeWidthPx);
+    const replyBadgeSize = getMarkerReplyBadgeSize(dotSize);
+    const scaleClass = isHovered ? "scale-[1.4]" : isReportMode && isProximityHighlighted ? "scale-110" : "";
 
     return (
         <div
@@ -155,61 +162,66 @@ function MarkerButton({
                     isReportMode ? (isProximityHighlighted ? "pointer-events-none opacity-100" : "pointer-events-none opacity-50") : "pointer-events-auto"
                 }`}
             >
-                {isDetached ? (
-                    <div
-                        aria-hidden
-                        className={`pointer-events-none absolute -inset-[6px] border border-dashed ${shapeStyle.ringClass} ${ringColorClass}`}
-                    />
-                ) : null}
-                <button
-                    ref={hoverRef}
-                    key={markerItem.id}
-                    type="button"
-                    data-fivepixels-interactive=""
-                    data-marker-report-id={markerItem.report.id}
-                    aria-label={isDetached ? `${resolvedDetachedAriaLabel} · ${markerLabel}` : markerLabel}
-                    aria-hidden={isReportMode || undefined}
-                    tabIndex={isReportMode ? -1 : undefined}
-                    onClick={
-                        isReportMode
-                            ? undefined
-                            : () => {
-                                  void onActivate(markerItem.report);
-                              }
-                    }
-                    onPointerMove={
-                        isReportMode
-                            ? undefined
-                            : (event) => {
-                                  onPointerMove(event.clientX, event.clientY);
-                              }
-                    }
-                    className={`${MARKER_BUTTON_BASE_CLASS} border-[2px] border-white shadow-[0_4px_10px_#00000090] transition-transform duration-150 ${shapeStyle.shapeClass} ${
-                        isSelected ? "scale-[1.4]" : ""
-                    } ${isDetached ? "border-dashed" : ""} ${isReportMode ? (isProximityHighlighted ? "scale-110" : "") : isDetached ? "opacity-75" : ""} ${showMarkerLabel ? "text-white" : ""}`}
-                    style={{
-                        backgroundColor: getMarkerColor(markerItem.report, markerAppearance.colors),
-                        pointerEvents: isReportMode ? "none" : "auto",
-                        width: shapeStyle.width,
-                        height: shapeStyle.height,
-                        minWidth: shapeStyle.width,
-                        minHeight: shapeStyle.height,
-                        paddingLeft: shapeStyle.paddingX,
-                        paddingRight: shapeStyle.paddingX,
-                        clipPath: shapeStyle.clipPath,
-                        fontSize: markerFontSizePx === undefined ? undefined : `${markerFontSizePx}px`,
-                        fontFamily: showMarkerLabel ? typography.fontFamily : undefined,
-                    }}
-                >
-                    {showMarkerLabel ? (
-                        markerBadgeLabel
-                    ) : isModalDetached ? (
-                        <span
-                            aria-hidden
-                            className="block h-[7px] w-[9px] border border-white/90 bg-white/15"
+                <div className={`relative transition-transform duration-150 ${scaleClass}`}>
+                    <button
+                        ref={hoverRef}
+                        key={markerItem.id}
+                        type="button"
+                        data-fivepixels-interactive=""
+                        data-marker-report-id={markerItem.report.id}
+                        aria-label={isDetached ? `${resolvedDetachedAriaLabel} · ${markerLabel}` : markerLabel}
+                        aria-hidden={isReportMode || undefined}
+                        tabIndex={isReportMode ? -1 : undefined}
+                        onClick={
+                            isReportMode
+                                ? undefined
+                                : () => {
+                                      void onActivate(markerItem.report);
+                                  }
+                        }
+                        onPointerMove={
+                            isReportMode
+                                ? undefined
+                                : (event) => {
+                                      onPointerMove(event.clientX, event.clientY);
+                                  }
+                        }
+                        className={`${MARKER_BUTTON_BASE_CLASS} relative border-0 bg-transparent p-0 shadow-none ${
+                            isReportMode ? "" : isDetached ? "opacity-75" : ""
+                        }`}
+                        style={{
+                            pointerEvents: isReportMode ? "none" : "auto",
+                            width: shapeStyle.width,
+                            height: shapeStyle.height,
+                            minWidth: shapeStyle.width,
+                            minHeight: shapeStyle.height,
+                            color: showMarkerLabel ? paint.labelColor : undefined,
+                            fontSize: badgeDisplay.fontSizePx === undefined ? undefined : `${badgeDisplay.fontSizePx}px`,
+                            fontWeight: badgeDisplay.fontWeight,
+                            fontFamily: showMarkerLabel ? typography.fontFamily : undefined,
+                        }}
+                    >
+                        <span className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                            <MarkerShapeGlyph
+                                shape={glyphShape}
+                                fill={paint.fill}
+                                width={shapeStyle.width}
+                                height={shapeStyle.height}
+                                stroke={paint.stroke}
+                                strokeWidthPx={paint.strokeWidthPx}
+                            />
+                        </span>
+                        <span className="relative z-[1] flex items-center justify-center">
+                            {showMarkerLabel ? badgeDisplay.content : null}
+                        </span>
+                    </button>
+                    {showReplyIndicator ? (
+                        <MarkerReplyBadge
+                            size={replyBadgeSize}
+                            accentColor={markerColor}
                         />
                     ) : null}
-                </button>
+                </div>
             </div>
         </div>
     );
@@ -219,7 +231,6 @@ export function ReportMarkersLayer() {
     const {
         mode,
         markers,
-        selectedReport,
         activeReplyReport,
         activeReplyReportId,
         tooltipReport,
@@ -230,7 +241,8 @@ export function ReportMarkersLayer() {
         messages,
         markerAppearance,
         typography,
-        selectReport,
+        showHiddenDetachedMarkers,
+        showModalDetachedMarkers,
         activateFeedbackMarker,
         clearHoverLeaveTimeout,
         scheduleHoverLeave,
@@ -241,11 +253,8 @@ export function ReportMarkersLayer() {
         (reportId: string) => {
             clearHoverLeaveTimeout();
             setHoveredMarkerId(reportId);
-            if (!editingReportId) {
-                selectReport(reportId);
-            }
         },
-        [clearHoverLeaveTimeout, editingReportId, selectReport, setHoveredMarkerId],
+        [clearHoverLeaveTimeout, setHoveredMarkerId],
     );
 
     const handleMarkerHoverEnd = useCallback(
@@ -267,8 +276,26 @@ export function ReportMarkersLayer() {
 
     const isViewMode = mode === "view";
     const isReportMode = mode === "report";
-    const visibleMarkers = useMemo(() => markers.filter((marker) => marker.clampedEdge === null), [markers]);
-    const overflowHints = useMemo(() => resolveMarkerOverflowHints(markers), [markers]);
+    const visibleMarkers = useMemo(
+        () =>
+            markers.filter((marker) => {
+                if (marker.clampedEdge !== null) {
+                    return false;
+                }
+
+                if (marker.detachedKind === "hidden" && !showHiddenDetachedMarkers) {
+                    return false;
+                }
+
+                if (marker.detachedKind === "modal" && !showModalDetachedMarkers) {
+                    return false;
+                }
+
+                return true;
+            }),
+        [markers, showHiddenDetachedMarkers, showModalDetachedMarkers],
+    );
+    const overflowHints = useMemo(() => resolveMarkerOverflowHints(visibleMarkers), [visibleMarkers]);
     const proximityHighlightedMarkerId = useMemo(() => {
         if (!isReportMode || !hoverPointer) {
             return null;
@@ -295,8 +322,11 @@ export function ReportMarkersLayer() {
         }
     }, [isReportMode, proximityHighlightedMarkerId, setHoveredMarkerId]);
 
+    // Only show the modal ghost while the marker is actively hovered / reply-open.
+    // Do not key off selectedReport — list selection fallback would flash the
+    // silhouette whenever a modal-classified marker merely scrolled out of view.
     const ghostFrameMarker = useMemo(() => {
-        const activeReportId = tooltipReport?.id ?? selectedReport?.id;
+        const activeReportId = tooltipReport?.id;
 
         if (!activeReportId) {
             return null;
@@ -309,7 +339,7 @@ export function ReportMarkersLayer() {
         }
 
         return marker;
-    }, [selectedReport?.id, tooltipReport?.id, visibleMarkers]);
+    }, [tooltipReport?.id, visibleMarkers]);
 
     const getOverflowHintLabel = useCallback(
         (hint: MarkerOverflowHint) => {
@@ -349,13 +379,13 @@ export function ReportMarkersLayer() {
 
     return (
         <>
-            {isViewMode && ghostFrameMarker ? <DetachedModalGhostFrame markerItem={ghostFrameMarker} /> : null}
+            {isViewMode && ghostFrameMarker ? <DetachedModalGhostFrame /> : null}
 
             {visibleMarkers.map((markerItem) => (
                 <MarkerButton
                     key={markerItem.id}
                     markerItem={markerItem}
-                    isSelected={isViewMode && markerItem.report.id === selectedReport?.id}
+                    isHovered={isViewMode && tooltipReport?.id === markerItem.report.id && !isExpandedTooltip}
                     isReportMode={isReportMode}
                     isProximityHighlighted={markerItem.id === proximityHighlightedMarkerId}
                     detachedAriaLabel={messages.marker.detachedAriaLabel}

@@ -18,6 +18,14 @@ export type ReportMessages = {
         retry: string;
         none: string;
         all: string;
+        relativeTime: {
+            secondsAgo: (count: number) => string;
+            minutesAgo: (count: number) => string;
+            hoursAgo: (count: number) => string;
+            daysAgo: (count: number) => string;
+            monthsAgo: (count: number) => string;
+            yearsAgo: (count: number) => string;
+        };
     };
     panel: {
         expand: string;
@@ -56,6 +64,8 @@ export type ReportMessages = {
             open: string;
             errors: string;
             recheck: string;
+            created: string;
+            replied: string;
             mine: string;
             needsReply: string;
             reReview: string;
@@ -102,6 +112,10 @@ export type ReportMessages = {
         probeEditModeReset: string;
         probeEditModeUndo: string;
         probeEditModeRedo: string;
+        hiddenMarkerBannerMessage: string;
+        modalMarkerBannerMessage: string;
+        detachedMarkerHide: string;
+        detachedMarkerShow: string;
         persistenceStatusAriaLabel: string;
         persistenceConflictTitle: string;
         persistenceConflictDescription: string;
@@ -384,6 +398,8 @@ export type ReportMessages = {
         issueDescription: string;
         reviewerSnippetHint: string;
         keyInfoToggle: string;
+        resetKey: string;
+        resetKeyConfirm: string;
         copySnippet: string;
         copied: string;
         done: string;
@@ -429,13 +445,22 @@ export type ReportMessages = {
         categoryTeamSummary: string;
         resetTabsToRoleDefault: string;
         backAriaLabel: string;
+        appearanceBackAriaLabel: string;
+        appearanceThemeLanguage: string;
         sectionTheme: string;
+        sectionLanguage: string;
         sectionMarkerAppearance: string;
+        sectionMarkerForm: string;
+        sectionMarkerColors: string;
         sectionTypography: string;
         markerSize: string;
         markerSizeAriaLabel: string;
         markerShape: string;
         markerShapeAriaLabel: string;
+        markerFillStyle: string;
+        markerFillStyleAriaLabel: string;
+        markerFillStyleFilled: string;
+        markerFillStyleOutlined: string;
         markerColorOpen: string;
         markerColorResolved: string;
         markerColorGitIssued: string;
@@ -448,14 +473,24 @@ export type ReportMessages = {
         fontFamily: string;
         fontFamilyAriaLabel: string;
         scaleNone: string;
+        scaleXs: string;
         scaleSm: string;
         scaleMd: string;
         scaleLg: string;
         scaleXl: string;
         markerShapeCircle: string;
         markerShapeSquare: string;
+        markerShapeCookie4: string;
+        markerShapeSunny: string;
+        markerShapeCookie6: string;
+        markerShapeClover4: string;
+        markerShapeFlower: string;
+        markerShapeGhostish: string;
+        markerShapeBun: string;
+        markerShapeGem: string;
         markerShapePill: string;
-        markerShapePin: string;
+        markerShapePentagon: string;
+        markerShapePuffy: string;
     };
     team: {
         localStorageHint: string;

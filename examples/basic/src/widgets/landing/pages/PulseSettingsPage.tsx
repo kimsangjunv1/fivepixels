@@ -1,5 +1,10 @@
 import { useModalDemo } from "../../../features/modals/model/ModalDemoContext";
 import { useModalZustandStore } from "../../../features/modals/model/modalZustandStore";
+import {
+    useDemoFeedbackSeed,
+    SETTINGS_FEEDBACK_SEED_CATALOG,
+    SETTINGS_FEEDBACK_SEED_IDS,
+} from "../../../features/edgecase/hooks/useEdgecaseFeedbackSeed";
 
 function ModalCaseBadge({ label, className = "" }: { label: string; className?: string }) {
     return <span className={`modal-demo-badge ${className}`.trim()}>{label}</span>;
@@ -108,12 +113,30 @@ function ZustandModalCase() {
 }
 
 export function PulseSettingsPage() {
+    useDemoFeedbackSeed();
+
     return (
         <section className="pulse-page-section pulse-settings-lab" data-report-id="pulse-settings-page" data-report-type="group">
             <header className="pulse-page-section__header">
                 <h2 className="pulse-page-section__title">Settings · Modal QA Lab</h2>
-                <p className="pulse-page-section__desc">다양한 숨김 방식의 모달을 열고 피드백을 남긴 뒤, 닫고 detached 마커 복원을 테스트하세요.</p>
+                <p className="pulse-page-section__desc">
+                    다양한 숨김 방식의 모달을 열고 피드백을 남긴 뒤, 닫고 detached 마커 복원을 테스트하세요. 방문 시 localStorage에 데모 피드백 {SETTINGS_FEEDBACK_SEED_IDS.length}건(모달 6종 × page·overlay·target 마커 3개)이 자동으로 준비됩니다.
+                </p>
             </header>
+
+            <div className="pulse-edgecase-seed-catalog" aria-label="Settings seed scenario catalog">
+                <h3 className="pulse-edgecase-layouts__heading">Seed scenarios ({SETTINGS_FEEDBACK_SEED_CATALOG.length})</h3>
+                <p className="pulse-edgecase-layouts__desc">각 모달마다 페이지 카드·overlay·target 마커 3개씩. 모달을 연 뒤 overlay/dialog 시드를 locate해 detached 복원을 확인하세요.</p>
+                <ul className="pulse-edgecase-seed-catalog__list">
+                    {SETTINGS_FEEDBACK_SEED_CATALOG.map((entry) => (
+                        <li key={entry.id} className="pulse-edgecase-seed-catalog__item">
+                            <strong>{entry.label}</strong>
+                            <span>{entry.summary}</span>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+
             <div className="pulse-settings-lab__grid">
                 <OpacityModalCase />
                 <DisplayModalCase />

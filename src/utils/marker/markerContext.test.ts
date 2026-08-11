@@ -29,8 +29,8 @@ describe("resolveDetachedKind", () => {
         expect(resolveDetachedKind({ report_id: "modal-zustand-overlay", position: defaultPosition }, null, true)).toBe("modal");
     });
 
-    it("classifies viewport-detached feedback without anchor as modal", () => {
-        expect(resolveDetachedKind({ report_id: "hero-cta", position: defaultPosition }, null, true)).toBe("modal");
+    it("classifies viewport-detached page feedback as hidden, not modal", () => {
+        expect(resolveDetachedKind({ report_id: "hero-cta", position: defaultPosition }, null, true)).toBe("hidden");
     });
 
     it("classifies fixed targets as modal", () => {
@@ -117,14 +117,17 @@ describe("getModalGhostFrame", () => {
         vi.unstubAllGlobals();
     });
 
-    it("centers the ghost dialog around the saved viewport ratios", () => {
+    it("centers the ghost dialog in the viewport regardless of saved ratios", () => {
         const frame = getModalGhostFrame({
             position: createReportPosition({
-                viewport: { x: 0.5, y: 0.5, width: 1000, height: 800 },
+                viewport: { x: 0.2, y: 0.8, width: 1400, height: 900 },
             }),
         });
 
         expect(frame.backdrop.width).toBe(1000);
+        expect(frame.backdrop.height).toBe(800);
+        expect(frame.dialog.width).toBe(480);
+        expect(frame.dialog.height).toBe(280);
         expect(frame.dialog.left + frame.dialog.width / 2).toBeCloseTo(500, 0);
         expect(frame.dialog.top + frame.dialog.height / 2).toBeCloseTo(400, 0);
     });
