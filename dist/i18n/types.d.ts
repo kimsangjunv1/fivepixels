@@ -452,6 +452,17 @@ export type ReportMessages = {
         devicePreviewEnabledSummary: string;
         devicePreviewDisabledSummary: string;
         devicePreviewScrollLabel: (scrollY: number) => string;
+        devicePreviewQrTitle: string;
+        devicePreviewQrAriaLabel: string;
+        devicePreviewQrHintLocalhost: string;
+        devicePreviewQrUrlInputLabel: string;
+        devicePreviewQrUrlInputPlaceholder: string;
+        devicePreviewQrUrlInputAriaLabel: string;
+        devicePreviewQrEmptyUrl: string;
+        devicePreviewQrInvalidUrl: string;
+        devicePreviewQrCopyLabel: string;
+        devicePreviewQrCopiedLabel: string;
+        devicePreviewQrCopyAriaLabel: string;
         sectionViewerSwitch: string;
         viewerSwitchAriaLabel: string;
         viewerSwitchHint: string;

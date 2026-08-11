@@ -4,6 +4,7 @@ import { useReportPreferences } from "../../providers/reportContext.js";
 import { DEVICE_PREVIEW_BRAND_ORDER, DEVICE_PREVIEW_SCALE_OPTIONS, formatDevicePreviewScale, getDevicePreviewLayoutSize, getDevicePreviewPreset, getDevicePreviewPresetsByBrand, getEmptyBezel, scaleDeviceChrome, } from "../../constants/devicePreview.js";
 import { PanelOptionSwitch } from "../../components/panel/PanelOptionSwitch.js";
 import { DeviceFrameArtwork } from "./DeviceFrameArtwork.js";
+import { DevicePreviewQrCard } from "./DevicePreviewQrCard.js";
 import { DeviceStatusBar, getDeviceStatusBarHeight } from "./DeviceStatusBar.js";
 const HOST_STYLE_ID = "fivepixels-device-preview-host-style";
 const HTML_ACTIVE_CLASS = "fivepixels-device-preview-active";
@@ -325,6 +326,10 @@ html.${HTML_ACTIVE_CLASS} #root .pulse-content {
         transform: `scale(${centered.fitScale})`,
         transformOrigin: "top left",
     };
+    const qrGap = 16;
+    const qrLeft = frameLeft + centered.visualFrameWidth + qrGap;
+    const qrMaxWidth = Math.max(0, metrics.viewportWidth - qrLeft - 12);
+    const showQrCard = qrMaxWidth >= 140;
     return (_jsxs(_Fragment, { children: [_jsxs("div", { className: "pointer-events-none fixed inset-0 z-[999997]", "aria-hidden": true, "data-fivepixels-device-preview": "", children: [_jsx("div", { className: "absolute left-0 right-0 top-0", style: { ...DEVICE_PREVIEW_CANVAS_STYLE, height: Math.max(0, frameTop) } }), _jsx("div", { className: "absolute bottom-0 left-0 right-0", style: { ...DEVICE_PREVIEW_CANVAS_STYLE, top: frameTop + centered.visualFrameHeight } }), _jsx("div", { className: "absolute left-0", style: {
                             ...DEVICE_PREVIEW_CANVAS_STYLE,
                             top: frameTop,
@@ -358,6 +363,6 @@ html.${HTML_ACTIVE_CLASS} #root .pulse-content {
                                     return null;
                                 }
                                 return (_jsxs("div", { className: "absolute right-0 flex items-center", style: { top, height: 0 }, children: [_jsx("span", { className: `mr-[3px] text-[8px] tabular-nums ${tick.major ? "font-semibold text-white" : "text-[rgba(203,213,225,0.75)]"}`, children: tick.major ? tick.documentY : "" }), _jsx("span", { className: `block bg-[rgba(226,232,240,0.75)] ${tick.major ? "h-[1px] w-[12px]" : "h-[1px] w-[7px]"}` })] }, tick.documentY));
-                            })] })] }), _jsx(DevicePreviewFloatingBar, {})] }));
+                            })] })] }), showQrCard ? (_jsx(DevicePreviewQrCard, { left: qrLeft, top: Math.max(8, frameTop), maxWidth: qrMaxWidth, title: messages.settings.devicePreviewQrTitle, hintLocalhost: messages.settings.devicePreviewQrHintLocalhost, urlInputLabel: messages.settings.devicePreviewQrUrlInputLabel, urlInputPlaceholder: messages.settings.devicePreviewQrUrlInputPlaceholder, urlInputAriaLabel: messages.settings.devicePreviewQrUrlInputAriaLabel, invalidUrlMessage: messages.settings.devicePreviewQrInvalidUrl, emptyUrlMessage: messages.settings.devicePreviewQrEmptyUrl, copyLabel: messages.settings.devicePreviewQrCopyLabel, copiedLabel: messages.settings.devicePreviewQrCopiedLabel, copyAriaLabel: messages.settings.devicePreviewQrCopyAriaLabel, qrAriaLabel: messages.settings.devicePreviewQrAriaLabel })) : null, _jsx(DevicePreviewFloatingBar, {})] }));
 }
 //# sourceMappingURL=DevicePreviewChrome.js.map

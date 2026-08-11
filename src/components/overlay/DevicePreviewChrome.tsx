@@ -13,6 +13,7 @@ import {
 } from "@/constants/devicePreview.js";
 import { PanelOptionSwitch } from "@/components/panel/PanelOptionSwitch.js";
 import { DeviceFrameArtwork } from "./DeviceFrameArtwork.js";
+import { DevicePreviewQrCard } from "./DevicePreviewQrCard.js";
 import { DeviceStatusBar, getDeviceStatusBarHeight } from "./DeviceStatusBar.js";
 
 const HOST_STYLE_ID = "fivepixels-device-preview-host-style";
@@ -94,17 +95,7 @@ function resolveCenteredLayout(args: {
     viewportHeight: number;
     fitToViewport: boolean;
 }) {
-    const {
-        layoutWidth,
-        layoutHeight,
-        bezelTop,
-        bezelRight,
-        bezelBottom,
-        bezelLeft,
-        viewportWidth,
-        viewportHeight,
-        fitToViewport,
-    } = args;
+    const { layoutWidth, layoutHeight, bezelTop, bezelRight, bezelBottom, bezelLeft, viewportWidth, viewportHeight, fitToViewport } = args;
     const availableWidth = Math.max(240, viewportWidth - 24);
     const availableHeight = Math.max(240, viewportHeight - FLOATING_BAR_RESERVE - LABEL_RESERVE);
 
@@ -294,15 +285,7 @@ function DevicePreviewFloatingBar() {
 }
 
 export function DevicePreviewChrome() {
-    const {
-        devicePreviewUiOpen,
-        devicePreviewDeviceId,
-        devicePreviewScale,
-        devicePreviewImageEnabled,
-        devicePreviewFitToViewport,
-        resolvedPanelAppearance,
-        messages,
-    } = useReportPreferences();
+    const { devicePreviewUiOpen, devicePreviewDeviceId, devicePreviewScale, devicePreviewImageEnabled, devicePreviewFitToViewport, resolvedPanelAppearance, messages } = useReportPreferences();
     const preset = useMemo(() => getDevicePreviewPreset(devicePreviewDeviceId), [devicePreviewDeviceId]);
     const layout = useMemo(() => getDevicePreviewLayoutSize(preset, devicePreviewScale), [preset, devicePreviewScale]);
     const chrome = useMemo(() => {
@@ -431,11 +414,7 @@ html.${HTML_ACTIVE_CLASS} #root .pulse-content {
             root.style.setProperty("position", "relative", "important");
             root.style.setProperty("z-index", "0", "important");
             root.style.setProperty("box-sizing", "border-box", "important");
-            root.style.setProperty(
-                "border-radius",
-                devicePreviewImageEnabled ? `${Math.max(0, Math.round(chrome.screenRadius))}px` : "0px",
-                "important",
-            );
+            root.style.setProperty("border-radius", devicePreviewImageEnabled ? `${Math.max(0, Math.round(chrome.screenRadius))}px` : "0px", "important");
             root.style.setProperty("transform", `scale(${centered.fitScale})`, "important");
             root.style.setProperty("transform-origin", "top left", "important");
         }
@@ -451,17 +430,7 @@ html.${HTML_ACTIVE_CLASS} #root .pulse-content {
                 clearRootInlineStyles(root);
             }
         };
-    }, [
-        devicePreviewUiOpen,
-        devicePreviewImageEnabled,
-        centered.screenWidth,
-        centered.screenHeight,
-        centered.screenLeft,
-        centered.screenTop,
-        centered.fitScale,
-        chrome.screenRadius,
-        preset,
-    ]);
+    }, [devicePreviewUiOpen, devicePreviewImageEnabled, centered.screenWidth, centered.screenHeight, centered.screenLeft, centered.screenTop, centered.fitScale, chrome.screenRadius, preset]);
 
     useEffect(() => {
         if (!devicePreviewUiOpen) {
@@ -503,6 +472,10 @@ html.${HTML_ACTIVE_CLASS} #root .pulse-content {
         transform: `scale(${centered.fitScale})`,
         transformOrigin: "top left" as const,
     };
+    const qrGap = 16;
+    const qrLeft = frameLeft + centered.visualFrameWidth + qrGap;
+    const qrMaxWidth = Math.max(0, metrics.viewportWidth - qrLeft - 12);
+    const showQrCard = qrMaxWidth >= 140;
 
     return (
         <>
@@ -626,6 +599,26 @@ html.${HTML_ACTIVE_CLASS} #root .pulse-content {
                     })}
                 </div>
             </div>
+
+            {showQrCard ? (
+                <DevicePreviewQrCard
+                    left={qrLeft}
+                    // top={Math.max(8, frameTop)}
+                    // top={Math.max(8, frameTop)}
+                    maxWidth={qrMaxWidth}
+                    title={messages.settings.devicePreviewQrTitle}
+                    hintLocalhost={messages.settings.devicePreviewQrHintLocalhost}
+                    urlInputLabel={messages.settings.devicePreviewQrUrlInputLabel}
+                    urlInputPlaceholder={messages.settings.devicePreviewQrUrlInputPlaceholder}
+                    urlInputAriaLabel={messages.settings.devicePreviewQrUrlInputAriaLabel}
+                    invalidUrlMessage={messages.settings.devicePreviewQrInvalidUrl}
+                    emptyUrlMessage={messages.settings.devicePreviewQrEmptyUrl}
+                    copyLabel={messages.settings.devicePreviewQrCopyLabel}
+                    copiedLabel={messages.settings.devicePreviewQrCopiedLabel}
+                    copyAriaLabel={messages.settings.devicePreviewQrCopyAriaLabel}
+                    qrAriaLabel={messages.settings.devicePreviewQrAriaLabel}
+                />
+            ) : null}
 
             <DevicePreviewFloatingBar />
         </>
