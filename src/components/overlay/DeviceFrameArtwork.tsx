@@ -7,11 +7,12 @@ type DeviceFrameArtworkProps = {
     screenHeight: number;
 };
 
-const FRAME_FILL = "#000000";
-const FRAME_STROKE = "#1a1a1a";
-const DETAIL_FILL = "#0a0a0a";
-const DETAIL_STROKE = "#2a2a2a";
-const BUTTON_FILL = "#1a1a1a";
+const FRAME_FILL = "var(--adaptive-neutralTintOpacity900)";
+const FRAME_STROKE = "var(--adaptive-tintOpacity200)";
+const DETAIL_FILL = "var(--adaptive-tintOpacity300)";
+const DETAIL_STROKE = "var(--adaptive-tintOpacity200)";
+const BUTTON_FILL = "var(--adaptive-neutralTintOpacity900)";
+const DETAIL_INNER_FILL = "var(--adaptive-tintOpacity400)";
 
 function roundedRectPath(x: number, y: number, w: number, h: number, r: number) {
     const radius = Math.max(0, Math.min(r, w / 2, h / 2));
@@ -159,7 +160,7 @@ function HomeButtonFrame({ chrome, screenWidth, screenHeight }: DeviceFrameArtwo
                     cx={cameraCx}
                     cy={bezel.top * 0.45}
                     r={cameraSize / 5}
-                    fill="#1a1a1a"
+                    fill={DETAIL_INNER_FILL}
                 />
 
                 <circle
@@ -225,11 +226,13 @@ function BezelShellFrame({
             </svg>
             {showHomeIndicator ? (
                 <div
-                    className="absolute left-1/2 -translate-x-1/2 rounded-full bg-white/85"
+                    className="absolute rounded-full bg-[var(--adaptive-tintOpacity800)]"
                     style={{
+                        left: bezel.left + screenWidth / 2,
                         bottom: bezel.bottom + 8,
                         width: Math.min(148, screenWidth * 0.36),
                         height: 5,
+                        transform: "translateX(-50%)",
                     }}
                 />
             ) : null}

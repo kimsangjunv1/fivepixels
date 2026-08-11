@@ -130,7 +130,7 @@ export function DevicePreviewQrCard({
     return (
         <div
             data-fivepixels-interactive=""
-            className="pointer-events-auto fixed z-[1000001] top-[50%] flex flex-col"
+            className="pointer-events-auto fixed z-[1000001] top-[50%] flex flex-col gap-[4px]"
             style={{
                 left,
 
@@ -142,15 +142,14 @@ export function DevicePreviewQrCard({
             role="region"
             aria-label={title}
         >
-            <div className="text-[11px] font-semibold tracking-[0.01em] text-white">{title}</div>
+            <div className="text-[14px] font-semibold tracking-[0.01em] text-[var(--adaptive-black900)] whitespace-break-spaces leading-[1.5]">{title}</div>
 
-            <div className="flex items-center justify-center rounded-[10px] bg-white p-[8px]">
+            <div className="overflow-hidden rounded-[10px] bg-white">
                 {qr ? (
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox={`0 0 ${qr.dimension} ${qr.dimension}`}
-                        width={Math.min(148, width - 40)}
-                        height={Math.min(148, width - 40)}
+                        className="block aspect-square w-full"
                         role="img"
                         aria-label={qrAriaLabel}
                     >
@@ -166,7 +165,7 @@ export function DevicePreviewQrCard({
                     </svg>
                 ) : (
                     <div
-                        className="flex h-[148px] w-[148px] items-center justify-center rounded-[8px] border border-dashed border-[rgba(148,163,184,0.55)] bg-[rgba(248,250,252,0.92)] px-[10px] text-center text-[10px] font-medium leading-snug text-slate-500"
+                        className="flex aspect-square w-full items-center justify-center border border-dashed border-[rgba(148,163,184,0.55)] bg-[rgba(248,250,252,0.92)] px-[10px] text-center text-[10px] font-medium leading-snug text-slate-500"
                         aria-hidden
                     >
                         QR
@@ -176,40 +175,40 @@ export function DevicePreviewQrCard({
 
             {resolved.needsManualUrl ? (
                 <div className="flex flex-col gap-[4px]">
-                    <p className="text-[9px] leading-snug text-[rgba(226,232,240,0.78)]">{hintLocalhost}</p>
                     <label className="flex flex-col gap-[3px]">
-                        <span className="text-[9px] font-semibold text-[rgba(226,232,240,0.7)]">{urlInputLabel}</span>
+                        {/* <span className="text-[9px] font-semibold text-[var(--adaptive-black500)]">{urlInputLabel}</span> */}
                         <input
                             type="url"
                             value={manualUrl}
                             onChange={(event) => setManualUrl(event.target.value)}
                             placeholder={urlInputPlaceholder}
                             aria-label={urlInputAriaLabel}
-                            className="h-[30px] w-full rounded-[8px] border border-[rgba(148,163,184,0.4)] bg-[rgba(15,23,42,0.85)] px-[8px] text-[11px] text-white outline-none placeholder:text-[rgba(148,163,184,0.7)] focus:border-[rgba(96,165,250,0.9)]"
+                            className="h-[30px] w-full rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] px-[8px] text-[11px] text-[var(--adaptive-black900)] outline-none placeholder:text-[var(--adaptive-black500)] focus:border-[var(--adaptive-blue500)]"
                         />
                     </label>
-                    {statusMessage ? <p className="text-[9px] leading-snug text-[rgba(252,165,165,0.95)]">{statusMessage}</p> : null}
+                    {statusMessage ? <p className="text-[9px] leading-snug text-[var(--adaptive-red500)]">{statusMessage}</p> : null}
                 </div>
             ) : null}
 
             {resolved.url ? (
                 <div className="flex flex-col gap-[6px]">
-                    <p
-                        className="break-all text-[9px] leading-snug text-[rgba(226,232,240,0.82)]"
+                    {/* <p
+                        className="break-all text-[9px] leading-snug text-[var(--adaptive-black500)]"
                         title={resolved.url}
                     >
                         {resolved.url}
-                    </p>
+                    </p> */}
                     <button
                         type="button"
                         onClick={() => void handleCopy()}
                         aria-label={copyAriaLabel}
-                        className="h-[28px] rounded-[8px] border border-[rgba(148,163,184,0.35)] bg-[rgba(30,41,59,0.95)] px-[8px] text-[10px] font-semibold text-white hover:bg-[rgba(51,65,85,0.95)]"
+                        className="h-[28px] rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] px-[8px] text-[10px] font-semibold text-[var(--adaptive-black900)] hover:bg-[var(--adaptive-black100)]"
                     >
                         {copied ? copiedLabel : copyLabel}
                     </button>
                 </div>
             ) : null}
+            <p className="text-[12px] text-[var(--adaptive-black500)] leading-[1.5] whitespace-break-spaces">{hintLocalhost}</p>
         </div>
     );
 }

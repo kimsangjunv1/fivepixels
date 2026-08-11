@@ -296,10 +296,10 @@ export function ReportControlPanel() {
                 onDrop={isGateView ? undefined : handleDrop}
                 className={`pointer-events-auto z-[1000000] border border-[var(--adaptive-border-subtle)] flex ${MOTION.panelEnter} ${MOTION.panelDock} ${isDragging ? MOTION.panelDockDragging : ""} ${
                     isRecording
-                        ? "min-h-[40px] bg-[var(--adaptive-neutralTintOpacity900)] backdrop-blur-[10px] rounded-[16px] shadow-[0_0_120px_0_var(--adaptive-black500)]"
+                        ? "min-h-[40px] bg-[var(--adaptive-neutralTintOpacity900)] backdrop-blur-[10px] rounded-[16px] shadow-[var(--adaptive-popup-shadow)]"
                         : panelCollapsed
                           ? ""
-                          : "relative bg-[var(--adaptive-neutralTintOpacity900)] backdrop-blur-[10px] rounded-[16px] shadow-[0_0_120px_0_var(--adaptive-black500)]"
+                          : "relative bg-[var(--adaptive-neutralTintOpacity900)] backdrop-blur-[10px] rounded-[16px] shadow-[var(--adaptive-popup-shadow)]"
                 }`}
                 style={{ ...resolvedPanelStyle, ...resolvedSizeStyle }}
             >

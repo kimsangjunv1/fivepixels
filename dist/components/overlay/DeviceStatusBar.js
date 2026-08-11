@@ -144,23 +144,24 @@ function renderTablet(color, metrics) {
 export function getDeviceStatusBarHeight(preset, screenWidth, scale = 1) {
     return Math.max(0, Math.round(getDeviceSafeAreaTop(preset, screenWidth) * scale));
 }
-export function DeviceStatusBar({ preset, width, scale = 1, appearance = "light", }) {
+export function DeviceStatusBar({ preset, width, scale = 1, appearance = "light", showCutout = true, }) {
     const metrics = scaleStatusBarMetrics(preset, width);
     const height = Math.max(0, Math.round(metrics.safeAreaTop * scale));
     const { background, foreground } = themeColors(appearance);
+    const cutout = showCutout ? metrics.cutout : { kind: "none", width: metrics.cutout.width, height: 0, top: 0 };
     let content = null;
     switch (metrics.layout) {
         case "classic":
-            content = renderClassic(foreground, metrics);
+            content = renderClassic(foreground, { ...metrics, cutout });
             break;
         case "faceId":
-            content = renderFaceId(foreground, metrics);
+            content = renderFaceId(foreground, { ...metrics, cutout });
             break;
         case "android":
-            content = renderAndroid(foreground, metrics);
+            content = renderAndroid(foreground, { ...metrics, cutout });
             break;
         case "tablet":
-            content = renderTablet(foreground, metrics);
+            content = renderTablet(foreground, { ...metrics, cutout });
             break;
         case "none":
         default:

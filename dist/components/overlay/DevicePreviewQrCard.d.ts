@@ -1,6 +1,5 @@
 type DevicePreviewQrCardProps = {
     left: number;
-    top: number;
     maxWidth: number;
     title: string;
     hintLocalhost: string;
@@ -14,6 +13,6 @@ type DevicePreviewQrCardProps = {
     copyAriaLabel: string;
     qrAriaLabel: string;
 };
-export declare function DevicePreviewQrCard({ left, top, maxWidth, title, hintLocalhost, urlInputLabel, urlInputPlaceholder, urlInputAriaLabel, invalidUrlMessage, emptyUrlMessage, copyLabel, copiedLabel, copyAriaLabel, qrAriaLabel, }: DevicePreviewQrCardProps): import("react").JSX.Element;
+export declare function DevicePreviewQrCard({ left, maxWidth, title, hintLocalhost, urlInputLabel, urlInputPlaceholder, urlInputAriaLabel, invalidUrlMessage, emptyUrlMessage, copyLabel, copiedLabel, copyAriaLabel, qrAriaLabel, }: DevicePreviewQrCardProps): import("react").JSX.Element;
 export {};
 //# sourceMappingURL=DevicePreviewQrCard.d.ts.map

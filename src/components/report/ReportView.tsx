@@ -39,7 +39,7 @@ export function ReportView() {
             </ThemeScope>
 
             {devicePreviewUiOpen ? (
-                <ThemeScope appearance={resolvedTooltipAppearance}>
+                <ThemeScope appearance={resolvedPanelAppearance}>
                     <DevicePreviewChrome />
                 </ThemeScope>
             ) : null}

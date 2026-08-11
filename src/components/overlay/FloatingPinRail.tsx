@@ -260,7 +260,7 @@ export function FloatingPinRail() {
                     onClick={() => setPinRailCollapsed(false)}
                     aria-expanded={false}
                     aria-label={messages.pins.railExpandAriaLabel}
-                    className="flex h-[52px] w-[52px] items-center justify-center rounded-full border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-neutralTintOpacity900)] shadow-[0_0_120px_0_var(--adaptive-black500)] backdrop-blur-[10px] transition-transform duration-200 ease-[cubic-bezier(0.34,1.28,0.64,1)] hover:scale-[1.04]"
+                    className="flex h-[52px] w-[52px] items-center justify-center rounded-full border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-neutralTintOpacity900)] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[10px] transition-transform duration-200 ease-[cubic-bezier(0.34,1.28,0.64,1)] hover:scale-[1.04]"
                 >
                     <CircularProgress
                         progress={overallProgress}
@@ -274,7 +274,7 @@ export function FloatingPinRail() {
 
     return (
         <div
-            className={`pointer-events-auto fixed right-[16px] top-[20%] z-[1000002] flex w-[280px] flex-col backdrop-blur-[10px] rounded-[16px] bg-[var(--adaptive-neutralTintOpacity900)] border border-[var(--adaptive-border-subtle)] shadow-[0_0_120px_0_var(--adaptive-black500)] ${entered ? MOTION.pinRailEnter : ""}`}
+            className={`pointer-events-auto fixed right-[16px] top-[20%] z-[1000002] flex w-[280px] flex-col backdrop-blur-[10px] rounded-[16px] bg-[var(--adaptive-neutralTintOpacity900)] border border-[var(--adaptive-border-subtle)] shadow-[var(--adaptive-popup-shadow)] ${entered ? MOTION.pinRailEnter : ""}`}
         >
             <div
                 className={`${MOTION.pinRailShell} overflow-hidden`}

@@ -24,15 +24,30 @@ const RULER_MINOR_STEP = 50;
 const FLOATING_BAR_RESERVE = 88;
 const LABEL_RESERVE = 34;
 
-const DEVICE_PREVIEW_CANVAS_BG = "#181719";
-const DEVICE_PREVIEW_CANVAS_LINE = "#ffffff10";
 const DEVICE_PREVIEW_CANVAS_GRID = 16;
-const DEVICE_PREVIEW_CANVAS_STYLE = {
-    backgroundColor: DEVICE_PREVIEW_CANVAS_BG,
-    backgroundImage: `linear-gradient(${DEVICE_PREVIEW_CANVAS_LINE} 1px, transparent 1px), linear-gradient(90deg, ${DEVICE_PREVIEW_CANVAS_LINE} 1px, transparent 1px)`,
-    backgroundSize: `${DEVICE_PREVIEW_CANVAS_GRID}px ${DEVICE_PREVIEW_CANVAS_GRID}px`,
-    backgroundAttachment: "fixed",
+
+/** Host document (html/body) is outside ThemeScope — resolve token hex by appearance. */
+const DEVICE_PREVIEW_HOST_CANVAS = {
+    light: {
+        background: "#f5f5f5", // --adaptive-black100
+        line: "rgba(0, 0, 0, 0.04)",
+        screen: "#ffffff", // --adaptive-background
+    },
+    dark: {
+        background: "#1F2125",
+        line: "rgba(255, 255, 255, 0.04)",
+        screen: "#17171c", // --adaptive-background
+    },
 } as const;
+
+function buildDevicePreviewCanvasStyle(hostCanvas: (typeof DEVICE_PREVIEW_HOST_CANVAS)[keyof typeof DEVICE_PREVIEW_HOST_CANVAS]) {
+    return {
+        backgroundColor: hostCanvas.background,
+        backgroundImage: `linear-gradient(${hostCanvas.line} 1px, transparent 1px), linear-gradient(90deg, ${hostCanvas.line} 1px, transparent 1px)`,
+        backgroundSize: `${DEVICE_PREVIEW_CANVAS_GRID}px ${DEVICE_PREVIEW_CANVAS_GRID}px`,
+        backgroundAttachment: "fixed" as const,
+    };
+}
 
 type ContentMetrics = {
     scrollY: number;
@@ -185,6 +200,8 @@ function DevicePreviewFloatingBar() {
         setDevicePreviewImageEnabled,
         devicePreviewFitToViewport,
         setDevicePreviewFitToViewport,
+        devicePreviewStatusBarEnabled,
+        setDevicePreviewStatusBarEnabled,
     } = useReportPreferences();
 
     const selectClassName =
@@ -280,12 +297,34 @@ function DevicePreviewFloatingBar() {
                     ariaLabel={messages.settings.devicePreviewFitViewportAriaLabel}
                 />
             </div>
+
+            <div className="flex min-w-[132px] flex-col gap-[3px]">
+                <span className="text-[9px] font-semibold text-[var(--adaptive-black500)]">{messages.settings.devicePreviewStatusBarLabel}</span>
+                <PanelOptionSwitch
+                    options={[
+                        { value: "off", label: messages.settings.devicePreviewStatusBarOff },
+                        { value: "on", label: messages.settings.devicePreviewStatusBarOn },
+                    ]}
+                    value={devicePreviewStatusBarEnabled ? "on" : "off"}
+                    onChange={(value) => setDevicePreviewStatusBarEnabled(value === "on")}
+                    ariaLabel={messages.settings.devicePreviewStatusBarAriaLabel}
+                />
+            </div>
         </div>
     );
 }
 
 export function DevicePreviewChrome() {
-    const { devicePreviewUiOpen, devicePreviewDeviceId, devicePreviewScale, devicePreviewImageEnabled, devicePreviewFitToViewport, resolvedPanelAppearance, messages } = useReportPreferences();
+    const {
+        devicePreviewUiOpen,
+        devicePreviewDeviceId,
+        devicePreviewScale,
+        devicePreviewImageEnabled,
+        devicePreviewFitToViewport,
+        devicePreviewStatusBarEnabled,
+        resolvedPanelAppearance,
+        messages,
+    } = useReportPreferences();
     const preset = useMemo(() => getDevicePreviewPreset(devicePreviewDeviceId), [devicePreviewDeviceId]);
     const layout = useMemo(() => getDevicePreviewLayoutSize(preset, devicePreviewScale), [preset, devicePreviewScale]);
     const chrome = useMemo(() => {
@@ -299,6 +338,8 @@ export function DevicePreviewChrome() {
 
         return scaleDeviceChrome(preset, devicePreviewScale);
     }, [devicePreviewImageEnabled, preset, devicePreviewScale]);
+    const hostCanvas = DEVICE_PREVIEW_HOST_CANVAS[resolvedPanelAppearance === "dark" ? "dark" : "light"];
+    const canvasStyle = useMemo(() => buildDevicePreviewCanvasStyle(hostCanvas), [hostCanvas]);
 
     const [metrics, setMetrics] = useState<ContentMetrics>(() =>
         typeof window === "undefined"
@@ -331,6 +372,11 @@ export function DevicePreviewChrome() {
         [layout.width, layout.height, chrome.bezel, metrics.viewportWidth, metrics.viewportHeight, devicePreviewFitToViewport],
     );
 
+    const statusBarHeight = useMemo(
+        () => (devicePreviewStatusBarEnabled ? getDeviceStatusBarHeight(preset, centered.screenWidth) : 0),
+        [devicePreviewStatusBarEnabled, preset, centered.screenWidth],
+    );
+
     useEffect(() => {
         if (!devicePreviewUiOpen) {
             document.documentElement.classList.remove(HTML_ACTIVE_CLASS);
@@ -357,8 +403,8 @@ html.${HTML_ACTIVE_CLASS} body {
   height: 100% !important;
   max-height: 100% !important;
   overflow: hidden !important;
-  background-color: ${DEVICE_PREVIEW_CANVAS_BG} !important;
-  background-image: linear-gradient(${DEVICE_PREVIEW_CANVAS_LINE} 1px, transparent 1px), linear-gradient(90deg, ${DEVICE_PREVIEW_CANVAS_LINE} 1px, transparent 1px) !important;
+  background-color: ${hostCanvas.background} !important;
+  background-image: linear-gradient(${hostCanvas.line} 1px, transparent 1px), linear-gradient(90deg, ${hostCanvas.line} 1px, transparent 1px) !important;
   background-size: ${DEVICE_PREVIEW_CANVAS_GRID}px ${DEVICE_PREVIEW_CANVAS_GRID}px !important;
 }
 
@@ -392,7 +438,6 @@ html.${HTML_ACTIVE_CLASS} #root .pulse-content {
 `;
 
         const root = getPreviewContentRoot();
-        const statusBarHeight = getDeviceStatusBarHeight(preset, centered.screenWidth);
         if (root) {
             // Logical CSS size = selected device resolution (× user scale). Viewport fit uses transform only.
             root.style.setProperty("max-width", `${centered.screenWidth}px`, "important");
@@ -410,7 +455,7 @@ html.${HTML_ACTIVE_CLASS} #root .pulse-content {
             root.style.setProperty("overscroll-behavior", "contain", "important");
             root.style.setProperty("container-type", "inline-size", "important");
             root.style.setProperty("container-name", "fivepixels-device-preview", "important");
-            root.style.setProperty("background", "#ffffff", "important");
+            root.style.setProperty("background", hostCanvas.screen, "important");
             root.style.setProperty("position", "relative", "important");
             root.style.setProperty("z-index", "0", "important");
             root.style.setProperty("box-sizing", "border-box", "important");
@@ -430,7 +475,22 @@ html.${HTML_ACTIVE_CLASS} #root .pulse-content {
                 clearRootInlineStyles(root);
             }
         };
-    }, [devicePreviewUiOpen, devicePreviewImageEnabled, centered.screenWidth, centered.screenHeight, centered.screenLeft, centered.screenTop, centered.fitScale, chrome.screenRadius, preset]);
+    }, [
+        devicePreviewUiOpen,
+        devicePreviewImageEnabled,
+        devicePreviewStatusBarEnabled,
+        statusBarHeight,
+        centered.screenWidth,
+        centered.screenHeight,
+        centered.screenLeft,
+        centered.screenTop,
+        centered.fitScale,
+        chrome.screenRadius,
+        preset,
+        hostCanvas.background,
+        hostCanvas.line,
+        hostCanvas.screen,
+    ]);
 
     useEffect(() => {
         if (!devicePreviewUiOpen) {
@@ -464,10 +524,13 @@ html.${HTML_ACTIVE_CLASS} #root .pulse-content {
     const visualScreenHeight = centered.visualScreenHeight;
     const frameLeft = centered.frameLeft;
     const frameTop = centered.frameTop;
-    const ticks = buildRulerTicks(metrics.scrollY, screenHeight, Math.max(metrics.scrollHeight, screenHeight));
+    const ticks = buildRulerTicks(metrics.scrollY, metrics.clientHeight || screenHeight, Math.max(metrics.scrollHeight, screenHeight));
     const rulerLeft = screenLeft >= RULER_WIDTH + 8 ? screenLeft - RULER_WIDTH : Math.max(0, screenLeft - 4);
-    const sizeLabel = `${preset.label} · ${preset.width}×${preset.height} · ${formatDevicePreviewScale(devicePreviewScale)}`;
-    const scrollLabel = messages.settings.devicePreviewScrollLabel(metrics.scrollY);
+    const visualStatusBarHeight = statusBarHeight * centered.fitScale;
+    const rulerTop = screenTop + visualStatusBarHeight;
+    const rulerHeight = Math.max(0, visualScreenHeight - visualStatusBarHeight);
+    const contentScrollY = Math.max(0, metrics.scrollY - statusBarHeight);
+    const scrollLabel = messages.settings.devicePreviewScrollLabel(contentScrollY);
     const stageTransform = {
         transform: `scale(${centered.fitScale})`,
         transformOrigin: "top left" as const,
@@ -487,20 +550,20 @@ html.${HTML_ACTIVE_CLASS} #root .pulse-content {
                 {/*
                   Do NOT paint a full-screen overlay fill — it sits above #root and
                   would hide page content through the transparent SVG screen hole.
-                  Only mask the area outside the device frame with solid black.
+                  Only mask the area outside the device frame with the canvas fill.
                 */}
                 <div
                     className="absolute left-0 right-0 top-0"
-                    style={{ ...DEVICE_PREVIEW_CANVAS_STYLE, height: Math.max(0, frameTop) }}
+                    style={{ ...canvasStyle, height: Math.max(0, frameTop) }}
                 />
                 <div
                     className="absolute bottom-0 left-0 right-0"
-                    style={{ ...DEVICE_PREVIEW_CANVAS_STYLE, top: frameTop + centered.visualFrameHeight }}
+                    style={{ ...canvasStyle, top: frameTop + centered.visualFrameHeight }}
                 />
                 <div
                     className="absolute left-0"
                     style={{
-                        ...DEVICE_PREVIEW_CANVAS_STYLE,
+                        ...canvasStyle,
                         top: frameTop,
                         height: centered.visualFrameHeight,
                         width: Math.max(0, frameLeft),
@@ -509,7 +572,7 @@ html.${HTML_ACTIVE_CLASS} #root .pulse-content {
                 <div
                     className="absolute right-0"
                     style={{
-                        ...DEVICE_PREVIEW_CANVAS_STYLE,
+                        ...canvasStyle,
                         top: frameTop,
                         height: centered.visualFrameHeight,
                         width: Math.max(0, metrics.viewportWidth - frameLeft - centered.visualFrameWidth),
@@ -535,7 +598,7 @@ html.${HTML_ACTIVE_CLASS} #root .pulse-content {
                         />
                     ) : (
                         <div
-                            className="absolute border border-white/20 bg-transparent"
+                            className="absolute border border-[var(--adaptive-border-subtle)] bg-transparent"
                             style={{
                                 left: centered.bezel.left,
                                 top: centered.bezel.top,
@@ -545,44 +608,41 @@ html.${HTML_ACTIVE_CLASS} #root .pulse-content {
                         />
                     )}
 
-                    {/* Status bar owns notch / island / punch in its center flex section */}
-                    <div
-                        className="absolute z-[1] overflow-hidden"
-                        style={{
-                            left: centered.bezel.left,
-                            top: centered.bezel.top,
-                            width: screenWidth,
-                            height: screenHeight,
-                            borderRadius: devicePreviewImageEnabled ? chrome.screenRadius : 0,
-                        }}
-                    >
-                        <DeviceStatusBar
-                            preset={preset}
-                            width={screenWidth}
-                            appearance={resolvedPanelAppearance === "dark" ? "dark" : "light"}
-                        />
-                    </div>
+                    {devicePreviewStatusBarEnabled ? (
+                        <div
+                            className="absolute z-[1] overflow-hidden"
+                            style={{
+                                left: centered.bezel.left,
+                                top: centered.bezel.top,
+                                width: screenWidth,
+                                height: screenHeight,
+                                borderRadius: devicePreviewImageEnabled ? chrome.screenRadius : 0,
+                            }}
+                        >
+                            <DeviceStatusBar
+                                preset={preset}
+                                width={screenWidth}
+                                appearance={resolvedPanelAppearance === "dark" ? "dark" : "light"}
+                                showCutout={devicePreviewImageEnabled}
+                            />
+                        </div>
+                    ) : null}
                 </div>
 
                 <div
-                    className="absolute left-1/2 z-[6] -translate-x-1/2 rounded-[999px] border border-[rgba(255,255,255,0.2)] bg-[rgba(15,23,42,0.88)] px-[10px] py-[4px] text-[10px] font-semibold tracking-[0.01em] text-white backdrop-blur-[6px]"
-                    style={{ top: Math.max(8, frameTop - 28) }}
+                    className="absolute overflow-hidden border-r border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-neutralTintOpacity900)] text-[var(--adaptive-black900)] backdrop-blur-[4px]"
+                    style={{ left: rulerLeft, top: rulerTop, width: RULER_WIDTH, height: rulerHeight, borderRadius: 6 }}
                 >
-                    {sizeLabel}
-                </div>
-
-                <div
-                    className="absolute overflow-hidden border-r border-[rgba(148,163,184,0.35)] bg-[rgba(15,23,42,0.9)] text-[rgba(226,232,240,0.92)] backdrop-blur-[4px]"
-                    style={{ left: rulerLeft, top: screenTop, width: RULER_WIDTH, height: visualScreenHeight, borderRadius: 6 }}
-                >
-                    <div className="absolute inset-x-0 top-0 z-[1] border-b border-[rgba(148,163,184,0.35)] bg-[rgba(15,23,42,0.95)] px-[4px] py-[6px] text-center text-[9px] font-semibold leading-tight">
+                    <div className="absolute inset-x-0 top-0 z-[1] border-b border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-neutralTintOpacity900)] px-[4px] py-[6px] text-center text-[9px] font-semibold leading-tight text-[var(--adaptive-black900)]">
                         {scrollLabel}
                     </div>
                     {ticks.map((tick) => {
-                        const top = (tick.documentY - metrics.scrollY) * centered.fitScale;
-                        if (top < 0 || top > visualScreenHeight) {
+                        const top = (tick.documentY - metrics.scrollY - statusBarHeight) * centered.fitScale;
+                        if (top < 0 || top > rulerHeight) {
                             return null;
                         }
+
+                        const labelY = Math.max(0, tick.documentY - statusBarHeight);
 
                         return (
                             <div
@@ -590,10 +650,16 @@ html.${HTML_ACTIVE_CLASS} #root .pulse-content {
                                 className="absolute right-0 flex items-center"
                                 style={{ top, height: 0 }}
                             >
-                                <span className={`mr-[3px] text-[8px] tabular-nums ${tick.major ? "font-semibold text-white" : "text-[rgba(203,213,225,0.75)]"}`}>
-                                    {tick.major ? tick.documentY : ""}
+                                <span
+                                    className={`mr-[3px] text-[8px] tabular-nums ${
+                                        tick.major ? "font-semibold text-[var(--adaptive-black900)]" : "text-[var(--adaptive-black500)]"
+                                    }`}
+                                >
+                                    {tick.major ? labelY : ""}
                                 </span>
-                                <span className={`block bg-[rgba(226,232,240,0.75)] ${tick.major ? "h-[1px] w-[12px]" : "h-[1px] w-[7px]"}`} />
+                                <span
+                                    className={`block bg-[var(--adaptive-black500)] ${tick.major ? "h-[1px] w-[12px]" : "h-[1px] w-[7px]"}`}
+                                />
                             </div>
                         );
                     })}

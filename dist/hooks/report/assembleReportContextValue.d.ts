@@ -150,6 +150,8 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     setDevicePreviewImageEnabled: (enabled: boolean) => void;
     devicePreviewFitToViewport: boolean;
     setDevicePreviewFitToViewport: (enabled: boolean) => void;
+    devicePreviewStatusBarEnabled: boolean;
+    setDevicePreviewStatusBarEnabled: (enabled: boolean) => void;
     devicePreviewPreset: import("../../constants/devicePreview.js").DevicePreviewPreset;
     showHiddenDetachedMarkers: boolean;
     setShowHiddenDetachedMarkers: (enabled: boolean) => void;

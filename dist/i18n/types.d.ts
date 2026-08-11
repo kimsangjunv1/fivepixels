@@ -444,6 +444,10 @@ export type ReportMessages = {
         devicePreviewFitViewportAriaLabel: string;
         devicePreviewFitViewportOn: string;
         devicePreviewFitViewportOff: string;
+        devicePreviewStatusBarLabel: string;
+        devicePreviewStatusBarAriaLabel: string;
+        devicePreviewStatusBarOn: string;
+        devicePreviewStatusBarOff: string;
         devicePreviewFloatingAriaLabel: string;
         devicePreviewBrandApple: string;
         devicePreviewBrandSamsung: string;

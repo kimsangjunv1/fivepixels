@@ -154,6 +154,8 @@ export function assembleReportContextValue({
         setDevicePreviewImageEnabled: panel.setDevicePreviewImageEnabled,
         devicePreviewFitToViewport: panel.devicePreviewFitToViewport,
         setDevicePreviewFitToViewport: panel.setDevicePreviewFitToViewport,
+        devicePreviewStatusBarEnabled: panel.devicePreviewStatusBarEnabled,
+        setDevicePreviewStatusBarEnabled: panel.setDevicePreviewStatusBarEnabled,
         devicePreviewPreset: panel.devicePreviewPreset,
         showHiddenDetachedMarkers: panel.showHiddenDetachedMarkers,
         setShowHiddenDetachedMarkers: panel.setShowHiddenDetachedMarkers,

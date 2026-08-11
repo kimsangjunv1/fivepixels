@@ -43,6 +43,8 @@ export const REPORT_PREFERENCE_KEYS = [
     "setDevicePreviewImageEnabled",
     "devicePreviewFitToViewport",
     "setDevicePreviewFitToViewport",
+    "devicePreviewStatusBarEnabled",
+    "setDevicePreviewStatusBarEnabled",
     "devicePreviewPreset",
     "showHiddenDetachedMarkers",
     "setShowHiddenDetachedMarkers",

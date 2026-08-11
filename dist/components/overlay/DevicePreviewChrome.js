@@ -13,12 +13,23 @@ const RULER_MAJOR_STEP = 100;
 const RULER_MINOR_STEP = 50;
 const FLOATING_BAR_RESERVE = 88;
 const LABEL_RESERVE = 34;
-const DEVICE_PREVIEW_CANVAS_BG = "#181719";
-const DEVICE_PREVIEW_CANVAS_LINE = "#ffffff10";
 const DEVICE_PREVIEW_CANVAS_GRID = 16;
+/** Host document (html/body) is outside ThemeScope — resolve token hex by appearance. */
+const DEVICE_PREVIEW_HOST_CANVAS = {
+    light: {
+        background: "#f5f5f5", // --adaptive-black100
+        line: "rgba(0, 0, 0, 0.04)",
+        screen: "#ffffff", // --adaptive-background
+    },
+    dark: {
+        background: "#424242", // --adaptive-black100
+        line: "rgba(255, 255, 255, 0.04)",
+        screen: "#17171c", // --adaptive-background
+    },
+};
 const DEVICE_PREVIEW_CANVAS_STYLE = {
-    backgroundColor: DEVICE_PREVIEW_CANVAS_BG,
-    backgroundImage: `linear-gradient(${DEVICE_PREVIEW_CANVAS_LINE} 1px, transparent 1px), linear-gradient(90deg, ${DEVICE_PREVIEW_CANVAS_LINE} 1px, transparent 1px)`,
+    backgroundColor: "var(--adaptive-black100)",
+    backgroundImage: "linear-gradient(var(--adaptive-tintOpacity50) 1px, transparent 1px), linear-gradient(90deg, var(--adaptive-tintOpacity50) 1px, transparent 1px)",
     backgroundSize: `${DEVICE_PREVIEW_CANVAS_GRID}px ${DEVICE_PREVIEW_CANVAS_GRID}px`,
     backgroundAttachment: "fixed",
 };
@@ -55,7 +66,7 @@ function buildRulerTicks(scrollY, clientHeight, scrollHeight) {
     return ticks;
 }
 function resolveCenteredLayout(args) {
-    const { layoutWidth, layoutHeight, bezelTop, bezelRight, bezelBottom, bezelLeft, viewportWidth, viewportHeight, fitToViewport, } = args;
+    const { layoutWidth, layoutHeight, bezelTop, bezelRight, bezelBottom, bezelLeft, viewportWidth, viewportHeight, fitToViewport } = args;
     const availableWidth = Math.max(240, viewportWidth - 24);
     const availableHeight = Math.max(240, viewportHeight - FLOATING_BAR_RESERVE - LABEL_RESERVE);
     // Logical screen stays at the selected device × user scale — never shrink for the viewport.
@@ -129,7 +140,7 @@ function clearRootInlineStyles(root) {
     }
 }
 function DevicePreviewFloatingBar() {
-    const { messages, devicePreviewDeviceId, setDevicePreviewDeviceId, devicePreviewScale, setDevicePreviewScale, devicePreviewImageEnabled, setDevicePreviewImageEnabled, devicePreviewFitToViewport, setDevicePreviewFitToViewport, } = useReportPreferences();
+    const { messages, devicePreviewDeviceId, setDevicePreviewDeviceId, devicePreviewScale, setDevicePreviewScale, devicePreviewImageEnabled, setDevicePreviewImageEnabled, devicePreviewFitToViewport, setDevicePreviewFitToViewport, devicePreviewStatusBarEnabled, setDevicePreviewStatusBarEnabled, } = useReportPreferences();
     const selectClassName = "h-[30px] min-w-[148px] rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] px-[8px] text-[11px] font-semibold text-[var(--adaptive-black900)] outline-none focus:border-[var(--adaptive-blue500)]";
     return (_jsxs("div", { "data-fivepixels-interactive": "", className: "pointer-events-auto fixed z-[1000002] flex items-center gap-[10px] rounded-[14px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)]/95 px-[12px] py-[10px] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[8px]", style: {
             bottom: 16,
@@ -147,10 +158,13 @@ function DevicePreviewFloatingBar() {
                         ], value: devicePreviewImageEnabled ? "on" : "off", onChange: (value) => setDevicePreviewImageEnabled(value === "on"), ariaLabel: messages.settings.devicePreviewImageAriaLabel })] }), _jsxs("div", { className: "flex min-w-[132px] flex-col gap-[3px]", children: [_jsx("span", { className: "text-[9px] font-semibold text-[var(--adaptive-black500)]", children: messages.settings.devicePreviewFitViewportLabel }), _jsx(PanelOptionSwitch, { options: [
                             { value: "off", label: messages.settings.devicePreviewFitViewportOff },
                             { value: "on", label: messages.settings.devicePreviewFitViewportOn },
-                        ], value: devicePreviewFitToViewport ? "on" : "off", onChange: (value) => setDevicePreviewFitToViewport(value === "on"), ariaLabel: messages.settings.devicePreviewFitViewportAriaLabel })] })] }));
+                        ], value: devicePreviewFitToViewport ? "on" : "off", onChange: (value) => setDevicePreviewFitToViewport(value === "on"), ariaLabel: messages.settings.devicePreviewFitViewportAriaLabel })] }), _jsxs("div", { className: "flex min-w-[132px] flex-col gap-[3px]", children: [_jsx("span", { className: "text-[9px] font-semibold text-[var(--adaptive-black500)]", children: messages.settings.devicePreviewStatusBarLabel }), _jsx(PanelOptionSwitch, { options: [
+                            { value: "off", label: messages.settings.devicePreviewStatusBarOff },
+                            { value: "on", label: messages.settings.devicePreviewStatusBarOn },
+                        ], value: devicePreviewStatusBarEnabled ? "on" : "off", onChange: (value) => setDevicePreviewStatusBarEnabled(value === "on"), ariaLabel: messages.settings.devicePreviewStatusBarAriaLabel })] })] }));
 }
 export function DevicePreviewChrome() {
-    const { devicePreviewUiOpen, devicePreviewDeviceId, devicePreviewScale, devicePreviewImageEnabled, devicePreviewFitToViewport, resolvedPanelAppearance, messages, } = useReportPreferences();
+    const { devicePreviewUiOpen, devicePreviewDeviceId, devicePreviewScale, devicePreviewImageEnabled, devicePreviewFitToViewport, devicePreviewStatusBarEnabled, resolvedPanelAppearance, messages, } = useReportPreferences();
     const preset = useMemo(() => getDevicePreviewPreset(devicePreviewDeviceId), [devicePreviewDeviceId]);
     const layout = useMemo(() => getDevicePreviewLayoutSize(preset, devicePreviewScale), [preset, devicePreviewScale]);
     const chrome = useMemo(() => {
@@ -163,6 +177,7 @@ export function DevicePreviewChrome() {
         }
         return scaleDeviceChrome(preset, devicePreviewScale);
     }, [devicePreviewImageEnabled, preset, devicePreviewScale]);
+    const hostCanvas = DEVICE_PREVIEW_HOST_CANVAS[resolvedPanelAppearance === "dark" ? "dark" : "light"];
     const [metrics, setMetrics] = useState(() => typeof window === "undefined"
         ? {
             scrollY: 0,
@@ -186,6 +201,7 @@ export function DevicePreviewChrome() {
         viewportHeight: metrics.viewportHeight || (typeof window !== "undefined" ? window.innerHeight : 800),
         fitToViewport: devicePreviewFitToViewport,
     }), [layout.width, layout.height, chrome.bezel, metrics.viewportWidth, metrics.viewportHeight, devicePreviewFitToViewport]);
+    const statusBarHeight = useMemo(() => (devicePreviewStatusBarEnabled ? getDeviceStatusBarHeight(preset, centered.screenWidth) : 0), [devicePreviewStatusBarEnabled, preset, centered.screenWidth]);
     useEffect(() => {
         if (!devicePreviewUiOpen) {
             document.documentElement.classList.remove(HTML_ACTIVE_CLASS);
@@ -209,8 +225,8 @@ html.${HTML_ACTIVE_CLASS} body {
   height: 100% !important;
   max-height: 100% !important;
   overflow: hidden !important;
-  background-color: ${DEVICE_PREVIEW_CANVAS_BG} !important;
-  background-image: linear-gradient(${DEVICE_PREVIEW_CANVAS_LINE} 1px, transparent 1px), linear-gradient(90deg, ${DEVICE_PREVIEW_CANVAS_LINE} 1px, transparent 1px) !important;
+  background-color: ${hostCanvas.background} !important;
+  background-image: linear-gradient(${hostCanvas.line} 1px, transparent 1px), linear-gradient(90deg, ${hostCanvas.line} 1px, transparent 1px) !important;
   background-size: ${DEVICE_PREVIEW_CANVAS_GRID}px ${DEVICE_PREVIEW_CANVAS_GRID}px !important;
 }
 
@@ -243,7 +259,6 @@ html.${HTML_ACTIVE_CLASS} #root .pulse-content {
 }
 `;
         const root = getPreviewContentRoot();
-        const statusBarHeight = getDeviceStatusBarHeight(preset, centered.screenWidth);
         if (root) {
             // Logical CSS size = selected device resolution (× user scale). Viewport fit uses transform only.
             root.style.setProperty("max-width", `${centered.screenWidth}px`, "important");
@@ -261,7 +276,7 @@ html.${HTML_ACTIVE_CLASS} #root .pulse-content {
             root.style.setProperty("overscroll-behavior", "contain", "important");
             root.style.setProperty("container-type", "inline-size", "important");
             root.style.setProperty("container-name", "fivepixels-device-preview", "important");
-            root.style.setProperty("background", "#ffffff", "important");
+            root.style.setProperty("background", hostCanvas.screen, "important");
             root.style.setProperty("position", "relative", "important");
             root.style.setProperty("z-index", "0", "important");
             root.style.setProperty("box-sizing", "border-box", "important");
@@ -282,6 +297,8 @@ html.${HTML_ACTIVE_CLASS} #root .pulse-content {
     }, [
         devicePreviewUiOpen,
         devicePreviewImageEnabled,
+        devicePreviewStatusBarEnabled,
+        statusBarHeight,
         centered.screenWidth,
         centered.screenHeight,
         centered.screenLeft,
@@ -289,6 +306,9 @@ html.${HTML_ACTIVE_CLASS} #root .pulse-content {
         centered.fitScale,
         chrome.screenRadius,
         preset,
+        hostCanvas.background,
+        hostCanvas.line,
+        hostCanvas.screen,
     ]);
     useEffect(() => {
         if (!devicePreviewUiOpen) {
@@ -318,10 +338,13 @@ html.${HTML_ACTIVE_CLASS} #root .pulse-content {
     const visualScreenHeight = centered.visualScreenHeight;
     const frameLeft = centered.frameLeft;
     const frameTop = centered.frameTop;
-    const ticks = buildRulerTicks(metrics.scrollY, screenHeight, Math.max(metrics.scrollHeight, screenHeight));
+    const ticks = buildRulerTicks(metrics.scrollY, metrics.clientHeight || screenHeight, Math.max(metrics.scrollHeight, screenHeight));
     const rulerLeft = screenLeft >= RULER_WIDTH + 8 ? screenLeft - RULER_WIDTH : Math.max(0, screenLeft - 4);
-    const sizeLabel = `${preset.label} · ${preset.width}×${preset.height} · ${formatDevicePreviewScale(devicePreviewScale)}`;
-    const scrollLabel = messages.settings.devicePreviewScrollLabel(metrics.scrollY);
+    const visualStatusBarHeight = statusBarHeight * centered.fitScale;
+    const rulerTop = screenTop + visualStatusBarHeight;
+    const rulerHeight = Math.max(0, visualScreenHeight - visualStatusBarHeight);
+    const contentScrollY = Math.max(0, metrics.scrollY - statusBarHeight);
+    const scrollLabel = messages.settings.devicePreviewScrollLabel(contentScrollY);
     const stageTransform = {
         transform: `scale(${centered.fitScale})`,
         transformOrigin: "top left",
@@ -346,23 +369,27 @@ html.${HTML_ACTIVE_CLASS} #root .pulse-content {
                             width: centered.frameWidth,
                             height: centered.frameHeight,
                             ...stageTransform,
-                        }, children: [devicePreviewImageEnabled ? (_jsx(DeviceFrameArtwork, { preset: preset, chrome: chrome, screenWidth: screenWidth, screenHeight: screenHeight })) : (_jsx("div", { className: "absolute border border-white/20 bg-transparent", style: {
+                        }, children: [devicePreviewImageEnabled ? (_jsx(DeviceFrameArtwork, { preset: preset, chrome: chrome, screenWidth: screenWidth, screenHeight: screenHeight })) : (_jsx("div", { className: "absolute border border-[var(--adaptive-border-subtle)] bg-transparent", style: {
                                     left: centered.bezel.left,
                                     top: centered.bezel.top,
                                     width: screenWidth,
                                     height: screenHeight,
-                                } })), _jsx("div", { className: "absolute z-[1] overflow-hidden", style: {
+                                } })), devicePreviewStatusBarEnabled ? (_jsx("div", { className: "absolute z-[1] overflow-hidden", style: {
                                     left: centered.bezel.left,
                                     top: centered.bezel.top,
                                     width: screenWidth,
                                     height: screenHeight,
                                     borderRadius: devicePreviewImageEnabled ? chrome.screenRadius : 0,
-                                }, children: _jsx(DeviceStatusBar, { preset: preset, width: screenWidth, appearance: resolvedPanelAppearance === "dark" ? "dark" : "light" }) })] }), _jsx("div", { className: "absolute left-1/2 z-[6] -translate-x-1/2 rounded-[999px] border border-[rgba(255,255,255,0.2)] bg-[rgba(15,23,42,0.88)] px-[10px] py-[4px] text-[10px] font-semibold tracking-[0.01em] text-white backdrop-blur-[6px]", style: { top: Math.max(8, frameTop - 28) }, children: sizeLabel }), _jsxs("div", { className: "absolute overflow-hidden border-r border-[rgba(148,163,184,0.35)] bg-[rgba(15,23,42,0.9)] text-[rgba(226,232,240,0.92)] backdrop-blur-[4px]", style: { left: rulerLeft, top: screenTop, width: RULER_WIDTH, height: visualScreenHeight, borderRadius: 6 }, children: [_jsx("div", { className: "absolute inset-x-0 top-0 z-[1] border-b border-[rgba(148,163,184,0.35)] bg-[rgba(15,23,42,0.95)] px-[4px] py-[6px] text-center text-[9px] font-semibold leading-tight", children: scrollLabel }), ticks.map((tick) => {
-                                const top = (tick.documentY - metrics.scrollY) * centered.fitScale;
-                                if (top < 0 || top > visualScreenHeight) {
+                                }, children: _jsx(DeviceStatusBar, { preset: preset, width: screenWidth, appearance: resolvedPanelAppearance === "dark" ? "dark" : "light", showCutout: devicePreviewImageEnabled }) })) : null] }), _jsxs("div", { className: "absolute overflow-hidden border-r border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-neutralTintOpacity900)] text-[var(--adaptive-black900)] backdrop-blur-[4px]", style: { left: rulerLeft, top: rulerTop, width: RULER_WIDTH, height: rulerHeight, borderRadius: 6 }, children: [_jsx("div", { className: "absolute inset-x-0 top-0 z-[1] border-b border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-neutralTintOpacity900)] px-[4px] py-[6px] text-center text-[9px] font-semibold leading-tight text-[var(--adaptive-black900)]", children: scrollLabel }), ticks.map((tick) => {
+                                const top = (tick.documentY - metrics.scrollY - statusBarHeight) * centered.fitScale;
+                                if (top < 0 || top > rulerHeight) {
                                     return null;
                                 }
-                                return (_jsxs("div", { className: "absolute right-0 flex items-center", style: { top, height: 0 }, children: [_jsx("span", { className: `mr-[3px] text-[8px] tabular-nums ${tick.major ? "font-semibold text-white" : "text-[rgba(203,213,225,0.75)]"}`, children: tick.major ? tick.documentY : "" }), _jsx("span", { className: `block bg-[rgba(226,232,240,0.75)] ${tick.major ? "h-[1px] w-[12px]" : "h-[1px] w-[7px]"}` })] }, tick.documentY));
-                            })] })] }), showQrCard ? (_jsx(DevicePreviewQrCard, { left: qrLeft, top: Math.max(8, frameTop), maxWidth: qrMaxWidth, title: messages.settings.devicePreviewQrTitle, hintLocalhost: messages.settings.devicePreviewQrHintLocalhost, urlInputLabel: messages.settings.devicePreviewQrUrlInputLabel, urlInputPlaceholder: messages.settings.devicePreviewQrUrlInputPlaceholder, urlInputAriaLabel: messages.settings.devicePreviewQrUrlInputAriaLabel, invalidUrlMessage: messages.settings.devicePreviewQrInvalidUrl, emptyUrlMessage: messages.settings.devicePreviewQrEmptyUrl, copyLabel: messages.settings.devicePreviewQrCopyLabel, copiedLabel: messages.settings.devicePreviewQrCopiedLabel, copyAriaLabel: messages.settings.devicePreviewQrCopyAriaLabel, qrAriaLabel: messages.settings.devicePreviewQrAriaLabel })) : null, _jsx(DevicePreviewFloatingBar, {})] }));
+                                const labelY = Math.max(0, tick.documentY - statusBarHeight);
+                                return (_jsxs("div", { className: "absolute right-0 flex items-center", style: { top, height: 0 }, children: [_jsx("span", { className: `mr-[3px] text-[8px] tabular-nums ${tick.major ? "font-semibold text-[var(--adaptive-black900)]" : "text-[var(--adaptive-black500)]"}`, children: tick.major ? labelY : "" }), _jsx("span", { className: `block bg-[var(--adaptive-black500)] ${tick.major ? "h-[1px] w-[12px]" : "h-[1px] w-[7px]"}` })] }, tick.documentY));
+                            })] })] }), showQrCard ? (_jsx(DevicePreviewQrCard, { left: qrLeft, 
+                // top={Math.max(8, frameTop)}
+                // top={Math.max(8, frameTop)}
+                maxWidth: qrMaxWidth, title: messages.settings.devicePreviewQrTitle, hintLocalhost: messages.settings.devicePreviewQrHintLocalhost, urlInputLabel: messages.settings.devicePreviewQrUrlInputLabel, urlInputPlaceholder: messages.settings.devicePreviewQrUrlInputPlaceholder, urlInputAriaLabel: messages.settings.devicePreviewQrUrlInputAriaLabel, invalidUrlMessage: messages.settings.devicePreviewQrInvalidUrl, emptyUrlMessage: messages.settings.devicePreviewQrEmptyUrl, copyLabel: messages.settings.devicePreviewQrCopyLabel, copiedLabel: messages.settings.devicePreviewQrCopiedLabel, copyAriaLabel: messages.settings.devicePreviewQrCopyAriaLabel, qrAriaLabel: messages.settings.devicePreviewQrAriaLabel })) : null, _jsx(DevicePreviewFloatingBar, {})] }));
 }
 //# sourceMappingURL=DevicePreviewChrome.js.map

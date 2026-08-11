@@ -13,6 +13,7 @@ type DeviceStatusBarProps = {
     width: number;
     scale?: number;
     appearance?: StatusBarAppearance;
+    showCutout?: boolean;
 };
 
 const IOS_TIME = "9:41";
@@ -581,24 +582,26 @@ export function DeviceStatusBar({
     width,
     scale = 1,
     appearance = "light",
+    showCutout = true,
 }: DeviceStatusBarProps) {
     const metrics = scaleStatusBarMetrics(preset, width);
     const height = Math.max(0, Math.round(metrics.safeAreaTop * scale));
     const { background, foreground } = themeColors(appearance);
+    const cutout: ScaledDeviceCutout = showCutout ? metrics.cutout : { kind: "none", width: metrics.cutout.width, height: 0, top: 0 };
 
     let content: ReactNode = null;
     switch (metrics.layout) {
         case "classic":
-            content = renderClassic(foreground, metrics);
+            content = renderClassic(foreground, { ...metrics, cutout });
             break;
         case "faceId":
-            content = renderFaceId(foreground, metrics);
+            content = renderFaceId(foreground, { ...metrics, cutout });
             break;
         case "android":
-            content = renderAndroid(foreground, metrics);
+            content = renderAndroid(foreground, { ...metrics, cutout });
             break;
         case "tablet":
-            content = renderTablet(foreground, metrics);
+            content = renderTablet(foreground, { ...metrics, cutout });
             break;
         case "none":
         default:

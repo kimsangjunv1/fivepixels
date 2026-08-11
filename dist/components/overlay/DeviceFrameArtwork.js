@@ -1,9 +1,10 @@
 import { jsx as _jsx, Fragment as _Fragment, jsxs as _jsxs } from "react/jsx-runtime";
-const FRAME_FILL = "#000000";
-const FRAME_STROKE = "#1a1a1a";
-const DETAIL_FILL = "#0a0a0a";
-const DETAIL_STROKE = "#2a2a2a";
-const BUTTON_FILL = "#1a1a1a";
+const FRAME_FILL = "var(--adaptive-neutralTintOpacity900)";
+const FRAME_STROKE = "var(--adaptive-tintOpacity200)";
+const DETAIL_FILL = "var(--adaptive-tintOpacity300)";
+const DETAIL_STROKE = "var(--adaptive-tintOpacity200)";
+const BUTTON_FILL = "var(--adaptive-neutralTintOpacity900)";
+const DETAIL_INNER_FILL = "var(--adaptive-tintOpacity400)";
 function roundedRectPath(x, y, w, h, r) {
     const radius = Math.max(0, Math.min(r, w / 2, h / 2));
     return [
@@ -50,16 +51,18 @@ function HomeButtonFrame({ chrome, screenWidth, screenHeight }) {
     const cameraSize = Math.round(frameWidth * 0.028);
     const speakerY = bezel.top * 0.42;
     const cameraCx = (frameWidth - speakerWidth) / 2 - cameraSize * 1.6;
-    return (_jsxs("div", { className: "absolute overflow-visible", style: { width: frameWidth, height: frameHeight }, children: [_jsxs("svg", { width: frameWidth, height: frameHeight, viewBox: `0 0 ${frameWidth} ${frameHeight}`, className: "absolute inset-0", "aria-hidden": true, children: [_jsx(ShellWithScreenHole, { frameWidth: frameWidth, frameHeight: frameHeight, frameRadius: frameRadius, screenX: bezel.left, screenY: bezel.top, screenWidth: screenWidth, screenHeight: screenHeight, screenRadius: screenRadius }), _jsx("rect", { x: (frameWidth - speakerWidth) / 2, y: speakerY, width: speakerWidth, height: Math.max(5, bezel.top * 0.055), rx: 3, fill: DETAIL_FILL, stroke: DETAIL_STROKE, strokeWidth: "1" }), _jsx("circle", { cx: cameraCx, cy: bezel.top * 0.45, r: cameraSize / 2, fill: DETAIL_FILL, stroke: DETAIL_STROKE, strokeWidth: "1.2" }), _jsx("circle", { cx: cameraCx, cy: bezel.top * 0.45, r: cameraSize / 5, fill: "#1a1a1a" }), _jsx("circle", { cx: frameWidth / 2, cy: bezel.top + screenHeight + bezel.bottom / 2, r: homeSize / 2, fill: "none", stroke: DETAIL_STROKE, strokeWidth: "2.5" }), _jsx("circle", { cx: frameWidth / 2, cy: bezel.top + screenHeight + bezel.bottom / 2, r: homeSize / 2 - 3, fill: DETAIL_FILL })] }), _jsx(HardwareButtons, { chrome: chrome, frameHeight: frameHeight })] }));
+    return (_jsxs("div", { className: "absolute overflow-visible", style: { width: frameWidth, height: frameHeight }, children: [_jsxs("svg", { width: frameWidth, height: frameHeight, viewBox: `0 0 ${frameWidth} ${frameHeight}`, className: "absolute inset-0", "aria-hidden": true, children: [_jsx(ShellWithScreenHole, { frameWidth: frameWidth, frameHeight: frameHeight, frameRadius: frameRadius, screenX: bezel.left, screenY: bezel.top, screenWidth: screenWidth, screenHeight: screenHeight, screenRadius: screenRadius }), _jsx("rect", { x: (frameWidth - speakerWidth) / 2, y: speakerY, width: speakerWidth, height: Math.max(5, bezel.top * 0.055), rx: 3, fill: DETAIL_FILL, stroke: DETAIL_STROKE, strokeWidth: "1" }), _jsx("circle", { cx: cameraCx, cy: bezel.top * 0.45, r: cameraSize / 2, fill: DETAIL_FILL, stroke: DETAIL_STROKE, strokeWidth: "1.2" }), _jsx("circle", { cx: cameraCx, cy: bezel.top * 0.45, r: cameraSize / 5, fill: DETAIL_INNER_FILL }), _jsx("circle", { cx: frameWidth / 2, cy: bezel.top + screenHeight + bezel.bottom / 2, r: homeSize / 2, fill: "none", stroke: DETAIL_STROKE, strokeWidth: "2.5" }), _jsx("circle", { cx: frameWidth / 2, cy: bezel.top + screenHeight + bezel.bottom / 2, r: homeSize / 2 - 3, fill: DETAIL_FILL })] }), _jsx(HardwareButtons, { chrome: chrome, frameHeight: frameHeight })] }));
 }
 function BezelShellFrame({ chrome, screenWidth, screenHeight, showHomeIndicator, }) {
     const { bezel, frameRadius, screenRadius } = chrome;
     const frameWidth = screenWidth + bezel.left + bezel.right;
     const frameHeight = screenHeight + bezel.top + bezel.bottom;
-    return (_jsxs("div", { className: "absolute overflow-visible", style: { width: frameWidth, height: frameHeight }, children: [_jsx("svg", { width: frameWidth, height: frameHeight, viewBox: `0 0 ${frameWidth} ${frameHeight}`, className: "absolute inset-0", "aria-hidden": true, children: _jsx(ShellWithScreenHole, { frameWidth: frameWidth, frameHeight: frameHeight, frameRadius: frameRadius, screenX: bezel.left, screenY: bezel.top, screenWidth: screenWidth, screenHeight: screenHeight, screenRadius: screenRadius }) }), showHomeIndicator ? (_jsx("div", { className: "absolute left-1/2 -translate-x-1/2 rounded-full bg-white/85", style: {
+    return (_jsxs("div", { className: "absolute overflow-visible", style: { width: frameWidth, height: frameHeight }, children: [_jsx("svg", { width: frameWidth, height: frameHeight, viewBox: `0 0 ${frameWidth} ${frameHeight}`, className: "absolute inset-0", "aria-hidden": true, children: _jsx(ShellWithScreenHole, { frameWidth: frameWidth, frameHeight: frameHeight, frameRadius: frameRadius, screenX: bezel.left, screenY: bezel.top, screenWidth: screenWidth, screenHeight: screenHeight, screenRadius: screenRadius }) }), showHomeIndicator ? (_jsx("div", { className: "absolute rounded-full bg-[var(--adaptive-tintOpacity800)]", style: {
+                    left: bezel.left + screenWidth / 2,
                     bottom: bezel.bottom + 8,
                     width: Math.min(148, screenWidth * 0.36),
                     height: 5,
+                    transform: "translateX(-50%)",
                 } })) : null, _jsx(HardwareButtons, { chrome: chrome, frameHeight: frameHeight })] }));
 }
 function NotchFrame({ chrome, screenWidth, screenHeight }) {
