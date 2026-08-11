@@ -27,13 +27,22 @@ describe("devicePreview presets", () => {
     it("keeps device-specific chrome metrics", () => {
         const se = getDevicePreviewPreset("iphone-se");
         const pro = getDevicePreviewPreset("iphone-15-pro");
+        const air = getDevicePreviewPreset("iphone-air");
         const ultra = getDevicePreviewPreset("galaxy-s24-ultra");
 
         expect(se.frame).toBe("home-button");
+        expect(se.statusBar.layout).toBe("classic");
         expect(se.chrome.bezel.top).toBeGreaterThan(pro.chrome.bezel.top);
         expect(se.chrome.screenRadius).toBeLessThan(pro.chrome.screenRadius);
         expect(pro.frame).toBe("island");
+        expect(pro.statusBar.cutout.kind).toBe("island");
+        expect(air.width).toBe(420);
+        expect(air.height).toBe(912);
+        expect(air.frame).toBe("island");
+        expect(air.statusBar.safeAreaTop).toBe(68);
+        expect(air.statusBar.cutout.kind).toBe("island");
         expect(ultra.frame).toBe("punch-flat");
+        expect(ultra.statusBar.layout).toBe("android");
         expect(ultra.chrome.frameRadius).toBeLessThan(pro.chrome.frameRadius);
     });
 

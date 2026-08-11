@@ -309,7 +309,7 @@ html.${HTML_ACTIVE_CLASS} #root .pulse-content {
                             top: screenTop,
                             width: screenWidth,
                             height: screenHeight,
-                        } })), _jsx("div", { className: "absolute z-[2] overflow-hidden", style: {
+                        } })), _jsx("div", { className: "absolute z-[4] overflow-hidden", style: {
                             left: screenLeft,
                             top: screenTop,
                             width: screenWidth,

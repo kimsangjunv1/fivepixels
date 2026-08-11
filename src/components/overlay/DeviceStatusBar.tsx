@@ -1,5 +1,10 @@
 import type { ReactNode } from "react";
-import type { DevicePreviewFrame, DevicePreviewPreset } from "@/constants/devicePreview.js";
+import {
+    getDeviceSafeAreaTop,
+    scaleStatusBarMetrics,
+    type DevicePreviewPreset,
+    type ScaledDeviceCutout,
+} from "@/constants/devicePreview.js";
 
 type StatusBarAppearance = "light" | "dark";
 
@@ -12,77 +17,22 @@ type DeviceStatusBarProps = {
 
 const IOS_TIME = "9:41";
 const ANDROID_TIME = "9:41";
+const BATTERY_PERCENT = 80;
 
 function themeColors(appearance: StatusBarAppearance) {
-    if (appearance === "dark") {
-        return {
-            background: "#000000",
-            foreground: "#ffffff",
-        };
-    }
-
-    return {
-        background: "#F2F2F7",
-        foreground: "#000000",
-    };
-}
-
-function getStatusBarHeight(frame: DevicePreviewFrame, width: number) {
-    switch (frame) {
-        case "home-button":
-            return Math.round(width * (20 / 375));
-        case "notch":
-            return Math.round(width * (47 / 390));
-        case "island":
-            return Math.round(width * (54 / 393));
-        case "punch":
-        case "punch-flat":
-            return Math.round(width * (24 / 360));
-        case "tablet":
-        case "tablet-thin":
-            return Math.round(width * (24 / 768));
-        case "desktop":
-            return 0;
+    switch (appearance) {
+        case "dark":
+            return { background: "#000000", foreground: "#ffffff" };
+        case "light":
         default:
-            return Math.round(width * 0.06);
+            return { background: "#F2F2F7", foreground: "#000000" };
     }
-}
-
-/** Match DeviceFrameArtwork cutout sizes for the center column. */
-function getCutoutSize(frame: DevicePreviewFrame, width: number) {
-    if (frame === "notch") {
-        return {
-            width: Math.round(width * 0.34),
-            height: Math.round(Math.max(28, width * 0.08)),
-            kind: "notch" as const,
-        };
-    }
-
-    if (frame === "island") {
-        return {
-            width: Math.round(Math.min(126, width * 0.32)),
-            height: Math.round(Math.max(34, width * 0.085)),
-            kind: "island" as const,
-        };
-    }
-
-    if (frame === "punch" || frame === "punch-flat") {
-        const hole = frame === "punch-flat" ? 11 : 12;
-        return {
-            width: hole * 2 + 8,
-            height: hole * 2 + 8,
-            kind: "punch" as const,
-            hole,
-        };
-    }
-
-    return null;
 }
 
 function CellularIcon({ color, height }: { color: string; height: number }) {
-    const barW = height * 0.18;
-    const gap = height * 0.1;
-    const ratios = [0.3, 0.5, 0.72, 1];
+    const barW = Math.max(2.2, height * 0.22);
+    const gap = Math.max(1.4, height * 0.12);
+    const ratios = [0.28, 0.48, 0.7, 1];
     const w = barW * 4 + gap * 3;
 
     return (
@@ -90,6 +40,7 @@ function CellularIcon({ color, height }: { color: string; height: number }) {
             width={w}
             height={height}
             viewBox={`0 0 ${w} ${height}`}
+            style={{ overflow: "visible", display: "block" }}
             aria-hidden
         >
             {ratios.map((ratio, index) => {
@@ -111,185 +62,216 @@ function CellularIcon({ color, height }: { color: string; height: number }) {
 }
 
 function WifiIcon({ color, size }: { color: string; size: number }) {
+    const h = size * 0.78;
     return (
         <svg
             width={size}
-            height={size * 0.72}
-            viewBox="0 0 16 11.5"
+            height={h}
+            viewBox="-1.2 -1.2 18.4 14"
+            style={{ overflow: "visible", display: "block" }}
             aria-hidden
         >
             <circle
                 cx="8"
-                cy="10.15"
-                r="1.2"
+                cy="10.35"
+                r="1.25"
                 fill={color}
             />
             <path
-                d="M5.1 7.25c1.6-1.55 4.2-1.55 5.8 0"
+                d="M5.1 7.35c1.6-1.55 4.2-1.55 5.8 0"
                 fill="none"
                 stroke={color}
-                strokeWidth="1.6"
+                strokeWidth="1.7"
                 strokeLinecap="round"
             />
             <path
-                d="M2.75 4.85c2.9-2.85 7.6-2.85 10.5 0"
+                d="M2.75 4.95c2.9-2.85 7.6-2.85 10.5 0"
                 fill="none"
                 stroke={color}
-                strokeWidth="1.6"
+                strokeWidth="1.7"
                 strokeLinecap="round"
             />
             <path
-                d="M0.55 2.45c4.1-4 10.8-4 14.9 0"
+                d="M0.7 2.55c4-3.8 10.6-3.8 14.6 0"
                 fill="none"
                 stroke={color}
-                strokeWidth="1.6"
+                strokeWidth="1.7"
                 strokeLinecap="round"
             />
         </svg>
     );
 }
 
-function BatteryIcon({ color, width }: { color: string; width: number }) {
-    const h = width * 0.48;
-    const bodyW = width * 0.82;
-    const tipW = Math.max(1.5, width * 0.075);
-    const inset = Math.max(1.15, h * 0.18);
+function BatteryIcon({ color, width, height }: { color: string; width: number; height: number }) {
+    const stroke = 1.5;
+    const tipW = 2.2;
+    const tipGap = 1.1;
+    const bodyW = width - tipW - tipGap;
+    const ox = stroke / 2 + 0.25;
+    const oy = stroke / 2 + 0.25;
+    const ow = bodyW - ox * 2;
+    const oh = height - oy * 2;
+    const fillInset = Math.max(ox + 1.1, height * 0.22);
 
     return (
         <svg
             width={width}
-            height={h}
-            viewBox={`0 0 ${width} ${h}`}
+            height={height}
+            viewBox={`0 0 ${width} ${height}`}
+            style={{ overflow: "visible", display: "block" }}
             aria-hidden
         >
             <rect
-                x="0.7"
-                y="0.7"
-                width={bodyW - 1.4}
-                height={h - 1.4}
-                rx={h * 0.26}
+                x={ox}
+                y={oy}
+                width={ow}
+                height={oh}
+                rx={oh * 0.28}
                 fill="none"
                 stroke={color}
-                strokeWidth="1.35"
-                opacity="0.45"
+                strokeWidth={stroke}
+                opacity="0.4"
             />
             <rect
-                x={inset}
-                y={inset}
-                width={bodyW - inset * 2}
-                height={h - inset * 2}
-                rx={h * 0.14}
+                x={fillInset}
+                y={fillInset}
+                width={bodyW - fillInset * 2}
+                height={height - fillInset * 2}
+                rx={(height - fillInset * 2) * 0.2}
                 fill={color}
             />
-            <path
-                d={`M ${bodyW - 0.2} ${h * 0.3}
-                    h ${tipW * 0.35}
-                    a ${tipW / 2} ${tipW / 2} 0 0 1 0 ${h * 0.4}
-                    h ${-tipW * 0.35}
-                    z`}
+            <rect
+                x={bodyW + tipGap * 0.15}
+                y={height * 0.3}
+                width={tipW}
+                height={height * 0.4}
+                rx={tipW / 2}
                 fill={color}
-                opacity="0.45"
+                opacity="0.4"
             />
         </svg>
     );
 }
 
-function TrailingIcons({ color, iconH }: { color: string; iconH: number }) {
+function BatteryWithPercent({ color, width, height }: { color: string; width: number; height: number }) {
+    const stroke = 1.5;
+    const tipW = 2.4;
+    const tipGap = 1.1;
+    const bodyW = width - tipW - tipGap;
+    const ox = stroke / 2 + 0.35;
+    const oy = stroke / 2 + 0.35;
+    const ow = bodyW - ox * 2;
+    const oh = height - oy * 2;
+    const fillInset = ox + 1.15;
+    const fillW = Math.max(2, (bodyW - fillInset * 2) * (BATTERY_PERCENT / 100));
+    const fontSize = Math.max(9, height * 0.62);
+
+    return (
+        <svg
+            width={width}
+            height={height}
+            viewBox={`0 0 ${width} ${height}`}
+            style={{ overflow: "visible", display: "block" }}
+            aria-hidden
+        >
+            <rect
+                x={ox}
+                y={oy}
+                width={ow}
+                height={oh}
+                rx={oh * 0.3}
+                fill="none"
+                stroke={color}
+                strokeWidth={stroke}
+                opacity="0.4"
+            />
+            <rect
+                x={fillInset}
+                y={fillInset}
+                width={fillW}
+                height={height - fillInset * 2}
+                rx={(height - fillInset * 2) * 0.22}
+                fill="#34C759"
+            />
+            <text
+                x={bodyW / 2}
+                y={height / 2 + 0.35}
+                textAnchor="middle"
+                dominantBaseline="middle"
+                fill="#ffffff"
+                fontSize={fontSize}
+                fontWeight="700"
+                fontFamily='-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif'
+            >
+                {BATTERY_PERCENT}
+            </text>
+            <rect
+                x={bodyW + tipGap * 0.15}
+                y={height * 0.3}
+                width={tipW}
+                height={height * 0.4}
+                rx={tipW / 2}
+                fill={color}
+                opacity="0.4"
+            />
+        </svg>
+    );
+}
+
+function TrailingIcons({
+    color,
+    cellularH,
+    wifiSize,
+    batteryW,
+    batteryH,
+    gap,
+    withPercent,
+}: {
+    color: string;
+    cellularH: number;
+    wifiSize: number;
+    batteryW: number;
+    batteryH: number;
+    gap: number;
+    withPercent: boolean;
+}) {
     return (
         <div
-            className="flex items-center justify-center"
-            style={{ gap: Math.max(4, iconH * 0.42), color }}
+            className="flex items-center"
+            style={{ gap, color, overflow: "visible", lineHeight: 0 }}
         >
             <CellularIcon
                 color={color}
-                height={iconH}
+                height={cellularH}
             />
             <WifiIcon
                 color={color}
-                size={iconH * 1.05}
+                size={wifiSize}
             />
-            <BatteryIcon
-                color={color}
-                width={iconH * 2.05}
-            />
+            {withPercent ? (
+                <BatteryWithPercent
+                    color={color}
+                    width={batteryW}
+                    height={batteryH}
+                />
+            ) : (
+                <BatteryIcon
+                    color={color}
+                    width={batteryW}
+                    height={batteryH}
+                />
+            )}
         </div>
     );
 }
 
-function CutoutCenter({ frame, width }: { frame: DevicePreviewFrame; width: number }) {
-    const cutout = getCutoutSize(frame, width);
-    if (!cutout) {
-        return (
-            <div
-                className="h-full shrink-0"
-                style={{ width: Math.max(8, width * 0.08) }}
-            />
-        );
-    }
-
-    if (cutout.kind === "notch") {
-        return (
-            <div
-                className="flex shrink-0 items-end justify-center"
-                style={{ width: cutout.width, height: "100%" }}
-            >
-                <div
-                    style={{
-                        width: cutout.width,
-                        height: cutout.height,
-                        background: "#000000",
-                        borderBottomLeftRadius: cutout.height * 0.45,
-                        borderBottomRightRadius: cutout.height * 0.45,
-                    }}
-                />
-            </div>
-        );
-    }
-
-    if (cutout.kind === "island") {
-        return (
-            <div
-                className="flex shrink-0 items-center justify-center"
-                style={{ width: cutout.width, height: "100%" }}
-            >
-                <div
-                    style={{
-                        width: cutout.width,
-                        height: cutout.height,
-                        borderRadius: 999,
-                        background: "#000000",
-                        boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.16)",
-                    }}
-                />
-            </div>
-        );
-    }
-
-    const hole = cutout.hole ?? 12;
-    return (
-        <div
-            className="flex shrink-0 items-center justify-center"
-            style={{ width: cutout.width, height: "100%" }}
-        >
-            <div
-                style={{
-                    width: hole * 2,
-                    height: hole * 2,
-                    borderRadius: 999,
-                    background: "#000000",
-                    boxShadow: "inset 0 0 0 2px rgba(255,255,255,0.3)",
-                }}
-            />
-        </div>
-    );
-}
-
-function TimeLabel({ color, children }: { color: string; children: string }) {
+function TimeLabel({ color, fontSize, children }: { color: string; fontSize: number; children: string }) {
     return (
         <span
             style={{
                 color,
                 WebkitTextFillColor: color,
+                fontSize,
                 fontVariantNumeric: "tabular-nums",
                 lineHeight: 1,
             }}
@@ -299,26 +281,127 @@ function TimeLabel({ color, children }: { color: string; children: string }) {
     );
 }
 
-function StatusRow({
-    width,
-    frame,
+function CutoutVisual({ cutout }: { cutout: ScaledDeviceCutout }) {
+    switch (cutout.kind) {
+        case "notch":
+            return (
+                <div
+                    className="relative shrink-0"
+                    style={{
+                        width: cutout.width,
+                        height: cutout.height,
+                        background: "#000000",
+                        borderBottomLeftRadius: cutout.height * 0.45,
+                        borderBottomRightRadius: cutout.height * 0.45,
+                    }}
+                >
+                    <div
+                        className="absolute left-1/2 top-[42%] -translate-x-1/2 -translate-y-1/2 rounded-full"
+                        style={{
+                            width: 6.4,
+                            height: 6.4,
+                            background: "#0a0a0a",
+                            boxShadow: "inset 0 0 0 1px #2a2a2a",
+                        }}
+                    />
+                </div>
+            );
+        case "island":
+            return (
+                <div
+                    className="relative shrink-0"
+                    style={{
+                        width: cutout.width,
+                        height: cutout.height,
+                        borderRadius: 999,
+                        background: "#000000",
+                        boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.16)",
+                    }}
+                >
+                    <div
+                        className="absolute top-1/2 -translate-y-1/2 rounded-full"
+                        style={{
+                            right: 12,
+                            width: 8,
+                            height: 8,
+                            background: "#0a0a0a",
+                            boxShadow: "inset 0 0 0 1px #2a2a2a",
+                        }}
+                    />
+                </div>
+            );
+        case "punch":
+            return (
+                <div
+                    className="relative shrink-0 rounded-full"
+                    style={{
+                        width: cutout.radius * 2,
+                        height: cutout.radius * 2,
+                        background: "#000000",
+                        boxShadow: "inset 0 0 0 2px rgba(255,255,255,0.3)",
+                    }}
+                >
+                    <div
+                        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
+                        style={{
+                            width: cutout.radius * 0.7,
+                            height: cutout.radius * 0.7,
+                            background: "#0a0a0a",
+                        }}
+                    />
+                </div>
+            );
+        case "none":
+        default:
+            return null;
+    }
+}
+
+function CenterColumn({ cutout }: { cutout: ScaledDeviceCutout }) {
+    if (cutout.kind === "none") {
+        return (
+            <div
+                className="flex h-full shrink-0 items-center justify-center"
+                style={{ width: cutout.width }}
+            />
+        );
+    }
+
+    return (
+        <div
+            className="flex h-full shrink-0 items-center justify-center"
+            style={{ width: cutout.width }}
+            data-fivepixels-device-cutout={cutout.kind}
+        >
+            <CutoutVisual cutout={cutout} />
+        </div>
+    );
+}
+
+type StatusMetrics = ReturnType<typeof scaleStatusBarMetrics>;
+
+function StatusThreeColumn({
     color,
     fontFamily,
     fontSize,
     fontWeight,
+    padLeft,
+    padRight,
+    cutout,
     left,
     right,
-    showCutout,
+    center,
 }: {
-    width: number;
-    frame: DevicePreviewFrame;
     color: string;
     fontFamily: string;
     fontSize: number;
     fontWeight: number;
+    padLeft: number;
+    padRight: number;
+    cutout: ScaledDeviceCutout;
     left: ReactNode;
     right: ReactNode;
-    showCutout: boolean;
+    center?: ReactNode;
 }) {
     return (
         <div
@@ -332,25 +415,165 @@ function StatusRow({
                 letterSpacing: "-0.02em",
             }}
         >
-            <div className="flex min-w-0 flex-1 items-center justify-center">{left}</div>
-            {showCutout ? (
-                <CutoutCenter
-                    frame={frame}
-                    width={width}
-                />
-            ) : (
-                <div
-                    className="h-full shrink-0"
-                    style={{ width: Math.max(8, width * 0.08) }}
-                />
-            )}
-            <div className="flex min-w-0 flex-1 items-center justify-center">{right}</div>
+            <div
+                className="flex min-w-0 flex-1 items-center justify-center"
+                style={{ paddingLeft: padLeft || undefined, overflow: "visible" }}
+            >
+                {left}
+            </div>
+            {center ?? <CenterColumn cutout={cutout} />}
+            <div
+                className="flex min-w-0 flex-1 items-center justify-center"
+                style={{ paddingRight: padRight || undefined, overflow: "visible" }}
+            >
+                {right}
+            </div>
         </div>
     );
 }
 
+function renderClassic(color: string, metrics: StatusMetrics) {
+    const iosFont = '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif';
+    return (
+        <StatusThreeColumn
+            color={color}
+            fontFamily={iosFont}
+            fontSize={metrics.timeSize}
+            fontWeight={600}
+            padLeft={metrics.padLeft}
+            padRight={metrics.padRight}
+            cutout={metrics.cutout}
+            left={
+                <div
+                    className="flex items-center"
+                    style={{ gap: 4 }}
+                >
+                    <TimeLabel color={color} fontSize={metrics.timeSize}>
+                        SKT
+                    </TimeLabel>
+                    <CellularIcon
+                        color={color}
+                        height={metrics.cellularH}
+                    />
+                </div>
+            }
+            center={
+                <div className="flex shrink-0 items-center justify-center">
+                    <TimeLabel color={color} fontSize={metrics.timeSize}>
+                        {IOS_TIME}
+                    </TimeLabel>
+                </div>
+            }
+            right={
+                <TrailingIcons
+                    color={color}
+                    cellularH={metrics.cellularH}
+                    wifiSize={metrics.wifi}
+                    batteryW={metrics.batteryW}
+                    batteryH={metrics.batteryH}
+                    gap={metrics.iconGap}
+                    withPercent={metrics.batteryPercent}
+                />
+            }
+        />
+    );
+}
+
+function renderFaceId(color: string, metrics: StatusMetrics) {
+    const iosFont = '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif';
+    return (
+        <StatusThreeColumn
+            color={color}
+            fontFamily={iosFont}
+            fontSize={metrics.timeSize}
+            fontWeight={600}
+            padLeft={metrics.padLeft}
+            padRight={metrics.padRight}
+            cutout={metrics.cutout}
+            left={
+                <TimeLabel color={color} fontSize={metrics.timeSize}>
+                    {IOS_TIME}
+                </TimeLabel>
+            }
+            right={
+                <TrailingIcons
+                    color={color}
+                    cellularH={metrics.cellularH}
+                    wifiSize={metrics.wifi}
+                    batteryW={metrics.batteryW}
+                    batteryH={metrics.batteryH}
+                    gap={metrics.iconGap}
+                    withPercent={metrics.batteryPercent}
+                />
+            }
+        />
+    );
+}
+
+function renderAndroid(color: string, metrics: StatusMetrics) {
+    const androidFont = 'Roboto, "Noto Sans", system-ui, sans-serif';
+    return (
+        <StatusThreeColumn
+            color={color}
+            fontFamily={androidFont}
+            fontSize={metrics.timeSize}
+            fontWeight={500}
+            padLeft={metrics.padLeft}
+            padRight={metrics.padRight}
+            cutout={metrics.cutout}
+            left={
+                <TimeLabel color={color} fontSize={metrics.timeSize}>
+                    {ANDROID_TIME}
+                </TimeLabel>
+            }
+            right={
+                <TrailingIcons
+                    color={color}
+                    cellularH={metrics.cellularH}
+                    wifiSize={metrics.wifi}
+                    batteryW={metrics.batteryW}
+                    batteryH={metrics.batteryH}
+                    gap={metrics.iconGap}
+                    withPercent={metrics.batteryPercent}
+                />
+            }
+        />
+    );
+}
+
+function renderTablet(color: string, metrics: StatusMetrics) {
+    const iosFont = '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif';
+    return (
+        <StatusThreeColumn
+            color={color}
+            fontFamily={iosFont}
+            fontSize={metrics.timeSize}
+            fontWeight={600}
+            padLeft={metrics.padLeft}
+            padRight={metrics.padRight}
+            cutout={metrics.cutout}
+            left={
+                <TimeLabel color={color} fontSize={metrics.timeSize}>
+                    {IOS_TIME}
+                </TimeLabel>
+            }
+            right={
+                <TrailingIcons
+                    color={color}
+                    cellularH={metrics.cellularH}
+                    wifiSize={metrics.wifi}
+                    batteryW={metrics.batteryW}
+                    batteryH={metrics.batteryH}
+                    gap={metrics.iconGap}
+                    withPercent={metrics.batteryPercent}
+                />
+            }
+        />
+    );
+}
+
 export function getDeviceStatusBarHeight(preset: DevicePreviewPreset, screenWidth: number, scale = 1) {
-    return Math.max(0, Math.round(getStatusBarHeight(preset.frame, screenWidth) * scale));
+    return Math.max(0, Math.round(getDeviceSafeAreaTop(preset, screenWidth) * scale));
 }
 
 export function DeviceStatusBar({
@@ -359,132 +582,34 @@ export function DeviceStatusBar({
     scale = 1,
     appearance = "light",
 }: DeviceStatusBarProps) {
-    if (preset.frame === "desktop") {
-        return null;
-    }
-
-    const height = getDeviceStatusBarHeight(preset, width, scale);
+    const metrics = scaleStatusBarMetrics(preset, width);
+    const height = Math.max(0, Math.round(metrics.safeAreaTop * scale));
     const { background, foreground } = themeColors(appearance);
-    const iconH = Math.max(10, Math.min(14, width * 0.032));
-    const iosFont = '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif';
-    const androidFont = 'Roboto, "Noto Sans", system-ui, sans-serif';
 
     let content: ReactNode = null;
-
-    if (preset.frame === "home-button") {
-        content = (
-            <div
-                className="flex h-full w-full items-center"
-                style={{
-                    color: foreground,
-                    WebkitTextFillColor: foreground,
-                    fontFamily: iosFont,
-                    fontSize: Math.max(12, width * (12 / 375)),
-                    fontWeight: 600,
-                }}
-            >
-                <div
-                    className="flex min-w-0 flex-1 items-center justify-center"
-                    style={{ gap: 4 }}
-                >
-                    <TimeLabel color={foreground}>SKT</TimeLabel>
-                    <CellularIcon
-                        color={foreground}
-                        height={iconH * 0.9}
-                    />
-                </div>
-                <div className="flex shrink-0 items-center justify-center">
-                    <TimeLabel color={foreground}>{IOS_TIME}</TimeLabel>
-                </div>
-                <div className="flex min-w-0 flex-1 items-center justify-center">
-                    <TrailingIcons
-                        color={foreground}
-                        iconH={iconH}
-                    />
-                </div>
-            </div>
-        );
-    } else if (preset.frame === "notch" || preset.frame === "island") {
-        content = (
-            <StatusRow
-                width={width}
-                frame={preset.frame}
-                color={foreground}
-                fontFamily={iosFont}
-                fontSize={Math.max(15, width * (15 / 393))}
-                fontWeight={600}
-                showCutout
-                left={<TimeLabel color={foreground}>{IOS_TIME}</TimeLabel>}
-                right={
-                    <TrailingIcons
-                        color={foreground}
-                        iconH={Math.max(11, width * (12 / 393))}
-                    />
-                }
-            />
-        );
-    } else if (preset.frame === "punch" || preset.frame === "punch-flat") {
-        content = (
-            <StatusRow
-                width={width}
-                frame={preset.frame}
-                color={foreground}
-                fontFamily={androidFont}
-                fontSize={Math.max(11, width * (12 / 360))}
-                fontWeight={500}
-                showCutout
-                left={<TimeLabel color={foreground}>{ANDROID_TIME}</TimeLabel>}
-                right={
-                    <div
-                        className="flex items-center justify-center"
-                        style={{ gap: 6, color: foreground }}
-                    >
-                        <WifiIcon
-                            color={foreground}
-                            size={iconH}
-                        />
-                        <CellularIcon
-                            color={foreground}
-                            height={iconH * 0.95}
-                        />
-                        <BatteryIcon
-                            color={foreground}
-                            width={iconH * 2}
-                        />
-                    </div>
-                }
-            />
-        );
-    } else if (preset.frame === "tablet" || preset.frame === "tablet-thin") {
-        content = (
-            <StatusRow
-                width={width}
-                frame={preset.frame}
-                color={foreground}
-                fontFamily={iosFont}
-                fontSize={Math.max(12, width * (13 / 768))}
-                fontWeight={600}
-                showCutout={false}
-                left={<TimeLabel color={foreground}>{IOS_TIME}</TimeLabel>}
-                right={
-                    <TrailingIcons
-                        color={foreground}
-                        iconH={Math.max(10, height * 0.4)}
-                    />
-                }
-            />
-        );
-    }
-
-    if (!content) {
-        return null;
+    switch (metrics.layout) {
+        case "classic":
+            content = renderClassic(foreground, metrics);
+            break;
+        case "faceId":
+            content = renderFaceId(foreground, metrics);
+            break;
+        case "android":
+            content = renderAndroid(foreground, metrics);
+            break;
+        case "tablet":
+            content = renderTablet(foreground, metrics);
+            break;
+        case "none":
+        default:
+            return null;
     }
 
     return (
         <div
             className="pointer-events-none absolute left-0 right-0 top-0 overflow-hidden"
             style={{ height, background, color: foreground, WebkitTextFillColor: foreground }}
-            data-fivepixels-device-status-bar={preset.frame}
+            data-fivepixels-device-status-bar={metrics.layout}
             aria-hidden
         >
             {content}

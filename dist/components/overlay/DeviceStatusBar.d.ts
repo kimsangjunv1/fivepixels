@@ -1,4 +1,4 @@
-import type { DevicePreviewPreset } from "../../constants/devicePreview.js";
+import { type DevicePreviewPreset } from "../../constants/devicePreview.js";
 type StatusBarAppearance = "light" | "dark";
 type DeviceStatusBarProps = {
     preset: DevicePreviewPreset;

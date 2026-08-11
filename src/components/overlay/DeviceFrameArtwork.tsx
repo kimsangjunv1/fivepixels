@@ -185,13 +185,20 @@ function HomeButtonFrame({ chrome, screenWidth, screenHeight }: DeviceFrameArtwo
     );
 }
 
-function NotchFrame({ chrome, screenWidth, screenHeight }: DeviceFrameArtworkProps) {
+function BezelShellFrame({
+    chrome,
+    screenWidth,
+    screenHeight,
+    showHomeIndicator,
+}: {
+    chrome: DeviceChromeSpec;
+    screenWidth: number;
+    screenHeight: number;
+    showHomeIndicator?: boolean;
+}) {
     const { bezel, frameRadius, screenRadius } = chrome;
     const frameWidth = screenWidth + bezel.left + bezel.right;
     const frameHeight = screenHeight + bezel.top + bezel.bottom;
-    const notchWidth = Math.round(screenWidth * 0.34);
-    const notchHeight = Math.round(Math.max(28, screenWidth * 0.08));
-    const notchX = bezel.left + (screenWidth - notchWidth) / 2;
 
     return (
         <div
@@ -215,156 +222,57 @@ function NotchFrame({ chrome, screenWidth, screenHeight }: DeviceFrameArtworkPro
                     screenHeight={screenHeight}
                     screenRadius={screenRadius}
                 />
-                <path
-                    d={`
-                      M ${notchX} ${bezel.top}
-                      h ${notchWidth}
-                      v ${notchHeight * 0.55}
-                      q 0 ${notchHeight * 0.45} ${-notchHeight * 0.45} ${notchHeight * 0.45}
-                      h ${-(notchWidth - notchHeight * 0.9)}
-                      q ${-notchHeight * 0.45} 0 ${-notchHeight * 0.45} ${-notchHeight * 0.45}
-                      Z
-                    `}
-                    fill={FRAME_FILL}
-                />
-                <circle
-                    cx={bezel.left + screenWidth / 2}
-                    cy={bezel.top + notchHeight * 0.42}
-                    r={3.2}
-                    fill={DETAIL_FILL}
-                    stroke={DETAIL_STROKE}
-                    strokeWidth="1"
-                />
             </svg>
-            <div
-                className="absolute left-1/2 -translate-x-1/2 rounded-full bg-white/80"
-                style={{
-                    bottom: bezel.bottom + 8,
-                    width: Math.min(140, screenWidth * 0.34),
-                    height: 5,
-                }}
-            />
+            {showHomeIndicator ? (
+                <div
+                    className="absolute left-1/2 -translate-x-1/2 rounded-full bg-white/85"
+                    style={{
+                        bottom: bezel.bottom + 8,
+                        width: Math.min(148, screenWidth * 0.36),
+                        height: 5,
+                    }}
+                />
+            ) : null}
             <HardwareButtons
                 chrome={chrome}
                 frameHeight={frameHeight}
             />
         </div>
+    );
+}
+
+function NotchFrame({ chrome, screenWidth, screenHeight }: DeviceFrameArtworkProps) {
+    // Notch / camera cutout lives in DeviceStatusBar center column (same flex row).
+    return (
+        <BezelShellFrame
+            chrome={chrome}
+            screenWidth={screenWidth}
+            screenHeight={screenHeight}
+            showHomeIndicator
+        />
     );
 }
 
 function IslandFrame({ chrome, screenWidth, screenHeight }: DeviceFrameArtworkProps) {
-    const { bezel, frameRadius, screenRadius } = chrome;
-    const frameWidth = screenWidth + bezel.left + bezel.right;
-    const frameHeight = screenHeight + bezel.top + bezel.bottom;
-    const islandWidth = Math.round(Math.min(126, screenWidth * 0.32));
-    const islandHeight = Math.round(Math.max(34, screenWidth * 0.085));
-
+    // Dynamic Island lives in DeviceStatusBar center column (same flex row).
     return (
-        <div
-            className="absolute overflow-visible"
-            style={{ width: frameWidth, height: frameHeight }}
-        >
-            <svg
-                width={frameWidth}
-                height={frameHeight}
-                viewBox={`0 0 ${frameWidth} ${frameHeight}`}
-                className="absolute inset-0"
-                aria-hidden
-            >
-                <ShellWithScreenHole
-                    frameWidth={frameWidth}
-                    frameHeight={frameHeight}
-                    frameRadius={frameRadius}
-                    screenX={bezel.left}
-                    screenY={bezel.top}
-                    screenWidth={screenWidth}
-                    screenHeight={screenHeight}
-                    screenRadius={screenRadius}
-                />
-                <rect
-                    x={bezel.left + (screenWidth - islandWidth) / 2}
-                    y={bezel.top + 10}
-                    width={islandWidth}
-                    height={islandHeight}
-                    rx={islandHeight / 2}
-                    ry={islandHeight / 2}
-                    fill={FRAME_FILL}
-                    stroke="rgba(255,255,255,0.16)"
-                    strokeWidth="1"
-                />
-                <circle
-                    cx={bezel.left + (screenWidth + islandWidth) / 2 - 16}
-                    cy={bezel.top + 10 + islandHeight / 2}
-                    r={4}
-                    fill={DETAIL_FILL}
-                    stroke={DETAIL_STROKE}
-                    strokeWidth="1"
-                />
-            </svg>
-            <div
-                className="absolute left-1/2 -translate-x-1/2 rounded-full bg-white/85"
-                style={{
-                    bottom: bezel.bottom + 8,
-                    width: Math.min(148, screenWidth * 0.36),
-                    height: 5,
-                }}
-            />
-            <HardwareButtons
-                chrome={chrome}
-                frameHeight={frameHeight}
-            />
-        </div>
+        <BezelShellFrame
+            chrome={chrome}
+            screenWidth={screenWidth}
+            screenHeight={screenHeight}
+            showHomeIndicator
+        />
     );
 }
 
-function PunchFrame({ chrome, screenWidth, screenHeight, preset }: DeviceFrameArtworkProps) {
-    const { bezel, frameRadius, screenRadius } = chrome;
-    const frameWidth = screenWidth + bezel.left + bezel.right;
-    const frameHeight = screenHeight + bezel.top + bezel.bottom;
-    const hole = preset.frame === "punch-flat" ? 11 : 12;
-
+function PunchFrame({ chrome, screenWidth, screenHeight }: DeviceFrameArtworkProps) {
+    // Punch-hole camera lives in DeviceStatusBar center column (same flex row).
     return (
-        <div
-            className="absolute overflow-visible"
-            style={{ width: frameWidth, height: frameHeight }}
-        >
-            <svg
-                width={frameWidth}
-                height={frameHeight}
-                viewBox={`0 0 ${frameWidth} ${frameHeight}`}
-                className="absolute inset-0"
-                aria-hidden
-            >
-                <ShellWithScreenHole
-                    frameWidth={frameWidth}
-                    frameHeight={frameHeight}
-                    frameRadius={frameRadius}
-                    screenX={bezel.left}
-                    screenY={bezel.top}
-                    screenWidth={screenWidth}
-                    screenHeight={screenHeight}
-                    screenRadius={screenRadius}
-                />
-                <circle
-                    cx={bezel.left + screenWidth / 2}
-                    cy={bezel.top + 16}
-                    r={hole}
-                    fill={FRAME_FILL}
-                    stroke="rgba(255,255,255,0.3)"
-                    strokeWidth="2"
-                />
-                <circle
-                    cx={bezel.left + screenWidth / 2}
-                    cy={bezel.top + 16}
-                    r={hole * 0.35}
-                    fill={DETAIL_FILL}
-                />
-            </svg>
-            <HardwareButtons
-                chrome={chrome}
-                frameHeight={frameHeight}
-            />
-        </div>
+        <BezelShellFrame
+            chrome={chrome}
+            screenWidth={screenWidth}
+            screenHeight={screenHeight}
+        />
     );
 }
 

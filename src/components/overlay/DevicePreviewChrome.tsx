@@ -509,9 +509,9 @@ html.${HTML_ACTIVE_CLASS} #root .pulse-content {
                     />
                 )}
 
-                {/* Below frame cutouts (notch/island) so hardware chrome stays on top */}
+                {/* Status bar owns notch / island / punch in its center flex section */}
                 <div
-                    className="absolute z-[2] overflow-hidden"
+                    className="absolute z-[4] overflow-hidden"
                     style={{
                         left: screenLeft,
                         top: screenTop,

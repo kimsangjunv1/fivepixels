@@ -1,11 +1,90 @@
+function statusBarClassic(overrides = {}) {
+    return {
+        layout: "classic",
+        safeAreaTop: 20,
+        padLeft: 0,
+        padRight: 0,
+        timeSize: 16,
+        cellularH: 12,
+        wifi: 15,
+        batteryW: 27,
+        batteryH: 12,
+        iconGap: 6,
+        batteryPercent: false,
+        cutout: { kind: "none" },
+        ...overrides,
+    };
+}
+function statusBarFaceId(overrides) {
+    return {
+        layout: "faceId",
+        padLeft: 0,
+        padRight: 0,
+        timeSize: 16,
+        cellularH: 13,
+        wifi: 17,
+        batteryW: 34,
+        batteryH: 15,
+        iconGap: 7,
+        batteryPercent: true,
+        ...overrides,
+    };
+}
+function statusBarAndroid(overrides) {
+    return {
+        layout: "android",
+        safeAreaTop: 28,
+        padLeft: 14,
+        padRight: 12,
+        timeSize: 14,
+        cellularH: 12,
+        wifi: 16,
+        batteryW: 28,
+        batteryH: 12,
+        iconGap: 6,
+        batteryPercent: false,
+        ...overrides,
+    };
+}
+function statusBarTablet(overrides = {}) {
+    return {
+        layout: "tablet",
+        safeAreaTop: 24,
+        padLeft: 18,
+        padRight: 16,
+        timeSize: 14,
+        cellularH: 12,
+        wifi: 16,
+        batteryW: 30,
+        batteryH: 12,
+        iconGap: 7,
+        batteryPercent: true,
+        cutout: { kind: "none" },
+        ...overrides,
+    };
+}
+function statusBarNone() {
+    return {
+        layout: "none",
+        safeAreaTop: 0,
+        padLeft: 0,
+        padRight: 0,
+        timeSize: 0,
+        cellularH: 0,
+        wifi: 0,
+        batteryW: 0,
+        batteryH: 0,
+        iconGap: 0,
+        batteryPercent: false,
+        cutout: { kind: "none" },
+    };
+}
 /**
  * Chrome metrics are derived from public body/display mm ratios,
  * scaled to each device's CSS logical width so bezels/radii stay proportional.
  *
- * iPhone SE 3: 67.3×138.4mm body, ~4.7" 16:9 panel → thick top/bottom, sharp screen.
- * iPhone 14 / 15 Pro: near-bezel-less Super Retina with continuous corners.
- * Galaxy S24: centered punch-hole; Ultra uses flatter corners.
- * Pixel 8: centered punch-hole with slightly thicker chin than S24.
+ * Status bar / cutout values live on each preset so DeviceStatusBar and
+ * DeviceFrameArtwork share one source of truth.
  */
 export const DEVICE_PREVIEW_PRESETS = [
     {
@@ -15,6 +94,7 @@ export const DEVICE_PREVIEW_PRESETS = [
         width: 375,
         height: 667,
         frame: "home-button",
+        statusBar: statusBarClassic(),
         chrome: {
             frameRadius: 68,
             screenRadius: 2,
@@ -36,6 +116,10 @@ export const DEVICE_PREVIEW_PRESETS = [
         width: 390,
         height: 844,
         frame: "notch",
+        statusBar: statusBarFaceId({
+            safeAreaTop: 47,
+            cutout: { kind: "notch", width: 133, height: 31, top: 0 },
+        }),
         chrome: {
             frameRadius: 54,
             screenRadius: 47,
@@ -57,6 +141,10 @@ export const DEVICE_PREVIEW_PRESETS = [
         width: 393,
         height: 852,
         frame: "island",
+        statusBar: statusBarFaceId({
+            safeAreaTop: 59,
+            cutout: { kind: "island", width: 126, height: 34, top: 10 },
+        }),
         chrome: {
             frameRadius: 58,
             screenRadius: 55,
@@ -78,6 +166,10 @@ export const DEVICE_PREVIEW_PRESETS = [
         width: 430,
         height: 932,
         frame: "island",
+        statusBar: statusBarFaceId({
+            safeAreaTop: 59,
+            cutout: { kind: "island", width: 126, height: 37, top: 10 },
+        }),
         chrome: {
             frameRadius: 62,
             screenRadius: 58,
@@ -93,12 +185,38 @@ export const DEVICE_PREVIEW_PRESETS = [
         },
     },
     {
+        id: "iphone-air",
+        brand: "apple",
+        label: "iPhone Air",
+        width: 420,
+        height: 912,
+        frame: "island",
+        statusBar: statusBarFaceId({
+            safeAreaTop: 68,
+            cutout: { kind: "island", width: 126, height: 36, top: 10 },
+        }),
+        chrome: {
+            frameRadius: 60,
+            screenRadius: 56,
+            bezel: { top: 10, right: 10, bottom: 10, left: 10 },
+            buttons: {
+                left: [
+                    { topRatio: 0.15, height: 30 },
+                    { topRatio: 0.22, height: 54 },
+                    { topRatio: 0.3, height: 54 },
+                ],
+                right: [{ topRatio: 0.23, height: 74 }],
+            },
+        },
+    },
+    {
         id: "ipad-mini",
         brand: "apple",
         label: "iPad mini",
         width: 768,
         height: 1024,
         frame: "tablet",
+        statusBar: statusBarTablet(),
         chrome: {
             frameRadius: 42,
             screenRadius: 18,
@@ -112,6 +230,7 @@ export const DEVICE_PREVIEW_PRESETS = [
         width: 834,
         height: 1194,
         frame: "tablet-thin",
+        statusBar: statusBarTablet({ safeAreaTop: 24 }),
         chrome: {
             frameRadius: 36,
             screenRadius: 18,
@@ -125,6 +244,9 @@ export const DEVICE_PREVIEW_PRESETS = [
         width: 360,
         height: 780,
         frame: "punch",
+        statusBar: statusBarAndroid({
+            cutout: { kind: "punch", radius: 12, top: 16 },
+        }),
         chrome: {
             frameRadius: 44,
             screenRadius: 38,
@@ -145,6 +267,9 @@ export const DEVICE_PREVIEW_PRESETS = [
         width: 384,
         height: 824,
         frame: "punch-flat",
+        statusBar: statusBarAndroid({
+            cutout: { kind: "punch", radius: 11, top: 16 },
+        }),
         chrome: {
             frameRadius: 18,
             screenRadius: 12,
@@ -165,6 +290,7 @@ export const DEVICE_PREVIEW_PRESETS = [
         width: 800,
         height: 1280,
         frame: "tablet",
+        statusBar: statusBarTablet({ batteryPercent: false }),
         chrome: {
             frameRadius: 28,
             screenRadius: 16,
@@ -178,6 +304,9 @@ export const DEVICE_PREVIEW_PRESETS = [
         width: 412,
         height: 915,
         frame: "punch",
+        statusBar: statusBarAndroid({
+            cutout: { kind: "punch", radius: 12, top: 16 },
+        }),
         chrome: {
             frameRadius: 40,
             screenRadius: 34,
@@ -199,6 +328,9 @@ export const DEVICE_PREVIEW_PRESETS = [
         width: 448,
         height: 998,
         frame: "punch",
+        statusBar: statusBarAndroid({
+            cutout: { kind: "punch", radius: 12, top: 16 },
+        }),
         chrome: {
             frameRadius: 42,
             screenRadius: 36,
@@ -220,6 +352,7 @@ export const DEVICE_PREVIEW_PRESETS = [
         width: 1280,
         height: 720,
         frame: "desktop",
+        statusBar: statusBarNone(),
         chrome: {
             frameRadius: 14,
             screenRadius: 4,
@@ -233,6 +366,7 @@ export const DEVICE_PREVIEW_PRESETS = [
         width: 1440,
         height: 900,
         frame: "desktop",
+        statusBar: statusBarNone(),
         chrome: {
             frameRadius: 14,
             screenRadius: 4,
@@ -246,6 +380,7 @@ export const DEVICE_PREVIEW_PRESETS = [
         width: 1920,
         height: 1080,
         frame: "desktop",
+        statusBar: statusBarNone(),
         chrome: {
             frameRadius: 14,
             screenRadius: 4,
@@ -294,5 +429,71 @@ export function scaleDeviceChrome(preset, scale) {
 }
 export function getEmptyBezel() {
     return { top: 0, right: 0, bottom: 0, left: 0 };
+}
+/** Scale preset cutout metrics to the current on-screen width. */
+export function getScaledDeviceCutout(preset, screenWidth) {
+    const cutout = preset.statusBar.cutout;
+    const s = preset.width > 0 ? screenWidth / preset.width : 1;
+    switch (cutout.kind) {
+        case "notch":
+            return {
+                kind: "notch",
+                width: Math.round(cutout.width * s),
+                height: Math.round(cutout.height * s),
+                top: Math.round(cutout.top * s),
+            };
+        case "island":
+            return {
+                kind: "island",
+                width: Math.round(cutout.width * s),
+                height: Math.round(cutout.height * s),
+                top: Math.round(cutout.top * s),
+            };
+        case "punch": {
+            const radius = Math.round(cutout.radius * s);
+            return {
+                kind: "punch",
+                width: radius * 2 + 8,
+                height: radius * 2 + 8,
+                top: Math.round(cutout.top * s),
+                radius,
+            };
+        }
+        case "none":
+        default:
+            return {
+                kind: "none",
+                width: Math.max(8, Math.round(screenWidth * 0.08)),
+                height: 0,
+                top: 0,
+            };
+    }
+}
+export function getDeviceSafeAreaTop(preset, screenWidth) {
+    const base = preset.statusBar.safeAreaTop;
+    if (preset.width <= 0) {
+        return base;
+    }
+    return Math.max(0, Math.round(base * (screenWidth / preset.width)));
+}
+export function scaleStatusBarMetrics(preset, screenWidth) {
+    const s = preset.width > 0 ? screenWidth / preset.width : 1;
+    const mild = Math.min(1.12, Math.max(0.95, s));
+    const bar = preset.statusBar;
+    return {
+        safeAreaTop: getDeviceSafeAreaTop(preset, screenWidth),
+        padLeft: bar.padLeft * mild,
+        padRight: bar.padRight * mild,
+        // Keep exact pt for clock so Face ID / classic stay at 16px.
+        timeSize: bar.layout === "faceId" || bar.layout === "classic" ? bar.timeSize : bar.timeSize * mild,
+        cellularH: bar.cellularH * mild,
+        wifi: bar.wifi * mild,
+        batteryW: bar.batteryW * mild,
+        batteryH: bar.batteryH * mild,
+        iconGap: bar.iconGap * mild,
+        batteryPercent: bar.batteryPercent,
+        layout: bar.layout,
+        cutout: getScaledDeviceCutout(preset, screenWidth),
+    };
 }
 //# sourceMappingURL=devicePreview.js.map
