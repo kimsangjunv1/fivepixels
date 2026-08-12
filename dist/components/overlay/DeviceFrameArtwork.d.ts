@@ -1,4 +1,4 @@
-import type { DeviceChromeSpec, DevicePreviewPreset } from "../../constants/devicePreview.js";
+import { type DeviceChromeSpec, type DevicePreviewPreset } from "../../constants/devicePreview.js";
 type DeviceFrameArtworkProps = {
     preset: DevicePreviewPreset;
     chrome: DeviceChromeSpec;

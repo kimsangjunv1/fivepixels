@@ -52,6 +52,7 @@ export type ReportMessages = {
         viewOptionsAriaLabel: string;
         viewSelectableElements: string;
         viewFeedbacks: string;
+        devicePreview: string;
         refresh: string;
         stopAutoRefresh: string;
         autoRefreshIntervalAriaLabel: string;
@@ -444,9 +445,6 @@ export type ReportMessages = {
         markerTargetsOff: string;
         markerTargetsOn: string;
         markerTargetsAriaLabel: string;
-        sectionDevicePreview: string;
-        devicePreviewUiOpenLabel: string;
-        devicePreviewUiOpenAriaLabel: string;
         devicePreviewDeviceLabel: string;
         devicePreviewDeviceAriaLabel: string;
         devicePreviewScaleLabel: string;
@@ -468,8 +466,6 @@ export type ReportMessages = {
         devicePreviewBrandSamsung: string;
         devicePreviewBrandGoogle: string;
         devicePreviewBrandDesktop: string;
-        devicePreviewEnabledSummary: string;
-        devicePreviewDisabledSummary: string;
         devicePreviewScrollLabel: (scrollY: number) => string;
         devicePreviewQrTitle: string;
         devicePreviewQrAriaLabel: string;

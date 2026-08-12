@@ -1,4 +1,4 @@
-import type { DeviceChromeSpec, DevicePreviewPreset } from "@/constants/devicePreview.js";
+import { DEVICE_CHROME_COLOR, type DeviceChromeSpec, type DevicePreviewPreset } from "@/constants/devicePreview.js";
 
 type DeviceFrameArtworkProps = {
     preset: DevicePreviewPreset;
@@ -7,12 +7,11 @@ type DeviceFrameArtworkProps = {
     screenHeight: number;
 };
 
-const FRAME_FILL = "var(--adaptive-neutralTintOpacity900)";
-const FRAME_STROKE = "var(--adaptive-tintOpacity200)";
+const FRAME_FILL = DEVICE_CHROME_COLOR;
+const FRAME_STROKE = DEVICE_CHROME_COLOR;
 const DETAIL_FILL = "var(--adaptive-tintOpacity300)";
 const DETAIL_STROKE = "var(--adaptive-tintOpacity200)";
-const BUTTON_FILL = "var(--adaptive-neutralTintOpacity900)";
-const DETAIL_INNER_FILL = "var(--adaptive-tintOpacity400)";
+const BUTTON_FILL = DEVICE_CHROME_COLOR;
 
 function roundedRectPath(x: number, y: number, w: number, h: number, r: number) {
     const radius = Math.max(0, Math.min(r, w / 2, h / 2));
@@ -109,7 +108,7 @@ function HomeButtonFrame({ chrome, screenWidth, screenHeight }: DeviceFrameArtwo
     const { bezel, frameRadius, screenRadius } = chrome;
     const frameWidth = screenWidth + bezel.left + bezel.right;
     const frameHeight = screenHeight + bezel.top + bezel.bottom;
-    const homeSize = Math.round(Math.min(bezel.bottom * 0.52, frameWidth * 0.145));
+    const homeSize = Math.round(Math.min(bezel.bottom * 0.58, frameWidth * 0.155));
     const speakerWidth = Math.round(frameWidth * 0.18);
     const cameraSize = Math.round(frameWidth * 0.028);
     const speakerY = bezel.top * 0.42;
@@ -152,15 +151,13 @@ function HomeButtonFrame({ chrome, screenWidth, screenHeight }: DeviceFrameArtwo
                     cx={cameraCx}
                     cy={bezel.top * 0.45}
                     r={cameraSize / 2}
-                    fill={DETAIL_FILL}
-                    stroke={DETAIL_STROKE}
-                    strokeWidth="1.2"
+                    fill={DEVICE_CHROME_COLOR}
                 />
                 <circle
                     cx={cameraCx}
                     cy={bezel.top * 0.45}
                     r={cameraSize / 5}
-                    fill={DETAIL_INNER_FILL}
+                    fill={DEVICE_CHROME_COLOR}
                 />
 
                 <circle
@@ -310,9 +307,7 @@ function TabletFrame({ chrome, screenWidth, screenHeight, preset }: DeviceFrameA
                     cx={frameWidth / 2}
                     cy={bezel.top / 2}
                     r={preset.frame === "tablet-thin" ? 3.5 : 4.5}
-                    fill={DETAIL_FILL}
-                    stroke={DETAIL_STROKE}
-                    strokeWidth="1"
+                    fill={DEVICE_CHROME_COLOR}
                 />
             </svg>
         </div>
@@ -350,7 +345,7 @@ function DesktopFrame({ chrome, screenWidth, screenHeight }: DeviceFrameArtworkP
                     cx={frameWidth / 2}
                     cy={bezel.top / 2}
                     r={4}
-                    fill={DETAIL_FILL}
+                    fill={DEVICE_CHROME_COLOR}
                 />
                 <rect
                     x={frameWidth * 0.28}

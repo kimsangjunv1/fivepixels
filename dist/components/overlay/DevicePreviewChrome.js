@@ -1,17 +1,57 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useReportPreferences } from "../../providers/reportContext.js";
 import { DEVICE_PREVIEW_BRAND_ORDER, DEVICE_PREVIEW_SCALE_OPTIONS, formatDevicePreviewScale, getDevicePreviewLayoutSize, getDevicePreviewPreset, getDevicePreviewPresetsByBrand, getEmptyBezel, scaleDeviceChrome, } from "../../constants/devicePreview.js";
 import { PanelOptionSwitch } from "../../components/panel/PanelOptionSwitch.js";
+import { FloatingWindow } from "../../components/ui/FloatingWindow.js";
 import { DeviceFrameArtwork } from "./DeviceFrameArtwork.js";
 import { DevicePreviewQrCard } from "./DevicePreviewQrCard.js";
 import { DeviceStatusBar, getDeviceStatusBarHeight } from "./DeviceStatusBar.js";
+const DEVICE_PREVIEW_BAR_STORAGE_KEY = "fivepixels:device-preview-bar-position:v1";
+const FLOATING_BAR_RESERVE = 88;
+function readDevicePreviewBarPosition() {
+    const fallback = getDefaultDevicePreviewBarPosition();
+    if (typeof window === "undefined") {
+        return fallback;
+    }
+    try {
+        const raw = window.localStorage.getItem(DEVICE_PREVIEW_BAR_STORAGE_KEY);
+        if (!raw) {
+            return fallback;
+        }
+        const parsed = JSON.parse(raw);
+        if (typeof parsed.left === "number" && Number.isFinite(parsed.left) && typeof parsed.top === "number" && Number.isFinite(parsed.top)) {
+            return { left: parsed.left, top: parsed.top };
+        }
+    }
+    catch {
+        // Ignore storage failures.
+    }
+    return fallback;
+}
+function getDefaultDevicePreviewBarPosition() {
+    if (typeof window === "undefined") {
+        return { left: 80, top: 640 };
+    }
+    return {
+        left: Math.max(16, window.innerWidth - 240),
+        top: Math.max(16, window.innerHeight - 420),
+    };
+}
+function persistDevicePreviewBarPosition(position) {
+    try {
+        window.localStorage.setItem(DEVICE_PREVIEW_BAR_STORAGE_KEY, JSON.stringify(position));
+    }
+    catch {
+        // Ignore storage failures.
+    }
+}
 const HOST_STYLE_ID = "fivepixels-device-preview-host-style";
 const HTML_ACTIVE_CLASS = "fivepixels-device-preview-active";
 const RULER_WIDTH = 44;
+const RULER_GAP = 6;
 const RULER_MAJOR_STEP = 100;
 const RULER_MINOR_STEP = 50;
-const FLOATING_BAR_RESERVE = 88;
 const LABEL_RESERVE = 34;
 const DEVICE_PREVIEW_CANVAS_GRID = 16;
 /** Host document (html/body) is outside ThemeScope — resolve token hex by appearance. */
@@ -142,28 +182,36 @@ function clearRootInlineStyles(root) {
     }
 }
 function DevicePreviewFloatingBar() {
-    const { messages, devicePreviewDeviceId, setDevicePreviewDeviceId, devicePreviewScale, setDevicePreviewScale, devicePreviewImageEnabled, setDevicePreviewImageEnabled, devicePreviewFitToViewport, setDevicePreviewFitToViewport, devicePreviewStatusBarEnabled, setDevicePreviewStatusBarEnabled, } = useReportPreferences();
-    const selectClassName = "h-[30px] min-w-[148px] rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] px-[8px] text-[11px] font-semibold text-[var(--adaptive-black900)] outline-none focus:border-[var(--adaptive-blue500)]";
-    return (_jsxs("div", { "data-fivepixels-interactive": "", className: "pointer-events-auto fixed z-[1000002] flex items-center gap-[10px] rounded-[14px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)]/95 px-[12px] py-[10px] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[8px]", style: {
-            bottom: 16,
-            left: "50%",
-            transform: "translateX(-50%)",
-        }, role: "toolbar", "aria-label": messages.settings.devicePreviewFloatingAriaLabel, children: [_jsxs("label", { className: "flex flex-col gap-[3px]", children: [_jsx("span", { className: "text-[9px] font-semibold text-[var(--adaptive-black500)]", children: messages.settings.devicePreviewDeviceLabel }), _jsx("select", { value: devicePreviewDeviceId, onChange: (event) => setDevicePreviewDeviceId(event.target.value), "aria-label": messages.settings.devicePreviewDeviceAriaLabel, className: selectClassName, children: DEVICE_PREVIEW_BRAND_ORDER.map((brand) => (_jsx("optgroup", { label: brand === "apple"
-                                ? messages.settings.devicePreviewBrandApple
-                                : brand === "samsung"
-                                    ? messages.settings.devicePreviewBrandSamsung
-                                    : brand === "google"
-                                        ? messages.settings.devicePreviewBrandGoogle
-                                        : messages.settings.devicePreviewBrandDesktop, children: getDevicePreviewPresetsByBrand(brand).map((option) => (_jsxs("option", { value: option.id, children: [option.label, " (", option.width, "\u00D7", option.height, ")"] }, option.id))) }, brand))) })] }), _jsxs("label", { className: "flex flex-col gap-[3px]", children: [_jsx("span", { className: "text-[9px] font-semibold text-[var(--adaptive-black500)]", children: messages.settings.devicePreviewScaleLabel }), _jsx("select", { value: String(devicePreviewScale), onChange: (event) => setDevicePreviewScale(Number(event.target.value)), "aria-label": messages.settings.devicePreviewScaleAriaLabel, className: `${selectClassName} min-w-[88px]`, children: DEVICE_PREVIEW_SCALE_OPTIONS.map((scale) => (_jsx("option", { value: String(scale), children: formatDevicePreviewScale(scale) }, scale))) })] }), _jsxs("div", { className: "flex min-w-[132px] flex-col gap-[3px]", children: [_jsx("span", { className: "text-[9px] font-semibold text-[var(--adaptive-black500)]", children: messages.settings.devicePreviewImageLabel }), _jsx(PanelOptionSwitch, { options: [
-                            { value: "off", label: messages.settings.devicePreviewImageOff },
-                            { value: "on", label: messages.settings.devicePreviewImageOn },
-                        ], value: devicePreviewImageEnabled ? "on" : "off", onChange: (value) => setDevicePreviewImageEnabled(value === "on"), ariaLabel: messages.settings.devicePreviewImageAriaLabel })] }), _jsxs("div", { className: "flex min-w-[132px] flex-col gap-[3px]", children: [_jsx("span", { className: "text-[9px] font-semibold text-[var(--adaptive-black500)]", children: messages.settings.devicePreviewFitViewportLabel }), _jsx(PanelOptionSwitch, { options: [
-                            { value: "off", label: messages.settings.devicePreviewFitViewportOff },
-                            { value: "on", label: messages.settings.devicePreviewFitViewportOn },
-                        ], value: devicePreviewFitToViewport ? "on" : "off", onChange: (value) => setDevicePreviewFitToViewport(value === "on"), ariaLabel: messages.settings.devicePreviewFitViewportAriaLabel })] }), _jsxs("div", { className: "flex min-w-[132px] flex-col gap-[3px]", children: [_jsx("span", { className: "text-[9px] font-semibold text-[var(--adaptive-black500)]", children: messages.settings.devicePreviewStatusBarLabel }), _jsx(PanelOptionSwitch, { options: [
-                            { value: "off", label: messages.settings.devicePreviewStatusBarOff },
-                            { value: "on", label: messages.settings.devicePreviewStatusBarOn },
-                        ], value: devicePreviewStatusBarEnabled ? "on" : "off", onChange: (value) => setDevicePreviewStatusBarEnabled(value === "on"), ariaLabel: messages.settings.devicePreviewStatusBarAriaLabel })] })] }));
+    const { messages, devicePreviewDeviceId, setDevicePreviewDeviceId, devicePreviewScale, setDevicePreviewScale, devicePreviewImageEnabled, setDevicePreviewImageEnabled, devicePreviewFitToViewport, setDevicePreviewFitToViewport, devicePreviewStatusBarEnabled, setDevicePreviewStatusBarEnabled, setDevicePreviewUiOpen, } = useReportPreferences();
+    const [position, setPosition] = useState(() => readDevicePreviewBarPosition());
+    const [mode, setMode] = useState("normal");
+    const selectClassName = "h-[30px] w-full rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] px-[8px] text-[11px] font-semibold text-[var(--adaptive-black900)] outline-none focus:border-[var(--adaptive-blue500)]";
+    const handlePositionChange = useCallback((next) => {
+        setPosition(next);
+        persistDevicePreviewBarPosition(next);
+    }, []);
+    return (_jsx(FloatingWindow, { dataChrome: "device-preview-toolbar", role: "toolbar", ariaLabel: messages.settings.devicePreviewFloatingAriaLabel, position: position, onPositionChange: handlePositionChange, mode: mode, onModeChange: setMode, width: 220, minWidth: 200, minHeight: 160, resizable: true, resizeAriaLabel: messages.marker.resizeAriaLabel, contentClassName: "px-[12px] pb-[12px]", controls: {
+            onClose: () => setDevicePreviewUiOpen(false),
+            closeAriaLabel: messages.marker.windowCloseAriaLabel,
+            minimizeAriaLabel: messages.marker.windowMinimizeAriaLabel,
+            maximizeAriaLabel: messages.marker.windowMaximizeAriaLabel,
+            restoreAriaLabel: messages.marker.windowRestoreAriaLabel,
+        }, title: _jsx("span", { className: "truncate text-[12px] font-bold text-[var(--adaptive-black900)]", children: messages.settings.devicePreviewFloatingAriaLabel }), children: _jsxs("div", { className: "flex w-full flex-col gap-[10px]", children: [_jsxs("label", { className: "flex flex-col gap-[3px]", children: [_jsx("span", { className: "text-[9px] font-semibold text-[var(--adaptive-black500)]", children: messages.settings.devicePreviewDeviceLabel }), _jsx("select", { value: devicePreviewDeviceId, onChange: (event) => setDevicePreviewDeviceId(event.target.value), "aria-label": messages.settings.devicePreviewDeviceAriaLabel, className: selectClassName, children: DEVICE_PREVIEW_BRAND_ORDER.map((brand) => (_jsx("optgroup", { label: brand === "apple"
+                                    ? messages.settings.devicePreviewBrandApple
+                                    : brand === "samsung"
+                                        ? messages.settings.devicePreviewBrandSamsung
+                                        : brand === "google"
+                                            ? messages.settings.devicePreviewBrandGoogle
+                                            : messages.settings.devicePreviewBrandDesktop, children: getDevicePreviewPresetsByBrand(brand).map((option) => (_jsxs("option", { value: option.id, children: [option.label, " (", option.width, "\u00D7", option.height, ")"] }, option.id))) }, brand))) })] }), _jsxs("label", { className: "flex flex-col gap-[3px]", children: [_jsx("span", { className: "text-[9px] font-semibold text-[var(--adaptive-black500)]", children: messages.settings.devicePreviewScaleLabel }), _jsx("select", { value: String(devicePreviewScale), onChange: (event) => setDevicePreviewScale(Number(event.target.value)), "aria-label": messages.settings.devicePreviewScaleAriaLabel, className: selectClassName, children: DEVICE_PREVIEW_SCALE_OPTIONS.map((scale) => (_jsx("option", { value: String(scale), children: formatDevicePreviewScale(scale) }, scale))) })] }), _jsxs("div", { className: "flex flex-col gap-[3px]", children: [_jsx("span", { className: "text-[9px] font-semibold text-[var(--adaptive-black500)]", children: messages.settings.devicePreviewImageLabel }), _jsx(PanelOptionSwitch, { options: [
+                                { value: "off", label: messages.settings.devicePreviewImageOff },
+                                { value: "on", label: messages.settings.devicePreviewImageOn },
+                            ], value: devicePreviewImageEnabled ? "on" : "off", onChange: (value) => setDevicePreviewImageEnabled(value === "on"), ariaLabel: messages.settings.devicePreviewImageAriaLabel })] }), _jsxs("div", { className: "flex flex-col gap-[3px]", children: [_jsx("span", { className: "text-[9px] font-semibold text-[var(--adaptive-black500)]", children: messages.settings.devicePreviewFitViewportLabel }), _jsx(PanelOptionSwitch, { options: [
+                                { value: "off", label: messages.settings.devicePreviewFitViewportOff },
+                                { value: "on", label: messages.settings.devicePreviewFitViewportOn },
+                            ], value: devicePreviewFitToViewport ? "on" : "off", onChange: (value) => setDevicePreviewFitToViewport(value === "on"), ariaLabel: messages.settings.devicePreviewFitViewportAriaLabel })] }), _jsxs("div", { className: "flex flex-col gap-[3px]", children: [_jsx("span", { className: "text-[9px] font-semibold text-[var(--adaptive-black500)]", children: messages.settings.devicePreviewStatusBarLabel }), _jsx(PanelOptionSwitch, { options: [
+                                { value: "off", label: messages.settings.devicePreviewStatusBarOff },
+                                { value: "on", label: messages.settings.devicePreviewStatusBarOn },
+                            ], value: devicePreviewStatusBarEnabled ? "on" : "off", onChange: (value) => setDevicePreviewStatusBarEnabled(value === "on"), ariaLabel: messages.settings.devicePreviewStatusBarAriaLabel })] })] }) }));
 }
 export function DevicePreviewChrome() {
     const { devicePreviewUiOpen, devicePreviewDeviceId, devicePreviewScale, devicePreviewImageEnabled, devicePreviewFitToViewport, devicePreviewStatusBarEnabled, resolvedPanelAppearance, messages, } = useReportPreferences();
@@ -308,7 +356,6 @@ html.${HTML_ACTIVE_CLASS} #root .pulse-content {
         centered.screenTop,
         centered.fitScale,
         chrome.screenRadius,
-        preset,
         hostCanvas.background,
         hostCanvas.line,
         hostCanvas.screen,
@@ -342,7 +389,11 @@ html.${HTML_ACTIVE_CLASS} #root .pulse-content {
     const frameLeft = centered.frameLeft;
     const frameTop = centered.frameTop;
     const ticks = buildRulerTicks(metrics.scrollY, metrics.clientHeight || screenHeight, Math.max(metrics.scrollHeight, screenHeight));
-    const rulerLeft = screenLeft >= RULER_WIDTH + 8 ? screenLeft - RULER_WIDTH : Math.max(0, screenLeft - 4);
+    const visualBezelLeft = centered.bezel.left * centered.fitScale;
+    const actualFrameLeft = screenLeft - visualBezelLeft;
+    const rulerLeft = actualFrameLeft >= RULER_WIDTH + RULER_GAP
+        ? actualFrameLeft - RULER_WIDTH - RULER_GAP
+        : Math.max(0, actualFrameLeft - RULER_WIDTH);
     const visualStatusBarHeight = statusBarHeight * centered.fitScale;
     const rulerTop = screenTop + visualStatusBarHeight;
     const rulerHeight = Math.max(0, visualScreenHeight - visualStatusBarHeight);

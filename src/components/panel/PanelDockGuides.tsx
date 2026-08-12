@@ -1,28 +1,24 @@
-import type { DockEdge } from "@/types/pinnedFeedback.js";
+import { PANEL_CORNERS, type PanelCorner } from "@/hooks/usePanelDock.js";
 
 type PanelDockGuidesProps = {
     visible: boolean;
-    activeEdge: DockEdge | null;
+    activeCorner: PanelCorner | null;
 };
 
-export function PanelDockGuides({ visible, activeEdge }: PanelDockGuidesProps) {
+export function PanelDockGuides({ visible, activeCorner }: PanelDockGuidesProps) {
     if (!visible) {
         return null;
     }
 
     return (
-        <div
-            className="fivepixels-dock-guide-layer"
-            aria-hidden="true"
-        >
-            {(["left", "right"] as const).map((edge) => (
+        <div className="fivepixels-dock-guide-layer" aria-hidden="true">
+            {PANEL_CORNERS.map((corner) => (
                 <div
-                    key={edge}
+                    key={corner}
                     className={[
                         "fivepixels-dock-guide",
-                        "fivepixels-dock-guide--edge-rail",
-                        `fivepixels-dock-guide--edge-${edge}`,
-                        activeEdge === edge ? "fivepixels-dock-guide--active" : undefined,
+                        `fivepixels-dock-guide--${corner}`,
+                        activeCorner === corner ? "fivepixels-dock-guide--active" : undefined,
                     ]
                         .filter(Boolean)
                         .join(" ")}

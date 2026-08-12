@@ -1,13 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
 import { PIN_RAIL_BUBBLE_SIZE, PIN_RAIL_EXPANDED_WIDTH } from "@/constants/overlayChrome.js";
-import type { PanelPlacement } from "@/hooks/usePanelDock.js";
-import {
-    pinPlacementToStyle,
-    projectPointerToPinPlacement,
-    resolvePinPlacementAwayFromPanel,
-    sanitizePinRailPlacement,
-    type PinRailPlacement,
-} from "@/utils/overlay/edgeDock.js";
+import { clampWindowPosition } from "@/hooks/useDraggableWindow.js";
+import { pinPlacementToStyle, sanitizePinRailPlacement, type PinRailPlacement } from "@/utils/overlay/edgeDock.js";
 
 const DRAG_LISTENER_OPTIONS = { capture: true } as const;
 const DRAG_THRESHOLD_PX = 6;
@@ -15,19 +9,17 @@ const DRAG_THRESHOLD_PX = 6;
 type UsePinRailDockArgs = {
     enabled: boolean;
     collapsed: boolean;
-    peeking: boolean;
     placement: PinRailPlacement;
     onPlacementChange: (placement: PinRailPlacement) => void;
     onTap?: () => void;
-    panelPlacement?: PanelPlacement | null;
 };
 
-export function usePinRailDock({ enabled, collapsed, peeking, placement, onPlacementChange, onTap, panelPlacement = null }: UsePinRailDockArgs) {
+/** @deprecated Prefer FloatingWindow + useDraggableWindow for free-floating chrome. */
+export function usePinRailDock({ enabled, collapsed, placement, onPlacementChange, onTap }: UsePinRailDockArgs) {
     const railRef = useRef<HTMLDivElement>(null);
     const [isPointerDown, setIsPointerDown] = useState(false);
     const [hasMoved, setHasMoved] = useState(false);
     const [dragPosition, setDragPosition] = useState<{ left: number; top: number } | null>(null);
-    const [previewPlacement, setPreviewPlacement] = useState<PinRailPlacement | null>(null);
     const dragPointerIdRef = useRef<number | null>(null);
     const dragOriginRef = useRef<{ startX: number; startY: number; originLeft: number; originTop: number; width: number; height: number } | null>(null);
     const suppressClickRef = useRef(false);
@@ -35,7 +27,7 @@ export function usePinRailDock({ enabled, collapsed, peeking, placement, onPlace
     const listenersRef = useRef<{ move: (event: PointerEvent) => void; up: (event: PointerEvent) => void } | null>(null);
     onTapRef.current = onTap;
 
-    const currentPlacement = sanitizePinRailPlacement(previewPlacement ?? placement);
+    const currentPlacement = sanitizePinRailPlacement(placement);
     const height = collapsed ? PIN_RAIL_BUBBLE_SIZE : Math.max(railRef.current?.offsetHeight ?? 120, PIN_RAIL_BUBBLE_SIZE);
     const width = collapsed ? PIN_RAIL_BUBBLE_SIZE : PIN_RAIL_EXPANDED_WIDTH;
     const isDragging = isPointerDown && hasMoved;
@@ -64,7 +56,6 @@ export function usePinRailDock({ enabled, collapsed, peeking, placement, onPlace
         setIsPointerDown(false);
         setHasMoved(false);
         setDragPosition(null);
-        setPreviewPlacement(null);
     }, [detachListeners, enabled]);
 
     useEffect(() => () => detachListeners(), [detachListeners]);
@@ -85,24 +76,23 @@ export function usePinRailDock({ enabled, collapsed, peeking, placement, onPlace
 
             if (didMove) {
                 const origin = dragOriginRef.current;
-                const next = resolvePinPlacementAwayFromPanel(
-                    projectPointerToPinPlacement(clientX, clientY, { height: origin?.height ?? height }),
-                    panelPlacement,
-                );
-                onPlacementChange(next);
+
+                if (origin) {
+                    const nextLeft = origin.originLeft + (clientX - origin.startX);
+                    const nextTop = origin.originTop + (clientY - origin.startY);
+                    onPlacementChange(clampWindowPosition(nextLeft, nextTop, origin.width, origin.height));
+                }
             } else {
-                // preventDefault(pointerdown) may still emit click in some engines — suppress it.
                 onTapRef.current?.();
             }
 
             dragPointerIdRef.current = null;
             dragOriginRef.current = null;
-            setPreviewPlacement(null);
             setDragPosition(null);
             setIsPointerDown(false);
             setHasMoved(false);
         },
-        [detachListeners, height, onPlacementChange, panelPlacement],
+        [detachListeners, onPlacementChange],
     );
 
     const handleDragHandlePointerDown = useCallback(
@@ -152,8 +142,7 @@ export function usePinRailDock({ enabled, collapsed, peeking, placement, onPlace
                 }
 
                 setHasMoved(true);
-                setDragPosition({ left: origin.originLeft + deltaX, top: origin.originTop + deltaY });
-                setPreviewPlacement(projectPointerToPinPlacement(moveEvent.clientX, moveEvent.clientY, { height: origin.height }));
+                setDragPosition(clampWindowPosition(origin.originLeft + deltaX, origin.originTop + deltaY, origin.width, origin.height));
             };
 
             const handlePointerUp = (upEvent: PointerEvent) => {
@@ -180,21 +169,16 @@ export function usePinRailDock({ enabled, collapsed, peeking, placement, onPlace
     );
 
     const railStyle: CSSProperties = pinPlacementToStyle(currentPlacement, {
-        collapsed,
-        peeking: peeking && !isDragging,
         isDragging,
         dragLeft: dragPosition?.left,
         dragTop: dragPosition?.top,
         width,
-        height,
     });
 
     return {
         railRef,
         railStyle,
         isDragging,
-        activeEdge: isDragging ? currentPlacement.edge : null,
-        placementEdge: currentPlacement.edge,
         handleDragHandlePointerDown,
         consumeClickSuppressed,
     };

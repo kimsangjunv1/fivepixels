@@ -99,6 +99,9 @@ export declare function EyeOpenIcon({ className }: {
 export declare function EyeClosedIcon({ className }: {
     className?: string;
 }): import("react").JSX.Element;
+export declare function DevicePreviewIcon({ className }: {
+    className?: string;
+}): import("react").JSX.Element;
 export declare function ArrowBelowIcon({ className }: {
     className?: string;
 }): import("react").JSX.Element;

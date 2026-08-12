@@ -1,15 +1,15 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import { getDeviceSafeAreaTop, scaleStatusBarMetrics, } from "../../constants/devicePreview.js";
+import { DEVICE_CHROME_COLOR, getDeviceSafeAreaTop, scaleStatusBarMetrics, } from "../../constants/devicePreview.js";
 const IOS_TIME = "9:41";
 const ANDROID_TIME = "9:41";
 const BATTERY_PERCENT = 80;
 function themeColors(appearance) {
     switch (appearance) {
         case "dark":
-            return { background: "#000000", foreground: "#ffffff" };
+            return { foreground: "#ffffff" };
         case "light":
         default:
-            return { background: "#F2F2F7", foreground: "#000000" };
+            return { foreground: "#000000" };
     }
 }
 function CellularIcon({ color, height }) {
@@ -70,39 +70,35 @@ function CutoutVisual({ cutout }) {
             return (_jsx("div", { className: "relative shrink-0", style: {
                     width: cutout.width,
                     height: cutout.height,
-                    background: "#000000",
+                    background: DEVICE_CHROME_COLOR,
                     borderBottomLeftRadius: cutout.height * 0.45,
                     borderBottomRightRadius: cutout.height * 0.45,
                 }, children: _jsx("div", { className: "absolute left-1/2 top-[42%] -translate-x-1/2 -translate-y-1/2 rounded-full", style: {
                         width: 6.4,
                         height: 6.4,
-                        background: "#0a0a0a",
-                        boxShadow: "inset 0 0 0 1px #2a2a2a",
+                        background: DEVICE_CHROME_COLOR,
                     } }) }));
         case "island":
             return (_jsx("div", { className: "relative shrink-0", style: {
                     width: cutout.width,
                     height: cutout.height,
                     borderRadius: 999,
-                    background: "#000000",
-                    boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.16)",
+                    background: DEVICE_CHROME_COLOR,
                 }, children: _jsx("div", { className: "absolute top-1/2 -translate-y-1/2 rounded-full", style: {
                         right: 12,
                         width: 8,
                         height: 8,
-                        background: "#0a0a0a",
-                        boxShadow: "inset 0 0 0 1px #2a2a2a",
+                        background: DEVICE_CHROME_COLOR,
                     } }) }));
         case "punch":
             return (_jsx("div", { className: "relative shrink-0 rounded-full", style: {
                     width: cutout.radius * 2,
                     height: cutout.radius * 2,
-                    background: "#000000",
-                    boxShadow: "inset 0 0 0 2px rgba(255,255,255,0.3)",
+                    background: DEVICE_CHROME_COLOR,
                 }, children: _jsx("div", { className: "absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full", style: {
                         width: cutout.radius * 0.7,
                         height: cutout.radius * 0.7,
-                        background: "#0a0a0a",
+                        background: DEVICE_CHROME_COLOR,
                     } }) }));
         case "none":
         default:
@@ -147,7 +143,7 @@ export function getDeviceStatusBarHeight(preset, screenWidth, scale = 1) {
 export function DeviceStatusBar({ preset, width, scale = 1, appearance = "light", showCutout = true, }) {
     const metrics = scaleStatusBarMetrics(preset, width);
     const height = Math.max(0, Math.round(metrics.safeAreaTop * scale));
-    const { background, foreground } = themeColors(appearance);
+    const { foreground } = themeColors(appearance);
     const cutout = showCutout ? metrics.cutout : { kind: "none", width: metrics.cutout.width, height: 0, top: 0 };
     let content = null;
     switch (metrics.layout) {
@@ -167,6 +163,6 @@ export function DeviceStatusBar({ preset, width, scale = 1, appearance = "light"
         default:
             return null;
     }
-    return (_jsx("div", { className: "pointer-events-none absolute left-0 right-0 top-0 overflow-hidden", style: { height, background, color: foreground, WebkitTextFillColor: foreground }, "data-fivepixels-device-status-bar": metrics.layout, "aria-hidden": true, children: content }));
+    return (_jsx("div", { className: "pointer-events-none absolute left-0 right-0 top-0 overflow-hidden bg-[var(--adaptive-neutralTintOpacity700)] backdrop-blur-[10px]", style: { height, color: foreground, WebkitTextFillColor: foreground }, "data-fivepixels-device-status-bar": metrics.layout, "aria-hidden": true, children: content }));
 }
 //# sourceMappingURL=DeviceStatusBar.js.map

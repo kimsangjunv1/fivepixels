@@ -26,7 +26,9 @@ describe("devicePreview presets", () => {
 
     it("keeps device-specific chrome metrics", () => {
         const se = getDevicePreviewPreset("iphone-se");
+        const fourteen = getDevicePreviewPreset("iphone-14");
         const pro = getDevicePreviewPreset("iphone-15-pro");
+        const proMax = getDevicePreviewPreset("iphone-15-pro-max");
         const air = getDevicePreviewPreset("iphone-air");
         const ultra = getDevicePreviewPreset("galaxy-s24-ultra");
 
@@ -44,6 +46,9 @@ describe("devicePreview presets", () => {
         expect(ultra.frame).toBe("punch-flat");
         expect(ultra.statusBar.layout).toBe("android");
         expect(ultra.chrome.frameRadius).toBeLessThan(pro.chrome.frameRadius);
+        expect(fourteen.chrome.bezel).toEqual(pro.chrome.bezel);
+        expect(proMax.chrome.bezel).toEqual(pro.chrome.bezel);
+        expect(air.chrome.bezel).toEqual(pro.chrome.bezel);
     });
 
     it("normalizes scale and layout size", () => {

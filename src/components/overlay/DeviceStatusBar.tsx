@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import {
+    DEVICE_CHROME_COLOR,
     getDeviceSafeAreaTop,
     scaleStatusBarMetrics,
     type DevicePreviewPreset,
@@ -23,10 +24,10 @@ const BATTERY_PERCENT = 80;
 function themeColors(appearance: StatusBarAppearance) {
     switch (appearance) {
         case "dark":
-            return { background: "#000000", foreground: "#ffffff" };
+            return { foreground: "#ffffff" };
         case "light":
         default:
-            return { background: "#F2F2F7", foreground: "#000000" };
+            return { foreground: "#000000" };
     }
 }
 
@@ -291,7 +292,7 @@ function CutoutVisual({ cutout }: { cutout: ScaledDeviceCutout }) {
                     style={{
                         width: cutout.width,
                         height: cutout.height,
-                        background: "#000000",
+                        background: DEVICE_CHROME_COLOR,
                         borderBottomLeftRadius: cutout.height * 0.45,
                         borderBottomRightRadius: cutout.height * 0.45,
                     }}
@@ -301,8 +302,7 @@ function CutoutVisual({ cutout }: { cutout: ScaledDeviceCutout }) {
                         style={{
                             width: 6.4,
                             height: 6.4,
-                            background: "#0a0a0a",
-                            boxShadow: "inset 0 0 0 1px #2a2a2a",
+                            background: DEVICE_CHROME_COLOR,
                         }}
                     />
                 </div>
@@ -315,8 +315,7 @@ function CutoutVisual({ cutout }: { cutout: ScaledDeviceCutout }) {
                         width: cutout.width,
                         height: cutout.height,
                         borderRadius: 999,
-                        background: "#000000",
-                        boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.16)",
+                        background: DEVICE_CHROME_COLOR,
                     }}
                 >
                     <div
@@ -325,8 +324,7 @@ function CutoutVisual({ cutout }: { cutout: ScaledDeviceCutout }) {
                             right: 12,
                             width: 8,
                             height: 8,
-                            background: "#0a0a0a",
-                            boxShadow: "inset 0 0 0 1px #2a2a2a",
+                            background: DEVICE_CHROME_COLOR,
                         }}
                     />
                 </div>
@@ -338,8 +336,7 @@ function CutoutVisual({ cutout }: { cutout: ScaledDeviceCutout }) {
                     style={{
                         width: cutout.radius * 2,
                         height: cutout.radius * 2,
-                        background: "#000000",
-                        boxShadow: "inset 0 0 0 2px rgba(255,255,255,0.3)",
+                        background: DEVICE_CHROME_COLOR,
                     }}
                 >
                     <div
@@ -347,7 +344,7 @@ function CutoutVisual({ cutout }: { cutout: ScaledDeviceCutout }) {
                         style={{
                             width: cutout.radius * 0.7,
                             height: cutout.radius * 0.7,
-                            background: "#0a0a0a",
+                            background: DEVICE_CHROME_COLOR,
                         }}
                     />
                 </div>
@@ -586,7 +583,7 @@ export function DeviceStatusBar({
 }: DeviceStatusBarProps) {
     const metrics = scaleStatusBarMetrics(preset, width);
     const height = Math.max(0, Math.round(metrics.safeAreaTop * scale));
-    const { background, foreground } = themeColors(appearance);
+    const { foreground } = themeColors(appearance);
     const cutout: ScaledDeviceCutout = showCutout ? metrics.cutout : { kind: "none", width: metrics.cutout.width, height: 0, top: 0 };
 
     let content: ReactNode = null;
@@ -610,8 +607,8 @@ export function DeviceStatusBar({
 
     return (
         <div
-            className="pointer-events-none absolute left-0 right-0 top-0 overflow-hidden"
-            style={{ height, background, color: foreground, WebkitTextFillColor: foreground }}
+            className="pointer-events-none absolute left-0 right-0 top-0 overflow-hidden bg-[var(--adaptive-neutralTintOpacity700)] backdrop-blur-[10px]"
+            style={{ height, color: foreground, WebkitTextFillColor: foreground }}
             data-fivepixels-device-status-bar={metrics.layout}
             aria-hidden
         >

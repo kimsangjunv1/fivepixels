@@ -1,3 +1,6 @@
+/** Hardware chrome color — bezel, notch, island, and camera stay this regardless of theme. */
+export const DEVICE_CHROME_COLOR = "#101010";
+
 export type DeviceBezelInset = {
     top: number;
     right: number;
@@ -175,9 +178,9 @@ export const DEVICE_PREVIEW_PRESETS: readonly DevicePreviewPreset[] = [
         frame: "home-button",
         statusBar: statusBarClassic(),
         chrome: {
-            frameRadius: 68,
+            frameRadius: 56,
             screenRadius: 2,
-            bezel: { top: 108, right: 28, bottom: 108, left: 28 },
+            bezel: { top: 90, right: 9, bottom: 90, left: 9 },
             buttons: {
                 left: [
                     { topRatio: 0.16, height: 22 },
@@ -201,8 +204,8 @@ export const DEVICE_PREVIEW_PRESETS: readonly DevicePreviewPreset[] = [
         }),
         chrome: {
             frameRadius: 54,
-            screenRadius: 47,
-            bezel: { top: 12, right: 12, bottom: 12, left: 12 },
+            screenRadius: 50,
+            bezel: { top: 6, right: 6, bottom: 6, left: 6 },
             buttons: {
                 left: [
                     { topRatio: 0.14, height: 28 },
@@ -225,9 +228,9 @@ export const DEVICE_PREVIEW_PRESETS: readonly DevicePreviewPreset[] = [
             cutout: { kind: "island", width: 126, height: 34, top: 10 },
         }),
         chrome: {
-            frameRadius: 58,
-            screenRadius: 55,
-            bezel: { top: 11, right: 11, bottom: 11, left: 11 },
+            frameRadius: 55,
+            screenRadius: 51,
+            bezel: { top: 6, right: 6, bottom: 6, left: 6 },
             buttons: {
                 left: [
                     { topRatio: 0.15, height: 30 },
@@ -250,9 +253,9 @@ export const DEVICE_PREVIEW_PRESETS: readonly DevicePreviewPreset[] = [
             cutout: { kind: "island", width: 126, height: 37, top: 10 },
         }),
         chrome: {
-            frameRadius: 62,
-            screenRadius: 58,
-            bezel: { top: 12, right: 12, bottom: 12, left: 12 },
+            frameRadius: 58,
+            screenRadius: 54,
+            bezel: { top: 6, right: 6, bottom: 6, left: 6 },
             buttons: {
                 left: [
                     { topRatio: 0.15, height: 32 },
@@ -275,9 +278,9 @@ export const DEVICE_PREVIEW_PRESETS: readonly DevicePreviewPreset[] = [
             cutout: { kind: "island", width: 126, height: 36, top: 10 },
         }),
         chrome: {
-            frameRadius: 60,
-            screenRadius: 56,
-            bezel: { top: 10, right: 10, bottom: 10, left: 10 },
+            frameRadius: 56,
+            screenRadius: 52,
+            bezel: { top: 6, right: 6, bottom: 6, left: 6 },
             buttons: {
                 left: [
                     { topRatio: 0.15, height: 30 },

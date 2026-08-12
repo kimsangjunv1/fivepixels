@@ -1,3 +1,5 @@
+/** Hardware chrome color — bezel, notch, island, and camera stay this regardless of theme. */
+export declare const DEVICE_CHROME_COLOR = "#101010";
 export type DeviceBezelInset = {
     top: number;
     right: number;

@@ -1,10 +1,18 @@
 import { useEffect, useRef, useState } from "react";
-import { panelAnchorSide, usePanelDock } from "@/hooks/usePanelDock.js";
-import { resolvePinPlacementAwayFromPanel } from "@/utils/overlay/edgeDock.js";
+import { panelAnchorSide, placementToCollapsedPanelStyle, usePanelDock } from "@/hooks/usePanelDock.js";
 import { usePanelResize, panelSizeToStyle } from "@/hooks/usePanelResize.js";
 import { usePanelFeedbackTransfer } from "@/hooks/usePanelFeedbackTransfer.js";
 import { useReport } from "@/providers/reportContext.js";
-import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, EyeOpenIcon, LogoIcon, SelectIcon, SettingsIcon } from "@/components/icons/Icons.js";
+import {
+    ChevronDownIcon,
+    ChevronLeftIcon,
+    ChevronRightIcon,
+    DevicePreviewIcon,
+    EyeOpenIcon,
+    LogoIcon,
+    SelectIcon,
+    SettingsIcon,
+} from "@/components/icons/Icons.js";
 import { IconTooltipButton } from "@/components/ui/IconTooltipButton.js";
 import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
 import { PanelDockGuides } from "./PanelDockGuides.js";
@@ -37,19 +45,7 @@ import { getPanelTabDefinition } from "@/constants/panelTabRegistry.js";
 import { MOTION, PANEL_TAB_FADE_MS, panelCollapseInClass } from "@/constants/motionClasses.js";
 import type { ReportPanelTab } from "@/types/report-ui.js";
 
-function PanelCollapseTab({
-    collapsed,
-    anchorSide,
-    onClick,
-    onPointerDown,
-    messages,
-}: {
-    collapsed: boolean;
-    anchorSide: "left" | "right";
-    onClick: () => void;
-    onPointerDown?: (event: React.PointerEvent<HTMLButtonElement>) => void;
-    messages: ReturnType<typeof useReport>["messages"];
-}) {
+function PanelCollapseTab({ collapsed, anchorSide, onClick, messages }: { collapsed: boolean; anchorSide: "left" | "right"; onClick: () => void; messages: ReturnType<typeof useReport>["messages"] }) {
     const hideIcon = anchorSide === "right" ? <ChevronRightIcon className="h-4 w-4" /> : <ChevronLeftIcon className="h-4 w-4" />;
     const expandIcon = anchorSide === "right" ? <ChevronLeftIcon className="h-4 w-4" /> : <ChevronRightIcon className="h-4 w-4" />;
 
@@ -61,15 +57,13 @@ function PanelCollapseTab({
             <button
                 type="button"
                 onClick={onClick}
-                onPointerDown={onPointerDown}
                 aria-expanded={!collapsed}
                 aria-label={collapsed ? messages.panel.expand : messages.panel.collapse}
-                title={collapsed ? messages.panel.repositionTitle : undefined}
                 className={
                     collapsed
                         ? anchorSide === "right"
-                            ? "flex h-[105px] w-[32px] cursor-grab items-center justify-center rounded-l-[12px] rounded-r-none bg-[var(--adaptive-black200)] text-[var(--adaptive-blue500)] shadow-[0_0_24px_0_rgba(0,0,0,0.35)] active:cursor-grabbing"
-                            : "flex h-[105px] w-[32px] cursor-grab items-center justify-center rounded-r-[12px] rounded-l-none bg-[var(--adaptive-black200)] text-[var(--adaptive-blue500)] shadow-[0_0_24px_0_rgba(0,0,0,0.35)] active:cursor-grabbing"
+                            ? "flex h-[105px] w-[32px] items-center justify-center rounded-l-[12px] rounded-r-none bg-[var(--adaptive-black200)] text-[var(--adaptive-blue500)] shadow-[0_0_24px_0_rgba(0,0,0,0.35)]"
+                            : "flex h-[105px] w-[32px] items-center justify-center rounded-r-[12px] rounded-l-none bg-[var(--adaptive-black200)] text-[var(--adaptive-blue500)] shadow-[0_0_24px_0_rgba(0,0,0,0.35)]"
                         : "flex items-center justify-center py-[8px] text-[var(--adaptive-text-muted)]"
                 }
             >
@@ -124,9 +118,8 @@ export function ReportControlPanel() {
         refetch,
         panelCollapsed,
         setPanelCollapsed,
-        pinnedFeedbackItems,
-        pinRailPlacement,
-        setPinRailPlacement,
+        devicePreviewUiOpen,
+        setDevicePreviewUiOpen,
     } = useReport();
     const [personalKeyStep, setPersonalKeyStep] = useState<"none" | "required" | "insert" | "rotate">("none");
     const [personalKeyNotice, setPersonalKeyNotice] = useState("");
@@ -167,31 +160,9 @@ export function ReportControlPanel() {
         openPanelTab,
         isRecording,
     });
-    const {
-        panelRef,
-        panelStyle,
-        placementCorner,
-        isDragging,
-        activeEdge,
-        handleDragHandlePointerDown,
-        consumeClickSuppressed,
-    } = usePanelDock({
+    const { panelRef, panelStyle, placementCorner, isDragging, activeCorner, handleDragHandlePointerDown } = usePanelDock({
         enabled: !isMobileViewport,
         measureKey: `${panelCollapsed}-${isRecording}-${panelTab ?? "none"}-${isIssueMode}-${importStep !== "none" ? "import" : "none"}-${commandStep !== "none" ? "command" : "none"}-${panelView}`,
-        collapsed: panelCollapsed && !isRecording,
-        pinPlacement: pinnedFeedbackItems.length > 0 ? pinRailPlacement : null,
-        onTap: () => setPanelCollapsed((current) => !current),
-        onPlacementSettled: (next) => {
-            if (pinnedFeedbackItems.length === 0) {
-                return;
-            }
-
-            const nudged = resolvePinPlacementAwayFromPanel(pinRailPlacement, next);
-
-            if (nudged.edge !== pinRailPlacement.edge || nudged.offsetRatio !== pinRailPlacement.offsetRatio) {
-                setPinRailPlacement(nudged);
-            }
-        },
     });
     const panelExpanded = !panelCollapsed && !isRecording;
     const contentSectionOpen = panelTab !== null && personalKeyStep === "none" && importStep === "none" && !isGateView;
@@ -295,14 +266,10 @@ export function ReportControlPanel() {
     };
 
     const handleTogglePanelCollapsed = () => {
-        if (consumeClickSuppressed()) {
-            return;
-        }
-
         setPanelCollapsed((current) => !current);
     };
 
-    const resolvedPanelStyle = panelStyle;
+    const resolvedPanelStyle = panelCollapsed && !isRecording ? placementToCollapsedPanelStyle({ corner: placementCorner }) : panelStyle;
     const resolvedSizeStyle = panelExpanded ? panelSizeToStyle(panelSize, applyFixedHeight || isGateView) : undefined;
 
     const panelSideControls = panelExpanded ? (
@@ -322,7 +289,7 @@ export function ReportControlPanel() {
         <>
             <PanelDockGuides
                 visible={isDragging}
-                activeEdge={activeEdge}
+                activeCorner={activeCorner}
             />
 
             {isResizing ? (
@@ -383,7 +350,6 @@ export function ReportControlPanel() {
                             collapsed={panelCollapsed}
                             anchorSide={anchorSide}
                             onClick={handleTogglePanelCollapsed}
-                            onPointerDown={handleDragHandlePointerDown}
                             messages={messages}
                         />
                     ) : isGateView ? (
@@ -437,6 +403,14 @@ export function ReportControlPanel() {
                                                     onClick={toggleIssueMode}
                                                 >
                                                     <EyeOpenIcon className="h-[16px] w-[16px]" />
+                                                </IconTooltipButton>
+
+                                                <IconTooltipButton
+                                                    label={messages.panel.devicePreview}
+                                                    active={devicePreviewUiOpen}
+                                                    onClick={() => setDevicePreviewUiOpen(!devicePreviewUiOpen)}
+                                                >
+                                                    <DevicePreviewIcon className="h-[16px] w-[16px]" />
                                                 </IconTooltipButton>
 
                                                 <PanelAutoRefreshControl />

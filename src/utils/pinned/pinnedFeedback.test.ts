@@ -28,7 +28,7 @@ describe("pinnedFeedback", () => {
         expect(sanitizePinnedFeedbackPreference(null)).toEqual({
             items: [],
             railCollapsed: true,
-            placement: { edge: "right", offsetRatio: 0.2 },
+            placement: { left: 16, top: 16 },
         });
         expect(
             sanitizePinnedFeedbackPreference({
@@ -37,7 +37,7 @@ describe("pinnedFeedback", () => {
             }),
         ).toEqual({
             railCollapsed: true,
-            placement: { edge: "right", offsetRatio: 0.2 },
+            placement: { left: 16, top: 16 },
             items: [
                 {
                     reportId: "a",

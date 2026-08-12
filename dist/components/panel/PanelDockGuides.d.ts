@@ -1,8 +1,8 @@
-import type { DockEdge } from "../../types/pinnedFeedback.js";
+import { type PanelCorner } from "../../hooks/usePanelDock.js";
 type PanelDockGuidesProps = {
     visible: boolean;
-    activeEdge: DockEdge | null;
+    activeCorner: PanelCorner | null;
 };
-export declare function PanelDockGuides({ visible, activeEdge }: PanelDockGuidesProps): import("react").JSX.Element | null;
+export declare function PanelDockGuides({ visible, activeCorner }: PanelDockGuidesProps): import("react").JSX.Element | null;
 export {};
 //# sourceMappingURL=PanelDockGuides.d.ts.map

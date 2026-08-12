@@ -1,10 +1,9 @@
-import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
-import { useEffect, useMemo, useState } from "react";
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { CloseIcon, ChevronDownIcon } from "../../components/icons/Icons.js";
-import { PinDockGuides } from "../../components/overlay/PinDockGuides.js";
+import { FloatingWindow } from "../../components/ui/FloatingWindow.js";
+import { PIN_RAIL_EXPANDED_WIDTH } from "../../constants/overlayChrome.js";
 import { MOTION } from "../../constants/motionClasses.js";
-import { getStoredPanelPlacement } from "../../hooks/usePanelDock.js";
-import { usePinRailDock } from "../../hooks/usePinRailDock.js";
 import { useReportData, useReportPreferences, useReportSession } from "../../providers/reportContext.js";
 import { formatFeedbackCaseId } from "../../utils/feedback/feedbackCaseId.js";
 import { getPinnedFeedbackCaseProgress } from "../../utils/pinned/pinnedFeedback.js";
@@ -25,12 +24,12 @@ function PinRailCard({ item, index, onOpen, onRemove }) {
         window.setTimeout(() => setPulsing(false), 180);
         onOpen(item);
     };
-    return (_jsxs("div", { className: `${MOTION.pinCardEnter} group relative flex border-b border-[var(--adaptive-border-subtle)] last:border-b-0 bg-[var(--adaptive-tintOpacity50)] ${pulsing ? MOTION.pinCardPulse : ""}`, style: { animationDelay: `${index * 35}ms` }, children: [_jsxs("button", { type: "button", "data-fivepixels-interactive": "", onClick: handleOpen, "aria-label": messages.pins.openPinAriaLabel, className: "flex min-w-0 flex-1 text-left hover:bg-[var(--adaptive-black300)]", children: [_jsx("span", { className: "flex min-w-[72px] shrink-0 items-center justify-center border-r border-r-[var(--adaptive-border-subtle)] px-[8px] py-[8px] text-[12px] font-semibold text-[var(--adaptive-black900)]", children: item.fcNumber ? formatFeedbackCaseId(item.fcNumber) : "#FC-—" }), _jsx("span", { className: "min-w-0 flex-1 truncate px-[12px] py-[8px] pr-[28px] text-[11px] leading-[1.35] text-[var(--adaptive-black500)]", children: item.summary })] }), _jsx("button", { type: "button", "data-fivepixels-interactive": "", onClick: () => onRemove(item.reportId), "aria-label": messages.pins.removePinAriaLabel, className: "absolute right-[6px] top-1/2 z-[1] flex h-[20px] w-[20px] -translate-y-1/2 items-center justify-center rounded-[4px] text-[var(--adaptive-black400)] opacity-0 transition-opacity hover:bg-[var(--adaptive-tintOpacity200)] hover:text-[var(--adaptive-black900)] group-hover:opacity-100", children: _jsx(CloseIcon, { className: "h-[12px] w-[12px]" }) })] }));
+    return (_jsxs("div", { className: `${MOTION.pinCardEnter} group relative flex overflow-hidden rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] ${pulsing ? MOTION.pinCardPulse : ""}`, style: { animationDelay: `${index * 35}ms` }, children: [_jsxs("button", { type: "button", "data-fivepixels-interactive": "", onClick: handleOpen, "aria-label": messages.pins.openPinAriaLabel, className: "flex min-w-0 flex-1 text-left transition-colors hover:bg-[var(--adaptive-black100)]", children: [_jsx("span", { className: "flex min-w-[72px] shrink-0 items-center justify-center border-r border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black100)] px-[8px] py-[8px] text-[12px] font-semibold text-[var(--adaptive-black900)]", children: item.fcNumber ? formatFeedbackCaseId(item.fcNumber) : "#FC-—" }), _jsx("span", { className: "min-w-0 flex-1 truncate px-[12px] py-[8px] pr-[28px] text-[11px] leading-[1.35] text-[var(--adaptive-black500)]", children: item.summary })] }), _jsx("button", { type: "button", "data-fivepixels-interactive": "", onClick: () => onRemove(item.reportId), "aria-label": messages.pins.removePinAriaLabel, className: "absolute right-[6px] top-1/2 z-[1] flex h-[20px] w-[20px] -translate-y-1/2 items-center justify-center rounded-[4px] text-[var(--adaptive-black400)] opacity-0 transition-opacity hover:bg-[var(--adaptive-tintOpacity200)] hover:text-[var(--adaptive-black900)] group-hover:opacity-100", children: _jsx(CloseIcon, { className: "h-[12px] w-[12px]" }) })] }));
 }
-function PinnedRouteAccordion({ group, collapsed, isFirst, onToggle, onOpen, onRemove, }) {
+function PinnedRouteAccordion({ group, collapsed, onToggle, onOpen, onRemove, }) {
     const { messages } = useReportPreferences();
     const expanded = !collapsed;
-    return (_jsxs("section", { className: "overflow-hidden", children: [_jsxs("button", { type: "button", "data-fivepixels-interactive": "", onClick: onToggle, "aria-expanded": expanded, "aria-label": messages.pins.routeToggleAriaLabel(group.pathname), className: `sticky top-0 z-10 flex w-full items-center justify-between gap-[8px] bg-[var(--adaptive-black300)] p-[4px_12px] text-left ${isFirst ? "border-b border-b-[var(--adaptive-border-subtle)]" : "border-y border-y-[var(--adaptive-border-subtle)]"}`, children: [_jsxs("span", { className: "flex min-w-0 items-center gap-[7px]", children: [_jsx(CircularProgress, { progress: group.progress, size: 22 }), _jsxs("span", { className: "min-w-0", children: [_jsx("span", { className: "block truncate text-[11px] font-semibold text-[var(--adaptive-black900)]", children: group.pathname }), _jsx("span", { className: "block text-[10px] tabular-nums text-[var(--adaptive-black500)]", children: messages.pins.completedCasesLabel(group.progress.resolved, group.progress.total) })] })] }), _jsx(ChevronDownIcon, { className: `h-[13px] w-[13px] shrink-0 text-[var(--adaptive-black500)] transition-transform duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] ${expanded ? "rotate-180" : ""}` })] }), _jsx("div", { className: MOTION.pinRailBody, "data-expanded": expanded ? "true" : "false", children: _jsx("div", { className: MOTION.pinRailBodyInner, children: _jsx("div", { className: "flex flex-col", children: group.items.map((item, index) => (_jsx(PinRailCard, { item: item, index: index, onOpen: onOpen, onRemove: onRemove }, item.reportId))) }) }) })] }));
+    return (_jsxs("section", { className: "flex flex-col gap-[6px]", children: [_jsxs("button", { type: "button", "data-fivepixels-interactive": "", onClick: onToggle, "aria-expanded": expanded, "aria-label": messages.pins.routeToggleAriaLabel(group.pathname), className: "flex w-full items-center justify-between gap-[8px] rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black100)] px-[10px] py-[8px] text-left transition-colors hover:bg-[var(--adaptive-black200)]", children: [_jsxs("span", { className: "flex min-w-0 items-center gap-[7px]", children: [_jsx(CircularProgress, { progress: group.progress, size: 22 }), _jsxs("span", { className: "min-w-0", children: [_jsx("span", { className: "block truncate text-[11px] font-semibold text-[var(--adaptive-black900)]", children: group.pathname }), _jsx("span", { className: "block text-[10px] tabular-nums text-[var(--adaptive-black500)]", children: messages.pins.completedCasesLabel(group.progress.resolved, group.progress.total) })] })] }), _jsx(ChevronDownIcon, { className: `h-[13px] w-[13px] shrink-0 text-[var(--adaptive-black500)] transition-transform duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] ${expanded ? "rotate-180" : ""}` })] }), _jsx("div", { className: MOTION.pinRailBody, "data-expanded": expanded ? "true" : "false", children: _jsx("div", { className: MOTION.pinRailBodyInner, children: _jsx("div", { className: "flex flex-col gap-[6px]", children: group.items.map((item, index) => (_jsx(PinRailCard, { item: item, index: index, onOpen: onOpen, onRemove: onRemove }, item.reportId))) }) }) })] }));
 }
 export function FloatingPinRail() {
     const { messages, pinnedFeedbackItems, pinRailCollapsed, pinRailPlacement, setPinRailCollapsed, setPinRailPlacement, unpinFeedback, syncPinnedFeedbackReports, isMobileViewport, } = useReportPreferences();
@@ -38,20 +37,20 @@ export function FloatingPinRail() {
     const { reports, allPageReports } = useReportData();
     const [entered, setEntered] = useState(false);
     const [collapsedRoutes, setCollapsedRoutes] = useState(() => new Set());
-    const [hovered, setHovered] = useState(false);
-    const [panelPlacement, setPanelPlacement] = useState(() => (typeof window === "undefined" ? null : getStoredPanelPlacement()));
     const hasPins = pinnedFeedbackItems.length > 0;
-    const expanded = !pinRailCollapsed;
-    const peeking = !expanded && !hovered;
-    const { railRef, railStyle, isDragging, activeEdge, handleDragHandlePointerDown, consumeClickSuppressed } = usePinRailDock({
-        enabled: hasPins && !isMobileViewport,
-        collapsed: !expanded,
-        peeking,
-        placement: pinRailPlacement,
-        onPlacementChange: setPinRailPlacement,
-        onTap: () => setPinRailCollapsed(expanded),
-        panelPlacement,
-    });
+    const [mode, setMode] = useState(() => (pinRailCollapsed ? "minimized" : "normal"));
+    useEffect(() => {
+        setMode((current) => {
+            if (pinRailCollapsed) {
+                return "minimized";
+            }
+            return current === "minimized" ? "normal" : current;
+        });
+    }, [pinRailCollapsed]);
+    const handleModeChange = useCallback((next) => {
+        setMode(next);
+        setPinRailCollapsed(next === "minimized");
+    }, [setPinRailCollapsed]);
     const enrichedItems = useMemo(() => {
         const reportById = new Map([...allPageReports, ...reports].map((report) => [report.id, report]));
         return [...pinnedFeedbackItems].reverse().map((item) => {
@@ -99,55 +98,35 @@ export function FloatingPinRail() {
         const frame = window.requestAnimationFrame(() => setEntered(true));
         return () => window.cancelAnimationFrame(frame);
     }, [hasPins]);
-    useEffect(() => {
-        const syncPlacement = () => setPanelPlacement(getStoredPanelPlacement());
-        syncPlacement();
-        window.addEventListener("storage", syncPlacement);
-        window.addEventListener("resize", syncPlacement);
-        window.addEventListener("fivepixels:panel-placement", syncPlacement);
-        return () => {
-            window.removeEventListener("storage", syncPlacement);
-            window.removeEventListener("resize", syncPlacement);
-            window.removeEventListener("fivepixels:panel-placement", syncPlacement);
-        };
-    }, []);
-    useEffect(() => {
-        if (isDragging) {
-            setPanelPlacement(getStoredPanelPlacement());
-        }
-    }, [isDragging]);
-    if (!hasPins) {
-        return null;
-    }
     const handleOpen = (item) => {
         void openPinnedFeedback(item.reportId, {
             caseId: item.caseId,
             pathname: item.pathname,
         });
     };
-    return (_jsxs(_Fragment, { children: [_jsx(PinDockGuides, { visible: isDragging, activeEdge: activeEdge }), _jsx("div", { ref: railRef, "data-fp-chrome": "pin", "data-collapsed": expanded ? "false" : "true", "data-dragging": isDragging ? "true" : "false", onPointerEnter: () => setHovered(true), onPointerLeave: () => setHovered(false), className: `pointer-events-auto z-[1000002] ${MOTION.pinRailDock} ${isDragging ? MOTION.pinRailDockDragging : ""} ${entered ? MOTION.pinRailEnter : ""} ${expanded
-                    ? "flex flex-col backdrop-blur-[10px] rounded-[16px] bg-[var(--adaptive-neutralTintOpacity900)] border border-[var(--adaptive-border-subtle)] shadow-[var(--adaptive-popup-shadow)]"
-                    : ""}`, style: railStyle, children: !expanded ? (_jsx("button", { type: "button", "data-fivepixels-interactive": "", onClick: () => {
-                        if (consumeClickSuppressed()) {
-                            return;
+    const handlePositionChange = useCallback((next) => {
+        setPinRailPlacement(next);
+    }, [setPinRailPlacement]);
+    if (!hasPins || isMobileViewport) {
+        return null;
+    }
+    return (_jsx(FloatingWindow, { dataChrome: "pin", className: entered ? MOTION.pinRailEnter : "", width: PIN_RAIL_EXPANDED_WIDTH, minWidth: 240, minHeight: 160, position: pinRailPlacement, onPositionChange: handlePositionChange, mode: mode, onModeChange: handleModeChange, resizable: true, resizeAriaLabel: messages.marker.resizeAriaLabel, contentClassName: "px-[12px] pb-[12px]", ariaLabel: messages.pins.railTitle, controls: {
+            onClose: () => handleModeChange("minimized"),
+            closeAriaLabel: messages.pins.railCollapseAriaLabel,
+            minimizeAriaLabel: messages.pins.railCollapseAriaLabel,
+            maximizeAriaLabel: messages.marker.windowMaximizeAriaLabel,
+            restoreAriaLabel: messages.marker.windowRestoreAriaLabel,
+        }, title: _jsxs("span", { className: "truncate text-[12px] font-bold text-[var(--adaptive-black900)]", children: [messages.pins.railTitle, " ", messages.pins.railCountLabel(pinnedFeedbackItems.length), " (", overallProgress.percentage, "%)"] }), headerRight: _jsxs("span", { className: "flex items-center gap-[6px]", children: [_jsx(CircularProgress, { progress: overallProgress, size: 18, showPercentLabel: true }), _jsx("button", { type: "button", "data-fivepixels-interactive": "", onPointerDown: (event) => event.stopPropagation(), onClick: () => handleModeChange(mode === "minimized" ? "normal" : "minimized"), "aria-expanded": mode !== "minimized", "aria-label": mode === "minimized" ? messages.pins.railExpandAriaLabel : messages.pins.railCollapseAriaLabel, title: messages.pins.repositionTitle, className: "flex h-[22px] w-[22px] items-center justify-center rounded-[6px] text-[var(--adaptive-black500)] transition-colors hover:bg-[var(--adaptive-tintOpacity200)] hover:text-[var(--adaptive-black900)]", children: _jsx(ChevronDownIcon, { className: `h-[14px] w-[14px] transition-transform duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] ${mode === "minimized" ? "" : "rotate-180"}` }) })] }), children: _jsx("div", { className: `flex flex-col gap-[10px] ${mode === "maximized" ? "h-full overflow-y-auto" : "max-h-[min(60vh,520px)] overflow-y-auto"}`, children: routeGroups.map((group) => (_jsx(PinnedRouteAccordion, { group: group, collapsed: collapsedRoutes.has(group.pathname), onToggle: () => {
+                    setCollapsedRoutes((current) => {
+                        const next = new Set(current);
+                        if (next.has(group.pathname)) {
+                            next.delete(group.pathname);
                         }
-                        setPinRailCollapsed(false);
-                    }, onPointerDown: handleDragHandlePointerDown, "aria-expanded": false, "aria-label": messages.pins.railExpandAriaLabel, title: messages.pins.repositionTitle, className: "flex h-[52px] w-[52px] items-center justify-center rounded-full border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-neutralTintOpacity900)] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[10px] transition-transform duration-200 ease-[cubic-bezier(0.34,1.28,0.64,1)] hover:scale-[1.04] cursor-grab active:cursor-grabbing", children: _jsx(CircularProgress, { progress: overallProgress, size: 44, showPercentLabel: true }) })) : (_jsxs("div", { className: `${MOTION.pinRailShell} overflow-hidden`, "data-expanded": "true", children: [_jsxs("button", { type: "button", "data-fivepixels-interactive": "", onClick: () => {
-                                if (consumeClickSuppressed()) {
-                                    return;
-                                }
-                                setPinRailCollapsed(true);
-                            }, onPointerDown: handleDragHandlePointerDown, "aria-expanded": true, "aria-label": messages.pins.railCollapseAriaLabel, title: messages.pins.repositionTitle, className: "flex w-full cursor-grab items-center justify-between gap-[8px] border-b border-b-[var(--adaptive-border-subtle)] px-[12px] py-[8px] text-left active:cursor-grabbing", children: [_jsxs("span", { className: "flex min-w-0 items-center gap-[7px]", children: [_jsx("span", { className: "truncate text-[12px] font-bold text-[var(--adaptive-black900)]", children: messages.pins.railTitle }), _jsx("span", { className: "rounded-[4px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black100)] px-[5px] py-[1px] text-[10px] font-semibold tabular-nums text-[var(--adaptive-black600)]", children: messages.pins.railCountLabel(pinnedFeedbackItems.length) }), _jsx(CircularProgress, { progress: overallProgress, size: 20, showPercentLabel: true })] }), _jsx(ChevronDownIcon, { className: "h-[14px] w-[14px] shrink-0 rotate-180 text-[var(--adaptive-black500)] transition-transform duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]" })] }), _jsx("div", { className: MOTION.pinRailBody, "data-expanded": "true", children: _jsx("div", { className: MOTION.pinRailBodyInner, children: _jsx("div", { className: "max-h-[min(60vh,520px)] overflow-y-auto", children: routeGroups.map((group, index) => (_jsx(PinnedRouteAccordion, { group: group, isFirst: index === 0, collapsed: collapsedRoutes.has(group.pathname), onToggle: () => {
-                                            setCollapsedRoutes((current) => {
-                                                const next = new Set(current);
-                                                if (next.has(group.pathname)) {
-                                                    next.delete(group.pathname);
-                                                }
-                                                else {
-                                                    next.add(group.pathname);
-                                                }
-                                                return next;
-                                            });
-                                        }, onOpen: handleOpen, onRemove: unpinFeedback }, group.pathname))) }) }) })] })) })] }));
+                        else {
+                            next.add(group.pathname);
+                        }
+                        return next;
+                    });
+                }, onOpen: handleOpen, onRemove: unpinFeedback }, group.pathname))) }) }));
 }
 //# sourceMappingURL=FloatingPinRail.js.map

@@ -1,9 +1,9 @@
 import type { ReportCaseStatus } from "./report.js";
 export type DockEdge = "left" | "right";
+/** Free-floating pin window position in viewport coordinates. */
 export type PinRailPlacement = {
-    edge: DockEdge;
-    /** 0 = near top, 1 = near bottom within the usable vertical band. */
-    offsetRatio: number;
+    left: number;
+    top: number;
 };
 export type PinnedFeedbackCaseSnapshot = {
     id: string;
