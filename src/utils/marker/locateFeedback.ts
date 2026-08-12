@@ -2,6 +2,7 @@ import type { ReportFeedback } from "@/types/report.js";
 import { getFeedbackTargetSelector, isFeedbackTargetVisible } from "../shared/dom.js";
 import { normalizeReportPosition } from "../report/reportPosition.js";
 import { findElementByTargetSelector } from "./targetSelector.js";
+import { getPageWindow, isHtmlElement, queryPageSelector } from "../overlay/pageDocumentBridge.js";
 
 export { isFeedbackTargetVisible } from "../shared/dom.js";
 
@@ -18,8 +19,9 @@ export function getFeedbackTargetElement(report: Pick<ReportFeedback, "report_id
     }
 
     const selector = getFeedbackTargetSelector(report.report_id, report.report_type);
+    const element = queryPageSelector(selector);
 
-    return document.querySelector<HTMLElement>(selector);
+    return isHtmlElement(element) ? element : null;
 }
 
 export function getFeedbackAnchorElement(report: Pick<ReportFeedback, "position">) {
@@ -30,8 +32,9 @@ export function getFeedbackAnchorElement(report: Pick<ReportFeedback, "position"
     }
 
     const selector = getFeedbackTargetSelector(anchor.reportId, anchor.reportType);
+    const element = queryPageSelector(selector);
 
-    return document.querySelector<HTMLElement>(selector);
+    return isHtmlElement(element) ? element : null;
 }
 
 export function isFeedbackTargetDetached(report: Pick<ReportFeedback, "report_id" | "report_type">) {
@@ -69,6 +72,6 @@ export function scrollToFeedbackTarget(report: Pick<ReportFeedback, "report_id" 
         return { foundElement: true as const, targetElement: anchorElement };
     }
 
-    window.scrollTo({ top: normalizeReportPosition(report.position).scrollY, behavior: "smooth" });
+    getPageWindow().scrollTo({ top: normalizeReportPosition(report.position).scrollY, behavior: "smooth" });
     return { foundElement: false as const, targetElement: null };
 }

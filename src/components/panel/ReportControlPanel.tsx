@@ -3,7 +3,16 @@ import { panelAnchorSide, placementToCollapsedPanelStyle, usePanelDock } from "@
 import { usePanelResize, panelSizeToStyle } from "@/hooks/usePanelResize.js";
 import { usePanelFeedbackTransfer } from "@/hooks/usePanelFeedbackTransfer.js";
 import { useReport } from "@/providers/reportContext.js";
-import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, EyeOpenIcon, LogoIcon, SelectIcon, SettingsIcon } from "@/components/icons/Icons.js";
+import {
+    ChevronDownIcon,
+    ChevronLeftIcon,
+    ChevronRightIcon,
+    DevicePreviewIcon,
+    EyeOpenIcon,
+    LogoIcon,
+    SelectIcon,
+    SettingsIcon,
+} from "@/components/icons/Icons.js";
 import { IconTooltipButton } from "@/components/ui/IconTooltipButton.js";
 import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
 import { PanelDockGuides } from "./PanelDockGuides.js";
@@ -29,11 +38,13 @@ import { PanelRoleSwitch } from "./PanelRoleSwitch.js";
 import { PanelPresentationSwitch } from "./PanelPresentationSwitch.js";
 import { PanelAutoRefreshControl } from "./PanelAutoRefreshControl.js";
 import { PanelOnboarding } from "./PanelOnboarding.js";
+import { isInsideDevicePreviewFrame } from "@/utils/overlay/devicePreviewFrame.js";
 import { PanelKeyGate } from "./PanelKeyGate.js";
 import { PanelProjectFooter } from "./PanelProjectFooter.js";
 import { createPersonalKeyBackupFilename, downloadPersonalKeyBackup } from "@/utils/feedback/feedbackDataTransfer.js";
 import { getPanelTabDefinition } from "@/constants/panelTabRegistry.js";
 import { MOTION, PANEL_TAB_FADE_MS, panelCollapseInClass } from "@/constants/motionClasses.js";
+import { PANEL_LAYER_Z_INDEX } from "@/utils/overlay/floatingWindowStack.js";
 import type { ReportPanelTab } from "@/types/report-ui.js";
 
 function PanelCollapseTab({ collapsed, anchorSide, onClick, messages }: { collapsed: boolean; anchorSide: "left" | "right"; onClick: () => void; messages: ReturnType<typeof useReport>["messages"] }) {
@@ -109,6 +120,8 @@ export function ReportControlPanel() {
         refetch,
         panelCollapsed,
         setPanelCollapsed,
+        devicePreviewUiOpen,
+        setDevicePreviewUiOpen,
     } = useReport();
     const [personalKeyStep, setPersonalKeyStep] = useState<"none" | "required" | "insert" | "rotate">("none");
     const [personalKeyNotice, setPersonalKeyNotice] = useState("");
@@ -284,24 +297,28 @@ export function ReportControlPanel() {
             {isResizing ? (
                 <CornerResizeGhost
                     ghostRef={ghostRef}
-                    zIndexClassName="z-[1000001]"
+                    zIndexClassName="z-[1001001]"
                 />
             ) : null}
 
             <div
                 ref={panelRef}
+                data-fp-chrome="panel"
+                data-collapsed={panelCollapsed && !isRecording ? "true" : "false"}
+                data-dragging={isDragging ? "true" : "false"}
+                data-anchor-side={anchorSide}
                 onDragEnter={isGateView ? undefined : handleDragEnter}
                 onDragLeave={isGateView ? undefined : handleDragLeave}
                 onDragOver={isGateView ? undefined : handleDragOver}
                 onDrop={isGateView ? undefined : handleDrop}
-                className={`pointer-events-auto z-[1000000] border border-[var(--adaptive-border-subtle)] flex ${MOTION.panelEnter} ${MOTION.panelDock} ${isDragging ? MOTION.panelDockDragging : ""} ${
+                className={`pointer-events-auto border border-[var(--adaptive-border-subtle)] flex ${MOTION.panelEnter} ${MOTION.panelDock} ${isDragging ? MOTION.panelDockDragging : ""} ${
                     isRecording
-                        ? "min-h-[40px] bg-[var(--adaptive-neutralTintOpacity900)] backdrop-blur-[10px] rounded-[16px] shadow-[0_0_120px_0_var(--adaptive-black500)]"
+                        ? "min-h-[40px] bg-[var(--adaptive-neutralTintOpacity900)] backdrop-blur-[10px] rounded-[16px] shadow-[var(--adaptive-popup-shadow)]"
                         : panelCollapsed
                           ? ""
-                          : "relative bg-[var(--adaptive-neutralTintOpacity900)] backdrop-blur-[10px] rounded-[16px] shadow-[0_0_120px_0_var(--adaptive-black500)]"
+                          : "relative bg-[var(--adaptive-neutralTintOpacity900)] backdrop-blur-[10px] rounded-[16px] shadow-[var(--adaptive-popup-shadow)]"
                 }`}
-                style={{ ...resolvedPanelStyle, ...resolvedSizeStyle }}
+                style={{ ...resolvedPanelStyle, ...resolvedSizeStyle, zIndex: PANEL_LAYER_Z_INDEX }}
             >
                 {panelExpanded ? (
                     <CornerResizeHandle
@@ -389,6 +406,22 @@ export function ReportControlPanel() {
                                                 >
                                                     <EyeOpenIcon className="h-[16px] w-[16px]" />
                                                 </IconTooltipButton>
+
+                                                {isInsideDevicePreviewFrame() ? null : (
+                                                    <IconTooltipButton
+                                                        label={messages.panel.devicePreview}
+                                                        active={devicePreviewUiOpen}
+                                                        onClick={() => {
+                                                            if (mode === "view") {
+                                                                toggleIssueMode();
+                                                            }
+
+                                                            setDevicePreviewUiOpen(!devicePreviewUiOpen);
+                                                        }}
+                                                    >
+                                                        <DevicePreviewIcon className="h-[16px] w-[16px]" />
+                                                    </IconTooltipButton>
+                                                )}
 
                                                 <PanelAutoRefreshControl />
 

@@ -1,6 +1,6 @@
 {
     "name": "@fivepixels-js/react",
-    "version": "0.2.8",
+    "version": "0.2.10",
     "description": "React library for DOM element feedback markers on staging, QA, and internal tool UIs",
     "license": "MIT",
     "keywords": [
@@ -34,7 +34,9 @@
         "node": ">=18"
     },
     "files": [
-        "dist"
+        "dist",
+        "LICENSE",
+        "THIRD_PARTY_NOTICES.md"
     ],
     "main": "./dist/index.js",
     "module": "./dist/index.js",
@@ -83,5 +85,8 @@
         "vite": "^6.3.5",
         "vitest": "^4.1.7",
         "zustand": "^5.0.14"
+    },
+    "dependencies": {
+        "html-to-image": "^1.11.13"
     }
 }

@@ -1,8 +1,10 @@
 import { MAX_PINNED_FEEDBACK } from "../../types/pinnedFeedback.js";
 import { getCaseById, getIssueSummary } from "../../utils/report/reportCases.js";
+import { DEFAULT_PIN_RAIL_PLACEMENT, sanitizePinRailPlacement } from "../../utils/overlay/edgeDock.js";
 const EMPTY_PREFERENCE = {
     items: [],
-    railCollapsed: false,
+    railCollapsed: true,
+    placement: { ...DEFAULT_PIN_RAIL_PLACEMENT },
 };
 export function getPinnedFeedbackStorageKey(projectId, environment) {
     return ["fivepixels:pinned-feedback:v1", projectId, environment].filter(Boolean).join(":");
@@ -40,7 +42,8 @@ export function sanitizePinnedFeedbackPreference(value) {
         : [];
     return {
         items,
-        railCollapsed: Boolean(raw.railCollapsed),
+        railCollapsed: raw.railCollapsed === undefined ? true : Boolean(raw.railCollapsed),
+        placement: sanitizePinRailPlacement(raw.placement),
     };
 }
 export function getPinnedFeedbackCaseProgress(items) {

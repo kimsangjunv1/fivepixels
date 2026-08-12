@@ -26,6 +26,18 @@ function isLegacyPanelPlacement(value) {
         isPanelEdge(String(value.edge)) &&
         typeof value.offset === "number");
 }
+/** Temporary edge+offsetRatio format used during the edge-dock experiment. */
+function isTemporaryEdgeRatioPlacement(value) {
+    if (!value || typeof value !== "object" || "corner" in value || "offset" in value) {
+        return false;
+    }
+    const placement = value;
+    return (placement.edge === "left" || placement.edge === "right") && typeof placement.offsetRatio === "number" && Number.isFinite(placement.offsetRatio);
+}
+function temporaryEdgeRatioToCorner(edge, offsetRatio) {
+    const vertical = offsetRatio < 0.5 ? "top" : "bottom";
+    return `${vertical}-${edge}`;
+}
 function edgeOffsetToCorner(edge, offset) {
     if (typeof window === "undefined") {
         return DEFAULT_PLACEMENT.corner;
@@ -66,6 +78,9 @@ function readStoredPlacement() {
             if (isPanelPlacement(parsed)) {
                 return parsed;
             }
+            if (isTemporaryEdgeRatioPlacement(parsed)) {
+                return { corner: temporaryEdgeRatioToCorner(parsed.edge, parsed.offsetRatio) };
+            }
             if (isLegacyPanelPlacement(parsed)) {
                 return { corner: edgeOffsetToCorner(parsed.edge, parsed.offset) };
             }
@@ -80,6 +95,10 @@ function readStoredPlacement() {
     }
     return DEFAULT_PLACEMENT;
 }
+/** Read the persisted panel corner for collision avoidance with other chrome. */
+export function getStoredPanelCorner() {
+    return readStoredPlacement().corner;
+}
 function persistPlacement(placement) {
     try {
         window.localStorage.setItem(STORAGE_KEY, JSON.stringify(placement));
@@ -87,6 +106,9 @@ function persistPlacement(placement) {
     }
     catch {
         // Ignore storage failures in restricted environments.
+    }
+    if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("fivepixels:panel-placement", { detail: placement }));
     }
 }
 export function getNearestPanelCorner(clientX, clientY) {

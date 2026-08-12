@@ -1,6 +1,13 @@
 import { TARGET_SELECTOR } from "../../constants/report.js";
 import { getPickTargetBoxStyle, getPickTargetFontStyle, getPickTargetReportIdAttribute, getPickTargetTagName } from "../probe/pickTargetInspect.js";
 import { createAutoPickReportId, generateCssSelector, generateSuggestedReportId, isPickableElement, } from "../marker/targetSelector.js";
+import { getElementHostRect, getPageElementsFromPoint, getPageViewportSize, getPageWindow, isHtmlElement, queryPageSelector, queryPageSelectorAll, } from "../overlay/pageDocumentBridge.js";
+function getElementWindow(element) {
+    return element.ownerDocument.defaultView ?? getPageWindow();
+}
+function getElementDocumentElement(element) {
+    return element.ownerDocument.documentElement;
+}
 export function escapeAttribute(value) {
     return value.split("\\").join("\\\\").split('"').join('\\"');
 }
@@ -27,12 +34,13 @@ function intersectsViewport(rect) {
     if (rect.width <= 0 || rect.height <= 0) {
         return false;
     }
-    return rect.right > 0 && rect.bottom > 0 && rect.left < window.innerWidth && rect.top < window.innerHeight;
+    const viewport = getPageViewportSize();
+    return rect.right > 0 && rect.bottom > 0 && rect.left < viewport.width && rect.top < viewport.height;
 }
 export function hasFixedPositionAncestor(element) {
     let node = element.parentElement;
-    while (node && node !== document.documentElement) {
-        if (window.getComputedStyle(node).position === "fixed") {
+    while (node && node !== getElementDocumentElement(node)) {
+        if (getElementWindow(node).getComputedStyle(node).position === "fixed") {
             return true;
         }
         node = node.parentElement;
@@ -47,8 +55,8 @@ export function isFeedbackTargetVisible(element) {
     }
     else {
         let node = element;
-        while (node && node !== document.documentElement) {
-            if (isStyleHidden(window.getComputedStyle(node))) {
+        while (node && node !== getElementDocumentElement(node)) {
+            if (isStyleHidden(getElementWindow(node).getComputedStyle(node))) {
                 return false;
             }
             node = node.parentElement;
@@ -152,15 +160,15 @@ export function toSnapshot(element) {
     return {
         id: reportId,
         type: resolveReportType(element),
-        rect: element.getBoundingClientRect(),
+        rect: getElementHostRect(element),
         isTagged: true,
     };
 }
 export function resolveFeedbackDocumentAnchor(targetElement) {
     let node = targetElement.parentElement;
-    while (node && node !== document.documentElement) {
+    while (node && node !== getElementDocumentElement(node)) {
         const reportId = node.dataset.reportId?.trim();
-        if (reportId && window.getComputedStyle(node).position !== "fixed") {
+        if (reportId && getElementWindow(node).getComputedStyle(node).position !== "fixed") {
             return toSnapshot(node);
         }
         node = node.parentElement;
@@ -192,8 +200,8 @@ function isScrollableOverflow(value) {
 }
 export function getNearestScrollContainer(element) {
     let node = element.parentElement;
-    while (node && node !== document.documentElement) {
-        const style = window.getComputedStyle(node);
+    while (node && node !== getElementDocumentElement(node)) {
+        const style = getElementWindow(node).getComputedStyle(node);
         const canScrollY = isScrollableOverflow(style.overflowY) && node.scrollHeight > node.clientHeight + 1;
         const canScrollX = isScrollableOverflow(style.overflowX) && node.scrollWidth > node.clientWidth + 1;
         if (canScrollY || canScrollX) {
@@ -214,7 +222,7 @@ export function getScrollContainerClampId(scrollContainer) {
     return id;
 }
 export function getScrollContainerByClampId(containerId) {
-    return document.querySelector(`[${SCROLL_CLAMP_ATTR}="${containerId}"]`);
+    return queryPageSelector(`[${SCROLL_CLAMP_ATTR}="${containerId}"]`);
 }
 export function scrollContainerTowardEdge(containerId, edge) {
     const container = getScrollContainerByClampId(containerId);
@@ -238,23 +246,17 @@ export function scrollContainerTowardEdge(containerId, edge) {
     }
 }
 export function getSelectableTargets() {
-    return Array.from(document.querySelectorAll(TARGET_SELECTOR))
+    return queryPageSelectorAll(TARGET_SELECTOR)
+        .filter(isHtmlElement)
         .map((element) => toSnapshot(element))
         .filter((snapshot) => snapshot !== null);
 }
 function getElementsFromPoint(clientX, clientY) {
-    if (typeof document.elementsFromPoint === "function") {
-        return document.elementsFromPoint(clientX, clientY).filter((node) => node instanceof HTMLElement);
-    }
-    if (typeof document.elementFromPoint === "function") {
-        const hitElement = document.elementFromPoint(clientX, clientY);
-        return hitElement instanceof HTMLElement ? [hitElement] : [];
-    }
-    return [];
+    return getPageElementsFromPoint(clientX, clientY);
 }
 function isAriaHiddenSubtree(element) {
     let node = element;
-    while (node && node !== document.documentElement) {
+    while (node && node !== getElementDocumentElement(node)) {
         if (node.getAttribute("aria-hidden") === "true") {
             return true;
         }
@@ -272,26 +274,29 @@ function isSelectableFeedbackTarget(target) {
     return true;
 }
 function isPointerEventBlockingLayer(element, clientX, clientY) {
-    const style = window.getComputedStyle(element);
+    const pageWindow = getElementWindow(element);
+    const style = pageWindow.getComputedStyle(element);
     if (style.pointerEvents === "none" || isStyleHidden(style)) {
         return false;
     }
     if (style.position !== "fixed" && style.position !== "sticky") {
         return false;
     }
-    const rect = element.getBoundingClientRect();
-    const isPointInside = clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom;
+    const hostRect = getElementHostRect(element);
+    const isPointInside = clientX >= hostRect.left && clientX <= hostRect.right && clientY >= hostRect.top && clientY <= hostRect.bottom;
     if (!isPointInside) {
         return false;
     }
-    const viewportArea = window.innerWidth * window.innerHeight;
-    const elementArea = rect.width * rect.height;
+    const pageRect = element.getBoundingClientRect();
+    const viewport = getPageViewportSize();
+    const viewportArea = viewport.width * viewport.height;
+    const elementArea = pageRect.width * pageRect.height;
     const coverageRatio = viewportArea > 0 ? elementArea / viewportArea : 0;
-    const nearlyFullscreen = rect.width >= window.innerWidth * 0.9 && rect.height >= window.innerHeight * 0.9;
+    const nearlyFullscreen = pageRect.width >= viewport.width * 0.9 && pageRect.height >= viewport.height * 0.9;
     const looksModalLayer = element.getAttribute("aria-modal") === "true" || element.getAttribute("role") === "dialog";
     // Treat only broad overlays/modal shells as blockers.
     // Small fixed headers/toolbars should not block target picking.
-    return (rect.width > 0 && rect.height > 0 && coverageRatio >= 0.35) || nearlyFullscreen || looksModalLayer;
+    return (pageRect.width > 0 && pageRect.height > 0 && coverageRatio >= 0.35) || nearlyFullscreen || looksModalLayer;
 }
 export function toPickSnapshot(element) {
     if (!element) {
@@ -303,7 +308,7 @@ export function toPickSnapshot(element) {
     return {
         id: reportId ?? createAutoPickReportId(selector),
         type: reportId ? resolveReportType(element) : "item",
-        rect: element.getBoundingClientRect(),
+        rect: getElementHostRect(element),
         isTagged: Boolean(reportId),
         targetSelector: selector,
         suggestedReportId,

@@ -1,4 +1,5 @@
 import { escapeAttribute, getFeedbackTargetSelector, isFeedbackTargetVisible, resolveReportType } from "../shared/dom.js";
+import { isHtmlElement, queryPageSelector } from "../overlay/pageDocumentBridge.js";
 const REPORT_HOST_ID = "fivepixels-root";
 const AUTO_ID_PREFIX = "fp-pick-";
 const NON_PICKABLE_TAGS = new Set(["HTML", "HEAD", "BODY", "SCRIPT", "STYLE", "NOSCRIPT", "SVG", "PATH"]);
@@ -89,13 +90,8 @@ export function generateCssSelector(element) {
     return path.join(" > ");
 }
 export function findElementByTargetSelector(selector) {
-    try {
-        const element = document.querySelector(selector);
-        return element instanceof HTMLElement ? element : null;
-    }
-    catch {
-        return null;
-    }
+    const element = queryPageSelector(selector);
+    return isHtmlElement(element) ? element : null;
 }
 export function resolveTargetBinding(report) {
     if (report.target_selector) {
@@ -104,11 +100,11 @@ export function resolveTargetBinding(report) {
             return { kind: "selector", element: bySelector };
         }
     }
-    const byReportId = document.querySelector(getFeedbackTargetSelector(report.report_id, report.report_type));
-    if (byReportId && isFeedbackTargetVisible(byReportId)) {
+    const byReportId = queryPageSelector(getFeedbackTargetSelector(report.report_id, report.report_type));
+    if (isHtmlElement(byReportId) && isFeedbackTargetVisible(byReportId)) {
         return { kind: "report-id", element: byReportId };
     }
-    return { kind: "coordinates", element: byReportId };
+    return { kind: "coordinates", element: isHtmlElement(byReportId) ? byReportId : null };
 }
 export function isPickableElement(element) {
     if (NON_PICKABLE_TAGS.has(element.tagName)) {

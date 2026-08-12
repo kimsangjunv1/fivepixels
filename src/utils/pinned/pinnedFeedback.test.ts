@@ -25,7 +25,11 @@ function makeReport(overrides?: Parameters<typeof createReportFeedback>[0]) {
 
 describe("pinnedFeedback", () => {
     it("sanitizes invalid preference payloads", () => {
-        expect(sanitizePinnedFeedbackPreference(null)).toEqual({ items: [], railCollapsed: false });
+        expect(sanitizePinnedFeedbackPreference(null)).toEqual({
+            items: [],
+            railCollapsed: true,
+            placement: { left: 16, top: 16 },
+        });
         expect(
             sanitizePinnedFeedbackPreference({
                 railCollapsed: true,
@@ -33,6 +37,7 @@ describe("pinnedFeedback", () => {
             }),
         ).toEqual({
             railCollapsed: true,
+            placement: { left: 16, top: 16 },
             items: [
                 {
                     reportId: "a",

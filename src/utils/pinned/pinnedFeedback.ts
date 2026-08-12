@@ -1,10 +1,12 @@
 import type { ReportFeedback } from "@/types/report.js";
 import { MAX_PINNED_FEEDBACK, type PinnedFeedbackItem, type PinnedFeedbackPreference } from "@/types/pinnedFeedback.js";
 import { getCaseById, getIssueSummary } from "@/utils/report/reportCases.js";
+import { DEFAULT_PIN_RAIL_PLACEMENT, sanitizePinRailPlacement } from "@/utils/overlay/edgeDock.js";
 
 const EMPTY_PREFERENCE: PinnedFeedbackPreference = {
     items: [],
-    railCollapsed: false,
+    railCollapsed: true,
+    placement: { ...DEFAULT_PIN_RAIL_PLACEMENT },
 };
 
 export function getPinnedFeedbackStorageKey(projectId: string, environment?: string) {
@@ -54,7 +56,8 @@ export function sanitizePinnedFeedbackPreference(value: unknown): PinnedFeedback
 
     return {
         items,
-        railCollapsed: Boolean(raw.railCollapsed),
+        railCollapsed: raw.railCollapsed === undefined ? true : Boolean(raw.railCollapsed),
+        placement: sanitizePinRailPlacement(raw.placement),
     };
 }
 

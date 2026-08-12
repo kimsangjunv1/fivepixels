@@ -5,6 +5,7 @@ import { ReportProvider } from "@/providers/ReportProvider.js";
 import { resolveReportEnabled } from "@/utils/shared/env.js";
 import { resolveReportVisibility } from "@/utils/report/reportVisibility.js";
 import type { FivePixelsProps } from "@/types/publicApi.js";
+import { isInsideDevicePreviewFrame } from "@/utils/overlay/devicePreviewFrame.js";
 import { ReportView } from "./ReportView.js";
 
 export type { FivePixelsProps } from "@/types/publicApi.js";
@@ -40,6 +41,11 @@ export function FivePixels({
     const resolvedVisibility = resolveReportVisibility({ visibility });
 
     if (!resolveReportEnabled(resolvedVisibility)) {
+        return null;
+    }
+
+    // Parent owns the panel/overlays; guest iframe only renders the page so media queries match the device.
+    if (isInsideDevicePreviewFrame()) {
         return null;
     }
 
