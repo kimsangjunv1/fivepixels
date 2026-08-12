@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useReportPreferences } from "@/providers/reportContext.js";
 import {
     DEVICE_PREVIEW_BRAND_ORDER,
@@ -14,6 +14,13 @@ import {
 import { PanelOptionSwitch } from "@/components/panel/PanelOptionSwitch.js";
 import { FloatingWindow, type FloatingWindowMode } from "@/components/ui/FloatingWindow.js";
 import type { WindowPosition } from "@/hooks/useDraggableWindow.js";
+import {
+    buildDevicePreviewCaptureFilename,
+    captureDevicePreview,
+    downloadCanvasPng,
+    getDevicePreviewCaptureLayout,
+    type DevicePreviewCaptureState,
+} from "@/utils/overlay/devicePreviewCapture.js";
 import { DeviceFrameArtwork } from "./DeviceFrameArtwork.js";
 import { DevicePreviewQrCard } from "./DevicePreviewQrCard.js";
 import { DeviceStatusBar, getDeviceStatusBarHeight } from "./DeviceStatusBar.js";
@@ -239,7 +246,13 @@ function clearRootInlineStyles(root: HTMLElement) {
     }
 }
 
-function DevicePreviewFloatingBar() {
+function DevicePreviewFloatingBar({
+    captureState,
+    onCapture,
+}: {
+    captureState: DevicePreviewCaptureState;
+    onCapture: () => void;
+}) {
     const {
         messages,
         devicePreviewDeviceId,
@@ -256,6 +269,14 @@ function DevicePreviewFloatingBar() {
     } = useReportPreferences();
     const [position, setPosition] = useState<WindowPosition>(() => readDevicePreviewBarPosition());
     const [mode, setMode] = useState<FloatingWindowMode>("normal");
+    const captureLabel =
+        captureState === "capturing"
+            ? messages.settings.devicePreviewCaptureCapturingLabel
+            : captureState === "saved"
+              ? messages.settings.devicePreviewCaptureSavedLabel
+              : captureState === "failed"
+                ? messages.settings.devicePreviewCaptureFailedLabel
+                : messages.settings.devicePreviewCaptureLabel;
 
     const selectClassName =
         "h-[30px] w-full rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] px-[8px] text-[11px] font-semibold text-[var(--adaptive-black900)] outline-none focus:border-[var(--adaptive-blue500)]";
@@ -383,6 +404,16 @@ function DevicePreviewFloatingBar() {
                         ariaLabel={messages.settings.devicePreviewStatusBarAriaLabel}
                     />
                 </div>
+
+                <button
+                    type="button"
+                    onClick={onCapture}
+                    disabled={captureState === "capturing"}
+                    aria-label={messages.settings.devicePreviewCaptureAriaLabel}
+                    className="h-[28px] rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] px-[8px] text-[10px] font-semibold text-[var(--adaptive-black900)] hover:bg-[var(--adaptive-black100)] disabled:opacity-60"
+                >
+                    {captureLabel}
+                </button>
             </div>
         </FloatingWindow>
     );
@@ -414,6 +445,10 @@ export function DevicePreviewChrome() {
     }, [devicePreviewImageEnabled, preset, devicePreviewScale]);
     const hostCanvas = DEVICE_PREVIEW_HOST_CANVAS[resolvedPanelAppearance === "dark" ? "dark" : "light"];
     const canvasStyle = useMemo(() => buildDevicePreviewCanvasStyle(hostCanvas), [hostCanvas]);
+    const stageRef = useRef<HTMLDivElement>(null);
+    const statusBarRef = useRef<HTMLDivElement>(null);
+    const captureResetTimerRef = useRef<number | null>(null);
+    const [captureState, setCaptureState] = useState<DevicePreviewCaptureState>("idle");
 
     const [metrics, setMetrics] = useState<ContentMetrics>(() =>
         typeof window === "undefined"
@@ -450,6 +485,76 @@ export function DevicePreviewChrome() {
         () => (devicePreviewStatusBarEnabled ? getDeviceStatusBarHeight(preset, centered.screenWidth) : 0),
         [devicePreviewStatusBarEnabled, preset, centered.screenWidth],
     );
+
+    const handleCapture = useCallback(async () => {
+        if (captureState === "capturing") {
+            return;
+        }
+
+        const contentRoot = getPreviewContentRoot();
+
+        if (captureResetTimerRef.current !== null) {
+            window.clearTimeout(captureResetTimerRef.current);
+            captureResetTimerRef.current = null;
+        }
+
+        setCaptureState("capturing");
+
+        try {
+            if (!contentRoot) {
+                throw new Error("Device preview content is missing.");
+            }
+
+            const layout = getDevicePreviewCaptureLayout({
+                screenWidth: centered.screenWidth,
+                screenHeight: centered.screenHeight,
+                bezel: chrome.bezel,
+                deviceImageEnabled: devicePreviewImageEnabled,
+            });
+            const canvas = await captureDevicePreview({
+                contentRoot,
+                chromeStage: stageRef.current,
+                statusBarLayer: statusBarRef.current,
+                deviceImageEnabled: devicePreviewImageEnabled,
+                statusBarEnabled: devicePreviewStatusBarEnabled,
+                layout,
+                background: hostCanvas.screen,
+            });
+            await downloadCanvasPng(
+                canvas,
+                buildDevicePreviewCaptureFilename({
+                    deviceId: preset.id,
+                    width: centered.screenWidth,
+                    height: centered.screenHeight,
+                }),
+            );
+            setCaptureState("saved");
+        } catch {
+            setCaptureState("failed");
+        } finally {
+            captureResetTimerRef.current = window.setTimeout(() => {
+                setCaptureState("idle");
+                captureResetTimerRef.current = null;
+            }, 1600);
+        }
+    }, [
+        captureState,
+        centered.screenHeight,
+        centered.screenWidth,
+        chrome.bezel,
+        devicePreviewImageEnabled,
+        devicePreviewStatusBarEnabled,
+        hostCanvas.screen,
+        preset.id,
+    ]);
+
+    useEffect(() => {
+        return () => {
+            if (captureResetTimerRef.current !== null) {
+                window.clearTimeout(captureResetTimerRef.current);
+            }
+        };
+    }, []);
 
     useEffect(() => {
         if (!devicePreviewUiOpen) {
@@ -658,7 +763,9 @@ html.${HTML_ACTIVE_CLASS} #root .pulse-content {
                 />
 
                 <div
+                    ref={stageRef}
                     className="absolute z-[3]"
+                    data-fivepixels-device-preview-stage=""
                     style={{
                         left: frameLeft,
                         top: frameTop,
@@ -677,6 +784,7 @@ html.${HTML_ACTIVE_CLASS} #root .pulse-content {
                     ) : (
                         <div
                             className="absolute border border-[var(--adaptive-border-subtle)] bg-transparent"
+                            data-fivepixels-skip-capture=""
                             style={{
                                 left: centered.bezel.left,
                                 top: centered.bezel.top,
@@ -688,6 +796,7 @@ html.${HTML_ACTIVE_CLASS} #root .pulse-content {
 
                     {devicePreviewStatusBarEnabled ? (
                         <div
+                            ref={statusBarRef}
                             className="absolute z-[1] overflow-hidden"
                             style={{
                                 left: centered.bezel.left,
@@ -709,6 +818,7 @@ html.${HTML_ACTIVE_CLASS} #root .pulse-content {
 
                 <div
                     className="absolute overflow-hidden border-r border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-neutralTintOpacity900)] text-[var(--adaptive-black900)] backdrop-blur-[4px]"
+                    data-fivepixels-skip-capture=""
                     style={{ left: rulerLeft, top: rulerTop, width: RULER_WIDTH, height: rulerHeight, borderRadius: 6 }}
                 >
                     <div className="absolute inset-x-0 top-0 z-[1] border-b border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-neutralTintOpacity900)] px-[4px] py-[6px] text-center text-[9px] font-semibold leading-tight text-[var(--adaptive-black900)]">
@@ -764,7 +874,10 @@ html.${HTML_ACTIVE_CLASS} #root .pulse-content {
                 />
             ) : null}
 
-            <DevicePreviewFloatingBar />
+            <DevicePreviewFloatingBar
+                captureState={captureState}
+                onCapture={() => void handleCapture()}
+            />
         </>
     );
 }

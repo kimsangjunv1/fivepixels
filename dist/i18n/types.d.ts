@@ -463,6 +463,11 @@ export type ReportMessages = {
         devicePreviewQrCopyLabel: string;
         devicePreviewQrCopiedLabel: string;
         devicePreviewQrCopyAriaLabel: string;
+        devicePreviewCaptureLabel: string;
+        devicePreviewCaptureCapturingLabel: string;
+        devicePreviewCaptureSavedLabel: string;
+        devicePreviewCaptureFailedLabel: string;
+        devicePreviewCaptureAriaLabel: string;
         sectionViewerSwitch: string;
         viewerSwitchAriaLabel: string;
         viewerSwitchHint: string;

@@ -1,9 +1,10 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useReportPreferences } from "../../providers/reportContext.js";
 import { DEVICE_PREVIEW_BRAND_ORDER, DEVICE_PREVIEW_SCALE_OPTIONS, formatDevicePreviewScale, getDevicePreviewLayoutSize, getDevicePreviewPreset, getDevicePreviewPresetsByBrand, getEmptyBezel, scaleDeviceChrome, } from "../../constants/devicePreview.js";
 import { PanelOptionSwitch } from "../../components/panel/PanelOptionSwitch.js";
 import { FloatingWindow } from "../../components/ui/FloatingWindow.js";
+import { buildDevicePreviewCaptureFilename, captureDevicePreview, downloadCanvasPng, getDevicePreviewCaptureLayout, } from "../../utils/overlay/devicePreviewCapture.js";
 import { DeviceFrameArtwork } from "./DeviceFrameArtwork.js";
 import { DevicePreviewQrCard } from "./DevicePreviewQrCard.js";
 import { DeviceStatusBar, getDeviceStatusBarHeight } from "./DeviceStatusBar.js";
@@ -181,10 +182,17 @@ function clearRootInlineStyles(root) {
         root.style.removeProperty(prop);
     }
 }
-function DevicePreviewFloatingBar() {
+function DevicePreviewFloatingBar({ captureState, onCapture, }) {
     const { messages, devicePreviewDeviceId, setDevicePreviewDeviceId, devicePreviewScale, setDevicePreviewScale, devicePreviewImageEnabled, setDevicePreviewImageEnabled, devicePreviewFitToViewport, setDevicePreviewFitToViewport, devicePreviewStatusBarEnabled, setDevicePreviewStatusBarEnabled, setDevicePreviewUiOpen, } = useReportPreferences();
     const [position, setPosition] = useState(() => readDevicePreviewBarPosition());
     const [mode, setMode] = useState("normal");
+    const captureLabel = captureState === "capturing"
+        ? messages.settings.devicePreviewCaptureCapturingLabel
+        : captureState === "saved"
+            ? messages.settings.devicePreviewCaptureSavedLabel
+            : captureState === "failed"
+                ? messages.settings.devicePreviewCaptureFailedLabel
+                : messages.settings.devicePreviewCaptureLabel;
     const selectClassName = "h-[30px] w-full rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] px-[8px] text-[11px] font-semibold text-[var(--adaptive-black900)] outline-none focus:border-[var(--adaptive-blue500)]";
     const handlePositionChange = useCallback((next) => {
         setPosition(next);
@@ -211,7 +219,7 @@ function DevicePreviewFloatingBar() {
                             ], value: devicePreviewFitToViewport ? "on" : "off", onChange: (value) => setDevicePreviewFitToViewport(value === "on"), ariaLabel: messages.settings.devicePreviewFitViewportAriaLabel })] }), _jsxs("div", { className: "flex flex-col gap-[3px]", children: [_jsx("span", { className: "text-[9px] font-semibold text-[var(--adaptive-black500)]", children: messages.settings.devicePreviewStatusBarLabel }), _jsx(PanelOptionSwitch, { options: [
                                 { value: "off", label: messages.settings.devicePreviewStatusBarOff },
                                 { value: "on", label: messages.settings.devicePreviewStatusBarOn },
-                            ], value: devicePreviewStatusBarEnabled ? "on" : "off", onChange: (value) => setDevicePreviewStatusBarEnabled(value === "on"), ariaLabel: messages.settings.devicePreviewStatusBarAriaLabel })] })] }) }));
+                            ], value: devicePreviewStatusBarEnabled ? "on" : "off", onChange: (value) => setDevicePreviewStatusBarEnabled(value === "on"), ariaLabel: messages.settings.devicePreviewStatusBarAriaLabel })] }), _jsx("button", { type: "button", onClick: onCapture, disabled: captureState === "capturing", "aria-label": messages.settings.devicePreviewCaptureAriaLabel, className: "h-[28px] rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] px-[8px] text-[10px] font-semibold text-[var(--adaptive-black900)] hover:bg-[var(--adaptive-black100)] disabled:opacity-60", children: captureLabel })] }) }));
 }
 export function DevicePreviewChrome() {
     const { devicePreviewUiOpen, devicePreviewDeviceId, devicePreviewScale, devicePreviewImageEnabled, devicePreviewFitToViewport, devicePreviewStatusBarEnabled, resolvedPanelAppearance, messages, } = useReportPreferences();
@@ -229,6 +237,10 @@ export function DevicePreviewChrome() {
     }, [devicePreviewImageEnabled, preset, devicePreviewScale]);
     const hostCanvas = DEVICE_PREVIEW_HOST_CANVAS[resolvedPanelAppearance === "dark" ? "dark" : "light"];
     const canvasStyle = useMemo(() => buildDevicePreviewCanvasStyle(hostCanvas), [hostCanvas]);
+    const stageRef = useRef(null);
+    const statusBarRef = useRef(null);
+    const captureResetTimerRef = useRef(null);
+    const [captureState, setCaptureState] = useState("idle");
     const [metrics, setMetrics] = useState(() => typeof window === "undefined"
         ? {
             scrollY: 0,
@@ -253,6 +265,68 @@ export function DevicePreviewChrome() {
         fitToViewport: devicePreviewFitToViewport,
     }), [layout.width, layout.height, chrome.bezel, metrics.viewportWidth, metrics.viewportHeight, devicePreviewFitToViewport]);
     const statusBarHeight = useMemo(() => (devicePreviewStatusBarEnabled ? getDeviceStatusBarHeight(preset, centered.screenWidth) : 0), [devicePreviewStatusBarEnabled, preset, centered.screenWidth]);
+    const handleCapture = useCallback(async () => {
+        if (captureState === "capturing") {
+            return;
+        }
+        const contentRoot = getPreviewContentRoot();
+        if (captureResetTimerRef.current !== null) {
+            window.clearTimeout(captureResetTimerRef.current);
+            captureResetTimerRef.current = null;
+        }
+        setCaptureState("capturing");
+        try {
+            if (!contentRoot) {
+                throw new Error("Device preview content is missing.");
+            }
+            const layout = getDevicePreviewCaptureLayout({
+                screenWidth: centered.screenWidth,
+                screenHeight: centered.screenHeight,
+                bezel: chrome.bezel,
+                deviceImageEnabled: devicePreviewImageEnabled,
+            });
+            const canvas = await captureDevicePreview({
+                contentRoot,
+                chromeStage: stageRef.current,
+                statusBarLayer: statusBarRef.current,
+                deviceImageEnabled: devicePreviewImageEnabled,
+                statusBarEnabled: devicePreviewStatusBarEnabled,
+                layout,
+                background: hostCanvas.screen,
+            });
+            await downloadCanvasPng(canvas, buildDevicePreviewCaptureFilename({
+                deviceId: preset.id,
+                width: centered.screenWidth,
+                height: centered.screenHeight,
+            }));
+            setCaptureState("saved");
+        }
+        catch {
+            setCaptureState("failed");
+        }
+        finally {
+            captureResetTimerRef.current = window.setTimeout(() => {
+                setCaptureState("idle");
+                captureResetTimerRef.current = null;
+            }, 1600);
+        }
+    }, [
+        captureState,
+        centered.screenHeight,
+        centered.screenWidth,
+        chrome.bezel,
+        devicePreviewImageEnabled,
+        devicePreviewStatusBarEnabled,
+        hostCanvas.screen,
+        preset.id,
+    ]);
+    useEffect(() => {
+        return () => {
+            if (captureResetTimerRef.current !== null) {
+                window.clearTimeout(captureResetTimerRef.current);
+            }
+        };
+    }, []);
     useEffect(() => {
         if (!devicePreviewUiOpen) {
             document.documentElement.classList.remove(HTML_ACTIVE_CLASS);
@@ -417,24 +491,24 @@ html.${HTML_ACTIVE_CLASS} #root .pulse-content {
                             top: frameTop,
                             height: centered.visualFrameHeight,
                             width: Math.max(0, metrics.viewportWidth - frameLeft - centered.visualFrameWidth),
-                        } }), _jsxs("div", { className: "absolute z-[3]", style: {
+                        } }), _jsxs("div", { ref: stageRef, className: "absolute z-[3]", "data-fivepixels-device-preview-stage": "", style: {
                             left: frameLeft,
                             top: frameTop,
                             width: centered.frameWidth,
                             height: centered.frameHeight,
                             ...stageTransform,
-                        }, children: [devicePreviewImageEnabled ? (_jsx(DeviceFrameArtwork, { preset: preset, chrome: chrome, screenWidth: screenWidth, screenHeight: screenHeight })) : (_jsx("div", { className: "absolute border border-[var(--adaptive-border-subtle)] bg-transparent", style: {
+                        }, children: [devicePreviewImageEnabled ? (_jsx(DeviceFrameArtwork, { preset: preset, chrome: chrome, screenWidth: screenWidth, screenHeight: screenHeight })) : (_jsx("div", { className: "absolute border border-[var(--adaptive-border-subtle)] bg-transparent", "data-fivepixels-skip-capture": "", style: {
                                     left: centered.bezel.left,
                                     top: centered.bezel.top,
                                     width: screenWidth,
                                     height: screenHeight,
-                                } })), devicePreviewStatusBarEnabled ? (_jsx("div", { className: "absolute z-[1] overflow-hidden", style: {
+                                } })), devicePreviewStatusBarEnabled ? (_jsx("div", { ref: statusBarRef, className: "absolute z-[1] overflow-hidden", style: {
                                     left: centered.bezel.left,
                                     top: centered.bezel.top,
                                     width: screenWidth,
                                     height: screenHeight,
                                     borderRadius: devicePreviewImageEnabled ? chrome.screenRadius : 0,
-                                }, children: _jsx(DeviceStatusBar, { preset: preset, width: screenWidth, appearance: resolvedPanelAppearance === "dark" ? "dark" : "light", showCutout: devicePreviewImageEnabled }) })) : null] }), _jsxs("div", { className: "absolute overflow-hidden border-r border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-neutralTintOpacity900)] text-[var(--adaptive-black900)] backdrop-blur-[4px]", style: { left: rulerLeft, top: rulerTop, width: RULER_WIDTH, height: rulerHeight, borderRadius: 6 }, children: [_jsx("div", { className: "absolute inset-x-0 top-0 z-[1] border-b border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-neutralTintOpacity900)] px-[4px] py-[6px] text-center text-[9px] font-semibold leading-tight text-[var(--adaptive-black900)]", children: scrollLabel }), ticks.map((tick) => {
+                                }, children: _jsx(DeviceStatusBar, { preset: preset, width: screenWidth, appearance: resolvedPanelAppearance === "dark" ? "dark" : "light", showCutout: devicePreviewImageEnabled }) })) : null] }), _jsxs("div", { className: "absolute overflow-hidden border-r border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-neutralTintOpacity900)] text-[var(--adaptive-black900)] backdrop-blur-[4px]", "data-fivepixels-skip-capture": "", style: { left: rulerLeft, top: rulerTop, width: RULER_WIDTH, height: rulerHeight, borderRadius: 6 }, children: [_jsx("div", { className: "absolute inset-x-0 top-0 z-[1] border-b border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-neutralTintOpacity900)] px-[4px] py-[6px] text-center text-[9px] font-semibold leading-tight text-[var(--adaptive-black900)]", children: scrollLabel }), ticks.map((tick) => {
                                 const top = (tick.documentY - metrics.scrollY - statusBarHeight) * centered.fitScale;
                                 if (top < 0 || top > rulerHeight) {
                                     return null;
@@ -444,6 +518,6 @@ html.${HTML_ACTIVE_CLASS} #root .pulse-content {
                             })] })] }), showQrCard ? (_jsx(DevicePreviewQrCard, { left: qrLeft, 
                 // top={Math.max(8, frameTop)}
                 // top={Math.max(8, frameTop)}
-                maxWidth: qrMaxWidth, title: messages.settings.devicePreviewQrTitle, hintLocalhost: messages.settings.devicePreviewQrHintLocalhost, urlInputLabel: messages.settings.devicePreviewQrUrlInputLabel, urlInputPlaceholder: messages.settings.devicePreviewQrUrlInputPlaceholder, urlInputAriaLabel: messages.settings.devicePreviewQrUrlInputAriaLabel, invalidUrlMessage: messages.settings.devicePreviewQrInvalidUrl, emptyUrlMessage: messages.settings.devicePreviewQrEmptyUrl, copyLabel: messages.settings.devicePreviewQrCopyLabel, copiedLabel: messages.settings.devicePreviewQrCopiedLabel, copyAriaLabel: messages.settings.devicePreviewQrCopyAriaLabel, qrAriaLabel: messages.settings.devicePreviewQrAriaLabel })) : null, _jsx(DevicePreviewFloatingBar, {})] }));
+                maxWidth: qrMaxWidth, title: messages.settings.devicePreviewQrTitle, hintLocalhost: messages.settings.devicePreviewQrHintLocalhost, urlInputLabel: messages.settings.devicePreviewQrUrlInputLabel, urlInputPlaceholder: messages.settings.devicePreviewQrUrlInputPlaceholder, urlInputAriaLabel: messages.settings.devicePreviewQrUrlInputAriaLabel, invalidUrlMessage: messages.settings.devicePreviewQrInvalidUrl, emptyUrlMessage: messages.settings.devicePreviewQrEmptyUrl, copyLabel: messages.settings.devicePreviewQrCopyLabel, copiedLabel: messages.settings.devicePreviewQrCopiedLabel, copyAriaLabel: messages.settings.devicePreviewQrCopyAriaLabel, qrAriaLabel: messages.settings.devicePreviewQrAriaLabel })) : null, _jsx(DevicePreviewFloatingBar, { captureState: captureState, onCapture: () => void handleCapture() })] }));
 }
 //# sourceMappingURL=DevicePreviewChrome.js.map
