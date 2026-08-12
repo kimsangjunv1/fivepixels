@@ -123,6 +123,9 @@ export declare function RestoreIcon({ className }: {
 export declare function SidePanelIcon({ className }: {
     className?: string;
 }): import("react").JSX.Element;
+export declare function MoreHorizontalIcon({ className }: {
+    className?: string;
+}): import("react").JSX.Element;
 export declare const LogoIcon: ({ className }: {
     className?: string;
 }) => import("react").JSX.Element;

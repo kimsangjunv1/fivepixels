@@ -1,12 +1,18 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { CloseIcon, MaximizeIcon, MinimizeIcon, MoreHorizontalIcon, RestoreIcon } from "@/components/icons/Icons.js";
 import { CornerResizeGhost } from "@/components/ui/CornerResizeGhost.js";
 import { CornerResizeHandle } from "@/components/ui/CornerResizeHandle.js";
 import { clampWindowPosition, useDraggableWindow, type WindowPosition } from "@/hooks/useDraggableWindow.js";
 import { useGhostCornerResize, type BoxSize } from "@/hooks/useGhostCornerResize.js";
 import { claimFloatingWindowZIndex, getFloatingWindowZBase } from "@/utils/overlay/floatingWindowStack.js";
 
-const TRAFFIC_LIGHT_BASE =
-    "h-[12px] w-[12px] shrink-0 rounded-full border border-black/10 transition-[filter,transform] duration-150 hover:brightness-95 active:scale-[0.96]";
+const HEADER_BUTTON_CLASS =
+    "flex h-[24px] w-[24px] shrink-0 items-center justify-center rounded-[6px] text-[var(--adaptive-black600)] transition-colors hover:bg-[var(--adaptive-tintOpacity200)] hover:text-[var(--adaptive-black900)]";
+const CONTROL_BUTTON_SIZE = 24;
+const CONTROL_BUTTON_GAP = 2;
+const CONTROL_BUTTON_COUNT = 3;
+const EXPANDED_CONTROLS_WIDTH = CONTROL_BUTTON_SIZE * CONTROL_BUTTON_COUNT + CONTROL_BUTTON_GAP * (CONTROL_BUTTON_COUNT - 1);
+const HEADER_GAP = 10;
 
 const MAXIMIZE_MARGIN = 12;
 const DEFAULT_MIN_WIDTH = 200;
@@ -14,14 +20,14 @@ const DEFAULT_MIN_HEIGHT = 120;
 
 export type FloatingWindowMode = "normal" | "minimized" | "maximized";
 
-type TrafficLightButtonProps = {
-    colorClassName: string;
+type WindowIconButtonProps = {
     ariaLabel: string;
     disabled?: boolean;
     onClick?: () => void;
+    children: ReactNode;
 };
 
-function TrafficLightButton({ colorClassName, ariaLabel, disabled, onClick }: TrafficLightButtonProps) {
+function WindowIconButton({ ariaLabel, disabled, onClick, children }: WindowIconButtonProps) {
     return (
         <button
             type="button"
@@ -30,8 +36,62 @@ function TrafficLightButton({ colorClassName, ariaLabel, disabled, onClick }: Tr
             onPointerDown={(event) => event.stopPropagation()}
             onClick={onClick}
             aria-label={ariaLabel}
-            className={`${TRAFFIC_LIGHT_BASE} ${colorClassName} ${disabled || !onClick ? "opacity-40" : "cursor-pointer"}`}
-        />
+            className={`${HEADER_BUTTON_CLASS} ${disabled || !onClick ? "opacity-40" : "cursor-pointer"}`}
+        >
+            {children}
+        </button>
+    );
+}
+
+type WindowModeControlButtonsProps = {
+    closeAriaLabel: string;
+    minimizeAriaLabel: string;
+    maximizeAriaLabel: string;
+    closeDisabled?: boolean;
+    minimizeDisabled?: boolean;
+    maximizeDisabled?: boolean;
+    isMaximized: boolean;
+    onClose?: () => void;
+    onMinimize?: () => void;
+    onMaximize?: () => void;
+};
+
+function WindowModeControlButtons({
+    closeAriaLabel,
+    minimizeAriaLabel,
+    maximizeAriaLabel,
+    closeDisabled,
+    minimizeDisabled,
+    maximizeDisabled,
+    isMaximized,
+    onClose,
+    onMinimize,
+    onMaximize,
+}: WindowModeControlButtonsProps) {
+    return (
+        <>
+            <WindowIconButton
+                ariaLabel={closeAriaLabel}
+                disabled={closeDisabled}
+                onClick={onClose}
+            >
+                <CloseIcon className="h-[15px] w-[15px]" />
+            </WindowIconButton>
+            <WindowIconButton
+                ariaLabel={minimizeAriaLabel}
+                disabled={minimizeDisabled}
+                onClick={onMinimize}
+            >
+                <MinimizeIcon className="h-[15px] w-[15px]" />
+            </WindowIconButton>
+            <WindowIconButton
+                ariaLabel={maximizeAriaLabel}
+                disabled={maximizeDisabled}
+                onClick={onMaximize}
+            >
+                {isMaximized ? <RestoreIcon className="h-[15px] w-[15px]" /> : <MaximizeIcon className="h-[15px] w-[15px]" />}
+            </WindowIconButton>
+        </>
     );
 }
 
@@ -60,6 +120,7 @@ export type FloatingWindowControls = {
     minimizeAriaLabel?: string;
     maximizeAriaLabel?: string;
     restoreAriaLabel?: string;
+    moreAriaLabel?: string;
     closeDisabled?: boolean;
     minimizeDisabled?: boolean;
     maximizeDisabled?: boolean;
@@ -125,10 +186,16 @@ export function FloatingWindow({
     role,
 }: FloatingWindowProps) {
     const windowRef = useRef<HTMLDivElement | null>(null);
+    const headerRef = useRef<HTMLElement | null>(null);
+    const titleMeasureRef = useRef<HTMLDivElement | null>(null);
+    const headerRightRef = useRef<HTMLDivElement | null>(null);
+    const controlsClusterRef = useRef<HTMLDivElement | null>(null);
     const wasDraggingRef = useRef(false);
     const restoreFrameRef = useRef<(WindowPosition & BoxSize) | null>(null);
     const [stackZIndex, setStackZIndex] = useState(() => zIndex ?? claimFloatingWindowZIndex(getFloatingWindowZBase()));
     const [uncontrolledMode, setUncontrolledMode] = useState<FloatingWindowMode>(defaultMode);
+    const [controlsCollapsed, setControlsCollapsed] = useState(() => typeof width === "number" && width < 260);
+    const [controlsExpanded, setControlsExpanded] = useState(false);
     const mode = modeProp ?? uncontrolledMode;
     const isMinimized = mode === "minimized";
     const isMaximized = mode === "maximized";
@@ -168,6 +235,7 @@ export function FloatingWindow({
     useEffect(() => {
         if (isDragging) {
             bringToFront();
+            setControlsExpanded(false);
         }
     }, [bringToFront, isDragging]);
 
@@ -299,12 +367,104 @@ export function FloatingWindow({
         handleMaximize();
     }, [controls?.maximizeDisabled, handleMaximize]);
 
+    const closeAriaLabel = controls?.closeAriaLabel ?? "Close";
     const minimizeAriaLabel = isMinimized
         ? (controls?.restoreAriaLabel ?? controls?.minimizeAriaLabel ?? "Restore")
         : (controls?.minimizeAriaLabel ?? "Minimize");
     const maximizeAriaLabel = isMaximized
         ? (controls?.restoreAriaLabel ?? controls?.maximizeAriaLabel ?? "Restore")
         : (controls?.maximizeAriaLabel ?? "Maximize");
+    const moreAriaLabel = controls?.moreAriaLabel ?? "More window controls";
+
+    const modeControlButtons = (
+        <WindowModeControlButtons
+            closeAriaLabel={closeAriaLabel}
+            minimizeAriaLabel={minimizeAriaLabel}
+            maximizeAriaLabel={maximizeAriaLabel}
+            closeDisabled={controls?.closeDisabled}
+            minimizeDisabled={controls?.minimizeDisabled}
+            maximizeDisabled={controls?.maximizeDisabled}
+            isMaximized={isMaximized}
+            onClose={handleClose}
+            onMinimize={handleMinimize}
+            onMaximize={handleMaximize}
+        />
+    );
+
+    useLayoutEffect(() => {
+        const header = headerRef.current;
+
+        if (!header || !showControls) {
+            setControlsCollapsed(false);
+            setControlsExpanded(false);
+            return;
+        }
+
+        const updateControlsLayout = () => {
+            const paddingX = Number.parseFloat(getComputedStyle(header).paddingLeft) + Number.parseFloat(getComputedStyle(header).paddingRight);
+            const titleWidth = titleMeasureRef.current?.scrollWidth ?? 0;
+            const headerRightWidth = headerRightRef.current?.offsetWidth ?? 0;
+            const parts = [EXPANDED_CONTROLS_WIDTH, titleWidth, headerRightWidth].filter((width) => width > 0);
+            const neededWidth = paddingX + parts.reduce((total, width) => total + width, 0) + HEADER_GAP * Math.max(0, parts.length - 1);
+            const nextCollapsed = neededWidth > header.clientWidth + 0.5;
+
+            setControlsCollapsed(nextCollapsed);
+
+            if (!nextCollapsed) {
+                setControlsExpanded(false);
+            }
+        };
+
+        updateControlsLayout();
+
+        const resizeObserver = typeof ResizeObserver !== "undefined" ? new ResizeObserver(updateControlsLayout) : null;
+        resizeObserver?.observe(header);
+
+        if (titleMeasureRef.current) {
+            resizeObserver?.observe(titleMeasureRef.current);
+        }
+
+        if (headerRightRef.current) {
+            resizeObserver?.observe(headerRightRef.current);
+        }
+
+        window.addEventListener("resize", updateControlsLayout);
+
+        return () => {
+            resizeObserver?.disconnect();
+            window.removeEventListener("resize", updateControlsLayout);
+        };
+    }, [headerRight, showControls, title]);
+
+    useEffect(() => {
+        if (!controlsCollapsed || !controlsExpanded) {
+            return;
+        }
+
+        const handlePointerDown = (event: PointerEvent) => {
+            const path = event.composedPath();
+
+            if (controlsClusterRef.current && path.includes(controlsClusterRef.current)) {
+                return;
+            }
+
+            setControlsExpanded(false);
+        };
+
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === "Escape") {
+                setControlsExpanded(false);
+            }
+        };
+
+        window.addEventListener("pointerdown", handlePointerDown);
+        window.addEventListener("keydown", handleKeyDown);
+
+        return () => {
+            window.removeEventListener("pointerdown", handlePointerDown);
+            window.removeEventListener("keydown", handleKeyDown);
+        };
+    }, [controlsCollapsed, controlsExpanded]);
 
     return (
         <>
@@ -330,38 +490,70 @@ export function FloatingWindow({
                 }}
             >
                 <header
+                    ref={headerRef}
                     onPointerDown={handleDragHandlePointerDown}
                     onDoubleClick={handleHeaderDoubleClick}
-                    className={`flex shrink-0 cursor-grab touch-none select-none items-center gap-[10px] border-b border-[var(--adaptive-border-subtle)] px-[12px] py-[8px] active:cursor-grabbing ${
+                    className={`relative flex shrink-0 cursor-grab touch-none select-none items-center gap-[10px] border-b border-[var(--adaptive-border-subtle)] px-[12px] py-[8px] active:cursor-grabbing ${
                         isMinimized ? "border-b-0" : ""
                     } ${headerClassName}`}
                 >
-                    {showControls ? (
-                        <div className="flex shrink-0 items-center gap-[6px]">
-                            <TrafficLightButton
-                                colorClassName="bg-[#FF5F57]"
-                                ariaLabel={controls?.closeAriaLabel ?? "Close"}
-                                disabled={controls?.closeDisabled}
-                                onClick={handleClose}
-                            />
-                            <TrafficLightButton
-                                colorClassName="bg-[#FEBC2E]"
-                                ariaLabel={minimizeAriaLabel}
-                                disabled={controls?.minimizeDisabled}
-                                onClick={handleMinimize}
-                            />
-                            <TrafficLightButton
-                                colorClassName="bg-[#28C840]"
-                                ariaLabel={maximizeAriaLabel}
-                                disabled={controls?.maximizeDisabled}
-                                onClick={handleMaximize}
-                            />
+                    {title ? (
+                        <div
+                            ref={titleMeasureRef}
+                            aria-hidden
+                            className="pointer-events-none invisible absolute whitespace-nowrap"
+                        >
+                            {title}
                         </div>
                     ) : null}
 
-                    {title ? <div className="min-w-0 flex-1">{title}</div> : <div className="min-w-0 flex-1" />}
+                    {showControls ? (
+                        controlsCollapsed ? (
+                            <div
+                                ref={controlsClusterRef}
+                                className="flex shrink-0 items-center gap-[2px]"
+                            >
+                                <button
+                                    type="button"
+                                    data-fivepixels-interactive=""
+                                    aria-label={moreAriaLabel}
+                                    aria-expanded={controlsExpanded}
+                                    onPointerDown={(event) => event.stopPropagation()}
+                                    onClick={() => setControlsExpanded((current) => !current)}
+                                    className={`${HEADER_BUTTON_CLASS} cursor-pointer`}
+                                >
+                                    <MoreHorizontalIcon className="h-[15px] w-[15px]" />
+                                </button>
+                                <div
+                                    aria-hidden={!controlsExpanded}
+                                    className={`flex items-center gap-[2px] overflow-hidden transition-[max-width,opacity] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                                        controlsExpanded ? "max-w-[80px] opacity-100" : "pointer-events-none max-w-0 opacity-0"
+                                    }`}
+                                >
+                                    {modeControlButtons}
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="flex shrink-0 items-center gap-[2px]">{modeControlButtons}</div>
+                        )
+                    ) : null}
 
-                    {headerRight ? <div className="flex shrink-0 items-center gap-[6px]">{headerRight}</div> : null}
+                    {title ? (
+                        <div className="min-w-0 flex-1 overflow-hidden">
+                            <div className="truncate">{title}</div>
+                        </div>
+                    ) : (
+                        <div className="min-w-0 flex-1" />
+                    )}
+
+                    {headerRight ? (
+                        <div
+                            ref={headerRightRef}
+                            className="flex shrink-0 items-center gap-[6px]"
+                        >
+                            {headerRight}
+                        </div>
+                    ) : null}
                 </header>
 
                 {!isMinimized && children ? <div className={`min-h-0 min-w-0 flex-1 overflow-auto ${contentClassName}`}>{children}</div> : null}

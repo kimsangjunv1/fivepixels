@@ -1,4 +1,15 @@
+import { FIVEPIXELS_HOST_ID } from "../../constants/overlayChrome.js";
 export const DEVICE_PREVIEW_BUTTON_OUTSET = 3;
+export function shouldCaptureDevicePreviewNode(node) {
+    if (node.nodeType !== Node.ELEMENT_NODE) {
+        return true;
+    }
+    const element = node;
+    if (element.hasAttribute("data-fivepixels-skip-capture")) {
+        return false;
+    }
+    return element.id !== FIVEPIXELS_HOST_ID;
+}
 function sanitizeFilenamePart(value) {
     return value.replace(/[^a-zA-Z0-9._-]+/g, "-").replace(/^-+|-+$/g, "") || "device";
 }
@@ -84,7 +95,7 @@ export async function defaultRasterizeElement(element, options) {
             width: `${options.width}px`,
             height: `${captureHeight}px`,
         },
-        filter: (node) => !(node instanceof Element) || !node.hasAttribute("data-fivepixels-skip-capture"),
+        filter: shouldCaptureDevicePreviewNode,
     });
     if (!options.cropToViewport || (canvas.width === options.width && canvas.height === options.height && element.scrollTop <= 0 && element.scrollLeft <= 0)) {
         return canvas;

@@ -8,6 +8,7 @@ export type FloatingWindowControls = {
     minimizeAriaLabel?: string;
     maximizeAriaLabel?: string;
     restoreAriaLabel?: string;
+    moreAriaLabel?: string;
     closeDisabled?: boolean;
     minimizeDisabled?: boolean;
     maximizeDisabled?: boolean;

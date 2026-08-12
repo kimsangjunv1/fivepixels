@@ -483,6 +483,8 @@ export type ReportMessages = {
         devicePreviewCaptureSavedLabel: string;
         devicePreviewCaptureFailedLabel: string;
         devicePreviewCaptureAriaLabel: string;
+        devicePreviewIframeTitle: string;
+        devicePreviewIframeBlocked: string;
         sectionViewerSwitch: string;
         viewerSwitchAriaLabel: string;
         viewerSwitchHint: string;
@@ -725,6 +727,7 @@ export type ReportMessages = {
         windowMinimizeAriaLabel: string;
         windowRestoreAriaLabel: string;
         windowMaximizeAriaLabel: string;
+        windowControlsMoreAriaLabel: string;
         sidebarCollapseAriaLabel: string;
         sidebarExpandAriaLabel: string;
         shareLinkAriaLabel: string;

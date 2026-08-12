@@ -1,9 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { FIVEPIXELS_HOST_ID } from "@/constants/overlayChrome.js";
 import {
     DEVICE_PREVIEW_BUTTON_OUTSET,
     buildDevicePreviewCaptureFilename,
     captureDevicePreview,
     getDevicePreviewCaptureLayout,
+    shouldCaptureDevicePreviewNode,
     type RasterizeOptions,
 } from "./devicePreviewCapture.js";
 
@@ -22,6 +24,19 @@ function stubCanvasContext() {
 describe("devicePreviewCapture", () => {
     afterEach(() => {
         vi.restoreAllMocks();
+    });
+
+    it("skips overlay chrome and explicit skip nodes while capturing", () => {
+        const host = document.createElement("div");
+        host.id = FIVEPIXELS_HOST_ID;
+        const skipped = document.createElement("div");
+        skipped.setAttribute("data-fivepixels-skip-capture", "");
+        const page = document.createElement("main");
+
+        expect(shouldCaptureDevicePreviewNode(host)).toBe(false);
+        expect(shouldCaptureDevicePreviewNode(skipped)).toBe(false);
+        expect(shouldCaptureDevicePreviewNode(page)).toBe(true);
+        expect(shouldCaptureDevicePreviewNode(document.createTextNode("ok"))).toBe(true);
     });
 
     it("includes the device bezel and button outset when the device image is on", () => {

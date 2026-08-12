@@ -5,6 +5,7 @@ import { DEVICE_PREVIEW_BRAND_ORDER, DEVICE_PREVIEW_SCALE_OPTIONS, formatDeviceP
 import { PanelOptionSwitch } from "../../components/panel/PanelOptionSwitch.js";
 import { FloatingWindow } from "../../components/ui/FloatingWindow.js";
 import { buildDevicePreviewCaptureFilename, captureDevicePreview, downloadCanvasPng, getDevicePreviewCaptureLayout, } from "../../utils/overlay/devicePreviewCapture.js";
+import { DEVICE_PREVIEW_FRAME_NAME, DEVICE_PREVIEW_HOST_STYLE_ID, HTML_DEVICE_PREVIEW_ACTIVE_CLASS, buildDevicePreviewHostStyle, clearGuestStatusBarStyle, closeDevicePreviewAndSyncGuestUrl, getGuestCaptureRoot, getGuestDocument, getGuestWindow, isGuestDocumentReady, isInsideDevicePreviewFrame, readGuestContentMetrics, syncGuestStatusBarStyle, } from "../../utils/overlay/devicePreviewFrame.js";
 import { DeviceFrameArtwork } from "./DeviceFrameArtwork.js";
 import { DevicePreviewQrCard } from "./DevicePreviewQrCard.js";
 import { DeviceStatusBar, getDeviceStatusBarHeight } from "./DeviceStatusBar.js";
@@ -47,8 +48,6 @@ function persistDevicePreviewBarPosition(position) {
         // Ignore storage failures.
     }
 }
-const HOST_STYLE_ID = "fivepixels-device-preview-host-style";
-const HTML_ACTIVE_CLASS = "fivepixels-device-preview-active";
 const RULER_WIDTH = 44;
 const RULER_GAP = 6;
 const RULER_MAJOR_STEP = 100;
@@ -74,26 +73,6 @@ function buildDevicePreviewCanvasStyle(hostCanvas) {
         backgroundImage: `linear-gradient(${hostCanvas.line} 1px, transparent 1px), linear-gradient(90deg, ${hostCanvas.line} 1px, transparent 1px)`,
         backgroundSize: `${DEVICE_PREVIEW_CANVAS_GRID}px ${DEVICE_PREVIEW_CANVAS_GRID}px`,
         backgroundAttachment: "fixed",
-    };
-}
-function getPreviewContentRoot() {
-    if (typeof document === "undefined") {
-        return null;
-    }
-    return document.getElementById("root");
-}
-function readContentMetrics(fallbackWidth) {
-    const root = getPreviewContentRoot();
-    const rect = root?.getBoundingClientRect();
-    return {
-        scrollY: Math.round(root?.scrollTop ?? 0),
-        scrollHeight: Math.round(root?.scrollHeight ?? 0),
-        clientHeight: Math.round(root?.clientHeight ?? 0),
-        left: Math.round(rect?.left ?? Math.max(0, (window.innerWidth - fallbackWidth) / 2)),
-        top: Math.round(rect?.top ?? 0),
-        width: Math.round(rect?.width ?? Math.min(fallbackWidth, window.innerWidth)),
-        viewportWidth: window.innerWidth,
-        viewportHeight: window.innerHeight,
     };
 }
 function buildRulerTicks(scrollY, clientHeight, scrollHeight) {
@@ -150,40 +129,8 @@ function resolveCenteredLayout(args) {
         bezel,
     };
 }
-function clearRootInlineStyles(root) {
-    const props = [
-        "max-width",
-        "width",
-        "height",
-        "max-height",
-        "min-height",
-        "margin",
-        "margin-top",
-        "margin-left",
-        "margin-right",
-        "margin-bottom",
-        "overflow",
-        "overflow-x",
-        "overflow-y",
-        "overscroll-behavior",
-        "container-type",
-        "container-name",
-        "background",
-        "position",
-        "z-index",
-        "box-sizing",
-        "padding",
-        "padding-top",
-        "border-radius",
-        "transform",
-        "transform-origin",
-    ];
-    for (const prop of props) {
-        root.style.removeProperty(prop);
-    }
-}
-function DevicePreviewFloatingBar({ captureState, onCapture, }) {
-    const { messages, devicePreviewDeviceId, setDevicePreviewDeviceId, devicePreviewScale, setDevicePreviewScale, devicePreviewImageEnabled, setDevicePreviewImageEnabled, devicePreviewFitToViewport, setDevicePreviewFitToViewport, devicePreviewStatusBarEnabled, setDevicePreviewStatusBarEnabled, setDevicePreviewUiOpen, } = useReportPreferences();
+function DevicePreviewFloatingBar({ captureState, onCapture, onClose, }) {
+    const { messages, devicePreviewDeviceId, setDevicePreviewDeviceId, devicePreviewScale, setDevicePreviewScale, devicePreviewImageEnabled, setDevicePreviewImageEnabled, devicePreviewFitToViewport, setDevicePreviewFitToViewport, devicePreviewStatusBarEnabled, setDevicePreviewStatusBarEnabled, } = useReportPreferences();
     const [position, setPosition] = useState(() => readDevicePreviewBarPosition());
     const [mode, setMode] = useState("normal");
     const captureLabel = captureState === "capturing"
@@ -199,11 +146,12 @@ function DevicePreviewFloatingBar({ captureState, onCapture, }) {
         persistDevicePreviewBarPosition(next);
     }, []);
     return (_jsx(FloatingWindow, { dataChrome: "device-preview-toolbar", role: "toolbar", ariaLabel: messages.settings.devicePreviewFloatingAriaLabel, position: position, onPositionChange: handlePositionChange, mode: mode, onModeChange: setMode, width: 220, minWidth: 200, minHeight: 160, resizable: true, resizeAriaLabel: messages.marker.resizeAriaLabel, contentClassName: "px-[12px] pb-[12px]", controls: {
-            onClose: () => setDevicePreviewUiOpen(false),
+            onClose,
             closeAriaLabel: messages.marker.windowCloseAriaLabel,
             minimizeAriaLabel: messages.marker.windowMinimizeAriaLabel,
             maximizeAriaLabel: messages.marker.windowMaximizeAriaLabel,
             restoreAriaLabel: messages.marker.windowRestoreAriaLabel,
+            moreAriaLabel: messages.marker.windowControlsMoreAriaLabel,
         }, title: _jsx("span", { className: "truncate text-[12px] font-bold text-[var(--adaptive-black900)]", children: messages.settings.devicePreviewFloatingAriaLabel }), children: _jsxs("div", { className: "flex w-full flex-col gap-[10px]", children: [_jsxs("label", { className: "flex flex-col gap-[3px]", children: [_jsx("span", { className: "text-[9px] font-semibold text-[var(--adaptive-black500)]", children: messages.settings.devicePreviewDeviceLabel }), _jsx("select", { value: devicePreviewDeviceId, onChange: (event) => setDevicePreviewDeviceId(event.target.value), "aria-label": messages.settings.devicePreviewDeviceAriaLabel, className: selectClassName, children: DEVICE_PREVIEW_BRAND_ORDER.map((brand) => (_jsx("optgroup", { label: brand === "apple"
                                     ? messages.settings.devicePreviewBrandApple
                                     : brand === "samsung"
@@ -222,7 +170,8 @@ function DevicePreviewFloatingBar({ captureState, onCapture, }) {
                             ], value: devicePreviewStatusBarEnabled ? "on" : "off", onChange: (value) => setDevicePreviewStatusBarEnabled(value === "on"), ariaLabel: messages.settings.devicePreviewStatusBarAriaLabel })] }), _jsx("button", { type: "button", onClick: onCapture, disabled: captureState === "capturing", "aria-label": messages.settings.devicePreviewCaptureAriaLabel, className: "h-[28px] rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] px-[8px] text-[10px] font-semibold text-[var(--adaptive-black900)] hover:bg-[var(--adaptive-black100)] disabled:opacity-60", children: captureLabel })] }) }));
 }
 export function DevicePreviewChrome() {
-    const { devicePreviewUiOpen, devicePreviewDeviceId, devicePreviewScale, devicePreviewImageEnabled, devicePreviewFitToViewport, devicePreviewStatusBarEnabled, resolvedPanelAppearance, messages, } = useReportPreferences();
+    const { devicePreviewUiOpen, devicePreviewDeviceId, devicePreviewScale, devicePreviewImageEnabled, devicePreviewFitToViewport, devicePreviewStatusBarEnabled, resolvedPanelAppearance, messages, setDevicePreviewUiOpen, } = useReportPreferences();
+    const isPreviewGuest = isInsideDevicePreviewFrame();
     const preset = useMemo(() => getDevicePreviewPreset(devicePreviewDeviceId), [devicePreviewDeviceId]);
     const layout = useMemo(() => getDevicePreviewLayoutSize(preset, devicePreviewScale), [preset, devicePreviewScale]);
     const chrome = useMemo(() => {
@@ -239,8 +188,11 @@ export function DevicePreviewChrome() {
     const canvasStyle = useMemo(() => buildDevicePreviewCanvasStyle(hostCanvas), [hostCanvas]);
     const stageRef = useRef(null);
     const statusBarRef = useRef(null);
+    const iframeRef = useRef(null);
     const captureResetTimerRef = useRef(null);
     const [captureState, setCaptureState] = useState("idle");
+    const [frameLoadState, setFrameLoadState] = useState("loading");
+    const [frameSrc] = useState(() => (typeof window === "undefined" ? "" : window.location.href));
     const [metrics, setMetrics] = useState(() => typeof window === "undefined"
         ? {
             scrollY: 0,
@@ -252,7 +204,7 @@ export function DevicePreviewChrome() {
             viewportWidth: 1280,
             viewportHeight: 800,
         }
-        : readContentMetrics(layout.width));
+        : readGuestContentMetrics(null, layout.width));
     const centered = useMemo(() => resolveCenteredLayout({
         layoutWidth: layout.width,
         layoutHeight: layout.height,
@@ -269,7 +221,7 @@ export function DevicePreviewChrome() {
         if (captureState === "capturing") {
             return;
         }
-        const contentRoot = getPreviewContentRoot();
+        const contentRoot = getGuestCaptureRoot(iframeRef.current);
         if (captureResetTimerRef.current !== null) {
             window.clearTimeout(captureResetTimerRef.current);
             captureResetTimerRef.current = null;
@@ -327,132 +279,78 @@ export function DevicePreviewChrome() {
             }
         };
     }, []);
-    useEffect(() => {
-        if (!devicePreviewUiOpen) {
-            document.documentElement.classList.remove(HTML_ACTIVE_CLASS);
-            document.getElementById(HOST_STYLE_ID)?.remove();
-            const root = getPreviewContentRoot();
-            if (root) {
-                clearRootInlineStyles(root);
-            }
+    const handleClose = useCallback(() => {
+        closeDevicePreviewAndSyncGuestUrl(iframeRef.current, () => setDevicePreviewUiOpen(false));
+    }, [setDevicePreviewUiOpen]);
+    const handleFrameLoad = useCallback(() => {
+        const iframe = iframeRef.current;
+        if (!isGuestDocumentReady(iframe)) {
+            setFrameLoadState("blocked");
             return;
         }
-        document.documentElement.classList.add(HTML_ACTIVE_CLASS);
-        let style = document.getElementById(HOST_STYLE_ID);
+        setFrameLoadState("ready");
+        syncGuestStatusBarStyle(getGuestDocument(iframe), statusBarHeight);
+        setMetrics(readGuestContentMetrics(iframe, centered.screenWidth));
+        iframe?.focus();
+    }, [centered.screenWidth, statusBarHeight]);
+    useEffect(() => {
+        if (!devicePreviewUiOpen) {
+            document.documentElement.classList.remove(HTML_DEVICE_PREVIEW_ACTIVE_CLASS);
+            document.getElementById(DEVICE_PREVIEW_HOST_STYLE_ID)?.remove();
+            return;
+        }
+        document.documentElement.classList.add(HTML_DEVICE_PREVIEW_ACTIVE_CLASS);
+        let style = document.getElementById(DEVICE_PREVIEW_HOST_STYLE_ID);
         if (!style) {
             style = document.createElement("style");
-            style.id = HOST_STYLE_ID;
+            style.id = DEVICE_PREVIEW_HOST_STYLE_ID;
             document.documentElement.append(style);
         }
-        style.textContent = `
-html.${HTML_ACTIVE_CLASS},
-html.${HTML_ACTIVE_CLASS} body {
-  height: 100% !important;
-  max-height: 100% !important;
-  overflow: hidden !important;
-  background-color: ${hostCanvas.background} !important;
-  background-image: linear-gradient(${hostCanvas.line} 1px, transparent 1px), linear-gradient(90deg, ${hostCanvas.line} 1px, transparent 1px) !important;
-  background-size: ${DEVICE_PREVIEW_CANVAS_GRID}px ${DEVICE_PREVIEW_CANVAS_GRID}px !important;
-}
-
-html.${HTML_ACTIVE_CLASS} #fivepixels-root {
-  position: fixed !important;
-  inset: 0 !important;
-  width: 100vw !important;
-  height: 100vh !important;
-  max-width: none !important;
-  max-height: none !important;
-  margin: 0 !important;
-  pointer-events: none !important;
-  z-index: 2147483646 !important;
-}
-
-html.${HTML_ACTIVE_CLASS} #root .pulse-board,
-html.${HTML_ACTIVE_CLASS} #root .pulse-sidebar,
-html.${HTML_ACTIVE_CLASS} #root .pulse-main {
-  height: auto !important;
-  min-height: 100% !important;
-  max-height: none !important;
-  overflow: visible !important;
-}
-
-html.${HTML_ACTIVE_CLASS} #root .pulse-content {
-  height: auto !important;
-  max-height: none !important;
-  overflow: visible !important;
-  flex: none !important;
-}
-`;
-        const root = getPreviewContentRoot();
-        if (root) {
-            // Logical CSS size = selected device resolution (× user scale). Viewport fit uses transform only.
-            root.style.setProperty("max-width", `${centered.screenWidth}px`, "important");
-            root.style.setProperty("width", `${centered.screenWidth}px`, "important");
-            root.style.setProperty("height", `${centered.screenHeight}px`, "important");
-            root.style.setProperty("max-height", `${centered.screenHeight}px`, "important");
-            root.style.setProperty("min-height", "0px", "important");
-            root.style.setProperty("margin-left", `${centered.screenLeft}px`, "important");
-            root.style.setProperty("margin-right", "0", "important");
-            root.style.setProperty("margin-top", `${centered.screenTop}px`, "important");
-            root.style.setProperty("margin-bottom", "0", "important");
-            root.style.setProperty("padding-top", `${statusBarHeight}px`, "important");
-            root.style.setProperty("overflow-x", "hidden", "important");
-            root.style.setProperty("overflow-y", "auto", "important");
-            root.style.setProperty("overscroll-behavior", "contain", "important");
-            root.style.setProperty("container-type", "inline-size", "important");
-            root.style.setProperty("container-name", "fivepixels-device-preview", "important");
-            root.style.setProperty("background", hostCanvas.screen, "important");
-            root.style.setProperty("position", "relative", "important");
-            root.style.setProperty("z-index", "0", "important");
-            root.style.setProperty("box-sizing", "border-box", "important");
-            root.style.setProperty("border-radius", devicePreviewImageEnabled ? `${Math.max(0, Math.round(chrome.screenRadius))}px` : "0px", "important");
-            root.style.setProperty("transform", `scale(${centered.fitScale})`, "important");
-            root.style.setProperty("transform-origin", "top left", "important");
-        }
-        const sync = () => setMetrics(readContentMetrics(centered.screenWidth));
+        style.textContent = buildDevicePreviewHostStyle({
+            background: hostCanvas.background,
+            line: hostCanvas.line,
+            gridSize: DEVICE_PREVIEW_CANVAS_GRID,
+        });
+        const sync = () => setMetrics(readGuestContentMetrics(iframeRef.current, centered.screenWidth));
         sync();
         requestAnimationFrame(sync);
         return () => {
-            document.documentElement.classList.remove(HTML_ACTIVE_CLASS);
+            document.documentElement.classList.remove(HTML_DEVICE_PREVIEW_ACTIVE_CLASS);
             style?.remove();
-            if (root) {
-                clearRootInlineStyles(root);
-            }
         };
-    }, [
-        devicePreviewUiOpen,
-        devicePreviewImageEnabled,
-        devicePreviewStatusBarEnabled,
-        statusBarHeight,
-        centered.screenWidth,
-        centered.screenHeight,
-        centered.screenLeft,
-        centered.screenTop,
-        centered.fitScale,
-        chrome.screenRadius,
-        hostCanvas.background,
-        hostCanvas.line,
-        hostCanvas.screen,
-    ]);
+    }, [devicePreviewUiOpen, centered.screenWidth, hostCanvas.background, hostCanvas.line]);
     useEffect(() => {
         if (!devicePreviewUiOpen) {
             return;
         }
-        const sync = () => setMetrics(readContentMetrics(centered.screenWidth));
-        const root = getPreviewContentRoot();
-        root?.addEventListener("scroll", sync, { passive: true });
+        const iframe = iframeRef.current;
+        syncGuestStatusBarStyle(getGuestDocument(iframe), statusBarHeight);
+        return () => {
+            clearGuestStatusBarStyle(getGuestDocument(iframe));
+        };
+    }, [devicePreviewUiOpen, statusBarHeight, frameLoadState]);
+    useEffect(() => {
+        if (!devicePreviewUiOpen) {
+            return;
+        }
+        const sync = () => setMetrics(readGuestContentMetrics(iframeRef.current, centered.screenWidth));
+        const iframe = iframeRef.current;
+        const guestWindow = getGuestWindow(iframe);
+        guestWindow?.addEventListener("scroll", sync, { passive: true });
+        guestWindow?.addEventListener("resize", sync);
         window.addEventListener("resize", sync);
-        const resizeObserver = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(() => sync());
-        if (root) {
-            resizeObserver?.observe(root);
+        const resizeObserver = typeof ResizeObserver === "undefined" || !iframe ? null : new ResizeObserver(() => sync());
+        if (iframe) {
+            resizeObserver?.observe(iframe);
         }
         return () => {
-            root?.removeEventListener("scroll", sync);
+            guestWindow?.removeEventListener("scroll", sync);
+            guestWindow?.removeEventListener("resize", sync);
             window.removeEventListener("resize", sync);
             resizeObserver?.disconnect();
         };
-    }, [devicePreviewUiOpen, centered.screenWidth, centered.screenHeight]);
-    if (!devicePreviewUiOpen) {
+    }, [devicePreviewUiOpen, centered.screenWidth, centered.screenHeight, frameLoadState]);
+    if (!devicePreviewUiOpen || isPreviewGuest) {
         return null;
     }
     const screenLeft = metrics.left || centered.screenLeft;
@@ -481,7 +379,7 @@ html.${HTML_ACTIVE_CLASS} #root .pulse-content {
     const qrLeft = frameLeft + centered.visualFrameWidth + qrGap;
     const qrMaxWidth = Math.max(0, metrics.viewportWidth - qrLeft - 12);
     const showQrCard = qrMaxWidth >= 140;
-    return (_jsxs(_Fragment, { children: [_jsxs("div", { className: "pointer-events-none fixed inset-0 z-[999997]", "aria-hidden": true, "data-fivepixels-device-preview": "", children: [_jsx("div", { className: "absolute left-0 right-0 top-0", style: { ...canvasStyle, height: Math.max(0, frameTop) } }), _jsx("div", { className: "absolute bottom-0 left-0 right-0", style: { ...canvasStyle, top: frameTop + centered.visualFrameHeight } }), _jsx("div", { className: "absolute left-0", style: {
+    return (_jsxs(_Fragment, { children: [_jsxs("div", { className: "pointer-events-none fixed inset-0 z-[999997]", "data-fivepixels-device-preview": "", children: [_jsx("div", { className: "absolute left-0 right-0 top-0", style: { ...canvasStyle, height: Math.max(0, frameTop) } }), _jsx("div", { className: "absolute bottom-0 left-0 right-0", style: { ...canvasStyle, top: frameTop + centered.visualFrameHeight } }), _jsx("div", { className: "absolute left-0", style: {
                             ...canvasStyle,
                             top: frameTop,
                             height: centered.visualFrameHeight,
@@ -491,7 +389,22 @@ html.${HTML_ACTIVE_CLASS} #root .pulse-content {
                             top: frameTop,
                             height: centered.visualFrameHeight,
                             width: Math.max(0, metrics.viewportWidth - frameLeft - centered.visualFrameWidth),
-                        } }), _jsxs("div", { ref: stageRef, className: "absolute z-[3]", "data-fivepixels-device-preview-stage": "", style: {
+                        } }), _jsx("iframe", { ref: iframeRef, name: DEVICE_PREVIEW_FRAME_NAME, title: messages.settings.devicePreviewIframeTitle, src: frameSrc, onLoad: handleFrameLoad, "data-fivepixels-device-preview-frame": "", tabIndex: -1, className: "pointer-events-auto absolute z-[1] border-0", style: {
+                            left: centered.screenLeft,
+                            top: centered.screenTop,
+                            width: screenWidth,
+                            height: screenHeight,
+                            transform: `scale(${centered.fitScale})`,
+                            transformOrigin: "top left",
+                            borderRadius: devicePreviewImageEnabled ? chrome.screenRadius : 0,
+                            background: hostCanvas.screen,
+                            overflow: "hidden",
+                        } }), frameLoadState === "blocked" ? (_jsx("div", { className: "pointer-events-none absolute z-[2] flex items-center justify-center px-[16px] text-center text-[12px] font-semibold text-[var(--adaptive-black900)]", style: {
+                            left: centered.screenLeft,
+                            top: centered.screenTop,
+                            width: centered.visualScreenWidth,
+                            height: centered.visualScreenHeight,
+                        }, children: messages.settings.devicePreviewIframeBlocked })) : null, _jsxs("div", { ref: stageRef, className: "absolute z-[3]", "data-fivepixels-device-preview-stage": "", style: {
                             left: frameLeft,
                             top: frameTop,
                             width: centered.frameWidth,
@@ -518,6 +431,6 @@ html.${HTML_ACTIVE_CLASS} #root .pulse-content {
                             })] })] }), showQrCard ? (_jsx(DevicePreviewQrCard, { left: qrLeft, 
                 // top={Math.max(8, frameTop)}
                 // top={Math.max(8, frameTop)}
-                maxWidth: qrMaxWidth, title: messages.settings.devicePreviewQrTitle, hintLocalhost: messages.settings.devicePreviewQrHintLocalhost, urlInputLabel: messages.settings.devicePreviewQrUrlInputLabel, urlInputPlaceholder: messages.settings.devicePreviewQrUrlInputPlaceholder, urlInputAriaLabel: messages.settings.devicePreviewQrUrlInputAriaLabel, invalidUrlMessage: messages.settings.devicePreviewQrInvalidUrl, emptyUrlMessage: messages.settings.devicePreviewQrEmptyUrl, copyLabel: messages.settings.devicePreviewQrCopyLabel, copiedLabel: messages.settings.devicePreviewQrCopiedLabel, copyAriaLabel: messages.settings.devicePreviewQrCopyAriaLabel, qrAriaLabel: messages.settings.devicePreviewQrAriaLabel })) : null, _jsx(DevicePreviewFloatingBar, { captureState: captureState, onCapture: () => void handleCapture() })] }));
+                maxWidth: qrMaxWidth, title: messages.settings.devicePreviewQrTitle, hintLocalhost: messages.settings.devicePreviewQrHintLocalhost, urlInputLabel: messages.settings.devicePreviewQrUrlInputLabel, urlInputPlaceholder: messages.settings.devicePreviewQrUrlInputPlaceholder, urlInputAriaLabel: messages.settings.devicePreviewQrUrlInputAriaLabel, invalidUrlMessage: messages.settings.devicePreviewQrInvalidUrl, emptyUrlMessage: messages.settings.devicePreviewQrEmptyUrl, copyLabel: messages.settings.devicePreviewQrCopyLabel, copiedLabel: messages.settings.devicePreviewQrCopiedLabel, copyAriaLabel: messages.settings.devicePreviewQrCopyAriaLabel, qrAriaLabel: messages.settings.devicePreviewQrAriaLabel })) : null, _jsx(DevicePreviewFloatingBar, { captureState: captureState, onCapture: () => void handleCapture(), onClose: handleClose })] }));
 }
 //# sourceMappingURL=DevicePreviewChrome.js.map

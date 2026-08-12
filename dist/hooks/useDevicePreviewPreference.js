@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
 import { DEFAULT_DEVICE_PREVIEW_ID, DEFAULT_DEVICE_PREVIEW_SCALE, getDevicePreviewPreset, normalizeDevicePreviewScale, } from "../constants/devicePreview.js";
+import { isInsideDevicePreviewFrame } from "../utils/overlay/devicePreviewFrame.js";
 const UI_OPEN_STORAGE_KEY = "fivepixels:device-preview-ui-open";
 const DEVICE_STORAGE_KEY = "fivepixels:device-preview-device";
 const SCALE_STORAGE_KEY = "fivepixels:device-preview-scale";
@@ -72,13 +73,16 @@ function persistScale(scale) {
     }
 }
 export function useDevicePreviewPreference() {
-    const [devicePreviewUiOpen, setDevicePreviewUiOpenState] = useState(() => readStoredFlag(UI_OPEN_STORAGE_KEY, false));
+    const [devicePreviewUiOpen, setDevicePreviewUiOpenState] = useState(() => isInsideDevicePreviewFrame() ? false : readStoredFlag(UI_OPEN_STORAGE_KEY, false));
     const [devicePreviewDeviceId, setDevicePreviewDeviceIdState] = useState(() => readStoredDeviceId());
     const [devicePreviewScale, setDevicePreviewScaleState] = useState(() => readStoredScale());
     const [devicePreviewImageEnabled, setDevicePreviewImageEnabledState] = useState(() => readStoredFlag(IMAGE_STORAGE_KEY, true));
     const [devicePreviewFitToViewport, setDevicePreviewFitToViewportState] = useState(() => readStoredFlag(FIT_VIEWPORT_STORAGE_KEY, false));
     const [devicePreviewStatusBarEnabled, setDevicePreviewStatusBarEnabledState] = useState(() => readStoredFlag(STATUS_BAR_STORAGE_KEY, true));
     const setDevicePreviewUiOpen = useCallback((open) => {
+        if (isInsideDevicePreviewFrame()) {
+            return;
+        }
         setDevicePreviewUiOpenState(open);
         persistFlag(UI_OPEN_STORAGE_KEY, open);
     }, []);
