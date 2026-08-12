@@ -1,6 +1,9 @@
 const FLOATING_WINDOW_Z_BASE = 1_000_002;
 const FLOATING_WINDOW_Z_CEILING = 1_000_900;
 
+/** Always above floating pin/device windows so the control panel is never covered. */
+export const PANEL_LAYER_Z_INDEX = 1_001_000;
+
 let nextFloatingWindowZIndex = FLOATING_WINDOW_Z_BASE;
 
 /** Bump global layer so the latest focused floating window sits above peers. */

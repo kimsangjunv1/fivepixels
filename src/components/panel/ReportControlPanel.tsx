@@ -43,6 +43,7 @@ import { PanelProjectFooter } from "./PanelProjectFooter.js";
 import { createPersonalKeyBackupFilename, downloadPersonalKeyBackup } from "@/utils/feedback/feedbackDataTransfer.js";
 import { getPanelTabDefinition } from "@/constants/panelTabRegistry.js";
 import { MOTION, PANEL_TAB_FADE_MS, panelCollapseInClass } from "@/constants/motionClasses.js";
+import { PANEL_LAYER_Z_INDEX } from "@/utils/overlay/floatingWindowStack.js";
 import type { ReportPanelTab } from "@/types/report-ui.js";
 
 function PanelCollapseTab({ collapsed, anchorSide, onClick, messages }: { collapsed: boolean; anchorSide: "left" | "right"; onClick: () => void; messages: ReturnType<typeof useReport>["messages"] }) {
@@ -295,7 +296,7 @@ export function ReportControlPanel() {
             {isResizing ? (
                 <CornerResizeGhost
                     ghostRef={ghostRef}
-                    zIndexClassName="z-[1000001]"
+                    zIndexClassName="z-[1001001]"
                 />
             ) : null}
 
@@ -309,14 +310,14 @@ export function ReportControlPanel() {
                 onDragLeave={isGateView ? undefined : handleDragLeave}
                 onDragOver={isGateView ? undefined : handleDragOver}
                 onDrop={isGateView ? undefined : handleDrop}
-                className={`pointer-events-auto z-[1000000] border border-[var(--adaptive-border-subtle)] flex ${MOTION.panelEnter} ${MOTION.panelDock} ${isDragging ? MOTION.panelDockDragging : ""} ${
+                className={`pointer-events-auto border border-[var(--adaptive-border-subtle)] flex ${MOTION.panelEnter} ${MOTION.panelDock} ${isDragging ? MOTION.panelDockDragging : ""} ${
                     isRecording
                         ? "min-h-[40px] bg-[var(--adaptive-neutralTintOpacity900)] backdrop-blur-[10px] rounded-[16px] shadow-[var(--adaptive-popup-shadow)]"
                         : panelCollapsed
                           ? ""
                           : "relative bg-[var(--adaptive-neutralTintOpacity900)] backdrop-blur-[10px] rounded-[16px] shadow-[var(--adaptive-popup-shadow)]"
                 }`}
-                style={{ ...resolvedPanelStyle, ...resolvedSizeStyle }}
+                style={{ ...resolvedPanelStyle, ...resolvedSizeStyle, zIndex: PANEL_LAYER_Z_INDEX }}
             >
                 {panelExpanded ? (
                     <CornerResizeHandle
