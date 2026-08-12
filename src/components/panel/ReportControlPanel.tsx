@@ -412,13 +412,11 @@ export function ReportControlPanel() {
                                                         label={messages.panel.devicePreview}
                                                         active={devicePreviewUiOpen}
                                                         onClick={() => {
-                                                            const nextOpen = !devicePreviewUiOpen;
-
-                                                            if (nextOpen && mode === "view") {
+                                                            if (mode === "view") {
                                                                 toggleIssueMode();
                                                             }
 
-                                                            setDevicePreviewUiOpen(nextOpen);
+                                                            setDevicePreviewUiOpen(!devicePreviewUiOpen);
                                                         }}
                                                     >
                                                         <DevicePreviewIcon className="h-[16px] w-[16px]" />
