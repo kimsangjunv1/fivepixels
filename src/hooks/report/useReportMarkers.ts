@@ -7,6 +7,13 @@ import { clearFeedbackDeepLinkFromUrl, parseFeedbackDeepLink } from "@/utils/fee
 import { getFieldTags } from "@/utils/report/fields.js";
 import { getFeedbackTargetElement, isFeedbackTargetVisible, scrollToFeedbackTarget, waitForTargetRevealResync } from "@/utils/marker/locateFeedback.js";
 import { markerToTargetSnapshot } from "@/utils/marker/markerTarget.js";
+import {
+    getPageDocument,
+    getPageScrollY,
+    getPageWindow,
+    navigatePagePath,
+    subscribePageDocumentBridge,
+} from "@/utils/overlay/pageDocumentBridge.js";
 
 const MARKER_HOVER_LEAVE_MS = 250;
 
@@ -86,7 +93,7 @@ export function useReportMarkers({
     const deepLinkHandledRef = useRef(false);
 
     const syncMarkers = useCallback(() => {
-        setMarkers(currentPageReports.map((report) => getMarkerFromReport(report, window.scrollY)));
+        setMarkers(currentPageReports.map((report) => getMarkerFromReport(report, getPageScrollY())));
     }, [currentPageReports, markerAppearanceSize]);
 
     const activeMarkerReportId = useMemo(() => {
@@ -236,15 +243,18 @@ export function useReportMarkers({
             }
         });
 
-        mutationObserver.observe(document.body, {
+        mutationObserver.observe(getPageDocument().body ?? getPageDocument().documentElement, {
             attributes: true,
             attributeFilter: ["class", "style", "aria-hidden"],
             childList: true,
             subtree: true,
         });
 
-        window.addEventListener("scroll", syncMarkers, { passive: true, capture: true });
+        const pageWindow = getPageWindow();
+        pageWindow.addEventListener("scroll", syncMarkers, { passive: true, capture: true });
+        pageWindow.addEventListener("resize", syncMarkers);
         window.addEventListener("resize", syncMarkers);
+        const unsubscribeBridge = subscribePageDocumentBridge(syncMarkers);
 
         return () => {
             cancelled = true;
@@ -254,8 +264,10 @@ export function useReportMarkers({
             }
 
             mutationObserver.disconnect();
-            window.removeEventListener("scroll", syncMarkers, { capture: true });
+            pageWindow.removeEventListener("scroll", syncMarkers, { capture: true });
+            pageWindow.removeEventListener("resize", syncMarkers);
             window.removeEventListener("resize", syncMarkers);
+            unsubscribeBridge();
         };
     }, [currentPathname, mode, showMarkerTargetPreview, syncMarkers]);
 
@@ -268,12 +280,17 @@ export function useReportMarkers({
             syncMarkers();
         };
 
-        window.addEventListener("scroll", syncPreviewRects, { passive: true, capture: true });
+        const pageWindow = getPageWindow();
+        pageWindow.addEventListener("scroll", syncPreviewRects, { passive: true, capture: true });
+        pageWindow.addEventListener("resize", syncPreviewRects);
         window.addEventListener("resize", syncPreviewRects);
+        const unsubscribeBridge = subscribePageDocumentBridge(syncPreviewRects);
 
         return () => {
-            window.removeEventListener("scroll", syncPreviewRects, { capture: true });
+            pageWindow.removeEventListener("scroll", syncPreviewRects, { capture: true });
+            pageWindow.removeEventListener("resize", syncPreviewRects);
             window.removeEventListener("resize", syncPreviewRects);
+            unsubscribeBridge();
         };
     }, [showMarkerTargetPreview, syncMarkers]);
 
@@ -373,11 +390,7 @@ export function useReportMarkers({
             pendingLocateReportIdRef.current = reportId;
 
             try {
-                if (onNavigate) {
-                    await onNavigate(report.pathname);
-                } else if (typeof window !== "undefined") {
-                    window.location.assign(report.pathname);
-                }
+                await navigatePagePath(report.pathname, onNavigate);
             } catch (nextError) {
                 pendingLocateReportIdRef.current = null;
                 setErrorMessage(nextError instanceof Error ? nextError.message : messages.errors.loadFeedbackFailed);
@@ -461,11 +474,7 @@ export function useReportMarkers({
             pendingActivatePinRef.current = { reportId, caseId };
 
             try {
-                if (onNavigate) {
-                    await onNavigate(targetPathname);
-                } else if (typeof window !== "undefined") {
-                    window.location.assign(targetPathname);
-                }
+                await navigatePagePath(targetPathname, onNavigate);
             } catch (nextError) {
                 pendingActivatePinRef.current = null;
                 setErrorMessage(nextError instanceof Error ? nextError.message : messages.errors.loadFeedbackFailed);

@@ -1,1 +1,1 @@
-{"version":3,"file":"useCurrentPathname.d.ts","sourceRoot":"","sources":["../../src/hooks/useCurrentPathname.ts"],"names":[],"mappings":"AAQA,wBAAgB,kBAAkB,CAAC,QAAQ,CAAC,EAAE,MAAM,UAQnD"}
+{"version":3,"file":"useCurrentPathname.d.ts","sourceRoot":"","sources":["../../src/hooks/useCurrentPathname.ts"],"names":[],"mappings":"AAmBA,wBAAgB,kBAAkB,CAAC,QAAQ,CAAC,EAAE,MAAM,UAQnD"}

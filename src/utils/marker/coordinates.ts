@@ -6,6 +6,7 @@ import { getFeedbackAnchorElement, getFeedbackTargetElement } from "./locateFeed
 import { findElementByTargetSelector } from "./targetSelector.js";
 import { resolveDetachedKind } from "./markerContext.js";
 import { getDocumentY, normalizeReportPosition } from "../report/reportPosition.js";
+import { getElementHostRect, getPageViewportSize, isHtmlElement, mapPagePointToHost, queryPageSelector } from "../overlay/pageDocumentBridge.js";
 
 export type MarkerPosition = {
     left: number;
@@ -26,12 +27,12 @@ function applyScrollContainerClamp(left: number, top: number, element: HTMLEleme
         return { left, top, clampedEdge: null, clampBounds: null, clampContainerId: null };
     }
 
-    const bounds = scrollContainer.getBoundingClientRect();
+    const boundsRect = getElementHostRect(scrollContainer);
     const clampBounds: MarkerClampBounds = {
-        left: bounds.left,
-        top: bounds.top,
-        right: bounds.right,
-        bottom: bounds.bottom,
+        left: boundsRect.left,
+        top: boundsRect.top,
+        right: boundsRect.right,
+        bottom: boundsRect.bottom,
     };
     const clampContainerId = getScrollContainerClampId(scrollContainer);
     const dotSize = getMarkerDotSize();
@@ -41,22 +42,22 @@ function applyScrollContainerClamp(left: number, top: number, element: HTMLEleme
     let clampedY = anchorY;
     let clampedEdge: MarkerClampEdge | null = null;
 
-    if (anchorY < bounds.top) {
-        clampedY = bounds.top;
+    if (anchorY < clampBounds.top) {
+        clampedY = clampBounds.top;
         clampedEdge = "top";
-    } else if (anchorY > bounds.bottom) {
-        clampedY = bounds.bottom;
+    } else if (anchorY > clampBounds.bottom) {
+        clampedY = clampBounds.bottom;
         clampedEdge = "bottom";
     }
 
-    if (anchorX < bounds.left) {
-        clampedX = bounds.left;
+    if (anchorX < clampBounds.left) {
+        clampedX = clampBounds.left;
 
         if (!clampedEdge) {
             clampedEdge = "left";
         }
-    } else if (anchorX > bounds.right) {
-        clampedX = bounds.right;
+    } else if (anchorX > clampBounds.right) {
+        clampedX = clampBounds.right;
 
         if (!clampedEdge) {
             clampedEdge = "right";
@@ -95,7 +96,7 @@ function getAnchorMarkerPosition(report: ReportFeedback) {
         return null;
     }
 
-    const rect = anchorElement.getBoundingClientRect();
+    const rect = getElementHostRect(anchorElement);
 
     if (rect.width <= 0 || rect.height <= 0) {
         return null;
@@ -128,20 +129,34 @@ function getDetachedMarkerPosition(report: ReportFeedback, currentScrollY: numbe
     }
 
     const { viewport } = position;
-    const widthScale = viewport.width > 0 ? window.innerWidth / viewport.width : 1;
-    const left = viewport.width * viewport.x * widthScale - getMarkerDotSize() / 2;
+    const pageViewport = getPageViewportSize();
+    const widthScale = viewport.width > 0 ? pageViewport.width / viewport.width : 1;
+    const pageX = viewport.width * viewport.x * widthScale;
     const useViewportCoords = shouldUseViewportDetachedCoords(anchoredReport, targetElement);
 
     if (useViewportCoords) {
-        const heightScale = viewport.height > 0 ? window.innerHeight / viewport.height : 1;
-        const top = viewport.height * viewport.y * heightScale - getMarkerDotSize() / 2;
+        const heightScale = viewport.height > 0 ? pageViewport.height / viewport.height : 1;
+        const pageY = viewport.height * viewport.y * heightScale;
+        const hostPoint = mapPagePointToHost(pageX, pageY);
 
-        return { left, top, clampedEdge: null, clampBounds: null, clampContainerId: null };
+        return {
+            left: hostPoint.x - getMarkerDotSize() / 2,
+            top: hostPoint.y - getMarkerDotSize() / 2,
+            clampedEdge: null,
+            clampBounds: null,
+            clampContainerId: null,
+        };
     }
 
-    const top = getDocumentY(position) - currentScrollY - getMarkerDotSize() / 2;
+    const hostPoint = mapPagePointToHost(pageX, getDocumentY(position) - currentScrollY);
 
-    return { left, top, clampedEdge: null, clampBounds: null, clampContainerId: null };
+    return {
+        left: hostPoint.x - getMarkerDotSize() / 2,
+        top: hostPoint.y - getMarkerDotSize() / 2,
+        clampedEdge: null,
+        clampBounds: null,
+        clampContainerId: null,
+    };
 }
 
 export function getMarkerFromReport(report: ReportFeedback, currentScrollY: number): Marker {
@@ -151,7 +166,7 @@ export function getMarkerFromReport(report: ReportFeedback, currentScrollY: numb
     const { target, viewport } = position;
 
     if (targetElement && isFeedbackTargetVisible(targetElement)) {
-        const rect = targetElement.getBoundingClientRect();
+        const rect = getElementHostRect(targetElement);
         const targetX = target?.x ?? viewport.x;
         const targetY = target?.y ?? viewport.y;
         const markerPosition = applyScrollContainerClamp(
@@ -197,7 +212,10 @@ export function getDraftMarkerPosition(
     if (selectedTarget) {
         const targetElement =
             (draft.targetSelector ? findElementByTargetSelector(draft.targetSelector) : null) ??
-            document.querySelector<HTMLElement>(getFeedbackTargetSelector(selectedTarget.id, selectedTarget.type));
+            (() => {
+                const element = queryPageSelector(getFeedbackTargetSelector(selectedTarget.id, selectedTarget.type));
+                return isHtmlElement(element) ? element : null;
+            })();
 
         return applyScrollContainerClamp(
             selectedTarget.rect.left + selectedTarget.rect.width * draft.elementXRatio - getMarkerDotSize() / 2,

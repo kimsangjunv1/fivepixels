@@ -1,4 +1,5 @@
 export declare const DEVICE_PREVIEW_BUTTON_OUTSET = 3;
+export declare function shouldCaptureDevicePreviewNode(node: Node): boolean;
 export type DevicePreviewCaptureState = "idle" | "capturing" | "saved" | "failed";
 export type DevicePreviewCaptureBezel = {
     top: number;

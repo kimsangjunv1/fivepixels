@@ -4,6 +4,7 @@ import { clearFeedbackDeepLinkFromUrl, parseFeedbackDeepLink } from "../../utils
 import { getFieldTags } from "../../utils/report/fields.js";
 import { getFeedbackTargetElement, isFeedbackTargetVisible, scrollToFeedbackTarget, waitForTargetRevealResync } from "../../utils/marker/locateFeedback.js";
 import { markerToTargetSnapshot } from "../../utils/marker/markerTarget.js";
+import { getPageDocument, getPageScrollY, getPageWindow, navigatePagePath, subscribePageDocumentBridge, } from "../../utils/overlay/pageDocumentBridge.js";
 const MARKER_HOVER_LEAVE_MS = 250;
 function getInitialDeepLinkFeedbackId() {
     if (typeof window === "undefined") {
@@ -20,7 +21,7 @@ export function useReportMarkers({ mode, messages, fields, currentPathname, curr
     const pendingDeepLinkFeedbackIdRef = useRef(getInitialDeepLinkFeedbackId());
     const deepLinkHandledRef = useRef(false);
     const syncMarkers = useCallback(() => {
-        setMarkers(currentPageReports.map((report) => getMarkerFromReport(report, window.scrollY)));
+        setMarkers(currentPageReports.map((report) => getMarkerFromReport(report, getPageScrollY())));
     }, [currentPageReports, markerAppearanceSize]);
     const activeMarkerReportId = useMemo(() => {
         if (activeReplyReportId) {
@@ -135,22 +136,27 @@ export function useReportMarkers({ mode, messages, fields, currentPathname, curr
                 scheduleMutationSync();
             }
         });
-        mutationObserver.observe(document.body, {
+        mutationObserver.observe(getPageDocument().body ?? getPageDocument().documentElement, {
             attributes: true,
             attributeFilter: ["class", "style", "aria-hidden"],
             childList: true,
             subtree: true,
         });
-        window.addEventListener("scroll", syncMarkers, { passive: true, capture: true });
+        const pageWindow = getPageWindow();
+        pageWindow.addEventListener("scroll", syncMarkers, { passive: true, capture: true });
+        pageWindow.addEventListener("resize", syncMarkers);
         window.addEventListener("resize", syncMarkers);
+        const unsubscribeBridge = subscribePageDocumentBridge(syncMarkers);
         return () => {
             cancelled = true;
             if (mutationSyncTimeout !== null) {
                 window.clearTimeout(mutationSyncTimeout);
             }
             mutationObserver.disconnect();
-            window.removeEventListener("scroll", syncMarkers, { capture: true });
+            pageWindow.removeEventListener("scroll", syncMarkers, { capture: true });
+            pageWindow.removeEventListener("resize", syncMarkers);
             window.removeEventListener("resize", syncMarkers);
+            unsubscribeBridge();
         };
     }, [currentPathname, mode, showMarkerTargetPreview, syncMarkers]);
     useEffect(() => {
@@ -160,11 +166,16 @@ export function useReportMarkers({ mode, messages, fields, currentPathname, curr
         const syncPreviewRects = () => {
             syncMarkers();
         };
-        window.addEventListener("scroll", syncPreviewRects, { passive: true, capture: true });
+        const pageWindow = getPageWindow();
+        pageWindow.addEventListener("scroll", syncPreviewRects, { passive: true, capture: true });
+        pageWindow.addEventListener("resize", syncPreviewRects);
         window.addEventListener("resize", syncPreviewRects);
+        const unsubscribeBridge = subscribePageDocumentBridge(syncPreviewRects);
         return () => {
-            window.removeEventListener("scroll", syncPreviewRects, { capture: true });
+            pageWindow.removeEventListener("scroll", syncPreviewRects, { capture: true });
+            pageWindow.removeEventListener("resize", syncPreviewRects);
             window.removeEventListener("resize", syncPreviewRects);
+            unsubscribeBridge();
         };
     }, [showMarkerTargetPreview, syncMarkers]);
     const prepareFeedbackLocation = useCallback(async (report) => {
@@ -236,12 +247,7 @@ export function useReportMarkers({ mode, messages, fields, currentPathname, curr
         if (report.pathname !== currentPathname) {
             pendingLocateReportIdRef.current = reportId;
             try {
-                if (onNavigate) {
-                    await onNavigate(report.pathname);
-                }
-                else if (typeof window !== "undefined") {
-                    window.location.assign(report.pathname);
-                }
+                await navigatePagePath(report.pathname, onNavigate);
             }
             catch (nextError) {
                 pendingLocateReportIdRef.current = null;
@@ -304,12 +310,7 @@ export function useReportMarkers({ mode, messages, fields, currentPathname, curr
         if (targetPathname && targetPathname !== currentPathname) {
             pendingActivatePinRef.current = { reportId, caseId };
             try {
-                if (onNavigate) {
-                    await onNavigate(targetPathname);
-                }
-                else if (typeof window !== "undefined") {
-                    window.location.assign(targetPathname);
-                }
+                await navigatePagePath(targetPathname, onNavigate);
             }
             catch (nextError) {
                 pendingActivatePinRef.current = null;

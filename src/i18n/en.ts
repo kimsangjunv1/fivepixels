@@ -492,6 +492,9 @@ export const en: ReportMessages = {
         devicePreviewCaptureSavedLabel: "Saved",
         devicePreviewCaptureFailedLabel: "Capture failed",
         devicePreviewCaptureAriaLabel: "Capture the current device preview",
+        devicePreviewIframeTitle: "Device preview",
+        devicePreviewIframeBlocked:
+            "This page blocked the iframe preview. Check X-Frame-Options or CSP frame-ancestors.",
         sectionViewerSwitch: "Viewer switch",
         viewerSwitchAriaLabel: "Select preview viewer",
         viewerSwitchHint: "Preview buttons and permissions as the selected user.",
@@ -751,6 +754,7 @@ export const en: ReportMessages = {
         windowMinimizeAriaLabel: "Minimize window",
         windowRestoreAriaLabel: "Restore window",
         windowMaximizeAriaLabel: "Maximize window",
+        windowControlsMoreAriaLabel: "More window controls",
         sidebarCollapseAriaLabel: "Collapse case list",
         sidebarExpandAriaLabel: "Expand case list",
         shareLinkAriaLabel: "Copy feedback link",

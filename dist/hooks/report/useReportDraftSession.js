@@ -6,6 +6,7 @@ import { getPickProbeElementKey } from "../../utils/probe/pickProbeSession.js";
 import { createReportCase } from "../../utils/report/reportCases.js";
 import { resolveDefaultAuthorName } from "../../utils/report/resolveDefaultAuthorName.js";
 import { buildDraftFromReport } from "../../utils/report/buildDraftFromReport.js";
+import { getPageScrollY, getPageViewportSize, mapHostPointToPage } from "../../utils/overlay/pageDocumentBridge.js";
 import { useReportPickProbe } from "./useReportPickProbe.js";
 const OVERLAY_HOVER_LEAVE_MS = 100;
 export function useReportDraftSession({ mode, setMode, fields, messages, currentPathname, environment, appVersion, sessionActor, authorSelectionLocked, activeIdentify, authorizedAuthors, selfName, setErrorMessage, hoveredElementRef, selectedElementRef, overlayRef, overlayHoverLeaveTimeoutRef, }) {
@@ -190,19 +191,23 @@ export function useReportDraftSession({ mode, setMode, fields, messages, current
         setSelectedTarget(snapshot);
         setDraftStep("content");
         setErrorMessage("");
+        const pagePoint = mapHostPointToPage(event.clientX, event.clientY) ?? { x: event.clientX, y: event.clientY };
+        const pageViewport = getPageViewportSize();
+        const pageScrollY = getPageScrollY();
+        // Element ratios use host-mapped snapshot rects (same space as clientX/Y).
         setDraft({
             clientX: event.clientX,
             clientY: event.clientY,
-            xRatio: clampRatio(event.clientX / window.innerWidth),
-            yRatio: clampRatio(event.clientY / window.innerHeight),
+            xRatio: clampRatio(pagePoint.x / pageViewport.width),
+            yRatio: clampRatio(pagePoint.y / pageViewport.height),
             elementXRatio: clampRatio((event.clientX - snapshot.rect.left) / Math.max(snapshot.rect.width, 1)),
             elementYRatio: clampRatio((event.clientY - snapshot.rect.top) / Math.max(snapshot.rect.height, 1)),
             anchorReportId: anchorSnapshot?.id ?? null,
             anchorReportType: anchorSnapshot?.type ?? null,
             anchorXRatio: anchorSnapshot ? clampRatio((event.clientX - anchorSnapshot.rect.left) / Math.max(anchorSnapshot.rect.width, 1)) : null,
             anchorYRatio: anchorSnapshot ? clampRatio((event.clientY - anchorSnapshot.rect.top) / Math.max(anchorSnapshot.rect.height, 1)) : null,
-            scrollY: window.scrollY,
-            documentY: Math.round(window.scrollY + event.clientY),
+            scrollY: pageScrollY,
+            documentY: Math.round(pageScrollY + pagePoint.y),
             reportId: snapshot.id,
             reportType: snapshot.type,
             targetSelector: isTagged ? null : (snapshot.targetSelector ?? null),
@@ -342,8 +347,8 @@ export function useReportDraftSession({ mode, setMode, fields, messages, current
                 viewport: {
                     x: draft.xRatio,
                     y: draft.yRatio,
-                    width: window.innerWidth,
-                    height: window.innerHeight,
+                    width: getPageViewportSize().width,
+                    height: getPageViewportSize().height,
                 },
                 scrollY: draft.scrollY,
                 anchor: draft.anchorReportId && draft.anchorReportType && draft.anchorXRatio !== null && draft.anchorYRatio !== null

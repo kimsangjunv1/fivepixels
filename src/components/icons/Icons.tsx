@@ -655,6 +655,34 @@ export function SidePanelIcon({ className }: { className?: string }) {
     );
 }
 
+export function MoreHorizontalIcon({ className }: { className?: string }) {
+    return (
+        <StrokeGlyph className={className}>
+            <circle
+                cx="5"
+                cy="12"
+                r="1.75"
+                fill="currentColor"
+                stroke="none"
+            />
+            <circle
+                cx="12"
+                cy="12"
+                r="1.75"
+                fill="currentColor"
+                stroke="none"
+            />
+            <circle
+                cx="19"
+                cy="12"
+                r="1.75"
+                fill="currentColor"
+                stroke="none"
+            />
+        </StrokeGlyph>
+    );
+}
+
 export const LogoIcon = ({ className }: { className?: string }) => {
     return (
         <svg

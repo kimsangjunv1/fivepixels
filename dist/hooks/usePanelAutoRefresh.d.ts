@@ -4,7 +4,7 @@ type UsePanelAutoRefreshOptions = {
     isFetching: boolean;
 };
 export declare function usePanelAutoRefresh({ refetch, isFetching }: UsePanelAutoRefreshOptions): {
-    intervalMinutes: 0 | 1 | 10 | 3 | 5;
+    intervalMinutes: 0 | 1 | 3 | 5 | 10;
     setIntervalMinutes: (next: PanelAutoRefreshIntervalMinutes) => void;
     isAutoRefreshEnabled: boolean;
     progress: number;

@@ -38,6 +38,7 @@ import { PanelRoleSwitch } from "./PanelRoleSwitch.js";
 import { PanelPresentationSwitch } from "./PanelPresentationSwitch.js";
 import { PanelAutoRefreshControl } from "./PanelAutoRefreshControl.js";
 import { PanelOnboarding } from "./PanelOnboarding.js";
+import { isInsideDevicePreviewFrame } from "@/utils/overlay/devicePreviewFrame.js";
 import { PanelKeyGate } from "./PanelKeyGate.js";
 import { PanelProjectFooter } from "./PanelProjectFooter.js";
 import { createPersonalKeyBackupFilename, downloadPersonalKeyBackup } from "@/utils/feedback/feedbackDataTransfer.js";
@@ -406,13 +407,21 @@ export function ReportControlPanel() {
                                                     <EyeOpenIcon className="h-[16px] w-[16px]" />
                                                 </IconTooltipButton>
 
-                                                <IconTooltipButton
-                                                    label={messages.panel.devicePreview}
-                                                    active={devicePreviewUiOpen}
-                                                    onClick={() => setDevicePreviewUiOpen(!devicePreviewUiOpen)}
-                                                >
-                                                    <DevicePreviewIcon className="h-[16px] w-[16px]" />
-                                                </IconTooltipButton>
+                                                {isInsideDevicePreviewFrame() ? null : (
+                                                    <IconTooltipButton
+                                                        label={messages.panel.devicePreview}
+                                                        active={devicePreviewUiOpen}
+                                                        onClick={() => {
+                                                            if (mode === "view") {
+                                                                toggleIssueMode();
+                                                            }
+
+                                                            setDevicePreviewUiOpen(!devicePreviewUiOpen);
+                                                        }}
+                                                    >
+                                                        <DevicePreviewIcon className="h-[16px] w-[16px]" />
+                                                    </IconTooltipButton>
+                                                )}
 
                                                 <PanelAutoRefreshControl />
 

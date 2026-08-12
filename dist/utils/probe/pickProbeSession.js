@@ -2,6 +2,7 @@ import { applyPickProbeCompareMode, applyPickProbeValues } from "./pickProbe.js"
 import { getFeedbackTargetSelector, resolveReportType } from "../shared/dom.js";
 import { shouldInspectFontStyle } from "./pickTargetInspect.js";
 import { findElementByTargetSelector, generateCssSelector } from "../marker/targetSelector.js";
+import { isHtmlElement, queryPageSelector } from "../overlay/pageDocumentBridge.js";
 export function restoreProbeElementFromSnapshot(element, snapshot) {
     if (snapshot.style === null) {
         element.removeAttribute("style");
@@ -37,7 +38,8 @@ export function findElementByProbeKey(elementKey) {
         if (!reportId || !reportType) {
             return null;
         }
-        return document.querySelector(getFeedbackTargetSelector(reportId, reportType));
+        const element = queryPageSelector(getFeedbackTargetSelector(reportId, reportType));
+        return isHtmlElement(element) ? element : null;
     }
     if (elementKey.startsWith("selector:")) {
         return findElementByTargetSelector(elementKey.slice("selector:".length));

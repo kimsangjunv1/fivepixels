@@ -305,6 +305,7 @@ export function FloatingPinRail() {
                 minimizeAriaLabel: messages.pins.railCollapseAriaLabel,
                 maximizeAriaLabel: messages.marker.windowMaximizeAriaLabel,
                 restoreAriaLabel: messages.marker.windowRestoreAriaLabel,
+                moreAriaLabel: messages.marker.windowControlsMoreAriaLabel,
             }}
             title={
                 <span className="truncate text-[12px] font-bold text-[var(--adaptive-black900)]">

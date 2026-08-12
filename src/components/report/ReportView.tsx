@@ -8,6 +8,7 @@ import { ReportMarkersLayer } from "@/components/point/ReportMarkersLayer.js";
 import { DotWaveOverlay } from "@/components/overlay/DotWaveOverlay.js";
 import { FloatingPinRail } from "@/components/overlay/FloatingPinRail.js";
 import { useOverlayChrome } from "@/hooks/useOverlayChrome.js";
+import { isInsideDevicePreviewFrame } from "@/utils/overlay/devicePreviewFrame.js";
 import { ShadowReportRoot } from "./ShadowReportRoot.js";
 import { ThemeScope } from "./ThemeScope.js";
 
@@ -30,6 +31,8 @@ export function ReportView() {
     const feedbackModeDotColor = markerAppearance.feedbackModeDotColors[resolvedPanelAppearance];
     const hasDraftContentError = mode === "report" && Boolean(draft) && Boolean(errorMessage);
     const resolvedFeedbackModeDotColor = hasDraftContentError ? FEEDBACK_ERROR_DOT_COLOR : feedbackModeDotColor;
+    const isPreviewGuest = isInsideDevicePreviewFrame();
+    const showHostDevicePreview = devicePreviewUiOpen && !isPreviewGuest;
 
     useOverlayChrome({
         mode,
@@ -40,8 +43,18 @@ export function ReportView() {
         hasPins: pinnedFeedbackItems.length > 0,
     });
 
+    if (isPreviewGuest) {
+        return null;
+    }
+
     return (
         <ShadowReportRoot panelAppearance={resolvedPanelAppearance}>
+            {showHostDevicePreview ? (
+                <ThemeScope appearance={resolvedPanelAppearance}>
+                    <DevicePreviewChrome />
+                </ThemeScope>
+            ) : null}
+
             <ThemeScope
                 appearance={resolvedPanelAppearance}
                 className="pointer-events-none fixed inset-0 z-[999998]"
@@ -56,12 +69,6 @@ export function ReportView() {
                 <ReportControlPanel />
                 <FloatingPinRail />
             </ThemeScope>
-
-            {devicePreviewUiOpen ? (
-                <ThemeScope appearance={resolvedPanelAppearance}>
-                    <DevicePreviewChrome />
-                </ThemeScope>
-            ) : null}
 
             {showOverlay ? (
                 <ThemeScope appearance={resolvedTooltipAppearance}>

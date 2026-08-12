@@ -1,6 +1,7 @@
 import { createMentionId, MENTION_TOKEN_PATTERN, mentionPlainLabel, serializeMentionToken } from "../../types/mention.js";
 import { TARGET_SELECTOR } from "../../constants/report.js";
 import { isFeedbackTargetVisible, toPickSnapshot } from "../../utils/shared/dom.js";
+import { getPageDocument, isHtmlElement, queryPageSelector, queryPageSelectorAll } from "../../utils/overlay/pageDocumentBridge.js";
 const REPORT_HOST_ID = "fivepixels-root";
 const SKIP_TAGS = new Set(["SCRIPT", "STYLE", "NOSCRIPT", "TEXTAREA", "INPUT", "SELECT", "OPTION", "SVG", "PATH"]);
 const MAX_LABEL_LENGTH = 48;
@@ -123,14 +124,15 @@ export function findElementMentionCandidates(query, limit = MAX_CANDIDATES) {
     const matches = [];
     const seen = new Set();
     // Prioritize tagged feedback targets (data-report-id).
-    for (const element of Array.from(document.querySelectorAll(TARGET_SELECTOR))) {
+    for (const element of queryPageSelectorAll(TARGET_SELECTOR).filter(isHtmlElement)) {
         const reportId = element.dataset.reportId?.trim() ?? "";
         const visibleLabel = collectVisibleLabel(element);
         const label = visibleLabel || reportId;
         pushCandidate(matches, seen, buildElementMentionFromElement(element, label), normalizedQuery);
     }
     // Also index visible text leaves for untagged UI copy.
-    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_ELEMENT);
+    const pageDocument = getPageDocument();
+    const walker = pageDocument.createTreeWalker(pageDocument.body ?? pageDocument.documentElement, NodeFilter.SHOW_ELEMENT);
     let node = walker.nextNode();
     while (node) {
         const element = node;
@@ -157,23 +159,14 @@ export function findElementMentionCandidates(query, limit = MAX_CANDIDATES) {
 }
 export function resolveMentionElement(mention) {
     if (mention.reportId) {
-        try {
-            const tagged = document.querySelector(`[data-report-id="${CSS.escape(mention.reportId)}"]`);
-            if (tagged) {
-                return tagged;
-            }
-        }
-        catch {
-            // ignore invalid selectors
+        const tagged = queryPageSelector(`[data-report-id="${CSS.escape(mention.reportId)}"]`);
+        if (isHtmlElement(tagged)) {
+            return tagged;
         }
     }
     if (mention.targetSelector) {
-        try {
-            return document.querySelector(mention.targetSelector);
-        }
-        catch {
-            return null;
-        }
+        const element = queryPageSelector(mention.targetSelector);
+        return isHtmlElement(element) ? element : null;
     }
     return null;
 }
