@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useReportPreferences } from "@/providers/reportContext.js";
+import { useReportPreferences, useReportSession } from "@/providers/reportContext.js";
 import {
     DEVICE_PREVIEW_BRAND_ORDER,
     DEVICE_PREVIEW_SCALE_OPTIONS,
@@ -37,6 +37,11 @@ import {
     syncGuestStatusBarStyle,
     type DevicePreviewContentMetrics,
 } from "@/utils/overlay/devicePreviewFrame.js";
+import {
+    clearPageDocumentBridge,
+    notifyPageDocumentBridge,
+    setPageDocumentBridge,
+} from "@/utils/overlay/pageDocumentBridge.js";
 import { DeviceFrameArtwork } from "./DeviceFrameArtwork.js";
 import { DevicePreviewQrCard } from "./DevicePreviewQrCard.js";
 import { DeviceStatusBar, getDeviceStatusBarHeight } from "./DeviceStatusBar.js";
@@ -380,6 +385,7 @@ export function DevicePreviewChrome() {
         messages,
         setDevicePreviewUiOpen,
     } = useReportPreferences();
+    const { mode } = useReportSession();
     const isPreviewGuest = isInsideDevicePreviewFrame();
     const preset = useMemo(() => getDevicePreviewPreset(devicePreviewDeviceId), [devicePreviewDeviceId]);
     const layout = useMemo(() => getDevicePreviewLayoutSize(preset, devicePreviewScale), [preset, devicePreviewScale]);
@@ -518,17 +524,60 @@ export function DevicePreviewChrome() {
         const iframe = iframeRef.current;
         if (!isGuestDocumentReady(iframe)) {
             setFrameLoadState("blocked");
+            clearPageDocumentBridge();
             return;
         }
 
         setFrameLoadState("ready");
+        setPageDocumentBridge({ iframe, fitScale: centered.fitScale });
         syncGuestStatusBarStyle(getGuestDocument(iframe), statusBarHeight);
         setMetrics(readGuestContentMetrics(iframe, centered.screenWidth));
+        notifyPageDocumentBridge();
         iframe?.focus();
-    }, [centered.screenWidth, statusBarHeight]);
+    }, [centered.fitScale, centered.screenWidth, statusBarHeight]);
+
+    useEffect(() => {
+        if (!devicePreviewUiOpen || frameLoadState !== "ready") {
+            return;
+        }
+
+        setPageDocumentBridge({ iframe: iframeRef.current, fitScale: centered.fitScale });
+    }, [centered.fitScale, devicePreviewUiOpen, frameLoadState]);
+
+    useEffect(() => {
+        if (!devicePreviewUiOpen || frameLoadState !== "ready") {
+            return;
+        }
+
+        const guestWindow = getGuestWindow(iframeRef.current);
+        if (!guestWindow) {
+            return;
+        }
+
+        const notify = () => notifyPageDocumentBridge();
+        const originalPushState = guestWindow.history.pushState.bind(guestWindow.history);
+        const originalReplaceState = guestWindow.history.replaceState.bind(guestWindow.history);
+
+        guestWindow.addEventListener("popstate", notify);
+        guestWindow.history.pushState = (...args: Parameters<History["pushState"]>) => {
+            originalPushState(...args);
+            notify();
+        };
+        guestWindow.history.replaceState = (...args: Parameters<History["replaceState"]>) => {
+            originalReplaceState(...args);
+            notify();
+        };
+
+        return () => {
+            guestWindow.removeEventListener("popstate", notify);
+            guestWindow.history.pushState = originalPushState;
+            guestWindow.history.replaceState = originalReplaceState;
+        };
+    }, [devicePreviewUiOpen, frameLoadState, frameSrc]);
 
     useEffect(() => {
         if (!devicePreviewUiOpen) {
+            clearPageDocumentBridge();
             document.documentElement.classList.remove(HTML_DEVICE_PREVIEW_ACTIVE_CLASS);
             document.getElementById(DEVICE_PREVIEW_HOST_STYLE_ID)?.remove();
             return;
@@ -556,6 +605,7 @@ export function DevicePreviewChrome() {
         return () => {
             document.documentElement.classList.remove(HTML_DEVICE_PREVIEW_ACTIVE_CLASS);
             style?.remove();
+            clearPageDocumentBridge();
         };
     }, [devicePreviewUiOpen, centered.screenWidth, hostCanvas.background, hostCanvas.line]);
 
@@ -674,7 +724,7 @@ export function DevicePreviewChrome() {
                     onLoad={handleFrameLoad}
                     data-fivepixels-device-preview-frame=""
                     tabIndex={-1}
-                    className="pointer-events-auto absolute z-[1] border-0"
+                    className={`${mode === "report" ? "pointer-events-none" : "pointer-events-auto"} absolute z-[1] border-0`}
                     style={{
                         left: centered.screenLeft,
                         top: centered.screenTop,

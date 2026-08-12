@@ -1,5 +1,6 @@
 import type { ReportFeedback } from "@/types/report.js";
 import { escapeAttribute, getFeedbackTargetSelector, isFeedbackTargetVisible, resolveReportType } from "../shared/dom.js";
+import { isHtmlElement, queryPageSelector } from "../overlay/pageDocumentBridge.js";
 
 const REPORT_HOST_ID = "fivepixels-root";
 const AUTO_ID_PREFIX = "fp-pick-";
@@ -128,13 +129,8 @@ export function generateCssSelector(element: HTMLElement) {
 }
 
 export function findElementByTargetSelector(selector: string) {
-    try {
-        const element = document.querySelector<HTMLElement>(selector);
-
-        return element instanceof HTMLElement ? element : null;
-    } catch {
-        return null;
-    }
+    const element = queryPageSelector(selector);
+    return isHtmlElement(element) ? element : null;
 }
 
 export type TargetBindingKind = "selector" | "report-id" | "coordinates";
@@ -148,13 +144,13 @@ export function resolveTargetBinding(report: Pick<ReportFeedback, "report_id" | 
         }
     }
 
-    const byReportId = document.querySelector<HTMLElement>(getFeedbackTargetSelector(report.report_id, report.report_type));
+    const byReportId = queryPageSelector(getFeedbackTargetSelector(report.report_id, report.report_type));
 
-    if (byReportId && isFeedbackTargetVisible(byReportId)) {
+    if (isHtmlElement(byReportId) && isFeedbackTargetVisible(byReportId)) {
         return { kind: "report-id" as const, element: byReportId };
     }
 
-    return { kind: "coordinates" as const, element: byReportId };
+    return { kind: "coordinates" as const, element: isHtmlElement(byReportId) ? byReportId : null };
 }
 
 export function isPickableElement(element: HTMLElement) {

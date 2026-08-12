@@ -31,9 +31,9 @@ export function ReportView() {
         setPinRailCollapsed,
         hasPins: pinnedFeedbackItems.length > 0,
     });
-    if (showHostDevicePreview) {
-        return (_jsx(ShadowReportRoot, { panelAppearance: resolvedPanelAppearance, children: _jsx(ThemeScope, { appearance: resolvedPanelAppearance, children: _jsx(DevicePreviewChrome, {}) }) }));
+    if (isPreviewGuest) {
+        return null;
     }
-    return (_jsxs(ShadowReportRoot, { panelAppearance: resolvedPanelAppearance, children: [_jsx(ThemeScope, { appearance: resolvedPanelAppearance, className: "pointer-events-none fixed inset-0 z-[999998]", children: _jsx(DotWaveOverlay, { active: mode === "report", color: resolvedFeedbackModeDotColor }) }), _jsxs(ThemeScope, { appearance: resolvedPanelAppearance, children: [_jsx(ReportControlPanel, {}), _jsx(FloatingPinRail, {})] }), showOverlay ? (_jsx(ThemeScope, { appearance: resolvedTooltipAppearance, children: _jsx(ReportOverlayLayer, { children: mode !== "idle" ? (_jsxs(_Fragment, { children: [_jsx(ReportMarkersLayer, {}), _jsx(ReportDraftMarker, {}), _jsx(ReportDraftForm, {})] })) : null }) })) : null] }));
+    return (_jsxs(ShadowReportRoot, { panelAppearance: resolvedPanelAppearance, children: [showHostDevicePreview ? (_jsx(ThemeScope, { appearance: resolvedPanelAppearance, children: _jsx(DevicePreviewChrome, {}) })) : null, _jsx(ThemeScope, { appearance: resolvedPanelAppearance, className: "pointer-events-none fixed inset-0 z-[999998]", children: _jsx(DotWaveOverlay, { active: mode === "report", color: resolvedFeedbackModeDotColor }) }), _jsxs(ThemeScope, { appearance: resolvedPanelAppearance, children: [_jsx(ReportControlPanel, {}), _jsx(FloatingPinRail, {})] }), showOverlay ? (_jsx(ThemeScope, { appearance: resolvedTooltipAppearance, children: _jsx(ReportOverlayLayer, { children: mode !== "idle" ? (_jsxs(_Fragment, { children: [_jsx(ReportMarkersLayer, {}), _jsx(ReportDraftMarker, {}), _jsx(ReportDraftForm, {})] })) : null }) })) : null] }));
 }
 //# sourceMappingURL=ReportView.js.map

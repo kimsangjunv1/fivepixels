@@ -8,6 +8,23 @@ import {
     generateSuggestedReportId,
     isPickableElement,
 } from "../marker/targetSelector.js";
+import {
+    getElementHostRect,
+    getPageElementsFromPoint,
+    getPageViewportSize,
+    getPageWindow,
+    isHtmlElement,
+    queryPageSelector,
+    queryPageSelectorAll,
+} from "../overlay/pageDocumentBridge.js";
+
+function getElementWindow(element: Element) {
+    return element.ownerDocument.defaultView ?? getPageWindow();
+}
+
+function getElementDocumentElement(element: Element) {
+    return element.ownerDocument.documentElement;
+}
 
 export function escapeAttribute(value: string) {
     return value.split("\\").join("\\\\").split('"').join('\\"');
@@ -39,19 +56,20 @@ function isStyleHidden(style: CSSStyleDeclaration) {
     return false;
 }
 
-function intersectsViewport(rect: DOMRect) {
+function intersectsViewport(rect: DOMRect | DOMRectReadOnly) {
     if (rect.width <= 0 || rect.height <= 0) {
         return false;
     }
 
-    return rect.right > 0 && rect.bottom > 0 && rect.left < window.innerWidth && rect.top < window.innerHeight;
+    const viewport = getPageViewportSize();
+    return rect.right > 0 && rect.bottom > 0 && rect.left < viewport.width && rect.top < viewport.height;
 }
 
 export function hasFixedPositionAncestor(element: HTMLElement) {
     let node: HTMLElement | null = element.parentElement;
 
-    while (node && node !== document.documentElement) {
-        if (window.getComputedStyle(node).position === "fixed") {
+    while (node && node !== getElementDocumentElement(node)) {
+        if (getElementWindow(node).getComputedStyle(node).position === "fixed") {
             return true;
         }
 
@@ -69,8 +87,8 @@ export function isFeedbackTargetVisible(element: HTMLElement) {
     } else {
         let node: HTMLElement | null = element;
 
-        while (node && node !== document.documentElement) {
-            if (isStyleHidden(window.getComputedStyle(node))) {
+        while (node && node !== getElementDocumentElement(node)) {
+            if (isStyleHidden(getElementWindow(node).getComputedStyle(node))) {
                 return false;
             }
 
@@ -211,7 +229,7 @@ export function toSnapshot(element: HTMLElement | null): TargetSnapshot | null {
     return {
         id: reportId,
         type: resolveReportType(element),
-        rect: element.getBoundingClientRect(),
+        rect: getElementHostRect(element),
         isTagged: true,
     };
 }
@@ -219,10 +237,10 @@ export function toSnapshot(element: HTMLElement | null): TargetSnapshot | null {
 export function resolveFeedbackDocumentAnchor(targetElement: HTMLElement): TargetSnapshot | null {
     let node: HTMLElement | null = targetElement.parentElement;
 
-    while (node && node !== document.documentElement) {
+    while (node && node !== getElementDocumentElement(node)) {
         const reportId = node.dataset.reportId?.trim();
 
-        if (reportId && window.getComputedStyle(node).position !== "fixed") {
+        if (reportId && getElementWindow(node).getComputedStyle(node).position !== "fixed") {
             return toSnapshot(node);
         }
 
@@ -266,8 +284,8 @@ function isScrollableOverflow(value: string) {
 export function getNearestScrollContainer(element: HTMLElement): HTMLElement | null {
     let node: HTMLElement | null = element.parentElement;
 
-    while (node && node !== document.documentElement) {
-        const style = window.getComputedStyle(node);
+    while (node && node !== getElementDocumentElement(node)) {
+        const style = getElementWindow(node).getComputedStyle(node);
         const canScrollY = isScrollableOverflow(style.overflowY) && node.scrollHeight > node.clientHeight + 1;
         const canScrollX = isScrollableOverflow(style.overflowX) && node.scrollWidth > node.clientWidth + 1;
 
@@ -296,7 +314,7 @@ export function getScrollContainerClampId(scrollContainer: HTMLElement): string 
 }
 
 export function getScrollContainerByClampId(containerId: string): HTMLElement | null {
-    return document.querySelector<HTMLElement>(`[${SCROLL_CLAMP_ATTR}="${containerId}"]`);
+    return queryPageSelector<HTMLElement>(`[${SCROLL_CLAMP_ATTR}="${containerId}"]`);
 }
 
 export function scrollContainerTowardEdge(containerId: string, edge: "top" | "bottom" | "left" | "right") {
@@ -325,29 +343,20 @@ export function scrollContainerTowardEdge(containerId: string, edge: "top" | "bo
 }
 
 export function getSelectableTargets() {
-    return Array.from(document.querySelectorAll<HTMLElement>(TARGET_SELECTOR))
+    return queryPageSelectorAll<HTMLElement>(TARGET_SELECTOR)
+        .filter(isHtmlElement)
         .map((element) => toSnapshot(element))
         .filter((snapshot): snapshot is TargetSnapshot => snapshot !== null);
 }
 
 function getElementsFromPoint(clientX: number, clientY: number) {
-    if (typeof document.elementsFromPoint === "function") {
-        return document.elementsFromPoint(clientX, clientY).filter((node): node is HTMLElement => node instanceof HTMLElement);
-    }
-
-    if (typeof document.elementFromPoint === "function") {
-        const hitElement = document.elementFromPoint(clientX, clientY);
-
-        return hitElement instanceof HTMLElement ? [hitElement] : [];
-    }
-
-    return [];
+    return getPageElementsFromPoint(clientX, clientY);
 }
 
 function isAriaHiddenSubtree(element: HTMLElement) {
     let node: HTMLElement | null = element;
 
-    while (node && node !== document.documentElement) {
+    while (node && node !== getElementDocumentElement(node)) {
         if (node.getAttribute("aria-hidden") === "true") {
             return true;
         }
@@ -371,7 +380,8 @@ function isSelectableFeedbackTarget(target: HTMLElement) {
 }
 
 function isPointerEventBlockingLayer(element: HTMLElement, clientX: number, clientY: number) {
-    const style = window.getComputedStyle(element);
+    const pageWindow = getElementWindow(element);
+    const style = pageWindow.getComputedStyle(element);
 
     if (style.pointerEvents === "none" || isStyleHidden(style)) {
         return false;
@@ -381,22 +391,24 @@ function isPointerEventBlockingLayer(element: HTMLElement, clientX: number, clie
         return false;
     }
 
-    const rect = element.getBoundingClientRect();
-    const isPointInside = clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom;
+    const hostRect = getElementHostRect(element);
+    const isPointInside = clientX >= hostRect.left && clientX <= hostRect.right && clientY >= hostRect.top && clientY <= hostRect.bottom;
 
     if (!isPointInside) {
         return false;
     }
 
-    const viewportArea = window.innerWidth * window.innerHeight;
-    const elementArea = rect.width * rect.height;
+    const pageRect = element.getBoundingClientRect();
+    const viewport = getPageViewportSize();
+    const viewportArea = viewport.width * viewport.height;
+    const elementArea = pageRect.width * pageRect.height;
     const coverageRatio = viewportArea > 0 ? elementArea / viewportArea : 0;
-    const nearlyFullscreen = rect.width >= window.innerWidth * 0.9 && rect.height >= window.innerHeight * 0.9;
+    const nearlyFullscreen = pageRect.width >= viewport.width * 0.9 && pageRect.height >= viewport.height * 0.9;
     const looksModalLayer = element.getAttribute("aria-modal") === "true" || element.getAttribute("role") === "dialog";
 
     // Treat only broad overlays/modal shells as blockers.
     // Small fixed headers/toolbars should not block target picking.
-    return (rect.width > 0 && rect.height > 0 && coverageRatio >= 0.35) || nearlyFullscreen || looksModalLayer;
+    return (pageRect.width > 0 && pageRect.height > 0 && coverageRatio >= 0.35) || nearlyFullscreen || looksModalLayer;
 }
 
 export function toPickSnapshot(element: HTMLElement | null): TargetSnapshot | null {
@@ -411,7 +423,7 @@ export function toPickSnapshot(element: HTMLElement | null): TargetSnapshot | nu
     return {
         id: reportId ?? createAutoPickReportId(selector),
         type: reportId ? resolveReportType(element) : "item",
-        rect: element.getBoundingClientRect(),
+        rect: getElementHostRect(element),
         isTagged: Boolean(reportId),
         targetSelector: selector,
         suggestedReportId,

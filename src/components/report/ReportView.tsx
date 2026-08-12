@@ -43,18 +43,18 @@ export function ReportView() {
         hasPins: pinnedFeedbackItems.length > 0,
     });
 
-    if (showHostDevicePreview) {
-        return (
-            <ShadowReportRoot panelAppearance={resolvedPanelAppearance}>
-                <ThemeScope appearance={resolvedPanelAppearance}>
-                    <DevicePreviewChrome />
-                </ThemeScope>
-            </ShadowReportRoot>
-        );
+    if (isPreviewGuest) {
+        return null;
     }
 
     return (
         <ShadowReportRoot panelAppearance={resolvedPanelAppearance}>
+            {showHostDevicePreview ? (
+                <ThemeScope appearance={resolvedPanelAppearance}>
+                    <DevicePreviewChrome />
+                </ThemeScope>
+            ) : null}
+
             <ThemeScope
                 appearance={resolvedPanelAppearance}
                 className="pointer-events-none fixed inset-0 z-[999998]"

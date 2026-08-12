@@ -411,7 +411,15 @@ export function ReportControlPanel() {
                                                     <IconTooltipButton
                                                         label={messages.panel.devicePreview}
                                                         active={devicePreviewUiOpen}
-                                                        onClick={() => setDevicePreviewUiOpen(!devicePreviewUiOpen)}
+                                                        onClick={() => {
+                                                            const nextOpen = !devicePreviewUiOpen;
+
+                                                            if (nextOpen && mode === "view") {
+                                                                toggleIssueMode();
+                                                            }
+
+                                                            setDevicePreviewUiOpen(nextOpen);
+                                                        }}
                                                     >
                                                         <DevicePreviewIcon className="h-[16px] w-[16px]" />
                                                     </IconTooltipButton>

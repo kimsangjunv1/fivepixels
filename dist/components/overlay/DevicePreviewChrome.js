@@ -1,11 +1,12 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useReportPreferences } from "../../providers/reportContext.js";
+import { useReportPreferences, useReportSession } from "../../providers/reportContext.js";
 import { DEVICE_PREVIEW_BRAND_ORDER, DEVICE_PREVIEW_SCALE_OPTIONS, formatDevicePreviewScale, getDevicePreviewLayoutSize, getDevicePreviewPreset, getDevicePreviewPresetsByBrand, getEmptyBezel, scaleDeviceChrome, } from "../../constants/devicePreview.js";
 import { PanelOptionSwitch } from "../../components/panel/PanelOptionSwitch.js";
 import { FloatingWindow } from "../../components/ui/FloatingWindow.js";
 import { buildDevicePreviewCaptureFilename, captureDevicePreview, downloadCanvasPng, getDevicePreviewCaptureLayout, } from "../../utils/overlay/devicePreviewCapture.js";
 import { DEVICE_PREVIEW_FRAME_NAME, DEVICE_PREVIEW_HOST_STYLE_ID, HTML_DEVICE_PREVIEW_ACTIVE_CLASS, buildDevicePreviewHostStyle, clearGuestStatusBarStyle, closeDevicePreviewAndSyncGuestUrl, getGuestCaptureRoot, getGuestDocument, getGuestWindow, isGuestDocumentReady, isInsideDevicePreviewFrame, readGuestContentMetrics, syncGuestStatusBarStyle, } from "../../utils/overlay/devicePreviewFrame.js";
+import { clearPageDocumentBridge, notifyPageDocumentBridge, setPageDocumentBridge, } from "../../utils/overlay/pageDocumentBridge.js";
 import { DeviceFrameArtwork } from "./DeviceFrameArtwork.js";
 import { DevicePreviewQrCard } from "./DevicePreviewQrCard.js";
 import { DeviceStatusBar, getDeviceStatusBarHeight } from "./DeviceStatusBar.js";
@@ -171,6 +172,7 @@ function DevicePreviewFloatingBar({ captureState, onCapture, onClose, }) {
 }
 export function DevicePreviewChrome() {
     const { devicePreviewUiOpen, devicePreviewDeviceId, devicePreviewScale, devicePreviewImageEnabled, devicePreviewFitToViewport, devicePreviewStatusBarEnabled, resolvedPanelAppearance, messages, setDevicePreviewUiOpen, } = useReportPreferences();
+    const { mode } = useReportSession();
     const isPreviewGuest = isInsideDevicePreviewFrame();
     const preset = useMemo(() => getDevicePreviewPreset(devicePreviewDeviceId), [devicePreviewDeviceId]);
     const layout = useMemo(() => getDevicePreviewLayoutSize(preset, devicePreviewScale), [preset, devicePreviewScale]);
@@ -286,15 +288,51 @@ export function DevicePreviewChrome() {
         const iframe = iframeRef.current;
         if (!isGuestDocumentReady(iframe)) {
             setFrameLoadState("blocked");
+            clearPageDocumentBridge();
             return;
         }
         setFrameLoadState("ready");
+        setPageDocumentBridge({ iframe, fitScale: centered.fitScale });
         syncGuestStatusBarStyle(getGuestDocument(iframe), statusBarHeight);
         setMetrics(readGuestContentMetrics(iframe, centered.screenWidth));
+        notifyPageDocumentBridge();
         iframe?.focus();
-    }, [centered.screenWidth, statusBarHeight]);
+    }, [centered.fitScale, centered.screenWidth, statusBarHeight]);
+    useEffect(() => {
+        if (!devicePreviewUiOpen || frameLoadState !== "ready") {
+            return;
+        }
+        setPageDocumentBridge({ iframe: iframeRef.current, fitScale: centered.fitScale });
+    }, [centered.fitScale, devicePreviewUiOpen, frameLoadState]);
+    useEffect(() => {
+        if (!devicePreviewUiOpen || frameLoadState !== "ready") {
+            return;
+        }
+        const guestWindow = getGuestWindow(iframeRef.current);
+        if (!guestWindow) {
+            return;
+        }
+        const notify = () => notifyPageDocumentBridge();
+        const originalPushState = guestWindow.history.pushState.bind(guestWindow.history);
+        const originalReplaceState = guestWindow.history.replaceState.bind(guestWindow.history);
+        guestWindow.addEventListener("popstate", notify);
+        guestWindow.history.pushState = (...args) => {
+            originalPushState(...args);
+            notify();
+        };
+        guestWindow.history.replaceState = (...args) => {
+            originalReplaceState(...args);
+            notify();
+        };
+        return () => {
+            guestWindow.removeEventListener("popstate", notify);
+            guestWindow.history.pushState = originalPushState;
+            guestWindow.history.replaceState = originalReplaceState;
+        };
+    }, [devicePreviewUiOpen, frameLoadState, frameSrc]);
     useEffect(() => {
         if (!devicePreviewUiOpen) {
+            clearPageDocumentBridge();
             document.documentElement.classList.remove(HTML_DEVICE_PREVIEW_ACTIVE_CLASS);
             document.getElementById(DEVICE_PREVIEW_HOST_STYLE_ID)?.remove();
             return;
@@ -317,6 +355,7 @@ export function DevicePreviewChrome() {
         return () => {
             document.documentElement.classList.remove(HTML_DEVICE_PREVIEW_ACTIVE_CLASS);
             style?.remove();
+            clearPageDocumentBridge();
         };
     }, [devicePreviewUiOpen, centered.screenWidth, hostCanvas.background, hostCanvas.line]);
     useEffect(() => {
@@ -389,7 +428,7 @@ export function DevicePreviewChrome() {
                             top: frameTop,
                             height: centered.visualFrameHeight,
                             width: Math.max(0, metrics.viewportWidth - frameLeft - centered.visualFrameWidth),
-                        } }), _jsx("iframe", { ref: iframeRef, name: DEVICE_PREVIEW_FRAME_NAME, title: messages.settings.devicePreviewIframeTitle, src: frameSrc, onLoad: handleFrameLoad, "data-fivepixels-device-preview-frame": "", tabIndex: -1, className: "pointer-events-auto absolute z-[1] border-0", style: {
+                        } }), _jsx("iframe", { ref: iframeRef, name: DEVICE_PREVIEW_FRAME_NAME, title: messages.settings.devicePreviewIframeTitle, src: frameSrc, onLoad: handleFrameLoad, "data-fivepixels-device-preview-frame": "", tabIndex: -1, className: `${mode === "report" ? "pointer-events-none" : "pointer-events-auto"} absolute z-[1] border-0`, style: {
                             left: centered.screenLeft,
                             top: centered.screenTop,
                             width: screenWidth,
