@@ -3,6 +3,7 @@ import { ensureReportLocaleMessages, getReportMessages, setActiveReportMessages 
 import type { DeepPartialReportMessages } from "@/i18n/types.js";
 import type { ReportLocale } from "@/i18n/types.js";
 import { useMarkerTargetPreviewPreference } from "../useMarkerTargetPreviewPreference.js";
+import { useDevicePreviewPreference } from "../useDevicePreviewPreference.js";
 import { useDetachedMarkerVisibilityPreference } from "../useDetachedMarkerVisibilityPreference.js";
 import { useMarkerAppearancePreference } from "../useMarkerAppearancePreference.js";
 import { useTypographyPreference } from "../useTypographyPreference.js";
@@ -115,6 +116,21 @@ export function useReportPanelShell({
     const { appearance: activePanelAppearance, setAppearance: setPanelAppearance } = useAppearancePreference(PANEL_APPEARANCE_STORAGE_KEY, panelAppearance);
     const { appearance: activeTooltipAppearance, setAppearance: setTooltipAppearance } = useAppearancePreference(TOOLTIP_APPEARANCE_STORAGE_KEY, tooltipAppearance);
     const { showMarkerTargetPreview, setShowMarkerTargetPreview, toggleMarkerTargetPreview } = useMarkerTargetPreviewPreference();
+    const {
+        devicePreviewUiOpen,
+        setDevicePreviewUiOpen,
+        devicePreviewDeviceId,
+        setDevicePreviewDeviceId,
+        devicePreviewScale,
+        setDevicePreviewScale,
+        devicePreviewImageEnabled,
+        setDevicePreviewImageEnabled,
+        devicePreviewFitToViewport,
+        setDevicePreviewFitToViewport,
+        devicePreviewStatusBarEnabled,
+        setDevicePreviewStatusBarEnabled,
+        devicePreviewPreset,
+    } = useDevicePreviewPreference();
     const { showHiddenDetachedMarkers, setShowHiddenDetachedMarkers, showModalDetachedMarkers, setShowModalDetachedMarkers } =
         useDetachedMarkerVisibilityPreference();
     const {
@@ -132,7 +148,7 @@ export function useReportPanelShell({
     const { questionThreadDisplay, setQuestionThreadDisplay } = useQuestionThreadPreference(questionThreadDefault);
     const { panelRole, setPanelRole } = usePanelRolePreference();
     const { storedPreference, setPanelTabPreference, setVisibleTabs, resetTabsToRoleDefault, applyRoleDefaultTabs } = usePanelTabPreference();
-    const { pinnedFeedbackItems, pinRailCollapsed, togglePinnedFeedback, unpinFeedback, setPinRailCollapsed, syncPinnedFeedbackReports } =
+    const { pinnedFeedbackItems, pinRailCollapsed, pinRailPlacement, togglePinnedFeedback, unpinFeedback, setPinRailCollapsed, setPinRailPlacement, syncPinnedFeedbackReports } =
         usePinnedFeedbackPreference(projectId, environment);
     const { locale, setLocale } = useLocalePreference(initialLocale);
     const [localeMessagesReady, setLocaleMessagesReady] = useState(locale !== "ko");
@@ -460,6 +476,19 @@ export function useReportPanelShell({
         showMarkerTargetPreview,
         setShowMarkerTargetPreview,
         toggleMarkerTargetPreview,
+        devicePreviewUiOpen,
+        setDevicePreviewUiOpen,
+        devicePreviewDeviceId,
+        setDevicePreviewDeviceId,
+        devicePreviewScale,
+        setDevicePreviewScale,
+        devicePreviewImageEnabled,
+        setDevicePreviewImageEnabled,
+        devicePreviewFitToViewport,
+        setDevicePreviewFitToViewport,
+        devicePreviewStatusBarEnabled,
+        setDevicePreviewStatusBarEnabled,
+        devicePreviewPreset,
         showHiddenDetachedMarkers,
         setShowHiddenDetachedMarkers,
         showModalDetachedMarkers,
@@ -542,9 +571,11 @@ export function useReportPanelShell({
         savePanelTabPreference,
         pinnedFeedbackItems,
         pinRailCollapsed,
+        pinRailPlacement,
         togglePinnedFeedback,
         unpinFeedback,
         setPinRailCollapsed,
+        setPinRailPlacement,
         syncPinnedFeedbackReports,
         targetStats,
         roleStatItems,

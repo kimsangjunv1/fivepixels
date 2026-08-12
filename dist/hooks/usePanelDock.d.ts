@@ -4,6 +4,8 @@ export type PanelPlacement = {
     corner: PanelCorner;
 };
 declare const PANEL_CORNERS: PanelCorner[];
+/** Read the persisted panel corner for collision avoidance with other chrome. */
+export declare function getStoredPanelCorner(): PanelCorner;
 export declare function getNearestPanelCorner(clientX: number, clientY: number): PanelCorner;
 export declare function clampPanelPlacement(placement: PanelPlacement): PanelPlacement;
 export declare function projectPointerToPlacement(clientX: number, clientY: number): PanelPlacement;

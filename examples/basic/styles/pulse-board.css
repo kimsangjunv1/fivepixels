@@ -1177,3 +1177,63 @@
         flex-basis: 100%;
     }
 }
+
+/* Device preview constrains #root width — viewport media queries won't fire, so mirror breakpoints with container queries. */
+@container fivepixels-device-preview (max-width: 1080px) {
+    .pulse-board {
+        grid-template-columns: 1fr;
+    }
+
+    .pulse-sidebar {
+        height: auto;
+        max-height: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .pulse-sidebar__nav {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        flex: none;
+    }
+
+    .pulse-stats,
+    .pulse-kanban,
+    .pulse-bottom {
+        grid-template-columns: 1fr;
+    }
+
+    .pulse-kanban__column {
+        max-height: 300px;
+    }
+
+    .pulse-settings-lab__grid {
+        grid-template-columns: 1fr;
+    }
+
+    .pulse-header {
+        flex-wrap: wrap;
+    }
+
+    .pulse-header__search {
+        order: 3;
+        flex-basis: 100%;
+    }
+}
+
+@container fivepixels-device-preview (max-width: 480px) {
+    .pulse-sidebar__nav {
+        grid-template-columns: 1fr;
+    }
+
+    .pulse-content {
+        padding: 16px;
+        gap: 16px;
+    }
+
+    .pulse-stat-card__value {
+        font-size: 28px;
+    }
+
+    .pulse-header {
+        padding: 12px 16px;
+    }
+}

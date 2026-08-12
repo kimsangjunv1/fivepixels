@@ -1,0 +1,883 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useReportPreferences } from "@/providers/reportContext.js";
+import {
+    DEVICE_PREVIEW_BRAND_ORDER,
+    DEVICE_PREVIEW_SCALE_OPTIONS,
+    formatDevicePreviewScale,
+    getDevicePreviewLayoutSize,
+    getDevicePreviewPreset,
+    getDevicePreviewPresetsByBrand,
+    getEmptyBezel,
+    scaleDeviceChrome,
+    type DevicePreviewScale,
+} from "@/constants/devicePreview.js";
+import { PanelOptionSwitch } from "@/components/panel/PanelOptionSwitch.js";
+import { FloatingWindow, type FloatingWindowMode } from "@/components/ui/FloatingWindow.js";
+import type { WindowPosition } from "@/hooks/useDraggableWindow.js";
+import {
+    buildDevicePreviewCaptureFilename,
+    captureDevicePreview,
+    downloadCanvasPng,
+    getDevicePreviewCaptureLayout,
+    type DevicePreviewCaptureState,
+} from "@/utils/overlay/devicePreviewCapture.js";
+import { DeviceFrameArtwork } from "./DeviceFrameArtwork.js";
+import { DevicePreviewQrCard } from "./DevicePreviewQrCard.js";
+import { DeviceStatusBar, getDeviceStatusBarHeight } from "./DeviceStatusBar.js";
+
+const DEVICE_PREVIEW_BAR_STORAGE_KEY = "fivepixels:device-preview-bar-position:v1";
+const FLOATING_BAR_RESERVE = 88;
+
+function readDevicePreviewBarPosition(): WindowPosition {
+    const fallback = getDefaultDevicePreviewBarPosition();
+
+    if (typeof window === "undefined") {
+        return fallback;
+    }
+
+    try {
+        const raw = window.localStorage.getItem(DEVICE_PREVIEW_BAR_STORAGE_KEY);
+
+        if (!raw) {
+            return fallback;
+        }
+
+        const parsed = JSON.parse(raw) as Partial<WindowPosition>;
+
+        if (typeof parsed.left === "number" && Number.isFinite(parsed.left) && typeof parsed.top === "number" && Number.isFinite(parsed.top)) {
+            return { left: parsed.left, top: parsed.top };
+        }
+    } catch {
+        // Ignore storage failures.
+    }
+
+    return fallback;
+}
+
+function getDefaultDevicePreviewBarPosition(): WindowPosition {
+    if (typeof window === "undefined") {
+        return { left: 80, top: 640 };
+    }
+
+    return {
+        left: Math.max(16, window.innerWidth - 240),
+        top: Math.max(16, window.innerHeight - 420),
+    };
+}
+
+function persistDevicePreviewBarPosition(position: WindowPosition) {
+    try {
+        window.localStorage.setItem(DEVICE_PREVIEW_BAR_STORAGE_KEY, JSON.stringify(position));
+    } catch {
+        // Ignore storage failures.
+    }
+}
+
+const HOST_STYLE_ID = "fivepixels-device-preview-host-style";
+const HTML_ACTIVE_CLASS = "fivepixels-device-preview-active";
+const RULER_WIDTH = 44;
+const RULER_GAP = 6;
+const RULER_MAJOR_STEP = 100;
+const RULER_MINOR_STEP = 50;
+const LABEL_RESERVE = 34;
+
+const DEVICE_PREVIEW_CANVAS_GRID = 16;
+
+/** Host document (html/body) is outside ThemeScope — resolve token hex by appearance. */
+const DEVICE_PREVIEW_HOST_CANVAS = {
+    light: {
+        background: "#f5f5f5", // --adaptive-black100
+        line: "rgba(0, 0, 0, 0.04)",
+        screen: "#ffffff", // --adaptive-background
+    },
+    dark: {
+        background: "#1F2125",
+        line: "rgba(255, 255, 255, 0.04)",
+        screen: "#17171c", // --adaptive-background
+    },
+} as const;
+
+function buildDevicePreviewCanvasStyle(hostCanvas: (typeof DEVICE_PREVIEW_HOST_CANVAS)[keyof typeof DEVICE_PREVIEW_HOST_CANVAS]) {
+    return {
+        backgroundColor: hostCanvas.background,
+        backgroundImage: `linear-gradient(${hostCanvas.line} 1px, transparent 1px), linear-gradient(90deg, ${hostCanvas.line} 1px, transparent 1px)`,
+        backgroundSize: `${DEVICE_PREVIEW_CANVAS_GRID}px ${DEVICE_PREVIEW_CANVAS_GRID}px`,
+        backgroundAttachment: "fixed" as const,
+    };
+}
+
+type ContentMetrics = {
+    scrollY: number;
+    scrollHeight: number;
+    clientHeight: number;
+    left: number;
+    top: number;
+    width: number;
+    viewportWidth: number;
+    viewportHeight: number;
+};
+
+function getPreviewContentRoot(): HTMLElement | null {
+    if (typeof document === "undefined") {
+        return null;
+    }
+
+    return document.getElementById("root");
+}
+
+function readContentMetrics(fallbackWidth: number): ContentMetrics {
+    const root = getPreviewContentRoot();
+    const rect = root?.getBoundingClientRect();
+
+    return {
+        scrollY: Math.round(root?.scrollTop ?? 0),
+        scrollHeight: Math.round(root?.scrollHeight ?? 0),
+        clientHeight: Math.round(root?.clientHeight ?? 0),
+        left: Math.round(rect?.left ?? Math.max(0, (window.innerWidth - fallbackWidth) / 2)),
+        top: Math.round(rect?.top ?? 0),
+        width: Math.round(rect?.width ?? Math.min(fallbackWidth, window.innerWidth)),
+        viewportWidth: window.innerWidth,
+        viewportHeight: window.innerHeight,
+    };
+}
+
+function buildRulerTicks(scrollY: number, clientHeight: number, scrollHeight: number) {
+    const start = Math.floor(scrollY / RULER_MINOR_STEP) * RULER_MINOR_STEP;
+    const end = Math.ceil((scrollY + clientHeight) / RULER_MINOR_STEP) * RULER_MINOR_STEP;
+    const ticks: { documentY: number; major: boolean }[] = [];
+
+    for (let documentY = Math.max(0, start); documentY <= Math.min(scrollHeight, end + RULER_MINOR_STEP); documentY += RULER_MINOR_STEP) {
+        ticks.push({
+            documentY,
+            major: documentY % RULER_MAJOR_STEP === 0,
+        });
+    }
+
+    return ticks;
+}
+
+function resolveCenteredLayout(args: {
+    layoutWidth: number;
+    layoutHeight: number;
+    bezelTop: number;
+    bezelRight: number;
+    bezelBottom: number;
+    bezelLeft: number;
+    viewportWidth: number;
+    viewportHeight: number;
+    fitToViewport: boolean;
+}) {
+    const { layoutWidth, layoutHeight, bezelTop, bezelRight, bezelBottom, bezelLeft, viewportWidth, viewportHeight, fitToViewport } = args;
+    const availableWidth = Math.max(240, viewportWidth - 24);
+    const availableHeight = Math.max(240, viewportHeight - FLOATING_BAR_RESERVE - LABEL_RESERVE);
+
+    // Logical screen stays at the selected device × user scale — never shrink for the viewport.
+    const screenWidth = Math.max(1, Math.round(layoutWidth));
+    const screenHeight = Math.max(1, Math.round(layoutHeight));
+    const bezel = {
+        top: Math.max(0, Math.round(bezelTop)),
+        right: Math.max(0, Math.round(bezelRight)),
+        bottom: Math.max(0, Math.round(bezelBottom)),
+        left: Math.max(0, Math.round(bezelLeft)),
+    };
+    const frameWidth = screenWidth + bezel.left + bezel.right;
+    const frameHeight = screenHeight + bezel.top + bezel.bottom;
+
+    // Optional visual-only shrink; CSS size / container queries stay at the real device width.
+    const fitScale = fitToViewport ? Math.min(1, availableWidth / frameWidth, availableHeight / frameHeight) : 1;
+    const visualFrameWidth = frameWidth * fitScale;
+    const visualFrameHeight = frameHeight * fitScale;
+    const visualScreenWidth = screenWidth * fitScale;
+    const visualScreenHeight = screenHeight * fitScale;
+    const frameLeft = Math.round((viewportWidth - visualFrameWidth) / 2);
+    const frameTop = Math.round((availableHeight - visualFrameHeight) / 2 + LABEL_RESERVE / 2);
+    const screenLeft = frameLeft + bezel.left * fitScale;
+    const screenTop = frameTop + bezel.top * fitScale;
+
+    return {
+        fitScale,
+        screenWidth,
+        screenHeight,
+        visualScreenWidth,
+        visualScreenHeight,
+        frameWidth,
+        frameHeight,
+        visualFrameWidth,
+        visualFrameHeight,
+        frameLeft,
+        frameTop,
+        screenLeft,
+        screenTop,
+        bezel,
+    };
+}
+
+function clearRootInlineStyles(root: HTMLElement) {
+    const props = [
+        "max-width",
+        "width",
+        "height",
+        "max-height",
+        "min-height",
+        "margin",
+        "margin-top",
+        "margin-left",
+        "margin-right",
+        "margin-bottom",
+        "overflow",
+        "overflow-x",
+        "overflow-y",
+        "overscroll-behavior",
+        "container-type",
+        "container-name",
+        "background",
+        "position",
+        "z-index",
+        "box-sizing",
+        "padding",
+        "padding-top",
+        "border-radius",
+        "transform",
+        "transform-origin",
+    ];
+
+    for (const prop of props) {
+        root.style.removeProperty(prop);
+    }
+}
+
+function DevicePreviewFloatingBar({
+    captureState,
+    onCapture,
+}: {
+    captureState: DevicePreviewCaptureState;
+    onCapture: () => void;
+}) {
+    const {
+        messages,
+        devicePreviewDeviceId,
+        setDevicePreviewDeviceId,
+        devicePreviewScale,
+        setDevicePreviewScale,
+        devicePreviewImageEnabled,
+        setDevicePreviewImageEnabled,
+        devicePreviewFitToViewport,
+        setDevicePreviewFitToViewport,
+        devicePreviewStatusBarEnabled,
+        setDevicePreviewStatusBarEnabled,
+        setDevicePreviewUiOpen,
+    } = useReportPreferences();
+    const [position, setPosition] = useState<WindowPosition>(() => readDevicePreviewBarPosition());
+    const [mode, setMode] = useState<FloatingWindowMode>("normal");
+    const captureLabel =
+        captureState === "capturing"
+            ? messages.settings.devicePreviewCaptureCapturingLabel
+            : captureState === "saved"
+              ? messages.settings.devicePreviewCaptureSavedLabel
+              : captureState === "failed"
+                ? messages.settings.devicePreviewCaptureFailedLabel
+                : messages.settings.devicePreviewCaptureLabel;
+
+    const selectClassName =
+        "h-[30px] w-full rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] px-[8px] text-[11px] font-semibold text-[var(--adaptive-black900)] outline-none focus:border-[var(--adaptive-blue500)]";
+
+    const handlePositionChange = useCallback((next: WindowPosition) => {
+        setPosition(next);
+        persistDevicePreviewBarPosition(next);
+    }, []);
+
+    return (
+        <FloatingWindow
+            dataChrome="device-preview-toolbar"
+            role="toolbar"
+            ariaLabel={messages.settings.devicePreviewFloatingAriaLabel}
+            position={position}
+            onPositionChange={handlePositionChange}
+            mode={mode}
+            onModeChange={setMode}
+            width={220}
+            minWidth={200}
+            minHeight={160}
+            resizable
+            resizeAriaLabel={messages.marker.resizeAriaLabel}
+            contentClassName="px-[12px] pb-[12px]"
+            controls={{
+                onClose: () => setDevicePreviewUiOpen(false),
+                closeAriaLabel: messages.marker.windowCloseAriaLabel,
+                minimizeAriaLabel: messages.marker.windowMinimizeAriaLabel,
+                maximizeAriaLabel: messages.marker.windowMaximizeAriaLabel,
+                restoreAriaLabel: messages.marker.windowRestoreAriaLabel,
+            }}
+            title={
+                <span className="truncate text-[12px] font-bold text-[var(--adaptive-black900)]">{messages.settings.devicePreviewFloatingAriaLabel}</span>
+            }
+        >
+            <div className="flex w-full flex-col gap-[10px]">
+                <label className="flex flex-col gap-[3px]">
+                    <span className="text-[9px] font-semibold text-[var(--adaptive-black500)]">{messages.settings.devicePreviewDeviceLabel}</span>
+                    <select
+                        value={devicePreviewDeviceId}
+                        onChange={(event) => setDevicePreviewDeviceId(event.target.value)}
+                        aria-label={messages.settings.devicePreviewDeviceAriaLabel}
+                        className={selectClassName}
+                    >
+                        {DEVICE_PREVIEW_BRAND_ORDER.map((brand) => (
+                            <optgroup
+                                key={brand}
+                                label={
+                                    brand === "apple"
+                                        ? messages.settings.devicePreviewBrandApple
+                                        : brand === "samsung"
+                                          ? messages.settings.devicePreviewBrandSamsung
+                                          : brand === "google"
+                                            ? messages.settings.devicePreviewBrandGoogle
+                                            : messages.settings.devicePreviewBrandDesktop
+                                }
+                            >
+                                {getDevicePreviewPresetsByBrand(brand).map((option) => (
+                                    <option
+                                        key={option.id}
+                                        value={option.id}
+                                    >
+                                        {option.label} ({option.width}×{option.height})
+                                    </option>
+                                ))}
+                            </optgroup>
+                        ))}
+                    </select>
+                </label>
+
+                <label className="flex flex-col gap-[3px]">
+                    <span className="text-[9px] font-semibold text-[var(--adaptive-black500)]">{messages.settings.devicePreviewScaleLabel}</span>
+                    <select
+                        value={String(devicePreviewScale)}
+                        onChange={(event) => setDevicePreviewScale(Number(event.target.value) as DevicePreviewScale)}
+                        aria-label={messages.settings.devicePreviewScaleAriaLabel}
+                        className={selectClassName}
+                    >
+                        {DEVICE_PREVIEW_SCALE_OPTIONS.map((scale) => (
+                            <option
+                                key={scale}
+                                value={String(scale)}
+                            >
+                                {formatDevicePreviewScale(scale)}
+                            </option>
+                        ))}
+                    </select>
+                </label>
+
+                <div className="flex flex-col gap-[3px]">
+                    <span className="text-[9px] font-semibold text-[var(--adaptive-black500)]">{messages.settings.devicePreviewImageLabel}</span>
+                    <PanelOptionSwitch
+                        options={[
+                            { value: "off", label: messages.settings.devicePreviewImageOff },
+                            { value: "on", label: messages.settings.devicePreviewImageOn },
+                        ]}
+                        value={devicePreviewImageEnabled ? "on" : "off"}
+                        onChange={(value) => setDevicePreviewImageEnabled(value === "on")}
+                        ariaLabel={messages.settings.devicePreviewImageAriaLabel}
+                    />
+                </div>
+
+                <div className="flex flex-col gap-[3px]">
+                    <span className="text-[9px] font-semibold text-[var(--adaptive-black500)]">{messages.settings.devicePreviewFitViewportLabel}</span>
+                    <PanelOptionSwitch
+                        options={[
+                            { value: "off", label: messages.settings.devicePreviewFitViewportOff },
+                            { value: "on", label: messages.settings.devicePreviewFitViewportOn },
+                        ]}
+                        value={devicePreviewFitToViewport ? "on" : "off"}
+                        onChange={(value) => setDevicePreviewFitToViewport(value === "on")}
+                        ariaLabel={messages.settings.devicePreviewFitViewportAriaLabel}
+                    />
+                </div>
+
+                <div className="flex flex-col gap-[3px]">
+                    <span className="text-[9px] font-semibold text-[var(--adaptive-black500)]">{messages.settings.devicePreviewStatusBarLabel}</span>
+                    <PanelOptionSwitch
+                        options={[
+                            { value: "off", label: messages.settings.devicePreviewStatusBarOff },
+                            { value: "on", label: messages.settings.devicePreviewStatusBarOn },
+                        ]}
+                        value={devicePreviewStatusBarEnabled ? "on" : "off"}
+                        onChange={(value) => setDevicePreviewStatusBarEnabled(value === "on")}
+                        ariaLabel={messages.settings.devicePreviewStatusBarAriaLabel}
+                    />
+                </div>
+
+                <button
+                    type="button"
+                    onClick={onCapture}
+                    disabled={captureState === "capturing"}
+                    aria-label={messages.settings.devicePreviewCaptureAriaLabel}
+                    className="h-[28px] rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] px-[8px] text-[10px] font-semibold text-[var(--adaptive-black900)] hover:bg-[var(--adaptive-black100)] disabled:opacity-60"
+                >
+                    {captureLabel}
+                </button>
+            </div>
+        </FloatingWindow>
+    );
+}
+
+export function DevicePreviewChrome() {
+    const {
+        devicePreviewUiOpen,
+        devicePreviewDeviceId,
+        devicePreviewScale,
+        devicePreviewImageEnabled,
+        devicePreviewFitToViewport,
+        devicePreviewStatusBarEnabled,
+        resolvedPanelAppearance,
+        messages,
+    } = useReportPreferences();
+    const preset = useMemo(() => getDevicePreviewPreset(devicePreviewDeviceId), [devicePreviewDeviceId]);
+    const layout = useMemo(() => getDevicePreviewLayoutSize(preset, devicePreviewScale), [preset, devicePreviewScale]);
+    const chrome = useMemo(() => {
+        if (!devicePreviewImageEnabled) {
+            return {
+                frameRadius: 0,
+                screenRadius: 0,
+                bezel: getEmptyBezel(),
+            };
+        }
+
+        return scaleDeviceChrome(preset, devicePreviewScale);
+    }, [devicePreviewImageEnabled, preset, devicePreviewScale]);
+    const hostCanvas = DEVICE_PREVIEW_HOST_CANVAS[resolvedPanelAppearance === "dark" ? "dark" : "light"];
+    const canvasStyle = useMemo(() => buildDevicePreviewCanvasStyle(hostCanvas), [hostCanvas]);
+    const stageRef = useRef<HTMLDivElement>(null);
+    const statusBarRef = useRef<HTMLDivElement>(null);
+    const captureResetTimerRef = useRef<number | null>(null);
+    const [captureState, setCaptureState] = useState<DevicePreviewCaptureState>("idle");
+
+    const [metrics, setMetrics] = useState<ContentMetrics>(() =>
+        typeof window === "undefined"
+            ? {
+                  scrollY: 0,
+                  scrollHeight: 800,
+                  clientHeight: 800,
+                  left: 0,
+                  top: 0,
+                  width: 390,
+                  viewportWidth: 1280,
+                  viewportHeight: 800,
+              }
+            : readContentMetrics(layout.width),
+    );
+
+    const centered = useMemo(
+        () =>
+            resolveCenteredLayout({
+                layoutWidth: layout.width,
+                layoutHeight: layout.height,
+                bezelTop: chrome.bezel.top,
+                bezelRight: chrome.bezel.right,
+                bezelBottom: chrome.bezel.bottom,
+                bezelLeft: chrome.bezel.left,
+                viewportWidth: metrics.viewportWidth || (typeof window !== "undefined" ? window.innerWidth : 1280),
+                viewportHeight: metrics.viewportHeight || (typeof window !== "undefined" ? window.innerHeight : 800),
+                fitToViewport: devicePreviewFitToViewport,
+            }),
+        [layout.width, layout.height, chrome.bezel, metrics.viewportWidth, metrics.viewportHeight, devicePreviewFitToViewport],
+    );
+
+    const statusBarHeight = useMemo(
+        () => (devicePreviewStatusBarEnabled ? getDeviceStatusBarHeight(preset, centered.screenWidth) : 0),
+        [devicePreviewStatusBarEnabled, preset, centered.screenWidth],
+    );
+
+    const handleCapture = useCallback(async () => {
+        if (captureState === "capturing") {
+            return;
+        }
+
+        const contentRoot = getPreviewContentRoot();
+
+        if (captureResetTimerRef.current !== null) {
+            window.clearTimeout(captureResetTimerRef.current);
+            captureResetTimerRef.current = null;
+        }
+
+        setCaptureState("capturing");
+
+        try {
+            if (!contentRoot) {
+                throw new Error("Device preview content is missing.");
+            }
+
+            const layout = getDevicePreviewCaptureLayout({
+                screenWidth: centered.screenWidth,
+                screenHeight: centered.screenHeight,
+                bezel: chrome.bezel,
+                deviceImageEnabled: devicePreviewImageEnabled,
+            });
+            const canvas = await captureDevicePreview({
+                contentRoot,
+                chromeStage: stageRef.current,
+                statusBarLayer: statusBarRef.current,
+                deviceImageEnabled: devicePreviewImageEnabled,
+                statusBarEnabled: devicePreviewStatusBarEnabled,
+                layout,
+                background: hostCanvas.screen,
+            });
+            await downloadCanvasPng(
+                canvas,
+                buildDevicePreviewCaptureFilename({
+                    deviceId: preset.id,
+                    width: centered.screenWidth,
+                    height: centered.screenHeight,
+                }),
+            );
+            setCaptureState("saved");
+        } catch {
+            setCaptureState("failed");
+        } finally {
+            captureResetTimerRef.current = window.setTimeout(() => {
+                setCaptureState("idle");
+                captureResetTimerRef.current = null;
+            }, 1600);
+        }
+    }, [
+        captureState,
+        centered.screenHeight,
+        centered.screenWidth,
+        chrome.bezel,
+        devicePreviewImageEnabled,
+        devicePreviewStatusBarEnabled,
+        hostCanvas.screen,
+        preset.id,
+    ]);
+
+    useEffect(() => {
+        return () => {
+            if (captureResetTimerRef.current !== null) {
+                window.clearTimeout(captureResetTimerRef.current);
+            }
+        };
+    }, []);
+
+    useEffect(() => {
+        if (!devicePreviewUiOpen) {
+            document.documentElement.classList.remove(HTML_ACTIVE_CLASS);
+            document.getElementById(HOST_STYLE_ID)?.remove();
+            const root = getPreviewContentRoot();
+            if (root) {
+                clearRootInlineStyles(root);
+            }
+            return;
+        }
+
+        document.documentElement.classList.add(HTML_ACTIVE_CLASS);
+
+        let style = document.getElementById(HOST_STYLE_ID) as HTMLStyleElement | null;
+        if (!style) {
+            style = document.createElement("style");
+            style.id = HOST_STYLE_ID;
+            document.documentElement.append(style);
+        }
+
+        style.textContent = `
+html.${HTML_ACTIVE_CLASS},
+html.${HTML_ACTIVE_CLASS} body {
+  height: 100% !important;
+  max-height: 100% !important;
+  overflow: hidden !important;
+  background-color: ${hostCanvas.background} !important;
+  background-image: linear-gradient(${hostCanvas.line} 1px, transparent 1px), linear-gradient(90deg, ${hostCanvas.line} 1px, transparent 1px) !important;
+  background-size: ${DEVICE_PREVIEW_CANVAS_GRID}px ${DEVICE_PREVIEW_CANVAS_GRID}px !important;
+}
+
+html.${HTML_ACTIVE_CLASS} #fivepixels-root {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 0 !important;
+  pointer-events: none !important;
+  z-index: 2147483646 !important;
+}
+
+html.${HTML_ACTIVE_CLASS} #root .pulse-board,
+html.${HTML_ACTIVE_CLASS} #root .pulse-sidebar,
+html.${HTML_ACTIVE_CLASS} #root .pulse-main {
+  height: auto !important;
+  min-height: 100% !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+html.${HTML_ACTIVE_CLASS} #root .pulse-content {
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  flex: none !important;
+}
+`;
+
+        const root = getPreviewContentRoot();
+        if (root) {
+            // Logical CSS size = selected device resolution (× user scale). Viewport fit uses transform only.
+            root.style.setProperty("max-width", `${centered.screenWidth}px`, "important");
+            root.style.setProperty("width", `${centered.screenWidth}px`, "important");
+            root.style.setProperty("height", `${centered.screenHeight}px`, "important");
+            root.style.setProperty("max-height", `${centered.screenHeight}px`, "important");
+            root.style.setProperty("min-height", "0px", "important");
+            root.style.setProperty("margin-left", `${centered.screenLeft}px`, "important");
+            root.style.setProperty("margin-right", "0", "important");
+            root.style.setProperty("margin-top", `${centered.screenTop}px`, "important");
+            root.style.setProperty("margin-bottom", "0", "important");
+            root.style.setProperty("padding-top", `${statusBarHeight}px`, "important");
+            root.style.setProperty("overflow-x", "hidden", "important");
+            root.style.setProperty("overflow-y", "auto", "important");
+            root.style.setProperty("overscroll-behavior", "contain", "important");
+            root.style.setProperty("container-type", "inline-size", "important");
+            root.style.setProperty("container-name", "fivepixels-device-preview", "important");
+            root.style.setProperty("background", hostCanvas.screen, "important");
+            root.style.setProperty("position", "relative", "important");
+            root.style.setProperty("z-index", "0", "important");
+            root.style.setProperty("box-sizing", "border-box", "important");
+            root.style.setProperty("border-radius", devicePreviewImageEnabled ? `${Math.max(0, Math.round(chrome.screenRadius))}px` : "0px", "important");
+            root.style.setProperty("transform", `scale(${centered.fitScale})`, "important");
+            root.style.setProperty("transform-origin", "top left", "important");
+        }
+
+        const sync = () => setMetrics(readContentMetrics(centered.screenWidth));
+        sync();
+        requestAnimationFrame(sync);
+
+        return () => {
+            document.documentElement.classList.remove(HTML_ACTIVE_CLASS);
+            style?.remove();
+            if (root) {
+                clearRootInlineStyles(root);
+            }
+        };
+    }, [
+        devicePreviewUiOpen,
+        devicePreviewImageEnabled,
+        devicePreviewStatusBarEnabled,
+        statusBarHeight,
+        centered.screenWidth,
+        centered.screenHeight,
+        centered.screenLeft,
+        centered.screenTop,
+        centered.fitScale,
+        chrome.screenRadius,
+        hostCanvas.background,
+        hostCanvas.line,
+        hostCanvas.screen,
+    ]);
+
+    useEffect(() => {
+        if (!devicePreviewUiOpen) {
+            return;
+        }
+
+        const sync = () => setMetrics(readContentMetrics(centered.screenWidth));
+        const root = getPreviewContentRoot();
+        root?.addEventListener("scroll", sync, { passive: true });
+        window.addEventListener("resize", sync);
+        const resizeObserver = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(() => sync());
+        if (root) {
+            resizeObserver?.observe(root);
+        }
+
+        return () => {
+            root?.removeEventListener("scroll", sync);
+            window.removeEventListener("resize", sync);
+            resizeObserver?.disconnect();
+        };
+    }, [devicePreviewUiOpen, centered.screenWidth, centered.screenHeight]);
+
+    if (!devicePreviewUiOpen) {
+        return null;
+    }
+
+    const screenLeft = metrics.left || centered.screenLeft;
+    const screenTop = metrics.top || centered.screenTop;
+    const screenWidth = centered.screenWidth;
+    const screenHeight = centered.screenHeight;
+    const visualScreenHeight = centered.visualScreenHeight;
+    const frameLeft = centered.frameLeft;
+    const frameTop = centered.frameTop;
+    const ticks = buildRulerTicks(metrics.scrollY, metrics.clientHeight || screenHeight, Math.max(metrics.scrollHeight, screenHeight));
+    const visualBezelLeft = centered.bezel.left * centered.fitScale;
+    const actualFrameLeft = screenLeft - visualBezelLeft;
+    const rulerLeft =
+        actualFrameLeft >= RULER_WIDTH + RULER_GAP
+            ? actualFrameLeft - RULER_WIDTH - RULER_GAP
+            : Math.max(0, actualFrameLeft - RULER_WIDTH);
+    const visualStatusBarHeight = statusBarHeight * centered.fitScale;
+    const rulerTop = screenTop + visualStatusBarHeight;
+    const rulerHeight = Math.max(0, visualScreenHeight - visualStatusBarHeight);
+    const contentScrollY = Math.max(0, metrics.scrollY - statusBarHeight);
+    const scrollLabel = messages.settings.devicePreviewScrollLabel(contentScrollY);
+    const stageTransform = {
+        transform: `scale(${centered.fitScale})`,
+        transformOrigin: "top left" as const,
+    };
+    const qrGap = 16;
+    const qrLeft = frameLeft + centered.visualFrameWidth + qrGap;
+    const qrMaxWidth = Math.max(0, metrics.viewportWidth - qrLeft - 12);
+    const showQrCard = qrMaxWidth >= 140;
+
+    return (
+        <>
+            <div
+                className="pointer-events-none fixed inset-0 z-[999997]"
+                aria-hidden
+                data-fivepixels-device-preview=""
+            >
+                {/*
+                  Do NOT paint a full-screen overlay fill — it sits above #root and
+                  would hide page content through the transparent SVG screen hole.
+                  Only mask the area outside the device frame with the canvas fill.
+                */}
+                <div
+                    className="absolute left-0 right-0 top-0"
+                    style={{ ...canvasStyle, height: Math.max(0, frameTop) }}
+                />
+                <div
+                    className="absolute bottom-0 left-0 right-0"
+                    style={{ ...canvasStyle, top: frameTop + centered.visualFrameHeight }}
+                />
+                <div
+                    className="absolute left-0"
+                    style={{
+                        ...canvasStyle,
+                        top: frameTop,
+                        height: centered.visualFrameHeight,
+                        width: Math.max(0, frameLeft),
+                    }}
+                />
+                <div
+                    className="absolute right-0"
+                    style={{
+                        ...canvasStyle,
+                        top: frameTop,
+                        height: centered.visualFrameHeight,
+                        width: Math.max(0, metrics.viewportWidth - frameLeft - centered.visualFrameWidth),
+                    }}
+                />
+
+                <div
+                    ref={stageRef}
+                    className="absolute z-[3]"
+                    data-fivepixels-device-preview-stage=""
+                    style={{
+                        left: frameLeft,
+                        top: frameTop,
+                        width: centered.frameWidth,
+                        height: centered.frameHeight,
+                        ...stageTransform,
+                    }}
+                >
+                    {devicePreviewImageEnabled ? (
+                        <DeviceFrameArtwork
+                            preset={preset}
+                            chrome={chrome}
+                            screenWidth={screenWidth}
+                            screenHeight={screenHeight}
+                        />
+                    ) : (
+                        <div
+                            className="absolute border border-[var(--adaptive-border-subtle)] bg-transparent"
+                            data-fivepixels-skip-capture=""
+                            style={{
+                                left: centered.bezel.left,
+                                top: centered.bezel.top,
+                                width: screenWidth,
+                                height: screenHeight,
+                            }}
+                        />
+                    )}
+
+                    {devicePreviewStatusBarEnabled ? (
+                        <div
+                            ref={statusBarRef}
+                            className="absolute z-[1] overflow-hidden"
+                            style={{
+                                left: centered.bezel.left,
+                                top: centered.bezel.top,
+                                width: screenWidth,
+                                height: screenHeight,
+                                borderRadius: devicePreviewImageEnabled ? chrome.screenRadius : 0,
+                            }}
+                        >
+                            <DeviceStatusBar
+                                preset={preset}
+                                width={screenWidth}
+                                appearance={resolvedPanelAppearance === "dark" ? "dark" : "light"}
+                                showCutout={devicePreviewImageEnabled}
+                            />
+                        </div>
+                    ) : null}
+                </div>
+
+                <div
+                    className="absolute overflow-hidden border-r border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-neutralTintOpacity900)] text-[var(--adaptive-black900)] backdrop-blur-[4px]"
+                    data-fivepixels-skip-capture=""
+                    style={{ left: rulerLeft, top: rulerTop, width: RULER_WIDTH, height: rulerHeight, borderRadius: 6 }}
+                >
+                    <div className="absolute inset-x-0 top-0 z-[1] border-b border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-neutralTintOpacity900)] px-[4px] py-[6px] text-center text-[9px] font-semibold leading-tight text-[var(--adaptive-black900)]">
+                        {scrollLabel}
+                    </div>
+                    {ticks.map((tick) => {
+                        const top = (tick.documentY - metrics.scrollY - statusBarHeight) * centered.fitScale;
+                        if (top < 0 || top > rulerHeight) {
+                            return null;
+                        }
+
+                        const labelY = Math.max(0, tick.documentY - statusBarHeight);
+
+                        return (
+                            <div
+                                key={tick.documentY}
+                                className="absolute right-0 flex items-center"
+                                style={{ top, height: 0 }}
+                            >
+                                <span
+                                    className={`mr-[3px] text-[8px] tabular-nums ${
+                                        tick.major ? "font-semibold text-[var(--adaptive-black900)]" : "text-[var(--adaptive-black500)]"
+                                    }`}
+                                >
+                                    {tick.major ? labelY : ""}
+                                </span>
+                                <span
+                                    className={`block bg-[var(--adaptive-black500)] ${tick.major ? "h-[1px] w-[12px]" : "h-[1px] w-[7px]"}`}
+                                />
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+
+            {showQrCard ? (
+                <DevicePreviewQrCard
+                    left={qrLeft}
+                    // top={Math.max(8, frameTop)}
+                    // top={Math.max(8, frameTop)}
+                    maxWidth={qrMaxWidth}
+                    title={messages.settings.devicePreviewQrTitle}
+                    hintLocalhost={messages.settings.devicePreviewQrHintLocalhost}
+                    urlInputLabel={messages.settings.devicePreviewQrUrlInputLabel}
+                    urlInputPlaceholder={messages.settings.devicePreviewQrUrlInputPlaceholder}
+                    urlInputAriaLabel={messages.settings.devicePreviewQrUrlInputAriaLabel}
+                    invalidUrlMessage={messages.settings.devicePreviewQrInvalidUrl}
+                    emptyUrlMessage={messages.settings.devicePreviewQrEmptyUrl}
+                    copyLabel={messages.settings.devicePreviewQrCopyLabel}
+                    copiedLabel={messages.settings.devicePreviewQrCopiedLabel}
+                    copyAriaLabel={messages.settings.devicePreviewQrCopyAriaLabel}
+                    qrAriaLabel={messages.settings.devicePreviewQrAriaLabel}
+                />
+            ) : null}
+
+            <DevicePreviewFloatingBar
+                captureState={captureState}
+                onCapture={() => void handleCapture()}
+            />
+        </>
+    );
+}

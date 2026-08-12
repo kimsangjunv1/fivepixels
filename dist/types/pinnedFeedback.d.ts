@@ -1,4 +1,10 @@
 import type { ReportCaseStatus } from "./report.js";
+export type DockEdge = "left" | "right";
+/** Free-floating pin window position in viewport coordinates. */
+export type PinRailPlacement = {
+    left: number;
+    top: number;
+};
 export type PinnedFeedbackCaseSnapshot = {
     id: string;
     status: ReportCaseStatus;
@@ -15,6 +21,7 @@ export type PinnedFeedbackItem = {
 export type PinnedFeedbackPreference = {
     items: PinnedFeedbackItem[];
     railCollapsed: boolean;
+    placement: PinRailPlacement;
 };
 export declare const MAX_PINNED_FEEDBACK = 7;
 //# sourceMappingURL=pinnedFeedback.d.ts.map

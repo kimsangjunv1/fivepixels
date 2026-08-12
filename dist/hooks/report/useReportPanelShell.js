@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ensureReportLocaleMessages, getReportMessages, setActiveReportMessages } from "../../i18n/index.js";
 import { useMarkerTargetPreviewPreference } from "../useMarkerTargetPreviewPreference.js";
+import { useDevicePreviewPreference } from "../useDevicePreviewPreference.js";
 import { useDetachedMarkerVisibilityPreference } from "../useDetachedMarkerVisibilityPreference.js";
 import { useMarkerAppearancePreference } from "../useMarkerAppearancePreference.js";
 import { useTypographyPreference } from "../useTypographyPreference.js";
@@ -31,13 +32,14 @@ export function useReportPanelShell({ projectId, environment, appVersion, panelA
     const { appearance: activePanelAppearance, setAppearance: setPanelAppearance } = useAppearancePreference(PANEL_APPEARANCE_STORAGE_KEY, panelAppearance);
     const { appearance: activeTooltipAppearance, setAppearance: setTooltipAppearance } = useAppearancePreference(TOOLTIP_APPEARANCE_STORAGE_KEY, tooltipAppearance);
     const { showMarkerTargetPreview, setShowMarkerTargetPreview, toggleMarkerTargetPreview } = useMarkerTargetPreviewPreference();
+    const { devicePreviewUiOpen, setDevicePreviewUiOpen, devicePreviewDeviceId, setDevicePreviewDeviceId, devicePreviewScale, setDevicePreviewScale, devicePreviewImageEnabled, setDevicePreviewImageEnabled, devicePreviewFitToViewport, setDevicePreviewFitToViewport, devicePreviewStatusBarEnabled, setDevicePreviewStatusBarEnabled, devicePreviewPreset, } = useDevicePreviewPreference();
     const { showHiddenDetachedMarkers, setShowHiddenDetachedMarkers, showModalDetachedMarkers, setShowModalDetachedMarkers } = useDetachedMarkerVisibilityPreference();
     const { markerAppearance, setMarkerAppearance, setMarkerSize, setMarkerShape, setMarkerFillStyle, setMarkerColors, setMarkerColor, setFeedbackModeDotColors, setFeedbackModeDotColor, } = useMarkerAppearancePreference();
     const { typography, setTypography, setFontSize, setFontFamily } = useTypographyPreference();
     const { questionThreadDisplay, setQuestionThreadDisplay } = useQuestionThreadPreference(questionThreadDefault);
     const { panelRole, setPanelRole } = usePanelRolePreference();
     const { storedPreference, setPanelTabPreference, setVisibleTabs, resetTabsToRoleDefault, applyRoleDefaultTabs } = usePanelTabPreference();
-    const { pinnedFeedbackItems, pinRailCollapsed, togglePinnedFeedback, unpinFeedback, setPinRailCollapsed, syncPinnedFeedbackReports } = usePinnedFeedbackPreference(projectId, environment);
+    const { pinnedFeedbackItems, pinRailCollapsed, pinRailPlacement, togglePinnedFeedback, unpinFeedback, setPinRailCollapsed, setPinRailPlacement, syncPinnedFeedbackReports } = usePinnedFeedbackPreference(projectId, environment);
     const { locale, setLocale } = useLocalePreference(initialLocale);
     const [localeMessagesReady, setLocaleMessagesReady] = useState(locale !== "ko");
     const messages = useMemo(() => getReportMessages(locale, messageOverrides), [locale, localeMessagesReady, messageOverrides]);
@@ -244,6 +246,19 @@ export function useReportPanelShell({ projectId, environment, appVersion, panelA
         showMarkerTargetPreview,
         setShowMarkerTargetPreview,
         toggleMarkerTargetPreview,
+        devicePreviewUiOpen,
+        setDevicePreviewUiOpen,
+        devicePreviewDeviceId,
+        setDevicePreviewDeviceId,
+        devicePreviewScale,
+        setDevicePreviewScale,
+        devicePreviewImageEnabled,
+        setDevicePreviewImageEnabled,
+        devicePreviewFitToViewport,
+        setDevicePreviewFitToViewport,
+        devicePreviewStatusBarEnabled,
+        setDevicePreviewStatusBarEnabled,
+        devicePreviewPreset,
         showHiddenDetachedMarkers,
         setShowHiddenDetachedMarkers,
         showModalDetachedMarkers,
@@ -326,9 +341,11 @@ export function useReportPanelShell({ projectId, environment, appVersion, panelA
         savePanelTabPreference,
         pinnedFeedbackItems,
         pinRailCollapsed,
+        pinRailPlacement,
         togglePinnedFeedback,
         unpinFeedback,
         setPinRailCollapsed,
+        setPinRailPlacement,
         syncPinnedFeedbackReports,
         targetStats,
         roleStatItems,
