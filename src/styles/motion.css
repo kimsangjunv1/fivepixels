@@ -199,6 +199,18 @@
     }
 }
 
+@keyframes fivepixels-marker-window-minimized-out {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    to {
+        opacity: 0;
+        transform: translateY(32px);
+    }
+}
+
 @keyframes fivepixels-slide-from-right {
     from {
         opacity: 0;
@@ -573,6 +585,11 @@
     animation: fivepixels-marker-window-minimized-in 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+[data-fivepixels-mount] .fivepixels-marker-window-minimized-exit {
+    animation: fivepixels-marker-window-minimized-out 220ms cubic-bezier(0.4, 0, 1, 1) both;
+    pointer-events: none;
+}
+
 [data-fivepixels-mount] .fivepixels-marker-window-marquee {
     display: flex;
     width: max-content;
@@ -858,6 +875,7 @@
     [data-fivepixels-mount] .fivepixels-marker-window-enter,
     [data-fivepixels-mount] .fivepixels-marker-window-exit,
     [data-fivepixels-mount] .fivepixels-marker-window-minimized-enter,
+    [data-fivepixels-mount] .fivepixels-marker-window-minimized-exit,
     [data-fivepixels-mount] .fivepixels-marker-window-marquee,
     [data-fivepixels-mount] .fivepixels-heatmap-dot,
     [data-fivepixels-mount] .fivepixels-pin-rail-enter,

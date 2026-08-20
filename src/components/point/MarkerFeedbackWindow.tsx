@@ -45,6 +45,7 @@ const RIGHT_MIN_WIDTH = 280;
 const COLLAPSED_SIDEBAR_WIDTH = 46;
 const MINIMIZED_WINDOW_HEIGHT = 42;
 const MINIMIZED_WINDOW_WIDTH = 256;
+const MINIMIZED_WINDOW_EXIT_ANIMATION_MS = 220;
 const WINDOW_CLOSE_ANIMATION_MS = 220;
 const LEFT_SECTION_TRANSITION = "transition-[background-color,backdrop-filter] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]";
 const LEFT_SECTION_FLAT_CLASS = `${LEFT_SECTION_TRANSITION} bg-[var(--adaptive-black50)]`;
@@ -251,6 +252,7 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
     const [size, setSize] = useState<BoxSize>(DEFAULT_WINDOW_SIZE);
     const [sidebarWidth, setSidebarWidth] = useState(DEFAULT_SIDEBAR_WIDTH);
     const [isSidebarDeleteConfirming, setIsSidebarDeleteConfirming] = useState(false);
+    const [isMinimizedExiting, setIsMinimizedExiting] = useState(false);
 
     const splitStateRef = useRef<{ startX: number; startWidth: number; windowWidth: number } | null>(null);
     const splitListenersRef = useRef<{ move: (event: PointerEvent) => void; up: (event: PointerEvent) => void } | null>(null);
@@ -383,6 +385,21 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
 
     useEffect(() => () => detachSplitListeners(), [detachSplitListeners]);
 
+    const finishMinimizedRestore = useCallback(() => {
+        setIsMinimizedExiting(false);
+        setWindowMode("normal");
+    }, []);
+
+    useEffect(() => {
+        if (!isMinimizedExiting) {
+            return;
+        }
+
+        const fallbackId = window.setTimeout(finishMinimizedRestore, MINIMIZED_WINDOW_EXIT_ANIMATION_MS + 60);
+
+        return () => window.clearTimeout(fallbackId);
+    }, [finishMinimizedRestore, isMinimizedExiting]);
+
     useEffect(() => {
         if (!isSidebarDeleteConfirming) {
             return;
@@ -491,7 +508,28 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
     );
 
     const handleToggleMinimize = () => {
-        setWindowMode((current) => (current === "minimized" ? "normal" : "minimized"));
+        if (isMinimized) {
+            if (isMinimizedExiting) {
+                return;
+            }
+
+            if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+                finishMinimizedRestore();
+                return;
+            }
+
+            setIsMinimizedExiting(true);
+            return;
+        }
+
+        setIsMinimizedExiting(false);
+        setWindowMode("minimized");
+    };
+
+    const handleMinimizedAnimationEnd = (event: ReactAnimationEvent<HTMLDivElement>) => {
+        if (event.currentTarget === event.target && event.animationName.endsWith("fivepixels-marker-window-minimized-out")) {
+            finishMinimizedRestore();
+        }
     };
 
     const handleToggleMaximize = () => {
@@ -807,12 +845,14 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
                 {isMinimized ? (
                     <div
                         ref={surfaceRef}
-                        className={`fivepixels-marker-window-minimized-enter overflow-hidden rounded-[16px] border border-[var(--adaptive-border-subtle)] shadow-[var(--adaptive-popup-shadow)] ${leftSectionClass}`}
+                        onAnimationEnd={handleMinimizedAnimationEnd}
+                        className={`${isMinimizedExiting ? "fivepixels-marker-window-minimized-exit" : "fivepixels-marker-window-minimized-enter"} overflow-hidden rounded-[16px] border border-[var(--adaptive-border-subtle)] shadow-[var(--adaptive-popup-shadow)] ${leftSectionClass}`}
                     >
                         <button
                             type="button"
                             data-fivepixels-interactive=""
                             onClick={handleToggleMinimize}
+                            disabled={isMinimizedExiting}
                             aria-label={`${messages.marker.windowRestoreAriaLabel}. ${minimizedCaseTexts.map((text, index) => `${index + 1}. ${text}`).join(", ")}`}
                             title={messages.marker.windowRestoreAriaLabel}
                             className="flex min-h-[40px] w-full items-center overflow-hidden px-[12px] text-left"
