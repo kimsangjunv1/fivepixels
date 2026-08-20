@@ -38,13 +38,13 @@ export function DemoInvestHeader() {
                     })}
                 </nav>
 
-                <button type="button" className="demo-invest__search" data-report-id="demo-invest-search" data-report-type="item" onClick={() => openDialog("investSearch")}>
+                <button type="button" className="demo-invest__search" data-fp-open="demo-modal-search" data-report-id="demo-invest-search" data-report-type="item" onClick={() => openDialog("investSearch")}>
                     <img src="/demo-invest/icons/icon-search-mono.png" alt="" />
                     <kbd>/</kbd>
                     <span>를 눌러 검색하세요</span>
                 </button>
 
-                <button type="button" className="demo-invest__login" data-report-id="demo-invest-login" data-report-type="item" onClick={() => openDialog("investLogin")}>
+                <button type="button" className="demo-invest__login" data-fp-open="demo-modal-login" data-report-id="demo-invest-login" data-report-type="item" onClick={() => openDialog("investLogin")}>
                     로그인
                 </button>
             </div>

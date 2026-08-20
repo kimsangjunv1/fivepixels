@@ -14,6 +14,7 @@ export function DemoInvestModal({ id, title, description, onClose, children, foo
     return createPortal(
         <div
             className="demo-invest-modal__overlay"
+            data-fp-view={id}
             data-report-id={`${id}-overlay`}
             data-report-type="group"
             role="presentation"

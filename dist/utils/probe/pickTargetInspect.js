@@ -72,4 +72,7 @@ export function getPickTargetTagName(element) {
 export function getPickTargetReportIdAttribute(element) {
     return element.dataset.reportId?.trim() || null;
 }
+export function getPickTargetFpOpenAttribute(element) {
+    return element.getAttribute("data-fp-open")?.trim() || null;
+}
 //# sourceMappingURL=pickTargetInspect.js.map

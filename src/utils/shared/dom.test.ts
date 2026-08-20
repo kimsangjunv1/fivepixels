@@ -106,6 +106,7 @@ describe("toFeedbackHoverSnapshot", () => {
         const tagged = document.createElement("button");
         tagged.dataset.reportId = "hero-cta";
         tagged.dataset.reportType = "item";
+        tagged.dataset.fpOpen = "checkout-modal";
         document.body.append(tagged);
 
         const untagged = document.createElement("button");
@@ -113,6 +114,7 @@ describe("toFeedbackHoverSnapshot", () => {
         document.body.append(untagged);
 
         expect(toFeedbackHoverSnapshot(tagged)?.isTagged).toBe(true);
+        expect(toFeedbackHoverSnapshot(tagged)?.fpOpenAttribute).toBe("checkout-modal");
         expect(toFeedbackHoverSnapshot(untagged)?.isTagged).toBe(false);
         expect(hasDirectReportId(tagged)).toBe(true);
         expect(hasDirectReportId(untagged)).toBe(false);

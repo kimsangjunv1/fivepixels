@@ -713,6 +713,7 @@ export const en: ReportMessages = {
         tooltipFontWeight: "fontWeight",
         tooltipLineHeight: "lineHeight",
         tooltipReportId: "data-report-id",
+        tooltipFpOpen: "data-fp-open",
         tooltipNoReportId: "None",
         probeEdit: "Edit",
         probeClose: "Close",

@@ -52,7 +52,7 @@ export function FeedPage() {
 
             <div className="demo-invest__feed-layout">
                 <section className="demo-invest__feed-stream">
-                    <button type="button" className="demo-invest__opinion-box" onClick={() => openDialog("investOpinion")} data-report-id="demo-opinion-trigger" data-report-type="item">
+                    <button type="button" className="demo-invest__opinion-box" onClick={() => openDialog("investOpinion")} data-fp-open="demo-modal-opinion" data-report-id="demo-opinion-trigger" data-report-type="item">
                         <span className="demo-invest__avatar demo-invest__avatar--muted">●</span><span>오늘 시장 어떻게 보세요?</span><b>의견 남기기</b>
                     </button>
 

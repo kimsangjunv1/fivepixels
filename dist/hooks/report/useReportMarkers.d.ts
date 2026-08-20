@@ -46,7 +46,7 @@ export declare function useReportMarkers({ mode, messages, fields, currentPathna
     statusText: string;
     clearHoverLeaveTimeout: () => void;
     scheduleHoverLeave: (markerId: string) => void;
-    prepareFeedbackLocation: (report: ReportFeedback) => Promise<void>;
+    prepareFeedbackLocation: (report: ReportFeedback) => Promise<boolean>;
     showFeedbackTooltip: (report: ReportFeedback) => Promise<void>;
     locateFeedback: (reportId: string) => Promise<void>;
     focusSearchInput: () => void;

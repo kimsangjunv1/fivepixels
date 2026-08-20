@@ -55,7 +55,7 @@ export function ScreenerPage() {
             <aside className="demo-invest__screener-nav">
                 <h2>주식 골라보기 목록</h2>
                 <small>내가 만든</small>
-                <button type="button" className="demo-invest__make-preset" onClick={() => openDialog("investFilter")} data-report-id="demo-create-screener" data-report-type="item">⊕ 직접 만들기</button>
+                <button type="button" className="demo-invest__make-preset" onClick={() => openDialog("investFilter")} data-fp-open="demo-modal-filter" data-report-id="demo-create-screener" data-report-type="item">⊕ 직접 만들기</button>
                 <small>토스증권이 만든</small>
                 <ul>
                     {presets.map((preset, index) => (
@@ -88,7 +88,7 @@ export function ScreenerPage() {
                     <p>{activePreset === 0 ? "일주일 연속 상승세를 보이는 주식" : "선택한 투자 조건을 만족하는 주식"}</p>
                 </header>
                 <div className="demo-invest__screener-filters">
-                    <button type="button" onClick={() => openDialog("investFilter")} data-report-id="demo-add-filter" data-report-type="item">☷ 필터추가</button>
+                    <button type="button" onClick={() => openDialog("investFilter")} data-fp-open="demo-modal-filter" data-report-id="demo-add-filter" data-report-type="item">☷ 필터추가</button>
                     <button type="button" className="is-blue">🇰🇷 국내⌄</button>
                     {["시장", "산업", "시가총액"].map((filter) => <div key={filter} className="demo-invest__screener-filter-wrap"><button type="button" className={openFilter === filter ? "is-open" : undefined} onClick={() => setOpenFilter((current) => current === filter ? null : filter)} aria-expanded={openFilter === filter}>{filter}⌄</button>{openFilter === filter ? <div className="demo-invest__compact-popover demo-invest__screener-popover" data-report-id={`demo-${filter}-popover`} data-report-type="group">{filterOptions.map((option) => <button key={option} type="button" onClick={() => { setOpenFilter(null); showToast(`${option} 필터를 적용했어요.`); }}>{option}</button>)}</div> : null}</div>)}
                     <button type="button" className="is-blue">주가등락률 · 1주일 전 보다 · 0% 이상</button>
