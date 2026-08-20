@@ -178,6 +178,27 @@
     }
 }
 
+@keyframes fivepixels-marker-window-minimized-in {
+    0% {
+        transform: translateY(28px);
+        animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    50% {
+        transform: translateY(-10px);
+        animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    76% {
+        transform: translateY(4px);
+        animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    100% {
+        transform: translateY(0);
+    }
+}
+
 @keyframes fivepixels-slide-from-right {
     from {
         opacity: 0;
@@ -548,6 +569,10 @@
     pointer-events: none;
 }
 
+[data-fivepixels-mount] .fivepixels-marker-window-minimized-enter {
+    animation: fivepixels-marker-window-minimized-in 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 [data-fivepixels-mount] .fivepixels-marker-window-marquee {
     display: flex;
     width: max-content;
@@ -832,6 +857,7 @@
     [data-fivepixels-mount] .fivepixels-panel-tab-pane--out-to-right,
     [data-fivepixels-mount] .fivepixels-marker-window-enter,
     [data-fivepixels-mount] .fivepixels-marker-window-exit,
+    [data-fivepixels-mount] .fivepixels-marker-window-minimized-enter,
     [data-fivepixels-mount] .fivepixels-marker-window-marquee,
     [data-fivepixels-mount] .fivepixels-heatmap-dot,
     [data-fivepixels-mount] .fivepixels-pin-rail-enter,

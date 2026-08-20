@@ -807,7 +807,7 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
                 {isMinimized ? (
                     <div
                         ref={surfaceRef}
-                        className={`overflow-hidden rounded-[16px] border border-[var(--adaptive-border-subtle)] shadow-[var(--adaptive-popup-shadow)] ${leftSectionClass}`}
+                        className={`fivepixels-marker-window-minimized-enter overflow-hidden rounded-[16px] border border-[var(--adaptive-border-subtle)] shadow-[var(--adaptive-popup-shadow)] ${leftSectionClass}`}
                     >
                         <button
                             type="button"
