@@ -672,6 +672,7 @@ export type ReportMessages = {
         tooltipLineHeight: string;
         tooltipReportId: string;
         tooltipFpOpen: string;
+        tooltipFpView: string;
         tooltipNoReportId: string;
         probeEdit: string;
         probeClose: string;

@@ -171,6 +171,12 @@ export function PickTargetHoverTooltip({ target }: PickTargetHoverTooltipProps) 
                             value={target.fpOpenAttribute}
                         />
                     ) : null}
+                    {target.fpViewAttribute ? (
+                        <InspectRow
+                            label={messages.pickTarget.tooltipFpView}
+                            value={target.fpViewAttribute}
+                        />
+                    ) : null}
                     <div className="flex items-start justify-between gap-[8px] text-[11px] leading-[1.45]">
                         <span className="shrink-0 text-[var(--adaptive-black500)]">{messages.pickTarget.tooltipReportId}</span>
                         <div className="flex min-w-0 items-start justify-end gap-[6px]">
