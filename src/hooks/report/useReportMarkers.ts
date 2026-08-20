@@ -6,6 +6,7 @@ import { getMarkerFromReport, resolveTooltipAnchor } from "@/utils/marker/coordi
 import { clearFeedbackDeepLinkFromUrl, parseFeedbackDeepLink } from "@/utils/feedback/feedbackDeepLink.js";
 import { getFieldTags } from "@/utils/report/fields.js";
 import { getFeedbackTargetElement, isFeedbackTargetVisible, scrollToFeedbackTarget, waitForTargetRevealResync } from "@/utils/marker/locateFeedback.js";
+import { restoreFeedbackViews } from "@/utils/marker/viewRestore.js";
 import { markerToTargetSnapshot } from "@/utils/marker/markerTarget.js";
 import {
     getPageDocument,
@@ -296,20 +297,25 @@ export function useReportMarkers({
 
     const prepareFeedbackLocation = useCallback(
         async (report: ReportFeedback) => {
-            const targetElement = getFeedbackTargetElement(report);
+            let targetElement = getFeedbackTargetElement(report);
 
             if (targetElement && isFeedbackTargetVisible(targetElement)) {
                 scrollToFeedbackTarget(report);
                 return;
             }
 
-            let revealed = false;
+            let revealed = await restoreFeedbackViews(report.position.viewPath);
 
-            if (onRevealTarget) {
+            if (revealed) {
+                syncMarkers();
+                targetElement = getFeedbackTargetElement(report);
+            }
+
+            if ((!targetElement || !isFeedbackTargetVisible(targetElement)) && onRevealTarget) {
                 try {
-                    revealed = Boolean(await onRevealTarget(report));
+                    revealed = Boolean(await onRevealTarget(report)) || revealed;
                 } catch {
-                    revealed = false;
+                    // Keep a successful declarative reveal even if the fallback fails.
                 }
             }
 

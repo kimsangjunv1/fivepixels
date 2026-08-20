@@ -130,6 +130,9 @@ function validatePosition(value: unknown, index: number): ReportPosition {
     }
 
     const position = value as Record<string, unknown>;
+    const viewPath = Array.isArray(position.viewPath)
+        ? position.viewPath.flatMap((item) => (isNonEmptyString(item) ? [item.trim()] : []))
+        : [];
 
     if (position.target !== null && position.target !== undefined) {
         validatePositionRatio(position.target, index, "position.target");
@@ -144,6 +147,7 @@ function validatePosition(value: unknown, index: number): ReportPosition {
         viewport: validatePositionViewport(position.viewport, index),
         scrollY: position.scrollY,
         anchor: position.anchor === undefined ? null : validatePositionAnchor(position.anchor, index),
+        ...(viewPath.length > 0 ? { viewPath } : {}),
     };
 }
 

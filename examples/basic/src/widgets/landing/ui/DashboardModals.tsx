@@ -16,6 +16,7 @@ export function DashboardModals() {
         <>
             <div
                 className={`modal-demo-overlay ${opacityOpen ? "modal-demo-overlay--interactive" : "modal-demo-overlay--hidden-opacity"}`}
+                data-fp-view="modal-opacity"
                 data-report-id="modal-opacity-overlay"
                 data-report-type="group"
                 aria-hidden={!opacityOpen}
@@ -32,6 +33,7 @@ export function DashboardModals() {
 
             <div
                 className="modal-demo-overlay"
+                data-fp-view="modal-display"
                 data-report-id="modal-display-overlay"
                 data-report-type="group"
                 style={{ display: displayOpen ? "flex" : "none" }}
@@ -50,6 +52,7 @@ export function DashboardModals() {
             {conditionalOpen ? (
                 <div
                     className="modal-demo-overlay modal-demo-overlay--interactive"
+                    data-fp-view="modal-conditional"
                     data-report-id="modal-conditional-overlay"
                     data-report-type="group"
                     aria-hidden={false}
@@ -60,13 +63,14 @@ export function DashboardModals() {
                         targetId="modal-conditional-target"
                         onClose={() => closeModal("conditional")}
                     >
-                        <p className="modal-demo-dialog__note">locate 시 `onRevealTarget`이 모달을 다시 마운트합니다.</p>
+                        <p className="modal-demo-dialog__note">locate 시 `data-fp-open` 버튼이 모달을 다시 마운트합니다.</p>
                     </ModalDemoDialog>
                 </div>
             ) : null}
 
             <div
                 className={`modal-demo-overlay ${visibilityOpen ? "modal-demo-overlay--interactive" : "modal-demo-overlay--hidden-visibility"}`}
+                data-fp-view="modal-visibility"
                 data-report-id="modal-visibility-overlay"
                 data-report-type="group"
                 aria-hidden={!visibilityOpen}
@@ -83,6 +87,7 @@ export function DashboardModals() {
 
             <div
                 className={`modal-demo-overlay ${offscreenOpen ? "modal-demo-overlay--interactive" : "modal-demo-overlay--hidden-offscreen"}`}
+                data-fp-view="modal-offscreen"
                 data-report-id="modal-offscreen-overlay"
                 data-report-type="group"
                 aria-hidden={!offscreenOpen}
@@ -100,6 +105,7 @@ export function DashboardModals() {
             {zustandOpen ? (
                 <div
                     className="modal-demo-overlay modal-demo-overlay--interactive"
+                    data-fp-view="modal-zustand"
                     data-report-id="modal-zustand-overlay"
                     data-report-type="group"
                     aria-hidden={false}
@@ -110,7 +116,7 @@ export function DashboardModals() {
                         targetId="modal-zustand-target"
                         onClose={closeZustand}
                     >
-                        <p className="modal-demo-dialog__note">locate 시 modalRevealRegistry → revealZustandModal 순서로 복구됩니다.</p>
+                        <p className="modal-demo-dialog__note">locate 시 `data-fp-open` 버튼의 기존 store action으로 복구됩니다.</p>
                     </ModalDemoDialog>
                 </div>
             ) : null}

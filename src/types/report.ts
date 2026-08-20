@@ -269,6 +269,8 @@ export type ReportPosition = {
     viewport: ReportPositionViewport;
     scrollY: number;
     anchor: ReportPositionAnchor | null;
+    /** Ordered `data-fp-view` keys required to reveal the feedback target. */
+    viewPath?: string[];
 };
 
 export type ReportFeedback = {

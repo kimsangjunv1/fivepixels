@@ -97,6 +97,14 @@ function normalizePositionAnchor(value: unknown): ReportPositionAnchor | null {
     };
 }
 
+function normalizeViewPath(value: unknown) {
+    if (!Array.isArray(value)) {
+        return [];
+    }
+
+    return value.flatMap((item) => (typeof item === "string" && item.trim() ? [item.trim()] : []));
+}
+
 /** Coerce missing/partial API position payloads into a render-safe ReportPosition. */
 export function normalizeReportPosition(value: unknown): ReportPosition {
     if (!value || typeof value !== "object" || Array.isArray(value)) {
@@ -109,12 +117,14 @@ export function normalizeReportPosition(value: unknown): ReportPosition {
     }
 
     const position = value as Record<string, unknown>;
+    const viewPath = normalizeViewPath(position.viewPath);
 
     return {
         target: normalizePositionRatio(position.target),
         viewport: normalizePositionViewport(position.viewport),
         scrollY: isFiniteNumber(position.scrollY) ? position.scrollY : getFallbackScrollY(),
         anchor: normalizePositionAnchor(position.anchor),
+        ...(viewPath.length > 0 ? { viewPath } : {}),
     };
 }
 
@@ -128,6 +138,7 @@ export function createReportPosition(
         viewport?: Partial<ReportPositionViewport>;
         scrollY?: number;
         anchor?: ReportPositionAnchor | null;
+        viewPath?: string[];
     } = {},
 ): ReportPosition {
     return {
@@ -141,5 +152,6 @@ export function createReportPosition(
         },
         scrollY: overrides.scrollY ?? 0,
         anchor: overrides.anchor ?? null,
+        ...(overrides.viewPath?.length ? { viewPath: overrides.viewPath } : {}),
     };
 }

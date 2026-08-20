@@ -113,6 +113,17 @@ Layering rules: [docs/architecture-hooks.md](./docs/architecture-hooks.md).
 | --------- | -------- | ----------- |
 | `data-report-id` | Recommended | Element identifier for marker restore. Without it, targets fall back to a CSS selector. |
 | `data-report-type` | | `item` (default) or `group` for section-level targets. |
+| `data-fp-view` | | Key for a restorable modal, tab, or other hidden view. |
+| `data-fp-open` | | Trigger that opens the `data-fp-view` with the same key. |
+
+Feedback created inside a hidden view automatically reuses its existing trigger when its marker is opened.
+
+```tsx
+<button data-fp-open="login">Open login</button>
+<Modal data-fp-view="login">...</Modal>
+```
+
+Nested views are restored from outermost to innermost. `onRevealTarget` remains a fallback for targets that declarative restore cannot open.
 
 ## UI modes
 
