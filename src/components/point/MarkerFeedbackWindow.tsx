@@ -12,9 +12,8 @@ import { getCaseAssigneeName, getCaseById } from "@/utils/report/reportCases.js"
 import { getFieldTags } from "@/utils/report/fields.js";
 import { copyTextToClipboard } from "@/utils/feedback/feedbackDataTransfer.js";
 import { buildFeedbackShareUrl } from "@/utils/feedback/feedbackDeepLink.js";
-import { CloseIcon, CheckCircleIcon, EditIcon, FavoritePinIcon, LinkIcon, MaximizeIcon, MinimizeIcon, RestoreIcon, SidePanelIcon, TrashIcon } from "@/components/icons/Icons.js";
+import { CloseIcon, CheckCircleIcon, EditIcon, LinkIcon, MaximizeIcon, MinimizeIcon, RestoreIcon, SidePanelIcon, TrashIcon } from "@/components/icons/Icons.js";
 import { FeedbackFieldTags } from "@/components/panel/feedback/FeedbackFieldTags.js";
-import { FeedbackPinToggleButton } from "@/components/panel/feedback/FeedbackPinToggleButton.js";
 import { FeedbackDeleteAction } from "@/components/panel/feedback/FeedbackDeleteAction.js";
 import { canDeleteFeedback } from "@/utils/feedback/feedbackPermissions.js";
 import { canEditReportCases } from "@/utils/report/reportCases.js";
@@ -95,6 +94,26 @@ function WindowControlButton({ onClick, ariaLabel, title, className = "", childr
         >
             {children}
         </button>
+    );
+}
+
+function MarkerPinIcon({ pinned, className }: { pinned: boolean; className?: string }) {
+    return (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 -960 960 960"
+            fill="currentColor"
+            className={className}
+            aria-hidden
+        >
+            <path
+                d={
+                    pinned
+                        ? "M640-760v280l68 68q6 6 9 13.5t3 15.5v23q0 17-11.5 28.5T680-320H520v234q0 17-11.5 28.5T480-46q-17 0-28.5-11.5T440-86v-234H280q-17 0-28.5-11.5T240-360v-23q0-8 3-15.5t9-13.5l68-68v-280q-17 0-28.5-11.5T280-800q0-17 11.5-28.5T320-840h320q17 0 28.5 11.5T680-800q0 17-11.5 28.5T640-760ZM354-400h252l-46-46v-314H400v314l-46 46Zm126 0Z"
+                        : "M560-760H400v87L290-783q-5-5-7.5-11t-2.5-12q0-13 9-23.5t24-10.5h327q17 0 28.5 11.5T680-800q0 16-14.5 22.5T640-760v240q0 17-11.5 28.5T600-480q-17 0-28.5-11.5T560-520v-240ZM440-80v-240H296q-25 0-40-17.5T241-377q0-11 4.5-22t14.5-21l60-60v-46L84-764q-11-11-11.5-27.5T84-820q11-11 28-11t28 11l679 679q12 12 11.5 28.5T818-84q-12 11-28 11.5T762-84L526-320h-6v240q0 17-11.5 28.5T480-40q-17 0-28.5-11.5T440-80Zm-86-320h92l-44-44-2-2-46 46Zm126-193Zm-78 149Z"
+                }
+            />
+        </svg>
     );
 }
 
@@ -491,12 +510,16 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
     );
 
     const pinButton = (
-        <FeedbackPinToggleButton
-            report={report}
-            caseId={focusedCaseId}
-            className={HEADER_BUTTON_CLASS}
-            iconClassName="h-[14px] w-[14px]"
-        />
+        <WindowControlButton
+            onClick={handleTogglePin}
+            ariaLabel={isPinned ? messages.pins.unpinAriaLabel : messages.pins.pinAriaLabel}
+            className={isPinned ? "text-[var(--adaptive-blue500)]" : ""}
+        >
+            <MarkerPinIcon
+                pinned={isPinned}
+                className="h-[15px] w-[15px]"
+            />
+        </WindowControlButton>
     );
 
     const deleteButton = canDeleteFeedback(report, sessionActor) ? (
@@ -563,8 +586,8 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
                 aria-pressed={isPinned}
                 className={`${SIDEBAR_ACTION_CLASS} ${isPinned ? "text-[var(--adaptive-blue500)]" : ""}`}
             >
-                <FavoritePinIcon
-                    filled={isPinned}
+                <MarkerPinIcon
+                    pinned={isPinned}
                     className="h-[15px] w-[15px] shrink-0"
                 />
                 <span>{isPinned ? messages.marker.unpinAction : messages.marker.pinAction}</span>
