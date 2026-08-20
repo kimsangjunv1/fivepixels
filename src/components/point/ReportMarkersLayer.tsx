@@ -59,7 +59,7 @@ function MarkerOverflowHintButton({ hint, label, onActivate }: MarkerOverflowHin
     );
 }
 
-function DetachedModalGhostFrame() {
+function DetachedModalGhostFrame({ label }: { label: string }) {
     const frame = useMemo(() => getModalGhostFrame(), []);
 
     return (
@@ -77,14 +77,16 @@ function DetachedModalGhostFrame() {
                 }}
             />
             <div
-                className="absolute rounded-[20px] border-2 border-dashed border-[#818cf8]/80 bg-white/10 shadow-[0_18px_48px_rgba(79,70,229,0.18)]"
+                className="absolute flex items-center justify-center rounded-[20px] bg-[var(--adaptive-neutralTintOpacity900)] p-[24px] text-center text-[14px] font-semibold text-[var(--adaptive-black900)] backdrop-blur-[10px]"
                 style={{
                     left: frame.dialog.left,
                     top: frame.dialog.top,
                     width: frame.dialog.width,
                     height: frame.dialog.height,
                 }}
-            />
+            >
+                {label}
+            </div>
         </div>
     );
 }
@@ -379,7 +381,7 @@ export function ReportMarkersLayer() {
 
     return (
         <>
-            {isViewMode && ghostFrameMarker ? <DetachedModalGhostFrame /> : null}
+            {isViewMode && ghostFrameMarker ? <DetachedModalGhostFrame label={messages.marker.detachedModalHint} /> : null}
 
             {visibleMarkers.map((markerItem) => (
                 <MarkerButton
