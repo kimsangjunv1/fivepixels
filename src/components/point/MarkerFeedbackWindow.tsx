@@ -8,7 +8,7 @@ import type { Marker } from "@/types/report-ui.js";
 import type { ReportFeedback } from "@/types/report.js";
 import type { ReportMessages } from "@/i18n/types.js";
 import { resolvePendingComposerTargetPreview, shouldShowCaseReplyComposer } from "@/utils/feedback/feedbackThread.js";
-import { getCaseAssigneeName, getCaseById } from "@/utils/report/reportCases.js";
+import { getCaseAssigneeName, getCaseById, getReportCases } from "@/utils/report/reportCases.js";
 import { getFieldTags } from "@/utils/report/fields.js";
 import { copyTextToClipboard } from "@/utils/feedback/feedbackDataTransfer.js";
 import { buildFeedbackShareUrl } from "@/utils/feedback/feedbackDeepLink.js";
@@ -43,6 +43,7 @@ const RESOLVED_STATUS_COLOR = ACCENT_COLOR.green;
 const SIDEBAR_MIN_WIDTH = 150;
 const RIGHT_MIN_WIDTH = 280;
 const COLLAPSED_SIDEBAR_WIDTH = 46;
+const MINIMIZED_WINDOW_HEIGHT = 42;
 const WINDOW_CLOSE_ANIMATION_MS = 220;
 const LEFT_SECTION_TRANSITION = "transition-[background-color,backdrop-filter] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]";
 const LEFT_SECTION_FLAT_CLASS = `${LEFT_SECTION_TRANSITION} bg-[var(--adaptive-black50)]`;
@@ -114,6 +115,42 @@ function MarkerPinIcon({ pinned, className }: { pinned: boolean; className?: str
                 }
             />
         </svg>
+    );
+}
+
+function MinimizedCaseMarquee({ caseTexts }: { caseTexts: string[] }) {
+    if (caseTexts.length === 0) {
+        return null;
+    }
+
+    return (
+        <div
+            className="min-w-0 flex-1 overflow-hidden text-[12px] text-[var(--adaptive-black700)]"
+            aria-label={caseTexts.map((text, index) => `${index + 1}. ${text}`).join(", ")}
+        >
+            <div
+                aria-hidden
+                className="fivepixels-marker-window-marquee"
+                style={{ animationDuration: `${Math.max(12, caseTexts.length * 6)}s` }}
+            >
+                {[0, 1].map((copyIndex) => (
+                    <div
+                        key={copyIndex}
+                        className="fivepixels-marker-window-marquee__copy"
+                    >
+                        {caseTexts.map((text, index) => (
+                            <span
+                                key={`${copyIndex}-${index}`}
+                                className="whitespace-nowrap"
+                            >
+                                <span className="mr-[4px] text-[var(--adaptive-black500)]">{index + 1}.</span>
+                                {text}
+                            </span>
+                        ))}
+                    </div>
+                ))}
+            </div>
+        </div>
     );
 }
 
@@ -378,6 +415,14 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
     const focusedCaseAssigneeName = focusedCaseId ? getCaseAssigneeName(report, focusedCaseId) : null;
     const showAssigneeAssigned = Boolean(focusedCaseAssigneeName) || isClaimingAssignee;
     const fieldTags = useMemo(() => getFieldTags(fields, report.field_values), [fields, report.field_values]);
+    const minimizedCaseTexts = useMemo(
+        () =>
+            getReportCases(report)
+                .slice(0, 5)
+                .map((caseItem) => mentionMessageToPlainText(caseItem.text, caseItem.mentions).trim())
+                .filter(Boolean),
+        [report],
+    );
 
     const viewport = getViewportSize();
     const maximizedSize: BoxSize = {
@@ -388,6 +433,7 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
     const isMinimized = windowMode === "minimized";
     const isMaximized = windowMode === "maximized";
     const effectiveSize = isMaximized ? maximizedSize : size;
+    const minimizedWidth = Math.min(DEFAULT_WINDOW_SIZE.width, Math.max(280, viewport.width - WINDOW_MARGIN * 2));
     const resolvedSidebarWidth = clampSidebarWidth(sidebarWidth, effectiveSize.width);
 
     const initialPosition = useMemo(
@@ -395,7 +441,14 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
         [anchor.left, anchor.top, size.height, size.width],
     );
 
-    const resolvedPosition = isMaximized ? { left: WINDOW_MARGIN, top: WINDOW_MARGIN } : (position ?? initialPosition);
+    const resolvedPosition = isMinimized
+        ? {
+              left: Math.round((viewport.width - minimizedWidth) / 2),
+              top: Math.max(WINDOW_MARGIN, viewport.height - WINDOW_MARGIN - MINIMIZED_WINDOW_HEIGHT),
+          }
+        : isMaximized
+          ? { left: WINDOW_MARGIN, top: WINDOW_MARGIN }
+          : (position ?? initialPosition);
     const leftSectionClass = getLeftSectionClass(windowSurfacePhase);
     const windowAnimationClass =
         windowSurfacePhase === "exiting" ? MOTION.markerWindowExit : windowSurfacePhase === "entering" ? `${MOTION.markerWindowEnter} pointer-events-auto` : "pointer-events-auto";
@@ -747,7 +800,7 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
                 style={{
                     left: resolvedPosition.left,
                     top: resolvedPosition.top,
-                    width: effectiveSize.width,
+                    width: isMinimized ? minimizedWidth : effectiveSize.width,
                     ...(isMinimized ? null : { height: effectiveSize.height }),
                 }}
             >
@@ -756,16 +809,16 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
                         ref={surfaceRef}
                         className={`flex items-center justify-between gap-[8px] overflow-hidden rounded-[16px] border border-[var(--adaptive-border-subtle)] px-[10px] py-[8px] shadow-[var(--adaptive-popup-shadow)] ${leftSectionClass}`}
                     >
-                        <div
-                            onPointerDown={handleDragHandlePointerDown}
-                            className="flex flex-1 cursor-move touch-none select-none items-center gap-[2px]"
-                        >
+                        <div className="flex shrink-0 items-center gap-[2px]">
                             {leftControls}
                         </div>
-                        {shareButton}
-                        {editButton}
-                        {deleteButton}
-                        {sidebarToggleButton}
+                        <MinimizedCaseMarquee caseTexts={minimizedCaseTexts} />
+                        <div className="flex shrink-0 items-center gap-[2px]">
+                            {shareButton}
+                            {editButton}
+                            {deleteButton}
+                            {sidebarToggleButton}
+                        </div>
                     </div>
                 ) : (
                     <div

@@ -6,7 +6,7 @@ import { useGhostCornerResize } from "../../hooks/useGhostCornerResize.js";
 import { useNativeHover } from "../../hooks/useNativeHover.js";
 import { useReport } from "../../providers/reportContext.js";
 import { resolvePendingComposerTargetPreview, shouldShowCaseReplyComposer } from "../../utils/feedback/feedbackThread.js";
-import { getCaseAssigneeName, getCaseById } from "../../utils/report/reportCases.js";
+import { getCaseAssigneeName, getCaseById, getReportCases } from "../../utils/report/reportCases.js";
 import { getFieldTags } from "../../utils/report/fields.js";
 import { copyTextToClipboard } from "../../utils/feedback/feedbackDataTransfer.js";
 import { buildFeedbackShareUrl } from "../../utils/feedback/feedbackDeepLink.js";
@@ -37,6 +37,7 @@ const RESOLVED_STATUS_COLOR = ACCENT_COLOR.green;
 const SIDEBAR_MIN_WIDTH = 150;
 const RIGHT_MIN_WIDTH = 280;
 const COLLAPSED_SIDEBAR_WIDTH = 46;
+const MINIMIZED_WINDOW_HEIGHT = 42;
 const WINDOW_CLOSE_ANIMATION_MS = 220;
 const LEFT_SECTION_TRANSITION = "transition-[background-color,backdrop-filter] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]";
 const LEFT_SECTION_FLAT_CLASS = `${LEFT_SECTION_TRANSITION} bg-[var(--adaptive-black50)]`;
@@ -72,6 +73,12 @@ function MarkerPinIcon({ pinned, className }) {
     return (_jsx("svg", { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 -960 960 960", fill: "currentColor", className: className, "aria-hidden": true, children: _jsx("path", { d: pinned
                 ? "M640-760v280l68 68q6 6 9 13.5t3 15.5v23q0 17-11.5 28.5T680-320H520v234q0 17-11.5 28.5T480-46q-17 0-28.5-11.5T440-86v-234H280q-17 0-28.5-11.5T240-360v-23q0-8 3-15.5t9-13.5l68-68v-280q-17 0-28.5-11.5T280-800q0-17 11.5-28.5T320-840h320q17 0 28.5 11.5T680-800q0 17-11.5 28.5T640-760ZM354-400h252l-46-46v-314H400v314l-46 46Zm126 0Z"
                 : "M560-760H400v87L290-783q-5-5-7.5-11t-2.5-12q0-13 9-23.5t24-10.5h327q17 0 28.5 11.5T680-800q0 16-14.5 22.5T640-760v240q0 17-11.5 28.5T600-480q-17 0-28.5-11.5T560-520v-240ZM440-80v-240H296q-25 0-40-17.5T241-377q0-11 4.5-22t14.5-21l60-60v-46L84-764q-11-11-11.5-27.5T84-820q11-11 28-11t28 11l679 679q12 12 11.5 28.5T818-84q-12 11-28 11.5T762-84L526-320h-6v240q0 17-11.5 28.5T480-40q-17 0-28.5-11.5T440-80Zm-86-320h92l-44-44-2-2-46 46Zm126-193Zm-78 149Z" }) }));
+}
+function MinimizedCaseMarquee({ caseTexts }) {
+    if (caseTexts.length === 0) {
+        return null;
+    }
+    return (_jsx("div", { className: "min-w-0 flex-1 overflow-hidden text-[12px] text-[var(--adaptive-black700)]", "aria-label": caseTexts.map((text, index) => `${index + 1}. ${text}`).join(", "), children: _jsx("div", { "aria-hidden": true, className: "fivepixels-marker-window-marquee", style: { animationDuration: `${Math.max(12, caseTexts.length * 6)}s` }, children: [0, 1].map((copyIndex) => (_jsx("div", { className: "fivepixels-marker-window-marquee__copy", children: caseTexts.map((text, index) => (_jsxs("span", { className: "whitespace-nowrap", children: [_jsxs("span", { className: "mr-[4px] text-[var(--adaptive-black500)]", children: [index + 1, "."] }), text] }, `${copyIndex}-${index}`))) }, copyIndex))) }) }));
 }
 function MarkerWindowShareButton({ report, messages, expanded = false }) {
     const [copied, setCopied] = useState(false);
@@ -220,6 +227,10 @@ export function MarkerFeedbackWindow({ report, anchor }) {
     const focusedCaseAssigneeName = focusedCaseId ? getCaseAssigneeName(report, focusedCaseId) : null;
     const showAssigneeAssigned = Boolean(focusedCaseAssigneeName) || isClaimingAssignee;
     const fieldTags = useMemo(() => getFieldTags(fields, report.field_values), [fields, report.field_values]);
+    const minimizedCaseTexts = useMemo(() => getReportCases(report)
+        .slice(0, 5)
+        .map((caseItem) => mentionMessageToPlainText(caseItem.text, caseItem.mentions).trim())
+        .filter(Boolean), [report]);
     const viewport = getViewportSize();
     const maximizedSize = {
         width: Math.max(MIN_WINDOW_WIDTH, viewport.width - WINDOW_MARGIN * 2),
@@ -228,9 +239,17 @@ export function MarkerFeedbackWindow({ report, anchor }) {
     const isMinimized = windowMode === "minimized";
     const isMaximized = windowMode === "maximized";
     const effectiveSize = isMaximized ? maximizedSize : size;
+    const minimizedWidth = Math.min(DEFAULT_WINDOW_SIZE.width, Math.max(280, viewport.width - WINDOW_MARGIN * 2));
     const resolvedSidebarWidth = clampSidebarWidth(sidebarWidth, effectiveSize.width);
     const initialPosition = useMemo(() => clampWindowPosition(anchor.left + getMarkerDotSize() / 2 - size.width / 2, anchor.top + getMarkerDotSize() / 2 - size.height / 2, size.width, size.height), [anchor.left, anchor.top, size.height, size.width]);
-    const resolvedPosition = isMaximized ? { left: WINDOW_MARGIN, top: WINDOW_MARGIN } : (position ?? initialPosition);
+    const resolvedPosition = isMinimized
+        ? {
+            left: Math.round((viewport.width - minimizedWidth) / 2),
+            top: Math.max(WINDOW_MARGIN, viewport.height - WINDOW_MARGIN - MINIMIZED_WINDOW_HEIGHT),
+        }
+        : isMaximized
+            ? { left: WINDOW_MARGIN, top: WINDOW_MARGIN }
+            : (position ?? initialPosition);
     const leftSectionClass = getLeftSectionClass(windowSurfacePhase);
     const windowAnimationClass = windowSurfacePhase === "exiting" ? MOTION.markerWindowExit : windowSurfacePhase === "entering" ? `${MOTION.markerWindowEnter} pointer-events-auto` : "pointer-events-auto";
     const handleSplitPointerDown = useCallback((event) => {
@@ -302,8 +321,8 @@ export function MarkerFeedbackWindow({ report, anchor }) {
     return (_jsxs(_Fragment, { children: [isResizing ? _jsx(CornerResizeGhost, { ghostRef: ghostRef }) : null, _jsx("div", { ref: bindWindowRef, "data-fivepixels-interactive": "", onClick: (event) => event.stopPropagation(), onAnimationEnd: handleWindowAnimationEnd, className: `fixed z-[1000001] ${windowAnimationClass}`, style: {
                     left: resolvedPosition.left,
                     top: resolvedPosition.top,
-                    width: effectiveSize.width,
+                    width: isMinimized ? minimizedWidth : effectiveSize.width,
                     ...(isMinimized ? null : { height: effectiveSize.height }),
-                }, children: isMinimized ? (_jsxs("div", { ref: surfaceRef, className: `flex items-center justify-between gap-[8px] overflow-hidden rounded-[16px] border border-[var(--adaptive-border-subtle)] px-[10px] py-[8px] shadow-[var(--adaptive-popup-shadow)] ${leftSectionClass}`, children: [_jsx("div", { onPointerDown: handleDragHandlePointerDown, className: "flex flex-1 cursor-move touch-none select-none items-center gap-[2px]", children: leftControls }), shareButton, editButton, deleteButton, sidebarToggleButton] })) : (_jsxs("div", { ref: surfaceRef, className: "flex h-full w-full flex-row overflow-hidden rounded-[16px] shadow-[var(--adaptive-popup-shadow)] border border-[var(--adaptive-border-subtle)]", children: [isSidebarCollapsed ? (_jsxs("div", { onPointerDown: handleDragHandlePointerDown, className: `flex shrink-0 cursor-move touch-none select-none flex-col items-center gap-[2px] py-[8px] ${leftSectionClass}`, style: { width: COLLAPSED_SIDEBAR_WIDTH }, children: [leftControls, shareButton, editButton, deleteButton, pinButton, sidebarToggleButton] })) : (_jsxs("div", { className: `flex shrink-0 flex-col overflow-hidden ${leftSectionClass}`, style: { width: resolvedSidebarWidth }, children: [_jsxs("header", { onPointerDown: handleDragHandlePointerDown, className: "flex shrink-0 cursor-move touch-none select-none items-center justify-between gap-[8px] px-[10px] py-[8px]", children: [_jsx("div", { className: "flex items-center gap-[2px]", children: leftControls }), _jsx("div", { className: "flex items-center gap-[2px]", children: sidebarToggleButton })] }), expandedSidebarActions, _jsx(MarkerCaseSidebar, { report: report, focusedCaseId: focusedCaseId, onSelectCase: selectCase }), expandedSidebarDelete] })), isSidebarCollapsed ? null : (_jsx("div", { role: "separator", "aria-orientation": "vertical", onPointerDown: handleSplitPointerDown, className: "group relative w-[3px] shrink-0 cursor-col-resize touch-none self-stretch bg-[var(--adaptive-black50)] group-hover:bg-[var(--adaptive-blue500)] transition-colors", children: _jsx("span", { className: "absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-[var(--adaptive-border-subtle)] transition-colors group-hover:bg-[var(--adaptive-blue500)] touch-none pointer-events-none" }) })), rightSection, windowMode === "normal" ? (_jsx(CornerResizeHandle, { corner: "bottom-right", ariaLabel: messages.marker.resizeAriaLabel, onPointerDown: handleResizePointerDown })) : null] })) })] }));
+                }, children: isMinimized ? (_jsxs("div", { ref: surfaceRef, className: `flex items-center justify-between gap-[8px] overflow-hidden rounded-[16px] border border-[var(--adaptive-border-subtle)] px-[10px] py-[8px] shadow-[var(--adaptive-popup-shadow)] ${leftSectionClass}`, children: [_jsx("div", { className: "flex shrink-0 items-center gap-[2px]", children: leftControls }), _jsx(MinimizedCaseMarquee, { caseTexts: minimizedCaseTexts }), _jsxs("div", { className: "flex shrink-0 items-center gap-[2px]", children: [shareButton, editButton, deleteButton, sidebarToggleButton] })] })) : (_jsxs("div", { ref: surfaceRef, className: "flex h-full w-full flex-row overflow-hidden rounded-[16px] shadow-[var(--adaptive-popup-shadow)] border border-[var(--adaptive-border-subtle)]", children: [isSidebarCollapsed ? (_jsxs("div", { onPointerDown: handleDragHandlePointerDown, className: `flex shrink-0 cursor-move touch-none select-none flex-col items-center gap-[2px] py-[8px] ${leftSectionClass}`, style: { width: COLLAPSED_SIDEBAR_WIDTH }, children: [leftControls, shareButton, editButton, deleteButton, pinButton, sidebarToggleButton] })) : (_jsxs("div", { className: `flex shrink-0 flex-col overflow-hidden ${leftSectionClass}`, style: { width: resolvedSidebarWidth }, children: [_jsxs("header", { onPointerDown: handleDragHandlePointerDown, className: "flex shrink-0 cursor-move touch-none select-none items-center justify-between gap-[8px] px-[10px] py-[8px]", children: [_jsx("div", { className: "flex items-center gap-[2px]", children: leftControls }), _jsx("div", { className: "flex items-center gap-[2px]", children: sidebarToggleButton })] }), expandedSidebarActions, _jsx(MarkerCaseSidebar, { report: report, focusedCaseId: focusedCaseId, onSelectCase: selectCase }), expandedSidebarDelete] })), isSidebarCollapsed ? null : (_jsx("div", { role: "separator", "aria-orientation": "vertical", onPointerDown: handleSplitPointerDown, className: "group relative w-[3px] shrink-0 cursor-col-resize touch-none self-stretch bg-[var(--adaptive-black50)] group-hover:bg-[var(--adaptive-blue500)] transition-colors", children: _jsx("span", { className: "absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-[var(--adaptive-border-subtle)] transition-colors group-hover:bg-[var(--adaptive-blue500)] touch-none pointer-events-none" }) })), rightSection, windowMode === "normal" ? (_jsx(CornerResizeHandle, { corner: "bottom-right", ariaLabel: messages.marker.resizeAriaLabel, onPointerDown: handleResizePointerDown })) : null] })) })] }));
 }
 //# sourceMappingURL=MarkerFeedbackWindow.js.map
