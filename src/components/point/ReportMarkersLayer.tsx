@@ -6,7 +6,7 @@ import type { Marker, MarkerOverflowHint } from "@/types/report-ui.js";
 import type { ReportFeedback } from "@/types/report.js";
 import { resolveMarkerOverflowHints } from "@/utils/marker/coordinates.js";
 import { scrollContainerTowardEdge } from "@/utils/shared/dom.js";
-import { getDetachedMarkerAriaLabel, getModalGhostFrame } from "@/utils/marker/markerContext.js";
+import { getDetachedMarkerAriaLabel } from "@/utils/marker/markerContext.js";
 import { getMarkerDotSize } from "@/utils/marker/markerRuntime.js";
 import { getMarkerReplyBadgeSize, resolveMarkerGlyphPaint, resolveMarkerShapeStyle } from "@/utils/marker/markerShape.js";
 import type { MarkerAppearancePreferences, TypographyPreferences } from "@/constants/markerAppearance.js";
@@ -60,33 +60,12 @@ function MarkerOverflowHintButton({ hint, label, onActivate }: MarkerOverflowHin
 }
 
 function DetachedModalGhostFrame({ label }: { label: string }) {
-    const frame = useMemo(() => getModalGhostFrame(), []);
-
     return (
         <div
-            className={MODAL_GHOST_LAYER_CLASS}
+            className={`${MODAL_GHOST_LAYER_CLASS} flex items-center justify-center bg-[var(--adaptive-neutralTintOpacity900)] p-[24px] text-center text-[14px] font-semibold text-[var(--adaptive-black900)] backdrop-blur-[10px] ${MOTION.tooltipFadeIn}`}
             aria-hidden
         >
-            <div
-                className="absolute bg-[#0f172a]/12"
-                style={{
-                    left: frame.backdrop.left,
-                    top: frame.backdrop.top,
-                    width: frame.backdrop.width,
-                    height: frame.backdrop.height,
-                }}
-            />
-            <div
-                className="absolute flex items-center justify-center rounded-[20px] bg-[var(--adaptive-neutralTintOpacity900)] p-[24px] text-center text-[14px] font-semibold text-[var(--adaptive-black900)] backdrop-blur-[10px]"
-                style={{
-                    left: frame.dialog.left,
-                    top: frame.dialog.top,
-                    width: frame.dialog.width,
-                    height: frame.dialog.height,
-                }}
-            >
-                {label}
-            </div>
+            {label}
         </div>
     );
 }
