@@ -1,4 +1,5 @@
 import { escapeAttribute, isFeedbackTargetVisible } from "@/utils/shared/dom.js";
+import type { ReportFeedback } from "@/types/report.js";
 import { getPageWindow, isHtmlElement, queryPageSelector, queryPageSelectorAll } from "@/utils/overlay/pageDocumentBridge.js";
 import { waitForTargetRevealResync } from "./locateFeedback.js";
 
@@ -53,6 +54,30 @@ export function getFeedbackViewTrigger(viewPath: string[] | undefined, options: 
     }
 
     return null;
+}
+
+export function getActiveFeedbackViewKeys() {
+    const visibleViews = queryPageSelectorAll(`[${VIEW_ATTRIBUTE}]`).filter(
+        (element): element is HTMLElement =>
+            isHtmlElement(element) && Boolean(element.getAttribute(VIEW_ATTRIBUTE)?.trim()) && isFeedbackTargetVisible(element),
+    );
+    const deepestVisibleViews = visibleViews.filter(
+        (view) => !visibleViews.some((candidate) => candidate !== view && view.contains(candidate)),
+    );
+
+    return Array.from(new Set(deepestVisibleViews.flatMap((view) => {
+        const viewKey = view.getAttribute(VIEW_ATTRIBUTE)?.trim();
+        return viewKey ? [viewKey] : [];
+    })));
+}
+
+export function filterFeedbackForActiveViews(reports: ReportFeedback[], activeViewKeys: string[]) {
+    if (activeViewKeys.length === 0) {
+        return reports;
+    }
+
+    const activeViewKeySet = new Set(activeViewKeys);
+    return reports.filter((report) => report.position.viewPath?.some((viewKey) => activeViewKeySet.has(viewKey)));
 }
 
 export function getFeedbackViewPath(element: HTMLElement | null) {

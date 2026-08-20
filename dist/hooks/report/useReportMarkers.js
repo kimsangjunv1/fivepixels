@@ -3,7 +3,7 @@ import { aggregateViewTriggerMarkers, getMarkerFromReport, resolveTooltipAnchor 
 import { clearFeedbackDeepLinkFromUrl, parseFeedbackDeepLink } from "../../utils/feedback/feedbackDeepLink.js";
 import { getFieldTags } from "../../utils/report/fields.js";
 import { getFeedbackTargetElement, isFeedbackTargetVisible, scrollToFeedbackTarget, waitForTargetRevealResync } from "../../utils/marker/locateFeedback.js";
-import { restoreFeedbackViews } from "../../utils/marker/viewRestore.js";
+import { filterFeedbackForActiveViews, getActiveFeedbackViewKeys, restoreFeedbackViews } from "../../utils/marker/viewRestore.js";
 import { markerToTargetSnapshot } from "../../utils/marker/markerTarget.js";
 import { getPageDocument, getPageScrollY, getPageWindow, navigatePagePath, subscribePageDocumentBridge, } from "../../utils/overlay/pageDocumentBridge.js";
 const MARKER_HOVER_LEAVE_MS = 250;
@@ -23,7 +23,8 @@ export function useReportMarkers({ mode, messages, fields, currentPathname, curr
     const deepLinkHandledRef = useRef(false);
     const syncMarkers = useCallback(() => {
         const currentScrollY = getPageScrollY();
-        setMarkers(aggregateViewTriggerMarkers(currentPageReports.map((report) => getMarkerFromReport(report, currentScrollY))));
+        const visibleReports = filterFeedbackForActiveViews(currentPageReports, getActiveFeedbackViewKeys());
+        setMarkers(aggregateViewTriggerMarkers(visibleReports.map((report) => getMarkerFromReport(report, currentScrollY))));
     }, [currentPageReports, markerAppearanceSize]);
     const activeMarkerReportId = useMemo(() => {
         if (activeReplyReportId) {

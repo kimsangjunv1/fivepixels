@@ -41,6 +41,21 @@ export function getFeedbackViewTrigger(viewPath, options = {}) {
     }
     return null;
 }
+export function getActiveFeedbackViewKeys() {
+    const visibleViews = queryPageSelectorAll(`[${VIEW_ATTRIBUTE}]`).filter((element) => isHtmlElement(element) && Boolean(element.getAttribute(VIEW_ATTRIBUTE)?.trim()) && isFeedbackTargetVisible(element));
+    const deepestVisibleViews = visibleViews.filter((view) => !visibleViews.some((candidate) => candidate !== view && view.contains(candidate)));
+    return Array.from(new Set(deepestVisibleViews.flatMap((view) => {
+        const viewKey = view.getAttribute(VIEW_ATTRIBUTE)?.trim();
+        return viewKey ? [viewKey] : [];
+    })));
+}
+export function filterFeedbackForActiveViews(reports, activeViewKeys) {
+    if (activeViewKeys.length === 0) {
+        return reports;
+    }
+    const activeViewKeySet = new Set(activeViewKeys);
+    return reports.filter((report) => report.position.viewPath?.some((viewKey) => activeViewKeySet.has(viewKey)));
+}
 export function getFeedbackViewPath(element) {
     const viewPath = [];
     let current = element;
