@@ -29,6 +29,7 @@ import type {
     ReportReply,
     QuestionThreadDisplay,
     ReportTeamHandlers,
+    ReportAuthHandlers,
     UpdateReportFeedbackPayload,
 } from "@/types/report.js";
 import type { ReportSideEffectCallbacks } from "@/utils/report/reportCallbacks.js";
@@ -66,6 +67,9 @@ export type ReportStateConfig = {
     onResolveReviewerRequest?: ReportTeamHandlers["onResolveReviewerRequest"];
     onRegisterReviewer?: ReportTeamHandlers["onRegisterReviewer"];
     onUpdateReviewer?: ReportTeamHandlers["onUpdateReviewer"];
+    onApiLogin?: ReportAuthHandlers["onApiLogin"];
+    onApiRegister?: ReportAuthHandlers["onApiRegister"];
+    onArtemisLogin?: ReportAuthHandlers["onArtemisLogin"];
     onEvent?: (event: ReportEvent) => void | Promise<void>;
     onReply?: (params: { feedbackId: string; message: string }) => void | Promise<void>;
     github?: ReportGitHubConfig;
@@ -107,6 +111,9 @@ export function useReportState({
     onResolveReviewerRequest,
     onRegisterReviewer,
     onUpdateReviewer,
+    onApiLogin,
+    onApiRegister,
+    onArtemisLogin,
     onEvent,
     onReply,
     github,
@@ -136,6 +143,9 @@ export function useReportState({
         identify,
         requireReviewerKey,
         pixelsMode,
+        onApiLogin,
+        onApiRegister,
+        onArtemisLogin,
     });
 
     const panel = useReportPanelShell({

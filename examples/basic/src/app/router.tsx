@@ -1,33 +1,26 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 
-import { LandingPageProvider } from "../features/landing/model/LandingContext";
 import { ModalDemoProvider } from "../features/modals/model/ModalDemoContext";
+import { DemoInvestShell, FeedPage, HomePage, IndexDetailPage, LoginPage, ScreenerPage } from "../widgets/demo-invest";
 import { PulseEdgecasePage } from "../widgets/landing/pages/PulseEdgecasePage";
-import { PulseIssuesPage } from "../widgets/landing/pages/PulseIssuesPage";
-import { PulseOverviewPage } from "../widgets/landing/pages/PulseOverviewPage";
-import { PulseReleasePage } from "../widgets/landing/pages/PulseReleasePage";
-import { PulseReviewsPage } from "../widgets/landing/pages/PulseReviewsPage";
-import { PulseSettingsPage } from "../widgets/landing/pages/PulseSettingsPage";
-import { PulseBoardLayout } from "../widgets/landing/ui/PulseBoardLayout";
 
 import "../../styles/pulse-board.css";
+import "../../styles/demo-invest.css";
 
 export function AppRouter() {
     return (
-        <LandingPageProvider>
-            <ModalDemoProvider>
-                <Routes>
-                    <Route element={<PulseBoardLayout />}>
-                        <Route index element={<PulseOverviewPage />} />
-                        <Route path="issues" element={<PulseIssuesPage />} />
-                        <Route path="reviews" element={<PulseReviewsPage />} />
-                        <Route path="release" element={<PulseReleasePage />} />
-                        <Route path="settings" element={<PulseSettingsPage />} />
-                        <Route path="edgecase" element={<PulseEdgecasePage />} />
-                    </Route>
-                    <Route path="*" element={<Navigate to="/" replace />} />
-                </Routes>
-            </ModalDemoProvider>
-        </LandingPageProvider>
+        <ModalDemoProvider>
+            <Routes>
+                <Route element={<DemoInvestShell />}>
+                    <Route index element={<HomePage />} />
+                    <Route path="feed" element={<FeedPage />} />
+                    <Route path="screener" element={<ScreenerPage />} />
+                    <Route path="indices/:code" element={<IndexDetailPage />} />
+                </Route>
+                <Route path="signin" element={<LoginPage />} />
+                <Route path="edgecase" element={<PulseEdgecasePage />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+        </ModalDemoProvider>
     );
 }

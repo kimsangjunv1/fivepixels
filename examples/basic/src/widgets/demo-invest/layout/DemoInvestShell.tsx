@@ -1,0 +1,30 @@
+import { Link, Outlet, useLocation } from "react-router-dom";
+
+import { DemoInvestInteractionProvider } from "../model/DemoInvestInteractionContext";
+import { BottomTicker } from "../ui/BottomTicker";
+import { DemoInvestHeader } from "../ui/DemoInvestHeader";
+import { RightRail } from "../ui/RightRail";
+import { WatchlistSidebar } from "../ui/WatchlistSidebar";
+
+export function DemoInvestShell() {
+    const { pathname } = useLocation();
+    const showMarketTicker = pathname === "/";
+
+    return (
+        <DemoInvestInteractionProvider>
+            <div className="demo-invest" data-report-id="demo-invest-shell" data-report-type="group">
+                <DemoInvestHeader />
+                <div className="demo-invest__shell">
+                    <main className="demo-invest__main">
+                        <Outlet />
+                    </main>
+                    <WatchlistSidebar />
+                    <RightRail />
+                </div>
+                {showMarketTicker ? <BottomTicker /> : null}
+            </div>
+        </DemoInvestInteractionProvider>
+    );
+}
+
+export { Link as DemoInvestLink };

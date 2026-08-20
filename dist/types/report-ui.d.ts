@@ -109,6 +109,7 @@ export type DraftReport = {
     reportId: string;
     reportType: ReportTargetType;
     targetSelector: string | null;
+    viewPath: string[];
     suggestedReportId: string | null;
     cases: ReportCase[];
     category: FeedbackCategory | null;

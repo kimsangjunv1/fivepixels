@@ -3,6 +3,7 @@ import type {
     ReportFeedback,
     ReportField,
     ReportGitHubConfig,
+    ReportAuthHandlers,
     ReportPersistenceHandlers,
     ReportProject,
     ReportTeam,
@@ -34,6 +35,7 @@ export type FivePixelsProps = {
     github?: ReportGitHubConfig;
 } & Partial<ReportPersistenceHandlers> &
     Partial<ReportTeamHandlers> &
+    Partial<ReportAuthHandlers> &
     ReportSideEffectCallbacks;
 
 /** `<ReportProvider />` = public props + children (custom UI assembly). */

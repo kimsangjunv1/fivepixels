@@ -8,6 +8,7 @@ import { resolveDefaultAuthorName } from "../../utils/report/resolveDefaultAutho
 import { buildDraftFromReport } from "../../utils/report/buildDraftFromReport.js";
 import { getPageScrollY, getPageViewportSize, mapHostPointToPage } from "../../utils/overlay/pageDocumentBridge.js";
 import { useReportPickProbe } from "./useReportPickProbe.js";
+import { getFeedbackViewPath } from "../../utils/marker/viewRestore.js";
 const OVERLAY_HOVER_LEAVE_MS = 100;
 export function useReportDraftSession({ mode, setMode, fields, messages, currentPathname, environment, appVersion, sessionActor, authorSelectionLocked, activeIdentify, authorizedAuthors, selfName, setErrorMessage, hoveredElementRef, selectedElementRef, overlayRef, overlayHoverLeaveTimeoutRef, }) {
     const [showTargetPreview, setShowTargetPreview] = useState(false);
@@ -211,6 +212,7 @@ export function useReportDraftSession({ mode, setMode, fields, messages, current
             reportId: snapshot.id,
             reportType: snapshot.type,
             targetSelector: isTagged ? null : (snapshot.targetSelector ?? null),
+            viewPath: getFeedbackViewPath(targetElement),
             suggestedReportId: isTagged ? null : (snapshot.suggestedReportId ?? snapshot.id),
             cases: [createReportCase("")],
             category: null,
@@ -359,6 +361,7 @@ export function useReportDraftSession({ mode, setMode, fields, messages, current
                         y: draft.anchorYRatio,
                     }
                     : null,
+                ...(draft.viewPath.length > 0 ? { viewPath: draft.viewPath } : {}),
             },
             ...(environment ? { environment } : {}),
             ...(appVersion ? { app_version: appVersion } : {}),

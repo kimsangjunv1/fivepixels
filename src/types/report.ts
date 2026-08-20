@@ -214,6 +214,35 @@ export type ReportTeamHandlers = {
     onUpdateReviewer?: (id: string, payload: UpdateReviewerPayload) => Promise<ReportAuthor>;
 };
 
+export type ReportAuthUser = {
+    id: string;
+    name: string;
+    email?: string;
+};
+
+export type ReportApiLoginPayload = {
+    loginId: string;
+    password: string;
+};
+
+export type ReportApiRegisterPayload = {
+    loginId: string;
+    password: string;
+    passwordConfirm: string;
+    email: string;
+    username: string;
+};
+
+/**
+ * Optional account login handlers for API / Artemis onboarding.
+ * Local login still uses personal keys in localStorage.
+ */
+export type ReportAuthHandlers = {
+    onApiLogin?: (payload: ReportApiLoginPayload) => Promise<ReportAuthUser>;
+    onApiRegister?: (payload: ReportApiRegisterPayload) => Promise<void>;
+    onArtemisLogin?: () => Promise<ReportAuthUser>;
+};
+
 export type ReportAuthAction = "feedback:create" | "feedback:update" | "reply:create";
 
 export type ReportAuthProof = {

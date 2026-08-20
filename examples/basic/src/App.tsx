@@ -3,6 +3,7 @@ import { FivePixels, type ReportFeedback } from "@fivepixels-js/react";
 
 import { AppRouter } from "./app/router";
 import { invokeModalRevealHandler } from "./features/modals/model/modalRevealRegistry";
+import { exampleApiLogin, exampleApiRegister, exampleArtemisLogin } from "./features/auth/exampleAuthHandlers";
 
 async function createGitHubIssue(feedback: ReportFeedback) {
     const response = await fetch("/api/github/issues", {
@@ -76,6 +77,9 @@ function AppContent() {
                         // },
                     ],
                 }}
+                onApiLogin={exampleApiLogin}
+                onApiRegister={exampleApiRegister}
+                onArtemisLogin={exampleArtemisLogin}
             />
             <AppRouter />
         </>

@@ -24,6 +24,7 @@ export function buildDraftFromReport(report, fields) {
         reportId: report.report_id,
         reportType: report.report_type,
         targetSelector: report.target_selector ?? null,
+        viewPath: report.position.viewPath ?? [],
         suggestedReportId: null,
         cases: report.cases.map((item) => ({ ...item })),
         category: report.category ?? null,

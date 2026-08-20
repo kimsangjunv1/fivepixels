@@ -37,6 +37,10 @@ export type {
     ReportRouteDetailsSummary,
     ReportPersistenceHandlers,
     ReportTeamHandlers,
+    ReportAuthHandlers,
+    ReportAuthUser,
+    ReportApiLoginPayload,
+    ReportApiRegisterPayload,
     CreateReviewerRequestPayload,
     RegisterReviewerPayload,
     ReportReviewerRequest,
@@ -78,6 +82,8 @@ export {
     canEditReportCases,
 } from "@/utils/report/reportCases.js";
 export { createReportAuthMessage, parsePublicKey, verifyReportAuthProof } from "@/utils/auth/personalKey.js";
+export { ReportAuthError, resolveRegistrationError } from "@/utils/auth/reportAuthError.js";
+export { LOGIN_METHOD_VALUES, isRemoteLoginMethod, type LoginMethod } from "@/constants/loginMethod.js";
 export { REPORT_STATUS_FLOW, REPORT_STATUS_TRANSITIONS } from "@/types/report.js";
 export {
     buildGitHubIssueUpdate,

@@ -1,4 +1,4 @@
-import type { FivePixelsMode, ReportFeedback, ReportField, ReportGitHubConfig, ReportPersistenceHandlers, ReportProject, ReportTeam, ReportTeamHandlers, ReportUi, ReportVisibility } from "./report.js";
+import type { FivePixelsMode, ReportFeedback, ReportField, ReportGitHubConfig, ReportAuthHandlers, ReportPersistenceHandlers, ReportProject, ReportTeam, ReportTeamHandlers, ReportUi, ReportVisibility } from "./report.js";
 import type { ReportSideEffectCallbacks } from "../utils/report/reportCallbacks.js";
 /**
  * Public props for `<FivePixels />` — single source of truth.
@@ -20,7 +20,7 @@ export type FivePixelsProps = {
     /** Attempt to reveal a target that is not on the current page. */
     onRevealTarget?: (report: ReportFeedback) => boolean | Promise<boolean>;
     github?: ReportGitHubConfig;
-} & Partial<ReportPersistenceHandlers> & Partial<ReportTeamHandlers> & ReportSideEffectCallbacks;
+} & Partial<ReportPersistenceHandlers> & Partial<ReportTeamHandlers> & Partial<ReportAuthHandlers> & ReportSideEffectCallbacks;
 /** `<ReportProvider />` = public props + children (custom UI assembly). */
 export type ReportProviderProps = FivePixelsProps & {
     children: import("react").ReactNode;
