@@ -44,6 +44,7 @@ const SIDEBAR_MIN_WIDTH = 150;
 const RIGHT_MIN_WIDTH = 280;
 const COLLAPSED_SIDEBAR_WIDTH = 46;
 const MINIMIZED_WINDOW_HEIGHT = 42;
+const MINIMIZED_WINDOW_WIDTH = 256;
 const WINDOW_CLOSE_ANIMATION_MS = 220;
 const LEFT_SECTION_TRANSITION = "transition-[background-color,backdrop-filter] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]";
 const LEFT_SECTION_FLAT_CLASS = `${LEFT_SECTION_TRANSITION} bg-[var(--adaptive-black50)]`;
@@ -126,7 +127,6 @@ function MinimizedCaseMarquee({ caseTexts }: { caseTexts: string[] }) {
     return (
         <div
             className="min-w-0 flex-1 overflow-hidden text-[12px] text-[var(--adaptive-black700)]"
-            aria-label={caseTexts.map((text, index) => `${index + 1}. ${text}`).join(", ")}
         >
             <div
                 aria-hidden
@@ -433,7 +433,7 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
     const isMinimized = windowMode === "minimized";
     const isMaximized = windowMode === "maximized";
     const effectiveSize = isMaximized ? maximizedSize : size;
-    const minimizedWidth = Math.min(DEFAULT_WINDOW_SIZE.width, Math.max(280, viewport.width - WINDOW_MARGIN * 2));
+    const minimizedWidth = Math.min(MINIMIZED_WINDOW_WIDTH, Math.max(0, viewport.width - WINDOW_MARGIN * 2));
     const resolvedSidebarWidth = clampSidebarWidth(sidebarWidth, effectiveSize.width);
 
     const initialPosition = useMemo(
@@ -807,18 +807,18 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
                 {isMinimized ? (
                     <div
                         ref={surfaceRef}
-                        className={`flex items-center justify-between gap-[8px] overflow-hidden rounded-[16px] border border-[var(--adaptive-border-subtle)] px-[10px] py-[8px] shadow-[var(--adaptive-popup-shadow)] ${leftSectionClass}`}
+                        className={`overflow-hidden rounded-[16px] border border-[var(--adaptive-border-subtle)] shadow-[var(--adaptive-popup-shadow)] ${leftSectionClass}`}
                     >
-                        <div className="flex shrink-0 items-center gap-[2px]">
-                            {leftControls}
-                        </div>
-                        <MinimizedCaseMarquee caseTexts={minimizedCaseTexts} />
-                        <div className="flex shrink-0 items-center gap-[2px]">
-                            {shareButton}
-                            {editButton}
-                            {deleteButton}
-                            {sidebarToggleButton}
-                        </div>
+                        <button
+                            type="button"
+                            data-fivepixels-interactive=""
+                            onClick={handleToggleMinimize}
+                            aria-label={`${messages.marker.windowRestoreAriaLabel}. ${minimizedCaseTexts.map((text, index) => `${index + 1}. ${text}`).join(", ")}`}
+                            title={messages.marker.windowRestoreAriaLabel}
+                            className="flex min-h-[40px] w-full items-center overflow-hidden px-[12px] text-left"
+                        >
+                            <MinimizedCaseMarquee caseTexts={minimizedCaseTexts} />
+                        </button>
                     </div>
                 ) : (
                     <div
