@@ -301,7 +301,7 @@ export function useReportMarkers({
 
             if (targetElement && isFeedbackTargetVisible(targetElement)) {
                 scrollToFeedbackTarget(report);
-                return;
+                return false;
             }
 
             let revealed = await restoreFeedbackViews(report.position.viewPath);
@@ -325,6 +325,7 @@ export function useReportMarkers({
             }
 
             scrollToFeedbackTarget(report);
+            return revealed;
         },
         [onRevealTarget, syncMarkers],
     );
@@ -447,17 +448,30 @@ export function useReportMarkers({
         void locateFeedback(currentPageReports[nextIndex].id);
     };
 
-    const activateFeedbackMarker = useCallback(
-        async (report: ReportFeedback, caseId?: string | null) => {
+    const activateFeedback = useCallback(
+        async (report: ReportFeedback, caseId?: string | null, stopAfterReveal = false) => {
+            const revealed = await prepareFeedbackLocation(report);
+
+            if (revealed && stopAfterReveal) {
+                clearHoverLeaveTimeout();
+                closeReplyComposer();
+                setHoveredMarkerId(null);
+                return;
+            }
+
             const enrichedReport = await loadRepliesIfNeeded(report);
-            await prepareFeedbackLocation(enrichedReport);
             openReplyComposer(enrichedReport);
 
             if (caseId && enrichedReport.cases.some((item) => item.id === caseId)) {
                 selectCase(caseId);
             }
         },
-        [loadRepliesIfNeeded, openReplyComposer, prepareFeedbackLocation, selectCase],
+        [clearHoverLeaveTimeout, closeReplyComposer, loadRepliesIfNeeded, openReplyComposer, prepareFeedbackLocation, selectCase],
+    );
+
+    const activateFeedbackMarker = useCallback(
+        (report: ReportFeedback, caseId?: string | null) => activateFeedback(report, caseId, true),
+        [activateFeedback],
     );
 
     const openPinnedFeedback = async (reportId: string, options?: { caseId?: string | null; pathname?: string }) => {
@@ -494,7 +508,7 @@ export function useReportMarkers({
             return;
         }
 
-        await activateFeedbackMarker(report, caseId);
+        await activateFeedback(report, caseId);
     };
 
     useEffect(() => {
@@ -513,9 +527,9 @@ export function useReportMarkers({
 
         pendingActivatePinRef.current = null;
         window.setTimeout(() => {
-            void activateFeedbackMarker(report, pending.caseId);
+            void activateFeedback(report, pending.caseId);
         }, 0);
-    }, [activateFeedbackMarker, allPageReports, currentPathname, reports]);
+    }, [activateFeedback, allPageReports, currentPathname, reports]);
 
     useEffect(() => {
         const feedbackId = pendingDeepLinkFeedbackIdRef.current;
@@ -535,10 +549,10 @@ export function useReportMarkers({
         deepLinkHandledRef.current = true;
         pendingDeepLinkFeedbackIdRef.current = null;
 
-        void activateFeedbackMarker(report).finally(() => {
+        void activateFeedback(report).finally(() => {
             clearFeedbackDeepLinkFromUrl();
         });
-    }, [activateFeedbackMarker, isFetching, isReportsLoading, reports]);
+    }, [activateFeedback, isFetching, isReportsLoading, reports]);
 
     return {
         markers,

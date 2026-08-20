@@ -16,7 +16,7 @@ export function StockDetailPanel({ stock }: StockDetailPanelProps) {
                     <div className="demo-invest__detail-title">{stock.name}</div>
                     <div className="demo-invest__detail-sub">{stock.price} <span className={`demo-invest__text-${stock.direction}`}>{stock.changeRate}</span></div>
                 </div>
-                <button type="button" className="demo-invest__detail-order" onClick={() => openDialog("investLogin")}>주문</button>
+                <button type="button" className="demo-invest__detail-order" data-fp-open="demo-modal-login" onClick={() => openDialog("investLogin")}>주문</button>
             </div>
             <div className="demo-invest__chart-label">일봉</div>
             <img

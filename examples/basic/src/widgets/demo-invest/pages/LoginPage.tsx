@@ -52,7 +52,7 @@ export function LoginPage() {
                             <p>토스 앱 없이 이메일로 로그인해요.</p>
                             <input aria-label="이메일" placeholder="이메일" />
                             <input aria-label="비밀번호" type="password" placeholder="비밀번호" />
-                            <button type="button" onClick={() => showDialog("login")}>이메일로 로그인</button>
+                            <button type="button" data-fp-open="demo-modal-login" onClick={() => showDialog("login")}>이메일로 로그인</button>
                         </div> : <>
                             <div className="demo-invest-login-card__fields">
                                 <input aria-label="이름" placeholder="이름" value={fields.name} onChange={(event) => setFields((current) => ({ ...current, name: event.target.value }))} />
@@ -68,7 +68,7 @@ export function LoginPage() {
                                     </label>
                                 ))}
                             </div>
-                            <button type="button" className="demo-invest-login-card__submit" disabled={!canSubmit} onClick={() => showDialog("login")} data-report-id="demo-login-submit" data-report-type="item">로그인</button>
+                            <button type="button" className="demo-invest-login-card__submit" disabled={!canSubmit} onClick={() => showDialog("login")} data-fp-open="demo-modal-login" data-report-id="demo-login-submit" data-report-type="item">로그인</button>
                         </>}
                         <button type="button" className="demo-invest-login-card__without-app" onClick={() => setWithoutApp((current) => !current)}>{withoutApp ? "휴대폰 번호로 로그인하기" : "토스 앱 없이 로그인하기"}</button>
                     </div> : <div className="demo-invest-login-card__qr" data-report-id="demo-login-qr-panel" data-report-type="group">
@@ -78,7 +78,7 @@ export function LoginPage() {
                         <button type="button">↻ QR코드 새로고침</button>
                     </div>}
                 </section>
-                <p>아직 토스증권 회원이 아닌가요? <button type="button" onClick={() => showDialog("join")}>가입하기</button></p>
+                <p>아직 토스증권 회원이 아닌가요? <button type="button" data-fp-open="demo-modal-login" onClick={() => showDialog("join")}>가입하기</button></p>
             </main>
 
             {isOpen("investLogin") ? <DemoInvestModal

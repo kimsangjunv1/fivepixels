@@ -250,11 +250,18 @@ export function ReportMarkersLayer() {
     } = useReport();
 
     const handleMarkerHoverStart = useCallback(
-        (reportId: string) => {
+        (marker: Marker) => {
             clearHoverLeaveTimeout();
-            setHoveredMarkerId(reportId);
+
+            if (marker.detachedKind === "modal" && marker.report.position.viewPath?.length) {
+                setHoverPointer(null);
+                setHoveredMarkerId(null);
+                return;
+            }
+
+            setHoveredMarkerId(marker.report.id);
         },
-        [clearHoverLeaveTimeout, setHoveredMarkerId],
+        [clearHoverLeaveTimeout, setHoverPointer, setHoveredMarkerId],
     );
 
     const handleMarkerHoverEnd = useCallback(
@@ -393,7 +400,7 @@ export function ReportMarkersLayer() {
                     markerAppearance={markerAppearance}
                     typography={typography}
                     onActivate={activateFeedbackMarker}
-                    onHoverStart={() => handleMarkerHoverStart(markerItem.report.id)}
+                    onHoverStart={() => handleMarkerHoverStart(markerItem)}
                     onHoverEnd={() => handleMarkerHoverEnd(markerItem.report.id)}
                     onPointerMove={(clientX, clientY) => setHoverPointer({ clientX, clientY })}
                 />

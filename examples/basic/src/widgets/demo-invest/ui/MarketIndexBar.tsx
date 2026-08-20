@@ -35,7 +35,7 @@ export function MarketIndexBar() {
                 <span><strong>국내 정규장</strong> 09:00 ~ 15:30</span>
                 <span className="demo-invest__market-dot" />
                 <span><strong>해외 데이마켓</strong> 09:00 ~ 17:00</span>
-                <button type="button" onClick={() => openDialog("investLogin")} data-report-id="demo-ai-intro" data-report-type="item">✦ 토스증권 AI 소개</button>
+                <button type="button" onClick={() => openDialog("investLogin")} data-fp-open="demo-modal-login" data-report-id="demo-ai-intro" data-report-type="item">✦ 토스증권 AI 소개</button>
             </div>
 
             <div className="demo-invest__market-grid">

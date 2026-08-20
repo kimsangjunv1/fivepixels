@@ -708,6 +708,7 @@ export const ko = {
         tooltipFontWeight: "fontWeight",
         tooltipLineHeight: "lineHeight",
         tooltipReportId: "data-report-id",
+        tooltipFpOpen: "data-fp-open",
         tooltipNoReportId: "없음",
         probeEdit: "Edit",
         probeClose: "닫기",

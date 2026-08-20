@@ -134,6 +134,7 @@ export type TargetSnapshot = {
     suggestedReportId?: string | null;
     tagName?: string;
     reportIdAttribute?: string | null;
+    fpOpenAttribute?: string | null;
     boxStyle?: PickTargetBoxStyle;
     fontStyle?: PickTargetFontStyle | null;
 };

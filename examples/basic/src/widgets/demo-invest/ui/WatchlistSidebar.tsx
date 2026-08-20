@@ -33,7 +33,7 @@ export function WatchlistSidebar() {
                 </div>
             ))}
 
-            <button type="button" className="demo-invest__watchlist-add" data-report-id="demo-watchlist-add" data-report-type="item" onClick={() => openDialog("investWatchlist")}>
+            <button type="button" className="demo-invest__watchlist-add" data-fp-open="demo-modal-watchlist" data-report-id="demo-watchlist-add" data-report-type="item" onClick={() => openDialog("investWatchlist")}>
                 <span>＋</span> 추가하기
             </button>
         </aside>
