@@ -768,6 +768,11 @@ export type ReportMessages = {
         shareLinkAriaLabel: string;
         shareLinkTitle: string;
         shareLinkCopiedTitle: string;
+        sidebarActionsAriaLabel: string;
+        newCaseAction: string;
+        shareAction: string;
+        pinAction: string;
+        unpinAction: string;
         assigneeAssigned: string;
         assigneeUnassigned: string;
         previousAssignee: string;

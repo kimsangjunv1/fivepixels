@@ -12,12 +12,13 @@ import { getCaseAssigneeName, getCaseById } from "@/utils/report/reportCases.js"
 import { getFieldTags } from "@/utils/report/fields.js";
 import { copyTextToClipboard } from "@/utils/feedback/feedbackDataTransfer.js";
 import { buildFeedbackShareUrl } from "@/utils/feedback/feedbackDeepLink.js";
-import { CloseIcon, CheckCircleIcon, EditIcon, LinkIcon, MaximizeIcon, MinimizeIcon, RestoreIcon, SidePanelIcon } from "@/components/icons/Icons.js";
+import { CloseIcon, CheckCircleIcon, EditIcon, FavoritePinIcon, LinkIcon, MaximizeIcon, MinimizeIcon, RestoreIcon, SidePanelIcon, TrashIcon } from "@/components/icons/Icons.js";
 import { FeedbackFieldTags } from "@/components/panel/feedback/FeedbackFieldTags.js";
 import { FeedbackPinToggleButton } from "@/components/panel/feedback/FeedbackPinToggleButton.js";
 import { FeedbackDeleteAction } from "@/components/panel/feedback/FeedbackDeleteAction.js";
 import { canDeleteFeedback } from "@/utils/feedback/feedbackPermissions.js";
 import { canEditReportCases } from "@/utils/report/reportCases.js";
+import { createPinnedFeedbackItem, isFeedbackPinned } from "@/utils/pinned/pinnedFeedback.js";
 import { mentionMessageToPlainText } from "@/utils/mention/elementMentions.js";
 import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
 import { CornerResizeGhost } from "@/components/ui/CornerResizeGhost.js";
@@ -53,6 +54,8 @@ function getLeftSectionClass(phase: WindowSurfacePhase) {
 }
 const HEADER_BUTTON_CLASS =
     "flex h-[24px] w-[24px] items-center justify-center rounded-[6px] text-[var(--adaptive-black600)] transition-colors hover:bg-[var(--adaptive-tintOpacity200)] hover:text-[var(--adaptive-black900)]";
+const SIDEBAR_ACTION_CLASS =
+    "flex h-[32px] w-full items-center gap-[8px] rounded-[8px] px-[8px] text-left text-[13px] font-semibold text-[var(--adaptive-black700)] transition-colors hover:bg-[var(--adaptive-tintOpacity200)] hover:text-[var(--adaptive-black900)]";
 
 function getViewportSize() {
     if (typeof window === "undefined") {
@@ -95,7 +98,7 @@ function WindowControlButton({ onClick, ariaLabel, title, className = "", childr
     );
 }
 
-function MarkerWindowShareButton({ report, messages }: { report: ReportFeedback; messages: ReportMessages }) {
+function MarkerWindowShareButton({ report, messages, expanded = false }: { report: ReportFeedback; messages: ReportMessages; expanded?: boolean }) {
     const [copied, setCopied] = useState(false);
 
     const handleCopy = () => {
@@ -109,7 +112,19 @@ function MarkerWindowShareButton({ report, messages }: { report: ReportFeedback;
             });
     };
 
-    return (
+    return expanded ? (
+        <button
+            type="button"
+            data-fivepixels-interactive=""
+            onPointerDown={(event) => event.stopPropagation()}
+            onClick={handleCopy}
+            aria-label={messages.marker.shareLinkAriaLabel}
+            className={SIDEBAR_ACTION_CLASS}
+        >
+            <LinkIcon className="h-[15px] w-[15px] shrink-0" />
+            <span>{copied ? messages.marker.shareLinkCopiedTitle : messages.marker.shareAction}</span>
+        </button>
+    ) : (
         <WindowControlButton
             onClick={handleCopy}
             ariaLabel={messages.marker.shareLinkAriaLabel}
@@ -164,6 +179,9 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
         sessionActor,
         cancelPendingComposer,
         beginFeedbackEdit,
+        addDraftCase,
+        pinnedFeedbackItems,
+        togglePinnedFeedback,
     } = useReport();
 
     const windowRef = useRef<HTMLDivElement | null>(null);
@@ -176,6 +194,7 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const [size, setSize] = useState<BoxSize>(DEFAULT_WINDOW_SIZE);
     const [sidebarWidth, setSidebarWidth] = useState(DEFAULT_SIDEBAR_WIDTH);
+    const [isSidebarDeleteConfirming, setIsSidebarDeleteConfirming] = useState(false);
 
     const splitStateRef = useRef<{ startX: number; startWidth: number; windowWidth: number } | null>(null);
     const splitListenersRef = useRef<{ move: (event: PointerEvent) => void; up: (event: PointerEvent) => void } | null>(null);
@@ -308,6 +327,16 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
 
     useEffect(() => () => detachSplitListeners(), [detachSplitListeners]);
 
+    useEffect(() => {
+        if (!isSidebarDeleteConfirming) {
+            return;
+        }
+
+        const timer = window.setTimeout(() => setIsSidebarDeleteConfirming(false), 1500);
+
+        return () => window.clearTimeout(timer);
+    }, [isSidebarDeleteConfirming]);
+
     const isCreatorQuestionComposer = pendingComposer?.type === "question";
 
     const showComposer = useMemo(() => {
@@ -397,6 +426,30 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
         setWindowMode((current) => (current === "maximized" ? "normal" : "maximized"));
     };
 
+    const handleAddCase = () => {
+        beginFeedbackEdit(report);
+        addDraftCase();
+    };
+
+    const isPinned = isFeedbackPinned(pinnedFeedbackItems, report.id);
+    const handleTogglePin = () => {
+        togglePinnedFeedback(
+            createPinnedFeedbackItem(report, {
+                caseId: focusedCaseId,
+                summaryMore: messages.cases.summaryMore,
+            }),
+        );
+    };
+
+    const handleSidebarDelete = () => {
+        if (!isSidebarDeleteConfirming) {
+            setIsSidebarDeleteConfirming(true);
+            return;
+        }
+
+        void handleDelete(report.id).finally(() => setIsSidebarDeleteConfirming(false));
+    };
+
     const leftControls = (
         <>
             <WindowControlButton
@@ -473,14 +526,68 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
         </HoverTooltip>
     ) : null;
 
-    const headerUtilityButtons = (
-        <>
-            {shareButton}
-            {editButton}
-            {deleteButton}
-            {pinButton}
-        </>
+    const expandedSidebarActions = (
+        <nav
+            aria-label={messages.marker.sidebarActionsAriaLabel}
+            className="shrink-0 px-[6px] pb-[10px] pt-[2px]"
+        >
+            {canEditReportCases(report) ? (
+                <button
+                    type="button"
+                    data-fivepixels-interactive=""
+                    onPointerDown={(event) => event.stopPropagation()}
+                    onClick={handleAddCase}
+                    className={SIDEBAR_ACTION_CLASS}
+                >
+                    <span
+                        aria-hidden
+                        className="inline-flex h-[15px] w-[15px] shrink-0 items-center justify-center text-[18px] font-normal"
+                    >
+                        +
+                    </span>
+                    <span>{messages.marker.newCaseAction}</span>
+                </button>
+            ) : null}
+
+            <MarkerWindowShareButton
+                report={report}
+                messages={messages}
+                expanded
+            />
+
+            <button
+                type="button"
+                data-fivepixels-interactive=""
+                onPointerDown={(event) => event.stopPropagation()}
+                onClick={handleTogglePin}
+                aria-pressed={isPinned}
+                className={`${SIDEBAR_ACTION_CLASS} ${isPinned ? "text-[var(--adaptive-blue500)]" : ""}`}
+            >
+                <FavoritePinIcon
+                    filled={isPinned}
+                    className="h-[15px] w-[15px] shrink-0"
+                />
+                <span>{isPinned ? messages.marker.unpinAction : messages.marker.pinAction}</span>
+            </button>
+        </nav>
     );
+
+    const expandedSidebarDelete = canDeleteFeedback(report, sessionActor) ? (
+        <div className="mt-auto shrink-0 border-t border-[var(--adaptive-border-subtle)] p-[6px]">
+            <button
+                type="button"
+                data-fivepixels-interactive=""
+                onPointerDown={(event) => event.stopPropagation()}
+                onClick={handleSidebarDelete}
+                disabled={isDeleting}
+                aria-label={isSidebarDeleteConfirming ? messages.feedbackList.deleteConfirmAriaLabel : messages.feedbackList.deleteAriaLabel}
+                className={`${SIDEBAR_ACTION_CLASS} text-rose-500 hover:text-rose-600 disabled:opacity-50`}
+            >
+                <TrashIcon className="h-[15px] w-[15px] shrink-0" />
+                <span>{isSidebarDeleteConfirming ? messages.feedbackList.deleteConfirmTitle : messages.feedbackList.deleteTitle}</span>
+            </button>
+        </div>
+    ) : null;
 
     const rightSection = (
         <div className="flex min-w-0 flex-1 flex-col bg-[var(--adaptive-black50)]">
@@ -665,17 +772,18 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
                                     className="flex shrink-0 cursor-move touch-none select-none items-center justify-between gap-[8px] px-[10px] py-[8px]"
                                 >
                                     <div className="flex items-center gap-[2px]">{leftControls}</div>
-                                    <div className="flex items-center gap-[2px]">
-                                        {headerUtilityButtons}
-                                        {sidebarToggleButton}
-                                    </div>
+                                    <div className="flex items-center gap-[2px]">{sidebarToggleButton}</div>
                                 </header>
+
+                                {expandedSidebarActions}
 
                                 <MarkerCaseSidebar
                                     report={report}
                                     focusedCaseId={focusedCaseId}
                                     onSelectCase={selectCase}
                                 />
+
+                                {expandedSidebarDelete}
                             </div>
                         )}
 
