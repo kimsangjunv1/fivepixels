@@ -104,12 +104,14 @@ function MarkerButton({
         onLeave: onHoverEnd,
     });
     const replyCount = getReplyCount(markerItem.report);
+    const aggregateCount = markerItem.aggregateCount ?? 1;
     const markerBadgeLabel = getMarkerDisplayLabel(markerItem.report);
-    const showReplyIndicator = hasMarkerReplyIndicator(markerItem.report, replyCount);
+    const showReplyIndicator = aggregateCount === 1 && hasMarkerReplyIndicator(markerItem.report, replyCount);
     const markerLabelParts = [
         markerItem.report.report_type,
         markerItem.report.report_id,
         markerBadgeLabel,
+        aggregateCount > 1 ? `${aggregateCount}` : null,
         showReplyIndicator ? `+${replyCount}` : null,
     ].filter(Boolean);
     const markerLabel = markerLabelParts.join(" · ");
@@ -196,6 +198,20 @@ function MarkerButton({
                             {showMarkerLabel ? badgeDisplay.content : null}
                         </span>
                     </button>
+                    {aggregateCount > 1 ? (
+                        <span
+                            aria-hidden
+                            className="pointer-events-none absolute z-10 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-white px-[4px] text-[10px] font-bold leading-none text-white"
+                            style={{
+                                top: -5,
+                                right: -5,
+                                backgroundColor: markerColor,
+                                boxShadow: "0 1px 4px #00000040",
+                            }}
+                        >
+                            {aggregateCount}
+                        </span>
+                    ) : null}
                     {showReplyIndicator ? (
                         <MarkerReplyBadge
                             size={replyBadgeSize}
@@ -315,7 +331,7 @@ export function ReportMarkersLayer() {
 
         const marker = visibleMarkers.find((item) => item.report.id === activeReportId);
 
-        if (!marker || marker.detachedKind !== "modal") {
+        if (!marker || marker.detachedKind !== "modal" || marker.viewTriggerKey) {
             return null;
         }
 

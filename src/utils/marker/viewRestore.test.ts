@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { getFeedbackViewPath, restoreFeedbackViews } from "./viewRestore.js";
+import { getFeedbackViewPath, getFeedbackViewTrigger, restoreFeedbackViews } from "./viewRestore.js";
 
 describe("viewRestore", () => {
     beforeEach(() => {
@@ -41,5 +41,20 @@ describe("viewRestore", () => {
         expect(clicks).toEqual(["settings-modal", "account-tab"]);
         animationFrame.mockRestore();
         vi.useRealTimers();
+    });
+
+    it("prefers the first visible enabled trigger", () => {
+        document.body.innerHTML = `
+            <button data-fp-open="settings-modal" disabled>Disabled</button>
+            <button data-fp-open="settings-modal" id="hidden">Hidden</button>
+            <button data-fp-open="settings-modal" id="visible">Visible</button>
+        `;
+        const hidden = document.querySelector<HTMLElement>("#hidden")!;
+        const visible = document.querySelector<HTMLElement>("#visible")!;
+
+        vi.spyOn(hidden, "getBoundingClientRect").mockReturnValue(new DOMRect(0, 0, 0, 0));
+        vi.spyOn(visible, "getBoundingClientRect").mockReturnValue(new DOMRect(20, 30, 120, 40));
+
+        expect(getFeedbackViewTrigger(["settings-modal"], { visibleOnly: true })?.element).toBe(visible);
     });
 });

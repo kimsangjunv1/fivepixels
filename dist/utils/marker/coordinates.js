@@ -3,6 +3,7 @@ import { getFeedbackTargetSelector, getNearestScrollContainer, getScrollContaine
 import { getFeedbackAnchorElement, getFeedbackTargetElement } from "./locateFeedback.js";
 import { findElementByTargetSelector } from "./targetSelector.js";
 import { resolveDetachedKind } from "./markerContext.js";
+import { getFeedbackViewTrigger } from "./viewRestore.js";
 import { getDocumentY, normalizeReportPosition } from "../report/reportPosition.js";
 import { getElementHostRect, getPageViewportSize, isHtmlElement, mapPagePointToHost, queryPageSelector } from "../overlay/pageDocumentBridge.js";
 function applyScrollContainerClamp(left, top, element) {
@@ -141,6 +142,25 @@ export function getMarkerFromReport(report, currentScrollY) {
             clampContainerId: markerPosition.clampContainerId,
         };
     }
+    const detachedKind = resolveDetachedKind(normalizedReport, targetElement, true);
+    const viewTrigger = detachedKind === "modal" ? getFeedbackViewTrigger(position.viewPath, { visibleOnly: true }) : null;
+    if (viewTrigger) {
+        const rect = getElementHostRect(viewTrigger.element);
+        const markerPosition = applyScrollContainerClamp(rect.left + rect.width / 2 - getMarkerDotSize() / 2, rect.top + rect.height / 2 - getMarkerDotSize() / 2, viewTrigger.element);
+        return {
+            id: normalizedReport.id,
+            report: normalizedReport,
+            left: markerPosition.left,
+            top: markerPosition.top,
+            rect,
+            detached: true,
+            detachedKind,
+            clampedEdge: markerPosition.clampedEdge,
+            clampBounds: markerPosition.clampBounds,
+            clampContainerId: markerPosition.clampContainerId,
+            viewTriggerKey: viewTrigger.viewKey,
+        };
+    }
     const detachedPosition = getDetachedMarkerPosition(normalizedReport, currentScrollY, targetElement);
     return {
         id: normalizedReport.id,
@@ -149,11 +169,32 @@ export function getMarkerFromReport(report, currentScrollY) {
         top: detachedPosition.top,
         rect: null,
         detached: true,
-        detachedKind: resolveDetachedKind(normalizedReport, targetElement, true),
+        detachedKind,
         clampedEdge: detachedPosition.clampedEdge,
         clampBounds: detachedPosition.clampBounds,
         clampContainerId: detachedPosition.clampContainerId,
     };
+}
+export function aggregateViewTriggerMarkers(markers) {
+    const aggregated = [];
+    const groupIndices = new Map();
+    for (const marker of markers) {
+        const viewPath = marker.report.position.viewPath;
+        if (!marker.viewTriggerKey || !viewPath?.length) {
+            aggregated.push(marker);
+            continue;
+        }
+        const groupKey = `${marker.report.pathname}\u0000${viewPath.join("\u0000")}`;
+        const existingIndex = groupIndices.get(groupKey);
+        if (existingIndex === undefined) {
+            groupIndices.set(groupKey, aggregated.length);
+            aggregated.push({ ...marker, aggregateCount: 1 });
+            continue;
+        }
+        const existing = aggregated[existingIndex];
+        aggregated[existingIndex] = { ...existing, aggregateCount: (existing.aggregateCount ?? 1) + 1 };
+    }
+    return aggregated;
 }
 export function getDraftMarkerPosition(draft, selectedTarget) {
     if (selectedTarget) {

@@ -184,6 +184,8 @@ export type Marker = {
     clampedEdge: MarkerClampEdge | null;
     clampBounds: MarkerClampBounds | null;
     clampContainerId: string | null;
+    viewTriggerKey?: string | null;
+    aggregateCount?: number;
     report: ReportFeedback;
 };
 

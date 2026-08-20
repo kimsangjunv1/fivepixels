@@ -1,5 +1,6 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { createReportFeedback } from "../report/reportFixtures.js";
+import { createReportPosition } from "../report/reportPosition.js";
 import { markerToTargetSnapshot } from "./markerTarget.js";
 
 describe("markerToTargetSnapshot", () => {
@@ -66,5 +67,29 @@ describe("markerToTargetSnapshot", () => {
         expect(tagged?.isTagged).toBe(true);
         expect(untagged?.isTagged).toBe(false);
         expect(untagged?.targetSelector).toBe("button[data-testid='checkout']");
+    });
+
+    it("uses the data-fp-open trigger as the highlight target for grouped modal feedback", () => {
+        document.body.innerHTML = '<button data-fp-open="demo-modal-login">Login</button>';
+        const trigger = document.querySelector<HTMLElement>("button")!;
+        const rect = new DOMRect(20, 30, 120, 40);
+        vi.spyOn(trigger, "getBoundingClientRect").mockReturnValue(rect);
+        const snapshot = markerToTargetSnapshot({
+            id: "marker-modal",
+            left: 60,
+            top: 40,
+            rect,
+            detached: true,
+            detachedKind: "modal",
+            clampedEdge: null,
+            clampBounds: null,
+            clampContainerId: null,
+            viewTriggerKey: "demo-modal-login",
+            aggregateCount: 3,
+            report: createReportFeedback({ position: createReportPosition({ viewPath: ["demo-modal-login"] }) }),
+        });
+
+        expect(snapshot?.rect).toEqual(rect);
+        expect(snapshot?.fpOpenAttribute).toBe("demo-modal-login");
     });
 });

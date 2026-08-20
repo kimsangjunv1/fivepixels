@@ -2,7 +2,7 @@ import { type Dispatch, type RefObject, type SetStateAction, useCallback, useEff
 import type { ReportMessages } from "@/i18n/types.js";
 import type { ReportFeedback, ReportField } from "@/types/report.js";
 import type { Marker, ReportMode, TargetSnapshot } from "@/types/report-ui.js";
-import { getMarkerFromReport, resolveTooltipAnchor } from "@/utils/marker/coordinates.js";
+import { aggregateViewTriggerMarkers, getMarkerFromReport, resolveTooltipAnchor } from "@/utils/marker/coordinates.js";
 import { clearFeedbackDeepLinkFromUrl, parseFeedbackDeepLink } from "@/utils/feedback/feedbackDeepLink.js";
 import { getFieldTags } from "@/utils/report/fields.js";
 import { getFeedbackTargetElement, isFeedbackTargetVisible, scrollToFeedbackTarget, waitForTargetRevealResync } from "@/utils/marker/locateFeedback.js";
@@ -94,7 +94,8 @@ export function useReportMarkers({
     const deepLinkHandledRef = useRef(false);
 
     const syncMarkers = useCallback(() => {
-        setMarkers(currentPageReports.map((report) => getMarkerFromReport(report, getPageScrollY())));
+        const currentScrollY = getPageScrollY();
+        setMarkers(aggregateViewTriggerMarkers(currentPageReports.map((report) => getMarkerFromReport(report, currentScrollY))));
     }, [currentPageReports, markerAppearanceSize]);
 
     const activeMarkerReportId = useMemo(() => {
@@ -246,7 +247,7 @@ export function useReportMarkers({
 
         mutationObserver.observe(getPageDocument().body ?? getPageDocument().documentElement, {
             attributes: true,
-            attributeFilter: ["class", "style", "aria-hidden"],
+            attributeFilter: ["class", "style", "aria-hidden", "aria-disabled", "disabled", "data-fp-open", "data-fp-view"],
             childList: true,
             subtree: true,
         });

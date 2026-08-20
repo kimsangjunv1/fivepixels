@@ -43,12 +43,14 @@ function MarkerButton({ markerItem, isHovered, isReportMode, isProximityHighligh
         onLeave: onHoverEnd,
     });
     const replyCount = getReplyCount(markerItem.report);
+    const aggregateCount = markerItem.aggregateCount ?? 1;
     const markerBadgeLabel = getMarkerDisplayLabel(markerItem.report);
-    const showReplyIndicator = hasMarkerReplyIndicator(markerItem.report, replyCount);
+    const showReplyIndicator = aggregateCount === 1 && hasMarkerReplyIndicator(markerItem.report, replyCount);
     const markerLabelParts = [
         markerItem.report.report_type,
         markerItem.report.report_id,
         markerBadgeLabel,
+        aggregateCount > 1 ? `${aggregateCount}` : null,
         showReplyIndicator ? `+${replyCount}` : null,
     ].filter(Boolean);
     const markerLabel = markerLabelParts.join(" · ");
@@ -88,7 +90,12 @@ function MarkerButton({ markerItem, isHovered, isReportMode, isProximityHighligh
                             fontSize: badgeDisplay.fontSizePx === undefined ? undefined : `${badgeDisplay.fontSizePx}px`,
                             fontWeight: badgeDisplay.fontWeight,
                             fontFamily: showMarkerLabel ? typography.fontFamily : undefined,
-                        }, children: [_jsx("span", { className: "pointer-events-none absolute inset-0 flex items-center justify-center", children: _jsx(MarkerShapeGlyph, { shape: glyphShape, fill: paint.fill, width: shapeStyle.width, height: shapeStyle.height, stroke: paint.stroke, strokeWidthPx: paint.strokeWidthPx }) }), _jsx("span", { className: "relative z-[1] flex items-center justify-center", children: showMarkerLabel ? badgeDisplay.content : null })] }, markerItem.id), showReplyIndicator ? (_jsx(MarkerReplyBadge, { size: replyBadgeSize, accentColor: markerColor })) : null] }) }) }));
+                        }, children: [_jsx("span", { className: "pointer-events-none absolute inset-0 flex items-center justify-center", children: _jsx(MarkerShapeGlyph, { shape: glyphShape, fill: paint.fill, width: shapeStyle.width, height: shapeStyle.height, stroke: paint.stroke, strokeWidthPx: paint.strokeWidthPx }) }), _jsx("span", { className: "relative z-[1] flex items-center justify-center", children: showMarkerLabel ? badgeDisplay.content : null })] }, markerItem.id), aggregateCount > 1 ? (_jsx("span", { "aria-hidden": true, className: "pointer-events-none absolute z-10 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-white px-[4px] text-[10px] font-bold leading-none text-white", style: {
+                            top: -5,
+                            right: -5,
+                            backgroundColor: markerColor,
+                            boxShadow: "0 1px 4px #00000040",
+                        }, children: aggregateCount })) : null, showReplyIndicator ? (_jsx(MarkerReplyBadge, { size: replyBadgeSize, accentColor: markerColor })) : null] }) }) }));
 }
 export function ReportMarkersLayer() {
     const { mode, markers, activeReplyReport, activeReplyReportId, tooltipReport, tooltipAnchor, editingReportId, hoverPointer, setHoverPointer, messages, markerAppearance, typography, showHiddenDetachedMarkers, showModalDetachedMarkers, activateFeedbackMarker, clearHoverLeaveTimeout, scheduleHoverLeave, setHoveredMarkerId, } = useReport();
@@ -150,7 +157,7 @@ export function ReportMarkersLayer() {
             return null;
         }
         const marker = visibleMarkers.find((item) => item.report.id === activeReportId);
-        if (!marker || marker.detachedKind !== "modal") {
+        if (!marker || marker.detachedKind !== "modal" || marker.viewTriggerKey) {
             return null;
         }
         return marker;

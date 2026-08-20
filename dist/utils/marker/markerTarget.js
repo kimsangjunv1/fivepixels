@@ -1,10 +1,16 @@
 import { toFeedbackHoverSnapshot } from "../../utils/shared/dom.js";
 import { getFeedbackTargetElement } from "./locateFeedback.js";
+import { getFeedbackViewTrigger } from "./viewRestore.js";
 export function markerToTargetSnapshot(marker) {
     if (!marker.rect) {
         return null;
     }
     const { report, rect } = marker;
+    const viewTrigger = marker.viewTriggerKey ? (getFeedbackViewTrigger(report.position.viewPath, { visibleOnly: true })?.element ?? null) : null;
+    const inspectedViewTrigger = toFeedbackHoverSnapshot(viewTrigger);
+    if (inspectedViewTrigger) {
+        return inspectedViewTrigger;
+    }
     const inspectedTarget = toFeedbackHoverSnapshot(getFeedbackTargetElement(report));
     if (inspectedTarget) {
         return inspectedTarget;

@@ -1,4 +1,4 @@
-import { escapeAttribute } from "@/utils/shared/dom.js";
+import { escapeAttribute, isFeedbackTargetVisible } from "@/utils/shared/dom.js";
 import { getPageWindow, isHtmlElement, queryPageSelector, queryPageSelectorAll } from "@/utils/overlay/pageDocumentBridge.js";
 import { waitForTargetRevealResync } from "./locateFeedback.js";
 
@@ -34,6 +34,27 @@ function isTriggerEnabled(element: HTMLElement) {
     return element.getAttribute("aria-disabled") !== "true" && !("disabled" in element && element.disabled === true);
 }
 
+export function getFeedbackViewTrigger(viewPath: string[] | undefined, options: { visibleOnly?: boolean } = {}) {
+    for (const viewKey of viewPath ?? []) {
+        const view = queryPageSelector(getAttributeSelector(VIEW_ATTRIBUTE, viewKey));
+
+        if (isHtmlElement(view) && isViewOpen(view)) {
+            continue;
+        }
+
+        const triggers = queryPageSelectorAll(getAttributeSelector(OPEN_ATTRIBUTE, viewKey)).filter(
+            (element): element is HTMLElement => isHtmlElement(element) && isTriggerEnabled(element),
+        );
+        const trigger = triggers.find(isFeedbackTargetVisible) ?? (options.visibleOnly ? null : triggers[0]);
+
+        if (trigger) {
+            return { element: trigger, viewKey };
+        }
+    }
+
+    return null;
+}
+
 export function getFeedbackViewPath(element: HTMLElement | null) {
     const viewPath: string[] = [];
     let current = element;
@@ -61,9 +82,7 @@ export async function restoreFeedbackViews(viewPath: string[] | undefined) {
             continue;
         }
 
-        const trigger = queryPageSelectorAll(getAttributeSelector(OPEN_ATTRIBUTE, viewKey)).find(
-            (element): element is HTMLElement => isHtmlElement(element) && isTriggerEnabled(element),
-        );
+        const trigger = getFeedbackViewTrigger([viewKey])?.element;
 
         if (!isHtmlElement(trigger)) {
             continue;

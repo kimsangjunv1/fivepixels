@@ -9,6 +9,7 @@ export type MarkerPosition = {
 };
 export declare function clampRatio(value: number): number;
 export declare function getMarkerFromReport(report: ReportFeedback, currentScrollY: number): Marker;
+export declare function aggregateViewTriggerMarkers(markers: Marker[]): Marker[];
 export declare function getDraftMarkerPosition(draft: Pick<DraftReport, "clientX" | "clientY" | "elementXRatio" | "elementYRatio" | "targetSelector">, selectedTarget: TargetSnapshot | null): MarkerPosition;
 export declare function resolveMarkerOverflowHints(markers: Marker[]): MarkerOverflowHint[];
 export declare function resolveTooltipAnchor(markers: Marker[], reportId: string | null): Marker | null;
