@@ -1,4 +1,3 @@
-import type { LoginMethod } from "@/constants/loginMethod.js";
 import type { ReportMessages } from "@/i18n/types.js";
 import {
     PANEL_GATE_BACK_BUTTON_CLASS,
@@ -60,61 +59,6 @@ function StepFooter({
                 </button>
             ) : null}
         </div>
-    );
-}
-
-const LOGIN_METHOD_OPTIONS: readonly LoginMethod[] = ["local", "api", "artemis"];
-
-export function LoginMethodStep({
-    copy,
-    value,
-    onChange,
-    onBack,
-    onNext,
-}: {
-    copy: OnboardingCopy;
-    value: LoginMethod;
-    onChange: (method: LoginMethod) => void;
-    onBack: () => void;
-    onNext: () => void;
-}) {
-    const details: Record<LoginMethod, { title: string; description: string }> = {
-        local: { title: copy.loginMethodLocal, description: copy.loginMethodLocalDescription },
-        api: { title: copy.loginMethodApi, description: copy.loginMethodApiDescription },
-        artemis: { title: copy.loginMethodArtemis, description: copy.loginMethodArtemisDescription },
-    };
-
-    return (
-        <>
-            <div>
-                <h6 className={PANEL_GATE_TITLE_CLASS}>{copy.loginMethodStepTitle}</h6>
-                <p className={PANEL_GATE_DESCRIPTION_CLASS}>{copy.loginMethodStepDescription}</p>
-            </div>
-            <div className="flex flex-col gap-[8px]">
-                {LOGIN_METHOD_OPTIONS.map((method) => {
-                    const selected = method === value;
-
-                    return (
-                        <button
-                            key={method}
-                            type="button"
-                            onClick={() => onChange(method)}
-                            className={`rounded-[8px] border px-[12px] py-[10px] text-left ${
-                                selected
-                                    ? "border-[var(--adaptive-blue400)] bg-[var(--adaptive-blue100)]"
-                                    : "border-[var(--adaptive-black200)] hover:bg-[var(--adaptive-black100)]"
-                            }`}
-                        >
-                            <span className={`block text-[12px] font-semibold ${selected ? "text-[var(--adaptive-blue500)]" : "text-[var(--adaptive-black700)]"}`}>
-                                {details[method].title}
-                            </span>
-                            <span className="mt-[2px] block text-[11px] leading-[1.4] text-[var(--adaptive-black500)]">{details[method].description}</span>
-                        </button>
-                    );
-                })}
-            </div>
-            <StepFooter backLabel={copy.back} onBack={onBack} nextLabel={copy.next} onNext={onNext} />
-        </>
     );
 }
 

@@ -163,6 +163,7 @@
 |------|------|
 | **작성자** | `team.user` — `{ id, name }` |
 | **리뷰어 목록** | `team.reviewers` — 공개키 포함 가능 |
+| **동기화 모드** | `sync` — `local`(기본, localStorage) / `api` / `artemis` |
 | **개인 키** | ECDSA P-256 기반 개인키 생성·보관·회전 |
 | **서명 인증** | `feedback:create/update`, `reply:create` 액션 서명·검증 |
 | **리뷰어 키 필수** | `requireReviewerKey` 옵션 |

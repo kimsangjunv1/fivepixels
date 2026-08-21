@@ -1,5 +1,4 @@
-"use client";
-
+import type { FivePixelsSync } from "@/constants/loginMethod.js";
 import { getDefaultFields } from "@/i18n/index.js";
 import type { DeepPartialReportMessages, ReportLocale } from "@/i18n/types.js";
 import { useReportState } from "@/hooks/report/useReportState.js";
@@ -45,6 +44,7 @@ type ReportProviderEnabledProps = Omit<ReportProviderProps, "project" | "ui" | "
     locale: ReportLocale;
     messageOverrides?: DeepPartialReportMessages;
     pixelsMode: FivePixelsMode;
+    sync: FivePixelsSync;
 };
 
 function ReportProviderEnabled({
@@ -89,6 +89,7 @@ function ReportProviderEnabled({
     locale,
     messageOverrides,
     pixelsMode,
+    sync,
     children,
 }: ReportProviderEnabledProps) {
     const value = useReportState({
@@ -105,6 +106,7 @@ function ReportProviderEnabled({
         shortcut,
         identify,
         pixelsMode,
+        sync,
         onList,
         onListAll,
         onPanelBootstrap,
@@ -153,6 +155,7 @@ export function ReportProvider({
     visibility,
     team,
     mode = "default",
+    sync = "local",
     fields,
     onList,
     onListAll,
@@ -232,6 +235,7 @@ export function ReportProvider({
             locale={resolvedUi.locale}
             messageOverrides={ui?.messages}
             pixelsMode={mode}
+            sync={sync}
         >
             {children}
         </ReportProviderEnabled>

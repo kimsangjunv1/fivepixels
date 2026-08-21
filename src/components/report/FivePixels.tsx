@@ -16,6 +16,7 @@ export function FivePixels({
     visibility,
     team,
     mode = "default",
+    sync = "local",
     fields = DEFAULT_FIELDS,
     onList,
     onListAll,
@@ -59,6 +60,7 @@ export function FivePixels({
             visibility={visibility}
             team={team}
             mode={mode}
+            sync={sync}
             fields={fields}
             onList={onList}
             onListAll={onListAll}

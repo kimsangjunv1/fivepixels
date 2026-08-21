@@ -1,4 +1,4 @@
 import type { FivePixelsProps } from "../../types/publicApi.js";
 export type { FivePixelsProps } from "../../types/publicApi.js";
-export declare function FivePixels({ project, ui, visibility, team, mode, fields, onList, onListAll, onPanelBootstrap, onActivitySummary, onListReplies, onNavigate, onRevealTarget, onCreate, onCreateReply, onUpdate, onDelete, onListReviewers, onListReviewerRequests, onCreateReviewerRequest, onResolveReviewerRequest, onRegisterReviewer, onUpdateReviewer, onApiLogin, onApiRegister, onArtemisLogin, onEvent, onReply, github, }: FivePixelsProps): import("react").JSX.Element | null;
+export declare function FivePixels({ project, ui, visibility, team, mode, sync, fields, onList, onListAll, onPanelBootstrap, onActivitySummary, onListReplies, onNavigate, onRevealTarget, onCreate, onCreateReply, onUpdate, onDelete, onListReviewers, onListReviewerRequests, onCreateReviewerRequest, onResolveReviewerRequest, onRegisterReviewer, onUpdateReviewer, onApiLogin, onApiRegister, onArtemisLogin, onEvent, onReply, github, }: FivePixelsProps): import("react").JSX.Element | null;
 //# sourceMappingURL=FivePixels.d.ts.map

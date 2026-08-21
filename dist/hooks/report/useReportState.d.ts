@@ -1,6 +1,7 @@
 import type { DeepPartialReportMessages } from "../../i18n/types.js";
 import type { ReportLocale } from "../../i18n/types.js";
 import { type PanelView } from "./useReportAuthSession.js";
+import type { FivePixelsSync } from "../../constants/loginMethod.js";
 import type { CreateReportFeedbackPayload, CreateReplyPayload, ReportAppearance, ReportAuthor, ReportActivitySummaryParams, ReportActivitySummaryResult, ReportEvent, ReportFeedback, ReportField, ReportGitHubConfig, FivePixelsMode, ReportIdentify, ReportListAllParams, ReportListAllResult, ReportPanelBootstrapParams, ReportPanelBootstrapResult, ReportReply, QuestionThreadDisplay, ReportTeamHandlers, ReportAuthHandlers, UpdateReportFeedbackPayload } from "../../types/report.js";
 export type { PanelView };
 export type ReportStateConfig = {
@@ -50,9 +51,10 @@ export type ReportStateConfig = {
     initialLocale: ReportLocale;
     messageOverrides?: DeepPartialReportMessages;
     pixelsMode?: FivePixelsMode;
+    sync?: FivePixelsSync;
     replyHistory: import("../../utils/report/reportUi.js").ResolvedReplyHistoryConfig;
 };
-export declare function useReportState({ projectId, environment, appVersion, panelAppearance, tooltipAppearance, questionThreadDefault, fields, authors, requireReviewerKey, shortcut: _shortcut, identify, onList, onListAll, onPanelBootstrap, onActivitySummary, onListReplies, onNavigate, onRevealTarget, onCreate, onCreateReply, onUpdate, onDelete, onListReviewers, onListReviewerRequests, onCreateReviewerRequest, onResolveReviewerRequest, onRegisterReviewer, onUpdateReviewer, onApiLogin, onApiRegister, onArtemisLogin, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys, initialLocale, messageOverrides, pixelsMode, replyHistory, }: ReportStateConfig): {
+export declare function useReportState({ projectId, environment, appVersion, panelAppearance, tooltipAppearance, questionThreadDefault, fields, authors, requireReviewerKey, shortcut: _shortcut, identify, onList, onListAll, onPanelBootstrap, onActivitySummary, onListReplies, onNavigate, onRevealTarget, onCreate, onCreateReply, onUpdate, onDelete, onListReviewers, onListReviewerRequests, onCreateReviewerRequest, onResolveReviewerRequest, onRegisterReviewer, onUpdateReviewer, onApiLogin, onApiRegister, onArtemisLogin, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys, initialLocale, messageOverrides, pixelsMode, sync, replyHistory, }: ReportStateConfig): {
     panelAppearance: ReportAppearance;
     setPanelAppearance: (nextAppearance: ReportAppearance) => void;
     tooltipAppearance: ReportAppearance;
@@ -94,8 +96,7 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     authDiagnostics: import("./useReportAuthSession.js").AuthDiagnostics;
     authorSelectionLocked: boolean;
     panelView: PanelView;
-    loginMethod: "local" | "api" | "artemis" | null;
-    selectLoginMethod: (method: import("../../index.js").LoginMethod) => void;
+    loginMethod: "local" | "api" | "artemis";
     loginWithApi: (payload: import("../../types/report.js").ReportApiLoginPayload) => Promise<import("../../types/report.js").ReportAuthUser>;
     registerWithApi: (payload: import("../../types/report.js").ReportApiRegisterPayload) => Promise<void>;
     loginWithArtemis: () => Promise<import("../../types/report.js").ReportAuthUser>;

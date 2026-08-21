@@ -50,8 +50,7 @@ declare const ReportContext: Context<{
     authDiagnostics: import("../hooks/report/useReportAuthSession.js").AuthDiagnostics;
     authorSelectionLocked: boolean;
     panelView: import("../hooks/report/useReportState.js").PanelView;
-    loginMethod: "local" | "api" | "artemis" | null;
-    selectLoginMethod: (method: import("../index.js").LoginMethod) => void;
+    loginMethod: "local" | "api" | "artemis";
     loginWithApi: (payload: import("../index.js").ReportApiLoginPayload) => Promise<import("../index.js").ReportAuthUser>;
     registerWithApi: (payload: import("../index.js").ReportApiRegisterPayload) => Promise<void>;
     loginWithArtemis: () => Promise<import("../index.js").ReportAuthUser>;
@@ -380,8 +379,7 @@ export declare function useReport(): {
     authDiagnostics: import("../hooks/report/useReportAuthSession.js").AuthDiagnostics;
     authorSelectionLocked: boolean;
     panelView: import("../hooks/report/useReportState.js").PanelView;
-    loginMethod: "local" | "api" | "artemis" | null;
-    selectLoginMethod: (method: import("../index.js").LoginMethod) => void;
+    loginMethod: "local" | "api" | "artemis";
     loginWithApi: (payload: import("../index.js").ReportApiLoginPayload) => Promise<import("../index.js").ReportAuthUser>;
     registerWithApi: (payload: import("../index.js").ReportApiRegisterPayload) => Promise<void>;
     loginWithArtemis: () => Promise<import("../index.js").ReportAuthUser>;
@@ -713,8 +711,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         authDiagnostics: import("../hooks/report/useReportAuthSession.js").AuthDiagnostics;
         authorSelectionLocked: boolean;
         panelView: import("../hooks/report/useReportState.js").PanelView;
-        loginMethod: "local" | "api" | "artemis" | null;
-        selectLoginMethod: (method: import("../index.js").LoginMethod) => void;
+        loginMethod: "local" | "api" | "artemis";
         loginWithApi: (payload: import("../index.js").ReportApiLoginPayload) => Promise<import("../index.js").ReportAuthUser>;
         registerWithApi: (payload: import("../index.js").ReportApiRegisterPayload) => Promise<void>;
         loginWithArtemis: () => Promise<import("../index.js").ReportAuthUser>;
@@ -996,7 +993,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         handleCreateGitHubIssue: (report: import("../index.js").ReportFeedback) => Promise<void>;
         handleCreateSubmitWithGitHubIssue: () => Promise<void>;
         isDraftGitHubIssueSubmitting: boolean;
-    }, "personalKey" | "projectId" | "fields" | "personalKeyRequired" | "environment" | "questionThreadDisplay" | "setQuestionThreadDisplay" | "locale" | "setLocale" | "showMarkerTargetPreview" | "setShowMarkerTargetPreview" | "toggleMarkerTargetPreview" | "devicePreviewUiOpen" | "setDevicePreviewUiOpen" | "devicePreviewDeviceId" | "setDevicePreviewDeviceId" | "devicePreviewScale" | "setDevicePreviewScale" | "devicePreviewImageEnabled" | "setDevicePreviewImageEnabled" | "devicePreviewFitToViewport" | "setDevicePreviewFitToViewport" | "devicePreviewStatusBarEnabled" | "setDevicePreviewStatusBarEnabled" | "devicePreviewPreset" | "showHiddenDetachedMarkers" | "setShowHiddenDetachedMarkers" | "showModalDetachedMarkers" | "setShowModalDetachedMarkers" | "markerAppearance" | "setMarkerAppearance" | "setMarkerSize" | "setMarkerShape" | "setMarkerFillStyle" | "setMarkerColors" | "setMarkerColor" | "setFeedbackModeDotColors" | "setFeedbackModeDotColor" | "typography" | "setTypography" | "setFontSize" | "setFontFamily" | "panelRole" | "setPanelRole" | "persistenceStatus" | "appVersion" | "showFeedbackList" | "selfProfile" | "authors" | "publicKey" | "personalKeyCandidates" | "issuePersonalKey" | "rotatePersonalKey" | "insertPersonalKey" | "clearPersonalKey" | "authorSelectionLocked" | "messages" | "onListReviewers" | "onListReviewerRequests" | "onCreateReviewerRequest" | "onResolveReviewerRequest" | "onRegisterReviewer" | "onUpdateReviewer" | "visibleShortcutKeys" | "teamReviewers" | "panelAppearance" | "setPanelAppearance" | "tooltipAppearance" | "setTooltipAppearance" | "teamActor" | "teamActorRole" | "isTeamAdmin" | "canAccessTeamSettings" | "panelView" | "loginMethod" | "selectLoginMethod" | "loginWithApi" | "registerWithApi" | "loginWithArtemis" | "completeRemoteOnboarding" | "completeOnboarding" | "restoreFromBackup" | "skipOnboarding" | "resolvedPanelAppearance" | "resolvedTooltipAppearance" | "isMobileViewport" | "isPresentationMode" | "presentationViewers" | "visiblePanelTabs" | "visiblePanelTabsSummary" | "resolvedTabAvailabilityContext" | "setVisiblePanelTabs" | "resetVisibleTabsToRoleDefault" | "applyRoleDefaultTabsForOnboarding" | "savePanelTabPreference" | "storedPanelTabPreference">;
+    }, "personalKey" | "projectId" | "fields" | "personalKeyRequired" | "environment" | "questionThreadDisplay" | "setQuestionThreadDisplay" | "locale" | "setLocale" | "showMarkerTargetPreview" | "setShowMarkerTargetPreview" | "toggleMarkerTargetPreview" | "devicePreviewUiOpen" | "setDevicePreviewUiOpen" | "devicePreviewDeviceId" | "setDevicePreviewDeviceId" | "devicePreviewScale" | "setDevicePreviewScale" | "devicePreviewImageEnabled" | "setDevicePreviewImageEnabled" | "devicePreviewFitToViewport" | "setDevicePreviewFitToViewport" | "devicePreviewStatusBarEnabled" | "setDevicePreviewStatusBarEnabled" | "devicePreviewPreset" | "showHiddenDetachedMarkers" | "setShowHiddenDetachedMarkers" | "showModalDetachedMarkers" | "setShowModalDetachedMarkers" | "markerAppearance" | "setMarkerAppearance" | "setMarkerSize" | "setMarkerShape" | "setMarkerFillStyle" | "setMarkerColors" | "setMarkerColor" | "setFeedbackModeDotColors" | "setFeedbackModeDotColor" | "typography" | "setTypography" | "setFontSize" | "setFontFamily" | "panelRole" | "setPanelRole" | "persistenceStatus" | "appVersion" | "showFeedbackList" | "selfProfile" | "authors" | "publicKey" | "personalKeyCandidates" | "issuePersonalKey" | "rotatePersonalKey" | "insertPersonalKey" | "clearPersonalKey" | "authorSelectionLocked" | "messages" | "onListReviewers" | "onListReviewerRequests" | "onCreateReviewerRequest" | "onResolveReviewerRequest" | "onRegisterReviewer" | "onUpdateReviewer" | "visibleShortcutKeys" | "teamReviewers" | "panelAppearance" | "setPanelAppearance" | "tooltipAppearance" | "setTooltipAppearance" | "teamActor" | "teamActorRole" | "isTeamAdmin" | "canAccessTeamSettings" | "panelView" | "loginMethod" | "loginWithApi" | "registerWithApi" | "loginWithArtemis" | "completeRemoteOnboarding" | "completeOnboarding" | "restoreFromBackup" | "skipOnboarding" | "resolvedPanelAppearance" | "resolvedTooltipAppearance" | "isMobileViewport" | "isPresentationMode" | "presentationViewers" | "visiblePanelTabs" | "visiblePanelTabsSummary" | "resolvedTabAvailabilityContext" | "setVisiblePanelTabs" | "resetVisibleTabsToRoleDefault" | "applyRoleDefaultTabsForOnboarding" | "savePanelTabPreference" | "storedPanelTabPreference">;
     session: Pick<{
         panelAppearance: import("../index.js").ReportAppearance;
         setPanelAppearance: (nextAppearance: import("../index.js").ReportAppearance) => void;
@@ -1039,8 +1036,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         authDiagnostics: import("../hooks/report/useReportAuthSession.js").AuthDiagnostics;
         authorSelectionLocked: boolean;
         panelView: import("../hooks/report/useReportState.js").PanelView;
-        loginMethod: "local" | "api" | "artemis" | null;
-        selectLoginMethod: (method: import("../index.js").LoginMethod) => void;
+        loginMethod: "local" | "api" | "artemis";
         loginWithApi: (payload: import("../index.js").ReportApiLoginPayload) => Promise<import("../index.js").ReportAuthUser>;
         registerWithApi: (payload: import("../index.js").ReportApiRegisterPayload) => Promise<void>;
         loginWithArtemis: () => Promise<import("../index.js").ReportAuthUser>;
@@ -1365,8 +1361,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         authDiagnostics: import("../hooks/report/useReportAuthSession.js").AuthDiagnostics;
         authorSelectionLocked: boolean;
         panelView: import("../hooks/report/useReportState.js").PanelView;
-        loginMethod: "local" | "api" | "artemis" | null;
-        selectLoginMethod: (method: import("../index.js").LoginMethod) => void;
+        loginMethod: "local" | "api" | "artemis";
         loginWithApi: (payload: import("../index.js").ReportApiLoginPayload) => Promise<import("../index.js").ReportAuthUser>;
         registerWithApi: (payload: import("../index.js").ReportApiRegisterPayload) => Promise<void>;
         loginWithArtemis: () => Promise<import("../index.js").ReportAuthUser>;

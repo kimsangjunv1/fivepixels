@@ -6,20 +6,6 @@ function OnboardingField({ label, value, onChange, type = "text", autoFocus }) {
 function StepFooter({ backLabel, onBack, nextLabel, onNext, nextDisabled, nextClassName = PANEL_GATE_PRIMARY_BUTTON_CLASS, }) {
     return (_jsxs("div", { className: `flex items-center ${onNext ? "justify-between" : "justify-start"}`, children: [_jsx("button", { type: "button", onClick: onBack, className: PANEL_GATE_BACK_BUTTON_CLASS, children: backLabel }), onNext && nextLabel ? (_jsx("button", { type: "button", disabled: nextDisabled, onClick: onNext, className: nextClassName, children: nextLabel })) : null] }));
 }
-const LOGIN_METHOD_OPTIONS = ["local", "api", "artemis"];
-export function LoginMethodStep({ copy, value, onChange, onBack, onNext, }) {
-    const details = {
-        local: { title: copy.loginMethodLocal, description: copy.loginMethodLocalDescription },
-        api: { title: copy.loginMethodApi, description: copy.loginMethodApiDescription },
-        artemis: { title: copy.loginMethodArtemis, description: copy.loginMethodArtemisDescription },
-    };
-    return (_jsxs(_Fragment, { children: [_jsxs("div", { children: [_jsx("h6", { className: PANEL_GATE_TITLE_CLASS, children: copy.loginMethodStepTitle }), _jsx("p", { className: PANEL_GATE_DESCRIPTION_CLASS, children: copy.loginMethodStepDescription })] }), _jsx("div", { className: "flex flex-col gap-[8px]", children: LOGIN_METHOD_OPTIONS.map((method) => {
-                    const selected = method === value;
-                    return (_jsxs("button", { type: "button", onClick: () => onChange(method), className: `rounded-[8px] border px-[12px] py-[10px] text-left ${selected
-                            ? "border-[var(--adaptive-blue400)] bg-[var(--adaptive-blue100)]"
-                            : "border-[var(--adaptive-black200)] hover:bg-[var(--adaptive-black100)]"}`, children: [_jsx("span", { className: `block text-[12px] font-semibold ${selected ? "text-[var(--adaptive-blue500)]" : "text-[var(--adaptive-black700)]"}`, children: details[method].title }), _jsx("span", { className: "mt-[2px] block text-[11px] leading-[1.4] text-[var(--adaptive-black500)]", children: details[method].description })] }, method));
-                }) }), _jsx(StepFooter, { backLabel: copy.back, onBack: onBack, nextLabel: copy.next, onNext: onNext })] }));
-}
 export function ApiLoginStep({ copy, loginId, password, error, busy, onLoginIdChange, onPasswordChange, onLogin, onSignUp, onBack, }) {
     return (_jsxs(_Fragment, { children: [_jsxs("div", { children: [_jsx("h6", { className: PANEL_GATE_TITLE_CLASS, children: copy.apiLoginTitle }), _jsx("p", { className: PANEL_GATE_DESCRIPTION_CLASS, children: copy.apiLoginDescription })] }), _jsxs("div", { className: "flex flex-col gap-[8px]", children: [_jsx(OnboardingField, { autoFocus: true, label: copy.loginIdLabel, value: loginId, onChange: onLoginIdChange }), _jsx(OnboardingField, { label: copy.passwordLabel, value: password, onChange: onPasswordChange, type: "password" })] }), error ? _jsx("p", { className: "text-[12px] text-rose-700", children: error }) : null, _jsxs("div", { className: "flex flex-col gap-[8px]", children: [_jsx("button", { type: "button", disabled: !loginId.trim() || !password || busy, onClick: onLogin, className: `${PANEL_GATE_PRIMARY_BUTTON_CLASS} py-[10px]`, children: copy.loginAction }), _jsx("button", { type: "button", disabled: busy, onClick: onSignUp, className: "rounded-[8px] border border-[var(--adaptive-black200)] px-[12px] py-[10px] text-[12px] font-semibold text-[var(--adaptive-black700)] hover:bg-[var(--adaptive-black100)]", children: copy.signUpAction })] }), _jsx(StepFooter, { backLabel: copy.back, onBack: onBack })] }));
 }

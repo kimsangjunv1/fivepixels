@@ -125,7 +125,6 @@ export function assembleReportContextValue({
         authorSelectionLocked: auth.authorSelectionLocked,
         panelView: auth.panelView,
         loginMethod: auth.loginMethod,
-        selectLoginMethod: auth.selectLoginMethod,
         loginWithApi: auth.loginWithApi,
         registerWithApi: auth.registerWithApi,
         loginWithArtemis: auth.loginWithArtemis,

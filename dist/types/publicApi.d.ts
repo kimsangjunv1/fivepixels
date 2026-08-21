@@ -1,3 +1,4 @@
+import type { FivePixelsSync } from "../constants/loginMethod.js";
 import type { FivePixelsMode, ReportFeedback, ReportField, ReportGitHubConfig, ReportAuthHandlers, ReportPersistenceHandlers, ReportProject, ReportTeam, ReportTeamHandlers, ReportUi, ReportVisibility } from "./report.js";
 import type { ReportSideEffectCallbacks } from "../utils/report/reportCallbacks.js";
 /**
@@ -14,6 +15,13 @@ export type FivePixelsProps = {
     visibility?: ReportVisibility;
     team?: ReportTeam;
     mode?: FivePixelsMode;
+    /**
+     * Auth / identity sync strategy for the panel.
+     * - `local` (default): localStorage + personal key flow
+     * - `api`: company API login handlers (`onApiLogin` / `onApiRegister`)
+     * - `artemis`: Artemis Google login (`onArtemisLogin`)
+     */
+    sync?: FivePixelsSync;
     fields?: ReportField[];
     /** Navigate in view mode when locating feedback on another route. */
     onNavigate?: (pathname: string) => void | Promise<void>;

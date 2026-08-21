@@ -9,6 +9,7 @@ import { useReportMutations } from "./useReportMutations.js";
 import { useReportPanelShell, type ReportPanelShellBridges } from "./useReportPanelShell.js";
 import { useReportReplyReview } from "./useReportReplyReview.js";
 import { assembleReportContextValue } from "./assembleReportContextValue.js";
+import type { FivePixelsSync } from "@/constants/loginMethod.js";
 import type {
     CreateReportFeedbackPayload,
     CreateReplyPayload,
@@ -79,6 +80,7 @@ export type ReportStateConfig = {
     initialLocale: ReportLocale;
     messageOverrides?: DeepPartialReportMessages;
     pixelsMode?: FivePixelsMode;
+    sync?: FivePixelsSync;
     replyHistory: import("@/utils/report/reportUi.js").ResolvedReplyHistoryConfig;
 };
 
@@ -123,6 +125,7 @@ export function useReportState({
     initialLocale,
     messageOverrides,
     pixelsMode = "default",
+    sync = "local",
     replyHistory,
 }: ReportStateConfig) {
     const overlayRef = useRef<HTMLDivElement | null>(null);
@@ -143,6 +146,7 @@ export function useReportState({
         identify,
         requireReviewerKey,
         pixelsMode,
+        sync,
         onApiLogin,
         onApiRegister,
         onArtemisLogin,

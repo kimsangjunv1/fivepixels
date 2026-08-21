@@ -367,14 +367,6 @@ export type ReportMessages = {
     onboarding: {
         languageStepTitle: string;
         languageStepDescription: string;
-        loginMethodStepTitle: string;
-        loginMethodStepDescription: string;
-        loginMethodLocal: string;
-        loginMethodLocalDescription: string;
-        loginMethodApi: string;
-        loginMethodApiDescription: string;
-        loginMethodArtemis: string;
-        loginMethodArtemisDescription: string;
         apiLoginTitle: string;
         apiLoginDescription: string;
         loginIdLabel: string;
