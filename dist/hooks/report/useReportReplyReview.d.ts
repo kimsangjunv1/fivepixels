@@ -29,9 +29,18 @@ export declare function useReportReplyReview({ reports, allPageReports, messages
     focusedCaseId: string | null;
     selectCase: (caseId: string) => void;
     clearFocusedCase: () => void;
+    isComposingNewCase: boolean;
+    beginComposeNewCase: () => void;
+    cancelComposeNewCase: () => void;
     openReplyComposer: (report: ReportFeedback) => void;
     closeReplyComposer: () => void;
+    restoreOpenReplyWindows: (snapshot: {
+        openIds: string[];
+        minimizedIds: string[];
+        focusedId: string | null;
+    }, preferredFocusId?: string | null, focusReport?: ReportFeedback | null) => void;
     handleReplySubmit: () => Promise<void>;
+    handleCreateCaseSubmit: () => Promise<void>;
     beginCaseEdit: (report: ReportFeedback) => void;
     cancelCaseEdit: () => void;
     handleCaseEditSave: () => Promise<void>;
@@ -48,6 +57,7 @@ export declare function useReportReplyReview({ reports, allPageReports, messages
     openReplyReports: ReportFeedback[];
     minimizedReplyReportIds: string[];
     setReplyWindowMinimized: (reportId: string, minimized: boolean) => void;
+    reorderMinimizedReplyWindow: (reportId: string, toIndex: number) => void;
     focusReplyWindow: (reportId: string) => void;
     closeReplyWindow: (reportId: string) => void;
     activeReplyReport: ReportFeedback | null;

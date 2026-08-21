@@ -50,6 +50,9 @@ export declare function DeleteIcon({ className, fill }: {
 export declare function RevertIcon({ className, fill }: {
     className?: string;
 } & Pick<MaterialIconProps, "fill">): import("react").JSX.Element;
+export declare function ArrowReturnRightIcon({ className, fill }: {
+    className?: string;
+} & Pick<MaterialIconProps, "fill">): import("react").JSX.Element;
 export declare function AskActionIcon({ className, fill }: {
     className?: string;
 } & Pick<MaterialIconProps, "fill">): import("react").JSX.Element;

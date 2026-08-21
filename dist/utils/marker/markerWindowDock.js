@@ -16,4 +16,25 @@ export function resolveMinimizedDockPosition(index, count, viewportWidth, viewpo
         top: Math.max(margin, viewportHeight - margin - itemHeight),
     };
 }
+/** Resolve the dock slot index under a horizontal center point (Mac Dock–style). */
+export function resolveMinimizedDockIndexFromPointer(centerX, count, viewportWidth, itemWidth = MARKER_MINIMIZED_WINDOW_WIDTH, gap = MARKER_MINIMIZED_DOCK_GAP) {
+    const safeCount = Math.max(1, count);
+    if (safeCount <= 1) {
+        return 0;
+    }
+    const totalWidth = safeCount * itemWidth + (safeCount - 1) * gap;
+    const startLeft = (viewportWidth - totalWidth) / 2;
+    const slotWidth = itemWidth + gap;
+    const index = Math.round((centerX - startLeft - itemWidth / 2) / slotWidth);
+    return Math.max(0, Math.min(safeCount - 1, index));
+}
+export function moveMinimizedDockItem(items, fromIndex, toIndex) {
+    if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0 || fromIndex >= items.length || toIndex >= items.length) {
+        return items;
+    }
+    const next = [...items];
+    const [item] = next.splice(fromIndex, 1);
+    next.splice(toIndex, 0, item);
+    return next;
+}
 //# sourceMappingURL=markerWindowDock.js.map

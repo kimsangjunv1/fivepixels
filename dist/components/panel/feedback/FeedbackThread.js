@@ -19,6 +19,7 @@ import { ThreadAuthorMeta } from "./ThreadAuthorMeta.js";
 import { ThreadTimelineRow } from "./ThreadTimelineRow.js";
 import { CaseThreadEntryActions, ThreadEntryActions, THREAD_ACTION_ENTRY_SURFACE_CLASS, THREAD_CASE_ENTRY_SURFACE_CLASS } from "./ThreadEntryActions.js";
 import { MentionMessage } from "./MentionMessage.js";
+import { getFeedbackTargetElement } from "../../../utils/marker/locateFeedback.js";
 function getScrollOverflowState(element) {
     const { scrollTop, scrollHeight, clientHeight } = element;
     const hasOverflow = scrollHeight > clientHeight + 1;
@@ -37,6 +38,11 @@ function ThreadStartedDivider({ createdAt }) {
     const { locale } = useReportPreferences();
     const dateColor = "var(--adaptive-black500)";
     return (_jsx(ThreadTimelineRow, { children: _jsxs("div", { className: "flex items-center gap-[8px]", role: "status", children: [_jsx("span", { "aria-hidden": true, className: "h-px flex-1 bg-[var(--adaptive-border-subtle)]" }), _jsx("span", { className: "inline-flex shrink-0 items-center gap-[6px]", children: _jsx("span", { className: "text-[13px] font-bold leading-none tabular-nums", style: { color: dateColor }, children: formatDateOnly(createdAt, locale) }) }), _jsx("span", { "aria-hidden": true, className: "h-px flex-1 bg-[var(--adaptive-border-subtle)]" })] }) }));
+}
+function ThreadDetachedTargetDivider() {
+    const { messages } = useReportPreferences();
+    const labelColor = "var(--adaptive-black500)";
+    return (_jsx(ThreadTimelineRow, { children: _jsxs("div", { className: "flex items-center gap-[8px]", role: "status", children: [_jsx("span", { "aria-hidden": true, className: "h-px flex-1 bg-[var(--adaptive-border-subtle)]" }), _jsx("span", { className: "inline-flex shrink-0 items-center gap-[6px]", children: _jsx("span", { className: "text-[13px] font-bold leading-none", style: { color: labelColor }, children: messages.thread.detachedTargetDivider }) }), _jsx("span", { "aria-hidden": true, className: "h-px flex-1 bg-[var(--adaptive-border-subtle)]" })] }) }));
 }
 function CaseThreadEntry({ report, caseId, caseText, caseMentions = [], caseCreatedAt, caseStatus, authors, actorName, pendingComposer, onStartAskQuestion, onClaimAssignee, isUpdating, isClaimingAssignee, isEditingCases = false, }) {
     const showPreClaimDiscussion = !isEditingCases && canShowCaseEntryActions(report, caseId);
@@ -78,6 +84,7 @@ export function FeedbackThread({ report, authors, pendingComposer, confirmAuthor
     const scrollRef = useRef(null);
     const loadingOlderRef = useRef(false);
     const [isAllCasesView, setIsAllCasesView] = useState(false);
+    const [isOriginalTargetMissing, setIsOriginalTargetMissing] = useState(() => !getFeedbackTargetElement(report));
     const [scrollOverflow, setScrollOverflow] = useState({
         canScrollUp: false,
         canScrollDown: false,
@@ -94,6 +101,14 @@ export function FeedbackThread({ report, authors, pendingComposer, confirmAuthor
     const systemBranches = useMemo(() => buildThreadTimeline(report).branches.filter((branch) => isGitIssuedSystemReply(branch.root, report)), [report, replies]);
     const showTimelineRail = Boolean((focusedCaseId && !isAllCasesView) || systemBranches.length > 0);
     const replyHistoryState = replyHistoryByReportId[report.id];
+    useEffect(() => {
+        const syncOriginalTarget = () => {
+            setIsOriginalTargetMissing(!getFeedbackTargetElement(report));
+        };
+        syncOriginalTarget();
+        const intervalId = window.setInterval(syncOriginalTarget, 500);
+        return () => window.clearInterval(intervalId);
+    }, [report]);
     useEffect(() => {
         void loadRepliesIfNeeded(report);
     }, [loadRepliesIfNeeded, report.id]);
@@ -170,6 +185,6 @@ export function FeedbackThread({ report, authors, pendingComposer, confirmAuthor
                                             composerTargetsGroup: pendingComposer?.type === "question" && pendingComposer.targetReplyId === ISSUE_ROOT_PARENT_ID,
                                         }) }), timeline.branches.map((branch) => (_jsxs("div", { className: "flex flex-col", children: [_jsx(ThreadRootReply, { reply: branch.root, report: report, caseId: focusedCaseId, authors: authors, pendingComposer: pendingComposer, confirmAuthorName: confirmAuthorName, showConfirmAuthorSelect: showConfirmAuthorSelect, originalAuthorName: originalAuthorName, issueUrl: issueUrl, onConfirmAuthorNameChange: onConfirmAuthorNameChange, onStartDeny: onStartDeny, onStartCheckout: onStartCheckout, onStartAskQuestion: onStartAskQuestion, onTransferAssignee: onTransferAssignee, onConfirm: onConfirm, isUpdating: isUpdating, isClaimingAssignee: isClaimingAssignee, actorName: actorName }), _jsx(QuestionThreadGroup, { questions: branch.children, authors: authors, originalAuthorName: originalAuthorName, actorName: actorName, forceExpanded: shouldForceExpandQuestionGroup(report, focusedCaseId, branch.children, {
                                                     composerTargetsGroup: pendingComposer?.type === "question" && pendingComposer.targetReplyId === branch.root.id,
-                                                }) })] }, branch.root.id)))] })) : (_jsx("p", { className: "px-[12px] py-[8px] text-[12px] text-[var(--adaptive-black500)]", children: messages.cases.selectToView })), systemBranches.map((branch) => (_jsx(ThreadRootReply, { reply: branch.root, report: report, caseId: focusedCaseId ?? "", authors: authors, pendingComposer: pendingComposer, confirmAuthorName: confirmAuthorName, showConfirmAuthorSelect: showConfirmAuthorSelect, originalAuthorName: originalAuthorName, issueUrl: issueUrl, onConfirmAuthorNameChange: onConfirmAuthorNameChange, onStartDeny: onStartDeny, onStartCheckout: onStartCheckout, onStartAskQuestion: onStartAskQuestion, onTransferAssignee: onTransferAssignee, onConfirm: onConfirm, isUpdating: isUpdating, isClaimingAssignee: isClaimingAssignee, actorName: actorName }, branch.root.id)))] })] })] }));
+                                                }) })] }, branch.root.id))), isOriginalTargetMissing ? _jsx(ThreadDetachedTargetDivider, {}) : null] })) : (_jsx("p", { className: "px-[12px] py-[8px] text-[12px] text-[var(--adaptive-black500)]", children: messages.cases.selectToView })), systemBranches.map((branch) => (_jsx(ThreadRootReply, { reply: branch.root, report: report, caseId: focusedCaseId ?? "", authors: authors, pendingComposer: pendingComposer, confirmAuthorName: confirmAuthorName, showConfirmAuthorSelect: showConfirmAuthorSelect, originalAuthorName: originalAuthorName, issueUrl: issueUrl, onConfirmAuthorNameChange: onConfirmAuthorNameChange, onStartDeny: onStartDeny, onStartCheckout: onStartCheckout, onStartAskQuestion: onStartAskQuestion, onTransferAssignee: onTransferAssignee, onConfirm: onConfirm, isUpdating: isUpdating, isClaimingAssignee: isClaimingAssignee, actorName: actorName }, branch.root.id)))] })] })] }));
 }
 //# sourceMappingURL=FeedbackThread.js.map

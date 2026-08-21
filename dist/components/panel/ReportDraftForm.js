@@ -14,15 +14,15 @@ import { CornerResizeHandle } from "../../components/ui/CornerResizeHandle.js";
 const TOOLTIP_SURFACE_CLASS = "rounded-[16px] shadow-[var(--adaptive-popup-shadow)] bg-[var(--adaptive-neutralTintOpacity900)] backdrop-blur-[5px]";
 const EXPANDED_TOOLTIP_ANCHOR_CLASS = "pointer-events-auto fixed z-[1000001]";
 export function ReportDraftForm() {
-    const { draft, fields, authors, isCreating, isUpdating, editingReportId, markers, selectedTarget, updateDraftCase, addDraftCase, removeDraftCase, updateDraftField, updateDraftCategory, handleCreateSubmit, handleCreateSubmitWithGitHubIssue, canCreateGitHubIssueOnCreate, isDraftGitHubIssueSubmitting, draftAuthorName, setDraftAuthorName, errorMessage, isPresentationMode, authorSelectionLocked, sessionActor, } = useReport();
+    const { draft, fields, authors, isCreating, isUpdating, editingReportId, mode, markers, selectedTarget, updateDraftCase, addDraftCase, removeDraftCase, updateDraftField, updateDraftCategory, handleCreateSubmit, handleCreateSubmitWithGitHubIssue, canCreateGitHubIssueOnCreate, isDraftGitHubIssueSubmitting, draftAuthorName, setDraftAuthorName, errorMessage, isPresentationMode, authorSelectionLocked, sessionActor, cancelDraft, } = useReport();
     if (!draft) {
         return null;
     }
     const isEditing = Boolean(editingReportId);
     const editingMarker = isEditing ? (markers.find((marker) => marker.report.id === editingReportId) ?? null) : null;
-    return (_jsx(ReportDraftFormContent, { draft: draft, fields: fields, authors: authors, isCreating: isCreating, isUpdating: isUpdating, isEditing: isEditing, editingMarker: editingMarker, selectedTarget: selectedTarget, updateDraftCase: updateDraftCase, addDraftCase: addDraftCase, removeDraftCase: removeDraftCase, updateDraftField: updateDraftField, updateDraftCategory: updateDraftCategory, handleCreateSubmit: handleCreateSubmit, handleCreateSubmitWithGitHubIssue: handleCreateSubmitWithGitHubIssue, canCreateGitHubIssueOnCreate: canCreateGitHubIssueOnCreate && !isEditing, isDraftGitHubIssueSubmitting: isDraftGitHubIssueSubmitting, draftAuthorName: draftAuthorName, setDraftAuthorName: setDraftAuthorName, errorMessage: errorMessage, isPresentationMode: isPresentationMode, authorSelectionLocked: authorSelectionLocked, sessionActor: sessionActor }));
+    return (_jsx(ReportDraftFormContent, { draft: draft, fields: fields, authors: authors, isCreating: isCreating, isUpdating: isUpdating, isEditing: isEditing, mode: mode, editingMarker: editingMarker, selectedTarget: selectedTarget, updateDraftCase: updateDraftCase, addDraftCase: addDraftCase, removeDraftCase: removeDraftCase, updateDraftField: updateDraftField, updateDraftCategory: updateDraftCategory, handleCreateSubmit: handleCreateSubmit, handleCreateSubmitWithGitHubIssue: handleCreateSubmitWithGitHubIssue, canCreateGitHubIssueOnCreate: canCreateGitHubIssueOnCreate && !isEditing, isDraftGitHubIssueSubmitting: isDraftGitHubIssueSubmitting, draftAuthorName: draftAuthorName, setDraftAuthorName: setDraftAuthorName, errorMessage: errorMessage, isPresentationMode: isPresentationMode, authorSelectionLocked: authorSelectionLocked, sessionActor: sessionActor, cancelDraft: cancelDraft }));
 }
-function ReportDraftFormContent({ draft, fields, authors, isCreating, isUpdating, isEditing, editingMarker, selectedTarget, updateDraftCase, addDraftCase, removeDraftCase, updateDraftField, updateDraftCategory, handleCreateSubmit, handleCreateSubmitWithGitHubIssue, canCreateGitHubIssueOnCreate, isDraftGitHubIssueSubmitting, draftAuthorName, setDraftAuthorName, errorMessage, isPresentationMode, authorSelectionLocked, sessionActor, }) {
+function ReportDraftFormContent({ draft, fields, authors, isCreating, isUpdating, isEditing, mode, editingMarker, selectedTarget, updateDraftCase, addDraftCase, removeDraftCase, updateDraftField, updateDraftCategory, handleCreateSubmit, handleCreateSubmitWithGitHubIssue, canCreateGitHubIssueOnCreate, isDraftGitHubIssueSubmitting, draftAuthorName, setDraftAuthorName, errorMessage, isPresentationMode, authorSelectionLocked, sessionActor, cancelDraft, }) {
     const { messages } = useReportPreferences();
     const tooltipSurfaceRef = useRef(null);
     const [footerWarningMessage, setFooterWarningMessage] = useState(null);
@@ -61,6 +61,29 @@ function ReportDraftFormContent({ draft, fields, authors, isCreating, isUpdating
         }
         setActiveCaseId(draft.cases[draft.cases.length - 1]?.id ?? draft.cases[0]?.id ?? null);
     }, [activeCaseId, draft.cases]);
+    useEffect(() => {
+        // Report-mode create uses the overlay click path to re-target; only dismiss in view/edit flows.
+        if (mode === "report") {
+            return;
+        }
+        const handlePointerDown = (event) => {
+            const path = event.composedPath();
+            const isInsideDraft = path.some((node) => node instanceof Element && node.hasAttribute("data-fivepixels-draft-form"));
+            if (isInsideDraft) {
+                return;
+            }
+            // Marker activation clears the draft itself before opening a window.
+            const isMarker = path.some((node) => node instanceof Element && node.hasAttribute("data-marker-report-id"));
+            if (isMarker) {
+                return;
+            }
+            cancelDraft();
+        };
+        document.addEventListener("pointerdown", handlePointerDown, true);
+        return () => {
+            document.removeEventListener("pointerdown", handlePointerDown, true);
+        };
+    }, [cancelDraft, mode]);
     const handleRemoveCase = (caseId) => {
         const removeIndex = draft.cases.findIndex((item) => item.id === caseId);
         if (removeIndex < 0) {
@@ -103,7 +126,7 @@ function ReportDraftFormContent({ draft, fields, authors, isCreating, isUpdating
     if (!tooltipPosition || !tooltipAnchorStyle) {
         return null;
     }
-    return (_jsxs(_Fragment, { children: [isResizing ? _jsx(CornerResizeGhost, { ghostRef: ghostRef }) : null, _jsxs("div", { ref: setTooltipElement, "data-fivepixels-interactive": "", onClick: (event) => event.stopPropagation(), className: `${EXPANDED_TOOLTIP_ANCHOR_CLASS} flex flex-col gap-[4px]`, style: {
+    return (_jsxs(_Fragment, { children: [isResizing ? _jsx(CornerResizeGhost, { ghostRef: ghostRef }) : null, _jsxs("div", { ref: setTooltipElement, "data-fivepixels-interactive": "", "data-fivepixels-draft-form": "", onClick: (event) => event.stopPropagation(), className: `${EXPANDED_TOOLTIP_ANCHOR_CLASS} flex flex-col gap-[4px]`, style: {
                     left: tooltipPosition.left,
                     top: tooltipPosition.top,
                     width: tooltipPosition.width,

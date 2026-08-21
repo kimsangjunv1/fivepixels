@@ -14,9 +14,8 @@ export type UseReportMutationsParams = {
     selectedReport: ReportFeedback | null;
     selectedReportId: string | null;
     setSelectedReportId: Dispatch<SetStateAction<string | null>>;
-    getActiveReplyReportId: () => string | null;
-    closeReplyComposer: () => void;
-    openReplyComposer: (report: ReportFeedback) => void;
+    closeReplyWindow: (id: string) => void;
+    restoreSuspendedOpenReplyWindows: (focusReport?: ReportFeedback | null) => void;
     isCreating: boolean;
     createFeedback: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
     updateFeedback: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
@@ -30,7 +29,7 @@ export type UseReportMutationsParams = {
     buildCreatePayloadFromDraft: () => CreateReportFeedbackPayload | null;
     finalizeDraftCreate: () => void;
 };
-export declare function useReportMutations({ messages, fields, github, eventCallbacks, reports, sessionActor, selectedReport, selectedReportId, setSelectedReportId, getActiveReplyReportId, closeReplyComposer, openReplyComposer, isCreating, createFeedback, updateFeedback, deleteFeedback, createReply, usesCreateReply, signCreatePayload, signUpdatePayload, signReplyPayload, setErrorMessage, buildCreatePayloadFromDraft, finalizeDraftCreate, }: UseReportMutationsParams): {
+export declare function useReportMutations({ messages, fields, github, eventCallbacks, reports, sessionActor, selectedReport, selectedReportId, setSelectedReportId, closeReplyWindow, restoreSuspendedOpenReplyWindows, isCreating, createFeedback, updateFeedback, deleteFeedback, createReply, usesCreateReply, signCreatePayload, signUpdatePayload, signReplyPayload, setErrorMessage, buildCreatePayloadFromDraft, finalizeDraftCreate, }: UseReportMutationsParams): {
     editingReportId: string | null;
     setEditingReportId: Dispatch<SetStateAction<string | null>>;
     editableDraft: EditableDraft | null;

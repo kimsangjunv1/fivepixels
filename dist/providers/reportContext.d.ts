@@ -224,6 +224,7 @@ declare const ReportContext: Context<{
     openReplyReports: import("../index.js").ReportFeedback[];
     minimizedReplyReportIds: string[];
     setReplyWindowMinimized: (reportId: string, minimized: boolean) => void;
+    reorderMinimizedReplyWindow: (reportId: string, toIndex: number) => void;
     focusReplyWindow: (reportId: string) => void;
     closeReplyWindow: (reportId: string) => void;
     tooltipReport: import("../index.js").ReportFeedback | null;
@@ -270,6 +271,9 @@ declare const ReportContext: Context<{
     removePersistedCase: (report: import("../index.js").ReportFeedback, caseId: string) => Promise<void>;
     focusedCaseId: string | null;
     selectCase: (caseId: string) => void;
+    isComposingNewCase: boolean;
+    beginComposeNewCase: () => void;
+    cancelComposeNewCase: () => void;
     clearFocusedCase: () => void;
     isCaseEditing: boolean;
     caseEditReportId: string | null;
@@ -321,6 +325,7 @@ declare const ReportContext: Context<{
     stopEditing: () => void;
     handleUpdateSubmit: () => Promise<void>;
     handleReplySubmit: () => Promise<void>;
+    handleCreateCaseSubmit: () => Promise<void>;
     handleDelete: (id: string) => Promise<void>;
     canCreateGitHubIssueFromList: boolean;
     canCreateGitHubIssueOnCreate: boolean;
@@ -549,6 +554,7 @@ export declare function useReport(): {
     openReplyReports: import("../index.js").ReportFeedback[];
     minimizedReplyReportIds: string[];
     setReplyWindowMinimized: (reportId: string, minimized: boolean) => void;
+    reorderMinimizedReplyWindow: (reportId: string, toIndex: number) => void;
     focusReplyWindow: (reportId: string) => void;
     closeReplyWindow: (reportId: string) => void;
     tooltipReport: import("../index.js").ReportFeedback | null;
@@ -595,6 +601,9 @@ export declare function useReport(): {
     removePersistedCase: (report: import("../index.js").ReportFeedback, caseId: string) => Promise<void>;
     focusedCaseId: string | null;
     selectCase: (caseId: string) => void;
+    isComposingNewCase: boolean;
+    beginComposeNewCase: () => void;
+    cancelComposeNewCase: () => void;
     clearFocusedCase: () => void;
     isCaseEditing: boolean;
     caseEditReportId: string | null;
@@ -646,6 +655,7 @@ export declare function useReport(): {
     stopEditing: () => void;
     handleUpdateSubmit: () => Promise<void>;
     handleReplySubmit: () => Promise<void>;
+    handleCreateCaseSubmit: () => Promise<void>;
     handleDelete: (id: string) => Promise<void>;
     canCreateGitHubIssueFromList: boolean;
     canCreateGitHubIssueOnCreate: boolean;
@@ -877,6 +887,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         openReplyReports: import("../index.js").ReportFeedback[];
         minimizedReplyReportIds: string[];
         setReplyWindowMinimized: (reportId: string, minimized: boolean) => void;
+        reorderMinimizedReplyWindow: (reportId: string, toIndex: number) => void;
         focusReplyWindow: (reportId: string) => void;
         closeReplyWindow: (reportId: string) => void;
         tooltipReport: import("../index.js").ReportFeedback | null;
@@ -923,6 +934,9 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         removePersistedCase: (report: import("../index.js").ReportFeedback, caseId: string) => Promise<void>;
         focusedCaseId: string | null;
         selectCase: (caseId: string) => void;
+        isComposingNewCase: boolean;
+        beginComposeNewCase: () => void;
+        cancelComposeNewCase: () => void;
         clearFocusedCase: () => void;
         isCaseEditing: boolean;
         caseEditReportId: string | null;
@@ -974,6 +988,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         stopEditing: () => void;
         handleUpdateSubmit: () => Promise<void>;
         handleReplySubmit: () => Promise<void>;
+        handleCreateCaseSubmit: () => Promise<void>;
         handleDelete: (id: string) => Promise<void>;
         canCreateGitHubIssueFromList: boolean;
         canCreateGitHubIssueOnCreate: boolean;
@@ -1198,6 +1213,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         openReplyReports: import("../index.js").ReportFeedback[];
         minimizedReplyReportIds: string[];
         setReplyWindowMinimized: (reportId: string, minimized: boolean) => void;
+        reorderMinimizedReplyWindow: (reportId: string, toIndex: number) => void;
         focusReplyWindow: (reportId: string) => void;
         closeReplyWindow: (reportId: string) => void;
         tooltipReport: import("../index.js").ReportFeedback | null;
@@ -1244,6 +1260,9 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         removePersistedCase: (report: import("../index.js").ReportFeedback, caseId: string) => Promise<void>;
         focusedCaseId: string | null;
         selectCase: (caseId: string) => void;
+        isComposingNewCase: boolean;
+        beginComposeNewCase: () => void;
+        cancelComposeNewCase: () => void;
         clearFocusedCase: () => void;
         isCaseEditing: boolean;
         caseEditReportId: string | null;
@@ -1295,6 +1314,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         stopEditing: () => void;
         handleUpdateSubmit: () => Promise<void>;
         handleReplySubmit: () => Promise<void>;
+        handleCreateCaseSubmit: () => Promise<void>;
         handleDelete: (id: string) => Promise<void>;
         canCreateGitHubIssueFromList: boolean;
         canCreateGitHubIssueOnCreate: boolean;
@@ -1302,7 +1322,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         handleCreateGitHubIssue: (report: import("../index.js").ReportFeedback) => Promise<void>;
         handleCreateSubmitWithGitHubIssue: () => Promise<void>;
         isDraftGitHubIssueSubmitting: boolean;
-    }, "statusText" | "toggleReportMode" | "toggleTargetPreview" | "currentPathname" | "sessionActor" | "savedProbeDeletions" | "hasProbeSessionChanges" | "canUndoProbeSession" | "canRedoProbeSession" | "undoProbeSessionAction" | "redoProbeSessionAction" | "revertAllSavedProbeEdits" | "draft" | "pickProbeOpen" | "pickProbeSupportsTextFields" | "pickProbeLayoutMode" | "pickProbeValues" | "pickProbeCompareMode" | "pickProbeHasEdits" | "pickTargetContextMenu" | "contextMenuElementKey" | "savedProbeEdits" | "savedProbeCompareMode" | "closePickProbe" | "closePickTargetContextMenu" | "handlePickTargetEdit" | "handlePickTargetDelete" | "handlePickTargetRevert" | "commitPickProbeEdits" | "revertSavedProbeEdit" | "setSavedProbeCompareMode" | "setPickProbeCompareMode" | "updatePickProbeValue" | "resetPickProbeValues" | "appendSavedProbeSummaryAsNewDraftCase" | "activeReplyReportId" | "selectedTarget" | "hoveredTarget" | "mode" | "showTargetPreview" | "closeReplyComposer" | "openReplyComposer" | "selectCase" | "selectReport" | "setErrorMessage" | "focusedCaseId" | "activeReplyReport" | "cancelCaseEdit" | "markers" | "overlayRef" | "cancelDraft" | "beginFeedbackEdit" | "editingReportId" | "panelTab" | "pendingComposer" | "toggleIssueMode" | "cancelPendingComposer" | "stopEditing" | "focusSearchInput" | "selectAdjacentReport" | "panelCollapsed" | "setPanelCollapsed" | "searchInputRef" | "activeMarkerTarget" | "markerPreviewTargets" | "selectableTargets" | "errorMessage" | "draftStep" | "setDraftStep" | "hoverPointer" | "setHoverPointer" | "editableDraft" | "setEditableDraft" | "openReplyReportIds" | "openReplyReports" | "minimizedReplyReportIds" | "setReplyWindowMinimized" | "focusReplyWindow" | "closeReplyWindow" | "tooltipReport" | "tooltipAnchor" | "tooltipFieldTags" | "replyDraft" | "setReplyDraft" | "replyMentions" | "setReplyMentions" | "mentionHighlightTarget" | "setMentionHighlightTarget" | "replySubmitAsQuestion" | "setReplySubmitAsQuestion" | "draftAuthorName" | "setDraftAuthorName" | "replyAuthorName" | "setReplyAuthorName" | "presentationViewerId" | "setPresentationViewerId" | "startDenyReview" | "startCheckoutReview" | "startAskQuestion" | "confirmAuthorName" | "setConfirmAuthorName" | "showConfirmAuthorSelect" | "toggleConfirmAuthorSelect" | "beginCaseEdit" | "updateCaseEditDraftCase" | "addCaseEditDraftCase" | "removeCaseEditDraftCase" | "removePersistedCase" | "clearFocusedCase" | "isCaseEditing" | "caseEditReportId" | "caseEditCases" | "openPanelTab" | "togglePanelTab" | "locateFeedback" | "activateFeedbackMarker" | "revealOpenFeedback" | "clearHoverLeaveTimeout" | "scheduleHoverLeave" | "setHoveredMarkerId" | "handleOverlayMove" | "handleOverlayContextMenu" | "handleOverlayClick" | "updateDraftCase" | "addDraftCase" | "removeDraftCase" | "updateDraftField" | "updateDraftCategory" | "startEditing">;
+    }, "statusText" | "toggleReportMode" | "toggleTargetPreview" | "currentPathname" | "sessionActor" | "savedProbeDeletions" | "hasProbeSessionChanges" | "canUndoProbeSession" | "canRedoProbeSession" | "undoProbeSessionAction" | "redoProbeSessionAction" | "revertAllSavedProbeEdits" | "draft" | "pickProbeOpen" | "pickProbeSupportsTextFields" | "pickProbeLayoutMode" | "pickProbeValues" | "pickProbeCompareMode" | "pickProbeHasEdits" | "pickTargetContextMenu" | "contextMenuElementKey" | "savedProbeEdits" | "savedProbeCompareMode" | "closePickProbe" | "closePickTargetContextMenu" | "handlePickTargetEdit" | "handlePickTargetDelete" | "handlePickTargetRevert" | "commitPickProbeEdits" | "revertSavedProbeEdit" | "setSavedProbeCompareMode" | "setPickProbeCompareMode" | "updatePickProbeValue" | "resetPickProbeValues" | "appendSavedProbeSummaryAsNewDraftCase" | "activeReplyReportId" | "minimizedReplyReportIds" | "selectedTarget" | "hoveredTarget" | "mode" | "showTargetPreview" | "closeReplyComposer" | "openReplyComposer" | "selectCase" | "selectReport" | "setErrorMessage" | "focusedCaseId" | "activeReplyReport" | "cancelCaseEdit" | "markers" | "overlayRef" | "cancelDraft" | "beginFeedbackEdit" | "editingReportId" | "panelTab" | "pendingComposer" | "toggleIssueMode" | "cancelPendingComposer" | "stopEditing" | "focusSearchInput" | "selectAdjacentReport" | "panelCollapsed" | "setPanelCollapsed" | "searchInputRef" | "activeMarkerTarget" | "markerPreviewTargets" | "selectableTargets" | "errorMessage" | "draftStep" | "setDraftStep" | "hoverPointer" | "setHoverPointer" | "editableDraft" | "setEditableDraft" | "openReplyReportIds" | "openReplyReports" | "setReplyWindowMinimized" | "reorderMinimizedReplyWindow" | "focusReplyWindow" | "closeReplyWindow" | "tooltipReport" | "tooltipAnchor" | "tooltipFieldTags" | "replyDraft" | "setReplyDraft" | "replyMentions" | "setReplyMentions" | "mentionHighlightTarget" | "setMentionHighlightTarget" | "replySubmitAsQuestion" | "setReplySubmitAsQuestion" | "draftAuthorName" | "setDraftAuthorName" | "replyAuthorName" | "setReplyAuthorName" | "presentationViewerId" | "setPresentationViewerId" | "startDenyReview" | "startCheckoutReview" | "startAskQuestion" | "confirmAuthorName" | "setConfirmAuthorName" | "showConfirmAuthorSelect" | "toggleConfirmAuthorSelect" | "beginCaseEdit" | "updateCaseEditDraftCase" | "addCaseEditDraftCase" | "removeCaseEditDraftCase" | "removePersistedCase" | "isComposingNewCase" | "beginComposeNewCase" | "cancelComposeNewCase" | "clearFocusedCase" | "isCaseEditing" | "caseEditReportId" | "caseEditCases" | "openPanelTab" | "togglePanelTab" | "locateFeedback" | "activateFeedbackMarker" | "revealOpenFeedback" | "clearHoverLeaveTimeout" | "scheduleHoverLeave" | "setHoveredMarkerId" | "handleOverlayMove" | "handleOverlayContextMenu" | "handleOverlayClick" | "updateDraftCase" | "addDraftCase" | "removeDraftCase" | "updateDraftField" | "updateDraftCategory" | "startEditing">;
     data: Pick<{
         panelAppearance: import("../index.js").ReportAppearance;
         setPanelAppearance: (nextAppearance: import("../index.js").ReportAppearance) => void;
@@ -1519,6 +1539,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         openReplyReports: import("../index.js").ReportFeedback[];
         minimizedReplyReportIds: string[];
         setReplyWindowMinimized: (reportId: string, minimized: boolean) => void;
+        reorderMinimizedReplyWindow: (reportId: string, toIndex: number) => void;
         focusReplyWindow: (reportId: string) => void;
         closeReplyWindow: (reportId: string) => void;
         tooltipReport: import("../index.js").ReportFeedback | null;
@@ -1565,6 +1586,9 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         removePersistedCase: (report: import("../index.js").ReportFeedback, caseId: string) => Promise<void>;
         focusedCaseId: string | null;
         selectCase: (caseId: string) => void;
+        isComposingNewCase: boolean;
+        beginComposeNewCase: () => void;
+        cancelComposeNewCase: () => void;
         clearFocusedCase: () => void;
         isCaseEditing: boolean;
         caseEditReportId: string | null;
@@ -1616,6 +1640,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         stopEditing: () => void;
         handleUpdateSubmit: () => Promise<void>;
         handleReplySubmit: () => Promise<void>;
+        handleCreateCaseSubmit: () => Promise<void>;
         handleDelete: (id: string) => Promise<void>;
         canCreateGitHubIssueFromList: boolean;
         canCreateGitHubIssueOnCreate: boolean;
@@ -1623,7 +1648,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         handleCreateGitHubIssue: (report: import("../index.js").ReportFeedback) => Promise<void>;
         handleCreateSubmitWithGitHubIssue: () => Promise<void>;
         isDraftGitHubIssueSubmitting: boolean;
-    }, "authDiagnostics" | "isError" | "isFetching" | "hasNextPage" | "isFetchingNextPage" | "fetchNextPage" | "refetch" | "replyHistoryByReportId" | "replyHistory" | "loadOlderReplies" | "goToOlderPaginationPage" | "goToNewerPaginationPage" | "canTransferFeedback" | "canListAllFeedback" | "listScope" | "setListScope" | "filters" | "setFilters" | "reports" | "currentPageReports" | "filteredReports" | "allPageReports" | "onPanelBootstrap" | "routeDetailsStats" | "selectedReport" | "isCreating" | "isUpdating" | "isDeleting" | "queryErrorMessage" | "loadRepliesIfNeeded" | "onActivitySummary" | "handleCreateSubmit" | "handleUpdateSubmit" | "isSubmittingReply" | "isClaimingAssignee" | "handleClaimAssignee" | "handleTransferAssignee" | "handleConfirmResolution" | "handleCaseEditSave" | "targetStats" | "roleStatItems" | "handleReplySubmit" | "handleDelete" | "canCreateGitHubIssueFromList" | "canCreateGitHubIssueOnCreate" | "creatingGitHubIssueId" | "handleCreateGitHubIssue" | "handleCreateSubmitWithGitHubIssue" | "isDraftGitHubIssueSubmitting">;
+    }, "authDiagnostics" | "isError" | "isFetching" | "hasNextPage" | "isFetchingNextPage" | "fetchNextPage" | "refetch" | "replyHistoryByReportId" | "replyHistory" | "loadOlderReplies" | "goToOlderPaginationPage" | "goToNewerPaginationPage" | "canTransferFeedback" | "canListAllFeedback" | "listScope" | "setListScope" | "filters" | "setFilters" | "reports" | "currentPageReports" | "filteredReports" | "allPageReports" | "onPanelBootstrap" | "routeDetailsStats" | "selectedReport" | "isCreating" | "isUpdating" | "isDeleting" | "queryErrorMessage" | "loadRepliesIfNeeded" | "onActivitySummary" | "handleCreateSubmit" | "handleUpdateSubmit" | "isSubmittingReply" | "isClaimingAssignee" | "handleClaimAssignee" | "handleTransferAssignee" | "handleConfirmResolution" | "handleCaseEditSave" | "targetStats" | "roleStatItems" | "handleReplySubmit" | "handleCreateCaseSubmit" | "handleDelete" | "canCreateGitHubIssueFromList" | "canCreateGitHubIssueOnCreate" | "creatingGitHubIssueId" | "handleCreateGitHubIssue" | "handleCreateSubmitWithGitHubIssue" | "isDraftGitHubIssueSubmitting">;
 };
 export { ReportContext, ReportPreferencesContext, ReportSessionContext, ReportDataContext };
 //# sourceMappingURL=reportContext.d.ts.map

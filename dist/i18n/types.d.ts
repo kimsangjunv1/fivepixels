@@ -243,6 +243,8 @@ export type ReportMessages = {
         removeCaseConfirmTitle: string;
         removeCaseAriaLabel: string;
         removeCaseConfirmAriaLabel: string;
+        composingCaseTitle: string;
+        composingCasePlaceholder: string;
     };
     thread: {
         scrollHintUp: string;
@@ -263,6 +265,7 @@ export type ReportMessages = {
         questionsPending: (count: number) => string;
         questionsToggleAriaLabel: (count: number, expanded: boolean) => string;
         issueResolvedDivider: string;
+        detachedTargetDivider: string;
         claimAssignee: string;
         takeOverAssignee: string;
         assigneeAssigned: string;
@@ -764,6 +767,11 @@ export type ReportMessages = {
         viewMoreCases: string;
         hoverTooltipHeader: string;
         offscreenNavigateHint: string;
+        minimizedAliasEditAriaLabel: string;
+        minimizedAliasInputAriaLabel: string;
+        minimizedAliasPlaceholder: string;
+        minimizedAliasClearAriaLabel: string;
+        viewingWindowBadge: string;
     };
     defaults: {
         fields: {
