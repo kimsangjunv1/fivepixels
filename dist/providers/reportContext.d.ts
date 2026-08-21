@@ -301,6 +301,7 @@ declare const ReportContext: Context<{
     selectAdjacentReport: (direction: "up" | "down") => void;
     openReplyComposer: (report: import("../index.js").ReportFeedback) => void;
     activateFeedbackMarker: (report: import("../index.js").ReportFeedback, caseId?: string | null) => Promise<void>;
+    revealOpenFeedback: (report: import("../index.js").ReportFeedback) => Promise<void>;
     closeReplyComposer: () => void;
     clearHoverLeaveTimeout: () => void;
     scheduleHoverLeave: (markerId: string) => void;
@@ -625,6 +626,7 @@ export declare function useReport(): {
     selectAdjacentReport: (direction: "up" | "down") => void;
     openReplyComposer: (report: import("../index.js").ReportFeedback) => void;
     activateFeedbackMarker: (report: import("../index.js").ReportFeedback, caseId?: string | null) => Promise<void>;
+    revealOpenFeedback: (report: import("../index.js").ReportFeedback) => Promise<void>;
     closeReplyComposer: () => void;
     clearHoverLeaveTimeout: () => void;
     scheduleHoverLeave: (markerId: string) => void;
@@ -952,6 +954,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         selectAdjacentReport: (direction: "up" | "down") => void;
         openReplyComposer: (report: import("../index.js").ReportFeedback) => void;
         activateFeedbackMarker: (report: import("../index.js").ReportFeedback, caseId?: string | null) => Promise<void>;
+        revealOpenFeedback: (report: import("../index.js").ReportFeedback) => Promise<void>;
         closeReplyComposer: () => void;
         clearHoverLeaveTimeout: () => void;
         scheduleHoverLeave: (markerId: string) => void;
@@ -1272,6 +1275,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         selectAdjacentReport: (direction: "up" | "down") => void;
         openReplyComposer: (report: import("../index.js").ReportFeedback) => void;
         activateFeedbackMarker: (report: import("../index.js").ReportFeedback, caseId?: string | null) => Promise<void>;
+        revealOpenFeedback: (report: import("../index.js").ReportFeedback) => Promise<void>;
         closeReplyComposer: () => void;
         clearHoverLeaveTimeout: () => void;
         scheduleHoverLeave: (markerId: string) => void;
@@ -1298,7 +1302,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         handleCreateGitHubIssue: (report: import("../index.js").ReportFeedback) => Promise<void>;
         handleCreateSubmitWithGitHubIssue: () => Promise<void>;
         isDraftGitHubIssueSubmitting: boolean;
-    }, "statusText" | "toggleReportMode" | "toggleTargetPreview" | "currentPathname" | "sessionActor" | "savedProbeDeletions" | "hasProbeSessionChanges" | "canUndoProbeSession" | "canRedoProbeSession" | "undoProbeSessionAction" | "redoProbeSessionAction" | "revertAllSavedProbeEdits" | "draft" | "pickProbeOpen" | "pickProbeSupportsTextFields" | "pickProbeLayoutMode" | "pickProbeValues" | "pickProbeCompareMode" | "pickProbeHasEdits" | "pickTargetContextMenu" | "contextMenuElementKey" | "savedProbeEdits" | "savedProbeCompareMode" | "closePickProbe" | "closePickTargetContextMenu" | "handlePickTargetEdit" | "handlePickTargetDelete" | "handlePickTargetRevert" | "commitPickProbeEdits" | "revertSavedProbeEdit" | "setSavedProbeCompareMode" | "setPickProbeCompareMode" | "updatePickProbeValue" | "resetPickProbeValues" | "appendSavedProbeSummaryAsNewDraftCase" | "activeReplyReportId" | "selectedTarget" | "hoveredTarget" | "mode" | "showTargetPreview" | "closeReplyComposer" | "openReplyComposer" | "selectCase" | "setErrorMessage" | "focusedCaseId" | "activeReplyReport" | "cancelCaseEdit" | "markers" | "overlayRef" | "selectReport" | "cancelDraft" | "beginFeedbackEdit" | "editingReportId" | "panelTab" | "pendingComposer" | "toggleIssueMode" | "cancelPendingComposer" | "stopEditing" | "focusSearchInput" | "selectAdjacentReport" | "panelCollapsed" | "setPanelCollapsed" | "searchInputRef" | "activeMarkerTarget" | "markerPreviewTargets" | "selectableTargets" | "errorMessage" | "draftStep" | "setDraftStep" | "hoverPointer" | "setHoverPointer" | "editableDraft" | "setEditableDraft" | "openReplyReportIds" | "openReplyReports" | "minimizedReplyReportIds" | "setReplyWindowMinimized" | "focusReplyWindow" | "closeReplyWindow" | "tooltipReport" | "tooltipAnchor" | "tooltipFieldTags" | "replyDraft" | "setReplyDraft" | "replyMentions" | "setReplyMentions" | "mentionHighlightTarget" | "setMentionHighlightTarget" | "replySubmitAsQuestion" | "setReplySubmitAsQuestion" | "draftAuthorName" | "setDraftAuthorName" | "replyAuthorName" | "setReplyAuthorName" | "presentationViewerId" | "setPresentationViewerId" | "startDenyReview" | "startCheckoutReview" | "startAskQuestion" | "confirmAuthorName" | "setConfirmAuthorName" | "showConfirmAuthorSelect" | "toggleConfirmAuthorSelect" | "beginCaseEdit" | "updateCaseEditDraftCase" | "addCaseEditDraftCase" | "removeCaseEditDraftCase" | "removePersistedCase" | "clearFocusedCase" | "isCaseEditing" | "caseEditReportId" | "caseEditCases" | "openPanelTab" | "togglePanelTab" | "locateFeedback" | "activateFeedbackMarker" | "clearHoverLeaveTimeout" | "scheduleHoverLeave" | "setHoveredMarkerId" | "handleOverlayMove" | "handleOverlayContextMenu" | "handleOverlayClick" | "updateDraftCase" | "addDraftCase" | "removeDraftCase" | "updateDraftField" | "updateDraftCategory" | "startEditing">;
+    }, "statusText" | "toggleReportMode" | "toggleTargetPreview" | "currentPathname" | "sessionActor" | "savedProbeDeletions" | "hasProbeSessionChanges" | "canUndoProbeSession" | "canRedoProbeSession" | "undoProbeSessionAction" | "redoProbeSessionAction" | "revertAllSavedProbeEdits" | "draft" | "pickProbeOpen" | "pickProbeSupportsTextFields" | "pickProbeLayoutMode" | "pickProbeValues" | "pickProbeCompareMode" | "pickProbeHasEdits" | "pickTargetContextMenu" | "contextMenuElementKey" | "savedProbeEdits" | "savedProbeCompareMode" | "closePickProbe" | "closePickTargetContextMenu" | "handlePickTargetEdit" | "handlePickTargetDelete" | "handlePickTargetRevert" | "commitPickProbeEdits" | "revertSavedProbeEdit" | "setSavedProbeCompareMode" | "setPickProbeCompareMode" | "updatePickProbeValue" | "resetPickProbeValues" | "appendSavedProbeSummaryAsNewDraftCase" | "activeReplyReportId" | "selectedTarget" | "hoveredTarget" | "mode" | "showTargetPreview" | "closeReplyComposer" | "openReplyComposer" | "selectCase" | "selectReport" | "setErrorMessage" | "focusedCaseId" | "activeReplyReport" | "cancelCaseEdit" | "markers" | "overlayRef" | "cancelDraft" | "beginFeedbackEdit" | "editingReportId" | "panelTab" | "pendingComposer" | "toggleIssueMode" | "cancelPendingComposer" | "stopEditing" | "focusSearchInput" | "selectAdjacentReport" | "panelCollapsed" | "setPanelCollapsed" | "searchInputRef" | "activeMarkerTarget" | "markerPreviewTargets" | "selectableTargets" | "errorMessage" | "draftStep" | "setDraftStep" | "hoverPointer" | "setHoverPointer" | "editableDraft" | "setEditableDraft" | "openReplyReportIds" | "openReplyReports" | "minimizedReplyReportIds" | "setReplyWindowMinimized" | "focusReplyWindow" | "closeReplyWindow" | "tooltipReport" | "tooltipAnchor" | "tooltipFieldTags" | "replyDraft" | "setReplyDraft" | "replyMentions" | "setReplyMentions" | "mentionHighlightTarget" | "setMentionHighlightTarget" | "replySubmitAsQuestion" | "setReplySubmitAsQuestion" | "draftAuthorName" | "setDraftAuthorName" | "replyAuthorName" | "setReplyAuthorName" | "presentationViewerId" | "setPresentationViewerId" | "startDenyReview" | "startCheckoutReview" | "startAskQuestion" | "confirmAuthorName" | "setConfirmAuthorName" | "showConfirmAuthorSelect" | "toggleConfirmAuthorSelect" | "beginCaseEdit" | "updateCaseEditDraftCase" | "addCaseEditDraftCase" | "removeCaseEditDraftCase" | "removePersistedCase" | "clearFocusedCase" | "isCaseEditing" | "caseEditReportId" | "caseEditCases" | "openPanelTab" | "togglePanelTab" | "locateFeedback" | "activateFeedbackMarker" | "revealOpenFeedback" | "clearHoverLeaveTimeout" | "scheduleHoverLeave" | "setHoveredMarkerId" | "handleOverlayMove" | "handleOverlayContextMenu" | "handleOverlayClick" | "updateDraftCase" | "addDraftCase" | "removeDraftCase" | "updateDraftField" | "updateDraftCategory" | "startEditing">;
     data: Pick<{
         panelAppearance: import("../index.js").ReportAppearance;
         setPanelAppearance: (nextAppearance: import("../index.js").ReportAppearance) => void;
@@ -1592,6 +1596,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         selectAdjacentReport: (direction: "up" | "down") => void;
         openReplyComposer: (report: import("../index.js").ReportFeedback) => void;
         activateFeedbackMarker: (report: import("../index.js").ReportFeedback, caseId?: string | null) => Promise<void>;
+        revealOpenFeedback: (report: import("../index.js").ReportFeedback) => Promise<void>;
         closeReplyComposer: () => void;
         clearHoverLeaveTimeout: () => void;
         scheduleHoverLeave: (markerId: string) => void;

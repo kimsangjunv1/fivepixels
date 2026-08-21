@@ -213,7 +213,6 @@ export function useReportPanelShell({ projectId, environment, appVersion, panelA
     };
     const enableIssueMode = () => {
         bridgesRef.current.setShowTargetPreview(false);
-        bridgesRef.current.closeReplyComposer();
         bridgesRef.current.stopEditing();
         setMode("view");
     };
@@ -226,10 +225,14 @@ export function useReportPanelShell({ projectId, environment, appVersion, panelA
     };
     const toggleIssueMode = () => {
         bridgesRef.current.setShowTargetPreview(false);
-        bridgesRef.current.closeReplyComposer();
-        setMode((current) => (current === "view" ? "idle" : "view"));
         bridgesRef.current.stopEditing();
-        setSelectedReportId(null);
+        if (mode === "view") {
+            bridgesRef.current.closeReplyComposer();
+            setSelectedReportId(null);
+            setMode("idle");
+            return;
+        }
+        setMode("view");
     };
     return {
         panelAppearance: activePanelAppearance,

@@ -210,6 +210,7 @@ export const REPORT_SESSION_KEYS = [
     "selectAdjacentReport",
     "openReplyComposer",
     "activateFeedbackMarker",
+    "revealOpenFeedback",
     "closeReplyComposer",
     "clearHoverLeaveTimeout",
     "scheduleHoverLeave",

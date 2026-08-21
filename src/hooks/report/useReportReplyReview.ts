@@ -41,6 +41,7 @@ import { useReplyCaseEdit } from "./useReplyCaseEdit.js";
 
 export type UseReportReplyReviewParams = {
     reports: ReportFeedback[];
+    allPageReports: ReportFeedback[];
     messages: ReportMessages;
     fields: ReportField[];
     sessionActor: SessionActor | null;
@@ -60,6 +61,7 @@ export type UseReportReplyReviewParams = {
 
 export function useReportReplyReview({
     reports,
+    allPageReports,
     messages,
     fields,
     sessionActor,
@@ -78,6 +80,7 @@ export function useReportReplyReview({
 }: UseReportReplyReviewParams) {
     const [activeReplyReportId, setActiveReplyReportId] = useState<string | null>(null);
     const [openReplyReportIds, setOpenReplyReportIds] = useState<string[]>([]);
+    const [openReplyReportCache, setOpenReplyReportCache] = useState<Record<string, ReportFeedback>>({});
     const [minimizedReplyReportIds, setMinimizedReplyReportIds] = useState<string[]>([]);
     const [replyDraft, setReplyDraft] = useState("");
     const [replyMentions, setReplyMentions] = useState<ElementMention[]>([]);
@@ -111,13 +114,49 @@ export function useReportReplyReview({
         [authorSelectionLocked, sessionActor?.name],
     );
 
+    const reportLookup = useMemo(() => {
+        const byId = new Map<string, ReportFeedback>();
+
+        for (const item of Object.values(openReplyReportCache)) {
+            byId.set(item.id, item);
+        }
+
+        for (const item of [...allPageReports, ...reports]) {
+            byId.set(item.id, item);
+        }
+
+        return byId;
+    }, [allPageReports, openReplyReportCache, reports]);
+
+    const rememberOpenReport = useCallback((report: ReportFeedback) => {
+        setOpenReplyReportCache((current) => {
+            if (current[report.id] === report) {
+                return current;
+            }
+
+            return { ...current, [report.id]: report };
+        });
+    }, []);
+
+    const forgetOpenReport = useCallback((reportId: string) => {
+        setOpenReplyReportCache((current) => {
+            if (!(reportId in current)) {
+                return current;
+            }
+
+            const next = { ...current };
+            delete next[reportId];
+            return next;
+        });
+    }, []);
+
     const activeReplyReport = useMemo(
-        () => (activeReplyReportId ? (reports.find((item) => item.id === activeReplyReportId) ?? null) : null),
-        [activeReplyReportId, reports],
+        () => (activeReplyReportId ? (reportLookup.get(activeReplyReportId) ?? null) : null),
+        [activeReplyReportId, reportLookup],
     );
     const openReplyReports = useMemo(
-        () => openReplyReportIds.map((reportId) => reports.find((item) => item.id === reportId)).filter((item): item is ReportFeedback => Boolean(item)),
-        [openReplyReportIds, reports],
+        () => openReplyReportIds.map((reportId) => reportLookup.get(reportId)).filter((item): item is ReportFeedback => Boolean(item)),
+        [openReplyReportIds, reportLookup],
     );
     const activeReplyAnchor = useMemo(
         () => (activeReplyReport ? ({ report: activeReplyReport } as { report: ReportFeedback }) : null),
@@ -125,18 +164,33 @@ export function useReportReplyReview({
     );
 
     useEffect(() => {
-        const availableIds = new Set(reports.map((item) => item.id));
+        if (openReplyReportIds.length === 0) {
+            return;
+        }
 
-        setOpenReplyReportIds((current) => {
-            const next = current.filter((reportId) => availableIds.has(reportId));
-            return next.length === current.length ? current : next;
+        setOpenReplyReportCache((current) => {
+            let changed = false;
+            const next = { ...current };
+
+            for (const reportId of openReplyReportIds) {
+                const fresh = reports.find((item) => item.id === reportId) ?? allPageReports.find((item) => item.id === reportId);
+
+                if (fresh && next[reportId] !== fresh) {
+                    next[reportId] = fresh;
+                    changed = true;
+                }
+            }
+
+            for (const reportId of Object.keys(next)) {
+                if (!openReplyReportIds.includes(reportId)) {
+                    delete next[reportId];
+                    changed = true;
+                }
+            }
+
+            return changed ? next : current;
         });
-        setMinimizedReplyReportIds((current) => {
-            const next = current.filter((reportId) => availableIds.has(reportId));
-            return next.length === current.length ? current : next;
-        });
-        setActiveReplyReportId((current) => (current && !availableIds.has(current) ? null : current));
-    }, [reports]);
+    }, [allPageReports, openReplyReportIds, reports]);
 
     const clearFocusedCase = useCallback(() => {
         setFocusedCaseId(null);
@@ -231,6 +285,7 @@ export function useReportReplyReview({
     const closeReplyComposer = useCallback(() => {
         setActiveReplyReportId(null);
         setOpenReplyReportIds([]);
+        setOpenReplyReportCache({});
         setMinimizedReplyReportIds([]);
         resetComposerSession();
     }, [resetComposerSession]);
@@ -242,6 +297,7 @@ export function useReportReplyReview({
             const nextFocusedId = closingFocused ? (nextOpen[nextOpen.length - 1] ?? null) : activeReplyReportId;
 
             setOpenReplyReportIds(nextOpen);
+            forgetOpenReport(reportId);
             setMinimizedReplyReportIds((current) => current.filter((id) => id !== reportId));
 
             if (!closingFocused) {
@@ -255,7 +311,7 @@ export function useReportReplyReview({
                 return;
             }
 
-            const nextReport = reports.find((item) => item.id === nextFocusedId);
+            const nextReport = reportLookup.get(nextFocusedId) ?? null;
 
             if (!nextReport) {
                 return;
@@ -266,7 +322,7 @@ export function useReportReplyReview({
             setConfirmAuthorName(resolveOriginalFeedbackAuthorName(nextReport));
             setFocusedCaseId(resolveDefaultFocusedCaseId(nextReport));
         },
-        [activeIdentify, activeReplyReportId, authorizedAuthors, onSelectReport, openReplyReportIds, reports, resetComposerSession, selfName, sessionActor?.name],
+        [activeIdentify, activeReplyReportId, authorizedAuthors, forgetOpenReport, onSelectReport, openReplyReportIds, reportLookup, resetComposerSession, selfName, sessionActor?.name],
     );
 
     const setReplyWindowMinimized = useCallback((reportId: string, minimized: boolean) => {
@@ -285,12 +341,13 @@ export function useReportReplyReview({
 
     const focusReplyWindow = useCallback(
         (reportId: string) => {
-            const report = reports.find((item) => item.id === reportId);
+            const report = reportLookup.get(reportId);
 
             if (!report) {
                 return;
             }
 
+            rememberOpenReport(report);
             setOpenReplyReportIds((current) => (current.includes(reportId) ? current : [...current, reportId]));
             setMinimizedReplyReportIds((current) => current.filter((id) => id !== reportId));
 
@@ -309,11 +366,12 @@ export function useReportReplyReview({
             setFocusedCaseId(resolveDefaultFocusedCaseId(report));
             cancelCaseEdit();
         },
-        [activeIdentify, activeReplyReportId, authorizedAuthors, cancelCaseEdit, clearReplyComposerDraft, onSelectReport, reports, selfName, sessionActor?.name],
+        [activeIdentify, activeReplyReportId, authorizedAuthors, cancelCaseEdit, clearReplyComposerDraft, onSelectReport, rememberOpenReport, reportLookup, selfName, sessionActor?.name],
     );
 
     const openReplyComposer = (report: ReportFeedback) => {
         onSelectReport(report.id);
+        rememberOpenReport(report);
         setOpenReplyReportIds((current) => (current.includes(report.id) ? current : [...current, report.id]));
         setMinimizedReplyReportIds((current) => current.filter((id) => id !== report.id));
         setActiveReplyReportId(report.id);

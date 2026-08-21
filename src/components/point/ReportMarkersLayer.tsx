@@ -15,7 +15,6 @@ import { getMarkerColor, getMarkerDisplayLabel, hasMarkerReplyIndicator } from "
 import { FeedbackHoverCard } from "@/components/panel/feedback/FeedbackHoverCard.js";
 import { getReplyCount } from "@/utils/feedback/feedbackThread.js";
 import { MOTION } from "@/constants/motionClasses.js";
-import { MarkerFeedbackWindow } from "./MarkerFeedbackWindow.js";
 import { MarkerReplyBadge } from "./MarkerReplyBadge.js";
 import { MarkerShapeGlyph } from "./MarkerShapeGlyph.js";
 
@@ -228,9 +227,7 @@ export function ReportMarkersLayer() {
     const {
         mode,
         markers,
-        openReplyReports,
         openReplyReportIds,
-        activeReplyReportId,
         tooltipReport,
         tooltipAnchor,
         editingReportId,
@@ -430,25 +427,6 @@ export function ReportMarkersLayer() {
                     />
                 </div>
             ) : null}
-
-            {isViewMode
-                ? openReplyReports.map((report) => {
-                      const markerAnchor = markers.find((marker) => marker.report.id === report.id);
-                      const anchor = markerAnchor ?? {
-                          left: typeof window === "undefined" ? 0 : Math.round(window.innerWidth / 2),
-                          top: typeof window === "undefined" ? 0 : Math.round(window.innerHeight / 2),
-                      };
-
-                      return (
-                          <MarkerFeedbackWindow
-                              key={report.id}
-                              report={report}
-                              anchor={anchor}
-                              isFocused={report.id === activeReplyReportId}
-                          />
-                      );
-                  })
-                : null}
         </>
     );
 }

@@ -800,6 +800,7 @@ export const en = {
         assigneeInfoAriaLabel: "Assignee transfer details",
         viewMoreCases: "Click to view more cases",
         hoverTooltipHeader: "Feedback summary",
+        offscreenNavigateHint: "Click to go to the path where this feedback exists",
     },
     defaults: {
         fields: {

@@ -6,7 +6,7 @@ describe("resolveMinimizedDockPosition", () => {
         const position = resolveMinimizedDockPosition(0, 1, 1000, 800);
 
         expect(position.left).toBe(Math.round((1000 - MARKER_MINIMIZED_WINDOW_WIDTH) / 2));
-        expect(position.top).toBe(800 - 16 - 42);
+        expect(position.top).toBe(800 - 16 - 56);
     });
 
     it("places additional windows to the right in order while keeping the group centered", () => {

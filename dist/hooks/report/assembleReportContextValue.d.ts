@@ -332,6 +332,7 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     selectAdjacentReport: (direction: "up" | "down") => void;
     openReplyComposer: (report: ReportFeedback) => void;
     activateFeedbackMarker: (report: ReportFeedback, caseId?: string | null) => Promise<void>;
+    revealOpenFeedback: (report: ReportFeedback) => Promise<void>;
     closeReplyComposer: () => void;
     clearHoverLeaveTimeout: () => void;
     scheduleHoverLeave: (markerId: string) => void;

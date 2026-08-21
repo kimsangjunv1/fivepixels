@@ -35,6 +35,8 @@ import {
     MARKER_WINDOW_MARGIN,
     resolveMinimizedDockPosition,
 } from "@/utils/marker/markerWindowDock.js";
+import { getFeedbackTargetElement, isFeedbackTargetVisible } from "@/utils/marker/locateFeedback.js";
+import { getPageWindow } from "@/utils/overlay/pageDocumentBridge.js";
 
 type WindowMode = "normal" | "minimized" | "maximized";
 type WindowSurfacePhase = "entering" | "idle" | "exiting";
@@ -140,24 +142,35 @@ function MinimizedCaseMarquee({ caseTexts }: { caseTexts: string[] }) {
     );
 }
 
-function UnfocusedCaseSummary({ caseTexts, emptyLabel }: { caseTexts: string[]; emptyLabel: string }) {
-    if (caseTexts.length === 0) {
-        return <p className="px-[24px] text-center text-[13px] text-[var(--adaptive-black500)]">{emptyLabel}</p>;
-    }
-
+function UnfocusedCaseSummary({
+    caseTexts,
+    emptyLabel,
+    navigateHint,
+}: {
+    caseTexts: string[];
+    emptyLabel: string;
+    navigateHint?: string;
+}) {
     return (
-        <ul className="flex max-h-full w-full max-w-[440px] flex-col gap-[8px] overflow-hidden px-[28px]">
-            {caseTexts.map((text, index) => (
-                <li
-                    key={`${index}-${text.slice(0, 24)}`}
-                    className="truncate text-center text-[13px] leading-[1.4] text-[var(--adaptive-black800)]"
-                    title={text}
-                >
-                    <span className="mr-[6px] text-[var(--adaptive-black500)]">{index + 1}.</span>
-                    {text}
-                </li>
-            ))}
-        </ul>
+        <div className="flex max-h-full w-full max-w-[440px] flex-col items-center gap-[12px] overflow-hidden px-[28px]">
+            {navigateHint ? <p className="text-center text-[12px] font-medium leading-[1.4] text-[var(--adaptive-blue500)]">{navigateHint}</p> : null}
+            {caseTexts.length === 0 ? (
+                <p className="text-center text-[13px] text-[var(--adaptive-black500)]">{emptyLabel}</p>
+            ) : (
+                <ul className="flex w-full flex-col gap-[8px] overflow-hidden">
+                    {caseTexts.map((text, index) => (
+                        <li
+                            key={`${index}-${text.slice(0, 24)}`}
+                            className="truncate text-center text-[13px] leading-[1.4] text-[var(--adaptive-black800)]"
+                            title={text}
+                        >
+                            <span className="mr-[6px] text-[var(--adaptive-black500)]">{index + 1}.</span>
+                            {text}
+                        </li>
+                    ))}
+                </ul>
+            )}
+        </div>
     );
 }
 
@@ -209,6 +222,7 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
         messages,
         fields,
         authors,
+        currentPathname,
         pendingComposer,
         replyDraft,
         replyMentions,
@@ -224,6 +238,7 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
         selectCase,
         closeReplyWindow,
         focusReplyWindow,
+        revealOpenFeedback,
         minimizedReplyReportIds,
         setReplyWindowMinimized,
         clearHoverLeaveTimeout,
@@ -261,6 +276,7 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
     const [sidebarWidth, setSidebarWidth] = useState(DEFAULT_SIDEBAR_WIDTH);
     const [isSidebarDeleteConfirming, setIsSidebarDeleteConfirming] = useState(false);
     const [isMinimizedExiting, setIsMinimizedExiting] = useState(false);
+    const [isTargetVisible, setIsTargetVisible] = useState(true);
 
     const splitStateRef = useRef<{ startX: number; startWidth: number; windowWidth: number } | null>(null);
     const splitListenersRef = useRef<{ move: (event: PointerEvent) => void; up: (event: PointerEvent) => void } | null>(null);
@@ -346,44 +362,6 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
         };
     }, [finishClose, windowSurfacePhase]);
 
-    useEffect(() => {
-        if (!isFocused || !focusedCaseId) {
-            return;
-        }
-
-        const handlePointerDown = (event: PointerEvent) => {
-            if (closeRequestedRef.current) {
-                return;
-            }
-
-            const path = event.composedPath();
-
-            if (windowRef.current && path.includes(windowRef.current)) {
-                return;
-            }
-
-            const clickedMarker = path.find((node) => node instanceof Element && node.hasAttribute("data-marker-report-id"));
-
-            if (clickedMarker instanceof Element) {
-                return;
-            }
-
-            const clickedOpenWindow = path.find((node) => node instanceof Element && node.hasAttribute("data-marker-feedback-window"));
-
-            if (clickedOpenWindow instanceof Element) {
-                return;
-            }
-
-            requestClose();
-        };
-
-        window.addEventListener("pointerdown", handlePointerDown);
-
-        return () => {
-            window.removeEventListener("pointerdown", handlePointerDown);
-        };
-    }, [focusedCaseId, isFocused, requestClose]);
-
     const detachSplitListeners = useCallback(() => {
         const listeners = splitListenersRef.current;
 
@@ -433,26 +411,55 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
         }
     }, [isMinimizedExiting, minimizedReplyReportIds, report.id, windowMode]);
 
+    useEffect(() => {
+        const syncTargetVisibility = () => {
+            if (report.pathname !== currentPathname) {
+                setIsTargetVisible(false);
+                return;
+            }
+
+            const targetElement = getFeedbackTargetElement(report);
+            setIsTargetVisible(Boolean(targetElement && isFeedbackTargetVisible(targetElement)));
+        };
+
+        syncTargetVisibility();
+
+        const pageWindow = getPageWindow();
+        pageWindow.addEventListener("scroll", syncTargetVisibility, { passive: true, capture: true });
+        pageWindow.addEventListener("resize", syncTargetVisibility);
+        window.addEventListener("resize", syncTargetVisibility);
+
+        const visibilityIntervalId = window.setInterval(syncTargetVisibility, 500);
+
+        return () => {
+            pageWindow.removeEventListener("scroll", syncTargetVisibility, { capture: true });
+            pageWindow.removeEventListener("resize", syncTargetVisibility);
+            window.removeEventListener("resize", syncTargetVisibility);
+            window.clearInterval(visibilityIntervalId);
+        };
+    }, [currentPathname, report]);
+
+    const showFullContent = isFocused && isTargetVisible;
     const isCreatorQuestionComposer = pendingComposer?.type === "question";
 
     const showComposer = useMemo(() => {
-        if (!isFocused || !focusedCaseId) {
+        if (!showFullContent || !focusedCaseId) {
             return false;
         }
 
         return shouldShowCaseReplyComposer(report, focusedCaseId, pendingComposer);
-    }, [focusedCaseId, isFocused, pendingComposer, report]);
+    }, [focusedCaseId, pendingComposer, report, showFullContent]);
 
     const replyTargetPreview = useMemo(() => {
-        if (!isFocused || pendingComposer?.type !== "question") {
+        if (!showFullContent || pendingComposer?.type !== "question") {
             return null;
         }
 
         return resolvePendingComposerTargetPreview(report, focusedCaseId, pendingComposer);
-    }, [focusedCaseId, isFocused, pendingComposer, report]);
+    }, [focusedCaseId, pendingComposer, report, showFullContent]);
 
-    const focusedCase = isFocused && focusedCaseId ? getCaseById(report, focusedCaseId) : undefined;
-    const focusedCaseAssigneeName = isFocused && focusedCaseId ? getCaseAssigneeName(report, focusedCaseId) : null;
+    const focusedCase = showFullContent && focusedCaseId ? getCaseById(report, focusedCaseId) : undefined;
+    const focusedCaseAssigneeName = showFullContent && focusedCaseId ? getCaseAssigneeName(report, focusedCaseId) : null;
     const showAssigneeAssigned = Boolean(focusedCaseAssigneeName) || isClaimingAssignee;
     const fieldTags = useMemo(() => getFieldTags(fields, report.field_values), [fields, report.field_values]);
     const caseTexts = useMemo(
@@ -478,16 +485,17 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
     const minimizedDockIndex = Math.max(0, minimizedReplyReportIds.indexOf(report.id));
     const minimizedDockCount = Math.max(1, minimizedReplyReportIds.length);
 
-    const initialPosition = useMemo(
-        () => clampWindowPosition(anchor.left + getMarkerDotSize() / 2 - size.width / 2, anchor.top + getMarkerDotSize() / 2 - size.height / 2, size.width, size.height),
-        [anchor.left, anchor.top, size.height, size.width],
+    // Freeze the open position on mount so page changes (lost marker anchors) don't
+    // collapse every window onto the same fallback center coordinate.
+    const [seedPosition] = useState(() =>
+        clampWindowPosition(anchor.left + getMarkerDotSize() / 2 - DEFAULT_WINDOW_SIZE.width / 2, anchor.top + getMarkerDotSize() / 2 - DEFAULT_WINDOW_SIZE.height / 2, DEFAULT_WINDOW_SIZE.width, DEFAULT_WINDOW_SIZE.height),
     );
 
     const resolvedPosition = isMinimized
         ? resolveMinimizedDockPosition(minimizedDockIndex, minimizedDockCount, viewport.width, viewport.height, minimizedWidth, MINIMIZED_WINDOW_HEIGHT)
         : isMaximized
           ? { left: WINDOW_MARGIN, top: WINDOW_MARGIN }
-          : (position ?? initialPosition);
+          : (position ?? seedPosition);
     const leftSectionClass = getLeftSectionClass(windowSurfacePhase);
     const windowAnimationClass =
         windowSurfacePhase === "exiting" ? MOTION.markerWindowExit : windowSurfacePhase === "entering" ? `${MOTION.markerWindowEnter} pointer-events-auto` : "pointer-events-auto";
@@ -535,7 +543,11 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
                 return;
             }
 
-            focusReplyWindow(report.id);
+            if (!isTargetVisible) {
+                void revealOpenFeedback(report);
+            } else {
+                focusReplyWindow(report.id);
+            }
 
             if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
                 finishMinimizedRestore();
@@ -558,6 +570,11 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
     };
 
     const handleToggleMaximize = () => {
+        if (!isTargetVisible) {
+            void revealOpenFeedback(report);
+            return;
+        }
+
         if (!isFocused) {
             focusReplyWindow(report.id);
         }
@@ -566,6 +583,11 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
     };
 
     const handleWindowActivate = () => {
+        if (!isTargetVisible) {
+            void revealOpenFeedback(report);
+            return;
+        }
+
         if (!isFocused) {
             focusReplyWindow(report.id);
         }
@@ -707,6 +729,7 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
             <UnfocusedCaseSummary
                 caseTexts={caseTexts}
                 emptyLabel={messages.cases.selectToView}
+                navigateHint={isTargetVisible ? undefined : messages.marker.offscreenNavigateHint}
             />
         </div>
     );
@@ -841,11 +864,11 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
                 ref={bindWindowRef}
                 data-fivepixels-interactive=""
                 data-marker-feedback-window={report.id}
-                data-marker-window-focused={isFocused ? "true" : "false"}
+                data-marker-window-focused={showFullContent ? "true" : "false"}
                 onPointerDown={handleWindowActivate}
                 onClick={(event) => event.stopPropagation()}
                 onAnimationEnd={handleWindowAnimationEnd}
-                className={`fixed ${isFocused ? "z-[1000002]" : "z-[1000001]"} ${windowAnimationClass}`}
+                className={`fixed ${showFullContent ? "z-[1000002]" : "z-[1000001]"} ${windowAnimationClass}`}
                 style={{
                     left: resolvedPosition.left,
                     top: resolvedPosition.top,
@@ -864,10 +887,11 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
                             data-fivepixels-interactive=""
                             onClick={handleToggleMinimize}
                             disabled={isMinimizedExiting}
-                            aria-label={`${messages.marker.windowRestoreAriaLabel}. ${minimizedCaseTexts.map((text, index) => `${index + 1}. ${text}`).join(", ")}`}
+                            aria-label={`${messages.marker.windowRestoreAriaLabel}. ${report.pathname}. ${minimizedCaseTexts.map((text, index) => `${index + 1}. ${text}`).join(", ")}`}
                             title={messages.marker.windowRestoreAriaLabel}
-                            className="flex min-h-[40px] w-full items-center overflow-hidden px-[12px] text-left"
+                            className="flex min-h-[52px] w-full flex-col justify-center gap-[2px] overflow-hidden px-[12px] py-[6px] text-left"
                         >
+                            <span className="truncate text-[10px] font-semibold leading-none text-[var(--adaptive-black500)]">{report.pathname}</span>
                             <MinimizedCaseMarquee caseTexts={minimizedCaseTexts} />
                         </button>
                     </div>
@@ -876,7 +900,7 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
                         ref={surfaceRef}
                         className="flex h-full w-full flex-row overflow-hidden rounded-[16px] border border-[var(--adaptive-border-subtle)] shadow-[var(--adaptive-popup-shadow)]"
                     >
-                        {isFocused ? (
+                        {showFullContent ? (
                             <>
                                 {isSidebarCollapsed ? (
                                     <div

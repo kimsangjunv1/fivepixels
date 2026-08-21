@@ -273,6 +273,7 @@ export function useReportState({
 
     const reply = useReportReplyReview({
         reports: panel.reports,
+        allPageReports: panel.allPageReports,
         messages: panel.messages,
         fields,
         sessionActor: auth.sessionActor,
@@ -327,6 +328,7 @@ export function useReportState({
         closeReplyComposer: closeReplyComposerBridge,
         openReplyComposer: openReplyComposerBridge,
         selectCase: reply.selectCase,
+        ensureIssueMode: panel.enableIssueMode,
         loadRepliesIfNeeded: panel.loadRepliesIfNeeded,
         searchInputRef: panel.searchInputRef,
     });
@@ -354,7 +356,6 @@ export function useReportState({
         draft.setHoveredTarget(null);
         draft.setSelectedTarget(null);
         markers.setHoveredMarkerId(null);
-        reply.closeReplyComposer();
         reply.setReplyDraft("");
         reply.setReplyMentions([]);
         reply.setMentionHighlightTarget(null);

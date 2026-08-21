@@ -345,6 +345,7 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     selectAdjacentReport: (direction: "up" | "down") => void;
     openReplyComposer: (report: ReportFeedback) => void;
     activateFeedbackMarker: (report: ReportFeedback, caseId?: string | null) => Promise<void>;
+    revealOpenFeedback: (report: ReportFeedback) => Promise<void>;
     closeReplyComposer: () => void;
     clearHoverLeaveTimeout: () => void;
     scheduleHoverLeave: (markerId: string) => void;

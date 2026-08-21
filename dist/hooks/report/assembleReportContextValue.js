@@ -254,6 +254,7 @@ export function assembleReportContextValue({ panel, auth, draft, markers, mutati
         selectAdjacentReport: markers.selectAdjacentReport,
         openReplyComposer: reply.openReplyComposer,
         activateFeedbackMarker: markers.activateFeedbackMarker,
+        revealOpenFeedback: markers.revealOpenFeedback,
         closeReplyComposer: reply.closeReplyComposer,
         clearHoverLeaveTimeout: markers.clearHoverLeaveTimeout,
         scheduleHoverLeave: markers.scheduleHoverLeave,

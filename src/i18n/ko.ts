@@ -802,6 +802,7 @@ export const ko: ReportMessages = {
         assigneeInfoAriaLabel: "담당자 변경 정보",
         viewMoreCases: "클릭하여 더 많은 케이스 확인",
         hoverTooltipHeader: "피드백 요약",
+        offscreenNavigateHint: "클릭하면 해당 피드백이 존재하는 경로로 이동해요",
     },
     defaults: {
         fields: {

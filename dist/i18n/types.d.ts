@@ -763,6 +763,7 @@ export type ReportMessages = {
         assigneeInfoAriaLabel: string;
         viewMoreCases: string;
         hoverTooltipHeader: string;
+        offscreenNavigateHint: string;
     };
     defaults: {
         fields: {

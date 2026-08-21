@@ -51,6 +51,7 @@ export type UseReportMarkersParams = {
     closeReplyComposer: () => void;
     openReplyComposer: (report: ReportFeedback) => void;
     selectCase: (caseId: string) => void;
+    ensureIssueMode: () => void;
     loadRepliesIfNeeded: (report: ReportFeedback) => Promise<ReportFeedback>;
     searchInputRef: RefObject<HTMLInputElement | null>;
 };
@@ -80,6 +81,7 @@ export function useReportMarkers({
     closeReplyComposer,
     openReplyComposer,
     selectCase,
+    ensureIssueMode,
     loadRepliesIfNeeded,
     searchInputRef,
 }: UseReportMarkersParams) {
@@ -87,6 +89,7 @@ export function useReportMarkers({
     const [hoveredMarkerId, setHoveredMarkerId] = useState<string | null>(null);
     const hoverLeaveTimeoutRef = useRef<number | null>(null);
     const pendingLocateReportIdRef = useRef<string | null>(null);
+    const pendingRevealWindowReportIdRef = useRef<string | null>(null);
     const pendingDeepLinkFeedbackIdRef = useRef<string | null>(getInitialDeepLinkFeedbackId());
     const deepLinkHandledRef = useRef(false);
 
@@ -473,6 +476,69 @@ export function useReportMarkers({
         [activateFeedback],
     );
 
+    const revealOpenFeedback = useCallback(
+        async (report: ReportFeedback) => {
+            ensureIssueMode();
+            selectReport(report.id);
+            clearHoverLeaveTimeout();
+
+            if (report.pathname !== currentPathname) {
+                pendingRevealWindowReportIdRef.current = report.id;
+
+                try {
+                    await navigatePagePath(report.pathname, onNavigate);
+                } catch (nextError) {
+                    pendingRevealWindowReportIdRef.current = null;
+                    setErrorMessage(nextError instanceof Error ? nextError.message : messages.errors.loadFeedbackFailed);
+                }
+
+                return;
+            }
+
+            await prepareFeedbackLocation(report);
+            const enrichedReport = await loadRepliesIfNeeded(report);
+            openReplyComposer(enrichedReport);
+        },
+        [
+            clearHoverLeaveTimeout,
+            currentPathname,
+            ensureIssueMode,
+            loadRepliesIfNeeded,
+            messages.errors.loadFeedbackFailed,
+            onNavigate,
+            openReplyComposer,
+            prepareFeedbackLocation,
+            selectReport,
+            setErrorMessage,
+        ],
+    );
+
+    useEffect(() => {
+        const pendingReportId = pendingRevealWindowReportIdRef.current;
+
+        if (!pendingReportId) {
+            return;
+        }
+
+        const report =
+            reports.find((item) => item.id === pendingReportId && item.pathname === currentPathname) ??
+            allPageReports.find((item) => item.id === pendingReportId && item.pathname === currentPathname) ??
+            currentPageReports.find((item) => item.id === pendingReportId && item.pathname === currentPathname);
+
+        if (!report) {
+            return;
+        }
+
+        pendingRevealWindowReportIdRef.current = null;
+        window.setTimeout(() => {
+            void (async () => {
+                await prepareFeedbackLocation(report);
+                const enrichedReport = await loadRepliesIfNeeded(report);
+                openReplyComposer(enrichedReport);
+            })();
+        }, 0);
+    }, [allPageReports, currentPageReports, currentPathname, loadRepliesIfNeeded, openReplyComposer, prepareFeedbackLocation, reports]);
+
     useEffect(() => {
         const feedbackId = pendingDeepLinkFeedbackIdRef.current;
 
@@ -514,5 +580,6 @@ export function useReportMarkers({
         focusSearchInput,
         selectAdjacentReport,
         activateFeedbackMarker,
+        revealOpenFeedback,
     };
 }

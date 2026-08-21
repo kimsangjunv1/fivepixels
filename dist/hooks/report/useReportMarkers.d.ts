@@ -27,10 +27,11 @@ export type UseReportMarkersParams = {
     closeReplyComposer: () => void;
     openReplyComposer: (report: ReportFeedback) => void;
     selectCase: (caseId: string) => void;
+    ensureIssueMode: () => void;
     loadRepliesIfNeeded: (report: ReportFeedback) => Promise<ReportFeedback>;
     searchInputRef: RefObject<HTMLInputElement | null>;
 };
-export declare function useReportMarkers({ mode, messages, fields, currentPathname, currentPageReports, reports, allPageReports, selectedReportId, markerAppearanceSize, showMarkerTargetPreview, showTargetPreview, selectableTargetsLength, selectedTarget, hoveredTarget, isFetching, isReportsLoading, activeReplyReportId, setErrorMessage, onNavigate, onRevealTarget, selectReport, closeReplyComposer, openReplyComposer, selectCase, loadRepliesIfNeeded, searchInputRef, }: UseReportMarkersParams): {
+export declare function useReportMarkers({ mode, messages, fields, currentPathname, currentPageReports, reports, allPageReports, selectedReportId, markerAppearanceSize, showMarkerTargetPreview, showTargetPreview, selectableTargetsLength, selectedTarget, hoveredTarget, isFetching, isReportsLoading, activeReplyReportId, setErrorMessage, onNavigate, onRevealTarget, selectReport, closeReplyComposer, openReplyComposer, selectCase, ensureIssueMode, loadRepliesIfNeeded, searchInputRef, }: UseReportMarkersParams): {
     markers: Marker[];
     hoveredMarkerId: string | null;
     setHoveredMarkerId: Dispatch<SetStateAction<string | null>>;
@@ -51,5 +52,6 @@ export declare function useReportMarkers({ mode, messages, fields, currentPathna
     focusSearchInput: () => void;
     selectAdjacentReport: (direction: "up" | "down") => void;
     activateFeedbackMarker: (report: ReportFeedback, caseId?: string | null) => Promise<void>;
+    revealOpenFeedback: (report: ReportFeedback) => Promise<void>;
 };
 //# sourceMappingURL=useReportMarkers.d.ts.map

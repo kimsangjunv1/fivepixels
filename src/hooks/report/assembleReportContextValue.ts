@@ -330,6 +330,7 @@ export function assembleReportContextValue({
         selectAdjacentReport: markers.selectAdjacentReport,
         openReplyComposer: reply.openReplyComposer,
         activateFeedbackMarker: markers.activateFeedbackMarker,
+        revealOpenFeedback: markers.revealOpenFeedback,
         closeReplyComposer: reply.closeReplyComposer,
         clearHoverLeaveTimeout: markers.clearHoverLeaveTimeout,
         scheduleHoverLeave: markers.scheduleHoverLeave,

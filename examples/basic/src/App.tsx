@@ -80,6 +80,9 @@ function AppContent() {
                 onApiLogin={exampleApiLogin}
                 onApiRegister={exampleApiRegister}
                 onArtemisLogin={exampleArtemisLogin}
+                onNavigate={(pathname) => {
+                    navigate(pathname);
+                }}
             />
             <AppRouter />
         </>

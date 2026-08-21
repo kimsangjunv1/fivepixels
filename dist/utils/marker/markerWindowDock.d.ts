@@ -1,5 +1,5 @@
 export declare const MARKER_MINIMIZED_WINDOW_WIDTH = 256;
-export declare const MARKER_MINIMIZED_WINDOW_HEIGHT = 42;
+export declare const MARKER_MINIMIZED_WINDOW_HEIGHT = 56;
 export declare const MARKER_WINDOW_MARGIN = 16;
 export declare const MARKER_MINIMIZED_DOCK_GAP = 8;
 export type MarkerWindowDockPosition = {

@@ -8,6 +8,7 @@ import type { ElementMention } from "../../types/mention.js";
 import type { TargetSnapshot } from "../../types/report-ui.js";
 export type UseReportReplyReviewParams = {
     reports: ReportFeedback[];
+    allPageReports: ReportFeedback[];
     messages: ReportMessages;
     fields: ReportField[];
     sessionActor: SessionActor | null;
@@ -24,7 +25,7 @@ export type UseReportReplyReviewParams = {
     setErrorMessage: Dispatch<SetStateAction<string>>;
     onSelectReport: (reportId: string) => void;
 };
-export declare function useReportReplyReview({ reports, messages, fields, sessionActor, authorSelectionLocked, activeIdentify, authorizedAuthors, selfName, eventCallbacks, createReply, updateFeedback, usesCreateReply, signReplyPayload, signUpdatePayload, setErrorMessage, onSelectReport, }: UseReportReplyReviewParams): {
+export declare function useReportReplyReview({ reports, allPageReports, messages, fields, sessionActor, authorSelectionLocked, activeIdentify, authorizedAuthors, selfName, eventCallbacks, createReply, updateFeedback, usesCreateReply, signReplyPayload, signUpdatePayload, setErrorMessage, onSelectReport, }: UseReportReplyReviewParams): {
     focusedCaseId: string | null;
     selectCase: (caseId: string) => void;
     clearFocusedCase: () => void;
