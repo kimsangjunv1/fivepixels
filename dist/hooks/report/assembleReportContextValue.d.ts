@@ -251,6 +251,12 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     overlayRef: RefObject<HTMLDivElement>;
     activeReplyReportId: string | null;
     activeReplyReport: ReportFeedback | null;
+    openReplyReportIds: string[];
+    openReplyReports: ReportFeedback[];
+    minimizedReplyReportIds: string[];
+    setReplyWindowMinimized: (reportId: string, minimized: boolean) => void;
+    focusReplyWindow: (reportId: string) => void;
+    closeReplyWindow: (reportId: string) => void;
     tooltipReport: ReportFeedback | null;
     tooltipAnchor: import("../../types/report-ui.js").Marker | null;
     tooltipFieldTags: {

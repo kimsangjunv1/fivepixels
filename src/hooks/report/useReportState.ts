@@ -355,7 +355,7 @@ export function useReportState({
         draft.setHoveredTarget(null);
         draft.setSelectedTarget(null);
         markers.setHoveredMarkerId(null);
-        reply.setActiveReplyReportId(null);
+        reply.closeReplyComposer();
         reply.setReplyDraft("");
         reply.setReplyMentions([]);
         reply.setMentionHighlightTarget(null);

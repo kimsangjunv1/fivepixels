@@ -30,11 +30,17 @@ import { FeedbackThread } from "@/components/panel/feedback/FeedbackThread.js";
 import { MarkerCaseSidebar } from "./MarkerCaseSidebar.js";
 import { ProcessingDots } from "@/components/ui/ProcessingDots.js";
 import { Text } from "@/components/ui/Text/index.js";
+import {
+    MARKER_MINIMIZED_WINDOW_HEIGHT,
+    MARKER_MINIMIZED_WINDOW_WIDTH,
+    MARKER_WINDOW_MARGIN,
+    resolveMinimizedDockPosition,
+} from "@/utils/marker/markerWindowDock.js";
 
 type WindowMode = "normal" | "minimized" | "maximized";
 type WindowSurfacePhase = "entering" | "idle" | "exiting";
 
-const WINDOW_MARGIN = 16;
+const WINDOW_MARGIN = MARKER_WINDOW_MARGIN;
 const DEFAULT_WINDOW_SIZE: BoxSize = { width: 600, height: 460 };
 const MIN_WINDOW_WIDTH = 420;
 const MIN_WINDOW_HEIGHT = 280;
@@ -43,8 +49,8 @@ const RESOLVED_STATUS_COLOR = ACCENT_COLOR.green;
 const SIDEBAR_MIN_WIDTH = 150;
 const RIGHT_MIN_WIDTH = 280;
 const COLLAPSED_SIDEBAR_WIDTH = 46;
-const MINIMIZED_WINDOW_HEIGHT = 42;
-const MINIMIZED_WINDOW_WIDTH = 256;
+const MINIMIZED_WINDOW_HEIGHT = MARKER_MINIMIZED_WINDOW_HEIGHT;
+const MINIMIZED_WINDOW_WIDTH = MARKER_MINIMIZED_WINDOW_WIDTH;
 const MINIMIZED_WINDOW_EXIT_ANIMATION_MS = 220;
 const WINDOW_CLOSE_ANIMATION_MS = 220;
 const LEFT_SECTION_TRANSITION = "transition-[background-color,backdrop-filter] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]";
@@ -155,6 +161,27 @@ function MinimizedCaseMarquee({ caseTexts }: { caseTexts: string[] }) {
     );
 }
 
+function UnfocusedCaseSummary({ caseTexts, emptyLabel }: { caseTexts: string[]; emptyLabel: string }) {
+    if (caseTexts.length === 0) {
+        return <p className="px-[24px] text-center text-[13px] text-[var(--adaptive-black500)]">{emptyLabel}</p>;
+    }
+
+    return (
+        <ul className="flex max-h-full w-full max-w-[440px] flex-col gap-[8px] overflow-hidden px-[28px]">
+            {caseTexts.map((text, index) => (
+                <li
+                    key={`${index}-${text.slice(0, 24)}`}
+                    className="truncate text-center text-[13px] leading-[1.4] text-[var(--adaptive-black800)]"
+                    title={text}
+                >
+                    <span className="mr-[6px] text-[var(--adaptive-black500)]">{index + 1}.</span>
+                    {text}
+                </li>
+            ))}
+        </ul>
+    );
+}
+
 function MarkerWindowShareButton({ report, messages, expanded = false }: { report: ReportFeedback; messages: ReportMessages; expanded?: boolean }) {
     const [copied, setCopied] = useState(false);
 
@@ -195,9 +222,10 @@ function MarkerWindowShareButton({ report, messages, expanded = false }: { repor
 type MarkerFeedbackWindowProps = {
     report: ReportFeedback;
     anchor: Pick<Marker, "left" | "top">;
+    isFocused: boolean;
 };
 
-export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowProps) {
+export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedbackWindowProps) {
     const {
         messages,
         fields,
@@ -215,7 +243,10 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
         isClaimingAssignee,
         focusedCaseId,
         selectCase,
-        closeReplyComposer,
+        closeReplyWindow,
+        focusReplyWindow,
+        minimizedReplyReportIds,
+        setReplyWindowMinimized,
         clearHoverLeaveTimeout,
         scheduleHoverLeave,
         setHoveredMarkerId,
@@ -295,9 +326,9 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
 
         closeFinishedRef.current = true;
         clearHoverLeaveTimeout();
-        setHoveredMarkerId(null);
-        closeReplyComposer();
-    }, [clearHoverLeaveTimeout, closeReplyComposer, setHoveredMarkerId]);
+        setHoveredMarkerId((current) => (current === report.id ? null : current));
+        closeReplyWindow(report.id);
+    }, [clearHoverLeaveTimeout, closeReplyWindow, report.id, setHoveredMarkerId]);
 
     const requestClose = useCallback(() => {
         if (closeRequestedRef.current) {
@@ -339,7 +370,7 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
     }, [finishClose, windowSurfacePhase]);
 
     useEffect(() => {
-        if (!focusedCaseId) {
+        if (!isFocused || !focusedCaseId) {
             return;
         }
 
@@ -360,6 +391,12 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
                 return;
             }
 
+            const clickedOpenWindow = path.find((node) => node instanceof Element && node.hasAttribute("data-marker-feedback-window"));
+
+            if (clickedOpenWindow instanceof Element) {
+                return;
+            }
+
             requestClose();
         };
 
@@ -368,7 +405,7 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
         return () => {
             window.removeEventListener("pointerdown", handlePointerDown);
         };
-    }, [focusedCaseId, requestClose]);
+    }, [focusedCaseId, isFocused, requestClose]);
 
     const detachSplitListeners = useCallback(() => {
         const listeners = splitListenersRef.current;
@@ -388,7 +425,8 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
     const finishMinimizedRestore = useCallback(() => {
         setIsMinimizedExiting(false);
         setWindowMode("normal");
-    }, []);
+        setReplyWindowMinimized(report.id, false);
+    }, [report.id, setReplyWindowMinimized]);
 
     useEffect(() => {
         if (!isMinimizedExiting) {
@@ -410,36 +448,44 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
         return () => window.clearTimeout(timer);
     }, [isSidebarDeleteConfirming]);
 
+    useEffect(() => {
+        const dockMinimized = minimizedReplyReportIds.includes(report.id);
+
+        if (!dockMinimized && windowMode === "minimized" && !isMinimizedExiting) {
+            setWindowMode("normal");
+        }
+    }, [isMinimizedExiting, minimizedReplyReportIds, report.id, windowMode]);
+
     const isCreatorQuestionComposer = pendingComposer?.type === "question";
 
     const showComposer = useMemo(() => {
-        if (!focusedCaseId) {
+        if (!isFocused || !focusedCaseId) {
             return false;
         }
 
         return shouldShowCaseReplyComposer(report, focusedCaseId, pendingComposer);
-    }, [focusedCaseId, pendingComposer, report]);
+    }, [focusedCaseId, isFocused, pendingComposer, report]);
 
     const replyTargetPreview = useMemo(() => {
-        if (pendingComposer?.type !== "question") {
+        if (!isFocused || pendingComposer?.type !== "question") {
             return null;
         }
 
         return resolvePendingComposerTargetPreview(report, focusedCaseId, pendingComposer);
-    }, [focusedCaseId, pendingComposer, report]);
+    }, [focusedCaseId, isFocused, pendingComposer, report]);
 
-    const focusedCase = focusedCaseId ? getCaseById(report, focusedCaseId) : undefined;
-    const focusedCaseAssigneeName = focusedCaseId ? getCaseAssigneeName(report, focusedCaseId) : null;
+    const focusedCase = isFocused && focusedCaseId ? getCaseById(report, focusedCaseId) : undefined;
+    const focusedCaseAssigneeName = isFocused && focusedCaseId ? getCaseAssigneeName(report, focusedCaseId) : null;
     const showAssigneeAssigned = Boolean(focusedCaseAssigneeName) || isClaimingAssignee;
     const fieldTags = useMemo(() => getFieldTags(fields, report.field_values), [fields, report.field_values]);
-    const minimizedCaseTexts = useMemo(
+    const caseTexts = useMemo(
         () =>
             getReportCases(report)
-                .slice(0, 5)
                 .map((caseItem) => mentionMessageToPlainText(caseItem.text, caseItem.mentions).trim())
                 .filter(Boolean),
         [report],
     );
+    const minimizedCaseTexts = useMemo(() => caseTexts.slice(0, 5), [caseTexts]);
 
     const viewport = getViewportSize();
     const maximizedSize: BoxSize = {
@@ -452,6 +498,8 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
     const effectiveSize = isMaximized ? maximizedSize : size;
     const minimizedWidth = Math.min(MINIMIZED_WINDOW_WIDTH, Math.max(0, viewport.width - WINDOW_MARGIN * 2));
     const resolvedSidebarWidth = clampSidebarWidth(sidebarWidth, effectiveSize.width);
+    const minimizedDockIndex = Math.max(0, minimizedReplyReportIds.indexOf(report.id));
+    const minimizedDockCount = Math.max(1, minimizedReplyReportIds.length);
 
     const initialPosition = useMemo(
         () => clampWindowPosition(anchor.left + getMarkerDotSize() / 2 - size.width / 2, anchor.top + getMarkerDotSize() / 2 - size.height / 2, size.width, size.height),
@@ -459,10 +507,7 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
     );
 
     const resolvedPosition = isMinimized
-        ? {
-              left: Math.round((viewport.width - minimizedWidth) / 2),
-              top: Math.max(WINDOW_MARGIN, viewport.height - WINDOW_MARGIN - MINIMIZED_WINDOW_HEIGHT),
-          }
+        ? resolveMinimizedDockPosition(minimizedDockIndex, minimizedDockCount, viewport.width, viewport.height, minimizedWidth, MINIMIZED_WINDOW_HEIGHT)
         : isMaximized
           ? { left: WINDOW_MARGIN, top: WINDOW_MARGIN }
           : (position ?? initialPosition);
@@ -513,6 +558,8 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
                 return;
             }
 
+            focusReplyWindow(report.id);
+
             if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
                 finishMinimizedRestore();
                 return;
@@ -524,6 +571,7 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
 
         setIsMinimizedExiting(false);
         setWindowMode("minimized");
+        setReplyWindowMinimized(report.id, true);
     };
 
     const handleMinimizedAnimationEnd = (event: ReactAnimationEvent<HTMLDivElement>) => {
@@ -533,7 +581,17 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
     };
 
     const handleToggleMaximize = () => {
+        if (!isFocused) {
+            focusReplyWindow(report.id);
+        }
+
         setWindowMode((current) => (current === "maximized" ? "normal" : "maximized"));
+    };
+
+    const handleWindowActivate = () => {
+        if (!isFocused) {
+            focusReplyWindow(report.id);
+        }
     };
 
     const handleAddCase = () => {
@@ -545,7 +603,7 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
     const handleTogglePin = () => {
         togglePinnedFeedback(
             createPinnedFeedbackItem(report, {
-                caseId: focusedCaseId,
+                caseId: isFocused ? focusedCaseId : null,
                 summaryMore: messages.cases.summaryMore,
             }),
         );
@@ -703,6 +761,15 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
         </div>
     ) : null;
 
+    const unfocusedBody = (
+        <div className="flex min-h-0 min-w-0 flex-1 items-center justify-center bg-[var(--adaptive-black50)]">
+            <UnfocusedCaseSummary
+                caseTexts={caseTexts}
+                emptyLabel={messages.cases.selectToView}
+            />
+        </div>
+    );
+
     const rightSection = (
         <div className="flex min-w-0 flex-1 flex-col bg-[var(--adaptive-black50)]">
             <header
@@ -832,9 +899,12 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
             <div
                 ref={bindWindowRef}
                 data-fivepixels-interactive=""
+                data-marker-feedback-window={report.id}
+                data-marker-window-focused={isFocused ? "true" : "false"}
+                onPointerDown={handleWindowActivate}
                 onClick={(event) => event.stopPropagation()}
                 onAnimationEnd={handleWindowAnimationEnd}
-                className={`fixed z-[1000001] ${windowAnimationClass}`}
+                className={`fixed ${isFocused ? "z-[1000002]" : "z-[1000001]"} ${windowAnimationClass}`}
                 style={{
                     left: resolvedPosition.left,
                     top: resolvedPosition.top,
@@ -863,58 +933,73 @@ export function MarkerFeedbackWindow({ report, anchor }: MarkerFeedbackWindowPro
                 ) : (
                     <div
                         ref={surfaceRef}
-                        className="flex h-full w-full flex-row overflow-hidden rounded-[16px] shadow-[var(--adaptive-popup-shadow)] border border-[var(--adaptive-border-subtle)]"
+                        className="flex h-full w-full flex-row overflow-hidden rounded-[16px] border border-[var(--adaptive-border-subtle)] shadow-[var(--adaptive-popup-shadow)]"
                     >
-                        {isSidebarCollapsed ? (
-                            <div
-                                onPointerDown={handleDragHandlePointerDown}
-                                className={`flex shrink-0 cursor-move touch-none select-none flex-col items-center gap-[2px] py-[8px] ${leftSectionClass}`}
-                                style={{ width: COLLAPSED_SIDEBAR_WIDTH }}
-                            >
-                                {leftControls}
-                                {shareButton}
-                                {editButton}
-                                {deleteButton}
-                                {pinButton}
-                                {sidebarToggleButton}
-                            </div>
+                        {isFocused ? (
+                            <>
+                                {isSidebarCollapsed ? (
+                                    <div
+                                        onPointerDown={handleDragHandlePointerDown}
+                                        className={`flex shrink-0 cursor-move touch-none select-none flex-col items-center gap-[2px] py-[8px] ${leftSectionClass}`}
+                                        style={{ width: COLLAPSED_SIDEBAR_WIDTH }}
+                                    >
+                                        {leftControls}
+                                        {shareButton}
+                                        {editButton}
+                                        {deleteButton}
+                                        {pinButton}
+                                        {sidebarToggleButton}
+                                    </div>
+                                ) : (
+                                    <div
+                                        className={`flex shrink-0 flex-col overflow-hidden ${leftSectionClass}`}
+                                        style={{ width: resolvedSidebarWidth }}
+                                    >
+                                        <header
+                                            onPointerDown={handleDragHandlePointerDown}
+                                            className="flex shrink-0 cursor-move touch-none select-none items-center justify-between gap-[8px] px-[10px] py-[8px]"
+                                        >
+                                            <div className="flex items-center gap-[2px]">{leftControls}</div>
+                                            <div className="flex items-center gap-[2px]">{sidebarToggleButton}</div>
+                                        </header>
+
+                                        {expandedSidebarActions}
+
+                                        <MarkerCaseSidebar
+                                            report={report}
+                                            focusedCaseId={focusedCaseId}
+                                            onSelectCase={selectCase}
+                                        />
+
+                                        {expandedSidebarDelete}
+                                    </div>
+                                )}
+
+                                {isSidebarCollapsed ? null : (
+                                    <div
+                                        role="separator"
+                                        aria-orientation="vertical"
+                                        onPointerDown={handleSplitPointerDown}
+                                        className="group relative w-[3px] shrink-0 cursor-col-resize touch-none self-stretch bg-[var(--adaptive-black50)] transition-colors group-hover:bg-[var(--adaptive-blue500)]"
+                                    >
+                                        <span className="pointer-events-none absolute inset-y-0 left-1/2 w-px -translate-x-1/2 touch-none bg-[var(--adaptive-border-subtle)] transition-colors group-hover:bg-[var(--adaptive-blue500)]" />
+                                    </div>
+                                )}
+
+                                {rightSection}
+                            </>
                         ) : (
-                            <div
-                                className={`flex shrink-0 flex-col overflow-hidden ${leftSectionClass}`}
-                                style={{ width: resolvedSidebarWidth }}
-                            >
-                                <header
+                            <>
+                                <div
                                     onPointerDown={handleDragHandlePointerDown}
-                                    className="flex shrink-0 cursor-move touch-none select-none items-center justify-between gap-[8px] px-[10px] py-[8px]"
+                                    className={`flex shrink-0 cursor-move touch-none select-none flex-col items-center gap-[2px] py-[8px] ${leftSectionClass}`}
+                                    style={{ width: COLLAPSED_SIDEBAR_WIDTH }}
                                 >
-                                    <div className="flex items-center gap-[2px]">{leftControls}</div>
-                                    <div className="flex items-center gap-[2px]">{sidebarToggleButton}</div>
-                                </header>
-
-                                {expandedSidebarActions}
-
-                                <MarkerCaseSidebar
-                                    report={report}
-                                    focusedCaseId={focusedCaseId}
-                                    onSelectCase={selectCase}
-                                />
-
-                                {expandedSidebarDelete}
-                            </div>
+                                    {leftControls}
+                                </div>
+                                {unfocusedBody}
+                            </>
                         )}
-
-                        {isSidebarCollapsed ? null : (
-                            <div
-                                role="separator"
-                                aria-orientation="vertical"
-                                onPointerDown={handleSplitPointerDown}
-                                className="group relative w-[3px] shrink-0 cursor-col-resize touch-none self-stretch bg-[var(--adaptive-black50)] group-hover:bg-[var(--adaptive-blue500)] transition-colors"
-                            >
-                                <span className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-[var(--adaptive-border-subtle)] transition-colors group-hover:bg-[var(--adaptive-blue500)] touch-none pointer-events-none" />
-                            </div>
-                        )}
-
-                        {rightSection}
 
                         {windowMode === "normal" ? (
                             <CornerResizeHandle

@@ -208,7 +208,7 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         draft.setHoveredTarget(null);
         draft.setSelectedTarget(null);
         markers.setHoveredMarkerId(null);
-        reply.setActiveReplyReportId(null);
+        reply.closeReplyComposer();
         reply.setReplyDraft("");
         reply.setReplyMentions([]);
         reply.setMentionHighlightTarget(null);

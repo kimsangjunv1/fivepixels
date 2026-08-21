@@ -43,6 +43,12 @@ export declare function useReportReplyReview({ reports, messages, fields, sessio
     caseEditCases: import("../../types/report.js").ReportCase[] | null;
     activeReplyReportId: string | null;
     setActiveReplyReportId: Dispatch<SetStateAction<string | null>>;
+    openReplyReportIds: string[];
+    openReplyReports: ReportFeedback[];
+    minimizedReplyReportIds: string[];
+    setReplyWindowMinimized: (reportId: string, minimized: boolean) => void;
+    focusReplyWindow: (reportId: string) => void;
+    closeReplyWindow: (reportId: string) => void;
     activeReplyReport: ReportFeedback | null;
     activeReplyAnchor: {
         report: ReportFeedback;

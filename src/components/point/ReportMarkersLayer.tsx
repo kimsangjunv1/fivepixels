@@ -228,7 +228,8 @@ export function ReportMarkersLayer() {
     const {
         mode,
         markers,
-        activeReplyReport,
+        openReplyReports,
+        openReplyReportIds,
         activeReplyReportId,
         tooltipReport,
         tooltipAnchor,
@@ -258,7 +259,7 @@ export function ReportMarkersLayer() {
         (reportId: string) => {
             setHoverPointer(null);
 
-            if (activeReplyReportId) {
+            if (openReplyReportIds.length > 0) {
                 scheduleHoverLeave(reportId);
                 return;
             }
@@ -266,10 +267,11 @@ export function ReportMarkersLayer() {
             clearHoverLeaveTimeout();
             setHoveredMarkerId((current) => (current === reportId ? null : current));
         },
-        [activeReplyReportId, clearHoverLeaveTimeout, scheduleHoverLeave, setHoverPointer, setHoveredMarkerId],
+        [clearHoverLeaveTimeout, openReplyReportIds.length, scheduleHoverLeave, setHoverPointer, setHoveredMarkerId],
     );
 
-    const isExpandedTooltip = Boolean(activeReplyReport && tooltipReport && activeReplyReport.id === tooltipReport.id);
+    const openReplyReportIdSet = useMemo(() => new Set(openReplyReportIds), [openReplyReportIds]);
+    const isHoveringOpenWindow = Boolean(tooltipReport && openReplyReportIdSet.has(tooltipReport.id));
 
     const isViewMode = mode === "view";
     const isReportMode = mode === "report";
@@ -358,8 +360,8 @@ export function ReportMarkersLayer() {
         scrollContainerTowardEdge(hint.containerId, hint.edge);
     }, []);
 
-    const showTooltip = Boolean(tooltipReport && tooltipAnchor) && (!editingReportId || tooltipReport?.id !== editingReportId);
-    const { layout: tooltipLayout, setTooltipElement } = useTooltipLayout(tooltipAnchor, isExpandedTooltip, showTooltip);
+    const showTooltip = Boolean(tooltipReport && tooltipAnchor) && (!editingReportId || tooltipReport?.id !== editingReportId) && !isHoveringOpenWindow;
+    const { layout: tooltipLayout, setTooltipElement } = useTooltipLayout(tooltipAnchor, false, showTooltip);
     const tooltipPosition = tooltipLayout?.position ?? null;
     const tooltipAnchorStyle = tooltipLayout?.anchorStyle;
 
@@ -382,7 +384,7 @@ export function ReportMarkersLayer() {
                 <MarkerButton
                     key={markerItem.id}
                     markerItem={markerItem}
-                    isHovered={isViewMode && tooltipReport?.id === markerItem.report.id && !isExpandedTooltip}
+                    isHovered={isViewMode && tooltipReport?.id === markerItem.report.id && !openReplyReportIdSet.has(markerItem.report.id)}
                     isReportMode={isReportMode}
                     isProximityHighlighted={markerItem.id === proximityHighlightedMarkerId}
                     detachedAriaLabel={messages.marker.detachedAriaLabel}
@@ -407,7 +409,7 @@ export function ReportMarkersLayer() {
                   ))
                 : null}
 
-            {showTooltip && !isExpandedTooltip && tooltipReport && tooltipPosition && tooltipAnchorStyle ? (
+            {showTooltip && tooltipReport && tooltipPosition && tooltipAnchorStyle ? (
                 <div
                     ref={bindHoverTooltipRef}
                     className={`pointer-events-none ${TOOLTIP_FIXED_CLASS}`}
@@ -429,13 +431,24 @@ export function ReportMarkersLayer() {
                 </div>
             ) : null}
 
-            {isViewMode && isExpandedTooltip && activeReplyReport && tooltipAnchor ? (
-                <MarkerFeedbackWindow
-                    key={activeReplyReport.id}
-                    report={activeReplyReport}
-                    anchor={tooltipAnchor}
-                />
-            ) : null}
+            {isViewMode
+                ? openReplyReports.map((report) => {
+                      const markerAnchor = markers.find((marker) => marker.report.id === report.id);
+                      const anchor = markerAnchor ?? {
+                          left: typeof window === "undefined" ? 0 : Math.round(window.innerWidth / 2),
+                          top: typeof window === "undefined" ? 0 : Math.round(window.innerHeight / 2),
+                      };
+
+                      return (
+                          <MarkerFeedbackWindow
+                              key={report.id}
+                              report={report}
+                              anchor={anchor}
+                              isFocused={report.id === activeReplyReportId}
+                          />
+                      );
+                  })
+                : null}
         </>
     );
 }

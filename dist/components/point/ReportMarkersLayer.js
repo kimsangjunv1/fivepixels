@@ -98,21 +98,22 @@ function MarkerButton({ markerItem, isHovered, isReportMode, isProximityHighligh
                         }, children: aggregateCount })) : null, showReplyIndicator ? (_jsx(MarkerReplyBadge, { size: replyBadgeSize, accentColor: markerColor })) : null] }) }) }));
 }
 export function ReportMarkersLayer() {
-    const { mode, markers, activeReplyReport, activeReplyReportId, tooltipReport, tooltipAnchor, editingReportId, hoverPointer, setHoverPointer, messages, markerAppearance, typography, showHiddenDetachedMarkers, showModalDetachedMarkers, activateFeedbackMarker, clearHoverLeaveTimeout, scheduleHoverLeave, setHoveredMarkerId, } = useReport();
+    const { mode, markers, openReplyReports, openReplyReportIds, activeReplyReportId, tooltipReport, tooltipAnchor, editingReportId, hoverPointer, setHoverPointer, messages, markerAppearance, typography, showHiddenDetachedMarkers, showModalDetachedMarkers, activateFeedbackMarker, clearHoverLeaveTimeout, scheduleHoverLeave, setHoveredMarkerId, } = useReport();
     const handleMarkerHoverStart = useCallback((reportId) => {
         clearHoverLeaveTimeout();
         setHoveredMarkerId(reportId);
     }, [clearHoverLeaveTimeout, setHoveredMarkerId]);
     const handleMarkerHoverEnd = useCallback((reportId) => {
         setHoverPointer(null);
-        if (activeReplyReportId) {
+        if (openReplyReportIds.length > 0) {
             scheduleHoverLeave(reportId);
             return;
         }
         clearHoverLeaveTimeout();
         setHoveredMarkerId((current) => (current === reportId ? null : current));
-    }, [activeReplyReportId, clearHoverLeaveTimeout, scheduleHoverLeave, setHoverPointer, setHoveredMarkerId]);
-    const isExpandedTooltip = Boolean(activeReplyReport && tooltipReport && activeReplyReport.id === tooltipReport.id);
+    }, [clearHoverLeaveTimeout, openReplyReportIds.length, scheduleHoverLeave, setHoverPointer, setHoveredMarkerId]);
+    const openReplyReportIdSet = useMemo(() => new Set(openReplyReportIds), [openReplyReportIds]);
+    const isHoveringOpenWindow = Boolean(tooltipReport && openReplyReportIdSet.has(tooltipReport.id));
     const isViewMode = mode === "view";
     const isReportMode = mode === "report";
     const visibleMarkers = useMemo(() => markers.filter((marker) => {
@@ -177,8 +178,8 @@ export function ReportMarkersLayer() {
     const handleOverflowHintActivate = useCallback((hint) => {
         scrollContainerTowardEdge(hint.containerId, hint.edge);
     }, []);
-    const showTooltip = Boolean(tooltipReport && tooltipAnchor) && (!editingReportId || tooltipReport?.id !== editingReportId);
-    const { layout: tooltipLayout, setTooltipElement } = useTooltipLayout(tooltipAnchor, isExpandedTooltip, showTooltip);
+    const showTooltip = Boolean(tooltipReport && tooltipAnchor) && (!editingReportId || tooltipReport?.id !== editingReportId) && !isHoveringOpenWindow;
+    const { layout: tooltipLayout, setTooltipElement } = useTooltipLayout(tooltipAnchor, false, showTooltip);
     const tooltipPosition = tooltipLayout?.position ?? null;
     const tooltipAnchorStyle = tooltipLayout?.anchorStyle;
     const bindHoverTooltipRef = useCallback((node) => {
@@ -187,14 +188,23 @@ export function ReportMarkersLayer() {
     if (!isViewMode && !isReportMode) {
         return null;
     }
-    return (_jsxs(_Fragment, { children: [isViewMode && ghostFrameMarker ? _jsx(DetachedModalGhostFrame, { label: messages.marker.detachedModalHint }) : null, visibleMarkers.map((markerItem) => (_jsx(MarkerButton, { markerItem: markerItem, isHovered: isViewMode && tooltipReport?.id === markerItem.report.id && !isExpandedTooltip, isReportMode: isReportMode, isProximityHighlighted: markerItem.id === proximityHighlightedMarkerId, detachedAriaLabel: messages.marker.detachedAriaLabel, detachedModalAriaLabel: messages.marker.detachedModalAriaLabel, markerAppearance: markerAppearance, typography: typography, onActivate: activateFeedbackMarker, onHoverStart: () => handleMarkerHoverStart(markerItem.report.id), onHoverEnd: () => handleMarkerHoverEnd(markerItem.report.id), onPointerMove: (clientX, clientY) => setHoverPointer({ clientX, clientY }) }, markerItem.id))), isViewMode
+    return (_jsxs(_Fragment, { children: [isViewMode && ghostFrameMarker ? _jsx(DetachedModalGhostFrame, { label: messages.marker.detachedModalHint }) : null, visibleMarkers.map((markerItem) => (_jsx(MarkerButton, { markerItem: markerItem, isHovered: isViewMode && tooltipReport?.id === markerItem.report.id && !openReplyReportIdSet.has(markerItem.report.id), isReportMode: isReportMode, isProximityHighlighted: markerItem.id === proximityHighlightedMarkerId, detachedAriaLabel: messages.marker.detachedAriaLabel, detachedModalAriaLabel: messages.marker.detachedModalAriaLabel, markerAppearance: markerAppearance, typography: typography, onActivate: activateFeedbackMarker, onHoverStart: () => handleMarkerHoverStart(markerItem.report.id), onHoverEnd: () => handleMarkerHoverEnd(markerItem.report.id), onPointerMove: (clientX, clientY) => setHoverPointer({ clientX, clientY }) }, markerItem.id))), isViewMode
                 ? overflowHints.map((hint) => (_jsx(MarkerOverflowHintButton, { hint: hint, label: getOverflowHintLabel(hint), onActivate: handleOverflowHintActivate }, hint.id)))
-                : null, showTooltip && !isExpandedTooltip && tooltipReport && tooltipPosition && tooltipAnchorStyle ? (_jsx("div", { ref: bindHoverTooltipRef, className: `pointer-events-none ${TOOLTIP_FIXED_CLASS}`, style: {
+                : null, showTooltip && tooltipReport && tooltipPosition && tooltipAnchorStyle ? (_jsx("div", { ref: bindHoverTooltipRef, className: `pointer-events-none ${TOOLTIP_FIXED_CLASS}`, style: {
                     left: tooltipPosition.left,
                     top: tooltipPosition.top,
                     width: tooltipPosition.width,
                     ...tooltipAnchorStyle,
                     pointerEvents: "none",
-                }, children: _jsx(FeedbackHoverCard, { report: tooltipReport, detached: Boolean(tooltipAnchor?.detached), detachedKind: tooltipAnchor?.detachedKind ?? null, detachedHint: messages.marker.detachedHint, detachedModalHint: messages.marker.detachedModalHint }) })) : null, isViewMode && isExpandedTooltip && activeReplyReport && tooltipAnchor ? (_jsx(MarkerFeedbackWindow, { report: activeReplyReport, anchor: tooltipAnchor }, activeReplyReport.id)) : null] }));
+                }, children: _jsx(FeedbackHoverCard, { report: tooltipReport, detached: Boolean(tooltipAnchor?.detached), detachedKind: tooltipAnchor?.detachedKind ?? null, detachedHint: messages.marker.detachedHint, detachedModalHint: messages.marker.detachedModalHint }) })) : null, isViewMode
+                ? openReplyReports.map((report) => {
+                    const markerAnchor = markers.find((marker) => marker.report.id === report.id);
+                    const anchor = markerAnchor ?? {
+                        left: typeof window === "undefined" ? 0 : Math.round(window.innerWidth / 2),
+                        top: typeof window === "undefined" ? 0 : Math.round(window.innerHeight / 2),
+                    };
+                    return (_jsx(MarkerFeedbackWindow, { report: report, anchor: anchor, isFocused: report.id === activeReplyReportId }, report.id));
+                })
+                : null] }));
 }
 //# sourceMappingURL=ReportMarkersLayer.js.map
