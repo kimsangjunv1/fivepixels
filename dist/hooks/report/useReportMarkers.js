@@ -13,7 +13,7 @@ function getInitialDeepLinkFeedbackId() {
     }
     return parseFeedbackDeepLink()?.feedbackId ?? null;
 }
-export function useReportMarkers({ mode, messages, fields, currentPathname, currentPageReports, reports, allPageReports, selectedReportId, markerAppearanceSize, showMarkerTargetPreview, showTargetPreview, selectableTargetsLength, selectedTarget, hoveredTarget, isFetching, isReportsLoading, activeReplyReportId, setErrorMessage, onNavigate, onRevealTarget, selectReport, closeReplyComposer, openReplyComposer, selectCase, ensureIssueMode, loadRepliesIfNeeded, searchInputRef, }) {
+export function useReportMarkers({ mode, messages, fields, currentPathname, currentPageReports, reports, allPageReports, selectedReportId, markerAppearanceSize, showMarkerTargetPreview, showTargetPreview, selectableTargetsLength, selectedTarget, hoveredTarget, isFetching, isReportsLoading, activeReplyReportId, minimizedReplyReportIds = [], setErrorMessage, onNavigate, onRevealTarget, selectReport, closeReplyComposer, openReplyComposer, selectCase, ensureIssueMode, loadRepliesIfNeeded, searchInputRef, }) {
     const [markers, setMarkers] = useState([]);
     const [hoveredMarkerId, setHoveredMarkerId] = useState(null);
     const hoverLeaveTimeoutRef = useRef(null);
@@ -26,15 +26,16 @@ export function useReportMarkers({ mode, messages, fields, currentPathname, curr
         const visibleReports = filterFeedbackForActiveViews(currentPageReports, getActiveFeedbackViewKeys());
         setMarkers(aggregateViewTriggerMarkers(visibleReports.map((report) => getMarkerFromReport(report, currentScrollY))));
     }, [currentPageReports, markerAppearanceSize]);
+    const minimizedReplyReportIdSet = useMemo(() => new Set(minimizedReplyReportIds), [minimizedReplyReportIds]);
     const activeMarkerReportId = useMemo(() => {
-        if (activeReplyReportId) {
+        if (activeReplyReportId && !minimizedReplyReportIdSet.has(activeReplyReportId)) {
             return activeReplyReportId;
         }
-        if (hoveredMarkerId) {
+        if (hoveredMarkerId && !minimizedReplyReportIdSet.has(hoveredMarkerId)) {
             return hoveredMarkerId;
         }
         return null;
-    }, [activeReplyReportId, hoveredMarkerId]);
+    }, [activeReplyReportId, hoveredMarkerId, minimizedReplyReportIdSet]);
     const activeMarkerTarget = useMemo(() => {
         if (!activeMarkerReportId) {
             return null;

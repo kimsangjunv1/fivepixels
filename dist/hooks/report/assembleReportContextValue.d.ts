@@ -255,6 +255,7 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     openReplyReports: ReportFeedback[];
     minimizedReplyReportIds: string[];
     setReplyWindowMinimized: (reportId: string, minimized: boolean) => void;
+    reorderMinimizedReplyWindow: (reportId: string, toIndex: number) => void;
     focusReplyWindow: (reportId: string) => void;
     closeReplyWindow: (reportId: string) => void;
     tooltipReport: ReportFeedback | null;
@@ -301,6 +302,9 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     removePersistedCase: (report: ReportFeedback, caseId: string) => Promise<void>;
     focusedCaseId: string | null;
     selectCase: (caseId: string) => void;
+    isComposingNewCase: boolean;
+    beginComposeNewCase: () => void;
+    cancelComposeNewCase: () => void;
     clearFocusedCase: () => void;
     isCaseEditing: boolean;
     caseEditReportId: string | null;
@@ -352,6 +356,7 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     stopEditing: () => void;
     handleUpdateSubmit: () => Promise<void>;
     handleReplySubmit: () => Promise<void>;
+    handleCreateCaseSubmit: () => Promise<void>;
     handleDelete: (id: string) => Promise<void>;
     canCreateGitHubIssueFromList: boolean;
     canCreateGitHubIssueOnCreate: boolean;

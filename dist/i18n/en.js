@@ -253,6 +253,8 @@ export const en = {
         removeCaseConfirmTitle: "Press again to delete",
         removeCaseAriaLabel: "Delete case",
         removeCaseConfirmAriaLabel: "Press again to delete case",
+        composingCaseTitle: "Case in progress",
+        composingCasePlaceholder: "Enter the case you want to add",
     },
     thread: {
         scrollHintUp: "More messages above",
@@ -273,6 +275,7 @@ export const en = {
         questionsPending: (count) => (count === 1 ? "Question awaiting reply" : `${count} questions awaiting reply`),
         questionsToggleAriaLabel: (count, expanded) => (expanded ? `Hide ${count} question${count === 1 ? "" : "s"}` : `Show ${count} question${count === 1 ? "" : "s"}`),
         issueResolvedDivider: "Issue Resolved",
+        detachedTargetDivider: "Original target is missing. It will reactivate when restored.",
         claimAssignee: "Take ownership",
         takeOverAssignee: "Take over",
         assigneeAssigned: "Assigned and Review Started.",
@@ -801,6 +804,11 @@ export const en = {
         viewMoreCases: "Click to view more cases",
         hoverTooltipHeader: "Feedback summary",
         offscreenNavigateHint: "Click to go to the path where this feedback exists",
+        minimizedAliasEditAriaLabel: "Edit minimized window alias",
+        minimizedAliasInputAriaLabel: "Minimized window alias",
+        minimizedAliasPlaceholder: "Enter alias",
+        minimizedAliasClearAriaLabel: "Clear alias",
+        viewingWindowBadge: "Viewing",
     },
     defaults: {
         fields: {

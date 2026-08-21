@@ -253,6 +253,8 @@ export const ko = {
         removeCaseConfirmTitle: "한 번 더 눌러 삭제",
         removeCaseAriaLabel: "케이스 삭제",
         removeCaseConfirmAriaLabel: "한 번 더 눌러 케이스 삭제",
+        composingCaseTitle: "현재 작성중인 케이스",
+        composingCasePlaceholder: "추가하실 케이스를 입력해주세요",
     },
     thread: {
         scrollHintUp: "위쪽에 더 많은 메시지가 있어요",
@@ -273,6 +275,7 @@ export const ko = {
         questionsPending: (count) => (count === 1 ? "답변 대기 중인 질문" : `답변 대기 중인 질문 ${count}개`),
         questionsToggleAriaLabel: (count, expanded) => (expanded ? `질문 ${count}개 숨기기` : `질문 ${count}개 보기`),
         issueResolvedDivider: "이슈 해결됨",
+        detachedTargetDivider: "원본이 유실되었습니다, 복구시 다시 활성화 됩니다",
         claimAssignee: "담당하기",
         takeOverAssignee: "내가 담당하기",
         assigneeAssigned: "담당자 배정 및 검토가 시작되었습니다.",
@@ -801,6 +804,11 @@ export const ko = {
         viewMoreCases: "클릭하여 더 많은 케이스 확인",
         hoverTooltipHeader: "피드백 요약",
         offscreenNavigateHint: "클릭하면 해당 피드백이 존재하는 경로로 이동해요",
+        minimizedAliasEditAriaLabel: "최소화 창 별칭 편집",
+        minimizedAliasInputAriaLabel: "최소화 창 별칭",
+        minimizedAliasPlaceholder: "별칭 입력",
+        minimizedAliasClearAriaLabel: "별칭 삭제",
+        viewingWindowBadge: "보는중",
     },
     defaults: {
         fields: {

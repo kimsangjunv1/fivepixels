@@ -79,13 +79,47 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
     });
     const replyBridgeRef = useRef({
         activeReplyReportId: null,
+        openReplyReportIds: [],
+        minimizedReplyReportIds: [],
         closeReplyComposer: () => undefined,
+        closeReplyWindow: () => undefined,
         openReplyComposer: () => undefined,
+        restoreOpenReplyWindows: () => undefined,
     });
+    const suspendedOpenWindowsRef = useRef(null);
     const closeReplyComposerBridge = useCallback(() => {
         replyBridgeRef.current.closeReplyComposer();
     }, []);
+    const closeReplyWindowBridge = useCallback((reportId) => {
+        replyBridgeRef.current.closeReplyWindow(reportId);
+    }, []);
     const openReplyComposerBridge = useCallback((report) => {
+        replyBridgeRef.current.openReplyComposer(report);
+    }, []);
+    const restoreSuspendedOpenReplyWindows = useCallback((focusReport) => {
+        const snapshot = suspendedOpenWindowsRef.current;
+        suspendedOpenWindowsRef.current = null;
+        const preferredFocusId = focusReport?.id ?? snapshot?.focusedId ?? null;
+        if (snapshot && snapshot.openIds.length > 0) {
+            replyBridgeRef.current.restoreOpenReplyWindows(snapshot, preferredFocusId, focusReport);
+            return;
+        }
+        if (focusReport) {
+            replyBridgeRef.current.openReplyComposer(focusReport);
+        }
+    }, []);
+    const captureOpenReplyWindowsForDraftEdit = useCallback(() => {
+        suspendedOpenWindowsRef.current = {
+            openIds: [...replyBridgeRef.current.openReplyReportIds],
+            minimizedIds: [...replyBridgeRef.current.minimizedReplyReportIds],
+            focusedId: replyBridgeRef.current.activeReplyReportId,
+        };
+    }, []);
+    const draftSessionBridgeRef = useRef({
+        discardDraft: () => undefined,
+    });
+    const openReplyComposerClearingDraft = useCallback((report) => {
+        draftSessionBridgeRef.current.discardDraft();
         replyBridgeRef.current.openReplyComposer(report);
     }, []);
     const mutations = useReportMutations({
@@ -98,9 +132,8 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         selectedReport: panel.selectedReport,
         selectedReportId: panel.selectedReportId,
         setSelectedReportId: panel.setSelectedReportId,
-        getActiveReplyReportId: () => replyBridgeRef.current.activeReplyReportId,
-        closeReplyComposer: closeReplyComposerBridge,
-        openReplyComposer: openReplyComposerBridge,
+        closeReplyWindow: closeReplyWindowBridge,
+        restoreSuspendedOpenReplyWindows,
         isCreating: panel.isCreating,
         createFeedback: panel.createFeedback,
         updateFeedback: panel.updateFeedback,
@@ -114,23 +147,25 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         buildCreatePayloadFromDraft: draft.buildCreatePayloadFromDraft,
         finalizeDraftCreate: draft.finalizeDraftCreate,
     });
+    const discardDraft = useCallback(() => {
+        draft.cancelDraft();
+        mutations.stopEditing();
+    }, [draft, mutations]);
+    draftSessionBridgeRef.current = {
+        discardDraft,
+    };
     const selectReport = (reportId) => {
         panel.setSelectedReportId(reportId);
         if (mutations.editingReportId && mutations.editingReportId !== reportId) {
-            mutations.stopEditing();
+            discardDraft();
+            restoreSuspendedOpenReplyWindows(null);
         }
     };
     const cancelDraft = () => {
         const editingId = mutations.editingReportId;
-        draft.cancelDraft();
-        mutations.stopEditing();
-        if (!editingId) {
-            return;
-        }
-        const editingReport = panel.reports.find((item) => item.id === editingId);
-        if (editingReport) {
-            openReplyComposerBridge(editingReport);
-        }
+        const editingReport = editingId ? (panel.reports.find((item) => item.id === editingId) ?? null) : null;
+        discardDraft();
+        restoreSuspendedOpenReplyWindows(editingReport);
     };
     const reply = useReportReplyReview({
         reports: panel.reports,
@@ -153,8 +188,12 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
     });
     replyBridgeRef.current = {
         activeReplyReportId: reply.activeReplyReportId,
+        openReplyReportIds: reply.openReplyReportIds,
+        minimizedReplyReportIds: reply.minimizedReplyReportIds,
         closeReplyComposer: reply.closeReplyComposer,
+        closeReplyWindow: reply.closeReplyWindow,
         openReplyComposer: reply.openReplyComposer,
+        restoreOpenReplyWindows: reply.restoreOpenReplyWindows,
     };
     panelShellBridgesRef.current = {
         setShowTargetPreview: draft.setShowTargetPreview,
@@ -179,25 +218,29 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         isFetching: panel.isFetching,
         isReportsLoading: panel.isReportsLoading,
         activeReplyReportId: reply.activeReplyReportId,
+        minimizedReplyReportIds: reply.minimizedReplyReportIds,
         setErrorMessage: panel.setErrorMessage,
         onNavigate,
         onRevealTarget,
         selectReport,
         closeReplyComposer: closeReplyComposerBridge,
-        openReplyComposer: openReplyComposerBridge,
+        openReplyComposer: openReplyComposerClearingDraft,
         selectCase: reply.selectCase,
         ensureIssueMode: panel.enableIssueMode,
         loadRepliesIfNeeded: panel.loadRepliesIfNeeded,
         searchInputRef: panel.searchInputRef,
     });
     const beginFeedbackEdit = (report) => {
+        captureOpenReplyWindowsForDraftEdit();
         closeReplyComposerBridge();
         markers.setHoveredMarkerId(null);
         if (!mutations.beginDraftReportEdit(report)) {
+            restoreSuspendedOpenReplyWindows(report);
             return;
         }
         if (!draft.beginDraftEdit(report)) {
             mutations.stopEditing();
+            restoreSuspendedOpenReplyWindows(report);
         }
     };
     const authorizedAuthorId = auth.authorizedAuthors[0]?.id ?? null;
@@ -221,6 +264,7 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         }
         mutations.setEditingReportId(null);
         mutations.setEditableDraft(null);
+        suspendedOpenWindowsRef.current = null;
         if (panel.mode !== "idle") {
             draft.setShowTargetPreview(false);
         }
