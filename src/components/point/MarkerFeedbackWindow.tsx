@@ -30,6 +30,7 @@ import { MarkerCaseSidebar } from "./MarkerCaseSidebar.js";
 import { ProcessingDots } from "@/components/ui/ProcessingDots.js";
 import { Text } from "@/components/ui/Text/index.js";
 import { MARKER_MINIMIZED_WINDOW_HEIGHT, MARKER_MINIMIZED_WINDOW_WIDTH, MARKER_WINDOW_MARGIN, resolveMinimizedDockPosition } from "@/utils/marker/markerWindowDock.js";
+import { readMinimizedWindowAlias, writeMinimizedWindowAlias } from "@/utils/marker/minimizedWindowAlias.js";
 
 type WindowMode = "normal" | "minimized" | "maximized";
 type WindowSurfacePhase = "entering" | "idle" | "exiting";
@@ -129,6 +130,141 @@ function MinimizedCaseMarquee({ caseTexts }: { caseTexts: string[] }) {
                     </div>
                 ))}
             </div>
+        </div>
+    );
+}
+
+function MinimizedWindowAliasRow({
+    projectId,
+    reportId,
+    caseTexts,
+    messages,
+    onRestore,
+    restoreDisabled = false,
+}: {
+    projectId: string;
+    reportId: string;
+    caseTexts: string[];
+    messages: ReportMessages;
+    onRestore: () => void;
+    restoreDisabled?: boolean;
+}) {
+    const [alias, setAlias] = useState(() => readMinimizedWindowAlias(projectId, reportId));
+    const [isEditing, setIsEditing] = useState(false);
+    const [draft, setDraft] = useState(alias);
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        setAlias(readMinimizedWindowAlias(projectId, reportId));
+    }, [projectId, reportId]);
+
+    useEffect(() => {
+        if (!isEditing) {
+            return;
+        }
+
+        inputRef.current?.focus();
+        inputRef.current?.select();
+    }, [isEditing]);
+
+    const commitAlias = () => {
+        const next = writeMinimizedWindowAlias(projectId, reportId, draft);
+        setAlias(next);
+        setDraft(next);
+        setIsEditing(false);
+    };
+
+    const clearAlias = () => {
+        writeMinimizedWindowAlias(projectId, reportId, "");
+        setAlias("");
+        setDraft("");
+        setIsEditing(false);
+    };
+
+    if (isEditing) {
+        return (
+            <div
+                className="flex min-w-0 items-center gap-[4px]"
+                onPointerDown={(event) => event.stopPropagation()}
+                onClick={(event) => event.stopPropagation()}
+            >
+                <input
+                    ref={inputRef}
+                    type="text"
+                    value={draft}
+                    maxLength={40}
+                    placeholder={messages.marker.minimizedAliasPlaceholder}
+                    aria-label={messages.marker.minimizedAliasInputAriaLabel}
+                    data-fivepixels-interactive=""
+                    onChange={(event) => setDraft(event.target.value)}
+                    onKeyDown={(event) => {
+                        if (event.key === "Enter") {
+                            event.preventDefault();
+                            commitAlias();
+                        }
+
+                        if (event.key === "Escape") {
+                            event.preventDefault();
+                            setDraft(alias);
+                            setIsEditing(false);
+                        }
+                    }}
+                    onBlur={commitAlias}
+                    className="min-w-0 flex-1 rounded-[4px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black100)] px-[6px] py-[2px] text-[12px] font-semibold text-[var(--adaptive-black900)] outline-none focus:border-[var(--adaptive-blue500)]"
+                />
+                {alias ? (
+                    <button
+                        type="button"
+                        data-fivepixels-interactive=""
+                        aria-label={messages.marker.minimizedAliasClearAriaLabel}
+                        title={messages.marker.minimizedAliasClearAriaLabel}
+                        onMouseDown={(event) => event.preventDefault()}
+                        onClick={clearAlias}
+                        className="inline-flex h-[20px] w-[20px] shrink-0 items-center justify-center rounded-[4px] text-[var(--adaptive-black500)] hover:bg-[var(--adaptive-tintOpacity200)] hover:text-[var(--adaptive-black900)]"
+                    >
+                        <CloseIcon className="h-[12px] w-[12px]" />
+                    </button>
+                ) : null}
+            </div>
+        );
+    }
+
+    return (
+        <div className="flex min-w-0 items-center gap-[4px]">
+            <button
+                type="button"
+                data-fivepixels-interactive=""
+                onClick={onRestore}
+                disabled={restoreDisabled}
+                aria-label={messages.marker.windowRestoreAriaLabel}
+                className="flex min-w-0 flex-1 items-center overflow-hidden text-left"
+            >
+                {alias ? (
+                    <p
+                        className="min-w-0 flex-1 truncate text-[12px] font-semibold leading-[1.3] text-[var(--adaptive-black900)]"
+                        title={alias}
+                    >
+                        {alias}
+                    </p>
+                ) : (
+                    <MinimizedCaseMarquee caseTexts={caseTexts} />
+                )}
+            </button>
+            <button
+                type="button"
+                data-fivepixels-interactive=""
+                aria-label={messages.marker.minimizedAliasEditAriaLabel}
+                title={messages.marker.minimizedAliasEditAriaLabel}
+                onPointerDown={(event) => event.stopPropagation()}
+                onClick={(event) => {
+                    event.stopPropagation();
+                    setDraft(alias);
+                    setIsEditing(true);
+                }}
+                className="inline-flex h-[20px] w-[20px] shrink-0 items-center justify-center rounded-[4px] text-[var(--adaptive-black500)] hover:bg-[var(--adaptive-tintOpacity200)] hover:text-[var(--adaptive-black900)]"
+            >
+                <EditIcon className="h-[12px] w-[12px]" />
+            </button>
         </div>
     );
 }
@@ -245,6 +381,7 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
         cancelPendingComposer,
         beginFeedbackEdit,
         addDraftCase,
+        projectId,
     } = useReport();
 
     const windowRef = useRef<HTMLDivElement | null>(null);
@@ -840,22 +977,29 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
                         onAnimationEnd={handleMinimizedAnimationEnd}
                         className={`${isMinimizedExiting ? "fivepixels-marker-window-minimized-exit" : "fivepixels-marker-window-minimized-enter"} overflow-hidden rounded-[16px] border border-[var(--adaptive-border-subtle)] shadow-[var(--adaptive-popup-shadow)] ${leftSectionClass}`}
                     >
-                        <button
-                            type="button"
-                            data-fivepixels-interactive=""
-                            onClick={handleToggleMinimize}
-                            disabled={isMinimizedExiting}
-                            aria-label={`${messages.marker.windowRestoreAriaLabel}. ${report.pathname}. ${minimizedCaseTexts.map((text, index) => `${index + 1}. ${text}`).join(", ")}`}
-                            title={messages.marker.windowRestoreAriaLabel}
-                            className="flex w-full flex-col justify-center gap-[2px] overflow-hidden px-[12px] py-[6px] text-left"
-                        >
-                            <section className="flex items-center gap-[4px]">
-                                <p className="text-[10px] bg-[var(--adaptive-tintOpacity300)] rounded-[4px] px-[2px] py-[2px]">Route</p>
-                                <p className="truncate text-[10px] font-semibold leading-none text-[var(--adaptive-accent-coral)]">{report.pathname}</p>
-                            </section>
+                        <div className="flex w-full flex-col justify-center gap-[2px] overflow-hidden px-[12px] py-[6px]">
+                            <button
+                                type="button"
+                                data-fivepixels-interactive=""
+                                onClick={handleToggleMinimize}
+                                disabled={isMinimizedExiting}
+                                aria-label={`${messages.marker.windowRestoreAriaLabel}. ${report.pathname}. ${minimizedCaseTexts.map((text, index) => `${index + 1}. ${text}`).join(", ")}`}
+                                title={messages.marker.windowRestoreAriaLabel}
+                                className="flex min-w-0 items-center gap-[4px] text-left"
+                            >
+                                <p className="shrink-0 rounded-[4px] bg-[var(--adaptive-tintOpacity300)] px-[2px] py-[2px] text-[10px]">Route</p>
+                                <p className="min-w-0 truncate text-[10px] font-semibold leading-none text-[var(--adaptive-accent-coral)]">{report.pathname}</p>
+                            </button>
 
-                            <MinimizedCaseMarquee caseTexts={minimizedCaseTexts} />
-                        </button>
+                            <MinimizedWindowAliasRow
+                                projectId={projectId}
+                                reportId={report.id}
+                                caseTexts={minimizedCaseTexts}
+                                messages={messages}
+                                onRestore={handleToggleMinimize}
+                                restoreDisabled={isMinimizedExiting}
+                            />
+                        </div>
                     </div>
                 ) : (
                     <div

@@ -780,6 +780,10 @@ export type ReportMessages = {
         viewMoreCases: string;
         hoverTooltipHeader: string;
         offscreenNavigateHint: string;
+        minimizedAliasEditAriaLabel: string;
+        minimizedAliasInputAriaLabel: string;
+        minimizedAliasPlaceholder: string;
+        minimizedAliasClearAriaLabel: string;
     };
     defaults: {
         fields: {

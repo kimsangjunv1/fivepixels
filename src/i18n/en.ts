@@ -807,6 +807,10 @@ export const en: ReportMessages = {
         viewMoreCases: "Click to view more cases",
         hoverTooltipHeader: "Feedback summary",
         offscreenNavigateHint: "Click to go to the path where this feedback exists",
+        minimizedAliasEditAriaLabel: "Edit minimized window alias",
+        minimizedAliasInputAriaLabel: "Minimized window alias",
+        minimizedAliasPlaceholder: "Enter alias",
+        minimizedAliasClearAriaLabel: "Clear alias",
     },
     defaults: {
         fields: {

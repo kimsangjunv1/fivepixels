@@ -804,6 +804,10 @@ export const ko: ReportMessages = {
         viewMoreCases: "클릭하여 더 많은 케이스 확인",
         hoverTooltipHeader: "피드백 요약",
         offscreenNavigateHint: "클릭하면 해당 피드백이 존재하는 경로로 이동해요",
+        minimizedAliasEditAriaLabel: "최소화 창 별칭 편집",
+        minimizedAliasInputAriaLabel: "최소화 창 별칭",
+        minimizedAliasPlaceholder: "별칭 입력",
+        minimizedAliasClearAriaLabel: "별칭 삭제",
     },
     defaults: {
         fields: {
