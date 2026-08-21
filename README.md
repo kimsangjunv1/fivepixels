@@ -115,6 +115,17 @@ REST 경로·Phase·호출 순서는 [docs/backend-api-route.md](./docs/backend-
 | ---- | ---- | ---- |
 | `data-report-id` | 권장 | 요소 식별자. 마커 위치 복원에 사용. 없으면 CSS selector로 대체 추적합니다. |
 | `data-report-type` | | `item`(기본) 또는 `group`(섹션 단위). |
+| `data-fp-view` | | 모달·탭처럼 다시 열어야 하는 영역의 키. |
+| `data-fp-open` | | 같은 키의 `data-fp-view` 영역을 여는 트리거. |
+
+숨겨진 영역 안에서 작성한 피드백은 마커를 열 때 기존 트리거를 자동으로 다시 실행합니다.
+
+```tsx
+<button data-fp-open="login">로그인 열기</button>
+<Modal data-fp-view="login">...</Modal>
+```
+
+중첩된 view는 바깥쪽부터 순서대로 복원하며, 기존 `onRevealTarget`은 선언형 복원으로 열리지 않는 대상의 fallback으로 동작합니다.
 
 ## UI 모드
 

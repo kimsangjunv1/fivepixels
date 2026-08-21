@@ -72,4 +72,18 @@ export function getPickTargetTagName(element) {
 export function getPickTargetReportIdAttribute(element) {
     return element.dataset.reportId?.trim() || null;
 }
+export function getPickTargetFpOpenAttribute(element) {
+    return element.getAttribute("data-fp-open")?.trim() || null;
+}
+export function getPickTargetFpViewAttribute(element) {
+    let current = element;
+    while (current) {
+        const viewKey = current.getAttribute("data-fp-view")?.trim();
+        if (viewKey) {
+            return viewKey;
+        }
+        current = current.parentElement;
+    }
+    return null;
+}
 //# sourceMappingURL=pickTargetInspect.js.map

@@ -20,6 +20,7 @@ export type UseReportMarkersParams = {
     isFetching: boolean;
     isReportsLoading: boolean;
     activeReplyReportId: string | null;
+    minimizedReplyReportIds?: readonly string[];
     setErrorMessage: Dispatch<SetStateAction<string>>;
     onNavigate?: (pathname: string) => void | Promise<void>;
     onRevealTarget?: (report: ReportFeedback) => boolean | Promise<boolean>;
@@ -31,7 +32,7 @@ export type UseReportMarkersParams = {
     loadRepliesIfNeeded: (report: ReportFeedback) => Promise<ReportFeedback>;
     searchInputRef: RefObject<HTMLInputElement | null>;
 };
-export declare function useReportMarkers({ mode, messages, fields, currentPathname, currentPageReports, reports, allPageReports, selectedReportId, markerAppearanceSize, showMarkerTargetPreview, showTargetPreview, selectableTargetsLength, selectedTarget, hoveredTarget, isFetching, isReportsLoading, activeReplyReportId, setErrorMessage, onNavigate, onRevealTarget, selectReport, closeReplyComposer, openReplyComposer, selectCase, ensureIssueMode, loadRepliesIfNeeded, searchInputRef, }: UseReportMarkersParams): {
+export declare function useReportMarkers({ mode, messages, fields, currentPathname, currentPageReports, reports, allPageReports, selectedReportId, markerAppearanceSize, showMarkerTargetPreview, showTargetPreview, selectableTargetsLength, selectedTarget, hoveredTarget, isFetching, isReportsLoading, activeReplyReportId, minimizedReplyReportIds, setErrorMessage, onNavigate, onRevealTarget, selectReport, closeReplyComposer, openReplyComposer, selectCase, ensureIssueMode, loadRepliesIfNeeded, searchInputRef, }: UseReportMarkersParams): {
     markers: Marker[];
     hoveredMarkerId: string | null;
     setHoveredMarkerId: Dispatch<SetStateAction<string | null>>;
@@ -46,15 +47,12 @@ export declare function useReportMarkers({ mode, messages, fields, currentPathna
     statusText: string;
     clearHoverLeaveTimeout: () => void;
     scheduleHoverLeave: (markerId: string) => void;
-    prepareFeedbackLocation: (report: ReportFeedback) => Promise<void>;
+    prepareFeedbackLocation: (report: ReportFeedback) => Promise<boolean>;
     showFeedbackTooltip: (report: ReportFeedback) => Promise<void>;
     locateFeedback: (reportId: string) => Promise<void>;
     focusSearchInput: () => void;
     selectAdjacentReport: (direction: "up" | "down") => void;
     activateFeedbackMarker: (report: ReportFeedback, caseId?: string | null) => Promise<void>;
-    openPinnedFeedback: (reportId: string, options?: {
-        caseId?: string | null;
-        pathname?: string;
-    }) => Promise<void>;
+    revealOpenFeedback: (report: ReportFeedback) => Promise<void>;
 };
 //# sourceMappingURL=useReportMarkers.d.ts.map

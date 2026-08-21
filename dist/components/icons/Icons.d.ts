@@ -32,10 +32,6 @@ export declare function CopyIcon({ className }: {
 export declare function StarIcon({ className }: {
     className?: string;
 }): import("react").JSX.Element;
-export declare function FavoritePinIcon({ className, filled }: {
-    className?: string;
-    filled?: boolean;
-}): import("react").JSX.Element;
 export declare function InfoIcon({ className }: {
     className?: string;
 }): import("react").JSX.Element;
@@ -52,6 +48,9 @@ export declare function DeleteIcon({ className, fill }: {
     className?: string;
 } & Pick<MaterialIconProps, "fill">): import("react").JSX.Element;
 export declare function RevertIcon({ className, fill }: {
+    className?: string;
+} & Pick<MaterialIconProps, "fill">): import("react").JSX.Element;
+export declare function ArrowReturnRightIcon({ className, fill }: {
     className?: string;
 } & Pick<MaterialIconProps, "fill">): import("react").JSX.Element;
 export declare function AskActionIcon({ className, fill }: {

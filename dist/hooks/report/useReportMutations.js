@@ -4,7 +4,7 @@ import { buildGitHubIssueStatusUpdate, buildGitHubIssueUpdate, canCreateGitHubIs
 import { notifyFeedbackCreate, notifyFeedbackDelete, notifyFeedbackUpdate, notifyGitHubIssueCreated } from "../../utils/report/reportCallbacks.js";
 import { canDeleteFeedback } from "../../utils/feedback/feedbackPermissions.js";
 import { syncIssueStatusFromCases } from "../../utils/report/reportCases.js";
-export function useReportMutations({ messages, fields, github, eventCallbacks, reports, sessionActor, selectedReport, selectedReportId, setSelectedReportId, getActiveReplyReportId, closeReplyComposer, openReplyComposer, isCreating, createFeedback, updateFeedback, deleteFeedback, createReply, usesCreateReply, signCreatePayload, signUpdatePayload, signReplyPayload, setErrorMessage, buildCreatePayloadFromDraft, finalizeDraftCreate, }) {
+export function useReportMutations({ messages, fields, github, eventCallbacks, reports, sessionActor, selectedReport, selectedReportId, setSelectedReportId, closeReplyWindow, restoreSuspendedOpenReplyWindows, isCreating, createFeedback, updateFeedback, deleteFeedback, createReply, usesCreateReply, signCreatePayload, signUpdatePayload, signReplyPayload, setErrorMessage, buildCreatePayloadFromDraft, finalizeDraftCreate, }) {
     const [editingReportId, setEditingReportId] = useState(null);
     const [editableDraft, setEditableDraft] = useState(null);
     const [creatingGitHubIssueId, setCreatingGitHubIssueId] = useState(null);
@@ -46,7 +46,7 @@ export function useReportMutations({ messages, fields, github, eventCallbacks, r
                 await notifyFeedbackUpdate(eventCallbacks, updatedFeedback);
                 finalizeDraftCreate();
                 stopEditing();
-                openReplyComposer(updatedFeedback);
+                restoreSuspendedOpenReplyWindows(updatedFeedback);
                 return;
             }
             const savedFeedback = await createFeedback(await signCreatePayload(payload));
@@ -187,9 +187,7 @@ export function useReportMutations({ messages, fields, github, eventCallbacks, r
             if (editingReportId === id) {
                 stopEditing();
             }
-            if (getActiveReplyReportId() === id) {
-                closeReplyComposer();
-            }
+            closeReplyWindow(id);
             setErrorMessage("");
         }
         catch (nextError) {

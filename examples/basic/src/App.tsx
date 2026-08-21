@@ -2,7 +2,9 @@ import { BrowserRouter, useNavigate } from "react-router-dom";
 import { FivePixels, type ReportFeedback } from "@fivepixels-js/react";
 
 import { AppRouter } from "./app/router";
+import { useDemoFeedbackSeed } from "./features/edgecase/hooks/useEdgecaseFeedbackSeed";
 import { invokeModalRevealHandler } from "./features/modals/model/modalRevealRegistry";
+import { exampleApiLogin, exampleApiRegister, exampleArtemisLogin } from "./features/auth/exampleAuthHandlers";
 
 async function createGitHubIssue(feedback: ReportFeedback) {
     const response = await fetch("/api/github/issues", {
@@ -26,6 +28,7 @@ async function createGitHubIssue(feedback: ReportFeedback) {
 
 function AppContent() {
     const navigate = useNavigate();
+    useDemoFeedbackSeed();
 
     return (
         <>
@@ -40,7 +43,7 @@ function AppContent() {
                     reviewers: [
                         {
                             id: "8ed4c9fe-c42d-4aec-80d8-977b6c548b1c",
-                            name: "John Smith",
+                            name: "박서연, QA",
                             publicKey:
                                 "stpub1.eyJrZXlfb3BzIjpbInZlcmlmeSJdLCJleHQiOnRydWUsImt0eSI6IkVDIiwieCI6InVkb21jcXAzei1jT1BabC1PV1BKQkUxV0JIU2RFaU04S3NpemhBVHRwLUUiLCJ5IjoiTkNhZ19xdmJEMlVxZk5vYnZ2OVExTTZRdEZ1NW1UOVE5eU1GbndhM1k3YyIsImNydiI6IlAtMjU2In0",
                             privateKey:
@@ -48,7 +51,7 @@ function AppContent() {
                         },
                         {
                             id: "dc88ca0c-b43f-40b2-844b-13b008a8cd96",
-                            name: "Emily Johnson",
+                            name: "이준호, 프론트엔드",
                             publicKey:
                                 "stpub1.eyJrZXlfb3BzIjpbInZlcmlmeSJdLCJleHQiOnRydWUsImt0eSI6IkVDIiwieCI6Im1pbnhUQm8zVHRtNEt6MEdqVkZDOV9TcWNwOVJOZzF6RlRQa08xeGMxUTgiLCJ5IjoiTEQ5cHRHMUdkazRCWnhUc0xVOUdzS1RBa0RlX0tMNXFudkIxb0Z5NXlZRSIsImNydiI6IlAtMjU2In0",
                             privateKey:
@@ -56,7 +59,7 @@ function AppContent() {
                         },
                         {
                             id: "4178c529-dbd1-4add-ad67-60e77b099043",
-                            name: "Michael Lee",
+                            name: "최유진, 백엔드",
                             publicKey:
                                 "stpub1.eyJrZXlfb3BzIjpbInZlcmlmeSJdLCJleHQiOnRydWUsImt0eSI6IkVDIiwieCI6Im5USWFPQWZvZC12WDV0b0VnRXkwZ1dOV1JsWUE5S3RsZmdrc0ZzZDJnV2MiLCJ5IjoiNzdyZ2tJX0xtSlFNRV9mU1QxaGh0ZmZKY1IwenBIOWNrQk5YbUtuM08xRSIsImNydiI6IlAtMjU2In0",
                             privateKey:
@@ -75,6 +78,12 @@ function AppContent() {
                         //         "stpub1.eyJrZXlfb3BzIjpbInZlcmlmeSJdLCJleHQiOnRydWUsImt0eSI6IkVDIiwieCI6InVkb21jcXAzei1jT1BabC1PV1BKQkUxV0JIU2RFaU04S3NpemhBVHRwLUUiLCJ5IjoiTkNhZ19xdmJEMlVxZk5vYnZ2OVExTTZRdEZ1NW1UOVE5eU1GbndhM1k3YyIsImNydiI6IlAtMjU2In0",
                         // },
                     ],
+                }}
+                onApiLogin={exampleApiLogin}
+                onApiRegister={exampleApiRegister}
+                onArtemisLogin={exampleArtemisLogin}
+                onNavigate={(pathname) => {
+                    navigate(pathname);
                 }}
             />
             <AppRouter />

@@ -1,0 +1,1 @@
+{"version":3,"file":"loginMethod.d.ts","sourceRoot":"","sources":["../../src/constants/loginMethod.ts"],"names":[],"mappings":"AAAA,eAAO,MAAM,mBAAmB,sCAAuC,CAAC;AACxE,MAAM,MAAM,WAAW,GAAG,CAAC,OAAO,mBAAmB,CAAC,CAAC,MAAM,CAAC,CAAC;AAE/D,wBAAgB,mBAAmB,CAAC,MAAM,EAAE,WAAW,GAAG,IAAI,GAAG,SAAS,GAAG,MAAM,IAAI,KAAK,GAAG,SAAS,CAEvG"}

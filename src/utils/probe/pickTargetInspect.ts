@@ -86,3 +86,23 @@ export function getPickTargetTagName(element: HTMLElement) {
 export function getPickTargetReportIdAttribute(element: HTMLElement) {
     return element.dataset.reportId?.trim() || null;
 }
+
+export function getPickTargetFpOpenAttribute(element: HTMLElement) {
+    return element.getAttribute("data-fp-open")?.trim() || null;
+}
+
+export function getPickTargetFpViewAttribute(element: HTMLElement) {
+    let current: HTMLElement | null = element;
+
+    while (current) {
+        const viewKey = current.getAttribute("data-fp-view")?.trim();
+
+        if (viewKey) {
+            return viewKey;
+        }
+
+        current = current.parentElement;
+    }
+
+    return null;
+}

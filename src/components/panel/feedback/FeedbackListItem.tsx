@@ -9,7 +9,6 @@ import { getFeedbackListStatusTag } from "@/utils/feedback/feedbackListStatus.js
 import { isFeedbackCategory } from "@/constants/feedbackCategory.js";
 import { copyTextToClipboard, serializeFeedbackItem } from "@/utils/feedback/feedbackDataTransfer.js";
 import { GitIssueButton } from "./GitIssueButton.js";
-import { FeedbackPinToggleButton } from "./FeedbackPinToggleButton.js";
 import { FeedbackDeleteAction } from "./FeedbackDeleteAction.js";
 import { canDeleteFeedback } from "@/utils/feedback/feedbackPermissions.js";
 import { useReport } from "@/providers/reportContext.js";
@@ -226,11 +225,6 @@ export function FeedbackListItem({
                         />
                     ) : null}
                 </div>
-                <FeedbackPinToggleButton
-                    report={report}
-                    className="h-[20px] w-[20px]"
-                    iconClassName="h-[12px] w-[12px]"
-                />
             </div>
         </div>
     );

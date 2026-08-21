@@ -50,6 +50,12 @@ declare const ReportContext: Context<{
     authDiagnostics: import("../hooks/report/useReportAuthSession.js").AuthDiagnostics;
     authorSelectionLocked: boolean;
     panelView: import("../hooks/report/useReportState.js").PanelView;
+    loginMethod: "local" | "api" | "artemis" | null;
+    selectLoginMethod: (method: import("../index.js").LoginMethod) => void;
+    loginWithApi: (payload: import("../index.js").ReportApiLoginPayload) => Promise<import("../index.js").ReportAuthUser>;
+    registerWithApi: (payload: import("../index.js").ReportApiRegisterPayload) => Promise<void>;
+    loginWithArtemis: () => Promise<import("../index.js").ReportAuthUser>;
+    completeRemoteOnboarding: () => void;
     completeOnboarding: ({ name }: {
         name: string;
     }) => Promise<{
@@ -214,6 +220,13 @@ declare const ReportContext: Context<{
     overlayRef: import("react").RefObject<HTMLDivElement>;
     activeReplyReportId: string | null;
     activeReplyReport: import("../index.js").ReportFeedback | null;
+    openReplyReportIds: string[];
+    openReplyReports: import("../index.js").ReportFeedback[];
+    minimizedReplyReportIds: string[];
+    setReplyWindowMinimized: (reportId: string, minimized: boolean) => void;
+    reorderMinimizedReplyWindow: (reportId: string, toIndex: number) => void;
+    focusReplyWindow: (reportId: string) => void;
+    closeReplyWindow: (reportId: string) => void;
     tooltipReport: import("../index.js").ReportFeedback | null;
     tooltipAnchor: import("../types/report-ui.js").Marker | null;
     tooltipFieldTags: {
@@ -258,6 +271,9 @@ declare const ReportContext: Context<{
     removePersistedCase: (report: import("../index.js").ReportFeedback, caseId: string) => Promise<void>;
     focusedCaseId: string | null;
     selectCase: (caseId: string) => void;
+    isComposingNewCase: boolean;
+    beginComposeNewCase: () => void;
+    cancelComposeNewCase: () => void;
     clearFocusedCase: () => void;
     isCaseEditing: boolean;
     caseEditReportId: string | null;
@@ -277,14 +293,6 @@ declare const ReportContext: Context<{
     applyRoleDefaultTabsForOnboarding: (role: import("../constants/panelRole.js").PanelRole) => void;
     savePanelTabPreference: (preference: import("../utils/panel/panelTabPreference.js").PanelTabPreference) => void;
     storedPanelTabPreference: import("../utils/panel/panelTabPreference.js").PanelTabPreference | null;
-    pinnedFeedbackItems: import("../types/pinnedFeedback.js").PinnedFeedbackItem[];
-    pinRailCollapsed: boolean;
-    pinRailPlacement: import("../types/pinnedFeedback.js").PinRailPlacement;
-    togglePinnedFeedback: (item: import("../types/pinnedFeedback.js").PinnedFeedbackItem) => void;
-    unpinFeedback: (reportId: string) => void;
-    setPinRailCollapsed: (railCollapsed: boolean) => void;
-    setPinRailPlacement: (placement: import("../types/pinnedFeedback.js").PinRailPlacement) => void;
-    syncPinnedFeedbackReports: (reports: import("../index.js").ReportFeedback[]) => void;
     statusText: string;
     toggleReportMode: () => void;
     toggleTargetPreview: () => void;
@@ -297,10 +305,7 @@ declare const ReportContext: Context<{
     selectAdjacentReport: (direction: "up" | "down") => void;
     openReplyComposer: (report: import("../index.js").ReportFeedback) => void;
     activateFeedbackMarker: (report: import("../index.js").ReportFeedback, caseId?: string | null) => Promise<void>;
-    openPinnedFeedback: (reportId: string, options?: {
-        caseId?: string | null;
-        pathname?: string;
-    }) => Promise<void>;
+    revealOpenFeedback: (report: import("../index.js").ReportFeedback) => Promise<void>;
     closeReplyComposer: () => void;
     clearHoverLeaveTimeout: () => void;
     scheduleHoverLeave: (markerId: string) => void;
@@ -320,6 +325,7 @@ declare const ReportContext: Context<{
     stopEditing: () => void;
     handleUpdateSubmit: () => Promise<void>;
     handleReplySubmit: () => Promise<void>;
+    handleCreateCaseSubmit: () => Promise<void>;
     handleDelete: (id: string) => Promise<void>;
     canCreateGitHubIssueFromList: boolean;
     canCreateGitHubIssueOnCreate: boolean;
@@ -374,6 +380,12 @@ export declare function useReport(): {
     authDiagnostics: import("../hooks/report/useReportAuthSession.js").AuthDiagnostics;
     authorSelectionLocked: boolean;
     panelView: import("../hooks/report/useReportState.js").PanelView;
+    loginMethod: "local" | "api" | "artemis" | null;
+    selectLoginMethod: (method: import("../index.js").LoginMethod) => void;
+    loginWithApi: (payload: import("../index.js").ReportApiLoginPayload) => Promise<import("../index.js").ReportAuthUser>;
+    registerWithApi: (payload: import("../index.js").ReportApiRegisterPayload) => Promise<void>;
+    loginWithArtemis: () => Promise<import("../index.js").ReportAuthUser>;
+    completeRemoteOnboarding: () => void;
     completeOnboarding: ({ name }: {
         name: string;
     }) => Promise<{
@@ -538,6 +550,13 @@ export declare function useReport(): {
     overlayRef: import("react").RefObject<HTMLDivElement>;
     activeReplyReportId: string | null;
     activeReplyReport: import("../index.js").ReportFeedback | null;
+    openReplyReportIds: string[];
+    openReplyReports: import("../index.js").ReportFeedback[];
+    minimizedReplyReportIds: string[];
+    setReplyWindowMinimized: (reportId: string, minimized: boolean) => void;
+    reorderMinimizedReplyWindow: (reportId: string, toIndex: number) => void;
+    focusReplyWindow: (reportId: string) => void;
+    closeReplyWindow: (reportId: string) => void;
     tooltipReport: import("../index.js").ReportFeedback | null;
     tooltipAnchor: import("../types/report-ui.js").Marker | null;
     tooltipFieldTags: {
@@ -582,6 +601,9 @@ export declare function useReport(): {
     removePersistedCase: (report: import("../index.js").ReportFeedback, caseId: string) => Promise<void>;
     focusedCaseId: string | null;
     selectCase: (caseId: string) => void;
+    isComposingNewCase: boolean;
+    beginComposeNewCase: () => void;
+    cancelComposeNewCase: () => void;
     clearFocusedCase: () => void;
     isCaseEditing: boolean;
     caseEditReportId: string | null;
@@ -601,14 +623,6 @@ export declare function useReport(): {
     applyRoleDefaultTabsForOnboarding: (role: import("../constants/panelRole.js").PanelRole) => void;
     savePanelTabPreference: (preference: import("../utils/panel/panelTabPreference.js").PanelTabPreference) => void;
     storedPanelTabPreference: import("../utils/panel/panelTabPreference.js").PanelTabPreference | null;
-    pinnedFeedbackItems: import("../types/pinnedFeedback.js").PinnedFeedbackItem[];
-    pinRailCollapsed: boolean;
-    pinRailPlacement: import("../types/pinnedFeedback.js").PinRailPlacement;
-    togglePinnedFeedback: (item: import("../types/pinnedFeedback.js").PinnedFeedbackItem) => void;
-    unpinFeedback: (reportId: string) => void;
-    setPinRailCollapsed: (railCollapsed: boolean) => void;
-    setPinRailPlacement: (placement: import("../types/pinnedFeedback.js").PinRailPlacement) => void;
-    syncPinnedFeedbackReports: (reports: import("../index.js").ReportFeedback[]) => void;
     statusText: string;
     toggleReportMode: () => void;
     toggleTargetPreview: () => void;
@@ -621,10 +635,7 @@ export declare function useReport(): {
     selectAdjacentReport: (direction: "up" | "down") => void;
     openReplyComposer: (report: import("../index.js").ReportFeedback) => void;
     activateFeedbackMarker: (report: import("../index.js").ReportFeedback, caseId?: string | null) => Promise<void>;
-    openPinnedFeedback: (reportId: string, options?: {
-        caseId?: string | null;
-        pathname?: string;
-    }) => Promise<void>;
+    revealOpenFeedback: (report: import("../index.js").ReportFeedback) => Promise<void>;
     closeReplyComposer: () => void;
     clearHoverLeaveTimeout: () => void;
     scheduleHoverLeave: (markerId: string) => void;
@@ -644,6 +655,7 @@ export declare function useReport(): {
     stopEditing: () => void;
     handleUpdateSubmit: () => Promise<void>;
     handleReplySubmit: () => Promise<void>;
+    handleCreateCaseSubmit: () => Promise<void>;
     handleDelete: (id: string) => Promise<void>;
     canCreateGitHubIssueFromList: boolean;
     canCreateGitHubIssueOnCreate: boolean;
@@ -701,6 +713,12 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         authDiagnostics: import("../hooks/report/useReportAuthSession.js").AuthDiagnostics;
         authorSelectionLocked: boolean;
         panelView: import("../hooks/report/useReportState.js").PanelView;
+        loginMethod: "local" | "api" | "artemis" | null;
+        selectLoginMethod: (method: import("../index.js").LoginMethod) => void;
+        loginWithApi: (payload: import("../index.js").ReportApiLoginPayload) => Promise<import("../index.js").ReportAuthUser>;
+        registerWithApi: (payload: import("../index.js").ReportApiRegisterPayload) => Promise<void>;
+        loginWithArtemis: () => Promise<import("../index.js").ReportAuthUser>;
+        completeRemoteOnboarding: () => void;
         completeOnboarding: ({ name }: {
             name: string;
         }) => Promise<{
@@ -865,6 +883,13 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         overlayRef: import("react").RefObject<HTMLDivElement>;
         activeReplyReportId: string | null;
         activeReplyReport: import("../index.js").ReportFeedback | null;
+        openReplyReportIds: string[];
+        openReplyReports: import("../index.js").ReportFeedback[];
+        minimizedReplyReportIds: string[];
+        setReplyWindowMinimized: (reportId: string, minimized: boolean) => void;
+        reorderMinimizedReplyWindow: (reportId: string, toIndex: number) => void;
+        focusReplyWindow: (reportId: string) => void;
+        closeReplyWindow: (reportId: string) => void;
         tooltipReport: import("../index.js").ReportFeedback | null;
         tooltipAnchor: import("../types/report-ui.js").Marker | null;
         tooltipFieldTags: {
@@ -909,6 +934,9 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         removePersistedCase: (report: import("../index.js").ReportFeedback, caseId: string) => Promise<void>;
         focusedCaseId: string | null;
         selectCase: (caseId: string) => void;
+        isComposingNewCase: boolean;
+        beginComposeNewCase: () => void;
+        cancelComposeNewCase: () => void;
         clearFocusedCase: () => void;
         isCaseEditing: boolean;
         caseEditReportId: string | null;
@@ -928,14 +956,6 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         applyRoleDefaultTabsForOnboarding: (role: import("../constants/panelRole.js").PanelRole) => void;
         savePanelTabPreference: (preference: import("../utils/panel/panelTabPreference.js").PanelTabPreference) => void;
         storedPanelTabPreference: import("../utils/panel/panelTabPreference.js").PanelTabPreference | null;
-        pinnedFeedbackItems: import("../types/pinnedFeedback.js").PinnedFeedbackItem[];
-        pinRailCollapsed: boolean;
-        pinRailPlacement: import("../types/pinnedFeedback.js").PinRailPlacement;
-        togglePinnedFeedback: (item: import("../types/pinnedFeedback.js").PinnedFeedbackItem) => void;
-        unpinFeedback: (reportId: string) => void;
-        setPinRailCollapsed: (railCollapsed: boolean) => void;
-        setPinRailPlacement: (placement: import("../types/pinnedFeedback.js").PinRailPlacement) => void;
-        syncPinnedFeedbackReports: (reports: import("../index.js").ReportFeedback[]) => void;
         statusText: string;
         toggleReportMode: () => void;
         toggleTargetPreview: () => void;
@@ -948,10 +968,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         selectAdjacentReport: (direction: "up" | "down") => void;
         openReplyComposer: (report: import("../index.js").ReportFeedback) => void;
         activateFeedbackMarker: (report: import("../index.js").ReportFeedback, caseId?: string | null) => Promise<void>;
-        openPinnedFeedback: (reportId: string, options?: {
-            caseId?: string | null;
-            pathname?: string;
-        }) => Promise<void>;
+        revealOpenFeedback: (report: import("../index.js").ReportFeedback) => Promise<void>;
         closeReplyComposer: () => void;
         clearHoverLeaveTimeout: () => void;
         scheduleHoverLeave: (markerId: string) => void;
@@ -971,6 +988,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         stopEditing: () => void;
         handleUpdateSubmit: () => Promise<void>;
         handleReplySubmit: () => Promise<void>;
+        handleCreateCaseSubmit: () => Promise<void>;
         handleDelete: (id: string) => Promise<void>;
         canCreateGitHubIssueFromList: boolean;
         canCreateGitHubIssueOnCreate: boolean;
@@ -978,7 +996,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         handleCreateGitHubIssue: (report: import("../index.js").ReportFeedback) => Promise<void>;
         handleCreateSubmitWithGitHubIssue: () => Promise<void>;
         isDraftGitHubIssueSubmitting: boolean;
-    }, "personalKey" | "projectId" | "fields" | "personalKeyRequired" | "environment" | "questionThreadDisplay" | "setQuestionThreadDisplay" | "locale" | "setLocale" | "showMarkerTargetPreview" | "setShowMarkerTargetPreview" | "toggleMarkerTargetPreview" | "devicePreviewUiOpen" | "setDevicePreviewUiOpen" | "devicePreviewDeviceId" | "setDevicePreviewDeviceId" | "devicePreviewScale" | "setDevicePreviewScale" | "devicePreviewImageEnabled" | "setDevicePreviewImageEnabled" | "devicePreviewFitToViewport" | "setDevicePreviewFitToViewport" | "devicePreviewStatusBarEnabled" | "setDevicePreviewStatusBarEnabled" | "devicePreviewPreset" | "showHiddenDetachedMarkers" | "setShowHiddenDetachedMarkers" | "showModalDetachedMarkers" | "setShowModalDetachedMarkers" | "markerAppearance" | "setMarkerAppearance" | "setMarkerSize" | "setMarkerShape" | "setMarkerFillStyle" | "setMarkerColors" | "setMarkerColor" | "setFeedbackModeDotColors" | "setFeedbackModeDotColor" | "typography" | "setTypography" | "setFontSize" | "setFontFamily" | "panelRole" | "setPanelRole" | "persistenceStatus" | "appVersion" | "showFeedbackList" | "pinnedFeedbackItems" | "pinRailCollapsed" | "pinRailPlacement" | "togglePinnedFeedback" | "unpinFeedback" | "setPinRailCollapsed" | "setPinRailPlacement" | "syncPinnedFeedbackReports" | "selfProfile" | "authors" | "publicKey" | "personalKeyCandidates" | "issuePersonalKey" | "rotatePersonalKey" | "insertPersonalKey" | "clearPersonalKey" | "authorSelectionLocked" | "messages" | "onListReviewers" | "onListReviewerRequests" | "onCreateReviewerRequest" | "onResolveReviewerRequest" | "onRegisterReviewer" | "onUpdateReviewer" | "visibleShortcutKeys" | "teamReviewers" | "panelAppearance" | "setPanelAppearance" | "tooltipAppearance" | "setTooltipAppearance" | "teamActor" | "teamActorRole" | "isTeamAdmin" | "canAccessTeamSettings" | "panelView" | "completeOnboarding" | "restoreFromBackup" | "skipOnboarding" | "resolvedPanelAppearance" | "resolvedTooltipAppearance" | "isMobileViewport" | "isPresentationMode" | "presentationViewers" | "visiblePanelTabs" | "visiblePanelTabsSummary" | "resolvedTabAvailabilityContext" | "setVisiblePanelTabs" | "resetVisibleTabsToRoleDefault" | "applyRoleDefaultTabsForOnboarding" | "savePanelTabPreference" | "storedPanelTabPreference">;
+    }, "personalKey" | "projectId" | "fields" | "personalKeyRequired" | "environment" | "questionThreadDisplay" | "setQuestionThreadDisplay" | "locale" | "setLocale" | "showMarkerTargetPreview" | "setShowMarkerTargetPreview" | "toggleMarkerTargetPreview" | "devicePreviewUiOpen" | "setDevicePreviewUiOpen" | "devicePreviewDeviceId" | "setDevicePreviewDeviceId" | "devicePreviewScale" | "setDevicePreviewScale" | "devicePreviewImageEnabled" | "setDevicePreviewImageEnabled" | "devicePreviewFitToViewport" | "setDevicePreviewFitToViewport" | "devicePreviewStatusBarEnabled" | "setDevicePreviewStatusBarEnabled" | "devicePreviewPreset" | "showHiddenDetachedMarkers" | "setShowHiddenDetachedMarkers" | "showModalDetachedMarkers" | "setShowModalDetachedMarkers" | "markerAppearance" | "setMarkerAppearance" | "setMarkerSize" | "setMarkerShape" | "setMarkerFillStyle" | "setMarkerColors" | "setMarkerColor" | "setFeedbackModeDotColors" | "setFeedbackModeDotColor" | "typography" | "setTypography" | "setFontSize" | "setFontFamily" | "panelRole" | "setPanelRole" | "persistenceStatus" | "appVersion" | "showFeedbackList" | "selfProfile" | "authors" | "publicKey" | "personalKeyCandidates" | "issuePersonalKey" | "rotatePersonalKey" | "insertPersonalKey" | "clearPersonalKey" | "authorSelectionLocked" | "messages" | "onListReviewers" | "onListReviewerRequests" | "onCreateReviewerRequest" | "onResolveReviewerRequest" | "onRegisterReviewer" | "onUpdateReviewer" | "visibleShortcutKeys" | "teamReviewers" | "panelAppearance" | "setPanelAppearance" | "tooltipAppearance" | "setTooltipAppearance" | "teamActor" | "teamActorRole" | "isTeamAdmin" | "canAccessTeamSettings" | "panelView" | "loginMethod" | "selectLoginMethod" | "loginWithApi" | "registerWithApi" | "loginWithArtemis" | "completeRemoteOnboarding" | "completeOnboarding" | "restoreFromBackup" | "skipOnboarding" | "resolvedPanelAppearance" | "resolvedTooltipAppearance" | "isMobileViewport" | "isPresentationMode" | "presentationViewers" | "visiblePanelTabs" | "visiblePanelTabsSummary" | "resolvedTabAvailabilityContext" | "setVisiblePanelTabs" | "resetVisibleTabsToRoleDefault" | "applyRoleDefaultTabsForOnboarding" | "savePanelTabPreference" | "storedPanelTabPreference">;
     session: Pick<{
         panelAppearance: import("../index.js").ReportAppearance;
         setPanelAppearance: (nextAppearance: import("../index.js").ReportAppearance) => void;
@@ -1021,6 +1039,12 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         authDiagnostics: import("../hooks/report/useReportAuthSession.js").AuthDiagnostics;
         authorSelectionLocked: boolean;
         panelView: import("../hooks/report/useReportState.js").PanelView;
+        loginMethod: "local" | "api" | "artemis" | null;
+        selectLoginMethod: (method: import("../index.js").LoginMethod) => void;
+        loginWithApi: (payload: import("../index.js").ReportApiLoginPayload) => Promise<import("../index.js").ReportAuthUser>;
+        registerWithApi: (payload: import("../index.js").ReportApiRegisterPayload) => Promise<void>;
+        loginWithArtemis: () => Promise<import("../index.js").ReportAuthUser>;
+        completeRemoteOnboarding: () => void;
         completeOnboarding: ({ name }: {
             name: string;
         }) => Promise<{
@@ -1185,6 +1209,13 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         overlayRef: import("react").RefObject<HTMLDivElement>;
         activeReplyReportId: string | null;
         activeReplyReport: import("../index.js").ReportFeedback | null;
+        openReplyReportIds: string[];
+        openReplyReports: import("../index.js").ReportFeedback[];
+        minimizedReplyReportIds: string[];
+        setReplyWindowMinimized: (reportId: string, minimized: boolean) => void;
+        reorderMinimizedReplyWindow: (reportId: string, toIndex: number) => void;
+        focusReplyWindow: (reportId: string) => void;
+        closeReplyWindow: (reportId: string) => void;
         tooltipReport: import("../index.js").ReportFeedback | null;
         tooltipAnchor: import("../types/report-ui.js").Marker | null;
         tooltipFieldTags: {
@@ -1229,6 +1260,9 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         removePersistedCase: (report: import("../index.js").ReportFeedback, caseId: string) => Promise<void>;
         focusedCaseId: string | null;
         selectCase: (caseId: string) => void;
+        isComposingNewCase: boolean;
+        beginComposeNewCase: () => void;
+        cancelComposeNewCase: () => void;
         clearFocusedCase: () => void;
         isCaseEditing: boolean;
         caseEditReportId: string | null;
@@ -1248,14 +1282,6 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         applyRoleDefaultTabsForOnboarding: (role: import("../constants/panelRole.js").PanelRole) => void;
         savePanelTabPreference: (preference: import("../utils/panel/panelTabPreference.js").PanelTabPreference) => void;
         storedPanelTabPreference: import("../utils/panel/panelTabPreference.js").PanelTabPreference | null;
-        pinnedFeedbackItems: import("../types/pinnedFeedback.js").PinnedFeedbackItem[];
-        pinRailCollapsed: boolean;
-        pinRailPlacement: import("../types/pinnedFeedback.js").PinRailPlacement;
-        togglePinnedFeedback: (item: import("../types/pinnedFeedback.js").PinnedFeedbackItem) => void;
-        unpinFeedback: (reportId: string) => void;
-        setPinRailCollapsed: (railCollapsed: boolean) => void;
-        setPinRailPlacement: (placement: import("../types/pinnedFeedback.js").PinRailPlacement) => void;
-        syncPinnedFeedbackReports: (reports: import("../index.js").ReportFeedback[]) => void;
         statusText: string;
         toggleReportMode: () => void;
         toggleTargetPreview: () => void;
@@ -1268,10 +1294,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         selectAdjacentReport: (direction: "up" | "down") => void;
         openReplyComposer: (report: import("../index.js").ReportFeedback) => void;
         activateFeedbackMarker: (report: import("../index.js").ReportFeedback, caseId?: string | null) => Promise<void>;
-        openPinnedFeedback: (reportId: string, options?: {
-            caseId?: string | null;
-            pathname?: string;
-        }) => Promise<void>;
+        revealOpenFeedback: (report: import("../index.js").ReportFeedback) => Promise<void>;
         closeReplyComposer: () => void;
         clearHoverLeaveTimeout: () => void;
         scheduleHoverLeave: (markerId: string) => void;
@@ -1291,6 +1314,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         stopEditing: () => void;
         handleUpdateSubmit: () => Promise<void>;
         handleReplySubmit: () => Promise<void>;
+        handleCreateCaseSubmit: () => Promise<void>;
         handleDelete: (id: string) => Promise<void>;
         canCreateGitHubIssueFromList: boolean;
         canCreateGitHubIssueOnCreate: boolean;
@@ -1298,7 +1322,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         handleCreateGitHubIssue: (report: import("../index.js").ReportFeedback) => Promise<void>;
         handleCreateSubmitWithGitHubIssue: () => Promise<void>;
         isDraftGitHubIssueSubmitting: boolean;
-    }, "statusText" | "toggleReportMode" | "toggleTargetPreview" | "currentPathname" | "sessionActor" | "savedProbeDeletions" | "hasProbeSessionChanges" | "canUndoProbeSession" | "canRedoProbeSession" | "undoProbeSessionAction" | "redoProbeSessionAction" | "revertAllSavedProbeEdits" | "draft" | "pickProbeOpen" | "pickProbeSupportsTextFields" | "pickProbeLayoutMode" | "pickProbeValues" | "pickProbeCompareMode" | "pickProbeHasEdits" | "pickTargetContextMenu" | "contextMenuElementKey" | "savedProbeEdits" | "savedProbeCompareMode" | "closePickProbe" | "closePickTargetContextMenu" | "handlePickTargetEdit" | "handlePickTargetDelete" | "handlePickTargetRevert" | "commitPickProbeEdits" | "revertSavedProbeEdit" | "setSavedProbeCompareMode" | "setPickProbeCompareMode" | "updatePickProbeValue" | "resetPickProbeValues" | "appendSavedProbeSummaryAsNewDraftCase" | "activeReplyReportId" | "selectedTarget" | "hoveredTarget" | "mode" | "showTargetPreview" | "closeReplyComposer" | "openReplyComposer" | "selectCase" | "setErrorMessage" | "focusedCaseId" | "activeReplyReport" | "markers" | "overlayRef" | "selectReport" | "cancelDraft" | "beginFeedbackEdit" | "editingReportId" | "panelTab" | "pendingComposer" | "toggleIssueMode" | "cancelPendingComposer" | "stopEditing" | "focusSearchInput" | "selectAdjacentReport" | "panelCollapsed" | "setPanelCollapsed" | "searchInputRef" | "activeMarkerTarget" | "markerPreviewTargets" | "selectableTargets" | "errorMessage" | "draftStep" | "setDraftStep" | "hoverPointer" | "setHoverPointer" | "editableDraft" | "setEditableDraft" | "tooltipReport" | "tooltipAnchor" | "tooltipFieldTags" | "replyDraft" | "setReplyDraft" | "replyMentions" | "setReplyMentions" | "mentionHighlightTarget" | "setMentionHighlightTarget" | "replySubmitAsQuestion" | "setReplySubmitAsQuestion" | "draftAuthorName" | "setDraftAuthorName" | "replyAuthorName" | "setReplyAuthorName" | "presentationViewerId" | "setPresentationViewerId" | "startDenyReview" | "startCheckoutReview" | "startAskQuestion" | "confirmAuthorName" | "setConfirmAuthorName" | "showConfirmAuthorSelect" | "toggleConfirmAuthorSelect" | "beginCaseEdit" | "cancelCaseEdit" | "updateCaseEditDraftCase" | "addCaseEditDraftCase" | "removeCaseEditDraftCase" | "removePersistedCase" | "clearFocusedCase" | "isCaseEditing" | "caseEditReportId" | "caseEditCases" | "openPanelTab" | "togglePanelTab" | "locateFeedback" | "activateFeedbackMarker" | "openPinnedFeedback" | "clearHoverLeaveTimeout" | "scheduleHoverLeave" | "setHoveredMarkerId" | "handleOverlayMove" | "handleOverlayContextMenu" | "handleOverlayClick" | "updateDraftCase" | "addDraftCase" | "removeDraftCase" | "updateDraftField" | "updateDraftCategory" | "startEditing">;
+    }, "statusText" | "toggleReportMode" | "toggleTargetPreview" | "currentPathname" | "sessionActor" | "savedProbeDeletions" | "hasProbeSessionChanges" | "canUndoProbeSession" | "canRedoProbeSession" | "undoProbeSessionAction" | "redoProbeSessionAction" | "revertAllSavedProbeEdits" | "draft" | "pickProbeOpen" | "pickProbeSupportsTextFields" | "pickProbeLayoutMode" | "pickProbeValues" | "pickProbeCompareMode" | "pickProbeHasEdits" | "pickTargetContextMenu" | "contextMenuElementKey" | "savedProbeEdits" | "savedProbeCompareMode" | "closePickProbe" | "closePickTargetContextMenu" | "handlePickTargetEdit" | "handlePickTargetDelete" | "handlePickTargetRevert" | "commitPickProbeEdits" | "revertSavedProbeEdit" | "setSavedProbeCompareMode" | "setPickProbeCompareMode" | "updatePickProbeValue" | "resetPickProbeValues" | "appendSavedProbeSummaryAsNewDraftCase" | "activeReplyReportId" | "minimizedReplyReportIds" | "selectedTarget" | "hoveredTarget" | "mode" | "showTargetPreview" | "closeReplyComposer" | "openReplyComposer" | "selectCase" | "selectReport" | "setErrorMessage" | "focusedCaseId" | "activeReplyReport" | "cancelCaseEdit" | "markers" | "overlayRef" | "cancelDraft" | "beginFeedbackEdit" | "editingReportId" | "panelTab" | "pendingComposer" | "toggleIssueMode" | "cancelPendingComposer" | "stopEditing" | "focusSearchInput" | "selectAdjacentReport" | "panelCollapsed" | "setPanelCollapsed" | "searchInputRef" | "activeMarkerTarget" | "markerPreviewTargets" | "selectableTargets" | "errorMessage" | "draftStep" | "setDraftStep" | "hoverPointer" | "setHoverPointer" | "editableDraft" | "setEditableDraft" | "openReplyReportIds" | "openReplyReports" | "setReplyWindowMinimized" | "reorderMinimizedReplyWindow" | "focusReplyWindow" | "closeReplyWindow" | "tooltipReport" | "tooltipAnchor" | "tooltipFieldTags" | "replyDraft" | "setReplyDraft" | "replyMentions" | "setReplyMentions" | "mentionHighlightTarget" | "setMentionHighlightTarget" | "replySubmitAsQuestion" | "setReplySubmitAsQuestion" | "draftAuthorName" | "setDraftAuthorName" | "replyAuthorName" | "setReplyAuthorName" | "presentationViewerId" | "setPresentationViewerId" | "startDenyReview" | "startCheckoutReview" | "startAskQuestion" | "confirmAuthorName" | "setConfirmAuthorName" | "showConfirmAuthorSelect" | "toggleConfirmAuthorSelect" | "beginCaseEdit" | "updateCaseEditDraftCase" | "addCaseEditDraftCase" | "removeCaseEditDraftCase" | "removePersistedCase" | "isComposingNewCase" | "beginComposeNewCase" | "cancelComposeNewCase" | "clearFocusedCase" | "isCaseEditing" | "caseEditReportId" | "caseEditCases" | "openPanelTab" | "togglePanelTab" | "locateFeedback" | "activateFeedbackMarker" | "revealOpenFeedback" | "clearHoverLeaveTimeout" | "scheduleHoverLeave" | "setHoveredMarkerId" | "handleOverlayMove" | "handleOverlayContextMenu" | "handleOverlayClick" | "updateDraftCase" | "addDraftCase" | "removeDraftCase" | "updateDraftField" | "updateDraftCategory" | "startEditing">;
     data: Pick<{
         panelAppearance: import("../index.js").ReportAppearance;
         setPanelAppearance: (nextAppearance: import("../index.js").ReportAppearance) => void;
@@ -1341,6 +1365,12 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         authDiagnostics: import("../hooks/report/useReportAuthSession.js").AuthDiagnostics;
         authorSelectionLocked: boolean;
         panelView: import("../hooks/report/useReportState.js").PanelView;
+        loginMethod: "local" | "api" | "artemis" | null;
+        selectLoginMethod: (method: import("../index.js").LoginMethod) => void;
+        loginWithApi: (payload: import("../index.js").ReportApiLoginPayload) => Promise<import("../index.js").ReportAuthUser>;
+        registerWithApi: (payload: import("../index.js").ReportApiRegisterPayload) => Promise<void>;
+        loginWithArtemis: () => Promise<import("../index.js").ReportAuthUser>;
+        completeRemoteOnboarding: () => void;
         completeOnboarding: ({ name }: {
             name: string;
         }) => Promise<{
@@ -1505,6 +1535,13 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         overlayRef: import("react").RefObject<HTMLDivElement>;
         activeReplyReportId: string | null;
         activeReplyReport: import("../index.js").ReportFeedback | null;
+        openReplyReportIds: string[];
+        openReplyReports: import("../index.js").ReportFeedback[];
+        minimizedReplyReportIds: string[];
+        setReplyWindowMinimized: (reportId: string, minimized: boolean) => void;
+        reorderMinimizedReplyWindow: (reportId: string, toIndex: number) => void;
+        focusReplyWindow: (reportId: string) => void;
+        closeReplyWindow: (reportId: string) => void;
         tooltipReport: import("../index.js").ReportFeedback | null;
         tooltipAnchor: import("../types/report-ui.js").Marker | null;
         tooltipFieldTags: {
@@ -1549,6 +1586,9 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         removePersistedCase: (report: import("../index.js").ReportFeedback, caseId: string) => Promise<void>;
         focusedCaseId: string | null;
         selectCase: (caseId: string) => void;
+        isComposingNewCase: boolean;
+        beginComposeNewCase: () => void;
+        cancelComposeNewCase: () => void;
         clearFocusedCase: () => void;
         isCaseEditing: boolean;
         caseEditReportId: string | null;
@@ -1568,14 +1608,6 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         applyRoleDefaultTabsForOnboarding: (role: import("../constants/panelRole.js").PanelRole) => void;
         savePanelTabPreference: (preference: import("../utils/panel/panelTabPreference.js").PanelTabPreference) => void;
         storedPanelTabPreference: import("../utils/panel/panelTabPreference.js").PanelTabPreference | null;
-        pinnedFeedbackItems: import("../types/pinnedFeedback.js").PinnedFeedbackItem[];
-        pinRailCollapsed: boolean;
-        pinRailPlacement: import("../types/pinnedFeedback.js").PinRailPlacement;
-        togglePinnedFeedback: (item: import("../types/pinnedFeedback.js").PinnedFeedbackItem) => void;
-        unpinFeedback: (reportId: string) => void;
-        setPinRailCollapsed: (railCollapsed: boolean) => void;
-        setPinRailPlacement: (placement: import("../types/pinnedFeedback.js").PinRailPlacement) => void;
-        syncPinnedFeedbackReports: (reports: import("../index.js").ReportFeedback[]) => void;
         statusText: string;
         toggleReportMode: () => void;
         toggleTargetPreview: () => void;
@@ -1588,10 +1620,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         selectAdjacentReport: (direction: "up" | "down") => void;
         openReplyComposer: (report: import("../index.js").ReportFeedback) => void;
         activateFeedbackMarker: (report: import("../index.js").ReportFeedback, caseId?: string | null) => Promise<void>;
-        openPinnedFeedback: (reportId: string, options?: {
-            caseId?: string | null;
-            pathname?: string;
-        }) => Promise<void>;
+        revealOpenFeedback: (report: import("../index.js").ReportFeedback) => Promise<void>;
         closeReplyComposer: () => void;
         clearHoverLeaveTimeout: () => void;
         scheduleHoverLeave: (markerId: string) => void;
@@ -1611,6 +1640,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         stopEditing: () => void;
         handleUpdateSubmit: () => Promise<void>;
         handleReplySubmit: () => Promise<void>;
+        handleCreateCaseSubmit: () => Promise<void>;
         handleDelete: (id: string) => Promise<void>;
         canCreateGitHubIssueFromList: boolean;
         canCreateGitHubIssueOnCreate: boolean;
@@ -1618,7 +1648,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         handleCreateGitHubIssue: (report: import("../index.js").ReportFeedback) => Promise<void>;
         handleCreateSubmitWithGitHubIssue: () => Promise<void>;
         isDraftGitHubIssueSubmitting: boolean;
-    }, "authDiagnostics" | "isError" | "isFetching" | "hasNextPage" | "isFetchingNextPage" | "fetchNextPage" | "refetch" | "replyHistoryByReportId" | "replyHistory" | "loadOlderReplies" | "goToOlderPaginationPage" | "goToNewerPaginationPage" | "canTransferFeedback" | "canListAllFeedback" | "listScope" | "setListScope" | "filters" | "setFilters" | "reports" | "currentPageReports" | "filteredReports" | "allPageReports" | "onPanelBootstrap" | "routeDetailsStats" | "selectedReport" | "isCreating" | "isUpdating" | "isDeleting" | "queryErrorMessage" | "loadRepliesIfNeeded" | "onActivitySummary" | "handleCreateSubmit" | "handleUpdateSubmit" | "isSubmittingReply" | "isClaimingAssignee" | "handleClaimAssignee" | "handleTransferAssignee" | "handleConfirmResolution" | "handleCaseEditSave" | "targetStats" | "roleStatItems" | "handleReplySubmit" | "handleDelete" | "canCreateGitHubIssueFromList" | "canCreateGitHubIssueOnCreate" | "creatingGitHubIssueId" | "handleCreateGitHubIssue" | "handleCreateSubmitWithGitHubIssue" | "isDraftGitHubIssueSubmitting">;
+    }, "authDiagnostics" | "isError" | "isFetching" | "hasNextPage" | "isFetchingNextPage" | "fetchNextPage" | "refetch" | "replyHistoryByReportId" | "replyHistory" | "loadOlderReplies" | "goToOlderPaginationPage" | "goToNewerPaginationPage" | "canTransferFeedback" | "canListAllFeedback" | "listScope" | "setListScope" | "filters" | "setFilters" | "reports" | "currentPageReports" | "filteredReports" | "allPageReports" | "onPanelBootstrap" | "routeDetailsStats" | "selectedReport" | "isCreating" | "isUpdating" | "isDeleting" | "queryErrorMessage" | "loadRepliesIfNeeded" | "onActivitySummary" | "handleCreateSubmit" | "handleUpdateSubmit" | "isSubmittingReply" | "isClaimingAssignee" | "handleClaimAssignee" | "handleTransferAssignee" | "handleConfirmResolution" | "handleCaseEditSave" | "targetStats" | "roleStatItems" | "handleReplySubmit" | "handleCreateCaseSubmit" | "handleDelete" | "canCreateGitHubIssueFromList" | "canCreateGitHubIssueOnCreate" | "creatingGitHubIssueId" | "handleCreateGitHubIssue" | "handleCreateSubmitWithGitHubIssue" | "isDraftGitHubIssueSubmitting">;
 };
 export { ReportContext, ReportPreferencesContext, ReportSessionContext, ReportDataContext };
 //# sourceMappingURL=reportContext.d.ts.map

@@ -1,7 +1,7 @@
 import type { DeepPartialReportMessages } from "../../i18n/types.js";
 import type { ReportLocale } from "../../i18n/types.js";
 import { type PanelView } from "./useReportAuthSession.js";
-import type { CreateReportFeedbackPayload, CreateReplyPayload, ReportAppearance, ReportAuthor, ReportActivitySummaryParams, ReportActivitySummaryResult, ReportEvent, ReportFeedback, ReportField, ReportGitHubConfig, FivePixelsMode, ReportIdentify, ReportListAllParams, ReportListAllResult, ReportPanelBootstrapParams, ReportPanelBootstrapResult, ReportReply, QuestionThreadDisplay, ReportTeamHandlers, UpdateReportFeedbackPayload } from "../../types/report.js";
+import type { CreateReportFeedbackPayload, CreateReplyPayload, ReportAppearance, ReportAuthor, ReportActivitySummaryParams, ReportActivitySummaryResult, ReportEvent, ReportFeedback, ReportField, ReportGitHubConfig, FivePixelsMode, ReportIdentify, ReportListAllParams, ReportListAllResult, ReportPanelBootstrapParams, ReportPanelBootstrapResult, ReportReply, QuestionThreadDisplay, ReportTeamHandlers, ReportAuthHandlers, UpdateReportFeedbackPayload } from "../../types/report.js";
 export type { PanelView };
 export type ReportStateConfig = {
     /** Internal resolved config (not public props). Public surface: `FivePixelsProps` in `src/types/publicApi.ts`. */
@@ -35,6 +35,9 @@ export type ReportStateConfig = {
     onResolveReviewerRequest?: ReportTeamHandlers["onResolveReviewerRequest"];
     onRegisterReviewer?: ReportTeamHandlers["onRegisterReviewer"];
     onUpdateReviewer?: ReportTeamHandlers["onUpdateReviewer"];
+    onApiLogin?: ReportAuthHandlers["onApiLogin"];
+    onApiRegister?: ReportAuthHandlers["onApiRegister"];
+    onArtemisLogin?: ReportAuthHandlers["onArtemisLogin"];
     onEvent?: (event: ReportEvent) => void | Promise<void>;
     onReply?: (params: {
         feedbackId: string;
@@ -49,7 +52,7 @@ export type ReportStateConfig = {
     pixelsMode?: FivePixelsMode;
     replyHistory: import("../../utils/report/reportUi.js").ResolvedReplyHistoryConfig;
 };
-export declare function useReportState({ projectId, environment, appVersion, panelAppearance, tooltipAppearance, questionThreadDefault, fields, authors, requireReviewerKey, shortcut: _shortcut, identify, onList, onListAll, onPanelBootstrap, onActivitySummary, onListReplies, onNavigate, onRevealTarget, onCreate, onCreateReply, onUpdate, onDelete, onListReviewers, onListReviewerRequests, onCreateReviewerRequest, onResolveReviewerRequest, onRegisterReviewer, onUpdateReviewer, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys, initialLocale, messageOverrides, pixelsMode, replyHistory, }: ReportStateConfig): {
+export declare function useReportState({ projectId, environment, appVersion, panelAppearance, tooltipAppearance, questionThreadDefault, fields, authors, requireReviewerKey, shortcut: _shortcut, identify, onList, onListAll, onPanelBootstrap, onActivitySummary, onListReplies, onNavigate, onRevealTarget, onCreate, onCreateReply, onUpdate, onDelete, onListReviewers, onListReviewerRequests, onCreateReviewerRequest, onResolveReviewerRequest, onRegisterReviewer, onUpdateReviewer, onApiLogin, onApiRegister, onArtemisLogin, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys, initialLocale, messageOverrides, pixelsMode, replyHistory, }: ReportStateConfig): {
     panelAppearance: ReportAppearance;
     setPanelAppearance: (nextAppearance: ReportAppearance) => void;
     tooltipAppearance: ReportAppearance;
@@ -91,6 +94,12 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     authDiagnostics: import("./useReportAuthSession.js").AuthDiagnostics;
     authorSelectionLocked: boolean;
     panelView: PanelView;
+    loginMethod: "local" | "api" | "artemis" | null;
+    selectLoginMethod: (method: import("../../index.js").LoginMethod) => void;
+    loginWithApi: (payload: import("../../types/report.js").ReportApiLoginPayload) => Promise<import("../../types/report.js").ReportAuthUser>;
+    registerWithApi: (payload: import("../../types/report.js").ReportApiRegisterPayload) => Promise<void>;
+    loginWithArtemis: () => Promise<import("../../types/report.js").ReportAuthUser>;
+    completeRemoteOnboarding: () => void;
     completeOnboarding: ({ name }: {
         name: string;
     }) => Promise<{
@@ -255,6 +264,13 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     overlayRef: import("react").RefObject<HTMLDivElement>;
     activeReplyReportId: string | null;
     activeReplyReport: ReportFeedback | null;
+    openReplyReportIds: string[];
+    openReplyReports: ReportFeedback[];
+    minimizedReplyReportIds: string[];
+    setReplyWindowMinimized: (reportId: string, minimized: boolean) => void;
+    reorderMinimizedReplyWindow: (reportId: string, toIndex: number) => void;
+    focusReplyWindow: (reportId: string) => void;
+    closeReplyWindow: (reportId: string) => void;
     tooltipReport: ReportFeedback | null;
     tooltipAnchor: import("../../types/report-ui.js").Marker | null;
     tooltipFieldTags: {
@@ -299,6 +315,9 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     removePersistedCase: (report: ReportFeedback, caseId: string) => Promise<void>;
     focusedCaseId: string | null;
     selectCase: (caseId: string) => void;
+    isComposingNewCase: boolean;
+    beginComposeNewCase: () => void;
+    cancelComposeNewCase: () => void;
     clearFocusedCase: () => void;
     isCaseEditing: boolean;
     caseEditReportId: string | null;
@@ -318,14 +337,6 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     applyRoleDefaultTabsForOnboarding: (role: import("../../constants/panelRole.js").PanelRole) => void;
     savePanelTabPreference: (preference: import("../../utils/panel/panelTabPreference.js").PanelTabPreference) => void;
     storedPanelTabPreference: import("../../utils/panel/panelTabPreference.js").PanelTabPreference | null;
-    pinnedFeedbackItems: import("../../types/pinnedFeedback.js").PinnedFeedbackItem[];
-    pinRailCollapsed: boolean;
-    pinRailPlacement: import("../../types/pinnedFeedback.js").PinRailPlacement;
-    togglePinnedFeedback: (item: import("../../types/pinnedFeedback.js").PinnedFeedbackItem) => void;
-    unpinFeedback: (reportId: string) => void;
-    setPinRailCollapsed: (railCollapsed: boolean) => void;
-    setPinRailPlacement: (placement: import("../../types/pinnedFeedback.js").PinRailPlacement) => void;
-    syncPinnedFeedbackReports: (reports: ReportFeedback[]) => void;
     statusText: string;
     toggleReportMode: () => void;
     toggleTargetPreview: () => void;
@@ -338,10 +349,7 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     selectAdjacentReport: (direction: "up" | "down") => void;
     openReplyComposer: (report: ReportFeedback) => void;
     activateFeedbackMarker: (report: ReportFeedback, caseId?: string | null) => Promise<void>;
-    openPinnedFeedback: (reportId: string, options?: {
-        caseId?: string | null;
-        pathname?: string;
-    }) => Promise<void>;
+    revealOpenFeedback: (report: ReportFeedback) => Promise<void>;
     closeReplyComposer: () => void;
     clearHoverLeaveTimeout: () => void;
     scheduleHoverLeave: (markerId: string) => void;
@@ -361,6 +369,7 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     stopEditing: () => void;
     handleUpdateSubmit: () => Promise<void>;
     handleReplySubmit: () => Promise<void>;
+    handleCreateCaseSubmit: () => Promise<void>;
     handleDelete: (id: string) => Promise<void>;
     canCreateGitHubIssueFromList: boolean;
     canCreateGitHubIssueOnCreate: boolean;

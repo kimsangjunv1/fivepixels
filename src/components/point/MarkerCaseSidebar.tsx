@@ -16,7 +16,10 @@ const RESOLVED_STATUS_COLOR = ACCENT_COLOR.green;
 type MarkerCaseSidebarProps = {
     report: ReportFeedback;
     focusedCaseId: string | null;
+    isComposingNewCase?: boolean;
+    composingCaseTitle?: string;
     onSelectCase: (caseId: string) => void;
+    onSelectComposingCase?: () => void;
 };
 
 function CaseStatusIndicator({ caseStatus }: { caseStatus: ReportCaseStatus }) {
@@ -51,10 +54,18 @@ function CaseStatusLabel({ status, isNeedGray }: { status: FeedbackDisplayStatus
     );
 }
 
-export function MarkerCaseSidebar({ report, focusedCaseId, onSelectCase }: MarkerCaseSidebarProps) {
+export function MarkerCaseSidebar({
+    report,
+    focusedCaseId,
+    isComposingNewCase = false,
+    composingCaseTitle,
+    onSelectCase,
+    onSelectComposingCase,
+}: MarkerCaseSidebarProps) {
     const { messages } = useReportPreferences();
     const { sessionActor, removePersistedCase, isUpdating } = useReport();
     const cases = getReportCases(report);
+    const resolvedComposingTitle = composingCaseTitle ?? messages.cases.composingCaseTitle;
 
     return (
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
@@ -62,7 +73,7 @@ export function MarkerCaseSidebar({ report, focusedCaseId, onSelectCase }: Marke
 
             <ul className="flex min-h-0 flex-1 flex-col gap-[2px] overflow-auto px-[6px] pb-[10px]">
                 {cases.map((item) => {
-                    const isActive = item.id === focusedCaseId;
+                    const isActive = !isComposingNewCase && item.id === focusedCaseId;
                     const status = getCaseLatestStatus(report, item.id);
                     const showRemove = canRemoveCase(report, item.id, sessionActor);
                     const caseRelativeTime = formatRelativeTime(item.created_at, messages.common.relativeTime);
@@ -117,6 +128,33 @@ export function MarkerCaseSidebar({ report, focusedCaseId, onSelectCase }: Marke
                         </li>
                     );
                 })}
+
+                {isComposingNewCase ? (
+                    <li>
+                        <button
+                            type="button"
+                            data-fivepixels-interactive=""
+                            aria-current
+                            onClick={() => onSelectComposingCase?.()}
+                            className="flex w-full flex-col items-start justify-center gap-[8px] rounded-[8px] bg-[var(--adaptive-neutralTintOpacity900)] px-[8px] py-[8px] text-left text-[var(--adaptive-black900)]"
+                        >
+                            <section className="flex w-full items-center gap-[4px]">
+                                <span
+                                    aria-hidden
+                                    className="inline-flex h-[12px] w-[12px] shrink-0 rounded-full border border-dashed border-[var(--adaptive-blue400)]"
+                                />
+                                <span className="min-w-0 flex-1 truncate text-[14px] font-semibold leading-[1] text-[var(--adaptive-blue400)]">
+                                    {resolvedComposingTitle}
+                                </span>
+                            </section>
+                            <div className="flex w-full min-w-0 items-center justify-between gap-[8px]">
+                                <span className="shrink-0 whitespace-nowrap text-[11px] font-semibold leading-none text-[var(--adaptive-black500)]">
+                                    {messages.cases.open}
+                                </span>
+                            </div>
+                        </button>
+                    </li>
+                ) : null}
             </ul>
         </div>
     );

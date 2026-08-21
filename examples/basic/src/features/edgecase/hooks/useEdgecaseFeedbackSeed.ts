@@ -1,5 +1,9 @@
 import { useEffect } from "react";
 import {
+    DEMO_INVEST_FEEDBACK_SEED_CATALOG,
+    DEMO_INVEST_FEEDBACK_SEED_IDS,
+} from "../model/createDemoInvestFeedbackSeed";
+import {
     EDGECASE_FEEDBACK_SEED_CATALOG,
     EDGECASE_FEEDBACK_SEED_IDS,
 } from "../model/createEdgecaseFeedbackSeed";
@@ -19,6 +23,8 @@ export function useDemoFeedbackSeed() {
 export const useEdgecaseFeedbackSeed = useDemoFeedbackSeed;
 
 export {
+    DEMO_INVEST_FEEDBACK_SEED_CATALOG,
+    DEMO_INVEST_FEEDBACK_SEED_IDS,
     EDGECASE_FEEDBACK_SEED_CATALOG,
     EDGECASE_FEEDBACK_SEED_IDS,
     SETTINGS_FEEDBACK_SEED_CATALOG,

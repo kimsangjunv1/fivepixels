@@ -6,7 +6,7 @@ import type { Marker, MarkerOverflowHint } from "@/types/report-ui.js";
 import type { ReportFeedback } from "@/types/report.js";
 import { resolveMarkerOverflowHints } from "@/utils/marker/coordinates.js";
 import { scrollContainerTowardEdge } from "@/utils/shared/dom.js";
-import { getDetachedMarkerAriaLabel, getModalGhostFrame } from "@/utils/marker/markerContext.js";
+import { getDetachedMarkerAriaLabel } from "@/utils/marker/markerContext.js";
 import { getMarkerDotSize } from "@/utils/marker/markerRuntime.js";
 import { getMarkerReplyBadgeSize, resolveMarkerGlyphPaint, resolveMarkerShapeStyle } from "@/utils/marker/markerShape.js";
 import type { MarkerAppearancePreferences, TypographyPreferences } from "@/constants/markerAppearance.js";
@@ -15,7 +15,6 @@ import { getMarkerColor, getMarkerDisplayLabel, hasMarkerReplyIndicator } from "
 import { FeedbackHoverCard } from "@/components/panel/feedback/FeedbackHoverCard.js";
 import { getReplyCount } from "@/utils/feedback/feedbackThread.js";
 import { MOTION } from "@/constants/motionClasses.js";
-import { MarkerFeedbackWindow } from "./MarkerFeedbackWindow.js";
 import { MarkerReplyBadge } from "./MarkerReplyBadge.js";
 import { MarkerShapeGlyph } from "./MarkerShapeGlyph.js";
 
@@ -59,32 +58,13 @@ function MarkerOverflowHintButton({ hint, label, onActivate }: MarkerOverflowHin
     );
 }
 
-function DetachedModalGhostFrame() {
-    const frame = useMemo(() => getModalGhostFrame(), []);
-
+function DetachedModalGhostFrame({ label }: { label: string }) {
     return (
         <div
-            className={MODAL_GHOST_LAYER_CLASS}
+            className={`${MODAL_GHOST_LAYER_CLASS} flex items-center justify-center bg-[var(--adaptive-neutralTintOpacity900)] p-[24px] text-center text-[14px] font-semibold text-[var(--adaptive-black900)] backdrop-blur-[10px] ${MOTION.tooltipFadeIn}`}
             aria-hidden
         >
-            <div
-                className="absolute bg-[#0f172a]/12"
-                style={{
-                    left: frame.backdrop.left,
-                    top: frame.backdrop.top,
-                    width: frame.backdrop.width,
-                    height: frame.backdrop.height,
-                }}
-            />
-            <div
-                className="absolute rounded-[20px] border-2 border-dashed border-[#818cf8]/80 bg-white/10 shadow-[0_18px_48px_rgba(79,70,229,0.18)]"
-                style={{
-                    left: frame.dialog.left,
-                    top: frame.dialog.top,
-                    width: frame.dialog.width,
-                    height: frame.dialog.height,
-                }}
-            />
+            {label}
         </div>
     );
 }
@@ -94,6 +74,8 @@ type MarkerButtonProps = {
     isHovered: boolean;
     isReportMode: boolean;
     isProximityHighlighted: boolean;
+    isWindowOpen: boolean;
+    viewingWindowBadge: string;
     detachedAriaLabel: string;
     detachedModalAriaLabel: string;
     markerAppearance: MarkerAppearancePreferences;
@@ -109,6 +91,8 @@ function MarkerButton({
     isHovered,
     isReportMode,
     isProximityHighlighted,
+    isWindowOpen,
+    viewingWindowBadge,
     detachedAriaLabel,
     detachedModalAriaLabel,
     markerAppearance,
@@ -123,13 +107,16 @@ function MarkerButton({
         onLeave: onHoverEnd,
     });
     const replyCount = getReplyCount(markerItem.report);
+    const aggregateCount = markerItem.aggregateCount ?? 1;
     const markerBadgeLabel = getMarkerDisplayLabel(markerItem.report);
-    const showReplyIndicator = hasMarkerReplyIndicator(markerItem.report, replyCount);
+    const showReplyIndicator = aggregateCount === 1 && hasMarkerReplyIndicator(markerItem.report, replyCount);
     const markerLabelParts = [
         markerItem.report.report_type,
         markerItem.report.report_id,
         markerBadgeLabel,
+        aggregateCount > 1 ? `${aggregateCount}` : null,
         showReplyIndicator ? `+${replyCount}` : null,
+        isWindowOpen ? viewingWindowBadge : null,
     ].filter(Boolean);
     const markerLabel = markerLabelParts.join(" · ");
     const isDetached = markerItem.detached;
@@ -215,11 +202,33 @@ function MarkerButton({
                             {showMarkerLabel ? badgeDisplay.content : null}
                         </span>
                     </button>
+                    {aggregateCount > 1 ? (
+                        <span
+                            aria-hidden
+                            className="pointer-events-none absolute z-10 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-white px-[4px] text-[10px] font-bold leading-none text-white"
+                            style={{
+                                top: -5,
+                                right: -5,
+                                backgroundColor: markerColor,
+                                boxShadow: "0 1px 4px #00000040",
+                            }}
+                        >
+                            {aggregateCount}
+                        </span>
+                    ) : null}
                     {showReplyIndicator ? (
                         <MarkerReplyBadge
                             size={replyBadgeSize}
                             accentColor={markerColor}
                         />
+                    ) : null}
+                    {isWindowOpen ? (
+                        <span
+                            aria-hidden
+                            className="pointer-events-none absolute left-1/2 top-full z-20 mt-[2px] -translate-x-1/2 whitespace-nowrap rounded-full bg-black/55 px-[2px] py-[1px] text-[10px] font-semibold leading-none text-white"
+                        >
+                            {viewingWindowBadge}
+                        </span>
                     ) : null}
                 </div>
             </div>
@@ -231,8 +240,7 @@ export function ReportMarkersLayer() {
     const {
         mode,
         markers,
-        activeReplyReport,
-        activeReplyReportId,
+        openReplyReportIds,
         tooltipReport,
         tooltipAnchor,
         editingReportId,
@@ -261,7 +269,7 @@ export function ReportMarkersLayer() {
         (reportId: string) => {
             setHoverPointer(null);
 
-            if (activeReplyReportId) {
+            if (openReplyReportIds.length > 0) {
                 scheduleHoverLeave(reportId);
                 return;
             }
@@ -269,10 +277,11 @@ export function ReportMarkersLayer() {
             clearHoverLeaveTimeout();
             setHoveredMarkerId((current) => (current === reportId ? null : current));
         },
-        [activeReplyReportId, clearHoverLeaveTimeout, scheduleHoverLeave, setHoverPointer, setHoveredMarkerId],
+        [clearHoverLeaveTimeout, openReplyReportIds.length, scheduleHoverLeave, setHoverPointer, setHoveredMarkerId],
     );
 
-    const isExpandedTooltip = Boolean(activeReplyReport && tooltipReport && activeReplyReport.id === tooltipReport.id);
+    const openReplyReportIdSet = useMemo(() => new Set(openReplyReportIds), [openReplyReportIds]);
+    const isHoveringOpenWindow = Boolean(tooltipReport && openReplyReportIdSet.has(tooltipReport.id));
 
     const isViewMode = mode === "view";
     const isReportMode = mode === "report";
@@ -334,7 +343,7 @@ export function ReportMarkersLayer() {
 
         const marker = visibleMarkers.find((item) => item.report.id === activeReportId);
 
-        if (!marker || marker.detachedKind !== "modal") {
+        if (!marker || marker.detachedKind !== "modal" || marker.viewTriggerKey) {
             return null;
         }
 
@@ -361,8 +370,8 @@ export function ReportMarkersLayer() {
         scrollContainerTowardEdge(hint.containerId, hint.edge);
     }, []);
 
-    const showTooltip = Boolean(tooltipReport && tooltipAnchor) && (!editingReportId || tooltipReport?.id !== editingReportId);
-    const { layout: tooltipLayout, setTooltipElement } = useTooltipLayout(tooltipAnchor, isExpandedTooltip, showTooltip);
+    const showTooltip = Boolean(tooltipReport && tooltipAnchor) && (!editingReportId || tooltipReport?.id !== editingReportId) && !isHoveringOpenWindow;
+    const { layout: tooltipLayout, setTooltipElement } = useTooltipLayout(tooltipAnchor, false, showTooltip);
     const tooltipPosition = tooltipLayout?.position ?? null;
     const tooltipAnchorStyle = tooltipLayout?.anchorStyle;
 
@@ -379,15 +388,17 @@ export function ReportMarkersLayer() {
 
     return (
         <>
-            {isViewMode && ghostFrameMarker ? <DetachedModalGhostFrame /> : null}
+            {isViewMode && ghostFrameMarker ? <DetachedModalGhostFrame label={messages.marker.detachedModalHint} /> : null}
 
             {visibleMarkers.map((markerItem) => (
                 <MarkerButton
                     key={markerItem.id}
                     markerItem={markerItem}
-                    isHovered={isViewMode && tooltipReport?.id === markerItem.report.id && !isExpandedTooltip}
+                    isHovered={isViewMode && tooltipReport?.id === markerItem.report.id && !openReplyReportIdSet.has(markerItem.report.id)}
                     isReportMode={isReportMode}
                     isProximityHighlighted={markerItem.id === proximityHighlightedMarkerId}
+                    isWindowOpen={openReplyReportIdSet.has(markerItem.report.id)}
+                    viewingWindowBadge={messages.marker.viewingWindowBadge}
                     detachedAriaLabel={messages.marker.detachedAriaLabel}
                     detachedModalAriaLabel={messages.marker.detachedModalAriaLabel}
                     markerAppearance={markerAppearance}
@@ -410,7 +421,7 @@ export function ReportMarkersLayer() {
                   ))
                 : null}
 
-            {showTooltip && !isExpandedTooltip && tooltipReport && tooltipPosition && tooltipAnchorStyle ? (
+            {showTooltip && tooltipReport && tooltipPosition && tooltipAnchorStyle ? (
                 <div
                     ref={bindHoverTooltipRef}
                     className={`pointer-events-none ${TOOLTIP_FIXED_CLASS}`}
@@ -430,14 +441,6 @@ export function ReportMarkersLayer() {
                         detachedModalHint={messages.marker.detachedModalHint}
                     />
                 </div>
-            ) : null}
-
-            {isViewMode && isExpandedTooltip && activeReplyReport && tooltipAnchor ? (
-                <MarkerFeedbackWindow
-                    key={activeReplyReport.id}
-                    report={activeReplyReport}
-                    anchor={tooltipAnchor}
-                />
             ) : null}
         </>
     );

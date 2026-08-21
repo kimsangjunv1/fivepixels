@@ -1,7 +1,7 @@
 import { TARGET_SELECTOR } from "@/constants/report.js";
 import type { ReportTargetType } from "@/types/report.js";
 import type { PickTargetFontStyle, TargetSnapshot } from "@/types/report-ui.js";
-import { getPickTargetBoxStyle, getPickTargetFontStyle, getPickTargetReportIdAttribute, getPickTargetTagName } from "../probe/pickTargetInspect.js";
+import { getPickTargetBoxStyle, getPickTargetFontStyle, getPickTargetFpOpenAttribute, getPickTargetFpViewAttribute, getPickTargetReportIdAttribute, getPickTargetTagName } from "../probe/pickTargetInspect.js";
 import {
     createAutoPickReportId,
     generateCssSelector,
@@ -151,6 +151,8 @@ function enrichPickTargetInspect(element: HTMLElement, snapshot: TargetSnapshot)
         ...snapshot,
         tagName: getPickTargetTagName(element),
         reportIdAttribute: getPickTargetReportIdAttribute(element),
+        fpOpenAttribute: getPickTargetFpOpenAttribute(element),
+        fpViewAttribute: getPickTargetFpViewAttribute(element),
         boxStyle: getPickTargetBoxStyle(element),
         fontStyle: getPickTargetFontStyle(element),
     };
@@ -176,6 +178,8 @@ export function isSameHoverTarget(previous: TargetSnapshot | null, next: TargetS
         previous.rect.height === next.rect.height &&
         previous.tagName === next.tagName &&
         previous.reportIdAttribute === next.reportIdAttribute &&
+        previous.fpOpenAttribute === next.fpOpenAttribute &&
+        previous.fpViewAttribute === next.fpViewAttribute &&
         isSamePickTargetBoxStyle(previous.boxStyle, next.boxStyle) &&
         isSamePickTargetFontStyle(previous.fontStyle, next.fontStyle)
     );

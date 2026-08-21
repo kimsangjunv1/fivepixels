@@ -1,5 +1,5 @@
 import { TARGET_SELECTOR } from "../../constants/report.js";
-import { getPickTargetBoxStyle, getPickTargetFontStyle, getPickTargetReportIdAttribute, getPickTargetTagName } from "../probe/pickTargetInspect.js";
+import { getPickTargetBoxStyle, getPickTargetFontStyle, getPickTargetFpOpenAttribute, getPickTargetFpViewAttribute, getPickTargetReportIdAttribute, getPickTargetTagName } from "../probe/pickTargetInspect.js";
 import { createAutoPickReportId, generateCssSelector, generateSuggestedReportId, isPickableElement, } from "../marker/targetSelector.js";
 import { getElementHostRect, getPageElementsFromPoint, getPageViewportSize, getPageWindow, isHtmlElement, queryPageSelector, queryPageSelectorAll, } from "../overlay/pageDocumentBridge.js";
 function getElementWindow(element) {
@@ -100,6 +100,8 @@ function enrichPickTargetInspect(element, snapshot) {
         ...snapshot,
         tagName: getPickTargetTagName(element),
         reportIdAttribute: getPickTargetReportIdAttribute(element),
+        fpOpenAttribute: getPickTargetFpOpenAttribute(element),
+        fpViewAttribute: getPickTargetFpViewAttribute(element),
         boxStyle: getPickTargetBoxStyle(element),
         fontStyle: getPickTargetFontStyle(element),
     };
@@ -120,6 +122,8 @@ export function isSameHoverTarget(previous, next) {
         previous.rect.height === next.rect.height &&
         previous.tagName === next.tagName &&
         previous.reportIdAttribute === next.reportIdAttribute &&
+        previous.fpOpenAttribute === next.fpOpenAttribute &&
+        previous.fpViewAttribute === next.fpViewAttribute &&
         isSamePickTargetBoxStyle(previous.boxStyle, next.boxStyle) &&
         isSamePickTargetFontStyle(previous.fontStyle, next.fontStyle));
 }

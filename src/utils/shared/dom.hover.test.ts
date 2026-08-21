@@ -28,4 +28,20 @@ describe("isSameHoverTarget", () => {
             false,
         );
     });
+
+    it("treats different data-fp-open values as unequal", () => {
+        const rect = new DOMRect(0, 0, 10, 10);
+        const previous = { id: "cta", type: "item" as const, rect, isTagged: true, fpOpenAttribute: "login" };
+        const next = { id: "cta", type: "item" as const, rect, isTagged: true, fpOpenAttribute: "search" };
+
+        expect(isSameHoverTarget(previous, next)).toBe(false);
+    });
+
+    it("treats different data-fp-view values as unequal", () => {
+        const rect = new DOMRect(0, 0, 10, 10);
+        const previous = { id: "copy", type: "item" as const, rect, isTagged: true, fpViewAttribute: "login" };
+        const next = { id: "copy", type: "item" as const, rect, isTagged: true, fpViewAttribute: "search" };
+
+        expect(isSameHoverTarget(previous, next)).toBe(false);
+    });
 });

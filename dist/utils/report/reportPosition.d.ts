@@ -7,5 +7,6 @@ export declare function createReportPosition(overrides?: {
     viewport?: Partial<ReportPositionViewport>;
     scrollY?: number;
     anchor?: ReportPositionAnchor | null;
+    viewPath?: string[];
 }): ReportPosition;
 //# sourceMappingURL=reportPosition.d.ts.map

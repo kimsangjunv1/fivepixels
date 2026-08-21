@@ -30,6 +30,8 @@ const DENIED_ACTION_PATH =
 const COMPLETE_ACTION_PATH =
     "m424-296 282-282-56-56-226 226-114-114-56 56 170 170Zm56 216q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z";
 const KEYBOARD_RETURN_PATH = "M360-240 120-480l240-240 56 56-144 144h488v-160h80v240H272l144 144-56 56Z";
+const ARROW_RETURN_RIGHT_PATH =
+    "M520-177q0-16 12-28l115-115H280q-33 0-56.5-23.5T200-400v-360q0-17 11.5-28.5T240-800q17 0 28.5 11.5T280-760v360h367L531-516q-12-12-11.5-28t11.5-28q12-12 28-12.5t28 11.5l185 185q6 6 8.5 13t2.5 15q0 8-2.5 15t-8.5 13L589-149q-12 12-28.5 12T532-149q-12-12-12-28Z";
 const TRASH_PATH =
     "M280-120q-33 0-56.5-23.5T200-200v-520q-17 0-28.5-11.5T160-760q0-17 11.5-28.5T200-800h160q0-17 11.5-28.5T400-840h160q17 0 28.5 11.5T600-800h160q17 0 28.5 11.5T800-760q0 17-11.5 28.5T760-720v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM400-280q17 0 28.5-11.5T440-320v-280q0-17-11.5-28.5T400-640q-17 0-28.5 11.5T360-600v280q0 17 11.5 28.5T400-280Zm160 0q17 0 28.5-11.5T600-320v-280q0-17-11.5-28.5T560-640q-17 0-28.5 11.5T520-600v280q0 17 11.5 28.5T560-280ZM240-720h480v-80H240v80Zm0 0v-80 80Z";
 const SETTINGS_PATH =
@@ -329,24 +331,6 @@ export function StarIcon({ className }: { className?: string }) {
     );
 }
 
-export function FavoritePinIcon({ className, filled = false }: { className?: string; filled?: boolean }) {
-    return (
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 16 16"
-            fill={filled ? "currentColor" : "none"}
-            stroke="currentColor"
-            strokeWidth="1.5"
-            className={className}
-            aria-hidden
-        >
-            <path
-                strokeLinejoin="round"
-                d="M8 1.75 9.76 5.4l4.01.34-3.04 2.66.92 3.9L8 10.4l-3.65 2.1.92-3.9L2.23 5.74l4.01-.34L8 1.75Z"
-            />
-        </svg>
-    );
-}
 
 export function InfoIcon({ className }: { className?: string }) {
     return (
@@ -400,6 +384,16 @@ export function RevertIcon({ className, fill }: { className?: string } & Pick<Ma
     return (
         <IconGlyph
             path={REVERT_PATH}
+            className={className}
+            fill={fill}
+        />
+    );
+}
+
+export function ArrowReturnRightIcon({ className, fill }: { className?: string } & Pick<MaterialIconProps, "fill">) {
+    return (
+        <IconGlyph
+            path={ARROW_RETURN_RIGHT_PATH}
             className={className}
             fill={fill}
         />

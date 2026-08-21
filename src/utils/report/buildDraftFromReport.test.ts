@@ -21,6 +21,7 @@ describe("buildDraftFromReport", () => {
                 viewport: { x: 0.4, y: 0.5, width: 1200, height: 800 },
                 scrollY: 120,
                 anchor: null,
+                viewPath: ["settings-modal", "account-tab"],
             },
         });
 
@@ -36,5 +37,6 @@ describe("buildDraftFromReport", () => {
         expect(draft.yRatio).toBe(0.5);
         expect(draft.reportId).toBe(report.report_id);
         expect(draft.targetSelector).toBe(report.target_selector ?? null);
+        expect(draft.viewPath).toEqual(["settings-modal", "account-tab"]);
     });
 });

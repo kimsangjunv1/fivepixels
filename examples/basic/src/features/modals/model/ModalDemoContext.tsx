@@ -3,7 +3,17 @@ import type { ReportFeedback } from "@fivepixels-js/react";
 
 import { registerModalRevealHandler } from "./modalRevealRegistry";
 
-type ModalCaseKey = "opacity" | "display" | "conditional" | "visibility" | "offscreen";
+export type ModalCaseKey =
+    | "opacity"
+    | "display"
+    | "conditional"
+    | "visibility"
+    | "offscreen"
+    | "investSearch"
+    | "investWatchlist"
+    | "investFilter"
+    | "investOpinion"
+    | "investLogin";
 
 type ModalDemoContextValue = {
     isOpen: (key: ModalCaseKey) => boolean;
@@ -19,6 +29,11 @@ const revealTargetByCase: Record<ModalCaseKey, string[]> = {
     conditional: ["modal-conditional-target", "modal-conditional-overlay"],
     visibility: ["modal-visibility-target", "modal-visibility-overlay"],
     offscreen: ["modal-offscreen-target", "modal-offscreen-overlay"],
+    investSearch: ["demo-modal-search", "demo-modal-search-overlay"],
+    investWatchlist: ["demo-modal-watchlist", "demo-modal-watchlist-overlay"],
+    investFilter: ["demo-modal-filter", "demo-modal-filter-overlay"],
+    investOpinion: ["demo-modal-opinion", "demo-modal-opinion-overlay"],
+    investLogin: ["demo-modal-login", "demo-modal-login-overlay"],
 };
 
 export function ModalDemoProvider({ children }: PropsWithChildren) {
@@ -28,6 +43,11 @@ export function ModalDemoProvider({ children }: PropsWithChildren) {
         conditional: false,
         visibility: false,
         offscreen: false,
+        investSearch: false,
+        investWatchlist: false,
+        investFilter: false,
+        investOpinion: false,
+        investLogin: false,
     });
 
     const openModal = useCallback((key: ModalCaseKey) => {

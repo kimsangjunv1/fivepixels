@@ -34,15 +34,6 @@ export declare const MOTION: {
     readonly panelTabPaneOutToRight: "fivepixels-panel-tab-pane--out-to-right";
     readonly markerWindowEnter: "fivepixels-marker-window-enter";
     readonly markerWindowExit: "fivepixels-marker-window-exit";
-    readonly pinRailEnter: "fivepixels-pin-rail-enter";
-    readonly pinRailDock: "fivepixels-pin-rail-dock";
-    readonly pinRailDockDragging: "fivepixels-pin-rail-dock--dragging";
-    readonly pinRailShell: "fivepixels-pin-rail-shell";
-    readonly pinRailBody: "fivepixels-pin-rail-body";
-    readonly pinRailBodyInner: "fivepixels-pin-rail-body-inner";
-    readonly pinCardEnter: "fivepixels-pin-card-enter";
-    readonly pinStarPop: "fivepixels-pin-star-pop";
-    readonly pinCardPulse: "fivepixels-pin-card-pulse";
 };
 export type MotionClassName = (typeof MOTION)[keyof typeof MOTION];
 export declare const PANEL_TAB_FADE_MS = 180;

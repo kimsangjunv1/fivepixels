@@ -16,6 +16,21 @@ import {
 
 const TEAM = SEED_TEAM;
 
+const VIEW_KEY_BY_REPORT_ID: Record<string, string> = {
+    "modal-opacity-overlay": "modal-opacity",
+    "modal-opacity-target": "modal-opacity",
+    "modal-display-overlay": "modal-display",
+    "modal-display-target": "modal-display",
+    "modal-conditional-overlay": "modal-conditional",
+    "modal-conditional-target": "modal-conditional",
+    "modal-visibility-overlay": "modal-visibility",
+    "modal-visibility-target": "modal-visibility",
+    "modal-offscreen-overlay": "modal-offscreen",
+    "modal-offscreen-target": "modal-offscreen",
+    "modal-zustand-overlay": "modal-zustand",
+    "modal-zustand-target": "modal-zustand",
+};
+
 const CASE = {
     opacityOverlayA: "settings-case-opacity-a",
     opacityOverlayB: "settings-case-opacity-b",
@@ -51,7 +66,20 @@ const CASE = {
 } as const;
 
 function seed(id: string, overrides: Parameters<typeof buildSeedFeedback>[2]) {
-    return buildSeedFeedback(id, SETTINGS_PATHNAME, overrides);
+    const feedback = buildSeedFeedback(id, SETTINGS_PATHNAME, overrides);
+    const viewKey = VIEW_KEY_BY_REPORT_ID[feedback.report_id];
+
+    if (!viewKey) {
+        return feedback;
+    }
+
+    return {
+        ...feedback,
+        position: {
+            ...feedback.position,
+            viewPath: [viewKey],
+        },
+    };
 }
 
 export function createSettingsFeedbackSeed(): ReportFeedback[] {
@@ -147,7 +175,7 @@ export function createSettingsFeedbackSeed(): ReportFeedback[] {
             replies: [
                 seedReply(
                     "settings-reply-display-s",
-                    "locate 시 onRevealTarget로 display:flex 복구 후 마커 재계산.",
+                    "locate 시 data-fp-open 트리거로 display:flex 복구 후 마커 재계산.",
                     daysAgo(2, 10),
                     "suggested",
                     {
@@ -329,7 +357,7 @@ export function createSettingsFeedbackSeed(): ReportFeedback[] {
                     id: CASE.zustandB,
                     assignee_name: TEAM.emma,
                 }),
-                createReportCase("revealZustandModal misses overlay group target.", {
+                createReportCase("Declarative view restore misses overlay group target.", {
                     id: CASE.zustandC,
                     status: "resolved",
                     assignee_name: TEAM.william,

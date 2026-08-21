@@ -29,6 +29,18 @@ describe("normalizeReportPosition", () => {
         });
     });
 
+    it("preserves valid view restore keys", () => {
+        expect(
+            normalizeReportPosition({
+                target: null,
+                viewport: { x: 0.5, y: 0.5, width: 1200, height: 800 },
+                scrollY: 0,
+                anchor: null,
+                viewPath: [" settings-modal ", "", 42],
+            }).viewPath,
+        ).toEqual(["settings-modal"]);
+    });
+
     it("fills incomplete viewport fields while keeping valid ratios", () => {
         expect(
             normalizeReportPosition({

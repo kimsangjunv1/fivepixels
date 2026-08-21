@@ -8,6 +8,7 @@ import type { ElementMention } from "../../types/mention.js";
 import type { TargetSnapshot } from "../../types/report-ui.js";
 export type UseReportReplyReviewParams = {
     reports: ReportFeedback[];
+    allPageReports: ReportFeedback[];
     messages: ReportMessages;
     fields: ReportField[];
     sessionActor: SessionActor | null;
@@ -24,13 +25,22 @@ export type UseReportReplyReviewParams = {
     setErrorMessage: Dispatch<SetStateAction<string>>;
     onSelectReport: (reportId: string) => void;
 };
-export declare function useReportReplyReview({ reports, messages, fields, sessionActor, authorSelectionLocked, activeIdentify, authorizedAuthors, selfName, eventCallbacks, createReply, updateFeedback, usesCreateReply, signReplyPayload, signUpdatePayload, setErrorMessage, onSelectReport, }: UseReportReplyReviewParams): {
+export declare function useReportReplyReview({ reports, allPageReports, messages, fields, sessionActor, authorSelectionLocked, activeIdentify, authorizedAuthors, selfName, eventCallbacks, createReply, updateFeedback, usesCreateReply, signReplyPayload, signUpdatePayload, setErrorMessage, onSelectReport, }: UseReportReplyReviewParams): {
     focusedCaseId: string | null;
     selectCase: (caseId: string) => void;
     clearFocusedCase: () => void;
+    isComposingNewCase: boolean;
+    beginComposeNewCase: () => void;
+    cancelComposeNewCase: () => void;
     openReplyComposer: (report: ReportFeedback) => void;
     closeReplyComposer: () => void;
+    restoreOpenReplyWindows: (snapshot: {
+        openIds: string[];
+        minimizedIds: string[];
+        focusedId: string | null;
+    }, preferredFocusId?: string | null, focusReport?: ReportFeedback | null) => void;
     handleReplySubmit: () => Promise<void>;
+    handleCreateCaseSubmit: () => Promise<void>;
     beginCaseEdit: (report: ReportFeedback) => void;
     cancelCaseEdit: () => void;
     handleCaseEditSave: () => Promise<void>;
@@ -43,6 +53,13 @@ export declare function useReportReplyReview({ reports, messages, fields, sessio
     caseEditCases: import("../../types/report.js").ReportCase[] | null;
     activeReplyReportId: string | null;
     setActiveReplyReportId: Dispatch<SetStateAction<string | null>>;
+    openReplyReportIds: string[];
+    openReplyReports: ReportFeedback[];
+    minimizedReplyReportIds: string[];
+    setReplyWindowMinimized: (reportId: string, minimized: boolean) => void;
+    reorderMinimizedReplyWindow: (reportId: string, toIndex: number) => void;
+    focusReplyWindow: (reportId: string) => void;
+    closeReplyWindow: (reportId: string) => void;
     activeReplyReport: ReportFeedback | null;
     activeReplyAnchor: {
         report: ReportFeedback;

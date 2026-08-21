@@ -77,6 +77,9 @@ function ReportProviderEnabled({
     onResolveReviewerRequest,
     onRegisterReviewer,
     onUpdateReviewer,
+    onApiLogin,
+    onApiRegister,
+    onArtemisLogin,
     onEvent,
     onReply,
     github,
@@ -119,6 +122,9 @@ function ReportProviderEnabled({
         onResolveReviewerRequest,
         onRegisterReviewer,
         onUpdateReviewer,
+        onApiLogin,
+        onApiRegister,
+        onArtemisLogin,
         onEvent,
         onReply,
         github,
@@ -165,6 +171,9 @@ export function ReportProvider({
     onResolveReviewerRequest,
     onRegisterReviewer,
     onUpdateReviewer,
+    onApiLogin,
+    onApiRegister,
+    onArtemisLogin,
     onEvent,
     onReply,
     github,
@@ -213,6 +222,9 @@ export function ReportProvider({
             onResolveReviewerRequest={onResolveReviewerRequest}
             onRegisterReviewer={onRegisterReviewer}
             onUpdateReviewer={onUpdateReviewer}
+            onApiLogin={onApiLogin}
+            onApiRegister={onApiRegister}
+            onArtemisLogin={onArtemisLogin}
             onEvent={onEvent}
             onReply={onReply}
             github={github}

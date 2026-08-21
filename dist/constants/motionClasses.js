@@ -34,15 +34,6 @@ export const MOTION = {
     panelTabPaneOutToRight: "fivepixels-panel-tab-pane--out-to-right",
     markerWindowEnter: "fivepixels-marker-window-enter",
     markerWindowExit: "fivepixels-marker-window-exit",
-    pinRailEnter: "fivepixels-pin-rail-enter",
-    pinRailDock: "fivepixels-pin-rail-dock",
-    pinRailDockDragging: "fivepixels-pin-rail-dock--dragging",
-    pinRailShell: "fivepixels-pin-rail-shell",
-    pinRailBody: "fivepixels-pin-rail-body",
-    pinRailBodyInner: "fivepixels-pin-rail-body-inner",
-    pinCardEnter: "fivepixels-pin-card-enter",
-    pinStarPop: "fivepixels-pin-star-pop",
-    pinCardPulse: "fivepixels-pin-card-pulse",
 };
 export const PANEL_TAB_FADE_MS = 180;
 export const PANEL_TAB_HEIGHT_MS = 300;

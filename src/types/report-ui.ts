@@ -134,6 +134,8 @@ export type TargetSnapshot = {
     suggestedReportId?: string | null;
     tagName?: string;
     reportIdAttribute?: string | null;
+    fpOpenAttribute?: string | null;
+    fpViewAttribute?: string | null;
     boxStyle?: PickTargetBoxStyle;
     fontStyle?: PickTargetFontStyle | null;
 };
@@ -154,6 +156,7 @@ export type DraftReport = {
     reportId: string;
     reportType: ReportTargetType;
     targetSelector: string | null;
+    viewPath: string[];
     suggestedReportId: string | null;
     cases: ReportCase[];
     category: FeedbackCategory | null;
@@ -181,6 +184,8 @@ export type Marker = {
     clampedEdge: MarkerClampEdge | null;
     clampBounds: MarkerClampBounds | null;
     clampContainerId: string | null;
+    viewTriggerKey?: string | null;
+    aggregateCount?: number;
     report: ReportFeedback;
 };
 

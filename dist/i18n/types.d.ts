@@ -243,6 +243,8 @@ export type ReportMessages = {
         removeCaseConfirmTitle: string;
         removeCaseAriaLabel: string;
         removeCaseConfirmAriaLabel: string;
+        composingCaseTitle: string;
+        composingCasePlaceholder: string;
     };
     thread: {
         scrollHintUp: string;
@@ -263,6 +265,7 @@ export type ReportMessages = {
         questionsPending: (count: number) => string;
         questionsToggleAriaLabel: (count: number, expanded: boolean) => string;
         issueResolvedDivider: string;
+        detachedTargetDivider: string;
         claimAssignee: string;
         takeOverAssignee: string;
         assigneeAssigned: string;
@@ -364,6 +367,39 @@ export type ReportMessages = {
     onboarding: {
         languageStepTitle: string;
         languageStepDescription: string;
+        loginMethodStepTitle: string;
+        loginMethodStepDescription: string;
+        loginMethodLocal: string;
+        loginMethodLocalDescription: string;
+        loginMethodApi: string;
+        loginMethodApiDescription: string;
+        loginMethodArtemis: string;
+        loginMethodArtemisDescription: string;
+        apiLoginTitle: string;
+        apiLoginDescription: string;
+        loginIdLabel: string;
+        passwordLabel: string;
+        passwordConfirmLabel: string;
+        emailLabel: string;
+        usernameLabel: string;
+        loginAction: string;
+        signUpAction: string;
+        registerTitle: string;
+        registerDescription: string;
+        registerSubmit: string;
+        registerSuccessTitle: string;
+        registerSuccessDescription: string;
+        goToLogin: string;
+        registerErrorTitle: string;
+        registerInvalid: string;
+        registerDuplicate: string;
+        registerUnknownError: string;
+        backToPrevious: string;
+        artemisLoginTitle: string;
+        artemisLoginDescription: string;
+        googleLogin: string;
+        loginFailed: string;
+        authUnavailable: string;
         introTitle: string;
         introDescription: string;
         newUser: string;
@@ -638,6 +674,8 @@ export type ReportMessages = {
         tooltipFontWeight: string;
         tooltipLineHeight: string;
         tooltipReportId: string;
+        tooltipFpOpen: string;
+        tooltipFpView: string;
         tooltipNoReportId: string;
         probeEdit: string;
         probeClose: string;
@@ -718,6 +756,9 @@ export type ReportMessages = {
         shareLinkAriaLabel: string;
         shareLinkTitle: string;
         shareLinkCopiedTitle: string;
+        sidebarActionsAriaLabel: string;
+        newCaseAction: string;
+        shareAction: string;
         assigneeAssigned: string;
         assigneeUnassigned: string;
         previousAssignee: string;
@@ -725,6 +766,12 @@ export type ReportMessages = {
         assigneeInfoAriaLabel: string;
         viewMoreCases: string;
         hoverTooltipHeader: string;
+        offscreenNavigateHint: string;
+        minimizedAliasEditAriaLabel: string;
+        minimizedAliasInputAriaLabel: string;
+        minimizedAliasPlaceholder: string;
+        minimizedAliasClearAriaLabel: string;
+        viewingWindowBadge: string;
     };
     defaults: {
         fields: {
@@ -823,24 +870,6 @@ export type ReportMessages = {
         selectCaseFirst: string;
         caseAssigneeOnly: string;
         personalKeyRequired: string;
-    };
-    pins: {
-        railTitle: string;
-        railCountLabel: (count: number) => string;
-        railExpandAriaLabel: string;
-        railCollapseAriaLabel: string;
-        repositionAriaLabel: string;
-        repositionTitle: string;
-        pinAriaLabel: string;
-        unpinAriaLabel: string;
-        openPinAriaLabel: string;
-        removePinAriaLabel: string;
-        routeToggleAriaLabel: (pathname: string) => string;
-        progressAriaLabel: (resolved: number, total: number, percentage: number) => string;
-        completedCasesLabel: (resolved: number, total: number) => string;
-        sectionTitle: string;
-        empty: string;
-        notFound: string;
     };
 };
 export type DeepPartialReportMessages = {

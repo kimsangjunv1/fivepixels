@@ -1,6 +1,7 @@
 import type { Marker, TargetSnapshot } from "@/types/report-ui.js";
 import { toFeedbackHoverSnapshot } from "@/utils/shared/dom.js";
 import { getFeedbackTargetElement } from "./locateFeedback.js";
+import { getFeedbackViewTrigger } from "./viewRestore.js";
 
 export function markerToTargetSnapshot(marker: Marker): TargetSnapshot | null {
     if (!marker.rect) {
@@ -8,6 +9,13 @@ export function markerToTargetSnapshot(marker: Marker): TargetSnapshot | null {
     }
 
     const { report, rect } = marker;
+    const viewTrigger = marker.viewTriggerKey ? (getFeedbackViewTrigger(report.position.viewPath, { visibleOnly: true })?.element ?? null) : null;
+    const inspectedViewTrigger = toFeedbackHoverSnapshot(viewTrigger);
+
+    if (inspectedViewTrigger) {
+        return inspectedViewTrigger;
+    }
+
     const inspectedTarget = toFeedbackHoverSnapshot(getFeedbackTargetElement(report));
 
     if (inspectedTarget) {

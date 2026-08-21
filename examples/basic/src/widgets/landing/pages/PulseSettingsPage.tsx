@@ -18,9 +18,9 @@ function OpacityModalCase() {
             <header className="section-header">
                 <ModalCaseBadge label="opacity: 0" />
                 <h3>Opacity로 숨기는 모달</h3>
-                <p>닫힌 뒤 locate하면 onRevealTarget으로 opacity가 복구됩니다.</p>
+                <p>닫힌 뒤 locate하면 data-fp-open 트리거로 opacity가 복구됩니다.</p>
             </header>
-            <button type="button" className="primary-button" data-report-id="modal-opacity-open" data-report-type="item" onClick={() => openModal("opacity")}>
+            <button type="button" className="primary-button" data-fp-open="modal-opacity" data-report-id="modal-opacity-open" data-report-type="item" onClick={() => openModal("opacity")}>
                 모달 열기
             </button>
         </section>
@@ -37,7 +37,7 @@ function DisplayModalCase() {
                 <h3>display:none 모달</h3>
                 <p>getBoundingClientRect()가 0×0이 되어 detached로 처리됩니다.</p>
             </header>
-            <button type="button" className="primary-button" data-report-id="modal-display-open" data-report-type="item" onClick={() => openModal("display")}>
+            <button type="button" className="primary-button" data-fp-open="modal-display" data-report-id="modal-display-open" data-report-type="item" onClick={() => openModal("display")}>
                 모달 열기
             </button>
         </section>
@@ -54,7 +54,7 @@ function ConditionalModalCase() {
                 <h3>조건부 렌더링 모달</h3>
                 <p>닫으면 React state에 따라 모달 전체가 언마운트됩니다.</p>
             </header>
-            <button type="button" className="primary-button" data-report-id="modal-conditional-open" data-report-type="item" onClick={() => openModal("conditional")}>
+            <button type="button" className="primary-button" data-fp-open="modal-conditional" data-report-id="modal-conditional-open" data-report-type="item" onClick={() => openModal("conditional")}>
                 모달 열기
             </button>
         </section>
@@ -71,7 +71,7 @@ function VisibilityModalCase() {
                 <h3>visibility:hidden 모달</h3>
                 <p>opacity와 별도로 visibility만 변경하는 케이스입니다.</p>
             </header>
-            <button type="button" className="primary-button" data-report-id="modal-visibility-open" data-report-type="item" onClick={() => openModal("visibility")}>
+            <button type="button" className="primary-button" data-fp-open="modal-visibility" data-report-id="modal-visibility-open" data-report-type="item" onClick={() => openModal("visibility")}>
                 모달 열기
             </button>
         </section>
@@ -88,7 +88,7 @@ function OffscreenModalCase() {
                 <h3>화면 밖 transform 모달</h3>
                 <p>닫히면 translateX로 뷰포트 밖으로 이동합니다.</p>
             </header>
-            <button type="button" className="primary-button" data-report-id="modal-offscreen-open" data-report-type="item" onClick={() => openModal("offscreen")}>
+            <button type="button" className="primary-button" data-fp-open="modal-offscreen" data-report-id="modal-offscreen-open" data-report-type="item" onClick={() => openModal("offscreen")}>
                 모달 열기
             </button>
         </section>
@@ -103,9 +103,9 @@ function ZustandModalCase() {
             <header className="section-header">
                 <ModalCaseBadge label="zustand boolean" className="modal-demo-badge--zustand" />
                 <h3>Zustand store 모달</h3>
-                <p>onRevealTarget에서는 getState().open()만 호출해 복구합니다.</p>
+                <p>전역 store 여부와 관계없이 기존 열기 버튼을 다시 실행해 복구합니다.</p>
             </header>
-            <button type="button" className="primary-button" data-report-id="modal-zustand-open" data-report-type="item" onClick={open}>
+            <button type="button" className="primary-button" data-fp-open="modal-zustand" data-report-id="modal-zustand-open" data-report-type="item" onClick={open}>
                 모달 열기
             </button>
         </section>

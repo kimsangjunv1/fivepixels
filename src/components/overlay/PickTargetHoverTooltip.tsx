@@ -164,7 +164,19 @@ export function PickTargetHoverTooltip({ target }: PickTargetHoverTooltipProps) 
                     </>
                 ) : null}
 
-                <div className="mt-[2px] border-t border-[var(--adaptive-border-subtle)] pt-[6px]">
+                <div className="mt-[2px] flex flex-col gap-[6px] border-t border-[var(--adaptive-border-subtle)] pt-[6px]">
+                    {target.fpOpenAttribute ? (
+                        <InspectRow
+                            label={messages.pickTarget.tooltipFpOpen}
+                            value={target.fpOpenAttribute}
+                        />
+                    ) : null}
+                    {target.fpViewAttribute ? (
+                        <InspectRow
+                            label={messages.pickTarget.tooltipFpView}
+                            value={target.fpViewAttribute}
+                        />
+                    ) : null}
                     <div className="flex items-start justify-between gap-[8px] text-[11px] leading-[1.45]">
                         <span className="shrink-0 text-[var(--adaptive-black500)]">{messages.pickTarget.tooltipReportId}</span>
                         <div className="flex min-w-0 items-start justify-end gap-[6px]">

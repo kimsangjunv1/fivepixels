@@ -103,16 +103,22 @@ describe("toSnapshot", () => {
 
 describe("toFeedbackHoverSnapshot", () => {
     it("marks tagged and untagged targets", () => {
+        const view = document.createElement("div");
+        view.dataset.fpView = "checkout-modal";
         const tagged = document.createElement("button");
         tagged.dataset.reportId = "hero-cta";
         tagged.dataset.reportType = "item";
-        document.body.append(tagged);
+        tagged.dataset.fpOpen = "checkout-modal";
+        view.append(tagged);
+        document.body.append(view);
 
         const untagged = document.createElement("button");
         untagged.textContent = "Checkout";
         document.body.append(untagged);
 
         expect(toFeedbackHoverSnapshot(tagged)?.isTagged).toBe(true);
+        expect(toFeedbackHoverSnapshot(tagged)?.fpOpenAttribute).toBe("checkout-modal");
+        expect(toFeedbackHoverSnapshot(tagged)?.fpViewAttribute).toBe("checkout-modal");
         expect(toFeedbackHoverSnapshot(untagged)?.isTagged).toBe(false);
         expect(hasDirectReportId(tagged)).toBe(true);
         expect(hasDirectReportId(untagged)).toBe(false);

@@ -81,6 +81,12 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     authDiagnostics: import("./useReportAuthSession.js").AuthDiagnostics;
     authorSelectionLocked: boolean;
     panelView: import("./useReportAuthSession.js").PanelView;
+    loginMethod: "local" | "api" | "artemis" | null;
+    selectLoginMethod: (method: import("../../index.js").LoginMethod) => void;
+    loginWithApi: (payload: import("../../types/report.js").ReportApiLoginPayload) => Promise<import("../../types/report.js").ReportAuthUser>;
+    registerWithApi: (payload: import("../../types/report.js").ReportApiRegisterPayload) => Promise<void>;
+    loginWithArtemis: () => Promise<import("../../types/report.js").ReportAuthUser>;
+    completeRemoteOnboarding: () => void;
     completeOnboarding: ({ name }: {
         name: string;
     }) => Promise<{
@@ -245,6 +251,13 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     overlayRef: RefObject<HTMLDivElement>;
     activeReplyReportId: string | null;
     activeReplyReport: ReportFeedback | null;
+    openReplyReportIds: string[];
+    openReplyReports: ReportFeedback[];
+    minimizedReplyReportIds: string[];
+    setReplyWindowMinimized: (reportId: string, minimized: boolean) => void;
+    reorderMinimizedReplyWindow: (reportId: string, toIndex: number) => void;
+    focusReplyWindow: (reportId: string) => void;
+    closeReplyWindow: (reportId: string) => void;
     tooltipReport: ReportFeedback | null;
     tooltipAnchor: import("../../types/report-ui.js").Marker | null;
     tooltipFieldTags: {
@@ -289,6 +302,9 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     removePersistedCase: (report: ReportFeedback, caseId: string) => Promise<void>;
     focusedCaseId: string | null;
     selectCase: (caseId: string) => void;
+    isComposingNewCase: boolean;
+    beginComposeNewCase: () => void;
+    cancelComposeNewCase: () => void;
     clearFocusedCase: () => void;
     isCaseEditing: boolean;
     caseEditReportId: string | null;
@@ -308,14 +324,6 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     applyRoleDefaultTabsForOnboarding: (role: import("../../constants/panelRole.js").PanelRole) => void;
     savePanelTabPreference: (preference: import("../../utils/panel/panelTabPreference.js").PanelTabPreference) => void;
     storedPanelTabPreference: import("../../utils/panel/panelTabPreference.js").PanelTabPreference | null;
-    pinnedFeedbackItems: import("../../types/pinnedFeedback.js").PinnedFeedbackItem[];
-    pinRailCollapsed: boolean;
-    pinRailPlacement: import("../../types/pinnedFeedback.js").PinRailPlacement;
-    togglePinnedFeedback: (item: import("../../types/pinnedFeedback.js").PinnedFeedbackItem) => void;
-    unpinFeedback: (reportId: string) => void;
-    setPinRailCollapsed: (railCollapsed: boolean) => void;
-    setPinRailPlacement: (placement: import("../../types/pinnedFeedback.js").PinRailPlacement) => void;
-    syncPinnedFeedbackReports: (reports: ReportFeedback[]) => void;
     statusText: string;
     toggleReportMode: () => void;
     toggleTargetPreview: () => void;
@@ -328,10 +336,7 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     selectAdjacentReport: (direction: "up" | "down") => void;
     openReplyComposer: (report: ReportFeedback) => void;
     activateFeedbackMarker: (report: ReportFeedback, caseId?: string | null) => Promise<void>;
-    openPinnedFeedback: (reportId: string, options?: {
-        caseId?: string | null;
-        pathname?: string;
-    }) => Promise<void>;
+    revealOpenFeedback: (report: ReportFeedback) => Promise<void>;
     closeReplyComposer: () => void;
     clearHoverLeaveTimeout: () => void;
     scheduleHoverLeave: (markerId: string) => void;
@@ -351,6 +356,7 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     stopEditing: () => void;
     handleUpdateSubmit: () => Promise<void>;
     handleReplySubmit: () => Promise<void>;
+    handleCreateCaseSubmit: () => Promise<void>;
     handleDelete: (id: string) => Promise<void>;
     canCreateGitHubIssueFromList: boolean;
     canCreateGitHubIssueOnCreate: boolean;

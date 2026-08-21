@@ -34,6 +34,9 @@ export function FivePixels({
     onResolveReviewerRequest,
     onRegisterReviewer,
     onUpdateReviewer,
+    onApiLogin,
+    onApiRegister,
+    onArtemisLogin,
     onEvent,
     onReply,
     github,
@@ -74,6 +77,9 @@ export function FivePixels({
             onResolveReviewerRequest={onResolveReviewerRequest}
             onRegisterReviewer={onRegisterReviewer}
             onUpdateReviewer={onUpdateReviewer}
+            onApiLogin={onApiLogin}
+            onApiRegister={onApiRegister}
+            onArtemisLogin={onArtemisLogin}
             onEvent={onEvent}
             onReply={onReply}
             github={github}

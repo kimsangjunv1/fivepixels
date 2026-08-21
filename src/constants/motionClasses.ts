@@ -36,16 +36,6 @@ export const MOTION = {
 
     markerWindowEnter: "fivepixels-marker-window-enter",
     markerWindowExit: "fivepixels-marker-window-exit",
-
-    pinRailEnter: "fivepixels-pin-rail-enter",
-    pinRailDock: "fivepixels-pin-rail-dock",
-    pinRailDockDragging: "fivepixels-pin-rail-dock--dragging",
-    pinRailShell: "fivepixels-pin-rail-shell",
-    pinRailBody: "fivepixels-pin-rail-body",
-    pinRailBodyInner: "fivepixels-pin-rail-body-inner",
-    pinCardEnter: "fivepixels-pin-card-enter",
-    pinStarPop: "fivepixels-pin-star-pop",
-    pinCardPulse: "fivepixels-pin-card-pulse",
 } as const;
 
 export type MotionClassName = (typeof MOTION)[keyof typeof MOTION];

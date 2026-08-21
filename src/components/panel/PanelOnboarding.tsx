@@ -1,11 +1,13 @@
 import { useMemo, useState, type DragEvent } from "react";
 import { APPEARANCE_OPTION_VALUES } from "@/constants/appearance.js";
+import { LOGIN_METHOD_VALUES, isRemoteLoginMethod, type LoginMethod } from "@/constants/loginMethod.js";
 import { MARKER_FILL_STYLE_VALUES, type AppearanceScale, type MarkerFillStyle, type MarkerShape } from "@/constants/markerAppearance.js";
 import { PANEL_ROLE_VALUES, type PanelRole } from "@/constants/panelRole.js";
 import type { UserSelectablePanelTab } from "@/constants/panelTabRegistry.js";
 import type { ReportLocale } from "@/i18n/types.js";
 import { useReportPreferences, useReportSession } from "@/providers/reportContext.js";
 import { getDefaultVisibleTabsForRole } from "@/utils/panel/panelTabPreference.js";
+import { ReportAuthError, resolveRegistrationError } from "@/utils/auth/reportAuthError.js";
 import { isPersonalKeyFile, readPersonalKeyFile } from "@/utils/feedback/feedbackDataTransfer.js";
 import { hasTeamRequestHandler, isTeamWriteEnabled } from "@/utils/report/teamManagement.js";
 import { AppearanceThemePicker } from "./AppearanceThemePicker.js";
@@ -15,6 +17,7 @@ import { PanelDropdownMenuItem } from "./PanelDropdownMenu.js";
 import {
     PANEL_GATE_BACK_BUTTON_CLASS,
     PANEL_GATE_DESCRIPTION_CLASS,
+    PANEL_GATE_INPUT_CLASS,
     PANEL_GATE_PRIMARY_BUTTON_CLASS,
     PANEL_GATE_SECTION_CLASS,
     PANEL_GATE_TITLE_CLASS,
@@ -22,8 +25,28 @@ import {
 import { PanelMarkerDisplayControls } from "./PanelMarkerDisplayControls.js";
 import { PanelOptionSwitch } from "./PanelOptionSwitch.js";
 import { PanelTabSelector } from "./PanelTabSelector.js";
+import {
+    ApiLoginStep,
+    ApiRegisterResultStep,
+    ApiRegisterStep,
+    ArtemisLoginStep,
+    LoginMethodStep,
+} from "./onboarding/PanelOnboardingAuthSteps.js";
 
-type OnboardingStep = "language" | "intro" | "restore" | "role" | "appearance" | "display" | "key";
+type OnboardingStep =
+    | "language"
+    | "login-method"
+    | "intro"
+    | "restore"
+    | "api-login"
+    | "api-register"
+    | "api-register-success"
+    | "api-register-error"
+    | "artemis-login"
+    | "role"
+    | "appearance"
+    | "display"
+    | "key";
 
 const LOCALE_OPTIONS = ["en", "ko"] as const satisfies readonly ReportLocale[];
 
@@ -49,11 +72,18 @@ export function PanelOnboarding() {
         savePanelTabPreference,
         persistenceStatus,
         onCreateReviewerRequest,
+        loginMethod: storedLoginMethod,
+        selectLoginMethod,
+        loginWithApi,
+        registerWithApi,
+        loginWithArtemis,
+        completeRemoteOnboarding,
     } = useReportPreferences();
     const { setErrorMessage } = useReportSession();
     const onboarding = messages.onboarding;
     const canSubmitRegistrationRequest = isTeamWriteEnabled(persistenceStatus) && hasTeamRequestHandler({ onCreateReviewerRequest });
     const [step, setStep] = useState<OnboardingStep>("language");
+    const [selectedLoginMethod, setSelectedLoginMethod] = useState<LoginMethod>(storedLoginMethod && LOGIN_METHOD_VALUES.includes(storedLoginMethod) ? storedLoginMethod : "local");
     const [name, setName] = useState(selfProfile?.name ?? "");
     const [selectedTabs, setSelectedTabs] = useState<UserSelectablePanelTab[]>(() => getDefaultVisibleTabsForRole(panelRole, resolvedTabAvailabilityContext));
     const [isCreating, setIsCreating] = useState(false);
@@ -61,6 +91,14 @@ export function PanelOnboarding() {
     const [isRestoring, setIsRestoring] = useState(false);
     const [restoreError, setRestoreError] = useState("");
     const [isDragOver, setIsDragOver] = useState(false);
+    const [loginId, setLoginId] = useState("");
+    const [password, setPassword] = useState("");
+    const [passwordConfirm, setPasswordConfirm] = useState("");
+    const [email, setEmail] = useState("");
+    const [username, setUsername] = useState("");
+    const [authError, setAuthError] = useState("");
+    const [registerErrorKind, setRegisterErrorKind] = useState<"invalid-registration" | "account-already-exists" | "unknown">("unknown");
+    const [isAuthBusy, setIsAuthBusy] = useState(false);
     const trimmedName = name.trim();
     const hasDuplicateName = useMemo(() => Boolean(trimmedName) && personalKeyCandidates.some((author) => author.name.trim() === trimmedName), [personalKeyCandidates, trimmedName]);
     const canProceedFromRoleStep = selectedTabs.length > 0;
@@ -135,6 +173,114 @@ export function PanelOnboarding() {
             setIsCreating(false);
         }
     };
+
+    const goToSharedSetup = () => {
+        setStep("role");
+    };
+
+    const handleSelectLoginMethodNext = () => {
+        selectLoginMethod(selectedLoginMethod);
+        setAuthError("");
+
+        if (selectedLoginMethod === "api") {
+            setStep("api-login");
+            return;
+        }
+
+        if (selectedLoginMethod === "artemis") {
+            setStep("artemis-login");
+            return;
+        }
+
+        setStep("intro");
+    };
+
+    const handleApiLogin = async () => {
+        if (!loginId.trim() || !password || isAuthBusy) {
+            return;
+        }
+
+        setIsAuthBusy(true);
+        setAuthError("");
+
+        try {
+            await loginWithApi({ loginId: loginId.trim(), password });
+            goToSharedSetup();
+        } catch (error) {
+            setAuthError(error instanceof ReportAuthError && error.code === "auth-unavailable" ? onboarding.authUnavailable : onboarding.loginFailed);
+        } finally {
+            setIsAuthBusy(false);
+        }
+    };
+
+    const handleApiRegister = async () => {
+        if (isAuthBusy) {
+            return;
+        }
+
+        if (password !== passwordConfirm) {
+            setRegisterErrorKind("invalid-registration");
+            setStep("api-register-error");
+            return;
+        }
+
+        setIsAuthBusy(true);
+
+        try {
+            await registerWithApi({
+                loginId: loginId.trim(),
+                password,
+                passwordConfirm,
+                email: email.trim(),
+                username: username.trim(),
+            });
+            setStep("api-register-success");
+        } catch (error) {
+            setRegisterErrorKind(resolveRegistrationError(error));
+            setStep("api-register-error");
+        } finally {
+            setIsAuthBusy(false);
+        }
+    };
+
+    const handleArtemisLogin = async () => {
+        if (isAuthBusy) {
+            return;
+        }
+
+        setIsAuthBusy(true);
+        setAuthError("");
+
+        try {
+            await loginWithArtemis();
+            goToSharedSetup();
+        } catch (error) {
+            setAuthError(error instanceof ReportAuthError && error.code === "auth-unavailable" ? onboarding.authUnavailable : onboarding.loginFailed);
+        } finally {
+            setIsAuthBusy(false);
+        }
+    };
+
+    const handleFinishSharedSetup = () => {
+        if (isRemoteLoginMethod(selectedLoginMethod)) {
+            savePanelTabPreference({
+                visibleTabs: selectedTabs,
+                customized: true,
+            });
+            completeRemoteOnboarding();
+            return;
+        }
+
+        setStep("key");
+    };
+
+    const sharedSetupBackStep: OnboardingStep = selectedLoginMethod === "api" ? "api-login" : selectedLoginMethod === "artemis" ? "artemis-login" : "intro";
+    const registerErrorMessage =
+        registerErrorKind === "account-already-exists"
+            ? onboarding.registerDuplicate
+            : registerErrorKind === "invalid-registration"
+              ? onboarding.registerInvalid
+              : onboarding.registerUnknownError;
 
     const handleRestore = async () => {
         if (!backupKey.trim() || isRestoring) {
@@ -228,13 +374,82 @@ export function PanelOnboarding() {
                     <div className="flex items-center justify-end">
                         <button
                             type="button"
-                            onClick={() => setStep("intro")}
+                            onClick={() => setStep("login-method")}
                             className={PANEL_GATE_PRIMARY_BUTTON_CLASS}
                         >
                             {onboarding.next}
                         </button>
                     </div>
                 </>
+            ) : step === "login-method" ? (
+                <LoginMethodStep
+                    copy={onboarding}
+                    value={selectedLoginMethod}
+                    onChange={setSelectedLoginMethod}
+                    onBack={() => setStep("language")}
+                    onNext={handleSelectLoginMethodNext}
+                />
+            ) : step === "api-login" ? (
+                <ApiLoginStep
+                    copy={onboarding}
+                    loginId={loginId}
+                    password={password}
+                    error={authError}
+                    busy={isAuthBusy}
+                    onLoginIdChange={(value) => {
+                        setLoginId(value);
+                        setAuthError("");
+                    }}
+                    onPasswordChange={(value) => {
+                        setPassword(value);
+                        setAuthError("");
+                    }}
+                    onLogin={() => void handleApiLogin()}
+                    onSignUp={() => {
+                        setAuthError("");
+                        setStep("api-register");
+                    }}
+                    onBack={() => setStep("login-method")}
+                />
+            ) : step === "api-register" ? (
+                <ApiRegisterStep
+                    copy={onboarding}
+                    loginId={loginId}
+                    password={password}
+                    passwordConfirm={passwordConfirm}
+                    email={email}
+                    username={username}
+                    busy={isAuthBusy}
+                    onLoginIdChange={setLoginId}
+                    onPasswordChange={setPassword}
+                    onPasswordConfirmChange={setPasswordConfirm}
+                    onEmailChange={setEmail}
+                    onUsernameChange={setUsername}
+                    onSubmit={() => void handleApiRegister()}
+                    onBack={() => setStep("api-login")}
+                />
+            ) : step === "api-register-success" ? (
+                <ApiRegisterResultStep
+                    copy={onboarding}
+                    success
+                    message={onboarding.registerSuccessDescription}
+                    onAction={() => setStep("api-login")}
+                />
+            ) : step === "api-register-error" ? (
+                <ApiRegisterResultStep
+                    copy={onboarding}
+                    success={false}
+                    message={registerErrorMessage}
+                    onAction={() => setStep("api-register")}
+                />
+            ) : step === "artemis-login" ? (
+                <ArtemisLoginStep
+                    copy={onboarding}
+                    error={authError}
+                    busy={isAuthBusy}
+                    onGoogleLogin={() => void handleArtemisLogin()}
+                    onBack={() => setStep("login-method")}
+                />
             ) : step === "intro" ? (
                 <>
                     <div>
@@ -262,7 +477,7 @@ export function PanelOnboarding() {
                     <div className="flex items-center justify-start">
                         <button
                             type="button"
-                            onClick={() => setStep("language")}
+                            onClick={() => setStep("login-method")}
                             className={PANEL_GATE_BACK_BUTTON_CLASS}
                         >
                             {onboarding.back}
@@ -354,7 +569,7 @@ export function PanelOnboarding() {
                     <div className="flex items-center justify-between">
                         <button
                             type="button"
-                            onClick={() => setStep("intro")}
+                            onClick={() => setStep(sharedSetupBackStep)}
                             className={PANEL_GATE_BACK_BUTTON_CLASS}
                         >
                             {onboarding.back}
@@ -457,7 +672,7 @@ export function PanelOnboarding() {
                         </button>
                         <button
                             type="button"
-                            onClick={() => setStep("key")}
+                            onClick={handleFinishSharedSetup}
                             className={PANEL_GATE_PRIMARY_BUTTON_CLASS}
                         >
                             {onboarding.next}
@@ -475,7 +690,7 @@ export function PanelOnboarding() {
                         value={name}
                         onChange={(event) => setName(event.target.value)}
                         placeholder={onboarding.namePlaceholder}
-                        className="w-full rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface)] px-[10px] py-[8px] text-[12px] text-[var(--adaptive-text-primary)] outline-none"
+                        className={PANEL_GATE_INPUT_CLASS}
                     />
 
                     {hasDuplicateName ? <p className="text-[12px] text-rose-700">{onboarding.duplicateNameError}</p> : null}

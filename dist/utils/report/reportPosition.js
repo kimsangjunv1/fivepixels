@@ -74,6 +74,12 @@ function normalizePositionAnchor(value) {
         y: anchor.y,
     };
 }
+function normalizeViewPath(value) {
+    if (!Array.isArray(value)) {
+        return [];
+    }
+    return value.flatMap((item) => (typeof item === "string" && item.trim() ? [item.trim()] : []));
+}
 /** Coerce missing/partial API position payloads into a render-safe ReportPosition. */
 export function normalizeReportPosition(value) {
     if (!value || typeof value !== "object" || Array.isArray(value)) {
@@ -85,11 +91,13 @@ export function normalizeReportPosition(value) {
         };
     }
     const position = value;
+    const viewPath = normalizeViewPath(position.viewPath);
     return {
         target: normalizePositionRatio(position.target),
         viewport: normalizePositionViewport(position.viewport),
         scrollY: isFiniteNumber(position.scrollY) ? position.scrollY : getFallbackScrollY(),
         anchor: normalizePositionAnchor(position.anchor),
+        ...(viewPath.length > 0 ? { viewPath } : {}),
     };
 }
 export function getDocumentY(position) {
@@ -107,6 +115,7 @@ export function createReportPosition(overrides = {}) {
         },
         scrollY: overrides.scrollY ?? 0,
         anchor: overrides.anchor ?? null,
+        ...(overrides.viewPath?.length ? { viewPath: overrides.viewPath } : {}),
     };
 }
 //# sourceMappingURL=reportPosition.js.map

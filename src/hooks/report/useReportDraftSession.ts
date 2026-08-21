@@ -14,6 +14,7 @@ import type { SessionActor } from "@/utils/report/reportTeam.js";
 import { buildDraftFromReport } from "@/utils/report/buildDraftFromReport.js";
 import { getPageScrollY, getPageViewportSize, mapHostPointToPage } from "@/utils/overlay/pageDocumentBridge.js";
 import { useReportPickProbe } from "./useReportPickProbe.js";
+import { getFeedbackViewPath } from "@/utils/marker/viewRestore.js";
 
 const OVERLAY_HOVER_LEAVE_MS = 100;
 
@@ -341,6 +342,7 @@ export function useReportDraftSession({
             reportId: snapshot.id,
             reportType: snapshot.type,
             targetSelector: isTagged ? null : (snapshot.targetSelector ?? null),
+            viewPath: getFeedbackViewPath(targetElement),
             suggestedReportId: isTagged ? null : (snapshot.suggestedReportId ?? snapshot.id),
             cases: [createReportCase("")],
             category: null,
@@ -516,6 +518,7 @@ export function useReportDraftSession({
                               y: draft.anchorYRatio,
                           }
                         : null,
+                ...(draft.viewPath.length > 0 ? { viewPath: draft.viewPath } : {}),
             },
             ...(environment ? { environment } : {}),
             ...(appVersion ? { app_version: appVersion } : {}),
