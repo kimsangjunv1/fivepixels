@@ -11,9 +11,6 @@ type UseOverlayChromeArgs = {
     mode: ReportMode;
     panelCollapsed: boolean;
     setPanelCollapsed: (collapsed: boolean | ((current: boolean) => boolean)) => void;
-    pinRailCollapsed: boolean;
-    setPinRailCollapsed: (collapsed: boolean) => void;
-    hasPins: boolean;
 };
 
 function getMountElement(): HTMLElement | null {
@@ -31,29 +28,18 @@ function isFivepixelsPointerTarget(target: EventTarget | null): boolean {
 }
 
 /**
- * Host-yield + idle auto-collapse for floating chrome (panel / pin).
+ * Host-yield + idle auto-collapse for floating chrome (panel).
  * Writes `data-fp-host-yield` on the shadow mount for CSS-driven dimming/peek.
  */
-export function useOverlayChrome({
-    mode,
-    panelCollapsed,
-    setPanelCollapsed,
-    pinRailCollapsed,
-    setPinRailCollapsed,
-    hasPins,
-}: UseOverlayChromeArgs) {
+export function useOverlayChrome({ mode, panelCollapsed, setPanelCollapsed }: UseOverlayChromeArgs) {
     const idleTimerRef = useRef<number | null>(null);
     const yieldDelayRef = useRef<number | null>(null);
     const yieldHoldRef = useRef<number | null>(null);
     const panelCollapsedRef = useRef(panelCollapsed);
-    const pinRailCollapsedRef = useRef(pinRailCollapsed);
     const modeRef = useRef(mode);
-    const hasPinsRef = useRef(hasPins);
 
     panelCollapsedRef.current = panelCollapsed;
-    pinRailCollapsedRef.current = pinRailCollapsed;
     modeRef.current = mode;
-    hasPinsRef.current = hasPins;
 
     useEffect(() => {
         const clearIdle = () => {
@@ -104,10 +90,6 @@ export function useOverlayChrome({
 
                 if (!panelCollapsedRef.current) {
                     setPanelCollapsed(true);
-                }
-
-                if (hasPinsRef.current && !pinRailCollapsedRef.current) {
-                    setPinRailCollapsed(true);
                 }
             }, OVERLAY_IDLE_COLLAPSE_MS);
         };
@@ -171,7 +153,7 @@ export function useOverlayChrome({
             document.removeEventListener("pointermove", handlePointerMove, true);
             document.removeEventListener("keydown", handleKeyDown, true);
         };
-    }, [setPanelCollapsed, setPinRailCollapsed]);
+    }, [setPanelCollapsed]);
 
     useEffect(() => {
         if (mode !== "idle") {

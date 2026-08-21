@@ -185,7 +185,6 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         closeReplyComposer: closeReplyComposerBridge,
         openReplyComposer: openReplyComposerBridge,
         selectCase: reply.selectCase,
-        ensureIssueMode: panel.enableIssueMode,
         loadRepliesIfNeeded: panel.loadRepliesIfNeeded,
         searchInputRef: panel.searchInputRef,
     });

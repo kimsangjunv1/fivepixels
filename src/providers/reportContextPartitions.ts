@@ -95,14 +95,6 @@ export const REPORT_PREFERENCE_KEYS = [
     "applyRoleDefaultTabsForOnboarding",
     "savePanelTabPreference",
     "storedPanelTabPreference",
-    "pinnedFeedbackItems",
-    "pinRailCollapsed",
-    "pinRailPlacement",
-    "togglePinnedFeedback",
-    "unpinFeedback",
-    "setPinRailCollapsed",
-    "setPinRailPlacement",
-    "syncPinnedFeedbackReports",
 ] as const;
 
 export const REPORT_SESSION_KEYS = [
@@ -218,7 +210,6 @@ export const REPORT_SESSION_KEYS = [
     "selectAdjacentReport",
     "openReplyComposer",
     "activateFeedbackMarker",
-    "openPinnedFeedback",
     "closeReplyComposer",
     "clearHoverLeaveTimeout",
     "scheduleHoverLeave",

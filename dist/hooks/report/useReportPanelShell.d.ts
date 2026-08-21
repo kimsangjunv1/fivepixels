@@ -147,14 +147,6 @@ export declare function useReportPanelShell({ projectId, environment, appVersion
     resetVisibleTabsToRoleDefault: () => void;
     applyRoleDefaultTabsForOnboarding: (role: PanelRole) => void;
     savePanelTabPreference: (preference: PanelTabPreference) => void;
-    pinnedFeedbackItems: import("../../types/pinnedFeedback.js").PinnedFeedbackItem[];
-    pinRailCollapsed: boolean;
-    pinRailPlacement: import("../../types/pinnedFeedback.js").PinRailPlacement;
-    togglePinnedFeedback: (item: import("../../types/pinnedFeedback.js").PinnedFeedbackItem) => void;
-    unpinFeedback: (reportId: string) => void;
-    setPinRailCollapsed: (railCollapsed: boolean) => void;
-    setPinRailPlacement: (placement: import("../../types/pinnedFeedback.js").PinRailPlacement) => void;
-    syncPinnedFeedbackReports: (reports: ReportFeedback[]) => void;
     targetStats: import("../../types/report.js").ReportPanelStats;
     roleStatItems: import("../../utils/panel/panelRoleStats.js").PanelRoleStatItem[];
     toggleReportMode: () => void;

@@ -327,7 +327,6 @@ export function useReportState({
         closeReplyComposer: closeReplyComposerBridge,
         openReplyComposer: openReplyComposerBridge,
         selectCase: reply.selectCase,
-        ensureIssueMode: panel.enableIssueMode,
         loadRepliesIfNeeded: panel.loadRepliesIfNeeded,
         searchInputRef: panel.searchInputRef,
     });
