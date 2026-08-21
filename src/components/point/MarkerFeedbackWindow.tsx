@@ -423,7 +423,6 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
     const [sidebarWidth, setSidebarWidth] = useState(DEFAULT_SIDEBAR_WIDTH);
     const [isSidebarDeleteConfirming, setIsSidebarDeleteConfirming] = useState(false);
     const [dockMorph, setDockMorph] = useState<DockMorphState>(null);
-    const [isMinimizedHovered, setIsMinimizedHovered] = useState(false);
     const [dockDrag, setDockDrag] = useState<DockDragState | null>(null);
     const dockMorphTimerRef = useRef<number | null>(null);
     const dockMorphFrameRef = useRef<number | null>(null);
@@ -1222,13 +1221,7 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
             >
                 {showMinimizedChrome ? (
                     <div
-                        className={`relative h-full w-full ${minimizedReplyReportIds.length > 1 ? "cursor-grab" : ""} ${isDockDragging ? "cursor-grabbing" : ""}`}
-                        onPointerEnter={() => setIsMinimizedHovered(true)}
-                        onPointerLeave={() => {
-                            if (!dockDrag) {
-                                setIsMinimizedHovered(false);
-                            }
-                        }}
+                        className={`group/min-dock relative h-full w-full ${minimizedReplyReportIds.length > 1 ? "cursor-grab" : ""} ${isDockDragging ? "cursor-grabbing" : ""}`}
                         onPointerDown={handleMinimizedDockPointerDown}
                         onClickCapture={handleMinimizedDockClickCapture}
                     >
@@ -1266,15 +1259,16 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
                             data-fivepixels-interactive=""
                             aria-label={messages.marker.windowCloseAriaLabel}
                             title={messages.marker.windowCloseAriaLabel}
-                            disabled={dockMorph !== null || windowSurfacePhase === "exiting"}
+                            disabled={dockMorph !== null || windowSurfacePhase === "exiting" || isDockDragging}
                             onPointerDown={(event) => event.stopPropagation()}
                             onClick={(event) => {
                                 event.stopPropagation();
-                                setIsMinimizedHovered(false);
                                 requestClose();
                             }}
-                            className={`absolute -right-[7px] -top-[7px] z-[2] inline-flex h-[22px] w-[22px] items-center justify-center rounded-full border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black100)] text-[var(--adaptive-black700)] shadow-[var(--adaptive-popup-shadow)] transition-[opacity,transform] duration-150 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[var(--adaptive-black200)] hover:text-[var(--adaptive-black900)] ${
-                                isMinimizedHovered && dockMorph === null && !isDockDragging ? "pointer-events-auto scale-100 opacity-100" : "pointer-events-none scale-90 opacity-0"
+                            className={`absolute right-[6px] top-[6px] z-[2] inline-flex h-[22px] w-[22px] items-center justify-center rounded-full border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black100)] text-[var(--adaptive-black700)] shadow-[var(--adaptive-popup-shadow)] transition-[opacity,transform] duration-150 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[var(--adaptive-black200)] hover:text-[var(--adaptive-black900)] ${
+                                dockMorph !== null || isDockDragging
+                                    ? "pointer-events-none scale-90 opacity-0"
+                                    : "pointer-events-none scale-90 opacity-0 group-hover/min-dock:pointer-events-auto group-hover/min-dock:scale-100 group-hover/min-dock:opacity-100"
                             }`}
                         >
                             <CloseIcon className="h-[12px] w-[12px]" />
