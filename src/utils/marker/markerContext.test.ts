@@ -29,6 +29,12 @@ describe("resolveDetachedKind", () => {
         expect(resolveDetachedKind({ report_id: "modal-zustand-overlay", position: defaultPosition }, null, true)).toBe("modal");
     });
 
+    it("classifies reports with a saved view path as modal", () => {
+        const position = createReportPosition({ viewPath: ["demo-modal-login"] });
+
+        expect(resolveDetachedKind({ report_id: "login-copy", position }, null, true)).toBe("modal");
+    });
+
     it("classifies viewport-detached page feedback as hidden, not modal", () => {
         expect(resolveDetachedKind({ report_id: "hero-cta", position: defaultPosition }, null, true)).toBe("hidden");
     });

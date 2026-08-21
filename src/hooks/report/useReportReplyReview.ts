@@ -25,9 +25,13 @@ import {
     claimCaseAssignee,
     buildResolvedCasesUpdate,
     canActOnCase,
+    canEditReportCases,
+    createReportCase,
     getCaseAssigneeName,
+    getReportCases,
     isValidFocusedCase,
     resolveDefaultFocusedCaseId,
+    syncIssueStatusFromCases,
     transferCaseAssignee,
 } from "@/utils/report/reportCases.js";
 import { createReplyId } from "@/utils/shared/format.js";
@@ -41,6 +45,7 @@ import { useReplyCaseEdit } from "./useReplyCaseEdit.js";
 
 export type UseReportReplyReviewParams = {
     reports: ReportFeedback[];
+    allPageReports: ReportFeedback[];
     messages: ReportMessages;
     fields: ReportField[];
     sessionActor: SessionActor | null;
@@ -60,6 +65,7 @@ export type UseReportReplyReviewParams = {
 
 export function useReportReplyReview({
     reports,
+    allPageReports,
     messages,
     fields,
     sessionActor,
@@ -77,6 +83,9 @@ export function useReportReplyReview({
     onSelectReport,
 }: UseReportReplyReviewParams) {
     const [activeReplyReportId, setActiveReplyReportId] = useState<string | null>(null);
+    const [openReplyReportIds, setOpenReplyReportIds] = useState<string[]>([]);
+    const [openReplyReportCache, setOpenReplyReportCache] = useState<Record<string, ReportFeedback>>({});
+    const [minimizedReplyReportIds, setMinimizedReplyReportIds] = useState<string[]>([]);
     const [replyDraft, setReplyDraft] = useState("");
     const [replyMentions, setReplyMentions] = useState<ElementMention[]>([]);
     const [mentionHighlightTarget, setMentionHighlightTarget] = useState<TargetSnapshot | null>(null);
@@ -88,6 +97,7 @@ export function useReportReplyReview({
     const [confirmAuthorName, setConfirmAuthorName] = useState("");
     const [showConfirmAuthorSelect, setShowConfirmAuthorSelect] = useState(false);
     const [focusedCaseId, setFocusedCaseId] = useState<string | null>(null);
+    const [isComposingNewCase, setIsComposingNewCase] = useState(false);
 
     useEffect(() => {
         if (!sessionActor?.name) {
@@ -109,14 +119,83 @@ export function useReportReplyReview({
         [authorSelectionLocked, sessionActor?.name],
     );
 
+    const reportLookup = useMemo(() => {
+        const byId = new Map<string, ReportFeedback>();
+
+        for (const item of Object.values(openReplyReportCache)) {
+            byId.set(item.id, item);
+        }
+
+        for (const item of [...allPageReports, ...reports]) {
+            byId.set(item.id, item);
+        }
+
+        return byId;
+    }, [allPageReports, openReplyReportCache, reports]);
+
+    const rememberOpenReport = useCallback((report: ReportFeedback) => {
+        setOpenReplyReportCache((current) => {
+            if (current[report.id] === report) {
+                return current;
+            }
+
+            return { ...current, [report.id]: report };
+        });
+    }, []);
+
+    const forgetOpenReport = useCallback((reportId: string) => {
+        setOpenReplyReportCache((current) => {
+            if (!(reportId in current)) {
+                return current;
+            }
+
+            const next = { ...current };
+            delete next[reportId];
+            return next;
+        });
+    }, []);
+
     const activeReplyReport = useMemo(
-        () => (activeReplyReportId ? (reports.find((item) => item.id === activeReplyReportId) ?? null) : null),
-        [activeReplyReportId, reports],
+        () => (activeReplyReportId ? (reportLookup.get(activeReplyReportId) ?? null) : null),
+        [activeReplyReportId, reportLookup],
+    );
+    const openReplyReports = useMemo(
+        () => openReplyReportIds.map((reportId) => reportLookup.get(reportId)).filter((item): item is ReportFeedback => Boolean(item)),
+        [openReplyReportIds, reportLookup],
     );
     const activeReplyAnchor = useMemo(
         () => (activeReplyReport ? ({ report: activeReplyReport } as { report: ReportFeedback }) : null),
         [activeReplyReport],
     );
+
+    useEffect(() => {
+        if (openReplyReportIds.length === 0) {
+            return;
+        }
+
+        setOpenReplyReportCache((current) => {
+            let changed = false;
+            const next = { ...current };
+
+            for (const reportId of openReplyReportIds) {
+                const fresh = reports.find((item) => item.id === reportId) ?? allPageReports.find((item) => item.id === reportId);
+
+                if (fresh && next[reportId] !== fresh) {
+                    next[reportId] = fresh;
+                    changed = true;
+                }
+            }
+
+            for (const reportId of Object.keys(next)) {
+                if (!openReplyReportIds.includes(reportId)) {
+                    delete next[reportId];
+                    changed = true;
+                }
+            }
+
+            return changed ? next : current;
+        });
+    }, [allPageReports, openReplyReportIds, reports]);
 
     const clearFocusedCase = useCallback(() => {
         setFocusedCaseId(null);
@@ -130,6 +209,7 @@ export function useReportReplyReview({
 
     const selectCase = useCallback(
         (caseId: string) => {
+            setIsComposingNewCase(false);
             setFocusedCaseId(caseId);
             setPendingComposer(null);
             clearReplyComposerDraft();
@@ -155,6 +235,30 @@ export function useReportReplyReview({
     });
     const { cancelCaseEdit } = caseEdit;
 
+    const cancelComposeNewCase = useCallback(() => {
+        setIsComposingNewCase(false);
+        clearReplyComposerDraft();
+        setErrorMessage("");
+    }, [clearReplyComposerDraft, setErrorMessage]);
+
+    const beginComposeNewCase = useCallback(() => {
+        if (!activeReplyReport) {
+            return;
+        }
+
+        if (!canEditReportCases(activeReplyReport)) {
+            setErrorMessage(messages.errors.archivedReadOnly);
+            return;
+        }
+
+        setIsComposingNewCase(true);
+        setPendingComposer(null);
+        setReplySubmitAsQuestion(false);
+        clearReplyComposerDraft();
+        setErrorMessage("");
+        cancelCaseEdit();
+    }, [activeReplyReport, cancelCaseEdit, clearReplyComposerDraft, messages.errors.archivedReadOnly, setErrorMessage]);
+
     useEffect(() => {
         if (!activeReplyReport) {
             return;
@@ -168,6 +272,10 @@ export function useReportReplyReview({
             return resolveDefaultFocusedCaseId(activeReplyReport);
         });
     }, [activeReplyReport]);
+
+    useEffect(() => {
+        setIsComposingNewCase(false);
+    }, [activeReplyReportId]);
 
     const ensureFocusedCase = useCallback(
         (report: ReportFeedback) => {
@@ -199,18 +307,225 @@ export function useReportReplyReview({
         [ensureFocusedCase, focusedCaseId, messages.errors.caseAssigneeOnly, sessionActor?.name],
     );
 
-    const closeReplyComposer = () => {
-        setActiveReplyReportId(null);
+    const resetComposerSession = useCallback(() => {
         clearReplyComposerDraft();
         setReplySubmitAsQuestion(false);
         setPendingComposer(null);
         setShowConfirmAuthorSelect(false);
+        setIsComposingNewCase(false);
         cancelCaseEdit();
         clearFocusedCase();
-    };
+    }, [cancelCaseEdit, clearFocusedCase, clearReplyComposerDraft]);
+
+    const closeReplyComposer = useCallback(() => {
+        setActiveReplyReportId(null);
+        setOpenReplyReportIds([]);
+        setOpenReplyReportCache({});
+        setMinimizedReplyReportIds([]);
+        resetComposerSession();
+    }, [resetComposerSession]);
+
+    const applyFocusedReplyWindow = useCallback(
+        (report: ReportFeedback) => {
+            onSelectReport(report.id);
+            setActiveReplyReportId(report.id);
+            clearReplyComposerDraft();
+            setReplySubmitAsQuestion(false);
+            setPendingComposer(null);
+            setReplyAuthorName(sessionActor?.name ?? resolveDefaultAuthorName(activeIdentify, authorizedAuthors, selfName));
+            setConfirmAuthorName(resolveOriginalFeedbackAuthorName(report));
+            setShowConfirmAuthorSelect(false);
+            setFocusedCaseId(resolveDefaultFocusedCaseId(report));
+            setIsComposingNewCase(false);
+            cancelCaseEdit();
+        },
+        [activeIdentify, authorizedAuthors, cancelCaseEdit, clearReplyComposerDraft, onSelectReport, selfName, sessionActor?.name],
+    );
+
+    const closeReplyWindow = useCallback(
+        (reportId: string) => {
+            const nextOpen = openReplyReportIds.filter((id) => id !== reportId);
+            const closingFocused = activeReplyReportId === reportId;
+            const nextFocusedId = closingFocused ? (nextOpen[nextOpen.length - 1] ?? null) : activeReplyReportId;
+
+            setOpenReplyReportIds(nextOpen);
+            forgetOpenReport(reportId);
+            setMinimizedReplyReportIds((current) => current.filter((id) => id !== reportId));
+
+            if (!closingFocused) {
+                return;
+            }
+
+            resetComposerSession();
+            setActiveReplyReportId(nextFocusedId);
+
+            if (!nextFocusedId) {
+                return;
+            }
+
+            const nextReport = reportLookup.get(nextFocusedId) ?? null;
+
+            if (!nextReport) {
+                return;
+            }
+
+            applyFocusedReplyWindow(nextReport);
+        },
+        [activeReplyReportId, applyFocusedReplyWindow, forgetOpenReport, openReplyReportIds, reportLookup, resetComposerSession],
+    );
+
+    const restoreOpenReplyWindows = useCallback(
+        (
+            snapshot: { openIds: string[]; minimizedIds: string[]; focusedId: string | null },
+            preferredFocusId?: string | null,
+            focusReport?: ReportFeedback | null,
+        ) => {
+            if (focusReport) {
+                rememberOpenReport(focusReport);
+            }
+
+            const preferredFocus = preferredFocusId === undefined ? snapshot.focusedId : preferredFocusId;
+            const orderedIds = [...snapshot.openIds];
+
+            if (preferredFocus && !orderedIds.includes(preferredFocus)) {
+                orderedIds.push(preferredFocus);
+            }
+
+            const resolvedOpen: string[] = [];
+
+            for (const reportId of orderedIds) {
+                const report = (focusReport?.id === reportId ? focusReport : null) ?? reportLookup.get(reportId);
+
+                if (!report) {
+                    continue;
+                }
+
+                rememberOpenReport(report);
+                resolvedOpen.push(reportId);
+            }
+
+            const focusedId =
+                (preferredFocus && resolvedOpen.includes(preferredFocus) ? preferredFocus : null) ??
+                (snapshot.focusedId && resolvedOpen.includes(snapshot.focusedId) ? snapshot.focusedId : null) ??
+                resolvedOpen[resolvedOpen.length - 1] ??
+                null;
+
+            setOpenReplyReportIds(resolvedOpen);
+            setMinimizedReplyReportIds(
+                snapshot.minimizedIds.filter((reportId) => resolvedOpen.includes(reportId) && reportId !== focusedId),
+            );
+
+            if (!focusedId) {
+                setActiveReplyReportId(null);
+                resetComposerSession();
+                return;
+            }
+
+            const focused =
+                (focusReport?.id === focusedId ? focusReport : null) ?? reportLookup.get(focusedId) ?? null;
+
+            if (!focused) {
+                setActiveReplyReportId(null);
+                resetComposerSession();
+                return;
+            }
+
+            applyFocusedReplyWindow(focused);
+        },
+        [applyFocusedReplyWindow, rememberOpenReport, reportLookup, resetComposerSession],
+    );
+
+    const setReplyWindowMinimized = useCallback(
+        (reportId: string, minimized: boolean) => {
+            if (!minimized) {
+                setMinimizedReplyReportIds((current) => current.filter((id) => id !== reportId));
+                return;
+            }
+
+            const nextMinimizedIds = minimizedReplyReportIds.includes(reportId) ? minimizedReplyReportIds : [...minimizedReplyReportIds, reportId];
+            setMinimizedReplyReportIds(nextMinimizedIds);
+
+            if (activeReplyReportId !== reportId) {
+                return;
+            }
+
+            const minimizedIdSet = new Set(nextMinimizedIds);
+            const nextFocusedId = [...openReplyReportIds].reverse().find((id) => !minimizedIdSet.has(id)) ?? null;
+
+            resetComposerSession();
+            setActiveReplyReportId(nextFocusedId);
+
+            if (!nextFocusedId) {
+                return;
+            }
+
+            const nextReport = reportLookup.get(nextFocusedId) ?? null;
+
+            if (!nextReport) {
+                return;
+            }
+
+            applyFocusedReplyWindow(nextReport);
+        },
+        [activeReplyReportId, applyFocusedReplyWindow, minimizedReplyReportIds, openReplyReportIds, reportLookup, resetComposerSession],
+    );
+
+    const reorderMinimizedReplyWindow = useCallback((reportId: string, toIndex: number) => {
+        setMinimizedReplyReportIds((current) => {
+            const fromIndex = current.indexOf(reportId);
+
+            if (fromIndex < 0) {
+                return current;
+            }
+
+            const clampedIndex = Math.max(0, Math.min(toIndex, current.length - 1));
+
+            if (fromIndex === clampedIndex) {
+                return current;
+            }
+
+            const next = [...current];
+            const [item] = next.splice(fromIndex, 1);
+            next.splice(clampedIndex, 0, item);
+            return next;
+        });
+    }, []);
+
+    const focusReplyWindow = useCallback(
+        (reportId: string) => {
+            const report = reportLookup.get(reportId);
+
+            if (!report) {
+                return;
+            }
+
+            rememberOpenReport(report);
+            setOpenReplyReportIds((current) => (current.includes(reportId) ? current : [...current, reportId]));
+            setMinimizedReplyReportIds((current) => current.filter((id) => id !== reportId));
+
+            if (activeReplyReportId === reportId) {
+                return;
+            }
+
+            onSelectReport(reportId);
+            setActiveReplyReportId(reportId);
+            clearReplyComposerDraft();
+            setReplySubmitAsQuestion(false);
+            setPendingComposer(null);
+            setReplyAuthorName(sessionActor?.name ?? resolveDefaultAuthorName(activeIdentify, authorizedAuthors, selfName));
+            setConfirmAuthorName(resolveOriginalFeedbackAuthorName(report));
+            setShowConfirmAuthorSelect(false);
+            setFocusedCaseId(resolveDefaultFocusedCaseId(report));
+            cancelCaseEdit();
+        },
+        [activeIdentify, activeReplyReportId, authorizedAuthors, cancelCaseEdit, clearReplyComposerDraft, onSelectReport, rememberOpenReport, reportLookup, selfName, sessionActor?.name],
+    );
 
     const openReplyComposer = (report: ReportFeedback) => {
         onSelectReport(report.id);
+        rememberOpenReport(report);
+        setOpenReplyReportIds((current) => (current.includes(report.id) ? current : [...current, report.id]));
+        setMinimizedReplyReportIds((current) => current.filter((id) => id !== report.id));
         setActiveReplyReportId(report.id);
         clearReplyComposerDraft();
         setReplySubmitAsQuestion(false);
@@ -219,6 +534,7 @@ export function useReportReplyReview({
         setConfirmAuthorName(resolveOriginalFeedbackAuthorName(report));
         setShowConfirmAuthorSelect(false);
         setFocusedCaseId(resolveDefaultFocusedCaseId(report));
+        cancelCaseEdit();
     };
 
     const toggleConfirmAuthorSelect = () => {
@@ -324,7 +640,57 @@ export function useReportReplyReview({
         });
     };
 
+    const handleCreateCaseSubmit = async () => {
+        if (!activeReplyReport || !isComposingNewCase) {
+            return;
+        }
+
+        if (!canEditReportCases(activeReplyReport)) {
+            setErrorMessage(messages.errors.archivedReadOnly);
+            return;
+        }
+
+        if (!stripMentionTokensForEmptyCheck(replyDraft, replyMentions)) {
+            setErrorMessage(messages.errors.caseTextRequired(getReportCases(activeReplyReport).length + 1));
+            return;
+        }
+
+        const nextCase = createReportCase(replyDraft.trim(), {
+            ...(replyMentions.length > 0 ? { mentions: replyMentions } : {}),
+        });
+        const nextCases = [...getReportCases(activeReplyReport), nextCase];
+
+        try {
+            setIsSubmittingReply(true);
+
+            const updatedFeedback = await updateFeedback(
+                activeReplyReport.id,
+                await signUpdatePayload({
+                    cases: nextCases,
+                    status: syncIssueStatusFromCases({ ...activeReplyReport, cases: nextCases }),
+                }),
+            );
+
+            await notifyFeedbackUpdate(eventCallbacks, updatedFeedback);
+            setIsComposingNewCase(false);
+            setFocusedCaseId(nextCase.id);
+            setPendingComposer(null);
+            setReplySubmitAsQuestion(false);
+            clearReplyComposerDraft();
+            setErrorMessage("");
+        } catch (nextError) {
+            setErrorMessage(nextError instanceof Error ? nextError.message : messages.errors.updateFeedbackFailed);
+        } finally {
+            setIsSubmittingReply(false);
+        }
+    };
+
     const handleReplySubmit = async () => {
+        if (isComposingNewCase) {
+            await handleCreateCaseSubmit();
+            return;
+        }
+
         if (!activeReplyReport) {
             return;
         }
@@ -589,6 +955,13 @@ export function useReportReplyReview({
     return {
         activeReplyReportId,
         setActiveReplyReportId,
+        openReplyReportIds,
+        openReplyReports,
+        minimizedReplyReportIds,
+        setReplyWindowMinimized,
+        reorderMinimizedReplyWindow,
+        focusReplyWindow,
+        closeReplyWindow,
         activeReplyReport,
         activeReplyAnchor,
         replyDraft,
@@ -622,8 +995,13 @@ export function useReportReplyReview({
         focusedCaseId,
         selectCase,
         clearFocusedCase,
+        isComposingNewCase,
+        beginComposeNewCase,
+        cancelComposeNewCase,
         openReplyComposer,
         closeReplyComposer,
+        restoreOpenReplyWindows,
         handleReplySubmit,
+        handleCreateCaseSubmit,
     };
 }

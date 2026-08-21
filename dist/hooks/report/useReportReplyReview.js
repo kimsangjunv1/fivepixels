@@ -6,8 +6,10 @@ import { notifyFeedbackReply, notifyFeedbackUpdate } from "../../utils/report/re
 import { resolveDefaultAuthorName } from "../../utils/report/resolveDefaultAuthorName.js";
 import { stripMentionTokensForEmptyCheck } from "../../utils/mention/elementMentions.js";
 import { useReplyCaseEdit } from "./useReplyCaseEdit.js";
-export function useReportReplyReview({ reports, messages, fields, sessionActor, authorSelectionLocked, activeIdentify, authorizedAuthors, selfName, eventCallbacks, createReply, updateFeedback, usesCreateReply, signReplyPayload, signUpdatePayload, setErrorMessage, onSelectReport, }) {
+export function useReportReplyReview({ reports, allPageReports, messages, fields, sessionActor, authorSelectionLocked, activeIdentify, authorizedAuthors, selfName, eventCallbacks, createReply, updateFeedback, usesCreateReply, signReplyPayload, signUpdatePayload, setErrorMessage, onSelectReport, }) {
     const [activeReplyReportId, setActiveReplyReportId] = useState(null);
+    const [openReplyReportIds, setOpenReplyReportIds] = useState([]);
+    const [minimizedReplyReportIds, setMinimizedReplyReportIds] = useState([]);
     const [replyDraft, setReplyDraft] = useState("");
     const [replyMentions, setReplyMentions] = useState([]);
     const [mentionHighlightTarget, setMentionHighlightTarget] = useState(null);
@@ -32,8 +34,31 @@ export function useReportReplyReview({ reports, messages, fields, sessionActor, 
         }
         setReplyAuthorName(name);
     }, [authorSelectionLocked, sessionActor?.name]);
-    const activeReplyReport = useMemo(() => (activeReplyReportId ? (reports.find((item) => item.id === activeReplyReportId) ?? null) : null), [activeReplyReportId, reports]);
+    const reportLookup = useMemo(() => {
+        const byId = new Map();
+        for (const item of [...allPageReports, ...reports]) {
+            byId.set(item.id, item);
+        }
+        return byId;
+    }, [allPageReports, reports]);
+    const activeReplyReport = useMemo(() => (activeReplyReportId ? (reportLookup.get(activeReplyReportId) ?? null) : null), [activeReplyReportId, reportLookup]);
+    const openReplyReports = useMemo(() => openReplyReportIds.map((reportId) => reportLookup.get(reportId)).filter((item) => Boolean(item)), [openReplyReportIds, reportLookup]);
     const activeReplyAnchor = useMemo(() => (activeReplyReport ? { report: activeReplyReport } : null), [activeReplyReport]);
+    useEffect(() => {
+        if (allPageReports.length === 0 && reports.length === 0) {
+            return;
+        }
+        const availableIds = new Set(reportLookup.keys());
+        setOpenReplyReportIds((current) => {
+            const next = current.filter((reportId) => availableIds.has(reportId));
+            return next.length === current.length ? current : next;
+        });
+        setMinimizedReplyReportIds((current) => {
+            const next = current.filter((reportId) => availableIds.has(reportId));
+            return next.length === current.length ? current : next;
+        });
+        setActiveReplyReportId((current) => (current && !availableIds.has(current) ? null : current));
+    }, [allPageReports.length, reportLookup, reports.length]);
     const clearFocusedCase = useCallback(() => {
         setFocusedCaseId(null);
     }, []);
@@ -93,17 +118,79 @@ export function useReportReplyReview({ reports, messages, fields, sessionActor, 
         setErrorMessage(messages.errors.caseAssigneeOnly);
         return false;
     }, [ensureFocusedCase, focusedCaseId, messages.errors.caseAssigneeOnly, sessionActor?.name]);
-    const closeReplyComposer = () => {
-        setActiveReplyReportId(null);
+    const resetComposerSession = useCallback(() => {
         clearReplyComposerDraft();
         setReplySubmitAsQuestion(false);
         setPendingComposer(null);
         setShowConfirmAuthorSelect(false);
         cancelCaseEdit();
         clearFocusedCase();
-    };
+    }, [cancelCaseEdit, clearFocusedCase, clearReplyComposerDraft]);
+    const closeReplyComposer = useCallback(() => {
+        setActiveReplyReportId(null);
+        setOpenReplyReportIds([]);
+        setMinimizedReplyReportIds([]);
+        resetComposerSession();
+    }, [resetComposerSession]);
+    const closeReplyWindow = useCallback((reportId) => {
+        const nextOpen = openReplyReportIds.filter((id) => id !== reportId);
+        const closingFocused = activeReplyReportId === reportId;
+        const nextFocusedId = closingFocused ? (nextOpen[nextOpen.length - 1] ?? null) : activeReplyReportId;
+        setOpenReplyReportIds(nextOpen);
+        setMinimizedReplyReportIds((current) => current.filter((id) => id !== reportId));
+        if (!closingFocused) {
+            return;
+        }
+        resetComposerSession();
+        setActiveReplyReportId(nextFocusedId);
+        if (!nextFocusedId) {
+            return;
+        }
+        const nextReport = reportLookup.get(nextFocusedId) ?? null;
+        if (!nextReport) {
+            return;
+        }
+        onSelectReport(nextReport.id);
+        setReplyAuthorName(sessionActor?.name ?? resolveDefaultAuthorName(activeIdentify, authorizedAuthors, selfName));
+        setConfirmAuthorName(resolveOriginalFeedbackAuthorName(nextReport));
+        setFocusedCaseId(resolveDefaultFocusedCaseId(nextReport));
+    }, [activeIdentify, activeReplyReportId, authorizedAuthors, onSelectReport, openReplyReportIds, reportLookup, resetComposerSession, selfName, sessionActor?.name]);
+    const setReplyWindowMinimized = useCallback((reportId, minimized) => {
+        setMinimizedReplyReportIds((current) => {
+            if (minimized) {
+                if (current.includes(reportId)) {
+                    return current;
+                }
+                return [...current, reportId];
+            }
+            return current.filter((id) => id !== reportId);
+        });
+    }, []);
+    const focusReplyWindow = useCallback((reportId) => {
+        const report = reportLookup.get(reportId);
+        if (!report) {
+            return;
+        }
+        setOpenReplyReportIds((current) => (current.includes(reportId) ? current : [...current, reportId]));
+        setMinimizedReplyReportIds((current) => current.filter((id) => id !== reportId));
+        if (activeReplyReportId === reportId) {
+            return;
+        }
+        onSelectReport(reportId);
+        setActiveReplyReportId(reportId);
+        clearReplyComposerDraft();
+        setReplySubmitAsQuestion(false);
+        setPendingComposer(null);
+        setReplyAuthorName(sessionActor?.name ?? resolveDefaultAuthorName(activeIdentify, authorizedAuthors, selfName));
+        setConfirmAuthorName(resolveOriginalFeedbackAuthorName(report));
+        setShowConfirmAuthorSelect(false);
+        setFocusedCaseId(resolveDefaultFocusedCaseId(report));
+        cancelCaseEdit();
+    }, [activeIdentify, activeReplyReportId, authorizedAuthors, cancelCaseEdit, clearReplyComposerDraft, onSelectReport, reportLookup, selfName, sessionActor?.name]);
     const openReplyComposer = (report) => {
         onSelectReport(report.id);
+        setOpenReplyReportIds((current) => (current.includes(report.id) ? current : [...current, report.id]));
+        setMinimizedReplyReportIds((current) => current.filter((id) => id !== report.id));
         setActiveReplyReportId(report.id);
         clearReplyComposerDraft();
         setReplySubmitAsQuestion(false);
@@ -112,6 +199,7 @@ export function useReportReplyReview({ reports, messages, fields, sessionActor, 
         setConfirmAuthorName(resolveOriginalFeedbackAuthorName(report));
         setShowConfirmAuthorSelect(false);
         setFocusedCaseId(resolveDefaultFocusedCaseId(report));
+        cancelCaseEdit();
     };
     const toggleConfirmAuthorSelect = () => {
         setShowConfirmAuthorSelect((current) => !current);
@@ -413,6 +501,12 @@ export function useReportReplyReview({ reports, messages, fields, sessionActor, 
     return {
         activeReplyReportId,
         setActiveReplyReportId,
+        openReplyReportIds,
+        openReplyReports,
+        minimizedReplyReportIds,
+        setReplyWindowMinimized,
+        focusReplyWindow,
+        closeReplyWindow,
         activeReplyReport,
         activeReplyAnchor,
         replyDraft,

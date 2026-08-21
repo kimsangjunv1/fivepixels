@@ -135,6 +135,7 @@ export type TargetSnapshot = {
     tagName?: string;
     reportIdAttribute?: string | null;
     fpOpenAttribute?: string | null;
+    fpViewAttribute?: string | null;
     boxStyle?: PickTargetBoxStyle;
     fontStyle?: PickTargetFontStyle | null;
 };
@@ -183,6 +184,8 @@ export type Marker = {
     clampedEdge: MarkerClampEdge | null;
     clampBounds: MarkerClampBounds | null;
     clampContainerId: string | null;
+    viewTriggerKey?: string | null;
+    aggregateCount?: number;
     report: ReportFeedback;
 };
 

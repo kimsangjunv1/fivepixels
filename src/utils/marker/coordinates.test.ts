@@ -4,6 +4,7 @@ import type { ReportFeedback, ReportPosition } from "@/types/report.js";
 import { createReportFeedback } from "../report/reportFixtures.js";
 import { createReportPosition } from "../report/reportPosition.js";
 import {
+    aggregateViewTriggerMarkers,
     clampRatio,
     DRAFT_POPOVER_HEIGHT,
     DRAFT_POPOVER_MARGIN,
@@ -205,6 +206,43 @@ describe("getMarkerFromReport", () => {
 
         expect(marker.detached).toBe(true);
         expect(marker.detachedKind).toBe("modal");
+    });
+
+    it("anchors detached modal feedback to its visible data-fp-open trigger", () => {
+        document.body.innerHTML = '<button data-fp-open="demo-modal-login">Login</button>';
+        const trigger = document.querySelector<HTMLElement>("button")!;
+        vi.spyOn(trigger, "getBoundingClientRect").mockReturnValue(new DOMRect(100, 80, 120, 40));
+
+        const marker = getMarkerFromReport(
+            createStoredReport({ position: createReportPosition({ viewPath: ["demo-modal-login"] }) }),
+            0,
+        );
+
+        expect(marker.detachedKind).toBe("modal");
+        expect(marker.viewTriggerKey).toBe("demo-modal-login");
+        expect(marker.rect).toEqual(new DOMRect(100, 80, 120, 40));
+        expect(marker.left).toBe(100 + 120 / 2 - DOT_SIZE / 2);
+        expect(marker.top).toBe(80 + 40 / 2 - DOT_SIZE / 2);
+    });
+
+    it("aggregates feedback that points to the same view trigger", () => {
+        document.body.innerHTML = '<button data-fp-open="demo-modal-login">Login</button>';
+        const trigger = document.querySelector<HTMLElement>("button")!;
+        vi.spyOn(trigger, "getBoundingClientRect").mockReturnValue(new DOMRect(100, 80, 120, 40));
+        const position = createReportPosition({ viewPath: ["demo-modal-login"] });
+        const markers = [
+            getMarkerFromReport(createStoredReport({ id: "report-1", position }), 0),
+            getMarkerFromReport(createStoredReport({ id: "report-2", position }), 0),
+            getMarkerFromReport(createStoredReport({ id: "report-3", position }), 0),
+        ];
+
+        expect(aggregateViewTriggerMarkers(markers)).toMatchObject([
+            {
+                report: { id: "report-1" },
+                viewTriggerKey: "demo-modal-login",
+                aggregateCount: 3,
+            },
+        ]);
     });
 
     it("uses the first matching element when duplicate ids exist", () => {

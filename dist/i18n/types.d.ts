@@ -672,6 +672,7 @@ export type ReportMessages = {
         tooltipLineHeight: string;
         tooltipReportId: string;
         tooltipFpOpen: string;
+        tooltipFpView: string;
         tooltipNoReportId: string;
         probeEdit: string;
         probeClose: string;
@@ -752,6 +753,9 @@ export type ReportMessages = {
         shareLinkAriaLabel: string;
         shareLinkTitle: string;
         shareLinkCopiedTitle: string;
+        sidebarActionsAriaLabel: string;
+        newCaseAction: string;
+        shareAction: string;
         assigneeAssigned: string;
         assigneeUnassigned: string;
         previousAssignee: string;
@@ -759,6 +763,7 @@ export type ReportMessages = {
         assigneeInfoAriaLabel: string;
         viewMoreCases: string;
         hoverTooltipHeader: string;
+        offscreenNavigateHint: string;
     };
     defaults: {
         fields: {
@@ -857,24 +862,6 @@ export type ReportMessages = {
         selectCaseFirst: string;
         caseAssigneeOnly: string;
         personalKeyRequired: string;
-    };
-    pins: {
-        railTitle: string;
-        railCountLabel: (count: number) => string;
-        railExpandAriaLabel: string;
-        railCollapseAriaLabel: string;
-        repositionAriaLabel: string;
-        repositionTitle: string;
-        pinAriaLabel: string;
-        unpinAriaLabel: string;
-        openPinAriaLabel: string;
-        removePinAriaLabel: string;
-        routeToggleAriaLabel: (pathname: string) => string;
-        progressAriaLabel: (resolved: number, total: number, percentage: number) => string;
-        completedCasesLabel: (resolved: number, total: number) => string;
-        sectionTitle: string;
-        empty: string;
-        notFound: string;
     };
 };
 export type DeepPartialReportMessages = {

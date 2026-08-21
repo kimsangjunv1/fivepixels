@@ -15,7 +15,6 @@ import { useLocalePreference } from "../useLocalePreference.js";
 import { useQuestionThreadPreference } from "../useQuestionThreadPreference.js";
 import { usePanelRolePreference } from "../usePanelRolePreference.js";
 import { usePanelTabPreference } from "../usePanelTabPreference.js";
-import { usePinnedFeedbackPreference } from "../usePinnedFeedbackPreference.js";
 import { usePanelBootstrap } from "../usePanelBootstrap.js";
 import { useResolvedAppearance } from "../useResolvedAppearance.js";
 import type { PanelRole } from "@/constants/panelRole.js";
@@ -148,8 +147,6 @@ export function useReportPanelShell({
     const { questionThreadDisplay, setQuestionThreadDisplay } = useQuestionThreadPreference(questionThreadDefault);
     const { panelRole, setPanelRole } = usePanelRolePreference();
     const { storedPreference, setPanelTabPreference, setVisibleTabs, resetTabsToRoleDefault, applyRoleDefaultTabs } = usePanelTabPreference();
-    const { pinnedFeedbackItems, pinRailCollapsed, pinRailPlacement, togglePinnedFeedback, unpinFeedback, setPinRailCollapsed, setPinRailPlacement, syncPinnedFeedbackReports } =
-        usePinnedFeedbackPreference(projectId, environment);
     const { locale, setLocale } = useLocalePreference(initialLocale);
     const [localeMessagesReady, setLocaleMessagesReady] = useState(locale !== "ko");
     const messages = useMemo(() => getReportMessages(locale, messageOverrides), [locale, localeMessagesReady, messageOverrides]);
@@ -440,7 +437,6 @@ export function useReportPanelShell({
 
     const enableIssueMode = () => {
         bridgesRef.current.setShowTargetPreview(false);
-        bridgesRef.current.closeReplyComposer();
         bridgesRef.current.stopEditing();
         setMode("view");
     };
@@ -457,10 +453,16 @@ export function useReportPanelShell({
 
     const toggleIssueMode = () => {
         bridgesRef.current.setShowTargetPreview(false);
-        bridgesRef.current.closeReplyComposer();
-        setMode((current) => (current === "view" ? "idle" : "view"));
         bridgesRef.current.stopEditing();
-        setSelectedReportId(null);
+
+        if (mode === "view") {
+            bridgesRef.current.closeReplyComposer();
+            setSelectedReportId(null);
+            setMode("idle");
+            return;
+        }
+
+        setMode("view");
     };
 
     return {
@@ -569,14 +571,6 @@ export function useReportPanelShell({
         resetVisibleTabsToRoleDefault,
         applyRoleDefaultTabsForOnboarding,
         savePanelTabPreference,
-        pinnedFeedbackItems,
-        pinRailCollapsed,
-        pinRailPlacement,
-        togglePinnedFeedback,
-        unpinFeedback,
-        setPinRailCollapsed,
-        setPinRailPlacement,
-        syncPinnedFeedbackReports,
         targetStats,
         roleStatItems,
         toggleReportMode,

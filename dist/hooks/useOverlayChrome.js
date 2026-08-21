@@ -11,21 +11,17 @@ function isFivepixelsPointerTarget(target) {
     return target instanceof Element && (target.id === FIVEPIXELS_HOST_ID || Boolean(target.closest(`#${FIVEPIXELS_HOST_ID}`)));
 }
 /**
- * Host-yield + idle auto-collapse for floating chrome (panel / pin).
+ * Host-yield + idle auto-collapse for floating chrome (panel).
  * Writes `data-fp-host-yield` on the shadow mount for CSS-driven dimming/peek.
  */
-export function useOverlayChrome({ mode, panelCollapsed, setPanelCollapsed, pinRailCollapsed, setPinRailCollapsed, hasPins, }) {
+export function useOverlayChrome({ mode, panelCollapsed, setPanelCollapsed }) {
     const idleTimerRef = useRef(null);
     const yieldDelayRef = useRef(null);
     const yieldHoldRef = useRef(null);
     const panelCollapsedRef = useRef(panelCollapsed);
-    const pinRailCollapsedRef = useRef(pinRailCollapsed);
     const modeRef = useRef(mode);
-    const hasPinsRef = useRef(hasPins);
     panelCollapsedRef.current = panelCollapsed;
-    pinRailCollapsedRef.current = pinRailCollapsed;
     modeRef.current = mode;
-    hasPinsRef.current = hasPins;
     useEffect(() => {
         const clearIdle = () => {
             if (idleTimerRef.current !== null) {
@@ -65,9 +61,6 @@ export function useOverlayChrome({ mode, panelCollapsed, setPanelCollapsed, pinR
                 }
                 if (!panelCollapsedRef.current) {
                     setPanelCollapsed(true);
-                }
-                if (hasPinsRef.current && !pinRailCollapsedRef.current) {
-                    setPinRailCollapsed(true);
                 }
             }, OVERLAY_IDLE_COLLAPSE_MS);
         };
@@ -120,7 +113,7 @@ export function useOverlayChrome({ mode, panelCollapsed, setPanelCollapsed, pinR
             document.removeEventListener("pointermove", handlePointerMove, true);
             document.removeEventListener("keydown", handleKeyDown, true);
         };
-    }, [setPanelCollapsed, setPinRailCollapsed]);
+    }, [setPanelCollapsed]);
     useEffect(() => {
         if (mode !== "idle") {
             const mount = getMountElement();

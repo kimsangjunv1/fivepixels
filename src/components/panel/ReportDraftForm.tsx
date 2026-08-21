@@ -24,6 +24,7 @@ export function ReportDraftForm() {
         isCreating,
         isUpdating,
         editingReportId,
+        mode,
         markers,
         selectedTarget,
         updateDraftCase,
@@ -41,6 +42,7 @@ export function ReportDraftForm() {
         isPresentationMode,
         authorSelectionLocked,
         sessionActor,
+        cancelDraft,
     } = useReport();
 
     if (!draft) {
@@ -58,6 +60,7 @@ export function ReportDraftForm() {
             isCreating={isCreating}
             isUpdating={isUpdating}
             isEditing={isEditing}
+            mode={mode}
             editingMarker={editingMarker}
             selectedTarget={selectedTarget}
             updateDraftCase={updateDraftCase}
@@ -75,6 +78,7 @@ export function ReportDraftForm() {
             isPresentationMode={isPresentationMode}
             authorSelectionLocked={authorSelectionLocked}
             sessionActor={sessionActor}
+            cancelDraft={cancelDraft}
         />
     );
 }
@@ -86,6 +90,7 @@ type ReportDraftFormContentProps = {
     isCreating: boolean;
     isUpdating: boolean;
     isEditing: boolean;
+    mode: ReturnType<typeof useReport>["mode"];
     editingMarker: { left: number; top: number } | null;
     selectedTarget: ReturnType<typeof useReport>["selectedTarget"];
     updateDraftCase: (caseId: string, text: string, mentions?: ElementMention[]) => void;
@@ -103,6 +108,7 @@ type ReportDraftFormContentProps = {
     isPresentationMode: boolean;
     authorSelectionLocked: boolean;
     sessionActor: ReturnType<typeof useReport>["sessionActor"];
+    cancelDraft: () => void;
 };
 
 function ReportDraftFormContent({
@@ -112,6 +118,7 @@ function ReportDraftFormContent({
     isCreating,
     isUpdating,
     isEditing,
+    mode,
     editingMarker,
     selectedTarget,
     updateDraftCase,
@@ -129,6 +136,7 @@ function ReportDraftFormContent({
     isPresentationMode,
     authorSelectionLocked,
     sessionActor,
+    cancelDraft,
 }: ReportDraftFormContentProps) {
     const { messages } = useReportPreferences();
     const tooltipSurfaceRef = useRef<HTMLDivElement | null>(null);
@@ -174,6 +182,37 @@ function ReportDraftFormContent({
 
         setActiveCaseId(draft.cases[draft.cases.length - 1]?.id ?? draft.cases[0]?.id ?? null);
     }, [activeCaseId, draft.cases]);
+
+    useEffect(() => {
+        // Report-mode create uses the overlay click path to re-target; only dismiss in view/edit flows.
+        if (mode === "report") {
+            return;
+        }
+
+        const handlePointerDown = (event: PointerEvent) => {
+            const path = event.composedPath();
+            const isInsideDraft = path.some((node) => node instanceof Element && node.hasAttribute("data-fivepixels-draft-form"));
+
+            if (isInsideDraft) {
+                return;
+            }
+
+            // Marker activation clears the draft itself before opening a window.
+            const isMarker = path.some((node) => node instanceof Element && node.hasAttribute("data-marker-report-id"));
+
+            if (isMarker) {
+                return;
+            }
+
+            cancelDraft();
+        };
+
+        document.addEventListener("pointerdown", handlePointerDown, true);
+
+        return () => {
+            document.removeEventListener("pointerdown", handlePointerDown, true);
+        };
+    }, [cancelDraft, mode]);
 
     const handleRemoveCase = (caseId: string) => {
         const removeIndex = draft.cases.findIndex((item) => item.id === caseId);
@@ -238,6 +277,7 @@ function ReportDraftFormContent({
             <div
                 ref={setTooltipElement}
                 data-fivepixels-interactive=""
+                data-fivepixels-draft-form=""
                 onClick={(event) => event.stopPropagation()}
                 className={`${EXPANDED_TOOLTIP_ANCHOR_CLASS} flex flex-col gap-[4px]`}
                 style={{

@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { getMarkerFromReport, resolveTooltipAnchor } from "../../utils/marker/coordinates.js";
+import { aggregateViewTriggerMarkers, getMarkerFromReport, resolveTooltipAnchor } from "../../utils/marker/coordinates.js";
 import { clearFeedbackDeepLinkFromUrl, parseFeedbackDeepLink } from "../../utils/feedback/feedbackDeepLink.js";
 import { getFieldTags } from "../../utils/report/fields.js";
 import { getFeedbackTargetElement, isFeedbackTargetVisible, scrollToFeedbackTarget, waitForTargetRevealResync } from "../../utils/marker/locateFeedback.js";
-import { restoreFeedbackViews } from "../../utils/marker/viewRestore.js";
+import { filterFeedbackForActiveViews, getActiveFeedbackViewKeys, restoreFeedbackViews } from "../../utils/marker/viewRestore.js";
 import { markerToTargetSnapshot } from "../../utils/marker/markerTarget.js";
 import { getPageDocument, getPageScrollY, getPageWindow, navigatePagePath, subscribePageDocumentBridge, } from "../../utils/overlay/pageDocumentBridge.js";
 const MARKER_HOVER_LEAVE_MS = 250;
@@ -18,11 +18,13 @@ export function useReportMarkers({ mode, messages, fields, currentPathname, curr
     const [hoveredMarkerId, setHoveredMarkerId] = useState(null);
     const hoverLeaveTimeoutRef = useRef(null);
     const pendingLocateReportIdRef = useRef(null);
-    const pendingActivatePinRef = useRef(null);
+    const pendingRevealWindowReportIdRef = useRef(null);
     const pendingDeepLinkFeedbackIdRef = useRef(getInitialDeepLinkFeedbackId());
     const deepLinkHandledRef = useRef(false);
     const syncMarkers = useCallback(() => {
-        setMarkers(currentPageReports.map((report) => getMarkerFromReport(report, getPageScrollY())));
+        const currentScrollY = getPageScrollY();
+        const visibleReports = filterFeedbackForActiveViews(currentPageReports, getActiveFeedbackViewKeys());
+        setMarkers(aggregateViewTriggerMarkers(visibleReports.map((report) => getMarkerFromReport(report, currentScrollY))));
     }, [currentPageReports, markerAppearanceSize]);
     const activeMarkerReportId = useMemo(() => {
         if (activeReplyReportId) {
@@ -139,7 +141,7 @@ export function useReportMarkers({ mode, messages, fields, currentPathname, curr
         });
         mutationObserver.observe(getPageDocument().body ?? getPageDocument().documentElement, {
             attributes: true,
-            attributeFilter: ["class", "style", "aria-hidden"],
+            attributeFilter: ["class", "style", "aria-hidden", "aria-disabled", "disabled", "data-fp-open", "data-fp-view"],
             childList: true,
             subtree: true,
         });
@@ -308,50 +310,56 @@ export function useReportMarkers({ mode, messages, fields, currentPathname, curr
         }
     }, [clearHoverLeaveTimeout, closeReplyComposer, loadRepliesIfNeeded, openReplyComposer, prepareFeedbackLocation, selectCase]);
     const activateFeedbackMarker = useCallback((report, caseId) => activateFeedback(report, caseId, true), [activateFeedback]);
-    const openPinnedFeedback = async (reportId, options) => {
-        const caseId = options?.caseId;
-        const report = reports.find((item) => item.id === reportId) ?? allPageReports.find((item) => item.id === reportId);
-        const targetPathname = report?.pathname ?? options?.pathname;
-        if (!report && !targetPathname) {
-            setErrorMessage(messages.pins.notFound);
-            return;
-        }
+    const revealOpenFeedback = useCallback(async (report) => {
         ensureIssueMode();
-        if (report) {
-            selectReport(reportId);
-        }
-        if (targetPathname && targetPathname !== currentPathname) {
-            pendingActivatePinRef.current = { reportId, caseId };
+        selectReport(report.id);
+        clearHoverLeaveTimeout();
+        if (report.pathname !== currentPathname) {
+            pendingRevealWindowReportIdRef.current = report.id;
             try {
-                await navigatePagePath(targetPathname, onNavigate);
+                await navigatePagePath(report.pathname, onNavigate);
             }
             catch (nextError) {
-                pendingActivatePinRef.current = null;
+                pendingRevealWindowReportIdRef.current = null;
                 setErrorMessage(nextError instanceof Error ? nextError.message : messages.errors.loadFeedbackFailed);
             }
             return;
         }
-        if (!report) {
-            setErrorMessage(messages.pins.notFound);
-            return;
-        }
-        await activateFeedback(report, caseId);
-    };
+        await prepareFeedbackLocation(report);
+        const enrichedReport = await loadRepliesIfNeeded(report);
+        openReplyComposer(enrichedReport);
+    }, [
+        clearHoverLeaveTimeout,
+        currentPathname,
+        ensureIssueMode,
+        loadRepliesIfNeeded,
+        messages.errors.loadFeedbackFailed,
+        onNavigate,
+        openReplyComposer,
+        prepareFeedbackLocation,
+        selectReport,
+        setErrorMessage,
+    ]);
     useEffect(() => {
-        const pending = pendingActivatePinRef.current;
-        if (!pending) {
+        const pendingReportId = pendingRevealWindowReportIdRef.current;
+        if (!pendingReportId) {
             return;
         }
-        const report = reports.find((item) => item.id === pending.reportId && item.pathname === currentPathname)
-            ?? allPageReports.find((item) => item.id === pending.reportId && item.pathname === currentPathname);
+        const report = reports.find((item) => item.id === pendingReportId && item.pathname === currentPathname) ??
+            allPageReports.find((item) => item.id === pendingReportId && item.pathname === currentPathname) ??
+            currentPageReports.find((item) => item.id === pendingReportId && item.pathname === currentPathname);
         if (!report) {
             return;
         }
-        pendingActivatePinRef.current = null;
+        pendingRevealWindowReportIdRef.current = null;
         window.setTimeout(() => {
-            void activateFeedback(report, pending.caseId);
+            void (async () => {
+                await prepareFeedbackLocation(report);
+                const enrichedReport = await loadRepliesIfNeeded(report);
+                openReplyComposer(enrichedReport);
+            })();
         }, 0);
-    }, [activateFeedback, allPageReports, currentPathname, reports]);
+    }, [allPageReports, currentPageReports, currentPathname, loadRepliesIfNeeded, openReplyComposer, prepareFeedbackLocation, reports]);
     useEffect(() => {
         const feedbackId = pendingDeepLinkFeedbackIdRef.current;
         if (!feedbackId || deepLinkHandledRef.current || isReportsLoading || isFetching) {
@@ -387,7 +395,7 @@ export function useReportMarkers({ mode, messages, fields, currentPathname, curr
         focusSearchInput,
         selectAdjacentReport,
         activateFeedbackMarker,
-        openPinnedFeedback,
+        revealOpenFeedback,
     };
 }
 //# sourceMappingURL=useReportMarkers.js.map

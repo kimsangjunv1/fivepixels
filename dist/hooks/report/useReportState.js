@@ -134,6 +134,7 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
     };
     const reply = useReportReplyReview({
         reports: panel.reports,
+        allPageReports: panel.allPageReports,
         messages: panel.messages,
         fields,
         sessionActor: auth.sessionActor,
@@ -208,7 +209,6 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         draft.setHoveredTarget(null);
         draft.setSelectedTarget(null);
         markers.setHoveredMarkerId(null);
-        reply.setActiveReplyReportId(null);
         reply.setReplyDraft("");
         reply.setReplyMentions([]);
         reply.setMentionHighlightTarget(null);

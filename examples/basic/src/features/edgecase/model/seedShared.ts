@@ -4,13 +4,20 @@ import { ISSUE_ROOT_PARENT_ID } from "@/utils/feedback/feedbackThread.js";
 import { createAutoPickReportId } from "@/utils/marker/targetSelector.js";
 import { createReportCase } from "@/utils/report/reportCases.js";
 
-/** Mirrors `team` in examples/basic/src/App.tsx */
+/** Mirrors `team` reviewers in examples/basic/src/App.tsx */
 export const SEED_TEAM = {
-    user: "Alex",
-    alex: "Alex, QA Assistant",
-    sophia: "Sophia, QA",
-    william: "William, Developer",
-    emma: "Emma, Designer",
+    user: "김민수",
+    qa: "박서연, QA",
+    frontend: "이준호, 프론트엔드",
+    backend: "최유진, 백엔드",
+    /** @deprecated Prefer `qa` — kept for existing edgecase/settings seeds */
+    alex: "박서연, QA",
+    /** @deprecated Prefer `qa` */
+    sophia: "박서연, QA",
+    /** @deprecated Prefer `frontend` */
+    william: "이준호, 프론트엔드",
+    /** @deprecated Prefer `backend` */
+    emma: "최유진, 백엔드",
 } as const;
 
 export type DemoSeedCatalogEntry = {

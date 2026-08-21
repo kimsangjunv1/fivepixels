@@ -43,11 +43,15 @@ export function resolveDetachedKind(
         return null;
     }
 
-    // Only treat as modal when the report itself looks like an overlay/dialog,
-    // or the target still lives under a fixed-position ancestor (closed modal shell).
+    // Treat saved declarative views as modal-like restore targets alongside
+    // overlay/dialog ids and fixed-position ancestors.
     // Viewport-coordinate fallback alone must not imply modal — that mislabels
     // ordinary page markers that scrolled out of view.
     if (isModalReportId(report.report_id)) {
+        return "modal";
+    }
+
+    if (normalizeReportPosition(report.position).viewPath?.length) {
         return "modal";
     }
 

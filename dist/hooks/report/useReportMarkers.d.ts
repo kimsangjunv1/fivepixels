@@ -52,9 +52,6 @@ export declare function useReportMarkers({ mode, messages, fields, currentPathna
     focusSearchInput: () => void;
     selectAdjacentReport: (direction: "up" | "down") => void;
     activateFeedbackMarker: (report: ReportFeedback, caseId?: string | null) => Promise<void>;
-    openPinnedFeedback: (reportId: string, options?: {
-        caseId?: string | null;
-        pathname?: string;
-    }) => Promise<void>;
+    revealOpenFeedback: (report: ReportFeedback) => Promise<void>;
 };
 //# sourceMappingURL=useReportMarkers.d.ts.map

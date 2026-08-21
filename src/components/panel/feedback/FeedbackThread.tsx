@@ -36,6 +36,7 @@ import { ThreadAuthorMeta } from "./ThreadAuthorMeta.js";
 import { ThreadTimelineRow } from "./ThreadTimelineRow.js";
 import { CaseThreadEntryActions, ThreadEntryActions, THREAD_ACTION_ENTRY_SURFACE_CLASS, THREAD_CASE_ENTRY_SURFACE_CLASS } from "./ThreadEntryActions.js";
 import { MentionMessage } from "./MentionMessage.js";
+import { getFeedbackTargetElement } from "@/utils/marker/locateFeedback.js";
 
 type PendingComposer = {
     type: "deny" | "recheck" | "checkout" | "question";
@@ -134,6 +135,37 @@ function ThreadStartedDivider({ createdAt }: { createdAt: string }) {
                         style={{ color: dateColor }}
                     >
                         {formatDateOnly(createdAt, locale)}
+                    </span>
+                </span>
+                <span
+                    aria-hidden
+                    className="h-px flex-1 bg-[var(--adaptive-border-subtle)]"
+                />
+            </div>
+        </ThreadTimelineRow>
+    );
+}
+
+function ThreadDetachedTargetDivider() {
+    const { messages } = useReportPreferences();
+    const labelColor = "var(--adaptive-black500)";
+
+    return (
+        <ThreadTimelineRow>
+            <div
+                className="flex items-center gap-[8px]"
+                role="status"
+            >
+                <span
+                    aria-hidden
+                    className="h-px flex-1 bg-[var(--adaptive-border-subtle)]"
+                />
+                <span className="inline-flex shrink-0 items-center gap-[6px]">
+                    <span
+                        className="text-[13px] font-bold leading-none"
+                        style={{ color: labelColor }}
+                    >
+                        {messages.thread.detachedTargetDivider}
                     </span>
                 </span>
                 <span
@@ -406,6 +438,7 @@ export function FeedbackThread({
     const scrollRef = useRef<HTMLElement>(null);
     const loadingOlderRef = useRef(false);
     const [isAllCasesView, setIsAllCasesView] = useState(false);
+    const [isOriginalTargetMissing, setIsOriginalTargetMissing] = useState(() => !getFeedbackTargetElement(report));
     const [scrollOverflow, setScrollOverflow] = useState<ScrollOverflowState>({
         canScrollUp: false,
         canScrollDown: false,
@@ -423,6 +456,18 @@ export function FeedbackThread({
     const systemBranches = useMemo(() => buildThreadTimeline(report).branches.filter((branch) => isGitIssuedSystemReply(branch.root, report)), [report, replies]);
     const showTimelineRail = Boolean((focusedCaseId && !isAllCasesView) || systemBranches.length > 0);
     const replyHistoryState = replyHistoryByReportId[report.id];
+
+    useEffect(() => {
+        const syncOriginalTarget = () => {
+            setIsOriginalTargetMissing(!getFeedbackTargetElement(report));
+        };
+
+        syncOriginalTarget();
+
+        const intervalId = window.setInterval(syncOriginalTarget, 500);
+
+        return () => window.clearInterval(intervalId);
+    }, [report]);
 
     useEffect(() => {
         void loadRepliesIfNeeded(report);
@@ -637,6 +682,7 @@ export function FeedbackThread({
                                     />
                                 </div>
                             ))}
+                            {isOriginalTargetMissing ? <ThreadDetachedTargetDivider /> : null}
                         </>
                     ) : (
                         <p className="px-[12px] py-[8px] text-[12px] text-[var(--adaptive-black500)]">{messages.cases.selectToView}</p>
