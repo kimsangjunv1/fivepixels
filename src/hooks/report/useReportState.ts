@@ -220,6 +220,17 @@ export function useReportState({
         replyBridgeRef.current.openReplyComposer(report);
     }, []);
 
+    const draftSessionBridgeRef = useRef<{
+        discardDraft: () => void;
+    }>({
+        discardDraft: () => undefined,
+    });
+
+    const openReplyComposerClearingDraft = useCallback((report: ReportFeedback) => {
+        draftSessionBridgeRef.current.discardDraft();
+        replyBridgeRef.current.openReplyComposer(report);
+    }, []);
+
     const mutations = useReportMutations({
         messages: panel.messages,
         fields,
@@ -247,18 +258,26 @@ export function useReportState({
         finalizeDraftCreate: draft.finalizeDraftCreate,
     });
 
+    const discardDraft = useCallback(() => {
+        draft.cancelDraft();
+        mutations.stopEditing();
+    }, [draft, mutations]);
+
+    draftSessionBridgeRef.current = {
+        discardDraft,
+    };
+
     const selectReport = (reportId: string) => {
         panel.setSelectedReportId(reportId);
 
         if (mutations.editingReportId && mutations.editingReportId !== reportId) {
-            mutations.stopEditing();
+            discardDraft();
         }
     };
 
     const cancelDraft = () => {
         const editingId = mutations.editingReportId;
-        draft.cancelDraft();
-        mutations.stopEditing();
+        discardDraft();
 
         if (!editingId) {
             return;
@@ -326,7 +345,7 @@ export function useReportState({
         onRevealTarget,
         selectReport,
         closeReplyComposer: closeReplyComposerBridge,
-        openReplyComposer: openReplyComposerBridge,
+        openReplyComposer: openReplyComposerClearingDraft,
         selectCase: reply.selectCase,
         ensureIssueMode: panel.enableIssueMode,
         loadRepliesIfNeeded: panel.loadRepliesIfNeeded,

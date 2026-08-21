@@ -29,12 +29,7 @@ import { FeedbackThread } from "@/components/panel/feedback/FeedbackThread.js";
 import { MarkerCaseSidebar } from "./MarkerCaseSidebar.js";
 import { ProcessingDots } from "@/components/ui/ProcessingDots.js";
 import { Text } from "@/components/ui/Text/index.js";
-import {
-    MARKER_MINIMIZED_WINDOW_HEIGHT,
-    MARKER_MINIMIZED_WINDOW_WIDTH,
-    MARKER_WINDOW_MARGIN,
-    resolveMinimizedDockPosition,
-} from "@/utils/marker/markerWindowDock.js";
+import { MARKER_MINIMIZED_WINDOW_HEIGHT, MARKER_MINIMIZED_WINDOW_WIDTH, MARKER_WINDOW_MARGIN, resolveMinimizedDockPosition } from "@/utils/marker/markerWindowDock.js";
 import { getFeedbackTargetElement, isFeedbackTargetVisible } from "@/utils/marker/locateFeedback.js";
 import { getPageWindow } from "@/utils/overlay/pageDocumentBridge.js";
 
@@ -113,9 +108,7 @@ function MinimizedCaseMarquee({ caseTexts }: { caseTexts: string[] }) {
     }
 
     return (
-        <div
-            className="min-w-0 flex-1 overflow-hidden text-[12px] text-[var(--adaptive-black700)]"
-        >
+        <div className="min-w-0 flex-1 overflow-hidden text-[12px] text-[var(--adaptive-black700)]">
             <div
                 aria-hidden
                 className="fivepixels-marker-window-marquee"
@@ -142,15 +135,7 @@ function MinimizedCaseMarquee({ caseTexts }: { caseTexts: string[] }) {
     );
 }
 
-function UnfocusedCaseSummary({
-    caseTexts,
-    emptyLabel,
-    navigateHint,
-}: {
-    caseTexts: string[];
-    emptyLabel: string;
-    navigateHint?: string;
-}) {
+function UnfocusedCaseSummary({ caseTexts, emptyLabel, navigateHint }: { caseTexts: string[]; emptyLabel: string; navigateHint?: string }) {
     return (
         <div className="flex max-h-full w-full max-w-[440px] flex-col items-center gap-[12px] overflow-hidden px-[28px]">
             {navigateHint ? <p className="text-center text-[12px] font-medium leading-[1.4] text-[var(--adaptive-blue500)]">{navigateHint}</p> : null}
@@ -488,7 +473,12 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
     // Freeze the open position on mount so page changes (lost marker anchors) don't
     // collapse every window onto the same fallback center coordinate.
     const [seedPosition] = useState(() =>
-        clampWindowPosition(anchor.left + getMarkerDotSize() / 2 - DEFAULT_WINDOW_SIZE.width / 2, anchor.top + getMarkerDotSize() / 2 - DEFAULT_WINDOW_SIZE.height / 2, DEFAULT_WINDOW_SIZE.width, DEFAULT_WINDOW_SIZE.height),
+        clampWindowPosition(
+            anchor.left + getMarkerDotSize() / 2 - DEFAULT_WINDOW_SIZE.width / 2,
+            anchor.top + getMarkerDotSize() / 2 - DEFAULT_WINDOW_SIZE.height / 2,
+            DEFAULT_WINDOW_SIZE.width,
+            DEFAULT_WINDOW_SIZE.height,
+        ),
     );
 
     const resolvedPosition = isMinimized
@@ -647,7 +637,6 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
         />
     );
 
-
     const deleteButton = canDeleteFeedback(report, sessionActor) ? (
         <FeedbackDeleteAction
             reportId={report.id}
@@ -703,7 +692,6 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
                 messages={messages}
                 expanded
             />
-
         </nav>
     );
 
@@ -889,9 +877,13 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
                             disabled={isMinimizedExiting}
                             aria-label={`${messages.marker.windowRestoreAriaLabel}. ${report.pathname}. ${minimizedCaseTexts.map((text, index) => `${index + 1}. ${text}`).join(", ")}`}
                             title={messages.marker.windowRestoreAriaLabel}
-                            className="flex min-h-[52px] w-full flex-col justify-center gap-[2px] overflow-hidden px-[12px] py-[6px] text-left"
+                            className="flex w-full flex-col justify-center gap-[2px] overflow-hidden px-[12px] py-[6px] text-left"
                         >
-                            <span className="truncate text-[10px] font-semibold leading-none text-[var(--adaptive-black500)]">{report.pathname}</span>
+                            <section className="flex items-center gap-[4px]">
+                                <p className="text-[10px] bg-[var(--adaptive-tintOpacity300)] rounded-[4px] px-[2px] py-[2px]">Route</p>
+                                <p className="truncate text-[10px] font-semibold leading-none text-[var(--adaptive-accent-coral)]">{report.pathname}</p>
+                            </section>
+
                             <MinimizedCaseMarquee caseTexts={minimizedCaseTexts} />
                         </button>
                     </div>
