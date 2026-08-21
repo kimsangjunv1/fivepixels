@@ -259,6 +259,7 @@ export function assembleReportContextValue({
         openReplyReports: reply.openReplyReports,
         minimizedReplyReportIds: reply.minimizedReplyReportIds,
         setReplyWindowMinimized: reply.setReplyWindowMinimized,
+        reorderMinimizedReplyWindow: reply.reorderMinimizedReplyWindow,
         focusReplyWindow: reply.focusReplyWindow,
         closeReplyWindow: reply.closeReplyWindow,
         tooltipReport: markers.tooltipReport,

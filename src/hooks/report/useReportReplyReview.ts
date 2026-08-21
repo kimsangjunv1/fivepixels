@@ -413,6 +413,27 @@ export function useReportReplyReview({
         });
     }, []);
 
+    const reorderMinimizedReplyWindow = useCallback((reportId: string, toIndex: number) => {
+        setMinimizedReplyReportIds((current) => {
+            const fromIndex = current.indexOf(reportId);
+
+            if (fromIndex < 0) {
+                return current;
+            }
+
+            const clampedIndex = Math.max(0, Math.min(toIndex, current.length - 1));
+
+            if (fromIndex === clampedIndex) {
+                return current;
+            }
+
+            const next = [...current];
+            const [item] = next.splice(fromIndex, 1);
+            next.splice(clampedIndex, 0, item);
+            return next;
+        });
+    }, []);
+
     const focusReplyWindow = useCallback(
         (reportId: string) => {
             const report = reportLookup.get(reportId);
@@ -831,6 +852,7 @@ export function useReportReplyReview({
         openReplyReports,
         minimizedReplyReportIds,
         setReplyWindowMinimized,
+        reorderMinimizedReplyWindow,
         focusReplyWindow,
         closeReplyWindow,
         activeReplyReport,

@@ -157,6 +157,7 @@ export const REPORT_SESSION_KEYS = [
     "openReplyReports",
     "minimizedReplyReportIds",
     "setReplyWindowMinimized",
+    "reorderMinimizedReplyWindow",
     "focusReplyWindow",
     "closeReplyWindow",
     "tooltipReport",
