@@ -800,12 +800,16 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
         if (prefersReducedMotion()) {
             setWindowMode("minimized");
             setDockMorph(null);
+            clearHoverLeaveTimeout();
+            setHoveredMarkerId((current) => (current === report.id ? null : current));
             return;
         }
 
         runDockMorph("minimizing", from, to, () => {
             setWindowMode("minimized");
         });
+        clearHoverLeaveTimeout();
+        setHoveredMarkerId((current) => (current === report.id ? null : current));
     };
 
     const handleMinimizedDockPointerDown = useCallback(

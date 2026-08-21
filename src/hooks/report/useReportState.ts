@@ -381,6 +381,7 @@ export function useReportState({
         isFetching: panel.isFetching,
         isReportsLoading: panel.isReportsLoading,
         activeReplyReportId: reply.activeReplyReportId,
+        minimizedReplyReportIds: reply.minimizedReplyReportIds,
         setErrorMessage: panel.setErrorMessage,
         onNavigate,
         onRevealTarget,

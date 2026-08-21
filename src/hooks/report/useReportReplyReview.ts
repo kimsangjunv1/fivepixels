@@ -399,19 +399,40 @@ export function useReportReplyReview({
         [applyFocusedReplyWindow, rememberOpenReport, reportLookup, resetComposerSession],
     );
 
-    const setReplyWindowMinimized = useCallback((reportId: string, minimized: boolean) => {
-        setMinimizedReplyReportIds((current) => {
-            if (minimized) {
-                if (current.includes(reportId)) {
-                    return current;
-                }
-
-                return [...current, reportId];
+    const setReplyWindowMinimized = useCallback(
+        (reportId: string, minimized: boolean) => {
+            if (!minimized) {
+                setMinimizedReplyReportIds((current) => current.filter((id) => id !== reportId));
+                return;
             }
 
-            return current.filter((id) => id !== reportId);
-        });
-    }, []);
+            const nextMinimizedIds = minimizedReplyReportIds.includes(reportId) ? minimizedReplyReportIds : [...minimizedReplyReportIds, reportId];
+            setMinimizedReplyReportIds(nextMinimizedIds);
+
+            if (activeReplyReportId !== reportId) {
+                return;
+            }
+
+            const minimizedIdSet = new Set(nextMinimizedIds);
+            const nextFocusedId = [...openReplyReportIds].reverse().find((id) => !minimizedIdSet.has(id)) ?? null;
+
+            resetComposerSession();
+            setActiveReplyReportId(nextFocusedId);
+
+            if (!nextFocusedId) {
+                return;
+            }
+
+            const nextReport = reportLookup.get(nextFocusedId) ?? null;
+
+            if (!nextReport) {
+                return;
+            }
+
+            applyFocusedReplyWindow(nextReport);
+        },
+        [activeReplyReportId, applyFocusedReplyWindow, minimizedReplyReportIds, openReplyReportIds, reportLookup, resetComposerSession],
+    );
 
     const reorderMinimizedReplyWindow = useCallback((reportId: string, toIndex: number) => {
         setMinimizedReplyReportIds((current) => {

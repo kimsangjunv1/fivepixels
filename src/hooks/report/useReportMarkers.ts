@@ -44,6 +44,7 @@ export type UseReportMarkersParams = {
     isFetching: boolean;
     isReportsLoading: boolean;
     activeReplyReportId: string | null;
+    minimizedReplyReportIds?: readonly string[];
     setErrorMessage: Dispatch<SetStateAction<string>>;
     onNavigate?: (pathname: string) => void | Promise<void>;
     onRevealTarget?: (report: ReportFeedback) => boolean | Promise<boolean>;
@@ -74,6 +75,7 @@ export function useReportMarkers({
     isFetching,
     isReportsLoading,
     activeReplyReportId,
+    minimizedReplyReportIds = [],
     setErrorMessage,
     onNavigate,
     onRevealTarget,
@@ -99,17 +101,19 @@ export function useReportMarkers({
         setMarkers(aggregateViewTriggerMarkers(visibleReports.map((report) => getMarkerFromReport(report, currentScrollY))));
     }, [currentPageReports, markerAppearanceSize]);
 
+    const minimizedReplyReportIdSet = useMemo(() => new Set(minimizedReplyReportIds), [minimizedReplyReportIds]);
+
     const activeMarkerReportId = useMemo(() => {
-        if (activeReplyReportId) {
+        if (activeReplyReportId && !minimizedReplyReportIdSet.has(activeReplyReportId)) {
             return activeReplyReportId;
         }
 
-        if (hoveredMarkerId) {
+        if (hoveredMarkerId && !minimizedReplyReportIdSet.has(hoveredMarkerId)) {
             return hoveredMarkerId;
         }
 
         return null;
-    }, [activeReplyReportId, hoveredMarkerId]);
+    }, [activeReplyReportId, hoveredMarkerId, minimizedReplyReportIdSet]);
 
     const activeMarkerTarget = useMemo(() => {
         if (!activeMarkerReportId) {
