@@ -74,6 +74,8 @@ type MarkerButtonProps = {
     isHovered: boolean;
     isReportMode: boolean;
     isProximityHighlighted: boolean;
+    isWindowOpen: boolean;
+    viewingWindowBadge: string;
     detachedAriaLabel: string;
     detachedModalAriaLabel: string;
     markerAppearance: MarkerAppearancePreferences;
@@ -89,6 +91,8 @@ function MarkerButton({
     isHovered,
     isReportMode,
     isProximityHighlighted,
+    isWindowOpen,
+    viewingWindowBadge,
     detachedAriaLabel,
     detachedModalAriaLabel,
     markerAppearance,
@@ -112,6 +116,7 @@ function MarkerButton({
         markerBadgeLabel,
         aggregateCount > 1 ? `${aggregateCount}` : null,
         showReplyIndicator ? `+${replyCount}` : null,
+        isWindowOpen ? viewingWindowBadge : null,
     ].filter(Boolean);
     const markerLabel = markerLabelParts.join(" · ");
     const isDetached = markerItem.detached;
@@ -216,6 +221,14 @@ function MarkerButton({
                             size={replyBadgeSize}
                             accentColor={markerColor}
                         />
+                    ) : null}
+                    {isWindowOpen ? (
+                        <span
+                            aria-hidden
+                            className="pointer-events-none absolute left-1/2 top-full z-20 mt-[2px] -translate-x-1/2 whitespace-nowrap rounded-full bg-black/55 px-[2px] py-[1px] text-[10px] font-semibold leading-none text-white"
+                        >
+                            {viewingWindowBadge}
+                        </span>
                     ) : null}
                 </div>
             </div>
@@ -384,6 +397,8 @@ export function ReportMarkersLayer() {
                     isHovered={isViewMode && tooltipReport?.id === markerItem.report.id && !openReplyReportIdSet.has(markerItem.report.id)}
                     isReportMode={isReportMode}
                     isProximityHighlighted={markerItem.id === proximityHighlightedMarkerId}
+                    isWindowOpen={openReplyReportIdSet.has(markerItem.report.id)}
+                    viewingWindowBadge={messages.marker.viewingWindowBadge}
                     detachedAriaLabel={messages.marker.detachedAriaLabel}
                     detachedModalAriaLabel={messages.marker.detachedModalAriaLabel}
                     markerAppearance={markerAppearance}

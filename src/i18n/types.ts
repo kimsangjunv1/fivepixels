@@ -784,6 +784,7 @@ export type ReportMessages = {
         minimizedAliasInputAriaLabel: string;
         minimizedAliasPlaceholder: string;
         minimizedAliasClearAriaLabel: string;
+        viewingWindowBadge: string;
     };
     defaults: {
         fields: {

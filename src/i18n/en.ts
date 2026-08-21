@@ -811,6 +811,7 @@ export const en: ReportMessages = {
         minimizedAliasInputAriaLabel: "Minimized window alias",
         minimizedAliasPlaceholder: "Enter alias",
         minimizedAliasClearAriaLabel: "Clear alias",
+        viewingWindowBadge: "Viewing",
     },
     defaults: {
         fields: {

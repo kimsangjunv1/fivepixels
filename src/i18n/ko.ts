@@ -808,6 +808,7 @@ export const ko: ReportMessages = {
         minimizedAliasInputAriaLabel: "최소화 창 별칭",
         minimizedAliasPlaceholder: "별칭 입력",
         minimizedAliasClearAriaLabel: "별칭 삭제",
+        viewingWindowBadge: "보는중",
     },
     defaults: {
         fields: {
