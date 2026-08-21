@@ -34,6 +34,13 @@ import { readMinimizedWindowAlias, writeMinimizedWindowAlias } from "@/utils/mar
 
 type WindowMode = "normal" | "minimized" | "maximized";
 type WindowSurfacePhase = "entering" | "idle" | "exiting";
+type DockMorphRect = {
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+};
+type DockMorphState = (DockMorphRect & { phase: "minimizing" | "restoring" }) | null;
 
 const WINDOW_MARGIN = MARKER_WINDOW_MARGIN;
 const DEFAULT_WINDOW_SIZE: BoxSize = { width: 600, height: 460 };
@@ -46,7 +53,10 @@ const RIGHT_MIN_WIDTH = 280;
 const COLLAPSED_SIDEBAR_WIDTH = 46;
 const MINIMIZED_WINDOW_HEIGHT = MARKER_MINIMIZED_WINDOW_HEIGHT;
 const MINIMIZED_WINDOW_WIDTH = MARKER_MINIMIZED_WINDOW_WIDTH;
-const MINIMIZED_WINDOW_EXIT_ANIMATION_MS = 220;
+const MINIMIZE_MORPH_MS = 420;
+const MINIMIZE_MORPH_EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
+const MINIMIZE_MORPH_TRANSITION = `left ${MINIMIZE_MORPH_MS}ms ${MINIMIZE_MORPH_EASE}, top ${MINIMIZE_MORPH_MS}ms ${MINIMIZE_MORPH_EASE}, width ${MINIMIZE_MORPH_MS}ms ${MINIMIZE_MORPH_EASE}, height ${MINIMIZE_MORPH_MS}ms ${MINIMIZE_MORPH_EASE}`;
+const MINIMIZED_DOCK_SLIDE_TRANSITION = `left ${MINIMIZE_MORPH_MS}ms ${MINIMIZE_MORPH_EASE}, top ${MINIMIZE_MORPH_MS}ms ${MINIMIZE_MORPH_EASE}`;
 const WINDOW_CLOSE_ANIMATION_MS = 220;
 const LEFT_SECTION_TRANSITION = "transition-[background-color,backdrop-filter] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]";
 const LEFT_SECTION_FLAT_CLASS = `${LEFT_SECTION_TRANSITION} bg-[var(--adaptive-black50)]`;
@@ -59,6 +69,10 @@ const HEADER_BUTTON_CLASS =
     "flex h-[24px] w-[24px] items-center justify-center rounded-[6px] text-[var(--adaptive-black600)] transition-colors hover:bg-[var(--adaptive-tintOpacity200)] hover:text-[var(--adaptive-black900)]";
 const SIDEBAR_ACTION_CLASS =
     "flex h-[32px] w-full items-center gap-[8px] rounded-[8px] px-[8px] text-left text-[13px] font-semibold text-[var(--adaptive-black700)] transition-colors hover:bg-[var(--adaptive-tintOpacity200)] hover:text-[var(--adaptive-black900)]";
+
+function prefersReducedMotion() {
+    return typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
 
 function getViewportSize() {
     if (typeof window === "undefined") {
@@ -395,7 +409,10 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
     const [size, setSize] = useState<BoxSize>(DEFAULT_WINDOW_SIZE);
     const [sidebarWidth, setSidebarWidth] = useState(DEFAULT_SIDEBAR_WIDTH);
     const [isSidebarDeleteConfirming, setIsSidebarDeleteConfirming] = useState(false);
-    const [isMinimizedExiting, setIsMinimizedExiting] = useState(false);
+    const [dockMorph, setDockMorph] = useState<DockMorphState>(null);
+    const [isMinimizedHovered, setIsMinimizedHovered] = useState(false);
+    const dockMorphTimerRef = useRef<number | null>(null);
+    const dockMorphFrameRef = useRef<number | null>(null);
 
     const splitStateRef = useRef<{ startX: number; startWidth: number; windowWidth: number } | null>(null);
     const splitListenersRef = useRef<{ move: (event: PointerEvent) => void; up: (event: PointerEvent) => void } | null>(null);
@@ -419,12 +436,12 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
     );
 
     const { position, handleDragHandlePointerDown } = useDraggableWindow({
-        enabled: windowMode !== "maximized",
+        enabled: windowMode === "normal" && dockMorph === null,
         windowRef,
     });
 
     const { isResizing, ghostRef, handleResizePointerDown } = useGhostCornerResize({
-        enabled: windowMode === "normal",
+        enabled: windowMode === "normal" && dockMorph === null,
         targetRef: surfaceRef,
         handleCorner: "bottom-right",
         clampSize: clampMarkerWindowSize,
@@ -496,21 +513,19 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
 
     useEffect(() => () => detachSplitListeners(), [detachSplitListeners]);
 
-    const finishMinimizedRestore = useCallback(() => {
-        setIsMinimizedExiting(false);
-        setWindowMode("normal");
-        setReplyWindowMinimized(report.id, false);
-    }, [report.id, setReplyWindowMinimized]);
-
-    useEffect(() => {
-        if (!isMinimizedExiting) {
-            return;
+    const clearDockMorphTimers = useCallback(() => {
+        if (dockMorphTimerRef.current !== null) {
+            window.clearTimeout(dockMorphTimerRef.current);
+            dockMorphTimerRef.current = null;
         }
 
-        const fallbackId = window.setTimeout(finishMinimizedRestore, MINIMIZED_WINDOW_EXIT_ANIMATION_MS + 60);
+        if (dockMorphFrameRef.current !== null) {
+            window.cancelAnimationFrame(dockMorphFrameRef.current);
+            dockMorphFrameRef.current = null;
+        }
+    }, []);
 
-        return () => window.clearTimeout(fallbackId);
-    }, [finishMinimizedRestore, isMinimizedExiting]);
+    useEffect(() => () => clearDockMorphTimers(), [clearDockMorphTimers]);
 
     useEffect(() => {
         if (!isSidebarDeleteConfirming) {
@@ -525,10 +540,10 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
     useEffect(() => {
         const dockMinimized = minimizedReplyReportIds.includes(report.id);
 
-        if (!dockMinimized && windowMode === "minimized" && !isMinimizedExiting) {
+        if (!dockMinimized && windowMode === "minimized" && dockMorph === null) {
             setWindowMode("normal");
         }
-    }, [isMinimizedExiting, minimizedReplyReportIds, report.id, windowMode]);
+    }, [dockMorph, minimizedReplyReportIds, report.id, windowMode]);
 
     const isOnFeedbackPath = report.pathname === currentPathname;
     const showFullContent = isFocused && isOnFeedbackPath;
@@ -569,8 +584,9 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
         height: Math.max(MIN_WINDOW_HEIGHT, viewport.height - WINDOW_MARGIN * 2),
     };
 
-    const isMinimized = windowMode === "minimized";
+    const isMinimized = windowMode === "minimized" || dockMorph?.phase === "minimizing";
     const isMaximized = windowMode === "maximized";
+    const showMinimizedChrome = windowMode === "minimized" && dockMorph?.phase !== "restoring";
     const effectiveSize = isMaximized ? maximizedSize : size;
     const minimizedWidth = Math.min(MINIMIZED_WINDOW_WIDTH, Math.max(0, viewport.width - WINDOW_MARGIN * 2));
     const resolvedSidebarWidth = clampSidebarWidth(sidebarWidth, effectiveSize.width);
@@ -588,14 +604,52 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
         ),
     );
 
-    const resolvedPosition = isMinimized
-        ? resolveMinimizedDockPosition(minimizedDockIndex, minimizedDockCount, viewport.width, viewport.height, minimizedWidth, MINIMIZED_WINDOW_HEIGHT)
-        : isMaximized
-          ? { left: WINDOW_MARGIN, top: WINDOW_MARGIN }
-          : (position ?? seedPosition);
+    const restoredPosition = isMaximized ? { left: WINDOW_MARGIN, top: WINDOW_MARGIN } : (position ?? seedPosition);
+    const dockPosition = resolveMinimizedDockPosition(
+        minimizedDockIndex,
+        minimizedDockCount,
+        viewport.width,
+        viewport.height,
+        minimizedWidth,
+        MINIMIZED_WINDOW_HEIGHT,
+    );
+    const resolvedPosition = showMinimizedChrome ? dockPosition : restoredPosition;
+    const displayRect: DockMorphRect = dockMorph ?? {
+        left: resolvedPosition.left,
+        top: resolvedPosition.top,
+        width: showMinimizedChrome ? minimizedWidth : effectiveSize.width,
+        height: showMinimizedChrome ? MINIMIZED_WINDOW_HEIGHT : effectiveSize.height,
+    };
+    const layoutTransition = dockMorph ? MINIMIZE_MORPH_TRANSITION : showMinimizedChrome ? MINIMIZED_DOCK_SLIDE_TRANSITION : undefined;
     const leftSectionClass = getLeftSectionClass(windowSurfacePhase);
     const windowAnimationClass =
         windowSurfacePhase === "exiting" ? MOTION.markerWindowExit : windowSurfacePhase === "entering" ? `${MOTION.markerWindowEnter} pointer-events-auto` : "pointer-events-auto";
+
+    const runDockMorph = useCallback(
+        (phase: "minimizing" | "restoring", from: DockMorphRect, to: DockMorphRect, onComplete?: () => void) => {
+            clearDockMorphTimers();
+
+            if (prefersReducedMotion()) {
+                setDockMorph(null);
+                onComplete?.();
+                return;
+            }
+
+            setDockMorph({ phase, ...from });
+
+            dockMorphFrameRef.current = window.requestAnimationFrame(() => {
+                dockMorphFrameRef.current = window.requestAnimationFrame(() => {
+                    setDockMorph({ phase, ...to });
+                    dockMorphTimerRef.current = window.setTimeout(() => {
+                        setDockMorph(null);
+                        onComplete?.();
+                        dockMorphTimerRef.current = null;
+                    }, MINIMIZE_MORPH_MS + 40);
+                });
+            });
+        },
+        [clearDockMorphTimers],
+    );
 
     const handleSplitPointerDown = useCallback(
         (event: ReactPointerEvent<HTMLElement>) => {
@@ -635,38 +689,93 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
     );
 
     const handleToggleMinimize = () => {
-        if (isMinimized) {
-            if (isMinimizedExiting) {
-                return;
-            }
+        if (dockMorph) {
+            return;
+        }
 
+        const viewportSize = getViewportSize();
+        const currentMinimizedWidth = Math.min(MINIMIZED_WINDOW_WIDTH, Math.max(0, viewportSize.width - WINDOW_MARGIN * 2));
+        const currentRestoredPosition = isMaximized ? { left: WINDOW_MARGIN, top: WINDOW_MARGIN } : (position ?? seedPosition);
+        const currentRestoredSize = isMaximized
+            ? {
+                  width: Math.max(MIN_WINDOW_WIDTH, viewportSize.width - WINDOW_MARGIN * 2),
+                  height: Math.max(MIN_WINDOW_HEIGHT, viewportSize.height - WINDOW_MARGIN * 2),
+              }
+            : size;
+
+        if (windowMode === "minimized") {
             if (!isOnFeedbackPath) {
                 void revealOpenFeedback(report);
             } else {
                 focusReplyWindow(report.id);
             }
 
-            if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-                finishMinimizedRestore();
+            const from: DockMorphRect = {
+                left: dockPosition.left,
+                top: dockPosition.top,
+                width: currentMinimizedWidth,
+                height: MINIMIZED_WINDOW_HEIGHT,
+            };
+            const to: DockMorphRect = {
+                left: currentRestoredPosition.left,
+                top: currentRestoredPosition.top,
+                width: currentRestoredSize.width,
+                height: currentRestoredSize.height,
+            };
+
+            setWindowMode("normal");
+            setReplyWindowMinimized(report.id, false);
+
+            if (prefersReducedMotion()) {
+                setDockMorph(null);
                 return;
             }
 
-            setIsMinimizedExiting(true);
+            runDockMorph("restoring", from, to);
             return;
         }
 
-        setIsMinimizedExiting(false);
-        setWindowMode("minimized");
-        setReplyWindowMinimized(report.id, true);
-    };
+        const nextMinimizedIds = minimizedReplyReportIds.includes(report.id) ? minimizedReplyReportIds : [...minimizedReplyReportIds, report.id];
+        const nextDockIndex = Math.max(0, nextMinimizedIds.indexOf(report.id));
+        const nextDock = resolveMinimizedDockPosition(
+            nextDockIndex,
+            nextMinimizedIds.length,
+            viewportSize.width,
+            viewportSize.height,
+            currentMinimizedWidth,
+            MINIMIZED_WINDOW_HEIGHT,
+        );
+        const from: DockMorphRect = {
+            left: currentRestoredPosition.left,
+            top: currentRestoredPosition.top,
+            width: currentRestoredSize.width,
+            height: currentRestoredSize.height,
+        };
+        const to: DockMorphRect = {
+            left: nextDock.left,
+            top: nextDock.top,
+            width: currentMinimizedWidth,
+            height: MINIMIZED_WINDOW_HEIGHT,
+        };
 
-    const handleMinimizedAnimationEnd = (event: ReactAnimationEvent<HTMLDivElement>) => {
-        if (event.currentTarget === event.target && event.animationName.endsWith("fivepixels-marker-window-minimized-out")) {
-            finishMinimizedRestore();
+        setReplyWindowMinimized(report.id, true);
+
+        if (prefersReducedMotion()) {
+            setWindowMode("minimized");
+            setDockMorph(null);
+            return;
         }
+
+        runDockMorph("minimizing", from, to, () => {
+            setWindowMode("minimized");
+        });
     };
 
     const handleToggleMaximize = () => {
+        if (dockMorph) {
+            return;
+        }
+
         if (!isOnFeedbackPath) {
             void revealOpenFeedback(report);
             return;
@@ -963,43 +1072,68 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
                 onPointerDown={handleWindowActivate}
                 onClick={(event) => event.stopPropagation()}
                 onAnimationEnd={handleWindowAnimationEnd}
-                className={`fixed ${showFullContent ? "z-[1000002]" : "z-[1000001]"} ${windowAnimationClass}`}
+                className={`fixed rounded-[16px] ${showMinimizedChrome && dockMorph === null ? "" : "overflow-hidden"} ${showFullContent ? "z-[1000002]" : "z-[1000001]"} ${windowAnimationClass}`}
                 style={{
-                    left: resolvedPosition.left,
-                    top: resolvedPosition.top,
-                    width: isMinimized ? minimizedWidth : effectiveSize.width,
-                    ...(isMinimized ? null : { height: effectiveSize.height }),
+                    left: displayRect.left,
+                    top: displayRect.top,
+                    width: displayRect.width,
+                    height: displayRect.height,
+                    ...(layoutTransition ? { transition: layoutTransition } : null),
                 }}
             >
-                {isMinimized ? (
+                {showMinimizedChrome ? (
                     <div
-                        ref={surfaceRef}
-                        onAnimationEnd={handleMinimizedAnimationEnd}
-                        className={`${isMinimizedExiting ? "fivepixels-marker-window-minimized-exit" : "fivepixels-marker-window-minimized-enter"} overflow-hidden rounded-[16px] border border-[var(--adaptive-border-subtle)] shadow-[var(--adaptive-popup-shadow)] ${leftSectionClass}`}
+                        className="relative h-full w-full"
+                        onPointerEnter={() => setIsMinimizedHovered(true)}
+                        onPointerLeave={() => setIsMinimizedHovered(false)}
                     >
-                        <div className="flex w-full flex-col justify-center gap-[2px] overflow-hidden px-[12px] py-[6px]">
-                            <button
-                                type="button"
-                                data-fivepixels-interactive=""
-                                onClick={handleToggleMinimize}
-                                disabled={isMinimizedExiting}
-                                aria-label={`${messages.marker.windowRestoreAriaLabel}. ${report.pathname}. ${minimizedCaseTexts.map((text, index) => `${index + 1}. ${text}`).join(", ")}`}
-                                title={messages.marker.windowRestoreAriaLabel}
-                                className="flex min-w-0 items-center gap-[4px] text-left"
-                            >
-                                <p className="shrink-0 rounded-[4px] bg-[var(--adaptive-tintOpacity300)] px-[2px] py-[2px] text-[10px]">Route</p>
-                                <p className="min-w-0 truncate text-[10px] font-semibold leading-none text-[var(--adaptive-accent-coral)]">{report.pathname}</p>
-                            </button>
+                        <div
+                            ref={surfaceRef}
+                            className={`flex h-full w-full overflow-hidden rounded-[16px] border border-[var(--adaptive-border-subtle)] shadow-[var(--adaptive-popup-shadow)] ${leftSectionClass}`}
+                        >
+                            <div className="flex w-full flex-col justify-center gap-[2px] overflow-hidden px-[12px] py-[6px]">
+                                <button
+                                    type="button"
+                                    data-fivepixels-interactive=""
+                                    onClick={handleToggleMinimize}
+                                    disabled={dockMorph !== null}
+                                    aria-label={`${messages.marker.windowRestoreAriaLabel}. ${report.pathname}. ${minimizedCaseTexts.map((text, index) => `${index + 1}. ${text}`).join(", ")}`}
+                                    title={messages.marker.windowRestoreAriaLabel}
+                                    className="flex min-w-0 items-center gap-[4px] text-left"
+                                >
+                                    <p className="shrink-0 rounded-[4px] bg-[var(--adaptive-tintOpacity300)] px-[2px] py-[2px] text-[10px]">Route</p>
+                                    <p className="min-w-0 truncate text-[10px] font-semibold leading-none text-[var(--adaptive-accent-coral)]">{report.pathname}</p>
+                                </button>
 
-                            <MinimizedWindowAliasRow
-                                projectId={projectId}
-                                reportId={report.id}
-                                caseTexts={minimizedCaseTexts}
-                                messages={messages}
-                                onRestore={handleToggleMinimize}
-                                restoreDisabled={isMinimizedExiting}
-                            />
+                                <MinimizedWindowAliasRow
+                                    projectId={projectId}
+                                    reportId={report.id}
+                                    caseTexts={minimizedCaseTexts}
+                                    messages={messages}
+                                    onRestore={handleToggleMinimize}
+                                    restoreDisabled={dockMorph !== null}
+                                />
+                            </div>
                         </div>
+
+                        <button
+                            type="button"
+                            data-fivepixels-interactive=""
+                            aria-label={messages.marker.windowCloseAriaLabel}
+                            title={messages.marker.windowCloseAriaLabel}
+                            disabled={dockMorph !== null || windowSurfacePhase === "exiting"}
+                            onPointerDown={(event) => event.stopPropagation()}
+                            onClick={(event) => {
+                                event.stopPropagation();
+                                setIsMinimizedHovered(false);
+                                requestClose();
+                            }}
+                            className={`absolute -right-[7px] -top-[7px] z-[2] inline-flex h-[22px] w-[22px] items-center justify-center rounded-full border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black100)] text-[var(--adaptive-black700)] shadow-[var(--adaptive-popup-shadow)] transition-[opacity,transform] duration-150 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[var(--adaptive-black200)] hover:text-[var(--adaptive-black900)] ${
+                                isMinimizedHovered && dockMorph === null ? "pointer-events-auto scale-100 opacity-100" : "pointer-events-none scale-90 opacity-0"
+                            }`}
+                        >
+                            <CloseIcon className="h-[12px] w-[12px]" />
+                        </button>
                     </div>
                 ) : (
                     <div
@@ -1071,7 +1205,7 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
                             </>
                         )}
 
-                        {windowMode === "normal" ? (
+                        {windowMode === "normal" && dockMorph === null ? (
                             <CornerResizeHandle
                                 corner="bottom-right"
                                 ariaLabel={messages.marker.resizeAriaLabel}

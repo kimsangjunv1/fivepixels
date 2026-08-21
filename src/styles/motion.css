@@ -200,14 +200,23 @@
 }
 
 @keyframes fivepixels-marker-window-minimized-out {
-    from {
-        opacity: 1;
+    0% {
         transform: translateY(0);
+        animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
     }
 
-    to {
-        opacity: 0;
-        transform: translateY(32px);
+    24% {
+        transform: translateY(4px);
+        animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    50% {
+        transform: translateY(-10px);
+        animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    100% {
+        transform: translateY(28px);
     }
 }
 
@@ -532,7 +541,7 @@
 }
 
 [data-fivepixels-mount] .fivepixels-marker-window-minimized-exit {
-    animation: fivepixels-marker-window-minimized-out 220ms cubic-bezier(0.4, 0, 1, 1) both;
+    animation: fivepixels-marker-window-minimized-out 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
     pointer-events: none;
 }
 
