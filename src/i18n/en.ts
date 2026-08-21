@@ -255,6 +255,8 @@ export const en: ReportMessages = {
         removeCaseConfirmTitle: "Press again to delete",
         removeCaseAriaLabel: "Delete case",
         removeCaseConfirmAriaLabel: "Press again to delete case",
+        composingCaseTitle: "Case in progress",
+        composingCasePlaceholder: "Enter the case you want to add",
     },
     thread: {
         scrollHintUp: "More messages above",

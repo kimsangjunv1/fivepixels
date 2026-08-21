@@ -255,6 +255,8 @@ export const ko: ReportMessages = {
         removeCaseConfirmTitle: "한 번 더 눌러 삭제",
         removeCaseAriaLabel: "케이스 삭제",
         removeCaseConfirmAriaLabel: "한 번 더 눌러 케이스 삭제",
+        composingCaseTitle: "현재 작성중인 케이스",
+        composingCasePlaceholder: "추가하실 케이스를 입력해주세요",
     },
     thread: {
         scrollHintUp: "위쪽에 더 많은 메시지가 있어요",

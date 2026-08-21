@@ -25,9 +25,13 @@ import {
     claimCaseAssignee,
     buildResolvedCasesUpdate,
     canActOnCase,
+    canEditReportCases,
+    createReportCase,
     getCaseAssigneeName,
+    getReportCases,
     isValidFocusedCase,
     resolveDefaultFocusedCaseId,
+    syncIssueStatusFromCases,
     transferCaseAssignee,
 } from "@/utils/report/reportCases.js";
 import { createReplyId } from "@/utils/shared/format.js";
@@ -93,6 +97,7 @@ export function useReportReplyReview({
     const [confirmAuthorName, setConfirmAuthorName] = useState("");
     const [showConfirmAuthorSelect, setShowConfirmAuthorSelect] = useState(false);
     const [focusedCaseId, setFocusedCaseId] = useState<string | null>(null);
+    const [isComposingNewCase, setIsComposingNewCase] = useState(false);
 
     useEffect(() => {
         if (!sessionActor?.name) {
@@ -204,6 +209,7 @@ export function useReportReplyReview({
 
     const selectCase = useCallback(
         (caseId: string) => {
+            setIsComposingNewCase(false);
             setFocusedCaseId(caseId);
             setPendingComposer(null);
             clearReplyComposerDraft();
@@ -229,6 +235,30 @@ export function useReportReplyReview({
     });
     const { cancelCaseEdit } = caseEdit;
 
+    const cancelComposeNewCase = useCallback(() => {
+        setIsComposingNewCase(false);
+        clearReplyComposerDraft();
+        setErrorMessage("");
+    }, [clearReplyComposerDraft, setErrorMessage]);
+
+    const beginComposeNewCase = useCallback(() => {
+        if (!activeReplyReport) {
+            return;
+        }
+
+        if (!canEditReportCases(activeReplyReport)) {
+            setErrorMessage(messages.errors.archivedReadOnly);
+            return;
+        }
+
+        setIsComposingNewCase(true);
+        setPendingComposer(null);
+        setReplySubmitAsQuestion(false);
+        clearReplyComposerDraft();
+        setErrorMessage("");
+        cancelCaseEdit();
+    }, [activeReplyReport, cancelCaseEdit, clearReplyComposerDraft, messages.errors.archivedReadOnly, setErrorMessage]);
+
     useEffect(() => {
         if (!activeReplyReport) {
             return;
@@ -242,6 +272,10 @@ export function useReportReplyReview({
             return resolveDefaultFocusedCaseId(activeReplyReport);
         });
     }, [activeReplyReport]);
+
+    useEffect(() => {
+        setIsComposingNewCase(false);
+    }, [activeReplyReportId]);
 
     const ensureFocusedCase = useCallback(
         (report: ReportFeedback) => {
@@ -278,6 +312,7 @@ export function useReportReplyReview({
         setReplySubmitAsQuestion(false);
         setPendingComposer(null);
         setShowConfirmAuthorSelect(false);
+        setIsComposingNewCase(false);
         cancelCaseEdit();
         clearFocusedCase();
     }, [cancelCaseEdit, clearFocusedCase, clearReplyComposerDraft]);
@@ -301,6 +336,7 @@ export function useReportReplyReview({
             setConfirmAuthorName(resolveOriginalFeedbackAuthorName(report));
             setShowConfirmAuthorSelect(false);
             setFocusedCaseId(resolveDefaultFocusedCaseId(report));
+            setIsComposingNewCase(false);
             cancelCaseEdit();
         },
         [activeIdentify, authorizedAuthors, cancelCaseEdit, clearReplyComposerDraft, onSelectReport, selfName, sessionActor?.name],
@@ -604,7 +640,57 @@ export function useReportReplyReview({
         });
     };
 
+    const handleCreateCaseSubmit = async () => {
+        if (!activeReplyReport || !isComposingNewCase) {
+            return;
+        }
+
+        if (!canEditReportCases(activeReplyReport)) {
+            setErrorMessage(messages.errors.archivedReadOnly);
+            return;
+        }
+
+        if (!stripMentionTokensForEmptyCheck(replyDraft, replyMentions)) {
+            setErrorMessage(messages.errors.caseTextRequired(getReportCases(activeReplyReport).length + 1));
+            return;
+        }
+
+        const nextCase = createReportCase(replyDraft.trim(), {
+            ...(replyMentions.length > 0 ? { mentions: replyMentions } : {}),
+        });
+        const nextCases = [...getReportCases(activeReplyReport), nextCase];
+
+        try {
+            setIsSubmittingReply(true);
+
+            const updatedFeedback = await updateFeedback(
+                activeReplyReport.id,
+                await signUpdatePayload({
+                    cases: nextCases,
+                    status: syncIssueStatusFromCases({ ...activeReplyReport, cases: nextCases }),
+                }),
+            );
+
+            await notifyFeedbackUpdate(eventCallbacks, updatedFeedback);
+            setIsComposingNewCase(false);
+            setFocusedCaseId(nextCase.id);
+            setPendingComposer(null);
+            setReplySubmitAsQuestion(false);
+            clearReplyComposerDraft();
+            setErrorMessage("");
+        } catch (nextError) {
+            setErrorMessage(nextError instanceof Error ? nextError.message : messages.errors.updateFeedbackFailed);
+        } finally {
+            setIsSubmittingReply(false);
+        }
+    };
+
     const handleReplySubmit = async () => {
+        if (isComposingNewCase) {
+            await handleCreateCaseSubmit();
+            return;
+        }
+
         if (!activeReplyReport) {
             return;
         }
@@ -909,9 +995,13 @@ export function useReportReplyReview({
         focusedCaseId,
         selectCase,
         clearFocusedCase,
+        isComposingNewCase,
+        beginComposeNewCase,
+        cancelComposeNewCase,
         openReplyComposer,
         closeReplyComposer,
         restoreOpenReplyWindows,
         handleReplySubmit,
+        handleCreateCaseSubmit,
     };
 }

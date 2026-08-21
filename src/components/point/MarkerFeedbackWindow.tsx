@@ -407,7 +407,8 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
         sessionActor,
         cancelPendingComposer,
         beginFeedbackEdit,
-        addDraftCase,
+        beginComposeNewCase,
+        isComposingNewCase,
         projectId,
     } = useReport();
 
@@ -579,26 +580,35 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
 
     const isOnFeedbackPath = report.pathname === currentPathname;
     const showFullContent = isFocused && isOnFeedbackPath;
+    const isComposingCaseInThisWindow = showFullContent && isComposingNewCase;
     const isCreatorQuestionComposer = pendingComposer?.type === "question";
 
     const showComposer = useMemo(() => {
-        if (!showFullContent || !focusedCaseId) {
+        if (!showFullContent) {
+            return false;
+        }
+
+        if (isComposingNewCase) {
+            return true;
+        }
+
+        if (!focusedCaseId) {
             return false;
         }
 
         return shouldShowCaseReplyComposer(report, focusedCaseId, pendingComposer);
-    }, [focusedCaseId, pendingComposer, report, showFullContent]);
+    }, [focusedCaseId, isComposingNewCase, pendingComposer, report, showFullContent]);
 
     const replyTargetPreview = useMemo(() => {
-        if (!showFullContent || pendingComposer?.type !== "question") {
+        if (!showFullContent || isComposingNewCase || pendingComposer?.type !== "question") {
             return null;
         }
 
         return resolvePendingComposerTargetPreview(report, focusedCaseId, pendingComposer);
-    }, [focusedCaseId, pendingComposer, report, showFullContent]);
+    }, [focusedCaseId, isComposingNewCase, pendingComposer, report, showFullContent]);
 
-    const focusedCase = showFullContent && focusedCaseId ? getCaseById(report, focusedCaseId) : undefined;
-    const focusedCaseAssigneeName = showFullContent && focusedCaseId ? getCaseAssigneeName(report, focusedCaseId) : null;
+    const focusedCase = showFullContent && !isComposingNewCase && focusedCaseId ? getCaseById(report, focusedCaseId) : undefined;
+    const focusedCaseAssigneeName = showFullContent && !isComposingNewCase && focusedCaseId ? getCaseAssigneeName(report, focusedCaseId) : null;
     const showAssigneeAssigned = Boolean(focusedCaseAssigneeName) || isClaimingAssignee;
     const fieldTags = useMemo(() => getFieldTags(fields, report.field_values), [fields, report.field_values]);
     const caseTexts = useMemo(
@@ -939,8 +949,7 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
     };
 
     const handleAddCase = () => {
-        beginFeedbackEdit(report);
-        addDraftCase();
+        beginComposeNewCase();
     };
 
     const handleSidebarDelete = () => {
@@ -1083,7 +1092,12 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
                 onPointerDown={handleDragHandlePointerDown}
                 className="shrink-0 cursor-move touch-none select-none border-b border-[var(--adaptive-border-subtle)] px-[16px] py-[8px]"
             >
-                {focusedCase ? (
+                {isComposingCaseInThisWindow ? (
+                    <Fragment>
+                        <p className="truncate text-[15px] font-semibold leading-[1.4] text-[var(--adaptive-blue400)]">{messages.cases.composingCaseTitle}</p>
+                        <p className="mt-[2px] text-[12px] leading-[1.4] text-[var(--adaptive-black500)]">{messages.cases.open}</p>
+                    </Fragment>
+                ) : focusedCase ? (
                     <Fragment>
                         <p
                             className="truncate text-[15px] font-semibold leading-[1.4] text-[var(--adaptive-black900)]"
@@ -1142,24 +1156,28 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
 
             <div className="flex min-h-0 flex-1 flex-col">
                 <div className="min-h-0 flex-1 overflow-hidden">
-                    <FeedbackThread
-                        report={report}
-                        authors={authors}
-                        pendingComposer={pendingComposer}
-                        confirmAuthorName={confirmAuthorName}
-                        showConfirmAuthorSelect={showConfirmAuthorSelect}
-                        onConfirmAuthorNameChange={setConfirmAuthorName}
-                        onToggleConfirmAuthorSelect={toggleConfirmAuthorSelect}
-                        onStartDeny={startDenyReview}
-                        onStartCheckout={startCheckoutReview}
-                        onStartAskQuestion={startAskQuestion}
-                        onClaimAssignee={() => void handleClaimAssignee()}
-                        onTransferAssignee={() => void handleTransferAssignee()}
-                        onConfirm={() => void handleConfirmResolution()}
-                        isUpdating={isUpdating}
-                        isClaimingAssignee={isClaimingAssignee}
-                        hideCaseSelector
-                    />
+                    {isComposingCaseInThisWindow ? (
+                        <div className="h-full w-full bg-[var(--adaptive-black50)]" />
+                    ) : (
+                        <FeedbackThread
+                            report={report}
+                            authors={authors}
+                            pendingComposer={pendingComposer}
+                            confirmAuthorName={confirmAuthorName}
+                            showConfirmAuthorSelect={showConfirmAuthorSelect}
+                            onConfirmAuthorNameChange={setConfirmAuthorName}
+                            onToggleConfirmAuthorSelect={toggleConfirmAuthorSelect}
+                            onStartDeny={startDenyReview}
+                            onStartCheckout={startCheckoutReview}
+                            onStartAskQuestion={startAskQuestion}
+                            onClaimAssignee={() => void handleClaimAssignee()}
+                            onTransferAssignee={() => void handleTransferAssignee()}
+                            onConfirm={() => void handleConfirmResolution()}
+                            isUpdating={isUpdating}
+                            isClaimingAssignee={isClaimingAssignee}
+                            hideCaseSelector
+                        />
+                    )}
                 </div>
 
                 {showComposer ? (
@@ -1186,11 +1204,12 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
                             hideAuthorSelector
                             onSubmit={() => void handleReplySubmit()}
                             isSubmitting={isSubmittingReply || isUpdating}
-                            autoFocus={pendingComposer !== null}
-                            askQuestionForced={isCreatorQuestionComposer}
-                            composerMode={pendingComposer?.type ?? null}
-                            onCancelComposerMode={cancelPendingComposer}
-                            replyTargetPreview={replyTargetPreview}
+                            autoFocus={isComposingCaseInThisWindow || pendingComposer !== null}
+                            placeholder={isComposingCaseInThisWindow ? messages.cases.composingCasePlaceholder : undefined}
+                            askQuestionForced={isComposingCaseInThisWindow ? false : isCreatorQuestionComposer}
+                            composerMode={isComposingCaseInThisWindow ? null : (pendingComposer?.type ?? null)}
+                            onCancelComposerMode={isComposingCaseInThisWindow ? undefined : cancelPendingComposer}
+                            replyTargetPreview={isComposingCaseInThisWindow ? null : replyTargetPreview}
                             errorMessage={errorMessage}
                         />
                     </section>
@@ -1315,7 +1334,10 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
                                         <MarkerCaseSidebar
                                             report={report}
                                             focusedCaseId={focusedCaseId}
+                                            isComposingNewCase={isComposingCaseInThisWindow}
+                                            composingCaseTitle={messages.cases.composingCaseTitle}
                                             onSelectCase={selectCase}
+                                            onSelectComposingCase={beginComposeNewCase}
                                         />
 
                                         {expandedSidebarDelete}

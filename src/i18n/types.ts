@@ -258,6 +258,8 @@ export type ReportMessages = {
         removeCaseConfirmTitle: string;
         removeCaseAriaLabel: string;
         removeCaseConfirmAriaLabel: string;
+        composingCaseTitle: string;
+        composingCasePlaceholder: string;
     };
     thread: {
         scrollHintUp: string;
