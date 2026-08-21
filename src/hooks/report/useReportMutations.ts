@@ -25,9 +25,8 @@ export type UseReportMutationsParams = {
     selectedReport: ReportFeedback | null;
     selectedReportId: string | null;
     setSelectedReportId: Dispatch<SetStateAction<string | null>>;
-    getActiveReplyReportId: () => string | null;
-    closeReplyComposer: () => void;
-    openReplyComposer: (report: ReportFeedback) => void;
+    closeReplyWindow: (id: string) => void;
+    restoreSuspendedOpenReplyWindows: (focusReport?: ReportFeedback | null) => void;
     isCreating: boolean;
     createFeedback: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
     updateFeedback: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
@@ -52,9 +51,8 @@ export function useReportMutations({
     selectedReport,
     selectedReportId,
     setSelectedReportId,
-    getActiveReplyReportId,
-    closeReplyComposer,
-    openReplyComposer,
+    closeReplyWindow,
+    restoreSuspendedOpenReplyWindows,
     isCreating,
     createFeedback,
     updateFeedback,
@@ -125,7 +123,7 @@ export function useReportMutations({
                 await notifyFeedbackUpdate(eventCallbacks, updatedFeedback);
                 finalizeDraftCreate();
                 stopEditing();
-                openReplyComposer(updatedFeedback);
+                restoreSuspendedOpenReplyWindows(updatedFeedback);
                 return;
             }
 
@@ -294,10 +292,7 @@ export function useReportMutations({
                 stopEditing();
             }
 
-            if (getActiveReplyReportId() === id) {
-                closeReplyComposer();
-            }
-
+            closeReplyWindow(id);
             setErrorMessage("");
         } catch (nextError) {
             setErrorMessage(nextError instanceof Error ? nextError.message : messages.errors.deleteFeedbackFailed);

@@ -290,6 +290,22 @@ export function useReportReplyReview({
         resetComposerSession();
     }, [resetComposerSession]);
 
+    const applyFocusedReplyWindow = useCallback(
+        (report: ReportFeedback) => {
+            onSelectReport(report.id);
+            setActiveReplyReportId(report.id);
+            clearReplyComposerDraft();
+            setReplySubmitAsQuestion(false);
+            setPendingComposer(null);
+            setReplyAuthorName(sessionActor?.name ?? resolveDefaultAuthorName(activeIdentify, authorizedAuthors, selfName));
+            setConfirmAuthorName(resolveOriginalFeedbackAuthorName(report));
+            setShowConfirmAuthorSelect(false);
+            setFocusedCaseId(resolveDefaultFocusedCaseId(report));
+            cancelCaseEdit();
+        },
+        [activeIdentify, authorizedAuthors, cancelCaseEdit, clearReplyComposerDraft, onSelectReport, selfName, sessionActor?.name],
+    );
+
     const closeReplyWindow = useCallback(
         (reportId: string) => {
             const nextOpen = openReplyReportIds.filter((id) => id !== reportId);
@@ -317,12 +333,70 @@ export function useReportReplyReview({
                 return;
             }
 
-            onSelectReport(nextReport.id);
-            setReplyAuthorName(sessionActor?.name ?? resolveDefaultAuthorName(activeIdentify, authorizedAuthors, selfName));
-            setConfirmAuthorName(resolveOriginalFeedbackAuthorName(nextReport));
-            setFocusedCaseId(resolveDefaultFocusedCaseId(nextReport));
+            applyFocusedReplyWindow(nextReport);
         },
-        [activeIdentify, activeReplyReportId, authorizedAuthors, forgetOpenReport, onSelectReport, openReplyReportIds, reportLookup, resetComposerSession, selfName, sessionActor?.name],
+        [activeReplyReportId, applyFocusedReplyWindow, forgetOpenReport, openReplyReportIds, reportLookup, resetComposerSession],
+    );
+
+    const restoreOpenReplyWindows = useCallback(
+        (
+            snapshot: { openIds: string[]; minimizedIds: string[]; focusedId: string | null },
+            preferredFocusId?: string | null,
+            focusReport?: ReportFeedback | null,
+        ) => {
+            if (focusReport) {
+                rememberOpenReport(focusReport);
+            }
+
+            const preferredFocus = preferredFocusId === undefined ? snapshot.focusedId : preferredFocusId;
+            const orderedIds = [...snapshot.openIds];
+
+            if (preferredFocus && !orderedIds.includes(preferredFocus)) {
+                orderedIds.push(preferredFocus);
+            }
+
+            const resolvedOpen: string[] = [];
+
+            for (const reportId of orderedIds) {
+                const report = (focusReport?.id === reportId ? focusReport : null) ?? reportLookup.get(reportId);
+
+                if (!report) {
+                    continue;
+                }
+
+                rememberOpenReport(report);
+                resolvedOpen.push(reportId);
+            }
+
+            const focusedId =
+                (preferredFocus && resolvedOpen.includes(preferredFocus) ? preferredFocus : null) ??
+                (snapshot.focusedId && resolvedOpen.includes(snapshot.focusedId) ? snapshot.focusedId : null) ??
+                resolvedOpen[resolvedOpen.length - 1] ??
+                null;
+
+            setOpenReplyReportIds(resolvedOpen);
+            setMinimizedReplyReportIds(
+                snapshot.minimizedIds.filter((reportId) => resolvedOpen.includes(reportId) && reportId !== focusedId),
+            );
+
+            if (!focusedId) {
+                setActiveReplyReportId(null);
+                resetComposerSession();
+                return;
+            }
+
+            const focused =
+                (focusReport?.id === focusedId ? focusReport : null) ?? reportLookup.get(focusedId) ?? null;
+
+            if (!focused) {
+                setActiveReplyReportId(null);
+                resetComposerSession();
+                return;
+            }
+
+            applyFocusedReplyWindow(focused);
+        },
+        [applyFocusedReplyWindow, rememberOpenReport, reportLookup, resetComposerSession],
     );
 
     const setReplyWindowMinimized = useCallback((reportId: string, minimized: boolean) => {
@@ -794,6 +868,7 @@ export function useReportReplyReview({
         clearFocusedCase,
         openReplyComposer,
         closeReplyComposer,
+        restoreOpenReplyWindows,
         handleReplySubmit,
     };
 }
