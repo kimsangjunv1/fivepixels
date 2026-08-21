@@ -30,8 +30,6 @@ import { MarkerCaseSidebar } from "./MarkerCaseSidebar.js";
 import { ProcessingDots } from "@/components/ui/ProcessingDots.js";
 import { Text } from "@/components/ui/Text/index.js";
 import { MARKER_MINIMIZED_WINDOW_HEIGHT, MARKER_MINIMIZED_WINDOW_WIDTH, MARKER_WINDOW_MARGIN, resolveMinimizedDockPosition } from "@/utils/marker/markerWindowDock.js";
-import { getFeedbackTargetElement, isFeedbackTargetVisible } from "@/utils/marker/locateFeedback.js";
-import { getPageWindow } from "@/utils/overlay/pageDocumentBridge.js";
 
 type WindowMode = "normal" | "minimized" | "maximized";
 type WindowSurfacePhase = "entering" | "idle" | "exiting";
@@ -261,7 +259,6 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
     const [sidebarWidth, setSidebarWidth] = useState(DEFAULT_SIDEBAR_WIDTH);
     const [isSidebarDeleteConfirming, setIsSidebarDeleteConfirming] = useState(false);
     const [isMinimizedExiting, setIsMinimizedExiting] = useState(false);
-    const [isTargetVisible, setIsTargetVisible] = useState(true);
 
     const splitStateRef = useRef<{ startX: number; startWidth: number; windowWidth: number } | null>(null);
     const splitListenersRef = useRef<{ move: (event: PointerEvent) => void; up: (event: PointerEvent) => void } | null>(null);
@@ -396,35 +393,8 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
         }
     }, [isMinimizedExiting, minimizedReplyReportIds, report.id, windowMode]);
 
-    useEffect(() => {
-        const syncTargetVisibility = () => {
-            if (report.pathname !== currentPathname) {
-                setIsTargetVisible(false);
-                return;
-            }
-
-            const targetElement = getFeedbackTargetElement(report);
-            setIsTargetVisible(Boolean(targetElement && isFeedbackTargetVisible(targetElement)));
-        };
-
-        syncTargetVisibility();
-
-        const pageWindow = getPageWindow();
-        pageWindow.addEventListener("scroll", syncTargetVisibility, { passive: true, capture: true });
-        pageWindow.addEventListener("resize", syncTargetVisibility);
-        window.addEventListener("resize", syncTargetVisibility);
-
-        const visibilityIntervalId = window.setInterval(syncTargetVisibility, 500);
-
-        return () => {
-            pageWindow.removeEventListener("scroll", syncTargetVisibility, { capture: true });
-            pageWindow.removeEventListener("resize", syncTargetVisibility);
-            window.removeEventListener("resize", syncTargetVisibility);
-            window.clearInterval(visibilityIntervalId);
-        };
-    }, [currentPathname, report]);
-
-    const showFullContent = isFocused && isTargetVisible;
+    const isOnFeedbackPath = report.pathname === currentPathname;
+    const showFullContent = isFocused && isOnFeedbackPath;
     const isCreatorQuestionComposer = pendingComposer?.type === "question";
 
     const showComposer = useMemo(() => {
@@ -533,7 +503,7 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
                 return;
             }
 
-            if (!isTargetVisible) {
+            if (!isOnFeedbackPath) {
                 void revealOpenFeedback(report);
             } else {
                 focusReplyWindow(report.id);
@@ -560,7 +530,7 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
     };
 
     const handleToggleMaximize = () => {
-        if (!isTargetVisible) {
+        if (!isOnFeedbackPath) {
             void revealOpenFeedback(report);
             return;
         }
@@ -573,7 +543,7 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
     };
 
     const handleWindowActivate = () => {
-        if (!isTargetVisible) {
+        if (!isOnFeedbackPath) {
             void revealOpenFeedback(report);
             return;
         }
@@ -717,7 +687,7 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
             <UnfocusedCaseSummary
                 caseTexts={caseTexts}
                 emptyLabel={messages.cases.selectToView}
-                navigateHint={isTargetVisible ? undefined : messages.marker.offscreenNavigateHint}
+                navigateHint={isOnFeedbackPath ? undefined : messages.marker.offscreenNavigateHint}
             />
         </div>
     );

@@ -275,6 +275,7 @@ export const en: ReportMessages = {
         questionsPending: (count) => (count === 1 ? "Question awaiting reply" : `${count} questions awaiting reply`),
         questionsToggleAriaLabel: (count, expanded) => (expanded ? `Hide ${count} question${count === 1 ? "" : "s"}` : `Show ${count} question${count === 1 ? "" : "s"}`),
         issueResolvedDivider: "Issue Resolved",
+        detachedTargetDivider: "Original target is missing. It will reactivate when restored.",
         claimAssignee: "Take ownership",
         takeOverAssignee: "Take over",
         assigneeAssigned: "Assigned and Review Started.",

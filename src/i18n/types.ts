@@ -278,6 +278,7 @@ export type ReportMessages = {
         questionsPending: (count: number) => string;
         questionsToggleAriaLabel: (count: number, expanded: boolean) => string;
         issueResolvedDivider: string;
+        detachedTargetDivider: string;
         claimAssignee: string;
         takeOverAssignee: string;
         assigneeAssigned: string;

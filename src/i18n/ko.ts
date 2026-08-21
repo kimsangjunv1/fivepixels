@@ -275,6 +275,7 @@ export const ko: ReportMessages = {
         questionsPending: (count) => (count === 1 ? "답변 대기 중인 질문" : `답변 대기 중인 질문 ${count}개`),
         questionsToggleAriaLabel: (count, expanded) => (expanded ? `질문 ${count}개 숨기기` : `질문 ${count}개 보기`),
         issueResolvedDivider: "이슈 해결됨",
+        detachedTargetDivider: "원본이 유실되었습니다, 복구시 다시 활성화 됩니다",
         claimAssignee: "담당하기",
         takeOverAssignee: "내가 담당하기",
         assigneeAssigned: "담당자 배정 및 검토가 시작되었습니다.",
