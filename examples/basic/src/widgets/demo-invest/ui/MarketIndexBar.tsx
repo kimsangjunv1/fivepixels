@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 import { useDemoInvestInteractions } from "../model/DemoInvestInteractionContext";
 
 type MiniMarketProps = {
@@ -7,13 +9,13 @@ type MiniMarketProps = {
     tone?: "up" | "down";
     tag?: string;
     points?: string;
+    href?: string;
 };
 
-function MiniMarket({ name, value, change, tone = "up", tag, points = "2,38 9,25 18,21 27,12 35,18 45,8 56,7" }: MiniMarketProps) {
+function MiniMarket({ name, value, change, tone = "up", tag, points = "2,38 9,25 18,21 27,12 35,18 45,8 56,7", href }: MiniMarketProps) {
     const color = tone === "up" ? "#f04452" : "#3182f6";
-
-    return (
-        <div className="demo-invest__mini-market">
+    const body = (
+        <>
             <div className="demo-invest__mini-copy">
                 <span>{name}{tag ? <small>{tag}</small> : null}</span>
                 <strong>{value} <b className={`demo-invest__text-${tone}`}>{change}</b></strong>
@@ -21,8 +23,18 @@ function MiniMarket({ name, value, change, tone = "up", tag, points = "2,38 9,25
             <svg viewBox="0 0 60 44" aria-hidden="true">
                 <polyline points={points} fill="none" stroke={color} strokeWidth="1.7" />
             </svg>
-        </div>
+        </>
     );
+
+    if (href) {
+        return (
+            <Link to={href} className="demo-invest__mini-market demo-invest__mini-market--link">
+                {body}
+            </Link>
+        );
+    }
+
+    return <div className="demo-invest__mini-market">{body}</div>;
 }
 
 export function MarketIndexBar() {
@@ -51,7 +63,7 @@ export function MarketIndexBar() {
                 <div>
                     <MiniMarket name="나스닥 100 선물" value="실시간 시세 보기  ›" change="" points="2,34 8,25 14,31 21,18 29,28 38,29 47,25 56,29" />
                     <MiniMarket name="나스닥" tag="장기금리 급락" value="26,331.09" change="+41.38 (0.15%)" />
-                    <MiniMarket name="S&P 500" tag="장기금리 완화" value="7,707.98" change="+16.22 (0.21%)" />
+                    <MiniMarket name="S&P 500" tag="장기금리 완화" value="7,707.98" change="+16.22 (0.21%)" href="/indices/SPX" />
                 </div>
                 <div>
                     <MiniMarket name="필라델피아 반도체" value="11,738.22" change="-254.24" tone="down" points="2,11 7,34 13,15 20,19 26,13 35,21 43,15 52,20 58,18" />

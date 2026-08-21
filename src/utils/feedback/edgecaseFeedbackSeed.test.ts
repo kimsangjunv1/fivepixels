@@ -6,11 +6,24 @@ import {
     EDGECASE_FEEDBACK_SEED_IDS,
 } from "../../../examples/basic/src/features/edgecase/model/createEdgecaseFeedbackSeed.js";
 import {
+    createDemoInvestFeedbackSeed,
+    DEMO_INVEST_FEEDBACK_SEED_CATALOG,
+    DEMO_INVEST_FEEDBACK_SEED_IDS,
+} from "../../../examples/basic/src/features/edgecase/model/createDemoInvestFeedbackSeed.js";
+import {
     createSettingsFeedbackSeed,
     SETTINGS_FEEDBACK_SEED_CATALOG,
     SETTINGS_FEEDBACK_SEED_IDS,
 } from "../../../examples/basic/src/features/edgecase/model/createSettingsFeedbackSeed.js";
-import { EDGECASE_PATHNAME, SETTINGS_PATHNAME } from "../../../examples/basic/src/features/edgecase/model/reportProjectScope.js";
+import {
+    EDGECASE_PATHNAME,
+    FEED_PATHNAME,
+    HOME_PATHNAME,
+    INDICES_PATHNAME,
+    SCREENER_PATHNAME,
+    SETTINGS_PATHNAME,
+    SIGNIN_PATHNAME,
+} from "../../../examples/basic/src/features/edgecase/model/reportProjectScope.js";
 import { FEEDBACK_DISPLAY_STATUS_ORDER } from "@/constants/feedbackStatus.js";
 import type { ReportReplyStatus, ReportStatus } from "@/types/report.js";
 import { getFeedbackDisplayStatus, getCaseLatestStatus } from "@/utils/feedback/feedbackThread.js";
@@ -340,5 +353,45 @@ describe("settings feedback seed", () => {
         for (const item of createSettingsFeedbackSeed()) {
             expect(item.pathname).toBe(SETTINGS_PATHNAME);
         }
+    });
+});
+
+describe("demo invest feedback seed", () => {
+    it("parses every seed item through the import schema", () => {
+        const items = createDemoInvestFeedbackSeed();
+        const payload = parseFeedbackImportJson(JSON.stringify(items));
+
+        expect(payload.items).toHaveLength(items.length);
+        expect(new Set(items.map((item) => item.id)).size).toBe(items.length);
+    });
+
+    it("keeps catalog ids aligned with seed items", () => {
+        expect(DEMO_INVEST_FEEDBACK_SEED_IDS).toEqual(createDemoInvestFeedbackSeed().map((item) => item.id));
+        expect(new Set(DEMO_INVEST_FEEDBACK_SEED_CATALOG.map((entry) => entry.id))).toEqual(new Set(DEMO_INVEST_FEEDBACK_SEED_IDS));
+    });
+
+    it("covers all demo-invest route pathnames", () => {
+        const pathnames = new Set(createDemoInvestFeedbackSeed().map((item) => item.pathname));
+
+        expect(pathnames).toEqual(
+            new Set([HOME_PATHNAME, FEED_PATHNAME, SCREENER_PATHNAME, INDICES_PATHNAME, SIGNIN_PATHNAME]),
+        );
+    });
+
+    it("includes Korean team roles and key reply statuses", () => {
+        const items = createDemoInvestFeedbackSeed();
+        const assignees = new Set(
+            items.flatMap((item) => item.cases.map((caseItem) => caseItem.assignee_name).filter(Boolean)),
+        );
+        const replyStatuses = new Set(items.flatMap((item) => (item.replies ?? []).map((reply) => reply.status)));
+
+        expect(assignees.has("박서연, QA")).toBe(true);
+        expect(assignees.has("이준호, 프론트엔드")).toBe(true);
+        expect(assignees.has("최유진, 백엔드")).toBe(true);
+        expect(replyStatuses.has("additional_question")).toBe(true);
+        expect(replyStatuses.has("suggested")).toBe(true);
+        expect(replyStatuses.has("found_error")).toBe(true);
+        expect(replyStatuses.has("assignee_transferred")).toBe(true);
+        expect(items.some((item) => item.cases.some((caseItem) => (caseItem.mentions?.length ?? 0) > 0))).toBe(true);
     });
 });
