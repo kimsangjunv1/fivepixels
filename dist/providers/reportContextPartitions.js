@@ -261,6 +261,7 @@ export const REPORT_DATA_KEYS = [
     "replyHistory",
     "replyHistoryByReportId",
     "loadRepliesIfNeeded",
+    "hydrateFeedbackIfNeeded",
     "loadOlderReplies",
     "goToOlderPaginationPage",
     "goToNewerPaginationPage",

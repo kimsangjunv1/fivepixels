@@ -4,14 +4,11 @@ import { useCreateReportMutation, useDeleteReportMutation, useReportsQuery, useU
 import { useCurrentPathname } from "./useCurrentPathname.js";
 import { createReply as createReplyApi } from "./report.api.js";
 import type {
-    CreateReportFeedbackPayload,
-    CreateReplyPayload,
     ReportFeedback,
     ReportField,
-    ReportPersistenceHandlers,
     ReportReply,
     ReportStorageAdapter,
-    UpdateReportFeedbackPayload,
+    CreateReplyPayload,
 } from "@/types/report.js";
 import type { ReportFilters, ReportListScope } from "@/types/report-ui.js";
 import { casesToSearchText, getReportCases } from "@/utils/report/reportCases.js";
@@ -21,6 +18,13 @@ import { getRouteDetailStatus } from "@/utils/panel/routeDetailStatus.js";
 import { getFeedbackDisplayStatus, getLatestReply } from "@/utils/feedback/feedbackThread.js";
 import { mergeRepliesIntoReport } from "@/utils/report/reportSummary.js";
 import { resolveStorageAdapter } from "@/utils/shared/storage.js";
+import {
+    adapterUsesCreateReply,
+    adapterUsesLazyCases,
+    adapterUsesLazyReplies,
+    hydrateFeedbackFromAdapter,
+} from "@/utils/adapter/resolveAdapter.js";
+import type { FivePixelsAdapter } from "@/types/adapter.js";
 import type { ResolvedReplyHistoryConfig } from "@/utils/report/reportUi.js";
 import { createReplyHistoryActions, EMPTY_REPLY_HISTORY_STATE, type ReplyHistoryState } from "./replyHistoryActions.js";
 
@@ -29,14 +33,8 @@ export type ReportPersistenceConfig = {
     environment?: string;
     appVersion?: string;
     sync?: import("@/constants/loginMethod.js").FivePixelsSync;
+    adapter?: FivePixelsAdapter;
     fields: ReportField[];
-    onList?: (params: { pathname: string }) => Promise<ReportFeedback[]>;
-    onListAll?: ReportPersistenceHandlers["onListAll"];
-    onListReplies?: ReportPersistenceHandlers["onListReplies"];
-    onCreate?: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
-    onCreateReply?: ReportPersistenceHandlers["onCreateReply"];
-    onUpdate?: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
-    onDelete?: (id: string) => Promise<void>;
     routeKey?: string;
     fetchEnabled?: boolean;
     listFetchEnabled?: boolean;
@@ -109,39 +107,28 @@ export function useReportPersistence({
     appVersion,
     sync = "local",
     fields,
-    onList,
-    onListAll,
-    onListReplies,
-    onCreate,
-    onCreateReply,
-    onUpdate,
-    onDelete,
+    adapter,
     routeKey,
     fetchEnabled = true,
     listFetchEnabled = true,
     allReportsFetchEnabled = false,
     replyHistory,
 }: ReportPersistenceConfig) {
-    const { adapter: storageAdapterInstance, usesLocalStorage, persistenceStatus } = useMemo(
+    const { adapter: storageAdapterInstance, usesLocalStorage, persistenceStatus, fivePixelsAdapter } = useMemo(
         () =>
             resolveStorageAdapter({
                 projectId,
                 environment,
                 appVersion,
                 sync,
-                onList,
-                onListAll,
-                onListReplies,
-                onCreate,
-                onCreateReply,
-                onUpdate,
-                onDelete,
+                adapter,
             }),
-        [appVersion, environment, onCreate, onCreateReply, onDelete, onList, onListAll, onListReplies, onUpdate, projectId, sync],
+        [adapter, appVersion, environment, projectId, sync],
     );
     const canTransferFeedback = usesLocalStorage;
-    const usesLazyReplies = Boolean(storageAdapterInstance.listReplies);
-    const usesCreateReply = Boolean(storageAdapterInstance.createReply);
+    const usesLazyReplies = usesLocalStorage ? false : adapterUsesLazyReplies(fivePixelsAdapter) || Boolean(storageAdapterInstance.listReplies);
+    const usesCreateReply = usesLocalStorage ? true : adapterUsesCreateReply(fivePixelsAdapter) || Boolean(storageAdapterInstance.createReply);
+    const usesLazyCases = adapterUsesLazyCases(fivePixelsAdapter);
     const currentPathname = useCurrentPathname(routeKey);
     const [replyHistoryByReportId, setReplyHistoryByReportId] = useState<Record<string, ReplyHistoryState>>({});
 
@@ -233,8 +220,19 @@ export function useReportPersistence({
     });
 
     const loadRepliesIfNeeded = useCallback(
-        async (report: ReportFeedback): Promise<ReportFeedback> => initReplyHistory(report, replyHistory),
+        async (report: ReportFeedback, caseId?: string): Promise<ReportFeedback> => initReplyHistory(report, replyHistory, caseId),
         [initReplyHistory, replyHistory],
+    );
+
+    const hydrateFeedbackIfNeeded = useCallback(
+        async (report: ReportFeedback): Promise<ReportFeedback> => {
+            if (!usesLazyCases || !fivePixelsAdapter) {
+                return report;
+            }
+
+            return hydrateFeedbackFromAdapter(fivePixelsAdapter, report);
+        },
+        [fivePixelsAdapter, usesLazyCases],
     );
 
     const createReply = useCallback(
@@ -339,7 +337,9 @@ export function useReportPersistence({
         updateFeedback,
         deleteFeedback,
         loadRepliesIfNeeded,
+        hydrateFeedbackIfNeeded,
         createReply,
+        fivePixelsAdapter,
         replyHistory,
         replyHistoryByReportId,
         initReplyHistory,

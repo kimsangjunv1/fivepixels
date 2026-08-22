@@ -1,48 +1,24 @@
-import { type FivePixelsSync } from "../../constants/loginMethod.js";
-import type { ReportPersistenceHandlers, ReportStorageAdapter } from "../../types/report.js";
+import type { FivePixelsSync } from "../../constants/loginMethod.js";
+import type { FivePixelsAdapter } from "../../types/adapter.js";
+import { createUnavailableReportAdapter, type AdapterHandlerName, type PersistenceStatus } from "../../utils/adapter/resolveAdapter.js";
+export type { AdapterHandlerName, PersistenceStatus };
 export type ResolveStorageAdapterOptions = {
     projectId: string;
     environment?: string;
     appVersion?: string;
     sync?: FivePixelsSync;
-    onList?: ReportPersistenceHandlers["onList"];
-    onListAll?: ReportPersistenceHandlers["onListAll"];
-    onListReplies?: ReportPersistenceHandlers["onListReplies"];
-    onCreate?: ReportPersistenceHandlers["onCreate"];
-    onCreateReply?: ReportPersistenceHandlers["onCreateReply"];
-    onUpdate?: ReportPersistenceHandlers["onUpdate"];
-    onDelete?: ReportPersistenceHandlers["onDelete"];
+    adapter?: FivePixelsAdapter;
 };
-declare const REQUIRED_PERSISTENCE_HANDLER_NAMES: readonly ["onList", "onCreate", "onUpdate"];
-declare const PERSISTENCE_HANDLER_NAMES: readonly ["onList", "onListAll", "onListReplies", "onCreate", "onCreateReply", "onUpdate", "onDelete"];
-export type RequiredPersistenceHandlerName = (typeof REQUIRED_PERSISTENCE_HANDLER_NAMES)[number];
-export type PersistenceHandlerName = (typeof PERSISTENCE_HANDLER_NAMES)[number];
-export type PersistenceStatus = {
-    mode: "localStorage";
-    missingHandlers: [];
-    ignoredHandlers: [];
-} | {
-    mode: "API";
-    missingHandlers: [];
-    ignoredHandlers: [];
-} | {
-    mode: "conflict";
-    missingHandlers: RequiredPersistenceHandlerName[];
-    ignoredHandlers: PersistenceHandlerName[];
-} | {
-    /** Remote sync (`api` / `artemis`) without a complete persistence API — no localStorage fallback. */
-    mode: "unavailable";
-    missingHandlers: RequiredPersistenceHandlerName[];
-    ignoredHandlers: PersistenceHandlerName[];
-};
-export declare function hasCustomPersistenceHandlers(options: Pick<ResolveStorageAdapterOptions, "onList" | "onCreate" | "onUpdate">): options is Required<Pick<ResolveStorageAdapterOptions, "onList" | "onCreate" | "onUpdate">>;
-export declare function resolvePersistenceStatus(options: Pick<ResolveStorageAdapterOptions, PersistenceHandlerName | "sync">): PersistenceStatus;
-/** No localStorage reads — used when remote sync requires API persistence that is not wired. */
-export declare function createUnavailableReportAdapter(): ReportStorageAdapter;
-export declare function resolveStorageAdapter({ projectId, environment, appVersion, sync, onList, onListAll, onListReplies, onCreate, onCreateReply, onUpdate, onDelete, }: ResolveStorageAdapterOptions): {
-    adapter: ReportStorageAdapter;
+export declare function hasCustomPersistenceAdapter(adapter?: FivePixelsAdapter): boolean;
+export declare function resolvePersistenceStatus(options: Pick<ResolveStorageAdapterOptions, "adapter" | "sync">): PersistenceStatus;
+export { createUnavailableReportAdapter };
+export declare function resolveStorageAdapter(options: ResolveStorageAdapterOptions): {
+    adapter: import("../..").ReportStorageAdapter;
     usesLocalStorage: boolean;
     persistenceStatus: PersistenceStatus;
+    fivePixelsAdapter?: FivePixelsAdapter;
 };
-export {};
+export declare function resolvePersistenceMissingHandlers(adapter?: FivePixelsAdapter): AdapterHandlerName[];
+/** @deprecated Use hasCustomPersistenceAdapter */
+export declare const hasCustomPersistenceHandlers: typeof hasCustomPersistenceAdapter;
 //# sourceMappingURL=storage.d.ts.map

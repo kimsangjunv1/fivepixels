@@ -53,7 +53,8 @@ export type UseReportMarkersParams = {
     openReplyComposer: (report: ReportFeedback) => void;
     selectCase: (caseId: string) => void;
     ensureIssueMode: () => void;
-    loadRepliesIfNeeded: (report: ReportFeedback) => Promise<ReportFeedback>;
+    loadRepliesIfNeeded: (report: ReportFeedback, caseId?: string) => Promise<ReportFeedback>;
+    hydrateFeedbackIfNeeded: (report: ReportFeedback) => Promise<ReportFeedback>;
     searchInputRef: RefObject<HTMLInputElement | null>;
 };
 
@@ -85,6 +86,7 @@ export function useReportMarkers({
     selectCase,
     ensureIssueMode,
     loadRepliesIfNeeded,
+    hydrateFeedbackIfNeeded,
     searchInputRef,
 }: UseReportMarkersParams) {
     const [markers, setMarkers] = useState<Marker[]>([]);
@@ -465,14 +467,15 @@ export function useReportMarkers({
                 return;
             }
 
-            const enrichedReport = await loadRepliesIfNeeded(report);
+            const hydratedReport = await hydrateFeedbackIfNeeded(report);
+            const enrichedReport = await loadRepliesIfNeeded(hydratedReport, caseId ?? hydratedReport.cases[0]?.id);
             openReplyComposer(enrichedReport);
 
             if (caseId && enrichedReport.cases.some((item) => item.id === caseId)) {
                 selectCase(caseId);
             }
         },
-        [clearHoverLeaveTimeout, closeReplyComposer, loadRepliesIfNeeded, openReplyComposer, prepareFeedbackLocation, selectCase],
+        [clearHoverLeaveTimeout, closeReplyComposer, hydrateFeedbackIfNeeded, loadRepliesIfNeeded, openReplyComposer, prepareFeedbackLocation, selectCase],
     );
 
     const activateFeedbackMarker = useCallback(
@@ -500,7 +503,8 @@ export function useReportMarkers({
             }
 
             await prepareFeedbackLocation(report);
-            const enrichedReport = await loadRepliesIfNeeded(report);
+            const hydratedReport = await hydrateFeedbackIfNeeded(report);
+            const enrichedReport = await loadRepliesIfNeeded(hydratedReport, hydratedReport.cases[0]?.id);
             openReplyComposer(enrichedReport);
         },
         [

@@ -29,6 +29,8 @@ export type ListRepliesParams = {
     limit?: number;
     cursor?: string;
     direction?: "older";
+    /** Required when using `adapter.replies.list` (replies are scoped to a case). */
+    caseId?: string;
 };
 export type ListRepliesResult = {
     items: ReportReply[];

@@ -3,6 +3,7 @@ import { getDefaultFields } from "@/i18n/index.js";
 import type { DeepPartialReportMessages, ReportLocale } from "@/i18n/types.js";
 import { useReportState } from "@/hooks/report/useReportState.js";
 import type { ReportProviderProps } from "@/types/publicApi.js";
+import type { FivePixelsAdapter } from "@/types/adapter.js";
 import type {
     ReportAuthor,
     ReportField,
@@ -60,26 +61,9 @@ function ReportProviderEnabled({
     requireReviewerKey,
     shortcut,
     identify,
-    onList,
-    onListAll,
-    onPanelBootstrap,
-    onActivitySummary,
-    onListReplies,
+    adapter,
     onNavigate,
     onRevealTarget,
-    onCreate,
-    onCreateReply,
-    onUpdate,
-    onDelete,
-    onListReviewers,
-    onListReviewerRequests,
-    onCreateReviewerRequest,
-    onResolveReviewerRequest,
-    onRegisterReviewer,
-    onUpdateReviewer,
-    onApiLogin,
-    onApiRegister,
-    onArtemisLogin,
     onEvent,
     onReply,
     github,
@@ -107,26 +91,9 @@ function ReportProviderEnabled({
         identify,
         pixelsMode,
         sync,
-        onList,
-        onListAll,
-        onPanelBootstrap,
-        onActivitySummary,
-        onListReplies,
+        adapter,
         onNavigate,
         onRevealTarget,
-        onCreate,
-        onCreateReply,
-        onUpdate,
-        onDelete,
-        onListReviewers,
-        onListReviewerRequests,
-        onCreateReviewerRequest,
-        onResolveReviewerRequest,
-        onRegisterReviewer,
-        onUpdateReviewer,
-        onApiLogin,
-        onApiRegister,
-        onArtemisLogin,
         onEvent,
         onReply,
         github,
@@ -156,27 +123,10 @@ export function ReportProvider({
     team,
     mode = "default",
     sync = "local",
+    adapter,
     fields,
-    onList,
-    onListAll,
-    onPanelBootstrap,
-    onActivitySummary,
-    onListReplies,
     onNavigate,
     onRevealTarget,
-    onCreate,
-    onCreateReply,
-    onUpdate,
-    onDelete,
-    onListReviewers,
-    onListReviewerRequests,
-    onCreateReviewerRequest,
-    onResolveReviewerRequest,
-    onRegisterReviewer,
-    onUpdateReviewer,
-    onApiLogin,
-    onApiRegister,
-    onArtemisLogin,
     onEvent,
     onReply,
     github,
@@ -208,26 +158,9 @@ export function ReportProvider({
             authors={resolvedTeam.reviewers}
             requireReviewerKey={resolvedTeam.requireReviewerKey}
             identify={resolvedTeam.user}
-            onList={onList}
-            onListAll={onListAll}
-            onPanelBootstrap={onPanelBootstrap}
-            onActivitySummary={onActivitySummary}
-            onListReplies={onListReplies}
+            adapter={adapter}
             onNavigate={onNavigate}
             onRevealTarget={onRevealTarget}
-            onCreate={onCreate}
-            onCreateReply={onCreateReply}
-            onUpdate={onUpdate}
-            onDelete={onDelete}
-            onListReviewers={onListReviewers}
-            onListReviewerRequests={onListReviewerRequests}
-            onCreateReviewerRequest={onCreateReviewerRequest}
-            onResolveReviewerRequest={onResolveReviewerRequest}
-            onRegisterReviewer={onRegisterReviewer}
-            onUpdateReviewer={onUpdateReviewer}
-            onApiLogin={onApiLogin}
-            onApiRegister={onApiRegister}
-            onArtemisLogin={onArtemisLogin}
             onEvent={onEvent}
             onReply={onReply}
             github={github}

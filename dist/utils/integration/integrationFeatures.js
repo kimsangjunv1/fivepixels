@@ -1,9 +1,11 @@
-const CORE_PERSISTENCE_HANDLERS = ["onList", "onCreate", "onUpdate"];
+const CORE_PERSISTENCE_HANDLERS = [
+    "adapter.markers.list",
+    "adapter.feedback.create",
+    "adapter.feedback.update",
+];
 const TEAM_MANAGE_HANDLERS = [
-    "onListReviewerRequests",
-    "onResolveReviewerRequest",
-    "onRegisterReviewer",
-    "onUpdateReviewer",
+    "adapter.members.list",
+    "adapter.members.update",
 ];
 function persistenceUnavailable(caps) {
     return caps.persistenceMode === "unavailable";
@@ -23,20 +25,20 @@ export function resolveIntegrationLock(feature, caps) {
             return { locked: true, missingHandlers: corePersistenceMissing(caps) };
         case "listAll":
             if (persistenceUnavailable(caps)) {
-                return { locked: true, missingHandlers: [...corePersistenceMissing(caps), "onListAll"] };
+                return { locked: true, missingHandlers: [...corePersistenceMissing(caps), "adapter.markers.list"] };
             }
             if (caps.persistenceMode !== "API" || caps.listAll) {
                 return { locked: false, missingHandlers: [] };
             }
-            return { locked: true, missingHandlers: ["onListAll"] };
+            return { locked: true, missingHandlers: ["adapter.markers.list"] };
         case "deleteFeedback":
             if (persistenceUnavailable(caps)) {
-                return { locked: true, missingHandlers: [...corePersistenceMissing(caps), "onDelete"] };
+                return { locked: true, missingHandlers: [...corePersistenceMissing(caps), "adapter.feedback.delete"] };
             }
             if (caps.persistenceMode !== "API" || caps.delete) {
                 return { locked: false, missingHandlers: [] };
             }
-            return { locked: true, missingHandlers: ["onDelete"] };
+            return { locked: true, missingHandlers: ["adapter.feedback.delete"] };
         case "githubIssue":
             if (!caps.githubConfigured || caps.githubIssue) {
                 return { locked: false, missingHandlers: [] };
@@ -52,12 +54,12 @@ export function resolveIntegrationLock(feature, caps) {
             return { locked: true, missingHandlers: [...TEAM_MANAGE_HANDLERS] };
         case "teamRequest":
             if (caps.persistenceMode !== "API") {
-                return { locked: true, missingHandlers: [...CORE_PERSISTENCE_HANDLERS, "onCreateReviewerRequest"] };
+                return { locked: true, missingHandlers: [...CORE_PERSISTENCE_HANDLERS, "adapter.members.create"] };
             }
             if (caps.teamRequest) {
                 return { locked: false, missingHandlers: [] };
             }
-            return { locked: true, missingHandlers: ["onCreateReviewerRequest"] };
+            return { locked: true, missingHandlers: ["adapter.members.create"] };
         case "dataTransfer":
             if (caps.dataTransfer) {
                 return { locked: false, missingHandlers: [] };
@@ -67,28 +69,28 @@ export function resolveIntegrationLock(feature, caps) {
             if (caps.sync !== "api" || caps.apiLogin) {
                 return { locked: false, missingHandlers: [] };
             }
-            return { locked: true, missingHandlers: ["onApiLogin"] };
+            return { locked: true, missingHandlers: ["adapter.auth.login"] };
         case "apiRegister":
             if (caps.sync !== "api" || caps.apiRegister) {
                 return { locked: false, missingHandlers: [] };
             }
-            return { locked: true, missingHandlers: ["onApiRegister"] };
+            return { locked: true, missingHandlers: ["adapter.auth.signup"] };
         case "artemisLogin":
             if (caps.sync !== "artemis" || caps.artemisLogin) {
                 return { locked: false, missingHandlers: [] };
             }
-            return { locked: true, missingHandlers: ["onArtemisLogin"] };
+            return { locked: true, missingHandlers: ["adapter.auth.artemisLogin"] };
         case "activitySummary":
             if (caps.activitySummary) {
                 return { locked: false, missingHandlers: [] };
             }
             if (persistenceUnavailable(caps)) {
-                return { locked: true, missingHandlers: [...corePersistenceMissing(caps), "onActivitySummary"] };
+                return { locked: true, missingHandlers: [...corePersistenceMissing(caps), "adapter.session.activitySummary"] };
             }
             if (caps.persistenceMode !== "API") {
                 return { locked: false, missingHandlers: [] };
             }
-            return { locked: true, missingHandlers: ["onActivitySummary"] };
+            return { locked: true, missingHandlers: ["adapter.session.activitySummary"] };
         default:
             return { locked: false, missingHandlers: [] };
     }

@@ -5,21 +5,32 @@ import type { useReportMarkers } from "./useReportMarkers.js";
 import type { useReportMutations } from "./useReportMutations.js";
 import type { useReportPanelShell } from "./useReportPanelShell.js";
 import type { useReportReplyReview } from "./useReportReplyReview.js";
+import type { FivePixelsAdapter } from "@/types/adapter.js";
 import type {
-    ReportActivitySummaryParams,
-    ReportActivitySummaryResult,
     ReportAuthor,
-    ReportAuthHandlers,
     ReportFeedback,
     ReportField,
     ReportGitHubConfig,
-    ReportPanelBootstrapParams,
-    ReportPanelBootstrapResult,
     ReportTeamHandlers,
 } from "@/types/report.js";
 import type { ResolvedReplyHistoryConfig } from "@/utils/report/reportUi.js";
-import { buildIntegrationCapabilities, persistenceMissingHandlerNames } from "@/utils/integration/integrationGate.js";
+import { buildIntegrationCapabilities } from "@/utils/integration/integrationGate.js";
+import { resolvePersistenceMissingHandlers } from "@/utils/shared/storage.js";
 import { canAccessTeamSettings, hasTeamAdminHandlers, hasTeamRequestHandler, isReportAuthorAdmin, resolveAuthorRole } from "@/utils/report/teamManagement.js";
+
+function resolveTeamHandlersFromAdapter(adapter?: FivePixelsAdapter): Partial<ReportTeamHandlers> {
+    const members = adapter?.members;
+
+    if (!members) {
+        return {};
+    }
+
+    return {
+        onListReviewers: members.list,
+        onRegisterReviewer: members.create,
+        onUpdateReviewer: members.update,
+    };
+}
 
 type AssembleArgs = {
     panel: ReturnType<typeof useReportPanelShell>;
@@ -34,17 +45,7 @@ type AssembleArgs = {
     appVersion?: string;
     showFeedbackList: boolean;
     teamReviewers: ReportAuthor[];
-    onListReviewers?: ReportTeamHandlers["onListReviewers"];
-    onListReviewerRequests?: ReportTeamHandlers["onListReviewerRequests"];
-    onCreateReviewerRequest?: ReportTeamHandlers["onCreateReviewerRequest"];
-    onResolveReviewerRequest?: ReportTeamHandlers["onResolveReviewerRequest"];
-    onRegisterReviewer?: ReportTeamHandlers["onRegisterReviewer"];
-    onUpdateReviewer?: ReportTeamHandlers["onUpdateReviewer"];
-    onApiLogin?: ReportAuthHandlers["onApiLogin"];
-    onApiRegister?: ReportAuthHandlers["onApiRegister"];
-    onArtemisLogin?: ReportAuthHandlers["onArtemisLogin"];
-    onPanelBootstrap?: (params: ReportPanelBootstrapParams) => Promise<ReportPanelBootstrapResult>;
-    onActivitySummary?: (params: ReportActivitySummaryParams) => Promise<ReportActivitySummaryResult>;
+    adapter?: FivePixelsAdapter;
     github?: ReportGitHubConfig;
     canDeleteViaStorage: boolean;
     usesLazyReplies: boolean;
@@ -74,17 +75,7 @@ export function assembleReportContextValue({
     appVersion,
     showFeedbackList,
     teamReviewers,
-    onListReviewers,
-    onListReviewerRequests,
-    onCreateReviewerRequest,
-    onResolveReviewerRequest,
-    onRegisterReviewer,
-    onUpdateReviewer,
-    onApiLogin,
-    onApiRegister,
-    onArtemisLogin,
-    onPanelBootstrap,
-    onActivitySummary,
+    adapter,
     github,
     canDeleteViaStorage,
     usesLazyReplies,
@@ -98,18 +89,19 @@ export function assembleReportContextValue({
 }: AssembleArgs) {
     const authorizedId = auth.authorizedAuthors[0]?.id;
     const teamActor = authorizedId ? (teamReviewers.find((reviewer) => reviewer.id === authorizedId) ?? null) : null;
-    const teamHandlers = {
-        onListReviewers,
-        onListReviewerRequests,
-        onCreateReviewerRequest,
-        onResolveReviewerRequest,
-        onRegisterReviewer,
-        onUpdateReviewer,
-    };
+    const teamHandlers = resolveTeamHandlersFromAdapter(adapter);
+    const onListReviewers = teamHandlers.onListReviewers;
+    const onListReviewerRequests = teamHandlers.onListReviewerRequests;
+    const onCreateReviewerRequest = teamHandlers.onCreateReviewerRequest;
+    const onResolveReviewerRequest = teamHandlers.onResolveReviewerRequest;
+    const onRegisterReviewer = teamHandlers.onRegisterReviewer;
+    const onUpdateReviewer = teamHandlers.onUpdateReviewer;
+    const onPanelBootstrap = adapter?.session?.panelBootstrap;
+    const onActivitySummary = adapter?.session?.activitySummary;
     const integrationCapabilities = buildIntegrationCapabilities({
         sync: auth.loginMethod ?? "local",
         persistenceMode: panel.persistenceStatus.mode,
-        persistenceMissingHandlers: persistenceMissingHandlerNames(panel.persistenceStatus),
+        persistenceMissingHandlers: resolvePersistenceMissingHandlers(adapter),
         listAll: panel.canListAllFeedback,
         delete: canDeleteViaStorage,
         listReplies: usesLazyReplies,
@@ -118,9 +110,9 @@ export function assembleReportContextValue({
         panelBootstrap: Boolean(onPanelBootstrap),
         githubConfigured: Boolean(github) && github?.enabled !== false,
         githubIssue: Boolean(github?.onCreate) && github?.enabled !== false,
-        apiLogin: Boolean(onApiLogin),
-        apiRegister: Boolean(onApiRegister),
-        artemisLogin: Boolean(onArtemisLogin),
+        apiLogin: Boolean(adapter?.auth?.login),
+        apiRegister: Boolean(adapter?.auth?.signup),
+        artemisLogin: Boolean(adapter?.auth?.artemisLogin),
         teamRequest: hasTeamRequestHandler(teamHandlers),
         teamManage: hasTeamAdminHandlers(teamHandlers),
         dataTransfer: panel.canTransferFeedback,
@@ -250,6 +242,7 @@ export function assembleReportContextValue({
         replyHistory,
         replyHistoryByReportId: panel.replyHistoryByReportId,
         loadRepliesIfNeeded: panel.loadRepliesIfNeeded,
+        hydrateFeedbackIfNeeded: panel.hydrateFeedbackIfNeeded,
         loadOlderReplies: panel.loadOlderReplies,
         goToOlderPaginationPage: panel.goToOlderPaginationPage,
         goToNewerPaginationPage: panel.goToNewerPaginationPage,

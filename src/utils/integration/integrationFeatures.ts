@@ -1,27 +1,9 @@
 import type { FivePixelsSync } from "@/constants/loginMethod.js";
 import type { PersistenceStatus } from "@/utils/shared/storage.js";
+import type { AdapterHandlerName } from "@/utils/adapter/resolveAdapter.js";
 
-/** Public prop / nested handler names shown in lock tooltips. */
-export type IntegrationHandlerName =
-    | "onList"
-    | "onCreate"
-    | "onUpdate"
-    | "onDelete"
-    | "onListAll"
-    | "onListReplies"
-    | "onCreateReply"
-    | "onActivitySummary"
-    | "onPanelBootstrap"
-    | "onApiLogin"
-    | "onApiRegister"
-    | "onArtemisLogin"
-    | "onListReviewers"
-    | "onListReviewerRequests"
-    | "onCreateReviewerRequest"
-    | "onResolveReviewerRequest"
-    | "onRegisterReviewer"
-    | "onUpdateReviewer"
-    | "github.onCreate";
+/** Adapter / nested handler names shown in lock tooltips. */
+export type IntegrationHandlerName = AdapterHandlerName | "github.onCreate";
 
 export type IntegrationFeatureId =
     | "listAll"
@@ -40,24 +22,19 @@ export type IntegrationCapabilities = {
     sync: FivePixelsSync;
     persistenceMode: PersistenceStatus["mode"];
     persistenceMissingHandlers: IntegrationHandlerName[];
-    /** Adapter can list all pages (localStorage always true; API needs onListAll). */
     listAll: boolean;
-    /** Adapter can delete (localStorage always true; API needs onDelete). */
     delete: boolean;
     listReplies: boolean;
     createReply: boolean;
     activitySummary: boolean;
     panelBootstrap: boolean;
-    /** `github` prop is present and not explicitly disabled. */
     githubConfigured: boolean;
-    /** `github.onCreate` is provided. */
     githubIssue: boolean;
     apiLogin: boolean;
     apiRegister: boolean;
     artemisLogin: boolean;
     teamRequest: boolean;
     teamManage: boolean;
-    /** Import/export/command — localStorage only. */
     dataTransfer: boolean;
 };
 
@@ -66,12 +43,15 @@ export type IntegrationLockState = {
     missingHandlers: IntegrationHandlerName[];
 };
 
-const CORE_PERSISTENCE_HANDLERS: IntegrationHandlerName[] = ["onList", "onCreate", "onUpdate"];
+const CORE_PERSISTENCE_HANDLERS: IntegrationHandlerName[] = [
+    "adapter.markers.list",
+    "adapter.feedback.create",
+    "adapter.feedback.update",
+];
+
 const TEAM_MANAGE_HANDLERS: IntegrationHandlerName[] = [
-    "onListReviewerRequests",
-    "onResolveReviewerRequest",
-    "onRegisterReviewer",
-    "onUpdateReviewer",
+    "adapter.members.list",
+    "adapter.members.update",
 ];
 
 function persistenceUnavailable(caps: IntegrationCapabilities): boolean {
@@ -95,21 +75,21 @@ export function resolveIntegrationLock(feature: IntegrationFeatureId, caps: Inte
 
         case "listAll":
             if (persistenceUnavailable(caps)) {
-                return { locked: true, missingHandlers: [...corePersistenceMissing(caps), "onListAll"] };
+                return { locked: true, missingHandlers: [...corePersistenceMissing(caps), "adapter.markers.list"] };
             }
             if (caps.persistenceMode !== "API" || caps.listAll) {
                 return { locked: false, missingHandlers: [] };
             }
-            return { locked: true, missingHandlers: ["onListAll"] };
+            return { locked: true, missingHandlers: ["adapter.markers.list"] };
 
         case "deleteFeedback":
             if (persistenceUnavailable(caps)) {
-                return { locked: true, missingHandlers: [...corePersistenceMissing(caps), "onDelete"] };
+                return { locked: true, missingHandlers: [...corePersistenceMissing(caps), "adapter.feedback.delete"] };
             }
             if (caps.persistenceMode !== "API" || caps.delete) {
                 return { locked: false, missingHandlers: [] };
             }
-            return { locked: true, missingHandlers: ["onDelete"] };
+            return { locked: true, missingHandlers: ["adapter.feedback.delete"] };
 
         case "githubIssue":
             if (!caps.githubConfigured || caps.githubIssue) {
@@ -128,12 +108,12 @@ export function resolveIntegrationLock(feature: IntegrationFeatureId, caps: Inte
 
         case "teamRequest":
             if (caps.persistenceMode !== "API") {
-                return { locked: true, missingHandlers: [...CORE_PERSISTENCE_HANDLERS, "onCreateReviewerRequest"] };
+                return { locked: true, missingHandlers: [...CORE_PERSISTENCE_HANDLERS, "adapter.members.create"] };
             }
             if (caps.teamRequest) {
                 return { locked: false, missingHandlers: [] };
             }
-            return { locked: true, missingHandlers: ["onCreateReviewerRequest"] };
+            return { locked: true, missingHandlers: ["adapter.members.create"] };
 
         case "dataTransfer":
             if (caps.dataTransfer) {
@@ -145,31 +125,31 @@ export function resolveIntegrationLock(feature: IntegrationFeatureId, caps: Inte
             if (caps.sync !== "api" || caps.apiLogin) {
                 return { locked: false, missingHandlers: [] };
             }
-            return { locked: true, missingHandlers: ["onApiLogin"] };
+            return { locked: true, missingHandlers: ["adapter.auth.login"] };
 
         case "apiRegister":
             if (caps.sync !== "api" || caps.apiRegister) {
                 return { locked: false, missingHandlers: [] };
             }
-            return { locked: true, missingHandlers: ["onApiRegister"] };
+            return { locked: true, missingHandlers: ["adapter.auth.signup"] };
 
         case "artemisLogin":
             if (caps.sync !== "artemis" || caps.artemisLogin) {
                 return { locked: false, missingHandlers: [] };
             }
-            return { locked: true, missingHandlers: ["onArtemisLogin"] };
+            return { locked: true, missingHandlers: ["adapter.auth.artemisLogin"] };
 
         case "activitySummary":
             if (caps.activitySummary) {
                 return { locked: false, missingHandlers: [] };
             }
             if (persistenceUnavailable(caps)) {
-                return { locked: true, missingHandlers: [...corePersistenceMissing(caps), "onActivitySummary"] };
+                return { locked: true, missingHandlers: [...corePersistenceMissing(caps), "adapter.session.activitySummary"] };
             }
             if (caps.persistenceMode !== "API") {
                 return { locked: false, missingHandlers: [] };
             }
-            return { locked: true, missingHandlers: ["onActivitySummary"] };
+            return { locked: true, missingHandlers: ["adapter.session.activitySummary"] };
 
         default:
             return { locked: false, missingHandlers: [] };

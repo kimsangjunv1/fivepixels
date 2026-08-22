@@ -1,5 +1,6 @@
-import type { CreateReportFeedbackPayload, CreateReplyPayload, ReportFeedback, ReportField, ReportPersistenceHandlers, ReportReply, ReportStorageAdapter, UpdateReportFeedbackPayload } from "../types/report.js";
+import type { ReportFeedback, ReportField, ReportReply, ReportStorageAdapter, CreateReplyPayload } from "../types/report.js";
 import type { ReportFilters, ReportListScope } from "../types/report-ui.js";
+import type { FivePixelsAdapter } from "../types/adapter.js";
 import type { ResolvedReplyHistoryConfig } from "../utils/report/reportUi.js";
 import { type ReplyHistoryState } from "./replyHistoryActions.js";
 export type ReportPersistenceConfig = {
@@ -7,25 +8,17 @@ export type ReportPersistenceConfig = {
     environment?: string;
     appVersion?: string;
     sync?: import("../constants/loginMethod.js").FivePixelsSync;
+    adapter?: FivePixelsAdapter;
     fields: ReportField[];
-    onList?: (params: {
-        pathname: string;
-    }) => Promise<ReportFeedback[]>;
-    onListAll?: ReportPersistenceHandlers["onListAll"];
-    onListReplies?: ReportPersistenceHandlers["onListReplies"];
-    onCreate?: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
-    onCreateReply?: ReportPersistenceHandlers["onCreateReply"];
-    onUpdate?: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
-    onDelete?: (id: string) => Promise<void>;
     routeKey?: string;
     fetchEnabled?: boolean;
     listFetchEnabled?: boolean;
     allReportsFetchEnabled?: boolean;
     replyHistory: ResolvedReplyHistoryConfig;
 };
-export declare function useReportPersistence({ projectId, environment, appVersion, sync, fields, onList, onListAll, onListReplies, onCreate, onCreateReply, onUpdate, onDelete, routeKey, fetchEnabled, listFetchEnabled, allReportsFetchEnabled, replyHistory, }: ReportPersistenceConfig): {
+export declare function useReportPersistence({ projectId, environment, appVersion, sync, fields, adapter, routeKey, fetchEnabled, listFetchEnabled, allReportsFetchEnabled, replyHistory, }: ReportPersistenceConfig): {
     storageAdapterInstance: ReportStorageAdapter;
-    persistenceStatus: import("../utils/shared/storage.js").PersistenceStatus;
+    persistenceStatus: import("../utils/adapter/resolveAdapter.js").PersistenceStatus;
     canTransferFeedback: boolean;
     canListAllFeedback: boolean;
     usesLazyReplies: boolean;
@@ -56,15 +49,17 @@ export declare function useReportPersistence({ projectId, environment, appVersio
     isDeleting: boolean;
     queryErrorMessage: string | undefined;
     refetch: () => Promise<ReportFeedback[]>;
-    createFeedback: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
-    updateFeedback: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
+    createFeedback: (payload: import("../types/report.js").CreateReportFeedbackPayload) => Promise<ReportFeedback>;
+    updateFeedback: (id: string, payload: import("../types/report.js").UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
     deleteFeedback: (id: string) => Promise<void>;
-    loadRepliesIfNeeded: (report: ReportFeedback) => Promise<ReportFeedback>;
+    loadRepliesIfNeeded: (report: ReportFeedback, caseId?: string) => Promise<ReportFeedback>;
+    hydrateFeedbackIfNeeded: (report: ReportFeedback) => Promise<ReportFeedback>;
     createReply: (commentId: string, payload: CreateReplyPayload) => Promise<ReportReply>;
+    fivePixelsAdapter: FivePixelsAdapter | undefined;
     replyHistory: ResolvedReplyHistoryConfig;
     replyHistoryByReportId: Record<string, ReplyHistoryState>;
-    initReplyHistory: (report: ReportFeedback, config: ResolvedReplyHistoryConfig) => Promise<ReportFeedback>;
-    loadOlderReplies: (reportId: string, config: ResolvedReplyHistoryConfig) => Promise<void>;
+    initReplyHistory: (report: ReportFeedback, config: ResolvedReplyHistoryConfig, caseId?: string) => Promise<ReportFeedback>;
+    loadOlderReplies: (reportId: string, config: ResolvedReplyHistoryConfig, caseId?: string) => Promise<void>;
     goToOlderPaginationPage: (reportId: string, config: ResolvedReplyHistoryConfig) => Promise<void>;
     goToNewerPaginationPage: (reportId: string, config: ResolvedReplyHistoryConfig) => void;
     resetReplyHistory: (reportId?: string) => void;

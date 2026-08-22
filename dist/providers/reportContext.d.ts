@@ -35,7 +35,7 @@ declare const ReportContext: Context<{
     projectId: string;
     environment: string | undefined;
     appVersion: string | undefined;
-    persistenceStatus: import("../utils/shared/storage.js").PersistenceStatus;
+    persistenceStatus: import("../utils/adapter/resolveAdapter.js").PersistenceStatus;
     currentPathname: string;
     showFeedbackList: boolean;
     panelTab: import("../types/report-ui.js").ReportPanelTab | null;
@@ -170,8 +170,9 @@ declare const ReportContext: Context<{
     refetch: () => Promise<import("../index.js").ReportFeedback[]>;
     replyHistory: import("../utils/report/reportUi.js").ResolvedReplyHistoryConfig;
     replyHistoryByReportId: Record<string, import("../hooks/replyHistoryActions.js").ReplyHistoryState>;
-    loadRepliesIfNeeded: (report: import("../index.js").ReportFeedback) => Promise<import("../index.js").ReportFeedback>;
-    loadOlderReplies: (reportId: string, config: import("../utils/report/reportUi.js").ResolvedReplyHistoryConfig) => Promise<void>;
+    loadRepliesIfNeeded: (report: import("../index.js").ReportFeedback, caseId?: string) => Promise<import("../index.js").ReportFeedback>;
+    hydrateFeedbackIfNeeded: (report: import("../index.js").ReportFeedback) => Promise<import("../index.js").ReportFeedback>;
+    loadOlderReplies: (reportId: string, config: import("../utils/report/reportUi.js").ResolvedReplyHistoryConfig, caseId?: string) => Promise<void>;
     goToOlderPaginationPage: (reportId: string, config: import("../utils/report/reportUi.js").ResolvedReplyHistoryConfig) => Promise<void>;
     goToNewerPaginationPage: (reportId: string, config: import("../utils/report/reportUi.js").ResolvedReplyHistoryConfig) => void;
     errorMessage: string;
@@ -365,7 +366,7 @@ export declare function useReport(): {
     projectId: string;
     environment: string | undefined;
     appVersion: string | undefined;
-    persistenceStatus: import("../utils/shared/storage.js").PersistenceStatus;
+    persistenceStatus: import("../utils/adapter/resolveAdapter.js").PersistenceStatus;
     currentPathname: string;
     showFeedbackList: boolean;
     panelTab: import("../types/report-ui.js").ReportPanelTab | null;
@@ -500,8 +501,9 @@ export declare function useReport(): {
     refetch: () => Promise<import("../index.js").ReportFeedback[]>;
     replyHistory: import("../utils/report/reportUi.js").ResolvedReplyHistoryConfig;
     replyHistoryByReportId: Record<string, import("../hooks/replyHistoryActions.js").ReplyHistoryState>;
-    loadRepliesIfNeeded: (report: import("../index.js").ReportFeedback) => Promise<import("../index.js").ReportFeedback>;
-    loadOlderReplies: (reportId: string, config: import("../utils/report/reportUi.js").ResolvedReplyHistoryConfig) => Promise<void>;
+    loadRepliesIfNeeded: (report: import("../index.js").ReportFeedback, caseId?: string) => Promise<import("../index.js").ReportFeedback>;
+    hydrateFeedbackIfNeeded: (report: import("../index.js").ReportFeedback) => Promise<import("../index.js").ReportFeedback>;
+    loadOlderReplies: (reportId: string, config: import("../utils/report/reportUi.js").ResolvedReplyHistoryConfig, caseId?: string) => Promise<void>;
     goToOlderPaginationPage: (reportId: string, config: import("../utils/report/reportUi.js").ResolvedReplyHistoryConfig) => Promise<void>;
     goToNewerPaginationPage: (reportId: string, config: import("../utils/report/reportUi.js").ResolvedReplyHistoryConfig) => void;
     errorMessage: string;
@@ -698,7 +700,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         projectId: string;
         environment: string | undefined;
         appVersion: string | undefined;
-        persistenceStatus: import("../utils/shared/storage.js").PersistenceStatus;
+        persistenceStatus: import("../utils/adapter/resolveAdapter.js").PersistenceStatus;
         currentPathname: string;
         showFeedbackList: boolean;
         panelTab: import("../types/report-ui.js").ReportPanelTab | null;
@@ -833,8 +835,9 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         refetch: () => Promise<import("../index.js").ReportFeedback[]>;
         replyHistory: import("../utils/report/reportUi.js").ResolvedReplyHistoryConfig;
         replyHistoryByReportId: Record<string, import("../hooks/replyHistoryActions.js").ReplyHistoryState>;
-        loadRepliesIfNeeded: (report: import("../index.js").ReportFeedback) => Promise<import("../index.js").ReportFeedback>;
-        loadOlderReplies: (reportId: string, config: import("../utils/report/reportUi.js").ResolvedReplyHistoryConfig) => Promise<void>;
+        loadRepliesIfNeeded: (report: import("../index.js").ReportFeedback, caseId?: string) => Promise<import("../index.js").ReportFeedback>;
+        hydrateFeedbackIfNeeded: (report: import("../index.js").ReportFeedback) => Promise<import("../index.js").ReportFeedback>;
+        loadOlderReplies: (reportId: string, config: import("../utils/report/reportUi.js").ResolvedReplyHistoryConfig, caseId?: string) => Promise<void>;
         goToOlderPaginationPage: (reportId: string, config: import("../utils/report/reportUi.js").ResolvedReplyHistoryConfig) => Promise<void>;
         goToNewerPaginationPage: (reportId: string, config: import("../utils/report/reportUi.js").ResolvedReplyHistoryConfig) => void;
         errorMessage: string;
@@ -996,7 +999,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         handleCreateGitHubIssue: (report: import("../index.js").ReportFeedback) => Promise<void>;
         handleCreateSubmitWithGitHubIssue: () => Promise<void>;
         isDraftGitHubIssueSubmitting: boolean;
-    }, "personalKey" | "projectId" | "fields" | "personalKeyRequired" | "environment" | "questionThreadDisplay" | "setQuestionThreadDisplay" | "locale" | "setLocale" | "showMarkerTargetPreview" | "setShowMarkerTargetPreview" | "toggleMarkerTargetPreview" | "devicePreviewUiOpen" | "setDevicePreviewUiOpen" | "devicePreviewDeviceId" | "setDevicePreviewDeviceId" | "devicePreviewScale" | "setDevicePreviewScale" | "devicePreviewImageEnabled" | "setDevicePreviewImageEnabled" | "devicePreviewFitToViewport" | "setDevicePreviewFitToViewport" | "devicePreviewStatusBarEnabled" | "setDevicePreviewStatusBarEnabled" | "devicePreviewPreset" | "showHiddenDetachedMarkers" | "setShowHiddenDetachedMarkers" | "showModalDetachedMarkers" | "setShowModalDetachedMarkers" | "markerAppearance" | "setMarkerAppearance" | "setMarkerSize" | "setMarkerShape" | "setMarkerFillStyle" | "setMarkerColors" | "setMarkerColor" | "setFeedbackModeDotColors" | "setFeedbackModeDotColor" | "typography" | "setTypography" | "setFontSize" | "setFontFamily" | "panelRole" | "setPanelRole" | "persistenceStatus" | "appVersion" | "showFeedbackList" | "selfProfile" | "authors" | "publicKey" | "personalKeyCandidates" | "issuePersonalKey" | "rotatePersonalKey" | "insertPersonalKey" | "clearPersonalKey" | "authorSelectionLocked" | "messages" | "onListReviewers" | "onListReviewerRequests" | "onCreateReviewerRequest" | "onResolveReviewerRequest" | "onRegisterReviewer" | "onUpdateReviewer" | "visibleShortcutKeys" | "teamReviewers" | "panelAppearance" | "setPanelAppearance" | "tooltipAppearance" | "setTooltipAppearance" | "teamActor" | "teamActorRole" | "isTeamAdmin" | "canAccessTeamSettings" | "integrationCapabilities" | "panelView" | "loginMethod" | "loginWithApi" | "registerWithApi" | "loginWithArtemis" | "completeRemoteOnboarding" | "completeOnboarding" | "restoreFromBackup" | "skipOnboarding" | "resolvedPanelAppearance" | "resolvedTooltipAppearance" | "isMobileViewport" | "isPresentationMode" | "presentationViewers" | "visiblePanelTabs" | "visiblePanelTabsSummary" | "resolvedTabAvailabilityContext" | "setVisiblePanelTabs" | "resetVisibleTabsToRoleDefault" | "applyRoleDefaultTabsForOnboarding" | "savePanelTabPreference" | "storedPanelTabPreference">;
+    }, "personalKey" | "projectId" | "fields" | "personalKeyRequired" | "environment" | "questionThreadDisplay" | "setQuestionThreadDisplay" | "locale" | "setLocale" | "showMarkerTargetPreview" | "setShowMarkerTargetPreview" | "toggleMarkerTargetPreview" | "devicePreviewUiOpen" | "setDevicePreviewUiOpen" | "devicePreviewDeviceId" | "setDevicePreviewDeviceId" | "devicePreviewScale" | "setDevicePreviewScale" | "devicePreviewImageEnabled" | "setDevicePreviewImageEnabled" | "devicePreviewFitToViewport" | "setDevicePreviewFitToViewport" | "devicePreviewStatusBarEnabled" | "setDevicePreviewStatusBarEnabled" | "devicePreviewPreset" | "showHiddenDetachedMarkers" | "setShowHiddenDetachedMarkers" | "showModalDetachedMarkers" | "setShowModalDetachedMarkers" | "markerAppearance" | "setMarkerAppearance" | "setMarkerSize" | "setMarkerShape" | "setMarkerFillStyle" | "setMarkerColors" | "setMarkerColor" | "setFeedbackModeDotColors" | "setFeedbackModeDotColor" | "typography" | "setTypography" | "setFontSize" | "setFontFamily" | "panelRole" | "setPanelRole" | "persistenceStatus" | "appVersion" | "showFeedbackList" | "selfProfile" | "authors" | "publicKey" | "personalKeyCandidates" | "issuePersonalKey" | "rotatePersonalKey" | "insertPersonalKey" | "clearPersonalKey" | "authorSelectionLocked" | "messages" | "visibleShortcutKeys" | "teamReviewers" | "onListReviewers" | "onListReviewerRequests" | "onCreateReviewerRequest" | "onResolveReviewerRequest" | "onRegisterReviewer" | "onUpdateReviewer" | "panelAppearance" | "setPanelAppearance" | "tooltipAppearance" | "setTooltipAppearance" | "teamActor" | "teamActorRole" | "isTeamAdmin" | "canAccessTeamSettings" | "integrationCapabilities" | "panelView" | "loginMethod" | "loginWithApi" | "registerWithApi" | "loginWithArtemis" | "completeRemoteOnboarding" | "completeOnboarding" | "restoreFromBackup" | "skipOnboarding" | "resolvedPanelAppearance" | "resolvedTooltipAppearance" | "isMobileViewport" | "isPresentationMode" | "presentationViewers" | "visiblePanelTabs" | "visiblePanelTabsSummary" | "resolvedTabAvailabilityContext" | "setVisiblePanelTabs" | "resetVisibleTabsToRoleDefault" | "applyRoleDefaultTabsForOnboarding" | "savePanelTabPreference" | "storedPanelTabPreference">;
     session: Pick<{
         panelAppearance: import("../index.js").ReportAppearance;
         setPanelAppearance: (nextAppearance: import("../index.js").ReportAppearance) => void;
@@ -1024,7 +1027,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         projectId: string;
         environment: string | undefined;
         appVersion: string | undefined;
-        persistenceStatus: import("../utils/shared/storage.js").PersistenceStatus;
+        persistenceStatus: import("../utils/adapter/resolveAdapter.js").PersistenceStatus;
         currentPathname: string;
         showFeedbackList: boolean;
         panelTab: import("../types/report-ui.js").ReportPanelTab | null;
@@ -1159,8 +1162,9 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         refetch: () => Promise<import("../index.js").ReportFeedback[]>;
         replyHistory: import("../utils/report/reportUi.js").ResolvedReplyHistoryConfig;
         replyHistoryByReportId: Record<string, import("../hooks/replyHistoryActions.js").ReplyHistoryState>;
-        loadRepliesIfNeeded: (report: import("../index.js").ReportFeedback) => Promise<import("../index.js").ReportFeedback>;
-        loadOlderReplies: (reportId: string, config: import("../utils/report/reportUi.js").ResolvedReplyHistoryConfig) => Promise<void>;
+        loadRepliesIfNeeded: (report: import("../index.js").ReportFeedback, caseId?: string) => Promise<import("../index.js").ReportFeedback>;
+        hydrateFeedbackIfNeeded: (report: import("../index.js").ReportFeedback) => Promise<import("../index.js").ReportFeedback>;
+        loadOlderReplies: (reportId: string, config: import("../utils/report/reportUi.js").ResolvedReplyHistoryConfig, caseId?: string) => Promise<void>;
         goToOlderPaginationPage: (reportId: string, config: import("../utils/report/reportUi.js").ResolvedReplyHistoryConfig) => Promise<void>;
         goToNewerPaginationPage: (reportId: string, config: import("../utils/report/reportUi.js").ResolvedReplyHistoryConfig) => void;
         errorMessage: string;
@@ -1350,7 +1354,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         projectId: string;
         environment: string | undefined;
         appVersion: string | undefined;
-        persistenceStatus: import("../utils/shared/storage.js").PersistenceStatus;
+        persistenceStatus: import("../utils/adapter/resolveAdapter.js").PersistenceStatus;
         currentPathname: string;
         showFeedbackList: boolean;
         panelTab: import("../types/report-ui.js").ReportPanelTab | null;
@@ -1485,8 +1489,9 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         refetch: () => Promise<import("../index.js").ReportFeedback[]>;
         replyHistory: import("../utils/report/reportUi.js").ResolvedReplyHistoryConfig;
         replyHistoryByReportId: Record<string, import("../hooks/replyHistoryActions.js").ReplyHistoryState>;
-        loadRepliesIfNeeded: (report: import("../index.js").ReportFeedback) => Promise<import("../index.js").ReportFeedback>;
-        loadOlderReplies: (reportId: string, config: import("../utils/report/reportUi.js").ResolvedReplyHistoryConfig) => Promise<void>;
+        loadRepliesIfNeeded: (report: import("../index.js").ReportFeedback, caseId?: string) => Promise<import("../index.js").ReportFeedback>;
+        hydrateFeedbackIfNeeded: (report: import("../index.js").ReportFeedback) => Promise<import("../index.js").ReportFeedback>;
+        loadOlderReplies: (reportId: string, config: import("../utils/report/reportUi.js").ResolvedReplyHistoryConfig, caseId?: string) => Promise<void>;
         goToOlderPaginationPage: (reportId: string, config: import("../utils/report/reportUi.js").ResolvedReplyHistoryConfig) => Promise<void>;
         goToNewerPaginationPage: (reportId: string, config: import("../utils/report/reportUi.js").ResolvedReplyHistoryConfig) => void;
         errorMessage: string;
@@ -1648,7 +1653,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         handleCreateGitHubIssue: (report: import("../index.js").ReportFeedback) => Promise<void>;
         handleCreateSubmitWithGitHubIssue: () => Promise<void>;
         isDraftGitHubIssueSubmitting: boolean;
-    }, "authDiagnostics" | "isError" | "isFetching" | "hasNextPage" | "isFetchingNextPage" | "fetchNextPage" | "refetch" | "replyHistoryByReportId" | "replyHistory" | "loadOlderReplies" | "goToOlderPaginationPage" | "goToNewerPaginationPage" | "canTransferFeedback" | "canListAllFeedback" | "listScope" | "setListScope" | "filters" | "setFilters" | "reports" | "currentPageReports" | "filteredReports" | "allPageReports" | "onPanelBootstrap" | "routeDetailsStats" | "selectedReport" | "isCreating" | "isUpdating" | "isDeleting" | "queryErrorMessage" | "loadRepliesIfNeeded" | "onActivitySummary" | "handleCreateSubmit" | "handleUpdateSubmit" | "isSubmittingReply" | "isClaimingAssignee" | "handleClaimAssignee" | "handleTransferAssignee" | "handleConfirmResolution" | "handleCaseEditSave" | "targetStats" | "roleStatItems" | "handleReplySubmit" | "handleCreateCaseSubmit" | "handleDelete" | "canCreateGitHubIssueFromList" | "canCreateGitHubIssueOnCreate" | "creatingGitHubIssueId" | "handleCreateGitHubIssue" | "handleCreateSubmitWithGitHubIssue" | "isDraftGitHubIssueSubmitting">;
+    }, "authDiagnostics" | "isError" | "isFetching" | "hasNextPage" | "isFetchingNextPage" | "fetchNextPage" | "refetch" | "replyHistoryByReportId" | "replyHistory" | "loadOlderReplies" | "goToOlderPaginationPage" | "goToNewerPaginationPage" | "canTransferFeedback" | "canListAllFeedback" | "listScope" | "setListScope" | "filters" | "setFilters" | "reports" | "currentPageReports" | "filteredReports" | "allPageReports" | "onPanelBootstrap" | "routeDetailsStats" | "selectedReport" | "isCreating" | "isUpdating" | "isDeleting" | "queryErrorMessage" | "loadRepliesIfNeeded" | "hydrateFeedbackIfNeeded" | "handleCreateSubmit" | "handleUpdateSubmit" | "onActivitySummary" | "isSubmittingReply" | "isClaimingAssignee" | "handleClaimAssignee" | "handleTransferAssignee" | "handleConfirmResolution" | "handleCaseEditSave" | "targetStats" | "roleStatItems" | "handleReplySubmit" | "handleCreateCaseSubmit" | "handleDelete" | "canCreateGitHubIssueFromList" | "canCreateGitHubIssueOnCreate" | "creatingGitHubIssueId" | "handleCreateGitHubIssue" | "handleCreateSubmitWithGitHubIssue" | "isDraftGitHubIssueSubmitting">;
 };
 export { ReportContext, ReportPreferencesContext, ReportSessionContext, ReportDataContext };
 //# sourceMappingURL=reportContext.d.ts.map

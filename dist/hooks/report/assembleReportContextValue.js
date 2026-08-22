@@ -1,24 +1,37 @@
-import { buildIntegrationCapabilities, persistenceMissingHandlerNames } from "../../utils/integration/integrationGate.js";
+import { buildIntegrationCapabilities } from "../../utils/integration/integrationGate.js";
+import { resolvePersistenceMissingHandlers } from "../../utils/shared/storage.js";
 import { canAccessTeamSettings, hasTeamAdminHandlers, hasTeamRequestHandler, isReportAuthorAdmin, resolveAuthorRole } from "../../utils/report/teamManagement.js";
+function resolveTeamHandlersFromAdapter(adapter) {
+    const members = adapter?.members;
+    if (!members) {
+        return {};
+    }
+    return {
+        onListReviewers: members.list,
+        onRegisterReviewer: members.create,
+        onUpdateReviewer: members.update,
+    };
+}
 /**
  * Flat context value for ReportProvider slices.
  * Keys stay flat (see reportContextPartitions). Domain hooks → this assembler → UI.
  */
-export function assembleReportContextValue({ panel, auth, draft, markers, mutations, reply, fields, projectId, environment, appVersion, showFeedbackList, teamReviewers, onListReviewers, onListReviewerRequests, onCreateReviewerRequest, onResolveReviewerRequest, onRegisterReviewer, onUpdateReviewer, onApiLogin, onApiRegister, onArtemisLogin, onPanelBootstrap, onActivitySummary, github, canDeleteViaStorage, usesLazyReplies, usesCreateReply, visibleShortcutKeys, overlayRef, replyHistory, selectReport, beginFeedbackEdit, cancelDraft, }) {
+export function assembleReportContextValue({ panel, auth, draft, markers, mutations, reply, fields, projectId, environment, appVersion, showFeedbackList, teamReviewers, adapter, github, canDeleteViaStorage, usesLazyReplies, usesCreateReply, visibleShortcutKeys, overlayRef, replyHistory, selectReport, beginFeedbackEdit, cancelDraft, }) {
     const authorizedId = auth.authorizedAuthors[0]?.id;
     const teamActor = authorizedId ? (teamReviewers.find((reviewer) => reviewer.id === authorizedId) ?? null) : null;
-    const teamHandlers = {
-        onListReviewers,
-        onListReviewerRequests,
-        onCreateReviewerRequest,
-        onResolveReviewerRequest,
-        onRegisterReviewer,
-        onUpdateReviewer,
-    };
+    const teamHandlers = resolveTeamHandlersFromAdapter(adapter);
+    const onListReviewers = teamHandlers.onListReviewers;
+    const onListReviewerRequests = teamHandlers.onListReviewerRequests;
+    const onCreateReviewerRequest = teamHandlers.onCreateReviewerRequest;
+    const onResolveReviewerRequest = teamHandlers.onResolveReviewerRequest;
+    const onRegisterReviewer = teamHandlers.onRegisterReviewer;
+    const onUpdateReviewer = teamHandlers.onUpdateReviewer;
+    const onPanelBootstrap = adapter?.session?.panelBootstrap;
+    const onActivitySummary = adapter?.session?.activitySummary;
     const integrationCapabilities = buildIntegrationCapabilities({
         sync: auth.loginMethod ?? "local",
         persistenceMode: panel.persistenceStatus.mode,
-        persistenceMissingHandlers: persistenceMissingHandlerNames(panel.persistenceStatus),
+        persistenceMissingHandlers: resolvePersistenceMissingHandlers(adapter),
         listAll: panel.canListAllFeedback,
         delete: canDeleteViaStorage,
         listReplies: usesLazyReplies,
@@ -27,9 +40,9 @@ export function assembleReportContextValue({ panel, auth, draft, markers, mutati
         panelBootstrap: Boolean(onPanelBootstrap),
         githubConfigured: Boolean(github) && github?.enabled !== false,
         githubIssue: Boolean(github?.onCreate) && github?.enabled !== false,
-        apiLogin: Boolean(onApiLogin),
-        apiRegister: Boolean(onApiRegister),
-        artemisLogin: Boolean(onArtemisLogin),
+        apiLogin: Boolean(adapter?.auth?.login),
+        apiRegister: Boolean(adapter?.auth?.signup),
+        artemisLogin: Boolean(adapter?.auth?.artemisLogin),
         teamRequest: hasTeamRequestHandler(teamHandlers),
         teamManage: hasTeamAdminHandlers(teamHandlers),
         dataTransfer: panel.canTransferFeedback,
@@ -158,6 +171,7 @@ export function assembleReportContextValue({ panel, auth, draft, markers, mutati
         replyHistory,
         replyHistoryByReportId: panel.replyHistoryByReportId,
         loadRepliesIfNeeded: panel.loadRepliesIfNeeded,
+        hydrateFeedbackIfNeeded: panel.hydrateFeedbackIfNeeded,
         loadOlderReplies: panel.loadOlderReplies,
         goToOlderPaginationPage: panel.goToOlderPaginationPage,
         goToNewerPaginationPage: panel.goToNewerPaginationPage,

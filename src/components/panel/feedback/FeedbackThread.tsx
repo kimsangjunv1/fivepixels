@@ -470,8 +470,8 @@ export function FeedbackThread({
     }, [report]);
 
     useEffect(() => {
-        void loadRepliesIfNeeded(report);
-    }, [loadRepliesIfNeeded, report.id]);
+        void loadRepliesIfNeeded(report, focusedCaseId ?? undefined);
+    }, [focusedCaseId, loadRepliesIfNeeded, report.id]);
 
     const triggerLoadOlderReplies = useCallback(async () => {
         const element = scrollRef.current;

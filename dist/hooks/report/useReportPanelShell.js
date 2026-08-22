@@ -27,7 +27,9 @@ function getInitialDeepLinkFeedbackId() {
     }
     return parseFeedbackDeepLink()?.feedbackId ?? null;
 }
-export function useReportPanelShell({ projectId, environment, appVersion, sync = "local", panelAppearance, tooltipAppearance, questionThreadDefault = "expanded", fields, showFeedbackList, initialLocale, messageOverrides, onList, onListAll, onPanelBootstrap, onActivitySummary, onListReplies, onCreate, onCreateReply, onUpdate, onDelete, routeKey, replyHistory, sessionActorName, bridgesRef, }) {
+export function useReportPanelShell({ projectId, environment, appVersion, sync = "local", panelAppearance, tooltipAppearance, questionThreadDefault = "expanded", fields, showFeedbackList, initialLocale, messageOverrides, adapter, routeKey, replyHistory, sessionActorName, bridgesRef, }) {
+    const onPanelBootstrap = adapter?.session?.panelBootstrap;
+    const onActivitySummary = adapter?.session?.activitySummary;
     const { appearance: activePanelAppearance, setAppearance: setPanelAppearance } = useAppearancePreference(PANEL_APPEARANCE_STORAGE_KEY, panelAppearance);
     const { appearance: activeTooltipAppearance, setAppearance: setTooltipAppearance } = useAppearancePreference(TOOLTIP_APPEARANCE_STORAGE_KEY, tooltipAppearance);
     const { showMarkerTargetPreview, setShowMarkerTargetPreview, toggleMarkerTargetPreview } = useMarkerTargetPreviewPreference();
@@ -98,19 +100,13 @@ export function useReportPanelShell({ projectId, environment, appVersion, sync =
     const resolvedPanelAppearance = useResolvedAppearance(activePanelAppearance);
     const resolvedTooltipAppearance = useResolvedAppearance(activeTooltipAppearance);
     const isMobileViewport = useIsMobileViewport();
-    const { canTransferFeedback, canListAllFeedback, currentPathname, listScope, setListScope, filters, setFilters, selectedReportId, setSelectedReportId, reports, currentPageReports, filteredReports, currentPageFilteredReports, allPageReports, allPageFilteredReports, routeDetailsStats, selectedReport, isError, isReportsLoading, isFetching, hasNextPage, isFetchingNextPage, fetchNextPage, isCreating, isUpdating, isDeleting, queryErrorMessage, refetch, createFeedback, updateFeedback, deleteFeedback, loadRepliesIfNeeded, createReply, usesCreateReply, replyHistoryByReportId, loadOlderReplies, goToOlderPaginationPage, goToNewerPaginationPage, persistenceStatus, } = useReportPersistence({
+    const { canTransferFeedback, canListAllFeedback, currentPathname, listScope, setListScope, filters, setFilters, selectedReportId, setSelectedReportId, reports, currentPageReports, filteredReports, currentPageFilteredReports, allPageReports, allPageFilteredReports, routeDetailsStats, selectedReport, isError, isReportsLoading, isFetching, hasNextPage, isFetchingNextPage, fetchNextPage, isCreating, isUpdating, isDeleting, queryErrorMessage, refetch, createFeedback, updateFeedback, deleteFeedback, loadRepliesIfNeeded, hydrateFeedbackIfNeeded, createReply, usesCreateReply, usesLazyReplies, replyHistoryByReportId, loadOlderReplies, goToOlderPaginationPage, goToNewerPaginationPage, persistenceStatus, } = useReportPersistence({
         projectId,
         environment,
         appVersion,
         sync,
         fields,
-        onList,
-        onListAll,
-        onListReplies,
-        onCreate,
-        onCreateReply,
-        onUpdate,
-        onDelete,
+        adapter,
         routeKey,
         fetchEnabled,
         listFetchEnabled,
@@ -326,8 +322,10 @@ export function useReportPanelShell({ projectId, environment, appVersion, sync =
         updateFeedback,
         deleteFeedback,
         loadRepliesIfNeeded,
+        hydrateFeedbackIfNeeded,
         createReply,
         usesCreateReply,
+        usesLazyReplies,
         replyHistoryByReportId,
         loadOlderReplies,
         goToOlderPaginationPage,

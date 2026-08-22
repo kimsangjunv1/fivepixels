@@ -28,22 +28,8 @@ import {
     resolveVisibleTabs,
     type PanelTabPreference,
 } from "@/utils/panel/panelTabPreference.js";
-import type {
-    CreateReportFeedbackPayload,
-    CreateReplyPayload,
-    ReportAppearance,
-    ReportActivitySummaryParams,
-    ReportActivitySummaryResult,
-    ReportFeedback,
-    ReportField,
-    ReportListAllParams,
-    ReportListAllResult,
-    ReportPanelBootstrapParams,
-    ReportPanelBootstrapResult,
-    ReportReply,
-    QuestionThreadDisplay,
-    UpdateReportFeedbackPayload,
-} from "@/types/report.js";
+import type { FivePixelsAdapter } from "@/types/adapter.js";
+import type { ReportAppearance, ReportField, QuestionThreadDisplay } from "@/types/report.js";
 import type { ReportMode, ReportPanelTab } from "@/types/report-ui.js";
 import { parseFeedbackDeepLink } from "@/utils/feedback/feedbackDeepLink.js";
 
@@ -73,15 +59,7 @@ export type ReportPanelShellConfig = {
     showFeedbackList: boolean;
     initialLocale: ReportLocale;
     messageOverrides?: DeepPartialReportMessages;
-    onList?: (params: { pathname: string }) => Promise<ReportFeedback[]>;
-    onListAll?: (params: ReportListAllParams) => Promise<ReportListAllResult>;
-    onPanelBootstrap?: (params: ReportPanelBootstrapParams) => Promise<ReportPanelBootstrapResult>;
-    onActivitySummary?: (params: ReportActivitySummaryParams) => Promise<ReportActivitySummaryResult>;
-    onListReplies?: (commentId: string, params?: import("@/types/report.js").ListRepliesParams) => Promise<import("@/types/report.js").ListRepliesResult | ReportReply[]>;
-    onCreate?: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
-    onCreateReply?: (commentId: string, payload: CreateReplyPayload) => Promise<ReportReply>;
-    onUpdate?: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
-    onDelete?: (id: string) => Promise<void>;
+    adapter?: FivePixelsAdapter;
     routeKey?: string;
     replyHistory: import("@/utils/report/reportUi.js").ResolvedReplyHistoryConfig;
     sessionActorName: string | null;
@@ -100,20 +78,14 @@ export function useReportPanelShell({
     showFeedbackList,
     initialLocale,
     messageOverrides,
-    onList,
-    onListAll,
-    onPanelBootstrap,
-    onActivitySummary,
-    onListReplies,
-    onCreate,
-    onCreateReply,
-    onUpdate,
-    onDelete,
+    adapter,
     routeKey,
     replyHistory,
     sessionActorName,
     bridgesRef,
 }: ReportPanelShellConfig) {
+    const onPanelBootstrap = adapter?.session?.panelBootstrap;
+    const onActivitySummary = adapter?.session?.activitySummary;
     const { appearance: activePanelAppearance, setAppearance: setPanelAppearance } = useAppearancePreference(PANEL_APPEARANCE_STORAGE_KEY, panelAppearance);
     const { appearance: activeTooltipAppearance, setAppearance: setTooltipAppearance } = useAppearancePreference(TOOLTIP_APPEARANCE_STORAGE_KEY, tooltipAppearance);
     const { showMarkerTargetPreview, setShowMarkerTargetPreview, toggleMarkerTargetPreview } = useMarkerTargetPreviewPreference();
@@ -272,8 +244,10 @@ export function useReportPanelShell({
         updateFeedback,
         deleteFeedback,
         loadRepliesIfNeeded,
+        hydrateFeedbackIfNeeded,
         createReply,
         usesCreateReply,
+        usesLazyReplies,
         replyHistoryByReportId,
         loadOlderReplies,
         goToOlderPaginationPage,
@@ -285,13 +259,7 @@ export function useReportPanelShell({
         appVersion,
         sync,
         fields,
-        onList,
-        onListAll,
-        onListReplies,
-        onCreate,
-        onCreateReply,
-        onUpdate,
-        onDelete,
+        adapter,
         routeKey,
         fetchEnabled,
         listFetchEnabled,
@@ -559,8 +527,10 @@ export function useReportPanelShell({
         updateFeedback,
         deleteFeedback,
         loadRepliesIfNeeded,
+        hydrateFeedbackIfNeeded,
         createReply,
         usesCreateReply,
+        usesLazyReplies,
         replyHistoryByReportId,
         loadOlderReplies,
         goToOlderPaginationPage,

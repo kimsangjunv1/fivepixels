@@ -1,11 +1,9 @@
 import { resolveIntegrationLock, type IntegrationCapabilities, type IntegrationFeatureId, type IntegrationLockState } from "./integrationFeatures.js";
-import type { PersistenceStatus } from "@/utils/shared/storage.js";
-import type { IntegrationHandlerName } from "./integrationFeatures.js";
 
 export function buildIntegrationCapabilities(input: {
     sync: IntegrationCapabilities["sync"];
     persistenceMode: IntegrationCapabilities["persistenceMode"];
-    persistenceMissingHandlers?: IntegrationHandlerName[];
+    persistenceMissingHandlers?: IntegrationCapabilities["persistenceMissingHandlers"];
     listAll: boolean;
     delete: boolean;
     listReplies: boolean;
@@ -25,13 +23,6 @@ export function buildIntegrationCapabilities(input: {
         ...input,
         persistenceMissingHandlers: input.persistenceMissingHandlers ?? [],
     };
-}
-
-export function persistenceMissingHandlerNames(status: PersistenceStatus): IntegrationHandlerName[] {
-    if (status.mode === "unavailable" || status.mode === "conflict") {
-        return [...status.missingHandlers];
-    }
-    return [];
 }
 
 export function getIntegrationLock(feature: IntegrationFeatureId, caps: IntegrationCapabilities): IntegrationLockState {

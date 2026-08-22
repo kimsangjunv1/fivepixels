@@ -23,10 +23,10 @@ const base = (overrides: Partial<IntegrationCapabilities> = {}): IntegrationCapa
 });
 
 describe("resolveIntegrationLock", () => {
-    it("locks listAll only in API mode without onListAll", () => {
+    it("locks listAll only in API mode without markers list", () => {
         expect(resolveIntegrationLock("listAll", base({ persistenceMode: "API", listAll: false }))).toEqual({
             locked: true,
-            missingHandlers: ["onListAll"],
+            missingHandlers: ["adapter.markers.list"],
         });
         expect(resolveIntegrationLock("listAll", base({ persistenceMode: "localStorage", listAll: false })).locked).toBe(false);
         expect(resolveIntegrationLock("listAll", base({ persistenceMode: "API", listAll: true })).locked).toBe(false);
@@ -36,18 +36,24 @@ describe("resolveIntegrationLock", () => {
         const caps = base({
             sync: "api",
             persistenceMode: "unavailable",
-            persistenceMissingHandlers: ["onList", "onCreate", "onUpdate"],
+            persistenceMissingHandlers: ["adapter.markers.list", "adapter.feedback.create", "adapter.feedback.update"],
             listAll: false,
             delete: false,
             dataTransfer: false,
         });
-        expect(resolveIntegrationLock("feedbackPersistence", caps).missingHandlers).toEqual(["onList", "onCreate", "onUpdate"]);
+        expect(resolveIntegrationLock("feedbackPersistence", caps).missingHandlers).toEqual([
+            "adapter.markers.list",
+            "adapter.feedback.create",
+            "adapter.feedback.update",
+        ]);
         expect(resolveIntegrationLock("listAll", caps).locked).toBe(true);
         expect(resolveIntegrationLock("deleteFeedback", caps).locked).toBe(true);
     });
 
-    it("locks delete only in API mode without onDelete", () => {
-        expect(resolveIntegrationLock("deleteFeedback", base({ persistenceMode: "API", delete: false })).missingHandlers).toEqual(["onDelete"]);
+    it("locks delete only in API mode without feedback.delete", () => {
+        expect(resolveIntegrationLock("deleteFeedback", base({ persistenceMode: "API", delete: false })).missingHandlers).toEqual([
+            "adapter.feedback.delete",
+        ]);
         expect(resolveIntegrationLock("deleteFeedback", base({ persistenceMode: "API", delete: true })).locked).toBe(false);
     });
 
@@ -67,7 +73,7 @@ describe("resolveIntegrationLock", () => {
     });
 
     it("locks api login when sync is api without handler", () => {
-        expect(resolveIntegrationLock("apiLogin", base({ sync: "api", apiLogin: false })).missingHandlers).toEqual(["onApiLogin"]);
+        expect(resolveIntegrationLock("apiLogin", base({ sync: "api", apiLogin: false })).missingHandlers).toEqual(["adapter.auth.login"]);
         expect(resolveIntegrationLock("apiLogin", base({ sync: "local", apiLogin: false })).locked).toBe(false);
     });
 });
