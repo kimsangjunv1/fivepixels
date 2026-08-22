@@ -5,7 +5,7 @@ import type { useReportMarkers } from "./useReportMarkers.js";
 import type { useReportMutations } from "./useReportMutations.js";
 import type { useReportPanelShell } from "./useReportPanelShell.js";
 import type { useReportReplyReview } from "./useReportReplyReview.js";
-import type { ReportActivitySummaryParams, ReportActivitySummaryResult, ReportAuthor, ReportFeedback, ReportField, ReportPanelBootstrapParams, ReportPanelBootstrapResult, ReportTeamHandlers } from "../../types/report.js";
+import type { ReportActivitySummaryParams, ReportActivitySummaryResult, ReportAuthor, ReportAuthHandlers, ReportFeedback, ReportField, ReportGitHubConfig, ReportPanelBootstrapParams, ReportPanelBootstrapResult, ReportTeamHandlers } from "../../types/report.js";
 import type { ResolvedReplyHistoryConfig } from "../../utils/report/reportUi.js";
 type AssembleArgs = {
     panel: ReturnType<typeof useReportPanelShell>;
@@ -26,8 +26,15 @@ type AssembleArgs = {
     onResolveReviewerRequest?: ReportTeamHandlers["onResolveReviewerRequest"];
     onRegisterReviewer?: ReportTeamHandlers["onRegisterReviewer"];
     onUpdateReviewer?: ReportTeamHandlers["onUpdateReviewer"];
+    onApiLogin?: ReportAuthHandlers["onApiLogin"];
+    onApiRegister?: ReportAuthHandlers["onApiRegister"];
+    onArtemisLogin?: ReportAuthHandlers["onArtemisLogin"];
     onPanelBootstrap?: (params: ReportPanelBootstrapParams) => Promise<ReportPanelBootstrapResult>;
     onActivitySummary?: (params: ReportActivitySummaryParams) => Promise<ReportActivitySummaryResult>;
+    github?: ReportGitHubConfig;
+    canDeleteViaStorage: boolean;
+    usesLazyReplies: boolean;
+    usesCreateReply: boolean;
     visibleShortcutKeys: boolean;
     overlayRef: RefObject<HTMLDivElement>;
     replyHistory: ResolvedReplyHistoryConfig;
@@ -39,7 +46,7 @@ type AssembleArgs = {
  * Flat context value for ReportProvider slices.
  * Keys stay flat (see reportContextPartitions). Domain hooks → this assembler → UI.
  */
-export declare function assembleReportContextValue({ panel, auth, draft, markers, mutations, reply, fields, projectId, environment, appVersion, showFeedbackList, teamReviewers, onListReviewers, onListReviewerRequests, onCreateReviewerRequest, onResolveReviewerRequest, onRegisterReviewer, onUpdateReviewer, onPanelBootstrap, onActivitySummary, visibleShortcutKeys, overlayRef, replyHistory, selectReport, beginFeedbackEdit, cancelDraft, }: AssembleArgs): {
+export declare function assembleReportContextValue({ panel, auth, draft, markers, mutations, reply, fields, projectId, environment, appVersion, showFeedbackList, teamReviewers, onListReviewers, onListReviewerRequests, onCreateReviewerRequest, onResolveReviewerRequest, onRegisterReviewer, onUpdateReviewer, onApiLogin, onApiRegister, onArtemisLogin, onPanelBootstrap, onActivitySummary, github, canDeleteViaStorage, usesLazyReplies, usesCreateReply, visibleShortcutKeys, overlayRef, replyHistory, selectReport, beginFeedbackEdit, cancelDraft, }: AssembleArgs): {
     panelAppearance: import("../../types/report.js").ReportAppearance;
     setPanelAppearance: (nextAppearance: import("../../types/report.js").ReportAppearance) => void;
     tooltipAppearance: import("../../types/report.js").ReportAppearance;
@@ -56,6 +63,7 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     teamActorRole: import("../../types/report.js").ReportAuthorRole | null;
     isTeamAdmin: boolean;
     canAccessTeamSettings: boolean;
+    integrationCapabilities: import("../../utils/integration/integrationFeatures.js").IntegrationCapabilities;
     onListReviewers: (() => Promise<ReportAuthor[]>) | undefined;
     onListReviewerRequests: (() => Promise<import("../../types/report.js").ReportReviewerRequest[]>) | undefined;
     onCreateReviewerRequest: ((payload: import("../../types/report.js").CreateReviewerRequestPayload) => Promise<import("../../types/report.js").ReportReviewerRequest>) | undefined;

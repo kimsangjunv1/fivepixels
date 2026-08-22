@@ -6,6 +6,7 @@ export type ReportPersistenceConfig = {
     projectId: string;
     environment?: string;
     appVersion?: string;
+    sync?: import("../constants/loginMethod.js").FivePixelsSync;
     fields: ReportField[];
     onList?: (params: {
         pathname: string;
@@ -22,7 +23,7 @@ export type ReportPersistenceConfig = {
     allReportsFetchEnabled?: boolean;
     replyHistory: ResolvedReplyHistoryConfig;
 };
-export declare function useReportPersistence({ projectId, environment, appVersion, fields, onList, onListAll, onListReplies, onCreate, onCreateReply, onUpdate, onDelete, routeKey, fetchEnabled, listFetchEnabled, allReportsFetchEnabled, replyHistory, }: ReportPersistenceConfig): {
+export declare function useReportPersistence({ projectId, environment, appVersion, sync, fields, onList, onListAll, onListReplies, onCreate, onCreateReply, onUpdate, onDelete, routeKey, fetchEnabled, listFetchEnabled, allReportsFetchEnabled, replyHistory, }: ReportPersistenceConfig): {
     storageAdapterInstance: ReportStorageAdapter;
     persistenceStatus: import("../utils/shared/storage.js").PersistenceStatus;
     canTransferFeedback: boolean;

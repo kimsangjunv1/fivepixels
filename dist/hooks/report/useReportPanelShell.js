@@ -27,7 +27,7 @@ function getInitialDeepLinkFeedbackId() {
     }
     return parseFeedbackDeepLink()?.feedbackId ?? null;
 }
-export function useReportPanelShell({ projectId, environment, appVersion, panelAppearance, tooltipAppearance, questionThreadDefault = "expanded", fields, showFeedbackList, initialLocale, messageOverrides, onList, onListAll, onPanelBootstrap, onActivitySummary, onListReplies, onCreate, onCreateReply, onUpdate, onDelete, routeKey, replyHistory, sessionActorName, bridgesRef, }) {
+export function useReportPanelShell({ projectId, environment, appVersion, sync = "local", panelAppearance, tooltipAppearance, questionThreadDefault = "expanded", fields, showFeedbackList, initialLocale, messageOverrides, onList, onListAll, onPanelBootstrap, onActivitySummary, onListReplies, onCreate, onCreateReply, onUpdate, onDelete, routeKey, replyHistory, sessionActorName, bridgesRef, }) {
     const { appearance: activePanelAppearance, setAppearance: setPanelAppearance } = useAppearancePreference(PANEL_APPEARANCE_STORAGE_KEY, panelAppearance);
     const { appearance: activeTooltipAppearance, setAppearance: setTooltipAppearance } = useAppearancePreference(TOOLTIP_APPEARANCE_STORAGE_KEY, tooltipAppearance);
     const { showMarkerTargetPreview, setShowMarkerTargetPreview, toggleMarkerTargetPreview } = useMarkerTargetPreviewPreference();
@@ -102,6 +102,7 @@ export function useReportPanelShell({ projectId, environment, appVersion, panelA
         projectId,
         environment,
         appVersion,
+        sync,
         fields,
         onList,
         onListAll,

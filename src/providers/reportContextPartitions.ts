@@ -15,6 +15,7 @@ export const REPORT_PREFERENCE_KEYS = [
     "teamActorRole",
     "isTeamAdmin",
     "canAccessTeamSettings",
+    "integrationCapabilities",
     "onListReviewers",
     "onListReviewerRequests",
     "onCreateReviewerRequest",

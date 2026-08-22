@@ -3,6 +3,9 @@ import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-run
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useReportPreferences, useReportSession } from "../../providers/reportContext.js";
 import { canAssignTeamRole, canEditTeamMember, filterVisibleTeamMembers, hasTeamAdminHandlers, isTeamWriteEnabled, listAssignableRoles, resolveAuthorRole, sortTeamReviewers, } from "../../utils/report/teamManagement.js";
+import { LockIcon } from "../../components/icons/Icons.js";
+import { HoverTooltip } from "../../components/ui/HoverTooltip.js";
+import { useIntegrationLock } from "../../components/ui/IntegrationLock.js";
 function roleLabelFor(role, team) {
     if (role === "admin") {
         return team.roleAdmin;
@@ -22,6 +25,7 @@ export function PanelTeamSettings() {
     const { messages, teamReviewers, teamActor, canAccessTeamSettings, persistenceStatus, onListReviewers, onListReviewerRequests, onResolveReviewerRequest, onRegisterReviewer, onUpdateReviewer, } = useReportPreferences();
     const { setErrorMessage } = useReportSession();
     const team = messages.team;
+    const teamManageLock = useIntegrationLock("teamManage");
     const writeEnabled = isTeamWriteEnabled(persistenceStatus);
     const adminHandlers = hasTeamAdminHandlers({
         onListReviewerRequests,
@@ -160,7 +164,7 @@ export function PanelTeamSettings() {
     if (!canAccessTeamSettings) {
         return null;
     }
-    return (_jsxs("div", { className: "flex flex-col", children: [_jsxs("div", { className: "border-b border-[var(--adaptive-border-subtle)] px-[12px] py-[10px]", children: [_jsx("p", { className: "text-[12px] leading-[1.4] text-[var(--adaptive-black600)]", children: modeHint }), _jsx("p", { className: "mt-[6px] text-[11px] font-semibold text-[var(--adaptive-black700)]", children: memberCountLabel })] }), _jsxs("section", { className: "flex flex-col border-b border-[var(--adaptive-border-subtle)]", children: [_jsx("p", { className: "px-[12px] pt-[10px] pb-[4px] text-[11px] font-semibold uppercase tracking-[0.02em] text-[var(--adaptive-black500)]", children: team.sectionMembers }), loading ? _jsx("p", { className: "px-[12px] py-[10px] text-[12px] text-[var(--adaptive-black600)]", children: team.loading }) : null, !loading && members.length === 0 ? (_jsx("p", { className: "px-[12px] py-[10px] text-[12px] text-[var(--adaptive-black600)]", children: team.emptyMembers })) : null, members.map((member) => {
+    return (_jsxs("div", { className: "flex flex-col", children: [_jsxs("div", { className: "border-b border-[var(--adaptive-border-subtle)] px-[12px] py-[10px]", children: [_jsxs("p", { className: "inline-flex items-center gap-[6px] text-[12px] leading-[1.4] text-[var(--adaptive-black600)]", children: [modeHint, teamManageLock.locked ? (_jsx(HoverTooltip, { label: teamManageLock.tooltipLabel, multiline: true, children: _jsx("span", { className: "inline-flex text-[var(--adaptive-black500)]", children: _jsx(LockIcon, { className: "h-[12px] w-[12px]" }) }) })) : null] }), _jsx("p", { className: "mt-[6px] text-[11px] font-semibold text-[var(--adaptive-black700)]", children: memberCountLabel })] }), _jsxs("section", { className: "flex flex-col border-b border-[var(--adaptive-border-subtle)]", children: [_jsx("p", { className: "px-[12px] pt-[10px] pb-[4px] text-[11px] font-semibold uppercase tracking-[0.02em] text-[var(--adaptive-black500)]", children: team.sectionMembers }), loading ? _jsx("p", { className: "px-[12px] py-[10px] text-[12px] text-[var(--adaptive-black600)]", children: team.loading }) : null, !loading && members.length === 0 ? (_jsx("p", { className: "px-[12px] py-[10px] text-[12px] text-[var(--adaptive-black600)]", children: team.emptyMembers })) : null, members.map((member) => {
                         const editable = canManage && Boolean(onUpdateReviewer) && canEditTeamMember(teamActor, member) && busyId !== member.id;
                         return (_jsx(MemberRow, { member: member, roleLabel: roleLabelFor(resolveAuthorRole(member), team), roleMessages: team, inactiveLabel: team.inactive, canEdit: editable, assignableRoles: assignableRoles, activateLabel: team.activate, deactivateLabel: team.deactivate, onChangeRole: editable ? (role) => void handleUpdate(member, { role }) : undefined, onToggleActive: editable ? () => void handleUpdate(member, { is_active: member.isActive === false }) : undefined }, member.id));
                     })] }), canManage ? (_jsxs(_Fragment, { children: [_jsxs("section", { className: "flex flex-col border-b border-[var(--adaptive-border-subtle)]", children: [_jsx("p", { className: "px-[12px] pt-[10px] pb-[4px] text-[11px] font-semibold uppercase tracking-[0.02em] text-[var(--adaptive-black500)]", children: team.sectionRequests }), assignableRoles.length > 0 ? (_jsxs("div", { className: "flex flex-wrap gap-[6px] px-[12px] pb-[8px]", children: [_jsx("p", { className: "w-full text-[11px] text-[var(--adaptive-black600)]", children: team.approveAsRole }), assignableRoles.map((role) => (_jsx("button", { type: "button", onClick: () => setApproveRole(role), className: `rounded-[6px] px-[8px] py-[4px] text-[11px] ${approveRole === role

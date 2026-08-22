@@ -1,3 +1,4 @@
+import { isRemoteLoginMethod, type FivePixelsSync } from "@/constants/loginMethod.js";
 import { createLocalStorageReportAdapter } from "@/storage/local/localStorageAdapter.js";
 import type { ReportPersistenceHandlers, ReportStorageAdapter } from "@/types/report.js";
 
@@ -5,6 +6,7 @@ export type ResolveStorageAdapterOptions = {
     projectId: string;
     environment?: string;
     appVersion?: string;
+    sync?: FivePixelsSync;
     onList?: ReportPersistenceHandlers["onList"];
     onListAll?: ReportPersistenceHandlers["onListAll"];
     onListReplies?: ReportPersistenceHandlers["onListReplies"];
@@ -34,6 +36,12 @@ export type PersistenceStatus =
           mode: "conflict";
           missingHandlers: RequiredPersistenceHandlerName[];
           ignoredHandlers: PersistenceHandlerName[];
+      }
+    | {
+          /** Remote sync (`api` / `artemis`) without a complete persistence API — no localStorage fallback. */
+          mode: "unavailable";
+          missingHandlers: RequiredPersistenceHandlerName[];
+          ignoredHandlers: PersistenceHandlerName[];
       };
 
 export function hasCustomPersistenceHandlers(
@@ -43,18 +51,31 @@ export function hasCustomPersistenceHandlers(
 }
 
 export function resolvePersistenceStatus(
-    options: Pick<ResolveStorageAdapterOptions, PersistenceHandlerName>,
+    options: Pick<ResolveStorageAdapterOptions, PersistenceHandlerName | "sync">,
 ): PersistenceStatus {
+    const sync = options.sync ?? "local";
     const providedHandlers = PERSISTENCE_HANDLER_NAMES.filter((name) => Boolean(options[name]));
+    const missingHandlers = REQUIRED_PERSISTENCE_HANDLER_NAMES.filter((name) => !options[name]);
+    const requiresRemotePersistence = isRemoteLoginMethod(sync);
+
+    if (missingHandlers.length === 0 && providedHandlers.length > 0) {
+        return { mode: "API", missingHandlers: [], ignoredHandlers: [] };
+    }
+
+    if (hasCustomPersistenceHandlers(options)) {
+        return { mode: "API", missingHandlers: [], ignoredHandlers: [] };
+    }
+
+    if (requiresRemotePersistence) {
+        return {
+            mode: "unavailable",
+            missingHandlers: [...missingHandlers],
+            ignoredHandlers: providedHandlers,
+        };
+    }
 
     if (providedHandlers.length === 0) {
         return { mode: "localStorage", missingHandlers: [], ignoredHandlers: [] };
-    }
-
-    const missingHandlers = REQUIRED_PERSISTENCE_HANDLER_NAMES.filter((name) => !options[name]);
-
-    if (missingHandlers.length === 0) {
-        return { mode: "API", missingHandlers: [], ignoredHandlers: [] };
     }
 
     return {
@@ -79,10 +100,24 @@ function createStorageAdapterFromHandlers(
     };
 }
 
+/** No localStorage reads — used when remote sync requires API persistence that is not wired. */
+export function createUnavailableReportAdapter(): ReportStorageAdapter {
+    const unavailable = async () => {
+        throw new Error("[fivepixels] Persistence API is not configured. Pass onList, onCreate, and onUpdate.");
+    };
+
+    return {
+        list: async () => [],
+        create: unavailable,
+        update: unavailable,
+    };
+}
+
 export function resolveStorageAdapter({
     projectId,
     environment,
     appVersion,
+    sync = "local",
     onList,
     onListAll,
     onListReplies,
@@ -96,6 +131,7 @@ export function resolveStorageAdapter({
     persistenceStatus: PersistenceStatus;
 } {
     const persistenceStatus = resolvePersistenceStatus({
+        sync,
         onList,
         onListAll,
         onListReplies,
@@ -104,12 +140,6 @@ export function resolveStorageAdapter({
         onUpdate,
         onDelete,
     });
-
-    if (persistenceStatus.mode === "conflict") {
-        console.warn(
-            "[fivepixels] Custom persistence requires onList, onCreate, and onUpdate together. Falling back to localStorage.",
-        );
-    }
 
     if (hasCustomPersistenceHandlers({ onList, onCreate, onUpdate })) {
         return {
@@ -123,8 +153,26 @@ export function resolveStorageAdapter({
                 onDelete,
             }),
             usesLocalStorage: false,
+            persistenceStatus: { mode: "API", missingHandlers: [], ignoredHandlers: [] },
+        };
+    }
+
+    if (persistenceStatus.mode === "unavailable") {
+        console.warn(
+            "[fivepixels] Remote sync requires onList, onCreate, and onUpdate. localStorage feedback is disabled until those handlers are provided.",
+            persistenceStatus.missingHandlers,
+        );
+        return {
+            adapter: createUnavailableReportAdapter(),
+            usesLocalStorage: false,
             persistenceStatus,
         };
+    }
+
+    if (persistenceStatus.mode === "conflict") {
+        console.warn(
+            "[fivepixels] Custom persistence requires onList, onCreate, and onUpdate together. Falling back to localStorage.",
+        );
     }
 
     return {

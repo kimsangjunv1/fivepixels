@@ -35,6 +35,9 @@ export declare function StarIcon({ className }: {
 export declare function InfoIcon({ className }: {
     className?: string;
 }): import("react").JSX.Element;
+export declare function LockIcon({ className }: {
+    className?: string;
+}): import("react").JSX.Element;
 export declare function CheckIcon({ className }: {
     className?: string;
 }): import("react").JSX.Element;

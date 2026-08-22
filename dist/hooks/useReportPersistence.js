@@ -58,11 +58,12 @@ function enrichReports(reports, replyHistoryByReportId) {
         return mergeRepliesIntoReport(report, history.items);
     });
 }
-export function useReportPersistence({ projectId, environment, appVersion, fields, onList, onListAll, onListReplies, onCreate, onCreateReply, onUpdate, onDelete, routeKey, fetchEnabled = true, listFetchEnabled = true, allReportsFetchEnabled = false, replyHistory, }) {
+export function useReportPersistence({ projectId, environment, appVersion, sync = "local", fields, onList, onListAll, onListReplies, onCreate, onCreateReply, onUpdate, onDelete, routeKey, fetchEnabled = true, listFetchEnabled = true, allReportsFetchEnabled = false, replyHistory, }) {
     const { adapter: storageAdapterInstance, usesLocalStorage, persistenceStatus } = useMemo(() => resolveStorageAdapter({
         projectId,
         environment,
         appVersion,
+        sync,
         onList,
         onListAll,
         onListReplies,
@@ -70,7 +71,7 @@ export function useReportPersistence({ projectId, environment, appVersion, field
         onCreateReply,
         onUpdate,
         onDelete,
-    }), [appVersion, environment, onCreate, onCreateReply, onDelete, onList, onListAll, onListReplies, onUpdate, projectId]);
+    }), [appVersion, environment, onCreate, onCreateReply, onDelete, onList, onListAll, onListReplies, onUpdate, projectId, sync]);
     const canTransferFeedback = usesLocalStorage;
     const usesLazyReplies = Boolean(storageAdapterInstance.listReplies);
     const usesCreateReply = Boolean(storageAdapterInstance.createReply);

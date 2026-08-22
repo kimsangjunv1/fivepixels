@@ -65,6 +65,7 @@ export type ReportPanelShellConfig = {
     projectId: string;
     environment?: string;
     appVersion?: string;
+    sync?: import("@/constants/loginMethod.js").FivePixelsSync;
     panelAppearance: ReportAppearance;
     tooltipAppearance: ReportAppearance;
     questionThreadDefault?: QuestionThreadDisplay;
@@ -91,6 +92,7 @@ export function useReportPanelShell({
     projectId,
     environment,
     appVersion,
+    sync = "local",
     panelAppearance,
     tooltipAppearance,
     questionThreadDefault = "expanded",
@@ -281,6 +283,7 @@ export function useReportPanelShell({
         projectId,
         environment,
         appVersion,
+        sync,
         fields,
         onList,
         onListAll,

@@ -39,6 +39,7 @@ function AppContent() {
                     version: "1.0.0",
                 }}
                 // mode="presentation"
+                sync="api"
                 team={{
                     reviewers: [
                         {
@@ -79,12 +80,12 @@ function AppContent() {
                         // },
                     ],
                 }}
-                onApiLogin={exampleApiLogin}
-                onApiRegister={exampleApiRegister}
-                onArtemisLogin={exampleArtemisLogin}
-                onNavigate={(pathname) => {
-                    navigate(pathname);
-                }}
+                // onApiLogin={exampleApiLogin}
+                // onApiRegister={exampleApiRegister}
+                // onArtemisLogin={exampleArtemisLogin}
+                // onNavigate={(pathname) => {
+                //     navigate(pathname);
+                // }}
             />
             <AppRouter />
         </>

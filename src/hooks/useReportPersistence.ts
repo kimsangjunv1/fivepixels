@@ -28,6 +28,7 @@ export type ReportPersistenceConfig = {
     projectId: string;
     environment?: string;
     appVersion?: string;
+    sync?: import("@/constants/loginMethod.js").FivePixelsSync;
     fields: ReportField[];
     onList?: (params: { pathname: string }) => Promise<ReportFeedback[]>;
     onListAll?: ReportPersistenceHandlers["onListAll"];
@@ -106,6 +107,7 @@ export function useReportPersistence({
     projectId,
     environment,
     appVersion,
+    sync = "local",
     fields,
     onList,
     onListAll,
@@ -126,6 +128,7 @@ export function useReportPersistence({
                 projectId,
                 environment,
                 appVersion,
+                sync,
                 onList,
                 onListAll,
                 onListReplies,
@@ -134,7 +137,7 @@ export function useReportPersistence({
                 onUpdate,
                 onDelete,
             }),
-        [appVersion, environment, onCreate, onCreateReply, onDelete, onList, onListAll, onListReplies, onUpdate, projectId],
+        [appVersion, environment, onCreate, onCreateReply, onDelete, onList, onListAll, onListReplies, onUpdate, projectId, sync],
     );
     const canTransferFeedback = usesLocalStorage;
     const usesLazyReplies = Boolean(storageAdapterInstance.listReplies);

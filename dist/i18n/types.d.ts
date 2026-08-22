@@ -123,6 +123,9 @@ export type ReportMessages = {
         persistenceRequiredForApi: string;
         persistenceProvidedButIgnored: string;
         persistenceConflictFix: string;
+        integrationLockRequired: string;
+        integrationLockMissing: (handlers: string) => string;
+        integrationLockDataTransfer: string;
     };
     feedbackList: {
         scopeAriaLabel: string;
@@ -149,6 +152,8 @@ export type ReportMessages = {
         emptyTitle: string;
         emptyNoFeedback: string;
         emptyNoMatch: string;
+        emptyPersistenceRequired: string;
+        emptyPersistenceRequiredHint: string;
         loadingMore: string;
         deleteAriaLabel: string;
         deleteConfirmAriaLabel: string;

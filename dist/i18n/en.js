@@ -118,6 +118,9 @@ export const en = {
         persistenceRequiredForApi: "Required for API",
         persistenceProvidedButIgnored: "Provided but ignored",
         persistenceConflictFix: "Pass onList, onCreate, and onUpdate together to use API storage.",
+        integrationLockRequired: "Integration required",
+        integrationLockMissing: (handlers) => `Integration required\n${handlers}`,
+        integrationLockDataTransfer: "Data transfer is only available in localStorage mode.",
     },
     feedbackList: {
         scopeAriaLabel: "Feedback scope",
@@ -149,6 +152,8 @@ export const en = {
         emptyTitle: "No feedback to display.",
         emptyNoFeedback: 'No feedback yet.\nPress "Add feedback" to leave the first one.',
         emptyNoMatch: "No results match the current filters.",
+        emptyPersistenceRequired: "Persistence API is required",
+        emptyPersistenceRequiredHint: "Wire onList, onCreate, and onUpdate. localStorage feedback is hidden in API sync mode.",
         loadingMore: "Loading more...",
         deleteAriaLabel: "Delete feedback",
         deleteConfirmAriaLabel: "Press again to delete feedback",

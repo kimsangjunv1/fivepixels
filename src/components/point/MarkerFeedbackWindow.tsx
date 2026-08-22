@@ -19,6 +19,7 @@ import { canDeleteFeedback } from "@/utils/feedback/feedbackPermissions.js";
 import { canEditReportCases } from "@/utils/report/reportCases.js";
 import { mentionMessageToPlainText } from "@/utils/mention/elementMentions.js";
 import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
+import { useIntegrationLock } from "@/components/ui/IntegrationLock.js";
 import { CornerResizeGhost } from "@/components/ui/CornerResizeGhost.js";
 import { MOTION } from "@/constants/motionClasses.js";
 import { ACCENT_COLOR } from "@/constants/accentColors.js";
@@ -411,6 +412,7 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
         isComposingNewCase,
         projectId,
     } = useReport();
+    const deleteLock = useIntegrationLock("deleteFeedback");
 
     const windowRef = useRef<HTMLDivElement | null>(null);
     const surfaceRef = useRef<HTMLDivElement | null>(null);
@@ -1006,6 +1008,8 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
             reportId={report.id}
             onDelete={handleDelete}
             disabled={isDeleting}
+            locked={deleteLock.locked}
+            lockLabel={deleteLock.tooltipLabel}
             messages={messages}
             className={`${HEADER_BUTTON_CLASS} disabled:opacity-50`}
             iconClassName="h-[15px] w-[15px]"

@@ -1,4 +1,7 @@
 import type { ReportMessages } from "@/i18n/types.js";
+import { LockIcon } from "@/components/icons/Icons.js";
+import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
+import { useIntegrationLock } from "@/components/ui/IntegrationLock.js";
 import {
     PANEL_GATE_BACK_BUTTON_CLASS,
     PANEL_GATE_DESCRIPTION_CLASS,
@@ -85,6 +88,10 @@ export function ApiLoginStep({
     onSignUp: () => void;
     onBack: () => void;
 }) {
+    const loginLock = useIntegrationLock("apiLogin");
+    const registerLock = useIntegrationLock("apiRegister");
+    const loginDisabled = !loginId.trim() || !password || busy || loginLock.locked;
+
     return (
         <>
             <div>
@@ -97,22 +104,36 @@ export function ApiLoginStep({
             </div>
             {error ? <p className="text-[12px] text-rose-700">{error}</p> : null}
             <div className="flex flex-col gap-[8px]">
-                <button
-                    type="button"
-                    disabled={!loginId.trim() || !password || busy}
-                    onClick={onLogin}
-                    className={`${PANEL_GATE_PRIMARY_BUTTON_CLASS} py-[10px]`}
+                <HoverTooltip
+                    label={loginLock.locked ? loginLock.tooltipLabel : undefined}
+                    multiline={loginLock.locked}
+                    disabled={!loginLock.locked}
                 >
-                    {copy.loginAction}
-                </button>
-                <button
-                    type="button"
-                    disabled={busy}
-                    onClick={onSignUp}
-                    className="rounded-[8px] border border-[var(--adaptive-black200)] px-[12px] py-[10px] text-[12px] font-semibold text-[var(--adaptive-black700)] hover:bg-[var(--adaptive-black100)]"
+                    <button
+                        type="button"
+                        disabled={loginDisabled}
+                        onClick={onLogin}
+                        className={`${PANEL_GATE_PRIMARY_BUTTON_CLASS} inline-flex w-full items-center justify-center gap-[6px] py-[10px]`}
+                    >
+                        {loginLock.locked ? <LockIcon className="h-[12px] w-[12px]" /> : null}
+                        {copy.loginAction}
+                    </button>
+                </HoverTooltip>
+                <HoverTooltip
+                    label={registerLock.locked ? registerLock.tooltipLabel : undefined}
+                    multiline={registerLock.locked}
+                    disabled={!registerLock.locked}
                 >
-                    {copy.signUpAction}
-                </button>
+                    <button
+                        type="button"
+                        disabled={busy || registerLock.locked}
+                        onClick={onSignUp}
+                        className="inline-flex items-center justify-center gap-[6px] rounded-[8px] border border-[var(--adaptive-black200)] px-[12px] py-[10px] text-[12px] font-semibold text-[var(--adaptive-black700)] hover:bg-[var(--adaptive-black100)] disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                        {registerLock.locked ? <LockIcon className="h-[12px] w-[12px]" /> : null}
+                        {copy.signUpAction}
+                    </button>
+                </HoverTooltip>
             </div>
             <StepFooter backLabel={copy.back} onBack={onBack} />
         </>
@@ -150,7 +171,8 @@ export function ApiRegisterStep({
     onSubmit: () => void;
     onBack: () => void;
 }) {
-    const canSubmit = Boolean(loginId.trim() && password && passwordConfirm && email.trim() && username.trim()) && !busy;
+    const registerLock = useIntegrationLock("apiRegister");
+    const canSubmit = Boolean(loginId.trim() && password && passwordConfirm && email.trim() && username.trim()) && !busy && !registerLock.locked;
 
     return (
         <>
@@ -165,7 +187,27 @@ export function ApiRegisterStep({
                 <OnboardingField label={copy.emailLabel} value={email} onChange={onEmailChange} type="email" />
                 <OnboardingField label={copy.usernameLabel} value={username} onChange={onUsernameChange} />
             </div>
-            <StepFooter backLabel={copy.back} onBack={onBack} nextLabel={copy.registerSubmit} onNext={onSubmit} nextDisabled={!canSubmit} />
+            <HoverTooltip
+                label={registerLock.locked ? registerLock.tooltipLabel : undefined}
+                multiline={registerLock.locked}
+                disabled={!registerLock.locked}
+                className="w-full"
+            >
+                <div className={`flex items-center ${"justify-between"}`}>
+                    <button type="button" onClick={onBack} className={PANEL_GATE_BACK_BUTTON_CLASS}>
+                        {copy.back}
+                    </button>
+                    <button
+                        type="button"
+                        disabled={!canSubmit}
+                        onClick={onSubmit}
+                        className={`${PANEL_GATE_PRIMARY_BUTTON_CLASS} inline-flex items-center gap-[6px]`}
+                    >
+                        {registerLock.locked ? <LockIcon className="h-[12px] w-[12px]" /> : null}
+                        {copy.registerSubmit}
+                    </button>
+                </div>
+            </HoverTooltip>
         </>
     );
 }
@@ -220,21 +262,29 @@ export function ArtemisLoginStep({
     onGoogleLogin: () => void;
     onBack: () => void;
 }) {
+    const artemisLock = useIntegrationLock("artemisLogin");
+
     return (
         <>
             <div>
                 <h6 className={PANEL_GATE_TITLE_CLASS}>{copy.artemisLoginTitle}</h6>
                 <p className={PANEL_GATE_DESCRIPTION_CLASS}>{copy.artemisLoginDescription}</p>
             </div>
-            <button
-                type="button"
-                disabled={busy}
-                onClick={onGoogleLogin}
-                className="flex items-center justify-center gap-[8px] rounded-[8px] border border-[var(--adaptive-black200)] bg-[var(--adaptive-surface)] px-[12px] py-[10px] text-[12px] font-semibold text-[var(--adaptive-black700)] hover:bg-[var(--adaptive-black100)] disabled:opacity-50"
+            <HoverTooltip
+                label={artemisLock.locked ? artemisLock.tooltipLabel : undefined}
+                multiline={artemisLock.locked}
+                disabled={!artemisLock.locked}
             >
-                <GoogleGlyph />
-                {copy.googleLogin}
-            </button>
+                <button
+                    type="button"
+                    disabled={busy || artemisLock.locked}
+                    onClick={onGoogleLogin}
+                    className="flex w-full items-center justify-center gap-[8px] rounded-[8px] border border-[var(--adaptive-black200)] bg-[var(--adaptive-surface)] px-[12px] py-[10px] text-[12px] font-semibold text-[var(--adaptive-black700)] hover:bg-[var(--adaptive-black100)] disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                    {artemisLock.locked ? <LockIcon className="h-[12px] w-[12px]" /> : <GoogleGlyph />}
+                    {copy.googleLogin}
+                </button>
+            </HoverTooltip>
             {error ? <p className="text-[12px] text-rose-700">{error}</p> : null}
             <StepFooter backLabel={copy.back} onBack={onBack} />
         </>

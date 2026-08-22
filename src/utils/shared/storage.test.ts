@@ -22,6 +22,22 @@ describe("resolveStorageAdapter", () => {
         });
     });
 
+    it("does not fall back to localStorage when sync is api without persistence handlers", async () => {
+        const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+        const { usesLocalStorage, persistenceStatus, adapter } = resolveStorageAdapter({
+            projectId: "demo-app",
+            sync: "api",
+        });
+
+        expect(usesLocalStorage).toBe(false);
+        expect(persistenceStatus.mode).toBe("unavailable");
+        expect(persistenceStatus.missingHandlers).toEqual(["onList", "onCreate", "onUpdate"]);
+        await expect(adapter.list({ pathname: "/demo" })).resolves.toEqual([]);
+        await expect(adapter.create({} as CreateReportFeedbackPayload)).rejects.toThrow(/Persistence API is not configured/);
+        expect(warn).toHaveBeenCalled();
+        warn.mockRestore();
+    });
+
     it("wraps custom handlers as an adapter", async () => {
         const onList = vi.fn(async () => [sampleFeedback]);
         const onCreate = vi.fn(async (payload: CreateReportFeedbackPayload) => ({
@@ -41,6 +57,7 @@ describe("resolveStorageAdapter", () => {
 
         const { adapter, usesLocalStorage, persistenceStatus } = resolveStorageAdapter({
             projectId: "demo-app",
+            sync: "api",
             onList,
             onListAll,
             onCreate,
@@ -60,7 +77,7 @@ describe("resolveStorageAdapter", () => {
         expect(onListAll).toHaveBeenCalledWith({ limit: 100 });
     });
 
-    it("reports a conflict and falls back to localStorage when required handlers are missing", () => {
+    it("reports a conflict and falls back to localStorage when required handlers are missing in local sync", () => {
         const onList = vi.fn(async () => [sampleFeedback]);
         const onCreate = vi.fn(async (payload: CreateReportFeedbackPayload) => ({
             ...payload,
@@ -73,6 +90,7 @@ describe("resolveStorageAdapter", () => {
 
         const { usesLocalStorage, persistenceStatus } = resolveStorageAdapter({
             projectId: "demo-app",
+            sync: "local",
             onList,
             onCreate,
             onDelete,
@@ -88,6 +106,22 @@ describe("resolveStorageAdapter", () => {
             "[fivepixels] Custom persistence requires onList, onCreate, and onUpdate together. Falling back to localStorage.",
         );
 
+        warn.mockRestore();
+    });
+
+    it("does not fall back to localStorage when remote sync has incomplete persistence handlers", () => {
+        const onList = vi.fn(async () => [sampleFeedback]);
+        const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+
+        const { usesLocalStorage, persistenceStatus } = resolveStorageAdapter({
+            projectId: "demo-app",
+            sync: "artemis",
+            onList,
+        });
+
+        expect(usesLocalStorage).toBe(false);
+        expect(persistenceStatus.mode).toBe("unavailable");
+        expect(persistenceStatus.missingHandlers).toEqual(["onCreate", "onUpdate"]);
         warn.mockRestore();
     });
 });

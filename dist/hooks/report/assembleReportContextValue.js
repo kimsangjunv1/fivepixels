@@ -1,11 +1,39 @@
-import { canAccessTeamSettings, isReportAuthorAdmin, resolveAuthorRole } from "../../utils/report/teamManagement.js";
+import { buildIntegrationCapabilities, persistenceMissingHandlerNames } from "../../utils/integration/integrationGate.js";
+import { canAccessTeamSettings, hasTeamAdminHandlers, hasTeamRequestHandler, isReportAuthorAdmin, resolveAuthorRole } from "../../utils/report/teamManagement.js";
 /**
  * Flat context value for ReportProvider slices.
  * Keys stay flat (see reportContextPartitions). Domain hooks → this assembler → UI.
  */
-export function assembleReportContextValue({ panel, auth, draft, markers, mutations, reply, fields, projectId, environment, appVersion, showFeedbackList, teamReviewers, onListReviewers, onListReviewerRequests, onCreateReviewerRequest, onResolveReviewerRequest, onRegisterReviewer, onUpdateReviewer, onPanelBootstrap, onActivitySummary, visibleShortcutKeys, overlayRef, replyHistory, selectReport, beginFeedbackEdit, cancelDraft, }) {
+export function assembleReportContextValue({ panel, auth, draft, markers, mutations, reply, fields, projectId, environment, appVersion, showFeedbackList, teamReviewers, onListReviewers, onListReviewerRequests, onCreateReviewerRequest, onResolveReviewerRequest, onRegisterReviewer, onUpdateReviewer, onApiLogin, onApiRegister, onArtemisLogin, onPanelBootstrap, onActivitySummary, github, canDeleteViaStorage, usesLazyReplies, usesCreateReply, visibleShortcutKeys, overlayRef, replyHistory, selectReport, beginFeedbackEdit, cancelDraft, }) {
     const authorizedId = auth.authorizedAuthors[0]?.id;
     const teamActor = authorizedId ? (teamReviewers.find((reviewer) => reviewer.id === authorizedId) ?? null) : null;
+    const teamHandlers = {
+        onListReviewers,
+        onListReviewerRequests,
+        onCreateReviewerRequest,
+        onResolveReviewerRequest,
+        onRegisterReviewer,
+        onUpdateReviewer,
+    };
+    const integrationCapabilities = buildIntegrationCapabilities({
+        sync: auth.loginMethod ?? "local",
+        persistenceMode: panel.persistenceStatus.mode,
+        persistenceMissingHandlers: persistenceMissingHandlerNames(panel.persistenceStatus),
+        listAll: panel.canListAllFeedback,
+        delete: canDeleteViaStorage,
+        listReplies: usesLazyReplies,
+        createReply: usesCreateReply,
+        activitySummary: Boolean(onActivitySummary),
+        panelBootstrap: Boolean(onPanelBootstrap),
+        githubConfigured: Boolean(github) && github?.enabled !== false,
+        githubIssue: Boolean(github?.onCreate) && github?.enabled !== false,
+        apiLogin: Boolean(onApiLogin),
+        apiRegister: Boolean(onApiRegister),
+        artemisLogin: Boolean(onArtemisLogin),
+        teamRequest: hasTeamRequestHandler(teamHandlers),
+        teamManage: hasTeamAdminHandlers(teamHandlers),
+        dataTransfer: panel.canTransferFeedback,
+    });
     return {
         panelAppearance: panel.panelAppearance,
         setPanelAppearance: panel.setPanelAppearance,
@@ -23,6 +51,7 @@ export function assembleReportContextValue({ panel, auth, draft, markers, mutati
         teamActorRole: teamActor ? resolveAuthorRole(teamActor) : null,
         isTeamAdmin: isReportAuthorAdmin(teamActor),
         canAccessTeamSettings: canAccessTeamSettings(teamActor),
+        integrationCapabilities,
         onListReviewers,
         onListReviewerRequests,
         onCreateReviewerRequest,

@@ -1,3 +1,4 @@
+import { isRemoteLoginMethod } from "../../constants/loginMethod.js";
 import { createLocalStorageReportAdapter } from "../../storage/local/localStorageAdapter.js";
 const REQUIRED_PERSISTENCE_HANDLER_NAMES = ["onList", "onCreate", "onUpdate"];
 const PERSISTENCE_HANDLER_NAMES = [
@@ -13,13 +14,25 @@ export function hasCustomPersistenceHandlers(options) {
     return Boolean(options.onList && options.onCreate && options.onUpdate);
 }
 export function resolvePersistenceStatus(options) {
+    const sync = options.sync ?? "local";
     const providedHandlers = PERSISTENCE_HANDLER_NAMES.filter((name) => Boolean(options[name]));
+    const missingHandlers = REQUIRED_PERSISTENCE_HANDLER_NAMES.filter((name) => !options[name]);
+    const requiresRemotePersistence = isRemoteLoginMethod(sync);
+    if (missingHandlers.length === 0 && providedHandlers.length > 0) {
+        return { mode: "API", missingHandlers: [], ignoredHandlers: [] };
+    }
+    if (hasCustomPersistenceHandlers(options)) {
+        return { mode: "API", missingHandlers: [], ignoredHandlers: [] };
+    }
+    if (requiresRemotePersistence) {
+        return {
+            mode: "unavailable",
+            missingHandlers: [...missingHandlers],
+            ignoredHandlers: providedHandlers,
+        };
+    }
     if (providedHandlers.length === 0) {
         return { mode: "localStorage", missingHandlers: [], ignoredHandlers: [] };
-    }
-    const missingHandlers = REQUIRED_PERSISTENCE_HANDLER_NAMES.filter((name) => !options[name]);
-    if (missingHandlers.length === 0) {
-        return { mode: "API", missingHandlers: [], ignoredHandlers: [] };
     }
     return {
         mode: "conflict",
@@ -38,8 +51,20 @@ function createStorageAdapterFromHandlers(handlers) {
         remove: handlers.onDelete,
     };
 }
-export function resolveStorageAdapter({ projectId, environment, appVersion, onList, onListAll, onListReplies, onCreate, onCreateReply, onUpdate, onDelete, }) {
+/** No localStorage reads — used when remote sync requires API persistence that is not wired. */
+export function createUnavailableReportAdapter() {
+    const unavailable = async () => {
+        throw new Error("[fivepixels] Persistence API is not configured. Pass onList, onCreate, and onUpdate.");
+    };
+    return {
+        list: async () => [],
+        create: unavailable,
+        update: unavailable,
+    };
+}
+export function resolveStorageAdapter({ projectId, environment, appVersion, sync = "local", onList, onListAll, onListReplies, onCreate, onCreateReply, onUpdate, onDelete, }) {
     const persistenceStatus = resolvePersistenceStatus({
+        sync,
         onList,
         onListAll,
         onListReplies,
@@ -48,9 +73,6 @@ export function resolveStorageAdapter({ projectId, environment, appVersion, onLi
         onUpdate,
         onDelete,
     });
-    if (persistenceStatus.mode === "conflict") {
-        console.warn("[fivepixels] Custom persistence requires onList, onCreate, and onUpdate together. Falling back to localStorage.");
-    }
     if (hasCustomPersistenceHandlers({ onList, onCreate, onUpdate })) {
         return {
             adapter: createStorageAdapterFromHandlers({
@@ -63,8 +85,19 @@ export function resolveStorageAdapter({ projectId, environment, appVersion, onLi
                 onDelete,
             }),
             usesLocalStorage: false,
+            persistenceStatus: { mode: "API", missingHandlers: [], ignoredHandlers: [] },
+        };
+    }
+    if (persistenceStatus.mode === "unavailable") {
+        console.warn("[fivepixels] Remote sync requires onList, onCreate, and onUpdate. localStorage feedback is disabled until those handlers are provided.", persistenceStatus.missingHandlers);
+        return {
+            adapter: createUnavailableReportAdapter(),
+            usesLocalStorage: false,
             persistenceStatus,
         };
+    }
+    if (persistenceStatus.mode === "conflict") {
+        console.warn("[fivepixels] Custom persistence requires onList, onCreate, and onUpdate together. Falling back to localStorage.");
     }
     return {
         adapter: createLocalStorageReportAdapter({ projectId, environment, appVersion }),

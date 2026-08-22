@@ -9,14 +9,17 @@ import type {
     ReportActivitySummaryParams,
     ReportActivitySummaryResult,
     ReportAuthor,
+    ReportAuthHandlers,
     ReportFeedback,
     ReportField,
+    ReportGitHubConfig,
     ReportPanelBootstrapParams,
     ReportPanelBootstrapResult,
     ReportTeamHandlers,
 } from "@/types/report.js";
 import type { ResolvedReplyHistoryConfig } from "@/utils/report/reportUi.js";
-import { canAccessTeamSettings, isReportAuthorAdmin, resolveAuthorRole } from "@/utils/report/teamManagement.js";
+import { buildIntegrationCapabilities, persistenceMissingHandlerNames } from "@/utils/integration/integrationGate.js";
+import { canAccessTeamSettings, hasTeamAdminHandlers, hasTeamRequestHandler, isReportAuthorAdmin, resolveAuthorRole } from "@/utils/report/teamManagement.js";
 
 type AssembleArgs = {
     panel: ReturnType<typeof useReportPanelShell>;
@@ -37,8 +40,15 @@ type AssembleArgs = {
     onResolveReviewerRequest?: ReportTeamHandlers["onResolveReviewerRequest"];
     onRegisterReviewer?: ReportTeamHandlers["onRegisterReviewer"];
     onUpdateReviewer?: ReportTeamHandlers["onUpdateReviewer"];
+    onApiLogin?: ReportAuthHandlers["onApiLogin"];
+    onApiRegister?: ReportAuthHandlers["onApiRegister"];
+    onArtemisLogin?: ReportAuthHandlers["onArtemisLogin"];
     onPanelBootstrap?: (params: ReportPanelBootstrapParams) => Promise<ReportPanelBootstrapResult>;
     onActivitySummary?: (params: ReportActivitySummaryParams) => Promise<ReportActivitySummaryResult>;
+    github?: ReportGitHubConfig;
+    canDeleteViaStorage: boolean;
+    usesLazyReplies: boolean;
+    usesCreateReply: boolean;
     visibleShortcutKeys: boolean;
     overlayRef: RefObject<HTMLDivElement>;
     replyHistory: ResolvedReplyHistoryConfig;
@@ -70,8 +80,15 @@ export function assembleReportContextValue({
     onResolveReviewerRequest,
     onRegisterReviewer,
     onUpdateReviewer,
+    onApiLogin,
+    onApiRegister,
+    onArtemisLogin,
     onPanelBootstrap,
     onActivitySummary,
+    github,
+    canDeleteViaStorage,
+    usesLazyReplies,
+    usesCreateReply,
     visibleShortcutKeys,
     overlayRef,
     replyHistory,
@@ -81,6 +98,33 @@ export function assembleReportContextValue({
 }: AssembleArgs) {
     const authorizedId = auth.authorizedAuthors[0]?.id;
     const teamActor = authorizedId ? (teamReviewers.find((reviewer) => reviewer.id === authorizedId) ?? null) : null;
+    const teamHandlers = {
+        onListReviewers,
+        onListReviewerRequests,
+        onCreateReviewerRequest,
+        onResolveReviewerRequest,
+        onRegisterReviewer,
+        onUpdateReviewer,
+    };
+    const integrationCapabilities = buildIntegrationCapabilities({
+        sync: auth.loginMethod ?? "local",
+        persistenceMode: panel.persistenceStatus.mode,
+        persistenceMissingHandlers: persistenceMissingHandlerNames(panel.persistenceStatus),
+        listAll: panel.canListAllFeedback,
+        delete: canDeleteViaStorage,
+        listReplies: usesLazyReplies,
+        createReply: usesCreateReply,
+        activitySummary: Boolean(onActivitySummary),
+        panelBootstrap: Boolean(onPanelBootstrap),
+        githubConfigured: Boolean(github) && github?.enabled !== false,
+        githubIssue: Boolean(github?.onCreate) && github?.enabled !== false,
+        apiLogin: Boolean(onApiLogin),
+        apiRegister: Boolean(onApiRegister),
+        artemisLogin: Boolean(onArtemisLogin),
+        teamRequest: hasTeamRequestHandler(teamHandlers),
+        teamManage: hasTeamAdminHandlers(teamHandlers),
+        dataTransfer: panel.canTransferFeedback,
+    });
 
     return {
         panelAppearance: panel.panelAppearance,
@@ -99,6 +143,7 @@ export function assembleReportContextValue({
         teamActorRole: teamActor ? resolveAuthorRole(teamActor) : null,
         isTeamAdmin: isReportAuthorAdmin(teamActor),
         canAccessTeamSettings: canAccessTeamSettings(teamActor),
+        integrationCapabilities,
         onListReviewers,
         onListReviewerRequests,
         onCreateReviewerRequest,

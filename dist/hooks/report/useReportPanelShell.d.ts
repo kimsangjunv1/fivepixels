@@ -15,6 +15,7 @@ export type ReportPanelShellConfig = {
     projectId: string;
     environment?: string;
     appVersion?: string;
+    sync?: import("../../constants/loginMethod.js").FivePixelsSync;
     panelAppearance: ReportAppearance;
     tooltipAppearance: ReportAppearance;
     questionThreadDefault?: QuestionThreadDisplay;
@@ -38,7 +39,7 @@ export type ReportPanelShellConfig = {
     sessionActorName: string | null;
     bridgesRef: MutableRefObject<ReportPanelShellBridges>;
 };
-export declare function useReportPanelShell({ projectId, environment, appVersion, panelAppearance, tooltipAppearance, questionThreadDefault, fields, showFeedbackList, initialLocale, messageOverrides, onList, onListAll, onPanelBootstrap, onActivitySummary, onListReplies, onCreate, onCreateReply, onUpdate, onDelete, routeKey, replyHistory, sessionActorName, bridgesRef, }: ReportPanelShellConfig): {
+export declare function useReportPanelShell({ projectId, environment, appVersion, sync, panelAppearance, tooltipAppearance, questionThreadDefault, fields, showFeedbackList, initialLocale, messageOverrides, onList, onListAll, onPanelBootstrap, onActivitySummary, onListReplies, onCreate, onCreateReply, onUpdate, onDelete, routeKey, replyHistory, sessionActorName, bridgesRef, }: ReportPanelShellConfig): {
     panelAppearance: ReportAppearance;
     setPanelAppearance: (nextAppearance: ReportAppearance) => void;
     tooltipAppearance: ReportAppearance;

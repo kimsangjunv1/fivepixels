@@ -6,7 +6,9 @@ import { DEFAULT_FEEDBACK_MODE_DOT_COLORS, FONT_FAMILY_SUGGESTIONS, MARKER_FILL_
 import type { AppearanceScale, MarkerFillStyle, MarkerShape } from "@/constants/markerAppearance.js";
 import { useReportPreferences, useReportSession } from "@/providers/reportContext.js";
 import { formatPresentationViewerLabel } from "@/utils/report/reportTeam.js";
-import { ChevronLeftIcon, ChevronRightIcon } from "@/components/icons/Icons.js";
+import { ChevronLeftIcon, ChevronRightIcon, LockIcon } from "@/components/icons/Icons.js";
+import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
+import { useIntegrationLock } from "@/components/ui/IntegrationLock.js";
 import { AppearanceThemePicker } from "./AppearanceThemePicker.js";
 import { HexColorField } from "./HexColorField.js";
 import { MarkerShapePicker } from "./MarkerShapePicker.js";
@@ -48,20 +50,61 @@ function SettingsSection({ label, children }: { label: string; children: ReactNo
     );
 }
 
-function SettingsActionButton({ disabled = false, onClick, children }: { disabled?: boolean; onClick: () => void; children: ReactNode }) {
-    return (
+function SettingsActionButton({
+    disabled = false,
+    locked = false,
+    lockLabel,
+    onClick,
+    children,
+}: {
+    disabled?: boolean;
+    locked?: boolean;
+    lockLabel?: string;
+    onClick: () => void;
+    children: ReactNode;
+}) {
+    const button = (
         <button
             type="button"
-            disabled={disabled}
+            disabled={disabled || locked}
             onClick={onClick}
             className="w-full rounded-[8px] px-[12px] py-[8px] text-left text-[13px] text-[var(--adaptive-black800)] hover:bg-[var(--adaptive-black100)] disabled:cursor-not-allowed disabled:opacity-50"
         >
-            {children}
+            <span className="inline-flex items-center gap-[6px]">
+                {locked ? <LockIcon className="h-[12px] w-[12px] shrink-0 text-[var(--adaptive-black500)]" /> : null}
+                {children}
+            </span>
         </button>
+    );
+
+    if (!locked || !lockLabel) {
+        return button;
+    }
+
+    return (
+        <HoverTooltip
+            label={lockLabel}
+            multiline
+            className="w-full"
+        >
+            {button}
+        </HoverTooltip>
     );
 }
 
-function SettingsHubRow({ title, subtitle, onClick }: { title: string; subtitle: string; onClick: () => void }) {
+function SettingsHubRow({
+    title,
+    subtitle,
+    onClick,
+    locked = false,
+    lockLabel,
+}: {
+    title: string;
+    subtitle: string;
+    onClick: () => void;
+    locked?: boolean;
+    lockLabel?: string;
+}) {
     return (
         <button
             type="button"
@@ -69,7 +112,19 @@ function SettingsHubRow({ title, subtitle, onClick }: { title: string; subtitle:
             className="flex w-full items-center gap-[10px] border-b border-[var(--adaptive-border-subtle)] px-[12px] py-[10px] text-left last:border-b-0 hover:bg-[var(--adaptive-black100)]"
         >
             <div className="min-w-0 flex-1 flex flex-col gap-[4px]">
-                <p className="text-[13px] font-semibold text-[var(--adaptive-black900)]">{title}</p>
+                <p className="inline-flex items-center gap-[6px] text-[13px] font-semibold text-[var(--adaptive-black900)]">
+                    {title}
+                    {locked ? (
+                        <HoverTooltip
+                            label={lockLabel}
+                            multiline
+                        >
+                            <span className="inline-flex text-[var(--adaptive-black500)]">
+                                <LockIcon className="h-[12px] w-[12px]" />
+                            </span>
+                        </HoverTooltip>
+                    ) : null}
+                </p>
                 <p className="truncate text-[10px] text-[var(--adaptive-black700)]">{subtitle}</p>
             </div>
             <ChevronRightIcon className="h-[14px] w-[14px] shrink-0 text-[var(--adaptive-black400)]" />
@@ -143,6 +198,8 @@ export function PanelSettings({
 }: PanelSettingsProps) {
     const [activeCategory, setActiveCategory] = useState<SettingsCategory | null>(null);
     const [activeAppearanceSection, setActiveAppearanceSection] = useState<AppearanceSection | null>(null);
+    const transferLock = useIntegrationLock("dataTransfer");
+    const teamManageLock = useIntegrationLock("teamManage");
     const {
         locale,
         setLocale,
@@ -508,12 +565,16 @@ export function PanelSettings({
                             <SettingsSection label={messages.moreMenu.sectionTransfer}>
                                 <SettingsActionButton
                                     disabled={transferDisabled}
+                                    locked={transferLock.locked}
+                                    lockLabel={transferLock.tooltipLabel}
                                     onClick={onImport}
                                 >
                                     {messages.moreMenu.import}
                                 </SettingsActionButton>
                                 <SettingsActionButton
                                     disabled={transferDisabled}
+                                    locked={transferLock.locked}
+                                    lockLabel={transferLock.tooltipLabel}
                                     onClick={onExport}
                                 >
                                     {messages.moreMenu.export}
@@ -548,6 +609,8 @@ export function PanelSettings({
                         <SettingsSection label={messages.moreMenu.sectionAdvanced}>
                             <SettingsActionButton
                                 disabled={transferDisabled}
+                                locked={transferLock.locked}
+                                lockLabel={transferLock.tooltipLabel}
                                 onClick={onCommand}
                             >
                                 {messages.moreMenu.command}
@@ -596,6 +659,8 @@ export function PanelSettings({
                 <SettingsHubRow
                     title={messages.settings.categoryTeam}
                     subtitle={messages.settings.categoryTeamSummary}
+                    locked={teamManageLock.locked}
+                    lockLabel={teamManageLock.tooltipLabel}
                     onClick={() => setActiveCategory("team")}
                 />
             ) : null}
