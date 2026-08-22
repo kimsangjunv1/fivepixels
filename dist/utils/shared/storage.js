@@ -12,6 +12,4 @@ export function resolveStorageAdapter(options) {
 export function resolvePersistenceMissingHandlers(adapter) {
     return resolveAdapterMissingHandlers(adapter);
 }
-/** @deprecated Use hasCustomPersistenceAdapter */
-export const hasCustomPersistenceHandlers = hasCustomPersistenceAdapter;
 //# sourceMappingURL=storage.js.map

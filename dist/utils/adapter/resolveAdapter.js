@@ -175,7 +175,4 @@ export function adapterUsesLazyReplies(adapter) {
 export function adapterUsesCreateReply(adapter) {
     return Boolean(adapter?.replies?.create);
 }
-export function adapterCanDelete(adapter) {
-    return Boolean(adapter?.feedback?.delete);
-}
 //# sourceMappingURL=resolveAdapter.js.map

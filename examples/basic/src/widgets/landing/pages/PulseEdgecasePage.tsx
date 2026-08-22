@@ -2,7 +2,7 @@ import {
     useDemoFeedbackSeed,
     EDGECASE_FEEDBACK_SEED_CATALOG,
     EDGECASE_FEEDBACK_SEED_IDS,
-} from "../../../features/edgecase/hooks/useEdgecaseFeedbackSeed";
+} from "../../../features/edgecase/hooks/useDemoFeedbackSeed";
 
 type EdgecaseItem = {
     id: string;

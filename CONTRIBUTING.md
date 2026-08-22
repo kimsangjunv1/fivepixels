@@ -39,8 +39,9 @@ CI에서 `typecheck`, `test`, `build`, 번들 크기, example 빌드를 검사�
 
 | 문서 | 대상 |
 | ---- | ---- |
-| [docs/architecture-hooks.md](./docs/architecture-hooks.md) | hooks/utils/providers 레이어 규칙 |
-| [docs/backend-api-route.md](./docs/backend-api-route.md) | 백엔드 persistence handler 연동 |
+| `src/providers/reportContextPartitions.ts` | Context 파티션·레이어 경계 |
+| `src/types/adapter.ts` | `FivePixelsAdapter` 백엔드 연동 surface |
+| `examples/basic/src/fivepixels/adapter.ts` | API adapter 구현 예시 |
 
 `components` / `hooks`에서는 utils를 `@/utils/<domain>/<name>.js` 경로로 import합니다.
 

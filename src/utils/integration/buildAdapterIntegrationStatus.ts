@@ -43,12 +43,12 @@ const HANDLER_DEFINITIONS: HandlerDefinition[] = [
     { id: "adapter.auth.login", group: "auth", relevant: (sync) => sync === "api", required: (sync) => sync === "api", isConnected: (a) => Boolean(a?.auth?.login) },
     { id: "adapter.auth.signup", group: "auth", relevant: (sync) => sync === "api", required: () => false, isConnected: (a) => Boolean(a?.auth?.signup) },
     { id: "adapter.auth.artemisLogin", group: "auth", relevant: (sync) => sync === "artemis", required: (sync) => sync === "artemis", isConnected: (a) => Boolean(a?.auth?.artemisLogin) },
-    { id: "adapter.session.getMe", group: "session", relevant: isRemoteSync, required: () => false, isConnected: (a) => Boolean(a?.session?.getMe) },
     { id: "adapter.session.panelBootstrap", group: "session", relevant: isRemoteSync, required: () => false, isConnected: (a) => Boolean(a?.session?.panelBootstrap) },
     { id: "adapter.session.activitySummary", group: "session", relevant: isRemoteSync, required: () => false, isConnected: (a) => Boolean(a?.session?.activitySummary) },
     { id: "adapter.markers.list", group: "markers", relevant: isRemoteSync, required: isRemoteSync, isConnected: (a) => Boolean(a?.markers?.list) },
     { id: "adapter.feedback.create", group: "feedback", relevant: isRemoteSync, required: isRemoteSync, isConnected: (a) => Boolean(a?.feedback?.create) },
     { id: "adapter.feedback.getForUi", group: "feedback", relevant: isRemoteSync, required: () => false, isConnected: (a) => Boolean(a?.feedback?.getForUi) },
+    { id: "adapter.feedback.get", group: "feedback", relevant: isRemoteSync, required: () => false, isConnected: (a) => Boolean(a?.feedback?.get) },
     {
         id: "adapter.feedback.update",
         group: "feedback",

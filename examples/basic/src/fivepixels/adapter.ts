@@ -39,9 +39,6 @@ export function createFivepixelsAdapter({ baseUrl, projectId, getAccessToken }: 
             login: (payload) => api("/auth/login", { method: "POST", body: JSON.stringify(payload) }),
             signup: (payload) => api("/auth/register", { method: "POST", body: JSON.stringify(payload) }).then(() => undefined),
         },
-        session: {
-            getMe: () => api("/users/me"),
-        },
         markers: {
             list: ({ pathname }) => api(`${projectBase}/feedback-markers?pathname=${encodeURIComponent(pathname)}`),
         },

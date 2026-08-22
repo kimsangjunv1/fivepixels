@@ -19,6 +19,4 @@ export declare function resolveStorageAdapter(options: ResolveStorageAdapterOpti
     fivePixelsAdapter?: FivePixelsAdapter;
 };
 export declare function resolvePersistenceMissingHandlers(adapter?: FivePixelsAdapter): AdapterHandlerName[];
-/** @deprecated Use hasCustomPersistenceAdapter */
-export declare const hasCustomPersistenceHandlers: typeof hasCustomPersistenceAdapter;
 //# sourceMappingURL=storage.d.ts.map

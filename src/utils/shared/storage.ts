@@ -39,6 +39,3 @@ export function resolveStorageAdapter(options: ResolveStorageAdapterOptions) {
 export function resolvePersistenceMissingHandlers(adapter?: FivePixelsAdapter): AdapterHandlerName[] {
     return resolveAdapterMissingHandlers(adapter);
 }
-
-/** @deprecated Use hasCustomPersistenceAdapter */
-export const hasCustomPersistenceHandlers = hasCustomPersistenceAdapter;

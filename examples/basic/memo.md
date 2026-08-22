@@ -390,7 +390,7 @@ Grid	가로·세로 칸(1~12), gap
 
 ### Props 요약 (`/docs/api`용 — 랜딩 본문 장문 X)
 
-`project`, `ui`, `visibility`, `team`, `fields`, `onList`/`onCreate`/`onUpdate`, `onDelete`, `onListAll`, `onNavigate`, `onEvent`, `onReply`, `github` — handler 3개 생략 시 localStorage.
+`project`, `ui`, `visibility`, `team`, `sync`, `adapter`, `fields`, `onNavigate`, `onEvent`, `onReply`, `github` — `sync="local"`(기본)에서는 adapter 생략 시 localStorage.
 
 ---
 

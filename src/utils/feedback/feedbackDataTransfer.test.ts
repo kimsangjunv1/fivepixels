@@ -126,7 +126,7 @@ describe("feedbackDataTransfer", () => {
         const result = insertFeedbackItems(scope, [second]);
 
         expect(result.inserted).toBe(1);
-        expect(result.replaced).toBe(0);
+        expect(result.updated).toBe(0);
 
         const items = readAllFeedback(scope);
         expect(items).toHaveLength(2);
@@ -164,7 +164,7 @@ describe("feedbackDataTransfer", () => {
         const result = upsertFeedbackItems(scope, [duplicate]);
 
         expect(result.inserted).toBe(0);
-        expect(result.replaced).toBe(1);
+        expect(result.updated).toBe(1);
         expect(result.updated).toBe(1);
 
         const items = readAllFeedback(scope);

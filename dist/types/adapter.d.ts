@@ -5,7 +5,6 @@ export type FivePixelsAuthAdapter = {
     artemisLogin?: () => Promise<ReportAuthUser>;
 };
 export type FivePixelsSessionAdapter = {
-    getMe?: () => Promise<ReportAuthUser>;
     panelBootstrap?: (params: ReportPanelBootstrapParams) => Promise<ReportPanelBootstrapResult>;
     activitySummary?: (params: ReportActivitySummaryParams) => Promise<ReportActivitySummaryResult>;
 };

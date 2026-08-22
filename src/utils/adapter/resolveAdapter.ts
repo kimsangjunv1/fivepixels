@@ -28,6 +28,7 @@ export type PersistenceStatus =
 export type AdapterHandlerName =
     | "adapter.markers.list"
     | "adapter.feedback.create"
+    | "adapter.feedback.get"
     | "adapter.feedback.getForUi"
     | "adapter.feedback.update"
     | "adapter.cases.update"
@@ -37,7 +38,6 @@ export type AdapterHandlerName =
     | "adapter.auth.login"
     | "adapter.auth.signup"
     | "adapter.auth.artemisLogin"
-    | "adapter.session.getMe"
     | "adapter.session.activitySummary"
     | "adapter.session.panelBootstrap"
     | "adapter.cases.list"
@@ -300,8 +300,4 @@ export function adapterUsesLazyReplies(adapter?: FivePixelsAdapter): boolean {
 
 export function adapterUsesCreateReply(adapter?: FivePixelsAdapter): boolean {
     return Boolean(adapter?.replies?.create);
-}
-
-export function adapterCanDelete(adapter?: FivePixelsAdapter): boolean {
-    return Boolean(adapter?.feedback?.delete);
 }
