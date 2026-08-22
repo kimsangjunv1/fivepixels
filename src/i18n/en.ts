@@ -619,6 +619,7 @@ export const en: ReportMessages = {
             "adapter.session.activitySummary": "Activity heatmap",
             "adapter.markers.list": "Marker list",
             "adapter.feedback.create": "Create feedback",
+            "adapter.feedback.getForUi": "Feedback detail (UI)",
             "adapter.feedback.update": "Update feedback/cases",
             "adapter.feedback.delete": "Delete feedback",
             "adapter.cases.list": "Case list",

@@ -8,6 +8,7 @@ const HANDLER_DEFINITIONS = [
     { id: "adapter.session.activitySummary", group: "session", relevant: isRemoteSync, required: () => false, isConnected: (a) => Boolean(a?.session?.activitySummary) },
     { id: "adapter.markers.list", group: "markers", relevant: isRemoteSync, required: isRemoteSync, isConnected: (a) => Boolean(a?.markers?.list) },
     { id: "adapter.feedback.create", group: "feedback", relevant: isRemoteSync, required: isRemoteSync, isConnected: (a) => Boolean(a?.feedback?.create) },
+    { id: "adapter.feedback.getForUi", group: "feedback", relevant: isRemoteSync, required: () => false, isConnected: (a) => Boolean(a?.feedback?.getForUi) },
     {
         id: "adapter.feedback.update",
         group: "feedback",

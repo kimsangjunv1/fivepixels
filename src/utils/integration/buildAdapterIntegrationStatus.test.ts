@@ -33,14 +33,19 @@ describe("buildAdapterIntegrationStatus", () => {
             {
                 auth: { login: async () => ({ id: "1", name: "Kim" }) },
                 markers: { list: async () => [] },
-                feedback: { create: async () => ({}) as never, update: async () => ({}) as never },
+                feedback: {
+                    create: async () => ({}) as never,
+                    getForUi: async () => ({}) as never,
+                    update: async () => ({}) as never,
+                },
             },
             "api",
             baseCapabilities({ persistenceMode: "API", apiLogin: true }),
         );
 
         expect(status).not.toBeNull();
-        expect(status?.connectedCount).toBeGreaterThanOrEqual(4);
+        expect(status?.connectedCount).toBeGreaterThanOrEqual(5);
+        expect(status?.handlers.some((item) => item.id === "adapter.feedback.getForUi" && item.connected)).toBe(true);
         expect(status?.isRequiredComplete).toBe(true);
     });
 

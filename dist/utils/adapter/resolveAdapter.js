@@ -1,10 +1,5 @@
 import { isRemoteLoginMethod } from "../../constants/loginMethod.js";
 import { createLocalStorageReportAdapter } from "../../storage/local/localStorageAdapter.js";
-const REQUIRED_ADAPTER_HANDLERS = [
-    "adapter.markers.list",
-    "adapter.feedback.create",
-];
-const UPDATE_ADAPTER_HANDLERS = ["adapter.feedback.update", "adapter.cases.update"];
 export function hasCustomAdapter(adapter) {
     if (!adapter) {
         return false;
@@ -182,8 +177,5 @@ export function adapterUsesCreateReply(adapter) {
 }
 export function adapterCanDelete(adapter) {
     return Boolean(adapter?.feedback?.delete);
-}
-export function adapterCanListAll(_adapter) {
-    return false;
 }
 //# sourceMappingURL=resolveAdapter.js.map

@@ -28,6 +28,7 @@ export type PersistenceStatus =
 export type AdapterHandlerName =
     | "adapter.markers.list"
     | "adapter.feedback.create"
+    | "adapter.feedback.getForUi"
     | "adapter.feedback.update"
     | "adapter.cases.update"
     | "adapter.feedback.delete"
@@ -44,15 +45,7 @@ export type AdapterHandlerName =
     | "adapter.members.list"
     | "adapter.members.create"
     | "adapter.members.update"
-    | "adapter.members.delete"
     | "github.onCreate";
-
-const REQUIRED_ADAPTER_HANDLERS: AdapterHandlerName[] = [
-    "adapter.markers.list",
-    "adapter.feedback.create",
-];
-
-const UPDATE_ADAPTER_HANDLERS: AdapterHandlerName[] = ["adapter.feedback.update", "adapter.cases.update"];
 
 export function hasCustomAdapter(adapter?: FivePixelsAdapter): adapter is FivePixelsAdapter {
     if (!adapter) {
@@ -311,8 +304,4 @@ export function adapterUsesCreateReply(adapter?: FivePixelsAdapter): boolean {
 
 export function adapterCanDelete(adapter?: FivePixelsAdapter): boolean {
     return Boolean(adapter?.feedback?.delete);
-}
-
-export function adapterCanListAll(_adapter?: FivePixelsAdapter): boolean {
-    return false;
 }

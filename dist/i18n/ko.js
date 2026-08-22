@@ -614,6 +614,7 @@ export const ko = {
             "adapter.session.activitySummary": "활동 히트맵",
             "adapter.markers.list": "마커 목록",
             "adapter.feedback.create": "피드백 생성",
+            "adapter.feedback.getForUi": "피드백 상세 (UI)",
             "adapter.feedback.update": "피드백/케이스 수정",
             "adapter.feedback.delete": "피드백 삭제",
             "adapter.cases.list": "케이스 목록",

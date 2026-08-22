@@ -38,8 +38,6 @@ export function createFivepixelsAdapter({ baseUrl, projectId, getAccessToken }: 
         auth: {
             login: (payload) => api("/auth/login", { method: "POST", body: JSON.stringify(payload) }),
             signup: (payload) => api("/auth/register", { method: "POST", body: JSON.stringify(payload) }).then(() => undefined),
-            logout: () => api("/auth/logout", { method: "POST" }),
-            refresh: (payload) => api("/auth/refresh", { method: "POST", body: JSON.stringify(payload) }),
         },
         session: {
             getMe: () => api("/users/me"),
@@ -53,30 +51,13 @@ export function createFivepixelsAdapter({ baseUrl, projectId, getAccessToken }: 
             getForUi: (feedbackId) => api(`/ui${projectBase}/feedbacks/${feedbackId}`),
             update: (feedbackId, payload) =>
                 api(`${projectBase}/feedbacks/${feedbackId}`, { method: "PATCH", body: JSON.stringify(payload) }),
-            updateAssignee: (feedbackId, payload) =>
-                api(`${projectBase}/feedbacks/${feedbackId}/assignee`, { method: "PUT", body: JSON.stringify(payload) }),
-            updateStatus: (feedbackId, payload) =>
-                api(`${projectBase}/feedbacks/${feedbackId}/status`, { method: "PUT", body: JSON.stringify(payload) }),
             delete: (feedbackId) => api(`${projectBase}/feedbacks/${feedbackId}`, { method: "DELETE" }),
         },
         cases: {
             list: (feedbackId) => api(`${projectBase}/feedbacks/${feedbackId}/report-cases`),
-            get: (feedbackId, caseId) => api(`${projectBase}/feedbacks/${feedbackId}/report-cases/${caseId}`),
-            create: (feedbackId, payload) =>
-                api(`${projectBase}/feedbacks/${feedbackId}/report-cases`, { method: "POST", body: JSON.stringify(payload) }),
             update: (feedbackId, caseId, payload) =>
                 api(`${projectBase}/feedbacks/${feedbackId}/report-cases/${caseId}`, {
                     method: "PATCH",
-                    body: JSON.stringify(payload),
-                }),
-            updateAssignee: (feedbackId, caseId, payload) =>
-                api(`${projectBase}/feedbacks/${feedbackId}/report-cases/${caseId}/assignee`, {
-                    method: "PUT",
-                    body: JSON.stringify(payload),
-                }),
-            updateStatus: (feedbackId, caseId, payload) =>
-                api(`${projectBase}/feedbacks/${feedbackId}/report-cases/${caseId}/status`, {
-                    method: "PUT",
                     body: JSON.stringify(payload),
                 }),
             getTimeline: (feedbackId, caseId) =>
@@ -94,22 +75,12 @@ export function createFivepixelsAdapter({ baseUrl, projectId, getAccessToken }: 
                     method: "POST",
                     body: JSON.stringify(payload),
                 }),
-            update: (feedbackId, caseId, replyId, payload) =>
-                api(`${projectBase}/feedbacks/${feedbackId}/report-cases/${caseId}/replies/${replyId}`, {
-                    method: "PATCH",
-                    body: JSON.stringify(payload),
-                }),
-            delete: (feedbackId, caseId, replyId) =>
-                api(`${projectBase}/feedbacks/${feedbackId}/report-cases/${caseId}/replies/${replyId}`, {
-                    method: "DELETE",
-                }),
         },
         members: {
             list: () => api(`${projectBase}/members`),
             create: (payload) => api(`${projectBase}/members`, { method: "POST", body: JSON.stringify(payload) }),
             update: (userId, payload) =>
                 api(`${projectBase}/members/${userId}`, { method: "PATCH", body: JSON.stringify(payload) }),
-            delete: (userId) => api(`${projectBase}/members/${userId}`, { method: "DELETE" }),
         },
     };
 }
