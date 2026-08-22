@@ -580,6 +580,19 @@ export type ReportMessages = {
         markerShapePill: string;
         markerShapePentagon: string;
         markerShapePuffy: string;
+        categoryApiIntegration: string;
+        categoryApiIntegrationSummary: (connected: number, total: number) => string;
+        integrationLocalModeHint: string;
+        integrationProgressTitle: string;
+        integrationProgressCount: (connected: number, total: number) => string;
+        integrationRequiredProgress: (connected: number, total: number) => string;
+        integrationRequiredComplete: string;
+        integrationRequiredBadge: string;
+        integrationUnavailableHint: string;
+        integrationFeaturesTitle: string;
+        integrationGroup: Record<"auth" | "session" | "markers" | "feedback" | "cases" | "replies" | "members" | "github", string>;
+        integrationHandler: Record<string, string>;
+        integrationFeature: Record<string, string>;
     };
     team: {
         localStorageHint: string;

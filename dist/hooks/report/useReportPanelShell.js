@@ -100,7 +100,7 @@ export function useReportPanelShell({ projectId, environment, appVersion, sync =
     const resolvedPanelAppearance = useResolvedAppearance(activePanelAppearance);
     const resolvedTooltipAppearance = useResolvedAppearance(activeTooltipAppearance);
     const isMobileViewport = useIsMobileViewport();
-    const { canTransferFeedback, canListAllFeedback, currentPathname, listScope, setListScope, filters, setFilters, selectedReportId, setSelectedReportId, reports, currentPageReports, filteredReports, currentPageFilteredReports, allPageReports, allPageFilteredReports, routeDetailsStats, selectedReport, isError, isReportsLoading, isFetching, hasNextPage, isFetchingNextPage, fetchNextPage, isCreating, isUpdating, isDeleting, queryErrorMessage, refetch, createFeedback, updateFeedback, deleteFeedback, loadRepliesIfNeeded, hydrateFeedbackIfNeeded, createReply, usesCreateReply, usesLazyReplies, replyHistoryByReportId, loadOlderReplies, goToOlderPaginationPage, goToNewerPaginationPage, persistenceStatus, } = useReportPersistence({
+    const { canTransferFeedback, canListAllFeedback, currentPathname, listScope, setListScope, filters, setFilters, selectedReportId, setSelectedReportId, reports, currentPageReports, filteredReports, currentPageFilteredReports, allPageReports, allPageFilteredReports, routeDetailsStats, selectedReport, isError, isReportsLoading, isFetching, hasNextPage, isFetchingNextPage, fetchNextPage, isCreating, isUpdating, isDeleting, queryErrorMessage, refetch, createFeedback, updateFeedback, deleteFeedback, loadRepliesIfNeeded, hydrateFeedbackIfNeeded, createReply, usesCreateReply, usesLazyReplies, replyHistoryByReportId, loadOlderReplies, goToOlderPaginationPage, goToNewerPaginationPage, fivePixelsAdapter, persistenceStatus, } = useReportPersistence({
         projectId,
         environment,
         appVersion,
@@ -326,6 +326,7 @@ export function useReportPanelShell({ projectId, environment, appVersion, sync =
         createReply,
         usesCreateReply,
         usesLazyReplies,
+        fivePixelsAdapter,
         replyHistoryByReportId,
         loadOlderReplies,
         goToOlderPaginationPage,

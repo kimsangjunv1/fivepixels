@@ -125,6 +125,7 @@ export declare function useReportPanelShell({ projectId, environment, appVersion
     createReply: (commentId: string, payload: import("../../types/report.js").CreateReplyPayload) => Promise<import("../../types/report.js").ReportReply>;
     usesCreateReply: boolean;
     usesLazyReplies: boolean;
+    fivePixelsAdapter: FivePixelsAdapter | undefined;
     replyHistoryByReportId: Record<string, import("../replyHistoryActions.js").ReplyHistoryState>;
     loadOlderReplies: (reportId: string, config: import("../../utils/report/reportUi.js").ResolvedReplyHistoryConfig, caseId?: string) => Promise<void>;
     goToOlderPaginationPage: (reportId: string, config: import("../../utils/report/reportUi.js").ResolvedReplyHistoryConfig) => Promise<void>;

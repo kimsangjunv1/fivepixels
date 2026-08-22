@@ -5,6 +5,7 @@ import type { useReportMarkers } from "./useReportMarkers.js";
 import type { useReportMutations } from "./useReportMutations.js";
 import type { useReportPanelShell } from "./useReportPanelShell.js";
 import type { useReportReplyReview } from "./useReportReplyReview.js";
+import { buildAdapterIntegrationStatus } from "@/utils/integration/buildAdapterIntegrationStatus.js";
 import type { FivePixelsAdapter } from "@/types/adapter.js";
 import type {
     ReportAuthor,
@@ -117,6 +118,12 @@ export function assembleReportContextValue({
         teamManage: hasTeamAdminHandlers(teamHandlers),
         dataTransfer: panel.canTransferFeedback,
     });
+    const adapterIntegrationStatus = buildAdapterIntegrationStatus(
+        adapter,
+        integrationCapabilities.sync,
+        integrationCapabilities,
+        github,
+    );
 
     return {
         panelAppearance: panel.panelAppearance,
@@ -136,6 +143,7 @@ export function assembleReportContextValue({
         isTeamAdmin: isReportAuthorAdmin(teamActor),
         canAccessTeamSettings: canAccessTeamSettings(teamActor),
         integrationCapabilities,
+        adapterIntegrationStatus,
         onListReviewers,
         onListReviewerRequests,
         onCreateReviewerRequest,

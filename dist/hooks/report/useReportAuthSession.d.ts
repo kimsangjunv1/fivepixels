@@ -111,7 +111,7 @@ export declare function useReportAuthSession({ projectId, environment, authors, 
     skipOnboarding: () => void;
     sessionActor: import("../../utils/report/reportTeam.js").SessionActor | null;
     signCreatePayload: (payload: CreateReportFeedbackPayload) => Promise<CreateReportFeedbackPayload>;
-    signUpdatePayload: (payload: UpdateReportFeedbackPayload) => Promise<Partial<Pick<import("../../types/report.js").ReportFeedback, "cases" | "status" | "report_id" | "report_type" | "category" | "field_values" | "replies" | "auth" | "integrations">>>;
+    signUpdatePayload: (payload: UpdateReportFeedbackPayload) => Promise<Partial<Pick<import("../../types/report.js").ReportFeedback, "auth" | "cases" | "replies" | "status" | "report_id" | "report_type" | "category" | "field_values" | "integrations">>>;
     signReplyPayload: (payload: CreateReplyPayload) => Promise<CreateReplyPayload>;
 };
 //# sourceMappingURL=useReportAuthSession.d.ts.map

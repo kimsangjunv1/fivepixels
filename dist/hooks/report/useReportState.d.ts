@@ -54,6 +54,7 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     isTeamAdmin: boolean;
     canAccessTeamSettings: boolean;
     integrationCapabilities: import("../../utils/integration/integrationFeatures.js").IntegrationCapabilities;
+    adapterIntegrationStatus: import("../../utils/integration/buildAdapterIntegrationStatus.js").AdapterIntegrationStatus | null;
     onListReviewers: (() => Promise<ReportAuthor[]>) | undefined;
     onListReviewerRequests: (() => Promise<import("../../types/report.js").ReportReviewerRequest[]>) | undefined;
     onCreateReviewerRequest: ((payload: import("../../types/report.js").CreateReviewerRequestPayload) => Promise<import("../../types/report.js").ReportReviewerRequest>) | undefined;

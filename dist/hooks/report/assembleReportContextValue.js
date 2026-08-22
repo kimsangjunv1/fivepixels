@@ -1,3 +1,4 @@
+import { buildAdapterIntegrationStatus } from "../../utils/integration/buildAdapterIntegrationStatus.js";
 import { buildIntegrationCapabilities } from "../../utils/integration/integrationGate.js";
 import { resolvePersistenceMissingHandlers } from "../../utils/shared/storage.js";
 import { canAccessTeamSettings, hasTeamAdminHandlers, hasTeamRequestHandler, isReportAuthorAdmin, resolveAuthorRole } from "../../utils/report/teamManagement.js";
@@ -47,6 +48,7 @@ export function assembleReportContextValue({ panel, auth, draft, markers, mutati
         teamManage: hasTeamAdminHandlers(teamHandlers),
         dataTransfer: panel.canTransferFeedback,
     });
+    const adapterIntegrationStatus = buildAdapterIntegrationStatus(adapter, integrationCapabilities.sync, integrationCapabilities, github);
     return {
         panelAppearance: panel.panelAppearance,
         setPanelAppearance: panel.setPanelAppearance,
@@ -65,6 +67,7 @@ export function assembleReportContextValue({ panel, auth, draft, markers, mutati
         isTeamAdmin: isReportAuthorAdmin(teamActor),
         canAccessTeamSettings: canAccessTeamSettings(teamActor),
         integrationCapabilities,
+        adapterIntegrationStatus,
         onListReviewers,
         onListReviewerRequests,
         onCreateReviewerRequest,

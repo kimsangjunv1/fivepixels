@@ -12,6 +12,7 @@ import { useIntegrationLock } from "@/components/ui/IntegrationLock.js";
 import { AppearanceThemePicker } from "./AppearanceThemePicker.js";
 import { HexColorField } from "./HexColorField.js";
 import { MarkerShapePicker } from "./MarkerShapePicker.js";
+import { PanelIntegrationSettings } from "./PanelIntegrationSettings.js";
 import { PanelMarkerDisplayControls } from "./PanelMarkerDisplayControls.js";
 import { PanelOptionSwitch } from "./PanelOptionSwitch.js";
 import { PanelTabSelector } from "./PanelTabSelector.js";
@@ -35,7 +36,7 @@ type PanelSettingsProps = {
     onKeyRotate: () => void;
 };
 
-type SettingsCategory = "preview" | "appearance" | "display" | "tabs" | "team" | "data-and-keys" | "advanced";
+type SettingsCategory = "preview" | "appearance" | "display" | "tabs" | "team" | "data-and-keys" | "advanced" | "api-integration";
 type AppearanceSection = "theme-language" | "feedback-mode" | "marker";
 
 const LOCALE_OPTIONS = ["en", "ko"] as const satisfies readonly ReportLocale[];
@@ -165,6 +166,8 @@ function getCategoryTitle(category: SettingsCategory, messages: ReturnType<typeo
             return messages.settings.categoryDataAndKeys;
         case "advanced":
             return messages.settings.categoryAdvanced;
+        case "api-integration":
+            return messages.settings.categoryApiIntegration;
     }
 }
 
@@ -224,6 +227,8 @@ export function PanelSettings({
         setVisiblePanelTabs,
         resetVisibleTabsToRoleDefault,
         canAccessTeamSettings,
+        integrationCapabilities,
+        adapterIntegrationStatus,
     } = useReportPreferences();
     const { presentationViewerId, setPresentationViewerId } = useReportSession();
     const scaleLabels: Record<AppearanceScale, string> = {
@@ -276,6 +281,10 @@ export function PanelSettings({
     const markerSummary = `${scaleLabels[markerAppearance.size]} · ${shapeLabels[markerAppearance.shape]} · ${fillStyleLabels[markerAppearance.fillStyle]}`;
     const displaySummary = `${messages.questionThreadOption[questionThreadDisplay]} · ${showMarkerTargetPreview ? messages.settings.markerTargetsOn : messages.settings.markerTargetsOff}`;
     const tabsSummary = visiblePanelTabsSummary || messages.settings.categoryTabsSummary;
+    const showApiIntegrationCategory = integrationCapabilities.sync === "api" || integrationCapabilities.sync === "artemis";
+    const apiIntegrationSummary = adapterIntegrationStatus
+        ? messages.settings.categoryApiIntegrationSummary(adapterIntegrationStatus.connectedCount, adapterIntegrationStatus.totalCount)
+        : messages.settings.integrationLocalModeHint;
 
     if (activeCategory === "appearance" && !activeAppearanceSection) {
         return (
@@ -617,6 +626,8 @@ export function PanelSettings({
                             </SettingsActionButton>
                         </SettingsSection>
                     ) : null}
+
+                    {activeCategory === "api-integration" ? <PanelIntegrationSettings /> : null}
                 </div>
             </section>
         );
@@ -662,6 +673,14 @@ export function PanelSettings({
                     locked={teamManageLock.locked}
                     lockLabel={teamManageLock.tooltipLabel}
                     onClick={() => setActiveCategory("team")}
+                />
+            ) : null}
+
+            {showApiIntegrationCategory ? (
+                <SettingsHubRow
+                    title={messages.settings.categoryApiIntegration}
+                    subtitle={apiIntegrationSummary}
+                    onClick={() => setActiveCategory("api-integration")}
                 />
             ) : null}
 

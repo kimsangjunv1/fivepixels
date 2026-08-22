@@ -442,12 +442,12 @@ export function useReportState({
         appVersion,
         showFeedbackList,
         teamReviewers: authors,
-        adapter,
+        adapter: panel.fivePixelsAdapter,
         github,
         canDeleteViaStorage:
             panel.persistenceStatus.mode === "localStorage" ||
             panel.persistenceStatus.mode === "conflict" ||
-            (panel.persistenceStatus.mode === "API" && Boolean(adapter?.feedback?.delete)),
+            (panel.persistenceStatus.mode === "API" && Boolean(panel.fivePixelsAdapter?.feedback?.delete)),
         usesLazyReplies: panel.usesLazyReplies,
         usesCreateReply: panel.usesCreateReply,
         visibleShortcutKeys,

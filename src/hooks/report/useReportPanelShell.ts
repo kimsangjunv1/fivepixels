@@ -252,6 +252,7 @@ export function useReportPanelShell({
         loadOlderReplies,
         goToOlderPaginationPage,
         goToNewerPaginationPage,
+        fivePixelsAdapter,
         persistenceStatus,
     } = useReportPersistence({
         projectId,
@@ -531,6 +532,7 @@ export function useReportPanelShell({
         createReply,
         usesCreateReply,
         usesLazyReplies,
+        fivePixelsAdapter,
         replyHistoryByReportId,
         loadOlderReplies,
         goToOlderPaginationPage,

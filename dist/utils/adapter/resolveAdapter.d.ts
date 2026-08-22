@@ -18,7 +18,7 @@ export type PersistenceStatus = {
     missingHandlers: AdapterHandlerName[];
     ignoredHandlers: AdapterHandlerName[];
 };
-export type AdapterHandlerName = "adapter.markers.list" | "adapter.feedback.create" | "adapter.feedback.update" | "adapter.cases.update" | "adapter.feedback.delete" | "adapter.replies.list" | "adapter.replies.create" | "adapter.auth.login" | "adapter.auth.signup" | "adapter.auth.artemisLogin" | "adapter.session.activitySummary" | "adapter.session.panelBootstrap" | "adapter.members.list" | "adapter.members.create" | "adapter.members.update" | "adapter.members.delete" | "github.onCreate";
+export type AdapterHandlerName = "adapter.markers.list" | "adapter.feedback.create" | "adapter.feedback.update" | "adapter.cases.update" | "adapter.feedback.delete" | "adapter.replies.list" | "adapter.replies.create" | "adapter.auth.login" | "adapter.auth.signup" | "adapter.auth.artemisLogin" | "adapter.session.getMe" | "adapter.session.activitySummary" | "adapter.session.panelBootstrap" | "adapter.cases.list" | "adapter.cases.getTimeline" | "adapter.members.list" | "adapter.members.create" | "adapter.members.update" | "adapter.members.delete" | "github.onCreate";
 export declare function hasCustomAdapter(adapter?: FivePixelsAdapter): adapter is FivePixelsAdapter;
 export declare function resolveAdapterMissingHandlers(adapter?: FivePixelsAdapter): AdapterHandlerName[];
 export declare function resolveAdapterPersistenceStatus(adapter: FivePixelsAdapter | undefined, sync?: FivePixelsSync): PersistenceStatus;
