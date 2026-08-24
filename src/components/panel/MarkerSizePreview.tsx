@@ -18,6 +18,7 @@ type MarkerSizePreviewProps = {
     color: string;
     fontFamily: string;
     fillStyle?: MarkerFillStyle;
+    strokeColor?: string;
     label?: string;
     ariaLabel?: string;
     showReplyBadge?: boolean;
@@ -30,6 +31,7 @@ export function MarkerSizePreview({
     color,
     fontFamily,
     fillStyle = "filled",
+    strokeColor = "#ffffff",
     label = "1",
     ariaLabel,
     showReplyBadge = false,
@@ -38,7 +40,12 @@ export function MarkerSizePreview({
     const badgeDisplay = fontSize === "none" ? { content: null, fontSizePx: undefined, fontWeight: undefined } : resolveMarkerBadgeDisplay(size, label);
     const showMarkerLabel = Boolean(badgeDisplay.content);
     const shapeStyle = resolveMarkerShapeStyle(shape, dotSize);
-    const paint = resolveMarkerGlyphPaint(color, fillStyle, shapeStyle.strokeWidthPx);
+    const paint = resolveMarkerGlyphPaint({
+        color,
+        fillStyle,
+        strokeColor,
+        strokeWidthPx: shapeStyle.strokeWidthPx,
+    });
     const replyBadgeSize = getMarkerReplyBadgeSize(dotSize);
 
     return (

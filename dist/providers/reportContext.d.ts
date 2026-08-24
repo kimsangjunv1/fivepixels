@@ -140,6 +140,7 @@ declare const ReportContext: Context<{
     setMarkerFillStyle: (fillStyle: import("../constants/markerAppearance.js").MarkerFillStyle) => void;
     setMarkerColors: (colors: import("../constants/markerAppearance.js").MarkerColorPreferences) => void;
     setMarkerColor: (key: keyof import("../constants/markerAppearance.js").MarkerColorPreferences, color: string) => void;
+    setMarkerStrokeColor: (strokeColor: string) => void;
     setFeedbackModeDotColors: (colors: import("../constants/markerAppearance.js").FeedbackModeDotColors) => void;
     setFeedbackModeDotColor: (appearance: keyof import("../constants/markerAppearance.js").FeedbackModeDotColors, color: string) => void;
     typography: import("../constants/markerAppearance.js").TypographyPreferences;
@@ -479,6 +480,7 @@ export declare function useReport(): {
     setMarkerFillStyle: (fillStyle: import("../constants/markerAppearance.js").MarkerFillStyle) => void;
     setMarkerColors: (colors: import("../constants/markerAppearance.js").MarkerColorPreferences) => void;
     setMarkerColor: (key: keyof import("../constants/markerAppearance.js").MarkerColorPreferences, color: string) => void;
+    setMarkerStrokeColor: (strokeColor: string) => void;
     setFeedbackModeDotColors: (colors: import("../constants/markerAppearance.js").FeedbackModeDotColors) => void;
     setFeedbackModeDotColor: (appearance: keyof import("../constants/markerAppearance.js").FeedbackModeDotColors, color: string) => void;
     typography: import("../constants/markerAppearance.js").TypographyPreferences;
@@ -821,6 +823,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         setMarkerFillStyle: (fillStyle: import("../constants/markerAppearance.js").MarkerFillStyle) => void;
         setMarkerColors: (colors: import("../constants/markerAppearance.js").MarkerColorPreferences) => void;
         setMarkerColor: (key: keyof import("../constants/markerAppearance.js").MarkerColorPreferences, color: string) => void;
+        setMarkerStrokeColor: (strokeColor: string) => void;
         setFeedbackModeDotColors: (colors: import("../constants/markerAppearance.js").FeedbackModeDotColors) => void;
         setFeedbackModeDotColor: (appearance: keyof import("../constants/markerAppearance.js").FeedbackModeDotColors, color: string) => void;
         typography: import("../constants/markerAppearance.js").TypographyPreferences;
@@ -1023,7 +1026,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         handleCreateGitHubIssue: (report: import("../index.js").ReportFeedback) => Promise<void>;
         handleCreateSubmitWithGitHubIssue: () => Promise<void>;
         isDraftGitHubIssueSubmitting: boolean;
-    }, "personalKey" | "projectId" | "fields" | "personalKeyRequired" | "environment" | "questionThreadDisplay" | "setQuestionThreadDisplay" | "locale" | "setLocale" | "showMarkerTargetPreview" | "setShowMarkerTargetPreview" | "toggleMarkerTargetPreview" | "devicePreviewUiOpen" | "setDevicePreviewUiOpen" | "devicePreviewDeviceId" | "setDevicePreviewDeviceId" | "devicePreviewScale" | "setDevicePreviewScale" | "devicePreviewImageEnabled" | "setDevicePreviewImageEnabled" | "devicePreviewFitToViewport" | "setDevicePreviewFitToViewport" | "devicePreviewStatusBarEnabled" | "setDevicePreviewStatusBarEnabled" | "devicePreviewPreset" | "showHiddenDetachedMarkers" | "setShowHiddenDetachedMarkers" | "showModalDetachedMarkers" | "setShowModalDetachedMarkers" | "markerAppearance" | "setMarkerAppearance" | "setMarkerSize" | "setMarkerShape" | "setMarkerFillStyle" | "setMarkerColors" | "setMarkerColor" | "setFeedbackModeDotColors" | "setFeedbackModeDotColor" | "typography" | "setTypography" | "setFontSize" | "setFontFamily" | "panelRole" | "setPanelRole" | "persistenceStatus" | "appVersion" | "showFeedbackList" | "selfProfile" | "authors" | "publicKey" | "personalKeyCandidates" | "issuePersonalKey" | "rotatePersonalKey" | "insertPersonalKey" | "clearPersonalKey" | "authorSelectionLocked" | "messages" | "visibleShortcutKeys" | "teamReviewers" | "onListReviewers" | "onListReviewerRequests" | "onCreateReviewerRequest" | "onResolveReviewerRequest" | "onRegisterReviewer" | "onUpdateReviewer" | "panelAppearance" | "setPanelAppearance" | "tooltipAppearance" | "setTooltipAppearance" | "teamActor" | "teamActorRole" | "isTeamAdmin" | "canAccessTeamSettings" | "integrationCapabilities" | "adapterIntegrationStatus" | "panelView" | "loginMethod" | "loginWithApi" | "registerWithApi" | "loginWithArtemis" | "completeRemoteOnboarding" | "completeOnboarding" | "restoreFromBackup" | "skipOnboarding" | "resolvedPanelAppearance" | "resolvedTooltipAppearance" | "isMobileViewport" | "isPresentationMode" | "presentationViewers" | "visiblePanelTabs" | "visiblePanelTabsSummary" | "resolvedTabAvailabilityContext" | "setVisiblePanelTabs" | "resetVisibleTabsToRoleDefault" | "applyRoleDefaultTabsForOnboarding" | "savePanelTabPreference" | "storedPanelTabPreference">;
+    }, "personalKey" | "projectId" | "fields" | "personalKeyRequired" | "environment" | "questionThreadDisplay" | "setQuestionThreadDisplay" | "locale" | "setLocale" | "showMarkerTargetPreview" | "setShowMarkerTargetPreview" | "toggleMarkerTargetPreview" | "devicePreviewUiOpen" | "setDevicePreviewUiOpen" | "devicePreviewDeviceId" | "setDevicePreviewDeviceId" | "devicePreviewScale" | "setDevicePreviewScale" | "devicePreviewImageEnabled" | "setDevicePreviewImageEnabled" | "devicePreviewFitToViewport" | "setDevicePreviewFitToViewport" | "devicePreviewStatusBarEnabled" | "setDevicePreviewStatusBarEnabled" | "devicePreviewPreset" | "showHiddenDetachedMarkers" | "setShowHiddenDetachedMarkers" | "showModalDetachedMarkers" | "setShowModalDetachedMarkers" | "markerAppearance" | "setMarkerAppearance" | "setMarkerSize" | "setMarkerShape" | "setMarkerFillStyle" | "setMarkerColors" | "setMarkerColor" | "setMarkerStrokeColor" | "setFeedbackModeDotColors" | "setFeedbackModeDotColor" | "typography" | "setTypography" | "setFontSize" | "setFontFamily" | "panelRole" | "setPanelRole" | "persistenceStatus" | "appVersion" | "showFeedbackList" | "selfProfile" | "authors" | "publicKey" | "personalKeyCandidates" | "issuePersonalKey" | "rotatePersonalKey" | "insertPersonalKey" | "clearPersonalKey" | "authorSelectionLocked" | "messages" | "visibleShortcutKeys" | "teamReviewers" | "onListReviewers" | "onListReviewerRequests" | "onCreateReviewerRequest" | "onResolveReviewerRequest" | "onRegisterReviewer" | "onUpdateReviewer" | "panelAppearance" | "setPanelAppearance" | "tooltipAppearance" | "setTooltipAppearance" | "teamActor" | "teamActorRole" | "isTeamAdmin" | "canAccessTeamSettings" | "integrationCapabilities" | "adapterIntegrationStatus" | "panelView" | "loginMethod" | "loginWithApi" | "registerWithApi" | "loginWithArtemis" | "completeRemoteOnboarding" | "completeOnboarding" | "restoreFromBackup" | "skipOnboarding" | "resolvedPanelAppearance" | "resolvedTooltipAppearance" | "isMobileViewport" | "isPresentationMode" | "presentationViewers" | "visiblePanelTabs" | "visiblePanelTabsSummary" | "resolvedTabAvailabilityContext" | "setVisiblePanelTabs" | "resetVisibleTabsToRoleDefault" | "applyRoleDefaultTabsForOnboarding" | "savePanelTabPreference" | "storedPanelTabPreference">;
     session: Pick<{
         panelAppearance: import("../index.js").ReportAppearance;
         setPanelAppearance: (nextAppearance: import("../index.js").ReportAppearance) => void;
@@ -1156,6 +1159,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         setMarkerFillStyle: (fillStyle: import("../constants/markerAppearance.js").MarkerFillStyle) => void;
         setMarkerColors: (colors: import("../constants/markerAppearance.js").MarkerColorPreferences) => void;
         setMarkerColor: (key: keyof import("../constants/markerAppearance.js").MarkerColorPreferences, color: string) => void;
+        setMarkerStrokeColor: (strokeColor: string) => void;
         setFeedbackModeDotColors: (colors: import("../constants/markerAppearance.js").FeedbackModeDotColors) => void;
         setFeedbackModeDotColor: (appearance: keyof import("../constants/markerAppearance.js").FeedbackModeDotColors, color: string) => void;
         typography: import("../constants/markerAppearance.js").TypographyPreferences;
@@ -1491,6 +1495,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         setMarkerFillStyle: (fillStyle: import("../constants/markerAppearance.js").MarkerFillStyle) => void;
         setMarkerColors: (colors: import("../constants/markerAppearance.js").MarkerColorPreferences) => void;
         setMarkerColor: (key: keyof import("../constants/markerAppearance.js").MarkerColorPreferences, color: string) => void;
+        setMarkerStrokeColor: (strokeColor: string) => void;
         setFeedbackModeDotColors: (colors: import("../constants/markerAppearance.js").FeedbackModeDotColors) => void;
         setFeedbackModeDotColor: (appearance: keyof import("../constants/markerAppearance.js").FeedbackModeDotColors, color: string) => void;
         typography: import("../constants/markerAppearance.js").TypographyPreferences;

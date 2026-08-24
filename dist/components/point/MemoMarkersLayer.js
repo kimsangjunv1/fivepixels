@@ -11,7 +11,12 @@ const MARKER_BUTTON_BASE_CLASS = "flex items-center justify-center border-0 bg-t
 function MemoMarkerButton({ marker, markerAppearance, ariaLabel, onActivate }) {
     const dotSize = getMarkerDotSize();
     const shapeStyle = resolveMarkerShapeStyle(markerAppearance.shape, dotSize);
-    const paint = resolveMarkerGlyphPaint(MEMO_MARKER_COLOR, markerAppearance.fillStyle, shapeStyle.strokeWidthPx);
+    const paint = resolveMarkerGlyphPaint({
+        color: MEMO_MARKER_COLOR,
+        fillStyle: markerAppearance.fillStyle,
+        strokeColor: markerAppearance.strokeColor,
+        strokeWidthPx: shapeStyle.strokeWidthPx,
+    });
     const handleClick = useCallback((event) => {
         event.stopPropagation();
         onActivate(marker, event.clientX, event.clientY);

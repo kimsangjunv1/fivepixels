@@ -6,10 +6,11 @@ type MarkerSizePreviewProps = {
     color: string;
     fontFamily: string;
     fillStyle?: MarkerFillStyle;
+    strokeColor?: string;
     label?: string;
     ariaLabel?: string;
     showReplyBadge?: boolean;
 };
-export declare function MarkerSizePreview({ size, fontSize, shape, color, fontFamily, fillStyle, label, ariaLabel, showReplyBadge, }: MarkerSizePreviewProps): import("react").JSX.Element;
+export declare function MarkerSizePreview({ size, fontSize, shape, color, fontFamily, fillStyle, strokeColor, label, ariaLabel, showReplyBadge, }: MarkerSizePreviewProps): import("react").JSX.Element;
 export {};
 //# sourceMappingURL=MarkerSizePreview.d.ts.map

@@ -114,6 +114,7 @@ export function useReportPanelShell({
         setMarkerFillStyle,
         setMarkerColors,
         setMarkerColor,
+        setMarkerStrokeColor,
         setFeedbackModeDotColors,
         setFeedbackModeDotColor,
     } = useMarkerAppearancePreference();
@@ -474,6 +475,7 @@ export function useReportPanelShell({
         setMarkerFillStyle,
         setMarkerColors,
         setMarkerColor,
+        setMarkerStrokeColor,
         setFeedbackModeDotColors,
         setFeedbackModeDotColor,
         typography,

@@ -3,8 +3,8 @@ import {
     DEFAULT_FEEDBACK_MODE_DOT_COLORS,
     DEFAULT_MARKER_APPEARANCE,
     DEFAULT_MARKER_COLORS,
+    DEFAULT_MARKER_STROKE_COLOR,
     isAppearanceScale,
-    isMarkerFillStyle,
     isMarkerShape,
     MARKER_APPEARANCE_STORAGE_KEY,
     type MarkerAppearancePreferences,
@@ -44,6 +44,27 @@ function normalizeFeedbackModeDotColors(value: unknown): FeedbackModeDotColors {
     };
 }
 
+function normalizeStoredFillStyle(value: unknown, strokeColor: string | undefined): MarkerFillStyle {
+    if (value === "both") {
+        return "both";
+    }
+
+    if (value === "outlined") {
+        return "outlined";
+    }
+
+    if (value === "filled") {
+        // Legacy "filled" included a white outline; preserve that look as "both".
+        if (!strokeColor) {
+            return "both";
+        }
+
+        return "filled";
+    }
+
+    return DEFAULT_MARKER_APPEARANCE.fillStyle;
+}
+
 function readStoredMarkerAppearance(): MarkerAppearancePreferences {
     if (typeof window === "undefined") {
         return DEFAULT_MARKER_APPEARANCE;
@@ -57,12 +78,18 @@ function readStoredMarkerAppearance(): MarkerAppearancePreferences {
         }
 
         const parsed = JSON.parse(stored) as Partial<MarkerAppearancePreferences>;
+        const strokeColor = isValidHexColor(parsed.strokeColor ?? "")
+            ? parsed.strokeColor!
+            : parsed.fillStyle === "filled"
+              ? DEFAULT_MARKER_STROKE_COLOR
+              : DEFAULT_MARKER_APPEARANCE.strokeColor;
 
         return {
             size: isAppearanceScale(parsed.size) ? parsed.size : DEFAULT_MARKER_APPEARANCE.size,
             shape: isMarkerShape(parsed.shape) ? parsed.shape : DEFAULT_MARKER_APPEARANCE.shape,
-            fillStyle: isMarkerFillStyle(parsed.fillStyle) ? parsed.fillStyle : DEFAULT_MARKER_APPEARANCE.fillStyle,
+            fillStyle: normalizeStoredFillStyle(parsed.fillStyle, parsed.strokeColor),
             colors: normalizeMarkerColors(parsed.colors),
+            strokeColor,
             feedbackModeDotColors: normalizeFeedbackModeDotColors(parsed.feedbackModeDotColors),
         };
     } catch {
@@ -170,6 +197,16 @@ export function useMarkerAppearancePreference() {
         [setMarkerAppearance],
     );
 
+    const setMarkerStrokeColor = useCallback(
+        (strokeColor: string) => {
+            setMarkerAppearance((current) => ({
+                ...current,
+                strokeColor,
+            }));
+        },
+        [setMarkerAppearance],
+    );
+
     return {
         markerAppearance,
         setMarkerAppearance,
@@ -178,6 +215,7 @@ export function useMarkerAppearancePreference() {
         setMarkerFillStyle,
         setMarkerColors,
         setMarkerColor,
+        setMarkerStrokeColor,
         setFeedbackModeDotColors,
         setFeedbackModeDotColor,
     };

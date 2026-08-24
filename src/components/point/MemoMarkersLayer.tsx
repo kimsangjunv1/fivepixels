@@ -19,7 +19,12 @@ type MemoMarkerButtonProps = {
 function MemoMarkerButton({ marker, markerAppearance, ariaLabel, onActivate }: MemoMarkerButtonProps) {
     const dotSize = getMarkerDotSize();
     const shapeStyle = resolveMarkerShapeStyle(markerAppearance.shape, dotSize);
-    const paint = resolveMarkerGlyphPaint(MEMO_MARKER_COLOR, markerAppearance.fillStyle, shapeStyle.strokeWidthPx);
+    const paint = resolveMarkerGlyphPaint({
+        color: MEMO_MARKER_COLOR,
+        fillStyle: markerAppearance.fillStyle,
+        strokeColor: markerAppearance.strokeColor,
+        strokeWidthPx: shapeStyle.strokeWidthPx,
+    });
 
     const handleClick = useCallback(
         (event: MouseEvent<HTMLButtonElement>) => {

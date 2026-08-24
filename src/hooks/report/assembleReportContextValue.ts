@@ -218,6 +218,7 @@ export function assembleReportContextValue({
         setMarkerFillStyle: panel.setMarkerFillStyle,
         setMarkerColors: panel.setMarkerColors,
         setMarkerColor: panel.setMarkerColor,
+        setMarkerStrokeColor: panel.setMarkerStrokeColor,
         setFeedbackModeDotColors: panel.setFeedbackModeDotColors,
         setFeedbackModeDotColor: panel.setFeedbackModeDotColor,
         typography: panel.typography,

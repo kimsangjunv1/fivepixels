@@ -9,7 +9,7 @@ export function resolveMarkerShapeStyle(shape, dotSize) {
         strokeWidthPx: definition.strokeWidthPx,
     };
 }
-export function resolveMarkerGlyphPaint(color, fillStyle, strokeWidthPx) {
+export function resolveMarkerGlyphPaint({ color, fillStyle, strokeColor, strokeWidthPx }) {
     if (fillStyle === "outlined") {
         return {
             fill: "transparent",
@@ -18,10 +18,18 @@ export function resolveMarkerGlyphPaint(color, fillStyle, strokeWidthPx) {
             labelColor: color,
         };
     }
+    if (fillStyle === "both") {
+        return {
+            fill: color,
+            stroke: strokeColor,
+            strokeWidthPx,
+            labelColor: "#ffffff",
+        };
+    }
     return {
         fill: color,
-        stroke: "#ffffff",
-        strokeWidthPx,
+        stroke: "transparent",
+        strokeWidthPx: 0,
         labelColor: "#ffffff",
     };
 }

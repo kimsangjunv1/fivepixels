@@ -1,13 +1,14 @@
-export type AppearanceScale = "xs" | "sm" | "md" | "lg" | "xl";
-export declare const APPEARANCE_SCALE_VALUES: readonly ["xs", "sm", "md", "lg", "xl"];
+export type AppearanceScale = "2xs" | "xs" | "sm" | "md" | "lg" | "xl";
+export declare const APPEARANCE_SCALE_VALUES: readonly ["2xs", "xs", "sm", "md", "lg", "xl"];
 export declare const MARKER_SCALE_FACTOR: Record<AppearanceScale, number>;
 export type MarkerLabelFontSize = "sm" | "md" | "lg" | "xl";
 export type MarkerFontSize = "none" | MarkerLabelFontSize;
 export declare const MARKER_FONT_SIZE_VALUES: readonly ["none", "sm", "md", "lg", "xl"];
 export type MarkerShape = "circle" | "square" | "cookie4" | "sunny" | "cookie6" | "clover4" | "flower" | "ghostish" | "bun" | "gem" | "pill" | "pentagon" | "puffy";
 export declare const MARKER_SHAPE_VALUES: readonly ["circle", "square", "cookie4", "sunny", "cookie6", "clover4", "flower", "ghostish", "bun", "gem", "pill", "pentagon", "puffy"];
-export type MarkerFillStyle = "filled" | "outlined";
-export declare const MARKER_FILL_STYLE_VALUES: readonly ["filled", "outlined"];
+export type MarkerFillStyle = "filled" | "outlined" | "both";
+export declare const MARKER_FILL_STYLE_VALUES: readonly ["filled", "outlined", "both"];
+export declare const DEFAULT_MARKER_STROKE_COLOR = "#ffffff";
 export type MarkerColorPreferences = {
     open: string;
     resolved: string;
@@ -22,6 +23,7 @@ export type MarkerAppearancePreferences = {
     shape: MarkerShape;
     fillStyle: MarkerFillStyle;
     colors: MarkerColorPreferences;
+    strokeColor: string;
     feedbackModeDotColors: FeedbackModeDotColors;
 };
 export type TypographyPreferences = {
@@ -46,7 +48,7 @@ export declare function getMarkerScaleFactor(size: AppearanceScale): number;
 export declare const MARKER_COMPACT_LABEL = "\u00B7";
 export declare const MARKER_BADGE_FONT_SIZE_PX = 10;
 export declare const MARKER_BADGE_FONT_WEIGHT = 900;
-export declare function isCompactMarkerLabelScale(size: AppearanceScale): size is "xs" | "sm";
+export declare function isCompactMarkerLabelScale(size: AppearanceScale): size is "2xs" | "xs" | "sm";
 export declare function resolveMarkerBadgeDisplay(size: AppearanceScale, label: string | null): {
     content: string | null;
     fontSizePx: number | undefined;

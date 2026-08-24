@@ -216,6 +216,7 @@ export function PanelSettings({
         setMarkerShape,
         setMarkerFillStyle,
         setMarkerColor,
+        setMarkerStrokeColor,
         setFeedbackModeDotColors,
         setFeedbackModeDotColor,
         typography,
@@ -232,6 +233,7 @@ export function PanelSettings({
     } = useReportPreferences();
     const { presentationViewerId, setPresentationViewerId } = useReportSession();
     const scaleLabels: Record<AppearanceScale, string> = {
+        "2xs": messages.settings.scale2xs,
         xs: messages.settings.scaleXs,
         sm: messages.settings.scaleSm,
         md: messages.settings.scaleMd,
@@ -256,7 +258,11 @@ export function PanelSettings({
     const fillStyleLabels: Record<MarkerFillStyle, string> = {
         filled: messages.settings.markerFillStyleFilled,
         outlined: messages.settings.markerFillStyleOutlined,
+        both: messages.settings.markerFillStyleBoth,
     };
+    const showFillColorSettings = markerAppearance.fillStyle === "filled" || markerAppearance.fillStyle === "both";
+    const showStrokeStatusColorSettings = markerAppearance.fillStyle === "outlined";
+    const showBothStrokeColorSetting = markerAppearance.fillStyle === "both";
     const appearanceOptions = APPEARANCE_OPTION_VALUES.map((value) => ({
         value,
         label: messages.appearance[value],
@@ -472,30 +478,67 @@ export function PanelSettings({
                                             ariaLabel={messages.settings.markerShapeAriaLabel}
                                             previewColor={markerAppearance.colors.open}
                                             fillStyle={markerAppearance.fillStyle}
+                                            strokeColor={markerAppearance.strokeColor}
                                         />
                                     </div>
                                 </div>
                             </SettingsSection>
 
-                            <SettingsSection label={messages.settings.sectionMarkerColors}>
-                                <div className="flex flex-col gap-[12px] px-[12px] pb-[10px]">
-                                    <HexColorField
-                                        label={messages.settings.markerColorOpen}
-                                        value={markerAppearance.colors.open}
-                                        onChange={(color) => setMarkerColor("open", color)}
-                                    />
-                                    <HexColorField
-                                        label={messages.settings.markerColorResolved}
-                                        value={markerAppearance.colors.resolved}
-                                        onChange={(color) => setMarkerColor("resolved", color)}
-                                    />
-                                    <HexColorField
-                                        label={messages.settings.markerColorGitIssued}
-                                        value={markerAppearance.colors.gitIssued}
-                                        onChange={(color) => setMarkerColor("gitIssued", color)}
-                                    />
-                                </div>
-                            </SettingsSection>
+                            {showFillColorSettings ? (
+                                <SettingsSection label={messages.settings.sectionMarkerFillColors}>
+                                    <div className="flex flex-col gap-[12px] px-[12px] pb-[10px]">
+                                        <HexColorField
+                                            label={messages.settings.markerColorOpen}
+                                            value={markerAppearance.colors.open}
+                                            onChange={(color) => setMarkerColor("open", color)}
+                                        />
+                                        <HexColorField
+                                            label={messages.settings.markerColorResolved}
+                                            value={markerAppearance.colors.resolved}
+                                            onChange={(color) => setMarkerColor("resolved", color)}
+                                        />
+                                        <HexColorField
+                                            label={messages.settings.markerColorGitIssued}
+                                            value={markerAppearance.colors.gitIssued}
+                                            onChange={(color) => setMarkerColor("gitIssued", color)}
+                                        />
+                                    </div>
+                                </SettingsSection>
+                            ) : null}
+
+                            {showStrokeStatusColorSettings ? (
+                                <SettingsSection label={messages.settings.sectionMarkerStrokeColors}>
+                                    <div className="flex flex-col gap-[12px] px-[12px] pb-[10px]">
+                                        <HexColorField
+                                            label={messages.settings.markerColorOpen}
+                                            value={markerAppearance.colors.open}
+                                            onChange={(color) => setMarkerColor("open", color)}
+                                        />
+                                        <HexColorField
+                                            label={messages.settings.markerColorResolved}
+                                            value={markerAppearance.colors.resolved}
+                                            onChange={(color) => setMarkerColor("resolved", color)}
+                                        />
+                                        <HexColorField
+                                            label={messages.settings.markerColorGitIssued}
+                                            value={markerAppearance.colors.gitIssued}
+                                            onChange={(color) => setMarkerColor("gitIssued", color)}
+                                        />
+                                    </div>
+                                </SettingsSection>
+                            ) : null}
+
+                            {showBothStrokeColorSetting ? (
+                                <SettingsSection label={messages.settings.sectionMarkerStrokeColors}>
+                                    <div className="flex flex-col gap-[12px] px-[12px] pb-[10px]">
+                                        <HexColorField
+                                            label={messages.settings.markerStrokeColor}
+                                            value={markerAppearance.strokeColor}
+                                            onChange={setMarkerStrokeColor}
+                                        />
+                                    </div>
+                                </SettingsSection>
+                            ) : null}
 
                             <SettingsSection label={messages.settings.sectionTypography}>
                                 <div className="flex flex-col gap-[12px] px-[12px] pb-[10px]">

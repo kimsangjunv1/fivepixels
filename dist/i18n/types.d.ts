@@ -535,6 +535,10 @@ export type ReportMessages = {
         markerFillStyleAriaLabel: string;
         markerFillStyleFilled: string;
         markerFillStyleOutlined: string;
+        markerFillStyleBoth: string;
+        sectionMarkerFillColors: string;
+        sectionMarkerStrokeColors: string;
+        markerStrokeColor: string;
         markerColorOpen: string;
         markerColorResolved: string;
         markerColorGitIssued: string;
@@ -547,6 +551,7 @@ export type ReportMessages = {
         fontFamily: string;
         fontFamilyAriaLabel: string;
         scaleNone: string;
+        scale2xs: string;
         scaleXs: string;
         scaleSm: string;
         scaleMd: string;

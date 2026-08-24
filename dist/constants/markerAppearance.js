@@ -1,6 +1,7 @@
 import { ACCENT_COLOR_DARK } from "../constants/accentColors.js";
-export const APPEARANCE_SCALE_VALUES = ["xs", "sm", "md", "lg", "xl"];
+export const APPEARANCE_SCALE_VALUES = ["2xs", "xs", "sm", "md", "lg", "xl"];
 export const MARKER_SCALE_FACTOR = {
+    "2xs": 0.3,
     xs: 0.7,
     sm: 0.85,
     md: 1,
@@ -23,7 +24,8 @@ export const MARKER_SHAPE_VALUES = [
     "pentagon",
     "puffy",
 ];
-export const MARKER_FILL_STYLE_VALUES = ["filled", "outlined"];
+export const MARKER_FILL_STYLE_VALUES = ["filled", "outlined", "both"];
+export const DEFAULT_MARKER_STROKE_COLOR = "#ffffff";
 export const MARKER_APPEARANCE_STORAGE_KEY = "fivepixels:marker-appearance";
 export const TYPOGRAPHY_STORAGE_KEY = "fivepixels:typography";
 export const MARKER_LABEL_FONT_SIZE_PX = {
@@ -44,8 +46,9 @@ export const DEFAULT_FEEDBACK_MODE_DOT_COLORS = {
 export const DEFAULT_MARKER_APPEARANCE = {
     size: "md",
     shape: "cookie4",
-    fillStyle: "filled",
+    fillStyle: "both",
     colors: DEFAULT_MARKER_COLORS,
+    strokeColor: DEFAULT_MARKER_STROKE_COLOR,
     feedbackModeDotColors: DEFAULT_FEEDBACK_MODE_DOT_COLORS,
 };
 export const DEFAULT_FONT_FAMILY = 'system-ui, -apple-system, "Segoe UI", sans-serif';
@@ -69,7 +72,7 @@ export function isMarkerFontSize(value) {
     return value === "none" || isMarkerLabelFontSize(value);
 }
 export function isAppearanceScale(value) {
-    return value === "xs" || value === "sm" || value === "md" || value === "lg" || value === "xl";
+    return value === "2xs" || value === "xs" || value === "sm" || value === "md" || value === "lg" || value === "xl";
 }
 export function isMarkerShape(value) {
     return MARKER_SHAPE_VALUES.includes(value);
@@ -84,7 +87,7 @@ export const MARKER_COMPACT_LABEL = "·";
 export const MARKER_BADGE_FONT_SIZE_PX = 10;
 export const MARKER_BADGE_FONT_WEIGHT = 900;
 export function isCompactMarkerLabelScale(size) {
-    return size === "xs" || size === "sm";
+    return size === "2xs" || size === "xs" || size === "sm";
 }
 export function resolveMarkerBadgeDisplay(size, label) {
     if (!label) {
