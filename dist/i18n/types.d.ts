@@ -738,10 +738,20 @@ export type ReportMessages = {
         probeChangeGridColumns: (before: string, after: string) => string;
         probeChangeGridRows: (before: string, after: string) => string;
         contextEdit: string;
+        contextAddMemo: string;
+        contextEditMemo: string;
         contextDelete: string;
         contextRevert: string;
         probeApply: string;
         probeModifiedBadge: string;
+        memoBadge: string;
+        memoBadgeEditAriaLabel: string;
+        memoMarkerAriaLabel: (text: string) => string;
+        memoComposerTitle: string;
+        memoComposerHint: string;
+        memoComposerPlaceholder: string;
+        memoComposerSave: string;
+        memoComposerDelete: string;
     };
     marker: {
         detachedAriaLabel: string;

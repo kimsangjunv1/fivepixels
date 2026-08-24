@@ -47,6 +47,9 @@ export declare function CheckCircleIcon({ className, fill }: {
 export declare function EditIcon({ className, fill }: {
     className?: string;
 } & Pick<MaterialIconProps, "fill">): import("react").JSX.Element;
+export declare function MemoIcon({ className, fill }: {
+    className?: string;
+} & Pick<MaterialIconProps, "fill">): import("react").JSX.Element;
 export declare function DeleteIcon({ className, fill }: {
     className?: string;
 } & Pick<MaterialIconProps, "fill">): import("react").JSX.Element;

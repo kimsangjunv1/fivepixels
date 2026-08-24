@@ -257,6 +257,19 @@ export function formatProposedChanges(changes, messages) {
     const lines = changes.map((change) => `• ${formatProposedChangeLine(change, messages)}`);
     return [messages.pickTarget.probeSummaryTitle, ...lines].join("\n");
 }
+export function formatSavedProbeEditSummary(entry, messages) {
+    const element = findElementByProbeKey(entry.elementKey);
+    const supportsTextFields = element
+        ? shouldInspectFontStyle(element)
+        : Boolean(entry.baseline.textContent || entry.baseline.fontSize || entry.baseline.lineHeight);
+    const layoutMode = element ? getPickProbeLayoutMode(element) : inferLayoutModeFromProbeValues(entry.baseline);
+    const changes = getProposedChanges(entry.baseline, entry.applied, supportsTextFields, layoutMode);
+    if (changes.length === 0) {
+        return "";
+    }
+    const lines = changes.map((change) => `• ${formatProposedChangeLine(change, messages)}`);
+    return lines.join("\n");
+}
 export function formatSavedProbeEditsSummary(edits, messages) {
     const sections = Object.values(edits)
         .map((entry) => {

@@ -17,5 +17,6 @@ export declare function getProposedChanges(baseline: PickProbeValues, current: P
 export declare function applyPickProbeCompareMode(element: HTMLElement, mode: PickProbeCompareMode, baseline: PickProbeValues, current: PickProbeValues): void;
 export declare function formatProbeElementKeyLabel(elementKey: string): string;
 export declare function formatProposedChanges(changes: ProposedChange[], messages: ReportMessages): string;
+export declare function formatSavedProbeEditSummary(entry: SavedProbeEntry, messages: ReportMessages): string;
 export declare function formatSavedProbeEditsSummary(edits: Record<string, SavedProbeEntry>, messages: ReportMessages): string;
 //# sourceMappingURL=pickProbe.d.ts.map

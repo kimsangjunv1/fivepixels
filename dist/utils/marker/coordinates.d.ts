@@ -8,6 +8,7 @@ export type MarkerPosition = {
     clampContainerId: string | null;
 };
 export declare function clampRatio(value: number): number;
+export declare function getElementRatioMarkerPosition(element: HTMLElement, elementXRatio: number, elementYRatio: number): MarkerPosition;
 export declare function getMarkerFromReport(report: ReportFeedback, currentScrollY: number): Marker;
 export declare function aggregateViewTriggerMarkers(markers: Marker[]): Marker[];
 export declare function getDraftMarkerPosition(draft: Pick<DraftReport, "clientX" | "clientY" | "elementXRatio" | "elementYRatio" | "targetSelector">, selectedTarget: TargetSnapshot | null): MarkerPosition;

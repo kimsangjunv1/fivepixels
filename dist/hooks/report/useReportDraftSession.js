@@ -8,9 +8,10 @@ import { resolveDefaultAuthorName } from "../../utils/report/resolveDefaultAutho
 import { buildDraftFromReport } from "../../utils/report/buildDraftFromReport.js";
 import { getPageScrollY, getPageViewportSize, mapHostPointToPage } from "../../utils/overlay/pageDocumentBridge.js";
 import { useReportPickProbe } from "./useReportPickProbe.js";
+import { useElementMemos } from "./useElementMemos.js";
 import { getFeedbackViewPath } from "../../utils/marker/viewRestore.js";
 const OVERLAY_HOVER_LEAVE_MS = 100;
-export function useReportDraftSession({ mode, setMode, fields, messages, currentPathname, environment, appVersion, sessionActor, authorSelectionLocked, activeIdentify, authorizedAuthors, selfName, setErrorMessage, hoveredElementRef, selectedElementRef, overlayRef, overlayHoverLeaveTimeoutRef, }) {
+export function useReportDraftSession({ mode, setMode, projectId, fields, messages, currentPathname, environment, appVersion, sessionActor, authorSelectionLocked, activeIdentify, authorizedAuthors, selfName, setErrorMessage, hoveredElementRef, selectedElementRef, overlayRef, overlayHoverLeaveTimeoutRef, }) {
     const [showTargetPreview, setShowTargetPreview] = useState(false);
     const [selectableTargets, setSelectableTargets] = useState([]);
     const [draft, setDraft] = useState(null);
@@ -31,6 +32,16 @@ export function useReportDraftSession({ mode, setMode, fields, messages, current
         draft,
         messages,
     });
+    const { elementMemos, memoComposer, openMemoComposer, closeMemoComposer, saveElementMemo, deleteElementMemo, } = useElementMemos(projectId, currentPathname);
+    const handlePickTargetMemo = useCallback(() => {
+        const elementKey = contextMenuElementKey;
+        const menu = pickTargetContextMenu;
+        if (!elementKey || !menu) {
+            return;
+        }
+        closePickTargetContextMenu();
+        openMemoComposer(elementKey, menu.clientX, menu.clientY);
+    }, [closePickTargetContextMenu, contextMenuElementKey, openMemoComposer, pickTargetContextMenu]);
     const [draftAuthorName, setDraftAuthorName] = useState(() => resolveDefaultAuthorName(activeIdentify, authorizedAuthors, selfName));
     useEffect(() => {
         if (!sessionActor?.name) {
@@ -424,6 +435,7 @@ export function useReportDraftSession({ mode, setMode, fields, messages, current
         handlePickTargetEdit,
         handlePickTargetDelete,
         handlePickTargetRevert,
+        handlePickTargetMemo,
         commitPickProbeEdits,
         revertSavedProbeEdit,
         revertAllSavedProbeEdits,
@@ -433,6 +445,12 @@ export function useReportDraftSession({ mode, setMode, fields, messages, current
         resetPickProbeValues,
         resetPickProbeState,
         appendSavedProbeSummaryAsNewDraftCase,
+        elementMemos,
+        memoComposer,
+        openMemoComposer,
+        closeMemoComposer,
+        saveElementMemo,
+        deleteElementMemo,
         clearOverlayHoverLeaveTimeout,
         toggleTargetPreview,
         handleOverlayMove,
