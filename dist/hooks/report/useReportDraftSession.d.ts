@@ -5,6 +5,7 @@ import type { ElementMention } from "../../types/mention.js";
 import type { DraftReport, HoverPointer, ReportMode, TargetSnapshot } from "../../types/report-ui.js";
 import type { FeedbackCategory } from "../../constants/feedbackCategory.js";
 import type { SessionActor } from "../../utils/report/reportTeam.js";
+import type { ApiFlowEntry } from "../../types/networkMonitor.js";
 export type UseReportDraftSessionParams = {
     mode: ReportMode;
     setMode: Dispatch<SetStateAction<ReportMode>>;
@@ -74,6 +75,7 @@ export declare function useReportDraftSession({ mode, setMode, projectId, fields
     resetPickProbeValues: () => void;
     resetPickProbeState: () => void;
     appendSavedProbeSummaryAsNewDraftCase: () => void;
+    appendApiFlowEntryToDraftCase: (entry: ApiFlowEntry) => void;
     elementMemos: import("../../utils/memo/elementMemos.js").ElementMemoMap;
     memoComposer: import("./useElementMemos.js").ElementMemoComposerState | null;
     openMemoComposer: (elementKey: string, clientX: number, clientY: number) => void;

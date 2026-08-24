@@ -35,8 +35,9 @@ export type ReportStateConfig = {
     pixelsMode?: FivePixelsMode;
     sync?: FivePixelsSync;
     replyHistory: import("../../utils/report/reportUi.js").ResolvedReplyHistoryConfig;
+    networkMonitor?: boolean;
 };
-export declare function useReportState({ projectId, environment, appVersion, panelAppearance, tooltipAppearance, questionThreadDefault, fields, authors, requireReviewerKey, shortcut: _shortcut, identify, adapter, onNavigate, onRevealTarget, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys, initialLocale, messageOverrides, pixelsMode, sync, replyHistory, }: ReportStateConfig): {
+export declare function useReportState({ projectId, environment, appVersion, panelAppearance, tooltipAppearance, questionThreadDefault, fields, authors, requireReviewerKey, shortcut: _shortcut, identify, adapter, onNavigate, onRevealTarget, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys, initialLocale, messageOverrides, pixelsMode, sync, replyHistory, networkMonitor, }: ReportStateConfig): {
     panelAppearance: ReportAppearance;
     setPanelAppearance: (nextAppearance: ReportAppearance) => void;
     tooltipAppearance: ReportAppearance;
@@ -244,6 +245,7 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     updatePickProbeValue: (key: import("../../types/report-ui.js").PickProbeFieldKey, value: string) => void;
     resetPickProbeValues: () => void;
     appendSavedProbeSummaryAsNewDraftCase: () => void;
+    appendApiFlowEntryToDraftCase: (entryId: string) => void;
     elementMemos: import("../../utils/memo/elementMemos.js").ElementMemoMap;
     memoComposer: import("./useElementMemos.js").ElementMemoComposerState | null;
     openMemoComposer: (elementKey: string, clientX: number, clientY: number) => void;
@@ -371,5 +373,9 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     handleCreateGitHubIssue: (report: ReportFeedback) => Promise<void>;
     handleCreateSubmitWithGitHubIssue: () => Promise<void>;
     isDraftGitHubIssueSubmitting: boolean;
+    apiFlowEntries: readonly import("../../types/networkMonitor.js").ApiFlowEntry[];
+    activeApiFailureAlert: import("../../types/networkMonitor.js").ApiFlowEntry | null;
+    dismissFailureAlert: (entryId: string) => void;
+    networkMonitorEnabled: boolean;
 };
 //# sourceMappingURL=useReportState.d.ts.map

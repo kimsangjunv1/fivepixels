@@ -19,15 +19,15 @@ function AppContent() {
                     env: "STAGED",
                     version: "1.0.0",
                 }}
-                sync="local"
-                // sync="api"
-                // adapter={createFivepixelsAdapter({
-                //     baseUrl: "/api/v1/fivepixels",
-                //     projectId: PROJECT_ID,
-                // })}
-                // onNavigate={(pathname) => {
-                //     navigate(pathname);
-                // }}
+                // sync="local"
+                sync="api"
+                adapter={createFivepixelsAdapter({
+                    baseUrl: "/api/v1/fivepixels",
+                    projectId: PROJECT_ID,
+                })}
+                onNavigate={(pathname) => {
+                    navigate(pathname);
+                }}
             />
             <AppRouter />
         </>

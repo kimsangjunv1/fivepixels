@@ -6,6 +6,7 @@ import type { useReportMutations } from "./useReportMutations.js";
 import type { useReportPanelShell } from "./useReportPanelShell.js";
 import type { useReportReplyReview } from "./useReportReplyReview.js";
 import type { FivePixelsAdapter } from "../../types/adapter.js";
+import type { ApiFlowEntry } from "../../types/networkMonitor.js";
 import type { ReportAuthor, ReportFeedback, ReportField, ReportGitHubConfig } from "../../types/report.js";
 import type { ResolvedReplyHistoryConfig } from "../../utils/report/reportUi.js";
 type AssembleArgs = {
@@ -32,12 +33,17 @@ type AssembleArgs = {
     selectReport: (reportId: string) => void;
     beginFeedbackEdit: (report: ReportFeedback) => void;
     cancelDraft: () => void;
+    apiFlowEntries: readonly ApiFlowEntry[];
+    activeApiFailureAlert: ApiFlowEntry | null;
+    dismissFailureAlert: (entryId: string) => void;
+    appendApiFlowEntryToDraftCase: (entryId: string) => void;
+    networkMonitorEnabled: boolean;
 };
 /**
  * Flat context value for ReportProvider slices.
  * Keys stay flat (see reportContextPartitions). Domain hooks → this assembler → UI.
  */
-export declare function assembleReportContextValue({ panel, auth, draft, markers, mutations, reply, fields, projectId, environment, appVersion, showFeedbackList, teamReviewers, adapter, github, canDeleteViaStorage, usesLazyReplies, usesCreateReply, visibleShortcutKeys, overlayRef, replyHistory, selectReport, beginFeedbackEdit, cancelDraft, }: AssembleArgs): {
+export declare function assembleReportContextValue({ panel, auth, draft, markers, mutations, reply, fields, projectId, environment, appVersion, showFeedbackList, teamReviewers, adapter, github, canDeleteViaStorage, usesLazyReplies, usesCreateReply, visibleShortcutKeys, overlayRef, replyHistory, selectReport, beginFeedbackEdit, cancelDraft, apiFlowEntries, activeApiFailureAlert, dismissFailureAlert, appendApiFlowEntryToDraftCase, networkMonitorEnabled, }: AssembleArgs): {
     panelAppearance: import("../../types/report.js").ReportAppearance;
     setPanelAppearance: (nextAppearance: import("../../types/report.js").ReportAppearance) => void;
     tooltipAppearance: import("../../types/report.js").ReportAppearance;
@@ -245,6 +251,7 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     updatePickProbeValue: (key: import("../../types/report-ui.js").PickProbeFieldKey, value: string) => void;
     resetPickProbeValues: () => void;
     appendSavedProbeSummaryAsNewDraftCase: () => void;
+    appendApiFlowEntryToDraftCase: (entryId: string) => void;
     elementMemos: import("../../utils/memo/elementMemos.js").ElementMemoMap;
     memoComposer: import("./useElementMemos.js").ElementMemoComposerState | null;
     openMemoComposer: (elementKey: string, clientX: number, clientY: number) => void;
@@ -372,6 +379,10 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     handleCreateGitHubIssue: (report: ReportFeedback) => Promise<void>;
     handleCreateSubmitWithGitHubIssue: () => Promise<void>;
     isDraftGitHubIssueSubmitting: boolean;
+    apiFlowEntries: readonly ApiFlowEntry[];
+    activeApiFailureAlert: ApiFlowEntry | null;
+    dismissFailureAlert: (entryId: string) => void;
+    networkMonitorEnabled: boolean;
 };
 export {};
 //# sourceMappingURL=assembleReportContextValue.d.ts.map

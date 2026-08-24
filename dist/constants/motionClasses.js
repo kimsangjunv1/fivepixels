@@ -37,6 +37,8 @@ export const MOTION = {
 };
 export const PANEL_TAB_FADE_MS = 180;
 export const PANEL_TAB_HEIGHT_MS = 300;
+/** Tailwind class — caps auto-height tab bodies so inner lists can scroll. */
+export const PANEL_TAB_BODY_MAX_HEIGHT = "max-h-[min(60dvh,calc(100svh-240px))]";
 export function panelCollapseInClass(anchorSide) {
     return anchorSide === "right" ? MOTION.panelCollapseInRight : MOTION.panelCollapseInLeft;
 }

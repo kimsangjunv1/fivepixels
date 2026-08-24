@@ -149,6 +149,7 @@ export const REPORT_SESSION_KEYS = [
     "updatePickProbeValue",
     "resetPickProbeValues",
     "appendSavedProbeSummaryAsNewDraftCase",
+    "appendApiFlowEntryToDraftCase",
     "elementMemos",
     "memoComposer",
     "openMemoComposer",
@@ -294,6 +295,10 @@ export const REPORT_DATA_KEYS = [
     "handleCreateGitHubIssue",
     "handleCreateSubmitWithGitHubIssue",
     "isDraftGitHubIssueSubmitting",
+    "apiFlowEntries",
+    "activeApiFailureAlert",
+    "dismissFailureAlert",
+    "networkMonitorEnabled",
 ] as const;
 
 export function pickReportSlice<T extends object, const K extends readonly (keyof T)[]>(source: T, keys: K): Pick<T, K[number]> {

@@ -8,6 +8,7 @@ export type ReportPanelTab =
     | "route-details"
     | "feedback-list"
     | "diagnostics"
+    | "api-flow"
     | "my-tasks"
     | "page-brief"
     | "needs-attention"

@@ -30,6 +30,8 @@ export type FivePixelsProps = {
     /** Attempt to reveal a target that is not on the current page. */
     onRevealTarget?: (report: ReportFeedback) => boolean | Promise<boolean>;
     github?: ReportGitHubConfig;
+    /** Capture host app fetch/XHR traffic for the API flow tab. Default: true. */
+    networkMonitor?: boolean;
 } & ReportSideEffectCallbacks;
 /** `<ReportProvider />` = public props + children (custom UI assembly). */
 export type ReportProviderProps = FivePixelsProps & {
