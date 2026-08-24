@@ -71,10 +71,7 @@ export function writeAllFeedback(scope: FeedbackTransferScope, items: ReportFeed
     writeAllReportsToStorage(getFeedbackStorageKey(scope), items, toReportProject(scope));
 }
 
-export type FeedbackInsertResult = FeedbackMergeStats & {
-    /** @deprecated Prefer `updated`. Kept for command success message compatibility. */
-    replaced: number;
-};
+export type FeedbackInsertResult = FeedbackMergeStats;
 
 export type FeedbackInsertConflict = {
     id: string;
@@ -111,7 +108,6 @@ export function insertFeedbackItems(scope: FeedbackTransferScope, incoming: Repo
         updated: 0,
         kept: existing.length,
         localRepliesPreserved: 0,
-        replaced: 0,
     };
 }
 
@@ -123,8 +119,10 @@ export function upsertFeedbackItems(scope: FeedbackTransferScope, incoming: Repo
     writeAllFeedback(scope, merged.items);
 
     return {
-        ...merged,
-        replaced: merged.updated,
+        inserted: merged.inserted,
+        updated: merged.updated,
+        kept: merged.kept,
+        localRepliesPreserved: merged.localRepliesPreserved,
     };
 }
 
@@ -134,11 +132,10 @@ export function applyFeedbackImport(scope: FeedbackTransferScope, incoming: Repo
         writeAllFeedback(scope, incoming);
 
         return {
-            inserted: incoming.length,
-            updated: 0,
+            inserted: 0,
+            updated: incoming.length,
             kept: 0,
             localRepliesPreserved: 0,
-            replaced: incoming.length,
         };
     }
 

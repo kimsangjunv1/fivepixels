@@ -12,12 +12,13 @@ export const EMPTY_REPLY_HISTORY_STATE = {
     initialized: false,
     pageCache: {},
 };
-async function fetchReplyPage(adapter, report, usesLazyReplies, pageSize, cursor) {
+async function fetchReplyPage(adapter, report, usesLazyReplies, pageSize, cursor, caseId) {
     if (usesLazyReplies) {
         return listRepliesApi(adapter, report.id, {
             limit: pageSize,
             cursor,
             direction: "older",
+            caseId,
         });
     }
     return paginateSortedReplies(getEmbeddedRepliesForHistory(report), {
@@ -61,7 +62,7 @@ function flattenPageCache(pageCache) {
     return sortRepliesChronologically(pages.flatMap((pageIndex) => pageCache[pageIndex] ?? []));
 }
 export function createReplyHistoryActions({ adapter, usesLazyReplies, getReportById, replyHistoryByReportId, setReplyHistoryByReportId, }) {
-    const initReplyHistory = useCallback(async (report, config) => {
+    const initReplyHistory = useCallback(async (report, config, caseId) => {
         const existing = replyHistoryByReportId[report.id];
         if (existing?.initialized) {
             return {
@@ -78,7 +79,7 @@ export function createReplyHistoryActions({ adapter, usesLazyReplies, getReportB
             },
         }));
         try {
-            const pageResult = await fetchReplyPage(adapter, report, usesLazyReplies, config.pageSize);
+            const pageResult = await fetchReplyPage(adapter, report, usesLazyReplies, config.pageSize, undefined, caseId);
             const nextState = usesReplyPaginationMode(config.mode)
                 ? buildInitialPaginationState(report, pageResult)
                 : buildInitialAppendState(report, pageResult);
@@ -100,7 +101,7 @@ export function createReplyHistoryActions({ adapter, usesLazyReplies, getReportB
             return report;
         }
     }, [adapter, replyHistoryByReportId, setReplyHistoryByReportId, usesLazyReplies]);
-    const loadOlderReplies = useCallback(async (reportId, config) => {
+    const loadOlderReplies = useCallback(async (reportId, config, caseId) => {
         const state = replyHistoryByReportId[reportId];
         if (!state?.initialized || state.isLoadingOlder || !state.hasMoreOlder || !usesReplyAppendHistory(config.mode)) {
             return;
@@ -118,7 +119,7 @@ export function createReplyHistoryActions({ adapter, usesLazyReplies, getReportB
         }));
         try {
             const oldestId = state.items[0]?.id;
-            const pageResult = await fetchReplyPage(adapter, report, usesLazyReplies, config.pageSize, oldestId);
+            const pageResult = await fetchReplyPage(adapter, report, usesLazyReplies, config.pageSize, oldestId, caseId);
             setReplyHistoryByReportId((current) => {
                 const currentState = current[reportId] ?? state;
                 return {

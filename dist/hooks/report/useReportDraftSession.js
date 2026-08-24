@@ -8,9 +8,11 @@ import { resolveDefaultAuthorName } from "../../utils/report/resolveDefaultAutho
 import { buildDraftFromReport } from "../../utils/report/buildDraftFromReport.js";
 import { getPageScrollY, getPageViewportSize, mapHostPointToPage } from "../../utils/overlay/pageDocumentBridge.js";
 import { useReportPickProbe } from "./useReportPickProbe.js";
+import { useElementMemos } from "./useElementMemos.js";
 import { getFeedbackViewPath } from "../../utils/marker/viewRestore.js";
+import { formatApiFlowEntryForFeedback } from "../../utils/network/formatApiFlowEntry.js";
 const OVERLAY_HOVER_LEAVE_MS = 100;
-export function useReportDraftSession({ mode, setMode, fields, messages, currentPathname, environment, appVersion, sessionActor, authorSelectionLocked, activeIdentify, authorizedAuthors, selfName, setErrorMessage, hoveredElementRef, selectedElementRef, overlayRef, overlayHoverLeaveTimeoutRef, }) {
+export function useReportDraftSession({ mode, setMode, projectId, fields, messages, currentPathname, environment, appVersion, sessionActor, authorSelectionLocked, activeIdentify, authorizedAuthors, selfName, setErrorMessage, hoveredElementRef, selectedElementRef, overlayRef, overlayHoverLeaveTimeoutRef, }) {
     const [showTargetPreview, setShowTargetPreview] = useState(false);
     const [selectableTargets, setSelectableTargets] = useState([]);
     const [draft, setDraft] = useState(null);
@@ -31,6 +33,46 @@ export function useReportDraftSession({ mode, setMode, fields, messages, current
         draft,
         messages,
     });
+    const { elementMemos, memoComposer, openMemoComposer, closeMemoComposer, saveElementMemo, deleteElementMemo, } = useElementMemos(projectId, currentPathname);
+    const appendApiFlowEntryToDraftCase = useCallback((entry) => {
+        if (!draft) {
+            return;
+        }
+        const summary = formatApiFlowEntryForFeedback(entry, messages);
+        setDraft((current) => {
+            if (!current) {
+                return current;
+            }
+            const cases = current.cases.map((item) => ({ ...item }));
+            const emptyIndex = cases.findIndex((item) => !item.text.trim());
+            const targetIndex = emptyIndex >= 0 ? emptyIndex : 0;
+            const target = cases[targetIndex];
+            if (!target) {
+                return {
+                    ...current,
+                    cases: [createReportCase(summary)],
+                };
+            }
+            cases[targetIndex] = {
+                ...target,
+                text: target.text.trim() ? `${target.text.trim()}\n\n${summary}` : summary,
+                updated_at: new Date().toISOString(),
+            };
+            return {
+                ...current,
+                cases,
+            };
+        });
+    }, [draft, messages]);
+    const handlePickTargetMemo = useCallback(() => {
+        const elementKey = contextMenuElementKey;
+        const menu = pickTargetContextMenu;
+        if (!elementKey || !menu) {
+            return;
+        }
+        closePickTargetContextMenu();
+        openMemoComposer(elementKey, menu.clientX, menu.clientY);
+    }, [closePickTargetContextMenu, contextMenuElementKey, openMemoComposer, pickTargetContextMenu]);
     const [draftAuthorName, setDraftAuthorName] = useState(() => resolveDefaultAuthorName(activeIdentify, authorizedAuthors, selfName));
     useEffect(() => {
         if (!sessionActor?.name) {
@@ -424,6 +466,7 @@ export function useReportDraftSession({ mode, setMode, fields, messages, current
         handlePickTargetEdit,
         handlePickTargetDelete,
         handlePickTargetRevert,
+        handlePickTargetMemo,
         commitPickProbeEdits,
         revertSavedProbeEdit,
         revertAllSavedProbeEdits,
@@ -433,6 +476,13 @@ export function useReportDraftSession({ mode, setMode, fields, messages, current
         resetPickProbeValues,
         resetPickProbeState,
         appendSavedProbeSummaryAsNewDraftCase,
+        appendApiFlowEntryToDraftCase,
+        elementMemos,
+        memoComposer,
+        openMemoComposer,
+        closeMemoComposer,
+        saveElementMemo,
+        deleteElementMemo,
         clearOverlayHoverLeaveTimeout,
         toggleTargetPreview,
         handleOverlayMove,

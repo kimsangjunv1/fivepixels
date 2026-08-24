@@ -27,13 +27,15 @@ function getInitialDeepLinkFeedbackId() {
     }
     return parseFeedbackDeepLink()?.feedbackId ?? null;
 }
-export function useReportPanelShell({ projectId, environment, appVersion, panelAppearance, tooltipAppearance, questionThreadDefault = "expanded", fields, showFeedbackList, initialLocale, messageOverrides, onList, onListAll, onPanelBootstrap, onActivitySummary, onListReplies, onCreate, onCreateReply, onUpdate, onDelete, routeKey, replyHistory, sessionActorName, bridgesRef, }) {
+export function useReportPanelShell({ projectId, environment, appVersion, sync = "local", panelAppearance, tooltipAppearance, questionThreadDefault = "expanded", fields, showFeedbackList, initialLocale, messageOverrides, adapter, routeKey, replyHistory, sessionActorName, bridgesRef, }) {
+    const onPanelBootstrap = adapter?.session?.panelBootstrap;
+    const onActivitySummary = adapter?.session?.activitySummary;
     const { appearance: activePanelAppearance, setAppearance: setPanelAppearance } = useAppearancePreference(PANEL_APPEARANCE_STORAGE_KEY, panelAppearance);
     const { appearance: activeTooltipAppearance, setAppearance: setTooltipAppearance } = useAppearancePreference(TOOLTIP_APPEARANCE_STORAGE_KEY, tooltipAppearance);
     const { showMarkerTargetPreview, setShowMarkerTargetPreview, toggleMarkerTargetPreview } = useMarkerTargetPreviewPreference();
     const { devicePreviewUiOpen, setDevicePreviewUiOpen, devicePreviewDeviceId, setDevicePreviewDeviceId, devicePreviewScale, setDevicePreviewScale, devicePreviewImageEnabled, setDevicePreviewImageEnabled, devicePreviewFitToViewport, setDevicePreviewFitToViewport, devicePreviewStatusBarEnabled, setDevicePreviewStatusBarEnabled, devicePreviewPreset, } = useDevicePreviewPreference();
     const { showHiddenDetachedMarkers, setShowHiddenDetachedMarkers, showModalDetachedMarkers, setShowModalDetachedMarkers } = useDetachedMarkerVisibilityPreference();
-    const { markerAppearance, setMarkerAppearance, setMarkerSize, setMarkerShape, setMarkerFillStyle, setMarkerColors, setMarkerColor, setFeedbackModeDotColors, setFeedbackModeDotColor, } = useMarkerAppearancePreference();
+    const { markerAppearance, setMarkerAppearance, setMarkerSize, setMarkerShape, setMarkerFillStyle, setMarkerColors, setMarkerColor, setMarkerStrokeColor, setFeedbackModeDotColors, setFeedbackModeDotColor, } = useMarkerAppearancePreference();
     const { typography, setTypography, setFontSize, setFontFamily } = useTypographyPreference();
     const { questionThreadDisplay, setQuestionThreadDisplay } = useQuestionThreadPreference(questionThreadDefault);
     const { panelRole, setPanelRole } = usePanelRolePreference();
@@ -98,18 +100,13 @@ export function useReportPanelShell({ projectId, environment, appVersion, panelA
     const resolvedPanelAppearance = useResolvedAppearance(activePanelAppearance);
     const resolvedTooltipAppearance = useResolvedAppearance(activeTooltipAppearance);
     const isMobileViewport = useIsMobileViewport();
-    const { canTransferFeedback, canListAllFeedback, currentPathname, listScope, setListScope, filters, setFilters, selectedReportId, setSelectedReportId, reports, currentPageReports, filteredReports, currentPageFilteredReports, allPageReports, allPageFilteredReports, routeDetailsStats, selectedReport, isError, isReportsLoading, isFetching, hasNextPage, isFetchingNextPage, fetchNextPage, isCreating, isUpdating, isDeleting, queryErrorMessage, refetch, createFeedback, updateFeedback, deleteFeedback, loadRepliesIfNeeded, createReply, usesCreateReply, replyHistoryByReportId, loadOlderReplies, goToOlderPaginationPage, goToNewerPaginationPage, persistenceStatus, } = useReportPersistence({
+    const { canTransferFeedback, canListAllFeedback, currentPathname, listScope, setListScope, filters, setFilters, selectedReportId, setSelectedReportId, reports, currentPageReports, filteredReports, currentPageFilteredReports, allPageReports, allPageFilteredReports, routeDetailsStats, selectedReport, isError, isReportsLoading, isFetching, hasNextPage, isFetchingNextPage, fetchNextPage, isCreating, isUpdating, isDeleting, queryErrorMessage, refetch, createFeedback, updateFeedback, deleteFeedback, loadRepliesIfNeeded, hydrateFeedbackIfNeeded, createReply, usesCreateReply, usesLazyReplies, replyHistoryByReportId, loadOlderReplies, goToOlderPaginationPage, goToNewerPaginationPage, fivePixelsAdapter, persistenceStatus, } = useReportPersistence({
         projectId,
         environment,
         appVersion,
+        sync,
         fields,
-        onList,
-        onListAll,
-        onListReplies,
-        onCreate,
-        onCreateReply,
-        onUpdate,
-        onDelete,
+        adapter,
         routeKey,
         fetchEnabled,
         listFetchEnabled,
@@ -271,6 +268,7 @@ export function useReportPanelShell({ projectId, environment, appVersion, panelA
         setMarkerFillStyle,
         setMarkerColors,
         setMarkerColor,
+        setMarkerStrokeColor,
         setFeedbackModeDotColors,
         setFeedbackModeDotColor,
         typography,
@@ -325,8 +323,11 @@ export function useReportPanelShell({ projectId, environment, appVersion, panelA
         updateFeedback,
         deleteFeedback,
         loadRepliesIfNeeded,
+        hydrateFeedbackIfNeeded,
         createReply,
         usesCreateReply,
+        usesLazyReplies,
+        fivePixelsAdapter,
         replyHistoryByReportId,
         loadOlderReplies,
         goToOlderPaginationPage,

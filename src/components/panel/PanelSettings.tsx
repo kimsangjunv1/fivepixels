@@ -6,10 +6,13 @@ import { DEFAULT_FEEDBACK_MODE_DOT_COLORS, FONT_FAMILY_SUGGESTIONS, MARKER_FILL_
 import type { AppearanceScale, MarkerFillStyle, MarkerShape } from "@/constants/markerAppearance.js";
 import { useReportPreferences, useReportSession } from "@/providers/reportContext.js";
 import { formatPresentationViewerLabel } from "@/utils/report/reportTeam.js";
-import { ChevronLeftIcon, ChevronRightIcon } from "@/components/icons/Icons.js";
+import { ChevronLeftIcon, ChevronRightIcon, LockIcon } from "@/components/icons/Icons.js";
+import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
+import { useIntegrationLock } from "@/components/ui/IntegrationLock.js";
 import { AppearanceThemePicker } from "./AppearanceThemePicker.js";
 import { HexColorField } from "./HexColorField.js";
 import { MarkerShapePicker } from "./MarkerShapePicker.js";
+import { PanelIntegrationSettings } from "./PanelIntegrationSettings.js";
 import { PanelMarkerDisplayControls } from "./PanelMarkerDisplayControls.js";
 import { PanelOptionSwitch } from "./PanelOptionSwitch.js";
 import { PanelTabSelector } from "./PanelTabSelector.js";
@@ -33,7 +36,7 @@ type PanelSettingsProps = {
     onKeyRotate: () => void;
 };
 
-type SettingsCategory = "preview" | "appearance" | "display" | "tabs" | "team" | "data-and-keys" | "advanced";
+type SettingsCategory = "preview" | "appearance" | "display" | "tabs" | "team" | "data-and-keys" | "advanced" | "api-integration";
 type AppearanceSection = "theme-language" | "feedback-mode" | "marker";
 
 const LOCALE_OPTIONS = ["en", "ko"] as const satisfies readonly ReportLocale[];
@@ -48,20 +51,61 @@ function SettingsSection({ label, children }: { label: string; children: ReactNo
     );
 }
 
-function SettingsActionButton({ disabled = false, onClick, children }: { disabled?: boolean; onClick: () => void; children: ReactNode }) {
-    return (
+function SettingsActionButton({
+    disabled = false,
+    locked = false,
+    lockLabel,
+    onClick,
+    children,
+}: {
+    disabled?: boolean;
+    locked?: boolean;
+    lockLabel?: string;
+    onClick: () => void;
+    children: ReactNode;
+}) {
+    const button = (
         <button
             type="button"
-            disabled={disabled}
+            disabled={disabled || locked}
             onClick={onClick}
             className="w-full rounded-[8px] px-[12px] py-[8px] text-left text-[13px] text-[var(--adaptive-black800)] hover:bg-[var(--adaptive-black100)] disabled:cursor-not-allowed disabled:opacity-50"
         >
-            {children}
+            <span className="inline-flex items-center gap-[6px]">
+                {locked ? <LockIcon className="h-[12px] w-[12px] shrink-0 text-[var(--adaptive-black500)]" /> : null}
+                {children}
+            </span>
         </button>
+    );
+
+    if (!locked || !lockLabel) {
+        return button;
+    }
+
+    return (
+        <HoverTooltip
+            label={lockLabel}
+            multiline
+            className="w-full"
+        >
+            {button}
+        </HoverTooltip>
     );
 }
 
-function SettingsHubRow({ title, subtitle, onClick }: { title: string; subtitle: string; onClick: () => void }) {
+function SettingsHubRow({
+    title,
+    subtitle,
+    onClick,
+    locked = false,
+    lockLabel,
+}: {
+    title: string;
+    subtitle: string;
+    onClick: () => void;
+    locked?: boolean;
+    lockLabel?: string;
+}) {
     return (
         <button
             type="button"
@@ -69,7 +113,19 @@ function SettingsHubRow({ title, subtitle, onClick }: { title: string; subtitle:
             className="flex w-full items-center gap-[10px] border-b border-[var(--adaptive-border-subtle)] px-[12px] py-[10px] text-left last:border-b-0 hover:bg-[var(--adaptive-black100)]"
         >
             <div className="min-w-0 flex-1 flex flex-col gap-[4px]">
-                <p className="text-[13px] font-semibold text-[var(--adaptive-black900)]">{title}</p>
+                <p className="inline-flex items-center gap-[6px] text-[13px] font-semibold text-[var(--adaptive-black900)]">
+                    {title}
+                    {locked ? (
+                        <HoverTooltip
+                            label={lockLabel}
+                            multiline
+                        >
+                            <span className="inline-flex text-[var(--adaptive-black500)]">
+                                <LockIcon className="h-[12px] w-[12px]" />
+                            </span>
+                        </HoverTooltip>
+                    ) : null}
+                </p>
                 <p className="truncate text-[10px] text-[var(--adaptive-black700)]">{subtitle}</p>
             </div>
             <ChevronRightIcon className="h-[14px] w-[14px] shrink-0 text-[var(--adaptive-black400)]" />
@@ -110,6 +166,8 @@ function getCategoryTitle(category: SettingsCategory, messages: ReturnType<typeo
             return messages.settings.categoryDataAndKeys;
         case "advanced":
             return messages.settings.categoryAdvanced;
+        case "api-integration":
+            return messages.settings.categoryApiIntegration;
     }
 }
 
@@ -143,6 +201,8 @@ export function PanelSettings({
 }: PanelSettingsProps) {
     const [activeCategory, setActiveCategory] = useState<SettingsCategory | null>(null);
     const [activeAppearanceSection, setActiveAppearanceSection] = useState<AppearanceSection | null>(null);
+    const transferLock = useIntegrationLock("dataTransfer");
+    const teamManageLock = useIntegrationLock("teamManage");
     const {
         locale,
         setLocale,
@@ -156,6 +216,7 @@ export function PanelSettings({
         setMarkerShape,
         setMarkerFillStyle,
         setMarkerColor,
+        setMarkerStrokeColor,
         setFeedbackModeDotColors,
         setFeedbackModeDotColor,
         typography,
@@ -167,9 +228,12 @@ export function PanelSettings({
         setVisiblePanelTabs,
         resetVisibleTabsToRoleDefault,
         canAccessTeamSettings,
+        integrationCapabilities,
+        adapterIntegrationStatus,
     } = useReportPreferences();
     const { presentationViewerId, setPresentationViewerId } = useReportSession();
     const scaleLabels: Record<AppearanceScale, string> = {
+        "2xs": messages.settings.scale2xs,
         xs: messages.settings.scaleXs,
         sm: messages.settings.scaleSm,
         md: messages.settings.scaleMd,
@@ -194,7 +258,11 @@ export function PanelSettings({
     const fillStyleLabels: Record<MarkerFillStyle, string> = {
         filled: messages.settings.markerFillStyleFilled,
         outlined: messages.settings.markerFillStyleOutlined,
+        both: messages.settings.markerFillStyleBoth,
     };
+    const showFillColorSettings = markerAppearance.fillStyle === "filled" || markerAppearance.fillStyle === "both";
+    const showStrokeStatusColorSettings = markerAppearance.fillStyle === "outlined";
+    const showBothStrokeColorSetting = markerAppearance.fillStyle === "both";
     const appearanceOptions = APPEARANCE_OPTION_VALUES.map((value) => ({
         value,
         label: messages.appearance[value],
@@ -219,6 +287,10 @@ export function PanelSettings({
     const markerSummary = `${scaleLabels[markerAppearance.size]} · ${shapeLabels[markerAppearance.shape]} · ${fillStyleLabels[markerAppearance.fillStyle]}`;
     const displaySummary = `${messages.questionThreadOption[questionThreadDisplay]} · ${showMarkerTargetPreview ? messages.settings.markerTargetsOn : messages.settings.markerTargetsOff}`;
     const tabsSummary = visiblePanelTabsSummary || messages.settings.categoryTabsSummary;
+    const showApiIntegrationCategory = integrationCapabilities.sync === "api" || integrationCapabilities.sync === "artemis";
+    const apiIntegrationSummary = adapterIntegrationStatus
+        ? messages.settings.categoryApiIntegrationSummary(adapterIntegrationStatus.connectedCount, adapterIntegrationStatus.totalCount)
+        : messages.settings.integrationLocalModeHint;
 
     if (activeCategory === "appearance" && !activeAppearanceSection) {
         return (
@@ -406,30 +478,67 @@ export function PanelSettings({
                                             ariaLabel={messages.settings.markerShapeAriaLabel}
                                             previewColor={markerAppearance.colors.open}
                                             fillStyle={markerAppearance.fillStyle}
+                                            strokeColor={markerAppearance.strokeColor}
                                         />
                                     </div>
                                 </div>
                             </SettingsSection>
 
-                            <SettingsSection label={messages.settings.sectionMarkerColors}>
-                                <div className="flex flex-col gap-[12px] px-[12px] pb-[10px]">
-                                    <HexColorField
-                                        label={messages.settings.markerColorOpen}
-                                        value={markerAppearance.colors.open}
-                                        onChange={(color) => setMarkerColor("open", color)}
-                                    />
-                                    <HexColorField
-                                        label={messages.settings.markerColorResolved}
-                                        value={markerAppearance.colors.resolved}
-                                        onChange={(color) => setMarkerColor("resolved", color)}
-                                    />
-                                    <HexColorField
-                                        label={messages.settings.markerColorGitIssued}
-                                        value={markerAppearance.colors.gitIssued}
-                                        onChange={(color) => setMarkerColor("gitIssued", color)}
-                                    />
-                                </div>
-                            </SettingsSection>
+                            {showFillColorSettings ? (
+                                <SettingsSection label={messages.settings.sectionMarkerFillColors}>
+                                    <div className="flex flex-col gap-[12px] px-[12px] pb-[10px]">
+                                        <HexColorField
+                                            label={messages.settings.markerColorOpen}
+                                            value={markerAppearance.colors.open}
+                                            onChange={(color) => setMarkerColor("open", color)}
+                                        />
+                                        <HexColorField
+                                            label={messages.settings.markerColorResolved}
+                                            value={markerAppearance.colors.resolved}
+                                            onChange={(color) => setMarkerColor("resolved", color)}
+                                        />
+                                        <HexColorField
+                                            label={messages.settings.markerColorGitIssued}
+                                            value={markerAppearance.colors.gitIssued}
+                                            onChange={(color) => setMarkerColor("gitIssued", color)}
+                                        />
+                                    </div>
+                                </SettingsSection>
+                            ) : null}
+
+                            {showStrokeStatusColorSettings ? (
+                                <SettingsSection label={messages.settings.sectionMarkerStrokeColors}>
+                                    <div className="flex flex-col gap-[12px] px-[12px] pb-[10px]">
+                                        <HexColorField
+                                            label={messages.settings.markerColorOpen}
+                                            value={markerAppearance.colors.open}
+                                            onChange={(color) => setMarkerColor("open", color)}
+                                        />
+                                        <HexColorField
+                                            label={messages.settings.markerColorResolved}
+                                            value={markerAppearance.colors.resolved}
+                                            onChange={(color) => setMarkerColor("resolved", color)}
+                                        />
+                                        <HexColorField
+                                            label={messages.settings.markerColorGitIssued}
+                                            value={markerAppearance.colors.gitIssued}
+                                            onChange={(color) => setMarkerColor("gitIssued", color)}
+                                        />
+                                    </div>
+                                </SettingsSection>
+                            ) : null}
+
+                            {showBothStrokeColorSetting ? (
+                                <SettingsSection label={messages.settings.sectionMarkerStrokeColors}>
+                                    <div className="flex flex-col gap-[12px] px-[12px] pb-[10px]">
+                                        <HexColorField
+                                            label={messages.settings.markerStrokeColor}
+                                            value={markerAppearance.strokeColor}
+                                            onChange={setMarkerStrokeColor}
+                                        />
+                                    </div>
+                                </SettingsSection>
+                            ) : null}
 
                             <SettingsSection label={messages.settings.sectionTypography}>
                                 <div className="flex flex-col gap-[12px] px-[12px] pb-[10px]">
@@ -508,12 +617,16 @@ export function PanelSettings({
                             <SettingsSection label={messages.moreMenu.sectionTransfer}>
                                 <SettingsActionButton
                                     disabled={transferDisabled}
+                                    locked={transferLock.locked}
+                                    lockLabel={transferLock.tooltipLabel}
                                     onClick={onImport}
                                 >
                                     {messages.moreMenu.import}
                                 </SettingsActionButton>
                                 <SettingsActionButton
                                     disabled={transferDisabled}
+                                    locked={transferLock.locked}
+                                    lockLabel={transferLock.tooltipLabel}
                                     onClick={onExport}
                                 >
                                     {messages.moreMenu.export}
@@ -548,12 +661,16 @@ export function PanelSettings({
                         <SettingsSection label={messages.moreMenu.sectionAdvanced}>
                             <SettingsActionButton
                                 disabled={transferDisabled}
+                                locked={transferLock.locked}
+                                lockLabel={transferLock.tooltipLabel}
                                 onClick={onCommand}
                             >
                                 {messages.moreMenu.command}
                             </SettingsActionButton>
                         </SettingsSection>
                     ) : null}
+
+                    {activeCategory === "api-integration" ? <PanelIntegrationSettings /> : null}
                 </div>
             </section>
         );
@@ -596,7 +713,17 @@ export function PanelSettings({
                 <SettingsHubRow
                     title={messages.settings.categoryTeam}
                     subtitle={messages.settings.categoryTeamSummary}
+                    locked={teamManageLock.locked}
+                    lockLabel={teamManageLock.tooltipLabel}
                     onClick={() => setActiveCategory("team")}
+                />
+            ) : null}
+
+            {showApiIntegrationCategory ? (
+                <SettingsHubRow
+                    title={messages.settings.categoryApiIntegration}
+                    subtitle={apiIntegrationSummary}
+                    onClick={() => setActiveCategory("api-integration")}
                 />
             ) : null}
 

@@ -4,8 +4,9 @@ import { useActivitySummary } from "../../hooks/useActivitySummary.js";
 import { useReport } from "../../providers/reportContext.js";
 import { formatDateOnly } from "../../utils/shared/format.js";
 import { buildHeatmapGrid, formatHeatmapMonthLabel, formatShortMonthLabel, getHeatmapCellDelay, getHeatmapEntranceDuration, getYearEntranceDuration, getYearMonthCellDelay, resolveHeatmapLevel, } from "../../utils/panel/heatmapActivity.js";
-import { ChevronLeftIcon, ChevronRightIcon } from "../../components/icons/Icons.js";
+import { ChevronLeftIcon, ChevronRightIcon, LockIcon } from "../../components/icons/Icons.js";
 import { HoverTooltip } from "../../components/ui/HoverTooltip.js";
+import { IntegrationLockTip, useIntegrationLock } from "../../components/ui/IntegrationLock.js";
 const HEATMAP_CELL_SIZE_PX = 10;
 const HEATMAP_YEAR_CELL_SIZE_PX = 18;
 const HEATMAP_CELL_GAP_PX = 3;
@@ -36,6 +37,9 @@ function heatmapLevelClassName(level) {
 }
 export function FeedbackActivityHeatmap() {
     const { reports, currentPageReports, currentPathname, listScope, setListScope, setFilters, panelTab, openPanelTab, sessionActor, canListAllFeedback, onActivitySummary, locale, messages, } = useReport();
+    const listAllLock = useIntegrationLock("listAll");
+    const activitySummaryLock = useIntegrationLock("activitySummary");
+    const showScopeControl = canListAllFeedback || listAllLock.locked;
     const [viewMode, setViewMode] = useState("daily");
     const [actorScope, setActorScope] = useState("team");
     const [metric, setMetric] = useState("created");
@@ -95,7 +99,7 @@ export function FeedbackActivityHeatmap() {
         }
     };
     const heatmapMessages = messages.activityHeatmap;
-    return (_jsxs("section", { className: "border-b border-[var(--adaptive-black200)] bg-[var(--adaptive-black50)] px-[16px] py-[12px]", children: [_jsxs("div", { className: "mb-[10px] flex items-start justify-between gap-[8px]", children: [_jsx("p", { className: "text-[13px] font-[700] text-[var(--adaptive-black900)]", children: heatmapMessages.title }), drillDownMonth ? (_jsx(HeatmapToggleGroup, { label: heatmapMessages.viewModeAriaLabel, value: viewMode, onChange: setViewMode, options: [
+    return (_jsxs("section", { className: "border-b border-[var(--adaptive-black200)] bg-[var(--adaptive-black50)] px-[16px] py-[12px]", children: [_jsxs("div", { className: "mb-[10px] flex items-start justify-between gap-[8px]", children: [_jsxs("p", { className: "inline-flex items-center gap-[6px] text-[13px] font-[700] text-[var(--adaptive-black900)]", children: [heatmapMessages.title, activitySummaryLock.locked ? (_jsx(HoverTooltip, { label: activitySummaryLock.tooltipLabel, multiline: true, children: _jsx("span", { className: "inline-flex text-[var(--adaptive-black500)]", children: _jsx(LockIcon, { className: "h-[12px] w-[12px]" }) }) })) : null] }), drillDownMonth ? (_jsx(HeatmapToggleGroup, { label: heatmapMessages.viewModeAriaLabel, value: viewMode, onChange: setViewMode, options: [
                             { value: "daily", label: heatmapMessages.viewDaily },
                             { value: "weekly", label: heatmapMessages.viewWeekly },
                             { value: "cumulative", label: heatmapMessages.viewCumulative },
@@ -105,10 +109,10 @@ export function FeedbackActivityHeatmap() {
                         ] }), _jsxs("div", { className: "flex flex-wrap items-center gap-[8px]", children: [_jsx(HeatmapToggleGroup, { label: heatmapMessages.metricAriaLabel, value: metric, onChange: setMetric, options: [
                                     { value: "created", label: heatmapMessages.metricCreated },
                                     { value: "activity", label: heatmapMessages.metricActivity },
-                                ] }), canListAllFeedback ? (_jsx(HeatmapToggleGroup, { label: heatmapMessages.scopeAriaLabel, value: listScope, onChange: setListScope, options: [
-                                    { value: "current", label: heatmapMessages.scopeCurrentPage },
-                                    { value: "all", label: heatmapMessages.scopeAllPages },
-                                ] })) : null, drillDownMonth ? (_jsxs("div", { className: "flex items-center gap-[6px]", children: [_jsx("button", { type: "button", onClick: () => setDrillDownMonth(null), className: "rounded-[6px] px-[6px] py-[2px] text-[11px] font-[600] text-[var(--adaptive-blue500)] hover:bg-[var(--adaptive-black100)]", children: heatmapMessages.backToYear }), _jsx("p", { className: "text-[11px] font-[700] text-[var(--adaptive-black900)]", children: formatHeatmapMonthLabel(drillDownMonth, locale) })] })) : (_jsxs("nav", { className: "flex items-center gap-[2px]", "aria-label": heatmapMessages.yearNavAriaLabel, children: [_jsx("button", { type: "button", "aria-label": heatmapMessages.prevYear, onClick: () => setSelectedYear((current) => current - 1), className: "flex h-[22px] w-[22px] items-center justify-center rounded-[6px] text-[var(--adaptive-black500)] hover:bg-[var(--adaptive-black100)] hover:text-[var(--adaptive-black900)]", children: _jsx(ChevronLeftIcon, { className: "h-3.5 w-3.5" }) }), _jsx("p", { className: "min-w-[56px] px-[4px] text-center text-[11px] font-[700] text-[var(--adaptive-black900)]", children: selectedYear }), _jsx("button", { type: "button", "aria-label": heatmapMessages.nextYear, disabled: !canGoNextYear, onClick: () => {
+                                ] }), showScopeControl ? (_jsx(IntegrationLockTip, { locked: listAllLock.locked, label: listAllLock.tooltipLabel, children: _jsx("span", { className: listAllLock.locked ? "pointer-events-none opacity-50" : undefined, children: _jsx(HeatmapToggleGroup, { label: heatmapMessages.scopeAriaLabel, value: listScope, onChange: listAllLock.locked ? () => undefined : setListScope, options: [
+                                            { value: "current", label: heatmapMessages.scopeCurrentPage },
+                                            { value: "all", label: heatmapMessages.scopeAllPages },
+                                        ] }) }) })) : null, drillDownMonth ? (_jsxs("div", { className: "flex items-center gap-[6px]", children: [_jsx("button", { type: "button", onClick: () => setDrillDownMonth(null), className: "rounded-[6px] px-[6px] py-[2px] text-[11px] font-[600] text-[var(--adaptive-blue500)] hover:bg-[var(--adaptive-black100)]", children: heatmapMessages.backToYear }), _jsx("p", { className: "text-[11px] font-[700] text-[var(--adaptive-black900)]", children: formatHeatmapMonthLabel(drillDownMonth, locale) })] })) : (_jsxs("nav", { className: "flex items-center gap-[2px]", "aria-label": heatmapMessages.yearNavAriaLabel, children: [_jsx("button", { type: "button", "aria-label": heatmapMessages.prevYear, onClick: () => setSelectedYear((current) => current - 1), className: "flex h-[22px] w-[22px] items-center justify-center rounded-[6px] text-[var(--adaptive-black500)] hover:bg-[var(--adaptive-black100)] hover:text-[var(--adaptive-black900)]", children: _jsx(ChevronLeftIcon, { className: "h-3.5 w-3.5" }) }), _jsx("p", { className: "min-w-[56px] px-[4px] text-center text-[11px] font-[700] text-[var(--adaptive-black900)]", children: selectedYear }), _jsx("button", { type: "button", "aria-label": heatmapMessages.nextYear, disabled: !canGoNextYear, onClick: () => {
                                             if (canGoNextYear) {
                                                 setSelectedYear((current) => current + 1);
                                             }

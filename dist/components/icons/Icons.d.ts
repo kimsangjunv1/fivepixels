@@ -35,6 +35,9 @@ export declare function StarIcon({ className }: {
 export declare function InfoIcon({ className }: {
     className?: string;
 }): import("react").JSX.Element;
+export declare function LockIcon({ className }: {
+    className?: string;
+}): import("react").JSX.Element;
 export declare function CheckIcon({ className }: {
     className?: string;
 }): import("react").JSX.Element;
@@ -42,6 +45,9 @@ export declare function CheckCircleIcon({ className, fill }: {
     className?: string;
 } & Pick<MaterialIconProps, "fill">): import("react").JSX.Element;
 export declare function EditIcon({ className, fill }: {
+    className?: string;
+} & Pick<MaterialIconProps, "fill">): import("react").JSX.Element;
+export declare function MemoIcon({ className, fill }: {
     className?: string;
 } & Pick<MaterialIconProps, "fill">): import("react").JSX.Element;
 export declare function DeleteIcon({ className, fill }: {
@@ -56,6 +62,9 @@ export declare function ArrowReturnRightIcon({ className, fill }: {
 export declare function AskActionIcon({ className, fill }: {
     className?: string;
 } & Pick<MaterialIconProps, "fill">): import("react").JSX.Element;
+export declare function AskAiIcon({ className }: {
+    className?: string;
+}): import("react").JSX.Element;
 export declare function DeniedActionIcon({ className, fill }: {
     className?: string;
 } & Pick<MaterialIconProps, "fill">): import("react").JSX.Element;

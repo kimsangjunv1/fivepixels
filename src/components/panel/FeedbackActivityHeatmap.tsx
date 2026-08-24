@@ -13,8 +13,9 @@ import {
     resolveHeatmapLevel,
 } from "@/utils/panel/heatmapActivity.js";
 import type { HeatmapActorScope, HeatmapMetric, HeatmapViewMode } from "@/types/report-ui.js";
-import { ChevronLeftIcon, ChevronRightIcon } from "@/components/icons/Icons.js";
+import { ChevronLeftIcon, ChevronRightIcon, LockIcon } from "@/components/icons/Icons.js";
 import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
+import { IntegrationLockTip, useIntegrationLock } from "@/components/ui/IntegrationLock.js";
 
 const HEATMAP_CELL_SIZE_PX = 10;
 const HEATMAP_YEAR_CELL_SIZE_PX = 18;
@@ -94,6 +95,9 @@ export function FeedbackActivityHeatmap() {
         locale,
         messages,
     } = useReport();
+    const listAllLock = useIntegrationLock("listAll");
+    const activitySummaryLock = useIntegrationLock("activitySummary");
+    const showScopeControl = canListAllFeedback || listAllLock.locked;
     const [viewMode, setViewMode] = useState<HeatmapViewMode>("daily");
     const [actorScope, setActorScope] = useState<HeatmapActorScope>("team");
     const [metric, setMetric] = useState<HeatmapMetric>("created");
@@ -175,7 +179,19 @@ export function FeedbackActivityHeatmap() {
     return (
         <section className="border-b border-[var(--adaptive-black200)] bg-[var(--adaptive-black50)] px-[16px] py-[12px]">
             <div className="mb-[10px] flex items-start justify-between gap-[8px]">
-                <p className="text-[13px] font-[700] text-[var(--adaptive-black900)]">{heatmapMessages.title}</p>
+                <p className="inline-flex items-center gap-[6px] text-[13px] font-[700] text-[var(--adaptive-black900)]">
+                    {heatmapMessages.title}
+                    {activitySummaryLock.locked ? (
+                        <HoverTooltip
+                            label={activitySummaryLock.tooltipLabel}
+                            multiline
+                        >
+                            <span className="inline-flex text-[var(--adaptive-black500)]">
+                                <LockIcon className="h-[12px] w-[12px]" />
+                            </span>
+                        </HoverTooltip>
+                    ) : null}
+                </p>
                 {drillDownMonth ? (
                     <HeatmapToggleGroup
                         label={heatmapMessages.viewModeAriaLabel}
@@ -212,16 +228,23 @@ export function FeedbackActivityHeatmap() {
                         ]}
                     />
 
-                    {canListAllFeedback ? (
-                        <HeatmapToggleGroup
-                            label={heatmapMessages.scopeAriaLabel}
-                            value={listScope}
-                            onChange={setListScope}
-                            options={[
-                                { value: "current", label: heatmapMessages.scopeCurrentPage },
-                                { value: "all", label: heatmapMessages.scopeAllPages },
-                            ]}
-                        />
+                    {showScopeControl ? (
+                        <IntegrationLockTip
+                            locked={listAllLock.locked}
+                            label={listAllLock.tooltipLabel}
+                        >
+                            <span className={listAllLock.locked ? "pointer-events-none opacity-50" : undefined}>
+                                <HeatmapToggleGroup
+                                    label={heatmapMessages.scopeAriaLabel}
+                                    value={listScope}
+                                    onChange={listAllLock.locked ? () => undefined : setListScope}
+                                    options={[
+                                        { value: "current", label: heatmapMessages.scopeCurrentPage },
+                                        { value: "all", label: heatmapMessages.scopeAllPages },
+                                    ]}
+                                />
+                            </span>
+                        </IntegrationLockTip>
                     ) : null}
 
                     {drillDownMonth ? (

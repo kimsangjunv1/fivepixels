@@ -1,4 +1,4 @@
-import { LOGIN_METHOD_VALUES } from "../../constants/loginMethod.js";
+import { FIVE_PIXELS_SYNC_VALUES } from "../../constants/loginMethod.js";
 import { getLoginMethodStorageKey, getRemoteAuthSessionStorageKey } from "../../constants/storageKeys.js";
 function readJson(key) {
     if (typeof window === "undefined") {
@@ -36,7 +36,7 @@ function removeKey(key) {
 }
 export function readLoginMethod(projectId, environment) {
     const value = readJson(getLoginMethodStorageKey(projectId, environment));
-    return typeof value === "string" && LOGIN_METHOD_VALUES.includes(value) ? value : null;
+    return typeof value === "string" && FIVE_PIXELS_SYNC_VALUES.includes(value) ? value : null;
 }
 export function saveLoginMethod(projectId, environment, method) {
     writeJson(getLoginMethodStorageKey(projectId, environment), method);

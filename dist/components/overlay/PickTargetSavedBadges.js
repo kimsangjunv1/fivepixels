@@ -1,11 +1,23 @@
 import { jsx as _jsx, Fragment as _Fragment } from "react/jsx-runtime";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { HoverTooltip } from "../../components/ui/HoverTooltip.js";
 import { useReportPreferences, useReportSession } from "../../providers/reportContext.js";
+import { formatSavedProbeEditSummary } from "../../utils/probe/pickProbe.js";
 import { findElementByProbeKey } from "../../utils/probe/pickProbeSession.js";
 import { getPickProbeSavedBadgeLayout } from "../../utils/probe/pickProbeLayout.js";
-function SavedProbeBadge({ elementKey, label, badgeOpacity }) {
+const MODIFIED_BADGE_CLASS = "cursor-default rounded-[4px] bg-[#8b5cf6] px-[5px] py-[1px] text-[12px] font-semibold leading-[1.3] text-white shadow-[0_1px_4px_rgba(0,0,0,0.18)]";
+function SavedProbeBadge({ elementKey, badgeOpacity }) {
+    const { messages } = useReportPreferences();
+    const { savedProbeEdits } = useReportSession();
     const badgeRef = useRef(null);
     const [layout, setLayout] = useState(null);
+    const modifiedSummary = useMemo(() => {
+        const entry = savedProbeEdits[elementKey];
+        if (!entry) {
+            return "";
+        }
+        return formatSavedProbeEditSummary(entry, messages);
+    }, [elementKey, messages, savedProbeEdits]);
     useLayoutEffect(() => {
         const element = findElementByProbeKey(elementKey);
         const badge = badgeRef.current;
@@ -27,19 +39,19 @@ function SavedProbeBadge({ elementKey, label, badgeOpacity }) {
             window.removeEventListener("resize", update);
             window.removeEventListener("scroll", update, true);
         };
-    }, [elementKey, label]);
+    }, [elementKey, modifiedSummary]);
     const element = findElementByProbeKey(elementKey);
-    if (!element) {
+    if (!element || !modifiedSummary) {
         return null;
     }
-    return (_jsx("span", { ref: badgeRef, className: "pointer-events-none fixed z-[1000003] rounded-[4px] bg-[#8b5cf6] px-[5px] py-[1px] text-[12px] font-semibold leading-[1.3] text-white shadow-[0_1px_4px_rgba(0,0,0,0.18)]", style: {
-            top: layout?.top ?? element.getBoundingClientRect().top,
-            left: layout?.left ?? element.getBoundingClientRect().right,
-            opacity: layout ? badgeOpacity : 0,
-        }, children: label }));
+    const fallbackRect = element.getBoundingClientRect();
+    return (_jsx(HoverTooltip, { content: modifiedSummary, multiline: true, children: _jsx("span", { ref: badgeRef, className: `pointer-events-auto fixed z-[1000003] ${MODIFIED_BADGE_CLASS}`, style: {
+                top: layout?.top ?? fallbackRect.top,
+                left: layout?.left ?? fallbackRect.right,
+                opacity: layout ? badgeOpacity : 0,
+            }, "data-fivepixels-interactive": "", onPointerDown: (event) => event.stopPropagation(), onClick: (event) => event.stopPropagation(), children: messages.pickTarget.probeModifiedBadge }) }));
 }
 export function PickTargetSavedBadges() {
-    const { messages } = useReportPreferences();
     const { savedProbeEdits, mode } = useReportSession();
     const [, setTick] = useState(0);
     const savedElementKeys = Object.keys(savedProbeEdits);
@@ -59,6 +71,6 @@ export function PickTargetSavedBadges() {
     if (savedElementKeys.length === 0) {
         return null;
     }
-    return (_jsx(_Fragment, { children: savedElementKeys.map((elementKey) => (_jsx(SavedProbeBadge, { elementKey: elementKey, label: messages.pickTarget.probeModifiedBadge, badgeOpacity: badgeOpacity }, elementKey))) }));
+    return (_jsx(_Fragment, { children: savedElementKeys.map((elementKey) => (_jsx(SavedProbeBadge, { elementKey: elementKey, badgeOpacity: badgeOpacity }, elementKey))) }));
 }
 //# sourceMappingURL=PickTargetSavedBadges.js.map

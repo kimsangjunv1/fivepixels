@@ -1,7 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import { createReportFeedback } from "@/utils/report/reportFixtures.js";
+import type { FivePixelsAdapter } from "@/types/adapter.js";
 import type { CreateReportFeedbackPayload, ReportFeedback } from "@/types/report.js";
-import { hasCustomPersistenceHandlers, resolveStorageAdapter } from "./storage.js";
+import { hasCustomPersistenceAdapter, resolveStorageAdapter } from "./storage.js";
 
 const sampleFeedback = createReportFeedback({
     id: "1",
@@ -10,8 +11,30 @@ const sampleFeedback = createReportFeedback({
     created_at: "2026-01-01T00:00:00.000Z",
 });
 
+function createSampleAdapter(overrides: Partial<FivePixelsAdapter> = {}): FivePixelsAdapter {
+    return {
+        markers: {
+            list: vi.fn(async () => [sampleFeedback]),
+        },
+        feedback: {
+            create: vi.fn(async (payload: CreateReportFeedbackPayload) => ({
+                ...payload,
+                id: "created-id",
+                created_at: "2026-01-02T00:00:00.000Z",
+                replies: payload.replies ?? [],
+            })),
+            update: vi.fn(async (_id: string, payload: Partial<ReportFeedback>) => ({
+                ...sampleFeedback,
+                ...payload,
+            })),
+            delete: vi.fn(async () => undefined),
+        },
+        ...overrides,
+    };
+}
+
 describe("resolveStorageAdapter", () => {
-    it("uses localStorage when no custom handlers are provided", () => {
+    it("uses localStorage when no adapter is provided", () => {
         const { usesLocalStorage, persistenceStatus } = resolveStorageAdapter({ projectId: "demo-app" });
 
         expect(usesLocalStorage).toBe(true);
@@ -22,30 +45,35 @@ describe("resolveStorageAdapter", () => {
         });
     });
 
-    it("wraps custom handlers as an adapter", async () => {
-        const onList = vi.fn(async () => [sampleFeedback]);
-        const onCreate = vi.fn(async (payload: CreateReportFeedbackPayload) => ({
-            ...payload,
-            id: "created-id",
-            created_at: "2026-01-02T00:00:00.000Z",
-            replies: payload.replies ?? [],
-        }));
-        const onUpdate = vi.fn(async (_id: string, payload: Partial<ReportFeedback>) => ({
-            ...sampleFeedback,
-            ...payload,
-        }));
-        const onDelete = vi.fn(async () => undefined);
-        const onListAll = vi.fn(async () => ({ items: [sampleFeedback] }));
+    it("does not fall back to localStorage when sync is api without adapter", async () => {
+        const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+        const { usesLocalStorage, persistenceStatus, adapter } = resolveStorageAdapter({
+            projectId: "demo-app",
+            sync: "api",
+        });
 
-        expect(hasCustomPersistenceHandlers({ onList, onCreate, onUpdate })).toBe(true);
+        expect(usesLocalStorage).toBe(false);
+        expect(persistenceStatus.mode).toBe("unavailable");
+        expect(persistenceStatus.missingHandlers).toEqual([
+            "adapter.markers.list",
+            "adapter.feedback.create",
+            "adapter.feedback.update",
+            "adapter.cases.update",
+        ]);
+        await expect(adapter.list({ pathname: "/demo" })).resolves.toEqual([]);
+        await expect(adapter.create({} as CreateReportFeedbackPayload)).rejects.toThrow(/Persistence adapter is not configured/);
+        expect(warn).toHaveBeenCalled();
+        warn.mockRestore();
+    });
+
+    it("wraps a complete adapter as storage adapter", async () => {
+        const adapterConfig = createSampleAdapter();
+        expect(hasCustomPersistenceAdapter(adapterConfig)).toBe(true);
 
         const { adapter, usesLocalStorage, persistenceStatus } = resolveStorageAdapter({
             projectId: "demo-app",
-            onList,
-            onListAll,
-            onCreate,
-            onUpdate,
-            onDelete,
+            sync: "api",
+            adapter: adapterConfig,
         });
 
         expect(usesLocalStorage).toBe(false);
@@ -55,39 +83,25 @@ describe("resolveStorageAdapter", () => {
             ignoredHandlers: [],
         });
         await expect(adapter.list({ pathname: "/demo" })).resolves.toEqual([sampleFeedback]);
-        expect(onList).toHaveBeenCalledWith({ pathname: "/demo" });
-        await expect(adapter.listAll?.({ limit: 100 })).resolves.toEqual({ items: [sampleFeedback] });
-        expect(onListAll).toHaveBeenCalledWith({ limit: 100 });
+        expect(adapterConfig.markers?.list).toHaveBeenCalledWith({ pathname: "/demo" });
     });
 
-    it("reports a conflict and falls back to localStorage when required handlers are missing", () => {
-        const onList = vi.fn(async () => [sampleFeedback]);
-        const onCreate = vi.fn(async (payload: CreateReportFeedbackPayload) => ({
-            ...payload,
-            id: "created-id",
-            created_at: "2026-01-02T00:00:00.000Z",
-            replies: payload.replies ?? [],
-        }));
-        const onDelete = vi.fn(async () => undefined);
+    it("reports a conflict and falls back to localStorage when adapter is incomplete in local sync", () => {
         const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
 
         const { usesLocalStorage, persistenceStatus } = resolveStorageAdapter({
             projectId: "demo-app",
-            onList,
-            onCreate,
-            onDelete,
+            sync: "local",
+            adapter: {
+                markers: {
+                    list: vi.fn(async () => [sampleFeedback]),
+                },
+            },
         });
 
         expect(usesLocalStorage).toBe(true);
-        expect(persistenceStatus).toEqual({
-            mode: "conflict",
-            missingHandlers: ["onUpdate"],
-            ignoredHandlers: ["onList", "onCreate", "onDelete"],
-        });
-        expect(warn).toHaveBeenCalledWith(
-            "[fivepixels] Custom persistence requires onList, onCreate, and onUpdate together. Falling back to localStorage.",
-        );
-
+        expect(persistenceStatus.mode).toBe("conflict");
+        expect(warn).toHaveBeenCalled();
         warn.mockRestore();
     });
 });

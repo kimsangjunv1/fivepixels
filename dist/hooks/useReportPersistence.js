@@ -10,6 +10,7 @@ import { getRouteDetailStatus } from "../utils/panel/routeDetailStatus.js";
 import { getLatestReply } from "../utils/feedback/feedbackThread.js";
 import { mergeRepliesIntoReport } from "../utils/report/reportSummary.js";
 import { resolveStorageAdapter } from "../utils/shared/storage.js";
+import { adapterUsesCreateReply, adapterUsesLazyCases, adapterUsesLazyReplies, hydrateFeedbackFromAdapter, } from "../utils/adapter/resolveAdapter.js";
 import { createReplyHistoryActions } from "./replyHistoryActions.js";
 function buildReportSearchHaystack(report) {
     const latestReply = getLatestReply(report);
@@ -58,22 +59,18 @@ function enrichReports(reports, replyHistoryByReportId) {
         return mergeRepliesIntoReport(report, history.items);
     });
 }
-export function useReportPersistence({ projectId, environment, appVersion, fields, onList, onListAll, onListReplies, onCreate, onCreateReply, onUpdate, onDelete, routeKey, fetchEnabled = true, listFetchEnabled = true, allReportsFetchEnabled = false, replyHistory, }) {
-    const { adapter: storageAdapterInstance, usesLocalStorage, persistenceStatus } = useMemo(() => resolveStorageAdapter({
+export function useReportPersistence({ projectId, environment, appVersion, sync = "local", fields, adapter, routeKey, fetchEnabled = true, listFetchEnabled = true, allReportsFetchEnabled = false, replyHistory, }) {
+    const { adapter: storageAdapterInstance, usesLocalStorage, persistenceStatus, fivePixelsAdapter } = useMemo(() => resolveStorageAdapter({
         projectId,
         environment,
         appVersion,
-        onList,
-        onListAll,
-        onListReplies,
-        onCreate,
-        onCreateReply,
-        onUpdate,
-        onDelete,
-    }), [appVersion, environment, onCreate, onCreateReply, onDelete, onList, onListAll, onListReplies, onUpdate, projectId]);
+        sync,
+        adapter,
+    }), [adapter, appVersion, environment, projectId, sync]);
     const canTransferFeedback = usesLocalStorage;
-    const usesLazyReplies = Boolean(storageAdapterInstance.listReplies);
-    const usesCreateReply = Boolean(storageAdapterInstance.createReply);
+    const usesLazyReplies = usesLocalStorage ? false : adapterUsesLazyReplies(fivePixelsAdapter) || Boolean(storageAdapterInstance.listReplies);
+    const usesCreateReply = usesLocalStorage ? true : adapterUsesCreateReply(fivePixelsAdapter) || Boolean(storageAdapterInstance.createReply);
+    const usesLazyCases = adapterUsesLazyCases(fivePixelsAdapter);
     const currentPathname = useCurrentPathname(routeKey);
     const [replyHistoryByReportId, setReplyHistoryByReportId] = useState({});
     const [filters, setFilters] = useState({
@@ -136,7 +133,13 @@ export function useReportPersistence({ projectId, environment, appVersion, field
         replyHistoryByReportId,
         setReplyHistoryByReportId,
     });
-    const loadRepliesIfNeeded = useCallback(async (report) => initReplyHistory(report, replyHistory), [initReplyHistory, replyHistory]);
+    const loadRepliesIfNeeded = useCallback(async (report, caseId) => initReplyHistory(report, replyHistory, caseId), [initReplyHistory, replyHistory]);
+    const hydrateFeedbackIfNeeded = useCallback(async (report) => {
+        if (!usesLazyCases || !fivePixelsAdapter) {
+            return report;
+        }
+        return hydrateFeedbackFromAdapter(fivePixelsAdapter, report);
+    }, [fivePixelsAdapter, usesLazyCases]);
     const createReply = useCallback(async (commentId, payload) => {
         const created = await createReplyApi(storageAdapterInstance, commentId, payload);
         const history = replyHistoryByReportId[commentId];
@@ -215,7 +218,9 @@ export function useReportPersistence({ projectId, environment, appVersion, field
         updateFeedback,
         deleteFeedback,
         loadRepliesIfNeeded,
+        hydrateFeedbackIfNeeded,
         createReply,
+        fivePixelsAdapter,
         replyHistory,
         replyHistoryByReportId,
         initReplyHistory,

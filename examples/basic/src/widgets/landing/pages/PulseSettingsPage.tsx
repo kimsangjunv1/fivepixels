@@ -4,7 +4,7 @@ import {
     useDemoFeedbackSeed,
     SETTINGS_FEEDBACK_SEED_CATALOG,
     SETTINGS_FEEDBACK_SEED_IDS,
-} from "../../../features/edgecase/hooks/useEdgecaseFeedbackSeed";
+} from "../../../features/edgecase/hooks/useDemoFeedbackSeed";
 
 function ModalCaseBadge({ label, className = "" }: { label: string; className?: string }) {
     return <span className={`modal-demo-badge ${className}`.trim()}>{label}</span>;

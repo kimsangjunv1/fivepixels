@@ -7,12 +7,14 @@ import { useReportMutations } from "./useReportMutations.js";
 import { useReportPanelShell } from "./useReportPanelShell.js";
 import { useReportReplyReview } from "./useReportReplyReview.js";
 import { assembleReportContextValue } from "./assembleReportContextValue.js";
+import { useNetworkMonitor } from "../useNetworkMonitor.js";
 import { resolveDefaultAuthorName } from "../../utils/report/resolveDefaultAuthorName.js";
-export function useReportState({ projectId, environment, appVersion, panelAppearance, tooltipAppearance, questionThreadDefault = "expanded", fields, authors = [], requireReviewerKey = false, shortcut: _shortcut, identify, onList, onListAll, onPanelBootstrap, onActivitySummary, onListReplies, onNavigate, onRevealTarget, onCreate, onCreateReply, onUpdate, onDelete, onListReviewers, onListReviewerRequests, onCreateReviewerRequest, onResolveReviewerRequest, onRegisterReviewer, onUpdateReviewer, onApiLogin, onApiRegister, onArtemisLogin, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys = false, initialLocale, messageOverrides, pixelsMode = "default", replyHistory, }) {
+export function useReportState({ projectId, environment, appVersion, panelAppearance, tooltipAppearance, questionThreadDefault = "expanded", fields, authors = [], requireReviewerKey = false, shortcut: _shortcut, identify, adapter, onNavigate, onRevealTarget, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys = false, initialLocale, messageOverrides, pixelsMode = "default", sync = "local", replyHistory, networkMonitor = true, }) {
     const overlayRef = useRef(null);
     const hoveredElementRef = useRef(null);
     const selectedElementRef = useRef(null);
     const overlayHoverLeaveTimeoutRef = useRef(null);
+    const { apiFlowEntries, activeApiFailureAlert, dismissFailureAlert, getEntryById, networkMonitorEnabled, } = useNetworkMonitor(networkMonitor);
     const panelShellBridgesRef = useRef({
         setShowTargetPreview: () => undefined,
         closeReplyComposer: () => undefined,
@@ -25,14 +27,16 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         identify,
         requireReviewerKey,
         pixelsMode,
-        onApiLogin,
-        onApiRegister,
-        onArtemisLogin,
+        sync,
+        onApiLogin: adapter?.auth?.login,
+        onApiRegister: adapter?.auth?.signup,
+        onArtemisLogin: adapter?.auth?.artemisLogin,
     });
     const panel = useReportPanelShell({
         projectId,
         environment,
         appVersion,
+        sync,
         panelAppearance,
         tooltipAppearance,
         questionThreadDefault,
@@ -40,15 +44,7 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         showFeedbackList,
         initialLocale,
         messageOverrides,
-        onList,
-        onListAll,
-        onPanelBootstrap,
-        onActivitySummary,
-        onListReplies,
-        onCreate,
-        onCreateReply,
-        onUpdate,
-        onDelete,
+        adapter,
         routeKey,
         replyHistory,
         sessionActorName: auth.sessionActor?.name ?? null,
@@ -61,6 +57,7 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
     const draft = useReportDraftSession({
         mode: panel.mode,
         setMode: panel.setMode,
+        projectId,
         fields,
         messages: panel.messages,
         currentPathname: panel.currentPathname,
@@ -77,6 +74,12 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         overlayRef,
         overlayHoverLeaveTimeoutRef,
     });
+    const appendApiFlowEntryToDraftCase = useCallback((entryId) => {
+        const entry = getEntryById(entryId);
+        if (entry) {
+            draft.appendApiFlowEntryToDraftCase(entry);
+        }
+    }, [draft.appendApiFlowEntryToDraftCase, getEntryById]);
     const replyBridgeRef = useRef({
         activeReplyReportId: null,
         openReplyReportIds: [],
@@ -228,6 +231,7 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         selectCase: reply.selectCase,
         ensureIssueMode: panel.enableIssueMode,
         loadRepliesIfNeeded: panel.loadRepliesIfNeeded,
+        hydrateFeedbackIfNeeded: panel.hydrateFeedbackIfNeeded,
         searchInputRef: panel.searchInputRef,
     });
     const beginFeedbackEdit = (report) => {
@@ -318,20 +322,24 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         appVersion,
         showFeedbackList,
         teamReviewers: authors,
-        onListReviewers,
-        onListReviewerRequests,
-        onCreateReviewerRequest,
-        onResolveReviewerRequest,
-        onRegisterReviewer,
-        onUpdateReviewer,
-        onPanelBootstrap,
-        onActivitySummary,
+        adapter: panel.fivePixelsAdapter,
+        github,
+        canDeleteViaStorage: panel.persistenceStatus.mode === "localStorage" ||
+            panel.persistenceStatus.mode === "conflict" ||
+            (panel.persistenceStatus.mode === "API" && Boolean(panel.fivePixelsAdapter?.feedback?.delete)),
+        usesLazyReplies: panel.usesLazyReplies,
+        usesCreateReply: panel.usesCreateReply,
         visibleShortcutKeys,
         overlayRef,
         replyHistory,
         selectReport,
         beginFeedbackEdit,
         cancelDraft,
+        apiFlowEntries,
+        activeApiFailureAlert,
+        dismissFailureAlert,
+        appendApiFlowEntryToDraftCase,
+        networkMonitorEnabled,
     });
 }
 //# sourceMappingURL=useReportState.js.map

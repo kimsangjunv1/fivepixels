@@ -9,7 +9,7 @@ export declare function getPickProbeCompareChipLayout(anchorRect: DOMRect, chipW
     top: number;
     left: number;
 };
-export declare function getPickProbeSavedBadgeLayout(anchorRect: DOMRect, badgeWidth: number, badgeHeight: number): {
+export declare function getPickProbeSavedBadgeLayout(anchorRect: DOMRect, badgeWidth: number, badgeHeight: number, indexFromRight?: number, badgeGap?: number): {
     top: number;
     left: number;
 };

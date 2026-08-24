@@ -39,8 +39,9 @@ CI runs `typecheck`, `test`, `build`, bundle size checks, and the example build.
 
 | Doc | Audience |
 | --- | -------- |
-| [docs/architecture-hooks.md](./docs/architecture-hooks.md) | hooks/utils/providers layering |
-| [docs/backend-api-route.md](./docs/backend-api-route.md) | Backend persistence handler integration |
+| `src/providers/reportContextPartitions.ts` | Context partitions and layering |
+| `src/types/adapter.ts` | `FivePixelsAdapter` backend integration surface |
+| `examples/basic/src/fivepixels/adapter.ts` | Example API adapter implementation |
 
 Import utils from `@/utils/<domain>/<name>.js` in `components` and `hooks`.
 

@@ -1,18 +1,27 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { isRemoteLoginMethod } from "../../constants/loginMethod.js";
+import { isRemoteLoginMethod, resolveFivePixelsSync } from "../../constants/loginMethod.js";
 import { usePersonalKey } from "../usePersonalKey.js";
 import { useSelfProfile } from "../useSelfProfile.js";
 import { getAuthorIdFromPrivateKey, getAuthorNameFromPrivateKey, hasStoredPersonalKey, parsePrivateKeyBundle, publicKeysMatch, serializePublicKey, } from "../../utils/auth/personalKey.js";
-import { clearRemoteAuthSession, readLoginMethod, readRemoteAuthSession, saveLoginMethod, saveRemoteAuthSession, } from "../../utils/auth/loginSession.js";
+import { clearRemoteAuthSession, readRemoteAuthSession, saveLoginMethod, saveRemoteAuthSession, } from "../../utils/auth/loginSession.js";
 import { ReportAuthError } from "../../utils/auth/reportAuthError.js";
 import { resolvePanelView } from "../../utils/auth/resolvePanelView.js";
 import { buildPresentationViewers, resolveSessionActor } from "../../utils/report/reportTeam.js";
-export function useReportAuthSession({ projectId, environment, authors, identify, requireReviewerKey, pixelsMode, onApiLogin, onApiRegister, onArtemisLogin, }) {
+export function useReportAuthSession({ projectId, environment, authors, identify, requireReviewerKey, pixelsMode, sync: syncProp, onApiLogin, onApiRegister, onArtemisLogin, }) {
+    const sync = resolveFivePixelsSync(syncProp);
     const { selfProfile, saveSelfProfile, markOnboardingComplete } = useSelfProfile(projectId, environment);
     const requiresReviewerKey = requireReviewerKey || authors.some((author) => Boolean(author.publicKey));
     const isPresentationMode = pixelsMode === "presentation";
-    const [loginMethod, setLoginMethodState] = useState(() => readLoginMethod(projectId, environment));
-    const [remoteSession, setRemoteSession] = useState(() => readRemoteAuthSession(projectId, environment));
+    const [remoteSession, setRemoteSession] = useState(() => {
+        const stored = readRemoteAuthSession(projectId, environment);
+        if (!stored) {
+            return null;
+        }
+        if (!isRemoteLoginMethod(sync) || stored.method !== sync) {
+            return null;
+        }
+        return stored;
+    });
     const { personalKey, publicKey, personalKeyRequired: personalKeyRequiredFromKey, personalKeyPendingRegistration, personalKeyCandidates, authorizedAuthors: personalKeyAuthorizedAuthors, issuePersonalKey, issueSelfKey, rotatePersonalKey, insertPersonalKey, clearPersonalKey, signPayload, } = usePersonalKey({
         enabled: isPresentationMode || !requiresReviewerKey || hasStoredPersonalKey(projectId, environment),
         requireKey: requiresReviewerKey,
@@ -21,6 +30,7 @@ export function useReportAuthSession({ projectId, environment, authors, identify
         identify,
         authors,
     });
+    const loginMethod = sync;
     const isRemoteAuth = isRemoteLoginMethod(loginMethod);
     const remoteOnboardingCompleted = Boolean(isRemoteAuth && selfProfile?.completed);
     const remoteAuthor = useMemo(() => {
@@ -38,6 +48,21 @@ export function useReportAuthSession({ projectId, environment, authors, identify
         (personalKeyRequired ? undefined : identify);
     const presentationViewers = useMemo(() => buildPresentationViewers(identify, authors), [authors, identify]);
     const [presentationViewerId, setPresentationViewerId] = useState(null);
+    useEffect(() => {
+        saveLoginMethod(projectId, environment, sync);
+        if (!isRemoteLoginMethod(sync)) {
+            clearRemoteAuthSession(projectId, environment);
+            setRemoteSession(null);
+            return;
+        }
+        const stored = readRemoteAuthSession(projectId, environment);
+        if (!stored || stored.method !== sync) {
+            clearRemoteAuthSession(projectId, environment);
+            setRemoteSession(null);
+            return;
+        }
+        setRemoteSession(stored);
+    }, [environment, projectId, sync]);
     const resolvedPresentationViewerId = useMemo(() => {
         if (!isPresentationMode || presentationViewers.length === 0) {
             return null;
@@ -180,7 +205,6 @@ export function useReportAuthSession({ projectId, environment, authors, identify
         const session = { method, user };
         saveLoginMethod(projectId, environment, method);
         saveRemoteAuthSession(projectId, environment, session);
-        setLoginMethodState(method);
         setRemoteSession(session);
         saveSelfProfile({
             name: user.name.trim(),
@@ -188,14 +212,6 @@ export function useReportAuthSession({ projectId, environment, authors, identify
             completed: false,
         });
     }, [environment, projectId, saveSelfProfile]);
-    const selectLoginMethod = useCallback((method) => {
-        saveLoginMethod(projectId, environment, method);
-        setLoginMethodState(method);
-        if (!isRemoteLoginMethod(method)) {
-            clearRemoteAuthSession(projectId, environment);
-            setRemoteSession(null);
-        }
-    }, [environment, projectId]);
     const loginWithApi = useCallback(async (payload) => {
         if (!onApiLogin) {
             throw new ReportAuthError("auth-unavailable", "API login is not configured.");
@@ -295,7 +311,6 @@ export function useReportAuthSession({ projectId, environment, authors, identify
         authDiagnostics,
         panelView,
         loginMethod,
-        selectLoginMethod,
         loginWithApi,
         registerWithApi,
         loginWithArtemis,

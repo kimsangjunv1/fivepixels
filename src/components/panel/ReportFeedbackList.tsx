@@ -4,8 +4,10 @@ import { useReport } from "@/providers/reportContext.js";
 import { formatDateOnly } from "@/utils/shared/format.js";
 import { type RouteDetailStatus } from "@/utils/panel/routeDetailStatus.js";
 import { ShortcutHint } from "@/components/ShortcutHint.js";
-import { SearchIcon, ChevronDownIcon } from "@/components/icons/Icons.js";
+import { SearchIcon, ChevronDownIcon, LockIcon } from "@/components/icons/Icons.js";
 import type { ReportFeedback } from "@/types/report.js";
+import { IntegrationLockTip, useIntegrationLock } from "@/components/ui/IntegrationLock.js";
+import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
 import { PanelDropdownMenu, PanelDropdownMenuItem } from "./PanelDropdownMenu.js";
 import { FeedbackListItem } from "./feedback/FeedbackListItem.js";
 
@@ -82,6 +84,9 @@ export function ReportFeedbackList() {
 
     const scopeLabel = listScope === "current" ? messages.feedbackList.scopeCurrentPage : messages.feedbackList.scopeAllPages;
     const statusLabel = filters.status === "all" ? messages.feedbackList.filterStatusAll : messages.status.routeDetail[filters.status];
+    const listAllLock = useIntegrationLock("listAll");
+    const persistenceLock = useIntegrationLock("feedbackPersistence");
+    const showScopeControl = canListAllFeedback || listAllLock.locked;
     const visibleReports = useMemo(() => filteredReports.slice(0, visibleCount), [filteredReports, visibleCount]);
     const groupedReports = useMemo(() => groupReportsByDate(visibleReports, locale), [locale, visibleReports]);
 
@@ -149,7 +154,7 @@ export function ReportFeedbackList() {
     };
 
     return (
-        <section className="flex min-h-0 max-h-[calc(60dvh-(16px*2))] min-h-[128px] flex-1 flex-col bg-[var(--adaptive-black50)]">
+        <section className="flex min-h-0 flex-1 flex-col overflow-hidden bg-[var(--adaptive-black50)]">
             <div className="relative z-[20] shrink-0 border-b border-b-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)]">
                 {filters.dateKey ? (
                     <div className="flex items-center justify-between gap-[8px] border-b border-[var(--adaptive-border-subtle)] px-[8px] py-[6px]">
@@ -168,38 +173,51 @@ export function ReportFeedbackList() {
 
                 <div className="flex items-center">
                     <section className="h-[32px] flex items-center">
-                        {canListAllFeedback ? (
-                            <PanelDropdownMenu
-                                open={scopeMenuOpen}
-                                onClose={() => setScopeMenuOpen(false)}
-                                align="left"
-                                trigger={
-                                    <button
-                                        type="button"
-                                        onClick={() => setScopeMenuOpen((current) => !current)}
-                                        aria-expanded={scopeMenuOpen}
-                                        aria-haspopup="menu"
-                                        aria-label={messages.feedbackList.scopeAriaLabel}
-                                        className={`${scopeMenuOpen ? "bg-[var(--adaptive-accent-coral)] hover:bg-[var(--adaptive-accent-coral-hover)]" : "hover:bg-[var(--adaptive-black50)]"} flex h-full min-w-[72px] items-center justify-center gap-[4px] px-[8px] text-[14px] text-[var(--adaptive-black800)] outline-none`}
-                                    >
-                                        <span className={`${scopeMenuOpen ? "text-white" : ""} truncate`}>{scopeLabel}</span>
-                                        <ChevronDownIcon className={`h-[14px] w-[14px] shrink-0 text-[var(--adaptive-black600)] transition-transform ${scopeMenuOpen ? "rotate-180" : ""}`} />
-                                    </button>
-                                }
+                        {showScopeControl ? (
+                            <IntegrationLockTip
+                                locked={listAllLock.locked}
+                                label={listAllLock.tooltipLabel}
                             >
-                                {(["current", "all"] as const).map((scope) => (
-                                    <PanelDropdownMenuItem
-                                        key={scope}
-                                        active={listScope === scope}
-                                        onClick={() => {
-                                            setScopeMenuOpen(false);
-                                            setListScope(scope);
-                                        }}
-                                    >
-                                        {scope === "current" ? messages.feedbackList.scopeCurrentPage : messages.feedbackList.scopeAllPages}
-                                    </PanelDropdownMenuItem>
-                                ))}
-                            </PanelDropdownMenu>
+                                <PanelDropdownMenu
+                                    open={scopeMenuOpen && !listAllLock.locked}
+                                    onClose={() => setScopeMenuOpen(false)}
+                                    align="left"
+                                    trigger={
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                if (listAllLock.locked) {
+                                                    return;
+                                                }
+                                                setScopeMenuOpen((current) => !current);
+                                            }}
+                                            disabled={listAllLock.locked}
+                                            aria-expanded={scopeMenuOpen}
+                                            aria-haspopup="menu"
+                                            aria-label={messages.feedbackList.scopeAriaLabel}
+                                            className={`${scopeMenuOpen ? "bg-[var(--adaptive-accent-coral)] hover:bg-[var(--adaptive-accent-coral-hover)]" : "hover:bg-[var(--adaptive-black50)]"} flex h-full min-w-[72px] items-center justify-center gap-[4px] px-[8px] text-[14px] text-[var(--adaptive-black800)] outline-none disabled:cursor-not-allowed disabled:opacity-50`}
+                                        >
+                                            <span className={`${scopeMenuOpen ? "text-white" : ""} truncate`}>
+                                                {listAllLock.locked ? messages.feedbackList.scopeAllPages : scopeLabel}
+                                            </span>
+                                            <ChevronDownIcon className={`h-[14px] w-[14px] shrink-0 text-[var(--adaptive-black600)] transition-transform ${scopeMenuOpen ? "rotate-180" : ""}`} />
+                                        </button>
+                                    }
+                                >
+                                    {(["current", "all"] as const).map((scope) => (
+                                        <PanelDropdownMenuItem
+                                            key={scope}
+                                            active={listScope === scope}
+                                            onClick={() => {
+                                                setScopeMenuOpen(false);
+                                                setListScope(scope);
+                                            }}
+                                        >
+                                            {scope === "current" ? messages.feedbackList.scopeCurrentPage : messages.feedbackList.scopeAllPages}
+                                        </PanelDropdownMenuItem>
+                                    ))}
+                                </PanelDropdownMenu>
+                            </IntegrationLockTip>
                         ) : null}
 
                         <div className="h-full w-[1px] bg-[var(--adaptive-border-subtle)]" />
@@ -286,10 +304,34 @@ export function ReportFeedbackList() {
 
                 {!isError && !isFetching && filteredReports.length === 0 ? (
                     <div className="flex flex-col gap-[4px] bg-[var(--adaptive-black200)] p-[12px]">
-                        <h6 className="font-semibold text-[var(--adaptive-black900)]">{messages.feedbackList.emptyTitle}</h6>
-                        <p className="whitespace-break-spaces text-[12px] leading-[1.5] text-[var(--adaptive-black500)]">
-                            {reports.length === 0 ? messages.feedbackList.emptyNoFeedback : messages.feedbackList.emptyNoMatch}
-                        </p>
+                        {persistenceLock.locked ? (
+                            <>
+                                <h6 className="inline-flex items-center gap-[6px] font-semibold text-[var(--adaptive-black900)]">
+                                    {messages.feedbackList.emptyPersistenceRequired}
+                                    <HoverTooltip
+                                        label={persistenceLock.tooltipLabel}
+                                        multiline
+                                    >
+                                        <span className="inline-flex text-[var(--adaptive-black500)]">
+                                            <LockIcon className="h-[14px] w-[14px]" />
+                                        </span>
+                                    </HoverTooltip>
+                                </h6>
+                                <p className="whitespace-break-spaces text-[12px] leading-[1.5] text-[var(--adaptive-black500)]">
+                                    {messages.feedbackList.emptyPersistenceRequiredHint}
+                                </p>
+                                <p className="mt-[4px] font-mono text-[11px] leading-[1.4] text-[var(--adaptive-black600)]">
+                                    {persistenceLock.missingHandlers.join(", ")}
+                                </p>
+                            </>
+                        ) : (
+                            <>
+                                <h6 className="font-semibold text-[var(--adaptive-black900)]">{messages.feedbackList.emptyTitle}</h6>
+                                <p className="whitespace-break-spaces text-[12px] leading-[1.5] text-[var(--adaptive-black500)]">
+                                    {reports.length === 0 ? messages.feedbackList.emptyNoFeedback : messages.feedbackList.emptyNoMatch}
+                                </p>
+                            </>
+                        )}
                     </div>
                 ) : null}
 

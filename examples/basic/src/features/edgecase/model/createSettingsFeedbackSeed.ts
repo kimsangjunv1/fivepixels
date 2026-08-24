@@ -92,12 +92,12 @@ export function createSettingsFeedbackSeed(): ReportFeedback[] {
                 createReportCase("Opacity modal overlay backdrop blur too strong on retina.", {
                     id: CASE.opacityOverlayA,
                     status: "resolved",
-                    assignee_name: TEAM.emma,
+                    assignee_name: TEAM.backend,
                 }),
                 createReportCase("Dialog shadow clipped by parent overflow:hidden.", {
                     id: CASE.opacityOverlayB,
                     status: "resolved",
-                    assignee_name: TEAM.william,
+                    assignee_name: TEAM.frontend,
                 }),
             ],
             field_values: seedFields("[modal · opacity overlay · 2] 모달 내부 group — 해피패스 해결", { isImportant: true }),
@@ -105,7 +105,7 @@ export function createSettingsFeedbackSeed(): ReportFeedback[] {
                 seedReply("settings-reply-opacity-assigned", "An assignee has been assigned.", daysAgo(5, 9), "assignee_assigned", {
                     case_ids: [CASE.opacityOverlayA],
                     author_type: "manager",
-                    author_name: TEAM.emma,
+                    author_name: TEAM.backend,
                 }),
                 seedReply(
                     "settings-reply-opacity-q",
@@ -116,7 +116,7 @@ export function createSettingsFeedbackSeed(): ReportFeedback[] {
                         case_ids: [CASE.opacityOverlayA],
                         parent_reply_id: ISSUE_ROOT_PARENT_ID,
                         author_type: "manager",
-                        author_name: TEAM.sophia,
+                        author_name: TEAM.qa,
                     },
                 ),
                 seedReply(
@@ -127,13 +127,13 @@ export function createSettingsFeedbackSeed(): ReportFeedback[] {
                     {
                         case_ids: [CASE.opacityOverlayA, CASE.opacityOverlayB],
                         author_type: "manager",
-                        author_name: TEAM.emma,
+                        author_name: TEAM.backend,
                     },
                 ),
                 seedReply("settings-reply-opacity-resolved", "모달 닫힘/열림 + locate 복구 확인. resolved.", daysAgo(2, 15), "resolved", {
                     case_ids: [CASE.opacityOverlayA, CASE.opacityOverlayB],
                     author_type: "manager",
-                    author_name: TEAM.sophia,
+                    author_name: TEAM.qa,
                 }),
             ],
             position: anchorPosition("modal-opacity-overlay", "group", 120, 0.45),
@@ -155,7 +155,7 @@ export function createSettingsFeedbackSeed(): ReportFeedback[] {
                     {
                         case_ids: [CASE.opacityTarget],
                         author_type: "manager",
-                        author_name: TEAM.william,
+                        author_name: TEAM.frontend,
                     },
                 ),
             ],
@@ -168,7 +168,7 @@ export function createSettingsFeedbackSeed(): ReportFeedback[] {
             cases: [
                 createReportCase("display:none 모달 닫힌 뒤 detached 마커가 viewport 밖으로 표시됨.", {
                     id: CASE.displayOverlay,
-                    assignee_name: TEAM.william,
+                    assignee_name: TEAM.frontend,
                 }),
             ],
             field_values: seedFields("[modal · display overlay · 1] display:none detached — found_error 멈춤", { isBug: true }),
@@ -181,7 +181,7 @@ export function createSettingsFeedbackSeed(): ReportFeedback[] {
                     {
                         case_ids: [CASE.displayOverlay],
                         author_type: "manager",
-                        author_name: TEAM.william,
+                        author_name: TEAM.frontend,
                     },
                 ),
                 seedReply(
@@ -207,17 +207,17 @@ export function createSettingsFeedbackSeed(): ReportFeedback[] {
                 createReportCase("Conditional modal unmounts before marker animation completes.", {
                     id: CASE.conditionalA,
                     status: "resolved",
-                    assignee_name: TEAM.emma,
-                    previous_assignee_name: TEAM.william,
+                    assignee_name: TEAM.backend,
+                    previous_assignee_name: TEAM.frontend,
                 }),
                 createReportCase("Overlay click-outside closes without focus return.", {
                     id: CASE.conditionalB,
                     status: "resolved",
-                    assignee_name: TEAM.emma,
+                    assignee_name: TEAM.backend,
                 }),
                 createReportCase("Escape key does not trap focus inside dialog.", {
                     id: CASE.conditionalC,
-                    assignee_name: TEAM.sophia,
+                    assignee_name: TEAM.qa,
                 }),
             ],
             field_values: seedFields("[modal · conditional overlay · 3] 이관 + deny→approve", { isBug: true }),
@@ -225,17 +225,17 @@ export function createSettingsFeedbackSeed(): ReportFeedback[] {
                 seedReply("settings-reply-cond-assigned", "An assignee has been assigned.", daysAgo(6, 9), "assignee_assigned", {
                     case_ids: [CASE.conditionalA],
                     author_type: "manager",
-                    author_name: TEAM.william,
+                    author_name: TEAM.frontend,
                 }),
                 seedReply("settings-reply-cond-transferred", "The assignee has been changed.", daysAgo(5, 10), "assignee_transferred", {
                     case_ids: [CASE.conditionalA],
                     author_type: "manager",
-                    author_name: TEAM.emma,
+                    author_name: TEAM.backend,
                 }),
                 seedReply("settings-reply-cond-s1", "close delay 150ms 추가.", daysAgo(4, 12), "suggested", {
                     case_ids: [CASE.conditionalA],
                     author_type: "manager",
-                    author_name: TEAM.emma,
+                    author_name: TEAM.backend,
                 }),
                 seedReply("settings-reply-cond-fe", "delay 후에도 flicker. 거절.", daysAgo(3, 14), "found_error", {
                     case_ids: [CASE.conditionalA],
@@ -245,18 +245,18 @@ export function createSettingsFeedbackSeed(): ReportFeedback[] {
                 seedReply("settings-reply-cond-s2", "exit animation + focus restore.", daysAgo(2, 11), "suggested", {
                     case_ids: [CASE.conditionalA, CASE.conditionalB],
                     author_type: "manager",
-                    author_name: TEAM.emma,
+                    author_name: TEAM.backend,
                 }),
                 seedReply("settings-reply-cond-resolved", "conditional remount + locate OK. resolved.", daysAgo(1, 15), "resolved", {
                     case_ids: [CASE.conditionalA, CASE.conditionalB],
                     author_type: "manager",
-                    author_name: TEAM.sophia,
+                    author_name: TEAM.qa,
                 }),
                 seedReply("settings-reply-cond-c-q", "focus trap lib 적용 예정?", daysAgo(1, 9), "additional_question", {
                     case_ids: [CASE.conditionalC],
                     parent_reply_id: ISSUE_ROOT_PARENT_ID,
                     author_type: "manager",
-                    author_name: TEAM.sophia,
+                    author_name: TEAM.qa,
                 }),
             ],
             position: anchorPosition("modal-conditional-overlay", "group", 180, 0.52),
@@ -268,7 +268,7 @@ export function createSettingsFeedbackSeed(): ReportFeedback[] {
             cases: [
                 createReportCase("visibility:hidden 모달 dialog padding asymmetric left/right.", {
                     id: CASE.visibilityTarget,
-                    assignee_name: TEAM.emma,
+                    assignee_name: TEAM.backend,
                 }),
             ],
             field_values: seedFields("[modal · visibility target · 1] recheck_requested"),
@@ -276,7 +276,7 @@ export function createSettingsFeedbackSeed(): ReportFeedback[] {
                 seedReply("settings-reply-vis-assigned", "An assignee has been assigned.", daysAgo(2, 9), "assignee_assigned", {
                     case_ids: [CASE.visibilityTarget],
                     author_type: "manager",
-                    author_name: TEAM.emma,
+                    author_name: TEAM.backend,
                 }),
                 seedReply(
                     "settings-reply-vis-recheck",
@@ -286,7 +286,7 @@ export function createSettingsFeedbackSeed(): ReportFeedback[] {
                     {
                         case_ids: [CASE.visibilityTarget],
                         author_type: "manager",
-                        author_name: TEAM.emma,
+                        author_name: TEAM.backend,
                     },
                 ),
             ],
@@ -301,12 +301,12 @@ export function createSettingsFeedbackSeed(): ReportFeedback[] {
                 createReportCase("Off-screen transform leaves dialog partially visible at 1280px.", {
                     id: CASE.offscreenA,
                     status: "resolved",
-                    assignee_name: TEAM.william,
+                    assignee_name: TEAM.frontend,
                 }),
                 createReportCase("Locate does not scroll page to reveal off-screen modal.", {
                     id: CASE.offscreenB,
                     status: "resolved",
-                    assignee_name: TEAM.william,
+                    assignee_name: TEAM.frontend,
                 }),
             ],
             field_values: seedFields("[modal · offscreen overlay · 2] 거절의 거절 후 해결"),
@@ -314,7 +314,7 @@ export function createSettingsFeedbackSeed(): ReportFeedback[] {
                 seedReply("settings-reply-off-s1", "translateX(-120vw) 적용.", daysAgo(5, 9), "suggested", {
                     case_ids: [CASE.offscreenA],
                     author_type: "manager",
-                    author_name: TEAM.william,
+                    author_name: TEAM.frontend,
                 }),
                 seedReply("settings-reply-off-f1", "1280px에서 8px peek. 거절.", daysAgo(4, 11), "found_error", {
                     case_ids: [CASE.offscreenA],
@@ -324,7 +324,7 @@ export function createSettingsFeedbackSeed(): ReportFeedback[] {
                 seedReply("settings-reply-off-r1", "peek은 shadow bleed — 오류 아님.", daysAgo(3, 13), "recheck_requested", {
                     case_ids: [CASE.offscreenA],
                     author_type: "manager",
-                    author_name: TEAM.william,
+                    author_name: TEAM.frontend,
                 }),
                 seedReply("settings-reply-off-f2", "제품 스펙상 fully hidden 필요. 재거절.", daysAgo(2, 10), "found_error", {
                     case_ids: [CASE.offscreenA],
@@ -334,12 +334,12 @@ export function createSettingsFeedbackSeed(): ReportFeedback[] {
                 seedReply("settings-reply-off-s2", "translateX + opacity 0 병행.", daysAgo(1, 12), "suggested", {
                     case_ids: [CASE.offscreenA, CASE.offscreenB],
                     author_type: "manager",
-                    author_name: TEAM.william,
+                    author_name: TEAM.frontend,
                 }),
                 seedReply("settings-reply-off-resolved", "locate scroll + hidden 확인. resolved.", daysAgo(1, 16), "resolved", {
                     case_ids: [CASE.offscreenA, CASE.offscreenB],
                     author_type: "manager",
-                    author_name: TEAM.sophia,
+                    author_name: TEAM.qa,
                 }),
             ],
             position: anchorPosition("modal-offscreen-overlay", "group", 220, 0.56),
@@ -351,16 +351,16 @@ export function createSettingsFeedbackSeed(): ReportFeedback[] {
             cases: [
                 createReportCase("Zustand modal store open state not synced on hot reload.", {
                     id: CASE.zustandA,
-                    assignee_name: TEAM.william,
+                    assignee_name: TEAM.frontend,
                 }),
                 createReportCase("Overlay blocks pointer events when store isOpen false.", {
                     id: CASE.zustandB,
-                    assignee_name: TEAM.emma,
+                    assignee_name: TEAM.backend,
                 }),
                 createReportCase("Declarative view restore misses overlay group target.", {
                     id: CASE.zustandC,
                     status: "resolved",
-                    assignee_name: TEAM.william,
+                    assignee_name: TEAM.frontend,
                 }),
                 createReportCase("Close button focus ring clipped.", { id: CASE.zustandD }),
             ],
@@ -369,7 +369,7 @@ export function createSettingsFeedbackSeed(): ReportFeedback[] {
                 seedReply("settings-reply-z-s-a", "HMR guard 추가.", daysAgo(3, 10), "suggested", {
                     case_ids: [CASE.zustandA],
                     author_type: "manager",
-                    author_name: TEAM.william,
+                    author_name: TEAM.frontend,
                 }),
                 seedReply("settings-reply-z-fe-b", "isOpen false인데 overlay 클릭 가능. 거절.", daysAgo(2, 12), "found_error", {
                     case_ids: [CASE.zustandB],
@@ -379,7 +379,7 @@ export function createSettingsFeedbackSeed(): ReportFeedback[] {
                 seedReply("settings-reply-z-resolved-c", "reveal handler overlay 포함. resolved.", daysAgo(2, 14), "resolved", {
                     case_ids: [CASE.zustandC],
                     author_type: "manager",
-                    author_name: TEAM.william,
+                    author_name: TEAM.frontend,
                 }),
             ],
             position: anchorPosition("modal-zustand-overlay", "group", 240, 0.58),
@@ -389,13 +389,13 @@ export function createSettingsFeedbackSeed(): ReportFeedback[] {
             report_id: "modal-conditional-target",
             report_type: "item",
             cases: [
-                createReportCase("Dialog primary button contrast below AA.", { id: CASE.conditionalTarget1, assignee_name: TEAM.emma }),
+                createReportCase("Dialog primary button contrast below AA.", { id: CASE.conditionalTarget1, assignee_name: TEAM.backend }),
                 createReportCase("Ghost button indistinguishable from body text.", { id: CASE.conditionalTarget2 }),
-                createReportCase("Header eyebrow label not localized.", { id: CASE.conditionalTarget3, assignee_name: TEAM.sophia }),
-                createReportCase("Description text overflows at 320px.", { id: CASE.conditionalTarget4, assignee_name: TEAM.william }),
+                createReportCase("Header eyebrow label not localized.", { id: CASE.conditionalTarget3, assignee_name: TEAM.qa }),
+                createReportCase("Description text overflows at 320px.", { id: CASE.conditionalTarget4, assignee_name: TEAM.frontend }),
                 createReportCase("Close button missing aria-label.", { id: CASE.conditionalTarget5 }),
-                createReportCase("Confirm button disabled state unclear.", { id: CASE.conditionalTarget6, status: "resolved", assignee_name: TEAM.emma }),
-                createReportCase("Dialog max-height clips footer on mobile.", { id: CASE.conditionalTarget7, assignee_name: TEAM.william }),
+                createReportCase("Confirm button disabled state unclear.", { id: CASE.conditionalTarget6, status: "resolved", assignee_name: TEAM.backend }),
+                createReportCase("Dialog max-height clips footer on mobile.", { id: CASE.conditionalTarget7, assignee_name: TEAM.frontend }),
                 createReportCase("Focus trap skips first interactive element.", { id: CASE.conditionalTarget8 }),
             ],
             field_values: seedFields("[modal · conditional target · 8] 모달 dialog 최대 8케이스", { isBug: true, isImportant: true }),
@@ -403,18 +403,18 @@ export function createSettingsFeedbackSeed(): ReportFeedback[] {
                 seedReply("settings-reply-ct-assigned", "An assignee has been assigned.", daysAgo(4, 9), "assignee_assigned", {
                     case_ids: [CASE.conditionalTarget1],
                     author_type: "manager",
-                    author_name: TEAM.emma,
+                    author_name: TEAM.backend,
                 }),
                 seedReply("settings-reply-ct-q", "primary/ghost 둘 다 수정?", daysAgo(3, 11), "additional_question", {
                     case_ids: [CASE.conditionalTarget1, CASE.conditionalTarget2],
                     parent_reply_id: ISSUE_ROOT_PARENT_ID,
                     author_type: "manager",
-                    author_name: TEAM.sophia,
+                    author_name: TEAM.qa,
                 }),
                 seedReply("settings-reply-ct-s", "primary contrast + ghost underline.", daysAgo(2, 12), "suggested", {
                     case_ids: [CASE.conditionalTarget1, CASE.conditionalTarget2],
                     author_type: "manager",
-                    author_name: TEAM.emma,
+                    author_name: TEAM.backend,
                 }),
                 seedReply("settings-reply-ct-fe", "dark mode primary still 3.9:1. 거절.", daysAgo(1, 10), "found_error", {
                     case_ids: [CASE.conditionalTarget1],
@@ -424,7 +424,7 @@ export function createSettingsFeedbackSeed(): ReportFeedback[] {
                 seedReply("settings-reply-ct-r-6", "disabled opacity 추가. resolved.", daysAgo(1, 14), "resolved", {
                     case_ids: [CASE.conditionalTarget6],
                     author_type: "manager",
-                    author_name: TEAM.emma,
+                    author_name: TEAM.backend,
                 }),
             ],
             position: anchorPosition("modal-conditional-target", "item", 260, 0.6),
@@ -436,7 +436,7 @@ export function createSettingsFeedbackSeed(): ReportFeedback[] {
             cases: [
                 createReportCase("visibility:hidden overlay still captures pointer events when hidden.", {
                     id: "settings-case-visibility-overlay",
-                    assignee_name: TEAM.william,
+                    assignee_name: TEAM.frontend,
                 }),
             ],
             field_values: seedFields("[modal · visibility overlay · 1] group overlay — suggested 대기"),
@@ -449,7 +449,7 @@ export function createSettingsFeedbackSeed(): ReportFeedback[] {
                     {
                         case_ids: ["settings-case-visibility-overlay"],
                         author_type: "manager",
-                        author_name: TEAM.william,
+                        author_name: TEAM.frontend,
                     },
                 ),
             ],
@@ -473,7 +473,7 @@ export function createSettingsFeedbackSeed(): ReportFeedback[] {
                         case_ids: ["settings-case-offscreen-target"],
                         parent_reply_id: ISSUE_ROOT_PARENT_ID,
                         author_type: "manager",
-                        author_name: TEAM.emma,
+                        author_name: TEAM.backend,
                     },
                 ),
             ],
@@ -486,7 +486,7 @@ export function createSettingsFeedbackSeed(): ReportFeedback[] {
             cases: [
                 createReportCase("Zustand dialog header eyebrow uses wrong font size.", {
                     id: "settings-case-zustand-target",
-                    assignee_name: TEAM.william,
+                    assignee_name: TEAM.frontend,
                 }),
             ],
             field_values: seedFields("[modal · zustand target · 1] store modal dialog — found_error"),
@@ -494,7 +494,7 @@ export function createSettingsFeedbackSeed(): ReportFeedback[] {
                 seedReply("settings-reply-zt-s", "eyebrow 11px→12px.", daysAgo(2, 10), "suggested", {
                     case_ids: ["settings-case-zustand-target"],
                     author_type: "manager",
-                    author_name: TEAM.william,
+                    author_name: TEAM.frontend,
                 }),
                 seedReply("settings-reply-zt-fe", "store remount 후 eyebrow revert. 거절.", hoursAgo(5), "found_error", {
                     case_ids: ["settings-case-zustand-target"],
@@ -524,7 +524,7 @@ export function createSettingsFeedbackSeed(): ReportFeedback[] {
             cases: [
                 createReportCase("Conditional render card badge uses outdated accent color.", {
                     id: CASE.conditionalPageA,
-                    assignee_name: TEAM.emma,
+                    assignee_name: TEAM.backend,
                 }),
                 createReportCase("Open button does not show aria-expanded when modal is mounted.", {
                     id: CASE.conditionalPageB,
@@ -535,7 +535,7 @@ export function createSettingsFeedbackSeed(): ReportFeedback[] {
                 seedReply("settings-reply-cond-page-assigned", "An assignee has been assigned.", daysAgo(1, 10), "assignee_assigned", {
                     case_ids: [CASE.conditionalPageA],
                     author_type: "manager",
-                    author_name: TEAM.emma,
+                    author_name: TEAM.backend,
                 }),
                 seedReply(
                     "settings-reply-cond-page-q",
@@ -546,7 +546,7 @@ export function createSettingsFeedbackSeed(): ReportFeedback[] {
                         case_ids: [CASE.conditionalPageB],
                         parent_reply_id: ISSUE_ROOT_PARENT_ID,
                         author_type: "manager",
-                        author_name: TEAM.sophia,
+                        author_name: TEAM.qa,
                     },
                 ),
             ],
@@ -569,7 +569,7 @@ export function createSettingsFeedbackSeed(): ReportFeedback[] {
                     {
                         case_ids: [CASE.visibilityPage],
                         author_type: "manager",
-                        author_name: TEAM.william,
+                        author_name: TEAM.frontend,
                     },
                 ),
             ],
@@ -582,7 +582,7 @@ export function createSettingsFeedbackSeed(): ReportFeedback[] {
             cases: [
                 createReportCase("Off-screen card title overlaps badge on narrow widths.", {
                     id: CASE.offscreenPageA,
-                    assignee_name: TEAM.william,
+                    assignee_name: TEAM.frontend,
                 }),
                 createReportCase("Card grid row height jumps when off-screen demo is focused.", {
                     id: CASE.offscreenPageB,
@@ -598,7 +598,7 @@ export function createSettingsFeedbackSeed(): ReportFeedback[] {
                     {
                         case_ids: [CASE.offscreenPageA],
                         author_type: "manager",
-                        author_name: TEAM.william,
+                        author_name: TEAM.frontend,
                     },
                 ),
                 seedReply(
@@ -620,7 +620,7 @@ export function createSettingsFeedbackSeed(): ReportFeedback[] {
             report_id: "modal-opacity-demo",
             report_type: "group",
             cases: [
-                createReportCase("Opacity modal card badge color mismatches design system.", { id: CASE.opacityPage, assignee_name: TEAM.emma }),
+                createReportCase("Opacity modal card badge color mismatches design system.", { id: CASE.opacityPage, assignee_name: TEAM.backend }),
                 createReportCase("Open button missing loading state during modal mount.", { id: "settings-case-opacity-page-b" }),
             ],
             field_values: seedFields("[page · opacity demo · 2] 페이지 group — assignee + question"),
@@ -628,7 +628,7 @@ export function createSettingsFeedbackSeed(): ReportFeedback[] {
                 seedReply("settings-reply-page-opacity-assigned", "An assignee has been assigned.", daysAgo(1, 10), "assignee_assigned", {
                     case_ids: [CASE.opacityPage],
                     author_type: "manager",
-                    author_name: TEAM.emma,
+                    author_name: TEAM.backend,
                 }),
                 seedReply(
                     "settings-reply-page-opacity-q",
@@ -639,7 +639,7 @@ export function createSettingsFeedbackSeed(): ReportFeedback[] {
                         case_ids: [CASE.opacityPage],
                         parent_reply_id: ISSUE_ROOT_PARENT_ID,
                         author_type: "manager",
-                        author_name: TEAM.sophia,
+                        author_name: TEAM.qa,
                     },
                 ),
             ],
@@ -651,8 +651,8 @@ export function createSettingsFeedbackSeed(): ReportFeedback[] {
             report_type: "group",
             status: "git_issued",
             cases: [
-                createReportCase("Zustand modal card missing store badge in header.", { id: CASE.zustandGitOpen, assignee_name: TEAM.william }),
-                createReportCase("Quick action link to zustand demo 404 on staging.", { id: CASE.zustandGitDone, status: "resolved", assignee_name: TEAM.sophia }),
+                createReportCase("Zustand modal card missing store badge in header.", { id: CASE.zustandGitOpen, assignee_name: TEAM.frontend }),
+                createReportCase("Quick action link to zustand demo 404 on staging.", { id: CASE.zustandGitDone, status: "resolved", assignee_name: TEAM.qa }),
             ],
             field_values: seedFields("[page · zustand demo · 2] git_issued + 부분 해결", { isBug: true }),
             integrations: {
@@ -670,7 +670,7 @@ export function createSettingsFeedbackSeed(): ReportFeedback[] {
                 seedReply("settings-reply-zustand-git-resolved", "staging link fixed. case resolved.", hoursAgo(3), "resolved", {
                     case_ids: [CASE.zustandGitDone],
                     author_type: "manager",
-                    author_name: TEAM.sophia,
+                    author_name: TEAM.qa,
                 }),
             ],
             position: anchorPosition("modal-zustand-demo", "group", 100, 0.38),
@@ -693,7 +693,7 @@ export function createSettingsFeedbackSeed(): ReportFeedback[] {
                     {
                         parent_reply_id: ISSUE_ROOT_PARENT_ID,
                         author_type: "manager",
-                        author_name: TEAM.sophia,
+                        author_name: TEAM.qa,
                     },
                 ),
                 seedReply(
@@ -704,7 +704,7 @@ export function createSettingsFeedbackSeed(): ReportFeedback[] {
                     {
                         parent_reply_id: ISSUE_ROOT_PARENT_ID,
                         author_type: "manager",
-                        author_name: TEAM.emma,
+                        author_name: TEAM.backend,
                     },
                 ),
                 seedReply(
@@ -723,11 +723,11 @@ export function createSettingsFeedbackSeed(): ReportFeedback[] {
                     "note max-width + hyphenation 적용.",
                     daysAgo(3, 12),
                     "suggested",
-                    { author_type: "manager", author_name: TEAM.william },
+                    { author_type: "manager", author_name: TEAM.frontend },
                 ),
                 seedReply("settings-reply-dt-resolved", "display 모달 locate 후 확인. resolved.", daysAgo(2, 15), "resolved", {
                     author_type: "manager",
-                    author_name: TEAM.sophia,
+                    author_name: TEAM.qa,
                 }),
             ],
             position: anchorPosition("modal-display-target", "item", 170, 0.51),

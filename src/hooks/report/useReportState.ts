@@ -9,28 +9,19 @@ import { useReportMutations } from "./useReportMutations.js";
 import { useReportPanelShell, type ReportPanelShellBridges } from "./useReportPanelShell.js";
 import { useReportReplyReview } from "./useReportReplyReview.js";
 import { assembleReportContextValue } from "./assembleReportContextValue.js";
+import type { FivePixelsSync } from "@/constants/loginMethod.js";
+import { useNetworkMonitor } from "../useNetworkMonitor.js";
+import type { FivePixelsAdapter } from "@/types/adapter.js";
 import type {
-    CreateReportFeedbackPayload,
-    CreateReplyPayload,
     ReportAppearance,
     ReportAuthor,
-    ReportActivitySummaryParams,
-    ReportActivitySummaryResult,
     ReportEvent,
     ReportFeedback,
     ReportField,
     ReportGitHubConfig,
     FivePixelsMode,
     ReportIdentify,
-    ReportListAllParams,
-    ReportListAllResult,
-    ReportPanelBootstrapParams,
-    ReportPanelBootstrapResult,
-    ReportReply,
     QuestionThreadDisplay,
-    ReportTeamHandlers,
-    ReportAuthHandlers,
-    UpdateReportFeedbackPayload,
 } from "@/types/report.js";
 import type { ReportSideEffectCallbacks } from "@/utils/report/reportCallbacks.js";
 import { resolveDefaultAuthorName } from "@/utils/report/resolveDefaultAuthorName.js";
@@ -50,26 +41,9 @@ export type ReportStateConfig = {
     requireReviewerKey?: boolean;
     shortcut?: string;
     identify?: ReportIdentify;
-    onList?: (params: { pathname: string }) => Promise<ReportFeedback[]>;
-    onListAll?: (params: ReportListAllParams) => Promise<ReportListAllResult>;
-    onPanelBootstrap?: (params: ReportPanelBootstrapParams) => Promise<ReportPanelBootstrapResult>;
-    onActivitySummary?: (params: ReportActivitySummaryParams) => Promise<ReportActivitySummaryResult>;
-    onListReplies?: (commentId: string, params?: import("@/types/report.js").ListRepliesParams) => Promise<import("@/types/report.js").ListRepliesResult | ReportReply[]>;
+    adapter?: FivePixelsAdapter;
     onNavigate?: (pathname: string) => void | Promise<void>;
     onRevealTarget?: (report: ReportFeedback) => boolean | Promise<boolean>;
-    onCreate?: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
-    onCreateReply?: (commentId: string, payload: CreateReplyPayload) => Promise<ReportReply>;
-    onUpdate?: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
-    onDelete?: (id: string) => Promise<void>;
-    onListReviewers?: ReportTeamHandlers["onListReviewers"];
-    onListReviewerRequests?: ReportTeamHandlers["onListReviewerRequests"];
-    onCreateReviewerRequest?: ReportTeamHandlers["onCreateReviewerRequest"];
-    onResolveReviewerRequest?: ReportTeamHandlers["onResolveReviewerRequest"];
-    onRegisterReviewer?: ReportTeamHandlers["onRegisterReviewer"];
-    onUpdateReviewer?: ReportTeamHandlers["onUpdateReviewer"];
-    onApiLogin?: ReportAuthHandlers["onApiLogin"];
-    onApiRegister?: ReportAuthHandlers["onApiRegister"];
-    onArtemisLogin?: ReportAuthHandlers["onArtemisLogin"];
     onEvent?: (event: ReportEvent) => void | Promise<void>;
     onReply?: (params: { feedbackId: string; message: string }) => void | Promise<void>;
     github?: ReportGitHubConfig;
@@ -79,7 +53,9 @@ export type ReportStateConfig = {
     initialLocale: ReportLocale;
     messageOverrides?: DeepPartialReportMessages;
     pixelsMode?: FivePixelsMode;
+    sync?: FivePixelsSync;
     replyHistory: import("@/utils/report/reportUi.js").ResolvedReplyHistoryConfig;
+    networkMonitor?: boolean;
 };
 
 export function useReportState({
@@ -94,26 +70,9 @@ export function useReportState({
     requireReviewerKey = false,
     shortcut: _shortcut,
     identify,
-    onList,
-    onListAll,
-    onPanelBootstrap,
-    onActivitySummary,
-    onListReplies,
+    adapter,
     onNavigate,
     onRevealTarget,
-    onCreate,
-    onCreateReply,
-    onUpdate,
-    onDelete,
-    onListReviewers,
-    onListReviewerRequests,
-    onCreateReviewerRequest,
-    onResolveReviewerRequest,
-    onRegisterReviewer,
-    onUpdateReviewer,
-    onApiLogin,
-    onApiRegister,
-    onArtemisLogin,
     onEvent,
     onReply,
     github,
@@ -123,12 +82,22 @@ export function useReportState({
     initialLocale,
     messageOverrides,
     pixelsMode = "default",
+    sync = "local",
     replyHistory,
+    networkMonitor = true,
 }: ReportStateConfig) {
     const overlayRef = useRef<HTMLDivElement | null>(null);
     const hoveredElementRef = useRef<HTMLElement | null>(null);
     const selectedElementRef = useRef<HTMLElement | null>(null);
     const overlayHoverLeaveTimeoutRef = useRef<number | null>(null);
+
+    const {
+        apiFlowEntries,
+        activeApiFailureAlert,
+        dismissFailureAlert,
+        getEntryById,
+        networkMonitorEnabled,
+    } = useNetworkMonitor(networkMonitor);
 
     const panelShellBridgesRef = useRef<ReportPanelShellBridges>({
         setShowTargetPreview: () => undefined,
@@ -143,15 +112,17 @@ export function useReportState({
         identify,
         requireReviewerKey,
         pixelsMode,
-        onApiLogin,
-        onApiRegister,
-        onArtemisLogin,
+        sync,
+        onApiLogin: adapter?.auth?.login,
+        onApiRegister: adapter?.auth?.signup,
+        onArtemisLogin: adapter?.auth?.artemisLogin,
     });
 
     const panel = useReportPanelShell({
         projectId,
         environment,
         appVersion,
+        sync,
         panelAppearance,
         tooltipAppearance,
         questionThreadDefault,
@@ -159,15 +130,7 @@ export function useReportState({
         showFeedbackList,
         initialLocale,
         messageOverrides,
-        onList,
-        onListAll,
-        onPanelBootstrap,
-        onActivitySummary,
-        onListReplies,
-        onCreate,
-        onCreateReply,
-        onUpdate,
-        onDelete,
+        adapter,
         routeKey,
         replyHistory,
         sessionActorName: auth.sessionActor?.name ?? null,
@@ -185,6 +148,7 @@ export function useReportState({
     const draft = useReportDraftSession({
         mode: panel.mode,
         setMode: panel.setMode,
+        projectId,
         fields,
         messages: panel.messages,
         currentPathname: panel.currentPathname,
@@ -201,6 +165,17 @@ export function useReportState({
         overlayRef,
         overlayHoverLeaveTimeoutRef,
     });
+
+    const appendApiFlowEntryToDraftCase = useCallback(
+        (entryId: string) => {
+            const entry = getEntryById(entryId);
+
+            if (entry) {
+                draft.appendApiFlowEntryToDraftCase(entry);
+            }
+        },
+        [draft.appendApiFlowEntryToDraftCase, getEntryById],
+    );
 
     const replyBridgeRef = useRef<{
         activeReplyReportId: string | null;
@@ -391,6 +366,7 @@ export function useReportState({
         selectCase: reply.selectCase,
         ensureIssueMode: panel.enableIssueMode,
         loadRepliesIfNeeded: panel.loadRepliesIfNeeded,
+        hydrateFeedbackIfNeeded: panel.hydrateFeedbackIfNeeded,
         searchInputRef: panel.searchInputRef,
     });
 
@@ -489,20 +465,25 @@ export function useReportState({
         appVersion,
         showFeedbackList,
         teamReviewers: authors,
-        onListReviewers,
-        onListReviewerRequests,
-        onCreateReviewerRequest,
-        onResolveReviewerRequest,
-        onRegisterReviewer,
-        onUpdateReviewer,
-        onPanelBootstrap,
-        onActivitySummary,
+        adapter: panel.fivePixelsAdapter,
+        github,
+        canDeleteViaStorage:
+            panel.persistenceStatus.mode === "localStorage" ||
+            panel.persistenceStatus.mode === "conflict" ||
+            (panel.persistenceStatus.mode === "API" && Boolean(panel.fivePixelsAdapter?.feedback?.delete)),
+        usesLazyReplies: panel.usesLazyReplies,
+        usesCreateReply: panel.usesCreateReply,
         visibleShortcutKeys,
         overlayRef,
         replyHistory,
         selectReport,
         beginFeedbackEdit,
         cancelDraft,
+        apiFlowEntries,
+        activeApiFailureAlert,
+        dismissFailureAlert,
+        appendApiFlowEntryToDraftCase,
+        networkMonitorEnabled,
     });
 
 }

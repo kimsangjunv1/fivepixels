@@ -10,6 +10,7 @@ type HoverTooltipProps = {
     content?: ReactNode;
     multiline?: boolean;
     disabled?: boolean;
+    onHoverChange?: (hovered: boolean) => void;
     children: ReactNode;
     className?: string;
 };
@@ -31,7 +32,7 @@ function isSameLayout(current: HoverTooltipLayout | null, next: HoverTooltipLayo
     return current.top === next.top && current.left === next.left;
 }
 
-export function HoverTooltip({ label, content, multiline = false, disabled = false, children, className = "" }: HoverTooltipProps) {
+export function HoverTooltip({ label, content, multiline = false, disabled = false, onHoverChange, children, className = "" }: HoverTooltipProps) {
     const [hovered, setHovered] = useState(false);
     const [layout, setLayout] = useState<HoverTooltipLayout | null>(null);
     const anchorRef = useRef<HTMLSpanElement | null>(null);
@@ -41,9 +42,13 @@ export function HoverTooltip({ label, content, multiline = false, disabled = fal
         onEnter: () => {
             if (!disabled) {
                 setHovered(true);
+                onHoverChange?.(true);
             }
         },
-        onLeave: () => setHovered(false),
+        onLeave: () => {
+            setHovered(false);
+            onHoverChange?.(false);
+        },
     });
 
     const setAnchorRef = useCallback(
@@ -70,8 +75,9 @@ export function HoverTooltip({ label, content, multiline = false, disabled = fal
     useLayoutEffect(() => {
         if (disabled) {
             setHovered(false);
+            onHoverChange?.(false);
         }
-    }, [disabled]);
+    }, [disabled, onHoverChange]);
 
     useLayoutEffect(() => {
         if (!hovered || disabled) {

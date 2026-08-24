@@ -5,6 +5,7 @@ import { DevicePreviewChrome } from "../../components/overlay/DevicePreviewChrom
 import { ReportControlPanel } from "../../components/panel/ReportControlPanel.js";
 import { ReportDraftForm } from "../../components/panel/ReportDraftForm.js";
 import { ReportDraftMarker } from "../../components/point/ReportDraftMarker.js";
+import { MemoMarkersLayer } from "../../components/point/MemoMarkersLayer.js";
 import { ReportMarkersLayer } from "../../components/point/ReportMarkersLayer.js";
 import { ReportOpenWindowsLayer } from "../../components/point/ReportOpenWindowsLayer.js";
 import { DotWaveOverlay } from "../../components/overlay/DotWaveOverlay.js";
@@ -15,10 +16,11 @@ import { ThemeScope } from "./ThemeScope.js";
 const FEEDBACK_ERROR_DOT_COLOR = "#ef4444";
 export function ReportView() {
     const { showMarkerTargetPreview, devicePreviewUiOpen, resolvedPanelAppearance, resolvedTooltipAppearance, markerAppearance, } = useReportPreferences();
-    const { mode, showTargetPreview, savedProbeEdits, draft, errorMessage, panelCollapsed, setPanelCollapsed, openReplyReportIds } = useReportSession();
+    const { mode, showTargetPreview, savedProbeEdits, elementMemos, draft, errorMessage, panelCollapsed, setPanelCollapsed, openReplyReportIds } = useReportSession();
     const hasSavedProbeEdits = Object.keys(savedProbeEdits).length > 0;
+    const hasElementMemos = Object.keys(elementMemos).length > 0;
     const hasOpenWindows = openReplyReportIds.length > 0;
-    const showOverlay = mode !== "idle" || showTargetPreview || showMarkerTargetPreview || hasSavedProbeEdits || hasOpenWindows;
+    const showOverlay = mode !== "idle" || showTargetPreview || showMarkerTargetPreview || hasSavedProbeEdits || hasOpenWindows || hasElementMemos;
     const feedbackModeDotColor = markerAppearance.feedbackModeDotColors[resolvedPanelAppearance];
     const hasDraftContentError = mode === "report" && Boolean(draft) && Boolean(errorMessage);
     const resolvedFeedbackModeDotColor = hasDraftContentError ? FEEDBACK_ERROR_DOT_COLOR : feedbackModeDotColor;
@@ -32,6 +34,6 @@ export function ReportView() {
     if (isPreviewGuest) {
         return null;
     }
-    return (_jsxs(ShadowReportRoot, { panelAppearance: resolvedPanelAppearance, children: [showHostDevicePreview ? (_jsx(ThemeScope, { appearance: resolvedPanelAppearance, children: _jsx(DevicePreviewChrome, {}) })) : null, _jsx(ThemeScope, { appearance: resolvedPanelAppearance, className: "pointer-events-none fixed inset-0 z-[999998]", children: _jsx(DotWaveOverlay, { active: mode === "report", color: resolvedFeedbackModeDotColor }) }), _jsx(ThemeScope, { appearance: resolvedPanelAppearance, children: _jsx(ReportControlPanel, {}) }), showOverlay ? (_jsx(ThemeScope, { appearance: resolvedTooltipAppearance, children: _jsxs(ReportOverlayLayer, { children: [mode !== "idle" ? (_jsxs(_Fragment, { children: [_jsx(ReportMarkersLayer, {}), _jsx(ReportDraftMarker, {}), _jsx(ReportDraftForm, {})] })) : null, _jsx(ReportOpenWindowsLayer, {})] }) })) : null] }));
+    return (_jsxs(ShadowReportRoot, { panelAppearance: resolvedPanelAppearance, children: [showHostDevicePreview ? (_jsx(ThemeScope, { appearance: resolvedPanelAppearance, children: _jsx(DevicePreviewChrome, {}) })) : null, _jsx(ThemeScope, { appearance: resolvedPanelAppearance, className: "pointer-events-none fixed inset-0 z-[999998]", children: _jsx(DotWaveOverlay, { active: mode === "report", color: resolvedFeedbackModeDotColor }) }), _jsx(ThemeScope, { appearance: resolvedPanelAppearance, children: _jsx(ReportControlPanel, {}) }), showOverlay ? (_jsx(ThemeScope, { appearance: resolvedTooltipAppearance, children: _jsxs(ReportOverlayLayer, { children: [mode !== "idle" ? (_jsxs(_Fragment, { children: [_jsx(ReportMarkersLayer, {}), _jsx(ReportDraftMarker, {}), _jsx(ReportDraftForm, {})] })) : null, _jsx(MemoMarkersLayer, {}), _jsx(ReportOpenWindowsLayer, {})] }) })) : null] }));
 }
 //# sourceMappingURL=ReportView.js.map

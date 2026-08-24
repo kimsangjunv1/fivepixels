@@ -7,6 +7,7 @@ export declare function useMarkerAppearancePreference(): {
     setMarkerFillStyle: (fillStyle: MarkerFillStyle) => void;
     setMarkerColors: (colors: MarkerColorPreferences) => void;
     setMarkerColor: (key: keyof MarkerColorPreferences, color: string) => void;
+    setMarkerStrokeColor: (strokeColor: string) => void;
     setFeedbackModeDotColors: (colors: FeedbackModeDotColors) => void;
     setFeedbackModeDotColor: (appearance: keyof FeedbackModeDotColors, color: string) => void;
 };

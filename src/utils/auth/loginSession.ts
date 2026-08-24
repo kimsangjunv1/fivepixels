@@ -1,4 +1,4 @@
-import { LOGIN_METHOD_VALUES, type LoginMethod } from "@/constants/loginMethod.js";
+import { FIVE_PIXELS_SYNC_VALUES, type FivePixelsSync } from "@/constants/loginMethod.js";
 import { getLoginMethodStorageKey, getRemoteAuthSessionStorageKey } from "@/constants/storageKeys.js";
 import type { ReportAuthUser } from "@/types/report.js";
 
@@ -44,13 +44,13 @@ function removeKey(key: string) {
     }
 }
 
-export function readLoginMethod(projectId: string, environment?: string): LoginMethod | null {
+export function readLoginMethod(projectId: string, environment?: string): FivePixelsSync | null {
     const value = readJson(getLoginMethodStorageKey(projectId, environment));
 
-    return typeof value === "string" && LOGIN_METHOD_VALUES.includes(value as LoginMethod) ? (value as LoginMethod) : null;
+    return typeof value === "string" && FIVE_PIXELS_SYNC_VALUES.includes(value as FivePixelsSync) ? (value as FivePixelsSync) : null;
 }
 
-export function saveLoginMethod(projectId: string, environment: string | undefined, method: LoginMethod) {
+export function saveLoginMethod(projectId: string, environment: string | undefined, method: FivePixelsSync) {
     writeJson(getLoginMethodStorageKey(projectId, environment), method);
 }
 

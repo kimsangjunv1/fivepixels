@@ -20,12 +20,8 @@ export function ensureDemoFeedbackSeed() {
 
     return {
         inserted: items.length,
-        updated: 0,
+        updated: existing.length - nonSeedItems.length,
         kept: nonSeedItems.length,
         localRepliesPreserved: 0,
-        replaced: existing.length - nonSeedItems.length,
     };
 }
-
-/** @deprecated Use ensureDemoFeedbackSeed */
-export const ensureEdgecaseFeedbackSeed = ensureDemoFeedbackSeed;

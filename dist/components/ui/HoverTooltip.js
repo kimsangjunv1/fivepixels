@@ -16,7 +16,7 @@ function isSameLayout(current, next) {
     }
     return current.top === next.top && current.left === next.left;
 }
-export function HoverTooltip({ label, content, multiline = false, disabled = false, children, className = "" }) {
+export function HoverTooltip({ label, content, multiline = false, disabled = false, onHoverChange, children, className = "" }) {
     const [hovered, setHovered] = useState(false);
     const [layout, setLayout] = useState(null);
     const anchorRef = useRef(null);
@@ -25,9 +25,13 @@ export function HoverTooltip({ label, content, multiline = false, disabled = fal
         onEnter: () => {
             if (!disabled) {
                 setHovered(true);
+                onHoverChange?.(true);
             }
         },
-        onLeave: () => setHovered(false),
+        onLeave: () => {
+            setHovered(false);
+            onHoverChange?.(false);
+        },
     });
     const setAnchorRef = useCallback((node) => {
         anchorRef.current = node;
@@ -45,8 +49,9 @@ export function HoverTooltip({ label, content, multiline = false, disabled = fal
     useLayoutEffect(() => {
         if (disabled) {
             setHovered(false);
+            onHoverChange?.(false);
         }
-    }, [disabled]);
+    }, [disabled, onHoverChange]);
     useLayoutEffect(() => {
         if (!hovered || disabled) {
             setLayout((current) => (current === null ? current : null));

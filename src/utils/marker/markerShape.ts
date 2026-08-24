@@ -15,6 +15,13 @@ export type MarkerGlyphPaint = {
     labelColor: string;
 };
 
+export type ResolveMarkerGlyphPaintInput = {
+    color: string;
+    fillStyle: MarkerFillStyle;
+    strokeColor: string;
+    strokeWidthPx: number;
+};
+
 export function resolveMarkerShapeStyle(shape: MarkerShape, dotSize: number): MarkerShapeStyle {
     const definition = getMarkerShapeDefinition(shape);
     const size = dotSize + 4;
@@ -27,7 +34,7 @@ export function resolveMarkerShapeStyle(shape: MarkerShape, dotSize: number): Ma
     };
 }
 
-export function resolveMarkerGlyphPaint(color: string, fillStyle: MarkerFillStyle, strokeWidthPx: number): MarkerGlyphPaint {
+export function resolveMarkerGlyphPaint({ color, fillStyle, strokeColor, strokeWidthPx }: ResolveMarkerGlyphPaintInput): MarkerGlyphPaint {
     if (fillStyle === "outlined") {
         return {
             fill: "transparent",
@@ -37,10 +44,19 @@ export function resolveMarkerGlyphPaint(color: string, fillStyle: MarkerFillStyl
         };
     }
 
+    if (fillStyle === "both") {
+        return {
+            fill: color,
+            stroke: strokeColor,
+            strokeWidthPx,
+            labelColor: "#ffffff",
+        };
+    }
+
     return {
         fill: color,
-        stroke: "#ffffff",
-        strokeWidthPx,
+        stroke: "transparent",
+        strokeWidthPx: 0,
         labelColor: "#ffffff",
     };
 }

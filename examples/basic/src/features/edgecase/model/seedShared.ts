@@ -10,14 +10,6 @@ export const SEED_TEAM = {
     qa: "박서연, QA",
     frontend: "이준호, 프론트엔드",
     backend: "최유진, 백엔드",
-    /** @deprecated Prefer `qa` — kept for existing edgecase/settings seeds */
-    alex: "박서연, QA",
-    /** @deprecated Prefer `qa` */
-    sophia: "박서연, QA",
-    /** @deprecated Prefer `frontend` */
-    william: "이준호, 프론트엔드",
-    /** @deprecated Prefer `backend` */
-    emma: "최유진, 백엔드",
 } as const;
 
 export type DemoSeedCatalogEntry = {

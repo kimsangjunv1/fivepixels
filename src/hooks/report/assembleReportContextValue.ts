@@ -5,18 +5,34 @@ import type { useReportMarkers } from "./useReportMarkers.js";
 import type { useReportMutations } from "./useReportMutations.js";
 import type { useReportPanelShell } from "./useReportPanelShell.js";
 import type { useReportReplyReview } from "./useReportReplyReview.js";
+import { buildAdapterIntegrationStatus } from "@/utils/integration/buildAdapterIntegrationStatus.js";
+import type { FivePixelsAdapter } from "@/types/adapter.js";
+import type { ApiFlowEntry } from "@/types/networkMonitor.js";
 import type {
-    ReportActivitySummaryParams,
-    ReportActivitySummaryResult,
     ReportAuthor,
     ReportFeedback,
     ReportField,
-    ReportPanelBootstrapParams,
-    ReportPanelBootstrapResult,
+    ReportGitHubConfig,
     ReportTeamHandlers,
 } from "@/types/report.js";
 import type { ResolvedReplyHistoryConfig } from "@/utils/report/reportUi.js";
-import { canAccessTeamSettings, isReportAuthorAdmin, resolveAuthorRole } from "@/utils/report/teamManagement.js";
+import { buildIntegrationCapabilities } from "@/utils/integration/integrationGate.js";
+import { resolvePersistenceMissingHandlers } from "@/utils/shared/storage.js";
+import { canAccessTeamSettings, hasTeamAdminHandlers, hasTeamRequestHandler, isReportAuthorAdmin, resolveAuthorRole } from "@/utils/report/teamManagement.js";
+
+function resolveTeamHandlersFromAdapter(adapter?: FivePixelsAdapter): Partial<ReportTeamHandlers> {
+    const members = adapter?.members;
+
+    if (!members) {
+        return {};
+    }
+
+    return {
+        onListReviewers: members.list,
+        onRegisterReviewer: members.create,
+        onUpdateReviewer: members.update,
+    };
+}
 
 type AssembleArgs = {
     panel: ReturnType<typeof useReportPanelShell>;
@@ -31,20 +47,22 @@ type AssembleArgs = {
     appVersion?: string;
     showFeedbackList: boolean;
     teamReviewers: ReportAuthor[];
-    onListReviewers?: ReportTeamHandlers["onListReviewers"];
-    onListReviewerRequests?: ReportTeamHandlers["onListReviewerRequests"];
-    onCreateReviewerRequest?: ReportTeamHandlers["onCreateReviewerRequest"];
-    onResolveReviewerRequest?: ReportTeamHandlers["onResolveReviewerRequest"];
-    onRegisterReviewer?: ReportTeamHandlers["onRegisterReviewer"];
-    onUpdateReviewer?: ReportTeamHandlers["onUpdateReviewer"];
-    onPanelBootstrap?: (params: ReportPanelBootstrapParams) => Promise<ReportPanelBootstrapResult>;
-    onActivitySummary?: (params: ReportActivitySummaryParams) => Promise<ReportActivitySummaryResult>;
+    adapter?: FivePixelsAdapter;
+    github?: ReportGitHubConfig;
+    canDeleteViaStorage: boolean;
+    usesLazyReplies: boolean;
+    usesCreateReply: boolean;
     visibleShortcutKeys: boolean;
     overlayRef: RefObject<HTMLDivElement>;
     replyHistory: ResolvedReplyHistoryConfig;
     selectReport: (reportId: string) => void;
     beginFeedbackEdit: (report: ReportFeedback) => void;
     cancelDraft: () => void;
+    apiFlowEntries: readonly ApiFlowEntry[];
+    activeApiFailureAlert: ApiFlowEntry | null;
+    dismissFailureAlert: (entryId: string) => void;
+    appendApiFlowEntryToDraftCase: (entryId: string) => void;
+    networkMonitorEnabled: boolean;
 };
 
 /**
@@ -64,23 +82,59 @@ export function assembleReportContextValue({
     appVersion,
     showFeedbackList,
     teamReviewers,
-    onListReviewers,
-    onListReviewerRequests,
-    onCreateReviewerRequest,
-    onResolveReviewerRequest,
-    onRegisterReviewer,
-    onUpdateReviewer,
-    onPanelBootstrap,
-    onActivitySummary,
+    adapter,
+    github,
+    canDeleteViaStorage,
+    usesLazyReplies,
+    usesCreateReply,
     visibleShortcutKeys,
     overlayRef,
     replyHistory,
     selectReport,
     beginFeedbackEdit,
     cancelDraft,
+    apiFlowEntries,
+    activeApiFailureAlert,
+    dismissFailureAlert,
+    appendApiFlowEntryToDraftCase,
+    networkMonitorEnabled,
 }: AssembleArgs) {
     const authorizedId = auth.authorizedAuthors[0]?.id;
     const teamActor = authorizedId ? (teamReviewers.find((reviewer) => reviewer.id === authorizedId) ?? null) : null;
+    const teamHandlers = resolveTeamHandlersFromAdapter(adapter);
+    const onListReviewers = teamHandlers.onListReviewers;
+    const onListReviewerRequests = teamHandlers.onListReviewerRequests;
+    const onCreateReviewerRequest = teamHandlers.onCreateReviewerRequest;
+    const onResolveReviewerRequest = teamHandlers.onResolveReviewerRequest;
+    const onRegisterReviewer = teamHandlers.onRegisterReviewer;
+    const onUpdateReviewer = teamHandlers.onUpdateReviewer;
+    const onPanelBootstrap = adapter?.session?.panelBootstrap;
+    const onActivitySummary = adapter?.session?.activitySummary;
+    const integrationCapabilities = buildIntegrationCapabilities({
+        sync: auth.loginMethod ?? "local",
+        persistenceMode: panel.persistenceStatus.mode,
+        persistenceMissingHandlers: resolvePersistenceMissingHandlers(adapter),
+        listAll: panel.canListAllFeedback,
+        delete: canDeleteViaStorage,
+        listReplies: usesLazyReplies,
+        createReply: usesCreateReply,
+        activitySummary: Boolean(onActivitySummary),
+        panelBootstrap: Boolean(onPanelBootstrap),
+        githubConfigured: Boolean(github) && github?.enabled !== false,
+        githubIssue: Boolean(github?.onCreate) && github?.enabled !== false,
+        apiLogin: Boolean(adapter?.auth?.login),
+        apiRegister: Boolean(adapter?.auth?.signup),
+        artemisLogin: Boolean(adapter?.auth?.artemisLogin),
+        teamRequest: hasTeamRequestHandler(teamHandlers),
+        teamManage: hasTeamAdminHandlers(teamHandlers),
+        dataTransfer: panel.canTransferFeedback,
+    });
+    const adapterIntegrationStatus = buildAdapterIntegrationStatus(
+        adapter,
+        integrationCapabilities.sync,
+        integrationCapabilities,
+        github,
+    );
 
     return {
         panelAppearance: panel.panelAppearance,
@@ -99,6 +153,8 @@ export function assembleReportContextValue({
         teamActorRole: teamActor ? resolveAuthorRole(teamActor) : null,
         isTeamAdmin: isReportAuthorAdmin(teamActor),
         canAccessTeamSettings: canAccessTeamSettings(teamActor),
+        integrationCapabilities,
+        adapterIntegrationStatus,
         onListReviewers,
         onListReviewerRequests,
         onCreateReviewerRequest,
@@ -125,7 +181,6 @@ export function assembleReportContextValue({
         authorSelectionLocked: auth.authorSelectionLocked,
         panelView: auth.panelView,
         loginMethod: auth.loginMethod,
-        selectLoginMethod: auth.selectLoginMethod,
         loginWithApi: auth.loginWithApi,
         registerWithApi: auth.registerWithApi,
         loginWithArtemis: auth.loginWithArtemis,
@@ -174,6 +229,7 @@ export function assembleReportContextValue({
         setMarkerFillStyle: panel.setMarkerFillStyle,
         setMarkerColors: panel.setMarkerColors,
         setMarkerColor: panel.setMarkerColor,
+        setMarkerStrokeColor: panel.setMarkerStrokeColor,
         setFeedbackModeDotColors: panel.setFeedbackModeDotColors,
         setFeedbackModeDotColor: panel.setFeedbackModeDotColor,
         typography: panel.typography,
@@ -206,6 +262,7 @@ export function assembleReportContextValue({
         replyHistory,
         replyHistoryByReportId: panel.replyHistoryByReportId,
         loadRepliesIfNeeded: panel.loadRepliesIfNeeded,
+        hydrateFeedbackIfNeeded: panel.hydrateFeedbackIfNeeded,
         loadOlderReplies: panel.loadOlderReplies,
         goToOlderPaginationPage: panel.goToOlderPaginationPage,
         goToNewerPaginationPage: panel.goToNewerPaginationPage,
@@ -239,6 +296,7 @@ export function assembleReportContextValue({
         handlePickTargetEdit: draft.handlePickTargetEdit,
         handlePickTargetDelete: draft.handlePickTargetDelete,
         handlePickTargetRevert: draft.handlePickTargetRevert,
+        handlePickTargetMemo: draft.handlePickTargetMemo,
         commitPickProbeEdits: draft.commitPickProbeEdits,
         revertSavedProbeEdit: draft.revertSavedProbeEdit,
         revertAllSavedProbeEdits: draft.revertAllSavedProbeEdits,
@@ -247,6 +305,13 @@ export function assembleReportContextValue({
         updatePickProbeValue: draft.updatePickProbeValue,
         resetPickProbeValues: draft.resetPickProbeValues,
         appendSavedProbeSummaryAsNewDraftCase: draft.appendSavedProbeSummaryAsNewDraftCase,
+        appendApiFlowEntryToDraftCase,
+        elementMemos: draft.elementMemos,
+        memoComposer: draft.memoComposer,
+        openMemoComposer: draft.openMemoComposer,
+        closeMemoComposer: draft.closeMemoComposer,
+        saveElementMemo: draft.saveElementMemo,
+        deleteElementMemo: draft.deleteElementMemo,
         markers: markers.markers,
         selectedReport: panel.selectedReport,
         editingReportId: mutations.editingReportId,
@@ -362,5 +427,9 @@ export function assembleReportContextValue({
         handleCreateGitHubIssue: mutations.handleCreateGitHubIssue,
         handleCreateSubmitWithGitHubIssue: mutations.handleCreateSubmitWithGitHubIssue,
         isDraftGitHubIssueSubmitting: mutations.isDraftGitHubIssueSubmitting,
+        apiFlowEntries,
+        activeApiFailureAlert,
+        dismissFailureAlert,
+        networkMonitorEnabled,
     };
 }

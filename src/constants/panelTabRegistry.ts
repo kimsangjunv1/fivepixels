@@ -2,7 +2,7 @@ import type { ReportPanelTab } from "@/types/report-ui.js";
 
 export type UserSelectablePanelTab = Extract<
     ReportPanelTab,
-    "route-details" | "feedback-list" | "overview" | "diagnostics" | "my-tasks" | "page-brief" | "needs-attention" | "project-health" | "today-digest"
+    "route-details" | "feedback-list" | "overview" | "diagnostics" | "api-flow" | "my-tasks" | "page-brief" | "needs-attention" | "project-health" | "today-digest"
 >;
 
 export type PanelTabAvailabilityContext = {
@@ -10,7 +10,7 @@ export type PanelTabAvailabilityContext = {
     canListAllFeedback: boolean;
 };
 
-export type PanelTabLabelKey = "tabThisPage" | "tabFeedbackList" | "tabOverview" | "tabDiagnostics" | "tabMyTasks" | "tabPageBrief" | "tabNeedsAttention" | "tabProjectHealth" | "tabTodayDigest";
+export type PanelTabLabelKey = "tabThisPage" | "tabFeedbackList" | "tabOverview" | "tabDiagnostics" | "tabApiFlow" | "tabMyTasks" | "tabPageBrief" | "tabNeedsAttention" | "tabProjectHealth" | "tabTodayDigest";
 
 export type PanelTabDefinition = {
     id: UserSelectablePanelTab;
@@ -68,6 +68,14 @@ export const PANEL_USER_TAB_REGISTRY: PanelTabDefinition[] = [
     {
         id: "diagnostics",
         labelKey: "tabDiagnostics",
+        userSelectable: true,
+        experimental: false,
+        needsFullReportList: false,
+        isAvailable: () => true,
+    },
+    {
+        id: "api-flow",
+        labelKey: "tabApiFlow",
         userSelectable: true,
         experimental: false,
         needsFullReportList: false,

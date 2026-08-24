@@ -1,6 +1,6 @@
 import { useMemo, useState, type DragEvent } from "react";
 import { APPEARANCE_OPTION_VALUES } from "@/constants/appearance.js";
-import { LOGIN_METHOD_VALUES, isRemoteLoginMethod, type LoginMethod } from "@/constants/loginMethod.js";
+import { isRemoteLoginMethod, resolveFivePixelsSync, type FivePixelsSync } from "@/constants/loginMethod.js";
 import { MARKER_FILL_STYLE_VALUES, type AppearanceScale, type MarkerFillStyle, type MarkerShape } from "@/constants/markerAppearance.js";
 import { PANEL_ROLE_VALUES, type PanelRole } from "@/constants/panelRole.js";
 import type { UserSelectablePanelTab } from "@/constants/panelTabRegistry.js";
@@ -30,12 +30,10 @@ import {
     ApiRegisterResultStep,
     ApiRegisterStep,
     ArtemisLoginStep,
-    LoginMethodStep,
 } from "./onboarding/PanelOnboardingAuthSteps.js";
 
 type OnboardingStep =
     | "language"
-    | "login-method"
     | "intro"
     | "restore"
     | "api-login"
@@ -49,6 +47,16 @@ type OnboardingStep =
     | "key";
 
 const LOCALE_OPTIONS = ["en", "ko"] as const satisfies readonly ReportLocale[];
+
+function getAuthEntryStep(sync: FivePixelsSync): Extract<OnboardingStep, "intro" | "api-login" | "artemis-login"> {
+    if (sync === "api") {
+        return "api-login";
+    }
+    if (sync === "artemis") {
+        return "artemis-login";
+    }
+    return "intro";
+}
 
 export function PanelOnboarding() {
     const {
@@ -73,7 +81,6 @@ export function PanelOnboarding() {
         persistenceStatus,
         onCreateReviewerRequest,
         loginMethod: storedLoginMethod,
-        selectLoginMethod,
         loginWithApi,
         registerWithApi,
         loginWithArtemis,
@@ -81,9 +88,9 @@ export function PanelOnboarding() {
     } = useReportPreferences();
     const { setErrorMessage } = useReportSession();
     const onboarding = messages.onboarding;
+    const sync = resolveFivePixelsSync(storedLoginMethod);
     const canSubmitRegistrationRequest = isTeamWriteEnabled(persistenceStatus) && hasTeamRequestHandler({ onCreateReviewerRequest });
     const [step, setStep] = useState<OnboardingStep>("language");
-    const [selectedLoginMethod, setSelectedLoginMethod] = useState<LoginMethod>(storedLoginMethod && LOGIN_METHOD_VALUES.includes(storedLoginMethod) ? storedLoginMethod : "local");
     const [name, setName] = useState(selfProfile?.name ?? "");
     const [selectedTabs, setSelectedTabs] = useState<UserSelectablePanelTab[]>(() => getDefaultVisibleTabsForRole(panelRole, resolvedTabAvailabilityContext));
     const [isCreating, setIsCreating] = useState(false);
@@ -111,6 +118,7 @@ export function PanelOnboarding() {
         label: messages.appearance[value],
     }));
     const scaleLabels: Record<AppearanceScale, string> = {
+        "2xs": messages.settings.scale2xs,
         xs: messages.settings.scaleXs,
         sm: messages.settings.scaleSm,
         md: messages.settings.scaleMd,
@@ -135,6 +143,7 @@ export function PanelOnboarding() {
     const fillStyleLabels: Record<MarkerFillStyle, string> = {
         filled: messages.settings.markerFillStyleFilled,
         outlined: messages.settings.markerFillStyleOutlined,
+        both: messages.settings.markerFillStyleBoth,
     };
 
     const handleSelectRole = (role: PanelRole) => {
@@ -176,23 +185,6 @@ export function PanelOnboarding() {
 
     const goToSharedSetup = () => {
         setStep("role");
-    };
-
-    const handleSelectLoginMethodNext = () => {
-        selectLoginMethod(selectedLoginMethod);
-        setAuthError("");
-
-        if (selectedLoginMethod === "api") {
-            setStep("api-login");
-            return;
-        }
-
-        if (selectedLoginMethod === "artemis") {
-            setStep("artemis-login");
-            return;
-        }
-
-        setStep("intro");
     };
 
     const handleApiLogin = async () => {
@@ -262,7 +254,7 @@ export function PanelOnboarding() {
     };
 
     const handleFinishSharedSetup = () => {
-        if (isRemoteLoginMethod(selectedLoginMethod)) {
+        if (isRemoteLoginMethod(sync)) {
             savePanelTabPreference({
                 visibleTabs: selectedTabs,
                 customized: true,
@@ -274,7 +266,7 @@ export function PanelOnboarding() {
         setStep("key");
     };
 
-    const sharedSetupBackStep: OnboardingStep = selectedLoginMethod === "api" ? "api-login" : selectedLoginMethod === "artemis" ? "artemis-login" : "intro";
+    const sharedSetupBackStep: OnboardingStep = getAuthEntryStep(sync);
     const registerErrorMessage =
         registerErrorKind === "account-already-exists"
             ? onboarding.registerDuplicate
@@ -374,21 +366,13 @@ export function PanelOnboarding() {
                     <div className="flex items-center justify-end">
                         <button
                             type="button"
-                            onClick={() => setStep("login-method")}
+                            onClick={() => setStep(getAuthEntryStep(sync))}
                             className={PANEL_GATE_PRIMARY_BUTTON_CLASS}
                         >
                             {onboarding.next}
                         </button>
                     </div>
                 </>
-            ) : step === "login-method" ? (
-                <LoginMethodStep
-                    copy={onboarding}
-                    value={selectedLoginMethod}
-                    onChange={setSelectedLoginMethod}
-                    onBack={() => setStep("language")}
-                    onNext={handleSelectLoginMethodNext}
-                />
             ) : step === "api-login" ? (
                 <ApiLoginStep
                     copy={onboarding}
@@ -409,7 +393,7 @@ export function PanelOnboarding() {
                         setAuthError("");
                         setStep("api-register");
                     }}
-                    onBack={() => setStep("login-method")}
+                    onBack={() => setStep("language")}
                 />
             ) : step === "api-register" ? (
                 <ApiRegisterStep
@@ -448,7 +432,7 @@ export function PanelOnboarding() {
                     error={authError}
                     busy={isAuthBusy}
                     onGoogleLogin={() => void handleArtemisLogin()}
-                    onBack={() => setStep("login-method")}
+                    onBack={() => setStep("language")}
                 />
             ) : step === "intro" ? (
                 <>
@@ -477,7 +461,7 @@ export function PanelOnboarding() {
                     <div className="flex items-center justify-start">
                         <button
                             type="button"
-                            onClick={() => setStep("login-method")}
+                            onClick={() => setStep("language")}
                             className={PANEL_GATE_BACK_BUTTON_CLASS}
                         >
                             {onboarding.back}
@@ -628,6 +612,7 @@ export function PanelOnboarding() {
                         shape={markerAppearance.shape}
                         color={markerAppearance.colors.open}
                         fillStyle={markerAppearance.fillStyle}
+                        strokeColor={markerAppearance.strokeColor}
                         fontFamily={typography.fontFamily}
                         ariaLabel={onboarding.displayPreviewAriaLabel}
                         showReplyBadge
@@ -660,6 +645,7 @@ export function PanelOnboarding() {
                             ariaLabel={messages.settings.markerShapeAriaLabel}
                             previewColor={markerAppearance.colors.open}
                             fillStyle={markerAppearance.fillStyle}
+                            strokeColor={markerAppearance.strokeColor}
                         />
                     </div>
                     <div className="flex items-center justify-between">

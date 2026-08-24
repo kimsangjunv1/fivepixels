@@ -1,10 +1,11 @@
 import { ACCENT_COLOR_DARK } from "@/constants/accentColors.js";
 
-export type AppearanceScale = "xs" | "sm" | "md" | "lg" | "xl";
+export type AppearanceScale = "2xs" | "xs" | "sm" | "md" | "lg" | "xl";
 
-export const APPEARANCE_SCALE_VALUES = ["xs", "sm", "md", "lg", "xl"] as const satisfies readonly AppearanceScale[];
+export const APPEARANCE_SCALE_VALUES = ["2xs", "xs", "sm", "md", "lg", "xl"] as const satisfies readonly AppearanceScale[];
 
 export const MARKER_SCALE_FACTOR: Record<AppearanceScale, number> = {
+    "2xs": 0.3,
     xs: 0.7,
     sm: 0.85,
     md: 1,
@@ -49,9 +50,11 @@ export const MARKER_SHAPE_VALUES = [
     "puffy",
 ] as const satisfies readonly MarkerShape[];
 
-export type MarkerFillStyle = "filled" | "outlined";
+export type MarkerFillStyle = "filled" | "outlined" | "both";
 
-export const MARKER_FILL_STYLE_VALUES = ["filled", "outlined"] as const satisfies readonly MarkerFillStyle[];
+export const MARKER_FILL_STYLE_VALUES = ["filled", "outlined", "both"] as const satisfies readonly MarkerFillStyle[];
+
+export const DEFAULT_MARKER_STROKE_COLOR = "#ffffff";
 
 export type MarkerColorPreferences = {
     open: string;
@@ -69,6 +72,7 @@ export type MarkerAppearancePreferences = {
     shape: MarkerShape;
     fillStyle: MarkerFillStyle;
     colors: MarkerColorPreferences;
+    strokeColor: string;
     feedbackModeDotColors: FeedbackModeDotColors;
 };
 
@@ -101,8 +105,9 @@ export const DEFAULT_FEEDBACK_MODE_DOT_COLORS: FeedbackModeDotColors = {
 export const DEFAULT_MARKER_APPEARANCE: MarkerAppearancePreferences = {
     size: "md",
     shape: "cookie4",
-    fillStyle: "filled",
+    fillStyle: "both",
     colors: DEFAULT_MARKER_COLORS,
+    strokeColor: DEFAULT_MARKER_STROKE_COLOR,
     feedbackModeDotColors: DEFAULT_FEEDBACK_MODE_DOT_COLORS,
 };
 
@@ -132,7 +137,7 @@ export function isMarkerFontSize(value: unknown): value is MarkerFontSize {
 }
 
 export function isAppearanceScale(value: unknown): value is AppearanceScale {
-    return value === "xs" || value === "sm" || value === "md" || value === "lg" || value === "xl";
+    return value === "2xs" || value === "xs" || value === "sm" || value === "md" || value === "lg" || value === "xl";
 }
 
 export function isMarkerShape(value: unknown): value is MarkerShape {
@@ -152,7 +157,7 @@ export const MARKER_BADGE_FONT_SIZE_PX = 10;
 export const MARKER_BADGE_FONT_WEIGHT = 900;
 
 export function isCompactMarkerLabelScale(size: AppearanceScale) {
-    return size === "xs" || size === "sm";
+    return size === "2xs" || size === "xs" || size === "sm";
 }
 
 export function resolveMarkerBadgeDisplay(size: AppearanceScale, label: string | null) {

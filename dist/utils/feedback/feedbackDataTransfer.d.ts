@@ -15,10 +15,7 @@ export type FeedbackDownloadResult = "saved" | "downloaded" | "cancelled" | "fai
 export declare function getFeedbackStorageKey({ projectId, environment, appVersion }: FeedbackTransferScope): string;
 export declare function readAllFeedback({ projectId, environment, appVersion }: FeedbackTransferScope): ReportFeedback[];
 export declare function writeAllFeedback(scope: FeedbackTransferScope, items: ReportFeedback[]): void;
-export type FeedbackInsertResult = FeedbackMergeStats & {
-    /** @deprecated Prefer `updated`. Kept for command success message compatibility. */
-    replaced: number;
-};
+export type FeedbackInsertResult = FeedbackMergeStats;
 export type FeedbackInsertConflict = {
     id: string;
     existing: ReportFeedback;

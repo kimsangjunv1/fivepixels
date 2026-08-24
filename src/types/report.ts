@@ -40,6 +40,8 @@ export type ListRepliesParams = {
     limit?: number;
     cursor?: string;
     direction?: "older";
+    /** Required when using `adapter.replies.list` (replies are scoped to a case). */
+    caseId?: string;
 };
 
 export type ListRepliesResult = {
@@ -415,30 +417,8 @@ export interface ReportStorageAdapter {
     remove?(id: string): Promise<void>;
 }
 
-/** Custom persistence handlers passed to `<FivePixels />`. Requires onList, onCreate, and onUpdate together.
- * Exposed on `FivePixelsProps` via `Partial<ReportPersistenceHandlers>` (`src/types/publicApi.ts`).
- */
-export type ReportPersistenceHandlers = {
-    /** Current-page list. Returns `ReportFeedback[]`. */
-    onList: (params: { pathname: string }) => Promise<ReportFeedback[]>;
-    /** Paginated all-pages list. */
-    onListAll?: (params: ReportListAllParams) => Promise<ReportListAllResult>;
-    onPanelBootstrap?: (params: ReportPanelBootstrapParams) => Promise<ReportPanelBootstrapResult>;
-    onActivitySummary?: (params: ReportActivitySummaryParams) => Promise<ReportActivitySummaryResult>;
-    onListReplies?: (commentId: string, params?: ListRepliesParams) => Promise<ListRepliesResult | ReportReply[]>;
-    /** Create feedback. Body: `CreateReportFeedbackPayload` → `ReportFeedback`. */
-    onCreate: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
-    onCreateReply?: (commentId: string, payload: CreateReplyPayload) => Promise<ReportReply>;
-    /** Patch feedback / cases / replies embed. → `ReportFeedback`. */
-    onUpdate: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
-    onDelete?: (id: string) => Promise<void>;
-};
-
 export type SerializedReportFeedback = ReportFeedback;
 export type SerializedReportReply = ReportReply;
-
-export type Report = ReportFeedback;
-export type CreateReportPayload = CreateReportFeedbackPayload;
 
 export type ReportEvent =
     | { type: "feedback:create"; payload: ReportFeedback }

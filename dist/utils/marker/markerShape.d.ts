@@ -12,8 +12,14 @@ export type MarkerGlyphPaint = {
     strokeWidthPx: number;
     labelColor: string;
 };
+export type ResolveMarkerGlyphPaintInput = {
+    color: string;
+    fillStyle: MarkerFillStyle;
+    strokeColor: string;
+    strokeWidthPx: number;
+};
 export declare function resolveMarkerShapeStyle(shape: MarkerShape, dotSize: number): MarkerShapeStyle;
-export declare function resolveMarkerGlyphPaint(color: string, fillStyle: MarkerFillStyle, strokeWidthPx: number): MarkerGlyphPaint;
+export declare function resolveMarkerGlyphPaint({ color, fillStyle, strokeColor, strokeWidthPx }: ResolveMarkerGlyphPaintInput): MarkerGlyphPaint;
 export declare function getMarkerReplyBadgeSize(dotSize: number): number;
 export { MARKER_SHAPE_STROKE_WIDTH_PX };
 //# sourceMappingURL=markerShape.d.ts.map

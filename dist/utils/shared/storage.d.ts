@@ -1,39 +1,22 @@
-import type { ReportPersistenceHandlers, ReportStorageAdapter } from "../../types/report.js";
+import type { FivePixelsSync } from "../../constants/loginMethod.js";
+import type { FivePixelsAdapter } from "../../types/adapter.js";
+import { createUnavailableReportAdapter, type AdapterHandlerName, type PersistenceStatus } from "../../utils/adapter/resolveAdapter.js";
+export type { AdapterHandlerName, PersistenceStatus };
 export type ResolveStorageAdapterOptions = {
     projectId: string;
     environment?: string;
     appVersion?: string;
-    onList?: ReportPersistenceHandlers["onList"];
-    onListAll?: ReportPersistenceHandlers["onListAll"];
-    onListReplies?: ReportPersistenceHandlers["onListReplies"];
-    onCreate?: ReportPersistenceHandlers["onCreate"];
-    onCreateReply?: ReportPersistenceHandlers["onCreateReply"];
-    onUpdate?: ReportPersistenceHandlers["onUpdate"];
-    onDelete?: ReportPersistenceHandlers["onDelete"];
+    sync?: FivePixelsSync;
+    adapter?: FivePixelsAdapter;
 };
-declare const REQUIRED_PERSISTENCE_HANDLER_NAMES: readonly ["onList", "onCreate", "onUpdate"];
-declare const PERSISTENCE_HANDLER_NAMES: readonly ["onList", "onListAll", "onListReplies", "onCreate", "onCreateReply", "onUpdate", "onDelete"];
-export type RequiredPersistenceHandlerName = (typeof REQUIRED_PERSISTENCE_HANDLER_NAMES)[number];
-export type PersistenceHandlerName = (typeof PERSISTENCE_HANDLER_NAMES)[number];
-export type PersistenceStatus = {
-    mode: "localStorage";
-    missingHandlers: [];
-    ignoredHandlers: [];
-} | {
-    mode: "API";
-    missingHandlers: [];
-    ignoredHandlers: [];
-} | {
-    mode: "conflict";
-    missingHandlers: RequiredPersistenceHandlerName[];
-    ignoredHandlers: PersistenceHandlerName[];
-};
-export declare function hasCustomPersistenceHandlers(options: Pick<ResolveStorageAdapterOptions, "onList" | "onCreate" | "onUpdate">): options is Required<Pick<ResolveStorageAdapterOptions, "onList" | "onCreate" | "onUpdate">>;
-export declare function resolvePersistenceStatus(options: Pick<ResolveStorageAdapterOptions, PersistenceHandlerName>): PersistenceStatus;
-export declare function resolveStorageAdapter({ projectId, environment, appVersion, onList, onListAll, onListReplies, onCreate, onCreateReply, onUpdate, onDelete, }: ResolveStorageAdapterOptions): {
-    adapter: ReportStorageAdapter;
+export declare function hasCustomPersistenceAdapter(adapter?: FivePixelsAdapter): boolean;
+export declare function resolvePersistenceStatus(options: Pick<ResolveStorageAdapterOptions, "adapter" | "sync">): PersistenceStatus;
+export { createUnavailableReportAdapter };
+export declare function resolveStorageAdapter(options: ResolveStorageAdapterOptions): {
+    adapter: import("../..").ReportStorageAdapter;
     usesLocalStorage: boolean;
     persistenceStatus: PersistenceStatus;
+    fivePixelsAdapter?: FivePixelsAdapter;
 };
-export {};
+export declare function resolvePersistenceMissingHandlers(adapter?: FivePixelsAdapter): AdapterHandlerName[];
 //# sourceMappingURL=storage.d.ts.map

@@ -28,14 +28,14 @@ export type ImportStep = "none" | "project-mismatch" | "confirm";
 export type CommandStep = "none" | "replace-confirm";
 export type { FeedbackImportMode };
 
-function buildCommandSuccessMessage(messages: ReportMessages, inserted: number, replaced: number, localRepliesPreserved = 0) {
+function buildCommandSuccessMessage(messages: ReportMessages, inserted: number, updated: number, localRepliesPreserved = 0) {
     const base = (() => {
-        if (replaced > 0 && inserted > 0) {
-            return messages.errors.commandSuccessInsertedReplaced(inserted, replaced);
+        if (updated > 0 && inserted > 0) {
+            return messages.errors.commandSuccessInsertedReplaced(inserted, updated);
         }
 
-        if (replaced > 0) {
-            return messages.errors.commandSuccessReplaced(replaced);
+        if (updated > 0) {
+            return messages.errors.commandSuccessReplaced(updated);
         }
 
         return messages.errors.commandSuccessInserted(inserted);
@@ -205,7 +205,7 @@ export function usePanelFeedbackTransfer({
 
             return {
                 status: "success" as const,
-                message: buildCommandSuccessMessage(messages, result.inserted, result.replaced, result.localRepliesPreserved),
+                message: buildCommandSuccessMessage(messages, result.inserted, result.updated, result.localRepliesPreserved),
             };
         },
         [canTransferFeedback, messages, refetch, setErrorMessage, transferScope],
@@ -233,7 +233,7 @@ export function usePanelFeedbackTransfer({
             setCommandConflicts([]);
             setCommandStep("none");
             setCommandNotice({
-                message: buildCommandSuccessMessage(messages, result.inserted, result.replaced, result.localRepliesPreserved),
+                message: buildCommandSuccessMessage(messages, result.inserted, result.updated, result.localRepliesPreserved),
                 isError: false,
             });
         })();

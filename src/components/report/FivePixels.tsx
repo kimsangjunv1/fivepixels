@@ -9,6 +9,7 @@ import { isInsideDevicePreviewFrame } from "@/utils/overlay/devicePreviewFrame.j
 import { ReportView } from "./ReportView.js";
 
 export type { FivePixelsProps } from "@/types/publicApi.js";
+export type { FivePixelsAdapter } from "@/types/adapter.js";
 
 export function FivePixels({
     project,
@@ -16,30 +17,15 @@ export function FivePixels({
     visibility,
     team,
     mode = "default",
+    sync = "local",
+    adapter,
     fields = DEFAULT_FIELDS,
-    onList,
-    onListAll,
-    onPanelBootstrap,
-    onActivitySummary,
-    onListReplies,
     onNavigate,
     onRevealTarget,
-    onCreate,
-    onCreateReply,
-    onUpdate,
-    onDelete,
-    onListReviewers,
-    onListReviewerRequests,
-    onCreateReviewerRequest,
-    onResolveReviewerRequest,
-    onRegisterReviewer,
-    onUpdateReviewer,
-    onApiLogin,
-    onApiRegister,
-    onArtemisLogin,
     onEvent,
     onReply,
     github,
+    networkMonitor,
 }: FivePixelsProps) {
     const resolvedVisibility = resolveReportVisibility({ visibility });
 
@@ -47,7 +33,6 @@ export function FivePixels({
         return null;
     }
 
-    // Parent owns the panel/overlays; guest iframe only renders the page so media queries match the device.
     if (isInsideDevicePreviewFrame()) {
         return null;
     }
@@ -59,30 +44,15 @@ export function FivePixels({
             visibility={visibility}
             team={team}
             mode={mode}
+            sync={sync}
+            adapter={adapter}
             fields={fields}
-            onList={onList}
-            onListAll={onListAll}
-            onPanelBootstrap={onPanelBootstrap}
-            onActivitySummary={onActivitySummary}
-            onListReplies={onListReplies}
             onNavigate={onNavigate}
             onRevealTarget={onRevealTarget}
-            onCreate={onCreate}
-            onCreateReply={onCreateReply}
-            onUpdate={onUpdate}
-            onDelete={onDelete}
-            onListReviewers={onListReviewers}
-            onListReviewerRequests={onListReviewerRequests}
-            onCreateReviewerRequest={onCreateReviewerRequest}
-            onResolveReviewerRequest={onResolveReviewerRequest}
-            onRegisterReviewer={onRegisterReviewer}
-            onUpdateReviewer={onUpdateReviewer}
-            onApiLogin={onApiLogin}
-            onApiRegister={onApiRegister}
-            onArtemisLogin={onArtemisLogin}
             onEvent={onEvent}
             onReply={onReply}
             github={github}
+            networkMonitor={networkMonitor}
         >
             <ReportView />
         </ReportProvider>

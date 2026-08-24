@@ -9,17 +9,20 @@ import {
     ChevronRightIcon,
     DevicePreviewIcon,
     EyeOpenIcon,
+    LockIcon,
     LogoIcon,
     SelectIcon,
     SettingsIcon,
 } from "@/components/icons/Icons.js";
 import { IconTooltipButton } from "@/components/ui/IconTooltipButton.js";
 import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
+import { useIntegrationLock } from "@/components/ui/IntegrationLock.js";
 import { PanelDockGuides } from "./PanelDockGuides.js";
 import { ReportFeedbackList } from "./ReportFeedbackList.js";
 import { ReportOverview } from "./ReportOverview.js";
 import { ReportRouteDetails } from "./ReportRouteDetails.js";
 import { ReportAuthDiagnostics } from "./ReportAuthDiagnostics.js";
+import { ReportApiFlowPanel } from "./ReportApiFlowPanel.js";
 import { ReportMyTasksPanel } from "./experimental/ReportMyTasksPanel.js";
 import { ReportPageBriefPanel } from "./experimental/ReportPageBriefPanel.js";
 import { ReportNeedsAttentionPanel } from "./experimental/ReportNeedsAttentionPanel.js";
@@ -34,6 +37,7 @@ import { PanelSettings } from "./PanelSettings.js";
 import { CornerResizeGhost } from "@/components/ui/CornerResizeGhost.js";
 import { CornerResizeHandle } from "@/components/ui/CornerResizeHandle.js";
 import { PanelStatusBannerStack } from "./PanelStatusBannerStack.js";
+import { PanelNetworkFailureBanner } from "./PanelNetworkFailureBanner.js";
 import { PanelRoleSwitch } from "./PanelRoleSwitch.js";
 import { PanelPresentationSwitch } from "./PanelPresentationSwitch.js";
 import { PanelAutoRefreshControl } from "./PanelAutoRefreshControl.js";
@@ -126,6 +130,7 @@ export function ReportControlPanel() {
     const [personalKeyStep, setPersonalKeyStep] = useState<"none" | "required" | "insert" | "rotate">("none");
     const [personalKeyNotice, setPersonalKeyNotice] = useState("");
     const isRecording = mode === "report";
+    const persistenceLock = useIntegrationLock("feedbackPersistence");
     const isIssueMode = mode === "view";
     const isGateView = panelView !== "ready";
     const transferScope = { projectId, environment, appVersion };
@@ -316,7 +321,7 @@ export function ReportControlPanel() {
                         ? "min-h-[40px] bg-[var(--adaptive-neutralTintOpacity900)] backdrop-blur-[10px] rounded-[16px] shadow-[var(--adaptive-popup-shadow)]"
                         : panelCollapsed
                           ? ""
-                          : "relative bg-[var(--adaptive-neutralTintOpacity900)] backdrop-blur-[10px] rounded-[16px] shadow-[var(--adaptive-popup-shadow)]"
+                          : "relative overflow-hidden bg-[var(--adaptive-neutralTintOpacity900)] backdrop-blur-[10px] rounded-[16px] shadow-[var(--adaptive-popup-shadow)]"
                 }`}
                 style={{ ...resolvedPanelStyle, ...resolvedSizeStyle, zIndex: PANEL_LAYER_Z_INDEX }}
             >
@@ -330,9 +335,14 @@ export function ReportControlPanel() {
                 ) : null}
                 <div
                     key={shellMotionKey}
-                    className={`${shellMotionClass} ${panelCollapsed && !isRecording ? "flex shrink-0" : `flex w-full min-w-0 flex-col ${applyFixedHeight || isGateView ? "h-full min-h-0" : ""}`}`.trim()}
+                    className={`${shellMotionClass} ${panelCollapsed && !isRecording ? "flex shrink-0" : `flex h-full min-h-0 w-full min-w-0 flex-col overflow-hidden`}`.trim()}
                 >
-                    {panelCollapsed && !isRecording ? null : <PanelStatusBannerStack />}
+                    {panelCollapsed && !isRecording ? null : (
+                        <>
+                            <PanelNetworkFailureBanner />
+                            <PanelStatusBannerStack />
+                        </>
+                    )}
                     {isRecording ? (
                         <section className="flex items-center justify-between gap-[16px] px-[12px] py-[8px]">
                             <section className="flex items-center gap-[4px] justify-start shrink-0">
@@ -375,7 +385,11 @@ export function ReportControlPanel() {
                         </section>
                     ) : (
                         <>
-                            <section className={`relative flex min-w-0 flex-col ${applyFixedHeight ? "h-full min-h-0 flex-1" : "shrink-0"}`}>
+                            <section
+                                className={`relative flex min-h-0 min-w-0 flex-col overflow-hidden ${
+                                    applyFixedHeight || tabShellMounted ? "h-full flex-1" : "shrink-0"
+                                }`}
+                            >
                                 {isDragOver ? (
                                     <div className="pointer-events-none absolute inset-0 z-[30] flex items-center justify-center rounded-[12px] bg-[#dbeafe]/90 px-[16px] text-center backdrop-blur-[2px]">
                                         <p className="text-[14px] font-bold text-[var(--adaptive-blue500)]">{messages.panel.importDragOverlay}</p>
@@ -446,13 +460,25 @@ export function ReportControlPanel() {
                                         </section>
 
                                         <section className="flex items-center h-full">
-                                            <button
-                                                type="button"
-                                                onClick={toggleReportMode}
-                                                className="flex flex-col shrink-0 justify-center items-center gap-[4px] p-[0_16px] border-r border-r-[var(--adaptive-border-subtle)] h-full hover:bg-[#f6572d]"
+                                            <HoverTooltip
+                                                label={persistenceLock.locked ? persistenceLock.tooltipLabel : undefined}
+                                                multiline={persistenceLock.locked}
+                                                disabled={!persistenceLock.locked}
                                             >
-                                                <SelectIcon className="w-[24px]" />
-                                            </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        if (persistenceLock.locked) {
+                                                            return;
+                                                        }
+                                                        toggleReportMode();
+                                                    }}
+                                                    disabled={persistenceLock.locked}
+                                                    className="flex flex-col shrink-0 justify-center items-center gap-[4px] p-[0_16px] border-r border-r-[var(--adaptive-border-subtle)] h-full hover:bg-[#f6572d] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent"
+                                                >
+                                                    {persistenceLock.locked ? <LockIcon className="w-[20px] h-[20px]" /> : <SelectIcon className="w-[24px]" />}
+                                                </button>
+                                            </HoverTooltip>
 
                                             <section
                                                 className="flex flex-col min-w-0 flex-1 px-[16px] py-[8px] gap-[4px]"
@@ -544,58 +570,57 @@ export function ReportControlPanel() {
 
                                 {tabShellMounted ? (
                                     <div
-                                        className={`${MOTION.panelTabShell} ${applyFixedHeight ? "min-h-0 flex-1" : ""}`}
+                                        className={`${MOTION.panelTabShell} min-h-0 flex-1`}
                                         data-open={tabShellOpen ? "true" : "false"}
                                     >
-                                        <div className={MOTION.panelTabShellInner}>
-                                            <div className={applyFixedHeight ? "flex min-h-0 flex-1 flex-col overflow-hidden" : "flex flex-col"}>
-                                                {renderedTab === "overview" && commandStep === "none" ? <ReportOverview /> : null}
+                                        <div className={`${MOTION.panelTabShellInner} flex min-h-0 flex-col overflow-hidden`}>
+                                            {renderedTab === "overview" && commandStep === "none" ? <ReportOverview /> : null}
 
-                                                {renderedTab === "route-details" && commandStep === "none" ? <ReportRouteDetails /> : null}
+                                            {renderedTab === "route-details" && commandStep === "none" ? <ReportRouteDetails /> : null}
 
-                                                {renderedTab === "feedback-list" && showFeedbackList && commandStep === "none" ? <ReportFeedbackList /> : null}
-                                                {renderedTab === "diagnostics" && commandStep === "none" ? <ReportAuthDiagnostics /> : null}
-                                                {renderedTab === "my-tasks" && commandStep === "none" ? <ReportMyTasksPanel /> : null}
-                                                {renderedTab === "page-brief" && commandStep === "none" ? <ReportPageBriefPanel /> : null}
-                                                {renderedTab === "needs-attention" && commandStep === "none" ? <ReportNeedsAttentionPanel /> : null}
-                                                {renderedTab === "project-health" && commandStep === "none" ? <ReportProjectHealthPanel /> : null}
-                                                {renderedTab === "today-digest" && commandStep === "none" ? <ReportTodayDigestPanel /> : null}
+                                            {renderedTab === "feedback-list" && showFeedbackList && commandStep === "none" ? <ReportFeedbackList /> : null}
+                                            {renderedTab === "diagnostics" && commandStep === "none" ? <ReportAuthDiagnostics /> : null}
+                                            {renderedTab === "api-flow" && commandStep === "none" ? <ReportApiFlowPanel /> : null}
+                                            {renderedTab === "my-tasks" && commandStep === "none" ? <ReportMyTasksPanel /> : null}
+                                            {renderedTab === "page-brief" && commandStep === "none" ? <ReportPageBriefPanel /> : null}
+                                            {renderedTab === "needs-attention" && commandStep === "none" ? <ReportNeedsAttentionPanel /> : null}
+                                            {renderedTab === "project-health" && commandStep === "none" ? <ReportProjectHealthPanel /> : null}
+                                            {renderedTab === "today-digest" && commandStep === "none" ? <ReportTodayDigestPanel /> : null}
 
-                                                {renderedTab === "settings" && commandStep === "none" ? (
-                                                    <PanelSettings
-                                                        transferDisabled={!canTransferFeedback}
-                                                        panelAppearance={panelAppearance}
-                                                        onPanelAppearanceChange={setPanelAppearance}
-                                                        tooltipAppearance={tooltipAppearance}
-                                                        onTooltipAppearanceChange={setTooltipAppearance}
-                                                        questionThreadDisplay={questionThreadDisplay}
-                                                        onQuestionThreadDisplayChange={setQuestionThreadDisplay}
-                                                        onExport={handleExport}
-                                                        onImport={handleImportFromMenu}
-                                                        onCommand={handleOpenCommand}
-                                                        hasPersonalKey={Boolean(personalKey)}
-                                                        onKeyCopy={() => void handleKeyCopy()}
-                                                        onPublicKeyCopy={() => void handlePublicKeyCopy()}
-                                                        onKeyInsert={() => {
-                                                            setPersonalKeyStep("insert");
-                                                            setPersonalKeyNotice("");
-                                                        }}
-                                                        onKeyRotate={() => {
-                                                            setPersonalKeyStep("rotate");
-                                                            setPersonalKeyNotice("");
-                                                        }}
-                                                    />
-                                                ) : null}
+                                            {renderedTab === "settings" && commandStep === "none" ? (
+                                                <PanelSettings
+                                                    transferDisabled={!canTransferFeedback}
+                                                    panelAppearance={panelAppearance}
+                                                    onPanelAppearanceChange={setPanelAppearance}
+                                                    tooltipAppearance={tooltipAppearance}
+                                                    onTooltipAppearanceChange={setTooltipAppearance}
+                                                    questionThreadDisplay={questionThreadDisplay}
+                                                    onQuestionThreadDisplayChange={setQuestionThreadDisplay}
+                                                    onExport={handleExport}
+                                                    onImport={handleImportFromMenu}
+                                                    onCommand={handleOpenCommand}
+                                                    hasPersonalKey={Boolean(personalKey)}
+                                                    onKeyCopy={() => void handleKeyCopy()}
+                                                    onPublicKeyCopy={() => void handlePublicKeyCopy()}
+                                                    onKeyInsert={() => {
+                                                        setPersonalKeyStep("insert");
+                                                        setPersonalKeyNotice("");
+                                                    }}
+                                                    onKeyRotate={() => {
+                                                        setPersonalKeyStep("rotate");
+                                                        setPersonalKeyNotice("");
+                                                    }}
+                                                />
+                                            ) : null}
 
-                                                {renderedTab === "command" && commandStep === "none" ? (
-                                                    <ReportCommandPanel
-                                                        onExecute={handleCommandExecute}
-                                                        onClose={handleCloseCommand}
-                                                        notice={commandNotice}
-                                                        onNoticeClear={() => setCommandNotice(null)}
-                                                    />
-                                                ) : null}
-                                            </div>
+                                            {renderedTab === "command" && commandStep === "none" ? (
+                                                <ReportCommandPanel
+                                                    onExecute={handleCommandExecute}
+                                                    onClose={handleCloseCommand}
+                                                    notice={commandNotice}
+                                                    onNoticeClear={() => setCommandNotice(null)}
+                                                />
+                                            ) : null}
                                         </div>
                                     </div>
                                 ) : null}

@@ -11,16 +11,13 @@ import {
     SETTINGS_FEEDBACK_SEED_CATALOG,
     SETTINGS_FEEDBACK_SEED_IDS,
 } from "../model/createSettingsFeedbackSeed";
-import { ensureDemoFeedbackSeed } from "../model/ensureEdgecaseFeedbackSeed";
+import { ensureDemoFeedbackSeed } from "../model/ensureDemoFeedbackSeed";
 
 export function useDemoFeedbackSeed() {
     useEffect(() => {
         ensureDemoFeedbackSeed();
     }, []);
 }
-
-/** @deprecated Use useDemoFeedbackSeed */
-export const useEdgecaseFeedbackSeed = useDemoFeedbackSeed;
 
 export {
     DEMO_INVEST_FEEDBACK_SEED_CATALOG,
