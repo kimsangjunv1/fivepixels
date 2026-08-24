@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 import type { FeedbackDisplayStatus } from "@/constants/feedbackStatus.js";
 import type { RouteDetailStatus } from "@/utils/panel/routeDetailStatus.js";
 import { MaterialIcon, type MaterialIconProps } from "@/components/icons/MaterialIcon.js";
@@ -27,6 +27,10 @@ const REVERT_PATH =
     "M358-154q-28 0-48-20t-20-48.5q0-28.5 20-48t48-19.5h235q50 0 83.5-36t33.5-87q0-51-33.5-87.5T593-537H372l32 32q19 20 19 47.5T403-410q-19 19-46.5 19T309-410L163-556q-10-10-15.5-22.5t-5.5-26q0-13.5 5.5-26.5t15.5-22l146-146q20-19 47.5-19.5T404-799q20 19 19.5 47T404-704l-32 31h221q106 0 179.5 76T846-414q0 107-73.5 183.5T593-154H358Z";
 const ASK_ACTION_PATH =
     "m480-80-10-120h-10q-142 0-241-99t-99-241q0-142 99-241t241-99q71 0 132.5 26.5t108 73q46.5 46.5 73 108T800-540q0 75-24.5 144t-67 128q-42.5 59-101 107T480-80Zm8-253q12-12 12-29t-12-29q-12-12-29-12t-29 12q-12 12-12 29t12 29q12 12 29 12t29-12Zm-58-115h60q0-30 6-42t38-44q18-18 30-39t12-45q0-51-34.5-76.5T460-720q-44 0-74 24.5T344-636l56 22q5-17 19-33.5t41-16.5q27 0 40.5 15t13.5 33q0 17-10 30.5T480-558q-35 30-42.5 47.5T430-448Z";
+const ASK_AI_SPARK_LARGE_PATH =
+    "M9.0044 4.57078C9.38322 3.80974 10.469 3.80974 10.8478 4.57078L12.1674 7.22186C12.2672 7.42242 12.4298 7.58494 12.6303 7.68477L15.2814 9.00439C16.0424 9.38321 16.0424 10.469 15.2814 10.8478L12.6303 12.1674C12.4298 12.2672 12.2672 12.4298 12.1674 12.6303L10.8478 15.2814C10.469 16.0424 9.38321 16.0424 9.0044 15.2814L7.68477 12.6303C7.58494 12.4298 7.42242 12.2672 7.22187 12.1674L4.57078 10.8478C3.80974 10.469 3.80974 9.38321 4.57078 9.00439L7.22187 7.68477C7.42242 7.58494 7.58494 7.42242 7.68477 7.22186L9.0044 4.57078Z";
+const ASK_AI_SPARK_SMALL_PATH =
+    "M16.2114 13.8369C16.5902 13.0758 17.6759 13.0758 18.0547 13.8369L18.69 15.1132C18.7899 15.3137 18.9524 15.4762 19.1529 15.5761L20.4292 16.2114C21.1903 16.5902 21.1903 17.6759 20.4292 18.0547L19.1529 18.69C18.9524 18.7899 18.7899 18.9524 18.69 19.1529L18.0547 20.4292C17.6759 21.1903 16.5902 21.1903 16.2114 20.4292L15.5761 19.1529C15.4762 18.9524 15.3137 18.7899 15.1132 18.69L13.8369 18.0547C13.0758 17.6759 13.0758 16.5902 13.8369 16.2114L15.1132 15.5761C15.3137 15.4762 15.4762 15.3137 15.5761 15.1132L16.2114 13.8369Z";
 const DENIED_ACTION_PATH =
     "M280-440h400v-80H280v80ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z";
 const COMPLETE_ACTION_PATH =
@@ -418,6 +422,53 @@ export function AskActionIcon({ className, fill }: { className?: string } & Pick
             className={className}
             fill={fill}
         />
+    );
+}
+
+export function AskAiIcon({ className }: { className?: string }) {
+    const gradientId = useId().replace(/:/g, "");
+
+    return (
+        <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+            aria-hidden
+        >
+            <g className="fivepixels-ask-ai-star fivepixels-ask-ai-star--primary">
+                <path
+                    d={ASK_AI_SPARK_LARGE_PATH}
+                    fill={`url(#${gradientId})`}
+                />
+            </g>
+            <g className="fivepixels-ask-ai-star fivepixels-ask-ai-star--secondary">
+                <path
+                    d={ASK_AI_SPARK_SMALL_PATH}
+                    fill={`url(#${gradientId})`}
+                />
+            </g>
+            <defs>
+                <radialGradient
+                    id={gradientId}
+                    cx="0"
+                    cy="0"
+                    r="1"
+                    gradientUnits="userSpaceOnUse"
+                    gradientTransform="translate(12.5 12.5) rotate(90) scale(8.5)"
+                >
+                    <stop stopColor="#FE4720" />
+                    <stop
+                        offset="0.620192"
+                        stopColor="#FF43AE"
+                    />
+                    <stop
+                        offset="1"
+                        stopColor="#D220FE"
+                    />
+                </radialGradient>
+            </defs>
+        </svg>
     );
 }
 
