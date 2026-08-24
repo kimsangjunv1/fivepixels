@@ -12,8 +12,9 @@ import { GitIssueButton } from "./GitIssueButton.js";
 import { FeedbackDeleteAction } from "./FeedbackDeleteAction.js";
 import { canDeleteFeedback } from "@/utils/feedback/feedbackPermissions.js";
 import { useReport } from "@/providers/reportContext.js";
-import { CopyIcon } from "@/components/icons/Icons.js";
+import { CopyIcon, LockIcon } from "@/components/icons/Icons.js";
 import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
+import { useIntegrationLock } from "@/components/ui/IntegrationLock.js";
 
 type FeedbackListItemProps = {
     report: ReportFeedback;
@@ -141,12 +142,16 @@ export function FeedbackListItem({
 }: FeedbackListItemProps) {
     const { sessionActor } = useReport();
     const canDelete = canDeleteFeedback(report, sessionActor);
+    const deleteLock = useIntegrationLock("deleteFeedback");
+    const githubLock = useIntegrationLock("githubIssue");
     const caseId = getFeedbackCaseId(report);
     const replyCount = getReplyCount(report);
     const statusTag = getFeedbackListStatusTag(report);
     const category = isFeedbackCategory(report.category) ? report.category : null;
     const summary = getIssueSummary(report, { summaryMore: messages.cases.summaryMore });
     const activityAt = report.created_at;
+    const showGitHubAction = canCreateGitHubIssue || githubLock.locked;
+    const showDeleteAction = canDelete;
 
     return (
         <div className="group flex flex-col relative border-b border-[var(--adaptive-border-subtle)] last:border-b-0 bg-[var(--adaptive-tintOpacity50)]">
@@ -203,24 +208,44 @@ export function FeedbackListItem({
 
             <div className="absolute right-[10px] top-[6px] z-[1] flex items-center gap-[2px]">
                 <div className="flex items-center gap-[2px] opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
-                    {canCreateGitHubIssue && onCreateGitHubIssue ? (
-                        <FeedbackListGitIssueAction
-                            report={report}
-                            messages={messages}
-                            disabled={disabled}
-                            isSubmitting={creatingGitHubIssueId === report.id}
-                            onCreateIssue={onCreateGitHubIssue}
-                        />
+                    {showGitHubAction ? (
+                        githubLock.locked || !onCreateGitHubIssue ? (
+                            <HoverTooltip
+                                label={githubLock.tooltipLabel}
+                                multiline
+                            >
+                                <button
+                                    type="button"
+                                    data-fivepixels-interactive=""
+                                    disabled
+                                    aria-label={githubLock.tooltipLabel}
+                                    className="flex h-[20px] w-[20px] items-center justify-center text-[var(--adaptive-black50)] opacity-70"
+                                    onClick={(event) => event.stopPropagation()}
+                                >
+                                    <LockIcon className="h-[12px] w-[12px]" />
+                                </button>
+                            </HoverTooltip>
+                        ) : (
+                            <FeedbackListGitIssueAction
+                                report={report}
+                                messages={messages}
+                                disabled={disabled}
+                                isSubmitting={creatingGitHubIssueId === report.id}
+                                onCreateIssue={onCreateGitHubIssue}
+                            />
+                        )
                     ) : null}
                     <FeedbackListCopyAction
                         report={report}
                         messages={messages}
                     />
-                    {canDelete ? (
+                    {showDeleteAction ? (
                         <FeedbackDeleteAction
                             reportId={report.id}
                             onDelete={onDelete}
                             disabled={disabled}
+                            locked={deleteLock.locked}
+                            lockLabel={deleteLock.tooltipLabel}
                             messages={messages}
                         />
                     ) : null}

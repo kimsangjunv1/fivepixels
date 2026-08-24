@@ -115,8 +115,8 @@ export function createEdgecaseFeedbackSeed(): ReportFeedback[] {
                 createReportCase("Primary CTA label wraps to two lines on Korean locale builds.", {
                     id: CASE.happy,
                     status: "resolved",
-                    assignee_name: TEAM.william,
-                    previous_assignee_name: TEAM.sophia,
+                    assignee_name: TEAM.frontend,
+                    previous_assignee_name: TEAM.qa,
                 }),
             ],
             field_values: seedFields("[happy-path] 담당→질문→제안→승인 완주", { isImportant: true }),
@@ -124,12 +124,12 @@ export function createEdgecaseFeedbackSeed(): ReportFeedback[] {
                 seedReply("edgecase-reply-happy-assigned", "An assignee has been assigned.", daysAgo(6, 9), "assignee_assigned", {
                     case_ids: [CASE.happy],
                     author_type: "manager",
-                    author_name: TEAM.sophia,
+                    author_name: TEAM.qa,
                 }),
                 seedReply("edgecase-reply-happy-transferred", "The assignee has been changed.", daysAgo(6, 11), "assignee_transferred", {
                     case_ids: [CASE.happy],
                     author_type: "manager",
-                    author_name: TEAM.william,
+                    author_name: TEAM.frontend,
                 }),
                 seedReply(
                     "edgecase-reply-happy-q1",
@@ -140,7 +140,7 @@ export function createEdgecaseFeedbackSeed(): ReportFeedback[] {
                         case_ids: [CASE.happy],
                         parent_reply_id: ISSUE_ROOT_PARENT_ID,
                         author_type: "manager",
-                        author_name: TEAM.william,
+                        author_name: TEAM.frontend,
                     },
                 ),
                 seedReply(
@@ -163,7 +163,7 @@ export function createEdgecaseFeedbackSeed(): ReportFeedback[] {
                     {
                         case_ids: [CASE.happy],
                         author_type: "manager",
-                        author_name: TEAM.william,
+                        author_name: TEAM.frontend,
                     },
                 ),
                 seedReply(
@@ -174,7 +174,7 @@ export function createEdgecaseFeedbackSeed(): ReportFeedback[] {
                     {
                         case_ids: [CASE.happy],
                         author_type: "manager",
-                        author_name: TEAM.sophia,
+                        author_name: TEAM.qa,
                     },
                 ),
             ],
@@ -191,7 +191,7 @@ export function createEdgecaseFeedbackSeed(): ReportFeedback[] {
                 createReportCase("Open-issues metric card still uses neutral gray accent.", {
                     id: CASE.denyApprove,
                     status: "resolved",
-                    assignee_name: TEAM.emma,
+                    assignee_name: TEAM.backend,
                 }),
             ],
             field_values: seedFields("[deny→approve] suggested → found_error → suggested → resolved"),
@@ -201,7 +201,7 @@ export function createEdgecaseFeedbackSeed(): ReportFeedback[] {
                     "metric accent를 semantic.warning으로 교체.",
                     daysAgo(5, 10),
                     "suggested",
-                    { case_ids: [CASE.denyApprove], author_type: "manager", author_name: TEAM.emma },
+                    { case_ids: [CASE.denyApprove], author_type: "manager", author_name: TEAM.backend },
                 ),
                 seedReply(
                     "edgecase-reply-deny-fe",
@@ -215,14 +215,14 @@ export function createEdgecaseFeedbackSeed(): ReportFeedback[] {
                     "dark theme fill/stroke 토큰 수정.",
                     daysAgo(3, 11),
                     "suggested",
-                    { case_ids: [CASE.denyApprove], author_type: "manager", author_name: TEAM.emma },
+                    { case_ids: [CASE.denyApprove], author_type: "manager", author_name: TEAM.backend },
                 ),
                 seedReply(
                     "edgecase-reply-deny-resolved",
                     "양 테마 확인. 승인 및 resolved.",
                     daysAgo(2, 14),
                     "resolved",
-                    { case_ids: [CASE.denyApprove], author_type: "manager", author_name: TEAM.sophia },
+                    { case_ids: [CASE.denyApprove], author_type: "manager", author_name: TEAM.qa },
                 ),
             ],
             position: anchorPosition("edge-metric-open", "item", 80),
@@ -236,7 +236,7 @@ export function createEdgecaseFeedbackSeed(): ReportFeedback[] {
                 createReportCase("Filter input placeholder truncates on mobile.", {
                     id: CASE.denyOfDeny,
                     status: "resolved",
-                    assignee_name: TEAM.william,
+                    assignee_name: TEAM.frontend,
                 }),
             ],
             field_values: seedFields("[거절의 거절] deny↔recheck 왕복 후 해결", { isBug: true }),
@@ -244,7 +244,7 @@ export function createEdgecaseFeedbackSeed(): ReportFeedback[] {
                 seedReply("edgecase-reply-dod-s1", "flex shrink 제거.", daysAgo(7, 9), "suggested", {
                     case_ids: [CASE.denyOfDeny],
                     author_type: "manager",
-                    author_name: TEAM.william,
+                    author_name: TEAM.frontend,
                 }),
                 seedReply("edgecase-reply-dod-f1", "Safari에서 여전히 truncate.", daysAgo(6, 11), "found_error", {
                     case_ids: [CASE.denyOfDeny],
@@ -254,7 +254,7 @@ export function createEdgecaseFeedbackSeed(): ReportFeedback[] {
                 seedReply("edgecase-reply-dod-r1", "390px에서는 정상 — 오류 아님 주장.", daysAgo(5, 13), "recheck_requested", {
                     case_ids: [CASE.denyOfDeny],
                     author_type: "manager",
-                    author_name: TEAM.william,
+                    author_name: TEAM.frontend,
                 }),
                 seedReply("edgecase-reply-dod-f2", "기본 Safari 설정에서도 재현. 재거절.", daysAgo(4, 10), "found_error", {
                     case_ids: [CASE.denyOfDeny],
@@ -264,12 +264,12 @@ export function createEdgecaseFeedbackSeed(): ReportFeedback[] {
                 seedReply("edgecase-reply-dod-s2", "min-width:0 override + placeholder 단축.", daysAgo(3, 12), "suggested", {
                     case_ids: [CASE.denyOfDeny],
                     author_type: "manager",
-                    author_name: TEAM.william,
+                    author_name: TEAM.frontend,
                 }),
                 seedReply("edgecase-reply-dod-resolved", "Safari/Android 확인. resolved.", daysAgo(2, 15), "resolved", {
                     case_ids: [CASE.denyOfDeny],
                     author_type: "manager",
-                    author_name: TEAM.sophia,
+                    author_name: TEAM.qa,
                 }),
             ],
             position: anchorPosition("edge-search-field", "item", 120),
@@ -281,7 +281,7 @@ export function createEdgecaseFeedbackSeed(): ReportFeedback[] {
             cases: [
                 createReportCase("Span cell label clips descenders on the second line.", {
                     id: CASE.denyOpen,
-                    assignee_name: TEAM.william,
+                    assignee_name: TEAM.frontend,
                 }),
             ],
             field_values: seedFields("[거절의 거절 · open] recheck 후 재거절로 멈춤", { isBug: true }),
@@ -289,7 +289,7 @@ export function createEdgecaseFeedbackSeed(): ReportFeedback[] {
                 seedReply("edgecase-reply-deny-open-s1", "line-height 증가.", daysAgo(4, 9), "suggested", {
                     case_ids: [CASE.denyOpen],
                     author_type: "manager",
-                    author_name: TEAM.william,
+                    author_name: TEAM.frontend,
                 }),
                 seedReply("edgecase-reply-deny-open-f1", "Firefox 110% zoom에서 clip.", daysAgo(3, 11), "found_error", {
                     case_ids: [CASE.denyOpen],
@@ -299,7 +299,7 @@ export function createEdgecaseFeedbackSeed(): ReportFeedback[] {
                 seedReply("edgecase-reply-deny-open-r1", "110% zoom는 known issue — 오류 아님.", daysAgo(2, 13), "recheck_requested", {
                     case_ids: [CASE.denyOpen],
                     author_type: "manager",
-                    author_name: TEAM.william,
+                    author_name: TEAM.frontend,
                 }),
                 seedReply("edgecase-reply-deny-open-f2", "제품 요구사항상 visible 필요. 재거절.", daysAgo(1, 10), "found_error", {
                     case_ids: [CASE.denyOpen],
@@ -316,7 +316,7 @@ export function createEdgecaseFeedbackSeed(): ReportFeedback[] {
             cases: [
                 createReportCase("Sidebar note typography hierarchy is flat.", {
                     id: CASE.recheckFirst,
-                    assignee_name: TEAM.emma,
+                    assignee_name: TEAM.backend,
                 }),
             ],
             field_values: seedFields("[recheck-first] 담당 직후 recheck_requested"),
@@ -324,14 +324,14 @@ export function createEdgecaseFeedbackSeed(): ReportFeedback[] {
                 seedReply("edgecase-reply-recheck-assigned", "An assignee has been assigned.", daysAgo(2, 9), "assignee_assigned", {
                     case_ids: [CASE.recheckFirst],
                     author_type: "manager",
-                    author_name: TEAM.emma,
+                    author_name: TEAM.backend,
                 }),
                 seedReply(
                     "edgecase-reply-recheck-root",
                     "의도된 flat hierarchy — 오류 아님.",
                     daysAgo(1, 14),
                     "recheck_requested",
-                    { case_ids: [CASE.recheckFirst], author_type: "manager", author_name: TEAM.emma },
+                    { case_ids: [CASE.recheckFirst], author_type: "manager", author_name: TEAM.backend },
                 ),
             ],
             position: anchorPosition("edge-sidebar-note", "item", 160),
@@ -345,7 +345,7 @@ export function createEdgecaseFeedbackSeed(): ReportFeedback[] {
                 createReportCase("Toolbar chips wrap but ghost link stays alone on row 1.", {
                     id: CASE.longQa,
                     status: "resolved",
-                    assignee_name: TEAM.william,
+                    assignee_name: TEAM.frontend,
                 }),
             ],
             field_values: seedFields("[long-qa→resolve] 다중 질문 + 브랜치 질문"),
@@ -359,7 +359,7 @@ export function createEdgecaseFeedbackSeed(): ReportFeedback[] {
                         case_ids: [CASE.longQa],
                         parent_reply_id: ISSUE_ROOT_PARENT_ID,
                         author_type: "manager",
-                        author_name: TEAM.sophia,
+                        author_name: TEAM.qa,
                     },
                 ),
                 seedReply(
@@ -371,7 +371,7 @@ export function createEdgecaseFeedbackSeed(): ReportFeedback[] {
                         case_ids: [CASE.longQa],
                         parent_reply_id: ISSUE_ROOT_PARENT_ID,
                         author_type: "manager",
-                        author_name: TEAM.emma,
+                        author_name: TEAM.backend,
                     },
                 ),
                 seedReply(
@@ -391,7 +391,7 @@ export function createEdgecaseFeedbackSeed(): ReportFeedback[] {
                     "nowrap + shared min-width 적용.",
                     daysAgo(6, 12),
                     "suggested",
-                    { case_ids: [CASE.longQa], author_type: "manager", author_name: TEAM.william },
+                    { case_ids: [CASE.longQa], author_type: "manager", author_name: TEAM.frontend },
                 ),
                 seedReply(
                     "edgecase-reply-long-branch-q",
@@ -410,7 +410,7 @@ export function createEdgecaseFeedbackSeed(): ReportFeedback[] {
                     "320/360/414 확인. resolved.",
                     daysAgo(3, 16),
                     "resolved",
-                    { case_ids: [CASE.longQa], author_type: "manager", author_name: TEAM.sophia },
+                    { case_ids: [CASE.longQa], author_type: "manager", author_name: TEAM.qa },
                 ),
             ],
             position: anchorPosition("edge-flex-toolbar", "group", 200, 0.55),
@@ -422,7 +422,7 @@ export function createEdgecaseFeedbackSeed(): ReportFeedback[] {
             cases: [
                 createReportCase("Primary chip overlaps secondary at 320px.", {
                     id: CASE.stuckError,
-                    assignee_name: TEAM.william,
+                    assignee_name: TEAM.frontend,
                 }),
             ],
             field_values: seedFields("[stuck found_error] 거절로 멈춤", { isBug: true }),
@@ -432,7 +432,7 @@ export function createEdgecaseFeedbackSeed(): ReportFeedback[] {
                     "chip padding 2px 축소.",
                     daysAgo(2, 10),
                     "suggested",
-                    { case_ids: [CASE.stuckError], author_type: "manager", author_name: TEAM.william },
+                    { case_ids: [CASE.stuckError], author_type: "manager", author_name: TEAM.frontend },
                 ),
                 seedReply(
                     "edgecase-reply-stuck-found",
@@ -451,7 +451,7 @@ export function createEdgecaseFeedbackSeed(): ReportFeedback[] {
             cases: [
                 createReportCase("Chip border radius 6px vs design token 8px.", {
                     id: CASE.stuckRecheck,
-                    assignee_name: TEAM.emma,
+                    assignee_name: TEAM.backend,
                 }),
             ],
             field_values: seedFields("[stuck recheck] recheck_requested 대기"),
@@ -461,7 +461,7 @@ export function createEdgecaseFeedbackSeed(): ReportFeedback[] {
                     "dense toolbar variant는 6px 의도 — 오류 아님.",
                     daysAgo(1, 11),
                     "recheck_requested",
-                    { case_ids: [CASE.stuckRecheck], author_type: "manager", author_name: TEAM.emma },
+                    { case_ids: [CASE.stuckRecheck], author_type: "manager", author_name: TEAM.backend },
                 ),
             ],
             position: anchorPosition("edge-flex-nested-chip", "item", 280, 0.64),
@@ -483,7 +483,7 @@ export function createEdgecaseFeedbackSeed(): ReportFeedback[] {
                     {
                         case_ids: [CASE.suggestedPending],
                         author_type: "manager",
-                        author_name: TEAM.emma,
+                        author_name: TEAM.backend,
                     },
                 ),
             ],
@@ -497,15 +497,15 @@ export function createEdgecaseFeedbackSeed(): ReportFeedback[] {
                 createReportCase("Pill min-width too small — KO labels clip.", {
                     id: CASE.threadA,
                     status: "resolved",
-                    assignee_name: TEAM.william,
+                    assignee_name: TEAM.frontend,
                 }),
                 createReportCase("Caption should truncate with ellipsis.", {
                     id: CASE.threadB,
-                    assignee_name: TEAM.emma,
+                    assignee_name: TEAM.backend,
                 }),
                 createReportCase("Hover outline disappears on teal background.", {
                     id: CASE.threadC,
-                    assignee_name: TEAM.sophia,
+                    assignee_name: TEAM.qa,
                 }),
             ],
             field_values: seedFields("[multi-case · 3] 케이스별 다른 진행 상태", { isImportant: true }),
@@ -513,12 +513,12 @@ export function createEdgecaseFeedbackSeed(): ReportFeedback[] {
                 seedReply("edgecase-reply-div-a-resolved", "KO/EN 확인. case A resolved.", daysAgo(3, 12), "resolved", {
                     case_ids: [CASE.threadA],
                     author_type: "manager",
-                    author_name: TEAM.sophia,
+                    author_name: TEAM.qa,
                 }),
                 seedReply("edgecase-reply-div-b-suggested", "ellipsis + nowrap 적용.", daysAgo(2, 11), "suggested", {
                     case_ids: [CASE.threadB],
                     author_type: "manager",
-                    author_name: TEAM.emma,
+                    author_name: TEAM.backend,
                 }),
                 seedReply("edgecase-reply-div-c-found", "dark mode outline 미표시. 거절.", daysAgo(1, 9), "found_error", {
                     case_ids: [CASE.threadC],
@@ -533,10 +533,10 @@ export function createEdgecaseFeedbackSeed(): ReportFeedback[] {
             report_id: "edge-flex-nested",
             report_type: "group",
             cases: [
-                createReportCase("Nested row vertical alignment off by 2px.", { id: CASE.fourA, assignee_name: TEAM.william }),
-                createReportCase("Chip focus ring contrast below AA.", { id: CASE.fourB, assignee_name: TEAM.emma }),
+                createReportCase("Nested row vertical alignment off by 2px.", { id: CASE.fourA, assignee_name: TEAM.frontend }),
+                createReportCase("Chip focus ring contrast below AA.", { id: CASE.fourB, assignee_name: TEAM.backend }),
                 createReportCase("Note text wraps before chip on narrow panels.", { id: CASE.fourC }),
-                createReportCase("Hover state missing on untagged note.", { id: CASE.fourD, status: "resolved", assignee_name: TEAM.sophia }),
+                createReportCase("Hover state missing on untagged note.", { id: CASE.fourD, status: "resolved", assignee_name: TEAM.qa }),
             ],
             field_values: seedFields("[four-case · 4] 4개 케이스 혼합 진행"),
             replies: [
@@ -544,17 +544,17 @@ export function createEdgecaseFeedbackSeed(): ReportFeedback[] {
                     case_ids: [CASE.fourA],
                     parent_reply_id: ISSUE_ROOT_PARENT_ID,
                     author_type: "manager",
-                    author_name: TEAM.william,
+                    author_name: TEAM.frontend,
                 }),
                 seedReply("edgecase-reply-four-b-s", "outline token 교체.", daysAgo(2, 11), "suggested", {
                     case_ids: [CASE.fourB],
                     author_type: "manager",
-                    author_name: TEAM.emma,
+                    author_name: TEAM.backend,
                 }),
                 seedReply("edgecase-reply-four-d-r", "hover 추가 확인. resolved.", daysAgo(1, 14), "resolved", {
                     case_ids: [CASE.fourD],
                     author_type: "manager",
-                    author_name: TEAM.sophia,
+                    author_name: TEAM.qa,
                 }),
             ],
             position: anchorPosition("edge-flex-nested", "group", 260, 0.62),
@@ -568,31 +568,31 @@ export function createEdgecaseFeedbackSeed(): ReportFeedback[] {
                 createReportCase("Caption spacing drifts below chip center.", {
                     id: CASE.sixA,
                     status: "resolved",
-                    assignee_name: TEAM.emma,
-                    previous_assignee_name: TEAM.william,
+                    assignee_name: TEAM.backend,
+                    previous_assignee_name: TEAM.frontend,
                 }),
-                createReportCase("Pill label baseline misaligned.", { id: CASE.sixB, status: "resolved", assignee_name: TEAM.william }),
-                createReportCase("Grid cell padding inconsistent.", { id: CASE.sixC, assignee_name: TEAM.sophia }),
+                createReportCase("Pill label baseline misaligned.", { id: CASE.sixB, status: "resolved", assignee_name: TEAM.frontend }),
+                createReportCase("Grid cell padding inconsistent.", { id: CASE.sixC, assignee_name: TEAM.qa }),
                 createReportCase("Nested flex gap too tight at 320px.", { id: CASE.sixD }),
-                createReportCase("Caption color token wrong in dark mode.", { id: CASE.sixE, assignee_name: TEAM.emma }),
-                createReportCase("Touch target on pill below 44px.", { id: CASE.sixF, status: "resolved", assignee_name: TEAM.william }),
+                createReportCase("Caption color token wrong in dark mode.", { id: CASE.sixE, assignee_name: TEAM.backend }),
+                createReportCase("Touch target on pill below 44px.", { id: CASE.sixF, status: "resolved", assignee_name: TEAM.frontend }),
             ],
             field_values: seedFields("[six-case · 6] 대규모 멀티케이스 리뷰", { isBug: true }),
             replies: [
                 seedReply("edgecase-reply-six-transfer", "The assignee has been changed.", daysAgo(5, 10), "assignee_transferred", {
                     case_ids: [CASE.sixA],
                     author_type: "manager",
-                    author_name: TEAM.emma,
+                    author_name: TEAM.backend,
                 }),
                 seedReply("edgecase-reply-six-a-resolved", "align-items:center 적용. resolved.", daysAgo(4, 12), "resolved", {
                     case_ids: [CASE.sixA, CASE.sixB, CASE.sixF],
                     author_type: "manager",
-                    author_name: TEAM.emma,
+                    author_name: TEAM.backend,
                 }),
                 seedReply("edgecase-reply-six-c-s", "padding token 통일.", daysAgo(3, 11), "suggested", {
                     case_ids: [CASE.sixC],
                     author_type: "manager",
-                    author_name: TEAM.sophia,
+                    author_name: TEAM.qa,
                 }),
                 seedReply("edgecase-reply-six-e-fe", "dark mode caption color 미반영. 거절.", daysAgo(2, 9), "found_error", {
                     case_ids: [CASE.sixE],
@@ -607,13 +607,13 @@ export function createEdgecaseFeedbackSeed(): ReportFeedback[] {
             report_id: "edge-grid-dashboard",
             report_type: "group",
             cases: [
-                createReportCase("Grid gap collapses at tablet breakpoint.", { id: CASE.eightA, assignee_name: TEAM.william }),
-                createReportCase("Cell A focus ring too faint.", { id: CASE.eightB, assignee_name: TEAM.emma }),
+                createReportCase("Grid gap collapses at tablet breakpoint.", { id: CASE.eightA, assignee_name: TEAM.frontend }),
+                createReportCase("Cell A focus ring too faint.", { id: CASE.eightB, assignee_name: TEAM.backend }),
                 createReportCase("Span cell label overflow hidden.", { id: CASE.eightC }),
-                createReportCase("Untagged cell B contrast low.", { id: CASE.eightD, assignee_name: TEAM.sophia }),
+                createReportCase("Untagged cell B contrast low.", { id: CASE.eightD, assignee_name: TEAM.qa }),
                 createReportCase("Dashboard title not announced to SR.", { id: CASE.eightE }),
-                createReportCase("Cell hover state missing.", { id: CASE.eightF, status: "resolved", assignee_name: TEAM.william }),
-                createReportCase("Grid min-height jumps on load.", { id: CASE.eightG, assignee_name: TEAM.emma }),
+                createReportCase("Cell hover state missing.", { id: CASE.eightF, status: "resolved", assignee_name: TEAM.frontend }),
+                createReportCase("Grid min-height jumps on load.", { id: CASE.eightG, assignee_name: TEAM.backend }),
                 createReportCase("Nested flex caption truncates early.", { id: CASE.eightH }),
             ],
             field_values: seedFields("[eight-case · 8] 최대 8케이스 스프린트 보드", { isImportant: true, isBug: true }),
@@ -621,13 +621,13 @@ export function createEdgecaseFeedbackSeed(): ReportFeedback[] {
                 seedReply("edgecase-reply-eight-a-s", "md breakpoint gap 12px 유지.", daysAgo(4, 9), "suggested", {
                     case_ids: [CASE.eightA],
                     author_type: "manager",
-                    author_name: TEAM.william,
+                    author_name: TEAM.frontend,
                 }),
                 seedReply("edgecase-reply-eight-b-q", "teal 배경 대비 outline token?", daysAgo(4, 11), "additional_question", {
                     case_ids: [CASE.eightB],
                     parent_reply_id: ISSUE_ROOT_PARENT_ID,
                     author_type: "manager",
-                    author_name: TEAM.emma,
+                    author_name: TEAM.backend,
                 }),
                 seedReply("edgecase-reply-eight-d-fe", "cell B contrast 3.8:1. 거절.", daysAgo(3, 10), "found_error", {
                     case_ids: [CASE.eightD],
@@ -637,12 +637,12 @@ export function createEdgecaseFeedbackSeed(): ReportFeedback[] {
                 seedReply("edgecase-reply-eight-f-r", "hover 추가. resolved.", daysAgo(2, 14), "resolved", {
                     case_ids: [CASE.eightF],
                     author_type: "manager",
-                    author_name: TEAM.william,
+                    author_name: TEAM.frontend,
                 }),
                 seedReply("edgecase-reply-eight-g-r", "min-height skeleton 적용.", daysAgo(1, 12), "recheck_requested", {
                     case_ids: [CASE.eightG],
                     author_type: "manager",
-                    author_name: TEAM.emma,
+                    author_name: TEAM.backend,
                 }),
             ],
             position: anchorPosition("edge-grid-dashboard", "group", 340, 0.72),
@@ -656,8 +656,8 @@ export function createEdgecaseFeedbackSeed(): ReportFeedback[] {
                 createReportCase("Focus ring on cell A too faint.", {
                     id: CASE.transferFight,
                     status: "resolved",
-                    assignee_name: TEAM.emma,
-                    previous_assignee_name: TEAM.william,
+                    assignee_name: TEAM.backend,
+                    previous_assignee_name: TEAM.frontend,
                 }),
             ],
             field_values: seedFields("[transfer→fight→approve] 이관 후 deny→approve", { isBug: true }),
@@ -665,17 +665,17 @@ export function createEdgecaseFeedbackSeed(): ReportFeedback[] {
                 seedReply("edgecase-reply-tf-assigned", "An assignee has been assigned.", daysAgo(6, 9), "assignee_assigned", {
                     case_ids: [CASE.transferFight],
                     author_type: "manager",
-                    author_name: TEAM.william,
+                    author_name: TEAM.frontend,
                 }),
                 seedReply("edgecase-reply-tf-transferred", "The assignee has been changed.", daysAgo(5, 10), "assignee_transferred", {
                     case_ids: [CASE.transferFight],
                     author_type: "manager",
-                    author_name: TEAM.emma,
+                    author_name: TEAM.backend,
                 }),
                 seedReply("edgecase-reply-tf-s1", "outline token 교체.", daysAgo(4, 12), "suggested", {
                     case_ids: [CASE.transferFight],
                     author_type: "manager",
-                    author_name: TEAM.emma,
+                    author_name: TEAM.backend,
                 }),
                 seedReply("edgecase-reply-tf-fe", "teal 배경에서 여전히 faint. 거절.", daysAgo(3, 14), "found_error", {
                     case_ids: [CASE.transferFight],
@@ -685,12 +685,12 @@ export function createEdgecaseFeedbackSeed(): ReportFeedback[] {
                 seedReply("edgecase-reply-tf-s2", "high-contrast outline 적용.", daysAgo(2, 11), "suggested", {
                     case_ids: [CASE.transferFight],
                     author_type: "manager",
-                    author_name: TEAM.emma,
+                    author_name: TEAM.backend,
                 }),
                 seedReply("edgecase-reply-tf-resolved", "확인 완료. resolved.", daysAgo(1, 15), "resolved", {
                     case_ids: [CASE.transferFight],
                     author_type: "manager",
-                    author_name: TEAM.sophia,
+                    author_name: TEAM.qa,
                 }),
             ],
             position: anchorPosition("edge-grid-cell-a", "item", 360, 0.74),
@@ -704,7 +704,7 @@ export function createEdgecaseFeedbackSeed(): ReportFeedback[] {
                     `Compare focus ring with @{${PRIMARY_CTA_MENTION.id}} and @{${FLEX_CHIP_MENTION.id}}.`,
                     {
                         id: CASE.mention,
-                        assignee_name: TEAM.william,
+                        assignee_name: TEAM.frontend,
                         mentions: [PRIMARY_CTA_MENTION, FLEX_CHIP_MENTION],
                     },
                 ),
@@ -719,7 +719,7 @@ export function createEdgecaseFeedbackSeed(): ReportFeedback[] {
                     {
                         case_ids: [CASE.mention],
                         author_type: "manager",
-                        author_name: TEAM.william,
+                        author_name: TEAM.frontend,
                         mentions: [PRIMARY_CTA_MENTION],
                     },
                 ),
@@ -730,8 +730,8 @@ export function createEdgecaseFeedbackSeed(): ReportFeedback[] {
         untagged("edgecase-seed-git-issued", stagedMetricSelector, {
             status: "git_issued",
             cases: [
-                createReportCase("Staged metric missing delta arrow.", { id: CASE.gitOpen, assignee_name: TEAM.william }),
-                createReportCase("Weekly email shows stale count.", { id: CASE.gitDone, status: "resolved", assignee_name: TEAM.sophia }),
+                createReportCase("Staged metric missing delta arrow.", { id: CASE.gitOpen, assignee_name: TEAM.frontend }),
+                createReportCase("Weekly email shows stale count.", { id: CASE.gitDone, status: "resolved", assignee_name: TEAM.qa }),
             ],
             field_values: seedFields("[git_issued · 2] GitHub 연동 + 부분 해결", { isBug: true, isImportant: true }),
             integrations: {
@@ -749,7 +749,7 @@ export function createEdgecaseFeedbackSeed(): ReportFeedback[] {
                 seedReply("edgecase-reply-git-resolved", "email count fixed. case resolved.", hoursAgo(5), "resolved", {
                     case_ids: [CASE.gitDone],
                     author_type: "manager",
-                    author_name: TEAM.sophia,
+                    author_name: TEAM.qa,
                 }),
             ],
             position: coordinatePosition(0.55, 0.33, 70),
@@ -766,7 +766,7 @@ export function createEdgecaseFeedbackSeed(): ReportFeedback[] {
             replies: [
                 seedReply("edgecase-reply-resolved", "icon cap height 정렬 확인.", daysAgo(2, 14), "resolved", {
                     author_type: "manager",
-                    author_name: TEAM.sophia,
+                    author_name: TEAM.qa,
                 }),
             ],
             position: coordinatePosition(0.72, 0.36, 90),
@@ -779,7 +779,7 @@ export function createEdgecaseFeedbackSeed(): ReportFeedback[] {
             replies: [
                 seedReply("edgecase-reply-archived", "1.0 sign-off 후 archived.", daysAgo(10, 10), "resolved", {
                     author_type: "manager",
-                    author_name: TEAM.emma,
+                    author_name: TEAM.backend,
                 }),
             ],
             position: coordinatePosition(0.28, 0.48, 130),
@@ -817,24 +817,24 @@ export function createEdgecaseFeedbackSeed(): ReportFeedback[] {
             cases: [
                 createReportCase("Tooltip arrow clipped by overflow container.", {
                     id: "edgecase-case-assigned-only",
-                    assignee_name: TEAM.william,
+                    assignee_name: TEAM.frontend,
                 }),
                 createReportCase("Focus ring hidden behind sticky header.", {
                     id: "edgecase-case-transferred",
-                    assignee_name: TEAM.emma,
-                    previous_assignee_name: TEAM.william,
+                    assignee_name: TEAM.backend,
+                    previous_assignee_name: TEAM.frontend,
                 }),
             ],
             replies: [
                 seedReply("edgecase-reply-assignee-assigned", "An assignee has been assigned.", daysAgo(2, 10), "assignee_assigned", {
                     case_ids: ["edgecase-case-assigned-only"],
                     author_type: "manager",
-                    author_name: TEAM.william,
+                    author_name: TEAM.frontend,
                 }),
                 seedReply("edgecase-reply-assignee-transfer", "The assignee has been changed.", hoursAgo(8), "assignee_transferred", {
                     case_ids: ["edgecase-case-transferred"],
                     author_type: "manager",
-                    author_name: TEAM.emma,
+                    author_name: TEAM.backend,
                 }),
             ],
             field_values: seedFields("[assignee events · 2] claim + transfer"),
@@ -863,7 +863,7 @@ export function createEdgecaseFeedbackSeed(): ReportFeedback[] {
                         case_ids: ["edgecase-case-questions"],
                         parent_reply_id: ISSUE_ROOT_PARENT_ID,
                         author_type: "manager",
-                        author_name: TEAM.sophia,
+                        author_name: TEAM.qa,
                     },
                 ),
                 seedReply(
@@ -875,7 +875,7 @@ export function createEdgecaseFeedbackSeed(): ReportFeedback[] {
                         case_ids: ["edgecase-case-questions"],
                         parent_reply_id: ISSUE_ROOT_PARENT_ID,
                         author_type: "manager",
-                        author_name: TEAM.emma,
+                        author_name: TEAM.backend,
                     },
                 ),
             ],

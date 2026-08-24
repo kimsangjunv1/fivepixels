@@ -38,34 +38,44 @@ export default function App() {
 }
 ```
 
-handler를 넘기지 않으면 **localStorage**에 저장됩니다. API 연동 시 persistence handler를 함께 넘깁니다. handler는 **`useCallback`으로 고정**해 주세요. 인라인 함수는 목록 API가 반복 호출될 수 있습니다.
+`adapter`를 넘기지 않으면 **localStorage**에 저장됩니다. API 연동 시 `sync`와 `adapter`를 함께 넘깁니다. adapter 객체는 **`useMemo`로 고정**해 주세요. 인라인 객체는 목록 API가 반복 호출될 수 있습니다.
 
 ```tsx
-import { useCallback } from "react";
-import { FivePixels } from "@fivepixels-js/react";
+import { useMemo } from "react";
+import { FivePixels, type FivePixelsAdapter } from "@fivepixels-js/react";
 
-const onList = useCallback(
-    ({ pathname }) => fetch(`/api/feedbacks?pathname=${pathname}`).then((r) => r.json()),
-    [],
-);
+function createAdapter(): FivePixelsAdapter {
+    const projectBase = "/projects/my-app";
+
+    return {
+        markers: {
+            list: ({ pathname }) =>
+                fetch(`/api${projectBase}/feedback-markers?pathname=${encodeURIComponent(pathname)}`).then((r) => r.json()),
+        },
+        feedback: {
+            create: (payload) =>
+                fetch(`/api${projectBase}/feedbacks`, { method: "POST", body: JSON.stringify(payload) }).then((r) => r.json()),
+            getForUi: (id) => fetch(`/api/ui${projectBase}/feedbacks/${id}`).then((r) => r.json()),
+            update: (id, payload) =>
+                fetch(`/api${projectBase}/feedbacks/${id}`, { method: "PATCH", body: JSON.stringify(payload) }).then((r) => r.json()),
+        },
+    };
+}
 
 export function App() {
+    const adapter = useMemo(() => createAdapter(), []);
+
     return (
         <FivePixels
             project={{ id: "my-app", env: "stage" }}
-            onList={onList}
-            onCreate={(payload) =>
-                fetch("/api/feedbacks", { method: "POST", body: JSON.stringify(payload) }).then((r) => r.json())
-            }
-            onUpdate={(id, payload) =>
-                fetch(`/api/feedbacks/${id}`, { method: "PATCH", body: JSON.stringify(payload) }).then((r) => r.json())
-            }
+            sync="api"
+            adapter={adapter}
         />
     );
 }
 ```
 
-REST 경로·Phase·호출 순서는 [docs/backend-api-route.md](./docs/backend-api-route.md)를 참고하세요.
+REST 경로·필수 handler·선택 handler는 `examples/basic/src/fivepixels/adapter.ts`와 `FivePixelsAdapter` (`src/types/adapter.ts`)를 참고하세요. 설정 패널의 **API 연동** 탭에서 연결 상태를 확인할 수 있습니다.
 
 ## Props
 
@@ -76,25 +86,18 @@ REST 경로·Phase·호출 순서는 [docs/backend-api-route.md](./docs/backend-
 | `visibility` | `{ enabled?, devOnly?, routeKey? }` | 표시 여부. `devOnly`면 개발 환경에서만 노출. |
 | `team` | `{ user?, reviewers?, requireReviewerKey? }` | 작성자·리뷰어. `user`: `{ id, name }`. |
 | `mode` | `"default"` \| `"presentation"` | 프레젠테이션 모드(시연·데모용 뷰어 전환). |
+| `sync` | `"local"` \| `"api"` \| `"artemis"` | 인증·저장 전략. 기본값 `"local"`. |
+| `adapter` | `FivePixelsAdapter` | 백엔드 연동 handler 묶음. `sync="api"` / `"artemis"`에서 persistence·로그인에 사용. |
 | `fields` | `ReportField[]` | 커스텀 필드 (`textarea`, `checkbox`). |
-| `onList` | `(params) => Promise<ReportFeedback[]>` | pathname별 피드백 목록. |
-| `onCreate` | `(payload) => Promise<ReportFeedback>` | 피드백 생성. |
-| `onUpdate` | `(id, payload) => Promise<ReportFeedback>` | 피드백 수정·답변·검수 반영. |
-| `onDelete` | `(id) => Promise<void>` | 피드백 삭제. |
-| `onListAll` | `(params) => Promise<{ items, nextCursor? }>` | 전체 페이지 목록(페이지네이션). |
-| `onListReplies` | `(commentId, params?) => Promise<...>` | 답변 lazy 로드(P2). |
-| `onCreateReply` | `(commentId, payload) => Promise<ReportReply>` | 답변 생성(P2). |
-| `onPanelBootstrap` | `(params) => Promise<...>` | 패널 통계 부트스트랩(P3, 선택). |
-| `onActivitySummary` | `(params) => Promise<...>` | 활동 히트맵 집계(P3, 선택). |
 | `onNavigate` | `(pathname) => void` | View 모드에서 경로 이동. |
 | `onRevealTarget` | `(report) => boolean \| Promise<boolean>` | 다른 페이지 피드백 타깃 노출 시도. |
 | `onEvent` | `(event) => void` | create/update/delete/reply/github 이벤트. |
 | `onReply` | `({ feedbackId, message }) => void` | 답변 side effect. |
 | `github` | `{ enabled?, modes?, onCreate? }` | GitHub Issue 연동. |
 
-> `onList`, `onCreate`, `onUpdate`는 **함께** 넘기거나 **모두 생략**해야 합니다. 생략 시 localStorage adapter가 사용됩니다.
+> `sync="local"`(기본)에서는 `adapter`를 생략하면 localStorage adapter가 사용됩니다. `sync="api"` / `"artemis"`에서는 `adapter.markers.list`, `adapter.feedback.create`, `adapter.feedback.update`(또는 `adapter.cases.update`)가 **필수**입니다.
 
-**타입 찾는 법:** 공개 props → `FivePixelsProps` (`src/types/publicApi.ts`) · handler 입·출력 → `ReportPersistenceHandlers` · payload/엔티티 → `CreateReportFeedbackPayload` / `ReportFeedback` 등 (`src/types/report.ts`). 새 prop 추가 → [docs/add-props.md](./docs/add-props.md). fetch 예시 → [docs/snippets/createFeedbackHandlers.ts](./docs/snippets/createFeedbackHandlers.ts).
+**타입 찾는 법:** 공개 props → `FivePixelsProps` (`src/types/publicApi.ts`) · adapter surface → `FivePixelsAdapter` (`src/types/adapter.ts`) · payload/엔티티 → `CreateReportFeedbackPayload` / `ReportFeedback` 등 (`src/types/report.ts`).
 
 ## 커스텀 UI 확장
 
@@ -107,7 +110,7 @@ REST 경로·Phase·호출 순서는 [docs/backend-api-route.md](./docs/backend-
 | `useReportSession()` | mode, draft, markers, pickProbe, composers |
 | `useReportData()` | lists, filters, CRUD, stats, reply history |
 
-내부 레이어 규칙은 [docs/architecture-hooks.md](./docs/architecture-hooks.md)를 참고하세요.
+내부 Context 파티션은 `src/providers/reportContextPartitions.ts`를 참고하세요.
 
 ## DOM 속성
 

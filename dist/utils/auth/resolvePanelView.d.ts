@@ -1,9 +1,9 @@
-import { type LoginMethod } from "../../constants/loginMethod.js";
+import { type FivePixelsSync } from "../../constants/loginMethod.js";
 export type PanelView = "onboarding" | "setup-complete" | "key-issue" | "ready";
 export type ResolvePanelViewParams = {
     isPresentationMode: boolean;
     requiresReviewerKey: boolean;
-    loginMethod: LoginMethod | null;
+    loginMethod: FivePixelsSync | null;
     remoteOnboardingCompleted: boolean;
     hasPersistedPersonalKey: boolean;
     selfProfileCompleted: boolean | undefined;

@@ -13,6 +13,9 @@ import {
     resolveAuthorRole,
     sortTeamReviewers,
 } from "@/utils/report/teamManagement.js";
+import { LockIcon } from "@/components/icons/Icons.js";
+import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
+import { useIntegrationLock } from "@/components/ui/IntegrationLock.js";
 
 function roleLabelFor(role: ReportAuthorRole, team: { roleAdmin: string; roleSubAdmin: string; roleMember: string }) {
     if (role === "admin") {
@@ -107,6 +110,7 @@ export function PanelTeamSettings() {
     } = useReportPreferences();
     const { setErrorMessage } = useReportSession();
     const team = messages.team;
+    const teamManageLock = useIntegrationLock("teamManage");
     const writeEnabled = isTeamWriteEnabled(persistenceStatus);
     const adminHandlers = hasTeamAdminHandlers({
         onListReviewerRequests,
@@ -255,7 +259,19 @@ export function PanelTeamSettings() {
     return (
         <div className="flex flex-col">
             <div className="border-b border-[var(--adaptive-border-subtle)] px-[12px] py-[10px]">
-                <p className="text-[12px] leading-[1.4] text-[var(--adaptive-black600)]">{modeHint}</p>
+                <p className="inline-flex items-center gap-[6px] text-[12px] leading-[1.4] text-[var(--adaptive-black600)]">
+                    {modeHint}
+                    {teamManageLock.locked ? (
+                        <HoverTooltip
+                            label={teamManageLock.tooltipLabel}
+                            multiline
+                        >
+                            <span className="inline-flex text-[var(--adaptive-black500)]">
+                                <LockIcon className="h-[12px] w-[12px]" />
+                            </span>
+                        </HoverTooltip>
+                    ) : null}
+                </p>
                 <p className="mt-[6px] text-[11px] font-semibold text-[var(--adaptive-black700)]">{memberCountLabel}</p>
             </div>
 

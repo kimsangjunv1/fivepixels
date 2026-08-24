@@ -1,12 +1,12 @@
 import { useCallback, useRef, useState } from "react";
 import { applyFeedbackImport, createFeedbackBackupFilename, downloadFeedbackJson, findFeedbackInsertConflicts, insertFeedbackItems, isImportProjectCompatible, parseFeedbackCommandJson, pickFeedbackJsonFile, readAllFeedback, readFeedbackJsonFile, toReportProject, upsertFeedbackItems, } from "../utils/feedback/feedbackDataTransfer.js";
-function buildCommandSuccessMessage(messages, inserted, replaced, localRepliesPreserved = 0) {
+function buildCommandSuccessMessage(messages, inserted, updated, localRepliesPreserved = 0) {
     const base = (() => {
-        if (replaced > 0 && inserted > 0) {
-            return messages.errors.commandSuccessInsertedReplaced(inserted, replaced);
+        if (updated > 0 && inserted > 0) {
+            return messages.errors.commandSuccessInsertedReplaced(inserted, updated);
         }
-        if (replaced > 0) {
-            return messages.errors.commandSuccessReplaced(replaced);
+        if (updated > 0) {
+            return messages.errors.commandSuccessReplaced(updated);
         }
         return messages.errors.commandSuccessInserted(inserted);
     })();
@@ -121,7 +121,7 @@ export function usePanelFeedbackTransfer({ transferScope, canTransferFeedback, m
         setErrorMessage("");
         return {
             status: "success",
-            message: buildCommandSuccessMessage(messages, result.inserted, result.replaced, result.localRepliesPreserved),
+            message: buildCommandSuccessMessage(messages, result.inserted, result.updated, result.localRepliesPreserved),
         };
     }, [canTransferFeedback, messages, refetch, setErrorMessage, transferScope]);
     const handleCancelCommandReplace = useCallback(() => {
@@ -142,7 +142,7 @@ export function usePanelFeedbackTransfer({ transferScope, canTransferFeedback, m
             setCommandConflicts([]);
             setCommandStep("none");
             setCommandNotice({
-                message: buildCommandSuccessMessage(messages, result.inserted, result.replaced, result.localRepliesPreserved),
+                message: buildCommandSuccessMessage(messages, result.inserted, result.updated, result.localRepliesPreserved),
                 isError: false,
             });
         })();

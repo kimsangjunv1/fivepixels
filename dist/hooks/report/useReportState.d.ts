@@ -1,7 +1,9 @@
 import type { DeepPartialReportMessages } from "../../i18n/types.js";
 import type { ReportLocale } from "../../i18n/types.js";
 import { type PanelView } from "./useReportAuthSession.js";
-import type { CreateReportFeedbackPayload, CreateReplyPayload, ReportAppearance, ReportAuthor, ReportActivitySummaryParams, ReportActivitySummaryResult, ReportEvent, ReportFeedback, ReportField, ReportGitHubConfig, FivePixelsMode, ReportIdentify, ReportListAllParams, ReportListAllResult, ReportPanelBootstrapParams, ReportPanelBootstrapResult, ReportReply, QuestionThreadDisplay, ReportTeamHandlers, ReportAuthHandlers, UpdateReportFeedbackPayload } from "../../types/report.js";
+import type { FivePixelsSync } from "../../constants/loginMethod.js";
+import type { FivePixelsAdapter } from "../../types/adapter.js";
+import type { ReportAppearance, ReportAuthor, ReportEvent, ReportFeedback, ReportField, ReportGitHubConfig, FivePixelsMode, ReportIdentify, QuestionThreadDisplay } from "../../types/report.js";
 export type { PanelView };
 export type ReportStateConfig = {
     /** Internal resolved config (not public props). Public surface: `FivePixelsProps` in `src/types/publicApi.ts`. */
@@ -16,28 +18,9 @@ export type ReportStateConfig = {
     requireReviewerKey?: boolean;
     shortcut?: string;
     identify?: ReportIdentify;
-    onList?: (params: {
-        pathname: string;
-    }) => Promise<ReportFeedback[]>;
-    onListAll?: (params: ReportListAllParams) => Promise<ReportListAllResult>;
-    onPanelBootstrap?: (params: ReportPanelBootstrapParams) => Promise<ReportPanelBootstrapResult>;
-    onActivitySummary?: (params: ReportActivitySummaryParams) => Promise<ReportActivitySummaryResult>;
-    onListReplies?: (commentId: string, params?: import("../../types/report.js").ListRepliesParams) => Promise<import("../../types/report.js").ListRepliesResult | ReportReply[]>;
+    adapter?: FivePixelsAdapter;
     onNavigate?: (pathname: string) => void | Promise<void>;
     onRevealTarget?: (report: ReportFeedback) => boolean | Promise<boolean>;
-    onCreate?: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
-    onCreateReply?: (commentId: string, payload: CreateReplyPayload) => Promise<ReportReply>;
-    onUpdate?: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
-    onDelete?: (id: string) => Promise<void>;
-    onListReviewers?: ReportTeamHandlers["onListReviewers"];
-    onListReviewerRequests?: ReportTeamHandlers["onListReviewerRequests"];
-    onCreateReviewerRequest?: ReportTeamHandlers["onCreateReviewerRequest"];
-    onResolveReviewerRequest?: ReportTeamHandlers["onResolveReviewerRequest"];
-    onRegisterReviewer?: ReportTeamHandlers["onRegisterReviewer"];
-    onUpdateReviewer?: ReportTeamHandlers["onUpdateReviewer"];
-    onApiLogin?: ReportAuthHandlers["onApiLogin"];
-    onApiRegister?: ReportAuthHandlers["onApiRegister"];
-    onArtemisLogin?: ReportAuthHandlers["onArtemisLogin"];
     onEvent?: (event: ReportEvent) => void | Promise<void>;
     onReply?: (params: {
         feedbackId: string;
@@ -50,9 +33,10 @@ export type ReportStateConfig = {
     initialLocale: ReportLocale;
     messageOverrides?: DeepPartialReportMessages;
     pixelsMode?: FivePixelsMode;
+    sync?: FivePixelsSync;
     replyHistory: import("../../utils/report/reportUi.js").ResolvedReplyHistoryConfig;
 };
-export declare function useReportState({ projectId, environment, appVersion, panelAppearance, tooltipAppearance, questionThreadDefault, fields, authors, requireReviewerKey, shortcut: _shortcut, identify, onList, onListAll, onPanelBootstrap, onActivitySummary, onListReplies, onNavigate, onRevealTarget, onCreate, onCreateReply, onUpdate, onDelete, onListReviewers, onListReviewerRequests, onCreateReviewerRequest, onResolveReviewerRequest, onRegisterReviewer, onUpdateReviewer, onApiLogin, onApiRegister, onArtemisLogin, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys, initialLocale, messageOverrides, pixelsMode, replyHistory, }: ReportStateConfig): {
+export declare function useReportState({ projectId, environment, appVersion, panelAppearance, tooltipAppearance, questionThreadDefault, fields, authors, requireReviewerKey, shortcut: _shortcut, identify, adapter, onNavigate, onRevealTarget, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys, initialLocale, messageOverrides, pixelsMode, sync, replyHistory, }: ReportStateConfig): {
     panelAppearance: ReportAppearance;
     setPanelAppearance: (nextAppearance: ReportAppearance) => void;
     tooltipAppearance: ReportAppearance;
@@ -69,6 +53,8 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     teamActorRole: import("../../types/report.js").ReportAuthorRole | null;
     isTeamAdmin: boolean;
     canAccessTeamSettings: boolean;
+    integrationCapabilities: import("../../utils/integration/integrationFeatures.js").IntegrationCapabilities;
+    adapterIntegrationStatus: import("../../utils/integration/buildAdapterIntegrationStatus.js").AdapterIntegrationStatus | null;
     onListReviewers: (() => Promise<ReportAuthor[]>) | undefined;
     onListReviewerRequests: (() => Promise<import("../../types/report.js").ReportReviewerRequest[]>) | undefined;
     onCreateReviewerRequest: ((payload: import("../../types/report.js").CreateReviewerRequestPayload) => Promise<import("../../types/report.js").ReportReviewerRequest>) | undefined;
@@ -78,14 +64,14 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     projectId: string;
     environment: string | undefined;
     appVersion: string | undefined;
-    persistenceStatus: import("../../utils/shared/storage.js").PersistenceStatus;
+    persistenceStatus: import("../../utils/adapter/resolveAdapter.js").PersistenceStatus;
     currentPathname: string;
     showFeedbackList: boolean;
     panelTab: import("../../types/report-ui.js").ReportPanelTab | null;
     routeDetailsStats: import("../../types/report.js").ReportRouteDetailsSummary;
     panelCollapsed: boolean;
     setPanelCollapsed: import("react").Dispatch<import("react").SetStateAction<boolean>>;
-    onPanelBootstrap: ((params: ReportPanelBootstrapParams) => Promise<ReportPanelBootstrapResult>) | undefined;
+    onPanelBootstrap: ((params: import("../../types/report.js").ReportPanelBootstrapParams) => Promise<import("../../types/report.js").ReportPanelBootstrapResult>) | undefined;
     canTransferFeedback: boolean;
     personalKey: string | null;
     publicKey: string | null;
@@ -94,8 +80,7 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     authDiagnostics: import("./useReportAuthSession.js").AuthDiagnostics;
     authorSelectionLocked: boolean;
     panelView: PanelView;
-    loginMethod: "local" | "api" | "artemis" | null;
-    selectLoginMethod: (method: import("../../index.js").LoginMethod) => void;
+    loginMethod: "local" | "api" | "artemis";
     loginWithApi: (payload: import("../../types/report.js").ReportApiLoginPayload) => Promise<import("../../types/report.js").ReportAuthUser>;
     registerWithApi: (payload: import("../../types/report.js").ReportApiRegisterPayload) => Promise<void>;
     loginWithArtemis: () => Promise<import("../../types/report.js").ReportAuthUser>;
@@ -148,7 +133,7 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     }>;
     clearPersonalKey: () => void;
     canListAllFeedback: boolean;
-    onActivitySummary: ((params: ReportActivitySummaryParams) => Promise<ReportActivitySummaryResult>) | undefined;
+    onActivitySummary: ((params: import("../../types/report.js").ReportActivitySummaryParams) => Promise<import("../../types/report.js").ReportActivitySummaryResult>) | undefined;
     visibleShortcutKeys: boolean;
     searchInputRef: import("react").MutableRefObject<HTMLInputElement | null>;
     resolvedPanelAppearance: import("../../types/report-ui.js").ResolvedAppearance;
@@ -214,8 +199,9 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     refetch: () => Promise<ReportFeedback[]>;
     replyHistory: import("../../utils/report/reportUi.js").ResolvedReplyHistoryConfig;
     replyHistoryByReportId: Record<string, import("../replyHistoryActions.js").ReplyHistoryState>;
-    loadRepliesIfNeeded: (report: ReportFeedback) => Promise<ReportFeedback>;
-    loadOlderReplies: (reportId: string, config: import("../../utils/report/reportUi.js").ResolvedReplyHistoryConfig) => Promise<void>;
+    loadRepliesIfNeeded: (report: ReportFeedback, caseId?: string) => Promise<ReportFeedback>;
+    hydrateFeedbackIfNeeded: (report: ReportFeedback) => Promise<ReportFeedback>;
+    loadOlderReplies: (reportId: string, config: import("../../utils/report/reportUi.js").ResolvedReplyHistoryConfig, caseId?: string) => Promise<void>;
     goToOlderPaginationPage: (reportId: string, config: import("../../utils/report/reportUi.js").ResolvedReplyHistoryConfig) => Promise<void>;
     goToNewerPaginationPage: (reportId: string, config: import("../../utils/report/reportUi.js").ResolvedReplyHistoryConfig) => void;
     errorMessage: string;

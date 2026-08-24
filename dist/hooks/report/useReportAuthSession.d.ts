@@ -1,4 +1,4 @@
-import { type LoginMethod } from "../../constants/loginMethod.js";
+import { type FivePixelsSync } from "../../constants/loginMethod.js";
 import { type PanelView } from "../../utils/auth/resolvePanelView.js";
 import type { CreateReplyPayload, CreateReportFeedbackPayload, FivePixelsMode, ReportApiLoginPayload, ReportApiRegisterPayload, ReportAuthHandlers, ReportAuthUser, ReportAuthor, ReportIdentify, UpdateReportFeedbackPayload } from "../../types/report.js";
 export type { PanelView };
@@ -25,11 +25,12 @@ export type UseReportAuthSessionParams = {
     identify?: ReportIdentify;
     requireReviewerKey: boolean;
     pixelsMode: FivePixelsMode;
+    sync?: FivePixelsSync;
     onApiLogin?: ReportAuthHandlers["onApiLogin"];
     onApiRegister?: ReportAuthHandlers["onApiRegister"];
     onArtemisLogin?: ReportAuthHandlers["onArtemisLogin"];
 };
-export declare function useReportAuthSession({ projectId, environment, authors, identify, requireReviewerKey, pixelsMode, onApiLogin, onApiRegister, onArtemisLogin, }: UseReportAuthSessionParams): {
+export declare function useReportAuthSession({ projectId, environment, authors, identify, requireReviewerKey, pixelsMode, sync: syncProp, onApiLogin, onApiRegister, onArtemisLogin, }: UseReportAuthSessionParams): {
     selfProfile: import("../useSelfProfile.js").SelfProfile | null;
     saveSelfProfile: (profile: import("../useSelfProfile.js").SelfProfile) => void;
     markOnboardingComplete: () => void;
@@ -79,8 +80,7 @@ export declare function useReportAuthSession({ projectId, environment, authors, 
     isSelfAuthenticated: boolean;
     authDiagnostics: AuthDiagnostics;
     panelView: PanelView;
-    loginMethod: "local" | "api" | "artemis" | null;
-    selectLoginMethod: (method: LoginMethod) => void;
+    loginMethod: "local" | "api" | "artemis";
     loginWithApi: (payload: ReportApiLoginPayload) => Promise<ReportAuthUser>;
     registerWithApi: (payload: ReportApiRegisterPayload) => Promise<void>;
     loginWithArtemis: () => Promise<ReportAuthUser>;
@@ -111,7 +111,7 @@ export declare function useReportAuthSession({ projectId, environment, authors, 
     skipOnboarding: () => void;
     sessionActor: import("../../utils/report/reportTeam.js").SessionActor | null;
     signCreatePayload: (payload: CreateReportFeedbackPayload) => Promise<CreateReportFeedbackPayload>;
-    signUpdatePayload: (payload: UpdateReportFeedbackPayload) => Promise<Partial<Pick<import("../../types/report.js").ReportFeedback, "cases" | "status" | "report_id" | "report_type" | "category" | "field_values" | "replies" | "auth" | "integrations">>>;
+    signUpdatePayload: (payload: UpdateReportFeedbackPayload) => Promise<Partial<Pick<import("../../types/report.js").ReportFeedback, "auth" | "cases" | "replies" | "status" | "report_id" | "report_type" | "category" | "field_values" | "integrations">>>;
     signReplyPayload: (payload: CreateReplyPayload) => Promise<CreateReplyPayload>;
 };
 //# sourceMappingURL=useReportAuthSession.d.ts.map

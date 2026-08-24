@@ -1,12 +1,14 @@
 import { useEffect, useState, type MouseEvent } from "react";
 import type { ReportMessages } from "@/i18n/types.js";
-import { TrashIcon } from "@/components/icons/Icons.js";
+import { LockIcon, TrashIcon } from "@/components/icons/Icons.js";
 import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
 
 type FeedbackDeleteActionProps = {
     reportId: string;
     onDelete: (id: string) => Promise<void>;
     disabled?: boolean;
+    locked?: boolean;
+    lockLabel?: string;
     messages: ReportMessages;
     className?: string;
     iconClassName?: string;
@@ -20,6 +22,8 @@ export function FeedbackDeleteAction({
     reportId,
     onDelete,
     disabled = false,
+    locked = false,
+    lockLabel,
     messages,
     className = "flex h-[20px] w-[20px] items-center justify-center disabled:opacity-50",
     iconClassName = "h-[12px] w-[12px]",
@@ -45,6 +49,10 @@ export function FeedbackDeleteAction({
     const handleDelete = (event: MouseEvent<HTMLButtonElement>) => {
         event.stopPropagation();
 
+        if (locked) {
+            return;
+        }
+
         if (!confirming) {
             setConfirming(true);
             return;
@@ -55,18 +63,29 @@ export function FeedbackDeleteAction({
         });
     };
 
+    const tooltipLabel = locked ? lockLabel ?? deleteTitle : confirming ? deleteConfirmTitle : deleteTitle;
+
     return (
-        <HoverTooltip label={confirming ? deleteConfirmTitle : deleteTitle}>
+        <HoverTooltip
+            label={tooltipLabel}
+            multiline={locked}
+        >
             <button
                 type="button"
                 data-fivepixels-interactive=""
                 onPointerDown={(event) => event.stopPropagation()}
                 onClick={handleDelete}
-                disabled={disabled}
-                aria-label={confirming ? deleteConfirmAriaLabel : deleteAriaLabel}
+                disabled={disabled || locked}
+                aria-label={locked ? tooltipLabel : confirming ? deleteConfirmAriaLabel : deleteAriaLabel}
                 className={`${className} ${confirming ? "text-rose-200 hover:text-white" : "text-[var(--adaptive-black50)] hover:text-white"}`}
             >
-                {confirming ? <span className="text-[9px] font-semibold">!</span> : <TrashIcon className={iconClassName} />}
+                {locked ? (
+                    <LockIcon className={iconClassName} />
+                ) : confirming ? (
+                    <span className="text-[9px] font-semibold">!</span>
+                ) : (
+                    <TrashIcon className={iconClassName} />
+                )}
             </button>
         </HoverTooltip>
     );

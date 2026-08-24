@@ -20,8 +20,8 @@ export declare function createReplyHistoryActions({ adapter, usesLazyReplies, ge
     replyHistoryByReportId: Record<string, ReplyHistoryState>;
     setReplyHistoryByReportId: Dispatch<SetStateAction<Record<string, ReplyHistoryState>>>;
 }): {
-    initReplyHistory: (report: ReportFeedback, config: ResolvedReplyHistoryConfig) => Promise<ReportFeedback>;
-    loadOlderReplies: (reportId: string, config: ResolvedReplyHistoryConfig) => Promise<void>;
+    initReplyHistory: (report: ReportFeedback, config: ResolvedReplyHistoryConfig, caseId?: string) => Promise<ReportFeedback>;
+    loadOlderReplies: (reportId: string, config: ResolvedReplyHistoryConfig, caseId?: string) => Promise<void>;
     goToOlderPaginationPage: (reportId: string, config: ResolvedReplyHistoryConfig) => Promise<void>;
     goToNewerPaginationPage: (reportId: string, config: ResolvedReplyHistoryConfig) => void;
     appendReplyToHistory: (reportId: string, reply: ReportReply) => void;

@@ -1,9 +1,9 @@
-"use client";
-
+import type { FivePixelsSync } from "@/constants/loginMethod.js";
 import { getDefaultFields } from "@/i18n/index.js";
 import type { DeepPartialReportMessages, ReportLocale } from "@/i18n/types.js";
 import { useReportState } from "@/hooks/report/useReportState.js";
 import type { ReportProviderProps } from "@/types/publicApi.js";
+import type { FivePixelsAdapter } from "@/types/adapter.js";
 import type {
     ReportAuthor,
     ReportField,
@@ -45,6 +45,7 @@ type ReportProviderEnabledProps = Omit<ReportProviderProps, "project" | "ui" | "
     locale: ReportLocale;
     messageOverrides?: DeepPartialReportMessages;
     pixelsMode: FivePixelsMode;
+    sync: FivePixelsSync;
 };
 
 function ReportProviderEnabled({
@@ -60,26 +61,9 @@ function ReportProviderEnabled({
     requireReviewerKey,
     shortcut,
     identify,
-    onList,
-    onListAll,
-    onPanelBootstrap,
-    onActivitySummary,
-    onListReplies,
+    adapter,
     onNavigate,
     onRevealTarget,
-    onCreate,
-    onCreateReply,
-    onUpdate,
-    onDelete,
-    onListReviewers,
-    onListReviewerRequests,
-    onCreateReviewerRequest,
-    onResolveReviewerRequest,
-    onRegisterReviewer,
-    onUpdateReviewer,
-    onApiLogin,
-    onApiRegister,
-    onArtemisLogin,
     onEvent,
     onReply,
     github,
@@ -89,6 +73,7 @@ function ReportProviderEnabled({
     locale,
     messageOverrides,
     pixelsMode,
+    sync,
     children,
 }: ReportProviderEnabledProps) {
     const value = useReportState({
@@ -105,26 +90,10 @@ function ReportProviderEnabled({
         shortcut,
         identify,
         pixelsMode,
-        onList,
-        onListAll,
-        onPanelBootstrap,
-        onActivitySummary,
-        onListReplies,
+        sync,
+        adapter,
         onNavigate,
         onRevealTarget,
-        onCreate,
-        onCreateReply,
-        onUpdate,
-        onDelete,
-        onListReviewers,
-        onListReviewerRequests,
-        onCreateReviewerRequest,
-        onResolveReviewerRequest,
-        onRegisterReviewer,
-        onUpdateReviewer,
-        onApiLogin,
-        onApiRegister,
-        onArtemisLogin,
         onEvent,
         onReply,
         github,
@@ -153,27 +122,11 @@ export function ReportProvider({
     visibility,
     team,
     mode = "default",
+    sync = "local",
+    adapter,
     fields,
-    onList,
-    onListAll,
-    onPanelBootstrap,
-    onActivitySummary,
-    onListReplies,
     onNavigate,
     onRevealTarget,
-    onCreate,
-    onCreateReply,
-    onUpdate,
-    onDelete,
-    onListReviewers,
-    onListReviewerRequests,
-    onCreateReviewerRequest,
-    onResolveReviewerRequest,
-    onRegisterReviewer,
-    onUpdateReviewer,
-    onApiLogin,
-    onApiRegister,
-    onArtemisLogin,
     onEvent,
     onReply,
     github,
@@ -205,26 +158,9 @@ export function ReportProvider({
             authors={resolvedTeam.reviewers}
             requireReviewerKey={resolvedTeam.requireReviewerKey}
             identify={resolvedTeam.user}
-            onList={onList}
-            onListAll={onListAll}
-            onPanelBootstrap={onPanelBootstrap}
-            onActivitySummary={onActivitySummary}
-            onListReplies={onListReplies}
+            adapter={adapter}
             onNavigate={onNavigate}
             onRevealTarget={onRevealTarget}
-            onCreate={onCreate}
-            onCreateReply={onCreateReply}
-            onUpdate={onUpdate}
-            onDelete={onDelete}
-            onListReviewers={onListReviewers}
-            onListReviewerRequests={onListReviewerRequests}
-            onCreateReviewerRequest={onCreateReviewerRequest}
-            onResolveReviewerRequest={onResolveReviewerRequest}
-            onRegisterReviewer={onRegisterReviewer}
-            onUpdateReviewer={onUpdateReviewer}
-            onApiLogin={onApiLogin}
-            onApiRegister={onApiRegister}
-            onArtemisLogin={onArtemisLogin}
             onEvent={onEvent}
             onReply={onReply}
             github={github}
@@ -232,6 +168,7 @@ export function ReportProvider({
             locale={resolvedUi.locale}
             messageOverrides={ui?.messages}
             pixelsMode={mode}
+            sync={sync}
         >
             {children}
         </ReportProviderEnabled>

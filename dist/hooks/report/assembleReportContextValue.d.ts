@@ -5,7 +5,8 @@ import type { useReportMarkers } from "./useReportMarkers.js";
 import type { useReportMutations } from "./useReportMutations.js";
 import type { useReportPanelShell } from "./useReportPanelShell.js";
 import type { useReportReplyReview } from "./useReportReplyReview.js";
-import type { ReportActivitySummaryParams, ReportActivitySummaryResult, ReportAuthor, ReportFeedback, ReportField, ReportPanelBootstrapParams, ReportPanelBootstrapResult, ReportTeamHandlers } from "../../types/report.js";
+import type { FivePixelsAdapter } from "../../types/adapter.js";
+import type { ReportAuthor, ReportFeedback, ReportField, ReportGitHubConfig } from "../../types/report.js";
 import type { ResolvedReplyHistoryConfig } from "../../utils/report/reportUi.js";
 type AssembleArgs = {
     panel: ReturnType<typeof useReportPanelShell>;
@@ -20,14 +21,11 @@ type AssembleArgs = {
     appVersion?: string;
     showFeedbackList: boolean;
     teamReviewers: ReportAuthor[];
-    onListReviewers?: ReportTeamHandlers["onListReviewers"];
-    onListReviewerRequests?: ReportTeamHandlers["onListReviewerRequests"];
-    onCreateReviewerRequest?: ReportTeamHandlers["onCreateReviewerRequest"];
-    onResolveReviewerRequest?: ReportTeamHandlers["onResolveReviewerRequest"];
-    onRegisterReviewer?: ReportTeamHandlers["onRegisterReviewer"];
-    onUpdateReviewer?: ReportTeamHandlers["onUpdateReviewer"];
-    onPanelBootstrap?: (params: ReportPanelBootstrapParams) => Promise<ReportPanelBootstrapResult>;
-    onActivitySummary?: (params: ReportActivitySummaryParams) => Promise<ReportActivitySummaryResult>;
+    adapter?: FivePixelsAdapter;
+    github?: ReportGitHubConfig;
+    canDeleteViaStorage: boolean;
+    usesLazyReplies: boolean;
+    usesCreateReply: boolean;
     visibleShortcutKeys: boolean;
     overlayRef: RefObject<HTMLDivElement>;
     replyHistory: ResolvedReplyHistoryConfig;
@@ -39,7 +37,7 @@ type AssembleArgs = {
  * Flat context value for ReportProvider slices.
  * Keys stay flat (see reportContextPartitions). Domain hooks → this assembler → UI.
  */
-export declare function assembleReportContextValue({ panel, auth, draft, markers, mutations, reply, fields, projectId, environment, appVersion, showFeedbackList, teamReviewers, onListReviewers, onListReviewerRequests, onCreateReviewerRequest, onResolveReviewerRequest, onRegisterReviewer, onUpdateReviewer, onPanelBootstrap, onActivitySummary, visibleShortcutKeys, overlayRef, replyHistory, selectReport, beginFeedbackEdit, cancelDraft, }: AssembleArgs): {
+export declare function assembleReportContextValue({ panel, auth, draft, markers, mutations, reply, fields, projectId, environment, appVersion, showFeedbackList, teamReviewers, adapter, github, canDeleteViaStorage, usesLazyReplies, usesCreateReply, visibleShortcutKeys, overlayRef, replyHistory, selectReport, beginFeedbackEdit, cancelDraft, }: AssembleArgs): {
     panelAppearance: import("../../types/report.js").ReportAppearance;
     setPanelAppearance: (nextAppearance: import("../../types/report.js").ReportAppearance) => void;
     tooltipAppearance: import("../../types/report.js").ReportAppearance;
@@ -56,6 +54,8 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     teamActorRole: import("../../types/report.js").ReportAuthorRole | null;
     isTeamAdmin: boolean;
     canAccessTeamSettings: boolean;
+    integrationCapabilities: import("../../utils/integration/integrationFeatures.js").IntegrationCapabilities;
+    adapterIntegrationStatus: import("../../utils/integration/buildAdapterIntegrationStatus.js").AdapterIntegrationStatus | null;
     onListReviewers: (() => Promise<ReportAuthor[]>) | undefined;
     onListReviewerRequests: (() => Promise<import("../../types/report.js").ReportReviewerRequest[]>) | undefined;
     onCreateReviewerRequest: ((payload: import("../../types/report.js").CreateReviewerRequestPayload) => Promise<import("../../types/report.js").ReportReviewerRequest>) | undefined;
@@ -72,7 +72,7 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     routeDetailsStats: import("../../types/report.js").ReportRouteDetailsSummary;
     panelCollapsed: boolean;
     setPanelCollapsed: import("react").Dispatch<import("react").SetStateAction<boolean>>;
-    onPanelBootstrap: ((params: ReportPanelBootstrapParams) => Promise<ReportPanelBootstrapResult>) | undefined;
+    onPanelBootstrap: ((params: import("../../types/report.js").ReportPanelBootstrapParams) => Promise<import("../../types/report.js").ReportPanelBootstrapResult>) | undefined;
     canTransferFeedback: boolean;
     personalKey: string | null;
     publicKey: string | null;
@@ -81,8 +81,7 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     authDiagnostics: import("./useReportAuthSession.js").AuthDiagnostics;
     authorSelectionLocked: boolean;
     panelView: import("./useReportAuthSession.js").PanelView;
-    loginMethod: "local" | "api" | "artemis" | null;
-    selectLoginMethod: (method: import("../../index.js").LoginMethod) => void;
+    loginMethod: "local" | "api" | "artemis";
     loginWithApi: (payload: import("../../types/report.js").ReportApiLoginPayload) => Promise<import("../../types/report.js").ReportAuthUser>;
     registerWithApi: (payload: import("../../types/report.js").ReportApiRegisterPayload) => Promise<void>;
     loginWithArtemis: () => Promise<import("../../types/report.js").ReportAuthUser>;
@@ -135,7 +134,7 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     }>;
     clearPersonalKey: () => void;
     canListAllFeedback: boolean;
-    onActivitySummary: ((params: ReportActivitySummaryParams) => Promise<ReportActivitySummaryResult>) | undefined;
+    onActivitySummary: ((params: import("../../types/report.js").ReportActivitySummaryParams) => Promise<import("../../types/report.js").ReportActivitySummaryResult>) | undefined;
     visibleShortcutKeys: boolean;
     searchInputRef: import("react").MutableRefObject<HTMLInputElement | null>;
     resolvedPanelAppearance: import("../../types/report-ui.js").ResolvedAppearance;
@@ -201,8 +200,9 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     refetch: () => Promise<ReportFeedback[]>;
     replyHistory: ResolvedReplyHistoryConfig;
     replyHistoryByReportId: Record<string, import("../replyHistoryActions.js").ReplyHistoryState>;
-    loadRepliesIfNeeded: (report: ReportFeedback) => Promise<ReportFeedback>;
-    loadOlderReplies: (reportId: string, config: ResolvedReplyHistoryConfig) => Promise<void>;
+    loadRepliesIfNeeded: (report: ReportFeedback, caseId?: string) => Promise<ReportFeedback>;
+    hydrateFeedbackIfNeeded: (report: ReportFeedback) => Promise<ReportFeedback>;
+    loadOlderReplies: (reportId: string, config: ResolvedReplyHistoryConfig, caseId?: string) => Promise<void>;
     goToOlderPaginationPage: (reportId: string, config: ResolvedReplyHistoryConfig) => Promise<void>;
     goToNewerPaginationPage: (reportId: string, config: ResolvedReplyHistoryConfig) => void;
     errorMessage: string;

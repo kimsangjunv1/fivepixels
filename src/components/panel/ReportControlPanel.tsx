@@ -9,12 +9,14 @@ import {
     ChevronRightIcon,
     DevicePreviewIcon,
     EyeOpenIcon,
+    LockIcon,
     LogoIcon,
     SelectIcon,
     SettingsIcon,
 } from "@/components/icons/Icons.js";
 import { IconTooltipButton } from "@/components/ui/IconTooltipButton.js";
 import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
+import { useIntegrationLock } from "@/components/ui/IntegrationLock.js";
 import { PanelDockGuides } from "./PanelDockGuides.js";
 import { ReportFeedbackList } from "./ReportFeedbackList.js";
 import { ReportOverview } from "./ReportOverview.js";
@@ -126,6 +128,7 @@ export function ReportControlPanel() {
     const [personalKeyStep, setPersonalKeyStep] = useState<"none" | "required" | "insert" | "rotate">("none");
     const [personalKeyNotice, setPersonalKeyNotice] = useState("");
     const isRecording = mode === "report";
+    const persistenceLock = useIntegrationLock("feedbackPersistence");
     const isIssueMode = mode === "view";
     const isGateView = panelView !== "ready";
     const transferScope = { projectId, environment, appVersion };
@@ -446,13 +449,25 @@ export function ReportControlPanel() {
                                         </section>
 
                                         <section className="flex items-center h-full">
-                                            <button
-                                                type="button"
-                                                onClick={toggleReportMode}
-                                                className="flex flex-col shrink-0 justify-center items-center gap-[4px] p-[0_16px] border-r border-r-[var(--adaptive-border-subtle)] h-full hover:bg-[#f6572d]"
+                                            <HoverTooltip
+                                                label={persistenceLock.locked ? persistenceLock.tooltipLabel : undefined}
+                                                multiline={persistenceLock.locked}
+                                                disabled={!persistenceLock.locked}
                                             >
-                                                <SelectIcon className="w-[24px]" />
-                                            </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        if (persistenceLock.locked) {
+                                                            return;
+                                                        }
+                                                        toggleReportMode();
+                                                    }}
+                                                    disabled={persistenceLock.locked}
+                                                    className="flex flex-col shrink-0 justify-center items-center gap-[4px] p-[0_16px] border-r border-r-[var(--adaptive-border-subtle)] h-full hover:bg-[#f6572d] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent"
+                                                >
+                                                    {persistenceLock.locked ? <LockIcon className="w-[20px] h-[20px]" /> : <SelectIcon className="w-[24px]" />}
+                                                </button>
+                                            </HoverTooltip>
 
                                             <section
                                                 className="flex flex-col min-w-0 flex-1 px-[16px] py-[8px] gap-[4px]"

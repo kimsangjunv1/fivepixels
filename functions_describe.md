@@ -106,7 +106,7 @@
 | **스코프** | 현재 페이지 / 전체 페이지 |
 | **필터** | 상태·유형별 필터 |
 | **검색** | 텍스트 검색 |
-| **페이지네이션** | `onListAll` + cursor 기반 더 불러오기 |
+| **페이지네이션** | localStorage `listAll` + cursor 기반 더 불러오기 |
 | **호버 카드** | 마커 호버 시 피드백 미리보기 |
 | **경로 이동** | View 모드에서 다른 pathname으로 이동 (`onNavigate`) |
 
@@ -125,11 +125,12 @@
 
 | 기능 | 설명 |
 |------|------|
-| **localStorage** | handler 미지정 시 기본 저장소 |
-| **커스텀 API** | `onList` / `onCreate` / `onUpdate` (+ 선택적 `onDelete`, `onListAll`, `onListReplies`, `onCreateReply`) |
+| **localStorage** | `sync="local"`(기본) 또는 adapter 미지정 시 기본 저장소 |
+| **원격 API** | `sync="api"` / `"artemis"` + `adapter` (`FivePixelsAdapter`) |
 | **이벤트 콜백** | `onEvent` — create/update/delete/reply/github 이벤트 |
 | **답변 side effect** | `onReply` 콜백 |
 | **Storage Adapter** | `createLocalStorageReportAdapter` 공개 API |
+| **연동 상태 UI** | 설정 패널 API 연동 탭 — handler 연결·기능 잠금 표시 |
 
 ---
 
@@ -163,6 +164,7 @@
 |------|------|
 | **작성자** | `team.user` — `{ id, name }` |
 | **리뷰어 목록** | `team.reviewers` — 공개키 포함 가능 |
+| **동기화 모드** | `sync` — `local`(기본, localStorage) / `api` / `artemis` |
 | **개인 키** | ECDSA P-256 기반 개인키 생성·보관·회전 |
 | **서명 인증** | `feedback:create/update`, `reply:create` 액션 서명·검증 |
 | **리뷰어 키 필수** | `requireReviewerKey` 옵션 |

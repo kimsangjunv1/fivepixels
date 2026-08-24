@@ -11,14 +11,18 @@ import { resolvePendingComposerTargetPreview, shouldShowCaseReplyComposer } from
 import { getCaseAssigneeName, getCaseById, getReportCases } from "@/utils/report/reportCases.js";
 import { getFieldTags } from "@/utils/report/fields.js";
 import { copyTextToClipboard } from "@/utils/feedback/feedbackDataTransfer.js";
+import { buildAiPromptLabels, formatFeedbackForAiPrompt } from "@/utils/feedback/formatFeedbackForAiPrompt.js";
 import { buildFeedbackShareUrl } from "@/utils/feedback/feedbackDeepLink.js";
-import { CloseIcon, CheckCircleIcon, EditIcon, LinkIcon, MaximizeIcon, MinimizeIcon, RestoreIcon, SidePanelIcon, TrashIcon } from "@/components/icons/Icons.js";
+import { AskAiCopyDropdown } from "@/components/panel/feedback/AskAiCopyDropdown.js";
+import { CloseIcon, CheckCircleIcon, ChevronDownIcon, EditIcon, LinkIcon, MaximizeIcon, MinimizeIcon, RestoreIcon, SidePanelIcon, TrashIcon, AskAiIcon } from "@/components/icons/Icons.js";
+import type { ReportField } from "@/types/report.js";
 import { FeedbackFieldTags } from "@/components/panel/feedback/FeedbackFieldTags.js";
 import { FeedbackDeleteAction } from "@/components/panel/feedback/FeedbackDeleteAction.js";
 import { canDeleteFeedback } from "@/utils/feedback/feedbackPermissions.js";
 import { canEditReportCases } from "@/utils/report/reportCases.js";
 import { mentionMessageToPlainText } from "@/utils/mention/elementMentions.js";
 import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
+import { useIntegrationLock } from "@/components/ui/IntegrationLock.js";
 import { CornerResizeGhost } from "@/components/ui/CornerResizeGhost.js";
 import { MOTION } from "@/constants/motionClasses.js";
 import { ACCENT_COLOR } from "@/constants/accentColors.js";
@@ -356,6 +360,82 @@ function MarkerWindowShareButton({ report, messages, expanded = false }: { repor
     );
 }
 
+function MarkerWindowAskAiButton({
+    report,
+    fields,
+    messages,
+    focusedCaseId,
+    expanded = false,
+}: {
+    report: ReportFeedback;
+    fields: ReportField[];
+    messages: ReportMessages;
+    focusedCaseId: string | null;
+    expanded?: boolean;
+}) {
+    const copyPrompt = (options: Parameters<typeof formatFeedbackForAiPrompt>[2]) => {
+        const text = formatFeedbackForAiPrompt(report, fields, options, buildAiPromptLabels(messages));
+
+        if (!text) {
+            return Promise.reject(new Error("empty prompt"));
+        }
+
+        return copyTextToClipboard(text);
+    };
+
+    return (
+        <AskAiCopyDropdown
+            menuClassName="min-w-[168px]"
+            align="right"
+            items={[
+                {
+                    id: "full-review",
+                    label: messages.marker.askAi.fullReview,
+                    onSelect: () => copyPrompt({ intent: "review", scope: "full" }),
+                },
+                {
+                    id: "full-modification",
+                    label: messages.marker.askAi.fullModification,
+                    onSelect: () => copyPrompt({ intent: "modification", scope: "full" }),
+                },
+                {
+                    id: "selected-case-review",
+                    label: messages.marker.askAi.selectedCaseReview,
+                    disabled: !focusedCaseId,
+                    onSelect: () => copyPrompt({ intent: "review", scope: "selectedCase", caseId: focusedCaseId ?? undefined }),
+                },
+            ]}
+            trigger={({ open, copied, toggle }) =>
+                expanded ? (
+                    <button
+                        type="button"
+                        data-fivepixels-interactive=""
+                        onPointerDown={(event) => event.stopPropagation()}
+                        onClick={toggle}
+                        aria-expanded={open}
+                        aria-haspopup="menu"
+                        aria-label={messages.marker.askAi.menuAriaLabel}
+                        className={SIDEBAR_ACTION_CLASS}
+                    >
+                        <AskAiIcon className="h-[15px] w-[15px] shrink-0" />
+                        <span className="min-w-0 flex-1 truncate">{copied ? messages.marker.askAi.copied : messages.marker.askAi.title}</span>
+                        <ChevronDownIcon className={`h-[14px] w-[14px] shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
+                    </button>
+                ) : (
+                    <WindowControlButton
+                        onClick={toggle}
+                        ariaLabel={messages.marker.askAi.ariaLabel}
+                        title={copied ? messages.marker.askAi.copied : messages.marker.askAi.title}
+                        className={open ? "text-[var(--adaptive-blue500)]" : ""}
+                    >
+                        <AskAiIcon className="h-[15px] w-[15px]" />
+                    </WindowControlButton>
+                )
+            }
+        />
+    );
+}
+
 type MarkerFeedbackWindowProps = {
     report: ReportFeedback;
     anchor: Pick<Marker, "left" | "top">;
@@ -411,6 +491,7 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
         isComposingNewCase,
         projectId,
     } = useReport();
+    const deleteLock = useIntegrationLock("deleteFeedback");
 
     const windowRef = useRef<HTMLDivElement | null>(null);
     const surfaceRef = useRef<HTMLDivElement | null>(null);
@@ -1001,11 +1082,22 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
         />
     );
 
+    const askAiButton = (
+        <MarkerWindowAskAiButton
+            report={report}
+            fields={fields}
+            messages={messages}
+            focusedCaseId={focusedCaseId}
+        />
+    );
+
     const deleteButton = canDeleteFeedback(report, sessionActor) ? (
         <FeedbackDeleteAction
             reportId={report.id}
             onDelete={handleDelete}
             disabled={isDeleting}
+            locked={deleteLock.locked}
+            lockLabel={deleteLock.tooltipLabel}
             messages={messages}
             className={`${HEADER_BUTTON_CLASS} disabled:opacity-50`}
             iconClassName="h-[15px] w-[15px]"
@@ -1054,6 +1146,14 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
             <MarkerWindowShareButton
                 report={report}
                 messages={messages}
+                expanded
+            />
+
+            <MarkerWindowAskAiButton
+                report={report}
+                fields={fields}
+                messages={messages}
+                focusedCaseId={focusedCaseId}
                 expanded
             />
         </nav>
@@ -1312,6 +1412,7 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
                                     >
                                         {leftControls}
                                         {shareButton}
+                                        {askAiButton}
                                         {editButton}
                                         {deleteButton}
                                         {sidebarToggleButton}

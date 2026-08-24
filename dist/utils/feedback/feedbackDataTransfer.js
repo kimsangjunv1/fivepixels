@@ -42,7 +42,6 @@ export function insertFeedbackItems(scope, incoming) {
         updated: 0,
         kept: existing.length,
         localRepliesPreserved: 0,
-        replaced: 0,
     };
 }
 /** Upsert by id while merging replies so local-only replies are preserved. */
@@ -51,8 +50,10 @@ export function upsertFeedbackItems(scope, incoming) {
     const merged = mergeFeedbackCollections(existing, incoming);
     writeAllFeedback(scope, merged.items);
     return {
-        ...merged,
-        replaced: merged.updated,
+        inserted: merged.inserted,
+        updated: merged.updated,
+        kept: merged.kept,
+        localRepliesPreserved: merged.localRepliesPreserved,
     };
 }
 /** Apply an import payload with merge (default) or full replace. */
@@ -60,11 +61,10 @@ export function applyFeedbackImport(scope, incoming, mode = "merge") {
     if (mode === "replace") {
         writeAllFeedback(scope, incoming);
         return {
-            inserted: incoming.length,
-            updated: 0,
+            inserted: 0,
+            updated: incoming.length,
             kept: 0,
             localRepliesPreserved: 0,
-            replaced: incoming.length,
         };
     }
     return upsertFeedbackItems(scope, incoming);

@@ -4,7 +4,8 @@ import type { ReportLocale } from "../../i18n/types.js";
 import type { PanelRole } from "../../constants/panelRole.js";
 import { type UserSelectablePanelTab } from "../../constants/panelTabRegistry.js";
 import { type PanelTabPreference } from "../../utils/panel/panelTabPreference.js";
-import type { CreateReportFeedbackPayload, CreateReplyPayload, ReportAppearance, ReportActivitySummaryParams, ReportActivitySummaryResult, ReportFeedback, ReportField, ReportListAllParams, ReportListAllResult, ReportPanelBootstrapParams, ReportPanelBootstrapResult, ReportReply, QuestionThreadDisplay, UpdateReportFeedbackPayload } from "../../types/report.js";
+import type { FivePixelsAdapter } from "../../types/adapter.js";
+import type { ReportAppearance, ReportField, QuestionThreadDisplay } from "../../types/report.js";
 import type { ReportMode, ReportPanelTab } from "../../types/report-ui.js";
 export type ReportPanelShellBridges = {
     setShowTargetPreview: (show: boolean) => void;
@@ -15,6 +16,7 @@ export type ReportPanelShellConfig = {
     projectId: string;
     environment?: string;
     appVersion?: string;
+    sync?: import("../../constants/loginMethod.js").FivePixelsSync;
     panelAppearance: ReportAppearance;
     tooltipAppearance: ReportAppearance;
     questionThreadDefault?: QuestionThreadDisplay;
@@ -22,23 +24,13 @@ export type ReportPanelShellConfig = {
     showFeedbackList: boolean;
     initialLocale: ReportLocale;
     messageOverrides?: DeepPartialReportMessages;
-    onList?: (params: {
-        pathname: string;
-    }) => Promise<ReportFeedback[]>;
-    onListAll?: (params: ReportListAllParams) => Promise<ReportListAllResult>;
-    onPanelBootstrap?: (params: ReportPanelBootstrapParams) => Promise<ReportPanelBootstrapResult>;
-    onActivitySummary?: (params: ReportActivitySummaryParams) => Promise<ReportActivitySummaryResult>;
-    onListReplies?: (commentId: string, params?: import("../../types/report.js").ListRepliesParams) => Promise<import("../../types/report.js").ListRepliesResult | ReportReply[]>;
-    onCreate?: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
-    onCreateReply?: (commentId: string, payload: CreateReplyPayload) => Promise<ReportReply>;
-    onUpdate?: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
-    onDelete?: (id: string) => Promise<void>;
+    adapter?: FivePixelsAdapter;
     routeKey?: string;
     replyHistory: import("../../utils/report/reportUi.js").ResolvedReplyHistoryConfig;
     sessionActorName: string | null;
     bridgesRef: MutableRefObject<ReportPanelShellBridges>;
 };
-export declare function useReportPanelShell({ projectId, environment, appVersion, panelAppearance, tooltipAppearance, questionThreadDefault, fields, showFeedbackList, initialLocale, messageOverrides, onList, onListAll, onPanelBootstrap, onActivitySummary, onListReplies, onCreate, onCreateReply, onUpdate, onDelete, routeKey, replyHistory, sessionActorName, bridgesRef, }: ReportPanelShellConfig): {
+export declare function useReportPanelShell({ projectId, environment, appVersion, sync, panelAppearance, tooltipAppearance, questionThreadDefault, fields, showFeedbackList, initialLocale, messageOverrides, adapter, routeKey, replyHistory, sessionActorName, bridgesRef, }: ReportPanelShellConfig): {
     panelAppearance: ReportAppearance;
     setPanelAppearance: (nextAppearance: ReportAppearance) => void;
     tooltipAppearance: ReportAppearance;
@@ -96,7 +88,7 @@ export declare function useReportPanelShell({ projectId, environment, appVersion
     resolvedPanelAppearance: import("../../types/report-ui.js").ResolvedAppearance;
     resolvedTooltipAppearance: import("../../types/report-ui.js").ResolvedAppearance;
     isMobileViewport: boolean;
-    persistenceStatus: import("../../utils/shared/storage.js").PersistenceStatus;
+    persistenceStatus: import("../../utils/adapter/resolveAdapter.js").PersistenceStatus;
     canTransferFeedback: boolean;
     canListAllFeedback: boolean;
     currentPathname: string;
@@ -106,14 +98,14 @@ export declare function useReportPanelShell({ projectId, environment, appVersion
     setFilters: import("react").Dispatch<import("react").SetStateAction<import("../../types/report-ui.js").ReportFilters>>;
     selectedReportId: string | null;
     setSelectedReportId: import("react").Dispatch<import("react").SetStateAction<string | null>>;
-    reports: ReportFeedback[];
-    currentPageReports: ReportFeedback[];
-    filteredReports: ReportFeedback[];
-    currentPageFilteredReports: ReportFeedback[];
-    allPageReports: ReportFeedback[];
-    allPageFilteredReports: ReportFeedback[];
+    reports: import("../../types/report.js").ReportFeedback[];
+    currentPageReports: import("../../types/report.js").ReportFeedback[];
+    filteredReports: import("../../types/report.js").ReportFeedback[];
+    currentPageFilteredReports: import("../../types/report.js").ReportFeedback[];
+    allPageReports: import("../../types/report.js").ReportFeedback[];
+    allPageFilteredReports: import("../../types/report.js").ReportFeedback[];
     routeDetailsStats: import("../../types/report.js").ReportRouteDetailsSummary;
-    selectedReport: ReportFeedback;
+    selectedReport: import("../../types/report.js").ReportFeedback;
     isError: boolean;
     isReportsLoading: boolean;
     isFetching: boolean;
@@ -124,19 +116,22 @@ export declare function useReportPanelShell({ projectId, environment, appVersion
     isUpdating: boolean;
     isDeleting: boolean;
     queryErrorMessage: string | undefined;
-    refetch: () => Promise<ReportFeedback[]>;
-    createFeedback: (payload: CreateReportFeedbackPayload) => Promise<ReportFeedback>;
-    updateFeedback: (id: string, payload: UpdateReportFeedbackPayload) => Promise<ReportFeedback>;
+    refetch: () => Promise<import("../../types/report.js").ReportFeedback[]>;
+    createFeedback: (payload: import("../../types/report.js").CreateReportFeedbackPayload) => Promise<import("../../types/report.js").ReportFeedback>;
+    updateFeedback: (id: string, payload: import("../../types/report.js").UpdateReportFeedbackPayload) => Promise<import("../../types/report.js").ReportFeedback>;
     deleteFeedback: (id: string) => Promise<void>;
-    loadRepliesIfNeeded: (report: ReportFeedback) => Promise<ReportFeedback>;
-    createReply: (commentId: string, payload: CreateReplyPayload) => Promise<ReportReply>;
+    loadRepliesIfNeeded: (report: import("../../types/report.js").ReportFeedback, caseId?: string) => Promise<import("../../types/report.js").ReportFeedback>;
+    hydrateFeedbackIfNeeded: (report: import("../../types/report.js").ReportFeedback) => Promise<import("../../types/report.js").ReportFeedback>;
+    createReply: (commentId: string, payload: import("../../types/report.js").CreateReplyPayload) => Promise<import("../../types/report.js").ReportReply>;
     usesCreateReply: boolean;
+    usesLazyReplies: boolean;
+    fivePixelsAdapter: FivePixelsAdapter | undefined;
     replyHistoryByReportId: Record<string, import("../replyHistoryActions.js").ReplyHistoryState>;
-    loadOlderReplies: (reportId: string, config: import("../../utils/report/reportUi.js").ResolvedReplyHistoryConfig) => Promise<void>;
+    loadOlderReplies: (reportId: string, config: import("../../utils/report/reportUi.js").ResolvedReplyHistoryConfig, caseId?: string) => Promise<void>;
     goToOlderPaginationPage: (reportId: string, config: import("../../utils/report/reportUi.js").ResolvedReplyHistoryConfig) => Promise<void>;
     goToNewerPaginationPage: (reportId: string, config: import("../../utils/report/reportUi.js").ResolvedReplyHistoryConfig) => void;
-    onPanelBootstrap: ((params: ReportPanelBootstrapParams) => Promise<ReportPanelBootstrapResult>) | undefined;
-    onActivitySummary: ((params: ReportActivitySummaryParams) => Promise<ReportActivitySummaryResult>) | undefined;
+    onPanelBootstrap: ((params: import("../../types/report.js").ReportPanelBootstrapParams) => Promise<import("../../types/report.js").ReportPanelBootstrapResult>) | undefined;
+    onActivitySummary: ((params: import("../../types/report.js").ReportActivitySummaryParams) => Promise<import("../../types/report.js").ReportActivitySummaryResult>) | undefined;
     visiblePanelTabs: UserSelectablePanelTab[];
     visiblePanelTabsSummary: string;
     resolvedTabAvailabilityContext: {

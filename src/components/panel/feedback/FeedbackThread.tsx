@@ -36,6 +36,7 @@ import { ThreadAuthorMeta } from "./ThreadAuthorMeta.js";
 import { ThreadTimelineRow } from "./ThreadTimelineRow.js";
 import { CaseThreadEntryActions, ThreadEntryActions, THREAD_ACTION_ENTRY_SURFACE_CLASS, THREAD_CASE_ENTRY_SURFACE_CLASS } from "./ThreadEntryActions.js";
 import { MentionMessage } from "./MentionMessage.js";
+import { ThreadAskAiFloatingButton } from "./ThreadAskAiFloatingButton.js";
 import { getFeedbackTargetElement } from "@/utils/marker/locateFeedback.js";
 
 type PendingComposer = {
@@ -470,8 +471,8 @@ export function FeedbackThread({
     }, [report]);
 
     useEffect(() => {
-        void loadRepliesIfNeeded(report);
-    }, [loadRepliesIfNeeded, report.id]);
+        void loadRepliesIfNeeded(report, focusedCaseId ?? undefined);
+    }, [focusedCaseId, loadRepliesIfNeeded, report.id]);
 
     const triggerLoadOlderReplies = useCallback(async () => {
         const element = scrollRef.current;
@@ -567,7 +568,19 @@ export function FeedbackThread({
     }, [focusedCaseId, replies.length, scrollToBottom]);
 
     return (
-        <div className="relative min-h-0 h-full">
+        <div className="group/thread-section relative min-h-0 h-full">
+            {hideCaseSelector && focusedCaseId && focusedCase && !isAllCasesView ? (
+                <div className="pointer-events-none absolute right-[22px] top-[10px] z-20 opacity-50 transition-opacity duration-150 focus-within:opacity-100 group-hover/thread-section:opacity-100">
+                    <div className="pointer-events-auto">
+                        <ThreadAskAiFloatingButton
+                            report={report}
+                            fields={fields}
+                            messages={messages}
+                            caseId={focusedCaseId}
+                        />
+                    </div>
+                </div>
+            ) : null}
             {scrollOverflow.canScrollUp ? <p className={`${SCROLL_HINT_CLASS} top-0 bg-[linear-gradient(0deg,transparent,var(--adaptive-black50))]`}>{messages.thread.scrollHintUp}</p> : null}
             {scrollOverflow.canScrollDown ? <p className={`${SCROLL_HINT_CLASS} bottom-0 bg-[linear-gradient(180deg,transparent,var(--adaptive-black50))]`}>{messages.thread.scrollHintDown}</p> : null}
             <section

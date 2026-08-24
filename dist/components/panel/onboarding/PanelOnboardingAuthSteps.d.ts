@@ -1,13 +1,5 @@
-import type { LoginMethod } from "../../../constants/loginMethod.js";
 import type { ReportMessages } from "../../../i18n/types.js";
 type OnboardingCopy = ReportMessages["onboarding"];
-export declare function LoginMethodStep({ copy, value, onChange, onBack, onNext, }: {
-    copy: OnboardingCopy;
-    value: LoginMethod;
-    onChange: (method: LoginMethod) => void;
-    onBack: () => void;
-    onNext: () => void;
-}): import("react").JSX.Element;
 export declare function ApiLoginStep({ copy, loginId, password, error, busy, onLoginIdChange, onPasswordChange, onLogin, onSignUp, onBack, }: {
     copy: OnboardingCopy;
     loginId: string;

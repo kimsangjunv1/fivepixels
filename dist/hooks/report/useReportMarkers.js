@@ -13,7 +13,7 @@ function getInitialDeepLinkFeedbackId() {
     }
     return parseFeedbackDeepLink()?.feedbackId ?? null;
 }
-export function useReportMarkers({ mode, messages, fields, currentPathname, currentPageReports, reports, allPageReports, selectedReportId, markerAppearanceSize, showMarkerTargetPreview, showTargetPreview, selectableTargetsLength, selectedTarget, hoveredTarget, isFetching, isReportsLoading, activeReplyReportId, minimizedReplyReportIds = [], setErrorMessage, onNavigate, onRevealTarget, selectReport, closeReplyComposer, openReplyComposer, selectCase, ensureIssueMode, loadRepliesIfNeeded, searchInputRef, }) {
+export function useReportMarkers({ mode, messages, fields, currentPathname, currentPageReports, reports, allPageReports, selectedReportId, markerAppearanceSize, showMarkerTargetPreview, showTargetPreview, selectableTargetsLength, selectedTarget, hoveredTarget, isFetching, isReportsLoading, activeReplyReportId, minimizedReplyReportIds = [], setErrorMessage, onNavigate, onRevealTarget, selectReport, closeReplyComposer, openReplyComposer, selectCase, ensureIssueMode, loadRepliesIfNeeded, hydrateFeedbackIfNeeded, searchInputRef, }) {
     const [markers, setMarkers] = useState([]);
     const [hoveredMarkerId, setHoveredMarkerId] = useState(null);
     const hoverLeaveTimeoutRef = useRef(null);
@@ -304,12 +304,13 @@ export function useReportMarkers({ mode, messages, fields, currentPathname, curr
             setHoveredMarkerId(null);
             return;
         }
-        const enrichedReport = await loadRepliesIfNeeded(report);
+        const hydratedReport = await hydrateFeedbackIfNeeded(report);
+        const enrichedReport = await loadRepliesIfNeeded(hydratedReport, caseId ?? hydratedReport.cases[0]?.id);
         openReplyComposer(enrichedReport);
         if (caseId && enrichedReport.cases.some((item) => item.id === caseId)) {
             selectCase(caseId);
         }
-    }, [clearHoverLeaveTimeout, closeReplyComposer, loadRepliesIfNeeded, openReplyComposer, prepareFeedbackLocation, selectCase]);
+    }, [clearHoverLeaveTimeout, closeReplyComposer, hydrateFeedbackIfNeeded, loadRepliesIfNeeded, openReplyComposer, prepareFeedbackLocation, selectCase]);
     const activateFeedbackMarker = useCallback((report, caseId) => activateFeedback(report, caseId, true), [activateFeedback]);
     const revealOpenFeedback = useCallback(async (report) => {
         ensureIssueMode();
@@ -327,7 +328,8 @@ export function useReportMarkers({ mode, messages, fields, currentPathname, curr
             return;
         }
         await prepareFeedbackLocation(report);
-        const enrichedReport = await loadRepliesIfNeeded(report);
+        const hydratedReport = await hydrateFeedbackIfNeeded(report);
+        const enrichedReport = await loadRepliesIfNeeded(hydratedReport, hydratedReport.cases[0]?.id);
         openReplyComposer(enrichedReport);
     }, [
         clearHoverLeaveTimeout,

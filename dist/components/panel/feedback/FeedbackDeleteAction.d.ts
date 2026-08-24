@@ -3,6 +3,8 @@ type FeedbackDeleteActionProps = {
     reportId: string;
     onDelete: (id: string) => Promise<void>;
     disabled?: boolean;
+    locked?: boolean;
+    lockLabel?: string;
     messages: ReportMessages;
     className?: string;
     iconClassName?: string;
@@ -11,6 +13,6 @@ type FeedbackDeleteActionProps = {
     deleteAriaLabel?: string;
     deleteConfirmAriaLabel?: string;
 };
-export declare function FeedbackDeleteAction({ reportId, onDelete, disabled, messages, className, iconClassName, deleteTitle, deleteConfirmTitle, deleteAriaLabel, deleteConfirmAriaLabel, }: FeedbackDeleteActionProps): import("react").JSX.Element;
+export declare function FeedbackDeleteAction({ reportId, onDelete, disabled, locked, lockLabel, messages, className, iconClassName, deleteTitle, deleteConfirmTitle, deleteAriaLabel, deleteConfirmAriaLabel, }: FeedbackDeleteActionProps): import("react").JSX.Element;
 export {};
 //# sourceMappingURL=FeedbackDeleteAction.d.ts.map
