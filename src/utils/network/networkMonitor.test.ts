@@ -115,4 +115,15 @@ describe("networkMonitor", () => {
         await window.fetch("/api/stable-2");
         expect(getNetworkMonitorSnapshot()).not.toBe(first);
     });
+
+    it("ignores Next.js RSC flight requests", async () => {
+        installNetworkMonitor();
+
+        await window.fetch("/dashboard?_rsc=1abc");
+        await window.fetch("/api/users");
+
+        const snapshot = getNetworkMonitorSnapshot();
+        expect(snapshot.entries).toHaveLength(1);
+        expect(snapshot.entries[0]?.pathname).toBe("/api/users");
+    });
 });

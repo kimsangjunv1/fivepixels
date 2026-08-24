@@ -37,11 +37,11 @@ function ApiFlowListRow({ entry, selected, onSelect }: { entry: ApiFlowEntry; se
     const statusLabel = entry.status ?? messages.apiFlow.statusUnknown;
     const tone = entry.ok
         ? selected
-            ? "bg-emerald-100 text-emerald-900 ring-1 ring-inset ring-emerald-300"
-            : "bg-emerald-50 text-emerald-800 hover:bg-emerald-100"
+            ? "bg-[var(--adaptive-green50)] text-[var(--adaptive-green900)] ring-1 ring-inset ring-[var(--adaptive-green200)]"
+            : "bg-[var(--adaptive-green50)] text-[var(--adaptive-green900)] hover:bg-[var(--adaptive-green100)]"
         : selected
-          ? "bg-rose-100 text-rose-900 ring-1 ring-inset ring-rose-300"
-          : "bg-rose-50 text-rose-800 hover:bg-rose-100";
+          ? "bg-[var(--adaptive-red50)] text-[var(--adaptive-red900)] ring-1 ring-inset ring-[var(--adaptive-red200)]"
+          : "bg-[var(--adaptive-red50)] text-[var(--adaptive-red900)] hover:bg-[var(--adaptive-red100)]";
 
     return (
         <button
@@ -111,7 +111,7 @@ function ApiFlowDetailPane({ entry, copied, onCopy, onAttach, onClose }: { entry
                 />
 
                 {entry.errorMessage ? (
-                    <p className="text-[11px] text-rose-700">
+                    <p className="text-[11px] text-[var(--adaptive-red900)]">
                         {messages.apiFlow.detailError}: {entry.errorMessage}
                     </p>
                 ) : null}
