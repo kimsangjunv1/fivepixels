@@ -11,6 +11,7 @@ export const en = {
         executing: "Running...",
         ok: "OK",
         retry: "Retry",
+        noticeTitle: "Confirmation required",
         none: "(none)",
         all: "All",
         relativeTime: {

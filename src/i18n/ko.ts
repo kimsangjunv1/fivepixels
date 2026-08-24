@@ -13,6 +13,7 @@ export const ko: ReportMessages = {
         executing: "실행 중...",
         ok: "확인",
         retry: "다시 시도",
+        noticeTitle: "확인 필요",
         none: "(없음)",
         all: "전체",
         relativeTime: {

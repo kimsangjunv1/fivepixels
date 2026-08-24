@@ -11,6 +11,21 @@ export function parseApiFlowUrl(url) {
         return { pathname: url, queryParams: {} };
     }
 }
+/** Next.js App Router RSC / Flight fetches — noise for host-app API QA. */
+export function isRscNetworkRequest(url, headers) {
+    const { queryParams } = parseApiFlowUrl(url);
+    if ("_rsc" in queryParams) {
+        return true;
+    }
+    if (!headers) {
+        return false;
+    }
+    const accept = headers.get("accept") ?? "";
+    const rscHeader = headers.get("rsc") ?? headers.get("RSC");
+    const nextRouterState = headers.get("next-router-state-tree") ?? headers.get("Next-Router-State-Tree");
+    const nextRouterPrefetch = headers.get("next-router-prefetch") ?? headers.get("Next-Router-Prefetch");
+    return Boolean(rscHeader) || Boolean(nextRouterState) || Boolean(nextRouterPrefetch) || accept.includes("text/x-component");
+}
 export function describeApiFlowStatus(entry, messages) {
     if (entry.failureKind === "network") {
         return messages.apiFlow.statusNetworkError;

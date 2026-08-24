@@ -1,8 +1,8 @@
 import type { ReportProject } from "@/types/report.js";
 import { useReportPreferences } from "@/providers/reportContext.js";
-import { MOTION } from "@/constants/motionClasses.js";
 import { buildProjectComparisonLines } from "@/utils/feedback/feedbackTransferSchema.js";
 import type { ResolvedReportProject } from "@/utils/report/reportProject.js";
+import { ReportPanelNoticeDialog } from "./ReportPanelNoticeDialog.js";
 
 type ReportImportProjectMismatchDialogProps = {
     currentProject: ResolvedReportProject;
@@ -31,15 +31,28 @@ export function ReportImportProjectMismatchDialog({ currentProject, importedProj
     const comparisonLines = buildProjectComparisonLines(currentProject, importedProject);
 
     return (
-        <article className={`bg-[var(--adaptive-grey100)] ${MOTION.dialogIn}`}>
-            <section className="flex flex-col gap-[4px] p-[16px]">
-                <h6 className="text-[14px] font-bold text-[var(--adaptive-black900)]">{messages.importMismatch.title}</h6>
-                <p className="leading-[1.5] text-[var(--adaptive-black500)]">{messages.importMismatch.description}</p>
-            </section>
-
+        <ReportPanelNoticeDialog
+            title={messages.importMismatch.title}
+            description={messages.importMismatch.description}
+            sectioned
+            actions={[
+                {
+                    id: "cancel",
+                    label: messages.common.cancel,
+                    variant: "muted",
+                    onClick: onCancel,
+                },
+                {
+                    id: "proceed",
+                    label: messages.common.proceed,
+                    variant: "primary",
+                    onClick: onProceed,
+                },
+            ]}
+        >
             <section className="flex flex-col gap-[4px] p-[12px]">
                 <p className="text-[12px] text-[var(--adaptive-black700)]">{messages.importMismatch.currentData}</p>
-                <dl className="">
+                <dl>
                     {comparisonLines.map((line) => (
                         <div
                             key={line.label}
@@ -54,7 +67,7 @@ export function ReportImportProjectMismatchDialog({ currentProject, importedProj
 
             <section className="flex flex-col gap-[4px] p-[12px]">
                 <p className="text-[12px] text-[var(--adaptive-black700)]">{messages.importMismatch.updatedData}</p>
-                <dl className="">
+                <dl>
                     {comparisonLines.map((line) => (
                         <div
                             key={line.label}
@@ -71,24 +84,6 @@ export function ReportImportProjectMismatchDialog({ currentProject, importedProj
                     </div>
                 </dl>
             </section>
-
-            <section className="flex items-center justify-end gap-[10px] p-[16px]">
-                <button
-                    type="button"
-                    onClick={onCancel}
-                    className="bg-[var(--adaptive-grey300)] p-[4px_8px] rounded-[8px] font-semibold text-[var(--adaptive-black700)] border border-transparent"
-                >
-                    {messages.common.cancel}
-                </button>
-
-                <button
-                    type="button"
-                    onClick={onProceed}
-                    className="bg-[var(--adaptive-blue100)] p-[4px_8px] rounded-[8px] font-bold text-[var(--adaptive-blue500)] border border-transparent"
-                >
-                    {messages.common.proceed}
-                </button>
-            </section>
-        </article>
+        </ReportPanelNoticeDialog>
     );
 }

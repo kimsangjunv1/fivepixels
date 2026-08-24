@@ -12,6 +12,7 @@ import { MentionComposerInput } from "./MentionComposerInput.js";
 import { resolveComposerModeActionKind, THREAD_ACTION_STYLE } from "@/constants/threadActionStyles.js";
 import type { ElementMention } from "@/types/mention.js";
 import { stripMentionTokensForEmptyCheck } from "@/utils/mention/elementMentions.js";
+import { ReportPanelNoticeDialog } from "../ReportPanelNoticeDialog.js";
 
 export type ComposerMode = "deny" | "recheck" | "checkout" | "question";
 
@@ -452,12 +453,13 @@ export function FeedbackComposer({
             {!hideEditor ? (
                 <div className={`relative ${usesCaseEditor ? "min-h-0 flex-1" : ""}`}>
                     {errorMessage && !isFooterHandledError ? (
-                        <p
-                            role="alert"
-                            className="absolute bottom-full left-[8px] right-[8px] z-10 mb-[6px] rounded-[8px] border border-rose-200 bg-rose-50 px-[8px] py-[4px] text-[12px] leading-[1.4] text-rose-700 shadow-[0_2px_8px_rgba(0,0,0,0.08)]"
-                        >
-                            {errorMessage}
-                        </p>
+                        <div className="absolute bottom-full left-0 right-0 z-10 mb-[6px]">
+                            <ReportPanelNoticeDialog
+                                role="alert"
+                                title={messages.common.noticeTitle}
+                                description={errorMessage}
+                            />
+                        </div>
                     ) : null}
                     {usesCaseEditor ? (
                         <FeedbackCaseEditor

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useReportPreferences } from "@/providers/reportContext.js";
+import { ReportPanelNoticeDialog } from "./ReportPanelNoticeDialog.js";
 
 export type CommandExecuteResult = { status: "success"; message: string } | { status: "pending" };
 
@@ -55,7 +56,7 @@ export function ReportCommandPanel({ onExecute, onClose, notice = null, onNotice
     };
 
     return (
-        <section className="flex min-h-0 max-h-[51.2rem] flex-1 flex-col bg-[var(--adaptive-black50)] overflow-hidden">
+        <section className="flex min-h-0 max-h-[51.2rem] flex-1 flex-col overflow-hidden bg-[var(--adaptive-black50)]">
             <div className="border-b border-[var(--adaptive-black200)] p-[12px]">
                 <p className="text-[14px] font-bold text-[var(--adaptive-black900)]">{messages.command.title}</p>
                 <p className="mt-[4px] text-[12px] leading-[1.5] text-[var(--adaptive-black500)]">{messages.command.description}</p>
@@ -70,13 +71,30 @@ export function ReportCommandPanel({ onExecute, onClose, notice = null, onNotice
                     className="min-h-[160px] flex-1 resize-none bg-[var(--adaptive-overlay-surface)] p-[4px] font-mono text-[12px] leading-[1.5] text-[var(--adaptive-overlay-text)] outline-none placeholder:text-[var(--adaptive-overlay-text-muted)]"
                 />
 
-                {statusMessage ? <p className={`text-[12px] ${isError ? "text-rose-700" : "text-[var(--adaptive-green600,#2e7d32)]"}`}>{statusMessage}</p> : null}
+                {statusMessage ? (
+                    <ReportPanelNoticeDialog
+                        role={isError ? "alert" : "status"}
+                        title={messages.common.noticeTitle}
+                        description={statusMessage}
+                        actions={[
+                            {
+                                id: "dismiss",
+                                label: messages.common.ok,
+                                variant: "primary",
+                                onClick: () => {
+                                    setStatusMessage("");
+                                    setIsError(false);
+                                },
+                            },
+                        ]}
+                    />
+                ) : null}
 
-                <div className="flex items-center justify-end gap-[8px]">
+                <div className="flex items-center justify-end gap-[8px] p-[12px]">
                     <button
                         type="button"
                         onClick={onClose}
-                        className="rounded-[8px] border border-[var(--adaptive-black300)] px-[12px] py-[6px] text-[12px] font-semibold text-[var(--adaptive-black700)]"
+                        className="rounded-[8px] border border-[var(--adaptive-grey300)] bg-transparent p-[4px_8px] text-[12px] font-semibold text-[var(--adaptive-black700)]"
                     >
                         {messages.common.close}
                     </button>
@@ -84,7 +102,7 @@ export function ReportCommandPanel({ onExecute, onClose, notice = null, onNotice
                         type="button"
                         disabled={!raw.trim() || isExecuting}
                         onClick={handleExecute}
-                        className="rounded-[8px] bg-[var(--adaptive-blue500)] px-[12px] py-[6px] text-[12px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
+                        className="rounded-[8px] border border-transparent bg-[var(--adaptive-blue100)] p-[4px_8px] text-[12px] font-bold text-[var(--adaptive-blue500)] disabled:cursor-not-allowed disabled:opacity-50"
                     >
                         {isExecuting ? messages.common.executing : messages.common.execute}
                     </button>

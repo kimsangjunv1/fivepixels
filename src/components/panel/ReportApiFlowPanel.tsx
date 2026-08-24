@@ -8,6 +8,7 @@ import { redactJsonLikeText } from "@/utils/network/redactNetworkPayload.js";
 
 /** Shared height budget for list / split panes — keeps overflow-y-auto independent of parent flex height. */
 const API_FLOW_BODY_HEIGHT = "h-[min(52dvh,calc(100svh-280px))]";
+// const API_FLOW_BODY_HEIGHT = "h-[min(52dvh,calc(100svh-280px))]";
 
 function formatListTime(timestamp: number) {
     return new Date(timestamp).toLocaleTimeString(undefined, {
@@ -211,7 +212,7 @@ export function ReportApiFlowPanel() {
                     />
                 </div>
             ) : (
-                <div className={`overflow-y-auto overscroll-contain ${API_FLOW_BODY_HEIGHT}`}>{list}</div>
+                <div className={`overflow-y-auto overscroll-contain`}>{list}</div>
             )}
         </Fragment>
     );

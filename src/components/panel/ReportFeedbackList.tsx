@@ -10,6 +10,7 @@ import { IntegrationLockTip, useIntegrationLock } from "@/components/ui/Integrat
 import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
 import { PanelDropdownMenu, PanelDropdownMenuItem } from "./PanelDropdownMenu.js";
 import { FeedbackListItem } from "./feedback/FeedbackListItem.js";
+import { ReportPanelNoticeDialog } from "./ReportPanelNoticeDialog.js";
 
 const FEEDBACK_PAGE_SIZE = 20;
 
@@ -197,9 +198,7 @@ export function ReportFeedbackList() {
                                             aria-label={messages.feedbackList.scopeAriaLabel}
                                             className={`${scopeMenuOpen ? "bg-[var(--adaptive-accent-coral)] hover:bg-[var(--adaptive-accent-coral-hover)]" : "hover:bg-[var(--adaptive-black50)]"} flex h-full min-w-[72px] items-center justify-center gap-[4px] px-[8px] text-[14px] text-[var(--adaptive-black800)] outline-none disabled:cursor-not-allowed disabled:opacity-50`}
                                         >
-                                            <span className={`${scopeMenuOpen ? "text-white" : ""} truncate`}>
-                                                {listAllLock.locked ? messages.feedbackList.scopeAllPages : scopeLabel}
-                                            </span>
+                                            <span className={`${scopeMenuOpen ? "text-white" : ""} truncate`}>{listAllLock.locked ? messages.feedbackList.scopeAllPages : scopeLabel}</span>
                                             <ChevronDownIcon className={`h-[14px] w-[14px] shrink-0 text-[var(--adaptive-black600)] transition-transform ${scopeMenuOpen ? "rotate-180" : ""}`} />
                                         </button>
                                     }
@@ -289,17 +288,19 @@ export function ReportFeedbackList() {
 
             <div className="min-h-0 min-w-0 flex-1 overflow-y-auto bg-[var(--adaptive-black50)]">
                 {isError ? (
-                    <div className="m-[8px] space-y-1 rounded-md border border-[var(--adaptive-border-subtle)] bg-rose-50 p-2 text-xs text-rose-800">
-                        <strong className="text-sm font-semibold">{messages.feedbackList.loadFailedTitle}</strong>
-                        <p>{queryErrorMessage ?? messages.feedbackList.loadFailedRetry}</p>
-                        <button
-                            type="button"
-                            onClick={() => void refetch()}
-                            className="inline-flex items-center justify-center rounded-md border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface)] px-3 py-1 text-xs font-medium text-[var(--adaptive-text-secondary)]"
-                        >
-                            {messages.common.retry}
-                        </button>
-                    </div>
+                    <ReportPanelNoticeDialog
+                        role="alertdialog"
+                        title={messages.feedbackList.loadFailedTitle}
+                        description={queryErrorMessage ?? messages.feedbackList.loadFailedRetry}
+                        actions={[
+                            {
+                                id: "retry",
+                                label: messages.common.retry,
+                                variant: "primary",
+                                onClick: () => void refetch(),
+                            },
+                        ]}
+                    />
                 ) : null}
 
                 {!isError && !isFetching && filteredReports.length === 0 ? (
@@ -317,12 +318,8 @@ export function ReportFeedbackList() {
                                         </span>
                                     </HoverTooltip>
                                 </h6>
-                                <p className="whitespace-break-spaces text-[12px] leading-[1.5] text-[var(--adaptive-black500)]">
-                                    {messages.feedbackList.emptyPersistenceRequiredHint}
-                                </p>
-                                <p className="mt-[4px] font-mono text-[11px] leading-[1.4] text-[var(--adaptive-black600)]">
-                                    {persistenceLock.missingHandlers.join(", ")}
-                                </p>
+                                <p className="whitespace-break-spaces text-[12px] leading-[1.5] text-[var(--adaptive-black500)]">{messages.feedbackList.emptyPersistenceRequiredHint}</p>
+                                <p className="mt-[4px] font-mono text-[11px] leading-[1.4] text-[var(--adaptive-black600)]">{persistenceLock.missingHandlers.join(", ")}</p>
                             </>
                         ) : (
                             <>
@@ -349,7 +346,7 @@ export function ReportFeedbackList() {
                                     type="button"
                                     onClick={() => toggleGroup(dateKey)}
                                     aria-expanded={isExpanded}
-                                    className={`${isFirst ? "border-b border-b-[var(--adaptive-border-subtle)]" : "border-y border-y-[var(--adaptive-border-subtle)]"} bg-[var(--adaptive-black300)] sticky top-0 z-10 flex w-full items-center justify-between p-[4px_16px]`}
+                                    className={`${isFirst ? "border-b border-b-[var(--adaptive-border-subtle)]" : "border-y border-y-[var(--adaptive-border-subtle)]"} bg-[var(--adaptive-black50)] sticky top-0 z-10 flex w-full items-center justify-between p-[4px_16px]`}
                                 >
                                     <div className="w-[3px] h-[3px] bg-[var(--adaptive-black500)] rounded-full" />
                                     <section className="flex items-center">

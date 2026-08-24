@@ -31,6 +31,7 @@ export type ReportMessages = {
         executing: string;
         ok: string;
         retry: string;
+        noticeTitle: string;
         none: string;
         all: string;
         relativeTime: {
