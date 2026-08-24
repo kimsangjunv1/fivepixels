@@ -2,12 +2,19 @@ export type { FivePixelsProps, ReportProviderProps } from "@/types/publicApi.js"
 export type {
     FivePixelsAdapter,
     FivePixelsAuthAdapter,
+    FivePixelsCaseAssigneePayload,
+    FivePixelsCaseStatusPayload,
     FivePixelsCasesAdapter,
+    FivePixelsCaseTimelineResult,
     FivePixelsFeedbackAdapter,
+    FivePixelsFeedbackAssigneePayload,
+    FivePixelsFeedbackStatusPayload,
     FivePixelsMarkersAdapter,
+    FivePixelsMarkersListParams,
     FivePixelsMembersAdapter,
     FivePixelsRepliesAdapter,
     FivePixelsSessionAdapter,
+    UpdateReplyPayload,
 } from "@/types/adapter.js";
 export { FivePixels } from "./FivePixels.js";
 export { DotWaveOverlay, type DotWaveOrigin, type DotWaveOverlayProps } from "@/components/overlay/DotWaveOverlay.js";

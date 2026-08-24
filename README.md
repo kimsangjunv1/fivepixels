@@ -50,14 +50,14 @@ function createAdapter(): FivePixelsAdapter {
     return {
         markers: {
             list: ({ pathname }) =>
-                fetch(`/api${projectBase}/feedback-markers?pathname=${encodeURIComponent(pathname)}`).then((r) => r.json()),
+                fetch(`/api/v1/fivepixels${projectBase}/feedbacks/markers?pathname=${encodeURIComponent(pathname)}`).then((r) => r.json()),
         },
         feedback: {
             create: (payload) =>
-                fetch(`/api${projectBase}/feedbacks`, { method: "POST", body: JSON.stringify(payload) }).then((r) => r.json()),
-            getForUi: (id) => fetch(`/api/ui${projectBase}/feedbacks/${id}`).then((r) => r.json()),
+                fetch(`/api/v1/fivepixels${projectBase}/feedbacks`, { method: "POST", body: JSON.stringify(payload) }).then((r) => r.json()),
+            getForUi: (id) => fetch(`/api/v1/fivepixels${projectBase}/feedbacks/${id}/overview`).then((r) => r.json()),
             update: (id, payload) =>
-                fetch(`/api${projectBase}/feedbacks/${id}`, { method: "PATCH", body: JSON.stringify(payload) }).then((r) => r.json()),
+                fetch(`/api/v1/fivepixels${projectBase}/feedbacks/${id}`, { method: "PATCH", body: JSON.stringify(payload) }).then((r) => r.json()),
         },
     };
 }
