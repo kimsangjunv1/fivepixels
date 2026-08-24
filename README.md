@@ -86,8 +86,9 @@ REST 경로·필수 handler·선택 handler는 `examples/basic/src/fivepixels/ad
 | `visibility` | `{ enabled?, devOnly?, routeKey? }` | 표시 여부. `devOnly`면 개발 환경에서만 노출. |
 | `team` | `{ user?, reviewers?, requireReviewerKey? }` | 작성자·리뷰어. `user`: `{ id, name }`. |
 | `mode` | `"default"` \| `"presentation"` | 프레젠테이션 모드(시연·데모용 뷰어 전환). |
-| `sync` | `"local"` \| `"api"` \| `"artemis"` | 인증·저장 전략. 기본값 `"local"`. |
-| `adapter` | `FivePixelsAdapter` | 백엔드 연동 handler 묶음. `sync="api"` / `"artemis"`에서 persistence·로그인에 사용. |
+| `sync` | `"local"` \| `"api"` \| `"artemis"` | 저장 전략. 기본값 `"local"`. |
+| `requireAuth` | `boolean` | `api`/`artemis`에서 회사 로그인 필수 여부. 기본 `true`. `false`면 이름·개인키 온보딩. |
+| `adapter` | `FivePixelsAdapter` | 백엔드 연동 handler 묶음. `sync="api"` / `"artemis"`에서 persistence·(선택) 로그인에 사용. |
 | `fields` | `ReportField[]` | 커스텀 필드 (`textarea`, `checkbox`). |
 | `onNavigate` | `(pathname) => void` | View 모드에서 경로 이동. |
 | `onRevealTarget` | `(report) => boolean \| Promise<boolean>` | 다른 페이지 피드백 타깃 노출 시도. |
@@ -95,7 +96,7 @@ REST 경로·필수 handler·선택 handler는 `examples/basic/src/fivepixels/ad
 | `onReply` | `({ feedbackId, message }) => void` | 답변 side effect. |
 | `github` | `{ enabled?, modes?, onCreate? }` | GitHub Issue 연동. |
 
-> `sync="local"`(기본)에서는 `adapter`를 생략하면 localStorage adapter가 사용됩니다. `sync="api"` / `"artemis"`에서는 `adapter.markers.list`, `adapter.feedback.create`, `adapter.feedback.update`(또는 `adapter.cases.update`)가 **필수**입니다.
+> `sync="local"`(기본)에서는 `adapter`를 생략하면 localStorage adapter가 사용됩니다. `sync="api"` / `"artemis"`에서는 `adapter.markers.list`, `adapter.feedback.create`, `adapter.feedback.update`(또는 `adapter.cases.update`)가 **필수**입니다. 회사 로그인이 필요하면 `requireAuth`(기본 `true`)로 로그인 랜딩을 쓰고, `requireAuth={false}`면 local처럼 이름·개인키 온보딩 후 API에 저장합니다.
 
 **타입 찾는 법:** 공개 props → `FivePixelsProps` (`src/types/publicApi.ts`) · adapter surface → `FivePixelsAdapter` (`src/types/adapter.ts`) · payload/엔티티 → `CreateReportFeedbackPayload` / `ReportFeedback` 등 (`src/types/report.ts`).
 

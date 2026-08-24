@@ -1,7 +1,7 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import { useMemo, useState } from "react";
 import { APPEARANCE_OPTION_VALUES } from "../../constants/appearance.js";
-import { isRemoteLoginMethod, resolveFivePixelsSync } from "../../constants/loginMethod.js";
+import { resolveFivePixelsSync, resolveRequireAuth, usesRemoteAuthLogin } from "../../constants/loginMethod.js";
 import { MARKER_FILL_STYLE_VALUES } from "../../constants/markerAppearance.js";
 import { PANEL_ROLE_VALUES } from "../../constants/panelRole.js";
 import { useReportPreferences, useReportSession } from "../../providers/reportContext.js";
@@ -19,20 +19,21 @@ import { PanelOptionSwitch } from "./PanelOptionSwitch.js";
 import { PanelTabSelector } from "./PanelTabSelector.js";
 import { ApiLoginStep, ApiRegisterResultStep, ApiRegisterStep, ArtemisLoginStep, } from "./onboarding/PanelOnboardingAuthSteps.js";
 const LOCALE_OPTIONS = ["en", "ko"];
-function getAuthEntryStep(sync) {
-    if (sync === "api") {
+function getAuthEntryStep(sync, requireAuth) {
+    if (sync === "api" && requireAuth) {
         return "api-login";
     }
-    if (sync === "artemis") {
+    if (sync === "artemis" && requireAuth) {
         return "artemis-login";
     }
     return "intro";
 }
 export function PanelOnboarding() {
-    const { messages, locale, setLocale, panelAppearance, setPanelAppearance, markerAppearance, setMarkerSize, setMarkerShape, setMarkerFillStyle, typography, panelRole, setPanelRole, completeOnboarding, restoreFromBackup, selfProfile, personalKeyCandidates, resolvedTabAvailabilityContext, savePanelTabPreference, persistenceStatus, onCreateReviewerRequest, loginMethod: storedLoginMethod, loginWithApi, registerWithApi, loginWithArtemis, completeRemoteOnboarding, } = useReportPreferences();
+    const { messages, locale, setLocale, panelAppearance, setPanelAppearance, markerAppearance, setMarkerSize, setMarkerShape, setMarkerFillStyle, typography, panelRole, setPanelRole, completeOnboarding, restoreFromBackup, selfProfile, personalKeyCandidates, resolvedTabAvailabilityContext, savePanelTabPreference, persistenceStatus, onCreateReviewerRequest, loginMethod: storedLoginMethod, requireAuth: requireAuthProp, loginWithApi, registerWithApi, loginWithArtemis, completeRemoteOnboarding, } = useReportPreferences();
     const { setErrorMessage } = useReportSession();
     const onboarding = messages.onboarding;
     const sync = resolveFivePixelsSync(storedLoginMethod);
+    const requireAuth = resolveRequireAuth(sync, requireAuthProp);
     const canSubmitRegistrationRequest = isTeamWriteEnabled(persistenceStatus) && hasTeamRequestHandler({ onCreateReviewerRequest });
     const [step, setStep] = useState("language");
     const [name, setName] = useState(selfProfile?.name ?? "");
@@ -190,7 +191,7 @@ export function PanelOnboarding() {
         }
     };
     const handleFinishSharedSetup = () => {
-        if (isRemoteLoginMethod(sync)) {
+        if (usesRemoteAuthLogin(sync, requireAuth)) {
             savePanelTabPreference({
                 visibleTabs: selectedTabs,
                 customized: true,
@@ -200,7 +201,7 @@ export function PanelOnboarding() {
         }
         setStep("key");
     };
-    const sharedSetupBackStep = getAuthEntryStep(sync);
+    const sharedSetupBackStep = getAuthEntryStep(sync, requireAuth);
     const registerErrorMessage = registerErrorKind === "account-already-exists"
         ? onboarding.registerDuplicate
         : registerErrorKind === "invalid-registration"
@@ -270,7 +271,7 @@ export function PanelOnboarding() {
             setRestoreError(onboarding.restoreDropFailed);
         }
     };
-    return (_jsx("section", { className: PANEL_GATE_SECTION_CLASS, children: step === "language" ? (_jsxs(_Fragment, { children: [_jsxs("div", { children: [_jsx("h6", { className: PANEL_GATE_TITLE_CLASS, children: onboarding.languageStepTitle }), _jsx("p", { className: PANEL_GATE_DESCRIPTION_CLASS, children: onboarding.languageStepDescription })] }), _jsx(PanelOptionSwitch, { options: localeOptions, value: locale, onChange: setLocale, ariaLabel: messages.moreMenu.languageAriaLabel }), _jsx("div", { className: "flex items-center justify-end", children: _jsx("button", { type: "button", onClick: () => setStep(getAuthEntryStep(sync)), className: PANEL_GATE_PRIMARY_BUTTON_CLASS, children: onboarding.next }) })] })) : step === "api-login" ? (_jsx(ApiLoginStep, { copy: onboarding, loginId: loginId, password: password, error: authError, busy: isAuthBusy, onLoginIdChange: (value) => {
+    return (_jsx("section", { className: PANEL_GATE_SECTION_CLASS, children: step === "language" ? (_jsxs(_Fragment, { children: [_jsxs("div", { children: [_jsx("h6", { className: PANEL_GATE_TITLE_CLASS, children: onboarding.languageStepTitle }), _jsx("p", { className: PANEL_GATE_DESCRIPTION_CLASS, children: onboarding.languageStepDescription })] }), _jsx(PanelOptionSwitch, { options: localeOptions, value: locale, onChange: setLocale, ariaLabel: messages.moreMenu.languageAriaLabel }), _jsx("div", { className: "flex items-center justify-end", children: _jsx("button", { type: "button", onClick: () => setStep(getAuthEntryStep(sync, requireAuth)), className: PANEL_GATE_PRIMARY_BUTTON_CLASS, children: onboarding.next }) })] })) : step === "api-login" ? (_jsx(ApiLoginStep, { copy: onboarding, loginId: loginId, password: password, error: authError, busy: isAuthBusy, onLoginIdChange: (value) => {
                 setLoginId(value);
                 setAuthError("");
             }, onPasswordChange: (value) => {

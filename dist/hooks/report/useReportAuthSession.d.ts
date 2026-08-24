@@ -26,11 +26,12 @@ export type UseReportAuthSessionParams = {
     requireReviewerKey: boolean;
     pixelsMode: FivePixelsMode;
     sync?: FivePixelsSync;
+    requireAuth?: boolean;
     onApiLogin?: ReportAuthHandlers["onApiLogin"];
     onApiRegister?: ReportAuthHandlers["onApiRegister"];
     onArtemisLogin?: ReportAuthHandlers["onArtemisLogin"];
 };
-export declare function useReportAuthSession({ projectId, environment, authors, identify, requireReviewerKey, pixelsMode, sync: syncProp, onApiLogin, onApiRegister, onArtemisLogin, }: UseReportAuthSessionParams): {
+export declare function useReportAuthSession({ projectId, environment, authors, identify, requireReviewerKey, pixelsMode, sync: syncProp, requireAuth: requireAuthProp, onApiLogin, onApiRegister, onArtemisLogin, }: UseReportAuthSessionParams): {
     selfProfile: import("../useSelfProfile.js").SelfProfile | null;
     saveSelfProfile: (profile: import("../useSelfProfile.js").SelfProfile) => void;
     markOnboardingComplete: () => void;
@@ -81,6 +82,7 @@ export declare function useReportAuthSession({ projectId, environment, authors, 
     authDiagnostics: AuthDiagnostics;
     panelView: PanelView;
     loginMethod: "local" | "api" | "artemis";
+    requireAuth: boolean;
     loginWithApi: (payload: ReportApiLoginPayload) => Promise<ReportAuthUser>;
     registerWithApi: (payload: ReportApiRegisterPayload) => Promise<void>;
     loginWithArtemis: () => Promise<ReportAuthUser>;

@@ -21,6 +21,7 @@ function AppContent() {
                 }}
                 // sync="local"
                 sync="api"
+                // requireAuth={false} // name + personal key, still API storage
                 adapter={createFivepixelsAdapter({
                     baseUrl: "/api/v1/fivepixels",
                     projectId: PROJECT_ID,

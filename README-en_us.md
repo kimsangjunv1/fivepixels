@@ -86,8 +86,9 @@ See `examples/basic/src/fivepixels/adapter.ts` and `FivePixelsAdapter` (`src/typ
 | `visibility` | `{ enabled?, devOnly?, routeKey? }` | Mount control. `devOnly` limits to dev environments. |
 | `team` | `{ user?, reviewers?, requireReviewerKey? }` | Author and reviewers. `user`: `{ id, name }`. |
 | `mode` | `"default"` \| `"presentation"` | Presentation mode for demos and viewer switching. |
-| `sync` | `"local"` \| `"api"` \| `"artemis"` | Auth and persistence strategy. Defaults to `"local"`. |
-| `adapter` | `FivePixelsAdapter` | Backend handler bundle used for remote sync and API login. |
+| `sync` | `"local"` \| `"api"` \| `"artemis"` | Persistence strategy. Defaults to `"local"`. |
+| `requireAuth` | `boolean` | For `api`/`artemis`, whether company login is required. Defaults to `true`. When `false`, uses name + personal-key onboarding. |
+| `adapter` | `FivePixelsAdapter` | Backend handlers for remote persistence and optional API login. |
 | `fields` | `ReportField[]` | Custom fields (`textarea`, `checkbox`). |
 | `onNavigate` | `(pathname) => void` | Navigate from View mode. |
 | `onRevealTarget` | `(report) => boolean \| Promise<boolean>` | Reveal a cross-page feedback target. |
@@ -95,7 +96,7 @@ See `examples/basic/src/fivepixels/adapter.ts` and `FivePixelsAdapter` (`src/typ
 | `onReply` | `({ feedbackId, message }) => void` | Reply side effect hook. |
 | `github` | `{ enabled?, modes?, onCreate? }` | GitHub Issue integration. |
 
-> With `sync="local"` (default), omitting `adapter` uses the localStorage adapter. With `sync="api"` or `"artemis"`, `adapter.markers.list`, `adapter.feedback.create`, and `adapter.feedback.update` (or `adapter.cases.update`) are **required**.
+> With `sync="local"` (default), omitting `adapter` uses the localStorage adapter. With `sync="api"` or `"artemis"`, `adapter.markers.list`, `adapter.feedback.create`, and `adapter.feedback.update` (or `adapter.cases.update`) are **required**. Use `requireAuth` (default `true`) for the company login gate, or `requireAuth={false}` for local-style name + personal-key onboarding while still storing via the API.
 
 **Finding types:** public props → `FivePixelsProps` (`src/types/publicApi.ts`) · adapter surface → `FivePixelsAdapter` (`src/types/adapter.ts`) · payloads/entities → `CreateReportFeedbackPayload`, `ReportFeedback`, etc. (`src/types/report.ts`).
 

@@ -1,6 +1,6 @@
 import { useMemo, useState, type DragEvent } from "react";
 import { APPEARANCE_OPTION_VALUES } from "@/constants/appearance.js";
-import { isRemoteLoginMethod, resolveFivePixelsSync, type FivePixelsSync } from "@/constants/loginMethod.js";
+import { resolveFivePixelsSync, resolveRequireAuth, usesRemoteAuthLogin, type FivePixelsSync } from "@/constants/loginMethod.js";
 import { MARKER_FILL_STYLE_VALUES, type AppearanceScale, type MarkerFillStyle, type MarkerShape } from "@/constants/markerAppearance.js";
 import { PANEL_ROLE_VALUES, type PanelRole } from "@/constants/panelRole.js";
 import type { UserSelectablePanelTab } from "@/constants/panelTabRegistry.js";
@@ -48,11 +48,11 @@ type OnboardingStep =
 
 const LOCALE_OPTIONS = ["en", "ko"] as const satisfies readonly ReportLocale[];
 
-function getAuthEntryStep(sync: FivePixelsSync): Extract<OnboardingStep, "intro" | "api-login" | "artemis-login"> {
-    if (sync === "api") {
+function getAuthEntryStep(sync: FivePixelsSync, requireAuth: boolean): Extract<OnboardingStep, "intro" | "api-login" | "artemis-login"> {
+    if (sync === "api" && requireAuth) {
         return "api-login";
     }
-    if (sync === "artemis") {
+    if (sync === "artemis" && requireAuth) {
         return "artemis-login";
     }
     return "intro";
@@ -81,6 +81,7 @@ export function PanelOnboarding() {
         persistenceStatus,
         onCreateReviewerRequest,
         loginMethod: storedLoginMethod,
+        requireAuth: requireAuthProp,
         loginWithApi,
         registerWithApi,
         loginWithArtemis,
@@ -89,6 +90,7 @@ export function PanelOnboarding() {
     const { setErrorMessage } = useReportSession();
     const onboarding = messages.onboarding;
     const sync = resolveFivePixelsSync(storedLoginMethod);
+    const requireAuth = resolveRequireAuth(sync, requireAuthProp);
     const canSubmitRegistrationRequest = isTeamWriteEnabled(persistenceStatus) && hasTeamRequestHandler({ onCreateReviewerRequest });
     const [step, setStep] = useState<OnboardingStep>("language");
     const [name, setName] = useState(selfProfile?.name ?? "");
@@ -254,7 +256,7 @@ export function PanelOnboarding() {
     };
 
     const handleFinishSharedSetup = () => {
-        if (isRemoteLoginMethod(sync)) {
+        if (usesRemoteAuthLogin(sync, requireAuth)) {
             savePanelTabPreference({
                 visibleTabs: selectedTabs,
                 customized: true,
@@ -266,7 +268,7 @@ export function PanelOnboarding() {
         setStep("key");
     };
 
-    const sharedSetupBackStep: OnboardingStep = getAuthEntryStep(sync);
+    const sharedSetupBackStep: OnboardingStep = getAuthEntryStep(sync, requireAuth);
     const registerErrorMessage =
         registerErrorKind === "account-already-exists"
             ? onboarding.registerDuplicate
@@ -366,7 +368,7 @@ export function PanelOnboarding() {
                     <div className="flex items-center justify-end">
                         <button
                             type="button"
-                            onClick={() => setStep(getAuthEntryStep(sync))}
+                            onClick={() => setStep(getAuthEntryStep(sync, requireAuth))}
                             className={PANEL_GATE_PRIMARY_BUTTON_CLASS}
                         >
                             {onboarding.next}

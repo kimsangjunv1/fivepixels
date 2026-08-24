@@ -16,12 +16,21 @@ export type FivePixelsProps = {
     team?: ReportTeam;
     mode?: FivePixelsMode;
     /**
-     * Auth / identity sync strategy for the panel.
-     * - `local` (default): localStorage + personal key flow
-     * - `api`: company API login via `adapter.auth`
-     * - `artemis`: Artemis Google login via `adapter.auth.artemisLogin`
+     * Persistence strategy for the panel.
+     * - `local` (default): localStorage
+     * - `api`: company API via `adapter` (markers / feedback / …)
+     * - `artemis`: Artemis-backed remote persistence
+     *
+     * Identity / login is controlled separately by `requireAuth`.
      */
     sync?: FivePixelsSync;
+    /**
+     * When `sync` is `api` or `artemis`, whether company login is required.
+     * - `true` (default for remote sync): login / Artemis gate
+     * - `false`: local-style onboarding (display name + personal key), still using API storage
+     * Ignored when `sync="local"`.
+     */
+    requireAuth?: boolean;
     /** Backend integration handlers grouped by domain. */
     adapter?: FivePixelsAdapter;
     fields?: ReportField[];

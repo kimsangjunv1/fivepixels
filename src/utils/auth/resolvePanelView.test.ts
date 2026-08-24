@@ -6,6 +6,7 @@ describe("resolvePanelView", () => {
         isPresentationMode: false,
         requiresReviewerKey: true,
         loginMethod: "local" as const,
+        requireAuth: false,
         remoteOnboardingCompleted: false,
         hasPersistedPersonalKey: false,
         selfProfileCompleted: undefined as boolean | undefined,
@@ -32,6 +33,7 @@ describe("resolvePanelView", () => {
             resolvePanelView({
                 ...localBase,
                 loginMethod: "api",
+                requireAuth: true,
                 remoteOnboardingCompleted: true,
                 selfProfileCompleted: true,
             }),
@@ -43,6 +45,7 @@ describe("resolvePanelView", () => {
             resolvePanelView({
                 ...localBase,
                 loginMethod: "artemis",
+                requireAuth: true,
                 remoteOnboardingCompleted: true,
                 hasPersistedPersonalKey: false,
             }),
@@ -54,10 +57,35 @@ describe("resolvePanelView", () => {
             resolvePanelView({
                 ...localBase,
                 loginMethod: "api",
+                requireAuth: true,
                 remoteOnboardingCompleted: false,
                 hasPersistedPersonalKey: true,
                 selfProfileCompleted: false,
             }),
         ).toBe("onboarding");
+    });
+
+    it("uses personal-key onboarding when api sync has requireAuth false", () => {
+        expect(
+            resolvePanelView({
+                ...localBase,
+                loginMethod: "api",
+                requireAuth: false,
+                requiresReviewerKey: false,
+                remoteOnboardingCompleted: false,
+                hasPersistedPersonalKey: false,
+            }),
+        ).toBe("onboarding");
+
+        expect(
+            resolvePanelView({
+                ...localBase,
+                loginMethod: "api",
+                requireAuth: false,
+                requiresReviewerKey: false,
+                hasPersistedPersonalKey: true,
+                selfProfileCompleted: false,
+            }),
+        ).toBe("ready");
     });
 });

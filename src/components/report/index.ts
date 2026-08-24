@@ -99,7 +99,7 @@ export {
 } from "@/utils/report/reportCases.js";
 export { createReportAuthMessage, parsePublicKey, verifyReportAuthProof } from "@/utils/auth/personalKey.js";
 export { ReportAuthError, resolveRegistrationError } from "@/utils/auth/reportAuthError.js";
-export { FIVE_PIXELS_SYNC_VALUES, isRemoteLoginMethod, resolveFivePixelsSync, type FivePixelsSync } from "@/constants/loginMethod.js";
+export { FIVE_PIXELS_SYNC_VALUES, isRemoteLoginMethod, resolveFivePixelsSync, resolveRequireAuth, usesRemoteAuthLogin, type FivePixelsSync } from "@/constants/loginMethod.js";
 export { REPORT_STATUS_FLOW, REPORT_STATUS_TRANSITIONS } from "@/types/report.js";
 export {
     buildGitHubIssueUpdate,

@@ -54,6 +54,7 @@ export type ReportStateConfig = {
     messageOverrides?: DeepPartialReportMessages;
     pixelsMode?: FivePixelsMode;
     sync?: FivePixelsSync;
+    requireAuth?: boolean;
     replyHistory: import("@/utils/report/reportUi.js").ResolvedReplyHistoryConfig;
     networkMonitor?: boolean;
 };
@@ -83,6 +84,7 @@ export function useReportState({
     messageOverrides,
     pixelsMode = "default",
     sync = "local",
+    requireAuth,
     replyHistory,
     networkMonitor = true,
 }: ReportStateConfig) {
@@ -113,6 +115,7 @@ export function useReportState({
         requireReviewerKey,
         pixelsMode,
         sync,
+        requireAuth,
         onApiLogin: adapter?.auth?.login,
         onApiRegister: adapter?.auth?.signup,
         onArtemisLogin: adapter?.auth?.artemisLogin,

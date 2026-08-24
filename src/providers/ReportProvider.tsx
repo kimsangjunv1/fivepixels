@@ -46,6 +46,7 @@ type ReportProviderEnabledProps = Omit<ReportProviderProps, "project" | "ui" | "
     messageOverrides?: DeepPartialReportMessages;
     pixelsMode: FivePixelsMode;
     sync: FivePixelsSync;
+    requireAuth?: boolean;
     networkMonitor: boolean;
 };
 
@@ -75,6 +76,7 @@ function ReportProviderEnabled({
     messageOverrides,
     pixelsMode,
     sync,
+    requireAuth,
     networkMonitor,
     children,
 }: ReportProviderEnabledProps) {
@@ -93,6 +95,7 @@ function ReportProviderEnabled({
         identify,
         pixelsMode,
         sync,
+        requireAuth,
         adapter,
         onNavigate,
         onRevealTarget,
@@ -126,6 +129,7 @@ export function ReportProvider({
     team,
     mode = "default",
     sync = "local",
+    requireAuth,
     adapter,
     fields,
     onNavigate,
@@ -173,6 +177,7 @@ export function ReportProvider({
             messageOverrides={ui?.messages}
             pixelsMode={mode}
             sync={sync}
+            requireAuth={requireAuth}
             networkMonitor={networkMonitor}
         >
             {children}

@@ -48,7 +48,7 @@ export function assembleReportContextValue({ panel, auth, draft, markers, mutati
         teamManage: hasTeamAdminHandlers(teamHandlers),
         dataTransfer: panel.canTransferFeedback,
     });
-    const adapterIntegrationStatus = buildAdapterIntegrationStatus(adapter, integrationCapabilities.sync, integrationCapabilities, github);
+    const adapterIntegrationStatus = buildAdapterIntegrationStatus(adapter, integrationCapabilities.sync, integrationCapabilities, github, auth.requireAuth);
     return {
         panelAppearance: panel.panelAppearance,
         setPanelAppearance: panel.setPanelAppearance,
@@ -94,6 +94,7 @@ export function assembleReportContextValue({ panel, auth, draft, markers, mutati
         authorSelectionLocked: auth.authorSelectionLocked,
         panelView: auth.panelView,
         loginMethod: auth.loginMethod,
+        requireAuth: auth.requireAuth,
         loginWithApi: auth.loginWithApi,
         registerWithApi: auth.registerWithApi,
         loginWithArtemis: auth.loginWithArtemis,

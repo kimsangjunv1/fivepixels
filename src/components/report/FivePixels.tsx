@@ -18,6 +18,7 @@ export function FivePixels({
     team,
     mode = "default",
     sync = "local",
+    requireAuth,
     adapter,
     fields = DEFAULT_FIELDS,
     onNavigate,
@@ -45,6 +46,7 @@ export function FivePixels({
             team={team}
             mode={mode}
             sync={sync}
+            requireAuth={requireAuth}
             adapter={adapter}
             fields={fields}
             onNavigate={onNavigate}

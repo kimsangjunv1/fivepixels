@@ -34,10 +34,11 @@ export type ReportStateConfig = {
     messageOverrides?: DeepPartialReportMessages;
     pixelsMode?: FivePixelsMode;
     sync?: FivePixelsSync;
+    requireAuth?: boolean;
     replyHistory: import("../../utils/report/reportUi.js").ResolvedReplyHistoryConfig;
     networkMonitor?: boolean;
 };
-export declare function useReportState({ projectId, environment, appVersion, panelAppearance, tooltipAppearance, questionThreadDefault, fields, authors, requireReviewerKey, shortcut: _shortcut, identify, adapter, onNavigate, onRevealTarget, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys, initialLocale, messageOverrides, pixelsMode, sync, replyHistory, networkMonitor, }: ReportStateConfig): {
+export declare function useReportState({ projectId, environment, appVersion, panelAppearance, tooltipAppearance, questionThreadDefault, fields, authors, requireReviewerKey, shortcut: _shortcut, identify, adapter, onNavigate, onRevealTarget, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys, initialLocale, messageOverrides, pixelsMode, sync, requireAuth, replyHistory, networkMonitor, }: ReportStateConfig): {
     panelAppearance: ReportAppearance;
     setPanelAppearance: (nextAppearance: ReportAppearance) => void;
     tooltipAppearance: ReportAppearance;
@@ -82,6 +83,7 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     authorSelectionLocked: boolean;
     panelView: PanelView;
     loginMethod: "local" | "api" | "artemis";
+    requireAuth: boolean;
     loginWithApi: (payload: import("../../types/report.js").ReportApiLoginPayload) => Promise<import("../../types/report.js").ReportAuthUser>;
     registerWithApi: (payload: import("../../types/report.js").ReportApiRegisterPayload) => Promise<void>;
     loginWithArtemis: () => Promise<import("../../types/report.js").ReportAuthUser>;

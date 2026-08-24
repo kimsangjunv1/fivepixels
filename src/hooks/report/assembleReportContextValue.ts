@@ -134,6 +134,7 @@ export function assembleReportContextValue({
         integrationCapabilities.sync,
         integrationCapabilities,
         github,
+        auth.requireAuth,
     );
 
     return {
@@ -181,6 +182,7 @@ export function assembleReportContextValue({
         authorSelectionLocked: auth.authorSelectionLocked,
         panelView: auth.panelView,
         loginMethod: auth.loginMethod,
+        requireAuth: auth.requireAuth,
         loginWithApi: auth.loginWithApi,
         registerWithApi: auth.registerWithApi,
         loginWithArtemis: auth.loginWithArtemis,
