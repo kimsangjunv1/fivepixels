@@ -82,6 +82,17 @@ export function clampRatio(value: number) {
     return Math.min(1, Math.max(0, value));
 }
 
+export function getElementRatioMarkerPosition(element: HTMLElement, elementXRatio: number, elementYRatio: number): MarkerPosition {
+    const rect = getElementHostRect(element);
+    const dotSize = getMarkerDotSize();
+
+    return applyScrollContainerClamp(
+        rect.left + rect.width * clampRatio(elementXRatio) - dotSize / 2,
+        rect.top + rect.height * clampRatio(elementYRatio) - dotSize / 2,
+        element,
+    );
+}
+
 function getAnchorMarkerPosition(report: ReportFeedback) {
     const position = normalizeReportPosition(report.position);
     const anchor = position.anchor;

@@ -14,6 +14,7 @@ import type { SessionActor } from "@/utils/report/reportTeam.js";
 import { buildDraftFromReport } from "@/utils/report/buildDraftFromReport.js";
 import { getPageScrollY, getPageViewportSize, mapHostPointToPage } from "@/utils/overlay/pageDocumentBridge.js";
 import { useReportPickProbe } from "./useReportPickProbe.js";
+import { useElementMemos } from "./useElementMemos.js";
 import { getFeedbackViewPath } from "@/utils/marker/viewRestore.js";
 
 const OVERLAY_HOVER_LEAVE_MS = 100;
@@ -21,6 +22,7 @@ const OVERLAY_HOVER_LEAVE_MS = 100;
 export type UseReportDraftSessionParams = {
     mode: ReportMode;
     setMode: Dispatch<SetStateAction<ReportMode>>;
+    projectId: string;
     fields: ReportField[];
     messages: ReportMessages;
     currentPathname: string;
@@ -41,6 +43,7 @@ export type UseReportDraftSessionParams = {
 export function useReportDraftSession({
     mode,
     setMode,
+    projectId,
     fields,
     messages,
     currentPathname,
@@ -112,6 +115,27 @@ export function useReportDraftSession({
         draft,
         messages,
     });
+
+    const {
+        elementMemos,
+        memoComposer,
+        openMemoComposer,
+        closeMemoComposer,
+        saveElementMemo,
+        deleteElementMemo,
+    } = useElementMemos(projectId, currentPathname);
+
+    const handlePickTargetMemo = useCallback(() => {
+        const elementKey = contextMenuElementKey;
+        const menu = pickTargetContextMenu;
+
+        if (!elementKey || !menu) {
+            return;
+        }
+
+        closePickTargetContextMenu();
+        openMemoComposer(elementKey, menu.clientX, menu.clientY);
+    }, [closePickTargetContextMenu, contextMenuElementKey, openMemoComposer, pickTargetContextMenu]);
 
     const [draftAuthorName, setDraftAuthorName] = useState(() => resolveDefaultAuthorName(activeIdentify, authorizedAuthors, selfName));
 
@@ -583,6 +607,7 @@ export function useReportDraftSession({
         handlePickTargetEdit,
         handlePickTargetDelete,
         handlePickTargetRevert,
+        handlePickTargetMemo,
         commitPickProbeEdits,
         revertSavedProbeEdit,
         revertAllSavedProbeEdits,
@@ -592,6 +617,12 @@ export function useReportDraftSession({
         resetPickProbeValues,
         resetPickProbeState,
         appendSavedProbeSummaryAsNewDraftCase,
+        elementMemos,
+        memoComposer,
+        openMemoComposer,
+        closeMemoComposer,
+        saveElementMemo,
+        deleteElementMemo,
         clearOverlayHoverLeaveTimeout,
         toggleTargetPreview,
         handleOverlayMove,

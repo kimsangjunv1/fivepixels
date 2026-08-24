@@ -137,6 +137,7 @@ export function useReportState({
     const draft = useReportDraftSession({
         mode: panel.mode,
         setMode: panel.setMode,
+        projectId,
         fields,
         messages: panel.messages,
         currentPathname: panel.currentPathname,

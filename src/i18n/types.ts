@@ -550,6 +550,10 @@ export type ReportMessages = {
         markerFillStyleAriaLabel: string;
         markerFillStyleFilled: string;
         markerFillStyleOutlined: string;
+        markerFillStyleBoth: string;
+        sectionMarkerFillColors: string;
+        sectionMarkerStrokeColors: string;
+        markerStrokeColor: string;
         markerColorOpen: string;
         markerColorResolved: string;
         markerColorGitIssued: string;
@@ -562,6 +566,7 @@ export type ReportMessages = {
         fontFamily: string;
         fontFamilyAriaLabel: string;
         scaleNone: string;
+        scale2xs: string;
         scaleXs: string;
         scaleSm: string;
         scaleMd: string;
@@ -753,10 +758,20 @@ export type ReportMessages = {
         probeChangeGridColumns: (before: string, after: string) => string;
         probeChangeGridRows: (before: string, after: string) => string;
         contextEdit: string;
+        contextAddMemo: string;
+        contextEditMemo: string;
         contextDelete: string;
         contextRevert: string;
         probeApply: string;
         probeModifiedBadge: string;
+        memoBadge: string;
+        memoBadgeEditAriaLabel: string;
+        memoMarkerAriaLabel: (text: string) => string;
+        memoComposerTitle: string;
+        memoComposerHint: string;
+        memoComposerPlaceholder: string;
+        memoComposerSave: string;
+        memoComposerDelete: string;
     };
     marker: {
         detachedAriaLabel: string;

@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { DEFAULT_FEEDBACK_MODE_DOT_COLORS, DEFAULT_MARKER_APPEARANCE, DEFAULT_MARKER_COLORS, isAppearanceScale, isMarkerFillStyle, isMarkerShape, MARKER_APPEARANCE_STORAGE_KEY, } from "../constants/markerAppearance.js";
+import { DEFAULT_FEEDBACK_MODE_DOT_COLORS, DEFAULT_MARKER_APPEARANCE, DEFAULT_MARKER_COLORS, DEFAULT_MARKER_STROKE_COLOR, isAppearanceScale, isMarkerShape, MARKER_APPEARANCE_STORAGE_KEY, } from "../constants/markerAppearance.js";
 import { isValidHexColor } from "../utils/shared/hexColor.js";
 import { setMarkerDotSizeFromScale } from "../utils/marker/markerRuntime.js";
 function normalizeMarkerColors(value) {
@@ -23,6 +23,22 @@ function normalizeFeedbackModeDotColors(value) {
         dark: isValidHexColor(colors.dark ?? "") ? colors.dark : DEFAULT_FEEDBACK_MODE_DOT_COLORS.dark,
     };
 }
+function normalizeStoredFillStyle(value, strokeColor) {
+    if (value === "both") {
+        return "both";
+    }
+    if (value === "outlined") {
+        return "outlined";
+    }
+    if (value === "filled") {
+        // Legacy "filled" included a white outline; preserve that look as "both".
+        if (!strokeColor) {
+            return "both";
+        }
+        return "filled";
+    }
+    return DEFAULT_MARKER_APPEARANCE.fillStyle;
+}
 function readStoredMarkerAppearance() {
     if (typeof window === "undefined") {
         return DEFAULT_MARKER_APPEARANCE;
@@ -33,11 +49,17 @@ function readStoredMarkerAppearance() {
             return DEFAULT_MARKER_APPEARANCE;
         }
         const parsed = JSON.parse(stored);
+        const strokeColor = isValidHexColor(parsed.strokeColor ?? "")
+            ? parsed.strokeColor
+            : parsed.fillStyle === "filled"
+                ? DEFAULT_MARKER_STROKE_COLOR
+                : DEFAULT_MARKER_APPEARANCE.strokeColor;
         return {
             size: isAppearanceScale(parsed.size) ? parsed.size : DEFAULT_MARKER_APPEARANCE.size,
             shape: isMarkerShape(parsed.shape) ? parsed.shape : DEFAULT_MARKER_APPEARANCE.shape,
-            fillStyle: isMarkerFillStyle(parsed.fillStyle) ? parsed.fillStyle : DEFAULT_MARKER_APPEARANCE.fillStyle,
+            fillStyle: normalizeStoredFillStyle(parsed.fillStyle, parsed.strokeColor),
             colors: normalizeMarkerColors(parsed.colors),
+            strokeColor,
             feedbackModeDotColors: normalizeFeedbackModeDotColors(parsed.feedbackModeDotColors),
         };
     }
@@ -115,6 +137,12 @@ export function useMarkerAppearancePreference() {
             },
         }));
     }, [setMarkerAppearance]);
+    const setMarkerStrokeColor = useCallback((strokeColor) => {
+        setMarkerAppearance((current) => ({
+            ...current,
+            strokeColor,
+        }));
+    }, [setMarkerAppearance]);
     return {
         markerAppearance,
         setMarkerAppearance,
@@ -123,6 +151,7 @@ export function useMarkerAppearancePreference() {
         setMarkerFillStyle,
         setMarkerColors,
         setMarkerColor,
+        setMarkerStrokeColor,
         setFeedbackModeDotColors,
         setFeedbackModeDotColor,
     };

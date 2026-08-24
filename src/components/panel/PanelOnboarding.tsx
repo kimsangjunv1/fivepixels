@@ -118,6 +118,7 @@ export function PanelOnboarding() {
         label: messages.appearance[value],
     }));
     const scaleLabels: Record<AppearanceScale, string> = {
+        "2xs": messages.settings.scale2xs,
         xs: messages.settings.scaleXs,
         sm: messages.settings.scaleSm,
         md: messages.settings.scaleMd,
@@ -142,6 +143,7 @@ export function PanelOnboarding() {
     const fillStyleLabels: Record<MarkerFillStyle, string> = {
         filled: messages.settings.markerFillStyleFilled,
         outlined: messages.settings.markerFillStyleOutlined,
+        both: messages.settings.markerFillStyleBoth,
     };
 
     const handleSelectRole = (role: PanelRole) => {
@@ -610,6 +612,7 @@ export function PanelOnboarding() {
                         shape={markerAppearance.shape}
                         color={markerAppearance.colors.open}
                         fillStyle={markerAppearance.fillStyle}
+                        strokeColor={markerAppearance.strokeColor}
                         fontFamily={typography.fontFamily}
                         ariaLabel={onboarding.displayPreviewAriaLabel}
                         showReplyBadge
@@ -642,6 +645,7 @@ export function PanelOnboarding() {
                             ariaLabel={messages.settings.markerShapeAriaLabel}
                             previewColor={markerAppearance.colors.open}
                             fillStyle={markerAppearance.fillStyle}
+                            strokeColor={markerAppearance.strokeColor}
                         />
                     </div>
                     <div className="flex items-center justify-between">

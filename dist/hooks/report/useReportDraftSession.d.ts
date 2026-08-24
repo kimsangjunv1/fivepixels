@@ -8,6 +8,7 @@ import type { SessionActor } from "../../utils/report/reportTeam.js";
 export type UseReportDraftSessionParams = {
     mode: ReportMode;
     setMode: Dispatch<SetStateAction<ReportMode>>;
+    projectId: string;
     fields: ReportField[];
     messages: ReportMessages;
     currentPathname: string;
@@ -24,7 +25,7 @@ export type UseReportDraftSessionParams = {
     overlayRef: MutableRefObject<HTMLDivElement | null>;
     overlayHoverLeaveTimeoutRef: MutableRefObject<number | null>;
 };
-export declare function useReportDraftSession({ mode, setMode, fields, messages, currentPathname, environment, appVersion, sessionActor, authorSelectionLocked, activeIdentify, authorizedAuthors, selfName, setErrorMessage, hoveredElementRef, selectedElementRef, overlayRef, overlayHoverLeaveTimeoutRef, }: UseReportDraftSessionParams): {
+export declare function useReportDraftSession({ mode, setMode, projectId, fields, messages, currentPathname, environment, appVersion, sessionActor, authorSelectionLocked, activeIdentify, authorizedAuthors, selfName, setErrorMessage, hoveredElementRef, selectedElementRef, overlayRef, overlayHoverLeaveTimeoutRef, }: UseReportDraftSessionParams): {
     showTargetPreview: boolean;
     setShowTargetPreview: Dispatch<SetStateAction<boolean>>;
     selectableTargets: TargetSnapshot[];
@@ -63,6 +64,7 @@ export declare function useReportDraftSession({ mode, setMode, fields, messages,
     handlePickTargetEdit: () => void;
     handlePickTargetDelete: () => void;
     handlePickTargetRevert: () => void;
+    handlePickTargetMemo: () => void;
     commitPickProbeEdits: () => void;
     revertSavedProbeEdit: (elementKey: string) => void;
     revertAllSavedProbeEdits: () => void;
@@ -72,6 +74,12 @@ export declare function useReportDraftSession({ mode, setMode, fields, messages,
     resetPickProbeValues: () => void;
     resetPickProbeState: () => void;
     appendSavedProbeSummaryAsNewDraftCase: () => void;
+    elementMemos: import("../../utils/memo/elementMemos.js").ElementMemoMap;
+    memoComposer: import("./useElementMemos.js").ElementMemoComposerState | null;
+    openMemoComposer: (elementKey: string, clientX: number, clientY: number) => void;
+    closeMemoComposer: () => void;
+    saveElementMemo: (elementKey: string, text: string) => void;
+    deleteElementMemo: (elementKey: string) => void;
     clearOverlayHoverLeaveTimeout: () => void;
     toggleTargetPreview: () => void;
     handleOverlayMove: (event: MouseEvent<HTMLDivElement>) => void;

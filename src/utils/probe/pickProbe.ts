@@ -323,6 +323,23 @@ export function formatProposedChanges(changes: ProposedChange[], messages: Repor
     return [messages.pickTarget.probeSummaryTitle, ...lines].join("\n");
 }
 
+export function formatSavedProbeEditSummary(entry: SavedProbeEntry, messages: ReportMessages): string {
+    const element = findElementByProbeKey(entry.elementKey);
+    const supportsTextFields = element
+        ? shouldInspectFontStyle(element)
+        : Boolean(entry.baseline.textContent || entry.baseline.fontSize || entry.baseline.lineHeight);
+    const layoutMode = element ? getPickProbeLayoutMode(element) : inferLayoutModeFromProbeValues(entry.baseline);
+    const changes = getProposedChanges(entry.baseline, entry.applied, supportsTextFields, layoutMode);
+
+    if (changes.length === 0) {
+        return "";
+    }
+
+    const lines = changes.map((change) => `• ${formatProposedChangeLine(change, messages)}`);
+
+    return lines.join("\n");
+}
+
 export function formatSavedProbeEditsSummary(edits: Record<string, SavedProbeEntry>, messages: ReportMessages): string {
     const sections = Object.values(edits)
         .map((entry) => {

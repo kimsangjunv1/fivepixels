@@ -66,7 +66,12 @@ function MarkerButton({ markerItem, isHovered, isReportMode, isProximityHighligh
     const glyphShape = markerItem.detachedKind === "modal" ? "ghostish" : markerItem.detachedKind === "hidden" ? "puffy" : markerAppearance.shape;
     const shapeStyle = resolveMarkerShapeStyle(glyphShape, dotSize);
     const markerColor = getMarkerColor(markerItem.report, markerAppearance.colors);
-    const paint = resolveMarkerGlyphPaint(markerColor, markerAppearance.fillStyle, shapeStyle.strokeWidthPx);
+    const paint = resolveMarkerGlyphPaint({
+        color: markerColor,
+        fillStyle: markerAppearance.fillStyle,
+        strokeColor: markerAppearance.strokeColor,
+        strokeWidthPx: shapeStyle.strokeWidthPx,
+    });
     const replyBadgeSize = getMarkerReplyBadgeSize(dotSize);
     const scaleClass = isHovered ? "scale-[1.4]" : isReportMode && isProximityHighlighted ? "scale-110" : "";
     return (_jsx("div", { className: `${MARKER_ANCHOR_BASE_CLASS} ${shapeStyle.anchorClass}`, style: {

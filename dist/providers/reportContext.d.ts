@@ -140,6 +140,7 @@ declare const ReportContext: Context<{
     setMarkerFillStyle: (fillStyle: import("../constants/markerAppearance.js").MarkerFillStyle) => void;
     setMarkerColors: (colors: import("../constants/markerAppearance.js").MarkerColorPreferences) => void;
     setMarkerColor: (key: keyof import("../constants/markerAppearance.js").MarkerColorPreferences, color: string) => void;
+    setMarkerStrokeColor: (strokeColor: string) => void;
     setFeedbackModeDotColors: (colors: import("../constants/markerAppearance.js").FeedbackModeDotColors) => void;
     setFeedbackModeDotColor: (appearance: keyof import("../constants/markerAppearance.js").FeedbackModeDotColors, color: string) => void;
     typography: import("../constants/markerAppearance.js").TypographyPreferences;
@@ -206,6 +207,7 @@ declare const ReportContext: Context<{
     handlePickTargetEdit: () => void;
     handlePickTargetDelete: () => void;
     handlePickTargetRevert: () => void;
+    handlePickTargetMemo: () => void;
     commitPickProbeEdits: () => void;
     revertSavedProbeEdit: (elementKey: string) => void;
     revertAllSavedProbeEdits: () => void;
@@ -214,6 +216,12 @@ declare const ReportContext: Context<{
     updatePickProbeValue: (key: import("../types/report-ui.js").PickProbeFieldKey, value: string) => void;
     resetPickProbeValues: () => void;
     appendSavedProbeSummaryAsNewDraftCase: () => void;
+    elementMemos: import("../utils/memo/elementMemos.js").ElementMemoMap;
+    memoComposer: import("../hooks/report/useElementMemos.js").ElementMemoComposerState | null;
+    openMemoComposer: (elementKey: string, clientX: number, clientY: number) => void;
+    closeMemoComposer: () => void;
+    saveElementMemo: (elementKey: string, text: string) => void;
+    deleteElementMemo: (elementKey: string) => void;
     markers: import("../types/report-ui.js").Marker[];
     selectedReport: import("../index.js").ReportFeedback;
     editingReportId: string | null;
@@ -472,6 +480,7 @@ export declare function useReport(): {
     setMarkerFillStyle: (fillStyle: import("../constants/markerAppearance.js").MarkerFillStyle) => void;
     setMarkerColors: (colors: import("../constants/markerAppearance.js").MarkerColorPreferences) => void;
     setMarkerColor: (key: keyof import("../constants/markerAppearance.js").MarkerColorPreferences, color: string) => void;
+    setMarkerStrokeColor: (strokeColor: string) => void;
     setFeedbackModeDotColors: (colors: import("../constants/markerAppearance.js").FeedbackModeDotColors) => void;
     setFeedbackModeDotColor: (appearance: keyof import("../constants/markerAppearance.js").FeedbackModeDotColors, color: string) => void;
     typography: import("../constants/markerAppearance.js").TypographyPreferences;
@@ -538,6 +547,7 @@ export declare function useReport(): {
     handlePickTargetEdit: () => void;
     handlePickTargetDelete: () => void;
     handlePickTargetRevert: () => void;
+    handlePickTargetMemo: () => void;
     commitPickProbeEdits: () => void;
     revertSavedProbeEdit: (elementKey: string) => void;
     revertAllSavedProbeEdits: () => void;
@@ -546,6 +556,12 @@ export declare function useReport(): {
     updatePickProbeValue: (key: import("../types/report-ui.js").PickProbeFieldKey, value: string) => void;
     resetPickProbeValues: () => void;
     appendSavedProbeSummaryAsNewDraftCase: () => void;
+    elementMemos: import("../utils/memo/elementMemos.js").ElementMemoMap;
+    memoComposer: import("../hooks/report/useElementMemos.js").ElementMemoComposerState | null;
+    openMemoComposer: (elementKey: string, clientX: number, clientY: number) => void;
+    closeMemoComposer: () => void;
+    saveElementMemo: (elementKey: string, text: string) => void;
+    deleteElementMemo: (elementKey: string) => void;
     markers: import("../types/report-ui.js").Marker[];
     selectedReport: import("../index.js").ReportFeedback;
     editingReportId: string | null;
@@ -807,6 +823,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         setMarkerFillStyle: (fillStyle: import("../constants/markerAppearance.js").MarkerFillStyle) => void;
         setMarkerColors: (colors: import("../constants/markerAppearance.js").MarkerColorPreferences) => void;
         setMarkerColor: (key: keyof import("../constants/markerAppearance.js").MarkerColorPreferences, color: string) => void;
+        setMarkerStrokeColor: (strokeColor: string) => void;
         setFeedbackModeDotColors: (colors: import("../constants/markerAppearance.js").FeedbackModeDotColors) => void;
         setFeedbackModeDotColor: (appearance: keyof import("../constants/markerAppearance.js").FeedbackModeDotColors, color: string) => void;
         typography: import("../constants/markerAppearance.js").TypographyPreferences;
@@ -873,6 +890,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         handlePickTargetEdit: () => void;
         handlePickTargetDelete: () => void;
         handlePickTargetRevert: () => void;
+        handlePickTargetMemo: () => void;
         commitPickProbeEdits: () => void;
         revertSavedProbeEdit: (elementKey: string) => void;
         revertAllSavedProbeEdits: () => void;
@@ -881,6 +899,12 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         updatePickProbeValue: (key: import("../types/report-ui.js").PickProbeFieldKey, value: string) => void;
         resetPickProbeValues: () => void;
         appendSavedProbeSummaryAsNewDraftCase: () => void;
+        elementMemos: import("../utils/memo/elementMemos.js").ElementMemoMap;
+        memoComposer: import("../hooks/report/useElementMemos.js").ElementMemoComposerState | null;
+        openMemoComposer: (elementKey: string, clientX: number, clientY: number) => void;
+        closeMemoComposer: () => void;
+        saveElementMemo: (elementKey: string, text: string) => void;
+        deleteElementMemo: (elementKey: string) => void;
         markers: import("../types/report-ui.js").Marker[];
         selectedReport: import("../index.js").ReportFeedback;
         editingReportId: string | null;
@@ -1002,7 +1026,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         handleCreateGitHubIssue: (report: import("../index.js").ReportFeedback) => Promise<void>;
         handleCreateSubmitWithGitHubIssue: () => Promise<void>;
         isDraftGitHubIssueSubmitting: boolean;
-    }, "personalKey" | "projectId" | "fields" | "personalKeyRequired" | "environment" | "questionThreadDisplay" | "setQuestionThreadDisplay" | "locale" | "setLocale" | "showMarkerTargetPreview" | "setShowMarkerTargetPreview" | "toggleMarkerTargetPreview" | "devicePreviewUiOpen" | "setDevicePreviewUiOpen" | "devicePreviewDeviceId" | "setDevicePreviewDeviceId" | "devicePreviewScale" | "setDevicePreviewScale" | "devicePreviewImageEnabled" | "setDevicePreviewImageEnabled" | "devicePreviewFitToViewport" | "setDevicePreviewFitToViewport" | "devicePreviewStatusBarEnabled" | "setDevicePreviewStatusBarEnabled" | "devicePreviewPreset" | "showHiddenDetachedMarkers" | "setShowHiddenDetachedMarkers" | "showModalDetachedMarkers" | "setShowModalDetachedMarkers" | "markerAppearance" | "setMarkerAppearance" | "setMarkerSize" | "setMarkerShape" | "setMarkerFillStyle" | "setMarkerColors" | "setMarkerColor" | "setFeedbackModeDotColors" | "setFeedbackModeDotColor" | "typography" | "setTypography" | "setFontSize" | "setFontFamily" | "panelRole" | "setPanelRole" | "persistenceStatus" | "appVersion" | "showFeedbackList" | "selfProfile" | "authors" | "publicKey" | "personalKeyCandidates" | "issuePersonalKey" | "rotatePersonalKey" | "insertPersonalKey" | "clearPersonalKey" | "authorSelectionLocked" | "messages" | "visibleShortcutKeys" | "teamReviewers" | "onListReviewers" | "onListReviewerRequests" | "onCreateReviewerRequest" | "onResolveReviewerRequest" | "onRegisterReviewer" | "onUpdateReviewer" | "panelAppearance" | "setPanelAppearance" | "tooltipAppearance" | "setTooltipAppearance" | "teamActor" | "teamActorRole" | "isTeamAdmin" | "canAccessTeamSettings" | "integrationCapabilities" | "adapterIntegrationStatus" | "panelView" | "loginMethod" | "loginWithApi" | "registerWithApi" | "loginWithArtemis" | "completeRemoteOnboarding" | "completeOnboarding" | "restoreFromBackup" | "skipOnboarding" | "resolvedPanelAppearance" | "resolvedTooltipAppearance" | "isMobileViewport" | "isPresentationMode" | "presentationViewers" | "visiblePanelTabs" | "visiblePanelTabsSummary" | "resolvedTabAvailabilityContext" | "setVisiblePanelTabs" | "resetVisibleTabsToRoleDefault" | "applyRoleDefaultTabsForOnboarding" | "savePanelTabPreference" | "storedPanelTabPreference">;
+    }, "personalKey" | "projectId" | "fields" | "personalKeyRequired" | "environment" | "questionThreadDisplay" | "setQuestionThreadDisplay" | "locale" | "setLocale" | "showMarkerTargetPreview" | "setShowMarkerTargetPreview" | "toggleMarkerTargetPreview" | "devicePreviewUiOpen" | "setDevicePreviewUiOpen" | "devicePreviewDeviceId" | "setDevicePreviewDeviceId" | "devicePreviewScale" | "setDevicePreviewScale" | "devicePreviewImageEnabled" | "setDevicePreviewImageEnabled" | "devicePreviewFitToViewport" | "setDevicePreviewFitToViewport" | "devicePreviewStatusBarEnabled" | "setDevicePreviewStatusBarEnabled" | "devicePreviewPreset" | "showHiddenDetachedMarkers" | "setShowHiddenDetachedMarkers" | "showModalDetachedMarkers" | "setShowModalDetachedMarkers" | "markerAppearance" | "setMarkerAppearance" | "setMarkerSize" | "setMarkerShape" | "setMarkerFillStyle" | "setMarkerColors" | "setMarkerColor" | "setMarkerStrokeColor" | "setFeedbackModeDotColors" | "setFeedbackModeDotColor" | "typography" | "setTypography" | "setFontSize" | "setFontFamily" | "panelRole" | "setPanelRole" | "persistenceStatus" | "appVersion" | "showFeedbackList" | "selfProfile" | "authors" | "publicKey" | "personalKeyCandidates" | "issuePersonalKey" | "rotatePersonalKey" | "insertPersonalKey" | "clearPersonalKey" | "authorSelectionLocked" | "messages" | "visibleShortcutKeys" | "teamReviewers" | "onListReviewers" | "onListReviewerRequests" | "onCreateReviewerRequest" | "onResolveReviewerRequest" | "onRegisterReviewer" | "onUpdateReviewer" | "panelAppearance" | "setPanelAppearance" | "tooltipAppearance" | "setTooltipAppearance" | "teamActor" | "teamActorRole" | "isTeamAdmin" | "canAccessTeamSettings" | "integrationCapabilities" | "adapterIntegrationStatus" | "panelView" | "loginMethod" | "loginWithApi" | "registerWithApi" | "loginWithArtemis" | "completeRemoteOnboarding" | "completeOnboarding" | "restoreFromBackup" | "skipOnboarding" | "resolvedPanelAppearance" | "resolvedTooltipAppearance" | "isMobileViewport" | "isPresentationMode" | "presentationViewers" | "visiblePanelTabs" | "visiblePanelTabsSummary" | "resolvedTabAvailabilityContext" | "setVisiblePanelTabs" | "resetVisibleTabsToRoleDefault" | "applyRoleDefaultTabsForOnboarding" | "savePanelTabPreference" | "storedPanelTabPreference">;
     session: Pick<{
         panelAppearance: import("../index.js").ReportAppearance;
         setPanelAppearance: (nextAppearance: import("../index.js").ReportAppearance) => void;
@@ -1135,6 +1159,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         setMarkerFillStyle: (fillStyle: import("../constants/markerAppearance.js").MarkerFillStyle) => void;
         setMarkerColors: (colors: import("../constants/markerAppearance.js").MarkerColorPreferences) => void;
         setMarkerColor: (key: keyof import("../constants/markerAppearance.js").MarkerColorPreferences, color: string) => void;
+        setMarkerStrokeColor: (strokeColor: string) => void;
         setFeedbackModeDotColors: (colors: import("../constants/markerAppearance.js").FeedbackModeDotColors) => void;
         setFeedbackModeDotColor: (appearance: keyof import("../constants/markerAppearance.js").FeedbackModeDotColors, color: string) => void;
         typography: import("../constants/markerAppearance.js").TypographyPreferences;
@@ -1201,6 +1226,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         handlePickTargetEdit: () => void;
         handlePickTargetDelete: () => void;
         handlePickTargetRevert: () => void;
+        handlePickTargetMemo: () => void;
         commitPickProbeEdits: () => void;
         revertSavedProbeEdit: (elementKey: string) => void;
         revertAllSavedProbeEdits: () => void;
@@ -1209,6 +1235,12 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         updatePickProbeValue: (key: import("../types/report-ui.js").PickProbeFieldKey, value: string) => void;
         resetPickProbeValues: () => void;
         appendSavedProbeSummaryAsNewDraftCase: () => void;
+        elementMemos: import("../utils/memo/elementMemos.js").ElementMemoMap;
+        memoComposer: import("../hooks/report/useElementMemos.js").ElementMemoComposerState | null;
+        openMemoComposer: (elementKey: string, clientX: number, clientY: number) => void;
+        closeMemoComposer: () => void;
+        saveElementMemo: (elementKey: string, text: string) => void;
+        deleteElementMemo: (elementKey: string) => void;
         markers: import("../types/report-ui.js").Marker[];
         selectedReport: import("../index.js").ReportFeedback;
         editingReportId: string | null;
@@ -1330,7 +1362,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         handleCreateGitHubIssue: (report: import("../index.js").ReportFeedback) => Promise<void>;
         handleCreateSubmitWithGitHubIssue: () => Promise<void>;
         isDraftGitHubIssueSubmitting: boolean;
-    }, "markers" | "statusText" | "toggleReportMode" | "toggleTargetPreview" | "currentPathname" | "sessionActor" | "savedProbeDeletions" | "hasProbeSessionChanges" | "canUndoProbeSession" | "canRedoProbeSession" | "undoProbeSessionAction" | "redoProbeSessionAction" | "revertAllSavedProbeEdits" | "draft" | "pickProbeOpen" | "pickProbeSupportsTextFields" | "pickProbeLayoutMode" | "pickProbeValues" | "pickProbeCompareMode" | "pickProbeHasEdits" | "pickTargetContextMenu" | "contextMenuElementKey" | "savedProbeEdits" | "savedProbeCompareMode" | "closePickProbe" | "closePickTargetContextMenu" | "handlePickTargetEdit" | "handlePickTargetDelete" | "handlePickTargetRevert" | "commitPickProbeEdits" | "revertSavedProbeEdit" | "setSavedProbeCompareMode" | "setPickProbeCompareMode" | "updatePickProbeValue" | "resetPickProbeValues" | "appendSavedProbeSummaryAsNewDraftCase" | "activeReplyReportId" | "minimizedReplyReportIds" | "selectedTarget" | "hoveredTarget" | "mode" | "showTargetPreview" | "closeReplyComposer" | "openReplyComposer" | "selectCase" | "selectReport" | "setErrorMessage" | "focusedCaseId" | "activeReplyReport" | "cancelCaseEdit" | "overlayRef" | "cancelDraft" | "beginFeedbackEdit" | "editingReportId" | "panelTab" | "pendingComposer" | "toggleIssueMode" | "cancelPendingComposer" | "stopEditing" | "focusSearchInput" | "selectAdjacentReport" | "panelCollapsed" | "setPanelCollapsed" | "searchInputRef" | "activeMarkerTarget" | "markerPreviewTargets" | "selectableTargets" | "errorMessage" | "draftStep" | "setDraftStep" | "hoverPointer" | "setHoverPointer" | "editableDraft" | "setEditableDraft" | "openReplyReportIds" | "openReplyReports" | "setReplyWindowMinimized" | "reorderMinimizedReplyWindow" | "focusReplyWindow" | "closeReplyWindow" | "tooltipReport" | "tooltipAnchor" | "tooltipFieldTags" | "replyDraft" | "setReplyDraft" | "replyMentions" | "setReplyMentions" | "mentionHighlightTarget" | "setMentionHighlightTarget" | "replySubmitAsQuestion" | "setReplySubmitAsQuestion" | "draftAuthorName" | "setDraftAuthorName" | "replyAuthorName" | "setReplyAuthorName" | "presentationViewerId" | "setPresentationViewerId" | "startDenyReview" | "startCheckoutReview" | "startAskQuestion" | "confirmAuthorName" | "setConfirmAuthorName" | "showConfirmAuthorSelect" | "toggleConfirmAuthorSelect" | "beginCaseEdit" | "updateCaseEditDraftCase" | "addCaseEditDraftCase" | "removeCaseEditDraftCase" | "removePersistedCase" | "isComposingNewCase" | "beginComposeNewCase" | "cancelComposeNewCase" | "clearFocusedCase" | "isCaseEditing" | "caseEditReportId" | "caseEditCases" | "openPanelTab" | "togglePanelTab" | "locateFeedback" | "activateFeedbackMarker" | "revealOpenFeedback" | "clearHoverLeaveTimeout" | "scheduleHoverLeave" | "setHoveredMarkerId" | "handleOverlayMove" | "handleOverlayContextMenu" | "handleOverlayClick" | "updateDraftCase" | "addDraftCase" | "removeDraftCase" | "updateDraftField" | "updateDraftCategory" | "startEditing">;
+    }, "markers" | "statusText" | "toggleReportMode" | "toggleTargetPreview" | "currentPathname" | "sessionActor" | "savedProbeDeletions" | "hasProbeSessionChanges" | "canUndoProbeSession" | "canRedoProbeSession" | "undoProbeSessionAction" | "redoProbeSessionAction" | "revertAllSavedProbeEdits" | "draft" | "pickProbeOpen" | "pickProbeSupportsTextFields" | "pickProbeLayoutMode" | "pickProbeValues" | "pickProbeCompareMode" | "pickProbeHasEdits" | "pickTargetContextMenu" | "contextMenuElementKey" | "savedProbeEdits" | "savedProbeCompareMode" | "closePickProbe" | "closePickTargetContextMenu" | "handlePickTargetEdit" | "handlePickTargetDelete" | "handlePickTargetRevert" | "openMemoComposer" | "commitPickProbeEdits" | "revertSavedProbeEdit" | "setSavedProbeCompareMode" | "setPickProbeCompareMode" | "updatePickProbeValue" | "resetPickProbeValues" | "appendSavedProbeSummaryAsNewDraftCase" | "elementMemos" | "memoComposer" | "closeMemoComposer" | "saveElementMemo" | "deleteElementMemo" | "activeReplyReportId" | "minimizedReplyReportIds" | "selectedTarget" | "hoveredTarget" | "mode" | "showTargetPreview" | "closeReplyComposer" | "openReplyComposer" | "selectCase" | "selectReport" | "setErrorMessage" | "focusedCaseId" | "activeReplyReport" | "cancelCaseEdit" | "overlayRef" | "cancelDraft" | "beginFeedbackEdit" | "editingReportId" | "panelTab" | "pendingComposer" | "toggleIssueMode" | "cancelPendingComposer" | "stopEditing" | "focusSearchInput" | "selectAdjacentReport" | "panelCollapsed" | "setPanelCollapsed" | "searchInputRef" | "activeMarkerTarget" | "markerPreviewTargets" | "selectableTargets" | "errorMessage" | "draftStep" | "setDraftStep" | "hoverPointer" | "setHoverPointer" | "handlePickTargetMemo" | "editableDraft" | "setEditableDraft" | "openReplyReportIds" | "openReplyReports" | "setReplyWindowMinimized" | "reorderMinimizedReplyWindow" | "focusReplyWindow" | "closeReplyWindow" | "tooltipReport" | "tooltipAnchor" | "tooltipFieldTags" | "replyDraft" | "setReplyDraft" | "replyMentions" | "setReplyMentions" | "mentionHighlightTarget" | "setMentionHighlightTarget" | "replySubmitAsQuestion" | "setReplySubmitAsQuestion" | "draftAuthorName" | "setDraftAuthorName" | "replyAuthorName" | "setReplyAuthorName" | "presentationViewerId" | "setPresentationViewerId" | "startDenyReview" | "startCheckoutReview" | "startAskQuestion" | "confirmAuthorName" | "setConfirmAuthorName" | "showConfirmAuthorSelect" | "toggleConfirmAuthorSelect" | "beginCaseEdit" | "updateCaseEditDraftCase" | "addCaseEditDraftCase" | "removeCaseEditDraftCase" | "removePersistedCase" | "isComposingNewCase" | "beginComposeNewCase" | "cancelComposeNewCase" | "clearFocusedCase" | "isCaseEditing" | "caseEditReportId" | "caseEditCases" | "openPanelTab" | "togglePanelTab" | "locateFeedback" | "activateFeedbackMarker" | "revealOpenFeedback" | "clearHoverLeaveTimeout" | "scheduleHoverLeave" | "setHoveredMarkerId" | "handleOverlayMove" | "handleOverlayContextMenu" | "handleOverlayClick" | "updateDraftCase" | "addDraftCase" | "removeDraftCase" | "updateDraftField" | "updateDraftCategory" | "startEditing">;
     data: Pick<{
         panelAppearance: import("../index.js").ReportAppearance;
         setPanelAppearance: (nextAppearance: import("../index.js").ReportAppearance) => void;
@@ -1463,6 +1495,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         setMarkerFillStyle: (fillStyle: import("../constants/markerAppearance.js").MarkerFillStyle) => void;
         setMarkerColors: (colors: import("../constants/markerAppearance.js").MarkerColorPreferences) => void;
         setMarkerColor: (key: keyof import("../constants/markerAppearance.js").MarkerColorPreferences, color: string) => void;
+        setMarkerStrokeColor: (strokeColor: string) => void;
         setFeedbackModeDotColors: (colors: import("../constants/markerAppearance.js").FeedbackModeDotColors) => void;
         setFeedbackModeDotColor: (appearance: keyof import("../constants/markerAppearance.js").FeedbackModeDotColors, color: string) => void;
         typography: import("../constants/markerAppearance.js").TypographyPreferences;
@@ -1529,6 +1562,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         handlePickTargetEdit: () => void;
         handlePickTargetDelete: () => void;
         handlePickTargetRevert: () => void;
+        handlePickTargetMemo: () => void;
         commitPickProbeEdits: () => void;
         revertSavedProbeEdit: (elementKey: string) => void;
         revertAllSavedProbeEdits: () => void;
@@ -1537,6 +1571,12 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         updatePickProbeValue: (key: import("../types/report-ui.js").PickProbeFieldKey, value: string) => void;
         resetPickProbeValues: () => void;
         appendSavedProbeSummaryAsNewDraftCase: () => void;
+        elementMemos: import("../utils/memo/elementMemos.js").ElementMemoMap;
+        memoComposer: import("../hooks/report/useElementMemos.js").ElementMemoComposerState | null;
+        openMemoComposer: (elementKey: string, clientX: number, clientY: number) => void;
+        closeMemoComposer: () => void;
+        saveElementMemo: (elementKey: string, text: string) => void;
+        deleteElementMemo: (elementKey: string) => void;
         markers: import("../types/report-ui.js").Marker[];
         selectedReport: import("../index.js").ReportFeedback;
         editingReportId: string | null;

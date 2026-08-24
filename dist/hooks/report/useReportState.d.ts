@@ -168,6 +168,7 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     setMarkerFillStyle: (fillStyle: import("../../constants/markerAppearance.js").MarkerFillStyle) => void;
     setMarkerColors: (colors: import("../../constants/markerAppearance.js").MarkerColorPreferences) => void;
     setMarkerColor: (key: keyof import("../../constants/markerAppearance.js").MarkerColorPreferences, color: string) => void;
+    setMarkerStrokeColor: (strokeColor: string) => void;
     setFeedbackModeDotColors: (colors: import("../../constants/markerAppearance.js").FeedbackModeDotColors) => void;
     setFeedbackModeDotColor: (appearance: keyof import("../../constants/markerAppearance.js").FeedbackModeDotColors, color: string) => void;
     typography: import("../../constants/markerAppearance.js").TypographyPreferences;
@@ -234,6 +235,7 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     handlePickTargetEdit: () => void;
     handlePickTargetDelete: () => void;
     handlePickTargetRevert: () => void;
+    handlePickTargetMemo: () => void;
     commitPickProbeEdits: () => void;
     revertSavedProbeEdit: (elementKey: string) => void;
     revertAllSavedProbeEdits: () => void;
@@ -242,6 +244,12 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     updatePickProbeValue: (key: import("../../types/report-ui.js").PickProbeFieldKey, value: string) => void;
     resetPickProbeValues: () => void;
     appendSavedProbeSummaryAsNewDraftCase: () => void;
+    elementMemos: import("../../utils/memo/elementMemos.js").ElementMemoMap;
+    memoComposer: import("./useElementMemos.js").ElementMemoComposerState | null;
+    openMemoComposer: (elementKey: string, clientX: number, clientY: number) => void;
+    closeMemoComposer: () => void;
+    saveElementMemo: (elementKey: string, text: string) => void;
+    deleteElementMemo: (elementKey: string) => void;
     markers: import("../../types/report-ui.js").Marker[];
     selectedReport: ReportFeedback;
     editingReportId: string | null;

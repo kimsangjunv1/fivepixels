@@ -11,11 +11,27 @@ type MarkerShapePickerProps = {
     ariaLabel: string;
     previewColor: string;
     fillStyle?: MarkerFillStyle;
+    strokeColor?: string;
 };
 
-function ShapePreview({ shape, previewColor, fillStyle }: { shape: MarkerShape; previewColor: string; fillStyle: MarkerFillStyle }) {
+function ShapePreview({
+    shape,
+    previewColor,
+    fillStyle,
+    strokeColor = "#ffffff",
+}: {
+    shape: MarkerShape;
+    previewColor: string;
+    fillStyle: MarkerFillStyle;
+    strokeColor?: string;
+}) {
     const preview = resolveMarkerShapeStyle(shape, 12);
-    const paint = resolveMarkerGlyphPaint(previewColor, fillStyle, preview.strokeWidthPx);
+    const paint = resolveMarkerGlyphPaint({
+        color: previewColor,
+        fillStyle,
+        strokeColor,
+        strokeWidthPx: preview.strokeWidthPx,
+    });
     const width = Math.min(preview.width, 16);
     const height = Math.min(preview.height, 16);
 
@@ -39,6 +55,7 @@ export function MarkerShapePicker({
     ariaLabel,
     previewColor,
     fillStyle = "filled",
+    strokeColor = "#ffffff",
 }: MarkerShapePickerProps) {
     return (
         <div
@@ -67,6 +84,7 @@ export function MarkerShapePicker({
                                 shape={shape}
                                 previewColor={previewColor}
                                 fillStyle={fillStyle}
+                                strokeColor={strokeColor}
                             />
                             {active ? (
                                 <span className="absolute right-[2px] bottom-[2px] flex h-[12px] w-[12px] items-center justify-center rounded-full bg-[var(--adaptive-blue500)] text-white">
