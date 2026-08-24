@@ -148,6 +148,7 @@ export const REPORT_SESSION_KEYS = [
     "updatePickProbeValue",
     "resetPickProbeValues",
     "appendSavedProbeSummaryAsNewDraftCase",
+    "appendApiFlowEntryToDraftCase",
     "elementMemos",
     "memoComposer",
     "openMemoComposer",
@@ -292,6 +293,10 @@ export const REPORT_DATA_KEYS = [
     "handleCreateGitHubIssue",
     "handleCreateSubmitWithGitHubIssue",
     "isDraftGitHubIssueSubmitting",
+    "apiFlowEntries",
+    "activeApiFailureAlert",
+    "dismissFailureAlert",
+    "networkMonitorEnabled",
 ];
 export function pickReportSlice(source, keys) {
     const out = {};

@@ -46,6 +46,7 @@ type ReportProviderEnabledProps = Omit<ReportProviderProps, "project" | "ui" | "
     messageOverrides?: DeepPartialReportMessages;
     pixelsMode: FivePixelsMode;
     sync: FivePixelsSync;
+    networkMonitor: boolean;
 };
 
 function ReportProviderEnabled({
@@ -74,6 +75,7 @@ function ReportProviderEnabled({
     messageOverrides,
     pixelsMode,
     sync,
+    networkMonitor,
     children,
 }: ReportProviderEnabledProps) {
     const value = useReportState({
@@ -102,6 +104,7 @@ function ReportProviderEnabled({
         visibleShortcutKeys,
         initialLocale: locale,
         messageOverrides,
+        networkMonitor,
     });
     const { preferences, session, data } = useReportContextSlices(value);
 
@@ -130,6 +133,7 @@ export function ReportProvider({
     onEvent,
     onReply,
     github,
+    networkMonitor = true,
     children,
 }: ReportProviderProps) {
     const resolvedProject = resolveReportProject({ project });
@@ -169,6 +173,7 @@ export function ReportProvider({
             messageOverrides={ui?.messages}
             pixelsMode={mode}
             sync={sync}
+            networkMonitor={networkMonitor}
         >
             {children}
         </ReportProviderEnabled>

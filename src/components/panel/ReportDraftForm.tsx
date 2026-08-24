@@ -8,6 +8,7 @@ import { getDraftMarkerPosition, TOOLTIP_EXPANDED_DEFAULT_MAX_HEIGHT } from "@/u
 import { FeedbackComposer } from "./feedback/FeedbackComposer.js";
 import { DraftComposerToolbar } from "./feedback/DraftComposerToolbar.js";
 import { DraftProbeSummaryBanner } from "./DraftProbeSummaryBanner.js";
+import { DraftNetworkErrorBanner } from "./DraftNetworkErrorBanner.js";
 import { PickTargetSnippet } from "./feedback/PickTargetSnippet.js";
 import { CornerResizeGhost } from "@/components/ui/CornerResizeGhost.js";
 import { MOTION } from "@/constants/motionClasses.js";
@@ -313,6 +314,7 @@ function ReportDraftFormContent({
                             height: customSize?.height,
                         }}
                     >
+                        <DraftNetworkErrorBanner />
                         <DraftProbeSummaryBanner />
 
                         <FeedbackComposer

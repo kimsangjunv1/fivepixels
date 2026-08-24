@@ -25,6 +25,7 @@ export function FivePixels({
     onEvent,
     onReply,
     github,
+    networkMonitor,
 }: FivePixelsProps) {
     const resolvedVisibility = resolveReportVisibility({ visibility });
 
@@ -51,6 +52,7 @@ export function FivePixels({
             onEvent={onEvent}
             onReply={onReply}
             github={github}
+            networkMonitor={networkMonitor}
         >
             <ReportView />
         </ReportProvider>

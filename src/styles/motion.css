@@ -498,7 +498,6 @@
     }
 }
 
-
 @keyframes fivepixels-ghost-in {
     from {
         opacity: 0;
@@ -627,7 +626,7 @@
 }
 
 [data-fivepixels-mount] .fivepixels-panel-tab-shell-inner {
-    /* overflow: hidden; */
+    overflow: auto;
     min-height: 0;
 }
 
@@ -863,7 +862,6 @@
 [data-fivepixels-mount] .fivepixels-dock-guide--edge-rail.fivepixels-dock-guide--active {
     transform: translateY(-50%) scale(1.04);
 }
-
 
 /* Host-page yield: dim floating chrome so the product UI stays primary */
 [data-fivepixels-mount][data-fp-host-yield="true"] [data-fp-chrome] {

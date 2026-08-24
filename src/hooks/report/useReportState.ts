@@ -10,6 +10,7 @@ import { useReportPanelShell, type ReportPanelShellBridges } from "./useReportPa
 import { useReportReplyReview } from "./useReportReplyReview.js";
 import { assembleReportContextValue } from "./assembleReportContextValue.js";
 import type { FivePixelsSync } from "@/constants/loginMethod.js";
+import { useNetworkMonitor } from "../useNetworkMonitor.js";
 import type { FivePixelsAdapter } from "@/types/adapter.js";
 import type {
     ReportAppearance,
@@ -54,6 +55,7 @@ export type ReportStateConfig = {
     pixelsMode?: FivePixelsMode;
     sync?: FivePixelsSync;
     replyHistory: import("@/utils/report/reportUi.js").ResolvedReplyHistoryConfig;
+    networkMonitor?: boolean;
 };
 
 export function useReportState({
@@ -82,11 +84,20 @@ export function useReportState({
     pixelsMode = "default",
     sync = "local",
     replyHistory,
+    networkMonitor = true,
 }: ReportStateConfig) {
     const overlayRef = useRef<HTMLDivElement | null>(null);
     const hoveredElementRef = useRef<HTMLElement | null>(null);
     const selectedElementRef = useRef<HTMLElement | null>(null);
     const overlayHoverLeaveTimeoutRef = useRef<number | null>(null);
+
+    const {
+        apiFlowEntries,
+        activeApiFailureAlert,
+        dismissFailureAlert,
+        getEntryById,
+        networkMonitorEnabled,
+    } = useNetworkMonitor(networkMonitor);
 
     const panelShellBridgesRef = useRef<ReportPanelShellBridges>({
         setShowTargetPreview: () => undefined,
@@ -154,6 +165,17 @@ export function useReportState({
         overlayRef,
         overlayHoverLeaveTimeoutRef,
     });
+
+    const appendApiFlowEntryToDraftCase = useCallback(
+        (entryId: string) => {
+            const entry = getEntryById(entryId);
+
+            if (entry) {
+                draft.appendApiFlowEntryToDraftCase(entry);
+            }
+        },
+        [draft.appendApiFlowEntryToDraftCase, getEntryById],
+    );
 
     const replyBridgeRef = useRef<{
         activeReplyReportId: string | null;
@@ -457,6 +479,11 @@ export function useReportState({
         selectReport,
         beginFeedbackEdit,
         cancelDraft,
+        apiFlowEntries,
+        activeApiFailureAlert,
+        dismissFailureAlert,
+        appendApiFlowEntryToDraftCase,
+        networkMonitorEnabled,
     });
 
 }

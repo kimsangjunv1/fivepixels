@@ -44,6 +44,14 @@ export const PANEL_USER_TAB_REGISTRY = [
         isAvailable: () => true,
     },
     {
+        id: "api-flow",
+        labelKey: "tabApiFlow",
+        userSelectable: true,
+        experimental: false,
+        needsFullReportList: false,
+        isAvailable: () => true,
+    },
+    {
         id: "my-tasks",
         labelKey: "tabMyTasks",
         userSelectable: true,

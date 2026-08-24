@@ -61,7 +61,7 @@ describe("panelTabPreference", () => {
 
     it("creates role default preference", () => {
         expect(createRoleDefaultPreference("developer", defaultContext)).toEqual({
-            visibleTabs: ["feedback-list", "route-details", "diagnostics"],
+            visibleTabs: ["feedback-list", "route-details", "diagnostics", "api-flow"],
             customized: false,
         });
     });

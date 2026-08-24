@@ -7,6 +7,7 @@ import type { useReportPanelShell } from "./useReportPanelShell.js";
 import type { useReportReplyReview } from "./useReportReplyReview.js";
 import { buildAdapterIntegrationStatus } from "@/utils/integration/buildAdapterIntegrationStatus.js";
 import type { FivePixelsAdapter } from "@/types/adapter.js";
+import type { ApiFlowEntry } from "@/types/networkMonitor.js";
 import type {
     ReportAuthor,
     ReportFeedback,
@@ -57,6 +58,11 @@ type AssembleArgs = {
     selectReport: (reportId: string) => void;
     beginFeedbackEdit: (report: ReportFeedback) => void;
     cancelDraft: () => void;
+    apiFlowEntries: readonly ApiFlowEntry[];
+    activeApiFailureAlert: ApiFlowEntry | null;
+    dismissFailureAlert: (entryId: string) => void;
+    appendApiFlowEntryToDraftCase: (entryId: string) => void;
+    networkMonitorEnabled: boolean;
 };
 
 /**
@@ -87,6 +93,11 @@ export function assembleReportContextValue({
     selectReport,
     beginFeedbackEdit,
     cancelDraft,
+    apiFlowEntries,
+    activeApiFailureAlert,
+    dismissFailureAlert,
+    appendApiFlowEntryToDraftCase,
+    networkMonitorEnabled,
 }: AssembleArgs) {
     const authorizedId = auth.authorizedAuthors[0]?.id;
     const teamActor = authorizedId ? (teamReviewers.find((reviewer) => reviewer.id === authorizedId) ?? null) : null;
@@ -294,6 +305,7 @@ export function assembleReportContextValue({
         updatePickProbeValue: draft.updatePickProbeValue,
         resetPickProbeValues: draft.resetPickProbeValues,
         appendSavedProbeSummaryAsNewDraftCase: draft.appendSavedProbeSummaryAsNewDraftCase,
+        appendApiFlowEntryToDraftCase,
         elementMemos: draft.elementMemos,
         memoComposer: draft.memoComposer,
         openMemoComposer: draft.openMemoComposer,
@@ -415,5 +427,9 @@ export function assembleReportContextValue({
         handleCreateGitHubIssue: mutations.handleCreateGitHubIssue,
         handleCreateSubmitWithGitHubIssue: mutations.handleCreateSubmitWithGitHubIssue,
         isDraftGitHubIssueSubmitting: mutations.isDraftGitHubIssueSubmitting,
+        apiFlowEntries,
+        activeApiFailureAlert,
+        dismissFailureAlert,
+        networkMonitorEnabled,
     };
 }

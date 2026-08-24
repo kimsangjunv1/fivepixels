@@ -216,6 +216,7 @@ declare const ReportContext: Context<{
     updatePickProbeValue: (key: import("../types/report-ui.js").PickProbeFieldKey, value: string) => void;
     resetPickProbeValues: () => void;
     appendSavedProbeSummaryAsNewDraftCase: () => void;
+    appendApiFlowEntryToDraftCase: (entryId: string) => void;
     elementMemos: import("../utils/memo/elementMemos.js").ElementMemoMap;
     memoComposer: import("../hooks/report/useElementMemos.js").ElementMemoComposerState | null;
     openMemoComposer: (elementKey: string, clientX: number, clientY: number) => void;
@@ -343,6 +344,10 @@ declare const ReportContext: Context<{
     handleCreateGitHubIssue: (report: import("../index.js").ReportFeedback) => Promise<void>;
     handleCreateSubmitWithGitHubIssue: () => Promise<void>;
     isDraftGitHubIssueSubmitting: boolean;
+    apiFlowEntries: readonly import("../types/networkMonitor.js").ApiFlowEntry[];
+    activeApiFailureAlert: import("../types/networkMonitor.js").ApiFlowEntry | null;
+    dismissFailureAlert: (entryId: string) => void;
+    networkMonitorEnabled: boolean;
 } | null>;
 declare const ReportPreferencesContext: Context<ReportPreferencesValue | null>;
 declare const ReportSessionContext: Context<ReportSessionValue | null>;
@@ -556,6 +561,7 @@ export declare function useReport(): {
     updatePickProbeValue: (key: import("../types/report-ui.js").PickProbeFieldKey, value: string) => void;
     resetPickProbeValues: () => void;
     appendSavedProbeSummaryAsNewDraftCase: () => void;
+    appendApiFlowEntryToDraftCase: (entryId: string) => void;
     elementMemos: import("../utils/memo/elementMemos.js").ElementMemoMap;
     memoComposer: import("../hooks/report/useElementMemos.js").ElementMemoComposerState | null;
     openMemoComposer: (elementKey: string, clientX: number, clientY: number) => void;
@@ -683,6 +689,10 @@ export declare function useReport(): {
     handleCreateGitHubIssue: (report: import("../index.js").ReportFeedback) => Promise<void>;
     handleCreateSubmitWithGitHubIssue: () => Promise<void>;
     isDraftGitHubIssueSubmitting: boolean;
+    apiFlowEntries: readonly import("../types/networkMonitor.js").ApiFlowEntry[];
+    activeApiFailureAlert: import("../types/networkMonitor.js").ApiFlowEntry | null;
+    dismissFailureAlert: (entryId: string) => void;
+    networkMonitorEnabled: boolean;
 };
 /** Appearance, locale, tabs, personal key, role — changes less often than markers/lists. */
 export declare function useReportPreferences(): ReportPreferencesValue;
@@ -899,6 +909,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         updatePickProbeValue: (key: import("../types/report-ui.js").PickProbeFieldKey, value: string) => void;
         resetPickProbeValues: () => void;
         appendSavedProbeSummaryAsNewDraftCase: () => void;
+        appendApiFlowEntryToDraftCase: (entryId: string) => void;
         elementMemos: import("../utils/memo/elementMemos.js").ElementMemoMap;
         memoComposer: import("../hooks/report/useElementMemos.js").ElementMemoComposerState | null;
         openMemoComposer: (elementKey: string, clientX: number, clientY: number) => void;
@@ -1026,6 +1037,10 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         handleCreateGitHubIssue: (report: import("../index.js").ReportFeedback) => Promise<void>;
         handleCreateSubmitWithGitHubIssue: () => Promise<void>;
         isDraftGitHubIssueSubmitting: boolean;
+        apiFlowEntries: readonly import("../types/networkMonitor.js").ApiFlowEntry[];
+        activeApiFailureAlert: import("../types/networkMonitor.js").ApiFlowEntry | null;
+        dismissFailureAlert: (entryId: string) => void;
+        networkMonitorEnabled: boolean;
     }, "personalKey" | "projectId" | "fields" | "personalKeyRequired" | "environment" | "questionThreadDisplay" | "setQuestionThreadDisplay" | "locale" | "setLocale" | "showMarkerTargetPreview" | "setShowMarkerTargetPreview" | "toggleMarkerTargetPreview" | "devicePreviewUiOpen" | "setDevicePreviewUiOpen" | "devicePreviewDeviceId" | "setDevicePreviewDeviceId" | "devicePreviewScale" | "setDevicePreviewScale" | "devicePreviewImageEnabled" | "setDevicePreviewImageEnabled" | "devicePreviewFitToViewport" | "setDevicePreviewFitToViewport" | "devicePreviewStatusBarEnabled" | "setDevicePreviewStatusBarEnabled" | "devicePreviewPreset" | "showHiddenDetachedMarkers" | "setShowHiddenDetachedMarkers" | "showModalDetachedMarkers" | "setShowModalDetachedMarkers" | "markerAppearance" | "setMarkerAppearance" | "setMarkerSize" | "setMarkerShape" | "setMarkerFillStyle" | "setMarkerColors" | "setMarkerColor" | "setMarkerStrokeColor" | "setFeedbackModeDotColors" | "setFeedbackModeDotColor" | "typography" | "setTypography" | "setFontSize" | "setFontFamily" | "panelRole" | "setPanelRole" | "persistenceStatus" | "appVersion" | "showFeedbackList" | "selfProfile" | "authors" | "publicKey" | "personalKeyCandidates" | "issuePersonalKey" | "rotatePersonalKey" | "insertPersonalKey" | "clearPersonalKey" | "authorSelectionLocked" | "messages" | "visibleShortcutKeys" | "teamReviewers" | "onListReviewers" | "onListReviewerRequests" | "onCreateReviewerRequest" | "onResolveReviewerRequest" | "onRegisterReviewer" | "onUpdateReviewer" | "panelAppearance" | "setPanelAppearance" | "tooltipAppearance" | "setTooltipAppearance" | "teamActor" | "teamActorRole" | "isTeamAdmin" | "canAccessTeamSettings" | "integrationCapabilities" | "adapterIntegrationStatus" | "panelView" | "loginMethod" | "loginWithApi" | "registerWithApi" | "loginWithArtemis" | "completeRemoteOnboarding" | "completeOnboarding" | "restoreFromBackup" | "skipOnboarding" | "resolvedPanelAppearance" | "resolvedTooltipAppearance" | "isMobileViewport" | "isPresentationMode" | "presentationViewers" | "visiblePanelTabs" | "visiblePanelTabsSummary" | "resolvedTabAvailabilityContext" | "setVisiblePanelTabs" | "resetVisibleTabsToRoleDefault" | "applyRoleDefaultTabsForOnboarding" | "savePanelTabPreference" | "storedPanelTabPreference">;
     session: Pick<{
         panelAppearance: import("../index.js").ReportAppearance;
@@ -1235,6 +1250,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         updatePickProbeValue: (key: import("../types/report-ui.js").PickProbeFieldKey, value: string) => void;
         resetPickProbeValues: () => void;
         appendSavedProbeSummaryAsNewDraftCase: () => void;
+        appendApiFlowEntryToDraftCase: (entryId: string) => void;
         elementMemos: import("../utils/memo/elementMemos.js").ElementMemoMap;
         memoComposer: import("../hooks/report/useElementMemos.js").ElementMemoComposerState | null;
         openMemoComposer: (elementKey: string, clientX: number, clientY: number) => void;
@@ -1362,7 +1378,11 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         handleCreateGitHubIssue: (report: import("../index.js").ReportFeedback) => Promise<void>;
         handleCreateSubmitWithGitHubIssue: () => Promise<void>;
         isDraftGitHubIssueSubmitting: boolean;
-    }, "markers" | "statusText" | "toggleReportMode" | "toggleTargetPreview" | "currentPathname" | "sessionActor" | "savedProbeDeletions" | "hasProbeSessionChanges" | "canUndoProbeSession" | "canRedoProbeSession" | "undoProbeSessionAction" | "redoProbeSessionAction" | "revertAllSavedProbeEdits" | "draft" | "pickProbeOpen" | "pickProbeSupportsTextFields" | "pickProbeLayoutMode" | "pickProbeValues" | "pickProbeCompareMode" | "pickProbeHasEdits" | "pickTargetContextMenu" | "contextMenuElementKey" | "savedProbeEdits" | "savedProbeCompareMode" | "closePickProbe" | "closePickTargetContextMenu" | "handlePickTargetEdit" | "handlePickTargetDelete" | "handlePickTargetRevert" | "openMemoComposer" | "commitPickProbeEdits" | "revertSavedProbeEdit" | "setSavedProbeCompareMode" | "setPickProbeCompareMode" | "updatePickProbeValue" | "resetPickProbeValues" | "appendSavedProbeSummaryAsNewDraftCase" | "elementMemos" | "memoComposer" | "closeMemoComposer" | "saveElementMemo" | "deleteElementMemo" | "activeReplyReportId" | "minimizedReplyReportIds" | "selectedTarget" | "hoveredTarget" | "mode" | "showTargetPreview" | "closeReplyComposer" | "openReplyComposer" | "selectCase" | "selectReport" | "setErrorMessage" | "focusedCaseId" | "activeReplyReport" | "cancelCaseEdit" | "overlayRef" | "cancelDraft" | "beginFeedbackEdit" | "editingReportId" | "panelTab" | "pendingComposer" | "toggleIssueMode" | "cancelPendingComposer" | "stopEditing" | "focusSearchInput" | "selectAdjacentReport" | "panelCollapsed" | "setPanelCollapsed" | "searchInputRef" | "activeMarkerTarget" | "markerPreviewTargets" | "selectableTargets" | "errorMessage" | "draftStep" | "setDraftStep" | "hoverPointer" | "setHoverPointer" | "handlePickTargetMemo" | "editableDraft" | "setEditableDraft" | "openReplyReportIds" | "openReplyReports" | "setReplyWindowMinimized" | "reorderMinimizedReplyWindow" | "focusReplyWindow" | "closeReplyWindow" | "tooltipReport" | "tooltipAnchor" | "tooltipFieldTags" | "replyDraft" | "setReplyDraft" | "replyMentions" | "setReplyMentions" | "mentionHighlightTarget" | "setMentionHighlightTarget" | "replySubmitAsQuestion" | "setReplySubmitAsQuestion" | "draftAuthorName" | "setDraftAuthorName" | "replyAuthorName" | "setReplyAuthorName" | "presentationViewerId" | "setPresentationViewerId" | "startDenyReview" | "startCheckoutReview" | "startAskQuestion" | "confirmAuthorName" | "setConfirmAuthorName" | "showConfirmAuthorSelect" | "toggleConfirmAuthorSelect" | "beginCaseEdit" | "updateCaseEditDraftCase" | "addCaseEditDraftCase" | "removeCaseEditDraftCase" | "removePersistedCase" | "isComposingNewCase" | "beginComposeNewCase" | "cancelComposeNewCase" | "clearFocusedCase" | "isCaseEditing" | "caseEditReportId" | "caseEditCases" | "openPanelTab" | "togglePanelTab" | "locateFeedback" | "activateFeedbackMarker" | "revealOpenFeedback" | "clearHoverLeaveTimeout" | "scheduleHoverLeave" | "setHoveredMarkerId" | "handleOverlayMove" | "handleOverlayContextMenu" | "handleOverlayClick" | "updateDraftCase" | "addDraftCase" | "removeDraftCase" | "updateDraftField" | "updateDraftCategory" | "startEditing">;
+        apiFlowEntries: readonly import("../types/networkMonitor.js").ApiFlowEntry[];
+        activeApiFailureAlert: import("../types/networkMonitor.js").ApiFlowEntry | null;
+        dismissFailureAlert: (entryId: string) => void;
+        networkMonitorEnabled: boolean;
+    }, "markers" | "statusText" | "toggleReportMode" | "toggleTargetPreview" | "currentPathname" | "sessionActor" | "savedProbeDeletions" | "hasProbeSessionChanges" | "canUndoProbeSession" | "canRedoProbeSession" | "undoProbeSessionAction" | "redoProbeSessionAction" | "revertAllSavedProbeEdits" | "draft" | "pickProbeOpen" | "pickProbeSupportsTextFields" | "pickProbeLayoutMode" | "pickProbeValues" | "pickProbeCompareMode" | "pickProbeHasEdits" | "pickTargetContextMenu" | "contextMenuElementKey" | "savedProbeEdits" | "savedProbeCompareMode" | "closePickProbe" | "closePickTargetContextMenu" | "handlePickTargetEdit" | "handlePickTargetDelete" | "handlePickTargetRevert" | "openMemoComposer" | "commitPickProbeEdits" | "revertSavedProbeEdit" | "setSavedProbeCompareMode" | "setPickProbeCompareMode" | "updatePickProbeValue" | "resetPickProbeValues" | "appendSavedProbeSummaryAsNewDraftCase" | "elementMemos" | "memoComposer" | "closeMemoComposer" | "saveElementMemo" | "deleteElementMemo" | "activeReplyReportId" | "minimizedReplyReportIds" | "selectedTarget" | "hoveredTarget" | "mode" | "showTargetPreview" | "closeReplyComposer" | "openReplyComposer" | "selectCase" | "selectReport" | "setErrorMessage" | "focusedCaseId" | "activeReplyReport" | "cancelCaseEdit" | "appendApiFlowEntryToDraftCase" | "overlayRef" | "cancelDraft" | "beginFeedbackEdit" | "editingReportId" | "panelTab" | "pendingComposer" | "toggleIssueMode" | "cancelPendingComposer" | "stopEditing" | "focusSearchInput" | "selectAdjacentReport" | "panelCollapsed" | "setPanelCollapsed" | "searchInputRef" | "activeMarkerTarget" | "markerPreviewTargets" | "selectableTargets" | "errorMessage" | "draftStep" | "setDraftStep" | "hoverPointer" | "setHoverPointer" | "handlePickTargetMemo" | "editableDraft" | "setEditableDraft" | "openReplyReportIds" | "openReplyReports" | "setReplyWindowMinimized" | "reorderMinimizedReplyWindow" | "focusReplyWindow" | "closeReplyWindow" | "tooltipReport" | "tooltipAnchor" | "tooltipFieldTags" | "replyDraft" | "setReplyDraft" | "replyMentions" | "setReplyMentions" | "mentionHighlightTarget" | "setMentionHighlightTarget" | "replySubmitAsQuestion" | "setReplySubmitAsQuestion" | "draftAuthorName" | "setDraftAuthorName" | "replyAuthorName" | "setReplyAuthorName" | "presentationViewerId" | "setPresentationViewerId" | "startDenyReview" | "startCheckoutReview" | "startAskQuestion" | "confirmAuthorName" | "setConfirmAuthorName" | "showConfirmAuthorSelect" | "toggleConfirmAuthorSelect" | "beginCaseEdit" | "updateCaseEditDraftCase" | "addCaseEditDraftCase" | "removeCaseEditDraftCase" | "removePersistedCase" | "isComposingNewCase" | "beginComposeNewCase" | "cancelComposeNewCase" | "clearFocusedCase" | "isCaseEditing" | "caseEditReportId" | "caseEditCases" | "openPanelTab" | "togglePanelTab" | "locateFeedback" | "activateFeedbackMarker" | "revealOpenFeedback" | "clearHoverLeaveTimeout" | "scheduleHoverLeave" | "setHoveredMarkerId" | "handleOverlayMove" | "handleOverlayContextMenu" | "handleOverlayClick" | "updateDraftCase" | "addDraftCase" | "removeDraftCase" | "updateDraftField" | "updateDraftCategory" | "startEditing">;
     data: Pick<{
         panelAppearance: import("../index.js").ReportAppearance;
         setPanelAppearance: (nextAppearance: import("../index.js").ReportAppearance) => void;
@@ -1571,6 +1591,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         updatePickProbeValue: (key: import("../types/report-ui.js").PickProbeFieldKey, value: string) => void;
         resetPickProbeValues: () => void;
         appendSavedProbeSummaryAsNewDraftCase: () => void;
+        appendApiFlowEntryToDraftCase: (entryId: string) => void;
         elementMemos: import("../utils/memo/elementMemos.js").ElementMemoMap;
         memoComposer: import("../hooks/report/useElementMemos.js").ElementMemoComposerState | null;
         openMemoComposer: (elementKey: string, clientX: number, clientY: number) => void;
@@ -1698,7 +1719,11 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         handleCreateGitHubIssue: (report: import("../index.js").ReportFeedback) => Promise<void>;
         handleCreateSubmitWithGitHubIssue: () => Promise<void>;
         isDraftGitHubIssueSubmitting: boolean;
-    }, "authDiagnostics" | "isError" | "isFetching" | "hasNextPage" | "isFetchingNextPage" | "fetchNextPage" | "refetch" | "replyHistoryByReportId" | "replyHistory" | "loadOlderReplies" | "goToOlderPaginationPage" | "goToNewerPaginationPage" | "canTransferFeedback" | "canListAllFeedback" | "listScope" | "setListScope" | "filters" | "setFilters" | "reports" | "currentPageReports" | "filteredReports" | "allPageReports" | "onPanelBootstrap" | "routeDetailsStats" | "selectedReport" | "isCreating" | "isUpdating" | "isDeleting" | "queryErrorMessage" | "loadRepliesIfNeeded" | "hydrateFeedbackIfNeeded" | "handleCreateSubmit" | "handleUpdateSubmit" | "onActivitySummary" | "isSubmittingReply" | "isClaimingAssignee" | "handleClaimAssignee" | "handleTransferAssignee" | "handleConfirmResolution" | "handleCaseEditSave" | "targetStats" | "roleStatItems" | "handleReplySubmit" | "handleCreateCaseSubmit" | "handleDelete" | "canCreateGitHubIssueFromList" | "canCreateGitHubIssueOnCreate" | "creatingGitHubIssueId" | "handleCreateGitHubIssue" | "handleCreateSubmitWithGitHubIssue" | "isDraftGitHubIssueSubmitting">;
+        apiFlowEntries: readonly import("../types/networkMonitor.js").ApiFlowEntry[];
+        activeApiFailureAlert: import("../types/networkMonitor.js").ApiFlowEntry | null;
+        dismissFailureAlert: (entryId: string) => void;
+        networkMonitorEnabled: boolean;
+    }, "authDiagnostics" | "isError" | "isFetching" | "hasNextPage" | "isFetchingNextPage" | "fetchNextPage" | "refetch" | "replyHistoryByReportId" | "replyHistory" | "loadOlderReplies" | "goToOlderPaginationPage" | "goToNewerPaginationPage" | "canTransferFeedback" | "canListAllFeedback" | "listScope" | "setListScope" | "filters" | "setFilters" | "reports" | "currentPageReports" | "filteredReports" | "allPageReports" | "onPanelBootstrap" | "routeDetailsStats" | "selectedReport" | "isCreating" | "isUpdating" | "isDeleting" | "queryErrorMessage" | "loadRepliesIfNeeded" | "hydrateFeedbackIfNeeded" | "apiFlowEntries" | "activeApiFailureAlert" | "dismissFailureAlert" | "networkMonitorEnabled" | "handleCreateSubmit" | "handleUpdateSubmit" | "onActivitySummary" | "isSubmittingReply" | "isClaimingAssignee" | "handleClaimAssignee" | "handleTransferAssignee" | "handleConfirmResolution" | "handleCaseEditSave" | "targetStats" | "roleStatItems" | "handleReplySubmit" | "handleCreateCaseSubmit" | "handleDelete" | "canCreateGitHubIssueFromList" | "canCreateGitHubIssueOnCreate" | "creatingGitHubIssueId" | "handleCreateGitHubIssue" | "handleCreateSubmitWithGitHubIssue" | "isDraftGitHubIssueSubmitting">;
 };
 export { ReportContext, ReportPreferencesContext, ReportSessionContext, ReportDataContext };
 //# sourceMappingURL=reportContext.d.ts.map

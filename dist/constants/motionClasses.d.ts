@@ -38,6 +38,8 @@ export declare const MOTION: {
 export type MotionClassName = (typeof MOTION)[keyof typeof MOTION];
 export declare const PANEL_TAB_FADE_MS = 180;
 export declare const PANEL_TAB_HEIGHT_MS = 300;
+/** Tailwind class — caps auto-height tab bodies so inner lists can scroll. */
+export declare const PANEL_TAB_BODY_MAX_HEIGHT = "max-h-[min(60dvh,calc(100svh-240px))]";
 export declare function panelCollapseInClass(anchorSide: "left" | "right"): string;
 export declare function panelTabPaneClass(direction: "left" | "right" | "open" | null): string;
 /** Exit opposite to enter direction so content slides away as the next pane arrives. */

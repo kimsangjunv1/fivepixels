@@ -16,6 +16,8 @@ import { getPageScrollY, getPageViewportSize, mapHostPointToPage } from "@/utils
 import { useReportPickProbe } from "./useReportPickProbe.js";
 import { useElementMemos } from "./useElementMemos.js";
 import { getFeedbackViewPath } from "@/utils/marker/viewRestore.js";
+import type { ApiFlowEntry } from "@/types/networkMonitor.js";
+import { formatApiFlowEntryForFeedback } from "@/utils/network/formatApiFlowEntry.js";
 
 const OVERLAY_HOVER_LEAVE_MS = 100;
 
@@ -124,6 +126,46 @@ export function useReportDraftSession({
         saveElementMemo,
         deleteElementMemo,
     } = useElementMemos(projectId, currentPathname);
+
+    const appendApiFlowEntryToDraftCase = useCallback(
+        (entry: ApiFlowEntry) => {
+            if (!draft) {
+                return;
+            }
+
+            const summary = formatApiFlowEntryForFeedback(entry, messages);
+
+            setDraft((current) => {
+                if (!current) {
+                    return current;
+                }
+
+                const cases = current.cases.map((item) => ({ ...item }));
+                const emptyIndex = cases.findIndex((item) => !item.text.trim());
+                const targetIndex = emptyIndex >= 0 ? emptyIndex : 0;
+                const target = cases[targetIndex];
+
+                if (!target) {
+                    return {
+                        ...current,
+                        cases: [createReportCase(summary)],
+                    };
+                }
+
+                cases[targetIndex] = {
+                    ...target,
+                    text: target.text.trim() ? `${target.text.trim()}\n\n${summary}` : summary,
+                    updated_at: new Date().toISOString(),
+                };
+
+                return {
+                    ...current,
+                    cases,
+                };
+            });
+        },
+        [draft, messages],
+    );
 
     const handlePickTargetMemo = useCallback(() => {
         const elementKey = contextMenuElementKey;
@@ -617,6 +659,7 @@ export function useReportDraftSession({
         resetPickProbeValues,
         resetPickProbeState,
         appendSavedProbeSummaryAsNewDraftCase,
+        appendApiFlowEntryToDraftCase,
         elementMemos,
         memoComposer,
         openMemoComposer,
