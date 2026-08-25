@@ -28,6 +28,7 @@ export type PickTargetBoxStyle = {
 export type PickTargetContextMenuState = {
     clientX: number;
     clientY: number;
+    target: TargetSnapshot;
 };
 export type HoverPointer = {
     clientX: number;

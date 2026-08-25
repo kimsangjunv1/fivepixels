@@ -206,6 +206,7 @@ export function useReportDraftSession({ mode, setMode, projectId, fields, messag
         setPickTargetContextMenu({
             clientX: event.clientX,
             clientY: event.clientY,
+            target: snapshot,
         });
     };
     const handleOverlayClick = (event) => {

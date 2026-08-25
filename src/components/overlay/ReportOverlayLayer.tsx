@@ -81,6 +81,7 @@ export function ReportOverlayLayer({ children }: ReportOverlayLayerProps) {
             <TargetHighlights
                 hoveredTarget={hoveredTarget}
                 selectedTarget={selectedTarget}
+                contextMenuTarget={pickTargetContextMenu?.target ?? null}
                 showHoverInspect={showHoverInspect}
                 showSelectionHighlight={showSelectionHighlight}
                 showPickProbeCompare={showPickProbeCompare}

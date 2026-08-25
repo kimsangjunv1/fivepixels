@@ -6,6 +6,7 @@ import { PickTargetHoverTooltip } from "./PickTargetHoverTooltip.js";
 type TargetHighlightsProps = {
     hoveredTarget: TargetSnapshot | null;
     selectedTarget?: TargetSnapshot | null;
+    contextMenuTarget?: TargetSnapshot | null;
     showHoverInspect?: boolean;
     showSelectionHighlight?: boolean;
     showPickProbeCompare?: boolean;
@@ -18,6 +19,7 @@ type TargetHighlightsProps = {
 
 const HOVER_HIGHLIGHT_KEY = "hover-active";
 const SELECTION_HIGHLIGHT_KEY = "selection-active";
+const CONTEXT_MENU_FOCUS_KEY = "context-menu-focus";
 const ACTIVE_MARKER_HIGHLIGHT_KEY = "marker-active";
 const MENTION_HIGHLIGHT_KEY = "mention-active";
 
@@ -55,9 +57,27 @@ function HighlightBox({ target, showLabel }: { target: TargetSnapshot; showLabel
     );
 }
 
+/** Fixed outline for the element that opened the right-click menu (independent of hover). */
+function ContextMenuFocusBox({ target }: { target: TargetSnapshot }) {
+    return (
+        <div
+            className="fivepixels-context-menu-focus pointer-events-none fixed box-border"
+            aria-hidden="true"
+            style={{
+                left: target.rect.left,
+                top: target.rect.top,
+                width: target.rect.width,
+                height: target.rect.height,
+                borderRadius: target.boxStyle?.borderRadius ?? "0",
+            }}
+        />
+    );
+}
+
 export function TargetHighlights({
     hoveredTarget,
     selectedTarget = null,
+    contextMenuTarget = null,
     showHoverInspect = false,
     showSelectionHighlight = false,
     showPickProbeCompare = false,
@@ -111,6 +131,13 @@ export function TargetHighlights({
                     />
                     {showPickProbeCompare ? <PickTargetCompareChip target={selectedTarget} /> : null}
                 </>
+            ) : null}
+
+            {contextMenuTarget ? (
+                <ContextMenuFocusBox
+                    key={CONTEXT_MENU_FOCUS_KEY}
+                    target={contextMenuTarget}
+                />
             ) : null}
 
             {activeMarkerTarget ? (

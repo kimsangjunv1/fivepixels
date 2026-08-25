@@ -487,6 +487,17 @@
     }
 }
 
+@keyframes fivepixels-context-menu-focus-flow {
+    0% {
+        background-position: 0% 0%;
+    }
+
+    100% {
+        /* Exactly one tile of the repeating 0→50% pattern (start/end both black). */
+        background-position: 50% 50%;
+    }
+}
+
 @keyframes fivepixels-validation-attention-pulse {
     0%,
     100% {
@@ -815,6 +826,39 @@
     transition: background-color 0.32s var(--fp-ease-out);
 }
 
+[data-fivepixels-mount] .fivepixels-context-menu-focus {
+    pointer-events: none;
+    z-index: 1000003;
+}
+
+[data-fivepixels-mount] .fivepixels-context-menu-focus::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 2px;
+    /* Tile: black → red → black (period 50%). Looping by 50% background-position stays seamless. */
+    background: linear-gradient(
+        135deg,
+        #000000 0%,
+        #ef4444 25%,
+        #000000 50%,
+        #ef4444 75%,
+        #000000 100%
+    );
+    background-size: 280% 280%;
+    animation: fivepixels-context-menu-focus-flow 3.2s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate;
+    will-change: background-position;
+    -webkit-mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+}
+
 /* ---------------------------------------------------------------------------
  * Pick-target delete overlay
  * --------------------------------------------------------------------------- */
@@ -918,6 +962,7 @@
     [data-fivepixels-mount] .fivepixels-ask-ai-star--secondary,
     [data-fivepixels-mount] .fivepixels-heatmap-dot,
     [data-fivepixels-mount] .fivepixels-dock-guide,
+    [data-fivepixels-mount] .fivepixels-context-menu-focus::before,
     .fivepixels-pick-target-delete-overlay,
     .fivepixels-pick-target-delete-wave {
         animation: none;

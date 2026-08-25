@@ -353,6 +353,7 @@ export function useReportDraftSession({
         setPickTargetContextMenu({
             clientX: event.clientX,
             clientY: event.clientY,
+            target: snapshot,
         });
     };
 
