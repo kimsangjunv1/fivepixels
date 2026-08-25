@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { PointerFollowTooltip } from "@/components/ui/PointerFollowTooltip.js";
+import { StyleInspectTooltip, StyleInspectTooltipRow } from "@/components/ui/StyleInspectTooltip.js";
 import { panelNumericClassName } from "@/utils/panel/panelTypography.js";
 import {
     formatHourLabel,
@@ -181,32 +181,23 @@ export function RouteDetailsTimeline({
                 </div>
             </div>
 
-            <PointerFollowTooltip
+            <StyleInspectTooltip
                 open={Boolean(hoveredBucket && hoverPointer)}
                 pointer={hoverPointer}
-                className="min-w-[160px]"
             >
                 {hoveredBucket ? (
-                    <div className="flex flex-col gap-[4px] text-left text-[12px] leading-[1.4]">
-                        <p className="flex items-center justify-between gap-[12px]">
-                            <span className="text-[var(--adaptive-black500)]">
-                                {formatMessage(tooltipTodayTemplate, { hour: formatHourLabel(hoveredBucket.hour) })}
-                            </span>
-                            <span className={`font-bold text-[var(--adaptive-black900)] ${panelNumericClassName}`}>
-                                {hoveredBucket.todayCount.toLocaleString()}
-                            </span>
-                        </p>
-                        <p className="flex items-center justify-between gap-[12px]">
-                            <span className="text-[var(--adaptive-black500)]">
-                                {formatMessage(tooltipYesterdayTemplate, { hour: formatHourLabel(hoveredBucket.hour) })}
-                            </span>
-                            <span className={`font-bold text-[var(--adaptive-black900)] ${panelNumericClassName}`}>
-                                {hoveredBucket.yesterdayCount.toLocaleString()}
-                            </span>
-                        </p>
-                    </div>
+                    <>
+                        <StyleInspectTooltipRow
+                            label={formatMessage(tooltipTodayTemplate, { hour: formatHourLabel(hoveredBucket.hour) })}
+                            value={hoveredBucket.todayCount.toLocaleString()}
+                        />
+                        <StyleInspectTooltipRow
+                            label={formatMessage(tooltipYesterdayTemplate, { hour: formatHourLabel(hoveredBucket.hour) })}
+                            value={hoveredBucket.yesterdayCount.toLocaleString()}
+                        />
+                    </>
                 ) : null}
-            </PointerFollowTooltip>
+            </StyleInspectTooltip>
         </section>
     );
 }

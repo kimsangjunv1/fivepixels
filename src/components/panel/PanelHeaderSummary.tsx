@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { useReportPreferences, useReportSession, useReportData } from "@/providers/reportContext.js";
 import { formatDateOnly } from "@/utils/shared/format.js";
 import { formatStatCount } from "@/utils/panel/formatStatCount.js";
@@ -16,7 +16,7 @@ function TooltipRow({ label, value }: { label: string; value: string }) {
     return (
         <div className="flex items-start justify-between gap-[12px] text-[14px] leading-[1.45]">
             <span className="shrink-0 text-[var(--adaptive-black500)]">{label}</span>
-            <span className={`min-w-0 text-right font-[var(--coding-font)] text-[var(--adaptive-black900)] ${panelNumericClassName}`}>{value}</span>
+            <span className={`min-w-0 text-right font-bold font-[var(--coding-font)] text-[var(--adaptive-black900)] ${panelNumericClassName}`}>{value}</span>
         </div>
     );
 }
@@ -127,7 +127,7 @@ export function PanelHeaderSummary({ onOpenYearView }: PanelHeaderSummaryProps) 
                 pointer={hoverPointer}
             >
                 {hoveredBucket ? (
-                    <div className="flex flex-col gap-[6px] text-left">
+                    <Fragment>
                         {/* <p className="text-[14px] font-[700] text-[var(--adaptive-black900)]">{formatDateOnly(`${hoveredBucket.dateKey}T12:00:00`, locale)}</p> */}
                         <TooltipRow
                             label={panelMessages.statsFound}
@@ -144,7 +144,7 @@ export function PanelHeaderSummary({ onOpenYearView }: PanelHeaderSummaryProps) 
                         {/* <p className="border-t border-[var(--adaptive-border-subtle)] pt-[6px] text-[14px] text-[var(--adaptive-blue500)]">
                             {panelMessages.sparklineViewDay}
                         </p> */}
-                    </div>
+                    </Fragment>
                 ) : null}
             </PointerFollowTooltip>
         </section>

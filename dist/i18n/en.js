@@ -411,6 +411,7 @@ export const en = {
         authUnavailable: "This login method is not connected yet.",
         introTitle: "Let's get you set up",
         introDescription: "Use the buttons below to create your user and finish authentication.",
+        introDescriptionApiNoAuth: "No company login. Set a display name and personal key to identify authors — feedback is stored via your API.",
         newUser: "New user",
         existingUser: "Existing user",
         restoreTitle: "Enter your backup key",

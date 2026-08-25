@@ -89,6 +89,10 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     panelView: import("./useReportAuthSession.js").PanelView;
     loginMethod: "local" | "api" | "artemis";
     requireAuth: boolean;
+    require: {
+        authLogin: boolean;
+        reviewerKey: boolean;
+    };
     loginWithApi: (payload: import("../../types/report.js").ReportApiLoginPayload) => Promise<import("../../types/report.js").ReportAuthUser>;
     registerWithApi: (payload: import("../../types/report.js").ReportApiRegisterPayload) => Promise<void>;
     loginWithArtemis: () => Promise<import("../../types/report.js").ReportAuthUser>;

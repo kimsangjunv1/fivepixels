@@ -73,7 +73,14 @@ export function useReportAuthSession({ projectId, environment, authors, identify
         }
         return presentationViewers[0]?.id ?? null;
     }, [isPresentationMode, presentationViewerId, presentationViewers]);
-    const authorSelectionLocked = Boolean(personalKey);
+    const sessionActor = useMemo(() => resolveSessionActor({
+        isPresentationMode,
+        presentationViewers,
+        presentationViewerId: resolvedPresentationViewerId,
+        activeIdentify,
+    }), [activeIdentify, isPresentationMode, presentationViewers, resolvedPresentationViewerId]);
+    /** Lock author when a personal key exists, or when company login established the session actor. */
+    const authorSelectionLocked = Boolean(personalKey) || (isRemoteAuth && Boolean(sessionActor?.name));
     const hasPersistedPersonalKey = hasStoredPersonalKey(projectId, environment);
     const isSelfAuthenticated = hasPersistedPersonalKey || remoteOnboardingCompleted;
     const authDiagnostics = useMemo(() => {
@@ -240,12 +247,6 @@ export function useReportAuthSession({ projectId, environment, authors, identify
     const completeRemoteOnboarding = useCallback(() => {
         markOnboardingComplete();
     }, [markOnboardingComplete]);
-    const sessionActor = useMemo(() => resolveSessionActor({
-        isPresentationMode,
-        presentationViewers,
-        presentationViewerId: resolvedPresentationViewerId,
-        activeIdentify,
-    }), [activeIdentify, isPresentationMode, presentationViewers, resolvedPresentationViewerId]);
     const signCreatePayload = useCallback(async (payload) => {
         const auth = await signPayload("feedback:create", payload);
         return auth ? { ...payload, auth } : payload;

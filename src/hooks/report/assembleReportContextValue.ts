@@ -183,6 +183,10 @@ export function assembleReportContextValue({
         panelView: auth.panelView,
         loginMethod: auth.loginMethod,
         requireAuth: auth.requireAuth,
+        require: {
+            authLogin: auth.requireAuth,
+            reviewerKey: Boolean(auth.requiresReviewerKey),
+        },
         loginWithApi: auth.loginWithApi,
         registerWithApi: auth.registerWithApi,
         loginWithArtemis: auth.loginWithArtemis,

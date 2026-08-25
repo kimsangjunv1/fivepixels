@@ -413,6 +413,7 @@ export const ko: ReportMessages = {
         authUnavailable: "이 로그인 방식이 아직 연결되지 않았습니다.",
         introTitle: "세팅을 도와드릴게요",
         introDescription: "하단의 버튼을 통해 사용자 생성 및 인증을 마쳐주세요.",
+        introDescriptionApiNoAuth: "회사 로그인은 없습니다. 표시 이름과 개인 키로 작성자를 구분하고, 피드백은 API에 저장됩니다.",
         newUser: "새로운 사용자",
         existingUser: "기존 사용자",
         restoreTitle: "백업한 키를 입력해주세요",

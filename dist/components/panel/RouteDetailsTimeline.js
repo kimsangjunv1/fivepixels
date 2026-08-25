@@ -1,6 +1,6 @@
-import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import { useMemo, useState } from "react";
-import { PointerFollowTooltip } from "../../components/ui/PointerFollowTooltip.js";
+import { StyleInspectTooltip, StyleInspectTooltipRow } from "../../components/ui/StyleInspectTooltip.js";
 import { panelNumericClassName } from "../../utils/panel/panelTypography.js";
 import { formatHourLabel, resolveHourlyBarHeightPx, } from "../../utils/panel/hourlyCompareSparkline.js";
 const BAR_MAX_HEIGHT_PX = 36;
@@ -48,6 +48,6 @@ export function RouteDetailsTimeline({ sparkline, todayLabel, yesterdayLabel, ti
                                     todayCount: bucket.todayCount,
                                     yesterdayCount: bucket.yesterdayCount,
                                 }), onHover: handleHover, onLeave: handleLeave }, bucket.hour));
-                        }) })] }), _jsx(PointerFollowTooltip, { open: Boolean(hoveredBucket && hoverPointer), pointer: hoverPointer, className: "min-w-[160px]", children: hoveredBucket ? (_jsxs("div", { className: "flex flex-col gap-[4px] text-left text-[12px] leading-[1.4]", children: [_jsxs("p", { className: "flex items-center justify-between gap-[12px]", children: [_jsx("span", { className: "text-[var(--adaptive-black500)]", children: formatMessage(tooltipTodayTemplate, { hour: formatHourLabel(hoveredBucket.hour) }) }), _jsx("span", { className: `font-bold text-[var(--adaptive-black900)] ${panelNumericClassName}`, children: hoveredBucket.todayCount.toLocaleString() })] }), _jsxs("p", { className: "flex items-center justify-between gap-[12px]", children: [_jsx("span", { className: "text-[var(--adaptive-black500)]", children: formatMessage(tooltipYesterdayTemplate, { hour: formatHourLabel(hoveredBucket.hour) }) }), _jsx("span", { className: `font-bold text-[var(--adaptive-black900)] ${panelNumericClassName}`, children: hoveredBucket.yesterdayCount.toLocaleString() })] })] })) : null })] }));
+                        }) })] }), _jsx(StyleInspectTooltip, { open: Boolean(hoveredBucket && hoverPointer), pointer: hoverPointer, children: hoveredBucket ? (_jsxs(_Fragment, { children: [_jsx(StyleInspectTooltipRow, { label: formatMessage(tooltipTodayTemplate, { hour: formatHourLabel(hoveredBucket.hour) }), value: hoveredBucket.todayCount.toLocaleString() }), _jsx(StyleInspectTooltipRow, { label: formatMessage(tooltipYesterdayTemplate, { hour: formatHourLabel(hoveredBucket.hour) }), value: hoveredBucket.yesterdayCount.toLocaleString() })] })) : null })] }));
 }
 //# sourceMappingURL=RouteDetailsTimeline.js.map

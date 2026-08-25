@@ -132,8 +132,15 @@ export type ReportUi = {
 
 /** Team scope passed to `<FivePixels team={{ user, reviewers }} />`. */
 export type ReportTeam = {
+    /**
+     * Optional host-injected identity. Prefer personal-key / API login onboarding;
+     * most integrations can omit this.
+     */
     user?: ReportIdentify;
     reviewers?: ReportAuthor[];
+    /**
+     * @deprecated Prefer top-level `require.reviewerKey`.
+     */
     requireReviewerKey?: boolean;
 };
 

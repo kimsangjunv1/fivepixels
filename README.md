@@ -84,10 +84,11 @@ REST 경로·필수 handler·선택 handler는 `examples/basic/src/fivepixels/ad
 | `project` | `{ id?, env?, version? }` | 프로젝트 식별자. `id` 기본값 `"my-app"`. |
 | `ui` | `{ appearance?, showFeedbackList?, visibleShortcutKeys?, shortcut?, locale?, messages? }` | UI 설정. `appearance`: `light` \| `dark` \| `system`. |
 | `visibility` | `{ enabled?, devOnly?, routeKey? }` | 표시 여부. `devOnly`면 개발 환경에서만 노출. |
-| `team` | `{ user?, reviewers?, requireReviewerKey? }` | 작성자·리뷰어. `user`: `{ id, name }`. |
+| `team` | `{ reviewers?, user?, requireReviewerKey? }` | `reviewers` 명단. `user`·`requireReviewerKey`는 비권장(후자는 `require.reviewerKey`). |
 | `mode` | `"default"` \| `"presentation"` | 프레젠테이션 모드(시연·데모용 뷰어 전환). |
 | `sync` | `"local"` \| `"api"` \| `"artemis"` | 저장 전략. 기본값 `"local"`. |
-| `requireAuth` | `boolean` | `api`/`artemis`에서 회사 로그인 필수 여부. 기본 `true`. `false`면 이름·개인키 온보딩. |
+| `require` | `{ authLogin?, reviewerKey? }` | 신원 정책. `authLogin`: 회사 로그인(원격 sync 기본 true). `reviewerKey`: reviewers 키 매칭. |
+| `requireAuth` | `boolean` | **Deprecated** — `require.authLogin` 사용. |
 | `adapter` | `FivePixelsAdapter` | 백엔드 연동 handler 묶음. `sync="api"` / `"artemis"`에서 persistence·(선택) 로그인에 사용. |
 | `fields` | `ReportField[]` | 커스텀 필드 (`textarea`, `checkbox`). |
 | `onNavigate` | `(pathname) => void` | View 모드에서 경로 이동. |
@@ -96,7 +97,19 @@ REST 경로·필수 handler·선택 handler는 `examples/basic/src/fivepixels/ad
 | `onReply` | `({ feedbackId, message }) => void` | 답변 side effect. |
 | `github` | `{ enabled?, modes?, onCreate? }` | GitHub Issue 연동. |
 
-> `sync="local"`(기본)에서는 `adapter`를 생략하면 localStorage adapter가 사용됩니다. `sync="api"` / `"artemis"`에서는 `adapter.markers.list`, `adapter.feedback.create`, `adapter.feedback.update`(또는 `adapter.cases.update`)가 **필수**입니다. 회사 로그인이 필요하면 `requireAuth`(기본 `true`)로 로그인 랜딩을 쓰고, `requireAuth={false}`면 local처럼 이름·개인키 온보딩 후 API에 저장합니다.
+> `sync="local"`(기본)에서는 `adapter`를 생략하면 localStorage adapter가 사용됩니다. `sync="api"` / `"artemis"`에서는 `adapter.markers.list`, `adapter.feedback.create`, `adapter.feedback.update`(또는 `adapter.cases.update`)가 **필수**입니다. 회사 로그인은 `require.authLogin`(원격 sync 기본 `true`), 개인키·명단 매칭은 `require.reviewerKey`로 제어합니다.
+
+**로그인 없이 API만 쓰는 공유형 권장 설정:**
+
+```tsx
+<FivePixels
+  sync="api"
+  require={{ authLogin: false, reviewerKey: false }}
+  adapter={adapter}
+/>
+```
+
+이 경우 표시 이름·개인 키로 작성자를 구분하고, 팀 키 승인 대기(`setup-complete`) 없이 바로 사용할 수 있습니다.
 
 **타입 찾는 법:** 공개 props → `FivePixelsProps` (`src/types/publicApi.ts`) · adapter surface → `FivePixelsAdapter` (`src/types/adapter.ts`) · payload/엔티티 → `CreateReportFeedbackPayload` / `ReportFeedback` 등 (`src/types/report.ts`).
 

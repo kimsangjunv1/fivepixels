@@ -74,6 +74,7 @@ export const REPORT_PREFERENCE_KEYS = [
     "panelView",
     "loginMethod",
     "requireAuth",
+    "require",
     "loginWithApi",
     "registerWithApi",
     "loginWithArtemis",

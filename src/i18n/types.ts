@@ -416,6 +416,8 @@ export type ReportMessages = {
         authUnavailable: string;
         introTitle: string;
         introDescription: string;
+        /** Shown on intro when `sync="api"` and `require.authLogin={false}`. */
+        introDescriptionApiNoAuth: string;
         newUser: string;
         existingUser: string;
         restoreTitle: string;

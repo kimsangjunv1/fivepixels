@@ -20,7 +20,7 @@ import type {
 } from "./report.js";
 
 export type FivePixelsAuthAdapter = {
-    /** POST /auth/login — required when `sync="api"` and `requireAuth` (default) */
+    /** POST /auth/login — required when `sync="api"` and `require.authLogin` (default) */
     login?: (payload: ReportApiLoginPayload) => Promise<ReportAuthUser>;
     /** POST /auth/register — optional */
     signup?: (payload: ReportApiRegisterPayload) => Promise<void>;
@@ -139,11 +139,11 @@ export type FivePixelsMembersAdapter = {
  * Required for `sync="api"` / `sync="artemis"` persistence:
  * - `markers.list`, `feedback.create`, and at least one of `feedback.update` / `cases.update`
  *
- * Auth (when `requireAuth` is true, default for remote sync):
+ * Auth (when `require.authLogin` is true, default for remote sync):
  * - `api`: `auth.login` required; `signup` / `logout` / `refresh` optional
  * - `artemis`: `auth.artemisLogin` required
  *
- * When `requireAuth={false}`, identity uses local-style personal key onboarding; auth handlers are unused.
+ * When `require.authLogin={false}`, identity uses local-style personal key onboarding; auth handlers are unused.
  *
  * Paths follow `/api/v1/fivepixels` (host supplies the base URL).
  */

@@ -13,6 +13,7 @@ import type {
 } from "@/types/report.js";
 import { resolveReportEnabled } from "@/utils/shared/env.js";
 import { resolveReportProject } from "@/utils/report/reportProject.js";
+import { resolveFivePixelsRequire } from "@/utils/report/resolveRequire.js";
 import { resolveReportTeam } from "@/utils/report/reportTeam.js";
 import { resolveReportUi, type ResolvedReportUi } from "@/utils/report/reportUi.js";
 import { resolveReportVisibility } from "@/utils/report/reportVisibility.js";
@@ -26,7 +27,7 @@ import {
 
 export type { ReportProviderProps } from "@/types/publicApi.js";
 
-type ReportProviderEnabledProps = Omit<ReportProviderProps, "project" | "ui" | "visibility" | "team"> & {
+type ReportProviderEnabledProps = Omit<ReportProviderProps, "project" | "ui" | "visibility" | "team" | "require" | "requireAuth"> & {
     projectId: string;
     environment?: string;
     appVersion?: string;
@@ -46,7 +47,7 @@ type ReportProviderEnabledProps = Omit<ReportProviderProps, "project" | "ui" | "
     messageOverrides?: DeepPartialReportMessages;
     pixelsMode: FivePixelsMode;
     sync: FivePixelsSync;
-    requireAuth?: boolean;
+    requireAuth: boolean;
     networkMonitor: boolean;
 };
 
@@ -129,6 +130,7 @@ export function ReportProvider({
     team,
     mode = "default",
     sync = "local",
+    require: requireProp,
     requireAuth,
     adapter,
     fields,
@@ -143,7 +145,16 @@ export function ReportProvider({
     const resolvedProject = resolveReportProject({ project });
     const resolvedUi = resolveReportUi({ ui });
     const resolvedVisibility = resolveReportVisibility({ visibility });
-    const resolvedTeam = resolveReportTeam({ team });
+    const resolvedRequire = resolveFivePixelsRequire({
+        sync,
+        require: requireProp,
+        requireAuth,
+        teamRequireReviewerKey: team?.requireReviewerKey,
+    });
+    const resolvedTeam = resolveReportTeam({
+        team,
+        requireReviewerKey: resolvedRequire.reviewerKey,
+    });
     const resolvedFields = fields ?? getDefaultFields(resolvedUi.messages);
 
     if (!resolveReportEnabled(resolvedVisibility)) {
@@ -177,7 +188,7 @@ export function ReportProvider({
             messageOverrides={ui?.messages}
             pixelsMode={mode}
             sync={sync}
-            requireAuth={requireAuth}
+            requireAuth={resolvedRequire.authLogin}
             networkMonitor={networkMonitor}
         >
             {children}

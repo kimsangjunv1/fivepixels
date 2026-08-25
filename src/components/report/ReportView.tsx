@@ -45,7 +45,7 @@ export function ReportView() {
     }
 
     return (
-        <ShadowReportRoot panelAppearance={resolvedPanelAppearance}>
+        <ShadowReportRoot tooltipAppearance={resolvedTooltipAppearance}>
             {showHostDevicePreview ? (
                 <ThemeScope appearance={resolvedPanelAppearance}>
                     <DevicePreviewChrome />

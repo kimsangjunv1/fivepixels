@@ -1,4 +1,4 @@
-export type { FivePixelsProps, ReportProviderProps } from "../../types/publicApi.js";
+export type { FivePixelsProps, FivePixelsRequire, ReportProviderProps, ResolvedFivePixelsRequire } from "../../types/publicApi.js";
 export type { FivePixelsAdapter, FivePixelsAuthAdapter, FivePixelsCaseAssigneePayload, FivePixelsCaseStatusPayload, FivePixelsCasesAdapter, FivePixelsCaseTimelineResult, FivePixelsFeedbackAdapter, FivePixelsFeedbackAssigneePayload, FivePixelsFeedbackStatusPayload, FivePixelsMarkersAdapter, FivePixelsMarkersListParams, FivePixelsMembersAdapter, FivePixelsRepliesAdapter, FivePixelsSessionAdapter, UpdateReplyPayload, } from "../../types/adapter.js";
 export { FivePixels } from "./FivePixels.js";
 export { DotWaveOverlay, type DotWaveOrigin, type DotWaveOverlayProps } from "../../components/overlay/DotWaveOverlay.js";
@@ -11,6 +11,7 @@ export { allCasesResolved, applyCaseStatusSync, createCaseId, createReportCase, 
 export { createReportAuthMessage, parsePublicKey, verifyReportAuthProof } from "../../utils/auth/personalKey.js";
 export { ReportAuthError, resolveRegistrationError } from "../../utils/auth/reportAuthError.js";
 export { FIVE_PIXELS_SYNC_VALUES, isRemoteLoginMethod, resolveFivePixelsSync, resolveRequireAuth, usesRemoteAuthLogin, type FivePixelsSync } from "../../constants/loginMethod.js";
+export { resolveFivePixelsRequire } from "../../utils/report/resolveRequire.js";
 export { REPORT_STATUS_FLOW, REPORT_STATUS_TRANSITIONS } from "../../types/report.js";
 export { buildGitHubIssueUpdate, canCreateGitHubIssueFromList, canCreateGitHubIssueOnCreate, createGitIssuedReply, getGitHubIssueUrl, hasGitHubIssue, isGitIssued, isGitIssuedSystemReply, isGitHubIssueIntegrationEnabled, } from "../../utils/github/githubIntegration.js";
 export type { DeepPartialReportMessages, ReportLocale, ReportMessages } from "../../i18n/index.js";

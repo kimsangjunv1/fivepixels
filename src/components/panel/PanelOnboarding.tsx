@@ -440,7 +440,9 @@ export function PanelOnboarding() {
                 <>
                     <div>
                         <h6 className={PANEL_GATE_TITLE_CLASS}>{onboarding.introTitle}</h6>
-                        <p className={PANEL_GATE_DESCRIPTION_CLASS}>{onboarding.introDescription}</p>
+                        <p className={PANEL_GATE_DESCRIPTION_CLASS}>
+                            {sync === "api" && !requireAuth ? onboarding.introDescriptionApiNoAuth : onboarding.introDescription}
+                        </p>
                     </div>
 
                     <div className="flex flex-col gap-[8px]">

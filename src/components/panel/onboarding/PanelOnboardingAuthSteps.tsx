@@ -119,21 +119,16 @@ export function ApiLoginStep({
                         {copy.loginAction}
                     </button>
                 </HoverTooltip>
-                <HoverTooltip
-                    label={registerLock.locked ? registerLock.tooltipLabel : undefined}
-                    multiline={registerLock.locked}
-                    disabled={!registerLock.locked}
-                >
+                {registerLock.locked ? null : (
                     <button
                         type="button"
-                        disabled={busy || registerLock.locked}
+                        disabled={busy}
                         onClick={onSignUp}
                         className="inline-flex items-center justify-center gap-[6px] rounded-[8px] border border-[var(--adaptive-black200)] px-[12px] py-[10px] text-[12px] font-semibold text-[var(--adaptive-black700)] hover:bg-[var(--adaptive-black100)] disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                        {registerLock.locked ? <LockIcon className="h-[12px] w-[12px]" /> : null}
                         {copy.signUpAction}
                     </button>
-                </HoverTooltip>
+                )}
             </div>
             <StepFooter backLabel={copy.back} onBack={onBack} />
         </>
