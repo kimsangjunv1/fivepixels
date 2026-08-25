@@ -5,8 +5,10 @@ import { MOTION } from "../../constants/motionClasses.js";
 import { getReportTooltipRoot } from "../../utils/shared/dom.js";
 import { HOVER_TOOLTIP_MARGIN } from "../../utils/marker/hoverTooltipLayout.js";
 const POINTER_OFFSET = 12;
-/** Shared glass surface with marker pick-target hover tooltips. */
-export const POINTER_TOOLTIP_SURFACE_CLASS = "pointer-events-none fixed z-[1000002] min-w-[220px] max-w-[min(320px,calc(100vw-16px))] overflow-hidden rounded-[16px] border border-solid border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-neutralTintOpacity900)] px-[14px] py-[7px] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[20px]";
+/** Shared glass surface (style inspect tooltip + context menu). */
+export const STYLE_TOOLTIP_SURFACE_CLASS = "overflow-hidden rounded-[16px] border border-solid border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-neutralTintOpacity900)] px-[14px] py-[7px] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[20px]";
+/** Pointer-follow portal shell built on the shared style tooltip surface. */
+export const POINTER_TOOLTIP_SURFACE_CLASS = `pointer-events-none fixed z-[1000002] min-w-[220px] max-w-[min(320px,calc(100vw-16px))] ${STYLE_TOOLTIP_SURFACE_CLASS}`;
 function getPointerTooltipLayout(clientX, clientY, tooltipRect) {
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;

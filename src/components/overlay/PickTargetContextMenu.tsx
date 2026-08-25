@@ -1,12 +1,14 @@
 import { useEffect } from "react";
 import { DeleteIcon, EditIcon, MemoIcon, RevertIcon } from "@/components/icons/Icons.js";
+import { STYLE_TOOLTIP_SURFACE_CLASS } from "@/components/ui/PointerFollowTooltip.js";
 import { useReportPreferences, useReportSession } from "@/providers/reportContext.js";
+import { MOTION } from "@/constants/motionClasses.js";
 
-const MENU_SURFACE_CLASS =
-    "pointer-events-auto fixed z-[1000004] min-w-[140px] overflow-hidden rounded-[10px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface-overlay)] py-[4px] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[20px]";
+const MENU_SURFACE_CLASS = `pointer-events-auto fixed z-[1000004] min-w-[160px] ${STYLE_TOOLTIP_SURFACE_CLASS} ${MOTION.tooltipIn}`;
 const MENU_ITEM_CLASS =
-    "flex w-full items-center gap-[8px] px-[12px] py-[8px] text-left text-[14px] font-medium hover:bg-[var(--adaptive-black100)]";
+    "flex w-full items-center gap-[8px] rounded-[8px] py-[6px] text-left text-[14px] font-medium leading-[1.45] text-[var(--adaptive-black900)] hover:bg-[var(--adaptive-black100)]";
 const MENU_DIVIDER_CLASS = "my-[4px] h-px bg-[var(--adaptive-border-subtle)]";
+const MENU_ICON_CLASS = "h-[16px] w-[16px] shrink-0";
 
 type PickTargetContextMenuProps = {
     clientX: number;
@@ -41,7 +43,7 @@ export function PickTargetContextMenu({ clientX, clientY, showRevert, showMemo }
 
     const viewportWidth = typeof window !== "undefined" ? window.innerWidth : 0;
     const viewportHeight = typeof window !== "undefined" ? window.innerHeight : 0;
-    const left = Math.min(clientX, Math.max(8, viewportWidth - 160));
+    const left = Math.min(clientX, Math.max(8, viewportWidth - 180));
     const top = Math.min(clientY, Math.max(8, viewportHeight - (showRevert ? 176 : 144)));
 
     return (
@@ -59,11 +61,11 @@ export function PickTargetContextMenu({ clientX, clientY, showRevert, showMemo }
                 type="button"
                 data-fivepixels-interactive=""
                 onClick={() => handlePickTargetEdit()}
-                className={`${MENU_ITEM_CLASS} text-[#1f1f1f]`}
+                className={MENU_ITEM_CLASS}
             >
                 <EditIcon
-                    className="h-[18px] w-[18px] shrink-0"
-                    fill="#1f1f1f"
+                    className={MENU_ICON_CLASS}
+                    fill="currentColor"
                 />
                 {messages.pickTarget.contextEdit}
             </button>
@@ -71,11 +73,11 @@ export function PickTargetContextMenu({ clientX, clientY, showRevert, showMemo }
                 type="button"
                 data-fivepixels-interactive=""
                 onClick={() => handlePickTargetMemo()}
-                className={`${MENU_ITEM_CLASS} text-[#1f1f1f]`}
+                className={MENU_ITEM_CLASS}
             >
                 <MemoIcon
-                    className="h-[18px] w-[18px] shrink-0"
-                    fill="#1f1f1f"
+                    className={MENU_ICON_CLASS}
+                    fill="currentColor"
                 />
                 {showMemo ? messages.pickTarget.contextEditMemo : messages.pickTarget.contextAddMemo}
             </button>
@@ -84,11 +86,11 @@ export function PickTargetContextMenu({ clientX, clientY, showRevert, showMemo }
                     type="button"
                     data-fivepixels-interactive=""
                     onClick={() => handlePickTargetRevert()}
-                    className={`${MENU_ITEM_CLASS} text-[#1f1f1f]`}
+                    className={MENU_ITEM_CLASS}
                 >
                     <RevertIcon
-                        className="h-[18px] w-[18px] shrink-0"
-                        fill="#1f1f1f"
+                        className={MENU_ICON_CLASS}
+                        fill="currentColor"
                     />
                     {messages.pickTarget.contextRevert}
                 </button>
@@ -105,8 +107,8 @@ export function PickTargetContextMenu({ clientX, clientY, showRevert, showMemo }
                 className={`${MENU_ITEM_CLASS} text-[var(--adaptive-accent-red)] hover:bg-[color-mix(in_srgb,var(--adaptive-accent-red)_10%,transparent)]`}
             >
                 <DeleteIcon
-                    className="h-[18px] w-[18px] shrink-0"
-                    fill="var(--adaptive-accent-red)"
+                    className={MENU_ICON_CLASS}
+                    fill="currentColor"
                 />
                 {messages.pickTarget.contextDelete}
             </button>
