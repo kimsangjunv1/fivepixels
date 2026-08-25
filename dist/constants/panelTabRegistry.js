@@ -28,6 +28,14 @@ export const PANEL_USER_TAB_REGISTRY = [
         isAvailable: (context) => context.showFeedbackList,
     },
     {
+        id: "memo-list",
+        labelKey: "tabMemoList",
+        userSelectable: true,
+        experimental: false,
+        needsFullReportList: true,
+        isAvailable: (context) => context.showFeedbackList,
+    },
+    {
         id: "overview",
         labelKey: "tabOverview",
         userSelectable: true,

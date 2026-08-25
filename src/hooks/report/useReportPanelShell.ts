@@ -419,7 +419,7 @@ export function useReportPanelShell({
 
         setPanelTab(isClosing ? null : nextTab);
 
-        if (!isClosing && nextTab === "feedback-list") {
+        if (!isClosing && (nextTab === "feedback-list" || nextTab === "memo-list")) {
             enableIssueMode();
         }
     };

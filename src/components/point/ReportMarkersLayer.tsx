@@ -73,6 +73,7 @@ type MarkerButtonProps = {
     markerItem: Marker;
     isHovered: boolean;
     isReportMode: boolean;
+    isInteractive: boolean;
     isProximityHighlighted: boolean;
     isWindowOpen: boolean;
     viewingWindowBadge: string;
@@ -90,6 +91,7 @@ function MarkerButton({
     markerItem,
     isHovered,
     isReportMode,
+    isInteractive,
     isProximityHighlighted,
     isWindowOpen,
     viewingWindowBadge,
@@ -103,8 +105,20 @@ function MarkerButton({
     onPointerMove,
 }: MarkerButtonProps) {
     const hoverRef = useNativeHover<HTMLButtonElement>({
-        onEnter: onHoverStart,
-        onLeave: onHoverEnd,
+        onEnter: () => {
+            if (!isInteractive) {
+                return;
+            }
+
+            onHoverStart();
+        },
+        onLeave: () => {
+            if (!isInteractive) {
+                return;
+            }
+
+            onHoverEnd();
+        },
     });
     const replyCount = getReplyCount(markerItem.report);
     const aggregateCount = markerItem.aggregateCount ?? 1;
@@ -151,7 +165,13 @@ function MarkerButton({
         >
             <div
                 className={`relative transition-opacity duration-150 ${
-                    isReportMode ? (isProximityHighlighted ? "pointer-events-none opacity-100" : "pointer-events-none opacity-50") : "pointer-events-auto"
+                    isInteractive
+                        ? "pointer-events-auto opacity-100"
+                        : isReportMode
+                          ? isProximityHighlighted
+                              ? "pointer-events-none opacity-100"
+                              : "pointer-events-none opacity-50"
+                          : "pointer-events-auto"
                 }`}
             >
                 <div className={`relative transition-transform duration-150 ${scaleClass}`}>
@@ -162,27 +182,28 @@ function MarkerButton({
                         data-fivepixels-interactive=""
                         data-marker-report-id={markerItem.report.id}
                         aria-label={isDetached ? `${resolvedDetachedAriaLabel} · ${markerLabel}` : markerLabel}
-                        aria-hidden={isReportMode || undefined}
-                        tabIndex={isReportMode ? -1 : undefined}
+                        aria-hidden={isInteractive ? undefined : isReportMode || undefined}
+                        tabIndex={isInteractive ? 0 : isReportMode ? -1 : undefined}
                         onClick={
-                            isReportMode
-                                ? undefined
-                                : () => {
-                                      void onActivate(markerItem.report);
+                            isInteractive
+                                ? (event) => {
+                                      event.stopPropagation();
+                                      onActivate(markerItem.report);
                                   }
+                                : undefined
                         }
                         onPointerMove={
-                            isReportMode
-                                ? undefined
-                                : (event) => {
+                            isInteractive
+                                ? (event) => {
                                       onPointerMove(event.clientX, event.clientY);
                                   }
+                                : undefined
                         }
                         className={`${MARKER_BUTTON_BASE_CLASS} relative border-0 bg-transparent p-0 shadow-none ${
-                            isReportMode ? "" : isDetached ? "opacity-75" : ""
+                            isInteractive ? "" : isReportMode ? "" : isDetached ? "opacity-75" : ""
                         }`}
                         style={{
-                            pointerEvents: isReportMode ? "none" : "auto",
+                            pointerEvents: isInteractive ? "auto" : isReportMode ? "none" : "auto",
                             width: shapeStyle.width,
                             height: shapeStyle.height,
                             minWidth: shapeStyle.width,
@@ -257,6 +278,7 @@ export function ReportMarkersLayer() {
         showHiddenDetachedMarkers,
         showModalDetachedMarkers,
         activateFeedbackMarker,
+        beginFeedbackEdit,
         clearHoverLeaveTimeout,
         scheduleHoverLeave,
         setHoveredMarkerId,
@@ -283,6 +305,18 @@ export function ReportMarkersLayer() {
             setHoveredMarkerId((current) => (current === reportId ? null : current));
         },
         [clearHoverLeaveTimeout, openReplyReportIds.length, scheduleHoverLeave, setHoverPointer, setHoveredMarkerId],
+    );
+
+    const handleMarkerActivate = useCallback(
+        (report: ReportFeedback) => {
+            if (report.category === "memo") {
+                beginFeedbackEdit(report);
+                return;
+            }
+
+            void activateFeedbackMarker(report);
+        },
+        [activateFeedbackMarker, beginFeedbackEdit],
     );
 
     const openReplyReportIdSet = useMemo(() => new Set(openReplyReportIds), [openReplyReportIds]);
@@ -395,25 +429,33 @@ export function ReportMarkersLayer() {
         <>
             {isViewMode && ghostFrameMarker ? <DetachedModalGhostFrame label={messages.marker.detachedModalHint} /> : null}
 
-            {visibleMarkers.map((markerItem) => (
-                <MarkerButton
-                    key={markerItem.id}
-                    markerItem={markerItem}
-                    isHovered={isViewMode && tooltipReport?.id === markerItem.report.id && !openReplyReportIdSet.has(markerItem.report.id)}
-                    isReportMode={isReportMode}
-                    isProximityHighlighted={markerItem.id === proximityHighlightedMarkerId}
-                    isWindowOpen={openReplyReportIdSet.has(markerItem.report.id)}
-                    viewingWindowBadge={messages.marker.viewingWindowBadge}
-                    detachedAriaLabel={messages.marker.detachedAriaLabel}
-                    detachedModalAriaLabel={messages.marker.detachedModalAriaLabel}
-                    markerAppearance={markerAppearance}
-                    typography={typography}
-                    onActivate={activateFeedbackMarker}
-                    onHoverStart={() => handleMarkerHoverStart(markerItem.report.id)}
-                    onHoverEnd={() => handleMarkerHoverEnd(markerItem.report.id)}
-                    onPointerMove={(clientX, clientY) => setHoverPointer({ clientX, clientY })}
-                />
-            ))}
+            {visibleMarkers.map((markerItem) => {
+                const isMemoMarker = markerItem.report.category === "memo";
+                const isInteractive = isViewMode || isMemoMarker;
+                const isHovered =
+                    isInteractive && tooltipReport?.id === markerItem.report.id && !openReplyReportIdSet.has(markerItem.report.id);
+
+                return (
+                    <MarkerButton
+                        key={markerItem.id}
+                        markerItem={markerItem}
+                        isHovered={isHovered}
+                        isReportMode={isReportMode}
+                        isInteractive={isInteractive}
+                        isProximityHighlighted={markerItem.id === proximityHighlightedMarkerId}
+                        isWindowOpen={openReplyReportIdSet.has(markerItem.report.id)}
+                        viewingWindowBadge={messages.marker.viewingWindowBadge}
+                        detachedAriaLabel={messages.marker.detachedAriaLabel}
+                        detachedModalAriaLabel={messages.marker.detachedModalAriaLabel}
+                        markerAppearance={markerAppearance}
+                        typography={typography}
+                        onActivate={handleMarkerActivate}
+                        onHoverStart={() => handleMarkerHoverStart(markerItem.report.id)}
+                        onHoverEnd={() => handleMarkerHoverEnd(markerItem.report.id)}
+                        onPointerMove={(clientX, clientY) => setHoverPointer({ clientX, clientY })}
+                    />
+                );
+            })}
 
             {isViewMode
                 ? overflowHints.map((hint) => (

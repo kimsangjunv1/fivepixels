@@ -8,11 +8,10 @@ import { resolveDefaultAuthorName } from "../../utils/report/resolveDefaultAutho
 import { buildDraftFromReport } from "../../utils/report/buildDraftFromReport.js";
 import { getPageScrollY, getPageViewportSize, mapHostPointToPage } from "../../utils/overlay/pageDocumentBridge.js";
 import { useReportPickProbe } from "./useReportPickProbe.js";
-import { useElementMemos } from "./useElementMemos.js";
 import { getFeedbackViewPath } from "../../utils/marker/viewRestore.js";
 import { formatApiFlowEntryForFeedback } from "../../utils/network/formatApiFlowEntry.js";
 const OVERLAY_HOVER_LEAVE_MS = 100;
-export function useReportDraftSession({ mode, setMode, projectId, fields, messages, currentPathname, environment, appVersion, sessionActor, authorSelectionLocked, activeIdentify, authorizedAuthors, selfName, setErrorMessage, hoveredElementRef, selectedElementRef, overlayRef, overlayHoverLeaveTimeoutRef, }) {
+export function useReportDraftSession({ mode, setMode, fields, messages, currentPathname, environment, appVersion, sessionActor, authorSelectionLocked, activeIdentify, authorizedAuthors, selfName, setErrorMessage, hoveredElementRef, selectedElementRef, overlayRef, overlayHoverLeaveTimeoutRef, }) {
     const [showTargetPreview, setShowTargetPreview] = useState(false);
     const [selectableTargets, setSelectableTargets] = useState([]);
     const [draft, setDraft] = useState(null);
@@ -33,7 +32,6 @@ export function useReportDraftSession({ mode, setMode, projectId, fields, messag
         draft,
         messages,
     });
-    const { elementMemos, memoComposer, openMemoComposer, closeMemoComposer, saveElementMemo, deleteElementMemo, } = useElementMemos(projectId, currentPathname);
     const appendApiFlowEntryToDraftCase = useCallback((entry) => {
         if (!draft) {
             return;
@@ -65,14 +63,59 @@ export function useReportDraftSession({ mode, setMode, projectId, fields, messag
         });
     }, [draft, messages]);
     const handlePickTargetMemo = useCallback(() => {
-        const elementKey = contextMenuElementKey;
+        const targetElement = contextMenuElementRef.current;
         const menu = pickTargetContextMenu;
-        if (!elementKey || !menu) {
+        if (!targetElement || !menu) {
             return;
         }
         closePickTargetContextMenu();
-        openMemoComposer(elementKey, menu.clientX, menu.clientY);
-    }, [closePickTargetContextMenu, contextMenuElementKey, openMemoComposer, pickTargetContextMenu]);
+        resetPickProbeState();
+        const snapshot = menu.target;
+        const anchorSnapshot = resolveFeedbackDocumentAnchor(targetElement);
+        const isTagged = snapshot.isTagged;
+        const pagePoint = mapHostPointToPage(menu.clientX, menu.clientY) ?? { x: menu.clientX, y: menu.clientY };
+        const pageViewport = getPageViewportSize();
+        const pageScrollY = getPageScrollY();
+        hoveredElementRef.current = targetElement;
+        selectedElementRef.current = targetElement;
+        draftElementRef.current = targetElement;
+        setHoverPointer(null);
+        setHoveredTarget(null);
+        setSelectedTarget(snapshot);
+        setDraftStep("content");
+        setErrorMessage("");
+        setDraft({
+            clientX: menu.clientX,
+            clientY: menu.clientY,
+            xRatio: clampRatio(pagePoint.x / pageViewport.width),
+            yRatio: clampRatio(pagePoint.y / pageViewport.height),
+            elementXRatio: clampRatio((menu.clientX - snapshot.rect.left) / Math.max(snapshot.rect.width, 1)),
+            elementYRatio: clampRatio((menu.clientY - snapshot.rect.top) / Math.max(snapshot.rect.height, 1)),
+            anchorReportId: anchorSnapshot?.id ?? null,
+            anchorReportType: anchorSnapshot?.type ?? null,
+            anchorXRatio: anchorSnapshot ? clampRatio((menu.clientX - anchorSnapshot.rect.left) / Math.max(anchorSnapshot.rect.width, 1)) : null,
+            anchorYRatio: anchorSnapshot ? clampRatio((menu.clientY - anchorSnapshot.rect.top) / Math.max(anchorSnapshot.rect.height, 1)) : null,
+            scrollY: pageScrollY,
+            documentY: Math.round(pageScrollY + pagePoint.y),
+            reportId: snapshot.id,
+            reportType: snapshot.type,
+            targetSelector: isTagged ? null : (snapshot.targetSelector ?? null),
+            viewPath: getFeedbackViewPath(targetElement),
+            suggestedReportId: isTagged ? null : (snapshot.suggestedReportId ?? snapshot.id),
+            cases: [createReportCase("")],
+            category: "memo",
+            fieldValues: createInitialFieldValues(fields),
+        });
+    }, [
+        closePickTargetContextMenu,
+        contextMenuElementRef,
+        fields,
+        hoveredElementRef,
+        pickTargetContextMenu,
+        resetPickProbeState,
+        selectedElementRef,
+        setErrorMessage,
+    ]);
     const [draftAuthorName, setDraftAuthorName] = useState(() => resolveDefaultAuthorName(activeIdentify, authorizedAuthors, selfName));
     useEffect(() => {
         if (!sessionActor?.name) {
@@ -478,12 +521,6 @@ export function useReportDraftSession({ mode, setMode, projectId, fields, messag
         resetPickProbeState,
         appendSavedProbeSummaryAsNewDraftCase,
         appendApiFlowEntryToDraftCase,
-        elementMemos,
-        memoComposer,
-        openMemoComposer,
-        closeMemoComposer,
-        saveElementMemo,
-        deleteElementMemo,
         clearOverlayHoverLeaveTimeout,
         toggleTargetPreview,
         handleOverlayMove,

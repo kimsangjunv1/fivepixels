@@ -2,7 +2,7 @@ import type { FeedbackCategory, ReportCase, ReportFeedback, ReportFieldValues, R
 import type { RouteDetailStatus } from "../utils/panel/routeDetailStatus.js";
 export type ReportMode = "idle" | "report" | "view";
 export type ResolvedAppearance = "light" | "dark";
-export type ReportPanelTab = "overview" | "route-details" | "feedback-list" | "diagnostics" | "api-flow" | "my-tasks" | "page-brief" | "needs-attention" | "project-health" | "today-digest" | "settings" | "command";
+export type ReportPanelTab = "overview" | "route-details" | "feedback-list" | "memo-list" | "diagnostics" | "api-flow" | "my-tasks" | "page-brief" | "needs-attention" | "project-health" | "today-digest" | "settings" | "command";
 export type ReportListScope = "current" | "all";
 export type HeatmapActorScope = "team" | "me";
 export type HeatmapMetric = "created" | "activity";

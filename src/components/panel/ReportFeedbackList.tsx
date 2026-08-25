@@ -14,6 +14,12 @@ import { ReportPanelNoticeDialog } from "./ReportPanelNoticeDialog.js";
 
 const FEEDBACK_PAGE_SIZE = 20;
 
+export type FeedbackListKind = "feedback" | "memo";
+
+function isMemoReport(report: ReportFeedback) {
+    return report.category === "memo";
+}
+
 function getDateGroupKey(value: string) {
     const date = new Date(value);
     const year = date.getFullYear();
@@ -49,11 +55,11 @@ function groupReportsByDate(reports: ReportFeedback[], locale: ReturnType<typeof
     return groups;
 }
 
-export function ReportFeedbackList() {
+export function ReportFeedbackList({ listKind = "feedback" }: { listKind?: FeedbackListKind }) {
     const {
         filters,
         setFilters,
-        filteredReports,
+        filteredReports: allFilteredReports,
         reports,
         listScope,
         setListScope,
@@ -83,6 +89,11 @@ export function ReportFeedbackList() {
     const [statusMenuOpen, setStatusMenuOpen] = useState(false);
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
+    const filteredReports = useMemo(
+        () => allFilteredReports.filter((report) => (listKind === "memo" ? isMemoReport(report) : !isMemoReport(report))),
+        [allFilteredReports, listKind],
+    );
+
     const scopeLabel = listScope === "current" ? messages.feedbackList.scopeCurrentPage : messages.feedbackList.scopeAllPages;
     const statusLabel = filters.status === "all" ? messages.feedbackList.filterStatusAll : messages.status.routeDetail[filters.status];
     const listAllLock = useIntegrationLock("listAll");
@@ -93,7 +104,7 @@ export function ReportFeedbackList() {
 
     useEffect(() => {
         setVisibleCount(FEEDBACK_PAGE_SIZE);
-    }, [filters.dateKey, filters.keyword, filters.reportType, filters.status, listScope, reports.length]);
+    }, [filters.dateKey, filters.keyword, filters.reportType, filters.status, listKind, listScope, reports.length]);
 
     useEffect(() => {
         if (filters.dateKey) {
@@ -325,7 +336,11 @@ export function ReportFeedbackList() {
                             <>
                                 <h6 className="font-semibold text-[var(--adaptive-black900)]">{messages.feedbackList.emptyTitle}</h6>
                                 <p className="whitespace-break-spaces text-[12px] leading-[1.5] text-[var(--adaptive-black500)]">
-                                    {reports.length === 0 ? messages.feedbackList.emptyNoFeedback : messages.feedbackList.emptyNoMatch}
+                                    {reports.length === 0 || (listKind === "memo" ? !reports.some(isMemoReport) : !reports.some((report) => !isMemoReport(report)))
+                                        ? listKind === "memo"
+                                            ? messages.feedbackList.emptyNoMemo
+                                            : messages.feedbackList.emptyNoFeedback
+                                        : messages.feedbackList.emptyNoMatch}
                                 </p>
                             </>
                         )}

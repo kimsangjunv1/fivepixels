@@ -14,10 +14,9 @@ type PickTargetContextMenuProps = {
     clientX: number;
     clientY: number;
     showRevert: boolean;
-    showMemo: boolean;
 };
 
-export function PickTargetContextMenu({ clientX, clientY, showRevert, showMemo }: PickTargetContextMenuProps) {
+export function PickTargetContextMenu({ clientX, clientY, showRevert }: PickTargetContextMenuProps) {
     const { messages } = useReportPreferences();
     const {
         closePickTargetContextMenu,
@@ -79,7 +78,7 @@ export function PickTargetContextMenu({ clientX, clientY, showRevert, showMemo }
                     className={MENU_ICON_CLASS}
                     fill="currentColor"
                 />
-                {showMemo ? messages.pickTarget.contextEditMemo : messages.pickTarget.contextAddMemo}
+                {messages.pickTarget.contextAddMemo}
             </button>
             {showRevert ? (
                 <button

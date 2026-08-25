@@ -82,6 +82,7 @@ export type ReportMessages = {
         tabThisPage: string;
         tabPageDetails: string;
         tabFeedbackList: string;
+        tabMemoList: string;
         tabDiagnostics: string;
         tabApiFlow: string;
         tabSettings: string;
@@ -153,6 +154,7 @@ export type ReportMessages = {
         loadFailedRetry: string;
         emptyTitle: string;
         emptyNoFeedback: string;
+        emptyNoMemo: string;
         emptyNoMatch: string;
         emptyPersistenceRequired: string;
         emptyPersistenceRequiredHint: string;

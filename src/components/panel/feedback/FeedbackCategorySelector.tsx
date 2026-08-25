@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
-import { FEEDBACK_CATEGORIES, type FeedbackCategory } from "@/constants/feedbackCategory.js";
+import { SELECTABLE_FEEDBACK_CATEGORIES, type FeedbackCategory } from "@/constants/feedbackCategory.js";
 import type { ReportMessages } from "@/i18n/types.js";
 
 type FeedbackCategorySelectorProps = {
@@ -36,7 +36,7 @@ export function FeedbackCategorySelector({ value, onChange, messages, needsAtten
             aria-label={messages.composer.categoryAriaLabel}
             aria-invalid={needsAttention || undefined}
         >
-            {FEEDBACK_CATEGORIES.map((category, index) => {
+            {SELECTABLE_FEEDBACK_CATEGORIES.map((category, index) => {
                 const selected = value === category;
 
                 return (

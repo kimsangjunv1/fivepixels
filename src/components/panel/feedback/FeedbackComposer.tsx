@@ -476,6 +476,7 @@ export function FeedbackComposer({
                             activeCaseId={activeCaseId}
                             onActiveCaseIdChange={onActiveCaseIdChange}
                             enableElementMentions={enableElementMentions}
+                            placeholder={placeholder}
                         />
                     ) : enableElementMentions ? (
                         <div

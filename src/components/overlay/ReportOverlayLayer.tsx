@@ -3,7 +3,6 @@ import { useReportSession } from "@/providers/reportContext.js";
 import { PickTargetContextMenu } from "./PickTargetContextMenu.js";
 import { PickTargetProbePanel } from "./PickTargetProbePanel.js";
 import { PickTargetSavedBadges } from "./PickTargetSavedBadges.js";
-import { ElementMemoComposer } from "./ElementMemoComposer.js";
 import { TargetHighlights } from "./TargetHighlights.js";
 
 type ReportOverlayLayerProps = {
@@ -22,7 +21,6 @@ export function ReportOverlayLayer({ children }: ReportOverlayLayerProps) {
         pickTargetContextMenu,
         contextMenuElementKey,
         savedProbeEdits,
-        elementMemos,
         selectableTargets,
         showTargetPreview,
         markerPreviewTargets,
@@ -32,8 +30,6 @@ export function ReportOverlayLayer({ children }: ReportOverlayLayerProps) {
         handleOverlayContextMenu,
         handleOverlayClick,
         closePickTargetContextMenu,
-        memoComposer,
-        closeMemoComposer,
     } = useReportSession();
 
     const isReportMode = mode === "report";
@@ -69,11 +65,6 @@ export function ReportOverlayLayer({ children }: ReportOverlayLayerProps) {
                               return;
                           }
 
-                          if (memoComposer) {
-                              closeMemoComposer();
-                              return;
-                          }
-
                           handleOverlayClick(event);
                       }
                     : undefined
@@ -96,13 +87,11 @@ export function ReportOverlayLayer({ children }: ReportOverlayLayerProps) {
             />
             <PickTargetProbePanel />
             <PickTargetSavedBadges />
-            <ElementMemoComposer />
             {pickTargetContextMenu ? (
                 <PickTargetContextMenu
                     clientX={pickTargetContextMenu.clientX}
                     clientY={pickTargetContextMenu.clientY}
                     showRevert={Boolean(contextMenuElementKey && savedProbeEdits[contextMenuElementKey])}
-                    showMemo={Boolean(contextMenuElementKey && elementMemos[contextMenuElementKey])}
                 />
             ) : null}
             {children}

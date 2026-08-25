@@ -252,12 +252,6 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     resetPickProbeValues: () => void;
     appendSavedProbeSummaryAsNewDraftCase: () => void;
     appendApiFlowEntryToDraftCase: (entryId: string) => void;
-    elementMemos: import("../../utils/memo/elementMemos.js").ElementMemoMap;
-    memoComposer: import("./useElementMemos.js").ElementMemoComposerState | null;
-    openMemoComposer: (elementKey: string, clientX: number, clientY: number) => void;
-    closeMemoComposer: () => void;
-    saveElementMemo: (elementKey: string, text: string) => void;
-    deleteElementMemo: (elementKey: string) => void;
     markers: import("../../types/report-ui.js").Marker[];
     selectedReport: ReportFeedback;
     editingReportId: string | null;

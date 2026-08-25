@@ -53,7 +53,7 @@ function focusCaseInput(caseId) {
     const editable = root?.querySelector("[contenteditable='true']");
     (editable ?? (root instanceof HTMLElement ? root : null))?.focus();
 }
-export function FeedbackCaseEditor({ cases, onCaseChange, onAddCase, onRemoveCase, autoFocus = false, onSubmitShortcut, needsAttention = false, attentionKey = 0, emptyCaseIds = [], showTabBar = true, activeCaseId: controlledActiveCaseId, onActiveCaseIdChange, enableElementMentions = false, }) {
+export function FeedbackCaseEditor({ cases, onCaseChange, onAddCase, onRemoveCase, autoFocus = false, onSubmitShortcut, needsAttention = false, attentionKey = 0, emptyCaseIds = [], showTabBar = true, activeCaseId: controlledActiveCaseId, onActiveCaseIdChange, enableElementMentions = false, placeholder, }) {
     const { messages } = useReportPreferences();
     const previousCaseCountRef = useRef(cases.length);
     const containerRef = useRef(null);
@@ -74,7 +74,7 @@ export function FeedbackCaseEditor({ cases, onCaseChange, onAddCase, onRemoveCas
     const activeCase = cases.find((item) => item.id === resolvedActiveCaseId) ?? null;
     const activeCaseIndex = activeCase ? cases.findIndex((item) => item.id === activeCase.id) : -1;
     const activeCaseNeedsAttention = Boolean(activeCase && needsAttention && emptyCaseIds.includes(activeCase.id));
-    const getCaseInputPlaceholder = useCallback((index) => messages.composer.caseInputPlaceholder(index), [messages.composer]);
+    const getCaseInputPlaceholder = useCallback((index) => placeholder ?? messages.composer.caseInputPlaceholder(index), [messages.composer, placeholder]);
     useEffect(() => {
         const nextActiveCaseId = resolveActiveCaseId(cases, activeCaseId);
         if (nextActiveCaseId && nextActiveCaseId !== activeCaseId) {

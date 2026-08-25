@@ -216,7 +216,7 @@ export function useReportPanelShell({ projectId, environment, appVersion, sync =
     const openPanelTab = (nextTab) => {
         const isClosing = panelTab === nextTab;
         setPanelTab(isClosing ? null : nextTab);
-        if (!isClosing && nextTab === "feedback-list") {
+        if (!isClosing && (nextTab === "feedback-list" || nextTab === "memo-list")) {
             enableIssueMode();
         }
     };

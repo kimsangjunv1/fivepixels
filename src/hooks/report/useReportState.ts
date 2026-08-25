@@ -151,7 +151,6 @@ export function useReportState({
     const draft = useReportDraftSession({
         mode: panel.mode,
         setMode: panel.setMode,
-        projectId,
         fields,
         messages: panel.messages,
         currentPathname: panel.currentPathname,
@@ -223,15 +222,17 @@ export function useReportState({
     const restoreSuspendedOpenReplyWindows = useCallback((focusReport?: ReportFeedback | null) => {
         const snapshot = suspendedOpenWindowsRef.current;
         suspendedOpenWindowsRef.current = null;
-        const preferredFocusId = focusReport?.id ?? snapshot?.focusedId ?? null;
+        // Memo uses the draft composer, not the reply/marker window.
+        const safeFocus = focusReport?.category === "memo" ? null : (focusReport ?? null);
+        const preferredFocusId = safeFocus?.id ?? snapshot?.focusedId ?? null;
 
         if (snapshot && snapshot.openIds.length > 0) {
-            replyBridgeRef.current.restoreOpenReplyWindows(snapshot, preferredFocusId, focusReport);
+            replyBridgeRef.current.restoreOpenReplyWindows(snapshot, preferredFocusId, safeFocus);
             return;
         }
 
-        if (focusReport) {
-            replyBridgeRef.current.openReplyComposer(focusReport);
+        if (safeFocus) {
+            replyBridgeRef.current.openReplyComposer(safeFocus);
         }
     }, []);
 

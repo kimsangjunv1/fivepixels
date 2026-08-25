@@ -222,12 +222,6 @@ declare const ReportContext: Context<{
     resetPickProbeValues: () => void;
     appendSavedProbeSummaryAsNewDraftCase: () => void;
     appendApiFlowEntryToDraftCase: (entryId: string) => void;
-    elementMemos: import("../utils/memo/elementMemos.js").ElementMemoMap;
-    memoComposer: import("../hooks/report/useElementMemos.js").ElementMemoComposerState | null;
-    openMemoComposer: (elementKey: string, clientX: number, clientY: number) => void;
-    closeMemoComposer: () => void;
-    saveElementMemo: (elementKey: string, text: string) => void;
-    deleteElementMemo: (elementKey: string) => void;
     markers: import("../types/report-ui.js").Marker[];
     selectedReport: import("../index.js").ReportFeedback;
     editingReportId: string | null;
@@ -572,12 +566,6 @@ export declare function useReport(): {
     resetPickProbeValues: () => void;
     appendSavedProbeSummaryAsNewDraftCase: () => void;
     appendApiFlowEntryToDraftCase: (entryId: string) => void;
-    elementMemos: import("../utils/memo/elementMemos.js").ElementMemoMap;
-    memoComposer: import("../hooks/report/useElementMemos.js").ElementMemoComposerState | null;
-    openMemoComposer: (elementKey: string, clientX: number, clientY: number) => void;
-    closeMemoComposer: () => void;
-    saveElementMemo: (elementKey: string, text: string) => void;
-    deleteElementMemo: (elementKey: string) => void;
     markers: import("../types/report-ui.js").Marker[];
     selectedReport: import("../index.js").ReportFeedback;
     editingReportId: string | null;
@@ -925,12 +913,6 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         resetPickProbeValues: () => void;
         appendSavedProbeSummaryAsNewDraftCase: () => void;
         appendApiFlowEntryToDraftCase: (entryId: string) => void;
-        elementMemos: import("../utils/memo/elementMemos.js").ElementMemoMap;
-        memoComposer: import("../hooks/report/useElementMemos.js").ElementMemoComposerState | null;
-        openMemoComposer: (elementKey: string, clientX: number, clientY: number) => void;
-        closeMemoComposer: () => void;
-        saveElementMemo: (elementKey: string, text: string) => void;
-        deleteElementMemo: (elementKey: string) => void;
         markers: import("../types/report-ui.js").Marker[];
         selectedReport: import("../index.js").ReportFeedback;
         editingReportId: string | null;
@@ -1271,12 +1253,6 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         resetPickProbeValues: () => void;
         appendSavedProbeSummaryAsNewDraftCase: () => void;
         appendApiFlowEntryToDraftCase: (entryId: string) => void;
-        elementMemos: import("../utils/memo/elementMemos.js").ElementMemoMap;
-        memoComposer: import("../hooks/report/useElementMemos.js").ElementMemoComposerState | null;
-        openMemoComposer: (elementKey: string, clientX: number, clientY: number) => void;
-        closeMemoComposer: () => void;
-        saveElementMemo: (elementKey: string, text: string) => void;
-        deleteElementMemo: (elementKey: string) => void;
         markers: import("../types/report-ui.js").Marker[];
         selectedReport: import("../index.js").ReportFeedback;
         editingReportId: string | null;
@@ -1402,7 +1378,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         activeApiFailureAlert: import("../types/networkMonitor.js").ApiFlowEntry | null;
         dismissFailureAlert: (entryId: string) => void;
         networkMonitorEnabled: boolean;
-    }, "markers" | "statusText" | "toggleReportMode" | "toggleTargetPreview" | "currentPathname" | "sessionActor" | "savedProbeDeletions" | "hasProbeSessionChanges" | "canUndoProbeSession" | "canRedoProbeSession" | "undoProbeSessionAction" | "redoProbeSessionAction" | "revertAllSavedProbeEdits" | "draft" | "pickProbeOpen" | "pickProbeSupportsTextFields" | "pickProbeLayoutMode" | "pickProbeValues" | "pickProbeCompareMode" | "pickProbeHasEdits" | "pickTargetContextMenu" | "contextMenuElementKey" | "savedProbeEdits" | "savedProbeCompareMode" | "closePickProbe" | "closePickTargetContextMenu" | "handlePickTargetEdit" | "handlePickTargetDelete" | "handlePickTargetRevert" | "openMemoComposer" | "commitPickProbeEdits" | "revertSavedProbeEdit" | "setSavedProbeCompareMode" | "setPickProbeCompareMode" | "updatePickProbeValue" | "resetPickProbeValues" | "appendSavedProbeSummaryAsNewDraftCase" | "elementMemos" | "memoComposer" | "closeMemoComposer" | "saveElementMemo" | "deleteElementMemo" | "activeReplyReportId" | "minimizedReplyReportIds" | "selectedTarget" | "hoveredTarget" | "mode" | "showTargetPreview" | "closeReplyComposer" | "openReplyComposer" | "selectCase" | "selectReport" | "setErrorMessage" | "focusedCaseId" | "activeReplyReport" | "cancelCaseEdit" | "appendApiFlowEntryToDraftCase" | "overlayRef" | "cancelDraft" | "beginFeedbackEdit" | "editingReportId" | "panelTab" | "pendingComposer" | "toggleIssueMode" | "cancelPendingComposer" | "stopEditing" | "focusSearchInput" | "selectAdjacentReport" | "panelCollapsed" | "setPanelCollapsed" | "searchInputRef" | "activeMarkerTarget" | "markerPreviewTargets" | "selectableTargets" | "errorMessage" | "draftStep" | "setDraftStep" | "hoverPointer" | "setHoverPointer" | "handlePickTargetMemo" | "editableDraft" | "setEditableDraft" | "openReplyReportIds" | "openReplyReports" | "setReplyWindowMinimized" | "reorderMinimizedReplyWindow" | "focusReplyWindow" | "closeReplyWindow" | "tooltipReport" | "tooltipAnchor" | "tooltipFieldTags" | "replyDraft" | "setReplyDraft" | "replyMentions" | "setReplyMentions" | "mentionHighlightTarget" | "setMentionHighlightTarget" | "replySubmitAsQuestion" | "setReplySubmitAsQuestion" | "draftAuthorName" | "setDraftAuthorName" | "replyAuthorName" | "setReplyAuthorName" | "presentationViewerId" | "setPresentationViewerId" | "startDenyReview" | "startCheckoutReview" | "startAskQuestion" | "confirmAuthorName" | "setConfirmAuthorName" | "showConfirmAuthorSelect" | "toggleConfirmAuthorSelect" | "beginCaseEdit" | "updateCaseEditDraftCase" | "addCaseEditDraftCase" | "removeCaseEditDraftCase" | "removePersistedCase" | "isComposingNewCase" | "beginComposeNewCase" | "cancelComposeNewCase" | "clearFocusedCase" | "isCaseEditing" | "caseEditReportId" | "caseEditCases" | "openPanelTab" | "togglePanelTab" | "locateFeedback" | "activateFeedbackMarker" | "revealOpenFeedback" | "clearHoverLeaveTimeout" | "scheduleHoverLeave" | "setHoveredMarkerId" | "handleOverlayMove" | "handleOverlayContextMenu" | "handleOverlayClick" | "updateDraftCase" | "addDraftCase" | "removeDraftCase" | "updateDraftField" | "updateDraftCategory" | "startEditing">;
+    }, "markers" | "statusText" | "toggleReportMode" | "toggleTargetPreview" | "currentPathname" | "sessionActor" | "savedProbeDeletions" | "hasProbeSessionChanges" | "canUndoProbeSession" | "canRedoProbeSession" | "undoProbeSessionAction" | "redoProbeSessionAction" | "revertAllSavedProbeEdits" | "draft" | "pickProbeOpen" | "pickProbeSupportsTextFields" | "pickProbeLayoutMode" | "pickProbeValues" | "pickProbeCompareMode" | "pickProbeHasEdits" | "pickTargetContextMenu" | "contextMenuElementKey" | "savedProbeEdits" | "savedProbeCompareMode" | "closePickProbe" | "closePickTargetContextMenu" | "handlePickTargetEdit" | "handlePickTargetDelete" | "handlePickTargetRevert" | "setErrorMessage" | "commitPickProbeEdits" | "revertSavedProbeEdit" | "setSavedProbeCompareMode" | "setPickProbeCompareMode" | "updatePickProbeValue" | "resetPickProbeValues" | "appendSavedProbeSummaryAsNewDraftCase" | "activeReplyReportId" | "minimizedReplyReportIds" | "selectedTarget" | "hoveredTarget" | "mode" | "showTargetPreview" | "closeReplyComposer" | "openReplyComposer" | "selectCase" | "selectReport" | "focusedCaseId" | "activeReplyReport" | "cancelCaseEdit" | "appendApiFlowEntryToDraftCase" | "overlayRef" | "cancelDraft" | "beginFeedbackEdit" | "editingReportId" | "panelTab" | "pendingComposer" | "toggleIssueMode" | "cancelPendingComposer" | "stopEditing" | "focusSearchInput" | "selectAdjacentReport" | "panelCollapsed" | "setPanelCollapsed" | "searchInputRef" | "activeMarkerTarget" | "markerPreviewTargets" | "selectableTargets" | "errorMessage" | "draftStep" | "setDraftStep" | "hoverPointer" | "setHoverPointer" | "handlePickTargetMemo" | "editableDraft" | "setEditableDraft" | "openReplyReportIds" | "openReplyReports" | "setReplyWindowMinimized" | "reorderMinimizedReplyWindow" | "focusReplyWindow" | "closeReplyWindow" | "tooltipReport" | "tooltipAnchor" | "tooltipFieldTags" | "replyDraft" | "setReplyDraft" | "replyMentions" | "setReplyMentions" | "mentionHighlightTarget" | "setMentionHighlightTarget" | "replySubmitAsQuestion" | "setReplySubmitAsQuestion" | "draftAuthorName" | "setDraftAuthorName" | "replyAuthorName" | "setReplyAuthorName" | "presentationViewerId" | "setPresentationViewerId" | "startDenyReview" | "startCheckoutReview" | "startAskQuestion" | "confirmAuthorName" | "setConfirmAuthorName" | "showConfirmAuthorSelect" | "toggleConfirmAuthorSelect" | "beginCaseEdit" | "updateCaseEditDraftCase" | "addCaseEditDraftCase" | "removeCaseEditDraftCase" | "removePersistedCase" | "isComposingNewCase" | "beginComposeNewCase" | "cancelComposeNewCase" | "clearFocusedCase" | "isCaseEditing" | "caseEditReportId" | "caseEditCases" | "openPanelTab" | "togglePanelTab" | "locateFeedback" | "activateFeedbackMarker" | "revealOpenFeedback" | "clearHoverLeaveTimeout" | "scheduleHoverLeave" | "setHoveredMarkerId" | "handleOverlayMove" | "handleOverlayContextMenu" | "handleOverlayClick" | "updateDraftCase" | "addDraftCase" | "removeDraftCase" | "updateDraftField" | "updateDraftCategory" | "startEditing">;
     data: Pick<{
         panelAppearance: import("../index.js").ReportAppearance;
         setPanelAppearance: (nextAppearance: import("../index.js").ReportAppearance) => void;
@@ -1617,12 +1593,6 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         resetPickProbeValues: () => void;
         appendSavedProbeSummaryAsNewDraftCase: () => void;
         appendApiFlowEntryToDraftCase: (entryId: string) => void;
-        elementMemos: import("../utils/memo/elementMemos.js").ElementMemoMap;
-        memoComposer: import("../hooks/report/useElementMemos.js").ElementMemoComposerState | null;
-        openMemoComposer: (elementKey: string, clientX: number, clientY: number) => void;
-        closeMemoComposer: () => void;
-        saveElementMemo: (elementKey: string, text: string) => void;
-        deleteElementMemo: (elementKey: string) => void;
         markers: import("../types/report-ui.js").Marker[];
         selectedReport: import("../index.js").ReportFeedback;
         editingReportId: string | null;

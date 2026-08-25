@@ -7,6 +7,7 @@ export type ReportPanelTab =
     | "overview"
     | "route-details"
     | "feedback-list"
+    | "memo-list"
     | "diagnostics"
     | "api-flow"
     | "my-tasks"

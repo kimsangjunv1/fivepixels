@@ -1,13 +1,14 @@
 import { useState } from "react";
 import type { ReportCase } from "@/types/report.js";
-import { FEEDBACK_CATEGORIES, type FeedbackCategory } from "@/constants/feedbackCategory.js";
+import { SELECTABLE_FEEDBACK_CATEGORIES, type FeedbackCategory } from "@/constants/feedbackCategory.js";
 import { ChevronDownIcon, SendIcon } from "@/components/icons/Icons.js";
 import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
 import { PanelDropdownMenu, PanelDropdownMenuItem } from "@/components/panel/PanelDropdownMenu.js";
 import { useReportPreferences } from "@/providers/reportContext.js";
 import { mentionMessageToPlainText } from "@/utils/mention/elementMentions.js";
 
-type DraftComposerToolbarProps = {
+type FeedbackToolbarProps = {
+    variant?: "feedback";
     cases: ReportCase[];
     activeCaseId: string | null;
     onSelectCase: (caseId: string) => void;
@@ -28,6 +29,17 @@ type DraftComposerToolbarProps = {
     onGitHubIssueConfirmingChange?: (confirming: boolean) => void;
 };
 
+type MemoToolbarProps = {
+    variant: "memo";
+    onSave: () => void;
+    onCancel: () => void;
+    onDelete?: () => void;
+    canDelete?: boolean;
+    canSave?: boolean;
+};
+
+export type DraftComposerToolbarProps = FeedbackToolbarProps | MemoToolbarProps;
+
 const TOOLBAR_TRIGGER_CLASS =
     "inline-flex max-w-[140px] items-center gap-[4px] rounded-[8px] py-[2px] px-[4px] text-[12px] font-semibold text-[var(--adaptive-black600)] transition-colors hover:bg-[var(--adaptive-tintOpacity100)] hover:text-[var(--adaptive-black900)]";
 
@@ -41,13 +53,51 @@ function truncateLabel(text: string, fallback: string) {
     return trimmed.length > 18 ? `${trimmed.slice(0, 18)}…` : trimmed;
 }
 
-export function DraftComposerToolbar({
+function MemoComposerToolbar({ onSave, onCancel, onDelete, canDelete = false, canSave = false }: Omit<MemoToolbarProps, "variant">) {
+    const { messages } = useReportPreferences();
+
+    return (
+        <div className="flex shrink-0 items-center gap-[6px] px-[8px] py-[6px]">
+            {canDelete && onDelete ? (
+                <button
+                    type="button"
+                    data-fivepixels-interactive=""
+                    onClick={onDelete}
+                    className="rounded-[8px] px-[8px] py-[4px] text-[12px] font-semibold text-[var(--adaptive-accent-red)] transition-colors hover:bg-[color-mix(in_srgb,var(--adaptive-accent-red)_10%,transparent)]"
+                >
+                    {messages.pickTarget.memoComposerDelete}
+                </button>
+            ) : null}
+
+            <div className="min-w-[8px] flex-1" />
+
+            <button
+                type="button"
+                data-fivepixels-interactive=""
+                onClick={onCancel}
+                className="rounded-[8px] px-[8px] py-[4px] text-[12px] font-semibold text-[var(--adaptive-black600)] transition-colors hover:bg-[var(--adaptive-tintOpacity100)] hover:text-[var(--adaptive-black900)]"
+            >
+                {messages.common.cancel}
+            </button>
+            <button
+                type="button"
+                data-fivepixels-interactive=""
+                onClick={onSave}
+                disabled={!canSave}
+                className="inline-flex h-[32px] shrink-0 items-center justify-center rounded-full bg-[var(--adaptive-black900)] px-[12px] text-[12px] font-semibold text-[var(--adaptive-black50)] hover:bg-[var(--adaptive-blue400)] disabled:opacity-50"
+            >
+                {messages.pickTarget.memoComposerSave}
+            </button>
+        </div>
+    );
+}
+
+function FeedbackComposerToolbar({
     cases,
     activeCaseId,
     onSelectCase,
     onAddCase,
     onRemoveCase,
-    onInsertAtMention,
     category,
     onCategoryChange,
     categoryNeedsAttention = false,
@@ -60,7 +110,7 @@ export function DraftComposerToolbar({
     isGitHubIssueSubmitting = false,
     isGitHubIssueConfirming = false,
     onGitHubIssueConfirmingChange,
-}: DraftComposerToolbarProps) {
+}: FeedbackToolbarProps) {
     const { messages } = useReportPreferences();
     const [casesOpen, setCasesOpen] = useState(false);
     const [categoryOpen, setCategoryOpen] = useState(false);
@@ -106,26 +156,6 @@ export function DraftComposerToolbar({
                 </button>
             </HoverTooltip>
 
-            {/* {onInsertAtMention ? (
-                <HoverTooltip label={messages.composer.mentionInsertLabel}>
-                    <button
-                        type="button"
-                        data-fivepixels-interactive=""
-                        onClick={onInsertAtMention}
-                        disabled={isActionDisabled}
-                        aria-label={messages.composer.mentionInsertAriaLabel}
-                        className="inline-flex h-[28px] items-center gap-[2px] rounded-[8px] px-[8px] text-[12px] font-semibold text-[var(--adaptive-black600)] transition-colors hover:bg-[var(--adaptive-tintOpacity100)] hover:text-[var(--adaptive-black900)] disabled:opacity-50"
-                    >
-                        @
-                        <ChevronDownIcon className="h-[12px] w-[12px] shrink-0" />
-                    </button>
-                </HoverTooltip>
-            ) : null} */}
-
-            {/* <span
-                className="h-[14px] w-px shrink-0 bg-[var(--adaptive-border-subtle)]"
-                aria-hidden
-            /> */}
             <section className="flex flex-col gap-[4px]">
                 <section className="flex items-center">
                     <p className="text-[12px] text-[var(--adaptive-black500)]">case</p>
@@ -219,7 +249,7 @@ export function DraftComposerToolbar({
                             </button>
                         }
                     >
-                        {FEEDBACK_CATEGORIES.map((item) => (
+                        {SELECTABLE_FEEDBACK_CATEGORIES.map((item) => (
                             <PanelDropdownMenuItem
                                 key={item}
                                 active={category === item}
@@ -268,4 +298,20 @@ export function DraftComposerToolbar({
             </HoverTooltip>
         </div>
     );
+}
+
+export function DraftComposerToolbar(props: DraftComposerToolbarProps) {
+    if (props.variant === "memo") {
+        return (
+            <MemoComposerToolbar
+                onSave={props.onSave}
+                onCancel={props.onCancel}
+                onDelete={props.onDelete}
+                canDelete={props.canDelete}
+                canSave={props.canSave}
+            />
+        );
+    }
+
+    return <FeedbackComposerToolbar {...props} />;
 }

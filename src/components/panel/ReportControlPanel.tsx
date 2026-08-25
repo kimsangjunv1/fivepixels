@@ -583,7 +583,8 @@ export function ReportControlPanel() {
 
                                             {renderedTab === "route-details" && commandStep === "none" ? <ReportRouteDetails /> : null}
 
-                                            {renderedTab === "feedback-list" && showFeedbackList && commandStep === "none" ? <ReportFeedbackList /> : null}
+                                            {renderedTab === "feedback-list" && showFeedbackList && commandStep === "none" ? <ReportFeedbackList listKind="feedback" /> : null}
+                                            {renderedTab === "memo-list" && showFeedbackList && commandStep === "none" ? <ReportFeedbackList listKind="memo" /> : null}
                                             {renderedTab === "diagnostics" && commandStep === "none" ? <ReportAuthDiagnostics /> : null}
                                             {renderedTab === "api-flow" && commandStep === "none" ? <ReportApiFlowPanel /> : null}
                                             {renderedTab === "my-tasks" && commandStep === "none" ? <ReportMyTasksPanel /> : null}

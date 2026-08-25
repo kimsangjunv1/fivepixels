@@ -1,6 +1,7 @@
 import type { ReportCase } from "../../../types/report.js";
 import { type FeedbackCategory } from "../../../constants/feedbackCategory.js";
-type DraftComposerToolbarProps = {
+type FeedbackToolbarProps = {
+    variant?: "feedback";
     cases: ReportCase[];
     activeCaseId: string | null;
     onSelectCase: (caseId: string) => void;
@@ -20,6 +21,15 @@ type DraftComposerToolbarProps = {
     isGitHubIssueConfirming?: boolean;
     onGitHubIssueConfirmingChange?: (confirming: boolean) => void;
 };
-export declare function DraftComposerToolbar({ cases, activeCaseId, onSelectCase, onAddCase, onRemoveCase, onInsertAtMention, category, onCategoryChange, categoryNeedsAttention, onSubmit, isSubmitting, submitLabel, submittingLabel, showGitHubIssueOnCreate, onGitHubIssueSubmit, isGitHubIssueSubmitting, isGitHubIssueConfirming, onGitHubIssueConfirmingChange, }: DraftComposerToolbarProps): import("react").JSX.Element;
+type MemoToolbarProps = {
+    variant: "memo";
+    onSave: () => void;
+    onCancel: () => void;
+    onDelete?: () => void;
+    canDelete?: boolean;
+    canSave?: boolean;
+};
+export type DraftComposerToolbarProps = FeedbackToolbarProps | MemoToolbarProps;
+export declare function DraftComposerToolbar(props: DraftComposerToolbarProps): import("react").JSX.Element;
 export {};
 //# sourceMappingURL=DraftComposerToolbar.d.ts.map

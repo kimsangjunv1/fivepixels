@@ -11,6 +11,9 @@ import { PanelDropdownMenu, PanelDropdownMenuItem } from "./PanelDropdownMenu.js
 import { FeedbackListItem } from "./feedback/FeedbackListItem.js";
 import { ReportPanelNoticeDialog } from "./ReportPanelNoticeDialog.js";
 const FEEDBACK_PAGE_SIZE = 20;
+function isMemoReport(report) {
+    return report.category === "memo";
+}
 function getDateGroupKey(value) {
     const date = new Date(value);
     const year = date.getFullYear();
@@ -40,13 +43,14 @@ function groupReportsByDate(reports, locale) {
     }
     return groups;
 }
-export function ReportFeedbackList() {
-    const { filters, setFilters, filteredReports, reports, listScope, setListScope, canListAllFeedback, locale, messages, isError, isFetching, hasNextPage, isFetchingNextPage, fetchNextPage, isDeleting, queryErrorMessage, visibleShortcutKeys, searchInputRef, locateFeedback, refetch, handleDelete, canCreateGitHubIssueFromList, creatingGitHubIssueId, handleCreateGitHubIssue, } = useReport();
+export function ReportFeedbackList({ listKind = "feedback" }) {
+    const { filters, setFilters, filteredReports: allFilteredReports, reports, listScope, setListScope, canListAllFeedback, locale, messages, isError, isFetching, hasNextPage, isFetchingNextPage, fetchNextPage, isDeleting, queryErrorMessage, visibleShortcutKeys, searchInputRef, locateFeedback, refetch, handleDelete, canCreateGitHubIssueFromList, creatingGitHubIssueId, handleCreateGitHubIssue, } = useReport();
     const [visibleCount, setVisibleCount] = useState(FEEDBACK_PAGE_SIZE);
     const [expandedGroups, setExpandedGroups] = useState(() => new Set());
     const [scopeMenuOpen, setScopeMenuOpen] = useState(false);
     const [statusMenuOpen, setStatusMenuOpen] = useState(false);
     const loadMoreRef = useRef(null);
+    const filteredReports = useMemo(() => allFilteredReports.filter((report) => (listKind === "memo" ? isMemoReport(report) : !isMemoReport(report))), [allFilteredReports, listKind]);
     const scopeLabel = listScope === "current" ? messages.feedbackList.scopeCurrentPage : messages.feedbackList.scopeAllPages;
     const statusLabel = filters.status === "all" ? messages.feedbackList.filterStatusAll : messages.status.routeDetail[filters.status];
     const listAllLock = useIntegrationLock("listAll");
@@ -56,7 +60,7 @@ export function ReportFeedbackList() {
     const groupedReports = useMemo(() => groupReportsByDate(visibleReports, locale), [locale, visibleReports]);
     useEffect(() => {
         setVisibleCount(FEEDBACK_PAGE_SIZE);
-    }, [filters.dateKey, filters.keyword, filters.reportType, filters.status, listScope, reports.length]);
+    }, [filters.dateKey, filters.keyword, filters.reportType, filters.status, listKind, listScope, reports.length]);
     useEffect(() => {
         if (filters.dateKey) {
             setExpandedGroups(new Set([filters.dateKey]));
@@ -122,7 +126,11 @@ export function ReportFeedbackList() {
                                 variant: "primary",
                                 onClick: () => void refetch(),
                             },
-                        ] })) : null, !isError && !isFetching && filteredReports.length === 0 ? (_jsx("div", { className: "flex flex-col gap-[4px] bg-[var(--adaptive-black200)] p-[12px]", children: persistenceLock.locked ? (_jsxs(_Fragment, { children: [_jsxs("h6", { className: "inline-flex items-center gap-[6px] font-semibold text-[var(--adaptive-black900)]", children: [messages.feedbackList.emptyPersistenceRequired, _jsx(HoverTooltip, { label: persistenceLock.tooltipLabel, multiline: true, children: _jsx("span", { className: "inline-flex text-[var(--adaptive-black500)]", children: _jsx(LockIcon, { className: "h-[14px] w-[14px]" }) }) })] }), _jsx("p", { className: "whitespace-break-spaces text-[12px] leading-[1.5] text-[var(--adaptive-black500)]", children: messages.feedbackList.emptyPersistenceRequiredHint }), _jsx("p", { className: "mt-[4px] font-mono text-[11px] leading-[1.4] text-[var(--adaptive-black600)]", children: persistenceLock.missingHandlers.join(", ") })] })) : (_jsxs(_Fragment, { children: [_jsx("h6", { className: "font-semibold text-[var(--adaptive-black900)]", children: messages.feedbackList.emptyTitle }), _jsx("p", { className: "whitespace-break-spaces text-[12px] leading-[1.5] text-[var(--adaptive-black500)]", children: reports.length === 0 ? messages.feedbackList.emptyNoFeedback : messages.feedbackList.emptyNoMatch })] })) })) : null, _jsx("section", { className: "flex flex-col", children: groupedReports.map(({ dateKey, label, reports: groupReports }, index) => {
+                        ] })) : null, !isError && !isFetching && filteredReports.length === 0 ? (_jsx("div", { className: "flex flex-col gap-[4px] bg-[var(--adaptive-black200)] p-[12px]", children: persistenceLock.locked ? (_jsxs(_Fragment, { children: [_jsxs("h6", { className: "inline-flex items-center gap-[6px] font-semibold text-[var(--adaptive-black900)]", children: [messages.feedbackList.emptyPersistenceRequired, _jsx(HoverTooltip, { label: persistenceLock.tooltipLabel, multiline: true, children: _jsx("span", { className: "inline-flex text-[var(--adaptive-black500)]", children: _jsx(LockIcon, { className: "h-[14px] w-[14px]" }) }) })] }), _jsx("p", { className: "whitespace-break-spaces text-[12px] leading-[1.5] text-[var(--adaptive-black500)]", children: messages.feedbackList.emptyPersistenceRequiredHint }), _jsx("p", { className: "mt-[4px] font-mono text-[11px] leading-[1.4] text-[var(--adaptive-black600)]", children: persistenceLock.missingHandlers.join(", ") })] })) : (_jsxs(_Fragment, { children: [_jsx("h6", { className: "font-semibold text-[var(--adaptive-black900)]", children: messages.feedbackList.emptyTitle }), _jsx("p", { className: "whitespace-break-spaces text-[12px] leading-[1.5] text-[var(--adaptive-black500)]", children: reports.length === 0 || (listKind === "memo" ? !reports.some(isMemoReport) : !reports.some((report) => !isMemoReport(report)))
+                                        ? listKind === "memo"
+                                            ? messages.feedbackList.emptyNoMemo
+                                            : messages.feedbackList.emptyNoFeedback
+                                        : messages.feedbackList.emptyNoMatch })] })) })) : null, _jsx("section", { className: "flex flex-col", children: groupedReports.map(({ dateKey, label, reports: groupReports }, index) => {
                             const isExpanded = expandedGroups.has(dateKey);
                             const isFirst = groupedReports.length - (groupedReports.length - 1) === index + 1;
                             return (_jsxs("div", { className: "flex flex-col", children: [_jsxs("button", { type: "button", onClick: () => toggleGroup(dateKey), "aria-expanded": isExpanded, className: `${isFirst ? "border-b border-b-[var(--adaptive-border-subtle)]" : "border-y border-y-[var(--adaptive-border-subtle)]"} bg-[var(--adaptive-black50)] sticky top-0 z-10 flex w-full items-center justify-between p-[4px_16px]`, children: [_jsx("div", { className: "w-[3px] h-[3px] bg-[var(--adaptive-black500)] rounded-full" }), _jsxs("section", { className: "flex items-center", children: [_jsx("p", { className: "text-[12px] text-[var(--adaptive-black900)]", children: label }), _jsx(ChevronDownIcon, { className: `h-4 w-4 shrink-0 transition-transform ${isExpanded ? "rotate-180" : ""}` })] }), _jsx("div", { className: "w-[3px] h-[3px] bg-[var(--adaptive-black500)] rounded-full" })] }), isExpanded
