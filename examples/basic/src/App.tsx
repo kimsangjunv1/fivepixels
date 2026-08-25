@@ -19,8 +19,8 @@ function AppContent() {
                     env: "STAGED",
                     version: "1.0.0",
                 }}
-                // sync="local"
-                sync="api"
+                sync="local"
+                // sync="api"
                 require={{
                     authLogin: false,
                     reviewerKey: true,
@@ -47,13 +47,13 @@ function AppContent() {
                         },
                     ],
                 }}
-                adapter={createFivepixelsAdapter({
-                    baseUrl: "/api/v1/fivepixels",
-                    projectId: PROJECT_ID,
-                })}
-                onNavigate={(pathname) => {
-                    navigate(pathname);
-                }}
+                // adapter={createFivepixelsAdapter({
+                //     baseUrl: "/api/v1/fivepixels",
+                //     projectId: PROJECT_ID,
+                // })}
+                // onNavigate={(pathname) => {
+                //     navigate(pathname);
+                // }}
             />
             <AppRouter />
         </>
