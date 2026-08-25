@@ -124,14 +124,13 @@ export function TargetHighlights({
             ) : null}
 
             {showSelectionHighlight && selectedTarget ? (
-                <>
-                    <HighlightBox
-                        key={SELECTION_HIGHLIGHT_KEY}
-                        target={selectedTarget}
-                    />
-                    {showPickProbeCompare ? <PickTargetCompareChip target={selectedTarget} /> : null}
-                </>
+                <HighlightBox
+                    key={SELECTION_HIGHLIGHT_KEY}
+                    target={selectedTarget}
+                />
             ) : null}
+
+            {showPickProbeCompare && selectedTarget ? <PickTargetCompareChip target={selectedTarget} /> : null}
 
             {contextMenuTarget ? (
                 <ContextMenuFocusBox

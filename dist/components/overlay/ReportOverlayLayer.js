@@ -16,13 +16,16 @@ export function ReportOverlayLayer({ children }) {
         Boolean(hoveredTarget) &&
         !activeMarkerTarget &&
         !mentionHighlightTarget;
-    const showSelectionHighlight = isReportMode && Boolean(selectedTarget) && (Boolean(draft) || pickProbeOpen);
+    const showSelectionHighlight = isReportMode && Boolean(selectedTarget) && Boolean(draft) && !pickProbeOpen;
     const showPickProbeCompare = pickProbeOpen && pickProbeHasEdits;
     const showActiveMarkerInspect = isReportMode && Boolean(activeMarkerTarget);
+    const probeFocusTarget = pickProbeOpen ? selectedTarget : null;
     const overlayClassName = isReportMode
-        ? "pointer-events-auto fixed inset-0 z-[999999] cursor-crosshair"
+        ? pickProbeOpen
+            ? "pointer-events-none fixed inset-0 z-[999999]"
+            : "pointer-events-auto fixed inset-0 z-[999999] cursor-crosshair"
         : "pointer-events-none fixed inset-0 z-[999999]";
-    return (_jsxs("div", { ref: overlayRef, onMouseMove: isReportMode ? handleOverlayMove : undefined, onContextMenu: isReportMode ? handleOverlayContextMenu : undefined, onClick: isReportMode
+    return (_jsxs("div", { ref: overlayRef, onMouseMove: isReportMode && !pickProbeOpen ? handleOverlayMove : undefined, onContextMenu: isReportMode ? handleOverlayContextMenu : undefined, onClick: isReportMode && !pickProbeOpen
             ? (event) => {
                 if (pickTargetContextMenu) {
                     closePickTargetContextMenu();
@@ -34,6 +37,6 @@ export function ReportOverlayLayer({ children }) {
                 }
                 handleOverlayClick(event);
             }
-            : undefined, className: overlayClassName, "data-overlay-mode": isReportMode ? "report" : isViewMode ? "view" : isPreviewMode ? "preview" : "idle", children: [_jsx(TargetHighlights, { hoveredTarget: hoveredTarget, selectedTarget: selectedTarget, contextMenuTarget: pickTargetContextMenu?.target ?? null, showHoverInspect: showHoverInspect, showSelectionHighlight: showSelectionHighlight, showPickProbeCompare: showPickProbeCompare, showActiveMarkerInspect: showActiveMarkerInspect, previewTargets: isPreviewMode ? selectableTargets : undefined, markerPreviewTargets: markerPreviewTargets, activeMarkerTarget: activeMarkerTarget, mentionHighlightTarget: mentionHighlightTarget }), _jsx(PickTargetProbePanel, {}), _jsx(PickTargetSavedBadges, {}), _jsx(ElementMemoComposer, {}), pickTargetContextMenu ? (_jsx(PickTargetContextMenu, { clientX: pickTargetContextMenu.clientX, clientY: pickTargetContextMenu.clientY, showRevert: Boolean(contextMenuElementKey && savedProbeEdits[contextMenuElementKey]), showMemo: Boolean(contextMenuElementKey && elementMemos[contextMenuElementKey]) })) : null, children] }));
+            : undefined, className: overlayClassName, "data-overlay-mode": isReportMode ? "report" : isViewMode ? "view" : isPreviewMode ? "preview" : "idle", children: [_jsx(TargetHighlights, { hoveredTarget: hoveredTarget, selectedTarget: selectedTarget, contextMenuTarget: pickTargetContextMenu?.target ?? probeFocusTarget, showHoverInspect: showHoverInspect, showSelectionHighlight: showSelectionHighlight, showPickProbeCompare: showPickProbeCompare, showActiveMarkerInspect: showActiveMarkerInspect, previewTargets: isPreviewMode ? selectableTargets : undefined, markerPreviewTargets: markerPreviewTargets, activeMarkerTarget: activeMarkerTarget, mentionHighlightTarget: mentionHighlightTarget }), _jsx(PickTargetProbePanel, {}), _jsx(PickTargetSavedBadges, {}), _jsx(ElementMemoComposer, {}), pickTargetContextMenu ? (_jsx(PickTargetContextMenu, { clientX: pickTargetContextMenu.clientX, clientY: pickTargetContextMenu.clientY, showRevert: Boolean(contextMenuElementKey && savedProbeEdits[contextMenuElementKey]), showMemo: Boolean(contextMenuElementKey && elementMemos[contextMenuElementKey]) })) : null, children] }));
 }
 //# sourceMappingURL=ReportOverlayLayer.js.map

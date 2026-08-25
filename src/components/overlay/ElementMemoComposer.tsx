@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
+import { STYLE_TOOLTIP_SURFACE_CLASS } from "@/components/ui/PointerFollowTooltip.js";
 import { useReportPreferences, useReportSession } from "@/providers/reportContext.js";
+import { MOTION } from "@/constants/motionClasses.js";
 
-const COMPOSER_SURFACE_CLASS =
-    "pointer-events-auto fixed z-[1000005] w-[min(280px,calc(100vw-16px))] overflow-hidden rounded-[12px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface-overlay)] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[20px]";
+const COMPOSER_SURFACE_CLASS = `pointer-events-auto fixed z-[1000005] w-[min(280px,calc(100vw-16px))] ${STYLE_TOOLTIP_SURFACE_CLASS} ${MOTION.tooltipIn}`;
 
 export function ElementMemoComposer() {
     const { messages } = useReportPreferences();
@@ -66,11 +67,12 @@ export function ElementMemoComposer() {
                 event.stopPropagation();
             }}
         >
-            <div className="border-b border-[var(--adaptive-border-subtle)] px-[12px] py-[8px]">
-                <p className="text-[13px] font-semibold text-[var(--adaptive-black900)]">{messages.pickTarget.memoComposerTitle}</p>
-                <p className="mt-[2px] text-[11px] text-[var(--adaptive-black500)]">{messages.pickTarget.memoComposerHint}</p>
-            </div>
-            <div className="px-[12px] py-[10px]">
+            <div className="flex flex-col gap-[6px]">
+                <div className="flex flex-col gap-[2px]">
+                    <p className="text-[14px] font-semibold leading-[1.45] text-[var(--adaptive-black900)]">{messages.pickTarget.memoComposerTitle}</p>
+                    <p className="text-[14px] leading-[1.45] text-[var(--adaptive-black500)]">{messages.pickTarget.memoComposerHint}</p>
+                </div>
+
                 <textarea
                     ref={textareaRef}
                     data-fivepixels-interactive=""
@@ -78,37 +80,38 @@ export function ElementMemoComposer() {
                     onChange={(event) => setText(event.target.value)}
                     placeholder={messages.pickTarget.memoComposerPlaceholder}
                     rows={4}
-                    className="w-full resize-none rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] px-[10px] py-[8px] text-[13px] leading-[1.45] text-[var(--adaptive-black900)] outline-none focus:border-[var(--adaptive-blue500)]"
+                    className="w-full resize-none rounded-[8px] border border-solid border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] px-[10px] py-[8px] text-[14px] leading-[1.45] text-[var(--adaptive-black900)] outline-none placeholder:text-[var(--adaptive-black500)] focus:border-[var(--adaptive-border-subtle)]"
                 />
-            </div>
-            <div className="flex items-center justify-end gap-[6px] border-t border-[var(--adaptive-border-subtle)] px-[12px] py-[8px]">
-                {hasExistingMemo ? (
+
+                <div className="flex items-center justify-end gap-[6px] border-t border-[var(--adaptive-border-subtle)] pt-[6px]">
+                    {hasExistingMemo ? (
+                        <button
+                            type="button"
+                            data-fivepixels-interactive=""
+                            onClick={() => deleteElementMemo(memoComposer.elementKey)}
+                            className="mr-auto rounded-[8px] px-[8px] py-[4px] text-[14px] font-medium text-[var(--adaptive-accent-red)] hover:bg-[color-mix(in_srgb,var(--adaptive-accent-red)_10%,transparent)]"
+                        >
+                            {messages.pickTarget.memoComposerDelete}
+                        </button>
+                    ) : null}
                     <button
                         type="button"
                         data-fivepixels-interactive=""
-                        onClick={() => deleteElementMemo(memoComposer.elementKey)}
-                        className="mr-auto rounded-[8px] px-[10px] py-[5px] text-[12px] font-medium text-[var(--adaptive-accent-red)] hover:bg-[color-mix(in_srgb,var(--adaptive-accent-red)_10%,transparent)]"
+                        onClick={closeMemoComposer}
+                        className="rounded-[8px] px-[8px] py-[4px] text-[14px] font-medium text-[var(--adaptive-black500)] hover:bg-[var(--adaptive-black100)]"
                     >
-                        {messages.pickTarget.memoComposerDelete}
+                        {messages.common.cancel}
                     </button>
-                ) : null}
-                <button
-                    type="button"
-                    data-fivepixels-interactive=""
-                    onClick={closeMemoComposer}
-                    className="rounded-[8px] px-[10px] py-[5px] text-[12px] font-medium text-[var(--adaptive-black600)] hover:bg-[var(--adaptive-black100)]"
-                >
-                    {messages.common.cancel}
-                </button>
-                <button
-                    type="button"
-                    data-fivepixels-interactive=""
-                    onClick={() => saveElementMemo(memoComposer.elementKey, text)}
-                    className="rounded-[8px] bg-[var(--adaptive-black900)] px-[10px] py-[5px] text-[12px] font-semibold text-[var(--adaptive-black50)] hover:bg-[var(--adaptive-blue400)] disabled:opacity-50"
-                    disabled={!text.trim()}
-                >
-                    {messages.pickTarget.memoComposerSave}
-                </button>
+                    <button
+                        type="button"
+                        data-fivepixels-interactive=""
+                        onClick={() => saveElementMemo(memoComposer.elementKey, text)}
+                        className="rounded-[8px] bg-[var(--adaptive-black900)] px-[10px] py-[4px] text-[14px] font-semibold text-[var(--adaptive-black50)] hover:opacity-90 disabled:opacity-50"
+                        disabled={!text.trim()}
+                    >
+                        {messages.pickTarget.memoComposerSave}
+                    </button>
+                </div>
             </div>
         </div>
     );

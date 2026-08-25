@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import { useReportSession } from "@/providers/reportContext.js";
 import { PickTargetContextMenu } from "./PickTargetContextMenu.js";
 import { PickTargetProbePanel } from "./PickTargetProbePanel.js";
@@ -46,20 +46,23 @@ export function ReportOverlayLayer({ children }: ReportOverlayLayerProps) {
         Boolean(hoveredTarget) &&
         !activeMarkerTarget &&
         !mentionHighlightTarget;
-    const showSelectionHighlight = isReportMode && Boolean(selectedTarget) && (Boolean(draft) || pickProbeOpen);
+    const showSelectionHighlight = isReportMode && Boolean(selectedTarget) && Boolean(draft) && !pickProbeOpen;
     const showPickProbeCompare = pickProbeOpen && pickProbeHasEdits;
     const showActiveMarkerInspect = isReportMode && Boolean(activeMarkerTarget);
+    const probeFocusTarget = pickProbeOpen ? selectedTarget : null;
     const overlayClassName = isReportMode
-        ? "pointer-events-auto fixed inset-0 z-[999999] cursor-crosshair"
+        ? pickProbeOpen
+            ? "pointer-events-none fixed inset-0 z-[999999]"
+            : "pointer-events-auto fixed inset-0 z-[999999] cursor-crosshair"
         : "pointer-events-none fixed inset-0 z-[999999]";
 
     return (
         <div
             ref={overlayRef}
-            onMouseMove={isReportMode ? handleOverlayMove : undefined}
+            onMouseMove={isReportMode && !pickProbeOpen ? handleOverlayMove : undefined}
             onContextMenu={isReportMode ? handleOverlayContextMenu : undefined}
             onClick={
-                isReportMode
+                isReportMode && !pickProbeOpen
                     ? (event) => {
                           if (pickTargetContextMenu) {
                               closePickTargetContextMenu();
@@ -81,7 +84,7 @@ export function ReportOverlayLayer({ children }: ReportOverlayLayerProps) {
             <TargetHighlights
                 hoveredTarget={hoveredTarget}
                 selectedTarget={selectedTarget}
-                contextMenuTarget={pickTargetContextMenu?.target ?? null}
+                contextMenuTarget={pickTargetContextMenu?.target ?? probeFocusTarget}
                 showHoverInspect={showHoverInspect}
                 showSelectionHighlight={showSelectionHighlight}
                 showPickProbeCompare={showPickProbeCompare}
