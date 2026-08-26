@@ -139,6 +139,7 @@ export const en: ReportMessages = {
         filterStatusAriaLabel: "Status filter",
         filterTypeAriaLabel: "Type filter",
         searchPlaceholder: "Search case ID",
+        memoSearchPlaceholder: "Enter memo content",
         caseIdLabel: (fcNumber) => `#FC-${fcNumber}`,
         replyCountBadge: (count) => `+${count}`,
         statusTag: {

@@ -139,6 +139,7 @@ export const ko: ReportMessages = {
         filterStatusAriaLabel: "상태 필터",
         filterTypeAriaLabel: "타입 필터",
         searchPlaceholder: "케이스 ID 검색",
+        memoSearchPlaceholder: "메모 내용을 입력하세요",
         caseIdLabel: (fcNumber) => `#FC-${fcNumber}`,
         replyCountBadge: (count) => `+${count}`,
         statusTag: {

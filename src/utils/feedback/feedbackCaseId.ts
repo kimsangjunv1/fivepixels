@@ -4,12 +4,24 @@ export function formatFeedbackCaseId(fcNumber: number) {
     return `#FC-${fcNumber}`;
 }
 
+export function formatMemoCaseId(fcNumber: number) {
+    return `#MM-${fcNumber}`;
+}
+
 export function getFeedbackCaseId(report: Pick<ReportFeedback, "fc_number">) {
     if (typeof report.fc_number !== "number" || !Number.isFinite(report.fc_number) || report.fc_number <= 0) {
         return null;
     }
 
     return formatFeedbackCaseId(Math.trunc(report.fc_number));
+}
+
+export function getMemoCaseId(report: Pick<ReportFeedback, "fc_number">) {
+    if (typeof report.fc_number !== "number" || !Number.isFinite(report.fc_number) || report.fc_number <= 0) {
+        return null;
+    }
+
+    return formatMemoCaseId(Math.trunc(report.fc_number));
 }
 
 export function getMaxFcNumber(reports: Array<Pick<ReportFeedback, "fc_number">>) {

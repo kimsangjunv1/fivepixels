@@ -10,9 +10,19 @@ import { HoverTooltip } from "../../components/ui/HoverTooltip.js";
 import { PanelDropdownMenu, PanelDropdownMenuItem } from "./PanelDropdownMenu.js";
 import { FeedbackListItem } from "./feedback/FeedbackListItem.js";
 import { ReportPanelNoticeDialog } from "./ReportPanelNoticeDialog.js";
+import { casesToSearchText, getReportCases } from "../../utils/report/reportCases.js";
 const FEEDBACK_PAGE_SIZE = 20;
 function isMemoReport(report) {
     return report.category === "memo";
+}
+function matchesMemoKeyword(report, keyword) {
+    if (!keyword) {
+        return true;
+    }
+    const haystack = [casesToSearchText(getReportCases(report)), report.pathname, typeof report.fc_number === "number" ? `#mm-${report.fc_number}` : ""]
+        .join(" ")
+        .toLowerCase();
+    return haystack.includes(keyword);
 }
 function getDateGroupKey(value) {
     const date = new Date(value);
@@ -50,12 +60,19 @@ export function ReportFeedbackList({ listKind = "feedback" }) {
     const [scopeMenuOpen, setScopeMenuOpen] = useState(false);
     const [statusMenuOpen, setStatusMenuOpen] = useState(false);
     const loadMoreRef = useRef(null);
-    const filteredReports = useMemo(() => allFilteredReports.filter((report) => (listKind === "memo" ? isMemoReport(report) : !isMemoReport(report))), [allFilteredReports, listKind]);
+    const filteredReports = useMemo(() => {
+        if (listKind === "memo") {
+            const keyword = filters.keyword.trim().toLowerCase();
+            return reports.filter((report) => isMemoReport(report) && matchesMemoKeyword(report, keyword));
+        }
+        return allFilteredReports.filter((report) => !isMemoReport(report));
+    }, [allFilteredReports, filters.keyword, listKind, reports]);
+    const isMemoList = listKind === "memo";
     const scopeLabel = listScope === "current" ? messages.feedbackList.scopeCurrentPage : messages.feedbackList.scopeAllPages;
     const statusLabel = filters.status === "all" ? messages.feedbackList.filterStatusAll : messages.status.routeDetail[filters.status];
     const listAllLock = useIntegrationLock("listAll");
     const persistenceLock = useIntegrationLock("feedbackPersistence");
-    const showScopeControl = canListAllFeedback || listAllLock.locked;
+    const showScopeControl = !isMemoList && (canListAllFeedback || listAllLock.locked);
     const visibleReports = useMemo(() => filteredReports.slice(0, visibleCount), [filteredReports, visibleCount]);
     const groupedReports = useMemo(() => groupReportsByDate(visibleReports, locale), [locale, visibleReports]);
     useEffect(() => {
@@ -105,7 +122,7 @@ export function ReportFeedbackList({ listKind = "feedback" }) {
             return next;
         });
     };
-    return (_jsxs("section", { className: "flex min-h-0 flex-1 flex-col overflow-hidden bg-[var(--adaptive-black50)]", children: [_jsxs("div", { className: "relative z-[20] shrink-0 border-b border-b-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)]", children: [filters.dateKey ? (_jsxs("div", { className: "flex items-center justify-between gap-[8px] border-b border-[var(--adaptive-border-subtle)] px-[8px] py-[6px]", children: [_jsx("p", { className: "text-[11px] font-[600] text-[var(--adaptive-blue500)]", children: messages.activityHeatmap.dateFilterLabel.replace("{date}", formatDateOnly(`${filters.dateKey}T12:00:00`, locale)) }), _jsx("button", { type: "button", onClick: () => setFilters((current) => ({ ...current, dateKey: null })), className: "text-[11px] font-[600] text-[var(--adaptive-black500)] hover:text-[var(--adaptive-black900)]", children: messages.activityHeatmap.clearDateFilter })] })) : null, _jsxs("div", { className: "flex items-center", children: [_jsxs("section", { className: "h-[32px] flex items-center", children: [showScopeControl ? (_jsx(IntegrationLockTip, { locked: listAllLock.locked, label: listAllLock.tooltipLabel, children: _jsx(PanelDropdownMenu, { open: scopeMenuOpen && !listAllLock.locked, onClose: () => setScopeMenuOpen(false), align: "left", trigger: _jsxs("button", { type: "button", onClick: () => {
+    return (_jsxs("section", { className: "flex min-h-0 flex-1 flex-col overflow-hidden bg-[var(--adaptive-black50)]", children: [_jsxs("div", { className: "relative z-[20] shrink-0 border-b border-b-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)]", children: [filters.dateKey ? (_jsxs("div", { className: "flex items-center justify-between gap-[8px] border-b border-[var(--adaptive-border-subtle)] px-[8px] py-[6px]", children: [_jsx("p", { className: "text-[11px] font-[600] text-[var(--adaptive-blue500)]", children: messages.activityHeatmap.dateFilterLabel.replace("{date}", formatDateOnly(`${filters.dateKey}T12:00:00`, locale)) }), _jsx("button", { type: "button", onClick: () => setFilters((current) => ({ ...current, dateKey: null })), className: "text-[11px] font-[600] text-[var(--adaptive-black500)] hover:text-[var(--adaptive-black900)]", children: messages.activityHeatmap.clearDateFilter })] })) : null, _jsxs("div", { className: "flex items-center", children: [!isMemoList ? (_jsxs("section", { className: "h-[32px] flex items-center", children: [showScopeControl ? (_jsx(IntegrationLockTip, { locked: listAllLock.locked, label: listAllLock.tooltipLabel, children: _jsx(PanelDropdownMenu, { open: scopeMenuOpen && !listAllLock.locked, onClose: () => setScopeMenuOpen(false), align: "left", trigger: _jsxs("button", { type: "button", onClick: () => {
                                                     if (listAllLock.locked) {
                                                         return;
                                                     }
@@ -119,7 +136,7 @@ export function ReportFeedbackList({ listKind = "feedback" }) {
                                                 }, children: messages.feedbackList.filterStatusAll }), Object.keys(messages.status.routeDetail).map((status) => (_jsx(PanelDropdownMenuItem, { active: filters.status === status, onClick: () => {
                                                     setStatusMenuOpen(false);
                                                     setFilters((current) => ({ ...current, status }));
-                                                }, children: messages.status.routeDetail[status] }, status)))] })] }), _jsx("div", { className: "h-[32px] w-[1px] bg-[var(--adaptive-border-subtle)]" }), _jsxs("div", { className: "relative w-full", children: [_jsx("input", { ref: searchInputRef, value: filters.keyword, onChange: (event) => setFilters((current) => ({ ...current, keyword: event.target.value })), placeholder: messages.feedbackList.searchPlaceholder, className: "h-[32px] w-full px-[8px] pr-[30px] text-[14px] text-[var(--adaptive-black800)] outline-none" }), _jsx(SearchIcon, { className: "pointer-events-none absolute right-[8px] top-[25%] h-4 w-4 -translate-y-1/2 text-[var(--adaptive-black500)]" }), _jsx("div", { className: "absolute right-[30px] top-1/2 -translate-y-1/2", children: _jsx(ShortcutHint, { binding: REPORT_SHORTCUTS.focusSearch, visible: visibleShortcutKeys }) })] })] })] }), _jsxs("div", { className: "min-h-0 min-w-0 flex-1 overflow-y-auto bg-[var(--adaptive-black50)]", children: [isError ? (_jsx(ReportPanelNoticeDialog, { role: "alertdialog", title: messages.feedbackList.loadFailedTitle, description: queryErrorMessage ?? messages.feedbackList.loadFailedRetry, actions: [
+                                                }, children: messages.status.routeDetail[status] }, status)))] })] })) : null, !isMemoList ? _jsx("div", { className: "h-[32px] w-[1px] bg-[var(--adaptive-border-subtle)]" }) : null, _jsxs("div", { className: "relative w-full", children: [_jsx("input", { ref: searchInputRef, value: filters.keyword, onChange: (event) => setFilters((current) => ({ ...current, keyword: event.target.value })), placeholder: isMemoList ? messages.feedbackList.memoSearchPlaceholder : messages.feedbackList.searchPlaceholder, className: "h-[32px] w-full px-[8px] pr-[30px] text-[14px] text-[var(--adaptive-black800)] outline-none" }), _jsx(SearchIcon, { className: "pointer-events-none absolute right-[8px] top-[25%] h-4 w-4 -translate-y-1/2 text-[var(--adaptive-black500)]" }), _jsx("div", { className: "absolute right-[30px] top-1/2 -translate-y-1/2", children: _jsx(ShortcutHint, { binding: REPORT_SHORTCUTS.focusSearch, visible: visibleShortcutKeys }) })] })] })] }), _jsxs("div", { className: "min-h-0 min-w-0 flex-1 overflow-y-auto bg-[var(--adaptive-black50)]", children: [isError ? (_jsx(ReportPanelNoticeDialog, { role: "alertdialog", title: messages.feedbackList.loadFailedTitle, description: queryErrorMessage ?? messages.feedbackList.loadFailedRetry, actions: [
                             {
                                 id: "retry",
                                 label: messages.common.retry,
@@ -134,7 +151,7 @@ export function ReportFeedbackList({ listKind = "feedback" }) {
                             const isExpanded = expandedGroups.has(dateKey);
                             const isFirst = groupedReports.length - (groupedReports.length - 1) === index + 1;
                             return (_jsxs("div", { className: "flex flex-col", children: [_jsxs("button", { type: "button", onClick: () => toggleGroup(dateKey), "aria-expanded": isExpanded, className: `${isFirst ? "border-b border-b-[var(--adaptive-border-subtle)]" : "border-y border-y-[var(--adaptive-border-subtle)]"} bg-[var(--adaptive-black50)] sticky top-0 z-10 flex w-full items-center justify-between p-[4px_16px]`, children: [_jsx("div", { className: "w-[3px] h-[3px] bg-[var(--adaptive-black500)] rounded-full" }), _jsxs("section", { className: "flex items-center", children: [_jsx("p", { className: "text-[12px] text-[var(--adaptive-black900)]", children: label }), _jsx(ChevronDownIcon, { className: `h-4 w-4 shrink-0 transition-transform ${isExpanded ? "rotate-180" : ""}` })] }), _jsx("div", { className: "w-[3px] h-[3px] bg-[var(--adaptive-black500)] rounded-full" })] }), isExpanded
-                                        ? groupReports.map((report) => (_jsx(FeedbackListItem, { report: report, locale: locale, messages: messages, listScope: listScope, disabled: isDeleting, canCreateGitHubIssue: canCreateGitHubIssueFromList, creatingGitHubIssueId: creatingGitHubIssueId, onLocate: locateFeedback, onDelete: handleDelete, onCreateGitHubIssue: handleCreateGitHubIssue }, report.id)))
+                                        ? groupReports.map((report) => (_jsx(FeedbackListItem, { report: report, locale: locale, messages: messages, listScope: listScope, listKind: listKind, disabled: isDeleting, canCreateGitHubIssue: !isMemoList && canCreateGitHubIssueFromList, creatingGitHubIssueId: creatingGitHubIssueId, onLocate: locateFeedback, onDelete: handleDelete, onCreateGitHubIssue: handleCreateGitHubIssue }, report.id)))
                                         : null] }, dateKey));
                         }) }), visibleCount < filteredReports.length || hasNextPage ? (_jsx("div", { ref: loadMoreRef, className: "py-[8px] text-center text-[12px] text-[var(--adaptive-black500)]", children: isFetchingNextPage ? messages.feedbackList.loadingMore : "" })) : null] })] }));
 }

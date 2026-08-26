@@ -1,11 +1,20 @@
 export function formatFeedbackCaseId(fcNumber) {
     return `#FC-${fcNumber}`;
 }
+export function formatMemoCaseId(fcNumber) {
+    return `#MM-${fcNumber}`;
+}
 export function getFeedbackCaseId(report) {
     if (typeof report.fc_number !== "number" || !Number.isFinite(report.fc_number) || report.fc_number <= 0) {
         return null;
     }
     return formatFeedbackCaseId(Math.trunc(report.fc_number));
+}
+export function getMemoCaseId(report) {
+    if (typeof report.fc_number !== "number" || !Number.isFinite(report.fc_number) || report.fc_number <= 0) {
+        return null;
+    }
+    return formatMemoCaseId(Math.trunc(report.fc_number));
 }
 export function getMaxFcNumber(reports) {
     return reports.reduce((max, report) => {

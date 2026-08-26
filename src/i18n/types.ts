@@ -157,6 +157,7 @@ export type ReportMessages = {
         filterStatusAriaLabel: string;
         filterTypeAriaLabel: string;
         searchPlaceholder: string;
+        memoSearchPlaceholder: string;
         caseIdLabel: (fcNumber: number) => string;
         replyCountBadge: (count: number) => string;
         statusTag: {
