@@ -1,11 +1,16 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { FEEDBACK_STATUS_COLOR } from "../../../../constants/feedbackStatus.js";
+import { useReportPreferences } from "../../../../providers/reportContext.js";
 import { formatRelativeTimeCompact } from "../../../../utils/shared/format.js";
 import { formatAssigneeLabel, resolveAuthorDepartment } from "../../../../utils/report/reportCases.js";
-/** Name + compact time — badges intentionally omitted for feed density. */
-export function FeedCommentMeta({ authorName, createdAt, authors }) {
+/** Name + compact time + optional status label. */
+export function FeedCommentMeta({ authorName, createdAt, authors, status }) {
+    const { messages } = useReportPreferences();
     const displayName = formatAssigneeLabel(authorName, authors ? resolveAuthorDepartment(authors, authorName) : null);
     const relativeTime = formatRelativeTimeCompact(createdAt);
-    return (_jsxs("div", { className: "flex min-w-0 flex-wrap items-baseline gap-x-[6px] gap-y-[2px]", children: [_jsx("p", { className: "min-w-0 truncate text-[13px] font-semibold text-[var(--adaptive-text-primary)]", title: displayName, children: displayName }), relativeTime ? _jsx("span", { className: "shrink-0 text-[12px] text-[var(--adaptive-black500)]", children: relativeTime }) : null] }));
+    const statusLabel = status ? messages.status.feedback[status] : "";
+    const statusColor = status ? FEEDBACK_STATUS_COLOR[status] : undefined;
+    return (_jsxs("div", { className: "flex min-w-0 flex-wrap items-baseline gap-x-[6px] gap-y-[2px]", children: [_jsx("p", { className: "text-xs min-w-0 truncate font-semibold text-[var(--adaptive-black900)]", title: displayName, children: displayName }), relativeTime ? _jsx("span", { className: "text-xs shrink-0 font-semibold text-[var(--adaptive-black500)]", children: relativeTime }) : null, statusLabel ? (_jsx("span", { className: "text-xs shrink-0 font-semibold", style: { color: statusColor }, children: statusLabel })) : null] }));
 }
 /** Single-line activity: `Name action · 12m` */
 export function FeedActivityLine({ actorName, action, createdAt }) {

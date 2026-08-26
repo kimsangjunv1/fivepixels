@@ -1,3 +1,4 @@
+import type { FeedbackDisplayStatus } from "../../../../constants/feedbackStatus.js";
 type FeedCommentMetaProps = {
     authorName: string;
     createdAt: string;
@@ -5,9 +6,11 @@ type FeedCommentMetaProps = {
         name: string;
         department?: string;
     }>;
+    /** Reply/case status shown after name + time (e.g. 확인 요청, 오류 발견). */
+    status?: FeedbackDisplayStatus;
 };
-/** Name + compact time — badges intentionally omitted for feed density. */
-export declare function FeedCommentMeta({ authorName, createdAt, authors }: FeedCommentMetaProps): import("react").JSX.Element;
+/** Name + compact time + optional status label. */
+export declare function FeedCommentMeta({ authorName, createdAt, authors, status }: FeedCommentMetaProps): import("react").JSX.Element;
 type FeedActivityLineProps = {
     actorName?: string;
     action: string;

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import type { FeedActivityTone } from "./feedActivitySurface.js";
 export declare const FEED_RAIL_WIDTH = 32;
 /** Nested replies indent; L-branch connects back to the main track spine. */
 export declare const FEED_NESTED_OFFSET = 20;
@@ -8,9 +9,11 @@ type FeedTimelineRowProps = {
     node?: ReactNode;
     /** Indent as a nested reply under a parent comment (keeps L-branch). */
     nested?: boolean;
-    /** @deprecated Main spine is drawn by FeedTimelineTrack; kept for API compat. */
+    /** @deprecated Nested vertical rail removed; kept for API compat. */
+    nestedPosition?: string;
+    /** @deprecated Main spine is drawn by FeedTimelineTrack. */
     hideLineBelow?: boolean;
-    /** @deprecated Main spine is drawn by FeedTimelineTrack; kept for API compat. */
+    /** @deprecated Main spine is drawn by FeedTimelineTrack. */
     hideLineAbove?: boolean;
     /** Activity rows stay tight; comments breathe a bit more. */
     density?: FeedRowDensity;
@@ -19,13 +22,17 @@ type FeedTimelineRowProps = {
 };
 /**
  * Feed row. Root rows sit on FeedTimelineTrack's continuous spine.
- * Nested rows keep the L-branch connector + a short nested rail for question threads.
+ * Nested rows keep only the L horizontal stem (no nested vertical rail).
  */
 export declare function FeedTimelineRow({ node, nested, density, children, className, }: FeedTimelineRowProps): import("react").JSX.Element;
-/** Thin icon on the spine — no circular chip (avoids flowchart look). */
-export declare function FeedSpineIcon({ children }: {
+type FeedSpineIconProps = {
     children: ReactNode;
-}): import("react").JSX.Element;
+    /** Matches the activity surface tone on the right. */
+    tone?: FeedActivityTone;
+    className?: string;
+};
+/** Spine status icon with the same soft tone fill as the activity chip. */
+export declare function FeedSpineIcon({ children, tone, className }: FeedSpineIconProps): import("react").JSX.Element;
 export declare function FeedSpineDot({ className }: {
     className?: string;
 }): import("react").JSX.Element;

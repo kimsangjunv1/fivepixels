@@ -1,12 +1,11 @@
-import type { ReactNode } from "react";
+import { type ReactNode } from "react";
 type FeedTimelineTrackProps = {
     children: ReactNode;
     className?: string;
 };
 /**
- * Continuous main spine for the feed layout.
- * Nested L-branches stay on each nested row; this track keeps the root rail unbroken
- * through comments, questions, assignee events, and the final history item.
+ * Continuous main spine that ends at the center of the last spine node
+ * (no trailing line below the final history icon).
  */
 export declare function FeedTimelineTrack({ children, className }: FeedTimelineTrackProps): import("react").JSX.Element;
 export {};
