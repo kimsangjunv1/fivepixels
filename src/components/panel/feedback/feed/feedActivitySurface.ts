@@ -13,8 +13,22 @@ const FEED_ACTIVITY_SURFACE: Record<FeedActivityTone, string> = {
     neutral: `${FEED_ACTIVITY_SURFACE_BASE} bg-[var(--adaptive-black100)]`,
 };
 
+/** Compact spine-node chip — same tone mix as the activity surface, sized for icons. */
+const FEED_SPINE_NODE_SURFACE: Record<FeedActivityTone, string> = {
+    resolved: "bg-[color-mix(in_srgb,var(--adaptive-accent-green)_14%,transparent)] text-[var(--adaptive-accent-green)]",
+    denied: "bg-[color-mix(in_srgb,var(--adaptive-accent-red)_12%,transparent)] text-[var(--adaptive-accent-red)]",
+    assignee: "bg-[color-mix(in_srgb,var(--adaptive-accent-blue)_12%,transparent)] text-[var(--adaptive-accent-blue)]",
+    recheck: "bg-[color-mix(in_srgb,var(--adaptive-accent-coral)_12%,transparent)] text-[var(--adaptive-accent-coral)]",
+    suggested: "bg-[color-mix(in_srgb,var(--adaptive-accent-blue)_10%,transparent)] text-[var(--adaptive-accent-blue)]",
+    neutral: "bg-[var(--adaptive-black100)] text-[var(--adaptive-black500)]",
+};
+
 export function getFeedActivitySurfaceClass(tone: FeedActivityTone) {
     return FEED_ACTIVITY_SURFACE[tone];
+}
+
+export function getFeedSpineNodeSurfaceClass(tone: FeedActivityTone) {
+    return FEED_SPINE_NODE_SURFACE[tone];
 }
 
 export function resolveFeedActivityTone(status: ReportReplyStatus | "detached"): FeedActivityTone {

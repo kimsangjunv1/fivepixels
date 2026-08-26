@@ -1,3 +1,5 @@
+import type { FeedbackDisplayStatus } from "@/constants/feedbackStatus.js";
+import { FEEDBACK_STATUS_COLOR } from "@/constants/feedbackStatus.js";
 import { useReportPreferences } from "@/providers/reportContext.js";
 import { formatRelativeTimeCompact } from "@/utils/shared/format.js";
 import { formatAssigneeLabel, resolveAuthorDepartment } from "@/utils/report/reportCases.js";
@@ -6,22 +8,35 @@ type FeedCommentMetaProps = {
     authorName: string;
     createdAt: string;
     authors?: Array<{ name: string; department?: string }>;
+    /** Reply/case status shown after name + time (e.g. 확인 요청, 오류 발견). */
+    status?: FeedbackDisplayStatus;
 };
 
-/** Name + compact time — badges intentionally omitted for feed density. */
-export function FeedCommentMeta({ authorName, createdAt, authors }: FeedCommentMetaProps) {
+/** Name + compact time + optional status label. */
+export function FeedCommentMeta({ authorName, createdAt, authors, status }: FeedCommentMetaProps) {
+    const { messages } = useReportPreferences();
     const displayName = formatAssigneeLabel(authorName, authors ? resolveAuthorDepartment(authors, authorName) : null);
     const relativeTime = formatRelativeTimeCompact(createdAt);
+    const statusLabel = status ? messages.status.feedback[status] : "";
+    const statusColor = status ? FEEDBACK_STATUS_COLOR[status] : undefined;
 
     return (
         <div className="flex min-w-0 flex-wrap items-baseline gap-x-[6px] gap-y-[2px]">
             <p
-                className="min-w-0 truncate text-[13px] font-semibold text-[var(--adaptive-text-primary)]"
+                className="text-xs min-w-0 truncate font-semibold text-[var(--adaptive-black900)]"
                 title={displayName}
             >
                 {displayName}
             </p>
-            {relativeTime ? <span className="shrink-0 text-[12px] text-[var(--adaptive-black500)]">{relativeTime}</span> : null}
+            {relativeTime ? <span className="text-xs shrink-0 font-semibold text-[var(--adaptive-black500)]">{relativeTime}</span> : null}
+            {statusLabel ? (
+                <span
+                    className="text-xs shrink-0 font-semibold"
+                    style={{ color: statusColor }}
+                >
+                    {statusLabel}
+                </span>
+            ) : null}
         </div>
     );
 }

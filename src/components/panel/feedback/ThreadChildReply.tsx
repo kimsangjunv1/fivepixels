@@ -32,6 +32,7 @@ export function ThreadChildReply({ reply, authors, originalAuthorName, actorName
                     authorName={authorName}
                     createdAt={reply.created_at}
                     authors={authors}
+                    status={reply.status}
                 />
             ) : null}
 

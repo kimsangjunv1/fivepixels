@@ -39,7 +39,6 @@ export function QuestionThreadGroup({ questions, authors, originalAuthorName, ac
             : messages.thread.questionsHide(questions.length)
         : messages.thread.questionsShow(questions.length);
 
-    // Feed: render nested replies directly with L-branch; collapse is a quiet activity line only when closed.
     if (isFeed) {
         if (!isExpanded) {
             return (
@@ -54,9 +53,10 @@ export function QuestionThreadGroup({ questions, authors, originalAuthorName, ac
                         aria-expanded={false}
                         aria-label={messages.thread.questionsToggleAriaLabel(questions.length, false)}
                         onClick={() => setIsExpanded(true)}
-                        className="py-[1px] text-left text-[12px] text-[var(--adaptive-black500)] hover:opacity-80"
+                        className="inline-flex items-center gap-[4px] py-[1px] text-left text-[12px] text-[var(--adaptive-black500)] hover:opacity-80"
                     >
-                        {toggleLabel}
+                        <span>{toggleLabel}</span>
+                        <ChevronDownIcon className="h-[12px] w-[12px] shrink-0 text-[var(--adaptive-black400)]" />
                     </button>
                 </ThreadLayoutShell>
             );
@@ -85,9 +85,10 @@ export function QuestionThreadGroup({ questions, authors, originalAuthorName, ac
                             aria-expanded
                             aria-label={messages.thread.questionsToggleAriaLabel(questions.length, true)}
                             onClick={() => setIsExpanded(false)}
-                            className="py-[1px] text-left text-[12px] text-[var(--adaptive-black500)] hover:opacity-80"
+                            className="inline-flex items-center gap-[4px] py-[1px] text-left text-[12px] text-[var(--adaptive-black500)] hover:opacity-80"
                         >
-                            {messages.thread.questionsHide(questions.length)}
+                            <span>{messages.thread.questionsHide(questions.length)}</span>
+                            <ChevronDownIcon className="h-[12px] w-[12px] shrink-0 rotate-180 text-[var(--adaptive-black400)]" />
                         </button>
                     </ThreadLayoutShell>
                 ) : null}

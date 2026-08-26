@@ -128,7 +128,7 @@ export function AssigneeThreadEntry({
                 classicTime={formatClockTime(reply.created_at)}
                 density="activity"
                 feedNode={
-                    <FeedSpineIcon>
+                    <FeedSpineIcon tone={resolveFeedActivityTone(reply.status)}>
                         <EditIcon
                             className="h-[12px] w-[12px]"
                             fill="currentColor"

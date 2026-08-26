@@ -97,10 +97,10 @@ function ThreadResolvedDivider({ createdAt }: { createdAt?: string }) {
             <ThreadLayoutShell
                 density="activity"
                 feedNode={
-                    <FeedSpineIcon>
+                    <FeedSpineIcon tone="resolved">
                         <CheckCircleIcon
                             className="h-[14px] w-[14px]"
-                            fill={resolvedColor}
+                            fill="currentColor"
                         />
                     </FeedSpineIcon>
                 }
@@ -279,6 +279,7 @@ function CaseThreadEntry({
                         authorName={authorName}
                         createdAt={caseCreatedAt}
                         authors={authors}
+                        status="issue_apply"
                     />
                 ) : null
             ) : (
@@ -431,6 +432,7 @@ function ThreadRootReply({
                         authorName={authorName}
                         createdAt={reply.created_at}
                         authors={authors}
+                        status={reply.status}
                     />
                 ) : null
             ) : (
