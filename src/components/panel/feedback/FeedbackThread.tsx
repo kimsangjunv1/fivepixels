@@ -37,6 +37,10 @@ import { ThreadTimelineRow } from "./ThreadTimelineRow.js";
 import { CaseThreadEntryActions, ThreadEntryActions, THREAD_ACTION_ENTRY_SURFACE_CLASS, THREAD_CASE_ENTRY_SURFACE_CLASS } from "./ThreadEntryActions.js";
 import { MentionMessage } from "./MentionMessage.js";
 import { ThreadAskAiFloatingButton } from "./ThreadAskAiFloatingButton.js";
+import { FeedAuthorAvatar } from "./feed/FeedAuthorAvatar.js";
+import { FeedActivityLine, FeedCommentMeta } from "./feed/FeedCommentMeta.js";
+import { FeedSpineDot, FeedSpineIcon } from "./feed/FeedTimelineRow.js";
+import { ThreadLayoutShell } from "./feed/ThreadLayoutShell.js";
 import { getFeedbackTargetElement } from "@/utils/marker/locateFeedback.js";
 
 type PendingComposer = {
@@ -81,9 +85,32 @@ function getScrollOverflowState(element: HTMLElement): ScrollOverflowState {
 
 const SCROLL_HINT_CLASS = "pointer-events-none absolute left-0 right-0 z-10 px-[16px] py-[12px] text-center text-[12px] text-[var(--adaptive-black600)]";
 
-function ThreadResolvedDivider() {
-    const { messages } = useReportPreferences();
+function ThreadResolvedDivider({ createdAt }: { createdAt?: string }) {
+    const { messages, threadLayout } = useReportPreferences();
     const resolvedColor = ACCENT_COLOR.green;
+    const isFeed = threadLayout === "feed";
+
+    if (isFeed) {
+        return (
+            <ThreadLayoutShell
+                density="activity"
+                hideLineBelow
+                feedNode={
+                    <FeedSpineIcon>
+                        <CheckCircleIcon
+                            className="h-[14px] w-[14px]"
+                            fill={resolvedColor}
+                        />
+                    </FeedSpineIcon>
+                }
+            >
+                <FeedActivityLine
+                    action={messages.thread.feedIssueResolvedAction}
+                    createdAt={createdAt}
+                />
+            </ThreadLayoutShell>
+        );
+    }
 
     return (
         <ThreadTimelineRow>
@@ -117,7 +144,13 @@ function ThreadResolvedDivider() {
 }
 
 function ThreadStartedDivider({ createdAt }: { createdAt: string }) {
-    const { locale } = useReportPreferences();
+    const { locale, threadLayout } = useReportPreferences();
+
+    // Feed layout skips the day banner — continuous spine reads cleaner without horizontal rules.
+    if (threadLayout === "feed") {
+        return null;
+    }
+
     const dateColor = "var(--adaptive-black500)";
 
     return (
@@ -148,8 +181,20 @@ function ThreadStartedDivider({ createdAt }: { createdAt: string }) {
 }
 
 function ThreadDetachedTargetDivider() {
-    const { messages } = useReportPreferences();
+    const { messages, threadLayout } = useReportPreferences();
     const labelColor = "var(--adaptive-black500)";
+    const isFeed = threadLayout === "feed";
+
+    if (isFeed) {
+        return (
+            <ThreadLayoutShell
+                density="activity"
+                feedNode={<FeedSpineDot />}
+            >
+                <FeedActivityLine action={messages.thread.feedDetachedTargetAction} />
+            </ThreadLayoutShell>
+        );
+    }
 
     return (
         <ThreadTimelineRow>
@@ -209,6 +254,8 @@ function CaseThreadEntry({
     isClaimingAssignee?: boolean;
     isEditingCases?: boolean;
 }) {
+    const { threadLayout } = useReportPreferences();
+    const isFeed = threadLayout === "feed";
     const showPreClaimDiscussion = !isEditingCases && canShowCaseEntryActions(report, caseId);
     const hasActions = showPreClaimDiscussion && (Boolean(actorName.trim()) || canShowCaseClaimAction(report, caseId, actorName));
     const isComposerTarget = pendingComposer?.type === "question" && pendingComposer.targetReplyId === ISSUE_ROOT_PARENT_ID;
@@ -217,29 +264,40 @@ function CaseThreadEntry({
         : hasActions
           ? THREAD_ACTION_ENTRY_SURFACE_CLASS
           : THREAD_CASE_ENTRY_SURFACE_CLASS;
+    const authorName = report.author_name?.trim() ?? "";
 
     const entryBody = (
         <>
-            <div className="flex min-w-0 items-center justify-between gap-[8px]">
-                <FeedbackStatusBadge
-                    status="issue_apply"
-                    isNeedGray
-                    className="shrink-0"
-                />
-                {report.author_name ? (
-                    <ThreadAuthorMeta
-                        authorName={report.author_name}
+            {isFeed ? (
+                authorName ? (
+                    <FeedCommentMeta
+                        authorName={authorName}
+                        createdAt={caseCreatedAt}
                         authors={authors}
-                        showMine={report.author_name.trim() === actorName}
-                        showCreator
                     />
-                ) : null}
-            </div>
+                ) : null
+            ) : (
+                <div className="flex min-w-0 items-center justify-between gap-[8px]">
+                    <FeedbackStatusBadge
+                        status="issue_apply"
+                        isNeedGray
+                        className="shrink-0"
+                    />
+                    {authorName ? (
+                        <ThreadAuthorMeta
+                            authorName={authorName}
+                            authors={authors}
+                            showMine={authorName === actorName}
+                            showCreator
+                        />
+                    ) : null}
+                </div>
+            )}
 
             <MentionMessage
                 message={caseText}
                 mentions={caseMentions}
-                className={`leading-[1.5] text-[14px] text-[var(--adaptive-text-primary)] whitespace-break-spaces ${caseStatus === "resolved" ? "text-[var(--adaptive-black500)] line-through" : ""}`}
+                className={`leading-[1.45] text-[14px] text-[var(--adaptive-text-primary)] whitespace-break-spaces ${isFeed ? "mt-[2px]" : ""} ${caseStatus === "resolved" ? "text-[var(--adaptive-black500)] line-through" : ""}`}
             />
 
             {isEditingCases ? null : (
@@ -258,9 +316,13 @@ function CaseThreadEntry({
     );
 
     return (
-        <ThreadTimelineRow time={formatClockTime(caseCreatedAt)}>
-            <div className={surfaceClass}>{entryBody}</div>
-        </ThreadTimelineRow>
+        <ThreadLayoutShell
+            classicTime={formatClockTime(caseCreatedAt)}
+            density="comment"
+            feedNode={authorName ? <FeedAuthorAvatar name={authorName} /> : <FeedSpineDot />}
+        >
+            <div className={isFeed && !hasActions && !isComposerTarget ? undefined : surfaceClass}>{entryBody}</div>
+        </ThreadLayoutShell>
     );
 }
 
@@ -303,19 +365,25 @@ function ThreadRootReply({
     isClaimingAssignee?: boolean;
     actorName: string;
 }) {
+    const { threadLayout } = useReportPreferences();
+    const isFeed = threadLayout === "feed";
+
     if (isGitIssuedSystemReply(reply, report) && issueUrl) {
         return (
-            <ThreadTimelineRow time={formatClockTime(reply.created_at)}>
+            <ThreadLayoutShell
+                classicTime={formatClockTime(reply.created_at)}
+                feedNode={<FeedSpineDot />}
+            >
                 <GitIssuedThreadEntry
                     reply={reply}
                     issueUrl={issueUrl}
                 />
-            </ThreadTimelineRow>
+            </ThreadLayoutShell>
         );
     }
 
     if (reply.status === "resolved") {
-        return <ThreadResolvedDivider />;
+        return <ThreadResolvedDivider createdAt={reply.created_at} />;
     }
 
     if (isAssigneeEventStatus(reply.status)) {
@@ -346,26 +414,37 @@ function ThreadRootReply({
         : hasActions
           ? THREAD_ACTION_ENTRY_SURFACE_CLASS
           : THREAD_CASE_ENTRY_SURFACE_CLASS;
+    const authorName = reply.author_name?.trim() ?? "";
 
     const entryBody = (
         <>
-            <div className="flex min-w-0 items-center justify-between gap-[8px]">
-                <FeedbackStatusBadge
-                    status={reply.status}
-                    isNeedGray
-                    className="shrink-0"
-                />
-                {reply.author_name ? (
-                    <ThreadAuthorMeta
-                        authorName={reply.author_name}
+            {isFeed ? (
+                authorName ? (
+                    <FeedCommentMeta
+                        authorName={authorName}
+                        createdAt={reply.created_at}
                         authors={authors}
-                        showMine={reply.author_name.trim() === actorName}
-                        showCreator={reply.author_name.trim() === originalAuthorName}
                     />
-                ) : null}
-            </div>
+                ) : null
+            ) : (
+                <div className="flex min-w-0 items-center justify-between gap-[8px]">
+                    <FeedbackStatusBadge
+                        status={reply.status}
+                        isNeedGray
+                        className="shrink-0"
+                    />
+                    {authorName ? (
+                        <ThreadAuthorMeta
+                            authorName={authorName}
+                            authors={authors}
+                            showMine={authorName === actorName}
+                            showCreator={authorName === originalAuthorName}
+                        />
+                    ) : null}
+                </div>
+            )}
 
-            <p className="leading-[1.5] text-[14px] text-[var(--adaptive-text-primary)] whitespace-break-spaces">
+            <p className={`leading-[1.45] text-[14px] text-[var(--adaptive-text-primary)] whitespace-break-spaces ${isFeed ? "mt-[2px]" : ""}`}>
                 <MentionMessage
                     message={reply.message}
                     mentions={reply.mentions}
@@ -392,9 +471,13 @@ function ThreadRootReply({
     );
 
     return (
-        <ThreadTimelineRow time={formatClockTime(reply.created_at)}>
-            <div className={surfaceClass}>{entryBody}</div>
-        </ThreadTimelineRow>
+        <ThreadLayoutShell
+            classicTime={formatClockTime(reply.created_at)}
+            density="comment"
+            feedNode={authorName ? <FeedAuthorAvatar name={authorName} /> : <FeedSpineDot />}
+        >
+            <div className={isFeed && !hasActions && !isComposerTarget ? undefined : surfaceClass}>{entryBody}</div>
+        </ThreadLayoutShell>
     );
 }
 

@@ -5,6 +5,8 @@ export const REPORT_PREFERENCE_KEYS = [
     "setTooltipAppearance",
     "questionThreadDisplay",
     "setQuestionThreadDisplay",
+    "threadLayout",
+    "setThreadLayout",
     "locale",
     "setLocale",
     "messages",

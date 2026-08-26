@@ -5,7 +5,7 @@ import type { PanelRole } from "../../constants/panelRole.js";
 import { type UserSelectablePanelTab } from "../../constants/panelTabRegistry.js";
 import { type PanelTabPreference } from "../../utils/panel/panelTabPreference.js";
 import type { FivePixelsAdapter } from "../../types/adapter.js";
-import type { ReportAppearance, ReportField, QuestionThreadDisplay } from "../../types/report.js";
+import type { ReportAppearance, ReportField, QuestionThreadDisplay, ThreadLayoutStyle } from "../../types/report.js";
 import type { ReportMode, ReportPanelTab } from "../../types/report-ui.js";
 export type ReportPanelShellBridges = {
     setShowTargetPreview: (show: boolean) => void;
@@ -20,6 +20,7 @@ export type ReportPanelShellConfig = {
     panelAppearance: ReportAppearance;
     tooltipAppearance: ReportAppearance;
     questionThreadDefault?: QuestionThreadDisplay;
+    threadLayoutDefault?: ThreadLayoutStyle;
     fields: ReportField[];
     showFeedbackList: boolean;
     initialLocale: ReportLocale;
@@ -30,13 +31,15 @@ export type ReportPanelShellConfig = {
     sessionActorName: string | null;
     bridgesRef: MutableRefObject<ReportPanelShellBridges>;
 };
-export declare function useReportPanelShell({ projectId, environment, appVersion, sync, panelAppearance, tooltipAppearance, questionThreadDefault, fields, showFeedbackList, initialLocale, messageOverrides, adapter, routeKey, replyHistory, sessionActorName, bridgesRef, }: ReportPanelShellConfig): {
+export declare function useReportPanelShell({ projectId, environment, appVersion, sync, panelAppearance, tooltipAppearance, questionThreadDefault, threadLayoutDefault, fields, showFeedbackList, initialLocale, messageOverrides, adapter, routeKey, replyHistory, sessionActorName, bridgesRef, }: ReportPanelShellConfig): {
     panelAppearance: ReportAppearance;
     setPanelAppearance: (nextAppearance: ReportAppearance) => void;
     tooltipAppearance: ReportAppearance;
     setTooltipAppearance: (nextAppearance: ReportAppearance) => void;
     questionThreadDisplay: QuestionThreadDisplay;
     setQuestionThreadDisplay: (nextDisplay: QuestionThreadDisplay) => void;
+    threadLayout: ThreadLayoutStyle;
+    setThreadLayout: (nextLayout: ThreadLayoutStyle) => void;
     locale: ReportLocale;
     setLocale: (nextLocale: ReportLocale) => void;
     messages: import("../../i18n/types.js").ReportMessages;

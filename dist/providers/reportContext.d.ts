@@ -15,6 +15,8 @@ declare const ReportContext: Context<{
     setTooltipAppearance: (nextAppearance: import("../index.js").ReportAppearance) => void;
     questionThreadDisplay: import("../index.js").QuestionThreadDisplay;
     setQuestionThreadDisplay: (nextDisplay: import("../index.js").QuestionThreadDisplay) => void;
+    threadLayout: import("../index.js").ThreadLayoutStyle;
+    setThreadLayout: (nextLayout: import("../index.js").ThreadLayoutStyle) => void;
     locale: import("../index.js").ReportLocale;
     setLocale: (nextLocale: import("../index.js").ReportLocale) => void;
     messages: import("../index.js").ReportMessages;
@@ -359,6 +361,8 @@ export declare function useReport(): {
     setTooltipAppearance: (nextAppearance: import("../index.js").ReportAppearance) => void;
     questionThreadDisplay: import("../index.js").QuestionThreadDisplay;
     setQuestionThreadDisplay: (nextDisplay: import("../index.js").QuestionThreadDisplay) => void;
+    threadLayout: import("../index.js").ThreadLayoutStyle;
+    setThreadLayout: (nextLayout: import("../index.js").ThreadLayoutStyle) => void;
     locale: import("../index.js").ReportLocale;
     setLocale: (nextLocale: import("../index.js").ReportLocale) => void;
     messages: import("../index.js").ReportMessages;
@@ -706,6 +710,8 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         setTooltipAppearance: (nextAppearance: import("../index.js").ReportAppearance) => void;
         questionThreadDisplay: import("../index.js").QuestionThreadDisplay;
         setQuestionThreadDisplay: (nextDisplay: import("../index.js").QuestionThreadDisplay) => void;
+        threadLayout: import("../index.js").ThreadLayoutStyle;
+        setThreadLayout: (nextLayout: import("../index.js").ThreadLayoutStyle) => void;
         locale: import("../index.js").ReportLocale;
         setLocale: (nextLocale: import("../index.js").ReportLocale) => void;
         messages: import("../index.js").ReportMessages;
@@ -1038,7 +1044,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         activeApiFailureAlert: import("../types/networkMonitor.js").ApiFlowEntry | null;
         dismissFailureAlert: (entryId: string) => void;
         networkMonitorEnabled: boolean;
-    }, "personalKey" | "projectId" | "fields" | "personalKeyRequired" | "environment" | "require" | "requireAuth" | "questionThreadDisplay" | "setQuestionThreadDisplay" | "locale" | "setLocale" | "showMarkerTargetPreview" | "setShowMarkerTargetPreview" | "toggleMarkerTargetPreview" | "devicePreviewUiOpen" | "setDevicePreviewUiOpen" | "devicePreviewDeviceId" | "setDevicePreviewDeviceId" | "devicePreviewScale" | "setDevicePreviewScale" | "devicePreviewImageEnabled" | "setDevicePreviewImageEnabled" | "devicePreviewFitToViewport" | "setDevicePreviewFitToViewport" | "devicePreviewStatusBarEnabled" | "setDevicePreviewStatusBarEnabled" | "devicePreviewPreset" | "showHiddenDetachedMarkers" | "setShowHiddenDetachedMarkers" | "showModalDetachedMarkers" | "setShowModalDetachedMarkers" | "markerAppearance" | "setMarkerAppearance" | "setMarkerSize" | "setMarkerShape" | "setMarkerFillStyle" | "setMarkerColors" | "setMarkerColor" | "setMarkerStrokeColor" | "setFeedbackModeDotColors" | "setFeedbackModeDotColor" | "typography" | "setTypography" | "setFontSize" | "setFontFamily" | "panelRole" | "setPanelRole" | "persistenceStatus" | "appVersion" | "showFeedbackList" | "selfProfile" | "authors" | "publicKey" | "personalKeyCandidates" | "issuePersonalKey" | "rotatePersonalKey" | "insertPersonalKey" | "clearPersonalKey" | "authorSelectionLocked" | "messages" | "visibleShortcutKeys" | "teamReviewers" | "onListReviewers" | "onListReviewerRequests" | "onCreateReviewerRequest" | "onResolveReviewerRequest" | "onRegisterReviewer" | "onUpdateReviewer" | "panelAppearance" | "setPanelAppearance" | "tooltipAppearance" | "setTooltipAppearance" | "teamActor" | "teamActorRole" | "isTeamAdmin" | "canAccessTeamSettings" | "integrationCapabilities" | "adapterIntegrationStatus" | "panelView" | "loginMethod" | "loginWithApi" | "registerWithApi" | "loginWithArtemis" | "completeRemoteOnboarding" | "completeOnboarding" | "restoreFromBackup" | "skipOnboarding" | "resolvedPanelAppearance" | "resolvedTooltipAppearance" | "isMobileViewport" | "isPresentationMode" | "presentationViewers" | "visiblePanelTabs" | "visiblePanelTabsSummary" | "resolvedTabAvailabilityContext" | "setVisiblePanelTabs" | "resetVisibleTabsToRoleDefault" | "applyRoleDefaultTabsForOnboarding" | "savePanelTabPreference" | "storedPanelTabPreference">;
+    }, "personalKey" | "projectId" | "fields" | "personalKeyRequired" | "environment" | "require" | "requireAuth" | "questionThreadDisplay" | "setQuestionThreadDisplay" | "threadLayout" | "setThreadLayout" | "locale" | "setLocale" | "showMarkerTargetPreview" | "setShowMarkerTargetPreview" | "toggleMarkerTargetPreview" | "devicePreviewUiOpen" | "setDevicePreviewUiOpen" | "devicePreviewDeviceId" | "setDevicePreviewDeviceId" | "devicePreviewScale" | "setDevicePreviewScale" | "devicePreviewImageEnabled" | "setDevicePreviewImageEnabled" | "devicePreviewFitToViewport" | "setDevicePreviewFitToViewport" | "devicePreviewStatusBarEnabled" | "setDevicePreviewStatusBarEnabled" | "devicePreviewPreset" | "showHiddenDetachedMarkers" | "setShowHiddenDetachedMarkers" | "showModalDetachedMarkers" | "setShowModalDetachedMarkers" | "markerAppearance" | "setMarkerAppearance" | "setMarkerSize" | "setMarkerShape" | "setMarkerFillStyle" | "setMarkerColors" | "setMarkerColor" | "setMarkerStrokeColor" | "setFeedbackModeDotColors" | "setFeedbackModeDotColor" | "typography" | "setTypography" | "setFontSize" | "setFontFamily" | "panelRole" | "setPanelRole" | "persistenceStatus" | "appVersion" | "showFeedbackList" | "selfProfile" | "authors" | "publicKey" | "personalKeyCandidates" | "issuePersonalKey" | "rotatePersonalKey" | "insertPersonalKey" | "clearPersonalKey" | "authorSelectionLocked" | "messages" | "visibleShortcutKeys" | "teamReviewers" | "onListReviewers" | "onListReviewerRequests" | "onCreateReviewerRequest" | "onResolveReviewerRequest" | "onRegisterReviewer" | "onUpdateReviewer" | "panelAppearance" | "setPanelAppearance" | "tooltipAppearance" | "setTooltipAppearance" | "teamActor" | "teamActorRole" | "isTeamAdmin" | "canAccessTeamSettings" | "integrationCapabilities" | "adapterIntegrationStatus" | "panelView" | "loginMethod" | "loginWithApi" | "registerWithApi" | "loginWithArtemis" | "completeRemoteOnboarding" | "completeOnboarding" | "restoreFromBackup" | "skipOnboarding" | "resolvedPanelAppearance" | "resolvedTooltipAppearance" | "isMobileViewport" | "isPresentationMode" | "presentationViewers" | "visiblePanelTabs" | "visiblePanelTabsSummary" | "resolvedTabAvailabilityContext" | "setVisiblePanelTabs" | "resetVisibleTabsToRoleDefault" | "applyRoleDefaultTabsForOnboarding" | "savePanelTabPreference" | "storedPanelTabPreference">;
     session: Pick<{
         panelAppearance: import("../index.js").ReportAppearance;
         setPanelAppearance: (nextAppearance: import("../index.js").ReportAppearance) => void;
@@ -1046,6 +1052,8 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         setTooltipAppearance: (nextAppearance: import("../index.js").ReportAppearance) => void;
         questionThreadDisplay: import("../index.js").QuestionThreadDisplay;
         setQuestionThreadDisplay: (nextDisplay: import("../index.js").QuestionThreadDisplay) => void;
+        threadLayout: import("../index.js").ThreadLayoutStyle;
+        setThreadLayout: (nextLayout: import("../index.js").ThreadLayoutStyle) => void;
         locale: import("../index.js").ReportLocale;
         setLocale: (nextLocale: import("../index.js").ReportLocale) => void;
         messages: import("../index.js").ReportMessages;
@@ -1386,6 +1394,8 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         setTooltipAppearance: (nextAppearance: import("../index.js").ReportAppearance) => void;
         questionThreadDisplay: import("../index.js").QuestionThreadDisplay;
         setQuestionThreadDisplay: (nextDisplay: import("../index.js").QuestionThreadDisplay) => void;
+        threadLayout: import("../index.js").ThreadLayoutStyle;
+        setThreadLayout: (nextLayout: import("../index.js").ThreadLayoutStyle) => void;
         locale: import("../index.js").ReportLocale;
         setLocale: (nextLocale: import("../index.js").ReportLocale) => void;
         messages: import("../index.js").ReportMessages;

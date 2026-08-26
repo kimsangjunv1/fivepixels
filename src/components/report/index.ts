@@ -68,6 +68,7 @@ export type {
     ReportPositionViewport,
     ReportProject,
     QuestionThreadDisplay,
+    ThreadLayoutStyle,
     FivePixelsMode,
     ReportTeam,
     ReportUi,

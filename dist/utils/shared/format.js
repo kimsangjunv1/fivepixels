@@ -139,4 +139,22 @@ export function formatRelativeTime(value, labels, now = new Date()) {
             return labels.yearsAgo(parts.count);
     }
 }
+/** Compact feed timestamps like `12m`, `3h`, `5d` (reference activity-feed style). */
+export function formatRelativeTimeCompact(value, now = new Date()) {
+    const parts = getRelativeTimeParts(value, now);
+    if (!parts) {
+        return "";
+    }
+    if (parts.unit === "second") {
+        return "now";
+    }
+    const suffix = {
+        minute: "m",
+        hour: "h",
+        day: "d",
+        month: "mo",
+        year: "y",
+    };
+    return `${parts.count}${suffix[parts.unit]}`;
+}
 //# sourceMappingURL=format.js.map

@@ -1,8 +1,11 @@
 import type { ReportAuthor, ReportReply } from "@/types/report.js";
 import { formatClockTime } from "@/utils/shared/format.js";
+import { useReportPreferences } from "@/providers/reportContext.js";
 import { MentionMessage } from "./MentionMessage.js";
 import { ThreadAuthorMeta } from "./ThreadAuthorMeta.js";
-import { ThreadTimelineRow } from "./ThreadTimelineRow.js";
+import { FeedAuthorAvatar } from "./feed/FeedAuthorAvatar.js";
+import { FeedCommentMeta } from "./feed/FeedCommentMeta.js";
+import { ThreadLayoutShell } from "./feed/ThreadLayoutShell.js";
 
 type ThreadChildReplyProps = {
     reply: ReportReply;
@@ -12,21 +15,34 @@ type ThreadChildReplyProps = {
 };
 
 export function ThreadChildReply({ reply, authors, originalAuthorName, actorName }: ThreadChildReplyProps) {
+    const { threadLayout } = useReportPreferences();
     const authorName = reply.author_name?.trim() ?? "";
+    const isFeed = threadLayout === "feed";
 
     return (
-        <ThreadTimelineRow
-            time={formatClockTime(reply.created_at)}
-            replyIndicator
+        <ThreadLayoutShell
+            classicTime={formatClockTime(reply.created_at)}
+            classicReplyIndicator
+            nested={isFeed}
+            density="comment"
+            feedNode={authorName ? <FeedAuthorAvatar name={authorName} size="sm" /> : undefined}
         >
-            <p className="leading-[1.5] text-[13px] text-[var(--adaptive-text-primary)]">
+            {isFeed && authorName ? (
+                <FeedCommentMeta
+                    authorName={authorName}
+                    createdAt={reply.created_at}
+                    authors={authors}
+                />
+            ) : null}
+
+            <p className={`leading-[1.45] text-[var(--adaptive-text-primary)] ${isFeed ? "mt-[2px] text-[13px]" : "text-[13px]"}`}>
                 <MentionMessage
                     message={reply.message}
                     mentions={reply.mentions}
                 />
             </p>
 
-            {authorName ? (
+            {!isFeed && authorName ? (
                 <ThreadAuthorMeta
                     authorName={authorName}
                     authors={authors}
@@ -34,6 +50,6 @@ export function ThreadChildReply({ reply, authors, originalAuthorName, actorName
                     showCreator={authorName === originalAuthorName}
                 />
             ) : null}
-        </ThreadTimelineRow>
+        </ThreadLayoutShell>
     );
 }

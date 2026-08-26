@@ -114,6 +114,9 @@ export type ReportProject = {
 
 export type QuestionThreadDisplay = "expanded" | "collapsed";
 
+/** Marker-window / panel thread layout. `classic` is the time-rail UI; `feed` is the vertical activity feed. */
+export type ThreadLayoutStyle = "classic" | "feed";
+
 /** Runtime mode for `<FivePixels />`. Presentation mode enables viewer switching in settings. */
 export type FivePixelsMode = "default" | "presentation";
 
@@ -124,6 +127,8 @@ export type ReportUi = {
     showFeedbackList?: boolean;
     visibleShortcutKeys?: boolean;
     questionThreadDefault?: QuestionThreadDisplay;
+    /** Default thread layout when the user has not chosen one in Settings → Appearance. */
+    threadLayoutDefault?: ThreadLayoutStyle;
     replyHistory?: ReplyHistoryConfig;
     shortcut?: string;
     locale?: import("../i18n/types.js").ReportLocale;

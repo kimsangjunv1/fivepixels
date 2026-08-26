@@ -26,9 +26,7 @@ function matchesMemoKeyword(report: ReportFeedback, keyword: string) {
         return true;
     }
 
-    const haystack = [casesToSearchText(getReportCases(report)), report.pathname, typeof report.fc_number === "number" ? `#mm-${report.fc_number}` : ""]
-        .join(" ")
-        .toLowerCase();
+    const haystack = [casesToSearchText(getReportCases(report)), report.pathname, typeof report.fc_number === "number" ? `#mm-${report.fc_number}` : ""].join(" ").toLowerCase();
 
     return haystack.includes(keyword);
 }

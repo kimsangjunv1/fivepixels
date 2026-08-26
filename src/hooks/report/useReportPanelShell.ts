@@ -13,6 +13,7 @@ import { useAppearancePreference } from "../useAppearancePreference.js";
 import { PANEL_APPEARANCE_STORAGE_KEY, TOOLTIP_APPEARANCE_STORAGE_KEY } from "@/constants/appearance.js";
 import { useLocalePreference } from "../useLocalePreference.js";
 import { useQuestionThreadPreference } from "../useQuestionThreadPreference.js";
+import { useThreadLayoutPreference } from "../useThreadLayoutPreference.js";
 import { usePanelRolePreference } from "../usePanelRolePreference.js";
 import { usePanelTabPreference } from "../usePanelTabPreference.js";
 import { usePanelBootstrap } from "../usePanelBootstrap.js";
@@ -29,7 +30,7 @@ import {
     type PanelTabPreference,
 } from "@/utils/panel/panelTabPreference.js";
 import type { FivePixelsAdapter } from "@/types/adapter.js";
-import type { ReportAppearance, ReportField, QuestionThreadDisplay } from "@/types/report.js";
+import type { ReportAppearance, ReportField, QuestionThreadDisplay, ThreadLayoutStyle } from "@/types/report.js";
 import type { ReportMode, ReportPanelTab } from "@/types/report-ui.js";
 import { parseFeedbackDeepLink } from "@/utils/feedback/feedbackDeepLink.js";
 
@@ -55,6 +56,7 @@ export type ReportPanelShellConfig = {
     panelAppearance: ReportAppearance;
     tooltipAppearance: ReportAppearance;
     questionThreadDefault?: QuestionThreadDisplay;
+    threadLayoutDefault?: ThreadLayoutStyle;
     fields: ReportField[];
     showFeedbackList: boolean;
     initialLocale: ReportLocale;
@@ -74,6 +76,7 @@ export function useReportPanelShell({
     panelAppearance,
     tooltipAppearance,
     questionThreadDefault = "expanded",
+    threadLayoutDefault = "classic",
     fields,
     showFeedbackList,
     initialLocale,
@@ -120,6 +123,7 @@ export function useReportPanelShell({
     } = useMarkerAppearancePreference();
     const { typography, setTypography, setFontSize, setFontFamily } = useTypographyPreference();
     const { questionThreadDisplay, setQuestionThreadDisplay } = useQuestionThreadPreference(questionThreadDefault);
+    const { threadLayout, setThreadLayout } = useThreadLayoutPreference(threadLayoutDefault);
     const { panelRole, setPanelRole } = usePanelRolePreference();
     const { storedPreference, setPanelTabPreference, setVisibleTabs, resetTabsToRoleDefault, applyRoleDefaultTabs } = usePanelTabPreference();
     const { locale, setLocale } = useLocalePreference(initialLocale);
@@ -445,6 +449,8 @@ export function useReportPanelShell({
         setTooltipAppearance,
         questionThreadDisplay,
         setQuestionThreadDisplay,
+        threadLayout,
+        setThreadLayout,
         locale,
         setLocale,
         messages,

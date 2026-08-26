@@ -1,6 +1,6 @@
 import type { DeepPartialReportMessages, ReportLocale, ReportMessages } from "@/i18n/index.js";
 import { getReportMessages, resolveReportLocale } from "@/i18n/index.js";
-import type { QuestionThreadDisplay, ReplyHistoryLoadMode, ReportAppearance, ReportUi } from "@/types/report.js";
+import type { QuestionThreadDisplay, ReplyHistoryLoadMode, ReportAppearance, ReportUi, ThreadLayoutStyle } from "@/types/report.js";
 import { DEFAULT_REPLY_HISTORY_MODE, DEFAULT_REPLY_HISTORY_PAGE_SIZE } from "@/utils/feedback/replyHistory.js";
 
 export type ResolvedReplyHistoryConfig = {
@@ -14,6 +14,7 @@ export type ResolvedReportUi = {
     showFeedbackList: boolean;
     visibleShortcutKeys: boolean;
     questionThreadDefault: QuestionThreadDisplay;
+    threadLayoutDefault: ThreadLayoutStyle;
     replyHistory: ResolvedReplyHistoryConfig;
     shortcut?: string;
     locale: ReportLocale;
@@ -22,13 +23,14 @@ export type ResolvedReportUi = {
 
 const DEFAULT_UI: Pick<
     ResolvedReportUi,
-    "panelAppearance" | "tooltipAppearance" | "showFeedbackList" | "visibleShortcutKeys" | "questionThreadDefault" | "locale"
+    "panelAppearance" | "tooltipAppearance" | "showFeedbackList" | "visibleShortcutKeys" | "questionThreadDefault" | "threadLayoutDefault" | "locale"
 > = {
     panelAppearance: "light",
     tooltipAppearance: "light",
     showFeedbackList: true,
     visibleShortcutKeys: false,
     questionThreadDefault: "expanded",
+    threadLayoutDefault: "classic",
     locale: "en",
 };
 
@@ -47,6 +49,7 @@ export function resolveReportUi({ ui }: ResolveReportUiOptions): ResolvedReportU
         showFeedbackList: ui?.showFeedbackList ?? DEFAULT_UI.showFeedbackList,
         visibleShortcutKeys: ui?.visibleShortcutKeys ?? DEFAULT_UI.visibleShortcutKeys,
         questionThreadDefault: ui?.questionThreadDefault ?? DEFAULT_UI.questionThreadDefault,
+        threadLayoutDefault: ui?.threadLayoutDefault ?? DEFAULT_UI.threadLayoutDefault,
         replyHistory: {
             mode: ui?.replyHistory?.mode ?? DEFAULT_REPLY_HISTORY_MODE,
             pageSize: ui?.replyHistory?.pageSize ?? DEFAULT_REPLY_HISTORY_PAGE_SIZE,

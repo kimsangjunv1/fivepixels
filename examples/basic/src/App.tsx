@@ -47,6 +47,7 @@ function AppContent() {
                         },
                     ],
                 }}
+
                 // adapter={createFivepixelsAdapter({
                 //     baseUrl: "/api/v1/fivepixels",
                 //     projectId: PROJECT_ID,

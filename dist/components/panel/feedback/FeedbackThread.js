@@ -20,6 +20,10 @@ import { ThreadTimelineRow } from "./ThreadTimelineRow.js";
 import { CaseThreadEntryActions, ThreadEntryActions, THREAD_ACTION_ENTRY_SURFACE_CLASS, THREAD_CASE_ENTRY_SURFACE_CLASS } from "./ThreadEntryActions.js";
 import { MentionMessage } from "./MentionMessage.js";
 import { ThreadAskAiFloatingButton } from "./ThreadAskAiFloatingButton.js";
+import { FeedAuthorAvatar } from "./feed/FeedAuthorAvatar.js";
+import { FeedActivityLine, FeedCommentMeta } from "./feed/FeedCommentMeta.js";
+import { FeedSpineDot, FeedSpineIcon } from "./feed/FeedTimelineRow.js";
+import { ThreadLayoutShell } from "./feed/ThreadLayoutShell.js";
 import { getFeedbackTargetElement } from "../../../utils/marker/locateFeedback.js";
 function getScrollOverflowState(element) {
     const { scrollTop, scrollHeight, clientHeight } = element;
@@ -30,22 +34,36 @@ function getScrollOverflowState(element) {
     };
 }
 const SCROLL_HINT_CLASS = "pointer-events-none absolute left-0 right-0 z-10 px-[16px] py-[12px] text-center text-[12px] text-[var(--adaptive-black600)]";
-function ThreadResolvedDivider() {
-    const { messages } = useReportPreferences();
+function ThreadResolvedDivider({ createdAt }) {
+    const { messages, threadLayout } = useReportPreferences();
     const resolvedColor = ACCENT_COLOR.green;
+    const isFeed = threadLayout === "feed";
+    if (isFeed) {
+        return (_jsx(ThreadLayoutShell, { density: "activity", hideLineBelow: true, feedNode: _jsx(FeedSpineIcon, { children: _jsx(CheckCircleIcon, { className: "h-[14px] w-[14px]", fill: resolvedColor }) }), children: _jsx(FeedActivityLine, { action: messages.thread.feedIssueResolvedAction, createdAt: createdAt }) }));
+    }
     return (_jsx(ThreadTimelineRow, { children: _jsxs("div", { className: "flex items-center gap-[8px]", role: "status", children: [_jsx("span", { "aria-hidden": true, className: "h-px flex-1 bg-[var(--adaptive-border-subtle)]" }), _jsxs("span", { className: "inline-flex shrink-0 items-center gap-[6px]", children: [_jsx(CheckCircleIcon, { className: "h-[16px] w-[16px] shrink-0", fill: resolvedColor }), _jsx("span", { className: "text-[13px] font-bold leading-none", style: { color: resolvedColor }, children: messages.thread.issueResolvedDivider })] }), _jsx("span", { "aria-hidden": true, className: "h-px flex-1 bg-[var(--adaptive-border-subtle)]" })] }) }));
 }
 function ThreadStartedDivider({ createdAt }) {
-    const { locale } = useReportPreferences();
+    const { locale, threadLayout } = useReportPreferences();
+    // Feed layout skips the day banner — continuous spine reads cleaner without horizontal rules.
+    if (threadLayout === "feed") {
+        return null;
+    }
     const dateColor = "var(--adaptive-black500)";
     return (_jsx(ThreadTimelineRow, { children: _jsxs("div", { className: "flex items-center gap-[8px]", role: "status", children: [_jsx("span", { "aria-hidden": true, className: "h-px flex-1 bg-[var(--adaptive-border-subtle)]" }), _jsx("span", { className: "inline-flex shrink-0 items-center gap-[6px]", children: _jsx("span", { className: "text-[13px] font-bold leading-none tabular-nums", style: { color: dateColor }, children: formatDateOnly(createdAt, locale) }) }), _jsx("span", { "aria-hidden": true, className: "h-px flex-1 bg-[var(--adaptive-border-subtle)]" })] }) }));
 }
 function ThreadDetachedTargetDivider() {
-    const { messages } = useReportPreferences();
+    const { messages, threadLayout } = useReportPreferences();
     const labelColor = "var(--adaptive-black500)";
+    const isFeed = threadLayout === "feed";
+    if (isFeed) {
+        return (_jsx(ThreadLayoutShell, { density: "activity", feedNode: _jsx(FeedSpineDot, {}), children: _jsx(FeedActivityLine, { action: messages.thread.feedDetachedTargetAction }) }));
+    }
     return (_jsx(ThreadTimelineRow, { children: _jsxs("div", { className: "flex items-center gap-[8px]", role: "status", children: [_jsx("span", { "aria-hidden": true, className: "h-px flex-1 bg-[var(--adaptive-border-subtle)]" }), _jsx("span", { className: "inline-flex shrink-0 items-center gap-[6px]", children: _jsx("span", { className: "text-[13px] font-bold leading-none", style: { color: labelColor }, children: messages.thread.detachedTargetDivider }) }), _jsx("span", { "aria-hidden": true, className: "h-px flex-1 bg-[var(--adaptive-border-subtle)]" })] }) }));
 }
 function CaseThreadEntry({ report, caseId, caseText, caseMentions = [], caseCreatedAt, caseStatus, authors, actorName, pendingComposer, onStartAskQuestion, onClaimAssignee, isUpdating, isClaimingAssignee, isEditingCases = false, }) {
+    const { threadLayout } = useReportPreferences();
+    const isFeed = threadLayout === "feed";
     const showPreClaimDiscussion = !isEditingCases && canShowCaseEntryActions(report, caseId);
     const hasActions = showPreClaimDiscussion && (Boolean(actorName.trim()) || canShowCaseClaimAction(report, caseId, actorName));
     const isComposerTarget = pendingComposer?.type === "question" && pendingComposer.targetReplyId === ISSUE_ROOT_PARENT_ID;
@@ -54,15 +72,18 @@ function CaseThreadEntry({ report, caseId, caseText, caseMentions = [], caseCrea
         : hasActions
             ? THREAD_ACTION_ENTRY_SURFACE_CLASS
             : THREAD_CASE_ENTRY_SURFACE_CLASS;
-    const entryBody = (_jsxs(_Fragment, { children: [_jsxs("div", { className: "flex min-w-0 items-center justify-between gap-[8px]", children: [_jsx(FeedbackStatusBadge, { status: "issue_apply", isNeedGray: true, className: "shrink-0" }), report.author_name ? (_jsx(ThreadAuthorMeta, { authorName: report.author_name, authors: authors, showMine: report.author_name.trim() === actorName, showCreator: true })) : null] }), _jsx(MentionMessage, { message: caseText, mentions: caseMentions, className: `leading-[1.5] text-[14px] text-[var(--adaptive-text-primary)] whitespace-break-spaces ${caseStatus === "resolved" ? "text-[var(--adaptive-black500)] line-through" : ""}` }), isEditingCases ? null : (_jsx(CaseThreadEntryActions, { report: report, caseId: caseId, actorName: actorName, pendingComposer: pendingComposer, onStartAskQuestion: onStartAskQuestion, onClaimAssignee: onClaimAssignee, isUpdating: isUpdating, isClaimingAssignee: isClaimingAssignee }))] }));
-    return (_jsx(ThreadTimelineRow, { time: formatClockTime(caseCreatedAt), children: _jsx("div", { className: surfaceClass, children: entryBody }) }));
+    const authorName = report.author_name?.trim() ?? "";
+    const entryBody = (_jsxs(_Fragment, { children: [isFeed ? (authorName ? (_jsx(FeedCommentMeta, { authorName: authorName, createdAt: caseCreatedAt, authors: authors })) : null) : (_jsxs("div", { className: "flex min-w-0 items-center justify-between gap-[8px]", children: [_jsx(FeedbackStatusBadge, { status: "issue_apply", isNeedGray: true, className: "shrink-0" }), authorName ? (_jsx(ThreadAuthorMeta, { authorName: authorName, authors: authors, showMine: authorName === actorName, showCreator: true })) : null] })), _jsx(MentionMessage, { message: caseText, mentions: caseMentions, className: `leading-[1.45] text-[14px] text-[var(--adaptive-text-primary)] whitespace-break-spaces ${isFeed ? "mt-[2px]" : ""} ${caseStatus === "resolved" ? "text-[var(--adaptive-black500)] line-through" : ""}` }), isEditingCases ? null : (_jsx(CaseThreadEntryActions, { report: report, caseId: caseId, actorName: actorName, pendingComposer: pendingComposer, onStartAskQuestion: onStartAskQuestion, onClaimAssignee: onClaimAssignee, isUpdating: isUpdating, isClaimingAssignee: isClaimingAssignee }))] }));
+    return (_jsx(ThreadLayoutShell, { classicTime: formatClockTime(caseCreatedAt), density: "comment", feedNode: authorName ? _jsx(FeedAuthorAvatar, { name: authorName }) : _jsx(FeedSpineDot, {}), children: _jsx("div", { className: isFeed && !hasActions && !isComposerTarget ? undefined : surfaceClass, children: entryBody }) }));
 }
 function ThreadRootReply({ reply, report, caseId, authors, pendingComposer, confirmAuthorName, showConfirmAuthorSelect, originalAuthorName, issueUrl, onConfirmAuthorNameChange, onStartDeny, onStartCheckout, onStartAskQuestion, onTransferAssignee, onConfirm, isUpdating, isClaimingAssignee, actorName, }) {
+    const { threadLayout } = useReportPreferences();
+    const isFeed = threadLayout === "feed";
     if (isGitIssuedSystemReply(reply, report) && issueUrl) {
-        return (_jsx(ThreadTimelineRow, { time: formatClockTime(reply.created_at), children: _jsx(GitIssuedThreadEntry, { reply: reply, issueUrl: issueUrl }) }));
+        return (_jsx(ThreadLayoutShell, { classicTime: formatClockTime(reply.created_at), feedNode: _jsx(FeedSpineDot, {}), children: _jsx(GitIssuedThreadEntry, { reply: reply, issueUrl: issueUrl }) }));
     }
     if (reply.status === "resolved") {
-        return _jsx(ThreadResolvedDivider, {});
+        return _jsx(ThreadResolvedDivider, { createdAt: reply.created_at });
     }
     if (isAssigneeEventStatus(reply.status)) {
         return (_jsx(AssigneeThreadEntry, { reply: reply, report: report, caseId: caseId, authors: authors, actorName: actorName, pendingComposer: pendingComposer, onStartDeny: () => onStartDeny(reply.id), onStartCheckout: onStartCheckout, onTransferAssignee: onTransferAssignee, isUpdating: isUpdating, isClaimingAssignee: isClaimingAssignee }));
@@ -77,8 +98,9 @@ function ThreadRootReply({ reply, report, caseId, authors, pendingComposer, conf
         : hasActions
             ? THREAD_ACTION_ENTRY_SURFACE_CLASS
             : THREAD_CASE_ENTRY_SURFACE_CLASS;
-    const entryBody = (_jsxs(_Fragment, { children: [_jsxs("div", { className: "flex min-w-0 items-center justify-between gap-[8px]", children: [_jsx(FeedbackStatusBadge, { status: reply.status, isNeedGray: true, className: "shrink-0" }), reply.author_name ? (_jsx(ThreadAuthorMeta, { authorName: reply.author_name, authors: authors, showMine: reply.author_name.trim() === actorName, showCreator: reply.author_name.trim() === originalAuthorName })) : null] }), _jsx("p", { className: "leading-[1.5] text-[14px] text-[var(--adaptive-text-primary)] whitespace-break-spaces", children: _jsx(MentionMessage, { message: reply.message, mentions: reply.mentions }) }), _jsx(ThreadEntryActions, { reply: reply, report: report, caseId: caseId, authors: authors, pendingComposer: pendingComposer, confirmAuthorName: confirmAuthorName, showConfirmAuthorSelect: showConfirmAuthorSelect, onConfirmAuthorNameChange: onConfirmAuthorNameChange, onStartDeny: onStartDeny, onStartCheckout: onStartCheckout, onStartAskQuestion: onStartAskQuestion, onConfirm: onConfirm, isUpdating: isUpdating, canAct: canAct, actorName: actorName })] }));
-    return (_jsx(ThreadTimelineRow, { time: formatClockTime(reply.created_at), children: _jsx("div", { className: surfaceClass, children: entryBody }) }));
+    const authorName = reply.author_name?.trim() ?? "";
+    const entryBody = (_jsxs(_Fragment, { children: [isFeed ? (authorName ? (_jsx(FeedCommentMeta, { authorName: authorName, createdAt: reply.created_at, authors: authors })) : null) : (_jsxs("div", { className: "flex min-w-0 items-center justify-between gap-[8px]", children: [_jsx(FeedbackStatusBadge, { status: reply.status, isNeedGray: true, className: "shrink-0" }), authorName ? (_jsx(ThreadAuthorMeta, { authorName: authorName, authors: authors, showMine: authorName === actorName, showCreator: authorName === originalAuthorName })) : null] })), _jsx("p", { className: `leading-[1.45] text-[14px] text-[var(--adaptive-text-primary)] whitespace-break-spaces ${isFeed ? "mt-[2px]" : ""}`, children: _jsx(MentionMessage, { message: reply.message, mentions: reply.mentions }) }), _jsx(ThreadEntryActions, { reply: reply, report: report, caseId: caseId, authors: authors, pendingComposer: pendingComposer, confirmAuthorName: confirmAuthorName, showConfirmAuthorSelect: showConfirmAuthorSelect, onConfirmAuthorNameChange: onConfirmAuthorNameChange, onStartDeny: onStartDeny, onStartCheckout: onStartCheckout, onStartAskQuestion: onStartAskQuestion, onConfirm: onConfirm, isUpdating: isUpdating, canAct: canAct, actorName: actorName })] }));
+    return (_jsx(ThreadLayoutShell, { classicTime: formatClockTime(reply.created_at), density: "comment", feedNode: authorName ? _jsx(FeedAuthorAvatar, { name: authorName }) : _jsx(FeedSpineDot, {}), children: _jsx("div", { className: isFeed && !hasActions && !isComposerTarget ? undefined : surfaceClass, children: entryBody }) }));
 }
 export function FeedbackThread({ report, authors, pendingComposer, confirmAuthorName, showConfirmAuthorSelect, onConfirmAuthorNameChange, onToggleConfirmAuthorSelect: _onToggleConfirmAuthorSelect, onStartDeny, onStartCheckout, onStartAskQuestion, onClaimAssignee, onTransferAssignee, onConfirm, isUpdating, isClaimingAssignee, hideCaseSelector = false, }) {
     const { messages, fields, caseEditReportId, caseEditCases, beginCaseEdit, cancelCaseEdit, handleCaseEditSave, updateCaseEditDraftCase, addCaseEditDraftCase, removeCaseEditDraftCase, focusedCaseId, selectCase, replyAuthorName, errorMessage, replyHistory, replyHistoryByReportId, loadOlderReplies, loadRepliesIfNeeded, } = useReport();

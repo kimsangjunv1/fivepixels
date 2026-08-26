@@ -144,6 +144,8 @@ export function assembleReportContextValue({
         setTooltipAppearance: panel.setTooltipAppearance,
         questionThreadDisplay: panel.questionThreadDisplay,
         setQuestionThreadDisplay: panel.setQuestionThreadDisplay,
+        threadLayout: panel.threadLayout,
+        setThreadLayout: panel.setThreadLayout,
         locale: panel.locale,
         setLocale: panel.setLocale,
         messages: panel.messages,

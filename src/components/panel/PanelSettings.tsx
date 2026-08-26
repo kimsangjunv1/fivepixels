@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from "react";
-import type { ReportAppearance, QuestionThreadDisplay } from "@/types/report.js";
+import type { ReportAppearance, QuestionThreadDisplay, ThreadLayoutStyle } from "@/types/report.js";
 import type { ReportLocale } from "@/i18n/types.js";
 import { APPEARANCE_OPTION_VALUES } from "@/constants/appearance.js";
 import { DEFAULT_FEEDBACK_MODE_DOT_COLORS, FONT_FAMILY_SUGGESTIONS, MARKER_FILL_STYLE_VALUES } from "@/constants/markerAppearance.js";
@@ -26,6 +26,8 @@ type PanelSettingsProps = {
     onTooltipAppearanceChange: (appearance: ReportAppearance) => void;
     questionThreadDisplay: QuestionThreadDisplay;
     onQuestionThreadDisplayChange: (display: QuestionThreadDisplay) => void;
+    threadLayout: ThreadLayoutStyle;
+    onThreadLayoutChange: (layout: ThreadLayoutStyle) => void;
     onExport: () => void;
     onImport: () => void;
     onCommand: () => void;
@@ -37,10 +39,11 @@ type PanelSettingsProps = {
 };
 
 type SettingsCategory = "preview" | "appearance" | "display" | "tabs" | "team" | "data-and-keys" | "advanced" | "api-integration";
-type AppearanceSection = "theme-language" | "feedback-mode" | "marker";
+type AppearanceSection = "theme-language" | "thread-layout" | "feedback-mode" | "marker";
 
 const LOCALE_OPTIONS = ["en", "ko"] as const satisfies readonly ReportLocale[];
 const QUESTION_THREAD_OPTIONS = ["expanded", "collapsed"] as const satisfies readonly QuestionThreadDisplay[];
+const THREAD_LAYOUT_OPTIONS = ["classic", "feed"] as const satisfies readonly ThreadLayoutStyle[];
 
 function SettingsSection({ label, children }: { label: string; children: ReactNode }) {
     return (
@@ -175,6 +178,8 @@ function getAppearanceSectionTitle(section: AppearanceSection, messages: ReturnT
     switch (section) {
         case "theme-language":
             return messages.settings.appearanceThemeLanguage;
+        case "thread-layout":
+            return messages.settings.appearanceThreadLayout;
         case "feedback-mode":
             return messages.settings.sectionFeedbackMode;
         case "marker":
@@ -190,6 +195,8 @@ export function PanelSettings({
     onTooltipAppearanceChange,
     questionThreadDisplay,
     onQuestionThreadDisplayChange,
+    threadLayout,
+    onThreadLayoutChange,
     onExport,
     onImport,
     onCommand,
@@ -275,6 +282,10 @@ export function PanelSettings({
         value,
         label: messages.questionThreadOption[value],
     }));
+    const threadLayoutOptions = THREAD_LAYOUT_OPTIONS.map((value) => ({
+        value,
+        label: messages.threadLayoutOption[value],
+    }));
     const viewerOptions = presentationViewers.map((viewer) => ({
         value: viewer.id,
         label: viewer.isCreator ? `${formatPresentationViewerLabel(viewer)} (${messages.author.creatorLabel})` : formatPresentationViewerLabel(viewer),
@@ -306,6 +317,11 @@ export function PanelSettings({
                         title={messages.settings.appearanceThemeLanguage}
                         subtitle={appearanceSummary}
                         onClick={() => setActiveAppearanceSection("theme-language")}
+                    />
+                    <SettingsHubRow
+                        title={messages.settings.appearanceThreadLayout}
+                        subtitle={messages.threadLayoutOption[threadLayout]}
+                        onClick={() => setActiveAppearanceSection("thread-layout")}
                     />
                     <SettingsHubRow
                         title={messages.settings.sectionFeedbackMode}
@@ -424,6 +440,19 @@ export function PanelSettings({
                                 </div>
                             </SettingsSection>
                         </>
+                    ) : null}
+
+                    {activeAppearanceSection === "thread-layout" ? (
+                        <SettingsSection label={messages.settings.sectionThreadLayout}>
+                            <div className="px-[12px] pb-[10px]">
+                                <PanelOptionSwitch
+                                    options={threadLayoutOptions}
+                                    value={threadLayout}
+                                    onChange={onThreadLayoutChange}
+                                    ariaLabel={messages.settings.sectionThreadLayout}
+                                />
+                            </div>
+                        </SettingsSection>
                     ) : null}
 
                     {activeAppearanceSection === "feedback-mode" ? (

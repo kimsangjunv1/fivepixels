@@ -22,6 +22,7 @@ import type {
     FivePixelsMode,
     ReportIdentify,
     QuestionThreadDisplay,
+    ThreadLayoutStyle,
 } from "@/types/report.js";
 import type { ReportSideEffectCallbacks } from "@/utils/report/reportCallbacks.js";
 import { resolveDefaultAuthorName } from "@/utils/report/resolveDefaultAuthorName.js";
@@ -36,6 +37,7 @@ export type ReportStateConfig = {
     panelAppearance: ReportAppearance;
     tooltipAppearance: ReportAppearance;
     questionThreadDefault?: QuestionThreadDisplay;
+    threadLayoutDefault?: ThreadLayoutStyle;
     fields: ReportField[];
     authors?: ReportAuthor[];
     requireReviewerKey?: boolean;
@@ -66,6 +68,7 @@ export function useReportState({
     panelAppearance,
     tooltipAppearance,
     questionThreadDefault = "expanded",
+    threadLayoutDefault = "classic",
     fields,
     authors = [],
     requireReviewerKey = false,
@@ -129,6 +132,7 @@ export function useReportState({
         panelAppearance,
         tooltipAppearance,
         questionThreadDefault,
+        threadLayoutDefault,
         fields,
         showFeedbackList,
         initialLocale,

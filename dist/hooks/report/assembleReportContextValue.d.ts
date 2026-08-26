@@ -50,6 +50,8 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     setTooltipAppearance: (nextAppearance: import("../../types/report.js").ReportAppearance) => void;
     questionThreadDisplay: import("../../types/report.js").QuestionThreadDisplay;
     setQuestionThreadDisplay: (nextDisplay: import("../../types/report.js").QuestionThreadDisplay) => void;
+    threadLayout: import("../../types/report.js").ThreadLayoutStyle;
+    setThreadLayout: (nextLayout: import("../../types/report.js").ThreadLayoutStyle) => void;
     locale: import("../../utils/report/reportUi.js").ReportLocale;
     setLocale: (nextLocale: import("../../utils/report/reportUi.js").ReportLocale) => void;
     messages: import("../../utils/report/reportUi.js").ReportMessages;

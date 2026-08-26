@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatRelativeTime, formatTimeCompact, getRelativeTimeParts } from "./format.js";
+import { formatRelativeTime, formatRelativeTimeCompact, formatTimeCompact, getRelativeTimeParts } from "./format.js";
 
 describe("formatTimeCompact", () => {
     it("formats Korean compact time as 오전/오후 HH:mm in local time", () => {
@@ -46,5 +46,16 @@ describe("getRelativeTimeParts", () => {
 
         expect(getRelativeTimeParts(created.toISOString(), now)).toEqual({ unit: "year", count: 1 });
         expect(formatRelativeTime(created.toISOString(), labels, now)).toBe("1y");
+    });
+});
+
+describe("formatRelativeTimeCompact", () => {
+    it("formats compact feed timestamps", () => {
+        const now = new Date(2026, 6, 27, 12, 0, 0);
+
+        expect(formatRelativeTimeCompact(new Date(2026, 6, 27, 11, 59, 45).toISOString(), now)).toBe("now");
+        expect(formatRelativeTimeCompact(new Date(2026, 6, 27, 11, 48, 0).toISOString(), now)).toBe("12m");
+        expect(formatRelativeTimeCompact(new Date(2026, 6, 27, 9, 0, 0).toISOString(), now)).toBe("3h");
+        expect(formatRelativeTimeCompact(new Date(2026, 6, 22, 12, 0, 0).toISOString(), now)).toBe("5d");
     });
 });

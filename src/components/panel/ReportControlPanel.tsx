@@ -103,6 +103,8 @@ export function ReportControlPanel() {
         setTooltipAppearance,
         questionThreadDisplay,
         setQuestionThreadDisplay,
+        threadLayout,
+        setThreadLayout,
         canTransferFeedback,
         personalKey,
         publicKey,
@@ -602,6 +604,8 @@ export function ReportControlPanel() {
                                                     onTooltipAppearanceChange={setTooltipAppearance}
                                                     questionThreadDisplay={questionThreadDisplay}
                                                     onQuestionThreadDisplayChange={setQuestionThreadDisplay}
+                                                    threadLayout={threadLayout}
+                                                    onThreadLayoutChange={setThreadLayout}
                                                     onExport={handleExport}
                                                     onImport={handleImportFromMenu}
                                                     onCommand={handleOpenCommand}

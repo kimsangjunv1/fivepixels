@@ -19,9 +19,7 @@ function matchesMemoKeyword(report, keyword) {
     if (!keyword) {
         return true;
     }
-    const haystack = [casesToSearchText(getReportCases(report)), report.pathname, typeof report.fc_number === "number" ? `#mm-${report.fc_number}` : ""]
-        .join(" ")
-        .toLowerCase();
+    const haystack = [casesToSearchText(getReportCases(report)), report.pathname, typeof report.fc_number === "number" ? `#mm-${report.fc_number}` : ""].join(" ").toLowerCase();
     return haystack.includes(keyword);
 }
 function getDateGroupKey(value) {

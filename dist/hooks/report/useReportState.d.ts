@@ -3,7 +3,7 @@ import type { ReportLocale } from "../../i18n/types.js";
 import { type PanelView } from "./useReportAuthSession.js";
 import type { FivePixelsSync } from "../../constants/loginMethod.js";
 import type { FivePixelsAdapter } from "../../types/adapter.js";
-import type { ReportAppearance, ReportAuthor, ReportEvent, ReportFeedback, ReportField, ReportGitHubConfig, FivePixelsMode, ReportIdentify, QuestionThreadDisplay } from "../../types/report.js";
+import type { ReportAppearance, ReportAuthor, ReportEvent, ReportFeedback, ReportField, ReportGitHubConfig, FivePixelsMode, ReportIdentify, QuestionThreadDisplay, ThreadLayoutStyle } from "../../types/report.js";
 export type { PanelView };
 export type ReportStateConfig = {
     /** Internal resolved config (not public props). Public surface: `FivePixelsProps` in `src/types/publicApi.ts`. */
@@ -13,6 +13,7 @@ export type ReportStateConfig = {
     panelAppearance: ReportAppearance;
     tooltipAppearance: ReportAppearance;
     questionThreadDefault?: QuestionThreadDisplay;
+    threadLayoutDefault?: ThreadLayoutStyle;
     fields: ReportField[];
     authors?: ReportAuthor[];
     requireReviewerKey?: boolean;
@@ -38,13 +39,15 @@ export type ReportStateConfig = {
     replyHistory: import("../../utils/report/reportUi.js").ResolvedReplyHistoryConfig;
     networkMonitor?: boolean;
 };
-export declare function useReportState({ projectId, environment, appVersion, panelAppearance, tooltipAppearance, questionThreadDefault, fields, authors, requireReviewerKey, shortcut: _shortcut, identify, adapter, onNavigate, onRevealTarget, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys, initialLocale, messageOverrides, pixelsMode, sync, requireAuth, replyHistory, networkMonitor, }: ReportStateConfig): {
+export declare function useReportState({ projectId, environment, appVersion, panelAppearance, tooltipAppearance, questionThreadDefault, threadLayoutDefault, fields, authors, requireReviewerKey, shortcut: _shortcut, identify, adapter, onNavigate, onRevealTarget, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys, initialLocale, messageOverrides, pixelsMode, sync, requireAuth, replyHistory, networkMonitor, }: ReportStateConfig): {
     panelAppearance: ReportAppearance;
     setPanelAppearance: (nextAppearance: ReportAppearance) => void;
     tooltipAppearance: ReportAppearance;
     setTooltipAppearance: (nextAppearance: ReportAppearance) => void;
     questionThreadDisplay: QuestionThreadDisplay;
     setQuestionThreadDisplay: (nextDisplay: QuestionThreadDisplay) => void;
+    threadLayout: ThreadLayoutStyle;
+    setThreadLayout: (nextLayout: ThreadLayoutStyle) => void;
     locale: ReportLocale;
     setLocale: (nextLocale: ReportLocale) => void;
     messages: import("../../i18n/types.js").ReportMessages;

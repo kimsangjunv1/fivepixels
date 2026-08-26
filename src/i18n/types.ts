@@ -1,5 +1,5 @@
 import type { FeedbackCategory } from "@/constants/feedbackCategory.js";
-import type { ReportAppearance, QuestionThreadDisplay } from "@/types/report.js";
+import type { ReportAppearance, QuestionThreadDisplay, ThreadLayoutStyle } from "@/types/report.js";
 
 export type ReportLocale = "en" | "ko";
 
@@ -291,6 +291,10 @@ export type ReportMessages = {
         questionsToggleAriaLabel: (count: number, expanded: boolean) => string;
         issueResolvedDivider: string;
         detachedTargetDivider: string;
+        feedAssigneeAssignedAction: string;
+        feedAssigneeTransferredAction: string;
+        feedIssueResolvedAction: string;
+        feedDetachedTargetAction: string;
         claimAssignee: string;
         takeOverAssignee: string;
         assigneeAssigned: string;
@@ -513,6 +517,7 @@ export type ReportMessages = {
     localeOption: Record<ReportLocale, string>;
     appearance: Record<ReportAppearance, string>;
     questionThreadOption: Record<QuestionThreadDisplay, string>;
+    threadLayoutOption: Record<ThreadLayoutStyle, string>;
     settings: {
         sectionMarker: string;
         markerTargetsOff: string;
@@ -576,8 +581,10 @@ export type ReportMessages = {
         backAriaLabel: string;
         appearanceBackAriaLabel: string;
         appearanceThemeLanguage: string;
+        appearanceThreadLayout: string;
         sectionTheme: string;
         sectionLanguage: string;
+        sectionThreadLayout: string;
         sectionMarkerAppearance: string;
         sectionMarkerForm: string;
         sectionMarkerColors: string;

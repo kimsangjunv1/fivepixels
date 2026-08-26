@@ -36,6 +36,7 @@ type ReportProviderEnabledProps = Omit<ReportProviderProps, "project" | "ui" | "
     showFeedbackList: boolean;
     visibleShortcutKeys: boolean;
     questionThreadDefault: NonNullable<ReportUi["questionThreadDefault"]>;
+    threadLayoutDefault: NonNullable<ReportUi["threadLayoutDefault"]>;
     replyHistory: NonNullable<ResolvedReportUi["replyHistory"]>;
     shortcut?: string;
     fields: ReportField[];
@@ -58,6 +59,7 @@ function ReportProviderEnabled({
     panelAppearance,
     tooltipAppearance,
     questionThreadDefault,
+    threadLayoutDefault,
     replyHistory,
     fields,
     authors,
@@ -88,6 +90,7 @@ function ReportProviderEnabled({
         panelAppearance,
         tooltipAppearance,
         questionThreadDefault,
+        threadLayoutDefault,
         replyHistory,
         fields,
         authors,
@@ -171,6 +174,7 @@ export function ReportProvider({
             showFeedbackList={resolvedUi.showFeedbackList}
             visibleShortcutKeys={resolvedUi.visibleShortcutKeys}
             questionThreadDefault={resolvedUi.questionThreadDefault}
+            threadLayoutDefault={resolvedUi.threadLayoutDefault}
             replyHistory={resolvedUi.replyHistory}
             shortcut={resolvedUi.shortcut}
             fields={resolvedFields}
