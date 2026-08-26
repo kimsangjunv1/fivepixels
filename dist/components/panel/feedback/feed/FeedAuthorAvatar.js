@@ -13,6 +13,6 @@ function getInitials(name) {
 }
 export function FeedAuthorAvatar({ name, size = "md", className = "" }) {
     const dimension = size === "sm" ? "h-[22px] w-[22px] text-[9px]" : "h-[26px] w-[26px] text-[10px]";
-    return (_jsx("span", { "aria-hidden": true, className: `inline-flex shrink-0 items-center justify-center rounded-full bg-[var(--adaptive-black200)] font-semibold leading-none text-[var(--adaptive-black700)] ring-2 ring-[var(--adaptive-black50)] ${dimension} ${className}`, title: name, children: getInitials(name) }));
+    return (_jsx("span", { "aria-hidden": true, className: `inline-flex shrink-0 items-center justify-center rounded-[8px] bg-[var(--adaptive-black300)] font-semibold leading-none text-[var(--adaptive-black700)] ${dimension} ${className}`, title: name, children: getInitials(name) }));
 }
 //# sourceMappingURL=FeedAuthorAvatar.js.map

@@ -7,6 +7,7 @@ import { getThreadActionButtonClass, THREAD_ACTION_STYLE } from "@/constants/thr
 import { CompleteActionIcon, DeniedActionIcon, EditIcon } from "@/components/icons/Icons.js";
 import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
 import { FeedActivityLine } from "./feed/FeedCommentMeta.js";
+import { getFeedActivitySurfaceClass, resolveFeedActivityTone } from "./feed/feedActivitySurface.js";
 import { FeedSpineIcon } from "./feed/FeedTimelineRow.js";
 import { ThreadLayoutShell } from "./feed/ThreadLayoutShell.js";
 
@@ -135,7 +136,7 @@ export function AssigneeThreadEntry({
                     </FeedSpineIcon>
                 }
             >
-                <div className={hasActions ? surfaceClass : undefined}>
+                <div className={hasActions ? surfaceClass : getFeedActivitySurfaceClass(resolveFeedActivityTone(reply.status))}>
                     <FeedActivityLine
                         actorName={displayAssignee || undefined}
                         action={feedAction}
