@@ -228,17 +228,20 @@ export type ReportTeamHandlers = {
     onUpdateReviewer?: (id: string, payload: UpdateReviewerPayload) => Promise<ReportAuthor>;
 };
 
+/** User returned by `adapter.auth.login` / `refresh` / `artemisLogin`. */
 export type ReportAuthUser = {
     id: string;
     name: string;
     email?: string;
 };
 
+/** Argument for `adapter.auth.login`. */
 export type ReportApiLoginPayload = {
     loginId: string;
     password: string;
 };
 
+/** Argument for `adapter.auth.signup`. */
 export type ReportApiRegisterPayload = {
     loginId: string;
     password: string;
@@ -255,11 +258,15 @@ export type ReportApiRegisterPayload = {
  * (optional). Missing handlers still allow local session clear on logout.
  */
 export type ReportAuthHandlers = {
+    /** @returns `{ id, name, email? }` */
     onApiLogin?: (payload: ReportApiLoginPayload) => Promise<ReportAuthUser>;
+    /** @returns `void` on success */
     onApiRegister?: (payload: ReportApiRegisterPayload) => Promise<void>;
+    /** @returns `void` */
     onApiLogout?: () => Promise<void>;
-    /** Return an updated user to refresh the local session, or `void` if only the host token changed. */
+    /** @returns Updated `{ id, name, email? }`, or `void` if only the host token changed. */
     onApiRefresh?: () => Promise<ReportAuthUser | void>;
+    /** @returns `{ id, name, email? }` */
     onArtemisLogin?: () => Promise<ReportAuthUser>;
 };
 
