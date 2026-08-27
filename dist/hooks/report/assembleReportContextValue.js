@@ -103,6 +103,8 @@ export function assembleReportContextValue({ panel, auth, draft, markers, mutati
         },
         loginWithApi: auth.loginWithApi,
         registerWithApi: auth.registerWithApi,
+        logoutWithApi: auth.logoutWithApi,
+        refreshWithApi: auth.refreshWithApi,
         loginWithArtemis: auth.loginWithArtemis,
         completeRemoteOnboarding: auth.completeRemoteOnboarding,
         completeOnboarding: auth.completeOnboarding,

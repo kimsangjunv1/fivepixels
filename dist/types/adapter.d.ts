@@ -107,6 +107,7 @@ export type FivePixelsMembersAdapter = {
  *
  * Auth (when `require.authLogin` is true, default for remote sync):
  * - `api`: `auth.login` required; `signup` / `logout` / `refresh` optional
+ *   (`logout` / `refresh` map to session `logoutWithApi` / `refreshWithApi`)
  * - `artemis`: `auth.artemisLogin` required
  *
  * When `require.authLogin={false}`, identity uses local-style personal key onboarding; auth handlers are unused.

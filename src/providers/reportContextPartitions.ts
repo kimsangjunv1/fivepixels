@@ -79,6 +79,8 @@ export const REPORT_PREFERENCE_KEYS = [
     "require",
     "loginWithApi",
     "registerWithApi",
+    "logoutWithApi",
+    "refreshWithApi",
     "loginWithArtemis",
     "completeRemoteOnboarding",
     "completeOnboarding",

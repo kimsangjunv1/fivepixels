@@ -20,7 +20,7 @@ type MenuTooltipItemProps = {
     icon?: ReactNode;
     className?: string;
 } & Pick<ButtonHTMLAttributes<HTMLButtonElement>, "onPointerDown" | "aria-pressed">;
-export declare function MenuTooltipItem({ children, onClick, active, disabled, danger, icon, className, onPointerDown, "aria-pressed": ariaPressed, }: MenuTooltipItemProps): import("react").JSX.Element;
+export declare function MenuTooltipItem({ children, onClick, active, disabled, danger, icon, className, onPointerDown, "aria-pressed": ariaPressed }: MenuTooltipItemProps): import("react").JSX.Element;
 export declare function MenuTooltipDivider(): import("react").JSX.Element;
 export {};
 //# sourceMappingURL=MenuTooltip.d.ts.map

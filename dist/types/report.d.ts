@@ -210,10 +210,16 @@ export type ReportApiRegisterPayload = {
 /**
  * Optional account login handlers for API / Artemis onboarding.
  * Local login still uses personal keys in localStorage.
+ *
+ * Logout / token refresh map from `adapter.auth.logout` / `adapter.auth.refresh`
+ * (optional). Missing handlers still allow local session clear on logout.
  */
 export type ReportAuthHandlers = {
     onApiLogin?: (payload: ReportApiLoginPayload) => Promise<ReportAuthUser>;
     onApiRegister?: (payload: ReportApiRegisterPayload) => Promise<void>;
+    onApiLogout?: () => Promise<void>;
+    /** Return an updated user to refresh the local session, or `void` if only the host token changed. */
+    onApiRefresh?: () => Promise<ReportAuthUser | void>;
     onArtemisLogin?: () => Promise<ReportAuthUser>;
 };
 export type ReportAuthAction = "feedback:create" | "feedback:update" | "reply:create";

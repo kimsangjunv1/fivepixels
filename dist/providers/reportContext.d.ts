@@ -62,6 +62,8 @@ declare const ReportContext: Context<{
     };
     loginWithApi: (payload: import("../index.js").ReportApiLoginPayload) => Promise<import("../index.js").ReportAuthUser>;
     registerWithApi: (payload: import("../index.js").ReportApiRegisterPayload) => Promise<void>;
+    logoutWithApi: () => Promise<void>;
+    refreshWithApi: () => Promise<import("../index.js").ReportAuthUser | undefined>;
     loginWithArtemis: () => Promise<import("../index.js").ReportAuthUser>;
     completeRemoteOnboarding: () => void;
     completeOnboarding: ({ name }: {
@@ -408,6 +410,8 @@ export declare function useReport(): {
     };
     loginWithApi: (payload: import("../index.js").ReportApiLoginPayload) => Promise<import("../index.js").ReportAuthUser>;
     registerWithApi: (payload: import("../index.js").ReportApiRegisterPayload) => Promise<void>;
+    logoutWithApi: () => Promise<void>;
+    refreshWithApi: () => Promise<import("../index.js").ReportAuthUser | undefined>;
     loginWithArtemis: () => Promise<import("../index.js").ReportAuthUser>;
     completeRemoteOnboarding: () => void;
     completeOnboarding: ({ name }: {
@@ -757,6 +761,8 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         };
         loginWithApi: (payload: import("../index.js").ReportApiLoginPayload) => Promise<import("../index.js").ReportAuthUser>;
         registerWithApi: (payload: import("../index.js").ReportApiRegisterPayload) => Promise<void>;
+        logoutWithApi: () => Promise<void>;
+        refreshWithApi: () => Promise<import("../index.js").ReportAuthUser | undefined>;
         loginWithArtemis: () => Promise<import("../index.js").ReportAuthUser>;
         completeRemoteOnboarding: () => void;
         completeOnboarding: ({ name }: {
@@ -1044,7 +1050,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         activeApiFailureAlert: import("../types/networkMonitor.js").ApiFlowEntry | null;
         dismissFailureAlert: (entryId: string) => void;
         networkMonitorEnabled: boolean;
-    }, "personalKey" | "projectId" | "fields" | "personalKeyRequired" | "environment" | "require" | "requireAuth" | "questionThreadDisplay" | "setQuestionThreadDisplay" | "threadLayout" | "setThreadLayout" | "locale" | "setLocale" | "showMarkerTargetPreview" | "setShowMarkerTargetPreview" | "toggleMarkerTargetPreview" | "devicePreviewUiOpen" | "setDevicePreviewUiOpen" | "devicePreviewDeviceId" | "setDevicePreviewDeviceId" | "devicePreviewScale" | "setDevicePreviewScale" | "devicePreviewImageEnabled" | "setDevicePreviewImageEnabled" | "devicePreviewFitToViewport" | "setDevicePreviewFitToViewport" | "devicePreviewStatusBarEnabled" | "setDevicePreviewStatusBarEnabled" | "devicePreviewPreset" | "showHiddenDetachedMarkers" | "setShowHiddenDetachedMarkers" | "showModalDetachedMarkers" | "setShowModalDetachedMarkers" | "markerAppearance" | "setMarkerAppearance" | "setMarkerSize" | "setMarkerShape" | "setMarkerFillStyle" | "setMarkerColors" | "setMarkerColor" | "setMarkerStrokeColor" | "setFeedbackModeDotColors" | "setFeedbackModeDotColor" | "typography" | "setTypography" | "setFontSize" | "setFontFamily" | "panelRole" | "setPanelRole" | "persistenceStatus" | "appVersion" | "showFeedbackList" | "selfProfile" | "authors" | "publicKey" | "personalKeyCandidates" | "issuePersonalKey" | "rotatePersonalKey" | "insertPersonalKey" | "clearPersonalKey" | "authorSelectionLocked" | "messages" | "visibleShortcutKeys" | "teamReviewers" | "onListReviewers" | "onListReviewerRequests" | "onCreateReviewerRequest" | "onResolveReviewerRequest" | "onRegisterReviewer" | "onUpdateReviewer" | "panelAppearance" | "setPanelAppearance" | "tooltipAppearance" | "setTooltipAppearance" | "teamActor" | "teamActorRole" | "isTeamAdmin" | "canAccessTeamSettings" | "integrationCapabilities" | "adapterIntegrationStatus" | "panelView" | "loginMethod" | "loginWithApi" | "registerWithApi" | "loginWithArtemis" | "completeRemoteOnboarding" | "completeOnboarding" | "restoreFromBackup" | "skipOnboarding" | "resolvedPanelAppearance" | "resolvedTooltipAppearance" | "isMobileViewport" | "isPresentationMode" | "presentationViewers" | "visiblePanelTabs" | "visiblePanelTabsSummary" | "resolvedTabAvailabilityContext" | "setVisiblePanelTabs" | "resetVisibleTabsToRoleDefault" | "applyRoleDefaultTabsForOnboarding" | "savePanelTabPreference" | "storedPanelTabPreference">;
+    }, "personalKey" | "projectId" | "fields" | "personalKeyRequired" | "environment" | "require" | "requireAuth" | "questionThreadDisplay" | "setQuestionThreadDisplay" | "threadLayout" | "setThreadLayout" | "locale" | "setLocale" | "showMarkerTargetPreview" | "setShowMarkerTargetPreview" | "toggleMarkerTargetPreview" | "devicePreviewUiOpen" | "setDevicePreviewUiOpen" | "devicePreviewDeviceId" | "setDevicePreviewDeviceId" | "devicePreviewScale" | "setDevicePreviewScale" | "devicePreviewImageEnabled" | "setDevicePreviewImageEnabled" | "devicePreviewFitToViewport" | "setDevicePreviewFitToViewport" | "devicePreviewStatusBarEnabled" | "setDevicePreviewStatusBarEnabled" | "devicePreviewPreset" | "showHiddenDetachedMarkers" | "setShowHiddenDetachedMarkers" | "showModalDetachedMarkers" | "setShowModalDetachedMarkers" | "markerAppearance" | "setMarkerAppearance" | "setMarkerSize" | "setMarkerShape" | "setMarkerFillStyle" | "setMarkerColors" | "setMarkerColor" | "setMarkerStrokeColor" | "setFeedbackModeDotColors" | "setFeedbackModeDotColor" | "typography" | "setTypography" | "setFontSize" | "setFontFamily" | "panelRole" | "setPanelRole" | "persistenceStatus" | "appVersion" | "showFeedbackList" | "selfProfile" | "authors" | "publicKey" | "personalKeyCandidates" | "issuePersonalKey" | "rotatePersonalKey" | "insertPersonalKey" | "clearPersonalKey" | "authorSelectionLocked" | "messages" | "visibleShortcutKeys" | "teamReviewers" | "onListReviewers" | "onListReviewerRequests" | "onCreateReviewerRequest" | "onResolveReviewerRequest" | "onRegisterReviewer" | "onUpdateReviewer" | "panelAppearance" | "setPanelAppearance" | "tooltipAppearance" | "setTooltipAppearance" | "teamActor" | "teamActorRole" | "isTeamAdmin" | "canAccessTeamSettings" | "integrationCapabilities" | "adapterIntegrationStatus" | "panelView" | "loginMethod" | "loginWithApi" | "registerWithApi" | "logoutWithApi" | "refreshWithApi" | "loginWithArtemis" | "completeRemoteOnboarding" | "completeOnboarding" | "restoreFromBackup" | "skipOnboarding" | "resolvedPanelAppearance" | "resolvedTooltipAppearance" | "isMobileViewport" | "isPresentationMode" | "presentationViewers" | "visiblePanelTabs" | "visiblePanelTabsSummary" | "resolvedTabAvailabilityContext" | "setVisiblePanelTabs" | "resetVisibleTabsToRoleDefault" | "applyRoleDefaultTabsForOnboarding" | "savePanelTabPreference" | "storedPanelTabPreference">;
     session: Pick<{
         panelAppearance: import("../index.js").ReportAppearance;
         setPanelAppearance: (nextAppearance: import("../index.js").ReportAppearance) => void;
@@ -1099,6 +1105,8 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         };
         loginWithApi: (payload: import("../index.js").ReportApiLoginPayload) => Promise<import("../index.js").ReportAuthUser>;
         registerWithApi: (payload: import("../index.js").ReportApiRegisterPayload) => Promise<void>;
+        logoutWithApi: () => Promise<void>;
+        refreshWithApi: () => Promise<import("../index.js").ReportAuthUser | undefined>;
         loginWithArtemis: () => Promise<import("../index.js").ReportAuthUser>;
         completeRemoteOnboarding: () => void;
         completeOnboarding: ({ name }: {
@@ -1441,6 +1449,8 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         };
         loginWithApi: (payload: import("../index.js").ReportApiLoginPayload) => Promise<import("../index.js").ReportAuthUser>;
         registerWithApi: (payload: import("../index.js").ReportApiRegisterPayload) => Promise<void>;
+        logoutWithApi: () => Promise<void>;
+        refreshWithApi: () => Promise<import("../index.js").ReportAuthUser | undefined>;
         loginWithArtemis: () => Promise<import("../index.js").ReportAuthUser>;
         completeRemoteOnboarding: () => void;
         completeOnboarding: ({ name }: {

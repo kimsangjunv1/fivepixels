@@ -93,6 +93,8 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     };
     loginWithApi: (payload: import("../../types/report.js").ReportApiLoginPayload) => Promise<import("../../types/report.js").ReportAuthUser>;
     registerWithApi: (payload: import("../../types/report.js").ReportApiRegisterPayload) => Promise<void>;
+    logoutWithApi: () => Promise<void>;
+    refreshWithApi: () => Promise<import("../../types/report.js").ReportAuthUser | undefined>;
     loginWithArtemis: () => Promise<import("../../types/report.js").ReportAuthUser>;
     completeRemoteOnboarding: () => void;
     completeOnboarding: ({ name }: {

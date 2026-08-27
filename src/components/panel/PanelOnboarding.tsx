@@ -84,6 +84,7 @@ export function PanelOnboarding() {
         requireAuth: requireAuthProp,
         loginWithApi,
         registerWithApi,
+        logoutWithApi,
         loginWithArtemis,
         completeRemoteOnboarding,
     } = useReportPreferences();
@@ -189,6 +190,8 @@ export function PanelOnboarding() {
         setStep("role");
     };
 
+    const sharedSetupBackStep: OnboardingStep = getAuthEntryStep(sync, requireAuth);
+
     const handleApiLogin = async () => {
         if (!loginId.trim() || !password || isAuthBusy) {
             return;
@@ -268,7 +271,24 @@ export function PanelOnboarding() {
         setStep("key");
     };
 
-    const sharedSetupBackStep: OnboardingStep = getAuthEntryStep(sync, requireAuth);
+    const handleBackToAuthEntry = async () => {
+        if (usesRemoteAuthLogin(sync, requireAuth)) {
+            setIsAuthBusy(true);
+            setAuthError("");
+
+            try {
+                await logoutWithApi();
+            } catch {
+                setAuthError(onboarding.logoutFailed);
+            } finally {
+                setIsAuthBusy(false);
+            }
+        }
+
+        setPassword("");
+        setStep(sharedSetupBackStep);
+    };
+
     const registerErrorMessage =
         registerErrorKind === "account-already-exists"
             ? onboarding.registerDuplicate
@@ -557,10 +577,11 @@ export function PanelOnboarding() {
                     <div className="flex items-center justify-between">
                         <button
                             type="button"
-                            onClick={() => setStep(sharedSetupBackStep)}
+                            disabled={isAuthBusy}
+                            onClick={() => void handleBackToAuthEntry()}
                             className={PANEL_GATE_BACK_BUTTON_CLASS}
                         >
-                            {onboarding.back}
+                            {usesRemoteAuthLogin(sync, requireAuth) ? onboarding.logoutAction : onboarding.back}
                         </button>
                         <button
                             type="button"

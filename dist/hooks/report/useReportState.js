@@ -31,6 +31,8 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         requireAuth,
         onApiLogin: adapter?.auth?.login,
         onApiRegister: adapter?.auth?.signup,
+        onApiLogout: adapter?.auth?.logout,
+        onApiRefresh: adapter?.auth?.refresh,
         onArtemisLogin: adapter?.auth?.artemisLogin,
     });
     const panel = useReportPanelShell({

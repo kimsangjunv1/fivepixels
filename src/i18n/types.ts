@@ -350,6 +350,7 @@ export type ReportMessages = {
         settings: string;
         sectionTransfer: string;
         sectionKey: string;
+        sectionAccount: string;
         sectionAdvanced: string;
         import: string;
         export: string;
@@ -358,6 +359,8 @@ export type ReportMessages = {
         keyInsert: string;
         keyChange: string;
         keyRotate: string;
+        logout: string;
+        logoutFailed: string;
         theme: string;
         themeAriaLabel: string;
         panelTheme: string;
@@ -420,6 +423,8 @@ export type ReportMessages = {
         artemisLoginDescription: string;
         googleLogin: string;
         loginFailed: string;
+        logoutAction: string;
+        logoutFailed: string;
         authUnavailable: string;
         introTitle: string;
         introDescription: string;

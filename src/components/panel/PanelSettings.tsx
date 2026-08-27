@@ -2,6 +2,7 @@ import { useState, type ReactNode } from "react";
 import type { ReportAppearance, QuestionThreadDisplay, ThreadLayoutStyle } from "@/types/report.js";
 import type { ReportLocale } from "@/i18n/types.js";
 import { APPEARANCE_OPTION_VALUES } from "@/constants/appearance.js";
+import { resolveFivePixelsSync, resolveRequireAuth, usesRemoteAuthLogin } from "@/constants/loginMethod.js";
 import { DEFAULT_FEEDBACK_MODE_DOT_COLORS, FONT_FAMILY_SUGGESTIONS, MARKER_FILL_STYLE_VALUES } from "@/constants/markerAppearance.js";
 import type { AppearanceScale, MarkerFillStyle, MarkerShape } from "@/constants/markerAppearance.js";
 import { useReportPreferences, useReportSession } from "@/providers/reportContext.js";
@@ -208,6 +209,7 @@ export function PanelSettings({
 }: PanelSettingsProps) {
     const [activeCategory, setActiveCategory] = useState<SettingsCategory | null>(null);
     const [activeAppearanceSection, setActiveAppearanceSection] = useState<AppearanceSection | null>(null);
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
     const transferLock = useIntegrationLock("dataTransfer");
     const teamManageLock = useIntegrationLock("teamManage");
     const {
@@ -237,8 +239,30 @@ export function PanelSettings({
         canAccessTeamSettings,
         integrationCapabilities,
         adapterIntegrationStatus,
+        loginMethod,
+        requireAuth: requireAuthProp,
+        logoutWithApi,
     } = useReportPreferences();
-    const { presentationViewerId, setPresentationViewerId } = useReportSession();
+    const { presentationViewerId, setPresentationViewerId, setErrorMessage } = useReportSession();
+    const sync = resolveFivePixelsSync(loginMethod);
+    const requireAuth = resolveRequireAuth(sync, requireAuthProp);
+    const showAccountLogout = usesRemoteAuthLogin(sync, requireAuth);
+
+    const handleLogout = async () => {
+        if (isLoggingOut) {
+            return;
+        }
+
+        setIsLoggingOut(true);
+
+        try {
+            await logoutWithApi();
+        } catch {
+            setErrorMessage(messages.moreMenu.logoutFailed);
+        } finally {
+            setIsLoggingOut(false);
+        }
+    };
     const scaleLabels: Record<AppearanceScale, string> = {
         "2xs": messages.settings.scale2xs,
         xs: messages.settings.scaleXs,
@@ -643,6 +667,17 @@ export function PanelSettings({
 
                     {activeCategory === "data-and-keys" ? (
                         <>
+                            {showAccountLogout ? (
+                                <SettingsSection label={messages.moreMenu.sectionAccount}>
+                                    <SettingsActionButton
+                                        disabled={isLoggingOut}
+                                        onClick={() => void handleLogout()}
+                                    >
+                                        {messages.moreMenu.logout}
+                                    </SettingsActionButton>
+                                </SettingsSection>
+                            ) : null}
+
                             <SettingsSection label={messages.moreMenu.sectionTransfer}>
                                 <SettingsActionButton
                                     disabled={transferDisabled}

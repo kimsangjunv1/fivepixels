@@ -8,5 +8,6 @@ export declare function useSelfProfile(projectId: string, environment: string | 
     selfProfile: SelfProfile | null;
     saveSelfProfile: (profile: SelfProfile) => void;
     markOnboardingComplete: () => void;
+    clearSelfProfile: () => void;
 };
 //# sourceMappingURL=useSelfProfile.d.ts.map

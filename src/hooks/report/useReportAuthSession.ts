@@ -17,6 +17,7 @@ import {
     saveRemoteAuthSession,
     type RemoteAuthSession,
 } from "@/utils/auth/loginSession.js";
+import { applyRefreshUser, invokeOptionalLogout, resolveRefreshSessionMethod } from "@/utils/auth/remoteAuthLifecycle.js";
 import { ReportAuthError } from "@/utils/auth/reportAuthError.js";
 import { resolvePanelView, type PanelView } from "@/utils/auth/resolvePanelView.js";
 import { buildPresentationViewers, resolveSessionActor } from "@/utils/report/reportTeam.js";
@@ -76,6 +77,8 @@ export type UseReportAuthSessionParams = {
     requireAuth?: boolean;
     onApiLogin?: ReportAuthHandlers["onApiLogin"];
     onApiRegister?: ReportAuthHandlers["onApiRegister"];
+    onApiLogout?: ReportAuthHandlers["onApiLogout"];
+    onApiRefresh?: ReportAuthHandlers["onApiRefresh"];
     onArtemisLogin?: ReportAuthHandlers["onArtemisLogin"];
 };
 
@@ -90,11 +93,13 @@ export function useReportAuthSession({
     requireAuth: requireAuthProp,
     onApiLogin,
     onApiRegister,
+    onApiLogout,
+    onApiRefresh,
     onArtemisLogin,
 }: UseReportAuthSessionParams) {
     const sync = resolveFivePixelsSync(syncProp);
     const requireAuth = resolveRequireAuth(sync, requireAuthProp);
-    const { selfProfile, saveSelfProfile, markOnboardingComplete } = useSelfProfile(projectId, environment);
+    const { selfProfile, saveSelfProfile, markOnboardingComplete, clearSelfProfile } = useSelfProfile(projectId, environment);
     const requiresReviewerKey = requireReviewerKey || authors.some((author) => Boolean(author.publicKey));
     const isPresentationMode = pixelsMode === "presentation";
     const [remoteSession, setRemoteSession] = useState<RemoteAuthSession | null>(() => {
@@ -349,18 +354,19 @@ export function useReportAuthSession({
     }, [markOnboardingComplete]);
 
     const persistRemoteUser = useCallback(
-        (method: "api" | "artemis", user: ReportAuthUser) => {
+        (method: "api" | "artemis", user: ReportAuthUser, options?: { resetOnboarding?: boolean }) => {
             const session = { method, user };
+            const resetOnboarding = options?.resetOnboarding ?? true;
             saveLoginMethod(projectId, environment, method);
             saveRemoteAuthSession(projectId, environment, session);
             setRemoteSession(session);
             saveSelfProfile({
                 name: user.name.trim(),
                 authorId: user.id,
-                completed: false,
+                completed: resetOnboarding ? false : Boolean(selfProfile?.completed),
             });
         },
-        [environment, projectId, saveSelfProfile],
+        [environment, projectId, saveSelfProfile, selfProfile?.completed],
     );
 
     const loginWithApi = useCallback(
@@ -396,6 +402,34 @@ export function useReportAuthSession({
         persistRemoteUser("artemis", user);
         return user;
     }, [onArtemisLogin, persistRemoteUser]);
+
+    const logoutWithApi = useCallback(async () => {
+        try {
+            await invokeOptionalLogout(onApiLogout);
+        } finally {
+            clearRemoteAuthSession(projectId, environment);
+            setRemoteSession(null);
+            clearSelfProfile();
+            clearPersonalKey();
+        }
+    }, [clearPersonalKey, clearSelfProfile, environment, onApiLogout, projectId]);
+
+    const refreshWithApi = useCallback(async () => {
+        if (!onApiRefresh) {
+            throw new ReportAuthError("auth-unavailable", "API token refresh is not configured.");
+        }
+
+        const returned = await onApiRefresh();
+        const result = applyRefreshUser(returned);
+
+        if (result.action === "update") {
+            const method = resolveRefreshSessionMethod(remoteSession, loginMethod);
+            persistRemoteUser(method, result.user, { resetOnboarding: false });
+            return result.user;
+        }
+
+        return remoteSession?.user;
+    }, [loginMethod, onApiRefresh, persistRemoteUser, remoteSession]);
 
     const completeRemoteOnboarding = useCallback(() => {
         markOnboardingComplete();
@@ -495,6 +529,8 @@ export function useReportAuthSession({
         requireAuth,
         loginWithApi,
         registerWithApi,
+        logoutWithApi,
+        refreshWithApi,
         loginWithArtemis,
         completeRemoteOnboarding,
         completeOnboarding,
