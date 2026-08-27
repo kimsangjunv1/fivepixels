@@ -23,6 +23,8 @@ export function useReportReplyReview({ reports, allPageReports, messages, fields
     const [showConfirmAuthorSelect, setShowConfirmAuthorSelect] = useState(false);
     const [focusedCaseId, setFocusedCaseId] = useState(null);
     const [isComposingNewCase, setIsComposingNewCase] = useState(false);
+    /** Stashed new-case draft while browsing other cases; cleared on submit or window close. */
+    const [newCaseDraftSession, setNewCaseDraftSession] = useState(null);
     useEffect(() => {
         if (!sessionActor?.name) {
             return;
@@ -99,13 +101,16 @@ export function useReportReplyReview({ reports, allPageReports, messages, fields
         setMentionHighlightTarget(null);
     }, []);
     const selectCase = useCallback((caseId) => {
+        if (isComposingNewCase) {
+            setNewCaseDraftSession({ text: replyDraft, mentions: replyMentions });
+        }
         setIsComposingNewCase(false);
         setFocusedCaseId(caseId);
         setPendingComposer(null);
         clearReplyComposerDraft();
         setReplySubmitAsQuestion(false);
         setErrorMessage("");
-    }, [clearReplyComposerDraft, setErrorMessage]);
+    }, [clearReplyComposerDraft, isComposingNewCase, replyDraft, replyMentions, setErrorMessage]);
     const caseEdit = useReplyCaseEdit({
         reports,
         activeReplyReport,
@@ -123,6 +128,7 @@ export function useReportReplyReview({ reports, allPageReports, messages, fields
     const { cancelCaseEdit } = caseEdit;
     const cancelComposeNewCase = useCallback(() => {
         setIsComposingNewCase(false);
+        setNewCaseDraftSession(null);
         clearReplyComposerDraft();
         setErrorMessage("");
     }, [clearReplyComposerDraft, setErrorMessage]);
@@ -134,13 +140,30 @@ export function useReportReplyReview({ reports, allPageReports, messages, fields
             setErrorMessage(messages.errors.archivedReadOnly);
             return;
         }
+        if (isComposingNewCase) {
+            return;
+        }
         setIsComposingNewCase(true);
         setPendingComposer(null);
         setReplySubmitAsQuestion(false);
-        clearReplyComposerDraft();
         setErrorMessage("");
         cancelCaseEdit();
-    }, [activeReplyReport, cancelCaseEdit, clearReplyComposerDraft, messages.errors.archivedReadOnly, setErrorMessage]);
+        if (newCaseDraftSession) {
+            setReplyDraft(newCaseDraftSession.text);
+            setReplyMentions(newCaseDraftSession.mentions);
+            return;
+        }
+        clearReplyComposerDraft();
+        setNewCaseDraftSession({ text: "", mentions: [] });
+    }, [
+        activeReplyReport,
+        cancelCaseEdit,
+        clearReplyComposerDraft,
+        isComposingNewCase,
+        messages.errors.archivedReadOnly,
+        newCaseDraftSession,
+        setErrorMessage,
+    ]);
     useEffect(() => {
         if (!activeReplyReport) {
             return;
@@ -154,6 +177,7 @@ export function useReportReplyReview({ reports, allPageReports, messages, fields
     }, [activeReplyReport]);
     useEffect(() => {
         setIsComposingNewCase(false);
+        setNewCaseDraftSession(null);
     }, [activeReplyReportId]);
     const ensureFocusedCase = useCallback((report) => {
         if (isValidFocusedCase(report, focusedCaseId)) {
@@ -179,6 +203,7 @@ export function useReportReplyReview({ reports, allPageReports, messages, fields
         setPendingComposer(null);
         setShowConfirmAuthorSelect(false);
         setIsComposingNewCase(false);
+        setNewCaseDraftSession(null);
         cancelCaseEdit();
         clearFocusedCase();
     }, [cancelCaseEdit, clearFocusedCase, clearReplyComposerDraft]);
@@ -200,6 +225,7 @@ export function useReportReplyReview({ reports, allPageReports, messages, fields
         setShowConfirmAuthorSelect(false);
         setFocusedCaseId(resolveDefaultFocusedCaseId(report));
         setIsComposingNewCase(false);
+        setNewCaseDraftSession(null);
         cancelCaseEdit();
     }, [activeIdentify, authorizedAuthors, cancelCaseEdit, clearReplyComposerDraft, onSelectReport, selfName, sessionActor?.name]);
     const closeReplyWindow = useCallback((reportId) => {
@@ -446,6 +472,7 @@ export function useReportReplyReview({ reports, allPageReports, messages, fields
             }));
             await notifyFeedbackUpdate(eventCallbacks, updatedFeedback);
             setIsComposingNewCase(false);
+            setNewCaseDraftSession(null);
             setFocusedCaseId(nextCase.id);
             setPendingComposer(null);
             setReplySubmitAsQuestion(false);
@@ -718,6 +745,7 @@ export function useReportReplyReview({ reports, allPageReports, messages, fields
         selectCase,
         clearFocusedCase,
         isComposingNewCase,
+        hasNewCaseDraftSession: newCaseDraftSession !== null,
         beginComposeNewCase,
         cancelComposeNewCase,
         openReplyComposer,

@@ -9,8 +9,9 @@ export function FeedCommentMeta({ authorName, createdAt, authors, status }) {
     const displayName = formatAssigneeLabel(authorName, authors ? resolveAuthorDepartment(authors, authorName) : null);
     const relativeTime = formatRelativeTimeCompact(createdAt);
     const statusLabel = status ? messages.status.feedback[status] : "";
-    const statusColor = status ? FEEDBACK_STATUS_COLOR[status] : undefined;
-    return (_jsxs("div", { className: "flex min-w-0 flex-wrap items-baseline gap-x-[6px] gap-y-[2px]", children: [_jsx("p", { className: "text-xs min-w-0 truncate font-semibold text-[var(--adaptive-black900)]", title: displayName, children: displayName }), relativeTime ? _jsx("span", { className: "text-xs shrink-0 font-semibold text-[var(--adaptive-black500)]", children: relativeTime }) : null, statusLabel ? (_jsx("span", { className: "text-xs shrink-0 font-semibold", style: { color: statusColor }, children: statusLabel })) : null] }));
+    // Match timestamp gray for issue_apply; keep accent colors for other statuses.
+    const statusColor = status && status !== "issue_apply" ? FEEDBACK_STATUS_COLOR[status] : undefined;
+    return (_jsxs("div", { className: "flex min-w-0 flex-wrap items-baseline gap-x-[6px] gap-y-[2px]", children: [_jsx("p", { className: "text-xs min-w-0 truncate font-semibold text-[var(--adaptive-black900)]", title: displayName, children: displayName }), relativeTime ? _jsx("span", { className: "text-xs shrink-0 font-semibold text-[var(--adaptive-black500)]", children: relativeTime }) : null, statusLabel ? (_jsx("span", { className: `text-xs shrink-0 font-semibold ${statusColor ? "" : "text-[var(--adaptive-black500)]"}`, style: statusColor ? { color: statusColor } : undefined, children: statusLabel })) : null] }));
 }
 /** Single-line activity: `Name action · 12m` */
 export function FeedActivityLine({ actorName, action, createdAt }) {

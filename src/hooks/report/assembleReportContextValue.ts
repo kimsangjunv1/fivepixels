@@ -373,6 +373,7 @@ export function assembleReportContextValue({
         focusedCaseId: reply.focusedCaseId,
         selectCase: reply.selectCase,
         isComposingNewCase: reply.isComposingNewCase,
+        hasNewCaseDraftSession: reply.hasNewCaseDraftSession,
         beginComposeNewCase: reply.beginComposeNewCase,
         cancelComposeNewCase: reply.cancelComposeNewCase,
         clearFocusedCase: reply.clearFocusedCase,

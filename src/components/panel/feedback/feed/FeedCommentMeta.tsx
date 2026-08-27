@@ -18,7 +18,8 @@ export function FeedCommentMeta({ authorName, createdAt, authors, status }: Feed
     const displayName = formatAssigneeLabel(authorName, authors ? resolveAuthorDepartment(authors, authorName) : null);
     const relativeTime = formatRelativeTimeCompact(createdAt);
     const statusLabel = status ? messages.status.feedback[status] : "";
-    const statusColor = status ? FEEDBACK_STATUS_COLOR[status] : undefined;
+    // Match timestamp gray for issue_apply; keep accent colors for other statuses.
+    const statusColor = status && status !== "issue_apply" ? FEEDBACK_STATUS_COLOR[status] : undefined;
 
     return (
         <div className="flex min-w-0 flex-wrap items-baseline gap-x-[6px] gap-y-[2px]">
@@ -31,8 +32,8 @@ export function FeedCommentMeta({ authorName, createdAt, authors, status }: Feed
             {relativeTime ? <span className="text-xs shrink-0 font-semibold text-[var(--adaptive-black500)]">{relativeTime}</span> : null}
             {statusLabel ? (
                 <span
-                    className="text-xs shrink-0 font-semibold"
-                    style={{ color: statusColor }}
+                    className={`text-xs shrink-0 font-semibold ${statusColor ? "" : "text-[var(--adaptive-black500)]"}`}
+                    style={statusColor ? { color: statusColor } : undefined}
                 >
                     {statusLabel}
                 </span>

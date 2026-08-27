@@ -317,6 +317,7 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     focusedCaseId: string | null;
     selectCase: (caseId: string) => void;
     isComposingNewCase: boolean;
+    hasNewCaseDraftSession: boolean;
     beginComposeNewCase: () => void;
     cancelComposeNewCase: () => void;
     clearFocusedCase: () => void;

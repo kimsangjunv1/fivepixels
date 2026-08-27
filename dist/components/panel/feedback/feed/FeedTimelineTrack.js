@@ -22,17 +22,28 @@ export function FeedTimelineTrack({ children, className = "" }) {
             }
             const rootRect = root.getBoundingClientRect();
             const nodeRect = last.getBoundingClientRect();
-            const centerY = Math.max(0, nodeRect.top - rootRect.top + nodeRect.height / 2);
-            setSpineHeightPx((current) => (current != null && Math.abs(current - centerY) < 0.5 ? current : centerY));
+            const centerY = Math.round(Math.max(0, nodeRect.top - rootRect.top + nodeRect.height / 2));
+            setSpineHeightPx((current) => (current === centerY ? current : centerY));
         };
         measure();
-        const observer = new ResizeObserver(measure);
-        observer.observe(root);
-        for (const node of root.querySelectorAll("[data-feed-spine-node='true']")) {
-            observer.observe(node);
-        }
-        return () => observer.disconnect();
-    });
+        const resizeObserver = new ResizeObserver(measure);
+        resizeObserver.observe(root);
+        const observeSpineNodes = () => {
+            for (const node of root.querySelectorAll("[data-feed-spine-node='true']")) {
+                resizeObserver.observe(node);
+            }
+        };
+        observeSpineNodes();
+        const mutationObserver = new MutationObserver(() => {
+            observeSpineNodes();
+            measure();
+        });
+        mutationObserver.observe(root, { childList: true, subtree: true });
+        return () => {
+            resizeObserver.disconnect();
+            mutationObserver.disconnect();
+        };
+    }, []);
     return (_jsxs("div", { ref: rootRef, className: `relative ${className}`, children: [_jsx("span", { "aria-hidden": true, className: "pointer-events-none absolute top-0 w-px bg-[var(--adaptive-black300)]", style: {
                     left: FEED_RAIL_WIDTH / 2,
                     transform: "translateX(-50%)",

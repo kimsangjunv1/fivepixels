@@ -30,6 +30,7 @@ export declare function useReportReplyReview({ reports, allPageReports, messages
     selectCase: (caseId: string) => void;
     clearFocusedCase: () => void;
     isComposingNewCase: boolean;
+    hasNewCaseDraftSession: boolean;
     beginComposeNewCase: () => void;
     cancelComposeNewCase: () => void;
     openReplyComposer: (report: ReportFeedback) => void;

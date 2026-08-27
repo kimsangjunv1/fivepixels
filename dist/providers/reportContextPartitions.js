@@ -205,6 +205,7 @@ export const REPORT_SESSION_KEYS = [
     "focusedCaseId",
     "selectCase",
     "isComposingNewCase",
+    "hasNewCaseDraftSession",
     "beginComposeNewCase",
     "cancelComposeNewCase",
     "clearFocusedCase",

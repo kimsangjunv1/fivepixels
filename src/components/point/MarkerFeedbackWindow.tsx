@@ -489,6 +489,7 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
         beginFeedbackEdit,
         beginComposeNewCase,
         isComposingNewCase,
+        hasNewCaseDraftSession,
         projectId,
     } = useReport();
     const deleteLock = useIntegrationLock("deleteFeedback");
@@ -1436,6 +1437,7 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
                                             report={report}
                                             focusedCaseId={focusedCaseId}
                                             isComposingNewCase={isComposingCaseInThisWindow}
+                                            hasNewCaseDraftSession={showFullContent && hasNewCaseDraftSession}
                                             composingCaseTitle={messages.cases.composingCaseTitle}
                                             onSelectCase={selectCase}
                                             onSelectComposingCase={beginComposeNewCase}

@@ -32,21 +32,34 @@ export function FeedTimelineTrack({ children, className = "" }: FeedTimelineTrac
 
             const rootRect = root.getBoundingClientRect();
             const nodeRect = last.getBoundingClientRect();
-            const centerY = Math.max(0, nodeRect.top - rootRect.top + nodeRect.height / 2);
-            setSpineHeightPx((current) => (current != null && Math.abs(current - centerY) < 0.5 ? current : centerY));
+            const centerY = Math.round(Math.max(0, nodeRect.top - rootRect.top + nodeRect.height / 2));
+            setSpineHeightPx((current) => (current === centerY ? current : centerY));
         };
 
         measure();
 
-        const observer = new ResizeObserver(measure);
-        observer.observe(root);
+        const resizeObserver = new ResizeObserver(measure);
+        resizeObserver.observe(root);
 
-        for (const node of root.querySelectorAll<HTMLElement>("[data-feed-spine-node='true']")) {
-            observer.observe(node);
-        }
+        const observeSpineNodes = () => {
+            for (const node of root.querySelectorAll<HTMLElement>("[data-feed-spine-node='true']")) {
+                resizeObserver.observe(node);
+            }
+        };
 
-        return () => observer.disconnect();
-    });
+        observeSpineNodes();
+
+        const mutationObserver = new MutationObserver(() => {
+            observeSpineNodes();
+            measure();
+        });
+        mutationObserver.observe(root, { childList: true, subtree: true });
+
+        return () => {
+            resizeObserver.disconnect();
+            mutationObserver.disconnect();
+        };
+    }, []);
 
     return (
         <div

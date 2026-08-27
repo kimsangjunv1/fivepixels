@@ -285,6 +285,7 @@ export function assembleReportContextValue({ panel, auth, draft, markers, mutati
         focusedCaseId: reply.focusedCaseId,
         selectCase: reply.selectCase,
         isComposingNewCase: reply.isComposingNewCase,
+        hasNewCaseDraftSession: reply.hasNewCaseDraftSession,
         beginComposeNewCase: reply.beginComposeNewCase,
         cancelComposeNewCase: reply.cancelComposeNewCase,
         clearFocusedCase: reply.clearFocusedCase,
