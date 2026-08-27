@@ -4,7 +4,7 @@ import { usePersonalKey } from "../usePersonalKey.js";
 import { useSelfProfile } from "../useSelfProfile.js";
 import { getAuthorIdFromPrivateKey, getAuthorNameFromPrivateKey, hasStoredPersonalKey, parsePrivateKeyBundle, publicKeysMatch, serializePublicKey, } from "../../utils/auth/personalKey.js";
 import { clearRemoteAuthSession, readRemoteAuthSession, saveLoginMethod, saveRemoteAuthSession, } from "../../utils/auth/loginSession.js";
-import { applyRefreshUser, invokeOptionalLogout, resolveRefreshSessionMethod } from "../../utils/auth/remoteAuthLifecycle.js";
+import { applyRefreshUser, invokeOptionalLogout, resolveRefreshSessionMethod, resolveRemoteOnboardingCompleted } from "../../utils/auth/remoteAuthLifecycle.js";
 import { ReportAuthError } from "../../utils/auth/reportAuthError.js";
 import { resolvePanelView } from "../../utils/auth/resolvePanelView.js";
 import { buildPresentationViewers, resolveSessionActor } from "../../utils/report/reportTeam.js";
@@ -34,7 +34,7 @@ export function useReportAuthSession({ projectId, environment, authors, identify
     });
     const loginMethod = sync;
     const isRemoteAuth = usesRemoteAuthLogin(loginMethod, requireAuth);
-    const remoteOnboardingCompleted = Boolean(isRemoteAuth && selfProfile?.completed);
+    const remoteOnboardingCompleted = resolveRemoteOnboardingCompleted(isRemoteAuth, selfProfile?.completed, remoteSession);
     const remoteAuthor = useMemo(() => {
         const authorId = selfProfile?.authorId || remoteSession?.user.id;
         const name = selfProfile?.name || remoteSession?.user.name;

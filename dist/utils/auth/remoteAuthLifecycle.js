@@ -1,3 +1,6 @@
+export function resolveRemoteOnboardingCompleted(isRemoteAuth, selfProfileCompleted, remoteSession) {
+    return Boolean(isRemoteAuth && selfProfileCompleted && remoteSession);
+}
 export function isReportAuthUser(value) {
     if (!value || typeof value !== "object") {
         return false;
