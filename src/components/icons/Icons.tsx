@@ -21,6 +21,10 @@ const CHECK_CIRCLE_PATH =
     "m424-408-86-86q-11-11-28-11t-28 11q-11 11-11 28t11 28l114 114q12 12 28 12t28-12l226-226q11-11 11-28t-11-28q-11-11-28-11t-28 11L424-408Zm56 328q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z";
 const EDIT_PATH =
     "M141.24-84.65q-23.67 0-40.13-16.46t-16.46-40.13v-112.35q0-22.4 8.53-43.25 8.52-20.85 24.62-37.01l519.91-519.9q11.4-11.64 25.85-16.62 14.45-4.98 29.42-4.98 14.89 0 28.5 4.6t25.56 16.08l107.87 107.39q11.72 11.71 16.2 25.79 4.48 14.07 4.48 29.26 0 14.97-4.98 29.05-4.98 14.07-16.7 25.55L334.33-117.8q-16.16 16.1-37.01 24.62-20.85 8.53-43.25 8.53H141.24ZM692.7-635.7l57-56.52-57.24-56.48-57 56 57.24 57Z";
+const ASSIGNEE_ASSIGNED_PATH =
+    "M702-480 560-622l57-56 85 85 170-170 56 57-226 226Zm-455-47q-47-47-47-113t47-113q47-47 113-47t113 47q47 47 47 113t-47 113q-47 47-113 47t-113-47ZM40-160v-112q0-34 17.5-62.5T104-378q62-31 126-46.5T360-440q66 0 130 15.5T616-378q29 15 46.5 43.5T680-272v112H40Zm80-80h480v-32q0-11-5.5-20T580-306q-54-27-109-40.5T360-360q-56 0-111 13.5T140-306q-9 5-14.5 14t-5.5 20v32Zm296.5-343.5Q440-607 440-640t-23.5-56.5Q393-720 360-720t-56.5 23.5Q280-673 280-640t23.5 56.5Q327-560 360-560t56.5-23.5ZM360-300Zm0-340Z";
+const ASSIGNEE_TRANSFERRED_PATH =
+    "M482-160q-134 0-228-93t-94-227v-7l-64 64-56-56 160-160 160 160-56 56-64-64v7q0 100 70.5 170T482-240q26 0 51-6t49-18l60 60q-38 22-78 33t-82 11Zm278-161L600-481l56-56 64 64v-7q0-100-70.5-170T478-720q-26 0-51 6t-49 18l-60-60q38-22 78-33t82-11q134 0 228 93t94 227v7l64-64 56 56-160 160Z";
 const MEMO_PATH =
     "M180-120q-24 0-42-18t-18-42v-560q0-24 18-42t42-18h440l120 120v500q0 24-18 42t-42 18H180Zm0-80h600v-440H560v-80H180v520Zm0 0v-520 520Z";
 const DELETE_PATH =
@@ -381,6 +385,26 @@ export function EditIcon({ className, fill }: { className?: string } & Pick<Mate
     return (
         <IconGlyph
             path={EDIT_PATH}
+            className={className}
+            fill={fill}
+        />
+    );
+}
+
+export function AssigneeAssignedIcon({ className, fill }: { className?: string } & Pick<MaterialIconProps, "fill">) {
+    return (
+        <IconGlyph
+            path={ASSIGNEE_ASSIGNED_PATH}
+            className={className}
+            fill={fill}
+        />
+    );
+}
+
+export function AssigneeTransferredIcon({ className, fill }: { className?: string } & Pick<MaterialIconProps, "fill">) {
+    return (
+        <IconGlyph
+            path={ASSIGNEE_TRANSFERRED_PATH}
             className={className}
             fill={fill}
         />

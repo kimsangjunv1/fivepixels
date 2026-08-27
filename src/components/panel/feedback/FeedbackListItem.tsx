@@ -4,7 +4,7 @@ import type { ReportLocale, ReportMessages } from "@/i18n/types.js";
 import { formatTimeOnly } from "@/utils/shared/format.js";
 import { getIssueSummary } from "@/utils/report/reportCases.js";
 import { getReplyCount } from "@/utils/feedback/feedbackThread.js";
-import { getFeedbackCaseId } from "@/utils/feedback/feedbackCaseId.js";
+import { getFeedbackCaseId, getMemoCaseId } from "@/utils/feedback/feedbackCaseId.js";
 import { getFeedbackListStatusTag } from "@/utils/feedback/feedbackListStatus.js";
 import { isFeedbackCategory } from "@/constants/feedbackCategory.js";
 import { copyTextToClipboard, serializeFeedbackItem } from "@/utils/feedback/feedbackDataTransfer.js";
@@ -21,6 +21,7 @@ type FeedbackListItemProps = {
     locale: ReportLocale;
     messages: ReportMessages;
     listScope: "current" | "all";
+    listKind?: "feedback" | "memo";
     disabled?: boolean;
     canCreateGitHubIssue?: boolean;
     creatingGitHubIssueId?: string | null;
@@ -133,6 +134,7 @@ export function FeedbackListItem({
     locale,
     messages,
     listScope,
+    listKind = "feedback",
     disabled = false,
     canCreateGitHubIssue = false,
     creatingGitHubIssueId = null,
@@ -144,14 +146,16 @@ export function FeedbackListItem({
     const canDelete = canDeleteFeedback(report, sessionActor);
     const deleteLock = useIntegrationLock("deleteFeedback");
     const githubLock = useIntegrationLock("githubIssue");
-    const caseId = getFeedbackCaseId(report);
+    const isMemoItem = listKind === "memo" || report.category === "memo";
+    const caseId = isMemoItem ? getMemoCaseId(report) : getFeedbackCaseId(report);
     const replyCount = getReplyCount(report);
     const statusTag = getFeedbackListStatusTag(report);
     const category = isFeedbackCategory(report.category) ? report.category : null;
     const summary = getIssueSummary(report, { summaryMore: messages.cases.summaryMore });
     const activityAt = report.created_at;
-    const showGitHubAction = canCreateGitHubIssue || githubLock.locked;
+    const showGitHubAction = !isMemoItem && (canCreateGitHubIssue || githubLock.locked);
     const showDeleteAction = canDelete;
+    const caseIdFallback = isMemoItem ? "#MM-—" : "#FC-—";
 
     return (
         <div className="group flex flex-col relative border-b border-[var(--adaptive-border-subtle)] last:border-b-0 bg-[var(--adaptive-tintOpacity50)]">
@@ -162,33 +166,40 @@ export function FeedbackListItem({
             >
                 <section className="flex">
                     <span className="truncate text-[14px] font-semibold text-[var(--adaptive-black900)] min-w-[72px] flex items-center justify-center border-r border-r-[var(--adaptive-border-subtle)]">
-                        {caseId ?? "#FC-—"}
+                        {caseId ?? caseIdFallback}
                     </span>
 
                     <section className="flex flex-col gap-[4px] p-[8px_12px] flex-1">
                         <p className="line-clamp-2 text-[14px] text-[var(--adaptive-black900)] font-medium whitespace-break-spaces leading-[1.5]">{summary}</p>
 
                         <div className="flex items-center justify-between gap-[6px]">
-                            <section className="flex gap-[4px]">
-                                {category ? (
-                                    <section className="flex items-center rounded-[4px] border-[1px] border-[var(--adaptive-black900)]">
-                                        {/* <CategoryShieldIcon className="h-[11px] w-[11px] text-[var(--adaptive-black500)]" /> */}
-
-                                        <span className="px-[2px] py-[1px] text-[10px] font-medium text-[var(--adaptive-black900)]">{messages.feedbackList.categoryTag[category]}</span>
-                                    </section>
-                                ) : null}
-
-                                <section className="flex items-center rounded-[4px] border-[1px] border-[var(--adaptive-black900)]">
-                                    <span className="px-[4px] py-[1px] text-[10px] font-medium text-[var(--adaptive-black900)]">{messages.feedbackList.statusTag[statusTag]}</span>
-                                </section>
-                                <div className="flex min-w-0 items-center gap-[4px]">
-                                    {replyCount > 0 ? (
-                                        <span className="rounded-[4px] border-[1.5px] border-[var(--adaptive-black900)] px-[1px] text-[10px] font-bold text-[var(--adaptive-black900)]">
-                                            {messages.feedbackList.replyCountBadge(replyCount)}
-                                        </span>
+                            {isMemoItem ? (
+                                <p
+                                    className="min-w-0 truncate text-[12px] text-[var(--adaptive-black500)]"
+                                    title={report.pathname}
+                                >
+                                    {report.pathname || "/"}
+                                </p>
+                            ) : (
+                                <section className="flex gap-[4px]">
+                                    {category ? (
+                                        <section className="flex items-center rounded-[4px] border-[1px] border-[var(--adaptive-black900)]">
+                                            <span className="px-[2px] py-[1px] text-[10px] font-medium text-[var(--adaptive-black900)]">{messages.feedbackList.categoryTag[category]}</span>
+                                        </section>
                                     ) : null}
-                                </div>
-                            </section>
+
+                                    <section className="flex items-center rounded-[4px] border-[1px] border-[var(--adaptive-black900)]">
+                                        <span className="px-[4px] py-[1px] text-[10px] font-medium text-[var(--adaptive-black900)]">{messages.feedbackList.statusTag[statusTag]}</span>
+                                    </section>
+                                    <div className="flex min-w-0 items-center gap-[4px]">
+                                        {replyCount > 0 ? (
+                                            <span className="rounded-[4px] border-[1.5px] border-[var(--adaptive-black900)] px-[1px] text-[10px] font-bold text-[var(--adaptive-black900)]">
+                                                {messages.feedbackList.replyCountBadge(replyCount)}
+                                            </span>
+                                        ) : null}
+                                    </div>
+                                </section>
+                            )}
 
                             <section>
                                 <div className="flex min-w-0 items-center justify-between gap-[4px]">
@@ -203,7 +214,7 @@ export function FeedbackListItem({
                     </section>
                 </section>
 
-                {listScope === "all" ? <p className="truncate text-[11px] text-[var(--adaptive-black400)]">{report.pathname}</p> : null}
+                {!isMemoItem && listScope === "all" ? <p className="truncate text-[11px] text-[var(--adaptive-black400)]">{report.pathname}</p> : null}
             </button>
 
             <div className="absolute right-[10px] top-[6px] z-[1] flex items-center gap-[2px]">

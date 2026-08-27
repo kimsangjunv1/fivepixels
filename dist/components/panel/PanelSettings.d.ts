@@ -1,4 +1,4 @@
-import type { ReportAppearance, QuestionThreadDisplay } from "../../types/report.js";
+import type { ReportAppearance, QuestionThreadDisplay, ThreadLayoutStyle } from "../../types/report.js";
 type PanelSettingsProps = {
     transferDisabled?: boolean;
     panelAppearance: ReportAppearance;
@@ -7,6 +7,8 @@ type PanelSettingsProps = {
     onTooltipAppearanceChange: (appearance: ReportAppearance) => void;
     questionThreadDisplay: QuestionThreadDisplay;
     onQuestionThreadDisplayChange: (display: QuestionThreadDisplay) => void;
+    threadLayout: ThreadLayoutStyle;
+    onThreadLayoutChange: (layout: ThreadLayoutStyle) => void;
     onExport: () => void;
     onImport: () => void;
     onCommand: () => void;
@@ -16,6 +18,6 @@ type PanelSettingsProps = {
     onKeyInsert: () => void;
     onKeyRotate: () => void;
 };
-export declare function PanelSettings({ transferDisabled, panelAppearance, onPanelAppearanceChange, tooltipAppearance, onTooltipAppearanceChange, questionThreadDisplay, onQuestionThreadDisplayChange, onExport, onImport, onCommand, hasPersonalKey, onKeyCopy, onPublicKeyCopy, onKeyInsert, onKeyRotate, }: PanelSettingsProps): import("react").JSX.Element;
+export declare function PanelSettings({ transferDisabled, panelAppearance, onPanelAppearanceChange, tooltipAppearance, onTooltipAppearanceChange, questionThreadDisplay, onQuestionThreadDisplayChange, threadLayout, onThreadLayoutChange, onExport, onImport, onCommand, hasPersonalKey, onKeyCopy, onPublicKeyCopy, onKeyInsert, onKeyRotate, }: PanelSettingsProps): import("react").JSX.Element;
 export {};
 //# sourceMappingURL=PanelSettings.d.ts.map

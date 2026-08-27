@@ -1,3 +1,4 @@
+import { ACCENT_COLOR } from "../../constants/accentColors.js";
 import { DEFAULT_MARKER_COLORS } from "../../constants/markerAppearance.js";
 import { getReplyCount } from "../../utils/feedback/feedbackThread.js";
 import { getIssueProgressLabel, getReportCases } from "../../utils/report/reportCases.js";
@@ -15,6 +16,9 @@ export function getMarkerColor(report, colors = DEFAULT_MARKER_COLORS) {
     }
     if (report.status === "git_issued") {
         return colors.gitIssued;
+    }
+    if (report.category === "memo") {
+        return ACCENT_COLOR.pink;
     }
     return colors.open;
 }

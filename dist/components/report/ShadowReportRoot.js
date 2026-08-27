@@ -48,7 +48,7 @@ hot?.accept("../../styles/reportStylesheet.js", (module) => {
         applyReportStyles(host, module.REPORT_STYLESHEET);
     }
 });
-export function ShadowReportRoot({ panelAppearance, children }) {
+export function ShadowReportRoot({ tooltipAppearance, children }) {
     const [mount, setMount] = useState(null);
     useLayoutEffect(() => {
         let cancelled = false;
@@ -67,8 +67,10 @@ export function ShadowReportRoot({ panelAppearance, children }) {
         };
     }, []);
     useLayoutEffect(() => {
-        syncReportTooltipLayerTheme(panelAppearance);
-    }, [panelAppearance]);
+        // Pointer-follow tooltips portal into the tooltip layer (outside ThemeScope).
+        // Keep layer tokens aligned with tooltip theme, not panel theme.
+        syncReportTooltipLayerTheme(tooltipAppearance);
+    }, [tooltipAppearance]);
     if (!mount) {
         return null;
     }

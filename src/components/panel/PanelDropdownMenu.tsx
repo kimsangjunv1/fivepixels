@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
-import { MOTION } from "@/constants/motionClasses.js";
+import { MenuTooltipItem, MenuTooltipSurface } from "@/components/ui/MenuTooltip.js";
 
 const MENU_GAP = 0;
 // const MENU_GAP = 6;
@@ -19,7 +19,12 @@ type MenuPlacement = {
     left: number;
 };
 
-function computeDropdownPlacement(triggerRect: DOMRect, menuWidth: number, menuHeight: number, preferredAlign: "left" | "right"): MenuPlacement {
+function computeDropdownPlacement(
+    triggerRect: DOMRect,
+    menuWidth: number,
+    menuHeight: number,
+    preferredAlign: "left" | "right"
+): MenuPlacement {
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
 
@@ -40,12 +45,17 @@ function computeDropdownPlacement(triggerRect: DOMRect, menuWidth: number, menuH
         vertical = spaceBelow >= spaceAbove ? "bottom" : "top";
     }
 
-    const viewportTop = vertical === "top" ? triggerRect.top - menuHeight - MENU_GAP : triggerRect.bottom + MENU_GAP;
+    const viewportTop =
+        vertical === "top" ? triggerRect.top - menuHeight - MENU_GAP : triggerRect.bottom + MENU_GAP;
 
     const alignRightLeft = triggerRect.right - menuWidth;
     const alignLeftLeft = triggerRect.left;
-    const alignRightOverflow = alignRightLeft < VIEWPORT_PADDING || alignRightLeft + menuWidth > viewportWidth - VIEWPORT_PADDING;
-    const alignLeftOverflow = alignLeftLeft < VIEWPORT_PADDING || alignLeftLeft + menuWidth > viewportWidth - VIEWPORT_PADDING;
+    const alignRightOverflow =
+        alignRightLeft < VIEWPORT_PADDING ||
+        alignRightLeft + menuWidth > viewportWidth - VIEWPORT_PADDING;
+    const alignLeftOverflow =
+        alignLeftLeft < VIEWPORT_PADDING ||
+        alignLeftLeft + menuWidth > viewportWidth - VIEWPORT_PADDING;
 
     let viewportLeft: number;
 
@@ -93,7 +103,18 @@ function isSamePlacement(current: MenuPlacement | null, next: MenuPlacement | nu
     return current.top === next.top && current.left === next.left;
 }
 
-export function PanelDropdownMenu({ open, onClose, trigger, children, menuClassName, align = "right" }: PanelDropdownMenuProps) {
+/**
+ * Shared dropdown shell for panel chrome controls (role, presentation, author, etc.).
+ * Menu surface matches the pick-target right-click menu-tooltip look.
+ */
+export function PanelDropdownMenu({
+    open,
+    onClose,
+    trigger,
+    children,
+    menuClassName,
+    align = "right",
+}: PanelDropdownMenuProps) {
     const rootRef = useRef<HTMLDivElement | null>(null);
     const menuRef = useRef<HTMLDivElement | null>(null);
     const [menuPlacement, setMenuPlacement] = useState<MenuPlacement | null>(null);
@@ -109,10 +130,17 @@ export function PanelDropdownMenu({ open, onClose, trigger, children, menuClassN
         const rootRect = root.getBoundingClientRect();
         const triggerRect = rootRect;
         const menuRect = menu.getBoundingClientRect();
-        const viewportPlacement = computeDropdownPlacement(triggerRect, menuRect.width, menuRect.height, align);
+        const viewportPlacement = computeDropdownPlacement(
+            triggerRect,
+            menuRect.width,
+            menuRect.height,
+            align
+        );
         const nextPlacement = toRelativePlacement(viewportPlacement, rootRect);
 
-        setMenuPlacement((current) => (isSamePlacement(current, nextPlacement) ? current : nextPlacement));
+        setMenuPlacement((current) =>
+            isSamePlacement(current, nextPlacement) ? current : nextPlacement
+        );
     }, [align]);
 
     useLayoutEffect(() => {
@@ -126,7 +154,8 @@ export function PanelDropdownMenu({ open, onClose, trigger, children, menuClassN
         window.addEventListener("resize", updateMenuPlacement);
         window.addEventListener("scroll", updateMenuPlacement, true);
 
-        const resizeObserver = typeof ResizeObserver !== "undefined" ? new ResizeObserver(updateMenuPlacement) : null;
+        const resizeObserver =
+            typeof ResizeObserver !== "undefined" ? new ResizeObserver(updateMenuPlacement) : null;
 
         if (resizeObserver && rootRef.current) {
             resizeObserver.observe(rootRef.current);
@@ -183,38 +212,51 @@ export function PanelDropdownMenu({ open, onClose, trigger, children, menuClassN
             {trigger}
 
             {open ? (
-                <div
+                <MenuTooltipSurface
                     ref={menuRef}
                     role="menu"
+                    positioning="absolute"
                     style={menuStyle}
                     onPointerDown={(event) => event.stopPropagation()}
-                    className={`${open ? "border-[var(--adaptive-accent-coral)]" : ""} absolute z-[20] min-w-[120px] overflow-hidden bg-[var(--adaptive-black50)] border shadow-[0_0_100px_rgba(0,0,0,0.2)] ${MOTION.menuIn} ${menuClassName ?? ""}`}
+                    className={menuClassName ?? ""}
                 >
                     {children}
-                </div>
+                </MenuTooltipSurface>
             ) : null}
         </div>
     );
 }
+
 type PanelDropdownMenuItemProps = {
     onClick: () => void;
     active?: boolean;
     disabled?: boolean;
+    danger?: boolean;
+    icon?: ReactNode;
     children: ReactNode;
+    className?: string;
 };
 
-export function PanelDropdownMenuItem({ onClick, active = false, disabled = false, children }: PanelDropdownMenuItemProps) {
+export function PanelDropdownMenuItem({
+    onClick,
+    active = false,
+    disabled = false,
+    danger = false,
+    icon,
+    children,
+    className = "",
+}: PanelDropdownMenuItemProps) {
     return (
-        <button
-            type="button"
-            role="menuitem"
+        <MenuTooltipItem
+            active={active}
             disabled={disabled}
+            danger={danger}
+            icon={icon}
+            className={className}
             onPointerDown={(event) => event.stopPropagation()}
             onClick={onClick}
-            aria-pressed={active}
-            className={`flex w-full px-[12px] py-[8px] text-left text-[12px] font-semibold disabled:cursor-not-allowed disabled:opacity-50 ${active ? "bg-[var(--adaptive-black100)] text-[var(--adaptive-black900)]" : "text-[var(--adaptive-black800)] hover:bg-[var(--adaptive-black100)]"}`}
         >
             {children}
-        </button>
+        </MenuTooltipItem>
     );
 }

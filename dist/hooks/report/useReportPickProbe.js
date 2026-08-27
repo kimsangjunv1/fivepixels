@@ -119,7 +119,9 @@ export function useReportPickProbe({ mode, selectedElementRef, hoveredElementRef
         }
         const previousEntry = existing ?? null;
         const originalSnapshot = pickProbeOriginalSnapshotRef.current;
-        applyPickProbeCompareMode(element, savedProbeCompareMode, pickProbeBaseline, values);
+        if (!options?.skipDomApply) {
+            applyPickProbeCompareMode(element, savedProbeCompareMode, pickProbeBaseline, values);
+        }
         const nextEntry = createSavedProbeEntry(elementKey, pickProbeBaseline, values, originalSnapshot?.style ?? pickProbeRestoreRef.current?.style ?? null, originalSnapshot?.textContent ?? pickProbeRestoreRef.current?.textContent ?? pickProbeBaseline.textContent, existing, originalSnapshot?.innerHTML ?? null, originalSnapshot?.inputValue ?? null);
         const appliedChanged = !existing || getProposedChanges(existing.applied, values, pickProbeSupportsTextFields, pickProbeLayoutMode).length > 0;
         setSavedProbeEdits((current) => ({
@@ -312,6 +314,91 @@ export function useReportPickProbe({ mode, selectedElementRef, hoveredElementRef
             persistPickProbeEdits({ values: nextValues });
         }
     }, [pickProbeBaseline, pickProbeCompareMode, pickProbeValues, persistPickProbeEdits, refreshSelectedTargetSnapshot]);
+    /** Sync text already typed on the live DOM (contentEditable / input) without rewriting the node. */
+    const syncPickProbeTextFromDom = useCallback((value) => {
+        const element = selectedElementRef.current;
+        if (!element || !pickProbeBaseline || !pickProbeValues) {
+            return;
+        }
+        if (pickProbeValues.textContent === value) {
+            refreshSelectedTargetSnapshot();
+            return;
+        }
+        const nextValues = {
+            ...pickProbeValues,
+            textContent: value,
+        };
+        setPickProbeValues(nextValues);
+        if (pickProbeCompareMode === "after") {
+            refreshSelectedTargetSnapshot();
+            // Never re-apply textContent here — that breaks IME composition (Korean/Japanese/Chinese).
+            persistPickProbeEdits({ values: nextValues, skipDomApply: true });
+        }
+    }, [pickProbeBaseline, pickProbeCompareMode, pickProbeValues, persistPickProbeEdits, refreshSelectedTargetSnapshot]);
+    const syncPickProbeTextFromDomRef = useRef(syncPickProbeTextFromDom);
+    syncPickProbeTextFromDomRef.current = syncPickProbeTextFromDom;
+    useEffect(() => {
+        if (!pickProbeOpen || !pickProbeSupportsTextFields) {
+            return;
+        }
+        const element = selectedElementRef.current;
+        if (!element || !element.isConnected) {
+            return;
+        }
+        let isComposing = false;
+        const readLiveText = () => {
+            if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement) {
+                return element.value;
+            }
+            return element.textContent ?? "";
+        };
+        const flushLiveText = () => {
+            syncPickProbeTextFromDomRef.current(readLiveText());
+        };
+        const handleCompositionStart = () => {
+            isComposing = true;
+        };
+        const handleCompositionEnd = () => {
+            isComposing = false;
+            flushLiveText();
+        };
+        const handleInput = (event) => {
+            if (isComposing || (event instanceof InputEvent && event.isComposing)) {
+                return;
+            }
+            flushLiveText();
+        };
+        element.addEventListener("compositionstart", handleCompositionStart);
+        element.addEventListener("compositionend", handleCompositionEnd);
+        element.addEventListener("input", handleInput);
+        if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement) {
+            window.requestAnimationFrame(() => {
+                element.focus();
+                element.select?.();
+            });
+            return () => {
+                element.removeEventListener("compositionstart", handleCompositionStart);
+                element.removeEventListener("compositionend", handleCompositionEnd);
+                element.removeEventListener("input", handleInput);
+            };
+        }
+        const previousContentEditable = element.getAttribute("contenteditable");
+        element.setAttribute("contenteditable", "true");
+        window.requestAnimationFrame(() => {
+            element.focus({ preventScroll: true });
+        });
+        return () => {
+            element.removeEventListener("compositionstart", handleCompositionStart);
+            element.removeEventListener("compositionend", handleCompositionEnd);
+            element.removeEventListener("input", handleInput);
+            if (previousContentEditable === null) {
+                element.removeAttribute("contenteditable");
+            }
+            else {
+                element.setAttribute("contenteditable", previousContentEditable);
+            }
+        };
+    }, [pickProbeOpen, pickProbeSupportsTextFields]);
     const resetPickProbeValues = useCallback(() => {
         const element = selectedElementRef.current;
         if (!element || !pickProbeBaseline || !pickProbeValues) {

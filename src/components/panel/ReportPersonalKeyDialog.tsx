@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useReportPreferences } from "@/providers/reportContext.js";
-import { MOTION } from "@/constants/motionClasses.js";
+import { ReportPanelNoticeDialog } from "./ReportPanelNoticeDialog.js";
 
 type ReportPersonalKeyDialogProps = {
     mode: "required" | "insert" | "rotate";
@@ -59,76 +59,80 @@ export function ReportPersonalKeyDialog({ mode, onCancel, onComplete }: ReportPe
         onComplete(inserted.authorized ? messages.personalKey.setupSuccess : messages.personalKey.registrationPending);
     };
 
+    const title =
+        mode === "required" ? messages.personalKey.requiredTitle : mode === "rotate" ? messages.personalKey.rotateTitle : messages.personalKey.insertTitle;
+    const description =
+        mode === "required"
+            ? messages.personalKey.requiredDescription
+            : mode === "rotate"
+              ? messages.personalKey.rotateDescription
+              : messages.personalKey.insertDescription;
+
+    let body: ReactNode = null;
+
+    if (mode === "required") {
+        body = (
+            <>
+                <select
+                    value={authorId}
+                    onChange={(event) => setAuthorId(event.target.value)}
+                    className="w-full rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface)] px-[10px] py-[8px] text-[12px] text-[var(--adaptive-text-primary)] outline-none"
+                >
+                    <option value="">{messages.personalKey.reviewerPlaceholder}</option>
+                    {personalKeyCandidates.map((author) => (
+                        <option
+                            key={author.id}
+                            value={author.id}
+                        >
+                            {author.name}
+                        </option>
+                    ))}
+                </select>
+                <ul className="mt-[10px] list-disc space-y-[4px] pl-[18px] text-[12px] leading-[1.4] text-[var(--adaptive-black600)]">
+                    <li>{messages.personalKey.backupWarning}</li>
+                    <li>{messages.personalKey.restoreGuide}</li>
+                </ul>
+            </>
+        );
+    } else if (mode === "insert") {
+        body = (
+            <input
+                autoFocus
+                value={key}
+                onChange={(event) => {
+                    setKey(event.target.value);
+                    setError("");
+                }}
+                placeholder={messages.personalKey.inputPlaceholder}
+                className="w-full rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface)] px-[10px] py-[8px] text-[12px] text-[var(--adaptive-text-primary)] outline-none"
+            />
+        );
+    } else {
+        body = <p className="rounded-[8px] bg-amber-50 p-[10px] text-[12px] leading-[1.4] text-amber-800">{messages.personalKey.rotateWarning}</p>;
+    }
+
     return (
-        <section className={`bg-[var(--adaptive-grey100)] p-[16px] ${MOTION.dialogIn}`}>
-            <h6 className="text-[14px] font-bold text-[var(--adaptive-black900)]">
-                {mode === "required"
-                    ? messages.personalKey.requiredTitle
-                    : mode === "rotate"
-                      ? messages.personalKey.rotateTitle
-                      : messages.personalKey.insertTitle}
-            </h6>
-            <p className="mt-[8px] leading-[1.4] text-[var(--adaptive-black700)]">
-                {mode === "required"
-                    ? messages.personalKey.requiredDescription
-                    : mode === "rotate"
-                      ? messages.personalKey.rotateDescription
-                      : messages.personalKey.insertDescription}
-            </p>
-
-            {mode === "required" ? (
-                <>
-                    <select
-                        value={authorId}
-                        onChange={(event) => setAuthorId(event.target.value)}
-                        className="mt-[12px] w-full rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface)] px-[10px] py-[8px] text-[12px] text-[var(--adaptive-text-primary)] outline-none"
-                    >
-                        <option value="">{messages.personalKey.reviewerPlaceholder}</option>
-                        {personalKeyCandidates.map((author) => (
-                            <option key={author.id} value={author.id}>{author.name}</option>
-                        ))}
-                    </select>
-                    <ul className="mt-[10px] list-disc space-y-[4px] pl-[18px] text-[12px] leading-[1.4] text-[var(--adaptive-black600)]">
-                        <li>{messages.personalKey.backupWarning}</li>
-                        <li>{messages.personalKey.restoreGuide}</li>
-                    </ul>
-                </>
-            ) : mode === "insert" ? (
-                <input
-                    autoFocus
-                    value={key}
-                    onChange={(event) => {
-                        setKey(event.target.value);
-                        setError("");
-                    }}
-                    placeholder={messages.personalKey.inputPlaceholder}
-                    className="mt-[12px] w-full rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface)] px-[10px] py-[8px] text-[12px] text-[var(--adaptive-text-primary)] outline-none"
-                />
-            ) : (
-                <p className="mt-[10px] rounded-[8px] bg-amber-50 p-[10px] text-[12px] leading-[1.4] text-amber-800">
-                    {messages.personalKey.rotateWarning}
-                </p>
-            )}
-
-            {error ? <p className="mt-[8px] text-[12px] text-rose-700">{error}</p> : null}
-
-            <div className="mt-[14px] flex items-center justify-end gap-[10px]">
-                <button
-                    type="button"
-                    onClick={onCancel}
-                    className="rounded-[8px] bg-[var(--adaptive-grey300)] p-[4px_8px] font-semibold text-[var(--adaptive-black700)]"
-                >
-                    {messages.common.cancel}
-                </button>
-                <button
-                    type="button"
-                    disabled={mode === "required" ? !authorId : mode === "insert" ? !key.trim() : false}
-                    onClick={() => void handleConfirm()}
-                    className="rounded-[8px] bg-[var(--adaptive-blue100)] p-[4px_8px] font-bold text-[var(--adaptive-blue500)] disabled:opacity-50"
-                >
-                    {messages.common.confirm}
-                </button>
-            </div>
-        </section>
+        <ReportPanelNoticeDialog
+            title={title}
+            description={description}
+            actions={[
+                {
+                    id: "cancel",
+                    label: messages.common.cancel,
+                    variant: "muted",
+                    onClick: onCancel,
+                },
+                {
+                    id: "confirm",
+                    label: messages.common.confirm,
+                    variant: "primary",
+                    disabled: mode === "required" ? !authorId : mode === "insert" ? !key.trim() : false,
+                    onClick: () => void handleConfirm(),
+                },
+            ]}
+        >
+            {body}
+            {error ? <p className="mt-[8px] text-[12px] text-[var(--adaptive-black700)]">{error}</p> : null}
+        </ReportPanelNoticeDialog>
     );
 }

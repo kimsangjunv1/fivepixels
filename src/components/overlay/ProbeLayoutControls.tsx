@@ -38,7 +38,7 @@ type ProbeLayoutControlsProps = {
 };
 
 function ProbeLayoutSectionLabel({ children }: { children: ReactNode }) {
-    return <span className="text-[11px] font-medium text-[var(--adaptive-black500)]">{children}</span>;
+    return <span className="text-[14px] font-medium leading-[1.45] text-[var(--adaptive-black500)]">{children}</span>;
 }
 
 function ProbeIconToggleButton({
@@ -59,7 +59,7 @@ function ProbeIconToggleButton({
             aria-label={label}
             title={label}
             onClick={onClick}
-            className={`inline-flex h-[30px] w-[30px] items-center justify-center rounded-[8px] border transition-colors ${
+            className={`inline-flex h-[30px] w-[30px] items-center justify-center rounded-[8px] border border-solid transition-colors ${
                 active
                     ? "border-[var(--adaptive-blue500)] bg-[var(--adaptive-blue500)]/10 text-[var(--adaptive-blue500)]"
                     : "border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] text-[var(--adaptive-black700)] hover:bg-[var(--adaptive-black100)]"
@@ -110,26 +110,26 @@ function ProbeCountStepperField({
     onChange: (value: string) => void;
 }) {
     return (
-        <div className="flex flex-col gap-[4px] text-[11px]">
+        <div className="flex flex-col gap-[4px] text-[14px] leading-[1.45]">
             <ProbeLayoutSectionLabel>{label}</ProbeLayoutSectionLabel>
             <div className="flex items-center gap-[6px]">
                 <button
                     type="button"
                     data-fivepixels-interactive=""
                     onClick={() => onChange(stepGridTrackCount(value, -1))}
-                    className="inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] text-[14px] font-semibold text-[var(--adaptive-black900)]"
+                    className="inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-[8px] border border-solid border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] text-[14px] font-semibold text-[var(--adaptive-black900)]"
                     aria-label={`Decrease ${label}`}
                 >
                     −
                 </button>
-                <div className="min-w-0 flex-1 rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] px-[8px] py-[6px] text-center font-[var(--coding-font)] text-[12px] text-[var(--adaptive-black900)]">
+                <div className="min-w-0 flex-1 rounded-[8px] border border-solid border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] px-[8px] py-[6px] text-center font-[var(--coding-font)] text-[14px] text-[var(--adaptive-black900)]">
                     {value}
                 </div>
                 <button
                     type="button"
                     data-fivepixels-interactive=""
                     onClick={() => onChange(stepGridTrackCount(value, 1))}
-                    className="inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] text-[14px] font-semibold text-[var(--adaptive-black900)]"
+                    className="inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-[8px] border border-solid border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] text-[14px] font-semibold text-[var(--adaptive-black900)]"
                     aria-label={`Increase ${label}`}
                 >
                     +
@@ -149,26 +149,26 @@ function ProbeGapStepperField({
     onChange: (value: string) => void;
 }) {
     return (
-        <div className="flex flex-col gap-[4px] text-[11px]">
+        <div className="flex flex-col gap-[4px] text-[14px] leading-[1.45]">
             <ProbeLayoutSectionLabel>{label}</ProbeLayoutSectionLabel>
             <div className="flex items-center gap-[6px]">
                 <button
                     type="button"
                     data-fivepixels-interactive=""
                     onClick={() => onChange(stepProbeGap(value, -1))}
-                    className="inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] text-[14px] font-semibold text-[var(--adaptive-black900)]"
+                    className="inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-[8px] border border-solid border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] text-[14px] font-semibold text-[var(--adaptive-black900)]"
                     aria-label={`Decrease ${label}`}
                 >
                     −
                 </button>
-                <div className="min-w-0 flex-1 rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] px-[8px] py-[6px] text-center font-[var(--coding-font)] text-[12px] text-[var(--adaptive-black900)]">
+                <div className="min-w-0 flex-1 rounded-[8px] border border-solid border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] px-[8px] py-[6px] text-center font-[var(--coding-font)] text-[14px] text-[var(--adaptive-black900)]">
                     {value}
                 </div>
                 <button
                     type="button"
                     data-fivepixels-interactive=""
                     onClick={() => onChange(stepProbeGap(value, 1))}
-                    className="inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] text-[14px] font-semibold text-[var(--adaptive-black900)]"
+                    className="inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-[8px] border border-solid border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] text-[14px] font-semibold text-[var(--adaptive-black900)]"
                     aria-label={`Increase ${label}`}
                 >
                     +

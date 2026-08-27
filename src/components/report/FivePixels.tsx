@@ -8,7 +8,7 @@ import type { FivePixelsProps } from "@/types/publicApi.js";
 import { isInsideDevicePreviewFrame } from "@/utils/overlay/devicePreviewFrame.js";
 import { ReportView } from "./ReportView.js";
 
-export type { FivePixelsProps } from "@/types/publicApi.js";
+export type { FivePixelsProps, FivePixelsRequire, ResolvedFivePixelsRequire } from "@/types/publicApi.js";
 export type { FivePixelsAdapter } from "@/types/adapter.js";
 
 export function FivePixels({
@@ -18,6 +18,8 @@ export function FivePixels({
     team,
     mode = "default",
     sync = "local",
+    require: requireProp,
+    requireAuth,
     adapter,
     fields = DEFAULT_FIELDS,
     onNavigate,
@@ -45,6 +47,8 @@ export function FivePixels({
             team={team}
             mode={mode}
             sync={sync}
+            require={requireProp}
+            requireAuth={requireAuth}
             adapter={adapter}
             fields={fields}
             onNavigate={onNavigate}

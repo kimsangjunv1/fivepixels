@@ -21,6 +21,7 @@ describe("resolveReportUi", () => {
             showFeedbackList: false,
             visibleShortcutKeys: true,
             questionThreadDefault: "expanded",
+            threadLayoutDefault: "classic",
             replyHistory: {
                 mode: "button-and-scroll",
                 pageSize: 10,
@@ -45,6 +46,7 @@ describe("resolveReportUi", () => {
             showFeedbackList: true,
             visibleShortcutKeys: false,
             questionThreadDefault: "expanded",
+            threadLayoutDefault: "classic",
             replyHistory: {
                 mode: "button-and-scroll",
                 pageSize: 10,
@@ -62,6 +64,7 @@ describe("resolveReportUi", () => {
             showFeedbackList: true,
             visibleShortcutKeys: false,
             questionThreadDefault: "expanded",
+            threadLayoutDefault: "classic",
             replyHistory: {
                 mode: "button-and-scroll",
                 pageSize: 10,

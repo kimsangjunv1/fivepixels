@@ -19,6 +19,7 @@ type FeedbackCaseEditorProps = {
     activeCaseId?: string | null;
     onActiveCaseIdChange?: (caseId: string) => void;
     enableElementMentions?: boolean;
+    placeholder?: string;
 };
 
 const CASE_INPUT_MIN_HEIGHT = 56;
@@ -124,6 +125,7 @@ export function FeedbackCaseEditor({
     activeCaseId: controlledActiveCaseId,
     onActiveCaseIdChange,
     enableElementMentions = false,
+    placeholder,
 }: FeedbackCaseEditorProps) {
     const { messages } = useReportPreferences();
     const previousCaseCountRef = useRef(cases.length);
@@ -153,7 +155,10 @@ export function FeedbackCaseEditor({
     const activeCaseIndex = activeCase ? cases.findIndex((item) => item.id === activeCase.id) : -1;
     const activeCaseNeedsAttention = Boolean(activeCase && needsAttention && emptyCaseIds.includes(activeCase.id));
 
-    const getCaseInputPlaceholder = useCallback((index: number) => messages.composer.caseInputPlaceholder(index), [messages.composer]);
+    const getCaseInputPlaceholder = useCallback(
+        (index: number) => placeholder ?? messages.composer.caseInputPlaceholder(index),
+        [messages.composer, placeholder],
+    );
 
     useEffect(() => {
         const nextActiveCaseId = resolveActiveCaseId(cases, activeCaseId);

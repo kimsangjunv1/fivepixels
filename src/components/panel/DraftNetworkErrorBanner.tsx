@@ -12,18 +12,18 @@ export function DraftNetworkErrorBanner() {
 
     return (
         <section
-            className="flex items-center gap-[8px] border-b border-rose-100 bg-rose-50 px-[12px] py-[8px]"
+            className="flex items-center gap-[8px] border-b border-[var(--adaptive-red100)] bg-[var(--adaptive-red50)] px-[12px] py-[8px]"
             data-fivepixels-interactive=""
         >
             <div className="min-w-0 flex-1">
-                <p className="text-[11px] font-semibold text-rose-800">{messages.apiFlow.draftBannerTitle}</p>
-                <p className="mt-[2px] text-[11px] leading-[1.4] text-rose-700">{formatApiFlowSummaryLine(activeApiFailureAlert, messages)}</p>
+                <p className="text-[11px] font-semibold text-[var(--adaptive-red900)]">{messages.apiFlow.draftBannerTitle}</p>
+                <p className="mt-[2px] text-[11px] leading-[1.4] text-[var(--adaptive-red900)]">{formatApiFlowSummaryLine(activeApiFailureAlert, messages)}</p>
             </div>
             <button
                 type="button"
                 data-fivepixels-interactive=""
                 onClick={() => appendApiFlowEntryToDraftCase(activeApiFailureAlert.id)}
-                className="shrink-0 rounded-[8px] bg-rose-700 px-[10px] py-[4px] text-[11px] font-semibold text-white"
+                className="shrink-0 rounded-[8px] bg-[var(--adaptive-red700)] px-[10px] py-[4px] text-[11px] font-semibold text-white"
             >
                 {messages.apiFlow.draftBannerAttach}
             </button>

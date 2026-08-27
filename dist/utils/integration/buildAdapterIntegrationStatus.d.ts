@@ -17,6 +17,7 @@ export type AdapterIntegrationFeatureItem = {
 };
 export type AdapterIntegrationStatus = {
     sync: FivePixelsSync;
+    requireAuth: boolean;
     connectedCount: number;
     totalCount: number;
     requiredConnectedCount: number;
@@ -25,5 +26,5 @@ export type AdapterIntegrationStatus = {
     features: AdapterIntegrationFeatureItem[];
     isRequiredComplete: boolean;
 };
-export declare function buildAdapterIntegrationStatus(adapter: FivePixelsAdapter | undefined, sync: FivePixelsSync, capabilities: IntegrationCapabilities, github?: ReportGitHubConfig): AdapterIntegrationStatus | null;
+export declare function buildAdapterIntegrationStatus(adapter: FivePixelsAdapter | undefined, sync: FivePixelsSync, capabilities: IntegrationCapabilities, github?: ReportGitHubConfig, requireAuth?: boolean): AdapterIntegrationStatus | null;
 //# sourceMappingURL=buildAdapterIntegrationStatus.d.ts.map

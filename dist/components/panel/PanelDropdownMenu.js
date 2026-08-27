@@ -1,6 +1,6 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { MOTION } from "../../constants/motionClasses.js";
+import { MenuTooltipItem, MenuTooltipSurface } from "../../components/ui/MenuTooltip.js";
 const MENU_GAP = 0;
 // const MENU_GAP = 6;
 const VIEWPORT_PADDING = 8;
@@ -27,8 +27,10 @@ function computeDropdownPlacement(triggerRect, menuWidth, menuHeight, preferredA
     const viewportTop = vertical === "top" ? triggerRect.top - menuHeight - MENU_GAP : triggerRect.bottom + MENU_GAP;
     const alignRightLeft = triggerRect.right - menuWidth;
     const alignLeftLeft = triggerRect.left;
-    const alignRightOverflow = alignRightLeft < VIEWPORT_PADDING || alignRightLeft + menuWidth > viewportWidth - VIEWPORT_PADDING;
-    const alignLeftOverflow = alignLeftLeft < VIEWPORT_PADDING || alignLeftLeft + menuWidth > viewportWidth - VIEWPORT_PADDING;
+    const alignRightOverflow = alignRightLeft < VIEWPORT_PADDING ||
+        alignRightLeft + menuWidth > viewportWidth - VIEWPORT_PADDING;
+    const alignLeftOverflow = alignLeftLeft < VIEWPORT_PADDING ||
+        alignLeftLeft + menuWidth > viewportWidth - VIEWPORT_PADDING;
     let viewportLeft;
     if (preferredAlign === "right") {
         if (!alignRightOverflow) {
@@ -72,7 +74,11 @@ function isSamePlacement(current, next) {
     }
     return current.top === next.top && current.left === next.left;
 }
-export function PanelDropdownMenu({ open, onClose, trigger, children, menuClassName, align = "right" }) {
+/**
+ * Shared dropdown shell for panel chrome controls (role, presentation, author, etc.).
+ * Menu surface matches the pick-target right-click menu-tooltip look.
+ */
+export function PanelDropdownMenu({ open, onClose, trigger, children, menuClassName, align = "right", }) {
     const rootRef = useRef(null);
     const menuRef = useRef(null);
     const [menuPlacement, setMenuPlacement] = useState(null);
@@ -87,7 +93,7 @@ export function PanelDropdownMenu({ open, onClose, trigger, children, menuClassN
         const menuRect = menu.getBoundingClientRect();
         const viewportPlacement = computeDropdownPlacement(triggerRect, menuRect.width, menuRect.height, align);
         const nextPlacement = toRelativePlacement(viewportPlacement, rootRect);
-        setMenuPlacement((current) => (isSamePlacement(current, nextPlacement) ? current : nextPlacement));
+        setMenuPlacement((current) => isSamePlacement(current, nextPlacement) ? current : nextPlacement);
     }, [align]);
     useLayoutEffect(() => {
         if (!open) {
@@ -136,9 +142,9 @@ export function PanelDropdownMenu({ open, onClose, trigger, children, menuClassN
             left: 0,
             visibility: "hidden",
         };
-    return (_jsxs("div", { ref: rootRef, className: "relative shrink-0 h-[inherit]", children: [trigger, open ? (_jsx("div", { ref: menuRef, role: "menu", style: menuStyle, onPointerDown: (event) => event.stopPropagation(), className: `${open ? "border-[var(--adaptive-accent-coral)]" : ""} absolute z-[20] min-w-[120px] overflow-hidden bg-[var(--adaptive-black50)] border shadow-[0_0_100px_rgba(0,0,0,0.2)] ${MOTION.menuIn} ${menuClassName ?? ""}`, children: children })) : null] }));
+    return (_jsxs("div", { ref: rootRef, className: "relative shrink-0 h-[inherit]", children: [trigger, open ? (_jsx(MenuTooltipSurface, { ref: menuRef, role: "menu", positioning: "absolute", style: menuStyle, onPointerDown: (event) => event.stopPropagation(), className: menuClassName ?? "", children: children })) : null] }));
 }
-export function PanelDropdownMenuItem({ onClick, active = false, disabled = false, children }) {
-    return (_jsx("button", { type: "button", role: "menuitem", disabled: disabled, onPointerDown: (event) => event.stopPropagation(), onClick: onClick, "aria-pressed": active, className: `flex w-full px-[12px] py-[8px] text-left text-[12px] font-semibold disabled:cursor-not-allowed disabled:opacity-50 ${active ? "bg-[var(--adaptive-black100)] text-[var(--adaptive-black900)]" : "text-[var(--adaptive-black800)] hover:bg-[var(--adaptive-black100)]"}`, children: children }));
+export function PanelDropdownMenuItem({ onClick, active = false, disabled = false, danger = false, icon, children, className = "", }) {
+    return (_jsx(MenuTooltipItem, { active: active, disabled: disabled, danger: danger, icon: icon, className: className, onPointerDown: (event) => event.stopPropagation(), onClick: onClick, children: children }));
 }
 //# sourceMappingURL=PanelDropdownMenu.js.map

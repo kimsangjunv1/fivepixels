@@ -77,9 +77,24 @@ export function useSelfProfile(projectId: string, environment: string | undefine
         persistSelfProfile(projectId, environment, next);
     }, [environment, projectId, selfProfile?.authorId, selfProfile?.name]);
 
+    const clearSelfProfile = useCallback(() => {
+        setSelfProfileState(null);
+
+        if (typeof window === "undefined") {
+            return;
+        }
+
+        try {
+            window.localStorage.removeItem(getSelfProfileStorageKey(projectId, environment));
+        } catch {
+            // Ignore storage failures in restricted environments.
+        }
+    }, [environment, projectId]);
+
     return {
         selfProfile,
         saveSelfProfile,
         markOnboardingComplete,
+        clearSelfProfile,
     };
 }

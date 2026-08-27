@@ -9,7 +9,7 @@ import { useReportReplyReview } from "./useReportReplyReview.js";
 import { assembleReportContextValue } from "./assembleReportContextValue.js";
 import { useNetworkMonitor } from "../useNetworkMonitor.js";
 import { resolveDefaultAuthorName } from "../../utils/report/resolveDefaultAuthorName.js";
-export function useReportState({ projectId, environment, appVersion, panelAppearance, tooltipAppearance, questionThreadDefault = "expanded", fields, authors = [], requireReviewerKey = false, shortcut: _shortcut, identify, adapter, onNavigate, onRevealTarget, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys = false, initialLocale, messageOverrides, pixelsMode = "default", sync = "local", replyHistory, networkMonitor = true, }) {
+export function useReportState({ projectId, environment, appVersion, panelAppearance, tooltipAppearance, questionThreadDefault = "expanded", threadLayoutDefault = "classic", fields, authors = [], requireReviewerKey = false, shortcut: _shortcut, identify, adapter, onNavigate, onRevealTarget, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys = false, initialLocale, messageOverrides, pixelsMode = "default", sync = "local", requireAuth, replyHistory, networkMonitor = true, }) {
     const overlayRef = useRef(null);
     const hoveredElementRef = useRef(null);
     const selectedElementRef = useRef(null);
@@ -28,8 +28,11 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         requireReviewerKey,
         pixelsMode,
         sync,
+        requireAuth,
         onApiLogin: adapter?.auth?.login,
         onApiRegister: adapter?.auth?.signup,
+        onApiLogout: adapter?.auth?.logout,
+        onApiRefresh: adapter?.auth?.refresh,
         onArtemisLogin: adapter?.auth?.artemisLogin,
     });
     const panel = useReportPanelShell({
@@ -40,6 +43,7 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         panelAppearance,
         tooltipAppearance,
         questionThreadDefault,
+        threadLayoutDefault,
         fields,
         showFeedbackList,
         initialLocale,
@@ -57,7 +61,6 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
     const draft = useReportDraftSession({
         mode: panel.mode,
         setMode: panel.setMode,
-        projectId,
         fields,
         messages: panel.messages,
         currentPathname: panel.currentPathname,
@@ -102,13 +105,15 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
     const restoreSuspendedOpenReplyWindows = useCallback((focusReport) => {
         const snapshot = suspendedOpenWindowsRef.current;
         suspendedOpenWindowsRef.current = null;
-        const preferredFocusId = focusReport?.id ?? snapshot?.focusedId ?? null;
+        // Memo uses the draft composer, not the reply/marker window.
+        const safeFocus = focusReport?.category === "memo" ? null : (focusReport ?? null);
+        const preferredFocusId = safeFocus?.id ?? snapshot?.focusedId ?? null;
         if (snapshot && snapshot.openIds.length > 0) {
-            replyBridgeRef.current.restoreOpenReplyWindows(snapshot, preferredFocusId, focusReport);
+            replyBridgeRef.current.restoreOpenReplyWindows(snapshot, preferredFocusId, safeFocus);
             return;
         }
-        if (focusReport) {
-            replyBridgeRef.current.openReplyComposer(focusReport);
+        if (safeFocus) {
+            replyBridgeRef.current.openReplyComposer(safeFocus);
         }
     }, []);
     const captureOpenReplyWindowsForDraftEdit = useCallback(() => {

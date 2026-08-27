@@ -7,13 +7,20 @@ type PanelDropdownMenuProps = {
     menuClassName?: string;
     align?: "left" | "right";
 };
-export declare function PanelDropdownMenu({ open, onClose, trigger, children, menuClassName, align }: PanelDropdownMenuProps): import("react").JSX.Element;
+/**
+ * Shared dropdown shell for panel chrome controls (role, presentation, author, etc.).
+ * Menu surface matches the pick-target right-click menu-tooltip look.
+ */
+export declare function PanelDropdownMenu({ open, onClose, trigger, children, menuClassName, align, }: PanelDropdownMenuProps): import("react").JSX.Element;
 type PanelDropdownMenuItemProps = {
     onClick: () => void;
     active?: boolean;
     disabled?: boolean;
+    danger?: boolean;
+    icon?: ReactNode;
     children: ReactNode;
+    className?: string;
 };
-export declare function PanelDropdownMenuItem({ onClick, active, disabled, children }: PanelDropdownMenuItemProps): import("react").JSX.Element;
+export declare function PanelDropdownMenuItem({ onClick, active, disabled, danger, icon, children, className, }: PanelDropdownMenuItemProps): import("react").JSX.Element;
 export {};
 //# sourceMappingURL=PanelDropdownMenu.d.ts.map

@@ -50,6 +50,8 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     setTooltipAppearance: (nextAppearance: import("../../types/report.js").ReportAppearance) => void;
     questionThreadDisplay: import("../../types/report.js").QuestionThreadDisplay;
     setQuestionThreadDisplay: (nextDisplay: import("../../types/report.js").QuestionThreadDisplay) => void;
+    threadLayout: import("../../types/report.js").ThreadLayoutStyle;
+    setThreadLayout: (nextLayout: import("../../types/report.js").ThreadLayoutStyle) => void;
     locale: import("../../utils/report/reportUi.js").ReportLocale;
     setLocale: (nextLocale: import("../../utils/report/reportUi.js").ReportLocale) => void;
     messages: import("../../utils/report/reportUi.js").ReportMessages;
@@ -88,8 +90,15 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     authorSelectionLocked: boolean;
     panelView: import("./useReportAuthSession.js").PanelView;
     loginMethod: "local" | "api" | "artemis";
+    requireAuth: boolean;
+    require: {
+        authLogin: boolean;
+        reviewerKey: boolean;
+    };
     loginWithApi: (payload: import("../../types/report.js").ReportApiLoginPayload) => Promise<import("../../types/report.js").ReportAuthUser>;
     registerWithApi: (payload: import("../../types/report.js").ReportApiRegisterPayload) => Promise<void>;
+    logoutWithApi: () => Promise<void>;
+    refreshWithApi: () => Promise<import("../../types/report.js").ReportAuthUser | undefined>;
     loginWithArtemis: () => Promise<import("../../types/report.js").ReportAuthUser>;
     completeRemoteOnboarding: () => void;
     completeOnboarding: ({ name }: {
@@ -252,12 +261,6 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     resetPickProbeValues: () => void;
     appendSavedProbeSummaryAsNewDraftCase: () => void;
     appendApiFlowEntryToDraftCase: (entryId: string) => void;
-    elementMemos: import("../../utils/memo/elementMemos.js").ElementMemoMap;
-    memoComposer: import("./useElementMemos.js").ElementMemoComposerState | null;
-    openMemoComposer: (elementKey: string, clientX: number, clientY: number) => void;
-    closeMemoComposer: () => void;
-    saveElementMemo: (elementKey: string, text: string) => void;
-    deleteElementMemo: (elementKey: string) => void;
     markers: import("../../types/report-ui.js").Marker[];
     selectedReport: ReportFeedback;
     editingReportId: string | null;
@@ -318,6 +321,7 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     focusedCaseId: string | null;
     selectCase: (caseId: string) => void;
     isComposingNewCase: boolean;
+    hasNewCaseDraftSession: boolean;
     beginComposeNewCase: () => void;
     cancelComposeNewCase: () => void;
     clearFocusedCase: () => void;

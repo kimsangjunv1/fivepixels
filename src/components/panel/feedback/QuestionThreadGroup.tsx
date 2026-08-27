@@ -3,7 +3,8 @@ import type { ReportAuthor, ReportReply } from "@/types/report.js";
 import { useReportPreferences } from "@/providers/reportContext.js";
 import { ChevronDownIcon } from "@/components/icons/Icons.js";
 import { ThreadChildReply } from "./ThreadChildReply.js";
-import { ThreadTimelineRow } from "./ThreadTimelineRow.js";
+import { FeedSpineDot } from "./feed/FeedTimelineRow.js";
+import { ThreadLayoutShell } from "./feed/ThreadLayoutShell.js";
 
 type QuestionThreadGroupProps = {
     questions: ReportReply[];
@@ -14,12 +15,13 @@ type QuestionThreadGroupProps = {
 };
 
 export function QuestionThreadGroup({ questions, authors, originalAuthorName, actorName, forceExpanded = false }: QuestionThreadGroupProps) {
-    const { messages, questionThreadDisplay } = useReportPreferences();
-    const [isExpanded, setIsExpanded] = useState(() => questionThreadDisplay === "expanded");
+    const { messages, questionThreadDisplay, threadLayout } = useReportPreferences();
+    const isFeed = threadLayout === "feed";
+    const [isExpanded, setIsExpanded] = useState(() => questionThreadDisplay === "expanded" || isFeed);
 
     useEffect(() => {
-        setIsExpanded(questionThreadDisplay === "expanded");
-    }, [questionThreadDisplay]);
+        setIsExpanded(questionThreadDisplay === "expanded" || isFeed);
+    }, [questionThreadDisplay, isFeed]);
 
     useEffect(() => {
         if (forceExpanded) {
@@ -37,9 +39,66 @@ export function QuestionThreadGroup({ questions, authors, originalAuthorName, ac
             : messages.thread.questionsHide(questions.length)
         : messages.thread.questionsShow(questions.length);
 
+    if (isFeed) {
+        if (!isExpanded) {
+            return (
+                <ThreadLayoutShell
+                    density="activity"
+                    nested
+                    feedNode={<FeedSpineDot />}
+                >
+                    <button
+                        type="button"
+                        data-fivepixels-interactive=""
+                        aria-expanded={false}
+                        aria-label={messages.thread.questionsToggleAriaLabel(questions.length, false)}
+                        onClick={() => setIsExpanded(true)}
+                        className="inline-flex items-center gap-[4px] py-[1px] text-left text-[12px] text-[var(--adaptive-black500)] hover:opacity-80"
+                    >
+                        <span>{toggleLabel}</span>
+                        <ChevronDownIcon className="h-[12px] w-[12px] shrink-0 text-[var(--adaptive-black400)]" />
+                    </button>
+                </ThreadLayoutShell>
+            );
+        }
+
+        return (
+            <div className="flex flex-col">
+                {questions.map((question) => (
+                    <ThreadChildReply
+                        key={question.id}
+                        reply={question}
+                        authors={authors}
+                        originalAuthorName={originalAuthorName}
+                        actorName={actorName}
+                    />
+                ))}
+                {!forceExpanded ? (
+                    <ThreadLayoutShell
+                        density="activity"
+                        nested
+                        feedNode={<FeedSpineDot />}
+                    >
+                        <button
+                            type="button"
+                            data-fivepixels-interactive=""
+                            aria-expanded
+                            aria-label={messages.thread.questionsToggleAriaLabel(questions.length, true)}
+                            onClick={() => setIsExpanded(false)}
+                            className="inline-flex items-center gap-[4px] py-[1px] text-left text-[12px] text-[var(--adaptive-black500)] hover:opacity-80"
+                        >
+                            <span>{messages.thread.questionsHide(questions.length)}</span>
+                            <ChevronDownIcon className="h-[12px] w-[12px] shrink-0 rotate-180 text-[var(--adaptive-black400)]" />
+                        </button>
+                    </ThreadLayoutShell>
+                ) : null}
+            </div>
+        );
+    }
+
     return (
         <div className="flex flex-col">
-            <ThreadTimelineRow>
+            <ThreadLayoutShell>
                 <button
                     type="button"
                     data-fivepixels-interactive=""
@@ -51,7 +110,7 @@ export function QuestionThreadGroup({ questions, authors, originalAuthorName, ac
                     <ChevronDownIcon className={`h-[12px] w-[12px] shrink-0 text-[var(--adaptive-black400)] transition-transform ${isExpanded ? "rotate-180" : ""}`} />
                     <span className="text-[12px] text-[var(--adaptive-black500)] font-medium">{toggleLabel}</span>
                 </button>
-            </ThreadTimelineRow>
+            </ThreadLayoutShell>
 
             {isExpanded
                 ? questions.map((question) => (

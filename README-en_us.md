@@ -50,14 +50,14 @@ function createAdapter(): FivePixelsAdapter {
     return {
         markers: {
             list: ({ pathname }) =>
-                fetch(`/api${projectBase}/feedback-markers?pathname=${encodeURIComponent(pathname)}`).then((r) => r.json()),
+                fetch(`/api/v1/fivepixels${projectBase}/feedbacks/markers?pathname=${encodeURIComponent(pathname)}`).then((r) => r.json()),
         },
         feedback: {
             create: (payload) =>
-                fetch(`/api${projectBase}/feedbacks`, { method: "POST", body: JSON.stringify(payload) }).then((r) => r.json()),
-            getForUi: (id) => fetch(`/api/ui${projectBase}/feedbacks/${id}`).then((r) => r.json()),
+                fetch(`/api/v1/fivepixels${projectBase}/feedbacks`, { method: "POST", body: JSON.stringify(payload) }).then((r) => r.json()),
+            getForUi: (id) => fetch(`/api/v1/fivepixels${projectBase}/feedbacks/${id}/overview`).then((r) => r.json()),
             update: (id, payload) =>
-                fetch(`/api${projectBase}/feedbacks/${id}`, { method: "PATCH", body: JSON.stringify(payload) }).then((r) => r.json()),
+                fetch(`/api/v1/fivepixels${projectBase}/feedbacks/${id}`, { method: "PATCH", body: JSON.stringify(payload) }).then((r) => r.json()),
         },
     };
 }
@@ -84,10 +84,12 @@ See `examples/basic/src/fivepixels/adapter.ts` and `FivePixelsAdapter` (`src/typ
 | `project` | `{ id?, env?, version? }` | Project scope. `id` defaults to `"my-app"`. |
 | `ui` | `{ appearance?, showFeedbackList?, visibleShortcutKeys?, shortcut?, locale?, messages? }` | UI options. `appearance`: `light` \| `dark` \| `system`. |
 | `visibility` | `{ enabled?, devOnly?, routeKey? }` | Mount control. `devOnly` limits to dev environments. |
-| `team` | `{ user?, reviewers?, requireReviewerKey? }` | Author and reviewers. `user`: `{ id, name }`. |
+| `team` | `{ reviewers?, user?, requireReviewerKey? }` | Reviewer roster. Prefer omitting `user`; prefer `require.reviewerKey` over `requireReviewerKey`. |
 | `mode` | `"default"` \| `"presentation"` | Presentation mode for demos and viewer switching. |
-| `sync` | `"local"` \| `"api"` \| `"artemis"` | Auth and persistence strategy. Defaults to `"local"`. |
-| `adapter` | `FivePixelsAdapter` | Backend handler bundle used for remote sync and API login. |
+| `sync` | `"local"` \| `"api"` \| `"artemis"` | Persistence strategy. Defaults to `"local"`. |
+| `require` | `{ authLogin?, reviewerKey? }` | Identity policy. `authLogin`: company login (default true for remote sync). `reviewerKey`: match personal key to reviewers. |
+| `requireAuth` | `boolean` | **Deprecated** — use `require.authLogin`. |
+| `adapter` | `FivePixelsAdapter` | Backend handlers for remote persistence and optional API login. |
 | `fields` | `ReportField[]` | Custom fields (`textarea`, `checkbox`). |
 | `onNavigate` | `(pathname) => void` | Navigate from View mode. |
 | `onRevealTarget` | `(report) => boolean \| Promise<boolean>` | Reveal a cross-page feedback target. |
@@ -95,7 +97,19 @@ See `examples/basic/src/fivepixels/adapter.ts` and `FivePixelsAdapter` (`src/typ
 | `onReply` | `({ feedbackId, message }) => void` | Reply side effect hook. |
 | `github` | `{ enabled?, modes?, onCreate? }` | GitHub Issue integration. |
 
-> With `sync="local"` (default), omitting `adapter` uses the localStorage adapter. With `sync="api"` or `"artemis"`, `adapter.markers.list`, `adapter.feedback.create`, and `adapter.feedback.update` (or `adapter.cases.update`) are **required**.
+> With `sync="local"` (default), omitting `adapter` uses the localStorage adapter. With `sync="api"` or `"artemis"`, `adapter.markers.list`, `adapter.feedback.create`, and `adapter.feedback.update` (or `adapter.cases.update`) are **required**. Company login is controlled by `require.authLogin` (default `true` for remote sync); personal-key matching uses `require.reviewerKey`.
+
+**Recommended setup for shared API feedback without company login:**
+
+```tsx
+<FivePixels
+  sync="api"
+  require={{ authLogin: false, reviewerKey: false }}
+  adapter={adapter}
+/>
+```
+
+Authors are identified by display name + personal key, and the panel skips team-key approval (`setup-complete`) so people can start immediately.
 
 **Finding types:** public props → `FivePixelsProps` (`src/types/publicApi.ts`) · adapter surface → `FivePixelsAdapter` (`src/types/adapter.ts`) · payloads/entities → `CreateReportFeedbackPayload`, `ReportFeedback`, etc. (`src/types/report.ts`).
 

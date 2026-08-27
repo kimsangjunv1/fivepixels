@@ -22,6 +22,7 @@ import type {
     FivePixelsMode,
     ReportIdentify,
     QuestionThreadDisplay,
+    ThreadLayoutStyle,
 } from "@/types/report.js";
 import type { ReportSideEffectCallbacks } from "@/utils/report/reportCallbacks.js";
 import { resolveDefaultAuthorName } from "@/utils/report/resolveDefaultAuthorName.js";
@@ -36,6 +37,7 @@ export type ReportStateConfig = {
     panelAppearance: ReportAppearance;
     tooltipAppearance: ReportAppearance;
     questionThreadDefault?: QuestionThreadDisplay;
+    threadLayoutDefault?: ThreadLayoutStyle;
     fields: ReportField[];
     authors?: ReportAuthor[];
     requireReviewerKey?: boolean;
@@ -54,6 +56,7 @@ export type ReportStateConfig = {
     messageOverrides?: DeepPartialReportMessages;
     pixelsMode?: FivePixelsMode;
     sync?: FivePixelsSync;
+    requireAuth?: boolean;
     replyHistory: import("@/utils/report/reportUi.js").ResolvedReplyHistoryConfig;
     networkMonitor?: boolean;
 };
@@ -65,6 +68,7 @@ export function useReportState({
     panelAppearance,
     tooltipAppearance,
     questionThreadDefault = "expanded",
+    threadLayoutDefault = "classic",
     fields,
     authors = [],
     requireReviewerKey = false,
@@ -83,6 +87,7 @@ export function useReportState({
     messageOverrides,
     pixelsMode = "default",
     sync = "local",
+    requireAuth,
     replyHistory,
     networkMonitor = true,
 }: ReportStateConfig) {
@@ -113,8 +118,11 @@ export function useReportState({
         requireReviewerKey,
         pixelsMode,
         sync,
+        requireAuth,
         onApiLogin: adapter?.auth?.login,
         onApiRegister: adapter?.auth?.signup,
+        onApiLogout: adapter?.auth?.logout,
+        onApiRefresh: adapter?.auth?.refresh,
         onArtemisLogin: adapter?.auth?.artemisLogin,
     });
 
@@ -126,6 +134,7 @@ export function useReportState({
         panelAppearance,
         tooltipAppearance,
         questionThreadDefault,
+        threadLayoutDefault,
         fields,
         showFeedbackList,
         initialLocale,
@@ -148,7 +157,6 @@ export function useReportState({
     const draft = useReportDraftSession({
         mode: panel.mode,
         setMode: panel.setMode,
-        projectId,
         fields,
         messages: panel.messages,
         currentPathname: panel.currentPathname,
@@ -220,15 +228,17 @@ export function useReportState({
     const restoreSuspendedOpenReplyWindows = useCallback((focusReport?: ReportFeedback | null) => {
         const snapshot = suspendedOpenWindowsRef.current;
         suspendedOpenWindowsRef.current = null;
-        const preferredFocusId = focusReport?.id ?? snapshot?.focusedId ?? null;
+        // Memo uses the draft composer, not the reply/marker window.
+        const safeFocus = focusReport?.category === "memo" ? null : (focusReport ?? null);
+        const preferredFocusId = safeFocus?.id ?? snapshot?.focusedId ?? null;
 
         if (snapshot && snapshot.openIds.length > 0) {
-            replyBridgeRef.current.restoreOpenReplyWindows(snapshot, preferredFocusId, focusReport);
+            replyBridgeRef.current.restoreOpenReplyWindows(snapshot, preferredFocusId, safeFocus);
             return;
         }
 
-        if (focusReport) {
-            replyBridgeRef.current.openReplyComposer(focusReport);
+        if (safeFocus) {
+            replyBridgeRef.current.openReplyComposer(safeFocus);
         }
     }, []);
 

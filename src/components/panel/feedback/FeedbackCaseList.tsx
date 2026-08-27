@@ -6,6 +6,7 @@ import { getCaseHandlerName } from "@/utils/report/reportCases.js";
 import { mentionMessageToPlainText } from "@/utils/mention/elementMentions.js";
 import { FeedbackCaseEditor } from "./FeedbackCaseEditor.js";
 import { CASE_SELECTOR_ALL_TAB, CaseResolvedBadge, FeedbackCaseTabBar, type CaseSelectorTab } from "./FeedbackCaseTabBar.js";
+import { ReportPanelNoticeDialog } from "../ReportPanelNoticeDialog.js";
 
 type FeedbackCaseListProps = {
     report: Pick<ReportFeedback, "id" | "cases" | "replies" | "author_name">;
@@ -129,12 +130,11 @@ export function FeedbackCaseList({
         return (
             <div className="flex flex-col gap-[8px]">
                 {errorMessage ? (
-                    <p
+                    <ReportPanelNoticeDialog
                         role="alert"
-                        className="rounded-[8px] border border-rose-200 bg-rose-50 px-[8px] py-[4px] text-[12px] leading-[1.4] text-rose-700"
-                    >
-                        {errorMessage}
-                    </p>
+                        title={messages.common.noticeTitle}
+                        description={errorMessage}
+                    />
                 ) : null}
                 <FeedbackCaseEditor
                     cases={cases}

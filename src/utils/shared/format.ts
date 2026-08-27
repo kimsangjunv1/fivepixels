@@ -199,3 +199,26 @@ export function formatRelativeTime(value: string, labels: RelativeTimeLabels, no
             return labels.yearsAgo(parts.count);
     }
 }
+
+/** Compact feed timestamps like `12m`, `3h`, `5d` (reference activity-feed style). */
+export function formatRelativeTimeCompact(value: string, now: Date = new Date()) {
+    const parts = getRelativeTimeParts(value, now);
+
+    if (!parts) {
+        return "";
+    }
+
+    if (parts.unit === "second") {
+        return "now";
+    }
+
+    const suffix: Record<Exclude<RelativeTimeUnit, "second">, string> = {
+        minute: "m",
+        hour: "h",
+        day: "d",
+        month: "mo",
+        year: "y",
+    };
+
+    return `${parts.count}${suffix[parts.unit]}`;
+}

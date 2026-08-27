@@ -1,9 +1,9 @@
 import { formatAssigneeLabel } from "../../utils/report/reportCases.js";
-export function resolveReportTeam({ team }) {
+export function resolveReportTeam({ team, requireReviewerKey }) {
     return {
         user: team?.user,
         reviewers: team?.reviewers ?? [],
-        requireReviewerKey: team?.requireReviewerKey ?? false,
+        requireReviewerKey: typeof requireReviewerKey === "boolean" ? requireReviewerKey : (team?.requireReviewerKey ?? false),
     };
 }
 export function buildPresentationViewers(user, reviewers) {

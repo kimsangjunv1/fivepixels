@@ -13,8 +13,10 @@ export type PresentationViewer = {
 };
 export type ResolveReportTeamOptions = {
     team?: ReportTeam;
+    /** Overrides `team.requireReviewerKey` when set (from `require.reviewerKey`). */
+    requireReviewerKey?: boolean;
 };
-export declare function resolveReportTeam({ team }: ResolveReportTeamOptions): ResolvedReportTeam;
+export declare function resolveReportTeam({ team, requireReviewerKey }: ResolveReportTeamOptions): ResolvedReportTeam;
 export declare function buildPresentationViewers(user: ReportIdentify | undefined, reviewers: ReportAuthor[]): PresentationViewer[];
 export declare function formatPresentationViewerLabel(viewer: PresentationViewer): string;
 export type SessionActor = {

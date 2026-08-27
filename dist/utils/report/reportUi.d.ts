@@ -1,5 +1,5 @@
 import type { DeepPartialReportMessages, ReportLocale, ReportMessages } from "../../i18n/index.js";
-import type { QuestionThreadDisplay, ReplyHistoryLoadMode, ReportAppearance, ReportUi } from "../../types/report.js";
+import type { QuestionThreadDisplay, ReplyHistoryLoadMode, ReportAppearance, ReportUi, ThreadLayoutStyle } from "../../types/report.js";
 export type ResolvedReplyHistoryConfig = {
     mode: ReplyHistoryLoadMode;
     pageSize: number;
@@ -10,6 +10,7 @@ export type ResolvedReportUi = {
     showFeedbackList: boolean;
     visibleShortcutKeys: boolean;
     questionThreadDefault: QuestionThreadDisplay;
+    threadLayoutDefault: ThreadLayoutStyle;
     replyHistory: ResolvedReplyHistoryConfig;
     shortcut?: string;
     locale: ReportLocale;

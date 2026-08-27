@@ -1,5 +1,5 @@
 import type { FeedbackCategory } from "../constants/feedbackCategory.js";
-import type { ReportAppearance, QuestionThreadDisplay } from "../types/report.js";
+import type { ReportAppearance, QuestionThreadDisplay, ThreadLayoutStyle } from "../types/report.js";
 export type ReportLocale = "en" | "ko";
 type RouteDetailStatus = "wait" | "suggested" | "git_issued" | "resolved";
 type FeedbackDisplayStatus = "currently_wait" | "wait_for_reply" | "issue_apply" | "git_issued" | "suggested" | "additional_question" | "found_error" | "recheck_requested" | "resolved" | "assignee_assigned" | "assignee_transferred";
@@ -16,6 +16,7 @@ export type ReportMessages = {
         executing: string;
         ok: string;
         retry: string;
+        noticeTitle: string;
         none: string;
         all: string;
         relativeTime: {
@@ -81,6 +82,7 @@ export type ReportMessages = {
         tabThisPage: string;
         tabPageDetails: string;
         tabFeedbackList: string;
+        tabMemoList: string;
         tabDiagnostics: string;
         tabApiFlow: string;
         tabSettings: string;
@@ -140,6 +142,7 @@ export type ReportMessages = {
         filterStatusAriaLabel: string;
         filterTypeAriaLabel: string;
         searchPlaceholder: string;
+        memoSearchPlaceholder: string;
         caseIdLabel: (fcNumber: number) => string;
         replyCountBadge: (count: number) => string;
         statusTag: {
@@ -152,6 +155,7 @@ export type ReportMessages = {
         loadFailedRetry: string;
         emptyTitle: string;
         emptyNoFeedback: string;
+        emptyNoMemo: string;
         emptyNoMatch: string;
         emptyPersistenceRequired: string;
         emptyPersistenceRequiredHint: string;
@@ -272,6 +276,10 @@ export type ReportMessages = {
         questionsToggleAriaLabel: (count: number, expanded: boolean) => string;
         issueResolvedDivider: string;
         detachedTargetDivider: string;
+        feedAssigneeAssignedAction: string;
+        feedAssigneeTransferredAction: string;
+        feedIssueResolvedAction: string;
+        feedDetachedTargetAction: string;
         claimAssignee: string;
         takeOverAssignee: string;
         assigneeAssigned: string;
@@ -327,6 +335,7 @@ export type ReportMessages = {
         settings: string;
         sectionTransfer: string;
         sectionKey: string;
+        sectionAccount: string;
         sectionAdvanced: string;
         import: string;
         export: string;
@@ -335,6 +344,8 @@ export type ReportMessages = {
         keyInsert: string;
         keyChange: string;
         keyRotate: string;
+        logout: string;
+        logoutFailed: string;
         theme: string;
         themeAriaLabel: string;
         panelTheme: string;
@@ -397,9 +408,13 @@ export type ReportMessages = {
         artemisLoginDescription: string;
         googleLogin: string;
         loginFailed: string;
+        logoutAction: string;
+        logoutFailed: string;
         authUnavailable: string;
         introTitle: string;
         introDescription: string;
+        /** Shown on intro when `sync="api"` and `require.authLogin={false}`. */
+        introDescriptionApiNoAuth: string;
         newUser: string;
         existingUser: string;
         restoreTitle: string;
@@ -492,6 +507,7 @@ export type ReportMessages = {
     localeOption: Record<ReportLocale, string>;
     appearance: Record<ReportAppearance, string>;
     questionThreadOption: Record<QuestionThreadDisplay, string>;
+    threadLayoutOption: Record<ThreadLayoutStyle, string>;
     settings: {
         sectionMarker: string;
         markerTargetsOff: string;
@@ -555,8 +571,10 @@ export type ReportMessages = {
         backAriaLabel: string;
         appearanceBackAriaLabel: string;
         appearanceThemeLanguage: string;
+        appearanceThreadLayout: string;
         sectionTheme: string;
         sectionLanguage: string;
+        sectionThreadLayout: string;
         sectionMarkerAppearance: string;
         sectionMarkerForm: string;
         sectionMarkerColors: string;

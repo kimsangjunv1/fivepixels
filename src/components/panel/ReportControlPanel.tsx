@@ -3,17 +3,7 @@ import { panelAnchorSide, placementToCollapsedPanelStyle, usePanelDock } from "@
 import { usePanelResize, panelSizeToStyle } from "@/hooks/usePanelResize.js";
 import { usePanelFeedbackTransfer } from "@/hooks/usePanelFeedbackTransfer.js";
 import { useReport } from "@/providers/reportContext.js";
-import {
-    ChevronDownIcon,
-    ChevronLeftIcon,
-    ChevronRightIcon,
-    DevicePreviewIcon,
-    EyeOpenIcon,
-    LockIcon,
-    LogoIcon,
-    SelectIcon,
-    SettingsIcon,
-} from "@/components/icons/Icons.js";
+import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, DevicePreviewIcon, EyeOpenIcon, LockIcon, LogoIcon, SelectIcon, SettingsIcon } from "@/components/icons/Icons.js";
 import { IconTooltipButton } from "@/components/ui/IconTooltipButton.js";
 import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
 import { useIntegrationLock } from "@/components/ui/IntegrationLock.js";
@@ -33,6 +23,7 @@ import { ReportCommandReplaceConfirmDialog } from "./ReportCommandReplaceConfirm
 import { ReportImportConfirmDialog } from "./ReportImportConfirmDialog.js";
 import { ReportImportProjectMismatchDialog } from "./ReportImportProjectMismatchDialog.js";
 import { ReportPersonalKeyDialog } from "./ReportPersonalKeyDialog.js";
+import { ReportPanelNoticeDialog } from "./ReportPanelNoticeDialog.js";
 import { PanelSettings } from "./PanelSettings.js";
 import { CornerResizeGhost } from "@/components/ui/CornerResizeGhost.js";
 import { CornerResizeHandle } from "@/components/ui/CornerResizeHandle.js";
@@ -112,6 +103,8 @@ export function ReportControlPanel() {
         setTooltipAppearance,
         questionThreadDisplay,
         setQuestionThreadDisplay,
+        threadLayout,
+        setThreadLayout,
         canTransferFeedback,
         personalKey,
         publicKey,
@@ -385,11 +378,7 @@ export function ReportControlPanel() {
                         </section>
                     ) : (
                         <>
-                            <section
-                                className={`relative flex min-h-0 min-w-0 flex-col overflow-hidden ${
-                                    applyFixedHeight || tabShellMounted ? "h-full flex-1" : "shrink-0"
-                                }`}
-                            >
+                            <section className={`relative flex min-h-0 min-w-0 flex-col overflow-hidden ${applyFixedHeight || tabShellMounted ? "h-full flex-1" : "shrink-0"}`}>
                                 {isDragOver ? (
                                     <div className="pointer-events-none absolute inset-0 z-[30] flex items-center justify-center rounded-[12px] bg-[#dbeafe]/90 px-[16px] text-center backdrop-blur-[2px]">
                                         <p className="text-[14px] font-bold text-[var(--adaptive-blue500)]">{messages.panel.importDragOverlay}</p>
@@ -535,9 +524,27 @@ export function ReportControlPanel() {
                                 </section>
 
                                 {errorMessage && importStep === "none" && commandStep === "none" && !activeReplyReportId ? (
-                                    <p className={`px-[8px] text-[12px] text-rose-700 ${MOTION.noticeIn}`}>{errorMessage}</p>
+                                    <ReportPanelNoticeDialog
+                                        role="alert"
+                                        title={messages.common.noticeTitle}
+                                        description={errorMessage}
+                                    />
                                 ) : null}
-                                {personalKeyNotice ? <p className={`px-[8px] py-[4px] text-[12px] text-[var(--adaptive-green500)] ${MOTION.noticeIn}`}>{personalKeyNotice}</p> : null}
+                                {personalKeyNotice ? (
+                                    <ReportPanelNoticeDialog
+                                        role="status"
+                                        title={messages.common.noticeTitle}
+                                        description={personalKeyNotice}
+                                        actions={[
+                                            {
+                                                id: "dismiss",
+                                                label: messages.common.ok,
+                                                variant: "primary",
+                                                onClick: () => setPersonalKeyNotice(""),
+                                            },
+                                        ]}
+                                    />
+                                ) : null}
 
                                 {personalKeyStep !== "none" ? (
                                     <ReportPersonalKeyDialog
@@ -570,7 +577,7 @@ export function ReportControlPanel() {
 
                                 {tabShellMounted ? (
                                     <div
-                                        className={`${MOTION.panelTabShell} min-h-0 flex-1`}
+                                        className={`${MOTION.panelTabShell} min-h-[0px] max-h-[min(50dvh,512px)] h-full flex-1`}
                                         data-open={tabShellOpen ? "true" : "false"}
                                     >
                                         <div className={`${MOTION.panelTabShellInner} flex min-h-0 flex-col overflow-hidden`}>
@@ -578,7 +585,8 @@ export function ReportControlPanel() {
 
                                             {renderedTab === "route-details" && commandStep === "none" ? <ReportRouteDetails /> : null}
 
-                                            {renderedTab === "feedback-list" && showFeedbackList && commandStep === "none" ? <ReportFeedbackList /> : null}
+                                            {renderedTab === "feedback-list" && showFeedbackList && commandStep === "none" ? <ReportFeedbackList listKind="feedback" /> : null}
+                                            {renderedTab === "memo-list" && showFeedbackList && commandStep === "none" ? <ReportFeedbackList listKind="memo" /> : null}
                                             {renderedTab === "diagnostics" && commandStep === "none" ? <ReportAuthDiagnostics /> : null}
                                             {renderedTab === "api-flow" && commandStep === "none" ? <ReportApiFlowPanel /> : null}
                                             {renderedTab === "my-tasks" && commandStep === "none" ? <ReportMyTasksPanel /> : null}
@@ -596,6 +604,8 @@ export function ReportControlPanel() {
                                                     onTooltipAppearanceChange={setTooltipAppearance}
                                                     questionThreadDisplay={questionThreadDisplay}
                                                     onQuestionThreadDisplayChange={setQuestionThreadDisplay}
+                                                    threadLayout={threadLayout}
+                                                    onThreadLayoutChange={setThreadLayout}
                                                     onExport={handleExport}
                                                     onImport={handleImportFromMenu}
                                                     onCommand={handleOpenCommand}

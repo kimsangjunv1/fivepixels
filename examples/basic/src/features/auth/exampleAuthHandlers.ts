@@ -63,6 +63,14 @@ export async function exampleApiLogin(payload: ReportApiLoginPayload): Promise<R
     return { id: user.id, name: user.username, email: user.email };
 }
 
+export async function exampleApiLogout(): Promise<void> {
+    // Demo auth keeps accounts in localStorage; session clearing is handled by the library.
+}
+
+export async function exampleApiRefresh(): Promise<ReportAuthUser | void> {
+    // Demo auth has no token store — keep the existing library session as-is.
+}
+
 export async function exampleArtemisLogin(): Promise<ReportAuthUser> {
     return {
         id: "artemis-google-demo",

@@ -139,6 +139,32 @@ function ReportDraftFormContent({ draft, fields, authors, isCreating, isUpdating
                         }, children: [_jsxs("div", { className: "flex min-h-0 flex-col", style: {
                                     maxHeight: customSize?.height ?? TOOLTIP_EXPANDED_DEFAULT_MAX_HEIGHT,
                                     height: customSize?.height,
-                                }, children: [_jsx(DraftNetworkErrorBanner, {}), _jsx(DraftProbeSummaryBanner, {}), _jsx(FeedbackComposer, { cases: draft.cases, onCaseChange: updateDraftCase, onAddCase: addDraftCase, onRemoveCase: removeDraftCase, authorName: draftAuthorName, onAuthorNameChange: setDraftAuthorName, authors: authors, fields: fields, fieldValues: draft.fieldValues, onFieldChange: updateDraftField, category: draft.category, onCategoryChange: updateDraftCategory, showCategory: false, showTags: true, hideAuthorSelector: isPresentationMode || authorSelectionLocked, lockedAuthorName: authorSelectionLocked ? (sessionActor?.name ?? draftAuthorName) : undefined, onSubmit: () => void handleCreateSubmit(), isSubmitting: isCreating, autoFocus: true, errorMessage: errorMessage, onFooterWarningChange: setFooterWarningMessage, hideActions: true, hidePrimarySubmitAction: true, showCaseTabBar: false, activeCaseId: activeCaseId, onActiveCaseIdChange: setActiveCaseId, enableElementMentions: true }), _jsx(DraftComposerToolbar, { cases: draft.cases, activeCaseId: activeCaseId, onSelectCase: setActiveCaseId, onAddCase: addDraftCase, onRemoveCase: handleRemoveCase, onInsertAtMention: handleInsertAtMention, category: draft.category, onCategoryChange: updateDraftCategory, categoryNeedsAttention: categoryNeedsAttention, onSubmit: () => void handleCreateSubmit(), isSubmitting: isSubmitting, submitLabel: submitLabel, submittingLabel: submittingLabel, showGitHubIssueOnCreate: canCreateGitHubIssueOnCreate, onGitHubIssueSubmit: () => void handleCreateSubmitWithGitHubIssue(), isGitHubIssueSubmitting: isDraftGitHubIssueSubmitting, isGitHubIssueConfirming: isGitHubIssueConfirming, onGitHubIssueConfirmingChange: setIsGitHubIssueConfirming })] }), _jsx(CornerResizeHandle, { corner: "bottom-right", ariaLabel: messages.marker.resizeAriaLabel, onPointerDown: handleResizePointerDown })] })] })] }));
+                                }, children: [_jsx(DraftNetworkErrorBanner, {}), _jsx(DraftProbeSummaryBanner, {}), _jsx(FeedbackComposer, { cases: draft.cases, onCaseChange: updateDraftCase, onAddCase: addDraftCase, onRemoveCase: removeDraftCase, authorName: draftAuthorName, onAuthorNameChange: setDraftAuthorName, authors: authors, fields: fields, fieldValues: draft.fieldValues, onFieldChange: updateDraftField, category: draft.category, onCategoryChange: updateDraftCategory, showCategory: false, showTags: true, hideAuthorSelector: isPresentationMode || authorSelectionLocked, lockedAuthorName: authorSelectionLocked ? (sessionActor?.name ?? draftAuthorName) : undefined, onSubmit: () => void handleCreateSubmit(), isSubmitting: isCreating, autoFocus: true, errorMessage: errorMessage, onFooterWarningChange: setFooterWarningMessage, hideActions: true, hidePrimarySubmitAction: true, showCaseTabBar: false, activeCaseId: activeCaseId, onActiveCaseIdChange: setActiveCaseId, enableElementMentions: true, placeholder: draft.category === "memo" ? messages.pickTarget.memoComposerPlaceholder : undefined }), _jsx(DraftComposerToolbar, { ...(draft.category === "memo"
+                                            ? {
+                                                variant: "memo",
+                                                onSave: () => void handleCreateSubmit(),
+                                                onCancel: cancelDraft,
+                                                canSave: draft.cases.some((item) => item.text.trim().length > 0) && !isSubmitting,
+                                            }
+                                            : {
+                                                cases: draft.cases,
+                                                activeCaseId,
+                                                onSelectCase: setActiveCaseId,
+                                                onAddCase: addDraftCase,
+                                                onRemoveCase: handleRemoveCase,
+                                                onInsertAtMention: handleInsertAtMention,
+                                                category: draft.category,
+                                                onCategoryChange: updateDraftCategory,
+                                                categoryNeedsAttention,
+                                                onSubmit: () => void handleCreateSubmit(),
+                                                isSubmitting,
+                                                submitLabel,
+                                                submittingLabel,
+                                                showGitHubIssueOnCreate: canCreateGitHubIssueOnCreate,
+                                                onGitHubIssueSubmit: () => void handleCreateSubmitWithGitHubIssue(),
+                                                isGitHubIssueSubmitting: isDraftGitHubIssueSubmitting,
+                                                isGitHubIssueConfirming,
+                                                onGitHubIssueConfirmingChange: setIsGitHubIssueConfirming,
+                                            }) })] }), _jsx(CornerResizeHandle, { corner: "bottom-right", ariaLabel: messages.marker.resizeAriaLabel, onPointerDown: handleResizePointerDown })] })] })] }));
 }
 //# sourceMappingURL=ReportDraftForm.js.map

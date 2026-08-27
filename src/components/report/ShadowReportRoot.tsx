@@ -76,11 +76,11 @@ hot?.accept("../../styles/reportStylesheet.js", (module) => {
 });
 
 type ShadowReportRootProps = {
-    panelAppearance: ResolvedAppearance;
+    tooltipAppearance: ResolvedAppearance;
     children: ReactNode;
 };
 
-export function ShadowReportRoot({ panelAppearance, children }: ShadowReportRootProps) {
+export function ShadowReportRoot({ tooltipAppearance, children }: ShadowReportRootProps) {
     const [mount, setMount] = useState<HTMLElement | null>(null);
 
     useLayoutEffect(() => {
@@ -104,8 +104,10 @@ export function ShadowReportRoot({ panelAppearance, children }: ShadowReportRoot
     }, []);
 
     useLayoutEffect(() => {
-        syncReportTooltipLayerTheme(panelAppearance);
-    }, [panelAppearance]);
+        // Pointer-follow tooltips portal into the tooltip layer (outside ThemeScope).
+        // Keep layer tokens aligned with tooltip theme, not panel theme.
+        syncReportTooltipLayerTheme(tooltipAppearance);
+    }, [tooltipAppearance]);
 
     if (!mount) {
         return null;

@@ -39,6 +39,7 @@ export function FeedbackHoverCard({ report, detached = false, detachedKind = nul
     const { messages } = useReportPreferences();
     const { authors } = useReport();
     const cases = getReportCases(report);
+    const isMemo = report.category === "memo";
     const visibleCases = cases.slice(0, MAX_TOOLTIP_CASES);
     const hasMoreCases = cases.length > MAX_TOOLTIP_CASES;
     const resolvedDetachedHint = detached && detachedHint && detachedModalHint ? getDetachedMarkerHint(detachedKind, { detachedHint, detachedModalHint }) : null;
@@ -46,6 +47,32 @@ export function FeedbackHoverCard({ report, detached = false, detachedKind = nul
     const authorLabel = report.author_name
         ? formatAssigneeLabel(report.author_name, resolveAuthorDepartment(authors, report.author_name))
         : null;
+
+    if (isMemo) {
+        const memoText = visibleCases.map((item) => mentionMessageToPlainText(item.text, item.mentions)).filter(Boolean).join("\n");
+
+        return (
+            <div className="flex w-[260px] flex-col bg-transparent">
+                <div className="flex flex-col gap-[6px] p-[8px_12px]">
+                    {resolvedDetachedHint ? <p className="text-[13px] leading-[1.4] text-[var(--adaptive-black500)]">{resolvedDetachedHint}</p> : null}
+                    {memoText ? <p className="whitespace-pre-wrap break-words text-[14px] leading-[1.5] text-[var(--adaptive-text-primary)]">{memoText}</p> : null}
+                    {authorLabel || reportRelativeTime ? (
+                        <div className="flex items-center gap-[6px] pt-[2px]">
+                            {authorLabel ? (
+                                <p
+                                    className="min-w-0 truncate text-[14px] text-[var(--adaptive-black500)]"
+                                    title={authorLabel}
+                                >
+                                    {authorLabel}
+                                </p>
+                            ) : null}
+                            {reportRelativeTime ? <p className="shrink-0 text-[14px] text-[var(--adaptive-black500)]">{reportRelativeTime}</p> : null}
+                        </div>
+                    ) : null}
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="flex w-[260px] flex-col bg-transparent">

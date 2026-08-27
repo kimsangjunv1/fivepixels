@@ -5,6 +5,7 @@ type FeedbackListItemProps = {
     locale: ReportLocale;
     messages: ReportMessages;
     listScope: "current" | "all";
+    listKind?: "feedback" | "memo";
     disabled?: boolean;
     canCreateGitHubIssue?: boolean;
     creatingGitHubIssueId?: string | null;
@@ -12,6 +13,6 @@ type FeedbackListItemProps = {
     onDelete: (id: string) => Promise<void>;
     onCreateGitHubIssue?: (report: ReportFeedback) => Promise<void>;
 };
-export declare function FeedbackListItem({ report, locale, messages, listScope, disabled, canCreateGitHubIssue, creatingGitHubIssueId, onLocate, onDelete, onCreateGitHubIssue, }: FeedbackListItemProps): import("react").JSX.Element;
+export declare function FeedbackListItem({ report, locale, messages, listScope, listKind, disabled, canCreateGitHubIssue, creatingGitHubIssueId, onLocate, onDelete, onCreateGitHubIssue, }: FeedbackListItemProps): import("react").JSX.Element;
 export {};
 //# sourceMappingURL=FeedbackListItem.d.ts.map

@@ -17,6 +17,7 @@ type MarkerCaseSidebarProps = {
     report: ReportFeedback;
     focusedCaseId: string | null;
     isComposingNewCase?: boolean;
+    hasNewCaseDraftSession?: boolean;
     composingCaseTitle?: string;
     onSelectCase: (caseId: string) => void;
     onSelectComposingCase?: () => void;
@@ -58,6 +59,7 @@ export function MarkerCaseSidebar({
     report,
     focusedCaseId,
     isComposingNewCase = false,
+    hasNewCaseDraftSession = false,
     composingCaseTitle,
     onSelectCase,
     onSelectComposingCase,
@@ -66,6 +68,7 @@ export function MarkerCaseSidebar({
     const { sessionActor, removePersistedCase, isUpdating } = useReport();
     const cases = getReportCases(report);
     const resolvedComposingTitle = composingCaseTitle ?? messages.cases.composingCaseTitle;
+    const showComposingCase = isComposingNewCase || hasNewCaseDraftSession;
 
     return (
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
@@ -129,14 +132,18 @@ export function MarkerCaseSidebar({
                     );
                 })}
 
-                {isComposingNewCase ? (
+                {showComposingCase ? (
                     <li>
                         <button
                             type="button"
                             data-fivepixels-interactive=""
-                            aria-current
+                            aria-current={isComposingNewCase}
                             onClick={() => onSelectComposingCase?.()}
-                            className="flex w-full flex-col items-start justify-center gap-[8px] rounded-[8px] bg-[var(--adaptive-neutralTintOpacity900)] px-[8px] py-[8px] text-left text-[var(--adaptive-black900)]"
+                            className={`flex w-full flex-col items-start justify-center gap-[8px] rounded-[8px] px-[8px] py-[8px] text-left ${
+                                isComposingNewCase
+                                    ? "bg-[var(--adaptive-neutralTintOpacity900)] text-[var(--adaptive-black900)]"
+                                    : "text-[var(--adaptive-black700)] hover:bg-[var(--adaptive-tintOpacity100)]"
+                            }`}
                         >
                             <section className="flex w-full items-center gap-[4px]">
                                 <span

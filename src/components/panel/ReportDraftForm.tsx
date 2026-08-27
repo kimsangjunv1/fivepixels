@@ -345,26 +345,36 @@ function ReportDraftFormContent({
                             activeCaseId={activeCaseId}
                             onActiveCaseIdChange={setActiveCaseId}
                             enableElementMentions
+                            placeholder={draft.category === "memo" ? messages.pickTarget.memoComposerPlaceholder : undefined}
                         />
                         <DraftComposerToolbar
-                            cases={draft.cases}
-                            activeCaseId={activeCaseId}
-                            onSelectCase={setActiveCaseId}
-                            onAddCase={addDraftCase}
-                            onRemoveCase={handleRemoveCase}
-                            onInsertAtMention={handleInsertAtMention}
-                            category={draft.category}
-                            onCategoryChange={updateDraftCategory}
-                            categoryNeedsAttention={categoryNeedsAttention}
-                            onSubmit={() => void handleCreateSubmit()}
-                            isSubmitting={isSubmitting}
-                            submitLabel={submitLabel}
-                            submittingLabel={submittingLabel}
-                            showGitHubIssueOnCreate={canCreateGitHubIssueOnCreate}
-                            onGitHubIssueSubmit={() => void handleCreateSubmitWithGitHubIssue()}
-                            isGitHubIssueSubmitting={isDraftGitHubIssueSubmitting}
-                            isGitHubIssueConfirming={isGitHubIssueConfirming}
-                            onGitHubIssueConfirmingChange={setIsGitHubIssueConfirming}
+                            {...(draft.category === "memo"
+                                ? {
+                                      variant: "memo" as const,
+                                      onSave: () => void handleCreateSubmit(),
+                                      onCancel: cancelDraft,
+                                      canSave: draft.cases.some((item) => item.text.trim().length > 0) && !isSubmitting,
+                                  }
+                                : {
+                                      cases: draft.cases,
+                                      activeCaseId,
+                                      onSelectCase: setActiveCaseId,
+                                      onAddCase: addDraftCase,
+                                      onRemoveCase: handleRemoveCase,
+                                      onInsertAtMention: handleInsertAtMention,
+                                      category: draft.category,
+                                      onCategoryChange: updateDraftCategory,
+                                      categoryNeedsAttention,
+                                      onSubmit: () => void handleCreateSubmit(),
+                                      isSubmitting,
+                                      submitLabel,
+                                      submittingLabel,
+                                      showGitHubIssueOnCreate: canCreateGitHubIssueOnCreate,
+                                      onGitHubIssueSubmit: () => void handleCreateSubmitWithGitHubIssue(),
+                                      isGitHubIssueSubmitting: isDraftGitHubIssueSubmitting,
+                                      isGitHubIssueConfirming,
+                                      onGitHubIssueConfirmingChange: setIsGitHubIssueConfirming,
+                                  })}
                         />
                     </div>
 

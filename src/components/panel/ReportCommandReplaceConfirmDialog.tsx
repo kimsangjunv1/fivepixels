@@ -1,7 +1,7 @@
 import type { FeedbackInsertConflict } from "@/utils/feedback/feedbackDataTransfer.js";
 import { useReportPreferences } from "@/providers/reportContext.js";
-import { MOTION } from "@/constants/motionClasses.js";
 import { getIssueSummary } from "@/utils/report/reportCases.js";
+import { ReportPanelNoticeDialog } from "./ReportPanelNoticeDialog.js";
 
 type ReportCommandReplaceConfirmDialogProps = {
     conflicts: FeedbackInsertConflict[];
@@ -13,12 +13,25 @@ export function ReportCommandReplaceConfirmDialog({ conflicts, onConfirm, onCanc
     const { messages } = useReportPreferences();
 
     return (
-        <article className={`bg-[var(--adaptive-grey100)] ${MOTION.dialogIn}`}>
-            <section className="flex flex-col gap-[4px] p-[16px]">
-                <h6 className="text-[14px] font-bold text-[var(--adaptive-black900)]">{messages.commandReplace.title}</h6>
-                <p className="leading-[1.5] text-[var(--adaptive-black500)]">{messages.commandReplace.description}</p>
-            </section>
-
+        <ReportPanelNoticeDialog
+            title={messages.commandReplace.title}
+            description={messages.commandReplace.description}
+            sectioned
+            actions={[
+                {
+                    id: "cancel",
+                    label: messages.common.cancel,
+                    variant: "muted",
+                    onClick: onCancel,
+                },
+                {
+                    id: "confirm",
+                    label: messages.common.confirm,
+                    variant: "primary",
+                    onClick: onConfirm,
+                },
+            ]}
+        >
             {conflicts.map((conflict) => (
                 <section
                     key={conflict.id}
@@ -46,23 +59,6 @@ export function ReportCommandReplaceConfirmDialog({ conflicts, onConfirm, onCanc
                     </section>
                 </section>
             ))}
-
-            <section className="flex items-center justify-end gap-[10px] p-[16px]">
-                <button
-                    type="button"
-                    onClick={onCancel}
-                    className="rounded-[8px] border border-transparent bg-[var(--adaptive-grey300)] p-[4px_8px] font-semibold text-[var(--adaptive-black700)]"
-                >
-                    {messages.common.cancel}
-                </button>
-                <button
-                    type="button"
-                    onClick={onConfirm}
-                    className="rounded-[8px] border border-transparent bg-[var(--adaptive-blue100)] p-[4px_8px] font-bold text-[var(--adaptive-blue500)]"
-                >
-                    {messages.common.confirm}
-                </button>
-            </section>
-        </article>
+        </ReportPanelNoticeDialog>
     );
 }

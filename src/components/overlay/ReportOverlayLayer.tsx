@@ -1,9 +1,8 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import { useReportSession } from "@/providers/reportContext.js";
 import { PickTargetContextMenu } from "./PickTargetContextMenu.js";
 import { PickTargetProbePanel } from "./PickTargetProbePanel.js";
 import { PickTargetSavedBadges } from "./PickTargetSavedBadges.js";
-import { ElementMemoComposer } from "./ElementMemoComposer.js";
 import { TargetHighlights } from "./TargetHighlights.js";
 
 type ReportOverlayLayerProps = {
@@ -22,7 +21,6 @@ export function ReportOverlayLayer({ children }: ReportOverlayLayerProps) {
         pickTargetContextMenu,
         contextMenuElementKey,
         savedProbeEdits,
-        elementMemos,
         selectableTargets,
         showTargetPreview,
         markerPreviewTargets,
@@ -32,8 +30,6 @@ export function ReportOverlayLayer({ children }: ReportOverlayLayerProps) {
         handleOverlayContextMenu,
         handleOverlayClick,
         closePickTargetContextMenu,
-        memoComposer,
-        closeMemoComposer,
     } = useReportSession();
 
     const isReportMode = mode === "report";
@@ -46,28 +42,26 @@ export function ReportOverlayLayer({ children }: ReportOverlayLayerProps) {
         Boolean(hoveredTarget) &&
         !activeMarkerTarget &&
         !mentionHighlightTarget;
-    const showSelectionHighlight = isReportMode && Boolean(selectedTarget) && (Boolean(draft) || pickProbeOpen);
+    const showSelectionHighlight = isReportMode && Boolean(selectedTarget) && Boolean(draft) && !pickProbeOpen;
     const showPickProbeCompare = pickProbeOpen && pickProbeHasEdits;
     const showActiveMarkerInspect = isReportMode && Boolean(activeMarkerTarget);
+    const probeFocusTarget = pickProbeOpen ? selectedTarget : null;
     const overlayClassName = isReportMode
-        ? "pointer-events-auto fixed inset-0 z-[999999] cursor-crosshair"
+        ? pickProbeOpen
+            ? "pointer-events-none fixed inset-0 z-[999999]"
+            : "pointer-events-auto fixed inset-0 z-[999999] cursor-crosshair"
         : "pointer-events-none fixed inset-0 z-[999999]";
 
     return (
         <div
             ref={overlayRef}
-            onMouseMove={isReportMode ? handleOverlayMove : undefined}
+            onMouseMove={isReportMode && !pickProbeOpen ? handleOverlayMove : undefined}
             onContextMenu={isReportMode ? handleOverlayContextMenu : undefined}
             onClick={
-                isReportMode
+                isReportMode && !pickProbeOpen
                     ? (event) => {
                           if (pickTargetContextMenu) {
                               closePickTargetContextMenu();
-                              return;
-                          }
-
-                          if (memoComposer) {
-                              closeMemoComposer();
                               return;
                           }
 
@@ -81,6 +75,7 @@ export function ReportOverlayLayer({ children }: ReportOverlayLayerProps) {
             <TargetHighlights
                 hoveredTarget={hoveredTarget}
                 selectedTarget={selectedTarget}
+                contextMenuTarget={pickTargetContextMenu?.target ?? probeFocusTarget}
                 showHoverInspect={showHoverInspect}
                 showSelectionHighlight={showSelectionHighlight}
                 showPickProbeCompare={showPickProbeCompare}
@@ -92,13 +87,11 @@ export function ReportOverlayLayer({ children }: ReportOverlayLayerProps) {
             />
             <PickTargetProbePanel />
             <PickTargetSavedBadges />
-            <ElementMemoComposer />
             {pickTargetContextMenu ? (
                 <PickTargetContextMenu
                     clientX={pickTargetContextMenu.clientX}
                     clientY={pickTargetContextMenu.clientY}
                     showRevert={Boolean(contextMenuElementKey && savedProbeEdits[contextMenuElementKey])}
-                    showMemo={Boolean(contextMenuElementKey && elementMemos[contextMenuElementKey])}
                 />
             ) : null}
             {children}

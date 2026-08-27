@@ -30,12 +30,17 @@ export function sanitizeVisibleTabs(value, context) {
 }
 export function resolveVisibleTabs({ role, preference, context, }) {
     const defaults = getDefaultVisibleTabsForRole(role, context);
-    if (!preference) {
+    if (!preference || !preference.customized) {
         return defaults;
     }
     const sanitized = sanitizeVisibleTabs(preference.visibleTabs, context);
     if (sanitized.length === 0) {
         return defaults;
+    }
+    // Soft-migrate: keep memo list next to feedback list when the latter is already visible.
+    if (context.showFeedbackList && sanitized.includes("feedback-list") && !sanitized.includes("memo-list")) {
+        const feedbackIndex = sanitized.indexOf("feedback-list");
+        return [...sanitized.slice(0, feedbackIndex + 1), "memo-list", ...sanitized.slice(feedbackIndex + 1)];
     }
     return sanitized;
 }

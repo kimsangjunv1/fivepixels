@@ -114,6 +114,9 @@ export type ReportProject = {
 
 export type QuestionThreadDisplay = "expanded" | "collapsed";
 
+/** Marker-window / panel thread layout. `classic` is the time-rail UI; `feed` is the vertical activity feed. */
+export type ThreadLayoutStyle = "classic" | "feed";
+
 /** Runtime mode for `<FivePixels />`. Presentation mode enables viewer switching in settings. */
 export type FivePixelsMode = "default" | "presentation";
 
@@ -124,6 +127,8 @@ export type ReportUi = {
     showFeedbackList?: boolean;
     visibleShortcutKeys?: boolean;
     questionThreadDefault?: QuestionThreadDisplay;
+    /** Default thread layout when the user has not chosen one in Settings → Appearance. */
+    threadLayoutDefault?: ThreadLayoutStyle;
     replyHistory?: ReplyHistoryConfig;
     shortcut?: string;
     locale?: import("../i18n/types.js").ReportLocale;
@@ -132,8 +137,15 @@ export type ReportUi = {
 
 /** Team scope passed to `<FivePixels team={{ user, reviewers }} />`. */
 export type ReportTeam = {
+    /**
+     * Optional host-injected identity. Prefer personal-key / API login onboarding;
+     * most integrations can omit this.
+     */
     user?: ReportIdentify;
     reviewers?: ReportAuthor[];
+    /**
+     * @deprecated Prefer top-level `require.reviewerKey`.
+     */
     requireReviewerKey?: boolean;
 };
 
@@ -238,10 +250,16 @@ export type ReportApiRegisterPayload = {
 /**
  * Optional account login handlers for API / Artemis onboarding.
  * Local login still uses personal keys in localStorage.
+ *
+ * Logout / token refresh map from `adapter.auth.logout` / `adapter.auth.refresh`
+ * (optional). Missing handlers still allow local session clear on logout.
  */
 export type ReportAuthHandlers = {
     onApiLogin?: (payload: ReportApiLoginPayload) => Promise<ReportAuthUser>;
     onApiRegister?: (payload: ReportApiRegisterPayload) => Promise<void>;
+    onApiLogout?: () => Promise<void>;
+    /** Return an updated user to refresh the local session, or `void` if only the host token changed. */
+    onApiRefresh?: () => Promise<ReportAuthUser | void>;
     onArtemisLogin?: () => Promise<ReportAuthUser>;
 };
 

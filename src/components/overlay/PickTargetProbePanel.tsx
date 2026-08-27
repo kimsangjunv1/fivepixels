@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { CheckIcon, CopyIcon } from "@/components/icons/Icons.js";
+import { STYLE_TOOLTIP_SURFACE_CLASS } from "@/components/ui/PointerFollowTooltip.js";
 import { useReportPreferences, useReportSession } from "@/providers/reportContext.js";
+import { MOTION } from "@/constants/motionClasses.js";
 import type { PickProbeFieldKey, PickProbeValues } from "@/types/report-ui.js";
 import { isSteppableCssValue, stepCssBoxSides, stepCssPixel } from "@/utils/probe/cssStepper.js";
 import { copyTextToClipboard } from "@/utils/feedback/feedbackDataTransfer.js";
@@ -9,11 +11,16 @@ import { getProbeColorPreview, isValidProbeHexColor, probeHexToColorInputValue, 
 import { PickTargetCompareSegment } from "./PickTargetCompareSegment.js";
 import { ProbeLayoutControls } from "./ProbeLayoutControls.js";
 
-const PANEL_SURFACE_CLASS =
-    "pointer-events-auto fixed z-[1000002] w-[min(320px,calc(100vw-16px))] overflow-hidden rounded-[12px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface-overlay)] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[20px]";
+const PANEL_SURFACE_CLASS = `pointer-events-auto fixed z-[1000002] w-[min(320px,calc(100vw-16px))] ${STYLE_TOOLTIP_SURFACE_CLASS} ${MOTION.tooltipIn}`;
 
 const PROBE_HEADER_ACTION_CLASS =
-    "shrink-0 rounded-[6px] border border-[var(--adaptive-border-subtle)] px-[8px] py-[3px] text-[11px] font-medium text-[var(--adaptive-black700)] hover:bg-[var(--adaptive-black100)]";
+    "shrink-0 rounded-[8px] border border-solid border-[var(--adaptive-border-subtle)] px-[8px] py-[4px] text-[14px] font-medium text-[var(--adaptive-black700)] hover:bg-[var(--adaptive-black100)]";
+
+const PROBE_FIELD_LABEL_CLASS = "font-medium text-[var(--adaptive-black500)]";
+const PROBE_CONTROL_CLASS =
+    "rounded-[8px] border border-solid border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] text-[var(--adaptive-black900)] outline-none focus:border-[var(--adaptive-border-subtle)]";
+const PROBE_INPUT_CLASS = `w-full ${PROBE_CONTROL_CLASS} px-[8px] py-[6px] font-[var(--coding-font)] text-[14px]`;
+const PROBE_STEPPER_BUTTON_CLASS = `inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center ${PROBE_CONTROL_CLASS} text-[14px] font-semibold disabled:opacity-40`;
 
 const STEPPER_STEP_PX = 1;
 
@@ -25,14 +32,14 @@ type ProbeTextFieldProps = {
 
 function ProbeTextField({ label, value, onChange }: ProbeTextFieldProps) {
     return (
-        <label className="flex flex-col gap-[4px] text-[11px]">
-            <span className="font-medium text-[var(--adaptive-black500)]">{label}</span>
+        <label className="flex flex-col gap-[4px] text-[14px] leading-[1.45]">
+            <span className={PROBE_FIELD_LABEL_CLASS}>{label}</span>
             <input
                 type="text"
                 data-fivepixels-interactive=""
                 value={value}
                 onChange={(event) => onChange(event.target.value)}
-                className="w-full rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] px-[8px] py-[6px] font-[var(--coding-font)] text-[12px] text-[var(--adaptive-black900)] outline-none focus:border-[var(--adaptive-blue500)]"
+                className={PROBE_INPUT_CLASS}
             />
         </label>
     );
@@ -84,14 +91,14 @@ function ProbeColorField({ label, value, onChange }: ProbeColorFieldProps) {
     };
 
     return (
-        <label className="flex flex-col gap-[4px] text-[11px]">
-            <span className="font-medium text-[var(--adaptive-black500)]">{label}</span>
+        <label className="flex flex-col gap-[4px] text-[14px] leading-[1.45]">
+            <span className={PROBE_FIELD_LABEL_CLASS}>{label}</span>
             <div className="flex items-center gap-[6px]">
                 <button
                     type="button"
                     data-fivepixels-interactive=""
                     onClick={() => colorInputRef.current?.click()}
-                    className="relative h-[30px] w-[30px] shrink-0 overflow-hidden rounded-[8px] border border-[var(--adaptive-border-subtle)]"
+                    className="relative h-[30px] w-[30px] shrink-0 overflow-hidden rounded-[8px] border border-solid border-[var(--adaptive-border-subtle)]"
                     aria-label={label}
                 >
                     <span
@@ -115,7 +122,7 @@ function ProbeColorField({ label, value, onChange }: ProbeColorFieldProps) {
                     value={value}
                     onChange={(event) => onChange(sanitizeProbeHexInput(event.target.value))}
                     placeholder="#ededed"
-                    className="min-w-0 flex-1 rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] px-[8px] py-[6px] font-[var(--coding-font)] text-[12px] text-[var(--adaptive-black900)] outline-none focus:border-[var(--adaptive-blue500)]"
+                    className={`min-w-0 flex-1 ${PROBE_CONTROL_CLASS} px-[8px] py-[6px] font-[var(--coding-font)] text-[14px]`}
                 />
                 <button
                     type="button"
@@ -123,7 +130,7 @@ function ProbeColorField({ label, value, onChange }: ProbeColorFieldProps) {
                     onClick={handleCopy}
                     disabled={!canCopy}
                     aria-label={copied ? messages.common.copied : messages.common.copy}
-                    className="inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] text-[var(--adaptive-black700)] disabled:opacity-40"
+                    className={`inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center ${PROBE_CONTROL_CLASS} text-[var(--adaptive-black700)] disabled:opacity-40`}
                 >
                     {copied ? <CheckIcon className="h-[14px] w-[14px] text-[var(--adaptive-green500)]" /> : <CopyIcon className="h-[14px] w-[14px]" />}
                 </button>
@@ -151,28 +158,26 @@ function ProbeStepperField({ label, value, onChange }: ProbeStepperFieldProps) {
     };
 
     return (
-        <div className="flex flex-col gap-[4px] text-[11px]">
-            <span className="font-medium text-[var(--adaptive-black500)]">{label}</span>
+        <div className="flex flex-col gap-[4px] text-[14px] leading-[1.45]">
+            <span className={PROBE_FIELD_LABEL_CLASS}>{label}</span>
             <div className="flex items-center gap-[6px]">
                 <button
                     type="button"
                     data-fivepixels-interactive=""
                     disabled={!steppable}
                     onClick={() => handleStep(-1)}
-                    className="inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] text-[14px] font-semibold text-[var(--adaptive-black900)] disabled:opacity-40"
+                    className={PROBE_STEPPER_BUTTON_CLASS}
                     aria-label={`Decrease ${label}`}
                 >
                     −
                 </button>
-                <div className="min-w-0 flex-1 rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] px-[8px] py-[6px] text-center font-[var(--coding-font)] text-[12px] text-[var(--adaptive-black900)]">
-                    {value}
-                </div>
+                <div className={`min-w-0 flex-1 ${PROBE_CONTROL_CLASS} px-[8px] py-[6px] text-center font-[var(--coding-font)] text-[14px]`}>{value}</div>
                 <button
                     type="button"
                     data-fivepixels-interactive=""
                     disabled={!steppable}
                     onClick={() => handleStep(1)}
-                    className="inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] text-[14px] font-semibold text-[var(--adaptive-black900)] disabled:opacity-40"
+                    className={PROBE_STEPPER_BUTTON_CLASS}
                     aria-label={`Increase ${label}`}
                 >
                     +
@@ -245,9 +250,9 @@ export function PickTargetProbePanel() {
                 opacity: layout ? 1 : 0,
             }}
         >
-            <div className="flex max-h-[min(70vh,560px)] flex-col gap-[10px] overflow-y-auto px-[12px] py-[10px]">
+            <div className="flex max-h-[min(70vh,560px)] flex-col gap-[6px] overflow-y-auto">
                 <div className="flex items-center justify-between gap-[8px]">
-                    <p className="min-w-0 shrink text-[12px] font-semibold text-[var(--adaptive-black900)]">{messages.pickTarget.probeTitle}</p>
+                    <p className="min-w-0 shrink text-[14px] font-semibold leading-[1.45] text-[var(--adaptive-black900)]">{messages.pickTarget.probeTitle}</p>
                     <div className="flex shrink-0 items-center gap-[6px]">
                         {pickProbeHasEdits ? (
                             <PickTargetCompareSegment

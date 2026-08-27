@@ -1,5 +1,5 @@
 import type { ApiFlowEntry, ApiFlowFailureKind, NetworkMonitorSnapshot } from "@/types/networkMonitor.js";
-import { parseApiFlowUrl } from "./formatApiFlowEntry.js";
+import { isRscNetworkRequest, parseApiFlowUrl } from "./formatApiFlowEntry.js";
 
 const MAX_ENTRIES = 100;
 const MAX_BODY_LENGTH = 32_768;
@@ -213,6 +213,7 @@ async function recordFetch(input: RequestInfo | URL, init?: RequestInit) {
 
     const startedAt = Date.now();
     const request = toRequest(input, init);
+    const skipRecord = isRscNetworkRequest(request.url, request.headers);
     const method = request.method;
     const url = request.url;
     const base = buildEntryBase(method, url);
@@ -225,30 +226,35 @@ async function recordFetch(input: RequestInfo | URL, init?: RequestInit) {
 
     try {
         const response = await originalFetch(request);
-        const responseBody = await readResponseBody(response);
-        const ok = response.ok;
 
-        finalizeEntry(base, {
-            startedAt,
-            status: response.status,
-            ok,
-            requestBody,
-            responseBody,
-            errorMessage: ok ? null : response.statusText || null,
-            failureKind: ok ? null : "http",
-        });
+        if (!skipRecord) {
+            const responseBody = await readResponseBody(response);
+            const ok = response.ok;
+
+            finalizeEntry(base, {
+                startedAt,
+                status: response.status,
+                ok,
+                requestBody,
+                responseBody,
+                errorMessage: ok ? null : response.statusText || null,
+                failureKind: ok ? null : "http",
+            });
+        }
 
         return response;
     } catch (error) {
-        finalizeEntry(base, {
-            startedAt,
-            status: null,
-            ok: false,
-            requestBody,
-            responseBody: null,
-            errorMessage: error instanceof Error ? error.message : String(error),
-            failureKind: "network",
-        });
+        if (!skipRecord) {
+            finalizeEntry(base, {
+                startedAt,
+                status: null,
+                ok: false,
+                requestBody,
+                responseBody: null,
+                errorMessage: error instanceof Error ? error.message : String(error),
+                failureKind: "network",
+            });
+        }
 
         throw error;
     }
@@ -296,6 +302,11 @@ function patchXhr() {
         const tracked = this as TrackedXhr;
         const method = tracked.__fpMethod ?? "GET";
         const url = tracked.__fpUrl ?? "";
+
+        if (isRscNetworkRequest(url)) {
+            return originalXhrSend!.call(this, body);
+        }
+
         const base = buildEntryBase(method, url);
         const requestBody = serializeRequestBody(body ?? null);
         const startedAt = Date.now();

@@ -6,7 +6,7 @@ import { resolveReportEnabled } from "../../utils/shared/env.js";
 import { resolveReportVisibility } from "../../utils/report/reportVisibility.js";
 import { isInsideDevicePreviewFrame } from "../../utils/overlay/devicePreviewFrame.js";
 import { ReportView } from "./ReportView.js";
-export function FivePixels({ project, ui, visibility, team, mode = "default", sync = "local", adapter, fields = DEFAULT_FIELDS, onNavigate, onRevealTarget, onEvent, onReply, github, networkMonitor, }) {
+export function FivePixels({ project, ui, visibility, team, mode = "default", sync = "local", require: requireProp, requireAuth, adapter, fields = DEFAULT_FIELDS, onNavigate, onRevealTarget, onEvent, onReply, github, networkMonitor, }) {
     const resolvedVisibility = resolveReportVisibility({ visibility });
     if (!resolveReportEnabled(resolvedVisibility)) {
         return null;
@@ -14,6 +14,6 @@ export function FivePixels({ project, ui, visibility, team, mode = "default", sy
     if (isInsideDevicePreviewFrame()) {
         return null;
     }
-    return (_jsx(ReportProvider, { project: project, ui: ui, visibility: visibility, team: team, mode: mode, sync: sync, adapter: adapter, fields: fields, onNavigate: onNavigate, onRevealTarget: onRevealTarget, onEvent: onEvent, onReply: onReply, github: github, networkMonitor: networkMonitor, children: _jsx(ReportView, {}) }));
+    return (_jsx(ReportProvider, { project: project, ui: ui, visibility: visibility, team: team, mode: mode, sync: sync, require: requireProp, requireAuth: requireAuth, adapter: adapter, fields: fields, onNavigate: onNavigate, onRevealTarget: onRevealTarget, onEvent: onEvent, onReply: onReply, github: github, networkMonitor: networkMonitor, children: _jsx(ReportView, {}) }));
 }
 //# sourceMappingURL=FivePixels.js.map

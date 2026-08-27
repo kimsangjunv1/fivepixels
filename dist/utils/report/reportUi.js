@@ -6,6 +6,7 @@ const DEFAULT_UI = {
     showFeedbackList: true,
     visibleShortcutKeys: false,
     questionThreadDefault: "expanded",
+    threadLayoutDefault: "classic",
     locale: "en",
 };
 export function resolveReportUi({ ui }) {
@@ -18,6 +19,7 @@ export function resolveReportUi({ ui }) {
         showFeedbackList: ui?.showFeedbackList ?? DEFAULT_UI.showFeedbackList,
         visibleShortcutKeys: ui?.visibleShortcutKeys ?? DEFAULT_UI.visibleShortcutKeys,
         questionThreadDefault: ui?.questionThreadDefault ?? DEFAULT_UI.questionThreadDefault,
+        threadLayoutDefault: ui?.threadLayoutDefault ?? DEFAULT_UI.threadLayoutDefault,
         replyHistory: {
             mode: ui?.replyHistory?.mode ?? DEFAULT_REPLY_HISTORY_MODE,
             pageSize: ui?.replyHistory?.pageSize ?? DEFAULT_REPLY_HISTORY_PAGE_SIZE,

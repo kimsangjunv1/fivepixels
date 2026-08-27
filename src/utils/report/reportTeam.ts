@@ -17,13 +17,15 @@ export type PresentationViewer = {
 
 export type ResolveReportTeamOptions = {
     team?: ReportTeam;
+    /** Overrides `team.requireReviewerKey` when set (from `require.reviewerKey`). */
+    requireReviewerKey?: boolean;
 };
 
-export function resolveReportTeam({ team }: ResolveReportTeamOptions): ResolvedReportTeam {
+export function resolveReportTeam({ team, requireReviewerKey }: ResolveReportTeamOptions): ResolvedReportTeam {
     return {
         user: team?.user,
         reviewers: team?.reviewers ?? [],
-        requireReviewerKey: team?.requireReviewerKey ?? false,
+        requireReviewerKey: typeof requireReviewerKey === "boolean" ? requireReviewerKey : (team?.requireReviewerKey ?? false),
     };
 }
 

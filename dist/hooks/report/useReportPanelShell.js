@@ -11,6 +11,7 @@ import { useAppearancePreference } from "../useAppearancePreference.js";
 import { PANEL_APPEARANCE_STORAGE_KEY, TOOLTIP_APPEARANCE_STORAGE_KEY } from "../../constants/appearance.js";
 import { useLocalePreference } from "../useLocalePreference.js";
 import { useQuestionThreadPreference } from "../useQuestionThreadPreference.js";
+import { useThreadLayoutPreference } from "../useThreadLayoutPreference.js";
 import { usePanelRolePreference } from "../usePanelRolePreference.js";
 import { usePanelTabPreference } from "../usePanelTabPreference.js";
 import { usePanelBootstrap } from "../usePanelBootstrap.js";
@@ -27,7 +28,7 @@ function getInitialDeepLinkFeedbackId() {
     }
     return parseFeedbackDeepLink()?.feedbackId ?? null;
 }
-export function useReportPanelShell({ projectId, environment, appVersion, sync = "local", panelAppearance, tooltipAppearance, questionThreadDefault = "expanded", fields, showFeedbackList, initialLocale, messageOverrides, adapter, routeKey, replyHistory, sessionActorName, bridgesRef, }) {
+export function useReportPanelShell({ projectId, environment, appVersion, sync = "local", panelAppearance, tooltipAppearance, questionThreadDefault = "expanded", threadLayoutDefault = "classic", fields, showFeedbackList, initialLocale, messageOverrides, adapter, routeKey, replyHistory, sessionActorName, bridgesRef, }) {
     const onPanelBootstrap = adapter?.session?.panelBootstrap;
     const onActivitySummary = adapter?.session?.activitySummary;
     const { appearance: activePanelAppearance, setAppearance: setPanelAppearance } = useAppearancePreference(PANEL_APPEARANCE_STORAGE_KEY, panelAppearance);
@@ -38,6 +39,7 @@ export function useReportPanelShell({ projectId, environment, appVersion, sync =
     const { markerAppearance, setMarkerAppearance, setMarkerSize, setMarkerShape, setMarkerFillStyle, setMarkerColors, setMarkerColor, setMarkerStrokeColor, setFeedbackModeDotColors, setFeedbackModeDotColor, } = useMarkerAppearancePreference();
     const { typography, setTypography, setFontSize, setFontFamily } = useTypographyPreference();
     const { questionThreadDisplay, setQuestionThreadDisplay } = useQuestionThreadPreference(questionThreadDefault);
+    const { threadLayout, setThreadLayout } = useThreadLayoutPreference(threadLayoutDefault);
     const { panelRole, setPanelRole } = usePanelRolePreference();
     const { storedPreference, setPanelTabPreference, setVisibleTabs, resetTabsToRoleDefault, applyRoleDefaultTabs } = usePanelTabPreference();
     const { locale, setLocale } = useLocalePreference(initialLocale);
@@ -216,7 +218,7 @@ export function useReportPanelShell({ projectId, environment, appVersion, sync =
     const openPanelTab = (nextTab) => {
         const isClosing = panelTab === nextTab;
         setPanelTab(isClosing ? null : nextTab);
-        if (!isClosing && nextTab === "feedback-list") {
+        if (!isClosing && (nextTab === "feedback-list" || nextTab === "memo-list")) {
             enableIssueMode();
         }
     };
@@ -238,6 +240,8 @@ export function useReportPanelShell({ projectId, environment, appVersion, sync =
         setTooltipAppearance,
         questionThreadDisplay,
         setQuestionThreadDisplay,
+        threadLayout,
+        setThreadLayout,
         locale,
         setLocale,
         messages,

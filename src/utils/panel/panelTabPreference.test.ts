@@ -31,7 +31,11 @@ describe("panelTabPreference", () => {
     });
 
     it("resolves role defaults when preference is missing", () => {
-        expect(resolveVisibleTabs({ role: "designer", preference: null, context: defaultContext })).toEqual(["route-details", "feedback-list"]);
+        expect(resolveVisibleTabs({ role: "designer", preference: null, context: defaultContext })).toEqual([
+            "route-details",
+            "feedback-list",
+            "memo-list",
+        ]);
     });
 
     it("falls back to role defaults when stored tabs are empty after sanitization", () => {
@@ -54,6 +58,16 @@ describe("panelTabPreference", () => {
         ).toEqual(["diagnostics"]);
     });
 
+    it("inserts memo-list after feedback-list for customized preferences", () => {
+        expect(
+            resolveVisibleTabs({
+                role: "qa",
+                preference: { visibleTabs: ["feedback-list", "route-details"], customized: true },
+                context: defaultContext,
+            }),
+        ).toEqual(["feedback-list", "memo-list", "route-details"]);
+    });
+
     it("resolves default panel tab from visible tabs", () => {
         expect(resolveDefaultPanelTab("planner", ["feedback-list", "overview"])).toBe("feedback-list");
         expect(resolveDefaultPanelTab("planner", ["diagnostics"])).toBe("diagnostics");
@@ -61,9 +75,19 @@ describe("panelTabPreference", () => {
 
     it("creates role default preference", () => {
         expect(createRoleDefaultPreference("developer", defaultContext)).toEqual({
-            visibleTabs: ["feedback-list", "route-details", "diagnostics", "api-flow"],
+            visibleTabs: ["feedback-list", "memo-list", "route-details", "diagnostics", "api-flow"],
             customized: false,
         });
+    });
+
+    it("uses role defaults when preference is not customized", () => {
+        expect(
+            resolveVisibleTabs({
+                role: "designer",
+                preference: { visibleTabs: ["route-details", "feedback-list"], customized: false },
+                context: defaultContext,
+            }),
+        ).toEqual(["route-details", "feedback-list", "memo-list"]);
     });
 
     it("moves visible tabs up and down", () => {

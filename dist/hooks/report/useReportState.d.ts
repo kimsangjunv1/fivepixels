@@ -3,7 +3,7 @@ import type { ReportLocale } from "../../i18n/types.js";
 import { type PanelView } from "./useReportAuthSession.js";
 import type { FivePixelsSync } from "../../constants/loginMethod.js";
 import type { FivePixelsAdapter } from "../../types/adapter.js";
-import type { ReportAppearance, ReportAuthor, ReportEvent, ReportFeedback, ReportField, ReportGitHubConfig, FivePixelsMode, ReportIdentify, QuestionThreadDisplay } from "../../types/report.js";
+import type { ReportAppearance, ReportAuthor, ReportEvent, ReportFeedback, ReportField, ReportGitHubConfig, FivePixelsMode, ReportIdentify, QuestionThreadDisplay, ThreadLayoutStyle } from "../../types/report.js";
 export type { PanelView };
 export type ReportStateConfig = {
     /** Internal resolved config (not public props). Public surface: `FivePixelsProps` in `src/types/publicApi.ts`. */
@@ -13,6 +13,7 @@ export type ReportStateConfig = {
     panelAppearance: ReportAppearance;
     tooltipAppearance: ReportAppearance;
     questionThreadDefault?: QuestionThreadDisplay;
+    threadLayoutDefault?: ThreadLayoutStyle;
     fields: ReportField[];
     authors?: ReportAuthor[];
     requireReviewerKey?: boolean;
@@ -34,16 +35,19 @@ export type ReportStateConfig = {
     messageOverrides?: DeepPartialReportMessages;
     pixelsMode?: FivePixelsMode;
     sync?: FivePixelsSync;
+    requireAuth?: boolean;
     replyHistory: import("../../utils/report/reportUi.js").ResolvedReplyHistoryConfig;
     networkMonitor?: boolean;
 };
-export declare function useReportState({ projectId, environment, appVersion, panelAppearance, tooltipAppearance, questionThreadDefault, fields, authors, requireReviewerKey, shortcut: _shortcut, identify, adapter, onNavigate, onRevealTarget, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys, initialLocale, messageOverrides, pixelsMode, sync, replyHistory, networkMonitor, }: ReportStateConfig): {
+export declare function useReportState({ projectId, environment, appVersion, panelAppearance, tooltipAppearance, questionThreadDefault, threadLayoutDefault, fields, authors, requireReviewerKey, shortcut: _shortcut, identify, adapter, onNavigate, onRevealTarget, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys, initialLocale, messageOverrides, pixelsMode, sync, requireAuth, replyHistory, networkMonitor, }: ReportStateConfig): {
     panelAppearance: ReportAppearance;
     setPanelAppearance: (nextAppearance: ReportAppearance) => void;
     tooltipAppearance: ReportAppearance;
     setTooltipAppearance: (nextAppearance: ReportAppearance) => void;
     questionThreadDisplay: QuestionThreadDisplay;
     setQuestionThreadDisplay: (nextDisplay: QuestionThreadDisplay) => void;
+    threadLayout: ThreadLayoutStyle;
+    setThreadLayout: (nextLayout: ThreadLayoutStyle) => void;
     locale: ReportLocale;
     setLocale: (nextLocale: ReportLocale) => void;
     messages: import("../../i18n/types.js").ReportMessages;
@@ -82,8 +86,15 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     authorSelectionLocked: boolean;
     panelView: PanelView;
     loginMethod: "local" | "api" | "artemis";
+    requireAuth: boolean;
+    require: {
+        authLogin: boolean;
+        reviewerKey: boolean;
+    };
     loginWithApi: (payload: import("../../types/report.js").ReportApiLoginPayload) => Promise<import("../../types/report.js").ReportAuthUser>;
     registerWithApi: (payload: import("../../types/report.js").ReportApiRegisterPayload) => Promise<void>;
+    logoutWithApi: () => Promise<void>;
+    refreshWithApi: () => Promise<import("../../types/report.js").ReportAuthUser | undefined>;
     loginWithArtemis: () => Promise<import("../../types/report.js").ReportAuthUser>;
     completeRemoteOnboarding: () => void;
     completeOnboarding: ({ name }: {
@@ -246,12 +257,6 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     resetPickProbeValues: () => void;
     appendSavedProbeSummaryAsNewDraftCase: () => void;
     appendApiFlowEntryToDraftCase: (entryId: string) => void;
-    elementMemos: import("../../utils/memo/elementMemos.js").ElementMemoMap;
-    memoComposer: import("./useElementMemos.js").ElementMemoComposerState | null;
-    openMemoComposer: (elementKey: string, clientX: number, clientY: number) => void;
-    closeMemoComposer: () => void;
-    saveElementMemo: (elementKey: string, text: string) => void;
-    deleteElementMemo: (elementKey: string) => void;
     markers: import("../../types/report-ui.js").Marker[];
     selectedReport: ReportFeedback;
     editingReportId: string | null;
@@ -312,6 +317,7 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     focusedCaseId: string | null;
     selectCase: (caseId: string) => void;
     isComposingNewCase: boolean;
+    hasNewCaseDraftSession: boolean;
     beginComposeNewCase: () => void;
     cancelComposeNewCase: () => void;
     clearFocusedCase: () => void;

@@ -21,4 +21,6 @@ export type RelativeTimeLabels = {
 };
 export declare function getRelativeTimeParts(value: string, now?: Date): RelativeTimeParts | null;
 export declare function formatRelativeTime(value: string, labels: RelativeTimeLabels, now?: Date): string;
+/** Compact feed timestamps like `12m`, `3h`, `5d` (reference activity-feed style). */
+export declare function formatRelativeTimeCompact(value: string, now?: Date): string;
 //# sourceMappingURL=format.d.ts.map

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { allocateNextFcNumber, backfillFcNumbers, formatFeedbackCaseId, getFeedbackCaseId } from "./feedbackCaseId.js";
+import { allocateNextFcNumber, backfillFcNumbers, formatFeedbackCaseId, formatMemoCaseId, getFeedbackCaseId, getMemoCaseId } from "./feedbackCaseId.js";
 import type { ReportFeedback } from "@/types/report.js";
 import { createReportFeedback } from "../report/reportFixtures.js";
 
@@ -8,6 +8,9 @@ describe("feedbackCaseId", () => {
         expect(formatFeedbackCaseId(192)).toBe("#FC-192");
         expect(getFeedbackCaseId({ fc_number: 192 })).toBe("#FC-192");
         expect(getFeedbackCaseId({})).toBeNull();
+        expect(formatMemoCaseId(79)).toBe("#MM-79");
+        expect(getMemoCaseId({ fc_number: 79 })).toBe("#MM-79");
+        expect(getMemoCaseId({})).toBeNull();
     });
 
     it("allocates the next fc number", () => {

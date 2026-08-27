@@ -10,13 +10,17 @@ import type {
     ReportUi,
     ReportVisibility,
 } from "./report.js";
+import type { FivePixelsRequire } from "@/utils/report/resolveRequire.js";
 import type { ReportSideEffectCallbacks } from "@/utils/report/reportCallbacks.js";
+
+export type { FivePixelsRequire, ResolvedFivePixelsRequire } from "@/utils/report/resolveRequire.js";
 
 /**
  * Public props for `<FivePixels />` — single source of truth.
  *
  * - Remote persistence / auth: pass `adapter` (`FivePixelsAdapter` in `./adapter.js`).
  * - `sync="local"` (default): localStorage; `adapter` optional.
+ * - Identity gates: `require.authLogin` / `require.reviewerKey`.
  * - Payload / entity shapes: `CreateReportFeedbackPayload`, `ReportFeedback`, `ReportReply`, etc. in `./report.js`.
  */
 export type FivePixelsProps = {
@@ -26,12 +30,25 @@ export type FivePixelsProps = {
     team?: ReportTeam;
     mode?: FivePixelsMode;
     /**
-     * Auth / identity sync strategy for the panel.
-     * - `local` (default): localStorage + personal key flow
-     * - `api`: company API login via `adapter.auth`
-     * - `artemis`: Artemis Google login via `adapter.auth.artemisLogin`
+     * Persistence strategy for the panel.
+     * - `local` (default): localStorage
+     * - `api`: company API via `adapter` (markers / feedback / …)
+     * - `artemis`: Artemis-backed remote persistence
+     *
+     * Identity / login is controlled separately by `require`.
      */
     sync?: FivePixelsSync;
+    /**
+     * Identity policy flags.
+     * - `authLogin`: company login when `sync` is `api` / `artemis` (default true for remote)
+     * - `reviewerKey`: personal key must match `team.reviewers`
+     */
+    require?: FivePixelsRequire;
+    /**
+     * @deprecated Prefer `require.authLogin`.
+     * When `sync` is `api` or `artemis`, whether company login is required.
+     */
+    requireAuth?: boolean;
     /** Backend integration handlers grouped by domain. */
     adapter?: FivePixelsAdapter;
     fields?: ReportField[];

@@ -37,6 +37,12 @@ import { ThreadTimelineRow } from "./ThreadTimelineRow.js";
 import { CaseThreadEntryActions, ThreadEntryActions, THREAD_ACTION_ENTRY_SURFACE_CLASS, THREAD_CASE_ENTRY_SURFACE_CLASS } from "./ThreadEntryActions.js";
 import { MentionMessage } from "./MentionMessage.js";
 import { ThreadAskAiFloatingButton } from "./ThreadAskAiFloatingButton.js";
+import { FeedAuthorAvatar } from "./feed/FeedAuthorAvatar.js";
+import { FeedActivityLine, FeedCommentMeta } from "./feed/FeedCommentMeta.js";
+import { getFeedActivitySurfaceClass, resolveFeedActivityTone } from "./feed/feedActivitySurface.js";
+import { FeedSpineDot, FeedSpineIcon } from "./feed/FeedTimelineRow.js";
+import { FeedTimelineTrack } from "./feed/FeedTimelineTrack.js";
+import { ThreadLayoutShell } from "./feed/ThreadLayoutShell.js";
 import { getFeedbackTargetElement } from "@/utils/marker/locateFeedback.js";
 
 type PendingComposer = {
@@ -81,9 +87,33 @@ function getScrollOverflowState(element: HTMLElement): ScrollOverflowState {
 
 const SCROLL_HINT_CLASS = "pointer-events-none absolute left-0 right-0 z-10 px-[16px] py-[12px] text-center text-[12px] text-[var(--adaptive-black600)]";
 
-function ThreadResolvedDivider() {
-    const { messages } = useReportPreferences();
+function ThreadResolvedDivider({ createdAt }: { createdAt?: string }) {
+    const { messages, threadLayout } = useReportPreferences();
     const resolvedColor = ACCENT_COLOR.green;
+    const isFeed = threadLayout === "feed";
+
+    if (isFeed) {
+        return (
+            <ThreadLayoutShell
+                density="activity"
+                feedNode={
+                    <FeedSpineIcon tone="resolved">
+                        <CheckCircleIcon
+                            className="h-[14px] w-[14px]"
+                            fill="currentColor"
+                        />
+                    </FeedSpineIcon>
+                }
+            >
+                <div className={getFeedActivitySurfaceClass("resolved")}>
+                    <FeedActivityLine
+                        action={messages.thread.feedIssueResolvedAction}
+                        createdAt={createdAt}
+                    />
+                </div>
+            </ThreadLayoutShell>
+        );
+    }
 
     return (
         <ThreadTimelineRow>
@@ -117,7 +147,13 @@ function ThreadResolvedDivider() {
 }
 
 function ThreadStartedDivider({ createdAt }: { createdAt: string }) {
-    const { locale } = useReportPreferences();
+    const { locale, threadLayout } = useReportPreferences();
+
+    // Feed layout skips the day banner — continuous spine reads cleaner without horizontal rules.
+    if (threadLayout === "feed") {
+        return null;
+    }
+
     const dateColor = "var(--adaptive-black500)";
 
     return (
@@ -148,8 +184,22 @@ function ThreadStartedDivider({ createdAt }: { createdAt: string }) {
 }
 
 function ThreadDetachedTargetDivider() {
-    const { messages } = useReportPreferences();
+    const { messages, threadLayout } = useReportPreferences();
     const labelColor = "var(--adaptive-black500)";
+    const isFeed = threadLayout === "feed";
+
+    if (isFeed) {
+        return (
+            <ThreadLayoutShell
+                density="activity"
+                feedNode={<FeedSpineDot />}
+            >
+                <div className={getFeedActivitySurfaceClass("neutral")}>
+                    <FeedActivityLine action={messages.thread.feedDetachedTargetAction} />
+                </div>
+            </ThreadLayoutShell>
+        );
+    }
 
     return (
         <ThreadTimelineRow>
@@ -209,6 +259,8 @@ function CaseThreadEntry({
     isClaimingAssignee?: boolean;
     isEditingCases?: boolean;
 }) {
+    const { threadLayout } = useReportPreferences();
+    const isFeed = threadLayout === "feed";
     const showPreClaimDiscussion = !isEditingCases && canShowCaseEntryActions(report, caseId);
     const hasActions = showPreClaimDiscussion && (Boolean(actorName.trim()) || canShowCaseClaimAction(report, caseId, actorName));
     const isComposerTarget = pendingComposer?.type === "question" && pendingComposer.targetReplyId === ISSUE_ROOT_PARENT_ID;
@@ -217,29 +269,41 @@ function CaseThreadEntry({
         : hasActions
           ? THREAD_ACTION_ENTRY_SURFACE_CLASS
           : THREAD_CASE_ENTRY_SURFACE_CLASS;
+    const authorName = report.author_name?.trim() ?? "";
 
     const entryBody = (
         <>
-            <div className="flex min-w-0 items-center justify-between gap-[8px]">
-                <FeedbackStatusBadge
-                    status="issue_apply"
-                    isNeedGray
-                    className="shrink-0"
-                />
-                {report.author_name ? (
-                    <ThreadAuthorMeta
-                        authorName={report.author_name}
+            {isFeed ? (
+                authorName ? (
+                    <FeedCommentMeta
+                        authorName={authorName}
+                        createdAt={caseCreatedAt}
                         authors={authors}
-                        showMine={report.author_name.trim() === actorName}
-                        showCreator
+                        status="issue_apply"
                     />
-                ) : null}
-            </div>
+                ) : null
+            ) : (
+                <div className="flex min-w-0 items-center justify-between gap-[8px]">
+                    <FeedbackStatusBadge
+                        status="issue_apply"
+                        isNeedGray
+                        className="shrink-0"
+                    />
+                    {authorName ? (
+                        <ThreadAuthorMeta
+                            authorName={authorName}
+                            authors={authors}
+                            showMine={authorName === actorName}
+                            showCreator
+                        />
+                    ) : null}
+                </div>
+            )}
 
             <MentionMessage
                 message={caseText}
                 mentions={caseMentions}
-                className={`leading-[1.5] text-[14px] text-[var(--adaptive-text-primary)] whitespace-break-spaces ${caseStatus === "resolved" ? "text-[var(--adaptive-black500)] line-through" : ""}`}
+                className={`leading-[1.45] text-[14px] text-[var(--adaptive-text-primary)] whitespace-break-spaces ${isFeed ? "mt-[2px]" : ""} ${caseStatus === "resolved" ? "text-[var(--adaptive-black500)] line-through" : ""}`}
             />
 
             {isEditingCases ? null : (
@@ -258,9 +322,13 @@ function CaseThreadEntry({
     );
 
     return (
-        <ThreadTimelineRow time={formatClockTime(caseCreatedAt)}>
-            <div className={surfaceClass}>{entryBody}</div>
-        </ThreadTimelineRow>
+        <ThreadLayoutShell
+            classicTime={formatClockTime(caseCreatedAt)}
+            density="comment"
+            feedNode={authorName ? <FeedAuthorAvatar name={authorName} /> : <FeedSpineDot />}
+        >
+            <div className={isFeed && !hasActions && !isComposerTarget ? undefined : surfaceClass}>{entryBody}</div>
+        </ThreadLayoutShell>
     );
 }
 
@@ -303,19 +371,25 @@ function ThreadRootReply({
     isClaimingAssignee?: boolean;
     actorName: string;
 }) {
+    const { threadLayout } = useReportPreferences();
+    const isFeed = threadLayout === "feed";
+
     if (isGitIssuedSystemReply(reply, report) && issueUrl) {
         return (
-            <ThreadTimelineRow time={formatClockTime(reply.created_at)}>
+            <ThreadLayoutShell
+                classicTime={formatClockTime(reply.created_at)}
+                feedNode={<FeedSpineDot />}
+            >
                 <GitIssuedThreadEntry
                     reply={reply}
                     issueUrl={issueUrl}
                 />
-            </ThreadTimelineRow>
+            </ThreadLayoutShell>
         );
     }
 
     if (reply.status === "resolved") {
-        return <ThreadResolvedDivider />;
+        return <ThreadResolvedDivider createdAt={reply.created_at} />;
     }
 
     if (isAssigneeEventStatus(reply.status)) {
@@ -346,26 +420,40 @@ function ThreadRootReply({
         : hasActions
           ? THREAD_ACTION_ENTRY_SURFACE_CLASS
           : THREAD_CASE_ENTRY_SURFACE_CLASS;
+    const authorName = reply.author_name?.trim() ?? "";
+    const feedStatusSurface =
+        isFeed && !hasActions && !isComposerTarget ? getFeedActivitySurfaceClass(resolveFeedActivityTone(reply.status)) : undefined;
 
     const entryBody = (
         <>
-            <div className="flex min-w-0 items-center justify-between gap-[8px]">
-                <FeedbackStatusBadge
-                    status={reply.status}
-                    isNeedGray
-                    className="shrink-0"
-                />
-                {reply.author_name ? (
-                    <ThreadAuthorMeta
-                        authorName={reply.author_name}
+            {isFeed ? (
+                authorName ? (
+                    <FeedCommentMeta
+                        authorName={authorName}
+                        createdAt={reply.created_at}
                         authors={authors}
-                        showMine={reply.author_name.trim() === actorName}
-                        showCreator={reply.author_name.trim() === originalAuthorName}
+                        status={reply.status}
                     />
-                ) : null}
-            </div>
+                ) : null
+            ) : (
+                <div className="flex min-w-0 items-center justify-between gap-[8px]">
+                    <FeedbackStatusBadge
+                        status={reply.status}
+                        isNeedGray
+                        className="shrink-0"
+                    />
+                    {authorName ? (
+                        <ThreadAuthorMeta
+                            authorName={authorName}
+                            authors={authors}
+                            showMine={authorName === actorName}
+                            showCreator={authorName === originalAuthorName}
+                        />
+                    ) : null}
+                </div>
+            )}
 
-            <p className="leading-[1.5] text-[14px] text-[var(--adaptive-text-primary)] whitespace-break-spaces">
+            <p className={`leading-[1.45] text-[14px] text-[var(--adaptive-text-primary)] whitespace-break-spaces ${isFeed ? "mt-[2px]" : ""}`}>
                 <MentionMessage
                     message={reply.message}
                     mentions={reply.mentions}
@@ -392,9 +480,13 @@ function ThreadRootReply({
     );
 
     return (
-        <ThreadTimelineRow time={formatClockTime(reply.created_at)}>
-            <div className={surfaceClass}>{entryBody}</div>
-        </ThreadTimelineRow>
+        <ThreadLayoutShell
+            classicTime={formatClockTime(reply.created_at)}
+            density="comment"
+            feedNode={authorName ? <FeedAuthorAvatar name={authorName} /> : <FeedSpineDot />}
+        >
+            <div className={feedStatusSurface ?? surfaceClass}>{entryBody}</div>
+        </ThreadLayoutShell>
     );
 }
 
@@ -436,6 +528,8 @@ export function FeedbackThread({
         loadOlderReplies,
         loadRepliesIfNeeded,
     } = useReport();
+    const { threadLayout } = useReportPreferences();
+    const isFeedLayout = threadLayout === "feed";
     const scrollRef = useRef<HTMLElement>(null);
     const loadingOlderRef = useRef(false);
     const [isAllCasesView, setIsAllCasesView] = useState(false);
@@ -622,52 +716,92 @@ export function FeedbackThread({
                         history={replyHistoryState}
                     /> */}
 
-                    {/* {showTimelineRail ? (
-                        <div className="pointer-events-none absolute bottom-[12px] left-[20px] top-[12px] w-px bg-[linear-gradient(180deg,_var(--adaptive-black900)_60%,transparent_90%)]" />
-                    ) : null} */}
-
-                    {focusedCaseId && !isAllCasesView ? (
-                        <>
-                            {focusedCase ? (
+                    {(() => {
+                        const timelineContent =
+                            focusedCaseId && !isAllCasesView ? (
                                 <>
-                                    <ThreadStartedDivider createdAt={focusedCase.created_at} />
-                                    <CaseThreadEntry
-                                        report={report}
-                                        caseId={focusedCaseId}
-                                        caseText={focusedCase.text}
-                                        caseMentions={focusedCase.mentions}
-                                        caseCreatedAt={focusedCase.created_at}
-                                        caseStatus={focusedCase.status}
-                                        authors={authors}
-                                        actorName={actorName}
-                                        pendingComposer={pendingComposer}
-                                        onStartAskQuestion={onStartAskQuestion}
-                                        onClaimAssignee={onClaimAssignee}
-                                        isUpdating={isUpdating}
-                                        isClaimingAssignee={isClaimingAssignee}
-                                        isEditingCases={isEditingCases}
-                                    />
-                                </>
-                            ) : null}
+                                    {focusedCase ? (
+                                        <>
+                                            <ThreadStartedDivider createdAt={focusedCase.created_at} />
+                                            <CaseThreadEntry
+                                                report={report}
+                                                caseId={focusedCaseId}
+                                                caseText={focusedCase.text}
+                                                caseMentions={focusedCase.mentions}
+                                                caseCreatedAt={focusedCase.created_at}
+                                                caseStatus={focusedCase.status}
+                                                authors={authors}
+                                                actorName={actorName}
+                                                pendingComposer={pendingComposer}
+                                                onStartAskQuestion={onStartAskQuestion}
+                                                onClaimAssignee={onClaimAssignee}
+                                                isUpdating={isUpdating}
+                                                isClaimingAssignee={isClaimingAssignee}
+                                                isEditingCases={isEditingCases}
+                                            />
+                                        </>
+                                    ) : null}
 
-                            <QuestionThreadGroup
-                                questions={timeline.issueChildren}
-                                authors={authors}
-                                originalAuthorName={originalAuthorName}
-                                actorName={actorName}
-                                forceExpanded={shouldForceExpandQuestionGroup(report, focusedCaseId, timeline.issueChildren, {
-                                    composerTargetsGroup: pendingComposer?.type === "question" && pendingComposer.targetReplyId === ISSUE_ROOT_PARENT_ID,
-                                })}
-                            />
-                            {timeline.branches.map((branch) => (
-                                <div
-                                    key={branch.root.id}
-                                    className="flex flex-col"
-                                >
+                                    <QuestionThreadGroup
+                                        questions={timeline.issueChildren}
+                                        authors={authors}
+                                        originalAuthorName={originalAuthorName}
+                                        actorName={actorName}
+                                        forceExpanded={shouldForceExpandQuestionGroup(report, focusedCaseId, timeline.issueChildren, {
+                                            composerTargetsGroup: pendingComposer?.type === "question" && pendingComposer.targetReplyId === ISSUE_ROOT_PARENT_ID,
+                                        })}
+                                    />
+                                    {timeline.branches.map((branch) => (
+                                        <div
+                                            key={branch.root.id}
+                                            className="flex flex-col"
+                                        >
+                                            <ThreadRootReply
+                                                reply={branch.root}
+                                                report={report}
+                                                caseId={focusedCaseId}
+                                                authors={authors}
+                                                pendingComposer={pendingComposer}
+                                                confirmAuthorName={confirmAuthorName}
+                                                showConfirmAuthorSelect={showConfirmAuthorSelect}
+                                                originalAuthorName={originalAuthorName}
+                                                issueUrl={issueUrl}
+                                                onConfirmAuthorNameChange={onConfirmAuthorNameChange}
+                                                onStartDeny={onStartDeny}
+                                                onStartCheckout={onStartCheckout}
+                                                onStartAskQuestion={onStartAskQuestion}
+                                                onTransferAssignee={onTransferAssignee}
+                                                onConfirm={onConfirm}
+                                                isUpdating={isUpdating}
+                                                isClaimingAssignee={isClaimingAssignee}
+                                                actorName={actorName}
+                                            />
+                                            <QuestionThreadGroup
+                                                questions={branch.children}
+                                                authors={authors}
+                                                originalAuthorName={originalAuthorName}
+                                                actorName={actorName}
+                                                forceExpanded={shouldForceExpandQuestionGroup(report, focusedCaseId, branch.children, {
+                                                    composerTargetsGroup: pendingComposer?.type === "question" && pendingComposer.targetReplyId === branch.root.id,
+                                                })}
+                                            />
+                                        </div>
+                                    ))}
+                                    {isOriginalTargetMissing ? <ThreadDetachedTargetDivider /> : null}
+                                </>
+                            ) : (
+                                <p className="px-[12px] py-[8px] text-[12px] text-[var(--adaptive-black500)]">{messages.cases.selectToView}</p>
+                            );
+
+                        const withSystem = (
+                            <>
+                                {timelineContent}
+                                {systemBranches.map((branch) => (
                                     <ThreadRootReply
+                                        key={branch.root.id}
                                         reply={branch.root}
                                         report={report}
-                                        caseId={focusedCaseId}
+                                        caseId={focusedCaseId ?? ""}
                                         authors={authors}
                                         pendingComposer={pendingComposer}
                                         confirmAuthorName={confirmAuthorName}
@@ -684,46 +818,12 @@ export function FeedbackThread({
                                         isClaimingAssignee={isClaimingAssignee}
                                         actorName={actorName}
                                     />
-                                    <QuestionThreadGroup
-                                        questions={branch.children}
-                                        authors={authors}
-                                        originalAuthorName={originalAuthorName}
-                                        actorName={actorName}
-                                        forceExpanded={shouldForceExpandQuestionGroup(report, focusedCaseId, branch.children, {
-                                            composerTargetsGroup: pendingComposer?.type === "question" && pendingComposer.targetReplyId === branch.root.id,
-                                        })}
-                                    />
-                                </div>
-                            ))}
-                            {isOriginalTargetMissing ? <ThreadDetachedTargetDivider /> : null}
-                        </>
-                    ) : (
-                        <p className="px-[12px] py-[8px] text-[12px] text-[var(--adaptive-black500)]">{messages.cases.selectToView}</p>
-                    )}
+                                ))}
+                            </>
+                        );
 
-                    {systemBranches.map((branch) => (
-                        <ThreadRootReply
-                            key={branch.root.id}
-                            reply={branch.root}
-                            report={report}
-                            caseId={focusedCaseId ?? ""}
-                            authors={authors}
-                            pendingComposer={pendingComposer}
-                            confirmAuthorName={confirmAuthorName}
-                            showConfirmAuthorSelect={showConfirmAuthorSelect}
-                            originalAuthorName={originalAuthorName}
-                            issueUrl={issueUrl}
-                            onConfirmAuthorNameChange={onConfirmAuthorNameChange}
-                            onStartDeny={onStartDeny}
-                            onStartCheckout={onStartCheckout}
-                            onStartAskQuestion={onStartAskQuestion}
-                            onTransferAssignee={onTransferAssignee}
-                            onConfirm={onConfirm}
-                            isUpdating={isUpdating}
-                            isClaimingAssignee={isClaimingAssignee}
-                            actorName={actorName}
-                        />
-                    ))}
+                        return isFeedLayout ? <FeedTimelineTrack>{withSystem}</FeedTimelineTrack> : withSystem;
+                    })()}
                 </div>
             </section>
         </div>
