@@ -4,7 +4,7 @@ import { formatClockTime } from "@/utils/shared/format.js";
 import { formatAssigneeLabel, resolveAuthorDepartment } from "@/utils/report/reportCases.js";
 import { resolveAssigneeEntryActionRole } from "@/utils/feedback/feedbackThread.js";
 import { getThreadActionButtonClass, THREAD_ACTION_STYLE } from "@/constants/threadActionStyles.js";
-import { CompleteActionIcon, DeniedActionIcon, EditIcon } from "@/components/icons/Icons.js";
+import { AssigneeAssignedIcon, AssigneeTransferredIcon, CompleteActionIcon, DeniedActionIcon } from "@/components/icons/Icons.js";
 import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
 import { FeedActivityLine } from "./feed/FeedCommentMeta.js";
 import { getFeedActivitySurfaceClass, resolveFeedActivityTone } from "./feed/feedActivitySurface.js";
@@ -129,10 +129,17 @@ export function AssigneeThreadEntry({
                 density="activity"
                 feedNode={
                     <FeedSpineIcon tone={resolveFeedActivityTone(reply.status)}>
-                        <EditIcon
-                            className="h-[12px] w-[12px]"
-                            fill="currentColor"
-                        />
+                        {reply.status === "assignee_transferred" ? (
+                            <AssigneeTransferredIcon
+                                className="h-[12px] w-[12px]"
+                                fill="currentColor"
+                            />
+                        ) : (
+                            <AssigneeAssignedIcon
+                                className="h-[12px] w-[12px]"
+                                fill="currentColor"
+                            />
+                        )}
                     </FeedSpineIcon>
                 }
             >
