@@ -1,7 +1,14 @@
 import { describe, expect, it, vi } from "vitest";
-import { applyRefreshUser, invokeOptionalLogout, isReportAuthUser, resolveRefreshSessionMethod } from "./remoteAuthLifecycle.js";
+import { applyRefreshUser, invokeOptionalLogout, isReportAuthUser, resolveRefreshSessionMethod, resolveRemoteOnboardingCompleted } from "./remoteAuthLifecycle.js";
 
 describe("remoteAuthLifecycle", () => {
+    it("requires a remote auth session for completed remote onboarding", () => {
+        expect(resolveRemoteOnboardingCompleted(true, true, null)).toBe(false);
+        expect(resolveRemoteOnboardingCompleted(true, true, { method: "api", user: { id: "u1", name: "Ada" } })).toBe(true);
+        expect(resolveRemoteOnboardingCompleted(true, false, { method: "api", user: { id: "u1", name: "Ada" } })).toBe(false);
+        expect(resolveRemoteOnboardingCompleted(false, true, { method: "api", user: { id: "u1", name: "Ada" } })).toBe(false);
+    });
+
     it("detects a valid auth user payload", () => {
         expect(isReportAuthUser({ id: "u1", name: "Ada" })).toBe(true);
         expect(isReportAuthUser({ id: "", name: "Ada" })).toBe(false);

@@ -65,6 +65,19 @@ describe("resolvePanelView", () => {
         ).toBe("onboarding");
     });
 
+    it("stays in onboarding when selfProfile is completed but remote auth session is missing", () => {
+        expect(
+            resolvePanelView({
+                ...localBase,
+                loginMethod: "api",
+                requireAuth: true,
+                remoteOnboardingCompleted: false,
+                selfProfileCompleted: true,
+                hasPersistedPersonalKey: true,
+            }),
+        ).toBe("onboarding");
+    });
+
     it("uses personal-key onboarding when api sync has requireAuth false", () => {
         expect(
             resolvePanelView({

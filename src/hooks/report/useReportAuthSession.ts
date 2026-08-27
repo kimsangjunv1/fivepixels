@@ -17,7 +17,7 @@ import {
     saveRemoteAuthSession,
     type RemoteAuthSession,
 } from "@/utils/auth/loginSession.js";
-import { applyRefreshUser, invokeOptionalLogout, resolveRefreshSessionMethod } from "@/utils/auth/remoteAuthLifecycle.js";
+import { applyRefreshUser, invokeOptionalLogout, resolveRefreshSessionMethod, resolveRemoteOnboardingCompleted } from "@/utils/auth/remoteAuthLifecycle.js";
 import { ReportAuthError } from "@/utils/auth/reportAuthError.js";
 import { resolvePanelView, type PanelView } from "@/utils/auth/resolvePanelView.js";
 import { buildPresentationViewers, resolveSessionActor } from "@/utils/report/reportTeam.js";
@@ -135,7 +135,7 @@ export function useReportAuthSession({
     });
     const loginMethod = sync;
     const isRemoteAuth = usesRemoteAuthLogin(loginMethod, requireAuth);
-    const remoteOnboardingCompleted = Boolean(isRemoteAuth && selfProfile?.completed);
+    const remoteOnboardingCompleted = resolveRemoteOnboardingCompleted(isRemoteAuth, selfProfile?.completed, remoteSession);
     const remoteAuthor = useMemo<ReportAuthor | null>(() => {
         const authorId = selfProfile?.authorId || remoteSession?.user.id;
         const name = selfProfile?.name || remoteSession?.user.name;

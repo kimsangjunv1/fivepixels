@@ -2,6 +2,14 @@ import type { FivePixelsSync } from "@/constants/loginMethod.js";
 import type { ReportAuthUser } from "@/types/report.js";
 import type { RemoteAuthSession } from "./loginSession.js";
 
+export function resolveRemoteOnboardingCompleted(
+    isRemoteAuth: boolean,
+    selfProfileCompleted: boolean | undefined,
+    remoteSession: RemoteAuthSession | null,
+): boolean {
+    return Boolean(isRemoteAuth && selfProfileCompleted && remoteSession);
+}
+
 export function isReportAuthUser(value: unknown): value is ReportAuthUser {
     if (!value || typeof value !== "object") {
         return false;
