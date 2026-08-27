@@ -60,6 +60,20 @@ export function anchorPosition(reportId: string, reportType: ReportTargetType, s
     };
 }
 
+/** Modal target: same as anchorPosition but with `viewPath` for locate → reveal. */
+export function modalAnchorPosition(
+    reportId: string,
+    reportType: ReportTargetType,
+    viewKey: string,
+    scrollY = 180,
+    y = 0.35,
+): ReportPosition {
+    return {
+        ...anchorPosition(reportId, reportType, scrollY, y),
+        viewPath: [viewKey],
+    };
+}
+
 export function coordinatePosition(x: number, y: number, scrollY = 240): ReportPosition {
     return {
         target: { x, y },
