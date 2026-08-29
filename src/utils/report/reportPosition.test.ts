@@ -61,6 +61,24 @@ describe("normalizeReportPosition", () => {
         });
     });
 
+    it("accepts snake_case scroll_y and view_path aliases", () => {
+        expect(
+            normalizeReportPosition({
+                target: { x: 0.1, y: 0.2 },
+                viewport: { x: 0.3, y: 0.4, width: 800, height: 600 },
+                scroll_y: 43.75,
+                anchor: null,
+                view_path: ["modal-a"],
+            }),
+        ).toEqual({
+            target: { x: 0.1, y: 0.2 },
+            viewport: { x: 0.3, y: 0.4, width: 800, height: 600 },
+            scrollY: 43.75,
+            anchor: null,
+            viewPath: ["modal-a"],
+        });
+    });
+
     it("drops invalid target/anchor payloads", () => {
         expect(
             normalizeReportPosition({

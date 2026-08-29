@@ -11,12 +11,17 @@ import type {
     ReportStorageAdapter,
     UpdateReportFeedbackPayload,
 } from "@/types/report.js";
+import { normalizeMarkersListItem } from "@/utils/report/normalizeMarkersListItem.js";
 import { normalizeListReport } from "@/utils/report/reportSummary.js";
 import { normalizeListRepliesResult } from "@/utils/feedback/replyHistory.js";
 
 export async function listReports(adapter: ReportStorageAdapter, pathname: string) {
     const items = await adapter.list({ pathname });
-    return items.map(normalizeListReport);
+    return items.flatMap((item) => {
+        const normalized = normalizeMarkersListItem(item, { pathname });
+
+        return normalized ? [normalized] : [];
+    });
 }
 
 export async function listAllReports(adapter: ReportStorageAdapter, params: ReportListAllParams): Promise<ReportListAllResult> {
@@ -28,7 +33,11 @@ export async function listAllReports(adapter: ReportStorageAdapter, params: Repo
 
     return {
         ...result,
-        items: result.items.map(normalizeListReport),
+        items: result.items.flatMap((item) => {
+            const normalized = normalizeMarkersListItem(item);
+
+            return normalized ? [normalized] : [];
+        }),
     };
 }
 

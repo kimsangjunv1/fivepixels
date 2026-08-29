@@ -76,12 +76,14 @@ function normalizePositionAnchor(value: unknown): ReportPositionAnchor | null {
     }
 
     const anchor = value as Record<string, unknown>;
+    const reportId = typeof anchor.reportId === "string" && anchor.reportId ? anchor.reportId : typeof anchor.report_id === "string" ? anchor.report_id : "";
+    const reportType = anchor.reportType ?? anchor.report_type;
 
-    if (typeof anchor.reportId !== "string" || !anchor.reportId) {
+    if (!reportId) {
         return null;
     }
 
-    if (anchor.reportType !== "group" && anchor.reportType !== "item") {
+    if (reportType !== "group" && reportType !== "item") {
         return null;
     }
 
@@ -90,8 +92,8 @@ function normalizePositionAnchor(value: unknown): ReportPositionAnchor | null {
     }
 
     return {
-        reportId: anchor.reportId,
-        reportType: anchor.reportType as ReportTargetType,
+        reportId,
+        reportType: reportType as ReportTargetType,
         x: anchor.x,
         y: anchor.y,
     };
@@ -117,12 +119,17 @@ export function normalizeReportPosition(value: unknown): ReportPosition {
     }
 
     const position = value as Record<string, unknown>;
-    const viewPath = normalizeViewPath(position.viewPath);
+    const viewPath = normalizeViewPath(position.viewPath ?? position.view_path);
+    const scrollY = isFiniteNumber(position.scrollY)
+        ? position.scrollY
+        : isFiniteNumber(position.scroll_y)
+          ? position.scroll_y
+          : getFallbackScrollY();
 
     return {
         target: normalizePositionRatio(position.target),
         viewport: normalizePositionViewport(position.viewport),
-        scrollY: isFiniteNumber(position.scrollY) ? position.scrollY : getFallbackScrollY(),
+        scrollY,
         anchor: normalizePositionAnchor(position.anchor),
         ...(viewPath.length > 0 ? { viewPath } : {}),
     };
