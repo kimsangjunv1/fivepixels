@@ -58,18 +58,20 @@ function normalizePositionAnchor(value) {
         return null;
     }
     const anchor = value;
-    if (typeof anchor.reportId !== "string" || !anchor.reportId) {
+    const reportId = typeof anchor.reportId === "string" && anchor.reportId ? anchor.reportId : typeof anchor.report_id === "string" ? anchor.report_id : "";
+    const reportType = anchor.reportType ?? anchor.report_type;
+    if (!reportId) {
         return null;
     }
-    if (anchor.reportType !== "group" && anchor.reportType !== "item") {
+    if (reportType !== "group" && reportType !== "item") {
         return null;
     }
     if (!isFiniteNumber(anchor.x) || !isFiniteNumber(anchor.y)) {
         return null;
     }
     return {
-        reportId: anchor.reportId,
-        reportType: anchor.reportType,
+        reportId,
+        reportType: reportType,
         x: anchor.x,
         y: anchor.y,
     };
@@ -91,11 +93,16 @@ export function normalizeReportPosition(value) {
         };
     }
     const position = value;
-    const viewPath = normalizeViewPath(position.viewPath);
+    const viewPath = normalizeViewPath(position.viewPath ?? position.view_path);
+    const scrollY = isFiniteNumber(position.scrollY)
+        ? position.scrollY
+        : isFiniteNumber(position.scroll_y)
+            ? position.scroll_y
+            : getFallbackScrollY();
     return {
         target: normalizePositionRatio(position.target),
         viewport: normalizePositionViewport(position.viewport),
-        scrollY: isFiniteNumber(position.scrollY) ? position.scrollY : getFallbackScrollY(),
+        scrollY,
         anchor: normalizePositionAnchor(position.anchor),
         ...(viewPath.length > 0 ? { viewPath } : {}),
     };

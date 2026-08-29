@@ -1,9 +1,13 @@
 import { getActiveReportMessages } from "../i18n/index.js";
+import { normalizeMarkersListItem } from "../utils/report/normalizeMarkersListItem.js";
 import { normalizeListReport } from "../utils/report/reportSummary.js";
 import { normalizeListRepliesResult } from "../utils/feedback/replyHistory.js";
 export async function listReports(adapter, pathname) {
     const items = await adapter.list({ pathname });
-    return items.map(normalizeListReport);
+    return items.flatMap((item) => {
+        const normalized = normalizeMarkersListItem(item, { pathname });
+        return normalized ? [normalized] : [];
+    });
 }
 export async function listAllReports(adapter, params) {
     const result = await adapter.listAll?.(params);
@@ -12,7 +16,10 @@ export async function listAllReports(adapter, params) {
     }
     return {
         ...result,
-        items: result.items.map(normalizeListReport),
+        items: result.items.flatMap((item) => {
+            const normalized = normalizeMarkersListItem(item);
+            return normalized ? [normalized] : [];
+        }),
     };
 }
 export async function listReplies(adapter, commentId, params) {
