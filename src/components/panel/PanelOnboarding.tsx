@@ -5,6 +5,7 @@ import { MARKER_FILL_STYLE_VALUES, type AppearanceScale, type MarkerFillStyle, t
 import { PANEL_ROLE_VALUES, type PanelRole } from "@/constants/panelRole.js";
 import type { UserSelectablePanelTab } from "@/constants/panelTabRegistry.js";
 import type { ReportLocale } from "@/i18n/types.js";
+import { hasStoredLocalePreference } from "@/hooks/useLocalePreference.js";
 import { useReportPreferences, useReportSession } from "@/providers/reportContext.js";
 import { getDefaultVisibleTabsForRole } from "@/utils/panel/panelTabPreference.js";
 import { ReportAuthError, resolveRegistrationError } from "@/utils/auth/reportAuthError.js";
@@ -58,6 +59,20 @@ function getAuthEntryStep(sync: FivePixelsSync, requireAuth: boolean): Extract<O
     return "intro";
 }
 
+function resolveInitialOnboardingStep(
+    sync: FivePixelsSync,
+    requireAuth: boolean,
+    setupCompleted: boolean | undefined,
+): OnboardingStep {
+    const authEntry = getAuthEntryStep(sync, requireAuth);
+
+    if (setupCompleted || hasStoredLocalePreference()) {
+        return authEntry;
+    }
+
+    return "language";
+}
+
 export function PanelOnboarding() {
     const {
         messages,
@@ -93,7 +108,7 @@ export function PanelOnboarding() {
     const sync = resolveFivePixelsSync(storedLoginMethod);
     const requireAuth = resolveRequireAuth(sync, requireAuthProp);
     const canSubmitRegistrationRequest = isTeamWriteEnabled(persistenceStatus) && hasTeamRequestHandler({ onCreateReviewerRequest });
-    const [step, setStep] = useState<OnboardingStep>("language");
+    const [step, setStep] = useState<OnboardingStep>(() => resolveInitialOnboardingStep(sync, requireAuth, selfProfile?.completed));
     const [name, setName] = useState(selfProfile?.name ?? "");
     const [selectedTabs, setSelectedTabs] = useState<UserSelectablePanelTab[]>(() => getDefaultVisibleTabsForRole(panelRole, resolvedTabAvailabilityContext));
     const [isCreating, setIsCreating] = useState(false);
@@ -201,8 +216,11 @@ export function PanelOnboarding() {
         setAuthError("");
 
         try {
+            const setupAlreadyCompleted = selfProfile?.completed === true;
             await loginWithApi({ loginId: loginId.trim(), password });
-            goToSharedSetup();
+            if (!setupAlreadyCompleted) {
+                goToSharedSetup();
+            }
         } catch (error) {
             setAuthError(error instanceof ReportAuthError && error.code === "auth-unavailable" ? onboarding.authUnavailable : onboarding.loginFailed);
         } finally {
@@ -249,8 +267,11 @@ export function PanelOnboarding() {
         setAuthError("");
 
         try {
+            const setupAlreadyCompleted = selfProfile?.completed === true;
             await loginWithArtemis();
-            goToSharedSetup();
+            if (!setupAlreadyCompleted) {
+                goToSharedSetup();
+            }
         } catch (error) {
             setAuthError(error instanceof ReportAuthError && error.code === "auth-unavailable" ? onboarding.authUnavailable : onboarding.loginFailed);
         } finally {

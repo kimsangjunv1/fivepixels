@@ -11,7 +11,7 @@ import { buildPresentationViewers, resolveSessionActor } from "../../utils/repor
 export function useReportAuthSession({ projectId, environment, authors, identify, requireReviewerKey, pixelsMode, sync: syncProp, requireAuth: requireAuthProp, onApiLogin, onApiRegister, onApiLogout, onApiRefresh, onArtemisLogin, }) {
     const sync = resolveFivePixelsSync(syncProp);
     const requireAuth = resolveRequireAuth(sync, requireAuthProp);
-    const { selfProfile, saveSelfProfile, markOnboardingComplete, clearSelfProfile } = useSelfProfile(projectId, environment);
+    const { selfProfile, saveSelfProfile, markOnboardingComplete } = useSelfProfile(projectId, environment);
     const requiresReviewerKey = requireReviewerKey || authors.some((author) => Boolean(author.publicKey));
     const isPresentationMode = pixelsMode === "presentation";
     const [remoteSession, setRemoteSession] = useState(() => {
@@ -214,7 +214,7 @@ export function useReportAuthSession({ projectId, environment, authors, identify
     }, [markOnboardingComplete]);
     const persistRemoteUser = useCallback((method, user, options) => {
         const session = { method, user };
-        const resetOnboarding = options?.resetOnboarding ?? true;
+        const resetOnboarding = options?.resetOnboarding ?? !selfProfile?.completed;
         saveLoginMethod(projectId, environment, method);
         saveRemoteAuthSession(projectId, environment, session);
         setRemoteSession(session);
@@ -253,10 +253,9 @@ export function useReportAuthSession({ projectId, environment, authors, identify
         finally {
             clearRemoteAuthSession(projectId, environment);
             setRemoteSession(null);
-            clearSelfProfile();
             clearPersonalKey();
         }
-    }, [clearPersonalKey, clearSelfProfile, environment, onApiLogout, projectId]);
+    }, [clearPersonalKey, environment, onApiLogout, projectId]);
     const refreshWithApi = useCallback(async () => {
         if (!onApiRefresh) {
             throw new ReportAuthError("auth-unavailable", "API token refresh is not configured.");

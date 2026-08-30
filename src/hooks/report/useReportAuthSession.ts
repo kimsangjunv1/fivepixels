@@ -99,7 +99,7 @@ export function useReportAuthSession({
 }: UseReportAuthSessionParams) {
     const sync = resolveFivePixelsSync(syncProp);
     const requireAuth = resolveRequireAuth(sync, requireAuthProp);
-    const { selfProfile, saveSelfProfile, markOnboardingComplete, clearSelfProfile } = useSelfProfile(projectId, environment);
+    const { selfProfile, saveSelfProfile, markOnboardingComplete } = useSelfProfile(projectId, environment);
     const requiresReviewerKey = requireReviewerKey || authors.some((author) => Boolean(author.publicKey));
     const isPresentationMode = pixelsMode === "presentation";
     const [remoteSession, setRemoteSession] = useState<RemoteAuthSession | null>(() => {
@@ -356,7 +356,7 @@ export function useReportAuthSession({
     const persistRemoteUser = useCallback(
         (method: "api" | "artemis", user: ReportAuthUser, options?: { resetOnboarding?: boolean }) => {
             const session = { method, user };
-            const resetOnboarding = options?.resetOnboarding ?? true;
+            const resetOnboarding = options?.resetOnboarding ?? !selfProfile?.completed;
             saveLoginMethod(projectId, environment, method);
             saveRemoteAuthSession(projectId, environment, session);
             setRemoteSession(session);
@@ -409,10 +409,9 @@ export function useReportAuthSession({
         } finally {
             clearRemoteAuthSession(projectId, environment);
             setRemoteSession(null);
-            clearSelfProfile();
             clearPersonalKey();
         }
-    }, [clearPersonalKey, clearSelfProfile, environment, onApiLogout, projectId]);
+    }, [clearPersonalKey, environment, onApiLogout, projectId]);
 
     const refreshWithApi = useCallback(async () => {
         if (!onApiRefresh) {

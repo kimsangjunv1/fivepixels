@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-const STORAGE_KEY = "fivepixels:locale-preference";
+export const LOCALE_PREFERENCE_STORAGE_KEY = "fivepixels:locale-preference";
 function isReportLocale(value) {
     return value === "en" || value === "ko";
 }
@@ -8,7 +8,7 @@ function readStoredLocale(fallback) {
         return fallback;
     }
     try {
-        const stored = window.sessionStorage.getItem(STORAGE_KEY);
+        const stored = window.sessionStorage.getItem(LOCALE_PREFERENCE_STORAGE_KEY);
         if (isReportLocale(stored)) {
             return stored;
         }
@@ -20,10 +20,22 @@ function readStoredLocale(fallback) {
 }
 function persistLocale(locale) {
     try {
-        window.sessionStorage.setItem(STORAGE_KEY, locale);
+        window.sessionStorage.setItem(LOCALE_PREFERENCE_STORAGE_KEY, locale);
     }
     catch {
         // Ignore storage failures in restricted environments.
+    }
+}
+export function hasStoredLocalePreference() {
+    if (typeof window === "undefined") {
+        return false;
+    }
+    try {
+        const stored = window.sessionStorage.getItem(LOCALE_PREFERENCE_STORAGE_KEY);
+        return isReportLocale(stored);
+    }
+    catch {
+        return false;
     }
 }
 export function useLocalePreference(initialLocale) {

@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import type { ReportLocale } from "@/i18n/types.js";
 
-const STORAGE_KEY = "fivepixels:locale-preference";
+export const LOCALE_PREFERENCE_STORAGE_KEY = "fivepixels:locale-preference";
 
 function isReportLocale(value: unknown): value is ReportLocale {
     return value === "en" || value === "ko";
@@ -13,7 +13,7 @@ function readStoredLocale(fallback: ReportLocale): ReportLocale {
     }
 
     try {
-        const stored = window.sessionStorage.getItem(STORAGE_KEY);
+        const stored = window.sessionStorage.getItem(LOCALE_PREFERENCE_STORAGE_KEY);
 
         if (isReportLocale(stored)) {
             return stored;
@@ -27,9 +27,22 @@ function readStoredLocale(fallback: ReportLocale): ReportLocale {
 
 function persistLocale(locale: ReportLocale) {
     try {
-        window.sessionStorage.setItem(STORAGE_KEY, locale);
+        window.sessionStorage.setItem(LOCALE_PREFERENCE_STORAGE_KEY, locale);
     } catch {
         // Ignore storage failures in restricted environments.
+    }
+}
+
+export function hasStoredLocalePreference(): boolean {
+    if (typeof window === "undefined") {
+        return false;
+    }
+
+    try {
+        const stored = window.sessionStorage.getItem(LOCALE_PREFERENCE_STORAGE_KEY);
+        return isReportLocale(stored);
+    } catch {
+        return false;
     }
 }
 
