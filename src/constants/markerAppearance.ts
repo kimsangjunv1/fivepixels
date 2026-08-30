@@ -1,16 +1,18 @@
 import { ACCENT_COLOR_DARK } from "@/constants/accentColors.js";
 
-export type AppearanceScale = "2xs" | "xs" | "sm" | "md" | "lg" | "xl";
+export type AppearanceScale = "2xs" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl";
 
-export const APPEARANCE_SCALE_VALUES = ["2xs", "xs", "sm", "md", "lg", "xl"] as const satisfies readonly AppearanceScale[];
+export const APPEARANCE_SCALE_VALUES = ["2xs", "xs", "sm", "md", "lg", "xl", "2xl"] as const satisfies readonly AppearanceScale[];
 
+/** Evenly spaced from 50% to 150% with 100% (`md`) at the center step. */
 export const MARKER_SCALE_FACTOR: Record<AppearanceScale, number> = {
-    "2xs": 0.3,
-    xs: 0.7,
-    sm: 0.85,
+    "2xs": 0.5,
+    xs: 2 / 3,
+    sm: 5 / 6,
     md: 1,
-    lg: 1.15,
-    xl: 1.3,
+    lg: 7 / 6,
+    xl: 4 / 3,
+    "2xl": 1.5,
 };
 
 export type MarkerLabelFontSize = "sm" | "md" | "lg" | "xl";
@@ -104,7 +106,7 @@ export const DEFAULT_FEEDBACK_MODE_DOT_COLORS: FeedbackModeDotColors = {
 
 export const DEFAULT_MARKER_APPEARANCE: MarkerAppearancePreferences = {
     size: "md",
-    shape: "cookie4",
+    shape: "circle",
     fillStyle: "both",
     colors: DEFAULT_MARKER_COLORS,
     strokeColor: DEFAULT_MARKER_STROKE_COLOR,
@@ -137,7 +139,7 @@ export function isMarkerFontSize(value: unknown): value is MarkerFontSize {
 }
 
 export function isAppearanceScale(value: unknown): value is AppearanceScale {
-    return value === "2xs" || value === "xs" || value === "sm" || value === "md" || value === "lg" || value === "xl";
+    return value === "2xs" || value === "xs" || value === "sm" || value === "md" || value === "lg" || value === "xl" || value === "2xl";
 }
 
 export function isMarkerShape(value: unknown): value is MarkerShape {

@@ -1,5 +1,6 @@
-export type AppearanceScale = "2xs" | "xs" | "sm" | "md" | "lg" | "xl";
-export declare const APPEARANCE_SCALE_VALUES: readonly ["2xs", "xs", "sm", "md", "lg", "xl"];
+export type AppearanceScale = "2xs" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl";
+export declare const APPEARANCE_SCALE_VALUES: readonly ["2xs", "xs", "sm", "md", "lg", "xl", "2xl"];
+/** Evenly spaced from 50% to 150% with 100% (`md`) at the center step. */
 export declare const MARKER_SCALE_FACTOR: Record<AppearanceScale, number>;
 export type MarkerLabelFontSize = "sm" | "md" | "lg" | "xl";
 export type MarkerFontSize = "none" | MarkerLabelFontSize;

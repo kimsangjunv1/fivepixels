@@ -142,6 +142,7 @@ export function PanelOnboarding() {
         md: messages.settings.scaleMd,
         lg: messages.settings.scaleLg,
         xl: messages.settings.scaleXl,
+        "2xl": messages.settings.scale2xl,
     };
     const shapeLabels: Record<MarkerShape, string> = {
         circle: messages.settings.markerShapeCircle,

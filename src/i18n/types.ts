@@ -624,6 +624,7 @@ export type ReportMessages = {
         scaleMd: string;
         scaleLg: string;
         scaleXl: string;
+        scale2xl: string;
         markerShapeCircle: string;
         markerShapeSquare: string;
         markerShapeCookie4: string;

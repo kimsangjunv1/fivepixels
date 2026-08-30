@@ -1,12 +1,14 @@
 import { ACCENT_COLOR_DARK } from "../constants/accentColors.js";
-export const APPEARANCE_SCALE_VALUES = ["2xs", "xs", "sm", "md", "lg", "xl"];
+export const APPEARANCE_SCALE_VALUES = ["2xs", "xs", "sm", "md", "lg", "xl", "2xl"];
+/** Evenly spaced from 50% to 150% with 100% (`md`) at the center step. */
 export const MARKER_SCALE_FACTOR = {
-    "2xs": 0.3,
-    xs: 0.7,
-    sm: 0.85,
+    "2xs": 0.5,
+    xs: 2 / 3,
+    sm: 5 / 6,
     md: 1,
-    lg: 1.15,
-    xl: 1.3,
+    lg: 7 / 6,
+    xl: 4 / 3,
+    "2xl": 1.5,
 };
 export const MARKER_FONT_SIZE_VALUES = ["none", "sm", "md", "lg", "xl"];
 export const MARKER_SHAPE_VALUES = [
@@ -45,7 +47,7 @@ export const DEFAULT_FEEDBACK_MODE_DOT_COLORS = {
 };
 export const DEFAULT_MARKER_APPEARANCE = {
     size: "md",
-    shape: "cookie4",
+    shape: "circle",
     fillStyle: "both",
     colors: DEFAULT_MARKER_COLORS,
     strokeColor: DEFAULT_MARKER_STROKE_COLOR,
@@ -72,7 +74,7 @@ export function isMarkerFontSize(value) {
     return value === "none" || isMarkerLabelFontSize(value);
 }
 export function isAppearanceScale(value) {
-    return value === "2xs" || value === "xs" || value === "sm" || value === "md" || value === "lg" || value === "xl";
+    return value === "2xs" || value === "xs" || value === "sm" || value === "md" || value === "lg" || value === "xl" || value === "2xl";
 }
 export function isMarkerShape(value) {
     return MARKER_SHAPE_VALUES.includes(value);
