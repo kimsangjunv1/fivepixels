@@ -1062,6 +1062,8 @@ export const en: ReportMessages = {
         updateFeedbackFailed: "Failed to update feedback.",
         replyContentRequired: "Enter a reply message.",
         authorRequired: "Enter an author.",
+        authBootstrapPending: "Initializing Fivepixels authentication and project.",
+        authBootstrapFailed: "Authentication initialization failed. Please sign in again.",
         saveReplyFailed: "Failed to save reply.",
         reviewerRequired: "Select a reviewer.",
         confirmResolutionFailed: "Failed to confirm resolution.",

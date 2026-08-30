@@ -4,7 +4,7 @@ import { buildGitHubIssueStatusUpdate, buildGitHubIssueUpdate, canCreateGitHubIs
 import { notifyFeedbackCreate, notifyFeedbackDelete, notifyFeedbackUpdate, notifyGitHubIssueCreated } from "../../utils/report/reportCallbacks.js";
 import { canDeleteFeedback } from "../../utils/feedback/feedbackPermissions.js";
 import { syncIssueStatusFromCases } from "../../utils/report/reportCases.js";
-export function useReportMutations({ messages, fields, github, eventCallbacks, reports, sessionActor, selectedReport, selectedReportId, setSelectedReportId, closeReplyWindow, restoreSuspendedOpenReplyWindows, isCreating, createFeedback, updateFeedback, deleteFeedback, createReply, usesCreateReply, signCreatePayload, signUpdatePayload, signReplyPayload, setErrorMessage, buildCreatePayloadFromDraft, finalizeDraftCreate, }) {
+export function useReportMutations({ messages, fields, github, eventCallbacks, reports, sessionActor, selectedReport, selectedReportId, setSelectedReportId, closeReplyWindow, restoreSuspendedOpenReplyWindows, isCreating, createFeedback, updateFeedback, deleteFeedback, createReply, usesCreateReply, signCreatePayload, signUpdatePayload, signReplyPayload, setErrorMessage, buildCreatePayloadFromDraft, finalizeDraftCreate, isAuthBootstrapping = false, }) {
     const [editingReportId, setEditingReportId] = useState(null);
     const [editableDraft, setEditableDraft] = useState(null);
     const [creatingGitHubIssueId, setCreatingGitHubIssueId] = useState(null);
@@ -27,6 +27,10 @@ export function useReportMutations({ messages, fields, github, eventCallbacks, r
         setEditableDraft(null);
     };
     const handleCreateSubmit = async () => {
+        if (isAuthBootstrapping) {
+            setErrorMessage(messages.errors.authBootstrapPending);
+            return;
+        }
         const payload = buildCreatePayloadFromDraft();
         if (!payload) {
             return;

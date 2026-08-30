@@ -28,8 +28,9 @@ export type UseReportMutationsParams = {
     setErrorMessage: Dispatch<SetStateAction<string>>;
     buildCreatePayloadFromDraft: () => CreateReportFeedbackPayload | null;
     finalizeDraftCreate: () => void;
+    isAuthBootstrapping?: boolean;
 };
-export declare function useReportMutations({ messages, fields, github, eventCallbacks, reports, sessionActor, selectedReport, selectedReportId, setSelectedReportId, closeReplyWindow, restoreSuspendedOpenReplyWindows, isCreating, createFeedback, updateFeedback, deleteFeedback, createReply, usesCreateReply, signCreatePayload, signUpdatePayload, signReplyPayload, setErrorMessage, buildCreatePayloadFromDraft, finalizeDraftCreate, }: UseReportMutationsParams): {
+export declare function useReportMutations({ messages, fields, github, eventCallbacks, reports, sessionActor, selectedReport, selectedReportId, setSelectedReportId, closeReplyWindow, restoreSuspendedOpenReplyWindows, isCreating, createFeedback, updateFeedback, deleteFeedback, createReply, usesCreateReply, signCreatePayload, signUpdatePayload, signReplyPayload, setErrorMessage, buildCreatePayloadFromDraft, finalizeDraftCreate, isAuthBootstrapping, }: UseReportMutationsParams): {
     editingReportId: string | null;
     setEditingReportId: Dispatch<SetStateAction<string | null>>;
     editableDraft: EditableDraft | null;

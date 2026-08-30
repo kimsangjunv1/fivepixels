@@ -962,6 +962,8 @@ export type ReportMessages = {
         updateFeedbackFailed: string;
         replyContentRequired: string;
         authorRequired: string;
+        authBootstrapPending: string;
+        authBootstrapFailed: string;
         saveReplyFailed: string;
         reviewerRequired: string;
         confirmResolutionFailed: string;

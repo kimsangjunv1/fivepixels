@@ -85,6 +85,8 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     authDiagnostics: import("./useReportAuthSession.js").AuthDiagnostics;
     authorSelectionLocked: boolean;
     panelView: PanelView;
+    authBootstrapState: import("./useReportAuthSession.js").AuthBootstrapState;
+    isAuthBootstrapping: boolean;
     loginMethod: "local" | "api" | "artemis";
     requireAuth: boolean;
     require: {

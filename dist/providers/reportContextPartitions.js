@@ -74,6 +74,8 @@ export const REPORT_PREFERENCE_KEYS = [
     "personalKeyCandidates",
     "authorSelectionLocked",
     "panelView",
+    "authBootstrapState",
+    "isAuthBootstrapping",
     "loginMethod",
     "requireAuth",
     "require",

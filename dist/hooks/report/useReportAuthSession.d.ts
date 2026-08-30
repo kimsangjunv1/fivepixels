@@ -18,6 +18,7 @@ export type AuthDiagnostics = {
     expected: Record<AuthDiagnosticsField, string | null>;
     actual: Record<AuthDiagnosticsField, string | null>;
 };
+export type AuthBootstrapState = "idle" | "pending" | "ready" | "failed";
 export type UseReportAuthSessionParams = {
     projectId: string;
     environment?: string;
@@ -83,6 +84,8 @@ export declare function useReportAuthSession({ projectId, environment, authors, 
     isSelfAuthenticated: boolean;
     authDiagnostics: AuthDiagnostics;
     panelView: PanelView;
+    authBootstrapState: AuthBootstrapState;
+    isAuthBootstrapping: boolean;
     loginMethod: "local" | "api" | "artemis";
     requireAuth: boolean;
     loginWithApi: (payload: ReportApiLoginPayload) => Promise<ReportAuthUser>;

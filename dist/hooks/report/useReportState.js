@@ -154,6 +154,7 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         setErrorMessage: panel.setErrorMessage,
         buildCreatePayloadFromDraft: draft.buildCreatePayloadFromDraft,
         finalizeDraftCreate: draft.finalizeDraftCreate,
+        isAuthBootstrapping: auth.isAuthBootstrapping,
     });
     const discardDraft = useCallback(() => {
         draft.cancelDraft();
@@ -255,6 +256,12 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
     const authorizedAuthorId = auth.authorizedAuthors[0]?.id ?? null;
     const activeIdentifyId = auth.activeIdentify?.id ?? null;
     const activeIdentifyName = auth.activeIdentify?.name ?? null;
+    useEffect(() => {
+        if (auth.authBootstrapState !== "failed") {
+            return;
+        }
+        panel.setErrorMessage(panel.messages.errors.authBootstrapFailed);
+    }, [auth.authBootstrapState, panel.messages.errors.authBootstrapFailed, panel.setErrorMessage]);
     useEffect(() => {
         draft.setDraft(null);
         panel.setErrorMessage("");

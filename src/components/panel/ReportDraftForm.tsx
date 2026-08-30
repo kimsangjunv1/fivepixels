@@ -44,6 +44,7 @@ export function ReportDraftForm() {
         authorSelectionLocked,
         sessionActor,
         cancelDraft,
+        isAuthBootstrapping,
     } = useReport();
 
     if (!draft) {
@@ -80,6 +81,7 @@ export function ReportDraftForm() {
             authorSelectionLocked={authorSelectionLocked}
             sessionActor={sessionActor}
             cancelDraft={cancelDraft}
+            isAuthBootstrapping={isAuthBootstrapping}
         />
     );
 }
@@ -110,6 +112,7 @@ type ReportDraftFormContentProps = {
     authorSelectionLocked: boolean;
     sessionActor: ReturnType<typeof useReport>["sessionActor"];
     cancelDraft: () => void;
+    isAuthBootstrapping: boolean;
 };
 
 function ReportDraftFormContent({
@@ -138,6 +141,7 @@ function ReportDraftFormContent({
     authorSelectionLocked,
     sessionActor,
     cancelDraft,
+    isAuthBootstrapping,
 }: ReportDraftFormContentProps) {
     const { messages } = useReportPreferences();
     const tooltipSurfaceRef = useRef<HTMLDivElement | null>(null);
@@ -160,7 +164,7 @@ function ReportDraftFormContent({
     });
     const tooltipPosition = tooltipLayout?.position ?? null;
     const tooltipAnchorStyle = tooltipLayout?.anchorStyle;
-    const isSubmitting = isCreating || isUpdating || isDraftGitHubIssueSubmitting;
+    const isSubmitting = isCreating || isUpdating || isDraftGitHubIssueSubmitting || isAuthBootstrapping;
     const categoryNeedsAttention = errorMessage === messages.errors.categoryRequired && !draft.category;
     const showStatusChip = Boolean(footerWarningMessage) || Boolean(draft.targetSelector && draft.suggestedReportId);
     const submitLabel = isEditing ? messages.cases.save : messages.composer.draftComplete;
@@ -335,9 +339,9 @@ function ReportDraftFormContent({
                             hideAuthorSelector={isPresentationMode || authorSelectionLocked}
                             lockedAuthorName={authorSelectionLocked ? (sessionActor?.name ?? draftAuthorName) : undefined}
                             onSubmit={() => void handleCreateSubmit()}
-                            isSubmitting={isCreating}
+                            isSubmitting={isSubmitting}
                             autoFocus
-                            errorMessage={errorMessage}
+                            errorMessage={isAuthBootstrapping ? messages.errors.authBootstrapPending : errorMessage}
                             onFooterWarningChange={setFooterWarningMessage}
                             hideActions
                             hidePrimarySubmitAction

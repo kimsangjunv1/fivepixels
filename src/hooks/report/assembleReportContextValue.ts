@@ -183,6 +183,8 @@ export function assembleReportContextValue({
         authDiagnostics: auth.authDiagnostics,
         authorSelectionLocked: auth.authorSelectionLocked,
         panelView: auth.panelView,
+        authBootstrapState: auth.authBootstrapState,
+        isAuthBootstrapping: auth.isAuthBootstrapping,
         loginMethod: auth.loginMethod,
         requireAuth: auth.requireAuth,
         require: {

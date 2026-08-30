@@ -39,6 +39,7 @@ export type UseReportMutationsParams = {
     setErrorMessage: Dispatch<SetStateAction<string>>;
     buildCreatePayloadFromDraft: () => CreateReportFeedbackPayload | null;
     finalizeDraftCreate: () => void;
+    isAuthBootstrapping?: boolean;
 };
 
 export function useReportMutations({
@@ -65,6 +66,7 @@ export function useReportMutations({
     setErrorMessage,
     buildCreatePayloadFromDraft,
     finalizeDraftCreate,
+    isAuthBootstrapping = false,
 }: UseReportMutationsParams) {
     const [editingReportId, setEditingReportId] = useState<string | null>(null);
     const [editableDraft, setEditableDraft] = useState<EditableDraft | null>(null);
@@ -98,6 +100,11 @@ export function useReportMutations({
     };
 
     const handleCreateSubmit = async () => {
+        if (isAuthBootstrapping) {
+            setErrorMessage(messages.errors.authBootstrapPending);
+            return;
+        }
+
         const payload = buildCreatePayloadFromDraft();
 
         if (!payload) {

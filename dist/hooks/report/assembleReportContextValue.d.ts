@@ -89,6 +89,8 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     authDiagnostics: import("./useReportAuthSession.js").AuthDiagnostics;
     authorSelectionLocked: boolean;
     panelView: import("./useReportAuthSession.js").PanelView;
+    authBootstrapState: import("./useReportAuthSession.js").AuthBootstrapState;
+    isAuthBootstrapping: boolean;
     loginMethod: "local" | "api" | "artemis";
     requireAuth: boolean;
     require: {

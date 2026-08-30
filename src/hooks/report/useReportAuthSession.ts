@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { resolveFivePixelsSync, resolveRequireAuth, usesRemoteAuthLogin, type FivePixelsSync } from "@/constants/loginMethod.js";
 import { usePersonalKey } from "../usePersonalKey.js";
 import { useSelfProfile } from "../useSelfProfile.js";
@@ -65,6 +65,8 @@ export type AuthDiagnostics = {
     expected: Record<AuthDiagnosticsField, string | null>;
     actual: Record<AuthDiagnosticsField, string | null>;
 };
+
+export type AuthBootstrapState = "idle" | "pending" | "ready" | "failed";
 
 export type UseReportAuthSessionParams = {
     projectId: string;
@@ -135,6 +137,18 @@ export function useReportAuthSession({
     });
     const loginMethod = sync;
     const isRemoteAuth = usesRemoteAuthLogin(loginMethod, requireAuth);
+    const shouldBootstrapRemoteAuth = isRemoteAuth && Boolean(remoteSession) && Boolean(selfProfile?.completed) && Boolean(onApiRefresh);
+    const [authBootstrapState, setAuthBootstrapState] = useState<AuthBootstrapState>(() => (shouldBootstrapRemoteAuth ? "pending" : "ready"));
+    const authBootstrapKeyRef = useRef(`${projectId}:${environment ?? ""}:${remoteSession?.user.id ?? ""}`);
+    useEffect(() => {
+        const nextKey = `${projectId}:${environment ?? ""}:${remoteSession?.user.id ?? ""}`;
+
+        if (authBootstrapKeyRef.current !== nextKey) {
+            authBootstrapKeyRef.current = nextKey;
+            setAuthBootstrapState(shouldBootstrapRemoteAuth ? "pending" : "ready");
+        }
+    }, [environment, projectId, remoteSession?.user.id, shouldBootstrapRemoteAuth]);
+
     const remoteOnboardingCompleted = resolveRemoteOnboardingCompleted(isRemoteAuth, selfProfile?.completed, remoteSession);
     const remoteAuthor = useMemo<ReportAuthor | null>(() => {
         const authorId = selfProfile?.authorId || remoteSession?.user.id;
@@ -360,6 +374,7 @@ export function useReportAuthSession({
             saveLoginMethod(projectId, environment, method);
             saveRemoteAuthSession(projectId, environment, session);
             setRemoteSession(session);
+            setAuthBootstrapState("ready");
             saveSelfProfile({
                 name: user.name.trim(),
                 authorId: user.id,
@@ -410,6 +425,7 @@ export function useReportAuthSession({
             clearRemoteAuthSession(projectId, environment);
             setRemoteSession(null);
             clearPersonalKey();
+            setAuthBootstrapState("ready");
         }
     }, [clearPersonalKey, environment, onApiLogout, projectId]);
 
@@ -429,6 +445,36 @@ export function useReportAuthSession({
 
         return remoteSession?.user;
     }, [loginMethod, onApiRefresh, persistRemoteUser, remoteSession]);
+
+    useEffect(() => {
+        if (authBootstrapState !== "pending" || !onApiRefresh || !remoteSession) {
+            return;
+        }
+
+        let cancelled = false;
+
+        void (async () => {
+            try {
+                await refreshWithApi();
+
+                if (!cancelled) {
+                    setAuthBootstrapState("ready");
+                }
+            } catch {
+                if (cancelled) {
+                    return;
+                }
+
+                clearRemoteAuthSession(projectId, environment);
+                setRemoteSession(null);
+                setAuthBootstrapState("failed");
+            }
+        })();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [authBootstrapState, environment, onApiRefresh, projectId, refreshWithApi, remoteSession]);
 
     const completeRemoteOnboarding = useCallback(() => {
         markOnboardingComplete();
@@ -524,6 +570,8 @@ export function useReportAuthSession({
         isSelfAuthenticated,
         authDiagnostics,
         panelView,
+        authBootstrapState,
+        isAuthBootstrapping: authBootstrapState === "pending",
         loginMethod,
         requireAuth,
         loginWithApi,

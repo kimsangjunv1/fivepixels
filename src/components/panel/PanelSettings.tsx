@@ -668,17 +668,6 @@ export function PanelSettings({
 
                     {activeCategory === "data-and-keys" ? (
                         <>
-                            {showAccountLogout ? (
-                                <SettingsSection label={messages.moreMenu.sectionAccount}>
-                                    <SettingsActionButton
-                                        disabled={isLoggingOut}
-                                        onClick={() => void handleLogout()}
-                                    >
-                                        {messages.moreMenu.logout}
-                                    </SettingsActionButton>
-                                </SettingsSection>
-                            ) : null}
-
                             <SettingsSection label={messages.moreMenu.sectionTransfer}>
                                 <SettingsActionButton
                                     disabled={transferDisabled}
@@ -803,6 +792,17 @@ export function PanelSettings({
                 subtitle={messages.moreMenu.command}
                 onClick={() => setActiveCategory("advanced")}
             />
+
+            {showAccountLogout ? (
+                <div className="mt-auto border-t border-[var(--adaptive-border-subtle)]">
+                    <SettingsActionButton
+                        disabled={isLoggingOut}
+                        onClick={() => void handleLogout()}
+                    >
+                        {messages.moreMenu.logout}
+                    </SettingsActionButton>
+                </div>
+            ) : null}
         </section>
     );
 }

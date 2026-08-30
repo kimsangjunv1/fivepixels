@@ -54,6 +54,8 @@ declare const ReportContext: Context<{
     authDiagnostics: import("../hooks/report/useReportAuthSession.js").AuthDiagnostics;
     authorSelectionLocked: boolean;
     panelView: import("../hooks/report/useReportState.js").PanelView;
+    authBootstrapState: import("../hooks/report/useReportAuthSession.js").AuthBootstrapState;
+    isAuthBootstrapping: boolean;
     loginMethod: "local" | "api" | "artemis";
     requireAuth: boolean;
     require: {
@@ -403,6 +405,8 @@ export declare function useReport(): {
     authDiagnostics: import("../hooks/report/useReportAuthSession.js").AuthDiagnostics;
     authorSelectionLocked: boolean;
     panelView: import("../hooks/report/useReportState.js").PanelView;
+    authBootstrapState: import("../hooks/report/useReportAuthSession.js").AuthBootstrapState;
+    isAuthBootstrapping: boolean;
     loginMethod: "local" | "api" | "artemis";
     requireAuth: boolean;
     require: {
@@ -755,6 +759,8 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         authDiagnostics: import("../hooks/report/useReportAuthSession.js").AuthDiagnostics;
         authorSelectionLocked: boolean;
         panelView: import("../hooks/report/useReportState.js").PanelView;
+        authBootstrapState: import("../hooks/report/useReportAuthSession.js").AuthBootstrapState;
+        isAuthBootstrapping: boolean;
         loginMethod: "local" | "api" | "artemis";
         requireAuth: boolean;
         require: {
@@ -1053,7 +1059,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         activeApiFailureAlert: import("../types/networkMonitor.js").ApiFlowEntry | null;
         dismissFailureAlert: (entryId: string) => void;
         networkMonitorEnabled: boolean;
-    }, "personalKey" | "projectId" | "fields" | "personalKeyRequired" | "environment" | "require" | "requireAuth" | "questionThreadDisplay" | "setQuestionThreadDisplay" | "threadLayout" | "setThreadLayout" | "locale" | "setLocale" | "showMarkerTargetPreview" | "setShowMarkerTargetPreview" | "toggleMarkerTargetPreview" | "devicePreviewUiOpen" | "setDevicePreviewUiOpen" | "devicePreviewDeviceId" | "setDevicePreviewDeviceId" | "devicePreviewScale" | "setDevicePreviewScale" | "devicePreviewImageEnabled" | "setDevicePreviewImageEnabled" | "devicePreviewFitToViewport" | "setDevicePreviewFitToViewport" | "devicePreviewStatusBarEnabled" | "setDevicePreviewStatusBarEnabled" | "devicePreviewPreset" | "showHiddenDetachedMarkers" | "setShowHiddenDetachedMarkers" | "showModalDetachedMarkers" | "setShowModalDetachedMarkers" | "markerAppearance" | "setMarkerAppearance" | "setMarkerSize" | "setMarkerShape" | "setMarkerFillStyle" | "setMarkerColors" | "setMarkerColor" | "setMarkerStrokeColor" | "setFeedbackModeDotColors" | "setFeedbackModeDotColor" | "typography" | "setTypography" | "setFontSize" | "setFontFamily" | "panelRole" | "setPanelRole" | "persistenceStatus" | "appVersion" | "showFeedbackList" | "selfProfile" | "authors" | "publicKey" | "personalKeyCandidates" | "issuePersonalKey" | "rotatePersonalKey" | "insertPersonalKey" | "clearPersonalKey" | "authorSelectionLocked" | "messages" | "visibleShortcutKeys" | "teamReviewers" | "onListReviewers" | "onListReviewerRequests" | "onCreateReviewerRequest" | "onResolveReviewerRequest" | "onRegisterReviewer" | "onUpdateReviewer" | "panelAppearance" | "setPanelAppearance" | "tooltipAppearance" | "setTooltipAppearance" | "teamActor" | "teamActorRole" | "isTeamAdmin" | "canAccessTeamSettings" | "integrationCapabilities" | "adapterIntegrationStatus" | "panelView" | "loginMethod" | "loginWithApi" | "registerWithApi" | "logoutWithApi" | "refreshWithApi" | "loginWithArtemis" | "completeRemoteOnboarding" | "completeOnboarding" | "restoreFromBackup" | "skipOnboarding" | "resolvedPanelAppearance" | "resolvedTooltipAppearance" | "isMobileViewport" | "isPresentationMode" | "presentationViewers" | "visiblePanelTabs" | "visiblePanelTabsSummary" | "resolvedTabAvailabilityContext" | "setVisiblePanelTabs" | "resetVisibleTabsToRoleDefault" | "applyRoleDefaultTabsForOnboarding" | "savePanelTabPreference" | "storedPanelTabPreference">;
+    }, "personalKey" | "projectId" | "fields" | "personalKeyRequired" | "environment" | "require" | "requireAuth" | "questionThreadDisplay" | "setQuestionThreadDisplay" | "threadLayout" | "setThreadLayout" | "locale" | "setLocale" | "showMarkerTargetPreview" | "setShowMarkerTargetPreview" | "toggleMarkerTargetPreview" | "devicePreviewUiOpen" | "setDevicePreviewUiOpen" | "devicePreviewDeviceId" | "setDevicePreviewDeviceId" | "devicePreviewScale" | "setDevicePreviewScale" | "devicePreviewImageEnabled" | "setDevicePreviewImageEnabled" | "devicePreviewFitToViewport" | "setDevicePreviewFitToViewport" | "devicePreviewStatusBarEnabled" | "setDevicePreviewStatusBarEnabled" | "devicePreviewPreset" | "showHiddenDetachedMarkers" | "setShowHiddenDetachedMarkers" | "showModalDetachedMarkers" | "setShowModalDetachedMarkers" | "markerAppearance" | "setMarkerAppearance" | "setMarkerSize" | "setMarkerShape" | "setMarkerFillStyle" | "setMarkerColors" | "setMarkerColor" | "setMarkerStrokeColor" | "setFeedbackModeDotColors" | "setFeedbackModeDotColor" | "typography" | "setTypography" | "setFontSize" | "setFontFamily" | "panelRole" | "setPanelRole" | "persistenceStatus" | "appVersion" | "showFeedbackList" | "selfProfile" | "authors" | "publicKey" | "personalKeyCandidates" | "issuePersonalKey" | "rotatePersonalKey" | "insertPersonalKey" | "clearPersonalKey" | "authorSelectionLocked" | "messages" | "visibleShortcutKeys" | "teamReviewers" | "onListReviewers" | "onListReviewerRequests" | "onCreateReviewerRequest" | "onResolveReviewerRequest" | "onRegisterReviewer" | "onUpdateReviewer" | "panelAppearance" | "setPanelAppearance" | "tooltipAppearance" | "setTooltipAppearance" | "teamActor" | "teamActorRole" | "isTeamAdmin" | "canAccessTeamSettings" | "integrationCapabilities" | "adapterIntegrationStatus" | "panelView" | "authBootstrapState" | "isAuthBootstrapping" | "loginMethod" | "loginWithApi" | "registerWithApi" | "logoutWithApi" | "refreshWithApi" | "loginWithArtemis" | "completeRemoteOnboarding" | "completeOnboarding" | "restoreFromBackup" | "skipOnboarding" | "resolvedPanelAppearance" | "resolvedTooltipAppearance" | "isMobileViewport" | "isPresentationMode" | "presentationViewers" | "visiblePanelTabs" | "visiblePanelTabsSummary" | "resolvedTabAvailabilityContext" | "setVisiblePanelTabs" | "resetVisibleTabsToRoleDefault" | "applyRoleDefaultTabsForOnboarding" | "savePanelTabPreference" | "storedPanelTabPreference">;
     session: Pick<{
         panelAppearance: import("../index.js").ReportAppearance;
         setPanelAppearance: (nextAppearance: import("../index.js").ReportAppearance) => void;
@@ -1100,6 +1106,8 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         authDiagnostics: import("../hooks/report/useReportAuthSession.js").AuthDiagnostics;
         authorSelectionLocked: boolean;
         panelView: import("../hooks/report/useReportState.js").PanelView;
+        authBootstrapState: import("../hooks/report/useReportAuthSession.js").AuthBootstrapState;
+        isAuthBootstrapping: boolean;
         loginMethod: "local" | "api" | "artemis";
         requireAuth: boolean;
         require: {
@@ -1445,6 +1453,8 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         authDiagnostics: import("../hooks/report/useReportAuthSession.js").AuthDiagnostics;
         authorSelectionLocked: boolean;
         panelView: import("../hooks/report/useReportState.js").PanelView;
+        authBootstrapState: import("../hooks/report/useReportAuthSession.js").AuthBootstrapState;
+        isAuthBootstrapping: boolean;
         loginMethod: "local" | "api" | "artemis";
         requireAuth: boolean;
         require: {

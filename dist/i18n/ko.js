@@ -1057,6 +1057,8 @@ export const ko = {
         updateFeedbackFailed: "피드백 수정에 실패했어요.",
         replyContentRequired: "답변 내용을 입력해주세요.",
         authorRequired: "작성자를 입력해주세요.",
+        authBootstrapPending: "Fivepixels 인증 및 프로젝트를 초기화하고 있습니다.",
+        authBootstrapFailed: "인증 초기화에 실패했습니다. 다시 로그인해주세요.",
         saveReplyFailed: "답변 저장에 실패했어요.",
         reviewerRequired: "검수 처리자를 선택해주세요.",
         confirmResolutionFailed: "확인 처리에 실패했어요.",
