@@ -475,11 +475,16 @@ export type ReportMessages = {
         title: string;
         description: string;
         empty: string;
+        emptyFiltered: string;
         disabled: string;
         copy: string;
         copied: string;
         attachToFeedback: string;
         closeDetail: string;
+        filterAll: string;
+        filterSuccess: string;
+        filterFailure: string;
+        filterAriaLabel: string;
         detailQueryParams: string;
         detailRequestBody: string;
         detailResponseBody: string;

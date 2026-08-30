@@ -454,6 +454,7 @@ export function ReportControlPanel() {
                                                 label={persistenceLock.locked ? persistenceLock.tooltipLabel : undefined}
                                                 multiline={persistenceLock.locked}
                                                 disabled={!persistenceLock.locked}
+                                                className="h-full"
                                             >
                                                 <button
                                                     type="button"
