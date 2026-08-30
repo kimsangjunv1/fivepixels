@@ -321,7 +321,7 @@ export function PanelSettings({
     const appearanceSummary = `${messages.appearance[panelAppearance]} · ${messages.localeOption[locale]}`;
     const feedbackModeSummary = `${markerAppearance.feedbackModeDotColors.light} · ${markerAppearance.feedbackModeDotColors.dark}`;
     const markerSummary = `${scaleLabels[markerAppearance.size]} · ${shapeLabels[markerAppearance.shape]} · ${fillStyleLabels[markerAppearance.fillStyle]}`;
-    const displaySummary = `${messages.questionThreadOption[questionThreadDisplay]} · ${showMarkerTargetPreview ? messages.settings.markerTargetsOn : messages.settings.markerTargetsOff}`;
+    const displaySummary = showMarkerTargetPreview ? messages.settings.markerTargetsOn : messages.settings.markerTargetsOff;
     const tabsSummary = visiblePanelTabsSummary || messages.settings.categoryTabsSummary;
     const showApiIntegrationCategory = integrationCapabilities.sync === "api" || integrationCapabilities.sync === "artemis";
     const apiIntegrationSummary = adapterIntegrationStatus
@@ -345,7 +345,7 @@ export function PanelSettings({
                     />
                     <SettingsHubRow
                         title={messages.settings.appearanceThreadLayout}
-                        subtitle={messages.threadLayoutOption[threadLayout]}
+                        subtitle={`${messages.threadLayoutOption[threadLayout]} · ${messages.questionThreadOption[questionThreadDisplay]}`}
                         onClick={() => setActiveAppearanceSection("thread-layout")}
                     />
                     <SettingsHubRow
@@ -468,16 +468,29 @@ export function PanelSettings({
                     ) : null}
 
                     {activeAppearanceSection === "thread-layout" ? (
-                        <SettingsSection label={messages.settings.sectionThreadLayout}>
-                            <div className="px-[12px] pb-[10px]">
-                                <PanelOptionSwitch
-                                    options={threadLayoutOptions}
-                                    value={threadLayout}
-                                    onChange={onThreadLayoutChange}
-                                    ariaLabel={messages.settings.sectionThreadLayout}
-                                />
-                            </div>
-                        </SettingsSection>
+                        <>
+                            <SettingsSection label={messages.settings.sectionThreadLayout}>
+                                <div className="px-[12px] pb-[10px]">
+                                    <PanelOptionSwitch
+                                        options={threadLayoutOptions}
+                                        value={threadLayout}
+                                        onChange={onThreadLayoutChange}
+                                        ariaLabel={messages.settings.sectionThreadLayout}
+                                    />
+                                </div>
+                            </SettingsSection>
+
+                            <SettingsSection label={messages.moreMenu.questionThread}>
+                                <div className="px-[12px] pb-[10px]">
+                                    <PanelOptionSwitch
+                                        options={questionThreadOptions}
+                                        value={questionThreadDisplay}
+                                        onChange={onQuestionThreadDisplayChange}
+                                        ariaLabel={messages.moreMenu.questionThreadAriaLabel}
+                                    />
+                                </div>
+                            </SettingsSection>
+                        </>
                     ) : null}
 
                     {activeAppearanceSection === "feedback-mode" ? (
@@ -621,32 +634,19 @@ export function PanelSettings({
                     ) : null}
 
                     {activeCategory === "display" ? (
-                        <>
-                            <SettingsSection label={messages.moreMenu.questionThread}>
-                                <div className="px-[12px] pb-[10px]">
-                                    <PanelOptionSwitch
-                                        options={questionThreadOptions}
-                                        value={questionThreadDisplay}
-                                        onChange={onQuestionThreadDisplayChange}
-                                        ariaLabel={messages.moreMenu.questionThreadAriaLabel}
-                                    />
-                                </div>
-                            </SettingsSection>
-
-                            <SettingsSection label={messages.settings.sectionMarker}>
-                                <div className="px-[12px] pb-[10px]">
-                                    <PanelOptionSwitch
-                                        options={[
-                                            { value: "off", label: messages.settings.markerTargetsOff },
-                                            { value: "on", label: messages.settings.markerTargetsOn },
-                                        ]}
-                                        value={showMarkerTargetPreview ? "on" : "off"}
-                                        onChange={(value) => setShowMarkerTargetPreview(value === "on")}
-                                        ariaLabel={messages.settings.markerTargetsAriaLabel}
-                                    />
-                                </div>
-                            </SettingsSection>
-                        </>
+                        <SettingsSection label={messages.settings.sectionMarker}>
+                            <div className="px-[12px] pb-[10px]">
+                                <PanelOptionSwitch
+                                    options={[
+                                        { value: "off", label: messages.settings.markerTargetsOff },
+                                        { value: "on", label: messages.settings.markerTargetsOn },
+                                    ]}
+                                    value={showMarkerTargetPreview ? "on" : "off"}
+                                    onChange={(value) => setShowMarkerTargetPreview(value === "on")}
+                                    ariaLabel={messages.settings.markerTargetsAriaLabel}
+                                />
+                            </div>
+                        </SettingsSection>
                     ) : null}
 
                     {activeCategory === "tabs" ? (
