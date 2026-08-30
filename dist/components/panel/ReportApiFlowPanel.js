@@ -97,21 +97,21 @@ export function ReportApiFlowPanel() {
     if (!networkMonitorEnabled) {
         return (_jsx("section", { className: "bg-[var(--adaptive-black50)] p-[12px]", children: _jsx("p", { className: "text-[12px] text-[var(--adaptive-black600)]", children: messages.apiFlow.disabled }) }));
     }
-    return (_jsxs(Fragment, { children: [_jsxs("header", { className: "flex shrink-0 flex-col gap-[8px] border-b border-[var(--adaptive-border-subtle)] px-[12px] py-[8px]", children: [_jsxs("div", { className: "flex items-center gap-[6px] text-[11px] font-medium text-[var(--adaptive-black500)]", children: [_jsx("span", { children: messages.apiFlow.summaryRequests(apiFlowEntries.length) }), _jsx("span", { "aria-hidden": true, children: "\u00B7" }), _jsxs("span", { className: "inline-flex items-center gap-[4px]", children: [messages.apiFlow.summaryFailures(failureCount), _jsx(HoverTooltip, { label: messages.apiFlow.description, multiline: true, children: _jsx("span", { className: "inline-flex cursor-help text-[var(--adaptive-black500)]", "aria-label": messages.apiFlow.description, children: _jsx(InfoIcon, { className: "h-[12px] w-[12px]" }) }) })] })] }), _jsx(PanelOptionSwitch, { options: filterOptions, value: filter, onChange: (next) => {
-                            setFilter(next);
-                            if (!selectedEntryId) {
-                                return;
-                            }
-                            const entry = apiFlowEntries.find((item) => item.id === selectedEntryId);
-                            if (!entry) {
-                                setSelectedEntryId(null);
-                                setCopiedField(null);
-                                return;
-                            }
-                            if ((next === "success" && !entry.ok) || (next === "failure" && entry.ok)) {
-                                setSelectedEntryId(null);
-                                setCopiedField(null);
-                            }
-                        }, ariaLabel: messages.apiFlow.filterAriaLabel })] }), selectedEntry ? (_jsxs("div", { className: `flex overflow-hidden ${API_FLOW_BODY_HEIGHT}`, children: [_jsx("div", { className: "w-[42%] shrink-0 overflow-y-auto border-r border-[var(--adaptive-border-subtle)]", children: list }), _jsx(ApiFlowDetailPane, { entry: selectedEntry, copiedField: copiedField, onCopyField: (field, text) => void handleCopyField(field, text), onClose: () => setSelectedEntryId(null) })] })) : (_jsx("div", { className: "overflow-y-auto overscroll-contain", children: list }))] }));
+    return (_jsxs(Fragment, { children: [_jsx("header", { className: "flex shrink-0 border-b border-[var(--adaptive-border-subtle)] px-[12px] py-[8px]", children: _jsxs("div", { className: "flex w-1/2 min-w-0 items-center justify-between gap-[8px]", children: [_jsxs("div", { className: "flex shrink-0 items-center gap-[6px] text-[11px] font-medium text-[var(--adaptive-black500)]", children: [_jsx("span", { children: messages.apiFlow.summaryRequests(apiFlowEntries.length) }), _jsx("span", { "aria-hidden": true, children: "\u00B7" }), _jsxs("span", { className: "inline-flex items-center gap-[4px]", children: [messages.apiFlow.summaryFailures(failureCount), _jsx(HoverTooltip, { label: messages.apiFlow.description, multiline: true, children: _jsx("span", { className: "inline-flex cursor-help text-[var(--adaptive-black500)]", "aria-label": messages.apiFlow.description, children: _jsx(InfoIcon, { className: "h-[12px] w-[12px]" }) }) })] })] }), _jsx("div", { className: "min-w-0 flex-1", children: _jsx(PanelOptionSwitch, { options: filterOptions, value: filter, onChange: (next) => {
+                                    setFilter(next);
+                                    if (!selectedEntryId) {
+                                        return;
+                                    }
+                                    const entry = apiFlowEntries.find((item) => item.id === selectedEntryId);
+                                    if (!entry) {
+                                        setSelectedEntryId(null);
+                                        setCopiedField(null);
+                                        return;
+                                    }
+                                    if ((next === "success" && !entry.ok) || (next === "failure" && entry.ok)) {
+                                        setSelectedEntryId(null);
+                                        setCopiedField(null);
+                                    }
+                                }, ariaLabel: messages.apiFlow.filterAriaLabel }) })] }) }), selectedEntry ? (_jsxs("div", { className: `flex overflow-hidden ${API_FLOW_BODY_HEIGHT}`, children: [_jsx("div", { className: "w-[42%] shrink-0 overflow-y-auto border-r border-[var(--adaptive-border-subtle)]", children: list }), _jsx(ApiFlowDetailPane, { entry: selectedEntry, copiedField: copiedField, onCopyField: (field, text) => void handleCopyField(field, text), onClose: () => setSelectedEntryId(null) })] })) : (_jsx("div", { className: "overflow-y-auto overscroll-contain", children: list }))] }));
 }
 //# sourceMappingURL=ReportApiFlowPanel.js.map

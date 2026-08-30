@@ -11,18 +11,12 @@ type PanelOptionSwitchProps<T extends string> = {
     ariaLabel?: string;
 };
 
-export function PanelOptionSwitch<T extends string>({
-    options,
-    value,
-    onChange,
-    disabled = false,
-    ariaLabel,
-}: PanelOptionSwitchProps<T>) {
+export function PanelOptionSwitch<T extends string>({ options, value, onChange, disabled = false, ariaLabel }: PanelOptionSwitchProps<T>) {
     return (
         <div
             role="group"
             aria-label={ariaLabel}
-            className="flex w-full overflow-hidden rounded-[8px] border border-[var(--adaptive-black200)] bg-[var(--adaptive-black100)] p-[2px]"
+            className="flex w-full overflow-hidden rounded-[10px] border border-[var(--adaptive-border-subtle)] p-[2px]"
         >
             {options.map((option) => {
                 const active = option.value === value;
@@ -35,10 +29,10 @@ export function PanelOptionSwitch<T extends string>({
                         aria-checked={active}
                         disabled={disabled}
                         onClick={() => onChange(option.value)}
-                        className={`min-w-0 flex-1 rounded-[6px] px-[6px] py-[4px] text-[11px] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+                        className={`min-w-0 flex-1 rounded-[8px] p-[4px] text-[14px] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
                             active
-                                ? "bg-[var(--adaptive-grey200)] text-[var(--adaptive-black900)] shadow-[0_1px_2px_rgba(15,23,42,0.08)]"
-                                : "text-[var(--adaptive-black600)] hover:text-[var(--adaptive-black800)]"
+                                ? "bg-[var(--adaptive-border-subtle)] text-[var(--adaptive-black900)] shadow-[0_1px_2px_rgba(15,23,42,0.08)]"
+                                : "text-[var(--adaptive-black300)] hover:text-[var(--adaptive-black800)]"
                         }`}
                     >
                         {option.label}

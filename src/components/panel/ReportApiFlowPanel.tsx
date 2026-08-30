@@ -50,7 +50,11 @@ function ApiFlowDetailSectionHeader({ label, copied, copyLabel, onCopy }: { labe
     return (
         <div className="flex items-center justify-between gap-[8px]">
             <p className="text-[11px] font-semibold uppercase tracking-[0.02em] text-[var(--adaptive-black500)]">{label}</p>
-            <ApiFlowCopyButton copied={copied} label={copyLabel} onCopy={onCopy} />
+            <ApiFlowCopyButton
+                copied={copied}
+                label={copyLabel}
+                onCopy={onCopy}
+            />
         </div>
     );
 }
@@ -70,26 +74,19 @@ function ApiFlowDetailReadOnlyBlock({ label, value }: { label: string; value: st
     );
 }
 
-function ApiFlowDetailBlock({
-    label,
-    value,
-    copied,
-    copyLabel,
-    onCopy,
-}: {
-    label: string;
-    value: string | null;
-    copied: boolean;
-    copyLabel: string;
-    onCopy: () => void;
-}) {
+function ApiFlowDetailBlock({ label, value, copied, copyLabel, onCopy }: { label: string; value: string | null; copied: boolean; copyLabel: string; onCopy: () => void }) {
     if (!value) {
         return null;
     }
 
     return (
         <div className="flex flex-col gap-[4px]">
-            <ApiFlowDetailSectionHeader label={label} copied={copied} copyLabel={copyLabel} onCopy={onCopy} />
+            <ApiFlowDetailSectionHeader
+                label={label}
+                copied={copied}
+                copyLabel={copyLabel}
+                onCopy={onCopy}
+            />
             <pre className="max-h-[160px] overflow-auto rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface)] p-[8px] text-[11px] leading-[1.45] whitespace-pre-wrap break-all text-[var(--adaptive-black800)]">
                 {redactJsonLikeText(value)}
             </pre>
@@ -186,7 +183,10 @@ function ApiFlowDetailPane({
                     />
                 ) : null}
 
-                <ApiFlowDetailReadOnlyBlock label={messages.apiFlow.detailRequestBody} value={entry.requestBody} />
+                <ApiFlowDetailReadOnlyBlock
+                    label={messages.apiFlow.detailRequestBody}
+                    value={entry.requestBody}
+                />
 
                 {entry.responseBody ? (
                     <ApiFlowDetailBlock
@@ -227,10 +227,7 @@ export function ReportApiFlowPanel() {
 
         return apiFlowEntries;
     }, [apiFlowEntries, filter]);
-    const selectedEntry = useMemo(
-        () => (selectedEntryId ? (filteredEntries.find((entry) => entry.id === selectedEntryId) ?? null) : null),
-        [filteredEntries, selectedEntryId],
-    );
+    const selectedEntry = useMemo(() => (selectedEntryId ? (filteredEntries.find((entry) => entry.id === selectedEntryId) ?? null) : null), [filteredEntries, selectedEntryId]);
 
     const filterOptions = useMemo(
         () =>
@@ -279,43 +276,51 @@ export function ReportApiFlowPanel() {
 
     return (
         <Fragment>
-            <header className="flex shrink-0 flex-col gap-[8px] border-b border-[var(--adaptive-border-subtle)] px-[12px] py-[8px]">
-                <div className="flex items-center gap-[6px] text-[11px] font-medium text-[var(--adaptive-black500)]">
+            <header className="flex shrink-0 border-b border-[var(--adaptive-border-subtle)] px-[12px] py-[8px]">
+                <section className="flex-1 flex gap-[4px] shrink-0 items-center">
                     <span>{messages.apiFlow.summaryRequests(apiFlowEntries.length)}</span>
                     <span aria-hidden>·</span>
                     <span className="inline-flex items-center gap-[4px]">
                         {messages.apiFlow.summaryFailures(failureCount)}
-                        <HoverTooltip label={messages.apiFlow.description} multiline>
-                            <span className="inline-flex cursor-help text-[var(--adaptive-black500)]" aria-label={messages.apiFlow.description}>
+                        <HoverTooltip
+                            label={messages.apiFlow.description}
+                            multiline
+                        >
+                            <span
+                                className="inline-flex cursor-help text-[var(--adaptive-black500)]"
+                                aria-label={messages.apiFlow.description}
+                            >
                                 <InfoIcon className="h-[12px] w-[12px]" />
                             </span>
                         </HoverTooltip>
                     </span>
-                </div>
+                </section>
 
-                <PanelOptionSwitch
-                    options={filterOptions}
-                    value={filter}
-                    onChange={(next) => {
-                        setFilter(next);
-                        if (!selectedEntryId) {
-                            return;
-                        }
+                <section className="min-w-0 flex-1">
+                    <PanelOptionSwitch
+                        options={filterOptions}
+                        value={filter}
+                        onChange={(next) => {
+                            setFilter(next);
+                            if (!selectedEntryId) {
+                                return;
+                            }
 
-                        const entry = apiFlowEntries.find((item) => item.id === selectedEntryId);
-                        if (!entry) {
-                            setSelectedEntryId(null);
-                            setCopiedField(null);
-                            return;
-                        }
+                            const entry = apiFlowEntries.find((item) => item.id === selectedEntryId);
+                            if (!entry) {
+                                setSelectedEntryId(null);
+                                setCopiedField(null);
+                                return;
+                            }
 
-                        if ((next === "success" && !entry.ok) || (next === "failure" && entry.ok)) {
-                            setSelectedEntryId(null);
-                            setCopiedField(null);
-                        }
-                    }}
-                    ariaLabel={messages.apiFlow.filterAriaLabel}
-                />
+                            if ((next === "success" && !entry.ok) || (next === "failure" && entry.ok)) {
+                                setSelectedEntryId(null);
+                                setCopiedField(null);
+                            }
+                        }}
+                        ariaLabel={messages.apiFlow.filterAriaLabel}
+                    />
+                </section>
             </header>
 
             {selectedEntry ? (
