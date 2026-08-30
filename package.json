@@ -1,6 +1,6 @@
 {
     "name": "@fivepixels-js/react",
-    "version": "0.2.16",
+    "version": "0.2.17",
     "description": "React library for DOM element feedback markers on staging, QA, and internal tool UIs",
     "license": "MIT",
     "keywords": [
