@@ -16,6 +16,7 @@ import {
 import { LockIcon } from "@/components/icons/Icons.js";
 import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
 import { useIntegrationLock } from "@/components/ui/IntegrationLock.js";
+import { ReportPanelNoticeDialog } from "./ReportPanelNoticeDialog.js";
 
 function roleLabelFor(role: ReportAuthorRole, team: { roleAdmin: string; roleSubAdmin: string; roleMember: string }) {
     if (role === "admin") {
@@ -281,7 +282,10 @@ export function PanelTeamSettings() {
                 </p>
                 {loading ? <p className="px-[12px] py-[10px] text-[12px] text-[var(--adaptive-black600)]">{team.loading}</p> : null}
                 {!loading && members.length === 0 ? (
-                    <p className="px-[12px] py-[10px] text-[12px] text-[var(--adaptive-black600)]">{team.emptyMembers}</p>
+                    <ReportPanelNoticeDialog
+                        role="status"
+                        title={team.emptyMembers}
+                    />
                 ) : null}
                 {members.map((member) => {
                     const editable = canManage && Boolean(onUpdateReviewer) && canEditTeamMember(teamActor, member) && busyId !== member.id;
@@ -329,7 +333,10 @@ export function PanelTeamSettings() {
                             </div>
                         ) : null}
                         {pendingRequests.length === 0 ? (
-                            <p className="px-[12px] py-[10px] text-[12px] text-[var(--adaptive-black600)]">{team.emptyRequests}</p>
+                            <ReportPanelNoticeDialog
+                                role="status"
+                                title={team.emptyRequests}
+                            />
                         ) : (
                             pendingRequests.map((request) => (
                                 <div

@@ -3,6 +3,7 @@ import { useReportPreferences, useReportData } from "@/providers/reportContext.j
 import { buildProjectHealthSummary, resolveExperimentalListSource } from "@/utils/panel/experimentalPanelTabs.js";
 import { formatStatCount } from "@/utils/panel/formatStatCount.js";
 import { panelNumericClassName } from "@/utils/panel/panelTypography.js";
+import { ReportPanelNoticeDialog } from "@/components/panel/ReportPanelNoticeDialog.js";
 
 export function ReportProjectHealthPanel() {
     const { messages } = useReportPreferences();
@@ -39,7 +40,12 @@ export function ReportProjectHealthPanel() {
                 ))}
             </div>
 
-            {summary.total === 0 ? <p className="px-[12px] py-[8px] text-[12px] text-[var(--adaptive-black500)]">{messages.panel.experimentalEmpty}</p> : null}
+            {summary.total === 0 ? (
+                <ReportPanelNoticeDialog
+                    role="status"
+                    title={messages.panel.experimentalEmpty}
+                />
+            ) : null}
         </section>
     );
 }

@@ -4,7 +4,7 @@ import { useReport } from "@/providers/reportContext.js";
 import { formatDateOnly } from "@/utils/shared/format.js";
 import { type RouteDetailStatus } from "@/utils/panel/routeDetailStatus.js";
 import { ShortcutHint } from "@/components/ShortcutHint.js";
-import { SearchIcon, ChevronDownIcon, LockIcon } from "@/components/icons/Icons.js";
+import { SearchIcon, ChevronDownIcon } from "@/components/icons/Icons.js";
 import type { ReportFeedback } from "@/types/report.js";
 import { IntegrationLockTip, useIntegrationLock } from "@/components/ui/IntegrationLock.js";
 import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
@@ -334,36 +334,30 @@ export function ReportFeedbackList({ listKind = "feedback" }: { listKind?: Feedb
                 ) : null}
 
                 {!isError && !isFetching && filteredReports.length === 0 ? (
-                    <div className="flex flex-col gap-[4px] bg-[var(--adaptive-black200)] p-[12px]">
-                        {persistenceLock.locked ? (
-                            <>
-                                <h6 className="inline-flex items-center gap-[6px] font-semibold text-[var(--adaptive-black900)]">
-                                    {messages.feedbackList.emptyPersistenceRequired}
-                                    <HoverTooltip
-                                        label={persistenceLock.tooltipLabel}
-                                        multiline
-                                    >
-                                        <span className="inline-flex text-[var(--adaptive-black500)]">
-                                            <LockIcon className="h-[14px] w-[14px]" />
-                                        </span>
-                                    </HoverTooltip>
-                                </h6>
-                                <p className="whitespace-break-spaces text-[12px] leading-[1.5] text-[var(--adaptive-black500)]">{messages.feedbackList.emptyPersistenceRequiredHint}</p>
-                                <p className="mt-[4px] font-mono text-[11px] leading-[1.4] text-[var(--adaptive-black600)]">{persistenceLock.missingHandlers.join(", ")}</p>
-                            </>
-                        ) : (
-                            <>
-                                <h6 className="font-semibold text-[var(--adaptive-black900)]">{messages.feedbackList.emptyTitle}</h6>
-                                <p className="whitespace-break-spaces text-[12px] leading-[1.5] text-[var(--adaptive-black500)]">
-                                    {reports.length === 0 || (listKind === "memo" ? !reports.some(isMemoReport) : !reports.some((report) => !isMemoReport(report)))
-                                        ? listKind === "memo"
-                                            ? messages.feedbackList.emptyNoMemo
-                                            : messages.feedbackList.emptyNoFeedback
-                                        : messages.feedbackList.emptyNoMatch}
-                                </p>
-                            </>
-                        )}
-                    </div>
+                    persistenceLock.locked ? (
+                        <ReportPanelNoticeDialog
+                            role="status"
+                            title={messages.feedbackList.emptyPersistenceRequired}
+                            description={
+                                <>
+                                    <p className="whitespace-break-spaces">{messages.feedbackList.emptyPersistenceRequiredHint}</p>
+                                    <p className="mt-[4px] font-mono text-[11px] leading-[1.4] text-[var(--adaptive-black600)]">{persistenceLock.missingHandlers.join(", ")}</p>
+                                </>
+                            }
+                        />
+                    ) : (
+                        <ReportPanelNoticeDialog
+                            role="status"
+                            title={messages.feedbackList.emptyTitle}
+                            description={
+                                reports.length === 0 || (listKind === "memo" ? !reports.some(isMemoReport) : !reports.some((report) => !isMemoReport(report)))
+                                    ? listKind === "memo"
+                                        ? messages.feedbackList.emptyNoMemo
+                                        : messages.feedbackList.emptyNoFeedback
+                                    : messages.feedbackList.emptyNoMatch
+                            }
+                        />
+                    )
                 ) : null}
 
                 <section className="flex flex-col">

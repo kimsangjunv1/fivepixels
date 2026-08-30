@@ -3,6 +3,7 @@ import type { ApiFlowEntry } from "@/types/networkMonitor.js";
 import { CopyIcon, InfoIcon } from "@/components/icons/Icons.js";
 import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
 import { PanelOptionSwitch } from "@/components/panel/PanelOptionSwitch.js";
+import { ReportPanelNoticeDialog } from "@/components/panel/ReportPanelNoticeDialog.js";
 import { useReport, useReportPreferences } from "@/providers/reportContext.js";
 import { describeApiFlowStatus } from "@/utils/network/formatApiFlowEntry.js";
 import { redactJsonLikeText } from "@/utils/network/redactNetworkPayload.js";
@@ -252,9 +253,15 @@ export function ReportApiFlowPanel() {
 
     const list =
         apiFlowEntries.length === 0 ? (
-            <p className="px-[12px] py-[16px] text-[12px] text-[var(--adaptive-black500)]">{messages.apiFlow.empty}</p>
+            <ReportPanelNoticeDialog
+                role="status"
+                title={messages.apiFlow.empty}
+            />
         ) : filteredEntries.length === 0 ? (
-            <p className="px-[12px] py-[16px] text-[12px] text-[var(--adaptive-black500)]">{messages.apiFlow.emptyFiltered}</p>
+            <ReportPanelNoticeDialog
+                role="status"
+                title={messages.apiFlow.emptyFiltered}
+            />
         ) : (
             filteredEntries.map((entry) => (
                 <ApiFlowListRow
@@ -268,8 +275,11 @@ export function ReportApiFlowPanel() {
 
     if (!networkMonitorEnabled) {
         return (
-            <section className="bg-[var(--adaptive-black50)] p-[12px]">
-                <p className="text-[12px] text-[var(--adaptive-black600)]">{messages.apiFlow.disabled}</p>
+            <section className="bg-[var(--adaptive-black50)]">
+                <ReportPanelNoticeDialog
+                    role="status"
+                    title={messages.apiFlow.disabled}
+                />
             </section>
         );
     }

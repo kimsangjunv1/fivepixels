@@ -5,6 +5,7 @@ import { FeedbackStatusBadge } from "@/components/panel/feedback/FeedbackStatusB
 import { formatStatCount } from "@/utils/panel/formatStatCount.js";
 import { panelNumericClassName } from "@/utils/panel/panelTypography.js";
 import { ChevronDownIcon } from "@/components/icons/Icons.js";
+import { ReportPanelNoticeDialog } from "@/components/panel/ReportPanelNoticeDialog.js";
 
 export function ReportPageBriefPanel() {
     const { messages } = useReportPreferences();
@@ -57,7 +58,12 @@ export function ReportPageBriefPanel() {
                     </div>
                 ))}
 
-                {summary.total === 0 ? <p className="py-[8px] text-[12px] text-[var(--adaptive-black500)]">{messages.panel.experimentalEmpty}</p> : null}
+                {summary.total === 0 ? (
+                    <ReportPanelNoticeDialog
+                        role="status"
+                        title={messages.panel.experimentalEmpty}
+                    />
+                ) : null}
             </div>
         </section>
     );

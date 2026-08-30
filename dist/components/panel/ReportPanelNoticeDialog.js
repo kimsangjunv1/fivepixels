@@ -35,7 +35,7 @@ export function ReportPanelNoticeDialog({ title, description, children, choices,
     const footerActions = actions ?? [];
     const hasChoices = Boolean(choices && choices.length > 0);
     const hasFooter = footerActions.length > 0;
-    const header = (_jsxs(_Fragment, { children: [_jsx("p", { className: "text-[14px] font-bold text-[var(--adaptive-black900)]", children: title }), description ? _jsx("div", { className: "mt-[8px] leading-[1.4] text-[var(--adaptive-black700)]", children: description }) : null, hasChoices ? (_jsx("div", { className: "mt-[12px] flex flex-wrap gap-[8px]", children: choices.map((choice) => (_jsx(ReportPanelNoticeActionButton, { action: { ...choice, variant: "choice" } }, choice.id))) })) : null] }));
+    const header = (_jsxs(_Fragment, { children: [_jsx("p", { className: "text-[14px] font-bold text-[var(--adaptive-black900)]", children: title }), description ? _jsx("div", { className: "mt-[8px] leading-[1.4] whitespace-break-spaces text-[var(--adaptive-black700)]", children: description }) : null, hasChoices ? (_jsx("div", { className: "mt-[12px] flex flex-wrap gap-[8px]", children: choices.map((choice) => (_jsx(ReportPanelNoticeActionButton, { action: { ...choice, variant: "choice" } }, choice.id))) })) : null] }));
     if (sectioned) {
         return (_jsxs("section", { role: role, className: `bg-[var(--adaptive-grey100)] ${MOTION.dialogIn} ${className}`, "data-fivepixels-interactive": "", children: [_jsx("div", { className: "p-[16px]", children: header }), children, hasFooter ? (_jsx(NoticeFooter, { actions: footerActions, footerDividerBeforeLast: footerDividerBeforeLast, className: "p-[16px]" })) : null] }));
     }

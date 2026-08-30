@@ -129,7 +129,7 @@ export function ReportPanelNoticeDialog({
     const header = (
         <>
             <p className="text-[14px] font-bold text-[var(--adaptive-black900)]">{title}</p>
-            {description ? <div className="mt-[8px] leading-[1.4] text-[var(--adaptive-black700)]">{description}</div> : null}
+            {description ? <div className="mt-[8px] leading-[1.4] whitespace-break-spaces text-[var(--adaptive-black700)]">{description}</div> : null}
             {hasChoices ? (
                 <div className="mt-[12px] flex flex-wrap gap-[8px]">
                     {choices!.map((choice) => (

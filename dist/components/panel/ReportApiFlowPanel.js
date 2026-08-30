@@ -3,6 +3,7 @@ import { Fragment, useMemo, useState } from "react";
 import { CopyIcon, InfoIcon } from "../../components/icons/Icons.js";
 import { HoverTooltip } from "../../components/ui/HoverTooltip.js";
 import { PanelOptionSwitch } from "../../components/panel/PanelOptionSwitch.js";
+import { ReportPanelNoticeDialog } from "../../components/panel/ReportPanelNoticeDialog.js";
 import { useReport, useReportPreferences } from "../../providers/reportContext.js";
 import { describeApiFlowStatus } from "../../utils/network/formatApiFlowEntry.js";
 import { redactJsonLikeText } from "../../utils/network/redactNetworkPayload.js";
@@ -37,7 +38,7 @@ function ApiFlowDetailReadOnlyBlock({ label, value }) {
     }
     return (_jsxs("div", { className: "flex flex-col gap-[4px]", children: [_jsx("p", { className: "text-[11px] font-semibold uppercase tracking-[0.02em] text-[var(--adaptive-black500)]", children: label }), _jsx("pre", { className: "max-h-[160px] overflow-auto rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface)] p-[8px] text-[11px] leading-[1.45] whitespace-pre-wrap break-all text-[var(--adaptive-black800)]", children: redactJsonLikeText(value) })] }));
 }
-function ApiFlowDetailBlock({ label, value, copied, copyLabel, onCopy, }) {
+function ApiFlowDetailBlock({ label, value, copied, copyLabel, onCopy }) {
     if (!value) {
         return null;
     }
@@ -93,25 +94,25 @@ export function ReportApiFlowPanel() {
         setCopiedField(field);
         window.setTimeout(() => setCopiedField((current) => (current === field ? null : current)), 1400);
     };
-    const list = apiFlowEntries.length === 0 ? (_jsx("p", { className: "px-[12px] py-[16px] text-[12px] text-[var(--adaptive-black500)]", children: messages.apiFlow.empty })) : filteredEntries.length === 0 ? (_jsx("p", { className: "px-[12px] py-[16px] text-[12px] text-[var(--adaptive-black500)]", children: messages.apiFlow.emptyFiltered })) : (filteredEntries.map((entry) => (_jsx(ApiFlowListRow, { entry: entry, selected: selectedEntryId === entry.id, onSelect: () => setSelectedEntryId((current) => (current === entry.id ? null : entry.id)) }, entry.id))));
+    const list = apiFlowEntries.length === 0 ? (_jsx(ReportPanelNoticeDialog, { role: "status", title: messages.apiFlow.empty })) : filteredEntries.length === 0 ? (_jsx(ReportPanelNoticeDialog, { role: "status", title: messages.apiFlow.emptyFiltered })) : (filteredEntries.map((entry) => (_jsx(ApiFlowListRow, { entry: entry, selected: selectedEntryId === entry.id, onSelect: () => setSelectedEntryId((current) => (current === entry.id ? null : entry.id)) }, entry.id))));
     if (!networkMonitorEnabled) {
-        return (_jsx("section", { className: "bg-[var(--adaptive-black50)] p-[12px]", children: _jsx("p", { className: "text-[12px] text-[var(--adaptive-black600)]", children: messages.apiFlow.disabled }) }));
+        return (_jsx("section", { className: "bg-[var(--adaptive-black50)]", children: _jsx(ReportPanelNoticeDialog, { role: "status", title: messages.apiFlow.disabled }) }));
     }
-    return (_jsxs(Fragment, { children: [_jsx("header", { className: "flex shrink-0 border-b border-[var(--adaptive-border-subtle)] px-[12px] py-[8px]", children: _jsxs("div", { className: "flex w-1/2 min-w-0 items-center justify-between gap-[8px]", children: [_jsxs("div", { className: "flex shrink-0 items-center gap-[6px] text-[11px] font-medium text-[var(--adaptive-black500)]", children: [_jsx("span", { children: messages.apiFlow.summaryRequests(apiFlowEntries.length) }), _jsx("span", { "aria-hidden": true, children: "\u00B7" }), _jsxs("span", { className: "inline-flex items-center gap-[4px]", children: [messages.apiFlow.summaryFailures(failureCount), _jsx(HoverTooltip, { label: messages.apiFlow.description, multiline: true, children: _jsx("span", { className: "inline-flex cursor-help text-[var(--adaptive-black500)]", "aria-label": messages.apiFlow.description, children: _jsx(InfoIcon, { className: "h-[12px] w-[12px]" }) }) })] })] }), _jsx("div", { className: "min-w-0 flex-1", children: _jsx(PanelOptionSwitch, { options: filterOptions, value: filter, onChange: (next) => {
-                                    setFilter(next);
-                                    if (!selectedEntryId) {
-                                        return;
-                                    }
-                                    const entry = apiFlowEntries.find((item) => item.id === selectedEntryId);
-                                    if (!entry) {
-                                        setSelectedEntryId(null);
-                                        setCopiedField(null);
-                                        return;
-                                    }
-                                    if ((next === "success" && !entry.ok) || (next === "failure" && entry.ok)) {
-                                        setSelectedEntryId(null);
-                                        setCopiedField(null);
-                                    }
-                                }, ariaLabel: messages.apiFlow.filterAriaLabel }) })] }) }), selectedEntry ? (_jsxs("div", { className: `flex overflow-hidden ${API_FLOW_BODY_HEIGHT}`, children: [_jsx("div", { className: "w-[42%] shrink-0 overflow-y-auto border-r border-[var(--adaptive-border-subtle)]", children: list }), _jsx(ApiFlowDetailPane, { entry: selectedEntry, copiedField: copiedField, onCopyField: (field, text) => void handleCopyField(field, text), onClose: () => setSelectedEntryId(null) })] })) : (_jsx("div", { className: "overflow-y-auto overscroll-contain", children: list }))] }));
+    return (_jsxs(Fragment, { children: [_jsxs("header", { className: "flex shrink-0 border-b border-[var(--adaptive-border-subtle)] px-[12px] py-[8px]", children: [_jsxs("section", { className: "flex-1 flex gap-[4px] shrink-0 items-center", children: [_jsx("span", { children: messages.apiFlow.summaryRequests(apiFlowEntries.length) }), _jsx("span", { "aria-hidden": true, children: "\u00B7" }), _jsxs("span", { className: "inline-flex items-center gap-[4px]", children: [messages.apiFlow.summaryFailures(failureCount), _jsx(HoverTooltip, { label: messages.apiFlow.description, multiline: true, children: _jsx("span", { className: "inline-flex cursor-help text-[var(--adaptive-black500)]", "aria-label": messages.apiFlow.description, children: _jsx(InfoIcon, { className: "h-[12px] w-[12px]" }) }) })] })] }), _jsx("section", { className: "min-w-0 flex-1", children: _jsx(PanelOptionSwitch, { options: filterOptions, value: filter, onChange: (next) => {
+                                setFilter(next);
+                                if (!selectedEntryId) {
+                                    return;
+                                }
+                                const entry = apiFlowEntries.find((item) => item.id === selectedEntryId);
+                                if (!entry) {
+                                    setSelectedEntryId(null);
+                                    setCopiedField(null);
+                                    return;
+                                }
+                                if ((next === "success" && !entry.ok) || (next === "failure" && entry.ok)) {
+                                    setSelectedEntryId(null);
+                                    setCopiedField(null);
+                                }
+                            }, ariaLabel: messages.apiFlow.filterAriaLabel }) })] }), selectedEntry ? (_jsxs("div", { className: `flex overflow-hidden ${API_FLOW_BODY_HEIGHT}`, children: [_jsx("div", { className: "w-[42%] shrink-0 overflow-y-auto border-r border-[var(--adaptive-border-subtle)]", children: list }), _jsx(ApiFlowDetailPane, { entry: selectedEntry, copiedField: copiedField, onCopyField: (field, text) => void handleCopyField(field, text), onClose: () => setSelectedEntryId(null) })] })) : (_jsx("div", { className: "overflow-y-auto overscroll-contain", children: list }))] }));
 }
 //# sourceMappingURL=ReportApiFlowPanel.js.map
