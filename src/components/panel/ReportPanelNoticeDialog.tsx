@@ -36,9 +36,7 @@ export type ReportPanelNoticeDialogProps = {
 };
 
 function choiceClassName(pressed: boolean) {
-    return pressed
-        ? "border-[var(--adaptive-blue500)] bg-[var(--adaptive-blue100)] text-[var(--adaptive-blue500)]"
-        : "border-[var(--adaptive-grey300)] bg-transparent text-[var(--adaptive-black700)]";
+    return pressed ? "border-[var(--adaptive-blue500)] bg-[var(--adaptive-blue100)] text-[var(--adaptive-blue500)]" : "border-[var(--adaptive-grey300)] bg-transparent text-[var(--adaptive-black700)]";
 }
 
 function actionClassName(variant: ReportPanelNoticeActionVariant = "primary") {
@@ -55,13 +53,7 @@ function actionClassName(variant: ReportPanelNoticeActionVariant = "primary") {
     }
 }
 
-export function ReportPanelNoticeActionButton({
-    action,
-    className = "",
-}: {
-    action: ReportPanelNoticeAction;
-    className?: string;
-}) {
+export function ReportPanelNoticeActionButton({ action, className = "" }: { action: ReportPanelNoticeAction; className?: string }) {
     const variant = action.variant ?? "primary";
     const pressed = Boolean(action.pressed);
 
@@ -80,17 +72,8 @@ export function ReportPanelNoticeActionButton({
     );
 }
 
-function NoticeFooter({
-    actions,
-    footerDividerBeforeLast,
-    className = "",
-}: {
-    actions: ReportPanelNoticeAction[];
-    footerDividerBeforeLast: number;
-    className?: string;
-}) {
-    const dividerIndex =
-        footerDividerBeforeLast > 0 && actions.length > footerDividerBeforeLast ? actions.length - footerDividerBeforeLast : -1;
+function NoticeFooter({ actions, footerDividerBeforeLast, className = "" }: { actions: ReportPanelNoticeAction[]; footerDividerBeforeLast: number; className?: string }) {
+    const dividerIndex = footerDividerBeforeLast > 0 && actions.length > footerDividerBeforeLast ? actions.length - footerDividerBeforeLast : -1;
 
     return (
         <div className={`flex items-center justify-end gap-[10px] ${className}`}>
@@ -147,7 +130,7 @@ export function ReportPanelNoticeDialog({
         return (
             <section
                 role={role}
-                className={`bg-[var(--adaptive-grey100)] ${MOTION.dialogIn} ${className}`}
+                className={`bg-[var(--adaptive-black50)] ${MOTION.dialogIn} ${className}`}
                 data-fivepixels-interactive=""
             >
                 <div className="p-[16px]">{header}</div>
@@ -166,7 +149,7 @@ export function ReportPanelNoticeDialog({
     return (
         <section
             role={role}
-            className={`bg-[var(--adaptive-grey100)] ${MOTION.dialogIn} ${className}`}
+            className={`bg-[var(--adaptive-black50)] ${MOTION.dialogIn} ${className}`}
             data-fivepixels-interactive=""
         >
             <div className="p-[16px]">
