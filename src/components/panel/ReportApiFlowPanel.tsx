@@ -286,7 +286,7 @@ export function ReportApiFlowPanel() {
 
     return (
         <Fragment>
-            <header className="flex shrink-0 border-b border-[var(--adaptive-border-subtle)] px-[12px] py-[8px]">
+            <header className="flex shrink-0 border-b border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] px-[12px] py-[8px]">
                 <section className="flex-1 flex gap-[4px] shrink-0 items-center">
                     <span>{messages.apiFlow.summaryRequests(apiFlowEntries.length)}</span>
                     <span aria-hidden>·</span>
