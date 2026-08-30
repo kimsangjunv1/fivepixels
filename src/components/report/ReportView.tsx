@@ -22,7 +22,7 @@ export function ReportView() {
         resolvedTooltipAppearance,
         markerAppearance,
     } = useReportPreferences();
-    const { mode, showTargetPreview, savedProbeEdits, draft, errorMessage, panelCollapsed, setPanelCollapsed, openReplyReportIds } = useReportSession();
+    const { mode, showTargetPreview, savedProbeEdits, draft, errorMessage, openReplyReportIds } = useReportSession();
     const hasSavedProbeEdits = Object.keys(savedProbeEdits).length > 0;
     const hasOpenWindows = openReplyReportIds.length > 0;
     const showOverlay = mode !== "idle" || showTargetPreview || showMarkerTargetPreview || hasSavedProbeEdits || hasOpenWindows;
@@ -34,8 +34,6 @@ export function ReportView() {
 
     useOverlayChrome({
         mode,
-        panelCollapsed,
-        setPanelCollapsed,
     });
 
     if (isPreviewGuest) {

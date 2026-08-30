@@ -15,7 +15,7 @@ import { ThemeScope } from "./ThemeScope.js";
 const FEEDBACK_ERROR_DOT_COLOR = "#ef4444";
 export function ReportView() {
     const { showMarkerTargetPreview, devicePreviewUiOpen, resolvedPanelAppearance, resolvedTooltipAppearance, markerAppearance, } = useReportPreferences();
-    const { mode, showTargetPreview, savedProbeEdits, draft, errorMessage, panelCollapsed, setPanelCollapsed, openReplyReportIds } = useReportSession();
+    const { mode, showTargetPreview, savedProbeEdits, draft, errorMessage, openReplyReportIds } = useReportSession();
     const hasSavedProbeEdits = Object.keys(savedProbeEdits).length > 0;
     const hasOpenWindows = openReplyReportIds.length > 0;
     const showOverlay = mode !== "idle" || showTargetPreview || showMarkerTargetPreview || hasSavedProbeEdits || hasOpenWindows;
@@ -26,8 +26,6 @@ export function ReportView() {
     const showHostDevicePreview = devicePreviewUiOpen && !isPreviewGuest;
     useOverlayChrome({
         mode,
-        panelCollapsed,
-        setPanelCollapsed,
     });
     if (isPreviewGuest) {
         return null;

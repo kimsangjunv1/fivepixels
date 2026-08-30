@@ -1,6 +1,3 @@
-/** Idle time before expanded panel auto-collapse to a peek. */
-export const OVERLAY_IDLE_COLLAPSE_MS = 12_000;
-
 /** Delay after host-page pointer activity before chrome yields (dims). */
 export const OVERLAY_HOST_YIELD_DELAY_MS = 280;
 

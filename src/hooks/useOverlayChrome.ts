@@ -1,16 +1,9 @@
 import { useEffect, useRef } from "react";
-import {
-    FIVEPIXELS_HOST_ID,
-    OVERLAY_HOST_YIELD_DELAY_MS,
-    OVERLAY_HOST_YIELD_HOLD_MS,
-    OVERLAY_IDLE_COLLAPSE_MS,
-} from "@/constants/overlayChrome.js";
+import { FIVEPIXELS_HOST_ID, OVERLAY_HOST_YIELD_DELAY_MS, OVERLAY_HOST_YIELD_HOLD_MS } from "@/constants/overlayChrome.js";
 import type { ReportMode } from "@/types/report-ui.js";
 
 type UseOverlayChromeArgs = {
     mode: ReportMode;
-    panelCollapsed: boolean;
-    setPanelCollapsed: (collapsed: boolean | ((current: boolean) => boolean)) => void;
 };
 
 function getMountElement(): HTMLElement | null {
@@ -28,27 +21,17 @@ function isFivepixelsPointerTarget(target: EventTarget | null): boolean {
 }
 
 /**
- * Host-yield + idle auto-collapse for floating chrome (panel).
+ * Host-yield dimming for floating chrome (panel) when the user interacts with the host page.
  * Writes `data-fp-host-yield` on the shadow mount for CSS-driven dimming/peek.
  */
-export function useOverlayChrome({ mode, panelCollapsed, setPanelCollapsed }: UseOverlayChromeArgs) {
-    const idleTimerRef = useRef<number | null>(null);
+export function useOverlayChrome({ mode }: UseOverlayChromeArgs) {
     const yieldDelayRef = useRef<number | null>(null);
     const yieldHoldRef = useRef<number | null>(null);
-    const panelCollapsedRef = useRef(panelCollapsed);
     const modeRef = useRef(mode);
 
-    panelCollapsedRef.current = panelCollapsed;
     modeRef.current = mode;
 
     useEffect(() => {
-        const clearIdle = () => {
-            if (idleTimerRef.current !== null) {
-                window.clearTimeout(idleTimerRef.current);
-                idleTimerRef.current = null;
-            }
-        };
-
         const clearYieldTimers = () => {
             if (yieldDelayRef.current !== null) {
                 window.clearTimeout(yieldDelayRef.current);
@@ -76,38 +59,17 @@ export function useOverlayChrome({ mode, panelCollapsed, setPanelCollapsed }: Us
             }
         };
 
-        const scheduleIdleCollapse = () => {
-            clearIdle();
-
-            if (modeRef.current !== "idle") {
-                return;
-            }
-
-            idleTimerRef.current = window.setTimeout(() => {
-                if (modeRef.current !== "idle") {
-                    return;
-                }
-
-                if (!panelCollapsedRef.current) {
-                    setPanelCollapsed(true);
-                }
-            }, OVERLAY_IDLE_COLLAPSE_MS);
-        };
-
         const markChromeActive = () => {
             clearYieldTimers();
             setYielding(false);
-            scheduleIdleCollapse();
         };
 
         const markHostActive = () => {
-            clearIdle();
             clearYieldTimers();
             yieldDelayRef.current = window.setTimeout(() => {
                 setYielding(true);
                 yieldHoldRef.current = window.setTimeout(() => {
                     setYielding(false);
-                    scheduleIdleCollapse();
                 }, OVERLAY_HOST_YIELD_HOLD_MS);
             }, OVERLAY_HOST_YIELD_DELAY_MS);
         };
@@ -139,21 +101,19 @@ export function useOverlayChrome({ mode, panelCollapsed, setPanelCollapsed }: Us
         };
 
         setYielding(false);
-        scheduleIdleCollapse();
 
         document.addEventListener("pointerdown", handlePointerDown, true);
         document.addEventListener("pointermove", handlePointerMove, true);
         document.addEventListener("keydown", handleKeyDown, true);
 
         return () => {
-            clearIdle();
             clearYieldTimers();
             setYielding(false);
             document.removeEventListener("pointerdown", handlePointerDown, true);
             document.removeEventListener("pointermove", handlePointerMove, true);
             document.removeEventListener("keydown", handleKeyDown, true);
         };
-    }, [setPanelCollapsed]);
+    }, []);
 
     useEffect(() => {
         if (mode !== "idle") {
