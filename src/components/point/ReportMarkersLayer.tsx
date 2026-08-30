@@ -10,7 +10,7 @@ import { getDetachedMarkerAriaLabel } from "@/utils/marker/markerContext.js";
 import { getMarkerDotSize } from "@/utils/marker/markerRuntime.js";
 import { getMarkerReplyBadgeSize, resolveMarkerGlyphPaint, resolveMarkerShapeStyle } from "@/utils/marker/markerShape.js";
 import type { MarkerAppearancePreferences, TypographyPreferences } from "@/constants/markerAppearance.js";
-import { resolveMarkerBadgeDisplay } from "@/constants/markerAppearance.js";
+import { resolveMarkerBadgeDisplay, MARKER_BADGE_LABEL_CLASS } from "@/constants/markerAppearance.js";
 import { getMarkerColor, getMarkerDisplayLabel, hasMarkerReplyIndicator } from "@/utils/report/reportVisual.js";
 import { FeedbackHoverCard } from "@/components/panel/feedback/FeedbackHoverCard.js";
 import { getReplyCount } from "@/utils/feedback/feedbackThread.js";
@@ -208,9 +208,6 @@ function MarkerButton({
                             height: shapeStyle.height,
                             minWidth: shapeStyle.width,
                             minHeight: shapeStyle.height,
-                            color: showMarkerLabel ? paint.labelColor : undefined,
-                            fontSize: badgeDisplay.fontSizePx === undefined ? undefined : `${badgeDisplay.fontSizePx}px`,
-                            fontWeight: badgeDisplay.fontWeight,
                             fontFamily: showMarkerLabel ? typography.fontFamily : undefined,
                         }}
                     >
@@ -224,7 +221,7 @@ function MarkerButton({
                                 strokeWidthPx={paint.strokeWidthPx}
                             />
                         </span>
-                        <span className="relative z-[1] flex items-center justify-center">
+                        <span className={`relative z-[1] flex items-center justify-center ${showMarkerLabel ? MARKER_BADGE_LABEL_CLASS : ""}`}>
                             {showMarkerLabel ? badgeDisplay.content : null}
                         </span>
                     </button>

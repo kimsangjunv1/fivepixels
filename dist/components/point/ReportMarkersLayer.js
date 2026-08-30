@@ -8,7 +8,7 @@ import { scrollContainerTowardEdge } from "../../utils/shared/dom.js";
 import { getDetachedMarkerAriaLabel } from "../../utils/marker/markerContext.js";
 import { getMarkerDotSize } from "../../utils/marker/markerRuntime.js";
 import { getMarkerReplyBadgeSize, resolveMarkerGlyphPaint, resolveMarkerShapeStyle } from "../../utils/marker/markerShape.js";
-import { resolveMarkerBadgeDisplay } from "../../constants/markerAppearance.js";
+import { resolveMarkerBadgeDisplay, MARKER_BADGE_LABEL_CLASS } from "../../constants/markerAppearance.js";
 import { getMarkerColor, getMarkerDisplayLabel, hasMarkerReplyIndicator } from "../../utils/report/reportVisual.js";
 import { FeedbackHoverCard } from "../../components/panel/feedback/FeedbackHoverCard.js";
 import { getReplyCount } from "../../utils/feedback/feedbackThread.js";
@@ -108,11 +108,8 @@ function MarkerButton({ markerItem, isHovered, isReportMode, isInteractive, isPr
                             height: shapeStyle.height,
                             minWidth: shapeStyle.width,
                             minHeight: shapeStyle.height,
-                            color: showMarkerLabel ? paint.labelColor : undefined,
-                            fontSize: badgeDisplay.fontSizePx === undefined ? undefined : `${badgeDisplay.fontSizePx}px`,
-                            fontWeight: badgeDisplay.fontWeight,
                             fontFamily: showMarkerLabel ? typography.fontFamily : undefined,
-                        }, children: [_jsx("span", { className: "pointer-events-none absolute inset-0 flex items-center justify-center", children: _jsx(MarkerShapeGlyph, { shape: glyphShape, fill: paint.fill, width: shapeStyle.width, height: shapeStyle.height, stroke: paint.stroke, strokeWidthPx: paint.strokeWidthPx }) }), _jsx("span", { className: "relative z-[1] flex items-center justify-center", children: showMarkerLabel ? badgeDisplay.content : null })] }, markerItem.id), aggregateCount > 1 ? (_jsx("span", { "aria-hidden": true, className: "pointer-events-none absolute z-10 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-white px-[4px] text-[10px] font-bold leading-none text-white", style: {
+                        }, children: [_jsx("span", { className: "pointer-events-none absolute inset-0 flex items-center justify-center", children: _jsx(MarkerShapeGlyph, { shape: glyphShape, fill: paint.fill, width: shapeStyle.width, height: shapeStyle.height, stroke: paint.stroke, strokeWidthPx: paint.strokeWidthPx }) }), _jsx("span", { className: `relative z-[1] flex items-center justify-center ${showMarkerLabel ? MARKER_BADGE_LABEL_CLASS : ""}`, children: showMarkerLabel ? badgeDisplay.content : null })] }, markerItem.id), aggregateCount > 1 ? (_jsx("span", { "aria-hidden": true, className: "pointer-events-none absolute z-10 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-white px-[4px] text-[10px] font-bold leading-none text-white", style: {
                             top: -5,
                             right: -5,
                             backgroundColor: markerColor,

@@ -2,6 +2,7 @@ import { DOT_SIZE } from "@/constants/report.js";
 import {
     getMarkerScaleFactor,
     resolveMarkerBadgeDisplay,
+    MARKER_BADGE_LABEL_CLASS,
     type AppearanceScale,
     type MarkerFillStyle,
     type MarkerFontSize,
@@ -81,13 +82,9 @@ export function MarkerSizePreview({
                                 />
                                 {showMarkerLabel ? (
                                     <span
-                                        className="absolute inset-0 z-[1] flex items-center justify-center"
+                                        className={`absolute inset-0 z-[1] flex items-center justify-center ${MARKER_BADGE_LABEL_CLASS}`}
                                         style={{
-                                            color: paint.labelColor,
-                                            fontSize: badgeDisplay.fontSizePx === undefined ? undefined : `${badgeDisplay.fontSizePx}px`,
-                                            fontWeight: badgeDisplay.fontWeight,
                                             fontFamily,
-                                            lineHeight: 1,
                                         }}
                                     >
                                         {badgeDisplay.content}
