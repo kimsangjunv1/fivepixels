@@ -27,7 +27,7 @@ export function PanelAutoRefreshControl() {
         setMenuOpen(false);
     };
     const actionLabel = isAutoRefreshEnabled ? messages.panel.stopAutoRefresh : messages.panel.refresh;
-    return (_jsx("div", { className: "flex h-full shrink-0 items-center px-[4px]", children: _jsxs("div", { className: `relative flex h-[24px] items-stretch rounded-[8px] ${isAutoRefreshEnabled ? "bg-[var(--adaptive-black300)] text-[var(--adaptive-black50)]" : "bg-[var(--adaptive-black300)] text-[var(--adaptive-black900)]"}`, children: [_jsx(HoverTooltip, { label: actionLabel, className: "h-full", children: _jsx("button", { type: "button", "aria-label": actionLabel, disabled: !isAutoRefreshEnabled && isFetching, onPointerDown: (event) => {
+    return (_jsx("div", { className: "flex h-full shrink-0 items-center px-[4px]", children: _jsxs("div", { className: `relative flex h-[24px] items-stretch rounded-[8px] border border-[var(--adaptive-border-subtle)] ${isAutoRefreshEnabled ? " text-[var(--adaptive-black50)]" : "text-[var(--adaptive-black900)]"}`, children: [_jsx(HoverTooltip, { label: actionLabel, className: "h-full", children: _jsx("button", { type: "button", "aria-label": actionLabel, disabled: !isAutoRefreshEnabled && isFetching, onPointerDown: (event) => {
                             event.stopPropagation();
                             if (isAutoRefreshEnabled) {
                                 stopAutoRefresh();

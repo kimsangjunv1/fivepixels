@@ -36,8 +36,8 @@ export function PanelAutoRefreshControl() {
     return (
         <div className="flex h-full shrink-0 items-center px-[4px]">
             <div
-                className={`relative flex h-[24px] items-stretch rounded-[8px] ${
-                    isAutoRefreshEnabled ? "bg-[var(--adaptive-black300)] text-[var(--adaptive-black50)]" : "bg-[var(--adaptive-black300)] text-[var(--adaptive-black900)]"
+                className={`relative flex h-[24px] items-stretch rounded-[8px] border border-[var(--adaptive-border-subtle)] ${
+                    isAutoRefreshEnabled ? " text-[var(--adaptive-black50)]" : "text-[var(--adaptive-black900)]"
                 }`}
             >
                 <HoverTooltip

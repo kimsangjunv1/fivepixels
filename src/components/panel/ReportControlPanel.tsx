@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { panelAnchorSide, placementToCollapsedPanelStyle, usePanelDock } from "@/hooks/usePanelDock.js";
 import { usePanelResize, panelSizeToStyle } from "@/hooks/usePanelResize.js";
 import { usePanelFeedbackTransfer } from "@/hooks/usePanelFeedbackTransfer.js";
-import { useReport } from "@/providers/reportContext.js";
+import { useReport, useReportPreferences } from "@/providers/reportContext.js";
 import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, DevicePreviewIcon, EyeOpenIcon, LockIcon, LogoIcon, SelectIcon, SettingsIcon } from "@/components/icons/Icons.js";
 import { IconTooltipButton } from "@/components/ui/IconTooltipButton.js";
 import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
@@ -120,6 +120,8 @@ export function ReportControlPanel() {
         devicePreviewUiOpen,
         setDevicePreviewUiOpen,
     } = useReport();
+    const { integrationCapabilities } = useReportPreferences();
+    const showAutoRefreshControl = integrationCapabilities.persistenceMode !== "localStorage";
     const [personalKeyStep, setPersonalKeyStep] = useState<"none" | "required" | "insert" | "rotate">("none");
     const [personalKeyNotice, setPersonalKeyNotice] = useState("");
     const isRecording = mode === "report";
@@ -396,6 +398,7 @@ export function ReportControlPanel() {
                                         >
                                             <section className="flex min-w-0 items-center gap-[4px] py-[4px] pl-[12px]">
                                                 <LogoIcon className="w-[94px] shrink-0" />
+                                                {showAutoRefreshControl ? <PanelAutoRefreshControl /> : null}
                                             </section>
 
                                             <section className="flex shrink-0 items-center h-full">
@@ -425,8 +428,6 @@ export function ReportControlPanel() {
                                                         <DevicePreviewIcon className="h-[16px] w-[16px]" />
                                                     </IconTooltipButton>
                                                 )}
-
-                                                <PanelAutoRefreshControl />
 
                                                 <IconTooltipButton
                                                     label={messages.panel.tabSettings}
