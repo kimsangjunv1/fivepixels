@@ -1331,7 +1331,7 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
                 onPointerDown={handleWindowActivate}
                 onClick={(event) => event.stopPropagation()}
                 onAnimationEnd={handleWindowAnimationEnd}
-                className={`fixed rounded-[16px] ${showMinimizedChrome && dockMorph === null && !isDockDragging ? "" : "overflow-hidden"} ${
+                className={`fixed rounded-[16px] shadow-[var(--adaptive-popup-shadow)] ${showMinimizedChrome && dockMorph === null && !isDockDragging ? "" : "overflow-hidden"} ${
                     isDockDragging ? "z-[1000003]" : showFullContent ? "z-[1000002]" : "z-[1000001]"
                 } ${windowAnimationClass}`}
                 style={{
@@ -1351,7 +1351,7 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
                     >
                         <div
                             ref={surfaceRef}
-                            className={`flex h-full w-full overflow-hidden rounded-[16px] border border-[var(--adaptive-border-subtle)] shadow-[var(--adaptive-popup-shadow)] ${leftSectionClass}`}
+                            className={`flex h-full w-full overflow-hidden rounded-[16px] border border-[var(--adaptive-border-subtle)] ${leftSectionClass}`}
                         >
                             <div className="flex w-full flex-col justify-center gap-[2px] overflow-hidden px-[12px] py-[6px]">
                                 <button
@@ -1401,7 +1401,7 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
                 ) : (
                     <div
                         ref={surfaceRef}
-                        className="flex h-full w-full flex-row overflow-hidden rounded-[16px] border border-[var(--adaptive-border-subtle)] shadow-[var(--adaptive-popup-shadow)]"
+                        className="flex h-full w-full flex-row overflow-hidden rounded-[16px] border border-[var(--adaptive-border-subtle)]"
                     >
                         {showFullContent ? (
                             <>
