@@ -422,7 +422,9 @@ function ThreadRootReply({
           : THREAD_CASE_ENTRY_SURFACE_CLASS;
     const authorName = reply.author_name?.trim() ?? "";
     const feedStatusSurface =
-        isFeed && !hasActions && !isComposerTarget ? getFeedActivitySurfaceClass(resolveFeedActivityTone(reply.status)) : undefined;
+        isFeed && !hasActions && !isComposerTarget && reply.status !== "suggested"
+            ? getFeedActivitySurfaceClass(resolveFeedActivityTone(reply.status))
+            : undefined;
 
     const entryBody = (
         <>

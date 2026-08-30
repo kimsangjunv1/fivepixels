@@ -101,7 +101,9 @@ function ThreadRootReply({ reply, report, caseId, authors, pendingComposer, conf
             ? THREAD_ACTION_ENTRY_SURFACE_CLASS
             : THREAD_CASE_ENTRY_SURFACE_CLASS;
     const authorName = reply.author_name?.trim() ?? "";
-    const feedStatusSurface = isFeed && !hasActions && !isComposerTarget ? getFeedActivitySurfaceClass(resolveFeedActivityTone(reply.status)) : undefined;
+    const feedStatusSurface = isFeed && !hasActions && !isComposerTarget && reply.status !== "suggested"
+        ? getFeedActivitySurfaceClass(resolveFeedActivityTone(reply.status))
+        : undefined;
     const entryBody = (_jsxs(_Fragment, { children: [isFeed ? (authorName ? (_jsx(FeedCommentMeta, { authorName: authorName, createdAt: reply.created_at, authors: authors, status: reply.status })) : null) : (_jsxs("div", { className: "flex min-w-0 items-center justify-between gap-[8px]", children: [_jsx(FeedbackStatusBadge, { status: reply.status, isNeedGray: true, className: "shrink-0" }), authorName ? (_jsx(ThreadAuthorMeta, { authorName: authorName, authors: authors, showMine: authorName === actorName, showCreator: authorName === originalAuthorName })) : null] })), _jsx("p", { className: `leading-[1.45] text-[14px] text-[var(--adaptive-text-primary)] whitespace-break-spaces ${isFeed ? "mt-[2px]" : ""}`, children: _jsx(MentionMessage, { message: reply.message, mentions: reply.mentions }) }), _jsx(ThreadEntryActions, { reply: reply, report: report, caseId: caseId, authors: authors, pendingComposer: pendingComposer, confirmAuthorName: confirmAuthorName, showConfirmAuthorSelect: showConfirmAuthorSelect, onConfirmAuthorNameChange: onConfirmAuthorNameChange, onStartDeny: onStartDeny, onStartCheckout: onStartCheckout, onStartAskQuestion: onStartAskQuestion, onConfirm: onConfirm, isUpdating: isUpdating, canAct: canAct, actorName: actorName })] }));
     return (_jsx(ThreadLayoutShell, { classicTime: formatClockTime(reply.created_at), density: "comment", feedNode: authorName ? _jsx(FeedAuthorAvatar, { name: authorName }) : _jsx(FeedSpineDot, {}), children: _jsx("div", { className: feedStatusSurface ?? surfaceClass, children: entryBody }) }));
 }
