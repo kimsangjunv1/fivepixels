@@ -30,7 +30,7 @@ export type ReportPanelNoticeDialogProps = {
     className?: string;
     role?: "dialog" | "alertdialog" | "alert" | "status";
 };
-export declare function ReportPanelNoticeActionButton({ action, className, }: {
+export declare function ReportPanelNoticeActionButton({ action, className }: {
     action: ReportPanelNoticeAction;
     className?: string;
 }): import("react").JSX.Element;
