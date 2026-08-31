@@ -4,12 +4,12 @@ export function useReportTeamActor({ authorizedAuthorId, teamReviewers, persiste
     const [apiTeamMembers, setApiTeamMembers] = useState(null);
     const [apiTeamMembersLoading, setApiTeamMembersLoading] = useState(false);
     const onListReviewersRef = useRef(onListReviewers);
+    const hasListReviewers = Boolean(onListReviewers);
     useEffect(() => {
         onListReviewersRef.current = onListReviewers;
     }, [onListReviewers]);
     const refreshTeamMembers = useCallback(async () => {
         if (persistenceMode !== "API" || !onListReviewersRef.current || !authorizedAuthorId) {
-            setApiTeamMembers(null);
             return null;
         }
         setApiTeamMembersLoading(true);
@@ -27,8 +27,15 @@ export function useReportTeamActor({ authorizedAuthorId, teamReviewers, persiste
         }
     }, [authorizedAuthorId, persistenceMode]);
     useEffect(() => {
+        if (persistenceMode !== "API" || !authorizedAuthorId) {
+            setApiTeamMembers(null);
+            return;
+        }
+        if (!hasListReviewers) {
+            return;
+        }
         void refreshTeamMembers();
-    }, [refreshTeamMembers]);
+    }, [authorizedAuthorId, hasListReviewers, persistenceMode, refreshTeamMembers]);
     const teamActor = useMemo(() => resolveTeamActor(authorizedAuthorId, teamReviewers, apiTeamMembers, persistenceMode), [apiTeamMembers, authorizedAuthorId, persistenceMode, teamReviewers]);
     return { teamActor, apiTeamMembers, apiTeamMembersLoading, refreshTeamMembers };
 }
