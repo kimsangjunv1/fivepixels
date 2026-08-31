@@ -257,7 +257,7 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
     const authorizedAuthorId = auth.authorizedAuthors[0]?.id ?? null;
     const activeIdentifyId = auth.activeIdentify?.id ?? null;
     const activeIdentifyName = auth.activeIdentify?.name ?? null;
-    const { teamActor } = useReportTeamActor({
+    const { teamActor, apiTeamMembers, apiTeamMembersLoading, refreshTeamMembers } = useReportTeamActor({
         authorizedAuthorId,
         teamReviewers: authors,
         persistenceMode: panel.persistenceStatus.mode,
@@ -342,6 +342,9 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         showFeedbackList,
         teamReviewers: authors,
         teamActor,
+        apiTeamMembers,
+        apiTeamMembersLoading,
+        refreshTeamMembers,
         adapter: panel.fivePixelsAdapter,
         github,
         canDeleteViaStorage: panel.persistenceStatus.mode === "localStorage" ||

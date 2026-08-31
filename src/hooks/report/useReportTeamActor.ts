@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ReportAuthor } from "@/types/report.js";
 import type { PersistenceStatus } from "@/utils/shared/storage.js";
 import { resolveTeamActor } from "@/utils/report/teamManagement.js";
@@ -12,42 +12,40 @@ type UseReportTeamActorParams = {
 
 export function useReportTeamActor({ authorizedAuthorId, teamReviewers, persistenceMode, onListReviewers }: UseReportTeamActorParams) {
     const [apiTeamMembers, setApiTeamMembers] = useState<ReportAuthor[] | null>(null);
+    const [apiTeamMembersLoading, setApiTeamMembersLoading] = useState(false);
     const onListReviewersRef = useRef(onListReviewers);
 
     useEffect(() => {
         onListReviewersRef.current = onListReviewers;
     }, [onListReviewers]);
 
-    useEffect(() => {
+    const refreshTeamMembers = useCallback(async (): Promise<ReportAuthor[] | null> => {
         if (persistenceMode !== "API" || !onListReviewersRef.current || !authorizedAuthorId) {
             setApiTeamMembers(null);
-            return;
+            return null;
         }
 
-        let cancelled = false;
-
-        void onListReviewersRef
-            .current()
-            .then((members) => {
-                if (!cancelled) {
-                    setApiTeamMembers(members);
-                }
-            })
-            .catch(() => {
-                if (!cancelled) {
-                    setApiTeamMembers(null);
-                }
-            });
-
-        return () => {
-            cancelled = true;
-        };
+        setApiTeamMembersLoading(true);
+        try {
+            const members = await onListReviewersRef.current();
+            setApiTeamMembers(members);
+            return members;
+        } catch {
+            setApiTeamMembers(null);
+            return null;
+        } finally {
+            setApiTeamMembersLoading(false);
+        }
     }, [authorizedAuthorId, persistenceMode]);
+
+    useEffect(() => {
+        void refreshTeamMembers();
+    }, [refreshTeamMembers]);
 
     const teamActor = useMemo(
         () => resolveTeamActor(authorizedAuthorId, teamReviewers, apiTeamMembers, persistenceMode),
         [apiTeamMembers, authorizedAuthorId, persistenceMode, teamReviewers],
     );
 
-    return { teamActor, apiTeamMembers };
+    return { teamActor, apiTeamMembers, apiTeamMembersLoading, refreshTeamMembers };
 }

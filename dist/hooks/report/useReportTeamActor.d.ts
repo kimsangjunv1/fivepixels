@@ -9,6 +9,8 @@ type UseReportTeamActorParams = {
 export declare function useReportTeamActor({ authorizedAuthorId, teamReviewers, persistenceMode, onListReviewers }: UseReportTeamActorParams): {
     teamActor: ReportAuthor | null;
     apiTeamMembers: ReportAuthor[] | null;
+    apiTeamMembersLoading: boolean;
+    refreshTeamMembers: () => Promise<ReportAuthor[] | null>;
 };
 export {};
 //# sourceMappingURL=useReportTeamActor.d.ts.map

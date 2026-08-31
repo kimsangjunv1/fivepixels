@@ -1,7 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { buildPresentationViewers, formatPresentationViewerLabel, resolveSessionActor } from "@/utils/report/reportTeam.js";
+import { buildPresentationViewers, formatPresentationViewerLabel, resolveReportTeam, resolveSessionActor } from "@/utils/report/reportTeam.js";
 
 describe("reportTeam", () => {
+    it("reuses stable empty reviewers array when team.reviewers is omitted", () => {
+        const left = resolveReportTeam({});
+        const right = resolveReportTeam({});
+
+        expect(left.reviewers).toBe(right.reviewers);
+        expect(left.reviewers).toEqual([]);
+    });
+
     it("builds presentation viewers from user and reviewers without duplicates", () => {
         const viewers = buildPresentationViewers(
             { id: "demo-user", name: "Alex", privateKey: "stpk2.demo-user" },

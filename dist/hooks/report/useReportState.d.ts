@@ -58,6 +58,9 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     teamActorRole: import("../../types/report.js").ReportAuthorRole | null;
     isTeamAdmin: boolean;
     canAccessTeamSettings: boolean;
+    apiTeamMembers: ReportAuthor[] | null;
+    apiTeamMembersLoading: boolean;
+    refreshTeamMembers: () => Promise<ReportAuthor[] | null>;
     integrationCapabilities: import("../../utils/integration/integrationFeatures.js").IntegrationCapabilities;
     adapterIntegrationStatus: import("../../utils/integration/buildAdapterIntegrationStatus.js").AdapterIntegrationStatus | null;
     onListReviewers: (() => Promise<ReportAuthor[]>) | undefined;

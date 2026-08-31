@@ -23,7 +23,7 @@ function MemberRow({ member, roleLabel, roleMessages, inactiveLabel, canEdit, ap
                                         : "text-[var(--adaptive-black800)] hover:bg-[var(--adaptive-black100)]"}`, children: roleLabelFor(role, roleMessages) }, role))) })] })) : null, _jsxs("div", { className: "flex flex-wrap gap-[6px]", children: [!apiMode && onToggleActive ? (_jsx("button", { type: "button", onClick: onToggleActive, className: "rounded-[6px] px-[8px] py-[4px] text-[11px] text-[var(--adaptive-black800)] hover:bg-[var(--adaptive-black100)]", children: inactive ? activateLabel : deactivateLabel })) : null, apiMode && onDelete ? (_jsx("button", { type: "button", onClick: onDelete, className: "rounded-[6px] px-[8px] py-[4px] text-[11px] font-semibold text-[var(--adaptive-red500)] hover:bg-[color-mix(in_srgb,var(--adaptive-red500)_10%,transparent)]", children: deleteLabel })) : null] })] })) : null] }));
 }
 export function PanelTeamSettings() {
-    const { messages, teamReviewers, teamActor, canAccessTeamSettings, persistenceStatus, onListReviewers, onListReviewerRequests, onResolveReviewerRequest, onRegisterReviewer, onUpdateReviewer, onDeleteReviewer, } = useReportPreferences();
+    const { messages, teamReviewers, teamActor, canAccessTeamSettings, persistenceStatus, apiTeamMembers, apiTeamMembersLoading, refreshTeamMembers, onListReviewerRequests, onResolveReviewerRequest, onRegisterReviewer, onUpdateReviewer, onDeleteReviewer, } = useReportPreferences();
     const { setErrorMessage } = useReportSession();
     const team = messages.team;
     const teamManageLock = useIntegrationLock("teamManage");
@@ -38,17 +38,25 @@ export function PanelTeamSettings() {
     const localManageMode = !writeEnabled && canAccessTeamSettings && adminHandlers;
     const assignableRoles = useMemo(() => listAssignableRoles(teamActor), [teamActor]);
     const defaultRegisterRole = assignableRoles.includes("member") ? "member" : assignableRoles[0];
-    const onListReviewersRef = useRef(onListReviewers);
     const onListReviewerRequestsRef = useRef(onListReviewerRequests);
-    useEffect(() => {
-        onListReviewersRef.current = onListReviewers;
-    }, [onListReviewers]);
+    const refreshTeamMembersRef = useRef(refreshTeamMembers);
+    const teamActorRef = useRef(teamActor);
+    const teamReviewersRef = useRef(teamReviewers);
     useEffect(() => {
         onListReviewerRequestsRef.current = onListReviewerRequests;
     }, [onListReviewerRequests]);
+    useEffect(() => {
+        refreshTeamMembersRef.current = refreshTeamMembers;
+    }, [refreshTeamMembers]);
+    useEffect(() => {
+        teamActorRef.current = teamActor;
+    }, [teamActor]);
+    useEffect(() => {
+        teamReviewersRef.current = teamReviewers;
+    }, [teamReviewers]);
     const [members, setMembers] = useState(() => sortTeamReviewers(filterVisibleTeamMembers(teamActor, teamReviewers)));
     const [requests, setRequests] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const [localLoading, setLocalLoading] = useState(false);
     const [busyId, setBusyId] = useState(null);
     const [manualName, setManualName] = useState("");
     const [manualId, setManualId] = useState("");
@@ -67,19 +75,30 @@ export function PanelTeamSettings() {
     const pendingRequests = useMemo(() => requests.filter((item) => item.status === "pending"), [requests]);
     const memberCountLabel = team.memberCount(members.length);
     const modeHint = writeEnabled ? (canManage ? team.apiAdminHint : team.apiMemberHint) : team.localStorageHint;
-    const reload = useCallback(async () => {
+    const loading = writeEnabled ? apiTeamMembersLoading : localLoading;
+    useEffect(() => {
         if (!canAccessTeamSettings) {
             setMembers([]);
+            return;
+        }
+        if (writeEnabled) {
+            if (!apiTeamMembers) {
+                return;
+            }
+            setMembers(sortTeamReviewers(filterVisibleTeamMembers(teamActorRef.current, apiTeamMembers)));
+            return;
+        }
+        setMembers(sortTeamReviewers(filterVisibleTeamMembers(teamActorRef.current, teamReviewersRef.current)));
+    }, [apiTeamMembers, canAccessTeamSettings, writeEnabled]);
+    const reloadLocalRequests = useCallback(async () => {
+        if (!canAccessTeamSettings || !localManageMode) {
             setRequests([]);
             return;
         }
-        setLoading(true);
+        setLocalLoading(true);
         try {
-            const listReviewers = onListReviewersRef.current;
-            const nextMembers = listReviewers && writeEnabled ? await listReviewers() : teamReviewers;
-            setMembers(sortTeamReviewers(filterVisibleTeamMembers(teamActor, nextMembers)));
             const listReviewerRequests = onListReviewerRequestsRef.current;
-            if (localManageMode && listReviewerRequests) {
+            if (listReviewerRequests) {
                 setRequests(await listReviewerRequests());
             }
             else {
@@ -90,12 +109,24 @@ export function PanelTeamSettings() {
             setErrorMessage(error instanceof Error ? error.message : team.loadFailed);
         }
         finally {
-            setLoading(false);
+            setLocalLoading(false);
         }
-    }, [canAccessTeamSettings, localManageMode, setErrorMessage, team.loadFailed, teamActor, teamReviewers, writeEnabled]);
+    }, [canAccessTeamSettings, localManageMode, setErrorMessage, team.loadFailed]);
     useEffect(() => {
-        void reload();
-    }, [reload]);
+        void reloadLocalRequests();
+    }, [reloadLocalRequests]);
+    const reloadAfterMutation = useCallback(async () => {
+        if (writeEnabled) {
+            try {
+                await refreshTeamMembersRef.current();
+            }
+            catch (error) {
+                setErrorMessage(error instanceof Error ? error.message : team.loadFailed);
+            }
+            return;
+        }
+        await reloadLocalRequests();
+    }, [reloadLocalRequests, setErrorMessage, team.loadFailed, writeEnabled]);
     const handleResolve = async (id, status) => {
         if (!onResolveReviewerRequest) {
             return;
@@ -107,7 +138,7 @@ export function PanelTeamSettings() {
         setBusyId(id);
         try {
             await onResolveReviewerRequest(id, { status, role: status === "approved" ? approveRole : undefined });
-            await reload();
+            await reloadAfterMutation();
         }
         catch (error) {
             setErrorMessage(error instanceof Error ? error.message : team.resolveFailed);
@@ -137,7 +168,7 @@ export function PanelTeamSettings() {
             setManualName("");
             setManualId("");
             setManualPublicKey("");
-            await reload();
+            await reloadAfterMutation();
         }
         catch (error) {
             setErrorMessage(error instanceof Error ? error.message : team.registerFailed);
@@ -168,7 +199,7 @@ export function PanelTeamSettings() {
                 role: apiRole,
             });
             setApiUserId("");
-            await reload();
+            await reloadAfterMutation();
         }
         catch (error) {
             setErrorMessage(error instanceof Error ? error.message : team.registerFailed);
@@ -188,7 +219,7 @@ export function PanelTeamSettings() {
         setBusyId(member.id);
         try {
             await onUpdateReviewer(member.id, patch);
-            await reload();
+            await reloadAfterMutation();
         }
         catch (error) {
             setErrorMessage(error instanceof Error ? error.message : team.updateFailed);
@@ -204,7 +235,7 @@ export function PanelTeamSettings() {
         setBusyId(member.id);
         try {
             await onDeleteReviewer(member.id);
-            await reload();
+            await reloadAfterMutation();
         }
         catch (error) {
             setErrorMessage(error instanceof Error ? error.message : team.deleteFailed);

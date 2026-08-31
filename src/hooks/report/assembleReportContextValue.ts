@@ -49,6 +49,9 @@ type AssembleArgs = {
     showFeedbackList: boolean;
     teamReviewers: ReportAuthor[];
     teamActor: ReportAuthor | null;
+    apiTeamMembers: ReportAuthor[] | null;
+    apiTeamMembersLoading: boolean;
+    refreshTeamMembers: () => Promise<ReportAuthor[] | null>;
     adapter?: FivePixelsAdapter;
     github?: ReportGitHubConfig;
     canDeleteViaStorage: boolean;
@@ -85,6 +88,9 @@ export function assembleReportContextValue({
     showFeedbackList,
     teamReviewers,
     teamActor,
+    apiTeamMembers,
+    apiTeamMembersLoading,
+    refreshTeamMembers,
     adapter,
     github,
     canDeleteViaStorage,
@@ -158,6 +164,9 @@ export function assembleReportContextValue({
         teamActorRole: teamActor ? resolveAuthorRole(teamActor) : null,
         isTeamAdmin: isReportAuthorAdmin(teamActor),
         canAccessTeamSettings: canAccessTeamSettings(teamActor),
+        apiTeamMembers,
+        apiTeamMembersLoading,
+        refreshTeamMembers,
         integrationCapabilities,
         adapterIntegrationStatus,
         onListReviewers,

@@ -21,10 +21,12 @@ export type ResolveReportTeamOptions = {
     requireReviewerKey?: boolean;
 };
 
+const EMPTY_TEAM_REVIEWERS: ReportAuthor[] = [];
+
 export function resolveReportTeam({ team, requireReviewerKey }: ResolveReportTeamOptions): ResolvedReportTeam {
     return {
         user: team?.user,
-        reviewers: team?.reviewers ?? [],
+        reviewers: team?.reviewers ?? EMPTY_TEAM_REVIEWERS,
         requireReviewerKey: typeof requireReviewerKey === "boolean" ? requireReviewerKey : (team?.requireReviewerKey ?? false),
     };
 }
