@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { ReportAuthor } from "@/types/report.js";
 import type { PersistenceStatus } from "@/utils/shared/storage.js";
 import { resolveTeamActor } from "@/utils/report/teamManagement.js";
@@ -12,16 +12,22 @@ type UseReportTeamActorParams = {
 
 export function useReportTeamActor({ authorizedAuthorId, teamReviewers, persistenceMode, onListReviewers }: UseReportTeamActorParams) {
     const [apiTeamMembers, setApiTeamMembers] = useState<ReportAuthor[] | null>(null);
+    const onListReviewersRef = useRef(onListReviewers);
 
     useEffect(() => {
-        if (persistenceMode !== "API" || !onListReviewers || !authorizedAuthorId) {
+        onListReviewersRef.current = onListReviewers;
+    }, [onListReviewers]);
+
+    useEffect(() => {
+        if (persistenceMode !== "API" || !onListReviewersRef.current || !authorizedAuthorId) {
             setApiTeamMembers(null);
             return;
         }
 
         let cancelled = false;
 
-        void onListReviewers()
+        void onListReviewersRef
+            .current()
             .then((members) => {
                 if (!cancelled) {
                     setApiTeamMembers(members);
@@ -36,7 +42,7 @@ export function useReportTeamActor({ authorizedAuthorId, teamReviewers, persiste
         return () => {
             cancelled = true;
         };
-    }, [authorizedAuthorId, onListReviewers, persistenceMode]);
+    }, [authorizedAuthorId, persistenceMode]);
 
     const teamActor = useMemo(
         () => resolveTeamActor(authorizedAuthorId, teamReviewers, apiTeamMembers, persistenceMode),
