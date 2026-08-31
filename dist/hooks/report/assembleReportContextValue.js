@@ -11,6 +11,7 @@ function resolveTeamHandlersFromAdapter(adapter) {
         onListReviewers: members.list,
         onRegisterReviewer: members.create,
         onUpdateReviewer: members.update,
+        onDeleteReviewer: members.delete,
     };
 }
 /**
@@ -25,6 +26,7 @@ export function assembleReportContextValue({ panel, auth, draft, markers, mutati
     const onResolveReviewerRequest = teamHandlers.onResolveReviewerRequest;
     const onRegisterReviewer = teamHandlers.onRegisterReviewer;
     const onUpdateReviewer = teamHandlers.onUpdateReviewer;
+    const onDeleteReviewer = teamHandlers.onDeleteReviewer;
     const onPanelBootstrap = adapter?.session?.panelBootstrap;
     const onActivitySummary = adapter?.session?.activitySummary;
     const integrationCapabilities = buildIntegrationCapabilities({
@@ -74,6 +76,7 @@ export function assembleReportContextValue({ panel, auth, draft, markers, mutati
         onResolveReviewerRequest,
         onRegisterReviewer,
         onUpdateReviewer,
+        onDeleteReviewer,
         projectId,
         environment,
         appVersion,

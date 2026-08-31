@@ -25,6 +25,7 @@ export const REPORT_PREFERENCE_KEYS = [
     "onResolveReviewerRequest",
     "onRegisterReviewer",
     "onUpdateReviewer",
+    "onDeleteReviewer",
     "projectId",
     "environment",
     "appVersion",

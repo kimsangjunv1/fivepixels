@@ -231,6 +231,7 @@ export type ReportTeamHandlers = {
     onResolveReviewerRequest?: (id: string, payload: ResolveReviewerRequestPayload) => Promise<ReportReviewerRequest>;
     onRegisterReviewer?: (payload: RegisterReviewerPayload) => Promise<ReportAuthor>;
     onUpdateReviewer?: (id: string, payload: UpdateReviewerPayload) => Promise<ReportAuthor>;
+    onDeleteReviewer?: (id: string) => Promise<void>;
 };
 
 /** User returned by `adapter.auth.login` / `refresh` / `artemisLogin`. */

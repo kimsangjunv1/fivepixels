@@ -31,6 +31,7 @@ function resolveTeamHandlersFromAdapter(adapter?: FivePixelsAdapter): Partial<Re
         onListReviewers: members.list,
         onRegisterReviewer: members.create,
         onUpdateReviewer: members.update,
+        onDeleteReviewer: members.delete,
     };
 }
 
@@ -108,6 +109,7 @@ export function assembleReportContextValue({
     const onResolveReviewerRequest = teamHandlers.onResolveReviewerRequest;
     const onRegisterReviewer = teamHandlers.onRegisterReviewer;
     const onUpdateReviewer = teamHandlers.onUpdateReviewer;
+    const onDeleteReviewer = teamHandlers.onDeleteReviewer;
     const onPanelBootstrap = adapter?.session?.panelBootstrap;
     const onActivitySummary = adapter?.session?.activitySummary;
     const integrationCapabilities = buildIntegrationCapabilities({
@@ -164,6 +166,7 @@ export function assembleReportContextValue({
         onResolveReviewerRequest,
         onRegisterReviewer,
         onUpdateReviewer,
+        onDeleteReviewer,
         projectId,
         environment,
         appVersion,

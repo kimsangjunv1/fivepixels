@@ -35,6 +35,7 @@ declare const ReportContext: Context<{
     onResolveReviewerRequest: ((id: string, payload: import("../index.js").ResolveReviewerRequestPayload) => Promise<import("../index.js").ReportReviewerRequest>) | undefined;
     onRegisterReviewer: ((payload: import("../index.js").RegisterReviewerPayload) => Promise<import("../index.js").ReportAuthor>) | undefined;
     onUpdateReviewer: ((id: string, payload: import("../index.js").UpdateReviewerPayload) => Promise<import("../index.js").ReportAuthor>) | undefined;
+    onDeleteReviewer: ((id: string) => Promise<void>) | undefined;
     projectId: string;
     environment: string | undefined;
     appVersion: string | undefined;
@@ -386,6 +387,7 @@ export declare function useReport(): {
     onResolveReviewerRequest: ((id: string, payload: import("../index.js").ResolveReviewerRequestPayload) => Promise<import("../index.js").ReportReviewerRequest>) | undefined;
     onRegisterReviewer: ((payload: import("../index.js").RegisterReviewerPayload) => Promise<import("../index.js").ReportAuthor>) | undefined;
     onUpdateReviewer: ((id: string, payload: import("../index.js").UpdateReviewerPayload) => Promise<import("../index.js").ReportAuthor>) | undefined;
+    onDeleteReviewer: ((id: string) => Promise<void>) | undefined;
     projectId: string;
     environment: string | undefined;
     appVersion: string | undefined;
@@ -740,6 +742,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         onResolveReviewerRequest: ((id: string, payload: import("../index.js").ResolveReviewerRequestPayload) => Promise<import("../index.js").ReportReviewerRequest>) | undefined;
         onRegisterReviewer: ((payload: import("../index.js").RegisterReviewerPayload) => Promise<import("../index.js").ReportAuthor>) | undefined;
         onUpdateReviewer: ((id: string, payload: import("../index.js").UpdateReviewerPayload) => Promise<import("../index.js").ReportAuthor>) | undefined;
+        onDeleteReviewer: ((id: string) => Promise<void>) | undefined;
         projectId: string;
         environment: string | undefined;
         appVersion: string | undefined;
@@ -1059,7 +1062,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         activeApiFailureAlert: import("../types/networkMonitor.js").ApiFlowEntry | null;
         dismissFailureAlert: (entryId: string) => void;
         networkMonitorEnabled: boolean;
-    }, "personalKey" | "projectId" | "fields" | "personalKeyRequired" | "environment" | "require" | "requireAuth" | "questionThreadDisplay" | "setQuestionThreadDisplay" | "threadLayout" | "setThreadLayout" | "locale" | "setLocale" | "showMarkerTargetPreview" | "setShowMarkerTargetPreview" | "toggleMarkerTargetPreview" | "devicePreviewUiOpen" | "setDevicePreviewUiOpen" | "devicePreviewDeviceId" | "setDevicePreviewDeviceId" | "devicePreviewScale" | "setDevicePreviewScale" | "devicePreviewImageEnabled" | "setDevicePreviewImageEnabled" | "devicePreviewFitToViewport" | "setDevicePreviewFitToViewport" | "devicePreviewStatusBarEnabled" | "setDevicePreviewStatusBarEnabled" | "devicePreviewPreset" | "showHiddenDetachedMarkers" | "setShowHiddenDetachedMarkers" | "showModalDetachedMarkers" | "setShowModalDetachedMarkers" | "markerAppearance" | "setMarkerAppearance" | "setMarkerSize" | "setMarkerShape" | "setMarkerFillStyle" | "setMarkerColors" | "setMarkerColor" | "setMarkerStrokeColor" | "setFeedbackModeDotColors" | "setFeedbackModeDotColor" | "typography" | "setTypography" | "setFontSize" | "setFontFamily" | "panelRole" | "setPanelRole" | "persistenceStatus" | "appVersion" | "showFeedbackList" | "selfProfile" | "authors" | "publicKey" | "personalKeyCandidates" | "issuePersonalKey" | "rotatePersonalKey" | "insertPersonalKey" | "clearPersonalKey" | "authorSelectionLocked" | "messages" | "teamReviewers" | "teamActor" | "visibleShortcutKeys" | "onListReviewers" | "onListReviewerRequests" | "onCreateReviewerRequest" | "onResolveReviewerRequest" | "onRegisterReviewer" | "onUpdateReviewer" | "panelAppearance" | "setPanelAppearance" | "tooltipAppearance" | "setTooltipAppearance" | "teamActorRole" | "isTeamAdmin" | "canAccessTeamSettings" | "integrationCapabilities" | "adapterIntegrationStatus" | "panelView" | "authBootstrapState" | "isAuthBootstrapping" | "loginMethod" | "loginWithApi" | "registerWithApi" | "logoutWithApi" | "refreshWithApi" | "loginWithArtemis" | "completeRemoteOnboarding" | "completeOnboarding" | "restoreFromBackup" | "skipOnboarding" | "resolvedPanelAppearance" | "resolvedTooltipAppearance" | "isMobileViewport" | "isPresentationMode" | "presentationViewers" | "visiblePanelTabs" | "visiblePanelTabsSummary" | "resolvedTabAvailabilityContext" | "setVisiblePanelTabs" | "resetVisibleTabsToRoleDefault" | "applyRoleDefaultTabsForOnboarding" | "savePanelTabPreference" | "storedPanelTabPreference">;
+    }, "personalKey" | "projectId" | "fields" | "personalKeyRequired" | "environment" | "require" | "requireAuth" | "questionThreadDisplay" | "setQuestionThreadDisplay" | "threadLayout" | "setThreadLayout" | "locale" | "setLocale" | "showMarkerTargetPreview" | "setShowMarkerTargetPreview" | "toggleMarkerTargetPreview" | "devicePreviewUiOpen" | "setDevicePreviewUiOpen" | "devicePreviewDeviceId" | "setDevicePreviewDeviceId" | "devicePreviewScale" | "setDevicePreviewScale" | "devicePreviewImageEnabled" | "setDevicePreviewImageEnabled" | "devicePreviewFitToViewport" | "setDevicePreviewFitToViewport" | "devicePreviewStatusBarEnabled" | "setDevicePreviewStatusBarEnabled" | "devicePreviewPreset" | "showHiddenDetachedMarkers" | "setShowHiddenDetachedMarkers" | "showModalDetachedMarkers" | "setShowModalDetachedMarkers" | "markerAppearance" | "setMarkerAppearance" | "setMarkerSize" | "setMarkerShape" | "setMarkerFillStyle" | "setMarkerColors" | "setMarkerColor" | "setMarkerStrokeColor" | "setFeedbackModeDotColors" | "setFeedbackModeDotColor" | "typography" | "setTypography" | "setFontSize" | "setFontFamily" | "panelRole" | "setPanelRole" | "persistenceStatus" | "appVersion" | "showFeedbackList" | "selfProfile" | "authors" | "publicKey" | "personalKeyCandidates" | "issuePersonalKey" | "rotatePersonalKey" | "insertPersonalKey" | "clearPersonalKey" | "authorSelectionLocked" | "messages" | "teamReviewers" | "teamActor" | "visibleShortcutKeys" | "onListReviewers" | "onListReviewerRequests" | "onCreateReviewerRequest" | "onResolveReviewerRequest" | "onRegisterReviewer" | "onUpdateReviewer" | "onDeleteReviewer" | "panelAppearance" | "setPanelAppearance" | "tooltipAppearance" | "setTooltipAppearance" | "teamActorRole" | "isTeamAdmin" | "canAccessTeamSettings" | "integrationCapabilities" | "adapterIntegrationStatus" | "panelView" | "authBootstrapState" | "isAuthBootstrapping" | "loginMethod" | "loginWithApi" | "registerWithApi" | "logoutWithApi" | "refreshWithApi" | "loginWithArtemis" | "completeRemoteOnboarding" | "completeOnboarding" | "restoreFromBackup" | "skipOnboarding" | "resolvedPanelAppearance" | "resolvedTooltipAppearance" | "isMobileViewport" | "isPresentationMode" | "presentationViewers" | "visiblePanelTabs" | "visiblePanelTabsSummary" | "resolvedTabAvailabilityContext" | "setVisiblePanelTabs" | "resetVisibleTabsToRoleDefault" | "applyRoleDefaultTabsForOnboarding" | "savePanelTabPreference" | "storedPanelTabPreference">;
     session: Pick<{
         panelAppearance: import("../index.js").ReportAppearance;
         setPanelAppearance: (nextAppearance: import("../index.js").ReportAppearance) => void;
@@ -1087,6 +1090,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         onResolveReviewerRequest: ((id: string, payload: import("../index.js").ResolveReviewerRequestPayload) => Promise<import("../index.js").ReportReviewerRequest>) | undefined;
         onRegisterReviewer: ((payload: import("../index.js").RegisterReviewerPayload) => Promise<import("../index.js").ReportAuthor>) | undefined;
         onUpdateReviewer: ((id: string, payload: import("../index.js").UpdateReviewerPayload) => Promise<import("../index.js").ReportAuthor>) | undefined;
+        onDeleteReviewer: ((id: string) => Promise<void>) | undefined;
         projectId: string;
         environment: string | undefined;
         appVersion: string | undefined;
@@ -1434,6 +1438,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         onResolveReviewerRequest: ((id: string, payload: import("../index.js").ResolveReviewerRequestPayload) => Promise<import("../index.js").ReportReviewerRequest>) | undefined;
         onRegisterReviewer: ((payload: import("../index.js").RegisterReviewerPayload) => Promise<import("../index.js").ReportAuthor>) | undefined;
         onUpdateReviewer: ((id: string, payload: import("../index.js").UpdateReviewerPayload) => Promise<import("../index.js").ReportAuthor>) | undefined;
+        onDeleteReviewer: ((id: string) => Promise<void>) | undefined;
         projectId: string;
         environment: string | undefined;
         appVersion: string | undefined;

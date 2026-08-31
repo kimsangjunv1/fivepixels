@@ -71,6 +71,7 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     onResolveReviewerRequest: ((id: string, payload: import("../../types/report.js").ResolveReviewerRequestPayload) => Promise<import("../../types/report.js").ReportReviewerRequest>) | undefined;
     onRegisterReviewer: ((payload: import("../../types/report.js").RegisterReviewerPayload) => Promise<ReportAuthor>) | undefined;
     onUpdateReviewer: ((id: string, payload: import("../../types/report.js").UpdateReviewerPayload) => Promise<ReportAuthor>) | undefined;
+    onDeleteReviewer: ((id: string) => Promise<void>) | undefined;
     projectId: string;
     environment: string | undefined;
     appVersion: string | undefined;

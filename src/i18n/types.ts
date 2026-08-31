@@ -666,6 +666,7 @@ export type ReportMessages = {
         sectionRequests: string;
         sectionMyRequest: string;
         sectionManual: string;
+        sectionRegister: string;
         loading: string;
         emptyMembers: string;
         emptyRequests: string;
@@ -686,12 +687,17 @@ export type ReportMessages = {
         manualNamePlaceholder: string;
         manualIdPlaceholder: string;
         manualPublicKeyPlaceholder: string;
+        apiUserIdPlaceholder: string;
+        apiRegisterRequired: string;
+        editRole: string;
+        deleteMember: string;
         manualRequired: string;
         loadFailed: string;
         requestFailed: string;
         resolveFailed: string;
         registerFailed: string;
         updateFailed: string;
+        deleteFailed: string;
     };
     command: {
         title: string;

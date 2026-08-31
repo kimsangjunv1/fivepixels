@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useReportPreferences, useReportSession } from "@/providers/reportContext.js";
 import type { ReportAuthor, ReportAuthorRole, ReportReviewerRequest } from "@/types/report.js";
 import {
@@ -34,22 +34,30 @@ function MemberRow({
     roleMessages,
     inactiveLabel,
     canEdit,
+    apiMode,
     assignableRoles,
+    editRoleLabel,
     activateLabel,
     deactivateLabel,
+    deleteLabel,
     onToggleActive,
     onChangeRole,
+    onDelete,
 }: {
     member: ReportAuthor;
     roleLabel: string;
     roleMessages: { roleAdmin: string; roleSubAdmin: string; roleMember: string };
     inactiveLabel: string;
     canEdit: boolean;
+    apiMode: boolean;
     assignableRoles: ReportAuthorRole[];
+    editRoleLabel: string;
     activateLabel: string;
     deactivateLabel: string;
+    deleteLabel: string;
     onToggleActive?: () => void;
     onChangeRole?: (role: ReportAuthorRole) => void;
+    onDelete?: () => void;
 }) {
     const inactive = member.isActive === false;
 
@@ -68,28 +76,48 @@ function MemberRow({
             </div>
             {inactive ? <p className="text-[11px] text-[var(--adaptive-black500)]">{inactiveLabel}</p> : null}
             {canEdit ? (
-                <div className="flex flex-wrap gap-[6px]">
-                    {onChangeRole
-                        ? assignableRoles.map((role) => (
-                              <button
-                                  key={role}
-                                  type="button"
-                                  onClick={() => onChangeRole(role)}
-                                  className="rounded-[6px] px-[8px] py-[4px] text-[11px] text-[var(--adaptive-black800)] hover:bg-[var(--adaptive-black100)]"
-                              >
-                                  {roleLabelFor(role, roleMessages)}
-                              </button>
-                          ))
-                        : null}
-                    {onToggleActive ? (
-                        <button
-                            type="button"
-                            onClick={onToggleActive}
-                            className="rounded-[6px] px-[8px] py-[4px] text-[11px] text-[var(--adaptive-black800)] hover:bg-[var(--adaptive-black100)]"
-                        >
-                            {inactive ? activateLabel : deactivateLabel}
-                        </button>
+                <div className="flex flex-col gap-[6px]">
+                    {onChangeRole ? (
+                        <div className="flex flex-col gap-[4px]">
+                            <p className="text-[10px] font-semibold text-[var(--adaptive-black600)]">{editRoleLabel}</p>
+                            <div className="flex flex-wrap gap-[6px]">
+                                {assignableRoles.map((role) => (
+                                    <button
+                                        key={role}
+                                        type="button"
+                                        onClick={() => onChangeRole(role)}
+                                        className={`rounded-[6px] px-[8px] py-[4px] text-[11px] ${
+                                            resolveAuthorRole(member) === role
+                                                ? "bg-[var(--adaptive-blue50)] font-semibold text-[var(--adaptive-blue500)]"
+                                                : "text-[var(--adaptive-black800)] hover:bg-[var(--adaptive-black100)]"
+                                        }`}
+                                    >
+                                        {roleLabelFor(role, roleMessages)}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
                     ) : null}
+                    <div className="flex flex-wrap gap-[6px]">
+                        {!apiMode && onToggleActive ? (
+                            <button
+                                type="button"
+                                onClick={onToggleActive}
+                                className="rounded-[6px] px-[8px] py-[4px] text-[11px] text-[var(--adaptive-black800)] hover:bg-[var(--adaptive-black100)]"
+                            >
+                                {inactive ? activateLabel : deactivateLabel}
+                            </button>
+                        ) : null}
+                        {apiMode && onDelete ? (
+                            <button
+                                type="button"
+                                onClick={onDelete}
+                                className="rounded-[6px] px-[8px] py-[4px] text-[11px] font-semibold text-[var(--adaptive-red500)] hover:bg-[color-mix(in_srgb,var(--adaptive-red500)_10%,transparent)]"
+                            >
+                                {deleteLabel}
+                            </button>
+                        ) : null}
+                    </div>
                 </div>
             ) : null}
         </div>
@@ -108,6 +136,7 @@ export function PanelTeamSettings() {
         onResolveReviewerRequest,
         onRegisterReviewer,
         onUpdateReviewer,
+        onDeleteReviewer,
     } = useReportPreferences();
     const { setErrorMessage } = useReportSession();
     const team = messages.team;
@@ -120,8 +149,20 @@ export function PanelTeamSettings() {
         onUpdateReviewer,
     });
     const canManage = writeEnabled && canAccessTeamSettings && adminHandlers;
+    const localManageMode = !writeEnabled && canAccessTeamSettings && adminHandlers;
     const assignableRoles = useMemo(() => listAssignableRoles(teamActor), [teamActor]);
     const defaultRegisterRole = assignableRoles.includes("member") ? "member" : assignableRoles[0];
+
+    const onListReviewersRef = useRef(onListReviewers);
+    const onListReviewerRequestsRef = useRef(onListReviewerRequests);
+
+    useEffect(() => {
+        onListReviewersRef.current = onListReviewers;
+    }, [onListReviewers]);
+
+    useEffect(() => {
+        onListReviewerRequestsRef.current = onListReviewerRequests;
+    }, [onListReviewerRequests]);
 
     const [members, setMembers] = useState<ReportAuthor[]>(() => sortTeamReviewers(filterVisibleTeamMembers(teamActor, teamReviewers)));
     const [requests, setRequests] = useState<ReportReviewerRequest[]>([]);
@@ -132,11 +173,14 @@ export function PanelTeamSettings() {
     const [manualPublicKey, setManualPublicKey] = useState("");
     const [manualRole, setManualRole] = useState<ReportAuthorRole>("member");
     const [approveRole, setApproveRole] = useState<ReportAuthorRole>("member");
+    const [apiUserId, setApiUserId] = useState("");
+    const [apiRole, setApiRole] = useState<ReportAuthorRole>("member");
 
     useEffect(() => {
         if (defaultRegisterRole) {
             setManualRole(defaultRegisterRole);
             setApproveRole(defaultRegisterRole);
+            setApiRole(defaultRegisterRole);
         }
     }, [defaultRegisterRole]);
 
@@ -153,11 +197,13 @@ export function PanelTeamSettings() {
 
         setLoading(true);
         try {
-            const nextMembers = onListReviewers && writeEnabled ? await onListReviewers() : teamReviewers;
+            const listReviewers = onListReviewersRef.current;
+            const nextMembers = listReviewers && writeEnabled ? await listReviewers() : teamReviewers;
             setMembers(sortTeamReviewers(filterVisibleTeamMembers(teamActor, nextMembers)));
 
-            if (canManage && onListReviewerRequests) {
-                setRequests(await onListReviewerRequests());
+            const listReviewerRequests = onListReviewerRequestsRef.current;
+            if (localManageMode && listReviewerRequests) {
+                setRequests(await listReviewerRequests());
             } else {
                 setRequests([]);
             }
@@ -166,17 +212,7 @@ export function PanelTeamSettings() {
         } finally {
             setLoading(false);
         }
-    }, [
-        canAccessTeamSettings,
-        canManage,
-        onListReviewerRequests,
-        onListReviewers,
-        setErrorMessage,
-        team.loadFailed,
-        teamActor,
-        teamReviewers,
-        writeEnabled,
-    ]);
+    }, [canAccessTeamSettings, localManageMode, setErrorMessage, team.loadFailed, teamActor, teamReviewers, writeEnabled]);
 
     useEffect(() => {
         void reload();
@@ -202,7 +238,7 @@ export function PanelTeamSettings() {
         }
     };
 
-    const handleRegister = async () => {
+    const handleLocalRegister = async () => {
         if (!onRegisterReviewer) {
             return;
         }
@@ -233,6 +269,38 @@ export function PanelTeamSettings() {
         }
     };
 
+    const handleApiRegister = async () => {
+        if (!onRegisterReviewer) {
+            return;
+        }
+
+        const userId = apiUserId.trim();
+        if (!userId) {
+            setErrorMessage(team.apiRegisterRequired);
+            return;
+        }
+        if (!canAssignTeamRole(teamActor, apiRole)) {
+            setErrorMessage(team.roleNotAllowed);
+            return;
+        }
+
+        setBusyId("register");
+        try {
+            await onRegisterReviewer({
+                author_id: userId,
+                author_name: userId,
+                public_key: "",
+                role: apiRole,
+            });
+            setApiUserId("");
+            await reload();
+        } catch (error) {
+            setErrorMessage(error instanceof Error ? error.message : team.registerFailed);
+        } finally {
+            setBusyId(null);
+        }
+    };
+
     const handleUpdate = async (member: ReportAuthor, patch: { role?: ReportAuthorRole; is_active?: boolean }) => {
         if (!onUpdateReviewer || !canEditTeamMember(teamActor, member)) {
             return;
@@ -248,6 +316,22 @@ export function PanelTeamSettings() {
             await reload();
         } catch (error) {
             setErrorMessage(error instanceof Error ? error.message : team.updateFailed);
+        } finally {
+            setBusyId(null);
+        }
+    };
+
+    const handleDelete = async (member: ReportAuthor) => {
+        if (!onDeleteReviewer || !canEditTeamMember(teamActor, member)) {
+            return;
+        }
+
+        setBusyId(member.id);
+        try {
+            await onDeleteReviewer(member.id);
+            await reload();
+        } catch (error) {
+            setErrorMessage(error instanceof Error ? error.message : team.deleteFailed);
         } finally {
             setBusyId(null);
         }
@@ -289,6 +373,7 @@ export function PanelTeamSettings() {
                 ) : null}
                 {members.map((member) => {
                     const editable = canManage && Boolean(onUpdateReviewer) && canEditTeamMember(teamActor, member) && busyId !== member.id;
+                    const deletable = editable && Boolean(onDeleteReviewer) && writeEnabled;
                     return (
                         <MemberRow
                             key={member.id}
@@ -297,17 +382,21 @@ export function PanelTeamSettings() {
                             roleMessages={team}
                             inactiveLabel={team.inactive}
                             canEdit={editable}
+                            apiMode={writeEnabled}
                             assignableRoles={assignableRoles}
+                            editRoleLabel={team.editRole}
                             activateLabel={team.activate}
                             deactivateLabel={team.deactivate}
+                            deleteLabel={team.deleteMember}
                             onChangeRole={editable ? (role) => void handleUpdate(member, { role }) : undefined}
-                            onToggleActive={editable ? () => void handleUpdate(member, { is_active: member.isActive === false }) : undefined}
+                            onToggleActive={editable && !writeEnabled ? () => void handleUpdate(member, { is_active: member.isActive === false }) : undefined}
+                            onDelete={deletable ? () => void handleDelete(member) : undefined}
                         />
                     );
                 })}
             </section>
 
-            {canManage ? (
+            {localManageMode ? (
                 <>
                     <section className="flex flex-col border-b border-[var(--adaptive-border-subtle)]">
                         <p className="px-[12px] pt-[10px] pb-[4px] text-[11px] font-semibold uppercase tracking-[0.02em] text-[var(--adaptive-black500)]">
@@ -415,7 +504,7 @@ export function PanelTeamSettings() {
                                 <button
                                     type="button"
                                     disabled={busyId === "register"}
-                                    onClick={() => void handleRegister()}
+                                    onClick={() => void handleLocalRegister()}
                                     className="w-full rounded-[8px] px-[12px] py-[8px] text-left text-[13px] text-[var(--adaptive-black800)] hover:bg-[var(--adaptive-black100)] disabled:opacity-50"
                                 >
                                     {team.register}
@@ -424,6 +513,46 @@ export function PanelTeamSettings() {
                         </section>
                     ) : null}
                 </>
+            ) : null}
+
+            {canManage && writeEnabled && onRegisterReviewer && assignableRoles.length > 0 ? (
+                <section className="flex flex-col px-[12px] py-[10px]">
+                    <p className="mb-[6px] text-[11px] font-semibold uppercase tracking-[0.02em] text-[var(--adaptive-black500)]">
+                        {team.sectionRegister}
+                    </p>
+                    <div className="mb-[8px] flex flex-wrap gap-[6px]">
+                        {assignableRoles.map((role) => (
+                            <button
+                                key={role}
+                                type="button"
+                                onClick={() => setApiRole(role)}
+                                className={`rounded-[6px] px-[8px] py-[4px] text-[11px] ${
+                                    apiRole === role
+                                        ? "bg-[var(--adaptive-blue50)] font-semibold text-[var(--adaptive-blue500)]"
+                                        : "text-[var(--adaptive-black800)] hover:bg-[var(--adaptive-black100)]"
+                                }`}
+                            >
+                                {roleLabelFor(role, team)}
+                            </button>
+                        ))}
+                    </div>
+                    <div className="flex flex-col gap-[6px]">
+                        <input
+                            value={apiUserId}
+                            onChange={(event) => setApiUserId(event.target.value)}
+                            placeholder={team.apiUserIdPlaceholder}
+                            className="rounded-[8px] border border-[var(--adaptive-black200)] bg-[var(--adaptive-black50)] px-[10px] py-[8px] text-[12px] text-[var(--adaptive-black900)] outline-none"
+                        />
+                        <button
+                            type="button"
+                            disabled={busyId === "register"}
+                            onClick={() => void handleApiRegister()}
+                            className="w-full rounded-[8px] px-[12px] py-[8px] text-left text-[13px] text-[var(--adaptive-black800)] hover:bg-[var(--adaptive-black100)] disabled:opacity-50"
+                        >
+                            {team.register}
+                        </button>
+                    </div>
+                </section>
             ) : null}
         </div>
     );
