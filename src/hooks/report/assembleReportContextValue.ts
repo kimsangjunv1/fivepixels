@@ -47,6 +47,7 @@ type AssembleArgs = {
     appVersion?: string;
     showFeedbackList: boolean;
     teamReviewers: ReportAuthor[];
+    teamActor: ReportAuthor | null;
     adapter?: FivePixelsAdapter;
     github?: ReportGitHubConfig;
     canDeleteViaStorage: boolean;
@@ -82,6 +83,7 @@ export function assembleReportContextValue({
     appVersion,
     showFeedbackList,
     teamReviewers,
+    teamActor,
     adapter,
     github,
     canDeleteViaStorage,
@@ -99,8 +101,6 @@ export function assembleReportContextValue({
     appendApiFlowEntryToDraftCase,
     networkMonitorEnabled,
 }: AssembleArgs) {
-    const authorizedId = auth.authorizedAuthors[0]?.id;
-    const teamActor = authorizedId ? (teamReviewers.find((reviewer) => reviewer.id === authorizedId) ?? null) : null;
     const teamHandlers = resolveTeamHandlersFromAdapter(adapter);
     const onListReviewers = teamHandlers.onListReviewers;
     const onListReviewerRequests = teamHandlers.onListReviewerRequests;

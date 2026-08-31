@@ -17,9 +17,7 @@ function resolveTeamHandlersFromAdapter(adapter) {
  * Flat context value for ReportProvider slices.
  * Keys stay flat (see reportContextPartitions). Domain hooks → this assembler → UI.
  */
-export function assembleReportContextValue({ panel, auth, draft, markers, mutations, reply, fields, projectId, environment, appVersion, showFeedbackList, teamReviewers, adapter, github, canDeleteViaStorage, usesLazyReplies, usesCreateReply, visibleShortcutKeys, overlayRef, replyHistory, selectReport, beginFeedbackEdit, cancelDraft, apiFlowEntries, activeApiFailureAlert, dismissFailureAlert, appendApiFlowEntryToDraftCase, networkMonitorEnabled, }) {
-    const authorizedId = auth.authorizedAuthors[0]?.id;
-    const teamActor = authorizedId ? (teamReviewers.find((reviewer) => reviewer.id === authorizedId) ?? null) : null;
+export function assembleReportContextValue({ panel, auth, draft, markers, mutations, reply, fields, projectId, environment, appVersion, showFeedbackList, teamReviewers, teamActor, adapter, github, canDeleteViaStorage, usesLazyReplies, usesCreateReply, visibleShortcutKeys, overlayRef, replyHistory, selectReport, beginFeedbackEdit, cancelDraft, apiFlowEntries, activeApiFailureAlert, dismissFailureAlert, appendApiFlowEntryToDraftCase, networkMonitorEnabled, }) {
     const teamHandlers = resolveTeamHandlersFromAdapter(adapter);
     const onListReviewers = teamHandlers.onListReviewers;
     const onListReviewerRequests = teamHandlers.onListReviewerRequests;

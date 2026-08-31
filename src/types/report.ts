@@ -142,6 +142,11 @@ export type ReportTeam = {
      * most integrations can omit this.
      */
     user?: ReportIdentify;
+    /**
+     * Local reviewer seed and API fallback when `adapter.members.list` is unavailable.
+     * Required for `sync="local"`. Optional for `sync="api"` / `sync="artemis"` when
+     * `adapter.members.list` returns roles for the signed-in user.
+     */
     reviewers?: ReportAuthor[];
     /**
      * @deprecated Prefer top-level `require.reviewerKey`.

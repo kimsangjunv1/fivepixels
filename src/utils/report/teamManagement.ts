@@ -85,6 +85,30 @@ export function isTeamWriteEnabled(persistenceStatus: PersistenceStatus): boolea
     return persistenceStatus.mode === "API";
 }
 
+/**
+ * Resolve the active team actor for permission checks.
+ * API mode prefers `adapter.members.list` results; local mode uses `team.reviewers` only.
+ */
+export function resolveTeamActor(
+    authorizedAuthorId: string | null | undefined,
+    teamReviewers: ReportAuthor[],
+    apiTeamMembers: ReportAuthor[] | null,
+    persistenceMode: PersistenceStatus["mode"],
+): ReportAuthor | null {
+    if (!authorizedAuthorId) {
+        return null;
+    }
+
+    if (persistenceMode === "API" && apiTeamMembers) {
+        const fromApi = apiTeamMembers.find((member) => member.id === authorizedAuthorId);
+        if (fromApi) {
+            return fromApi;
+        }
+    }
+
+    return teamReviewers.find((reviewer) => reviewer.id === authorizedAuthorId) ?? null;
+}
+
 export function hasTeamAdminHandlers(handlers: Partial<ReportTeamHandlers> | null | undefined): boolean {
     return Boolean(handlers?.onListReviewerRequests || handlers?.onResolveReviewerRequest || handlers?.onRegisterReviewer || handlers?.onUpdateReviewer);
 }

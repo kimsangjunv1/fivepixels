@@ -9,6 +9,7 @@ import { useReportMutations } from "./useReportMutations.js";
 import { useReportPanelShell, type ReportPanelShellBridges } from "./useReportPanelShell.js";
 import { useReportReplyReview } from "./useReportReplyReview.js";
 import { assembleReportContextValue } from "./assembleReportContextValue.js";
+import { useReportTeamActor } from "./useReportTeamActor.js";
 import type { FivePixelsSync } from "@/constants/loginMethod.js";
 import { useNetworkMonitor } from "../useNetworkMonitor.js";
 import type { FivePixelsAdapter } from "@/types/adapter.js";
@@ -400,6 +401,12 @@ export function useReportState({
     const authorizedAuthorId = auth.authorizedAuthors[0]?.id ?? null;
     const activeIdentifyId = auth.activeIdentify?.id ?? null;
     const activeIdentifyName = auth.activeIdentify?.name ?? null;
+    const { teamActor } = useReportTeamActor({
+        authorizedAuthorId,
+        teamReviewers: authors,
+        persistenceMode: panel.persistenceStatus.mode,
+        onListReviewers: adapter?.members?.list,
+    });
 
     useEffect(() => {
         if (auth.authBootstrapState !== "failed") {
@@ -484,6 +491,7 @@ export function useReportState({
         appVersion,
         showFeedbackList,
         teamReviewers: authors,
+        teamActor,
         adapter: panel.fivePixelsAdapter,
         github,
         canDeleteViaStorage:

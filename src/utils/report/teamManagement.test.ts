@@ -11,6 +11,7 @@ import {
     isTeamWriteEnabled,
     listAssignableRoles,
     resolveAuthorRole,
+    resolveTeamActor,
     sortTeamReviewers,
 } from "@/utils/report/teamManagement.js";
 
@@ -72,5 +73,29 @@ describe("teamManagement hierarchy", () => {
 
     it("sorts by rank then name", () => {
         expect(sortTeamReviewers([member, admin, sub]).map((item) => item.role)).toEqual(["admin", "sub_admin", "member"]);
+    });
+
+    it("resolves team actor from API members in API mode", () => {
+        const apiMembers = [
+            { id: "u1", name: "API Admin", role: "admin" as const },
+            { id: "u2", name: "API Member", role: "member" as const },
+        ];
+
+        expect(resolveTeamActor("u1", [], apiMembers, "API")).toEqual(apiMembers[0]);
+        expect(resolveTeamActor("u2", [], apiMembers, "API")).toEqual(apiMembers[1]);
+        expect(resolveTeamActor("u1", [], null, "API")).toBeNull();
+    });
+
+    it("falls back to team.reviewers when API member is missing", () => {
+        const apiMembers = [{ id: "u2", name: "API Member", role: "member" as const }];
+
+        expect(resolveTeamActor("a", [admin], apiMembers, "API")).toEqual(admin);
+        expect(resolveTeamActor("u2", [admin], apiMembers, "API")).toEqual(apiMembers[0]);
+    });
+
+    it("uses team.reviewers only in local persistence mode", () => {
+        const apiMembers = [{ id: "a", name: "API Admin", role: "member" as const }];
+
+        expect(resolveTeamActor("a", [admin], apiMembers, "localStorage")).toEqual(admin);
     });
 });

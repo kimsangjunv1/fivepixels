@@ -22,6 +22,7 @@ type AssembleArgs = {
     appVersion?: string;
     showFeedbackList: boolean;
     teamReviewers: ReportAuthor[];
+    teamActor: ReportAuthor | null;
     adapter?: FivePixelsAdapter;
     github?: ReportGitHubConfig;
     canDeleteViaStorage: boolean;
@@ -43,7 +44,7 @@ type AssembleArgs = {
  * Flat context value for ReportProvider slices.
  * Keys stay flat (see reportContextPartitions). Domain hooks → this assembler → UI.
  */
-export declare function assembleReportContextValue({ panel, auth, draft, markers, mutations, reply, fields, projectId, environment, appVersion, showFeedbackList, teamReviewers, adapter, github, canDeleteViaStorage, usesLazyReplies, usesCreateReply, visibleShortcutKeys, overlayRef, replyHistory, selectReport, beginFeedbackEdit, cancelDraft, apiFlowEntries, activeApiFailureAlert, dismissFailureAlert, appendApiFlowEntryToDraftCase, networkMonitorEnabled, }: AssembleArgs): {
+export declare function assembleReportContextValue({ panel, auth, draft, markers, mutations, reply, fields, projectId, environment, appVersion, showFeedbackList, teamReviewers, teamActor, adapter, github, canDeleteViaStorage, usesLazyReplies, usesCreateReply, visibleShortcutKeys, overlayRef, replyHistory, selectReport, beginFeedbackEdit, cancelDraft, apiFlowEntries, activeApiFailureAlert, dismissFailureAlert, appendApiFlowEntryToDraftCase, networkMonitorEnabled, }: AssembleArgs): {
     panelAppearance: import("../../types/report.js").ReportAppearance;
     setPanelAppearance: (nextAppearance: import("../../types/report.js").ReportAppearance) => void;
     tooltipAppearance: import("../../types/report.js").ReportAppearance;

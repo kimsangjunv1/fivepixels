@@ -27,6 +27,7 @@ export type FivePixelsProps = {
     project?: ReportProject;
     ui?: ReportUi;
     visibility?: ReportVisibility;
+    /** Local reviewer seed; optional when `sync` is `api` / `artemis` and `adapter.members.list` is configured. */
     team?: ReportTeam;
     mode?: FivePixelsMode;
     /**

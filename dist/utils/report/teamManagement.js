@@ -69,6 +69,22 @@ export function filterVisibleTeamMembers(viewer, members) {
 export function isTeamWriteEnabled(persistenceStatus) {
     return persistenceStatus.mode === "API";
 }
+/**
+ * Resolve the active team actor for permission checks.
+ * API mode prefers `adapter.members.list` results; local mode uses `team.reviewers` only.
+ */
+export function resolveTeamActor(authorizedAuthorId, teamReviewers, apiTeamMembers, persistenceMode) {
+    if (!authorizedAuthorId) {
+        return null;
+    }
+    if (persistenceMode === "API" && apiTeamMembers) {
+        const fromApi = apiTeamMembers.find((member) => member.id === authorizedAuthorId);
+        if (fromApi) {
+            return fromApi;
+        }
+    }
+    return teamReviewers.find((reviewer) => reviewer.id === authorizedAuthorId) ?? null;
+}
 export function hasTeamAdminHandlers(handlers) {
     return Boolean(handlers?.onListReviewerRequests || handlers?.onResolveReviewerRequest || handlers?.onRegisterReviewer || handlers?.onUpdateReviewer);
 }

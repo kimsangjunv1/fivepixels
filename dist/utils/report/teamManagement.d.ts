@@ -16,6 +16,11 @@ export declare function canAssignTeamRole(actor: ReportAuthor | null | undefined
 export declare function listAssignableRoles(actor: ReportAuthor | null | undefined): ReportAuthorRole[];
 export declare function filterVisibleTeamMembers(viewer: ReportAuthor | null | undefined, members: ReportAuthor[]): ReportAuthor[];
 export declare function isTeamWriteEnabled(persistenceStatus: PersistenceStatus): boolean;
+/**
+ * Resolve the active team actor for permission checks.
+ * API mode prefers `adapter.members.list` results; local mode uses `team.reviewers` only.
+ */
+export declare function resolveTeamActor(authorizedAuthorId: string | null | undefined, teamReviewers: ReportAuthor[], apiTeamMembers: ReportAuthor[] | null, persistenceMode: PersistenceStatus["mode"]): ReportAuthor | null;
 export declare function hasTeamAdminHandlers(handlers: Partial<ReportTeamHandlers> | null | undefined): boolean;
 export declare function hasTeamRequestHandler(handlers: Partial<ReportTeamHandlers> | null | undefined): boolean;
 export declare function sortTeamReviewers(reviewers: ReportAuthor[]): ReportAuthor[];

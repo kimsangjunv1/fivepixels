@@ -7,6 +7,7 @@ import { useReportMutations } from "./useReportMutations.js";
 import { useReportPanelShell } from "./useReportPanelShell.js";
 import { useReportReplyReview } from "./useReportReplyReview.js";
 import { assembleReportContextValue } from "./assembleReportContextValue.js";
+import { useReportTeamActor } from "./useReportTeamActor.js";
 import { useNetworkMonitor } from "../useNetworkMonitor.js";
 import { resolveDefaultAuthorName } from "../../utils/report/resolveDefaultAuthorName.js";
 export function useReportState({ projectId, environment, appVersion, panelAppearance, tooltipAppearance, questionThreadDefault = "expanded", threadLayoutDefault = "classic", fields, authors = [], requireReviewerKey = false, shortcut: _shortcut, identify, adapter, onNavigate, onRevealTarget, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys = false, initialLocale, messageOverrides, pixelsMode = "default", sync = "local", requireAuth, replyHistory, networkMonitor = true, }) {
@@ -256,6 +257,12 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
     const authorizedAuthorId = auth.authorizedAuthors[0]?.id ?? null;
     const activeIdentifyId = auth.activeIdentify?.id ?? null;
     const activeIdentifyName = auth.activeIdentify?.name ?? null;
+    const { teamActor } = useReportTeamActor({
+        authorizedAuthorId,
+        teamReviewers: authors,
+        persistenceMode: panel.persistenceStatus.mode,
+        onListReviewers: adapter?.members?.list,
+    });
     useEffect(() => {
         if (auth.authBootstrapState !== "failed") {
             return;
@@ -334,6 +341,7 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         appVersion,
         showFeedbackList,
         teamReviewers: authors,
+        teamActor,
         adapter: panel.fivePixelsAdapter,
         github,
         canDeleteViaStorage: panel.persistenceStatus.mode === "localStorage" ||
