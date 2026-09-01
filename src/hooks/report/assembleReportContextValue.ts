@@ -5,6 +5,8 @@ import type { useReportMarkers } from "./useReportMarkers.js";
 import type { useReportMutations } from "./useReportMutations.js";
 import type { useReportPanelShell } from "./useReportPanelShell.js";
 import type { useReportReplyReview } from "./useReportReplyReview.js";
+import type { useNotificationCenter } from "./useNotificationCenter.js";
+import type { NotificationItem } from "@/types/notification.js";
 import { buildAdapterIntegrationStatus } from "@/utils/integration/buildAdapterIntegrationStatus.js";
 import type { FivePixelsAdapter } from "@/types/adapter.js";
 import type { ApiFlowEntry } from "@/types/networkMonitor.js";
@@ -68,6 +70,8 @@ type AssembleArgs = {
     dismissFailureAlert: (entryId: string) => void;
     appendApiFlowEntryToDraftCase: (entryId: string) => void;
     networkMonitorEnabled: boolean;
+    notifications: ReturnType<typeof useNotificationCenter>;
+    activateNotification: (item: NotificationItem) => void;
 };
 
 /**
@@ -107,6 +111,8 @@ export function assembleReportContextValue({
     dismissFailureAlert,
     appendApiFlowEntryToDraftCase,
     networkMonitorEnabled,
+    notifications,
+    activateNotification,
 }: AssembleArgs) {
     const teamHandlers = resolveTeamHandlersFromAdapter(adapter);
     const onListReviewers = teamHandlers.onListReviewers;
@@ -352,6 +358,8 @@ export function assembleReportContextValue({
         setReplyDraft: reply.setReplyDraft,
         replyMentions: reply.replyMentions,
         setReplyMentions: reply.setReplyMentions,
+        replyUserMentions: reply.replyUserMentions,
+        setReplyUserMentions: reply.setReplyUserMentions,
         mentionHighlightTarget: reply.mentionHighlightTarget,
         setMentionHighlightTarget: reply.setMentionHighlightTarget,
         replySubmitAsQuestion: reply.replySubmitAsQuestion,
@@ -450,5 +458,18 @@ export function assembleReportContextValue({
         activeApiFailureAlert,
         dismissFailureAlert,
         networkMonitorEnabled,
+        notifications: notifications.notifications,
+        unreadNotificationCount: notifications.unreadNotificationCount,
+        notificationUiOpen: notifications.notificationUiOpen,
+        setNotificationUiOpen: notifications.setNotificationUiOpen,
+        toggleNotificationUiOpen: notifications.toggleNotificationUiOpen,
+        closeNotificationUi: notifications.closeNotificationUi,
+        markNotificationRead: notifications.markNotificationRead,
+        markAllNotificationsRead: notifications.markAllNotificationsRead,
+        dismissNotification: notifications.dismissNotification,
+        clearNotifications: notifications.clearNotifications,
+        notificationWindowPosition: notifications.notificationWindowPosition,
+        setNotificationWindowPosition: notifications.setNotificationWindowPosition,
+        activateNotification,
     };
 }

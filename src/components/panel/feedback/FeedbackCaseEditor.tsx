@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { ReportCase } from "@/types/report.js";
-import type { ElementMention } from "@/types/mention.js";
-import { useReportPreferences } from "@/providers/reportContext.js";
+import type { ElementMention, UserMention } from "@/types/mention.js";
+import { useReport, useReportPreferences } from "@/providers/reportContext.js";
+import { resolveMentionMemberDirectory } from "@/utils/mention/userMentions.js";
 import { FeedbackCaseTabBar } from "./FeedbackCaseTabBar.js";
 import { MentionComposerInput } from "./MentionComposerInput.js";
 
 type FeedbackCaseEditorProps = {
     cases: ReportCase[];
-    onCaseChange: (caseId: string, text: string, mentions?: ElementMention[]) => void;
+    onCaseChange: (caseId: string, text: string, mentions?: ElementMention[], userMentions?: UserMention[]) => void;
     onAddCase: () => void;
     onRemoveCase: (caseId: string) => void;
     autoFocus?: boolean;
@@ -128,6 +129,8 @@ export function FeedbackCaseEditor({
     placeholder,
 }: FeedbackCaseEditorProps) {
     const { messages } = useReportPreferences();
+    const { authors, apiTeamMembers } = useReport();
+    const teamMembers = resolveMentionMemberDirectory(authors, apiTeamMembers);
     const previousCaseCountRef = useRef(cases.length);
     const containerRef = useRef<HTMLDivElement | null>(null);
     const [uncontrolledActiveCaseId, setUncontrolledActiveCaseId] = useState<string | null>(() => cases[0]?.id ?? null);
@@ -259,7 +262,9 @@ export function FeedbackCaseEditor({
                         <MentionComposerInput
                             value={activeCase.text}
                             mentions={activeCase.mentions ?? []}
-                            onChange={({ message, mentions }) => onCaseChange(activeCase.id, message, mentions)}
+                            userMentions={activeCase.user_mentions ?? []}
+                            teamMembers={teamMembers}
+                            onChange={({ message, mentions, userMentions }) => onCaseChange(activeCase.id, message, mentions, userMentions)}
                             placeholder={getCaseInputPlaceholder(activeCaseIndex + 1)}
                             autoFocus={autoFocus && activeCaseIndex === 0}
                             onSubmitShortcut={onSubmitShortcut}

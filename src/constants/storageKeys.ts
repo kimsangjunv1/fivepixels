@@ -4,6 +4,7 @@ export const SELF_PROFILE_STORAGE_KEY = "fivepixels:self-profile:v1";
 export const LOGIN_METHOD_STORAGE_KEY = "fivepixels:login-method:v1";
 export const REMOTE_AUTH_SESSION_STORAGE_KEY = "fivepixels:remote-auth:v1";
 export const MINIMIZED_WINDOW_ALIAS_STORAGE_KEY = "fivepixels:minimized-window-alias:v1";
+export const NOTIFICATIONS_STORAGE_KEY = "fivepixels:notifications:v1";
 
 export function getReportsStorageKey(projectId: string, environment?: string, appVersion?: string) {
     const segments = [REPORTS_STORAGE_KEY, projectId];
@@ -37,4 +38,8 @@ export function getRemoteAuthSessionStorageKey(projectId: string, environment?: 
 
 export function getMinimizedWindowAliasStorageKey(projectId: string) {
     return [MINIMIZED_WINDOW_ALIAS_STORAGE_KEY, projectId].join(":");
+}
+
+export function getNotificationsStorageKey(projectId?: string, actorId?: string | null) {
+    return [NOTIFICATIONS_STORAGE_KEY, projectId, actorId].filter(Boolean).join(":");
 }

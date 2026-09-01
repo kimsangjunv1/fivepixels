@@ -330,7 +330,7 @@ export function useReportDraftSession({ mode, setMode, fields, messages, current
         setDraft(buildDraftFromReport(report, fields));
         return true;
     };
-    const updateDraftCase = (caseId, text, mentions) => {
+    const updateDraftCase = (caseId, text, mentions, userMentions) => {
         setDraft((current) => {
             if (!current) {
                 return current;
@@ -342,10 +342,12 @@ export function useReportDraftSession({ mode, setMode, fields, messages, current
                         return item;
                     }
                     const nextMentions = mentions === undefined ? item.mentions : mentions.length > 0 ? mentions : undefined;
+                    const nextUserMentions = userMentions === undefined ? item.user_mentions : userMentions.length > 0 ? userMentions : undefined;
                     return {
                         ...item,
                         text,
                         ...(nextMentions ? { mentions: nextMentions } : { mentions: undefined }),
+                        ...(nextUserMentions ? { user_mentions: nextUserMentions } : { user_mentions: undefined }),
                     };
                 }),
             };

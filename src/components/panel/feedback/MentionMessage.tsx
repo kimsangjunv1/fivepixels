@@ -1,22 +1,26 @@
-import type { ElementMention } from "@/types/mention.js";
-import { mentionPlainLabel } from "@/types/mention.js";
+import type { ElementMention, UserMention } from "@/types/mention.js";
+import { mentionPlainLabel, userMentionPlainLabel } from "@/types/mention.js";
 import { parseMentionMessage, resolveMentionElement, resolveMentionSnapshot } from "@/utils/mention/elementMentions.js";
 import { useReportSession } from "@/providers/reportContext.js";
 
 type MentionMessageProps = {
     message: string;
     mentions?: ElementMention[];
+    userMentions?: UserMention[];
     className?: string;
 };
 
 const MENTION_CHIP_CLASS =
     "mx-[1px] inline-flex cursor-pointer items-center rounded-[6px] bg-[var(--adaptive-blue100)] px-[6px] py-[4px] text-[12px] font-semibold text-[var(--adaptive-blue600)] align-baseline transition-opacity hover:opacity-90";
 
-export function MentionMessage({ message, mentions = [], className = "" }: MentionMessageProps) {
-    const { setMentionHighlightTarget } = useReportSession();
-    const parts = parseMentionMessage(message, mentions);
+const USER_MENTION_CHIP_CLASS =
+    "mx-[1px] inline-flex items-center rounded-[6px] bg-[color-mix(in_srgb,var(--adaptive-accent-coral)_14%,transparent)] px-[6px] py-[4px] text-[12px] font-semibold text-[var(--adaptive-accent-coral)] align-baseline";
 
-    if (mentions.length === 0 && !message.includes("@{")) {
+export function MentionMessage({ message, mentions = [], userMentions = [], className = "" }: MentionMessageProps) {
+    const { setMentionHighlightTarget } = useReportSession();
+    const parts = parseMentionMessage(message, mentions, userMentions);
+
+    if (mentions.length === 0 && userMentions.length === 0 && !message.includes("@{") && !message.includes("@u{")) {
         return <span className={className}>{message}</span>;
     }
 
@@ -25,6 +29,17 @@ export function MentionMessage({ message, mentions = [], className = "" }: Menti
             {parts.map((part, index) => {
                 if (part.type === "text") {
                     return <span key={`text-${index}`}>{part.value}</span>;
+                }
+
+                if (part.type === "user_mention") {
+                    return (
+                        <span
+                            key={`user-mention-${part.mention.id}-${index}`}
+                            className={USER_MENTION_CHIP_CLASS}
+                        >
+                            {userMentionPlainLabel(part.mention)}
+                        </span>
+                    );
                 }
 
                 return (

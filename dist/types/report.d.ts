@@ -1,8 +1,8 @@
 import type { FeedbackCategory } from "../constants/feedbackCategory.js";
 import type { FeedbackDisplayStatus } from "../constants/feedbackStatus.js";
-import type { ElementMention } from "./mention.js";
+import type { ElementMention, UserMention } from "./mention.js";
 export type { FeedbackCategory } from "../constants/feedbackCategory.js";
-export type { ElementMention } from "./mention.js";
+export type { ElementMention, UserMention } from "./mention.js";
 export type ReportTargetType = "group" | "item";
 export type ReportStatus = "open" | "git_issued" | "resolved" | "archived";
 export type ReportAppearance = "light" | "dark" | "system";
@@ -19,6 +19,8 @@ export type ReportCase = {
     updated_at: string;
     /** Element @mentions embedded in `text` via `@{mentionId}` tokens. */
     mentions?: ElementMention[];
+    /** User @mentions embedded in `text` via `@u{userId}` tokens. */
+    user_mentions?: UserMention[];
 };
 export type ReplyHistoryLoadMode = "pagination" | "infinite-scroll" | "load-more-button" | "button-and-scroll";
 export type ReplyHistoryConfig = {
@@ -64,6 +66,7 @@ export type ReportReply = {
     author_name?: string | null;
     auth?: ReportAuthProof;
     mentions?: ElementMention[];
+    user_mentions?: UserMention[];
 };
 export type ReportReplySummary = Pick<ReportReply, "id" | "message" | "created_at" | "status" | "author_type" | "author_name" | "case_ids">;
 export type CreateReplyPayload = {
@@ -75,6 +78,7 @@ export type CreateReplyPayload = {
     author_name?: string | null;
     auth?: ReportAuthProof;
     mentions?: ElementMention[];
+    user_mentions?: UserMention[];
 };
 export type ReportIdentify = {
     id: string;

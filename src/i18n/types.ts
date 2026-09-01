@@ -53,6 +53,7 @@ export type ReportMessages = {
         viewOptionsAriaLabel: string;
         viewSelectableElements: string;
         viewFeedbacks: string;
+        notifications: string;
         devicePreview: string;
         refresh: string;
         stopAutoRefresh: string;
@@ -240,6 +241,7 @@ export type ReportMessages = {
         mentionEmpty: string;
         mentionInsertLabel: string;
         mentionInsertAriaLabel: string;
+        userMentionHint: string;
         categoryOption: Record<FeedbackCategory, string>;
         categoryTooltip: Record<FeedbackCategory, string>;
         probeSummaryPrompt: string;
@@ -1026,6 +1028,28 @@ export type ReportMessages = {
         selectCaseFirst: string;
         caseAssigneeOnly: string;
         personalKeyRequired: string;
+    };
+    notifications: {
+        title: string;
+        windowAriaLabel: string;
+        empty: string;
+        markAllRead: string;
+        clearAll: string;
+        dismissAriaLabel: string;
+        openAriaLabel: string;
+        userMentionTitle: string;
+        userMentionBody: (label: string) => string;
+        caseAssignedTitle: string;
+        caseAssignedBody: (label: string) => string;
+        caseResolvedTitle: string;
+        caseResolvedBody: (label: string) => string;
+        feedbackResolvedTitle: string;
+        feedbackResolvedBody: (label: string) => string;
+        caseDeletedTitle: string;
+        caseDeletedBody: (label: string) => string;
+        feedbackDeletedTitle: string;
+        feedbackDeletedBody: (label: string) => string;
+        apiErrorTitle: string;
     };
 };
 

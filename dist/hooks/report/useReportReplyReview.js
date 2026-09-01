@@ -13,6 +13,7 @@ export function useReportReplyReview({ reports, allPageReports, messages, fields
     const [minimizedReplyReportIds, setMinimizedReplyReportIds] = useState([]);
     const [replyDraft, setReplyDraft] = useState("");
     const [replyMentions, setReplyMentions] = useState([]);
+    const [replyUserMentions, setReplyUserMentions] = useState([]);
     const [mentionHighlightTarget, setMentionHighlightTarget] = useState(null);
     const [replySubmitAsQuestion, setReplySubmitAsQuestion] = useState(false);
     const [replyAuthorName, setReplyAuthorName] = useState(() => resolveDefaultAuthorName(activeIdentify, authorizedAuthors, selfName));
@@ -98,11 +99,12 @@ export function useReportReplyReview({ reports, allPageReports, messages, fields
     const clearReplyComposerDraft = useCallback(() => {
         setReplyDraft("");
         setReplyMentions([]);
+        setReplyUserMentions([]);
         setMentionHighlightTarget(null);
     }, []);
     const selectCase = useCallback((caseId) => {
         if (isComposingNewCase) {
-            setNewCaseDraftSession({ text: replyDraft, mentions: replyMentions });
+            setNewCaseDraftSession({ text: replyDraft, mentions: replyMentions, userMentions: replyUserMentions });
         }
         setIsComposingNewCase(false);
         setFocusedCaseId(caseId);
@@ -110,7 +112,7 @@ export function useReportReplyReview({ reports, allPageReports, messages, fields
         clearReplyComposerDraft();
         setReplySubmitAsQuestion(false);
         setErrorMessage("");
-    }, [clearReplyComposerDraft, isComposingNewCase, replyDraft, replyMentions, setErrorMessage]);
+    }, [clearReplyComposerDraft, isComposingNewCase, replyDraft, replyMentions, replyUserMentions, setErrorMessage]);
     const caseEdit = useReplyCaseEdit({
         reports,
         activeReplyReport,
@@ -151,10 +153,11 @@ export function useReportReplyReview({ reports, allPageReports, messages, fields
         if (newCaseDraftSession) {
             setReplyDraft(newCaseDraftSession.text);
             setReplyMentions(newCaseDraftSession.mentions);
+            setReplyUserMentions(newCaseDraftSession.userMentions);
             return;
         }
         clearReplyComposerDraft();
-        setNewCaseDraftSession({ text: "", mentions: [] });
+        setNewCaseDraftSession({ text: "", mentions: [], userMentions: [] });
     }, [
         activeReplyReport,
         cancelCaseEdit,
@@ -456,12 +459,13 @@ export function useReportReplyReview({ reports, allPageReports, messages, fields
             setErrorMessage(messages.errors.archivedReadOnly);
             return;
         }
-        if (!stripMentionTokensForEmptyCheck(replyDraft, replyMentions)) {
+        if (!stripMentionTokensForEmptyCheck(replyDraft, replyMentions, replyUserMentions)) {
             setErrorMessage(messages.errors.caseTextRequired(getReportCases(activeReplyReport).length + 1));
             return;
         }
         const nextCase = createReportCase(replyDraft.trim(), {
             ...(replyMentions.length > 0 ? { mentions: replyMentions } : {}),
+            ...(replyUserMentions.length > 0 ? { user_mentions: replyUserMentions } : {}),
         });
         const nextCases = [...getReportCases(activeReplyReport), nextCase];
         try {
@@ -494,7 +498,7 @@ export function useReportReplyReview({ reports, allPageReports, messages, fields
         if (!activeReplyReport) {
             return;
         }
-        if (!stripMentionTokensForEmptyCheck(replyDraft, replyMentions)) {
+        if (!stripMentionTokensForEmptyCheck(replyDraft, replyMentions, replyUserMentions)) {
             setErrorMessage(messages.errors.replyContentRequired);
             return;
         }
@@ -526,6 +530,7 @@ export function useReportReplyReview({ reports, allPageReports, messages, fields
             author_type: isCreatorSubmit ? "user" : "manager",
             author_name: actorName,
             ...(replyMentions.length > 0 ? { mentions: replyMentions } : {}),
+            ...(replyUserMentions.length > 0 ? { user_mentions: replyUserMentions } : {}),
         };
         try {
             setIsSubmittingReply(true);
@@ -717,6 +722,8 @@ export function useReportReplyReview({ reports, allPageReports, messages, fields
         setReplyDraft,
         replyMentions,
         setReplyMentions,
+        replyUserMentions,
+        setReplyUserMentions,
         mentionHighlightTarget,
         setMentionHighlightTarget,
         replySubmitAsQuestion,

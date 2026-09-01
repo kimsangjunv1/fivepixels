@@ -20,6 +20,7 @@ export function createReportCase(text: string, overrides: Partial<Omit<ReportCas
         created_at: timestamp,
         updated_at: overrides.updated_at ?? timestamp,
         ...(overrides.mentions && overrides.mentions.length > 0 ? { mentions: overrides.mentions } : {}),
+        ...(overrides.user_mentions && overrides.user_mentions.length > 0 ? { user_mentions: overrides.user_mentions } : {}),
         ...(overrides.previous_assignee_name !== undefined ? { previous_assignee_name: overrides.previous_assignee_name } : {}),
     };
 }

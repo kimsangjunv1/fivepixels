@@ -1,4 +1,4 @@
-import type { ElementMention, ElementMentionCandidate } from "../../types/mention.js";
+import type { ElementMention, ElementMentionCandidate, UserMention } from "../../types/mention.js";
 import type { TargetSnapshot } from "../../types/report-ui.js";
 export declare function buildElementMentionFromElement(element: HTMLElement, labelOverride?: string): ElementMentionCandidate | null;
 export declare function findElementMentionCandidates(query: string, limit?: number): ElementMentionCandidate[];
@@ -10,10 +10,13 @@ export type MentionMessagePart = {
 } | {
     type: "mention";
     mention: ElementMention;
+} | {
+    type: "user_mention";
+    mention: UserMention;
 };
-export declare function parseMentionMessage(message: string, mentions?: ElementMention[]): MentionMessagePart[];
-export declare function mentionMessageToPlainText(message: string, mentions?: ElementMention[]): string;
-export declare function stripMentionTokensForEmptyCheck(message: string, mentions?: ElementMention[]): string;
+export declare function parseMentionMessage(message: string, mentions?: ElementMention[], userMentions?: UserMention[]): MentionMessagePart[];
+export declare function mentionMessageToPlainText(message: string, mentions?: ElementMention[], userMentions?: UserMention[]): string;
+export declare function stripMentionTokensForEmptyCheck(message: string, mentions?: ElementMention[], userMentions?: UserMention[]): string;
 export declare function toStoredMention(candidate: ElementMentionCandidate): ElementMention;
 export declare function insertMentionToken(message: string, cursor: number, atStart: number, mention: ElementMention): {
     message: string;
@@ -41,5 +44,6 @@ export declare function resolveActiveMentionQuery(options: {
     query: string;
     atOffsetInBefore: number;
 } | null;
-export declare function replaceActiveMentionQuery(message: string, query: string, mention: ElementMention, atOffsetInBefore?: number): string | null;
+export declare function replaceActiveMentionQuery(message: string, query: string, mentionOrToken: ElementMention | string, atOffsetInBefore?: number): string | null;
+export declare function replaceActiveUserMentionQuery(message: string, query: string, mention: UserMention, atOffsetInBefore?: number): string | null;
 //# sourceMappingURL=elementMentions.d.ts.map

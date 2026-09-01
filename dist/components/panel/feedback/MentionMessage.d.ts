@@ -1,9 +1,10 @@
-import type { ElementMention } from "../../../types/mention.js";
+import type { ElementMention, UserMention } from "../../../types/mention.js";
 type MentionMessageProps = {
     message: string;
     mentions?: ElementMention[];
+    userMentions?: UserMention[];
     className?: string;
 };
-export declare function MentionMessage({ message, mentions, className }: MentionMessageProps): import("react").JSX.Element;
+export declare function MentionMessage({ message, mentions, userMentions, className }: MentionMessageProps): import("react").JSX.Element;
 export {};
 //# sourceMappingURL=MentionMessage.d.ts.map

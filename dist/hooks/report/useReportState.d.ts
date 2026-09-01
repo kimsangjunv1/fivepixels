@@ -1,6 +1,7 @@
 import type { DeepPartialReportMessages } from "../../i18n/types.js";
 import type { ReportLocale } from "../../i18n/types.js";
 import { type PanelView } from "./useReportAuthSession.js";
+import type { NotificationItem } from "../../types/notification.js";
 import type { FivePixelsSync } from "../../constants/loginMethod.js";
 import type { FivePixelsAdapter } from "../../types/adapter.js";
 import type { ReportAppearance, ReportAuthor, ReportEvent, ReportFeedback, ReportField, ReportGitHubConfig, FivePixelsMode, ReportIdentify, QuestionThreadDisplay, ThreadLayoutStyle } from "../../types/report.js";
@@ -288,6 +289,8 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     setReplyDraft: import("react").Dispatch<import("react").SetStateAction<string>>;
     replyMentions: import("../../types/report.js").ElementMention[];
     setReplyMentions: import("react").Dispatch<import("react").SetStateAction<import("../../types/report.js").ElementMention[]>>;
+    replyUserMentions: import("../../types/report.js").UserMention[];
+    setReplyUserMentions: import("react").Dispatch<import("react").SetStateAction<import("../../types/report.js").UserMention[]>>;
     mentionHighlightTarget: import("../../types/report-ui.js").TargetSnapshot | null;
     setMentionHighlightTarget: import("react").Dispatch<import("react").SetStateAction<import("../../types/report-ui.js").TargetSnapshot | null>>;
     replySubmitAsQuestion: boolean;
@@ -316,7 +319,7 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     beginCaseEdit: (report: ReportFeedback) => void;
     cancelCaseEdit: () => void;
     handleCaseEditSave: () => Promise<void>;
-    updateCaseEditDraftCase: (caseId: string, text: string, mentions?: import("../../types/report.js").ElementMention[]) => void;
+    updateCaseEditDraftCase: (caseId: string, text: string, mentions?: import("../../types/report.js").ElementMention[], userMentions?: import("../../types/report.js").UserMention[]) => void;
     addCaseEditDraftCase: () => void;
     removeCaseEditDraftCase: (caseId: string) => void;
     removePersistedCase: (report: ReportFeedback, caseId: string) => Promise<void>;
@@ -367,7 +370,7 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     handleOverlayClick: (event: import("react").MouseEvent<HTMLDivElement>) => void;
     cancelDraft: () => void;
     beginFeedbackEdit: (report: ReportFeedback) => void;
-    updateDraftCase: (caseId: string, text: string, mentions?: import("../../types/report.js").ElementMention[]) => void;
+    updateDraftCase: (caseId: string, text: string, mentions?: import("../../types/report.js").ElementMention[], userMentions?: import("../../types/report.js").UserMention[]) => void;
     addDraftCase: () => void;
     removeDraftCase: (caseId: string) => void;
     updateDraftField: (key: string, nextValue: string | boolean) => void;
@@ -389,5 +392,18 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     activeApiFailureAlert: import("../../types/networkMonitor.js").ApiFlowEntry | null;
     dismissFailureAlert: (entryId: string) => void;
     networkMonitorEnabled: boolean;
+    notifications: NotificationItem[];
+    unreadNotificationCount: number;
+    notificationUiOpen: boolean;
+    setNotificationUiOpen: import("react").Dispatch<import("react").SetStateAction<boolean>>;
+    toggleNotificationUiOpen: () => void;
+    closeNotificationUi: () => void;
+    markNotificationRead: (id: string) => void;
+    markAllNotificationsRead: () => void;
+    dismissNotification: (id: string) => void;
+    clearNotifications: () => void;
+    notificationWindowPosition: import("../useDraggableWindow.js").WindowPosition;
+    setNotificationWindowPosition: (position: import("../useDraggableWindow.js").WindowPosition) => void;
+    activateNotification: (item: NotificationItem) => void;
 };
 //# sourceMappingURL=useReportState.d.ts.map

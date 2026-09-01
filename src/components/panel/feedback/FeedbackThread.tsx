@@ -233,6 +233,7 @@ function CaseThreadEntry({
     caseId,
     caseText,
     caseMentions = [],
+    caseUserMentions = [],
     caseCreatedAt,
     caseStatus,
     authors,
@@ -248,6 +249,7 @@ function CaseThreadEntry({
     caseId: string;
     caseText: string;
     caseMentions?: ElementMention[];
+    caseUserMentions?: import("@/types/mention.js").UserMention[];
     caseCreatedAt: string;
     caseStatus: "open" | "resolved";
     authors: ReportAuthor[];
@@ -303,6 +305,7 @@ function CaseThreadEntry({
             <MentionMessage
                 message={caseText}
                 mentions={caseMentions}
+                userMentions={caseUserMentions}
                 className={`leading-[1.45] text-[14px] text-[var(--adaptive-text-primary)] whitespace-break-spaces ${isFeed ? "mt-[2px]" : ""} ${caseStatus === "resolved" ? "text-[var(--adaptive-black500)] line-through" : ""}`}
             />
 
@@ -459,6 +462,7 @@ function ThreadRootReply({
                 <MentionMessage
                     message={reply.message}
                     mentions={reply.mentions}
+                    userMentions={reply.user_mentions}
                 />
             </p>
             <ThreadEntryActions
@@ -730,6 +734,7 @@ export function FeedbackThread({
                                                 caseId={focusedCaseId}
                                                 caseText={focusedCase.text}
                                                 caseMentions={focusedCase.mentions}
+                                                caseUserMentions={focusedCase.user_mentions}
                                                 caseCreatedAt={focusedCase.created_at}
                                                 caseStatus={focusedCase.status}
                                                 authors={authors}

@@ -1,5 +1,13 @@
-import type { ElementMention, ElementMentionCandidate } from "@/types/mention.js";
-import { createMentionId, MENTION_TOKEN_PATTERN, mentionPlainLabel, serializeMentionToken } from "@/types/mention.js";
+import type { ElementMention, ElementMentionCandidate, UserMention } from "@/types/mention.js";
+import {
+    createMentionId,
+    MENTION_TOKEN_PATTERN,
+    USER_MENTION_TOKEN_PATTERN,
+    mentionPlainLabel,
+    serializeMentionToken,
+    serializeUserMentionToken,
+    userMentionPlainLabel,
+} from "@/types/mention.js";
 import type { TargetSnapshot } from "@/types/report-ui.js";
 import { TARGET_SELECTOR } from "@/constants/report.js";
 import { isFeedbackTargetVisible, toPickSnapshot } from "@/utils/shared/dom.js";
@@ -240,29 +248,73 @@ export function resolveMentionSnapshot(mention: ElementMention): TargetSnapshot 
 
 export type MentionMessagePart =
     | { type: "text"; value: string }
-    | { type: "mention"; mention: ElementMention };
+    | { type: "mention"; mention: ElementMention }
+    | { type: "user_mention"; mention: UserMention };
 
-export function parseMentionMessage(message: string, mentions: ElementMention[] = []): MentionMessagePart[] {
+type TokenMatch = {
+    index: number;
+    length: number;
+    kind: "element" | "user";
+    id: string;
+    raw: string;
+};
+
+function collectTokenMatches(message: string): TokenMatch[] {
+    const matches: TokenMatch[] = [];
+
+    for (const match of message.matchAll(MENTION_TOKEN_PATTERN)) {
+        matches.push({
+            index: match.index ?? 0,
+            length: match[0].length,
+            kind: "element",
+            id: match[1] ?? "",
+            raw: match[0],
+        });
+    }
+
+    for (const match of message.matchAll(USER_MENTION_TOKEN_PATTERN)) {
+        matches.push({
+            index: match.index ?? 0,
+            length: match[0].length,
+            kind: "user",
+            id: match[1] ?? "",
+            raw: match[0],
+        });
+    }
+
+    return matches.sort((left, right) => left.index - right.index);
+}
+
+export function parseMentionMessage(message: string, mentions: ElementMention[] = [], userMentions: UserMention[] = []): MentionMessagePart[] {
     const mentionById = new Map(mentions.map((item) => [item.id, item]));
+    const userMentionById = new Map(userMentions.map((item) => [item.id, item]));
     const parts: MentionMessagePart[] = [];
     let lastIndex = 0;
 
-    for (const match of message.matchAll(MENTION_TOKEN_PATTERN)) {
-        const index = match.index ?? 0;
-        const mentionId = match[1];
-        const mention = mentionById.get(mentionId);
-
-        if (index > lastIndex) {
-            parts.push({ type: "text", value: message.slice(lastIndex, index) });
+    for (const match of collectTokenMatches(message)) {
+        if (match.index > lastIndex) {
+            parts.push({ type: "text", value: message.slice(lastIndex, match.index) });
         }
 
-        if (mention) {
-            parts.push({ type: "mention", mention });
+        if (match.kind === "element") {
+            const mention = mentionById.get(match.id);
+
+            if (mention) {
+                parts.push({ type: "mention", mention });
+            } else {
+                parts.push({ type: "text", value: match.raw });
+            }
         } else {
-            parts.push({ type: "text", value: match[0] });
+            const mention = userMentionById.get(match.id);
+
+            if (mention) {
+                parts.push({ type: "user_mention", mention });
+            } else {
+                parts.push({ type: "text", value: match.raw });
+            }
         }
 
-        lastIndex = index + match[0].length;
+        lastIndex = match.index + match.length;
     }
 
     if (lastIndex < message.length) {
@@ -272,14 +324,24 @@ export function parseMentionMessage(message: string, mentions: ElementMention[] 
     return parts.length > 0 ? parts : [{ type: "text", value: message }];
 }
 
-export function mentionMessageToPlainText(message: string, mentions: ElementMention[] = []) {
-    return parseMentionMessage(message, mentions)
-        .map((part) => (part.type === "text" ? part.value : mentionPlainLabel(part.mention)))
+export function mentionMessageToPlainText(message: string, mentions: ElementMention[] = [], userMentions: UserMention[] = []) {
+    return parseMentionMessage(message, mentions, userMentions)
+        .map((part) => {
+            if (part.type === "text") {
+                return part.value;
+            }
+
+            if (part.type === "user_mention") {
+                return userMentionPlainLabel(part.mention);
+            }
+
+            return mentionPlainLabel(part.mention);
+        })
         .join("");
 }
 
-export function stripMentionTokensForEmptyCheck(message: string, mentions: ElementMention[] = []) {
-    return mentionMessageToPlainText(message, mentions).trim();
+export function stripMentionTokensForEmptyCheck(message: string, mentions: ElementMention[] = [], userMentions: UserMention[] = []) {
+    return mentionMessageToPlainText(message, mentions, userMentions).trim();
 }
 
 export function toStoredMention(candidate: ElementMentionCandidate): ElementMention {
@@ -348,7 +410,12 @@ export function resolveActiveMentionQuery(options: { textBeforeCaret?: string | 
     return null;
 }
 
-export function replaceActiveMentionQuery(message: string, query: string, mention: ElementMention, atOffsetInBefore?: number) {
+export function replaceActiveMentionQuery(
+    message: string,
+    query: string,
+    mentionOrToken: ElementMention | string,
+    atOffsetInBefore?: number,
+) {
     const needle = `@${query}`;
     const replaceAt = atOffsetInBefore ?? message.lastIndexOf(needle);
 
@@ -356,12 +423,16 @@ export function replaceActiveMentionQuery(message: string, query: string, mentio
         return null;
     }
 
-    // Avoid replacing the `@` inside an existing `@{id}` token when offset is omitted.
-    if (atOffsetInBefore === undefined && message[replaceAt + 1] === "{") {
+    // Avoid replacing the `@` inside an existing `@{id}` / `@u{id}` token when offset is omitted.
+    if (atOffsetInBefore === undefined && (message[replaceAt + 1] === "{" || message.slice(replaceAt + 1, replaceAt + 3) === "u{")) {
         return null;
     }
 
-    const token = serializeMentionToken(mention.id);
+    const token = typeof mentionOrToken === "string" ? mentionOrToken : serializeMentionToken(mentionOrToken.id);
 
     return `${message.slice(0, replaceAt)}${token} ${message.slice(replaceAt + needle.length)}`;
+}
+
+export function replaceActiveUserMentionQuery(message: string, query: string, mention: UserMention, atOffsetInBefore?: number) {
+    return replaceActiveMentionQuery(message, query, serializeUserMentionToken(mention.id), atOffsetInBefore);
 }

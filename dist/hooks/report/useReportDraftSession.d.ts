@@ -82,7 +82,7 @@ export declare function useReportDraftSession({ mode, setMode, fields, messages,
     handleOverlayClick: (event: MouseEvent<HTMLDivElement>) => void;
     cancelDraft: () => void;
     beginDraftEdit: (report: ReportFeedback) => boolean;
-    updateDraftCase: (caseId: string, text: string, mentions?: ElementMention[]) => void;
+    updateDraftCase: (caseId: string, text: string, mentions?: ElementMention[], userMentions?: import("../../types/mention.js").UserMention[]) => void;
     updateDraftCategory: (category: FeedbackCategory | null) => void;
     addDraftCase: () => void;
     removeDraftCase: (caseId: string) => void;

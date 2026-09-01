@@ -1,8 +1,8 @@
 import type { ReportCase } from "../../../types/report.js";
-import type { ElementMention } from "../../../types/mention.js";
+import type { ElementMention, UserMention } from "../../../types/mention.js";
 type FeedbackCaseEditorProps = {
     cases: ReportCase[];
-    onCaseChange: (caseId: string, text: string, mentions?: ElementMention[]) => void;
+    onCaseChange: (caseId: string, text: string, mentions?: ElementMention[], userMentions?: UserMention[]) => void;
     onAddCase: () => void;
     onRemoveCase: (caseId: string) => void;
     autoFocus?: boolean;

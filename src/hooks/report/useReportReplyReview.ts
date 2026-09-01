@@ -39,7 +39,7 @@ import { notifyFeedbackReply, notifyFeedbackUpdate, type ReportSideEffectCallbac
 import type { SessionActor } from "@/utils/report/reportTeam.js";
 import { resolveDefaultAuthorName } from "@/utils/report/resolveDefaultAuthorName.js";
 import { stripMentionTokensForEmptyCheck } from "@/utils/mention/elementMentions.js";
-import type { ElementMention } from "@/types/mention.js";
+import type { ElementMention, UserMention } from "@/types/mention.js";
 import type { TargetSnapshot } from "@/types/report-ui.js";
 import { useReplyCaseEdit } from "./useReplyCaseEdit.js";
 
@@ -88,6 +88,7 @@ export function useReportReplyReview({
     const [minimizedReplyReportIds, setMinimizedReplyReportIds] = useState<string[]>([]);
     const [replyDraft, setReplyDraft] = useState("");
     const [replyMentions, setReplyMentions] = useState<ElementMention[]>([]);
+    const [replyUserMentions, setReplyUserMentions] = useState<UserMention[]>([]);
     const [mentionHighlightTarget, setMentionHighlightTarget] = useState<TargetSnapshot | null>(null);
     const [replySubmitAsQuestion, setReplySubmitAsQuestion] = useState(false);
     const [replyAuthorName, setReplyAuthorName] = useState(() => resolveDefaultAuthorName(activeIdentify, authorizedAuthors, selfName));
@@ -99,7 +100,7 @@ export function useReportReplyReview({
     const [focusedCaseId, setFocusedCaseId] = useState<string | null>(null);
     const [isComposingNewCase, setIsComposingNewCase] = useState(false);
     /** Stashed new-case draft while browsing other cases; cleared on submit or window close. */
-    const [newCaseDraftSession, setNewCaseDraftSession] = useState<{ text: string; mentions: ElementMention[] } | null>(null);
+    const [newCaseDraftSession, setNewCaseDraftSession] = useState<{ text: string; mentions: ElementMention[]; userMentions: UserMention[] } | null>(null);
 
     useEffect(() => {
         if (!sessionActor?.name) {
@@ -206,13 +207,14 @@ export function useReportReplyReview({
     const clearReplyComposerDraft = useCallback(() => {
         setReplyDraft("");
         setReplyMentions([]);
+        setReplyUserMentions([]);
         setMentionHighlightTarget(null);
     }, []);
 
     const selectCase = useCallback(
         (caseId: string) => {
             if (isComposingNewCase) {
-                setNewCaseDraftSession({ text: replyDraft, mentions: replyMentions });
+                setNewCaseDraftSession({ text: replyDraft, mentions: replyMentions, userMentions: replyUserMentions });
             }
 
             setIsComposingNewCase(false);
@@ -222,7 +224,7 @@ export function useReportReplyReview({
             setReplySubmitAsQuestion(false);
             setErrorMessage("");
         },
-        [clearReplyComposerDraft, isComposingNewCase, replyDraft, replyMentions, setErrorMessage],
+        [clearReplyComposerDraft, isComposingNewCase, replyDraft, replyMentions, replyUserMentions, setErrorMessage],
     );
 
     const caseEdit = useReplyCaseEdit({
@@ -271,11 +273,12 @@ export function useReportReplyReview({
         if (newCaseDraftSession) {
             setReplyDraft(newCaseDraftSession.text);
             setReplyMentions(newCaseDraftSession.mentions);
+            setReplyUserMentions(newCaseDraftSession.userMentions);
             return;
         }
 
         clearReplyComposerDraft();
-        setNewCaseDraftSession({ text: "", mentions: [] });
+        setNewCaseDraftSession({ text: "", mentions: [], userMentions: [] });
     }, [
         activeReplyReport,
         cancelCaseEdit,
@@ -655,6 +658,7 @@ export function useReportReplyReview({
                     author_type: reply.author_type ?? "manager",
                     author_name: reply.author_name,
                     ...(reply.mentions && reply.mentions.length > 0 ? { mentions: reply.mentions } : {}),
+                    ...(reply.user_mentions && reply.user_mentions.length > 0 ? { user_mentions: reply.user_mentions } : {}),
                 }),
             );
         } else {
@@ -680,13 +684,14 @@ export function useReportReplyReview({
             return;
         }
 
-        if (!stripMentionTokensForEmptyCheck(replyDraft, replyMentions)) {
+        if (!stripMentionTokensForEmptyCheck(replyDraft, replyMentions, replyUserMentions)) {
             setErrorMessage(messages.errors.caseTextRequired(getReportCases(activeReplyReport).length + 1));
             return;
         }
 
         const nextCase = createReportCase(replyDraft.trim(), {
             ...(replyMentions.length > 0 ? { mentions: replyMentions } : {}),
+            ...(replyUserMentions.length > 0 ? { user_mentions: replyUserMentions } : {}),
         });
         const nextCases = [...getReportCases(activeReplyReport), nextCase];
 
@@ -726,7 +731,7 @@ export function useReportReplyReview({
             return;
         }
 
-        if (!stripMentionTokensForEmptyCheck(replyDraft, replyMentions)) {
+        if (!stripMentionTokensForEmptyCheck(replyDraft, replyMentions, replyUserMentions)) {
             setErrorMessage(messages.errors.replyContentRequired);
             return;
         }
@@ -764,6 +769,7 @@ export function useReportReplyReview({
             author_type: isCreatorSubmit ? "user" : "manager",
             author_name: actorName,
             ...(replyMentions.length > 0 ? { mentions: replyMentions } : {}),
+            ...(replyUserMentions.length > 0 ? { user_mentions: replyUserMentions } : {}),
         };
 
         try {
@@ -999,6 +1005,8 @@ export function useReportReplyReview({
         setReplyDraft,
         replyMentions,
         setReplyMentions,
+        replyUserMentions,
+        setReplyUserMentions,
         mentionHighlightTarget,
         setMentionHighlightTarget,
         replySubmitAsQuestion,

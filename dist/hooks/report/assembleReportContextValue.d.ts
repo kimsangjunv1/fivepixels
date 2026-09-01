@@ -5,6 +5,8 @@ import type { useReportMarkers } from "./useReportMarkers.js";
 import type { useReportMutations } from "./useReportMutations.js";
 import type { useReportPanelShell } from "./useReportPanelShell.js";
 import type { useReportReplyReview } from "./useReportReplyReview.js";
+import type { useNotificationCenter } from "./useNotificationCenter.js";
+import type { NotificationItem } from "../../types/notification.js";
 import type { FivePixelsAdapter } from "../../types/adapter.js";
 import type { ApiFlowEntry } from "../../types/networkMonitor.js";
 import type { ReportAuthor, ReportFeedback, ReportField, ReportGitHubConfig } from "../../types/report.js";
@@ -42,12 +44,14 @@ type AssembleArgs = {
     dismissFailureAlert: (entryId: string) => void;
     appendApiFlowEntryToDraftCase: (entryId: string) => void;
     networkMonitorEnabled: boolean;
+    notifications: ReturnType<typeof useNotificationCenter>;
+    activateNotification: (item: NotificationItem) => void;
 };
 /**
  * Flat context value for ReportProvider slices.
  * Keys stay flat (see reportContextPartitions). Domain hooks → this assembler → UI.
  */
-export declare function assembleReportContextValue({ panel, auth, draft, markers, mutations, reply, fields, projectId, environment, appVersion, showFeedbackList, teamReviewers, teamActor, apiTeamMembers, apiTeamMembersLoading, refreshTeamMembers, adapter, github, canDeleteViaStorage, usesLazyReplies, usesCreateReply, visibleShortcutKeys, overlayRef, replyHistory, selectReport, beginFeedbackEdit, cancelDraft, apiFlowEntries, activeApiFailureAlert, dismissFailureAlert, appendApiFlowEntryToDraftCase, networkMonitorEnabled, }: AssembleArgs): {
+export declare function assembleReportContextValue({ panel, auth, draft, markers, mutations, reply, fields, projectId, environment, appVersion, showFeedbackList, teamReviewers, teamActor, apiTeamMembers, apiTeamMembersLoading, refreshTeamMembers, adapter, github, canDeleteViaStorage, usesLazyReplies, usesCreateReply, visibleShortcutKeys, overlayRef, replyHistory, selectReport, beginFeedbackEdit, cancelDraft, apiFlowEntries, activeApiFailureAlert, dismissFailureAlert, appendApiFlowEntryToDraftCase, networkMonitorEnabled, notifications, activateNotification, }: AssembleArgs): {
     panelAppearance: import("../../types/report.js").ReportAppearance;
     setPanelAppearance: (nextAppearance: import("../../types/report.js").ReportAppearance) => void;
     tooltipAppearance: import("../../types/report.js").ReportAppearance;
@@ -296,6 +300,8 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     setReplyDraft: import("react").Dispatch<import("react").SetStateAction<string>>;
     replyMentions: import("../../types/report.js").ElementMention[];
     setReplyMentions: import("react").Dispatch<import("react").SetStateAction<import("../../types/report.js").ElementMention[]>>;
+    replyUserMentions: import("../../types/report.js").UserMention[];
+    setReplyUserMentions: import("react").Dispatch<import("react").SetStateAction<import("../../types/report.js").UserMention[]>>;
     mentionHighlightTarget: import("../../types/report-ui.js").TargetSnapshot | null;
     setMentionHighlightTarget: import("react").Dispatch<import("react").SetStateAction<import("../../types/report-ui.js").TargetSnapshot | null>>;
     replySubmitAsQuestion: boolean;
@@ -324,7 +330,7 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     beginCaseEdit: (report: ReportFeedback) => void;
     cancelCaseEdit: () => void;
     handleCaseEditSave: () => Promise<void>;
-    updateCaseEditDraftCase: (caseId: string, text: string, mentions?: import("../../types/report.js").ElementMention[]) => void;
+    updateCaseEditDraftCase: (caseId: string, text: string, mentions?: import("../../types/report.js").ElementMention[], userMentions?: import("../../types/report.js").UserMention[]) => void;
     addCaseEditDraftCase: () => void;
     removeCaseEditDraftCase: (caseId: string) => void;
     removePersistedCase: (report: ReportFeedback, caseId: string) => Promise<void>;
@@ -375,7 +381,7 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     handleOverlayClick: (event: import("react").MouseEvent<HTMLDivElement>) => void;
     cancelDraft: () => void;
     beginFeedbackEdit: (report: ReportFeedback) => void;
-    updateDraftCase: (caseId: string, text: string, mentions?: import("../../types/report.js").ElementMention[]) => void;
+    updateDraftCase: (caseId: string, text: string, mentions?: import("../../types/report.js").ElementMention[], userMentions?: import("../../types/report.js").UserMention[]) => void;
     addDraftCase: () => void;
     removeDraftCase: (caseId: string) => void;
     updateDraftField: (key: string, nextValue: string | boolean) => void;
@@ -397,6 +403,19 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     activeApiFailureAlert: ApiFlowEntry | null;
     dismissFailureAlert: (entryId: string) => void;
     networkMonitorEnabled: boolean;
+    notifications: NotificationItem[];
+    unreadNotificationCount: number;
+    notificationUiOpen: boolean;
+    setNotificationUiOpen: import("react").Dispatch<import("react").SetStateAction<boolean>>;
+    toggleNotificationUiOpen: () => void;
+    closeNotificationUi: () => void;
+    markNotificationRead: (id: string) => void;
+    markAllNotificationsRead: () => void;
+    dismissNotification: (id: string) => void;
+    clearNotifications: () => void;
+    notificationWindowPosition: import("../useDraggableWindow.js").WindowPosition;
+    setNotificationWindowPosition: (position: import("../useDraggableWindow.js").WindowPosition) => void;
+    activateNotification: (item: NotificationItem) => void;
 };
 export {};
 //# sourceMappingURL=assembleReportContextValue.d.ts.map

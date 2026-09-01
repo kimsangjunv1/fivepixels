@@ -257,6 +257,8 @@ declare const ReportContext: Context<{
     setReplyDraft: import("react").Dispatch<import("react").SetStateAction<string>>;
     replyMentions: import("../types/mention.js").ElementMention[];
     setReplyMentions: import("react").Dispatch<import("react").SetStateAction<import("../types/mention.js").ElementMention[]>>;
+    replyUserMentions: import("../types/mention.js").UserMention[];
+    setReplyUserMentions: import("react").Dispatch<import("react").SetStateAction<import("../types/mention.js").UserMention[]>>;
     mentionHighlightTarget: import("../types/report-ui.js").TargetSnapshot | null;
     setMentionHighlightTarget: import("react").Dispatch<import("react").SetStateAction<import("../types/report-ui.js").TargetSnapshot | null>>;
     replySubmitAsQuestion: boolean;
@@ -285,7 +287,7 @@ declare const ReportContext: Context<{
     beginCaseEdit: (report: import("../index.js").ReportFeedback) => void;
     cancelCaseEdit: () => void;
     handleCaseEditSave: () => Promise<void>;
-    updateCaseEditDraftCase: (caseId: string, text: string, mentions?: import("../types/mention.js").ElementMention[]) => void;
+    updateCaseEditDraftCase: (caseId: string, text: string, mentions?: import("../types/mention.js").ElementMention[], userMentions?: import("../types/mention.js").UserMention[]) => void;
     addCaseEditDraftCase: () => void;
     removeCaseEditDraftCase: (caseId: string) => void;
     removePersistedCase: (report: import("../index.js").ReportFeedback, caseId: string) => Promise<void>;
@@ -336,7 +338,7 @@ declare const ReportContext: Context<{
     handleOverlayClick: (event: import("react").MouseEvent<HTMLDivElement>) => void;
     cancelDraft: () => void;
     beginFeedbackEdit: (report: import("../index.js").ReportFeedback) => void;
-    updateDraftCase: (caseId: string, text: string, mentions?: import("../types/mention.js").ElementMention[]) => void;
+    updateDraftCase: (caseId: string, text: string, mentions?: import("../types/mention.js").ElementMention[], userMentions?: import("../types/mention.js").UserMention[]) => void;
     addDraftCase: () => void;
     removeDraftCase: (caseId: string) => void;
     updateDraftField: (key: string, nextValue: string | boolean) => void;
@@ -358,6 +360,19 @@ declare const ReportContext: Context<{
     activeApiFailureAlert: import("../types/networkMonitor.js").ApiFlowEntry | null;
     dismissFailureAlert: (entryId: string) => void;
     networkMonitorEnabled: boolean;
+    notifications: import("../types/notification.js").NotificationItem[];
+    unreadNotificationCount: number;
+    notificationUiOpen: boolean;
+    setNotificationUiOpen: import("react").Dispatch<import("react").SetStateAction<boolean>>;
+    toggleNotificationUiOpen: () => void;
+    closeNotificationUi: () => void;
+    markNotificationRead: (id: string) => void;
+    markAllNotificationsRead: () => void;
+    dismissNotification: (id: string) => void;
+    clearNotifications: () => void;
+    notificationWindowPosition: import("../hooks/useDraggableWindow.js").WindowPosition;
+    setNotificationWindowPosition: (position: import("../hooks/useDraggableWindow.js").WindowPosition) => void;
+    activateNotification: (item: import("../types/notification.js").NotificationItem) => void;
 } | null>;
 declare const ReportPreferencesContext: Context<ReportPreferencesValue | null>;
 declare const ReportSessionContext: Context<ReportSessionValue | null>;
@@ -612,6 +627,8 @@ export declare function useReport(): {
     setReplyDraft: import("react").Dispatch<import("react").SetStateAction<string>>;
     replyMentions: import("../types/mention.js").ElementMention[];
     setReplyMentions: import("react").Dispatch<import("react").SetStateAction<import("../types/mention.js").ElementMention[]>>;
+    replyUserMentions: import("../types/mention.js").UserMention[];
+    setReplyUserMentions: import("react").Dispatch<import("react").SetStateAction<import("../types/mention.js").UserMention[]>>;
     mentionHighlightTarget: import("../types/report-ui.js").TargetSnapshot | null;
     setMentionHighlightTarget: import("react").Dispatch<import("react").SetStateAction<import("../types/report-ui.js").TargetSnapshot | null>>;
     replySubmitAsQuestion: boolean;
@@ -640,7 +657,7 @@ export declare function useReport(): {
     beginCaseEdit: (report: import("../index.js").ReportFeedback) => void;
     cancelCaseEdit: () => void;
     handleCaseEditSave: () => Promise<void>;
-    updateCaseEditDraftCase: (caseId: string, text: string, mentions?: import("../types/mention.js").ElementMention[]) => void;
+    updateCaseEditDraftCase: (caseId: string, text: string, mentions?: import("../types/mention.js").ElementMention[], userMentions?: import("../types/mention.js").UserMention[]) => void;
     addCaseEditDraftCase: () => void;
     removeCaseEditDraftCase: (caseId: string) => void;
     removePersistedCase: (report: import("../index.js").ReportFeedback, caseId: string) => Promise<void>;
@@ -691,7 +708,7 @@ export declare function useReport(): {
     handleOverlayClick: (event: import("react").MouseEvent<HTMLDivElement>) => void;
     cancelDraft: () => void;
     beginFeedbackEdit: (report: import("../index.js").ReportFeedback) => void;
-    updateDraftCase: (caseId: string, text: string, mentions?: import("../types/mention.js").ElementMention[]) => void;
+    updateDraftCase: (caseId: string, text: string, mentions?: import("../types/mention.js").ElementMention[], userMentions?: import("../types/mention.js").UserMention[]) => void;
     addDraftCase: () => void;
     removeDraftCase: (caseId: string) => void;
     updateDraftField: (key: string, nextValue: string | boolean) => void;
@@ -713,6 +730,19 @@ export declare function useReport(): {
     activeApiFailureAlert: import("../types/networkMonitor.js").ApiFlowEntry | null;
     dismissFailureAlert: (entryId: string) => void;
     networkMonitorEnabled: boolean;
+    notifications: import("../types/notification.js").NotificationItem[];
+    unreadNotificationCount: number;
+    notificationUiOpen: boolean;
+    setNotificationUiOpen: import("react").Dispatch<import("react").SetStateAction<boolean>>;
+    toggleNotificationUiOpen: () => void;
+    closeNotificationUi: () => void;
+    markNotificationRead: (id: string) => void;
+    markAllNotificationsRead: () => void;
+    dismissNotification: (id: string) => void;
+    clearNotifications: () => void;
+    notificationWindowPosition: import("../hooks/useDraggableWindow.js").WindowPosition;
+    setNotificationWindowPosition: (position: import("../hooks/useDraggableWindow.js").WindowPosition) => void;
+    activateNotification: (item: import("../types/notification.js").NotificationItem) => void;
 };
 /** Appearance, locale, tabs, personal key, role — changes less often than markers/lists. */
 export declare function useReportPreferences(): ReportPreferencesValue;
@@ -970,6 +1000,8 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         setReplyDraft: import("react").Dispatch<import("react").SetStateAction<string>>;
         replyMentions: import("../types/mention.js").ElementMention[];
         setReplyMentions: import("react").Dispatch<import("react").SetStateAction<import("../types/mention.js").ElementMention[]>>;
+        replyUserMentions: import("../types/mention.js").UserMention[];
+        setReplyUserMentions: import("react").Dispatch<import("react").SetStateAction<import("../types/mention.js").UserMention[]>>;
         mentionHighlightTarget: import("../types/report-ui.js").TargetSnapshot | null;
         setMentionHighlightTarget: import("react").Dispatch<import("react").SetStateAction<import("../types/report-ui.js").TargetSnapshot | null>>;
         replySubmitAsQuestion: boolean;
@@ -998,7 +1030,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         beginCaseEdit: (report: import("../index.js").ReportFeedback) => void;
         cancelCaseEdit: () => void;
         handleCaseEditSave: () => Promise<void>;
-        updateCaseEditDraftCase: (caseId: string, text: string, mentions?: import("../types/mention.js").ElementMention[]) => void;
+        updateCaseEditDraftCase: (caseId: string, text: string, mentions?: import("../types/mention.js").ElementMention[], userMentions?: import("../types/mention.js").UserMention[]) => void;
         addCaseEditDraftCase: () => void;
         removeCaseEditDraftCase: (caseId: string) => void;
         removePersistedCase: (report: import("../index.js").ReportFeedback, caseId: string) => Promise<void>;
@@ -1049,7 +1081,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         handleOverlayClick: (event: import("react").MouseEvent<HTMLDivElement>) => void;
         cancelDraft: () => void;
         beginFeedbackEdit: (report: import("../index.js").ReportFeedback) => void;
-        updateDraftCase: (caseId: string, text: string, mentions?: import("../types/mention.js").ElementMention[]) => void;
+        updateDraftCase: (caseId: string, text: string, mentions?: import("../types/mention.js").ElementMention[], userMentions?: import("../types/mention.js").UserMention[]) => void;
         addDraftCase: () => void;
         removeDraftCase: (caseId: string) => void;
         updateDraftField: (key: string, nextValue: string | boolean) => void;
@@ -1071,6 +1103,19 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         activeApiFailureAlert: import("../types/networkMonitor.js").ApiFlowEntry | null;
         dismissFailureAlert: (entryId: string) => void;
         networkMonitorEnabled: boolean;
+        notifications: import("../types/notification.js").NotificationItem[];
+        unreadNotificationCount: number;
+        notificationUiOpen: boolean;
+        setNotificationUiOpen: import("react").Dispatch<import("react").SetStateAction<boolean>>;
+        toggleNotificationUiOpen: () => void;
+        closeNotificationUi: () => void;
+        markNotificationRead: (id: string) => void;
+        markAllNotificationsRead: () => void;
+        dismissNotification: (id: string) => void;
+        clearNotifications: () => void;
+        notificationWindowPosition: import("../hooks/useDraggableWindow.js").WindowPosition;
+        setNotificationWindowPosition: (position: import("../hooks/useDraggableWindow.js").WindowPosition) => void;
+        activateNotification: (item: import("../types/notification.js").NotificationItem) => void;
     }, "personalKey" | "projectId" | "fields" | "personalKeyRequired" | "environment" | "require" | "requireAuth" | "questionThreadDisplay" | "setQuestionThreadDisplay" | "threadLayout" | "setThreadLayout" | "locale" | "setLocale" | "showMarkerTargetPreview" | "setShowMarkerTargetPreview" | "toggleMarkerTargetPreview" | "devicePreviewUiOpen" | "setDevicePreviewUiOpen" | "devicePreviewDeviceId" | "setDevicePreviewDeviceId" | "devicePreviewScale" | "setDevicePreviewScale" | "devicePreviewImageEnabled" | "setDevicePreviewImageEnabled" | "devicePreviewFitToViewport" | "setDevicePreviewFitToViewport" | "devicePreviewStatusBarEnabled" | "setDevicePreviewStatusBarEnabled" | "devicePreviewPreset" | "showHiddenDetachedMarkers" | "setShowHiddenDetachedMarkers" | "showModalDetachedMarkers" | "setShowModalDetachedMarkers" | "markerAppearance" | "setMarkerAppearance" | "setMarkerSize" | "setMarkerShape" | "setMarkerFillStyle" | "setMarkerColors" | "setMarkerColor" | "setMarkerStrokeColor" | "setFeedbackModeDotColors" | "setFeedbackModeDotColor" | "typography" | "setTypography" | "setFontSize" | "setFontFamily" | "panelRole" | "setPanelRole" | "persistenceStatus" | "appVersion" | "showFeedbackList" | "selfProfile" | "authors" | "publicKey" | "personalKeyCandidates" | "issuePersonalKey" | "rotatePersonalKey" | "insertPersonalKey" | "clearPersonalKey" | "authorSelectionLocked" | "messages" | "teamReviewers" | "teamActor" | "apiTeamMembers" | "apiTeamMembersLoading" | "refreshTeamMembers" | "visibleShortcutKeys" | "onListReviewers" | "onListReviewerRequests" | "onCreateReviewerRequest" | "onResolveReviewerRequest" | "onRegisterReviewer" | "onUpdateReviewer" | "onDeleteReviewer" | "panelAppearance" | "setPanelAppearance" | "tooltipAppearance" | "setTooltipAppearance" | "teamActorRole" | "isTeamAdmin" | "canAccessTeamSettings" | "integrationCapabilities" | "adapterIntegrationStatus" | "panelView" | "authBootstrapState" | "isAuthBootstrapping" | "loginMethod" | "loginWithApi" | "registerWithApi" | "logoutWithApi" | "refreshWithApi" | "loginWithArtemis" | "completeRemoteOnboarding" | "completeOnboarding" | "restoreFromBackup" | "skipOnboarding" | "resolvedPanelAppearance" | "resolvedTooltipAppearance" | "isMobileViewport" | "isPresentationMode" | "presentationViewers" | "visiblePanelTabs" | "visiblePanelTabsSummary" | "resolvedTabAvailabilityContext" | "setVisiblePanelTabs" | "resetVisibleTabsToRoleDefault" | "applyRoleDefaultTabsForOnboarding" | "savePanelTabPreference" | "storedPanelTabPreference">;
     session: Pick<{
         panelAppearance: import("../index.js").ReportAppearance;
@@ -1321,6 +1366,8 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         setReplyDraft: import("react").Dispatch<import("react").SetStateAction<string>>;
         replyMentions: import("../types/mention.js").ElementMention[];
         setReplyMentions: import("react").Dispatch<import("react").SetStateAction<import("../types/mention.js").ElementMention[]>>;
+        replyUserMentions: import("../types/mention.js").UserMention[];
+        setReplyUserMentions: import("react").Dispatch<import("react").SetStateAction<import("../types/mention.js").UserMention[]>>;
         mentionHighlightTarget: import("../types/report-ui.js").TargetSnapshot | null;
         setMentionHighlightTarget: import("react").Dispatch<import("react").SetStateAction<import("../types/report-ui.js").TargetSnapshot | null>>;
         replySubmitAsQuestion: boolean;
@@ -1349,7 +1396,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         beginCaseEdit: (report: import("../index.js").ReportFeedback) => void;
         cancelCaseEdit: () => void;
         handleCaseEditSave: () => Promise<void>;
-        updateCaseEditDraftCase: (caseId: string, text: string, mentions?: import("../types/mention.js").ElementMention[]) => void;
+        updateCaseEditDraftCase: (caseId: string, text: string, mentions?: import("../types/mention.js").ElementMention[], userMentions?: import("../types/mention.js").UserMention[]) => void;
         addCaseEditDraftCase: () => void;
         removeCaseEditDraftCase: (caseId: string) => void;
         removePersistedCase: (report: import("../index.js").ReportFeedback, caseId: string) => Promise<void>;
@@ -1400,7 +1447,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         handleOverlayClick: (event: import("react").MouseEvent<HTMLDivElement>) => void;
         cancelDraft: () => void;
         beginFeedbackEdit: (report: import("../index.js").ReportFeedback) => void;
-        updateDraftCase: (caseId: string, text: string, mentions?: import("../types/mention.js").ElementMention[]) => void;
+        updateDraftCase: (caseId: string, text: string, mentions?: import("../types/mention.js").ElementMention[], userMentions?: import("../types/mention.js").UserMention[]) => void;
         addDraftCase: () => void;
         removeDraftCase: (caseId: string) => void;
         updateDraftField: (key: string, nextValue: string | boolean) => void;
@@ -1422,7 +1469,20 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         activeApiFailureAlert: import("../types/networkMonitor.js").ApiFlowEntry | null;
         dismissFailureAlert: (entryId: string) => void;
         networkMonitorEnabled: boolean;
-    }, "markers" | "statusText" | "toggleReportMode" | "toggleTargetPreview" | "currentPathname" | "sessionActor" | "savedProbeDeletions" | "hasProbeSessionChanges" | "canUndoProbeSession" | "canRedoProbeSession" | "undoProbeSessionAction" | "redoProbeSessionAction" | "revertAllSavedProbeEdits" | "draft" | "pickProbeOpen" | "pickProbeSupportsTextFields" | "pickProbeLayoutMode" | "pickProbeValues" | "pickProbeCompareMode" | "pickProbeHasEdits" | "pickTargetContextMenu" | "contextMenuElementKey" | "savedProbeEdits" | "savedProbeCompareMode" | "closePickProbe" | "closePickTargetContextMenu" | "handlePickTargetEdit" | "handlePickTargetDelete" | "handlePickTargetRevert" | "setErrorMessage" | "commitPickProbeEdits" | "revertSavedProbeEdit" | "setSavedProbeCompareMode" | "setPickProbeCompareMode" | "updatePickProbeValue" | "resetPickProbeValues" | "appendSavedProbeSummaryAsNewDraftCase" | "activeReplyReportId" | "minimizedReplyReportIds" | "selectedTarget" | "hoveredTarget" | "mode" | "showTargetPreview" | "closeReplyComposer" | "openReplyComposer" | "selectCase" | "selectReport" | "focusedCaseId" | "activeReplyReport" | "cancelCaseEdit" | "appendApiFlowEntryToDraftCase" | "overlayRef" | "cancelDraft" | "beginFeedbackEdit" | "editingReportId" | "panelTab" | "pendingComposer" | "toggleIssueMode" | "cancelPendingComposer" | "stopEditing" | "focusSearchInput" | "selectAdjacentReport" | "panelCollapsed" | "setPanelCollapsed" | "searchInputRef" | "activeMarkerTarget" | "markerPreviewTargets" | "selectableTargets" | "errorMessage" | "draftStep" | "setDraftStep" | "hoverPointer" | "setHoverPointer" | "handlePickTargetMemo" | "editableDraft" | "setEditableDraft" | "openReplyReportIds" | "openReplyReports" | "setReplyWindowMinimized" | "reorderMinimizedReplyWindow" | "focusReplyWindow" | "closeReplyWindow" | "tooltipReport" | "tooltipAnchor" | "tooltipFieldTags" | "replyDraft" | "setReplyDraft" | "replyMentions" | "setReplyMentions" | "mentionHighlightTarget" | "setMentionHighlightTarget" | "replySubmitAsQuestion" | "setReplySubmitAsQuestion" | "draftAuthorName" | "setDraftAuthorName" | "replyAuthorName" | "setReplyAuthorName" | "presentationViewerId" | "setPresentationViewerId" | "startDenyReview" | "startCheckoutReview" | "startAskQuestion" | "confirmAuthorName" | "setConfirmAuthorName" | "showConfirmAuthorSelect" | "toggleConfirmAuthorSelect" | "beginCaseEdit" | "updateCaseEditDraftCase" | "addCaseEditDraftCase" | "removeCaseEditDraftCase" | "removePersistedCase" | "isComposingNewCase" | "hasNewCaseDraftSession" | "beginComposeNewCase" | "cancelComposeNewCase" | "clearFocusedCase" | "isCaseEditing" | "caseEditReportId" | "caseEditCases" | "openPanelTab" | "togglePanelTab" | "locateFeedback" | "activateFeedbackMarker" | "revealOpenFeedback" | "clearHoverLeaveTimeout" | "scheduleHoverLeave" | "setHoveredMarkerId" | "handleOverlayMove" | "handleOverlayContextMenu" | "handleOverlayClick" | "updateDraftCase" | "addDraftCase" | "removeDraftCase" | "updateDraftField" | "updateDraftCategory" | "startEditing">;
+        notifications: import("../types/notification.js").NotificationItem[];
+        unreadNotificationCount: number;
+        notificationUiOpen: boolean;
+        setNotificationUiOpen: import("react").Dispatch<import("react").SetStateAction<boolean>>;
+        toggleNotificationUiOpen: () => void;
+        closeNotificationUi: () => void;
+        markNotificationRead: (id: string) => void;
+        markAllNotificationsRead: () => void;
+        dismissNotification: (id: string) => void;
+        clearNotifications: () => void;
+        notificationWindowPosition: import("../hooks/useDraggableWindow.js").WindowPosition;
+        setNotificationWindowPosition: (position: import("../hooks/useDraggableWindow.js").WindowPosition) => void;
+        activateNotification: (item: import("../types/notification.js").NotificationItem) => void;
+    }, "markers" | "statusText" | "notifications" | "toggleReportMode" | "toggleTargetPreview" | "currentPathname" | "sessionActor" | "savedProbeDeletions" | "hasProbeSessionChanges" | "canUndoProbeSession" | "canRedoProbeSession" | "undoProbeSessionAction" | "redoProbeSessionAction" | "revertAllSavedProbeEdits" | "draft" | "pickProbeOpen" | "pickProbeSupportsTextFields" | "pickProbeLayoutMode" | "pickProbeValues" | "pickProbeCompareMode" | "pickProbeHasEdits" | "pickTargetContextMenu" | "contextMenuElementKey" | "savedProbeEdits" | "savedProbeCompareMode" | "closePickProbe" | "closePickTargetContextMenu" | "handlePickTargetEdit" | "handlePickTargetDelete" | "handlePickTargetRevert" | "setErrorMessage" | "commitPickProbeEdits" | "revertSavedProbeEdit" | "setSavedProbeCompareMode" | "setPickProbeCompareMode" | "updatePickProbeValue" | "resetPickProbeValues" | "appendSavedProbeSummaryAsNewDraftCase" | "activeReplyReportId" | "minimizedReplyReportIds" | "selectedTarget" | "hoveredTarget" | "mode" | "showTargetPreview" | "closeReplyComposer" | "openReplyComposer" | "selectCase" | "selectReport" | "focusedCaseId" | "activeReplyReport" | "cancelCaseEdit" | "appendApiFlowEntryToDraftCase" | "overlayRef" | "cancelDraft" | "beginFeedbackEdit" | "activateNotification" | "editingReportId" | "panelTab" | "pendingComposer" | "toggleIssueMode" | "cancelPendingComposer" | "stopEditing" | "focusSearchInput" | "selectAdjacentReport" | "panelCollapsed" | "setPanelCollapsed" | "searchInputRef" | "activeMarkerTarget" | "markerPreviewTargets" | "selectableTargets" | "errorMessage" | "draftStep" | "setDraftStep" | "hoverPointer" | "setHoverPointer" | "handlePickTargetMemo" | "editableDraft" | "setEditableDraft" | "openReplyReportIds" | "openReplyReports" | "setReplyWindowMinimized" | "reorderMinimizedReplyWindow" | "focusReplyWindow" | "closeReplyWindow" | "tooltipReport" | "tooltipAnchor" | "tooltipFieldTags" | "replyDraft" | "setReplyDraft" | "replyMentions" | "setReplyMentions" | "replyUserMentions" | "setReplyUserMentions" | "mentionHighlightTarget" | "setMentionHighlightTarget" | "replySubmitAsQuestion" | "setReplySubmitAsQuestion" | "draftAuthorName" | "setDraftAuthorName" | "replyAuthorName" | "setReplyAuthorName" | "presentationViewerId" | "setPresentationViewerId" | "startDenyReview" | "startCheckoutReview" | "startAskQuestion" | "confirmAuthorName" | "setConfirmAuthorName" | "showConfirmAuthorSelect" | "toggleConfirmAuthorSelect" | "beginCaseEdit" | "updateCaseEditDraftCase" | "addCaseEditDraftCase" | "removeCaseEditDraftCase" | "removePersistedCase" | "isComposingNewCase" | "hasNewCaseDraftSession" | "beginComposeNewCase" | "cancelComposeNewCase" | "clearFocusedCase" | "isCaseEditing" | "caseEditReportId" | "caseEditCases" | "openPanelTab" | "togglePanelTab" | "locateFeedback" | "activateFeedbackMarker" | "revealOpenFeedback" | "clearHoverLeaveTimeout" | "scheduleHoverLeave" | "setHoveredMarkerId" | "handleOverlayMove" | "handleOverlayContextMenu" | "handleOverlayClick" | "updateDraftCase" | "addDraftCase" | "removeDraftCase" | "updateDraftField" | "updateDraftCategory" | "startEditing" | "unreadNotificationCount" | "notificationUiOpen" | "setNotificationUiOpen" | "toggleNotificationUiOpen" | "closeNotificationUi" | "markNotificationRead" | "markAllNotificationsRead" | "dismissNotification" | "clearNotifications" | "notificationWindowPosition" | "setNotificationWindowPosition">;
     data: Pick<{
         panelAppearance: import("../index.js").ReportAppearance;
         setPanelAppearance: (nextAppearance: import("../index.js").ReportAppearance) => void;
@@ -1672,6 +1732,8 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         setReplyDraft: import("react").Dispatch<import("react").SetStateAction<string>>;
         replyMentions: import("../types/mention.js").ElementMention[];
         setReplyMentions: import("react").Dispatch<import("react").SetStateAction<import("../types/mention.js").ElementMention[]>>;
+        replyUserMentions: import("../types/mention.js").UserMention[];
+        setReplyUserMentions: import("react").Dispatch<import("react").SetStateAction<import("../types/mention.js").UserMention[]>>;
         mentionHighlightTarget: import("../types/report-ui.js").TargetSnapshot | null;
         setMentionHighlightTarget: import("react").Dispatch<import("react").SetStateAction<import("../types/report-ui.js").TargetSnapshot | null>>;
         replySubmitAsQuestion: boolean;
@@ -1700,7 +1762,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         beginCaseEdit: (report: import("../index.js").ReportFeedback) => void;
         cancelCaseEdit: () => void;
         handleCaseEditSave: () => Promise<void>;
-        updateCaseEditDraftCase: (caseId: string, text: string, mentions?: import("../types/mention.js").ElementMention[]) => void;
+        updateCaseEditDraftCase: (caseId: string, text: string, mentions?: import("../types/mention.js").ElementMention[], userMentions?: import("../types/mention.js").UserMention[]) => void;
         addCaseEditDraftCase: () => void;
         removeCaseEditDraftCase: (caseId: string) => void;
         removePersistedCase: (report: import("../index.js").ReportFeedback, caseId: string) => Promise<void>;
@@ -1751,7 +1813,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         handleOverlayClick: (event: import("react").MouseEvent<HTMLDivElement>) => void;
         cancelDraft: () => void;
         beginFeedbackEdit: (report: import("../index.js").ReportFeedback) => void;
-        updateDraftCase: (caseId: string, text: string, mentions?: import("../types/mention.js").ElementMention[]) => void;
+        updateDraftCase: (caseId: string, text: string, mentions?: import("../types/mention.js").ElementMention[], userMentions?: import("../types/mention.js").UserMention[]) => void;
         addDraftCase: () => void;
         removeDraftCase: (caseId: string) => void;
         updateDraftField: (key: string, nextValue: string | boolean) => void;
@@ -1773,6 +1835,19 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         activeApiFailureAlert: import("../types/networkMonitor.js").ApiFlowEntry | null;
         dismissFailureAlert: (entryId: string) => void;
         networkMonitorEnabled: boolean;
+        notifications: import("../types/notification.js").NotificationItem[];
+        unreadNotificationCount: number;
+        notificationUiOpen: boolean;
+        setNotificationUiOpen: import("react").Dispatch<import("react").SetStateAction<boolean>>;
+        toggleNotificationUiOpen: () => void;
+        closeNotificationUi: () => void;
+        markNotificationRead: (id: string) => void;
+        markAllNotificationsRead: () => void;
+        dismissNotification: (id: string) => void;
+        clearNotifications: () => void;
+        notificationWindowPosition: import("../hooks/useDraggableWindow.js").WindowPosition;
+        setNotificationWindowPosition: (position: import("../hooks/useDraggableWindow.js").WindowPosition) => void;
+        activateNotification: (item: import("../types/notification.js").NotificationItem) => void;
     }, "authDiagnostics" | "isError" | "isFetching" | "hasNextPage" | "isFetchingNextPage" | "fetchNextPage" | "refetch" | "replyHistoryByReportId" | "replyHistory" | "loadOlderReplies" | "goToOlderPaginationPage" | "goToNewerPaginationPage" | "canTransferFeedback" | "canListAllFeedback" | "listScope" | "setListScope" | "filters" | "setFilters" | "reports" | "currentPageReports" | "filteredReports" | "allPageReports" | "onPanelBootstrap" | "routeDetailsStats" | "selectedReport" | "isCreating" | "isUpdating" | "isDeleting" | "queryErrorMessage" | "loadRepliesIfNeeded" | "hydrateFeedbackIfNeeded" | "apiFlowEntries" | "activeApiFailureAlert" | "dismissFailureAlert" | "networkMonitorEnabled" | "handleCreateSubmit" | "handleUpdateSubmit" | "onActivitySummary" | "isSubmittingReply" | "isClaimingAssignee" | "handleClaimAssignee" | "handleTransferAssignee" | "handleConfirmResolution" | "handleCaseEditSave" | "targetStats" | "roleStatItems" | "handleReplySubmit" | "handleCreateCaseSubmit" | "handleDelete" | "canCreateGitHubIssueFromList" | "canCreateGitHubIssueOnCreate" | "creatingGitHubIssueId" | "handleCreateGitHubIssue" | "handleCreateSubmitWithGitHubIssue" | "isDraftGitHubIssueSubmitting">;
 };
 export { ReportContext, ReportPreferencesContext, ReportSessionContext, ReportDataContext };

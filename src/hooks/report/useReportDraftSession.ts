@@ -480,7 +480,7 @@ export function useReportDraftSession({
         return true;
     };
 
-    const updateDraftCase = (caseId: string, text: string, mentions?: ElementMention[]) => {
+    const updateDraftCase = (caseId: string, text: string, mentions?: ElementMention[], userMentions?: import("@/types/mention.js").UserMention[]) => {
         setDraft((current) => {
             if (!current) {
                 return current;
@@ -494,11 +494,14 @@ export function useReportDraftSession({
                     }
 
                     const nextMentions = mentions === undefined ? item.mentions : mentions.length > 0 ? mentions : undefined;
+                    const nextUserMentions =
+                        userMentions === undefined ? item.user_mentions : userMentions.length > 0 ? userMentions : undefined;
 
                     return {
                         ...item,
                         text,
                         ...(nextMentions ? { mentions: nextMentions } : { mentions: undefined }),
+                        ...(nextUserMentions ? { user_mentions: nextUserMentions } : { user_mentions: undefined }),
                     };
                 }),
             };

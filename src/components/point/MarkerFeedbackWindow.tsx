@@ -451,6 +451,7 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
         pendingComposer,
         replyDraft,
         replyMentions,
+        replyUserMentions,
         replyAuthorName,
         confirmAuthorName,
         showConfirmAuthorSelect,
@@ -472,6 +473,7 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
         setHoveredMarkerId,
         setReplyDraft,
         setReplyMentions,
+        setReplyUserMentions,
         setReplyAuthorName,
         setConfirmAuthorName,
         toggleConfirmAuthorSelect,
@@ -1294,6 +1296,8 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
                             }}
                             mentions={replyMentions}
                             onMentionsChange={setReplyMentions}
+                            userMentions={replyUserMentions}
+                            onUserMentionsChange={setReplyUserMentions}
                             enableElementMentions
                             authorName={replyAuthorName}
                             onAuthorNameChange={setReplyAuthorName}

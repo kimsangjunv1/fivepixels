@@ -113,6 +113,12 @@ export declare function EyeOpenIcon({ className }: {
 export declare function EyeClosedIcon({ className }: {
     className?: string;
 }): import("react").JSX.Element;
+export declare function NotificationIdleIcon({ className }: {
+    className?: string;
+}): import("react").JSX.Element;
+export declare function NotificationActiveIcon({ className }: {
+    className?: string;
+}): import("react").JSX.Element;
 export declare function DevicePreviewIcon({ className }: {
     className?: string;
 }): import("react").JSX.Element;

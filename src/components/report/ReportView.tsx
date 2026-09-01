@@ -1,6 +1,7 @@
 import { useReportPreferences, useReportSession } from "@/providers/reportContext.js";
 import { ReportOverlayLayer } from "@/components/overlay/ReportOverlayLayer.js";
 import { DevicePreviewChrome } from "@/components/overlay/DevicePreviewChrome.js";
+import { NotificationCenterWindow } from "@/components/panel/NotificationCenterWindow.js";
 import { ReportControlPanel } from "@/components/panel/ReportControlPanel.js";
 import { ReportDraftForm } from "@/components/panel/ReportDraftForm.js";
 import { ReportDraftMarker } from "@/components/point/ReportDraftMarker.js";
@@ -22,7 +23,7 @@ export function ReportView() {
         resolvedTooltipAppearance,
         markerAppearance,
     } = useReportPreferences();
-    const { mode, showTargetPreview, savedProbeEdits, draft, errorMessage, openReplyReportIds } = useReportSession();
+    const { mode, showTargetPreview, savedProbeEdits, draft, errorMessage, openReplyReportIds, notificationUiOpen } = useReportSession();
     const hasSavedProbeEdits = Object.keys(savedProbeEdits).length > 0;
     const hasOpenWindows = openReplyReportIds.length > 0;
     const showOverlay = mode !== "idle" || showTargetPreview || showMarkerTargetPreview || hasSavedProbeEdits || hasOpenWindows;
@@ -61,6 +62,12 @@ export function ReportView() {
             <ThemeScope appearance={resolvedPanelAppearance}>
                 <ReportControlPanel />
             </ThemeScope>
+
+            {notificationUiOpen ? (
+                <ThemeScope appearance={resolvedPanelAppearance}>
+                    <NotificationCenterWindow />
+                </ThemeScope>
+            ) : null}
 
             {showOverlay ? (
                 <ThemeScope appearance={resolvedTooltipAppearance}>

@@ -2,7 +2,7 @@ import type { ReportField, ReportFieldValues, ReportCase } from "@/types/report.
 import type { ReportAuthor } from "@/types/report.js";
 import type { FeedbackCategory } from "@/constants/feedbackCategory.js";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { useReportPreferences } from "@/providers/reportContext.js";
+import { useReport, useReportPreferences } from "@/providers/reportContext.js";
 import type { ReportMessages } from "@/i18n/types.js";
 import { CloseIcon, AskActionIcon, DeniedActionIcon, CompleteActionIcon, SendIcon, KeyboardReturnIcon } from "@/components/icons/Icons.js";
 import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
@@ -10,8 +10,9 @@ import { FeedbackCategorySelector } from "./FeedbackCategorySelector.js";
 import { FeedbackCaseEditor } from "./FeedbackCaseEditor.js";
 import { MentionComposerInput } from "./MentionComposerInput.js";
 import { resolveComposerModeActionKind, THREAD_ACTION_STYLE } from "@/constants/threadActionStyles.js";
-import type { ElementMention } from "@/types/mention.js";
+import type { ElementMention, UserMention } from "@/types/mention.js";
 import { stripMentionTokensForEmptyCheck } from "@/utils/mention/elementMentions.js";
+import { resolveMentionMemberDirectory } from "@/utils/mention/userMentions.js";
 import { ReportPanelNoticeDialog } from "../ReportPanelNoticeDialog.js";
 
 export type ComposerMode = "deny" | "recheck" | "checkout" | "question";
@@ -21,9 +22,11 @@ type FeedbackComposerProps = {
     onMessageChange?: (value: string) => void;
     mentions?: ElementMention[];
     onMentionsChange?: (mentions: ElementMention[]) => void;
+    userMentions?: UserMention[];
+    onUserMentionsChange?: (mentions: UserMention[]) => void;
     enableElementMentions?: boolean;
     cases?: ReportCase[];
-    onCaseChange?: (caseId: string, text: string, mentions?: ElementMention[]) => void;
+    onCaseChange?: (caseId: string, text: string, mentions?: ElementMention[], userMentions?: UserMention[]) => void;
     onAddCase?: () => void;
     onRemoveCase?: (caseId: string) => void;
     authorName: string;
@@ -283,6 +286,8 @@ export function FeedbackComposer({
     onMessageChange,
     mentions = [],
     onMentionsChange,
+    userMentions = [],
+    onUserMentionsChange,
     enableElementMentions = false,
     cases,
     onCaseChange,
@@ -325,6 +330,8 @@ export function FeedbackComposer({
     onActiveCaseIdChange,
 }: FeedbackComposerProps) {
     const { messages } = useReportPreferences();
+    const { authors: teamAuthors, apiTeamMembers } = useReport();
+    const teamMembers = useMemo(() => resolveMentionMemberDirectory(teamAuthors, apiTeamMembers), [apiTeamMembers, teamAuthors]);
     const [isGitHubIssueConfirming, setIsGitHubIssueConfirming] = useState(false);
     const [categoryAttentionKey, setCategoryAttentionKey] = useState(0);
     const [caseAttentionKey, setCaseAttentionKey] = useState(0);
@@ -336,7 +343,13 @@ export function FeedbackComposer({
     const showFooterComposerModeTag = Boolean(resolvedComposerMode && isReplyMultiline);
     const showActionRow = !hideActions && (showAskQuestionToggle || showGitHubIssueOnCreate || !hidePrimarySubmitAction || showFooterComposerModeTag);
     const resolvedPlaceholder = isQuestionMode ? messages.composer.questionPlaceholder : (placeholder ?? (usesCaseEditor ? messages.fieldEditor.messagePlaceholder : messages.composer.placeholder));
-    const emptyCaseIds = useMemo(() => (cases ?? []).filter((item) => !stripMentionTokensForEmptyCheck(item.text, item.mentions).trim()).map((item) => item.id), [cases]);
+    const emptyCaseIds = useMemo(
+        () =>
+            (cases ?? [])
+                .filter((item) => !stripMentionTokensForEmptyCheck(item.text, item.mentions, item.user_mentions).trim())
+                .map((item) => item.id),
+        [cases],
+    );
     const hasEmptyCase = emptyCaseIds.length > 0;
     const isCategoryRequiredError = errorMessage === messages.errors.categoryRequired;
     const isEmptyCaseError = isCaseTextErrorMessage(errorMessage, cases?.length ?? 0, messages.errors.caseTextRequired, messages.errors.casesRequired);
@@ -496,9 +509,12 @@ export function FeedbackComposer({
                                 <MentionComposerInput
                                     value={message}
                                     mentions={mentions}
-                                    onChange={({ message: nextMessage, mentions: nextMentions }) => {
+                                    userMentions={userMentions}
+                                    teamMembers={teamMembers}
+                                    onChange={({ message: nextMessage, mentions: nextMentions, userMentions: nextUserMentions }) => {
                                         onMessageChange?.(nextMessage);
                                         onMentionsChange?.(nextMentions);
+                                        onUserMentionsChange?.(nextUserMentions);
                                     }}
                                     placeholder={resolvedPlaceholder}
                                     autoFocus={autoFocus}

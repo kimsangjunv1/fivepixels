@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import type { ReportMessages } from "@/i18n/types.js";
 import type { ReportFeedback, ReportField, UpdateReportFeedbackPayload } from "@/types/report.js";
-import type { ElementMention } from "@/types/mention.js";
+import type { ElementMention, UserMention } from "@/types/mention.js";
 import { getFieldError } from "@/utils/report/fields.js";
 import { canEditReportCases, createReportCase, getReportCases, resolveDefaultFocusedCaseId, syncIssueStatusFromCases } from "@/utils/report/reportCases.js";
 import { notifyFeedbackUpdate, type ReportSideEffectCallbacks } from "@/utils/report/reportCallbacks.js";
@@ -58,7 +58,7 @@ export function useReplyCaseEdit({
         [messages.errors.archivedReadOnly, setErrorMessage],
     );
 
-    const updateCaseEditDraftCase = useCallback((caseId: string, text: string, mentions?: ElementMention[]) => {
+    const updateCaseEditDraftCase = useCallback((caseId: string, text: string, mentions?: ElementMention[], userMentions?: UserMention[]) => {
         setCaseEditDraft((current) => {
             if (!current) {
                 return current;
@@ -70,11 +70,14 @@ export function useReplyCaseEdit({
                 }
 
                 const nextMentions = mentions === undefined ? item.mentions : mentions.length > 0 ? mentions : undefined;
+                const nextUserMentions =
+                    userMentions === undefined ? item.user_mentions : userMentions.length > 0 ? userMentions : undefined;
 
                 return {
                     ...item,
                     text,
                     ...(nextMentions ? { mentions: nextMentions } : { mentions: undefined }),
+                    ...(nextUserMentions ? { user_mentions: nextUserMentions } : { user_mentions: undefined }),
                 };
             });
         });

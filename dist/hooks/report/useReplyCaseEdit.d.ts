@@ -1,7 +1,7 @@
 import { type Dispatch, type SetStateAction } from "react";
 import type { ReportMessages } from "../../i18n/types.js";
 import type { ReportFeedback, ReportField, UpdateReportFeedbackPayload } from "../../types/report.js";
-import type { ElementMention } from "../../types/mention.js";
+import type { ElementMention, UserMention } from "../../types/mention.js";
 import { type ReportSideEffectCallbacks } from "../../utils/report/reportCallbacks.js";
 import { type FeedbackActor } from "../../utils/feedback/feedbackPermissions.js";
 export type UseReplyCaseEditParams = {
@@ -22,7 +22,7 @@ export declare function useReplyCaseEdit({ reports, activeReplyReport, activeRep
     beginCaseEdit: (report: ReportFeedback) => void;
     cancelCaseEdit: () => void;
     handleCaseEditSave: () => Promise<void>;
-    updateCaseEditDraftCase: (caseId: string, text: string, mentions?: ElementMention[]) => void;
+    updateCaseEditDraftCase: (caseId: string, text: string, mentions?: ElementMention[], userMentions?: UserMention[]) => void;
     addCaseEditDraftCase: () => void;
     removeCaseEditDraftCase: (caseId: string) => void;
     removePersistedCase: (report: ReportFeedback, caseId: string) => Promise<void>;

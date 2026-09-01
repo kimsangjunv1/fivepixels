@@ -1,5 +1,5 @@
-import type { ElementMention } from "@/types/mention.js";
-import { mentionPlainLabel, serializeMentionToken } from "@/types/mention.js";
+import type { ElementMention, UserMention } from "@/types/mention.js";
+import { mentionPlainLabel, serializeMentionToken, serializeUserMentionToken, userMentionPlainLabel } from "@/types/mention.js";
 import { parseMentionMessage } from "@/utils/mention/elementMentions.js";
 
 const BLOCK_TAGS = new Set(["DIV", "P", "LI", "SECTION", "ARTICLE", "HEADER", "FOOTER", "H1", "H2", "H3", "H4", "H5", "H6"]);
@@ -8,9 +8,18 @@ export const MENTION_CARET_GUARD = "\u200B";
 export const MENTION_CHIP_CLASS =
     "mx-[1px] inline-flex items-center rounded-[6px] bg-[var(--adaptive-blue100)] px-[6px] py-[4px] text-[12px] font-semibold text-[var(--adaptive-blue600)] align-baseline";
 
+export const USER_MENTION_CHIP_CLASS =
+    "mx-[1px] inline-flex items-center rounded-[6px] bg-[color-mix(in_srgb,var(--adaptive-accent-coral)_14%,transparent)] px-[6px] py-[4px] text-[12px] font-semibold text-[var(--adaptive-accent-coral)] align-baseline";
+
 export type EditorCaretPoint = {
     node: Node;
     offset: number;
+};
+
+export type MentionEditorState = {
+    message: string;
+    mentions: ElementMention[];
+    userMentions: UserMention[];
 };
 
 function normalizeEditorText(text: string) {
@@ -36,13 +45,13 @@ function isBlockPlaceholder(element: HTMLElement) {
     return children.every((node) => node instanceof HTMLElement && node.tagName === "BR");
 }
 
-function appendChip(parent: HTMLElement, mention: ElementMention, chipClassName: string) {
-    // ZWSP guards let the caret sit before/after contentEditable=false chips.
+function appendElementChip(parent: HTMLElement, mention: ElementMention, chipClassName: string) {
     parent.appendChild(document.createTextNode(MENTION_CARET_GUARD));
 
     const chip = document.createElement("span");
     chip.contentEditable = "false";
     chip.dataset.mentionId = mention.id;
+    chip.dataset.mentionKind = "element";
     chip.className = chipClassName;
     chip.textContent = mentionPlainLabel(mention);
     parent.appendChild(chip);
@@ -50,12 +59,64 @@ function appendChip(parent: HTMLElement, mention: ElementMention, chipClassName:
     parent.appendChild(document.createTextNode(MENTION_CARET_GUARD));
 }
 
-function serializeEditorTree(root: HTMLElement, mentions: ElementMention[], end: EditorCaretPoint | null) {
+function appendUserChip(parent: HTMLElement, mention: UserMention, chipClassName: string) {
+    parent.appendChild(document.createTextNode(MENTION_CARET_GUARD));
+
+    const chip = document.createElement("span");
+    chip.contentEditable = "false";
+    chip.dataset.mentionId = mention.id;
+    chip.dataset.mentionKind = "user";
+    chip.className = chipClassName;
+    chip.textContent = userMentionPlainLabel(mention);
+    parent.appendChild(chip);
+
+    parent.appendChild(document.createTextNode(MENTION_CARET_GUARD));
+}
+
+function serializeEditorTree(
+    root: HTMLElement,
+    mentions: ElementMention[],
+    userMentions: UserMention[],
+    end: EditorCaretPoint | null,
+): MentionEditorState {
     const mentionById = new Map(mentions.map((item) => [item.id, item]));
+    const userMentionById = new Map(userMentions.map((item) => [item.id, item]));
     const used: ElementMention[] = [];
+    const usedUsers: UserMention[] = [];
     let message = "";
     let hasContent = false;
     let stopped = false;
+
+    const appendMentionToken = (node: HTMLElement) => {
+        const mentionId = node.dataset.mentionId;
+
+        if (!mentionId) {
+            message += normalizeEditorText(node.textContent ?? "");
+            return;
+        }
+
+        if (node.dataset.mentionKind === "user") {
+            const mention = userMentionById.get(mentionId);
+
+            if (mention) {
+                message += serializeUserMentionToken(mention.id);
+                usedUsers.push(mention);
+            } else {
+                message += normalizeEditorText(node.textContent ?? "");
+            }
+
+            return;
+        }
+
+        const mention = mentionById.get(mentionId);
+
+        if (mention) {
+            message += serializeMentionToken(mention.id);
+            used.push(mention);
+        } else {
+            message += normalizeEditorText(node.textContent ?? "");
+        }
+    };
 
     const visit = (node: Node) => {
         if (stopped) {
@@ -91,30 +152,13 @@ function serializeEditorTree(root: HTMLElement, mentions: ElementMention[], end:
 
         if (mentionId) {
             if (end && (node === end.node || node.contains(end.node))) {
-                // Caret on/inside a chip → treat as after the token for query/replace.
-                const mention = mentionById.get(mentionId);
-
-                if (mention) {
-                    message += serializeMentionToken(mention.id);
-                    used.push(mention);
-                } else {
-                    message += normalizeEditorText(node.textContent ?? "");
-                }
-
+                appendMentionToken(node);
                 hasContent = true;
                 stopped = true;
                 return;
             }
 
-            const mention = mentionById.get(mentionId);
-
-            if (mention) {
-                message += serializeMentionToken(mention.id);
-                used.push(mention);
-            } else {
-                message += normalizeEditorText(node.textContent ?? "");
-            }
-
+            appendMentionToken(node);
             hasContent = true;
             return;
         }
@@ -175,9 +219,11 @@ function serializeEditorTree(root: HTMLElement, mentions: ElementMention[], end:
 
     visitChildren(root);
 
-    const uniqueUsed = Array.from(new Map(used.map((item) => [item.id, item])).values());
-
-    return { message, mentions: uniqueUsed };
+    return {
+        message,
+        mentions: Array.from(new Map(used.map((item) => [item.id, item])).values()),
+        userMentions: Array.from(new Map(usedUsers.map((item) => [item.id, item])).values()),
+    };
 }
 
 /**
@@ -185,17 +231,22 @@ function serializeEditorTree(root: HTMLElement, mentions: ElementMention[], end:
  * Chrome/Safari often insert Enter as block <div>s instead of <br>, so block boundaries become `\n`.
  * A trailing/empty `<div><br></div>` is a block break only — the inner BR is a caret placeholder, not an extra line.
  */
-export function serializeMentionEditor(root: HTMLElement, mentions: ElementMention[]) {
-    return serializeEditorTree(root, mentions, null);
+export function serializeMentionEditor(root: HTMLElement, mentions: ElementMention[], userMentions: UserMention[] = []) {
+    return serializeEditorTree(root, mentions, userMentions, null);
 }
 
 /** Same rules as full serialize, but only content before the current caret. */
-export function serializeMentionEditorBeforeCaret(root: HTMLElement, mentions: ElementMention[], caret: EditorCaretPoint | null) {
+export function serializeMentionEditorBeforeCaret(
+    root: HTMLElement,
+    mentions: ElementMention[],
+    caret: EditorCaretPoint | null,
+    userMentions: UserMention[] = [],
+) {
     if (!caret) {
         return null;
     }
 
-    return serializeEditorTree(root, mentions, caret);
+    return serializeEditorTree(root, mentions, userMentions, caret);
 }
 
 export function getEditorCaretPoint(root: HTMLElement): EditorCaretPoint | null {
@@ -231,9 +282,16 @@ export function getCaretClientRect(root: HTMLElement): DOMRect | null {
     return rect;
 }
 
-export function renderMentionEditorContent(root: HTMLElement, message: string, mentions: ElementMention[], chipClassName = MENTION_CHIP_CLASS) {
+export function renderMentionEditorContent(
+    root: HTMLElement,
+    message: string,
+    mentions: ElementMention[],
+    userMentions: UserMention[] = [],
+    chipClassName = MENTION_CHIP_CLASS,
+    userChipClassName = USER_MENTION_CHIP_CLASS,
+) {
     root.replaceChildren();
-    const parts = parseMentionMessage(message, mentions);
+    const parts = parseMentionMessage(message, mentions, userMentions);
 
     for (const part of parts) {
         if (part.type === "text") {
@@ -251,7 +309,12 @@ export function renderMentionEditorContent(root: HTMLElement, message: string, m
             continue;
         }
 
-        appendChip(root, part.mention, chipClassName);
+        if (part.type === "user_mention") {
+            appendUserChip(root, part.mention, userChipClassName);
+            continue;
+        }
+
+        appendElementChip(root, part.mention, chipClassName);
     }
 }
 
@@ -283,7 +346,7 @@ export function placeCaretAfterMention(editor: HTMLElement, mentionId: string) {
 }
 
 /** Remove the nearest mention chip behind a collapsed caret (Backspace). */
-export function deleteMentionChipBeforeCaret(editor: HTMLElement, mentions: ElementMention[]) {
+export function deleteMentionChipBeforeCaret(editor: HTMLElement, mentions: ElementMention[], userMentions: UserMention[] = []) {
     const caret = getEditorCaretPoint(editor);
 
     if (!caret) {
@@ -314,6 +377,7 @@ export function deleteMentionChipBeforeCaret(editor: HTMLElement, mentions: Elem
     }
 
     const mentionId = probe.dataset.mentionId;
+    const mentionKind = probe.dataset.mentionKind;
     const before = probe.previousSibling;
     const after = probe.nextSibling;
     probe.remove();
@@ -326,5 +390,9 @@ export function deleteMentionChipBeforeCaret(editor: HTMLElement, mentions: Elem
         after.remove();
     }
 
-    return serializeMentionEditor(editor, mentions.filter((item) => item.id !== mentionId));
+    return serializeMentionEditor(
+        editor,
+        mentionKind === "user" ? mentions : mentions.filter((item) => item.id !== mentionId),
+        mentionKind === "user" ? userMentions.filter((item) => item.id !== mentionId) : userMentions,
+    );
 }

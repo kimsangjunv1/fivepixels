@@ -1,6 +1,7 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { useReportPreferences } from "../../../providers/reportContext.js";
+import { useReport, useReportPreferences } from "../../../providers/reportContext.js";
+import { resolveMentionMemberDirectory } from "../../../utils/mention/userMentions.js";
 import { FeedbackCaseTabBar } from "./FeedbackCaseTabBar.js";
 import { MentionComposerInput } from "./MentionComposerInput.js";
 const CASE_INPUT_MIN_HEIGHT = 56;
@@ -55,6 +56,8 @@ function focusCaseInput(caseId) {
 }
 export function FeedbackCaseEditor({ cases, onCaseChange, onAddCase, onRemoveCase, autoFocus = false, onSubmitShortcut, needsAttention = false, attentionKey = 0, emptyCaseIds = [], showTabBar = true, activeCaseId: controlledActiveCaseId, onActiveCaseIdChange, enableElementMentions = false, placeholder, }) {
     const { messages } = useReportPreferences();
+    const { authors, apiTeamMembers } = useReport();
+    const teamMembers = resolveMentionMemberDirectory(authors, apiTeamMembers);
     const previousCaseCountRef = useRef(cases.length);
     const containerRef = useRef(null);
     const [uncontrolledActiveCaseId, setUncontrolledActiveCaseId] = useState(() => cases[0]?.id ?? null);
@@ -125,6 +128,6 @@ export function FeedbackCaseEditor({ cases, onCaseChange, onAddCase, onRemoveCas
     if (!activeCase || activeCaseIndex < 0) {
         return null;
     }
-    return (_jsxs("div", { ref: containerRef, className: "flex h-full min-h-0 flex-1 flex-col", children: [showTabBar ? (_jsx(FeedbackCaseTabBar, { variant: "editor", cases: cases, activeCaseId: resolvedActiveCaseId, onSelectCase: setActiveCaseId, onAddCase: onAddCase, onRemoveCase: handleRemoveCase, invalidCaseIds: needsAttention ? emptyCaseIds : [] })) : null, _jsx("div", { role: "tabpanel", id: `fivepixels-case-panel-${activeCase.id}`, "aria-labelledby": `fivepixels-case-tab-${activeCase.id}`, className: "flex min-h-0 flex-1 flex-col overflow-y-auto px-[4px] py-[4px]", children: enableElementMentions ? (_jsx("div", { id: `fivepixels-case-input-${activeCase.id}`, "data-fivepixels-case-input": activeCase.id, className: activeCaseNeedsAttention ? "fivepixels-validation-attention rounded-[8px] bg-rose-500/10" : undefined, children: _jsx(MentionComposerInput, { value: activeCase.text, mentions: activeCase.mentions ?? [], onChange: ({ message, mentions }) => onCaseChange(activeCase.id, message, mentions), placeholder: getCaseInputPlaceholder(activeCaseIndex + 1), autoFocus: autoFocus && activeCaseIndex === 0, onSubmitShortcut: onSubmitShortcut }) })) : (_jsx(CaseTextarea, { id: `fivepixels-case-input-${activeCase.id}`, autoFocus: autoFocus && activeCaseIndex === 0, value: activeCase.text, placeholder: getCaseInputPlaceholder(activeCaseIndex + 1), onChange: (text) => onCaseChange(activeCase.id, text), onSubmitShortcut: onSubmitShortcut, needsAttention: activeCaseNeedsAttention })) })] }));
+    return (_jsxs("div", { ref: containerRef, className: "flex h-full min-h-0 flex-1 flex-col", children: [showTabBar ? (_jsx(FeedbackCaseTabBar, { variant: "editor", cases: cases, activeCaseId: resolvedActiveCaseId, onSelectCase: setActiveCaseId, onAddCase: onAddCase, onRemoveCase: handleRemoveCase, invalidCaseIds: needsAttention ? emptyCaseIds : [] })) : null, _jsx("div", { role: "tabpanel", id: `fivepixels-case-panel-${activeCase.id}`, "aria-labelledby": `fivepixels-case-tab-${activeCase.id}`, className: "flex min-h-0 flex-1 flex-col overflow-y-auto px-[4px] py-[4px]", children: enableElementMentions ? (_jsx("div", { id: `fivepixels-case-input-${activeCase.id}`, "data-fivepixels-case-input": activeCase.id, className: activeCaseNeedsAttention ? "fivepixels-validation-attention rounded-[8px] bg-rose-500/10" : undefined, children: _jsx(MentionComposerInput, { value: activeCase.text, mentions: activeCase.mentions ?? [], userMentions: activeCase.user_mentions ?? [], teamMembers: teamMembers, onChange: ({ message, mentions, userMentions }) => onCaseChange(activeCase.id, message, mentions, userMentions), placeholder: getCaseInputPlaceholder(activeCaseIndex + 1), autoFocus: autoFocus && activeCaseIndex === 0, onSubmitShortcut: onSubmitShortcut }) })) : (_jsx(CaseTextarea, { id: `fivepixels-case-input-${activeCase.id}`, autoFocus: autoFocus && activeCaseIndex === 0, value: activeCase.text, placeholder: getCaseInputPlaceholder(activeCaseIndex + 1), onChange: (text) => onCaseChange(activeCase.id, text), onSubmitShortcut: onSubmitShortcut, needsAttention: activeCaseNeedsAttention })) })] }));
 }
 //# sourceMappingURL=FeedbackCaseEditor.js.map

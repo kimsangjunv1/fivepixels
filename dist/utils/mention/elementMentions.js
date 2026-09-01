@@ -1,4 +1,4 @@
-import { createMentionId, MENTION_TOKEN_PATTERN, mentionPlainLabel, serializeMentionToken } from "../../types/mention.js";
+import { createMentionId, MENTION_TOKEN_PATTERN, USER_MENTION_TOKEN_PATTERN, mentionPlainLabel, serializeMentionToken, serializeUserMentionToken, userMentionPlainLabel, } from "../../types/mention.js";
 import { TARGET_SELECTOR } from "../../constants/report.js";
 import { isFeedbackTargetVisible, toPickSnapshot } from "../../utils/shared/dom.js";
 import { getPageDocument, isHtmlElement, queryPageSelector, queryPageSelectorAll } from "../../utils/overlay/pageDocumentBridge.js";
@@ -177,37 +177,77 @@ export function resolveMentionSnapshot(mention) {
     }
     return toPickSnapshot(element);
 }
-export function parseMentionMessage(message, mentions = []) {
+function collectTokenMatches(message) {
+    const matches = [];
+    for (const match of message.matchAll(MENTION_TOKEN_PATTERN)) {
+        matches.push({
+            index: match.index ?? 0,
+            length: match[0].length,
+            kind: "element",
+            id: match[1] ?? "",
+            raw: match[0],
+        });
+    }
+    for (const match of message.matchAll(USER_MENTION_TOKEN_PATTERN)) {
+        matches.push({
+            index: match.index ?? 0,
+            length: match[0].length,
+            kind: "user",
+            id: match[1] ?? "",
+            raw: match[0],
+        });
+    }
+    return matches.sort((left, right) => left.index - right.index);
+}
+export function parseMentionMessage(message, mentions = [], userMentions = []) {
     const mentionById = new Map(mentions.map((item) => [item.id, item]));
+    const userMentionById = new Map(userMentions.map((item) => [item.id, item]));
     const parts = [];
     let lastIndex = 0;
-    for (const match of message.matchAll(MENTION_TOKEN_PATTERN)) {
-        const index = match.index ?? 0;
-        const mentionId = match[1];
-        const mention = mentionById.get(mentionId);
-        if (index > lastIndex) {
-            parts.push({ type: "text", value: message.slice(lastIndex, index) });
+    for (const match of collectTokenMatches(message)) {
+        if (match.index > lastIndex) {
+            parts.push({ type: "text", value: message.slice(lastIndex, match.index) });
         }
-        if (mention) {
-            parts.push({ type: "mention", mention });
+        if (match.kind === "element") {
+            const mention = mentionById.get(match.id);
+            if (mention) {
+                parts.push({ type: "mention", mention });
+            }
+            else {
+                parts.push({ type: "text", value: match.raw });
+            }
         }
         else {
-            parts.push({ type: "text", value: match[0] });
+            const mention = userMentionById.get(match.id);
+            if (mention) {
+                parts.push({ type: "user_mention", mention });
+            }
+            else {
+                parts.push({ type: "text", value: match.raw });
+            }
         }
-        lastIndex = index + match[0].length;
+        lastIndex = match.index + match.length;
     }
     if (lastIndex < message.length) {
         parts.push({ type: "text", value: message.slice(lastIndex) });
     }
     return parts.length > 0 ? parts : [{ type: "text", value: message }];
 }
-export function mentionMessageToPlainText(message, mentions = []) {
-    return parseMentionMessage(message, mentions)
-        .map((part) => (part.type === "text" ? part.value : mentionPlainLabel(part.mention)))
+export function mentionMessageToPlainText(message, mentions = [], userMentions = []) {
+    return parseMentionMessage(message, mentions, userMentions)
+        .map((part) => {
+        if (part.type === "text") {
+            return part.value;
+        }
+        if (part.type === "user_mention") {
+            return userMentionPlainLabel(part.mention);
+        }
+        return mentionPlainLabel(part.mention);
+    })
         .join("");
 }
-export function stripMentionTokensForEmptyCheck(message, mentions = []) {
-    return mentionMessageToPlainText(message, mentions).trim();
+export function stripMentionTokensForEmptyCheck(message, mentions = [], userMentions = []) {
+    return mentionMessageToPlainText(message, mentions, userMentions).trim();
 }
 export function toStoredMention(candidate) {
     return {
@@ -263,17 +303,20 @@ export function resolveActiveMentionQuery(options) {
     }
     return null;
 }
-export function replaceActiveMentionQuery(message, query, mention, atOffsetInBefore) {
+export function replaceActiveMentionQuery(message, query, mentionOrToken, atOffsetInBefore) {
     const needle = `@${query}`;
     const replaceAt = atOffsetInBefore ?? message.lastIndexOf(needle);
     if (replaceAt < 0 || message.slice(replaceAt, replaceAt + needle.length) !== needle) {
         return null;
     }
-    // Avoid replacing the `@` inside an existing `@{id}` token when offset is omitted.
-    if (atOffsetInBefore === undefined && message[replaceAt + 1] === "{") {
+    // Avoid replacing the `@` inside an existing `@{id}` / `@u{id}` token when offset is omitted.
+    if (atOffsetInBefore === undefined && (message[replaceAt + 1] === "{" || message.slice(replaceAt + 1, replaceAt + 3) === "u{")) {
         return null;
     }
-    const token = serializeMentionToken(mention.id);
+    const token = typeof mentionOrToken === "string" ? mentionOrToken : serializeMentionToken(mentionOrToken.id);
     return `${message.slice(0, replaceAt)}${token} ${message.slice(replaceAt + needle.length)}`;
+}
+export function replaceActiveUserMentionQuery(message, query, mention, atOffsetInBefore) {
+    return replaceActiveMentionQuery(message, query, serializeUserMentionToken(mention.id), atOffsetInBefore);
 }
 //# sourceMappingURL=elementMentions.js.map

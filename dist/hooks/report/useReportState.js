@@ -8,6 +8,7 @@ import { useReportPanelShell } from "./useReportPanelShell.js";
 import { useReportReplyReview } from "./useReportReplyReview.js";
 import { assembleReportContextValue } from "./assembleReportContextValue.js";
 import { useReportTeamActor } from "./useReportTeamActor.js";
+import { useNotificationCenter } from "./useNotificationCenter.js";
 import { useNetworkMonitor } from "../useNetworkMonitor.js";
 import { resolveDefaultAuthorName } from "../../utils/report/resolveDefaultAuthorName.js";
 export function useReportState({ projectId, environment, appVersion, panelAppearance, tooltipAppearance, questionThreadDefault = "expanded", threadLayoutDefault = "classic", fields, authors = [], requireReviewerKey = false, shortcut: _shortcut, identify, adapter, onNavigate, onRevealTarget, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys = false, initialLocale, messageOverrides, pixelsMode = "default", sync = "local", requireAuth, replyHistory, networkMonitor = true, }) {
@@ -263,6 +264,38 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         persistenceMode: panel.persistenceStatus.mode,
         onListReviewers: adapter?.members?.list,
     });
+    const notifications = useNotificationCenter({
+        projectId,
+        messages: panel.messages,
+        sessionActor: auth.sessionActor
+            ? { id: auth.sessionActor.id ?? null, name: auth.sessionActor.name ?? null }
+            : null,
+        reports: panel.reports,
+        allPageReports: panel.allPageReports,
+        activeApiFailureAlert,
+    });
+    const activateNotification = useCallback((item) => {
+        if (item.type === "api_error") {
+            panel.openPanelTab("api-flow");
+            return;
+        }
+        const reportId = item.payload.reportId;
+        if (!reportId) {
+            return;
+        }
+        const report = panel.reports.find((entry) => entry.id === reportId) ??
+            panel.allPageReports.find((entry) => entry.id === reportId) ??
+            panel.currentPageReports.find((entry) => entry.id === reportId);
+        if (!report) {
+            void markers.locateFeedback(reportId);
+            return;
+        }
+        if (item.type === "case_deleted" || item.type === "feedback_deleted") {
+            void markers.locateFeedback(reportId);
+            return;
+        }
+        void markers.activateFeedbackMarker(report, item.payload.caseId ?? null);
+    }, [markers, panel]);
     useEffect(() => {
         if (auth.authBootstrapState !== "failed") {
             return;
@@ -277,6 +310,7 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         markers.setHoveredMarkerId(null);
         reply.setReplyDraft("");
         reply.setReplyMentions([]);
+        reply.setReplyUserMentions([]);
         reply.setMentionHighlightTarget(null);
         reply.setPendingComposer(null);
         reply.setShowConfirmAuthorSelect(false);
@@ -363,6 +397,8 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         dismissFailureAlert,
         appendApiFlowEntryToDraftCase,
         networkMonitorEnabled,
+        notifications,
+        activateNotification,
     });
 }
 //# sourceMappingURL=useReportState.js.map

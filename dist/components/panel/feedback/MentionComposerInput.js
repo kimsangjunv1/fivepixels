@@ -1,7 +1,9 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { findElementMentionCandidates, getAtQuery, mentionQueryEndsWithSpace, replaceActiveMentionQuery, toStoredMention } from "../../../utils/mention/elementMentions.js";
+import { serializeMentionToken, serializeUserMentionToken } from "../../../types/mention.js";
+import { findElementMentionCandidates, getAtQuery, mentionQueryEndsWithSpace, replaceActiveMentionQuery, toStoredMention, } from "../../../utils/mention/elementMentions.js";
+import { findUserMentionCandidates, toStoredUserMention } from "../../../utils/mention/userMentions.js";
 import { deleteMentionChipBeforeCaret, getCaretClientRect, getEditorCaretPoint, placeCaretAfterMention, renderMentionEditorContent, serializeMentionEditor, serializeMentionEditorBeforeCaret, } from "../../../utils/mention/mentionComposerDom.js";
 import { useReportPreferences, useReportSession } from "../../../providers/reportContext.js";
 import { ensureReportTooltipLayer } from "../../../utils/shared/dom.js";
@@ -19,12 +21,14 @@ function placeCaretAtEnd(element) {
     selection.removeAllRanges();
     selection.addRange(range);
 }
-export function MentionComposerInput({ value, mentions, onChange, placeholder, autoFocus = false, onSubmitShortcut, onMultilineChange }) {
+export function MentionComposerInput({ value, mentions, userMentions = [], teamMembers = [], onChange, placeholder, autoFocus = false, onSubmitShortcut, onMultilineChange, }) {
     const { messages } = useReportPreferences();
     const { setMentionHighlightTarget } = useReportSession();
     const editorRef = useRef(null);
     const rootRef = useRef(null);
     const mentionsRef = useRef(mentions);
+    const userMentionsRef = useRef(userMentions);
+    const teamMembersRef = useRef(teamMembers);
     const skipSyncRef = useRef(false);
     const isComposingRef = useRef(false);
     const activeAtOffsetRef = useRef(null);
@@ -37,6 +41,8 @@ export function MentionComposerInput({ value, mentions, onChange, placeholder, a
     const [portalRoot, setPortalRoot] = useState(null);
     const lastMultilineRef = useRef(null);
     mentionsRef.current = mentions;
+    userMentionsRef.current = userMentions;
+    teamMembersRef.current = teamMembers;
     const syncHeight = useCallback(() => {
         const editor = editorRef.current;
         if (!editor) {
@@ -68,8 +74,10 @@ export function MentionComposerInput({ value, mentions, onChange, placeholder, a
             return;
         }
         const caret = getEditorCaretPoint(editor);
-        const before = serializeMentionEditorBeforeCaret(editor, mentionsRef.current, caret);
-        const resolved = before ? getAtQuery(before.message) : getAtQuery(serializeMentionEditor(editor, mentionsRef.current).message);
+        const before = serializeMentionEditorBeforeCaret(editor, mentionsRef.current, caret, userMentionsRef.current);
+        const resolved = before
+            ? getAtQuery(before.message)
+            : getAtQuery(serializeMentionEditor(editor, mentionsRef.current, userMentionsRef.current).message);
         if (!resolved) {
             dismissedAtOffsetRef.current = null;
             activeAtOffsetRef.current = null;
@@ -99,14 +107,14 @@ export function MentionComposerInput({ value, mentions, onChange, placeholder, a
             syncHeight();
             return;
         }
-        const serialized = serializeMentionEditor(editor, mentionsRef.current);
+        const serialized = serializeMentionEditor(editor, mentionsRef.current, userMentionsRef.current);
         if (serialized.message === value) {
             syncHeight();
             return;
         }
-        renderMentionEditorContent(editor, value, mentions);
+        renderMentionEditorContent(editor, value, mentions, userMentions);
         syncHeight();
-    }, [value, mentions, syncHeight]);
+    }, [value, mentions, userMentions, syncHeight]);
     useEffect(() => {
         if (!autoFocus) {
             return;
@@ -127,22 +135,20 @@ export function MentionComposerInput({ value, mentions, onChange, placeholder, a
             setMentionHighlightTarget(null);
             return;
         }
-        const nextCandidates = findElementMentionCandidates(query);
-        setCandidates(nextCandidates);
+        const userCandidates = findUserMentionCandidates(query, teamMembersRef.current).map((candidate) => ({ kind: "user", candidate }));
+        const elementCandidates = findElementMentionCandidates(query).map((candidate) => ({ kind: "element", candidate }));
+        setCandidates([...userCandidates, ...elementCandidates]);
         setActiveIndex(0);
-    }, [query, setMentionHighlightTarget]);
-    // IME-safe: Korean composition uses the first Space to commit text, so keydown
-    // alone cannot reliably dismiss. When the query already ends with a space and
-    // nothing matches, close mention mode (works for both IME and Latin input).
+    }, [query, setMentionHighlightTarget, teamMembers]);
     useEffect(() => {
         if (query === null || !mentionQueryEndsWithSpace(query)) {
             return;
         }
-        if (findElementMentionCandidates(query).length > 0) {
+        if (candidates.length > 0) {
             return;
         }
         dismissActiveMention(activeAtOffsetRef.current);
-    }, [query, dismissActiveMention]);
+    }, [query, candidates.length, dismissActiveMention]);
     useLayoutEffect(() => {
         if (query === null || !rootRef.current) {
             setMenuPlacement(null);
@@ -184,7 +190,7 @@ export function MentionComposerInput({ value, mentions, onChange, placeholder, a
             return;
         }
         const active = candidates[activeIndex];
-        setMentionHighlightTarget(active?.snapshot ?? null);
+        setMentionHighlightTarget(active?.kind === "element" ? active.candidate.snapshot : null);
     }, [activeIndex, candidates, query, setMentionHighlightTarget]);
     useEffect(() => {
         return () => {
@@ -197,39 +203,66 @@ export function MentionComposerInput({ value, mentions, onChange, placeholder, a
             return;
         }
         skipSyncRef.current = true;
-        const next = serializeMentionEditor(editor, mentionsRef.current);
+        const next = serializeMentionEditor(editor, mentionsRef.current, userMentionsRef.current);
+        mentionsRef.current = next.mentions;
+        userMentionsRef.current = next.userMentions;
         onChange(next);
         syncHeight();
         refreshMentionQuery();
     };
-    const insertCandidate = (candidate) => {
+    const insertCandidate = (item) => {
         const editor = editorRef.current;
         if (!editor) {
             return;
         }
-        const current = serializeMentionEditor(editor, mentionsRef.current);
+        const current = serializeMentionEditor(editor, mentionsRef.current, userMentionsRef.current);
         const caret = getEditorCaretPoint(editor);
-        const before = serializeMentionEditorBeforeCaret(editor, mentionsRef.current, caret);
+        const before = serializeMentionEditorBeforeCaret(editor, mentionsRef.current, caret, userMentionsRef.current);
         const resolved = (before ? getAtQuery(before.message) : null) ??
-            (query !== null && activeAtOffsetRef.current !== null ? { query, atOffsetInBefore: activeAtOffsetRef.current } : getAtQuery(current.message));
+            (query !== null && activeAtOffsetRef.current !== null
+                ? { query, atOffsetInBefore: activeAtOffsetRef.current }
+                : getAtQuery(current.message));
         if (!resolved) {
             return;
         }
-        const mention = toStoredMention(candidate);
-        const nextMessage = replaceActiveMentionQuery(current.message, resolved.query, mention, resolved.atOffsetInBefore);
+        if (item.kind === "user") {
+            const mention = toStoredUserMention(item.candidate);
+            const nextMessage = replaceActiveMentionQuery(current.message, resolved.query, serializeUserMentionToken(mention.id), resolved.atOffsetInBefore);
+            if (!nextMessage) {
+                return;
+            }
+            const nextUserMentions = [...current.userMentions.filter((entry) => entry.id !== mention.id), mention];
+            mentionsRef.current = current.mentions;
+            userMentionsRef.current = nextUserMentions;
+            dismissedAtOffsetRef.current = null;
+            activeAtOffsetRef.current = null;
+            setQuery(null);
+            setMentionHighlightTarget(null);
+            setMenuPlacement(null);
+            renderMentionEditorContent(editor, nextMessage, current.mentions, nextUserMentions);
+            skipSyncRef.current = true;
+            onChange({ message: nextMessage, mentions: current.mentions, userMentions: nextUserMentions });
+            syncHeight();
+            editor.focus();
+            placeCaretAfterMention(editor, mention.id);
+            return;
+        }
+        const mention = toStoredMention(item.candidate);
+        const nextMessage = replaceActiveMentionQuery(current.message, resolved.query, serializeMentionToken(mention.id), resolved.atOffsetInBefore);
         if (!nextMessage) {
             return;
         }
-        const nextMentions = [...current.mentions.filter((item) => item.id !== mention.id), mention];
+        const nextMentions = [...current.mentions.filter((entry) => entry.id !== mention.id), mention];
         mentionsRef.current = nextMentions;
+        userMentionsRef.current = current.userMentions;
         dismissedAtOffsetRef.current = null;
         activeAtOffsetRef.current = null;
         setQuery(null);
         setMentionHighlightTarget(null);
         setMenuPlacement(null);
-        renderMentionEditorContent(editor, nextMessage, nextMentions);
+        renderMentionEditorContent(editor, nextMessage, nextMentions, current.userMentions);
         skipSyncRef.current = true;
-        onChange({ message: nextMessage, mentions: nextMentions });
+        onChange({ message: nextMessage, mentions: nextMentions, userMentions: current.userMentions });
         syncHeight();
         editor.focus();
         placeCaretAfterMention(editor, mention.id);
@@ -250,16 +283,23 @@ export function MentionComposerInput({ value, mentions, onChange, placeholder, a
                         width: menuPlacement.width,
                     }
                 : {
-                    // Fallback before first layout measure so the menu never "fails to open".
                     bottom: 24,
                     left: 24,
                     width: 280,
-                }, children: candidates.length === 0 ? (_jsx("p", { className: "px-[12px] py-[8px] text-[12px] text-[var(--adaptive-black500)]", children: messages.composer.mentionEmpty })) : (candidates.map((candidate, index) => {
+                }, children: candidates.length === 0 ? (_jsx("p", { className: "px-[12px] py-[8px] text-[12px] text-[var(--adaptive-black500)]", children: messages.composer.mentionEmpty })) : (candidates.map((item, index) => {
                 const active = index === activeIndex;
-                return (_jsxs("button", { type: "button", role: "option", "aria-selected": active, "data-fivepixels-interactive": "", className: "flex w-full flex-col gap-[2px] px-[4px] py-[2px] text-left border-none " + (active ? "bg-[var(--adaptive-blue100)]" : "hover:bg-[var(--adaptive-black100)]"), onMouseEnter: () => setActiveIndex(index), onMouseDown: (event) => {
+                if (item.kind === "user") {
+                    return (_jsxs("button", { type: "button", role: "option", "aria-selected": active, "data-fivepixels-interactive": "", className: "flex w-full flex-col gap-[2px] px-[4px] py-[2px] text-left border-none " +
+                            (active ? "bg-[var(--adaptive-blue100)]" : "hover:bg-[var(--adaptive-black100)]"), onMouseEnter: () => setActiveIndex(index), onMouseDown: (event) => {
+                            event.preventDefault();
+                            insertCandidate(item);
+                        }, children: [_jsxs("span", { className: "truncate text-[12px] font-semibold text-[var(--adaptive-black900)]", children: ["@", item.candidate.name] }), _jsx("span", { className: "truncate text-[11px] text-[var(--adaptive-black500)]", children: messages.composer.userMentionHint })] }, `user-${item.candidate.id}-${index}`));
+                }
+                return (_jsxs("button", { type: "button", role: "option", "aria-selected": active, "data-fivepixels-interactive": "", className: "flex w-full flex-col gap-[2px] px-[4px] py-[2px] text-left border-none " +
+                        (active ? "bg-[var(--adaptive-blue100)]" : "hover:bg-[var(--adaptive-black100)]"), onMouseEnter: () => setActiveIndex(index), onMouseDown: (event) => {
                         event.preventDefault();
-                        insertCandidate(candidate);
-                    }, children: [_jsx("span", { className: "truncate text-[12px] font-semibold text-[var(--adaptive-black900)]", children: candidate.label }), _jsx("span", { className: "truncate text-[11px] text-[var(--adaptive-black500)]", children: candidate.reportId ?? candidate.suggestedReportId ?? candidate.element.tagName.toLowerCase() })] }, `${candidate.targetSelector}-${candidate.label}-${index}`));
+                        insertCandidate(item);
+                    }, children: [_jsx("span", { className: "truncate text-[12px] font-semibold text-[var(--adaptive-black900)]", children: item.candidate.label }), _jsx("span", { className: "truncate text-[11px] text-[var(--adaptive-black500)]", children: item.candidate.reportId ?? item.candidate.suggestedReportId ?? item.candidate.element.tagName.toLowerCase() })] }, `${item.candidate.targetSelector}-${item.candidate.label}-${index}`));
             })) }), portalRoot)
         : null;
     return (_jsxs("div", { ref: rootRef, className: "relative min-w-0 flex-1", children: [showPlaceholder ? _jsx("span", { className: "pointer-events-none absolute left-[4px] top-[6px] text-[14px] leading-[1.5] text-[var(--adaptive-text-muted)]", children: placeholder }) : null, _jsx("div", { ref: editorRef, contentEditable: true, role: "textbox", "aria-multiline": "true", "aria-label": placeholder, "data-fivepixels-interactive": "", suppressContentEditableWarning: true, className: "max-h-[200px] w-full min-w-0 flex-1 resize-none overflow-hidden bg-transparent px-[4px] py-[6px] text-[14px] leading-[1.5] text-[var(--adaptive-text-primary)] outline-none", style: { minHeight: EDITOR_MIN_HEIGHT }, onInput: () => {
@@ -297,13 +337,10 @@ export function MentionComposerInput({ value, mentions, onChange, placeholder, a
                             return;
                         }
                         if (event.key === " " && !event.metaKey && !event.ctrlKey && !event.altKey) {
-                            // Empty results: dismiss on the first Space even while IME is composing
-                            // (Hangul often uses Space only to commit, without inserting a space char).
                             if (candidates.length === 0) {
                                 dismissActiveMention(activeAtOffsetRef.current);
                                 return;
                             }
-                            // Candidates present: a second consecutive space confirms the highlighted one.
                             if (!isComposingRef.current && mentionQueryEndsWithSpace(query)) {
                                 event.preventDefault();
                                 const active = candidates[activeIndex];
@@ -322,10 +359,11 @@ export function MentionComposerInput({ value, mentions, onChange, placeholder, a
                     if (event.key === "Backspace" && !event.metaKey && !event.ctrlKey && !event.altKey) {
                         const editor = editorRef.current;
                         if (editor) {
-                            const deleted = deleteMentionChipBeforeCaret(editor, mentionsRef.current);
+                            const deleted = deleteMentionChipBeforeCaret(editor, mentionsRef.current, userMentionsRef.current);
                             if (deleted) {
                                 event.preventDefault();
                                 mentionsRef.current = deleted.mentions;
+                                userMentionsRef.current = deleted.userMentions;
                                 skipSyncRef.current = true;
                                 onChange(deleted);
                                 syncHeight();

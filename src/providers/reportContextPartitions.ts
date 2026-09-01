@@ -183,6 +183,8 @@ export const REPORT_SESSION_KEYS = [
     "setReplyDraft",
     "replyMentions",
     "setReplyMentions",
+    "replyUserMentions",
+    "setReplyUserMentions",
     "mentionHighlightTarget",
     "setMentionHighlightTarget",
     "replySubmitAsQuestion",
@@ -248,6 +250,19 @@ export const REPORT_SESSION_KEYS = [
     "updateDraftCategory",
     "startEditing",
     "stopEditing",
+    "notifications",
+    "unreadNotificationCount",
+    "notificationUiOpen",
+    "setNotificationUiOpen",
+    "toggleNotificationUiOpen",
+    "closeNotificationUi",
+    "markNotificationRead",
+    "markAllNotificationsRead",
+    "dismissNotification",
+    "clearNotifications",
+    "notificationWindowPosition",
+    "setNotificationWindowPosition",
+    "activateNotification",
 ] as const;
 
 export const REPORT_DATA_KEYS = [

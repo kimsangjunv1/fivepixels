@@ -3,7 +3,7 @@ import { panelAnchorSide, placementToCollapsedPanelStyle, usePanelDock } from "@
 import { usePanelResize, panelSizeToStyle } from "@/hooks/usePanelResize.js";
 import { usePanelFeedbackTransfer } from "@/hooks/usePanelFeedbackTransfer.js";
 import { useReport, useReportPreferences } from "@/providers/reportContext.js";
-import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, DevicePreviewIcon, EyeOpenIcon, LockIcon, LogoIcon, SelectIcon, SettingsIcon } from "@/components/icons/Icons.js";
+import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, DevicePreviewIcon, EyeOpenIcon, LockIcon, LogoIcon, NotificationActiveIcon, NotificationIdleIcon, SelectIcon, SettingsIcon } from "@/components/icons/Icons.js";
 import { IconTooltipButton } from "@/components/ui/IconTooltipButton.js";
 import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
 import { useIntegrationLock } from "@/components/ui/IntegrationLock.js";
@@ -119,6 +119,9 @@ export function ReportControlPanel() {
         setPanelCollapsed,
         devicePreviewUiOpen,
         setDevicePreviewUiOpen,
+        notificationUiOpen,
+        toggleNotificationUiOpen,
+        unreadNotificationCount,
     } = useReport();
     const { integrationCapabilities } = useReportPreferences();
     const showAutoRefreshControl = integrationCapabilities.persistenceMode !== "localStorage";
@@ -411,6 +414,18 @@ export function ReportControlPanel() {
                                                     onClick={toggleIssueMode}
                                                 >
                                                     <EyeOpenIcon className="h-[16px] w-[16px]" />
+                                                </IconTooltipButton>
+
+                                                <IconTooltipButton
+                                                    label={messages.panel.notifications}
+                                                    active={notificationUiOpen}
+                                                    onClick={toggleNotificationUiOpen}
+                                                >
+                                                    {unreadNotificationCount > 0 ? (
+                                                        <NotificationActiveIcon className="h-[16px] w-[16px]" />
+                                                    ) : (
+                                                        <NotificationIdleIcon className="h-[16px] w-[16px]" />
+                                                    )}
                                                 </IconTooltipButton>
 
                                                 {isInsideDevicePreviewFrame() ? null : (

@@ -4,7 +4,7 @@ import type { CreateReplyPayload, ReportAuthor, ReportFeedback, ReportField, Rep
 import type { PendingFeedbackComposer } from "../../types/report-ui.js";
 import { type ReportSideEffectCallbacks } from "../../utils/report/reportCallbacks.js";
 import type { SessionActor } from "../../utils/report/reportTeam.js";
-import type { ElementMention } from "../../types/mention.js";
+import type { ElementMention, UserMention } from "../../types/mention.js";
 import type { TargetSnapshot } from "../../types/report-ui.js";
 export type UseReportReplyReviewParams = {
     reports: ReportFeedback[];
@@ -45,7 +45,7 @@ export declare function useReportReplyReview({ reports, allPageReports, messages
     beginCaseEdit: (report: ReportFeedback) => void;
     cancelCaseEdit: () => void;
     handleCaseEditSave: () => Promise<void>;
-    updateCaseEditDraftCase: (caseId: string, text: string, mentions?: ElementMention[]) => void;
+    updateCaseEditDraftCase: (caseId: string, text: string, mentions?: ElementMention[], userMentions?: UserMention[]) => void;
     addCaseEditDraftCase: () => void;
     removeCaseEditDraftCase: (caseId: string) => void;
     removePersistedCase: (report: ReportFeedback, caseId: string) => Promise<void>;
@@ -69,6 +69,8 @@ export declare function useReportReplyReview({ reports, allPageReports, messages
     setReplyDraft: Dispatch<SetStateAction<string>>;
     replyMentions: ElementMention[];
     setReplyMentions: Dispatch<SetStateAction<ElementMention[]>>;
+    replyUserMentions: UserMention[];
+    setReplyUserMentions: Dispatch<SetStateAction<UserMention[]>>;
     mentionHighlightTarget: TargetSnapshot | null;
     setMentionHighlightTarget: Dispatch<SetStateAction<TargetSnapshot | null>>;
     replySubmitAsQuestion: boolean;
