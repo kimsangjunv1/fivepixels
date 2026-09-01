@@ -1,5 +1,5 @@
 import type { ResizeCorner } from "@/hooks/useGhostCornerResize.js";
-import type { PointerEvent as ReactPointerEvent } from "react";
+import type { CSSProperties, PointerEvent as ReactPointerEvent } from "react";
 
 type CornerResizeHandleProps = {
     corner: ResizeCorner;
@@ -9,10 +9,10 @@ type CornerResizeHandleProps = {
 };
 
 const POSITION_CLASS: Record<ResizeCorner, string> = {
-    "bottom-right": "bottom-0 right-0 items-end justify-end rounded-br-[12px]",
-    "bottom-left": "bottom-0 left-0 items-end justify-start rounded-bl-[12px]",
-    "top-right": "top-0 right-0 items-start justify-end rounded-tr-[12px]",
-    "top-left": "top-0 left-0 items-start justify-start rounded-tl-[12px]",
+    "bottom-right": "bottom-0 right-0 translate-x-1/2 translate-y-1/2",
+    "bottom-left": "bottom-0 left-0 -translate-x-1/2 translate-y-1/2",
+    "top-right": "top-0 right-0 translate-x-1/2 -translate-y-1/2",
+    "top-left": "top-0 left-0 -translate-x-1/2 -translate-y-1/2",
 };
 
 const CURSOR_CLASS: Record<ResizeCorner, string> = {
@@ -22,28 +22,48 @@ const CURSOR_CLASS: Record<ResizeCorner, string> = {
     "top-left": "cursor-nwse-resize",
 };
 
-const ICON_TRANSFORM_CLASS: Record<ResizeCorner, string> = {
-    "bottom-right": "",
-    "bottom-left": "-scale-x-100",
-    "top-right": "-scale-y-100",
-    "top-left": "-scale-x-100 -scale-y-100",
+/** Pin the SVG inner corner on the hit-area center (= panel corner). */
+const ICON_STYLE: Record<ResizeCorner, CSSProperties> = {
+    "bottom-right": {
+        left: "50%",
+        top: "50%",
+    },
+    "top-left": {
+        left: "50%",
+        top: "50%",
+        transform: "translate(-100%, -100%) rotate(180deg)",
+        transformOrigin: "100% 100%",
+    },
+    "top-right": {
+        left: "50%",
+        top: "50%",
+        transform: "translate(0, -100%) scaleY(-1)",
+        transformOrigin: "0% 100%",
+    },
+    "bottom-left": {
+        left: "50%",
+        top: "50%",
+        transform: "translate(-100%, 0) scaleX(-1)",
+        transformOrigin: "100% 0%",
+    },
 };
 
-function DragHandleIcon({ corner }: { corner: ResizeCorner }) {
+function CornerHandleIcon({ corner }: { corner: ResizeCorner }) {
     return (
         <svg
-            width="12"
-            height="12"
-            viewBox="0 0 12 12"
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
             aria-hidden
-            className={`text-[var(--adaptive-text-muted)] ${ICON_TRANSFORM_CLASS[corner]}`}
+            className="pointer-events-none absolute block drop-shadow-[0_1px_4px_rgba(0,0,0,0.12)]"
+            style={ICON_STYLE[corner]}
         >
             <path
-                d="M11 2.5C11 7.02 7.52 10.5 3 10.5"
-                stroke="currentColor"
-                strokeWidth="2.5"
+                d="M2 14C2 7.82 7.82 2 14 2"
+                stroke="var(--adaptive-surface-overlay)"
+                strokeWidth="3"
                 strokeLinecap="round"
             />
         </svg>
@@ -66,11 +86,11 @@ export function CornerResizeHandle({ corner, ariaLabel, inactive = false, onPoin
             aria-label={ariaLabel}
             aria-disabled={inactive}
             onPointerDown={handlePointerDown}
-            className={`absolute z-20 flex h-[22px] w-[22px] p-[4px] outline-none ${POSITION_CLASS[corner]} ${
+            className={`absolute z-20 h-[24px] w-[24px] outline-none ${POSITION_CLASS[corner]} ${
                 inactive ? "pointer-events-none opacity-40" : CURSOR_CLASS[corner]
             }`}
         >
-            <DragHandleIcon corner={corner} />
+            <CornerHandleIcon corner={corner} />
         </div>
     );
 }

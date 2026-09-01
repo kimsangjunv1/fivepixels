@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useGhostCornerResize } from "../hooks/useGhostCornerResize.js";
+import { getResizeHandlesForPlacement } from "../utils/panel/resizeHandles.js";
 const STORAGE_KEY = "fivepixels:panel-size";
 export const PANEL_WIDTH_MIN = 342;
 export const PANEL_DEFAULT_WIDTH = PANEL_WIDTH_MIN;
@@ -130,7 +131,7 @@ export function panelSizeToStyle(size, applyFixedHeight = false) {
 }
 export function usePanelResize({ enabled, corner, heightResizeEnabled, panelRef, }) {
     const [size, setSize] = useState(() => readStoredPanelSize());
-    const resizeCorner = getOppositeResizeCorner(corner);
+    const resizeHandles = useMemo(() => getResizeHandlesForPlacement(corner, heightResizeEnabled), [corner, heightResizeEnabled]);
     const resolveMinHeight = useCallback(() => {
         if (heightResizeEnabled) {
             return PANEL_HEIGHT_MIN;
@@ -193,10 +194,9 @@ export function usePanelResize({ enabled, corner, heightResizeEnabled, panelRef,
         setSize(nextState);
         persistPanelSize(nextState);
     }, [heightResizeEnabled]);
-    const { isResizing, ghostRef, handleResizePointerDown } = useGhostCornerResize({
+    const { isResizing, ghostRef, createResizePointerDown } = useGhostCornerResize({
         enabled,
         targetRef: panelRef,
-        handleCorner: resizeCorner,
         clampSize: clampResizeBox,
         onResizeComplete: handleResizeComplete,
         resolveStartSize,
@@ -209,8 +209,8 @@ export function usePanelResize({ enabled, corner, heightResizeEnabled, panelRef,
     return {
         panelSize: size,
         isResizing,
-        resizeCorner,
-        handleResizePointerDown,
+        resizeHandles,
+        createResizePointerDown,
         resetPanelSize,
         ghostRef,
         isDefaultSize: size.width === PANEL_DEFAULT_WIDTH && size.height === null,

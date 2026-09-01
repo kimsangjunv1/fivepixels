@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type RefObject } from "react";
 
 export type ResizeCorner = "top-left" | "top-right" | "bottom-left" | "bottom-right";
+export type ResizeEdge = "top" | "bottom" | "left" | "right";
+
+export type ResizeHandle = { kind: "corner"; corner: ResizeCorner } | { kind: "edge"; edge: ResizeEdge };
 
 export type BoxSize = {
     width: number;
@@ -15,7 +18,7 @@ type ResizeSession = {
     startHeight: number;
     visualLeft: number;
     visualTop: number;
-    handleCorner: ResizeCorner;
+    handle: ResizeHandle;
 };
 
 const RESIZE_LISTENER_OPTIONS = { capture: true } as const;
@@ -27,8 +30,10 @@ function applyGhostRect(node: HTMLDivElement, rect: BoxSize & { left: number; to
     node.style.height = `${rect.height}px`;
 }
 
+type RectSession = Pick<ResizeSession, "visualLeft" | "visualTop" | "startWidth" | "startHeight" | "startX" | "startY">;
+
 export function resolveGhostCornerRect(
-    session: Pick<ResizeSession, "handleCorner" | "visualLeft" | "visualTop" | "startWidth" | "startHeight" | "startX" | "startY">,
+    session: RectSession & { handleCorner: ResizeCorner },
     clientX: number,
     clientY: number,
     clampSize: (width: number, height: number) => BoxSize,
@@ -86,6 +91,66 @@ export function resolveGhostCornerRect(
     };
 }
 
+export function resolveGhostEdgeRect(
+    session: RectSession & { handleEdge: ResizeEdge },
+    clientX: number,
+    clientY: number,
+    clampSize: (width: number, height: number) => BoxSize,
+) {
+    const deltaX = clientX - session.startX;
+    const deltaY = clientY - session.startY;
+    let width = session.startWidth;
+    let height = session.startHeight;
+
+    switch (session.handleEdge) {
+        case "right":
+            width = session.startWidth + deltaX;
+            break;
+        case "left":
+            width = session.startWidth - deltaX;
+            break;
+        case "bottom":
+            height = session.startHeight + deltaY;
+            break;
+        case "top":
+            height = session.startHeight - deltaY;
+            break;
+    }
+
+    const clamped = clampSize(width, height);
+    const visualRight = session.visualLeft + session.startWidth;
+    const visualBottom = session.visualTop + session.startHeight;
+    let left = session.visualLeft;
+    let top = session.visualTop;
+
+    switch (session.handleEdge) {
+        case "right":
+        case "bottom":
+            break;
+        case "left":
+            left = visualRight - clamped.width;
+            break;
+        case "top":
+            top = visualBottom - clamped.height;
+            break;
+    }
+
+    return {
+        left,
+        top,
+        width: clamped.width,
+        height: clamped.height,
+    };
+}
+
+function resolveGhostRect(session: ResizeSession, clientX: number, clientY: number, clampSize: (width: number, height: number) => BoxSize) {
+    if (session.handle.kind === "corner") {
+        return resolveGhostCornerRect({ ...session, handleCorner: session.handle.corner }, clientX, clientY, clampSize);
+    }
+
+    return resolveGhostEdgeRect({ ...session, handleEdge: session.handle.edge }, clientX, clientY, clampSize);
+}
+
 export function useGhostCornerResize({
     enabled,
     targetRef,
@@ -96,7 +161,7 @@ export function useGhostCornerResize({
 }: {
     enabled: boolean;
     targetRef: RefObject<HTMLElement | null>;
-    handleCorner: ResizeCorner;
+    handleCorner?: ResizeCorner;
     clampSize: (width: number, height: number) => BoxSize;
     onResizeComplete: (size: BoxSize) => void;
     resolveStartSize?: () => BoxSize;
@@ -161,8 +226,8 @@ export function useGhostCornerResize({
         });
     }, [isResizing]);
 
-    const handleResizePointerDown = useCallback(
-        (event: ReactPointerEvent<HTMLElement>) => {
+    const createResizePointerDown = useCallback(
+        (handle: ResizeHandle) => (event: ReactPointerEvent<HTMLElement>) => {
             if (!enabled || event.button !== 0) {
                 return;
             }
@@ -190,7 +255,7 @@ export function useGhostCornerResize({
                 startHeight: startSize.height,
                 visualLeft: rect.left,
                 visualTop: rect.top,
-                handleCorner,
+                handle,
             };
             setIsResizing(true);
 
@@ -201,7 +266,7 @@ export function useGhostCornerResize({
                     return;
                 }
 
-                const ghostRect = resolveGhostCornerRect(session, moveEvent.clientX, moveEvent.clientY, clampSize);
+                const ghostRect = resolveGhostRect(session, moveEvent.clientX, moveEvent.clientY, clampSize);
                 pendingSizeRef.current = { width: ghostRect.width, height: ghostRect.height };
 
                 const ghost = ghostRef.current;
@@ -226,12 +291,24 @@ export function useGhostCornerResize({
             window.addEventListener("pointerup", handlePointerUp, RESIZE_LISTENER_OPTIONS);
             window.addEventListener("pointercancel", handlePointerUp, RESIZE_LISTENER_OPTIONS);
         },
-        [clampSize, detachResizeListeners, enabled, finishResize, handleCorner, resolveStartSize, targetRef],
+        [clampSize, detachResizeListeners, enabled, finishResize, resolveStartSize, targetRef],
+    );
+
+    const handleResizePointerDown = useCallback(
+        (event: ReactPointerEvent<HTMLElement>) => {
+            if (!handleCorner) {
+                return;
+            }
+
+            createResizePointerDown({ kind: "corner", corner: handleCorner })(event);
+        },
+        [createResizePointerDown, handleCorner],
     );
 
     return {
         isResizing,
         ghostRef,
+        createResizePointerDown,
         handleResizePointerDown,
     };
 }

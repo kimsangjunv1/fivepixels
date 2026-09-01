@@ -27,8 +27,8 @@ export declare function usePanelResize({ enabled, corner, heightResizeEnabled, p
 }): {
     panelSize: PanelSizeState;
     isResizing: boolean;
-    resizeCorner: ResizeCorner;
-    handleResizePointerDown: (event: import("react").PointerEvent<HTMLElement>) => void;
+    resizeHandles: import("../utils/panel/resizeHandles.js").PanelResizeHandles;
+    createResizePointerDown: (handle: import("../hooks/useGhostCornerResize.js").ResizeHandle) => (event: import("react").PointerEvent<HTMLElement>) => void;
     resetPanelSize: () => void;
     ghostRef: import("react").MutableRefObject<HTMLDivElement | null>;
     isDefaultSize: boolean;
