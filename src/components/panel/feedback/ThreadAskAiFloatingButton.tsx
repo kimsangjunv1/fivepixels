@@ -49,7 +49,7 @@ export function ThreadAskAiFloatingButton({ report, fields, messages, caseId }: 
                     aria-haspopup="menu"
                     aria-label={messages.marker.askAi.threadFloatingAriaLabel}
                     title={copied ? messages.marker.askAi.copied : messages.marker.askAi.title}
-                    className={`flex h-[28px] w-[28px] items-center justify-center rounded-full border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black100)] text-[var(--adaptive-black700)] shadow-[var(--adaptive-popup-shadow)] transition-colors hover:bg-[var(--adaptive-black200)] hover:text-[var(--adaptive-black900)] ${open ? "text-[var(--adaptive-blue500)]" : ""}`}
+                    className={`flex h-[28px] w-[28px] items-center justify-center rounded-full bg-[var(--adaptive-black100)] text-[var(--adaptive-black700)] shadow-[var(--adaptive-popup-shadow)] transition-colors hover:bg-[var(--adaptive-black200)] hover:text-[var(--adaptive-black900)] ${open ? "text-[var(--adaptive-blue500)]" : ""}`}
                 >
                     <AskAiIcon className="h-[14px] w-[14px]" />
                 </button>

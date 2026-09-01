@@ -3,7 +3,19 @@ import { panelAnchorSide, placementToCollapsedPanelStyle, usePanelDock } from "@
 import { usePanelResize, panelSizeToStyle } from "@/hooks/usePanelResize.js";
 import { usePanelFeedbackTransfer } from "@/hooks/usePanelFeedbackTransfer.js";
 import { useReport, useReportPreferences } from "@/providers/reportContext.js";
-import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, DevicePreviewIcon, EyeOpenIcon, LockIcon, LogoIcon, NotificationActiveIcon, NotificationIdleIcon, SelectIcon, SettingsIcon } from "@/components/icons/Icons.js";
+import {
+    ChevronDownIcon,
+    ChevronLeftIcon,
+    ChevronRightIcon,
+    DevicePreviewIcon,
+    EyeOpenIcon,
+    LockIcon,
+    LogoIcon,
+    NotificationActiveIcon,
+    NotificationIdleIcon,
+    SelectIcon,
+    SettingsIcon,
+} from "@/components/icons/Icons.js";
 import { IconTooltipButton } from "@/components/ui/IconTooltipButton.js";
 import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
 import { useIntegrationLock } from "@/components/ui/IntegrationLock.js";
@@ -314,7 +326,7 @@ export function ReportControlPanel() {
                 onDragLeave={isGateView ? undefined : handleDragLeave}
                 onDragOver={isGateView ? undefined : handleDragOver}
                 onDrop={isGateView ? undefined : handleDrop}
-                className={`pointer-events-auto border border-[var(--adaptive-border-subtle)] flex ${MOTION.panelEnter} ${MOTION.panelDock} ${isDragging ? MOTION.panelDockDragging : ""} ${
+                className={`pointer-events-auto flex ${MOTION.panelEnter} ${MOTION.panelDock} ${isDragging ? MOTION.panelDockDragging : ""} ${
                     isRecording
                         ? "min-h-[40px] bg-[var(--adaptive-neutralTintOpacity900)] backdrop-blur-[10px] rounded-[16px] shadow-[var(--adaptive-popup-shadow)]"
                         : panelCollapsed
@@ -421,11 +433,7 @@ export function ReportControlPanel() {
                                                     active={notificationUiOpen}
                                                     onClick={toggleNotificationUiOpen}
                                                 >
-                                                    {unreadNotificationCount > 0 ? (
-                                                        <NotificationActiveIcon className="h-[16px] w-[16px]" />
-                                                    ) : (
-                                                        <NotificationIdleIcon className="h-[16px] w-[16px]" />
-                                                    )}
+                                                    {unreadNotificationCount > 0 ? <NotificationActiveIcon className="h-[16px] w-[16px]" /> : <NotificationIdleIcon className="h-[16px] w-[16px]" />}
                                                 </IconTooltipButton>
 
                                                 {isInsideDevicePreviewFrame() ? null : (

@@ -1,0 +1,505 @@
+/* Toss Securities demo — theme tokens (dark default, light via data-theme) */
+
+.demo-invest,
+.demo-invest-login-page {
+    --di-up: #f04452;
+    --di-down: #3182f6;
+    --di-primary: #3182f6;
+    --di-header-height: 51px;
+    --di-watchlist-width: 312px;
+    --di-rail-width: 56px;
+
+    /* dark (default) */
+    --di-bg: #101116;
+    --di-header-bg: #0e0f14;
+    --di-header-border: #22232a;
+    --di-surface: #17181d;
+    --di-surface-2: #202126;
+    --di-surface-3: #222329;
+    --di-surface-4: #25262d;
+    --di-surface-5: #282832;
+    --di-surface-6: #292b32;
+    --di-surface-7: #31323a;
+    --di-surface-8: #33343d;
+    --di-border: #292a31;
+    --di-border-2: #27282e;
+    --di-border-3: #2b2c33;
+    --di-border-4: #30313a;
+    --di-border-5: #33343b;
+    --di-border-6: #34353d;
+    --di-border-7: #353740;
+    --di-border-8: #3a3b45;
+    --di-border-9: #3a3c45;
+    --di-line: #373840;
+    --di-text: #e6e8ed;
+    --di-text-2: #dfe1e6;
+    --di-text-3: #d5d7dd;
+    --di-text-4: #d0d3da;
+    --di-text-5: #d9dbe1;
+    --di-text-6: #e2e4e9;
+    --di-text-7: #e3e5e9;
+    --di-text-8: #e4e6eb;
+    --di-text-9: #e5e7ec;
+    --di-sub: #a0a4af;
+    --di-muted: #696e7a;
+    --di-muted-2: #777c87;
+    --di-muted-3: #858a95;
+    --di-muted-4: #8a8f99;
+    --di-muted-5: #8b909a;
+    --di-nav: #868b96;
+    --di-nav-active: #f1f2f5;
+    --di-search-bg: #282832;
+    --di-search-border: #3a3b45;
+    --di-search-text: #9a9ea8;
+    --di-search-kbd-bg: #41414b;
+    --di-search-kbd-text: #aaadb6;
+    --di-search-icon-filter: invert(1);
+    --di-search-icon-opacity: 0.5;
+    --di-login-bg: #3182f6;
+    --di-login-text: #fff;
+    --di-currency-bg: #272831;
+    --di-currency-text: #606571;
+    --di-currency-active: #aeb2bc;
+    --di-rail-bg: #101116;
+    --di-rail-border: #27282e;
+    --di-rail-btn: #626773;
+    --di-rail-btn-active-bg: #2d3038;
+    --di-rail-btn-active-text: #c6c9d0;
+    --di-rail-header: #555966;
+    --di-theme-btn-bg: #292b32;
+    --di-theme-btn-text: #9ca0aa;
+    --di-row-hover: #191a20;
+    --di-row-hover-2: #18191e;
+    --di-row-hover-3: #202127;
+    --di-row-selected: #191a20;
+    --di-tab: #686d78;
+    --di-tab-active: #e3e5e9;
+    --di-tab-active-border: #e3e5e9;
+    --di-filter-bg: #25262d;
+    --di-filter-border: #353740;
+    --di-filter-text: #818691;
+    --di-filter-active-bg: #3a3b45;
+    --di-filter-active-text: #e2e4e9;
+    --di-table-head: #858a95;
+    --di-heart: #59606b;
+    --di-rank: #5a606c;
+    --di-chip-bg: #31333a;
+    --di-chip-text: #bbc0c8;
+    --di-rate-up-bg: rgba(240, 68, 82, 0.14);
+    --di-ai-accent: #57a4ff;
+    --di-ai-text: #d4d6dc;
+    --di-ai-chevron: #565b66;
+    --di-add-btn-bg: #282a31;
+    --di-add-btn-icon: #3790ff;
+    --di-market-bar: #878c97;
+    --di-market-bar-strong: #daddE3;
+    --di-market-dot: #22b885;
+    --di-market-btn-border: #3a3c45;
+    --di-market-btn-text: #c8cbd2;
+    --di-mini-label: #c4c7ce;
+    --di-mini-badge-bg: #34353b;
+    --di-mini-badge-text: #a3a7b0;
+    --di-mini-strong: #dfe1e6;
+    --di-schedule-card-bg: #222329;
+    --di-schedule-card-border: #2d2f36;
+    --di-schedule-muted: #727681;
+    --di-schedule-text: #969aa4;
+    --di-schedule-item: #e2e4e9;
+    --di-schedule-dot: #17a878;
+    --di-schedule-dot-muted: #626875;
+    --di-investor: #858a95;
+    --di-summary-toggle: #9296a0;
+    --di-realtime-text: #dfe1e6;
+    --di-hide-risk: #3993ff;
+    --di-detail-sub: #828792;
+    --di-chart-label: #767b86;
+    --di-chart-border: #2d2e35;
+    --di-chart-filter: invert(1) hue-rotate(180deg) brightness(0.48) saturate(1.5);
+    --di-community-text: #bec1c9;
+    --di-community-meta: #676c78;
+    --di-community-card-bg: #23242a;
+    --di-community-card-border: #303138;
+    --di-feed-tab: #777c87;
+    --di-feed-tab-active-bg: #33343d;
+    --di-feed-tab-active-text: #e4e6eb;
+    --di-opinion-bg: #222329;
+    --di-opinion-border: #303138;
+    --di-opinion-text: #777c87;
+    --di-opinion-btn-bg: #33353d;
+    --di-opinion-btn-text: #c7cad1;
+    --di-avatar-bg: #30323a;
+    --di-avatar-muted: #6c717c;
+    --di-post-meta: #6e737e;
+    --di-follow-bg: #123c6b;
+    --di-follow-text: #4da1ff;
+    --di-following-bg: #31333a;
+    --di-following-text: #a8acb5;
+    --di-more: #3182f6;
+    --di-feed-action: #8b909a;
+    --di-screener-nav-title: #c3c6cd;
+    --di-screener-nav-label: #5f6470;
+    --di-screener-nav-item: #d5d7dd;
+    --di-screener-nav-active: #303139;
+    --di-screener-popular-bg: #17497c;
+    --di-screener-popular-text: #4098ff;
+    --di-tooltip-bg: #303039;
+    --di-tooltip-border: #43444d;
+    --di-tooltip-text: #bec1ca;
+    --di-screener-filter-bg: #31323a;
+    --di-screener-filter-border: #3c3d46;
+    --di-screener-filter-blue-bg: #17375f;
+    --di-screener-filter-blue-border: #173e6b;
+    --di-screener-filter-blue-text: #3182f6;
+    --di-screener-row-border: #393a42;
+    --di-screener-head: #747984;
+    --di-login-page-bg: radial-gradient(circle at 36% -18%, #17445a 0, #152e46 39%, #14171d 78%);
+    --di-login-text: #dfe2e7;
+    --di-login-close: #8995a3;
+    --di-login-card-bg: #17171c;
+    --di-login-tab: #5f626c;
+    --di-login-tab-active-bg: #36363f;
+    --di-login-tab-active-text: #e2e4e9;
+    --di-login-input-border: #41434d;
+    --di-login-input-text: #c9ccd3;
+    --di-login-agree-border: #3a3b43;
+    --di-login-agree-text: #d2d4da;
+    --di-login-agree-check: #666a75;
+    --di-login-submit-disabled: #245b9e;
+    --di-login-submit-disabled-text: #7fa2cd;
+    --di-login-footer: #727985;
+    --di-login-link: #3d9bff;
+    --di-login-without: #b9bcc4;
+    --di-ticker-bg: #111217;
+    --di-ticker-border: #2a2b31;
+    --di-ticker-toggle: #7c818c;
+    --di-ticker-text: #d0d3d9;
+    --di-ticker-name: #8a8f99;
+    --di-modal-overlay: rgba(4, 5, 9, 0.72);
+    --di-modal-bg: #1d1e24;
+    --di-modal-border: #3a3c46;
+    --di-modal-header-muted: #858a95;
+    --di-modal-close-bg: #2b2d34;
+    --di-modal-close-text: #9ba0aa;
+    --di-modal-footer-border: #303139;
+    --di-modal-input-bg: #15161b;
+    --di-modal-result-hover: #292b33;
+    --di-modal-filter-bg: #25262d;
+    --di-modal-filter-border: #3b3d46;
+    --di-modal-filter-selected-bg: #173b68;
+    --di-modal-filter-selected-text: #62a7ff;
+    --di-modal-filter-text: #b8bbc3;
+    --di-toast-bg: #272931;
+    --di-toast-border: #3b3e47;
+    --di-toast-text: #e8e9ed;
+    --di-main-margin: 10px;
+    --di-main-border: 1px solid #27282e;
+    --di-main-radius: 12px;
+    --di-main-shadow: none;
+    --di-logo-src: url("/demo-invest/logo-toss-white.png");
+}
+
+.demo-invest[data-theme="light"],
+.demo-invest-login-page[data-theme="light"] {
+    --di-bg: #f2f4f6;
+    --di-header-bg: #ffffff;
+    --di-header-border: #e5e8eb;
+    --di-surface: #ffffff;
+    --di-surface-2: #f9fafb;
+    --di-surface-3: #ffffff;
+    --di-surface-4: #f2f4f6;
+    --di-surface-5: #f2f4f6;
+    --di-surface-6: #f2f4f6;
+    --di-surface-7: #f2f4f6;
+    --di-surface-8: #f2f4f6;
+    --di-border: #e5e8eb;
+    --di-border-2: #e5e8eb;
+    --di-border-3: #e5e8eb;
+    --di-border-4: #e5e8eb;
+    --di-border-5: #e5e8eb;
+    --di-border-6: #e5e8eb;
+    --di-border-7: #e5e8eb;
+    --di-border-8: #d1d6db;
+    --di-border-9: #d1d6db;
+    --di-line: #e5e8eb;
+    --di-text: #191f28;
+    --di-text-2: #191f28;
+    --di-text-3: #191f28;
+    --di-text-4: #333d4b;
+    --di-text-5: #333d4b;
+    --di-text-6: #333d4b;
+    --di-text-7: #191f28;
+    --di-text-8: #191f28;
+    --di-text-9: #191f28;
+    --di-sub: #4e5968;
+    --di-muted: #6b7684;
+    --di-muted-2: #6b7684;
+    --di-muted-3: #8b95a1;
+    --di-muted-4: #8b95a1;
+    --di-muted-5: #8b95a1;
+    --di-nav: #6b7684;
+    --di-nav-active: #191f28;
+    --di-search-bg: #f2f4f6;
+    --di-search-border: #e5e8eb;
+    --di-search-text: #8b95a1;
+    --di-search-kbd-bg: #e5e8eb;
+    --di-search-kbd-text: #6b7684;
+    --di-search-icon-filter: none;
+    --di-search-icon-opacity: 0.45;
+    --di-login-bg: #3182f6;
+    --di-login-text: #ffffff;
+    --di-currency-bg: #f2f4f6;
+    --di-currency-text: #adb5bd;
+    --di-currency-active: #191f28;
+    --di-rail-bg: #ffffff;
+    --di-rail-border: #e5e8eb;
+    --di-rail-btn: #8b95a1;
+    --di-rail-btn-active-bg: #f2f4f6;
+    --di-rail-btn-active-text: #191f28;
+    --di-rail-header: #8b95a1;
+    --di-theme-btn-bg: #f2f4f6;
+    --di-theme-btn-text: #6b7684;
+    --di-row-hover: #f9fafb;
+    --di-row-hover-2: #f9fafb;
+    --di-row-hover-3: #f9fafb;
+    --di-row-selected: #f2f4f6;
+    --di-tab: #8b95a1;
+    --di-tab-active: #191f28;
+    --di-tab-active-border: #191f28;
+    --di-filter-bg: #ffffff;
+    --di-filter-border: #e5e8eb;
+    --di-filter-text: #6b7684;
+    --di-filter-active-bg: #f2f4f6;
+    --di-filter-active-text: #191f28;
+    --di-table-head: #8b95a1;
+    --di-heart: #d1d6db;
+    --di-rank: #adb5bd;
+    --di-chip-bg: #f2f4f6;
+    --di-chip-text: #6b7684;
+    --di-rate-up-bg: rgba(240, 68, 82, 0.08);
+    --di-ai-accent: #3182f6;
+    --di-ai-text: #333d4b;
+    --di-ai-chevron: #adb5bd;
+    --di-add-btn-bg: #f2f4f6;
+    --di-add-btn-icon: #3182f6;
+    --di-market-bar: #6b7684;
+    --di-market-bar-strong: #191f28;
+    --di-market-dot: #22b885;
+    --di-market-btn-border: #e5e8eb;
+    --di-market-btn-text: #4e5968;
+    --di-mini-label: #6b7684;
+    --di-mini-badge-bg: #f2f4f6;
+    --di-mini-badge-text: #6b7684;
+    --di-mini-strong: #191f28;
+    --di-schedule-card-bg: #ffffff;
+    --di-schedule-card-border: #e5e8eb;
+    --di-schedule-muted: #8b95a1;
+    --di-schedule-text: #6b7684;
+    --di-schedule-item: #333d4b;
+    --di-schedule-dot: #17a878;
+    --di-schedule-dot-muted: #adb5bd;
+    --di-investor: #6b7684;
+    --di-summary-toggle: #6b7684;
+    --di-realtime-text: #191f28;
+    --di-hide-risk: #3182f6;
+    --di-detail-sub: #8b95a1;
+    --di-chart-label: #8b95a1;
+    --di-chart-border: #e5e8eb;
+    --di-chart-filter: none;
+    --di-community-text: #4e5968;
+    --di-community-meta: #8b95a1;
+    --di-community-card-bg: #f9fafb;
+    --di-community-card-border: #e5e8eb;
+    --di-feed-tab: #6b7684;
+    --di-feed-tab-active-bg: #f2f4f6;
+    --di-feed-tab-active-text: #191f28;
+    --di-opinion-bg: #ffffff;
+    --di-opinion-border: #e5e8eb;
+    --di-opinion-text: #8b95a1;
+    --di-opinion-btn-bg: #f2f4f6;
+    --di-opinion-btn-text: #4e5968;
+    --di-avatar-bg: #f2f4f6;
+    --di-avatar-muted: #adb5bd;
+    --di-post-meta: #8b95a1;
+    --di-follow-bg: #e8f3ff;
+    --di-follow-text: #3182f6;
+    --di-following-bg: #f2f4f6;
+    --di-following-text: #6b7684;
+    --di-more: #3182f6;
+    --di-feed-action: #8b95a1;
+    --di-screener-nav-title: #191f28;
+    --di-screener-nav-label: #8b95a1;
+    --di-screener-nav-item: #4e5968;
+    --di-screener-nav-active: #f2f4f6;
+    --di-screener-popular-bg: #e8f3ff;
+    --di-screener-popular-text: #3182f6;
+    --di-tooltip-bg: #ffffff;
+    --di-tooltip-border: #e5e8eb;
+    --di-tooltip-text: #4e5968;
+    --di-screener-filter-bg: #ffffff;
+    --di-screener-filter-border: #e5e8eb;
+    --di-screener-filter-blue-bg: #e8f3ff;
+    --di-screener-filter-blue-border: #c9e2ff;
+    --di-screener-filter-blue-text: #3182f6;
+    --di-screener-row-border: #e5e8eb;
+    --di-screener-head: #8b95a1;
+    --di-login-page-bg: linear-gradient(180deg, #e8f4f8 0%, #ffffff 42%, #ffffff 100%);
+    --di-login-text: #191f28;
+    --di-login-close: #8b95a1;
+    --di-login-card-bg: #ffffff;
+    --di-login-tab: #8b95a1;
+    --di-login-tab-active-bg: #f2f4f6;
+    --di-login-tab-active-text: #191f28;
+    --di-login-input-border: #e5e8eb;
+    --di-login-input-text: #191f28;
+    --di-login-agree-border: #e5e8eb;
+    --di-login-agree-text: #4e5968;
+    --di-login-agree-check: #d1d6db;
+    --di-login-submit-disabled: #b0cfff;
+    --di-login-submit-disabled-text: #ffffff;
+    --di-login-footer: #8b95a1;
+    --di-login-link: #3182f6;
+    --di-login-without: #6b7684;
+    --di-ticker-bg: #ffffff;
+    --di-ticker-border: #e5e8eb;
+    --di-ticker-toggle: #8b95a1;
+    --di-ticker-text: #333d4b;
+    --di-ticker-name: #8b95a1;
+    --di-modal-overlay: rgba(0, 0, 0, 0.32);
+    --di-modal-bg: #ffffff;
+    --di-modal-border: #e5e8eb;
+    --di-modal-header-muted: #8b95a1;
+    --di-modal-close-bg: #f2f4f6;
+    --di-modal-close-text: #6b7684;
+    --di-modal-footer-border: #e5e8eb;
+    --di-modal-input-bg: #ffffff;
+    --di-modal-result-hover: #f9fafb;
+    --di-modal-filter-bg: #ffffff;
+    --di-modal-filter-border: #e5e8eb;
+    --di-modal-filter-selected-bg: #e8f3ff;
+    --di-modal-filter-selected-text: #3182f6;
+    --di-modal-filter-text: #4e5968;
+    --di-toast-bg: #ffffff;
+    --di-toast-border: #e5e8eb;
+    --di-toast-text: #191f28;
+    --di-main-margin: 0;
+    --di-main-border: none;
+    --di-main-radius: 0;
+    --di-main-shadow: none;
+    --di-logo-src: url("/demo-invest/logo-toss-blue.svg");
+    --di-scrollbar-thumb: #d1d6db;
+    --di-ranking-rank-num: #adb5bd;
+    --di-popover-border: #e5e8eb;
+    --di-popover-hover: #f2f4f6;
+    --di-banner-bg: #e8f3ff;
+    --di-banner-text: #3182f6;
+    --di-header-rail-color: #8b95a1;
+}
+
+.demo-invest[data-theme="dark"],
+.demo-invest-login-page:not([data-theme="light"]) {
+    --di-logo-src: url("/demo-invest/logo-toss-white.png");
+    --di-scrollbar-thumb: #4b4e56;
+    --di-ranking-rank-num: #d9dce2;
+    --di-popover-border: #3b3d46;
+    --di-popover-hover: #373942;
+    --di-banner-bg: #18243a;
+    --di-banner-text: #62a7ff;
+    --di-header-rail-color: #555966;
+}
+
+.demo-invest-login-page[data-theme="dark"] {
+    --di-logo-src: url("/demo-invest/logo-toss-white.png");
+}
+
+/* Light-mode layout polish aligned with Toss reference screenshots */
+.demo-invest[data-theme="light"] .demo-invest__header-rail {
+    color: var(--di-header-rail-color);
+}
+
+.demo-invest[data-theme="light"] .demo-invest__main {
+    scrollbar-color: var(--di-scrollbar-thumb) transparent;
+}
+
+.demo-invest[data-theme="light"] .demo-invest__watchlist {
+    scrollbar-color: var(--di-scrollbar-thumb) transparent;
+}
+
+.demo-invest[data-theme="light"] .demo-invest__market-overview {
+    background: var(--di-surface);
+    border-bottom: 1px solid var(--di-border);
+}
+
+.demo-invest[data-theme="light"] .demo-invest__market-grid > div {
+    border-right-color: var(--di-border);
+}
+
+.demo-invest[data-theme="light"] .demo-invest__mini-market {
+    border-bottom-color: var(--di-border);
+}
+
+.demo-invest[data-theme="light"] .demo-invest__home-tabs {
+    border-bottom-color: var(--di-border);
+}
+
+.demo-invest[data-theme="light"] .demo-invest__home-tabs button.is-active {
+    border-color: var(--di-tab-active-border);
+    color: var(--di-tab-active);
+}
+
+.demo-invest[data-theme="light"] .demo-invest__ranking-filters {
+    border-bottom-color: var(--di-border);
+}
+
+.demo-invest[data-theme="light"] .demo-invest__ranking-head {
+    border-bottom-color: var(--di-border);
+}
+
+.demo-invest[data-theme="light"] .demo-invest__ranking-row {
+    border-bottom-color: var(--di-border);
+}
+
+.demo-invest[data-theme="light"] .demo-invest__table-section {
+    border-right-color: var(--di-border);
+}
+
+.demo-invest[data-theme="light"] .demo-invest__detail-panel {
+    background: var(--di-surface);
+}
+
+.demo-invest[data-theme="light"] .demo-invest__feed-tabs,
+.demo-invest[data-theme="light"] .demo-invest__feed-stream {
+    border-color: var(--di-border);
+}
+
+.demo-invest[data-theme="light"] .demo-invest__screener-nav {
+    border-right-color: var(--di-border);
+    background: var(--di-surface);
+}
+
+.demo-invest[data-theme="light"] .demo-invest__screener-results {
+    background: var(--di-surface);
+}
+
+.demo-invest[data-theme="light"] .demo-invest-login-card {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+.demo-invest-login-page[data-theme="light"] .demo-invest-login-card__submit:not(:disabled) {
+    background: #90c2f7;
+}
+
+.demo-invest-login-page__theme-button {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 60;
+    width: 33px;
+    height: 33px;
+    border: 0;
+    border-radius: 8px;
+    background: var(--di-theme-btn-bg);
+    color: var(--di-theme-btn-text);
+    font-size: 18px;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}

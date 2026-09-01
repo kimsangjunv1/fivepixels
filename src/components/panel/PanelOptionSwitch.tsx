@@ -30,9 +30,7 @@ export function PanelOptionSwitch<T extends string>({ options, value, onChange, 
                         disabled={disabled}
                         onClick={() => onChange(option.value)}
                         className={`min-w-0 flex-1 rounded-[8px] p-[4px] text-[14px] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
-                            active
-                                ? "bg-[var(--adaptive-border-subtle)] text-[var(--adaptive-black900)] shadow-[0_1px_2px_rgba(15,23,42,0.08)]"
-                                : "text-[var(--adaptive-black300)] hover:text-[var(--adaptive-black800)]"
+                            active ? "bg-[var(--adaptive-border-subtle)] shadow-[var(--adaptive-popup-shadow)]" : "text-[var(--adaptive-black300)] hover:text-[var(--adaptive-black800)]"
                         }`}
                     >
                         {option.label}

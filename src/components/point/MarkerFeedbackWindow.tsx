@@ -1,4 +1,15 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type AnimationEvent as ReactAnimationEvent, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, type ReactNode, Fragment } from "react";
+import {
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+    type AnimationEvent as ReactAnimationEvent,
+    type MouseEvent as ReactMouseEvent,
+    type PointerEvent as ReactPointerEvent,
+    type ReactNode,
+    Fragment,
+} from "react";
 import { getMarkerDotSize } from "@/utils/marker/markerRuntime.js";
 import { useDraggableWindow, clampWindowPosition } from "@/hooks/useDraggableWindow.js";
 import { useGhostCornerResize, type BoxSize } from "@/hooks/useGhostCornerResize.js";
@@ -33,7 +44,13 @@ import { FeedbackThread } from "@/components/panel/feedback/FeedbackThread.js";
 import { MarkerCaseSidebar } from "./MarkerCaseSidebar.js";
 import { ProcessingDots } from "@/components/ui/ProcessingDots.js";
 import { Text } from "@/components/ui/Text/index.js";
-import { MARKER_MINIMIZED_WINDOW_HEIGHT, MARKER_MINIMIZED_WINDOW_WIDTH, MARKER_WINDOW_MARGIN, resolveMinimizedDockIndexFromPointer, resolveMinimizedDockPosition } from "@/utils/marker/markerWindowDock.js";
+import {
+    MARKER_MINIMIZED_WINDOW_HEIGHT,
+    MARKER_MINIMIZED_WINDOW_WIDTH,
+    MARKER_WINDOW_MARGIN,
+    resolveMinimizedDockIndexFromPointer,
+    resolveMinimizedDockPosition,
+} from "@/utils/marker/markerWindowDock.js";
 import { readMinimizedWindowAlias, writeMinimizedWindowAlias } from "@/utils/marker/minimizedWindowAlias.js";
 
 type WindowMode = "normal" | "minimized" | "maximized";
@@ -731,14 +748,7 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
     );
 
     const restoredPosition = isMaximized ? { left: WINDOW_MARGIN, top: WINDOW_MARGIN } : (position ?? seedPosition);
-    const dockPosition = resolveMinimizedDockPosition(
-        minimizedDockIndex,
-        minimizedDockCount,
-        viewport.width,
-        viewport.height,
-        minimizedWidth,
-        MINIMIZED_WINDOW_HEIGHT,
-    );
+    const dockPosition = resolveMinimizedDockPosition(minimizedDockIndex, minimizedDockCount, viewport.width, viewport.height, minimizedWidth, MINIMIZED_WINDOW_HEIGHT);
     const resolvedPosition = showMinimizedChrome ? dockPosition : restoredPosition;
     const isDockDragging = dockDrag?.active === true;
     const displayRect: DockMorphRect = dockMorph ?? {
@@ -747,11 +757,7 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
         width: showMinimizedChrome ? minimizedWidth : effectiveSize.width,
         height: showMinimizedChrome ? MINIMIZED_WINDOW_HEIGHT : effectiveSize.height,
     };
-    const layoutTransition = dockMorph
-        ? MINIMIZE_MORPH_TRANSITION
-        : showMinimizedChrome && !isDockDragging
-          ? MINIMIZED_DOCK_SLIDE_TRANSITION
-          : undefined;
+    const layoutTransition = dockMorph ? MINIMIZE_MORPH_TRANSITION : showMinimizedChrome && !isDockDragging ? MINIMIZED_DOCK_SLIDE_TRANSITION : undefined;
     const leftSectionClass = getLeftSectionClass(windowSurfacePhase);
     const windowAnimationClass =
         windowSurfacePhase === "exiting" ? MOTION.markerWindowExit : windowSurfacePhase === "entering" ? `${MOTION.markerWindowEnter} pointer-events-auto` : "pointer-events-auto";
@@ -868,14 +874,7 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
 
         const nextMinimizedIds = minimizedReplyReportIds.includes(report.id) ? minimizedReplyReportIds : [...minimizedReplyReportIds, report.id];
         const nextDockIndex = Math.max(0, nextMinimizedIds.indexOf(report.id));
-        const nextDock = resolveMinimizedDockPosition(
-            nextDockIndex,
-            nextMinimizedIds.length,
-            viewportSize.width,
-            viewportSize.height,
-            currentMinimizedWidth,
-            MINIMIZED_WINDOW_HEIGHT,
-        );
+        const nextDock = resolveMinimizedDockPosition(nextDockIndex, nextMinimizedIds.length, viewportSize.width, viewportSize.height, currentMinimizedWidth, MINIMIZED_WINDOW_HEIGHT);
         const from: DockMorphRect = {
             left: currentRestoredPosition.left,
             top: currentRestoredPosition.top,
@@ -1355,7 +1354,7 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
                     >
                         <div
                             ref={surfaceRef}
-                            className={`flex h-full w-full overflow-hidden rounded-[16px] border border-[var(--adaptive-border-subtle)] ${leftSectionClass}`}
+                            className={`flex h-full w-full overflow-hidden rounded-[16px] ${leftSectionClass}`}
                         >
                             <div className="flex w-full flex-col justify-center gap-[2px] overflow-hidden px-[12px] py-[6px]">
                                 <button
@@ -1393,7 +1392,7 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
                                 event.stopPropagation();
                                 requestClose();
                             }}
-                            className={`absolute right-[6px] top-[6px] z-[2] inline-flex h-[22px] w-[22px] items-center justify-center rounded-full border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black100)] text-[var(--adaptive-black700)] shadow-[var(--adaptive-popup-shadow)] transition-[opacity,transform] duration-150 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[var(--adaptive-black200)] hover:text-[var(--adaptive-black900)] ${
+                            className={`absolute right-[6px] top-[6px] z-[2] inline-flex h-[22px] w-[22px] items-center justify-center rounded-full bg-[var(--adaptive-black100)] text-[var(--adaptive-black700)] shadow-[var(--adaptive-popup-shadow)] transition-[opacity,transform] duration-150 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[var(--adaptive-black200)] hover:text-[var(--adaptive-black900)] ${
                                 dockMorph !== null || isDockDragging
                                     ? "pointer-events-none scale-90 opacity-0"
                                     : "pointer-events-none scale-90 opacity-0 group-hover/min-dock:pointer-events-auto group-hover/min-dock:scale-100 group-hover/min-dock:opacity-100"
@@ -1405,7 +1404,7 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
                 ) : (
                     <div
                         ref={surfaceRef}
-                        className="flex h-full w-full flex-row overflow-hidden rounded-[16px] border border-[var(--adaptive-border-subtle)]"
+                        className="flex h-full w-full flex-row overflow-hidden rounded-[16px]"
                     >
                         {showFullContent ? (
                             <>

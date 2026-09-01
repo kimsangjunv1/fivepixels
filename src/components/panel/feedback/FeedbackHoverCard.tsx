@@ -44,12 +44,13 @@ export function FeedbackHoverCard({ report, detached = false, detachedKind = nul
     const hasMoreCases = cases.length > MAX_TOOLTIP_CASES;
     const resolvedDetachedHint = detached && detachedHint && detachedModalHint ? getDetachedMarkerHint(detachedKind, { detachedHint, detachedModalHint }) : null;
     const reportRelativeTime = formatRelativeTime(report.created_at, messages.common.relativeTime);
-    const authorLabel = report.author_name
-        ? formatAssigneeLabel(report.author_name, resolveAuthorDepartment(authors, report.author_name))
-        : null;
+    const authorLabel = report.author_name ? formatAssigneeLabel(report.author_name, resolveAuthorDepartment(authors, report.author_name)) : null;
 
     if (isMemo) {
-        const memoText = visibleCases.map((item) => mentionMessageToPlainText(item.text, item.mentions)).filter(Boolean).join("\n");
+        const memoText = visibleCases
+            .map((item) => mentionMessageToPlainText(item.text, item.mentions))
+            .filter(Boolean)
+            .join("\n");
 
         return (
             <div className="flex w-[260px] flex-col bg-transparent">
@@ -76,9 +77,7 @@ export function FeedbackHoverCard({ report, detached = false, detachedKind = nul
 
     return (
         <div className="flex w-[260px] flex-col bg-transparent">
-            <div className="flex flex-col gap-[6px] p-[8px_12px]">
-                {resolvedDetachedHint ? <p className="text-[13px] leading-[1.4] text-[var(--adaptive-black500)]">{resolvedDetachedHint}</p> : null}
-
+            <div className="flex flex-col gap-[6px] p-[6px_8px]">
                 <ul className="flex flex-col gap-[4px]">
                     {visibleCases.map((item) => {
                         const status = getCaseLatestStatus(report, item.id);
@@ -110,19 +109,24 @@ export function FeedbackHoverCard({ report, detached = false, detachedKind = nul
 
                 {hasMoreCases ? <p className="text-[12px] leading-[1.4] text-[var(--adaptive-black500)]">{messages.marker.viewMoreCases}</p> : null}
 
-                {authorLabel || reportRelativeTime ? (
-                    <div className="flex items-center gap-[6px] pt-[6px]">
-                        {authorLabel ? (
-                            <p
-                                className="min-w-0 truncate text-[14px] text-[var(--adaptive-black500)]"
-                                title={authorLabel}
-                            >
-                                {authorLabel}
-                            </p>
-                        ) : null}
-                        {reportRelativeTime ? <p className="shrink-0 text-[14px] text-[var(--adaptive-black500)]">{reportRelativeTime}</p> : null}
-                    </div>
-                ) : null}
+                <section className="flex items-center justify-between">
+                    {authorLabel || reportRelativeTime ? (
+                        <div className="flex items-center gap-[6px]">
+                            {authorLabel ? (
+                                <p
+                                    className="min-w-0 truncate text-[12px] text-[var(--adaptive-black500)]"
+                                    title={authorLabel}
+                                >
+                                    {authorLabel}
+                                </p>
+                            ) : null}
+
+                            {reportRelativeTime ? <p className="shrink-0 text-[12px] text-[var(--adaptive-black500)]">{reportRelativeTime}</p> : null}
+                        </div>
+                    ) : null}
+
+                    {resolvedDetachedHint ? <p className="text-[12px] text-[var(--adaptive-black500)]">{resolvedDetachedHint}</p> : null}
+                </section>
             </div>
         </div>
     );

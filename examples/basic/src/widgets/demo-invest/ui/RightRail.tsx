@@ -1,4 +1,7 @@
+import { useDemoInvestTheme } from "../model/DemoInvestThemeContext";
+
 export function RightRail() {
+    const { theme, toggleTheme } = useDemoInvestTheme();
     const items = [
         { label: "내 투자", active: false, icon: "▰" },
         { label: "관심", active: true, icon: "♥" },
@@ -20,7 +23,16 @@ export function RightRail() {
                     {item.label}
                 </button>
             ))}
-            <button type="button" className="demo-invest__theme-button">◔</button>
+            <button
+                type="button"
+                className="demo-invest__theme-button"
+                onClick={toggleTheme}
+                aria-label={theme === "light" ? "다크 모드로 전환" : "라이트 모드로 전환"}
+                data-report-id="demo-theme-toggle"
+                data-report-type="item"
+            >
+                {theme === "light" ? "☾" : "☀"}
+            </button>
         </aside>
     );
 }

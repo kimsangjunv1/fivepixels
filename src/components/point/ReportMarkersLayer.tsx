@@ -18,8 +18,7 @@ import { MOTION } from "@/constants/motionClasses.js";
 import { MarkerReplyBadge } from "./MarkerReplyBadge.js";
 import { MarkerShapeGlyph } from "./MarkerShapeGlyph.js";
 
-const TOOLTIP_SURFACE_CLASS =
-    "overflow-hidden rounded-[16px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-neutralTintOpacity800)] backdrop-blur-[5px] shadow-[var(--adaptive-popup-shadow)]";
+const TOOLTIP_SURFACE_CLASS = "overflow-hidden rounded-[16px] bg-[var(--adaptive-neutralTintOpacity600)] backdrop-blur-[5px] shadow-[var(--adaptive-popup-shadow)]";
 const TOOLTIP_FIXED_CLASS = `fixed z-[1000001] ${TOOLTIP_SURFACE_CLASS} ${MOTION.tooltipFadeIn}`;
 
 const MARKER_ANCHOR_BASE_CLASS = "pointer-events-none fixed z-[1000000]";
@@ -142,8 +141,7 @@ function MarkerButton({
     const hasBadgeSource = typography.fontSize !== "none" && Boolean(markerBadgeLabel);
     const badgeDisplay = hasBadgeSource ? resolveMarkerBadgeDisplay(markerAppearance.size, markerBadgeLabel) : { content: null, fontSizePx: undefined, fontWeight: undefined };
     const showMarkerLabel = Boolean(badgeDisplay.content);
-    const glyphShape =
-        markerItem.detachedKind === "modal" ? "ghostish" : markerItem.detachedKind === "hidden" ? "puffy" : markerAppearance.shape;
+    const glyphShape = markerItem.detachedKind === "modal" ? "ghostish" : markerItem.detachedKind === "hidden" ? "puffy" : markerAppearance.shape;
     const shapeStyle = resolveMarkerShapeStyle(glyphShape, dotSize);
     const markerColor = getMarkerColor(markerItem.report, markerAppearance.colors);
     const paint = resolveMarkerGlyphPaint({
@@ -199,9 +197,7 @@ function MarkerButton({
                                   }
                                 : undefined
                         }
-                        className={`${MARKER_BUTTON_BASE_CLASS} relative border-0 bg-transparent p-0 shadow-none ${
-                            isInteractive ? "" : isReportMode ? "" : isDetached ? "opacity-75" : ""
-                        }`}
+                        className={`${MARKER_BUTTON_BASE_CLASS} relative border-0 bg-transparent p-0 shadow-none ${isInteractive ? "" : isReportMode ? "" : isDetached ? "opacity-75" : ""}`}
                         style={{
                             pointerEvents: isInteractive ? "auto" : isReportMode ? "none" : "auto",
                             width: shapeStyle.width,
@@ -221,9 +217,7 @@ function MarkerButton({
                                 strokeWidthPx={paint.strokeWidthPx}
                             />
                         </span>
-                        <span className={`relative z-[1] flex items-center justify-center ${showMarkerLabel ? MARKER_BADGE_LABEL_CLASS : ""}`}>
-                            {showMarkerLabel ? badgeDisplay.content : null}
-                        </span>
+                        <span className={`relative z-[1] flex items-center justify-center ${showMarkerLabel ? MARKER_BADGE_LABEL_CLASS : ""}`}>{showMarkerLabel ? badgeDisplay.content : null}</span>
                     </button>
                     {aggregateCount > 1 ? (
                         <span
@@ -429,8 +423,7 @@ export function ReportMarkersLayer() {
             {visibleMarkers.map((markerItem) => {
                 const isMemoMarker = markerItem.report.category === "memo";
                 const isInteractive = isViewMode || isMemoMarker;
-                const isHovered =
-                    isInteractive && tooltipReport?.id === markerItem.report.id && !openReplyReportIdSet.has(markerItem.report.id);
+                const isHovered = isInteractive && tooltipReport?.id === markerItem.report.id && !openReplyReportIdSet.has(markerItem.report.id);
 
                 return (
                     <MarkerButton

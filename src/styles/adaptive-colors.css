@@ -31,7 +31,10 @@
     --adaptive-overlay-text-muted: #bdbdbd;
     --adaptive-border: #eeeeee;
     --adaptive-border-subtle: rgba(0, 0, 0, 0.1);
-    --adaptive-popup-shadow: 0 24px 64px rgba(0, 0, 0, 0.18);
+    --adaptive-popup-shadow:
+        rgba(17, 24, 39, 0.1) 0px 0px 0px 1px, rgba(17, 24, 39, 0.04) 0px 1px 1px -0.5px, rgba(17, 24, 39, 0.04) 0px 3px 3px -1.5px, rgba(17, 24, 39, 0.04) 0px 6px 6px -3px,
+        rgba(17, 24, 39, 0.04) 0px 12px 12px -6px, rgba(17, 24, 39, 0.04) 0px 24px 24px -12px;
+    /* --adaptive-popup-shadow: 0 24px 64px rgba(0, 0, 0, 0.18); */
 
     --adaptive-background: #ffffff;
     --adaptive-layeredBackground: #ffffff;

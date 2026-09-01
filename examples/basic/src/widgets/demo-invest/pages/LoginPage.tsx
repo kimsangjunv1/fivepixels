@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 
 import { useModalDemo } from "../../../features/modals/model/ModalDemoContext";
+import { useDemoInvestTheme } from "../model/DemoInvestThemeContext";
 import { DemoInvestModal } from "../ui/DemoInvestModal";
 
 const agreements = [
@@ -11,6 +12,7 @@ const agreements = [
 ];
 
 export function LoginPage() {
+    const { theme, toggleTheme } = useDemoInvestTheme();
     const { isOpen, openModal, closeModal } = useModalDemo();
     const [method, setMethod] = useState<"phone" | "qr">("phone");
     const [fields, setFields] = useState({ name: "", birth: "", phone: "" });
@@ -33,10 +35,12 @@ export function LoginPage() {
         openModal("investLogin");
     };
 
+    const logoSrc = theme === "light" ? "/demo-invest/logo-toss-blue.svg" : "/demo-invest/logo-toss-white.png";
+
     return (
-        <div className="demo-invest-login-page" data-report-id="demo-login-page" data-report-type="group">
+        <div className="demo-invest-login-page" data-theme={theme} data-report-id="demo-login-page" data-report-type="group">
             <Link to="/" className="demo-invest-login-page__brand">
-                <img src="/demo-invest/logo-toss-white.png" alt="토스증권" />
+                <img src={logoSrc} alt="토스증권" />
             </Link>
             <Link to="/" className="demo-invest-login-page__close" aria-label="닫기">×</Link>
 
@@ -90,6 +94,17 @@ export function LoginPage() {
             >
                 <div className="demo-invest-modal__login-visual">{dialogMode === "join" ? "📱" : "✓"}<strong>{dialogMode === "join" ? "가입 안내를 확인해주세요" : "휴대폰에서 인증 대기 중"}</strong><span>이 화면은 모달 전환과 완료 상태를 테스트하기 위한 데모예요.</span></div>
             </DemoInvestModal> : null}
+
+            <button
+                type="button"
+                className="demo-invest-login-page__theme-button"
+                onClick={toggleTheme}
+                aria-label={theme === "light" ? "다크 모드로 전환" : "라이트 모드로 전환"}
+                data-report-id="demo-login-theme-toggle"
+                data-report-type="item"
+            >
+                {theme === "light" ? "☾" : "☀"}
+            </button>
         </div>
     );
 }

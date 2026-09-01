@@ -1,6 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 
 import { useDemoInvestInteractions } from "../model/DemoInvestInteractionContext";
+import { useDemoInvestTheme } from "../model/DemoInvestThemeContext";
 
 const navItems = [
     { label: "홈", href: "/" },
@@ -11,13 +12,15 @@ const navItems = [
 
 export function DemoInvestHeader() {
     const { pathname } = useLocation();
+    const { theme } = useDemoInvestTheme();
     const { openDialog } = useDemoInvestInteractions();
+    const logoSrc = theme === "light" ? "/demo-invest/logo-toss-blue.svg" : "/demo-invest/logo-toss-white.png";
 
     return (
         <header className="demo-invest__header" data-report-id="demo-invest-header" data-report-type="group">
             <div className="demo-invest__header-main">
                 <Link to="/" className="demo-invest__brand" data-report-id="demo-invest-brand" data-report-type="item">
-                    <img src="/demo-invest/logo-toss-white.png" alt="토스증권" />
+                    <img src={logoSrc} alt="토스증권" />
                 </Link>
 
                 <nav className="demo-invest__nav" data-report-id="demo-invest-nav" data-report-type="group">

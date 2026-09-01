@@ -3,8 +3,7 @@ import { getMarkerScaleFactor } from "@/constants/markerAppearance.js";
 import { useReportPreferences, useReportSession } from "@/providers/reportContext.js";
 import { getDraftMarkerPosition } from "@/utils/marker/coordinates.js";
 
-const DRAFT_MARKER_CLASS =
-    "pointer-events-none fixed z-[1000000000] flex -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 border-white shadow-lg";
+const DRAFT_MARKER_CLASS = "pointer-events-none fixed z-[1000000000] flex -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 border-white shadow-lg";
 
 export function ReportDraftMarker() {
     const { draft, selectedTarget, editingReportId } = useReportSession();
