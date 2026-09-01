@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getNotificationsStorageKey } from "../../constants/storageKeys.js";
 import { diffNotifications } from "../../utils/notification/notificationDiff.js";
-const NOTIFICATION_WINDOW_POSITION_KEY = "fivepixels:notification-window-position:v1";
 function readStoredNotifications(storageKey) {
     if (typeof window === "undefined") {
         return [];
@@ -29,49 +28,11 @@ function persistNotifications(storageKey, items) {
         // Ignore storage failures.
     }
 }
-function getDefaultNotificationWindowPosition() {
-    if (typeof window === "undefined") {
-        return { left: 80, top: 120 };
-    }
-    return {
-        left: Math.max(16, window.innerWidth - 360),
-        top: 96,
-    };
-}
-function readNotificationWindowPosition() {
-    const fallback = getDefaultNotificationWindowPosition();
-    if (typeof window === "undefined") {
-        return fallback;
-    }
-    try {
-        const raw = window.localStorage.getItem(NOTIFICATION_WINDOW_POSITION_KEY);
-        if (!raw) {
-            return fallback;
-        }
-        const parsed = JSON.parse(raw);
-        if (typeof parsed.left === "number" && Number.isFinite(parsed.left) && typeof parsed.top === "number" && Number.isFinite(parsed.top)) {
-            return { left: parsed.left, top: parsed.top };
-        }
-    }
-    catch {
-        // Ignore storage failures.
-    }
-    return fallback;
-}
-function persistNotificationWindowPosition(position) {
-    try {
-        window.localStorage.setItem(NOTIFICATION_WINDOW_POSITION_KEY, JSON.stringify(position));
-    }
-    catch {
-        // Ignore storage failures.
-    }
-}
 export function useNotificationCenter({ projectId, messages, sessionActor, reports, allPageReports, getRepliesForReport, activeApiFailureAlert, }) {
     const actorId = sessionActor?.id ?? null;
     const storageKey = useMemo(() => getNotificationsStorageKey(projectId, actorId), [actorId, projectId]);
     const [notifications, setNotifications] = useState(() => readStoredNotifications(storageKey));
     const [notificationUiOpen, setNotificationUiOpen] = useState(false);
-    const [notificationWindowPosition, setNotificationWindowPosition] = useState(() => readNotificationWindowPosition());
     const previousSnapshotRef = useRef(new Map());
     const previousApiFailureIdRef = useRef(null);
     const bootstrappedRef = useRef(false);
@@ -151,10 +112,6 @@ export function useNotificationCenter({ projectId, messages, sessionActor, repor
     const clearNotifications = useCallback(() => {
         setNotifications([]);
     }, []);
-    const handleNotificationWindowPositionChange = useCallback((position) => {
-        setNotificationWindowPosition(position);
-        persistNotificationWindowPosition(position);
-    }, []);
     return {
         notifications,
         unreadNotificationCount,
@@ -166,8 +123,6 @@ export function useNotificationCenter({ projectId, messages, sessionActor, repor
         markAllNotificationsRead,
         dismissNotification,
         clearNotifications,
-        notificationWindowPosition,
-        setNotificationWindowPosition: handleNotificationWindowPositionChange,
     };
 }
 //# sourceMappingURL=useNotificationCenter.js.map

@@ -5,9 +5,6 @@ import type { ReportFeedback, ReportReply } from "@/types/report.js";
 import type { ReportMessages } from "@/i18n/types.js";
 import { getNotificationsStorageKey } from "@/constants/storageKeys.js";
 import { diffNotifications, type FeedbackSnapshot, type NotificationActor } from "@/utils/notification/notificationDiff.js";
-import type { WindowPosition } from "@/hooks/useDraggableWindow.js";
-
-const NOTIFICATION_WINDOW_POSITION_KEY = "fivepixels:notification-window-position:v1";
 
 type StoredNotifications = {
     items: NotificationItem[];
@@ -45,51 +42,6 @@ function persistNotifications(storageKey: string, items: NotificationItem[]) {
     }
 }
 
-function getDefaultNotificationWindowPosition(): WindowPosition {
-    if (typeof window === "undefined") {
-        return { left: 80, top: 120 };
-    }
-
-    return {
-        left: Math.max(16, window.innerWidth - 360),
-        top: 96,
-    };
-}
-
-function readNotificationWindowPosition(): WindowPosition {
-    const fallback = getDefaultNotificationWindowPosition();
-
-    if (typeof window === "undefined") {
-        return fallback;
-    }
-
-    try {
-        const raw = window.localStorage.getItem(NOTIFICATION_WINDOW_POSITION_KEY);
-
-        if (!raw) {
-            return fallback;
-        }
-
-        const parsed = JSON.parse(raw) as Partial<WindowPosition>;
-
-        if (typeof parsed.left === "number" && Number.isFinite(parsed.left) && typeof parsed.top === "number" && Number.isFinite(parsed.top)) {
-            return { left: parsed.left, top: parsed.top };
-        }
-    } catch {
-        // Ignore storage failures.
-    }
-
-    return fallback;
-}
-
-function persistNotificationWindowPosition(position: WindowPosition) {
-    try {
-        window.localStorage.setItem(NOTIFICATION_WINDOW_POSITION_KEY, JSON.stringify(position));
-    } catch {
-        // Ignore storage failures.
-    }
-}
-
 type UseNotificationCenterParams = {
     projectId?: string;
     messages: ReportMessages;
@@ -113,7 +65,6 @@ export function useNotificationCenter({
     const storageKey = useMemo(() => getNotificationsStorageKey(projectId, actorId), [actorId, projectId]);
     const [notifications, setNotifications] = useState<NotificationItem[]>(() => readStoredNotifications(storageKey));
     const [notificationUiOpen, setNotificationUiOpen] = useState(false);
-    const [notificationWindowPosition, setNotificationWindowPosition] = useState<WindowPosition>(() => readNotificationWindowPosition());
     const previousSnapshotRef = useRef<Map<string, FeedbackSnapshot>>(new Map());
     const previousApiFailureIdRef = useRef<string | null>(null);
     const bootstrappedRef = useRef(false);
@@ -215,11 +166,6 @@ export function useNotificationCenter({
         setNotifications([]);
     }, []);
 
-    const handleNotificationWindowPositionChange = useCallback((position: WindowPosition) => {
-        setNotificationWindowPosition(position);
-        persistNotificationWindowPosition(position);
-    }, []);
-
     return {
         notifications,
         unreadNotificationCount,
@@ -231,7 +177,5 @@ export function useNotificationCenter({
         markAllNotificationsRead,
         dismissNotification,
         clearNotifications,
-        notificationWindowPosition,
-        setNotificationWindowPosition: handleNotificationWindowPositionChange,
     };
 }

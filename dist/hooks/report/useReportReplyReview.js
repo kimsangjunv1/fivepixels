@@ -438,6 +438,7 @@ export function useReportReplyReview({ reports, allPageReports, messages, fields
                 author_type: reply.author_type ?? "manager",
                 author_name: reply.author_name,
                 ...(reply.mentions && reply.mentions.length > 0 ? { mentions: reply.mentions } : {}),
+                ...(reply.user_mentions && reply.user_mentions.length > 0 ? { user_mentions: reply.user_mentions } : {}),
             }));
         }
         else {

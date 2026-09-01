@@ -366,8 +366,6 @@ export function assembleReportContextValue({ panel, auth, draft, markers, mutati
         markAllNotificationsRead: notifications.markAllNotificationsRead,
         dismissNotification: notifications.dismissNotification,
         clearNotifications: notifications.clearNotifications,
-        notificationWindowPosition: notifications.notificationWindowPosition,
-        setNotificationWindowPosition: notifications.setNotificationWindowPosition,
         activateNotification,
     };
 }

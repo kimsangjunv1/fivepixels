@@ -3,7 +3,6 @@ import type { NotificationItem } from "../../types/notification.js";
 import type { ReportFeedback, ReportReply } from "../../types/report.js";
 import type { ReportMessages } from "../../i18n/types.js";
 import { type NotificationActor } from "../../utils/notification/notificationDiff.js";
-import type { WindowPosition } from "../../hooks/useDraggableWindow.js";
 type UseNotificationCenterParams = {
     projectId?: string;
     messages: ReportMessages;
@@ -24,8 +23,6 @@ export declare function useNotificationCenter({ projectId, messages, sessionActo
     markAllNotificationsRead: () => void;
     dismissNotification: (id: string) => void;
     clearNotifications: () => void;
-    notificationWindowPosition: WindowPosition;
-    setNotificationWindowPosition: (position: WindowPosition) => void;
 };
 export {};
 //# sourceMappingURL=useNotificationCenter.d.ts.map

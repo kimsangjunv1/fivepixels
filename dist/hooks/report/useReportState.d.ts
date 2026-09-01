@@ -402,8 +402,6 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     markAllNotificationsRead: () => void;
     dismissNotification: (id: string) => void;
     clearNotifications: () => void;
-    notificationWindowPosition: import("../useDraggableWindow.js").WindowPosition;
-    setNotificationWindowPosition: (position: import("../useDraggableWindow.js").WindowPosition) => void;
     activateNotification: (item: NotificationItem) => void;
 };
 //# sourceMappingURL=useReportState.d.ts.map

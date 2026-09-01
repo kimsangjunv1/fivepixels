@@ -259,8 +259,6 @@ export const REPORT_SESSION_KEYS = [
     "markAllNotificationsRead",
     "dismissNotification",
     "clearNotifications",
-    "notificationWindowPosition",
-    "setNotificationWindowPosition",
     "activateNotification",
 ];
 export const REPORT_DATA_KEYS = [
