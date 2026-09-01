@@ -155,6 +155,11 @@ export type ReportAuthor = {
     role?: ReportAuthorRole;
     /** Soft-disable without deleting history. Default true when omitted. */
     isActive?: boolean;
+    /**
+     * Project team membership when `adapter.members.list` returns a user directory
+     * (e.g. `GET /users?projectId=`). Omitted or `true` = joined; `false` = not yet registered.
+     */
+    isJoined?: boolean;
 };
 export type ReportReviewerRequestStatus = "pending" | "approved" | "rejected";
 export type ReportReviewerRequest = {

@@ -686,6 +686,7 @@ export type ReportMessages = {
         approveAsRole: string;
         roleNotAllowed: string;
         register: string;
+        join: string;
         manualNamePlaceholder: string;
         manualIdPlaceholder: string;
         manualPublicKeyPlaceholder: string;

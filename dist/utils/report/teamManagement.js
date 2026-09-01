@@ -47,9 +47,16 @@ export function canViewTeamMember(viewer, target) {
     // sub_admin: peers + members (not admins)
     return targetRole === "sub_admin" || targetRole === "member";
 }
+/** `isJoined` omitted means joined (legacy `members.list` responses). */
+export function isJoinedTeamMember(author) {
+    return author?.isJoined !== false;
+}
+export function filterJoinedTeamMembers(members) {
+    return members.filter((member) => isJoinedTeamMember(member));
+}
 /** Same-rank peers are visible but not editable. Only strictly lower ranks. */
 export function canEditTeamMember(actor, target) {
-    if (!canManageTeamMembers(actor)) {
+    if (!canManageTeamMembers(actor) || !isJoinedTeamMember(target)) {
         return false;
     }
     return getAuthorRoleRank(resolveAuthorRole(actor)) > getAuthorRoleRank(resolveAuthorRole(target));

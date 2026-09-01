@@ -749,6 +749,7 @@ export const en = {
         approveAsRole: "Approve as",
         roleNotAllowed: "You cannot assign that role.",
         register: "Register member",
+        join: "Join",
         manualNamePlaceholder: "Display name",
         manualIdPlaceholder: "Author id",
         manualPublicKeyPlaceholder: "Public key (stpub1…)",

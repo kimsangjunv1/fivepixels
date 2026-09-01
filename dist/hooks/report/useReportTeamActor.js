@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { resolveTeamActor } from "../../utils/report/teamManagement.js";
+import { filterJoinedTeamMembers, resolveTeamActor } from "../../utils/report/teamManagement.js";
 export function useReportTeamActor({ authorizedAuthorId, teamReviewers, persistenceMode, onListReviewers }) {
-    const [apiTeamMembers, setApiTeamMembers] = useState(null);
+    const [apiTeamDirectory, setApiTeamDirectory] = useState(null);
     const [apiTeamMembersLoading, setApiTeamMembersLoading] = useState(false);
+    const apiTeamMembers = useMemo(() => (apiTeamDirectory ? filterJoinedTeamMembers(apiTeamDirectory) : null), [apiTeamDirectory]);
     const onListReviewersRef = useRef(onListReviewers);
     const hasListReviewers = Boolean(onListReviewers);
     useEffect(() => {
@@ -15,11 +16,11 @@ export function useReportTeamActor({ authorizedAuthorId, teamReviewers, persiste
         setApiTeamMembersLoading(true);
         try {
             const members = await onListReviewersRef.current();
-            setApiTeamMembers(members);
+            setApiTeamDirectory(members);
             return members;
         }
         catch {
-            setApiTeamMembers(null);
+            setApiTeamDirectory(null);
             return null;
         }
         finally {
@@ -28,7 +29,7 @@ export function useReportTeamActor({ authorizedAuthorId, teamReviewers, persiste
     }, [authorizedAuthorId, persistenceMode]);
     useEffect(() => {
         if (persistenceMode !== "API" || !authorizedAuthorId) {
-            setApiTeamMembers(null);
+            setApiTeamDirectory(null);
             return;
         }
         if (!hasListReviewers) {
@@ -37,6 +38,6 @@ export function useReportTeamActor({ authorizedAuthorId, teamReviewers, persiste
         void refreshTeamMembers();
     }, [authorizedAuthorId, hasListReviewers, persistenceMode, refreshTeamMembers]);
     const teamActor = useMemo(() => resolveTeamActor(authorizedAuthorId, teamReviewers, apiTeamMembers, persistenceMode), [apiTeamMembers, authorizedAuthorId, persistenceMode, teamReviewers]);
-    return { teamActor, apiTeamMembers, apiTeamMembersLoading, refreshTeamMembers };
+    return { teamActor, apiTeamDirectory, apiTeamMembers, apiTeamMembersLoading, refreshTeamMembers };
 }
 //# sourceMappingURL=useReportTeamActor.js.map

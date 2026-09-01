@@ -109,7 +109,26 @@ export function createFivepixelsAdapter({ baseUrl, projectId, getAccessToken }: 
                 }),
         },
         members: {
-            list: () => api(`${projectBase}/members`),
+            list: async () => {
+                type UsersListItem = {
+                    id: string;
+                    userName: string;
+                    profileImageUrl?: string | null;
+                    isJoined?: boolean;
+                    role?: string;
+                };
+                type UsersListResponse = UsersListItem[] | { result?: UsersListItem[] };
+
+                const response = await api<UsersListResponse>(`/users?projectId=${encodeURIComponent(projectId)}`);
+                const items = Array.isArray(response) ? response : (response.result ?? []);
+
+                return items.map((user) => ({
+                    id: user.id,
+                    name: user.userName,
+                    ...(user.role ? { role: user.role as "admin" | "sub_admin" | "member" } : {}),
+                    ...(typeof user.isJoined === "boolean" ? { isJoined: user.isJoined } : {}),
+                }));
+            },
             create: (payload) => api(`${projectBase}/members`, { method: "POST", body: JSON.stringify(payload) }),
             update: (userId, payload) =>
                 api(`${projectBase}/members/${userId}`, { method: "PATCH", body: JSON.stringify(payload) }),

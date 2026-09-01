@@ -403,7 +403,7 @@ export function useReportState({
     const authorizedAuthorId = auth.authorizedAuthors[0]?.id ?? null;
     const activeIdentifyId = auth.activeIdentify?.id ?? null;
     const activeIdentifyName = auth.activeIdentify?.name ?? null;
-    const { teamActor, apiTeamMembers, apiTeamMembersLoading, refreshTeamMembers } = useReportTeamActor({
+    const { teamActor, apiTeamDirectory, apiTeamMembers, apiTeamMembersLoading, refreshTeamMembers } = useReportTeamActor({
         authorizedAuthorId,
         teamReviewers: authors,
         persistenceMode: panel.persistenceStatus.mode,
@@ -539,6 +539,7 @@ export function useReportState({
         showFeedbackList,
         teamReviewers: authors,
         teamActor,
+        apiTeamDirectory,
         apiTeamMembers,
         apiTeamMembersLoading,
         refreshTeamMembers,

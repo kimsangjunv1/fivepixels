@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ReportAuthor } from "@/types/report.js";
 import type { PersistenceStatus } from "@/utils/shared/storage.js";
-import { resolveTeamActor } from "@/utils/report/teamManagement.js";
+import { filterJoinedTeamMembers, resolveTeamActor } from "@/utils/report/teamManagement.js";
 
 type UseReportTeamActorParams = {
     authorizedAuthorId: string | null;
@@ -11,8 +11,12 @@ type UseReportTeamActorParams = {
 };
 
 export function useReportTeamActor({ authorizedAuthorId, teamReviewers, persistenceMode, onListReviewers }: UseReportTeamActorParams) {
-    const [apiTeamMembers, setApiTeamMembers] = useState<ReportAuthor[] | null>(null);
+    const [apiTeamDirectory, setApiTeamDirectory] = useState<ReportAuthor[] | null>(null);
     const [apiTeamMembersLoading, setApiTeamMembersLoading] = useState(false);
+    const apiTeamMembers = useMemo(
+        () => (apiTeamDirectory ? filterJoinedTeamMembers(apiTeamDirectory) : null),
+        [apiTeamDirectory],
+    );
     const onListReviewersRef = useRef(onListReviewers);
     const hasListReviewers = Boolean(onListReviewers);
 
@@ -28,10 +32,10 @@ export function useReportTeamActor({ authorizedAuthorId, teamReviewers, persiste
         setApiTeamMembersLoading(true);
         try {
             const members = await onListReviewersRef.current();
-            setApiTeamMembers(members);
+            setApiTeamDirectory(members);
             return members;
         } catch {
-            setApiTeamMembers(null);
+            setApiTeamDirectory(null);
             return null;
         } finally {
             setApiTeamMembersLoading(false);
@@ -40,7 +44,7 @@ export function useReportTeamActor({ authorizedAuthorId, teamReviewers, persiste
 
     useEffect(() => {
         if (persistenceMode !== "API" || !authorizedAuthorId) {
-            setApiTeamMembers(null);
+            setApiTeamDirectory(null);
             return;
         }
 
@@ -56,5 +60,5 @@ export function useReportTeamActor({ authorizedAuthorId, teamReviewers, persiste
         [apiTeamMembers, authorizedAuthorId, persistenceMode, teamReviewers],
     );
 
-    return { teamActor, apiTeamMembers, apiTeamMembersLoading, refreshTeamMembers };
+    return { teamActor, apiTeamDirectory, apiTeamMembers, apiTeamMembersLoading, refreshTeamMembers };
 }

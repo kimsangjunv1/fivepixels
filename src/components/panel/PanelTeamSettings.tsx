@@ -8,6 +8,7 @@ import {
     canEditTeamMember,
     filterVisibleTeamMembers,
     hasTeamAdminHandlers,
+    isJoinedTeamMember,
     isTeamWriteEnabled,
     listAssignableRoles,
     resolveAuthorRole,
@@ -34,32 +35,39 @@ function MemberRow({
     roleMessages,
     inactiveLabel,
     canEdit,
+    canJoin,
     apiMode,
     assignableRoles,
     editRoleLabel,
     activateLabel,
     deactivateLabel,
     deleteLabel,
+    joinLabel,
     onToggleActive,
     onChangeRole,
     onDelete,
+    onJoin,
 }: {
     member: ReportAuthor;
     roleLabel: string;
     roleMessages: { roleAdmin: string; roleSubAdmin: string; roleMember: string };
     inactiveLabel: string;
     canEdit: boolean;
+    canJoin: boolean;
     apiMode: boolean;
     assignableRoles: ReportAuthorRole[];
     editRoleLabel: string;
     activateLabel: string;
     deactivateLabel: string;
     deleteLabel: string;
+    joinLabel: string;
     onToggleActive?: () => void;
     onChangeRole?: (role: ReportAuthorRole) => void;
     onDelete?: () => void;
+    onJoin?: () => void;
 }) {
     const inactive = member.isActive === false;
+    const joined = isJoinedTeamMember(member);
 
     return (
         <div className="flex flex-col gap-[6px] border-b border-[var(--adaptive-border-subtle)] px-[12px] py-[10px] last:border-b-0">
@@ -70,9 +78,19 @@ function MemberRow({
                     </p>
                     <p className="truncate text-[10px] text-[var(--adaptive-black600)]">{member.id}</p>
                 </div>
-                <span className="shrink-0 rounded-[4px] bg-[var(--adaptive-black100)] px-[6px] py-[2px] text-[10px] font-semibold text-[var(--adaptive-black700)]">
-                    {roleLabel}
-                </span>
+                {joined ? (
+                    <span className="shrink-0 rounded-[4px] bg-[var(--adaptive-black100)] px-[6px] py-[2px] text-[10px] font-semibold text-[var(--adaptive-black700)]">
+                        {roleLabel}
+                    </span>
+                ) : canJoin && onJoin ? (
+                    <button
+                        type="button"
+                        onClick={onJoin}
+                        className="shrink-0 rounded-[6px] bg-[var(--adaptive-blue50)] px-[8px] py-[4px] text-[11px] font-semibold text-[var(--adaptive-blue500)] hover:bg-[color-mix(in_srgb,var(--adaptive-blue500)_12%,transparent)]"
+                    >
+                        {joinLabel}
+                    </button>
+                ) : null}
             </div>
             {inactive ? <p className="text-[11px] text-[var(--adaptive-black500)]">{inactiveLabel}</p> : null}
             {canEdit ? (
@@ -131,7 +149,7 @@ export function PanelTeamSettings() {
         teamActor,
         canAccessTeamSettings,
         persistenceStatus,
-        apiTeamMembers,
+        apiTeamDirectory,
         apiTeamMembersLoading,
         refreshTeamMembers,
         onListReviewerRequests,
@@ -208,16 +226,16 @@ export function PanelTeamSettings() {
         }
 
         if (writeEnabled) {
-            if (!apiTeamMembers) {
+            if (!apiTeamDirectory) {
                 return;
             }
 
-            setMembers(sortTeamReviewers(filterVisibleTeamMembers(teamActorRef.current, apiTeamMembers)));
+            setMembers(sortTeamReviewers(filterVisibleTeamMembers(teamActorRef.current, apiTeamDirectory)));
             return;
         }
 
         setMembers(sortTeamReviewers(filterVisibleTeamMembers(teamActorRef.current, teamReviewersRef.current)));
-    }, [apiTeamMembers, canAccessTeamSettings, writeEnabled]);
+    }, [apiTeamDirectory, canAccessTeamSettings, writeEnabled]);
 
     const reloadLocalRequests = useCallback(async () => {
         if (!canAccessTeamSettings || !localManageMode) {
@@ -340,6 +358,31 @@ export function PanelTeamSettings() {
         }
     };
 
+    const handleJoinMember = async (member: ReportAuthor) => {
+        if (!onRegisterReviewer) {
+            return;
+        }
+        if (!canAssignTeamRole(teamActor, apiRole)) {
+            setErrorMessage(team.roleNotAllowed);
+            return;
+        }
+
+        setBusyId(member.id);
+        try {
+            await onRegisterReviewer({
+                author_id: member.id,
+                author_name: member.name,
+                public_key: "",
+                role: apiRole,
+            });
+            await reloadAfterMutation();
+        } catch (error) {
+            setErrorMessage(error instanceof Error ? error.message : team.registerFailed);
+        } finally {
+            setBusyId(null);
+        }
+    };
+
     const handleUpdate = async (member: ReportAuthor, patch: { role?: ReportAuthorRole; is_active?: boolean }) => {
         if (!onUpdateReviewer || !canEditTeamMember(teamActor, member)) {
             return;
@@ -411,8 +454,10 @@ export function PanelTeamSettings() {
                     />
                 ) : null}
                 {members.map((member) => {
-                    const editable = canManage && Boolean(onUpdateReviewer) && canEditTeamMember(teamActor, member) && busyId !== member.id;
+                    const joined = isJoinedTeamMember(member);
+                    const editable = joined && canManage && Boolean(onUpdateReviewer) && canEditTeamMember(teamActor, member) && busyId !== member.id;
                     const deletable = editable && Boolean(onDeleteReviewer) && writeEnabled;
+                    const joinable = !joined && canManage && Boolean(onRegisterReviewer) && busyId !== member.id;
                     return (
                         <MemberRow
                             key={member.id}
@@ -421,15 +466,18 @@ export function PanelTeamSettings() {
                             roleMessages={team}
                             inactiveLabel={team.inactive}
                             canEdit={editable}
+                            canJoin={joinable}
                             apiMode={writeEnabled}
                             assignableRoles={assignableRoles}
                             editRoleLabel={team.editRole}
                             activateLabel={team.activate}
                             deactivateLabel={team.deactivate}
                             deleteLabel={team.deleteMember}
+                            joinLabel={team.join}
                             onChangeRole={editable ? (role) => void handleUpdate(member, { role }) : undefined}
                             onToggleActive={editable && !writeEnabled ? () => void handleUpdate(member, { is_active: member.isActive === false }) : undefined}
                             onDelete={deletable ? () => void handleDelete(member) : undefined}
+                            onJoin={joinable ? () => void handleJoinMember(member) : undefined}
                         />
                     );
                 })}

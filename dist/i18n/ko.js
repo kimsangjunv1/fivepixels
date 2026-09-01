@@ -749,6 +749,7 @@ export const ko = {
         approveAsRole: "승인 시 권한",
         roleNotAllowed: "해당 권한은 부여할 수 없습니다.",
         register: "멤버 등록",
+        join: "가입",
         manualNamePlaceholder: "표시 이름",
         manualIdPlaceholder: "작성자 id",
         manualPublicKeyPlaceholder: "공개키 (stpub1…)",

@@ -8,6 +8,7 @@ type UseReportTeamActorParams = {
 };
 export declare function useReportTeamActor({ authorizedAuthorId, teamReviewers, persistenceMode, onListReviewers }: UseReportTeamActorParams): {
     teamActor: ReportAuthor | null;
+    apiTeamDirectory: ReportAuthor[] | null;
     apiTeamMembers: ReportAuthor[] | null;
     apiTeamMembersLoading: boolean;
     refreshTeamMembers: () => Promise<ReportAuthor[] | null>;

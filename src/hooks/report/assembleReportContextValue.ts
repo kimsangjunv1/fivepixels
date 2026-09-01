@@ -51,6 +51,7 @@ type AssembleArgs = {
     showFeedbackList: boolean;
     teamReviewers: ReportAuthor[];
     teamActor: ReportAuthor | null;
+    apiTeamDirectory: ReportAuthor[] | null;
     apiTeamMembers: ReportAuthor[] | null;
     apiTeamMembersLoading: boolean;
     refreshTeamMembers: () => Promise<ReportAuthor[] | null>;
@@ -92,6 +93,7 @@ export function assembleReportContextValue({
     showFeedbackList,
     teamReviewers,
     teamActor,
+    apiTeamDirectory,
     apiTeamMembers,
     apiTeamMembersLoading,
     refreshTeamMembers,
@@ -170,6 +172,7 @@ export function assembleReportContextValue({
         teamActorRole: teamActor ? resolveAuthorRole(teamActor) : null,
         isTeamAdmin: isReportAuthorAdmin(teamActor),
         canAccessTeamSettings: canAccessTeamSettings(teamActor),
+        apiTeamDirectory,
         apiTeamMembers,
         apiTeamMembersLoading,
         refreshTeamMembers,

@@ -5,8 +5,10 @@ import {
     canAssignTeamRole,
     canEditTeamMember,
     canViewTeamMember,
+    filterJoinedTeamMembers,
     filterVisibleTeamMembers,
     hasTeamAdminHandlers,
+    isJoinedTeamMember,
     isReportAuthorAdmin,
     isTeamWriteEnabled,
     listAssignableRoles,
@@ -54,6 +56,7 @@ describe("teamManagement hierarchy", () => {
         expect(canEditTeamMember(admin, peerAdmin)).toBe(false);
         expect(canEditTeamMember(admin, sub)).toBe(true);
         expect(canEditTeamMember(admin, member)).toBe(true);
+        expect(canEditTeamMember(admin, { ...member, isJoined: false })).toBe(false);
         expect(canEditTeamMember(sub, peerSub)).toBe(false);
         expect(canEditTeamMember(sub, member)).toBe(true);
         expect(canEditTeamMember(sub, admin)).toBe(false);
@@ -63,6 +66,17 @@ describe("teamManagement hierarchy", () => {
         expect(canAssignTeamRole(sub, "sub_admin")).toBe(false);
         expect(listAssignableRoles(admin)).toEqual(["member", "sub_admin"]);
         expect(listAssignableRoles(sub)).toEqual(["member"]);
+    });
+
+    it("treats missing isJoined as joined and filters directory members", () => {
+        const directory = [
+            admin,
+            { id: "u3", name: "Pending", isJoined: false },
+        ];
+
+        expect(isJoinedTeamMember(admin)).toBe(true);
+        expect(isJoinedTeamMember({ id: "u3", name: "Pending", isJoined: false })).toBe(false);
+        expect(filterJoinedTeamMembers(directory)).toEqual([admin]);
     });
 
     it("enables writes only in API persistence mode", () => {

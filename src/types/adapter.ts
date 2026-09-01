@@ -295,9 +295,10 @@ export type FivePixelsRepliesAdapter = {
 
 export type FivePixelsMembersAdapter = {
     /**
-     * GET /projects/{projectId}/members
+     * GET /projects/{projectId}/members — or a user directory such as
+     * `GET /users?projectId=` when each item includes `isJoined`.
      *
-     * @returns Team members (`ReportAuthor[]`) — each `{ id, name, role?, department?, … }`
+     * @returns `ReportAuthor[]` — joined members when `isJoined` is omitted; otherwise full directory
      */
     list?: () => Promise<ReportAuthor[]>;
     /**

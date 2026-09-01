@@ -10,6 +10,9 @@ export declare function canAccessTeamSettings(author: ReportAuthor | null | unde
 /** Can perform any team write (approve / register / update) in API mode. */
 export declare function canManageTeamMembers(author: ReportAuthor | null | undefined): boolean;
 export declare function canViewTeamMember(viewer: ReportAuthor | null | undefined, target: ReportAuthor): boolean;
+/** `isJoined` omitted means joined (legacy `members.list` responses). */
+export declare function isJoinedTeamMember(author: Pick<ReportAuthor, "isJoined"> | null | undefined): boolean;
+export declare function filterJoinedTeamMembers(members: ReportAuthor[]): ReportAuthor[];
 /** Same-rank peers are visible but not editable. Only strictly lower ranks. */
 export declare function canEditTeamMember(actor: ReportAuthor | null | undefined, target: ReportAuthor): boolean;
 export declare function canAssignTeamRole(actor: ReportAuthor | null | undefined, nextRole: ReportAuthorRole): boolean;
