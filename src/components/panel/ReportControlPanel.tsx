@@ -38,7 +38,7 @@ import { ReportPersonalKeyDialog } from "./ReportPersonalKeyDialog.js";
 import { ReportPanelNoticeDialog } from "./ReportPanelNoticeDialog.js";
 import { PanelSettings } from "./PanelSettings.js";
 import { CornerResizeGhost } from "@/components/ui/CornerResizeGhost.js";
-import { CornerResizeHandle } from "@/components/ui/CornerResizeHandle.js";
+import { PanelResizeHandles } from "./PanelResizeHandles.js";
 import { PanelStatusBannerStack } from "./PanelStatusBannerStack.js";
 import { PanelNetworkFailureBanner } from "./PanelNetworkFailureBanner.js";
 import { PanelRoleSwitch } from "./PanelRoleSwitch.js";
@@ -187,7 +187,7 @@ export function ReportControlPanel() {
     const [renderedTab, setRenderedTab] = useState<ReportPanelTab | null>(null);
     const [tabShellOpen, setTabShellOpen] = useState(false);
     const tabShellMounted = renderedTab !== null;
-    const { panelSize, resizeCorner, handleResizePointerDown, resetPanelSize, isDefaultSize, isResizing, ghostRef } = usePanelResize({
+    const { panelSize, resizeHandles, heightResizeEnabled, createResizePointerDown, resetPanelSize, isDefaultSize, isResizing, ghostRef } = usePanelResize({
         enabled: !isMobileViewport && panelExpanded,
         corner: placementCorner,
         heightResizeEnabled: contentSectionOpen || tabShellMounted,
@@ -331,16 +331,18 @@ export function ReportControlPanel() {
                         ? "min-h-[40px] bg-[var(--adaptive-neutralTintOpacity900)] backdrop-blur-[10px] rounded-[16px] shadow-[var(--adaptive-popup-shadow)]"
                         : panelCollapsed
                           ? ""
-                          : "relative overflow-hidden bg-[var(--adaptive-neutralTintOpacity900)] backdrop-blur-[10px] rounded-[16px] shadow-[var(--adaptive-popup-shadow)]"
+                          : "relative overflow-visible bg-[var(--adaptive-neutralTintOpacity900)] backdrop-blur-[10px] rounded-[16px] shadow-[var(--adaptive-popup-shadow)]"
                 }`}
                 style={{ ...resolvedPanelStyle, ...resolvedSizeStyle, zIndex: PANEL_LAYER_Z_INDEX }}
             >
                 {panelExpanded ? (
-                    <CornerResizeHandle
-                        corner={resizeCorner}
-                        ariaLabel={messages.panel.resizeAriaLabel}
+                    <PanelResizeHandles
+                        edges={resizeHandles.edges}
+                        corner={resizeHandles.corner}
                         inactive={isDragging}
-                        onPointerDown={handleResizePointerDown}
+                        heightResizeEnabled={heightResizeEnabled}
+                        messages={messages}
+                        createResizePointerDown={createResizePointerDown}
                     />
                 ) : null}
                 <div

@@ -55,6 +55,54 @@ export function resolveGhostCornerRect(session, clientX, clientY, clampSize) {
         height: clamped.height,
     };
 }
+export function resolveGhostEdgeRect(session, clientX, clientY, clampSize) {
+    const deltaX = clientX - session.startX;
+    const deltaY = clientY - session.startY;
+    let width = session.startWidth;
+    let height = session.startHeight;
+    switch (session.handleEdge) {
+        case "right":
+            width = session.startWidth + deltaX;
+            break;
+        case "left":
+            width = session.startWidth - deltaX;
+            break;
+        case "bottom":
+            height = session.startHeight + deltaY;
+            break;
+        case "top":
+            height = session.startHeight - deltaY;
+            break;
+    }
+    const clamped = clampSize(width, height);
+    const visualRight = session.visualLeft + session.startWidth;
+    const visualBottom = session.visualTop + session.startHeight;
+    let left = session.visualLeft;
+    let top = session.visualTop;
+    switch (session.handleEdge) {
+        case "right":
+        case "bottom":
+            break;
+        case "left":
+            left = visualRight - clamped.width;
+            break;
+        case "top":
+            top = visualBottom - clamped.height;
+            break;
+    }
+    return {
+        left,
+        top,
+        width: clamped.width,
+        height: clamped.height,
+    };
+}
+function resolveGhostRect(session, clientX, clientY, clampSize) {
+    if (session.handle.kind === "corner") {
+        return resolveGhostCornerRect({ ...session, handleCorner: session.handle.corner }, clientX, clientY, clampSize);
+    }
+    return resolveGhostEdgeRect({ ...session, handleEdge: session.handle.edge }, clientX, clientY, clampSize);
+}
 export function useGhostCornerResize({ enabled, targetRef, handleCorner, clampSize, onResizeComplete, resolveStartSize, }) {
     const [isResizing, setIsResizing] = useState(false);
     const ghostRef = useRef(null);
@@ -103,7 +151,7 @@ export function useGhostCornerResize({ enabled, targetRef, handleCorner, clampSi
             height: session.startHeight,
         });
     }, [isResizing]);
-    const handleResizePointerDown = useCallback((event) => {
+    const createResizePointerDown = useCallback((handle) => (event) => {
         if (!enabled || event.button !== 0) {
             return;
         }
@@ -125,7 +173,7 @@ export function useGhostCornerResize({ enabled, targetRef, handleCorner, clampSi
             startHeight: startSize.height,
             visualLeft: rect.left,
             visualTop: rect.top,
-            handleCorner,
+            handle,
         };
         setIsResizing(true);
         const handlePointerMove = (moveEvent) => {
@@ -133,7 +181,7 @@ export function useGhostCornerResize({ enabled, targetRef, handleCorner, clampSi
             if (!session || session.pointerId !== moveEvent.pointerId) {
                 return;
             }
-            const ghostRect = resolveGhostCornerRect(session, moveEvent.clientX, moveEvent.clientY, clampSize);
+            const ghostRect = resolveGhostRect(session, moveEvent.clientX, moveEvent.clientY, clampSize);
             pendingSizeRef.current = { width: ghostRect.width, height: ghostRect.height };
             const ghost = ghostRef.current;
             if (ghost) {
@@ -151,10 +199,17 @@ export function useGhostCornerResize({ enabled, targetRef, handleCorner, clampSi
         window.addEventListener("pointermove", handlePointerMove, RESIZE_LISTENER_OPTIONS);
         window.addEventListener("pointerup", handlePointerUp, RESIZE_LISTENER_OPTIONS);
         window.addEventListener("pointercancel", handlePointerUp, RESIZE_LISTENER_OPTIONS);
-    }, [clampSize, detachResizeListeners, enabled, finishResize, handleCorner, resolveStartSize, targetRef]);
+    }, [clampSize, detachResizeListeners, enabled, finishResize, resolveStartSize, targetRef]);
+    const handleResizePointerDown = useCallback((event) => {
+        if (!handleCorner) {
+            return;
+        }
+        createResizePointerDown({ kind: "corner", corner: handleCorner })(event);
+    }, [createResizePointerDown, handleCorner]);
     return {
         isResizing,
         ghostRef,
+        createResizePointerDown,
         handleResizePointerDown,
     };
 }

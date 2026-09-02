@@ -9,20 +9,11 @@ type PanelResizeHandleProps = {
     onPointerDown: (event: ReactPointerEvent<HTMLElement>) => void;
 };
 
-export const PANEL_RESIZE_ACTIVE_COLOR = "#F6572E";
-
 const EDGE_CLASS: Record<PanelResizeEdge, string> = {
     top: "left-1/2 top-0 -translate-x-1/2 -translate-y-1/2",
     bottom: "left-1/2 bottom-0 -translate-x-1/2 translate-y-1/2",
     left: "left-0 top-1/2 -translate-x-1/2 -translate-y-1/2",
     right: "right-0 top-1/2 translate-x-1/2 -translate-y-1/2",
-};
-
-const PILL_CLASS: Record<PanelResizeEdge, string> = {
-    top: "h-[6px] w-[28px]",
-    bottom: "h-[6px] w-[28px]",
-    left: "h-[28px] w-[6px]",
-    right: "h-[28px] w-[6px]",
 };
 
 const CURSOR_CLASS: Record<PanelResizeEdge, string> = {
@@ -31,6 +22,32 @@ const CURSOR_CLASS: Record<PanelResizeEdge, string> = {
     left: "cursor-ew-resize",
     right: "cursor-ew-resize",
 };
+
+function EdgeHandleIcon({ edge, active }: { edge: PanelResizeEdge; active: boolean }) {
+    const isHorizontal = edge === "top" || edge === "bottom";
+
+    return (
+        <svg
+            width={isHorizontal ? 28 : 6}
+            height={isHorizontal ? 6 : 28}
+            viewBox={isHorizontal ? "0 0 28 6" : "0 0 6 28"}
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden
+            className="drop-shadow-[0_1px_4px_rgba(0,0,0,0.12)]"
+        >
+            <rect
+                x="0.5"
+                y="0.5"
+                width={isHorizontal ? 27 : 5}
+                height={isHorizontal ? 5 : 27}
+                rx="2.5"
+                fill={active ? "#F6572E" : "var(--adaptive-surface-overlay)"}
+                stroke={active ? "#F6572E" : "var(--adaptive-border-subtle)"}
+            />
+        </svg>
+    );
+}
 
 export function PanelResizeHandle({ edge, ariaLabel, inactive = false, active = false, onPointerDown }: PanelResizeHandleProps) {
     const handlePointerDown = (event: ReactPointerEvent<HTMLElement>) => {
@@ -48,16 +65,13 @@ export function PanelResizeHandle({ edge, ariaLabel, inactive = false, active = 
             aria-label={ariaLabel}
             aria-disabled={inactive}
             onPointerDown={handlePointerDown}
-            className={`absolute z-20 flex items-center justify-center outline-none ${EDGE_CLASS[edge]} ${inactive ? "pointer-events-none" : CURSOR_CLASS[edge]}`}
+            className={`absolute z-20 flex items-center justify-center outline-none ${EDGE_CLASS[edge]} ${
+                inactive ? "pointer-events-none opacity-40" : CURSOR_CLASS[edge]
+            }`}
         >
-            <span
-                className={`rounded-full border shadow-[0_1px_4px_rgba(0,0,0,0.12)] transition-[opacity,background-color,border-color] ${PILL_CLASS[edge]} ${
-                    inactive ? "opacity-30" : "opacity-100"
-                } ${
-                    active
-                        ? "border-[#F6572E] bg-[#F6572E]"
-                        : "border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface-overlay)]"
-                }`}
+            <EdgeHandleIcon
+                edge={edge}
+                active={active}
             />
         </div>
     );

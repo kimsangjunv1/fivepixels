@@ -15,7 +15,7 @@ import { getReplyCount } from "../../utils/feedback/feedbackThread.js";
 import { MOTION } from "../../constants/motionClasses.js";
 import { MarkerReplyBadge } from "./MarkerReplyBadge.js";
 import { MarkerShapeGlyph } from "./MarkerShapeGlyph.js";
-const TOOLTIP_SURFACE_CLASS = "overflow-hidden rounded-[16px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-neutralTintOpacity800)] backdrop-blur-[5px] shadow-[var(--adaptive-popup-shadow)]";
+const TOOLTIP_SURFACE_CLASS = "overflow-hidden rounded-[16px] bg-[var(--adaptive-neutralTintOpacity600)] backdrop-blur-[5px] shadow-[var(--adaptive-popup-shadow)]";
 const TOOLTIP_FIXED_CLASS = `fixed z-[1000001] ${TOOLTIP_SURFACE_CLASS} ${MOTION.tooltipFadeIn}`;
 const MARKER_ANCHOR_BASE_CLASS = "pointer-events-none fixed z-[1000000]";
 const MARKER_BUTTON_BASE_CLASS = "flex items-center justify-center";
