@@ -18,7 +18,6 @@ export function useReportTeamActor({ authorizedAuthorId, teamReviewers, persiste
         [apiTeamDirectory],
     );
     const onListReviewersRef = useRef(onListReviewers);
-    const hasListReviewers = Boolean(onListReviewers);
 
     useEffect(() => {
         onListReviewersRef.current = onListReviewers;
@@ -43,17 +42,36 @@ export function useReportTeamActor({ authorizedAuthorId, teamReviewers, persiste
     }, [authorizedAuthorId, persistenceMode]);
 
     useEffect(() => {
-        if (persistenceMode !== "API" || !authorizedAuthorId) {
+        if (persistenceMode !== "API" || !onListReviewersRef.current || !authorizedAuthorId) {
             setApiTeamDirectory(null);
             return;
         }
 
-        if (!hasListReviewers) {
-            return;
-        }
+        let cancelled = false;
+        setApiTeamMembersLoading(true);
 
-        void refreshTeamMembers();
-    }, [authorizedAuthorId, hasListReviewers, persistenceMode, refreshTeamMembers]);
+        void onListReviewersRef
+            .current()
+            .then((members) => {
+                if (!cancelled) {
+                    setApiTeamDirectory(members);
+                }
+            })
+            .catch(() => {
+                if (!cancelled) {
+                    setApiTeamDirectory(null);
+                }
+            })
+            .finally(() => {
+                if (!cancelled) {
+                    setApiTeamMembersLoading(false);
+                }
+            });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [authorizedAuthorId, persistenceMode]);
 
     const teamActor = useMemo(
         () => resolveTeamActor(authorizedAuthorId, teamReviewers, apiTeamMembers, persistenceMode),
