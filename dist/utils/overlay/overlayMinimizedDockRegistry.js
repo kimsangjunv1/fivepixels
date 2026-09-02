@@ -9,6 +9,7 @@ export function parseMarkerDockWindowId(windowId) {
     return windowId.slice(MARKER_DOCK_WINDOW_ID_PREFIX.length);
 }
 let dockOrder = [];
+let activeDockDragWindowId = null;
 const listeners = new Set();
 function emit() {
     for (const listener of listeners) {
@@ -23,6 +24,16 @@ export function subscribeOverlayMinimizedDock(listener) {
     return () => {
         listeners.delete(listener);
     };
+}
+export function getActiveDockDragWindowId() {
+    return activeDockDragWindowId;
+}
+export function setActiveDockDragWindowId(windowId) {
+    if (activeDockDragWindowId === windowId) {
+        return;
+    }
+    activeDockDragWindowId = windowId;
+    emit();
 }
 export function isOverlayMinimizedDocked(windowId) {
     return dockOrder.includes(windowId);
@@ -56,6 +67,7 @@ export function reorderOverlayMinimizedDock(fromIndex, toIndex) {
 /** Test helper */
 export function resetOverlayMinimizedDockRegistryForTests() {
     dockOrder = [];
+    activeDockDragWindowId = null;
     emit();
 }
 //# sourceMappingURL=overlayMinimizedDockRegistry.js.map

@@ -7,6 +7,7 @@ import { WINDOW_EXPANDED_CONTROLS_WIDTH, WINDOW_HEADER_BUTTON_CLASS, WINDOW_HEAD
 import { clampWindowPosition, useDraggableWindow } from "../../hooks/useDraggableWindow.js";
 import { useGhostCornerResize } from "../../hooks/useGhostCornerResize.js";
 import { useOverlayMinimizedDock } from "../../hooks/useOverlayMinimizedDock.js";
+import { useMinimizedDockDragReorder } from "../../hooks/useMinimizedDockDragReorder.js";
 import { getMaximizedWindowFrame, getWindowViewportSize, useWindowMode } from "../../hooks/useWindowMode.js";
 import { claimFloatingWindowZIndex, getFloatingWindowZBase } from "../../utils/overlay/floatingWindowStack.js";
 import { MINIMIZED_WINDOW_HEIGHT } from "../../utils/overlay/minimizedDockLayout.js";
@@ -64,6 +65,15 @@ export function FloatingWindow({ children, title, headerRight, controls, showCon
         onMinimizedChange: (minimized) => setMode(minimized ? "minimized" : "normal"),
     });
     const showDockMinimizedChrome = dockEnabled && isMinimized && overlayDock.dockMorph?.phase !== "restoring";
+    const dockDrag = useMinimizedDockDragReorder({
+        windowId: windowId ?? "overlay-window",
+        windowRef,
+        enabled: showDockMinimizedChrome && overlayDock.dockCount >= 2,
+        blockDrag: overlayDock.dockMorph !== null,
+        minimizedWidth: overlayDock.minimizedWidth,
+        dockPosition: overlayDock.dockPosition,
+    });
+    const isDockDragging = dockDrag.isDockDragging;
     const dragEnabled = enabled && mode === "normal" && !showDockMinimizedChrome && !overlayDock.dockMorph;
     useEffect(() => {
         if (isDragging) {
@@ -96,13 +106,25 @@ export function FloatingWindow({ children, title, headerRight, controls, showCon
             return { left: overlayDock.dockMorph.left, top: overlayDock.dockMorph.top };
         }
         if (showDockMinimizedChrome) {
-            return overlayDock.dockPosition;
+            return {
+                left: dockDrag.displayLeft,
+                top: dockDrag.displayTop,
+            };
         }
         if (isMaximized) {
             return getMaximizedWindowFrame(minWidth, minHeight);
         }
         return resolvedPositionBeforeMode;
-    }, [isMaximized, minHeight, minWidth, overlayDock.dockMorph, overlayDock.dockPosition, resolvedPositionBeforeMode, showDockMinimizedChrome]);
+    }, [
+        dockDrag.displayLeft,
+        dockDrag.displayTop,
+        isMaximized,
+        minHeight,
+        minWidth,
+        overlayDock.dockMorph,
+        resolvedPositionBeforeMode,
+        showDockMinimizedChrome,
+    ]);
     const resolvedSizeStyle = useMemo(() => {
         if (isMaximized) {
             const frame = getMaximizedWindowFrame(minWidth, minHeight);
@@ -289,14 +311,25 @@ export function FloatingWindow({ children, title, headerRight, controls, showCon
             window.removeEventListener("keydown", handleKeyDown);
         };
     }, [controlsCollapsed, controlsExpanded]);
+    const dockLayoutTransition = isDockDragging ? undefined : overlayDock.layoutTransition;
+    const handleHeaderPointerDown = useCallback((event) => {
+        if (showDockMinimizedChrome) {
+            dockDrag.handleMinimizedDockPointerDown(event);
+            return;
+        }
+        handleDragPointerDown(event);
+    }, [dockDrag, handleDragPointerDown, showDockMinimizedChrome]);
     return (_jsxs(_Fragment, { children: [isResizing ? _jsx(CornerResizeGhost, { ghostRef: ghostRef }) : null, _jsxs("div", { ref: windowRef, "data-fivepixels-interactive": "", "data-fp-chrome": dataChrome, "data-dragging": isDragging ? "true" : "false", "data-mode": mode, role: role, "aria-label": ariaLabel, onPointerDown: handleWindowPointerDown, className: `pointer-events-auto fixed flex flex-col rounded-[16px] bg-[var(--adaptive-black50)]/95 shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[10px] ${resizable && mode === "normal" && !showDockMinimizedChrome ? "overflow-visible" : "overflow-hidden"} ${className}`, style: {
                     left: resolvedPosition.left,
                     top: resolvedPosition.top,
-                    zIndex: stackZIndex,
+                    zIndex: isDockDragging ? stackZIndex + 100 : stackZIndex,
                     width: resolvedSizeStyle.width,
                     height: resolvedSizeStyle.height,
-                    transition: overlayDock.layoutTransition,
+                    transition: dockLayoutTransition,
+                    ...(isDockDragging ? { cursor: "grabbing", transform: "scale(1.03)", willChange: "left, top, transform" } : null),
                     ...style,
-                }, children: [_jsxs("header", { ref: headerRef, onPointerDown: handleDragPointerDown, onDoubleClick: handleHeaderDoubleClick, className: `relative flex shrink-0 touch-none select-none items-center gap-[10px] px-[12px] py-[8px] ${dragEnabled ? "cursor-grab active:cursor-grabbing" : ""} ${showDockMinimizedChrome || (isMinimized && minimizePolicy === "inplace") ? "border-b-0" : "border-b border-[var(--adaptive-border-subtle)]"} ${headerClassName}`, children: [title ? (_jsx("div", { ref: titleMeasureRef, "aria-hidden": true, className: "pointer-events-none invisible absolute whitespace-nowrap", children: title })) : null, showControls ? (controlsCollapsed ? (_jsxs("div", { ref: controlsClusterRef, className: "flex shrink-0 items-center gap-[2px]", children: [_jsx("button", { type: "button", "data-fivepixels-interactive": "", "aria-label": moreAriaLabel, "aria-expanded": controlsExpanded, onPointerDown: (event) => event.stopPropagation(), onClick: () => setControlsExpanded((current) => !current), className: `${WINDOW_HEADER_BUTTON_CLASS} cursor-pointer`, children: _jsx(MoreHorizontalIcon, { className: "h-[15px] w-[15px]" }) }), _jsx("div", { "aria-hidden": !controlsExpanded, className: `flex items-center gap-[2px] overflow-hidden transition-[max-width,opacity] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] ${controlsExpanded ? "max-w-[80px] opacity-100" : "pointer-events-none max-w-0 opacity-0"}`, children: modeControlButtons })] })) : (_jsx("div", { className: "flex shrink-0 items-center gap-[2px]", children: modeControlButtons }))) : null, title ? (_jsx("div", { className: "min-w-0 flex-1 overflow-hidden", children: _jsx("div", { className: "truncate", children: title }) })) : (_jsx("div", { className: "min-w-0 flex-1" })), headerRight ? (_jsx("div", { ref: headerRightRef, className: "flex shrink-0 items-center gap-[6px]", children: headerRight })) : null] }), !isMinimized && children ? _jsx("div", { className: `min-h-0 min-w-0 flex-1 overflow-auto rounded-[16px] ${contentClassName}`, children: children }) : null, resizable && mode === "normal" && !showDockMinimizedChrome ? (_jsx(WindowResizeHandles, { resizeWidthAriaLabel: resizeAriaLabel, resizeHeightAriaLabel: resizeAriaLabel, createResizePointerDown: createResizePointerDown })) : null] })] }));
+                }, children: [_jsxs("header", { ref: headerRef, onPointerDown: handleHeaderPointerDown, onClickCapture: showDockMinimizedChrome ? dockDrag.handleMinimizedDockClickCapture : undefined, onDoubleClick: handleHeaderDoubleClick, className: `relative flex shrink-0 touch-none select-none items-center gap-[10px] px-[12px] py-[8px] ${dragEnabled || (showDockMinimizedChrome && overlayDock.dockCount > 1)
+                            ? `cursor-grab ${isDockDragging ? "cursor-grabbing" : ""}`
+                            : ""} ${showDockMinimizedChrome || (isMinimized && minimizePolicy === "inplace") ? "border-b-0" : "border-b border-[var(--adaptive-border-subtle)]"} ${headerClassName}`, children: [title ? (_jsx("div", { ref: titleMeasureRef, "aria-hidden": true, className: "pointer-events-none invisible absolute whitespace-nowrap", children: title })) : null, showControls ? (controlsCollapsed ? (_jsxs("div", { ref: controlsClusterRef, className: "flex shrink-0 items-center gap-[2px]", children: [_jsx("button", { type: "button", "data-fivepixels-interactive": "", "aria-label": moreAriaLabel, "aria-expanded": controlsExpanded, onPointerDown: (event) => event.stopPropagation(), onClick: () => setControlsExpanded((current) => !current), className: `${WINDOW_HEADER_BUTTON_CLASS} cursor-pointer`, children: _jsx(MoreHorizontalIcon, { className: "h-[15px] w-[15px]" }) }), _jsx("div", { "aria-hidden": !controlsExpanded, className: `flex items-center gap-[2px] overflow-hidden transition-[max-width,opacity] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] ${controlsExpanded ? "max-w-[80px] opacity-100" : "pointer-events-none max-w-0 opacity-0"}`, children: modeControlButtons })] })) : (_jsx("div", { className: "flex shrink-0 items-center gap-[2px]", children: modeControlButtons }))) : null, title ? (_jsx("div", { className: "min-w-0 flex-1 overflow-hidden", children: _jsx("div", { className: "truncate", children: title }) })) : (_jsx("div", { className: "min-w-0 flex-1" })), headerRight ? (_jsx("div", { ref: headerRightRef, className: "flex shrink-0 items-center gap-[6px]", children: headerRight })) : null] }), !isMinimized && children ? _jsx("div", { className: `min-h-0 min-w-0 flex-1 overflow-auto rounded-[16px] ${contentClassName}`, children: children }) : null, resizable && mode === "normal" && !showDockMinimizedChrome ? (_jsx(WindowResizeHandles, { resizeWidthAriaLabel: resizeAriaLabel, resizeHeightAriaLabel: resizeAriaLabel, createResizePointerDown: createResizePointerDown })) : null] })] }));
 }
 //# sourceMappingURL=FloatingWindow.js.map

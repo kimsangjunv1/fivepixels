@@ -5,6 +5,7 @@ import { useDraggableWindow, clampWindowPosition } from "../../hooks/useDraggabl
 import { useGhostCornerResize } from "../../hooks/useGhostCornerResize.js";
 import { useNativeHover } from "../../hooks/useNativeHover.js";
 import { useOverlayMinimizedDock } from "../../hooks/useOverlayMinimizedDock.js";
+import { useMinimizedDockDragReorder } from "../../hooks/useMinimizedDockDragReorder.js";
 import { useReport } from "../../providers/reportContext.js";
 import { resolvePendingComposerTargetPreview, shouldShowCaseReplyComposer } from "../../utils/feedback/feedbackThread.js";
 import { getCaseAssigneeName, getCaseById, getReportCases } from "../../utils/report/reportCases.js";
@@ -32,8 +33,8 @@ import { FeedbackThread } from "../../components/panel/feedback/FeedbackThread.j
 import { MarkerCaseSidebar } from "./MarkerCaseSidebar.js";
 import { ProcessingDots } from "../../components/ui/ProcessingDots.js";
 import { Text } from "../../components/ui/Text/index.js";
-import { MARKER_MINIMIZED_WINDOW_HEIGHT, MARKER_MINIMIZED_WINDOW_WIDTH, MARKER_WINDOW_MARGIN, resolveMinimizedDockIndexFromPointer, } from "../../utils/marker/markerWindowDock.js";
-import { getMarkerDockWindowId, getOverlayMinimizedDockOrder, registerOverlayMinimizedDock, unregisterOverlayMinimizedDock, } from "../../utils/overlay/overlayMinimizedDockRegistry.js";
+import { MARKER_MINIMIZED_WINDOW_HEIGHT, MARKER_MINIMIZED_WINDOW_WIDTH, MARKER_WINDOW_MARGIN, } from "../../utils/marker/markerWindowDock.js";
+import { getMarkerDockWindowId, registerOverlayMinimizedDock, unregisterOverlayMinimizedDock, } from "../../utils/overlay/overlayMinimizedDockRegistry.js";
 import { readMinimizedWindowAlias, writeMinimizedWindowAlias } from "../../utils/marker/minimizedWindowAlias.js";
 const WINDOW_MARGIN = MARKER_WINDOW_MARGIN;
 const DEFAULT_WINDOW_SIZE = { width: 600, height: 460 };
@@ -46,8 +47,6 @@ const RIGHT_MIN_WIDTH = 280;
 const COLLAPSED_SIDEBAR_WIDTH = 46;
 const MINIMIZED_WINDOW_HEIGHT = MARKER_MINIMIZED_WINDOW_HEIGHT;
 const MINIMIZED_WINDOW_WIDTH = MARKER_MINIMIZED_WINDOW_WIDTH;
-const MINIMIZED_DOCK_DRAG_THRESHOLD_PX = 6;
-const MINIMIZED_DOCK_DRAG_LIFT_PX = 10;
 const WINDOW_CLOSE_ANIMATION_MS = 220;
 const LEFT_SECTION_TRANSITION = "transition-[background-color,backdrop-filter] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]";
 const LEFT_SECTION_FLAT_CLASS = `${LEFT_SECTION_TRANSITION} bg-[var(--adaptive-black50)]`;
@@ -192,14 +191,19 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }) {
         onMinimizedChange: (minimized) => setWindowMode(minimized ? "minimized" : "normal"),
     });
     const dockMorph = overlayDock.dockMorph;
+    const dockDrag = useMinimizedDockDragReorder({
+        windowId: markerDockId,
+        windowRef,
+        enabled: windowMode === "minimized" && overlayDock.dockCount >= 2,
+        blockDrag: dockMorph !== null,
+        minimizedWidth: overlayDock.minimizedWidth,
+        dockPosition: overlayDock.dockPosition,
+    });
+    const isDockDragging = dockDrag.isDockDragging;
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const [size, setSize] = useState(DEFAULT_WINDOW_SIZE);
     const [sidebarWidth, setSidebarWidth] = useState(DEFAULT_SIDEBAR_WIDTH);
     const [isSidebarDeleteConfirming, setIsSidebarDeleteConfirming] = useState(false);
-    const [dockDrag, setDockDrag] = useState(null);
-    const dockDragRef = useRef(null);
-    const dockDragListenersRef = useRef(null);
-    const suppressDockRestoreClickRef = useRef(false);
     const splitStateRef = useRef(null);
     const splitListenersRef = useRef(null);
     const hoverRef = useNativeHover({
@@ -277,17 +281,6 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }) {
         splitListenersRef.current = null;
     }, []);
     useEffect(() => () => detachSplitListeners(), [detachSplitListeners]);
-    const detachDockDragListeners = useCallback(() => {
-        const listeners = dockDragListenersRef.current;
-        if (!listeners) {
-            return;
-        }
-        window.removeEventListener("pointermove", listeners.move, true);
-        window.removeEventListener("pointerup", listeners.up, true);
-        window.removeEventListener("pointercancel", listeners.up, true);
-        dockDragListenersRef.current = null;
-    }, []);
-    useEffect(() => () => detachDockDragListeners(), [detachDockDragListeners]);
     useEffect(() => {
         const dockMinimized = minimizedReplyReportIds.includes(report.id);
         if (dockMinimized) {
@@ -366,16 +359,14 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }) {
     // collapse every window onto the same fallback center coordinate.
     const [seedPosition] = useState(() => clampWindowPosition(anchor.left + getMarkerDotSize() / 2 - DEFAULT_WINDOW_SIZE.width / 2, anchor.top + getMarkerDotSize() / 2 - DEFAULT_WINDOW_SIZE.height / 2, DEFAULT_WINDOW_SIZE.width, DEFAULT_WINDOW_SIZE.height));
     const restoredPosition = isMaximized ? { left: WINDOW_MARGIN, top: WINDOW_MARGIN } : (position ?? seedPosition);
-    const dockPosition = overlayDock.dockPosition;
-    const resolvedPosition = showMinimizedChrome ? dockPosition : restoredPosition;
-    const isDockDragging = dockDrag?.active === true;
+    const resolvedPosition = showMinimizedChrome ? overlayDock.dockPosition : restoredPosition;
     const displayRect = dockMorph ?? {
-        left: dockDrag?.active ? dockDrag.pointerX - dockDrag.offsetX : resolvedPosition.left,
-        top: dockDrag?.active ? dockPosition.top - MINIMIZED_DOCK_DRAG_LIFT_PX : resolvedPosition.top,
+        left: showMinimizedChrome ? dockDrag.displayLeft : resolvedPosition.left,
+        top: showMinimizedChrome ? dockDrag.displayTop : resolvedPosition.top,
         width: showMinimizedChrome ? minimizedWidth : effectiveSize.width,
         height: showMinimizedChrome ? MINIMIZED_WINDOW_HEIGHT : effectiveSize.height,
     };
-    const layoutTransition = overlayDock.layoutTransition;
+    const layoutTransition = isDockDragging ? undefined : overlayDock.layoutTransition;
     const leftSectionClass = getLeftSectionClass(windowSurfacePhase);
     const windowAnimationClass = windowSurfacePhase === "exiting" ? MOTION.markerWindowExit : windowSurfacePhase === "entering" ? `${MOTION.markerWindowEnter} pointer-events-auto` : "pointer-events-auto";
     const handleSplitPointerDown = useCallback((event) => {
@@ -441,82 +432,6 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }) {
         clearHoverLeaveTimeout();
         setHoveredMarkerId((current) => (current === report.id ? null : current));
     };
-    const handleMinimizedDockPointerDown = useCallback((event) => {
-        if (event.button !== 0 || dockMorph !== null || windowMode !== "minimized" || overlayDock.dockCount < 2) {
-            return;
-        }
-        event.preventDefault();
-        event.stopPropagation();
-        detachDockDragListeners();
-        const rect = windowRef.current?.getBoundingClientRect();
-        const initial = {
-            pointerId: event.pointerId,
-            startX: event.clientX,
-            startY: event.clientY,
-            offsetX: rect ? event.clientX - rect.left : minimizedWidth / 2,
-            offsetY: rect ? event.clientY - rect.top : MINIMIZED_WINDOW_HEIGHT / 2,
-            pointerX: event.clientX,
-            pointerY: event.clientY,
-            active: false,
-        };
-        dockDragRef.current = initial;
-        setDockDrag(initial);
-        const handlePointerMove = (moveEvent) => {
-            const state = dockDragRef.current;
-            if (!state || moveEvent.pointerId !== state.pointerId) {
-                return;
-            }
-            const distance = Math.hypot(moveEvent.clientX - state.startX, moveEvent.clientY - state.startY);
-            const nextActive = state.active || distance >= MINIMIZED_DOCK_DRAG_THRESHOLD_PX;
-            if (nextActive && !state.active) {
-                suppressDockRestoreClickRef.current = true;
-            }
-            const next = {
-                ...state,
-                pointerX: moveEvent.clientX,
-                pointerY: moveEvent.clientY,
-                active: nextActive,
-            };
-            dockDragRef.current = next;
-            setDockDrag(next);
-            if (!nextActive) {
-                return;
-            }
-            const dockOrder = [...getOverlayMinimizedDockOrder()];
-            const fromIndex = dockOrder.indexOf(markerDockId);
-            if (fromIndex < 0 || dockOrder.length < 2) {
-                return;
-            }
-            const viewportWidth = window.innerWidth;
-            const itemWidth = Math.min(MINIMIZED_WINDOW_WIDTH, Math.max(0, viewportWidth - WINDOW_MARGIN * 2));
-            const centerX = moveEvent.clientX - state.offsetX + itemWidth / 2;
-            const toIndex = resolveMinimizedDockIndexFromPointer(centerX, dockOrder.length, viewportWidth, itemWidth);
-            if (toIndex !== fromIndex) {
-                overlayDock.reorderDockItem(fromIndex, toIndex);
-            }
-        };
-        const handlePointerUp = (upEvent) => {
-            const state = dockDragRef.current;
-            if (!state || upEvent.pointerId !== state.pointerId) {
-                return;
-            }
-            detachDockDragListeners();
-            dockDragRef.current = null;
-            setDockDrag(null);
-        };
-        dockDragListenersRef.current = { move: handlePointerMove, up: handlePointerUp };
-        window.addEventListener("pointermove", handlePointerMove, true);
-        window.addEventListener("pointerup", handlePointerUp, true);
-        window.addEventListener("pointercancel", handlePointerUp, true);
-    }, [detachDockDragListeners, dockMorph, markerDockId, minimizedWidth, overlayDock, report.id, windowMode]);
-    const handleMinimizedDockClickCapture = useCallback((event) => {
-        if (!suppressDockRestoreClickRef.current) {
-            return;
-        }
-        event.preventDefault();
-        event.stopPropagation();
-        suppressDockRestoreClickRef.current = false;
-    }, []);
     const handleToggleMaximize = () => {
         if (dockMorph) {
             return;
@@ -578,7 +493,7 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }) {
                     height: displayRect.height,
                     ...(layoutTransition ? { transition: layoutTransition } : null),
                     ...(isDockDragging ? { cursor: "grabbing", transform: "scale(1.03)", willChange: "left, top, transform" } : null),
-                }, children: [showMinimizedChrome ? (_jsxs("div", { className: `group/min-dock relative h-full w-full ${overlayDock.dockCount > 1 ? "cursor-grab" : ""} ${isDockDragging ? "cursor-grabbing" : ""}`, onPointerDown: handleMinimizedDockPointerDown, onClickCapture: handleMinimizedDockClickCapture, children: [_jsx("div", { ref: surfaceRef, className: `flex h-full w-full overflow-hidden rounded-[16px] ${leftSectionClass}`, children: _jsxs("div", { className: "flex w-full flex-col justify-center gap-[2px] overflow-hidden px-[12px] py-[6px]", children: [_jsxs("button", { type: "button", "data-fivepixels-interactive": "", onClick: handleToggleMinimize, disabled: dockMorph !== null, "aria-label": `${messages.marker.windowRestoreAriaLabel}. ${report.pathname}. ${minimizedCaseTexts.map((text, index) => `${index + 1}. ${text}`).join(", ")}`, title: messages.marker.windowRestoreAriaLabel, className: "flex min-w-0 items-center gap-[4px] text-left", children: [_jsx("p", { className: "shrink-0 rounded-[4px] bg-[var(--adaptive-tintOpacity300)] px-[2px] py-[2px] text-[10px]", children: "Route" }), _jsx("p", { className: "min-w-0 truncate text-[10px] font-semibold leading-none text-[var(--adaptive-accent-coral)]", children: report.pathname })] }), _jsx(MinimizedWindowAliasRow, { projectId: projectId, reportId: report.id, caseTexts: minimizedCaseTexts, messages: messages, onRestore: handleToggleMinimize, restoreDisabled: dockMorph !== null })] }) }), _jsx("button", { type: "button", "data-fivepixels-interactive": "", "aria-label": messages.marker.windowCloseAriaLabel, title: messages.marker.windowCloseAriaLabel, disabled: dockMorph !== null || windowSurfacePhase === "exiting" || isDockDragging, onPointerDown: (event) => event.stopPropagation(), onClick: (event) => {
+                }, children: [showMinimizedChrome ? (_jsxs("div", { className: `group/min-dock relative h-full w-full ${overlayDock.dockCount > 1 ? "cursor-grab" : ""} ${isDockDragging ? "cursor-grabbing" : ""}`, onPointerDown: dockDrag.handleMinimizedDockPointerDown, onClickCapture: dockDrag.handleMinimizedDockClickCapture, children: [_jsx("div", { ref: surfaceRef, className: `flex h-full w-full overflow-hidden rounded-[16px] ${leftSectionClass}`, children: _jsxs("div", { className: "flex w-full flex-col justify-center gap-[2px] overflow-hidden px-[12px] py-[6px]", children: [_jsxs("button", { type: "button", "data-fivepixels-interactive": "", onClick: handleToggleMinimize, disabled: dockMorph !== null, "aria-label": `${messages.marker.windowRestoreAriaLabel}. ${report.pathname}. ${minimizedCaseTexts.map((text, index) => `${index + 1}. ${text}`).join(", ")}`, title: messages.marker.windowRestoreAriaLabel, className: "flex min-w-0 items-center gap-[4px] text-left", children: [_jsx("p", { className: "shrink-0 rounded-[4px] bg-[var(--adaptive-tintOpacity300)] px-[2px] py-[2px] text-[10px]", children: "Route" }), _jsx("p", { className: "min-w-0 truncate text-[10px] font-semibold leading-none text-[var(--adaptive-accent-coral)]", children: report.pathname })] }), _jsx(MinimizedWindowAliasRow, { projectId: projectId, reportId: report.id, caseTexts: minimizedCaseTexts, messages: messages, onRestore: handleToggleMinimize, restoreDisabled: dockMorph !== null })] }) }), _jsx("button", { type: "button", "data-fivepixels-interactive": "", "aria-label": messages.marker.windowCloseAriaLabel, title: messages.marker.windowCloseAriaLabel, disabled: dockMorph !== null || windowSurfacePhase === "exiting" || isDockDragging, onPointerDown: (event) => event.stopPropagation(), onClick: (event) => {
                                     event.stopPropagation();
                                     requestClose();
                                 }, className: `absolute right-[6px] top-[6px] z-[2] inline-flex h-[22px] w-[22px] items-center justify-center rounded-full bg-[var(--adaptive-black100)] text-[var(--adaptive-black700)] shadow-[var(--adaptive-popup-shadow)] transition-[opacity,transform] duration-150 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[var(--adaptive-black200)] hover:text-[var(--adaptive-black900)] ${dockMorph !== null || isDockDragging

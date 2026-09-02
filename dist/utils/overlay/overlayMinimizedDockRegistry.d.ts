@@ -4,6 +4,8 @@ export declare function getMarkerDockWindowId(reportId: string): string;
 export declare function parseMarkerDockWindowId(windowId: string): string | null;
 export declare function getOverlayMinimizedDockOrder(): readonly string[];
 export declare function subscribeOverlayMinimizedDock(listener: DockListener): () => void;
+export declare function getActiveDockDragWindowId(): string | null;
+export declare function setActiveDockDragWindowId(windowId: string | null): void;
 export declare function isOverlayMinimizedDocked(windowId: string): boolean;
 export declare function registerOverlayMinimizedDock(windowId: string): readonly string[];
 export declare function unregisterOverlayMinimizedDock(windowId: string): readonly string[];

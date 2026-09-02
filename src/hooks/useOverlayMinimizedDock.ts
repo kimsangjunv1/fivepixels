@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
+    getActiveDockDragWindowId,
     getOverlayMinimizedDockOrder,
     isOverlayMinimizedDocked,
     registerOverlayMinimizedDock,
@@ -36,10 +37,12 @@ type UseOverlayMinimizedDockOptions = {
 export function useOverlayMinimizedDock({ windowId, enabled, isMinimized, onMinimizedChange }: UseOverlayMinimizedDockOptions) {
     const [dockOrder, setDockOrder] = useState<string[]>(() => [...getOverlayMinimizedDockOrder()]);
     const [dockMorph, setDockMorph] = useState<DockMorphState>(null);
+    const [activeDockDragWindowId, setActiveDockDragWindowId] = useState<string | null>(() => getActiveDockDragWindowId());
 
     useEffect(() => {
         return subscribeOverlayMinimizedDock(() => {
             setDockOrder([...getOverlayMinimizedDockOrder()]);
+            setActiveDockDragWindowId(getActiveDockDragWindowId());
         });
     }, []);
 
@@ -141,7 +144,8 @@ export function useOverlayMinimizedDock({ windowId, enabled, isMinimized, onMini
         }
     }, [enabled, isMinimized, windowId]);
 
-    const layoutTransition = dockMorph ? MINIMIZE_MORPH_TRANSITION : isMinimized ? MINIMIZED_DOCK_SLIDE_TRANSITION : undefined;
+    const layoutTransition =
+        dockMorph ? MINIMIZE_MORPH_TRANSITION : isMinimized && activeDockDragWindowId === null ? MINIMIZED_DOCK_SLIDE_TRANSITION : undefined;
 
     return {
         dockMorph,

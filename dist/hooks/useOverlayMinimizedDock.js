@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { getOverlayMinimizedDockOrder, isOverlayMinimizedDocked, registerOverlayMinimizedDock, reorderOverlayMinimizedDock, subscribeOverlayMinimizedDock, unregisterOverlayMinimizedDock, } from "../utils/overlay/overlayMinimizedDockRegistry.js";
+import { getActiveDockDragWindowId, getOverlayMinimizedDockOrder, isOverlayMinimizedDocked, registerOverlayMinimizedDock, reorderOverlayMinimizedDock, subscribeOverlayMinimizedDock, unregisterOverlayMinimizedDock, } from "../utils/overlay/overlayMinimizedDockRegistry.js";
 import { MINIMIZED_DOCK_SLIDE_TRANSITION, MINIMIZED_WINDOW_HEIGHT, MINIMIZED_WINDOW_MARGIN, MINIMIZED_WINDOW_WIDTH, MINIMIZE_MORPH_TRANSITION, prefersReducedMotion, resolveMinimizedDockPosition, } from "../utils/overlay/minimizedDockLayout.js";
 export function useOverlayMinimizedDock({ windowId, enabled, isMinimized, onMinimizedChange }) {
     const [dockOrder, setDockOrder] = useState(() => [...getOverlayMinimizedDockOrder()]);
     const [dockMorph, setDockMorph] = useState(null);
+    const [activeDockDragWindowId, setActiveDockDragWindowId] = useState(() => getActiveDockDragWindowId());
     useEffect(() => {
         return subscribeOverlayMinimizedDock(() => {
             setDockOrder([...getOverlayMinimizedDockOrder()]);
+            setActiveDockDragWindowId(getActiveDockDragWindowId());
         });
     }, []);
     const dockIndex = Math.max(0, dockOrder.indexOf(windowId));
@@ -84,7 +86,7 @@ export function useOverlayMinimizedDock({ windowId, enabled, isMinimized, onMini
             unregisterOverlayMinimizedDock(windowId);
         }
     }, [enabled, isMinimized, windowId]);
-    const layoutTransition = dockMorph ? MINIMIZE_MORPH_TRANSITION : isMinimized ? MINIMIZED_DOCK_SLIDE_TRANSITION : undefined;
+    const layoutTransition = dockMorph ? MINIMIZE_MORPH_TRANSITION : isMinimized && activeDockDragWindowId === null ? MINIMIZED_DOCK_SLIDE_TRANSITION : undefined;
     return {
         dockMorph,
         dockPosition,

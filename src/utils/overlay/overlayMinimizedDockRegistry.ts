@@ -15,6 +15,7 @@ export function parseMarkerDockWindowId(windowId: string): string | null {
 }
 
 let dockOrder: string[] = [];
+let activeDockDragWindowId: string | null = null;
 const listeners = new Set<DockListener>();
 
 function emit() {
@@ -33,6 +34,19 @@ export function subscribeOverlayMinimizedDock(listener: DockListener): () => voi
     return () => {
         listeners.delete(listener);
     };
+}
+
+export function getActiveDockDragWindowId(): string | null {
+    return activeDockDragWindowId;
+}
+
+export function setActiveDockDragWindowId(windowId: string | null): void {
+    if (activeDockDragWindowId === windowId) {
+        return;
+    }
+
+    activeDockDragWindowId = windowId;
+    emit();
 }
 
 export function isOverlayMinimizedDocked(windowId: string): boolean {
@@ -76,5 +90,6 @@ export function reorderOverlayMinimizedDock(fromIndex: number, toIndex: number):
 /** Test helper */
 export function resetOverlayMinimizedDockRegistryForTests() {
     dockOrder = [];
+    activeDockDragWindowId = null;
     emit();
 }

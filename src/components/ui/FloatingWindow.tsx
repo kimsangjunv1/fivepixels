@@ -11,6 +11,7 @@ import {
 import { clampWindowPosition, useDraggableWindow } from "@/hooks/useDraggableWindow.js";
 import { useGhostCornerResize, type BoxSize } from "@/hooks/useGhostCornerResize.js";
 import { useOverlayMinimizedDock } from "@/hooks/useOverlayMinimizedDock.js";
+import { useMinimizedDockDragReorder } from "@/hooks/useMinimizedDockDragReorder.js";
 import { getMaximizedWindowFrame, getWindowViewportSize, useWindowMode } from "@/hooks/useWindowMode.js";
 import type { WindowChromeControls, WindowMinimizePolicy, WindowMode } from "@/types/windowChrome.js";
 import { claimFloatingWindowZIndex, getFloatingWindowZBase } from "@/utils/overlay/floatingWindowStack.js";
@@ -156,6 +157,17 @@ export function FloatingWindow({
     });
 
     const showDockMinimizedChrome = dockEnabled && isMinimized && overlayDock.dockMorph?.phase !== "restoring";
+
+    const dockDrag = useMinimizedDockDragReorder({
+        windowId: windowId ?? "overlay-window",
+        windowRef,
+        enabled: showDockMinimizedChrome && overlayDock.dockCount >= 2,
+        blockDrag: overlayDock.dockMorph !== null,
+        minimizedWidth: overlayDock.minimizedWidth,
+        dockPosition: overlayDock.dockPosition,
+    });
+    const isDockDragging = dockDrag.isDockDragging;
+
     const dragEnabled = enabled && mode === "normal" && !showDockMinimizedChrome && !overlayDock.dockMorph;
 
     useEffect(() => {
@@ -201,7 +213,10 @@ export function FloatingWindow({
         }
 
         if (showDockMinimizedChrome) {
-            return overlayDock.dockPosition;
+            return {
+                left: dockDrag.displayLeft,
+                top: dockDrag.displayTop,
+            };
         }
 
         if (isMaximized) {
@@ -209,7 +224,16 @@ export function FloatingWindow({
         }
 
         return resolvedPositionBeforeMode;
-    }, [isMaximized, minHeight, minWidth, overlayDock.dockMorph, overlayDock.dockPosition, resolvedPositionBeforeMode, showDockMinimizedChrome]);
+    }, [
+        dockDrag.displayLeft,
+        dockDrag.displayTop,
+        isMaximized,
+        minHeight,
+        minWidth,
+        overlayDock.dockMorph,
+        resolvedPositionBeforeMode,
+        showDockMinimizedChrome,
+    ]);
 
     const resolvedSizeStyle = useMemo(() => {
         if (isMaximized) {
@@ -458,6 +482,20 @@ export function FloatingWindow({
         };
     }, [controlsCollapsed, controlsExpanded]);
 
+    const dockLayoutTransition = isDockDragging ? undefined : overlayDock.layoutTransition;
+
+    const handleHeaderPointerDown = useCallback(
+        (event: ReactPointerEvent<HTMLElement>) => {
+            if (showDockMinimizedChrome) {
+                dockDrag.handleMinimizedDockPointerDown(event);
+                return;
+            }
+
+            handleDragPointerDown(event);
+        },
+        [dockDrag, handleDragPointerDown, showDockMinimizedChrome],
+    );
+
     return (
         <>
             {isResizing ? <CornerResizeGhost ghostRef={ghostRef} /> : null}
@@ -477,19 +515,23 @@ export function FloatingWindow({
                 style={{
                     left: resolvedPosition.left,
                     top: resolvedPosition.top,
-                    zIndex: stackZIndex,
+                    zIndex: isDockDragging ? stackZIndex + 100 : stackZIndex,
                     width: resolvedSizeStyle.width,
                     height: resolvedSizeStyle.height,
-                    transition: overlayDock.layoutTransition,
+                    transition: dockLayoutTransition,
+                    ...(isDockDragging ? { cursor: "grabbing", transform: "scale(1.03)", willChange: "left, top, transform" } : null),
                     ...style,
                 }}
             >
                 <header
                     ref={headerRef}
-                    onPointerDown={handleDragPointerDown}
+                    onPointerDown={handleHeaderPointerDown}
+                    onClickCapture={showDockMinimizedChrome ? dockDrag.handleMinimizedDockClickCapture : undefined}
                     onDoubleClick={handleHeaderDoubleClick}
                     className={`relative flex shrink-0 touch-none select-none items-center gap-[10px] px-[12px] py-[8px] ${
-                        dragEnabled ? "cursor-grab active:cursor-grabbing" : ""
+                        dragEnabled || (showDockMinimizedChrome && overlayDock.dockCount > 1)
+                            ? `cursor-grab ${isDockDragging ? "cursor-grabbing" : ""}`
+                            : ""
                     } ${showDockMinimizedChrome || (isMinimized && minimizePolicy === "inplace") ? "border-b-0" : "border-b border-[var(--adaptive-border-subtle)]"} ${headerClassName}`}
                 >
                     {title ? (

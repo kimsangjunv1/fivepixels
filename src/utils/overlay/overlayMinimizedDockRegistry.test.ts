@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
     getMarkerDockWindowId,
+    getActiveDockDragWindowId,
     getOverlayMinimizedDockOrder,
     parseMarkerDockWindowId,
     registerOverlayMinimizedDock,
     reorderOverlayMinimizedDock,
     resetOverlayMinimizedDockRegistryForTests,
+    setActiveDockDragWindowId,
     unregisterOverlayMinimizedDock,
 } from "@/utils/overlay/overlayMinimizedDockRegistry.js";
 
@@ -45,5 +47,17 @@ describe("overlayMinimizedDockRegistry", () => {
         expect(getOverlayMinimizedDockOrder()).toEqual(["marker:report-a", "device-preview-toolbar", "marker:report-b"]);
         expect(parseMarkerDockWindowId("marker:report-a")).toBe("report-a");
         expect(parseMarkerDockWindowId("device-preview-toolbar")).toBeNull();
+    });
+
+    it("tracks active dock drag window id", () => {
+        resetOverlayMinimizedDockRegistryForTests();
+
+        setActiveDockDragWindowId("marker:a");
+
+        expect(getActiveDockDragWindowId()).toBe("marker:a");
+
+        setActiveDockDragWindowId(null);
+
+        expect(getActiveDockDragWindowId()).toBeNull();
     });
 });
