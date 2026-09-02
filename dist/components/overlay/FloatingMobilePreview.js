@@ -5,12 +5,15 @@ import { CloseIcon, ScreenRotateIcon } from "../../components/icons/Icons.js";
 import { useDraggableWindow } from "../../hooks/useDraggableWindow.js";
 import { useReportPreferences } from "../../providers/reportContext.js";
 import { DeviceFrameArtwork } from "./DeviceFrameArtwork.js";
+import { DeviceStatusBar, getDeviceStatusBarHeight } from "./DeviceStatusBar.js";
 import { claimFloatingWindowZIndex } from "../../utils/overlay/floatingWindowStack.js";
+import { syncGuestStatusBarStyle } from "../../utils/overlay/devicePreviewFrame.js";
 import { resolveMobilePreviewScreenSize } from "../../utils/overlay/mobilePreviewLayout.js";
 import { MOBILE_PREVIEW_FRAME_NAME, getMobilePreviewGuestDocument, getMobilePreviewGuestWindow, isInsideMobilePreviewFrame, isMobilePreviewGuestDocumentReady, syncMobilePreviewGuestViewport, } from "../../utils/overlay/mobilePreviewFrame.js";
 const MOBILE_PREVIEW_POSITION_STORAGE_KEY = "fivepixels:mobile-preview-position:v1";
 const MOBILE_PREVIEW_SCALE = 0.75;
 const MOBILE_PREVIEW_BRANDS = DEVICE_PREVIEW_BRAND_ORDER.filter((brand) => brand !== "desktop");
+const TOOLBAR_DEVICE_GAP = 10;
 function readMobilePreviewPosition() {
     const fallback = getDefaultMobilePreviewPosition();
     if (typeof window === "undefined") {
@@ -48,9 +51,10 @@ function persistMobilePreviewPosition(position) {
         // Ignore storage failures.
     }
 }
-function syncGuestViewport(iframe, viewportWidth) {
+function syncGuestViewport(iframe, viewportWidth, statusBarHeight) {
     const guestDocument = getMobilePreviewGuestDocument(iframe);
     syncMobilePreviewGuestViewport(guestDocument, viewportWidth);
+    syncGuestStatusBarStyle(guestDocument, statusBarHeight);
     getMobilePreviewGuestWindow(iframe)?.dispatchEvent(new Event("resize"));
 }
 export function FloatingMobilePreview() {
@@ -63,6 +67,8 @@ export function FloatingMobilePreview() {
     const chrome = useMemo(() => scaleDeviceChrome(mobilePreviewPreset, MOBILE_PREVIEW_SCALE), [mobilePreviewPreset]);
     const frameWidth = layout.width + chrome.bezel.left + chrome.bezel.right;
     const frameHeight = layout.height + chrome.bezel.top + chrome.bezel.bottom;
+    const statusBarHeight = useMemo(() => getDeviceStatusBarHeight(mobilePreviewPreset, screenSize.width), [mobilePreviewPreset, screenSize.width]);
+    const statusBarAppearance = resolvedPanelAppearance === "dark" ? "dark" : "light";
     const screenBackground = resolvedPanelAppearance === "dark" ? "#17171c" : "#ffffff";
     const [storedPosition] = useState(() => readMobilePreviewPosition());
     const [zIndex, setZIndex] = useState(() => claimFloatingWindowZIndex());
@@ -85,8 +91,8 @@ export function FloatingMobilePreview() {
         if (frameLoadState !== "ready") {
             return;
         }
-        syncGuestViewport(iframeRef.current, screenSize.width);
-    }, [frameLoadState, screenSize.width]);
+        syncGuestViewport(iframeRef.current, screenSize.width, statusBarHeight);
+    }, [frameLoadState, screenSize.width, statusBarHeight]);
     const handleClose = useCallback(() => {
         setMobilePreviewUiOpen(false);
     }, [setMobilePreviewUiOpen]);
@@ -96,46 +102,53 @@ export function FloatingMobilePreview() {
             setFrameLoadState("blocked");
             return;
         }
-        syncGuestViewport(iframe, screenSize.width);
+        syncGuestViewport(iframe, screenSize.width, statusBarHeight);
         setFrameLoadState("ready");
-    }, [screenSize.width]);
+    }, [screenSize.width, statusBarHeight]);
     const handleFocus = useCallback(() => {
         setZIndex(claimFloatingWindowZIndex());
     }, []);
-    const selectClassName = "h-[28px] min-w-0 flex-1 rounded-[6px] border border-white/10 bg-white/10 px-[8px] text-[11px] font-semibold text-white outline-none focus:border-[#5b9dff]";
+    const selectClassName = "h-[26px] min-w-0 flex-1 rounded-[6px] border-0 bg-transparent px-[4px] text-[12px] font-medium text-white/95 outline-none";
     if (!mobilePreviewUiOpen || isInsideMobilePreviewFrame()) {
         return null;
     }
-    return (_jsxs("div", { ref: rootRef, "data-fivepixels-interactive": "", "data-chrome": "mobile-preview-simulator", className: "fixed select-none", style: {
+    return (_jsxs("div", { ref: rootRef, "data-fivepixels-interactive": "", "data-chrome": "mobile-preview-simulator", className: "fixed flex flex-col select-none", style: {
             left: resolvedPosition.left,
             top: resolvedPosition.top,
             zIndex,
             width: frameWidth,
-            boxShadow: "0 28px 80px rgba(0, 0, 0, 0.42)",
-            borderRadius: 14,
-            overflow: "hidden",
             touchAction: "none",
             cursor: isDragging ? "grabbing" : undefined,
-        }, onPointerDown: handleFocus, children: [_jsxs("header", { className: "flex items-center gap-[8px] border-b border-white/10 bg-[#2b2b2f] px-[10px] py-[8px]", onPointerDown: handleDragHandlePointerDown, children: [_jsxs("label", { className: "flex min-w-0 flex-1 items-center gap-[6px]", children: [_jsx("span", { className: "sr-only", children: messages.settings.mobilePreviewDeviceAriaLabel }), _jsx("select", { value: mobilePreviewDeviceId, onChange: (event) => setMobilePreviewDeviceId(event.target.value), onPointerDown: (event) => event.stopPropagation(), "aria-label": messages.settings.mobilePreviewDeviceAriaLabel, className: selectClassName, children: MOBILE_PREVIEW_BRANDS.map((brand) => (_jsx("optgroup", { label: brand === "apple"
+        }, onPointerDown: handleFocus, children: [_jsxs("header", { className: "mb-[10px] flex items-center gap-[6px] rounded-[10px] border border-white/10 bg-[rgba(48,48,52,0.82)] px-[10px] py-[6px] shadow-[0_8px_24px_rgba(0,0,0,0.28)] backdrop-blur-[18px]", style: { marginBottom: TOOLBAR_DEVICE_GAP }, onPointerDown: handleDragHandlePointerDown, children: [_jsxs("label", { className: "flex min-w-0 flex-1 items-center gap-[6px]", children: [_jsx("span", { className: "sr-only", children: messages.settings.mobilePreviewDeviceAriaLabel }), _jsx("select", { value: mobilePreviewDeviceId, onChange: (event) => setMobilePreviewDeviceId(event.target.value), onPointerDown: (event) => event.stopPropagation(), "aria-label": messages.settings.mobilePreviewDeviceAriaLabel, className: selectClassName, children: MOBILE_PREVIEW_BRANDS.map((brand) => (_jsx("optgroup", { label: brand === "apple"
                                         ? messages.settings.devicePreviewBrandApple
                                         : brand === "samsung"
                                             ? messages.settings.devicePreviewBrandSamsung
-                                            : messages.settings.devicePreviewBrandGoogle, children: getDevicePreviewPresetsByBrand(brand).map((option) => (_jsxs("option", { value: option.id, children: [option.label, " (", option.width, "\u00D7", option.height, ")"] }, option.id))) }, brand))) })] }), _jsx("button", { type: "button", onClick: toggleMobilePreviewOrientation, onPointerDown: (event) => event.stopPropagation(), "aria-label": messages.settings.mobilePreviewRotateAriaLabel, title: messages.settings.mobilePreviewRotateLabel, className: "flex h-[28px] w-[28px] shrink-0 items-center justify-center rounded-[6px] text-white/90 hover:bg-white/10", children: _jsx(ScreenRotateIcon, { className: "h-[16px] w-[16px]" }) }), _jsx("button", { type: "button", onClick: handleClose, onPointerDown: (event) => event.stopPropagation(), "aria-label": messages.marker.windowCloseAriaLabel, className: "flex h-[28px] w-[28px] shrink-0 items-center justify-center rounded-[6px] text-white/90 hover:bg-white/10", children: _jsx(CloseIcon, { className: "h-[14px] w-[14px]" }) })] }), _jsxs("div", { className: "relative bg-[#101010]", style: { width: frameWidth, height: frameHeight }, children: [_jsx("iframe", { ref: iframeRef, name: MOBILE_PREVIEW_FRAME_NAME, title: messages.settings.mobilePreviewIframeTitle, src: frameSrc, onLoad: handleFrameLoad, "data-fivepixels-mobile-preview-frame": "", className: "absolute z-[0] border-0", style: {
+                                            : messages.settings.devicePreviewBrandGoogle, children: getDevicePreviewPresetsByBrand(brand).map((option) => (_jsxs("option", { value: option.id, children: [option.label, " (", option.width, "\u00D7", option.height, ")"] }, option.id))) }, brand))) })] }), _jsx("button", { type: "button", onClick: toggleMobilePreviewOrientation, onPointerDown: (event) => event.stopPropagation(), "aria-label": messages.settings.mobilePreviewRotateAriaLabel, title: messages.settings.mobilePreviewRotateLabel, className: "flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-[6px] text-white/90 hover:bg-white/10", children: _jsx(ScreenRotateIcon, { className: "h-[16px] w-[16px]" }) }), _jsx("button", { type: "button", onClick: handleClose, onPointerDown: (event) => event.stopPropagation(), "aria-label": messages.marker.windowCloseAriaLabel, className: "flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-[6px] text-white/90 hover:bg-white/10", children: _jsx(CloseIcon, { className: "h-[14px] w-[14px]" }) })] }), _jsxs("div", { className: "relative", style: {
+                    width: frameWidth,
+                    height: frameHeight,
+                    filter: "drop-shadow(0 28px 56px rgba(0, 0, 0, 0.42))",
+                }, children: [_jsx("iframe", { ref: iframeRef, name: MOBILE_PREVIEW_FRAME_NAME, title: messages.settings.mobilePreviewIframeTitle, src: frameSrc, onLoad: handleFrameLoad, "data-fivepixels-mobile-preview-frame": "", className: "absolute z-[0] border-0", style: {
                             left: chrome.bezel.left,
                             top: chrome.bezel.top,
                             width: screenSize.width,
                             height: screenSize.height,
                             transform: `scale(${MOBILE_PREVIEW_SCALE})`,
                             transformOrigin: "top left",
-                            borderRadius: mobilePreviewPreset.chrome.screenRadius,
+                            borderRadius: chrome.screenRadius,
                             background: screenBackground,
-                        } }), frameLoadState === "blocked" ? (_jsx("div", { className: "pointer-events-none absolute z-[1] flex items-center justify-center px-[12px] text-center text-[11px] font-semibold text-white", style: {
+                        } }), frameLoadState === "blocked" ? (_jsx("div", { className: "pointer-events-none absolute z-[1] flex items-center justify-center px-[12px] text-center text-[11px] font-semibold text-[var(--adaptive-black900)]", style: {
                             left: chrome.bezel.left,
                             top: chrome.bezel.top,
                             width: layout.width,
                             height: layout.height,
                             borderRadius: chrome.screenRadius,
                             background: screenBackground,
-                        }, children: messages.settings.mobilePreviewIframeBlocked })) : null, _jsx("div", { className: "pointer-events-none absolute inset-0 z-[2]", children: _jsx(DeviceFrameArtwork, { preset: mobilePreviewPreset, chrome: chrome, screenWidth: layout.width, screenHeight: layout.height }) })] })] }));
+                        }, children: messages.settings.mobilePreviewIframeBlocked })) : null, _jsx("div", { className: "pointer-events-none absolute inset-0 z-[2]", "data-fivepixels-mobile-preview-stage": "", children: _jsx(DeviceFrameArtwork, { preset: mobilePreviewPreset, chrome: chrome, screenWidth: layout.width, screenHeight: layout.height }) }), _jsx("div", { className: "pointer-events-none absolute z-[3] overflow-hidden", style: {
+                            left: chrome.bezel.left,
+                            top: chrome.bezel.top,
+                            width: layout.width,
+                            height: layout.height,
+                            borderRadius: chrome.screenRadius,
+                        }, children: _jsx(DeviceStatusBar, { preset: mobilePreviewPreset, width: layout.width, appearance: statusBarAppearance, showCutout: true }) })] })] }));
 }
 //# sourceMappingURL=FloatingMobilePreview.js.map
