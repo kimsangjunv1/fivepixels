@@ -131,7 +131,7 @@ export function panelSizeToStyle(size, applyFixedHeight = false) {
 }
 export function usePanelResize({ enabled, corner, heightResizeEnabled, panelRef, }) {
     const [size, setSize] = useState(() => readStoredPanelSize());
-    const resizeHandles = useMemo(() => getResizeHandlesForPlacement(corner, heightResizeEnabled), [corner, heightResizeEnabled]);
+    const resizeHandles = useMemo(() => getResizeHandlesForPlacement(corner), [corner]);
     const resolveMinHeight = useCallback(() => {
         if (heightResizeEnabled) {
             return PANEL_HEIGHT_MIN;
@@ -210,6 +210,7 @@ export function usePanelResize({ enabled, corner, heightResizeEnabled, panelRef,
         panelSize: size,
         isResizing,
         resizeHandles,
+        heightResizeEnabled,
         createResizePointerDown,
         resetPanelSize,
         ghostRef,

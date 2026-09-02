@@ -142,28 +142,24 @@ describe("getResizeHandlesForPlacement", () => {
     it("exposes right and bottom handles for a top-left panel", () => {
         expect(getResizeHandlesForPlacement("top-left")).toEqual({
             edges: ["right", "bottom"],
-            corner: "bottom-right",
         });
     });
 
     it("exposes right and top handles for a bottom-left panel", () => {
         expect(getResizeHandlesForPlacement("bottom-left")).toEqual({
             edges: ["right", "top"],
-            corner: "top-right",
         });
     });
 
     it("exposes left and top handles for a bottom-right panel", () => {
         expect(getResizeHandlesForPlacement("bottom-right")).toEqual({
             edges: ["left", "top"],
-            corner: "top-left",
         });
     });
 
     it("exposes left and bottom handles for a top-right panel", () => {
         expect(getResizeHandlesForPlacement("top-right")).toEqual({
             edges: ["left", "bottom"],
-            corner: "bottom-left",
         });
     });
 });

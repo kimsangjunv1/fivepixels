@@ -12,6 +12,10 @@ export type BoxSize = {
     width: number;
     height: number;
 };
+export type BoxRect = BoxSize & {
+    left: number;
+    top: number;
+};
 type ResizeSession = {
     pointerId: number;
     startX: number;
@@ -44,7 +48,7 @@ export declare function useGhostCornerResize({ enabled, targetRef, handleCorner,
     targetRef: RefObject<HTMLElement | null>;
     handleCorner?: ResizeCorner;
     clampSize: (width: number, height: number) => BoxSize;
-    onResizeComplete: (size: BoxSize) => void;
+    onResizeComplete: (rect: BoxRect) => void;
     resolveStartSize?: () => BoxSize;
 }): {
     isResizing: boolean;

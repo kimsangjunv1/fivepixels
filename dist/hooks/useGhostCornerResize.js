@@ -107,7 +107,7 @@ export function useGhostCornerResize({ enabled, targetRef, handleCorner, clampSi
     const [isResizing, setIsResizing] = useState(false);
     const ghostRef = useRef(null);
     const sessionRef = useRef(null);
-    const pendingSizeRef = useRef(null);
+    const pendingRectRef = useRef(null);
     const listenersRef = useRef(null);
     const detachResizeListeners = useCallback(() => {
         const listeners = listenersRef.current;
@@ -125,17 +125,17 @@ export function useGhostCornerResize({ enabled, targetRef, handleCorner, clampSi
         }
         detachResizeListeners();
         sessionRef.current = null;
-        pendingSizeRef.current = null;
+        pendingRectRef.current = null;
         setIsResizing(false);
     }, [detachResizeListeners, enabled]);
     useEffect(() => () => detachResizeListeners(), [detachResizeListeners]);
     const finishResize = useCallback(() => {
         detachResizeListeners();
-        if (pendingSizeRef.current) {
-            onResizeComplete(pendingSizeRef.current);
+        if (pendingRectRef.current) {
+            onResizeComplete(pendingRectRef.current);
         }
         sessionRef.current = null;
-        pendingSizeRef.current = null;
+        pendingRectRef.current = null;
         setIsResizing(false);
     }, [detachResizeListeners, onResizeComplete]);
     useLayoutEffect(() => {
@@ -182,7 +182,7 @@ export function useGhostCornerResize({ enabled, targetRef, handleCorner, clampSi
                 return;
             }
             const ghostRect = resolveGhostRect(session, moveEvent.clientX, moveEvent.clientY, clampSize);
-            pendingSizeRef.current = { width: ghostRect.width, height: ghostRect.height };
+            pendingRectRef.current = ghostRect;
             const ghost = ghostRef.current;
             if (ghost) {
                 applyGhostRect(ghost, ghostRect);

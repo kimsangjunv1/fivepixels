@@ -1,5 +1,5 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTooltipLayout } from "../../hooks/useTooltipLayout.js";
 import { useTooltipResize } from "../../hooks/useTooltipResize.js";
 import { useReport, useReportPreferences } from "../../providers/reportContext.js";
@@ -10,8 +10,8 @@ import { DraftProbeSummaryBanner } from "./DraftProbeSummaryBanner.js";
 import { DraftNetworkErrorBanner } from "./DraftNetworkErrorBanner.js";
 import { PickTargetSnippet } from "./feedback/PickTargetSnippet.js";
 import { CornerResizeGhost } from "../../components/ui/CornerResizeGhost.js";
+import { WindowResizeHandles } from "../../components/ui/WindowResizeHandles.js";
 import { MOTION } from "../../constants/motionClasses.js";
-import { CornerResizeHandle } from "../../components/ui/CornerResizeHandle.js";
 const TOOLTIP_SURFACE_CLASS = "rounded-[16px] shadow-[var(--adaptive-popup-shadow)] bg-[var(--adaptive-neutralTintOpacity1000)] backdrop-blur-[5px]";
 const EXPANDED_TOOLTIP_ANCHOR_CLASS = "pointer-events-auto fixed z-[1000001]";
 export function ReportDraftForm() {
@@ -25,7 +25,7 @@ export function ReportDraftForm() {
 }
 function ReportDraftFormContent({ draft, fields, authors, isCreating, isUpdating, isEditing, mode, editingMarker, selectedTarget, updateDraftCase, addDraftCase, removeDraftCase, updateDraftField, updateDraftCategory, handleCreateSubmit, handleCreateSubmitWithGitHubIssue, canCreateGitHubIssueOnCreate, isDraftGitHubIssueSubmitting, draftAuthorName, setDraftAuthorName, errorMessage, isPresentationMode, authorSelectionLocked, sessionActor, cancelDraft, isAuthBootstrapping, }) {
     const { messages } = useReportPreferences();
-    const tooltipSurfaceRef = useRef(null);
+    const tooltipContainerRef = useRef(null);
     const [footerWarningMessage, setFooterWarningMessage] = useState(null);
     const [activeCaseId, setActiveCaseId] = useState(() => draft.cases[0]?.id ?? null);
     const [isGitHubIssueConfirming, setIsGitHubIssueConfirming] = useState(false);
@@ -35,13 +35,18 @@ function ReportDraftFormContent({ draft, fields, authors, isCreating, isUpdating
         }
         return getDraftMarkerPosition(draft, selectedTarget);
     }, [draft, editingMarker, selectedTarget]);
-    const { customSize, isResizing, ghostRef, handleResizePointerDown } = useTooltipResize({
+    const { customSize, manualPosition, isResizing, ghostRef, createResizePointerDown } = useTooltipResize({
         enabled: true,
-        tooltipRef: tooltipSurfaceRef,
+        tooltipRef: tooltipContainerRef,
     });
     const { layout: tooltipLayout, setTooltipElement } = useTooltipLayout(anchor, true, true, {
         customWidth: customSize?.width,
+        customHeight: customSize?.height,
     });
+    const bindTooltipContainerRef = useCallback((node) => {
+        tooltipContainerRef.current = node;
+        setTooltipElement(node);
+    }, [setTooltipElement]);
     const tooltipPosition = tooltipLayout?.position ?? null;
     const tooltipAnchorStyle = tooltipLayout?.anchorStyle;
     const isSubmitting = isCreating || isUpdating || isDraftGitHubIssueSubmitting || isAuthBootstrapping;
@@ -127,44 +132,44 @@ function ReportDraftFormContent({ draft, fields, authors, isCreating, isUpdating
     if (!tooltipPosition || !tooltipAnchorStyle) {
         return null;
     }
-    return (_jsxs(_Fragment, { children: [isResizing ? _jsx(CornerResizeGhost, { ghostRef: ghostRef }) : null, _jsxs("div", { ref: setTooltipElement, "data-fivepixels-interactive": "", "data-fivepixels-draft-form": "", onClick: (event) => event.stopPropagation(), className: `${EXPANDED_TOOLTIP_ANCHOR_CLASS} flex flex-col gap-[4px]`, style: {
-                    left: tooltipPosition.left,
-                    top: tooltipPosition.top,
-                    width: tooltipPosition.width,
+    return (_jsxs(_Fragment, { children: [isResizing ? _jsx(CornerResizeGhost, { ghostRef: ghostRef }) : null, _jsxs("div", { ref: bindTooltipContainerRef, "data-fivepixels-interactive": "", "data-fivepixels-draft-form": "", onClick: (event) => event.stopPropagation(), className: `${EXPANDED_TOOLTIP_ANCHOR_CLASS} relative flex flex-col gap-[4px] overflow-visible`, style: {
+                    left: manualPosition?.left ?? tooltipPosition.left,
+                    top: manualPosition?.top ?? tooltipPosition.top,
+                    width: customSize?.width ?? tooltipPosition.width,
                     minWidth: 320,
                     ...tooltipAnchorStyle,
-                }, children: [showStatusChip ? (_jsx("div", { className: `shrink-0 border border-[var(--adaptive-border-subtle)] ${TOOLTIP_SURFACE_CLASS} ${MOTION.tooltipFadeIn}`, children: _jsx(PickTargetSnippet, { suggestedReportId: draft.suggestedReportId ?? undefined, reportType: draft.reportType, alertMessage: footerWarningMessage }) })) : null, _jsxs("div", { ref: tooltipSurfaceRef, className: `relative ${TOOLTIP_SURFACE_CLASS} ${MOTION.tooltipFadeIn}`, style: {
+                }, children: [showStatusChip ? (_jsx("div", { className: `shrink-0 border border-[var(--adaptive-border-subtle)] ${TOOLTIP_SURFACE_CLASS} ${MOTION.tooltipFadeIn}`, children: _jsx(PickTargetSnippet, { suggestedReportId: draft.suggestedReportId ?? undefined, reportType: draft.reportType, alertMessage: footerWarningMessage }) })) : null, _jsx("div", { className: `relative ${TOOLTIP_SURFACE_CLASS} ${MOTION.tooltipFadeIn}`, style: {
                             pointerEvents: "auto",
                             height: customSize?.height,
-                        }, children: [_jsxs("div", { className: "flex min-h-0 flex-col", style: {
-                                    maxHeight: customSize?.height ?? TOOLTIP_EXPANDED_DEFAULT_MAX_HEIGHT,
-                                    height: customSize?.height,
-                                }, children: [_jsx(DraftNetworkErrorBanner, {}), _jsx(DraftProbeSummaryBanner, {}), _jsx(FeedbackComposer, { cases: draft.cases, onCaseChange: updateDraftCase, onAddCase: addDraftCase, onRemoveCase: removeDraftCase, authorName: draftAuthorName, onAuthorNameChange: setDraftAuthorName, authors: authors, fields: fields, fieldValues: draft.fieldValues, onFieldChange: updateDraftField, category: draft.category, onCategoryChange: updateDraftCategory, showCategory: false, showTags: true, hideAuthorSelector: isPresentationMode || authorSelectionLocked, lockedAuthorName: authorSelectionLocked ? (sessionActor?.name ?? draftAuthorName) : undefined, onSubmit: () => void handleCreateSubmit(), isSubmitting: isSubmitting, autoFocus: true, errorMessage: isAuthBootstrapping ? messages.errors.authBootstrapPending : errorMessage, onFooterWarningChange: setFooterWarningMessage, hideActions: true, hidePrimarySubmitAction: true, showCaseTabBar: false, activeCaseId: activeCaseId, onActiveCaseIdChange: setActiveCaseId, enableElementMentions: true, placeholder: draft.category === "memo" ? messages.pickTarget.memoComposerPlaceholder : undefined }), _jsx(DraftComposerToolbar, { ...(draft.category === "memo"
-                                            ? {
-                                                variant: "memo",
-                                                onSave: () => void handleCreateSubmit(),
-                                                onCancel: cancelDraft,
-                                                canSave: draft.cases.some((item) => item.text.trim().length > 0) && !isSubmitting,
-                                            }
-                                            : {
-                                                cases: draft.cases,
-                                                activeCaseId,
-                                                onSelectCase: setActiveCaseId,
-                                                onAddCase: addDraftCase,
-                                                onRemoveCase: handleRemoveCase,
-                                                onInsertAtMention: handleInsertAtMention,
-                                                category: draft.category,
-                                                onCategoryChange: updateDraftCategory,
-                                                categoryNeedsAttention,
-                                                onSubmit: () => void handleCreateSubmit(),
-                                                isSubmitting,
-                                                submitLabel,
-                                                submittingLabel,
-                                                showGitHubIssueOnCreate: canCreateGitHubIssueOnCreate,
-                                                onGitHubIssueSubmit: () => void handleCreateSubmitWithGitHubIssue(),
-                                                isGitHubIssueSubmitting: isDraftGitHubIssueSubmitting,
-                                                isGitHubIssueConfirming,
-                                                onGitHubIssueConfirmingChange: setIsGitHubIssueConfirming,
-                                            }) })] }), _jsx(CornerResizeHandle, { corner: "bottom-right", ariaLabel: messages.marker.resizeAriaLabel, onPointerDown: handleResizePointerDown })] })] })] }));
+                        }, children: _jsxs("div", { className: "flex min-h-0 flex-col", style: {
+                                maxHeight: customSize?.height ?? TOOLTIP_EXPANDED_DEFAULT_MAX_HEIGHT,
+                                height: customSize?.height,
+                            }, children: [_jsx(DraftNetworkErrorBanner, {}), _jsx(DraftProbeSummaryBanner, {}), _jsx(FeedbackComposer, { cases: draft.cases, onCaseChange: updateDraftCase, onAddCase: addDraftCase, onRemoveCase: removeDraftCase, authorName: draftAuthorName, onAuthorNameChange: setDraftAuthorName, authors: authors, fields: fields, fieldValues: draft.fieldValues, onFieldChange: updateDraftField, category: draft.category, onCategoryChange: updateDraftCategory, showCategory: false, showTags: true, hideAuthorSelector: isPresentationMode || authorSelectionLocked, lockedAuthorName: authorSelectionLocked ? (sessionActor?.name ?? draftAuthorName) : undefined, onSubmit: () => void handleCreateSubmit(), isSubmitting: isSubmitting, autoFocus: true, errorMessage: isAuthBootstrapping ? messages.errors.authBootstrapPending : errorMessage, onFooterWarningChange: setFooterWarningMessage, hideActions: true, hidePrimarySubmitAction: true, showCaseTabBar: false, activeCaseId: activeCaseId, onActiveCaseIdChange: setActiveCaseId, enableElementMentions: true, placeholder: draft.category === "memo" ? messages.pickTarget.memoComposerPlaceholder : undefined }), _jsx(DraftComposerToolbar, { ...(draft.category === "memo"
+                                        ? {
+                                            variant: "memo",
+                                            onSave: () => void handleCreateSubmit(),
+                                            onCancel: cancelDraft,
+                                            canSave: draft.cases.some((item) => item.text.trim().length > 0) && !isSubmitting,
+                                        }
+                                        : {
+                                            cases: draft.cases,
+                                            activeCaseId,
+                                            onSelectCase: setActiveCaseId,
+                                            onAddCase: addDraftCase,
+                                            onRemoveCase: handleRemoveCase,
+                                            onInsertAtMention: handleInsertAtMention,
+                                            category: draft.category,
+                                            onCategoryChange: updateDraftCategory,
+                                            categoryNeedsAttention,
+                                            onSubmit: () => void handleCreateSubmit(),
+                                            isSubmitting,
+                                            submitLabel,
+                                            submittingLabel,
+                                            showGitHubIssueOnCreate: canCreateGitHubIssueOnCreate,
+                                            onGitHubIssueSubmit: () => void handleCreateSubmitWithGitHubIssue(),
+                                            isGitHubIssueSubmitting: isDraftGitHubIssueSubmitting,
+                                            isGitHubIssueConfirming,
+                                            onGitHubIssueConfirmingChange: setIsGitHubIssueConfirming,
+                                        }) })] }) }), _jsx(WindowResizeHandles, { resizeWidthAriaLabel: messages.panel.resizeWidthAriaLabel, resizeHeightAriaLabel: messages.panel.resizeHeightAriaLabel, createResizePointerDown: createResizePointerDown })] })] }));
 }
 //# sourceMappingURL=ReportDraftForm.js.map

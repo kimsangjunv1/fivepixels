@@ -8,8 +8,6 @@ type ThreadLayoutShellProps = {
     classicReplyIndicator?: boolean;
     feedNode?: ReactNode;
     nested?: boolean;
-    hideLineBelow?: boolean;
-    hideLineAbove?: boolean;
     density?: FeedRowDensity;
     children: ReactNode;
     className?: string;
@@ -21,8 +19,6 @@ export function ThreadLayoutShell({
     classicReplyIndicator = false,
     feedNode,
     nested = false,
-    hideLineBelow = false,
-    hideLineAbove = false,
     density = "comment",
     children,
     className = "",
@@ -34,8 +30,6 @@ export function ThreadLayoutShell({
             <FeedTimelineRow
                 node={feedNode}
                 nested={nested}
-                hideLineBelow={hideLineBelow}
-                hideLineAbove={hideLineAbove}
                 density={density}
                 className={className}
             >

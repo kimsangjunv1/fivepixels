@@ -2,7 +2,7 @@ import { jsx as _jsx, Fragment as _Fragment, jsxs as _jsxs } from "react/jsx-run
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { CloseIcon, MaximizeIcon, MinimizeIcon, MoreHorizontalIcon, RestoreIcon } from "../../components/icons/Icons.js";
 import { CornerResizeGhost } from "../../components/ui/CornerResizeGhost.js";
-import { CornerResizeHandle } from "../../components/ui/CornerResizeHandle.js";
+import { WindowResizeHandles } from "../../components/ui/WindowResizeHandles.js";
 import { clampWindowPosition, useDraggableWindow } from "../../hooks/useDraggableWindow.js";
 import { useGhostCornerResize } from "../../hooks/useGhostCornerResize.js";
 import { claimFloatingWindowZIndex, getFloatingWindowZBase } from "../../utils/overlay/floatingWindowStack.js";
@@ -70,7 +70,7 @@ export function FloatingWindow({ children, title, headerRight, controls, showCon
         }
         onModeChange?.(next);
     }, [modeProp, onModeChange]);
-    const { position: dragPosition, isDragging, handleDragHandlePointerDown, setPosition: setDragPosition } = useDraggableWindow({
+    const { position: dragPosition, isDragging, handleDragHandlePointerDown, setPosition: setDragPosition, } = useDraggableWindow({
         enabled: enabled && !isMaximized,
         windowRef,
     });
@@ -87,16 +87,18 @@ export function FloatingWindow({ children, title, headerRight, controls, showCon
             height: Math.min(Math.max(nextHeight, minHeight), Math.max(minHeight, viewport.height - MAXIMIZE_MARGIN * 2)),
         };
     }, [minHeight, minWidth]);
-    const { isResizing, ghostRef, handleResizePointerDown } = useGhostCornerResize({
+    const handleResizeComplete = useCallback((rect) => {
+        const nextSize = { width: rect.width, height: rect.height };
+        setNormalSize(nextSize);
+        setHasExplicitHeight(true);
+        setDragPosition(clampWindowPosition(rect.left, rect.top, rect.width, rect.height));
+        onSizeChange?.(nextSize);
+    }, [onSizeChange, setDragPosition]);
+    const { isResizing, ghostRef, createResizePointerDown } = useGhostCornerResize({
         enabled: enabled && resizable && mode === "normal",
         targetRef: windowRef,
-        handleCorner: "bottom-right",
         clampSize,
-        onResizeComplete: (size) => {
-            setNormalSize(size);
-            setHasExplicitHeight(true);
-            onSizeChange?.(size);
-        },
+        onResizeComplete: handleResizeComplete,
     });
     const resolvedPosition = useMemo(() => {
         if (isMaximized) {
@@ -182,12 +184,8 @@ export function FloatingWindow({ children, title, headerRight, controls, showCon
         handleMaximize();
     }, [controls?.maximizeDisabled, handleMaximize]);
     const closeAriaLabel = controls?.closeAriaLabel ?? "Close";
-    const minimizeAriaLabel = isMinimized
-        ? (controls?.restoreAriaLabel ?? controls?.minimizeAriaLabel ?? "Restore")
-        : (controls?.minimizeAriaLabel ?? "Minimize");
-    const maximizeAriaLabel = isMaximized
-        ? (controls?.restoreAriaLabel ?? controls?.maximizeAriaLabel ?? "Restore")
-        : (controls?.maximizeAriaLabel ?? "Maximize");
+    const minimizeAriaLabel = isMinimized ? (controls?.restoreAriaLabel ?? controls?.minimizeAriaLabel ?? "Restore") : (controls?.minimizeAriaLabel ?? "Minimize");
+    const maximizeAriaLabel = isMaximized ? (controls?.restoreAriaLabel ?? controls?.maximizeAriaLabel ?? "Restore") : (controls?.maximizeAriaLabel ?? "Maximize");
     const moreAriaLabel = controls?.moreAriaLabel ?? "More window controls";
     const modeControlButtons = (_jsx(WindowModeControlButtons, { closeAriaLabel: closeAriaLabel, minimizeAriaLabel: minimizeAriaLabel, maximizeAriaLabel: maximizeAriaLabel, closeDisabled: controls?.closeDisabled, minimizeDisabled: controls?.minimizeDisabled, maximizeDisabled: controls?.maximizeDisabled, isMaximized: isMaximized, onClose: handleClose, onMinimize: handleMinimize, onMaximize: handleMaximize }));
     useLayoutEffect(() => {
@@ -247,13 +245,13 @@ export function FloatingWindow({ children, title, headerRight, controls, showCon
             window.removeEventListener("keydown", handleKeyDown);
         };
     }, [controlsCollapsed, controlsExpanded]);
-    return (_jsxs(_Fragment, { children: [isResizing ? _jsx(CornerResizeGhost, { ghostRef: ghostRef }) : null, _jsxs("div", { ref: windowRef, "data-fivepixels-interactive": "", "data-fp-chrome": dataChrome, "data-dragging": isDragging ? "true" : "false", "data-mode": mode, role: role, "aria-label": ariaLabel, onPointerDown: handleWindowPointerDown, className: `pointer-events-auto fixed flex flex-col overflow-hidden rounded-[16px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)]/95 shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[10px] ${className}`, style: {
+    return (_jsxs(_Fragment, { children: [isResizing ? _jsx(CornerResizeGhost, { ghostRef: ghostRef }) : null, _jsxs("div", { ref: windowRef, "data-fivepixels-interactive": "", "data-fp-chrome": dataChrome, "data-dragging": isDragging ? "true" : "false", "data-mode": mode, role: role, "aria-label": ariaLabel, onPointerDown: handleWindowPointerDown, className: `pointer-events-auto fixed flex flex-col rounded-[16px] bg-[var(--adaptive-black50)]/95 shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[10px] ${resizable && mode === "normal" ? "overflow-visible" : "overflow-hidden"} ${className}`, style: {
                     left: resolvedPosition.left,
                     top: resolvedPosition.top,
                     zIndex: stackZIndex,
                     width: resolvedSizeStyle.width,
                     height: resolvedSizeStyle.height,
                     ...style,
-                }, children: [_jsxs("header", { ref: headerRef, onPointerDown: handleDragHandlePointerDown, onDoubleClick: handleHeaderDoubleClick, className: `relative flex shrink-0 cursor-grab touch-none select-none items-center gap-[10px] border-b border-[var(--adaptive-border-subtle)] px-[12px] py-[8px] active:cursor-grabbing ${isMinimized ? "border-b-0" : ""} ${headerClassName}`, children: [title ? (_jsx("div", { ref: titleMeasureRef, "aria-hidden": true, className: "pointer-events-none invisible absolute whitespace-nowrap", children: title })) : null, showControls ? (controlsCollapsed ? (_jsxs("div", { ref: controlsClusterRef, className: "flex shrink-0 items-center gap-[2px]", children: [_jsx("button", { type: "button", "data-fivepixels-interactive": "", "aria-label": moreAriaLabel, "aria-expanded": controlsExpanded, onPointerDown: (event) => event.stopPropagation(), onClick: () => setControlsExpanded((current) => !current), className: `${HEADER_BUTTON_CLASS} cursor-pointer`, children: _jsx(MoreHorizontalIcon, { className: "h-[15px] w-[15px]" }) }), _jsx("div", { "aria-hidden": !controlsExpanded, className: `flex items-center gap-[2px] overflow-hidden transition-[max-width,opacity] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] ${controlsExpanded ? "max-w-[80px] opacity-100" : "pointer-events-none max-w-0 opacity-0"}`, children: modeControlButtons })] })) : (_jsx("div", { className: "flex shrink-0 items-center gap-[2px]", children: modeControlButtons }))) : null, title ? (_jsx("div", { className: "min-w-0 flex-1 overflow-hidden", children: _jsx("div", { className: "truncate", children: title }) })) : (_jsx("div", { className: "min-w-0 flex-1" })), headerRight ? (_jsx("div", { ref: headerRightRef, className: "flex shrink-0 items-center gap-[6px]", children: headerRight })) : null] }), !isMinimized && children ? _jsx("div", { className: `min-h-0 min-w-0 flex-1 overflow-auto ${contentClassName}`, children: children }) : null, resizable && mode === "normal" ? (_jsx(CornerResizeHandle, { corner: "bottom-right", ariaLabel: resizeAriaLabel, onPointerDown: handleResizePointerDown })) : null] })] }));
+                }, children: [_jsxs("header", { ref: headerRef, onPointerDown: handleDragHandlePointerDown, onDoubleClick: handleHeaderDoubleClick, className: `relative flex shrink-0 cursor-grab touch-none select-none items-center gap-[10px] border-b border-[var(--adaptive-border-subtle)] px-[12px] py-[8px] active:cursor-grabbing ${isMinimized ? "border-b-0" : ""} ${headerClassName}`, children: [title ? (_jsx("div", { ref: titleMeasureRef, "aria-hidden": true, className: "pointer-events-none invisible absolute whitespace-nowrap", children: title })) : null, showControls ? (controlsCollapsed ? (_jsxs("div", { ref: controlsClusterRef, className: "flex shrink-0 items-center gap-[2px]", children: [_jsx("button", { type: "button", "data-fivepixels-interactive": "", "aria-label": moreAriaLabel, "aria-expanded": controlsExpanded, onPointerDown: (event) => event.stopPropagation(), onClick: () => setControlsExpanded((current) => !current), className: `${HEADER_BUTTON_CLASS} cursor-pointer`, children: _jsx(MoreHorizontalIcon, { className: "h-[15px] w-[15px]" }) }), _jsx("div", { "aria-hidden": !controlsExpanded, className: `flex items-center gap-[2px] overflow-hidden transition-[max-width,opacity] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] ${controlsExpanded ? "max-w-[80px] opacity-100" : "pointer-events-none max-w-0 opacity-0"}`, children: modeControlButtons })] })) : (_jsx("div", { className: "flex shrink-0 items-center gap-[2px]", children: modeControlButtons }))) : null, title ? (_jsx("div", { className: "min-w-0 flex-1 overflow-hidden", children: _jsx("div", { className: "truncate", children: title }) })) : (_jsx("div", { className: "min-w-0 flex-1" })), headerRight ? (_jsx("div", { ref: headerRightRef, className: "flex shrink-0 items-center gap-[6px]", children: headerRight })) : null] }), !isMinimized && children ? _jsx("div", { className: `min-h-0 min-w-0 flex-1 overflow-auto rounded-[16px] ${contentClassName}`, children: children }) : null, resizable && mode === "normal" ? (_jsx(WindowResizeHandles, { resizeWidthAriaLabel: resizeAriaLabel, resizeHeightAriaLabel: resizeAriaLabel, createResizePointerDown: createResizePointerDown })) : null] })] }));
 }
 //# sourceMappingURL=FloatingWindow.js.map

@@ -6,7 +6,7 @@ import { defineConfig } from "vite";
 import type { ReportFeedback } from "../../src/types/report.js";
 
 const reportStylesheetDev = new URL("../../src/styles/reportStylesheet.dev.ts", import.meta.url).pathname;
-const formatGitHubIssueModuleId = fileURLToPath(new URL("../../src/utils/formatGitHubIssue.ts", import.meta.url));
+const formatGitHubIssueModuleId = fileURLToPath(new URL("../../src/utils/github/formatGitHubIssue.ts", import.meta.url));
 
 type FormatGitHubIssueBody = (feedback: ReportFeedback, fields?: import("../../src/types/report.js").ReportField[], options?: { formatProgress?: (resolved: number, total: number) => string }) => string;
 

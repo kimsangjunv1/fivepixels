@@ -3,10 +3,10 @@ import { useReportPreferences } from "../../../../providers/reportContext.js";
 import { ThreadTimelineRow } from "../ThreadTimelineRow.js";
 import { FeedTimelineRow } from "./FeedTimelineRow.js";
 /** Picks classic time-rail vs feed spine based on Settings → Appearance → Thread layout. */
-export function ThreadLayoutShell({ classicTime, classicReplyIndicator = false, feedNode, nested = false, hideLineBelow = false, hideLineAbove = false, density = "comment", children, className = "", }) {
+export function ThreadLayoutShell({ classicTime, classicReplyIndicator = false, feedNode, nested = false, density = "comment", children, className = "", }) {
     const { threadLayout } = useReportPreferences();
     if (threadLayout === "feed") {
-        return (_jsx(FeedTimelineRow, { node: feedNode, nested: nested, hideLineBelow: hideLineBelow, hideLineAbove: hideLineAbove, density: density, className: className, children: children }));
+        return (_jsx(FeedTimelineRow, { node: feedNode, nested: nested, density: density, className: className, children: children }));
     }
     return (_jsx(ThreadTimelineRow, { time: classicTime, replyIndicator: classicReplyIndicator || nested, className: className, children: children }));
 }

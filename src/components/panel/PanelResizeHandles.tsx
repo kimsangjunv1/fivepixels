@@ -1,15 +1,12 @@
-import { CornerResizeHandle } from "@/components/ui/CornerResizeHandle.js";
 import { PanelResizeHandle } from "@/components/panel/PanelResizeHandle.js";
 import type { ResizeHandle } from "@/hooks/useGhostCornerResize.js";
 import type { PanelResizeEdge } from "@/hooks/usePanelResize.js";
-import type { ResizeCorner } from "@/hooks/useGhostCornerResize.js";
 import type { PointerEvent as ReactPointerEvent } from "react";
 import type { ReportMessages } from "@/i18n/types.js";
 import { isVerticalResizeEdge } from "@/utils/panel/resizeHandles.js";
 
 type PanelResizeHandlesProps = {
     edges: PanelResizeEdge[];
-    corner: ResizeCorner;
     inactive?: boolean;
     heightResizeEnabled?: boolean;
     messages: ReportMessages;
@@ -23,7 +20,7 @@ const EDGE_ARIA_LABEL: Record<PanelResizeEdge, "resizeWidthAriaLabel" | "resizeH
     right: "resizeWidthAriaLabel",
 };
 
-export function PanelResizeHandles({ edges, corner, inactive = false, heightResizeEnabled = true, messages, createResizePointerDown }: PanelResizeHandlesProps) {
+export function PanelResizeHandles({ edges, inactive = false, heightResizeEnabled = true, messages, createResizePointerDown }: PanelResizeHandlesProps) {
     return (
         <>
             {edges.map((edge) => (
@@ -35,12 +32,6 @@ export function PanelResizeHandles({ edges, corner, inactive = false, heightResi
                     onPointerDown={createResizePointerDown({ kind: "edge", edge })}
                 />
             ))}
-            {/* <CornerResizeHandle
-                corner={corner}
-                ariaLabel={messages.panel.resizeAriaLabel}
-                inactive={inactive}
-                onPointerDown={createResizePointerDown({ kind: "corner", corner })}
-            /> */}
         </>
     );
 }

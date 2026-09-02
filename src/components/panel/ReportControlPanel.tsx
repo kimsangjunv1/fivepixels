@@ -338,7 +338,6 @@ export function ReportControlPanel() {
                 {panelExpanded ? (
                     <PanelResizeHandles
                         edges={resizeHandles.edges}
-                        corner={resizeHandles.corner}
                         inactive={isDragging}
                         heightResizeEnabled={heightResizeEnabled}
                         messages={messages}

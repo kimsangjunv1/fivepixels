@@ -31,7 +31,7 @@ type MotionProps<T extends ElementType> = MotionConfig & Omit<HTMLAttributes<HTM
 };
 export declare function AnimatedPresence({ children }: {
     children: ReactNode;
-}): import("react/jsx-runtime").JSX.Element[];
+}): import("react").JSX.Element[];
 declare function createMotionComponent(tagName: string): import("react").ForwardRefExoticComponent<MotionConfig & Omit<HTMLAttributes<HTMLElement>, keyof MotionConfig> & {
     as?: ElementType | undefined;
     style?: CSSProperties;

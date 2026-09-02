@@ -9,12 +9,6 @@ type FeedTimelineRowProps = {
     node?: ReactNode;
     /** Indent as a nested reply under a parent comment (keeps L-branch). */
     nested?: boolean;
-    /** @deprecated Nested vertical rail removed; kept for API compat. */
-    nestedPosition?: string;
-    /** @deprecated Main spine is drawn by FeedTimelineTrack. */
-    hideLineBelow?: boolean;
-    /** @deprecated Main spine is drawn by FeedTimelineTrack. */
-    hideLineAbove?: boolean;
     /** Activity rows stay tight; comments breathe a bit more. */
     density?: FeedRowDensity;
     children: ReactNode;

@@ -5,7 +5,6 @@ export function useReportTeamActor({ authorizedAuthorId, teamReviewers, persiste
     const [apiTeamMembersLoading, setApiTeamMembersLoading] = useState(false);
     const apiTeamMembers = useMemo(() => (apiTeamDirectory ? filterJoinedTeamMembers(apiTeamDirectory) : null), [apiTeamDirectory]);
     const onListReviewersRef = useRef(onListReviewers);
-    const hasListReviewers = Boolean(onListReviewers);
     useEffect(() => {
         onListReviewersRef.current = onListReviewers;
     }, [onListReviewers]);
@@ -28,15 +27,33 @@ export function useReportTeamActor({ authorizedAuthorId, teamReviewers, persiste
         }
     }, [authorizedAuthorId, persistenceMode]);
     useEffect(() => {
-        if (persistenceMode !== "API" || !authorizedAuthorId) {
+        if (persistenceMode !== "API" || !onListReviewersRef.current || !authorizedAuthorId) {
             setApiTeamDirectory(null);
             return;
         }
-        if (!hasListReviewers) {
-            return;
-        }
-        void refreshTeamMembers();
-    }, [authorizedAuthorId, hasListReviewers, persistenceMode, refreshTeamMembers]);
+        let cancelled = false;
+        setApiTeamMembersLoading(true);
+        void onListReviewersRef
+            .current()
+            .then((members) => {
+            if (!cancelled) {
+                setApiTeamDirectory(members);
+            }
+        })
+            .catch(() => {
+            if (!cancelled) {
+                setApiTeamDirectory(null);
+            }
+        })
+            .finally(() => {
+            if (!cancelled) {
+                setApiTeamMembersLoading(false);
+            }
+        });
+        return () => {
+            cancelled = true;
+        };
+    }, [authorizedAuthorId, persistenceMode]);
     const teamActor = useMemo(() => resolveTeamActor(authorizedAuthorId, teamReviewers, apiTeamMembers, persistenceMode), [apiTeamMembers, authorizedAuthorId, persistenceMode, teamReviewers]);
     return { teamActor, apiTeamDirectory, apiTeamMembers, apiTeamMembersLoading, refreshTeamMembers };
 }

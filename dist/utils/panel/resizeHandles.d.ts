@@ -1,9 +1,8 @@
 import type { PanelCorner } from "../../hooks/usePanelDock.js";
-import { type PanelResizeEdge } from "../../hooks/usePanelResize.js";
-import type { ResizeCorner } from "../../hooks/useGhostCornerResize.js";
+import type { PanelResizeEdge } from "../../hooks/usePanelResize.js";
 export type PanelResizeHandles = {
     edges: PanelResizeEdge[];
-    corner: ResizeCorner;
 };
-export declare function getResizeHandlesForPlacement(corner: PanelCorner, heightResizeEnabled: boolean): PanelResizeHandles;
+export declare function getResizeHandlesForPlacement(corner: PanelCorner): PanelResizeHandles;
+export declare function isVerticalResizeEdge(edge: PanelResizeEdge): boolean;
 //# sourceMappingURL=resizeHandles.d.ts.map
