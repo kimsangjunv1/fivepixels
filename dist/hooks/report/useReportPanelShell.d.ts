@@ -50,6 +50,12 @@ export declare function useReportPanelShell({ projectId, environment, appVersion
     setDevicePreviewUiOpen: (open: boolean) => void;
     mobilePreviewUiOpen: boolean;
     setMobilePreviewUiOpen: (open: boolean) => void;
+    mobilePreviewDeviceId: string;
+    setMobilePreviewDeviceId: (deviceId: string) => void;
+    mobilePreviewOrientation: import("../useMobilePreviewPreference.js").MobilePreviewOrientation;
+    setMobilePreviewOrientation: (orientation: import("../useMobilePreviewPreference.js").MobilePreviewOrientation) => void;
+    toggleMobilePreviewOrientation: () => void;
+    mobilePreviewPreset: import("../../constants/devicePreview.js").DevicePreviewPreset;
     devicePreviewDeviceId: string;
     setDevicePreviewDeviceId: (deviceId: string) => void;
     devicePreviewScale: 1 | 0.5 | 0.75 | 1.25;

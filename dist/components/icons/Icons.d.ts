@@ -125,6 +125,9 @@ export declare function DevicePreviewIcon({ className }: {
 export declare function MobilePreviewIcon({ className }: {
     className?: string;
 }): import("react").JSX.Element;
+export declare function ScreenRotateIcon({ className }: {
+    className?: string;
+}): import("react").JSX.Element;
 export declare function ArrowBelowIcon({ className }: {
     className?: string;
 }): import("react").JSX.Element;

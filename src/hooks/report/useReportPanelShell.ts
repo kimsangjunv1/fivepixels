@@ -108,7 +108,7 @@ export function useReportPanelShell({
         setDevicePreviewStatusBarEnabled,
         devicePreviewPreset,
     } = useDevicePreviewPreference();
-    const { mobilePreviewUiOpen, setMobilePreviewUiOpen } = useMobilePreviewPreference();
+    const { mobilePreviewUiOpen, setMobilePreviewUiOpen, mobilePreviewDeviceId, setMobilePreviewDeviceId, mobilePreviewOrientation, setMobilePreviewOrientation, toggleMobilePreviewOrientation, mobilePreviewPreset } = useMobilePreviewPreference();
     const { showHiddenDetachedMarkers, setShowHiddenDetachedMarkers, showModalDetachedMarkers, setShowModalDetachedMarkers } =
         useDetachedMarkerVisibilityPreference();
     const {
@@ -463,6 +463,12 @@ export function useReportPanelShell({
         setDevicePreviewUiOpen,
         mobilePreviewUiOpen,
         setMobilePreviewUiOpen,
+        mobilePreviewDeviceId,
+        setMobilePreviewDeviceId,
+        mobilePreviewOrientation,
+        setMobilePreviewOrientation,
+        toggleMobilePreviewOrientation,
+        mobilePreviewPreset,
         devicePreviewDeviceId,
         setDevicePreviewDeviceId,
         devicePreviewScale,

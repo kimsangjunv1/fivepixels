@@ -36,7 +36,7 @@ export function useReportPanelShell({ projectId, environment, appVersion, sync =
     const { appearance: activeTooltipAppearance, setAppearance: setTooltipAppearance } = useAppearancePreference(TOOLTIP_APPEARANCE_STORAGE_KEY, tooltipAppearance);
     const { showMarkerTargetPreview, setShowMarkerTargetPreview, toggleMarkerTargetPreview } = useMarkerTargetPreviewPreference();
     const { devicePreviewUiOpen, setDevicePreviewUiOpen, devicePreviewDeviceId, setDevicePreviewDeviceId, devicePreviewScale, setDevicePreviewScale, devicePreviewImageEnabled, setDevicePreviewImageEnabled, devicePreviewFitToViewport, setDevicePreviewFitToViewport, devicePreviewStatusBarEnabled, setDevicePreviewStatusBarEnabled, devicePreviewPreset, } = useDevicePreviewPreference();
-    const { mobilePreviewUiOpen, setMobilePreviewUiOpen } = useMobilePreviewPreference();
+    const { mobilePreviewUiOpen, setMobilePreviewUiOpen, mobilePreviewDeviceId, setMobilePreviewDeviceId, mobilePreviewOrientation, setMobilePreviewOrientation, toggleMobilePreviewOrientation, mobilePreviewPreset } = useMobilePreviewPreference();
     const { showHiddenDetachedMarkers, setShowHiddenDetachedMarkers, showModalDetachedMarkers, setShowModalDetachedMarkers } = useDetachedMarkerVisibilityPreference();
     const { markerAppearance, setMarkerAppearance, setMarkerSize, setMarkerShape, setMarkerFillStyle, setMarkerColors, setMarkerColor, setMarkerStrokeColor, setFeedbackModeDotColors, setFeedbackModeDotColor, } = useMarkerAppearancePreference();
     const { typography, setTypography, setFontSize, setFontFamily } = useTypographyPreference();
@@ -254,6 +254,12 @@ export function useReportPanelShell({ projectId, environment, appVersion, sync =
         setDevicePreviewUiOpen,
         mobilePreviewUiOpen,
         setMobilePreviewUiOpen,
+        mobilePreviewDeviceId,
+        setMobilePreviewDeviceId,
+        mobilePreviewOrientation,
+        setMobilePreviewOrientation,
+        toggleMobilePreviewOrientation,
+        mobilePreviewPreset,
         devicePreviewDeviceId,
         setDevicePreviewDeviceId,
         devicePreviewScale,

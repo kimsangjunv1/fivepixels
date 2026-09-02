@@ -594,6 +594,9 @@ export const en: ReportMessages = {
         mobilePreviewIframeTitle: "Mobile preview",
         mobilePreviewIframeBlocked:
             "This page blocked the iframe preview. Check X-Frame-Options or CSP frame-ancestors.",
+        mobilePreviewDeviceAriaLabel: "Select preview device",
+        mobilePreviewRotateLabel: "Rotate screen",
+        mobilePreviewRotateAriaLabel: "Rotate screen",
         sectionViewerSwitch: "Viewer switch",
         viewerSwitchAriaLabel: "Select preview viewer",
         viewerSwitchHint: "Preview buttons and permissions as the selected user.",
