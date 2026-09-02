@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { CloseIcon, MaximizeIcon, MinimizeIcon, MoreHorizontalIcon, RestoreIcon } from "@/components/icons/Icons.js";
 import { CornerResizeGhost } from "@/components/ui/CornerResizeGhost.js";
-import { CornerResizeHandle } from "@/components/ui/CornerResizeHandle.js";
+import { WindowResizeHandles } from "@/components/ui/WindowResizeHandles.js";
 import { clampWindowPosition, useDraggableWindow, type WindowPosition } from "@/hooks/useDraggableWindow.js";
 import { useGhostCornerResize, type BoxSize } from "@/hooks/useGhostCornerResize.js";
 import { claimFloatingWindowZIndex, getFloatingWindowZBase } from "@/utils/overlay/floatingWindowStack.js";
@@ -227,7 +227,12 @@ export function FloatingWindow({
         [modeProp, onModeChange],
     );
 
-    const { position: dragPosition, isDragging, handleDragHandlePointerDown, setPosition: setDragPosition } = useDraggableWindow({
+    const {
+        position: dragPosition,
+        isDragging,
+        handleDragHandlePointerDown,
+        setPosition: setDragPosition,
+    } = useDraggableWindow({
         enabled: enabled && !isMaximized,
         windowRef,
     });
@@ -251,16 +256,22 @@ export function FloatingWindow({
         [minHeight, minWidth],
     );
 
-    const { isResizing, ghostRef, handleResizePointerDown } = useGhostCornerResize({
+    const handleResizeComplete = useCallback(
+        (rect: { left: number; top: number; width: number; height: number }) => {
+            const nextSize = { width: rect.width, height: rect.height };
+            setNormalSize(nextSize);
+            setHasExplicitHeight(true);
+            setDragPosition(clampWindowPosition(rect.left, rect.top, rect.width, rect.height));
+            onSizeChange?.(nextSize);
+        },
+        [onSizeChange, setDragPosition],
+    );
+
+    const { isResizing, ghostRef, createResizePointerDown } = useGhostCornerResize({
         enabled: enabled && resizable && mode === "normal",
         targetRef: windowRef,
-        handleCorner: "bottom-right",
         clampSize,
-        onResizeComplete: (size) => {
-            setNormalSize(size);
-            setHasExplicitHeight(true);
-            onSizeChange?.(size);
-        },
+        onResizeComplete: handleResizeComplete,
     });
 
     const resolvedPosition = useMemo(() => {
@@ -368,12 +379,8 @@ export function FloatingWindow({
     }, [controls?.maximizeDisabled, handleMaximize]);
 
     const closeAriaLabel = controls?.closeAriaLabel ?? "Close";
-    const minimizeAriaLabel = isMinimized
-        ? (controls?.restoreAriaLabel ?? controls?.minimizeAriaLabel ?? "Restore")
-        : (controls?.minimizeAriaLabel ?? "Minimize");
-    const maximizeAriaLabel = isMaximized
-        ? (controls?.restoreAriaLabel ?? controls?.maximizeAriaLabel ?? "Restore")
-        : (controls?.maximizeAriaLabel ?? "Maximize");
+    const minimizeAriaLabel = isMinimized ? (controls?.restoreAriaLabel ?? controls?.minimizeAriaLabel ?? "Restore") : (controls?.minimizeAriaLabel ?? "Minimize");
+    const maximizeAriaLabel = isMaximized ? (controls?.restoreAriaLabel ?? controls?.maximizeAriaLabel ?? "Restore") : (controls?.maximizeAriaLabel ?? "Maximize");
     const moreAriaLabel = controls?.moreAriaLabel ?? "More window controls";
 
     const modeControlButtons = (
@@ -479,7 +486,9 @@ export function FloatingWindow({
                 role={role}
                 aria-label={ariaLabel}
                 onPointerDown={handleWindowPointerDown}
-                className={`pointer-events-auto fixed flex flex-col overflow-hidden rounded-[16px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)]/95 shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[10px] ${className}`}
+                className={`pointer-events-auto fixed flex flex-col rounded-[16px] bg-[var(--adaptive-black50)]/95 shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[10px] ${
+                    resizable && mode === "normal" ? "overflow-visible" : "overflow-hidden"
+                } ${className}`}
                 style={{
                     left: resolvedPosition.left,
                     top: resolvedPosition.top,
@@ -556,13 +565,13 @@ export function FloatingWindow({
                     ) : null}
                 </header>
 
-                {!isMinimized && children ? <div className={`min-h-0 min-w-0 flex-1 overflow-auto ${contentClassName}`}>{children}</div> : null}
+                {!isMinimized && children ? <div className={`min-h-0 min-w-0 flex-1 overflow-auto rounded-[16px] ${contentClassName}`}>{children}</div> : null}
 
                 {resizable && mode === "normal" ? (
-                    <CornerResizeHandle
-                        corner="bottom-right"
-                        ariaLabel={resizeAriaLabel}
-                        onPointerDown={handleResizePointerDown}
+                    <WindowResizeHandles
+                        resizeWidthAriaLabel={resizeAriaLabel}
+                        resizeHeightAriaLabel={resizeAriaLabel}
+                        createResizePointerDown={createResizePointerDown}
                     />
                 ) : null}
             </div>

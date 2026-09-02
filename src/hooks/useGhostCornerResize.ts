@@ -10,6 +10,11 @@ export type BoxSize = {
     height: number;
 };
 
+export type BoxRect = BoxSize & {
+    left: number;
+    top: number;
+};
+
 type ResizeSession = {
     pointerId: number;
     startX: number;
@@ -163,13 +168,13 @@ export function useGhostCornerResize({
     targetRef: RefObject<HTMLElement | null>;
     handleCorner?: ResizeCorner;
     clampSize: (width: number, height: number) => BoxSize;
-    onResizeComplete: (size: BoxSize) => void;
+    onResizeComplete: (rect: BoxRect) => void;
     resolveStartSize?: () => BoxSize;
 }) {
     const [isResizing, setIsResizing] = useState(false);
     const ghostRef = useRef<HTMLDivElement | null>(null);
     const sessionRef = useRef<ResizeSession | null>(null);
-    const pendingSizeRef = useRef<BoxSize | null>(null);
+    const pendingRectRef = useRef<BoxRect | null>(null);
     const listenersRef = useRef<{ move: (event: PointerEvent) => void; up: (event: PointerEvent) => void } | null>(null);
 
     const detachResizeListeners = useCallback(() => {
@@ -192,7 +197,7 @@ export function useGhostCornerResize({
 
         detachResizeListeners();
         sessionRef.current = null;
-        pendingSizeRef.current = null;
+        pendingRectRef.current = null;
         setIsResizing(false);
     }, [detachResizeListeners, enabled]);
 
@@ -201,12 +206,12 @@ export function useGhostCornerResize({
     const finishResize = useCallback(() => {
         detachResizeListeners();
 
-        if (pendingSizeRef.current) {
-            onResizeComplete(pendingSizeRef.current);
+        if (pendingRectRef.current) {
+            onResizeComplete(pendingRectRef.current);
         }
 
         sessionRef.current = null;
-        pendingSizeRef.current = null;
+        pendingRectRef.current = null;
         setIsResizing(false);
     }, [detachResizeListeners, onResizeComplete]);
 
@@ -267,7 +272,7 @@ export function useGhostCornerResize({
                 }
 
                 const ghostRect = resolveGhostRect(session, moveEvent.clientX, moveEvent.clientY, clampSize);
-                pendingSizeRef.current = { width: ghostRect.width, height: ghostRect.height };
+                pendingRectRef.current = ghostRect;
 
                 const ghost = ghostRef.current;
 

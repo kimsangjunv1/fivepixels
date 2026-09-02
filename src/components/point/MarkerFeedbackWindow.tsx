@@ -35,9 +35,9 @@ import { mentionMessageToPlainText } from "@/utils/mention/elementMentions.js";
 import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
 import { useIntegrationLock } from "@/components/ui/IntegrationLock.js";
 import { CornerResizeGhost } from "@/components/ui/CornerResizeGhost.js";
+import { WindowResizeHandles } from "@/components/ui/WindowResizeHandles.js";
 import { MOTION } from "@/constants/motionClasses.js";
 import { ACCENT_COLOR } from "@/constants/accentColors.js";
-import { CornerResizeHandle } from "@/components/ui/CornerResizeHandle.js";
 import { FeedbackComposer } from "@/components/panel/feedback/FeedbackComposer.js";
 import { CaseAssigneeInfo } from "@/components/panel/feedback/CaseAssigneeInfo.js";
 import { FeedbackThread } from "@/components/panel/feedback/FeedbackThread.js";
@@ -555,17 +555,24 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
         [hoverRef],
     );
 
-    const { position, handleDragHandlePointerDown } = useDraggableWindow({
+    const { position, setPosition, handleDragHandlePointerDown } = useDraggableWindow({
         enabled: windowMode === "normal" && dockMorph === null,
         windowRef,
     });
 
-    const { isResizing, ghostRef, handleResizePointerDown } = useGhostCornerResize({
+    const handleResizeComplete = useCallback(
+        (rect: { left: number; top: number; width: number; height: number }) => {
+            setSize({ width: rect.width, height: rect.height });
+            setPosition(clampWindowPosition(rect.left, rect.top, rect.width, rect.height));
+        },
+        [setPosition],
+    );
+
+    const { isResizing, ghostRef, createResizePointerDown } = useGhostCornerResize({
         enabled: windowMode === "normal" && dockMorph === null,
-        targetRef: surfaceRef,
-        handleCorner: "bottom-right",
+        targetRef: windowRef,
         clampSize: clampMarkerWindowSize,
-        onResizeComplete: setSize,
+        onResizeComplete: handleResizeComplete,
     });
 
     const finishClose = useCallback(() => {
@@ -1334,9 +1341,13 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
                 onPointerDown={handleWindowActivate}
                 onClick={(event) => event.stopPropagation()}
                 onAnimationEnd={handleWindowAnimationEnd}
-                className={`fixed rounded-[16px] shadow-[var(--adaptive-popup-shadow)] ${showMinimizedChrome && dockMorph === null && !isDockDragging ? "" : "overflow-hidden"} ${
-                    isDockDragging ? "z-[1000003]" : showFullContent ? "z-[1000002]" : "z-[1000001]"
-                } ${windowAnimationClass}`}
+                className={`fixed rounded-[16px] shadow-[var(--adaptive-popup-shadow)] ${
+                    windowMode === "normal" && dockMorph === null
+                        ? "overflow-visible"
+                        : showMinimizedChrome && dockMorph === null && !isDockDragging
+                          ? ""
+                          : "overflow-hidden"
+                } ${isDockDragging ? "z-[1000003]" : showFullContent ? "z-[1000002]" : "z-[1000001]"} ${windowAnimationClass}`}
                 style={{
                     left: displayRect.left,
                     top: displayRect.top,
@@ -1476,15 +1487,16 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
                             </>
                         )}
 
-                        {windowMode === "normal" && dockMorph === null ? (
-                            <CornerResizeHandle
-                                corner="bottom-right"
-                                ariaLabel={messages.marker.resizeAriaLabel}
-                                onPointerDown={handleResizePointerDown}
-                            />
-                        ) : null}
                     </div>
                 )}
+
+                {windowMode === "normal" && dockMorph === null ? (
+                    <WindowResizeHandles
+                        resizeWidthAriaLabel={messages.panel.resizeWidthAriaLabel}
+                        resizeHeightAriaLabel={messages.panel.resizeHeightAriaLabel}
+                        createResizePointerDown={createResizePointerDown}
+                    />
+                ) : null}
             </div>
         </>
     );

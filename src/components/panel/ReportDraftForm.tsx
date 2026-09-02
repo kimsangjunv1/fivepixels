@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { FeedbackCategory } from "@/constants/feedbackCategory.js";
 import type { ElementMention } from "@/types/mention.js";
 import { useTooltipLayout } from "@/hooks/useTooltipLayout.js";
@@ -11,8 +11,8 @@ import { DraftProbeSummaryBanner } from "./DraftProbeSummaryBanner.js";
 import { DraftNetworkErrorBanner } from "./DraftNetworkErrorBanner.js";
 import { PickTargetSnippet } from "./feedback/PickTargetSnippet.js";
 import { CornerResizeGhost } from "@/components/ui/CornerResizeGhost.js";
+import { WindowResizeHandles } from "@/components/ui/WindowResizeHandles.js";
 import { MOTION } from "@/constants/motionClasses.js";
-import { CornerResizeHandle } from "@/components/ui/CornerResizeHandle.js";
 
 const TOOLTIP_SURFACE_CLASS = "rounded-[16px] shadow-[var(--adaptive-popup-shadow)] bg-[var(--adaptive-neutralTintOpacity1000)] backdrop-blur-[5px]";
 const EXPANDED_TOOLTIP_ANCHOR_CLASS = "pointer-events-auto fixed z-[1000001]";
@@ -144,7 +144,7 @@ function ReportDraftFormContent({
     isAuthBootstrapping,
 }: ReportDraftFormContentProps) {
     const { messages } = useReportPreferences();
-    const tooltipSurfaceRef = useRef<HTMLDivElement | null>(null);
+    const tooltipContainerRef = useRef<HTMLDivElement | null>(null);
     const [footerWarningMessage, setFooterWarningMessage] = useState<string | null>(null);
     const [activeCaseId, setActiveCaseId] = useState<string | null>(() => draft.cases[0]?.id ?? null);
     const [isGitHubIssueConfirming, setIsGitHubIssueConfirming] = useState(false);
@@ -155,13 +155,21 @@ function ReportDraftFormContent({
 
         return getDraftMarkerPosition(draft, selectedTarget);
     }, [draft, editingMarker, selectedTarget]);
-    const { customSize, isResizing, ghostRef, handleResizePointerDown } = useTooltipResize({
+    const { customSize, manualPosition, isResizing, ghostRef, createResizePointerDown } = useTooltipResize({
         enabled: true,
-        tooltipRef: tooltipSurfaceRef,
+        tooltipRef: tooltipContainerRef,
     });
     const { layout: tooltipLayout, setTooltipElement } = useTooltipLayout(anchor, true, true, {
         customWidth: customSize?.width,
+        customHeight: customSize?.height,
     });
+    const bindTooltipContainerRef = useCallback(
+        (node: HTMLDivElement | null) => {
+            tooltipContainerRef.current = node;
+            setTooltipElement(node);
+        },
+        [setTooltipElement],
+    );
     const tooltipPosition = tooltipLayout?.position ?? null;
     const tooltipAnchorStyle = tooltipLayout?.anchorStyle;
     const isSubmitting = isCreating || isUpdating || isDraftGitHubIssueSubmitting || isAuthBootstrapping;
@@ -280,15 +288,15 @@ function ReportDraftFormContent({
             {isResizing ? <CornerResizeGhost ghostRef={ghostRef} /> : null}
 
             <div
-                ref={setTooltipElement}
+                ref={bindTooltipContainerRef}
                 data-fivepixels-interactive=""
                 data-fivepixels-draft-form=""
                 onClick={(event) => event.stopPropagation()}
-                className={`${EXPANDED_TOOLTIP_ANCHOR_CLASS} flex flex-col gap-[4px]`}
+                className={`${EXPANDED_TOOLTIP_ANCHOR_CLASS} relative flex flex-col gap-[4px] overflow-visible`}
                 style={{
-                    left: tooltipPosition.left,
-                    top: tooltipPosition.top,
-                    width: tooltipPosition.width,
+                    left: manualPosition?.left ?? tooltipPosition.left,
+                    top: manualPosition?.top ?? tooltipPosition.top,
+                    width: customSize?.width ?? tooltipPosition.width,
                     minWidth: 320,
                     ...tooltipAnchorStyle,
                 }}
@@ -304,7 +312,6 @@ function ReportDraftFormContent({
                 ) : null}
 
                 <div
-                    ref={tooltipSurfaceRef}
                     className={`relative ${TOOLTIP_SURFACE_CLASS} ${MOTION.tooltipFadeIn}`}
                     style={{
                         pointerEvents: "auto",
@@ -381,13 +388,13 @@ function ReportDraftFormContent({
                                   })}
                         />
                     </div>
-
-                    <CornerResizeHandle
-                        corner="bottom-right"
-                        ariaLabel={messages.marker.resizeAriaLabel}
-                        onPointerDown={handleResizePointerDown}
-                    />
                 </div>
+
+                <WindowResizeHandles
+                    resizeWidthAriaLabel={messages.panel.resizeWidthAriaLabel}
+                    resizeHeightAriaLabel={messages.panel.resizeHeightAriaLabel}
+                    createResizePointerDown={createResizePointerDown}
+                />
             </div>
         </>
     );

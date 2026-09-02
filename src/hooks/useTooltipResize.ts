@@ -1,10 +1,15 @@
 import { useCallback, useState, type RefObject } from "react";
-import { useGhostCornerResize } from "@/hooks/useGhostCornerResize.js";
+import { useGhostCornerResize, type BoxRect } from "@/hooks/useGhostCornerResize.js";
 import { clampTooltipExpandedSize } from "@/utils/marker/coordinates.js";
 
 export type TooltipCustomSize = {
     width: number;
     height: number;
+};
+
+export type TooltipManualPosition = {
+    left: number;
+    top: number;
 };
 
 export function useTooltipResize({
@@ -15,28 +20,31 @@ export function useTooltipResize({
     tooltipRef: RefObject<HTMLElement | null>;
 }) {
     const [customSize, setCustomSize] = useState<TooltipCustomSize | null>(null);
+    const [manualPosition, setManualPosition] = useState<TooltipManualPosition | null>(null);
 
-    const handleResizeComplete = useCallback((size: TooltipCustomSize) => {
-        setCustomSize(size);
+    const handleResizeComplete = useCallback((rect: BoxRect) => {
+        setCustomSize({ width: rect.width, height: rect.height });
+        setManualPosition({ left: rect.left, top: rect.top });
     }, []);
 
-    const { isResizing, ghostRef, handleResizePointerDown } = useGhostCornerResize({
+    const { isResizing, ghostRef, createResizePointerDown } = useGhostCornerResize({
         enabled,
         targetRef: tooltipRef,
-        handleCorner: "bottom-right",
         clampSize: clampTooltipExpandedSize,
         onResizeComplete: handleResizeComplete,
     });
 
     const resetTooltipSize = useCallback(() => {
         setCustomSize(null);
+        setManualPosition(null);
     }, []);
 
     return {
         customSize,
+        manualPosition,
         isResizing,
         ghostRef,
-        handleResizePointerDown,
+        createResizePointerDown,
         resetTooltipSize,
     };
 }
