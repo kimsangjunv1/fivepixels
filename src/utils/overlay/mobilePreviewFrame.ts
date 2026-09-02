@@ -1,6 +1,7 @@
 export const MOBILE_PREVIEW_FRAME_ATTR = "data-fivepixels-mobile-preview-frame";
 export const MOBILE_PREVIEW_FRAME_NAME = "fivepixels-mobile-preview-guest";
 export const MOBILE_PREVIEW_GUEST_VIEWPORT_META_ATTR = "data-fivepixels-mobile-preview-viewport";
+export const MOBILE_PREVIEW_GUEST_HTML_CLASS = "fivepixels-mobile-preview-guest";
 
 export function isInsideMobilePreviewFrame(): boolean {
     if (typeof window === "undefined") {
@@ -55,6 +56,8 @@ export function syncMobilePreviewGuestViewport(doc: Document | null, viewportWid
     }
 
     const width = Math.max(1, Math.round(viewportWidth));
+    doc.documentElement.classList.add(MOBILE_PREVIEW_GUEST_HTML_CLASS);
+
     let meta = doc.querySelector(`meta[${MOBILE_PREVIEW_GUEST_VIEWPORT_META_ATTR}]`) as HTMLMetaElement | null;
 
     if (!meta) {

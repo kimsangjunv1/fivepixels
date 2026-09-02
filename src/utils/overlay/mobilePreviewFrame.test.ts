@@ -1,5 +1,11 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { MOBILE_PREVIEW_FRAME_ATTR, MOBILE_PREVIEW_FRAME_NAME, isInsideMobilePreviewFrame, syncMobilePreviewGuestViewport } from "./mobilePreviewFrame.js";
+import {
+    MOBILE_PREVIEW_FRAME_ATTR,
+    MOBILE_PREVIEW_FRAME_NAME,
+    MOBILE_PREVIEW_GUEST_HTML_CLASS,
+    isInsideMobilePreviewFrame,
+    syncMobilePreviewGuestViewport,
+} from "./mobilePreviewFrame.js";
 
 describe("isInsideMobilePreviewFrame", () => {
     const originalName = window.name;
@@ -46,6 +52,7 @@ describe("syncMobilePreviewGuestViewport", () => {
         syncMobilePreviewGuestViewport(doc, 390);
 
         expect(existing.getAttribute("content")).toBe("width=390, initial-scale=1, viewport-fit=cover");
+        expect(doc.documentElement.classList.contains(MOBILE_PREVIEW_GUEST_HTML_CLASS)).toBe(true);
     });
 
     it("creates a viewport meta when one is missing", () => {

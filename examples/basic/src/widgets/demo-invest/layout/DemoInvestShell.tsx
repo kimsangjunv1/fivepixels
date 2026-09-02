@@ -23,7 +23,7 @@ export function DemoInvestShell() {
                 data-report-type="group"
             >
                 <DemoInvestHeader />
-                <div className={`demo-invest__shell${isResponsiveCheckPage ? " demo-invest__shell--responsive-check" : ""}`}>
+                <div className="demo-invest__shell">
                     <main className="demo-invest__main">
                         <Outlet />
                     </main>

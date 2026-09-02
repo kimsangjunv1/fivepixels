@@ -12,6 +12,50 @@
     letter-spacing: -.018em;
 }
 
+/* mobile floating preview guest — drop desktop min-width so viewport media queries can reflow */
+html.fivepixels-mobile-preview-guest .demo-invest,
+.demo-invest[data-page="responsive-check"] {
+    min-width: 0;
+    width: 100%;
+    overflow-x: clip;
+}
+
+html.fivepixels-mobile-preview-guest .demo-invest__header,
+.demo-invest[data-page="responsive-check"] .demo-invest__header {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+html.fivepixels-mobile-preview-guest .demo-invest__header-watch,
+html.fivepixels-mobile-preview-guest .demo-invest__header-rail,
+html.fivepixels-mobile-preview-guest .demo-invest__watchlist,
+html.fivepixels-mobile-preview-guest .demo-invest__right-rail,
+.demo-invest[data-page="responsive-check"] .demo-invest__header-watch,
+.demo-invest[data-page="responsive-check"] .demo-invest__header-rail {
+    display: none;
+}
+
+html.fivepixels-mobile-preview-guest .demo-invest__shell,
+.demo-invest[data-page="responsive-check"] .demo-invest__shell {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+html.fivepixels-mobile-preview-guest .demo-invest__nav,
+.demo-invest[data-page="responsive-check"] .demo-invest__nav {
+    display: none;
+}
+
+html.fivepixels-mobile-preview-guest .demo-invest__search span,
+html.fivepixels-mobile-preview-guest .demo-invest__search kbd,
+.demo-invest[data-page="responsive-check"] .demo-invest__search span,
+.demo-invest[data-page="responsive-check"] .demo-invest__search kbd {
+    display: none;
+}
+
+html.fivepixels-mobile-preview-guest .demo-invest__header-main,
+.demo-invest[data-page="responsive-check"] .demo-invest__header-main {
+    gap: 12px;
+}
+
 .demo-invest *, .demo-invest *::before, .demo-invest *::after,
 .demo-invest-login-page *, .demo-invest-login-page *::before, .demo-invest-login-page *::after { box-sizing: border-box; }
 .demo-invest button, .demo-invest input, .demo-invest-login-page button, .demo-invest-login-page input { font: inherit; }
@@ -253,21 +297,9 @@
 .demo-invest__responsive-panel button { justify-self: start; height: 38px; padding: 0 14px; border: 0; border-radius: 9px; background: #3182f6; color: #fff; font: inherit; font-weight: 650; }
 
 @media (max-width: 900px) {
-    .demo-invest__shell--responsive-check { grid-template-columns: minmax(0, 1fr); }
-    .demo-invest__shell--responsive-check .demo-invest__watchlist,
-    .demo-invest__shell--responsive-check .demo-invest__right-rail { display: none; }
-    .demo-invest[data-page="responsive-check"] .demo-invest__header-watch,
-    .demo-invest[data-page="responsive-check"] .demo-invest__header-rail { display: none; }
     .demo-invest__responsive-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .demo-invest__responsive-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .demo-invest__responsive-split { grid-template-columns: 1fr; }
-}
-
-@media (max-width: 768px) {
-    .demo-invest[data-page="responsive-check"] .demo-invest__nav { display: none; }
-    .demo-invest[data-page="responsive-check"] .demo-invest__search span,
-    .demo-invest[data-page="responsive-check"] .demo-invest__search kbd { display: none; }
-    .demo-invest[data-page="responsive-check"] .demo-invest__header-main { gap: 12px; }
 }
 
 @media (max-width: 480px) {
