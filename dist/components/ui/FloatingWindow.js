@@ -72,6 +72,7 @@ export function FloatingWindow({ children, title, headerRight, controls, showCon
         blockDrag: overlayDock.dockMorph !== null,
         minimizedWidth: overlayDock.minimizedWidth,
         dockPosition: overlayDock.dockPosition,
+        dockRegion: overlayDock.dockRegion,
     });
     const isDockDragging = dockDrag.isDockDragging;
     const dragEnabled = enabled && mode === "normal" && !showDockMinimizedChrome && !overlayDock.dockMorph;
@@ -311,7 +312,6 @@ export function FloatingWindow({ children, title, headerRight, controls, showCon
             window.removeEventListener("keydown", handleKeyDown);
         };
     }, [controlsCollapsed, controlsExpanded]);
-    const dockLayoutTransition = isDockDragging ? undefined : overlayDock.layoutTransition;
     const handleHeaderPointerDown = useCallback((event) => {
         if (showDockMinimizedChrome) {
             dockDrag.handleMinimizedDockPointerDown(event);
@@ -325,7 +325,7 @@ export function FloatingWindow({ children, title, headerRight, controls, showCon
                     zIndex: isDockDragging ? stackZIndex + 100 : stackZIndex,
                     width: resolvedSizeStyle.width,
                     height: resolvedSizeStyle.height,
-                    transition: dockLayoutTransition,
+                    transition: overlayDock.layoutTransition,
                     ...(isDockDragging ? { cursor: "grabbing", transform: "scale(1.03)", willChange: "left, top, transform" } : null),
                     ...style,
                 }, children: [_jsxs("header", { ref: headerRef, onPointerDown: handleHeaderPointerDown, onClickCapture: showDockMinimizedChrome ? dockDrag.handleMinimizedDockClickCapture : undefined, onDoubleClick: handleHeaderDoubleClick, className: `relative flex shrink-0 touch-none select-none items-center gap-[10px] px-[12px] py-[8px] ${dragEnabled || (showDockMinimizedChrome && overlayDock.dockCount > 1)

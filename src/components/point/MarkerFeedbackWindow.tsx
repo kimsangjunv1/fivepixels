@@ -514,6 +514,7 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
         blockDrag: dockMorph !== null,
         minimizedWidth: overlayDock.minimizedWidth,
         dockPosition: overlayDock.dockPosition,
+        dockRegion: overlayDock.dockRegion,
     });
     const isDockDragging = dockDrag.isDockDragging;
 
@@ -746,7 +747,7 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
         width: showMinimizedChrome ? minimizedWidth : effectiveSize.width,
         height: showMinimizedChrome ? MINIMIZED_WINDOW_HEIGHT : effectiveSize.height,
     };
-    const layoutTransition = isDockDragging ? undefined : overlayDock.layoutTransition;
+    const layoutTransition = overlayDock.layoutTransition;
     const leftSectionClass = getLeftSectionClass(windowSurfacePhase);
     const windowAnimationClass =
         windowSurfacePhase === "exiting" ? MOTION.markerWindowExit : windowSurfacePhase === "entering" ? `${MOTION.markerWindowEnter} pointer-events-auto` : "pointer-events-auto";

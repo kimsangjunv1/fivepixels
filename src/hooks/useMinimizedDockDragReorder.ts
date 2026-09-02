@@ -9,6 +9,7 @@ import {
     MINIMIZED_WINDOW_MARGIN,
     MINIMIZED_WINDOW_WIDTH,
     resolveMinimizedDockIndexFromPointer,
+    type MinimizedDockRegion,
 } from "@/utils/overlay/minimizedDockLayout.js";
 
 const DOCK_DRAG_THRESHOLD_PX = 6;
@@ -33,6 +34,7 @@ type UseMinimizedDockDragReorderOptions = {
     blockDrag?: boolean;
     minimizedWidth: number;
     dockPosition: { left: number; top: number };
+    dockRegion: MinimizedDockRegion;
 };
 
 export function useMinimizedDockDragReorder({
@@ -42,6 +44,7 @@ export function useMinimizedDockDragReorder({
     blockDrag = false,
     minimizedWidth,
     dockPosition,
+    dockRegion,
 }: UseMinimizedDockDragReorderOptions) {
     const [dockDrag, setDockDrag] = useState<DockDragState | null>(null);
     const dockDragRef = useRef<DockDragState | null>(null);
@@ -155,9 +158,9 @@ export function useMinimizedDockDragReorder({
                 }
 
                 const viewportWidth = window.innerWidth;
-                const itemWidth = Math.min(MINIMIZED_WINDOW_WIDTH, Math.max(0, viewportWidth - MINIMIZED_WINDOW_MARGIN * 2));
+                const itemWidth = Math.min(MINIMIZED_WINDOW_WIDTH, Math.max(0, Math.min(viewportWidth - MINIMIZED_WINDOW_MARGIN * 2, dockRegion.regionWidth)));
                 const centerX = moveEvent.clientX - state.offsetX + itemWidth / 2;
-                const toIndex = resolveMinimizedDockIndexFromPointer(centerX, currentOrder.length, viewportWidth, itemWidth);
+                const toIndex = resolveMinimizedDockIndexFromPointer(centerX, currentOrder.length, viewportWidth, itemWidth, undefined, undefined, dockRegion);
 
                 if (toIndex !== fromIndex) {
                     reorderOverlayMinimizedDock(fromIndex, toIndex);
@@ -181,7 +184,7 @@ export function useMinimizedDockDragReorder({
             window.addEventListener("pointerup", handlePointerUp, true);
             window.addEventListener("pointercancel", handlePointerUp, true);
         },
-        [blockDrag, detachDockDragListeners, enabled, minimizedWidth, windowId, windowRef],
+        [blockDrag, detachDockDragListeners, dockRegion, enabled, minimizedWidth, windowId, windowRef],
     );
 
     const handleMinimizedDockClickCapture = useCallback((event: ReactMouseEvent<HTMLElement>) => {

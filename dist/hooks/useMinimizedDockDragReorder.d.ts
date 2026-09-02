@@ -1,4 +1,5 @@
 import { type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, type RefObject } from "react";
+import { type MinimizedDockRegion } from "../utils/overlay/minimizedDockLayout.js";
 export declare const MINIMIZED_DOCK_DRAG_LIFT_PX = 10;
 type UseMinimizedDockDragReorderOptions = {
     windowId: string;
@@ -10,8 +11,9 @@ type UseMinimizedDockDragReorderOptions = {
         left: number;
         top: number;
     };
+    dockRegion: MinimizedDockRegion;
 };
-export declare function useMinimizedDockDragReorder({ windowId, windowRef, enabled, blockDrag, minimizedWidth, dockPosition, }: UseMinimizedDockDragReorderOptions): {
+export declare function useMinimizedDockDragReorder({ windowId, windowRef, enabled, blockDrag, minimizedWidth, dockPosition, dockRegion, }: UseMinimizedDockDragReorderOptions): {
     isDockDragging: boolean;
     displayLeft: number;
     displayTop: number;

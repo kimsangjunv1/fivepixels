@@ -8,8 +8,13 @@ export type MarkerWindowDockPosition = {
     top: number;
 };
 
+export type MinimizedDockRegion = {
+    regionLeft: number;
+    regionWidth: number;
+};
+
 /**
- * Lay out minimized marker windows in a horizontal strip centered on the viewport,
+ * Lay out minimized marker windows in a horizontal strip centered in the available region,
  * filling left → right in minimize order.
  */
 export function resolveMinimizedDockPosition(
@@ -21,11 +26,14 @@ export function resolveMinimizedDockPosition(
     itemHeight = MARKER_MINIMIZED_WINDOW_HEIGHT,
     gap = MARKER_MINIMIZED_DOCK_GAP,
     margin = MARKER_WINDOW_MARGIN,
+    region?: MinimizedDockRegion,
 ): MarkerWindowDockPosition {
     const safeCount = Math.max(1, count);
     const safeIndex = Math.min(Math.max(0, index), safeCount - 1);
     const totalWidth = safeCount * itemWidth + (safeCount - 1) * gap;
-    const startLeft = Math.round((viewportWidth - totalWidth) / 2);
+    const regionLeft = region?.regionLeft ?? margin;
+    const regionWidth = region?.regionWidth ?? Math.max(0, viewportWidth - margin * 2);
+    const startLeft = Math.round(regionLeft + (regionWidth - totalWidth) / 2);
 
     return {
         left: startLeft + safeIndex * (itemWidth + gap),
@@ -40,6 +48,8 @@ export function resolveMinimizedDockIndexFromPointer(
     viewportWidth: number,
     itemWidth = MARKER_MINIMIZED_WINDOW_WIDTH,
     gap = MARKER_MINIMIZED_DOCK_GAP,
+    margin = MARKER_WINDOW_MARGIN,
+    region?: MinimizedDockRegion,
 ): number {
     const safeCount = Math.max(1, count);
 
@@ -48,7 +58,9 @@ export function resolveMinimizedDockIndexFromPointer(
     }
 
     const totalWidth = safeCount * itemWidth + (safeCount - 1) * gap;
-    const startLeft = (viewportWidth - totalWidth) / 2;
+    const regionLeft = region?.regionLeft ?? margin;
+    const regionWidth = region?.regionWidth ?? Math.max(0, viewportWidth - margin * 2);
+    const startLeft = regionLeft + (regionWidth - totalWidth) / 2;
     const slotWidth = itemWidth + gap;
     const index = Math.round((centerX - startLeft - itemWidth / 2) / slotWidth);
 

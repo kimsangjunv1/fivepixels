@@ -7,7 +7,10 @@ export {
     resolveMinimizedDockIndexFromPointer,
     resolveMinimizedDockPosition,
     type MarkerWindowDockPosition as MinimizedDockPosition,
+    type MinimizedDockRegion,
 } from "@/utils/marker/markerWindowDock.js";
+
+export { measureMinimizedDockRegion } from "@/utils/overlay/minimizedDockPanelBounds.js";
 
 export const MINIMIZE_MORPH_MS = 420;
 export const MINIMIZE_MORPH_EASE = "cubic-bezier(0.22, 1, 0.36, 1)";

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMinimizedDockRegionBounds } from "@/hooks/useMinimizedDockRegionBounds.js";
 import {
     getActiveDockDragWindowId,
     getOverlayMinimizedDockOrder,
@@ -48,18 +49,30 @@ export function useOverlayMinimizedDock({ windowId, enabled, isMinimized, onMini
 
     const dockIndex = Math.max(0, dockOrder.indexOf(windowId));
     const dockCount = Math.max(isMinimized ? dockOrder.length : dockOrder.length || 1, 1);
+    const trackRegionBounds = enabled && (isMinimized || dockOrder.includes(windowId));
+    const dockRegion = useMinimizedDockRegionBounds(trackRegionBounds);
 
     const minimizedWidth = useMemo(() => {
         const viewportWidth = typeof window === "undefined" ? 1280 : window.innerWidth;
-        return Math.min(MINIMIZED_WINDOW_WIDTH, Math.max(0, viewportWidth - MINIMIZED_WINDOW_MARGIN * 2));
-    }, [dockOrder.length]);
+        return Math.min(MINIMIZED_WINDOW_WIDTH, Math.max(0, Math.min(viewportWidth - MINIMIZED_WINDOW_MARGIN * 2, dockRegion.regionWidth)));
+    }, [dockOrder.length, dockRegion.regionWidth]);
 
     const dockPosition = useMemo(() => {
         const viewportWidth = typeof window === "undefined" ? 1280 : window.innerWidth;
         const viewportHeight = typeof window === "undefined" ? 720 : window.innerHeight;
 
-        return resolveMinimizedDockPosition(dockIndex, dockCount, viewportWidth, viewportHeight, minimizedWidth, MINIMIZED_WINDOW_HEIGHT);
-    }, [dockCount, dockIndex, minimizedWidth]);
+        return resolveMinimizedDockPosition(
+            dockIndex,
+            dockCount,
+            viewportWidth,
+            viewportHeight,
+            minimizedWidth,
+            MINIMIZED_WINDOW_HEIGHT,
+            undefined,
+            undefined,
+            dockRegion,
+        );
+    }, [dockCount, dockIndex, dockRegion, minimizedWidth]);
 
     const runDockMorph = useCallback((phase: "minimizing" | "restoring", from: DockMorphRect, to: DockMorphRect, onComplete?: () => void) => {
         if (prefersReducedMotion()) {
@@ -88,7 +101,17 @@ export function useOverlayMinimizedDock({ windowId, enabled, isMinimized, onMini
             const nextIndex = Math.max(0, nextOrder.indexOf(windowId));
             const viewportWidth = typeof window === "undefined" ? 1280 : window.innerWidth;
             const viewportHeight = typeof window === "undefined" ? 720 : window.innerHeight;
-            const to = resolveMinimizedDockPosition(nextIndex, nextOrder.length, viewportWidth, viewportHeight, minimizedWidth, MINIMIZED_WINDOW_HEIGHT);
+            const to = resolveMinimizedDockPosition(
+                nextIndex,
+                nextOrder.length,
+                viewportWidth,
+                viewportHeight,
+                minimizedWidth,
+                MINIMIZED_WINDOW_HEIGHT,
+                undefined,
+                undefined,
+                dockRegion,
+            );
 
             const target: DockMorphRect = {
                 left: to.left,
@@ -107,7 +130,7 @@ export function useOverlayMinimizedDock({ windowId, enabled, isMinimized, onMini
                 onMinimizedChange(true);
             });
         },
-        [minimizedWidth, onMinimizedChange, runDockMorph, windowId],
+        [dockRegion, minimizedWidth, onMinimizedChange, runDockMorph, windowId],
     );
 
     const restoreFromDock = useCallback(
@@ -144,14 +167,16 @@ export function useOverlayMinimizedDock({ windowId, enabled, isMinimized, onMini
         }
     }, [enabled, isMinimized, windowId]);
 
+    const isSelfDragging = activeDockDragWindowId === windowId;
     const layoutTransition =
-        dockMorph ? MINIMIZE_MORPH_TRANSITION : isMinimized && activeDockDragWindowId === null ? MINIMIZED_DOCK_SLIDE_TRANSITION : undefined;
+        dockMorph ? MINIMIZE_MORPH_TRANSITION : isMinimized && !isSelfDragging ? MINIMIZED_DOCK_SLIDE_TRANSITION : undefined;
 
     return {
         dockMorph,
         dockPosition,
         dockIndex,
         dockCount,
+        dockRegion,
         minimizedWidth,
         layoutTransition,
         minimizeToDock,

@@ -22,6 +22,16 @@ describe("resolveMinimizedDockPosition", () => {
         expect(first.left).toBeLessThan(Math.round((1000 - MARKER_MINIMIZED_WINDOW_WIDTH) / 2));
         expect(second.top).toBe(first.top);
     });
+
+    it("centers within a reduced region when the panel occupies the right side", () => {
+        const region = { regionLeft: 16, regionWidth: 600 };
+        const first = resolveMinimizedDockPosition(0, 2, 1200, 800, MARKER_MINIMIZED_WINDOW_WIDTH, undefined, undefined, undefined, region);
+        const second = resolveMinimizedDockPosition(1, 2, 1200, 800, MARKER_MINIMIZED_WINDOW_WIDTH, undefined, undefined, undefined, region);
+
+        expect(first.left).toBeGreaterThanOrEqual(region.regionLeft);
+        expect(second.left + MARKER_MINIMIZED_WINDOW_WIDTH).toBeLessThanOrEqual(region.regionLeft + region.regionWidth);
+        expect(second.left).toBe(first.left + MARKER_MINIMIZED_WINDOW_WIDTH + 8);
+    });
 });
 
 describe("resolveMinimizedDockIndexFromPointer", () => {

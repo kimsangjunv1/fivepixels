@@ -198,6 +198,7 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }) {
         blockDrag: dockMorph !== null,
         minimizedWidth: overlayDock.minimizedWidth,
         dockPosition: overlayDock.dockPosition,
+        dockRegion: overlayDock.dockRegion,
     });
     const isDockDragging = dockDrag.isDockDragging;
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -366,7 +367,7 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }) {
         width: showMinimizedChrome ? minimizedWidth : effectiveSize.width,
         height: showMinimizedChrome ? MINIMIZED_WINDOW_HEIGHT : effectiveSize.height,
     };
-    const layoutTransition = isDockDragging ? undefined : overlayDock.layoutTransition;
+    const layoutTransition = overlayDock.layoutTransition;
     const leftSectionClass = getLeftSectionClass(windowSurfacePhase);
     const windowAnimationClass = windowSurfacePhase === "exiting" ? MOTION.markerWindowExit : windowSurfacePhase === "entering" ? `${MOTION.markerWindowEnter} pointer-events-auto` : "pointer-events-auto";
     const handleSplitPointerDown = useCallback((event) => {

@@ -165,6 +165,7 @@ export function FloatingWindow({
         blockDrag: overlayDock.dockMorph !== null,
         minimizedWidth: overlayDock.minimizedWidth,
         dockPosition: overlayDock.dockPosition,
+        dockRegion: overlayDock.dockRegion,
     });
     const isDockDragging = dockDrag.isDockDragging;
 
@@ -482,8 +483,6 @@ export function FloatingWindow({
         };
     }, [controlsCollapsed, controlsExpanded]);
 
-    const dockLayoutTransition = isDockDragging ? undefined : overlayDock.layoutTransition;
-
     const handleHeaderPointerDown = useCallback(
         (event: ReactPointerEvent<HTMLElement>) => {
             if (showDockMinimizedChrome) {
@@ -518,7 +517,7 @@ export function FloatingWindow({
                     zIndex: isDockDragging ? stackZIndex + 100 : stackZIndex,
                     width: resolvedSizeStyle.width,
                     height: resolvedSizeStyle.height,
-                    transition: dockLayoutTransition,
+                    transition: overlayDock.layoutTransition,
                     ...(isDockDragging ? { cursor: "grabbing", transform: "scale(1.03)", willChange: "left, top, transform" } : null),
                     ...style,
                 }}

@@ -19,6 +19,7 @@ export declare function useOverlayMinimizedDock({ windowId, enabled, isMinimized
     dockPosition: import("../utils/overlay/minimizedDockLayout.js").MinimizedDockPosition;
     dockIndex: number;
     dockCount: number;
+    dockRegion: import("../utils/overlay/minimizedDockLayout.js").MinimizedDockRegion;
     minimizedWidth: number;
     layoutTransition: string | undefined;
     minimizeToDock: (from: DockMorphRect) => void;
