@@ -1,6 +1,7 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { CloseIcon } from "../../components/icons/Icons.js";
+import { OverlayShell } from "../../components/ui/OverlayShell.js";
 import { useReportPreferences, useReportSession } from "../../providers/reportContext.js";
 import { PANEL_LAYER_Z_INDEX } from "../../utils/overlay/floatingWindowStack.js";
 const STAGGER_MS = 100;
@@ -43,7 +44,6 @@ export function NotificationCenterWindow() {
     const { messages, locale } = useReportPreferences();
     const { notifications, closeNotificationUi, markNotificationRead, markAllNotificationsRead, dismissNotification, clearNotifications, activateNotification, } = useReportSession();
     const [entered, setEntered] = useState(false);
-    const panelRef = useRef(null);
     useEffect(() => {
         const frame = window.requestAnimationFrame(() => {
             setEntered(true);
@@ -52,55 +52,35 @@ export function NotificationCenterWindow() {
             window.cancelAnimationFrame(frame);
         };
     }, []);
-    useEffect(() => {
-        const handleKeyDown = (event) => {
-            if (event.key === "Escape") {
-                event.preventDefault();
-                event.stopPropagation();
-                closeNotificationUi();
-            }
-        };
-        window.addEventListener("keydown", handleKeyDown, true);
-        return () => {
-            window.removeEventListener("keydown", handleKeyDown, true);
-        };
-    }, [closeNotificationUi]);
     const handleOpen = useCallback((item) => {
         markNotificationRead(item.id);
         activateNotification(item);
     }, [activateNotification, markNotificationRead]);
-    const handleBackdropPointerDown = useCallback((event) => {
-        if (panelRef.current?.contains(event.target)) {
-            return;
-        }
-        closeNotificationUi();
-    }, [closeNotificationUi]);
     const footerIndex = notifications.length === 0 ? 0 : notifications.length;
     const actionsIndex = footerIndex + 1;
-    return (_jsx("div", { "data-fp-chrome": "notification-center", role: "dialog", "aria-modal": "true", "aria-label": messages.notifications.windowAriaLabel, "data-fivepixels-interactive": "", className: "pointer-events-auto fixed inset-0", style: {
-            zIndex: PANEL_LAYER_Z_INDEX + 10,
+    return (_jsx(OverlayShell, { shell: "modal", open: true, onClose: closeNotificationUi, ariaLabel: messages.notifications.windowAriaLabel, dataChrome: "notification-center", zIndex: PANEL_LAYER_Z_INDEX + 10, backdropStyle: {
             background: "linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.72) 55%, rgba(0, 0, 0, 0.92) 100%)",
-        }, onPointerDown: handleBackdropPointerDown, children: _jsx("div", { ref: panelRef, className: "pointer-events-auto absolute inset-y-0 right-0 flex w-full max-w-[380px] flex-col justify-end", onPointerDown: (event) => event.stopPropagation(), children: _jsxs("div", { className: "flex max-h-[min(88dvh,920px)] flex-col gap-[10px] overflow-y-auto px-[16px] pb-[18px] pt-[48px]", children: [notifications.length === 0 ? (_jsx("div", { className: "rounded-[18px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] px-[14px] py-[18px] text-center shadow-[var(--adaptive-popup-shadow)]", style: {
-                            opacity: entered ? 1 : 0,
-                            transform: entered ? "translateY(0)" : `translateY(${ENTER_OFFSET_PX}px)`,
-                            transitionProperty: "opacity, transform",
-                            transitionDuration: `${ENTER_DURATION_MS}ms`,
-                            transitionTimingFunction: ENTER_EASE,
-                            transitionDelay: "0ms",
-                        }, children: _jsx("p", { className: "text-[12px] text-[var(--adaptive-black500)]", children: messages.notifications.empty }) })) : (notifications.map((item, index) => (_jsx(NotificationCard, { item: item, index: index, entered: entered, locale: locale, dismissAriaLabel: messages.notifications.dismissAriaLabel, onOpen: handleOpen, onDismiss: dismissNotification }, item.id)))), _jsxs("div", { className: "flex items-center justify-between gap-[8px] rounded-[16px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] px-[12px] py-[10px] shadow-[var(--adaptive-popup-shadow)]", style: {
-                            opacity: entered ? 1 : 0,
-                            transform: entered ? "translateY(0)" : `translateY(${ENTER_OFFSET_PX}px)`,
-                            transitionProperty: "opacity, transform",
-                            transitionDuration: `${ENTER_DURATION_MS}ms`,
-                            transitionTimingFunction: ENTER_EASE,
-                            transitionDelay: `${footerIndex * STAGGER_MS}ms`,
-                        }, children: [_jsx("p", { className: "text-[12px] font-bold text-[var(--adaptive-black900)]", children: messages.notifications.title }), _jsx("button", { type: "button", "data-fivepixels-interactive": "", "aria-label": messages.marker.windowCloseAriaLabel, onClick: closeNotificationUi, className: "flex h-[24px] w-[24px] items-center justify-center rounded-full text-[var(--adaptive-black600)] hover:bg-[var(--adaptive-tintOpacity200)] hover:text-[var(--adaptive-black900)]", children: _jsx(CloseIcon, { className: "h-[14px] w-[14px]" }) })] }), _jsxs("div", { className: "flex items-center justify-end gap-[6px]", style: {
-                            opacity: entered ? 1 : 0,
-                            transform: entered ? "translateY(0)" : `translateY(${ENTER_OFFSET_PX}px)`,
-                            transitionProperty: "opacity, transform",
-                            transitionDuration: `${ENTER_DURATION_MS}ms`,
-                            transitionTimingFunction: ENTER_EASE,
-                            transitionDelay: `${actionsIndex * STAGGER_MS}ms`,
-                        }, children: [_jsx("button", { type: "button", "data-fivepixels-interactive": "", onClick: markAllNotificationsRead, className: "rounded-[8px] px-[8px] py-[4px] text-[11px] font-semibold text-white/80 hover:bg-white/10 hover:text-white", children: messages.notifications.markAllRead }), _jsx("button", { type: "button", "data-fivepixels-interactive": "", onClick: clearNotifications, className: "rounded-[8px] px-[8px] py-[4px] text-[11px] font-semibold text-white/80 hover:bg-white/10 hover:text-white", children: messages.notifications.clearAll })] })] }) }) }));
+        }, panelClassName: "pointer-events-auto absolute inset-y-0 right-0 flex w-full max-w-[380px] flex-col justify-end", children: _jsxs("div", { className: "flex max-h-[min(88dvh,920px)] flex-col gap-[10px] overflow-y-auto px-[16px] pb-[18px] pt-[48px]", children: [notifications.length === 0 ? (_jsx("div", { className: "rounded-[18px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] px-[14px] py-[18px] text-center shadow-[var(--adaptive-popup-shadow)]", style: {
+                        opacity: entered ? 1 : 0,
+                        transform: entered ? "translateY(0)" : `translateY(${ENTER_OFFSET_PX}px)`,
+                        transitionProperty: "opacity, transform",
+                        transitionDuration: `${ENTER_DURATION_MS}ms`,
+                        transitionTimingFunction: ENTER_EASE,
+                        transitionDelay: "0ms",
+                    }, children: _jsx("p", { className: "text-[12px] text-[var(--adaptive-black500)]", children: messages.notifications.empty }) })) : (notifications.map((item, index) => (_jsx(NotificationCard, { item: item, index: index, entered: entered, locale: locale, dismissAriaLabel: messages.notifications.dismissAriaLabel, onOpen: handleOpen, onDismiss: dismissNotification }, item.id)))), _jsxs("div", { className: "flex items-center justify-between gap-[8px] rounded-[16px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] px-[12px] py-[10px] shadow-[var(--adaptive-popup-shadow)]", style: {
+                        opacity: entered ? 1 : 0,
+                        transform: entered ? "translateY(0)" : `translateY(${ENTER_OFFSET_PX}px)`,
+                        transitionProperty: "opacity, transform",
+                        transitionDuration: `${ENTER_DURATION_MS}ms`,
+                        transitionTimingFunction: ENTER_EASE,
+                        transitionDelay: `${footerIndex * STAGGER_MS}ms`,
+                    }, children: [_jsx("p", { className: "text-[12px] font-bold text-[var(--adaptive-black900)]", children: messages.notifications.title }), _jsx("button", { type: "button", "data-fivepixels-interactive": "", "aria-label": messages.marker.windowCloseAriaLabel, onClick: closeNotificationUi, className: "flex h-[24px] w-[24px] items-center justify-center rounded-full text-[var(--adaptive-black600)] hover:bg-[var(--adaptive-tintOpacity200)] hover:text-[var(--adaptive-black900)]", children: _jsx(CloseIcon, { className: "h-[14px] w-[14px]" }) })] }), _jsxs("div", { className: "flex items-center justify-end gap-[6px]", style: {
+                        opacity: entered ? 1 : 0,
+                        transform: entered ? "translateY(0)" : `translateY(${ENTER_OFFSET_PX}px)`,
+                        transitionProperty: "opacity, transform",
+                        transitionDuration: `${ENTER_DURATION_MS}ms`,
+                        transitionTimingFunction: ENTER_EASE,
+                        transitionDelay: `${actionsIndex * STAGGER_MS}ms`,
+                    }, children: [_jsx("button", { type: "button", "data-fivepixels-interactive": "", onClick: markAllNotificationsRead, className: "rounded-[8px] px-[8px] py-[4px] text-[11px] font-semibold text-white/80 hover:bg-white/10 hover:text-white", children: messages.notifications.markAllRead }), _jsx("button", { type: "button", "data-fivepixels-interactive": "", onClick: clearNotifications, className: "rounded-[8px] px-[8px] py-[4px] text-[11px] font-semibold text-white/80 hover:bg-white/10 hover:text-white", children: messages.notifications.clearAll })] })] }) }));
 }
 //# sourceMappingURL=NotificationCenterWindow.js.map

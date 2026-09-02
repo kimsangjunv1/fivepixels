@@ -25,7 +25,8 @@ import { copyTextToClipboard } from "@/utils/feedback/feedbackDataTransfer.js";
 import { buildAiPromptLabels, formatFeedbackForAiPrompt } from "@/utils/feedback/formatFeedbackForAiPrompt.js";
 import { buildFeedbackShareUrl } from "@/utils/feedback/feedbackDeepLink.js";
 import { AskAiCopyDropdown } from "@/components/panel/feedback/AskAiCopyDropdown.js";
-import { CloseIcon, CheckCircleIcon, ChevronDownIcon, EditIcon, LinkIcon, MaximizeIcon, MinimizeIcon, RestoreIcon, SidePanelIcon, TrashIcon, AskAiIcon } from "@/components/icons/Icons.js";
+import { WindowModeControls } from "@/components/ui/window/WindowModeControls.js";
+import { CloseIcon, CheckCircleIcon, ChevronDownIcon, EditIcon, LinkIcon, SidePanelIcon, TrashIcon, AskAiIcon } from "@/components/icons/Icons.js";
 import type { ReportField } from "@/types/report.js";
 import { FeedbackFieldTags } from "@/components/panel/feedback/FeedbackFieldTags.js";
 import { FeedbackDeleteAction } from "@/components/panel/feedback/FeedbackDeleteAction.js";
@@ -1052,26 +1053,15 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
     };
 
     const leftControls = (
-        <>
-            <WindowControlButton
-                onClick={requestClose}
-                ariaLabel={messages.marker.windowCloseAriaLabel}
-            >
-                <CloseIcon className="h-[15px] w-[15px]" />
-            </WindowControlButton>
-            <WindowControlButton
-                onClick={handleToggleMinimize}
-                ariaLabel={isMinimized ? messages.marker.windowRestoreAriaLabel : messages.marker.windowMinimizeAriaLabel}
-            >
-                <MinimizeIcon className="h-[15px] w-[15px]" />
-            </WindowControlButton>
-            <WindowControlButton
-                onClick={handleToggleMaximize}
-                ariaLabel={isMaximized ? messages.marker.windowRestoreAriaLabel : messages.marker.windowMaximizeAriaLabel}
-            >
-                {isMaximized ? <RestoreIcon className="h-[15px] w-[15px]" /> : <MaximizeIcon className="h-[15px] w-[15px]" />}
-            </WindowControlButton>
-        </>
+        <WindowModeControls
+            closeAriaLabel={messages.marker.windowCloseAriaLabel}
+            minimizeAriaLabel={isMinimized ? messages.marker.windowRestoreAriaLabel : messages.marker.windowMinimizeAriaLabel}
+            maximizeAriaLabel={isMaximized ? messages.marker.windowRestoreAriaLabel : messages.marker.windowMaximizeAriaLabel}
+            isMaximized={isMaximized}
+            onClose={requestClose}
+            onMinimize={handleToggleMinimize}
+            onMaximize={handleToggleMaximize}
+        />
     );
 
     const sidebarToggleButton = (

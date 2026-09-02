@@ -1,130 +1,27 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
-import { CloseIcon, MaximizeIcon, MinimizeIcon, MoreHorizontalIcon, RestoreIcon } from "@/components/icons/Icons.js";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
+import { MoreHorizontalIcon } from "@/components/icons/Icons.js";
 import { CornerResizeGhost } from "@/components/ui/CornerResizeGhost.js";
 import { WindowResizeHandles } from "@/components/ui/WindowResizeHandles.js";
-import { clampWindowPosition, useDraggableWindow, type WindowPosition } from "@/hooks/useDraggableWindow.js";
+import {
+    WINDOW_EXPANDED_CONTROLS_WIDTH,
+    WINDOW_HEADER_BUTTON_CLASS,
+    WINDOW_HEADER_GAP,
+    WindowModeControls,
+} from "@/components/ui/window/WindowModeControls.js";
+import { clampWindowPosition, useDraggableWindow } from "@/hooks/useDraggableWindow.js";
 import { useGhostCornerResize, type BoxSize } from "@/hooks/useGhostCornerResize.js";
+import { useOverlayMinimizedDock } from "@/hooks/useOverlayMinimizedDock.js";
+import { getMaximizedWindowFrame, getWindowViewportSize, useWindowMode } from "@/hooks/useWindowMode.js";
+import type { WindowChromeControls, WindowMinimizePolicy, WindowMode } from "@/types/windowChrome.js";
 import { claimFloatingWindowZIndex, getFloatingWindowZBase } from "@/utils/overlay/floatingWindowStack.js";
+import { MINIMIZED_WINDOW_HEIGHT } from "@/utils/overlay/minimizedDockLayout.js";
 
-const HEADER_BUTTON_CLASS =
-    "flex h-[24px] w-[24px] shrink-0 items-center justify-center rounded-[6px] text-[var(--adaptive-black600)] transition-colors hover:bg-[var(--adaptive-tintOpacity200)] hover:text-[var(--adaptive-black900)]";
-const CONTROL_BUTTON_SIZE = 24;
-const CONTROL_BUTTON_GAP = 2;
-const CONTROL_BUTTON_COUNT = 3;
-const EXPANDED_CONTROLS_WIDTH = CONTROL_BUTTON_SIZE * CONTROL_BUTTON_COUNT + CONTROL_BUTTON_GAP * (CONTROL_BUTTON_COUNT - 1);
-const HEADER_GAP = 10;
-
-const MAXIMIZE_MARGIN = 12;
 const DEFAULT_MIN_WIDTH = 200;
 const DEFAULT_MIN_HEIGHT = 120;
+const MAXIMIZE_MARGIN = 12;
 
-export type FloatingWindowMode = "normal" | "minimized" | "maximized";
-
-type WindowIconButtonProps = {
-    ariaLabel: string;
-    disabled?: boolean;
-    onClick?: () => void;
-    children: ReactNode;
-};
-
-function WindowIconButton({ ariaLabel, disabled, onClick, children }: WindowIconButtonProps) {
-    return (
-        <button
-            type="button"
-            data-fivepixels-interactive=""
-            disabled={disabled || !onClick}
-            onPointerDown={(event) => event.stopPropagation()}
-            onClick={onClick}
-            aria-label={ariaLabel}
-            className={`${HEADER_BUTTON_CLASS} ${disabled || !onClick ? "opacity-40" : "cursor-pointer"}`}
-        >
-            {children}
-        </button>
-    );
-}
-
-type WindowModeControlButtonsProps = {
-    closeAriaLabel: string;
-    minimizeAriaLabel: string;
-    maximizeAriaLabel: string;
-    closeDisabled?: boolean;
-    minimizeDisabled?: boolean;
-    maximizeDisabled?: boolean;
-    isMaximized: boolean;
-    onClose?: () => void;
-    onMinimize?: () => void;
-    onMaximize?: () => void;
-};
-
-function WindowModeControlButtons({
-    closeAriaLabel,
-    minimizeAriaLabel,
-    maximizeAriaLabel,
-    closeDisabled,
-    minimizeDisabled,
-    maximizeDisabled,
-    isMaximized,
-    onClose,
-    onMinimize,
-    onMaximize,
-}: WindowModeControlButtonsProps) {
-    return (
-        <>
-            <WindowIconButton
-                ariaLabel={closeAriaLabel}
-                disabled={closeDisabled}
-                onClick={onClose}
-            >
-                <CloseIcon className="h-[15px] w-[15px]" />
-            </WindowIconButton>
-            <WindowIconButton
-                ariaLabel={minimizeAriaLabel}
-                disabled={minimizeDisabled}
-                onClick={onMinimize}
-            >
-                <MinimizeIcon className="h-[15px] w-[15px]" />
-            </WindowIconButton>
-            <WindowIconButton
-                ariaLabel={maximizeAriaLabel}
-                disabled={maximizeDisabled}
-                onClick={onMaximize}
-            >
-                {isMaximized ? <RestoreIcon className="h-[15px] w-[15px]" /> : <MaximizeIcon className="h-[15px] w-[15px]" />}
-            </WindowIconButton>
-        </>
-    );
-}
-
-function getViewportSize() {
-    if (typeof window === "undefined") {
-        return { width: 1280, height: 720 };
-    }
-
-    return { width: window.innerWidth, height: window.innerHeight };
-}
-
-function getMaximizedFrame(): WindowPosition & BoxSize {
-    const viewport = getViewportSize();
-
-    return {
-        left: MAXIMIZE_MARGIN,
-        top: MAXIMIZE_MARGIN,
-        width: Math.max(DEFAULT_MIN_WIDTH, viewport.width - MAXIMIZE_MARGIN * 2),
-        height: Math.max(DEFAULT_MIN_HEIGHT, viewport.height - MAXIMIZE_MARGIN * 2),
-    };
-}
-
-export type FloatingWindowControls = {
-    onClose?: () => void;
-    closeAriaLabel?: string;
-    minimizeAriaLabel?: string;
-    maximizeAriaLabel?: string;
-    restoreAriaLabel?: string;
-    moreAriaLabel?: string;
-    closeDisabled?: boolean;
-    minimizeDisabled?: boolean;
-    maximizeDisabled?: boolean;
-};
+export type FloatingWindowMode = WindowMode;
+export type FloatingWindowControls = WindowChromeControls;
 
 export type FloatingWindowProps = {
     children?: ReactNode;
@@ -135,13 +32,14 @@ export type FloatingWindowProps = {
     mode?: FloatingWindowMode;
     defaultMode?: FloatingWindowMode;
     onModeChange?: (mode: FloatingWindowMode) => void;
+    minimizePolicy?: WindowMinimizePolicy;
+    /** Required when `minimizePolicy` is `dock`. */
+    windowId?: string;
     className?: string;
     contentClassName?: string;
     headerClassName?: string;
     style?: CSSProperties;
-    /** Preferred width in normal mode. */
     width?: number | string;
-    /** Preferred height in normal mode. Omit for content-sized height until resized. */
     height?: number | string;
     minWidth?: number;
     minHeight?: number;
@@ -149,8 +47,8 @@ export type FloatingWindowProps = {
     resizeAriaLabel?: string;
     zIndex?: number;
     enabled?: boolean;
-    position: WindowPosition;
-    onPositionChange?: (position: WindowPosition) => void;
+    position: { left: number; top: number };
+    onPositionChange?: (position: { left: number; top: number }) => void;
     onSizeChange?: (size: BoxSize) => void;
     ariaLabel?: string;
     dataChrome?: string;
@@ -166,6 +64,8 @@ export function FloatingWindow({
     mode: modeProp,
     defaultMode = "normal",
     onModeChange,
+    minimizePolicy = "inplace",
+    windowId,
     className = "",
     contentClassName = "",
     headerClassName = "",
@@ -191,14 +91,9 @@ export function FloatingWindow({
     const headerRightRef = useRef<HTMLDivElement | null>(null);
     const controlsClusterRef = useRef<HTMLDivElement | null>(null);
     const wasDraggingRef = useRef(false);
-    const restoreFrameRef = useRef<(WindowPosition & BoxSize) | null>(null);
     const [stackZIndex, setStackZIndex] = useState(() => zIndex ?? claimFloatingWindowZIndex(getFloatingWindowZBase()));
-    const [uncontrolledMode, setUncontrolledMode] = useState<FloatingWindowMode>(defaultMode);
     const [controlsCollapsed, setControlsCollapsed] = useState(() => typeof width === "number" && width < 260);
     const [controlsExpanded, setControlsExpanded] = useState(false);
-    const mode = modeProp ?? uncontrolledMode;
-    const isMinimized = mode === "minimized";
-    const isMaximized = mode === "maximized";
 
     const bringToFront = useCallback(() => {
         setStackZIndex(claimFloatingWindowZIndex(zIndex ?? getFloatingWindowZBase()));
@@ -216,26 +111,52 @@ export function FloatingWindow({
     }));
     const [hasExplicitHeight, setHasExplicitHeight] = useState(numericDefaultHeight !== null);
 
-    const setMode = useCallback(
-        (next: FloatingWindowMode) => {
-            if (modeProp === undefined) {
-                setUncontrolledMode(next);
-            }
-
-            onModeChange?.(next);
-        },
-        [modeProp, onModeChange],
-    );
-
     const {
         position: dragPosition,
         isDragging,
         handleDragHandlePointerDown,
         setPosition: setDragPosition,
     } = useDraggableWindow({
-        enabled: enabled && !isMaximized,
+        enabled,
         windowRef,
     });
+
+    const resolvedPositionBeforeMode = useMemo(() => dragPosition ?? position, [dragPosition, position]);
+
+    const {
+        mode,
+        isMinimized,
+        isMaximized,
+        setMode,
+        captureRestoreFrame,
+        toggleMinimized,
+        toggleMaximized,
+    } = useWindowMode({
+        mode: modeProp,
+        defaultMode,
+        onModeChange,
+        minWidth,
+        minHeight,
+        windowRef,
+        normalSize,
+        hasExplicitHeight,
+        resolvedPosition: resolvedPositionBeforeMode,
+        onPositionChange,
+        setNormalSize,
+        setHasExplicitHeight,
+        setDragPosition,
+    });
+
+    const dockEnabled = minimizePolicy === "dock" && Boolean(windowId);
+    const overlayDock = useOverlayMinimizedDock({
+        windowId: windowId ?? "overlay-window",
+        enabled: dockEnabled,
+        isMinimized,
+        onMinimizedChange: (minimized) => setMode(minimized ? "minimized" : "normal"),
+    });
+
+    const showDockMinimizedChrome = dockEnabled && isMinimized && overlayDock.dockMorph?.phase !== "restoring";
+    const dragEnabled = enabled && mode === "normal" && !showDockMinimizedChrome && !overlayDock.dockMorph;
 
     useEffect(() => {
         if (isDragging) {
@@ -246,7 +167,7 @@ export function FloatingWindow({
 
     const clampSize = useCallback(
         (nextWidth: number, nextHeight: number): BoxSize => {
-            const viewport = getViewportSize();
+            const viewport = getWindowViewportSize();
 
             return {
                 width: Math.min(Math.max(nextWidth, minWidth), Math.max(minWidth, viewport.width - MAXIMIZE_MARGIN * 2)),
@@ -268,27 +189,43 @@ export function FloatingWindow({
     );
 
     const { isResizing, ghostRef, createResizePointerDown } = useGhostCornerResize({
-        enabled: enabled && resizable && mode === "normal",
+        enabled: enabled && resizable && mode === "normal" && !overlayDock.dockMorph,
         targetRef: windowRef,
         clampSize,
         onResizeComplete: handleResizeComplete,
     });
 
     const resolvedPosition = useMemo(() => {
-        if (isMaximized) {
-            return getMaximizedFrame();
+        if (overlayDock.dockMorph) {
+            return { left: overlayDock.dockMorph.left, top: overlayDock.dockMorph.top };
         }
 
-        return dragPosition ?? position;
-    }, [dragPosition, isMaximized, position]);
+        if (showDockMinimizedChrome) {
+            return overlayDock.dockPosition;
+        }
+
+        if (isMaximized) {
+            return getMaximizedWindowFrame(minWidth, minHeight);
+        }
+
+        return resolvedPositionBeforeMode;
+    }, [isMaximized, minHeight, minWidth, overlayDock.dockMorph, overlayDock.dockPosition, resolvedPositionBeforeMode, showDockMinimizedChrome]);
 
     const resolvedSizeStyle = useMemo(() => {
         if (isMaximized) {
-            const frame = getMaximizedFrame();
+            const frame = getMaximizedWindowFrame(minWidth, minHeight);
             return { width: frame.width, height: frame.height };
         }
 
-        if (isMinimized) {
+        if (overlayDock.dockMorph) {
+            return { width: overlayDock.dockMorph.width, height: overlayDock.dockMorph.height };
+        }
+
+        if (showDockMinimizedChrome) {
+            return { width: overlayDock.minimizedWidth, height: MINIMIZED_WINDOW_HEIGHT };
+        }
+
+        if (isMinimized && minimizePolicy === "inplace") {
             return {
                 width: typeof width === "number" || typeof width === "string" ? width : normalSize.width,
                 height: undefined as number | undefined,
@@ -299,7 +236,19 @@ export function FloatingWindow({
             width: typeof width === "string" && !hasExplicitHeight ? width : normalSize.width,
             height: hasExplicitHeight ? normalSize.height : typeof height === "number" || typeof height === "string" ? height : undefined,
         };
-    }, [hasExplicitHeight, height, isMaximized, isMinimized, normalSize.height, normalSize.width, width]);
+    }, [
+        hasExplicitHeight,
+        height,
+        isMaximized,
+        isMinimized,
+        minimizePolicy,
+        normalSize.height,
+        normalSize.width,
+        overlayDock.dockMorph,
+        overlayDock.minimizedWidth,
+        showDockMinimizedChrome,
+        width,
+    ]);
 
     useEffect(() => {
         if (wasDraggingRef.current && !isDragging && dragPosition) {
@@ -322,25 +271,39 @@ export function FloatingWindow({
         }
     }, [height]);
 
-    const captureRestoreFrame = useCallback(() => {
-        const node = windowRef.current;
-        const rect = node?.getBoundingClientRect();
-
-        restoreFrameRef.current = {
-            left: rect?.left ?? resolvedPosition.left,
-            top: rect?.top ?? resolvedPosition.top,
-            width: rect?.width ?? normalSize.width,
-            height: rect?.height ?? (hasExplicitHeight ? normalSize.height : Math.max(minHeight, rect?.height ?? minHeight)),
-        };
-    }, [hasExplicitHeight, minHeight, normalSize.height, normalSize.width, resolvedPosition.left, resolvedPosition.top]);
-
     const handleClose = useCallback(() => {
         controls?.onClose?.();
     }, [controls]);
 
+    const getCurrentFrame = useCallback(() => {
+        const node = windowRef.current;
+        const rect = node?.getBoundingClientRect();
+
+        return {
+            left: rect?.left ?? resolvedPositionBeforeMode.left,
+            top: rect?.top ?? resolvedPositionBeforeMode.top,
+            width: rect?.width ?? normalSize.width,
+            height: rect?.height ?? (hasExplicitHeight ? normalSize.height : minHeight),
+        };
+    }, [hasExplicitHeight, minHeight, normalSize.height, normalSize.width, resolvedPositionBeforeMode.left, resolvedPositionBeforeMode.top]);
+
     const handleMinimize = useCallback(() => {
+        if (minimizePolicy === "none") {
+            return;
+        }
+
         if (isMinimized) {
-            setMode("normal");
+            if (dockEnabled) {
+                overlayDock.restoreFromDock({
+                    left: resolvedPositionBeforeMode.left,
+                    top: resolvedPositionBeforeMode.top,
+                    width: normalSize.width,
+                    height: hasExplicitHeight ? normalSize.height : minHeight,
+                });
+                return;
+            }
+
+            toggleMinimized();
             return;
         }
 
@@ -348,35 +311,56 @@ export function FloatingWindow({
             captureRestoreFrame();
         }
 
-        setMode("minimized");
-    }, [captureRestoreFrame, isMaximized, isMinimized, setMode]);
+        if (dockEnabled) {
+            overlayDock.minimizeToDock(getCurrentFrame());
+            return;
+        }
+
+        toggleMinimized();
+    }, [
+        captureRestoreFrame,
+        dockEnabled,
+        getCurrentFrame,
+        hasExplicitHeight,
+        isMaximized,
+        isMinimized,
+        minHeight,
+        minimizePolicy,
+        normalSize.height,
+        normalSize.width,
+        overlayDock,
+        resolvedPositionBeforeMode.left,
+        resolvedPositionBeforeMode.top,
+        toggleMinimized,
+    ]);
 
     const handleMaximize = useCallback(() => {
-        if (isMaximized) {
-            const restore = restoreFrameRef.current;
-
-            if (restore) {
-                setNormalSize({ width: restore.width, height: restore.height });
-                setHasExplicitHeight(true);
-                onPositionChange?.(clampWindowPosition(restore.left, restore.top, restore.width, restore.height));
-                setDragPosition(clampWindowPosition(restore.left, restore.top, restore.width, restore.height));
-            }
-
-            setMode("normal");
+        if (showDockMinimizedChrome) {
+            handleMinimize();
             return;
         }
 
-        captureRestoreFrame();
-        setMode("maximized");
-    }, [captureRestoreFrame, isMaximized, onPositionChange, setDragPosition, setMode]);
+        toggleMaximized();
+    }, [handleMinimize, showDockMinimizedChrome, toggleMaximized]);
 
     const handleHeaderDoubleClick = useCallback(() => {
-        if (controls?.maximizeDisabled) {
+        if (controls?.maximizeDisabled || showDockMinimizedChrome) {
             return;
         }
 
-        handleMaximize();
-    }, [controls?.maximizeDisabled, handleMaximize]);
+        toggleMaximized();
+    }, [controls?.maximizeDisabled, showDockMinimizedChrome, toggleMaximized]);
+
+    const handleDragPointerDown = useCallback(
+        (event: ReactPointerEvent<HTMLElement>) => {
+            if (!dragEnabled) {
+                return;
+            }
+
+            handleDragHandlePointerDown(event);
+        },
+        [dragEnabled, handleDragHandlePointerDown],
+    );
 
     const closeAriaLabel = controls?.closeAriaLabel ?? "Close";
     const minimizeAriaLabel = isMinimized ? (controls?.restoreAriaLabel ?? controls?.minimizeAriaLabel ?? "Restore") : (controls?.minimizeAriaLabel ?? "Minimize");
@@ -384,13 +368,14 @@ export function FloatingWindow({
     const moreAriaLabel = controls?.moreAriaLabel ?? "More window controls";
 
     const modeControlButtons = (
-        <WindowModeControlButtons
+        <WindowModeControls
             closeAriaLabel={closeAriaLabel}
             minimizeAriaLabel={minimizeAriaLabel}
             maximizeAriaLabel={maximizeAriaLabel}
             closeDisabled={controls?.closeDisabled}
-            minimizeDisabled={controls?.minimizeDisabled}
-            maximizeDisabled={controls?.maximizeDisabled}
+            minimizeDisabled={controls?.minimizeDisabled || minimizePolicy === "none"}
+            maximizeDisabled={controls?.maximizeDisabled || showDockMinimizedChrome}
+            showMinimize={minimizePolicy !== "none"}
             isMaximized={isMaximized}
             onClose={handleClose}
             onMinimize={handleMinimize}
@@ -411,8 +396,8 @@ export function FloatingWindow({
             const paddingX = Number.parseFloat(getComputedStyle(header).paddingLeft) + Number.parseFloat(getComputedStyle(header).paddingRight);
             const titleWidth = titleMeasureRef.current?.scrollWidth ?? 0;
             const headerRightWidth = headerRightRef.current?.offsetWidth ?? 0;
-            const parts = [EXPANDED_CONTROLS_WIDTH, titleWidth, headerRightWidth].filter((width) => width > 0);
-            const neededWidth = paddingX + parts.reduce((total, width) => total + width, 0) + HEADER_GAP * Math.max(0, parts.length - 1);
+            const parts = [WINDOW_EXPANDED_CONTROLS_WIDTH, titleWidth, headerRightWidth].filter((value) => value > 0);
+            const neededWidth = paddingX + parts.reduce((total, value) => total + value, 0) + WINDOW_HEADER_GAP * Math.max(0, parts.length - 1);
             const nextCollapsed = neededWidth > header.clientWidth + 0.5;
 
             setControlsCollapsed(nextCollapsed);
@@ -487,7 +472,7 @@ export function FloatingWindow({
                 aria-label={ariaLabel}
                 onPointerDown={handleWindowPointerDown}
                 className={`pointer-events-auto fixed flex flex-col rounded-[16px] bg-[var(--adaptive-black50)]/95 shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[10px] ${
-                    resizable && mode === "normal" ? "overflow-visible" : "overflow-hidden"
+                    resizable && mode === "normal" && !showDockMinimizedChrome ? "overflow-visible" : "overflow-hidden"
                 } ${className}`}
                 style={{
                     left: resolvedPosition.left,
@@ -495,16 +480,17 @@ export function FloatingWindow({
                     zIndex: stackZIndex,
                     width: resolvedSizeStyle.width,
                     height: resolvedSizeStyle.height,
+                    transition: overlayDock.layoutTransition,
                     ...style,
                 }}
             >
                 <header
                     ref={headerRef}
-                    onPointerDown={handleDragHandlePointerDown}
+                    onPointerDown={handleDragPointerDown}
                     onDoubleClick={handleHeaderDoubleClick}
-                    className={`relative flex shrink-0 cursor-grab touch-none select-none items-center gap-[10px] border-b border-[var(--adaptive-border-subtle)] px-[12px] py-[8px] active:cursor-grabbing ${
-                        isMinimized ? "border-b-0" : ""
-                    } ${headerClassName}`}
+                    className={`relative flex shrink-0 touch-none select-none items-center gap-[10px] px-[12px] py-[8px] ${
+                        dragEnabled ? "cursor-grab active:cursor-grabbing" : ""
+                    } ${showDockMinimizedChrome || (isMinimized && minimizePolicy === "inplace") ? "border-b-0" : "border-b border-[var(--adaptive-border-subtle)]"} ${headerClassName}`}
                 >
                     {title ? (
                         <div
@@ -529,7 +515,7 @@ export function FloatingWindow({
                                     aria-expanded={controlsExpanded}
                                     onPointerDown={(event) => event.stopPropagation()}
                                     onClick={() => setControlsExpanded((current) => !current)}
-                                    className={`${HEADER_BUTTON_CLASS} cursor-pointer`}
+                                    className={`${WINDOW_HEADER_BUTTON_CLASS} cursor-pointer`}
                                 >
                                     <MoreHorizontalIcon className="h-[15px] w-[15px]" />
                                 </button>
@@ -567,7 +553,7 @@ export function FloatingWindow({
 
                 {!isMinimized && children ? <div className={`min-h-0 min-w-0 flex-1 overflow-auto rounded-[16px] ${contentClassName}`}>{children}</div> : null}
 
-                {resizable && mode === "normal" ? (
+                {resizable && mode === "normal" && !showDockMinimizedChrome ? (
                     <WindowResizeHandles
                         resizeWidthAriaLabel={resizeAriaLabel}
                         resizeHeightAriaLabel={resizeAriaLabel}

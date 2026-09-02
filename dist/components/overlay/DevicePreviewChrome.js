@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useReportPreferences, useReportSession } from "../../providers/reportContext.js";
 import { DEVICE_PREVIEW_BRAND_ORDER, DEVICE_PREVIEW_SCALE_OPTIONS, formatDevicePreviewScale, getDevicePreviewLayoutSize, getDevicePreviewPreset, getDevicePreviewPresetsByBrand, getEmptyBezel, scaleDeviceChrome, } from "../../constants/devicePreview.js";
 import { PanelOptionSwitch } from "../../components/panel/PanelOptionSwitch.js";
-import { FloatingWindow } from "../../components/ui/FloatingWindow.js";
+import { OverlayShell } from "../../components/ui/OverlayShell.js";
 import { buildDevicePreviewCaptureFilename, captureDevicePreview, downloadCanvasPng, getDevicePreviewCaptureLayout, } from "../../utils/overlay/devicePreviewCapture.js";
 import { DEVICE_PREVIEW_FRAME_NAME, DEVICE_PREVIEW_HOST_STYLE_ID, HTML_DEVICE_PREVIEW_ACTIVE_CLASS, buildDevicePreviewHostStyle, clearGuestStatusBarStyle, closeDevicePreviewAndSyncGuestUrl, getGuestCaptureRoot, getGuestDocument, getGuestWindow, isGuestDocumentReady, isInsideDevicePreviewFrame, readGuestContentMetrics, syncGuestStatusBarStyle, } from "../../utils/overlay/devicePreviewFrame.js";
 import { clearPageDocumentBridge, notifyPageDocumentBridge, setPageDocumentBridge, } from "../../utils/overlay/pageDocumentBridge.js";
@@ -146,7 +146,7 @@ function DevicePreviewFloatingBar({ captureState, onCapture, onClose, }) {
         setPosition(next);
         persistDevicePreviewBarPosition(next);
     }, []);
-    return (_jsx(FloatingWindow, { dataChrome: "device-preview-toolbar", role: "toolbar", ariaLabel: messages.settings.devicePreviewFloatingAriaLabel, position: position, onPositionChange: handlePositionChange, mode: mode, onModeChange: setMode, width: 220, minWidth: 200, minHeight: 160, resizable: true, resizeAriaLabel: messages.marker.resizeAriaLabel, contentClassName: "px-[12px] pb-[12px]", controls: {
+    return (_jsx(OverlayShell, { windowId: "device-preview-toolbar", minimizePolicy: "dock", dataChrome: "device-preview-toolbar", role: "toolbar", ariaLabel: messages.settings.devicePreviewFloatingAriaLabel, position: position, onPositionChange: handlePositionChange, mode: mode, onModeChange: setMode, width: 220, minWidth: 200, minHeight: 160, resizable: true, resizeAriaLabel: messages.marker.resizeAriaLabel, contentClassName: "px-[12px] pb-[12px]", controls: {
             onClose,
             closeAriaLabel: messages.marker.windowCloseAriaLabel,
             minimizeAriaLabel: messages.marker.windowMinimizeAriaLabel,

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { CheckIcon, CopyIcon } from "@/components/icons/Icons.js";
 import { STYLE_TOOLTIP_SURFACE_CLASS } from "@/components/ui/PointerFollowTooltip.js";
+import { OverlayShell } from "@/components/ui/OverlayShell.js";
 import { useReportPreferences, useReportSession } from "@/providers/reportContext.js";
 import { MOTION } from "@/constants/motionClasses.js";
 import type { PickProbeFieldKey, PickProbeValues } from "@/types/report-ui.js";
@@ -11,7 +12,8 @@ import { getProbeColorPreview, isValidProbeHexColor, probeHexToColorInputValue, 
 import { PickTargetCompareSegment } from "./PickTargetCompareSegment.js";
 import { ProbeLayoutControls } from "./ProbeLayoutControls.js";
 
-const PANEL_SURFACE_CLASS = `pointer-events-auto fixed z-[1000002] w-[min(320px,calc(100vw-16px))] ${STYLE_TOOLTIP_SURFACE_CLASS} ${MOTION.tooltipIn}`;
+const PANEL_SURFACE_CLASS = `${STYLE_TOOLTIP_SURFACE_CLASS} ${MOTION.tooltipIn}`;
+const PANEL_Z_CLASS = "pointer-events-auto fixed z-[1000002] w-[min(320px,calc(100vw-16px))]";
 
 const PROBE_HEADER_ACTION_CLASS =
     "shrink-0 rounded-[8px] border border-solid border-[var(--adaptive-border-subtle)] px-[8px] py-[4px] text-[14px] font-medium text-[var(--adaptive-black700)] hover:bg-[var(--adaptive-black100)]";
@@ -235,22 +237,28 @@ export function PickTargetProbePanel() {
     const values: PickProbeValues = pickProbeValues;
 
     return (
-        <div
-            ref={panelRef}
-            data-fivepixels-interactive=""
-            onClick={(event) => event.stopPropagation()}
-            onContextMenu={(event) => {
-                event.preventDefault();
-                event.stopPropagation();
-            }}
-            className={PANEL_SURFACE_CLASS}
-            style={{
-                top: layout?.top ?? selectedTarget.rect.bottom + 8,
+        <OverlayShell
+            shell="anchored"
+            containerRef={panelRef}
+            position={{
                 left: layout?.left ?? selectedTarget.rect.left,
+                top: layout?.top ?? selectedTarget.rect.bottom + 8,
                 opacity: layout ? 1 : 0,
             }}
+            resizable={false}
+            showResizeHandles={false}
+            zIndexClassName={PANEL_Z_CLASS}
+            surfaceClassName={PANEL_SURFACE_CLASS}
+            dataChrome="pick-target-probe"
+            onClick={(event) => event.stopPropagation()}
         >
-            <div className="flex max-h-[min(70vh,560px)] flex-col gap-[6px] overflow-y-auto">
+            <div
+                className="flex max-h-[min(70vh,560px)] flex-col gap-[6px] overflow-y-auto"
+                onContextMenu={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }}
+            >
                 <div className="flex items-center justify-between gap-[8px]">
                     <p className="min-w-0 shrink text-[14px] font-semibold leading-[1.45] text-[var(--adaptive-black900)]">{messages.pickTarget.probeTitle}</p>
                     <div className="flex shrink-0 items-center gap-[6px]">
@@ -337,6 +345,6 @@ export function PickTargetProbePanel() {
                     onChange={(key, value) => handleChange(key)(value)}
                 />
             </div>
-        </div>
+        </OverlayShell>
     );
 }

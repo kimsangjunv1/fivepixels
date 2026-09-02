@@ -1,8 +1,6 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { FeedbackCategory } from "@/constants/feedbackCategory.js";
 import type { ElementMention } from "@/types/mention.js";
-import { useTooltipLayout } from "@/hooks/useTooltipLayout.js";
-import { useTooltipResize } from "@/hooks/useTooltipResize.js";
 import { useReport, useReportPreferences } from "@/providers/reportContext.js";
 import { getDraftMarkerPosition, TOOLTIP_EXPANDED_DEFAULT_MAX_HEIGHT } from "@/utils/marker/coordinates.js";
 import { FeedbackComposer } from "./feedback/FeedbackComposer.js";
@@ -10,12 +8,10 @@ import { DraftComposerToolbar } from "./feedback/DraftComposerToolbar.js";
 import { DraftProbeSummaryBanner } from "./DraftProbeSummaryBanner.js";
 import { DraftNetworkErrorBanner } from "./DraftNetworkErrorBanner.js";
 import { PickTargetSnippet } from "./feedback/PickTargetSnippet.js";
-import { CornerResizeGhost } from "@/components/ui/CornerResizeGhost.js";
-import { WindowResizeHandles } from "@/components/ui/WindowResizeHandles.js";
+import { OverlayShell } from "@/components/ui/OverlayShell.js";
 import { MOTION } from "@/constants/motionClasses.js";
 
 const TOOLTIP_SURFACE_CLASS = "rounded-[16px] shadow-[var(--adaptive-popup-shadow)] bg-[var(--adaptive-neutralTintOpacity1000)] backdrop-blur-[5px]";
-const EXPANDED_TOOLTIP_ANCHOR_CLASS = "pointer-events-auto fixed z-[1000001]";
 
 export function ReportDraftForm() {
     const {
@@ -144,7 +140,6 @@ function ReportDraftFormContent({
     isAuthBootstrapping,
 }: ReportDraftFormContentProps) {
     const { messages } = useReportPreferences();
-    const tooltipContainerRef = useRef<HTMLDivElement | null>(null);
     const [footerWarningMessage, setFooterWarningMessage] = useState<string | null>(null);
     const [activeCaseId, setActiveCaseId] = useState<string | null>(() => draft.cases[0]?.id ?? null);
     const [isGitHubIssueConfirming, setIsGitHubIssueConfirming] = useState(false);
@@ -155,23 +150,6 @@ function ReportDraftFormContent({
 
         return getDraftMarkerPosition(draft, selectedTarget);
     }, [draft, editingMarker, selectedTarget]);
-    const { customSize, manualPosition, isResizing, ghostRef, createResizePointerDown } = useTooltipResize({
-        enabled: true,
-        tooltipRef: tooltipContainerRef,
-    });
-    const { layout: tooltipLayout, setTooltipElement } = useTooltipLayout(anchor, true, true, {
-        customWidth: customSize?.width,
-        customHeight: customSize?.height,
-    });
-    const bindTooltipContainerRef = useCallback(
-        (node: HTMLDivElement | null) => {
-            tooltipContainerRef.current = node;
-            setTooltipElement(node);
-        },
-        [setTooltipElement],
-    );
-    const tooltipPosition = tooltipLayout?.position ?? null;
-    const tooltipAnchorStyle = tooltipLayout?.anchorStyle;
     const isSubmitting = isCreating || isUpdating || isDraftGitHubIssueSubmitting || isAuthBootstrapping;
     const categoryNeedsAttention = errorMessage === messages.errors.categoryRequired && !draft.category;
     const showStatusChip = Boolean(footerWarningMessage) || Boolean(draft.targetSelector && draft.suggestedReportId);
@@ -279,29 +257,21 @@ function ReportDraftFormContent({
         });
     };
 
-    if (!tooltipPosition || !tooltipAnchorStyle) {
+    if (!anchor) {
         return null;
     }
 
     return (
-        <>
-            {isResizing ? <CornerResizeGhost ghostRef={ghostRef} /> : null}
-
-            <div
-                ref={bindTooltipContainerRef}
-                data-fivepixels-interactive=""
-                data-fivepixels-draft-form=""
-                onClick={(event) => event.stopPropagation()}
-                className={`${EXPANDED_TOOLTIP_ANCHOR_CLASS} relative flex flex-col gap-[4px] overflow-visible`}
-                style={{
-                    left: manualPosition?.left ?? tooltipPosition.left,
-                    top: manualPosition?.top ?? tooltipPosition.top,
-                    width: customSize?.width ?? tooltipPosition.width,
-                    minWidth: 320,
-                    ...tooltipAnchorStyle,
-                }}
-            >
-                {showStatusChip ? (
+        <OverlayShell
+            shell="anchored"
+            anchor={anchor}
+            dataAttributes={{ "data-fivepixels-draft-form": "" }}
+            onClick={(event) => event.stopPropagation()}
+            surfaceClassName={`${TOOLTIP_SURFACE_CLASS} ${MOTION.tooltipFadeIn}`}
+            resizeWidthAriaLabel={messages.panel.resizeWidthAriaLabel}
+            resizeHeightAriaLabel={messages.panel.resizeHeightAriaLabel}
+            prefix={
+                showStatusChip ? (
                     <div className={`shrink-0 border border-[var(--adaptive-border-subtle)] ${TOOLTIP_SURFACE_CLASS} ${MOTION.tooltipFadeIn}`}>
                         <PickTargetSnippet
                             suggestedReportId={draft.suggestedReportId ?? undefined}
@@ -309,93 +279,76 @@ function ReportDraftFormContent({
                             alertMessage={footerWarningMessage}
                         />
                     </div>
-                ) : null}
+                ) : null
+            }
+        >
+            <div
+                className="flex min-h-0 flex-col"
+                style={{ maxHeight: TOOLTIP_EXPANDED_DEFAULT_MAX_HEIGHT }}
+            >
+                <DraftNetworkErrorBanner />
+                <DraftProbeSummaryBanner />
 
-                <div
-                    className={`relative ${TOOLTIP_SURFACE_CLASS} ${MOTION.tooltipFadeIn}`}
-                    style={{
-                        pointerEvents: "auto",
-                        height: customSize?.height,
-                    }}
-                >
-                    <div
-                        className="flex min-h-0 flex-col"
-                        style={{
-                            maxHeight: customSize?.height ?? TOOLTIP_EXPANDED_DEFAULT_MAX_HEIGHT,
-                            height: customSize?.height,
-                        }}
-                    >
-                        <DraftNetworkErrorBanner />
-                        <DraftProbeSummaryBanner />
-
-                        <FeedbackComposer
-                            cases={draft.cases}
-                            onCaseChange={updateDraftCase}
-                            onAddCase={addDraftCase}
-                            onRemoveCase={removeDraftCase}
-                            authorName={draftAuthorName}
-                            onAuthorNameChange={setDraftAuthorName}
-                            authors={authors}
-                            fields={fields}
-                            fieldValues={draft.fieldValues}
-                            onFieldChange={updateDraftField}
-                            category={draft.category}
-                            onCategoryChange={updateDraftCategory}
-                            showCategory={false}
-                            showTags
-                            hideAuthorSelector={isPresentationMode || authorSelectionLocked}
-                            lockedAuthorName={authorSelectionLocked ? (sessionActor?.name ?? draftAuthorName) : undefined}
-                            onSubmit={() => void handleCreateSubmit()}
-                            isSubmitting={isSubmitting}
-                            autoFocus
-                            errorMessage={isAuthBootstrapping ? messages.errors.authBootstrapPending : errorMessage}
-                            onFooterWarningChange={setFooterWarningMessage}
-                            hideActions
-                            hidePrimarySubmitAction
-                            showCaseTabBar={false}
-                            activeCaseId={activeCaseId}
-                            onActiveCaseIdChange={setActiveCaseId}
-                            enableElementMentions
-                            placeholder={draft.category === "memo" ? messages.pickTarget.memoComposerPlaceholder : undefined}
-                        />
-                        <DraftComposerToolbar
-                            {...(draft.category === "memo"
-                                ? {
-                                      variant: "memo" as const,
-                                      onSave: () => void handleCreateSubmit(),
-                                      onCancel: cancelDraft,
-                                      canSave: draft.cases.some((item) => item.text.trim().length > 0) && !isSubmitting,
-                                  }
-                                : {
-                                      cases: draft.cases,
-                                      activeCaseId,
-                                      onSelectCase: setActiveCaseId,
-                                      onAddCase: addDraftCase,
-                                      onRemoveCase: handleRemoveCase,
-                                      onInsertAtMention: handleInsertAtMention,
-                                      category: draft.category,
-                                      onCategoryChange: updateDraftCategory,
-                                      categoryNeedsAttention,
-                                      onSubmit: () => void handleCreateSubmit(),
-                                      isSubmitting,
-                                      submitLabel,
-                                      submittingLabel,
-                                      showGitHubIssueOnCreate: canCreateGitHubIssueOnCreate,
-                                      onGitHubIssueSubmit: () => void handleCreateSubmitWithGitHubIssue(),
-                                      isGitHubIssueSubmitting: isDraftGitHubIssueSubmitting,
-                                      isGitHubIssueConfirming,
-                                      onGitHubIssueConfirmingChange: setIsGitHubIssueConfirming,
-                                  })}
-                        />
-                    </div>
-                </div>
-
-                <WindowResizeHandles
-                    resizeWidthAriaLabel={messages.panel.resizeWidthAriaLabel}
-                    resizeHeightAriaLabel={messages.panel.resizeHeightAriaLabel}
-                    createResizePointerDown={createResizePointerDown}
+                <FeedbackComposer
+                    cases={draft.cases}
+                    onCaseChange={updateDraftCase}
+                    onAddCase={addDraftCase}
+                    onRemoveCase={removeDraftCase}
+                    authorName={draftAuthorName}
+                    onAuthorNameChange={setDraftAuthorName}
+                    authors={authors}
+                    fields={fields}
+                    fieldValues={draft.fieldValues}
+                    onFieldChange={updateDraftField}
+                    category={draft.category}
+                    onCategoryChange={updateDraftCategory}
+                    showCategory={false}
+                    showTags
+                    hideAuthorSelector={isPresentationMode || authorSelectionLocked}
+                    lockedAuthorName={authorSelectionLocked ? (sessionActor?.name ?? draftAuthorName) : undefined}
+                    onSubmit={() => void handleCreateSubmit()}
+                    isSubmitting={isSubmitting}
+                    autoFocus
+                    errorMessage={isAuthBootstrapping ? messages.errors.authBootstrapPending : errorMessage}
+                    onFooterWarningChange={setFooterWarningMessage}
+                    hideActions
+                    hidePrimarySubmitAction
+                    showCaseTabBar={false}
+                    activeCaseId={activeCaseId}
+                    onActiveCaseIdChange={setActiveCaseId}
+                    enableElementMentions
+                    placeholder={draft.category === "memo" ? messages.pickTarget.memoComposerPlaceholder : undefined}
+                />
+                <DraftComposerToolbar
+                    {...(draft.category === "memo"
+                        ? {
+                              variant: "memo" as const,
+                              onSave: () => void handleCreateSubmit(),
+                              onCancel: cancelDraft,
+                              canSave: draft.cases.some((item) => item.text.trim().length > 0) && !isSubmitting,
+                          }
+                        : {
+                              cases: draft.cases,
+                              activeCaseId,
+                              onSelectCase: setActiveCaseId,
+                              onAddCase: addDraftCase,
+                              onRemoveCase: handleRemoveCase,
+                              onInsertAtMention: handleInsertAtMention,
+                              category: draft.category,
+                              onCategoryChange: updateDraftCategory,
+                              categoryNeedsAttention,
+                              onSubmit: () => void handleCreateSubmit(),
+                              isSubmitting,
+                              submitLabel,
+                              submittingLabel,
+                              showGitHubIssueOnCreate: canCreateGitHubIssueOnCreate,
+                              onGitHubIssueSubmit: () => void handleCreateSubmitWithGitHubIssue(),
+                              isGitHubIssueSubmitting: isDraftGitHubIssueSubmitting,
+                              isGitHubIssueConfirming,
+                              onGitHubIssueConfirmingChange: setIsGitHubIssueConfirming,
+                          })}
                 />
             </div>
-        </>
+        </OverlayShell>
     );
 }

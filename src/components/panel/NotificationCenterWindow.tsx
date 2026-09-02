@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { CloseIcon } from "@/components/icons/Icons.js";
+import { OverlayShell } from "@/components/ui/OverlayShell.js";
 import { useReportPreferences, useReportSession } from "@/providers/reportContext.js";
 import type { NotificationItem } from "@/types/notification.js";
 import { PANEL_LAYER_Z_INDEX } from "@/utils/overlay/floatingWindowStack.js";
@@ -109,7 +110,6 @@ export function NotificationCenterWindow() {
         activateNotification,
     } = useReportSession();
     const [entered, setEntered] = useState(false);
-    const panelRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
         const frame = window.requestAnimationFrame(() => {
@@ -121,22 +121,6 @@ export function NotificationCenterWindow() {
         };
     }, []);
 
-    useEffect(() => {
-        const handleKeyDown = (event: KeyboardEvent) => {
-            if (event.key === "Escape") {
-                event.preventDefault();
-                event.stopPropagation();
-                closeNotificationUi();
-            }
-        };
-
-        window.addEventListener("keydown", handleKeyDown, true);
-
-        return () => {
-            window.removeEventListener("keydown", handleKeyDown, true);
-        };
-    }, [closeNotificationUi]);
-
     const handleOpen = useCallback(
         (item: NotificationItem) => {
             markNotificationRead(item.id);
@@ -145,40 +129,23 @@ export function NotificationCenterWindow() {
         [activateNotification, markNotificationRead],
     );
 
-    const handleBackdropPointerDown = useCallback(
-        (event: ReactPointerEvent<HTMLDivElement>) => {
-            if (panelRef.current?.contains(event.target as Node)) {
-                return;
-            }
-
-            closeNotificationUi();
-        },
-        [closeNotificationUi],
-    );
-
     const footerIndex = notifications.length === 0 ? 0 : notifications.length;
     const actionsIndex = footerIndex + 1;
 
     return (
-        <div
-            data-fp-chrome="notification-center"
-            role="dialog"
-            aria-modal="true"
-            aria-label={messages.notifications.windowAriaLabel}
-            data-fivepixels-interactive=""
-            className="pointer-events-auto fixed inset-0"
-            style={{
-                zIndex: PANEL_LAYER_Z_INDEX + 10,
+        <OverlayShell
+            shell="modal"
+            open
+            onClose={closeNotificationUi}
+            ariaLabel={messages.notifications.windowAriaLabel}
+            dataChrome="notification-center"
+            zIndex={PANEL_LAYER_Z_INDEX + 10}
+            backdropStyle={{
                 background: "linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.72) 55%, rgba(0, 0, 0, 0.92) 100%)",
             }}
-            onPointerDown={handleBackdropPointerDown}
+            panelClassName="pointer-events-auto absolute inset-y-0 right-0 flex w-full max-w-[380px] flex-col justify-end"
         >
-            <div
-                ref={panelRef}
-                className="pointer-events-auto absolute inset-y-0 right-0 flex w-full max-w-[380px] flex-col justify-end"
-                onPointerDown={(event) => event.stopPropagation()}
-            >
-                <div className="flex max-h-[min(88dvh,920px)] flex-col gap-[10px] overflow-y-auto px-[16px] pb-[18px] pt-[48px]">
+            <div className="flex max-h-[min(88dvh,920px)] flex-col gap-[10px] overflow-y-auto px-[16px] pb-[18px] pt-[48px]">
                     {notifications.length === 0 ? (
                         <div
                             className="rounded-[18px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] px-[14px] py-[18px] text-center shadow-[var(--adaptive-popup-shadow)]"
@@ -259,8 +226,7 @@ export function NotificationCenterWindow() {
                             {messages.notifications.clearAll}
                         </button>
                     </div>
-                </div>
             </div>
-        </div>
+        </OverlayShell>
     );
 }

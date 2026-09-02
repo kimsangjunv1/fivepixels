@@ -12,7 +12,8 @@ import { copyTextToClipboard } from "../../utils/feedback/feedbackDataTransfer.j
 import { buildAiPromptLabels, formatFeedbackForAiPrompt } from "../../utils/feedback/formatFeedbackForAiPrompt.js";
 import { buildFeedbackShareUrl } from "../../utils/feedback/feedbackDeepLink.js";
 import { AskAiCopyDropdown } from "../../components/panel/feedback/AskAiCopyDropdown.js";
-import { CloseIcon, CheckCircleIcon, ChevronDownIcon, EditIcon, LinkIcon, MaximizeIcon, MinimizeIcon, RestoreIcon, SidePanelIcon, TrashIcon, AskAiIcon } from "../../components/icons/Icons.js";
+import { WindowModeControls } from "../../components/ui/window/WindowModeControls.js";
+import { CloseIcon, CheckCircleIcon, ChevronDownIcon, EditIcon, LinkIcon, SidePanelIcon, TrashIcon, AskAiIcon } from "../../components/icons/Icons.js";
 import { FeedbackFieldTags } from "../../components/panel/feedback/FeedbackFieldTags.js";
 import { FeedbackDeleteAction } from "../../components/panel/feedback/FeedbackDeleteAction.js";
 import { canDeleteFeedback } from "../../utils/feedback/feedbackPermissions.js";
@@ -594,7 +595,7 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }) {
         }
         void handleDelete(report.id).finally(() => setIsSidebarDeleteConfirming(false));
     };
-    const leftControls = (_jsxs(_Fragment, { children: [_jsx(WindowControlButton, { onClick: requestClose, ariaLabel: messages.marker.windowCloseAriaLabel, children: _jsx(CloseIcon, { className: "h-[15px] w-[15px]" }) }), _jsx(WindowControlButton, { onClick: handleToggleMinimize, ariaLabel: isMinimized ? messages.marker.windowRestoreAriaLabel : messages.marker.windowMinimizeAriaLabel, children: _jsx(MinimizeIcon, { className: "h-[15px] w-[15px]" }) }), _jsx(WindowControlButton, { onClick: handleToggleMaximize, ariaLabel: isMaximized ? messages.marker.windowRestoreAriaLabel : messages.marker.windowMaximizeAriaLabel, children: isMaximized ? _jsx(RestoreIcon, { className: "h-[15px] w-[15px]" }) : _jsx(MaximizeIcon, { className: "h-[15px] w-[15px]" }) })] }));
+    const leftControls = (_jsx(WindowModeControls, { closeAriaLabel: messages.marker.windowCloseAriaLabel, minimizeAriaLabel: isMinimized ? messages.marker.windowRestoreAriaLabel : messages.marker.windowMinimizeAriaLabel, maximizeAriaLabel: isMaximized ? messages.marker.windowRestoreAriaLabel : messages.marker.windowMaximizeAriaLabel, isMaximized: isMaximized, onClose: requestClose, onMinimize: handleToggleMinimize, onMaximize: handleToggleMaximize }));
     const sidebarToggleButton = (_jsx(WindowControlButton, { onClick: () => setIsSidebarCollapsed((current) => !current), ariaLabel: isSidebarCollapsed ? messages.marker.sidebarExpandAriaLabel : messages.marker.sidebarCollapseAriaLabel, className: isSidebarCollapsed ? "" : "text-[var(--adaptive-blue500)]", children: _jsx(SidePanelIcon, { className: "h-[16px] w-[16px]" }) }));
     const shareButton = (_jsx(MarkerWindowShareButton, { report: report, messages: messages }));
     const askAiButton = (_jsx(MarkerWindowAskAiButton, { report: report, fields: fields, messages: messages, focusedCaseId: focusedCaseId }));

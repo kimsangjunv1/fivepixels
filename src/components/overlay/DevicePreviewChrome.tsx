@@ -12,7 +12,7 @@ import {
     type DevicePreviewScale,
 } from "@/constants/devicePreview.js";
 import { PanelOptionSwitch } from "@/components/panel/PanelOptionSwitch.js";
-import { FloatingWindow, type FloatingWindowMode } from "@/components/ui/FloatingWindow.js";
+import { OverlayShell, type FloatingWindowMode } from "@/components/ui/OverlayShell.js";
 import type { WindowPosition } from "@/hooks/useDraggableWindow.js";
 import {
     buildDevicePreviewCaptureFilename,
@@ -240,7 +240,9 @@ function DevicePreviewFloatingBar({
     }, []);
 
     return (
-        <FloatingWindow
+        <OverlayShell
+            windowId="device-preview-toolbar"
+            minimizePolicy="dock"
             dataChrome="device-preview-toolbar"
             role="toolbar"
             ariaLabel={messages.settings.devicePreviewFloatingAriaLabel}
@@ -369,7 +371,7 @@ function DevicePreviewFloatingBar({
                     {captureLabel}
                 </button>
             </div>
-        </FloatingWindow>
+        </OverlayShell>
     );
 }
 
