@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+    getMarkerDockWindowId,
     getOverlayMinimizedDockOrder,
+    parseMarkerDockWindowId,
     registerOverlayMinimizedDock,
     reorderOverlayMinimizedDock,
     resetOverlayMinimizedDockRegistryForTests,
@@ -31,5 +33,17 @@ describe("overlayMinimizedDockRegistry", () => {
         reorderOverlayMinimizedDock(2, 0);
 
         expect(getOverlayMinimizedDockOrder()).toEqual(["c", "a", "b"]);
+    });
+
+    it("builds marker dock ids and interleaves overlay windows", () => {
+        resetOverlayMinimizedDockRegistryForTests();
+
+        registerOverlayMinimizedDock(getMarkerDockWindowId("report-a"));
+        registerOverlayMinimizedDock("device-preview-toolbar");
+        registerOverlayMinimizedDock(getMarkerDockWindowId("report-b"));
+
+        expect(getOverlayMinimizedDockOrder()).toEqual(["marker:report-a", "device-preview-toolbar", "marker:report-b"]);
+        expect(parseMarkerDockWindowId("marker:report-a")).toBe("report-a");
+        expect(parseMarkerDockWindowId("device-preview-toolbar")).toBeNull();
     });
 });

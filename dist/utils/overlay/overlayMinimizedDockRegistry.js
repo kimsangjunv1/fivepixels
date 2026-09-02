@@ -1,3 +1,13 @@
+export const MARKER_DOCK_WINDOW_ID_PREFIX = "marker:";
+export function getMarkerDockWindowId(reportId) {
+    return `${MARKER_DOCK_WINDOW_ID_PREFIX}${reportId}`;
+}
+export function parseMarkerDockWindowId(windowId) {
+    if (!windowId.startsWith(MARKER_DOCK_WINDOW_ID_PREFIX)) {
+        return null;
+    }
+    return windowId.slice(MARKER_DOCK_WINDOW_ID_PREFIX.length);
+}
 let dockOrder = [];
 const listeners = new Set();
 function emit() {

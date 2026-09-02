@@ -14,6 +14,7 @@ import { getMarkerDotSize } from "@/utils/marker/markerRuntime.js";
 import { useDraggableWindow, clampWindowPosition } from "@/hooks/useDraggableWindow.js";
 import { useGhostCornerResize, type BoxSize } from "@/hooks/useGhostCornerResize.js";
 import { useNativeHover } from "@/hooks/useNativeHover.js";
+import { useOverlayMinimizedDock } from "@/hooks/useOverlayMinimizedDock.js";
 import { useReport } from "@/providers/reportContext.js";
 import type { Marker } from "@/types/report-ui.js";
 import type { ReportFeedback } from "@/types/report.js";
@@ -50,19 +51,17 @@ import {
     MARKER_MINIMIZED_WINDOW_WIDTH,
     MARKER_WINDOW_MARGIN,
     resolveMinimizedDockIndexFromPointer,
-    resolveMinimizedDockPosition,
 } from "@/utils/marker/markerWindowDock.js";
+import {
+    getMarkerDockWindowId,
+    getOverlayMinimizedDockOrder,
+    registerOverlayMinimizedDock,
+    unregisterOverlayMinimizedDock,
+} from "@/utils/overlay/overlayMinimizedDockRegistry.js";
 import { readMinimizedWindowAlias, writeMinimizedWindowAlias } from "@/utils/marker/minimizedWindowAlias.js";
 
 type WindowMode = "normal" | "minimized" | "maximized";
 type WindowSurfacePhase = "entering" | "idle" | "exiting";
-type DockMorphRect = {
-    left: number;
-    top: number;
-    width: number;
-    height: number;
-};
-type DockMorphState = (DockMorphRect & { phase: "minimizing" | "restoring" }) | null;
 type DockDragState = {
     pointerId: number;
     startX: number;
@@ -85,10 +84,6 @@ const RIGHT_MIN_WIDTH = 280;
 const COLLAPSED_SIDEBAR_WIDTH = 46;
 const MINIMIZED_WINDOW_HEIGHT = MARKER_MINIMIZED_WINDOW_HEIGHT;
 const MINIMIZED_WINDOW_WIDTH = MARKER_MINIMIZED_WINDOW_WIDTH;
-const MINIMIZE_MORPH_MS = 420;
-const MINIMIZE_MORPH_EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
-const MINIMIZE_MORPH_TRANSITION = `left ${MINIMIZE_MORPH_MS}ms ${MINIMIZE_MORPH_EASE}, top ${MINIMIZE_MORPH_MS}ms ${MINIMIZE_MORPH_EASE}, width ${MINIMIZE_MORPH_MS}ms ${MINIMIZE_MORPH_EASE}, height ${MINIMIZE_MORPH_MS}ms ${MINIMIZE_MORPH_EASE}`;
-const MINIMIZED_DOCK_SLIDE_TRANSITION = `left ${MINIMIZE_MORPH_MS}ms ${MINIMIZE_MORPH_EASE}, top ${MINIMIZE_MORPH_MS}ms ${MINIMIZE_MORPH_EASE}`;
 const MINIMIZED_DOCK_DRAG_THRESHOLD_PX = 6;
 const MINIMIZED_DOCK_DRAG_LIFT_PX = 10;
 const WINDOW_CLOSE_ANIMATION_MS = 220;
@@ -103,10 +98,6 @@ const HEADER_BUTTON_CLASS =
     "flex h-[24px] w-[24px] items-center justify-center rounded-[6px] text-[var(--adaptive-black600)] transition-colors hover:bg-[var(--adaptive-tintOpacity200)] hover:text-[var(--adaptive-black900)]";
 const SIDEBAR_ACTION_CLASS =
     "flex h-[32px] w-full items-center gap-[8px] rounded-[8px] px-[8px] text-left text-[13px] font-semibold text-[var(--adaptive-black700)] transition-colors hover:bg-[var(--adaptive-tintOpacity200)] hover:text-[var(--adaptive-black900)]";
-
-function prefersReducedMotion() {
-    return typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-}
 
 function getViewportSize() {
     if (typeof window === "undefined") {
@@ -485,7 +476,6 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
         revealOpenFeedback,
         minimizedReplyReportIds,
         setReplyWindowMinimized,
-        reorderMinimizedReplyWindow,
         clearHoverLeaveTimeout,
         scheduleHoverLeave,
         setHoveredMarkerId,
@@ -521,19 +511,23 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
 
     const [windowMode, setWindowMode] = useState<WindowMode>("normal");
     const [windowSurfacePhase, setWindowSurfacePhase] = useState<WindowSurfacePhase>("entering");
+    const markerDockId = getMarkerDockWindowId(report.id);
+
+    const overlayDock = useOverlayMinimizedDock({
+        windowId: markerDockId,
+        enabled: true,
+        isMinimized: windowMode === "minimized",
+        onMinimizedChange: (minimized) => setWindowMode(minimized ? "minimized" : "normal"),
+    });
+    const dockMorph = overlayDock.dockMorph;
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const [size, setSize] = useState<BoxSize>(DEFAULT_WINDOW_SIZE);
     const [sidebarWidth, setSidebarWidth] = useState(DEFAULT_SIDEBAR_WIDTH);
     const [isSidebarDeleteConfirming, setIsSidebarDeleteConfirming] = useState(false);
-    const [dockMorph, setDockMorph] = useState<DockMorphState>(null);
     const [dockDrag, setDockDrag] = useState<DockDragState | null>(null);
-    const dockMorphTimerRef = useRef<number | null>(null);
-    const dockMorphFrameRef = useRef<number | null>(null);
     const dockDragRef = useRef<DockDragState | null>(null);
     const dockDragListenersRef = useRef<{ move: (event: PointerEvent) => void; up: (event: PointerEvent) => void } | null>(null);
     const suppressDockRestoreClickRef = useRef(false);
-    const minimizedReplyReportIdsRef = useRef(minimizedReplyReportIds);
-    minimizedReplyReportIdsRef.current = minimizedReplyReportIds;
 
     const splitStateRef = useRef<{ startX: number; startWidth: number; windowWidth: number } | null>(null);
     const splitListenersRef = useRef<{ move: (event: PointerEvent) => void; up: (event: PointerEvent) => void } | null>(null);
@@ -641,18 +635,6 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
 
     useEffect(() => () => detachSplitListeners(), [detachSplitListeners]);
 
-    const clearDockMorphTimers = useCallback(() => {
-        if (dockMorphTimerRef.current !== null) {
-            window.clearTimeout(dockMorphTimerRef.current);
-            dockMorphTimerRef.current = null;
-        }
-
-        if (dockMorphFrameRef.current !== null) {
-            window.cancelAnimationFrame(dockMorphFrameRef.current);
-            dockMorphFrameRef.current = null;
-        }
-    }, []);
-
     const detachDockDragListeners = useCallback(() => {
         const listeners = dockDragListenersRef.current;
 
@@ -666,8 +648,28 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
         dockDragListenersRef.current = null;
     }, []);
 
-    useEffect(() => () => clearDockMorphTimers(), [clearDockMorphTimers]);
     useEffect(() => () => detachDockDragListeners(), [detachDockDragListeners]);
+
+    useEffect(() => {
+        const dockMinimized = minimizedReplyReportIds.includes(report.id);
+
+        if (dockMinimized) {
+            registerOverlayMinimizedDock(markerDockId);
+            return;
+        }
+
+        if (windowMode === "minimized" || dockMorph) {
+            return;
+        }
+
+        unregisterOverlayMinimizedDock(markerDockId);
+    }, [dockMorph, markerDockId, minimizedReplyReportIds, report.id, windowMode]);
+
+    useEffect(() => {
+        return () => {
+            unregisterOverlayMinimizedDock(markerDockId);
+        };
+    }, [markerDockId]);
 
     useEffect(() => {
         if (!isSidebarDeleteConfirming) {
@@ -684,6 +686,11 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
 
         if (!dockMinimized && windowMode === "minimized" && dockMorph === null) {
             setWindowMode("normal");
+            return;
+        }
+
+        if (dockMinimized && windowMode !== "minimized" && dockMorph === null) {
+            setWindowMode("minimized");
         }
     }, [dockMorph, minimizedReplyReportIds, report.id, windowMode]);
 
@@ -739,10 +746,8 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
     const isMaximized = windowMode === "maximized";
     const showMinimizedChrome = windowMode === "minimized" && dockMorph?.phase !== "restoring";
     const effectiveSize = isMaximized ? maximizedSize : size;
-    const minimizedWidth = Math.min(MINIMIZED_WINDOW_WIDTH, Math.max(0, viewport.width - WINDOW_MARGIN * 2));
+    const minimizedWidth = overlayDock.minimizedWidth;
     const resolvedSidebarWidth = clampSidebarWidth(sidebarWidth, effectiveSize.width);
-    const minimizedDockIndex = Math.max(0, minimizedReplyReportIds.indexOf(report.id));
-    const minimizedDockCount = Math.max(1, minimizedReplyReportIds.length);
 
     // Freeze the open position on mount so page changes (lost marker anchors) don't
     // collapse every window onto the same fallback center coordinate.
@@ -756,45 +761,19 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
     );
 
     const restoredPosition = isMaximized ? { left: WINDOW_MARGIN, top: WINDOW_MARGIN } : (position ?? seedPosition);
-    const dockPosition = resolveMinimizedDockPosition(minimizedDockIndex, minimizedDockCount, viewport.width, viewport.height, minimizedWidth, MINIMIZED_WINDOW_HEIGHT);
+    const dockPosition = overlayDock.dockPosition;
     const resolvedPosition = showMinimizedChrome ? dockPosition : restoredPosition;
     const isDockDragging = dockDrag?.active === true;
-    const displayRect: DockMorphRect = dockMorph ?? {
+    const displayRect = dockMorph ?? {
         left: dockDrag?.active ? dockDrag.pointerX - dockDrag.offsetX : resolvedPosition.left,
         top: dockDrag?.active ? dockPosition.top - MINIMIZED_DOCK_DRAG_LIFT_PX : resolvedPosition.top,
         width: showMinimizedChrome ? minimizedWidth : effectiveSize.width,
         height: showMinimizedChrome ? MINIMIZED_WINDOW_HEIGHT : effectiveSize.height,
     };
-    const layoutTransition = dockMorph ? MINIMIZE_MORPH_TRANSITION : showMinimizedChrome && !isDockDragging ? MINIMIZED_DOCK_SLIDE_TRANSITION : undefined;
+    const layoutTransition = overlayDock.layoutTransition;
     const leftSectionClass = getLeftSectionClass(windowSurfacePhase);
     const windowAnimationClass =
         windowSurfacePhase === "exiting" ? MOTION.markerWindowExit : windowSurfacePhase === "entering" ? `${MOTION.markerWindowEnter} pointer-events-auto` : "pointer-events-auto";
-
-    const runDockMorph = useCallback(
-        (phase: "minimizing" | "restoring", from: DockMorphRect, to: DockMorphRect, onComplete?: () => void) => {
-            clearDockMorphTimers();
-
-            if (prefersReducedMotion()) {
-                setDockMorph(null);
-                onComplete?.();
-                return;
-            }
-
-            setDockMorph({ phase, ...from });
-
-            dockMorphFrameRef.current = window.requestAnimationFrame(() => {
-                dockMorphFrameRef.current = window.requestAnimationFrame(() => {
-                    setDockMorph({ phase, ...to });
-                    dockMorphTimerRef.current = window.setTimeout(() => {
-                        setDockMorph(null);
-                        onComplete?.();
-                        dockMorphTimerRef.current = null;
-                    }, MINIMIZE_MORPH_MS + 40);
-                });
-            });
-        },
-        [clearDockMorphTimers],
-    );
 
     const handleSplitPointerDown = useCallback(
         (event: ReactPointerEvent<HTMLElement>) => {
@@ -839,7 +818,6 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
         }
 
         const viewportSize = getViewportSize();
-        const currentMinimizedWidth = Math.min(MINIMIZED_WINDOW_WIDTH, Math.max(0, viewportSize.width - WINDOW_MARGIN * 2));
         const currentRestoredPosition = isMaximized ? { left: WINDOW_MARGIN, top: WINDOW_MARGIN } : (position ?? seedPosition);
         const currentRestoredSize = isMaximized
             ? {
@@ -855,59 +833,22 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
                 focusReplyWindow(report.id);
             }
 
-            const from: DockMorphRect = {
-                left: dockPosition.left,
-                top: dockPosition.top,
-                width: currentMinimizedWidth,
-                height: MINIMIZED_WINDOW_HEIGHT,
-            };
-            const to: DockMorphRect = {
+            setReplyWindowMinimized(report.id, false);
+            overlayDock.restoreFromDock({
                 left: currentRestoredPosition.left,
                 top: currentRestoredPosition.top,
                 width: currentRestoredSize.width,
                 height: currentRestoredSize.height,
-            };
-
-            setWindowMode("normal");
-            setReplyWindowMinimized(report.id, false);
-
-            if (prefersReducedMotion()) {
-                setDockMorph(null);
-                return;
-            }
-
-            runDockMorph("restoring", from, to);
+            });
             return;
         }
 
-        const nextMinimizedIds = minimizedReplyReportIds.includes(report.id) ? minimizedReplyReportIds : [...minimizedReplyReportIds, report.id];
-        const nextDockIndex = Math.max(0, nextMinimizedIds.indexOf(report.id));
-        const nextDock = resolveMinimizedDockPosition(nextDockIndex, nextMinimizedIds.length, viewportSize.width, viewportSize.height, currentMinimizedWidth, MINIMIZED_WINDOW_HEIGHT);
-        const from: DockMorphRect = {
+        setReplyWindowMinimized(report.id, true);
+        overlayDock.minimizeToDock({
             left: currentRestoredPosition.left,
             top: currentRestoredPosition.top,
             width: currentRestoredSize.width,
             height: currentRestoredSize.height,
-        };
-        const to: DockMorphRect = {
-            left: nextDock.left,
-            top: nextDock.top,
-            width: currentMinimizedWidth,
-            height: MINIMIZED_WINDOW_HEIGHT,
-        };
-
-        setReplyWindowMinimized(report.id, true);
-
-        if (prefersReducedMotion()) {
-            setWindowMode("minimized");
-            setDockMorph(null);
-            clearHoverLeaveTimeout();
-            setHoveredMarkerId((current) => (current === report.id ? null : current));
-            return;
-        }
-
-        runDockMorph("minimizing", from, to, () => {
-            setWindowMode("minimized");
         });
         clearHoverLeaveTimeout();
         setHoveredMarkerId((current) => (current === report.id ? null : current));
@@ -915,7 +856,7 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
 
     const handleMinimizedDockPointerDown = useCallback(
         (event: ReactPointerEvent<HTMLElement>) => {
-            if (event.button !== 0 || dockMorph !== null || windowMode !== "minimized" || minimizedReplyReportIds.length < 2) {
+            if (event.button !== 0 || dockMorph !== null || windowMode !== "minimized" || overlayDock.dockCount < 2) {
                 return;
             }
 
@@ -964,20 +905,20 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
                     return;
                 }
 
-                const ids = minimizedReplyReportIdsRef.current;
-                const fromIndex = ids.indexOf(report.id);
+                const dockOrder = [...getOverlayMinimizedDockOrder()];
+                const fromIndex = dockOrder.indexOf(markerDockId);
 
-                if (fromIndex < 0 || ids.length < 2) {
+                if (fromIndex < 0 || dockOrder.length < 2) {
                     return;
                 }
 
                 const viewportWidth = window.innerWidth;
                 const itemWidth = Math.min(MINIMIZED_WINDOW_WIDTH, Math.max(0, viewportWidth - WINDOW_MARGIN * 2));
                 const centerX = moveEvent.clientX - state.offsetX + itemWidth / 2;
-                const toIndex = resolveMinimizedDockIndexFromPointer(centerX, ids.length, viewportWidth, itemWidth);
+                const toIndex = resolveMinimizedDockIndexFromPointer(centerX, dockOrder.length, viewportWidth, itemWidth);
 
                 if (toIndex !== fromIndex) {
-                    reorderMinimizedReplyWindow(report.id, toIndex);
+                    overlayDock.reorderDockItem(fromIndex, toIndex);
                 }
             };
 
@@ -998,7 +939,7 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
             window.addEventListener("pointerup", handlePointerUp, true);
             window.addEventListener("pointercancel", handlePointerUp, true);
         },
-        [detachDockDragListeners, dockMorph, minimizedReplyReportIds.length, minimizedWidth, reorderMinimizedReplyWindow, report.id, windowMode],
+        [detachDockDragListeners, dockMorph, markerDockId, minimizedWidth, overlayDock, report.id, windowMode],
     );
 
     const handleMinimizedDockClickCapture = useCallback((event: ReactMouseEvent<HTMLElement>) => {
@@ -1349,7 +1290,7 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
             >
                 {showMinimizedChrome ? (
                     <div
-                        className={`group/min-dock relative h-full w-full ${minimizedReplyReportIds.length > 1 ? "cursor-grab" : ""} ${isDockDragging ? "cursor-grabbing" : ""}`}
+                        className={`group/min-dock relative h-full w-full ${overlayDock.dockCount > 1 ? "cursor-grab" : ""} ${isDockDragging ? "cursor-grabbing" : ""}`}
                         onPointerDown={handleMinimizedDockPointerDown}
                         onClickCapture={handleMinimizedDockClickCapture}
                     >

@@ -1,5 +1,19 @@
 type DockListener = () => void;
 
+export const MARKER_DOCK_WINDOW_ID_PREFIX = "marker:";
+
+export function getMarkerDockWindowId(reportId: string): string {
+    return `${MARKER_DOCK_WINDOW_ID_PREFIX}${reportId}`;
+}
+
+export function parseMarkerDockWindowId(windowId: string): string | null {
+    if (!windowId.startsWith(MARKER_DOCK_WINDOW_ID_PREFIX)) {
+        return null;
+    }
+
+    return windowId.slice(MARKER_DOCK_WINDOW_ID_PREFIX.length);
+}
+
 let dockOrder: string[] = [];
 const listeners = new Set<DockListener>();
 
