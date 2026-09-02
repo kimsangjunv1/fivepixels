@@ -8,6 +8,10 @@ import {
     WINDOW_HEADER_GAP,
     WindowModeControls,
 } from "@/components/ui/window/WindowModeControls.js";
+import {
+    MinimizedDockSimpleSubtitleRow,
+    MinimizedDockWindowChrome,
+} from "@/components/ui/window/MinimizedDockWindowChrome.js";
 import { clampWindowPosition, useDraggableWindow } from "@/hooks/useDraggableWindow.js";
 import { useGhostCornerResize, type BoxSize } from "@/hooks/useGhostCornerResize.js";
 import { useOverlayMinimizedDock } from "@/hooks/useOverlayMinimizedDock.js";
@@ -54,6 +58,9 @@ export type FloatingWindowProps = {
     ariaLabel?: string;
     dataChrome?: string;
     role?: string;
+    minimizedDockBadgeLabel?: string;
+    minimizedDockBadgeValue?: string;
+    minimizedDockSubtitle?: string;
 };
 
 export function FloatingWindow({
@@ -85,6 +92,9 @@ export function FloatingWindow({
     ariaLabel,
     dataChrome,
     role,
+    minimizedDockBadgeLabel = "common ui",
+    minimizedDockBadgeValue,
+    minimizedDockSubtitle,
 }: FloatingWindowProps) {
     const windowRef = useRef<HTMLDivElement | null>(null);
     const headerRef = useRef<HTMLElement | null>(null);
@@ -495,6 +505,9 @@ export function FloatingWindow({
         [dockDrag, handleDragPointerDown, showDockMinimizedChrome],
     );
 
+    const resolvedMinimizedSubtitle = minimizedDockSubtitle ?? minimizedDockBadgeValue ?? ariaLabel ?? "";
+    const dockMorphActive = overlayDock.dockMorph !== null;
+
     return (
         <>
             {isResizing ? <CornerResizeGhost ghostRef={ghostRef} /> : null}
@@ -508,8 +521,10 @@ export function FloatingWindow({
                 role={role}
                 aria-label={ariaLabel}
                 onPointerDown={handleWindowPointerDown}
-                className={`pointer-events-auto fixed flex flex-col rounded-[16px] bg-[var(--adaptive-black50)]/95 shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[10px] ${
-                    resizable && mode === "normal" && !showDockMinimizedChrome ? "overflow-visible" : "overflow-hidden"
+                className={`pointer-events-auto fixed flex flex-col rounded-[16px] shadow-[var(--adaptive-popup-shadow)] ${
+                    showDockMinimizedChrome
+                        ? "overflow-hidden"
+                        : `bg-[var(--adaptive-black50)]/95 backdrop-blur-[10px] ${resizable && mode === "normal" ? "overflow-visible" : "overflow-hidden"}`
                 } ${className}`}
                 style={{
                     left: resolvedPosition.left,
@@ -522,6 +537,34 @@ export function FloatingWindow({
                     ...style,
                 }}
             >
+                {showDockMinimizedChrome ? (
+                    <MinimizedDockWindowChrome
+                        badgeLabel={minimizedDockBadgeLabel}
+                        badgeValue={minimizedDockBadgeValue}
+                        restoreAriaLabel={minimizeAriaLabel}
+                        restoreTitle={minimizeAriaLabel}
+                        onRestore={handleMinimize}
+                        restoreDisabled={dockMorphActive}
+                        closeAriaLabel={closeAriaLabel}
+                        closeTitle={closeAriaLabel}
+                        onClose={handleClose}
+                        closeDisabled={dockMorphActive || isDockDragging}
+                        dockCount={overlayDock.dockCount}
+                        isDockDragging={isDockDragging}
+                        onPointerDown={dockDrag.handleMinimizedDockPointerDown}
+                        onClickCapture={dockDrag.handleMinimizedDockClickCapture}
+                    >
+                        {resolvedMinimizedSubtitle ? (
+                            <MinimizedDockSimpleSubtitleRow
+                                label={resolvedMinimizedSubtitle}
+                                onRestore={handleMinimize}
+                                restoreDisabled={dockMorphActive}
+                                restoreAriaLabel={minimizeAriaLabel}
+                            />
+                        ) : null}
+                    </MinimizedDockWindowChrome>
+                ) : (
+                    <>
                 <header
                     ref={headerRef}
                     onPointerDown={handleHeaderPointerDown}
@@ -601,6 +644,8 @@ export function FloatingWindow({
                         createResizePointerDown={createResizePointerDown}
                     />
                 ) : null}
+                    </>
+                )}
             </div>
         </>
     );

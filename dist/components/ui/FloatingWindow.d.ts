@@ -39,6 +39,9 @@ export type FloatingWindowProps = {
     ariaLabel?: string;
     dataChrome?: string;
     role?: string;
+    minimizedDockBadgeLabel?: string;
+    minimizedDockBadgeValue?: string;
+    minimizedDockSubtitle?: string;
 };
-export declare function FloatingWindow({ children, title, headerRight, controls, showControls, mode: modeProp, defaultMode, onModeChange, minimizePolicy, windowId, className, contentClassName, headerClassName, style, width, height, minWidth, minHeight, resizable, resizeAriaLabel, zIndex, enabled, position, onPositionChange, onSizeChange, ariaLabel, dataChrome, role, }: FloatingWindowProps): import("react").JSX.Element;
+export declare function FloatingWindow({ children, title, headerRight, controls, showControls, mode: modeProp, defaultMode, onModeChange, minimizePolicy, windowId, className, contentClassName, headerClassName, style, width, height, minWidth, minHeight, resizable, resizeAriaLabel, zIndex, enabled, position, onPositionChange, onSizeChange, ariaLabel, dataChrome, role, minimizedDockBadgeLabel, minimizedDockBadgeValue, minimizedDockSubtitle, }: FloatingWindowProps): import("react").JSX.Element;
 //# sourceMappingURL=FloatingWindow.d.ts.map

@@ -256,6 +256,7 @@ function DevicePreviewFloatingBar({
             resizable
             resizeAriaLabel={messages.marker.resizeAriaLabel}
             contentClassName="px-[12px] pb-[12px]"
+            minimizedDockSubtitle={messages.settings.devicePreviewFloatingAriaLabel}
             controls={{
                 onClose,
                 closeAriaLabel: messages.marker.windowCloseAriaLabel,

@@ -146,7 +146,7 @@ function DevicePreviewFloatingBar({ captureState, onCapture, onClose, }) {
         setPosition(next);
         persistDevicePreviewBarPosition(next);
     }, []);
-    return (_jsx(OverlayShell, { windowId: "device-preview-toolbar", minimizePolicy: "dock", dataChrome: "device-preview-toolbar", role: "toolbar", ariaLabel: messages.settings.devicePreviewFloatingAriaLabel, position: position, onPositionChange: handlePositionChange, mode: mode, onModeChange: setMode, width: 220, minWidth: 200, minHeight: 160, resizable: true, resizeAriaLabel: messages.marker.resizeAriaLabel, contentClassName: "px-[12px] pb-[12px]", controls: {
+    return (_jsx(OverlayShell, { windowId: "device-preview-toolbar", minimizePolicy: "dock", dataChrome: "device-preview-toolbar", role: "toolbar", ariaLabel: messages.settings.devicePreviewFloatingAriaLabel, position: position, onPositionChange: handlePositionChange, mode: mode, onModeChange: setMode, width: 220, minWidth: 200, minHeight: 160, resizable: true, resizeAriaLabel: messages.marker.resizeAriaLabel, contentClassName: "px-[12px] pb-[12px]", minimizedDockSubtitle: messages.settings.devicePreviewFloatingAriaLabel, controls: {
             onClose,
             closeAriaLabel: messages.marker.windowCloseAriaLabel,
             minimizeAriaLabel: messages.marker.windowMinimizeAriaLabel,

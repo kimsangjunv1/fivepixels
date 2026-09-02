@@ -27,6 +27,8 @@ import { buildAiPromptLabels, formatFeedbackForAiPrompt } from "@/utils/feedback
 import { buildFeedbackShareUrl } from "@/utils/feedback/feedbackDeepLink.js";
 import { AskAiCopyDropdown } from "@/components/panel/feedback/AskAiCopyDropdown.js";
 import { WindowModeControls } from "@/components/ui/window/WindowModeControls.js";
+import { MinimizedDockWindowChrome } from "@/components/ui/window/MinimizedDockWindowChrome.js";
+import { MinimizedWindowAliasRow } from "@/components/ui/window/MinimizedWindowAliasRow.js";
 import { CloseIcon, CheckCircleIcon, ChevronDownIcon, EditIcon, LinkIcon, SidePanelIcon, TrashIcon, AskAiIcon } from "@/components/icons/Icons.js";
 import type { ReportField } from "@/types/report.js";
 import { FeedbackFieldTags } from "@/components/panel/feedback/FeedbackFieldTags.js";
@@ -56,7 +58,6 @@ import {
     registerOverlayMinimizedDock,
     unregisterOverlayMinimizedDock,
 } from "@/utils/overlay/overlayMinimizedDockRegistry.js";
-import { readMinimizedWindowAlias, writeMinimizedWindowAlias } from "@/utils/marker/minimizedWindowAlias.js";
 
 type WindowMode = "normal" | "minimized" | "maximized";
 type WindowSurfacePhase = "entering" | "idle" | "exiting";
@@ -123,174 +124,6 @@ function WindowControlButton({ onClick, ariaLabel, title, className = "", childr
         >
             {children}
         </button>
-    );
-}
-
-function MinimizedCaseMarquee({ caseTexts }: { caseTexts: string[] }) {
-    if (caseTexts.length === 0) {
-        return null;
-    }
-
-    return (
-        <div className="min-w-0 flex-1 overflow-hidden text-[12px] text-[var(--adaptive-black700)]">
-            <div
-                aria-hidden
-                className="fivepixels-marker-window-marquee"
-                style={{ animationDuration: `${Math.max(12, caseTexts.length * 6)}s` }}
-            >
-                {[0, 1].map((copyIndex) => (
-                    <div
-                        key={copyIndex}
-                        className="fivepixels-marker-window-marquee__copy"
-                    >
-                        {caseTexts.map((text, index) => (
-                            <span
-                                key={`${copyIndex}-${index}`}
-                                className="whitespace-nowrap"
-                            >
-                                <span className="mr-[4px] text-[var(--adaptive-black500)]">{index + 1}.</span>
-                                {text}
-                            </span>
-                        ))}
-                    </div>
-                ))}
-            </div>
-        </div>
-    );
-}
-
-function MinimizedWindowAliasRow({
-    projectId,
-    reportId,
-    caseTexts,
-    messages,
-    onRestore,
-    restoreDisabled = false,
-}: {
-    projectId: string;
-    reportId: string;
-    caseTexts: string[];
-    messages: ReportMessages;
-    onRestore: () => void;
-    restoreDisabled?: boolean;
-}) {
-    const [alias, setAlias] = useState(() => readMinimizedWindowAlias(projectId, reportId));
-    const [isEditing, setIsEditing] = useState(false);
-    const [draft, setDraft] = useState(alias);
-    const inputRef = useRef<HTMLInputElement>(null);
-
-    useEffect(() => {
-        setAlias(readMinimizedWindowAlias(projectId, reportId));
-    }, [projectId, reportId]);
-
-    useEffect(() => {
-        if (!isEditing) {
-            return;
-        }
-
-        inputRef.current?.focus();
-        inputRef.current?.select();
-    }, [isEditing]);
-
-    const commitAlias = () => {
-        const next = writeMinimizedWindowAlias(projectId, reportId, draft);
-        setAlias(next);
-        setDraft(next);
-        setIsEditing(false);
-    };
-
-    const clearAlias = () => {
-        writeMinimizedWindowAlias(projectId, reportId, "");
-        setAlias("");
-        setDraft("");
-        setIsEditing(false);
-    };
-
-    if (isEditing) {
-        return (
-            <div
-                className="flex min-w-0 items-center gap-[4px]"
-                onPointerDown={(event) => event.stopPropagation()}
-                onClick={(event) => event.stopPropagation()}
-            >
-                <input
-                    ref={inputRef}
-                    type="text"
-                    value={draft}
-                    maxLength={40}
-                    placeholder={messages.marker.minimizedAliasPlaceholder}
-                    aria-label={messages.marker.minimizedAliasInputAriaLabel}
-                    data-fivepixels-interactive=""
-                    onChange={(event) => setDraft(event.target.value)}
-                    onKeyDown={(event) => {
-                        if (event.key === "Enter") {
-                            event.preventDefault();
-                            commitAlias();
-                        }
-
-                        if (event.key === "Escape") {
-                            event.preventDefault();
-                            setDraft(alias);
-                            setIsEditing(false);
-                        }
-                    }}
-                    onBlur={commitAlias}
-                    className="min-w-0 flex-1 rounded-[4px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black100)] px-[6px] py-[2px] text-[12px] font-semibold text-[var(--adaptive-black900)] outline-none focus:border-[var(--adaptive-blue500)]"
-                />
-                {alias ? (
-                    <button
-                        type="button"
-                        data-fivepixels-interactive=""
-                        aria-label={messages.marker.minimizedAliasClearAriaLabel}
-                        title={messages.marker.minimizedAliasClearAriaLabel}
-                        onMouseDown={(event) => event.preventDefault()}
-                        onClick={clearAlias}
-                        className="inline-flex h-[20px] w-[20px] shrink-0 items-center justify-center rounded-[4px] text-[var(--adaptive-black500)] hover:bg-[var(--adaptive-tintOpacity200)] hover:text-[var(--adaptive-black900)]"
-                    >
-                        <CloseIcon className="h-[12px] w-[12px]" />
-                    </button>
-                ) : null}
-            </div>
-        );
-    }
-
-    return (
-        <div className="flex min-w-0 items-center gap-[4px]">
-            <button
-                type="button"
-                data-fivepixels-interactive=""
-                onClick={onRestore}
-                disabled={restoreDisabled}
-                aria-label={messages.marker.windowRestoreAriaLabel}
-                className="flex min-w-0 flex-1 items-center overflow-hidden text-left"
-            >
-                {alias ? (
-                    <p
-                        className="min-w-0 flex-1 truncate text-[12px] font-semibold leading-[1.3] text-[var(--adaptive-black900)]"
-                        title={alias}
-                    >
-                        {alias}
-                    </p>
-                ) : (
-                    <MinimizedCaseMarquee caseTexts={caseTexts} />
-                )}
-            </button>
-            <button
-                type="button"
-                data-fivepixels-interactive=""
-                aria-label={messages.marker.minimizedAliasEditAriaLabel}
-                title={messages.marker.minimizedAliasEditAriaLabel}
-                onPointerDown={(event) => event.stopPropagation()}
-                onClick={(event) => {
-                    event.stopPropagation();
-                    setDraft(alias);
-                    setIsEditing(true);
-                }}
-                className="inline-flex h-[20px] w-[20px] shrink-0 items-center justify-center rounded-[4px] text-[var(--adaptive-black500)] hover:bg-[var(--adaptive-tintOpacity200)] hover:text-[var(--adaptive-black900)]"
-            >
-                <EditIcon className="h-[12px] w-[12px]" />
-            </button>
-        </div>
     );
 }
 
@@ -1168,60 +1001,32 @@ export function MarkerFeedbackWindow({ report, anchor, isFocused }: MarkerFeedba
                 }}
             >
                 {showMinimizedChrome ? (
-                    <div
-                        className={`group/min-dock relative h-full w-full ${overlayDock.dockCount > 1 ? "cursor-grab" : ""} ${isDockDragging ? "cursor-grabbing" : ""}`}
+                    <MinimizedDockWindowChrome
+                        badgeLabel="Route"
+                        badgeValue={report.pathname}
+                        restoreAriaLabel={`${messages.marker.windowRestoreAriaLabel}. ${report.pathname}. ${minimizedCaseTexts.map((text, index) => `${index + 1}. ${text}`).join(", ")}`}
+                        restoreTitle={messages.marker.windowRestoreAriaLabel}
+                        onRestore={handleToggleMinimize}
+                        restoreDisabled={dockMorph !== null}
+                        closeAriaLabel={messages.marker.windowCloseAriaLabel}
+                        closeTitle={messages.marker.windowCloseAriaLabel}
+                        onClose={requestClose}
+                        closeDisabled={dockMorph !== null || windowSurfacePhase === "exiting" || isDockDragging}
+                        dockCount={overlayDock.dockCount}
+                        isDockDragging={isDockDragging}
                         onPointerDown={dockDrag.handleMinimizedDockPointerDown}
                         onClickCapture={dockDrag.handleMinimizedDockClickCapture}
+                        surfaceClassName={leftSectionClass}
                     >
-                        <div
-                            ref={surfaceRef}
-                            className={`flex h-full w-full overflow-hidden rounded-[16px] ${leftSectionClass}`}
-                        >
-                            <div className="flex w-full flex-col justify-center gap-[2px] overflow-hidden px-[12px] py-[6px]">
-                                <button
-                                    type="button"
-                                    data-fivepixels-interactive=""
-                                    onClick={handleToggleMinimize}
-                                    disabled={dockMorph !== null}
-                                    aria-label={`${messages.marker.windowRestoreAriaLabel}. ${report.pathname}. ${minimizedCaseTexts.map((text, index) => `${index + 1}. ${text}`).join(", ")}`}
-                                    title={messages.marker.windowRestoreAriaLabel}
-                                    className="flex min-w-0 items-center gap-[4px] text-left"
-                                >
-                                    <p className="shrink-0 rounded-[4px] bg-[var(--adaptive-tintOpacity300)] px-[2px] py-[2px] text-[10px]">Route</p>
-                                    <p className="min-w-0 truncate text-[10px] font-semibold leading-none text-[var(--adaptive-accent-coral)]">{report.pathname}</p>
-                                </button>
-
-                                <MinimizedWindowAliasRow
-                                    projectId={projectId}
-                                    reportId={report.id}
-                                    caseTexts={minimizedCaseTexts}
-                                    messages={messages}
-                                    onRestore={handleToggleMinimize}
-                                    restoreDisabled={dockMorph !== null}
-                                />
-                            </div>
-                        </div>
-
-                        <button
-                            type="button"
-                            data-fivepixels-interactive=""
-                            aria-label={messages.marker.windowCloseAriaLabel}
-                            title={messages.marker.windowCloseAriaLabel}
-                            disabled={dockMorph !== null || windowSurfacePhase === "exiting" || isDockDragging}
-                            onPointerDown={(event) => event.stopPropagation()}
-                            onClick={(event) => {
-                                event.stopPropagation();
-                                requestClose();
-                            }}
-                            className={`absolute right-[6px] top-[6px] z-[2] inline-flex h-[22px] w-[22px] items-center justify-center rounded-full bg-[var(--adaptive-black100)] text-[var(--adaptive-black700)] shadow-[var(--adaptive-popup-shadow)] transition-[opacity,transform] duration-150 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[var(--adaptive-black200)] hover:text-[var(--adaptive-black900)] ${
-                                dockMorph !== null || isDockDragging
-                                    ? "pointer-events-none scale-90 opacity-0"
-                                    : "pointer-events-none scale-90 opacity-0 group-hover/min-dock:pointer-events-auto group-hover/min-dock:scale-100 group-hover/min-dock:opacity-100"
-                            }`}
-                        >
-                            <CloseIcon className="h-[12px] w-[12px]" />
-                        </button>
-                    </div>
+                        <MinimizedWindowAliasRow
+                            projectId={projectId}
+                            reportId={report.id}
+                            caseTexts={minimizedCaseTexts}
+                            messages={messages}
+                            onRestore={handleToggleMinimize}
+                            restoreDisabled={dockMorph !== null}
+                        />
+                    </MinimizedDockWindowChrome>
                 ) : (
                     <div
                         ref={surfaceRef}
