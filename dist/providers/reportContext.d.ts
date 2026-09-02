@@ -134,6 +134,8 @@ declare const ReportContext: Context<{
     toggleMarkerTargetPreview: () => void;
     devicePreviewUiOpen: boolean;
     setDevicePreviewUiOpen: (open: boolean) => void;
+    mobilePreviewUiOpen: boolean;
+    setMobilePreviewUiOpen: (open: boolean) => void;
     devicePreviewDeviceId: string;
     setDevicePreviewDeviceId: (deviceId: string) => void;
     devicePreviewScale: 1 | 0.5 | 0.75 | 1.25;
@@ -503,6 +505,8 @@ export declare function useReport(): {
     toggleMarkerTargetPreview: () => void;
     devicePreviewUiOpen: boolean;
     setDevicePreviewUiOpen: (open: boolean) => void;
+    mobilePreviewUiOpen: boolean;
+    setMobilePreviewUiOpen: (open: boolean) => void;
     devicePreviewDeviceId: string;
     setDevicePreviewDeviceId: (deviceId: string) => void;
     devicePreviewScale: 1 | 0.5 | 0.75 | 1.25;
@@ -875,6 +879,8 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         toggleMarkerTargetPreview: () => void;
         devicePreviewUiOpen: boolean;
         setDevicePreviewUiOpen: (open: boolean) => void;
+        mobilePreviewUiOpen: boolean;
+        setMobilePreviewUiOpen: (open: boolean) => void;
         devicePreviewDeviceId: string;
         setDevicePreviewDeviceId: (deviceId: string) => void;
         devicePreviewScale: 1 | 0.5 | 0.75 | 1.25;
@@ -1113,7 +1119,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         dismissNotification: (id: string) => void;
         clearNotifications: () => void;
         activateNotification: (item: import("../types/notification.js").NotificationItem) => void;
-    }, "personalKey" | "projectId" | "fields" | "personalKeyRequired" | "environment" | "require" | "requireAuth" | "questionThreadDisplay" | "setQuestionThreadDisplay" | "threadLayout" | "setThreadLayout" | "locale" | "setLocale" | "showMarkerTargetPreview" | "setShowMarkerTargetPreview" | "toggleMarkerTargetPreview" | "devicePreviewUiOpen" | "setDevicePreviewUiOpen" | "devicePreviewDeviceId" | "setDevicePreviewDeviceId" | "devicePreviewScale" | "setDevicePreviewScale" | "devicePreviewImageEnabled" | "setDevicePreviewImageEnabled" | "devicePreviewFitToViewport" | "setDevicePreviewFitToViewport" | "devicePreviewStatusBarEnabled" | "setDevicePreviewStatusBarEnabled" | "devicePreviewPreset" | "showHiddenDetachedMarkers" | "setShowHiddenDetachedMarkers" | "showModalDetachedMarkers" | "setShowModalDetachedMarkers" | "markerAppearance" | "setMarkerAppearance" | "setMarkerSize" | "setMarkerShape" | "setMarkerFillStyle" | "setMarkerColors" | "setMarkerColor" | "setMarkerStrokeColor" | "setFeedbackModeDotColors" | "setFeedbackModeDotColor" | "typography" | "setTypography" | "setFontSize" | "setFontFamily" | "panelRole" | "setPanelRole" | "persistenceStatus" | "appVersion" | "showFeedbackList" | "selfProfile" | "authors" | "publicKey" | "personalKeyCandidates" | "issuePersonalKey" | "rotatePersonalKey" | "insertPersonalKey" | "clearPersonalKey" | "authorSelectionLocked" | "messages" | "teamReviewers" | "teamActor" | "apiTeamDirectory" | "apiTeamMembers" | "apiTeamMembersLoading" | "refreshTeamMembers" | "visibleShortcutKeys" | "onListReviewers" | "onListReviewerRequests" | "onCreateReviewerRequest" | "onResolveReviewerRequest" | "onRegisterReviewer" | "onUpdateReviewer" | "onDeleteReviewer" | "panelAppearance" | "setPanelAppearance" | "tooltipAppearance" | "setTooltipAppearance" | "teamActorRole" | "isTeamAdmin" | "canAccessTeamSettings" | "integrationCapabilities" | "adapterIntegrationStatus" | "panelView" | "authBootstrapState" | "isAuthBootstrapping" | "loginMethod" | "loginWithApi" | "registerWithApi" | "logoutWithApi" | "refreshWithApi" | "loginWithArtemis" | "completeRemoteOnboarding" | "completeOnboarding" | "restoreFromBackup" | "skipOnboarding" | "resolvedPanelAppearance" | "resolvedTooltipAppearance" | "isMobileViewport" | "isPresentationMode" | "presentationViewers" | "visiblePanelTabs" | "visiblePanelTabsSummary" | "resolvedTabAvailabilityContext" | "setVisiblePanelTabs" | "resetVisibleTabsToRoleDefault" | "applyRoleDefaultTabsForOnboarding" | "savePanelTabPreference" | "storedPanelTabPreference">;
+    }, "personalKey" | "projectId" | "fields" | "personalKeyRequired" | "environment" | "require" | "requireAuth" | "questionThreadDisplay" | "setQuestionThreadDisplay" | "threadLayout" | "setThreadLayout" | "locale" | "setLocale" | "showMarkerTargetPreview" | "setShowMarkerTargetPreview" | "toggleMarkerTargetPreview" | "devicePreviewUiOpen" | "setDevicePreviewUiOpen" | "mobilePreviewUiOpen" | "setMobilePreviewUiOpen" | "devicePreviewDeviceId" | "setDevicePreviewDeviceId" | "devicePreviewScale" | "setDevicePreviewScale" | "devicePreviewImageEnabled" | "setDevicePreviewImageEnabled" | "devicePreviewFitToViewport" | "setDevicePreviewFitToViewport" | "devicePreviewStatusBarEnabled" | "setDevicePreviewStatusBarEnabled" | "devicePreviewPreset" | "showHiddenDetachedMarkers" | "setShowHiddenDetachedMarkers" | "showModalDetachedMarkers" | "setShowModalDetachedMarkers" | "markerAppearance" | "setMarkerAppearance" | "setMarkerSize" | "setMarkerShape" | "setMarkerFillStyle" | "setMarkerColors" | "setMarkerColor" | "setMarkerStrokeColor" | "setFeedbackModeDotColors" | "setFeedbackModeDotColor" | "typography" | "setTypography" | "setFontSize" | "setFontFamily" | "panelRole" | "setPanelRole" | "persistenceStatus" | "appVersion" | "showFeedbackList" | "selfProfile" | "authors" | "publicKey" | "personalKeyCandidates" | "issuePersonalKey" | "rotatePersonalKey" | "insertPersonalKey" | "clearPersonalKey" | "authorSelectionLocked" | "messages" | "teamReviewers" | "teamActor" | "apiTeamDirectory" | "apiTeamMembers" | "apiTeamMembersLoading" | "refreshTeamMembers" | "visibleShortcutKeys" | "onListReviewers" | "onListReviewerRequests" | "onCreateReviewerRequest" | "onResolveReviewerRequest" | "onRegisterReviewer" | "onUpdateReviewer" | "onDeleteReviewer" | "panelAppearance" | "setPanelAppearance" | "tooltipAppearance" | "setTooltipAppearance" | "teamActorRole" | "isTeamAdmin" | "canAccessTeamSettings" | "integrationCapabilities" | "adapterIntegrationStatus" | "panelView" | "authBootstrapState" | "isAuthBootstrapping" | "loginMethod" | "loginWithApi" | "registerWithApi" | "logoutWithApi" | "refreshWithApi" | "loginWithArtemis" | "completeRemoteOnboarding" | "completeOnboarding" | "restoreFromBackup" | "skipOnboarding" | "resolvedPanelAppearance" | "resolvedTooltipAppearance" | "isMobileViewport" | "isPresentationMode" | "presentationViewers" | "visiblePanelTabs" | "visiblePanelTabsSummary" | "resolvedTabAvailabilityContext" | "setVisiblePanelTabs" | "resetVisibleTabsToRoleDefault" | "applyRoleDefaultTabsForOnboarding" | "savePanelTabPreference" | "storedPanelTabPreference">;
     session: Pick<{
         panelAppearance: import("../index.js").ReportAppearance;
         setPanelAppearance: (nextAppearance: import("../index.js").ReportAppearance) => void;
@@ -1240,6 +1246,8 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         toggleMarkerTargetPreview: () => void;
         devicePreviewUiOpen: boolean;
         setDevicePreviewUiOpen: (open: boolean) => void;
+        mobilePreviewUiOpen: boolean;
+        setMobilePreviewUiOpen: (open: boolean) => void;
         devicePreviewDeviceId: string;
         setDevicePreviewDeviceId: (deviceId: string) => void;
         devicePreviewScale: 1 | 0.5 | 0.75 | 1.25;
@@ -1605,6 +1613,8 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         toggleMarkerTargetPreview: () => void;
         devicePreviewUiOpen: boolean;
         setDevicePreviewUiOpen: (open: boolean) => void;
+        mobilePreviewUiOpen: boolean;
+        setMobilePreviewUiOpen: (open: boolean) => void;
         devicePreviewDeviceId: string;
         setDevicePreviewDeviceId: (deviceId: string) => void;
         devicePreviewScale: 1 | 0.5 | 0.75 | 1.25;

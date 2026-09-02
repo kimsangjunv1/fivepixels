@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ensureReportLocaleMessages, getReportMessages, setActiveReportMessages } from "../../i18n/index.js";
 import { useMarkerTargetPreviewPreference } from "../useMarkerTargetPreviewPreference.js";
 import { useDevicePreviewPreference } from "../useDevicePreviewPreference.js";
+import { useMobilePreviewPreference } from "../useMobilePreviewPreference.js";
 import { useDetachedMarkerVisibilityPreference } from "../useDetachedMarkerVisibilityPreference.js";
 import { useMarkerAppearancePreference } from "../useMarkerAppearancePreference.js";
 import { useTypographyPreference } from "../useTypographyPreference.js";
@@ -35,6 +36,7 @@ export function useReportPanelShell({ projectId, environment, appVersion, sync =
     const { appearance: activeTooltipAppearance, setAppearance: setTooltipAppearance } = useAppearancePreference(TOOLTIP_APPEARANCE_STORAGE_KEY, tooltipAppearance);
     const { showMarkerTargetPreview, setShowMarkerTargetPreview, toggleMarkerTargetPreview } = useMarkerTargetPreviewPreference();
     const { devicePreviewUiOpen, setDevicePreviewUiOpen, devicePreviewDeviceId, setDevicePreviewDeviceId, devicePreviewScale, setDevicePreviewScale, devicePreviewImageEnabled, setDevicePreviewImageEnabled, devicePreviewFitToViewport, setDevicePreviewFitToViewport, devicePreviewStatusBarEnabled, setDevicePreviewStatusBarEnabled, devicePreviewPreset, } = useDevicePreviewPreference();
+    const { mobilePreviewUiOpen, setMobilePreviewUiOpen } = useMobilePreviewPreference();
     const { showHiddenDetachedMarkers, setShowHiddenDetachedMarkers, showModalDetachedMarkers, setShowModalDetachedMarkers } = useDetachedMarkerVisibilityPreference();
     const { markerAppearance, setMarkerAppearance, setMarkerSize, setMarkerShape, setMarkerFillStyle, setMarkerColors, setMarkerColor, setMarkerStrokeColor, setFeedbackModeDotColors, setFeedbackModeDotColor, } = useMarkerAppearancePreference();
     const { typography, setTypography, setFontSize, setFontFamily } = useTypographyPreference();
@@ -250,6 +252,8 @@ export function useReportPanelShell({ projectId, environment, appVersion, sync =
         toggleMarkerTargetPreview,
         devicePreviewUiOpen,
         setDevicePreviewUiOpen,
+        mobilePreviewUiOpen,
+        setMobilePreviewUiOpen,
         devicePreviewDeviceId,
         setDevicePreviewDeviceId,
         devicePreviewScale,

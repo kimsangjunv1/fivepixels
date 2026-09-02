@@ -54,6 +54,7 @@ export type ReportMessages = {
         viewSelectableElements: string;
         viewFeedbacks: string;
         notifications: string;
+        mobilePreview: string;
         devicePreview: string;
         refresh: string;
         stopAutoRefresh: string;
@@ -575,6 +576,8 @@ export type ReportMessages = {
         devicePreviewCaptureAriaLabel: string;
         devicePreviewIframeTitle: string;
         devicePreviewIframeBlocked: string;
+        mobilePreviewIframeTitle: string;
+        mobilePreviewIframeBlocked: string;
         sectionViewerSwitch: string;
         viewerSwitchAriaLabel: string;
         viewerSwitchHint: string;

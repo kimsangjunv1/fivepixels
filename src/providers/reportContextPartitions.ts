@@ -44,6 +44,8 @@ export const REPORT_PREFERENCE_KEYS = [
     "toggleMarkerTargetPreview",
     "devicePreviewUiOpen",
     "setDevicePreviewUiOpen",
+    "mobilePreviewUiOpen",
+    "setMobilePreviewUiOpen",
     "devicePreviewDeviceId",
     "setDevicePreviewDeviceId",
     "devicePreviewScale",

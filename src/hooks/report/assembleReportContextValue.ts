@@ -240,6 +240,8 @@ export function assembleReportContextValue({
         toggleMarkerTargetPreview: panel.toggleMarkerTargetPreview,
         devicePreviewUiOpen: panel.devicePreviewUiOpen,
         setDevicePreviewUiOpen: panel.setDevicePreviewUiOpen,
+        mobilePreviewUiOpen: panel.mobilePreviewUiOpen,
+        setMobilePreviewUiOpen: panel.setMobilePreviewUiOpen,
         devicePreviewDeviceId: panel.devicePreviewDeviceId,
         setDevicePreviewDeviceId: panel.setDevicePreviewDeviceId,
         devicePreviewScale: panel.devicePreviewScale,

@@ -166,6 +166,8 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     toggleMarkerTargetPreview: () => void;
     devicePreviewUiOpen: boolean;
     setDevicePreviewUiOpen: (open: boolean) => void;
+    mobilePreviewUiOpen: boolean;
+    setMobilePreviewUiOpen: (open: boolean) => void;
     devicePreviewDeviceId: string;
     setDevicePreviewDeviceId: (deviceId: string) => void;
     devicePreviewScale: 1 | 0.5 | 0.75 | 1.25;

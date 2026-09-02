@@ -9,7 +9,8 @@ import { ReportMarkersLayer } from "@/components/point/ReportMarkersLayer.js";
 import { ReportOpenWindowsLayer } from "@/components/point/ReportOpenWindowsLayer.js";
 import { DotWaveOverlay } from "@/components/overlay/DotWaveOverlay.js";
 import { useOverlayChrome } from "@/hooks/useOverlayChrome.js";
-import { isInsideDevicePreviewFrame } from "@/utils/overlay/devicePreviewFrame.js";
+import { FloatingMobilePreview } from "@/components/overlay/FloatingMobilePreview.js";
+import { isInsidePreviewGuestFrame } from "@/utils/overlay/previewGuestFrame.js";
 import { ShadowReportRoot } from "./ShadowReportRoot.js";
 import { ThemeScope } from "./ThemeScope.js";
 
@@ -18,6 +19,7 @@ const FEEDBACK_ERROR_DOT_COLOR = "#ef4444";
 export function ReportView() {
     const {
         showMarkerTargetPreview,
+        mobilePreviewUiOpen,
         devicePreviewUiOpen,
         resolvedPanelAppearance,
         resolvedTooltipAppearance,
@@ -30,8 +32,9 @@ export function ReportView() {
     const feedbackModeDotColor = markerAppearance.feedbackModeDotColors[resolvedPanelAppearance];
     const hasDraftContentError = mode === "report" && Boolean(draft) && Boolean(errorMessage);
     const resolvedFeedbackModeDotColor = hasDraftContentError ? FEEDBACK_ERROR_DOT_COLOR : feedbackModeDotColor;
-    const isPreviewGuest = isInsideDevicePreviewFrame();
+    const isPreviewGuest = isInsidePreviewGuestFrame();
     const showHostDevicePreview = devicePreviewUiOpen && !isPreviewGuest;
+    const showFloatingMobilePreview = mobilePreviewUiOpen && !isPreviewGuest;
 
     useOverlayChrome({
         mode,
@@ -62,6 +65,12 @@ export function ReportView() {
             <ThemeScope appearance={resolvedPanelAppearance}>
                 <ReportControlPanel />
             </ThemeScope>
+
+            {showFloatingMobilePreview ? (
+                <ThemeScope appearance={resolvedPanelAppearance}>
+                    <FloatingMobilePreview />
+                </ThemeScope>
+            ) : null}
 
             {notificationUiOpen ? (
                 <ThemeScope appearance={resolvedPanelAppearance}>

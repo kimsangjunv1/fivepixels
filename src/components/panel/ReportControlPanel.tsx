@@ -7,6 +7,7 @@ import {
     ChevronDownIcon,
     ChevronLeftIcon,
     ChevronRightIcon,
+    MobilePreviewIcon,
     DevicePreviewIcon,
     EyeOpenIcon,
     LockIcon,
@@ -45,7 +46,7 @@ import { PanelRoleSwitch } from "./PanelRoleSwitch.js";
 import { PanelPresentationSwitch } from "./PanelPresentationSwitch.js";
 import { PanelAutoRefreshControl } from "./PanelAutoRefreshControl.js";
 import { PanelOnboarding } from "./PanelOnboarding.js";
-import { isInsideDevicePreviewFrame } from "@/utils/overlay/devicePreviewFrame.js";
+import { isInsidePreviewGuestFrame } from "@/utils/overlay/previewGuestFrame.js";
 import { PanelKeyGate } from "./PanelKeyGate.js";
 import { PanelProjectFooter } from "./PanelProjectFooter.js";
 import { createPersonalKeyBackupFilename, downloadPersonalKeyBackup } from "@/utils/feedback/feedbackDataTransfer.js";
@@ -131,6 +132,8 @@ export function ReportControlPanel() {
         setPanelCollapsed,
         devicePreviewUiOpen,
         setDevicePreviewUiOpen,
+        mobilePreviewUiOpen,
+        setMobilePreviewUiOpen,
         notificationUiOpen,
         toggleNotificationUiOpen,
         unreadNotificationCount,
@@ -430,6 +433,14 @@ export function ReportControlPanel() {
                                                 </IconTooltipButton>
 
                                                 <IconTooltipButton
+                                                    label={messages.panel.mobilePreview}
+                                                    active={mobilePreviewUiOpen}
+                                                    onClick={() => setMobilePreviewUiOpen(!mobilePreviewUiOpen)}
+                                                >
+                                                    <MobilePreviewIcon className="h-[16px] w-[16px]" />
+                                                </IconTooltipButton>
+
+                                                <IconTooltipButton
                                                     label={messages.panel.notifications}
                                                     active={notificationUiOpen}
                                                     onClick={toggleNotificationUiOpen}
@@ -437,7 +448,7 @@ export function ReportControlPanel() {
                                                     {unreadNotificationCount > 0 ? <NotificationActiveIcon className="h-[16px] w-[16px]" /> : <NotificationIdleIcon className="h-[16px] w-[16px]" />}
                                                 </IconTooltipButton>
 
-                                                {isInsideDevicePreviewFrame() ? null : (
+                                                {isInsidePreviewGuestFrame() ? null : (
                                                     <IconTooltipButton
                                                         label={messages.panel.devicePreview}
                                                         active={devicePreviewUiOpen}

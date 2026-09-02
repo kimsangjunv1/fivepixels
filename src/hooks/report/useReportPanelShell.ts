@@ -4,6 +4,7 @@ import type { DeepPartialReportMessages } from "@/i18n/types.js";
 import type { ReportLocale } from "@/i18n/types.js";
 import { useMarkerTargetPreviewPreference } from "../useMarkerTargetPreviewPreference.js";
 import { useDevicePreviewPreference } from "../useDevicePreviewPreference.js";
+import { useMobilePreviewPreference } from "../useMobilePreviewPreference.js";
 import { useDetachedMarkerVisibilityPreference } from "../useDetachedMarkerVisibilityPreference.js";
 import { useMarkerAppearancePreference } from "../useMarkerAppearancePreference.js";
 import { useTypographyPreference } from "../useTypographyPreference.js";
@@ -107,6 +108,7 @@ export function useReportPanelShell({
         setDevicePreviewStatusBarEnabled,
         devicePreviewPreset,
     } = useDevicePreviewPreference();
+    const { mobilePreviewUiOpen, setMobilePreviewUiOpen } = useMobilePreviewPreference();
     const { showHiddenDetachedMarkers, setShowHiddenDetachedMarkers, showModalDetachedMarkers, setShowModalDetachedMarkers } =
         useDetachedMarkerVisibilityPreference();
     const {
@@ -459,6 +461,8 @@ export function useReportPanelShell({
         toggleMarkerTargetPreview,
         devicePreviewUiOpen,
         setDevicePreviewUiOpen,
+        mobilePreviewUiOpen,
+        setMobilePreviewUiOpen,
         devicePreviewDeviceId,
         setDevicePreviewDeviceId,
         devicePreviewScale,

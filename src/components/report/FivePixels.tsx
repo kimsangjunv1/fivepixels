@@ -5,7 +5,7 @@ import { ReportProvider } from "@/providers/ReportProvider.js";
 import { resolveReportEnabled } from "@/utils/shared/env.js";
 import { resolveReportVisibility } from "@/utils/report/reportVisibility.js";
 import type { FivePixelsProps } from "@/types/publicApi.js";
-import { isInsideDevicePreviewFrame } from "@/utils/overlay/devicePreviewFrame.js";
+import { isInsidePreviewGuestFrame } from "@/utils/overlay/previewGuestFrame.js";
 import { ReportView } from "./ReportView.js";
 
 export type { FivePixelsProps, FivePixelsRequire, ResolvedFivePixelsRequire } from "@/types/publicApi.js";
@@ -35,7 +35,7 @@ export function FivePixels({
         return null;
     }
 
-    if (isInsideDevicePreviewFrame()) {
+    if (isInsidePreviewGuestFrame()) {
         return null;
     }
 

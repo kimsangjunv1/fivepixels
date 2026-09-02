@@ -36,6 +36,7 @@ export const en: ReportMessages = {
         viewSelectableElements: "View selectable elements",
         viewFeedbacks: "View feedbacks",
         notifications: "Notifications",
+        mobilePreview: "Mobile preview",
         devicePreview: "Device preview",
         refresh: "Refresh",
         stopAutoRefresh: "Stop auto-refresh",
@@ -589,6 +590,9 @@ export const en: ReportMessages = {
         devicePreviewCaptureAriaLabel: "Capture the current device preview",
         devicePreviewIframeTitle: "Device preview",
         devicePreviewIframeBlocked:
+            "This page blocked the iframe preview. Check X-Frame-Options or CSP frame-ancestors.",
+        mobilePreviewIframeTitle: "Mobile preview",
+        mobilePreviewIframeBlocked:
             "This page blocked the iframe preview. Check X-Frame-Options or CSP frame-ancestors.",
         sectionViewerSwitch: "Viewer switch",
         viewerSwitchAriaLabel: "Select preview viewer",
