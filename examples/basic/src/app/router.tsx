@@ -2,7 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 
 import { ModalDemoProvider } from "../features/modals/model/ModalDemoContext";
 import { DemoInvestThemeProvider } from "../widgets/demo-invest/model/DemoInvestThemeContext";
-import { DemoInvestShell, FeedPage, HomePage, IndexDetailPage, LoginPage, ScreenerPage } from "../widgets/demo-invest";
+import { DemoInvestShell, FeedPage, HomePage, IndexDetailPage, LoginPage, ResponsiveCheckPage, ScreenerPage } from "../widgets/demo-invest";
 import { PulseEdgecasePage } from "../widgets/landing/pages/PulseEdgecasePage";
 
 import "../../styles/pulse-board.css";
@@ -18,6 +18,7 @@ export function AppRouter() {
                         <Route index element={<HomePage />} />
                         <Route path="feed" element={<FeedPage />} />
                         <Route path="screener" element={<ScreenerPage />} />
+                        <Route path="responsive-check" element={<ResponsiveCheckPage />} />
                         <Route path="indices/:code" element={<IndexDetailPage />} />
                     </Route>
                     <Route path="signin" element={<LoginPage />} />

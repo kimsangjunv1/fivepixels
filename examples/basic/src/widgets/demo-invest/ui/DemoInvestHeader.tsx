@@ -7,6 +7,7 @@ const navItems = [
     { label: "홈", href: "/" },
     { label: "피드", href: "/feed" },
     { label: "주식 골라보기", href: "/screener" },
+    { label: "반응형 확인", href: "/responsive-check" },
     { label: "내 계좌", href: "/signin" },
 ];
 
