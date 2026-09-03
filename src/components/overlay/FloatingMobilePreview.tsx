@@ -554,41 +554,6 @@ export function FloatingMobilePreview() {
                                 </select>
                             </label>
 
-                            <button
-                                type="button"
-                                onClick={() => setCaptureWindowOpen((open) => !open)}
-                                onPointerDown={(event) => event.stopPropagation()}
-                                aria-label={messages.settings.mobilePreviewCaptureOpenAriaLabel}
-                                title={messages.settings.mobilePreviewCaptureOpenLabel}
-                                aria-pressed={captureWindowOpen}
-                                className={WINDOW_HEADER_BUTTON_CLASS}
-                            >
-                                <CaptureIcon className="h-[16px] w-[16px]" />
-                            </button>
-
-                            <button
-                                type="button"
-                                onClick={() => setQrPanelOpen((open) => !open)}
-                                onPointerDown={(event) => event.stopPropagation()}
-                                aria-label={messages.settings.mobilePreviewQrOpenAriaLabel}
-                                title={messages.settings.mobilePreviewQrOpenLabel}
-                                aria-pressed={qrPanelOpen}
-                                className={WINDOW_HEADER_BUTTON_CLASS}
-                            >
-                                <QrCodeIcon className="h-[16px] w-[16px]" />
-                            </button>
-
-                            <button
-                                type="button"
-                                onClick={toggleMobilePreviewOrientation}
-                                onPointerDown={(event) => event.stopPropagation()}
-                                aria-label={messages.settings.mobilePreviewRotateAriaLabel}
-                                title={messages.settings.mobilePreviewRotateLabel}
-                                className={WINDOW_HEADER_BUTTON_CLASS}
-                            >
-                                <ScreenRotateIcon className="h-[16px] w-[16px]" />
-                            </button>
-
                             <div className="flex shrink-0 items-center gap-[2px]">
                                 <WindowModeControls
                                     closeAriaLabel={messages.marker.windowCloseAriaLabel}
@@ -717,6 +682,43 @@ export function FloatingMobilePreview() {
                                         />
                                     </div>
                                 ) : null}
+                            </div>
+                        </div>
+                        <div
+                            className="absolute z-[20] flex justify-center"
+                            style={{ top: frameHeight + 8, left: 0, width: frameWidth }}
+                            onPointerDown={(event) => event.stopPropagation()}
+                        >
+                            <div className="flex items-center rounded-full bg-[var(--adaptive-fillOpacity700)] p-[4px] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[10px]">
+                                <button
+                                    type="button"
+                                    onClick={() => setCaptureWindowOpen((open) => !open)}
+                                    aria-label={messages.settings.mobilePreviewCaptureOpenAriaLabel}
+                                    title={messages.settings.mobilePreviewCaptureOpenLabel}
+                                    aria-pressed={captureWindowOpen}
+                                    className={WINDOW_HEADER_BUTTON_CLASS}
+                                >
+                                    <CaptureIcon className="h-[16px] w-[16px]" />
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setQrPanelOpen((open) => !open)}
+                                    aria-label={messages.settings.mobilePreviewQrOpenAriaLabel}
+                                    title={messages.settings.mobilePreviewQrOpenLabel}
+                                    aria-pressed={qrPanelOpen}
+                                    className={WINDOW_HEADER_BUTTON_CLASS}
+                                >
+                                    <QrCodeIcon className="h-[16px] w-[16px]" />
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={toggleMobilePreviewOrientation}
+                                    aria-label={messages.settings.mobilePreviewRotateAriaLabel}
+                                    title={messages.settings.mobilePreviewRotateLabel}
+                                    className={WINDOW_HEADER_BUTTON_CLASS}
+                                >
+                                    <ScreenRotateIcon className="h-[16px] w-[16px]" />
+                                </button>
                             </div>
                         </div>
                         {qrPanelOpen ? (
