@@ -128,6 +128,9 @@ export declare function MobilePreviewIcon({ className }: {
 export declare function ScreenRotateIcon({ className }: {
     className?: string;
 }): import("react").JSX.Element;
+export declare function QrCodeIcon({ className }: {
+    className?: string;
+}): import("react").JSX.Element;
 export declare function ArrowBelowIcon({ className }: {
     className?: string;
 }): import("react").JSX.Element;

@@ -1,12 +1,13 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { DEVICE_PREVIEW_BRAND_ORDER, getDevicePreviewPresetsByBrand, scaleDeviceChrome } from "../../constants/devicePreview.js";
-import { ScreenRotateIcon } from "../../components/icons/Icons.js";
+import { QrCodeIcon, ScreenRotateIcon } from "../../components/icons/Icons.js";
 import { useDraggableWindow } from "../../hooks/useDraggableWindow.js";
 import { useMinimizedDockDragReorder } from "../../hooks/useMinimizedDockDragReorder.js";
 import { useOverlayMinimizedDock } from "../../hooks/useOverlayMinimizedDock.js";
 import { useReportPreferences } from "../../providers/reportContext.js";
 import { DeviceFrameArtwork } from "./DeviceFrameArtwork.js";
+import { DevicePreviewQrPanel } from "./DevicePreviewQrPanel.js";
 import { DeviceStatusBar, getDeviceStatusBarHeight } from "./DeviceStatusBar.js";
 import { MinimizedDockSimpleSubtitleRow, MinimizedDockWindowChrome } from "../../components/ui/window/MinimizedDockWindowChrome.js";
 import { WINDOW_HEADER_BUTTON_CLASS, WindowModeControls } from "../../components/ui/window/WindowModeControls.js";
@@ -25,6 +26,8 @@ const TOOLBAR_CONTROLS_HEIGHT = 38;
 const TOOLBAR_URL_ROW_HEIGHT = 28;
 const TOOLBAR_INNER_GAP = 6;
 const TOOLBAR_APPROX_HEIGHT = TOOLBAR_CONTROLS_HEIGHT + TOOLBAR_INNER_GAP + TOOLBAR_URL_ROW_HEIGHT;
+const QR_PANEL_WIDTH = 220;
+const QR_DEVICE_GAP = 16;
 function readMobilePreviewPosition() {
     const fallback = getDefaultMobilePreviewPosition();
     if (typeof window === "undefined") {
@@ -85,6 +88,7 @@ export function FloatingMobilePreview() {
     const [frameLoadState, setFrameLoadState] = useState("loading");
     const [frameSrc, setFrameSrc] = useState(() => typeof window === "undefined" ? "" : readMobilePreviewUrl(window.location.href));
     const [urlDraft, setUrlDraft] = useState(() => typeof window === "undefined" ? "" : readMobilePreviewUrl(window.location.href));
+    const [qrPanelOpen, setQrPanelOpen] = useState(false);
     const rootRef = useRef(null);
     const iframeRef = useRef(null);
     const isMinimized = windowMode === "minimized";
@@ -118,6 +122,12 @@ export function FloatingMobilePreview() {
         persistMobilePreviewPosition(dragPosition);
     }, [dragPosition, windowMode]);
     useEffect(() => {
+        if (!mobilePreviewUiOpen) {
+            setQrPanelOpen(false);
+        }
+    }, [mobilePreviewUiOpen]);
+    const contentWidth = qrPanelOpen ? frameWidth + QR_DEVICE_GAP + QR_PANEL_WIDTH : frameWidth;
+    useEffect(() => {
         if (frameLoadState !== "ready") {
             return;
         }
@@ -139,7 +149,7 @@ export function FloatingMobilePreview() {
             overlayDock.restoreFromDock({
                 left: restoredPosition.left,
                 top: restoredPosition.top,
-                width: frameWidth,
+                width: contentWidth,
                 height: TOOLBAR_DEVICE_GAP + TOOLBAR_APPROX_HEIGHT + frameHeight,
             });
             return;
@@ -150,7 +160,7 @@ export function FloatingMobilePreview() {
             width: rect.width,
             height: rect.height,
         });
-    }, [dockMorph, frameHeight, frameWidth, overlayDock, restoredPosition.left, restoredPosition.top, windowMode]);
+    }, [contentWidth, dockMorph, frameHeight, overlayDock, restoredPosition.left, restoredPosition.top, windowMode]);
     const handleFrameLoad = useCallback(() => {
         const iframe = iframeRef.current;
         if (!isMobilePreviewGuestDocumentReady(iframe)) {
@@ -206,10 +216,32 @@ export function FloatingMobilePreview() {
         return {
             left: restoredPosition.left,
             top: restoredPosition.top,
-            width: frameWidth,
+            width: contentWidth,
             height: undefined,
         };
-    }, [dockDrag.displayLeft, dockDrag.displayTop, dockMorph, frameWidth, overlayDock.minimizedWidth, restoredPosition.left, restoredPosition.top, showMinimizedChrome]);
+    }, [
+        contentWidth,
+        dockDrag.displayLeft,
+        dockDrag.displayTop,
+        dockMorph,
+        overlayDock.minimizedWidth,
+        restoredPosition.left,
+        restoredPosition.top,
+        showMinimizedChrome,
+    ]);
+    const qrPanelMessages = useMemo(() => ({
+        title: messages.settings.devicePreviewQrTitle,
+        hintLocalhost: messages.settings.devicePreviewQrHintLocalhost,
+        urlInputLabel: messages.settings.devicePreviewQrUrlInputLabel,
+        urlInputPlaceholder: messages.settings.devicePreviewQrUrlInputPlaceholder,
+        urlInputAriaLabel: messages.settings.devicePreviewQrUrlInputAriaLabel,
+        invalidUrlMessage: messages.settings.devicePreviewQrInvalidUrl,
+        emptyUrlMessage: messages.settings.devicePreviewQrEmptyUrl,
+        copyLabel: messages.settings.devicePreviewQrCopyLabel,
+        copiedLabel: messages.settings.devicePreviewQrCopiedLabel,
+        copyAriaLabel: messages.settings.devicePreviewQrCopyAriaLabel,
+        qrAriaLabel: messages.settings.devicePreviewQrAriaLabel,
+    }), [messages.settings]);
     if (!mobilePreviewUiOpen || isInsideMobilePreviewFrame()) {
         return null;
     }
@@ -223,36 +255,36 @@ export function FloatingMobilePreview() {
             touchAction: "none",
             cursor: isDragging || isDockDragging ? "grabbing" : undefined,
             ...(isDockDragging ? { transform: "scale(1.03)", willChange: "left, top, transform" } : null),
-        }, onPointerDown: handleRootPointerDown, children: showMinimizedChrome ? (_jsx(MinimizedDockWindowChrome, { badgeLabel: messages.panel.mobilePreview, badgeValue: mobilePreviewPreset.label, restoreAriaLabel: messages.marker.windowRestoreAriaLabel, restoreTitle: messages.marker.windowRestoreAriaLabel, onRestore: handleToggleMinimize, restoreDisabled: dockMorph !== null, closeAriaLabel: messages.marker.windowCloseAriaLabel, closeTitle: messages.marker.windowCloseAriaLabel, onClose: handleClose, closeDisabled: dockMorph !== null || isDockDragging, dockCount: overlayDock.dockCount, isDockDragging: isDockDragging, onPointerDown: dockDrag.handleMinimizedDockPointerDown, onClickCapture: dockDrag.handleMinimizedDockClickCapture, children: _jsx(MinimizedDockSimpleSubtitleRow, { label: mobilePreviewPreset.label, onRestore: handleToggleMinimize, restoreDisabled: dockMorph !== null, restoreAriaLabel: messages.marker.windowRestoreAriaLabel }) })) : (_jsxs(_Fragment, { children: [_jsxs("header", { className: "mb-[10px] flex w-full min-w-0 flex-col gap-[6px] rounded-[12px] bg-[var(--adaptive-fillOpacity700)] px-[10px] py-[6px] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[10px]", style: { marginBottom: TOOLBAR_DEVICE_GAP, width: frameWidth, maxWidth: "100%" }, onPointerDown: handleDragHandlePointerDown, children: [_jsxs("div", { className: "flex min-w-0 items-center gap-[6px]", children: [_jsxs("label", { className: "flex min-w-0 flex-1 items-center gap-[6px]", children: [_jsx("span", { className: "sr-only", children: messages.settings.mobilePreviewDeviceAriaLabel }), _jsx("select", { value: mobilePreviewDeviceId, onChange: (event) => setMobilePreviewDeviceId(event.target.value), onPointerDown: (event) => event.stopPropagation(), "aria-label": messages.settings.mobilePreviewDeviceAriaLabel, className: selectClassName, children: MOBILE_PREVIEW_BRANDS.map((brand) => (_jsx("optgroup", { label: brand === "apple"
+        }, onPointerDown: handleRootPointerDown, children: showMinimizedChrome ? (_jsx(MinimizedDockWindowChrome, { badgeLabel: messages.panel.mobilePreview, badgeValue: mobilePreviewPreset.label, restoreAriaLabel: messages.marker.windowRestoreAriaLabel, restoreTitle: messages.marker.windowRestoreAriaLabel, onRestore: handleToggleMinimize, restoreDisabled: dockMorph !== null, closeAriaLabel: messages.marker.windowCloseAriaLabel, closeTitle: messages.marker.windowCloseAriaLabel, onClose: handleClose, closeDisabled: dockMorph !== null || isDockDragging, dockCount: overlayDock.dockCount, isDockDragging: isDockDragging, onPointerDown: dockDrag.handleMinimizedDockPointerDown, onClickCapture: dockDrag.handleMinimizedDockClickCapture, children: _jsx(MinimizedDockSimpleSubtitleRow, { label: mobilePreviewPreset.label, onRestore: handleToggleMinimize, restoreDisabled: dockMorph !== null, restoreAriaLabel: messages.marker.windowRestoreAriaLabel }) })) : (_jsxs(_Fragment, { children: [_jsxs("header", { className: "mb-[10px] flex w-full min-w-0 flex-col gap-[6px] rounded-[12px] bg-[var(--adaptive-fillOpacity700)] px-[10px] py-[6px] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[10px]", style: { marginBottom: TOOLBAR_DEVICE_GAP, width: contentWidth, maxWidth: "100%" }, onPointerDown: handleDragHandlePointerDown, children: [_jsxs("div", { className: "flex min-w-0 items-center gap-[6px]", children: [_jsxs("label", { className: "flex min-w-0 flex-1 items-center gap-[6px]", children: [_jsx("span", { className: "sr-only", children: messages.settings.mobilePreviewDeviceAriaLabel }), _jsx("select", { value: mobilePreviewDeviceId, onChange: (event) => setMobilePreviewDeviceId(event.target.value), onPointerDown: (event) => event.stopPropagation(), "aria-label": messages.settings.mobilePreviewDeviceAriaLabel, className: selectClassName, children: MOBILE_PREVIEW_BRANDS.map((brand) => (_jsx("optgroup", { label: brand === "apple"
                                                     ? messages.settings.devicePreviewBrandApple
                                                     : brand === "samsung"
                                                         ? messages.settings.devicePreviewBrandSamsung
-                                                        : messages.settings.devicePreviewBrandGoogle, children: getDevicePreviewPresetsByBrand(brand).map((option) => (_jsxs("option", { value: option.id, children: [option.label, " (", option.width, "\u00D7", option.height, ")"] }, option.id))) }, brand))) })] }), _jsx("button", { type: "button", onClick: toggleMobilePreviewOrientation, onPointerDown: (event) => event.stopPropagation(), "aria-label": messages.settings.mobilePreviewRotateAriaLabel, title: messages.settings.mobilePreviewRotateLabel, className: WINDOW_HEADER_BUTTON_CLASS, children: _jsx(ScreenRotateIcon, { className: "h-[16px] w-[16px]" }) }), _jsx("div", { className: "flex shrink-0 items-center gap-[2px]", children: _jsx(WindowModeControls, { closeAriaLabel: messages.marker.windowCloseAriaLabel, minimizeAriaLabel: isMinimized ? messages.marker.windowRestoreAriaLabel : messages.marker.windowMinimizeAriaLabel, maximizeAriaLabel: messages.marker.windowMaximizeAriaLabel, showMaximize: false, isMaximized: false, onClose: handleClose, onMinimize: handleToggleMinimize }) })] }), _jsxs("form", { className: "flex min-w-0 items-center gap-[6px]", onSubmit: handleUrlSubmit, onPointerDown: (event) => event.stopPropagation(), children: [_jsxs("label", { className: "flex min-w-0 flex-1 items-center", children: [_jsx("span", { className: "sr-only", children: messages.settings.mobilePreviewUrlAriaLabel }), _jsx("input", { type: "text", value: urlDraft, onChange: (event) => setUrlDraft(event.target.value), placeholder: messages.settings.mobilePreviewUrlPlaceholder, "aria-label": messages.settings.mobilePreviewUrlAriaLabel, className: urlInputClassName, spellCheck: false, autoCapitalize: "off", autoCorrect: "off" })] }), _jsx("button", { type: "submit", className: "h-[24px] shrink-0 rounded-[6px] bg-[var(--adaptive-fillOpacity500)] px-[10px] text-[12px] font-semibold text-[var(--adaptive-black600)]", children: messages.settings.mobilePreviewUrlGoLabel })] })] }), _jsxs("div", { className: "relative shrink-0", style: {
-                        width: frameWidth,
-                        height: frameHeight,
-                        filter: "drop-shadow(0 28px 56px rgba(0, 0, 0, 0.42))",
-                    }, children: [_jsx("iframe", { ref: iframeRef, name: MOBILE_PREVIEW_FRAME_NAME, title: messages.settings.mobilePreviewIframeTitle, src: frameSrc, onLoad: handleFrameLoad, "data-fivepixels-mobile-preview-frame": "", className: "absolute z-[0] border-0", style: {
-                                left: chrome.bezel.left,
-                                top: chrome.bezel.top,
-                                width: guestViewportSize.width,
-                                height: guestViewportSize.height,
-                                transform: `scale(${MOBILE_PREVIEW_SCALE})`,
-                                transformOrigin: "top left",
-                                borderRadius: chrome.screenRadius,
-                                background: screenBackground,
-                            } }), frameLoadState === "blocked" ? (_jsx("div", { className: "pointer-events-none absolute z-[1] flex items-center justify-center px-[12px] text-center text-[11px] font-semibold text-[var(--adaptive-black900)]", style: {
-                                left: chrome.bezel.left,
-                                top: chrome.bezel.top,
-                                width: layout.width,
-                                height: layout.height,
-                                borderRadius: chrome.screenRadius,
-                                background: screenBackground,
-                            }, children: messages.settings.mobilePreviewIframeBlocked })) : null, _jsx("div", { className: "pointer-events-none absolute inset-0 z-[2]", "data-fivepixels-mobile-preview-stage": "", children: _jsx(DeviceFrameArtwork, { preset: mobilePreviewPreset, chrome: chrome, screenWidth: layout.width, screenHeight: layout.height, orientation: mobilePreviewOrientation }) }), _jsx("div", { className: `pointer-events-none absolute z-[3] ${mobilePreviewOrientation === "landscape" ? "overflow-visible" : "overflow-hidden"}`, style: {
-                                left: chrome.bezel.left,
-                                top: chrome.bezel.top,
-                                width: layout.width,
-                                height: layout.height,
-                                borderRadius: chrome.screenRadius,
-                            }, children: _jsx(DeviceStatusBar, { preset: mobilePreviewPreset, width: layout.width, screenHeight: layout.height, appearance: statusBarAppearance, showCutout: true, orientation: mobilePreviewOrientation, referenceLogicalWidth: statusBarReferenceWidth }) })] })] })) }));
+                                                        : messages.settings.devicePreviewBrandGoogle, children: getDevicePreviewPresetsByBrand(brand).map((option) => (_jsxs("option", { value: option.id, children: [option.label, " (", option.width, "\u00D7", option.height, ")"] }, option.id))) }, brand))) })] }), _jsx("button", { type: "button", onClick: () => setQrPanelOpen((open) => !open), onPointerDown: (event) => event.stopPropagation(), "aria-label": messages.settings.mobilePreviewQrOpenAriaLabel, title: messages.settings.mobilePreviewQrOpenLabel, "aria-pressed": qrPanelOpen, className: WINDOW_HEADER_BUTTON_CLASS, children: _jsx(QrCodeIcon, { className: "h-[16px] w-[16px]" }) }), _jsx("button", { type: "button", onClick: toggleMobilePreviewOrientation, onPointerDown: (event) => event.stopPropagation(), "aria-label": messages.settings.mobilePreviewRotateAriaLabel, title: messages.settings.mobilePreviewRotateLabel, className: WINDOW_HEADER_BUTTON_CLASS, children: _jsx(ScreenRotateIcon, { className: "h-[16px] w-[16px]" }) }), _jsx("div", { className: "flex shrink-0 items-center gap-[2px]", children: _jsx(WindowModeControls, { closeAriaLabel: messages.marker.windowCloseAriaLabel, minimizeAriaLabel: isMinimized ? messages.marker.windowRestoreAriaLabel : messages.marker.windowMinimizeAriaLabel, maximizeAriaLabel: messages.marker.windowMaximizeAriaLabel, showMaximize: false, isMaximized: false, onClose: handleClose, onMinimize: handleToggleMinimize }) })] }), _jsxs("form", { className: "flex min-w-0 items-center gap-[6px]", onSubmit: handleUrlSubmit, onPointerDown: (event) => event.stopPropagation(), children: [_jsxs("label", { className: "flex min-w-0 flex-1 items-center", children: [_jsx("span", { className: "sr-only", children: messages.settings.mobilePreviewUrlAriaLabel }), _jsx("input", { type: "text", value: urlDraft, onChange: (event) => setUrlDraft(event.target.value), placeholder: messages.settings.mobilePreviewUrlPlaceholder, "aria-label": messages.settings.mobilePreviewUrlAriaLabel, className: urlInputClassName, spellCheck: false, autoCapitalize: "off", autoCorrect: "off" })] }), _jsx("button", { type: "submit", className: "h-[24px] shrink-0 rounded-[6px] bg-[var(--adaptive-fillOpacity500)] px-[10px] text-[12px] font-semibold text-[var(--adaptive-black600)]", children: messages.settings.mobilePreviewUrlGoLabel })] })] }), _jsxs("div", { className: "flex shrink-0 items-center", style: { gap: qrPanelOpen ? QR_DEVICE_GAP : 0 }, children: [_jsxs("div", { className: "relative shrink-0", style: {
+                                width: frameWidth,
+                                height: frameHeight,
+                                filter: "drop-shadow(0 28px 56px rgba(0, 0, 0, 0.42))",
+                            }, children: [_jsx("iframe", { ref: iframeRef, name: MOBILE_PREVIEW_FRAME_NAME, title: messages.settings.mobilePreviewIframeTitle, src: frameSrc, onLoad: handleFrameLoad, "data-fivepixels-mobile-preview-frame": "", className: "absolute z-[0] border-0", style: {
+                                        left: chrome.bezel.left,
+                                        top: chrome.bezel.top,
+                                        width: guestViewportSize.width,
+                                        height: guestViewportSize.height,
+                                        transform: `scale(${MOBILE_PREVIEW_SCALE})`,
+                                        transformOrigin: "top left",
+                                        borderRadius: chrome.screenRadius,
+                                        background: screenBackground,
+                                    } }), frameLoadState === "blocked" ? (_jsx("div", { className: "pointer-events-none absolute z-[1] flex items-center justify-center px-[12px] text-center text-[11px] font-semibold text-[var(--adaptive-black900)]", style: {
+                                        left: chrome.bezel.left,
+                                        top: chrome.bezel.top,
+                                        width: layout.width,
+                                        height: layout.height,
+                                        borderRadius: chrome.screenRadius,
+                                        background: screenBackground,
+                                    }, children: messages.settings.mobilePreviewIframeBlocked })) : null, _jsx("div", { className: "pointer-events-none absolute inset-0 z-[2]", "data-fivepixels-mobile-preview-stage": "", children: _jsx(DeviceFrameArtwork, { preset: mobilePreviewPreset, chrome: chrome, screenWidth: layout.width, screenHeight: layout.height, orientation: mobilePreviewOrientation }) }), _jsx("div", { className: `pointer-events-none absolute z-[3] ${mobilePreviewOrientation === "landscape" ? "overflow-visible" : "overflow-hidden"}`, style: {
+                                        left: chrome.bezel.left,
+                                        top: chrome.bezel.top,
+                                        width: layout.width,
+                                        height: layout.height,
+                                        borderRadius: chrome.screenRadius,
+                                    }, children: _jsx(DeviceStatusBar, { preset: mobilePreviewPreset, width: layout.width, screenHeight: layout.height, appearance: statusBarAppearance, showCutout: true, orientation: mobilePreviewOrientation, referenceLogicalWidth: statusBarReferenceWidth }) })] }), qrPanelOpen ? (_jsx("div", { className: "shrink-0 self-center", onPointerDown: (event) => event.stopPropagation(), children: _jsx(DevicePreviewQrPanel, { ...qrPanelMessages, pageHref: frameSrc, width: QR_PANEL_WIDTH }) })) : null] })] })) }));
 }
 //# sourceMappingURL=FloatingMobilePreview.js.map

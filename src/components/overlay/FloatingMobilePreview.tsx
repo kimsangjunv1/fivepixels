@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type PointerEvent as ReactPointerEvent } from "react";
 import { DEVICE_PREVIEW_BRAND_ORDER, getDevicePreviewPresetsByBrand, scaleDeviceChrome, type DevicePreviewScale } from "@/constants/devicePreview.js";
-import { ScreenRotateIcon } from "@/components/icons/Icons.js";
+import { QrCodeIcon, ScreenRotateIcon } from "@/components/icons/Icons.js";
 import type { WindowPosition } from "@/hooks/useDraggableWindow.js";
 import { useDraggableWindow } from "@/hooks/useDraggableWindow.js";
 import { useMinimizedDockDragReorder } from "@/hooks/useMinimizedDockDragReorder.js";
 import { useOverlayMinimizedDock } from "@/hooks/useOverlayMinimizedDock.js";
 import { useReportPreferences } from "@/providers/reportContext.js";
 import { DeviceFrameArtwork } from "./DeviceFrameArtwork.js";
+import { DevicePreviewQrPanel } from "./DevicePreviewQrPanel.js";
 import { DeviceStatusBar, getDeviceStatusBarHeight } from "./DeviceStatusBar.js";
 import { MinimizedDockSimpleSubtitleRow, MinimizedDockWindowChrome } from "@/components/ui/window/MinimizedDockWindowChrome.js";
 import { WINDOW_HEADER_BUTTON_CLASS, WindowModeControls } from "@/components/ui/window/WindowModeControls.js";
@@ -39,6 +40,8 @@ const TOOLBAR_CONTROLS_HEIGHT = 38;
 const TOOLBAR_URL_ROW_HEIGHT = 28;
 const TOOLBAR_INNER_GAP = 6;
 const TOOLBAR_APPROX_HEIGHT = TOOLBAR_CONTROLS_HEIGHT + TOOLBAR_INNER_GAP + TOOLBAR_URL_ROW_HEIGHT;
+const QR_PANEL_WIDTH = 220;
+const QR_DEVICE_GAP = 16;
 
 type FrameLoadState = "loading" | "ready" | "blocked";
 type MobilePreviewWindowMode = "normal" | "minimized";
@@ -128,6 +131,7 @@ export function FloatingMobilePreview() {
     const [urlDraft, setUrlDraft] = useState(() =>
         typeof window === "undefined" ? "" : readMobilePreviewUrl(window.location.href),
     );
+    const [qrPanelOpen, setQrPanelOpen] = useState(false);
     const rootRef = useRef<HTMLDivElement>(null);
     const iframeRef = useRef<HTMLIFrameElement>(null);
 
@@ -172,6 +176,14 @@ export function FloatingMobilePreview() {
     }, [dragPosition, windowMode]);
 
     useEffect(() => {
+        if (!mobilePreviewUiOpen) {
+            setQrPanelOpen(false);
+        }
+    }, [mobilePreviewUiOpen]);
+
+    const contentWidth = qrPanelOpen ? frameWidth + QR_DEVICE_GAP + QR_PANEL_WIDTH : frameWidth;
+
+    useEffect(() => {
         if (frameLoadState !== "ready") {
             return;
         }
@@ -199,7 +211,7 @@ export function FloatingMobilePreview() {
             overlayDock.restoreFromDock({
                 left: restoredPosition.left,
                 top: restoredPosition.top,
-                width: frameWidth,
+                width: contentWidth,
                 height: TOOLBAR_DEVICE_GAP + TOOLBAR_APPROX_HEIGHT + frameHeight,
             });
             return;
@@ -211,7 +223,7 @@ export function FloatingMobilePreview() {
             width: rect.width,
             height: rect.height,
         });
-    }, [dockMorph, frameHeight, frameWidth, overlayDock, restoredPosition.left, restoredPosition.top, windowMode]);
+    }, [contentWidth, dockMorph, frameHeight, overlayDock, restoredPosition.left, restoredPosition.top, windowMode]);
 
     const handleFrameLoad = useCallback(() => {
         const iframe = iframeRef.current;
@@ -289,10 +301,36 @@ export function FloatingMobilePreview() {
         return {
             left: restoredPosition.left,
             top: restoredPosition.top,
-            width: frameWidth,
+            width: contentWidth,
             height: undefined as number | undefined,
         };
-    }, [dockDrag.displayLeft, dockDrag.displayTop, dockMorph, frameWidth, overlayDock.minimizedWidth, restoredPosition.left, restoredPosition.top, showMinimizedChrome]);
+    }, [
+        contentWidth,
+        dockDrag.displayLeft,
+        dockDrag.displayTop,
+        dockMorph,
+        overlayDock.minimizedWidth,
+        restoredPosition.left,
+        restoredPosition.top,
+        showMinimizedChrome,
+    ]);
+
+    const qrPanelMessages = useMemo(
+        () => ({
+            title: messages.settings.devicePreviewQrTitle,
+            hintLocalhost: messages.settings.devicePreviewQrHintLocalhost,
+            urlInputLabel: messages.settings.devicePreviewQrUrlInputLabel,
+            urlInputPlaceholder: messages.settings.devicePreviewQrUrlInputPlaceholder,
+            urlInputAriaLabel: messages.settings.devicePreviewQrUrlInputAriaLabel,
+            invalidUrlMessage: messages.settings.devicePreviewQrInvalidUrl,
+            emptyUrlMessage: messages.settings.devicePreviewQrEmptyUrl,
+            copyLabel: messages.settings.devicePreviewQrCopyLabel,
+            copiedLabel: messages.settings.devicePreviewQrCopiedLabel,
+            copyAriaLabel: messages.settings.devicePreviewQrCopyAriaLabel,
+            qrAriaLabel: messages.settings.devicePreviewQrAriaLabel,
+        }),
+        [messages.settings],
+    );
 
     if (!mobilePreviewUiOpen || isInsideMobilePreviewFrame()) {
         return null;
@@ -347,7 +385,7 @@ export function FloatingMobilePreview() {
                 <>
                     <header
                         className="mb-[10px] flex w-full min-w-0 flex-col gap-[6px] rounded-[12px] bg-[var(--adaptive-fillOpacity700)] px-[10px] py-[6px] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[10px]"
-                        style={{ marginBottom: TOOLBAR_DEVICE_GAP, width: frameWidth, maxWidth: "100%" }}
+                        style={{ marginBottom: TOOLBAR_DEVICE_GAP, width: contentWidth, maxWidth: "100%" }}
                         onPointerDown={handleDragHandlePointerDown}
                     >
                         <div className="flex min-w-0 items-center gap-[6px]">
@@ -383,6 +421,18 @@ export function FloatingMobilePreview() {
                                     ))}
                                 </select>
                             </label>
+
+                            <button
+                                type="button"
+                                onClick={() => setQrPanelOpen((open) => !open)}
+                                onPointerDown={(event) => event.stopPropagation()}
+                                aria-label={messages.settings.mobilePreviewQrOpenAriaLabel}
+                                title={messages.settings.mobilePreviewQrOpenLabel}
+                                aria-pressed={qrPanelOpen}
+                                className={WINDOW_HEADER_BUTTON_CLASS}
+                            >
+                                <QrCodeIcon className="h-[16px] w-[16px]" />
+                            </button>
 
                             <button
                                 type="button"
@@ -437,13 +487,17 @@ export function FloatingMobilePreview() {
                     </header>
 
                     <div
-                        className="relative shrink-0"
-                        style={{
-                            width: frameWidth,
-                            height: frameHeight,
-                            filter: "drop-shadow(0 28px 56px rgba(0, 0, 0, 0.42))",
-                        }}
+                        className="flex shrink-0 items-center"
+                        style={{ gap: qrPanelOpen ? QR_DEVICE_GAP : 0 }}
                     >
+                        <div
+                            className="relative shrink-0"
+                            style={{
+                                width: frameWidth,
+                                height: frameHeight,
+                                filter: "drop-shadow(0 28px 56px rgba(0, 0, 0, 0.42))",
+                            }}
+                        >
                         <iframe
                             ref={iframeRef}
                             name={MOBILE_PREVIEW_FRAME_NAME}
@@ -510,6 +564,19 @@ export function FloatingMobilePreview() {
                                 referenceLogicalWidth={statusBarReferenceWidth}
                             />
                         </div>
+                        </div>
+                        {qrPanelOpen ? (
+                            <div
+                                className="shrink-0 self-center"
+                                onPointerDown={(event) => event.stopPropagation()}
+                            >
+                                <DevicePreviewQrPanel
+                                    {...qrPanelMessages}
+                                    pageHref={frameSrc}
+                                    width={QR_PANEL_WIDTH}
+                                />
+                            </div>
+                        ) : null}
                     </div>
                 </>
             )}
