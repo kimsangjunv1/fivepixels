@@ -14,7 +14,7 @@ import { MinimizedDockSimpleSubtitleRow, MinimizedDockWindowChrome } from "../..
 import { WINDOW_HEADER_BUTTON_CLASS, WindowModeControls } from "../../components/ui/window/WindowModeControls.js";
 import { claimFloatingWindowZIndex } from "../../utils/overlay/floatingWindowStack.js";
 import { syncGuestStatusBarStyle } from "../../utils/overlay/devicePreviewFrame.js";
-import { buildDevicePreviewCaptureFilename, captureDevicePreview, defaultRasterizeElement, downloadCanvasPng, getDevicePreviewCaptureLayout, } from "../../utils/overlay/devicePreviewCapture.js";
+import { buildDevicePreviewCaptureFilename, captureDevicePreview, defaultRasterizeElement, downloadCanvasPng, getDevicePreviewCaptureLayout, resolveCaptureViewportScroll, } from "../../utils/overlay/devicePreviewCapture.js";
 import { MINIMIZED_WINDOW_HEIGHT } from "../../utils/overlay/minimizedDockLayout.js";
 import { resolveMobilePreviewChrome, resolveMobilePreviewFrameMetrics, resolveMobilePreviewLayout, resolveMobilePreviewScreenRadius, resolveMobilePreviewScreenSize, resolveMobilePreviewStatusBarReferenceWidth, } from "../../utils/overlay/mobilePreviewLayout.js";
 import { MOBILE_PREVIEW_FRAME_NAME, getMobilePreviewCaptureRoot, getMobilePreviewGuestDocument, getMobilePreviewGuestWindow, isInsideMobilePreviewFrame, isMobilePreviewGuestDocumentReady, syncMobilePreviewGuestViewport, } from "../../utils/overlay/mobilePreviewFrame.js";
@@ -209,16 +209,18 @@ export function FloatingMobilePreview() {
         if (captureState === "capturing" || frameLoadState !== "ready") {
             return;
         }
-        const contentRoot = getMobilePreviewCaptureRoot(iframeRef.current);
+        const documentRoot = getMobilePreviewCaptureRoot(iframeRef.current);
         if (captureResetTimerRef.current !== null) {
             window.clearTimeout(captureResetTimerRef.current);
             captureResetTimerRef.current = null;
         }
         setCaptureState("capturing");
         try {
-            if (!contentRoot) {
+            if (!documentRoot) {
                 throw new Error("Mobile preview content is missing.");
             }
+            // Re-apply safe-area padding immediately before capture so the guest bitmap matches the live preview.
+            syncGuestStatusBarStyle(getMobilePreviewGuestDocument(iframeRef.current), guestStatusBarHeight);
             const screenWidth = guestViewportSize.width;
             const screenHeight = guestViewportSize.height;
             const captureChrome = resolveMobilePreviewChrome(scaleDeviceChrome(mobilePreviewPreset, 1), mobilePreviewOrientation);
@@ -228,6 +230,20 @@ export function FloatingMobilePreview() {
                 bezel: captureImageEnabled ? captureChrome.bezel : getEmptyBezel(),
                 deviceImageEnabled: captureImageEnabled,
             });
+            const screenCornerRadius = resolveMobilePreviewScreenRadius({
+                deviceChrome: captureChrome,
+                deviceImageEnabled: captureImageEnabled,
+                cornerStyle: captureCornerStyle,
+            });
+            const contentRoot = documentRoot;
+            const captureScroll = resolveCaptureViewportScroll(documentRoot, getMobilePreviewGuestWindow(iframeRef.current));
+            const viewportScroll = {
+                scrollX: captureScroll.scrollX,
+                scrollY: captureScroll.scrollY,
+                scrollWidth: Math.max(captureScroll.scrollWidth, screenWidth + captureScroll.scrollX),
+                scrollHeight: Math.max(captureScroll.scrollHeight, screenHeight + captureScroll.scrollY),
+            };
+            const statusBarPixelRatio = guestViewportSize.width / Math.max(1, layout.width);
             const canvas = await captureDevicePreview({
                 contentRoot,
                 chromeStage: captureStageRef.current,
@@ -236,6 +252,13 @@ export function FloatingMobilePreview() {
                 statusBarEnabled: captureStatusBarEnabled,
                 layout: captureLayout,
                 background: screenBackground,
+                // Always clip screen content — including when the device frame is on —
+                // so rectangular page pixels do not poke through the rounded screen hole.
+                screenCornerRadius,
+                contentScrollX: viewportScroll.scrollX,
+                contentScrollY: viewportScroll.scrollY,
+                contentScrollWidth: viewportScroll.scrollWidth,
+                contentScrollHeight: viewportScroll.scrollHeight,
                 rasterize: async (element, options) => {
                     if (element === contentRoot) {
                         return defaultRasterizeElement(element, {
@@ -243,6 +266,10 @@ export function FloatingMobilePreview() {
                             width: guestViewportSize.width,
                             height: guestViewportSize.height,
                             cropToViewport: true,
+                            scrollX: viewportScroll.scrollX,
+                            scrollY: viewportScroll.scrollY,
+                            scrollWidth: viewportScroll.scrollWidth,
+                            scrollHeight: viewportScroll.scrollHeight,
                         });
                     }
                     if (element === captureStageRef.current) {
@@ -251,6 +278,7 @@ export function FloatingMobilePreview() {
                             width: frameWidth,
                             height: frameHeight,
                             cropToViewport: false,
+                            pixelRatio: statusBarPixelRatio,
                         });
                     }
                     if (element === statusBarRef.current) {
@@ -259,6 +287,7 @@ export function FloatingMobilePreview() {
                             width: layout.width,
                             height: layout.height,
                             cropToViewport: false,
+                            pixelRatio: statusBarPixelRatio,
                         });
                     }
                     return defaultRasterizeElement(element, options);
@@ -281,12 +310,14 @@ export function FloatingMobilePreview() {
             }, 1600);
         }
     }, [
+        captureCornerStyle,
         captureImageEnabled,
         captureState,
         captureStatusBarEnabled,
         frameHeight,
         frameLoadState,
         frameWidth,
+        guestStatusBarHeight,
         guestViewportSize.height,
         guestViewportSize.width,
         layout.height,

@@ -3,7 +3,9 @@ import {
     MOBILE_PREVIEW_FRAME_ATTR,
     MOBILE_PREVIEW_FRAME_NAME,
     MOBILE_PREVIEW_GUEST_HTML_CLASS,
+    getMobilePreviewCaptureRoot,
     isInsideMobilePreviewFrame,
+    readMobilePreviewCaptureScroll,
     syncMobilePreviewGuestViewport,
 } from "./mobilePreviewFrame.js";
 
@@ -62,5 +64,49 @@ describe("syncMobilePreviewGuestViewport", () => {
 
         const meta = doc.querySelector('meta[name="viewport"]');
         expect(meta?.getAttribute("content")).toBe("width=390, initial-scale=1, viewport-fit=cover");
+    });
+});
+
+describe("mobile preview capture helpers", () => {
+    it("prefers the scrolling document root so safe-area padding is included", () => {
+        const iframe = document.createElement("iframe");
+        document.body.append(iframe);
+        const doc = iframe.contentDocument;
+
+        if (!doc) {
+            iframe.remove();
+            return;
+        }
+
+        doc.body.innerHTML = "<main>preview</main>";
+        expect(getMobilePreviewCaptureRoot(iframe)).toBe(doc.scrollingElement ?? doc.documentElement);
+        iframe.remove();
+    });
+
+    it("reads window scroll for viewport cropping", () => {
+        const iframe = document.createElement("iframe");
+        document.body.append(iframe);
+        const win = iframe.contentWindow;
+        const doc = iframe.contentDocument;
+
+        if (!win || !doc) {
+            iframe.remove();
+            return;
+        }
+
+        doc.body.innerHTML = "<main style='height:2000px'>preview</main>";
+        Object.defineProperty(win, "scrollX", { configurable: true, value: 0 });
+        Object.defineProperty(win, "scrollY", { configurable: true, value: 520 });
+        Object.defineProperty(win, "innerWidth", { configurable: true, value: 430 });
+        Object.defineProperty(win, "innerHeight", { configurable: true, value: 932 });
+
+        expect(readMobilePreviewCaptureScroll(iframe)).toEqual(
+            expect.objectContaining({
+                scrollX: 0,
+                scrollY: 520,
+            }),
+        );
+
+        iframe.remove();
     });
 });

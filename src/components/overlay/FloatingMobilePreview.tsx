@@ -20,6 +20,7 @@ import {
     defaultRasterizeElement,
     downloadCanvasPng,
     getDevicePreviewCaptureLayout,
+    resolveCaptureViewportScroll,
     type DevicePreviewCaptureState,
 } from "@/utils/overlay/devicePreviewCapture.js";
 import { MINIMIZED_WINDOW_HEIGHT } from "@/utils/overlay/minimizedDockLayout.js";
@@ -304,7 +305,7 @@ export function FloatingMobilePreview() {
             return;
         }
 
-        const contentRoot = getMobilePreviewCaptureRoot(iframeRef.current);
+        const documentRoot = getMobilePreviewCaptureRoot(iframeRef.current);
 
         if (captureResetTimerRef.current !== null) {
             window.clearTimeout(captureResetTimerRef.current);
@@ -314,9 +315,12 @@ export function FloatingMobilePreview() {
         setCaptureState("capturing");
 
         try {
-            if (!contentRoot) {
+            if (!documentRoot) {
                 throw new Error("Mobile preview content is missing.");
             }
+
+            // Re-apply safe-area padding immediately before capture so the guest bitmap matches the live preview.
+            syncGuestStatusBarStyle(getMobilePreviewGuestDocument(iframeRef.current), guestStatusBarHeight);
 
             const screenWidth = guestViewportSize.width;
             const screenHeight = guestViewportSize.height;
@@ -327,6 +331,20 @@ export function FloatingMobilePreview() {
                 bezel: captureImageEnabled ? captureChrome.bezel : getEmptyBezel(),
                 deviceImageEnabled: captureImageEnabled,
             });
+            const screenCornerRadius = resolveMobilePreviewScreenRadius({
+                deviceChrome: captureChrome,
+                deviceImageEnabled: captureImageEnabled,
+                cornerStyle: captureCornerStyle,
+            });
+            const contentRoot = documentRoot;
+            const captureScroll = resolveCaptureViewportScroll(documentRoot, getMobilePreviewGuestWindow(iframeRef.current));
+            const viewportScroll = {
+                scrollX: captureScroll.scrollX,
+                scrollY: captureScroll.scrollY,
+                scrollWidth: Math.max(captureScroll.scrollWidth, screenWidth + captureScroll.scrollX),
+                scrollHeight: Math.max(captureScroll.scrollHeight, screenHeight + captureScroll.scrollY),
+            };
+            const statusBarPixelRatio = guestViewportSize.width / Math.max(1, layout.width);
 
             const canvas = await captureDevicePreview({
                 contentRoot,
@@ -336,6 +354,13 @@ export function FloatingMobilePreview() {
                 statusBarEnabled: captureStatusBarEnabled,
                 layout: captureLayout,
                 background: screenBackground,
+                // Always clip screen content — including when the device frame is on —
+                // so rectangular page pixels do not poke through the rounded screen hole.
+                screenCornerRadius,
+                contentScrollX: viewportScroll.scrollX,
+                contentScrollY: viewportScroll.scrollY,
+                contentScrollWidth: viewportScroll.scrollWidth,
+                contentScrollHeight: viewportScroll.scrollHeight,
                 rasterize: async (element, options) => {
                     if (element === contentRoot) {
                         return defaultRasterizeElement(element, {
@@ -343,6 +368,10 @@ export function FloatingMobilePreview() {
                             width: guestViewportSize.width,
                             height: guestViewportSize.height,
                             cropToViewport: true,
+                            scrollX: viewportScroll.scrollX,
+                            scrollY: viewportScroll.scrollY,
+                            scrollWidth: viewportScroll.scrollWidth,
+                            scrollHeight: viewportScroll.scrollHeight,
                         });
                     }
 
@@ -352,6 +381,7 @@ export function FloatingMobilePreview() {
                             width: frameWidth,
                             height: frameHeight,
                             cropToViewport: false,
+                            pixelRatio: statusBarPixelRatio,
                         });
                     }
 
@@ -361,6 +391,7 @@ export function FloatingMobilePreview() {
                             width: layout.width,
                             height: layout.height,
                             cropToViewport: false,
+                            pixelRatio: statusBarPixelRatio,
                         });
                     }
 
@@ -386,12 +417,14 @@ export function FloatingMobilePreview() {
             }, 1600);
         }
     }, [
+        captureCornerStyle,
         captureImageEnabled,
         captureState,
         captureStatusBarEnabled,
         frameHeight,
         frameLoadState,
         frameWidth,
+        guestStatusBarHeight,
         guestViewportSize.height,
         guestViewportSize.width,
         layout.height,
