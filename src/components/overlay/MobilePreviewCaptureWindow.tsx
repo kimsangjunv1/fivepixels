@@ -3,12 +3,16 @@ import { useReportPreferences } from "@/providers/reportContext.js";
 import type { DevicePreviewCaptureState } from "@/utils/overlay/devicePreviewCapture.js";
 import { MOBILE_PREVIEW_SIDE_PANEL_WIDTH } from "@/utils/overlay/mobilePreviewSidePanels.js";
 
+export type MobilePreviewCornerStyle = "sharp" | "rounded";
+
 export type MobilePreviewCaptureWindowProps = {
     captureState: DevicePreviewCaptureState;
     captureImageEnabled: boolean;
     captureStatusBarEnabled: boolean;
+    captureCornerStyle: MobilePreviewCornerStyle;
     onCaptureImageEnabledChange: (enabled: boolean) => void;
     onCaptureStatusBarEnabledChange: (enabled: boolean) => void;
+    onCaptureCornerStyleChange: (style: MobilePreviewCornerStyle) => void;
     onCapture: () => void;
     width?: number;
     className?: string;
@@ -18,8 +22,10 @@ export function MobilePreviewCaptureWindow({
     captureState,
     captureImageEnabled,
     captureStatusBarEnabled,
+    captureCornerStyle,
     onCaptureImageEnabledChange,
     onCaptureStatusBarEnabledChange,
+    onCaptureCornerStyleChange,
     onCapture,
     width = MOBILE_PREVIEW_SIDE_PANEL_WIDTH,
     className = "",
@@ -57,6 +63,21 @@ export function MobilePreviewCaptureWindow({
                     ariaLabel={messages.settings.devicePreviewImageAriaLabel}
                 />
             </div>
+
+            {!captureImageEnabled ? (
+                <div className="flex flex-col gap-[3px]">
+                    <span className="text-[9px] font-semibold text-[var(--adaptive-black500)]">{messages.settings.mobilePreviewCornerStyleLabel}</span>
+                    <PanelOptionSwitch
+                        options={[
+                            { value: "sharp", label: messages.settings.mobilePreviewCornerStyleSharp },
+                            { value: "rounded", label: messages.settings.mobilePreviewCornerStyleRounded },
+                        ]}
+                        value={captureCornerStyle}
+                        onChange={(value) => onCaptureCornerStyleChange(value as MobilePreviewCornerStyle)}
+                        ariaLabel={messages.settings.mobilePreviewCornerStyleAriaLabel}
+                    />
+                </div>
+            ) : null}
 
             <div className="flex flex-col gap-[3px]">
                 <span className="text-[9px] font-semibold text-[var(--adaptive-black500)]">{messages.settings.devicePreviewStatusBarLabel}</span>

@@ -9,7 +9,7 @@ import { useReportPreferences } from "@/providers/reportContext.js";
 import { DeviceFrameArtwork } from "./DeviceFrameArtwork.js";
 import { DevicePreviewQrPanel } from "./DevicePreviewQrPanel.js";
 import { DeviceStatusBar, getDeviceStatusBarHeight } from "./DeviceStatusBar.js";
-import { MobilePreviewCaptureWindow } from "./MobilePreviewCaptureWindow.js";
+import { MobilePreviewCaptureWindow, type MobilePreviewCornerStyle } from "./MobilePreviewCaptureWindow.js";
 import { MinimizedDockSimpleSubtitleRow, MinimizedDockWindowChrome } from "@/components/ui/window/MinimizedDockWindowChrome.js";
 import { WINDOW_HEADER_BUTTON_CLASS, WindowModeControls } from "@/components/ui/window/WindowModeControls.js";
 import { claimFloatingWindowZIndex } from "@/utils/overlay/floatingWindowStack.js";
@@ -133,6 +133,7 @@ export function FloatingMobilePreview() {
     const deviceChrome = useMemo(() => resolveMobilePreviewChrome(portraitChrome, mobilePreviewOrientation), [mobilePreviewOrientation, portraitChrome]);
     const [captureState, setCaptureState] = useState<DevicePreviewCaptureState>("idle");
     const [captureImageEnabled, setCaptureImageEnabled] = useState(true);
+    const [captureCornerStyle, setCaptureCornerStyle] = useState<MobilePreviewCornerStyle>("rounded");
     const [captureStatusBarEnabled, setCaptureStatusBarEnabled] = useState(true);
     const chrome = useMemo(
         () =>
@@ -145,6 +146,7 @@ export function FloatingMobilePreview() {
                   },
         [captureImageEnabled, deviceChrome],
     );
+    const screenRadius = captureImageEnabled || captureCornerStyle === "rounded" ? deviceChrome.screenRadius : 0;
     const { frameWidth, frameHeight } = useMemo(() => resolveMobilePreviewFrameMetrics(layout, chrome.bezel), [chrome.bezel, layout]);
     const statusBarReferenceWidth = useMemo(() => resolveMobilePreviewStatusBarReferenceWidth(mobilePreviewPreset, mobilePreviewOrientation), [mobilePreviewOrientation, mobilePreviewPreset]);
     const guestStatusBarHeight = useMemo(
@@ -634,7 +636,7 @@ export function FloatingMobilePreview() {
                                     height: guestViewportSize.height,
                                     transform: `scale(${MOBILE_PREVIEW_SCALE})`,
                                     transformOrigin: "top left",
-                                    borderRadius: chrome.screenRadius,
+                                    borderRadius: screenRadius,
                                     background: screenBackground,
                                 }}
                             />
@@ -646,7 +648,7 @@ export function FloatingMobilePreview() {
                                         top: chrome.bezel.top,
                                         width: layout.width,
                                         height: layout.height,
-                                        borderRadius: chrome.screenRadius,
+                                        borderRadius: screenRadius,
                                         background: screenBackground,
                                     }}
                                 >
@@ -677,7 +679,7 @@ export function FloatingMobilePreview() {
                                             top: chrome.bezel.top,
                                             width: layout.width,
                                             height: layout.height,
-                                            borderRadius: captureImageEnabled ? chrome.screenRadius : 0,
+                                            borderRadius: screenRadius,
                                         }}
                                     >
                                         <DeviceStatusBar
@@ -750,8 +752,10 @@ export function FloatingMobilePreview() {
                                                 captureState={captureState}
                                                 captureImageEnabled={captureImageEnabled}
                                                 captureStatusBarEnabled={captureStatusBarEnabled}
+                                                captureCornerStyle={captureCornerStyle}
                                                 onCaptureImageEnabledChange={setCaptureImageEnabled}
                                                 onCaptureStatusBarEnabledChange={setCaptureStatusBarEnabled}
+                                                onCaptureCornerStyleChange={setCaptureCornerStyle}
                                                 onCapture={() => void handleCapture()}
                                                 width={MOBILE_PREVIEW_SIDE_PANEL_WIDTH}
                                             />
