@@ -40,6 +40,14 @@ import {
     syncMobilePreviewGuestViewport,
 } from "@/utils/overlay/mobilePreviewFrame.js";
 import { normalizeMobilePreviewUrl, persistMobilePreviewUrl, readMobilePreviewUrl } from "@/utils/overlay/mobilePreviewUrl.js";
+import {
+    MOBILE_PREVIEW_SIDE_PANEL_GAP,
+    MOBILE_PREVIEW_SIDE_PANEL_STACK_GAP,
+    MOBILE_PREVIEW_SIDE_PANEL_WIDTH,
+    isMobilePreviewSidePanelOpen,
+    toggleMobilePreviewSidePanel,
+    type MobilePreviewSidePanelId,
+} from "@/utils/overlay/mobilePreviewSidePanels.js";
 
 const MOBILE_PREVIEW_WINDOW_ID = "mobile-preview";
 const MOBILE_PREVIEW_POSITION_STORAGE_KEY = "fivepixels:mobile-preview-position:v1";
@@ -50,8 +58,6 @@ const TOOLBAR_CONTROLS_HEIGHT = 38;
 const TOOLBAR_URL_ROW_HEIGHT = 28;
 const TOOLBAR_INNER_GAP = 6;
 const TOOLBAR_APPROX_HEIGHT = TOOLBAR_CONTROLS_HEIGHT + TOOLBAR_INNER_GAP + TOOLBAR_URL_ROW_HEIGHT;
-const QR_PANEL_WIDTH = 220;
-const QR_DEVICE_GAP = 16;
 
 type FrameLoadState = "loading" | "ready" | "blocked";
 type MobilePreviewWindowMode = "normal" | "minimized";
@@ -125,7 +131,6 @@ export function FloatingMobilePreview() {
     const layout = useMemo(() => resolveMobilePreviewLayout(mobilePreviewPreset, MOBILE_PREVIEW_SCALE, mobilePreviewOrientation), [mobilePreviewOrientation, mobilePreviewPreset]);
     const portraitChrome = useMemo(() => scaleDeviceChrome(mobilePreviewPreset, MOBILE_PREVIEW_SCALE), [mobilePreviewPreset]);
     const deviceChrome = useMemo(() => resolveMobilePreviewChrome(portraitChrome, mobilePreviewOrientation), [mobilePreviewOrientation, portraitChrome]);
-    const [captureWindowOpen, setCaptureWindowOpen] = useState(false);
     const [captureState, setCaptureState] = useState<DevicePreviewCaptureState>("idle");
     const [captureImageEnabled, setCaptureImageEnabled] = useState(true);
     const [captureStatusBarEnabled, setCaptureStatusBarEnabled] = useState(true);
@@ -155,7 +160,7 @@ export function FloatingMobilePreview() {
     const [frameLoadState, setFrameLoadState] = useState<FrameLoadState>("loading");
     const [frameSrc, setFrameSrc] = useState(() => (typeof window === "undefined" ? "" : readMobilePreviewUrl(window.location.href)));
     const [urlDraft, setUrlDraft] = useState(() => (typeof window === "undefined" ? "" : readMobilePreviewUrl(window.location.href)));
-    const [qrPanelOpen, setQrPanelOpen] = useState(false);
+    const [openSidePanels, setOpenSidePanels] = useState<MobilePreviewSidePanelId[]>([]);
     const rootRef = useRef<HTMLDivElement>(null);
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const captureStageRef = useRef<HTMLDivElement>(null);
@@ -204,8 +209,7 @@ export function FloatingMobilePreview() {
 
     useEffect(() => {
         if (!mobilePreviewUiOpen) {
-            setQrPanelOpen(false);
-            setCaptureWindowOpen(false);
+            setOpenSidePanels([]);
         }
     }, [mobilePreviewUiOpen]);
 
@@ -217,7 +221,13 @@ export function FloatingMobilePreview() {
         };
     }, []);
 
-    const contentWidth = qrPanelOpen ? frameWidth + QR_DEVICE_GAP + QR_PANEL_WIDTH : frameWidth;
+    const contentWidth = openSidePanels.length > 0 ? frameWidth + MOBILE_PREVIEW_SIDE_PANEL_GAP + MOBILE_PREVIEW_SIDE_PANEL_WIDTH : frameWidth;
+    const capturePanelOpen = isMobilePreviewSidePanelOpen(openSidePanels, "capture");
+    const qrPanelOpen = isMobilePreviewSidePanelOpen(openSidePanels, "qr");
+
+    const toggleSidePanel = useCallback((panelId: MobilePreviewSidePanelId) => {
+        setOpenSidePanels((panels) => toggleMobilePreviewSidePanel(panels, panelId));
+    }, []);
 
     useEffect(() => {
         if (frameLoadState !== "ready") {
@@ -468,7 +478,6 @@ export function FloatingMobilePreview() {
     }
 
     return (
-        <>
         <div
             ref={rootRef}
             data-fivepixels-interactive=""
@@ -692,17 +701,17 @@ export function FloatingMobilePreview() {
                             <div className="flex items-center rounded-full bg-[var(--adaptive-fillOpacity700)] p-[4px] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[10px]">
                                 <button
                                     type="button"
-                                    onClick={() => setCaptureWindowOpen((open) => !open)}
+                                    onClick={() => toggleSidePanel("capture")}
                                     aria-label={messages.settings.mobilePreviewCaptureOpenAriaLabel}
                                     title={messages.settings.mobilePreviewCaptureOpenLabel}
-                                    aria-pressed={captureWindowOpen}
+                                    aria-pressed={capturePanelOpen}
                                     className={WINDOW_HEADER_BUTTON_CLASS}
                                 >
                                     <CaptureIcon className="h-[16px] w-[16px]" />
                                 </button>
                                 <button
                                     type="button"
-                                    onClick={() => setQrPanelOpen((open) => !open)}
+                                    onClick={() => toggleSidePanel("qr")}
                                     aria-label={messages.settings.mobilePreviewQrOpenAriaLabel}
                                     title={messages.settings.mobilePreviewQrOpenLabel}
                                     aria-pressed={qrPanelOpen}
@@ -721,35 +730,52 @@ export function FloatingMobilePreview() {
                                 </button>
                             </div>
                         </div>
-                        {qrPanelOpen ? (
+                        {openSidePanels.length > 0 ? (
                             <div
-                                className="z-[1000]"
-                                // className="px-[10px] py-[6px] bg-[var(--adaptive-fillOpacity700)] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[10px] rounded-[12px] z-[1000]"
-                                style={{ position: "absolute", top: "50%", left: frameWidth + QR_DEVICE_GAP, transform: "translateY(-50%)" }}
+                                className="absolute z-[1000] flex flex-col"
+                                style={{
+                                    left: frameWidth + MOBILE_PREVIEW_SIDE_PANEL_GAP,
+                                    top: "50%",
+                                    width: MOBILE_PREVIEW_SIDE_PANEL_WIDTH,
+                                    gap: MOBILE_PREVIEW_SIDE_PANEL_STACK_GAP,
+                                    transform: "translateY(-50%)",
+                                }}
                                 onPointerDown={(event) => event.stopPropagation()}
                             >
-                                <DevicePreviewQrPanel
-                                    {...qrPanelMessages}
-                                    pageHref={frameSrc}
-                                    width={QR_PANEL_WIDTH}
-                                />
+                                {openSidePanels.map((panelId) => {
+                                    if (panelId === "capture") {
+                                        return (
+                                            <MobilePreviewCaptureWindow
+                                                key={panelId}
+                                                captureState={captureState}
+                                                captureImageEnabled={captureImageEnabled}
+                                                captureStatusBarEnabled={captureStatusBarEnabled}
+                                                onCaptureImageEnabledChange={setCaptureImageEnabled}
+                                                onCaptureStatusBarEnabledChange={setCaptureStatusBarEnabled}
+                                                onCapture={() => void handleCapture()}
+                                                width={MOBILE_PREVIEW_SIDE_PANEL_WIDTH}
+                                            />
+                                        );
+                                    }
+
+                                    if (panelId === "qr") {
+                                        return (
+                                            <DevicePreviewQrPanel
+                                                key={panelId}
+                                                {...qrPanelMessages}
+                                                pageHref={frameSrc}
+                                                width={MOBILE_PREVIEW_SIDE_PANEL_WIDTH}
+                                            />
+                                        );
+                                    }
+
+                                    return null;
+                                })}
                             </div>
                         ) : null}
                     </div>
                 </>
             )}
         </div>
-        {captureWindowOpen ? (
-            <MobilePreviewCaptureWindow
-                captureState={captureState}
-                captureImageEnabled={captureImageEnabled}
-                captureStatusBarEnabled={captureStatusBarEnabled}
-                onCaptureImageEnabledChange={setCaptureImageEnabled}
-                onCaptureStatusBarEnabledChange={setCaptureStatusBarEnabled}
-                onCapture={() => void handleCapture()}
-                onClose={() => setCaptureWindowOpen(false)}
-            />
-        ) : null}
-        </>
     );
 }
