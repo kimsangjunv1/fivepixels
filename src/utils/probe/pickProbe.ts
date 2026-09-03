@@ -8,7 +8,7 @@ import {
     inferLayoutModeFromProbeValues,
     parseGridTrackCount,
 } from "./probeLayout.js";
-import { findElementByProbeKey } from "./pickProbeSession.js";
+import { findElementByProbeKey } from "./probeElement.js";
 import { getPickTargetBoxStyle, getPickTargetFontStyle, shouldInspectFontStyle } from "./pickTargetInspect.js";
 
 const TEXT_PROBE_FIELD_KEYS: PickProbeFieldKey[] = ["textContent", "fontSize", "lineHeight"];

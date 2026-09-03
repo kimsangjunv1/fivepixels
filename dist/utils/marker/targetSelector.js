@@ -1,4 +1,4 @@
-import { escapeAttribute, getFeedbackTargetSelector, isFeedbackTargetVisible, resolveReportType } from "../shared/dom.js";
+import { escapeAttribute, getFeedbackTargetSelector, isFeedbackTargetVisible, resolveReportType } from "./targetDom.js";
 import { isHtmlElement, queryPageSelector } from "../overlay/pageDocumentBridge.js";
 const REPORT_HOST_ID = "fivepixels-root";
 const AUTO_ID_PREFIX = "fp-pick-";

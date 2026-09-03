@@ -76,7 +76,7 @@ export function useReportDraftSession({
         pickProbeCompareMode,
         pickProbeHasEdits,
         pickTargetContextMenu,
-        setPickTargetContextMenu,
+        setContextMenuTooltip,
         contextMenuElementKey,
         setContextMenuElementKey,
         contextMenuElementRef,
@@ -89,7 +89,7 @@ export function useReportDraftSession({
         redoProbeSessionAction,
         savedProbeCompareMode,
         closePickProbe,
-        closePickTargetContextMenu,
+        closeContextMenuTooltip,
         handlePickTargetEdit,
         handlePickTargetDelete,
         handlePickTargetRevert,
@@ -163,7 +163,7 @@ export function useReportDraftSession({
             return;
         }
 
-        closePickTargetContextMenu();
+        closeContextMenuTooltip();
         resetPickProbeState();
 
         const snapshot = menu.target;
@@ -204,7 +204,7 @@ export function useReportDraftSession({
             fieldValues: createInitialFieldValues(fields),
         });
     }, [
-        closePickTargetContextMenu,
+        closeContextMenuTooltip,
         contextMenuElementRef,
         fields,
         hoveredElementRef,
@@ -363,14 +363,14 @@ export function useReportDraftSession({
         const targetElement = findPickTargetByPoint(overlayRef.current, event.clientX, event.clientY);
 
         if (!targetElement) {
-            closePickTargetContextMenu();
+            closeContextMenuTooltip();
             return;
         }
 
         const snapshot = toFeedbackHoverSnapshot(targetElement);
 
         if (!snapshot) {
-            closePickTargetContextMenu();
+            closeContextMenuTooltip();
             return;
         }
 
@@ -385,7 +385,7 @@ export function useReportDraftSession({
             setSelectedTarget(snapshot);
         }
 
-        setPickTargetContextMenu({
+        setContextMenuTooltip({
             clientX: event.clientX,
             clientY: event.clientY,
             target: snapshot,
@@ -397,7 +397,7 @@ export function useReportDraftSession({
             return;
         }
 
-        closePickTargetContextMenu();
+        closeContextMenuTooltip();
         resetPickProbeState();
 
         const targetElement = findPickTargetByPoint(overlayRef.current, event.clientX, event.clientY);
@@ -684,7 +684,7 @@ export function useReportDraftSession({
         redoProbeSessionAction,
         savedProbeCompareMode,
         closePickProbe,
-        closePickTargetContextMenu,
+        closeContextMenuTooltip,
         handlePickTargetEdit,
         handlePickTargetDelete,
         handlePickTargetRevert,

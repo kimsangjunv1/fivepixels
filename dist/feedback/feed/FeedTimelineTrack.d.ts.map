@@ -1,0 +1,1 @@
+{"version":3,"file":"FeedTimelineTrack.d.ts","sourceRoot":"","sources":["../../../src/feedback/feed/FeedTimelineTrack.tsx"],"names":[],"mappings":"AAAA,OAAO,EAAqC,KAAK,SAAS,EAAE,MAAM,OAAO,CAAC;AAG1E,KAAK,sBAAsB,GAAG;IAC1B,QAAQ,EAAE,SAAS,CAAC;IACpB,SAAS,CAAC,EAAE,MAAM,CAAC;CACtB,CAAC;AAEF;;;GAGG;AACH,wBAAgB,iBAAiB,CAAC,EAAE,QAAQ,EAAE,SAAc,EAAE,EAAE,sBAAsB,+BAoErF"}

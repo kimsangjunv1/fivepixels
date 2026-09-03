@@ -20,7 +20,7 @@ export function useReportDraftSession({ mode, setMode, fields, messages, current
     const [selectedTarget, setSelectedTarget] = useState(null);
     const [draftStep, setDraftStep] = useState("content");
     const draftElementRef = useRef(null);
-    const { pickProbeOpen, pickProbeSupportsTextFields, pickProbeLayoutMode, pickProbeValues, pickProbeCompareMode, pickProbeHasEdits, pickTargetContextMenu, setPickTargetContextMenu, contextMenuElementKey, setContextMenuElementKey, contextMenuElementRef, savedProbeEdits, savedProbeDeletions, hasProbeSessionChanges, canUndoProbeSession, canRedoProbeSession, undoProbeSessionAction, redoProbeSessionAction, savedProbeCompareMode, closePickProbe, closePickTargetContextMenu, handlePickTargetEdit, handlePickTargetDelete, handlePickTargetRevert, commitPickProbeEdits, revertSavedProbeEdit, revertAllSavedProbeEdits, setSavedProbeCompareMode, setPickProbeCompareMode, updatePickProbeValue, resetPickProbeValues, resetPickProbeState, appendSavedProbeSummaryAsNewDraftCase, } = useReportPickProbe({
+    const { pickProbeOpen, pickProbeSupportsTextFields, pickProbeLayoutMode, pickProbeValues, pickProbeCompareMode, pickProbeHasEdits, pickTargetContextMenu, setContextMenuTooltip, contextMenuElementKey, setContextMenuElementKey, contextMenuElementRef, savedProbeEdits, savedProbeDeletions, hasProbeSessionChanges, canUndoProbeSession, canRedoProbeSession, undoProbeSessionAction, redoProbeSessionAction, savedProbeCompareMode, closePickProbe, closeContextMenuTooltip, handlePickTargetEdit, handlePickTargetDelete, handlePickTargetRevert, commitPickProbeEdits, revertSavedProbeEdit, revertAllSavedProbeEdits, setSavedProbeCompareMode, setPickProbeCompareMode, updatePickProbeValue, resetPickProbeValues, resetPickProbeState, appendSavedProbeSummaryAsNewDraftCase, } = useReportPickProbe({
         mode,
         selectedElementRef,
         hoveredElementRef,
@@ -68,7 +68,7 @@ export function useReportDraftSession({ mode, setMode, fields, messages, current
         if (!targetElement || !menu) {
             return;
         }
-        closePickTargetContextMenu();
+        closeContextMenuTooltip();
         resetPickProbeState();
         const snapshot = menu.target;
         const anchorSnapshot = resolveFeedbackDocumentAnchor(targetElement);
@@ -107,7 +107,7 @@ export function useReportDraftSession({ mode, setMode, fields, messages, current
             fieldValues: createInitialFieldValues(fields),
         });
     }, [
-        closePickTargetContextMenu,
+        closeContextMenuTooltip,
         contextMenuElementRef,
         fields,
         hoveredElementRef,
@@ -230,12 +230,12 @@ export function useReportDraftSession({ mode, setMode, fields, messages, current
         event.preventDefault();
         const targetElement = findPickTargetByPoint(overlayRef.current, event.clientX, event.clientY);
         if (!targetElement) {
-            closePickTargetContextMenu();
+            closeContextMenuTooltip();
             return;
         }
         const snapshot = toFeedbackHoverSnapshot(targetElement);
         if (!snapshot) {
-            closePickTargetContextMenu();
+            closeContextMenuTooltip();
             return;
         }
         const elementKey = getPickProbeElementKey(targetElement);
@@ -246,7 +246,7 @@ export function useReportDraftSession({ mode, setMode, fields, messages, current
             hoveredElementRef.current = targetElement;
             setSelectedTarget(snapshot);
         }
-        setPickTargetContextMenu({
+        setContextMenuTooltip({
             clientX: event.clientX,
             clientY: event.clientY,
             target: snapshot,
@@ -256,7 +256,7 @@ export function useReportDraftSession({ mode, setMode, fields, messages, current
         if (mode !== "report") {
             return;
         }
-        closePickTargetContextMenu();
+        closeContextMenuTooltip();
         resetPickProbeState();
         const targetElement = findPickTargetByPoint(overlayRef.current, event.clientX, event.clientY);
         if (!targetElement) {
@@ -508,7 +508,7 @@ export function useReportDraftSession({ mode, setMode, fields, messages, current
         redoProbeSessionAction,
         savedProbeCompareMode,
         closePickProbe,
-        closePickTargetContextMenu,
+        closeContextMenuTooltip,
         handlePickTargetEdit,
         handlePickTargetDelete,
         handlePickTargetRevert,

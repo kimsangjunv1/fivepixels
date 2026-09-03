@@ -3,8 +3,8 @@ import { ensureReportLocaleMessages, getReportMessages, setActiveReportMessages 
 import type { DeepPartialReportMessages } from "@/i18n/types.js";
 import type { ReportLocale } from "@/i18n/types.js";
 import { useMarkerTargetPreviewPreference } from "../useMarkerTargetPreviewPreference.js";
-import { useDevicePreviewPreference } from "../useDevicePreviewPreference.js";
-import { useMobilePreviewPreference } from "../useMobilePreviewPreference.js";
+import { useDevicePreviewPreference } from "@/preview/useDevicePreviewPreference.js";
+import { useMobilePreviewPreference } from "@/preview/useMobilePreviewPreference.js";
 import { useDetachedMarkerVisibilityPreference } from "../useDetachedMarkerVisibilityPreference.js";
 import { useMarkerAppearancePreference } from "../useMarkerAppearancePreference.js";
 import { useTypographyPreference } from "../useTypographyPreference.js";

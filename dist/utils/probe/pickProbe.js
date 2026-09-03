@@ -1,6 +1,6 @@
 import { cssColorToProbeHex, isValidProbeHexColor } from "./probeColor.js";
 import { captureProbeGap, formatGridTrackCount, getPickProbeLayoutMode, inferLayoutModeFromProbeValues, parseGridTrackCount, } from "./probeLayout.js";
-import { findElementByProbeKey } from "./pickProbeSession.js";
+import { findElementByProbeKey } from "./probeElement.js";
 import { getPickTargetBoxStyle, getPickTargetFontStyle, shouldInspectFontStyle } from "./pickTargetInspect.js";
 const TEXT_PROBE_FIELD_KEYS = ["textContent", "fontSize", "lineHeight"];
 const STYLE_PROBE_FIELD_KEYS = ["padding", "margin", "textColor", "backgroundColor", "borderColor"];

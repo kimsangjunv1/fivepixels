@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ensureReportLocaleMessages, getReportMessages, setActiveReportMessages } from "../../i18n/index.js";
 import { useMarkerTargetPreviewPreference } from "../useMarkerTargetPreviewPreference.js";
-import { useDevicePreviewPreference } from "../useDevicePreviewPreference.js";
-import { useMobilePreviewPreference } from "../useMobilePreviewPreference.js";
+import { useDevicePreviewPreference } from "../../preview/useDevicePreviewPreference.js";
+import { useMobilePreviewPreference } from "../../preview/useMobilePreviewPreference.js";
 import { useDetachedMarkerVisibilityPreference } from "../useDetachedMarkerVisibilityPreference.js";
 import { useMarkerAppearancePreference } from "../useMarkerAppearancePreference.js";
 import { useTypographyPreference } from "../useTypographyPreference.js";

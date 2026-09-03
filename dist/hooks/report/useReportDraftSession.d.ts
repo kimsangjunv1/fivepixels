@@ -49,7 +49,7 @@ export declare function useReportDraftSession({ mode, setMode, fields, messages,
     pickProbeValues: import("../../types/report-ui.js").PickProbeValues | null;
     pickProbeCompareMode: import("../../types/report-ui.js").PickProbeCompareMode;
     pickProbeHasEdits: boolean;
-    pickTargetContextMenu: import("../../types/report-ui.js").PickTargetContextMenuState | null;
+    pickTargetContextMenu: import("../../types/report-ui.js").ContextMenuTooltipState | null;
     contextMenuElementKey: string | null;
     savedProbeEdits: Record<string, import("../../types/report-ui.js").SavedProbeEntry>;
     savedProbeDeletions: import("../../types/report-ui.js").SavedProbeDeletion[];
@@ -60,7 +60,7 @@ export declare function useReportDraftSession({ mode, setMode, fields, messages,
     redoProbeSessionAction: () => void;
     savedProbeCompareMode: import("../../types/report-ui.js").PickProbeCompareMode;
     closePickProbe: () => void;
-    closePickTargetContextMenu: () => void;
+    closeContextMenuTooltip: () => void;
     handlePickTargetEdit: () => void;
     handlePickTargetDelete: () => void;
     handlePickTargetRevert: () => void;

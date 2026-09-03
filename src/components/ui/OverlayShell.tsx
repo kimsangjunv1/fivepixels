@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { FloatingWindow, type FloatingWindowProps } from "@/components/ui/FloatingWindow.js";
+import { FloatingWindow, type FloatingWindowProps } from "@/window/FloatingWindow.js";
 import { OverlayShellAnchored, type OverlayShellAnchoredProps } from "@/components/ui/overlay-shell/OverlayShellAnchored.js";
 import { OverlayShellModal, type OverlayShellModalProps } from "@/components/ui/overlay-shell/OverlayShellModal.js";
 
@@ -37,6 +37,6 @@ export function OverlayShell(props: OverlayShellProps) {
     return <FloatingWindow {...floatingProps}>{children}</FloatingWindow>;
 }
 
-export type { FloatingWindowMode, FloatingWindowControls } from "@/components/ui/FloatingWindow.js";
+export type { FloatingWindowMode, FloatingWindowControls } from "@/window/FloatingWindow.js";
 export type { OverlayShellAnchoredProps } from "@/components/ui/overlay-shell/OverlayShellAnchored.js";
 export type { OverlayShellModalProps } from "@/components/ui/overlay-shell/OverlayShellModal.js";

@@ -333,7 +333,7 @@ export function assembleReportContextValue({
         redoProbeSessionAction: draft.redoProbeSessionAction,
         savedProbeCompareMode: draft.savedProbeCompareMode,
         closePickProbe: draft.closePickProbe,
-        closePickTargetContextMenu: draft.closePickTargetContextMenu,
+        closeContextMenuTooltip: draft.closeContextMenuTooltip,
         handlePickTargetEdit: draft.handlePickTargetEdit,
         handlePickTargetDelete: draft.handlePickTargetDelete,
         handlePickTargetRevert: draft.handlePickTargetRevert,

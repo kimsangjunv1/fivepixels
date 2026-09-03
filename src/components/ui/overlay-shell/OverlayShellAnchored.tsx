@@ -1,9 +1,9 @@
 import { useCallback, useRef, type CSSProperties, type ReactNode, type Ref } from "react";
-import { CornerResizeGhost } from "@/components/ui/CornerResizeGhost.js";
-import { WindowResizeHandles } from "@/components/ui/WindowResizeHandles.js";
-import { WindowModeControls } from "@/components/ui/window/WindowModeControls.js";
-import { useTooltipLayout } from "@/hooks/useTooltipLayout.js";
-import { useTooltipResize } from "@/hooks/useTooltipResize.js";
+import { CornerResizeGhost } from "@/window/CornerResizeGhost.js";
+import { WindowResizeHandles } from "@/window/WindowResizeHandles.js";
+import { WindowModeControls } from "@/window/WindowModeControls.js";
+import { useTooltipLayout } from "@/tooltip/useTooltipLayout.js";
+import { useTooltipResize } from "@/tooltip/useTooltipResize.js";
 import type { WindowChromeControls } from "@/types/windowChrome.js";
 
 const DEFAULT_Z_CLASS = "pointer-events-auto fixed z-[1000001]";

@@ -138,8 +138,8 @@ declare const ReportContext: Context<{
     setMobilePreviewUiOpen: (open: boolean) => void;
     mobilePreviewDeviceId: string;
     setMobilePreviewDeviceId: (deviceId: string) => void;
-    mobilePreviewOrientation: import("../hooks/useMobilePreviewPreference.js").MobilePreviewOrientation;
-    setMobilePreviewOrientation: (orientation: import("../hooks/useMobilePreviewPreference.js").MobilePreviewOrientation) => void;
+    mobilePreviewOrientation: import("../preview/useMobilePreviewPreference.js").MobilePreviewOrientation;
+    setMobilePreviewOrientation: (orientation: import("../preview/useMobilePreviewPreference.js").MobilePreviewOrientation) => void;
     toggleMobilePreviewOrientation: () => void;
     mobilePreviewPreset: import("../constants/devicePreview.js").DevicePreviewPreset;
     devicePreviewDeviceId: string;
@@ -216,7 +216,7 @@ declare const ReportContext: Context<{
     pickProbeValues: import("../types/report-ui.js").PickProbeValues | null;
     pickProbeCompareMode: import("../types/report-ui.js").PickProbeCompareMode;
     pickProbeHasEdits: boolean;
-    pickTargetContextMenu: import("../types/report-ui.js").PickTargetContextMenuState | null;
+    pickTargetContextMenu: import("../types/report-ui.js").ContextMenuTooltipState | null;
     contextMenuElementKey: string | null;
     savedProbeEdits: Record<string, import("../types/report-ui.js").SavedProbeEntry>;
     savedProbeDeletions: import("../types/report-ui.js").SavedProbeDeletion[];
@@ -227,7 +227,7 @@ declare const ReportContext: Context<{
     redoProbeSessionAction: () => void;
     savedProbeCompareMode: import("../types/report-ui.js").PickProbeCompareMode;
     closePickProbe: () => void;
-    closePickTargetContextMenu: () => void;
+    closeContextMenuTooltip: () => void;
     handlePickTargetEdit: () => void;
     handlePickTargetDelete: () => void;
     handlePickTargetRevert: () => void;
@@ -515,8 +515,8 @@ export declare function useReport(): {
     setMobilePreviewUiOpen: (open: boolean) => void;
     mobilePreviewDeviceId: string;
     setMobilePreviewDeviceId: (deviceId: string) => void;
-    mobilePreviewOrientation: import("../hooks/useMobilePreviewPreference.js").MobilePreviewOrientation;
-    setMobilePreviewOrientation: (orientation: import("../hooks/useMobilePreviewPreference.js").MobilePreviewOrientation) => void;
+    mobilePreviewOrientation: import("../preview/useMobilePreviewPreference.js").MobilePreviewOrientation;
+    setMobilePreviewOrientation: (orientation: import("../preview/useMobilePreviewPreference.js").MobilePreviewOrientation) => void;
     toggleMobilePreviewOrientation: () => void;
     mobilePreviewPreset: import("../constants/devicePreview.js").DevicePreviewPreset;
     devicePreviewDeviceId: string;
@@ -593,7 +593,7 @@ export declare function useReport(): {
     pickProbeValues: import("../types/report-ui.js").PickProbeValues | null;
     pickProbeCompareMode: import("../types/report-ui.js").PickProbeCompareMode;
     pickProbeHasEdits: boolean;
-    pickTargetContextMenu: import("../types/report-ui.js").PickTargetContextMenuState | null;
+    pickTargetContextMenu: import("../types/report-ui.js").ContextMenuTooltipState | null;
     contextMenuElementKey: string | null;
     savedProbeEdits: Record<string, import("../types/report-ui.js").SavedProbeEntry>;
     savedProbeDeletions: import("../types/report-ui.js").SavedProbeDeletion[];
@@ -604,7 +604,7 @@ export declare function useReport(): {
     redoProbeSessionAction: () => void;
     savedProbeCompareMode: import("../types/report-ui.js").PickProbeCompareMode;
     closePickProbe: () => void;
-    closePickTargetContextMenu: () => void;
+    closeContextMenuTooltip: () => void;
     handlePickTargetEdit: () => void;
     handlePickTargetDelete: () => void;
     handlePickTargetRevert: () => void;
@@ -895,8 +895,8 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         setMobilePreviewUiOpen: (open: boolean) => void;
         mobilePreviewDeviceId: string;
         setMobilePreviewDeviceId: (deviceId: string) => void;
-        mobilePreviewOrientation: import("../hooks/useMobilePreviewPreference.js").MobilePreviewOrientation;
-        setMobilePreviewOrientation: (orientation: import("../hooks/useMobilePreviewPreference.js").MobilePreviewOrientation) => void;
+        mobilePreviewOrientation: import("../preview/useMobilePreviewPreference.js").MobilePreviewOrientation;
+        setMobilePreviewOrientation: (orientation: import("../preview/useMobilePreviewPreference.js").MobilePreviewOrientation) => void;
         toggleMobilePreviewOrientation: () => void;
         mobilePreviewPreset: import("../constants/devicePreview.js").DevicePreviewPreset;
         devicePreviewDeviceId: string;
@@ -973,7 +973,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         pickProbeValues: import("../types/report-ui.js").PickProbeValues | null;
         pickProbeCompareMode: import("../types/report-ui.js").PickProbeCompareMode;
         pickProbeHasEdits: boolean;
-        pickTargetContextMenu: import("../types/report-ui.js").PickTargetContextMenuState | null;
+        pickTargetContextMenu: import("../types/report-ui.js").ContextMenuTooltipState | null;
         contextMenuElementKey: string | null;
         savedProbeEdits: Record<string, import("../types/report-ui.js").SavedProbeEntry>;
         savedProbeDeletions: import("../types/report-ui.js").SavedProbeDeletion[];
@@ -984,7 +984,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         redoProbeSessionAction: () => void;
         savedProbeCompareMode: import("../types/report-ui.js").PickProbeCompareMode;
         closePickProbe: () => void;
-        closePickTargetContextMenu: () => void;
+        closeContextMenuTooltip: () => void;
         handlePickTargetEdit: () => void;
         handlePickTargetDelete: () => void;
         handlePickTargetRevert: () => void;
@@ -1268,8 +1268,8 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         setMobilePreviewUiOpen: (open: boolean) => void;
         mobilePreviewDeviceId: string;
         setMobilePreviewDeviceId: (deviceId: string) => void;
-        mobilePreviewOrientation: import("../hooks/useMobilePreviewPreference.js").MobilePreviewOrientation;
-        setMobilePreviewOrientation: (orientation: import("../hooks/useMobilePreviewPreference.js").MobilePreviewOrientation) => void;
+        mobilePreviewOrientation: import("../preview/useMobilePreviewPreference.js").MobilePreviewOrientation;
+        setMobilePreviewOrientation: (orientation: import("../preview/useMobilePreviewPreference.js").MobilePreviewOrientation) => void;
         toggleMobilePreviewOrientation: () => void;
         mobilePreviewPreset: import("../constants/devicePreview.js").DevicePreviewPreset;
         devicePreviewDeviceId: string;
@@ -1346,7 +1346,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         pickProbeValues: import("../types/report-ui.js").PickProbeValues | null;
         pickProbeCompareMode: import("../types/report-ui.js").PickProbeCompareMode;
         pickProbeHasEdits: boolean;
-        pickTargetContextMenu: import("../types/report-ui.js").PickTargetContextMenuState | null;
+        pickTargetContextMenu: import("../types/report-ui.js").ContextMenuTooltipState | null;
         contextMenuElementKey: string | null;
         savedProbeEdits: Record<string, import("../types/report-ui.js").SavedProbeEntry>;
         savedProbeDeletions: import("../types/report-ui.js").SavedProbeDeletion[];
@@ -1357,7 +1357,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         redoProbeSessionAction: () => void;
         savedProbeCompareMode: import("../types/report-ui.js").PickProbeCompareMode;
         closePickProbe: () => void;
-        closePickTargetContextMenu: () => void;
+        closeContextMenuTooltip: () => void;
         handlePickTargetEdit: () => void;
         handlePickTargetDelete: () => void;
         handlePickTargetRevert: () => void;
@@ -1510,7 +1510,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         dismissNotification: (id: string) => void;
         clearNotifications: () => void;
         activateNotification: (item: import("../types/notification.js").NotificationItem) => void;
-    }, "markers" | "statusText" | "notifications" | "toggleReportMode" | "toggleTargetPreview" | "currentPathname" | "sessionActor" | "savedProbeDeletions" | "hasProbeSessionChanges" | "canUndoProbeSession" | "canRedoProbeSession" | "undoProbeSessionAction" | "redoProbeSessionAction" | "revertAllSavedProbeEdits" | "draft" | "pickProbeOpen" | "pickProbeSupportsTextFields" | "pickProbeLayoutMode" | "pickProbeValues" | "pickProbeCompareMode" | "pickProbeHasEdits" | "pickTargetContextMenu" | "contextMenuElementKey" | "savedProbeEdits" | "savedProbeCompareMode" | "closePickProbe" | "closePickTargetContextMenu" | "handlePickTargetEdit" | "handlePickTargetDelete" | "handlePickTargetRevert" | "setErrorMessage" | "commitPickProbeEdits" | "revertSavedProbeEdit" | "setSavedProbeCompareMode" | "setPickProbeCompareMode" | "updatePickProbeValue" | "resetPickProbeValues" | "appendSavedProbeSummaryAsNewDraftCase" | "activeReplyReportId" | "minimizedReplyReportIds" | "selectedTarget" | "hoveredTarget" | "mode" | "showTargetPreview" | "closeReplyComposer" | "openReplyComposer" | "selectCase" | "selectReport" | "focusedCaseId" | "activeReplyReport" | "cancelCaseEdit" | "appendApiFlowEntryToDraftCase" | "overlayRef" | "cancelDraft" | "beginFeedbackEdit" | "activateNotification" | "editingReportId" | "panelTab" | "pendingComposer" | "toggleIssueMode" | "cancelPendingComposer" | "stopEditing" | "focusSearchInput" | "selectAdjacentReport" | "panelCollapsed" | "setPanelCollapsed" | "searchInputRef" | "activeMarkerTarget" | "markerPreviewTargets" | "selectableTargets" | "errorMessage" | "draftStep" | "setDraftStep" | "hoverPointer" | "setHoverPointer" | "handlePickTargetMemo" | "editableDraft" | "setEditableDraft" | "openReplyReportIds" | "openReplyReports" | "setReplyWindowMinimized" | "reorderMinimizedReplyWindow" | "focusReplyWindow" | "closeReplyWindow" | "tooltipReport" | "tooltipAnchor" | "tooltipFieldTags" | "replyDraft" | "setReplyDraft" | "replyMentions" | "setReplyMentions" | "replyUserMentions" | "setReplyUserMentions" | "mentionHighlightTarget" | "setMentionHighlightTarget" | "replySubmitAsQuestion" | "setReplySubmitAsQuestion" | "draftAuthorName" | "setDraftAuthorName" | "replyAuthorName" | "setReplyAuthorName" | "presentationViewerId" | "setPresentationViewerId" | "startDenyReview" | "startCheckoutReview" | "startAskQuestion" | "confirmAuthorName" | "setConfirmAuthorName" | "showConfirmAuthorSelect" | "toggleConfirmAuthorSelect" | "beginCaseEdit" | "updateCaseEditDraftCase" | "addCaseEditDraftCase" | "removeCaseEditDraftCase" | "removePersistedCase" | "isComposingNewCase" | "hasNewCaseDraftSession" | "beginComposeNewCase" | "cancelComposeNewCase" | "clearFocusedCase" | "isCaseEditing" | "caseEditReportId" | "caseEditCases" | "openPanelTab" | "togglePanelTab" | "locateFeedback" | "activateFeedbackMarker" | "revealOpenFeedback" | "clearHoverLeaveTimeout" | "scheduleHoverLeave" | "setHoveredMarkerId" | "handleOverlayMove" | "handleOverlayContextMenu" | "handleOverlayClick" | "updateDraftCase" | "addDraftCase" | "removeDraftCase" | "updateDraftField" | "updateDraftCategory" | "startEditing" | "unreadNotificationCount" | "notificationUiOpen" | "setNotificationUiOpen" | "toggleNotificationUiOpen" | "closeNotificationUi" | "markNotificationRead" | "markAllNotificationsRead" | "dismissNotification" | "clearNotifications">;
+    }, "markers" | "statusText" | "notifications" | "toggleReportMode" | "toggleTargetPreview" | "currentPathname" | "sessionActor" | "savedProbeDeletions" | "hasProbeSessionChanges" | "canUndoProbeSession" | "canRedoProbeSession" | "undoProbeSessionAction" | "redoProbeSessionAction" | "revertAllSavedProbeEdits" | "draft" | "pickProbeOpen" | "pickProbeSupportsTextFields" | "pickProbeLayoutMode" | "pickProbeValues" | "pickProbeCompareMode" | "pickProbeHasEdits" | "pickTargetContextMenu" | "contextMenuElementKey" | "savedProbeEdits" | "savedProbeCompareMode" | "closePickProbe" | "closeContextMenuTooltip" | "handlePickTargetEdit" | "handlePickTargetDelete" | "handlePickTargetRevert" | "setErrorMessage" | "commitPickProbeEdits" | "revertSavedProbeEdit" | "setSavedProbeCompareMode" | "setPickProbeCompareMode" | "updatePickProbeValue" | "resetPickProbeValues" | "appendSavedProbeSummaryAsNewDraftCase" | "activeReplyReportId" | "minimizedReplyReportIds" | "selectedTarget" | "hoveredTarget" | "mode" | "showTargetPreview" | "closeReplyComposer" | "openReplyComposer" | "selectCase" | "selectReport" | "focusedCaseId" | "activeReplyReport" | "cancelCaseEdit" | "appendApiFlowEntryToDraftCase" | "overlayRef" | "cancelDraft" | "beginFeedbackEdit" | "activateNotification" | "editingReportId" | "panelTab" | "pendingComposer" | "toggleIssueMode" | "cancelPendingComposer" | "stopEditing" | "focusSearchInput" | "selectAdjacentReport" | "panelCollapsed" | "setPanelCollapsed" | "searchInputRef" | "activeMarkerTarget" | "markerPreviewTargets" | "selectableTargets" | "errorMessage" | "draftStep" | "setDraftStep" | "hoverPointer" | "setHoverPointer" | "handlePickTargetMemo" | "editableDraft" | "setEditableDraft" | "openReplyReportIds" | "openReplyReports" | "setReplyWindowMinimized" | "reorderMinimizedReplyWindow" | "focusReplyWindow" | "closeReplyWindow" | "tooltipReport" | "tooltipAnchor" | "tooltipFieldTags" | "replyDraft" | "setReplyDraft" | "replyMentions" | "setReplyMentions" | "replyUserMentions" | "setReplyUserMentions" | "mentionHighlightTarget" | "setMentionHighlightTarget" | "replySubmitAsQuestion" | "setReplySubmitAsQuestion" | "draftAuthorName" | "setDraftAuthorName" | "replyAuthorName" | "setReplyAuthorName" | "presentationViewerId" | "setPresentationViewerId" | "startDenyReview" | "startCheckoutReview" | "startAskQuestion" | "confirmAuthorName" | "setConfirmAuthorName" | "showConfirmAuthorSelect" | "toggleConfirmAuthorSelect" | "beginCaseEdit" | "updateCaseEditDraftCase" | "addCaseEditDraftCase" | "removeCaseEditDraftCase" | "removePersistedCase" | "isComposingNewCase" | "hasNewCaseDraftSession" | "beginComposeNewCase" | "cancelComposeNewCase" | "clearFocusedCase" | "isCaseEditing" | "caseEditReportId" | "caseEditCases" | "openPanelTab" | "togglePanelTab" | "locateFeedback" | "activateFeedbackMarker" | "revealOpenFeedback" | "clearHoverLeaveTimeout" | "scheduleHoverLeave" | "setHoveredMarkerId" | "handleOverlayMove" | "handleOverlayContextMenu" | "handleOverlayClick" | "updateDraftCase" | "addDraftCase" | "removeDraftCase" | "updateDraftField" | "updateDraftCategory" | "startEditing" | "unreadNotificationCount" | "notificationUiOpen" | "setNotificationUiOpen" | "toggleNotificationUiOpen" | "closeNotificationUi" | "markNotificationRead" | "markAllNotificationsRead" | "dismissNotification" | "clearNotifications">;
     data: Pick<{
         panelAppearance: import("../index.js").ReportAppearance;
         setPanelAppearance: (nextAppearance: import("../index.js").ReportAppearance) => void;
@@ -1641,8 +1641,8 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         setMobilePreviewUiOpen: (open: boolean) => void;
         mobilePreviewDeviceId: string;
         setMobilePreviewDeviceId: (deviceId: string) => void;
-        mobilePreviewOrientation: import("../hooks/useMobilePreviewPreference.js").MobilePreviewOrientation;
-        setMobilePreviewOrientation: (orientation: import("../hooks/useMobilePreviewPreference.js").MobilePreviewOrientation) => void;
+        mobilePreviewOrientation: import("../preview/useMobilePreviewPreference.js").MobilePreviewOrientation;
+        setMobilePreviewOrientation: (orientation: import("../preview/useMobilePreviewPreference.js").MobilePreviewOrientation) => void;
         toggleMobilePreviewOrientation: () => void;
         mobilePreviewPreset: import("../constants/devicePreview.js").DevicePreviewPreset;
         devicePreviewDeviceId: string;
@@ -1719,7 +1719,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         pickProbeValues: import("../types/report-ui.js").PickProbeValues | null;
         pickProbeCompareMode: import("../types/report-ui.js").PickProbeCompareMode;
         pickProbeHasEdits: boolean;
-        pickTargetContextMenu: import("../types/report-ui.js").PickTargetContextMenuState | null;
+        pickTargetContextMenu: import("../types/report-ui.js").ContextMenuTooltipState | null;
         contextMenuElementKey: string | null;
         savedProbeEdits: Record<string, import("../types/report-ui.js").SavedProbeEntry>;
         savedProbeDeletions: import("../types/report-ui.js").SavedProbeDeletion[];
@@ -1730,7 +1730,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         redoProbeSessionAction: () => void;
         savedProbeCompareMode: import("../types/report-ui.js").PickProbeCompareMode;
         closePickProbe: () => void;
-        closePickTargetContextMenu: () => void;
+        closeContextMenuTooltip: () => void;
         handlePickTargetEdit: () => void;
         handlePickTargetDelete: () => void;
         handlePickTargetRevert: () => void;

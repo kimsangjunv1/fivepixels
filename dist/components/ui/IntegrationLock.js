@@ -1,6 +1,6 @@
 import { Fragment as _Fragment, jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { LockIcon } from "../../components/icons/Icons.js";
-import { HoverTooltip } from "../../components/ui/HoverTooltip.js";
+import { HoverTooltip } from "../../tooltip/HoverTooltip.js";
 import { useReportPreferences } from "../../providers/reportContext.js";
 import { formatIntegrationMissingHandlers } from "../../utils/integration/integrationFeatures.js";
 import { getIntegrationLock } from "../../utils/integration/integrationGate.js";

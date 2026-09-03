@@ -1,8 +1,9 @@
 import { applyPickProbeCompareMode, applyPickProbeValues } from "./pickProbe.js";
-import { getFeedbackTargetSelector, resolveReportType } from "../shared/dom.js";
+import { resolveReportType } from "../marker/targetDom.js";
 import { shouldInspectFontStyle } from "./pickTargetInspect.js";
 import { findElementByTargetSelector, generateCssSelector } from "../marker/targetSelector.js";
-import { isHtmlElement, queryPageSelector } from "../overlay/pageDocumentBridge.js";
+import { findElementByProbeKey } from "./probeElement.js";
+export { findElementByProbeKey } from "./probeElement.js";
 export function restoreProbeElementFromSnapshot(element, snapshot) {
     if (snapshot.style === null) {
         element.removeAttribute("style");
@@ -31,20 +32,6 @@ export function getPickProbeElementKey(element) {
         return `id:${reportId}:${resolveReportType(element)}`;
     }
     return `selector:${generateCssSelector(element)}`;
-}
-export function findElementByProbeKey(elementKey) {
-    if (elementKey.startsWith("id:")) {
-        const [, reportId, reportType] = elementKey.split(":");
-        if (!reportId || !reportType) {
-            return null;
-        }
-        const element = queryPageSelector(getFeedbackTargetSelector(reportId, reportType));
-        return isHtmlElement(element) ? element : null;
-    }
-    if (elementKey.startsWith("selector:")) {
-        return findElementByTargetSelector(elementKey.slice("selector:".length));
-    }
-    return null;
 }
 export function captureProbeOriginalSnapshot(element) {
     const isTextInput = element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement;
