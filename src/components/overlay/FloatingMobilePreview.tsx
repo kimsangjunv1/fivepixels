@@ -125,12 +125,8 @@ export function FloatingMobilePreview() {
     const [windowMode, setWindowMode] = useState<MobilePreviewWindowMode>("normal");
     const [zIndex, setZIndex] = useState(() => claimFloatingWindowZIndex());
     const [frameLoadState, setFrameLoadState] = useState<FrameLoadState>("loading");
-    const [frameSrc, setFrameSrc] = useState(() =>
-        typeof window === "undefined" ? "" : readMobilePreviewUrl(window.location.href),
-    );
-    const [urlDraft, setUrlDraft] = useState(() =>
-        typeof window === "undefined" ? "" : readMobilePreviewUrl(window.location.href),
-    );
+    const [frameSrc, setFrameSrc] = useState(() => (typeof window === "undefined" ? "" : readMobilePreviewUrl(window.location.href)));
+    const [urlDraft, setUrlDraft] = useState(() => (typeof window === "undefined" ? "" : readMobilePreviewUrl(window.location.href)));
     const [qrPanelOpen, setQrPanelOpen] = useState(false);
     const rootRef = useRef<HTMLDivElement>(null);
     const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -241,25 +237,28 @@ export function FloatingMobilePreview() {
         setZIndex(claimFloatingWindowZIndex());
     }, []);
 
-    const navigatePreviewUrl = useCallback((rawInput: string) => {
-        if (typeof window === "undefined") {
-            return;
-        }
-
-        const nextUrl = normalizeMobilePreviewUrl(rawInput, window.location.href);
-
-        if (!nextUrl || nextUrl === frameSrc) {
-            if (nextUrl) {
-                setUrlDraft(nextUrl);
+    const navigatePreviewUrl = useCallback(
+        (rawInput: string) => {
+            if (typeof window === "undefined") {
+                return;
             }
-            return;
-        }
 
-        setFrameLoadState("loading");
-        setFrameSrc(nextUrl);
-        setUrlDraft(nextUrl);
-        persistMobilePreviewUrl(nextUrl);
-    }, [frameSrc]);
+            const nextUrl = normalizeMobilePreviewUrl(rawInput, window.location.href);
+
+            if (!nextUrl || nextUrl === frameSrc) {
+                if (nextUrl) {
+                    setUrlDraft(nextUrl);
+                }
+                return;
+            }
+
+            setFrameLoadState("loading");
+            setFrameSrc(nextUrl);
+            setUrlDraft(nextUrl);
+            persistMobilePreviewUrl(nextUrl);
+        },
+        [frameSrc],
+    );
 
     const handleUrlSubmit = useCallback(
         (event: FormEvent<HTMLFormElement>) => {
@@ -281,8 +280,7 @@ export function FloatingMobilePreview() {
     );
 
     const selectClassName = "h-[26px] min-w-0 flex-1 rounded-[6px] border-0 bg-transparent px-[4px] font-[14px] text-[var(--adaptive-black600)] outline-none";
-    const urlInputClassName =
-        "h-[24px] min-w-0 flex-1 rounded-[6px] border-0 bg-[var(--adaptive-fillOpacity500)] px-[8px] font-[12px] text-[var(--adaptive-black600)] outline-none";
+    const urlInputClassName = "h-[24px] min-w-0 flex-1 rounded-[6px] border-0 bg-[var(--adaptive-fillOpacity500)] px-[8px] font-[12px] text-[var(--adaptive-black600)] outline-none";
 
     const displayRect = useMemo(() => {
         if (dockMorph) {
@@ -304,16 +302,7 @@ export function FloatingMobilePreview() {
             width: contentWidth,
             height: undefined as number | undefined,
         };
-    }, [
-        contentWidth,
-        dockDrag.displayLeft,
-        dockDrag.displayTop,
-        dockMorph,
-        overlayDock.minimizedWidth,
-        restoredPosition.left,
-        restoredPosition.top,
-        showMinimizedChrome,
-    ]);
+    }, [contentWidth, dockDrag.displayLeft, dockDrag.displayTop, dockMorph, overlayDock.minimizedWidth, restoredPosition.left, restoredPosition.top, showMinimizedChrome]);
 
     const qrPanelMessages = useMemo(
         () => ({
@@ -385,7 +374,7 @@ export function FloatingMobilePreview() {
                 <>
                     <header
                         className="mb-[10px] flex w-full min-w-0 flex-col gap-[6px] rounded-[12px] bg-[var(--adaptive-fillOpacity700)] px-[10px] py-[6px] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[10px]"
-                        style={{ marginBottom: TOOLBAR_DEVICE_GAP, width: contentWidth, maxWidth: "100%" }}
+                        style={{ marginBottom: TOOLBAR_DEVICE_GAP, width: frameWidth, maxWidth: "100%" }}
                         onPointerDown={handleDragHandlePointerDown}
                     >
                         <div className="flex min-w-0 items-center gap-[6px]">
@@ -487,8 +476,11 @@ export function FloatingMobilePreview() {
                     </header>
 
                     <div
-                        className="flex shrink-0 items-center"
-                        style={{ gap: qrPanelOpen ? QR_DEVICE_GAP : 0 }}
+                        className="relative shrink-0 overflow-visible"
+                        style={{
+                            width: contentWidth,
+                            height: frameHeight,
+                        }}
                     >
                         <div
                             className="relative shrink-0"
@@ -498,76 +490,78 @@ export function FloatingMobilePreview() {
                                 filter: "drop-shadow(0 28px 56px rgba(0, 0, 0, 0.42))",
                             }}
                         >
-                        <iframe
-                            ref={iframeRef}
-                            name={MOBILE_PREVIEW_FRAME_NAME}
-                            title={messages.settings.mobilePreviewIframeTitle}
-                            src={frameSrc}
-                            onLoad={handleFrameLoad}
-                            data-fivepixels-mobile-preview-frame=""
-                            className="absolute z-[0] border-0"
-                            style={{
-                                left: chrome.bezel.left,
-                                top: chrome.bezel.top,
-                                width: guestViewportSize.width,
-                                height: guestViewportSize.height,
-                                transform: `scale(${MOBILE_PREVIEW_SCALE})`,
-                                transformOrigin: "top left",
-                                borderRadius: chrome.screenRadius,
-                                background: screenBackground,
-                            }}
-                        />
-                        {frameLoadState === "blocked" ? (
+                            <iframe
+                                ref={iframeRef}
+                                name={MOBILE_PREVIEW_FRAME_NAME}
+                                title={messages.settings.mobilePreviewIframeTitle}
+                                src={frameSrc}
+                                onLoad={handleFrameLoad}
+                                data-fivepixels-mobile-preview-frame=""
+                                className="absolute z-[0] border-0"
+                                style={{
+                                    left: chrome.bezel.left,
+                                    top: chrome.bezel.top,
+                                    width: guestViewportSize.width,
+                                    height: guestViewportSize.height,
+                                    transform: `scale(${MOBILE_PREVIEW_SCALE})`,
+                                    transformOrigin: "top left",
+                                    borderRadius: chrome.screenRadius,
+                                    background: screenBackground,
+                                }}
+                            />
+                            {frameLoadState === "blocked" ? (
+                                <div
+                                    className="pointer-events-none absolute z-[1] flex items-center justify-center px-[12px] text-center text-[11px] font-semibold text-[var(--adaptive-black900)]"
+                                    style={{
+                                        left: chrome.bezel.left,
+                                        top: chrome.bezel.top,
+                                        width: layout.width,
+                                        height: layout.height,
+                                        borderRadius: chrome.screenRadius,
+                                        background: screenBackground,
+                                    }}
+                                >
+                                    {messages.settings.mobilePreviewIframeBlocked}
+                                </div>
+                            ) : null}
                             <div
-                                className="pointer-events-none absolute z-[1] flex items-center justify-center px-[12px] text-center text-[11px] font-semibold text-[var(--adaptive-black900)]"
+                                className="pointer-events-none absolute inset-0 z-[2]"
+                                data-fivepixels-mobile-preview-stage=""
+                            >
+                                <DeviceFrameArtwork
+                                    preset={mobilePreviewPreset}
+                                    chrome={chrome}
+                                    screenWidth={layout.width}
+                                    screenHeight={layout.height}
+                                    orientation={mobilePreviewOrientation}
+                                />
+                            </div>
+                            <div
+                                className={`pointer-events-none absolute z-[3] ${mobilePreviewOrientation === "landscape" ? "overflow-visible" : "overflow-hidden"}`}
                                 style={{
                                     left: chrome.bezel.left,
                                     top: chrome.bezel.top,
                                     width: layout.width,
                                     height: layout.height,
                                     borderRadius: chrome.screenRadius,
-                                    background: screenBackground,
                                 }}
                             >
-                                {messages.settings.mobilePreviewIframeBlocked}
+                                <DeviceStatusBar
+                                    preset={mobilePreviewPreset}
+                                    width={layout.width}
+                                    screenHeight={layout.height}
+                                    appearance={statusBarAppearance}
+                                    showCutout
+                                    orientation={mobilePreviewOrientation}
+                                    referenceLogicalWidth={statusBarReferenceWidth}
+                                />
                             </div>
-                        ) : null}
-                        <div
-                            className="pointer-events-none absolute inset-0 z-[2]"
-                            data-fivepixels-mobile-preview-stage=""
-                        >
-                            <DeviceFrameArtwork
-                                preset={mobilePreviewPreset}
-                                chrome={chrome}
-                                screenWidth={layout.width}
-                                screenHeight={layout.height}
-                                orientation={mobilePreviewOrientation}
-                            />
-                        </div>
-                        <div
-                            className={`pointer-events-none absolute z-[3] ${mobilePreviewOrientation === "landscape" ? "overflow-visible" : "overflow-hidden"}`}
-                            style={{
-                                left: chrome.bezel.left,
-                                top: chrome.bezel.top,
-                                width: layout.width,
-                                height: layout.height,
-                                borderRadius: chrome.screenRadius,
-                            }}
-                        >
-                            <DeviceStatusBar
-                                preset={mobilePreviewPreset}
-                                width={layout.width}
-                                screenHeight={layout.height}
-                                appearance={statusBarAppearance}
-                                showCutout
-                                orientation={mobilePreviewOrientation}
-                                referenceLogicalWidth={statusBarReferenceWidth}
-                            />
-                        </div>
                         </div>
                         {qrPanelOpen ? (
                             <div
-                                className="shrink-0 self-center"
+                                className="z-[1000]"
+                                // className="px-[10px] py-[6px] bg-[var(--adaptive-fillOpacity700)] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[10px] rounded-[12px] z-[1000]"
+                                style={{ position: "absolute", top: "50%", left: frameWidth + QR_DEVICE_GAP, transform: "translateY(-50%)" }}
                                 onPointerDown={(event) => event.stopPropagation()}
                             >
                                 <DevicePreviewQrPanel

@@ -132,7 +132,7 @@ export function DevicePreviewQrPanel({
             role="region"
             aria-label={title}
         >
-            <div className="text-[14px] font-semibold tracking-[0.01em] text-[var(--adaptive-black900)] whitespace-break-spaces leading-[1.5]">{title}</div>
+            {/* <div className="text-[14px] font-semibold text-[var(--adaptive-black700)] whitespace-break-spaces leading-[1.5]">{title}</div> */}
 
             <div className="overflow-hidden rounded-[16px] border border-[var(--adaptive-border-subtle)] bg-white">
                 {qr ? (
@@ -163,36 +163,39 @@ export function DevicePreviewQrPanel({
                 )}
             </div>
 
-            {resolved.needsManualUrl ? (
-                <div className="flex flex-col gap-[4px]">
-                    <label className="flex flex-col gap-[3px]">
-                        <span className="sr-only">{urlInputLabel}</span>
-                        <input
-                            type="url"
-                            value={manualUrl}
-                            onChange={(event) => setManualUrl(event.target.value)}
-                            placeholder={urlInputPlaceholder}
-                            aria-label={urlInputAriaLabel}
-                            className="h-[30px] w-full rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] px-[8px] text-[11px] text-[var(--adaptive-black900)] outline-none placeholder:text-[var(--adaptive-black500)] focus:border-[var(--adaptive-blue500)]"
-                        />
-                    </label>
-                    {statusMessage ? <p className="text-[9px] leading-snug text-[var(--adaptive-red500)]">{statusMessage}</p> : null}
-                </div>
-            ) : null}
+            <section className="rounded-[12px] bg-[var(--adaptive-fillOpacity700)] overflow-hidden shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[10px]">
+                {resolved.needsManualUrl ? (
+                    <div className="flex gap-[4px] bg-[var(--adaptive-neutralTintOpacity900)]">
+                        <label className="flex flex-col gap-[3px]">
+                            <span className="sr-only">{urlInputLabel}</span>
+                            <input
+                                type="url"
+                                value={manualUrl}
+                                onChange={(event) => setManualUrl(event.target.value)}
+                                placeholder={urlInputPlaceholder}
+                                aria-label={urlInputAriaLabel}
+                                className="h-[30px] w-full px-[10px] text-[var(--adaptive-black900)] outline-none placeholder:text-[var(--adaptive-black500)] focus:border-[var(--adaptive-blue500)]"
+                            />
+                        </label>
 
-            {resolved.url ? (
-                <div className="flex flex-col gap-[6px]">
-                    <button
-                        type="button"
-                        onClick={() => void handleCopy()}
-                        aria-label={copyAriaLabel}
-                        className="h-[28px] rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] px-[8px] text-[10px] font-semibold text-[var(--adaptive-black900)] hover:bg-[var(--adaptive-black100)]"
-                    >
-                        {copied ? copiedLabel : copyLabel}
-                    </button>
-                </div>
-            ) : null}
-            <p className="text-[12px] text-[var(--adaptive-black500)] leading-[1.5] whitespace-break-spaces">{hintLocalhost}</p>
+                        {/* {statusMessage ? <p className="text-[14px] leading-snug text-[var(--adaptive-red500)]">{statusMessage}</p> : null} */}
+                        {resolved.url ? (
+                            <div className="flex flex-col gap-[6px]">
+                                <button
+                                    type="button"
+                                    onClick={() => void handleCopy()}
+                                    aria-label={copyAriaLabel}
+                                    className="h-[28px] rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] px-[8px] text-[10px] font-semibold text-[var(--adaptive-black900)] hover:bg-[var(--adaptive-black100)]"
+                                >
+                                    {copied ? copiedLabel : copyLabel}
+                                </button>
+                            </div>
+                        ) : null}
+                    </div>
+                ) : null}
+
+                <p className="text-[12px] text-[var(--adaptive-black500)] leading-[1.5] whitespace-break-spaces px-[10px] py-[6px]">{hintLocalhost}</p>
+            </section>
         </div>
     );
 }
