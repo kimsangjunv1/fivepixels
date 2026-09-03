@@ -24,4 +24,16 @@ export declare function resolveMobilePreviewFrameMetrics(layout: {
  */
 export declare function rotateDeviceChromeForLandscape(chrome: DeviceChromeSpec): DeviceChromeSpec;
 export declare function resolveMobilePreviewChrome(portraitChrome: DeviceChromeSpec, orientation: MobilePreviewOrientation): DeviceChromeSpec;
+export type MobilePreviewCornerStyle = "sharp" | "rounded";
+/**
+ * Visual CSS px added on top of frameRadius when device image is off and corners are rounded.
+ * Tune this single constant to make the no-frame rounded preview more/less round.
+ */
+export declare const MOBILE_PREVIEW_ROUNDED_CORNER_EXTRA_PX = 0;
+/** Screen clip radius in visual CSS px (already scaled with the floating preview). */
+export declare function resolveMobilePreviewScreenRadius(args: {
+    deviceChrome: DeviceChromeSpec;
+    deviceImageEnabled: boolean;
+    cornerStyle: MobilePreviewCornerStyle;
+}): number;
 //# sourceMappingURL=mobilePreviewLayout.d.ts.map

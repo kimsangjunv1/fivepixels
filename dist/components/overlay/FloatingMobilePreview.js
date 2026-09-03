@@ -16,7 +16,7 @@ import { claimFloatingWindowZIndex } from "../../utils/overlay/floatingWindowSta
 import { syncGuestStatusBarStyle } from "../../utils/overlay/devicePreviewFrame.js";
 import { buildDevicePreviewCaptureFilename, captureDevicePreview, defaultRasterizeElement, downloadCanvasPng, getDevicePreviewCaptureLayout, } from "../../utils/overlay/devicePreviewCapture.js";
 import { MINIMIZED_WINDOW_HEIGHT } from "../../utils/overlay/minimizedDockLayout.js";
-import { resolveMobilePreviewChrome, resolveMobilePreviewFrameMetrics, resolveMobilePreviewLayout, resolveMobilePreviewScreenSize, resolveMobilePreviewStatusBarReferenceWidth, } from "../../utils/overlay/mobilePreviewLayout.js";
+import { resolveMobilePreviewChrome, resolveMobilePreviewFrameMetrics, resolveMobilePreviewLayout, resolveMobilePreviewScreenRadius, resolveMobilePreviewScreenSize, resolveMobilePreviewStatusBarReferenceWidth, } from "../../utils/overlay/mobilePreviewLayout.js";
 import { MOBILE_PREVIEW_FRAME_NAME, getMobilePreviewCaptureRoot, getMobilePreviewGuestDocument, getMobilePreviewGuestWindow, isInsideMobilePreviewFrame, isMobilePreviewGuestDocumentReady, syncMobilePreviewGuestViewport, } from "../../utils/overlay/mobilePreviewFrame.js";
 import { normalizeMobilePreviewUrl, persistMobilePreviewUrl, readMobilePreviewUrl } from "../../utils/overlay/mobilePreviewUrl.js";
 import { MOBILE_PREVIEW_SIDE_PANEL_GAP, MOBILE_PREVIEW_SIDE_PANEL_STACK_GAP, MOBILE_PREVIEW_SIDE_PANEL_WIDTH, isMobilePreviewSidePanelOpen, toggleMobilePreviewSidePanel, } from "../../utils/overlay/mobilePreviewSidePanels.js";
@@ -89,11 +89,11 @@ export function FloatingMobilePreview() {
             screenRadius: 0,
             bezel: getEmptyBezel(),
         }, [captureImageEnabled, deviceChrome]);
-    const previewRadius = captureImageEnabled
-        ? deviceChrome.screenRadius
-        : captureCornerStyle === "rounded"
-            ? deviceChrome.frameRadius
-            : 0;
+    const previewRadius = useMemo(() => resolveMobilePreviewScreenRadius({
+        deviceChrome,
+        deviceImageEnabled: captureImageEnabled,
+        cornerStyle: captureCornerStyle,
+    }), [captureCornerStyle, captureImageEnabled, deviceChrome]);
     const { frameWidth, frameHeight } = useMemo(() => resolveMobilePreviewFrameMetrics(layout, chrome.bezel), [chrome.bezel, layout]);
     const statusBarReferenceWidth = useMemo(() => resolveMobilePreviewStatusBarReferenceWidth(mobilePreviewPreset, mobilePreviewOrientation), [mobilePreviewOrientation, mobilePreviewPreset]);
     const guestStatusBarHeight = useMemo(() => (captureStatusBarEnabled ? getDeviceStatusBarHeight(mobilePreviewPreset, guestViewportSize.width, 1, statusBarReferenceWidth) : 0), [captureStatusBarEnabled, guestViewportSize.width, mobilePreviewPreset, statusBarReferenceWidth]);
@@ -379,25 +379,20 @@ export function FloatingMobilePreview() {
                                 width: frameWidth,
                                 height: frameHeight,
                                 filter: "drop-shadow(0 28px 56px rgba(0, 0, 0, 0.42))",
-                            }, children: [_jsx("iframe", { ref: iframeRef, name: MOBILE_PREVIEW_FRAME_NAME, title: messages.settings.mobilePreviewIframeTitle, src: frameSrc, onLoad: handleFrameLoad, "data-fivepixels-mobile-preview-frame": "", className: "absolute z-[0] border-0", style: {
-                                        left: chrome.bezel.left,
-                                        top: chrome.bezel.top,
-                                        width: guestViewportSize.width,
-                                        height: guestViewportSize.height,
-                                        transform: `scale(${MOBILE_PREVIEW_SCALE})`,
-                                        transformOrigin: "top left",
-                                        borderRadius: previewRadius,
-                                        background: screenBackground,
-                                        overflow: "hidden",
-                                    } }), frameLoadState === "blocked" ? (_jsx("div", { className: "pointer-events-none absolute z-[1] flex items-center justify-center px-[12px] text-center text-[11px] font-semibold text-[var(--adaptive-black900)]", style: {
+                            }, children: [_jsxs("div", { className: "absolute z-[0] overflow-hidden", style: {
                                         left: chrome.bezel.left,
                                         top: chrome.bezel.top,
                                         width: layout.width,
                                         height: layout.height,
                                         borderRadius: previewRadius,
                                         background: screenBackground,
-                                        overflow: "hidden",
-                                    }, children: messages.settings.mobilePreviewIframeBlocked })) : null, _jsxs("div", { ref: captureStageRef, className: "pointer-events-none absolute inset-0 z-[2]", children: [captureImageEnabled ? (_jsx("div", { "data-fivepixels-mobile-preview-stage": "", children: _jsx(DeviceFrameArtwork, { preset: mobilePreviewPreset, chrome: chrome, screenWidth: layout.width, screenHeight: layout.height, orientation: mobilePreviewOrientation }) })) : null, captureStatusBarEnabled ? (_jsx("div", { ref: statusBarRef, className: `pointer-events-none absolute z-[1] ${captureImageEnabled && mobilePreviewOrientation === "landscape" ? "overflow-visible" : "overflow-hidden"}`, style: {
+                                    }, children: [_jsx("iframe", { ref: iframeRef, name: MOBILE_PREVIEW_FRAME_NAME, title: messages.settings.mobilePreviewIframeTitle, src: frameSrc, onLoad: handleFrameLoad, "data-fivepixels-mobile-preview-frame": "", className: "absolute left-0 top-0 z-[0] border-0", style: {
+                                                width: guestViewportSize.width,
+                                                height: guestViewportSize.height,
+                                                transform: `scale(${MOBILE_PREVIEW_SCALE})`,
+                                                transformOrigin: "top left",
+                                                background: screenBackground,
+                                            } }), frameLoadState === "blocked" ? (_jsx("div", { className: "pointer-events-none absolute inset-0 z-[1] flex items-center justify-center px-[12px] text-center text-[11px] font-semibold text-[var(--adaptive-black900)]", style: { background: screenBackground }, children: messages.settings.mobilePreviewIframeBlocked })) : null] }), _jsxs("div", { ref: captureStageRef, className: "pointer-events-none absolute inset-0 z-[2]", children: [captureImageEnabled ? (_jsx("div", { "data-fivepixels-mobile-preview-stage": "", children: _jsx(DeviceFrameArtwork, { preset: mobilePreviewPreset, chrome: chrome, screenWidth: layout.width, screenHeight: layout.height, orientation: mobilePreviewOrientation }) })) : null, captureStatusBarEnabled ? (_jsx("div", { ref: statusBarRef, className: `pointer-events-none absolute z-[1] ${captureImageEnabled && mobilePreviewOrientation === "landscape" ? "overflow-visible" : "overflow-hidden"}`, style: {
                                                 left: chrome.bezel.left,
                                                 top: chrome.bezel.top,
                                                 width: layout.width,

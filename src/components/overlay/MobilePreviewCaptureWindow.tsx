@@ -1,9 +1,10 @@
 import { PanelOptionSwitch } from "@/components/panel/PanelOptionSwitch.js";
 import { useReportPreferences } from "@/providers/reportContext.js";
 import type { DevicePreviewCaptureState } from "@/utils/overlay/devicePreviewCapture.js";
+import type { MobilePreviewCornerStyle } from "@/utils/overlay/mobilePreviewLayout.js";
 import { MOBILE_PREVIEW_SIDE_PANEL_WIDTH } from "@/utils/overlay/mobilePreviewSidePanels.js";
 
-export type MobilePreviewCornerStyle = "sharp" | "rounded";
+export type { MobilePreviewCornerStyle };
 
 export type MobilePreviewCaptureWindowProps = {
     captureState: DevicePreviewCaptureState;

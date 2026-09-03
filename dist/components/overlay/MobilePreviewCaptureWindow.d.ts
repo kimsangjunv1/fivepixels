@@ -1,5 +1,6 @@
 import type { DevicePreviewCaptureState } from "../../utils/overlay/devicePreviewCapture.js";
-export type MobilePreviewCornerStyle = "sharp" | "rounded";
+import type { MobilePreviewCornerStyle } from "../../utils/overlay/mobilePreviewLayout.js";
+export type { MobilePreviewCornerStyle };
 export type MobilePreviewCaptureWindowProps = {
     captureState: DevicePreviewCaptureState;
     captureImageEnabled: boolean;

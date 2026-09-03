@@ -4,6 +4,7 @@ import {
     resolveMobilePreviewChrome,
     resolveMobilePreviewFrameMetrics,
     resolveMobilePreviewLayout,
+    resolveMobilePreviewScreenRadius,
     resolveMobilePreviewScreenSize,
     rotateDeviceChromeForLandscape,
 } from "./mobilePreviewLayout.js";
@@ -81,5 +82,40 @@ describe("resolveMobilePreviewFrameMetrics", () => {
         const landscapeMetrics = resolveMobilePreviewFrameMetrics(landscapeLayout, landscapeChrome.bezel);
         expect(landscapeMetrics.frameWidth).toBe(portraitMetrics.frameHeight);
         expect(landscapeMetrics.frameHeight).toBe(portraitMetrics.frameWidth);
+    });
+});
+
+describe("resolveMobilePreviewScreenRadius", () => {
+    const preset = getDevicePreviewPreset("iphone-15-pro-max");
+    const deviceChrome = scaleDeviceChrome(preset, 0.75);
+
+    it("uses screenRadius when device image is on", () => {
+        expect(
+            resolveMobilePreviewScreenRadius({
+                deviceChrome,
+                deviceImageEnabled: true,
+                cornerStyle: "rounded",
+            }),
+        ).toBe(deviceChrome.screenRadius);
+    });
+
+    it("uses frameRadius when device image is off and corners are rounded", () => {
+        expect(
+            resolveMobilePreviewScreenRadius({
+                deviceChrome,
+                deviceImageEnabled: false,
+                cornerStyle: "rounded",
+            }),
+        ).toBe(deviceChrome.frameRadius);
+    });
+
+    it("returns 0 when corners are sharp", () => {
+        expect(
+            resolveMobilePreviewScreenRadius({
+                deviceChrome,
+                deviceImageEnabled: false,
+                cornerStyle: "sharp",
+            }),
+        ).toBe(0);
     });
 });

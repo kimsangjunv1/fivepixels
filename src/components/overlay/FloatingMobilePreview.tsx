@@ -9,7 +9,7 @@ import { useReportPreferences } from "@/providers/reportContext.js";
 import { DeviceFrameArtwork } from "./DeviceFrameArtwork.js";
 import { DevicePreviewQrPanel } from "./DevicePreviewQrPanel.js";
 import { DeviceStatusBar, getDeviceStatusBarHeight } from "./DeviceStatusBar.js";
-import { MobilePreviewCaptureWindow, type MobilePreviewCornerStyle } from "./MobilePreviewCaptureWindow.js";
+import { MobilePreviewCaptureWindow } from "./MobilePreviewCaptureWindow.js";
 import { MinimizedDockSimpleSubtitleRow, MinimizedDockWindowChrome } from "@/components/ui/window/MinimizedDockWindowChrome.js";
 import { WINDOW_HEADER_BUTTON_CLASS, WindowModeControls } from "@/components/ui/window/WindowModeControls.js";
 import { claimFloatingWindowZIndex } from "@/utils/overlay/floatingWindowStack.js";
@@ -27,9 +27,11 @@ import {
     resolveMobilePreviewChrome,
     resolveMobilePreviewFrameMetrics,
     resolveMobilePreviewLayout,
+    resolveMobilePreviewScreenRadius,
     resolveMobilePreviewScreenSize,
     resolveMobilePreviewStatusBarReferenceWidth,
 } from "@/utils/overlay/mobilePreviewLayout.js";
+import type { MobilePreviewCornerStyle } from "@/utils/overlay/mobilePreviewLayout.js";
 import {
     MOBILE_PREVIEW_FRAME_NAME,
     getMobilePreviewCaptureRoot,
@@ -146,11 +148,15 @@ export function FloatingMobilePreview() {
                   },
         [captureImageEnabled, deviceChrome],
     );
-    const previewRadius = captureImageEnabled
-        ? deviceChrome.screenRadius
-        : captureCornerStyle === "rounded"
-          ? deviceChrome.frameRadius
-          : 0;
+    const previewRadius = useMemo(
+        () =>
+            resolveMobilePreviewScreenRadius({
+                deviceChrome,
+                deviceImageEnabled: captureImageEnabled,
+                cornerStyle: captureCornerStyle,
+            }),
+        [captureCornerStyle, captureImageEnabled, deviceChrome],
+    );
     const { frameWidth, frameHeight } = useMemo(() => resolveMobilePreviewFrameMetrics(layout, chrome.bezel), [chrome.bezel, layout]);
     const statusBarReferenceWidth = useMemo(() => resolveMobilePreviewStatusBarReferenceWidth(mobilePreviewPreset, mobilePreviewOrientation), [mobilePreviewOrientation, mobilePreviewPreset]);
     const guestStatusBarHeight = useMemo(
@@ -625,42 +631,39 @@ export function FloatingMobilePreview() {
                                 filter: "drop-shadow(0 28px 56px rgba(0, 0, 0, 0.42))",
                             }}
                         >
-                            <iframe
-                                ref={iframeRef}
-                                name={MOBILE_PREVIEW_FRAME_NAME}
-                                title={messages.settings.mobilePreviewIframeTitle}
-                                src={frameSrc}
-                                onLoad={handleFrameLoad}
-                                data-fivepixels-mobile-preview-frame=""
-                                className="absolute z-[0] border-0"
+                            <div
+                                className="absolute z-[0] overflow-hidden"
                                 style={{
                                     left: chrome.bezel.left,
                                     top: chrome.bezel.top,
-                                    width: guestViewportSize.width,
-                                    height: guestViewportSize.height,
-                                    transform: `scale(${MOBILE_PREVIEW_SCALE})`,
-                                    transformOrigin: "top left",
+                                    width: layout.width,
+                                    height: layout.height,
                                     borderRadius: previewRadius,
                                     background: screenBackground,
-                                    overflow: "hidden",
                                 }}
-                            />
-                            {frameLoadState === "blocked" ? (
-                                <div
-                                    className="pointer-events-none absolute z-[1] flex items-center justify-center px-[12px] text-center text-[11px] font-semibold text-[var(--adaptive-black900)]"
+                            >
+                                <iframe
+                                    ref={iframeRef}
+                                    name={MOBILE_PREVIEW_FRAME_NAME}
+                                    title={messages.settings.mobilePreviewIframeTitle}
+                                    src={frameSrc}
+                                    onLoad={handleFrameLoad}
+                                    data-fivepixels-mobile-preview-frame=""
+                                    className="absolute left-0 top-0 z-[0] border-0"
                                     style={{
-                                        left: chrome.bezel.left,
-                                        top: chrome.bezel.top,
-                                        width: layout.width,
-                                        height: layout.height,
-                                        borderRadius: previewRadius,
+                                        width: guestViewportSize.width,
+                                        height: guestViewportSize.height,
+                                        transform: `scale(${MOBILE_PREVIEW_SCALE})`,
+                                        transformOrigin: "top left",
                                         background: screenBackground,
-                                        overflow: "hidden",
                                     }}
-                                >
-                                    {messages.settings.mobilePreviewIframeBlocked}
-                                </div>
-                            ) : null}
+                                />
+                                {frameLoadState === "blocked" ? (
+                                    <div className="pointer-events-none absolute inset-0 z-[1] flex items-center justify-center px-[12px] text-center text-[11px] font-semibold text-[var(--adaptive-black900)]" style={{ background: screenBackground }}>
+                                        {messages.settings.mobilePreviewIframeBlocked}
+                                    </div>
+                                ) : null}
+                            </div>
                             <div
                                 ref={captureStageRef}
                                 className="pointer-events-none absolute inset-0 z-[2]"
