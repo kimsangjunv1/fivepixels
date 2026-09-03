@@ -131,6 +131,9 @@ export declare function ScreenRotateIcon({ className }: {
 export declare function QrCodeIcon({ className }: {
     className?: string;
 }): import("react").JSX.Element;
+export declare function CaptureIcon({ className }: {
+    className?: string;
+}): import("react").JSX.Element;
 export declare function ArrowBelowIcon({ className }: {
     className?: string;
 }): import("react").JSX.Element;

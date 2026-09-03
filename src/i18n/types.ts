@@ -587,6 +587,8 @@ export type ReportMessages = {
         mobilePreviewQrOpenLabel: string;
         mobilePreviewQrOpenAriaLabel: string;
         mobilePreviewQrWindowTitle: string;
+        mobilePreviewCaptureOpenLabel: string;
+        mobilePreviewCaptureOpenAriaLabel: string;
         sectionViewerSwitch: string;
         viewerSwitchAriaLabel: string;
         viewerSwitchHint: string;

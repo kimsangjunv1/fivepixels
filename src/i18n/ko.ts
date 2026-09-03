@@ -599,6 +599,8 @@ export const ko: ReportMessages = {
         mobilePreviewQrOpenLabel: "QR 코드",
         mobilePreviewQrOpenAriaLabel: "모바일 미리보기 QR 코드 열기",
         mobilePreviewQrWindowTitle: "QR 코드",
+        mobilePreviewCaptureOpenLabel: "화면 캡처",
+        mobilePreviewCaptureOpenAriaLabel: "모바일 미리보기 캡처 컨트롤 열기",
         sectionViewerSwitch: "사용자 전환",
         viewerSwitchAriaLabel: "미리보기 사용자 선택",
         viewerSwitchHint: "선택한 사용자 관점에서 버튼과 권한 UI를 확인합니다.",

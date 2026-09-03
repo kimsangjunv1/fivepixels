@@ -20,6 +20,20 @@ export function isInsideMobilePreviewFrame(): boolean {
     }
 }
 
+export function getMobilePreviewCaptureRoot(iframe: HTMLIFrameElement | null): HTMLElement | null {
+    const doc = getMobilePreviewGuestDocument(iframe);
+
+    if (!doc) {
+        return null;
+    }
+
+    if (doc.body) {
+        return doc.body;
+    }
+
+    return doc.documentElement;
+}
+
 export function getMobilePreviewGuestDocument(iframe: HTMLIFrameElement | null): Document | null {
     if (!iframe) {
         return null;

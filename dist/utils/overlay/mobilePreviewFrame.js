@@ -17,6 +17,16 @@ export function isInsideMobilePreviewFrame() {
         return window.name === MOBILE_PREVIEW_FRAME_NAME;
     }
 }
+export function getMobilePreviewCaptureRoot(iframe) {
+    const doc = getMobilePreviewGuestDocument(iframe);
+    if (!doc) {
+        return null;
+    }
+    if (doc.body) {
+        return doc.body;
+    }
+    return doc.documentElement;
+}
 export function getMobilePreviewGuestDocument(iframe) {
     if (!iframe) {
         return null;

@@ -597,6 +597,8 @@ export const en = {
         mobilePreviewQrOpenLabel: "QR code",
         mobilePreviewQrOpenAriaLabel: "Open mobile preview QR code",
         mobilePreviewQrWindowTitle: "QR code",
+        mobilePreviewCaptureOpenLabel: "Capture screen",
+        mobilePreviewCaptureOpenAriaLabel: "Open mobile preview capture controls",
         sectionViewerSwitch: "Viewer switch",
         viewerSwitchAriaLabel: "Select preview viewer",
         viewerSwitchHint: "Preview buttons and permissions as the selected user.",

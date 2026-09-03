@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type PointerEvent as ReactPointerEvent } from "react";
-import { DEVICE_PREVIEW_BRAND_ORDER, getDevicePreviewPresetsByBrand, scaleDeviceChrome, type DevicePreviewScale } from "@/constants/devicePreview.js";
-import { QrCodeIcon, ScreenRotateIcon } from "@/components/icons/Icons.js";
+import { DEVICE_PREVIEW_BRAND_ORDER, getDevicePreviewPresetsByBrand, getEmptyBezel, scaleDeviceChrome, type DevicePreviewScale } from "@/constants/devicePreview.js";
+import { CaptureIcon, QrCodeIcon, ScreenRotateIcon } from "@/components/icons/Icons.js";
 import type { WindowPosition } from "@/hooks/useDraggableWindow.js";
 import { useDraggableWindow } from "@/hooks/useDraggableWindow.js";
 import { useMinimizedDockDragReorder } from "@/hooks/useMinimizedDockDragReorder.js";
@@ -9,10 +9,19 @@ import { useReportPreferences } from "@/providers/reportContext.js";
 import { DeviceFrameArtwork } from "./DeviceFrameArtwork.js";
 import { DevicePreviewQrPanel } from "./DevicePreviewQrPanel.js";
 import { DeviceStatusBar, getDeviceStatusBarHeight } from "./DeviceStatusBar.js";
+import { MobilePreviewCaptureWindow } from "./MobilePreviewCaptureWindow.js";
 import { MinimizedDockSimpleSubtitleRow, MinimizedDockWindowChrome } from "@/components/ui/window/MinimizedDockWindowChrome.js";
 import { WINDOW_HEADER_BUTTON_CLASS, WindowModeControls } from "@/components/ui/window/WindowModeControls.js";
 import { claimFloatingWindowZIndex } from "@/utils/overlay/floatingWindowStack.js";
 import { syncGuestStatusBarStyle } from "@/utils/overlay/devicePreviewFrame.js";
+import {
+    buildDevicePreviewCaptureFilename,
+    captureDevicePreview,
+    defaultRasterizeElement,
+    downloadCanvasPng,
+    getDevicePreviewCaptureLayout,
+    type DevicePreviewCaptureState,
+} from "@/utils/overlay/devicePreviewCapture.js";
 import { MINIMIZED_WINDOW_HEIGHT } from "@/utils/overlay/minimizedDockLayout.js";
 import {
     resolveMobilePreviewChrome,
@@ -23,6 +32,7 @@ import {
 } from "@/utils/overlay/mobilePreviewLayout.js";
 import {
     MOBILE_PREVIEW_FRAME_NAME,
+    getMobilePreviewCaptureRoot,
     getMobilePreviewGuestDocument,
     getMobilePreviewGuestWindow,
     isInsideMobilePreviewFrame,
@@ -128,8 +138,17 @@ export function FloatingMobilePreview() {
     const [frameSrc, setFrameSrc] = useState(() => (typeof window === "undefined" ? "" : readMobilePreviewUrl(window.location.href)));
     const [urlDraft, setUrlDraft] = useState(() => (typeof window === "undefined" ? "" : readMobilePreviewUrl(window.location.href)));
     const [qrPanelOpen, setQrPanelOpen] = useState(false);
+    const [captureWindowOpen, setCaptureWindowOpen] = useState(false);
+    const [captureState, setCaptureState] = useState<DevicePreviewCaptureState>("idle");
+    const [captureScale, setCaptureScale] = useState<DevicePreviewScale>(1);
+    const [captureImageEnabled, setCaptureImageEnabled] = useState(true);
+    const [captureFitToViewport, setCaptureFitToViewport] = useState(false);
+    const [captureStatusBarEnabled, setCaptureStatusBarEnabled] = useState(true);
     const rootRef = useRef<HTMLDivElement>(null);
     const iframeRef = useRef<HTMLIFrameElement>(null);
+    const captureStageRef = useRef<HTMLDivElement>(null);
+    const statusBarRef = useRef<HTMLDivElement>(null);
+    const captureResetTimerRef = useRef<number | null>(null);
 
     const isMinimized = windowMode === "minimized";
     const overlayDock = useOverlayMinimizedDock({
@@ -174,8 +193,17 @@ export function FloatingMobilePreview() {
     useEffect(() => {
         if (!mobilePreviewUiOpen) {
             setQrPanelOpen(false);
+            setCaptureWindowOpen(false);
         }
     }, [mobilePreviewUiOpen]);
+
+    useEffect(() => {
+        return () => {
+            if (captureResetTimerRef.current !== null) {
+                window.clearTimeout(captureResetTimerRef.current);
+            }
+        };
+    }, []);
 
     const contentWidth = qrPanelOpen ? frameWidth + QR_DEVICE_GAP + QR_PANEL_WIDTH : frameWidth;
 
@@ -236,6 +264,81 @@ export function FloatingMobilePreview() {
     const handleFocus = useCallback(() => {
         setZIndex(claimFloatingWindowZIndex());
     }, []);
+
+    const handleCapture = useCallback(async () => {
+        if (captureState === "capturing" || frameLoadState !== "ready") {
+            return;
+        }
+
+        const contentRoot = getMobilePreviewCaptureRoot(iframeRef.current);
+
+        if (captureResetTimerRef.current !== null) {
+            window.clearTimeout(captureResetTimerRef.current);
+            captureResetTimerRef.current = null;
+        }
+
+        setCaptureState("capturing");
+
+        try {
+            if (!contentRoot) {
+                throw new Error("Mobile preview content is missing.");
+            }
+
+            const screenWidth = Math.max(1, Math.round(guestViewportSize.width * captureScale));
+            const screenHeight = Math.max(1, Math.round(guestViewportSize.height * captureScale));
+            const scaledChrome = resolveMobilePreviewChrome(scaleDeviceChrome(mobilePreviewPreset, captureScale), mobilePreviewOrientation);
+            const layout = getDevicePreviewCaptureLayout({
+                screenWidth,
+                screenHeight,
+                bezel: captureImageEnabled ? scaledChrome.bezel : getEmptyBezel(),
+                deviceImageEnabled: captureImageEnabled,
+            });
+
+            const canvas = await captureDevicePreview({
+                contentRoot,
+                chromeStage: captureStageRef.current,
+                statusBarLayer: statusBarRef.current,
+                deviceImageEnabled: captureImageEnabled,
+                statusBarEnabled: captureStatusBarEnabled,
+                layout,
+                background: screenBackground,
+                rasterize: (element, options) =>
+                    defaultRasterizeElement(element, {
+                        ...options,
+                        cropToViewport: captureFitToViewport,
+                    }),
+            });
+
+            await downloadCanvasPng(
+                canvas,
+                buildDevicePreviewCaptureFilename({
+                    deviceId: mobilePreviewPreset.id,
+                    width: screenWidth,
+                    height: screenHeight,
+                }),
+            );
+            setCaptureState("saved");
+        } catch {
+            setCaptureState("failed");
+        } finally {
+            captureResetTimerRef.current = window.setTimeout(() => {
+                setCaptureState("idle");
+                captureResetTimerRef.current = null;
+            }, 1600);
+        }
+    }, [
+        captureFitToViewport,
+        captureImageEnabled,
+        captureScale,
+        captureState,
+        captureStatusBarEnabled,
+        frameLoadState,
+        guestViewportSize.height,
+        guestViewportSize.width,
+        mobilePreviewOrientation,
+        mobilePreviewPreset,
+        screenBackground,
+    ]);
 
     const navigatePreviewUrl = useCallback(
         (rawInput: string) => {
@@ -326,6 +429,7 @@ export function FloatingMobilePreview() {
     }
 
     return (
+        <>
         <div
             ref={rootRef}
             data-fivepixels-interactive=""
@@ -410,6 +514,18 @@ export function FloatingMobilePreview() {
                                     ))}
                                 </select>
                             </label>
+
+                            <button
+                                type="button"
+                                onClick={() => setCaptureWindowOpen((open) => !open)}
+                                onPointerDown={(event) => event.stopPropagation()}
+                                aria-label={messages.settings.mobilePreviewCaptureOpenAriaLabel}
+                                title={messages.settings.mobilePreviewCaptureOpenLabel}
+                                aria-pressed={captureWindowOpen}
+                                className={WINDOW_HEADER_BUTTON_CLASS}
+                            >
+                                <CaptureIcon className="h-[16px] w-[16px]" />
+                            </button>
 
                             <button
                                 type="button"
@@ -525,36 +641,54 @@ export function FloatingMobilePreview() {
                                 </div>
                             ) : null}
                             <div
+                                ref={captureStageRef}
                                 className="pointer-events-none absolute inset-0 z-[2]"
-                                data-fivepixels-mobile-preview-stage=""
                             >
-                                <DeviceFrameArtwork
-                                    preset={mobilePreviewPreset}
-                                    chrome={chrome}
-                                    screenWidth={layout.width}
-                                    screenHeight={layout.height}
-                                    orientation={mobilePreviewOrientation}
-                                />
-                            </div>
-                            <div
-                                className={`pointer-events-none absolute z-[3] ${mobilePreviewOrientation === "landscape" ? "overflow-visible" : "overflow-hidden"}`}
-                                style={{
-                                    left: chrome.bezel.left,
-                                    top: chrome.bezel.top,
-                                    width: layout.width,
-                                    height: layout.height,
-                                    borderRadius: chrome.screenRadius,
-                                }}
-                            >
-                                <DeviceStatusBar
-                                    preset={mobilePreviewPreset}
-                                    width={layout.width}
-                                    screenHeight={layout.height}
-                                    appearance={statusBarAppearance}
-                                    showCutout
-                                    orientation={mobilePreviewOrientation}
-                                    referenceLogicalWidth={statusBarReferenceWidth}
-                                />
+                                {captureImageEnabled ? (
+                                    <div data-fivepixels-mobile-preview-stage="">
+                                        <DeviceFrameArtwork
+                                            preset={mobilePreviewPreset}
+                                            chrome={chrome}
+                                            screenWidth={layout.width}
+                                            screenHeight={layout.height}
+                                            orientation={mobilePreviewOrientation}
+                                        />
+                                    </div>
+                                ) : (
+                                    <div
+                                        className="absolute border border-[var(--adaptive-border-subtle)] bg-transparent"
+                                        data-fivepixels-skip-capture=""
+                                        style={{
+                                            left: chrome.bezel.left,
+                                            top: chrome.bezel.top,
+                                            width: layout.width,
+                                            height: layout.height,
+                                        }}
+                                    />
+                                )}
+                                {captureStatusBarEnabled ? (
+                                    <div
+                                        ref={statusBarRef}
+                                        className={`pointer-events-none absolute z-[1] ${mobilePreviewOrientation === "landscape" ? "overflow-visible" : "overflow-hidden"}`}
+                                        style={{
+                                            left: chrome.bezel.left,
+                                            top: chrome.bezel.top,
+                                            width: layout.width,
+                                            height: layout.height,
+                                            borderRadius: captureImageEnabled ? chrome.screenRadius : 0,
+                                        }}
+                                    >
+                                        <DeviceStatusBar
+                                            preset={mobilePreviewPreset}
+                                            width={layout.width}
+                                            screenHeight={layout.height}
+                                            appearance={statusBarAppearance}
+                                            showCutout={captureImageEnabled}
+                                            orientation={mobilePreviewOrientation}
+                                            referenceLogicalWidth={statusBarReferenceWidth}
+                                        />
+                                    </div>
+                                ) : null}
                             </div>
                         </div>
                         {qrPanelOpen ? (
@@ -575,5 +709,21 @@ export function FloatingMobilePreview() {
                 </>
             )}
         </div>
+        {captureWindowOpen ? (
+            <MobilePreviewCaptureWindow
+                captureState={captureState}
+                captureScale={captureScale}
+                captureImageEnabled={captureImageEnabled}
+                captureFitToViewport={captureFitToViewport}
+                captureStatusBarEnabled={captureStatusBarEnabled}
+                onCaptureScaleChange={setCaptureScale}
+                onCaptureImageEnabledChange={setCaptureImageEnabled}
+                onCaptureFitToViewportChange={setCaptureFitToViewport}
+                onCaptureStatusBarEnabledChange={setCaptureStatusBarEnabled}
+                onCapture={() => void handleCapture()}
+                onClose={() => setCaptureWindowOpen(false)}
+            />
+        ) : null}
+        </>
     );
 }
