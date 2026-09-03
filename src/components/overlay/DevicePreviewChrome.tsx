@@ -1,34 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useReportPreferences, useReportSession } from "@/providers/reportContext.js";
-import {
-    DEVICE_PREVIEW_BRAND_ORDER,
-    DEVICE_PREVIEW_SCALE_OPTIONS,
-    formatDevicePreviewScale,
-    getDevicePreviewLayoutSize,
-    getDevicePreviewPreset,
-    getDevicePreviewPresetsByBrand,
-    getEmptyBezel,
-    scaleDeviceChrome,
-    type DevicePreviewScale,
-} from "@/constants/devicePreview.js";
-import { PanelOptionSwitch } from "@/components/panel/PanelOptionSwitch.js";
-import { OverlayShell, type FloatingWindowMode } from "@/components/ui/OverlayShell.js";
-import type { WindowPosition } from "@/hooks/useDraggableWindow.js";
-import {
-    buildDevicePreviewCaptureFilename,
-    captureDevicePreview,
-    downloadCanvasPng,
-    getDevicePreviewCaptureLayout,
-    type DevicePreviewCaptureState,
-} from "@/utils/overlay/devicePreviewCapture.js";
+import { getDevicePreviewLayoutSize, getDevicePreviewPreset, getEmptyBezel, scaleDeviceChrome } from "@/constants/devicePreview.js";
 import {
     DEVICE_PREVIEW_FRAME_NAME,
     DEVICE_PREVIEW_HOST_STYLE_ID,
     HTML_DEVICE_PREVIEW_ACTIVE_CLASS,
     buildDevicePreviewHostStyle,
     clearGuestStatusBarStyle,
-    closeDevicePreviewAndSyncGuestUrl,
-    getGuestCaptureRoot,
     getGuestDocument,
     getGuestWindow,
     isGuestDocumentReady,
@@ -43,57 +21,9 @@ import {
     setPageDocumentBridge,
 } from "@/utils/overlay/pageDocumentBridge.js";
 import { DeviceFrameArtwork } from "./DeviceFrameArtwork.js";
-import { DevicePreviewQrCard } from "./DevicePreviewQrCard.js";
 import { DeviceStatusBar, getDeviceStatusBarHeight } from "./DeviceStatusBar.js";
 
-const DEVICE_PREVIEW_BAR_STORAGE_KEY = "fivepixels:device-preview-bar-position:v1";
-const FLOATING_BAR_RESERVE = 88;
-
-function readDevicePreviewBarPosition(): WindowPosition {
-    const fallback = getDefaultDevicePreviewBarPosition();
-
-    if (typeof window === "undefined") {
-        return fallback;
-    }
-
-    try {
-        const raw = window.localStorage.getItem(DEVICE_PREVIEW_BAR_STORAGE_KEY);
-
-        if (!raw) {
-            return fallback;
-        }
-
-        const parsed = JSON.parse(raw) as Partial<WindowPosition>;
-
-        if (typeof parsed.left === "number" && Number.isFinite(parsed.left) && typeof parsed.top === "number" && Number.isFinite(parsed.top)) {
-            return { left: parsed.left, top: parsed.top };
-        }
-    } catch {
-        // Ignore storage failures.
-    }
-
-    return fallback;
-}
-
-function getDefaultDevicePreviewBarPosition(): WindowPosition {
-    if (typeof window === "undefined") {
-        return { left: 80, top: 640 };
-    }
-
-    return {
-        left: Math.max(16, window.innerWidth - 240),
-        top: Math.max(16, window.innerHeight - 420),
-    };
-}
-
-function persistDevicePreviewBarPosition(position: WindowPosition) {
-    try {
-        window.localStorage.setItem(DEVICE_PREVIEW_BAR_STORAGE_KEY, JSON.stringify(position));
-    } catch {
-        // Ignore storage failures.
-    }
-}
-
+const FLOATING_BAR_RESERVE = 32;
 const RULER_WIDTH = 44;
 const RULER_GAP = 6;
 const RULER_MAJOR_STEP = 100;
@@ -198,184 +128,6 @@ function resolveCenteredLayout(args: {
     };
 }
 
-function DevicePreviewFloatingBar({
-    captureState,
-    onCapture,
-    onClose,
-}: {
-    captureState: DevicePreviewCaptureState;
-    onCapture: () => void;
-    onClose: () => void;
-}) {
-    const {
-        messages,
-        devicePreviewDeviceId,
-        setDevicePreviewDeviceId,
-        devicePreviewScale,
-        setDevicePreviewScale,
-        devicePreviewImageEnabled,
-        setDevicePreviewImageEnabled,
-        devicePreviewFitToViewport,
-        setDevicePreviewFitToViewport,
-        devicePreviewStatusBarEnabled,
-        setDevicePreviewStatusBarEnabled,
-    } = useReportPreferences();
-    const [position, setPosition] = useState<WindowPosition>(() => readDevicePreviewBarPosition());
-    const [mode, setMode] = useState<FloatingWindowMode>("normal");
-    const captureLabel =
-        captureState === "capturing"
-            ? messages.settings.devicePreviewCaptureCapturingLabel
-            : captureState === "saved"
-              ? messages.settings.devicePreviewCaptureSavedLabel
-              : captureState === "failed"
-                ? messages.settings.devicePreviewCaptureFailedLabel
-                : messages.settings.devicePreviewCaptureLabel;
-
-    const selectClassName =
-        "h-[30px] w-full rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] px-[8px] text-[11px] font-semibold text-[var(--adaptive-black900)] outline-none focus:border-[var(--adaptive-blue500)]";
-
-    const handlePositionChange = useCallback((next: WindowPosition) => {
-        setPosition(next);
-        persistDevicePreviewBarPosition(next);
-    }, []);
-
-    return (
-        <OverlayShell
-            windowId="device-preview-toolbar"
-            minimizePolicy="dock"
-            dataChrome="device-preview-toolbar"
-            role="toolbar"
-            ariaLabel={messages.settings.devicePreviewFloatingAriaLabel}
-            position={position}
-            onPositionChange={handlePositionChange}
-            mode={mode}
-            onModeChange={setMode}
-            width={220}
-            minWidth={200}
-            minHeight={160}
-            resizable
-            resizeAriaLabel={messages.marker.resizeAriaLabel}
-            contentClassName="px-[12px] pb-[12px]"
-            minimizedDockSubtitle={messages.settings.devicePreviewFloatingAriaLabel}
-            controls={{
-                onClose,
-                closeAriaLabel: messages.marker.windowCloseAriaLabel,
-                minimizeAriaLabel: messages.marker.windowMinimizeAriaLabel,
-                maximizeAriaLabel: messages.marker.windowMaximizeAriaLabel,
-                restoreAriaLabel: messages.marker.windowRestoreAriaLabel,
-                moreAriaLabel: messages.marker.windowControlsMoreAriaLabel,
-            }}
-            title={
-                <span className="truncate text-[12px] font-bold text-[var(--adaptive-black900)]">{messages.settings.devicePreviewFloatingAriaLabel}</span>
-            }
-        >
-            <div className="flex w-full flex-col gap-[10px]">
-                <label className="flex flex-col gap-[3px]">
-                    <span className="text-[9px] font-semibold text-[var(--adaptive-black500)]">{messages.settings.devicePreviewDeviceLabel}</span>
-                    <select
-                        value={devicePreviewDeviceId}
-                        onChange={(event) => setDevicePreviewDeviceId(event.target.value)}
-                        aria-label={messages.settings.devicePreviewDeviceAriaLabel}
-                        className={selectClassName}
-                    >
-                        {DEVICE_PREVIEW_BRAND_ORDER.map((brand) => (
-                            <optgroup
-                                key={brand}
-                                label={
-                                    brand === "apple"
-                                        ? messages.settings.devicePreviewBrandApple
-                                        : brand === "samsung"
-                                          ? messages.settings.devicePreviewBrandSamsung
-                                          : brand === "google"
-                                            ? messages.settings.devicePreviewBrandGoogle
-                                            : messages.settings.devicePreviewBrandDesktop
-                                }
-                            >
-                                {getDevicePreviewPresetsByBrand(brand).map((option) => (
-                                    <option
-                                        key={option.id}
-                                        value={option.id}
-                                    >
-                                        {option.label} ({option.width}×{option.height})
-                                    </option>
-                                ))}
-                            </optgroup>
-                        ))}
-                    </select>
-                </label>
-
-                <label className="flex flex-col gap-[3px]">
-                    <span className="text-[9px] font-semibold text-[var(--adaptive-black500)]">{messages.settings.devicePreviewScaleLabel}</span>
-                    <select
-                        value={String(devicePreviewScale)}
-                        onChange={(event) => setDevicePreviewScale(Number(event.target.value) as DevicePreviewScale)}
-                        aria-label={messages.settings.devicePreviewScaleAriaLabel}
-                        className={selectClassName}
-                    >
-                        {DEVICE_PREVIEW_SCALE_OPTIONS.map((scale) => (
-                            <option
-                                key={scale}
-                                value={String(scale)}
-                            >
-                                {formatDevicePreviewScale(scale)}
-                            </option>
-                        ))}
-                    </select>
-                </label>
-
-                <div className="flex flex-col gap-[3px]">
-                    <span className="text-[9px] font-semibold text-[var(--adaptive-black500)]">{messages.settings.devicePreviewImageLabel}</span>
-                    <PanelOptionSwitch
-                        options={[
-                            { value: "off", label: messages.settings.devicePreviewImageOff },
-                            { value: "on", label: messages.settings.devicePreviewImageOn },
-                        ]}
-                        value={devicePreviewImageEnabled ? "on" : "off"}
-                        onChange={(value) => setDevicePreviewImageEnabled(value === "on")}
-                        ariaLabel={messages.settings.devicePreviewImageAriaLabel}
-                    />
-                </div>
-
-                <div className="flex flex-col gap-[3px]">
-                    <span className="text-[9px] font-semibold text-[var(--adaptive-black500)]">{messages.settings.devicePreviewFitViewportLabel}</span>
-                    <PanelOptionSwitch
-                        options={[
-                            { value: "off", label: messages.settings.devicePreviewFitViewportOff },
-                            { value: "on", label: messages.settings.devicePreviewFitViewportOn },
-                        ]}
-                        value={devicePreviewFitToViewport ? "on" : "off"}
-                        onChange={(value) => setDevicePreviewFitToViewport(value === "on")}
-                        ariaLabel={messages.settings.devicePreviewFitViewportAriaLabel}
-                    />
-                </div>
-
-                <div className="flex flex-col gap-[3px]">
-                    <span className="text-[9px] font-semibold text-[var(--adaptive-black500)]">{messages.settings.devicePreviewStatusBarLabel}</span>
-                    <PanelOptionSwitch
-                        options={[
-                            { value: "off", label: messages.settings.devicePreviewStatusBarOff },
-                            { value: "on", label: messages.settings.devicePreviewStatusBarOn },
-                        ]}
-                        value={devicePreviewStatusBarEnabled ? "on" : "off"}
-                        onChange={(value) => setDevicePreviewStatusBarEnabled(value === "on")}
-                        ariaLabel={messages.settings.devicePreviewStatusBarAriaLabel}
-                    />
-                </div>
-
-                <button
-                    type="button"
-                    onClick={onCapture}
-                    disabled={captureState === "capturing"}
-                    aria-label={messages.settings.devicePreviewCaptureAriaLabel}
-                    className="h-[28px] rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] px-[8px] text-[10px] font-semibold text-[var(--adaptive-black900)] hover:bg-[var(--adaptive-black100)] disabled:opacity-60"
-                >
-                    {captureLabel}
-                </button>
-            </div>
-        </OverlayShell>
-    );
-}
-
 export function DevicePreviewChrome() {
     const {
         devicePreviewUiOpen,
@@ -386,7 +138,6 @@ export function DevicePreviewChrome() {
         devicePreviewStatusBarEnabled,
         resolvedPanelAppearance,
         messages,
-        setDevicePreviewUiOpen,
     } = useReportPreferences();
     const { mode } = useReportSession();
     const isPreviewGuest = isInsideDevicePreviewFrame();
@@ -405,11 +156,7 @@ export function DevicePreviewChrome() {
     }, [devicePreviewImageEnabled, preset, devicePreviewScale]);
     const hostCanvas = DEVICE_PREVIEW_HOST_CANVAS[resolvedPanelAppearance === "dark" ? "dark" : "light"];
     const canvasStyle = useMemo(() => buildDevicePreviewCanvasStyle(hostCanvas), [hostCanvas]);
-    const stageRef = useRef<HTMLDivElement>(null);
-    const statusBarRef = useRef<HTMLDivElement>(null);
     const iframeRef = useRef<HTMLIFrameElement>(null);
-    const captureResetTimerRef = useRef<number | null>(null);
-    const [captureState, setCaptureState] = useState<DevicePreviewCaptureState>("idle");
     const [frameLoadState, setFrameLoadState] = useState<FrameLoadState>("loading");
     const [frameSrc] = useState(() => (typeof window === "undefined" ? "" : window.location.href));
 
@@ -448,80 +195,6 @@ export function DevicePreviewChrome() {
         () => (devicePreviewStatusBarEnabled ? getDeviceStatusBarHeight(preset, centered.screenWidth) : 0),
         [devicePreviewStatusBarEnabled, preset, centered.screenWidth],
     );
-
-    const handleCapture = useCallback(async () => {
-        if (captureState === "capturing") {
-            return;
-        }
-
-        const contentRoot = getGuestCaptureRoot(iframeRef.current);
-
-        if (captureResetTimerRef.current !== null) {
-            window.clearTimeout(captureResetTimerRef.current);
-            captureResetTimerRef.current = null;
-        }
-
-        setCaptureState("capturing");
-
-        try {
-            if (!contentRoot) {
-                throw new Error("Device preview content is missing.");
-            }
-
-            const layout = getDevicePreviewCaptureLayout({
-                screenWidth: centered.screenWidth,
-                screenHeight: centered.screenHeight,
-                bezel: chrome.bezel,
-                deviceImageEnabled: devicePreviewImageEnabled,
-            });
-            const canvas = await captureDevicePreview({
-                contentRoot,
-                chromeStage: stageRef.current,
-                statusBarLayer: statusBarRef.current,
-                deviceImageEnabled: devicePreviewImageEnabled,
-                statusBarEnabled: devicePreviewStatusBarEnabled,
-                layout,
-                background: hostCanvas.screen,
-            });
-            await downloadCanvasPng(
-                canvas,
-                buildDevicePreviewCaptureFilename({
-                    deviceId: preset.id,
-                    width: centered.screenWidth,
-                    height: centered.screenHeight,
-                }),
-            );
-            setCaptureState("saved");
-        } catch {
-            setCaptureState("failed");
-        } finally {
-            captureResetTimerRef.current = window.setTimeout(() => {
-                setCaptureState("idle");
-                captureResetTimerRef.current = null;
-            }, 1600);
-        }
-    }, [
-        captureState,
-        centered.screenHeight,
-        centered.screenWidth,
-        chrome.bezel,
-        devicePreviewImageEnabled,
-        devicePreviewStatusBarEnabled,
-        hostCanvas.screen,
-        preset.id,
-    ]);
-
-    useEffect(() => {
-        return () => {
-            if (captureResetTimerRef.current !== null) {
-                window.clearTimeout(captureResetTimerRef.current);
-            }
-        };
-    }, []);
-
-    const handleClose = useCallback(() => {
-        closeDevicePreviewAndSyncGuestUrl(iframeRef.current, () => setDevicePreviewUiOpen(false));
-    }, [setDevicePreviewUiOpen]);
 
     const handleFrameLoad = useCallback(() => {
         const iframe = iframeRef.current;
@@ -676,10 +349,6 @@ export function DevicePreviewChrome() {
         transform: `scale(${centered.fitScale})`,
         transformOrigin: "top left" as const,
     };
-    const qrGap = 16;
-    const qrLeft = frameLeft + centered.visualFrameWidth + qrGap;
-    const qrMaxWidth = Math.max(0, metrics.viewportWidth - qrLeft - 12);
-    const showQrCard = qrMaxWidth >= 140;
 
     return (
         <>
@@ -755,7 +424,6 @@ export function DevicePreviewChrome() {
                 ) : null}
 
                 <div
-                    ref={stageRef}
                     className="absolute z-[3]"
                     data-fivepixels-device-preview-stage=""
                     style={{
@@ -788,7 +456,6 @@ export function DevicePreviewChrome() {
 
                     {devicePreviewStatusBarEnabled ? (
                         <div
-                            ref={statusBarRef}
                             className="absolute z-[1] overflow-hidden"
                             style={{
                                 left: centered.bezel.left,
@@ -845,32 +512,6 @@ export function DevicePreviewChrome() {
                     })}
                 </div>
             </div>
-
-            {showQrCard ? (
-                <DevicePreviewQrCard
-                    left={qrLeft}
-                    // top={Math.max(8, frameTop)}
-                    // top={Math.max(8, frameTop)}
-                    maxWidth={qrMaxWidth}
-                    title={messages.settings.devicePreviewQrTitle}
-                    hintLocalhost={messages.settings.devicePreviewQrHintLocalhost}
-                    urlInputLabel={messages.settings.devicePreviewQrUrlInputLabel}
-                    urlInputPlaceholder={messages.settings.devicePreviewQrUrlInputPlaceholder}
-                    urlInputAriaLabel={messages.settings.devicePreviewQrUrlInputAriaLabel}
-                    invalidUrlMessage={messages.settings.devicePreviewQrInvalidUrl}
-                    emptyUrlMessage={messages.settings.devicePreviewQrEmptyUrl}
-                    copyLabel={messages.settings.devicePreviewQrCopyLabel}
-                    copiedLabel={messages.settings.devicePreviewQrCopiedLabel}
-                    copyAriaLabel={messages.settings.devicePreviewQrCopyAriaLabel}
-                    qrAriaLabel={messages.settings.devicePreviewQrAriaLabel}
-                />
-            ) : null}
-
-            <DevicePreviewFloatingBar
-                captureState={captureState}
-                onCapture={() => void handleCapture()}
-                onClose={handleClose}
-            />
         </>
     );
 }

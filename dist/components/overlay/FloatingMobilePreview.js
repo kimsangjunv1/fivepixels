@@ -78,10 +78,22 @@ export function FloatingMobilePreview() {
     const guestViewportSize = useMemo(() => resolveMobilePreviewScreenSize(mobilePreviewPreset, mobilePreviewOrientation), [mobilePreviewOrientation, mobilePreviewPreset]);
     const layout = useMemo(() => resolveMobilePreviewLayout(mobilePreviewPreset, MOBILE_PREVIEW_SCALE, mobilePreviewOrientation), [mobilePreviewOrientation, mobilePreviewPreset]);
     const portraitChrome = useMemo(() => scaleDeviceChrome(mobilePreviewPreset, MOBILE_PREVIEW_SCALE), [mobilePreviewPreset]);
-    const chrome = useMemo(() => resolveMobilePreviewChrome(portraitChrome, mobilePreviewOrientation), [mobilePreviewOrientation, portraitChrome]);
+    const deviceChrome = useMemo(() => resolveMobilePreviewChrome(portraitChrome, mobilePreviewOrientation), [mobilePreviewOrientation, portraitChrome]);
+    const [captureWindowOpen, setCaptureWindowOpen] = useState(false);
+    const [captureState, setCaptureState] = useState("idle");
+    const [captureScale, setCaptureScale] = useState(1);
+    const [captureImageEnabled, setCaptureImageEnabled] = useState(true);
+    const [captureStatusBarEnabled, setCaptureStatusBarEnabled] = useState(true);
+    const chrome = useMemo(() => captureImageEnabled
+        ? deviceChrome
+        : {
+            frameRadius: 0,
+            screenRadius: 0,
+            bezel: getEmptyBezel(),
+        }, [captureImageEnabled, deviceChrome]);
     const { frameWidth, frameHeight } = useMemo(() => resolveMobilePreviewFrameMetrics(layout, chrome.bezel), [chrome.bezel, layout]);
     const statusBarReferenceWidth = useMemo(() => resolveMobilePreviewStatusBarReferenceWidth(mobilePreviewPreset, mobilePreviewOrientation), [mobilePreviewOrientation, mobilePreviewPreset]);
-    const statusBarHeight = useMemo(() => getDeviceStatusBarHeight(mobilePreviewPreset, layout.width, 1, statusBarReferenceWidth), [layout.width, mobilePreviewPreset, statusBarReferenceWidth]);
+    const statusBarHeight = useMemo(() => (captureStatusBarEnabled ? getDeviceStatusBarHeight(mobilePreviewPreset, layout.width, 1, statusBarReferenceWidth) : 0), [captureStatusBarEnabled, layout.width, mobilePreviewPreset, statusBarReferenceWidth]);
     const statusBarAppearance = resolvedPanelAppearance === "dark" ? "dark" : "light";
     const screenBackground = resolvedPanelAppearance === "dark" ? "#17171c" : "#ffffff";
     const [storedPosition] = useState(() => readMobilePreviewPosition());
@@ -91,12 +103,6 @@ export function FloatingMobilePreview() {
     const [frameSrc, setFrameSrc] = useState(() => (typeof window === "undefined" ? "" : readMobilePreviewUrl(window.location.href)));
     const [urlDraft, setUrlDraft] = useState(() => (typeof window === "undefined" ? "" : readMobilePreviewUrl(window.location.href)));
     const [qrPanelOpen, setQrPanelOpen] = useState(false);
-    const [captureWindowOpen, setCaptureWindowOpen] = useState(false);
-    const [captureState, setCaptureState] = useState("idle");
-    const [captureScale, setCaptureScale] = useState(1);
-    const [captureImageEnabled, setCaptureImageEnabled] = useState(true);
-    const [captureFitToViewport, setCaptureFitToViewport] = useState(false);
-    const [captureStatusBarEnabled, setCaptureStatusBarEnabled] = useState(true);
     const rootRef = useRef(null);
     const iframeRef = useRef(null);
     const captureStageRef = useRef(null);
@@ -209,7 +215,7 @@ export function FloatingMobilePreview() {
             const screenWidth = Math.max(1, Math.round(guestViewportSize.width * captureScale));
             const screenHeight = Math.max(1, Math.round(guestViewportSize.height * captureScale));
             const scaledChrome = resolveMobilePreviewChrome(scaleDeviceChrome(mobilePreviewPreset, captureScale), mobilePreviewOrientation);
-            const layout = getDevicePreviewCaptureLayout({
+            const captureLayout = getDevicePreviewCaptureLayout({
                 screenWidth,
                 screenHeight,
                 bezel: captureImageEnabled ? scaledChrome.bezel : getEmptyBezel(),
@@ -221,12 +227,35 @@ export function FloatingMobilePreview() {
                 statusBarLayer: statusBarRef.current,
                 deviceImageEnabled: captureImageEnabled,
                 statusBarEnabled: captureStatusBarEnabled,
-                layout,
+                layout: captureLayout,
                 background: screenBackground,
-                rasterize: (element, options) => defaultRasterizeElement(element, {
-                    ...options,
-                    cropToViewport: captureFitToViewport,
-                }),
+                rasterize: async (element, options) => {
+                    if (element === contentRoot) {
+                        return defaultRasterizeElement(element, {
+                            ...options,
+                            width: guestViewportSize.width,
+                            height: guestViewportSize.height,
+                            cropToViewport: true,
+                        });
+                    }
+                    if (element === captureStageRef.current) {
+                        return defaultRasterizeElement(element, {
+                            ...options,
+                            width: frameWidth,
+                            height: frameHeight,
+                            cropToViewport: false,
+                        });
+                    }
+                    if (element === statusBarRef.current) {
+                        return defaultRasterizeElement(element, {
+                            ...options,
+                            width: layout.width,
+                            height: layout.height,
+                            cropToViewport: false,
+                        });
+                    }
+                    return defaultRasterizeElement(element, options);
+                },
             });
             await downloadCanvasPng(canvas, buildDevicePreviewCaptureFilename({
                 deviceId: mobilePreviewPreset.id,
@@ -245,14 +274,17 @@ export function FloatingMobilePreview() {
             }, 1600);
         }
     }, [
-        captureFitToViewport,
         captureImageEnabled,
         captureScale,
         captureState,
         captureStatusBarEnabled,
+        frameHeight,
         frameLoadState,
+        frameWidth,
         guestViewportSize.height,
         guestViewportSize.width,
+        layout.height,
+        layout.width,
         mobilePreviewOrientation,
         mobilePreviewPreset,
         screenBackground,
@@ -357,12 +389,7 @@ export function FloatingMobilePreview() {
                                                 height: layout.height,
                                                 borderRadius: chrome.screenRadius,
                                                 background: screenBackground,
-                                            }, children: messages.settings.mobilePreviewIframeBlocked })) : null, _jsxs("div", { ref: captureStageRef, className: "pointer-events-none absolute inset-0 z-[2]", children: [captureImageEnabled ? (_jsx("div", { "data-fivepixels-mobile-preview-stage": "", children: _jsx(DeviceFrameArtwork, { preset: mobilePreviewPreset, chrome: chrome, screenWidth: layout.width, screenHeight: layout.height, orientation: mobilePreviewOrientation }) })) : (_jsx("div", { className: "absolute border border-[var(--adaptive-border-subtle)] bg-transparent", "data-fivepixels-skip-capture": "", style: {
-                                                        left: chrome.bezel.left,
-                                                        top: chrome.bezel.top,
-                                                        width: layout.width,
-                                                        height: layout.height,
-                                                    } })), captureStatusBarEnabled ? (_jsx("div", { ref: statusBarRef, className: `pointer-events-none absolute z-[1] ${mobilePreviewOrientation === "landscape" ? "overflow-visible" : "overflow-hidden"}`, style: {
+                                            }, children: messages.settings.mobilePreviewIframeBlocked })) : null, _jsxs("div", { ref: captureStageRef, className: "pointer-events-none absolute inset-0 z-[2]", children: [captureImageEnabled ? (_jsx("div", { "data-fivepixels-mobile-preview-stage": "", children: _jsx(DeviceFrameArtwork, { preset: mobilePreviewPreset, chrome: chrome, screenWidth: layout.width, screenHeight: layout.height, orientation: mobilePreviewOrientation }) })) : null, captureStatusBarEnabled ? (_jsx("div", { ref: statusBarRef, className: `pointer-events-none absolute z-[1] ${mobilePreviewOrientation === "landscape" ? "overflow-visible" : "overflow-hidden"}`, style: {
                                                         left: chrome.bezel.left,
                                                         top: chrome.bezel.top,
                                                         width: layout.width,
@@ -370,6 +397,6 @@ export function FloatingMobilePreview() {
                                                         borderRadius: captureImageEnabled ? chrome.screenRadius : 0,
                                                     }, children: _jsx(DeviceStatusBar, { preset: mobilePreviewPreset, width: layout.width, screenHeight: layout.height, appearance: statusBarAppearance, showCutout: captureImageEnabled, orientation: mobilePreviewOrientation, referenceLogicalWidth: statusBarReferenceWidth }) })) : null] })] }), qrPanelOpen ? (_jsx("div", { className: "z-[1000]", 
                                     // className="px-[10px] py-[6px] bg-[var(--adaptive-fillOpacity700)] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[10px] rounded-[12px] z-[1000]"
-                                    style: { position: "absolute", top: "50%", left: frameWidth + QR_DEVICE_GAP, transform: "translateY(-50%)" }, onPointerDown: (event) => event.stopPropagation(), children: _jsx(DevicePreviewQrPanel, { ...qrPanelMessages, pageHref: frameSrc, width: QR_PANEL_WIDTH }) })) : null] })] })) }), captureWindowOpen ? (_jsx(MobilePreviewCaptureWindow, { captureState: captureState, captureScale: captureScale, captureImageEnabled: captureImageEnabled, captureFitToViewport: captureFitToViewport, captureStatusBarEnabled: captureStatusBarEnabled, onCaptureScaleChange: setCaptureScale, onCaptureImageEnabledChange: setCaptureImageEnabled, onCaptureFitToViewportChange: setCaptureFitToViewport, onCaptureStatusBarEnabledChange: setCaptureStatusBarEnabled, onCapture: () => void handleCapture(), onClose: () => setCaptureWindowOpen(false) })) : null] }));
+                                    style: { position: "absolute", top: "50%", left: frameWidth + QR_DEVICE_GAP, transform: "translateY(-50%)" }, onPointerDown: (event) => event.stopPropagation(), children: _jsx(DevicePreviewQrPanel, { ...qrPanelMessages, pageHref: frameSrc, width: QR_PANEL_WIDTH }) })) : null] })] })) }), captureWindowOpen ? (_jsx(MobilePreviewCaptureWindow, { captureState: captureState, captureScale: captureScale, captureImageEnabled: captureImageEnabled, captureStatusBarEnabled: captureStatusBarEnabled, onCaptureScaleChange: setCaptureScale, onCaptureImageEnabledChange: setCaptureImageEnabled, onCaptureStatusBarEnabledChange: setCaptureStatusBarEnabled, onCapture: () => void handleCapture(), onClose: () => setCaptureWindowOpen(false) })) : null] }));
 }
 //# sourceMappingURL=FloatingMobilePreview.js.map

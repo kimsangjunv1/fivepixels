@@ -1,5 +1,6 @@
 import { FIVEPIXELS_HOST_ID } from "../../constants/overlayChrome.js";
 export const DEVICE_PREVIEW_BUTTON_OUTSET = 3;
+const TRANSPARENT_PIXEL = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
 export function shouldCaptureDevicePreviewNode(node) {
     if (node.nodeType !== Node.ELEMENT_NODE) {
         return true;
@@ -9,6 +10,13 @@ export function shouldCaptureDevicePreviewNode(node) {
         return false;
     }
     return element.id !== FIVEPIXELS_HOST_ID;
+}
+function isLikelyUnsafeCaptureNode(node) {
+    if (node.nodeType !== Node.ELEMENT_NODE) {
+        return false;
+    }
+    const tag = node.tagName;
+    return tag === "CANVAS" || tag === "VIDEO" || tag === "IFRAME";
 }
 function sanitizeFilenamePart(value) {
     return value.replace(/[^a-zA-Z0-9._-]+/g, "-").replace(/^-+|-+$/g, "") || "device";
@@ -71,13 +79,15 @@ function cropCanvas(source, sx, sy, width, height) {
 export async function defaultRasterizeElement(element, options) {
     const { toCanvas } = await import("html-to-image");
     const captureHeight = options.cropToViewport ? Math.max(options.height, Math.round(element.scrollHeight) || options.height) : options.height;
-    const canvas = await toCanvas(element, {
+    const rasterizeOptions = {
         width: options.width,
         height: captureHeight,
         pixelRatio: 1,
         skipAutoScale: true,
         backgroundColor: options.backgroundColor ?? undefined,
         skipFonts: true,
+        imagePlaceholder: TRANSPARENT_PIXEL,
+        onImageErrorHandler: () => undefined,
         style: {
             transform: "none",
             transformOrigin: "top left",
@@ -96,7 +106,11 @@ export async function defaultRasterizeElement(element, options) {
             height: `${captureHeight}px`,
         },
         filter: shouldCaptureDevicePreviewNode,
-    });
+    };
+    const canvas = await toCanvas(element, rasterizeOptions).catch(() => toCanvas(element, {
+        ...rasterizeOptions,
+        filter: (node) => shouldCaptureDevicePreviewNode(node) && !isLikelyUnsafeCaptureNode(node),
+    }));
     if (!options.cropToViewport || (canvas.width === options.width && canvas.height === options.height && element.scrollTop <= 0 && element.scrollLeft <= 0)) {
         return canvas;
     }

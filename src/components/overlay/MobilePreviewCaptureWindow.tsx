@@ -61,11 +61,9 @@ export type MobilePreviewCaptureWindowProps = {
     captureState: DevicePreviewCaptureState;
     captureScale: DevicePreviewScale;
     captureImageEnabled: boolean;
-    captureFitToViewport: boolean;
     captureStatusBarEnabled: boolean;
     onCaptureScaleChange: (scale: DevicePreviewScale) => void;
     onCaptureImageEnabledChange: (enabled: boolean) => void;
-    onCaptureFitToViewportChange: (enabled: boolean) => void;
     onCaptureStatusBarEnabledChange: (enabled: boolean) => void;
     onCapture: () => void;
     onClose: () => void;
@@ -75,11 +73,9 @@ export function MobilePreviewCaptureWindow({
     captureState,
     captureScale,
     captureImageEnabled,
-    captureFitToViewport,
     captureStatusBarEnabled,
     onCaptureScaleChange,
     onCaptureImageEnabledChange,
-    onCaptureFitToViewportChange,
     onCaptureStatusBarEnabledChange,
     onCapture,
     onClose,
@@ -164,19 +160,6 @@ export function MobilePreviewCaptureWindow({
                         value={captureImageEnabled ? "on" : "off"}
                         onChange={(value) => onCaptureImageEnabledChange(value === "on")}
                         ariaLabel={messages.settings.devicePreviewImageAriaLabel}
-                    />
-                </div>
-
-                <div className="flex flex-col gap-[3px]">
-                    <span className="text-[9px] font-semibold text-[var(--adaptive-black500)]">{messages.settings.devicePreviewFitViewportLabel}</span>
-                    <PanelOptionSwitch
-                        options={[
-                            { value: "off", label: messages.settings.devicePreviewFitViewportOff },
-                            { value: "on", label: messages.settings.devicePreviewFitViewportOn },
-                        ]}
-                        value={captureFitToViewport ? "on" : "off"}
-                        onChange={(value) => onCaptureFitToViewportChange(value === "on")}
-                        ariaLabel={messages.settings.devicePreviewFitViewportAriaLabel}
                     />
                 </div>
 
