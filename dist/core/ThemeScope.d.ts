@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { ResolvedAppearance } from "../types/report-ui.js";
+import type { ResolvedAppearance } from "../shared/types/report-ui.js";
 type ThemeScopeProps = {
     appearance: ResolvedAppearance;
     children: ReactNode;

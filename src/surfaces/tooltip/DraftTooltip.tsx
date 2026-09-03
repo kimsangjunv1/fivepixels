@@ -1,0 +1,352 @@
+import { useEffect, useMemo, useState } from "react";
+import type { FeedbackCategory } from "@/shared/constants/feedbackCategory.js";
+import type { ElementMention } from "@/shared/types/mention.js";
+import { useReportData, useReportPreferences, useReportSession, type ReportContextValue } from "@/shared/providers/reportContext.js";
+import { getDraftMarkerPosition, TOOLTIP_EXPANDED_DEFAULT_MAX_HEIGHT } from "@/shared/utils/marker/coordinates.js";
+import { FeedbackComposer } from "@/surfaces/feedback/FeedbackComposer.js";
+import { DraftComposerToolbar } from "@/surfaces/feedback/DraftComposerToolbar.js";
+import { DraftProbeSummaryBanner } from "./DraftProbeSummaryBanner.js";
+import { DraftNetworkErrorBanner } from "./DraftNetworkErrorBanner.js";
+import { PickTargetSnippet } from "@/surfaces/feedback/PickTargetSnippet.js";
+import { OverlayShell } from "@/shared/components/ui/OverlayShell.js";
+import { MOTION } from "@/shared/constants/motionClasses.js";
+
+const TOOLTIP_SURFACE_CLASS = "rounded-[16px] shadow-[var(--adaptive-popup-shadow)] bg-[var(--adaptive-fillOpacity700)] backdrop-blur-[5px]";
+
+export function DraftTooltip() {
+    const { fields, authors, isPresentationMode, authorSelectionLocked, isAuthBootstrapping } = useReportPreferences();
+    const {
+        draft,
+        editingReportId,
+        mode,
+        markers,
+        selectedTarget,
+        updateDraftCase,
+        addDraftCase,
+        removeDraftCase,
+        updateDraftField,
+        updateDraftCategory,
+        draftAuthorName,
+        setDraftAuthorName,
+        errorMessage,
+        sessionActor,
+        cancelDraft,
+    } = useReportSession();
+    const {
+        isCreating,
+        isUpdating,
+        handleCreateSubmit,
+        handleCreateSubmitWithGitHubIssue,
+        canCreateGitHubIssueOnCreate,
+        isDraftGitHubIssueSubmitting,
+    } = useReportData();
+
+    if (!draft) {
+        return null;
+    }
+
+    const isEditing = Boolean(editingReportId);
+    const editingMarker = isEditing ? (markers.find((marker) => marker.report.id === editingReportId) ?? null) : null;
+
+    return (
+        <DraftTooltipContent
+            draft={draft}
+            fields={fields}
+            authors={authors}
+            isCreating={isCreating}
+            isUpdating={isUpdating}
+            isEditing={isEditing}
+            mode={mode}
+            editingMarker={editingMarker}
+            selectedTarget={selectedTarget}
+            updateDraftCase={updateDraftCase}
+            addDraftCase={addDraftCase}
+            removeDraftCase={removeDraftCase}
+            updateDraftField={updateDraftField}
+            updateDraftCategory={updateDraftCategory}
+            handleCreateSubmit={handleCreateSubmit}
+            handleCreateSubmitWithGitHubIssue={handleCreateSubmitWithGitHubIssue}
+            canCreateGitHubIssueOnCreate={canCreateGitHubIssueOnCreate && !isEditing}
+            isDraftGitHubIssueSubmitting={isDraftGitHubIssueSubmitting}
+            draftAuthorName={draftAuthorName}
+            setDraftAuthorName={setDraftAuthorName}
+            errorMessage={errorMessage}
+            isPresentationMode={isPresentationMode}
+            authorSelectionLocked={authorSelectionLocked}
+            sessionActor={sessionActor}
+            cancelDraft={cancelDraft}
+            isAuthBootstrapping={isAuthBootstrapping}
+        />
+    );
+}
+
+type DraftTooltipContentProps = {
+    draft: NonNullable<ReportContextValue["draft"]>;
+    fields: ReportContextValue["fields"];
+    authors: ReportContextValue["authors"];
+    isCreating: boolean;
+    isUpdating: boolean;
+    isEditing: boolean;
+    mode: ReportContextValue["mode"];
+    editingMarker: { left: number; top: number } | null;
+    selectedTarget: ReportContextValue["selectedTarget"];
+    updateDraftCase: (caseId: string, text: string, mentions?: ElementMention[]) => void;
+    addDraftCase: () => void;
+    removeDraftCase: (caseId: string) => void;
+    updateDraftField: (key: string, value: string | boolean) => void;
+    updateDraftCategory: (value: FeedbackCategory | null) => void;
+    handleCreateSubmit: () => Promise<void>;
+    handleCreateSubmitWithGitHubIssue: () => Promise<void>;
+    canCreateGitHubIssueOnCreate: boolean;
+    isDraftGitHubIssueSubmitting: boolean;
+    draftAuthorName: string;
+    setDraftAuthorName: (name: string) => void;
+    errorMessage: string;
+    isPresentationMode: boolean;
+    authorSelectionLocked: boolean;
+    sessionActor: ReportContextValue["sessionActor"];
+    cancelDraft: () => void;
+    isAuthBootstrapping: boolean;
+};
+
+function DraftTooltipContent({
+    draft,
+    fields,
+    authors,
+    isCreating,
+    isUpdating,
+    isEditing,
+    mode,
+    editingMarker,
+    selectedTarget,
+    updateDraftCase,
+    addDraftCase,
+    removeDraftCase,
+    updateDraftField,
+    updateDraftCategory,
+    handleCreateSubmit,
+    handleCreateSubmitWithGitHubIssue,
+    canCreateGitHubIssueOnCreate,
+    isDraftGitHubIssueSubmitting,
+    draftAuthorName,
+    setDraftAuthorName,
+    errorMessage,
+    isPresentationMode,
+    authorSelectionLocked,
+    sessionActor,
+    cancelDraft,
+    isAuthBootstrapping,
+}: DraftTooltipContentProps) {
+    const { messages } = useReportPreferences();
+    const [footerWarningMessage, setFooterWarningMessage] = useState<string | null>(null);
+    const [activeCaseId, setActiveCaseId] = useState<string | null>(() => draft.cases[0]?.id ?? null);
+    const [isGitHubIssueConfirming, setIsGitHubIssueConfirming] = useState(false);
+    const anchor = useMemo(() => {
+        if (editingMarker) {
+            return { left: editingMarker.left, top: editingMarker.top };
+        }
+
+        return getDraftMarkerPosition(draft, selectedTarget);
+    }, [draft, editingMarker, selectedTarget]);
+    const isSubmitting = isCreating || isUpdating || isDraftGitHubIssueSubmitting || isAuthBootstrapping;
+    const categoryNeedsAttention = errorMessage === messages.errors.categoryRequired && !draft.category;
+    const showStatusChip = Boolean(footerWarningMessage) || Boolean(draft.targetSelector && draft.suggestedReportId);
+    const submitLabel = isEditing ? messages.cases.save : messages.composer.draftComplete;
+    const submittingLabel = isEditing ? messages.cases.saving : messages.composer.draftCompleting;
+
+    useEffect(() => {
+        if (!isGitHubIssueConfirming) {
+            return;
+        }
+
+        const timer = window.setTimeout(() => setIsGitHubIssueConfirming(false), 1500);
+
+        return () => window.clearTimeout(timer);
+    }, [isGitHubIssueConfirming]);
+
+    useEffect(() => {
+        if (activeCaseId && draft.cases.some((item) => item.id === activeCaseId)) {
+            return;
+        }
+
+        setActiveCaseId(draft.cases[draft.cases.length - 1]?.id ?? draft.cases[0]?.id ?? null);
+    }, [activeCaseId, draft.cases]);
+
+    useEffect(() => {
+        // Report-mode create uses the overlay click path to re-target; only dismiss in view/edit flows.
+        if (mode === "report") {
+            return;
+        }
+
+        const handlePointerDown = (event: PointerEvent) => {
+            const path = event.composedPath();
+            const isInsideDraft = path.some((node) => node instanceof Element && node.hasAttribute("data-fivepixels-draft-form"));
+
+            if (isInsideDraft) {
+                return;
+            }
+
+            // Marker activation clears the draft itself before opening a window.
+            const isMarker = path.some((node) => node instanceof Element && node.hasAttribute("data-marker-report-id"));
+
+            if (isMarker) {
+                return;
+            }
+
+            cancelDraft();
+        };
+
+        document.addEventListener("pointerdown", handlePointerDown, true);
+
+        return () => {
+            document.removeEventListener("pointerdown", handlePointerDown, true);
+        };
+    }, [cancelDraft, mode]);
+
+    const handleRemoveCase = (caseId: string) => {
+        const removeIndex = draft.cases.findIndex((item) => item.id === caseId);
+
+        if (removeIndex < 0) {
+            return;
+        }
+
+        const fallbackCase = draft.cases[removeIndex + 1] ?? draft.cases[removeIndex - 1];
+
+        if (activeCaseId === caseId && fallbackCase) {
+            setActiveCaseId(fallbackCase.id);
+        }
+
+        removeDraftCase(caseId);
+    };
+
+    const handleInsertAtMention = () => {
+        const targetCaseId = activeCaseId ?? draft.cases[0]?.id;
+
+        if (!targetCaseId) {
+            return;
+        }
+
+        const targetCase = draft.cases.find((item) => item.id === targetCaseId);
+
+        if (!targetCase) {
+            return;
+        }
+
+        const trimmed = targetCase.text;
+        const nextText = trimmed.length === 0 ? "@" : /(?:^|[\s([{])@$/.test(trimmed) ? trimmed : `${trimmed.replace(/\s+$/, "")} @`;
+        updateDraftCase(targetCaseId, nextText, targetCase.mentions);
+
+        window.requestAnimationFrame(() => {
+            const root = document.getElementById(`fivepixels-case-input-${targetCaseId}`) ?? document.querySelector<HTMLElement>(`[data-fivepixels-case-input="${CSS.escape(targetCaseId)}"]`);
+            const editor = root?.querySelector<HTMLElement>("[contenteditable='true']");
+
+            if (!editor) {
+                return;
+            }
+
+            editor.focus();
+            const selection = window.getSelection();
+            const range = document.createRange();
+            range.selectNodeContents(editor);
+            range.collapse(false);
+            selection?.removeAllRanges();
+            selection?.addRange(range);
+            editor.dispatchEvent(new Event("input", { bubbles: true }));
+        });
+    };
+
+    if (!anchor) {
+        return null;
+    }
+
+    return (
+        <OverlayShell
+            shell="anchored"
+            anchor={anchor}
+            dataAttributes={{ "data-fivepixels-draft-form": "" }}
+            onClick={(event) => event.stopPropagation()}
+            surfaceClassName={`${TOOLTIP_SURFACE_CLASS} ${MOTION.tooltipFadeIn}`}
+            resizeWidthAriaLabel={messages.panel.resizeWidthAriaLabel}
+            resizeHeightAriaLabel={messages.panel.resizeHeightAriaLabel}
+            prefix={
+                showStatusChip ? (
+                    <div className={`shrink-0 ${TOOLTIP_SURFACE_CLASS} ${MOTION.tooltipFadeIn}`}>
+                        <PickTargetSnippet
+                            suggestedReportId={draft.suggestedReportId ?? undefined}
+                            reportType={draft.reportType}
+                            alertMessage={footerWarningMessage}
+                        />
+                    </div>
+                ) : null
+            }
+        >
+            <div
+                className="flex min-h-0 flex-col"
+                style={{ maxHeight: TOOLTIP_EXPANDED_DEFAULT_MAX_HEIGHT }}
+            >
+                <DraftNetworkErrorBanner />
+                <DraftProbeSummaryBanner />
+
+                <FeedbackComposer
+                    cases={draft.cases}
+                    onCaseChange={updateDraftCase}
+                    onAddCase={addDraftCase}
+                    onRemoveCase={removeDraftCase}
+                    authorName={draftAuthorName}
+                    onAuthorNameChange={setDraftAuthorName}
+                    authors={authors}
+                    fields={fields}
+                    fieldValues={draft.fieldValues}
+                    onFieldChange={updateDraftField}
+                    category={draft.category}
+                    onCategoryChange={updateDraftCategory}
+                    showCategory={false}
+                    showTags
+                    hideAuthorSelector={isPresentationMode || authorSelectionLocked}
+                    lockedAuthorName={authorSelectionLocked ? (sessionActor?.name ?? draftAuthorName) : undefined}
+                    onSubmit={() => void handleCreateSubmit()}
+                    isSubmitting={isSubmitting}
+                    autoFocus
+                    errorMessage={isAuthBootstrapping ? messages.errors.authBootstrapPending : errorMessage}
+                    onFooterWarningChange={setFooterWarningMessage}
+                    hideActions
+                    hidePrimarySubmitAction
+                    showCaseTabBar={false}
+                    activeCaseId={activeCaseId}
+                    onActiveCaseIdChange={setActiveCaseId}
+                    enableElementMentions
+                    placeholder={draft.category === "memo" ? messages.pickTarget.memoComposerPlaceholder : undefined}
+                />
+                <DraftComposerToolbar
+                    {...(draft.category === "memo"
+                        ? {
+                              variant: "memo" as const,
+                              onSave: () => void handleCreateSubmit(),
+                              onCancel: cancelDraft,
+                              canSave: draft.cases.some((item) => item.text.trim().length > 0) && !isSubmitting,
+                          }
+                        : {
+                              cases: draft.cases,
+                              activeCaseId,
+                              onSelectCase: setActiveCaseId,
+                              onAddCase: addDraftCase,
+                              onRemoveCase: handleRemoveCase,
+                              onInsertAtMention: handleInsertAtMention,
+                              category: draft.category,
+                              onCategoryChange: updateDraftCategory,
+                              categoryNeedsAttention,
+                              onSubmit: () => void handleCreateSubmit(),
+                              isSubmitting,
+                              submitLabel,
+                              submittingLabel,
+                              showGitHubIssueOnCreate: canCreateGitHubIssueOnCreate,
+                              onGitHubIssueSubmit: () => void handleCreateSubmitWithGitHubIssue(),
+                              isGitHubIssueSubmitting: isDraftGitHubIssueSubmitting,
+                              isGitHubIssueConfirming,
+                              onGitHubIssueConfirmingChange: setIsGitHubIssueConfirming,
+                          })}
+                />
+            </div>
+        </OverlayShell>
+    );
+}

@@ -19,5 +19,5 @@
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true
   },
-  "include": ["src/index.ts", "src/components/report/index.ts"]
+  "include": ["src/index.ts", "src/shared/components/report/index.ts"]
 }

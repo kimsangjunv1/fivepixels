@@ -1,1 +1,0 @@
-{"version":3,"file":"useOverlayChrome.d.ts","sourceRoot":"","sources":["../../src/hooks/useOverlayChrome.ts"],"names":[],"mappings":"AAEA,OAAO,KAAK,EAAE,UAAU,EAAE,MAAM,sBAAsB,CAAC;AAEvD,KAAK,oBAAoB,GAAG;IACxB,IAAI,EAAE,UAAU,CAAC;CACpB,CAAC;AAgBF;;;GAGG;AACH,wBAAgB,gBAAgB,CAAC,EAAE,IAAI,EAAE,EAAE,oBAAoB,QAiG9D"}

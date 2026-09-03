@@ -47,8 +47,8 @@
             "import": "./dist/index.js"
         },
         "./report": {
-            "types": "./dist/components/report/index.d.ts",
-            "import": "./dist/components/report/index.js"
+            "types": "./dist/shared/components/report/index.d.ts",
+            "import": "./dist/shared/components/report/index.js"
         }
     },
     "scripts": {

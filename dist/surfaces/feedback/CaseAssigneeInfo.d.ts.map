@@ -1,0 +1,1 @@
+{"version":3,"file":"CaseAssigneeInfo.d.ts","sourceRoot":"","sources":["../../../src/surfaces/feedback/CaseAssigneeInfo.tsx"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,YAAY,EAAE,UAAU,EAAE,MAAM,0BAA0B,CAAC;AAMzE,KAAK,qBAAqB,GAAG;IACzB,QAAQ,EAAE,UAAU,CAAC;IACrB,OAAO,EAAE,YAAY,EAAE,CAAC;CAC3B,CAAC;AAEF,wBAAgB,gBAAgB,CAAC,EAAE,QAAQ,EAAE,OAAO,EAAE,EAAE,qBAAqB,sCAiD5E"}

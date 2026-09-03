@@ -1,0 +1,17 @@
+import type { ReportAuthor } from "../../../shared/types/report.js";
+import type { PersistenceStatus } from "../../../shared/utils/shared/storage.js";
+type UseReportTeamActorParams = {
+    authorizedAuthorId: string | null;
+    teamReviewers: ReportAuthor[];
+    persistenceMode: PersistenceStatus["mode"];
+    onListReviewers?: () => Promise<ReportAuthor[]>;
+};
+export declare function useReportTeamActor({ authorizedAuthorId, teamReviewers, persistenceMode, onListReviewers }: UseReportTeamActorParams): {
+    teamActor: ReportAuthor | null;
+    apiTeamDirectory: ReportAuthor[] | null;
+    apiTeamMembers: ReportAuthor[] | null;
+    apiTeamMembersLoading: boolean;
+    refreshTeamMembers: () => Promise<ReportAuthor[] | null>;
+};
+export {};
+//# sourceMappingURL=useReportTeamActor.d.ts.map

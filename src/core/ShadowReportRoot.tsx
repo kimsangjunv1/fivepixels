@@ -1,7 +1,7 @@
 import { useLayoutEffect, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import type { ResolvedAppearance } from "@/types/report-ui.js";
-import { ensureReportTooltipLayer, syncReportTooltipLayerTheme } from "@/utils/shared/dom.js";
+import type { ResolvedAppearance } from "@/shared/types/report-ui.js";
+import { ensureReportTooltipLayer, syncReportTooltipLayerTheme } from "@/shared/utils/shared/dom.js";
 
 const HOST_ID = "fivepixels-root";
 const STYLE_ELEMENT_ID = "fivepixels-report-styles";
@@ -58,13 +58,13 @@ function applyReportStyles(shadowRoot: ShadowRoot, stylesheet: string) {
     style.textContent = stylesheet;
 }
 
-type ReportStylesheetModule = typeof import("../styles/reportStylesheet.js");
+type ReportStylesheetModule = typeof import("@/shared/styles/reportStylesheet.js");
 type ViteHot = {
     accept(deps: string, callback: (module: ReportStylesheetModule) => void): void;
 };
 
 const hot = (import.meta as ImportMeta & { hot?: ViteHot }).hot;
-hot?.accept("../styles/reportStylesheet.js", (module) => {
+hot?.accept("../shared/styles/reportStylesheet.js", (module) => {
     if (!module) {
         return;
     }
@@ -89,7 +89,7 @@ export function ShadowReportRoot({ tooltipAppearance, children }: ShadowReportRo
         ensureReportTooltipLayer();
         setMount(host.mount);
 
-        void import("@/styles/reportStylesheet.js").then((module) => {
+        void import("@/shared/styles/reportStylesheet.js").then((module) => {
             if (cancelled) {
                 return;
             }

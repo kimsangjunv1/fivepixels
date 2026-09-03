@@ -1,4 +1,4 @@
-import type { ReportFeedback } from "@/types/report.js";
+import type { ReportFeedback } from "@/shared/types/report.js";
 import { EDGECASE_PATHNAME } from "./reportProjectScope.js";
 import {
     anchorPosition,

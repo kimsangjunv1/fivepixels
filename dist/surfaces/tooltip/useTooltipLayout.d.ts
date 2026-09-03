@@ -1,0 +1,25 @@
+import type { Marker } from "../../shared/types/report-ui.js";
+export type TooltipAnchor = Pick<Marker, "left" | "top">;
+export type TooltipLayoutOptions = {
+    customWidth?: number;
+    customHeight?: number;
+};
+export declare function useTooltipLayout(anchor: TooltipAnchor | null, expanded: boolean, visible: boolean, layoutOptions?: TooltipLayoutOptions): {
+    layout: {
+        position: {
+            left: number;
+            top: number;
+            width: number;
+            placement: import("../../shared/utils/marker/coordinates.js").TooltipPlacement;
+        };
+        anchorStyle: {
+            readonly transform: "translateY(-100%)";
+            readonly transformOrigin: "bottom left";
+        } | {
+            readonly transformOrigin: "top left";
+            readonly transform?: undefined;
+        };
+    } | null;
+    setTooltipElement: (node: HTMLElement | null) => void;
+};
+//# sourceMappingURL=useTooltipLayout.d.ts.map

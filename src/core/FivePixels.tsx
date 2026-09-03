@@ -1,15 +1,15 @@
 "use client";
 
-import { DEFAULT_FIELDS } from "@/constants/report.js";
-import { ReportProvider } from "@/providers/ReportProvider.js";
-import { resolveReportEnabled } from "@/utils/shared/env.js";
-import { resolveReportVisibility } from "@/utils/report/reportVisibility.js";
-import type { FivePixelsProps } from "@/types/publicApi.js";
-import { isInsidePreviewGuestFrame } from "@/preview/previewGuestFrame.js";
+import { DEFAULT_FIELDS } from "@/shared/constants/report.js";
+import { ReportProvider } from "@/shared/providers/ReportProvider.js";
+import { resolveReportEnabled } from "@/shared/utils/shared/env.js";
+import { resolveReportVisibility } from "@/shared/utils/report/reportVisibility.js";
+import type { FivePixelsProps } from "@/shared/types/publicApi.js";
+import { isInsidePreviewGuestFrame } from "@/surfaces/preview/previewGuestFrame.js";
 import { ReportView } from "./ReportView.js";
 
-export type { FivePixelsProps, FivePixelsRequire, ResolvedFivePixelsRequire } from "@/types/publicApi.js";
-export type { FivePixelsAdapter } from "@/types/adapter.js";
+export type { FivePixelsProps, FivePixelsRequire, ResolvedFivePixelsRequire } from "@/shared/types/publicApi.js";
+export type { FivePixelsAdapter } from "@/shared/types/adapter.js";
 
 export function FivePixels({
     project,

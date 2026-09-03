@@ -5,4 +5,4 @@ examples/basic/dist/
 docs/
 
 .env
-src/components/report/reportStylesheet.ts
+src/shared/styles/reportStylesheet.ts
