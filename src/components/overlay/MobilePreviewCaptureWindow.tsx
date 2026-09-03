@@ -1,9 +1,4 @@
 import { useCallback, useState } from "react";
-import {
-    DEVICE_PREVIEW_SCALE_OPTIONS,
-    formatDevicePreviewScale,
-    type DevicePreviewScale,
-} from "@/constants/devicePreview.js";
 import { PanelOptionSwitch } from "@/components/panel/PanelOptionSwitch.js";
 import { OverlayShell, type FloatingWindowMode } from "@/components/ui/OverlayShell.js";
 import type { WindowPosition } from "@/hooks/useDraggableWindow.js";
@@ -59,10 +54,8 @@ function persistMobilePreviewCaptureBarPosition(position: WindowPosition) {
 
 export type MobilePreviewCaptureWindowProps = {
     captureState: DevicePreviewCaptureState;
-    captureScale: DevicePreviewScale;
     captureImageEnabled: boolean;
     captureStatusBarEnabled: boolean;
-    onCaptureScaleChange: (scale: DevicePreviewScale) => void;
     onCaptureImageEnabledChange: (enabled: boolean) => void;
     onCaptureStatusBarEnabledChange: (enabled: boolean) => void;
     onCapture: () => void;
@@ -71,10 +64,8 @@ export type MobilePreviewCaptureWindowProps = {
 
 export function MobilePreviewCaptureWindow({
     captureState,
-    captureScale,
     captureImageEnabled,
     captureStatusBarEnabled,
-    onCaptureScaleChange,
     onCaptureImageEnabledChange,
     onCaptureStatusBarEnabledChange,
     onCapture,
@@ -91,9 +82,6 @@ export function MobilePreviewCaptureWindow({
               : captureState === "failed"
                 ? messages.settings.devicePreviewCaptureFailedLabel
                 : messages.settings.devicePreviewCaptureLabel;
-
-    const selectClassName =
-        "h-[30px] w-full rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] px-[8px] text-[11px] font-semibold text-[var(--adaptive-black900)] outline-none focus:border-[var(--adaptive-blue500)]";
 
     const handlePositionChange = useCallback((next: WindowPosition) => {
         setPosition(next);
@@ -131,25 +119,6 @@ export function MobilePreviewCaptureWindow({
             }
         >
             <div className="flex w-full flex-col gap-[10px]">
-                <label className="flex flex-col gap-[3px]">
-                    <span className="text-[9px] font-semibold text-[var(--adaptive-black500)]">{messages.settings.devicePreviewScaleLabel}</span>
-                    <select
-                        value={String(captureScale)}
-                        onChange={(event) => onCaptureScaleChange(Number(event.target.value) as DevicePreviewScale)}
-                        aria-label={messages.settings.devicePreviewScaleAriaLabel}
-                        className={selectClassName}
-                    >
-                        {DEVICE_PREVIEW_SCALE_OPTIONS.map((scale) => (
-                            <option
-                                key={scale}
-                                value={String(scale)}
-                            >
-                                {formatDevicePreviewScale(scale)}
-                            </option>
-                        ))}
-                    </select>
-                </label>
-
                 <div className="flex flex-col gap-[3px]">
                     <span className="text-[9px] font-semibold text-[var(--adaptive-black500)]">{messages.settings.devicePreviewImageLabel}</span>
                     <PanelOptionSwitch

@@ -127,7 +127,6 @@ export function FloatingMobilePreview() {
     const deviceChrome = useMemo(() => resolveMobilePreviewChrome(portraitChrome, mobilePreviewOrientation), [mobilePreviewOrientation, portraitChrome]);
     const [captureWindowOpen, setCaptureWindowOpen] = useState(false);
     const [captureState, setCaptureState] = useState<DevicePreviewCaptureState>("idle");
-    const [captureScale, setCaptureScale] = useState<DevicePreviewScale>(1);
     const [captureImageEnabled, setCaptureImageEnabled] = useState(true);
     const [captureStatusBarEnabled, setCaptureStatusBarEnabled] = useState(true);
     const chrome = useMemo(
@@ -143,9 +142,9 @@ export function FloatingMobilePreview() {
     );
     const { frameWidth, frameHeight } = useMemo(() => resolveMobilePreviewFrameMetrics(layout, chrome.bezel), [chrome.bezel, layout]);
     const statusBarReferenceWidth = useMemo(() => resolveMobilePreviewStatusBarReferenceWidth(mobilePreviewPreset, mobilePreviewOrientation), [mobilePreviewOrientation, mobilePreviewPreset]);
-    const statusBarHeight = useMemo(
-        () => (captureStatusBarEnabled ? getDeviceStatusBarHeight(mobilePreviewPreset, layout.width, 1, statusBarReferenceWidth) : 0),
-        [captureStatusBarEnabled, layout.width, mobilePreviewPreset, statusBarReferenceWidth],
+    const guestStatusBarHeight = useMemo(
+        () => (captureStatusBarEnabled ? getDeviceStatusBarHeight(mobilePreviewPreset, guestViewportSize.width, 1, statusBarReferenceWidth) : 0),
+        [captureStatusBarEnabled, guestViewportSize.width, mobilePreviewPreset, statusBarReferenceWidth],
     );
     const statusBarAppearance = resolvedPanelAppearance === "dark" ? "dark" : "light";
     const screenBackground = resolvedPanelAppearance === "dark" ? "#17171c" : "#ffffff";
@@ -225,8 +224,8 @@ export function FloatingMobilePreview() {
             return;
         }
 
-        syncGuestViewport(iframeRef.current, guestViewportSize.width, statusBarHeight);
-    }, [frameLoadState, guestViewportSize.width, statusBarHeight]);
+        syncGuestViewport(iframeRef.current, guestViewportSize.width, guestStatusBarHeight);
+    }, [frameLoadState, guestViewportSize.width, guestStatusBarHeight]);
 
     const handleClose = useCallback(() => {
         setWindowMode("normal");
@@ -270,9 +269,9 @@ export function FloatingMobilePreview() {
             return;
         }
 
-        syncGuestViewport(iframe, guestViewportSize.width, statusBarHeight);
+        syncGuestViewport(iframe, guestViewportSize.width, guestStatusBarHeight);
         setFrameLoadState("ready");
-    }, [guestViewportSize.width, statusBarHeight]);
+    }, [guestViewportSize.width, guestStatusBarHeight]);
 
     const handleFocus = useCallback(() => {
         setZIndex(claimFloatingWindowZIndex());
@@ -297,13 +296,13 @@ export function FloatingMobilePreview() {
                 throw new Error("Mobile preview content is missing.");
             }
 
-            const screenWidth = Math.max(1, Math.round(guestViewportSize.width * captureScale));
-            const screenHeight = Math.max(1, Math.round(guestViewportSize.height * captureScale));
-            const scaledChrome = resolveMobilePreviewChrome(scaleDeviceChrome(mobilePreviewPreset, captureScale), mobilePreviewOrientation);
+            const screenWidth = guestViewportSize.width;
+            const screenHeight = guestViewportSize.height;
+            const captureChrome = resolveMobilePreviewChrome(scaleDeviceChrome(mobilePreviewPreset, 1), mobilePreviewOrientation);
             const captureLayout = getDevicePreviewCaptureLayout({
                 screenWidth,
                 screenHeight,
-                bezel: captureImageEnabled ? scaledChrome.bezel : getEmptyBezel(),
+                bezel: captureImageEnabled ? captureChrome.bezel : getEmptyBezel(),
                 deviceImageEnabled: captureImageEnabled,
             });
 
@@ -366,7 +365,6 @@ export function FloatingMobilePreview() {
         }
     }, [
         captureImageEnabled,
-        captureScale,
         captureState,
         captureStatusBarEnabled,
         frameHeight,
@@ -742,10 +740,8 @@ export function FloatingMobilePreview() {
         {captureWindowOpen ? (
             <MobilePreviewCaptureWindow
                 captureState={captureState}
-                captureScale={captureScale}
                 captureImageEnabled={captureImageEnabled}
                 captureStatusBarEnabled={captureStatusBarEnabled}
-                onCaptureScaleChange={setCaptureScale}
                 onCaptureImageEnabledChange={setCaptureImageEnabled}
                 onCaptureStatusBarEnabledChange={setCaptureStatusBarEnabled}
                 onCapture={() => void handleCapture()}

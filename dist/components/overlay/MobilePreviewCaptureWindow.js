@@ -1,6 +1,5 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useCallback, useState } from "react";
-import { DEVICE_PREVIEW_SCALE_OPTIONS, formatDevicePreviewScale, } from "../../constants/devicePreview.js";
 import { PanelOptionSwitch } from "../../components/panel/PanelOptionSwitch.js";
 import { OverlayShell } from "../../components/ui/OverlayShell.js";
 import { useReportPreferences } from "../../providers/reportContext.js";
@@ -42,7 +41,7 @@ function persistMobilePreviewCaptureBarPosition(position) {
         // Ignore storage failures.
     }
 }
-export function MobilePreviewCaptureWindow({ captureState, captureScale, captureImageEnabled, captureStatusBarEnabled, onCaptureScaleChange, onCaptureImageEnabledChange, onCaptureStatusBarEnabledChange, onCapture, onClose, }) {
+export function MobilePreviewCaptureWindow({ captureState, captureImageEnabled, captureStatusBarEnabled, onCaptureImageEnabledChange, onCaptureStatusBarEnabledChange, onCapture, onClose, }) {
     const { messages } = useReportPreferences();
     const [position, setPosition] = useState(() => readMobilePreviewCaptureBarPosition());
     const [mode, setMode] = useState("normal");
@@ -53,7 +52,6 @@ export function MobilePreviewCaptureWindow({ captureState, captureScale, capture
             : captureState === "failed"
                 ? messages.settings.devicePreviewCaptureFailedLabel
                 : messages.settings.devicePreviewCaptureLabel;
-    const selectClassName = "h-[30px] w-full rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] px-[8px] text-[11px] font-semibold text-[var(--adaptive-black900)] outline-none focus:border-[var(--adaptive-blue500)]";
     const handlePositionChange = useCallback((next) => {
         setPosition(next);
         persistMobilePreviewCaptureBarPosition(next);
@@ -65,7 +63,7 @@ export function MobilePreviewCaptureWindow({ captureState, captureScale, capture
             maximizeAriaLabel: messages.marker.windowMaximizeAriaLabel,
             restoreAriaLabel: messages.marker.windowRestoreAriaLabel,
             moreAriaLabel: messages.marker.windowControlsMoreAriaLabel,
-        }, title: _jsx("span", { className: "truncate text-[12px] font-bold text-[var(--adaptive-black900)]", children: messages.settings.devicePreviewFloatingAriaLabel }), children: _jsxs("div", { className: "flex w-full flex-col gap-[10px]", children: [_jsxs("label", { className: "flex flex-col gap-[3px]", children: [_jsx("span", { className: "text-[9px] font-semibold text-[var(--adaptive-black500)]", children: messages.settings.devicePreviewScaleLabel }), _jsx("select", { value: String(captureScale), onChange: (event) => onCaptureScaleChange(Number(event.target.value)), "aria-label": messages.settings.devicePreviewScaleAriaLabel, className: selectClassName, children: DEVICE_PREVIEW_SCALE_OPTIONS.map((scale) => (_jsx("option", { value: String(scale), children: formatDevicePreviewScale(scale) }, scale))) })] }), _jsxs("div", { className: "flex flex-col gap-[3px]", children: [_jsx("span", { className: "text-[9px] font-semibold text-[var(--adaptive-black500)]", children: messages.settings.devicePreviewImageLabel }), _jsx(PanelOptionSwitch, { options: [
+        }, title: _jsx("span", { className: "truncate text-[12px] font-bold text-[var(--adaptive-black900)]", children: messages.settings.devicePreviewFloatingAriaLabel }), children: _jsxs("div", { className: "flex w-full flex-col gap-[10px]", children: [_jsxs("div", { className: "flex flex-col gap-[3px]", children: [_jsx("span", { className: "text-[9px] font-semibold text-[var(--adaptive-black500)]", children: messages.settings.devicePreviewImageLabel }), _jsx(PanelOptionSwitch, { options: [
                                 { value: "off", label: messages.settings.devicePreviewImageOff },
                                 { value: "on", label: messages.settings.devicePreviewImageOn },
                             ], value: captureImageEnabled ? "on" : "off", onChange: (value) => onCaptureImageEnabledChange(value === "on"), ariaLabel: messages.settings.devicePreviewImageAriaLabel })] }), _jsxs("div", { className: "flex flex-col gap-[3px]", children: [_jsx("span", { className: "text-[9px] font-semibold text-[var(--adaptive-black500)]", children: messages.settings.devicePreviewStatusBarLabel }), _jsx(PanelOptionSwitch, { options: [
