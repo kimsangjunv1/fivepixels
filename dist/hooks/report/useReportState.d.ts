@@ -170,8 +170,8 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     setMobilePreviewUiOpen: (open: boolean) => void;
     mobilePreviewDeviceId: string;
     setMobilePreviewDeviceId: (deviceId: string) => void;
-    mobilePreviewOrientation: import("../useMobilePreviewPreference.js").MobilePreviewOrientation;
-    setMobilePreviewOrientation: (orientation: import("../useMobilePreviewPreference.js").MobilePreviewOrientation) => void;
+    mobilePreviewOrientation: import("../../preview/useMobilePreviewPreference.js").MobilePreviewOrientation;
+    setMobilePreviewOrientation: (orientation: import("../../preview/useMobilePreviewPreference.js").MobilePreviewOrientation) => void;
     toggleMobilePreviewOrientation: () => void;
     mobilePreviewPreset: import("../../constants/devicePreview.js").DevicePreviewPreset;
     devicePreviewDeviceId: string;
@@ -248,7 +248,7 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     pickProbeValues: import("../../types/report-ui.js").PickProbeValues | null;
     pickProbeCompareMode: import("../../types/report-ui.js").PickProbeCompareMode;
     pickProbeHasEdits: boolean;
-    pickTargetContextMenu: import("../../types/report-ui.js").PickTargetContextMenuState | null;
+    pickTargetContextMenu: import("../../types/report-ui.js").ContextMenuTooltipState | null;
     contextMenuElementKey: string | null;
     savedProbeEdits: Record<string, import("../../types/report-ui.js").SavedProbeEntry>;
     savedProbeDeletions: import("../../types/report-ui.js").SavedProbeDeletion[];
@@ -259,7 +259,7 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     redoProbeSessionAction: () => void;
     savedProbeCompareMode: import("../../types/report-ui.js").PickProbeCompareMode;
     closePickProbe: () => void;
-    closePickTargetContextMenu: () => void;
+    closeContextMenuTooltip: () => void;
     handlePickTargetEdit: () => void;
     handlePickTargetDelete: () => void;
     handlePickTargetRevert: () => void;

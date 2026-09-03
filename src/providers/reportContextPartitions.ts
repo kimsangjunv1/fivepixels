@@ -157,7 +157,7 @@ export const REPORT_SESSION_KEYS = [
     "redoProbeSessionAction",
     "savedProbeCompareMode",
     "closePickProbe",
-    "closePickTargetContextMenu",
+    "closeContextMenuTooltip",
     "handlePickTargetEdit",
     "handlePickTargetDelete",
     "handlePickTargetRevert",

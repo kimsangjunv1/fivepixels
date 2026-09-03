@@ -7,7 +7,7 @@ import type {
     PickProbeFieldKey,
     PickProbeLayoutMode,
     PickProbeValues,
-    PickTargetContextMenuState,
+    ContextMenuTooltipState,
     ReportMode,
     SavedProbeEntry,
     TargetSnapshot,
@@ -61,7 +61,7 @@ export function useReportPickProbe({
     const [pickProbeSupportsTextFields, setPickProbeSupportsTextFields] = useState(false);
     const [pickProbeLayoutMode, setPickProbeLayoutMode] = useState<PickProbeLayoutMode>(null);
     const [pickProbeCompareMode, setPickProbeCompareModeState] = useState<PickProbeCompareMode>("after");
-    const [pickTargetContextMenu, setPickTargetContextMenu] = useState<PickTargetContextMenuState | null>(null);
+    const [pickTargetContextMenu, setContextMenuTooltip] = useState<ContextMenuTooltipState | null>(null);
     const [contextMenuElementKey, setContextMenuElementKey] = useState<string | null>(null);
     const [savedProbeEdits, setSavedProbeEdits] = useState<Record<string, SavedProbeEntry>>({});
     const [savedProbeCompareMode, setSavedProbeCompareModeState] = useState<PickProbeCompareMode>("after");
@@ -315,15 +315,15 @@ export function useReportPickProbe({
         resetPickProbeState();
     }, [resetPickProbeState]);
 
-    const closePickTargetContextMenu = useCallback(() => {
-        setPickTargetContextMenu(null);
+    const closeContextMenuTooltip = useCallback(() => {
+        setContextMenuTooltip(null);
         setContextMenuElementKey(null);
     }, []);
 
     const handlePickTargetRevert = useCallback(() => {
         const elementKey = contextMenuElementKey;
 
-        closePickTargetContextMenu();
+        closeContextMenuTooltip();
 
         if (!elementKey) {
             return;
@@ -341,12 +341,12 @@ export function useReportPickProbe({
             elementKey,
             revertedEntry: entry,
         });
-    }, [closePickTargetContextMenu, contextMenuElementKey, pushProbeSessionAction, revertSavedProbeEdit, savedProbeEdits]);
+    }, [closeContextMenuTooltip, contextMenuElementKey, pushProbeSessionAction, revertSavedProbeEdit, savedProbeEdits]);
 
     const handlePickTargetEdit = useCallback(() => {
         const element = contextMenuElementRef.current;
 
-        closePickTargetContextMenu();
+        closeContextMenuTooltip();
 
         if (!element) {
             return;
@@ -365,13 +365,13 @@ export function useReportPickProbe({
         }
 
         openPickProbe();
-    }, [closePickTargetContextMenu, openPickProbe, pickProbeOpen, resetPickProbeState]);
+    }, [closeContextMenuTooltip, openPickProbe, pickProbeOpen, resetPickProbeState]);
 
     const handlePickTargetDelete = useCallback(() => {
         const element = contextMenuElementRef.current;
         const elementKey = element ? getPickProbeElementKey(element) : null;
 
-        closePickTargetContextMenu();
+        closeContextMenuTooltip();
         resetPickProbeState();
 
         if (!element) {
@@ -424,14 +424,14 @@ export function useReportPickProbe({
                 setDraft(null);
             }
         });
-    }, [closePickTargetContextMenu, pushProbeSessionAction, resetPickProbeState, savedProbeEdits]);
+    }, [closeContextMenuTooltip, pushProbeSessionAction, resetPickProbeState, savedProbeEdits]);
 
     useEffect(() => {
         if (mode !== "report") {
             resetPickProbeState();
-            closePickTargetContextMenu();
+            closeContextMenuTooltip();
         }
-    }, [closePickTargetContextMenu, mode, resetPickProbeState]);
+    }, [closeContextMenuTooltip, mode, resetPickProbeState]);
 
     const setPickProbeCompareMode = useCallback(
         (compareMode: PickProbeCompareMode) => {
@@ -658,7 +658,7 @@ export function useReportPickProbe({
         pickProbeCompareMode,
         pickProbeHasEdits,
         pickTargetContextMenu,
-        setPickTargetContextMenu,
+        setContextMenuTooltip,
         contextMenuElementKey,
         setContextMenuElementKey,
         contextMenuElementRef,
@@ -671,7 +671,7 @@ export function useReportPickProbe({
         redoProbeSessionAction,
         savedProbeCompareMode,
         closePickProbe,
-        closePickTargetContextMenu,
+        closeContextMenuTooltip,
         handlePickTargetEdit,
         handlePickTargetDelete,
         handlePickTargetRevert,

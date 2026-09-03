@@ -1,6 +1,6 @@
 import { type Dispatch, type MutableRefObject, type SetStateAction } from "react";
 import type { ReportMessages } from "../../i18n/types.js";
-import type { DraftReport, HoverPointer, PickProbeCompareMode, PickProbeFieldKey, PickProbeLayoutMode, PickProbeValues, PickTargetContextMenuState, ReportMode, SavedProbeEntry, TargetSnapshot } from "../../types/report-ui.js";
+import type { DraftReport, HoverPointer, PickProbeCompareMode, PickProbeFieldKey, PickProbeLayoutMode, PickProbeValues, ContextMenuTooltipState, ReportMode, SavedProbeEntry, TargetSnapshot } from "../../types/report-ui.js";
 export type UseReportPickProbeParams = {
     mode: ReportMode;
     selectedElementRef: MutableRefObject<HTMLElement | null>;
@@ -20,8 +20,8 @@ export declare function useReportPickProbe({ mode, selectedElementRef, hoveredEl
     pickProbeValues: PickProbeValues | null;
     pickProbeCompareMode: PickProbeCompareMode;
     pickProbeHasEdits: boolean;
-    pickTargetContextMenu: PickTargetContextMenuState | null;
-    setPickTargetContextMenu: Dispatch<SetStateAction<PickTargetContextMenuState | null>>;
+    pickTargetContextMenu: ContextMenuTooltipState | null;
+    setContextMenuTooltip: Dispatch<SetStateAction<ContextMenuTooltipState | null>>;
     contextMenuElementKey: string | null;
     setContextMenuElementKey: Dispatch<SetStateAction<string | null>>;
     contextMenuElementRef: MutableRefObject<HTMLElement | null>;
@@ -34,7 +34,7 @@ export declare function useReportPickProbe({ mode, selectedElementRef, hoveredEl
     redoProbeSessionAction: () => void;
     savedProbeCompareMode: PickProbeCompareMode;
     closePickProbe: () => void;
-    closePickTargetContextMenu: () => void;
+    closeContextMenuTooltip: () => void;
     handlePickTargetEdit: () => void;
     handlePickTargetDelete: () => void;
     handlePickTargetRevert: () => void;

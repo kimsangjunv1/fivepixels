@@ -1,5 +1,4 @@
 import { TARGET_SELECTOR } from "@/constants/report.js";
-import type { ReportTargetType } from "@/types/report.js";
 import type { PickTargetFontStyle, TargetSnapshot } from "@/types/report-ui.js";
 import { getPickTargetBoxStyle, getPickTargetFontStyle, getPickTargetFpOpenAttribute, getPickTargetFpViewAttribute, getPickTargetReportIdAttribute, getPickTargetTagName } from "../probe/pickTargetInspect.js";
 import {
@@ -8,6 +7,12 @@ import {
     generateSuggestedReportId,
     isPickableElement,
 } from "../marker/targetSelector.js";
+import {
+    escapeAttribute,
+    getFeedbackTargetSelector,
+    isFeedbackTargetVisible,
+    resolveReportType,
+} from "../marker/targetDom.js";
 import {
     getElementHostRect,
     getPageElementsFromPoint,
@@ -26,23 +31,7 @@ function getElementDocumentElement(element: Element) {
     return element.ownerDocument.documentElement;
 }
 
-export function escapeAttribute(value: string) {
-    return value.split("\\").join("\\\\").split('"').join('\\"');
-}
-
-export function resolveReportType(element: HTMLElement): ReportTargetType {
-    return element.dataset.reportType === "group" ? "group" : "item";
-}
-
-export function getFeedbackTargetSelector(reportId: string, reportType: ReportTargetType) {
-    const escapedId = escapeAttribute(reportId);
-
-    if (reportType === "group") {
-        return `[data-report-id="${escapedId}"][data-report-type="group"]`;
-    }
-
-    return `[data-report-id="${escapedId}"]:not([data-report-type="group"])`;
-}
+export { escapeAttribute, getFeedbackTargetSelector, isFeedbackTargetVisible, resolveReportType } from "../marker/targetDom.js";
 
 function isStyleHidden(style: CSSStyleDeclaration) {
     if (style.display === "none" || style.visibility === "hidden") {
@@ -54,15 +43,6 @@ function isStyleHidden(style: CSSStyleDeclaration) {
     }
 
     return false;
-}
-
-function intersectsViewport(rect: DOMRect | DOMRectReadOnly) {
-    if (rect.width <= 0 || rect.height <= 0) {
-        return false;
-    }
-
-    const viewport = getPageViewportSize();
-    return rect.right > 0 && rect.bottom > 0 && rect.left < viewport.width && rect.top < viewport.height;
 }
 
 export function hasFixedPositionAncestor(element: HTMLElement) {
@@ -77,36 +57,6 @@ export function hasFixedPositionAncestor(element: HTMLElement) {
     }
 
     return false;
-}
-
-export function isFeedbackTargetVisible(element: HTMLElement) {
-    if ("checkVisibility" in element && typeof element.checkVisibility === "function") {
-        if (!element.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true })) {
-            return false;
-        }
-    } else {
-        let node: HTMLElement | null = element;
-
-        while (node && node !== getElementDocumentElement(node)) {
-            if (isStyleHidden(getElementWindow(node).getComputedStyle(node))) {
-                return false;
-            }
-
-            node = node.parentElement;
-        }
-    }
-
-    const rect = element.getBoundingClientRect();
-
-    if (rect.width <= 0 || rect.height <= 0) {
-        return false;
-    }
-
-    if (!intersectsViewport(rect)) {
-        return false;
-    }
-
-    return true;
 }
 
 function isSamePickTargetFontStyle(previous: PickTargetFontStyle | null | undefined, next: PickTargetFontStyle | null | undefined) {

@@ -16,8 +16,8 @@ export type {
     FivePixelsSessionAdapter,
     UpdateReplyPayload,
 } from "@/types/adapter.js";
-export { FivePixels } from "./FivePixels.js";
-export { DotWaveOverlay, type DotWaveOrigin, type DotWaveOverlayProps } from "@/components/overlay/DotWaveOverlay.js";
+export { FivePixels } from "@/core/FivePixels.js";
+export { DotWaveOverlay, type DotWaveOrigin, type DotWaveOverlayProps } from "@/core/DotWaveOverlay.js";
 export { ReportProvider } from "@/providers/ReportProvider.js";
 export { useReport, useReportPreferences, useReportSession, useReportData } from "@/providers/reportContext.js";
 export type { ReportPreferencesValue, ReportSessionValue, ReportDataValue } from "@/providers/reportContext.js";

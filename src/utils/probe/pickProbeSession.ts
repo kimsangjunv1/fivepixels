@@ -1,10 +1,11 @@
-import type { ReportTargetType } from "@/types/report.js";
 import type { PickProbeCompareMode, PickProbeValues, ProbeOriginalSnapshot, SavedProbeDeletion, SavedProbeEntry } from "@/types/report-ui.js";
 import { applyPickProbeCompareMode, applyPickProbeValues } from "./pickProbe.js";
-import { getFeedbackTargetSelector, resolveReportType } from "../shared/dom.js";
+import { resolveReportType } from "../marker/targetDom.js";
 import { shouldInspectFontStyle } from "./pickTargetInspect.js";
 import { findElementByTargetSelector, generateCssSelector } from "../marker/targetSelector.js";
-import { isHtmlElement, queryPageSelector } from "../overlay/pageDocumentBridge.js";
+import { findElementByProbeKey } from "./probeElement.js";
+
+export { findElementByProbeKey } from "./probeElement.js";
 
 export type ProbeRestoreSnapshot = Pick<ProbeOriginalSnapshot, "style" | "innerHTML" | "textContent" | "inputValue">;
 
@@ -43,25 +44,6 @@ export function getPickProbeElementKey(element: HTMLElement) {
     }
 
     return `selector:${generateCssSelector(element)}`;
-}
-
-export function findElementByProbeKey(elementKey: string) {
-    if (elementKey.startsWith("id:")) {
-        const [, reportId, reportType] = elementKey.split(":");
-
-        if (!reportId || !reportType) {
-            return null;
-        }
-
-        const element = queryPageSelector(getFeedbackTargetSelector(reportId, reportType as ReportTargetType));
-        return isHtmlElement(element) ? element : null;
-    }
-
-    if (elementKey.startsWith("selector:")) {
-        return findElementByTargetSelector(elementKey.slice("selector:".length));
-    }
-
-    return null;
 }
 
 export function captureProbeOriginalSnapshot(element: HTMLElement): ProbeOriginalSnapshot {

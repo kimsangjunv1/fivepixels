@@ -1,10 +1,10 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import { useCallback, useRef } from "react";
-import { CornerResizeGhost } from "../../../components/ui/CornerResizeGhost.js";
-import { WindowResizeHandles } from "../../../components/ui/WindowResizeHandles.js";
-import { WindowModeControls } from "../../../components/ui/window/WindowModeControls.js";
-import { useTooltipLayout } from "../../../hooks/useTooltipLayout.js";
-import { useTooltipResize } from "../../../hooks/useTooltipResize.js";
+import { CornerResizeGhost } from "../../../window/CornerResizeGhost.js";
+import { WindowResizeHandles } from "../../../window/WindowResizeHandles.js";
+import { WindowModeControls } from "../../../window/WindowModeControls.js";
+import { useTooltipLayout } from "../../../tooltip/useTooltipLayout.js";
+import { useTooltipResize } from "../../../tooltip/useTooltipResize.js";
 const DEFAULT_Z_CLASS = "pointer-events-auto fixed z-[1000001]";
 export function OverlayShellAnchored({ anchor = null, position, visible = true, expanded = true, resizable = true, zIndexClassName = DEFAULT_Z_CLASS, className = "", surfaceClassName = "rounded-[16px] shadow-[var(--adaptive-popup-shadow)] bg-[var(--adaptive-neutralTintOpacity1000)] backdrop-blur-[5px]", contentClassName = "", prefix, controls, showControls = false, showResizeHandles = true, resizeWidthAriaLabel = "Resize width", resizeHeightAriaLabel = "Resize height", minWidth = 320, style, dataChrome, dataAttributes, containerRef: outerContainerRef, onClick, children, }) {
     const contentRef = useRef(null);

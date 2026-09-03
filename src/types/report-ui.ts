@@ -43,7 +43,7 @@ export type PickTargetBoxStyle = {
     borderRadius: string;
 };
 
-export type PickTargetContextMenuState = {
+export type ContextMenuTooltipState = {
     clientX: number;
     clientY: number;
     target: TargetSnapshot;

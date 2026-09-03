@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { LockIcon } from "@/components/icons/Icons.js";
-import { HoverTooltip } from "@/components/ui/HoverTooltip.js";
+import { HoverTooltip } from "@/tooltip/HoverTooltip.js";
 import { useReportPreferences } from "@/providers/reportContext.js";
 import { formatIntegrationMissingHandlers, type IntegrationFeatureId, type IntegrationHandlerName } from "@/utils/integration/integrationFeatures.js";
 import { getIntegrationLock } from "@/utils/integration/integrationGate.js";

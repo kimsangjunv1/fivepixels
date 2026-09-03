@@ -1,5 +1,5 @@
 import { jsx as _jsx } from "react/jsx-runtime";
-import { FloatingWindow } from "../../components/ui/FloatingWindow.js";
+import { FloatingWindow } from "../../window/FloatingWindow.js";
 import { OverlayShellAnchored } from "../../components/ui/overlay-shell/OverlayShellAnchored.js";
 import { OverlayShellModal } from "../../components/ui/overlay-shell/OverlayShellModal.js";
 export function OverlayShell(props) {
