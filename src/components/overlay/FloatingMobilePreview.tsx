@@ -146,7 +146,11 @@ export function FloatingMobilePreview() {
                   },
         [captureImageEnabled, deviceChrome],
     );
-    const screenRadius = captureImageEnabled || captureCornerStyle === "rounded" ? deviceChrome.screenRadius : 0;
+    const previewRadius = captureImageEnabled
+        ? deviceChrome.screenRadius
+        : captureCornerStyle === "rounded"
+          ? deviceChrome.frameRadius
+          : 0;
     const { frameWidth, frameHeight } = useMemo(() => resolveMobilePreviewFrameMetrics(layout, chrome.bezel), [chrome.bezel, layout]);
     const statusBarReferenceWidth = useMemo(() => resolveMobilePreviewStatusBarReferenceWidth(mobilePreviewPreset, mobilePreviewOrientation), [mobilePreviewOrientation, mobilePreviewPreset]);
     const guestStatusBarHeight = useMemo(
@@ -636,8 +640,9 @@ export function FloatingMobilePreview() {
                                     height: guestViewportSize.height,
                                     transform: `scale(${MOBILE_PREVIEW_SCALE})`,
                                     transformOrigin: "top left",
-                                    borderRadius: screenRadius,
+                                    borderRadius: previewRadius,
                                     background: screenBackground,
+                                    overflow: "hidden",
                                 }}
                             />
                             {frameLoadState === "blocked" ? (
@@ -648,8 +653,9 @@ export function FloatingMobilePreview() {
                                         top: chrome.bezel.top,
                                         width: layout.width,
                                         height: layout.height,
-                                        borderRadius: screenRadius,
+                                        borderRadius: previewRadius,
                                         background: screenBackground,
+                                        overflow: "hidden",
                                     }}
                                 >
                                     {messages.settings.mobilePreviewIframeBlocked}
@@ -673,13 +679,15 @@ export function FloatingMobilePreview() {
                                 {captureStatusBarEnabled ? (
                                     <div
                                         ref={statusBarRef}
-                                        className={`pointer-events-none absolute z-[1] ${mobilePreviewOrientation === "landscape" ? "overflow-visible" : "overflow-hidden"}`}
+                                        className={`pointer-events-none absolute z-[1] ${
+                                            captureImageEnabled && mobilePreviewOrientation === "landscape" ? "overflow-visible" : "overflow-hidden"
+                                        }`}
                                         style={{
                                             left: chrome.bezel.left,
                                             top: chrome.bezel.top,
                                             width: layout.width,
                                             height: layout.height,
-                                            borderRadius: screenRadius,
+                                            borderRadius: previewRadius,
                                         }}
                                     >
                                         <DeviceStatusBar
