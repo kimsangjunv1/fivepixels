@@ -1,8 +1,8 @@
-import type { ElementMention } from "@/types/mention.js";
-import type { ReportFeedback, ReportPosition, ReportReply, ReportTargetType } from "@/types/report.js";
-import { ISSUE_ROOT_PARENT_ID } from "@/utils/feedback/feedbackThread.js";
-import { createAutoPickReportId } from "@/utils/marker/targetSelector.js";
-import { createReportCase } from "@/utils/report/reportCases.js";
+import type { ElementMention } from "@/shared/types/mention.js";
+import type { ReportFeedback, ReportPosition, ReportReply, ReportTargetType } from "@/shared/types/report.js";
+import { ISSUE_ROOT_PARENT_ID } from "@/shared/utils/feedback/feedbackThread.js";
+import { createAutoPickReportId } from "@/shared/utils/marker/targetSelector.js";
+import { createReportCase } from "@/shared/utils/report/reportCases.js";
 
 /** Mirrors `team` reviewers in examples/basic/src/App.tsx */
 export const SEED_TEAM = {

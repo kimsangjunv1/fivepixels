@@ -1,1 +1,0 @@
-{"version":3,"file":"PanelKeyGate.d.ts","sourceRoot":"","sources":["../../src/panel/PanelKeyGate.tsx"],"names":[],"mappings":"AAGA,OAAO,KAAK,EAAE,SAAS,EAAE,MAAM,kCAAkC,CAAC;AAIlE,KAAK,gBAAgB,GAAG,OAAO,CAAC,SAAS,EAAE,gBAAgB,GAAG,WAAW,CAAC,CAAC;AAM3E,wBAAgB,YAAY,CAAC,EAAE,IAAI,EAAE,EAAE;IAAE,IAAI,EAAE,gBAAgB,CAAA;CAAE,+BAiHhE"}

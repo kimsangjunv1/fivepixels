@@ -1,0 +1,9 @@
+import type { FeedbackDisplayStatus } from "../../shared/constants/feedbackStatus.js";
+type FeedbackStatusBadgeProps = {
+    status: FeedbackDisplayStatus;
+    className?: string;
+    isNeedGray?: boolean;
+};
+export declare function FeedbackStatusBadge({ status, className, isNeedGray }: FeedbackStatusBadgeProps): import("react").JSX.Element;
+export {};
+//# sourceMappingURL=FeedbackStatusBadge.d.ts.map

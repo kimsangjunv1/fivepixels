@@ -1,0 +1,10 @@
+import type { ReportAppearance } from "../../shared/types/report.js";
+export declare const PANEL_APPEARANCE_STORAGE_KEY = "fivepixels:panel-appearance";
+export declare const TOOLTIP_APPEARANCE_STORAGE_KEY = "fivepixels:tooltip-appearance";
+export declare const LEGACY_APPEARANCE_STORAGE_KEY = "fivepixels:appearance-preference";
+export declare const APPEARANCE_OPTION_VALUES: readonly ["light", "dark", "system"];
+export declare const APPEARANCE_OPTIONS: ReadonlyArray<{
+    value: ReportAppearance;
+    label: string;
+}>;
+//# sourceMappingURL=appearance.d.ts.map

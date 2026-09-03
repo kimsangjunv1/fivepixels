@@ -1,0 +1,8 @@
+import type { ReportFeedback } from "../../../shared/types/report.js";
+type ExperimentalFeedbackRowProps = {
+    report: ReportFeedback;
+    onOpen: (reportId: string) => void;
+};
+export declare function ExperimentalFeedbackRow({ report, onOpen }: ExperimentalFeedbackRowProps): import("react").JSX.Element;
+export {};
+//# sourceMappingURL=ExperimentalFeedbackRow.d.ts.map

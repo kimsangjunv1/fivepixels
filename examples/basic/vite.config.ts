@@ -3,12 +3,12 @@ import { fileURLToPath } from "node:url";
 import react from "@vitejs/plugin-react";
 import type { Plugin, ViteDevServer } from "vite";
 import { defineConfig } from "vite";
-import type { ReportFeedback } from "../../src/types/report.js";
+import type { ReportFeedback } from "../../src/shared/types/report.js";
 
-const reportStylesheetDev = new URL("../../src/styles/reportStylesheet.dev.ts", import.meta.url).pathname;
-const formatGitHubIssueModuleId = fileURLToPath(new URL("../../src/utils/github/formatGitHubIssue.ts", import.meta.url));
+const reportStylesheetDev = new URL("../../src/shared/styles/reportStylesheet.dev.ts", import.meta.url).pathname;
+const formatGitHubIssueModuleId = fileURLToPath(new URL("../../src/shared/utils/github/formatGitHubIssue.ts", import.meta.url));
 
-type FormatGitHubIssueBody = (feedback: ReportFeedback, fields?: import("../../src/types/report.js").ReportField[], options?: { formatProgress?: (resolved: number, total: number) => string }) => string;
+type FormatGitHubIssueBody = (feedback: ReportFeedback, fields?: import("../../src/shared/types/report.js").ReportField[], options?: { formatProgress?: (resolved: number, total: number) => string }) => string;
 
 async function loadFormatGitHubIssueBody(server: ViteDevServer): Promise<FormatGitHubIssueBody> {
     const module = await server.ssrLoadModule(formatGitHubIssueModuleId);

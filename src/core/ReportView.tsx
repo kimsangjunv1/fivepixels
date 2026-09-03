@@ -1,16 +1,16 @@
-import { useReportPreferences, useReportSession } from "@/providers/reportContext.js";
-import { TooltipLayer } from "@/tooltip/TooltipLayer.js";
-import { DevicePreview } from "@/preview/DevicePreview.js";
-import { NotificationCenter } from "@/modal/NotificationCenter.js";
-import { Panel } from "@/panel/Panel.js";
-import { DraftTooltip } from "@/tooltip/DraftTooltip.js";
-import { DraftMarker } from "@/marker/DraftMarker.js";
-import { MarkerLayer } from "@/marker/MarkerLayer.js";
-import { WindowLayer } from "@/window/WindowLayer.js";
+import { useReportPreferences, useReportSession } from "@/shared/providers/reportContext.js";
+import { TooltipLayer } from "@/surfaces/tooltip/TooltipLayer.js";
+import { DevicePreview } from "@/surfaces/preview/DevicePreview.js";
+import { NotificationCenter } from "@/surfaces/window/NotificationCenter.js";
+import { Panel } from "@/surfaces/panel/Panel.js";
+import { DraftTooltip } from "@/surfaces/tooltip/DraftTooltip.js";
+import { DraftMarker } from "@/surfaces/marker/DraftMarker.js";
+import { MarkerLayer } from "@/surfaces/marker/MarkerLayer.js";
+import { WindowLayer } from "@/surfaces/window/WindowLayer.js";
 import { DotWaveOverlay } from "@/core/DotWaveOverlay.js";
-import { useOverlayChrome } from "@/hooks/useOverlayChrome.js";
-import { MobilePreviewWindow } from "@/window/MobilePreviewWindow.js";
-import { isInsidePreviewGuestFrame } from "@/preview/previewGuestFrame.js";
+import { useOverlayChrome } from "@/shared/hooks/useOverlayChrome.js";
+import { MobilePreviewWindow } from "@/surfaces/window/MobilePreviewWindow.js";
+import { isInsidePreviewGuestFrame } from "@/surfaces/preview/previewGuestFrame.js";
 import { ShadowReportRoot } from "./ShadowReportRoot.js";
 import { ThemeScope } from "./ThemeScope.js";
 

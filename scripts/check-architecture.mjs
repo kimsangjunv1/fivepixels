@@ -6,9 +6,13 @@ import ts from "typescript";
 const ROOT = path.resolve(import.meta.dirname, "..");
 const SRC = path.join(ROOT, "src");
 const EXTENSIONS = [".ts", ".tsx", ".mts", ".cts"];
-const LEGACY_SURFACE_DIRS = ["components/overlay", "components/panel", "components/point"];
-const ISOLATED_SURFACES = ["feedback", "marker", "modal", "preview", "tooltip", "window"];
+const LEGACY_SURFACE_DIRS = ["shared/components/overlay", "shared/components/panel", "shared/components/point"];
+const ISOLATED_SURFACES = ["feedback", "marker", "preview", "tooltip", "window"];
 const FEATURE_SURFACES = ["panel", ...ISOLATED_SURFACES];
+
+function surfacePath(name) {
+    return `surfaces${path.sep}${name}${path.sep}`;
+}
 
 function walk(directory, files = []) {
     if (!fs.existsSync(directory)) return files;
@@ -55,27 +59,27 @@ const violations = [];
 for (const legacyDirectory of LEGACY_SURFACE_DIRS) {
     const legacyFiles = walk(path.join(SRC, legacyDirectory));
     for (const file of legacyFiles) {
-        violations.push(`${path.relative(ROOT, file)} must live in a top-level feature folder`);
+        violations.push(`${path.relative(ROOT, file)} must live in a surfaces feature folder`);
     }
 }
 
 for (const file of files) {
     const source = ts.createSourceFile(file, fs.readFileSync(file, "utf8"), ts.ScriptTarget.Latest, true);
     const relativeFile = path.relative(SRC, file);
-    const surface = ISOLATED_SURFACES.find((candidate) => relativeFile.startsWith(`${candidate}${path.sep}`));
-    const featureSurface = FEATURE_SURFACES.find((candidate) => relativeFile.startsWith(`${candidate}${path.sep}`));
+    const surface = ISOLATED_SURFACES.find((candidate) => relativeFile.startsWith(surfacePath(candidate)));
+    const featureSurface = FEATURE_SURFACES.find((candidate) => relativeFile.startsWith(surfacePath(candidate)));
 
     for (const node of source.statements) {
         if ((!ts.isImportDeclaration(node) && !ts.isExportDeclaration(node)) || !node.moduleSpecifier || !ts.isStringLiteral(node.moduleSpecifier)) continue;
 
         const specifier = node.moduleSpecifier.text;
-        if (surface && specifier.startsWith("@/panel/")) {
+        if (surface && specifier.startsWith("@/surfaces/panel/")) {
             violations.push(`${path.relative(ROOT, file)} must not import panel internals (${specifier})`);
         }
         if (
             featureSurface &&
             ts.isImportDeclaration(node) &&
-            specifier === "@/providers/reportContext.js" &&
+            specifier === "@/shared/providers/reportContext.js" &&
             node.importClause?.namedBindings &&
             ts.isNamedImports(node.importClause.namedBindings) &&
             node.importClause.namedBindings.elements.some((element) => element.name.text === "useReport")

@@ -1,1 +1,0 @@
-{"version":3,"file":"CornerResizeGhost.js","sourceRoot":"","sources":["../../src/window/CornerResizeGhost.tsx"],"names":[],"mappings":";AACA,OAAO,EAAE,MAAM,EAAE,MAAM,8BAA8B,CAAC;AAOtD,MAAM,UAAU,iBAAiB,CAAC,EAAE,QAAQ,EAAE,eAAe,GAAG,aAAa,EAA0B;IACnG,OAAO,CACH,cACI,GAAG,EAAE,QAAQ,uBAEb,SAAS,EAAE,6BAA6B,eAAe,6HAA6H,MAAM,CAAC,OAAO,EAAE,GACtM,CACL,CAAC;AACN,CAAC"}

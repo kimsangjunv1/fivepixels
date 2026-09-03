@@ -1,5 +1,5 @@
-import { dispatchFeedbackStorageChanged } from "@/constants/feedbackStorageEvents.js";
-import { readAllFeedback, writeAllFeedback } from "@/utils/feedback/feedbackDataTransfer.js";
+import { dispatchFeedbackStorageChanged } from "@/shared/constants/feedbackStorageEvents.js";
+import { readAllFeedback, writeAllFeedback } from "@/shared/utils/feedback/feedbackDataTransfer.js";
 import { createDemoInvestFeedbackSeed } from "./createDemoInvestFeedbackSeed.js";
 import { createEdgecaseFeedbackSeed } from "./createEdgecaseFeedbackSeed.js";
 import { createSettingsFeedbackSeed } from "./createSettingsFeedbackSeed.js";

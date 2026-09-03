@@ -1,14 +1,25 @@
 #!/usr/bin/env node
 /**
- * Fails if src/* (except utils domain files) or examples import flat `@/utils/X.js`
- * (single segment). Prefer `@/utils/<domain>/X.js`.
+ * Fails if src/* (except utils domain files) or examples import flat `@/shared/utils/X.js`
+ * (single segment). Prefer `@/shared/utils/<domain>/X.js`.
  */
 import fs from "node:fs";
 import path from "node:path";
 
 const ROOT = path.resolve(import.meta.dirname, "..");
-const SCOPES = ["src/components", "src/hooks", "src/providers", "src/storage", "src/constants", "src/types", "src/i18n", "examples"];
-const FLAT_IMPORT = /from\s+["']@\/utils\/([^/"']+)\.js["']/g;
+const SCOPES = [
+    "src/shared/components",
+    "src/shared/hooks",
+    "src/shared/providers",
+    "src/shared/storage",
+    "src/shared/constants",
+    "src/shared/types",
+    "src/shared/i18n",
+    "src/surfaces",
+    "src/core",
+    "examples",
+];
+const FLAT_IMPORT = /from\s+["']@\/shared\/utils\/([^/"']+)\.js["']/g;
 
 function walk(dir, out = []) {
     if (!fs.existsSync(dir)) return out;
@@ -31,7 +42,7 @@ for (const scope of SCOPES) {
             if (!segment.includes("/")) {
                 violations.push({
                     file: path.relative(ROOT, file),
-                    import: `@/utils/${segment}.js`,
+                    import: `@/shared/utils/${segment}.js`,
                 });
             }
         }
@@ -39,7 +50,7 @@ for (const scope of SCOPES) {
 }
 
 if (violations.length > 0) {
-    console.error("Flat @/utils/<name>.js imports are banned. Use domain paths (@/utils/<domain>/<name>.js):\n");
+    console.error("Flat @/shared/utils/<name>.js imports are banned. Use domain paths (@/shared/utils/<domain>/<name>.js):\n");
     for (const v of violations) {
         console.error(`  ${v.file}: ${v.import}`);
     }

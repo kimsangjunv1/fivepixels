@@ -1,4 +1,4 @@
-import type { ReportFeedback, ReportReply } from "@/types/report.js";
+import type { ReportFeedback, ReportReply } from "@/shared/types/report.js";
 import {
     FEED_PATHNAME,
     HOME_PATHNAME,
