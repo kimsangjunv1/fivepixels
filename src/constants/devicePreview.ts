@@ -19,6 +19,8 @@ export type DeviceChromeSpec = {
     buttons?: {
         left?: Array<{ topRatio: number; height: number }>;
         right?: Array<{ topRatio: number; height: number }>;
+        top?: Array<{ leftRatio: number; width: number }>;
+        bottom?: Array<{ leftRatio: number; width: number }>;
     };
 };
 
@@ -531,9 +533,9 @@ export function getEmptyBezel(): DeviceBezelInset {
 }
 
 /** Scale preset cutout metrics to the current on-screen width. */
-export function getScaledDeviceCutout(preset: DevicePreviewPreset, screenWidth: number): ScaledDeviceCutout {
+export function getScaledDeviceCutout(preset: DevicePreviewPreset, screenWidth: number, referenceLogicalWidth = preset.width): ScaledDeviceCutout {
     const cutout = preset.statusBar.cutout;
-    const s = preset.width > 0 ? screenWidth / preset.width : 1;
+    const s = referenceLogicalWidth > 0 ? screenWidth / referenceLogicalWidth : 1;
 
     switch (cutout.kind) {
         case "notch":
@@ -571,21 +573,21 @@ export function getScaledDeviceCutout(preset: DevicePreviewPreset, screenWidth: 
     }
 }
 
-export function getDeviceSafeAreaTop(preset: DevicePreviewPreset, screenWidth: number): number {
+export function getDeviceSafeAreaTop(preset: DevicePreviewPreset, screenWidth: number, referenceLogicalWidth = preset.width): number {
     const base = preset.statusBar.safeAreaTop;
-    if (preset.width <= 0) {
+    if (referenceLogicalWidth <= 0) {
         return base;
     }
-    return Math.max(0, Math.round(base * (screenWidth / preset.width)));
+    return Math.max(0, Math.round(base * (screenWidth / referenceLogicalWidth)));
 }
 
-export function scaleStatusBarMetrics(preset: DevicePreviewPreset, screenWidth: number) {
-    const s = preset.width > 0 ? screenWidth / preset.width : 1;
+export function scaleStatusBarMetrics(preset: DevicePreviewPreset, screenWidth: number, referenceLogicalWidth = preset.width) {
+    const s = referenceLogicalWidth > 0 ? screenWidth / referenceLogicalWidth : 1;
     const mild = Math.min(1.12, Math.max(0.95, s));
     const bar = preset.statusBar;
 
     return {
-        safeAreaTop: getDeviceSafeAreaTop(preset, screenWidth),
+        safeAreaTop: getDeviceSafeAreaTop(preset, screenWidth, referenceLogicalWidth),
         padLeft: bar.padLeft * mild,
         padRight: bar.padRight * mild,
         // Keep exact pt for clock so Face ID / classic stay at 16px.
@@ -597,6 +599,6 @@ export function scaleStatusBarMetrics(preset: DevicePreviewPreset, screenWidth: 
         iconGap: bar.iconGap * mild,
         batteryPercent: bar.batteryPercent,
         layout: bar.layout,
-        cutout: getScaledDeviceCutout(preset, screenWidth),
+        cutout: getScaledDeviceCutout(preset, screenWidth, referenceLogicalWidth),
     };
 }

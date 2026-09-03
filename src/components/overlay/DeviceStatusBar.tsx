@@ -1,20 +1,17 @@
 import type { ReactNode } from "react";
-import {
-    DEVICE_CHROME_COLOR,
-    getDeviceSafeAreaTop,
-    scaleStatusBarMetrics,
-    type DevicePreviewPreset,
-    type ScaledDeviceCutout,
-} from "@/constants/devicePreview.js";
+import { DEVICE_CHROME_COLOR, getDeviceSafeAreaTop, scaleStatusBarMetrics, type DevicePreviewPreset, type ScaledDeviceCutout } from "@/constants/devicePreview.js";
 
 type StatusBarAppearance = "light" | "dark";
 
 type DeviceStatusBarProps = {
     preset: DevicePreviewPreset;
     width: number;
+    screenHeight?: number;
     scale?: number;
     appearance?: StatusBarAppearance;
     showCutout?: boolean;
+    orientation?: "portrait" | "landscape";
+    referenceLogicalWidth?: number;
 };
 
 const IOS_TIME = "9:41";
@@ -283,52 +280,66 @@ function TimeLabel({ color, fontSize, children }: { color: string; fontSize: num
     );
 }
 
-function CutoutVisual({ cutout }: { cutout: ScaledDeviceCutout }) {
+function CutoutVisual({ cutout, layout = "horizontal" }: { cutout: ScaledDeviceCutout; layout?: "horizontal" | "vertical" }) {
     switch (cutout.kind) {
-        case "notch":
+        case "notch": {
+            const width = layout === "vertical" ? cutout.height : cutout.width;
+            const height = layout === "vertical" ? cutout.width : cutout.height;
             return (
                 <div
                     className="relative shrink-0"
                     style={{
-                        width: cutout.width,
-                        height: cutout.height,
+                        width,
+                        height,
                         background: DEVICE_CHROME_COLOR,
-                        borderBottomLeftRadius: cutout.height * 0.45,
-                        borderBottomRightRadius: cutout.height * 0.45,
+                        ...(layout === "vertical"
+                            ? {
+                                  borderTopRightRadius: width * 0.45,
+                                  borderBottomRightRadius: width * 0.45,
+                              }
+                            : {
+                                  borderBottomLeftRadius: height * 0.45,
+                                  borderBottomRightRadius: height * 0.45,
+                              }),
                     }}
                 >
                     <div
-                        className="absolute left-1/2 top-[42%] -translate-x-1/2 -translate-y-1/2 rounded-full"
+                        className="absolute rounded-full"
                         style={{
                             width: 6.4,
                             height: 6.4,
                             background: DEVICE_CHROME_COLOR,
+                            ...(layout === "vertical" ? { left: "42%", top: "50%", transform: "translate(-50%, -50%)" } : { left: "50%", top: "42%", transform: "translate(-50%, -50%)" }),
                         }}
                     />
                 </div>
             );
-        case "island":
+        }
+        case "island": {
+            const width = layout === "vertical" ? cutout.height : cutout.width;
+            const height = layout === "vertical" ? cutout.width : cutout.height;
             return (
                 <div
                     className="relative shrink-0"
                     style={{
-                        width: cutout.width,
-                        height: cutout.height,
+                        width,
+                        height,
                         borderRadius: 999,
                         background: DEVICE_CHROME_COLOR,
                     }}
                 >
                     <div
-                        className="absolute top-1/2 -translate-y-1/2 rounded-full"
+                        className="absolute rounded-full"
                         style={{
-                            right: 12,
                             width: 8,
                             height: 8,
                             background: DEVICE_CHROME_COLOR,
+                            ...(layout === "vertical" ? { bottom: 12, left: "50%", transform: "translateX(-50%)" } : { top: "50%", right: 12, transform: "translateY(-50%)" }),
                         }}
                     />
                 </div>
             );
+        }
         case "punch":
             return (
                 <div
@@ -397,7 +408,7 @@ function StatusThreeColumn({
     padLeft: number;
     padRight: number;
     cutout: ScaledDeviceCutout;
-    left: ReactNode;
+    left?: ReactNode;
     right: ReactNode;
     center?: ReactNode;
 }) {
@@ -417,7 +428,7 @@ function StatusThreeColumn({
                 className="flex min-w-0 flex-1 items-center justify-center"
                 style={{ paddingLeft: padLeft || undefined, overflow: "visible" }}
             >
-                {left}
+                {left ?? null}
             </div>
             {center ?? <CenterColumn cutout={cutout} />}
             <div
@@ -446,7 +457,10 @@ function renderClassic(color: string, metrics: StatusMetrics) {
                     className="flex items-center"
                     style={{ gap: 4 }}
                 >
-                    <TimeLabel color={color} fontSize={metrics.timeSize}>
+                    <TimeLabel
+                        color={color}
+                        fontSize={metrics.timeSize}
+                    >
                         SKT
                     </TimeLabel>
                     <CellularIcon
@@ -457,7 +471,10 @@ function renderClassic(color: string, metrics: StatusMetrics) {
             }
             center={
                 <div className="flex shrink-0 items-center justify-center">
-                    <TimeLabel color={color} fontSize={metrics.timeSize}>
+                    <TimeLabel
+                        color={color}
+                        fontSize={metrics.timeSize}
+                    >
                         {IOS_TIME}
                     </TimeLabel>
                 </div>
@@ -477,8 +494,42 @@ function renderClassic(color: string, metrics: StatusMetrics) {
     );
 }
 
-function renderFaceId(color: string, metrics: StatusMetrics) {
+function renderFaceId(color: string, metrics: StatusMetrics, orientation: "portrait" | "landscape") {
     const iosFont = '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif';
+
+    if (orientation === "landscape") {
+        return (
+            <StatusThreeColumn
+                color={color}
+                fontFamily={iosFont}
+                fontSize={metrics.timeSize}
+                fontWeight={600}
+                padLeft={metrics.padLeft}
+                padRight={metrics.padRight}
+                cutout={{ kind: "none", width: 0, height: 0, top: 0 }}
+                center={
+                    <TimeLabel
+                        color={color}
+                        fontSize={metrics.timeSize}
+                    >
+                        {IOS_TIME}
+                    </TimeLabel>
+                }
+                right={
+                    <TrailingIcons
+                        color={color}
+                        cellularH={metrics.cellularH}
+                        wifiSize={metrics.wifi}
+                        batteryW={metrics.batteryW}
+                        batteryH={metrics.batteryH}
+                        gap={metrics.iconGap}
+                        withPercent={metrics.batteryPercent}
+                    />
+                }
+            />
+        );
+    }
+
     return (
         <StatusThreeColumn
             color={color}
@@ -489,7 +540,10 @@ function renderFaceId(color: string, metrics: StatusMetrics) {
             padRight={metrics.padRight}
             cutout={metrics.cutout}
             left={
-                <TimeLabel color={color} fontSize={metrics.timeSize}>
+                <TimeLabel
+                    color={color}
+                    fontSize={metrics.timeSize}
+                >
                     {IOS_TIME}
                 </TimeLabel>
             }
@@ -520,7 +574,10 @@ function renderAndroid(color: string, metrics: StatusMetrics) {
             padRight={metrics.padRight}
             cutout={metrics.cutout}
             left={
-                <TimeLabel color={color} fontSize={metrics.timeSize}>
+                <TimeLabel
+                    color={color}
+                    fontSize={metrics.timeSize}
+                >
                     {ANDROID_TIME}
                 </TimeLabel>
             }
@@ -551,7 +608,10 @@ function renderTablet(color: string, metrics: StatusMetrics) {
             padRight={metrics.padRight}
             cutout={metrics.cutout}
             left={
-                <TimeLabel color={color} fontSize={metrics.timeSize}>
+                <TimeLabel
+                    color={color}
+                    fontSize={metrics.timeSize}
+                >
                     {IOS_TIME}
                 </TimeLabel>
             }
@@ -570,18 +630,21 @@ function renderTablet(color: string, metrics: StatusMetrics) {
     );
 }
 
-export function getDeviceStatusBarHeight(preset: DevicePreviewPreset, screenWidth: number, scale = 1) {
-    return Math.max(0, Math.round(getDeviceSafeAreaTop(preset, screenWidth) * scale));
+export function getDeviceStatusBarHeight(preset: DevicePreviewPreset, screenWidth: number, scale = 1, referenceLogicalWidth = preset.width) {
+    return Math.max(0, Math.round(getDeviceSafeAreaTop(preset, screenWidth, referenceLogicalWidth) * scale));
 }
 
 export function DeviceStatusBar({
     preset,
     width,
+    screenHeight,
     scale = 1,
     appearance = "light",
     showCutout = true,
+    orientation = "portrait",
+    referenceLogicalWidth = preset.width,
 }: DeviceStatusBarProps) {
-    const metrics = scaleStatusBarMetrics(preset, width);
+    const metrics = scaleStatusBarMetrics(preset, width, referenceLogicalWidth);
     const height = Math.max(0, Math.round(metrics.safeAreaTop * scale));
     const { foreground } = themeColors(appearance);
     const cutout: ScaledDeviceCutout = showCutout ? metrics.cutout : { kind: "none", width: metrics.cutout.width, height: 0, top: 0 };
@@ -592,7 +655,7 @@ export function DeviceStatusBar({
             content = renderClassic(foreground, { ...metrics, cutout });
             break;
         case "faceId":
-            content = renderFaceId(foreground, { ...metrics, cutout });
+            content = renderFaceId(foreground, { ...metrics, cutout }, orientation);
             break;
         case "android":
             content = renderAndroid(foreground, { ...metrics, cutout });
@@ -605,7 +668,7 @@ export function DeviceStatusBar({
             return null;
     }
 
-    return (
+    const statusBarRow = (
         <div
             className="pointer-events-none absolute left-0 right-0 top-0 overflow-hidden bg-[var(--adaptive-neutralTintOpacity700)] backdrop-blur-[10px]"
             style={{ height, color: foreground, WebkitTextFillColor: foreground }}
@@ -613,6 +676,38 @@ export function DeviceStatusBar({
             aria-hidden
         >
             {content}
+        </div>
+    );
+
+    const showLandscapeEdgeCutout = orientation === "landscape" && showCutout && cutout.kind !== "none" && cutout.height > 0;
+
+    if (!showLandscapeEdgeCutout) {
+        return statusBarRow;
+    }
+
+    return (
+        <div
+            className="pointer-events-none absolute inset-0 overflow-visible"
+            style={screenHeight ? { height: screenHeight } : undefined}
+            aria-hidden
+        >
+            {statusBarRow}
+            <div
+                // className="absolute left-0 top-1/2 -translate-y-1/2"
+                data-fivepixels-device-cutout={cutout.kind}
+                data-fivepixels-device-cutout-placement="landscape-edge"
+                style={{
+                    position: "absolute",
+                    top: "50%",
+                    left: "14px",
+                    transform: "translate(0%, -50%)",
+                }}
+            >
+                <CutoutVisual
+                    cutout={cutout}
+                    layout="vertical"
+                />
+            </div>
         </div>
     );
 }

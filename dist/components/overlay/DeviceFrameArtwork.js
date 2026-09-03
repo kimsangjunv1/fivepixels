@@ -20,9 +20,11 @@ function roundedRectPath(x, y, w, h, r) {
         "Z",
     ].join(" ");
 }
-function HardwareButtons({ chrome, frameHeight, }) {
+function HardwareButtons({ chrome, frameWidth, frameHeight, }) {
     const left = chrome.buttons?.left ?? [];
     const right = chrome.buttons?.right ?? [];
+    const top = chrome.buttons?.top ?? [];
+    const bottom = chrome.buttons?.bottom ?? [];
     return (_jsxs(_Fragment, { children: [left.map((button, index) => (_jsx("div", { className: "absolute rounded-l-[2px]", style: {
                     left: -3,
                     width: 3,
@@ -35,7 +37,19 @@ function HardwareButtons({ chrome, frameHeight, }) {
                     top: frameHeight * button.topRatio,
                     height: button.height,
                     background: BUTTON_FILL,
-                } }, `right-${index}`)))] }));
+                } }, `right-${index}`))), top.map((button, index) => (_jsx("div", { className: "absolute rounded-t-[2px]", style: {
+                    top: -3,
+                    height: 3,
+                    left: frameWidth * button.leftRatio,
+                    width: button.width,
+                    background: BUTTON_FILL,
+                } }, `top-${index}`))), bottom.map((button, index) => (_jsx("div", { className: "absolute rounded-b-[2px]", style: {
+                    bottom: -3,
+                    height: 3,
+                    left: frameWidth * button.leftRatio,
+                    width: button.width,
+                    background: BUTTON_FILL,
+                } }, `bottom-${index}`)))] }));
 }
 function ShellWithScreenHole({ frameWidth, frameHeight, frameRadius, screenX, screenY, screenWidth, screenHeight, screenRadius, }) {
     const outer = roundedRectPath(0.5, 0.5, frameWidth - 1, frameHeight - 1, frameRadius);
@@ -51,31 +65,37 @@ function HomeButtonFrame({ chrome, screenWidth, screenHeight }) {
     const cameraSize = Math.round(frameWidth * 0.028);
     const speakerY = bezel.top * 0.42;
     const cameraCx = (frameWidth - speakerWidth) / 2 - cameraSize * 1.6;
-    return (_jsxs("div", { className: "absolute overflow-visible", style: { width: frameWidth, height: frameHeight }, children: [_jsxs("svg", { width: frameWidth, height: frameHeight, viewBox: `0 0 ${frameWidth} ${frameHeight}`, className: "absolute inset-0", "aria-hidden": true, children: [_jsx(ShellWithScreenHole, { frameWidth: frameWidth, frameHeight: frameHeight, frameRadius: frameRadius, screenX: bezel.left, screenY: bezel.top, screenWidth: screenWidth, screenHeight: screenHeight, screenRadius: screenRadius }), _jsx("rect", { x: (frameWidth - speakerWidth) / 2, y: speakerY, width: speakerWidth, height: Math.max(5, bezel.top * 0.055), rx: 3, fill: DETAIL_FILL, stroke: DETAIL_STROKE, strokeWidth: "1" }), _jsx("circle", { cx: cameraCx, cy: bezel.top * 0.45, r: cameraSize / 2, fill: DEVICE_CHROME_COLOR }), _jsx("circle", { cx: cameraCx, cy: bezel.top * 0.45, r: cameraSize / 5, fill: DEVICE_CHROME_COLOR }), _jsx("circle", { cx: frameWidth / 2, cy: bezel.top + screenHeight + bezel.bottom / 2, r: homeSize / 2, fill: "none", stroke: DETAIL_STROKE, strokeWidth: "2.5" }), _jsx("circle", { cx: frameWidth / 2, cy: bezel.top + screenHeight + bezel.bottom / 2, r: homeSize / 2 - 3, fill: DETAIL_FILL })] }), _jsx(HardwareButtons, { chrome: chrome, frameHeight: frameHeight })] }));
+    return (_jsxs("div", { className: "absolute overflow-visible", style: { width: frameWidth, height: frameHeight }, children: [_jsxs("svg", { width: frameWidth, height: frameHeight, viewBox: `0 0 ${frameWidth} ${frameHeight}`, className: "absolute inset-0", "aria-hidden": true, children: [_jsx(ShellWithScreenHole, { frameWidth: frameWidth, frameHeight: frameHeight, frameRadius: frameRadius, screenX: bezel.left, screenY: bezel.top, screenWidth: screenWidth, screenHeight: screenHeight, screenRadius: screenRadius }), _jsx("rect", { x: (frameWidth - speakerWidth) / 2, y: speakerY, width: speakerWidth, height: Math.max(5, bezel.top * 0.055), rx: 3, fill: DETAIL_FILL, stroke: DETAIL_STROKE, strokeWidth: "1" }), _jsx("circle", { cx: cameraCx, cy: bezel.top * 0.45, r: cameraSize / 2, fill: DEVICE_CHROME_COLOR }), _jsx("circle", { cx: cameraCx, cy: bezel.top * 0.45, r: cameraSize / 5, fill: DEVICE_CHROME_COLOR }), _jsx("circle", { cx: frameWidth / 2, cy: bezel.top + screenHeight + bezel.bottom / 2, r: homeSize / 2, fill: "none", stroke: DETAIL_STROKE, strokeWidth: "2.5" }), _jsx("circle", { cx: frameWidth / 2, cy: bezel.top + screenHeight + bezel.bottom / 2, r: homeSize / 2 - 3, fill: DETAIL_FILL })] }), _jsx(HardwareButtons, { chrome: chrome, frameWidth: frameWidth, frameHeight: frameHeight })] }));
 }
-function BezelShellFrame({ chrome, screenWidth, screenHeight, showHomeIndicator, }) {
+function BezelShellFrame({ chrome, screenWidth, screenHeight, showHomeIndicator, orientation = "portrait", }) {
     const { bezel, frameRadius, screenRadius } = chrome;
     const frameWidth = screenWidth + bezel.left + bezel.right;
     const frameHeight = screenHeight + bezel.top + bezel.bottom;
-    return (_jsxs("div", { className: "absolute overflow-visible", style: { width: frameWidth, height: frameHeight }, children: [_jsx("svg", { width: frameWidth, height: frameHeight, viewBox: `0 0 ${frameWidth} ${frameHeight}`, className: "absolute inset-0", "aria-hidden": true, children: _jsx(ShellWithScreenHole, { frameWidth: frameWidth, frameHeight: frameHeight, frameRadius: frameRadius, screenX: bezel.left, screenY: bezel.top, screenWidth: screenWidth, screenHeight: screenHeight, screenRadius: screenRadius }) }), showHomeIndicator ? (_jsx("div", { className: "absolute rounded-full bg-[var(--adaptive-tintOpacity800)]", style: {
+    return (_jsxs("div", { className: "absolute overflow-visible", style: { width: frameWidth, height: frameHeight }, children: [_jsx("svg", { width: frameWidth, height: frameHeight, viewBox: `0 0 ${frameWidth} ${frameHeight}`, className: "absolute inset-0", "aria-hidden": true, children: _jsx(ShellWithScreenHole, { frameWidth: frameWidth, frameHeight: frameHeight, frameRadius: frameRadius, screenX: bezel.left, screenY: bezel.top, screenWidth: screenWidth, screenHeight: screenHeight, screenRadius: screenRadius }) }), showHomeIndicator ? (orientation === "landscape" ? (_jsx("div", { className: "absolute rounded-full bg-[var(--adaptive-tintOpacity800)]", style: {
+                    right: bezel.right + 8,
+                    top: bezel.top + screenHeight / 2,
+                    width: 5,
+                    height: Math.min(148, screenHeight * 0.36),
+                    transform: "translateY(-50%)",
+                } })) : (_jsx("div", { className: "absolute rounded-full bg-[var(--adaptive-tintOpacity800)]", style: {
                     left: bezel.left + screenWidth / 2,
                     bottom: bezel.bottom + 8,
                     width: Math.min(148, screenWidth * 0.36),
                     height: 5,
                     transform: "translateX(-50%)",
-                } })) : null, _jsx(HardwareButtons, { chrome: chrome, frameHeight: frameHeight })] }));
+                } }))) : null, _jsx(HardwareButtons, { chrome: chrome, frameWidth: frameWidth, frameHeight: frameHeight })] }));
 }
-function NotchFrame({ chrome, screenWidth, screenHeight }) {
+function NotchFrame({ chrome, screenWidth, screenHeight, orientation = "portrait" }) {
     // Notch / camera cutout lives in DeviceStatusBar center column (same flex row).
-    return (_jsx(BezelShellFrame, { chrome: chrome, screenWidth: screenWidth, screenHeight: screenHeight, showHomeIndicator: true }));
+    return (_jsx(BezelShellFrame, { chrome: chrome, screenWidth: screenWidth, screenHeight: screenHeight, showHomeIndicator: true, orientation: orientation }));
 }
-function IslandFrame({ chrome, screenWidth, screenHeight }) {
+function IslandFrame({ chrome, screenWidth, screenHeight, orientation = "portrait" }) {
     // Dynamic Island lives in DeviceStatusBar center column (same flex row).
-    return (_jsx(BezelShellFrame, { chrome: chrome, screenWidth: screenWidth, screenHeight: screenHeight, showHomeIndicator: true }));
+    return (_jsx(BezelShellFrame, { chrome: chrome, screenWidth: screenWidth, screenHeight: screenHeight, showHomeIndicator: true, orientation: orientation }));
 }
-function PunchFrame({ chrome, screenWidth, screenHeight }) {
+function PunchFrame({ chrome, screenWidth, screenHeight, orientation = "portrait" }) {
     // Punch-hole camera lives in DeviceStatusBar center column (same flex row).
-    return (_jsx(BezelShellFrame, { chrome: chrome, screenWidth: screenWidth, screenHeight: screenHeight }));
+    return (_jsx(BezelShellFrame, { chrome: chrome, screenWidth: screenWidth, screenHeight: screenHeight, orientation: orientation }));
 }
 function TabletFrame({ chrome, screenWidth, screenHeight, preset }) {
     const { bezel, frameRadius, screenRadius } = chrome;

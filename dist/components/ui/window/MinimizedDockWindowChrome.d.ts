@@ -1,5 +1,5 @@
 import type { MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent, ReactNode } from "react";
-export declare const MINIMIZED_DOCK_SURFACE_CLASS = "bg-[var(--adaptive-neutralTintOpacity900)] backdrop-blur-[20px] shadow-[inset_0_20px_0_20px_var(--adaptive-black500)]]";
+export declare const MINIMIZED_DOCK_SURFACE_CLASS = "bg-[var(--adaptive-fillOpacity700)] backdrop-blur-[20px] shadow-[var(--adaptive-popup-shadow)]";
 export type MinimizedDockWindowChromeProps = {
     badgeLabel: string;
     badgeValue?: string;

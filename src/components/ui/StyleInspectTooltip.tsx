@@ -10,9 +10,9 @@ type StyleInspectTooltipRowProps = {
 /** Label/value row used by feedback pick-target style tooltips. */
 export function StyleInspectTooltipRow({ label, value, valueClassName = "" }: StyleInspectTooltipRowProps) {
     return (
-        <div className="flex items-start justify-between gap-[12px] text-[14px] leading-[1.45]">
+        <div className="flex items-start justify-between gap-[12px] text-[14px]">
             <span className="shrink-0 text-[var(--adaptive-black500)]">{label}</span>
-            <span className={`min-w-0 break-all text-right font-medium font-[var(--coding-font)] text-[var(--adaptive-black900)] ${valueClassName}`.trim()}>{value}</span>
+            <span className={`min-w-0 break-all text-right font-medium font-[var(--coding-font)] text-[var(--adaptive-black700)] ${valueClassName}`.trim()}>{value}</span>
         </div>
     );
 }

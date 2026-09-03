@@ -23,6 +23,14 @@ export type DeviceChromeSpec = {
             topRatio: number;
             height: number;
         }>;
+        top?: Array<{
+            leftRatio: number;
+            width: number;
+        }>;
+        bottom?: Array<{
+            leftRatio: number;
+            width: number;
+        }>;
     };
 };
 export type DevicePreviewFrame = "home-button" | "notch" | "island" | "punch" | "punch-flat" | "tablet" | "tablet-thin" | "desktop";
@@ -118,9 +126,9 @@ export declare function getDevicePreviewLayoutSize(preset: DevicePreviewPreset, 
 export declare function scaleDeviceChrome(preset: DevicePreviewPreset, scale: DevicePreviewScale): DeviceChromeSpec;
 export declare function getEmptyBezel(): DeviceBezelInset;
 /** Scale preset cutout metrics to the current on-screen width. */
-export declare function getScaledDeviceCutout(preset: DevicePreviewPreset, screenWidth: number): ScaledDeviceCutout;
-export declare function getDeviceSafeAreaTop(preset: DevicePreviewPreset, screenWidth: number): number;
-export declare function scaleStatusBarMetrics(preset: DevicePreviewPreset, screenWidth: number): {
+export declare function getScaledDeviceCutout(preset: DevicePreviewPreset, screenWidth: number, referenceLogicalWidth?: number): ScaledDeviceCutout;
+export declare function getDeviceSafeAreaTop(preset: DevicePreviewPreset, screenWidth: number, referenceLogicalWidth?: number): number;
+export declare function scaleStatusBarMetrics(preset: DevicePreviewPreset, screenWidth: number, referenceLogicalWidth?: number): {
     safeAreaTop: number;
     padLeft: number;
     padRight: number;

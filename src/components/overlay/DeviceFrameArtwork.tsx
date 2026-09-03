@@ -5,6 +5,7 @@ type DeviceFrameArtworkProps = {
     chrome: DeviceChromeSpec;
     screenWidth: number;
     screenHeight: number;
+    orientation?: "portrait" | "landscape";
 };
 
 const FRAME_FILL = DEVICE_CHROME_COLOR;
@@ -31,13 +32,17 @@ function roundedRectPath(x: number, y: number, w: number, h: number, r: number) 
 
 function HardwareButtons({
     chrome,
+    frameWidth,
     frameHeight,
 }: {
     chrome: DeviceChromeSpec;
+    frameWidth: number;
     frameHeight: number;
 }) {
     const left = chrome.buttons?.left ?? [];
     const right = chrome.buttons?.right ?? [];
+    const top = chrome.buttons?.top ?? [];
+    const bottom = chrome.buttons?.bottom ?? [];
 
     return (
         <>
@@ -63,6 +68,32 @@ function HardwareButtons({
                         width: 3,
                         top: frameHeight * button.topRatio,
                         height: button.height,
+                        background: BUTTON_FILL,
+                    }}
+                />
+            ))}
+            {top.map((button, index) => (
+                <div
+                    key={`top-${index}`}
+                    className="absolute rounded-t-[2px]"
+                    style={{
+                        top: -3,
+                        height: 3,
+                        left: frameWidth * button.leftRatio,
+                        width: button.width,
+                        background: BUTTON_FILL,
+                    }}
+                />
+            ))}
+            {bottom.map((button, index) => (
+                <div
+                    key={`bottom-${index}`}
+                    className="absolute rounded-b-[2px]"
+                    style={{
+                        bottom: -3,
+                        height: 3,
+                        left: frameWidth * button.leftRatio,
+                        width: button.width,
                         background: BUTTON_FILL,
                     }}
                 />
@@ -177,6 +208,7 @@ function HomeButtonFrame({ chrome, screenWidth, screenHeight }: DeviceFrameArtwo
             </svg>
             <HardwareButtons
                 chrome={chrome}
+                frameWidth={frameWidth}
                 frameHeight={frameHeight}
             />
         </div>
@@ -188,11 +220,13 @@ function BezelShellFrame({
     screenWidth,
     screenHeight,
     showHomeIndicator,
+    orientation = "portrait",
 }: {
     chrome: DeviceChromeSpec;
     screenWidth: number;
     screenHeight: number;
     showHomeIndicator?: boolean;
+    orientation?: "portrait" | "landscape";
 }) {
     const { bezel, frameRadius, screenRadius } = chrome;
     const frameWidth = screenWidth + bezel.left + bezel.right;
@@ -222,26 +256,40 @@ function BezelShellFrame({
                 />
             </svg>
             {showHomeIndicator ? (
-                <div
-                    className="absolute rounded-full bg-[var(--adaptive-tintOpacity800)]"
-                    style={{
-                        left: bezel.left + screenWidth / 2,
-                        bottom: bezel.bottom + 8,
-                        width: Math.min(148, screenWidth * 0.36),
-                        height: 5,
-                        transform: "translateX(-50%)",
-                    }}
-                />
+                orientation === "landscape" ? (
+                    <div
+                        className="absolute rounded-full bg-[var(--adaptive-tintOpacity800)]"
+                        style={{
+                            right: bezel.right + 8,
+                            top: bezel.top + screenHeight / 2,
+                            width: 5,
+                            height: Math.min(148, screenHeight * 0.36),
+                            transform: "translateY(-50%)",
+                        }}
+                    />
+                ) : (
+                    <div
+                        className="absolute rounded-full bg-[var(--adaptive-tintOpacity800)]"
+                        style={{
+                            left: bezel.left + screenWidth / 2,
+                            bottom: bezel.bottom + 8,
+                            width: Math.min(148, screenWidth * 0.36),
+                            height: 5,
+                            transform: "translateX(-50%)",
+                        }}
+                    />
+                )
             ) : null}
             <HardwareButtons
                 chrome={chrome}
+                frameWidth={frameWidth}
                 frameHeight={frameHeight}
             />
         </div>
     );
 }
 
-function NotchFrame({ chrome, screenWidth, screenHeight }: DeviceFrameArtworkProps) {
+function NotchFrame({ chrome, screenWidth, screenHeight, orientation = "portrait" }: DeviceFrameArtworkProps) {
     // Notch / camera cutout lives in DeviceStatusBar center column (same flex row).
     return (
         <BezelShellFrame
@@ -249,11 +297,12 @@ function NotchFrame({ chrome, screenWidth, screenHeight }: DeviceFrameArtworkPro
             screenWidth={screenWidth}
             screenHeight={screenHeight}
             showHomeIndicator
+            orientation={orientation}
         />
     );
 }
 
-function IslandFrame({ chrome, screenWidth, screenHeight }: DeviceFrameArtworkProps) {
+function IslandFrame({ chrome, screenWidth, screenHeight, orientation = "portrait" }: DeviceFrameArtworkProps) {
     // Dynamic Island lives in DeviceStatusBar center column (same flex row).
     return (
         <BezelShellFrame
@@ -261,17 +310,19 @@ function IslandFrame({ chrome, screenWidth, screenHeight }: DeviceFrameArtworkPr
             screenWidth={screenWidth}
             screenHeight={screenHeight}
             showHomeIndicator
+            orientation={orientation}
         />
     );
 }
 
-function PunchFrame({ chrome, screenWidth, screenHeight }: DeviceFrameArtworkProps) {
+function PunchFrame({ chrome, screenWidth, screenHeight, orientation = "portrait" }: DeviceFrameArtworkProps) {
     // Punch-hole camera lives in DeviceStatusBar center column (same flex row).
     return (
         <BezelShellFrame
             chrome={chrome}
             screenWidth={screenWidth}
             screenHeight={screenHeight}
+            orientation={orientation}
         />
     );
 }

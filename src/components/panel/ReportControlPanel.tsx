@@ -88,7 +88,7 @@ function PanelTabButton({ label, active, onClick }: { label: string; active: boo
         <button
             type="button"
             onClick={onClick}
-            className={`flex flex-1 items-center justify-center gap-[6px] px-[10px] py-[4px] hover:bg-[var(--adaptive-black200)] ${active ? "bg-[var(--adaptive-black50)]" : ""}`}
+            className={`flex flex-1 items-center justify-center gap-[6px] px-[10px] py-[4px] hover:bg-[var(--adaptive-black200)] ${active ? "bg-[var(--adaptive-fillOpacity400)]" : ""}`}
         >
             <p className={`${active ? "text-[var(--adaptive-black900)]" : "text-[var(--adaptive-black500)]"} font-[500] text-[14px]`}>{label}</p>
 
@@ -542,7 +542,7 @@ export function ReportControlPanel() {
                                 </section>
 
                                 <section className="flex shrink-0 items-stretch border-t border-[var(--adaptive-border-subtle)]">
-                                    <div className="flex min-w-0 flex-1 overflow-hidden border-b border-b-[var(--adaptive-border-subtle)]">
+                                    <div className="flex min-w-0 flex-1 overflow-hidden border-b-[0.1px] border-b-[var(--adaptive-border-subtle)]">
                                         {visiblePanelTabs.map((tabId, index) => (
                                             <div
                                                 key={tabId}

@@ -1,8 +1,7 @@
 import type { MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent, ReactNode } from "react";
 import { CloseIcon } from "@/components/icons/Icons.js";
 
-export const MINIMIZED_DOCK_SURFACE_CLASS =
-    "bg-[var(--adaptive-neutralTintOpacity900)] backdrop-blur-[20px] shadow-[inset_0_20px_0_20px_var(--adaptive-black500)]]";
+export const MINIMIZED_DOCK_SURFACE_CLASS = "bg-[var(--adaptive-fillOpacity700)] backdrop-blur-[20px] shadow-[var(--adaptive-popup-shadow)]";
 
 export type MinimizedDockWindowChromeProps = {
     badgeLabel: string;
@@ -59,9 +58,7 @@ export function MinimizedDockWindowChrome({
                         className="flex min-w-0 items-center gap-[4px] text-left"
                     >
                         <p className="shrink-0 rounded-[4px] bg-[var(--adaptive-tintOpacity300)] px-[2px] py-[2px] text-[10px]">{badgeLabel}</p>
-                        {badgeValue ? (
-                            <p className="min-w-0 truncate text-[10px] font-semibold leading-none text-[var(--adaptive-accent-coral)]">{badgeValue}</p>
-                        ) : null}
+                        {badgeValue ? <p className="min-w-0 truncate text-[10px] font-semibold leading-none text-[var(--adaptive-accent-coral)]">{badgeValue}</p> : null}
                     </button>
 
                     {children}

@@ -433,9 +433,9 @@ export function getEmptyBezel() {
     return { top: 0, right: 0, bottom: 0, left: 0 };
 }
 /** Scale preset cutout metrics to the current on-screen width. */
-export function getScaledDeviceCutout(preset, screenWidth) {
+export function getScaledDeviceCutout(preset, screenWidth, referenceLogicalWidth = preset.width) {
     const cutout = preset.statusBar.cutout;
-    const s = preset.width > 0 ? screenWidth / preset.width : 1;
+    const s = referenceLogicalWidth > 0 ? screenWidth / referenceLogicalWidth : 1;
     switch (cutout.kind) {
         case "notch":
             return {
@@ -471,19 +471,19 @@ export function getScaledDeviceCutout(preset, screenWidth) {
             };
     }
 }
-export function getDeviceSafeAreaTop(preset, screenWidth) {
+export function getDeviceSafeAreaTop(preset, screenWidth, referenceLogicalWidth = preset.width) {
     const base = preset.statusBar.safeAreaTop;
-    if (preset.width <= 0) {
+    if (referenceLogicalWidth <= 0) {
         return base;
     }
-    return Math.max(0, Math.round(base * (screenWidth / preset.width)));
+    return Math.max(0, Math.round(base * (screenWidth / referenceLogicalWidth)));
 }
-export function scaleStatusBarMetrics(preset, screenWidth) {
-    const s = preset.width > 0 ? screenWidth / preset.width : 1;
+export function scaleStatusBarMetrics(preset, screenWidth, referenceLogicalWidth = preset.width) {
+    const s = referenceLogicalWidth > 0 ? screenWidth / referenceLogicalWidth : 1;
     const mild = Math.min(1.12, Math.max(0.95, s));
     const bar = preset.statusBar;
     return {
-        safeAreaTop: getDeviceSafeAreaTop(preset, screenWidth),
+        safeAreaTop: getDeviceSafeAreaTop(preset, screenWidth, referenceLogicalWidth),
         padLeft: bar.padLeft * mild,
         padRight: bar.padRight * mild,
         // Keep exact pt for clock so Face ID / classic stay at 16px.
@@ -495,7 +495,7 @@ export function scaleStatusBarMetrics(preset, screenWidth) {
         iconGap: bar.iconGap * mild,
         batteryPercent: bar.batteryPercent,
         layout: bar.layout,
-        cutout: getScaledDeviceCutout(preset, screenWidth),
+        cutout: getScaledDeviceCutout(preset, screenWidth, referenceLogicalWidth),
     };
 }
 //# sourceMappingURL=devicePreview.js.map

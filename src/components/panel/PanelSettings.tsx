@@ -731,7 +731,7 @@ export function PanelSettings({
     }
 
     return (
-        <section className="flex min-h-0 flex-1 flex-col overflow-y-auto bg-[var(--adaptive-black50)]">
+        <section className="flex min-h-0 flex-1 flex-col overflow-y-auto bg-[var(--adaptive-fillOpacity500)]">
             <p className="shrink-0 border-b border-[var(--adaptive-border-subtle)] px-[12px] py-[10px] text-[13px] font-semibold text-[var(--adaptive-black900)]">{messages.settings.hubTitle}</p>
 
             {showPreviewCategory ? (

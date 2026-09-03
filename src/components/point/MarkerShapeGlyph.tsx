@@ -18,17 +18,7 @@ type MarkerShapeGlyphProps = {
  * Renders a marker silhouette from official Material 3 SVG path data
  * with a non-scaling stroke so the outline stays exactly `strokeWidthPx` (2px).
  */
-export function MarkerShapeGlyph({
-    shape,
-    fill,
-    width,
-    height,
-    stroke = "#ffffff",
-    strokeWidthPx,
-    dashed = false,
-    className = "",
-    style,
-}: MarkerShapeGlyphProps) {
+export function MarkerShapeGlyph({ shape, fill, width, height, stroke = "#ffffff", strokeWidthPx, dashed = false, className = "", style }: MarkerShapeGlyphProps) {
     const definition = getMarkerShapeDefinition(shape);
     const resolvedStrokeWidth = strokeWidthPx ?? definition.strokeWidthPx;
 
@@ -42,7 +32,7 @@ export function MarkerShapeGlyph({
             style={{
                 display: "block",
                 overflow: "visible",
-                filter: "drop-shadow(0 0 10px #00000040)",
+                filter: "drop-shadow(0px 0px 1px #1118271a) drop-shadow(0px 0px 1px #1118271a)  drop-shadow(0px 4px 2px rgba(17, 24, 39, 0.1))",
                 ...style,
             }}
         >

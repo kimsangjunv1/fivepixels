@@ -6,7 +6,7 @@ import { getReportTooltipRoot } from "../../utils/shared/dom.js";
 import { HOVER_TOOLTIP_MARGIN } from "../../utils/marker/hoverTooltipLayout.js";
 const POINTER_OFFSET = 12;
 /** Shared glass surface (style inspect tooltip + context menu). */
-export const STYLE_TOOLTIP_SURFACE_CLASS = "overflow-hidden rounded-[12px] bg-[var(--adaptive-neutralTintOpacity1000)] px-[8px] py-[2px] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[20px]";
+export const STYLE_TOOLTIP_SURFACE_CLASS = "overflow-hidden rounded-[12px] bg-[var(--adaptive-fillOpacity700)] px-[12px] py-[8px] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[20px]";
 /** Pointer-follow portal shell built on the shared style tooltip surface. */
 export const POINTER_TOOLTIP_SURFACE_CLASS = `pointer-events-none fixed z-[1000002] min-w-[220px] max-w-[min(320px,calc(100vw-16px))] ${STYLE_TOOLTIP_SURFACE_CLASS}`;
 function getPointerTooltipLayout(clientX, clientY, tooltipRect) {

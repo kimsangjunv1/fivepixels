@@ -27,7 +27,7 @@ export function ReportRouteDetails() {
     const summary = useMemo(() => buildRouteDetailsSummary(currentPageReports, fields, displayPath), [currentPageReports, displayPath, fields]);
 
     return (
-        <section className="flex min-h-0 flex-1 flex-col overflow-y-auto bg-[var(--adaptive-black50)]">
+        <section className="flex min-h-0 flex-1 flex-col overflow-y-auto bg-[var(--adaptive-fillOpacity500)]">
             <RouteDetailsTimeline
                 sparkline={sparkline}
                 todayLabel={messages.routeDetails.today}

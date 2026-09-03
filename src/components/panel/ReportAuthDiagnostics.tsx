@@ -69,7 +69,7 @@ export function ReportAuthDiagnostics() {
     }
 
     return (
-        <section className="flex min-h-0 flex-1 flex-col overflow-y-auto bg-[var(--adaptive-black50)] p-[12px]">
+        <section className="flex min-h-0 flex-1 flex-col overflow-y-auto bg-[var(--adaptive-fillOpacity500)]">
             <div className="flex items-center justify-between gap-[8px]">
                 <h6 className="text-[13px] font-bold text-[var(--adaptive-black900)]">{diagnostics.title}</h6>
                 <span
@@ -81,11 +81,7 @@ export function ReportAuthDiagnostics() {
                               : "bg-rose-100 text-rose-700"
                     }`}
                 >
-                    {authDiagnostics.status === "matched"
-                        ? diagnostics.statusMatched
-                        : authDiagnostics.status === "disabled"
-                          ? "키 강제 꺼짐"
-                          : diagnostics.statusFailed}
+                    {authDiagnostics.status === "matched" ? diagnostics.statusMatched : authDiagnostics.status === "disabled" ? "키 강제 꺼짐" : diagnostics.statusFailed}
                 </span>
             </div>
             <p className="mt-[4px] text-[12px] leading-[1.5] text-[var(--adaptive-black600)]">{diagnostics.description}</p>

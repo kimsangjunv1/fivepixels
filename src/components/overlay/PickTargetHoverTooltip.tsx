@@ -93,7 +93,7 @@ export function PickTargetHoverTooltip({ target }: PickTargetHoverTooltipProps) 
                 </>
             ) : null}
 
-            <div className="mt-[2px] flex flex-col gap-[6px] border-t border-[var(--adaptive-border-subtle)] pt-[6px]">
+            <div className="flex flex-col gap-[6px] border-t border-[var(--adaptive-border-subtle)] pt-[8px] mt-[8px]">
                 {target.fpOpenAttribute ? (
                     <StyleInspectTooltipRow
                         label={messages.pickTarget.tooltipFpOpen}
@@ -106,11 +106,11 @@ export function PickTargetHoverTooltip({ target }: PickTargetHoverTooltipProps) 
                         value={target.fpViewAttribute}
                     />
                 ) : null}
-                <div className="flex items-start justify-between gap-[8px] text-[14px] leading-[1.45]">
+                <div className="flex items-start justify-between gap-[8px] text-[14px]">
                     <span className="shrink-0 text-[var(--adaptive-black500)]">{messages.pickTarget.tooltipReportId}</span>
                     <div className="flex min-w-0 items-start justify-end gap-[6px]">
                         <ReportIdStatusIcon tagged={target.isTagged} />
-                        <span className="min-w-0 break-all text-right font-[var(--coding-font)] text-[var(--adaptive-black900)]">{reportIdValue}</span>
+                        <span className="min-w-0 break-all text-right font-[var(--coding-font)] text-[var(--adaptive-black700)]">{reportIdValue}</span>
                     </div>
                 </div>
             </div>

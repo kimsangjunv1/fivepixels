@@ -11,7 +11,7 @@ import { PickTargetSnippet } from "./feedback/PickTargetSnippet.js";
 import { OverlayShell } from "@/components/ui/OverlayShell.js";
 import { MOTION } from "@/constants/motionClasses.js";
 
-const TOOLTIP_SURFACE_CLASS = "rounded-[16px] shadow-[var(--adaptive-popup-shadow)] bg-[var(--adaptive-neutralTintOpacity1000)] backdrop-blur-[5px]";
+const TOOLTIP_SURFACE_CLASS = "rounded-[16px] shadow-[var(--adaptive-popup-shadow)] bg-[var(--adaptive-fillOpacity700)] backdrop-blur-[5px]";
 
 export function ReportDraftForm() {
     const {
@@ -272,7 +272,7 @@ function ReportDraftFormContent({
             resizeHeightAriaLabel={messages.panel.resizeHeightAriaLabel}
             prefix={
                 showStatusChip ? (
-                    <div className={`shrink-0 border border-[var(--adaptive-border-subtle)] ${TOOLTIP_SURFACE_CLASS} ${MOTION.tooltipFadeIn}`}>
+                    <div className={`shrink-0 ${TOOLTIP_SURFACE_CLASS} ${MOTION.tooltipFadeIn}`}>
                         <PickTargetSnippet
                             suggestedReportId={draft.suggestedReportId ?? undefined}
                             reportType={draft.reportType}

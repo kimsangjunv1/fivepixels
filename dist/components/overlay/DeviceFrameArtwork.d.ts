@@ -4,6 +4,7 @@ type DeviceFrameArtworkProps = {
     chrome: DeviceChromeSpec;
     screenWidth: number;
     screenHeight: number;
+    orientation?: "portrait" | "landscape";
 };
 export declare function DeviceFrameArtwork(props: DeviceFrameArtworkProps): import("react").JSX.Element | null;
 export {};

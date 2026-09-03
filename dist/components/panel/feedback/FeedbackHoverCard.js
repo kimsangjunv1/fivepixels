@@ -12,7 +12,7 @@ const RESOLVED_STATUS_COLOR = ACCENT_COLOR.green;
 function CaseStatusLabel({ status }) {
     const { messages } = useReportPreferences();
     const isResolved = status === "resolved";
-    return (_jsx("span", { className: `shrink-0 whitespace-nowrap text-[14px] font-semibold leading-none ${isResolved ? "" : "text-[var(--adaptive-black500)]"}`, style: isResolved ? { color: RESOLVED_STATUS_COLOR } : undefined, children: messages.status.feedback[status] }));
+    return (_jsx("span", { className: `shrink-0 whitespace-nowrap text-[12px] font-semibold leading-none ${isResolved ? "" : "text-[var(--adaptive-black500)]"}`, style: isResolved ? { color: RESOLVED_STATUS_COLOR } : undefined, children: messages.status.feedback[status] }));
 }
 export function FeedbackHoverCard({ report, detached = false, detachedKind = null, detachedHint, detachedModalHint }) {
     const { messages } = useReportPreferences();
@@ -31,11 +31,11 @@ export function FeedbackHoverCard({ report, detached = false, detachedKind = nul
             .join("\n");
         return (_jsx("div", { className: "flex w-[260px] flex-col bg-transparent", children: _jsxs("div", { className: "flex flex-col gap-[6px] p-[8px_12px]", children: [resolvedDetachedHint ? _jsx("p", { className: "text-[13px] leading-[1.4] text-[var(--adaptive-black500)]", children: resolvedDetachedHint }) : null, memoText ? _jsx("p", { className: "whitespace-pre-wrap break-words text-[14px] leading-[1.5] text-[var(--adaptive-text-primary)]", children: memoText }) : null, authorLabel || reportRelativeTime ? (_jsxs("div", { className: "flex items-center gap-[6px] pt-[2px]", children: [authorLabel ? (_jsx("p", { className: "min-w-0 truncate text-[14px] text-[var(--adaptive-black500)]", title: authorLabel, children: authorLabel })) : null, reportRelativeTime ? _jsx("p", { className: "shrink-0 text-[14px] text-[var(--adaptive-black500)]", children: reportRelativeTime }) : null] })) : null] }) }));
     }
-    return (_jsx("div", { className: "flex w-[260px] flex-col bg-transparent", children: _jsxs("div", { className: "flex flex-col gap-[6px] p-[6px_8px]", children: [_jsx("ul", { className: "flex flex-col gap-[4px]", children: visibleCases.map((item) => {
-                        const status = getCaseLatestStatus(report, item.id);
-                        const isResolved = status === "resolved";
-                        const caseText = mentionMessageToPlainText(item.text, item.mentions);
-                        return (_jsxs("li", { className: "flex min-w-0 items-center gap-[6px]", children: [_jsx("span", { className: "min-w-0 flex-1 text-[14px] leading-[1.5] truncate text-[var(--adaptive-text-primary)]", title: caseText, children: caseText }), isResolved ? (_jsx(CheckCircleIcon, { className: "h-[16px] w-[16px] shrink-0", fill: RESOLVED_STATUS_COLOR })) : null, _jsx(CaseStatusLabel, { status: status })] }, item.id));
-                    }) }), hasMoreCases ? _jsx("p", { className: "text-[12px] leading-[1.4] text-[var(--adaptive-black500)]", children: messages.marker.viewMoreCases }) : null, _jsxs("section", { className: "flex items-center justify-between", children: [authorLabel || reportRelativeTime ? (_jsxs("div", { className: "flex items-center gap-[6px]", children: [authorLabel ? (_jsx("p", { className: "min-w-0 truncate text-[12px] text-[var(--adaptive-black500)]", title: authorLabel, children: authorLabel })) : null, reportRelativeTime ? _jsx("p", { className: "shrink-0 text-[12px] text-[var(--adaptive-black500)]", children: reportRelativeTime }) : null] })) : null, resolvedDetachedHint ? _jsx("p", { className: "text-[12px] text-[var(--adaptive-black500)]", children: resolvedDetachedHint }) : null] })] }) }));
+    return (_jsxs("div", { className: "flex w-[260px] flex-col bg-transparent", children: [_jsx("ul", { className: "flex flex-col gap-[8px] p-[12px]", children: visibleCases.map((item) => {
+                    const status = getCaseLatestStatus(report, item.id);
+                    const isResolved = status === "resolved";
+                    const caseText = mentionMessageToPlainText(item.text, item.mentions);
+                    return (_jsxs("li", { className: "flex min-w-0 items-center gap-[4px]", children: [_jsx("span", { className: "min-w-0 flex-1 text-[14px] leading-[1] truncate text-[var(--adaptive-black700)] font-bold", title: caseText, children: caseText }), isResolved ? (_jsx(CheckCircleIcon, { className: "h-[12px] w-[12px] shrink-0", fill: RESOLVED_STATUS_COLOR })) : null, _jsx(CaseStatusLabel, { status: status })] }, item.id));
+                }) }), _jsxs("section", { className: "flex items-center justify-between bg-[var(--adaptive-fillOpacity400)] p-[12px]", children: [authorLabel || reportRelativeTime ? (_jsxs("div", { className: "flex items-center gap-[6px]", children: [authorLabel ? (_jsx("p", { className: "min-w-0 truncate text-[12px] font-bold text-[var(--adaptive-black500)]", title: authorLabel, children: authorLabel })) : null, reportRelativeTime ? _jsx("p", { className: "shrink-0 text-[12px] font-bold text-[var(--adaptive-black500)]", children: reportRelativeTime }) : null] })) : null, resolvedDetachedHint ? _jsx("p", { className: "text-[12px] text-[var(--adaptive-black500)]", children: resolvedDetachedHint }) : null] })] }));
 }
 //# sourceMappingURL=FeedbackHoverCard.js.map

@@ -1,19 +1,30 @@
-import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { DEVICE_PREVIEW_BRAND_ORDER, getDevicePreviewPresetsByBrand, scaleDeviceChrome, } from "../../constants/devicePreview.js";
-import { CloseIcon, ScreenRotateIcon } from "../../components/icons/Icons.js";
+import { DEVICE_PREVIEW_BRAND_ORDER, getDevicePreviewPresetsByBrand, scaleDeviceChrome } from "../../constants/devicePreview.js";
+import { ScreenRotateIcon } from "../../components/icons/Icons.js";
 import { useDraggableWindow } from "../../hooks/useDraggableWindow.js";
+import { useMinimizedDockDragReorder } from "../../hooks/useMinimizedDockDragReorder.js";
+import { useOverlayMinimizedDock } from "../../hooks/useOverlayMinimizedDock.js";
 import { useReportPreferences } from "../../providers/reportContext.js";
 import { DeviceFrameArtwork } from "./DeviceFrameArtwork.js";
 import { DeviceStatusBar, getDeviceStatusBarHeight } from "./DeviceStatusBar.js";
+import { MinimizedDockSimpleSubtitleRow, MinimizedDockWindowChrome } from "../../components/ui/window/MinimizedDockWindowChrome.js";
+import { WINDOW_HEADER_BUTTON_CLASS, WindowModeControls } from "../../components/ui/window/WindowModeControls.js";
 import { claimFloatingWindowZIndex } from "../../utils/overlay/floatingWindowStack.js";
 import { syncGuestStatusBarStyle } from "../../utils/overlay/devicePreviewFrame.js";
-import { resolveMobilePreviewScreenSize } from "../../utils/overlay/mobilePreviewLayout.js";
+import { MINIMIZED_WINDOW_HEIGHT } from "../../utils/overlay/minimizedDockLayout.js";
+import { resolveMobilePreviewChrome, resolveMobilePreviewFrameMetrics, resolveMobilePreviewLayout, resolveMobilePreviewScreenSize, resolveMobilePreviewStatusBarReferenceWidth, } from "../../utils/overlay/mobilePreviewLayout.js";
 import { MOBILE_PREVIEW_FRAME_NAME, getMobilePreviewGuestDocument, getMobilePreviewGuestWindow, isInsideMobilePreviewFrame, isMobilePreviewGuestDocumentReady, syncMobilePreviewGuestViewport, } from "../../utils/overlay/mobilePreviewFrame.js";
+import { normalizeMobilePreviewUrl, persistMobilePreviewUrl, readMobilePreviewUrl } from "../../utils/overlay/mobilePreviewUrl.js";
+const MOBILE_PREVIEW_WINDOW_ID = "mobile-preview";
 const MOBILE_PREVIEW_POSITION_STORAGE_KEY = "fivepixels:mobile-preview-position:v1";
 const MOBILE_PREVIEW_SCALE = 0.75;
 const MOBILE_PREVIEW_BRANDS = DEVICE_PREVIEW_BRAND_ORDER.filter((brand) => brand !== "desktop");
 const TOOLBAR_DEVICE_GAP = 10;
+const TOOLBAR_CONTROLS_HEIGHT = 38;
+const TOOLBAR_URL_ROW_HEIGHT = 28;
+const TOOLBAR_INNER_GAP = 6;
+const TOOLBAR_APPROX_HEIGHT = TOOLBAR_CONTROLS_HEIGHT + TOOLBAR_INNER_GAP + TOOLBAR_URL_ROW_HEIGHT;
 function readMobilePreviewPosition() {
     const fallback = getDefaultMobilePreviewPosition();
     if (typeof window === "undefined") {
@@ -59,96 +70,189 @@ function syncGuestViewport(iframe, viewportWidth, statusBarHeight) {
 }
 export function FloatingMobilePreview() {
     const { mobilePreviewUiOpen, setMobilePreviewUiOpen, mobilePreviewDeviceId, setMobilePreviewDeviceId, mobilePreviewOrientation, toggleMobilePreviewOrientation, mobilePreviewPreset, messages, resolvedPanelAppearance, } = useReportPreferences();
-    const screenSize = useMemo(() => resolveMobilePreviewScreenSize(mobilePreviewPreset, mobilePreviewOrientation), [mobilePreviewOrientation, mobilePreviewPreset]);
-    const layout = useMemo(() => ({
-        width: Math.max(1, Math.round(screenSize.width * MOBILE_PREVIEW_SCALE)),
-        height: Math.max(1, Math.round(screenSize.height * MOBILE_PREVIEW_SCALE)),
-    }), [screenSize.height, screenSize.width]);
-    const chrome = useMemo(() => scaleDeviceChrome(mobilePreviewPreset, MOBILE_PREVIEW_SCALE), [mobilePreviewPreset]);
-    const frameWidth = layout.width + chrome.bezel.left + chrome.bezel.right;
-    const frameHeight = layout.height + chrome.bezel.top + chrome.bezel.bottom;
-    const statusBarHeight = useMemo(() => getDeviceStatusBarHeight(mobilePreviewPreset, screenSize.width), [mobilePreviewPreset, screenSize.width]);
+    const guestViewportSize = useMemo(() => resolveMobilePreviewScreenSize(mobilePreviewPreset, mobilePreviewOrientation), [mobilePreviewOrientation, mobilePreviewPreset]);
+    const layout = useMemo(() => resolveMobilePreviewLayout(mobilePreviewPreset, MOBILE_PREVIEW_SCALE, mobilePreviewOrientation), [mobilePreviewOrientation, mobilePreviewPreset]);
+    const portraitChrome = useMemo(() => scaleDeviceChrome(mobilePreviewPreset, MOBILE_PREVIEW_SCALE), [mobilePreviewPreset]);
+    const chrome = useMemo(() => resolveMobilePreviewChrome(portraitChrome, mobilePreviewOrientation), [mobilePreviewOrientation, portraitChrome]);
+    const { frameWidth, frameHeight } = useMemo(() => resolveMobilePreviewFrameMetrics(layout, chrome.bezel), [chrome.bezel, layout]);
+    const statusBarReferenceWidth = useMemo(() => resolveMobilePreviewStatusBarReferenceWidth(mobilePreviewPreset, mobilePreviewOrientation), [mobilePreviewOrientation, mobilePreviewPreset]);
+    const statusBarHeight = useMemo(() => getDeviceStatusBarHeight(mobilePreviewPreset, layout.width, 1, statusBarReferenceWidth), [layout.width, mobilePreviewPreset, statusBarReferenceWidth]);
     const statusBarAppearance = resolvedPanelAppearance === "dark" ? "dark" : "light";
     const screenBackground = resolvedPanelAppearance === "dark" ? "#17171c" : "#ffffff";
     const [storedPosition] = useState(() => readMobilePreviewPosition());
+    const [windowMode, setWindowMode] = useState("normal");
     const [zIndex, setZIndex] = useState(() => claimFloatingWindowZIndex());
     const [frameLoadState, setFrameLoadState] = useState("loading");
-    const [frameSrc] = useState(() => (typeof window === "undefined" ? "" : window.location.href));
+    const [frameSrc, setFrameSrc] = useState(() => typeof window === "undefined" ? "" : readMobilePreviewUrl(window.location.href));
+    const [urlDraft, setUrlDraft] = useState(() => typeof window === "undefined" ? "" : readMobilePreviewUrl(window.location.href));
     const rootRef = useRef(null);
     const iframeRef = useRef(null);
-    const { position: dragPosition, isDragging, handleDragHandlePointerDown } = useDraggableWindow({
+    const isMinimized = windowMode === "minimized";
+    const overlayDock = useOverlayMinimizedDock({
+        windowId: MOBILE_PREVIEW_WINDOW_ID,
         enabled: mobilePreviewUiOpen,
+        isMinimized,
+        onMinimizedChange: (minimized) => setWindowMode(minimized ? "minimized" : "normal"),
+    });
+    const { dockMorph } = overlayDock;
+    const showMinimizedChrome = isMinimized && dockMorph?.phase !== "restoring";
+    const dockDrag = useMinimizedDockDragReorder({
+        windowId: MOBILE_PREVIEW_WINDOW_ID,
+        windowRef: rootRef,
+        enabled: showMinimizedChrome && overlayDock.dockCount >= 2,
+        blockDrag: dockMorph !== null,
+        minimizedWidth: overlayDock.minimizedWidth,
+        dockPosition: overlayDock.dockPosition,
+        dockRegion: overlayDock.dockRegion,
+    });
+    const isDockDragging = dockDrag.isDockDragging;
+    const { position: dragPosition, isDragging, handleDragHandlePointerDown, } = useDraggableWindow({
+        enabled: mobilePreviewUiOpen && windowMode === "normal" && dockMorph === null,
         windowRef: rootRef,
     });
-    const resolvedPosition = dragPosition ?? storedPosition;
+    const restoredPosition = dragPosition ?? storedPosition;
     useEffect(() => {
-        if (!dragPosition) {
+        if (!dragPosition || windowMode !== "normal") {
             return;
         }
         persistMobilePreviewPosition(dragPosition);
-    }, [dragPosition]);
+    }, [dragPosition, windowMode]);
     useEffect(() => {
         if (frameLoadState !== "ready") {
             return;
         }
-        syncGuestViewport(iframeRef.current, screenSize.width, statusBarHeight);
-    }, [frameLoadState, screenSize.width, statusBarHeight]);
+        syncGuestViewport(iframeRef.current, guestViewportSize.width, statusBarHeight);
+    }, [frameLoadState, guestViewportSize.width, statusBarHeight]);
     const handleClose = useCallback(() => {
+        setWindowMode("normal");
         setMobilePreviewUiOpen(false);
     }, [setMobilePreviewUiOpen]);
+    const handleToggleMinimize = useCallback(() => {
+        if (dockMorph) {
+            return;
+        }
+        const rect = rootRef.current?.getBoundingClientRect();
+        if (!rect) {
+            return;
+        }
+        if (windowMode === "minimized") {
+            overlayDock.restoreFromDock({
+                left: restoredPosition.left,
+                top: restoredPosition.top,
+                width: frameWidth,
+                height: TOOLBAR_DEVICE_GAP + TOOLBAR_APPROX_HEIGHT + frameHeight,
+            });
+            return;
+        }
+        overlayDock.minimizeToDock({
+            left: rect.left,
+            top: rect.top,
+            width: rect.width,
+            height: rect.height,
+        });
+    }, [dockMorph, frameHeight, frameWidth, overlayDock, restoredPosition.left, restoredPosition.top, windowMode]);
     const handleFrameLoad = useCallback(() => {
         const iframe = iframeRef.current;
         if (!isMobilePreviewGuestDocumentReady(iframe)) {
             setFrameLoadState("blocked");
             return;
         }
-        syncGuestViewport(iframe, screenSize.width, statusBarHeight);
+        syncGuestViewport(iframe, guestViewportSize.width, statusBarHeight);
         setFrameLoadState("ready");
-    }, [screenSize.width, statusBarHeight]);
+    }, [guestViewportSize.width, statusBarHeight]);
     const handleFocus = useCallback(() => {
         setZIndex(claimFloatingWindowZIndex());
     }, []);
-    const selectClassName = "h-[26px] min-w-0 flex-1 rounded-[6px] border-0 bg-transparent px-[4px] text-[12px] font-medium text-white/95 outline-none";
+    const navigatePreviewUrl = useCallback((rawInput) => {
+        if (typeof window === "undefined") {
+            return;
+        }
+        const nextUrl = normalizeMobilePreviewUrl(rawInput, window.location.href);
+        if (!nextUrl || nextUrl === frameSrc) {
+            if (nextUrl) {
+                setUrlDraft(nextUrl);
+            }
+            return;
+        }
+        setFrameLoadState("loading");
+        setFrameSrc(nextUrl);
+        setUrlDraft(nextUrl);
+        persistMobilePreviewUrl(nextUrl);
+    }, [frameSrc]);
+    const handleUrlSubmit = useCallback((event) => {
+        event.preventDefault();
+        navigatePreviewUrl(urlDraft);
+    }, [navigatePreviewUrl, urlDraft]);
+    const handleRootPointerDown = useCallback((event) => {
+        handleFocus();
+        if (showMinimizedChrome) {
+            dockDrag.handleMinimizedDockPointerDown(event);
+        }
+    }, [dockDrag, handleFocus, showMinimizedChrome]);
+    const selectClassName = "h-[26px] min-w-0 flex-1 rounded-[6px] border-0 bg-transparent px-[4px] font-[14px] text-[var(--adaptive-black600)] outline-none";
+    const urlInputClassName = "h-[24px] min-w-0 flex-1 rounded-[6px] border-0 bg-[var(--adaptive-fillOpacity500)] px-[8px] font-[12px] text-[var(--adaptive-black600)] outline-none";
+    const displayRect = useMemo(() => {
+        if (dockMorph) {
+            return dockMorph;
+        }
+        if (showMinimizedChrome) {
+            return {
+                left: dockDrag.displayLeft,
+                top: dockDrag.displayTop,
+                width: overlayDock.minimizedWidth,
+                height: MINIMIZED_WINDOW_HEIGHT,
+            };
+        }
+        return {
+            left: restoredPosition.left,
+            top: restoredPosition.top,
+            width: frameWidth,
+            height: undefined,
+        };
+    }, [dockDrag.displayLeft, dockDrag.displayTop, dockMorph, frameWidth, overlayDock.minimizedWidth, restoredPosition.left, restoredPosition.top, showMinimizedChrome]);
     if (!mobilePreviewUiOpen || isInsideMobilePreviewFrame()) {
         return null;
     }
-    return (_jsxs("div", { ref: rootRef, "data-fivepixels-interactive": "", "data-chrome": "mobile-preview-simulator", className: "fixed flex flex-col select-none", style: {
-            left: resolvedPosition.left,
-            top: resolvedPosition.top,
-            zIndex,
-            width: frameWidth,
+    return (_jsx("div", { ref: rootRef, "data-fivepixels-interactive": "", "data-chrome": "mobile-preview-simulator", "data-mode": windowMode, "data-orientation": mobilePreviewOrientation, className: `fixed select-none ${showMinimizedChrome ? "" : "flex flex-col items-start"}`, style: {
+            left: displayRect.left,
+            top: displayRect.top,
+            zIndex: isDockDragging ? zIndex + 100 : zIndex,
+            width: displayRect.width,
+            height: displayRect.height,
+            transition: overlayDock.layoutTransition,
             touchAction: "none",
-            cursor: isDragging ? "grabbing" : undefined,
-        }, onPointerDown: handleFocus, children: [_jsxs("header", { className: "mb-[10px] flex items-center gap-[6px] rounded-[10px] border border-white/10 bg-[rgba(48,48,52,0.82)] px-[10px] py-[6px] shadow-[0_8px_24px_rgba(0,0,0,0.28)] backdrop-blur-[18px]", style: { marginBottom: TOOLBAR_DEVICE_GAP }, onPointerDown: handleDragHandlePointerDown, children: [_jsxs("label", { className: "flex min-w-0 flex-1 items-center gap-[6px]", children: [_jsx("span", { className: "sr-only", children: messages.settings.mobilePreviewDeviceAriaLabel }), _jsx("select", { value: mobilePreviewDeviceId, onChange: (event) => setMobilePreviewDeviceId(event.target.value), onPointerDown: (event) => event.stopPropagation(), "aria-label": messages.settings.mobilePreviewDeviceAriaLabel, className: selectClassName, children: MOBILE_PREVIEW_BRANDS.map((brand) => (_jsx("optgroup", { label: brand === "apple"
-                                        ? messages.settings.devicePreviewBrandApple
-                                        : brand === "samsung"
-                                            ? messages.settings.devicePreviewBrandSamsung
-                                            : messages.settings.devicePreviewBrandGoogle, children: getDevicePreviewPresetsByBrand(brand).map((option) => (_jsxs("option", { value: option.id, children: [option.label, " (", option.width, "\u00D7", option.height, ")"] }, option.id))) }, brand))) })] }), _jsx("button", { type: "button", onClick: toggleMobilePreviewOrientation, onPointerDown: (event) => event.stopPropagation(), "aria-label": messages.settings.mobilePreviewRotateAriaLabel, title: messages.settings.mobilePreviewRotateLabel, className: "flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-[6px] text-white/90 hover:bg-white/10", children: _jsx(ScreenRotateIcon, { className: "h-[16px] w-[16px]" }) }), _jsx("button", { type: "button", onClick: handleClose, onPointerDown: (event) => event.stopPropagation(), "aria-label": messages.marker.windowCloseAriaLabel, className: "flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-[6px] text-white/90 hover:bg-white/10", children: _jsx(CloseIcon, { className: "h-[14px] w-[14px]" }) })] }), _jsxs("div", { className: "relative", style: {
-                    width: frameWidth,
-                    height: frameHeight,
-                    filter: "drop-shadow(0 28px 56px rgba(0, 0, 0, 0.42))",
-                }, children: [_jsx("iframe", { ref: iframeRef, name: MOBILE_PREVIEW_FRAME_NAME, title: messages.settings.mobilePreviewIframeTitle, src: frameSrc, onLoad: handleFrameLoad, "data-fivepixels-mobile-preview-frame": "", className: "absolute z-[0] border-0", style: {
-                            left: chrome.bezel.left,
-                            top: chrome.bezel.top,
-                            width: screenSize.width,
-                            height: screenSize.height,
-                            transform: `scale(${MOBILE_PREVIEW_SCALE})`,
-                            transformOrigin: "top left",
-                            borderRadius: chrome.screenRadius,
-                            background: screenBackground,
-                        } }), frameLoadState === "blocked" ? (_jsx("div", { className: "pointer-events-none absolute z-[1] flex items-center justify-center px-[12px] text-center text-[11px] font-semibold text-[var(--adaptive-black900)]", style: {
-                            left: chrome.bezel.left,
-                            top: chrome.bezel.top,
-                            width: layout.width,
-                            height: layout.height,
-                            borderRadius: chrome.screenRadius,
-                            background: screenBackground,
-                        }, children: messages.settings.mobilePreviewIframeBlocked })) : null, _jsx("div", { className: "pointer-events-none absolute inset-0 z-[2]", "data-fivepixels-mobile-preview-stage": "", children: _jsx(DeviceFrameArtwork, { preset: mobilePreviewPreset, chrome: chrome, screenWidth: layout.width, screenHeight: layout.height }) }), _jsx("div", { className: "pointer-events-none absolute z-[3] overflow-hidden", style: {
-                            left: chrome.bezel.left,
-                            top: chrome.bezel.top,
-                            width: layout.width,
-                            height: layout.height,
-                            borderRadius: chrome.screenRadius,
-                        }, children: _jsx(DeviceStatusBar, { preset: mobilePreviewPreset, width: layout.width, appearance: statusBarAppearance, showCutout: true }) })] })] }));
+            cursor: isDragging || isDockDragging ? "grabbing" : undefined,
+            ...(isDockDragging ? { transform: "scale(1.03)", willChange: "left, top, transform" } : null),
+        }, onPointerDown: handleRootPointerDown, children: showMinimizedChrome ? (_jsx(MinimizedDockWindowChrome, { badgeLabel: messages.panel.mobilePreview, badgeValue: mobilePreviewPreset.label, restoreAriaLabel: messages.marker.windowRestoreAriaLabel, restoreTitle: messages.marker.windowRestoreAriaLabel, onRestore: handleToggleMinimize, restoreDisabled: dockMorph !== null, closeAriaLabel: messages.marker.windowCloseAriaLabel, closeTitle: messages.marker.windowCloseAriaLabel, onClose: handleClose, closeDisabled: dockMorph !== null || isDockDragging, dockCount: overlayDock.dockCount, isDockDragging: isDockDragging, onPointerDown: dockDrag.handleMinimizedDockPointerDown, onClickCapture: dockDrag.handleMinimizedDockClickCapture, children: _jsx(MinimizedDockSimpleSubtitleRow, { label: mobilePreviewPreset.label, onRestore: handleToggleMinimize, restoreDisabled: dockMorph !== null, restoreAriaLabel: messages.marker.windowRestoreAriaLabel }) })) : (_jsxs(_Fragment, { children: [_jsxs("header", { className: "mb-[10px] flex w-full min-w-0 flex-col gap-[6px] rounded-[12px] bg-[var(--adaptive-fillOpacity700)] px-[10px] py-[6px] shadow-[var(--adaptive-popup-shadow)] backdrop-blur-[10px]", style: { marginBottom: TOOLBAR_DEVICE_GAP, width: frameWidth, maxWidth: "100%" }, onPointerDown: handleDragHandlePointerDown, children: [_jsxs("div", { className: "flex min-w-0 items-center gap-[6px]", children: [_jsxs("label", { className: "flex min-w-0 flex-1 items-center gap-[6px]", children: [_jsx("span", { className: "sr-only", children: messages.settings.mobilePreviewDeviceAriaLabel }), _jsx("select", { value: mobilePreviewDeviceId, onChange: (event) => setMobilePreviewDeviceId(event.target.value), onPointerDown: (event) => event.stopPropagation(), "aria-label": messages.settings.mobilePreviewDeviceAriaLabel, className: selectClassName, children: MOBILE_PREVIEW_BRANDS.map((brand) => (_jsx("optgroup", { label: brand === "apple"
+                                                    ? messages.settings.devicePreviewBrandApple
+                                                    : brand === "samsung"
+                                                        ? messages.settings.devicePreviewBrandSamsung
+                                                        : messages.settings.devicePreviewBrandGoogle, children: getDevicePreviewPresetsByBrand(brand).map((option) => (_jsxs("option", { value: option.id, children: [option.label, " (", option.width, "\u00D7", option.height, ")"] }, option.id))) }, brand))) })] }), _jsx("button", { type: "button", onClick: toggleMobilePreviewOrientation, onPointerDown: (event) => event.stopPropagation(), "aria-label": messages.settings.mobilePreviewRotateAriaLabel, title: messages.settings.mobilePreviewRotateLabel, className: WINDOW_HEADER_BUTTON_CLASS, children: _jsx(ScreenRotateIcon, { className: "h-[16px] w-[16px]" }) }), _jsx("div", { className: "flex shrink-0 items-center gap-[2px]", children: _jsx(WindowModeControls, { closeAriaLabel: messages.marker.windowCloseAriaLabel, minimizeAriaLabel: isMinimized ? messages.marker.windowRestoreAriaLabel : messages.marker.windowMinimizeAriaLabel, maximizeAriaLabel: messages.marker.windowMaximizeAriaLabel, showMaximize: false, isMaximized: false, onClose: handleClose, onMinimize: handleToggleMinimize }) })] }), _jsxs("form", { className: "flex min-w-0 items-center gap-[6px]", onSubmit: handleUrlSubmit, onPointerDown: (event) => event.stopPropagation(), children: [_jsxs("label", { className: "flex min-w-0 flex-1 items-center", children: [_jsx("span", { className: "sr-only", children: messages.settings.mobilePreviewUrlAriaLabel }), _jsx("input", { type: "text", value: urlDraft, onChange: (event) => setUrlDraft(event.target.value), placeholder: messages.settings.mobilePreviewUrlPlaceholder, "aria-label": messages.settings.mobilePreviewUrlAriaLabel, className: urlInputClassName, spellCheck: false, autoCapitalize: "off", autoCorrect: "off" })] }), _jsx("button", { type: "submit", className: "h-[24px] shrink-0 rounded-[6px] bg-[var(--adaptive-fillOpacity500)] px-[10px] text-[12px] font-semibold text-[var(--adaptive-black600)]", children: messages.settings.mobilePreviewUrlGoLabel })] })] }), _jsxs("div", { className: "relative shrink-0", style: {
+                        width: frameWidth,
+                        height: frameHeight,
+                        filter: "drop-shadow(0 28px 56px rgba(0, 0, 0, 0.42))",
+                    }, children: [_jsx("iframe", { ref: iframeRef, name: MOBILE_PREVIEW_FRAME_NAME, title: messages.settings.mobilePreviewIframeTitle, src: frameSrc, onLoad: handleFrameLoad, "data-fivepixels-mobile-preview-frame": "", className: "absolute z-[0] border-0", style: {
+                                left: chrome.bezel.left,
+                                top: chrome.bezel.top,
+                                width: guestViewportSize.width,
+                                height: guestViewportSize.height,
+                                transform: `scale(${MOBILE_PREVIEW_SCALE})`,
+                                transformOrigin: "top left",
+                                borderRadius: chrome.screenRadius,
+                                background: screenBackground,
+                            } }), frameLoadState === "blocked" ? (_jsx("div", { className: "pointer-events-none absolute z-[1] flex items-center justify-center px-[12px] text-center text-[11px] font-semibold text-[var(--adaptive-black900)]", style: {
+                                left: chrome.bezel.left,
+                                top: chrome.bezel.top,
+                                width: layout.width,
+                                height: layout.height,
+                                borderRadius: chrome.screenRadius,
+                                background: screenBackground,
+                            }, children: messages.settings.mobilePreviewIframeBlocked })) : null, _jsx("div", { className: "pointer-events-none absolute inset-0 z-[2]", "data-fivepixels-mobile-preview-stage": "", children: _jsx(DeviceFrameArtwork, { preset: mobilePreviewPreset, chrome: chrome, screenWidth: layout.width, screenHeight: layout.height, orientation: mobilePreviewOrientation }) }), _jsx("div", { className: `pointer-events-none absolute z-[3] ${mobilePreviewOrientation === "landscape" ? "overflow-visible" : "overflow-hidden"}`, style: {
+                                left: chrome.bezel.left,
+                                top: chrome.bezel.top,
+                                width: layout.width,
+                                height: layout.height,
+                                borderRadius: chrome.screenRadius,
+                            }, children: _jsx(DeviceStatusBar, { preset: mobilePreviewPreset, width: layout.width, screenHeight: layout.height, appearance: statusBarAppearance, showCutout: true, orientation: mobilePreviewOrientation, referenceLogicalWidth: statusBarReferenceWidth }) })] })] })) }));
 }
 //# sourceMappingURL=FloatingMobilePreview.js.map

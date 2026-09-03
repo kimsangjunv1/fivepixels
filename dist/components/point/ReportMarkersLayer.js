@@ -15,7 +15,7 @@ import { getReplyCount } from "../../utils/feedback/feedbackThread.js";
 import { MOTION } from "../../constants/motionClasses.js";
 import { MarkerReplyBadge } from "./MarkerReplyBadge.js";
 import { MarkerShapeGlyph } from "./MarkerShapeGlyph.js";
-const TOOLTIP_SURFACE_CLASS = "overflow-hidden rounded-[16px] bg-[var(--adaptive-neutralTintOpacity600)] backdrop-blur-[5px] shadow-[var(--adaptive-popup-shadow)]";
+const TOOLTIP_SURFACE_CLASS = "overflow-hidden rounded-[12px] bg-[var(--adaptive-fillOpacity700)] backdrop-blur-[10px] shadow-[var(--adaptive-popup-shadow)]";
 const TOOLTIP_FIXED_CLASS = `fixed z-[1000001] ${TOOLTIP_SURFACE_CLASS} ${MOTION.tooltipFadeIn}`;
 const MARKER_ANCHOR_BASE_CLASS = "pointer-events-none fixed z-[1000000]";
 const MARKER_BUTTON_BASE_CLASS = "flex items-center justify-center";
@@ -224,7 +224,6 @@ export function ReportMarkersLayer() {
                 : null, showTooltip && tooltipReport && tooltipPosition && tooltipAnchorStyle ? (_jsx("div", { ref: bindHoverTooltipRef, className: `pointer-events-none ${TOOLTIP_FIXED_CLASS}`, style: {
                     left: tooltipPosition.left,
                     top: tooltipPosition.top,
-                    width: tooltipPosition.width,
                     ...tooltipAnchorStyle,
                     pointerEvents: "none",
                 }, children: _jsx(FeedbackHoverCard, { report: tooltipReport, detached: Boolean(tooltipAnchor?.detached), detachedKind: tooltipAnchor?.detachedKind ?? null, detachedHint: messages.marker.detachedHint, detachedModalHint: messages.marker.detachedModalHint }) })) : null] }));

@@ -1,5 +1,5 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import { DEVICE_CHROME_COLOR, getDeviceSafeAreaTop, scaleStatusBarMetrics, } from "../../constants/devicePreview.js";
+import { DEVICE_CHROME_COLOR, getDeviceSafeAreaTop, scaleStatusBarMetrics } from "../../constants/devicePreview.js";
 const IOS_TIME = "9:41";
 const ANDROID_TIME = "9:41";
 const BATTERY_PERCENT = 80;
@@ -64,32 +64,46 @@ function TimeLabel({ color, fontSize, children }) {
             lineHeight: 1,
         }, children: children }));
 }
-function CutoutVisual({ cutout }) {
+function CutoutVisual({ cutout, layout = "horizontal" }) {
     switch (cutout.kind) {
-        case "notch":
+        case "notch": {
+            const width = layout === "vertical" ? cutout.height : cutout.width;
+            const height = layout === "vertical" ? cutout.width : cutout.height;
             return (_jsx("div", { className: "relative shrink-0", style: {
-                    width: cutout.width,
-                    height: cutout.height,
+                    width,
+                    height,
                     background: DEVICE_CHROME_COLOR,
-                    borderBottomLeftRadius: cutout.height * 0.45,
-                    borderBottomRightRadius: cutout.height * 0.45,
-                }, children: _jsx("div", { className: "absolute left-1/2 top-[42%] -translate-x-1/2 -translate-y-1/2 rounded-full", style: {
+                    ...(layout === "vertical"
+                        ? {
+                            borderTopRightRadius: width * 0.45,
+                            borderBottomRightRadius: width * 0.45,
+                        }
+                        : {
+                            borderBottomLeftRadius: height * 0.45,
+                            borderBottomRightRadius: height * 0.45,
+                        }),
+                }, children: _jsx("div", { className: "absolute rounded-full", style: {
                         width: 6.4,
                         height: 6.4,
                         background: DEVICE_CHROME_COLOR,
+                        ...(layout === "vertical" ? { left: "42%", top: "50%", transform: "translate(-50%, -50%)" } : { left: "50%", top: "42%", transform: "translate(-50%, -50%)" }),
                     } }) }));
-        case "island":
+        }
+        case "island": {
+            const width = layout === "vertical" ? cutout.height : cutout.width;
+            const height = layout === "vertical" ? cutout.width : cutout.height;
             return (_jsx("div", { className: "relative shrink-0", style: {
-                    width: cutout.width,
-                    height: cutout.height,
+                    width,
+                    height,
                     borderRadius: 999,
                     background: DEVICE_CHROME_COLOR,
-                }, children: _jsx("div", { className: "absolute top-1/2 -translate-y-1/2 rounded-full", style: {
-                        right: 12,
+                }, children: _jsx("div", { className: "absolute rounded-full", style: {
                         width: 8,
                         height: 8,
                         background: DEVICE_CHROME_COLOR,
+                        ...(layout === "vertical" ? { bottom: 12, left: "50%", transform: "translateX(-50%)" } : { top: "50%", right: 12, transform: "translateY(-50%)" }),
                     } }) }));
+        }
         case "punch":
             return (_jsx("div", { className: "relative shrink-0 rounded-full", style: {
                     width: cutout.radius * 2,
@@ -119,14 +133,17 @@ function StatusThreeColumn({ color, fontFamily, fontSize, fontWeight, padLeft, p
             fontSize,
             fontWeight,
             letterSpacing: "-0.02em",
-        }, children: [_jsx("div", { className: "flex min-w-0 flex-1 items-center justify-center", style: { paddingLeft: padLeft || undefined, overflow: "visible" }, children: left }), center ?? _jsx(CenterColumn, { cutout: cutout }), _jsx("div", { className: "flex min-w-0 flex-1 items-center justify-center", style: { paddingRight: padRight || undefined, overflow: "visible" }, children: right })] }));
+        }, children: [_jsx("div", { className: "flex min-w-0 flex-1 items-center justify-center", style: { paddingLeft: padLeft || undefined, overflow: "visible" }, children: left ?? null }), center ?? _jsx(CenterColumn, { cutout: cutout }), _jsx("div", { className: "flex min-w-0 flex-1 items-center justify-center", style: { paddingRight: padRight || undefined, overflow: "visible" }, children: right })] }));
 }
 function renderClassic(color, metrics) {
     const iosFont = '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif';
     return (_jsx(StatusThreeColumn, { color: color, fontFamily: iosFont, fontSize: metrics.timeSize, fontWeight: 600, padLeft: metrics.padLeft, padRight: metrics.padRight, cutout: metrics.cutout, left: _jsxs("div", { className: "flex items-center", style: { gap: 4 }, children: [_jsx(TimeLabel, { color: color, fontSize: metrics.timeSize, children: "SKT" }), _jsx(CellularIcon, { color: color, height: metrics.cellularH })] }), center: _jsx("div", { className: "flex shrink-0 items-center justify-center", children: _jsx(TimeLabel, { color: color, fontSize: metrics.timeSize, children: IOS_TIME }) }), right: _jsx(TrailingIcons, { color: color, cellularH: metrics.cellularH, wifiSize: metrics.wifi, batteryW: metrics.batteryW, batteryH: metrics.batteryH, gap: metrics.iconGap, withPercent: metrics.batteryPercent }) }));
 }
-function renderFaceId(color, metrics) {
+function renderFaceId(color, metrics, orientation) {
     const iosFont = '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif';
+    if (orientation === "landscape") {
+        return (_jsx(StatusThreeColumn, { color: color, fontFamily: iosFont, fontSize: metrics.timeSize, fontWeight: 600, padLeft: metrics.padLeft, padRight: metrics.padRight, cutout: { kind: "none", width: 0, height: 0, top: 0 }, center: _jsx(TimeLabel, { color: color, fontSize: metrics.timeSize, children: IOS_TIME }), right: _jsx(TrailingIcons, { color: color, cellularH: metrics.cellularH, wifiSize: metrics.wifi, batteryW: metrics.batteryW, batteryH: metrics.batteryH, gap: metrics.iconGap, withPercent: metrics.batteryPercent }) }));
+    }
     return (_jsx(StatusThreeColumn, { color: color, fontFamily: iosFont, fontSize: metrics.timeSize, fontWeight: 600, padLeft: metrics.padLeft, padRight: metrics.padRight, cutout: metrics.cutout, left: _jsx(TimeLabel, { color: color, fontSize: metrics.timeSize, children: IOS_TIME }), right: _jsx(TrailingIcons, { color: color, cellularH: metrics.cellularH, wifiSize: metrics.wifi, batteryW: metrics.batteryW, batteryH: metrics.batteryH, gap: metrics.iconGap, withPercent: metrics.batteryPercent }) }));
 }
 function renderAndroid(color, metrics) {
@@ -137,11 +154,11 @@ function renderTablet(color, metrics) {
     const iosFont = '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif';
     return (_jsx(StatusThreeColumn, { color: color, fontFamily: iosFont, fontSize: metrics.timeSize, fontWeight: 600, padLeft: metrics.padLeft, padRight: metrics.padRight, cutout: metrics.cutout, left: _jsx(TimeLabel, { color: color, fontSize: metrics.timeSize, children: IOS_TIME }), right: _jsx(TrailingIcons, { color: color, cellularH: metrics.cellularH, wifiSize: metrics.wifi, batteryW: metrics.batteryW, batteryH: metrics.batteryH, gap: metrics.iconGap, withPercent: metrics.batteryPercent }) }));
 }
-export function getDeviceStatusBarHeight(preset, screenWidth, scale = 1) {
-    return Math.max(0, Math.round(getDeviceSafeAreaTop(preset, screenWidth) * scale));
+export function getDeviceStatusBarHeight(preset, screenWidth, scale = 1, referenceLogicalWidth = preset.width) {
+    return Math.max(0, Math.round(getDeviceSafeAreaTop(preset, screenWidth, referenceLogicalWidth) * scale));
 }
-export function DeviceStatusBar({ preset, width, scale = 1, appearance = "light", showCutout = true, }) {
-    const metrics = scaleStatusBarMetrics(preset, width);
+export function DeviceStatusBar({ preset, width, screenHeight, scale = 1, appearance = "light", showCutout = true, orientation = "portrait", referenceLogicalWidth = preset.width, }) {
+    const metrics = scaleStatusBarMetrics(preset, width, referenceLogicalWidth);
     const height = Math.max(0, Math.round(metrics.safeAreaTop * scale));
     const { foreground } = themeColors(appearance);
     const cutout = showCutout ? metrics.cutout : { kind: "none", width: metrics.cutout.width, height: 0, top: 0 };
@@ -151,7 +168,7 @@ export function DeviceStatusBar({ preset, width, scale = 1, appearance = "light"
             content = renderClassic(foreground, { ...metrics, cutout });
             break;
         case "faceId":
-            content = renderFaceId(foreground, { ...metrics, cutout });
+            content = renderFaceId(foreground, { ...metrics, cutout }, orientation);
             break;
         case "android":
             content = renderAndroid(foreground, { ...metrics, cutout });
@@ -163,6 +180,16 @@ export function DeviceStatusBar({ preset, width, scale = 1, appearance = "light"
         default:
             return null;
     }
-    return (_jsx("div", { className: "pointer-events-none absolute left-0 right-0 top-0 overflow-hidden bg-[var(--adaptive-neutralTintOpacity700)] backdrop-blur-[10px]", style: { height, color: foreground, WebkitTextFillColor: foreground }, "data-fivepixels-device-status-bar": metrics.layout, "aria-hidden": true, children: content }));
+    const statusBarRow = (_jsx("div", { className: "pointer-events-none absolute left-0 right-0 top-0 overflow-hidden bg-[var(--adaptive-neutralTintOpacity700)] backdrop-blur-[10px]", style: { height, color: foreground, WebkitTextFillColor: foreground }, "data-fivepixels-device-status-bar": metrics.layout, "aria-hidden": true, children: content }));
+    const showLandscapeEdgeCutout = orientation === "landscape" && showCutout && cutout.kind !== "none" && cutout.height > 0;
+    if (!showLandscapeEdgeCutout) {
+        return statusBarRow;
+    }
+    return (_jsxs("div", { className: "pointer-events-none absolute inset-0 overflow-visible", style: screenHeight ? { height: screenHeight } : undefined, "aria-hidden": true, children: [statusBarRow, _jsx("div", { "data-fivepixels-device-cutout": cutout.kind, "data-fivepixels-device-cutout-placement": "landscape-edge", style: {
+                    position: "absolute",
+                    top: "50%",
+                    left: "14px",
+                    transform: "translate(0%, -50%)",
+                }, children: _jsx(CutoutVisual, { cutout: cutout, layout: "vertical" }) })] }));
 }
 //# sourceMappingURL=DeviceStatusBar.js.map
