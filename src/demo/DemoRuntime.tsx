@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { ReportProvider } from "@/shared/providers/ReportProvider.js";
 import { useReportPreferences } from "@/shared/providers/reportContext.js";
 import type { ReportLocale } from "@/shared/i18n/types.js";
@@ -24,18 +24,20 @@ function DemoPreferenceSync({ locale, appearance, children }: Omit<DemoRuntimePr
         tooltipAppearance,
         setTooltipAppearance,
     } = useReportPreferences();
+    const appliedLocaleRef = useRef<ReportLocale | null>(null);
+    const appliedAppearanceRef = useRef<ResolvedAppearance | null>(null);
 
     useEffect(() => {
-        if (activeLocale !== locale) {
+        if (appliedLocaleRef.current !== locale) {
+            appliedLocaleRef.current = locale;
             setLocale(locale);
         }
     }, [activeLocale, locale, setLocale]);
 
     useEffect(() => {
-        if (panelAppearance !== appearance) {
+        if (appliedAppearanceRef.current !== appearance) {
+            appliedAppearanceRef.current = appearance;
             setPanelAppearance(appearance);
-        }
-        if (tooltipAppearance !== appearance) {
             setTooltipAppearance(appearance);
         }
     }, [appearance, panelAppearance, setPanelAppearance, setTooltipAppearance, tooltipAppearance]);

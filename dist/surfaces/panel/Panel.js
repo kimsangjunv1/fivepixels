@@ -40,7 +40,7 @@ function PanelCollapseTab({ collapsed, anchorSide, onClick, messages }) {
                     : "flex h-[105px] w-[32px] items-center justify-center rounded-r-[12px] rounded-l-none bg-[var(--adaptive-black200)] text-[var(--adaptive-blue500)] shadow-[0_0_24px_0_rgba(0,0,0,0.35)]"
                 : "flex items-center justify-center py-[8px] text-[var(--adaptive-text-muted)]", children: collapsed ? expandIcon : hideIcon }) }));
 }
-export function Panel({ embedded = false } = {}) {
+export function Panel({ embedded = false, embeddedSettingsInitialCategory = null } = {}) {
     const { environment, projectId, appVersion, showFeedbackList, visiblePanelTabs, isMobileViewport, panelAppearance, setPanelAppearance, tooltipAppearance, setTooltipAppearance, questionThreadDisplay, setQuestionThreadDisplay, threadLayout, setThreadLayout, personalKey, publicKey, panelView, messages, devicePreviewUiOpen, setDevicePreviewUiOpen, mobilePreviewUiOpen, setMobilePreviewUiOpen, integrationCapabilities, } = useReportPreferences();
     const { mode, errorMessage, activeReplyReportId, panelTab, toggleReportMode, toggleIssueMode, openPanelTab, setErrorMessage, panelCollapsed, setPanelCollapsed, notificationUiOpen, toggleNotificationUiOpen, unreadNotificationCount, } = useReportSession();
     const { roleStatItems, canTransferFeedback, refetch } = useReportData();
@@ -199,6 +199,6 @@ export function Panel({ embedded = false } = {}) {
                                                         }, onKeyRotate: () => {
                                                             setPersonalKeyStep("rotate");
                                                             setPersonalKeyNotice("");
-                                                        } }), command: _jsx(ReportCommandPanel, { onExecute: handleCommandExecute, onClose: handleCloseCommand, notice: commandNotice, onNoticeClear: () => setCommandNotice(null) }) }) }) })) : null, personalKeyStep === "none" && commandStep === "replace-confirm" && pendingCommand ? (_jsx(ReportCommandReplaceConfirmDialog, { conflicts: commandConflicts, onConfirm: handleConfirmCommandReplace, onCancel: handleCancelCommandReplace })) : null, _jsx(PanelProjectFooter, {})] }) }))] }, shellMotionKey)] })] }));
+                                                        }, initialCategory: embeddedSettingsInitialCategory }), command: _jsx(ReportCommandPanel, { onExecute: handleCommandExecute, onClose: handleCloseCommand, notice: commandNotice, onNoticeClear: () => setCommandNotice(null) }) }) }) })) : null, personalKeyStep === "none" && commandStep === "replace-confirm" && pendingCommand ? (_jsx(ReportCommandReplaceConfirmDialog, { conflicts: commandConflicts, onConfirm: handleConfirmCommandReplace, onCancel: handleCancelCommandReplace })) : null, _jsx(PanelProjectFooter, {})] }) }))] }, shellMotionKey)] })] }));
 }
 //# sourceMappingURL=Panel.js.map

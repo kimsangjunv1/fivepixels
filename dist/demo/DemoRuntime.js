@@ -1,21 +1,23 @@
 "use client";
 import { jsx as _jsx } from "react/jsx-runtime";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ReportProvider } from "../shared/providers/ReportProvider.js";
 import { useReportPreferences } from "../shared/providers/reportContext.js";
 import { createDemoAdapter, DEMO_AUTHORS } from "./fixtures.js";
 function DemoPreferenceSync({ locale, appearance, children }) {
     const { locale: activeLocale, setLocale, panelAppearance, setPanelAppearance, tooltipAppearance, setTooltipAppearance, } = useReportPreferences();
+    const appliedLocaleRef = useRef(null);
+    const appliedAppearanceRef = useRef(null);
     useEffect(() => {
-        if (activeLocale !== locale) {
+        if (appliedLocaleRef.current !== locale) {
+            appliedLocaleRef.current = locale;
             setLocale(locale);
         }
     }, [activeLocale, locale, setLocale]);
     useEffect(() => {
-        if (panelAppearance !== appearance) {
+        if (appliedAppearanceRef.current !== appearance) {
+            appliedAppearanceRef.current = appearance;
             setPanelAppearance(appearance);
-        }
-        if (tooltipAppearance !== appearance) {
             setTooltipAppearance(appearance);
         }
     }, [appearance, panelAppearance, setPanelAppearance, setTooltipAppearance, tooltipAppearance]);

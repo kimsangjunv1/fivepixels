@@ -1,5 +1,6 @@
 import type { FivePixelsAdapter } from "@/shared/types/adapter.js";
 import type { NotificationItem } from "@/shared/types/notification.js";
+import type { ApiFlowEntry } from "@/shared/types/networkMonitor.js";
 import type { DraftReport, PickProbeValues, TargetSnapshot } from "@/shared/types/report-ui.js";
 import type { CreateReportFeedbackPayload, ReportAuthor, ReportFeedback, ReportReply, UpdateReportFeedbackPayload } from "@/shared/types/report.js";
 import type { FivePixelsDemoScene } from "./types.js";
@@ -170,6 +171,69 @@ export const DEMO_PROBE_VALUES: PickProbeValues = {
     gridRowCount: "1",
 };
 
+export const DEMO_API_FLOW_ENTRIES: ApiFlowEntry[] = [
+    {
+        id: "demo-api-1",
+        timestamp: Date.parse(UPDATED_AT),
+        method: "GET",
+        url: "https://api.fivepixels.dev/v1/feedback?pathname=%2Fcheckout",
+        pathname: "/v1/feedback",
+        queryParams: { pathname: "/checkout" },
+        status: 200,
+        ok: true,
+        durationMs: 84,
+        requestBody: null,
+        responseBody: JSON.stringify({ items: [{ id: "demo-feedback-1", status: "open" }], total: 6 }, null, 2),
+        errorMessage: null,
+        failureKind: null,
+    },
+    {
+        id: "demo-api-2",
+        timestamp: Date.parse(UPDATED_AT) + 1200,
+        method: "POST",
+        url: "https://api.fivepixels.dev/v1/feedback",
+        pathname: "/v1/feedback",
+        queryParams: {},
+        status: 201,
+        ok: true,
+        durationMs: 132,
+        requestBody: JSON.stringify({ report_id: "checkout-actions", category: "suggestion" }, null, 2),
+        responseBody: JSON.stringify({ id: "demo-feedback-7", status: "open" }, null, 2),
+        errorMessage: null,
+        failureKind: null,
+    },
+    {
+        id: "demo-api-3",
+        timestamp: Date.parse(UPDATED_AT) + 2400,
+        method: "PATCH",
+        url: "https://api.fivepixels.dev/v1/feedback/demo-feedback-1",
+        pathname: "/v1/feedback/demo-feedback-1",
+        queryParams: {},
+        status: 422,
+        ok: false,
+        durationMs: 246,
+        requestBody: JSON.stringify({ status: "resolved" }, null, 2),
+        responseBody: JSON.stringify({ message: "A reviewer confirmation is required." }, null, 2),
+        errorMessage: "Request failed with status 422",
+        failureKind: "http",
+    },
+    {
+        id: "demo-api-4",
+        timestamp: Date.parse(UPDATED_AT) + 3600,
+        method: "GET",
+        url: "https://api.fivepixels.dev/v1/members",
+        pathname: "/v1/members",
+        queryParams: {},
+        status: null,
+        ok: false,
+        durationMs: 3000,
+        requestBody: null,
+        responseBody: null,
+        errorMessage: "Network request timed out.",
+        failureKind: "network",
+    },
+];
+
 export function createDemoNotifications(locale: "ko" | "en"): NotificationItem[] {
     const content =
         locale === "ko"
@@ -237,10 +301,14 @@ export function createDemoAdapter(): FivePixelsAdapter {
 export const DEMO_SCENE_SIZE: Record<FivePixelsDemoScene, { width: number; height: number }> = {
     "marker-tooltip": { width: 390, height: 230 },
     "feedback-composer": { width: 430, height: 300 },
+    "memo-composer": { width: 430, height: 230 },
     "panel-overview": { width: 390, height: 220 },
+    "network-monitor": { width: 430, height: 540 },
+    "memo-list": { width: 390, height: 520 },
     "element-inspector": { width: 380, height: 540 },
     "device-preview": { width: 420, height: 650 },
     "feedback-thread": { width: 680, height: 520 },
     settings: { width: 390, height: 620 },
+    "settings-customization": { width: 390, height: 620 },
     notifications: { width: 440, height: 520 },
 };

@@ -30,7 +30,7 @@ const COPY: Record<Locale, ShowcaseCopy> = {
         },
         language: "언어",
         metrics: [
-            { value: "8", label: "인터랙티브 UI" },
+            { value: "12", label: "인터랙티브 UI" },
             { value: "2", label: "한국어 · English" },
             { value: "0", label: "필요한 백엔드" },
             { value: "100%", label: "격리된 데모 상태" },
@@ -43,11 +43,15 @@ const COPY: Record<Locale, ShowcaseCopy> = {
         features: {
             "marker-tooltip": { title: "맥락 위에 남는 마커", description: "화면의 정확한 위치에서 피드백 요약을 확인합니다.", action: "마커를 눌러 열고 닫아보세요" },
             "feedback-composer": { title: "빠르게 작성하는 피드백", description: "내용과 카테고리를 고르고 바로 새로운 케이스를 만듭니다.", action: "메시지를 입력하고 카테고리를 바꿔보세요" },
+            "memo-composer": { title: "가볍게 남기는 메모", description: "정식 피드백으로 전환하기 전에도 화면 위에 생각을 바로 기록합니다.", action: "메모를 입력하고 저장해보세요" },
             "panel-overview": { title: "한눈에 보는 프로젝트 상태", description: "현재 페이지와 네트워크의 활동을 하나의 패널에서 살펴봅니다.", action: "상단 탭과 필터를 전환해보세요" },
+            "network-monitor": { title: "요청 흐름까지 한자리에서", description: "성공과 실패 요청, 응답 시간과 상세 데이터를 화면 맥락 안에서 확인합니다.", action: "필터를 바꾸고 요청 상세를 열어보세요" },
+            "memo-list": { title: "흩어지지 않는 화면 메모", description: "페이지에 남긴 메모를 날짜별 목록에서 검색하고 다시 찾아갑니다.", action: "메모를 검색하고 항목을 선택해보세요" },
             "element-inspector": { title: "말 대신 보여주는 UI Edit", description: "선택한 요소의 정보와 여백, 색상 변경 요청을 함께 전달합니다.", action: "속성 항목과 색상 옵션을 눌러보세요" },
             "device-preview": { title: "기기별로 바로 확인", description: "동일한 화면을 모바일 기기별 크기와 프레임에서 검토합니다.", action: "iPhone과 Galaxy를 전환해보세요" },
             "feedback-thread": { title: "맥락이 이어지는 대화", description: "케이스, 답변, 담당 상태를 하나의 창에서 관리합니다.", action: "대화를 선택하고 답변을 남겨보세요" },
             settings: { title: "프로젝트에 맞는 표현", description: "팀의 작업 방식에 맞춰 테마와 마커의 모양, 크기를 정합니다.", action: "테마와 마커 스타일을 바꿔보세요" },
+            "settings-customization": { title: "세밀하게 맞추는 커스터마이징", description: "테마, 대화 방식, 피드백 점과 마커의 형태·색상·글꼴을 직접 조정합니다.", action: "각 외형 항목을 열어 값을 바꿔보세요" },
             notifications: { title: "놓치지 않는 상태 변화", description: "편집 모드, 오류, 숨겨진 마커와 새로운 활동을 바로 확인합니다.", action: "알림 항목을 선택해보세요" },
         },
         install: {
@@ -77,7 +81,7 @@ const COPY: Record<Locale, ShowcaseCopy> = {
         },
         language: "Language",
         metrics: [
-            { value: "8", label: "interactive scenes" },
+            { value: "12", label: "interactive scenes" },
             { value: "2", label: "Korean · English" },
             { value: "0", label: "backend required" },
             { value: "100%", label: "isolated demo state" },
@@ -90,11 +94,15 @@ const COPY: Record<Locale, ShowcaseCopy> = {
         features: {
             "marker-tooltip": { title: "Markers that keep context", description: "Review feedback exactly where it belongs on the screen.", action: "Press the marker to open and close it" },
             "feedback-composer": { title: "Fast, focused feedback", description: "Write a message, choose a category, and create a case in place.", action: "Type a message and switch categories" },
+            "memo-composer": { title: "Capture a quick memo", description: "Record a thought on the page before it needs to become formal feedback.", action: "Write a memo and save it" },
             "panel-overview": { title: "Project status at a glance", description: "Review page activity and network requests in one compact panel.", action: "Switch the tabs and filters" },
+            "network-monitor": { title: "See every request in context", description: "Inspect successful and failed requests, timings, and response details without leaving the page.", action: "Filter requests and open the details" },
+            "memo-list": { title: "Keep page notes together", description: "Search page memos by date and return to the exact context where they were created.", action: "Search and select a memo" },
             "element-inspector": { title: "Show changes with UI Edit", description: "Share the selected element, its spacing, and color changes together.", action: "Try the property and color controls" },
             "device-preview": { title: "Review across devices", description: "Preview the same page at common mobile sizes and device frames.", action: "Switch between iPhone and Galaxy" },
             "feedback-thread": { title: "Conversations with context", description: "Manage cases, replies, and ownership in a single window.", action: "Select a thread and leave a reply" },
             settings: { title: "Make it fit your project", description: "Tune the theme, marker shape, and size to match your workflow.", action: "Change the theme and marker style" },
+            "settings-customization": { title: "Customize every visual detail", description: "Adjust themes, thread behavior, feedback dots, marker form, colors, and typography.", action: "Open each appearance group and change a value" },
             notifications: { title: "Stay on top of changes", description: "See edit mode, errors, hidden markers, and new activity at once.", action: "Select a notification item" },
         },
         install: {

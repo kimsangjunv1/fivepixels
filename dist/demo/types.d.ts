@@ -1,7 +1,7 @@
 import type { CSSProperties } from "react";
 import type { ReportAppearance } from "../shared/types/report.js";
 import type { ReportLocale } from "../shared/i18n/types.js";
-export declare const FIVE_PIXELS_DEMO_SCENES: readonly ["marker-tooltip", "feedback-composer", "panel-overview", "element-inspector", "device-preview", "feedback-thread", "settings", "notifications"];
+export declare const FIVE_PIXELS_DEMO_SCENES: readonly ["marker-tooltip", "feedback-composer", "memo-composer", "panel-overview", "network-monitor", "memo-list", "element-inspector", "device-preview", "feedback-thread", "settings", "settings-customization", "notifications"];
 export type FivePixelsDemoScene = (typeof FIVE_PIXELS_DEMO_SCENES)[number];
 export type FivePixelsDemoProps = {
     scene: FivePixelsDemoScene;
