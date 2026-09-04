@@ -41,7 +41,7 @@ const COPY: Record<Locale, ShowcaseCopy> = {
             description: "실제 제품의 주요 흐름을 데모 데이터와 함께 담았습니다. 각 장면은 독립적으로 사용할 수 있고, 페이지 배경을 가리지 않습니다.",
         },
         features: {
-            "marker-tooltip": { title: "맥락 위에 남는 마커", description: "화면의 정확한 위치에서 피드백 요약을 확인합니다.", action: "영역을 벗어난 뒤 각 마커에 마우스를 올려보세요" },
+            "marker-tooltip": { title: "맥락 위에 남는 마커", description: "화면의 정확한 위치에서 피드백 요약을 확인합니다.", action: "마커를 눌러 열고 닫아보세요" },
             "feedback-composer": { title: "빠르게 작성하는 피드백", description: "내용과 카테고리를 고르고 바로 새로운 케이스를 만듭니다.", action: "메시지를 입력하고 카테고리를 바꿔보세요" },
             "memo-composer": { title: "가볍게 남기는 메모", description: "정식 피드백으로 전환하기 전에도 화면 위에 생각을 바로 기록합니다.", action: "메모를 입력하고 저장해보세요" },
             "panel-overview": { title: "한눈에 보는 프로젝트 상태", description: "현재 페이지와 네트워크의 활동을 하나의 패널에서 살펴봅니다.", action: "상단 탭과 필터를 전환해보세요" },
@@ -92,7 +92,7 @@ const COPY: Record<Locale, ShowcaseCopy> = {
             description: "The key product flows are ready with realistic demo data. Every scene works independently and keeps your page background visible.",
         },
         features: {
-            "marker-tooltip": { title: "Markers that keep context", description: "Review feedback exactly where it belongs on the screen.", action: "Leave the demo, then hover each marker" },
+            "marker-tooltip": { title: "Markers that keep context", description: "Review feedback exactly where it belongs on the screen.", action: "Press the marker to open and close it" },
             "feedback-composer": { title: "Fast, focused feedback", description: "Write a message, choose a category, and create a case in place.", action: "Type a message and switch categories" },
             "memo-composer": { title: "Capture a quick memo", description: "Record a thought on the page before it needs to become formal feedback.", action: "Write a memo and save it" },
             "panel-overview": { title: "Project status at a glance", description: "Review page activity and network requests in one compact panel.", action: "Switch the tabs and filters" },

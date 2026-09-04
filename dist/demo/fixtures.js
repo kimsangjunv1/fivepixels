@@ -277,7 +277,7 @@ export function createDemoAdapter() {
     };
 }
 export const DEMO_SCENE_SIZE = {
-    "marker-tooltip": { width: 540, height: 330 },
+    "marker-tooltip": { width: 390, height: 230 },
     "feedback-composer": { width: 430, height: 300 },
     "memo-composer": { width: 430, height: 230 },
     "panel-overview": { width: 390, height: 220 },
