@@ -2,7 +2,7 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { serializeMentionToken, serializeUserMentionToken } from "../../shared/types/mention.js";
-import { findElementMentionCandidates, getAtQuery, mentionQueryEndsWithSpace, replaceActiveMentionQuery, toStoredMention, } from "../../shared/utils/mention/elementMentions.js";
+import { findElementMentionCandidates, getAtQuery, mentionQueryEndsWithSpace, replaceActiveMentionQuery, toStoredMention } from "../../shared/utils/mention/elementMentions.js";
 import { findUserMentionCandidates, toStoredUserMention } from "../../shared/utils/mention/userMentions.js";
 import { deleteMentionChipBeforeCaret, getCaretClientRect, getEditorCaretPoint, placeCaretAfterMention, renderMentionEditorContent, serializeMentionEditor, serializeMentionEditorBeforeCaret, } from "../../shared/utils/mention/mentionComposerDom.js";
 import { useReportPreferences, useReportSession } from "../../shared/providers/reportContext.js";
@@ -75,9 +75,7 @@ export function MentionComposerInput({ value, mentions, userMentions = [], teamM
         }
         const caret = getEditorCaretPoint(editor);
         const before = serializeMentionEditorBeforeCaret(editor, mentionsRef.current, caret, userMentionsRef.current);
-        const resolved = before
-            ? getAtQuery(before.message)
-            : getAtQuery(serializeMentionEditor(editor, mentionsRef.current, userMentionsRef.current).message);
+        const resolved = before ? getAtQuery(before.message) : getAtQuery(serializeMentionEditor(editor, mentionsRef.current, userMentionsRef.current).message);
         if (!resolved) {
             dismissedAtOffsetRef.current = null;
             activeAtOffsetRef.current = null;
@@ -219,9 +217,7 @@ export function MentionComposerInput({ value, mentions, userMentions = [], teamM
         const caret = getEditorCaretPoint(editor);
         const before = serializeMentionEditorBeforeCaret(editor, mentionsRef.current, caret, userMentionsRef.current);
         const resolved = (before ? getAtQuery(before.message) : null) ??
-            (query !== null && activeAtOffsetRef.current !== null
-                ? { query, atOffsetInBefore: activeAtOffsetRef.current }
-                : getAtQuery(current.message));
+            (query !== null && activeAtOffsetRef.current !== null ? { query, atOffsetInBefore: activeAtOffsetRef.current } : getAtQuery(current.message));
         if (!resolved) {
             return;
         }
@@ -293,13 +289,12 @@ export function MentionComposerInput({ value, mentions, userMentions = [], teamM
                             (active ? "bg-[var(--adaptive-blue100)]" : "hover:bg-[var(--adaptive-black100)]"), onMouseEnter: () => setActiveIndex(index), onMouseDown: (event) => {
                             event.preventDefault();
                             insertCandidate(item);
-                        }, children: [_jsxs("span", { className: "truncate text-[12px] font-semibold text-[var(--adaptive-black900)]", children: ["@", item.candidate.name] }), _jsx("span", { className: "truncate text-[11px] text-[var(--adaptive-black500)]", children: messages.composer.userMentionHint })] }, `user-${item.candidate.id}-${index}`));
+                        }, children: [_jsxs("span", { className: "truncate text-[12px] font-semibold text-[var(--adaptive-black900)]", children: ["@", item.candidate.name] }), _jsx("span", { className: "truncate text-[12px] text-[var(--adaptive-black500)]", children: messages.composer.userMentionHint })] }, `user-${item.candidate.id}-${index}`));
                 }
-                return (_jsxs("button", { type: "button", role: "option", "aria-selected": active, "data-fivepixels-interactive": "", className: "flex w-full flex-col gap-[2px] px-[4px] py-[2px] text-left border-none " +
-                        (active ? "bg-[var(--adaptive-blue100)]" : "hover:bg-[var(--adaptive-black100)]"), onMouseEnter: () => setActiveIndex(index), onMouseDown: (event) => {
+                return (_jsxs("button", { type: "button", role: "option", "aria-selected": active, "data-fivepixels-interactive": "", className: "flex w-full flex-col gap-[2px] px-[4px] py-[2px] text-left border-none " + (active ? "bg-[var(--adaptive-blue100)]" : "hover:bg-[var(--adaptive-black100)]"), onMouseEnter: () => setActiveIndex(index), onMouseDown: (event) => {
                         event.preventDefault();
                         insertCandidate(item);
-                    }, children: [_jsx("span", { className: "truncate text-[12px] font-semibold text-[var(--adaptive-black900)]", children: item.candidate.label }), _jsx("span", { className: "truncate text-[11px] text-[var(--adaptive-black500)]", children: item.candidate.reportId ?? item.candidate.suggestedReportId ?? item.candidate.element.tagName.toLowerCase() })] }, `${item.candidate.targetSelector}-${item.candidate.label}-${index}`));
+                    }, children: [_jsx("span", { className: "truncate text-[12px] font-semibold text-[var(--adaptive-black900)]", children: item.candidate.label }), _jsx("span", { className: "truncate text-[12px] text-[var(--adaptive-black500)]", children: item.candidate.reportId ?? item.candidate.suggestedReportId ?? item.candidate.element.tagName.toLowerCase() })] }, `${item.candidate.targetSelector}-${item.candidate.label}-${index}`));
             })) }), portalRoot)
         : null;
     return (_jsxs("div", { ref: rootRef, className: "relative min-w-0 flex-1", children: [showPlaceholder ? _jsx("span", { className: "pointer-events-none absolute left-[4px] top-[6px] text-[14px] leading-[1.5] text-[var(--adaptive-text-muted)]", children: placeholder }) : null, _jsx("div", { ref: editorRef, contentEditable: true, role: "textbox", "aria-multiline": "true", "aria-label": placeholder, "data-fivepixels-interactive": "", suppressContentEditableWarning: true, className: "max-h-[200px] w-full min-w-0 flex-1 resize-none overflow-hidden bg-transparent px-[4px] py-[6px] text-[14px] leading-[1.5] text-[var(--adaptive-text-primary)] outline-none", style: { minHeight: EDITOR_MIN_HEIGHT }, onInput: () => {

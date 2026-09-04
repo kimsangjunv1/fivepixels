@@ -8,7 +8,7 @@ function ReportIdStatusIcon({ tagged }) {
     if (tagged) {
         return (_jsx(CheckCircleIcon, { className: "h-[16px] w-[16px] shrink-0", fill: TAGGED_REPORT_ID_COLOR }));
     }
-    return (_jsx("span", { "aria-hidden": "true", className: "inline-flex h-[16px] w-[16px] shrink-0 items-center justify-center rounded-full bg-[#ef44441f] text-[11px] font-bold text-[#dc2626]", children: "\u2715" }));
+    return (_jsx("span", { "aria-hidden": "true", className: "inline-flex h-[16px] w-[16px] shrink-0 items-center justify-center rounded-full bg-[#ef44441f] text-[12px] font-bold text-[#dc2626]", children: "\u2715" }));
 }
 export function InspectTooltip({ target }) {
     const { messages } = useReportPreferences();

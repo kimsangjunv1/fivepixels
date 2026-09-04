@@ -12,6 +12,6 @@ type AppearanceThemePickerProps = {
     ariaLabel?: string;
     previewKind?: ThemePreviewKind;
 };
-export declare function AppearanceThemePicker({ options, value, onChange, disabled, ariaLabel, previewKind, }: AppearanceThemePickerProps): import("react").JSX.Element;
+export declare function AppearanceThemePicker({ options, value, onChange, disabled, ariaLabel, previewKind }: AppearanceThemePickerProps): import("react").JSX.Element;
 export {};
 //# sourceMappingURL=AppearanceThemePicker.d.ts.map

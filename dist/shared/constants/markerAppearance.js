@@ -87,7 +87,7 @@ export function getMarkerScaleFactor(size) {
 export const MARKER_COMPACT_LABEL = "·";
 export const MARKER_BADGE_FONT_SIZE_PX = 10;
 export const MARKER_BADGE_FONT_WEIGHT = 700;
-export const MARKER_BADGE_LABEL_CLASS = "text-[10px] font-bold leading-none text-white";
+export const MARKER_BADGE_LABEL_CLASS = "text-[12px] font-bold leading-none text-white";
 export function isCompactMarkerLabelScale(size) {
     return size === "2xs" || size === "xs" || size === "sm";
 }

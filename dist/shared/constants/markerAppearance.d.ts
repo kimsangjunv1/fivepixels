@@ -49,7 +49,7 @@ export declare function getMarkerScaleFactor(size: AppearanceScale): number;
 export declare const MARKER_COMPACT_LABEL = "\u00B7";
 export declare const MARKER_BADGE_FONT_SIZE_PX = 10;
 export declare const MARKER_BADGE_FONT_WEIGHT = 700;
-export declare const MARKER_BADGE_LABEL_CLASS = "text-[10px] font-bold leading-none text-white";
+export declare const MARKER_BADGE_LABEL_CLASS = "text-[12px] font-bold leading-none text-white";
 export declare function isCompactMarkerLabelScale(size: AppearanceScale): size is "2xs" | "xs" | "sm";
 export declare function resolveMarkerBadgeDisplay(size: AppearanceScale, label: string | null): {
     content: string | null;

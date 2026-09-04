@@ -109,7 +109,7 @@ function FeedbackComposerScene({ variant = "feedback" }) {
         setDraft((current) => current
             ? {
                 ...current,
-                cases: current.cases.map((item) => item.id === caseId ? { ...item, text, mentions, user_mentions: userMentions } : item),
+                cases: current.cases.map((item) => (item.id === caseId ? { ...item, text, mentions, user_mentions: userMentions } : item)),
             }
             : current);
     }, []);
@@ -130,9 +130,7 @@ function FeedbackComposerScene({ variant = "feedback" }) {
         });
     }, []);
     const removeDraftCase = useCallback((caseId) => {
-        setDraft((current) => current && current.cases.length > 1
-            ? { ...current, cases: current.cases.filter((item) => item.id !== caseId) }
-            : current);
+        setDraft((current) => (current && current.cases.length > 1 ? { ...current, cases: current.cases.filter((item) => item.id !== caseId) } : current));
     }, []);
     const updateDraftField = useCallback((key, value) => {
         setDraft((current) => (current ? { ...current, fieldValues: { ...current.fieldValues, [key]: value } } : current));
@@ -289,24 +287,13 @@ function ElementInspectorScene() {
         updatePickProbeValue,
         resetPickProbeValues,
         closePickProbe,
-    }), [
-        baseSession,
-        closePickProbe,
-        compareMode,
-        hasEdits,
-        open,
-        resetPickProbeValues,
-        savedProbeEdits,
-        selectedTarget,
-        updatePickProbeValue,
-        values,
-    ]);
+    }), [baseSession, closePickProbe, compareMode, hasEdits, open, resetPickProbeValues, savedProbeEdits, selectedTarget, updatePickProbeValue, values]);
     return (_jsxs(ReportSessionContext.Provider, { value: session, children: [_jsxs("div", { className: "grid h-full w-full grid-cols-[minmax(200px,1fr)_320px] gap-[14px] p-[12px]", children: [_jsx("div", { className: "relative flex min-h-0 items-center justify-center overflow-visible", children: _jsxs("button", { ref: buttonRef, type: "button", "data-report-id": DEMO_TARGET.reportIdAttribute ?? "checkout-actions", style: previewStyle, onClick: openPickProbe, className: "min-h-[34px] outline-none", children: [_jsx("span", { children: previewValues.textContent }), _jsx("span", { "aria-hidden": "true", children: "\u2192" })] }) }), _jsx("div", { className: "relative min-h-0", children: _jsx(ProbeTooltip, { embedded: true }) })] }), _jsx(TargetHighlights, { hoveredTarget: null, selectedTarget: selectedTarget, contextMenuTarget: open ? selectedTarget : null, showPickProbeCompare: open && hasEdits, activeMarkerTarget: null }), _jsx(PickTargetSavedBadges, {})] }));
 }
 function DemoMobileContent() {
     const { locale } = useReportPreferences();
     const isKorean = locale === "ko";
-    return (_jsxs("div", { className: "h-full w-full bg-white p-[20px] text-[#191f28]", children: [_jsxs("div", { className: "flex items-center justify-between border-b border-[#e5e8eb] pb-[14px]", children: [_jsx("strong", { className: "text-[18px]", children: "fivepixels." }), _jsx("button", { type: "button", className: "rounded-[8px] bg-[#3182f6] px-[12px] py-[7px] text-[12px] font-bold text-white", children: isKorean ? "로그인" : "Sign in" })] }), _jsxs("div", { className: "grid grid-cols-2 gap-[12px] py-[18px]", children: [_jsxs("div", { className: "rounded-[12px] bg-[#f2f4f6] p-[14px]", children: [_jsx("p", { className: "text-[11px] text-[#8b95a1]", children: "KOSPI" }), _jsx("strong", { className: "mt-[6px] block text-[18px]", children: "6,792.12" }), _jsx("span", { className: "text-[11px] text-[#f04452]", children: "+5.45%" })] }), _jsxs("div", { className: "rounded-[12px] bg-[#f2f4f6] p-[14px]", children: [_jsx("p", { className: "text-[11px] text-[#8b95a1]", children: "NASDAQ" }), _jsx("strong", { className: "mt-[6px] block text-[18px]", children: "26,331.09" }), _jsx("span", { className: "text-[11px] text-[#3182f6]", children: "-0.59%" })] })] }), _jsx("p", { className: "mb-[10px] text-[13px] font-bold", children: isKorean ? "실시간 종목" : "Live market" }), DEMO_STOCK_NAMES.map((name, index) => (_jsxs("div", { className: "flex items-center border-t border-[#f2f4f6] py-[11px] text-[12px]", children: [_jsx("span", { className: "w-[24px] text-[#8b95a1]", children: index + 1 }), _jsx("strong", { children: isKorean ? name : DEMO_STOCK_NAMES_EN[index] }), _jsxs("span", { className: "ml-auto text-[#f04452]", children: ["+", (index + 2.4).toFixed(2), "%"] })] }, name)))] }));
+    return (_jsxs("div", { className: "h-full w-full bg-white p-[20px] text-[#191f28]", children: [_jsxs("div", { className: "flex items-center justify-between border-b border-[#e5e8eb] pb-[14px]", children: [_jsx("strong", { className: "text-[18px]", children: "fivepixels." }), _jsx("button", { type: "button", className: "rounded-[8px] bg-[#3182f6] px-[12px] py-[7px] text-[12px] font-bold text-white", children: isKorean ? "로그인" : "Sign in" })] }), _jsxs("div", { className: "grid grid-cols-2 gap-[12px] py-[18px]", children: [_jsxs("div", { className: "rounded-[12px] bg-[#f2f4f6] p-[14px]", children: [_jsx("p", { className: "text-[12px] text-[#8b95a1]", children: "KOSPI" }), _jsx("strong", { className: "mt-[6px] block text-[18px]", children: "6,792.12" }), _jsx("span", { className: "text-[12px] text-[#f04452]", children: "+5.45%" })] }), _jsxs("div", { className: "rounded-[12px] bg-[#f2f4f6] p-[14px]", children: [_jsx("p", { className: "text-[12px] text-[#8b95a1]", children: "NASDAQ" }), _jsx("strong", { className: "mt-[6px] block text-[18px]", children: "26,331.09" }), _jsx("span", { className: "text-[12px] text-[#3182f6]", children: "-0.59%" })] })] }), _jsx("p", { className: "mb-[10px] text-[14px] font-bold", children: isKorean ? "실시간 종목" : "Live market" }), DEMO_STOCK_NAMES.map((name, index) => (_jsxs("div", { className: "flex items-center border-t border-[#f2f4f6] py-[11px] text-[12px]", children: [_jsx("span", { className: "w-[24px] text-[#8b95a1]", children: index + 1 }), _jsx("strong", { children: isKorean ? name : DEMO_STOCK_NAMES_EN[index] }), _jsxs("span", { className: "ml-auto text-[#f04452]", children: ["+", (index + 2.4).toFixed(2), "%"] })] }, name)))] }));
 }
 function DevicePreviewScene() {
     return (_jsx("div", { className: "flex h-full items-start justify-center overflow-hidden pt-[8px]", children: _jsx(MobilePreviewWindow, { embedded: true, embeddedContent: _jsx(DemoMobileContent, {}) }) }));
@@ -403,15 +390,7 @@ function NotificationsScene() {
         clearNotifications,
         activateNotification: (item) => markNotificationRead(item.id),
         runNotificationAction,
-    }), [
-        baseSession,
-        clearNotifications,
-        dismissNotification,
-        markAllNotificationsRead,
-        markNotificationRead,
-        notifications,
-        runNotificationAction,
-    ]);
+    }), [baseSession, clearNotifications, dismissNotification, markAllNotificationsRead, markNotificationRead, notifications, runNotificationAction]);
     return (_jsx(ReportSessionContext.Provider, { value: session, children: _jsx("div", { className: "relative h-full w-full overflow-hidden rounded-[16px] bg-[linear-gradient(160deg,#1c1f24_0%,#2a3038_55%,#171a1f_100%)]", children: _jsx(NotificationCenter, { embedded: true }) }) }));
 }
 export function DemoScene({ scene }) {
@@ -427,7 +406,7 @@ export function DemoScene({ scene }) {
         case "network-monitor":
             return _jsx(PanelScene, { initialTab: "api-flow" });
         case "memo-list":
-            return _jsx(PanelScene, { initialTab: "memo-list", visibleTabs: MEMO_PANEL_TABS });
+            return (_jsx(PanelScene, { initialTab: "memo-list", visibleTabs: MEMO_PANEL_TABS }));
         case "element-inspector":
             return _jsx(ElementInspectorScene, {});
         case "device-preview":
@@ -437,7 +416,7 @@ export function DemoScene({ scene }) {
         case "settings":
             return _jsx(PanelScene, { initialTab: "settings" });
         case "settings-customization":
-            return _jsx(PanelScene, { initialTab: "settings", settingsInitialCategory: "appearance" });
+            return (_jsx(PanelScene, { initialTab: "settings", settingsInitialCategory: "appearance" }));
         case "notifications":
             return _jsx(NotificationsScene, {});
     }

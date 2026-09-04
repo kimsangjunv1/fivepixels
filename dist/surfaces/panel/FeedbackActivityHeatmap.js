@@ -16,10 +16,8 @@ const HEATMAP_ANIMATION_DURATION_MS = 320;
 function formatMessage(template, values) {
     return Object.entries(values).reduce((message, [key, value]) => message.replace(new RegExp(`\\{${key}\\}`, "g"), String(value)), template);
 }
-function HeatmapToggleGroup({ label, value, options, onChange, }) {
-    return (_jsx("div", { className: "flex flex-wrap gap-[4px]", role: "group", "aria-label": label, children: options.map((option) => (_jsx("button", { type: "button", "aria-pressed": value === option.value, onClick: () => onChange(option.value), className: `rounded-[6px] px-[6px] py-[2px] text-[11px] font-[600] ${value === option.value
-                ? "bg-[var(--adaptive-black200)] text-[var(--adaptive-black900)]"
-                : "text-[var(--adaptive-black500)] hover:bg-[var(--adaptive-black100)]"}`, children: option.label }, option.value))) }));
+function HeatmapToggleGroup({ label, value, options, onChange }) {
+    return (_jsx("div", { className: "flex flex-wrap gap-[4px]", role: "group", "aria-label": label, children: options.map((option) => (_jsx("button", { type: "button", "aria-pressed": value === option.value, onClick: () => onChange(option.value), className: `rounded-[6px] px-[6px] py-[2px] text-[12px] font-[600] ${value === option.value ? "bg-[var(--adaptive-black200)] text-[var(--adaptive-black900)]" : "text-[var(--adaptive-black500)] hover:bg-[var(--adaptive-black100)]"}`, children: option.label }, option.value))) }));
 }
 function heatmapLevelClassName(level) {
     switch (level) {
@@ -38,7 +36,7 @@ function heatmapLevelClassName(level) {
 export function FeedbackActivityHeatmap() {
     const { locale, messages } = useReportPreferences();
     const { currentPathname, panelTab, openPanelTab, sessionActor } = useReportSession();
-    const { reports, currentPageReports, listScope, setListScope, setFilters, canListAllFeedback, onActivitySummary, } = useReportData();
+    const { reports, currentPageReports, listScope, setListScope, setFilters, canListAllFeedback, onActivitySummary } = useReportData();
     const listAllLock = useIntegrationLock("listAll");
     const activitySummaryLock = useIntegrationLock("activitySummary");
     const showScopeControl = canListAllFeedback || listAllLock.locked;
@@ -101,7 +99,7 @@ export function FeedbackActivityHeatmap() {
         }
     };
     const heatmapMessages = messages.activityHeatmap;
-    return (_jsxs("section", { className: "border-b border-[var(--adaptive-black200)] bg-[var(--adaptive-black50)] px-[16px] py-[12px]", children: [_jsxs("div", { className: "mb-[10px] flex items-start justify-between gap-[8px]", children: [_jsxs("p", { className: "inline-flex items-center gap-[6px] text-[13px] font-[700] text-[var(--adaptive-black900)]", children: [heatmapMessages.title, activitySummaryLock.locked ? (_jsx(HoverTooltip, { label: activitySummaryLock.tooltipLabel, multiline: true, children: _jsx("span", { className: "inline-flex text-[var(--adaptive-black500)]", children: _jsx(LockIcon, { className: "h-[12px] w-[12px]" }) }) })) : null] }), drillDownMonth ? (_jsx(HeatmapToggleGroup, { label: heatmapMessages.viewModeAriaLabel, value: viewMode, onChange: setViewMode, options: [
+    return (_jsxs("section", { className: "border-b border-[var(--adaptive-black200)] bg-[var(--adaptive-black50)] px-[16px] py-[12px]", children: [_jsxs("div", { className: "mb-[10px] flex items-start justify-between gap-[8px]", children: [_jsxs("p", { className: "inline-flex items-center gap-[6px] text-[14px] font-[700] text-[var(--adaptive-black900)]", children: [heatmapMessages.title, activitySummaryLock.locked ? (_jsx(HoverTooltip, { label: activitySummaryLock.tooltipLabel, multiline: true, children: _jsx("span", { className: "inline-flex text-[var(--adaptive-black500)]", children: _jsx(LockIcon, { className: "h-[12px] w-[12px]" }) }) })) : null] }), drillDownMonth ? (_jsx(HeatmapToggleGroup, { label: heatmapMessages.viewModeAriaLabel, value: viewMode, onChange: setViewMode, options: [
                             { value: "daily", label: heatmapMessages.viewDaily },
                             { value: "weekly", label: heatmapMessages.viewWeekly },
                             { value: "cumulative", label: heatmapMessages.viewCumulative },
@@ -114,7 +112,7 @@ export function FeedbackActivityHeatmap() {
                                 ] }), showScopeControl ? (_jsx(IntegrationLockTip, { locked: listAllLock.locked, label: listAllLock.tooltipLabel, children: _jsx("span", { className: listAllLock.locked ? "pointer-events-none opacity-50" : undefined, children: _jsx(HeatmapToggleGroup, { label: heatmapMessages.scopeAriaLabel, value: listScope, onChange: listAllLock.locked ? () => undefined : setListScope, options: [
                                             { value: "current", label: heatmapMessages.scopeCurrentPage },
                                             { value: "all", label: heatmapMessages.scopeAllPages },
-                                        ] }) }) })) : null, drillDownMonth ? (_jsxs("div", { className: "flex items-center gap-[6px]", children: [_jsx("button", { type: "button", onClick: () => setDrillDownMonth(null), className: "rounded-[6px] px-[6px] py-[2px] text-[11px] font-[600] text-[var(--adaptive-blue500)] hover:bg-[var(--adaptive-black100)]", children: heatmapMessages.backToYear }), _jsx("p", { className: "text-[11px] font-[700] text-[var(--adaptive-black900)]", children: formatHeatmapMonthLabel(drillDownMonth, locale) })] })) : (_jsxs("nav", { className: "flex items-center gap-[2px]", "aria-label": heatmapMessages.yearNavAriaLabel, children: [_jsx("button", { type: "button", "aria-label": heatmapMessages.prevYear, onClick: () => setSelectedYear((current) => current - 1), className: "flex h-[22px] w-[22px] items-center justify-center rounded-[6px] text-[var(--adaptive-black500)] hover:bg-[var(--adaptive-black100)] hover:text-[var(--adaptive-black900)]", children: _jsx(ChevronLeftIcon, { className: "h-3.5 w-3.5" }) }), _jsx("p", { className: "min-w-[56px] px-[4px] text-center text-[11px] font-[700] text-[var(--adaptive-black900)]", children: selectedYear }), _jsx("button", { type: "button", "aria-label": heatmapMessages.nextYear, disabled: !canGoNextYear, onClick: () => {
+                                        ] }) }) })) : null, drillDownMonth ? (_jsxs("div", { className: "flex items-center gap-[6px]", children: [_jsx("button", { type: "button", onClick: () => setDrillDownMonth(null), className: "rounded-[6px] px-[6px] py-[2px] text-[12px] font-[600] text-[var(--adaptive-blue500)] hover:bg-[var(--adaptive-black100)]", children: heatmapMessages.backToYear }), _jsx("p", { className: "text-[12px] font-[700] text-[var(--adaptive-black900)]", children: formatHeatmapMonthLabel(drillDownMonth, locale) })] })) : (_jsxs("nav", { className: "flex items-center gap-[2px]", "aria-label": heatmapMessages.yearNavAriaLabel, children: [_jsx("button", { type: "button", "aria-label": heatmapMessages.prevYear, onClick: () => setSelectedYear((current) => current - 1), className: "flex h-[22px] w-[22px] items-center justify-center rounded-[6px] text-[var(--adaptive-black500)] hover:bg-[var(--adaptive-black100)] hover:text-[var(--adaptive-black900)]", children: _jsx(ChevronLeftIcon, { className: "h-3.5 w-3.5" }) }), _jsx("p", { className: "min-w-[56px] px-[4px] text-center text-[12px] font-[700] text-[var(--adaptive-black900)]", children: selectedYear }), _jsx("button", { type: "button", "aria-label": heatmapMessages.nextYear, disabled: !canGoNextYear, onClick: () => {
                                             if (canGoNextYear) {
                                                 setSelectedYear((current) => current + 1);
                                             }
@@ -132,9 +130,7 @@ export function FeedbackActivityHeatmap() {
                                 ? formatMessage(heatmapMessages.cellTooltip, { date: labelDate, count: cell.count })
                                 : formatMessage(heatmapMessages.cellTooltipEmpty, { date: labelDate })
                             : "";
-                        const ariaLabel = cell.dateKey
-                            ? formatMessage(heatmapMessages.cellAriaLabel, { date: labelDate, count: cell.count })
-                            : undefined;
+                        const ariaLabel = cell.dateKey ? formatMessage(heatmapMessages.cellAriaLabel, { date: labelDate, count: cell.count }) : undefined;
                         const button = (_jsx("button", { type: "button", disabled: !cell.inRange || !cell.dateKey, "aria-label": ariaLabel, onClick: () => {
                                 if (cell.dateKey && cell.inRange) {
                                     handleDayCellClick(cell.dateKey);
@@ -173,6 +169,6 @@ export function FeedbackActivityHeatmap() {
                             }) }), _jsx("div", { className: "mt-[6px] grid", style: {
                                 gridTemplateColumns: `repeat(12, ${HEATMAP_YEAR_CELL_SIZE_PX}px)`,
                                 gap: `${HEATMAP_YEAR_CELL_GAP_PX}px`,
-                            }, children: yearBuckets.buckets.map((bucket) => (_jsx("span", { className: "text-center text-[10px] text-[var(--adaptive-black500)]", style: { width: HEATMAP_YEAR_CELL_SIZE_PX }, children: formatShortMonthLabel(bucket.monthIndex, locale) }, `${bucket.monthKey}-label`))) })] })) }), _jsxs("div", { className: "mt-[8px] flex items-center justify-between gap-[8px] text-[10px] text-[var(--adaptive-black500)]", children: [_jsxs("div", { className: "flex items-center gap-[4px]", children: [_jsx("span", { children: heatmapMessages.legendLess }), _jsx("span", { className: "h-[10px] w-[10px] rounded-[2px] bg-[var(--adaptive-black200)]" }), _jsx("span", { className: "h-[10px] w-[10px] rounded-[2px] bg-[var(--adaptive-blue200)]" }), _jsx("span", { className: "h-[10px] w-[10px] rounded-[2px] bg-[var(--adaptive-blue300)]" }), _jsx("span", { className: "h-[10px] w-[10px] rounded-[2px] bg-[var(--adaptive-blue400)]" }), _jsx("span", { className: "h-[10px] w-[10px] rounded-[2px] bg-[var(--adaptive-blue500)]" }), _jsx("span", { children: heatmapMessages.legendMore })] }), _jsx("p", { children: formatMessage(heatmapMessages.totalCount, { count: drillDownMonth && monthHeatmap ? monthHeatmap.totalCount : yearBuckets.totalCount }) })] })] }));
+                            }, children: yearBuckets.buckets.map((bucket) => (_jsx("span", { className: "text-center text-[12px] text-[var(--adaptive-black500)]", style: { width: HEATMAP_YEAR_CELL_SIZE_PX }, children: formatShortMonthLabel(bucket.monthIndex, locale) }, `${bucket.monthKey}-label`))) })] })) }), _jsxs("div", { className: "mt-[8px] flex items-center justify-between gap-[8px] text-[12px] text-[var(--adaptive-black500)]", children: [_jsxs("div", { className: "flex items-center gap-[4px]", children: [_jsx("span", { children: heatmapMessages.legendLess }), _jsx("span", { className: "h-[10px] w-[10px] rounded-[2px] bg-[var(--adaptive-black200)]" }), _jsx("span", { className: "h-[10px] w-[10px] rounded-[2px] bg-[var(--adaptive-blue200)]" }), _jsx("span", { className: "h-[10px] w-[10px] rounded-[2px] bg-[var(--adaptive-blue300)]" }), _jsx("span", { className: "h-[10px] w-[10px] rounded-[2px] bg-[var(--adaptive-blue400)]" }), _jsx("span", { className: "h-[10px] w-[10px] rounded-[2px] bg-[var(--adaptive-blue500)]" }), _jsx("span", { children: heatmapMessages.legendMore })] }), _jsx("p", { children: formatMessage(heatmapMessages.totalCount, { count: drillDownMonth && monthHeatmap ? monthHeatmap.totalCount : yearBuckets.totalCount }) })] })] }));
 }
 //# sourceMappingURL=FeedbackActivityHeatmap.js.map

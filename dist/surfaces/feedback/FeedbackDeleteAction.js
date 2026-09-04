@@ -26,7 +26,7 @@ export function FeedbackDeleteAction({ reportId, onDelete, disabled = false, loc
             setConfirming(false);
         });
     };
-    const tooltipLabel = locked ? lockLabel ?? deleteTitle : confirming ? deleteConfirmTitle : deleteTitle;
-    return (_jsx(HoverTooltip, { label: tooltipLabel, multiline: locked, children: _jsx("button", { type: "button", "data-fivepixels-interactive": "", onPointerDown: (event) => event.stopPropagation(), onClick: handleDelete, disabled: disabled || locked, "aria-label": locked ? tooltipLabel : confirming ? deleteConfirmAriaLabel : deleteAriaLabel, className: `${className} ${confirming ? "text-rose-200 hover:text-white" : "text-[var(--adaptive-black50)] hover:text-white"}`, children: locked ? (_jsx(LockIcon, { className: iconClassName })) : confirming ? (_jsx("span", { className: "text-[9px] font-semibold", children: "!" })) : (_jsx(TrashIcon, { className: iconClassName })) }) }));
+    const tooltipLabel = locked ? (lockLabel ?? deleteTitle) : confirming ? deleteConfirmTitle : deleteTitle;
+    return (_jsx(HoverTooltip, { label: tooltipLabel, multiline: locked, children: _jsx("button", { type: "button", "data-fivepixels-interactive": "", onPointerDown: (event) => event.stopPropagation(), onClick: handleDelete, disabled: disabled || locked, "aria-label": locked ? tooltipLabel : confirming ? deleteConfirmAriaLabel : deleteAriaLabel, className: `${className} ${confirming ? "text-rose-200 hover:text-white" : "text-[var(--adaptive-black50)] hover:text-white"}`, children: locked ? _jsx(LockIcon, { className: iconClassName }) : confirming ? _jsx("span", { className: "text-[12px] font-semibold", children: "!" }) : _jsx(TrashIcon, { className: iconClassName }) }) }));
 }
 //# sourceMappingURL=FeedbackDeleteAction.js.map

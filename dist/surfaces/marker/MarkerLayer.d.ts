@@ -31,7 +31,7 @@ type MarkerTooltipSurfaceProps = {
     style?: CSSProperties;
     containerRef?: Ref<HTMLDivElement>;
 };
-export declare function MarkerTooltipSurface({ report, detached, detachedKind, detachedHint, detachedModalHint, positioning, style, containerRef, }: MarkerTooltipSurfaceProps): import("react").JSX.Element;
+export declare function MarkerTooltipSurface({ report, detached, detachedKind, detachedHint, detachedModalHint, positioning, style, containerRef }: MarkerTooltipSurfaceProps): import("react").JSX.Element;
 export declare function MarkerLayer(): import("react").JSX.Element | null;
 export {};
 //# sourceMappingURL=MarkerLayer.d.ts.map

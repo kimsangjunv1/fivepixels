@@ -8,6 +8,6 @@ type MarkerShapePickerProps = {
     fillStyle?: MarkerFillStyle;
     strokeColor?: string;
 };
-export declare function MarkerShapePicker({ value, onChange, labels, ariaLabel, previewColor, fillStyle, strokeColor, }: MarkerShapePickerProps): import("react").JSX.Element;
+export declare function MarkerShapePicker({ value, onChange, labels, ariaLabel, previewColor, fillStyle, strokeColor }: MarkerShapePickerProps): import("react").JSX.Element;
 export {};
 //# sourceMappingURL=MarkerShapePicker.d.ts.map

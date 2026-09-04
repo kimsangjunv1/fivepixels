@@ -6,7 +6,7 @@ import { toFixedLayerPosition, useFixedPositionOrigin } from "../../shared/hooks
 import { formatSavedProbeEditSummary } from "../../shared/utils/probe/pickProbe.js";
 import { findElementByProbeKey } from "../../shared/utils/probe/pickProbeSession.js";
 import { getPickProbeSavedBadgeLayout } from "../../shared/utils/probe/pickProbeLayout.js";
-const MODIFIED_BADGE_CLASS = "cursor-default rounded-[4px] bg-[#8b5cf6] px-[5px] py-[1px] text-[12px] font-semibold leading-[1.3] text-white shadow-[0_1px_4px_rgba(0,0,0,0.18)]";
+const MODIFIED_BADGE_CLASS = "cursor-default rounded-[4px] bg-[#8b5cf6] px-[5px] py-[1px] text-[12px] font-semibold leading-[1.5] text-white shadow-[0_1px_4px_rgba(0,0,0,0.18)]";
 function SavedProbeBadge({ elementKey, badgeOpacity }) {
     const { messages } = useReportPreferences();
     const { savedProbeEdits } = useReportSession();

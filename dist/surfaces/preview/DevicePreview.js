@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useReportPreferences, useReportSession } from "../../shared/providers/reportContext.js";
 import { getDevicePreviewLayoutSize, getDevicePreviewPreset, getEmptyBezel, scaleDeviceChrome } from "../../shared/constants/devicePreview.js";
 import { DEVICE_PREVIEW_FRAME_NAME, DEVICE_PREVIEW_HOST_STYLE_ID, HTML_DEVICE_PREVIEW_ACTIVE_CLASS, buildDevicePreviewHostStyle, clearGuestStatusBarStyle, getGuestDocument, getGuestWindow, isGuestDocumentReady, isInsideDevicePreviewFrame, readGuestContentMetrics, syncGuestStatusBarStyle, } from "../../shared/utils/overlay/devicePreviewFrame.js";
-import { clearPageDocumentBridge, notifyPageDocumentBridge, setPageDocumentBridge, } from "../../shared/utils/overlay/pageDocumentBridge.js";
+import { clearPageDocumentBridge, notifyPageDocumentBridge, setPageDocumentBridge } from "../../shared/utils/overlay/pageDocumentBridge.js";
 import { DeviceFrameArtwork } from "./DeviceFrameArtwork.js";
 import { DeviceStatusBar, getDeviceStatusBarHeight } from "./DeviceStatusBar.js";
 const FLOATING_BAR_RESERVE = 32;
@@ -89,7 +89,7 @@ function resolveCenteredLayout(args) {
     };
 }
 export function DevicePreview() {
-    const { devicePreviewUiOpen, devicePreviewDeviceId, devicePreviewScale, devicePreviewImageEnabled, devicePreviewFitToViewport, devicePreviewStatusBarEnabled, resolvedPanelAppearance, messages, } = useReportPreferences();
+    const { devicePreviewUiOpen, devicePreviewDeviceId, devicePreviewScale, devicePreviewImageEnabled, devicePreviewFitToViewport, devicePreviewStatusBarEnabled, resolvedPanelAppearance, messages } = useReportPreferences();
     const { mode } = useReportSession();
     const isPreviewGuest = isInsideDevicePreviewFrame();
     const preset = useMemo(() => getDevicePreviewPreset(devicePreviewDeviceId), [devicePreviewDeviceId]);
@@ -251,9 +251,7 @@ export function DevicePreview() {
     const ticks = buildRulerTicks(metrics.scrollY, metrics.clientHeight || screenHeight, Math.max(metrics.scrollHeight, screenHeight));
     const visualBezelLeft = centered.bezel.left * centered.fitScale;
     const actualFrameLeft = screenLeft - visualBezelLeft;
-    const rulerLeft = actualFrameLeft >= RULER_WIDTH + RULER_GAP
-        ? actualFrameLeft - RULER_WIDTH - RULER_GAP
-        : Math.max(0, actualFrameLeft - RULER_WIDTH);
+    const rulerLeft = actualFrameLeft >= RULER_WIDTH + RULER_GAP ? actualFrameLeft - RULER_WIDTH - RULER_GAP : Math.max(0, actualFrameLeft - RULER_WIDTH);
     const visualStatusBarHeight = statusBarHeight * centered.fitScale;
     const rulerTop = screenTop + visualStatusBarHeight;
     const rulerHeight = Math.max(0, visualScreenHeight - visualStatusBarHeight);
@@ -305,13 +303,13 @@ export function DevicePreview() {
                                 width: screenWidth,
                                 height: screenHeight,
                                 borderRadius: devicePreviewImageEnabled ? chrome.screenRadius : 0,
-                            }, children: _jsx(DeviceStatusBar, { preset: preset, width: screenWidth, appearance: resolvedPanelAppearance === "dark" ? "dark" : "light", showCutout: devicePreviewImageEnabled }) })) : null] }), _jsxs("div", { className: "absolute overflow-hidden border-r border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-neutralTintOpacity900)] text-[var(--adaptive-black900)] backdrop-blur-[4px]", "data-fivepixels-skip-capture": "", style: { left: rulerLeft, top: rulerTop, width: RULER_WIDTH, height: rulerHeight, borderRadius: 6 }, children: [_jsx("div", { className: "absolute inset-x-0 top-0 z-[1] border-b border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-neutralTintOpacity900)] px-[4px] py-[6px] text-center text-[9px] font-semibold leading-tight text-[var(--adaptive-black900)]", children: scrollLabel }), ticks.map((tick) => {
+                            }, children: _jsx(DeviceStatusBar, { preset: preset, width: screenWidth, appearance: resolvedPanelAppearance === "dark" ? "dark" : "light", showCutout: devicePreviewImageEnabled }) })) : null] }), _jsxs("div", { className: "absolute overflow-hidden border-r border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-neutralTintOpacity900)] text-[var(--adaptive-black900)] backdrop-blur-[4px]", "data-fivepixels-skip-capture": "", style: { left: rulerLeft, top: rulerTop, width: RULER_WIDTH, height: rulerHeight, borderRadius: 6 }, children: [_jsx("div", { className: "absolute inset-x-0 top-0 z-[1] border-b border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-neutralTintOpacity900)] px-[4px] py-[6px] text-center text-[12px] font-semibold leading-tight text-[var(--adaptive-black900)]", children: scrollLabel }), ticks.map((tick) => {
                             const top = (tick.documentY - metrics.scrollY - statusBarHeight) * centered.fitScale;
                             if (top < 0 || top > rulerHeight) {
                                 return null;
                             }
                             const labelY = Math.max(0, tick.documentY - statusBarHeight);
-                            return (_jsxs("div", { className: "absolute right-0 flex items-center", style: { top, height: 0 }, children: [_jsx("span", { className: `mr-[3px] text-[8px] tabular-nums ${tick.major ? "font-semibold text-[var(--adaptive-black900)]" : "text-[var(--adaptive-black500)]"}`, children: tick.major ? labelY : "" }), _jsx("span", { className: `block bg-[var(--adaptive-black500)] ${tick.major ? "h-[1px] w-[12px]" : "h-[1px] w-[7px]"}` })] }, tick.documentY));
+                            return (_jsxs("div", { className: "absolute right-0 flex items-center", style: { top, height: 0 }, children: [_jsx("span", { className: `mr-[3px] text-[12px] tabular-nums ${tick.major ? "font-semibold text-[var(--adaptive-black900)]" : "text-[var(--adaptive-black500)]"}`, children: tick.major ? labelY : "" }), _jsx("span", { className: `block bg-[var(--adaptive-black500)] ${tick.major ? "h-[1px] w-[12px]" : "h-[1px] w-[7px]"}` })] }, tick.documentY));
                         })] })] }) }));
 }
 //# sourceMappingURL=DevicePreview.js.map

@@ -29,11 +29,11 @@ function NoticeFooter({ actions, footerDividerBeforeLast, className = "" }) {
  * Shared panel notice / confirm shell — same visual language as import "확인 필요".
  * Settings/import dialogs stay separate from the floating notification stack.
  */
-export function NoticeDialog({ title, description, children, choices, actions, footerDividerBeforeLast = 0, sectioned = false, className = "", role = "dialog", }) {
+export function NoticeDialog({ title, description, children, choices, actions, footerDividerBeforeLast = 0, sectioned = false, className = "", role = "dialog" }) {
     const footerActions = actions ?? [];
     const hasChoices = Boolean(choices && choices.length > 0);
     const hasFooter = footerActions.length > 0;
-    const header = (_jsxs(_Fragment, { children: [_jsx("p", { className: "text-[14px] font-bold text-[var(--adaptive-black900)]", children: title }), description ? _jsx("div", { className: "mt-[8px] leading-[1.4] whitespace-break-spaces text-[var(--adaptive-black700)]", children: description }) : null, hasChoices ? (_jsx("div", { className: "mt-[12px] flex flex-wrap gap-[8px]", children: choices.map((choice) => (_jsx(NoticeActionButton, { action: { ...choice, variant: "choice" } }, choice.id))) })) : null] }));
+    const header = (_jsxs(_Fragment, { children: [_jsx("p", { className: "text-[14px] font-bold text-[var(--adaptive-black900)]", children: title }), description ? _jsx("div", { className: "mt-[8px] leading-[1.5] whitespace-break-spaces text-[var(--adaptive-black700)]", children: description }) : null, hasChoices ? (_jsx("div", { className: "mt-[12px] flex flex-wrap gap-[8px]", children: choices.map((choice) => (_jsx(NoticeActionButton, { action: { ...choice, variant: "choice" } }, choice.id))) })) : null] }));
     if (sectioned) {
         return (_jsxs("section", { role: role, className: `bg-[var(--adaptive-black50)] ${MOTION.dialogIn} ${className}`, "data-fivepixels-interactive": "", children: [_jsx("div", { className: "p-[16px]", children: header }), children, hasFooter ? (_jsx(NoticeFooter, { actions: footerActions, footerDividerBeforeLast: footerDividerBeforeLast, className: "p-[16px]" })) : null] }));
     }

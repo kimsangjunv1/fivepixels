@@ -6,8 +6,8 @@ import {
 } from "./useNotificationStackAnchor.js";
 
 describe("notification stack anchor rules", () => {
-    it("keeps an 8px gap constant", () => {
-        expect(PANEL_NOTIFICATION_GAP_PX).toBe(8);
+    it("keeps a 0px gap constant", () => {
+        expect(PANEL_NOTIFICATION_GAP_PX).toBe(0);
     });
 
     it("expands away from the panel by corner", () => {
@@ -17,7 +17,7 @@ describe("notification stack anchor rules", () => {
         expect(resolveNotificationExpandDirection("top-right")).toBe("down");
     });
 
-    it("places the tray below a top-docked panel with an 8px gap", () => {
+    it("places the tray below a top-docked panel with no gap", () => {
         const panel = {
             getBoundingClientRect: () => ({
                 top: 16,
@@ -39,7 +39,7 @@ describe("notification stack anchor rules", () => {
         expect(anchor.style.left).toBe(16);
     });
 
-    it("places the tray above a bottom-docked panel with an 8px gap", () => {
+    it("places the tray above a bottom-docked panel with no gap", () => {
         const viewportHeight = window.innerHeight;
         const panelTop = viewportHeight - 220;
         const panel = {
@@ -63,7 +63,7 @@ describe("notification stack anchor rules", () => {
         expect(anchor.style.left).toBe(16);
     });
 
-    it("tracks live rect so a moved top panel keeps an 8px gap below", () => {
+    it("tracks live rect so a moved top panel keeps no gap below", () => {
         const panel = {
             getBoundingClientRect: () => ({
                 top: 16,
