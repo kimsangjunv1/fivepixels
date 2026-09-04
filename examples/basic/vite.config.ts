@@ -128,9 +128,10 @@ export default defineConfig({
         reportCompressedSize: true,
     },
     resolve: {
-        alias: {
-            "@": new URL("../../src", import.meta.url).pathname,
-            "@fivepixels-js/react": new URL("../../src/index.ts", import.meta.url).pathname,
-        },
+        alias: [
+            { find: "@fivepixels-js/react/demo", replacement: new URL("../../src/demo/index.ts", import.meta.url).pathname },
+            { find: "@fivepixels-js/react", replacement: new URL("../../src/index.ts", import.meta.url).pathname },
+            { find: "@", replacement: new URL("../../src", import.meta.url).pathname },
+        ],
     },
 });

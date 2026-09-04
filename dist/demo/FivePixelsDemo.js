@@ -1,0 +1,23 @@
+"use client";
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { useState } from "react";
+import { DemoRoot } from "./DemoRoot.js";
+import { DemoScene } from "./DemoScenes.js";
+import { DEMO_SCENE_SIZE, getDemoCopy } from "./fixtures.js";
+export function FivePixelsDemo({ scene, locale, defaultLocale = "ko", onLocaleChange, showLocaleSwitch = false, appearance = "light", interactive = true, className = "", style, ariaLabel, }) {
+    const [uncontrolledLocale, setUncontrolledLocale] = useState(defaultLocale);
+    const activeLocale = locale ?? uncontrolledLocale;
+    const resolvedAppearance = appearance === "system" ? "light" : appearance;
+    const copy = getDemoCopy(activeLocale);
+    const size = DEMO_SCENE_SIZE[scene];
+    const handleLocaleChange = (nextLocale) => {
+        if (locale === undefined) {
+            setUncontrolledLocale(nextLocale);
+        }
+        onLocaleChange?.(nextLocale);
+    };
+    return (_jsxs(DemoRoot, { appearance: resolvedAppearance, width: size.width, height: size.height, interactive: interactive, className: className, style: style, ariaLabel: ariaLabel ?? `FivePixels ${scene} demo`, children: [showLocaleSwitch ? (_jsx("div", { className: "pointer-events-auto absolute right-[4px] top-[4px] z-[20] flex rounded-full border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-fillOpacity700)] p-[2px] shadow-sm backdrop-blur-[16px]", role: "group", "aria-label": copy.localeLabel, children: ["ko", "en"].map((option) => (_jsx("button", { type: "button", "aria-pressed": activeLocale === option, onClick: () => handleLocaleChange(option), className: `rounded-full px-[8px] py-[4px] text-[10px] ${activeLocale === option
+                        ? "bg-[var(--adaptive-black900)] text-[var(--adaptive-surface)]"
+                        : "text-[var(--adaptive-black500)]"}`, children: option.toUpperCase() }, option))) })) : null, _jsx(DemoScene, { scene: scene, locale: activeLocale, copy: copy })] }));
+}
+//# sourceMappingURL=FivePixelsDemo.js.map

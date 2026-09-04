@@ -5,6 +5,7 @@
 
 @source "../components/**/*.tsx";
 @source "../constants/**/*.ts";
+@source "../../demo/**/*.tsx";
 
 @theme {
     /* Use absolute units so host html font-size does not scale library spacing/text. */
