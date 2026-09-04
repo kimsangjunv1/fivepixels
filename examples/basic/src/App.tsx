@@ -1,4 +1,4 @@
-import { BrowserRouter, useNavigate } from "react-router-dom";
+import { BrowserRouter, useLocation, useNavigate } from "react-router-dom";
 import { FivePixels } from "@fivepixels-js/react";
 
 import { AppRouter } from "./app/router";
@@ -9,24 +9,26 @@ const PROJECT_ID = "fivepixels-basic-example";
 
 function AppContent() {
     const navigate = useNavigate();
+    const location = useLocation();
     useDemoFeedbackSeed();
 
     return (
         <>
-            <FivePixels
-                project={{
-                    id: PROJECT_ID,
-                    env: "STAGED",
-                    version: "1.0.0",
-                }}
-                sync="local"
-                // sync="api"
-                require={{
-                    authLogin: false,
-                    reviewerKey: true,
-                }}
-                team={{
-                    reviewers: [
+            {location.pathname !== "/demo-showcase" ? (
+                <FivePixels
+                    project={{
+                        id: PROJECT_ID,
+                        env: "STAGED",
+                        version: "1.0.0",
+                    }}
+                    sync="local"
+                    // sync="api"
+                    require={{
+                        authLogin: false,
+                        reviewerKey: true,
+                    }}
+                    team={{
+                        reviewers: [
                         // {
                         //     id: "8ed4c9fe-c42d-4aec-80d8-977b6c548b1c",
                         //     name: "John Smith",
@@ -45,17 +47,18 @@ function AppContent() {
                             publicKey:
                                 "stpub1.eyJjcnYiOiJQLTI1NiIsImV4dCI6dHJ1ZSwia2V5X29wcyI6WyJ2ZXJpZnkiXSwia3R5IjoiRUMiLCJ4IjoiUUhKTkdFeHplMUpLNkVDODZFdFRTYnFDSENQUF9jVjlxSXVLY1BLQ2RmNCIsInkiOiJBR0ZiYkxPOVJsT0U0NWlCeGRPVHNCbXlvSk5zSVBPanFTMHJUWEgwMGJzIn0",
                         },
-                    ],
-                }}
+                        ],
+                    }}
 
-                // adapter={createFivepixelsAdapter({
-                //     baseUrl: "/api/v1/fivepixels",
-                //     projectId: PROJECT_ID,
-                // })}
-                // onNavigate={(pathname) => {
-                //     navigate(pathname);
-                // }}
-            />
+                    // adapter={createFivepixelsAdapter({
+                    //     baseUrl: "/api/v1/fivepixels",
+                    //     projectId: PROJECT_ID,
+                    // })}
+                    // onNavigate={(pathname) => {
+                    //     navigate(pathname);
+                    // }}
+                />
+            ) : null}
             <AppRouter />
         </>
     );

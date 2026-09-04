@@ -49,6 +49,10 @@
         "./report": {
             "types": "./dist/shared/components/report/index.d.ts",
             "import": "./dist/shared/components/report/index.js"
+        },
+        "./demo": {
+            "types": "./dist/demo/index.d.ts",
+            "import": "./dist/demo/index.js"
         }
     },
     "scripts": {

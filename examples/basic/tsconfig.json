@@ -9,6 +9,7 @@
     "sourceMap": false,
     "paths": {
       "@fivepixels-js/react": ["../../src/index.ts"],
+      "@fivepixels-js/react/demo": ["../../src/demo/index.ts"],
       "@/*": ["../../src/*"]
     }
   },
