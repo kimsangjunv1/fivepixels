@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, type CSSProperties, type Ref } from "react";
 import { useNativeHover } from "@/shared/hooks/useNativeHover.js";
 import { useTooltipLayout } from "@/surfaces/tooltip/useTooltipLayout.js";
 import { useReportPreferences, useReportSession } from "@/shared/providers/reportContext.js";
-import type { Marker, MarkerOverflowHint } from "@/shared/types/report-ui.js";
+import type { Marker, MarkerDetachedKind, MarkerOverflowHint } from "@/shared/types/report-ui.js";
 import type { ReportFeedback } from "@/shared/types/report.js";
 import { resolveMarkerOverflowHints } from "@/shared/utils/marker/coordinates.js";
 import { scrollContainerTowardEdge } from "@/shared/utils/shared/dom.js";
@@ -21,7 +21,7 @@ import { MarkerShapeGlyph } from "./MarkerShapeGlyph.js";
 const TOOLTIP_SURFACE_CLASS = "overflow-hidden rounded-[12px] bg-[var(--adaptive-fillOpacity700)] backdrop-blur-[10px] shadow-[var(--adaptive-popup-shadow)]";
 const TOOLTIP_FIXED_CLASS = `fixed z-[1000001] ${TOOLTIP_SURFACE_CLASS} ${MOTION.tooltipFadeIn}`;
 
-const MARKER_ANCHOR_BASE_CLASS = "pointer-events-none fixed z-[1000000]";
+const MARKER_ANCHOR_BASE_CLASS = "pointer-events-none z-[1000000]";
 const MARKER_BUTTON_BASE_CLASS = "flex items-center justify-center";
 const OVERFLOW_HINT_BASE_CLASS = "pointer-events-auto fixed z-[1000000] flex items-center justify-center rounded-full bg-[#000000b3] backdrop-blur-[6px]";
 const OVERFLOW_HINT_TEXT_CLASS = "max-w-[220px] whitespace-nowrap px-[10px] py-[6px] text-[12px] font-medium leading-none text-white";
@@ -84,9 +84,10 @@ type MarkerButtonProps = {
     onHoverStart: () => void;
     onHoverEnd: () => void;
     onPointerMove: (clientX: number, clientY: number) => void;
+    positioning?: "fixed" | "absolute";
 };
 
-function MarkerButton({
+export function MarkerButton({
     markerItem,
     isHovered,
     isReportMode,
@@ -102,6 +103,7 @@ function MarkerButton({
     onHoverStart,
     onHoverEnd,
     onPointerMove,
+    positioning = "fixed",
 }: MarkerButtonProps) {
     const hoverRef = useNativeHover<HTMLButtonElement>({
         onEnter: () => {
@@ -155,7 +157,7 @@ function MarkerButton({
 
     return (
         <div
-            className={`${MARKER_ANCHOR_BASE_CLASS} ${shapeStyle.anchorClass}`}
+            className={`${MARKER_ANCHOR_BASE_CLASS} ${positioning} ${shapeStyle.anchorClass}`}
             style={{
                 left: markerItem.left,
                 top: markerItem.top,
@@ -249,6 +251,44 @@ function MarkerButton({
                     ) : null}
                 </div>
             </div>
+        </div>
+    );
+}
+
+type MarkerTooltipSurfaceProps = {
+    report: ReportFeedback;
+    detached?: boolean;
+    detachedKind?: MarkerDetachedKind;
+    detachedHint?: string;
+    detachedModalHint?: string;
+    positioning?: "fixed" | "absolute";
+    style?: CSSProperties;
+    containerRef?: Ref<HTMLDivElement>;
+};
+
+export function MarkerTooltipSurface({
+    report,
+    detached = false,
+    detachedKind = null,
+    detachedHint,
+    detachedModalHint,
+    positioning = "fixed",
+    style,
+    containerRef,
+}: MarkerTooltipSurfaceProps) {
+    return (
+        <div
+            ref={containerRef}
+            className={`pointer-events-none ${positioning === "fixed" ? TOOLTIP_FIXED_CLASS : `${TOOLTIP_SURFACE_CLASS} ${MOTION.tooltipFadeIn} absolute z-[1]`}`}
+            style={{ ...style, pointerEvents: "none" }}
+        >
+            <FeedbackHoverCard
+                report={report}
+                detached={detached}
+                detachedKind={detachedKind}
+                detachedHint={detachedHint}
+                detachedModalHint={detachedModalHint}
+            />
         </div>
     );
 }
@@ -455,25 +495,19 @@ export function MarkerLayer() {
                 : null}
 
             {showTooltip && tooltipReport && tooltipPosition && tooltipAnchorStyle ? (
-                <div
-                    ref={bindHoverTooltipRef}
-                    className={`pointer-events-none ${TOOLTIP_FIXED_CLASS}`}
+                <MarkerTooltipSurface
+                    containerRef={bindHoverTooltipRef}
+                    report={tooltipReport}
+                    detached={Boolean(tooltipAnchor?.detached)}
+                    detachedKind={tooltipAnchor?.detachedKind ?? null}
+                    detachedHint={messages.marker.detachedHint}
+                    detachedModalHint={messages.marker.detachedModalHint}
                     style={{
                         left: tooltipPosition.left,
                         top: tooltipPosition.top,
-
                         ...tooltipAnchorStyle,
-                        pointerEvents: "none",
                     }}
-                >
-                    <FeedbackHoverCard
-                        report={tooltipReport}
-                        detached={Boolean(tooltipAnchor?.detached)}
-                        detachedKind={tooltipAnchor?.detachedKind ?? null}
-                        detachedHint={messages.marker.detachedHint}
-                        detachedModalHint={messages.marker.detachedModalHint}
-                    />
-                </div>
+                />
             ) : null}
         </>
     );

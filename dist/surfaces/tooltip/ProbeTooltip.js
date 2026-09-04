@@ -68,7 +68,7 @@ function ProbeStepperField({ label, value, onChange }) {
     };
     return (_jsxs("div", { className: "flex flex-col gap-[4px] text-[14px] leading-[1.45]", children: [_jsx("span", { className: PROBE_FIELD_LABEL_CLASS, children: label }), _jsxs("div", { className: "flex items-center gap-[6px]", children: [_jsx("button", { type: "button", "data-fivepixels-interactive": "", disabled: !steppable, onClick: () => handleStep(-1), className: PROBE_STEPPER_BUTTON_CLASS, "aria-label": `Decrease ${label}`, children: "\u2212" }), _jsx("div", { className: `min-w-0 flex-1 ${PROBE_CONTROL_CLASS} px-[8px] py-[6px] text-center font-[var(--coding-font)] text-[14px]`, children: value }), _jsx("button", { type: "button", "data-fivepixels-interactive": "", disabled: !steppable, onClick: () => handleStep(1), className: PROBE_STEPPER_BUTTON_CLASS, "aria-label": `Increase ${label}`, children: "+" })] })] }));
 }
-export function ProbeTooltip() {
+export function ProbeTooltip({ embedded = false } = {}) {
     const { messages } = useReportPreferences();
     const { selectedTarget, pickProbeOpen, pickProbeValues, pickProbeSupportsTextFields, pickProbeLayoutMode, pickProbeCompareMode, pickProbeHasEdits, setPickProbeCompareMode, updatePickProbeValue, resetPickProbeValues, closePickProbe } = useReportSession();
     const panelRef = useRef(null);
@@ -82,6 +82,10 @@ export function ProbeTooltip() {
         setLayout(getPickProbePanelLayout(selectedTarget.rect, rect.width, rect.height));
     }, [selectedTarget]);
     useLayoutEffect(() => {
+        if (embedded) {
+            setLayout(null);
+            return;
+        }
         if (!pickProbeOpen || !selectedTarget) {
             setLayout(null);
             return;
@@ -95,7 +99,7 @@ export function ProbeTooltip() {
             window.removeEventListener("resize", updateLayout);
             window.removeEventListener("scroll", updateLayout, true);
         };
-    }, [pickProbeOpen, selectedTarget, pickProbeValues, updateLayout]);
+    }, [embedded, pickProbeOpen, selectedTarget, pickProbeValues, updateLayout]);
     if (!pickProbeOpen || !selectedTarget || !pickProbeValues) {
         return null;
     }
@@ -103,11 +107,13 @@ export function ProbeTooltip() {
         updatePickProbeValue(key, value);
     };
     const values = pickProbeValues;
-    return (_jsx(OverlayShell, { shell: "anchored", containerRef: panelRef, position: {
-            left: layout?.left ?? selectedTarget.rect.left,
-            top: layout?.top ?? selectedTarget.rect.bottom + 8,
-            opacity: layout ? 1 : 0,
-        }, resizable: false, showResizeHandles: false, zIndexClassName: PANEL_Z_CLASS, surfaceClassName: PANEL_SURFACE_CLASS, dataChrome: "pick-target-probe", onClick: (event) => event.stopPropagation(), children: _jsxs("div", { className: "flex max-h-[min(70vh,560px)] flex-col gap-[6px] overflow-y-auto", onContextMenu: (event) => {
+    return (_jsx(OverlayShell, { shell: "anchored", containerRef: panelRef, position: embedded
+            ? { left: 0, top: 0, width: "100%", opacity: 1 }
+            : {
+                left: layout?.left ?? selectedTarget.rect.left,
+                top: layout?.top ?? selectedTarget.rect.bottom + 8,
+                opacity: layout ? 1 : 0,
+            }, resizable: false, showResizeHandles: false, zIndexClassName: embedded ? "pointer-events-auto absolute z-[1]" : PANEL_Z_CLASS, surfaceClassName: PANEL_SURFACE_CLASS, dataChrome: "pick-target-probe", onClick: (event) => event.stopPropagation(), children: _jsxs("div", { className: "flex max-h-[min(70vh,560px)] flex-col gap-[6px] overflow-y-auto", onContextMenu: (event) => {
                 event.preventDefault();
                 event.stopPropagation();
             }, children: [_jsxs("div", { className: "flex items-center justify-between gap-[8px]", children: [_jsx("p", { className: "min-w-0 shrink text-[14px] font-semibold leading-[1.45] text-[var(--adaptive-black900)]", children: messages.pickTarget.probeTitle }), _jsxs("div", { className: "flex shrink-0 items-center gap-[6px]", children: [pickProbeHasEdits ? (_jsx(PickTargetCompareSegment, { mode: pickProbeCompareMode, onChange: setPickProbeCompareMode, beforeLabel: messages.pickTarget.probeBefore, afterLabel: messages.pickTarget.probeAfter })) : null, _jsx("button", { type: "button", "data-fivepixels-interactive": "", onClick: resetPickProbeValues, className: PROBE_HEADER_ACTION_CLASS, children: messages.pickTarget.probeReset }), _jsx("button", { type: "button", "data-fivepixels-interactive": "", onClick: closePickProbe, className: PROBE_HEADER_ACTION_CLASS, children: messages.pickTarget.probeClose })] })] }), pickProbeSupportsTextFields ? (_jsxs(_Fragment, { children: [_jsx(ProbeTextField, { label: messages.pickTarget.probeText, value: values.textContent, onChange: handleChange("textContent") }), _jsx(ProbeStepperField, { label: messages.pickTarget.probeFontSize, value: values.fontSize, onChange: handleChange("fontSize") }), _jsx(ProbeTextField, { label: messages.pickTarget.probeLineHeight, value: values.lineHeight, onChange: handleChange("lineHeight") })] })) : null, _jsxs("section", { className: "flex", children: [_jsx(ProbeStepperField, { label: messages.pickTarget.probePadding, value: values.padding, onChange: handleChange("padding") }), _jsx(ProbeStepperField, { label: messages.pickTarget.probeMargin, value: values.margin, onChange: handleChange("margin") })] }), _jsx(ProbeColorField, { label: messages.pickTarget.probeTextColor, value: values.textColor, onChange: handleChange("textColor") }), _jsx(ProbeColorField, { label: messages.pickTarget.probeBackgroundColor, value: values.backgroundColor, onChange: handleChange("backgroundColor") }), _jsx(ProbeColorField, { label: messages.pickTarget.probeBorderColor, value: values.borderColor, onChange: handleChange("borderColor") }), _jsx(ProbeLayoutControls, { layoutMode: pickProbeLayoutMode, values: values, messages: messages, onChange: (key, value) => handleChange(key)(value) })] }) }));

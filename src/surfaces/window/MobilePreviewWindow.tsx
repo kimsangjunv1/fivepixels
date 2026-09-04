@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type PointerEvent as ReactPointerEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
 import { DEVICE_PREVIEW_BRAND_ORDER, getDevicePreviewPresetsByBrand, getEmptyBezel, scaleDeviceChrome, type DevicePreviewScale } from "@/shared/constants/devicePreview.js";
 import { CaptureIcon, QrCodeIcon, ScreenRotateIcon } from "@/shared/components/icons/Icons.js";
 import type { WindowPosition } from "@/shared/hooks/useDraggableWindow.js";
@@ -117,7 +117,14 @@ function syncGuestViewport(iframe: HTMLIFrameElement | null, viewportWidth: numb
     getMobilePreviewGuestWindow(iframe)?.dispatchEvent(new Event("resize"));
 }
 
-export function MobilePreviewWindow() {
+type MobilePreviewWindowProps = {
+    /** Render the production preview window inside a bounded preview instead of the viewport. */
+    embedded?: boolean;
+    /** Optional host content used in embedded demos instead of loading an iframe. */
+    embeddedContent?: ReactNode;
+};
+
+export function MobilePreviewWindow({ embedded = false, embeddedContent }: MobilePreviewWindowProps = {}) {
     const {
         mobilePreviewUiOpen,
         setMobilePreviewUiOpen,
@@ -170,7 +177,7 @@ export function MobilePreviewWindow() {
     const [storedPosition] = useState(() => readMobilePreviewPosition());
     const [windowMode, setWindowMode] = useState<MobilePreviewWindowMode>("normal");
     const [zIndex, setZIndex] = useState(() => claimFloatingWindowZIndex());
-    const [frameLoadState, setFrameLoadState] = useState<FrameLoadState>("loading");
+    const [frameLoadState, setFrameLoadState] = useState<FrameLoadState>(embedded ? "ready" : "loading");
     const [frameSrc, setFrameSrc] = useState(() => (typeof window === "undefined" ? "" : readMobilePreviewUrl(window.location.href)));
     const [urlDraft, setUrlDraft] = useState(() => (typeof window === "undefined" ? "" : readMobilePreviewUrl(window.location.href)));
     const [openSidePanels, setOpenSidePanels] = useState<MobilePreviewSidePanelId[]>([]);
@@ -206,7 +213,7 @@ export function MobilePreviewWindow() {
         isDragging,
         handleDragHandlePointerDown,
     } = useDraggableWindow({
-        enabled: mobilePreviewUiOpen && windowMode === "normal" && dockMorph === null,
+        enabled: !embedded && mobilePreviewUiOpen && windowMode === "normal" && dockMorph === null,
         windowRef: rootRef,
     });
 
@@ -480,6 +487,10 @@ export function MobilePreviewWindow() {
     const urlInputClassName = "h-[24px] min-w-0 flex-1 rounded-[6px] border-0 bg-[var(--adaptive-fillOpacity500)] px-[8px] font-[12px] text-[var(--adaptive-black600)] outline-none";
 
     const displayRect = useMemo(() => {
+        if (embedded) {
+            return { left: 0, top: 0, width: contentWidth, height: undefined as number | undefined };
+        }
+
         if (dockMorph) {
             return dockMorph;
         }
@@ -499,7 +510,7 @@ export function MobilePreviewWindow() {
             width: contentWidth,
             height: undefined as number | undefined,
         };
-    }, [contentWidth, dockDrag.displayLeft, dockDrag.displayTop, dockMorph, overlayDock.minimizedWidth, restoredPosition.left, restoredPosition.top, showMinimizedChrome]);
+    }, [contentWidth, dockDrag.displayLeft, dockDrag.displayTop, dockMorph, embedded, overlayDock.minimizedWidth, restoredPosition.left, restoredPosition.top, showMinimizedChrome]);
 
     const qrPanelMessages = useMemo(
         () => ({
@@ -518,7 +529,7 @@ export function MobilePreviewWindow() {
         [messages.settings],
     );
 
-    if (!mobilePreviewUiOpen || isInsideMobilePreviewFrame()) {
+    if ((!embedded && !mobilePreviewUiOpen) || isInsideMobilePreviewFrame()) {
         return null;
     }
 
@@ -529,7 +540,7 @@ export function MobilePreviewWindow() {
             data-chrome="mobile-preview-simulator"
             data-mode={windowMode}
             data-orientation={mobilePreviewOrientation}
-            className={`fixed select-none ${showMinimizedChrome ? "" : "flex flex-col items-start"}`}
+            className={`${embedded ? "relative" : "fixed"} select-none ${showMinimizedChrome ? "" : "flex flex-col items-start"}`}
             style={{
                 left: displayRect.left,
                 top: displayRect.top,
@@ -675,22 +686,37 @@ export function MobilePreviewWindow() {
                                     background: screenBackground,
                                 }}
                             >
-                                <iframe
-                                    ref={iframeRef}
-                                    name={MOBILE_PREVIEW_FRAME_NAME}
-                                    title={messages.settings.mobilePreviewIframeTitle}
-                                    src={frameSrc}
-                                    onLoad={handleFrameLoad}
-                                    data-fivepixels-mobile-preview-frame=""
-                                    className="absolute left-0 top-0 z-[0] border-0"
-                                    style={{
-                                        width: guestViewportSize.width,
-                                        height: guestViewportSize.height,
-                                        transform: `scale(${MOBILE_PREVIEW_SCALE})`,
-                                        transformOrigin: "top left",
-                                        background: screenBackground,
-                                    }}
-                                />
+                                {embeddedContent ? (
+                                    <div
+                                        className="absolute left-0 top-0 z-[0] overflow-hidden"
+                                        style={{
+                                            width: guestViewportSize.width,
+                                            height: guestViewportSize.height,
+                                            transform: `scale(${MOBILE_PREVIEW_SCALE})`,
+                                            transformOrigin: "top left",
+                                            background: screenBackground,
+                                        }}
+                                    >
+                                        {embeddedContent}
+                                    </div>
+                                ) : (
+                                    <iframe
+                                        ref={iframeRef}
+                                        name={MOBILE_PREVIEW_FRAME_NAME}
+                                        title={messages.settings.mobilePreviewIframeTitle}
+                                        src={frameSrc}
+                                        onLoad={handleFrameLoad}
+                                        data-fivepixels-mobile-preview-frame=""
+                                        className="absolute left-0 top-0 z-[0] border-0"
+                                        style={{
+                                            width: guestViewportSize.width,
+                                            height: guestViewportSize.height,
+                                            transform: `scale(${MOBILE_PREVIEW_SCALE})`,
+                                            transformOrigin: "top left",
+                                            background: screenBackground,
+                                        }}
+                                    />
+                                )}
                                 {frameLoadState === "blocked" ? (
                                     <div className="pointer-events-none absolute inset-0 z-[1] flex items-center justify-center px-[12px] text-center text-[11px] font-semibold text-[var(--adaptive-black900)]" style={{ background: screenBackground }}>
                                         {messages.settings.mobilePreviewIframeBlocked}

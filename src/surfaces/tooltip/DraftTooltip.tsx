@@ -13,7 +13,12 @@ import { MOTION } from "@/shared/constants/motionClasses.js";
 
 const TOOLTIP_SURFACE_CLASS = "rounded-[16px] shadow-[var(--adaptive-popup-shadow)] bg-[var(--adaptive-fillOpacity700)] backdrop-blur-[5px]";
 
-export function DraftTooltip() {
+type DraftTooltipProps = {
+    /** Render the production composer in a bounded preview instead of at viewport coordinates. */
+    embedded?: boolean;
+};
+
+export function DraftTooltip({ embedded = false }: DraftTooltipProps = {}) {
     const { fields, authors, isPresentationMode, authorSelectionLocked, isAuthBootstrapping } = useReportPreferences();
     const {
         draft,
@@ -76,6 +81,7 @@ export function DraftTooltip() {
             sessionActor={sessionActor}
             cancelDraft={cancelDraft}
             isAuthBootstrapping={isAuthBootstrapping}
+            embedded={embedded}
         />
     );
 }
@@ -107,6 +113,7 @@ type DraftTooltipContentProps = {
     sessionActor: ReportContextValue["sessionActor"];
     cancelDraft: () => void;
     isAuthBootstrapping: boolean;
+    embedded: boolean;
 };
 
 function DraftTooltipContent({
@@ -136,6 +143,7 @@ function DraftTooltipContent({
     sessionActor,
     cancelDraft,
     isAuthBootstrapping,
+    embedded,
 }: DraftTooltipContentProps) {
     const { messages } = useReportPreferences();
     const [footerWarningMessage, setFooterWarningMessage] = useState<string | null>(null);
@@ -262,7 +270,11 @@ function DraftTooltipContent({
     return (
         <OverlayShell
             shell="anchored"
-            anchor={anchor}
+            anchor={embedded ? null : anchor}
+            position={embedded ? { left: 0, top: 0, width: "100%", opacity: 1 } : undefined}
+            zIndexClassName={embedded ? "pointer-events-auto absolute z-[1]" : undefined}
+            resizable={!embedded}
+            showResizeHandles={!embedded}
             dataAttributes={{ "data-fivepixels-draft-form": "" }}
             onClick={(event) => event.stopPropagation()}
             surfaceClassName={`${TOOLTIP_SURFACE_CLASS} ${MOTION.tooltipFadeIn}`}

@@ -1,5 +1,4 @@
-import { useEffect, useId, type CSSProperties, type ElementType } from "react";
-import { getReportStyleInjectionRoot } from "@/shared/utils/shared/dom.js";
+import { useEffect, useId, useRef, type CSSProperties, type ElementType } from "react";
 
 export type TextShimmerProps = {
     children: string;
@@ -25,10 +24,12 @@ export function Shimmer({
     duration = 2,
 }: TextShimmerProps) {
     const shimmerName = `text-shimmer-${useId().replace(/:/g, "")}`;
+    const shimmerRef = useRef<HTMLElement | null>(null);
 
     useEffect(() => {
-        const root = getReportStyleInjectionRoot();
-        root.getElementById(shimmerName)?.remove();
+        const nodeRoot = shimmerRef.current?.getRootNode();
+        const root = nodeRoot instanceof ShadowRoot ? nodeRoot : document.head;
+        root.querySelector(`#${CSS.escape(shimmerName)}`)?.remove();
 
         const keyframes = `
       @keyframes ${shimmerName} {
@@ -53,6 +54,7 @@ export function Shimmer({
 
     return (
         <Component
+            ref={shimmerRef}
             className={`relative inline-block bg-clip-text text-transparent [background-size:400%_100%] ${className}`}
             style={{
                 ...style,

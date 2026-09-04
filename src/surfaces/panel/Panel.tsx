@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { panelAnchorSide, placementToCollapsedPanelStyle, usePanelDock } from "@/shared/hooks/usePanelDock.js";
-import { usePanelResize, panelSizeToStyle } from "@/shared/hooks/usePanelResize.js";
+import { PANEL_DEFAULT_WIDTH, usePanelResize, panelSizeToStyle } from "@/shared/hooks/usePanelResize.js";
 import { usePanelFeedbackTransfer } from "@/shared/hooks/usePanelFeedbackTransfer.js";
 import { useReportData, useReportPreferences, useReportSession } from "@/shared/providers/reportContext.js";
 import {
@@ -74,7 +74,12 @@ function PanelCollapseTab({ collapsed, anchorSide, onClick, messages }: { collap
     );
 }
 
-export function Panel() {
+type PanelProps = {
+    /** Render the production panel inside a bounded preview instead of docking it to the viewport. */
+    embedded?: boolean;
+};
+
+export function Panel({ embedded = false }: PanelProps = {}) {
     const {
         environment,
         projectId,
@@ -158,7 +163,7 @@ export function Panel() {
         isRecording,
     });
     const { panelRef, panelStyle, placementCorner, isDragging, activeCorner, handleDragHandlePointerDown } = usePanelDock({
-        enabled: !isMobileViewport,
+        enabled: !embedded && !isMobileViewport,
         measureKey: `${panelCollapsed}-${isRecording}-${panelTab ?? "none"}-${isIssueMode}-${importStep !== "none" ? "import" : "none"}-${commandStep !== "none" ? "command" : "none"}-${panelView}`,
     });
     const panelExpanded = !panelCollapsed && !isRecording;
@@ -168,7 +173,7 @@ export function Panel() {
     const [tabShellOpen, setTabShellOpen] = useState(false);
     const tabShellMounted = renderedTab !== null;
     const { panelSize, resizeHandles, heightResizeEnabled, createResizePointerDown, resetPanelSize, isDefaultSize, isResizing, ghostRef } = usePanelResize({
-        enabled: !isMobileViewport && panelExpanded,
+        enabled: !embedded && !isMobileViewport && panelExpanded,
         corner: placementCorner,
         heightResizeEnabled: contentSectionOpen || tabShellMounted,
         panelRef,
@@ -266,8 +271,12 @@ export function Panel() {
         setPanelCollapsed((current) => !current);
     };
 
-    const resolvedPanelStyle = panelCollapsed && !isRecording ? placementToCollapsedPanelStyle({ corner: placementCorner }) : panelStyle;
-    const resolvedSizeStyle = panelExpanded ? panelSizeToStyle(panelSize, applyFixedHeight || isGateView) : undefined;
+    const resolvedPanelStyle = embedded
+        ? { position: "relative" as const, inset: "auto", width: PANEL_DEFAULT_WIDTH, maxWidth: "100%" }
+        : panelCollapsed && !isRecording
+          ? placementToCollapsedPanelStyle({ corner: placementCorner })
+          : panelStyle;
+    const resolvedSizeStyle = !embedded && panelExpanded ? panelSizeToStyle(panelSize, applyFixedHeight || isGateView) : undefined;
 
     const panelSideControls = panelExpanded ? (
         <div className="flex shrink-0 flex-col items-center border-l border-l-[var(--adaptive-border-subtle)] h-full">
@@ -285,11 +294,11 @@ export function Panel() {
     return (
         <>
             <PanelDockGuides
-                visible={isDragging}
+                visible={!embedded && isDragging}
                 activeCorner={activeCorner}
             />
 
-            {isResizing ? (
+            {!embedded && isResizing ? (
                 <CornerResizeGhost
                     ghostRef={ghostRef}
                     zIndexClassName="z-[1001001]"
@@ -302,6 +311,7 @@ export function Panel() {
                 data-collapsed={panelCollapsed && !isRecording ? "true" : "false"}
                 data-dragging={isDragging ? "true" : "false"}
                 data-anchor-side={anchorSide}
+                data-embedded={embedded ? "true" : undefined}
                 onDragEnter={isGateView ? undefined : handleDragEnter}
                 onDragLeave={isGateView ? undefined : handleDragLeave}
                 onDragOver={isGateView ? undefined : handleDragOver}
@@ -315,7 +325,7 @@ export function Panel() {
                 }`}
                 style={{ ...resolvedPanelStyle, ...resolvedSizeStyle, zIndex: PANEL_LAYER_Z_INDEX }}
             >
-                {panelExpanded ? (
+                {panelExpanded && !embedded ? (
                     <PanelResizeHandles
                         edges={resizeHandles.edges}
                         inactive={isDragging}

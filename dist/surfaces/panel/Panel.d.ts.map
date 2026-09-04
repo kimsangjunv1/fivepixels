@@ -1,1 +1,1 @@
-{"version":3,"file":"Panel.d.ts","sourceRoot":"","sources":["../../../src/surfaces/panel/Panel.tsx"],"names":[],"mappings":"AA4EA,wBAAgB,KAAK,gCA2jBpB"}
+{"version":3,"file":"Panel.d.ts","sourceRoot":"","sources":["../../../src/surfaces/panel/Panel.tsx"],"names":[],"mappings":"AA4EA,KAAK,UAAU,GAAG;IACd,kGAAkG;IAClG,QAAQ,CAAC,EAAE,OAAO,CAAC;CACtB,CAAC;AAEF,wBAAgB,KAAK,CAAC,EAAE,QAAgB,EAAE,GAAE,UAAe,+BAgkB1D"}

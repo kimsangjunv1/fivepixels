@@ -98,7 +98,12 @@ function NotificationCard({
     );
 }
 
-export function NotificationCenter() {
+type NotificationCenterProps = {
+    /** Render the production notification center inside a bounded preview. */
+    embedded?: boolean;
+};
+
+export function NotificationCenter({ embedded = false }: NotificationCenterProps = {}) {
     const { messages, locale } = useReportPreferences();
     const {
         notifications,
@@ -140,6 +145,7 @@ export function NotificationCenter() {
             ariaLabel={messages.notifications.windowAriaLabel}
             dataChrome="notification-center"
             zIndex={PANEL_LAYER_Z_INDEX + 10}
+            backdropClassName={embedded ? "pointer-events-auto absolute inset-0 overflow-hidden rounded-[16px]" : undefined}
             backdropStyle={{
                 background: "linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.72) 55%, rgba(0, 0, 0, 0.92) 100%)",
             }}

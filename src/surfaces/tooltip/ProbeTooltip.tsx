@@ -189,7 +189,12 @@ function ProbeStepperField({ label, value, onChange }: ProbeStepperFieldProps) {
     );
 }
 
-export function ProbeTooltip() {
+type ProbeTooltipProps = {
+    /** Render the production inspector in a bounded preview instead of at viewport coordinates. */
+    embedded?: boolean;
+};
+
+export function ProbeTooltip({ embedded = false }: ProbeTooltipProps = {}) {
     const { messages } = useReportPreferences();
     const { selectedTarget, pickProbeOpen, pickProbeValues, pickProbeSupportsTextFields, pickProbeLayoutMode, pickProbeCompareMode, pickProbeHasEdits, setPickProbeCompareMode, updatePickProbeValue, resetPickProbeValues, closePickProbe } = useReportSession();
 
@@ -208,6 +213,11 @@ export function ProbeTooltip() {
     }, [selectedTarget]);
 
     useLayoutEffect(() => {
+        if (embedded) {
+            setLayout(null);
+            return;
+        }
+
         if (!pickProbeOpen || !selectedTarget) {
             setLayout(null);
             return;
@@ -224,7 +234,7 @@ export function ProbeTooltip() {
             window.removeEventListener("resize", updateLayout);
             window.removeEventListener("scroll", updateLayout, true);
         };
-    }, [pickProbeOpen, selectedTarget, pickProbeValues, updateLayout]);
+    }, [embedded, pickProbeOpen, selectedTarget, pickProbeValues, updateLayout]);
 
     if (!pickProbeOpen || !selectedTarget || !pickProbeValues) {
         return null;
@@ -240,14 +250,18 @@ export function ProbeTooltip() {
         <OverlayShell
             shell="anchored"
             containerRef={panelRef}
-            position={{
-                left: layout?.left ?? selectedTarget.rect.left,
-                top: layout?.top ?? selectedTarget.rect.bottom + 8,
-                opacity: layout ? 1 : 0,
-            }}
+            position={
+                embedded
+                    ? { left: 0, top: 0, width: "100%", opacity: 1 }
+                    : {
+                          left: layout?.left ?? selectedTarget.rect.left,
+                          top: layout?.top ?? selectedTarget.rect.bottom + 8,
+                          opacity: layout ? 1 : 0,
+                      }
+            }
             resizable={false}
             showResizeHandles={false}
-            zIndexClassName={PANEL_Z_CLASS}
+            zIndexClassName={embedded ? "pointer-events-auto absolute z-[1]" : PANEL_Z_CLASS}
             surfaceClassName={PANEL_SURFACE_CLASS}
             dataChrome="pick-target-probe"
             onClick={(event) => event.stopPropagation()}
