@@ -277,13 +277,13 @@ export function createDemoAdapter() {
     };
 }
 export const DEMO_SCENE_SIZE = {
-    "marker-tooltip": { width: 390, height: 230 },
+    "marker-tooltip": { width: 540, height: 330 },
     "feedback-composer": { width: 430, height: 300 },
     "memo-composer": { width: 430, height: 230 },
     "panel-overview": { width: 390, height: 220 },
     "network-monitor": { width: 430, height: 540 },
     "memo-list": { width: 390, height: 520 },
-    "element-inspector": { width: 380, height: 540 },
+    "element-inspector": { width: 680, height: 570 },
     "device-preview": { width: 420, height: 650 },
     "feedback-thread": { width: 680, height: 520 },
     settings: { width: 390, height: 620 },
