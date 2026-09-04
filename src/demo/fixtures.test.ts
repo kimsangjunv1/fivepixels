@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DEMO_SCENE_SIZE, getDemoCopy } from "./fixtures.js";
+import { createDemoAdapter, createDemoNotifications, DEMO_REPORTS, DEMO_SCENE_SIZE } from "./fixtures.js";
 import { FIVE_PIXELS_DEMO_SCENES } from "./types.js";
 
 describe("FivePixels demo fixtures", () => {
@@ -10,8 +10,16 @@ describe("FivePixels demo fixtures", () => {
         }
     });
 
-    it("provides localized fixture copy", () => {
-        expect(getDemoCopy("ko").composer.placeholder).not.toBe(getDemoCopy("en").composer.placeholder);
-        expect(getDemoCopy("ko").panel.statuses).toHaveLength(getDemoCopy("en").panel.statuses.length);
+    it("provides localized notification data", () => {
+        expect(createDemoNotifications("ko")[0].title).not.toBe(createDemoNotifications("en")[0].title);
+        expect(createDemoNotifications("ko")).toHaveLength(createDemoNotifications("en").length);
+    });
+
+    it("serves reports from the in-memory adapter", async () => {
+        const adapter = createDemoAdapter();
+        const reports = await adapter.markers.list({ pathname: "/demo-showcase" });
+
+        expect(reports).toHaveLength(DEMO_REPORTS.length);
+        expect(await adapter.feedback.get(DEMO_REPORTS[0].id)).toMatchObject({ id: DEMO_REPORTS[0].id });
     });
 });

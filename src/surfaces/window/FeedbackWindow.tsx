@@ -268,9 +268,11 @@ type FeedbackWindowProps = {
     report: ReportFeedback;
     anchor: Pick<Marker, "left" | "top">;
     isFocused: boolean;
+    /** Render the production window inside a bounded preview instead of at viewport coordinates. */
+    embedded?: boolean;
 };
 
-export function FeedbackWindow({ report, anchor, isFocused }: FeedbackWindowProps) {
+export function FeedbackWindow({ report, anchor, isFocused, embedded = false }: FeedbackWindowProps) {
     const { messages, fields, authors, projectId } = useReportPreferences();
     const {
         currentPathname,
@@ -333,7 +335,7 @@ export function FeedbackWindow({ report, anchor, isFocused }: FeedbackWindowProp
 
     const overlayDock = useOverlayMinimizedDock({
         windowId: markerDockId,
-        enabled: true,
+        enabled: !embedded,
         isMinimized: windowMode === "minimized",
         onMinimizedChange: (minimized) => setWindowMode(minimized ? "minimized" : "normal"),
     });
@@ -377,7 +379,7 @@ export function FeedbackWindow({ report, anchor, isFocused }: FeedbackWindowProp
     );
 
     const { position, setPosition, handleDragHandlePointerDown } = useDraggableWindow({
-        enabled: windowMode === "normal" && dockMorph === null,
+        enabled: !embedded && windowMode === "normal" && dockMorph === null,
         windowRef,
     });
 
@@ -390,7 +392,7 @@ export function FeedbackWindow({ report, anchor, isFocused }: FeedbackWindowProp
     );
 
     const { isResizing, ghostRef, createResizePointerDown } = useGhostCornerResize({
-        enabled: windowMode === "normal" && dockMorph === null,
+        enabled: !embedded && windowMode === "normal" && dockMorph === null,
         targetRef: windowRef,
         clampSize: clampMarkerWindowSize,
         onResizeComplete: handleResizeComplete,
@@ -573,12 +575,14 @@ export function FeedbackWindow({ report, anchor, isFocused }: FeedbackWindowProp
 
     const restoredPosition = isMaximized ? { left: WINDOW_MARGIN, top: WINDOW_MARGIN } : (position ?? seedPosition);
     const resolvedPosition = showMinimizedChrome ? overlayDock.dockPosition : restoredPosition;
-    const displayRect = dockMorph ?? {
-        left: showMinimizedChrome ? dockDrag.displayLeft : resolvedPosition.left,
-        top: showMinimizedChrome ? dockDrag.displayTop : resolvedPosition.top,
-        width: showMinimizedChrome ? minimizedWidth : effectiveSize.width,
-        height: showMinimizedChrome ? MINIMIZED_WINDOW_HEIGHT : effectiveSize.height,
-    };
+    const displayRect = embedded
+        ? { left: 0, top: 0, width: "min(600px, calc(100vw - 32px))", height: DEFAULT_WINDOW_SIZE.height }
+        : dockMorph ?? {
+              left: showMinimizedChrome ? dockDrag.displayLeft : resolvedPosition.left,
+              top: showMinimizedChrome ? dockDrag.displayTop : resolvedPosition.top,
+              width: showMinimizedChrome ? minimizedWidth : effectiveSize.width,
+              height: showMinimizedChrome ? MINIMIZED_WINDOW_HEIGHT : effectiveSize.height,
+          };
     const layoutTransition = overlayDock.layoutTransition;
     const leftSectionClass = getLeftSectionClass(windowSurfacePhase);
     const windowAnimationClass =
@@ -973,7 +977,7 @@ export function FeedbackWindow({ report, anchor, isFocused }: FeedbackWindowProp
 
     return (
         <>
-            {isResizing ? <CornerResizeGhost ghostRef={ghostRef} /> : null}
+            {!embedded && isResizing ? <CornerResizeGhost ghostRef={ghostRef} /> : null}
 
             <div
                 ref={bindWindowRef}
@@ -983,7 +987,7 @@ export function FeedbackWindow({ report, anchor, isFocused }: FeedbackWindowProp
                 onPointerDown={handleWindowActivate}
                 onClick={(event) => event.stopPropagation()}
                 onAnimationEnd={handleWindowAnimationEnd}
-                className={`fixed rounded-[16px] shadow-[var(--adaptive-popup-shadow)] ${
+                className={`${embedded ? "relative" : "fixed"} rounded-[16px] shadow-[var(--adaptive-popup-shadow)] ${
                     windowMode === "normal" && dockMorph === null
                         ? "overflow-visible"
                         : showMinimizedChrome && dockMorph === null && !isDockDragging
@@ -1104,7 +1108,7 @@ export function FeedbackWindow({ report, anchor, isFocused }: FeedbackWindowProp
                     </div>
                 )}
 
-                {windowMode === "normal" && dockMorph === null ? (
+                {!embedded && windowMode === "normal" && dockMorph === null ? (
                     <WindowResizeHandles
                         resizeWidthAriaLabel={messages.panel.resizeWidthAriaLabel}
                         resizeHeightAriaLabel={messages.panel.resizeHeightAriaLabel}

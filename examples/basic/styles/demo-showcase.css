@@ -221,6 +221,8 @@
     contain-intrinsic-size: auto 620px;
 }
 
+.demo-showcase__feature--reverse { grid-template-columns: minmax(600px, 1.18fr) minmax(260px, 0.82fr); }
+
 .demo-showcase__feature--reverse .demo-showcase__copy { order: 2; }
 .demo-showcase__feature--reverse .demo-showcase__demo { order: 1; }
 .demo-showcase__copy > span { color: var(--demo-accent); font-size: 12px; font-weight: 800; }

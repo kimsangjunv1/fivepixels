@@ -17,7 +17,7 @@ import { MarkerReplyBadge } from "./MarkerReplyBadge.js";
 import { MarkerShapeGlyph } from "./MarkerShapeGlyph.js";
 const TOOLTIP_SURFACE_CLASS = "overflow-hidden rounded-[12px] bg-[var(--adaptive-fillOpacity700)] backdrop-blur-[10px] shadow-[var(--adaptive-popup-shadow)]";
 const TOOLTIP_FIXED_CLASS = `fixed z-[1000001] ${TOOLTIP_SURFACE_CLASS} ${MOTION.tooltipFadeIn}`;
-const MARKER_ANCHOR_BASE_CLASS = "pointer-events-none fixed z-[1000000]";
+const MARKER_ANCHOR_BASE_CLASS = "pointer-events-none z-[1000000]";
 const MARKER_BUTTON_BASE_CLASS = "flex items-center justify-center";
 const OVERFLOW_HINT_BASE_CLASS = "pointer-events-auto fixed z-[1000000] flex items-center justify-center rounded-full bg-[#000000b3] backdrop-blur-[6px]";
 const OVERFLOW_HINT_TEXT_CLASS = "max-w-[220px] whitespace-nowrap px-[10px] py-[6px] text-[12px] font-medium leading-none text-white";
@@ -36,7 +36,7 @@ function MarkerOverflowHintButton({ hint, label, onActivate }) {
 function DetachedModalGhostFrame({ label }) {
     return (_jsx("div", { className: `${MODAL_GHOST_LAYER_CLASS} flex items-center justify-center bg-[var(--adaptive-neutralTintOpacity900)] p-[24px] text-center text-[14px] font-semibold text-[var(--adaptive-black900)] backdrop-blur-[10px] ${MOTION.tooltipFadeIn}`, "aria-hidden": true, children: label }));
 }
-function MarkerButton({ markerItem, isHovered, isReportMode, isInteractive, isProximityHighlighted, isWindowOpen, viewingWindowBadge, detachedAriaLabel, detachedModalAriaLabel, markerAppearance, typography, onActivate, onHoverStart, onHoverEnd, onPointerMove, }) {
+export function MarkerButton({ markerItem, isHovered, isReportMode, isInteractive, isProximityHighlighted, isWindowOpen, viewingWindowBadge, detachedAriaLabel, detachedModalAriaLabel, markerAppearance, typography, onActivate, onHoverStart, onHoverEnd, onPointerMove, positioning = "fixed", }) {
     const hoverRef = useNativeHover({
         onEnter: () => {
             if (!isInteractive) {
@@ -84,7 +84,7 @@ function MarkerButton({ markerItem, isHovered, isReportMode, isInteractive, isPr
     });
     const replyBadgeSize = getMarkerReplyBadgeSize(dotSize);
     const scaleClass = isHovered ? "scale-[1.4]" : isReportMode && isProximityHighlighted ? "scale-110" : "";
-    return (_jsx("div", { className: `${MARKER_ANCHOR_BASE_CLASS} ${shapeStyle.anchorClass}`, style: {
+    return (_jsx("div", { className: `${MARKER_ANCHOR_BASE_CLASS} ${positioning} ${shapeStyle.anchorClass}`, style: {
             left: markerItem.left,
             top: markerItem.top,
         }, children: _jsx("div", { className: `relative transition-opacity duration-150 ${isInteractive
@@ -115,6 +115,9 @@ function MarkerButton({ markerItem, isHovered, isReportMode, isInteractive, isPr
                             backgroundColor: markerColor,
                             boxShadow: "0 1px 4px #00000040",
                         }, children: aggregateCount })) : null, showReplyIndicator ? (_jsx(MarkerReplyBadge, { size: replyBadgeSize, accentColor: markerColor })) : null, isWindowOpen ? (_jsx("span", { "aria-hidden": true, className: "pointer-events-none absolute left-1/2 top-full z-20 mt-[2px] -translate-x-1/2 whitespace-nowrap rounded-full bg-black/55 px-[2px] py-[1px] text-[10px] font-semibold leading-none text-white", children: viewingWindowBadge })) : null] }) }) }));
+}
+export function MarkerTooltipSurface({ report, detached = false, detachedKind = null, detachedHint, detachedModalHint, positioning = "fixed", style, containerRef, }) {
+    return (_jsx("div", { ref: containerRef, className: `pointer-events-none ${positioning === "fixed" ? TOOLTIP_FIXED_CLASS : `${TOOLTIP_SURFACE_CLASS} ${MOTION.tooltipFadeIn} absolute z-[1]`}`, style: { ...style, pointerEvents: "none" }, children: _jsx(FeedbackHoverCard, { report: report, detached: detached, detachedKind: detachedKind, detachedHint: detachedHint, detachedModalHint: detachedModalHint }) }));
 }
 export function MarkerLayer() {
     const { messages, markerAppearance, typography, showHiddenDetachedMarkers, showModalDetachedMarkers } = useReportPreferences();
@@ -222,11 +225,10 @@ export function MarkerLayer() {
                 return (_jsx(MarkerButton, { markerItem: markerItem, isHovered: isHovered, isReportMode: isReportMode, isInteractive: isInteractive, isProximityHighlighted: markerItem.id === proximityHighlightedMarkerId, isWindowOpen: openReplyReportIdSet.has(markerItem.report.id), viewingWindowBadge: messages.marker.viewingWindowBadge, detachedAriaLabel: messages.marker.detachedAriaLabel, detachedModalAriaLabel: messages.marker.detachedModalAriaLabel, markerAppearance: markerAppearance, typography: typography, onActivate: handleMarkerActivate, onHoverStart: () => handleMarkerHoverStart(markerItem.report.id), onHoverEnd: () => handleMarkerHoverEnd(markerItem.report.id), onPointerMove: (clientX, clientY) => setHoverPointer({ clientX, clientY }) }, markerItem.id));
             }), isViewMode
                 ? overflowHints.map((hint) => (_jsx(MarkerOverflowHintButton, { hint: hint, label: getOverflowHintLabel(hint), onActivate: handleOverflowHintActivate }, hint.id)))
-                : null, showTooltip && tooltipReport && tooltipPosition && tooltipAnchorStyle ? (_jsx("div", { ref: bindHoverTooltipRef, className: `pointer-events-none ${TOOLTIP_FIXED_CLASS}`, style: {
+                : null, showTooltip && tooltipReport && tooltipPosition && tooltipAnchorStyle ? (_jsx(MarkerTooltipSurface, { containerRef: bindHoverTooltipRef, report: tooltipReport, detached: Boolean(tooltipAnchor?.detached), detachedKind: tooltipAnchor?.detachedKind ?? null, detachedHint: messages.marker.detachedHint, detachedModalHint: messages.marker.detachedModalHint, style: {
                     left: tooltipPosition.left,
                     top: tooltipPosition.top,
                     ...tooltipAnchorStyle,
-                    pointerEvents: "none",
-                }, children: _jsx(FeedbackHoverCard, { report: tooltipReport, detached: Boolean(tooltipAnchor?.detached), detachedKind: tooltipAnchor?.detachedKind ?? null, detachedHint: messages.marker.detachedHint, detachedModalHint: messages.marker.detachedModalHint }) })) : null] }));
+                } })) : null] }));
 }
 //# sourceMappingURL=MarkerLayer.js.map

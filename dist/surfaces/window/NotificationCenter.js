@@ -40,7 +40,7 @@ function NotificationCard({ item, index, entered, locale, dismissAriaLabel, onOp
             willChange: "opacity, transform",
         }, children: [_jsxs("button", { type: "button", "data-fivepixels-interactive": "", onClick: () => onOpen(item), className: "min-w-0 flex-1 text-left", children: [_jsxs("div", { className: "flex items-start justify-between gap-[8px]", children: [_jsx("p", { className: "text-[13px] font-bold text-[var(--adaptive-black900)]", children: item.title }), _jsx("p", { className: "shrink-0 text-[10px] font-medium text-[var(--adaptive-black500)]", children: formatRelativeTime(item.createdAt, locale) })] }), _jsx("p", { className: "mt-[4px] text-[12px] leading-[1.45] text-[var(--adaptive-black600)]", children: item.body })] }), _jsx("button", { type: "button", "data-fivepixels-interactive": "", "aria-label": dismissAriaLabel, onClick: () => onDismiss(item.id), className: "mt-[1px] flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full text-[var(--adaptive-black500)] hover:bg-[var(--adaptive-tintOpacity200)] hover:text-[var(--adaptive-black900)]", children: _jsx(CloseIcon, { className: "h-[12px] w-[12px]" }) })] }));
 }
-export function NotificationCenter() {
+export function NotificationCenter({ embedded = false } = {}) {
     const { messages, locale } = useReportPreferences();
     const { notifications, closeNotificationUi, markNotificationRead, markAllNotificationsRead, dismissNotification, clearNotifications, activateNotification, } = useReportSession();
     const [entered, setEntered] = useState(false);
@@ -58,7 +58,7 @@ export function NotificationCenter() {
     }, [activateNotification, markNotificationRead]);
     const footerIndex = notifications.length === 0 ? 0 : notifications.length;
     const actionsIndex = footerIndex + 1;
-    return (_jsx(OverlayShell, { shell: "modal", open: true, onClose: closeNotificationUi, ariaLabel: messages.notifications.windowAriaLabel, dataChrome: "notification-center", zIndex: PANEL_LAYER_Z_INDEX + 10, backdropStyle: {
+    return (_jsx(OverlayShell, { shell: "modal", open: true, onClose: closeNotificationUi, ariaLabel: messages.notifications.windowAriaLabel, dataChrome: "notification-center", zIndex: PANEL_LAYER_Z_INDEX + 10, backdropClassName: embedded ? "pointer-events-auto absolute inset-0 overflow-hidden rounded-[16px]" : undefined, backdropStyle: {
             background: "linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.72) 55%, rgba(0, 0, 0, 0.92) 100%)",
         }, panelClassName: "pointer-events-auto absolute inset-y-0 right-0 flex w-full max-w-[380px] flex-col justify-end", children: _jsxs("div", { className: "flex max-h-[min(88dvh,920px)] flex-col gap-[10px] overflow-y-auto px-[16px] pb-[18px] pt-[48px]", children: [notifications.length === 0 ? (_jsx("div", { className: "rounded-[18px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] px-[14px] py-[18px] text-center shadow-[var(--adaptive-popup-shadow)]", style: {
                         opacity: entered ? 1 : 0,
