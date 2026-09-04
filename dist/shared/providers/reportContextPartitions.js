@@ -269,6 +269,7 @@ export const REPORT_SESSION_KEYS = [
     "dismissNotification",
     "clearNotifications",
     "activateNotification",
+    "runNotificationAction",
 ];
 export const REPORT_DATA_KEYS = [
     "routeDetailsStats",

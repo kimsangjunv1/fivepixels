@@ -11,7 +11,8 @@ import { useReportReplyReview } from "./useReportReplyReview.js";
 import { assembleReportContextValue } from "./assembleReportContextValue.js";
 import { useReportTeamActor } from "./useReportTeamActor.js";
 import { useNotificationCenter } from "./useNotificationCenter.js";
-import type { NotificationItem } from "@/shared/types/notification.js";
+import type { NotificationActionId, NotificationItem } from "@/shared/types/notification.js";
+import { buildStatusNotifications } from "@/shared/utils/notification/buildStatusNotifications.js";
 import type { FivePixelsSync } from "@/shared/constants/loginMethod.js";
 import { useNetworkMonitor } from "../useNetworkMonitor.js";
 import type { FivePixelsAdapter } from "@/shared/types/adapter.js";
@@ -421,10 +422,41 @@ export function useReportState({
         activeApiFailureAlert,
     });
 
+    useEffect(() => {
+        const hasHiddenMarker = markers.markers.some((marker) => marker.detachedKind === "hidden");
+        const hasModalMarker = markers.markers.some((marker) => marker.detachedKind === "modal");
+
+        notifications.syncStickyNotifications(
+            buildStatusNotifications({
+                messages: panel.messages,
+                hasHiddenMarker,
+                hasModalMarker,
+                hasProbeEdit: draft.hasProbeSessionChanges,
+                showHiddenDetachedMarkers: panel.showHiddenDetachedMarkers,
+                showModalDetachedMarkers: panel.showModalDetachedMarkers,
+                canUndoProbeSession: draft.canUndoProbeSession,
+                canRedoProbeSession: draft.canRedoProbeSession,
+            }),
+        );
+    }, [
+        draft.canRedoProbeSession,
+        draft.canUndoProbeSession,
+        draft.hasProbeSessionChanges,
+        markers.markers,
+        notifications.syncStickyNotifications,
+        panel.messages,
+        panel.showHiddenDetachedMarkers,
+        panel.showModalDetachedMarkers,
+    ]);
+
     const activateNotification = useCallback(
         (item: NotificationItem) => {
             if (item.type === "api_error") {
                 panel.openPanelTab("api-flow");
+                return;
+            }
+
+            if (item.type === "probe_edit" || item.type === "element_missing" || item.type === "modal_marker") {
                 return;
             }
 
@@ -452,6 +484,39 @@ export function useReportState({
             void markers.activateFeedbackMarker(report, item.payload.caseId ?? null);
         },
         [markers, panel],
+    );
+
+    const runNotificationAction = useCallback(
+        (item: NotificationItem, action: NotificationActionId) => {
+            switch (action) {
+                case "hide_markers":
+                    if (item.payload.detachedKind === "modal") {
+                        panel.setShowModalDetachedMarkers(false);
+                    } else {
+                        panel.setShowHiddenDetachedMarkers(false);
+                    }
+                    break;
+                case "show_markers":
+                    if (item.payload.detachedKind === "modal") {
+                        panel.setShowModalDetachedMarkers(true);
+                    } else {
+                        panel.setShowHiddenDetachedMarkers(true);
+                    }
+                    break;
+                case "probe_reset":
+                    draft.revertAllSavedProbeEdits();
+                    break;
+                case "probe_undo":
+                    draft.undoProbeSessionAction();
+                    break;
+                case "probe_redo":
+                    draft.redoProbeSessionAction();
+                    break;
+            }
+
+            notifications.markNotificationRead(item.id);
+        },
+        [draft, notifications, panel],
     );
 
     useEffect(() => {
@@ -564,6 +629,7 @@ export function useReportState({
         networkMonitorEnabled,
         notifications,
         activateNotification,
+        runNotificationAction,
     });
 
 }

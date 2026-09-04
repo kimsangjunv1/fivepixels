@@ -92,7 +92,7 @@ function NoticeFooter({ actions, footerDividerBeforeLast, className = "" }: { ac
 
 /**
  * Shared panel notice / confirm shell — same visual language as import "확인 필요".
- * Status banners (PanelStatusBanner) intentionally stay separate.
+ * Settings/import dialogs stay separate from the floating notification stack.
  */
 export function NoticeDialog({
     title,

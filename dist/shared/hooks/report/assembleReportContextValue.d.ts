@@ -6,7 +6,7 @@ import type { useReportMutations } from "./useReportMutations.js";
 import type { useReportPanelShell } from "./useReportPanelShell.js";
 import type { useReportReplyReview } from "./useReportReplyReview.js";
 import type { useNotificationCenter } from "./useNotificationCenter.js";
-import type { NotificationItem } from "../../../shared/types/notification.js";
+import type { NotificationActionId, NotificationItem } from "../../../shared/types/notification.js";
 import type { FivePixelsAdapter } from "../../../shared/types/adapter.js";
 import type { ApiFlowEntry } from "../../../shared/types/networkMonitor.js";
 import type { ReportAuthor, ReportFeedback, ReportField, ReportGitHubConfig } from "../../../shared/types/report.js";
@@ -47,12 +47,13 @@ type AssembleArgs = {
     networkMonitorEnabled: boolean;
     notifications: ReturnType<typeof useNotificationCenter>;
     activateNotification: (item: NotificationItem) => void;
+    runNotificationAction: (item: NotificationItem, action: NotificationActionId) => void;
 };
 /**
  * Flat context value for ReportProvider slices.
  * Keys stay flat (see reportContextPartitions). Domain hooks → this assembler → UI.
  */
-export declare function assembleReportContextValue({ panel, auth, draft, markers, mutations, reply, fields, projectId, environment, appVersion, showFeedbackList, teamReviewers, teamActor, apiTeamDirectory, apiTeamMembers, apiTeamMembersLoading, refreshTeamMembers, adapter, github, canDeleteViaStorage, usesLazyReplies, usesCreateReply, visibleShortcutKeys, overlayRef, replyHistory, selectReport, beginFeedbackEdit, cancelDraft, apiFlowEntries, activeApiFailureAlert, dismissFailureAlert, appendApiFlowEntryToDraftCase, networkMonitorEnabled, notifications, activateNotification, }: AssembleArgs): {
+export declare function assembleReportContextValue({ panel, auth, draft, markers, mutations, reply, fields, projectId, environment, appVersion, showFeedbackList, teamReviewers, teamActor, apiTeamDirectory, apiTeamMembers, apiTeamMembersLoading, refreshTeamMembers, adapter, github, canDeleteViaStorage, usesLazyReplies, usesCreateReply, visibleShortcutKeys, overlayRef, replyHistory, selectReport, beginFeedbackEdit, cancelDraft, apiFlowEntries, activeApiFailureAlert, dismissFailureAlert, appendApiFlowEntryToDraftCase, networkMonitorEnabled, notifications, activateNotification, runNotificationAction, }: AssembleArgs): {
     panelAppearance: import("../../../shared/types/report.js").ReportAppearance;
     setPanelAppearance: (nextAppearance: import("../../../shared/types/report.js").ReportAppearance) => void;
     tooltipAppearance: import("../../../shared/types/report.js").ReportAppearance;
@@ -424,6 +425,7 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     dismissNotification: (id: string) => void;
     clearNotifications: () => void;
     activateNotification: (item: NotificationItem) => void;
+    runNotificationAction: (item: NotificationItem, action: NotificationActionId) => void;
 };
 export {};
 //# sourceMappingURL=assembleReportContextValue.d.ts.map

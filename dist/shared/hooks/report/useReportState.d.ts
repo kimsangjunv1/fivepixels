@@ -1,7 +1,7 @@
 import type { DeepPartialReportMessages } from "../../../shared/i18n/types.js";
 import type { ReportLocale } from "../../../shared/i18n/types.js";
 import { type PanelView } from "./useReportAuthSession.js";
-import type { NotificationItem } from "../../../shared/types/notification.js";
+import type { NotificationActionId, NotificationItem } from "../../../shared/types/notification.js";
 import type { FivePixelsSync } from "../../../shared/constants/loginMethod.js";
 import type { FivePixelsAdapter } from "../../../shared/types/adapter.js";
 import type { ReportAppearance, ReportAuthor, ReportEvent, ReportFeedback, ReportField, ReportGitHubConfig, FivePixelsMode, ReportIdentify, QuestionThreadDisplay, ThreadLayoutStyle } from "../../../shared/types/report.js";
@@ -412,5 +412,6 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     dismissNotification: (id: string) => void;
     clearNotifications: () => void;
     activateNotification: (item: NotificationItem) => void;
+    runNotificationAction: (item: NotificationItem, action: NotificationActionId) => void;
 };
 //# sourceMappingURL=useReportState.d.ts.map

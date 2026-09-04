@@ -9,18 +9,11 @@ type PickTargetCompareSegmentProps = {
     tone?: "default" | "inverse";
 };
 
-export function PickTargetCompareSegment({
-    mode,
-    onChange,
-    beforeLabel,
-    afterLabel,
-    className = "",
-    tone = "default",
-}: PickTargetCompareSegmentProps) {
+export function PickTargetCompareSegment({ mode, onChange, beforeLabel, afterLabel, className = "", tone = "default" }: PickTargetCompareSegmentProps) {
     const shellClassName =
         tone === "inverse"
             ? "inline-flex overflow-hidden rounded-[8px] border border-white/30 bg-white/10 p-[2px]"
-            : "inline-flex overflow-hidden rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface-overlay)] p-[2px] shadow-[var(--adaptive-popup-shadow)]";
+            : "inline-flex overflow-hidden rounded-[8px] bg-[var(--adaptive-surface-overlay)] p-[2px] shadow-[var(--adaptive-popup-shadow)]";
 
     return (
         <div

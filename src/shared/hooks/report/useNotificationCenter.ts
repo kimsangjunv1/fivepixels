@@ -5,6 +5,7 @@ import type { ReportFeedback, ReportReply } from "@/shared/types/report.js";
 import type { ReportMessages } from "@/shared/i18n/types.js";
 import { getNotificationsStorageKey } from "@/shared/constants/storageKeys.js";
 import { diffNotifications, type FeedbackSnapshot, type NotificationActor } from "@/shared/utils/notification/notificationDiff.js";
+import { isStatusNotificationId, mergeStickyNotifications } from "@/shared/utils/notification/notificationGroups.js";
 
 type StoredNotifications = {
     items: NotificationItem[];
@@ -28,7 +29,8 @@ function readStoredNotifications(storageKey: string): NotificationItem[] {
             return [];
         }
 
-        return parsed.items.filter((item) => item && typeof item.id === "string");
+        // Sticky status notifications are rebuilt from live session state.
+        return parsed.items.filter((item) => item && typeof item.id === "string" && !isStatusNotificationId(item.id));
     } catch {
         return [];
     }
@@ -36,7 +38,8 @@ function readStoredNotifications(storageKey: string): NotificationItem[] {
 
 function persistNotifications(storageKey: string, items: NotificationItem[]) {
     try {
-        window.localStorage.setItem(storageKey, JSON.stringify({ items } satisfies StoredNotifications));
+        const durable = items.filter((item) => !isStatusNotificationId(item.id));
+        window.localStorage.setItem(storageKey, JSON.stringify({ items: durable } satisfies StoredNotifications));
     } catch {
         // Ignore storage failures.
     }
@@ -136,9 +139,40 @@ export function useNotificationCenter({
                 return currentItems;
             }
 
+            setNotificationUiOpen(true);
             return [...appended, ...currentItems].slice(0, 100);
         });
     }, [activeApiFailureAlert, getRepliesForReport, messages, sessionActor?.id, sessionActor?.name, sourceReports]);
+
+    const syncStickyNotifications = useCallback((stickyItems: NotificationItem[]) => {
+        setNotifications((currentItems) => {
+            const previousStickyIds = new Set(currentItems.filter((item) => isStatusNotificationId(item.id)).map((item) => item.id));
+            const addedSticky = stickyItems.some((item) => !previousStickyIds.has(item.id));
+            const next = mergeStickyNotifications(currentItems, stickyItems);
+
+            if (addedSticky) {
+                setNotificationUiOpen(true);
+            }
+
+            const unchanged =
+                next.length === currentItems.length &&
+                next.every((item, index) => {
+                    const previous = currentItems[index];
+                    return (
+                        previous &&
+                        previous.id === item.id &&
+                        previous.title === item.title &&
+                        previous.body === item.body &&
+                        previous.read === item.read &&
+                        previous.payload.markersVisible === item.payload.markersVisible &&
+                        previous.payload.canUndo === item.payload.canUndo &&
+                        previous.payload.canRedo === item.payload.canRedo
+                    );
+                });
+
+            return unchanged ? currentItems : next;
+        });
+    }, []);
 
     const unreadNotificationCount = useMemo(() => notifications.filter((item) => !item.read).length, [notifications]);
 
@@ -159,11 +193,15 @@ export function useNotificationCenter({
     }, []);
 
     const dismissNotification = useCallback((id: string) => {
+        if (isStatusNotificationId(id)) {
+            return;
+        }
+
         setNotifications((current) => current.filter((item) => item.id !== id));
     }, []);
 
     const clearNotifications = useCallback(() => {
-        setNotifications([]);
+        setNotifications((current) => current.filter((item) => isStatusNotificationId(item.id)));
     }, []);
 
     return {
@@ -177,5 +215,6 @@ export function useNotificationCenter({
         markAllNotificationsRead,
         dismissNotification,
         clearNotifications,
+        syncStickyNotifications,
     };
 }

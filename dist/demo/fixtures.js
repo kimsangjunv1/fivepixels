@@ -224,16 +224,52 @@ export function createDemoNotifications(locale) {
             ["김지윤님이 회원님을 언급했습니다.", "결제 버튼 문구 변경안을 확인해주세요."],
             ["새로운 케이스가 배정되었습니다.", "모바일 버튼 간격을 확인해주세요."],
             ["케이스가 해결되었습니다.", "필터 상태 유지 요청이 해결 처리되었습니다."],
+            ["원본이 사라진 마커", "원본이 사라진 마커가 감지되었어요, 숨길까요?"],
+            ["API 오류", "GET /v1/feedback · 500 · 842ms"],
+            ["모달 마커 감지", "모달 마커가 감지되었어요, 숨길까요?"],
+            ["UI Edit 적용 중", "현재 UI Edit 모드가 적용 중입니다. 초기화하거나 변경을 되돌릴 수 있어요."],
         ]
         : [
             ["Jiyoon mentioned you.", "Please review the updated checkout button copy."],
             ["A new case was assigned to you.", "Please check the mobile button spacing."],
             ["A case was resolved.", "The filter state request has been resolved."],
+            ["Hidden marker detected", "A marker whose source element disappeared was detected. Hide it?"],
+            ["API error", "GET /v1/feedback · 500 · 842ms"],
+            ["Modal marker detected", "A modal marker was detected. Hide it?"],
+            ["UI Edit in progress", "UI Edit changes are applied. Reset or undo them from here."],
         ];
     return [
         { id: "demo-notification-1", type: "user_mention", title: content[0][0], body: content[0][1], createdAt: UPDATED_AT, read: false, payload: { reportId: "demo-feedback-1", caseId: "demo-case-1" } },
         { id: "demo-notification-2", type: "case_assigned", title: content[1][0], body: content[1][1], createdAt: CREATED_AT, read: false, payload: { reportId: "demo-feedback-1", caseId: "demo-case-2" } },
         { id: "demo-notification-3", type: "case_resolved", title: content[2][0], body: content[2][1], createdAt: CREATED_AT, read: true, payload: { reportId: "demo-feedback-2" } },
+        {
+            id: "status:element_missing:hidden",
+            type: "element_missing",
+            title: content[3][0],
+            body: content[3][1],
+            createdAt: UPDATED_AT,
+            read: false,
+            payload: { detachedKind: "hidden", markersVisible: true },
+        },
+        { id: "demo-notification-5", type: "api_error", title: content[4][0], body: content[4][1], createdAt: CREATED_AT, read: false, payload: { apiFlowEntryId: "demo-api-1" } },
+        {
+            id: "status:modal_marker",
+            type: "modal_marker",
+            title: content[5][0],
+            body: content[5][1],
+            createdAt: UPDATED_AT,
+            read: false,
+            payload: { detachedKind: "modal", markersVisible: true },
+        },
+        {
+            id: "status:probe_edit",
+            type: "probe_edit",
+            title: content[6][0],
+            body: content[6][1],
+            createdAt: CREATED_AT,
+            read: false,
+            payload: { canUndo: true, canRedo: false },
+        },
     ];
 }
 export function createDemoAdapter() {
@@ -288,6 +324,6 @@ export const DEMO_SCENE_SIZE = {
     "feedback-thread": { width: 680, height: 520 },
     settings: { width: 390, height: 620 },
     "settings-customization": { width: 390, height: 620 },
-    notifications: { width: 440, height: 520 },
+    notifications: { width: 400, height: 420 },
 };
 //# sourceMappingURL=fixtures.js.map

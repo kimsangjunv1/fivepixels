@@ -72,11 +72,9 @@ export function ReportView() {
                 </ThemeScope>
             ) : null}
 
-            {notificationUiOpen ? (
-                <ThemeScope appearance={resolvedPanelAppearance}>
-                    <NotificationCenter />
-                </ThemeScope>
-            ) : null}
+            <ThemeScope appearance={resolvedPanelAppearance}>
+                <NotificationCenter open={notificationUiOpen} />
+            </ThemeScope>
 
             {showOverlay ? (
                 <ThemeScope appearance={resolvedTooltipAppearance}>

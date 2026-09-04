@@ -6,7 +6,7 @@ import type { useReportMutations } from "./useReportMutations.js";
 import type { useReportPanelShell } from "./useReportPanelShell.js";
 import type { useReportReplyReview } from "./useReportReplyReview.js";
 import type { useNotificationCenter } from "./useNotificationCenter.js";
-import type { NotificationItem } from "@/shared/types/notification.js";
+import type { NotificationActionId, NotificationItem } from "@/shared/types/notification.js";
 import { buildAdapterIntegrationStatus } from "@/shared/utils/integration/buildAdapterIntegrationStatus.js";
 import type { FivePixelsAdapter } from "@/shared/types/adapter.js";
 import type { ApiFlowEntry } from "@/shared/types/networkMonitor.js";
@@ -73,6 +73,7 @@ type AssembleArgs = {
     networkMonitorEnabled: boolean;
     notifications: ReturnType<typeof useNotificationCenter>;
     activateNotification: (item: NotificationItem) => void;
+    runNotificationAction: (item: NotificationItem, action: NotificationActionId) => void;
 };
 
 /**
@@ -115,6 +116,7 @@ export function assembleReportContextValue({
     networkMonitorEnabled,
     notifications,
     activateNotification,
+    runNotificationAction,
 }: AssembleArgs) {
     const teamHandlers = resolveTeamHandlersFromAdapter(adapter);
     const onListReviewers = teamHandlers.onListReviewers;
@@ -480,5 +482,6 @@ export function assembleReportContextValue({
         dismissNotification: notifications.dismissNotification,
         clearNotifications: notifications.clearNotifications,
         activateNotification,
+        runNotificationAction,
     };
 }

@@ -18,7 +18,7 @@ function resolveTeamHandlersFromAdapter(adapter) {
  * Flat context value for ReportProvider slices.
  * Keys stay flat (see reportContextPartitions). Domain hooks → this assembler → UI.
  */
-export function assembleReportContextValue({ panel, auth, draft, markers, mutations, reply, fields, projectId, environment, appVersion, showFeedbackList, teamReviewers, teamActor, apiTeamDirectory, apiTeamMembers, apiTeamMembersLoading, refreshTeamMembers, adapter, github, canDeleteViaStorage, usesLazyReplies, usesCreateReply, visibleShortcutKeys, overlayRef, replyHistory, selectReport, beginFeedbackEdit, cancelDraft, apiFlowEntries, activeApiFailureAlert, dismissFailureAlert, appendApiFlowEntryToDraftCase, networkMonitorEnabled, notifications, activateNotification, }) {
+export function assembleReportContextValue({ panel, auth, draft, markers, mutations, reply, fields, projectId, environment, appVersion, showFeedbackList, teamReviewers, teamActor, apiTeamDirectory, apiTeamMembers, apiTeamMembersLoading, refreshTeamMembers, adapter, github, canDeleteViaStorage, usesLazyReplies, usesCreateReply, visibleShortcutKeys, overlayRef, replyHistory, selectReport, beginFeedbackEdit, cancelDraft, apiFlowEntries, activeApiFailureAlert, dismissFailureAlert, appendApiFlowEntryToDraftCase, networkMonitorEnabled, notifications, activateNotification, runNotificationAction, }) {
     const teamHandlers = resolveTeamHandlersFromAdapter(adapter);
     const onListReviewers = teamHandlers.onListReviewers;
     const onListReviewerRequests = teamHandlers.onListReviewerRequests;
@@ -376,6 +376,7 @@ export function assembleReportContextValue({ panel, auth, draft, markers, mutati
         dismissNotification: notifications.dismissNotification,
         clearNotifications: notifications.clearNotifications,
         activateNotification,
+        runNotificationAction,
     };
 }
 //# sourceMappingURL=assembleReportContextValue.js.map

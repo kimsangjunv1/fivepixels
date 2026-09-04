@@ -338,9 +338,59 @@ function NotificationsScene() {
         setNotifications((current) => current.map((item) => ({ ...item, read: true })));
     }, []);
     const dismissNotification = useCallback((id) => {
+        if (id.startsWith("status:")) {
+            return;
+        }
         setNotifications((current) => current.filter((item) => item.id !== id));
     }, []);
-    const clearNotifications = useCallback(() => setNotifications([]), []);
+    const clearNotifications = useCallback(() => setNotifications((current) => current.filter((item) => item.id.startsWith("status:"))), []);
+    const runNotificationAction = useCallback((item, action) => {
+        setNotifications((current) => current.map((entry) => {
+            if (entry.id !== item.id) {
+                return entry;
+            }
+            if (action === "hide_markers" || action === "show_markers") {
+                return {
+                    ...entry,
+                    read: true,
+                    payload: {
+                        ...entry.payload,
+                        markersVisible: action === "show_markers",
+                    },
+                };
+            }
+            if (action === "probe_reset") {
+                return {
+                    ...entry,
+                    read: true,
+                    payload: { ...entry.payload, canUndo: false, canRedo: false },
+                };
+            }
+            if (action === "probe_undo") {
+                return {
+                    ...entry,
+                    read: true,
+                    payload: {
+                        ...entry.payload,
+                        canUndo: false,
+                        canRedo: true,
+                    },
+                };
+            }
+            if (action === "probe_redo") {
+                return {
+                    ...entry,
+                    read: true,
+                    payload: {
+                        ...entry.payload,
+                        canUndo: true,
+                        canRedo: false,
+                    },
+                };
+            }
+            return { ...entry, read: true };
+        }));
+    }, []);
     const session = useMemo(() => ({
         ...baseSession,
         notifications,
@@ -352,8 +402,17 @@ function NotificationsScene() {
         dismissNotification,
         clearNotifications,
         activateNotification: (item) => markNotificationRead(item.id),
-    }), [baseSession, clearNotifications, dismissNotification, markAllNotificationsRead, markNotificationRead, notifications]);
-    return (_jsx(ReportSessionContext.Provider, { value: session, children: _jsx("div", { className: "relative h-full w-full overflow-hidden rounded-[16px]", children: _jsx(NotificationCenter, { embedded: true }) }) }));
+        runNotificationAction,
+    }), [
+        baseSession,
+        clearNotifications,
+        dismissNotification,
+        markAllNotificationsRead,
+        markNotificationRead,
+        notifications,
+        runNotificationAction,
+    ]);
+    return (_jsx(ReportSessionContext.Provider, { value: session, children: _jsx("div", { className: "relative h-full w-full overflow-hidden rounded-[16px] bg-[linear-gradient(160deg,#1c1f24_0%,#2a3038_55%,#171a1f_100%)]", children: _jsx(NotificationCenter, { embedded: true }) }) }));
 }
 export function DemoScene({ scene }) {
     switch (scene) {

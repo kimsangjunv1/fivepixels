@@ -29,8 +29,6 @@ import { NoticeDialog } from "@/shared/components/ui/NoticeDialog.js";
 import { PanelSettings, type PanelSettingsInitialCategory } from "./PanelSettings.js";
 import { CornerResizeGhost } from "@/surfaces/window/CornerResizeGhost.js";
 import { PanelResizeHandles } from "./PanelResizeHandles.js";
-import { PanelStatusBannerStack } from "./PanelStatusBannerStack.js";
-import { PanelNetworkFailureBanner } from "./PanelNetworkFailureBanner.js";
 import { PanelRoleSwitch } from "./PanelRoleSwitch.js";
 import { PanelPresentationSwitch } from "./PanelPresentationSwitch.js";
 import { PanelAutoRefreshControl } from "./PanelAutoRefreshControl.js";
@@ -340,12 +338,6 @@ export function Panel({ embedded = false, embeddedSettingsInitialCategory = null
                     key={shellMotionKey}
                     className={`${shellMotionClass} ${panelCollapsed && !isRecording ? "flex shrink-0" : `flex h-full min-h-0 w-full min-w-0 flex-col overflow-hidden`}`.trim()}
                 >
-                    {panelCollapsed && !isRecording ? null : (
-                        <>
-                            <PanelNetworkFailureBanner />
-                            <PanelStatusBannerStack />
-                        </>
-                    )}
                     {isRecording ? (
                         <section className="flex items-center justify-between gap-[16px] px-[12px] py-[8px]">
                             <section className="flex items-center gap-[4px] justify-start shrink-0">
@@ -430,7 +422,7 @@ export function Panel({ embedded = false, embeddedSettingsInitialCategory = null
                                                 </IconTooltipButton>
 
                                                 <IconTooltipButton
-                                                    label={messages.panel.notifications}
+                                                    label={notificationUiOpen ? messages.notifications.closeAriaLabel : messages.notifications.openAriaLabel}
                                                     active={notificationUiOpen}
                                                     onClick={toggleNotificationUiOpen}
                                                 >

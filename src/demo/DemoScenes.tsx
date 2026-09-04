@@ -13,7 +13,7 @@ import {
     type ReportPreferencesValue,
     type ReportSessionValue,
 } from "@/shared/providers/reportContext.js";
-import type { NotificationItem } from "@/shared/types/notification.js";
+import type { NotificationActionId, NotificationItem } from "@/shared/types/notification.js";
 import type {
     DraftReport,
     Marker,
@@ -556,9 +556,70 @@ function NotificationsScene() {
         setNotifications((current) => current.map((item) => ({ ...item, read: true })));
     }, []);
     const dismissNotification = useCallback((id: string) => {
+        if (id.startsWith("status:")) {
+            return;
+        }
+
         setNotifications((current) => current.filter((item) => item.id !== id));
     }, []);
-    const clearNotifications = useCallback(() => setNotifications([]), []);
+    const clearNotifications = useCallback(
+        () => setNotifications((current) => current.filter((item) => item.id.startsWith("status:"))),
+        [],
+    );
+    const runNotificationAction = useCallback((item: NotificationItem, action: NotificationActionId) => {
+        setNotifications((current) =>
+            current.map((entry) => {
+                if (entry.id !== item.id) {
+                    return entry;
+                }
+
+                if (action === "hide_markers" || action === "show_markers") {
+                    return {
+                        ...entry,
+                        read: true,
+                        payload: {
+                            ...entry.payload,
+                            markersVisible: action === "show_markers",
+                        },
+                    };
+                }
+
+                if (action === "probe_reset") {
+                    return {
+                        ...entry,
+                        read: true,
+                        payload: { ...entry.payload, canUndo: false, canRedo: false },
+                    };
+                }
+
+                if (action === "probe_undo") {
+                    return {
+                        ...entry,
+                        read: true,
+                        payload: {
+                            ...entry.payload,
+                            canUndo: false,
+                            canRedo: true,
+                        },
+                    };
+                }
+
+                if (action === "probe_redo") {
+                    return {
+                        ...entry,
+                        read: true,
+                        payload: {
+                            ...entry.payload,
+                            canUndo: true,
+                            canRedo: false,
+                        },
+                    };
+                }
+
+                return { ...entry, read: true };
+            }),
+        );
+    }, []);
     const session = useMemo<ReportSessionValue>(
         () => ({
             ...baseSession,
@@ -571,13 +632,22 @@ function NotificationsScene() {
             dismissNotification,
             clearNotifications,
             activateNotification: (item) => markNotificationRead(item.id),
+            runNotificationAction,
         }),
-        [baseSession, clearNotifications, dismissNotification, markAllNotificationsRead, markNotificationRead, notifications],
+        [
+            baseSession,
+            clearNotifications,
+            dismissNotification,
+            markAllNotificationsRead,
+            markNotificationRead,
+            notifications,
+            runNotificationAction,
+        ],
     );
 
     return (
         <ReportSessionContext.Provider value={session}>
-            <div className="relative h-full w-full overflow-hidden rounded-[16px]">
+            <div className="relative h-full w-full overflow-hidden rounded-[16px] bg-[linear-gradient(160deg,#1c1f24_0%,#2a3038_55%,#171a1f_100%)]">
                 <NotificationCenter embedded />
             </div>
         </ReportSessionContext.Provider>

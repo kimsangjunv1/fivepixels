@@ -52,7 +52,7 @@ const COPY: Record<Locale, ShowcaseCopy> = {
             "feedback-thread": { title: "맥락이 이어지는 대화", description: "케이스, 답변, 담당 상태를 하나의 창에서 관리합니다.", action: "대화를 선택하고 답변을 남겨보세요" },
             settings: { title: "프로젝트에 맞는 표현", description: "팀의 작업 방식에 맞춰 테마와 마커의 모양, 크기를 정합니다.", action: "테마와 마커 스타일을 바꿔보세요" },
             "settings-customization": { title: "세밀하게 맞추는 커스터마이징", description: "테마, 대화 방식, 피드백 점과 마커의 형태·색상·글꼴을 직접 조정합니다.", action: "각 외형 항목을 열어 값을 바꿔보세요" },
-            notifications: { title: "놓치지 않는 상태 변화", description: "편집 모드, 오류, 숨겨진 마커와 새로운 활동을 바로 확인합니다.", action: "알림 항목을 선택해보세요" },
+            notifications: { title: "놓치지 않는 상태 변화", description: "편집 모드, 오류, 숨겨진 마커와 새로운 활동을 바로 확인합니다.", action: "알림 스택을 눌러 펼쳐보세요" },
         },
         install: {
             eyebrow: "Drop-in demo",
@@ -103,7 +103,7 @@ const COPY: Record<Locale, ShowcaseCopy> = {
             "feedback-thread": { title: "Conversations with context", description: "Manage cases, replies, and ownership in a single window.", action: "Select a thread and leave a reply" },
             settings: { title: "Make it fit your project", description: "Tune the theme, marker shape, and size to match your workflow.", action: "Change the theme and marker style" },
             "settings-customization": { title: "Customize every visual detail", description: "Adjust themes, thread behavior, feedback dots, marker form, colors, and typography.", action: "Open each appearance group and change a value" },
-            notifications: { title: "Stay on top of changes", description: "See edit mode, errors, hidden markers, and new activity at once.", action: "Select a notification item" },
+            notifications: { title: "Stay on top of changes", description: "See edit mode, errors, hidden markers, and new activity at once.", action: "Tap a stack to expand it" },
         },
         install: {
             eyebrow: "Drop-in demo",

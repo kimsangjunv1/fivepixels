@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getNotificationsStorageKey } from "../../../shared/constants/storageKeys.js";
 import { diffNotifications } from "../../../shared/utils/notification/notificationDiff.js";
+import { isStatusNotificationId, mergeStickyNotifications } from "../../../shared/utils/notification/notificationGroups.js";
 function readStoredNotifications(storageKey) {
     if (typeof window === "undefined") {
         return [];
@@ -14,7 +15,8 @@ function readStoredNotifications(storageKey) {
         if (!Array.isArray(parsed.items)) {
             return [];
         }
-        return parsed.items.filter((item) => item && typeof item.id === "string");
+        // Sticky status notifications are rebuilt from live session state.
+        return parsed.items.filter((item) => item && typeof item.id === "string" && !isStatusNotificationId(item.id));
     }
     catch {
         return [];
@@ -22,7 +24,8 @@ function readStoredNotifications(storageKey) {
 }
 function persistNotifications(storageKey, items) {
     try {
-        window.localStorage.setItem(storageKey, JSON.stringify({ items }));
+        const durable = items.filter((item) => !isStatusNotificationId(item.id));
+        window.localStorage.setItem(storageKey, JSON.stringify({ items: durable }));
     }
     catch {
         // Ignore storage failures.
@@ -90,9 +93,33 @@ export function useNotificationCenter({ projectId, messages, sessionActor, repor
             if (appended.length === 0) {
                 return currentItems;
             }
+            setNotificationUiOpen(true);
             return [...appended, ...currentItems].slice(0, 100);
         });
     }, [activeApiFailureAlert, getRepliesForReport, messages, sessionActor?.id, sessionActor?.name, sourceReports]);
+    const syncStickyNotifications = useCallback((stickyItems) => {
+        setNotifications((currentItems) => {
+            const previousStickyIds = new Set(currentItems.filter((item) => isStatusNotificationId(item.id)).map((item) => item.id));
+            const addedSticky = stickyItems.some((item) => !previousStickyIds.has(item.id));
+            const next = mergeStickyNotifications(currentItems, stickyItems);
+            if (addedSticky) {
+                setNotificationUiOpen(true);
+            }
+            const unchanged = next.length === currentItems.length &&
+                next.every((item, index) => {
+                    const previous = currentItems[index];
+                    return (previous &&
+                        previous.id === item.id &&
+                        previous.title === item.title &&
+                        previous.body === item.body &&
+                        previous.read === item.read &&
+                        previous.payload.markersVisible === item.payload.markersVisible &&
+                        previous.payload.canUndo === item.payload.canUndo &&
+                        previous.payload.canRedo === item.payload.canRedo);
+                });
+            return unchanged ? currentItems : next;
+        });
+    }, []);
     const unreadNotificationCount = useMemo(() => notifications.filter((item) => !item.read).length, [notifications]);
     const toggleNotificationUiOpen = useCallback(() => {
         setNotificationUiOpen((current) => !current);
@@ -107,10 +134,13 @@ export function useNotificationCenter({ projectId, messages, sessionActor, repor
         setNotifications((current) => current.map((item) => (item.read ? item : { ...item, read: true })));
     }, []);
     const dismissNotification = useCallback((id) => {
+        if (isStatusNotificationId(id)) {
+            return;
+        }
         setNotifications((current) => current.filter((item) => item.id !== id));
     }, []);
     const clearNotifications = useCallback(() => {
-        setNotifications([]);
+        setNotifications((current) => current.filter((item) => isStatusNotificationId(item.id)));
     }, []);
     return {
         notifications,
@@ -123,6 +153,7 @@ export function useNotificationCenter({ projectId, messages, sessionActor, repor
         markAllNotificationsRead,
         dismissNotification,
         clearNotifications,
+        syncStickyNotifications,
     };
 }
 //# sourceMappingURL=useNotificationCenter.js.map

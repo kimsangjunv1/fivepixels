@@ -9,6 +9,7 @@ import { useReportReplyReview } from "./useReportReplyReview.js";
 import { assembleReportContextValue } from "./assembleReportContextValue.js";
 import { useReportTeamActor } from "./useReportTeamActor.js";
 import { useNotificationCenter } from "./useNotificationCenter.js";
+import { buildStatusNotifications } from "../../../shared/utils/notification/buildStatusNotifications.js";
 import { useNetworkMonitor } from "../useNetworkMonitor.js";
 import { resolveDefaultAuthorName } from "../../../shared/utils/report/resolveDefaultAuthorName.js";
 export function useReportState({ projectId, environment, appVersion, panelAppearance, tooltipAppearance, questionThreadDefault = "expanded", threadLayoutDefault = "classic", fields, authors = [], requireReviewerKey = false, shortcut: _shortcut, identify, adapter, onNavigate, onRevealTarget, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys = false, initialLocale, messageOverrides, pixelsMode = "default", sync = "local", requireAuth, replyHistory, networkMonitor = true, }) {
@@ -274,9 +275,35 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         allPageReports: panel.allPageReports,
         activeApiFailureAlert,
     });
+    useEffect(() => {
+        const hasHiddenMarker = markers.markers.some((marker) => marker.detachedKind === "hidden");
+        const hasModalMarker = markers.markers.some((marker) => marker.detachedKind === "modal");
+        notifications.syncStickyNotifications(buildStatusNotifications({
+            messages: panel.messages,
+            hasHiddenMarker,
+            hasModalMarker,
+            hasProbeEdit: draft.hasProbeSessionChanges,
+            showHiddenDetachedMarkers: panel.showHiddenDetachedMarkers,
+            showModalDetachedMarkers: panel.showModalDetachedMarkers,
+            canUndoProbeSession: draft.canUndoProbeSession,
+            canRedoProbeSession: draft.canRedoProbeSession,
+        }));
+    }, [
+        draft.canRedoProbeSession,
+        draft.canUndoProbeSession,
+        draft.hasProbeSessionChanges,
+        markers.markers,
+        notifications.syncStickyNotifications,
+        panel.messages,
+        panel.showHiddenDetachedMarkers,
+        panel.showModalDetachedMarkers,
+    ]);
     const activateNotification = useCallback((item) => {
         if (item.type === "api_error") {
             panel.openPanelTab("api-flow");
+            return;
+        }
+        if (item.type === "probe_edit" || item.type === "element_missing" || item.type === "modal_marker") {
             return;
         }
         const reportId = item.payload.reportId;
@@ -296,6 +323,36 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         }
         void markers.activateFeedbackMarker(report, item.payload.caseId ?? null);
     }, [markers, panel]);
+    const runNotificationAction = useCallback((item, action) => {
+        switch (action) {
+            case "hide_markers":
+                if (item.payload.detachedKind === "modal") {
+                    panel.setShowModalDetachedMarkers(false);
+                }
+                else {
+                    panel.setShowHiddenDetachedMarkers(false);
+                }
+                break;
+            case "show_markers":
+                if (item.payload.detachedKind === "modal") {
+                    panel.setShowModalDetachedMarkers(true);
+                }
+                else {
+                    panel.setShowHiddenDetachedMarkers(true);
+                }
+                break;
+            case "probe_reset":
+                draft.revertAllSavedProbeEdits();
+                break;
+            case "probe_undo":
+                draft.undoProbeSessionAction();
+                break;
+            case "probe_redo":
+                draft.redoProbeSessionAction();
+                break;
+        }
+        notifications.markNotificationRead(item.id);
+    }, [draft, notifications, panel]);
     useEffect(() => {
         if (auth.authBootstrapState !== "failed") {
             return;
@@ -400,6 +457,7 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         networkMonitorEnabled,
         notifications,
         activateNotification,
+        runNotificationAction,
     });
 }
 //# sourceMappingURL=useReportState.js.map

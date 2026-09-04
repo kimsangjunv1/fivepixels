@@ -1041,6 +1041,7 @@ export type ReportMessages = {
         clearAll: string;
         dismissAriaLabel: string;
         openAriaLabel: string;
+        closeAriaLabel: string;
         userMentionTitle: string;
         userMentionBody: (label: string) => string;
         caseAssignedTitle: string;
@@ -1054,6 +1055,18 @@ export type ReportMessages = {
         feedbackDeletedTitle: string;
         feedbackDeletedBody: (label: string) => string;
         apiErrorTitle: string;
+        elementMissingTitle: string;
+        elementMissingBody: string;
+        modalMarkerTitle: string;
+        modalMarkerBody: string;
+        probeEditTitle: string;
+        probeEditBody: string;
+        groupSystem: string;
+        groupUserAction: string;
+        showLess: string;
+        showMore: string;
+        stackedCount: (count: number) => string;
+        clearGroupAriaLabel: string;
     };
 };
 export type DeepPartialReportMessages = {

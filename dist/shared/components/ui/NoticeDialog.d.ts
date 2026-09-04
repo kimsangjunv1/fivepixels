@@ -36,7 +36,7 @@ export declare function NoticeActionButton({ action, className }: {
 }): import("react").JSX.Element;
 /**
  * Shared panel notice / confirm shell — same visual language as import "확인 필요".
- * Status banners (PanelStatusBanner) intentionally stay separate.
+ * Settings/import dialogs stay separate from the floating notification stack.
  */
 export declare function NoticeDialog({ title, description, children, choices, actions, footerDividerBeforeLast, sectioned, className, role, }: NoticeDialogProps): import("react").JSX.Element;
 //# sourceMappingURL=NoticeDialog.d.ts.map

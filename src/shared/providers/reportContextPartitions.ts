@@ -270,6 +270,7 @@ export const REPORT_SESSION_KEYS = [
     "dismissNotification",
     "clearNotifications",
     "activateNotification",
+    "runNotificationAction",
 ] as const;
 
 export const REPORT_DATA_KEYS = [

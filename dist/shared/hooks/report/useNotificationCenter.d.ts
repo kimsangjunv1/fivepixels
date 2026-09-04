@@ -23,6 +23,7 @@ export declare function useNotificationCenter({ projectId, messages, sessionActo
     markAllNotificationsRead: () => void;
     dismissNotification: (id: string) => void;
     clearNotifications: () => void;
+    syncStickyNotifications: (stickyItems: NotificationItem[]) => void;
 };
 export {};
 //# sourceMappingURL=useNotificationCenter.d.ts.map
