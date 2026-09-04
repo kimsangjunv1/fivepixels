@@ -14,17 +14,7 @@ type MarkerShapePickerProps = {
     strokeColor?: string;
 };
 
-function ShapePreview({
-    shape,
-    previewColor,
-    fillStyle,
-    strokeColor = "#ffffff",
-}: {
-    shape: MarkerShape;
-    previewColor: string;
-    fillStyle: MarkerFillStyle;
-    strokeColor?: string;
-}) {
+function ShapePreview({ shape, previewColor, fillStyle, strokeColor = "#ffffff" }: { shape: MarkerShape; previewColor: string; fillStyle: MarkerFillStyle; strokeColor?: string }) {
     const preview = resolveMarkerShapeStyle(shape, 12);
     const paint = resolveMarkerGlyphPaint({
         color: previewColor,
@@ -48,15 +38,7 @@ function ShapePreview({
     );
 }
 
-export function MarkerShapePicker({
-    value,
-    onChange,
-    labels,
-    ariaLabel,
-    previewColor,
-    fillStyle = "filled",
-    strokeColor = "#ffffff",
-}: MarkerShapePickerProps) {
+export function MarkerShapePicker({ value, onChange, labels, ariaLabel, previewColor, fillStyle = "filled", strokeColor = "#ffffff" }: MarkerShapePickerProps) {
     return (
         <div
             role="radiogroup"
@@ -93,10 +75,8 @@ export function MarkerShapePicker({
                             ) : null}
                         </div>
                         <span
-                            className={`w-full truncate text-center text-[9px] leading-[1.2] ${
-                                active
-                                    ? "font-semibold text-[var(--adaptive-blue500)]"
-                                    : "font-medium text-[var(--adaptive-black600)] group-hover:text-[var(--adaptive-black800)]"
+                            className={`w-full truncate text-center text-[12px] leading-[1.5] ${
+                                active ? "font-semibold text-[var(--adaptive-blue500)]" : "font-medium text-[var(--adaptive-black600)] group-hover:text-[var(--adaptive-black800)]"
                             }`}
                         >
                             {labels[shape]}

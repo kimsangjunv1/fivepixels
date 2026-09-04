@@ -71,9 +71,9 @@ export function ReportAuthDiagnostics() {
     return (
         <section className="flex min-h-0 flex-1 flex-col overflow-y-auto bg-[var(--adaptive-fillOpacity500)]">
             <div className="flex items-center justify-between gap-[8px]">
-                <h6 className="text-[13px] font-bold text-[var(--adaptive-black900)]">{diagnostics.title}</h6>
+                <h6 className="text-[14px] font-bold text-[var(--adaptive-black900)]">{diagnostics.title}</h6>
                 <span
-                    className={`rounded-full px-[8px] py-[2px] text-[11px] font-semibold ${
+                    className={`rounded-full px-[8px] py-[2px] text-[12px] font-semibold ${
                         authDiagnostics.status === "matched"
                             ? "bg-[color-mix(in_srgb,var(--adaptive-green500)_18%,transparent)] text-[var(--adaptive-green500)]"
                             : authDiagnostics.status === "disabled"
@@ -87,13 +87,13 @@ export function ReportAuthDiagnostics() {
             <p className="mt-[4px] text-[12px] leading-[1.5] text-[var(--adaptive-black600)]">{diagnostics.description}</p>
 
             <div className="mt-[10px] rounded-[10px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface)] p-[10px]">
-                <p className="text-[11px] font-semibold text-[var(--adaptive-black500)]">{diagnostics.reason}</p>
+                <p className="text-[12px] font-semibold text-[var(--adaptive-black500)]">{diagnostics.reason}</p>
                 <p className="mt-[4px] break-all text-[12px] text-[var(--adaptive-black800)]">{reasonText}</p>
-                <p className="mt-[2px] break-all text-[11px] text-[var(--adaptive-black500)]">{authDiagnostics.reason}</p>
+                <p className="mt-[2px] break-all text-[12px] text-[var(--adaptive-black500)]">{authDiagnostics.reason}</p>
             </div>
 
             <div className="mt-[10px] overflow-hidden rounded-[10px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface)]">
-                <div className="grid grid-cols-[112px_1fr_1fr_52px] border-b border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black100)] px-[8px] py-[6px] text-[11px] font-semibold text-[var(--adaptive-black600)]">
+                <div className="grid grid-cols-[112px_1fr_1fr_52px] border-b border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black100)] px-[8px] py-[6px] text-[12px] font-semibold text-[var(--adaptive-black600)]">
                     <p>{diagnostics.field}</p>
                     <p>{diagnostics.expected}</p>
                     <p>{diagnostics.actual}</p>

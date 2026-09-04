@@ -53,7 +53,7 @@ export function FeedActivityLine({ actorName, action, createdAt }: FeedActivityL
     const relativeTime = createdAt ? formatRelativeTimeCompact(createdAt) : "";
 
     return (
-        <p className="min-w-0 pt-[2px] text-[12px] leading-[1.35] text-[var(--adaptive-black600)]">
+        <p className="min-w-0 pt-[2px] text-[12px] leading-[1.5] text-[var(--adaptive-black600)]">
             {actorName ? <span className="font-semibold text-[var(--adaptive-black800)]">{actorName}</span> : null}
             {actorName ? " " : null}
             <span>{action}</span>

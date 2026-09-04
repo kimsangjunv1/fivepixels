@@ -1,14 +1,4 @@
-import {
-    useCallback,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
-    type AnimationEvent as ReactAnimationEvent,
-    type PointerEvent as ReactPointerEvent,
-    type ReactNode,
-    Fragment,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type AnimationEvent as ReactAnimationEvent, type PointerEvent as ReactPointerEvent, type ReactNode, Fragment } from "react";
 import { getMarkerDotSize } from "@/shared/utils/marker/markerRuntime.js";
 import { useDraggableWindow, clampWindowPosition } from "@/shared/hooks/useDraggableWindow.js";
 import { useGhostCornerResize, type BoxSize } from "@/shared/hooks/useGhostCornerResize.js";
@@ -48,16 +38,8 @@ import { FeedbackThread } from "@/surfaces/feedback/FeedbackThread.js";
 import { MarkerCaseSidebar } from "./MarkerCaseSidebar.js";
 import { ProcessingDots } from "@/shared/components/ui/ProcessingDots.js";
 import { Text } from "@/shared/components/ui/Text/index.js";
-import {
-    MARKER_MINIMIZED_WINDOW_HEIGHT,
-    MARKER_MINIMIZED_WINDOW_WIDTH,
-    MARKER_WINDOW_MARGIN,
-} from "@/shared/utils/marker/markerWindowDock.js";
-import {
-    getMarkerDockWindowId,
-    registerOverlayMinimizedDock,
-    unregisterOverlayMinimizedDock,
-} from "@/shared/utils/overlay/overlayMinimizedDockRegistry.js";
+import { MARKER_MINIMIZED_WINDOW_HEIGHT, MARKER_MINIMIZED_WINDOW_WIDTH, MARKER_WINDOW_MARGIN } from "@/shared/utils/marker/markerWindowDock.js";
+import { getMarkerDockWindowId, registerOverlayMinimizedDock, unregisterOverlayMinimizedDock } from "@/shared/utils/overlay/overlayMinimizedDockRegistry.js";
 
 type WindowMode = "normal" | "minimized" | "maximized";
 type WindowSurfacePhase = "entering" | "idle" | "exiting";
@@ -84,7 +66,7 @@ function getLeftSectionClass(phase: WindowSurfacePhase) {
 const HEADER_BUTTON_CLASS =
     "flex h-[24px] w-[24px] items-center justify-center rounded-[6px] text-[var(--adaptive-black600)] transition-colors hover:bg-[var(--adaptive-tintOpacity200)] hover:text-[var(--adaptive-black900)]";
 const SIDEBAR_ACTION_CLASS =
-    "flex h-[32px] w-full items-center gap-[8px] rounded-[8px] px-[8px] text-left text-[13px] font-semibold text-[var(--adaptive-black700)] transition-colors hover:bg-[var(--adaptive-tintOpacity200)] hover:text-[var(--adaptive-black900)]";
+    "flex h-[32px] w-full items-center gap-[8px] rounded-[8px] px-[8px] text-left text-[14px] font-semibold text-[var(--adaptive-black700)] transition-colors hover:bg-[var(--adaptive-tintOpacity200)] hover:text-[var(--adaptive-black900)]";
 
 function getViewportSize() {
     if (typeof window === "undefined") {
@@ -130,15 +112,15 @@ function WindowControlButton({ onClick, ariaLabel, title, className = "", childr
 function UnfocusedCaseSummary({ caseTexts, emptyLabel, navigateHint }: { caseTexts: string[]; emptyLabel: string; navigateHint?: string }) {
     return (
         <div className="flex max-h-full w-full max-w-[440px] flex-col items-center gap-[12px] overflow-hidden px-[28px]">
-            {navigateHint ? <p className="text-center text-[12px] font-medium leading-[1.4] text-[var(--adaptive-blue500)]">{navigateHint}</p> : null}
+            {navigateHint ? <p className="text-center text-[12px] font-medium leading-[1.5] text-[var(--adaptive-blue500)]">{navigateHint}</p> : null}
             {caseTexts.length === 0 ? (
-                <p className="text-center text-[13px] text-[var(--adaptive-black500)]">{emptyLabel}</p>
+                <p className="text-center text-[14px] text-[var(--adaptive-black500)]">{emptyLabel}</p>
             ) : (
                 <ul className="flex w-full flex-col gap-[8px] overflow-hidden">
                     {caseTexts.map((text, index) => (
                         <li
                             key={`${index}-${text.slice(0, 24)}`}
-                            className="truncate text-center text-[13px] leading-[1.4] text-[var(--adaptive-black800)]"
+                            className="truncate text-center text-[14px] leading-[1.5] text-[var(--adaptive-black800)]"
                             title={text}
                         >
                             <span className="mr-[6px] text-[var(--adaptive-black500)]">{index + 1}.</span>
@@ -311,17 +293,7 @@ export function FeedbackWindow({ report, anchor, isFocused, embedded = false }: 
         isComposingNewCase,
         hasNewCaseDraftSession,
     } = useReportSession();
-    const {
-        isUpdating,
-        isSubmittingReply,
-        isClaimingAssignee,
-        handleReplySubmit,
-        handleClaimAssignee,
-        handleTransferAssignee,
-        handleConfirmResolution,
-        handleDelete,
-        isDeleting,
-    } = useReportData();
+    const { isUpdating, isSubmittingReply, isClaimingAssignee, handleReplySubmit, handleClaimAssignee, handleTransferAssignee, handleConfirmResolution, handleDelete, isDeleting } = useReportData();
     const deleteLock = useIntegrationLock("deleteFeedback");
 
     const windowRef = useRef<HTMLDivElement | null>(null);
@@ -577,12 +549,12 @@ export function FeedbackWindow({ report, anchor, isFocused, embedded = false }: 
     const resolvedPosition = showMinimizedChrome ? overlayDock.dockPosition : restoredPosition;
     const displayRect = embedded
         ? { left: 0, top: 0, width: "min(600px, calc(100vw - 32px))", height: DEFAULT_WINDOW_SIZE.height }
-        : dockMorph ?? {
+        : (dockMorph ?? {
               left: showMinimizedChrome ? dockDrag.displayLeft : resolvedPosition.left,
               top: showMinimizedChrome ? dockDrag.displayTop : resolvedPosition.top,
               width: showMinimizedChrome ? minimizedWidth : effectiveSize.width,
               height: showMinimizedChrome ? MINIMIZED_WINDOW_HEIGHT : effectiveSize.height,
-          };
+          });
     const layoutTransition = overlayDock.layoutTransition;
     const leftSectionClass = getLeftSectionClass(windowSurfacePhase);
     const windowAnimationClass =
@@ -849,13 +821,13 @@ export function FeedbackWindow({ report, anchor, isFocused, embedded = false }: 
             >
                 {isComposingCaseInThisWindow ? (
                     <Fragment>
-                        <p className="truncate text-[15px] font-semibold leading-[1.4] text-[var(--adaptive-blue400)]">{messages.cases.composingCaseTitle}</p>
-                        <p className="mt-[2px] text-[12px] leading-[1.4] text-[var(--adaptive-black500)]">{messages.cases.open}</p>
+                        <p className="truncate text-[14px] font-semibold leading-[1.5] text-[var(--adaptive-blue400)]">{messages.cases.composingCaseTitle}</p>
+                        <p className="mt-[2px] text-[12px] leading-[1.5] text-[var(--adaptive-black500)]">{messages.cases.open}</p>
                     </Fragment>
                 ) : focusedCase ? (
                     <Fragment>
                         <p
-                            className="truncate text-[15px] font-semibold leading-[1.4] text-[var(--adaptive-black900)]"
+                            className="truncate text-[14px] font-semibold leading-[1.5] text-[var(--adaptive-black900)]"
                             title={mentionMessageToPlainText(focusedCase.text, focusedCase.mentions)}
                         >
                             {mentionMessageToPlainText(focusedCase.text, focusedCase.mentions)}
@@ -869,7 +841,7 @@ export function FeedbackWindow({ report, anchor, isFocused, embedded = false }: 
                                             fill={RESOLVED_STATUS_COLOR}
                                         />
                                         <p
-                                            className="min-w-0 truncate text-[12px] font-semibold leading-[1.4]"
+                                            className="min-w-0 truncate text-[12px] font-semibold leading-[1.5]"
                                             style={{ color: RESOLVED_STATUS_COLOR }}
                                         >
                                             {messages.thread.issueResolvedDivider}
@@ -879,7 +851,7 @@ export function FeedbackWindow({ report, anchor, isFocused, embedded = false }: 
                                     <>
                                         <ProcessingDots />
                                         <Text.Shimmer
-                                            className="min-w-0 truncate text-[12px] leading-[1.4]"
+                                            className="min-w-0 truncate text-[12px] leading-[1.5]"
                                             color={{
                                                 start: "var(--adaptive-black900)",
                                                 end: "var(--adaptive-blue400)",
@@ -890,7 +862,7 @@ export function FeedbackWindow({ report, anchor, isFocused, embedded = false }: 
                                         </Text.Shimmer>
                                     </>
                                 ) : (
-                                    <p className="min-w-0 truncate text-[12px] leading-[1.4] text-[var(--adaptive-black500)]">{messages.marker.assigneeUnassigned}</p>
+                                    <p className="min-w-0 truncate text-[12px] leading-[1.5] text-[var(--adaptive-black500)]">{messages.marker.assigneeUnassigned}</p>
                                 )}
                             </div>
                             <div className="flex min-w-0 shrink-0 items-center gap-[8px]">
@@ -905,7 +877,7 @@ export function FeedbackWindow({ report, anchor, isFocused, embedded = false }: 
                         </div>
                     </Fragment>
                 ) : (
-                    <p className="text-[13px] text-[var(--adaptive-black500)]">{messages.cases.selectToView}</p>
+                    <p className="text-[14px] text-[var(--adaptive-black500)]">{messages.cases.selectToView}</p>
                 )}
             </header>
 
@@ -988,11 +960,7 @@ export function FeedbackWindow({ report, anchor, isFocused, embedded = false }: 
                 onClick={(event) => event.stopPropagation()}
                 onAnimationEnd={handleWindowAnimationEnd}
                 className={`${embedded ? "relative" : "fixed"} rounded-[16px] shadow-[var(--adaptive-popup-shadow)] ${
-                    windowMode === "normal" && dockMorph === null
-                        ? "overflow-visible"
-                        : showMinimizedChrome && dockMorph === null && !isDockDragging
-                          ? ""
-                          : "overflow-hidden"
+                    windowMode === "normal" && dockMorph === null ? "overflow-visible" : showMinimizedChrome && dockMorph === null && !isDockDragging ? "" : "overflow-hidden"
                 } ${isDockDragging ? "z-[1000003]" : showFullContent ? "z-[1000002]" : "z-[1000001]"} ${windowAnimationClass}`}
                 style={{
                     left: displayRect.left,
@@ -1104,7 +1072,6 @@ export function FeedbackWindow({ report, anchor, isFocused, embedded = false }: 
                                 {unfocusedBody}
                             </>
                         )}
-
                     </div>
                 )}
 

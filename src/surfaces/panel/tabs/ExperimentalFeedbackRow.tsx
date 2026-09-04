@@ -23,12 +23,12 @@ export function ExperimentalFeedbackRow({ report, onOpen }: ExperimentalFeedback
         >
             <div className="flex items-start justify-between gap-[8px]">
                 <FeedbackStatusBadge status={status} />
-                <span className="shrink-0 rounded-[4px] bg-[var(--adaptive-black100)] px-[6px] py-[1px] text-[10px] font-semibold text-[var(--adaptive-black600)]">
+                <span className="shrink-0 rounded-[4px] bg-[var(--adaptive-black100)] px-[6px] py-[1px] text-[12px] font-semibold text-[var(--adaptive-black600)]">
                     {messages.panel.experimentalCaseCount.replace("{count}", String(caseCount))}
                 </span>
             </div>
             <p className="line-clamp-2 text-[12px] font-semibold text-[var(--adaptive-black900)]">{preview}</p>
-            <p className="truncate text-[11px] text-[var(--adaptive-black500)]">{report.pathname}</p>
+            <p className="truncate text-[12px] text-[var(--adaptive-black500)]">{report.pathname}</p>
         </button>
     );
 }

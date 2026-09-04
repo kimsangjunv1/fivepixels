@@ -224,7 +224,7 @@ export function MarkerButton({
                     {aggregateCount > 1 ? (
                         <span
                             aria-hidden
-                            className="pointer-events-none absolute z-10 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-white px-[4px] text-[10px] font-bold leading-none text-white"
+                            className="pointer-events-none absolute z-10 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-white px-[4px] text-[12px] font-bold leading-none text-white"
                             style={{
                                 top: -5,
                                 right: -5,
@@ -244,7 +244,7 @@ export function MarkerButton({
                     {isWindowOpen ? (
                         <span
                             aria-hidden
-                            className="pointer-events-none absolute left-1/2 top-full z-20 mt-[2px] -translate-x-1/2 whitespace-nowrap rounded-full bg-black/55 px-[2px] py-[1px] text-[10px] font-semibold leading-none text-white"
+                            className="pointer-events-none absolute left-1/2 top-full z-20 mt-[2px] -translate-x-1/2 whitespace-nowrap rounded-full bg-black/55 px-[2px] py-[1px] text-[12px] font-semibold leading-none text-white"
                         >
                             {viewingWindowBadge}
                         </span>
@@ -266,16 +266,7 @@ type MarkerTooltipSurfaceProps = {
     containerRef?: Ref<HTMLDivElement>;
 };
 
-export function MarkerTooltipSurface({
-    report,
-    detached = false,
-    detachedKind = null,
-    detachedHint,
-    detachedModalHint,
-    positioning = "fixed",
-    style,
-    containerRef,
-}: MarkerTooltipSurfaceProps) {
+export function MarkerTooltipSurface({ report, detached = false, detachedKind = null, detachedHint, detachedModalHint, positioning = "fixed", style, containerRef }: MarkerTooltipSurfaceProps) {
     return (
         <div
             ref={containerRef}

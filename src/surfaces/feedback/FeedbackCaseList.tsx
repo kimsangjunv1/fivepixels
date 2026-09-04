@@ -64,7 +64,7 @@ function AllCasesList({ report, cases, onSelectCase }: AllCasesListProps) {
                                     {mentionMessageToPlainText(item.text, item.mentions)}
                                 </span>
                                 {isOpen ? (
-                                    <p className="mt-[2px] text-[11px] text-[var(--adaptive-black500)]">
+                                    <p className="mt-[2px] text-[12px] text-[var(--adaptive-black500)]">
                                         {messages.cases.assignee}: {handlerName ?? messages.cases.unassigned}
                                     </p>
                                 ) : null}
@@ -184,7 +184,7 @@ export function FeedbackCaseList({
                             type="button"
                             data-fivepixels-interactive=""
                             onClick={onBeginEdit}
-                            className="rounded-full border border-[var(--adaptive-border-subtle)] px-[8px] py-[4px] text-[11px] font-semibold whitespace-nowrap text-[var(--adaptive-blue500)] hover:bg-[var(--adaptive-blue100)]"
+                            className="rounded-full border border-[var(--adaptive-border-subtle)] px-[8px] py-[4px] text-[12px] font-semibold whitespace-nowrap text-[var(--adaptive-blue500)] hover:bg-[var(--adaptive-blue100)]"
                         >
                             {messages.cases.edit}
                         </button>

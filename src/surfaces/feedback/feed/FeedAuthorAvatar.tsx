@@ -21,7 +21,7 @@ type FeedAuthorAvatarProps = {
 };
 
 export function FeedAuthorAvatar({ name, size = "md", className = "" }: FeedAuthorAvatarProps) {
-    const dimension = size === "sm" ? "h-[22px] w-[22px] text-[9px]" : "h-[26px] w-[26px] text-[10px]";
+    const dimension = size === "sm" ? "h-[22px] w-[22px] text-[12px]" : "h-[26px] w-[26px] text-[12px]";
 
     return (
         <span

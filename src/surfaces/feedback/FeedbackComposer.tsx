@@ -342,13 +342,7 @@ export function FeedbackComposer({
     const showFooterComposerModeTag = Boolean(resolvedComposerMode && isReplyMultiline);
     const showActionRow = !hideActions && (showAskQuestionToggle || showGitHubIssueOnCreate || !hidePrimarySubmitAction || showFooterComposerModeTag);
     const resolvedPlaceholder = isQuestionMode ? messages.composer.questionPlaceholder : (placeholder ?? (usesCaseEditor ? messages.fieldEditor.messagePlaceholder : messages.composer.placeholder));
-    const emptyCaseIds = useMemo(
-        () =>
-            (cases ?? [])
-                .filter((item) => !stripMentionTokensForEmptyCheck(item.text, item.mentions, item.user_mentions).trim())
-                .map((item) => item.id),
-        [cases],
-    );
+    const emptyCaseIds = useMemo(() => (cases ?? []).filter((item) => !stripMentionTokensForEmptyCheck(item.text, item.mentions, item.user_mentions).trim()).map((item) => item.id), [cases]);
     const hasEmptyCase = emptyCaseIds.length > 0;
     const isCategoryRequiredError = errorMessage === messages.errors.categoryRequired;
     const isEmptyCaseError = isCaseTextErrorMessage(errorMessage, cases?.length ?? 0, messages.errors.caseTextRequired, messages.errors.casesRequired);
@@ -456,7 +450,7 @@ export function FeedbackComposer({
                     className="px-[8px] pt-[8px]"
                     title={trimmedReplyTargetPreview}
                 >
-                    <div className="flex min-w-0 items-center gap-[6px] rounded-[8px] bg-[var(--adaptive-black100)] px-[8px] py-[5px] text-[12px] leading-[1.4] text-[var(--adaptive-black500)]">
+                    <div className="flex min-w-0 items-center gap-[6px] rounded-[8px] bg-[var(--adaptive-black100)] px-[8px] py-[5px] text-[12px] leading-[1.5] text-[var(--adaptive-black500)]">
                         <KeyboardReturnIcon className="h-[14px] w-[14px] shrink-0" />
                         <span className="min-w-0 truncate">{`"${trimmedReplyTargetPreview}"`}</span>
                     </div>

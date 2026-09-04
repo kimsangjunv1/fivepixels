@@ -70,7 +70,7 @@ export function PanelAutoRefreshControl() {
 
                 {isAutoRefreshEnabled ? (
                     <span
-                        className="flex h-full items-center pr-[2px] font-mono text-[11px] font-semibold tabular-nums leading-none tracking-tight"
+                        className="flex h-full items-center pr-[2px] font-mono text-[12px] font-semibold tabular-nums leading-none tracking-tight"
                         aria-live="polite"
                     >
                         {remainingLabel}

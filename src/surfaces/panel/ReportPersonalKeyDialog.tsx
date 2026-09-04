@@ -59,14 +59,8 @@ export function ReportPersonalKeyDialog({ mode, onCancel, onComplete }: ReportPe
         onComplete(inserted.authorized ? messages.personalKey.setupSuccess : messages.personalKey.registrationPending);
     };
 
-    const title =
-        mode === "required" ? messages.personalKey.requiredTitle : mode === "rotate" ? messages.personalKey.rotateTitle : messages.personalKey.insertTitle;
-    const description =
-        mode === "required"
-            ? messages.personalKey.requiredDescription
-            : mode === "rotate"
-              ? messages.personalKey.rotateDescription
-              : messages.personalKey.insertDescription;
+    const title = mode === "required" ? messages.personalKey.requiredTitle : mode === "rotate" ? messages.personalKey.rotateTitle : messages.personalKey.insertTitle;
+    const description = mode === "required" ? messages.personalKey.requiredDescription : mode === "rotate" ? messages.personalKey.rotateDescription : messages.personalKey.insertDescription;
 
     let body: ReactNode = null;
 
@@ -88,7 +82,7 @@ export function ReportPersonalKeyDialog({ mode, onCancel, onComplete }: ReportPe
                         </option>
                     ))}
                 </select>
-                <ul className="mt-[10px] list-disc space-y-[4px] pl-[18px] text-[12px] leading-[1.4] text-[var(--adaptive-black600)]">
+                <ul className="mt-[10px] list-disc space-y-[4px] pl-[18px] text-[12px] leading-[1.5] text-[var(--adaptive-black600)]">
                     <li>{messages.personalKey.backupWarning}</li>
                     <li>{messages.personalKey.restoreGuide}</li>
                 </ul>
@@ -108,7 +102,7 @@ export function ReportPersonalKeyDialog({ mode, onCancel, onComplete }: ReportPe
             />
         );
     } else {
-        body = <p className="rounded-[8px] bg-amber-50 p-[10px] text-[12px] leading-[1.4] text-amber-800">{messages.personalKey.rotateWarning}</p>;
+        body = <p className="rounded-[8px] bg-amber-50 p-[10px] text-[12px] leading-[1.5] text-amber-800">{messages.personalKey.rotateWarning}</p>;
     }
 
     return (

@@ -23,12 +23,7 @@ export function PanelKeyGate({ mode }: { mode: PanelKeyGateMode }) {
     const canShowSnippet = Boolean(authorId && publicKey);
     const usesRequestFlow = isTeamWriteEnabled(persistenceStatus) && hasTeamRequestHandler({ onCreateReviewerRequest });
     const title = mode === "key-issue" ? onboarding.issueTitle : onboarding.doneTitle;
-    const description =
-        mode === "key-issue"
-            ? onboarding.issueDescription
-            : usesRequestFlow
-              ? onboarding.doneDescriptionWithRequest
-              : onboarding.doneDescription;
+    const description = mode === "key-issue" ? onboarding.issueDescription : usesRequestFlow ? onboarding.doneDescriptionWithRequest : onboarding.doneDescription;
 
     const handleCopySnippet = async () => {
         if (!canShowSnippet || !publicKey) {
@@ -62,7 +57,7 @@ export function PanelKeyGate({ mode }: { mode: PanelKeyGateMode }) {
             footer={
                 confirmingReset && mode === "key-issue" ? (
                     <div className="flex flex-col gap-[10px]">
-                        <p className="text-[12px] leading-[1.4] text-[var(--adaptive-black700)]">{onboarding.resetKeyConfirm}</p>
+                        <p className="text-[12px] leading-[1.5] text-[var(--adaptive-black700)]">{onboarding.resetKeyConfirm}</p>
                         <div className="flex items-center justify-end gap-[10px]">
                             <PanelGateButton
                                 variant="secondary"
@@ -96,9 +91,7 @@ export function PanelKeyGate({ mode }: { mode: PanelKeyGateMode }) {
                 )
             }
         >
-            {usesRequestFlow ? (
-                <p className="text-[12px] leading-[1.4] text-[var(--adaptive-black600)]">{onboarding.pendingDescriptionWithRequest}</p>
-            ) : null}
+            {usesRequestFlow ? <p className="text-[12px] leading-[1.5] text-[var(--adaptive-black600)]">{onboarding.pendingDescriptionWithRequest}</p> : null}
 
             {canShowSnippet && publicKey ? (
                 <div className="flex flex-col gap-[6px] overflow-hidden rounded-[8px] border border-[var(--adaptive-black200)]">
@@ -114,8 +107,8 @@ export function PanelKeyGate({ mode }: { mode: PanelKeyGateMode }) {
 
                     {keyInfoOpen ? (
                         <div className="flex flex-col gap-[6px] px-[10px] pb-[10px]">
-                            <p className="text-[11px] font-semibold text-[var(--adaptive-black500)]">{onboarding.reviewerSnippetHint}</p>
-                            <pre className="max-h-[120px] overflow-auto whitespace-pre-wrap break-all rounded-[8px] bg-[var(--adaptive-black100)] p-[10px] text-[11px] leading-[1.5] text-[var(--adaptive-black800)]">
+                            <p className="text-[12px] font-semibold text-[var(--adaptive-black500)]">{onboarding.reviewerSnippetHint}</p>
+                            <pre className="max-h-[120px] overflow-auto whitespace-pre-wrap break-all rounded-[8px] bg-[var(--adaptive-black100)] p-[10px] text-[12px] leading-[1.5] text-[var(--adaptive-black800)]">
                                 {buildReviewerSnippet({ name, authorId, publicKey })}
                             </pre>
                         </div>

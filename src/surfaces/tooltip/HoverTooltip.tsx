@@ -18,7 +18,7 @@ type HoverTooltipProps = {
 const SINGLE_LINE_TOOLTIP_CLASS_NAME =
     "pointer-events-none fixed whitespace-nowrap rounded-[100px] bg-[var(--adaptive-overlay-surface)] px-[10px] py-[4px] text-[14px] text-[var(--adaptive-overlay-text)]";
 const MULTILINE_TOOLTIP_CLASS_NAME =
-    "pointer-events-none fixed max-w-[min(280px,calc(100vw-16px))] whitespace-pre-wrap rounded-[8px] bg-[var(--adaptive-overlay-surface)] px-[10px] py-[6px] text-[12px] leading-[1.4] text-[var(--adaptive-overlay-text)]";
+    "pointer-events-none fixed max-w-[min(280px,calc(100vw-16px))] whitespace-pre-wrap rounded-[8px] bg-[var(--adaptive-overlay-surface)] px-[10px] py-[6px] text-[12px] leading-[1.5] text-[var(--adaptive-overlay-text)]";
 
 function isSameLayout(current: HoverTooltipLayout | null, next: HoverTooltipLayout | null) {
     if (current === next) {

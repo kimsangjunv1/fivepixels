@@ -14,15 +14,7 @@ import {
     type ReportSessionValue,
 } from "@/shared/providers/reportContext.js";
 import type { NotificationActionId, NotificationItem } from "@/shared/types/notification.js";
-import type {
-    DraftReport,
-    Marker,
-    PickProbeFieldKey,
-    PickProbeValues,
-    ReportPanelTab,
-    SavedProbeEntry,
-    TargetSnapshot,
-} from "@/shared/types/report-ui.js";
+import type { DraftReport, Marker, PickProbeFieldKey, PickProbeValues, ReportPanelTab, SavedProbeEntry, TargetSnapshot } from "@/shared/types/report-ui.js";
 import type { FeedbackCategory, ReportCase } from "@/shared/types/report.js";
 import { MarkerButton, MarkerTooltipSurface } from "@/surfaces/marker/MarkerLayer.js";
 import { Panel } from "@/surfaces/panel/Panel.js";
@@ -89,10 +81,7 @@ function PanelScene({ initialTab, visibleTabs = PANEL_TABS, settingsInitialCateg
     const togglePanelTab = useCallback((nextTab: ReportPanelTab) => {
         setPanelTab((current) => (current === nextTab ? null : nextTab));
     }, []);
-    const demoPreferences = useMemo<ReportPreferencesValue>(
-        () => ({ ...preferences, visiblePanelTabs: visibleTabs }),
-        [preferences, visibleTabs],
-    );
+    const demoPreferences = useMemo<ReportPreferencesValue>(() => ({ ...preferences, visiblePanelTabs: visibleTabs }), [preferences, visibleTabs]);
     const demoSession = useMemo<ReportSessionValue>(
         () => ({
             ...baseSession,
@@ -103,37 +92,37 @@ function PanelScene({ initialTab, visibleTabs = PANEL_TABS, settingsInitialCateg
         }),
         [baseSession, panelTab, togglePanelTab],
     );
-    const demoData = useMemo<ReportDataValue>(
-        () => {
-            if (initialTab === "api-flow") {
-                return {
-                    ...baseData,
-                    apiFlowEntries: DEMO_API_FLOW_ENTRIES,
-                    activeApiFailureAlert: null,
-                    networkMonitorEnabled: true,
-                };
-            }
+    const demoData = useMemo<ReportDataValue>(() => {
+        if (initialTab === "api-flow") {
+            return {
+                ...baseData,
+                apiFlowEntries: DEMO_API_FLOW_ENTRIES,
+                activeApiFailureAlert: null,
+                networkMonitorEnabled: true,
+            };
+        }
 
-            if (initialTab === "memo-list") {
-                return {
-                    ...baseData,
-                    reports: DEMO_REPORTS,
-                    currentPageReports: DEMO_REPORTS,
-                    filteredReports: DEMO_REPORTS,
-                };
-            }
+        if (initialTab === "memo-list") {
+            return {
+                ...baseData,
+                reports: DEMO_REPORTS,
+                currentPageReports: DEMO_REPORTS,
+                filteredReports: DEMO_REPORTS,
+            };
+        }
 
-            return baseData;
-        },
-        [baseData, initialTab],
-    );
+        return baseData;
+    }, [baseData, initialTab]);
 
     return (
         <ReportPreferencesContext.Provider value={demoPreferences}>
             <ReportSessionContext.Provider value={demoSession}>
                 <ReportDataContext.Provider value={demoData}>
                     <div className="flex h-full items-center justify-center p-[16px]">
-                        <Panel embedded embeddedSettingsInitialCategory={settingsInitialCategory} />
+                        <Panel
+                            embedded
+                            embeddedSettingsInitialCategory={settingsInitialCategory}
+                        />
                     </div>
                 </ReportDataContext.Provider>
             </ReportSessionContext.Provider>
@@ -205,9 +194,7 @@ function FeedbackComposerScene({ variant = "feedback" }: { variant?: "feedback" 
             current
                 ? {
                       ...current,
-                      cases: current.cases.map((item) =>
-                          item.id === caseId ? { ...item, text, mentions, user_mentions: userMentions } : item,
-                      ),
+                      cases: current.cases.map((item) => (item.id === caseId ? { ...item, text, mentions, user_mentions: userMentions } : item)),
                   }
                 : current,
         );
@@ -230,11 +217,7 @@ function FeedbackComposerScene({ variant = "feedback" }: { variant?: "feedback" 
         });
     }, []);
     const removeDraftCase = useCallback((caseId: string) => {
-        setDraft((current) =>
-            current && current.cases.length > 1
-                ? { ...current, cases: current.cases.filter((item) => item.id !== caseId) }
-                : current,
-        );
+        setDraft((current) => (current && current.cases.length > 1 ? { ...current, cases: current.cases.filter((item) => item.id !== caseId) } : current));
     }, []);
     const updateDraftField = useCallback((key: string, value: string | boolean) => {
         setDraft((current) => (current ? { ...current, fieldValues: { ...current.fieldValues, [key]: value } } : current));
@@ -297,10 +280,7 @@ function ElementInspectorScene() {
         }),
         [locale],
     );
-    const initialValues = useMemo<PickProbeValues>(
-        () => ({ ...DEMO_PROBE_VALUES, textContent: locale === "ko" ? "무료로 시작하기" : "Start for free" }),
-        [locale],
-    );
+    const initialValues = useMemo<PickProbeValues>(() => ({ ...DEMO_PROBE_VALUES, textContent: locale === "ko" ? "무료로 시작하기" : "Start for free" }), [locale]);
     const [values, setValues] = useState<PickProbeValues>(initialValues);
     const [open, setOpen] = useState(true);
     const [compareMode, setCompareMode] = useState<"before" | "after">("after");
@@ -429,18 +409,7 @@ function ElementInspectorScene() {
             resetPickProbeValues,
             closePickProbe,
         }),
-        [
-            baseSession,
-            closePickProbe,
-            compareMode,
-            hasEdits,
-            open,
-            resetPickProbeValues,
-            savedProbeEdits,
-            selectedTarget,
-            updatePickProbeValue,
-            values,
-        ],
+        [baseSession, closePickProbe, compareMode, hasEdits, open, resetPickProbeValues, savedProbeEdits, selectedTarget, updatePickProbeValue, values],
     );
 
     return (
@@ -483,25 +452,31 @@ function DemoMobileContent() {
         <div className="h-full w-full bg-white p-[20px] text-[#191f28]">
             <div className="flex items-center justify-between border-b border-[#e5e8eb] pb-[14px]">
                 <strong className="text-[18px]">fivepixels.</strong>
-                <button type="button" className="rounded-[8px] bg-[#3182f6] px-[12px] py-[7px] text-[12px] font-bold text-white">
+                <button
+                    type="button"
+                    className="rounded-[8px] bg-[#3182f6] px-[12px] py-[7px] text-[12px] font-bold text-white"
+                >
                     {isKorean ? "로그인" : "Sign in"}
                 </button>
             </div>
             <div className="grid grid-cols-2 gap-[12px] py-[18px]">
                 <div className="rounded-[12px] bg-[#f2f4f6] p-[14px]">
-                    <p className="text-[11px] text-[#8b95a1]">KOSPI</p>
+                    <p className="text-[12px] text-[#8b95a1]">KOSPI</p>
                     <strong className="mt-[6px] block text-[18px]">6,792.12</strong>
-                    <span className="text-[11px] text-[#f04452]">+5.45%</span>
+                    <span className="text-[12px] text-[#f04452]">+5.45%</span>
                 </div>
                 <div className="rounded-[12px] bg-[#f2f4f6] p-[14px]">
-                    <p className="text-[11px] text-[#8b95a1]">NASDAQ</p>
+                    <p className="text-[12px] text-[#8b95a1]">NASDAQ</p>
                     <strong className="mt-[6px] block text-[18px]">26,331.09</strong>
-                    <span className="text-[11px] text-[#3182f6]">-0.59%</span>
+                    <span className="text-[12px] text-[#3182f6]">-0.59%</span>
                 </div>
             </div>
-            <p className="mb-[10px] text-[13px] font-bold">{isKorean ? "실시간 종목" : "Live market"}</p>
+            <p className="mb-[10px] text-[14px] font-bold">{isKorean ? "실시간 종목" : "Live market"}</p>
             {DEMO_STOCK_NAMES.map((name, index) => (
-                <div key={name} className="flex items-center border-t border-[#f2f4f6] py-[11px] text-[12px]">
+                <div
+                    key={name}
+                    className="flex items-center border-t border-[#f2f4f6] py-[11px] text-[12px]"
+                >
                     <span className="w-[24px] text-[#8b95a1]">{index + 1}</span>
                     <strong>{isKorean ? name : DEMO_STOCK_NAMES_EN[index]}</strong>
                     <span className="ml-auto text-[#f04452]">+{(index + 2.4).toFixed(2)}%</span>
@@ -514,7 +489,10 @@ function DemoMobileContent() {
 function DevicePreviewScene() {
     return (
         <div className="flex h-full items-start justify-center overflow-hidden pt-[8px]">
-            <MobilePreviewWindow embedded embeddedContent={<DemoMobileContent />} />
+            <MobilePreviewWindow
+                embedded
+                embeddedContent={<DemoMobileContent />}
+            />
         </div>
     );
 }
@@ -535,7 +513,12 @@ function FeedbackThreadScene() {
 
     return (
         <div className="flex h-full items-center justify-center py-[20px]">
-            <FeedbackWindow report={report} anchor={{ left: 0, top: 0 }} isFocused embedded />
+            <FeedbackWindow
+                report={report}
+                anchor={{ left: 0, top: 0 }}
+                isFocused
+                embedded
+            />
         </div>
     );
 }
@@ -562,10 +545,7 @@ function NotificationsScene() {
 
         setNotifications((current) => current.filter((item) => item.id !== id));
     }, []);
-    const clearNotifications = useCallback(
-        () => setNotifications((current) => current.filter((item) => item.id.startsWith("status:"))),
-        [],
-    );
+    const clearNotifications = useCallback(() => setNotifications((current) => current.filter((item) => item.id.startsWith("status:"))), []);
     const runNotificationAction = useCallback((item: NotificationItem, action: NotificationActionId) => {
         setNotifications((current) =>
             current.map((entry) => {
@@ -634,15 +614,7 @@ function NotificationsScene() {
             activateNotification: (item) => markNotificationRead(item.id),
             runNotificationAction,
         }),
-        [
-            baseSession,
-            clearNotifications,
-            dismissNotification,
-            markAllNotificationsRead,
-            markNotificationRead,
-            notifications,
-            runNotificationAction,
-        ],
+        [baseSession, clearNotifications, dismissNotification, markAllNotificationsRead, markNotificationRead, notifications, runNotificationAction],
     );
 
     return (
@@ -667,7 +639,12 @@ export function DemoScene({ scene }: { scene: FivePixelsDemoScene }) {
         case "network-monitor":
             return <PanelScene initialTab="api-flow" />;
         case "memo-list":
-            return <PanelScene initialTab="memo-list" visibleTabs={MEMO_PANEL_TABS} />;
+            return (
+                <PanelScene
+                    initialTab="memo-list"
+                    visibleTabs={MEMO_PANEL_TABS}
+                />
+            );
         case "element-inspector":
             return <ElementInspectorScene />;
         case "device-preview":
@@ -677,7 +654,12 @@ export function DemoScene({ scene }: { scene: FivePixelsDemoScene }) {
         case "settings":
             return <PanelScene initialTab="settings" />;
         case "settings-customization":
-            return <PanelScene initialTab="settings" settingsInitialCategory="appearance" />;
+            return (
+                <PanelScene
+                    initialTab="settings"
+                    settingsInitialCategory="appearance"
+                />
+            );
         case "notifications":
             return <NotificationsScene />;
     }

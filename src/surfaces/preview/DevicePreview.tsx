@@ -15,11 +15,7 @@ import {
     syncGuestStatusBarStyle,
     type DevicePreviewContentMetrics,
 } from "@/shared/utils/overlay/devicePreviewFrame.js";
-import {
-    clearPageDocumentBridge,
-    notifyPageDocumentBridge,
-    setPageDocumentBridge,
-} from "@/shared/utils/overlay/pageDocumentBridge.js";
+import { clearPageDocumentBridge, notifyPageDocumentBridge, setPageDocumentBridge } from "@/shared/utils/overlay/pageDocumentBridge.js";
 import { DeviceFrameArtwork } from "./DeviceFrameArtwork.js";
 import { DeviceStatusBar, getDeviceStatusBarHeight } from "./DeviceStatusBar.js";
 
@@ -129,16 +125,8 @@ function resolveCenteredLayout(args: {
 }
 
 export function DevicePreview() {
-    const {
-        devicePreviewUiOpen,
-        devicePreviewDeviceId,
-        devicePreviewScale,
-        devicePreviewImageEnabled,
-        devicePreviewFitToViewport,
-        devicePreviewStatusBarEnabled,
-        resolvedPanelAppearance,
-        messages,
-    } = useReportPreferences();
+    const { devicePreviewUiOpen, devicePreviewDeviceId, devicePreviewScale, devicePreviewImageEnabled, devicePreviewFitToViewport, devicePreviewStatusBarEnabled, resolvedPanelAppearance, messages } =
+        useReportPreferences();
     const { mode } = useReportSession();
     const isPreviewGuest = isInsideDevicePreviewFrame();
     const preset = useMemo(() => getDevicePreviewPreset(devicePreviewDeviceId), [devicePreviewDeviceId]);
@@ -191,10 +179,7 @@ export function DevicePreview() {
         [layout.width, layout.height, chrome.bezel, metrics.viewportWidth, metrics.viewportHeight, devicePreviewFitToViewport],
     );
 
-    const statusBarHeight = useMemo(
-        () => (devicePreviewStatusBarEnabled ? getDeviceStatusBarHeight(preset, centered.screenWidth) : 0),
-        [devicePreviewStatusBarEnabled, preset, centered.screenWidth],
-    );
+    const statusBarHeight = useMemo(() => (devicePreviewStatusBarEnabled ? getDeviceStatusBarHeight(preset, centered.screenWidth) : 0), [devicePreviewStatusBarEnabled, preset, centered.screenWidth]);
 
     const handleFrameLoad = useCallback(() => {
         const iframe = iframeRef.current;
@@ -336,10 +321,7 @@ export function DevicePreview() {
     const ticks = buildRulerTicks(metrics.scrollY, metrics.clientHeight || screenHeight, Math.max(metrics.scrollHeight, screenHeight));
     const visualBezelLeft = centered.bezel.left * centered.fitScale;
     const actualFrameLeft = screenLeft - visualBezelLeft;
-    const rulerLeft =
-        actualFrameLeft >= RULER_WIDTH + RULER_GAP
-            ? actualFrameLeft - RULER_WIDTH - RULER_GAP
-            : Math.max(0, actualFrameLeft - RULER_WIDTH);
+    const rulerLeft = actualFrameLeft >= RULER_WIDTH + RULER_GAP ? actualFrameLeft - RULER_WIDTH - RULER_GAP : Math.max(0, actualFrameLeft - RULER_WIDTH);
     const visualStatusBarHeight = statusBarHeight * centered.fitScale;
     const rulerTop = screenTop + visualStatusBarHeight;
     const rulerHeight = Math.max(0, visualScreenHeight - visualStatusBarHeight);
@@ -480,7 +462,7 @@ export function DevicePreview() {
                     data-fivepixels-skip-capture=""
                     style={{ left: rulerLeft, top: rulerTop, width: RULER_WIDTH, height: rulerHeight, borderRadius: 6 }}
                 >
-                    <div className="absolute inset-x-0 top-0 z-[1] border-b border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-neutralTintOpacity900)] px-[4px] py-[6px] text-center text-[9px] font-semibold leading-tight text-[var(--adaptive-black900)]">
+                    <div className="absolute inset-x-0 top-0 z-[1] border-b border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-neutralTintOpacity900)] px-[4px] py-[6px] text-center text-[12px] font-semibold leading-tight text-[var(--adaptive-black900)]">
                         {scrollLabel}
                     </div>
                     {ticks.map((tick) => {
@@ -497,16 +479,10 @@ export function DevicePreview() {
                                 className="absolute right-0 flex items-center"
                                 style={{ top, height: 0 }}
                             >
-                                <span
-                                    className={`mr-[3px] text-[8px] tabular-nums ${
-                                        tick.major ? "font-semibold text-[var(--adaptive-black900)]" : "text-[var(--adaptive-black500)]"
-                                    }`}
-                                >
+                                <span className={`mr-[3px] text-[12px] tabular-nums ${tick.major ? "font-semibold text-[var(--adaptive-black900)]" : "text-[var(--adaptive-black500)]"}`}>
                                     {tick.major ? labelY : ""}
                                 </span>
-                                <span
-                                    className={`block bg-[var(--adaptive-black500)] ${tick.major ? "h-[1px] w-[12px]" : "h-[1px] w-[7px]"}`}
-                                />
+                                <span className={`block bg-[var(--adaptive-black500)] ${tick.major ? "h-[1px] w-[12px]" : "h-[1px] w-[7px]"}`} />
                             </div>
                         );
                     })}

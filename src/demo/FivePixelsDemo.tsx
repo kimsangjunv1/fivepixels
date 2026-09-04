@@ -34,7 +34,11 @@ export function FivePixelsDemo({
     };
 
     return (
-        <DemoRuntime scene={scene} locale={activeLocale} appearance={resolvedAppearance}>
+        <DemoRuntime
+            scene={scene}
+            locale={activeLocale}
+            appearance={resolvedAppearance}
+        >
             <DemoRoot
                 appearance={resolvedAppearance}
                 width={size.width}
@@ -45,17 +49,19 @@ export function FivePixelsDemo({
                 ariaLabel={ariaLabel ?? `FivePixels ${scene} demo`}
             >
                 {showLocaleSwitch ? (
-                    <div className="pointer-events-auto absolute right-0 top-0 z-[20] flex rounded-full border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-fillOpacity700)] p-[2px] shadow-sm backdrop-blur-[16px]" role="group" aria-label={activeLocale === "ko" ? "데모 언어" : "Demo language"}>
+                    <div
+                        className="pointer-events-auto absolute right-0 top-0 z-[20] flex rounded-full border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-fillOpacity700)] p-[2px] shadow-sm backdrop-blur-[16px]"
+                        role="group"
+                        aria-label={activeLocale === "ko" ? "데모 언어" : "Demo language"}
+                    >
                         {(["ko", "en"] as const).map((option) => (
                             <button
                                 key={option}
                                 type="button"
                                 aria-pressed={activeLocale === option}
                                 onClick={() => handleLocaleChange(option)}
-                                className={`rounded-full px-[8px] py-[4px] text-[10px] ${
-                                    activeLocale === option
-                                        ? "bg-[var(--adaptive-black900)] text-[var(--adaptive-surface)]"
-                                        : "text-[var(--adaptive-black500)]"
+                                className={`rounded-full px-[8px] py-[4px] text-[12px] ${
+                                    activeLocale === option ? "bg-[var(--adaptive-black900)] text-[var(--adaptive-surface)]" : "text-[var(--adaptive-black500)]"
                                 }`}
                             >
                                 {option.toUpperCase()}
@@ -63,7 +69,10 @@ export function FivePixelsDemo({
                         ))}
                     </div>
                 ) : null}
-                <div className="absolute inset-x-0 bottom-0" style={{ height: size.height }}>
+                <div
+                    className="absolute inset-x-0 bottom-0"
+                    style={{ height: size.height }}
+                >
                     <DemoScene scene={scene} />
                 </div>
             </DemoRoot>

@@ -718,7 +718,10 @@ export function MobilePreviewWindow({ embedded = false, embeddedContent }: Mobil
                                     />
                                 )}
                                 {frameLoadState === "blocked" ? (
-                                    <div className="pointer-events-none absolute inset-0 z-[1] flex items-center justify-center px-[12px] text-center text-[11px] font-semibold text-[var(--adaptive-black900)]" style={{ background: screenBackground }}>
+                                    <div
+                                        className="pointer-events-none absolute inset-0 z-[1] flex items-center justify-center px-[12px] text-center text-[12px] font-semibold text-[var(--adaptive-black900)]"
+                                        style={{ background: screenBackground }}
+                                    >
                                         {messages.settings.mobilePreviewIframeBlocked}
                                     </div>
                                 ) : null}
@@ -741,9 +744,7 @@ export function MobilePreviewWindow({ embedded = false, embeddedContent }: Mobil
                                 {captureStatusBarEnabled ? (
                                     <div
                                         ref={statusBarRef}
-                                        className={`pointer-events-none absolute z-[1] ${
-                                            captureImageEnabled && mobilePreviewOrientation === "landscape" ? "overflow-visible" : "overflow-hidden"
-                                        }`}
+                                        className={`pointer-events-none absolute z-[1] ${captureImageEnabled && mobilePreviewOrientation === "landscape" ? "overflow-visible" : "overflow-hidden"}`}
                                         style={{
                                             left: chrome.bezel.left,
                                             top: chrome.bezel.top,

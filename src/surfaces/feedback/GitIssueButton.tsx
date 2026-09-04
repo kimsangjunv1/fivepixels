@@ -64,11 +64,7 @@ export function GitIssueButton({ report, messages, disabled = false, isSubmittin
         });
     };
 
-    const tooltipLabel = isSubmitting
-        ? messages.feedbackList.gitIssueCreatingLabel
-        : confirming
-          ? messages.feedbackList.gitIssueConfirmTitle
-          : messages.feedbackList.gitIssueAddTitle;
+    const tooltipLabel = isSubmitting ? messages.feedbackList.gitIssueCreatingLabel : confirming ? messages.feedbackList.gitIssueConfirmTitle : messages.feedbackList.gitIssueAddTitle;
 
     return (
         <HoverTooltip
@@ -89,9 +85,9 @@ export function GitIssueButton({ report, messages, disabled = false, isSubmittin
             >
                 <GitHubIcon className="h-[16px] w-[16px]" />
                 {isSubmitting ? (
-                    <span className="text-[10px] font-semibold">{messages.feedbackList.gitIssueCreatingLabel}</span>
+                    <span className="text-[12px] font-semibold">{messages.feedbackList.gitIssueCreatingLabel}</span>
                 ) : confirming ? (
-                    <span className="text-[10px] font-semibold">{messages.feedbackList.gitIssueConfirmLabel}</span>
+                    <span className="text-[12px] font-semibold">{messages.feedbackList.gitIssueConfirmLabel}</span>
                 ) : null}
             </button>
         </HoverTooltip>

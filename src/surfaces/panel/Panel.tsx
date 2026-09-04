@@ -458,7 +458,7 @@ export function Panel({ embedded = false, embeddedSettingsInitialCategory = null
                                                     disabled={isDefaultSize}
                                                     onClick={resetPanelSize}
                                                 >
-                                                    <span className="inline-flex h-[16px] w-[16px] items-center justify-center rounded-[4px] border border-[var(--adaptive-border-subtle)] text-[10px] font-bold leading-none">
+                                                    <span className="inline-flex h-[16px] w-[16px] items-center justify-center rounded-[4px] border border-[var(--adaptive-border-subtle)] text-[12px] font-bold leading-none">
                                                         ↺
                                                     </span>
                                                 </IconTooltipButton> */}
@@ -595,30 +595,30 @@ export function Panel({ embedded = false, embeddedSettingsInitialCategory = null
                                                 showFeedbackList={showFeedbackList}
                                                 settings={
                                                     <PanelSettings
-                                                    transferDisabled={!canTransferFeedback}
-                                                    panelAppearance={panelAppearance}
-                                                    onPanelAppearanceChange={setPanelAppearance}
-                                                    tooltipAppearance={tooltipAppearance}
-                                                    onTooltipAppearanceChange={setTooltipAppearance}
-                                                    questionThreadDisplay={questionThreadDisplay}
-                                                    onQuestionThreadDisplayChange={setQuestionThreadDisplay}
-                                                    threadLayout={threadLayout}
-                                                    onThreadLayoutChange={setThreadLayout}
-                                                    onExport={handleExport}
-                                                    onImport={handleImportFromMenu}
-                                                    onCommand={handleOpenCommand}
-                                                    hasPersonalKey={Boolean(personalKey)}
-                                                    onKeyCopy={() => void handleKeyCopy()}
-                                                    onPublicKeyCopy={() => void handlePublicKeyCopy()}
-                                                    onKeyInsert={() => {
-                                                        setPersonalKeyStep("insert");
-                                                        setPersonalKeyNotice("");
-                                                    }}
-                                                    onKeyRotate={() => {
-                                                        setPersonalKeyStep("rotate");
-                                                        setPersonalKeyNotice("");
-                                                    }}
-                                                    initialCategory={embeddedSettingsInitialCategory}
+                                                        transferDisabled={!canTransferFeedback}
+                                                        panelAppearance={panelAppearance}
+                                                        onPanelAppearanceChange={setPanelAppearance}
+                                                        tooltipAppearance={tooltipAppearance}
+                                                        onTooltipAppearanceChange={setTooltipAppearance}
+                                                        questionThreadDisplay={questionThreadDisplay}
+                                                        onQuestionThreadDisplayChange={setQuestionThreadDisplay}
+                                                        threadLayout={threadLayout}
+                                                        onThreadLayoutChange={setThreadLayout}
+                                                        onExport={handleExport}
+                                                        onImport={handleImportFromMenu}
+                                                        onCommand={handleOpenCommand}
+                                                        hasPersonalKey={Boolean(personalKey)}
+                                                        onKeyCopy={() => void handleKeyCopy()}
+                                                        onPublicKeyCopy={() => void handlePublicKeyCopy()}
+                                                        onKeyInsert={() => {
+                                                            setPersonalKeyStep("insert");
+                                                            setPersonalKeyNotice("");
+                                                        }}
+                                                        onKeyRotate={() => {
+                                                            setPersonalKeyStep("rotate");
+                                                            setPersonalKeyNotice("");
+                                                        }}
+                                                        initialCategory={embeddedSettingsInitialCategory}
                                                     />
                                                 }
                                                 command={

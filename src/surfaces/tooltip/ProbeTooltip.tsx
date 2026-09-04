@@ -34,7 +34,7 @@ type ProbeTextFieldProps = {
 
 function ProbeTextField({ label, value, onChange }: ProbeTextFieldProps) {
     return (
-        <label className="flex flex-col gap-[4px] text-[14px] leading-[1.45]">
+        <label className="flex flex-col gap-[4px] text-[14px] leading-[1.5]">
             <span className={PROBE_FIELD_LABEL_CLASS}>{label}</span>
             <input
                 type="text"
@@ -93,7 +93,7 @@ function ProbeColorField({ label, value, onChange }: ProbeColorFieldProps) {
     };
 
     return (
-        <label className="flex flex-col gap-[4px] text-[14px] leading-[1.45]">
+        <label className="flex flex-col gap-[4px] text-[14px] leading-[1.5]">
             <span className={PROBE_FIELD_LABEL_CLASS}>{label}</span>
             <div className="flex items-center gap-[6px]">
                 <button
@@ -160,7 +160,7 @@ function ProbeStepperField({ label, value, onChange }: ProbeStepperFieldProps) {
     };
 
     return (
-        <div className="flex flex-col gap-[4px] text-[14px] leading-[1.45]">
+        <div className="flex flex-col gap-[4px] text-[14px] leading-[1.5]">
             <span className={PROBE_FIELD_LABEL_CLASS}>{label}</span>
             <div className="flex items-center gap-[6px]">
                 <button
@@ -196,7 +196,19 @@ type ProbeTooltipProps = {
 
 export function ProbeTooltip({ embedded = false }: ProbeTooltipProps = {}) {
     const { messages } = useReportPreferences();
-    const { selectedTarget, pickProbeOpen, pickProbeValues, pickProbeSupportsTextFields, pickProbeLayoutMode, pickProbeCompareMode, pickProbeHasEdits, setPickProbeCompareMode, updatePickProbeValue, resetPickProbeValues, closePickProbe } = useReportSession();
+    const {
+        selectedTarget,
+        pickProbeOpen,
+        pickProbeValues,
+        pickProbeSupportsTextFields,
+        pickProbeLayoutMode,
+        pickProbeCompareMode,
+        pickProbeHasEdits,
+        setPickProbeCompareMode,
+        updatePickProbeValue,
+        resetPickProbeValues,
+        closePickProbe,
+    } = useReportSession();
 
     const panelRef = useRef<HTMLDivElement | null>(null);
     const [layout, setLayout] = useState<ReturnType<typeof getPickProbePanelLayout> | null>(null);
@@ -274,7 +286,7 @@ export function ProbeTooltip({ embedded = false }: ProbeTooltipProps = {}) {
                 }}
             >
                 <div className="flex items-center justify-between gap-[8px]">
-                    <p className="min-w-0 shrink text-[14px] font-semibold leading-[1.45] text-[var(--adaptive-black900)]">{messages.pickTarget.probeTitle}</p>
+                    <p className="min-w-0 shrink text-[14px] font-semibold leading-[1.5] text-[var(--adaptive-black900)]">{messages.pickTarget.probeTitle}</p>
                     <div className="flex shrink-0 items-center gap-[6px]">
                         {pickProbeHasEdits ? (
                             <PickTargetCompareSegment

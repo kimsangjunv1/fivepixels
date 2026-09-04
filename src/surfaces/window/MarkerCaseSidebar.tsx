@@ -47,7 +47,7 @@ function CaseStatusLabel({ status, isNeedGray }: { status: FeedbackDisplayStatus
 
     return (
         <span
-            className="shrink-0 whitespace-nowrap text-[11px] font-semibold leading-none"
+            className="shrink-0 whitespace-nowrap text-[12px] font-semibold leading-none"
             style={{ color: isNeedGray ? "var(--adaptive-black500)" : color }}
         >
             {messages.status.feedback[status]}
@@ -93,7 +93,9 @@ export function MarkerCaseSidebar({
                                 aria-current={isActive}
                                 onClick={() => onSelectCase(item.id)}
                                 className={`flex w-full flex-col items-start justify-center gap-[8px] rounded-[8px] px-[8px] py-[8px] text-left transition-colors ${
-                                    isActive ? "bg-[var(--adaptive-neutralTintOpacity900)] text-[var(--adaptive-black900)]" : "text-[var(--adaptive-black700)] hover:bg-[var(--adaptive-tintOpacity100)]"
+                                    isActive
+                                        ? "bg-[var(--adaptive-neutralTintOpacity900)] text-[var(--adaptive-black900)]"
+                                        : "text-[var(--adaptive-black700)] hover:bg-[var(--adaptive-tintOpacity100)]"
                                 } ${showRemove ? "pr-[28px]" : ""}`}
                             >
                                 <section className="flex w-full items-center gap-[4px]">
@@ -110,7 +112,7 @@ export function MarkerCaseSidebar({
                                         status={status}
                                         isNeedGray
                                     />
-                                    <span className="min-w-0 truncate text-[11px] tabular-nums leading-none text-[var(--adaptive-black500)]">{caseRelativeTime}</span>
+                                    <span className="min-w-0 truncate text-[12px] tabular-nums leading-none text-[var(--adaptive-black500)]">{caseRelativeTime}</span>
                                 </div>
                             </button>
 
@@ -151,14 +153,10 @@ export function MarkerCaseSidebar({
                                     aria-hidden
                                     className="inline-flex h-[12px] w-[12px] shrink-0 rounded-full border border-dashed border-[var(--adaptive-blue400)]"
                                 />
-                                <span className="min-w-0 flex-1 truncate text-[14px] font-semibold leading-[1] text-[var(--adaptive-blue400)]">
-                                    {resolvedComposingTitle}
-                                </span>
+                                <span className="min-w-0 flex-1 truncate text-[14px] font-semibold leading-[1] text-[var(--adaptive-blue400)]">{resolvedComposingTitle}</span>
                             </section>
                             <div className="flex w-full min-w-0 items-center justify-between gap-[8px]">
-                                <span className="shrink-0 whitespace-nowrap text-[11px] font-semibold leading-none text-[var(--adaptive-black500)]">
-                                    {messages.cases.open}
-                                </span>
+                                <span className="shrink-0 whitespace-nowrap text-[12px] font-semibold leading-none text-[var(--adaptive-black500)]">{messages.cases.open}</span>
                             </div>
                         </button>
                     </li>

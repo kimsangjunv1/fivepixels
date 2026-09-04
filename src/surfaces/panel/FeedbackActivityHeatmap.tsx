@@ -28,17 +28,7 @@ function formatMessage(template: string, values: Record<string, string | number>
     return Object.entries(values).reduce((message, [key, value]) => message.replace(new RegExp(`\\{${key}\\}`, "g"), String(value)), template);
 }
 
-function HeatmapToggleGroup<T extends string>({
-    label,
-    value,
-    options,
-    onChange,
-}: {
-    label: string;
-    value: T;
-    options: { value: T; label: string }[];
-    onChange: (next: T) => void;
-}) {
+function HeatmapToggleGroup<T extends string>({ label, value, options, onChange }: { label: string; value: T; options: { value: T; label: string }[]; onChange: (next: T) => void }) {
     return (
         <div
             className="flex flex-wrap gap-[4px]"
@@ -51,10 +41,8 @@ function HeatmapToggleGroup<T extends string>({
                     type="button"
                     aria-pressed={value === option.value}
                     onClick={() => onChange(option.value)}
-                    className={`rounded-[6px] px-[6px] py-[2px] text-[11px] font-[600] ${
-                        value === option.value
-                            ? "bg-[var(--adaptive-black200)] text-[var(--adaptive-black900)]"
-                            : "text-[var(--adaptive-black500)] hover:bg-[var(--adaptive-black100)]"
+                    className={`rounded-[6px] px-[6px] py-[2px] text-[12px] font-[600] ${
+                        value === option.value ? "bg-[var(--adaptive-black200)] text-[var(--adaptive-black900)]" : "text-[var(--adaptive-black500)] hover:bg-[var(--adaptive-black100)]"
                     }`}
                 >
                     {option.label}
@@ -82,15 +70,7 @@ function heatmapLevelClassName(level: number) {
 export function FeedbackActivityHeatmap() {
     const { locale, messages } = useReportPreferences();
     const { currentPathname, panelTab, openPanelTab, sessionActor } = useReportSession();
-    const {
-        reports,
-        currentPageReports,
-        listScope,
-        setListScope,
-        setFilters,
-        canListAllFeedback,
-        onActivitySummary,
-    } = useReportData();
+    const { reports, currentPageReports, listScope, setListScope, setFilters, canListAllFeedback, onActivitySummary } = useReportData();
     const listAllLock = useIntegrationLock("listAll");
     const activitySummaryLock = useIntegrationLock("activitySummary");
     const showScopeControl = canListAllFeedback || listAllLock.locked;
@@ -175,7 +155,7 @@ export function FeedbackActivityHeatmap() {
     return (
         <section className="border-b border-[var(--adaptive-black200)] bg-[var(--adaptive-black50)] px-[16px] py-[12px]">
             <div className="mb-[10px] flex items-start justify-between gap-[8px]">
-                <p className="inline-flex items-center gap-[6px] text-[13px] font-[700] text-[var(--adaptive-black900)]">
+                <p className="inline-flex items-center gap-[6px] text-[14px] font-[700] text-[var(--adaptive-black900)]">
                     {heatmapMessages.title}
                     {activitySummaryLock.locked ? (
                         <HoverTooltip
@@ -248,11 +228,11 @@ export function FeedbackActivityHeatmap() {
                             <button
                                 type="button"
                                 onClick={() => setDrillDownMonth(null)}
-                                className="rounded-[6px] px-[6px] py-[2px] text-[11px] font-[600] text-[var(--adaptive-blue500)] hover:bg-[var(--adaptive-black100)]"
+                                className="rounded-[6px] px-[6px] py-[2px] text-[12px] font-[600] text-[var(--adaptive-blue500)] hover:bg-[var(--adaptive-black100)]"
                             >
                                 {heatmapMessages.backToYear}
                             </button>
-                            <p className="text-[11px] font-[700] text-[var(--adaptive-black900)]">{formatHeatmapMonthLabel(drillDownMonth, locale)}</p>
+                            <p className="text-[12px] font-[700] text-[var(--adaptive-black900)]">{formatHeatmapMonthLabel(drillDownMonth, locale)}</p>
                         </div>
                     ) : (
                         <nav
@@ -268,7 +248,7 @@ export function FeedbackActivityHeatmap() {
                                 <ChevronLeftIcon className="h-3.5 w-3.5" />
                             </button>
 
-                            <p className="min-w-[56px] px-[4px] text-center text-[11px] font-[700] text-[var(--adaptive-black900)]">{selectedYear}</p>
+                            <p className="min-w-[56px] px-[4px] text-center text-[12px] font-[700] text-[var(--adaptive-black900)]">{selectedYear}</p>
 
                             <button
                                 type="button"
@@ -307,9 +287,7 @@ export function FeedbackActivityHeatmap() {
                                     ? formatMessage(heatmapMessages.cellTooltip, { date: labelDate, count: cell.count })
                                     : formatMessage(heatmapMessages.cellTooltipEmpty, { date: labelDate })
                                 : "";
-                            const ariaLabel = cell.dateKey
-                                ? formatMessage(heatmapMessages.cellAriaLabel, { date: labelDate, count: cell.count })
-                                : undefined;
+                            const ariaLabel = cell.dateKey ? formatMessage(heatmapMessages.cellAriaLabel, { date: labelDate, count: cell.count }) : undefined;
 
                             const button = (
                                 <button
@@ -408,7 +386,7 @@ export function FeedbackActivityHeatmap() {
                             {yearBuckets.buckets.map((bucket) => (
                                 <span
                                     key={`${bucket.monthKey}-label`}
-                                    className="text-center text-[10px] text-[var(--adaptive-black500)]"
+                                    className="text-center text-[12px] text-[var(--adaptive-black500)]"
                                     style={{ width: HEATMAP_YEAR_CELL_SIZE_PX }}
                                 >
                                     {formatShortMonthLabel(bucket.monthIndex, locale)}
@@ -419,7 +397,7 @@ export function FeedbackActivityHeatmap() {
                 )}
             </div>
 
-            <div className="mt-[8px] flex items-center justify-between gap-[8px] text-[10px] text-[var(--adaptive-black500)]">
+            <div className="mt-[8px] flex items-center justify-between gap-[8px] text-[12px] text-[var(--adaptive-black500)]">
                 <div className="flex items-center gap-[4px]">
                     <span>{heatmapMessages.legendLess}</span>
                     <span className="h-[10px] w-[10px] rounded-[2px] bg-[var(--adaptive-black200)]" />

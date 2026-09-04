@@ -23,7 +23,7 @@ function ReportIdStatusIcon({ tagged }: { tagged: boolean }) {
     return (
         <span
             aria-hidden="true"
-            className="inline-flex h-[16px] w-[16px] shrink-0 items-center justify-center rounded-full bg-[#ef44441f] text-[11px] font-bold text-[#dc2626]"
+            className="inline-flex h-[16px] w-[16px] shrink-0 items-center justify-center rounded-full bg-[#ef44441f] text-[12px] font-bold text-[#dc2626]"
         >
             ✕
         </span>

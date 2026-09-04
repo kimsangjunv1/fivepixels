@@ -52,7 +52,7 @@ const THREAD_LAYOUT_OPTIONS = ["classic", "feed"] as const satisfies readonly Th
 function SettingsSection({ label, children }: { label: string; children: ReactNode }) {
     return (
         <section className="flex flex-col border-b border-[var(--adaptive-border-subtle)] last:border-b-0">
-            <p className="px-[12px] pt-[10px] pb-[4px] text-[11px] font-semibold uppercase tracking-[0.02em] text-[var(--adaptive-black500)]">{label}</p>
+            <p className="px-[12px] pt-[10px] pb-[4px] text-[12px] font-semibold uppercase tracking-[0.02em] text-[var(--adaptive-black500)]">{label}</p>
             <div className="flex flex-col py-[2px]">{children}</div>
         </section>
     );
@@ -76,7 +76,7 @@ function SettingsActionButton({
             type="button"
             disabled={disabled || locked}
             onClick={onClick}
-            className="w-full rounded-[8px] px-[12px] py-[8px] text-left text-[13px] text-[var(--adaptive-black800)] hover:bg-[var(--adaptive-black100)] disabled:cursor-not-allowed disabled:opacity-50"
+            className="w-full rounded-[8px] px-[12px] py-[8px] text-left text-[14px] text-[var(--adaptive-black800)] hover:bg-[var(--adaptive-black100)] disabled:cursor-not-allowed disabled:opacity-50"
         >
             <span className="inline-flex items-center gap-[6px]">
                 {locked ? <LockIcon className="h-[12px] w-[12px] shrink-0 text-[var(--adaptive-black500)]" /> : null}
@@ -100,19 +100,7 @@ function SettingsActionButton({
     );
 }
 
-function SettingsHubRow({
-    title,
-    subtitle,
-    onClick,
-    locked = false,
-    lockLabel,
-}: {
-    title: string;
-    subtitle: string;
-    onClick: () => void;
-    locked?: boolean;
-    lockLabel?: string;
-}) {
+function SettingsHubRow({ title, subtitle, onClick, locked = false, lockLabel }: { title: string; subtitle: string; onClick: () => void; locked?: boolean; lockLabel?: string }) {
     return (
         <button
             type="button"
@@ -120,7 +108,7 @@ function SettingsHubRow({
             className="flex w-full items-center gap-[10px] border-b border-[var(--adaptive-border-subtle)] px-[12px] py-[10px] text-left last:border-b-0 hover:bg-[var(--adaptive-black100)]"
         >
             <div className="min-w-0 flex-1 flex flex-col gap-[4px]">
-                <p className="inline-flex items-center gap-[6px] text-[13px] font-semibold text-[var(--adaptive-black900)]">
+                <p className="inline-flex items-center gap-[6px] text-[14px] font-semibold text-[var(--adaptive-black900)]">
                     {title}
                     {locked ? (
                         <HoverTooltip
@@ -133,7 +121,7 @@ function SettingsHubRow({
                         </HoverTooltip>
                     ) : null}
                 </p>
-                <p className="truncate text-[10px] text-[var(--adaptive-black700)]">{subtitle}</p>
+                <p className="truncate text-[12px] text-[var(--adaptive-black700)]">{subtitle}</p>
             </div>
             <ChevronRightIcon className="h-[14px] w-[14px] shrink-0 text-[var(--adaptive-black400)]" />
         </button>
@@ -369,10 +357,7 @@ export function PanelSettings({
 
     if (activeCategory) {
         const isAppearanceDetail = activeCategory === "appearance" && activeAppearanceSection != null;
-        const detailTitle =
-            activeCategory === "appearance" && activeAppearanceSection
-                ? getAppearanceSectionTitle(activeAppearanceSection, messages)
-                : getCategoryTitle(activeCategory, messages);
+        const detailTitle = activeCategory === "appearance" && activeAppearanceSection ? getAppearanceSectionTitle(activeAppearanceSection, messages) : getCategoryTitle(activeCategory, messages);
         const detailBackAriaLabel = isAppearanceDetail ? messages.settings.appearanceBackAriaLabel : messages.settings.backAriaLabel;
 
         return (
@@ -393,7 +378,7 @@ export function PanelSettings({
                 <div className="min-h-0 flex-1 overflow-y-auto">
                     {activeCategory === "preview" ? (
                         <SettingsSection label={messages.settings.sectionViewerSwitch}>
-                            <p className="mb-[8px] text-[12px] leading-[1.4] text-[var(--adaptive-black600)]">{messages.settings.viewerSwitchHint}</p>
+                            <p className="mb-[8px] text-[12px] leading-[1.5] text-[var(--adaptive-black600)]">{messages.settings.viewerSwitchHint}</p>
 
                             <div
                                 role="radiogroup"
@@ -417,7 +402,7 @@ export function PanelSettings({
 
                                                 void setPresentationViewerId(option.value);
                                             }}
-                                            className={`rounded-[8px] px-[12px] py-[8px] text-left text-[13px] transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+                                            className={`rounded-[8px] px-[12px] py-[8px] text-left text-[14px] transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
                                                 active
                                                     ? "bg-[var(--adaptive-blue50)] font-semibold text-[var(--adaptive-blue500)]"
                                                     : "text-[var(--adaptive-black800)] hover:bg-[var(--adaptive-black100)]"
@@ -436,7 +421,7 @@ export function PanelSettings({
                             <SettingsSection label={messages.settings.sectionTheme}>
                                 <div className="flex flex-col gap-[10px] px-[12px] pb-[10px]">
                                     <div>
-                                        <p className="mb-[6px] text-[11px] font-medium text-[var(--adaptive-black600)]">{messages.moreMenu.panelTheme}</p>
+                                        <p className="mb-[6px] text-[12px] font-medium text-[var(--adaptive-black600)]">{messages.moreMenu.panelTheme}</p>
                                         <AppearanceThemePicker
                                             options={appearanceOptions}
                                             value={panelAppearance}
@@ -446,7 +431,7 @@ export function PanelSettings({
                                         />
                                     </div>
                                     <div>
-                                        <p className="mb-[6px] text-[11px] font-medium text-[var(--adaptive-black600)]">{messages.moreMenu.tooltipTheme}</p>
+                                        <p className="mb-[6px] text-[12px] font-medium text-[var(--adaptive-black600)]">{messages.moreMenu.tooltipTheme}</p>
                                         <AppearanceThemePicker
                                             options={appearanceOptions}
                                             value={tooltipAppearance}
@@ -510,9 +495,7 @@ export function PanelSettings({
                                     value={markerAppearance.feedbackModeDotColors.dark}
                                     onChange={(color) => setFeedbackModeDotColor("dark", color)}
                                 />
-                                <SettingsActionButton onClick={() => setFeedbackModeDotColors(DEFAULT_FEEDBACK_MODE_DOT_COLORS)}>
-                                    {messages.settings.resetFeedbackModeDotColors}
-                                </SettingsActionButton>
+                                <SettingsActionButton onClick={() => setFeedbackModeDotColors(DEFAULT_FEEDBACK_MODE_DOT_COLORS)}>{messages.settings.resetFeedbackModeDotColors}</SettingsActionButton>
                             </div>
                         </SettingsSection>
                     ) : null}
@@ -529,7 +512,7 @@ export function PanelSettings({
                                         markerSizeAriaLabel={messages.settings.markerSizeAriaLabel}
                                     />
                                     <div>
-                                        <p className="mb-[6px] text-[11px] font-medium text-[var(--adaptive-black600)]">{messages.settings.markerFillStyle}</p>
+                                        <p className="mb-[6px] text-[12px] font-medium text-[var(--adaptive-black600)]">{messages.settings.markerFillStyle}</p>
                                         <OptionSwitch
                                             options={MARKER_FILL_STYLE_VALUES.map((value) => ({
                                                 value,
@@ -541,7 +524,7 @@ export function PanelSettings({
                                         />
                                     </div>
                                     <div>
-                                        <p className="mb-[6px] text-[11px] font-medium text-[var(--adaptive-black600)]">{messages.settings.markerShape}</p>
+                                        <p className="mb-[6px] text-[12px] font-medium text-[var(--adaptive-black600)]">{messages.settings.markerShape}</p>
                                         <MarkerShapePicker
                                             value={markerAppearance.shape}
                                             onChange={setMarkerShape}
@@ -613,7 +596,7 @@ export function PanelSettings({
 
                             <SettingsSection label={messages.settings.sectionTypography}>
                                 <div className="flex flex-col gap-[12px] px-[12px] pb-[10px]">
-                                    <label className="flex flex-col gap-[4px] text-[11px]">
+                                    <label className="flex flex-col gap-[4px] text-[12px]">
                                         <span className="font-medium text-[var(--adaptive-black500)]">{messages.settings.fontFamily}</span>
                                         <input
                                             type="text"
@@ -736,7 +719,7 @@ export function PanelSettings({
 
     return (
         <section className="flex min-h-0 flex-1 flex-col overflow-y-auto bg-[var(--adaptive-fillOpacity500)]">
-            <p className="shrink-0 border-b border-[var(--adaptive-border-subtle)] px-[12px] py-[10px] text-[13px] font-semibold text-[var(--adaptive-black900)]">{messages.settings.hubTitle}</p>
+            <p className="shrink-0 border-b border-[var(--adaptive-border-subtle)] px-[12px] py-[10px] text-[14px] font-semibold text-[var(--adaptive-black900)]">{messages.settings.hubTitle}</p>
 
             {showPreviewCategory ? (
                 <SettingsHubRow

@@ -30,7 +30,7 @@ export function PickTargetCompareSegment({ mode, onChange, beforeLabel, afterLab
                         type="button"
                         data-fivepixels-interactive=""
                         onClick={() => onChange(option)}
-                        className={`rounded-[6px] px-[8px] py-[3px] text-[11px] font-semibold transition-colors ${
+                        className={`rounded-[6px] px-[8px] py-[3px] text-[12px] font-semibold transition-colors ${
                             active
                                 ? tone === "inverse"
                                     ? "bg-white text-[#f6572d]"

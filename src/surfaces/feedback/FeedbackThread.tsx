@@ -131,7 +131,7 @@ function ThreadResolvedDivider({ createdAt }: { createdAt?: string }) {
                         fill={resolvedColor}
                     />
                     <span
-                        className="text-[13px] font-bold leading-none"
+                        className="text-[14px] font-bold leading-none"
                         style={{ color: resolvedColor }}
                     >
                         {messages.thread.issueResolvedDivider}
@@ -168,7 +168,7 @@ function ThreadStartedDivider({ createdAt }: { createdAt: string }) {
                 />
                 <span className="inline-flex shrink-0 items-center gap-[6px]">
                     <span
-                        className="text-[13px] font-bold leading-none tabular-nums"
+                        className="text-[14px] font-bold leading-none tabular-nums"
                         style={{ color: dateColor }}
                     >
                         {formatDateOnly(createdAt, locale)}
@@ -213,7 +213,7 @@ function ThreadDetachedTargetDivider() {
                 />
                 <span className="inline-flex shrink-0 items-center gap-[6px]">
                     <span
-                        className="text-[13px] font-bold leading-none"
+                        className="text-[14px] font-bold leading-none"
                         style={{ color: labelColor }}
                     >
                         {messages.thread.detachedTargetDivider}
@@ -306,7 +306,7 @@ function CaseThreadEntry({
                 message={caseText}
                 mentions={caseMentions}
                 userMentions={caseUserMentions}
-                className={`leading-[1.45] text-[14px] text-[var(--adaptive-text-primary)] whitespace-break-spaces ${isFeed ? "mt-[2px]" : ""} ${caseStatus === "resolved" ? "text-[var(--adaptive-black500)] line-through" : ""}`}
+                className={`leading-[1.5] text-[14px] text-[var(--adaptive-text-primary)] whitespace-break-spaces ${isFeed ? "mt-[2px]" : ""} ${caseStatus === "resolved" ? "text-[var(--adaptive-black500)] line-through" : ""}`}
             />
 
             {isEditingCases ? null : (
@@ -424,10 +424,7 @@ function ThreadRootReply({
           ? THREAD_ACTION_ENTRY_SURFACE_CLASS
           : THREAD_CASE_ENTRY_SURFACE_CLASS;
     const authorName = reply.author_name?.trim() ?? "";
-    const feedStatusSurface =
-        isFeed && !hasActions && !isComposerTarget && reply.status !== "suggested"
-            ? getFeedActivitySurfaceClass(resolveFeedActivityTone(reply.status))
-            : undefined;
+    const feedStatusSurface = isFeed && !hasActions && !isComposerTarget && reply.status !== "suggested" ? getFeedActivitySurfaceClass(resolveFeedActivityTone(reply.status)) : undefined;
 
     const entryBody = (
         <>
@@ -458,7 +455,7 @@ function ThreadRootReply({
                 </div>
             )}
 
-            <p className={`leading-[1.45] text-[14px] text-[var(--adaptive-text-primary)] whitespace-break-spaces ${isFeed ? "mt-[2px]" : ""}`}>
+            <p className={`leading-[1.5] text-[14px] text-[var(--adaptive-text-primary)] whitespace-break-spaces ${isFeed ? "mt-[2px]" : ""}`}>
                 <MentionMessage
                     message={reply.message}
                     mentions={reply.mentions}
@@ -528,13 +525,7 @@ export function FeedbackThread({
         replyAuthorName,
         errorMessage,
     } = useReportSession();
-    const {
-        handleCaseEditSave,
-        replyHistory,
-        replyHistoryByReportId,
-        loadOlderReplies,
-        loadRepliesIfNeeded,
-    } = useReportData();
+    const { handleCaseEditSave, replyHistory, replyHistoryByReportId, loadOlderReplies, loadRepliesIfNeeded } = useReportData();
     const isFeedLayout = threadLayout === "feed";
     const scrollRef = useRef<HTMLElement>(null);
     const loadingOlderRef = useRef(false);

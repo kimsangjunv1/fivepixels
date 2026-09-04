@@ -19,20 +19,7 @@ export type MarkerFontSize = "none" | MarkerLabelFontSize;
 
 export const MARKER_FONT_SIZE_VALUES = ["none", "sm", "md", "lg", "xl"] as const satisfies readonly MarkerFontSize[];
 
-export type MarkerShape =
-    | "circle"
-    | "square"
-    | "cookie4"
-    | "sunny"
-    | "cookie6"
-    | "clover4"
-    | "flower"
-    | "ghostish"
-    | "bun"
-    | "gem"
-    | "pill"
-    | "pentagon"
-    | "puffy";
+export type MarkerShape = "circle" | "square" | "cookie4" | "sunny" | "cookie6" | "clover4" | "flower" | "ghostish" | "bun" | "gem" | "pill" | "pentagon" | "puffy";
 
 export const MARKER_SHAPE_VALUES = [
     "circle",
@@ -155,7 +142,7 @@ export function getMarkerScaleFactor(size: AppearanceScale) {
 export const MARKER_COMPACT_LABEL = "·";
 export const MARKER_BADGE_FONT_SIZE_PX = 10;
 export const MARKER_BADGE_FONT_WEIGHT = 700;
-export const MARKER_BADGE_LABEL_CLASS = "text-[10px] font-bold leading-none text-white";
+export const MARKER_BADGE_LABEL_CLASS = "text-[12px] font-bold leading-none text-white";
 
 export function isCompactMarkerLabelScale(size: AppearanceScale) {
     return size === "2xs" || size === "xs" || size === "sm";

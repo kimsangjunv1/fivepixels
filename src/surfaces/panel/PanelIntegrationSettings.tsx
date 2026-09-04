@@ -56,33 +56,26 @@ export function PanelIntegrationSettings() {
     const { messages, adapterIntegrationStatus, integrationCapabilities } = useReportPreferences();
 
     if (!adapterIntegrationStatus) {
-        return (
-            <section className="px-[12px] py-[12px] text-[13px] text-[var(--adaptive-black700)]">
-                {messages.settings.integrationLocalModeHint}
-            </section>
-        );
+        return <section className="px-[12px] py-[12px] text-[14px] text-[var(--adaptive-black700)]">{messages.settings.integrationLocalModeHint}</section>;
     }
 
-    const { connectedCount, totalCount, requiredConnectedCount, requiredTotalCount, handlers, features, isRequiredComplete } =
-        adapterIntegrationStatus;
+    const { connectedCount, totalCount, requiredConnectedCount, requiredTotalCount, handlers, features, isRequiredComplete } = adapterIntegrationStatus;
     const progressPercent = totalCount > 0 ? Math.round((connectedCount / totalCount) * 100) : 0;
 
     return (
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto pb-[12px]">
             <section className="border-b border-[var(--adaptive-border-subtle)] px-[12px] py-[12px]">
                 <div className="mb-[8px] flex items-baseline justify-between gap-[8px]">
-                    <p className="text-[13px] font-semibold text-[var(--adaptive-black900)]">{messages.settings.integrationProgressTitle}</p>
-                    <p className="text-[12px] font-semibold text-[var(--adaptive-black700)]">
-                        {messages.settings.integrationProgressCount(connectedCount, totalCount)}
-                    </p>
+                    <p className="text-[14px] font-semibold text-[var(--adaptive-black900)]">{messages.settings.integrationProgressTitle}</p>
+                    <p className="text-[12px] font-semibold text-[var(--adaptive-black700)]">{messages.settings.integrationProgressCount(connectedCount, totalCount)}</p>
                 </div>
                 <ProgressBar value={progressPercent} />
-                <p className="mt-[8px] text-[11px] text-[var(--adaptive-black600)]">
+                <p className="mt-[8px] text-[12px] text-[var(--adaptive-black600)]">
                     {messages.settings.integrationRequiredProgress(requiredConnectedCount, requiredTotalCount)}
                     {isRequiredComplete ? ` · ${messages.settings.integrationRequiredComplete}` : ""}
                 </p>
                 {integrationCapabilities.persistenceMode === "unavailable" ? (
-                    <p className="mt-[6px] text-[11px] font-medium text-[var(--adaptive-red500)]">{messages.settings.integrationUnavailableHint}</p>
+                    <p className="mt-[6px] text-[12px] font-medium text-[var(--adaptive-red500)]">{messages.settings.integrationUnavailableHint}</p>
                 ) : null}
             </section>
 
@@ -98,9 +91,7 @@ export function PanelIntegrationSettings() {
                         key={group}
                         className="border-b border-[var(--adaptive-border-subtle)]"
                     >
-                        <p className="px-[12px] pt-[10px] pb-[4px] text-[11px] font-semibold uppercase tracking-[0.02em] text-[var(--adaptive-black500)]">
-                            {groupLabel(messages, group)}
-                        </p>
+                        <p className="px-[12px] pt-[10px] pb-[4px] text-[12px] font-semibold uppercase tracking-[0.02em] text-[var(--adaptive-black500)]">{groupLabel(messages, group)}</p>
                         <ul className="flex flex-col py-[2px]">
                             {groupHandlers.map((item) => (
                                 <li
@@ -108,11 +99,11 @@ export function PanelIntegrationSettings() {
                                     className="flex items-start gap-[8px] px-[12px] py-[7px] text-[12px] text-[var(--adaptive-black800)]"
                                 >
                                     <IntegrationStatusIndicator connected={item.connected} />
-                                    <span className="min-w-0 flex-1 break-all leading-[1.4]">
+                                    <span className="min-w-0 flex-1 break-all leading-[1.5]">
                                         <span className="font-medium">{handlerLabel(messages, item.id)}</span>
-                                        <span className="mt-[2px] block font-mono text-[10px] text-[var(--adaptive-black500)]">{item.id}</span>
+                                        <span className="mt-[2px] block font-mono text-[12px] text-[var(--adaptive-black500)]">{item.id}</span>
                                         {item.required ? (
-                                            <span className="mt-[2px] inline-block rounded-[4px] bg-[var(--adaptive-black100)] px-[4px] py-[1px] text-[10px] font-semibold text-[var(--adaptive-black600)]">
+                                            <span className="mt-[2px] inline-block rounded-[4px] bg-[var(--adaptive-black100)] px-[4px] py-[1px] text-[12px] font-semibold text-[var(--adaptive-black600)]">
                                                 {messages.settings.integrationRequiredBadge}
                                             </span>
                                         ) : null}
@@ -125,9 +116,7 @@ export function PanelIntegrationSettings() {
             })}
 
             <section className="border-b border-[var(--adaptive-border-subtle)] last:border-b-0">
-                <p className="px-[12px] pt-[10px] pb-[4px] text-[11px] font-semibold uppercase tracking-[0.02em] text-[var(--adaptive-black500)]">
-                    {messages.settings.integrationFeaturesTitle}
-                </p>
+                <p className="px-[12px] pt-[10px] pb-[4px] text-[12px] font-semibold uppercase tracking-[0.02em] text-[var(--adaptive-black500)]">{messages.settings.integrationFeaturesTitle}</p>
                 <ul className="flex flex-col py-[2px]">
                     {features.map((item) => (
                         <li
@@ -135,9 +124,7 @@ export function PanelIntegrationSettings() {
                             className="flex items-center gap-[8px] px-[12px] py-[7px] text-[12px] text-[var(--adaptive-black800)]"
                         >
                             <IntegrationStatusIndicator connected={item.available} />
-                            <span className={item.available ? "text-[var(--adaptive-black900)]" : "text-[var(--adaptive-black600)]"}>
-                                {featureLabel(messages, item.id)}
-                            </span>
+                            <span className={item.available ? "text-[var(--adaptive-black900)]" : "text-[var(--adaptive-black600)]"}>{featureLabel(messages, item.id)}</span>
                         </li>
                     ))}
                 </ul>

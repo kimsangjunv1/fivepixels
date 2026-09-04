@@ -2,13 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { createPortal } from "react-dom";
 import type { ElementMention, ElementMentionCandidate, UserMention, UserMentionCandidate } from "@/shared/types/mention.js";
 import { serializeMentionToken, serializeUserMentionToken } from "@/shared/types/mention.js";
-import {
-    findElementMentionCandidates,
-    getAtQuery,
-    mentionQueryEndsWithSpace,
-    replaceActiveMentionQuery,
-    toStoredMention,
-} from "@/shared/utils/mention/elementMentions.js";
+import { findElementMentionCandidates, getAtQuery, mentionQueryEndsWithSpace, replaceActiveMentionQuery, toStoredMention } from "@/shared/utils/mention/elementMentions.js";
 import { findUserMentionCandidates, toStoredUserMention } from "@/shared/utils/mention/userMentions.js";
 import {
     deleteMentionChipBeforeCaret,
@@ -47,9 +41,7 @@ type MenuPlacement = {
     placeAbove: boolean;
 };
 
-type MenuCandidate =
-    | { kind: "user"; candidate: UserMentionCandidate }
-    | { kind: "element"; candidate: ElementMentionCandidate };
+type MenuCandidate = { kind: "user"; candidate: UserMentionCandidate } | { kind: "element"; candidate: ElementMentionCandidate };
 
 function placeCaretAtEnd(element: HTMLElement) {
     const selection = window.getSelection();
@@ -144,9 +136,7 @@ export function MentionComposerInput({
 
         const caret = getEditorCaretPoint(editor);
         const before = serializeMentionEditorBeforeCaret(editor, mentionsRef.current, caret, userMentionsRef.current);
-        const resolved = before
-            ? getAtQuery(before.message)
-            : getAtQuery(serializeMentionEditor(editor, mentionsRef.current, userMentionsRef.current).message);
+        const resolved = before ? getAtQuery(before.message) : getAtQuery(serializeMentionEditor(editor, mentionsRef.current, userMentionsRef.current).message);
 
         if (!resolved) {
             dismissedAtOffsetRef.current = null;
@@ -221,12 +211,8 @@ export function MentionComposerInput({
             return;
         }
 
-        const userCandidates = findUserMentionCandidates(query, teamMembersRef.current).map(
-            (candidate): MenuCandidate => ({ kind: "user", candidate }),
-        );
-        const elementCandidates = findElementMentionCandidates(query).map(
-            (candidate): MenuCandidate => ({ kind: "element", candidate }),
-        );
+        const userCandidates = findUserMentionCandidates(query, teamMembersRef.current).map((candidate): MenuCandidate => ({ kind: "user", candidate }));
+        const elementCandidates = findElementMentionCandidates(query).map((candidate): MenuCandidate => ({ kind: "element", candidate }));
         setCandidates([...userCandidates, ...elementCandidates]);
         setActiveIndex(0);
     }, [query, setMentionHighlightTarget, teamMembers]);
@@ -329,9 +315,7 @@ export function MentionComposerInput({
         const before = serializeMentionEditorBeforeCaret(editor, mentionsRef.current, caret, userMentionsRef.current);
         const resolved =
             (before ? getAtQuery(before.message) : null) ??
-            (query !== null && activeAtOffsetRef.current !== null
-                ? { query, atOffsetInBefore: activeAtOffsetRef.current }
-                : getAtQuery(current.message));
+            (query !== null && activeAtOffsetRef.current !== null ? { query, atOffsetInBefore: activeAtOffsetRef.current } : getAtQuery(current.message));
 
         if (!resolved) {
             return;
@@ -339,12 +323,7 @@ export function MentionComposerInput({
 
         if (item.kind === "user") {
             const mention = toStoredUserMention(item.candidate);
-            const nextMessage = replaceActiveMentionQuery(
-                current.message,
-                resolved.query,
-                serializeUserMentionToken(mention.id),
-                resolved.atOffsetInBefore,
-            );
+            const nextMessage = replaceActiveMentionQuery(current.message, resolved.query, serializeUserMentionToken(mention.id), resolved.atOffsetInBefore);
 
             if (!nextMessage) {
                 return;
@@ -369,12 +348,7 @@ export function MentionComposerInput({
         }
 
         const mention = toStoredMention(item.candidate);
-        const nextMessage = replaceActiveMentionQuery(
-            current.message,
-            resolved.query,
-            serializeMentionToken(mention.id),
-            resolved.atOffsetInBefore,
-        );
+        const nextMessage = replaceActiveMentionQuery(current.message, resolved.query, serializeMentionToken(mention.id), resolved.atOffsetInBefore);
 
         if (!nextMessage) {
             return;
@@ -453,12 +427,8 @@ export function MentionComposerInput({
                                               insertCandidate(item);
                                           }}
                                       >
-                                          <span className="truncate text-[12px] font-semibold text-[var(--adaptive-black900)]">
-                                              @{item.candidate.name}
-                                          </span>
-                                          <span className="truncate text-[11px] text-[var(--adaptive-black500)]">
-                                              {messages.composer.userMentionHint}
-                                          </span>
+                                          <span className="truncate text-[12px] font-semibold text-[var(--adaptive-black900)]">@{item.candidate.name}</span>
+                                          <span className="truncate text-[12px] text-[var(--adaptive-black500)]">{messages.composer.userMentionHint}</span>
                                       </button>
                                   );
                               }
@@ -471,8 +441,7 @@ export function MentionComposerInput({
                                       aria-selected={active}
                                       data-fivepixels-interactive=""
                                       className={
-                                          "flex w-full flex-col gap-[2px] px-[4px] py-[2px] text-left border-none " +
-                                          (active ? "bg-[var(--adaptive-blue100)]" : "hover:bg-[var(--adaptive-black100)]")
+                                          "flex w-full flex-col gap-[2px] px-[4px] py-[2px] text-left border-none " + (active ? "bg-[var(--adaptive-blue100)]" : "hover:bg-[var(--adaptive-black100)]")
                                       }
                                       onMouseEnter={() => setActiveIndex(index)}
                                       onMouseDown={(event) => {
@@ -481,7 +450,7 @@ export function MentionComposerInput({
                                       }}
                                   >
                                       <span className="truncate text-[12px] font-semibold text-[var(--adaptive-black900)]">{item.candidate.label}</span>
-                                      <span className="truncate text-[11px] text-[var(--adaptive-black500)]">
+                                      <span className="truncate text-[12px] text-[var(--adaptive-black500)]">
                                           {item.candidate.reportId ?? item.candidate.suggestedReportId ?? item.candidate.element.tagName.toLowerCase()}
                                       </span>
                                   </button>

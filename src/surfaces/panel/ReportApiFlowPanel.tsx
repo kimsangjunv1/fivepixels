@@ -41,7 +41,7 @@ function ApiFlowCopyButton({ copied, label, onCopy }: { copied: boolean; label: 
                 aria-label={label}
                 className="flex h-[20px] w-[20px] shrink-0 items-center justify-center text-[var(--adaptive-black500)] hover:text-[var(--adaptive-black900)]"
             >
-                {copied ? <span className="text-[9px] font-semibold">{messages.common.ok}</span> : <CopyIcon className="h-[12px] w-[12px]" />}
+                {copied ? <span className="text-[12px] font-semibold">{messages.common.ok}</span> : <CopyIcon className="h-[12px] w-[12px]" />}
             </button>
         </HoverTooltip>
     );
@@ -50,7 +50,7 @@ function ApiFlowCopyButton({ copied, label, onCopy }: { copied: boolean; label: 
 function ApiFlowDetailSectionHeader({ label, copied, copyLabel, onCopy }: { label: string; copied: boolean; copyLabel: string; onCopy: () => void }) {
     return (
         <div className="flex items-center justify-between gap-[8px]">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.02em] text-[var(--adaptive-black500)]">{label}</p>
+            <p className="text-[12px] font-semibold uppercase tracking-[0.02em] text-[var(--adaptive-black500)]">{label}</p>
             <ApiFlowCopyButton
                 copied={copied}
                 label={copyLabel}
@@ -67,8 +67,8 @@ function ApiFlowDetailReadOnlyBlock({ label, value }: { label: string; value: st
 
     return (
         <div className="flex flex-col gap-[4px]">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.02em] text-[var(--adaptive-black500)]">{label}</p>
-            <pre className="max-h-[160px] overflow-auto rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface)] p-[8px] text-[11px] leading-[1.45] whitespace-pre-wrap break-all text-[var(--adaptive-black800)]">
+            <p className="text-[12px] font-semibold uppercase tracking-[0.02em] text-[var(--adaptive-black500)]">{label}</p>
+            <pre className="max-h-[160px] overflow-auto rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface)] p-[8px] text-[12px] leading-[1.5] whitespace-pre-wrap break-all text-[var(--adaptive-black800)]">
                 {redactJsonLikeText(value)}
             </pre>
         </div>
@@ -88,7 +88,7 @@ function ApiFlowDetailBlock({ label, value, copied, copyLabel, onCopy }: { label
                 copyLabel={copyLabel}
                 onCopy={onCopy}
             />
-            <pre className="max-h-[160px] overflow-auto rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface)] p-[8px] text-[11px] leading-[1.45] whitespace-pre-wrap break-all text-[var(--adaptive-black800)]">
+            <pre className="max-h-[160px] overflow-auto rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface)] p-[8px] text-[12px] leading-[1.5] whitespace-pre-wrap break-all text-[var(--adaptive-black800)]">
                 {redactJsonLikeText(value)}
             </pre>
         </div>
@@ -113,11 +113,11 @@ function ApiFlowListRow({ entry, selected, onSelect }: { entry: ApiFlowEntry; se
             className={`flex w-full flex-col gap-[2px] border-b border-[var(--adaptive-border-subtle)] px-[10px] py-[8px] text-left ${tone}`}
         >
             <div className="flex min-w-0 items-center gap-[6px]">
-                <span className="shrink-0 text-[11px] font-bold">{entry.method}</span>
+                <span className="shrink-0 text-[12px] font-bold">{entry.method}</span>
                 <span className="min-w-0 flex-1 truncate text-[12px] font-semibold">{entry.pathname}</span>
-                <span className="shrink-0 text-[11px] font-semibold">{statusLabel}</span>
+                <span className="shrink-0 text-[12px] font-semibold">{statusLabel}</span>
             </div>
-            <div className="flex items-center justify-between gap-[8px] text-[10px] opacity-80">
+            <div className="flex items-center justify-between gap-[8px] text-[12px] opacity-80">
                 <span className="truncate">{describeApiFlowStatus(entry, messages)}</span>
                 <span className="shrink-0">
                     {formatListTime(entry.timestamp)} · {entry.durationMs}ms
@@ -150,14 +150,14 @@ function ApiFlowDetailPane({
                     <p className="truncate text-[12px] font-bold text-[var(--adaptive-black900)]">
                         {entry.method} {entry.pathname}
                     </p>
-                    <p className="mt-[2px] text-[11px] text-[var(--adaptive-black600)]">
+                    <p className="mt-[2px] text-[12px] text-[var(--adaptive-black600)]">
                         {statusLabel} · {describeApiFlowStatus(entry, messages)} · {entry.durationMs}ms
                     </p>
                 </div>
                 <button
                     type="button"
                     onClick={onClose}
-                    className="shrink-0 rounded-[6px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface)] px-[8px] py-[4px] text-[11px] font-semibold text-[var(--adaptive-black700)] hover:bg-[var(--adaptive-black100)]"
+                    className="shrink-0 rounded-[6px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface)] px-[8px] py-[4px] text-[12px] font-semibold text-[var(--adaptive-black700)] hover:bg-[var(--adaptive-black100)]"
                 >
                     {messages.apiFlow.closeDetail}
                 </button>
@@ -171,7 +171,7 @@ function ApiFlowDetailPane({
                         copyLabel={`${messages.apiFlow.copy} ${messages.apiFlow.feedbackUrl}`}
                         onCopy={() => onCopyField("url", entry.url)}
                     />
-                    <p className="break-all text-[11px] text-[var(--adaptive-black800)]">{entry.url}</p>
+                    <p className="break-all text-[12px] text-[var(--adaptive-black800)]">{entry.url}</p>
                 </div>
 
                 {queryParamsValue ? (
@@ -200,7 +200,7 @@ function ApiFlowDetailPane({
                 ) : null}
 
                 {entry.errorMessage ? (
-                    <p className="text-[11px] text-[var(--adaptive-red900)]">
+                    <p className="text-[12px] text-[var(--adaptive-red900)]">
                         {messages.apiFlow.detailError}: {entry.errorMessage}
                     </p>
                 ) : null}

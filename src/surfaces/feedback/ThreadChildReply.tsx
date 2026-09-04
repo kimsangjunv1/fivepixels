@@ -25,7 +25,14 @@ export function ThreadChildReply({ reply, authors, originalAuthorName, actorName
             classicReplyIndicator
             nested={isFeed}
             density="comment"
-            feedNode={authorName ? <FeedAuthorAvatar name={authorName} size="sm" /> : undefined}
+            feedNode={
+                authorName ? (
+                    <FeedAuthorAvatar
+                        name={authorName}
+                        size="sm"
+                    />
+                ) : undefined
+            }
         >
             {isFeed && authorName ? (
                 <FeedCommentMeta
@@ -36,7 +43,7 @@ export function ThreadChildReply({ reply, authors, originalAuthorName, actorName
                 />
             ) : null}
 
-            <p className={`leading-[1.45] text-[var(--adaptive-text-primary)] ${isFeed ? "mt-[2px] text-[13px]" : "text-[13px]"}`}>
+            <p className={`leading-[1.5] text-[var(--adaptive-text-primary)] ${isFeed ? "mt-[2px] text-[14px]" : "text-[14px]"}`}>
                 <MentionMessage
                     message={reply.message}
                     mentions={reply.mentions}

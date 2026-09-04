@@ -52,9 +52,7 @@ export function PickTargetSnippet({ suggestedReportId, reportType = "item", aler
             role={isAlert ? "alert" : undefined}
         >
             <section className="flex min-w-0 items-center gap-[4px]">
-                <StarIcon
-                    className={`h-[12px] w-[12px] shrink-0 ${isAlert ? "text-rose-500" : "text-emerald-600 dark:text-emerald-300"}`}
-                />
+                <StarIcon className={`h-[12px] w-[12px] shrink-0 ${isAlert ? "text-rose-500" : "text-emerald-600 dark:text-emerald-300"}`} />
                 <Text.Shimmer
                     className="min-w-0 truncate text-[12px]"
                     color={isAlert ? ALERT_SHIMMER : TIP_SHIMMER}
@@ -88,7 +86,7 @@ export function PickTargetSnippet({ suggestedReportId, reportType = "item", aler
                             aria-label={messages.pickTarget.snippetCopyAriaLabel}
                             className="flex h-[20px] w-[20px] shrink-0 items-center justify-center text-[var(--adaptive-black500)] hover:text-[var(--adaptive-black900)]"
                         >
-                            {copied ? <span className="text-[9px] font-semibold">{messages.common.ok}</span> : <CopyIcon className="h-[12px] w-[12px]" />}
+                            {copied ? <span className="text-[12px] font-semibold">{messages.common.ok}</span> : <CopyIcon className="h-[12px] w-[12px]" />}
                         </button>
                     </HoverTooltip>
                 </section>

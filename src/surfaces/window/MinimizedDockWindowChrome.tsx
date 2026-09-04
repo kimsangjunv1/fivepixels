@@ -57,8 +57,8 @@ export function MinimizedDockWindowChrome({
                         title={restoreTitle ?? restoreAriaLabel}
                         className="flex min-w-0 items-center gap-[4px] text-left"
                     >
-                        <p className="shrink-0 rounded-[4px] bg-[var(--adaptive-tintOpacity300)] px-[2px] py-[2px] text-[10px]">{badgeLabel}</p>
-                        {badgeValue ? <p className="min-w-0 truncate text-[10px] font-semibold leading-none text-[var(--adaptive-accent-coral)]">{badgeValue}</p> : null}
+                        <p className="shrink-0 rounded-[4px] bg-[var(--adaptive-tintOpacity300)] px-[2px] py-[2px] text-[12px]">{badgeLabel}</p>
+                        {badgeValue ? <p className="min-w-0 truncate text-[12px] font-semibold leading-none text-[var(--adaptive-accent-coral)]">{badgeValue}</p> : null}
                     </button>
 
                     {children}
@@ -109,7 +109,7 @@ export function MinimizedDockSimpleSubtitleRow({
             className="flex min-w-0 flex-1 items-center overflow-hidden text-left"
         >
             <p
-                className="min-w-0 flex-1 truncate text-[12px] font-semibold leading-[1.3] text-[var(--adaptive-black900)]"
+                className="min-w-0 flex-1 truncate text-[12px] font-semibold leading-[1.5] text-[var(--adaptive-black900)]"
                 title={label}
             >
                 {label}

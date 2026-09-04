@@ -31,7 +31,7 @@ export function HexColorField({ label, value, onChange, placeholder = "ededed" }
     };
 
     return (
-        <label className="flex flex-col gap-[4px] text-[11px]">
+        <label className="flex flex-col gap-[4px] text-[12px]">
             <span className="font-medium text-[var(--adaptive-black500)]">{label}</span>
             <div className="flex items-center gap-[6px]">
                 <button

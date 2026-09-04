@@ -54,7 +54,7 @@ export function FeedbackHoverCard({ report, detached = false, detachedKind = nul
         return (
             <div className="flex w-[260px] flex-col bg-transparent">
                 <div className="flex flex-col gap-[6px] p-[8px_12px]">
-                    {resolvedDetachedHint ? <p className="text-[13px] leading-[1.4] text-[var(--adaptive-black500)]">{resolvedDetachedHint}</p> : null}
+                    {resolvedDetachedHint ? <p className="text-[14px] leading-[1.5] text-[var(--adaptive-black500)]">{resolvedDetachedHint}</p> : null}
                     {memoText ? <p className="whitespace-pre-wrap break-words text-[14px] leading-[1.5] text-[var(--adaptive-text-primary)]">{memoText}</p> : null}
                     {authorLabel || reportRelativeTime ? (
                         <div className="flex items-center gap-[6px] pt-[2px]">
@@ -108,7 +108,7 @@ export function FeedbackHoverCard({ report, detached = false, detachedKind = nul
             </ul>
 
             <section className="flex items-center justify-between bg-[var(--adaptive-fillOpacity400)] p-[12px]">
-                {/* {hasMoreCases ? <p className="text-[12px] leading-[1.4] text-[var(--adaptive-black500)]">{messages.marker.viewMoreCases}</p> : null} */}
+                {/* {hasMoreCases ? <p className="text-[12px] leading-[1.5] text-[var(--adaptive-black500)]">{messages.marker.viewMoreCases}</p> : null} */}
 
                 {authorLabel || reportRelativeTime ? (
                     <div className="flex items-center gap-[6px]">

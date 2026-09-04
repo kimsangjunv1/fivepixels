@@ -281,7 +281,7 @@ export function ThreadEntryActions({
                 ) : null}
             </div>
 
-            {!canAct && !isOwnBranchReply && !showAdjudication ? <p className="text-[11px] text-[var(--adaptive-black500)]">{messages.errors.caseAssigneeOnly}</p> : null}
+            {!canAct && !isOwnBranchReply && !showAdjudication ? <p className="text-[12px] text-[var(--adaptive-black500)]">{messages.errors.caseAssigneeOnly}</p> : null}
 
             {showReview && showAdjudication && showConfirmAuthorSelect ? (
                 <AuthorSelector

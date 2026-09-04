@@ -357,7 +357,7 @@ function NotificationGroupStack({
             style={stackGapStyle}
         >
             {badgeAboveCard ? (
-                <div className="pointer-events-none z-[5] mb-[4px] rounded-full bg-black/45 px-[8px] py-[2px] text-[10px] font-semibold text-white">
+                <div className="pointer-events-none z-[5] mb-[4px] rounded-full bg-black/45 px-[8px] py-[2px] text-[12px] font-semibold text-white">
                     {groupLabel} · {messages.notifications.stackedCount(items.length)}
                 </div>
             ) : null}
@@ -394,7 +394,7 @@ function NotificationGroupStack({
                 />
             </div>
             {!badgeAboveCard ? (
-                <div className="pointer-events-none z-[5] mt-[4px] rounded-full bg-black/45 px-[8px] py-[2px] text-[10px] font-semibold text-white">
+                <div className="pointer-events-none z-[5] mt-[4px] rounded-full bg-black/45 px-[8px] py-[2px] text-[12px] font-semibold text-white">
                     {groupLabel} · {messages.notifications.stackedCount(items.length)}
                 </div>
             ) : null}

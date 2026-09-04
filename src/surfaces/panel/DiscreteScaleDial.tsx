@@ -24,7 +24,7 @@ export function DiscreteScaleDial<T extends string>({ values, value, onChange, l
                         role="radio"
                         aria-checked={active}
                         onClick={() => onChange(scale)}
-                        className={`rounded-[6px] px-[2px] py-[6px] text-center text-[10px] leading-[1.2] transition-colors ${
+                        className={`rounded-[6px] px-[2px] py-[6px] text-center text-[12px] leading-[1.5] transition-colors ${
                             active
                                 ? "bg-[var(--adaptive-blue500)] font-semibold text-white"
                                 : "bg-[var(--adaptive-black100)] font-medium text-[var(--adaptive-black600)] ring-1 ring-[var(--adaptive-black200)] hover:bg-[var(--adaptive-black200)] hover:text-[var(--adaptive-black800)]"

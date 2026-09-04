@@ -143,7 +143,7 @@ export function MinimizedWindowAliasRow({
             >
                 {alias ? (
                     <p
-                        className="min-w-0 flex-1 truncate text-[12px] font-semibold leading-[1.3] text-[var(--adaptive-black900)]"
+                        className="min-w-0 flex-1 truncate text-[12px] font-semibold leading-[1.5] text-[var(--adaptive-black900)]"
                         title={alias}
                     >
                         {alias}

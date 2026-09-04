@@ -26,26 +26,9 @@ import {
 import { PanelMarkerDisplayControls } from "./PanelMarkerDisplayControls.js";
 import { OptionSwitch } from "@/shared/components/ui/OptionSwitch.js";
 import { PanelTabSelector } from "./PanelTabSelector.js";
-import {
-    ApiLoginStep,
-    ApiRegisterResultStep,
-    ApiRegisterStep,
-    ArtemisLoginStep,
-} from "./onboarding/PanelOnboardingAuthSteps.js";
+import { ApiLoginStep, ApiRegisterResultStep, ApiRegisterStep, ArtemisLoginStep } from "./onboarding/PanelOnboardingAuthSteps.js";
 
-type OnboardingStep =
-    | "language"
-    | "intro"
-    | "restore"
-    | "api-login"
-    | "api-register"
-    | "api-register-success"
-    | "api-register-error"
-    | "artemis-login"
-    | "role"
-    | "appearance"
-    | "display"
-    | "key";
+type OnboardingStep = "language" | "intro" | "restore" | "api-login" | "api-register" | "api-register-success" | "api-register-error" | "artemis-login" | "role" | "appearance" | "display" | "key";
 
 const LOCALE_OPTIONS = ["en", "ko"] as const satisfies readonly ReportLocale[];
 
@@ -59,11 +42,7 @@ function getAuthEntryStep(sync: FivePixelsSync, requireAuth: boolean): Extract<O
     return "intro";
 }
 
-function resolveInitialOnboardingStep(
-    sync: FivePixelsSync,
-    requireAuth: boolean,
-    setupCompleted: boolean | undefined,
-): OnboardingStep {
+function resolveInitialOnboardingStep(sync: FivePixelsSync, requireAuth: boolean, setupCompleted: boolean | undefined): OnboardingStep {
     const authEntry = getAuthEntryStep(sync, requireAuth);
 
     if (setupCompleted || hasStoredLocalePreference()) {
@@ -312,11 +291,7 @@ export function PanelOnboarding() {
     };
 
     const registerErrorMessage =
-        registerErrorKind === "account-already-exists"
-            ? onboarding.registerDuplicate
-            : registerErrorKind === "invalid-registration"
-              ? onboarding.registerInvalid
-              : onboarding.registerUnknownError;
+        registerErrorKind === "account-already-exists" ? onboarding.registerDuplicate : registerErrorKind === "invalid-registration" ? onboarding.registerInvalid : onboarding.registerUnknownError;
 
     const handleRestore = async () => {
         if (!backupKey.trim() || isRestoring) {
@@ -482,9 +457,7 @@ export function PanelOnboarding() {
                 <>
                     <div>
                         <h6 className={PANEL_GATE_TITLE_CLASS}>{onboarding.introTitle}</h6>
-                        <p className={PANEL_GATE_DESCRIPTION_CLASS}>
-                            {sync === "api" && !requireAuth ? onboarding.introDescriptionApiNoAuth : onboarding.introDescription}
-                        </p>
+                        <p className={PANEL_GATE_DESCRIPTION_CLASS}>{sync === "api" && !requireAuth ? onboarding.introDescriptionApiNoAuth : onboarding.introDescription}</p>
                     </div>
 
                     <div className="flex flex-col gap-[8px]">
@@ -545,7 +518,7 @@ export function PanelOnboarding() {
                         ) : null}
                     </div>
 
-                    <p className="text-[11px] text-[var(--adaptive-black500)]">{onboarding.restoreDropHint}</p>
+                    <p className="text-[12px] text-[var(--adaptive-black500)]">{onboarding.restoreDropHint}</p>
 
                     {restoreError ? <p className="text-[12px] text-rose-700">{restoreError}</p> : null}
 
@@ -594,7 +567,7 @@ export function PanelOnboarding() {
                         onChange={setSelectedTabs}
                     />
 
-                    <p className="text-[11px] text-[var(--adaptive-black500)]">{onboarding.roleStepTabsHint}</p>
+                    <p className="text-[12px] text-[var(--adaptive-black500)]">{onboarding.roleStepTabsHint}</p>
 
                     <div className="flex items-center justify-between">
                         <button
@@ -672,7 +645,7 @@ export function PanelOnboarding() {
                         markerSizeAriaLabel={messages.settings.markerSizeAriaLabel}
                     />
                     <div>
-                        <p className="mb-[6px] text-[11px] font-medium text-[var(--adaptive-black600)]">{messages.settings.markerFillStyle}</p>
+                        <p className="mb-[6px] text-[12px] font-medium text-[var(--adaptive-black600)]">{messages.settings.markerFillStyle}</p>
                         <OptionSwitch
                             options={MARKER_FILL_STYLE_VALUES.map((value) => ({
                                 value,
@@ -684,7 +657,7 @@ export function PanelOnboarding() {
                         />
                     </div>
                     <div>
-                        <p className="mb-[6px] text-[11px] font-medium text-[var(--adaptive-black600)]">{messages.settings.markerShape}</p>
+                        <p className="mb-[6px] text-[12px] font-medium text-[var(--adaptive-black600)]">{messages.settings.markerShape}</p>
                         <MarkerShapePicker
                             value={markerAppearance.shape}
                             onChange={setMarkerShape}

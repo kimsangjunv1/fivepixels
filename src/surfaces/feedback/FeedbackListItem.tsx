@@ -94,7 +94,7 @@ function FeedbackListCopyAction({ report, messages }: { report: ReportFeedback; 
                 aria-label={messages.feedbackList.copyAriaLabel}
                 className="flex h-[20px] w-[20px] items-center justify-center text-[var(--adaptive-black50)] hover:text-white"
             >
-                {copied ? <span className="text-[9px] font-semibold">{messages.common.ok}</span> : <CopyIcon className="h-[12px] w-[12px]" />}
+                {copied ? <span className="text-[12px] font-semibold">{messages.common.ok}</span> : <CopyIcon className="h-[12px] w-[12px]" />}
             </button>
         </HoverTooltip>
     );
@@ -184,16 +184,16 @@ export function FeedbackListItem({
                                 <section className="flex gap-[4px]">
                                     {category ? (
                                         <section className="flex items-center rounded-[4px] border-[1px] border-[var(--adaptive-black900)]">
-                                            <span className="px-[2px] py-[1px] text-[10px] font-medium text-[var(--adaptive-black900)]">{messages.feedbackList.categoryTag[category]}</span>
+                                            <span className="px-[2px] py-[1px] text-[12px] font-medium text-[var(--adaptive-black900)]">{messages.feedbackList.categoryTag[category]}</span>
                                         </section>
                                     ) : null}
 
                                     <section className="flex items-center rounded-[4px] border-[1px] border-[var(--adaptive-black900)]">
-                                        <span className="px-[4px] py-[1px] text-[10px] font-medium text-[var(--adaptive-black900)]">{messages.feedbackList.statusTag[statusTag]}</span>
+                                        <span className="px-[4px] py-[1px] text-[12px] font-medium text-[var(--adaptive-black900)]">{messages.feedbackList.statusTag[statusTag]}</span>
                                     </section>
                                     <div className="flex min-w-0 items-center gap-[4px]">
                                         {replyCount > 0 ? (
-                                            <span className="rounded-[4px] border-[1.5px] border-[var(--adaptive-black900)] px-[1px] text-[10px] font-bold text-[var(--adaptive-black900)]">
+                                            <span className="rounded-[4px] border-[1.5px] border-[var(--adaptive-black900)] px-[1px] text-[12px] font-bold text-[var(--adaptive-black900)]">
                                                 {messages.feedbackList.replyCountBadge(replyCount)}
                                             </span>
                                         ) : null}
@@ -214,7 +214,7 @@ export function FeedbackListItem({
                     </section>
                 </section>
 
-                {!isMemoItem && listScope === "all" ? <p className="truncate text-[11px] text-[var(--adaptive-black400)]">{report.pathname}</p> : null}
+                {!isMemoItem && listScope === "all" ? <p className="truncate text-[12px] text-[var(--adaptive-black400)]">{report.pathname}</p> : null}
             </button>
 
             <div className="absolute right-[10px] top-[6px] z-[1] flex items-center gap-[2px]">

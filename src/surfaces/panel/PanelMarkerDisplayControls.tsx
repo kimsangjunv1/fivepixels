@@ -10,16 +10,10 @@ type PanelMarkerDisplayControlsProps = {
 };
 
 /** Shared marker size dial (onboarding display step + settings). */
-export function PanelMarkerDisplayControls({
-    markerSize,
-    onMarkerSizeChange,
-    scaleLabels,
-    markerSizeLabel,
-    markerSizeAriaLabel,
-}: PanelMarkerDisplayControlsProps) {
+export function PanelMarkerDisplayControls({ markerSize, onMarkerSizeChange, scaleLabels, markerSizeLabel, markerSizeAriaLabel }: PanelMarkerDisplayControlsProps) {
     return (
         <div>
-            <p className="mb-[6px] text-[11px] font-medium text-[var(--adaptive-black600)]">{markerSizeLabel}</p>
+            <p className="mb-[6px] text-[12px] font-medium text-[var(--adaptive-black600)]">{markerSizeLabel}</p>
             <DiscreteScaleDial
                 values={APPEARANCE_SCALE_VALUES}
                 value={markerSize}

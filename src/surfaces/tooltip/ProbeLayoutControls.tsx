@@ -38,20 +38,10 @@ type ProbeLayoutControlsProps = {
 };
 
 function ProbeLayoutSectionLabel({ children }: { children: ReactNode }) {
-    return <span className="text-[14px] font-medium leading-[1.45] text-[var(--adaptive-black500)]">{children}</span>;
+    return <span className="text-[14px] font-medium leading-[1.5] text-[var(--adaptive-black500)]">{children}</span>;
 }
 
-function ProbeIconToggleButton({
-    active,
-    label,
-    onClick,
-    children,
-}: {
-    active: boolean;
-    label: string;
-    onClick: () => void;
-    children: ReactNode;
-}) {
+function ProbeIconToggleButton({ active, label, onClick, children }: { active: boolean; label: string; onClick: () => void; children: ReactNode }) {
     return (
         <button
             type="button"
@@ -100,17 +90,9 @@ function ProbeIconToggleGroup({
     );
 }
 
-function ProbeCountStepperField({
-    label,
-    value,
-    onChange,
-}: {
-    label: string;
-    value: string;
-    onChange: (value: string) => void;
-}) {
+function ProbeCountStepperField({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
     return (
-        <div className="flex flex-col gap-[4px] text-[14px] leading-[1.45]">
+        <div className="flex flex-col gap-[4px] text-[14px] leading-[1.5]">
             <ProbeLayoutSectionLabel>{label}</ProbeLayoutSectionLabel>
             <div className="flex items-center gap-[6px]">
                 <button
@@ -139,17 +121,9 @@ function ProbeCountStepperField({
     );
 }
 
-function ProbeGapStepperField({
-    label,
-    value,
-    onChange,
-}: {
-    label: string;
-    value: string;
-    onChange: (value: string) => void;
-}) {
+function ProbeGapStepperField({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
     return (
-        <div className="flex flex-col gap-[4px] text-[14px] leading-[1.45]">
+        <div className="flex flex-col gap-[4px] text-[14px] leading-[1.5]">
             <ProbeLayoutSectionLabel>{label}</ProbeLayoutSectionLabel>
             <div className="flex items-center gap-[6px]">
                 <button
@@ -308,7 +282,11 @@ function FlexLayoutControls({ values, messages, onChange }: Omit<ProbeLayoutCont
                     </ProbeIconToggleButton>
                 </div>
             </div>
-            <ProbeGapStepperField label={messages.pickTarget.probeGap} value={values.gap} onChange={(value) => onChange("gap", value)} />
+            <ProbeGapStepperField
+                label={messages.pickTarget.probeGap}
+                value={values.gap}
+                onChange={(value) => onChange("gap", value)}
+            />
         </div>
     );
 }
@@ -326,18 +304,34 @@ function GridLayoutControls({ values, messages, onChange }: Omit<ProbeLayoutCont
                 value={values.gridRowCount}
                 onChange={(value) => onChange("gridRowCount", value)}
             />
-            <ProbeGapStepperField label={messages.pickTarget.probeGap} value={values.gap} onChange={(value) => onChange("gap", value)} />
+            <ProbeGapStepperField
+                label={messages.pickTarget.probeGap}
+                value={values.gap}
+                onChange={(value) => onChange("gap", value)}
+            />
         </div>
     );
 }
 
 export function ProbeLayoutControls({ layoutMode, values, messages, onChange }: ProbeLayoutControlsProps) {
     if (layoutMode === "flex") {
-        return <FlexLayoutControls values={values} messages={messages} onChange={onChange} />;
+        return (
+            <FlexLayoutControls
+                values={values}
+                messages={messages}
+                onChange={onChange}
+            />
+        );
     }
 
     if (layoutMode === "grid") {
-        return <GridLayoutControls values={values} messages={messages} onChange={onChange} />;
+        return (
+            <GridLayoutControls
+                values={values}
+                messages={messages}
+                onChange={onChange}
+            />
+        );
     }
 
     return null;

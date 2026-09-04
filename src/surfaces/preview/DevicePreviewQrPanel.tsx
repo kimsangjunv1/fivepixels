@@ -155,7 +155,7 @@ export function DevicePreviewQrPanel({
                     </svg>
                 ) : (
                     <div
-                        className="flex aspect-square w-full items-center justify-center border border-dashed border-[rgba(148,163,184,0.55)] bg-[rgba(248,250,252,0.92)] px-[10px] text-center text-[10px] font-medium leading-snug text-slate-500"
+                        className="flex aspect-square w-full items-center justify-center border border-dashed border-[rgba(148,163,184,0.55)] bg-[rgba(248,250,252,0.92)] px-[10px] text-center text-[12px] font-medium leading-snug text-slate-500"
                         aria-hidden
                     >
                         QR
@@ -185,7 +185,7 @@ export function DevicePreviewQrPanel({
                                     type="button"
                                     onClick={() => void handleCopy()}
                                     aria-label={copyAriaLabel}
-                                    className="h-[28px] rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] px-[8px] text-[10px] font-semibold text-[var(--adaptive-black900)] hover:bg-[var(--adaptive-black100)]"
+                                    className="h-[28px] rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] px-[8px] text-[12px] font-semibold text-[var(--adaptive-black900)] hover:bg-[var(--adaptive-black100)]"
                                 >
                                     {copied ? copiedLabel : copyLabel}
                                 </button>

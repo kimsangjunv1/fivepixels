@@ -13,14 +13,12 @@ export function DraftProbeSummaryBanner() {
             className="flex items-center gap-[8px] border-b border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface-muted)] px-[12px] py-[8px]"
             data-fivepixels-interactive=""
         >
-            <p className="min-w-0 flex-1 text-[11px] font-medium leading-[1.4] text-[var(--adaptive-text-secondary)]">
-                {messages.composer.probeSummaryPrompt}
-            </p>
+            <p className="min-w-0 flex-1 text-[12px] font-medium leading-[1.5] text-[var(--adaptive-text-secondary)]">{messages.composer.probeSummaryPrompt}</p>
             <button
                 type="button"
                 data-fivepixels-interactive=""
                 onClick={() => appendSavedProbeSummaryAsNewDraftCase()}
-                className="shrink-0 rounded-[8px] bg-[var(--adaptive-blue500)] px-[10px] py-[4px] text-[11px] font-semibold text-white"
+                className="shrink-0 rounded-[8px] bg-[var(--adaptive-blue500)] px-[10px] py-[4px] text-[12px] font-semibold text-white"
             >
                 {messages.composer.probeSummaryApply}
             </button>

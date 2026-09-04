@@ -16,14 +16,7 @@ type AppearanceThemePickerProps = {
     previewKind?: ThemePreviewKind;
 };
 
-export function AppearanceThemePicker({
-    options,
-    value,
-    onChange,
-    disabled = false,
-    ariaLabel,
-    previewKind = "panel",
-}: AppearanceThemePickerProps) {
+export function AppearanceThemePicker({ options, value, onChange, disabled = false, ariaLabel, previewKind = "panel" }: AppearanceThemePickerProps) {
     const handleKeyDown = useCallback(
         (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
             if (disabled) {
@@ -70,9 +63,7 @@ export function AppearanceThemePicker({
                     >
                         <div
                             className={`aspect-[5/4] w-full overflow-hidden rounded-[12px] transition-[box-shadow] ${
-                                active
-                                    ? "shadow-[0_0_0_1.5px_#111113]"
-                                    : "shadow-[0_0_0_1px_transparent] group-hover:shadow-[0_0_0_1px_var(--adaptive-black300)]"
+                                active ? "shadow-[0_0_0_1.5px_#111113]" : "shadow-[0_0_0_1px_transparent] group-hover:shadow-[0_0_0_1px_var(--adaptive-black300)]"
                             }`}
                         >
                             <ThemePreviewSkeleton
@@ -81,10 +72,8 @@ export function AppearanceThemePicker({
                             />
                         </div>
                         <span
-                            className={`w-full truncate text-center text-[11px] leading-[1.2] ${
-                                active
-                                    ? "font-semibold text-[var(--adaptive-black900)]"
-                                    : "font-medium text-[var(--adaptive-black600)] group-hover:text-[var(--adaptive-black800)]"
+                            className={`w-full truncate text-center text-[12px] leading-[1.5] ${
+                                active ? "font-semibold text-[var(--adaptive-black900)]" : "font-medium text-[var(--adaptive-black600)] group-hover:text-[var(--adaptive-black800)]"
                             }`}
                         >
                             {option.label}

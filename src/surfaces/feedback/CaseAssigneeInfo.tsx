@@ -35,7 +35,7 @@ export function CaseAssigneeInfo({ caseItem, authors }: CaseAssigneeInfoProps) {
     );
 
     return (
-        <div className="flex min-w-0 items-center gap-[6px] text-[12px] leading-[1.4] text-[var(--adaptive-black500)]">
+        <div className="flex min-w-0 items-center gap-[6px] text-[12px] leading-[1.5] text-[var(--adaptive-black500)]">
             <span
                 className="min-w-0 truncate"
                 title={currentLabel}

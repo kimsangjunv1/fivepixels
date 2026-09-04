@@ -185,13 +185,13 @@ export function ReportFeedbackList({ listKind = "feedback" }: { listKind?: Feedb
             <div className="relative z-[20] shrink-0 border-b border-b-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)]">
                 {filters.dateKey ? (
                     <div className="flex items-center justify-between gap-[8px] border-b border-[var(--adaptive-border-subtle)] px-[8px] py-[6px]">
-                        <p className="text-[11px] font-[600] text-[var(--adaptive-blue500)]">
+                        <p className="text-[12px] font-[600] text-[var(--adaptive-blue500)]">
                             {messages.activityHeatmap.dateFilterLabel.replace("{date}", formatDateOnly(`${filters.dateKey}T12:00:00`, locale))}
                         </p>
                         <button
                             type="button"
                             onClick={() => setFilters((current) => ({ ...current, dateKey: null }))}
-                            className="text-[11px] font-[600] text-[var(--adaptive-black500)] hover:text-[var(--adaptive-black900)]"
+                            className="text-[12px] font-[600] text-[var(--adaptive-black500)] hover:text-[var(--adaptive-black900)]"
                         >
                             {messages.activityHeatmap.clearDateFilter}
                         </button>
@@ -339,7 +339,7 @@ export function ReportFeedbackList({ listKind = "feedback" }: { listKind?: Feedb
                             description={
                                 <>
                                     <p className="whitespace-break-spaces">{messages.feedbackList.emptyPersistenceRequiredHint}</p>
-                                    <p className="mt-[4px] font-mono text-[11px] leading-[1.4] text-[var(--adaptive-black600)]">{persistenceLock.missingHandlers.join(", ")}</p>
+                                    <p className="mt-[4px] font-mono text-[12px] leading-[1.5] text-[var(--adaptive-black600)]">{persistenceLock.missingHandlers.join(", ")}</p>
                                 </>
                             }
                         />

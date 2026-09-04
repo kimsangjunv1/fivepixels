@@ -53,7 +53,7 @@ export function CapturePanel({
             <div className="truncate text-[12px] font-bold text-[var(--adaptive-black900)]">{messages.settings.devicePreviewFloatingAriaLabel}</div>
 
             <div className="flex flex-col gap-[3px]">
-                <span className="text-[9px] font-semibold text-[var(--adaptive-black500)]">{messages.settings.devicePreviewImageLabel}</span>
+                <span className="text-[12px] font-semibold text-[var(--adaptive-black500)]">{messages.settings.devicePreviewImageLabel}</span>
                 <OptionSwitch
                     options={[
                         { value: "off", label: messages.settings.devicePreviewImageOff },
@@ -67,7 +67,7 @@ export function CapturePanel({
 
             {!captureImageEnabled ? (
                 <div className="flex flex-col gap-[3px]">
-                    <span className="text-[9px] font-semibold text-[var(--adaptive-black500)]">{messages.settings.mobilePreviewCornerStyleLabel}</span>
+                    <span className="text-[12px] font-semibold text-[var(--adaptive-black500)]">{messages.settings.mobilePreviewCornerStyleLabel}</span>
                     <OptionSwitch
                         options={[
                             { value: "sharp", label: messages.settings.mobilePreviewCornerStyleSharp },
@@ -81,7 +81,7 @@ export function CapturePanel({
             ) : null}
 
             <div className="flex flex-col gap-[3px]">
-                <span className="text-[9px] font-semibold text-[var(--adaptive-black500)]">{messages.settings.devicePreviewStatusBarLabel}</span>
+                <span className="text-[12px] font-semibold text-[var(--adaptive-black500)]">{messages.settings.devicePreviewStatusBarLabel}</span>
                 <OptionSwitch
                     options={[
                         { value: "off", label: messages.settings.devicePreviewStatusBarOff },
@@ -98,7 +98,7 @@ export function CapturePanel({
                 onClick={onCapture}
                 disabled={captureState === "capturing"}
                 aria-label={messages.settings.devicePreviewCaptureAriaLabel}
-                className="h-[28px] rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] px-[8px] text-[10px] font-semibold text-[var(--adaptive-black900)] hover:bg-[var(--adaptive-black100)] disabled:opacity-60"
+                className="h-[28px] rounded-[8px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-black50)] px-[8px] text-[12px] font-semibold text-[var(--adaptive-black900)] hover:bg-[var(--adaptive-black100)] disabled:opacity-60"
             >
                 {captureLabel}
             </button>

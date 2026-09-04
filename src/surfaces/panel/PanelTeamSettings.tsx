@@ -73,38 +73,34 @@ function MemberRow({
         <div className="flex flex-col gap-[6px] border-b border-[var(--adaptive-border-subtle)] px-[12px] py-[10px] last:border-b-0">
             <div className="flex items-start justify-between gap-[8px]">
                 <div className="min-w-0 flex-1">
-                    <p className={`truncate text-[13px] font-semibold ${inactive ? "text-[var(--adaptive-black500)]" : "text-[var(--adaptive-black900)]"}`}>
-                        {member.name}
-                    </p>
-                    <p className="truncate text-[10px] text-[var(--adaptive-black600)]">{member.id}</p>
+                    <p className={`truncate text-[14px] font-semibold ${inactive ? "text-[var(--adaptive-black500)]" : "text-[var(--adaptive-black900)]"}`}>{member.name}</p>
+                    <p className="truncate text-[12px] text-[var(--adaptive-black600)]">{member.id}</p>
                 </div>
                 {joined ? (
-                    <span className="shrink-0 rounded-[4px] bg-[var(--adaptive-black100)] px-[6px] py-[2px] text-[10px] font-semibold text-[var(--adaptive-black700)]">
-                        {roleLabel}
-                    </span>
+                    <span className="shrink-0 rounded-[4px] bg-[var(--adaptive-black100)] px-[6px] py-[2px] text-[12px] font-semibold text-[var(--adaptive-black700)]">{roleLabel}</span>
                 ) : canJoin && onJoin ? (
                     <button
                         type="button"
                         onClick={onJoin}
-                        className="shrink-0 rounded-[6px] bg-[var(--adaptive-blue50)] px-[8px] py-[4px] text-[11px] font-semibold text-[var(--adaptive-blue500)] hover:bg-[color-mix(in_srgb,var(--adaptive-blue500)_12%,transparent)]"
+                        className="shrink-0 rounded-[6px] bg-[var(--adaptive-blue50)] px-[8px] py-[4px] text-[12px] font-semibold text-[var(--adaptive-blue500)] hover:bg-[color-mix(in_srgb,var(--adaptive-blue500)_12%,transparent)]"
                     >
                         {joinLabel}
                     </button>
                 ) : null}
             </div>
-            {inactive ? <p className="text-[11px] text-[var(--adaptive-black500)]">{inactiveLabel}</p> : null}
+            {inactive ? <p className="text-[12px] text-[var(--adaptive-black500)]">{inactiveLabel}</p> : null}
             {canEdit ? (
                 <div className="flex flex-col gap-[6px]">
                     {onChangeRole ? (
                         <div className="flex flex-col gap-[4px]">
-                            <p className="text-[10px] font-semibold text-[var(--adaptive-black600)]">{editRoleLabel}</p>
+                            <p className="text-[12px] font-semibold text-[var(--adaptive-black600)]">{editRoleLabel}</p>
                             <div className="flex flex-wrap gap-[6px]">
                                 {assignableRoles.map((role) => (
                                     <button
                                         key={role}
                                         type="button"
                                         onClick={() => onChangeRole(role)}
-                                        className={`rounded-[6px] px-[8px] py-[4px] text-[11px] ${
+                                        className={`rounded-[6px] px-[8px] py-[4px] text-[12px] ${
                                             resolveAuthorRole(member) === role
                                                 ? "bg-[var(--adaptive-blue50)] font-semibold text-[var(--adaptive-blue500)]"
                                                 : "text-[var(--adaptive-black800)] hover:bg-[var(--adaptive-black100)]"
@@ -121,7 +117,7 @@ function MemberRow({
                             <button
                                 type="button"
                                 onClick={onToggleActive}
-                                className="rounded-[6px] px-[8px] py-[4px] text-[11px] text-[var(--adaptive-black800)] hover:bg-[var(--adaptive-black100)]"
+                                className="rounded-[6px] px-[8px] py-[4px] text-[12px] text-[var(--adaptive-black800)] hover:bg-[var(--adaptive-black100)]"
                             >
                                 {inactive ? activateLabel : deactivateLabel}
                             </button>
@@ -130,7 +126,7 @@ function MemberRow({
                             <button
                                 type="button"
                                 onClick={onDelete}
-                                className="rounded-[6px] px-[8px] py-[4px] text-[11px] font-semibold text-[var(--adaptive-red500)] hover:bg-[color-mix(in_srgb,var(--adaptive-red500)_10%,transparent)]"
+                                className="rounded-[6px] px-[8px] py-[4px] text-[12px] font-semibold text-[var(--adaptive-red500)] hover:bg-[color-mix(in_srgb,var(--adaptive-red500)_10%,transparent)]"
                             >
                                 {deleteLabel}
                             </button>
@@ -426,7 +422,7 @@ export function PanelTeamSettings() {
     return (
         <div className="flex flex-col">
             <div className="border-b border-[var(--adaptive-border-subtle)] px-[12px] py-[10px]">
-                <p className="inline-flex items-center gap-[6px] text-[12px] leading-[1.4] text-[var(--adaptive-black600)]">
+                <p className="inline-flex items-center gap-[6px] text-[12px] leading-[1.5] text-[var(--adaptive-black600)]">
                     {modeHint}
                     {teamManageLock.locked ? (
                         <HoverTooltip
@@ -439,13 +435,11 @@ export function PanelTeamSettings() {
                         </HoverTooltip>
                     ) : null}
                 </p>
-                <p className="mt-[6px] text-[11px] font-semibold text-[var(--adaptive-black700)]">{memberCountLabel}</p>
+                <p className="mt-[6px] text-[12px] font-semibold text-[var(--adaptive-black700)]">{memberCountLabel}</p>
             </div>
 
             <section className="flex flex-col border-b border-[var(--adaptive-border-subtle)]">
-                <p className="px-[12px] pt-[10px] pb-[4px] text-[11px] font-semibold uppercase tracking-[0.02em] text-[var(--adaptive-black500)]">
-                    {team.sectionMembers}
-                </p>
+                <p className="px-[12px] pt-[10px] pb-[4px] text-[12px] font-semibold uppercase tracking-[0.02em] text-[var(--adaptive-black500)]">{team.sectionMembers}</p>
                 {loading ? <p className="px-[12px] py-[10px] text-[12px] text-[var(--adaptive-black600)]">{team.loading}</p> : null}
                 {!loading && members.length === 0 ? (
                     <NoticeDialog
@@ -486,18 +480,16 @@ export function PanelTeamSettings() {
             {localManageMode ? (
                 <>
                     <section className="flex flex-col border-b border-[var(--adaptive-border-subtle)]">
-                        <p className="px-[12px] pt-[10px] pb-[4px] text-[11px] font-semibold uppercase tracking-[0.02em] text-[var(--adaptive-black500)]">
-                            {team.sectionRequests}
-                        </p>
+                        <p className="px-[12px] pt-[10px] pb-[4px] text-[12px] font-semibold uppercase tracking-[0.02em] text-[var(--adaptive-black500)]">{team.sectionRequests}</p>
                         {assignableRoles.length > 0 ? (
                             <div className="flex flex-wrap gap-[6px] px-[12px] pb-[8px]">
-                                <p className="w-full text-[11px] text-[var(--adaptive-black600)]">{team.approveAsRole}</p>
+                                <p className="w-full text-[12px] text-[var(--adaptive-black600)]">{team.approveAsRole}</p>
                                 {assignableRoles.map((role) => (
                                     <button
                                         key={role}
                                         type="button"
                                         onClick={() => setApproveRole(role)}
-                                        className={`rounded-[6px] px-[8px] py-[4px] text-[11px] ${
+                                        className={`rounded-[6px] px-[8px] py-[4px] text-[12px] ${
                                             approveRole === role
                                                 ? "bg-[var(--adaptive-blue50)] font-semibold text-[var(--adaptive-blue500)]"
                                                 : "text-[var(--adaptive-black800)] hover:bg-[var(--adaptive-black100)]"
@@ -520,16 +512,16 @@ export function PanelTeamSettings() {
                                     className="flex flex-col gap-[8px] border-b border-[var(--adaptive-border-subtle)] px-[12px] py-[10px] last:border-b-0"
                                 >
                                     <div>
-                                        <p className="text-[13px] font-semibold text-[var(--adaptive-black900)]">{request.author_name}</p>
-                                        <p className="truncate text-[10px] text-[var(--adaptive-black600)]">{request.author_id}</p>
-                                        <p className="mt-[4px] break-all text-[10px] text-[var(--adaptive-black500)]">{request.public_key}</p>
+                                        <p className="text-[14px] font-semibold text-[var(--adaptive-black900)]">{request.author_name}</p>
+                                        <p className="truncate text-[12px] text-[var(--adaptive-black600)]">{request.author_id}</p>
+                                        <p className="mt-[4px] break-all text-[12px] text-[var(--adaptive-black500)]">{request.public_key}</p>
                                     </div>
                                     <div className="flex gap-[6px]">
                                         <button
                                             type="button"
                                             disabled={busyId === request.id}
                                             onClick={() => void handleResolve(request.id, "approved")}
-                                            className="rounded-[6px] bg-[var(--adaptive-blue50)] px-[8px] py-[4px] text-[11px] font-semibold text-[var(--adaptive-blue500)] disabled:opacity-50"
+                                            className="rounded-[6px] bg-[var(--adaptive-blue50)] px-[8px] py-[4px] text-[12px] font-semibold text-[var(--adaptive-blue500)] disabled:opacity-50"
                                         >
                                             {team.approve}
                                         </button>
@@ -537,7 +529,7 @@ export function PanelTeamSettings() {
                                             type="button"
                                             disabled={busyId === request.id}
                                             onClick={() => void handleResolve(request.id, "rejected")}
-                                            className="rounded-[6px] px-[8px] py-[4px] text-[11px] text-[var(--adaptive-black800)] hover:bg-[var(--adaptive-black100)] disabled:opacity-50"
+                                            className="rounded-[6px] px-[8px] py-[4px] text-[12px] text-[var(--adaptive-black800)] hover:bg-[var(--adaptive-black100)] disabled:opacity-50"
                                         >
                                             {team.reject}
                                         </button>
@@ -549,16 +541,14 @@ export function PanelTeamSettings() {
 
                     {onRegisterReviewer && assignableRoles.length > 0 ? (
                         <section className="flex flex-col px-[12px] py-[10px]">
-                            <p className="mb-[6px] text-[11px] font-semibold uppercase tracking-[0.02em] text-[var(--adaptive-black500)]">
-                                {team.sectionManual}
-                            </p>
+                            <p className="mb-[6px] text-[12px] font-semibold uppercase tracking-[0.02em] text-[var(--adaptive-black500)]">{team.sectionManual}</p>
                             <div className="mb-[8px] flex flex-wrap gap-[6px]">
                                 {assignableRoles.map((role) => (
                                     <button
                                         key={role}
                                         type="button"
                                         onClick={() => setManualRole(role)}
-                                        className={`rounded-[6px] px-[8px] py-[4px] text-[11px] ${
+                                        className={`rounded-[6px] px-[8px] py-[4px] text-[12px] ${
                                             manualRole === role
                                                 ? "bg-[var(--adaptive-blue50)] font-semibold text-[var(--adaptive-blue500)]"
                                                 : "text-[var(--adaptive-black800)] hover:bg-[var(--adaptive-black100)]"
@@ -592,7 +582,7 @@ export function PanelTeamSettings() {
                                     type="button"
                                     disabled={busyId === "register"}
                                     onClick={() => void handleLocalRegister()}
-                                    className="w-full rounded-[8px] px-[12px] py-[8px] text-left text-[13px] text-[var(--adaptive-black800)] hover:bg-[var(--adaptive-black100)] disabled:opacity-50"
+                                    className="w-full rounded-[8px] px-[12px] py-[8px] text-left text-[14px] text-[var(--adaptive-black800)] hover:bg-[var(--adaptive-black100)] disabled:opacity-50"
                                 >
                                     {team.register}
                                 </button>
@@ -604,16 +594,14 @@ export function PanelTeamSettings() {
 
             {canManage && writeEnabled && onRegisterReviewer && assignableRoles.length > 0 ? (
                 <section className="flex flex-col px-[12px] py-[10px]">
-                    <p className="mb-[6px] text-[11px] font-semibold uppercase tracking-[0.02em] text-[var(--adaptive-black500)]">
-                        {team.sectionRegister}
-                    </p>
+                    <p className="mb-[6px] text-[12px] font-semibold uppercase tracking-[0.02em] text-[var(--adaptive-black500)]">{team.sectionRegister}</p>
                     <div className="mb-[8px] flex flex-wrap gap-[6px]">
                         {assignableRoles.map((role) => (
                             <button
                                 key={role}
                                 type="button"
                                 onClick={() => setApiRole(role)}
-                                className={`rounded-[6px] px-[8px] py-[4px] text-[11px] ${
+                                className={`rounded-[6px] px-[8px] py-[4px] text-[12px] ${
                                     apiRole === role
                                         ? "bg-[var(--adaptive-blue50)] font-semibold text-[var(--adaptive-blue500)]"
                                         : "text-[var(--adaptive-black800)] hover:bg-[var(--adaptive-black100)]"
@@ -634,7 +622,7 @@ export function PanelTeamSettings() {
                             type="button"
                             disabled={busyId === "register"}
                             onClick={() => void handleApiRegister()}
-                            className="w-full rounded-[8px] px-[12px] py-[8px] text-left text-[13px] text-[var(--adaptive-black800)] hover:bg-[var(--adaptive-black100)] disabled:opacity-50"
+                            className="w-full rounded-[8px] px-[12px] py-[8px] text-left text-[14px] text-[var(--adaptive-black800)] hover:bg-[var(--adaptive-black100)] disabled:opacity-50"
                         >
                             {team.register}
                         </button>

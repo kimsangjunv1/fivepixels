@@ -94,17 +94,7 @@ function NoticeFooter({ actions, footerDividerBeforeLast, className = "" }: { ac
  * Shared panel notice / confirm shell — same visual language as import "확인 필요".
  * Settings/import dialogs stay separate from the floating notification stack.
  */
-export function NoticeDialog({
-    title,
-    description,
-    children,
-    choices,
-    actions,
-    footerDividerBeforeLast = 0,
-    sectioned = false,
-    className = "",
-    role = "dialog",
-}: NoticeDialogProps) {
+export function NoticeDialog({ title, description, children, choices, actions, footerDividerBeforeLast = 0, sectioned = false, className = "", role = "dialog" }: NoticeDialogProps) {
     const footerActions = actions ?? [];
     const hasChoices = Boolean(choices && choices.length > 0);
     const hasFooter = footerActions.length > 0;
@@ -112,7 +102,7 @@ export function NoticeDialog({
     const header = (
         <>
             <p className="text-[14px] font-bold text-[var(--adaptive-black900)]">{title}</p>
-            {description ? <div className="mt-[8px] leading-[1.4] whitespace-break-spaces text-[var(--adaptive-black700)]">{description}</div> : null}
+            {description ? <div className="mt-[8px] leading-[1.5] whitespace-break-spaces text-[var(--adaptive-black700)]">{description}</div> : null}
             {hasChoices ? (
                 <div className="mt-[12px] flex flex-wrap gap-[8px]">
                     {choices!.map((choice) => (

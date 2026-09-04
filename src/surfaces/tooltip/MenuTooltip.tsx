@@ -8,7 +8,7 @@ export const MENU_TOOLTIP_ICON_CLASS = "h-[16px] w-[16px] shrink-0";
 const MENU_TOOLTIP_SURFACE_BASE = `${STYLE_TOOLTIP_SURFACE_CLASS} ${MOTION.tooltipIn}`;
 
 const MENU_TOOLTIP_ITEM_CLASS =
-    "flex w-full items-center gap-[8px] rounded-[8px] px-[4px] py-[4px] text-left text-[14px] font-medium leading-[1.45] text-[var(--adaptive-black900)] hover:bg-[var(--adaptive-black100)] disabled:cursor-not-allowed disabled:opacity-50";
+    "flex w-full items-center gap-[8px] rounded-[8px] px-[4px] py-[4px] text-left text-[14px] font-medium leading-[1.5] text-[var(--adaptive-black900)] hover:bg-[var(--adaptive-black100)] disabled:cursor-not-allowed disabled:opacity-50";
 
 const MENU_TOOLTIP_ITEM_ACTIVE_CLASS = "bg-[var(--adaptive-black100)]";
 

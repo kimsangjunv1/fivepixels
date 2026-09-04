@@ -18,22 +18,22 @@ export function ReportPageBriefPanel() {
         <section className="flex min-h-0 flex-1 flex-col overflow-y-auto bg-[var(--adaptive-fillOpacity500)]">
             <div className="border-b border-[var(--adaptive-border-subtle)] px-[12px] py-[8px]">
                 <p className="text-[12px] font-bold text-[var(--adaptive-black900)]">{messages.panel.tabPageBrief}</p>
-                <p className="truncate text-[10px] text-[var(--adaptive-black700)]">
+                <p className="truncate text-[12px] text-[var(--adaptive-black700)]">
                     {messages.panel.experimentalScopeCurrent} · {currentPathname}
                 </p>
             </div>
 
             <div className="grid grid-cols-3 gap-[8px] border-b border-[var(--adaptive-border-subtle)] px-[12px] py-[12px]">
                 <div className="flex flex-col gap-[2px]">
-                    <p className="text-[11px] text-[var(--adaptive-black500)]">{messages.panel.experimentalOpen}</p>
+                    <p className="text-[12px] text-[var(--adaptive-black500)]">{messages.panel.experimentalOpen}</p>
                     <p className={`text-[16px] font-bold text-[var(--adaptive-black900)] ${panelNumericClassName}`}>{formatStatCount(summary.open)}</p>
                 </div>
                 <div className="flex flex-col gap-[2px]">
-                    <p className="text-[11px] text-[var(--adaptive-black500)]">{messages.panel.roleStats.review}</p>
+                    <p className="text-[12px] text-[var(--adaptive-black500)]">{messages.panel.roleStats.review}</p>
                     <p className={`text-[16px] font-bold text-[var(--adaptive-black900)] ${panelNumericClassName}`}>{formatStatCount(summary.inProgress)}</p>
                 </div>
                 <div className="flex flex-col gap-[2px]">
-                    <p className="text-[11px] text-[var(--adaptive-black500)]">{messages.panel.statsResolved}</p>
+                    <p className="text-[12px] text-[var(--adaptive-black500)]">{messages.panel.statsResolved}</p>
                     <p className={`text-[16px] font-bold text-[var(--adaptive-black900)] ${panelNumericClassName}`}>{formatStatCount(summary.resolved)}</p>
                 </div>
             </div>
@@ -54,7 +54,7 @@ export function ReportPageBriefPanel() {
                         className="flex items-center justify-between gap-[8px] border-t border-[var(--adaptive-border-subtle)] py-[8px]"
                     >
                         <FeedbackStatusBadge status={row.status} />
-                        <p className={`text-[13px] font-bold text-[var(--adaptive-black900)] ${panelNumericClassName}`}>{row.count}</p>
+                        <p className={`text-[14px] font-bold text-[var(--adaptive-black900)] ${panelNumericClassName}`}>{row.count}</p>
                     </div>
                 ))}
 

@@ -69,12 +69,12 @@ function TabRows({
                             />
                             <span className="min-w-0 flex-1 text-[12px] font-semibold text-[var(--adaptive-black800)]">{panelMessages[tab.labelKey]}</span>
                             {recommended ? (
-                                <span className="shrink-0 rounded-[4px] bg-[var(--adaptive-blue100)] px-[6px] py-[1px] text-[10px] font-bold text-[var(--adaptive-blue500)]">
+                                <span className="shrink-0 rounded-[4px] bg-[var(--adaptive-blue100)] px-[6px] py-[1px] text-[12px] font-bold text-[var(--adaptive-blue500)]">
                                     {panelMessages.tabRecommendedBadge}
                                 </span>
                             ) : null}
                             {tab.experimental ? (
-                                <span className="shrink-0 rounded-[4px] bg-[var(--adaptive-black200)] px-[6px] py-[1px] text-[10px] font-bold text-[var(--adaptive-black700)]">
+                                <span className="shrink-0 rounded-[4px] bg-[var(--adaptive-black200)] px-[6px] py-[1px] text-[12px] font-bold text-[var(--adaptive-black700)]">
                                     {panelMessages.tabLabBadge}
                                 </span>
                             ) : null}
@@ -142,8 +142,8 @@ export function PanelTabSelector({ role, selectedTabs, context, messages, onChan
         <section className="flex flex-col gap-[12px]">
             <div className="flex flex-col gap-[6px]">
                 <div>
-                    <p className="text-[11px] font-[600] text-[var(--adaptive-black500)]">{panelMessages.tabsSectionLabel}</p>
-                    <p className="mt-[2px] text-[11px] text-[var(--adaptive-black500)]">{panelMessages.tabsOrderHint}</p>
+                    <p className="text-[12px] font-[600] text-[var(--adaptive-black500)]">{panelMessages.tabsSectionLabel}</p>
+                    <p className="mt-[2px] text-[12px] text-[var(--adaptive-black500)]">{panelMessages.tabsOrderHint}</p>
                 </div>
                 <TabRows
                     tabs={stableTabs}
@@ -157,7 +157,7 @@ export function PanelTabSelector({ role, selectedTabs, context, messages, onChan
 
             {experimentalTabs.length > 0 ? (
                 <div className="flex flex-col gap-[6px]">
-                    <p className="text-[11px] font-[600] text-[var(--adaptive-black500)]">{panelMessages.tabsExperimentalSectionLabel}</p>
+                    <p className="text-[12px] font-[600] text-[var(--adaptive-black500)]">{panelMessages.tabsExperimentalSectionLabel}</p>
                     <TabRows
                         tabs={experimentalTabs}
                         role={role}

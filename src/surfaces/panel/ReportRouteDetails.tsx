@@ -72,7 +72,7 @@ export function ReportRouteDetails() {
                                 <div className="flex-1 flex shrink-0 items-baseline">
                                     <div className="flex flex-1 items-baseline gap-[4px]">
                                         <p className={`text-[14px] font-bold text-[var(--adaptive-black900)] ${panelNumericClassName}`}>{row.today.toLocaleString()}</p>
-                                        {deltaLabel ? <span className={`text-[11px] font-[600] text-[var(--adaptive-green500)] ${panelNumericClassName}`}>{deltaLabel}</span> : null}
+                                        {deltaLabel ? <span className={`text-[12px] font-[600] text-[var(--adaptive-green500)] ${panelNumericClassName}`}>{deltaLabel}</span> : null}
                                     </div>
                                     <p className={`flex-1 text-right text-[14px] font-bold text-[var(--adaptive-black900)] ${panelNumericClassName}`}>{row.yesterday.toLocaleString()}</p>
                                 </div>

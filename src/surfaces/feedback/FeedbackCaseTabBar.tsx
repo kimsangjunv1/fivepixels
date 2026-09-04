@@ -40,7 +40,7 @@ export function CaseResolvedBadge({ resolvedLabel, openLabel, resolved }: { reso
 
     return (
         <span
-            className="inline-flex h-[14px] w-[14px] shrink-0 items-center justify-center rounded-full bg-[var(--adaptive-green500)] text-[10px] font-bold leading-none text-white"
+            className="inline-flex h-[14px] w-[14px] shrink-0 items-center justify-center rounded-full bg-[var(--adaptive-green500)] text-[12px] font-bold leading-none text-white"
             aria-label={resolved ? resolvedLabel : openLabel}
         >
             ✓
@@ -89,11 +89,7 @@ export function FeedbackCaseTabBar(props: FeedbackCaseTabBarProps) {
                         key={item.id}
                         className={
                             `flex max-w-[180px] shrink-0 items-stretch rounded-[8px] ` +
-                            (isInvalid
-                                ? "fivepixels-validation-attention border border-rose-400 bg-rose-500/10 text-rose-500"
-                                : isActive
-                                  ? CASE_TAB_ACTIVE_CLASS
-                                  : CASE_TAB_INACTIVE_CLASS)
+                            (isInvalid ? "fivepixels-validation-attention border border-rose-400 bg-rose-500/10 text-rose-500" : isActive ? CASE_TAB_ACTIVE_CLASS : CASE_TAB_INACTIVE_CLASS)
                         }
                     >
                         <button
@@ -110,9 +106,7 @@ export function FeedbackCaseTabBar(props: FeedbackCaseTabBarProps) {
                             title={messages.composer.caseTabLabel(index + 1)}
                         >
                             <span
-                                className={`${
-                                    isInvalid ? "text-rose-500" : isActive ? "text-[var(--adaptive-blue500)]" : "text-[var(--adaptive-black700)]"
-                                } font-medium text-[12px] min-w-0 truncate`}
+                                className={`${isInvalid ? "text-rose-500" : isActive ? "text-[var(--adaptive-blue500)]" : "text-[var(--adaptive-black700)]"} font-medium text-[12px] min-w-0 truncate`}
                             >
                                 {messages.composer.caseTabLabel(index + 1)}
                             </span>

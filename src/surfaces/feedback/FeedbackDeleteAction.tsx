@@ -63,7 +63,7 @@ export function FeedbackDeleteAction({
         });
     };
 
-    const tooltipLabel = locked ? lockLabel ?? deleteTitle : confirming ? deleteConfirmTitle : deleteTitle;
+    const tooltipLabel = locked ? (lockLabel ?? deleteTitle) : confirming ? deleteConfirmTitle : deleteTitle;
 
     return (
         <HoverTooltip
@@ -79,13 +79,7 @@ export function FeedbackDeleteAction({
                 aria-label={locked ? tooltipLabel : confirming ? deleteConfirmAriaLabel : deleteAriaLabel}
                 className={`${className} ${confirming ? "text-rose-200 hover:text-white" : "text-[var(--adaptive-black50)] hover:text-white"}`}
             >
-                {locked ? (
-                    <LockIcon className={iconClassName} />
-                ) : confirming ? (
-                    <span className="text-[9px] font-semibold">!</span>
-                ) : (
-                    <TrashIcon className={iconClassName} />
-                )}
+                {locked ? <LockIcon className={iconClassName} /> : confirming ? <span className="text-[12px] font-semibold">!</span> : <TrashIcon className={iconClassName} />}
             </button>
         </HoverTooltip>
     );
