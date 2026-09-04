@@ -26,7 +26,7 @@ import { ReportImportConfirmDialog } from "./ReportImportConfirmDialog.js";
 import { ReportImportProjectMismatchDialog } from "./ReportImportProjectMismatchDialog.js";
 import { ReportPersonalKeyDialog } from "./ReportPersonalKeyDialog.js";
 import { NoticeDialog } from "@/shared/components/ui/NoticeDialog.js";
-import { PanelSettings } from "./PanelSettings.js";
+import { PanelSettings, type PanelSettingsInitialCategory } from "./PanelSettings.js";
 import { CornerResizeGhost } from "@/surfaces/window/CornerResizeGhost.js";
 import { PanelResizeHandles } from "./PanelResizeHandles.js";
 import { PanelStatusBannerStack } from "./PanelStatusBannerStack.js";
@@ -77,9 +77,11 @@ function PanelCollapseTab({ collapsed, anchorSide, onClick, messages }: { collap
 type PanelProps = {
     /** Render the production panel inside a bounded preview instead of docking it to the viewport. */
     embedded?: boolean;
+    /** Initial settings section for embedded previews. */
+    embeddedSettingsInitialCategory?: PanelSettingsInitialCategory | null;
 };
 
-export function Panel({ embedded = false }: PanelProps = {}) {
+export function Panel({ embedded = false, embeddedSettingsInitialCategory = null }: PanelProps = {}) {
     const {
         environment,
         projectId,
@@ -624,6 +626,7 @@ export function Panel({ embedded = false }: PanelProps = {}) {
                                                         setPersonalKeyStep("rotate");
                                                         setPersonalKeyNotice("");
                                                     }}
+                                                    initialCategory={embeddedSettingsInitialCategory}
                                                     />
                                                 }
                                                 command={

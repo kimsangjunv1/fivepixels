@@ -5,11 +5,15 @@ import type { ReportLocale } from "@/shared/i18n/types.js";
 export const FIVE_PIXELS_DEMO_SCENES = [
     "marker-tooltip",
     "feedback-composer",
+    "memo-composer",
     "panel-overview",
+    "network-monitor",
+    "memo-list",
     "element-inspector",
     "device-preview",
     "feedback-thread",
     "settings",
+    "settings-customization",
     "notifications",
 ] as const;
 

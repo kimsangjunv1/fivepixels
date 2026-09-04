@@ -19,6 +19,8 @@ import { OptionSwitch } from "@/shared/components/ui/OptionSwitch.js";
 import { PanelTabSelector } from "./PanelTabSelector.js";
 import { PanelTeamSettings } from "./PanelTeamSettings.js";
 
+export type PanelSettingsInitialCategory = "appearance";
+
 type PanelSettingsProps = {
     transferDisabled?: boolean;
     panelAppearance: ReportAppearance;
@@ -37,6 +39,7 @@ type PanelSettingsProps = {
     onPublicKeyCopy: () => void;
     onKeyInsert: () => void;
     onKeyRotate: () => void;
+    initialCategory?: PanelSettingsInitialCategory | null;
 };
 
 type SettingsCategory = "preview" | "appearance" | "display" | "tabs" | "team" | "data-and-keys" | "advanced" | "api-integration";
@@ -206,8 +209,9 @@ export function PanelSettings({
     onPublicKeyCopy,
     onKeyInsert,
     onKeyRotate,
+    initialCategory = null,
 }: PanelSettingsProps) {
-    const [activeCategory, setActiveCategory] = useState<SettingsCategory | null>(null);
+    const [activeCategory, setActiveCategory] = useState<SettingsCategory | null>(initialCategory);
     const [activeAppearanceSection, setActiveAppearanceSection] = useState<AppearanceSection | null>(null);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
     const transferLock = useIntegrationLock("dataTransfer");

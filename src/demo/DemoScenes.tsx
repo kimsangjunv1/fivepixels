@@ -14,7 +14,7 @@ import {
     type ReportSessionValue,
 } from "@/shared/providers/reportContext.js";
 import type { NotificationItem } from "@/shared/types/notification.js";
-import type { DraftReport, Marker, PickProbeFieldKey, PickProbeValues } from "@/shared/types/report-ui.js";
+import type { DraftReport, Marker, PickProbeFieldKey, PickProbeValues, ReportPanelTab } from "@/shared/types/report-ui.js";
 import type { FeedbackCategory, ReportCase } from "@/shared/types/report.js";
 import { MarkerButton, MarkerTooltipSurface } from "@/surfaces/marker/MarkerLayer.js";
 import { Panel } from "@/surfaces/panel/Panel.js";
@@ -23,10 +23,11 @@ import { ProbeTooltip } from "@/surfaces/tooltip/ProbeTooltip.js";
 import { FeedbackWindow } from "@/surfaces/window/FeedbackWindow.js";
 import { MobilePreviewWindow } from "@/surfaces/window/MobilePreviewWindow.js";
 import { NotificationCenter } from "@/surfaces/window/NotificationCenter.js";
-import { createDemoNotifications, DEMO_DRAFT, DEMO_PROBE_VALUES, DEMO_REPORTS, DEMO_TARGET } from "./fixtures.js";
+import { createDemoNotifications, DEMO_API_FLOW_ENTRIES, DEMO_DRAFT, DEMO_PROBE_VALUES, DEMO_REPORTS, DEMO_TARGET } from "./fixtures.js";
 import type { FivePixelsDemoScene } from "./types.js";
 
 const PANEL_TABS: UserSelectablePanelTab[] = ["route-details", "api-flow"];
+const MEMO_PANEL_TABS: UserSelectablePanelTab[] = ["memo-list", "route-details"];
 const DEMO_STOCK_NAMES = ["삼성전자", "SK하이닉스", "NAVER", "현대차", "한화오션"];
 const DEMO_STOCK_NAMES_EN = ["Samsung", "SK Hynix", "NAVER", "Hyundai", "Hanwha Ocean"];
 const DEMO_MARKER: Marker = {
@@ -43,33 +44,72 @@ const DEMO_MARKER: Marker = {
     report: DEMO_REPORTS[0],
 };
 
-function cloneDraft(): DraftReport {
-    return structuredClone(DEMO_DRAFT);
+function cloneDraft(category: FeedbackCategory = "suggestion"): DraftReport {
+    return { ...structuredClone(DEMO_DRAFT), category };
 }
 
-function PanelScene({ settings = false }: { settings?: boolean }) {
+type PanelSceneProps = {
+    initialTab?: ReportPanelTab;
+    visibleTabs?: UserSelectablePanelTab[];
+    settingsInitialCategory?: "appearance";
+};
+
+function PanelScene({ initialTab, visibleTabs = PANEL_TABS, settingsInitialCategory }: PanelSceneProps) {
     const preferences = useReportPreferences();
-    const session = useReportSession();
-    const openedRef = useRef(false);
+    const baseSession = useReportSession();
+    const baseData = useReportData();
+    const [panelTab, setPanelTab] = useState<ReportPanelTab | null>(initialTab ?? null);
+    const togglePanelTab = useCallback((nextTab: ReportPanelTab) => {
+        setPanelTab((current) => (current === nextTab ? null : nextTab));
+    }, []);
     const demoPreferences = useMemo<ReportPreferencesValue>(
-        () => ({ ...preferences, visiblePanelTabs: PANEL_TABS }),
-        [preferences],
+        () => ({ ...preferences, visiblePanelTabs: visibleTabs }),
+        [preferences, visibleTabs],
     );
+    const demoSession = useMemo<ReportSessionValue>(
+        () => ({
+            ...baseSession,
+            markers: [],
+            panelTab,
+            openPanelTab: togglePanelTab,
+            togglePanelTab,
+        }),
+        [baseSession, panelTab, togglePanelTab],
+    );
+    const demoData = useMemo<ReportDataValue>(
+        () => {
+            if (initialTab === "api-flow") {
+                return {
+                    ...baseData,
+                    apiFlowEntries: DEMO_API_FLOW_ENTRIES,
+                    activeApiFailureAlert: null,
+                    networkMonitorEnabled: true,
+                };
+            }
 
-    useEffect(() => {
-        if (!settings || openedRef.current) {
-            return;
-        }
+            if (initialTab === "memo-list") {
+                return {
+                    ...baseData,
+                    reports: DEMO_REPORTS,
+                    currentPageReports: DEMO_REPORTS,
+                    filteredReports: DEMO_REPORTS,
+                };
+            }
 
-        openedRef.current = true;
-        session.openPanelTab("settings");
-    }, [session, settings]);
+            return baseData;
+        },
+        [baseData, initialTab],
+    );
 
     return (
         <ReportPreferencesContext.Provider value={demoPreferences}>
-            <div className="flex h-full items-center justify-center p-[16px]">
-                <Panel embedded />
-            </div>
+            <ReportSessionContext.Provider value={demoSession}>
+                <ReportDataContext.Provider value={demoData}>
+                    <div className="flex h-full items-center justify-center p-[16px]">
+                        <Panel embedded embeddedSettingsInitialCategory={settingsInitialCategory} />
+                    </div>
+                </ReportDataContext.Provider>
+            </ReportSessionContext.Provider>
         </ReportPreferencesContext.Provider>
     );
 }
@@ -111,10 +151,11 @@ function MarkerTooltipScene() {
     );
 }
 
-function FeedbackComposerScene() {
+function FeedbackComposerScene({ variant = "feedback" }: { variant?: "feedback" | "memo" }) {
     const baseSession = useReportSession();
     const baseData = useReportData();
-    const [draft, setDraft] = useState<DraftReport | null>(cloneDraft);
+    const draftCategory: FeedbackCategory = variant === "memo" ? "memo" : "suggestion";
+    const [draft, setDraft] = useState<DraftReport | null>(() => cloneDraft(draftCategory));
     const [authorName, setAuthorName] = useState("김상준");
 
     const updateDraftCase = useCallback<ReportSessionValue["updateDraftCase"]>((caseId, text, mentions, userMentions) => {
@@ -159,7 +200,7 @@ function FeedbackComposerScene() {
     const updateDraftCategory = useCallback((category: FeedbackCategory | null) => {
         setDraft((current) => (current ? { ...current, category } : current));
     }, []);
-    const resetDraft = useCallback(() => setDraft(cloneDraft()), []);
+    const resetDraft = useCallback(() => setDraft(cloneDraft(draftCategory)), [draftCategory]);
     const session = useMemo<ReportSessionValue>(
         () => ({
             ...baseSession,
@@ -346,8 +387,14 @@ export function DemoScene({ scene }: { scene: FivePixelsDemoScene }) {
             return <MarkerTooltipScene />;
         case "feedback-composer":
             return <FeedbackComposerScene />;
+        case "memo-composer":
+            return <FeedbackComposerScene variant="memo" />;
         case "panel-overview":
             return <PanelScene />;
+        case "network-monitor":
+            return <PanelScene initialTab="api-flow" />;
+        case "memo-list":
+            return <PanelScene initialTab="memo-list" visibleTabs={MEMO_PANEL_TABS} />;
         case "element-inspector":
             return <ElementInspectorScene />;
         case "device-preview":
@@ -355,7 +402,9 @@ export function DemoScene({ scene }: { scene: FivePixelsDemoScene }) {
         case "feedback-thread":
             return <FeedbackThreadScene />;
         case "settings":
-            return <PanelScene settings />;
+            return <PanelScene initialTab="settings" />;
+        case "settings-customization":
+            return <PanelScene initialTab="settings" settingsInitialCategory="appearance" />;
         case "notifications":
             return <NotificationsScene />;
     }

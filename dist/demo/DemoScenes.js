@@ -9,8 +9,9 @@ import { ProbeTooltip } from "../surfaces/tooltip/ProbeTooltip.js";
 import { FeedbackWindow } from "../surfaces/window/FeedbackWindow.js";
 import { MobilePreviewWindow } from "../surfaces/window/MobilePreviewWindow.js";
 import { NotificationCenter } from "../surfaces/window/NotificationCenter.js";
-import { createDemoNotifications, DEMO_DRAFT, DEMO_PROBE_VALUES, DEMO_REPORTS, DEMO_TARGET } from "./fixtures.js";
+import { createDemoNotifications, DEMO_API_FLOW_ENTRIES, DEMO_DRAFT, DEMO_PROBE_VALUES, DEMO_REPORTS, DEMO_TARGET } from "./fixtures.js";
 const PANEL_TABS = ["route-details", "api-flow"];
+const MEMO_PANEL_TABS = ["memo-list", "route-details"];
 const DEMO_STOCK_NAMES = ["삼성전자", "SK하이닉스", "NAVER", "현대차", "한화오션"];
 const DEMO_STOCK_NAMES_EN = ["Samsung", "SK Hynix", "NAVER", "Hyundai", "Hanwha Ocean"];
 const DEMO_MARKER = {
@@ -26,32 +27,56 @@ const DEMO_MARKER = {
     aggregateCount: 1,
     report: DEMO_REPORTS[0],
 };
-function cloneDraft() {
-    return structuredClone(DEMO_DRAFT);
+function cloneDraft(category = "suggestion") {
+    return { ...structuredClone(DEMO_DRAFT), category };
 }
-function PanelScene({ settings = false }) {
+function PanelScene({ initialTab, visibleTabs = PANEL_TABS, settingsInitialCategory }) {
     const preferences = useReportPreferences();
-    const session = useReportSession();
-    const openedRef = useRef(false);
-    const demoPreferences = useMemo(() => ({ ...preferences, visiblePanelTabs: PANEL_TABS }), [preferences]);
-    useEffect(() => {
-        if (!settings || openedRef.current) {
-            return;
+    const baseSession = useReportSession();
+    const baseData = useReportData();
+    const [panelTab, setPanelTab] = useState(initialTab ?? null);
+    const togglePanelTab = useCallback((nextTab) => {
+        setPanelTab((current) => (current === nextTab ? null : nextTab));
+    }, []);
+    const demoPreferences = useMemo(() => ({ ...preferences, visiblePanelTabs: visibleTabs }), [preferences, visibleTabs]);
+    const demoSession = useMemo(() => ({
+        ...baseSession,
+        markers: [],
+        panelTab,
+        openPanelTab: togglePanelTab,
+        togglePanelTab,
+    }), [baseSession, panelTab, togglePanelTab]);
+    const demoData = useMemo(() => {
+        if (initialTab === "api-flow") {
+            return {
+                ...baseData,
+                apiFlowEntries: DEMO_API_FLOW_ENTRIES,
+                activeApiFailureAlert: null,
+                networkMonitorEnabled: true,
+            };
         }
-        openedRef.current = true;
-        session.openPanelTab("settings");
-    }, [session, settings]);
-    return (_jsx(ReportPreferencesContext.Provider, { value: demoPreferences, children: _jsx("div", { className: "flex h-full items-center justify-center p-[16px]", children: _jsx(Panel, { embedded: true }) }) }));
+        if (initialTab === "memo-list") {
+            return {
+                ...baseData,
+                reports: DEMO_REPORTS,
+                currentPageReports: DEMO_REPORTS,
+                filteredReports: DEMO_REPORTS,
+            };
+        }
+        return baseData;
+    }, [baseData, initialTab]);
+    return (_jsx(ReportPreferencesContext.Provider, { value: demoPreferences, children: _jsx(ReportSessionContext.Provider, { value: demoSession, children: _jsx(ReportDataContext.Provider, { value: demoData, children: _jsx("div", { className: "flex h-full items-center justify-center p-[16px]", children: _jsx(Panel, { embedded: true, embeddedSettingsInitialCategory: settingsInitialCategory }) }) }) }) }));
 }
 function MarkerTooltipScene() {
     const { markerAppearance, typography, messages } = useReportPreferences();
     const [open, setOpen] = useState(true);
     return (_jsxs("div", { className: "relative h-full w-full", children: [_jsx(MarkerButton, { markerItem: DEMO_MARKER, isHovered: open, isReportMode: false, isInteractive: true, isProximityHighlighted: false, isWindowOpen: false, viewingWindowBadge: messages.marker.viewingWindowBadge, detachedAriaLabel: messages.marker.detachedAriaLabel, detachedModalAriaLabel: messages.marker.detachedModalAriaLabel, markerAppearance: markerAppearance, typography: typography, onActivate: () => setOpen((current) => !current), onHoverStart: () => setOpen(true), onHoverEnd: () => undefined, onPointerMove: () => undefined, positioning: "absolute" }), open ? (_jsx(MarkerTooltipSurface, { report: DEMO_REPORTS[0], detachedHint: messages.marker.detachedHint, detachedModalHint: messages.marker.detachedModalHint, positioning: "absolute", style: { left: 82, top: 24 } })) : null] }));
 }
-function FeedbackComposerScene() {
+function FeedbackComposerScene({ variant = "feedback" }) {
     const baseSession = useReportSession();
     const baseData = useReportData();
-    const [draft, setDraft] = useState(cloneDraft);
+    const draftCategory = variant === "memo" ? "memo" : "suggestion";
+    const [draft, setDraft] = useState(() => cloneDraft(draftCategory));
     const [authorName, setAuthorName] = useState("김상준");
     const updateDraftCase = useCallback((caseId, text, mentions, userMentions) => {
         setDraft((current) => current
@@ -88,7 +113,7 @@ function FeedbackComposerScene() {
     const updateDraftCategory = useCallback((category) => {
         setDraft((current) => (current ? { ...current, category } : current));
     }, []);
-    const resetDraft = useCallback(() => setDraft(cloneDraft()), []);
+    const resetDraft = useCallback(() => setDraft(cloneDraft(draftCategory)), [draftCategory]);
     const session = useMemo(() => ({
         ...baseSession,
         mode: "report",
@@ -191,8 +216,14 @@ export function DemoScene({ scene }) {
             return _jsx(MarkerTooltipScene, {});
         case "feedback-composer":
             return _jsx(FeedbackComposerScene, {});
+        case "memo-composer":
+            return _jsx(FeedbackComposerScene, { variant: "memo" });
         case "panel-overview":
             return _jsx(PanelScene, {});
+        case "network-monitor":
+            return _jsx(PanelScene, { initialTab: "api-flow" });
+        case "memo-list":
+            return _jsx(PanelScene, { initialTab: "memo-list", visibleTabs: MEMO_PANEL_TABS });
         case "element-inspector":
             return _jsx(ElementInspectorScene, {});
         case "device-preview":
@@ -200,7 +231,9 @@ export function DemoScene({ scene }) {
         case "feedback-thread":
             return _jsx(FeedbackThreadScene, {});
         case "settings":
-            return _jsx(PanelScene, { settings: true });
+            return _jsx(PanelScene, { initialTab: "settings" });
+        case "settings-customization":
+            return _jsx(PanelScene, { initialTab: "settings", settingsInitialCategory: "appearance" });
         case "notifications":
             return _jsx(NotificationsScene, {});
     }

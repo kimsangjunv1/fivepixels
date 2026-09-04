@@ -1,4 +1,5 @@
 import type { ReportAppearance, QuestionThreadDisplay, ThreadLayoutStyle } from "../../shared/types/report.js";
+export type PanelSettingsInitialCategory = "appearance";
 type PanelSettingsProps = {
     transferDisabled?: boolean;
     panelAppearance: ReportAppearance;
@@ -17,7 +18,8 @@ type PanelSettingsProps = {
     onPublicKeyCopy: () => void;
     onKeyInsert: () => void;
     onKeyRotate: () => void;
+    initialCategory?: PanelSettingsInitialCategory | null;
 };
-export declare function PanelSettings({ transferDisabled, panelAppearance, onPanelAppearanceChange, tooltipAppearance, onTooltipAppearanceChange, questionThreadDisplay, onQuestionThreadDisplayChange, threadLayout, onThreadLayoutChange, onExport, onImport, onCommand, hasPersonalKey, onKeyCopy, onPublicKeyCopy, onKeyInsert, onKeyRotate, }: PanelSettingsProps): import("react").JSX.Element;
+export declare function PanelSettings({ transferDisabled, panelAppearance, onPanelAppearanceChange, tooltipAppearance, onTooltipAppearanceChange, questionThreadDisplay, onQuestionThreadDisplayChange, threadLayout, onThreadLayoutChange, onExport, onImport, onCommand, hasPersonalKey, onKeyCopy, onPublicKeyCopy, onKeyInsert, onKeyRotate, initialCategory, }: PanelSettingsProps): import("react").JSX.Element;
 export {};
 //# sourceMappingURL=PanelSettings.d.ts.map

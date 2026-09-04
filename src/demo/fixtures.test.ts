@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { createDemoAdapter, createDemoNotifications, DEMO_REPORTS, DEMO_SCENE_SIZE } from "./fixtures.js";
+import {
+    createDemoAdapter,
+    createDemoNotifications,
+    DEMO_API_FLOW_ENTRIES,
+    DEMO_REPORTS,
+    DEMO_SCENE_SIZE,
+} from "./fixtures.js";
 import { FIVE_PIXELS_DEMO_SCENES } from "./types.js";
 
 describe("FivePixels demo fixtures", () => {
@@ -13,6 +19,12 @@ describe("FivePixels demo fixtures", () => {
     it("provides localized notification data", () => {
         expect(createDemoNotifications("ko")[0].title).not.toBe(createDemoNotifications("en")[0].title);
         expect(createDemoNotifications("ko")).toHaveLength(createDemoNotifications("en").length);
+    });
+
+    it("covers successful, HTTP failure, and network failure requests", () => {
+        expect(DEMO_API_FLOW_ENTRIES.some((entry) => entry.ok)).toBe(true);
+        expect(DEMO_API_FLOW_ENTRIES.some((entry) => entry.failureKind === "http")).toBe(true);
+        expect(DEMO_API_FLOW_ENTRIES.some((entry) => entry.failureKind === "network")).toBe(true);
     });
 
     it("serves reports from the in-memory adapter", async () => {
