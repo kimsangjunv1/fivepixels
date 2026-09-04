@@ -1,4 +1,5 @@
 import { FEEDBACK_HIGHLIGHT } from "@/shared/constants/report.js";
+import { toFixedLayerPosition, useFixedPositionOrigin, type FixedPositionOrigin } from "@/shared/hooks/useFixedPositionOrigin.js";
 import type { TargetSnapshot } from "@/shared/types/report-ui.js";
 import { PickTargetCompareChip } from "./PickTargetCompareChip.js";
 import { InspectTooltip } from "./InspectTooltip.js";
@@ -31,13 +32,15 @@ function highlightLabel(target: TargetSnapshot) {
     return `suggested · ${target.suggestedReportId ?? target.id}`;
 }
 
-function HighlightBox({ target, showLabel }: { target: TargetSnapshot; showLabel?: boolean }) {
+function HighlightBox({ target, showLabel, origin }: { target: TargetSnapshot; showLabel?: boolean; origin: FixedPositionOrigin }) {
+    const position = toFixedLayerPosition(target.rect.left, target.rect.top, origin);
+
     return (
         <div
             className="fivepixels-target-highlight pointer-events-none fixed box-border"
             style={{
-                left: target.rect.left,
-                top: target.rect.top,
+                left: position.left,
+                top: position.top,
                 width: target.rect.width,
                 height: target.rect.height,
                 borderRadius: target.boxStyle?.borderRadius ?? "0",
@@ -58,14 +61,16 @@ function HighlightBox({ target, showLabel }: { target: TargetSnapshot; showLabel
 }
 
 /** Fixed outline for the element that opened the right-click menu (independent of hover). */
-function ContextMenuFocusBox({ target }: { target: TargetSnapshot }) {
+function ContextMenuFocusBox({ target, origin }: { target: TargetSnapshot; origin: FixedPositionOrigin }) {
+    const position = toFixedLayerPosition(target.rect.left, target.rect.top, origin);
+
     return (
         <div
             className="fivepixels-context-menu-focus pointer-events-none fixed box-border"
             aria-hidden="true"
             style={{
-                left: target.rect.left,
-                top: target.rect.top,
+                left: position.left,
+                top: position.top,
                 width: target.rect.width,
                 height: target.rect.height,
                 borderRadius: target.boxStyle?.borderRadius ?? "0",
@@ -87,12 +92,16 @@ export function TargetHighlights({
     activeMarkerTarget,
     mentionHighlightTarget = null,
 }: TargetHighlightsProps) {
+    const { origin, originProbe } = useFixedPositionOrigin();
+
     return (
         <>
+            {originProbe}
             {previewTargets.map((target) => (
                 <HighlightBox
                     key={`preview-${target.type}-${target.id}`}
                     target={target}
+                    origin={origin}
                     showLabel
                 />
             ))}
@@ -101,6 +110,7 @@ export function TargetHighlights({
                 <HighlightBox
                     key={`marker-preview-${target.id}`}
                     target={target}
+                    origin={origin}
                     showLabel
                 />
             ))}
@@ -109,6 +119,7 @@ export function TargetHighlights({
                 <HighlightBox
                     key={MENTION_HIGHLIGHT_KEY}
                     target={mentionHighlightTarget}
+                    origin={origin}
                     showLabel
                 />
             ) : null}
@@ -118,6 +129,7 @@ export function TargetHighlights({
                     <HighlightBox
                         key={HOVER_HIGHLIGHT_KEY}
                         target={hoveredTarget}
+                        origin={origin}
                     />
                     <InspectTooltip target={hoveredTarget} />
                 </>
@@ -127,6 +139,7 @@ export function TargetHighlights({
                 <HighlightBox
                     key={SELECTION_HIGHLIGHT_KEY}
                     target={selectedTarget}
+                    origin={origin}
                 />
             ) : null}
 
@@ -136,6 +149,7 @@ export function TargetHighlights({
                 <ContextMenuFocusBox
                     key={CONTEXT_MENU_FOCUS_KEY}
                     target={contextMenuTarget}
+                    origin={origin}
                 />
             ) : null}
 
@@ -144,6 +158,7 @@ export function TargetHighlights({
                     <HighlightBox
                         key={ACTIVE_MARKER_HIGHLIGHT_KEY}
                         target={activeMarkerTarget}
+                        origin={origin}
                     />
                     {showActiveMarkerInspect ? <InspectTooltip target={activeMarkerTarget} /> : null}
                 </>

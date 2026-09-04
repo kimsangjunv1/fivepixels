@@ -1,7 +1,33 @@
 import type { ReportTargetType } from "@/shared/types/report.js";
 import { getFeedbackTargetSelector } from "../marker/targetDom.js";
 import { findElementByTargetSelector } from "../marker/targetSelector.js";
-import { isHtmlElement, queryPageSelector } from "../overlay/pageDocumentBridge.js";
+import { getPageDocument, isHtmlElement, queryPageSelector } from "../overlay/pageDocumentBridge.js";
+
+/** Fallback for demo/report mounts that live inside open shadow roots. */
+function queryInFivePixelsMounts(selector: string): Element | null {
+    try {
+        for (const host of getPageDocument().querySelectorAll("*")) {
+            const shadowRoot = host.shadowRoot;
+            if (!shadowRoot) {
+                continue;
+            }
+
+            const mount = shadowRoot.querySelector("[data-fivepixels-mount]");
+            if (!mount) {
+                continue;
+            }
+
+            const match = mount.querySelector(selector);
+            if (match) {
+                return match;
+            }
+        }
+    } catch {
+        return null;
+    }
+
+    return null;
+}
 
 export function findElementByProbeKey(elementKey: string) {
     if (elementKey.startsWith("id:")) {
@@ -11,12 +37,15 @@ export function findElementByProbeKey(elementKey: string) {
             return null;
         }
 
-        const element = queryPageSelector(getFeedbackTargetSelector(reportId, reportType as ReportTargetType));
+        const selector = getFeedbackTargetSelector(reportId, reportType as ReportTargetType);
+        const element = queryPageSelector(selector) ?? queryInFivePixelsMounts(selector);
         return isHtmlElement(element) ? element : null;
     }
 
     if (elementKey.startsWith("selector:")) {
-        return findElementByTargetSelector(elementKey.slice("selector:".length));
+        const selector = elementKey.slice("selector:".length);
+        const element = findElementByTargetSelector(selector) ?? queryInFivePixelsMounts(selector);
+        return isHtmlElement(element) ? element : null;
     }
 
     return null;

@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { HoverTooltip } from "@/surfaces/tooltip/HoverTooltip.js";
 import { useReportPreferences, useReportSession } from "@/shared/providers/reportContext.js";
+import { toFixedLayerPosition, useFixedPositionOrigin } from "@/shared/hooks/useFixedPositionOrigin.js";
 import { formatSavedProbeEditSummary } from "@/shared/utils/probe/pickProbe.js";
 import { findElementByProbeKey } from "@/shared/utils/probe/pickProbeSession.js";
 import { getPickProbeSavedBadgeLayout } from "@/shared/utils/probe/pickProbeLayout.js";
@@ -16,6 +17,7 @@ type SavedProbeBadgeProps = {
 function SavedProbeBadge({ elementKey, badgeOpacity }: SavedProbeBadgeProps) {
     const { messages } = useReportPreferences();
     const { savedProbeEdits } = useReportSession();
+    const { origin, originProbe } = useFixedPositionOrigin();
     const badgeRef = useRef<HTMLSpanElement | null>(null);
     const [layout, setLayout] = useState<{ top: number; left: number } | null>(null);
     const modifiedSummary = useMemo(() => {
@@ -63,27 +65,31 @@ function SavedProbeBadge({ elementKey, badgeOpacity }: SavedProbeBadgeProps) {
     }
 
     const fallbackRect = element.getBoundingClientRect();
+    const position = toFixedLayerPosition(layout?.left ?? fallbackRect.right, layout?.top ?? fallbackRect.top, origin);
 
     return (
-        <HoverTooltip
-            content={modifiedSummary}
-            multiline
-        >
-            <span
-                ref={badgeRef}
-                className={`pointer-events-auto fixed z-[1000003] ${MODIFIED_BADGE_CLASS}`}
-                style={{
-                    top: layout?.top ?? fallbackRect.top,
-                    left: layout?.left ?? fallbackRect.right,
-                    opacity: layout ? badgeOpacity : 0,
-                }}
-                data-fivepixels-interactive=""
-                onPointerDown={(event) => event.stopPropagation()}
-                onClick={(event) => event.stopPropagation()}
+        <>
+            {originProbe}
+            <HoverTooltip
+                content={modifiedSummary}
+                multiline
             >
-                {messages.pickTarget.probeModifiedBadge}
-            </span>
-        </HoverTooltip>
+                <span
+                    ref={badgeRef}
+                    className={`pointer-events-auto fixed z-[1000003] ${MODIFIED_BADGE_CLASS}`}
+                    style={{
+                        top: position.top,
+                        left: position.left,
+                        opacity: layout ? badgeOpacity : 0,
+                    }}
+                    data-fivepixels-interactive=""
+                    onPointerDown={(event) => event.stopPropagation()}
+                    onClick={(event) => event.stopPropagation()}
+                >
+                    {messages.pickTarget.probeModifiedBadge}
+                </span>
+            </HoverTooltip>
+        </>
     );
 }
 

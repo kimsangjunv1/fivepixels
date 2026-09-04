@@ -305,7 +305,7 @@ export const DEMO_SCENE_SIZE: Record<FivePixelsDemoScene, { width: number; heigh
     "panel-overview": { width: 390, height: 220 },
     "network-monitor": { width: 430, height: 540 },
     "memo-list": { width: 390, height: 520 },
-    "element-inspector": { width: 680, height: 570 },
+    "element-inspector": { width: 680, height: 480 },
     "device-preview": { width: 420, height: 650 },
     "feedback-thread": { width: 680, height: 520 },
     settings: { width: 390, height: 620 },

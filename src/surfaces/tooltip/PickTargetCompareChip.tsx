@@ -1,5 +1,6 @@
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import { useReportPreferences, useReportSession } from "@/shared/providers/reportContext.js";
+import { toFixedLayerPosition, useFixedPositionOrigin } from "@/shared/hooks/useFixedPositionOrigin.js";
 import type { TargetSnapshot } from "@/shared/types/report-ui.js";
 import { getPickProbeCompareChipLayout } from "@/shared/utils/probe/pickProbeLayout.js";
 import { PickTargetCompareSegment } from "./PickTargetCompareSegment.js";
@@ -11,6 +12,7 @@ type PickTargetCompareChipProps = {
 export function PickTargetCompareChip({ target }: PickTargetCompareChipProps) {
     const { messages } = useReportPreferences();
     const { pickProbeCompareMode, setPickProbeCompareMode } = useReportSession();
+    const { origin, originProbe } = useFixedPositionOrigin();
     const chipRef = useRef<HTMLDivElement | null>(null);
     const [layout, setLayout] = useState<{ top: number; left: number } | null>(null);
 
@@ -39,24 +41,29 @@ export function PickTargetCompareChip({ target }: PickTargetCompareChipProps) {
         };
     }, [target, updateLayout]);
 
+    const position = toFixedLayerPosition(layout?.left ?? target.rect.right, layout?.top ?? target.rect.top, origin);
+
     return (
-        <div
-            ref={chipRef}
-            className="pointer-events-auto fixed z-[1000003]"
-            style={{
-                top: layout?.top ?? target.rect.top,
-                left: layout?.left ?? target.rect.right,
-                opacity: layout ? 1 : 0,
-            }}
-            data-fivepixels-interactive=""
-            onClick={(event) => event.stopPropagation()}
-        >
-            <PickTargetCompareSegment
-                mode={pickProbeCompareMode}
-                onChange={setPickProbeCompareMode}
-                beforeLabel={messages.pickTarget.probeBefore}
-                afterLabel={messages.pickTarget.probeAfter}
-            />
-        </div>
+        <>
+            {originProbe}
+            <div
+                ref={chipRef}
+                className="pointer-events-auto fixed z-[1000003]"
+                style={{
+                    top: position.top,
+                    left: position.left,
+                    opacity: layout ? 1 : 0,
+                }}
+                data-fivepixels-interactive=""
+                onClick={(event) => event.stopPropagation()}
+            >
+                <PickTargetCompareSegment
+                    mode={pickProbeCompareMode}
+                    onChange={setPickProbeCompareMode}
+                    beforeLabel={messages.pickTarget.probeBefore}
+                    afterLabel={messages.pickTarget.probeAfter}
+                />
+            </div>
+        </>
     );
 }

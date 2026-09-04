@@ -1,15 +1,32 @@
 "use client";
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { ReportDataContext, ReportPreferencesContext, ReportSessionContext, useReportData, useReportPreferences, useReportSession, } from "../shared/providers/reportContext.js";
 import { MarkerButton, MarkerTooltipSurface } from "../surfaces/marker/MarkerLayer.js";
 import { Panel } from "../surfaces/panel/Panel.js";
 import { DraftTooltip } from "../surfaces/tooltip/DraftTooltip.js";
+import { PickTargetSavedBadges } from "../surfaces/tooltip/PickTargetSavedBadges.js";
 import { ProbeTooltip } from "../surfaces/tooltip/ProbeTooltip.js";
+import { TargetHighlights } from "../surfaces/tooltip/TargetHighlights.js";
+import { useTooltipLayout } from "../surfaces/tooltip/useTooltipLayout.js";
 import { FeedbackWindow } from "../surfaces/window/FeedbackWindow.js";
 import { MobilePreviewWindow } from "../surfaces/window/MobilePreviewWindow.js";
 import { NotificationCenter } from "../surfaces/window/NotificationCenter.js";
 import { createDemoNotifications, DEMO_API_FLOW_ENTRIES, DEMO_DRAFT, DEMO_PROBE_VALUES, DEMO_REPORTS, DEMO_TARGET } from "./fixtures.js";
+const DEMO_PROBE_ELEMENT_KEY = "id:checkout-actions:item";
+function toDomRect(rect) {
+    return {
+        x: rect.x,
+        y: rect.y,
+        left: rect.left,
+        top: rect.top,
+        right: rect.right,
+        bottom: rect.bottom,
+        width: rect.width,
+        height: rect.height,
+        toJSON: () => ({ x: rect.x, y: rect.y, width: rect.width, height: rect.height }),
+    };
+}
 const PANEL_TABS = ["route-details", "api-flow"];
 const MEMO_PANEL_TABS = ["memo-list", "route-details"];
 const DEMO_STOCK_NAMES = ["삼성전자", "SK하이닉스", "NAVER", "현대차", "한화오션"];
@@ -70,7 +87,17 @@ function PanelScene({ initialTab, visibleTabs = PANEL_TABS, settingsInitialCateg
 function MarkerTooltipScene() {
     const { markerAppearance, typography, messages } = useReportPreferences();
     const [open, setOpen] = useState(true);
-    return (_jsxs("div", { className: "relative h-full w-full", children: [_jsx(MarkerButton, { markerItem: DEMO_MARKER, isHovered: open, isReportMode: false, isInteractive: true, isProximityHighlighted: false, isWindowOpen: false, viewingWindowBadge: messages.marker.viewingWindowBadge, detachedAriaLabel: messages.marker.detachedAriaLabel, detachedModalAriaLabel: messages.marker.detachedModalAriaLabel, markerAppearance: markerAppearance, typography: typography, onActivate: () => setOpen((current) => !current), onHoverStart: () => setOpen(true), onHoverEnd: () => undefined, onPointerMove: () => undefined, positioning: "absolute" }), open ? (_jsx(MarkerTooltipSurface, { report: DEMO_REPORTS[0], detachedHint: messages.marker.detachedHint, detachedModalHint: messages.marker.detachedModalHint, positioning: "absolute", style: { left: 82, top: 24 } })) : null] }));
+    const { layout: tooltipLayout, setTooltipElement } = useTooltipLayout(open ? DEMO_MARKER : null, false, open);
+    const tooltipPosition = tooltipLayout?.position ?? null;
+    const tooltipAnchorStyle = tooltipLayout?.anchorStyle;
+    const bindHoverTooltipRef = useCallback((node) => {
+        setTooltipElement(node);
+    }, [setTooltipElement]);
+    return (_jsxs("div", { className: "relative h-full w-full overflow-visible", children: [_jsx(MarkerButton, { markerItem: DEMO_MARKER, isHovered: open, isReportMode: false, isInteractive: true, isProximityHighlighted: false, isWindowOpen: false, viewingWindowBadge: messages.marker.viewingWindowBadge, detachedAriaLabel: messages.marker.detachedAriaLabel, detachedModalAriaLabel: messages.marker.detachedModalAriaLabel, markerAppearance: markerAppearance, typography: typography, onActivate: () => setOpen((current) => !current), onHoverStart: () => setOpen(true), onHoverEnd: () => undefined, onPointerMove: () => undefined, positioning: "absolute" }), open && tooltipPosition && tooltipAnchorStyle ? (_jsx(MarkerTooltipSurface, { containerRef: bindHoverTooltipRef, report: DEMO_REPORTS[0], detachedHint: messages.marker.detachedHint, detachedModalHint: messages.marker.detachedModalHint, positioning: "absolute", style: {
+                    left: tooltipPosition.left,
+                    top: tooltipPosition.top,
+                    ...tooltipAnchorStyle,
+                } })) : null] }));
 }
 function FeedbackComposerScene({ variant = "feedback" }) {
     const baseSession = useReportSession();
@@ -138,6 +165,7 @@ function FeedbackComposerScene({ variant = "feedback" }) {
 function ElementInspectorScene() {
     const { locale } = useReportPreferences();
     const baseSession = useReportSession();
+    const buttonRef = useRef(null);
     const baselineValues = useMemo(() => ({
         ...DEMO_PROBE_VALUES,
         textContent: locale === "ko" ? "자세히 살펴보기" : "Explore details",
@@ -152,6 +180,8 @@ function ElementInspectorScene() {
     const [values, setValues] = useState(initialValues);
     const [open, setOpen] = useState(true);
     const [compareMode, setCompareMode] = useState("after");
+    const [targetRect, setTargetRect] = useState(DEMO_TARGET.rect);
+    const [savedProbeEdits, setSavedProbeEdits] = useState({});
     const hasEdits = Object.keys(values).some((key) => values[key] !== baselineValues[key]);
     const previewValues = compareMode === "before" ? baselineValues : values;
     const previewStyle = {
@@ -169,11 +199,40 @@ function ElementInspectorScene() {
         fontSize: previewValues.fontSize,
         lineHeight: previewValues.lineHeight,
     };
+    const updateTargetRect = useCallback(() => {
+        const node = buttonRef.current;
+        if (!node) {
+            return;
+        }
+        setTargetRect(toDomRect(node.getBoundingClientRect()));
+    }, []);
     useEffect(() => {
         setValues(initialValues);
         setCompareMode("after");
         setOpen(true);
+        setSavedProbeEdits({});
     }, [initialValues]);
+    useLayoutEffect(() => {
+        updateTargetRect();
+        const frameId = window.requestAnimationFrame(() => {
+            updateTargetRect();
+            window.requestAnimationFrame(updateTargetRect);
+        });
+        const node = buttonRef.current;
+        if (!node) {
+            return () => window.cancelAnimationFrame(frameId);
+        }
+        const resizeObserver = new ResizeObserver(() => updateTargetRect());
+        resizeObserver.observe(node);
+        window.addEventListener("resize", updateTargetRect);
+        window.addEventListener("scroll", updateTargetRect, true);
+        return () => {
+            window.cancelAnimationFrame(frameId);
+            resizeObserver.disconnect();
+            window.removeEventListener("resize", updateTargetRect);
+            window.removeEventListener("scroll", updateTargetRect, true);
+        };
+    }, [previewValues, updateTargetRect]);
     const updatePickProbeValue = useCallback((key, value) => {
         setValues((current) => ({ ...current, [key]: value }));
         setCompareMode("after");
@@ -181,24 +240,68 @@ function ElementInspectorScene() {
     const resetPickProbeValues = useCallback(() => {
         setValues(baselineValues);
         setCompareMode("after");
+        setSavedProbeEdits({});
     }, [baselineValues]);
-    const closePickProbe = useCallback(() => setOpen(false), []);
+    const closePickProbe = useCallback(() => {
+        setOpen(false);
+        if (!hasEdits) {
+            setSavedProbeEdits({});
+            return;
+        }
+        setSavedProbeEdits({
+            [DEMO_PROBE_ELEMENT_KEY]: {
+                elementKey: DEMO_PROBE_ELEMENT_KEY,
+                baseline: baselineValues,
+                applied: values,
+                originalStyle: null,
+                originalTextContent: baselineValues.textContent,
+                originalInnerHTML: null,
+                originalInputValue: null,
+            },
+        });
+    }, [baselineValues, hasEdits, values]);
+    const openPickProbe = useCallback(() => {
+        setSavedProbeEdits({});
+        setOpen(true);
+    }, []);
+    const selectedTarget = useMemo(() => ({
+        ...DEMO_TARGET,
+        rect: targetRect,
+        boxStyle: {
+            display: "flex",
+            padding: previewValues.padding,
+            margin: previewValues.margin,
+            borderRadius: "10px",
+        },
+    }), [previewValues.margin, previewValues.padding, targetRect]);
     const session = useMemo(() => ({
         ...baseSession,
-        selectedTarget: DEMO_TARGET,
+        mode: "report",
+        selectedTarget,
         pickProbeOpen: open,
         pickProbeSupportsTextFields: true,
         pickProbeLayoutMode: "flex",
         pickProbeValues: values,
         pickProbeCompareMode: compareMode,
         pickProbeHasEdits: hasEdits,
+        savedProbeEdits,
         setPickProbeCompareMode: setCompareMode,
         updatePickProbeValue,
         resetPickProbeValues,
         closePickProbe,
-    }), [baseSession, closePickProbe, compareMode, hasEdits, open, resetPickProbeValues, updatePickProbeValue, values]);
-    const isKorean = locale === "ko";
-    return (_jsx(ReportSessionContext.Provider, { value: session, children: _jsxs("div", { className: "grid h-full w-full grid-cols-[minmax(230px,1fr)_320px] gap-[14px] p-[12px]", children: [_jsxs("section", { className: "flex min-w-0 flex-col overflow-hidden rounded-[18px] border border-[var(--adaptive-border-subtle)] bg-[var(--adaptive-surface)] shadow-[0_18px_44px_rgba(15,23,42,0.08)]", "aria-label": isKorean ? "시안 조정 미리보기" : "Design adjustment preview", children: [_jsxs("header", { className: "flex h-[52px] items-center gap-[8px] border-b border-[var(--adaptive-border-subtle)] px-[14px]", children: [_jsx("span", { className: "h-[8px] w-[74px] rounded-full bg-[var(--adaptive-black300)]" }), _jsx("span", { className: "ml-auto h-[24px] w-[24px] rounded-full bg-[var(--adaptive-black100)]" })] }), _jsxs("div", { className: "flex flex-1 flex-col p-[16px]", children: [_jsx("span", { className: "h-[8px] w-[56px] rounded-full bg-[var(--adaptive-blue200)]" }), _jsx("h3", { className: "mt-[13px] text-[20px] font-bold leading-[1.35] text-[var(--adaptive-black900)]", children: isKorean ? "더 빠른 피드백으로 완성하는 화면" : "Build better screens with faster feedback" }), _jsx("p", { className: "mt-[8px] text-[11px] leading-[1.65] text-[var(--adaptive-black500)]", children: isKorean ? "선택한 요소의 텍스트와 스타일을 직접 바꿔보세요." : "Select an element and adjust its copy and styles directly." }), _jsxs("div", { className: "mt-[18px] grid grid-cols-2 gap-[8px]", children: [_jsx("span", { className: "h-[64px] rounded-[12px] bg-[var(--adaptive-black100)]" }), _jsx("span", { className: "h-[64px] rounded-[12px] bg-[var(--adaptive-black100)]" })] }), _jsxs("div", { className: "relative mt-auto rounded-[13px] border border-dashed border-[var(--adaptive-blue400)] p-[5px]", children: [_jsxs("button", { type: "button", style: previewStyle, onClick: () => setOpen(true), className: "min-h-[34px] w-full outline-none", children: [_jsx("span", { children: previewValues.textContent }), _jsx("span", { "aria-hidden": "true", children: "\u2192" })] }), _jsx("span", { className: "pointer-events-none absolute -left-[3px] -top-[3px] h-[6px] w-[6px] rounded-full bg-[var(--adaptive-blue500)]" }), _jsx("span", { className: "pointer-events-none absolute -right-[3px] -top-[3px] h-[6px] w-[6px] rounded-full bg-[var(--adaptive-blue500)]" }), _jsx("span", { className: "pointer-events-none absolute -bottom-[3px] -left-[3px] h-[6px] w-[6px] rounded-full bg-[var(--adaptive-blue500)]" }), _jsx("span", { className: "pointer-events-none absolute -bottom-[3px] -right-[3px] h-[6px] w-[6px] rounded-full bg-[var(--adaptive-blue500)]" })] }), _jsx("p", { className: "mt-[9px] text-center text-[10px] text-[var(--adaptive-black400)]", children: open ? (isKorean ? "오른쪽 값을 변경해보세요" : "Change a value on the right") : isKorean ? "버튼을 눌러 시안 조정을 다시 여세요" : "Press the button to reopen UI Edit" })] })] }), _jsx("div", { className: "relative min-h-0", children: _jsx(ProbeTooltip, { embedded: true }) })] }) }));
+    }), [
+        baseSession,
+        closePickProbe,
+        compareMode,
+        hasEdits,
+        open,
+        resetPickProbeValues,
+        savedProbeEdits,
+        selectedTarget,
+        updatePickProbeValue,
+        values,
+    ]);
+    return (_jsxs(ReportSessionContext.Provider, { value: session, children: [_jsxs("div", { className: "grid h-full w-full grid-cols-[minmax(200px,1fr)_320px] gap-[14px] p-[12px]", children: [_jsx("div", { className: "relative flex min-h-0 items-center justify-center overflow-visible", children: _jsxs("button", { ref: buttonRef, type: "button", "data-report-id": DEMO_TARGET.reportIdAttribute ?? "checkout-actions", style: previewStyle, onClick: openPickProbe, className: "min-h-[34px] outline-none", children: [_jsx("span", { children: previewValues.textContent }), _jsx("span", { "aria-hidden": "true", children: "\u2192" })] }) }), _jsx("div", { className: "relative min-h-0", children: _jsx(ProbeTooltip, { embedded: true }) })] }), _jsx(TargetHighlights, { hoveredTarget: null, selectedTarget: selectedTarget, contextMenuTarget: open ? selectedTarget : null, showPickProbeCompare: open && hasEdits, activeMarkerTarget: null }), _jsx(PickTargetSavedBadges, {})] }));
 }
 function DemoMobileContent() {
     const { locale } = useReportPreferences();

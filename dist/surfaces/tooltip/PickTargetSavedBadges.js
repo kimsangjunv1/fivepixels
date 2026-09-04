@@ -1,7 +1,8 @@
-import { jsx as _jsx, Fragment as _Fragment } from "react/jsx-runtime";
+import { jsx as _jsx, Fragment as _Fragment, jsxs as _jsxs } from "react/jsx-runtime";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { HoverTooltip } from "../../surfaces/tooltip/HoverTooltip.js";
 import { useReportPreferences, useReportSession } from "../../shared/providers/reportContext.js";
+import { toFixedLayerPosition, useFixedPositionOrigin } from "../../shared/hooks/useFixedPositionOrigin.js";
 import { formatSavedProbeEditSummary } from "../../shared/utils/probe/pickProbe.js";
 import { findElementByProbeKey } from "../../shared/utils/probe/pickProbeSession.js";
 import { getPickProbeSavedBadgeLayout } from "../../shared/utils/probe/pickProbeLayout.js";
@@ -9,6 +10,7 @@ const MODIFIED_BADGE_CLASS = "cursor-default rounded-[4px] bg-[#8b5cf6] px-[5px]
 function SavedProbeBadge({ elementKey, badgeOpacity }) {
     const { messages } = useReportPreferences();
     const { savedProbeEdits } = useReportSession();
+    const { origin, originProbe } = useFixedPositionOrigin();
     const badgeRef = useRef(null);
     const [layout, setLayout] = useState(null);
     const modifiedSummary = useMemo(() => {
@@ -45,11 +47,12 @@ function SavedProbeBadge({ elementKey, badgeOpacity }) {
         return null;
     }
     const fallbackRect = element.getBoundingClientRect();
-    return (_jsx(HoverTooltip, { content: modifiedSummary, multiline: true, children: _jsx("span", { ref: badgeRef, className: `pointer-events-auto fixed z-[1000003] ${MODIFIED_BADGE_CLASS}`, style: {
-                top: layout?.top ?? fallbackRect.top,
-                left: layout?.left ?? fallbackRect.right,
-                opacity: layout ? badgeOpacity : 0,
-            }, "data-fivepixels-interactive": "", onPointerDown: (event) => event.stopPropagation(), onClick: (event) => event.stopPropagation(), children: messages.pickTarget.probeModifiedBadge }) }));
+    const position = toFixedLayerPosition(layout?.left ?? fallbackRect.right, layout?.top ?? fallbackRect.top, origin);
+    return (_jsxs(_Fragment, { children: [originProbe, _jsx(HoverTooltip, { content: modifiedSummary, multiline: true, children: _jsx("span", { ref: badgeRef, className: `pointer-events-auto fixed z-[1000003] ${MODIFIED_BADGE_CLASS}`, style: {
+                        top: position.top,
+                        left: position.left,
+                        opacity: layout ? badgeOpacity : 0,
+                    }, "data-fivepixels-interactive": "", onPointerDown: (event) => event.stopPropagation(), onClick: (event) => event.stopPropagation(), children: messages.pickTarget.probeModifiedBadge }) })] }));
 }
 export function PickTargetSavedBadges() {
     const { savedProbeEdits, mode } = useReportSession();
