@@ -194,7 +194,7 @@ function buildReportFromSample(sample, index, idOverride) {
         },
         created_at: sample.createdAt,
         environment: "STAGED",
-        app_version: "0.2.24",
+        app_version: "0.2.25",
         author_id: sample.authorId,
         author_name: sample.author,
     };
