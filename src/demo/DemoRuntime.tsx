@@ -54,7 +54,7 @@ export function DemoRuntime({ scene, locale, appearance, children }: DemoRuntime
             ui={{ locale, panelAppearance: appearance, tooltipAppearance: appearance, showFeedbackList: true }}
             visibility={{ enabled: true, routeKey: "/demo-showcase" }}
             team={{ user: { id: "demo-user", name: "김상준" }, reviewers: DEMO_AUTHORS }}
-            mode="default"
+            mode="presentation"
             sync="api"
             require={{ authLogin: false, reviewerKey: false }}
             adapter={adapter}

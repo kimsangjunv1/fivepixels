@@ -71,7 +71,11 @@ function PanelScene({ initialTab = "route-details", visibleTabs = PANEL_TABS, se
         }
         setPanelTab(nextTab);
     }, [locked]);
-    const demoPreferences = useMemo(() => ({ ...preferences, visiblePanelTabs: visibleTabs }), [preferences, visibleTabs]);
+    const demoPreferences = useMemo(() => ({
+        ...preferences,
+        visiblePanelTabs: visibleTabs,
+        panelView: "ready",
+    }), [preferences, visibleTabs]);
     const demoSession = useMemo(() => ({
         ...baseSession,
         markers: [],

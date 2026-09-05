@@ -105,7 +105,14 @@ function PanelScene({ initialTab = "route-details", visibleTabs = PANEL_TABS, se
         [locked],
     );
 
-    const demoPreferences = useMemo<ReportPreferencesValue>(() => ({ ...preferences, visiblePanelTabs: visibleTabs }), [preferences, visibleTabs]);
+    const demoPreferences = useMemo<ReportPreferencesValue>(
+        () => ({
+            ...preferences,
+            visiblePanelTabs: visibleTabs,
+            panelView: "ready",
+        }),
+        [preferences, visibleTabs],
+    );
     const demoSession = useMemo<ReportSessionValue>(
         () => ({
             ...baseSession,
