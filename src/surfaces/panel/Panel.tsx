@@ -30,7 +30,6 @@ import { PanelSettings, type PanelSettingsInitialCategory } from "./PanelSetting
 import { CornerResizeGhost } from "@/surfaces/window/CornerResizeGhost.js";
 import { PanelResizeHandles } from "./PanelResizeHandles.js";
 import { PanelRoleSwitch } from "./PanelRoleSwitch.js";
-import { PanelPresentationSwitch } from "./PanelPresentationSwitch.js";
 import { PanelAutoRefreshControl } from "./PanelAutoRefreshControl.js";
 import { PanelOnboarding } from "./PanelOnboarding.js";
 import { isInsidePreviewGuestFrame } from "@/surfaces/preview/previewGuestFrame.js";
@@ -402,7 +401,6 @@ export function Panel({ embedded = false, embeddedSettingsInitialCategory = null
                                             </section>
 
                                             <section className="flex shrink-0 items-center h-full">
-                                                <PanelPresentationSwitch />
                                                 {/* <PanelRoleSwitch /> */}
 
                                                 <IconTooltipButton

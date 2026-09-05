@@ -6,7 +6,6 @@ import { resolveFivePixelsSync, resolveRequireAuth, usesRemoteAuthLogin } from "
 import { DEFAULT_FEEDBACK_MODE_DOT_COLORS, FONT_FAMILY_SUGGESTIONS, MARKER_FILL_STYLE_VALUES } from "@/shared/constants/markerAppearance.js";
 import type { AppearanceScale, MarkerFillStyle, MarkerShape } from "@/shared/constants/markerAppearance.js";
 import { useReportPreferences, useReportSession } from "@/shared/providers/reportContext.js";
-import { formatPresentationViewerLabel } from "@/shared/utils/report/reportTeam.js";
 import { ChevronLeftIcon, ChevronRightIcon, LockIcon } from "@/shared/components/icons/Icons.js";
 import { HoverTooltip } from "@/surfaces/tooltip/HoverTooltip.js";
 import { useIntegrationLock } from "@/shared/components/ui/IntegrationLock.js";
@@ -42,7 +41,7 @@ type PanelSettingsProps = {
     initialCategory?: PanelSettingsInitialCategory | null;
 };
 
-type SettingsCategory = "preview" | "appearance" | "display" | "tabs" | "team" | "data-and-keys" | "advanced" | "api-integration";
+type SettingsCategory = "appearance" | "display" | "tabs" | "team" | "data-and-keys" | "advanced" | "api-integration";
 type AppearanceSection = "theme-language" | "thread-layout" | "feedback-mode" | "marker";
 
 const LOCALE_OPTIONS = ["en", "ko"] as const satisfies readonly ReportLocale[];
@@ -147,8 +146,6 @@ function SettingsDetailHeader({ title, backAriaLabel, onBack }: { title: string;
 
 function getCategoryTitle(category: SettingsCategory, messages: ReturnType<typeof useReportPreferences>["messages"]) {
     switch (category) {
-        case "preview":
-            return messages.settings.categoryPreview;
         case "appearance":
             return messages.settings.categoryAppearance;
         case "display":
@@ -210,8 +207,6 @@ export function PanelSettings({
         messages,
         showMarkerTargetPreview,
         setShowMarkerTargetPreview,
-        isPresentationMode,
-        presentationViewers,
         markerAppearance,
         setMarkerSize,
         setMarkerShape,
@@ -235,7 +230,7 @@ export function PanelSettings({
         requireAuth: requireAuthProp,
         logoutWithApi,
     } = useReportPreferences();
-    const { presentationViewerId, setPresentationViewerId, setErrorMessage } = useReportSession();
+    const { setErrorMessage } = useReportSession();
     const sync = resolveFivePixelsSync(loginMethod);
     const requireAuth = resolveRequireAuth(sync, requireAuthProp);
     const showAccountLogout = usesRemoteAuthLogin(sync, requireAuth);
@@ -303,13 +298,6 @@ export function PanelSettings({
         value,
         label: messages.threadLayoutOption[value],
     }));
-    const viewerOptions = presentationViewers.map((viewer) => ({
-        value: viewer.id,
-        label: viewer.isCreator ? `${formatPresentationViewerLabel(viewer)} (${messages.author.creatorLabel})` : formatPresentationViewerLabel(viewer),
-        disabled: !viewer.privateKey,
-    }));
-    const showPreviewCategory = isPresentationMode && viewerOptions.length > 0;
-    const activeViewerLabel = viewerOptions.find((option) => option.value === (presentationViewerId ?? viewerOptions[0]?.value))?.label ?? "";
     const appearanceSummary = `${messages.appearance[panelAppearance]} · ${messages.localeOption[locale]}`;
     const feedbackModeSummary = `${markerAppearance.feedbackModeDotColors.light} · ${markerAppearance.feedbackModeDotColors.dark}`;
     const markerSummary = `${scaleLabels[markerAppearance.size]} · ${shapeLabels[markerAppearance.shape]} · ${fillStyleLabels[markerAppearance.fillStyle]}`;
@@ -376,46 +364,6 @@ export function PanelSettings({
                 />
 
                 <div className="min-h-0 flex-1 overflow-y-auto">
-                    {activeCategory === "preview" ? (
-                        <SettingsSection label={messages.settings.sectionViewerSwitch}>
-                            <p className="mb-[8px] text-[12px] leading-[1.5] text-[var(--adaptive-black600)]">{messages.settings.viewerSwitchHint}</p>
-
-                            <div
-                                role="radiogroup"
-                                aria-label={messages.settings.viewerSwitchAriaLabel}
-                                className="flex flex-col gap-[4px]"
-                            >
-                                {viewerOptions.map((option) => {
-                                    const active = option.value === (presentationViewerId ?? viewerOptions[0]?.value);
-
-                                    return (
-                                        <button
-                                            key={option.value}
-                                            type="button"
-                                            role="radio"
-                                            aria-checked={active}
-                                            disabled={option.disabled}
-                                            onClick={() => {
-                                                if (option.disabled) {
-                                                    return;
-                                                }
-
-                                                void setPresentationViewerId(option.value);
-                                            }}
-                                            className={`rounded-[8px] px-[12px] py-[8px] text-left text-[14px] transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
-                                                active
-                                                    ? "bg-[var(--adaptive-blue50)] font-semibold text-[var(--adaptive-blue500)]"
-                                                    : "text-[var(--adaptive-black800)] hover:bg-[var(--adaptive-black100)]"
-                                            }`}
-                                        >
-                                            {option.label}
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        </SettingsSection>
-                    ) : null}
-
                     {activeAppearanceSection === "theme-language" ? (
                         <>
                             <SettingsSection label={messages.settings.sectionTheme}>
@@ -720,14 +668,6 @@ export function PanelSettings({
     return (
         <section className="flex min-h-0 flex-1 flex-col overflow-y-auto bg-[var(--adaptive-fillOpacity500)]">
             <p className="shrink-0 border-b border-[var(--adaptive-border-subtle)] px-[12px] py-[10px] text-[14px] font-semibold text-[var(--adaptive-black900)]">{messages.settings.hubTitle}</p>
-
-            {showPreviewCategory ? (
-                <SettingsHubRow
-                    title={messages.settings.categoryPreview}
-                    subtitle={activeViewerLabel}
-                    onClick={() => setActiveCategory("preview")}
-                />
-            ) : null}
 
             <SettingsHubRow
                 title={messages.settings.categoryAppearance}
