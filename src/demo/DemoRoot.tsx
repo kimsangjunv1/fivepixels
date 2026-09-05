@@ -3,6 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { ThemeScope } from "@/core/ThemeScope.js";
+import { ReportOverlayRootProvider } from "@/shared/providers/ReportOverlayRootContext.js";
 import type { ResolvedAppearance } from "@/shared/types/report-ui.js";
 import type { DemoInteraction } from "./types.js";
 
@@ -24,6 +25,7 @@ const SHOWCASE_BLOCKED_EVENTS = ["click", "auxclick", "dblclick", "pointerdown",
 export function DemoRoot({ appearance, width, height, interaction, inputLocked, interactive, className, style, ariaLabel, children }: DemoRootProps) {
     const hostRef = useRef<HTMLDivElement | null>(null);
     const [mount, setMount] = useState<HTMLElement | null>(null);
+    const [overlayRoot, setOverlayRoot] = useState<HTMLElement | null>(null);
     const allowPointers = interactive !== false;
     const lockInput = allowPointers && inputLocked;
 
@@ -53,6 +55,7 @@ export function DemoRoot({ appearance, width, height, interaction, inputLocked, 
         return () => {
             cancelled = true;
             setMount(null);
+            setOverlayRoot(null);
             shadowRoot.replaceChildren();
         };
     }, []);
@@ -100,7 +103,15 @@ export function DemoRoot({ appearance, width, height, interaction, inputLocked, 
             {mount
                 ? createPortal(
                       <ThemeScope appearance={appearance} className="relative block h-full w-full overflow-visible">
-                          {children}
+                          <ReportOverlayRootProvider root={overlayRoot}>
+                              {children}
+                              <div
+                                  ref={setOverlayRoot}
+                                  data-fivepixels-tooltip-layer=""
+                                  className="pointer-events-none absolute inset-0 z-[2147483646] overflow-visible"
+                                  aria-hidden="true"
+                              />
+                          </ReportOverlayRootProvider>
                       </ThemeScope>,
                       mount,
                   )

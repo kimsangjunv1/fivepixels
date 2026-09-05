@@ -1,12 +1,14 @@
 "use client";
-import { jsx as _jsx } from "react/jsx-runtime";
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { ThemeScope } from "../core/ThemeScope.js";
+import { ReportOverlayRootProvider } from "../shared/providers/ReportOverlayRootContext.js";
 const SHOWCASE_BLOCKED_EVENTS = ["click", "auxclick", "dblclick", "pointerdown", "mousedown", "mouseup", "touchstart", "touchend"];
 export function DemoRoot({ appearance, width, height, interaction, inputLocked, interactive, className, style, ariaLabel, children }) {
     const hostRef = useRef(null);
     const [mount, setMount] = useState(null);
+    const [overlayRoot, setOverlayRoot] = useState(null);
     const allowPointers = interactive !== false;
     const lockInput = allowPointers && inputLocked;
     useLayoutEffect(() => {
@@ -31,6 +33,7 @@ export function DemoRoot({ appearance, width, height, interaction, inputLocked, 
         return () => {
             cancelled = true;
             setMount(null);
+            setOverlayRoot(null);
             shadowRoot.replaceChildren();
         };
     }, []);
@@ -61,7 +64,7 @@ export function DemoRoot({ appearance, width, height, interaction, inputLocked, 
             pointerEvents: allowPointers ? "auto" : "none",
             ...style,
         }, children: mount
-            ? createPortal(_jsx(ThemeScope, { appearance: appearance, className: "relative block h-full w-full overflow-visible", children: children }), mount)
+            ? createPortal(_jsx(ThemeScope, { appearance: appearance, className: "relative block h-full w-full overflow-visible", children: _jsxs(ReportOverlayRootProvider, { root: overlayRoot, children: [children, _jsx("div", { ref: setOverlayRoot, "data-fivepixels-tooltip-layer": "", className: "pointer-events-none absolute inset-0 z-[2147483646] overflow-visible", "aria-hidden": "true" })] }) }), mount)
             : null }));
 }
 //# sourceMappingURL=DemoRoot.js.map

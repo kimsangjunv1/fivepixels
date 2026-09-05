@@ -1,7 +1,9 @@
+"use client";
 import { jsx as _jsx } from "react/jsx-runtime";
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { MOTION } from "../../shared/constants/motionClasses.js";
+import { useReportOverlayRoot } from "../../shared/providers/ReportOverlayRootContext.js";
 import { getReportTooltipRoot } from "../../shared/utils/shared/dom.js";
 import { HOVER_TOOLTIP_MARGIN } from "../../shared/utils/marker/hoverTooltipLayout.js";
 const POINTER_OFFSET = 12;
@@ -25,6 +27,7 @@ function getPointerTooltipLayout(clientX, clientY, tooltipRect) {
     return { top, left };
 }
 export function PointerFollowTooltip({ open, pointer, children, className = "" }) {
+    const overlayRoot = useReportOverlayRoot();
     const tooltipRef = useRef(null);
     const [layout, setLayout] = useState(null);
     const updateLayout = useCallback(() => {
@@ -52,11 +55,23 @@ export function PointerFollowTooltip({ open, pointer, children, className = "" }
     if (!open || !pointer) {
         return null;
     }
-    const style = {
-        top: layout?.top ?? pointer.clientY + POINTER_OFFSET,
-        left: layout?.left ?? pointer.clientX + POINTER_OFFSET,
-        visibility: layout ? "visible" : "hidden",
-    };
-    return createPortal(_jsx("div", { ref: tooltipRef, role: "tooltip", className: `${POINTER_TOOLTIP_SURFACE_CLASS} ${MOTION.tooltipIn} ${className}`.trim(), style: style, children: children }), getReportTooltipRoot());
+    const viewportTop = layout?.top ?? pointer.clientY + POINTER_OFFSET;
+    const viewportLeft = layout?.left ?? pointer.clientX + POINTER_OFFSET;
+    const rootRect = overlayRoot?.getBoundingClientRect();
+    const scaleX = overlayRoot && rootRect ? rootRect.width / Math.max(1, overlayRoot.offsetWidth) : 1;
+    const scaleY = overlayRoot && rootRect ? rootRect.height / Math.max(1, overlayRoot.offsetHeight) : 1;
+    const style = overlayRoot
+        ? {
+            position: "absolute",
+            top: (viewportTop - (rootRect?.top ?? 0)) / scaleY,
+            left: (viewportLeft - (rootRect?.left ?? 0)) / scaleX,
+            visibility: layout ? "visible" : "hidden",
+        }
+        : {
+            top: viewportTop,
+            left: viewportLeft,
+            visibility: layout ? "visible" : "hidden",
+        };
+    return createPortal(_jsx("div", { ref: tooltipRef, role: "tooltip", className: `${overlayRoot ? POINTER_TOOLTIP_SURFACE_CLASS.replace("fixed ", "absolute ") : POINTER_TOOLTIP_SURFACE_CLASS} ${MOTION.tooltipIn} ${className}`.trim(), style: style, children: children }), overlayRoot ?? getReportTooltipRoot());
 }
 //# sourceMappingURL=PointerFollowTooltip.js.map
