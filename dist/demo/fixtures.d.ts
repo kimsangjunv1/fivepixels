@@ -5,8 +5,12 @@ import type { DraftReport, PickProbeValues, TargetSnapshot } from "../shared/typ
 import type { ReportAuthor, ReportFeedback } from "../shared/types/report.js";
 import type { FivePixelsDemoScene } from "./types.js";
 export declare const DEMO_AUTHORS: ReportAuthor[];
+/** 리스트/툴팁용 대표 케이스 (짧은 목록) */
+export declare const DEMO_FEATURED_REPORTS: ReportFeedback[];
+/** 패널 수치·활동용 전체 리포트 (대표 + 활동 벌크) */
 export declare const DEMO_REPORTS: ReportFeedback[];
 export declare const DEMO_DRAFT: DraftReport;
+export declare const DEMO_MEMO_DRAFT: DraftReport;
 export declare const DEMO_TARGET: TargetSnapshot;
 export declare const DEMO_PROBE_VALUES: PickProbeValues;
 export declare const DEMO_API_FLOW_ENTRIES: ApiFlowEntry[];

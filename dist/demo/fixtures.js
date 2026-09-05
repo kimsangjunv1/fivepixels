@@ -147,30 +147,31 @@ const STATUS_SAMPLES = [
         createdAt: daysAgoAtHourIso(1, 18),
     },
 ];
-export const DEMO_REPORTS = STATUS_SAMPLES.map((sample, index) => {
+function buildReportFromSample(sample, index, idOverride) {
+    const id = idOverride ?? sample.id;
     const replies = sample.replyStatus
         ? [
             reply({
-                id: `demo-reply-${index + 1}`,
-                comment_id: sample.id,
+                id: `demo-reply-${id}`,
+                comment_id: id,
                 message: sample.replyStatus === "resolved" ? "반영 완료했습니다." : "확인 후 답변드립니다.",
                 created_at: sample.createdAt,
                 status: sample.replyStatus,
-                case_ids: [`demo-case-${index + 1}`],
+                case_ids: [`demo-case-${id}`],
                 author_type: "manager",
                 author_name: sample.author === "김상준" ? "김지윤" : "김상준",
             }),
         ]
         : [];
     return {
-        id: sample.id,
+        id,
         pathname: DEMO_PATHNAME,
         report_id: `demo-target-${index + 1}`,
         report_type: index % 2 === 0 ? "item" : "group",
         target_selector: `[data-report-id="demo-target-${index + 1}"]`,
         cases: [
             {
-                id: `demo-case-${index + 1}`,
+                id: `demo-case-${id}`,
                 text: sample.text,
                 status: sample.status === "resolved" ? "resolved" : "open",
                 assignee_name: sample.assignee,
@@ -197,7 +198,61 @@ export const DEMO_REPORTS = STATUS_SAMPLES.map((sample, index) => {
         author_id: sample.authorId,
         author_name: sample.author,
     };
-});
+}
+/** 리스트/툴팁용 대표 케이스 (짧은 목록) */
+export const DEMO_FEATURED_REPORTS = STATUS_SAMPLES.map((sample, index) => buildReportFromSample(sample, index));
+/** 패널 Today/Yesterday·스파크라인용 0~50 분포 */
+const ACTIVITY_VOLUME = [
+    { reportStatus: "open", today: 28, yesterday: 21 },
+    { replyStatus: "additional_question", reportStatus: "open", today: 11, yesterday: 17 },
+    { replyStatus: "suggested", reportStatus: "open", today: 36, yesterday: 29 },
+    { replyStatus: "found_error", reportStatus: "open", today: 7, yesterday: 14 },
+    { replyStatus: "recheck_requested", reportStatus: "open", today: 19, yesterday: 9 },
+    { replyStatus: "assignee_assigned", reportStatus: "open", today: 24, yesterday: 31 },
+    { replyStatus: "assignee_transferred", reportStatus: "open", today: 5, yesterday: 12 },
+    { reportStatus: "git_issued", today: 16, yesterday: 22 },
+    { replyStatus: "resolved", reportStatus: "resolved", today: 43, yesterday: 38 },
+];
+const ACTIVITY_TEMPLATES = STATUS_SAMPLES;
+function pickHour(index, daysAgo, seed) {
+    const nowHour = new Date().getHours();
+    const hour = (seed + index * 3) % 24;
+    if (daysAgo === 0 && hour > nowHour) {
+        return Math.max(0, nowHour - (index % Math.max(1, nowHour + 1)));
+    }
+    return hour;
+}
+function buildActivityReports(featured) {
+    const generated = [];
+    let serial = featured.length;
+    ACTIVITY_VOLUME.forEach((volume, volumeIndex) => {
+        const template = ACTIVITY_TEMPLATES[volumeIndex % ACTIVITY_TEMPLATES.length];
+        const days = [
+            { daysAgo: 0, count: volume.today },
+            { daysAgo: 1, count: volume.yesterday },
+        ];
+        for (const { daysAgo, count } of days) {
+            for (let i = 0; i < count; i += 1) {
+                const hour = pickHour(i, daysAgo, volumeIndex * 7 + daysAgo * 11);
+                const createdAt = daysAgoAtHourIso(daysAgo, hour);
+                const id = `demo-activity-${volumeIndex}-${daysAgo}-${i}`;
+                generated.push(buildReportFromSample({
+                    ...template,
+                    id,
+                    status: volume.reportStatus,
+                    replyStatus: volume.replyStatus,
+                    text: template.text,
+                    createdAt,
+                    assignee: template.assignee,
+                }, serial, id));
+                serial += 1;
+            }
+        }
+    });
+    return [...featured, ...generated];
+}
+/** 패널 수치·활동용 전체 리포트 (대표 + 활동 벌크) */
+export const DEMO_REPORTS = buildActivityReports(DEMO_FEATURED_REPORTS);
 export const DEMO_DRAFT = {
     clientX: 210,
     clientY: 150,
@@ -227,6 +282,20 @@ export const DEMO_DRAFT = {
     ],
     category: "suggestion",
     fieldValues: { priority: "high" },
+};
+export const DEMO_MEMO_DRAFT = {
+    ...DEMO_DRAFT,
+    category: "memo",
+    fieldValues: {},
+    cases: [
+        {
+            id: "demo-memo-draft-case-1",
+            text: "히어로 CTA는 ‘무료로 시작’보다 ‘둘러보기’가 덜 부담스러울 듯. 카피 후보로만 남겨둠.",
+            status: "open",
+            created_at: CREATED_AT,
+            updated_at: CREATED_AT,
+        },
+    ],
 };
 const DEMO_TARGET_RECT = {
     x: 24,

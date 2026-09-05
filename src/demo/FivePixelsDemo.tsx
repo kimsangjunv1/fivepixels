@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ComponentProps } from "react";
 import type { ReportLocale } from "@/shared/i18n/types.js";
-import { DemoInteractionProvider } from "./DemoInteractionContext.js";
+import { DemoInteractionProvider, useDemoInputLocked } from "./DemoInteractionContext.js";
 import { DemoRoot } from "./DemoRoot.js";
 import { DemoRuntime } from "./DemoRuntime.js";
 import { DemoScene } from "./DemoScenes.js";
@@ -14,6 +14,16 @@ function resolveInteraction(interaction: DemoInteraction | undefined, interactiv
         return "showcase";
     }
     return interaction ?? "showcase";
+}
+
+function DemoRootWithLock(props: Omit<ComponentProps<typeof DemoRoot>, "inputLocked">) {
+    const inputLocked = useDemoInputLocked();
+    return (
+        <DemoRoot
+            {...props}
+            inputLocked={inputLocked}
+        />
+    );
 }
 
 export function FivePixelsDemo({
@@ -44,9 +54,16 @@ export function FivePixelsDemo({
     };
 
     return (
-        <DemoRuntime scene={scene} locale={activeLocale} appearance={resolvedAppearance}>
-            <DemoInteractionProvider interaction={resolvedInteraction}>
-                <DemoRoot
+        <DemoRuntime
+            scene={scene}
+            locale={activeLocale}
+            appearance={resolvedAppearance}
+        >
+            <DemoInteractionProvider
+                interaction={resolvedInteraction}
+                scene={scene}
+            >
+                <DemoRootWithLock
                     appearance={resolvedAppearance}
                     width={size.width}
                     height={size.height + localeSwitchHeight}
@@ -77,10 +94,13 @@ export function FivePixelsDemo({
                             ))}
                         </div>
                     ) : null}
-                    <div className="absolute inset-x-0 bottom-0" style={{ height: size.height }}>
+                    <div
+                        className="absolute inset-x-0 bottom-0"
+                        style={{ height: size.height }}
+                    >
                         <DemoScene scene={scene} />
                     </div>
-                </DemoRoot>
+                </DemoRootWithLock>
             </DemoInteractionProvider>
         </DemoRuntime>
     );

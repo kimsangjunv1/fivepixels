@@ -4,11 +4,11 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { ThemeScope } from "../core/ThemeScope.js";
 const SHOWCASE_BLOCKED_EVENTS = ["click", "auxclick", "dblclick", "pointerdown", "mousedown", "mouseup", "touchstart", "touchend"];
-export function DemoRoot({ appearance, width, height, interaction, interactive, className, style, ariaLabel, children }) {
+export function DemoRoot({ appearance, width, height, interaction, inputLocked, interactive, className, style, ariaLabel, children }) {
     const hostRef = useRef(null);
     const [mount, setMount] = useState(null);
     const allowPointers = interactive !== false;
-    const lockInput = allowPointers && interaction === "showcase";
+    const lockInput = allowPointers && inputLocked;
     useLayoutEffect(() => {
         const host = hostRef.current;
         if (!host) {
@@ -51,7 +51,7 @@ export function DemoRoot({ appearance, width, height, interaction, interactive, 
             }
         };
     }, [lockInput, mount]);
-    return (_jsx("div", { ref: hostRef, className: className, role: "group", "aria-label": ariaLabel, "data-fivepixels-demo-interaction": interaction, style: {
+    return (_jsx("div", { ref: hostRef, className: className, role: "group", "aria-label": ariaLabel, "data-fivepixels-demo-interaction": interaction, "data-fivepixels-demo-input-locked": lockInput ? "true" : "false", style: {
             display: "block",
             width,
             maxWidth: "100%",

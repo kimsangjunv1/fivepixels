@@ -12,8 +12,8 @@ import { useTooltipLayout } from "../surfaces/tooltip/useTooltipLayout.js";
 import { FeedbackWindow } from "../surfaces/window/FeedbackWindow.js";
 import { MobilePreviewWindow } from "../surfaces/window/MobilePreviewWindow.js";
 import { NotificationCenter } from "../surfaces/window/NotificationCenter.js";
-import { createDemoNotifications, DEMO_API_FLOW_ENTRIES, DEMO_DRAFT, DEMO_PROBE_VALUES, DEMO_REPORTS, DEMO_TARGET } from "./fixtures.js";
-import { useDemoLocked } from "./DemoInteractionContext.js";
+import { createDemoNotifications, DEMO_API_FLOW_ENTRIES, DEMO_DRAFT, DEMO_FEATURED_REPORTS, DEMO_MEMO_DRAFT, DEMO_PROBE_VALUES, DEMO_REPORTS, DEMO_TARGET } from "./fixtures.js";
+import { useDemoLocked, useDemoProbeEditable } from "./DemoInteractionContext.js";
 const DEMO_PROBE_ELEMENT_KEY = "id:checkout-actions:item";
 function toDomRect(rect) {
     return {
@@ -47,11 +47,15 @@ const DEMO_MARKER = {
     clampBounds: null,
     clampContainerId: null,
     aggregateCount: 1,
-    report: DEMO_REPORTS[0],
+    report: DEMO_FEATURED_REPORTS[0],
 };
 function cloneDraft(category = "suggestion") {
+    if (category === "memo") {
+        return structuredClone(DEMO_MEMO_DRAFT);
+    }
     return { ...structuredClone(DEMO_DRAFT), category };
 }
+const LIST_PANEL_REPORT_TABS = new Set(["feedback-list", "memo-list", "my-tasks"]);
 function PanelScene({ initialTab = "route-details", visibleTabs = PANEL_TABS, settingsInitialCategory }) {
     const locked = useDemoLocked();
     const preferences = useReportPreferences();
@@ -84,12 +88,13 @@ function PanelScene({ initialTab = "route-details", visibleTabs = PANEL_TABS, se
         togglePanelTab,
     }), [activeTab, baseSession, openPanelTab, togglePanelTab]);
     const demoData = useMemo(() => {
+        const panelReports = LIST_PANEL_REPORT_TABS.has(initialTab) ? DEMO_FEATURED_REPORTS : DEMO_REPORTS;
         const withReports = {
             ...baseData,
-            reports: DEMO_REPORTS,
-            currentPageReports: DEMO_REPORTS,
-            filteredReports: DEMO_REPORTS,
-            allPageReports: DEMO_REPORTS,
+            reports: panelReports,
+            currentPageReports: panelReports,
+            filteredReports: panelReports,
+            allPageReports: panelReports,
             listScope: "all",
         };
         if (initialTab === "api-flow") {
@@ -124,7 +129,7 @@ function MarkerTooltipScene() {
                     if (!locked) {
                         setOpen(true);
                     }
-                }, onHoverEnd: () => undefined, onPointerMove: () => undefined, positioning: "absolute" }), markerOpen && tooltipPosition && tooltipAnchorStyle ? (_jsx(MarkerTooltipSurface, { containerRef: bindHoverTooltipRef, report: DEMO_REPORTS[0], detachedHint: messages.marker.detachedHint, detachedModalHint: messages.marker.detachedModalHint, positioning: "absolute", style: {
+                }, onHoverEnd: () => undefined, onPointerMove: () => undefined, positioning: "absolute" }), markerOpen && tooltipPosition && tooltipAnchorStyle ? (_jsx(MarkerTooltipSurface, { containerRef: bindHoverTooltipRef, report: DEMO_FEATURED_REPORTS[0], detachedHint: messages.marker.detachedHint, detachedModalHint: messages.marker.detachedModalHint, positioning: "absolute", style: {
                     left: tooltipPosition.left,
                     top: tooltipPosition.top,
                     ...tooltipAnchorStyle,
@@ -213,7 +218,8 @@ function FeedbackComposerScene({ variant = "feedback" }) {
     return (_jsx(ReportSessionContext.Provider, { value: session, children: _jsx(ReportDataContext.Provider, { value: data, children: _jsx("div", { className: "relative h-full w-full p-[12px]", children: _jsx(DraftTooltip, { embedded: true }) }) }) }));
 }
 function ElementInspectorScene() {
-    const locked = useDemoLocked();
+    const stateLocked = useDemoLocked();
+    const probeEditable = useDemoProbeEditable();
     const { locale } = useReportPreferences();
     const baseSession = useReportSession();
     const buttonRef = useRef(null);
@@ -233,9 +239,9 @@ function ElementInspectorScene() {
     const [compareMode, setCompareMode] = useState("after");
     const [targetRect, setTargetRect] = useState(DEMO_TARGET.rect);
     const [savedProbeEdits, setSavedProbeEdits] = useState({});
-    const lockedOpen = locked ? true : open;
-    const lockedCompare = locked ? "after" : compareMode;
-    const lockedValues = locked ? initialValues : values;
+    const lockedOpen = stateLocked ? true : open;
+    const lockedCompare = probeEditable ? compareMode : "after";
+    const lockedValues = probeEditable ? values : initialValues;
     const hasEdits = Object.keys(lockedValues).some((key) => lockedValues[key] !== baselineValues[key]);
     const previewValues = lockedCompare === "before" ? baselineValues : lockedValues;
     const previewStyle = {
@@ -288,22 +294,22 @@ function ElementInspectorScene() {
         };
     }, [previewValues, updateTargetRect]);
     const updatePickProbeValue = useCallback((key, value) => {
-        if (locked) {
+        if (!probeEditable) {
             return;
         }
         setValues((current) => ({ ...current, [key]: value }));
         setCompareMode("after");
-    }, [locked]);
+    }, [probeEditable]);
     const resetPickProbeValues = useCallback(() => {
-        if (locked) {
+        if (!probeEditable) {
             return;
         }
         setValues(baselineValues);
         setCompareMode("after");
         setSavedProbeEdits({});
-    }, [baselineValues, locked]);
+    }, [baselineValues, probeEditable]);
     const closePickProbe = useCallback(() => {
-        if (locked) {
+        if (stateLocked) {
             return;
         }
         setOpen(false);
@@ -322,14 +328,14 @@ function ElementInspectorScene() {
                 originalInputValue: null,
             },
         });
-    }, [baselineValues, hasEdits, locked, values]);
+    }, [baselineValues, hasEdits, stateLocked, values]);
     const openPickProbe = useCallback(() => {
-        if (locked) {
+        if (stateLocked) {
             return;
         }
         setSavedProbeEdits({});
         setOpen(true);
-    }, [locked]);
+    }, [stateLocked]);
     const selectedTarget = useMemo(() => ({
         ...DEMO_TARGET,
         rect: targetRect,
@@ -351,11 +357,11 @@ function ElementInspectorScene() {
         pickProbeCompareMode: lockedCompare,
         pickProbeHasEdits: hasEdits,
         savedProbeEdits,
-        setPickProbeCompareMode: locked ? () => undefined : setCompareMode,
+        setPickProbeCompareMode: probeEditable ? setCompareMode : () => undefined,
         updatePickProbeValue,
         resetPickProbeValues,
         closePickProbe,
-    }), [baseSession, closePickProbe, hasEdits, locked, lockedCompare, lockedOpen, lockedValues, resetPickProbeValues, savedProbeEdits, selectedTarget, updatePickProbeValue]);
+    }), [baseSession, closePickProbe, hasEdits, lockedCompare, lockedOpen, lockedValues, probeEditable, resetPickProbeValues, savedProbeEdits, selectedTarget, updatePickProbeValue]);
     return (_jsxs(ReportSessionContext.Provider, { value: session, children: [_jsxs("div", { className: "grid h-full w-full grid-cols-[minmax(200px,1fr)_320px] gap-[14px] p-[12px]", children: [_jsx("div", { className: "relative flex min-h-0 items-center justify-center overflow-visible", children: _jsxs("button", { ref: buttonRef, type: "button", "data-report-id": DEMO_TARGET.reportIdAttribute ?? "checkout-actions", style: previewStyle, onClick: openPickProbe, className: "min-h-[34px] outline-none", children: [_jsx("span", { children: previewValues.textContent }), _jsx("span", { "aria-hidden": "true", children: "\u2192" })] }) }), _jsx("div", { className: "relative min-h-0", children: _jsx(ProbeTooltip, { embedded: true }) })] }), _jsx(TargetHighlights, { hoveredTarget: null, selectedTarget: selectedTarget, contextMenuTarget: lockedOpen ? selectedTarget : null, showPickProbeCompare: lockedOpen && hasEdits, activeMarkerTarget: null }), _jsx(PickTargetSavedBadges, {})] }));
 }
 function DemoMobileContent() {
@@ -369,7 +375,7 @@ function DevicePreviewScene() {
 function FeedbackThreadScene() {
     const session = useReportSession();
     const openedRef = useRef(false);
-    const report = DEMO_REPORTS[0];
+    const report = DEMO_FEATURED_REPORTS[0];
     useEffect(() => {
         if (openedRef.current) {
             return;

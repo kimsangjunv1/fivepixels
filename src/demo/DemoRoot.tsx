@@ -11,6 +11,7 @@ type DemoRootProps = {
     width: number;
     height: number;
     interaction: DemoInteraction;
+    inputLocked: boolean;
     interactive: boolean;
     className: string;
     style?: CSSProperties;
@@ -20,11 +21,11 @@ type DemoRootProps = {
 
 const SHOWCASE_BLOCKED_EVENTS = ["click", "auxclick", "dblclick", "pointerdown", "mousedown", "mouseup", "touchstart", "touchend"] as const;
 
-export function DemoRoot({ appearance, width, height, interaction, interactive, className, style, ariaLabel, children }: DemoRootProps) {
+export function DemoRoot({ appearance, width, height, interaction, inputLocked, interactive, className, style, ariaLabel, children }: DemoRootProps) {
     const hostRef = useRef<HTMLDivElement | null>(null);
     const [mount, setMount] = useState<HTMLElement | null>(null);
     const allowPointers = interactive !== false;
-    const lockInput = allowPointers && interaction === "showcase";
+    const lockInput = allowPointers && inputLocked;
 
     useLayoutEffect(() => {
         const host = hostRef.current;
@@ -84,6 +85,7 @@ export function DemoRoot({ appearance, width, height, interaction, interactive, 
             role="group"
             aria-label={ariaLabel}
             data-fivepixels-demo-interaction={interaction}
+            data-fivepixels-demo-input-locked={lockInput ? "true" : "false"}
             style={{
                 display: "block",
                 width,

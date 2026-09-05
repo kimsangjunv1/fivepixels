@@ -26,8 +26,8 @@ import { useTooltipLayout } from "@/surfaces/tooltip/useTooltipLayout.js";
 import { FeedbackWindow } from "@/surfaces/window/FeedbackWindow.js";
 import { MobilePreviewWindow } from "@/surfaces/window/MobilePreviewWindow.js";
 import { NotificationCenter } from "@/surfaces/window/NotificationCenter.js";
-import { createDemoNotifications, DEMO_API_FLOW_ENTRIES, DEMO_DRAFT, DEMO_PROBE_VALUES, DEMO_REPORTS, DEMO_TARGET } from "./fixtures.js";
-import { useDemoLocked } from "./DemoInteractionContext.js";
+import { createDemoNotifications, DEMO_API_FLOW_ENTRIES, DEMO_DRAFT, DEMO_FEATURED_REPORTS, DEMO_MEMO_DRAFT, DEMO_PROBE_VALUES, DEMO_REPORTS, DEMO_TARGET } from "./fixtures.js";
+import { useDemoLocked, useDemoProbeEditable } from "./DemoInteractionContext.js";
 import type { FivePixelsDemoScene } from "./types.js";
 
 const DEMO_PROBE_ELEMENT_KEY = "id:checkout-actions:item";
@@ -65,12 +65,17 @@ const DEMO_MARKER: Marker = {
     clampBounds: null,
     clampContainerId: null,
     aggregateCount: 1,
-    report: DEMO_REPORTS[0],
+    report: DEMO_FEATURED_REPORTS[0],
 };
 
 function cloneDraft(category: FeedbackCategory = "suggestion"): DraftReport {
+    if (category === "memo") {
+        return structuredClone(DEMO_MEMO_DRAFT);
+    }
     return { ...structuredClone(DEMO_DRAFT), category };
 }
+
+const LIST_PANEL_REPORT_TABS = new Set<ReportPanelTab>(["feedback-list", "memo-list", "my-tasks"]);
 
 type PanelSceneProps = {
     initialTab?: ReportPanelTab;
@@ -124,12 +129,13 @@ function PanelScene({ initialTab = "route-details", visibleTabs = PANEL_TABS, se
         [activeTab, baseSession, openPanelTab, togglePanelTab],
     );
     const demoData = useMemo<ReportDataValue>(() => {
+        const panelReports = LIST_PANEL_REPORT_TABS.has(initialTab) ? DEMO_FEATURED_REPORTS : DEMO_REPORTS;
         const withReports: ReportDataValue = {
             ...baseData,
-            reports: DEMO_REPORTS,
-            currentPageReports: DEMO_REPORTS,
-            filteredReports: DEMO_REPORTS,
-            allPageReports: DEMO_REPORTS,
+            reports: panelReports,
+            currentPageReports: panelReports,
+            filteredReports: panelReports,
+            allPageReports: panelReports,
             listScope: "all",
         };
 
@@ -206,7 +212,7 @@ function MarkerTooltipScene() {
             {markerOpen && tooltipPosition && tooltipAnchorStyle ? (
                 <MarkerTooltipSurface
                     containerRef={bindHoverTooltipRef}
-                    report={DEMO_REPORTS[0]}
+                    report={DEMO_FEATURED_REPORTS[0]}
                     detachedHint={messages.marker.detachedHint}
                     detachedModalHint={messages.marker.detachedModalHint}
                     positioning="absolute"
@@ -324,7 +330,8 @@ function FeedbackComposerScene({ variant = "feedback" }: { variant?: "feedback" 
 }
 
 function ElementInspectorScene() {
-    const locked = useDemoLocked();
+    const stateLocked = useDemoLocked();
+    const probeEditable = useDemoProbeEditable();
     const { locale } = useReportPreferences();
     const baseSession = useReportSession();
     const buttonRef = useRef<HTMLButtonElement | null>(null);
@@ -347,9 +354,9 @@ function ElementInspectorScene() {
     const [compareMode, setCompareMode] = useState<"before" | "after">("after");
     const [targetRect, setTargetRect] = useState<DOMRect>(DEMO_TARGET.rect);
     const [savedProbeEdits, setSavedProbeEdits] = useState<Record<string, SavedProbeEntry>>({});
-    const lockedOpen = locked ? true : open;
-    const lockedCompare = locked ? "after" : compareMode;
-    const lockedValues = locked ? initialValues : values;
+    const lockedOpen = stateLocked ? true : open;
+    const lockedCompare = probeEditable ? compareMode : "after";
+    const lockedValues = probeEditable ? values : initialValues;
     const hasEdits = (Object.keys(lockedValues) as PickProbeFieldKey[]).some((key) => lockedValues[key] !== baselineValues[key]);
     const previewValues = lockedCompare === "before" ? baselineValues : lockedValues;
     const previewStyle: CSSProperties = {
@@ -409,22 +416,22 @@ function ElementInspectorScene() {
     }, [previewValues, updateTargetRect]);
 
     const updatePickProbeValue = useCallback((key: PickProbeFieldKey, value: string) => {
-        if (locked) {
+        if (!probeEditable) {
             return;
         }
         setValues((current) => ({ ...current, [key]: value }));
         setCompareMode("after");
-    }, [locked]);
+    }, [probeEditable]);
     const resetPickProbeValues = useCallback(() => {
-        if (locked) {
+        if (!probeEditable) {
             return;
         }
         setValues(baselineValues);
         setCompareMode("after");
         setSavedProbeEdits({});
-    }, [baselineValues, locked]);
+    }, [baselineValues, probeEditable]);
     const closePickProbe = useCallback(() => {
-        if (locked) {
+        if (stateLocked) {
             return;
         }
         setOpen(false);
@@ -445,14 +452,14 @@ function ElementInspectorScene() {
                 originalInputValue: null,
             },
         });
-    }, [baselineValues, hasEdits, locked, values]);
+    }, [baselineValues, hasEdits, stateLocked, values]);
     const openPickProbe = useCallback(() => {
-        if (locked) {
+        if (stateLocked) {
             return;
         }
         setSavedProbeEdits({});
         setOpen(true);
-    }, [locked]);
+    }, [stateLocked]);
 
     const selectedTarget = useMemo<TargetSnapshot>(
         () => ({
@@ -480,12 +487,12 @@ function ElementInspectorScene() {
             pickProbeCompareMode: lockedCompare,
             pickProbeHasEdits: hasEdits,
             savedProbeEdits,
-            setPickProbeCompareMode: locked ? () => undefined : setCompareMode,
+            setPickProbeCompareMode: probeEditable ? setCompareMode : () => undefined,
             updatePickProbeValue,
             resetPickProbeValues,
             closePickProbe,
         }),
-        [baseSession, closePickProbe, hasEdits, locked, lockedCompare, lockedOpen, lockedValues, resetPickProbeValues, savedProbeEdits, selectedTarget, updatePickProbeValue],
+        [baseSession, closePickProbe, hasEdits, lockedCompare, lockedOpen, lockedValues, probeEditable, resetPickProbeValues, savedProbeEdits, selectedTarget, updatePickProbeValue],
     );
 
     return (
@@ -576,7 +583,7 @@ function DevicePreviewScene() {
 function FeedbackThreadScene() {
     const session = useReportSession();
     const openedRef = useRef(false);
-    const report = DEMO_REPORTS[0];
+    const report = DEMO_FEATURED_REPORTS[0];
 
     useEffect(() => {
         if (openedRef.current) {

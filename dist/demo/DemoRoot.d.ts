@@ -6,12 +6,13 @@ type DemoRootProps = {
     width: number;
     height: number;
     interaction: DemoInteraction;
+    inputLocked: boolean;
     interactive: boolean;
     className: string;
     style?: CSSProperties;
     ariaLabel?: string;
     children: ReactNode;
 };
-export declare function DemoRoot({ appearance, width, height, interaction, interactive, className, style, ariaLabel, children }: DemoRootProps): import("react").JSX.Element;
+export declare function DemoRoot({ appearance, width, height, interaction, inputLocked, interactive, className, style, ariaLabel, children }: DemoRootProps): import("react").JSX.Element;
 export {};
 //# sourceMappingURL=DemoRoot.d.ts.map

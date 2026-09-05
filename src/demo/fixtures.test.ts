@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
+import { buildRouteDetailsSummary } from "@/shared/utils/panel/panelBootstrap.js";
 import {
     createDemoAdapter,
     createDemoNotifications,
     DEMO_API_FLOW_ENTRIES,
+    DEMO_FEATURED_REPORTS,
     DEMO_REPORTS,
     DEMO_SCENE_SIZE,
 } from "./fixtures.js";
@@ -33,5 +35,16 @@ describe("FivePixels demo fixtures", () => {
 
         expect(reports).toHaveLength(DEMO_REPORTS.length);
         expect(await adapter.feedback.get(DEMO_REPORTS[0].id)).toMatchObject({ id: DEMO_REPORTS[0].id });
+    });
+
+    it("keeps featured reports short while activity reports diversify panel counts", () => {
+        expect(DEMO_FEATURED_REPORTS.length).toBeLessThanOrEqual(20);
+        expect(DEMO_REPORTS.length).toBeGreaterThan(100);
+
+        const summary = buildRouteDetailsSummary(DEMO_REPORTS, [], "/demo-showcase");
+        const activeRows = summary.statusRows.filter((row) => row.today > 0 || row.yesterday > 0);
+        expect(activeRows.length).toBeGreaterThan(5);
+        expect(activeRows.some((row) => row.today >= 10 || row.yesterday >= 10)).toBe(true);
+        expect(activeRows.every((row) => row.today <= 50 && row.yesterday <= 50)).toBe(true);
     });
 });
