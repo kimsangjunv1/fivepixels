@@ -82,7 +82,7 @@ declare const ReportContext: Context<{
     }>;
     restoreFromBackup: (backupKey: string) => Promise<{
         restored: false;
-        reason: "project-mismatch" | "invalid";
+        reason: "invalid" | "project-mismatch";
         name?: undefined;
         authorized?: undefined;
     } | {
@@ -122,7 +122,6 @@ declare const ReportContext: Context<{
     clearPersonalKey: () => void;
     canListAllFeedback: boolean;
     onActivitySummary: ((params: import("../types/report.js").ReportActivitySummaryParams) => Promise<import("../types/report.js").ReportActivitySummaryResult>) | undefined;
-    visibleShortcutKeys: boolean;
     searchInputRef: import("react").MutableRefObject<HTMLInputElement | null>;
     resolvedPanelAppearance: import("../types/report-ui.js").ResolvedAppearance;
     resolvedTooltipAppearance: import("../types/report-ui.js").ResolvedAppearance;
@@ -460,7 +459,7 @@ export declare function useReport(): {
     }>;
     restoreFromBackup: (backupKey: string) => Promise<{
         restored: false;
-        reason: "project-mismatch" | "invalid";
+        reason: "invalid" | "project-mismatch";
         name?: undefined;
         authorized?: undefined;
     } | {
@@ -500,7 +499,6 @@ export declare function useReport(): {
     clearPersonalKey: () => void;
     canListAllFeedback: boolean;
     onActivitySummary: ((params: import("../types/report.js").ReportActivitySummaryParams) => Promise<import("../types/report.js").ReportActivitySummaryResult>) | undefined;
-    visibleShortcutKeys: boolean;
     searchInputRef: import("react").MutableRefObject<HTMLInputElement | null>;
     resolvedPanelAppearance: import("../types/report-ui.js").ResolvedAppearance;
     resolvedTooltipAppearance: import("../types/report-ui.js").ResolvedAppearance;
@@ -841,7 +839,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         }>;
         restoreFromBackup: (backupKey: string) => Promise<{
             restored: false;
-            reason: "project-mismatch" | "invalid";
+            reason: "invalid" | "project-mismatch";
             name?: undefined;
             authorized?: undefined;
         } | {
@@ -881,7 +879,6 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         clearPersonalKey: () => void;
         canListAllFeedback: boolean;
         onActivitySummary: ((params: import("../types/report.js").ReportActivitySummaryParams) => Promise<import("../types/report.js").ReportActivitySummaryResult>) | undefined;
-        visibleShortcutKeys: boolean;
         searchInputRef: import("react").MutableRefObject<HTMLInputElement | null>;
         resolvedPanelAppearance: import("../types/report-ui.js").ResolvedAppearance;
         resolvedTooltipAppearance: import("../types/report-ui.js").ResolvedAppearance;
@@ -1140,7 +1137,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         clearNotifications: () => void;
         activateNotification: (item: import("../types/notification.js").NotificationItem) => void;
         runNotificationAction: (item: import("../types/notification.js").NotificationItem, action: import("../types/notification.js").NotificationActionId) => void;
-    }, "personalKey" | "projectId" | "fields" | "personalKeyRequired" | "environment" | "require" | "requireAuth" | "questionThreadDisplay" | "setQuestionThreadDisplay" | "threadLayout" | "setThreadLayout" | "locale" | "setLocale" | "showMarkerTargetPreview" | "setShowMarkerTargetPreview" | "toggleMarkerTargetPreview" | "devicePreviewUiOpen" | "setDevicePreviewUiOpen" | "mobilePreviewUiOpen" | "setMobilePreviewUiOpen" | "mobilePreviewDeviceId" | "setMobilePreviewDeviceId" | "mobilePreviewOrientation" | "setMobilePreviewOrientation" | "toggleMobilePreviewOrientation" | "mobilePreviewPreset" | "devicePreviewDeviceId" | "setDevicePreviewDeviceId" | "devicePreviewScale" | "setDevicePreviewScale" | "devicePreviewImageEnabled" | "setDevicePreviewImageEnabled" | "devicePreviewFitToViewport" | "setDevicePreviewFitToViewport" | "devicePreviewStatusBarEnabled" | "setDevicePreviewStatusBarEnabled" | "devicePreviewPreset" | "showHiddenDetachedMarkers" | "setShowHiddenDetachedMarkers" | "showModalDetachedMarkers" | "setShowModalDetachedMarkers" | "markerAppearance" | "setMarkerAppearance" | "setMarkerSize" | "setMarkerShape" | "setMarkerFillStyle" | "setMarkerColors" | "setMarkerColor" | "setMarkerStrokeColor" | "setFeedbackModeDotColors" | "setFeedbackModeDotColor" | "typography" | "setTypography" | "setFontSize" | "setFontFamily" | "panelRole" | "setPanelRole" | "persistenceStatus" | "appVersion" | "showFeedbackList" | "selfProfile" | "authors" | "publicKey" | "personalKeyCandidates" | "issuePersonalKey" | "rotatePersonalKey" | "insertPersonalKey" | "clearPersonalKey" | "authorSelectionLocked" | "messages" | "teamReviewers" | "teamActor" | "apiTeamDirectory" | "apiTeamMembers" | "apiTeamMembersLoading" | "refreshTeamMembers" | "visibleShortcutKeys" | "onListReviewers" | "onListReviewerRequests" | "onCreateReviewerRequest" | "onResolveReviewerRequest" | "onRegisterReviewer" | "onUpdateReviewer" | "onDeleteReviewer" | "panelAppearance" | "setPanelAppearance" | "tooltipAppearance" | "setTooltipAppearance" | "teamActorRole" | "isTeamAdmin" | "canAccessTeamSettings" | "integrationCapabilities" | "adapterIntegrationStatus" | "panelView" | "authBootstrapState" | "isAuthBootstrapping" | "loginMethod" | "loginWithApi" | "registerWithApi" | "logoutWithApi" | "refreshWithApi" | "loginWithArtemis" | "completeRemoteOnboarding" | "completeOnboarding" | "restoreFromBackup" | "skipOnboarding" | "resolvedPanelAppearance" | "resolvedTooltipAppearance" | "isMobileViewport" | "isPresentationMode" | "presentationViewers" | "visiblePanelTabs" | "visiblePanelTabsSummary" | "resolvedTabAvailabilityContext" | "setVisiblePanelTabs" | "resetVisibleTabsToRoleDefault" | "applyRoleDefaultTabsForOnboarding" | "savePanelTabPreference" | "storedPanelTabPreference">;
+    }, "personalKey" | "projectId" | "fields" | "personalKeyRequired" | "environment" | "require" | "requireAuth" | "publicKey" | "authors" | "selfProfile" | "isPresentationMode" | "loginMethod" | "personalKeyCandidates" | "issuePersonalKey" | "rotatePersonalKey" | "insertPersonalKey" | "clearPersonalKey" | "authBootstrapState" | "messages" | "appVersion" | "authorSelectionLocked" | "showMarkerTargetPreview" | "isAuthBootstrapping" | "devicePreviewUiOpen" | "devicePreviewDeviceId" | "devicePreviewScale" | "devicePreviewImageEnabled" | "devicePreviewFitToViewport" | "devicePreviewStatusBarEnabled" | "mobilePreviewUiOpen" | "mobilePreviewDeviceId" | "mobilePreviewOrientation" | "showHiddenDetachedMarkers" | "showModalDetachedMarkers" | "markerAppearance" | "typography" | "panelAppearance" | "tooltipAppearance" | "showFeedbackList" | "locale" | "persistenceStatus" | "questionThreadDisplay" | "threadLayout" | "panelRole" | "setShowMarkerTargetPreview" | "toggleMarkerTargetPreview" | "setDevicePreviewUiOpen" | "setDevicePreviewDeviceId" | "setDevicePreviewScale" | "setDevicePreviewImageEnabled" | "setDevicePreviewFitToViewport" | "setDevicePreviewStatusBarEnabled" | "devicePreviewPreset" | "setMobilePreviewUiOpen" | "setMobilePreviewDeviceId" | "setMobilePreviewOrientation" | "toggleMobilePreviewOrientation" | "mobilePreviewPreset" | "setShowHiddenDetachedMarkers" | "setShowModalDetachedMarkers" | "setMarkerAppearance" | "setMarkerSize" | "setMarkerShape" | "setMarkerFillStyle" | "setMarkerColors" | "setMarkerColor" | "setMarkerStrokeColor" | "setFeedbackModeDotColors" | "setFeedbackModeDotColor" | "setTypography" | "setFontSize" | "setFontFamily" | "setQuestionThreadDisplay" | "setThreadLayout" | "setPanelRole" | "setLocale" | "onListReviewers" | "onListReviewerRequests" | "onCreateReviewerRequest" | "onResolveReviewerRequest" | "onRegisterReviewer" | "onUpdateReviewer" | "onDeleteReviewer" | "teamReviewers" | "teamActor" | "apiTeamDirectory" | "apiTeamMembers" | "apiTeamMembersLoading" | "refreshTeamMembers" | "setPanelAppearance" | "setTooltipAppearance" | "teamActorRole" | "isTeamAdmin" | "canAccessTeamSettings" | "integrationCapabilities" | "adapterIntegrationStatus" | "resolvedPanelAppearance" | "resolvedTooltipAppearance" | "isMobileViewport" | "panelView" | "loginWithApi" | "registerWithApi" | "logoutWithApi" | "refreshWithApi" | "loginWithArtemis" | "completeRemoteOnboarding" | "completeOnboarding" | "restoreFromBackup" | "skipOnboarding" | "presentationViewers" | "visiblePanelTabs" | "visiblePanelTabsSummary" | "resolvedTabAvailabilityContext" | "setVisiblePanelTabs" | "resetVisibleTabsToRoleDefault" | "applyRoleDefaultTabsForOnboarding" | "savePanelTabPreference" | "storedPanelTabPreference">;
     session: Pick<{
         panelAppearance: import("../types/report.js").ReportAppearance;
         setPanelAppearance: (nextAppearance: import("../types/report.js").ReportAppearance) => void;
@@ -1215,7 +1212,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         }>;
         restoreFromBackup: (backupKey: string) => Promise<{
             restored: false;
-            reason: "project-mismatch" | "invalid";
+            reason: "invalid" | "project-mismatch";
             name?: undefined;
             authorized?: undefined;
         } | {
@@ -1255,7 +1252,6 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         clearPersonalKey: () => void;
         canListAllFeedback: boolean;
         onActivitySummary: ((params: import("../types/report.js").ReportActivitySummaryParams) => Promise<import("../types/report.js").ReportActivitySummaryResult>) | undefined;
-        visibleShortcutKeys: boolean;
         searchInputRef: import("react").MutableRefObject<HTMLInputElement | null>;
         resolvedPanelAppearance: import("../types/report-ui.js").ResolvedAppearance;
         resolvedTooltipAppearance: import("../types/report-ui.js").ResolvedAppearance;
@@ -1514,7 +1510,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         clearNotifications: () => void;
         activateNotification: (item: import("../types/notification.js").NotificationItem) => void;
         runNotificationAction: (item: import("../types/notification.js").NotificationItem, action: import("../types/notification.js").NotificationActionId) => void;
-    }, "markers" | "statusText" | "notifications" | "toggleReportMode" | "toggleTargetPreview" | "currentPathname" | "sessionActor" | "savedProbeDeletions" | "hasProbeSessionChanges" | "canUndoProbeSession" | "canRedoProbeSession" | "undoProbeSessionAction" | "redoProbeSessionAction" | "revertAllSavedProbeEdits" | "draft" | "pickProbeOpen" | "pickProbeSupportsTextFields" | "pickProbeLayoutMode" | "pickProbeValues" | "pickProbeCompareMode" | "pickProbeHasEdits" | "pickTargetContextMenu" | "contextMenuElementKey" | "savedProbeEdits" | "savedProbeCompareMode" | "closePickProbe" | "closeContextMenuTooltip" | "handlePickTargetEdit" | "handlePickTargetDelete" | "handlePickTargetRevert" | "setErrorMessage" | "commitPickProbeEdits" | "revertSavedProbeEdit" | "setSavedProbeCompareMode" | "setPickProbeCompareMode" | "updatePickProbeValue" | "resetPickProbeValues" | "appendSavedProbeSummaryAsNewDraftCase" | "activeReplyReportId" | "minimizedReplyReportIds" | "selectedTarget" | "hoveredTarget" | "mode" | "showTargetPreview" | "closeReplyComposer" | "openReplyComposer" | "selectCase" | "selectReport" | "focusedCaseId" | "activeReplyReport" | "cancelCaseEdit" | "appendApiFlowEntryToDraftCase" | "overlayRef" | "cancelDraft" | "beginFeedbackEdit" | "activateNotification" | "runNotificationAction" | "editingReportId" | "panelTab" | "pendingComposer" | "toggleIssueMode" | "cancelPendingComposer" | "stopEditing" | "focusSearchInput" | "selectAdjacentReport" | "panelCollapsed" | "setPanelCollapsed" | "searchInputRef" | "activeMarkerTarget" | "markerPreviewTargets" | "selectableTargets" | "errorMessage" | "draftStep" | "setDraftStep" | "hoverPointer" | "setHoverPointer" | "handlePickTargetMemo" | "editableDraft" | "setEditableDraft" | "openReplyReportIds" | "openReplyReports" | "setReplyWindowMinimized" | "reorderMinimizedReplyWindow" | "focusReplyWindow" | "closeReplyWindow" | "tooltipReport" | "tooltipAnchor" | "tooltipFieldTags" | "replyDraft" | "setReplyDraft" | "replyMentions" | "setReplyMentions" | "replyUserMentions" | "setReplyUserMentions" | "mentionHighlightTarget" | "setMentionHighlightTarget" | "replySubmitAsQuestion" | "setReplySubmitAsQuestion" | "draftAuthorName" | "setDraftAuthorName" | "replyAuthorName" | "setReplyAuthorName" | "presentationViewerId" | "setPresentationViewerId" | "startDenyReview" | "startCheckoutReview" | "startAskQuestion" | "confirmAuthorName" | "setConfirmAuthorName" | "showConfirmAuthorSelect" | "toggleConfirmAuthorSelect" | "beginCaseEdit" | "updateCaseEditDraftCase" | "addCaseEditDraftCase" | "removeCaseEditDraftCase" | "removePersistedCase" | "isComposingNewCase" | "hasNewCaseDraftSession" | "beginComposeNewCase" | "cancelComposeNewCase" | "clearFocusedCase" | "isCaseEditing" | "caseEditReportId" | "caseEditCases" | "openPanelTab" | "togglePanelTab" | "locateFeedback" | "activateFeedbackMarker" | "revealOpenFeedback" | "clearHoverLeaveTimeout" | "scheduleHoverLeave" | "setHoveredMarkerId" | "handleOverlayMove" | "handleOverlayContextMenu" | "handleOverlayClick" | "updateDraftCase" | "addDraftCase" | "removeDraftCase" | "updateDraftField" | "updateDraftCategory" | "startEditing" | "unreadNotificationCount" | "notificationUiOpen" | "setNotificationUiOpen" | "toggleNotificationUiOpen" | "closeNotificationUi" | "markNotificationRead" | "markAllNotificationsRead" | "dismissNotification" | "clearNotifications">;
+    }, "markers" | "statusText" | "notifications" | "presentationViewerId" | "setPresentationViewerId" | "savedProbeDeletions" | "mode" | "setHoverPointer" | "draft" | "pickProbeOpen" | "pickProbeValues" | "pickProbeSupportsTextFields" | "pickProbeLayoutMode" | "pickProbeCompareMode" | "pickTargetContextMenu" | "contextMenuElementKey" | "savedProbeEdits" | "savedProbeCompareMode" | "undoProbeSessionAction" | "redoProbeSessionAction" | "revertAllSavedProbeEdits" | "canUndoProbeSession" | "canRedoProbeSession" | "hasProbeSessionChanges" | "currentPathname" | "sessionActor" | "setErrorMessage" | "overlayRef" | "showTargetPreview" | "selectableTargets" | "hoveredTarget" | "hoverPointer" | "selectedTarget" | "draftStep" | "setDraftStep" | "pickProbeHasEdits" | "closePickProbe" | "closeContextMenuTooltip" | "handlePickTargetEdit" | "handlePickTargetDelete" | "handlePickTargetRevert" | "commitPickProbeEdits" | "revertSavedProbeEdit" | "setSavedProbeCompareMode" | "setPickProbeCompareMode" | "updatePickProbeValue" | "resetPickProbeValues" | "appendSavedProbeSummaryAsNewDraftCase" | "draftAuthorName" | "setDraftAuthorName" | "activeReplyReportId" | "minimizedReplyReportIds" | "selectReport" | "closeReplyComposer" | "openReplyComposer" | "selectCase" | "searchInputRef" | "setHoveredMarkerId" | "closeReplyWindow" | "editingReportId" | "editableDraft" | "setEditableDraft" | "panelCollapsed" | "setPanelCollapsed" | "panelTab" | "errorMessage" | "activeReplyReport" | "focusedCaseId" | "caseEditReportId" | "openReplyReportIds" | "replyDraft" | "setReplyDraft" | "replyMentions" | "setReplyMentions" | "replyUserMentions" | "setReplyUserMentions" | "mentionHighlightTarget" | "setMentionHighlightTarget" | "replySubmitAsQuestion" | "setReplySubmitAsQuestion" | "replyAuthorName" | "setReplyAuthorName" | "pendingComposer" | "confirmAuthorName" | "setConfirmAuthorName" | "showConfirmAuthorSelect" | "isComposingNewCase" | "cancelCaseEdit" | "notificationUiOpen" | "setNotificationUiOpen" | "beginFeedbackEdit" | "cancelDraft" | "appendApiFlowEntryToDraftCase" | "activateNotification" | "runNotificationAction" | "activeMarkerTarget" | "markerPreviewTargets" | "handlePickTargetMemo" | "openReplyReports" | "setReplyWindowMinimized" | "reorderMinimizedReplyWindow" | "focusReplyWindow" | "tooltipReport" | "tooltipAnchor" | "tooltipFieldTags" | "startDenyReview" | "startCheckoutReview" | "startAskQuestion" | "cancelPendingComposer" | "toggleConfirmAuthorSelect" | "beginCaseEdit" | "updateCaseEditDraftCase" | "addCaseEditDraftCase" | "removeCaseEditDraftCase" | "removePersistedCase" | "hasNewCaseDraftSession" | "beginComposeNewCase" | "cancelComposeNewCase" | "clearFocusedCase" | "isCaseEditing" | "caseEditCases" | "toggleReportMode" | "toggleTargetPreview" | "toggleIssueMode" | "openPanelTab" | "togglePanelTab" | "locateFeedback" | "focusSearchInput" | "selectAdjacentReport" | "activateFeedbackMarker" | "revealOpenFeedback" | "clearHoverLeaveTimeout" | "scheduleHoverLeave" | "handleOverlayMove" | "handleOverlayContextMenu" | "handleOverlayClick" | "updateDraftCase" | "addDraftCase" | "removeDraftCase" | "updateDraftField" | "updateDraftCategory" | "startEditing" | "stopEditing" | "unreadNotificationCount" | "toggleNotificationUiOpen" | "closeNotificationUi" | "markNotificationRead" | "markAllNotificationsRead" | "dismissNotification" | "clearNotifications">;
     data: Pick<{
         panelAppearance: import("../types/report.js").ReportAppearance;
         setPanelAppearance: (nextAppearance: import("../types/report.js").ReportAppearance) => void;
@@ -1589,7 +1585,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         }>;
         restoreFromBackup: (backupKey: string) => Promise<{
             restored: false;
-            reason: "project-mismatch" | "invalid";
+            reason: "invalid" | "project-mismatch";
             name?: undefined;
             authorized?: undefined;
         } | {
@@ -1629,7 +1625,6 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         clearPersonalKey: () => void;
         canListAllFeedback: boolean;
         onActivitySummary: ((params: import("../types/report.js").ReportActivitySummaryParams) => Promise<import("../types/report.js").ReportActivitySummaryResult>) | undefined;
-        visibleShortcutKeys: boolean;
         searchInputRef: import("react").MutableRefObject<HTMLInputElement | null>;
         resolvedPanelAppearance: import("../types/report-ui.js").ResolvedAppearance;
         resolvedTooltipAppearance: import("../types/report-ui.js").ResolvedAppearance;
@@ -1888,7 +1883,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         clearNotifications: () => void;
         activateNotification: (item: import("../types/notification.js").NotificationItem) => void;
         runNotificationAction: (item: import("../types/notification.js").NotificationItem, action: import("../types/notification.js").NotificationActionId) => void;
-    }, "authDiagnostics" | "isError" | "isFetching" | "hasNextPage" | "isFetchingNextPage" | "fetchNextPage" | "refetch" | "replyHistoryByReportId" | "replyHistory" | "loadOlderReplies" | "goToOlderPaginationPage" | "goToNewerPaginationPage" | "canTransferFeedback" | "canListAllFeedback" | "listScope" | "setListScope" | "filters" | "setFilters" | "reports" | "currentPageReports" | "filteredReports" | "allPageReports" | "onPanelBootstrap" | "routeDetailsStats" | "selectedReport" | "isCreating" | "isUpdating" | "isDeleting" | "queryErrorMessage" | "loadRepliesIfNeeded" | "hydrateFeedbackIfNeeded" | "apiFlowEntries" | "activeApiFailureAlert" | "dismissFailureAlert" | "networkMonitorEnabled" | "handleCreateSubmit" | "handleUpdateSubmit" | "onActivitySummary" | "isSubmittingReply" | "isClaimingAssignee" | "handleClaimAssignee" | "handleTransferAssignee" | "handleConfirmResolution" | "handleCaseEditSave" | "targetStats" | "roleStatItems" | "handleReplySubmit" | "handleCreateCaseSubmit" | "handleDelete" | "canCreateGitHubIssueFromList" | "canCreateGitHubIssueOnCreate" | "creatingGitHubIssueId" | "handleCreateGitHubIssue" | "handleCreateSubmitWithGitHubIssue" | "isDraftGitHubIssueSubmitting">;
+    }, "authDiagnostics" | "currentPageReports" | "reports" | "allPageReports" | "isFetching" | "loadRepliesIfNeeded" | "hydrateFeedbackIfNeeded" | "selectedReport" | "isCreating" | "creatingGitHubIssueId" | "isFetchingNextPage" | "replyHistory" | "replyHistoryByReportId" | "filters" | "setFilters" | "listScope" | "setListScope" | "isError" | "hasNextPage" | "fetchNextPage" | "refetch" | "loadOlderReplies" | "goToOlderPaginationPage" | "goToNewerPaginationPage" | "onPanelBootstrap" | "canTransferFeedback" | "canListAllFeedback" | "filteredReports" | "routeDetailsStats" | "isUpdating" | "isDeleting" | "queryErrorMessage" | "isSubmittingReply" | "isClaimingAssignee" | "activeApiFailureAlert" | "apiFlowEntries" | "dismissFailureAlert" | "networkMonitorEnabled" | "onActivitySummary" | "targetStats" | "roleStatItems" | "handleClaimAssignee" | "handleTransferAssignee" | "handleConfirmResolution" | "handleCaseEditSave" | "handleCreateSubmit" | "handleUpdateSubmit" | "handleReplySubmit" | "handleCreateCaseSubmit" | "handleDelete" | "canCreateGitHubIssueFromList" | "canCreateGitHubIssueOnCreate" | "handleCreateGitHubIssue" | "handleCreateSubmitWithGitHubIssue" | "isDraftGitHubIssueSubmitting">;
 };
 export { ReportContext, ReportPreferencesContext, ReportSessionContext, ReportDataContext };
 //# sourceMappingURL=reportContext.d.ts.map

@@ -1,10 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { REPORT_SHORTCUTS } from "@/shared/constants/reportShortcuts.js";
 import { useReportData, useReportPreferences, useReportSession } from "@/shared/providers/reportContext.js";
 import type { ReportLocale } from "@/shared/i18n/types.js";
 import { formatDateOnly } from "@/shared/utils/shared/format.js";
 import { type RouteDetailStatus } from "@/shared/utils/panel/routeDetailStatus.js";
-import { ShortcutHint } from "@/shared/components/ShortcutHint.js";
 import { SearchIcon, ChevronDownIcon } from "@/shared/components/icons/Icons.js";
 import type { ReportFeedback } from "@/shared/types/report.js";
 import { IntegrationLockTip, useIntegrationLock } from "@/shared/components/ui/IntegrationLock.js";
@@ -68,7 +66,7 @@ function groupReportsByDate(reports: ReportFeedback[], locale: ReportLocale) {
 }
 
 export function ReportFeedbackList({ listKind = "feedback" }: { listKind?: FeedbackListKind }) {
-    const { locale, messages, visibleShortcutKeys } = useReportPreferences();
+    const { locale, messages } = useReportPreferences();
     const { searchInputRef, locateFeedback } = useReportSession();
     const {
         filters,
@@ -303,13 +301,6 @@ export function ReportFeedbackList({ listKind = "feedback" }: { listKind?: Feedb
                             className="h-[32px] w-full px-[8px] pr-[30px] text-[14px] text-[var(--adaptive-black800)] outline-none"
                         />
                         <SearchIcon className="pointer-events-none absolute right-[8px] top-[25%] h-4 w-4 -translate-y-1/2 text-[var(--adaptive-black500)]" />
-
-                        <div className="absolute right-[30px] top-1/2 -translate-y-1/2">
-                            <ShortcutHint
-                                binding={REPORT_SHORTCUTS.focusSearch}
-                                visible={visibleShortcutKeys}
-                            />
-                        </div>
                     </div>
                 </div>
             </div>

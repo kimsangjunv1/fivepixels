@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import type { DeepPartialReportMessages } from "@/shared/i18n/types.js";
 import type { ReportLocale } from "@/shared/i18n/types.js";
-import { useReportShortcuts } from "../useReportShortcuts.js";
 import { useReportAuthSession, type PanelView } from "./useReportAuthSession.js";
 import { useReportDraftSession } from "./useReportDraftSession.js";
 import { useReportMarkers } from "./useReportMarkers.js";
@@ -45,7 +44,6 @@ export type ReportStateConfig = {
     fields: ReportField[];
     authors?: ReportAuthor[];
     requireReviewerKey?: boolean;
-    shortcut?: string;
     identify?: ReportIdentify;
     adapter?: FivePixelsAdapter;
     onNavigate?: (pathname: string) => void | Promise<void>;
@@ -55,7 +53,6 @@ export type ReportStateConfig = {
     github?: ReportGitHubConfig;
     routeKey?: string;
     showFeedbackList: boolean;
-    visibleShortcutKeys?: boolean;
     initialLocale: ReportLocale;
     messageOverrides?: DeepPartialReportMessages;
     pixelsMode?: FivePixelsMode;
@@ -76,7 +73,6 @@ export function useReportState({
     fields,
     authors = [],
     requireReviewerKey = false,
-    shortcut: _shortcut,
     identify,
     adapter,
     onNavigate,
@@ -86,7 +82,6 @@ export function useReportState({
     github,
     routeKey,
     showFeedbackList,
-    visibleShortcutKeys = false,
     initialLocale,
     messageOverrides,
     pixelsMode = "default",
@@ -567,29 +562,6 @@ export function useReportState({
         };
     }, []);
 
-    useReportShortcuts({
-        mode: panel.mode,
-        draft: draft.draft,
-        editingReportId: mutations.editingReportId,
-        panelTab: panel.panelTab,
-        showTargetPreview: draft.showTargetPreview,
-        activeReplyReportId: reply.activeReplyReportId,
-        pendingComposer: reply.pendingComposer,
-        pickProbeOpen: draft.pickProbeOpen,
-        toggleReportMode: panel.toggleReportMode,
-        toggleTargetPreview: draft.toggleTargetPreview,
-        toggleIssueMode: panel.toggleIssueMode,
-        cancelDraft,
-        cancelPendingComposer: reply.cancelPendingComposer,
-        closePickProbe: draft.closePickProbe,
-        closeReplyComposer: reply.closeReplyComposer,
-        handleCreateSubmit: mutations.handleCreateSubmit,
-        stopEditing: mutations.stopEditing,
-        handleUpdateSubmit: mutations.handleUpdateSubmit,
-        focusSearchInput: markers.focusSearchInput,
-        selectAdjacentReport: markers.selectAdjacentReport,
-    });
-
     return assembleReportContextValue({
         panel,
         auth,
@@ -616,7 +588,6 @@ export function useReportState({
             (panel.persistenceStatus.mode === "API" && Boolean(panel.fivePixelsAdapter?.feedback?.delete)),
         usesLazyReplies: panel.usesLazyReplies,
         usesCreateReply: panel.usesCreateReply,
-        visibleShortcutKeys,
         overlayRef,
         replyHistory,
         selectReport,

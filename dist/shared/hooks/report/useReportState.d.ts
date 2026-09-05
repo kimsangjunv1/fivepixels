@@ -18,7 +18,6 @@ export type ReportStateConfig = {
     fields: ReportField[];
     authors?: ReportAuthor[];
     requireReviewerKey?: boolean;
-    shortcut?: string;
     identify?: ReportIdentify;
     adapter?: FivePixelsAdapter;
     onNavigate?: (pathname: string) => void | Promise<void>;
@@ -31,7 +30,6 @@ export type ReportStateConfig = {
     github?: ReportGitHubConfig;
     routeKey?: string;
     showFeedbackList: boolean;
-    visibleShortcutKeys?: boolean;
     initialLocale: ReportLocale;
     messageOverrides?: DeepPartialReportMessages;
     pixelsMode?: FivePixelsMode;
@@ -40,7 +38,7 @@ export type ReportStateConfig = {
     replyHistory: import("../../../shared/utils/report/reportUi.js").ResolvedReplyHistoryConfig;
     networkMonitor?: boolean;
 };
-export declare function useReportState({ projectId, environment, appVersion, panelAppearance, tooltipAppearance, questionThreadDefault, threadLayoutDefault, fields, authors, requireReviewerKey, shortcut: _shortcut, identify, adapter, onNavigate, onRevealTarget, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys, initialLocale, messageOverrides, pixelsMode, sync, requireAuth, replyHistory, networkMonitor, }: ReportStateConfig): {
+export declare function useReportState({ projectId, environment, appVersion, panelAppearance, tooltipAppearance, questionThreadDefault, threadLayoutDefault, fields, authors, requireReviewerKey, identify, adapter, onNavigate, onRevealTarget, onEvent, onReply, github, routeKey, showFeedbackList, initialLocale, messageOverrides, pixelsMode, sync, requireAuth, replyHistory, networkMonitor, }: ReportStateConfig): {
     panelAppearance: ReportAppearance;
     setPanelAppearance: (nextAppearance: ReportAppearance) => void;
     tooltipAppearance: ReportAppearance;
@@ -114,7 +112,7 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     }>;
     restoreFromBackup: (backupKey: string) => Promise<{
         restored: false;
-        reason: "project-mismatch" | "invalid";
+        reason: "invalid" | "project-mismatch";
         name?: undefined;
         authorized?: undefined;
     } | {
@@ -154,7 +152,6 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     clearPersonalKey: () => void;
     canListAllFeedback: boolean;
     onActivitySummary: ((params: import("../../../shared/types/report.js").ReportActivitySummaryParams) => Promise<import("../../../shared/types/report.js").ReportActivitySummaryResult>) | undefined;
-    visibleShortcutKeys: boolean;
     searchInputRef: import("react").MutableRefObject<HTMLInputElement | null>;
     resolvedPanelAppearance: import("../../types/report-ui.js").ResolvedAppearance;
     resolvedTooltipAppearance: import("../../types/report-ui.js").ResolvedAppearance;

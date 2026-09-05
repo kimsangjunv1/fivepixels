@@ -12,23 +12,20 @@ export type ResolvedReportUi = {
     panelAppearance: ReportAppearance;
     tooltipAppearance: ReportAppearance;
     showFeedbackList: boolean;
-    visibleShortcutKeys: boolean;
     questionThreadDefault: QuestionThreadDisplay;
     threadLayoutDefault: ThreadLayoutStyle;
     replyHistory: ResolvedReplyHistoryConfig;
-    shortcut?: string;
     locale: ReportLocale;
     messages: ReportMessages;
 };
 
 const DEFAULT_UI: Pick<
     ResolvedReportUi,
-    "panelAppearance" | "tooltipAppearance" | "showFeedbackList" | "visibleShortcutKeys" | "questionThreadDefault" | "threadLayoutDefault" | "locale"
+    "panelAppearance" | "tooltipAppearance" | "showFeedbackList" | "questionThreadDefault" | "threadLayoutDefault" | "locale"
 > = {
     panelAppearance: "light",
     tooltipAppearance: "light",
     showFeedbackList: true,
-    visibleShortcutKeys: false,
     questionThreadDefault: "expanded",
     threadLayoutDefault: "classic",
     locale: "en",
@@ -47,14 +44,12 @@ export function resolveReportUi({ ui }: ResolveReportUiOptions): ResolvedReportU
         panelAppearance,
         tooltipAppearance,
         showFeedbackList: ui?.showFeedbackList ?? DEFAULT_UI.showFeedbackList,
-        visibleShortcutKeys: ui?.visibleShortcutKeys ?? DEFAULT_UI.visibleShortcutKeys,
         questionThreadDefault: ui?.questionThreadDefault ?? DEFAULT_UI.questionThreadDefault,
         threadLayoutDefault: ui?.threadLayoutDefault ?? DEFAULT_UI.threadLayoutDefault,
         replyHistory: {
             mode: ui?.replyHistory?.mode ?? DEFAULT_REPLY_HISTORY_MODE,
             pageSize: ui?.replyHistory?.pageSize ?? DEFAULT_REPLY_HISTORY_PAGE_SIZE,
         },
-        shortcut: ui?.shortcut,
         locale,
         messages: getReportMessages(locale, ui?.messages),
     };

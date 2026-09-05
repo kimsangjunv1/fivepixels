@@ -8,11 +8,9 @@ export type ResolvedReportUi = {
     panelAppearance: ReportAppearance;
     tooltipAppearance: ReportAppearance;
     showFeedbackList: boolean;
-    visibleShortcutKeys: boolean;
     questionThreadDefault: QuestionThreadDisplay;
     threadLayoutDefault: ThreadLayoutStyle;
     replyHistory: ResolvedReplyHistoryConfig;
-    shortcut?: string;
     locale: ReportLocale;
     messages: ReportMessages;
 };

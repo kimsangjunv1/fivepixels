@@ -35,7 +35,6 @@ export const REPORT_PREFERENCE_KEYS = [
     "appVersion",
     "persistenceStatus",
     "showFeedbackList",
-    "visibleShortcutKeys",
     "resolvedPanelAppearance",
     "resolvedTooltipAppearance",
     "isMobileViewport",

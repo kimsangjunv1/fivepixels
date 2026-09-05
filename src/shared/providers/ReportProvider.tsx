@@ -34,11 +34,9 @@ type ReportProviderEnabledProps = Omit<ReportProviderProps, "project" | "ui" | "
     panelAppearance: NonNullable<ReportUi["panelAppearance"]>;
     tooltipAppearance: NonNullable<ReportUi["tooltipAppearance"]>;
     showFeedbackList: boolean;
-    visibleShortcutKeys: boolean;
     questionThreadDefault: NonNullable<ReportUi["questionThreadDefault"]>;
     threadLayoutDefault: NonNullable<ReportUi["threadLayoutDefault"]>;
     replyHistory: NonNullable<ResolvedReportUi["replyHistory"]>;
-    shortcut?: string;
     fields: ReportField[];
     routeKey?: string;
     identify?: ReportIdentify;
@@ -64,7 +62,6 @@ function ReportProviderEnabled({
     fields,
     authors,
     requireReviewerKey,
-    shortcut,
     identify,
     adapter,
     onNavigate,
@@ -74,7 +71,6 @@ function ReportProviderEnabled({
     github,
     routeKey,
     showFeedbackList,
-    visibleShortcutKeys,
     locale,
     messageOverrides,
     pixelsMode,
@@ -95,7 +91,6 @@ function ReportProviderEnabled({
         fields,
         authors,
         requireReviewerKey,
-        shortcut,
         identify,
         pixelsMode,
         sync,
@@ -108,7 +103,6 @@ function ReportProviderEnabled({
         github,
         routeKey,
         showFeedbackList,
-        visibleShortcutKeys,
         initialLocale: locale,
         messageOverrides,
         networkMonitor,
@@ -172,11 +166,9 @@ export function ReportProvider({
             panelAppearance={resolvedUi.panelAppearance}
             tooltipAppearance={resolvedUi.tooltipAppearance}
             showFeedbackList={resolvedUi.showFeedbackList}
-            visibleShortcutKeys={resolvedUi.visibleShortcutKeys}
             questionThreadDefault={resolvedUi.questionThreadDefault}
             threadLayoutDefault={resolvedUi.threadLayoutDefault}
             replyHistory={resolvedUi.replyHistory}
-            shortcut={resolvedUi.shortcut}
             fields={resolvedFields}
             authors={resolvedTeam.reviewers}
             requireReviewerKey={resolvedTeam.requireReviewerKey}

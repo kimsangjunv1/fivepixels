@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
-import { useReportShortcuts } from "../useReportShortcuts.js";
 import { useReportAuthSession } from "./useReportAuthSession.js";
 import { useReportDraftSession } from "./useReportDraftSession.js";
 import { useReportMarkers } from "./useReportMarkers.js";
@@ -12,7 +11,7 @@ import { useNotificationCenter } from "./useNotificationCenter.js";
 import { buildStatusNotifications } from "../../../shared/utils/notification/buildStatusNotifications.js";
 import { useNetworkMonitor } from "../useNetworkMonitor.js";
 import { resolveDefaultAuthorName } from "../../../shared/utils/report/resolveDefaultAuthorName.js";
-export function useReportState({ projectId, environment, appVersion, panelAppearance, tooltipAppearance, questionThreadDefault = "expanded", threadLayoutDefault = "classic", fields, authors = [], requireReviewerKey = false, shortcut: _shortcut, identify, adapter, onNavigate, onRevealTarget, onEvent, onReply, github, routeKey, showFeedbackList, visibleShortcutKeys = false, initialLocale, messageOverrides, pixelsMode = "default", sync = "local", requireAuth, replyHistory, networkMonitor = true, }) {
+export function useReportState({ projectId, environment, appVersion, panelAppearance, tooltipAppearance, questionThreadDefault = "expanded", threadLayoutDefault = "classic", fields, authors = [], requireReviewerKey = false, identify, adapter, onNavigate, onRevealTarget, onEvent, onReply, github, routeKey, showFeedbackList, initialLocale, messageOverrides, pixelsMode = "default", sync = "local", requireAuth, replyHistory, networkMonitor = true, }) {
     const overlayRef = useRef(null);
     const hoveredElementRef = useRef(null);
     const selectedElementRef = useRef(null);
@@ -397,28 +396,6 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
             }
         };
     }, []);
-    useReportShortcuts({
-        mode: panel.mode,
-        draft: draft.draft,
-        editingReportId: mutations.editingReportId,
-        panelTab: panel.panelTab,
-        showTargetPreview: draft.showTargetPreview,
-        activeReplyReportId: reply.activeReplyReportId,
-        pendingComposer: reply.pendingComposer,
-        pickProbeOpen: draft.pickProbeOpen,
-        toggleReportMode: panel.toggleReportMode,
-        toggleTargetPreview: draft.toggleTargetPreview,
-        toggleIssueMode: panel.toggleIssueMode,
-        cancelDraft,
-        cancelPendingComposer: reply.cancelPendingComposer,
-        closePickProbe: draft.closePickProbe,
-        closeReplyComposer: reply.closeReplyComposer,
-        handleCreateSubmit: mutations.handleCreateSubmit,
-        stopEditing: mutations.stopEditing,
-        handleUpdateSubmit: mutations.handleUpdateSubmit,
-        focusSearchInput: markers.focusSearchInput,
-        selectAdjacentReport: markers.selectAdjacentReport,
-    });
     return assembleReportContextValue({
         panel,
         auth,
@@ -444,7 +421,6 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
             (panel.persistenceStatus.mode === "API" && Boolean(panel.fivePixelsAdapter?.feedback?.delete)),
         usesLazyReplies: panel.usesLazyReplies,
         usesCreateReply: panel.usesCreateReply,
-        visibleShortcutKeys,
         overlayRef,
         replyHistory,
         selectReport,

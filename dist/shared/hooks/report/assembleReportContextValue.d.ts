@@ -34,7 +34,6 @@ type AssembleArgs = {
     canDeleteViaStorage: boolean;
     usesLazyReplies: boolean;
     usesCreateReply: boolean;
-    visibleShortcutKeys: boolean;
     overlayRef: RefObject<HTMLDivElement>;
     replyHistory: ResolvedReplyHistoryConfig;
     selectReport: (reportId: string) => void;
@@ -53,7 +52,7 @@ type AssembleArgs = {
  * Flat context value for ReportProvider slices.
  * Keys stay flat (see reportContextPartitions). Domain hooks → this assembler → UI.
  */
-export declare function assembleReportContextValue({ panel, auth, draft, markers, mutations, reply, fields, projectId, environment, appVersion, showFeedbackList, teamReviewers, teamActor, apiTeamDirectory, apiTeamMembers, apiTeamMembersLoading, refreshTeamMembers, adapter, github, canDeleteViaStorage, usesLazyReplies, usesCreateReply, visibleShortcutKeys, overlayRef, replyHistory, selectReport, beginFeedbackEdit, cancelDraft, apiFlowEntries, activeApiFailureAlert, dismissFailureAlert, appendApiFlowEntryToDraftCase, networkMonitorEnabled, notifications, activateNotification, runNotificationAction, }: AssembleArgs): {
+export declare function assembleReportContextValue({ panel, auth, draft, markers, mutations, reply, fields, projectId, environment, appVersion, showFeedbackList, teamReviewers, teamActor, apiTeamDirectory, apiTeamMembers, apiTeamMembersLoading, refreshTeamMembers, adapter, github, canDeleteViaStorage, usesLazyReplies, usesCreateReply, overlayRef, replyHistory, selectReport, beginFeedbackEdit, cancelDraft, apiFlowEntries, activeApiFailureAlert, dismissFailureAlert, appendApiFlowEntryToDraftCase, networkMonitorEnabled, notifications, activateNotification, runNotificationAction, }: AssembleArgs): {
     panelAppearance: import("../../../shared/types/report.js").ReportAppearance;
     setPanelAppearance: (nextAppearance: import("../../../shared/types/report.js").ReportAppearance) => void;
     tooltipAppearance: import("../../../shared/types/report.js").ReportAppearance;
@@ -127,7 +126,7 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     }>;
     restoreFromBackup: (backupKey: string) => Promise<{
         restored: false;
-        reason: "project-mismatch" | "invalid";
+        reason: "invalid" | "project-mismatch";
         name?: undefined;
         authorized?: undefined;
     } | {
@@ -167,7 +166,6 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     clearPersonalKey: () => void;
     canListAllFeedback: boolean;
     onActivitySummary: ((params: import("../../../shared/types/report.js").ReportActivitySummaryParams) => Promise<import("../../../shared/types/report.js").ReportActivitySummaryResult>) | undefined;
-    visibleShortcutKeys: boolean;
     searchInputRef: import("react").MutableRefObject<HTMLInputElement | null>;
     resolvedPanelAppearance: import("../../types/report-ui.js").ResolvedAppearance;
     resolvedTooltipAppearance: import("../../types/report-ui.js").ResolvedAppearance;

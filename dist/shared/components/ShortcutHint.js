@@ -1,9 +1,0 @@
-import { jsx as _jsx } from "react/jsx-runtime";
-import { formatShortcutLabel } from "../../shared/utils/shared/shortcuts.js";
-export function ShortcutHint({ binding, visible }) {
-    if (!visible) {
-        return null;
-    }
-    return (_jsx("kbd", { className: "ml-1 inline-flex items-center rounded border border-[var(--adaptive-hairlineBorder)] bg-[var(--adaptive-black100)] px-1 py-0.5 text-[12px] font-medium text-[var(--adaptive-black500)]", children: formatShortcutLabel(binding) }));
-}
-//# sourceMappingURL=ShortcutHint.js.map

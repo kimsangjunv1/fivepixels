@@ -1,9 +1,7 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { REPORT_SHORTCUTS } from "../../shared/constants/reportShortcuts.js";
 import { useReportData, useReportPreferences, useReportSession } from "../../shared/providers/reportContext.js";
 import { formatDateOnly } from "../../shared/utils/shared/format.js";
-import { ShortcutHint } from "../../shared/components/ShortcutHint.js";
 import { SearchIcon, ChevronDownIcon } from "../../shared/components/icons/Icons.js";
 import { IntegrationLockTip, useIntegrationLock } from "../../shared/components/ui/IntegrationLock.js";
 import { DropdownMenu, DropdownMenuItem } from "../../shared/components/ui/DropdownMenu.js";
@@ -51,7 +49,7 @@ function groupReportsByDate(reports, locale) {
     return groups;
 }
 export function ReportFeedbackList({ listKind = "feedback" }) {
-    const { locale, messages, visibleShortcutKeys } = useReportPreferences();
+    const { locale, messages } = useReportPreferences();
     const { searchInputRef, locateFeedback } = useReportSession();
     const { filters, setFilters, filteredReports: allFilteredReports, reports, listScope, setListScope, canListAllFeedback, isError, isFetching, hasNextPage, isFetchingNextPage, fetchNextPage, isDeleting, queryErrorMessage, refetch, handleDelete, canCreateGitHubIssueFromList, creatingGitHubIssueId, handleCreateGitHubIssue, } = useReportData();
     const [visibleCount, setVisibleCount] = useState(FEEDBACK_PAGE_SIZE);
@@ -135,7 +133,7 @@ export function ReportFeedbackList({ listKind = "feedback" }) {
                                                 }, children: messages.feedbackList.filterStatusAll }), Object.keys(messages.status.routeDetail).map((status) => (_jsx(DropdownMenuItem, { active: filters.status === status, onClick: () => {
                                                     setStatusMenuOpen(false);
                                                     setFilters((current) => ({ ...current, status }));
-                                                }, children: messages.status.routeDetail[status] }, status)))] })] })) : null, !isMemoList ? _jsx("div", { className: "h-[32px] w-[1px] bg-[var(--adaptive-border-subtle)]" }) : null, _jsxs("div", { className: "relative w-full", children: [_jsx("input", { ref: searchInputRef, value: filters.keyword, onChange: (event) => setFilters((current) => ({ ...current, keyword: event.target.value })), placeholder: isMemoList ? messages.feedbackList.memoSearchPlaceholder : messages.feedbackList.searchPlaceholder, className: "h-[32px] w-full px-[8px] pr-[30px] text-[14px] text-[var(--adaptive-black800)] outline-none" }), _jsx(SearchIcon, { className: "pointer-events-none absolute right-[8px] top-[25%] h-4 w-4 -translate-y-1/2 text-[var(--adaptive-black500)]" }), _jsx("div", { className: "absolute right-[30px] top-1/2 -translate-y-1/2", children: _jsx(ShortcutHint, { binding: REPORT_SHORTCUTS.focusSearch, visible: visibleShortcutKeys }) })] })] })] }), _jsxs("div", { className: "min-h-0 min-w-0 flex-1 overflow-y-auto bg-[var(--adaptive-black50)]", children: [isError ? (_jsx(NoticeDialog, { role: "alertdialog", title: messages.feedbackList.loadFailedTitle, description: queryErrorMessage ?? messages.feedbackList.loadFailedRetry, actions: [
+                                                }, children: messages.status.routeDetail[status] }, status)))] })] })) : null, !isMemoList ? _jsx("div", { className: "h-[32px] w-[1px] bg-[var(--adaptive-border-subtle)]" }) : null, _jsxs("div", { className: "relative w-full", children: [_jsx("input", { ref: searchInputRef, value: filters.keyword, onChange: (event) => setFilters((current) => ({ ...current, keyword: event.target.value })), placeholder: isMemoList ? messages.feedbackList.memoSearchPlaceholder : messages.feedbackList.searchPlaceholder, className: "h-[32px] w-full px-[8px] pr-[30px] text-[14px] text-[var(--adaptive-black800)] outline-none" }), _jsx(SearchIcon, { className: "pointer-events-none absolute right-[8px] top-[25%] h-4 w-4 -translate-y-1/2 text-[var(--adaptive-black500)]" })] })] })] }), _jsxs("div", { className: "min-h-0 min-w-0 flex-1 overflow-y-auto bg-[var(--adaptive-black50)]", children: [isError ? (_jsx(NoticeDialog, { role: "alertdialog", title: messages.feedbackList.loadFailedTitle, description: queryErrorMessage ?? messages.feedbackList.loadFailedRetry, actions: [
                             {
                                 id: "retry",
                                 label: messages.common.retry,

@@ -82,7 +82,7 @@ REST 경로·필수 handler·선택 handler는 `examples/basic/src/fivepixels/ad
 | Prop | 타입 | 설명 |
 | ---- | ---- | ---- |
 | `project` | `{ id?, env?, version? }` | 프로젝트 식별자. `id` 기본값 `"my-app"`. |
-| `ui` | `{ appearance?, showFeedbackList?, visibleShortcutKeys?, shortcut?, locale?, messages? }` | UI 설정. `appearance`: `light` \| `dark` \| `system`. |
+| `ui` | `{ appearance?, showFeedbackList?, locale?, messages? }` | UI 설정. `appearance`: `light` \| `dark` \| `system`. |
 | `visibility` | `{ enabled?, devOnly?, routeKey? }` | 표시 여부. `devOnly`면 개발 환경에서만 노출. |
 | `team` | `{ reviewers?, user?, requireReviewerKey? }` | `reviewers` 명단. `user`·`requireReviewerKey`는 비권장(후자는 `require.reviewerKey`). |
 | `mode` | `"default"` \| `"presentation"` | 프레젠테이션 모드(시연·데모용 뷰어 전환). |
@@ -146,10 +146,10 @@ REST 경로·필수 handler·선택 handler는 `examples/basic/src/fivepixels/ad
 
 ## UI 모드
 
-| 모드 | 단축키 | 설명 |
-| ---- | ------ | ---- |
-| **report** | `⌘⇧M` | 요소 클릭 후 피드백 작성. 우클릭으로 시안 조정·삭제도 가능합니다. |
-| **view** | `⌘⇧L` | 마커·목록 조회, 답변·검수 |
+| 모드 | 설명 |
+| ---- | ---- |
+| **report** | 요소 클릭 후 피드백 작성. 우클릭으로 시안 조정·삭제도 가능합니다. |
+| **view** | 마커·목록 조회, 답변·검수 |
 
 ## UI Edit 모드 (시안 조정)
 

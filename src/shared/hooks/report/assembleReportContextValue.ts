@@ -60,7 +60,6 @@ type AssembleArgs = {
     canDeleteViaStorage: boolean;
     usesLazyReplies: boolean;
     usesCreateReply: boolean;
-    visibleShortcutKeys: boolean;
     overlayRef: RefObject<HTMLDivElement>;
     replyHistory: ResolvedReplyHistoryConfig;
     selectReport: (reportId: string) => void;
@@ -103,7 +102,6 @@ export function assembleReportContextValue({
     canDeleteViaStorage,
     usesLazyReplies,
     usesCreateReply,
-    visibleShortcutKeys,
     overlayRef,
     replyHistory,
     selectReport,
@@ -230,7 +228,6 @@ export function assembleReportContextValue({
         clearPersonalKey: auth.clearPersonalKey,
         canListAllFeedback: panel.canListAllFeedback,
         onActivitySummary,
-        visibleShortcutKeys,
         searchInputRef: panel.searchInputRef,
         resolvedPanelAppearance: panel.resolvedPanelAppearance,
         resolvedTooltipAppearance: panel.resolvedTooltipAppearance,

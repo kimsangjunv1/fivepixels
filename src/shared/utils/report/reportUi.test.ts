@@ -10,8 +10,6 @@ describe("resolveReportUi", () => {
                     panelAppearance: "dark",
                     tooltipAppearance: "dark",
                     showFeedbackList: false,
-                    visibleShortcutKeys: true,
-                    shortcut: "mod+shift+m",
                     locale: "ko",
                 },
             }),
@@ -19,14 +17,12 @@ describe("resolveReportUi", () => {
             panelAppearance: "dark",
             tooltipAppearance: "dark",
             showFeedbackList: false,
-            visibleShortcutKeys: true,
             questionThreadDefault: "expanded",
             threadLayoutDefault: "classic",
             replyHistory: {
                 mode: "button-and-scroll",
                 pageSize: 10,
             },
-            shortcut: "mod+shift+m",
             locale: "ko",
             messages: getReportMessages("ko"),
         });
@@ -44,14 +40,12 @@ describe("resolveReportUi", () => {
             panelAppearance: "light",
             tooltipAppearance: "dark",
             showFeedbackList: true,
-            visibleShortcutKeys: false,
             questionThreadDefault: "expanded",
             threadLayoutDefault: "classic",
             replyHistory: {
                 mode: "button-and-scroll",
                 pageSize: 10,
             },
-            shortcut: undefined,
             locale: "en",
             messages: getReportMessages("en"),
         });
@@ -62,14 +56,12 @@ describe("resolveReportUi", () => {
             panelAppearance: "light",
             tooltipAppearance: "light",
             showFeedbackList: true,
-            visibleShortcutKeys: false,
             questionThreadDefault: "expanded",
             threadLayoutDefault: "classic",
             replyHistory: {
                 mode: "button-and-scroll",
                 pageSize: 10,
             },
-            shortcut: undefined,
             locale: "en",
             messages: getReportMessages("en"),
         });

@@ -82,7 +82,7 @@ See `examples/basic/src/fivepixels/adapter.ts` and `FivePixelsAdapter` (`src/typ
 | Prop | Type | Description |
 | ---- | ---- | ----------- |
 | `project` | `{ id?, env?, version? }` | Project scope. `id` defaults to `"my-app"`. |
-| `ui` | `{ appearance?, showFeedbackList?, visibleShortcutKeys?, shortcut?, locale?, messages? }` | UI options. `appearance`: `light` \| `dark` \| `system`. |
+| `ui` | `{ appearance?, showFeedbackList?, locale?, messages? }` | UI options. `appearance`: `light` \| `dark` \| `system`. |
 | `visibility` | `{ enabled?, devOnly?, routeKey? }` | Mount control. `devOnly` limits to dev environments. |
 | `team` | `{ reviewers?, user?, requireReviewerKey? }` | Reviewer roster. Prefer omitting `user`; prefer `require.reviewerKey` over `requireReviewerKey`. |
 | `mode` | `"default"` \| `"presentation"` | Presentation mode for demos and viewer switching. |
@@ -146,10 +146,10 @@ Nested views are restored from outermost to innermost. `onRevealTarget` remains 
 
 ## UI modes
 
-| Mode | Shortcut | Description |
-| ---- | -------- | ----------- |
-| **report** | `⌘⇧M` | Click elements to create feedback. Right-click for design probe and delete. |
-| **view** | `⌘⇧L` | Browse markers, replies, and reviews |
+| Mode | Description |
+| ---- | ----------- |
+| **report** | Click elements to create feedback. Right-click for design probe and delete. |
+| **view** | Browse markers, replies, and reviews |
 
 ## UI Edit mode (design probe)
 

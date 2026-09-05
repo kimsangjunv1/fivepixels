@@ -103,7 +103,7 @@ export declare function useReportAuthSession({ projectId, environment, authors, 
     }>;
     restoreFromBackup: (backupKey: string) => Promise<{
         restored: false;
-        reason: "project-mismatch" | "invalid";
+        reason: "invalid" | "project-mismatch";
         name?: undefined;
         authorized?: undefined;
     } | {
