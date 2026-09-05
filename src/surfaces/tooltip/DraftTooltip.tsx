@@ -158,7 +158,8 @@ function DraftTooltipContent({
     }, [draft, editingMarker, selectedTarget]);
     const isSubmitting = isCreating || isUpdating || isDraftGitHubIssueSubmitting || isAuthBootstrapping;
     const categoryNeedsAttention = errorMessage === messages.errors.categoryRequired && !draft.category;
-    const showStatusChip = Boolean(footerWarningMessage) || Boolean(draft.targetSelector && draft.suggestedReportId);
+    const showIdHint = draft.category !== "memo" && Boolean(draft.targetSelector && draft.suggestedReportId);
+    const showStatusChip = Boolean(footerWarningMessage) || showIdHint;
     const submitLabel = isEditing ? messages.cases.save : messages.composer.draftComplete;
     const submittingLabel = isEditing ? messages.cases.saving : messages.composer.draftCompleting;
 

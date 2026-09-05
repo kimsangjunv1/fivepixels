@@ -242,11 +242,6 @@ function buildHoverTargetFromElement(element, reportId) {
         },
     };
 }
-const HOVER_INSPECT_CARDS = [
-    { id: "demo-kanban-card-03", title: "Notification stack collapse", tag: "TASK", tagTone: "task" },
-    { id: "demo-kanban-card-04", title: "Modal z-index stacking", tag: "BUG", tagTone: "bug" },
-    { id: "demo-kanban-card-05", title: "Marker badge spacing", tag: "DONE", tagTone: "done" },
-];
 function resolveSyntheticPointer(target) {
     return {
         clientX: target.rect.left + target.rect.width * 0.72,
@@ -257,40 +252,41 @@ function ElementHoverInspectScene() {
     const { locale } = useReportPreferences();
     const baseSession = useReportSession();
     const boardRef = useRef(null);
-    const cardRefs = useRef({});
-    const defaultCardId = HOVER_INSPECT_CARDS[1].id;
-    const [hoveredId, setHoveredId] = useState(defaultCardId);
+    const itemRefs = useRef({});
+    const defaultItemId = "demo-cta-button";
+    const [hoveredId, setHoveredId] = useState(defaultItemId);
     const [hoveredTarget, setHoveredTarget] = useState(null);
     const [hoverPointer, setHoverPointer] = useState(null);
     const [pointerLive, setPointerLive] = useState(false);
-    const applyCardTarget = useCallback((cardId, pointer) => {
-        const node = cardRefs.current[cardId];
+    const isKorean = locale === "ko";
+    const applyItemTarget = useCallback((itemId, pointer) => {
+        const node = itemRefs.current[itemId];
         if (!node) {
             return;
         }
-        const nextTarget = buildHoverTargetFromElement(node, cardId);
-        setHoveredId(cardId);
+        const nextTarget = buildHoverTargetFromElement(node, itemId);
+        setHoveredId(itemId);
         setHoveredTarget(nextTarget);
         setHoverPointer(pointer ?? resolveSyntheticPointer(nextTarget));
     }, []);
     const restorePreview = useCallback(() => {
         setPointerLive(false);
-        applyCardTarget(defaultCardId);
-    }, [applyCardTarget, defaultCardId]);
+        applyItemTarget(defaultItemId);
+    }, [applyItemTarget, defaultItemId]);
     useLayoutEffect(() => {
-        applyCardTarget(defaultCardId);
-        const frameId = window.requestAnimationFrame(() => applyCardTarget(defaultCardId));
+        applyItemTarget(defaultItemId);
+        const frameId = window.requestAnimationFrame(() => applyItemTarget(defaultItemId));
         return () => window.cancelAnimationFrame(frameId);
-    }, [applyCardTarget, defaultCardId, locale]);
+    }, [applyItemTarget, defaultItemId, locale]);
     useEffect(() => {
         const onResize = () => {
             if (!pointerLive) {
-                applyCardTarget(hoveredId);
+                applyItemTarget(hoveredId);
             }
         };
         window.addEventListener("resize", onResize);
         return () => window.removeEventListener("resize", onResize);
-    }, [applyCardTarget, hoveredId, pointerLive]);
+    }, [applyItemTarget, hoveredId, pointerLive]);
     const session = useMemo(() => ({
         ...baseSession,
         mode: "report",
@@ -299,24 +295,22 @@ function ElementHoverInspectScene() {
         setHoveredTarget: () => undefined,
         setHoverPointer: () => undefined,
     }), [baseSession, hoverPointer, hoveredTarget]);
-    const isKorean = locale === "ko";
-    return (_jsxs(ReportSessionContext.Provider, { value: session, children: [_jsxs("div", { ref: boardRef, className: "relative h-full w-full overflow-hidden rounded-[16px] bg-[#f4f6f8] p-[16px]", onPointerEnter: () => setPointerLive(true), onPointerLeave: restorePreview, onPointerMove: (event) => {
+    const bindItem = (itemId) => ({
+        ref: (node) => {
+            itemRefs.current[itemId] = node;
+        },
+        "data-report-id": itemId,
+        onPointerEnter: (event) => {
+            applyItemTarget(itemId, { clientX: event.clientX, clientY: event.clientY });
+        },
+        onPointerMove: (event) => {
+            applyItemTarget(itemId, { clientX: event.clientX, clientY: event.clientY });
+        },
+    });
+    return (_jsxs(ReportSessionContext.Provider, { value: session, children: [_jsxs("div", { ref: boardRef, className: "relative h-full w-full overflow-hidden rounded-[16px] bg-[#f4f6f8] p-[18px]", onPointerEnter: () => setPointerLive(true), onPointerLeave: restorePreview, onPointerMove: (event) => {
                     setPointerLive(true);
                     setHoverPointer({ clientX: event.clientX, clientY: event.clientY });
-                }, children: [_jsxs("div", { className: "mb-[12px] flex items-center justify-between gap-[8px]", children: [_jsxs("div", { children: [_jsx("p", { className: "text-[12px] font-semibold uppercase tracking-[0.04em] text-[#8b95a1]", children: isKorean ? "피드백 모드" : "Feedback mode" }), _jsx("h3", { className: "text-[16px] font-bold text-[#191f28]", children: isKorean ? "요소에 올리면 스타일이 보여요" : "Hover an element to inspect styles" })] }), _jsx("span", { className: "shrink-0 rounded-full bg-[#fff1f0] px-[10px] py-[4px] text-[11px] font-bold text-[#f04452]", children: "In Review" })] }), _jsx("div", { className: "grid grid-cols-1 gap-[10px]", children: HOVER_INSPECT_CARDS.map((card) => {
-                            const tagClass = card.tagTone === "bug"
-                                ? "bg-[#fff1f0] text-[#f04452]"
-                                : card.tagTone === "done"
-                                    ? "bg-[#e8f8ef] text-[#1f8a4c]"
-                                    : "bg-[#eef3ff] text-[#3182f6]";
-                            return (_jsxs("button", { ref: (node) => {
-                                    cardRefs.current[card.id] = node;
-                                }, type: "button", "data-report-id": card.id, className: "w-full rounded-[12px] border border-[#e5e8eb] bg-white px-[14px] py-[12px] text-left shadow-[0_8px_24px_rgba(25,31,40,0.06)] outline-none", onPointerEnter: (event) => {
-                                    applyCardTarget(card.id, { clientX: event.clientX, clientY: event.clientY });
-                                }, onPointerMove: (event) => {
-                                    applyCardTarget(card.id, { clientX: event.clientX, clientY: event.clientY });
-                                }, children: [_jsx("span", { className: `mb-[8px] inline-flex rounded-[6px] px-[6px] py-[2px] text-[10px] font-extrabold ${tagClass}`, children: card.tag }), _jsx("p", { className: "text-[15px] font-semibold leading-[1.35] text-[#191f28]", children: card.title })] }, card.id));
-                        }) })] }), _jsx(TargetHighlights, { hoveredTarget: hoveredTarget, selectedTarget: null, showHoverInspect: Boolean(hoveredTarget && hoverPointer), activeMarkerTarget: null })] }));
+                }, children: [_jsxs("div", { className: "mb-[14px] flex items-center justify-between gap-[8px]", children: [_jsxs("div", { children: [_jsx("p", { className: "text-[12px] font-semibold uppercase tracking-[0.04em] text-[#8b95a1]", children: isKorean ? "피드백 모드" : "Feedback mode" }), _jsx("h3", { className: "text-[16px] font-bold text-[#191f28]", children: isKorean ? "요소에 올리면 스타일이 보여요" : "Hover an element to inspect styles" })] }), _jsx("span", { className: "shrink-0 rounded-full bg-[#fff1f0] px-[10px] py-[4px] text-[11px] font-bold text-[#f04452]", children: "In Review" })] }), _jsxs("div", { className: "rounded-[16px] border border-[#e5e8eb] bg-white p-[18px] shadow-[0_10px_28px_rgba(25,31,40,0.06)]", children: [_jsx("p", { className: "mb-[10px] text-[11px] font-bold uppercase tracking-[0.06em] text-[#8b95a1]", children: isKorean ? "랜딩 미리보기" : "Landing preview" }), _jsx("h2", { ...bindItem("demo-hero-title"), className: "mb-[12px] max-w-[18ch] text-[28px] font-extrabold leading-[1.15] tracking-[-0.04em] text-[#191f28]", children: isKorean ? "웹사이트 위의 대화를, 더 선명하게." : "Clearer conversations on every page." }), _jsxs("div", { className: "mb-[16px] flex flex-wrap items-center gap-[10px]", children: [_jsx("span", { ...bindItem("demo-price-badge"), className: "inline-flex items-center rounded-full bg-[#111827] px-[12px] py-[6px] text-[13px] font-bold text-white", children: isKorean ? "월 29,000원" : "$29 / mo" }), _jsx("span", { className: "text-[13px] text-[#6b7684]", children: isKorean ? "팀 무제한 좌석 · 14일 체험" : "Unlimited seats · 14-day trial" })] }), _jsxs("button", { ...bindItem("demo-cta-button"), type: "button", className: "inline-flex items-center gap-[8px] rounded-[12px] bg-[#3182f6] px-[16px] py-[12px] text-[15px] font-bold text-white outline-none", children: [_jsx("span", { children: isKorean ? "무료로 시작하기" : "Start for free" }), _jsx("span", { "aria-hidden": "true", children: "\u2192" })] })] })] }), _jsx(TargetHighlights, { hoveredTarget: hoveredTarget, selectedTarget: null, showHoverInspect: Boolean(hoveredTarget && hoverPointer), activeMarkerTarget: null })] }));
 }
 function ElementInspectorScene() {
     const stateLocked = useDemoLocked();

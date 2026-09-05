@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
 import type { UserSelectablePanelTab } from "@/shared/constants/panelTabRegistry.js";
 import {
     ReportDataContext,
@@ -366,18 +366,7 @@ function buildHoverTargetFromElement(element: HTMLElement, reportId: string): Ta
     };
 }
 
-type HoverInspectCard = {
-    id: string;
-    title: string;
-    tag: string;
-    tagTone: "bug" | "task" | "done";
-};
-
-const HOVER_INSPECT_CARDS: HoverInspectCard[] = [
-    { id: "demo-kanban-card-03", title: "Notification stack collapse", tag: "TASK", tagTone: "task" },
-    { id: "demo-kanban-card-04", title: "Modal z-index stacking", tag: "BUG", tagTone: "bug" },
-    { id: "demo-kanban-card-05", title: "Marker badge spacing", tag: "DONE", tagTone: "done" },
-];
+type HoverInspectItemId = "demo-hero-title" | "demo-price-badge" | "demo-cta-button";
 
 function resolveSyntheticPointer(target: TargetSnapshot) {
     return {
@@ -390,45 +379,46 @@ function ElementHoverInspectScene() {
     const { locale } = useReportPreferences();
     const baseSession = useReportSession();
     const boardRef = useRef<HTMLDivElement | null>(null);
-    const cardRefs = useRef<Record<string, HTMLButtonElement | null>>({});
-    const defaultCardId = HOVER_INSPECT_CARDS[1]!.id;
-    const [hoveredId, setHoveredId] = useState(defaultCardId);
+    const itemRefs = useRef<Record<string, HTMLElement | null>>({});
+    const defaultItemId: HoverInspectItemId = "demo-cta-button";
+    const [hoveredId, setHoveredId] = useState<string>(defaultItemId);
     const [hoveredTarget, setHoveredTarget] = useState<TargetSnapshot | null>(null);
     const [hoverPointer, setHoverPointer] = useState<{ clientX: number; clientY: number } | null>(null);
     const [pointerLive, setPointerLive] = useState(false);
+    const isKorean = locale === "ko";
 
-    const applyCardTarget = useCallback((cardId: string, pointer?: { clientX: number; clientY: number }) => {
-        const node = cardRefs.current[cardId];
+    const applyItemTarget = useCallback((itemId: string, pointer?: { clientX: number; clientY: number }) => {
+        const node = itemRefs.current[itemId];
         if (!node) {
             return;
         }
 
-        const nextTarget = buildHoverTargetFromElement(node, cardId);
-        setHoveredId(cardId);
+        const nextTarget = buildHoverTargetFromElement(node, itemId);
+        setHoveredId(itemId);
         setHoveredTarget(nextTarget);
         setHoverPointer(pointer ?? resolveSyntheticPointer(nextTarget));
     }, []);
 
     const restorePreview = useCallback(() => {
         setPointerLive(false);
-        applyCardTarget(defaultCardId);
-    }, [applyCardTarget, defaultCardId]);
+        applyItemTarget(defaultItemId);
+    }, [applyItemTarget, defaultItemId]);
 
     useLayoutEffect(() => {
-        applyCardTarget(defaultCardId);
-        const frameId = window.requestAnimationFrame(() => applyCardTarget(defaultCardId));
+        applyItemTarget(defaultItemId);
+        const frameId = window.requestAnimationFrame(() => applyItemTarget(defaultItemId));
         return () => window.cancelAnimationFrame(frameId);
-    }, [applyCardTarget, defaultCardId, locale]);
+    }, [applyItemTarget, defaultItemId, locale]);
 
     useEffect(() => {
         const onResize = () => {
             if (!pointerLive) {
-                applyCardTarget(hoveredId);
+                applyItemTarget(hoveredId);
             }
         };
         window.addEventListener("resize", onResize);
         return () => window.removeEventListener("resize", onResize);
-    }, [applyCardTarget, hoveredId, pointerLive]);
+    }, [applyItemTarget, hoveredId, pointerLive]);
 
     const session = useMemo<ReportSessionValue>(
         () => ({
@@ -442,13 +432,24 @@ function ElementHoverInspectScene() {
         [baseSession, hoverPointer, hoveredTarget],
     );
 
-    const isKorean = locale === "ko";
+    const bindItem = (itemId: HoverInspectItemId) => ({
+        ref: (node: HTMLElement | null) => {
+            itemRefs.current[itemId] = node;
+        },
+        "data-report-id": itemId,
+        onPointerEnter: (event: ReactPointerEvent<HTMLElement>) => {
+            applyItemTarget(itemId, { clientX: event.clientX, clientY: event.clientY });
+        },
+        onPointerMove: (event: ReactPointerEvent<HTMLElement>) => {
+            applyItemTarget(itemId, { clientX: event.clientX, clientY: event.clientY });
+        },
+    });
 
     return (
         <ReportSessionContext.Provider value={session}>
             <div
                 ref={boardRef}
-                className="relative h-full w-full overflow-hidden rounded-[16px] bg-[#f4f6f8] p-[16px]"
+                className="relative h-full w-full overflow-hidden rounded-[16px] bg-[#f4f6f8] p-[18px]"
                 onPointerEnter={() => setPointerLive(true)}
                 onPointerLeave={restorePreview}
                 onPointerMove={(event) => {
@@ -456,7 +457,7 @@ function ElementHoverInspectScene() {
                     setHoverPointer({ clientX: event.clientX, clientY: event.clientY });
                 }}
             >
-                <div className="mb-[12px] flex items-center justify-between gap-[8px]">
+                <div className="mb-[14px] flex items-center justify-between gap-[8px]">
                     <div>
                         <p className="text-[12px] font-semibold uppercase tracking-[0.04em] text-[#8b95a1]">{isKorean ? "피드백 모드" : "Feedback mode"}</p>
                         <h3 className="text-[16px] font-bold text-[#191f28]">{isKorean ? "요소에 올리면 스타일이 보여요" : "Hover an element to inspect styles"}</h3>
@@ -464,36 +465,34 @@ function ElementHoverInspectScene() {
                     <span className="shrink-0 rounded-full bg-[#fff1f0] px-[10px] py-[4px] text-[11px] font-bold text-[#f04452]">In Review</span>
                 </div>
 
-                <div className="grid grid-cols-1 gap-[10px]">
-                    {HOVER_INSPECT_CARDS.map((card) => {
-                        const tagClass =
-                            card.tagTone === "bug"
-                                ? "bg-[#fff1f0] text-[#f04452]"
-                                : card.tagTone === "done"
-                                  ? "bg-[#e8f8ef] text-[#1f8a4c]"
-                                  : "bg-[#eef3ff] text-[#3182f6]";
+                <div className="rounded-[16px] border border-[#e5e8eb] bg-white p-[18px] shadow-[0_10px_28px_rgba(25,31,40,0.06)]">
+                    <p className="mb-[10px] text-[11px] font-bold uppercase tracking-[0.06em] text-[#8b95a1]">{isKorean ? "랜딩 미리보기" : "Landing preview"}</p>
 
-                        return (
-                            <button
-                                key={card.id}
-                                ref={(node) => {
-                                    cardRefs.current[card.id] = node;
-                                }}
-                                type="button"
-                                data-report-id={card.id}
-                                className="w-full rounded-[12px] border border-[#e5e8eb] bg-white px-[14px] py-[12px] text-left shadow-[0_8px_24px_rgba(25,31,40,0.06)] outline-none"
-                                onPointerEnter={(event) => {
-                                    applyCardTarget(card.id, { clientX: event.clientX, clientY: event.clientY });
-                                }}
-                                onPointerMove={(event) => {
-                                    applyCardTarget(card.id, { clientX: event.clientX, clientY: event.clientY });
-                                }}
-                            >
-                                <span className={`mb-[8px] inline-flex rounded-[6px] px-[6px] py-[2px] text-[10px] font-extrabold ${tagClass}`}>{card.tag}</span>
-                                <p className="text-[15px] font-semibold leading-[1.35] text-[#191f28]">{card.title}</p>
-                            </button>
-                        );
-                    })}
+                    <h2
+                        {...bindItem("demo-hero-title")}
+                        className="mb-[12px] max-w-[18ch] text-[28px] font-extrabold leading-[1.15] tracking-[-0.04em] text-[#191f28]"
+                    >
+                        {isKorean ? "웹사이트 위의 대화를, 더 선명하게." : "Clearer conversations on every page."}
+                    </h2>
+
+                    <div className="mb-[16px] flex flex-wrap items-center gap-[10px]">
+                        <span
+                            {...bindItem("demo-price-badge")}
+                            className="inline-flex items-center rounded-full bg-[#111827] px-[12px] py-[6px] text-[13px] font-bold text-white"
+                        >
+                            {isKorean ? "월 29,000원" : "$29 / mo"}
+                        </span>
+                        <span className="text-[13px] text-[#6b7684]">{isKorean ? "팀 무제한 좌석 · 14일 체험" : "Unlimited seats · 14-day trial"}</span>
+                    </div>
+
+                    <button
+                        {...bindItem("demo-cta-button")}
+                        type="button"
+                        className="inline-flex items-center gap-[8px] rounded-[12px] bg-[#3182f6] px-[16px] py-[12px] text-[15px] font-bold text-white outline-none"
+                    >
+                        <span>{isKorean ? "무료로 시작하기" : "Start for free"}</span>
+                        <span aria-hidden="true">→</span>
+                    </button>
                 </div>
             </div>
 

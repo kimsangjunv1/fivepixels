@@ -286,6 +286,7 @@ export const DEMO_DRAFT = {
 export const DEMO_MEMO_DRAFT = {
     ...DEMO_DRAFT,
     category: "memo",
+    suggestedReportId: null,
     fieldValues: {},
     cases: [
         {
