@@ -21,7 +21,11 @@ import type { PanelSettingsInitialAppearanceSection, PanelSettingsInitialCategor
 import { Panel } from "@/surfaces/panel/Panel.js";
 import { DraftTooltip } from "@/surfaces/tooltip/DraftTooltip.js";
 import { PickTargetSavedBadges } from "@/surfaces/tooltip/PickTargetSavedBadges.js";
+import { CheckCircleIcon } from "@/shared/components/icons/Icons.js";
+import { ACCENT_COLOR } from "@/shared/constants/accentColors.js";
 import { ProbeTooltip } from "@/surfaces/tooltip/ProbeTooltip.js";
+import { STYLE_TOOLTIP_SURFACE_CLASS } from "@/surfaces/tooltip/PointerFollowTooltip.js";
+import { StyleInspectTooltipRow } from "@/surfaces/tooltip/StyleInspectTooltip.js";
 import { TargetHighlights } from "@/surfaces/tooltip/TargetHighlights.js";
 import { useTooltipLayout } from "@/surfaces/tooltip/useTooltipLayout.js";
 import { FeedbackWindow } from "@/surfaces/window/FeedbackWindow.js";
@@ -379,6 +383,79 @@ const HOVER_INSPECT_CARDS: HoverInspectCard[] = [
     { id: "demo-kanban-card-05", title: "Marker badge spacing", tag: "DONE", tagTone: "done" },
 ];
 
+function DemoEmbeddedInspectTooltip({ target }: { target: TargetSnapshot }) {
+    const { messages } = useReportPreferences();
+    const tagName = target.tagName ?? "—";
+    const sizeLabel = `${Math.round(target.rect.width)} × ${Math.round(target.rect.height)}`;
+    const reportIdValue = target.reportIdAttribute ?? messages.pickTarget.tooltipNoReportId;
+
+    return (
+        <div
+            role="tooltip"
+            className={`pointer-events-none w-full ${STYLE_TOOLTIP_SURFACE_CLASS}`}
+        >
+            <div className="flex flex-col gap-[2px] text-left">
+                <StyleInspectTooltipRow
+                    label={messages.pickTarget.tooltipTag}
+                    value={`<${tagName}>`}
+                />
+                <StyleInspectTooltipRow
+                    label={messages.pickTarget.tooltipSize}
+                    value={sizeLabel}
+                />
+                {target.boxStyle ? (
+                    <>
+                        <StyleInspectTooltipRow
+                            label={messages.pickTarget.tooltipDisplay}
+                            value={target.boxStyle.display}
+                        />
+                        <StyleInspectTooltipRow
+                            label={messages.pickTarget.tooltipPadding}
+                            value={target.boxStyle.padding}
+                        />
+                        <StyleInspectTooltipRow
+                            label={messages.pickTarget.tooltipMargin}
+                            value={target.boxStyle.margin}
+                        />
+                    </>
+                ) : null}
+                {target.fontStyle ? (
+                    <>
+                        <StyleInspectTooltipRow
+                            label={messages.pickTarget.tooltipFontFamily}
+                            value={target.fontStyle.fontFamily}
+                        />
+                        <StyleInspectTooltipRow
+                            label={messages.pickTarget.tooltipFontSize}
+                            value={target.fontStyle.fontSize}
+                        />
+                        <StyleInspectTooltipRow
+                            label={messages.pickTarget.tooltipFontWeight}
+                            value={target.fontStyle.fontWeight}
+                        />
+                        <StyleInspectTooltipRow
+                            label={messages.pickTarget.tooltipLineHeight}
+                            value={target.fontStyle.lineHeight}
+                        />
+                    </>
+                ) : null}
+                <div className="mt-[8px] flex flex-col gap-[6px] border-t border-[var(--adaptive-border-subtle)] pt-[8px]">
+                    <div className="flex items-start justify-between gap-[8px] text-[14px]">
+                        <span className="shrink-0 text-[var(--adaptive-black500)]">{messages.pickTarget.tooltipReportId}</span>
+                        <div className="flex min-w-0 items-start justify-end gap-[6px]">
+                            <CheckCircleIcon
+                                className="h-[16px] w-[16px] shrink-0"
+                                fill={ACCENT_COLOR.green}
+                            />
+                            <span className="min-w-0 break-all text-right font-[var(--coding-font)] text-[var(--adaptive-black700)]">{reportIdValue}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 function ElementHoverInspectScene() {
     const { locale } = useReportPreferences();
     const baseSession = useReportSession();
@@ -387,19 +464,15 @@ function ElementHoverInspectScene() {
     const defaultCardId = HOVER_INSPECT_CARDS[1]!.id;
     const [hoveredId, setHoveredId] = useState(defaultCardId);
     const [hoveredTarget, setHoveredTarget] = useState<TargetSnapshot | null>(null);
-    const [hoverPointer, setHoverPointer] = useState<{ clientX: number; clientY: number } | null>(null);
 
-    const syncTarget = useCallback((cardId: string, pointer?: { clientX: number; clientY: number }) => {
+    const syncTarget = useCallback((cardId: string) => {
         const node = cardRefs.current[cardId];
         if (!node) {
             return;
         }
 
-        const nextTarget = buildHoverTargetFromElement(node, cardId);
         setHoveredId(cardId);
-        setHoveredTarget(nextTarget);
-        const rect = nextTarget.rect;
-        setHoverPointer(pointer ?? { clientX: rect.left + rect.width * 0.72, clientY: rect.top + rect.height * 0.35 });
+        setHoveredTarget(buildHoverTargetFromElement(node, cardId));
     }, []);
 
     useLayoutEffect(() => {
@@ -419,11 +492,16 @@ function ElementHoverInspectScene() {
             ...baseSession,
             mode: "report",
             hoveredTarget,
-            hoverPointer,
+            hoverPointer: hoveredTarget
+                ? {
+                      clientX: hoveredTarget.rect.left + hoveredTarget.rect.width * 0.7,
+                      clientY: hoveredTarget.rect.bottom + 8,
+                  }
+                : null,
             setHoveredTarget: () => undefined,
             setHoverPointer: () => undefined,
         }),
-        [baseSession, hoverPointer, hoveredTarget],
+        [baseSession, hoveredTarget],
     );
 
     const isKorean = locale === "ko";
@@ -432,53 +510,53 @@ function ElementHoverInspectScene() {
         <ReportSessionContext.Provider value={session}>
             <div
                 ref={boardRef}
-                className="relative h-full w-full overflow-hidden rounded-[16px] bg-[#f4f6f8] p-[16px]"
+                className="relative grid h-full w-full grid-cols-[minmax(0,1fr)_260px] gap-[12px] overflow-hidden rounded-[16px] bg-[#f4f6f8] p-[16px]"
             >
-                <div className="mb-[12px] flex items-center justify-between">
-                    <div>
-                        <p className="text-[12px] font-semibold uppercase tracking-[0.04em] text-[#8b95a1]">{isKorean ? "피드백 모드" : "Feedback mode"}</p>
-                        <h3 className="text-[16px] font-bold text-[#191f28]">{isKorean ? "요소에 올리면 스타일이 보여요" : "Hover an element to inspect styles"}</h3>
+                <div className="min-w-0">
+                    <div className="mb-[12px] flex items-center justify-between gap-[8px]">
+                        <div>
+                            <p className="text-[12px] font-semibold uppercase tracking-[0.04em] text-[#8b95a1]">{isKorean ? "피드백 모드" : "Feedback mode"}</p>
+                            <h3 className="text-[16px] font-bold text-[#191f28]">{isKorean ? "요소에 올리면 스타일이 보여요" : "Hover an element to inspect styles"}</h3>
+                        </div>
+                        <span className="shrink-0 rounded-full bg-[#fff1f0] px-[10px] py-[4px] text-[11px] font-bold text-[#f04452]">In Review</span>
                     </div>
-                    <span className="rounded-full bg-[#fff1f0] px-[10px] py-[4px] text-[11px] font-bold text-[#f04452]">{isKorean ? "In Review" : "In Review"}</span>
+
+                    <div className="grid grid-cols-1 gap-[10px]">
+                        {HOVER_INSPECT_CARDS.map((card) => {
+                            const tagClass =
+                                card.tagTone === "bug"
+                                    ? "bg-[#fff1f0] text-[#f04452]"
+                                    : card.tagTone === "done"
+                                      ? "bg-[#e8f8ef] text-[#1f8a4c]"
+                                      : "bg-[#eef3ff] text-[#3182f6]";
+
+                            return (
+                                <button
+                                    key={card.id}
+                                    ref={(node) => {
+                                        cardRefs.current[card.id] = node;
+                                    }}
+                                    type="button"
+                                    data-report-id={card.id}
+                                    className="w-full rounded-[12px] border border-[#e5e8eb] bg-white px-[14px] py-[12px] text-left shadow-[0_8px_24px_rgba(25,31,40,0.06)] outline-none"
+                                    onPointerEnter={() => syncTarget(card.id)}
+                                    onPointerMove={() => syncTarget(card.id)}
+                                >
+                                    <span className={`mb-[8px] inline-flex rounded-[6px] px-[6px] py-[2px] text-[10px] font-extrabold ${tagClass}`}>{card.tag}</span>
+                                    <p className="text-[15px] font-semibold leading-[1.35] text-[#191f28]">{card.title}</p>
+                                </button>
+                            );
+                        })}
+                    </div>
                 </div>
 
-                <div className="grid grid-cols-1 gap-[10px]">
-                    {HOVER_INSPECT_CARDS.map((card) => {
-                        const tagClass =
-                            card.tagTone === "bug"
-                                ? "bg-[#fff1f0] text-[#f04452]"
-                                : card.tagTone === "done"
-                                  ? "bg-[#e8f8ef] text-[#1f8a4c]"
-                                  : "bg-[#eef3ff] text-[#3182f6]";
-
-                        return (
-                            <button
-                                key={card.id}
-                                ref={(node) => {
-                                    cardRefs.current[card.id] = node;
-                                }}
-                                type="button"
-                                data-report-id={card.id}
-                                className="w-full rounded-[12px] border border-[#e5e8eb] bg-white px-[14px] py-[12px] text-left shadow-[0_8px_24px_rgba(25,31,40,0.06)] outline-none"
-                                onPointerMove={(event) => {
-                                    syncTarget(card.id, { clientX: event.clientX, clientY: event.clientY });
-                                }}
-                                onPointerEnter={(event) => {
-                                    syncTarget(card.id, { clientX: event.clientX, clientY: event.clientY });
-                                }}
-                            >
-                                <span className={`mb-[8px] inline-flex rounded-[6px] px-[6px] py-[2px] text-[10px] font-extrabold ${tagClass}`}>{card.tag}</span>
-                                <p className="text-[15px] font-semibold leading-[1.35] text-[#191f28]">{card.title}</p>
-                            </button>
-                        );
-                    })}
-                </div>
+                <aside className="min-w-0 self-start pt-[34px]">{hoveredTarget ? <DemoEmbeddedInspectTooltip target={hoveredTarget} /> : null}</aside>
             </div>
 
             <TargetHighlights
-                hoveredTarget={hoveredTarget}
-                selectedTarget={null}
-                showHoverInspect={Boolean(hoveredTarget)}
+                hoveredTarget={null}
+                selectedTarget={hoveredTarget}
+                showSelectionHighlight={Boolean(hoveredTarget)}
                 activeMarkerTarget={null}
             />
         </ReportSessionContext.Provider>
