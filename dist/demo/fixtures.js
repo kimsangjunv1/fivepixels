@@ -518,11 +518,13 @@ export const DEMO_SCENE_SIZE = {
     "page-brief": { width: 390, height: 560 },
     "my-tasks": { width: 390, height: 560 },
     "project-health": { width: 390, height: 560 },
+    "element-hover-inspect": { width: 720, height: 480 },
     "element-inspector": { width: 680, height: 480 },
     "device-preview": { width: 420, height: 650 },
     "feedback-thread": { width: 680, height: 520 },
     settings: { width: 390, height: 620 },
     "settings-customization": { width: 390, height: 620 },
+    "settings-marker": { width: 390, height: 620 },
     notifications: { width: 400, height: 420 },
 };
 //# sourceMappingURL=fixtures.js.map

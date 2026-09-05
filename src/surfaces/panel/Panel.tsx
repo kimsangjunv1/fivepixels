@@ -26,7 +26,7 @@ import { ReportImportConfirmDialog } from "./ReportImportConfirmDialog.js";
 import { ReportImportProjectMismatchDialog } from "./ReportImportProjectMismatchDialog.js";
 import { ReportPersonalKeyDialog } from "./ReportPersonalKeyDialog.js";
 import { NoticeDialog } from "@/shared/components/ui/NoticeDialog.js";
-import { PanelSettings, type PanelSettingsInitialCategory } from "./PanelSettings.js";
+import { PanelSettings, type PanelSettingsInitialAppearanceSection, type PanelSettingsInitialCategory } from "./PanelSettings.js";
 import { CornerResizeGhost } from "@/surfaces/window/CornerResizeGhost.js";
 import { PanelResizeHandles } from "./PanelResizeHandles.js";
 import { PanelRoleSwitch } from "./PanelRoleSwitch.js";
@@ -76,9 +76,14 @@ type PanelProps = {
     embedded?: boolean;
     /** Initial settings section for embedded previews. */
     embeddedSettingsInitialCategory?: PanelSettingsInitialCategory | null;
+    embeddedSettingsInitialAppearanceSection?: PanelSettingsInitialAppearanceSection | null;
 };
 
-export function Panel({ embedded = false, embeddedSettingsInitialCategory = null }: PanelProps = {}) {
+export function Panel({
+    embedded = false,
+    embeddedSettingsInitialCategory = null,
+    embeddedSettingsInitialAppearanceSection = null,
+}: PanelProps = {}) {
     const {
         environment,
         projectId,
@@ -617,6 +622,7 @@ export function Panel({ embedded = false, embeddedSettingsInitialCategory = null
                                                             setPersonalKeyNotice("");
                                                         }}
                                                         initialCategory={embeddedSettingsInitialCategory}
+                                                        initialAppearanceSection={embeddedSettingsInitialAppearanceSection}
                                                     />
                                                 }
                                                 command={

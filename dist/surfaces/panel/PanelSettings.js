@@ -64,9 +64,9 @@ function getAppearanceSectionTitle(section, messages) {
             return messages.settings.sectionMarkerAppearance;
     }
 }
-export function PanelSettings({ transferDisabled = false, panelAppearance, onPanelAppearanceChange, tooltipAppearance, onTooltipAppearanceChange, questionThreadDisplay, onQuestionThreadDisplayChange, threadLayout, onThreadLayoutChange, onExport, onImport, onCommand, hasPersonalKey, onKeyCopy, onPublicKeyCopy, onKeyInsert, onKeyRotate, initialCategory = null, }) {
+export function PanelSettings({ transferDisabled = false, panelAppearance, onPanelAppearanceChange, tooltipAppearance, onTooltipAppearanceChange, questionThreadDisplay, onQuestionThreadDisplayChange, threadLayout, onThreadLayoutChange, onExport, onImport, onCommand, hasPersonalKey, onKeyCopy, onPublicKeyCopy, onKeyInsert, onKeyRotate, initialCategory = null, initialAppearanceSection = null, }) {
     const [activeCategory, setActiveCategory] = useState(initialCategory);
-    const [activeAppearanceSection, setActiveAppearanceSection] = useState(null);
+    const [activeAppearanceSection, setActiveAppearanceSection] = useState(initialAppearanceSection);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
     const transferLock = useIntegrationLock("dataTransfer");
     const teamManageLock = useIntegrationLock("teamManage");

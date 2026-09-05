@@ -56,7 +56,7 @@ function cloneDraft(category = "suggestion") {
     return { ...structuredClone(DEMO_DRAFT), category };
 }
 const LIST_PANEL_REPORT_TABS = new Set(["feedback-list", "memo-list", "my-tasks"]);
-function PanelScene({ initialTab = "route-details", visibleTabs = PANEL_TABS, settingsInitialCategory }) {
+function PanelScene({ initialTab = "route-details", visibleTabs = PANEL_TABS, settingsInitialCategory, settingsInitialAppearanceSection, }) {
     const locked = useDemoLocked();
     const preferences = useReportPreferences();
     const baseSession = useReportSession();
@@ -107,7 +107,7 @@ function PanelScene({ initialTab = "route-details", visibleTabs = PANEL_TABS, se
         }
         return withReports;
     }, [baseData, initialTab]);
-    return (_jsx(ReportPreferencesContext.Provider, { value: demoPreferences, children: _jsx(ReportSessionContext.Provider, { value: demoSession, children: _jsx(ReportDataContext.Provider, { value: demoData, children: _jsx("div", { className: "flex h-full items-center justify-center p-[16px]", children: _jsx(Panel, { embedded: true, embeddedSettingsInitialCategory: settingsInitialCategory }) }) }) }) }));
+    return (_jsx(ReportPreferencesContext.Provider, { value: demoPreferences, children: _jsx(ReportSessionContext.Provider, { value: demoSession, children: _jsx(ReportDataContext.Provider, { value: demoData, children: _jsx("div", { className: "flex h-full items-center justify-center p-[16px]", children: _jsx(Panel, { embedded: true, embeddedSettingsInitialCategory: settingsInitialCategory, embeddedSettingsInitialAppearanceSection: settingsInitialAppearanceSection }) }) }) }) }));
 }
 function MarkerTooltipScene() {
     const locked = useDemoLocked();
@@ -216,6 +216,90 @@ function FeedbackComposerScene({ variant = "feedback" }) {
         handleCreateSubmitWithGitHubIssue: async () => undefined,
     }), [baseData]);
     return (_jsx(ReportSessionContext.Provider, { value: session, children: _jsx(ReportDataContext.Provider, { value: data, children: _jsx("div", { className: "relative h-full w-full p-[12px]", children: _jsx(DraftTooltip, { embedded: true }) }) }) }));
+}
+function buildHoverTargetFromElement(element, reportId) {
+    const style = window.getComputedStyle(element);
+    return {
+        id: reportId,
+        type: "item",
+        rect: toDomRect(element.getBoundingClientRect()),
+        isTagged: true,
+        targetSelector: `[data-report-id="${reportId}"]`,
+        suggestedReportId: reportId,
+        tagName: element.tagName.toLowerCase(),
+        reportIdAttribute: reportId,
+        boxStyle: {
+            display: style.display,
+            padding: style.padding,
+            margin: style.margin,
+            borderRadius: style.borderRadius,
+        },
+        fontStyle: {
+            fontFamily: style.fontFamily,
+            fontSize: style.fontSize,
+            fontWeight: style.fontWeight,
+            lineHeight: style.lineHeight,
+        },
+    };
+}
+const HOVER_INSPECT_CARDS = [
+    { id: "demo-kanban-card-03", title: "Notification stack collapse", tag: "TASK", tagTone: "task" },
+    { id: "demo-kanban-card-04", title: "Modal z-index stacking", tag: "BUG", tagTone: "bug" },
+    { id: "demo-kanban-card-05", title: "Marker badge spacing", tag: "DONE", tagTone: "done" },
+];
+function ElementHoverInspectScene() {
+    const { locale } = useReportPreferences();
+    const baseSession = useReportSession();
+    const boardRef = useRef(null);
+    const cardRefs = useRef({});
+    const defaultCardId = HOVER_INSPECT_CARDS[1].id;
+    const [hoveredId, setHoveredId] = useState(defaultCardId);
+    const [hoveredTarget, setHoveredTarget] = useState(null);
+    const [hoverPointer, setHoverPointer] = useState(null);
+    const syncTarget = useCallback((cardId, pointer) => {
+        const node = cardRefs.current[cardId];
+        if (!node) {
+            return;
+        }
+        const nextTarget = buildHoverTargetFromElement(node, cardId);
+        setHoveredId(cardId);
+        setHoveredTarget(nextTarget);
+        const rect = nextTarget.rect;
+        setHoverPointer(pointer ?? { clientX: rect.left + rect.width * 0.72, clientY: rect.top + rect.height * 0.35 });
+    }, []);
+    useLayoutEffect(() => {
+        syncTarget(defaultCardId);
+        const frameId = window.requestAnimationFrame(() => syncTarget(defaultCardId));
+        return () => window.cancelAnimationFrame(frameId);
+    }, [defaultCardId, locale, syncTarget]);
+    useEffect(() => {
+        const onResize = () => syncTarget(hoveredId);
+        window.addEventListener("resize", onResize);
+        return () => window.removeEventListener("resize", onResize);
+    }, [hoveredId, syncTarget]);
+    const session = useMemo(() => ({
+        ...baseSession,
+        mode: "report",
+        hoveredTarget,
+        hoverPointer,
+        setHoveredTarget: () => undefined,
+        setHoverPointer: () => undefined,
+    }), [baseSession, hoverPointer, hoveredTarget]);
+    const isKorean = locale === "ko";
+    return (_jsxs(ReportSessionContext.Provider, { value: session, children: [_jsxs("div", { ref: boardRef, className: "relative h-full w-full overflow-hidden rounded-[16px] bg-[#f4f6f8] p-[16px]", children: [_jsxs("div", { className: "mb-[12px] flex items-center justify-between", children: [_jsxs("div", { children: [_jsx("p", { className: "text-[12px] font-semibold uppercase tracking-[0.04em] text-[#8b95a1]", children: isKorean ? "피드백 모드" : "Feedback mode" }), _jsx("h3", { className: "text-[16px] font-bold text-[#191f28]", children: isKorean ? "요소에 올리면 스타일이 보여요" : "Hover an element to inspect styles" })] }), _jsx("span", { className: "rounded-full bg-[#fff1f0] px-[10px] py-[4px] text-[11px] font-bold text-[#f04452]", children: isKorean ? "In Review" : "In Review" })] }), _jsx("div", { className: "grid grid-cols-1 gap-[10px]", children: HOVER_INSPECT_CARDS.map((card) => {
+                            const tagClass = card.tagTone === "bug"
+                                ? "bg-[#fff1f0] text-[#f04452]"
+                                : card.tagTone === "done"
+                                    ? "bg-[#e8f8ef] text-[#1f8a4c]"
+                                    : "bg-[#eef3ff] text-[#3182f6]";
+                            return (_jsxs("button", { ref: (node) => {
+                                    cardRefs.current[card.id] = node;
+                                }, type: "button", "data-report-id": card.id, className: "w-full rounded-[12px] border border-[#e5e8eb] bg-white px-[14px] py-[12px] text-left shadow-[0_8px_24px_rgba(25,31,40,0.06)] outline-none", onPointerMove: (event) => {
+                                    syncTarget(card.id, { clientX: event.clientX, clientY: event.clientY });
+                                }, onPointerEnter: (event) => {
+                                    syncTarget(card.id, { clientX: event.clientX, clientY: event.clientY });
+                                }, children: [_jsx("span", { className: `mb-[8px] inline-flex rounded-[6px] px-[6px] py-[2px] text-[10px] font-extrabold ${tagClass}`, children: card.tag }), _jsx("p", { className: "text-[15px] font-semibold leading-[1.35] text-[#191f28]", children: card.title })] }, card.id));
+                        }) })] }), _jsx(TargetHighlights, { hoveredTarget: hoveredTarget, selectedTarget: null, showHoverInspect: Boolean(hoveredTarget), activeMarkerTarget: null })] }));
 }
 function ElementInspectorScene() {
     const stateLocked = useDemoLocked();
@@ -504,6 +588,8 @@ export function DemoScene({ scene }) {
             return _jsx(PanelScene, { initialTab: "my-tasks", visibleTabs: TASK_PANEL_TABS });
         case "project-health":
             return _jsx(PanelScene, { initialTab: "project-health", visibleTabs: HEALTH_PANEL_TABS });
+        case "element-hover-inspect":
+            return _jsx(ElementHoverInspectScene, {});
         case "element-inspector":
             return _jsx(ElementInspectorScene, {});
         case "device-preview":
@@ -514,6 +600,8 @@ export function DemoScene({ scene }) {
             return _jsx(PanelScene, { initialTab: "settings" });
         case "settings-customization":
             return (_jsx(PanelScene, { initialTab: "settings", settingsInitialCategory: "appearance" }));
+        case "settings-marker":
+            return (_jsx(PanelScene, { initialTab: "settings", settingsInitialCategory: "appearance", settingsInitialAppearanceSection: "marker" }));
         case "notifications":
             return _jsx(NotificationsScene, {});
     }

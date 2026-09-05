@@ -1,7 +1,7 @@
 import { type ReactNode } from "react";
 import type { DemoInteraction, FivePixelsDemoScene } from "./types.js";
 /** Showcase에서도 제한적 조작을 허용하는 장면 */
-export declare const DEMO_GUIDED_SCENES: Set<"settings" | "notifications" | "feedback-list" | "memo-list" | "my-tasks" | "page-brief" | "project-health" | "marker-tooltip" | "feedback-composer" | "memo-composer" | "panel-overview" | "network-monitor" | "element-inspector" | "device-preview" | "feedback-thread" | "settings-customization">;
+export declare const DEMO_GUIDED_SCENES: Set<"settings" | "notifications" | "feedback-list" | "memo-list" | "my-tasks" | "page-brief" | "project-health" | "marker-tooltip" | "feedback-composer" | "memo-composer" | "panel-overview" | "network-monitor" | "element-hover-inspect" | "element-inspector" | "device-preview" | "feedback-thread" | "settings-customization" | "settings-marker">;
 type DemoInteractionValue = {
     interaction: DemoInteraction;
     scene: FivePixelsDemoScene;

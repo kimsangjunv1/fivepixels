@@ -19,6 +19,7 @@ import { PanelTabSelector } from "./PanelTabSelector.js";
 import { PanelTeamSettings } from "./PanelTeamSettings.js";
 
 export type PanelSettingsInitialCategory = "appearance";
+export type PanelSettingsInitialAppearanceSection = "theme-language" | "thread-layout" | "feedback-mode" | "marker";
 
 type PanelSettingsProps = {
     transferDisabled?: boolean;
@@ -39,10 +40,11 @@ type PanelSettingsProps = {
     onKeyInsert: () => void;
     onKeyRotate: () => void;
     initialCategory?: PanelSettingsInitialCategory | null;
+    initialAppearanceSection?: PanelSettingsInitialAppearanceSection | null;
 };
 
 type SettingsCategory = "appearance" | "display" | "tabs" | "team" | "data-and-keys" | "advanced" | "api-integration";
-type AppearanceSection = "theme-language" | "thread-layout" | "feedback-mode" | "marker";
+type AppearanceSection = PanelSettingsInitialAppearanceSection;
 
 const LOCALE_OPTIONS = ["en", "ko"] as const satisfies readonly ReportLocale[];
 const QUESTION_THREAD_OPTIONS = ["expanded", "collapsed"] as const satisfies readonly QuestionThreadDisplay[];
@@ -195,9 +197,10 @@ export function PanelSettings({
     onKeyInsert,
     onKeyRotate,
     initialCategory = null,
+    initialAppearanceSection = null,
 }: PanelSettingsProps) {
     const [activeCategory, setActiveCategory] = useState<SettingsCategory | null>(initialCategory);
-    const [activeAppearanceSection, setActiveAppearanceSection] = useState<AppearanceSection | null>(null);
+    const [activeAppearanceSection, setActiveAppearanceSection] = useState<AppearanceSection | null>(initialAppearanceSection);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
     const transferLock = useIntegrationLock("dataTransfer");
     const teamManageLock = useIntegrationLock("teamManage");

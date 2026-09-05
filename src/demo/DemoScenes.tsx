@@ -17,6 +17,7 @@ import type { NotificationActionId, NotificationItem } from "@/shared/types/noti
 import type { DraftReport, Marker, PickProbeFieldKey, PickProbeValues, ReportPanelTab, SavedProbeEntry, TargetSnapshot } from "@/shared/types/report-ui.js";
 import type { FeedbackCategory, ReportCase } from "@/shared/types/report.js";
 import { MarkerButton, MarkerTooltipSurface } from "@/surfaces/marker/MarkerLayer.js";
+import type { PanelSettingsInitialAppearanceSection, PanelSettingsInitialCategory } from "@/surfaces/panel/PanelSettings.js";
 import { Panel } from "@/surfaces/panel/Panel.js";
 import { DraftTooltip } from "@/surfaces/tooltip/DraftTooltip.js";
 import { PickTargetSavedBadges } from "@/surfaces/tooltip/PickTargetSavedBadges.js";
@@ -80,10 +81,16 @@ const LIST_PANEL_REPORT_TABS = new Set<ReportPanelTab>(["feedback-list", "memo-l
 type PanelSceneProps = {
     initialTab?: ReportPanelTab;
     visibleTabs?: UserSelectablePanelTab[];
-    settingsInitialCategory?: "appearance";
+    settingsInitialCategory?: PanelSettingsInitialCategory;
+    settingsInitialAppearanceSection?: PanelSettingsInitialAppearanceSection;
 };
 
-function PanelScene({ initialTab = "route-details", visibleTabs = PANEL_TABS, settingsInitialCategory }: PanelSceneProps) {
+function PanelScene({
+    initialTab = "route-details",
+    visibleTabs = PANEL_TABS,
+    settingsInitialCategory,
+    settingsInitialAppearanceSection,
+}: PanelSceneProps) {
     const locked = useDemoLocked();
     const preferences = useReportPreferences();
     const baseSession = useReportSession();
@@ -156,7 +163,11 @@ function PanelScene({ initialTab = "route-details", visibleTabs = PANEL_TABS, se
             <ReportSessionContext.Provider value={demoSession}>
                 <ReportDataContext.Provider value={demoData}>
                     <div className="flex h-full items-center justify-center p-[16px]">
-                        <Panel embedded embeddedSettingsInitialCategory={settingsInitialCategory} />
+                        <Panel
+                            embedded
+                            embeddedSettingsInitialCategory={settingsInitialCategory}
+                            embeddedSettingsInitialAppearanceSection={settingsInitialAppearanceSection}
+                        />
                     </div>
                 </ReportDataContext.Provider>
             </ReportSessionContext.Provider>
@@ -325,6 +336,151 @@ function FeedbackComposerScene({ variant = "feedback" }: { variant?: "feedback" 
                     <DraftTooltip embedded />
                 </div>
             </ReportDataContext.Provider>
+        </ReportSessionContext.Provider>
+    );
+}
+
+function buildHoverTargetFromElement(element: HTMLElement, reportId: string): TargetSnapshot {
+    const style = window.getComputedStyle(element);
+    return {
+        id: reportId,
+        type: "item",
+        rect: toDomRect(element.getBoundingClientRect()),
+        isTagged: true,
+        targetSelector: `[data-report-id="${reportId}"]`,
+        suggestedReportId: reportId,
+        tagName: element.tagName.toLowerCase(),
+        reportIdAttribute: reportId,
+        boxStyle: {
+            display: style.display,
+            padding: style.padding,
+            margin: style.margin,
+            borderRadius: style.borderRadius,
+        },
+        fontStyle: {
+            fontFamily: style.fontFamily,
+            fontSize: style.fontSize,
+            fontWeight: style.fontWeight,
+            lineHeight: style.lineHeight,
+        },
+    };
+}
+
+type HoverInspectCard = {
+    id: string;
+    title: string;
+    tag: string;
+    tagTone: "bug" | "task" | "done";
+};
+
+const HOVER_INSPECT_CARDS: HoverInspectCard[] = [
+    { id: "demo-kanban-card-03", title: "Notification stack collapse", tag: "TASK", tagTone: "task" },
+    { id: "demo-kanban-card-04", title: "Modal z-index stacking", tag: "BUG", tagTone: "bug" },
+    { id: "demo-kanban-card-05", title: "Marker badge spacing", tag: "DONE", tagTone: "done" },
+];
+
+function ElementHoverInspectScene() {
+    const { locale } = useReportPreferences();
+    const baseSession = useReportSession();
+    const boardRef = useRef<HTMLDivElement | null>(null);
+    const cardRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+    const defaultCardId = HOVER_INSPECT_CARDS[1]!.id;
+    const [hoveredId, setHoveredId] = useState(defaultCardId);
+    const [hoveredTarget, setHoveredTarget] = useState<TargetSnapshot | null>(null);
+    const [hoverPointer, setHoverPointer] = useState<{ clientX: number; clientY: number } | null>(null);
+
+    const syncTarget = useCallback((cardId: string, pointer?: { clientX: number; clientY: number }) => {
+        const node = cardRefs.current[cardId];
+        if (!node) {
+            return;
+        }
+
+        const nextTarget = buildHoverTargetFromElement(node, cardId);
+        setHoveredId(cardId);
+        setHoveredTarget(nextTarget);
+        const rect = nextTarget.rect;
+        setHoverPointer(pointer ?? { clientX: rect.left + rect.width * 0.72, clientY: rect.top + rect.height * 0.35 });
+    }, []);
+
+    useLayoutEffect(() => {
+        syncTarget(defaultCardId);
+        const frameId = window.requestAnimationFrame(() => syncTarget(defaultCardId));
+        return () => window.cancelAnimationFrame(frameId);
+    }, [defaultCardId, locale, syncTarget]);
+
+    useEffect(() => {
+        const onResize = () => syncTarget(hoveredId);
+        window.addEventListener("resize", onResize);
+        return () => window.removeEventListener("resize", onResize);
+    }, [hoveredId, syncTarget]);
+
+    const session = useMemo<ReportSessionValue>(
+        () => ({
+            ...baseSession,
+            mode: "report",
+            hoveredTarget,
+            hoverPointer,
+            setHoveredTarget: () => undefined,
+            setHoverPointer: () => undefined,
+        }),
+        [baseSession, hoverPointer, hoveredTarget],
+    );
+
+    const isKorean = locale === "ko";
+
+    return (
+        <ReportSessionContext.Provider value={session}>
+            <div
+                ref={boardRef}
+                className="relative h-full w-full overflow-hidden rounded-[16px] bg-[#f4f6f8] p-[16px]"
+            >
+                <div className="mb-[12px] flex items-center justify-between">
+                    <div>
+                        <p className="text-[12px] font-semibold uppercase tracking-[0.04em] text-[#8b95a1]">{isKorean ? "피드백 모드" : "Feedback mode"}</p>
+                        <h3 className="text-[16px] font-bold text-[#191f28]">{isKorean ? "요소에 올리면 스타일이 보여요" : "Hover an element to inspect styles"}</h3>
+                    </div>
+                    <span className="rounded-full bg-[#fff1f0] px-[10px] py-[4px] text-[11px] font-bold text-[#f04452]">{isKorean ? "In Review" : "In Review"}</span>
+                </div>
+
+                <div className="grid grid-cols-1 gap-[10px]">
+                    {HOVER_INSPECT_CARDS.map((card) => {
+                        const tagClass =
+                            card.tagTone === "bug"
+                                ? "bg-[#fff1f0] text-[#f04452]"
+                                : card.tagTone === "done"
+                                  ? "bg-[#e8f8ef] text-[#1f8a4c]"
+                                  : "bg-[#eef3ff] text-[#3182f6]";
+
+                        return (
+                            <button
+                                key={card.id}
+                                ref={(node) => {
+                                    cardRefs.current[card.id] = node;
+                                }}
+                                type="button"
+                                data-report-id={card.id}
+                                className="w-full rounded-[12px] border border-[#e5e8eb] bg-white px-[14px] py-[12px] text-left shadow-[0_8px_24px_rgba(25,31,40,0.06)] outline-none"
+                                onPointerMove={(event) => {
+                                    syncTarget(card.id, { clientX: event.clientX, clientY: event.clientY });
+                                }}
+                                onPointerEnter={(event) => {
+                                    syncTarget(card.id, { clientX: event.clientX, clientY: event.clientY });
+                                }}
+                            >
+                                <span className={`mb-[8px] inline-flex rounded-[6px] px-[6px] py-[2px] text-[10px] font-extrabold ${tagClass}`}>{card.tag}</span>
+                                <p className="text-[15px] font-semibold leading-[1.35] text-[#191f28]">{card.title}</p>
+                            </button>
+                        );
+                    })}
+                </div>
+            </div>
+
+            <TargetHighlights
+                hoveredTarget={hoveredTarget}
+                selectedTarget={null}
+                showHoverInspect={Boolean(hoveredTarget)}
+                activeMarkerTarget={null}
+            />
         </ReportSessionContext.Provider>
     );
 }
@@ -751,6 +907,8 @@ export function DemoScene({ scene }: { scene: FivePixelsDemoScene }) {
             return <PanelScene initialTab="my-tasks" visibleTabs={TASK_PANEL_TABS} />;
         case "project-health":
             return <PanelScene initialTab="project-health" visibleTabs={HEALTH_PANEL_TABS} />;
+        case "element-hover-inspect":
+            return <ElementHoverInspectScene />;
         case "element-inspector":
             return <ElementInspectorScene />;
         case "device-preview":
@@ -764,6 +922,14 @@ export function DemoScene({ scene }: { scene: FivePixelsDemoScene }) {
                 <PanelScene
                     initialTab="settings"
                     settingsInitialCategory="appearance"
+                />
+            );
+        case "settings-marker":
+            return (
+                <PanelScene
+                    initialTab="settings"
+                    settingsInitialCategory="appearance"
+                    settingsInitialAppearanceSection="marker"
                 />
             );
         case "notifications":

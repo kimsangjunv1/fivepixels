@@ -15,11 +15,13 @@ export const FIVE_PIXELS_DEMO_SCENES = [
     "page-brief",
     "my-tasks",
     "project-health",
+    "element-hover-inspect",
     "element-inspector",
     "device-preview",
     "feedback-thread",
     "settings",
     "settings-customization",
+    "settings-marker",
     "notifications",
 ] as const;
 
