@@ -13,6 +13,7 @@ import { FeedbackWindow } from "../surfaces/window/FeedbackWindow.js";
 import { MobilePreviewWindow } from "../surfaces/window/MobilePreviewWindow.js";
 import { NotificationCenter } from "../surfaces/window/NotificationCenter.js";
 import { createDemoNotifications, DEMO_API_FLOW_ENTRIES, DEMO_DRAFT, DEMO_PROBE_VALUES, DEMO_REPORTS, DEMO_TARGET } from "./fixtures.js";
+import { useDemoLocked } from "./DemoInteractionContext.js";
 const DEMO_PROBE_ELEMENT_KEY = "id:checkout-actions:item";
 function toDomRect(rect) {
     return {
@@ -28,7 +29,11 @@ function toDomRect(rect) {
     };
 }
 const PANEL_TABS = ["route-details", "api-flow"];
+const LIST_PANEL_TABS = ["feedback-list", "route-details"];
 const MEMO_PANEL_TABS = ["memo-list", "route-details"];
+const BRIEF_PANEL_TABS = ["page-brief", "route-details"];
+const TASK_PANEL_TABS = ["my-tasks", "route-details"];
+const HEALTH_PANEL_TABS = ["project-health", "route-details"];
 const DEMO_STOCK_NAMES = ["삼성전자", "SK하이닉스", "NAVER", "현대차", "한화오션"];
 const DEMO_STOCK_NAMES_EN = ["Samsung", "SK Hynix", "NAVER", "Hyundai", "Hanwha Ocean"];
 const DEMO_MARKER = {
@@ -47,73 +52,102 @@ const DEMO_MARKER = {
 function cloneDraft(category = "suggestion") {
     return { ...structuredClone(DEMO_DRAFT), category };
 }
-function PanelScene({ initialTab, visibleTabs = PANEL_TABS, settingsInitialCategory }) {
+function PanelScene({ initialTab = "route-details", visibleTabs = PANEL_TABS, settingsInitialCategory }) {
+    const locked = useDemoLocked();
     const preferences = useReportPreferences();
     const baseSession = useReportSession();
     const baseData = useReportData();
-    const [panelTab, setPanelTab] = useState(initialTab ?? null);
+    const [panelTab, setPanelTab] = useState(initialTab);
+    const activeTab = locked ? initialTab : panelTab;
     const togglePanelTab = useCallback((nextTab) => {
+        if (locked) {
+            return;
+        }
         setPanelTab((current) => (current === nextTab ? null : nextTab));
-    }, []);
+    }, [locked]);
+    const openPanelTab = useCallback((nextTab) => {
+        if (locked) {
+            return;
+        }
+        setPanelTab(nextTab);
+    }, [locked]);
     const demoPreferences = useMemo(() => ({ ...preferences, visiblePanelTabs: visibleTabs }), [preferences, visibleTabs]);
     const demoSession = useMemo(() => ({
         ...baseSession,
         markers: [],
-        panelTab,
-        openPanelTab: togglePanelTab,
+        panelTab: activeTab,
+        openPanelTab,
         togglePanelTab,
-    }), [baseSession, panelTab, togglePanelTab]);
+    }), [activeTab, baseSession, openPanelTab, togglePanelTab]);
     const demoData = useMemo(() => {
+        const withReports = {
+            ...baseData,
+            reports: DEMO_REPORTS,
+            currentPageReports: DEMO_REPORTS,
+            filteredReports: DEMO_REPORTS,
+            allPageReports: DEMO_REPORTS,
+            listScope: "all",
+        };
         if (initialTab === "api-flow") {
             return {
-                ...baseData,
+                ...withReports,
                 apiFlowEntries: DEMO_API_FLOW_ENTRIES,
                 activeApiFailureAlert: null,
                 networkMonitorEnabled: true,
             };
         }
-        if (initialTab === "memo-list") {
-            return {
-                ...baseData,
-                reports: DEMO_REPORTS,
-                currentPageReports: DEMO_REPORTS,
-                filteredReports: DEMO_REPORTS,
-            };
-        }
-        return baseData;
+        return withReports;
     }, [baseData, initialTab]);
     return (_jsx(ReportPreferencesContext.Provider, { value: demoPreferences, children: _jsx(ReportSessionContext.Provider, { value: demoSession, children: _jsx(ReportDataContext.Provider, { value: demoData, children: _jsx("div", { className: "flex h-full items-center justify-center p-[16px]", children: _jsx(Panel, { embedded: true, embeddedSettingsInitialCategory: settingsInitialCategory }) }) }) }) }));
 }
 function MarkerTooltipScene() {
+    const locked = useDemoLocked();
     const { markerAppearance, typography, messages } = useReportPreferences();
     const [open, setOpen] = useState(true);
-    const { layout: tooltipLayout, setTooltipElement } = useTooltipLayout(open ? DEMO_MARKER : null, false, open);
+    const markerOpen = locked ? true : open;
+    const { layout: tooltipLayout, setTooltipElement } = useTooltipLayout(markerOpen ? DEMO_MARKER : null, false, markerOpen);
     const tooltipPosition = tooltipLayout?.position ?? null;
     const tooltipAnchorStyle = tooltipLayout?.anchorStyle;
     const bindHoverTooltipRef = useCallback((node) => {
         setTooltipElement(node);
     }, [setTooltipElement]);
-    return (_jsxs("div", { className: "relative h-full w-full overflow-visible", children: [_jsx(MarkerButton, { markerItem: DEMO_MARKER, isHovered: open, isReportMode: false, isInteractive: true, isProximityHighlighted: false, isWindowOpen: false, viewingWindowBadge: messages.marker.viewingWindowBadge, detachedAriaLabel: messages.marker.detachedAriaLabel, detachedModalAriaLabel: messages.marker.detachedModalAriaLabel, markerAppearance: markerAppearance, typography: typography, onActivate: () => setOpen((current) => !current), onHoverStart: () => setOpen(true), onHoverEnd: () => undefined, onPointerMove: () => undefined, positioning: "absolute" }), open && tooltipPosition && tooltipAnchorStyle ? (_jsx(MarkerTooltipSurface, { containerRef: bindHoverTooltipRef, report: DEMO_REPORTS[0], detachedHint: messages.marker.detachedHint, detachedModalHint: messages.marker.detachedModalHint, positioning: "absolute", style: {
+    return (_jsxs("div", { className: "relative h-full w-full overflow-visible", children: [_jsx(MarkerButton, { markerItem: DEMO_MARKER, isHovered: markerOpen, isReportMode: false, isInteractive: !locked, isProximityHighlighted: false, isWindowOpen: false, viewingWindowBadge: messages.marker.viewingWindowBadge, detachedAriaLabel: messages.marker.detachedAriaLabel, detachedModalAriaLabel: messages.marker.detachedModalAriaLabel, markerAppearance: markerAppearance, typography: typography, onActivate: () => {
+                    if (locked) {
+                        return;
+                    }
+                    setOpen((current) => !current);
+                }, onHoverStart: () => {
+                    if (!locked) {
+                        setOpen(true);
+                    }
+                }, onHoverEnd: () => undefined, onPointerMove: () => undefined, positioning: "absolute" }), markerOpen && tooltipPosition && tooltipAnchorStyle ? (_jsx(MarkerTooltipSurface, { containerRef: bindHoverTooltipRef, report: DEMO_REPORTS[0], detachedHint: messages.marker.detachedHint, detachedModalHint: messages.marker.detachedModalHint, positioning: "absolute", style: {
                     left: tooltipPosition.left,
                     top: tooltipPosition.top,
                     ...tooltipAnchorStyle,
                 } })) : null] }));
 }
 function FeedbackComposerScene({ variant = "feedback" }) {
+    const locked = useDemoLocked();
     const baseSession = useReportSession();
     const baseData = useReportData();
     const draftCategory = variant === "memo" ? "memo" : "suggestion";
     const [draft, setDraft] = useState(() => cloneDraft(draftCategory));
     const [authorName, setAuthorName] = useState("김상준");
     const updateDraftCase = useCallback((caseId, text, mentions, userMentions) => {
+        if (locked) {
+            return;
+        }
         setDraft((current) => current
             ? {
                 ...current,
                 cases: current.cases.map((item) => (item.id === caseId ? { ...item, text, mentions, user_mentions: userMentions } : item)),
             }
             : current);
-    }, []);
+    }, [locked]);
     const addDraftCase = useCallback(() => {
+        if (locked) {
+            return;
+        }
         setDraft((current) => {
             if (!current) {
                 return current;
@@ -128,31 +162,45 @@ function FeedbackComposerScene({ variant = "feedback" }) {
             };
             return { ...current, cases: [...current.cases, nextCase] };
         });
-    }, []);
+    }, [locked]);
     const removeDraftCase = useCallback((caseId) => {
+        if (locked) {
+            return;
+        }
         setDraft((current) => (current && current.cases.length > 1 ? { ...current, cases: current.cases.filter((item) => item.id !== caseId) } : current));
-    }, []);
+    }, [locked]);
     const updateDraftField = useCallback((key, value) => {
+        if (locked) {
+            return;
+        }
         setDraft((current) => (current ? { ...current, fieldValues: { ...current.fieldValues, [key]: value } } : current));
-    }, []);
+    }, [locked]);
     const updateDraftCategory = useCallback((category) => {
+        if (locked) {
+            return;
+        }
         setDraft((current) => (current ? { ...current, category } : current));
-    }, []);
-    const resetDraft = useCallback(() => setDraft(cloneDraft(draftCategory)), [draftCategory]);
+    }, [locked]);
+    const resetDraft = useCallback(() => {
+        if (locked) {
+            return;
+        }
+        setDraft(cloneDraft(draftCategory));
+    }, [draftCategory, locked]);
     const session = useMemo(() => ({
         ...baseSession,
         mode: "report",
         draft,
         selectedTarget: DEMO_TARGET,
         draftAuthorName: authorName,
-        setDraftAuthorName: setAuthorName,
+        setDraftAuthorName: locked ? () => undefined : setAuthorName,
         updateDraftCase,
         addDraftCase,
         removeDraftCase,
         updateDraftField,
         updateDraftCategory,
         cancelDraft: resetDraft,
-    }), [addDraftCase, authorName, baseSession, draft, removeDraftCase, resetDraft, updateDraftCase, updateDraftCategory, updateDraftField]);
+    }), [addDraftCase, authorName, baseSession, draft, locked, removeDraftCase, resetDraft, updateDraftCase, updateDraftCategory, updateDraftField]);
     const data = useMemo(() => ({
         ...baseData,
         handleCreateSubmit: async () => undefined,
@@ -161,6 +209,7 @@ function FeedbackComposerScene({ variant = "feedback" }) {
     return (_jsx(ReportSessionContext.Provider, { value: session, children: _jsx(ReportDataContext.Provider, { value: data, children: _jsx("div", { className: "relative h-full w-full p-[12px]", children: _jsx(DraftTooltip, { embedded: true }) }) }) }));
 }
 function ElementInspectorScene() {
+    const locked = useDemoLocked();
     const { locale } = useReportPreferences();
     const baseSession = useReportSession();
     const buttonRef = useRef(null);
@@ -180,8 +229,11 @@ function ElementInspectorScene() {
     const [compareMode, setCompareMode] = useState("after");
     const [targetRect, setTargetRect] = useState(DEMO_TARGET.rect);
     const [savedProbeEdits, setSavedProbeEdits] = useState({});
-    const hasEdits = Object.keys(values).some((key) => values[key] !== baselineValues[key]);
-    const previewValues = compareMode === "before" ? baselineValues : values;
+    const lockedOpen = locked ? true : open;
+    const lockedCompare = locked ? "after" : compareMode;
+    const lockedValues = locked ? initialValues : values;
+    const hasEdits = Object.keys(lockedValues).some((key) => lockedValues[key] !== baselineValues[key]);
+    const previewValues = lockedCompare === "before" ? baselineValues : lockedValues;
     const previewStyle = {
         display: "flex",
         alignItems: previewValues.alignItems,
@@ -232,15 +284,24 @@ function ElementInspectorScene() {
         };
     }, [previewValues, updateTargetRect]);
     const updatePickProbeValue = useCallback((key, value) => {
+        if (locked) {
+            return;
+        }
         setValues((current) => ({ ...current, [key]: value }));
         setCompareMode("after");
-    }, []);
+    }, [locked]);
     const resetPickProbeValues = useCallback(() => {
+        if (locked) {
+            return;
+        }
         setValues(baselineValues);
         setCompareMode("after");
         setSavedProbeEdits({});
-    }, [baselineValues]);
+    }, [baselineValues, locked]);
     const closePickProbe = useCallback(() => {
+        if (locked) {
+            return;
+        }
         setOpen(false);
         if (!hasEdits) {
             setSavedProbeEdits({});
@@ -257,11 +318,14 @@ function ElementInspectorScene() {
                 originalInputValue: null,
             },
         });
-    }, [baselineValues, hasEdits, values]);
+    }, [baselineValues, hasEdits, locked, values]);
     const openPickProbe = useCallback(() => {
+        if (locked) {
+            return;
+        }
         setSavedProbeEdits({});
         setOpen(true);
-    }, []);
+    }, [locked]);
     const selectedTarget = useMemo(() => ({
         ...DEMO_TARGET,
         rect: targetRect,
@@ -276,19 +340,19 @@ function ElementInspectorScene() {
         ...baseSession,
         mode: "report",
         selectedTarget,
-        pickProbeOpen: open,
+        pickProbeOpen: lockedOpen,
         pickProbeSupportsTextFields: true,
         pickProbeLayoutMode: "flex",
-        pickProbeValues: values,
-        pickProbeCompareMode: compareMode,
+        pickProbeValues: lockedValues,
+        pickProbeCompareMode: lockedCompare,
         pickProbeHasEdits: hasEdits,
         savedProbeEdits,
-        setPickProbeCompareMode: setCompareMode,
+        setPickProbeCompareMode: locked ? () => undefined : setCompareMode,
         updatePickProbeValue,
         resetPickProbeValues,
         closePickProbe,
-    }), [baseSession, closePickProbe, compareMode, hasEdits, open, resetPickProbeValues, savedProbeEdits, selectedTarget, updatePickProbeValue, values]);
-    return (_jsxs(ReportSessionContext.Provider, { value: session, children: [_jsxs("div", { className: "grid h-full w-full grid-cols-[minmax(200px,1fr)_320px] gap-[14px] p-[12px]", children: [_jsx("div", { className: "relative flex min-h-0 items-center justify-center overflow-visible", children: _jsxs("button", { ref: buttonRef, type: "button", "data-report-id": DEMO_TARGET.reportIdAttribute ?? "checkout-actions", style: previewStyle, onClick: openPickProbe, className: "min-h-[34px] outline-none", children: [_jsx("span", { children: previewValues.textContent }), _jsx("span", { "aria-hidden": "true", children: "\u2192" })] }) }), _jsx("div", { className: "relative min-h-0", children: _jsx(ProbeTooltip, { embedded: true }) })] }), _jsx(TargetHighlights, { hoveredTarget: null, selectedTarget: selectedTarget, contextMenuTarget: open ? selectedTarget : null, showPickProbeCompare: open && hasEdits, activeMarkerTarget: null }), _jsx(PickTargetSavedBadges, {})] }));
+    }), [baseSession, closePickProbe, hasEdits, locked, lockedCompare, lockedOpen, lockedValues, resetPickProbeValues, savedProbeEdits, selectedTarget, updatePickProbeValue]);
+    return (_jsxs(ReportSessionContext.Provider, { value: session, children: [_jsxs("div", { className: "grid h-full w-full grid-cols-[minmax(200px,1fr)_320px] gap-[14px] p-[12px]", children: [_jsx("div", { className: "relative flex min-h-0 items-center justify-center overflow-visible", children: _jsxs("button", { ref: buttonRef, type: "button", "data-report-id": DEMO_TARGET.reportIdAttribute ?? "checkout-actions", style: previewStyle, onClick: openPickProbe, className: "min-h-[34px] outline-none", children: [_jsx("span", { children: previewValues.textContent }), _jsx("span", { "aria-hidden": "true", children: "\u2192" })] }) }), _jsx("div", { className: "relative min-h-0", children: _jsx(ProbeTooltip, { embedded: true }) })] }), _jsx(TargetHighlights, { hoveredTarget: null, selectedTarget: selectedTarget, contextMenuTarget: lockedOpen ? selectedTarget : null, showPickProbeCompare: lockedOpen && hasEdits, activeMarkerTarget: null }), _jsx(PickTargetSavedBadges, {})] }));
 }
 function DemoMobileContent() {
     const { locale } = useReportPreferences();
@@ -312,6 +376,7 @@ function FeedbackThreadScene() {
     return (_jsx("div", { className: "flex h-full items-center justify-center py-[20px]", children: _jsx(FeedbackWindow, { report: report, anchor: { left: 0, top: 0 }, isFocused: true, embedded: true }) }));
 }
 function NotificationsScene() {
+    const locked = useDemoLocked();
     const { locale } = useReportPreferences();
     const baseSession = useReportSession();
     const [notifications, setNotifications] = useState(() => createDemoNotifications(locale));
@@ -319,19 +384,33 @@ function NotificationsScene() {
         setNotifications(createDemoNotifications(locale));
     }, [locale]);
     const markNotificationRead = useCallback((id) => {
+        if (locked) {
+            return;
+        }
         setNotifications((current) => current.map((item) => (item.id === id ? { ...item, read: true } : item)));
-    }, []);
+    }, [locked]);
     const markAllNotificationsRead = useCallback(() => {
+        if (locked) {
+            return;
+        }
         setNotifications((current) => current.map((item) => ({ ...item, read: true })));
-    }, []);
+    }, [locked]);
     const dismissNotification = useCallback((id) => {
-        if (id.startsWith("status:")) {
+        if (locked || id.startsWith("status:")) {
             return;
         }
         setNotifications((current) => current.filter((item) => item.id !== id));
-    }, []);
-    const clearNotifications = useCallback(() => setNotifications((current) => current.filter((item) => item.id.startsWith("status:"))), []);
+    }, [locked]);
+    const clearNotifications = useCallback(() => {
+        if (locked) {
+            return;
+        }
+        setNotifications((current) => current.filter((item) => item.id.startsWith("status:")));
+    }, [locked]);
     const runNotificationAction = useCallback((item, action) => {
+        if (locked) {
+            return;
+        }
         setNotifications((current) => current.map((entry) => {
             if (entry.id !== item.id) {
                 return entry;
@@ -377,7 +456,7 @@ function NotificationsScene() {
             }
             return { ...entry, read: true };
         }));
-    }, []);
+    }, [locked]);
     const session = useMemo(() => ({
         ...baseSession,
         notifications,
@@ -402,11 +481,19 @@ export function DemoScene({ scene }) {
         case "memo-composer":
             return _jsx(FeedbackComposerScene, { variant: "memo" });
         case "panel-overview":
-            return _jsx(PanelScene, {});
+            return _jsx(PanelScene, { initialTab: "route-details" });
         case "network-monitor":
             return _jsx(PanelScene, { initialTab: "api-flow" });
+        case "feedback-list":
+            return _jsx(PanelScene, { initialTab: "feedback-list", visibleTabs: LIST_PANEL_TABS });
         case "memo-list":
             return (_jsx(PanelScene, { initialTab: "memo-list", visibleTabs: MEMO_PANEL_TABS }));
+        case "page-brief":
+            return _jsx(PanelScene, { initialTab: "page-brief", visibleTabs: BRIEF_PANEL_TABS });
+        case "my-tasks":
+            return _jsx(PanelScene, { initialTab: "my-tasks", visibleTabs: TASK_PANEL_TABS });
+        case "project-health":
+            return _jsx(PanelScene, { initialTab: "project-health", visibleTabs: HEALTH_PANEL_TABS });
         case "element-inspector":
             return _jsx(ElementInspectorScene, {});
         case "device-preview":

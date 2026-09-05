@@ -1,11 +1,14 @@
 "use client";
 import { jsx as _jsx } from "react/jsx-runtime";
-import { useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { ThemeScope } from "../core/ThemeScope.js";
-export function DemoRoot({ appearance, width, height, interactive, className, style, ariaLabel, children }) {
+const SHOWCASE_BLOCKED_EVENTS = ["click", "auxclick", "dblclick", "pointerdown", "mousedown", "mouseup", "touchstart", "touchend"];
+export function DemoRoot({ appearance, width, height, interaction, interactive, className, style, ariaLabel, children }) {
     const hostRef = useRef(null);
     const [mount, setMount] = useState(null);
+    const allowPointers = interactive !== false;
+    const lockInput = allowPointers && interaction === "showcase";
     useLayoutEffect(() => {
         const host = hostRef.current;
         if (!host) {
@@ -31,13 +34,31 @@ export function DemoRoot({ appearance, width, height, interactive, className, st
             shadowRoot.replaceChildren();
         };
     }, []);
-    return (_jsx("div", { ref: hostRef, className: className, role: "group", "aria-label": ariaLabel, style: {
+    useEffect(() => {
+        if (!mount || !lockInput) {
+            return;
+        }
+        const block = (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+        };
+        for (const type of SHOWCASE_BLOCKED_EVENTS) {
+            mount.addEventListener(type, block, true);
+        }
+        return () => {
+            for (const type of SHOWCASE_BLOCKED_EVENTS) {
+                mount.removeEventListener(type, block, true);
+            }
+        };
+    }, [lockInput, mount]);
+    return (_jsx("div", { ref: hostRef, className: className, role: "group", "aria-label": ariaLabel, "data-fivepixels-demo-interaction": interaction, style: {
             display: "block",
-            width: "100%",
-            maxWidth: width,
+            width,
+            maxWidth: "100%",
             height,
+            marginInline: "auto",
             overflow: "visible",
-            pointerEvents: interactive ? "auto" : "none",
+            pointerEvents: allowPointers ? "auto" : "none",
             ...style,
         }, children: mount
             ? createPortal(_jsx(ThemeScope, { appearance: appearance, className: "relative block h-full w-full overflow-visible", children: children }), mount)

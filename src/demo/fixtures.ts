@@ -2,107 +2,226 @@ import type { FivePixelsAdapter } from "@/shared/types/adapter.js";
 import type { NotificationItem } from "@/shared/types/notification.js";
 import type { ApiFlowEntry } from "@/shared/types/networkMonitor.js";
 import type { DraftReport, PickProbeValues, TargetSnapshot } from "@/shared/types/report-ui.js";
-import type { CreateReportFeedbackPayload, ReportAuthor, ReportFeedback, ReportReply, UpdateReportFeedbackPayload } from "@/shared/types/report.js";
+import type { CreateReportFeedbackPayload, ReportAuthor, ReportFeedback, ReportReply, ReportReplyStatus, UpdateReportFeedbackPayload } from "@/shared/types/report.js";
 import type { FivePixelsDemoScene } from "./types.js";
 
 const DEMO_PATHNAME = "/demo-showcase";
 const CREATED_AT = "2026-09-01T09:00:00.000Z";
 const UPDATED_AT = "2026-09-03T09:00:00.000Z";
 
+function hoursAgoIso(hours: number): string {
+    return new Date(Date.now() - hours * 60 * 60 * 1000).toISOString();
+}
+
+function daysAgoAtHourIso(daysAgo: number, hour: number): string {
+    const date = new Date();
+    date.setHours(hour, 15, 0, 0);
+    date.setDate(date.getDate() - daysAgo);
+    return date.toISOString();
+}
+
 export const DEMO_AUTHORS: ReportAuthor[] = [
     { id: "demo-user", name: "김상준", department: "Product", role: "admin", isActive: true },
     { id: "demo-reviewer", name: "김지윤", department: "Design", role: "member", isActive: true },
+    { id: "demo-dev", name: "박시완", department: "Engineering", role: "member", isActive: true },
 ];
 
-const DEMO_REPLIES: ReportReply[] = [
-    {
-        id: "demo-reply-1",
-        comment_id: "demo-feedback-1",
-        message: "‘결제 계속하기’로 변경하고 모바일 화면도 확인했습니다.",
-        created_at: UPDATED_AT,
-        status: "recheck_requested",
-        case_ids: ["demo-case-1"],
-        author_type: "manager",
-        author_name: "김지윤",
-    },
-];
+function reply(partial: Omit<ReportReply, "comment_id"> & { comment_id?: string }): ReportReply {
+    return {
+        comment_id: partial.comment_id ?? "demo-feedback-1",
+        ...partial,
+    };
+}
 
-export const DEMO_REPORTS: ReportFeedback[] = [
+const STATUS_SAMPLES: Array<{
+    id: string;
+    category: ReportFeedback["category"];
+    status: ReportFeedback["status"];
+    text: string;
+    replyStatus?: ReportReplyStatus;
+    assignee?: string;
+    author: string;
+    authorId: string;
+    createdAt: string;
+}> = [
     {
         id: "demo-feedback-1",
-        pathname: DEMO_PATHNAME,
-        report_id: "checkout-actions",
-        report_type: "item",
-        target_selector: '[data-report-id="checkout-actions"]',
-        cases: [
-            {
-                id: "demo-case-1",
-                text: "결제 버튼 문구를 더 명확하게 바꿔주세요.",
-                status: "open",
-                assignee_name: "김지윤",
-                created_at: CREATED_AT,
-                updated_at: UPDATED_AT,
-            },
-            {
-                id: "demo-case-2",
-                text: "모바일에서 버튼 사이 간격도 확인해주세요.",
-                status: "resolved",
-                created_at: CREATED_AT,
-                updated_at: UPDATED_AT,
-            },
-        ],
-        status: "open",
-        fc_number: 24,
         category: "suggestion",
-        field_values: { priority: "high", verified: true },
-        replies: DEMO_REPLIES,
-        reply_count: DEMO_REPLIES.length,
-        latest_reply: DEMO_REPLIES[0],
-        position: {
-            target: { x: 0.74, y: 0.52 },
-            viewport: { x: 0.74, y: 0.52, width: 1440, height: 900 },
-            scrollY: 0,
-            anchor: { reportId: "checkout-actions", reportType: "item", x: 0.5, y: 0.5 },
-        },
-        created_at: CREATED_AT,
-        environment: "STAGED",
-        app_version: "0.2.23",
-        author_id: "demo-user",
-        author_name: "김상준",
+        status: "open",
+        text: "결제 버튼 문구를 더 명확하게 바꿔주세요.",
+        replyStatus: "suggested",
+        assignee: "김지윤",
+        author: "김상준",
+        authorId: "demo-user",
+        createdAt: hoursAgoIso(2),
     },
-    ...(["problem", "question", "incident", "suggestion", "memo"] as const).map((category, index): ReportFeedback => ({
-        id: `demo-feedback-${index + 2}`,
+    {
+        id: "demo-feedback-2",
+        category: "problem",
+        status: "open",
+        text: "필터 해제 후 결과가 초기화됩니다.",
+        author: "김상준",
+        authorId: "demo-user",
+        createdAt: hoursAgoIso(4),
+    },
+    {
+        id: "demo-feedback-3",
+        category: "question",
+        status: "open",
+        text: "빈 상태 안내 문구가 필요할까요?",
+        replyStatus: "additional_question",
+        author: "김지윤",
+        authorId: "demo-reviewer",
+        createdAt: hoursAgoIso(5),
+        assignee: "김상준",
+    },
+    {
+        id: "demo-feedback-4",
+        category: "incident",
+        status: "open",
+        text: "모바일에서 결제 CTA가 잘립니다.",
+        replyStatus: "found_error",
+        assignee: "박시완",
+        author: "김상준",
+        authorId: "demo-user",
+        createdAt: hoursAgoIso(7),
+    },
+    {
+        id: "demo-feedback-5",
+        category: "suggestion",
+        status: "open",
+        text: "로딩 스피너 타이밍을 앞당겨 주세요.",
+        replyStatus: "recheck_requested",
+        author: "김지윤",
+        authorId: "demo-reviewer",
+        createdAt: hoursAgoIso(9),
+    },
+    {
+        id: "demo-feedback-6",
+        category: "suggestion",
+        status: "open",
+        text: "담당자를 프론트 팀으로 전환합니다.",
+        replyStatus: "assignee_assigned",
+        assignee: "김상준",
+        author: "김지윤",
+        authorId: "demo-reviewer",
+        createdAt: daysAgoAtHourIso(0, 11),
+    },
+    {
+        id: "demo-feedback-7",
+        category: "problem",
+        status: "open",
+        text: "검수 후 담당을 디자인으로 넘깁니다.",
+        replyStatus: "assignee_transferred",
+        assignee: "김지윤",
+        author: "김상준",
+        authorId: "demo-user",
+        createdAt: daysAgoAtHourIso(0, 14),
+    },
+    {
+        id: "demo-feedback-8",
+        category: "suggestion",
+        status: "git_issued",
+        text: "GitHub Issue로 승격된 접근성 개선 건입니다.",
+        author: "김상준",
+        authorId: "demo-user",
+        createdAt: daysAgoAtHourIso(0, 16),
+    },
+    {
+        id: "demo-feedback-9",
+        category: "memo",
+        status: "open",
+        text: "히어로 CTA 카피 후보를 메모해 둡니다.",
+        author: "김상준",
+        authorId: "demo-user",
+        createdAt: daysAgoAtHourIso(1, 10),
+    },
+    {
+        id: "demo-feedback-10",
+        category: "suggestion",
+        status: "resolved",
+        text: "어제 반영된 여백 조정 요청입니다.",
+        replyStatus: "resolved",
+        author: "김지윤",
+        authorId: "demo-reviewer",
+        createdAt: daysAgoAtHourIso(1, 13),
+    },
+    {
+        id: "demo-feedback-11",
+        category: "problem",
+        status: "open",
+        text: "어제 발견된 네트워크 타임아웃 이슈입니다.",
+        replyStatus: "found_error",
+        assignee: "박시완",
+        author: "김상준",
+        authorId: "demo-user",
+        createdAt: daysAgoAtHourIso(1, 15),
+    },
+    {
+        id: "demo-feedback-12",
+        category: "question",
+        status: "open",
+        text: "어제 남긴 확인 요청입니다.",
+        replyStatus: "suggested",
+        assignee: "김상준",
+        author: "김지윤",
+        authorId: "demo-reviewer",
+        createdAt: daysAgoAtHourIso(1, 18),
+    },
+];
+
+export const DEMO_REPORTS: ReportFeedback[] = STATUS_SAMPLES.map((sample, index) => {
+    const replies: ReportReply[] = sample.replyStatus
+        ? [
+              reply({
+                  id: `demo-reply-${index + 1}`,
+                  comment_id: sample.id,
+                  message: sample.replyStatus === "resolved" ? "반영 완료했습니다." : "확인 후 답변드립니다.",
+                  created_at: sample.createdAt,
+                  status: sample.replyStatus,
+                  case_ids: [`demo-case-${index + 1}`],
+                  author_type: "manager",
+                  author_name: sample.author === "김상준" ? "김지윤" : "김상준",
+              }),
+          ]
+        : [];
+
+    return {
+        id: sample.id,
         pathname: DEMO_PATHNAME,
-        report_id: `demo-target-${index + 2}`,
+        report_id: `demo-target-${index + 1}`,
         report_type: index % 2 === 0 ? "item" : "group",
+        target_selector: `[data-report-id="demo-target-${index + 1}"]`,
         cases: [
             {
-                id: `demo-case-${index + 3}`,
-                text: ["필터 해제 후 결과를 유지해주세요.", "빈 상태 안내가 필요합니다.", "모바일 정렬을 확인해주세요.", "로딩 표시를 조금 더 빠르게 보여주세요.", "기획 메모를 남겨둡니다."][index],
-                status: index === 3 ? "resolved" : "open",
-                created_at: CREATED_AT,
-                updated_at: UPDATED_AT,
+                id: `demo-case-${index + 1}`,
+                text: sample.text,
+                status: sample.status === "resolved" ? "resolved" : "open",
+                assignee_name: sample.assignee,
+                created_at: sample.createdAt,
+                updated_at: sample.createdAt,
             },
         ],
-        status: index === 3 ? "resolved" : "open",
-        fc_number: 25 + index,
-        category,
-        field_values: {},
-        replies: [],
-        reply_count: index % 2,
+        status: sample.status,
+        fc_number: 24 + index,
+        category: sample.category,
+        field_values: index === 0 ? { priority: "high", verified: true } : ({} as ReportFeedback["field_values"]),
+        replies,
+        reply_count: replies.length,
+        latest_reply: replies[0],
         position: {
-            target: { x: 0.18 + index * 0.12, y: 0.32 + index * 0.08 },
-            viewport: { x: 0.18 + index * 0.12, y: 0.32 + index * 0.08, width: 1440, height: 900 },
+            target: { x: 0.18 + (index % 6) * 0.12, y: 0.28 + Math.floor(index / 6) * 0.18 },
+            viewport: { x: 0.18, y: 0.28, width: 1440, height: 900 },
             scrollY: 0,
-            anchor: { reportId: `demo-target-${index + 2}`, reportType: index % 2 === 0 ? "item" : "group", x: 0.5, y: 0.5 },
+            anchor: { reportId: `demo-target-${index + 1}`, reportType: index % 2 === 0 ? "item" : "group", x: 0.5, y: 0.5 },
         },
-        created_at: CREATED_AT,
+        created_at: sample.createdAt,
         environment: "STAGED",
-        app_version: "0.2.23",
-        author_id: index % 2 === 0 ? "demo-user" : "demo-reviewer",
-        author_name: index % 2 === 0 ? "김상준" : "김지윤",
-    })),
-];
+        app_version: "0.2.24",
+        author_id: sample.authorId,
+        author_name: sample.author,
+    };
+});
 
 export const DEMO_DRAFT: DraftReport = {
     clientX: 210,
@@ -123,10 +242,16 @@ export const DEMO_DRAFT: DraftReport = {
     viewPath: [],
     suggestedReportId: "checkout-actions",
     cases: [
-        { id: "demo-draft-case-1", text: "", status: "open", created_at: CREATED_AT, updated_at: CREATED_AT },
+        {
+            id: "demo-draft-case-1",
+            text: "결제 계속하기 문구로 바꾸고, 모바일에서도 버튼이 잘리지 않게 확인해주세요.",
+            status: "open",
+            created_at: CREATED_AT,
+            updated_at: CREATED_AT,
+        },
     ],
     category: "suggestion",
-    fieldValues: {},
+    fieldValues: { priority: "high" },
 };
 
 const DEMO_TARGET_RECT = {
@@ -174,7 +299,7 @@ export const DEMO_PROBE_VALUES: PickProbeValues = {
 export const DEMO_API_FLOW_ENTRIES: ApiFlowEntry[] = [
     {
         id: "demo-api-1",
-        timestamp: Date.parse(UPDATED_AT),
+        timestamp: Date.now() - 12_000,
         method: "GET",
         url: "https://api.fivepixels.dev/v1/feedback?pathname=%2Fcheckout",
         pathname: "/v1/feedback",
@@ -183,13 +308,13 @@ export const DEMO_API_FLOW_ENTRIES: ApiFlowEntry[] = [
         ok: true,
         durationMs: 84,
         requestBody: null,
-        responseBody: JSON.stringify({ items: [{ id: "demo-feedback-1", status: "open" }], total: 6 }, null, 2),
+        responseBody: JSON.stringify({ items: [{ id: "demo-feedback-1", status: "open" }], total: 12 }, null, 2),
         errorMessage: null,
         failureKind: null,
     },
     {
         id: "demo-api-2",
-        timestamp: Date.parse(UPDATED_AT) + 1200,
+        timestamp: Date.now() - 9_000,
         method: "POST",
         url: "https://api.fivepixels.dev/v1/feedback",
         pathname: "/v1/feedback",
@@ -198,13 +323,13 @@ export const DEMO_API_FLOW_ENTRIES: ApiFlowEntry[] = [
         ok: true,
         durationMs: 132,
         requestBody: JSON.stringify({ report_id: "checkout-actions", category: "suggestion" }, null, 2),
-        responseBody: JSON.stringify({ id: "demo-feedback-7", status: "open" }, null, 2),
+        responseBody: JSON.stringify({ id: "demo-feedback-13", status: "open" }, null, 2),
         errorMessage: null,
         failureKind: null,
     },
     {
         id: "demo-api-3",
-        timestamp: Date.parse(UPDATED_AT) + 2400,
+        timestamp: Date.now() - 6_000,
         method: "PATCH",
         url: "https://api.fivepixels.dev/v1/feedback/demo-feedback-1",
         pathname: "/v1/feedback/demo-feedback-1",
@@ -219,7 +344,7 @@ export const DEMO_API_FLOW_ENTRIES: ApiFlowEntry[] = [
     },
     {
         id: "demo-api-4",
-        timestamp: Date.parse(UPDATED_AT) + 3600,
+        timestamp: Date.now() - 3_000,
         method: "GET",
         url: "https://api.fivepixels.dev/v1/members",
         pathname: "/v1/members",
@@ -231,6 +356,21 @@ export const DEMO_API_FLOW_ENTRIES: ApiFlowEntry[] = [
         responseBody: null,
         errorMessage: "Network request timed out.",
         failureKind: "network",
+    },
+    {
+        id: "demo-api-5",
+        timestamp: Date.now() - 1_500,
+        method: "GET",
+        url: "https://api.fivepixels.dev/v1/notifications",
+        pathname: "/v1/notifications",
+        queryParams: {},
+        status: 200,
+        ok: true,
+        durationMs: 61,
+        requestBody: null,
+        responseBody: JSON.stringify({ unread: 4 }, null, 2),
+        errorMessage: null,
+        failureKind: null,
     },
 ];
 
@@ -318,7 +458,7 @@ export function createDemoAdapter(): FivePixelsAdapter {
             },
         },
         replies: {
-            list: async (feedbackId, caseId) => (findReport(feedbackId)?.replies ?? []).filter((reply) => reply.case_ids.includes(caseId)),
+            list: async (feedbackId, caseId) => (findReport(feedbackId)?.replies ?? []).filter((replyItem) => replyItem.case_ids.includes(caseId)),
             create: async (feedbackId, caseId, payload) => {
                 const created: ReportReply = { ...payload, id: `demo-reply-${Date.now()}`, comment_id: feedbackId, case_ids: [caseId], created_at: new Date().toISOString() };
                 const report = findReport(feedbackId);
@@ -337,10 +477,14 @@ export function createDemoAdapter(): FivePixelsAdapter {
 export const DEMO_SCENE_SIZE: Record<FivePixelsDemoScene, { width: number; height: number }> = {
     "marker-tooltip": { width: 390, height: 230 },
     "feedback-composer": { width: 430, height: 300 },
-    "memo-composer": { width: 430, height: 230 },
-    "panel-overview": { width: 390, height: 220 },
+    "memo-composer": { width: 430, height: 260 },
+    "panel-overview": { width: 390, height: 560 },
     "network-monitor": { width: 430, height: 540 },
+    "feedback-list": { width: 390, height: 560 },
     "memo-list": { width: 390, height: 520 },
+    "page-brief": { width: 390, height: 560 },
+    "my-tasks": { width: 390, height: 560 },
+    "project-health": { width: 390, height: 560 },
     "element-inspector": { width: 680, height: 480 },
     "device-preview": { width: 420, height: 650 },
     "feedback-thread": { width: 680, height: 520 },

@@ -1,14 +1,16 @@
 "use client";
 
-import { useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { ThemeScope } from "@/core/ThemeScope.js";
 import type { ResolvedAppearance } from "@/shared/types/report-ui.js";
+import type { DemoInteraction } from "./types.js";
 
 type DemoRootProps = {
     appearance: ResolvedAppearance;
     width: number;
     height: number;
+    interaction: DemoInteraction;
     interactive: boolean;
     className: string;
     style?: CSSProperties;
@@ -16,9 +18,13 @@ type DemoRootProps = {
     children: ReactNode;
 };
 
-export function DemoRoot({ appearance, width, height, interactive, className, style, ariaLabel, children }: DemoRootProps) {
+const SHOWCASE_BLOCKED_EVENTS = ["click", "auxclick", "dblclick", "pointerdown", "mousedown", "mouseup", "touchstart", "touchend"] as const;
+
+export function DemoRoot({ appearance, width, height, interaction, interactive, className, style, ariaLabel, children }: DemoRootProps) {
     const hostRef = useRef<HTMLDivElement | null>(null);
     const [mount, setMount] = useState<HTMLElement | null>(null);
+    const allowPointers = interactive !== false;
+    const lockInput = allowPointers && interaction === "showcase";
 
     useLayoutEffect(() => {
         const host = hostRef.current;
@@ -50,28 +56,48 @@ export function DemoRoot({ appearance, width, height, interactive, className, st
         };
     }, []);
 
+    useEffect(() => {
+        if (!mount || !lockInput) {
+            return;
+        }
+
+        const block = (event: Event) => {
+            event.preventDefault();
+            event.stopPropagation();
+        };
+
+        for (const type of SHOWCASE_BLOCKED_EVENTS) {
+            mount.addEventListener(type, block, true);
+        }
+
+        return () => {
+            for (const type of SHOWCASE_BLOCKED_EVENTS) {
+                mount.removeEventListener(type, block, true);
+            }
+        };
+    }, [lockInput, mount]);
+
     return (
         <div
             ref={hostRef}
             className={className}
             role="group"
             aria-label={ariaLabel}
+            data-fivepixels-demo-interaction={interaction}
             style={{
                 display: "block",
-                width: "100%",
-                maxWidth: width,
+                width,
+                maxWidth: "100%",
                 height,
+                marginInline: "auto",
                 overflow: "visible",
-                pointerEvents: interactive ? "auto" : "none",
+                pointerEvents: allowPointers ? "auto" : "none",
                 ...style,
             }}
         >
             {mount
                 ? createPortal(
-                      <ThemeScope
-                          appearance={appearance}
-                          className="relative block h-full w-full overflow-visible"
-                      >
+                      <ThemeScope appearance={appearance} className="relative block h-full w-full overflow-visible">
                           {children}
                       </ThemeScope>,
                       mount,

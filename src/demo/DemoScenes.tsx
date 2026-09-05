@@ -27,6 +27,7 @@ import { FeedbackWindow } from "@/surfaces/window/FeedbackWindow.js";
 import { MobilePreviewWindow } from "@/surfaces/window/MobilePreviewWindow.js";
 import { NotificationCenter } from "@/surfaces/window/NotificationCenter.js";
 import { createDemoNotifications, DEMO_API_FLOW_ENTRIES, DEMO_DRAFT, DEMO_PROBE_VALUES, DEMO_REPORTS, DEMO_TARGET } from "./fixtures.js";
+import { useDemoLocked } from "./DemoInteractionContext.js";
 import type { FivePixelsDemoScene } from "./types.js";
 
 const DEMO_PROBE_ELEMENT_KEY = "id:checkout-actions:item";
@@ -46,7 +47,11 @@ function toDomRect(rect: DOMRectReadOnly): DOMRect {
 }
 
 const PANEL_TABS: UserSelectablePanelTab[] = ["route-details", "api-flow"];
+const LIST_PANEL_TABS: UserSelectablePanelTab[] = ["feedback-list", "route-details"];
 const MEMO_PANEL_TABS: UserSelectablePanelTab[] = ["memo-list", "route-details"];
+const BRIEF_PANEL_TABS: UserSelectablePanelTab[] = ["page-brief", "route-details"];
+const TASK_PANEL_TABS: UserSelectablePanelTab[] = ["my-tasks", "route-details"];
+const HEALTH_PANEL_TABS: UserSelectablePanelTab[] = ["project-health", "route-details"];
 const DEMO_STOCK_NAMES = ["삼성전자", "SK하이닉스", "NAVER", "현대차", "한화오션"];
 const DEMO_STOCK_NAMES_EN = ["Samsung", "SK Hynix", "NAVER", "Hyundai", "Hanwha Ocean"];
 const DEMO_MARKER: Marker = {
@@ -73,45 +78,64 @@ type PanelSceneProps = {
     settingsInitialCategory?: "appearance";
 };
 
-function PanelScene({ initialTab, visibleTabs = PANEL_TABS, settingsInitialCategory }: PanelSceneProps) {
+function PanelScene({ initialTab = "route-details", visibleTabs = PANEL_TABS, settingsInitialCategory }: PanelSceneProps) {
+    const locked = useDemoLocked();
     const preferences = useReportPreferences();
     const baseSession = useReportSession();
     const baseData = useReportData();
-    const [panelTab, setPanelTab] = useState<ReportPanelTab | null>(initialTab ?? null);
-    const togglePanelTab = useCallback((nextTab: ReportPanelTab) => {
-        setPanelTab((current) => (current === nextTab ? null : nextTab));
-    }, []);
+    const [panelTab, setPanelTab] = useState<ReportPanelTab | null>(initialTab);
+    const activeTab = locked ? initialTab : panelTab;
+
+    const togglePanelTab = useCallback(
+        (nextTab: ReportPanelTab) => {
+            if (locked) {
+                return;
+            }
+            setPanelTab((current) => (current === nextTab ? null : nextTab));
+        },
+        [locked],
+    );
+    const openPanelTab = useCallback(
+        (nextTab: ReportPanelTab) => {
+            if (locked) {
+                return;
+            }
+            setPanelTab(nextTab);
+        },
+        [locked],
+    );
+
     const demoPreferences = useMemo<ReportPreferencesValue>(() => ({ ...preferences, visiblePanelTabs: visibleTabs }), [preferences, visibleTabs]);
     const demoSession = useMemo<ReportSessionValue>(
         () => ({
             ...baseSession,
             markers: [],
-            panelTab,
-            openPanelTab: togglePanelTab,
+            panelTab: activeTab,
+            openPanelTab,
             togglePanelTab,
         }),
-        [baseSession, panelTab, togglePanelTab],
+        [activeTab, baseSession, openPanelTab, togglePanelTab],
     );
     const demoData = useMemo<ReportDataValue>(() => {
+        const withReports: ReportDataValue = {
+            ...baseData,
+            reports: DEMO_REPORTS,
+            currentPageReports: DEMO_REPORTS,
+            filteredReports: DEMO_REPORTS,
+            allPageReports: DEMO_REPORTS,
+            listScope: "all",
+        };
+
         if (initialTab === "api-flow") {
             return {
-                ...baseData,
+                ...withReports,
                 apiFlowEntries: DEMO_API_FLOW_ENTRIES,
                 activeApiFailureAlert: null,
                 networkMonitorEnabled: true,
             };
         }
 
-        if (initialTab === "memo-list") {
-            return {
-                ...baseData,
-                reports: DEMO_REPORTS,
-                currentPageReports: DEMO_REPORTS,
-                filteredReports: DEMO_REPORTS,
-            };
-        }
-
-        return baseData;
+        return withReports;
     }, [baseData, initialTab]);
 
     return (
@@ -119,10 +143,7 @@ function PanelScene({ initialTab, visibleTabs = PANEL_TABS, settingsInitialCateg
             <ReportSessionContext.Provider value={demoSession}>
                 <ReportDataContext.Provider value={demoData}>
                     <div className="flex h-full items-center justify-center p-[16px]">
-                        <Panel
-                            embedded
-                            embeddedSettingsInitialCategory={settingsInitialCategory}
-                        />
+                        <Panel embedded embeddedSettingsInitialCategory={settingsInitialCategory} />
                     </div>
                 </ReportDataContext.Provider>
             </ReportSessionContext.Provider>
@@ -131,9 +152,11 @@ function PanelScene({ initialTab, visibleTabs = PANEL_TABS, settingsInitialCateg
 }
 
 function MarkerTooltipScene() {
+    const locked = useDemoLocked();
     const { markerAppearance, typography, messages } = useReportPreferences();
     const [open, setOpen] = useState(true);
-    const { layout: tooltipLayout, setTooltipElement } = useTooltipLayout(open ? DEMO_MARKER : null, false, open);
+    const markerOpen = locked ? true : open;
+    const { layout: tooltipLayout, setTooltipElement } = useTooltipLayout(markerOpen ? DEMO_MARKER : null, false, markerOpen);
     const tooltipPosition = tooltipLayout?.position ?? null;
     const tooltipAnchorStyle = tooltipLayout?.anchorStyle;
 
@@ -148,9 +171,9 @@ function MarkerTooltipScene() {
         <div className="relative h-full w-full overflow-visible">
             <MarkerButton
                 markerItem={DEMO_MARKER}
-                isHovered={open}
+                isHovered={markerOpen}
                 isReportMode={false}
-                isInteractive
+                isInteractive={!locked}
                 isProximityHighlighted={false}
                 isWindowOpen={false}
                 viewingWindowBadge={messages.marker.viewingWindowBadge}
@@ -158,13 +181,22 @@ function MarkerTooltipScene() {
                 detachedModalAriaLabel={messages.marker.detachedModalAriaLabel}
                 markerAppearance={markerAppearance}
                 typography={typography}
-                onActivate={() => setOpen((current) => !current)}
-                onHoverStart={() => setOpen(true)}
+                onActivate={() => {
+                    if (locked) {
+                        return;
+                    }
+                    setOpen((current) => !current);
+                }}
+                onHoverStart={() => {
+                    if (!locked) {
+                        setOpen(true);
+                    }
+                }}
                 onHoverEnd={() => undefined}
                 onPointerMove={() => undefined}
                 positioning="absolute"
             />
-            {open && tooltipPosition && tooltipAnchorStyle ? (
+            {markerOpen && tooltipPosition && tooltipAnchorStyle ? (
                 <MarkerTooltipSurface
                     containerRef={bindHoverTooltipRef}
                     report={DEMO_REPORTS[0]}
@@ -183,6 +215,7 @@ function MarkerTooltipScene() {
 }
 
 function FeedbackComposerScene({ variant = "feedback" }: { variant?: "feedback" | "memo" }) {
+    const locked = useDemoLocked();
     const baseSession = useReportSession();
     const baseData = useReportData();
     const draftCategory: FeedbackCategory = variant === "memo" ? "memo" : "suggestion";
@@ -190,6 +223,9 @@ function FeedbackComposerScene({ variant = "feedback" }: { variant?: "feedback" 
     const [authorName, setAuthorName] = useState("김상준");
 
     const updateDraftCase = useCallback<ReportSessionValue["updateDraftCase"]>((caseId, text, mentions, userMentions) => {
+        if (locked) {
+            return;
+        }
         setDraft((current) =>
             current
                 ? {
@@ -198,8 +234,11 @@ function FeedbackComposerScene({ variant = "feedback" }: { variant?: "feedback" 
                   }
                 : current,
         );
-    }, []);
+    }, [locked]);
     const addDraftCase = useCallback(() => {
+        if (locked) {
+            return;
+        }
         setDraft((current) => {
             if (!current) {
                 return current;
@@ -215,17 +254,31 @@ function FeedbackComposerScene({ variant = "feedback" }: { variant?: "feedback" 
             };
             return { ...current, cases: [...current.cases, nextCase] };
         });
-    }, []);
+    }, [locked]);
     const removeDraftCase = useCallback((caseId: string) => {
+        if (locked) {
+            return;
+        }
         setDraft((current) => (current && current.cases.length > 1 ? { ...current, cases: current.cases.filter((item) => item.id !== caseId) } : current));
-    }, []);
+    }, [locked]);
     const updateDraftField = useCallback((key: string, value: string | boolean) => {
+        if (locked) {
+            return;
+        }
         setDraft((current) => (current ? { ...current, fieldValues: { ...current.fieldValues, [key]: value } } : current));
-    }, []);
+    }, [locked]);
     const updateDraftCategory = useCallback((category: FeedbackCategory | null) => {
+        if (locked) {
+            return;
+        }
         setDraft((current) => (current ? { ...current, category } : current));
-    }, []);
-    const resetDraft = useCallback(() => setDraft(cloneDraft(draftCategory)), [draftCategory]);
+    }, [locked]);
+    const resetDraft = useCallback(() => {
+        if (locked) {
+            return;
+        }
+        setDraft(cloneDraft(draftCategory));
+    }, [draftCategory, locked]);
     const session = useMemo<ReportSessionValue>(
         () => ({
             ...baseSession,
@@ -233,7 +286,7 @@ function FeedbackComposerScene({ variant = "feedback" }: { variant?: "feedback" 
             draft,
             selectedTarget: DEMO_TARGET,
             draftAuthorName: authorName,
-            setDraftAuthorName: setAuthorName,
+            setDraftAuthorName: locked ? () => undefined : setAuthorName,
             updateDraftCase,
             addDraftCase,
             removeDraftCase,
@@ -241,7 +294,7 @@ function FeedbackComposerScene({ variant = "feedback" }: { variant?: "feedback" 
             updateDraftCategory,
             cancelDraft: resetDraft,
         }),
-        [addDraftCase, authorName, baseSession, draft, removeDraftCase, resetDraft, updateDraftCase, updateDraftCategory, updateDraftField],
+        [addDraftCase, authorName, baseSession, draft, locked, removeDraftCase, resetDraft, updateDraftCase, updateDraftCategory, updateDraftField],
     );
     const data = useMemo<ReportDataValue>(
         () => ({
@@ -264,6 +317,7 @@ function FeedbackComposerScene({ variant = "feedback" }: { variant?: "feedback" 
 }
 
 function ElementInspectorScene() {
+    const locked = useDemoLocked();
     const { locale } = useReportPreferences();
     const baseSession = useReportSession();
     const buttonRef = useRef<HTMLButtonElement | null>(null);
@@ -286,8 +340,11 @@ function ElementInspectorScene() {
     const [compareMode, setCompareMode] = useState<"before" | "after">("after");
     const [targetRect, setTargetRect] = useState<DOMRect>(DEMO_TARGET.rect);
     const [savedProbeEdits, setSavedProbeEdits] = useState<Record<string, SavedProbeEntry>>({});
-    const hasEdits = (Object.keys(values) as PickProbeFieldKey[]).some((key) => values[key] !== baselineValues[key]);
-    const previewValues = compareMode === "before" ? baselineValues : values;
+    const lockedOpen = locked ? true : open;
+    const lockedCompare = locked ? "after" : compareMode;
+    const lockedValues = locked ? initialValues : values;
+    const hasEdits = (Object.keys(lockedValues) as PickProbeFieldKey[]).some((key) => lockedValues[key] !== baselineValues[key]);
+    const previewValues = lockedCompare === "before" ? baselineValues : lockedValues;
     const previewStyle: CSSProperties = {
         display: "flex",
         alignItems: previewValues.alignItems,
@@ -345,15 +402,24 @@ function ElementInspectorScene() {
     }, [previewValues, updateTargetRect]);
 
     const updatePickProbeValue = useCallback((key: PickProbeFieldKey, value: string) => {
+        if (locked) {
+            return;
+        }
         setValues((current) => ({ ...current, [key]: value }));
         setCompareMode("after");
-    }, []);
+    }, [locked]);
     const resetPickProbeValues = useCallback(() => {
+        if (locked) {
+            return;
+        }
         setValues(baselineValues);
         setCompareMode("after");
         setSavedProbeEdits({});
-    }, [baselineValues]);
+    }, [baselineValues, locked]);
     const closePickProbe = useCallback(() => {
+        if (locked) {
+            return;
+        }
         setOpen(false);
 
         if (!hasEdits) {
@@ -372,11 +438,14 @@ function ElementInspectorScene() {
                 originalInputValue: null,
             },
         });
-    }, [baselineValues, hasEdits, values]);
+    }, [baselineValues, hasEdits, locked, values]);
     const openPickProbe = useCallback(() => {
+        if (locked) {
+            return;
+        }
         setSavedProbeEdits({});
         setOpen(true);
-    }, []);
+    }, [locked]);
 
     const selectedTarget = useMemo<TargetSnapshot>(
         () => ({
@@ -397,19 +466,19 @@ function ElementInspectorScene() {
             ...baseSession,
             mode: "report",
             selectedTarget,
-            pickProbeOpen: open,
+            pickProbeOpen: lockedOpen,
             pickProbeSupportsTextFields: true,
             pickProbeLayoutMode: "flex",
-            pickProbeValues: values,
-            pickProbeCompareMode: compareMode,
+            pickProbeValues: lockedValues,
+            pickProbeCompareMode: lockedCompare,
             pickProbeHasEdits: hasEdits,
             savedProbeEdits,
-            setPickProbeCompareMode: setCompareMode,
+            setPickProbeCompareMode: locked ? () => undefined : setCompareMode,
             updatePickProbeValue,
             resetPickProbeValues,
             closePickProbe,
         }),
-        [baseSession, closePickProbe, compareMode, hasEdits, open, resetPickProbeValues, savedProbeEdits, selectedTarget, updatePickProbeValue, values],
+        [baseSession, closePickProbe, hasEdits, locked, lockedCompare, lockedOpen, lockedValues, resetPickProbeValues, savedProbeEdits, selectedTarget, updatePickProbeValue],
     );
 
     return (
@@ -435,8 +504,8 @@ function ElementInspectorScene() {
             <TargetHighlights
                 hoveredTarget={null}
                 selectedTarget={selectedTarget}
-                contextMenuTarget={open ? selectedTarget : null}
-                showPickProbeCompare={open && hasEdits}
+                contextMenuTarget={lockedOpen ? selectedTarget : null}
+                showPickProbeCompare={lockedOpen && hasEdits}
                 activeMarkerTarget={null}
             />
             <PickTargetSavedBadges />
@@ -524,6 +593,7 @@ function FeedbackThreadScene() {
 }
 
 function NotificationsScene() {
+    const locked = useDemoLocked();
     const { locale } = useReportPreferences();
     const baseSession = useReportSession();
     const [notifications, setNotifications] = useState<NotificationItem[]>(() => createDemoNotifications(locale));
@@ -533,20 +603,34 @@ function NotificationsScene() {
     }, [locale]);
 
     const markNotificationRead = useCallback((id: string) => {
+        if (locked) {
+            return;
+        }
         setNotifications((current) => current.map((item) => (item.id === id ? { ...item, read: true } : item)));
-    }, []);
+    }, [locked]);
     const markAllNotificationsRead = useCallback(() => {
+        if (locked) {
+            return;
+        }
         setNotifications((current) => current.map((item) => ({ ...item, read: true })));
-    }, []);
+    }, [locked]);
     const dismissNotification = useCallback((id: string) => {
-        if (id.startsWith("status:")) {
+        if (locked || id.startsWith("status:")) {
             return;
         }
 
         setNotifications((current) => current.filter((item) => item.id !== id));
-    }, []);
-    const clearNotifications = useCallback(() => setNotifications((current) => current.filter((item) => item.id.startsWith("status:"))), []);
+    }, [locked]);
+    const clearNotifications = useCallback(() => {
+        if (locked) {
+            return;
+        }
+        setNotifications((current) => current.filter((item) => item.id.startsWith("status:")));
+    }, [locked]);
     const runNotificationAction = useCallback((item: NotificationItem, action: NotificationActionId) => {
+        if (locked) {
+            return;
+        }
         setNotifications((current) =>
             current.map((entry) => {
                 if (entry.id !== item.id) {
@@ -599,7 +683,7 @@ function NotificationsScene() {
                 return { ...entry, read: true };
             }),
         );
-    }, []);
+    }, [locked]);
     const session = useMemo<ReportSessionValue>(
         () => ({
             ...baseSession,
@@ -635,9 +719,11 @@ export function DemoScene({ scene }: { scene: FivePixelsDemoScene }) {
         case "memo-composer":
             return <FeedbackComposerScene variant="memo" />;
         case "panel-overview":
-            return <PanelScene />;
+            return <PanelScene initialTab="route-details" />;
         case "network-monitor":
             return <PanelScene initialTab="api-flow" />;
+        case "feedback-list":
+            return <PanelScene initialTab="feedback-list" visibleTabs={LIST_PANEL_TABS} />;
         case "memo-list":
             return (
                 <PanelScene
@@ -645,6 +731,12 @@ export function DemoScene({ scene }: { scene: FivePixelsDemoScene }) {
                     visibleTabs={MEMO_PANEL_TABS}
                 />
             );
+        case "page-brief":
+            return <PanelScene initialTab="page-brief" visibleTabs={BRIEF_PANEL_TABS} />;
+        case "my-tasks":
+            return <PanelScene initialTab="my-tasks" visibleTabs={TASK_PANEL_TABS} />;
+        case "project-health":
+            return <PanelScene initialTab="project-health" visibleTabs={HEALTH_PANEL_TABS} />;
         case "element-inspector":
             return <ElementInspectorScene />;
         case "device-preview":

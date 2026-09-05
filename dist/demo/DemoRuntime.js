@@ -25,6 +25,6 @@ function DemoPreferenceSync({ locale, appearance, children }) {
 }
 export function DemoRuntime({ scene, locale, appearance, children }) {
     const [adapter] = useState(createDemoAdapter);
-    return (_jsx(ReportProvider, { project: { id: `fivepixels-demo-${scene}`, env: "STAGED", version: "0.2.23" }, ui: { locale, panelAppearance: appearance, tooltipAppearance: appearance, showFeedbackList: true }, visibility: { enabled: true, routeKey: "/demo-showcase" }, team: { user: { id: "demo-user", name: "김상준" }, reviewers: DEMO_AUTHORS }, mode: "presentation", sync: "api", require: { authLogin: false, reviewerKey: false }, adapter: adapter, networkMonitor: false, children: _jsx(DemoPreferenceSync, { locale: locale, appearance: appearance, children: children }) }));
+    return (_jsx(ReportProvider, { project: { id: `fivepixels-demo-${scene}`, env: "STAGED", version: "0.2.23" }, ui: { locale, panelAppearance: appearance, tooltipAppearance: appearance, showFeedbackList: true }, visibility: { enabled: true, routeKey: "/demo-showcase" }, team: { user: { id: "demo-user", name: "김상준" }, reviewers: DEMO_AUTHORS }, mode: "default", sync: "api", require: { authLogin: false, reviewerKey: false }, adapter: adapter, networkMonitor: false, children: _jsx(DemoPreferenceSync, { locale: locale, appearance: appearance, children: children }) }));
 }
 //# sourceMappingURL=DemoRuntime.js.map
