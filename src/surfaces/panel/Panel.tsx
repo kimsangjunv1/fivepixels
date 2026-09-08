@@ -496,24 +496,29 @@ export function Panel({
                                                 title={messages.panel.repositionTitle}
                                                 style={isDragging ? { opacity: 0.8 } : undefined}
                                             >
-                                                <p className="text-[12px] text-[var(--adaptive-black500)] font-bold">내 모든 활동</p>
+                                                <p className="text-[12px] text-[var(--adaptive-black500)] font-bold">{messages.panel.myActivityTitle}</p>
 
-                                                <section className="flex">
+                                                <section className="flex min-w-0 gap-[4px]">
                                                     {roleStatItems.map((item) =>
                                                         item.kind === "cta" ? (
                                                             <p
                                                                 key={item.key}
-                                                                className="flex-1 self-center text-[12px] font-medium text-[var(--adaptive-black600)]"
+                                                                className="min-w-0 flex-1 self-center truncate text-[12px] font-medium text-[var(--adaptive-black600)]"
+                                                                title={item.display}
                                                             >
                                                                 {item.display}
                                                             </p>
                                                         ) : (
                                                             <section
                                                                 key={item.key}
-                                                                className="flex items-start gap-[4px] flex-1"
+                                                                className="flex min-w-0 flex-1 items-start gap-[4px]"
                                                             >
-                                                                <p className="text-[14px] text-[var(--adaptive-black500)]">{item.label}</p>
-                                                                <p className="text-[14px] font-semibold text-[var(--adaptive-black900)]">{item.display}개</p>
+                                                                <p className="min-w-0 truncate text-[14px] text-[var(--adaptive-black500)]" title={item.label}>
+                                                                    {item.label}
+                                                                </p>
+                                                                <p className="shrink-0 text-[14px] font-semibold text-[var(--adaptive-black900)]">
+                                                                    {messages.panel.statCount(item.display)}
+                                                                </p>
                                                             </section>
                                                         ),
                                                     )}

@@ -54,6 +54,8 @@ export type ReportMessages = {
         roleSwitchAriaLabel: string;
         presentationSwitchAriaLabel: string;
         roleStatsCta: string;
+        myActivityTitle: string;
+        statCount: (count: string | number) => string;
         roles: {
             general: string;
             qa: string;

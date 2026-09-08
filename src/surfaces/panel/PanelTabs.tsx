@@ -14,9 +14,10 @@ function PanelTabButton({ label, active, onClick }: PanelTabButtonProps) {
         <button
             type="button"
             onClick={onClick}
-            className={`flex flex-1 items-center justify-center gap-[6px] px-[10px] py-[4px] hover:bg-[var(--adaptive-black200)] ${active ? "bg-[var(--adaptive-fillOpacity400)]" : ""}`}
+            title={label}
+            className={`flex min-w-0 flex-1 items-center justify-center gap-[6px] px-[10px] py-[4px] hover:bg-[var(--adaptive-black200)] ${active ? "bg-[var(--adaptive-fillOpacity400)]" : ""}`}
         >
-            <p className={`${active ? "text-[var(--adaptive-black900)]" : "text-[var(--adaptive-black500)]"} font-[500] text-[14px]`}>{label}</p>
+            <p className={`min-w-0 truncate ${active ? "text-[var(--adaptive-black900)]" : "text-[var(--adaptive-black500)]"} font-[500] text-[14px]`}>{label}</p>
             <ChevronDownIcon className={`h-4 w-4 shrink-0 transition-transform ${active ? "rotate-180" : ""}`} />
         </button>
     );

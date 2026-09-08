@@ -51,6 +51,8 @@ export const ko: ReportMessages = {
         roleSwitchAriaLabel: "역할 선택",
         presentationSwitchAriaLabel: "미리보기 사용자 선택",
         roleStatsCta: "왼쪽 버튼으로 피드백을 남겨보세요",
+        myActivityTitle: "내 모든 활동",
+        statCount: (count) => `${count}개`,
         roles: {
             general: "기본",
             qa: "QA",
