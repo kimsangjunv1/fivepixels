@@ -11,7 +11,7 @@ import { useNotificationCenter } from "./useNotificationCenter.js";
 import { buildStatusNotifications } from "../../../shared/utils/notification/buildStatusNotifications.js";
 import { useNetworkMonitor } from "../useNetworkMonitor.js";
 import { resolveDefaultAuthorName } from "../../../shared/utils/report/resolveDefaultAuthorName.js";
-export function useReportState({ projectId, environment, appVersion, panelAppearance, tooltipAppearance, questionThreadDefault = "expanded", threadLayoutDefault = "classic", fields, authors = [], requireReviewerKey = false, identify, adapter, onNavigate, onRevealTarget, onEvent, onReply, github, routeKey, showFeedbackList, initialLocale, messageOverrides, pixelsMode = "default", sync = "local", requireAuth, replyHistory, networkMonitor = true, }) {
+export function useReportState({ projectId, environment, appVersion, panelAppearance, tooltipAppearance, questionThreadDefault = "expanded", threadLayoutDefault = "classic", fields, authors = [], requireReviewerKey = false, identify, adapter, onNavigate, onEvent, onReply, github, routeKey, showFeedbackList, initialLocale, messageOverrides, pixelsMode = "default", sync = "local", requireAuth, replyHistory, networkMonitor = true, }) {
     const overlayRef = useRef(null);
     const hoveredElementRef = useRef(null);
     const selectedElementRef = useRef(null);
@@ -232,7 +232,6 @@ export function useReportState({ projectId, environment, appVersion, panelAppear
         minimizedReplyReportIds: reply.minimizedReplyReportIds,
         setErrorMessage: panel.setErrorMessage,
         onNavigate,
-        onRevealTarget,
         selectReport,
         closeReplyComposer: closeReplyComposerBridge,
         openReplyComposer: openReplyComposerClearingDraft,

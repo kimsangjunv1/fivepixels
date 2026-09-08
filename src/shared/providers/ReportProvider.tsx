@@ -65,7 +65,6 @@ function ReportProviderEnabled({
     identify,
     adapter,
     onNavigate,
-    onRevealTarget,
     onEvent,
     onReply,
     github,
@@ -97,7 +96,6 @@ function ReportProviderEnabled({
         requireAuth,
         adapter,
         onNavigate,
-        onRevealTarget,
         onEvent,
         onReply,
         github,
@@ -132,7 +130,6 @@ export function ReportProvider({
     adapter,
     fields,
     onNavigate,
-    onRevealTarget,
     onEvent,
     onReply,
     github,
@@ -175,7 +172,6 @@ export function ReportProvider({
             identify={resolvedTeam.user}
             adapter={adapter}
             onNavigate={onNavigate}
-            onRevealTarget={onRevealTarget}
             onEvent={onEvent}
             onReply={onReply}
             github={github}

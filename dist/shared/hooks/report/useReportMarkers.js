@@ -13,7 +13,7 @@ function getInitialDeepLinkFeedbackId() {
     }
     return parseFeedbackDeepLink()?.feedbackId ?? null;
 }
-export function useReportMarkers({ mode, messages, fields, currentPathname, currentPageReports, reports, allPageReports, selectedReportId, markerAppearanceSize, showMarkerTargetPreview, showTargetPreview, selectableTargetsLength, selectedTarget, hoveredTarget, isFetching, isReportsLoading, activeReplyReportId, minimizedReplyReportIds = [], setErrorMessage, onNavigate, onRevealTarget, selectReport, closeReplyComposer, openReplyComposer, selectCase, ensureIssueMode, loadRepliesIfNeeded, hydrateFeedbackIfNeeded, searchInputRef, }) {
+export function useReportMarkers({ mode, messages, fields, currentPathname, currentPageReports, reports, allPageReports, selectedReportId, markerAppearanceSize, showMarkerTargetPreview, showTargetPreview, selectableTargetsLength, selectedTarget, hoveredTarget, isFetching, isReportsLoading, activeReplyReportId, minimizedReplyReportIds = [], setErrorMessage, onNavigate, selectReport, closeReplyComposer, openReplyComposer, selectCase, ensureIssueMode, loadRepliesIfNeeded, hydrateFeedbackIfNeeded, searchInputRef, }) {
     const [markers, setMarkers] = useState([]);
     const [hoveredMarkerId, setHoveredMarkerId] = useState(null);
     const hoverLeaveTimeoutRef = useRef(null);
@@ -190,24 +190,12 @@ export function useReportMarkers({ mode, messages, fields, currentPathname, curr
         }
         let revealed = await restoreFeedbackViews(report.position.viewPath);
         if (revealed) {
-            syncMarkers();
-            targetElement = getFeedbackTargetElement(report);
-        }
-        if ((!targetElement || !isFeedbackTargetVisible(targetElement)) && onRevealTarget) {
-            try {
-                revealed = Boolean(await onRevealTarget(report)) || revealed;
-            }
-            catch {
-                // Keep a successful declarative reveal even if the fallback fails.
-            }
-        }
-        if (revealed) {
             await waitForTargetRevealResync();
             syncMarkers();
         }
         scrollToFeedbackTarget(report);
         return revealed;
-    }, [onRevealTarget, syncMarkers]);
+    }, [syncMarkers]);
     useEffect(() => {
         if (!hoveredMarkerId) {
             return;

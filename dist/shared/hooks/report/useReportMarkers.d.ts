@@ -23,7 +23,6 @@ export type UseReportMarkersParams = {
     minimizedReplyReportIds?: readonly string[];
     setErrorMessage: Dispatch<SetStateAction<string>>;
     onNavigate?: (pathname: string) => void | Promise<void>;
-    onRevealTarget?: (report: ReportFeedback) => boolean | Promise<boolean>;
     selectReport: (reportId: string) => void;
     closeReplyComposer: () => void;
     openReplyComposer: (report: ReportFeedback) => void;
@@ -33,7 +32,7 @@ export type UseReportMarkersParams = {
     hydrateFeedbackIfNeeded: (report: ReportFeedback) => Promise<ReportFeedback>;
     searchInputRef: RefObject<HTMLInputElement | null>;
 };
-export declare function useReportMarkers({ mode, messages, fields, currentPathname, currentPageReports, reports, allPageReports, selectedReportId, markerAppearanceSize, showMarkerTargetPreview, showTargetPreview, selectableTargetsLength, selectedTarget, hoveredTarget, isFetching, isReportsLoading, activeReplyReportId, minimizedReplyReportIds, setErrorMessage, onNavigate, onRevealTarget, selectReport, closeReplyComposer, openReplyComposer, selectCase, ensureIssueMode, loadRepliesIfNeeded, hydrateFeedbackIfNeeded, searchInputRef, }: UseReportMarkersParams): {
+export declare function useReportMarkers({ mode, messages, fields, currentPathname, currentPageReports, reports, allPageReports, selectedReportId, markerAppearanceSize, showMarkerTargetPreview, showTargetPreview, selectableTargetsLength, selectedTarget, hoveredTarget, isFetching, isReportsLoading, activeReplyReportId, minimizedReplyReportIds, setErrorMessage, onNavigate, selectReport, closeReplyComposer, openReplyComposer, selectCase, ensureIssueMode, loadRepliesIfNeeded, hydrateFeedbackIfNeeded, searchInputRef, }: UseReportMarkersParams): {
     markers: Marker[];
     hoveredMarkerId: string | null;
     setHoveredMarkerId: Dispatch<SetStateAction<string | null>>;

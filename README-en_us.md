@@ -92,7 +92,6 @@ See `examples/basic/src/fivepixels/adapter.ts` and `FivePixelsAdapter` (`src/typ
 | `adapter` | `FivePixelsAdapter` | Backend handlers for remote persistence and optional API login. |
 | `fields` | `ReportField[]` | Custom fields (`textarea`, `checkbox`). |
 | `onNavigate` | `(pathname) => void` | Navigate from View mode. |
-| `onRevealTarget` | `(report) => boolean \| Promise<boolean>` | Reveal a cross-page feedback target. |
 | `onEvent` | `(event) => void` | create/update/delete/reply/github events. |
 | `onReply` | `({ feedbackId, message }) => void` | Reply side effect hook. |
 | `github` | `{ enabled?, modes?, onCreate? }` | GitHub Issue integration. |
@@ -142,7 +141,7 @@ Feedback created inside a hidden view automatically reuses its existing trigger 
 <Modal data-fp-view="login">...</Modal>
 ```
 
-Nested views are restored from outermost to innermost. `onRevealTarget` remains a fallback for targets that declarative restore cannot open.
+Nested views are restored from outermost to innermost.
 
 ## UI modes
 

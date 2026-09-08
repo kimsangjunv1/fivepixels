@@ -47,7 +47,6 @@ export type ReportStateConfig = {
     identify?: ReportIdentify;
     adapter?: FivePixelsAdapter;
     onNavigate?: (pathname: string) => void | Promise<void>;
-    onRevealTarget?: (report: ReportFeedback) => boolean | Promise<boolean>;
     onEvent?: (event: ReportEvent) => void | Promise<void>;
     onReply?: (params: { feedbackId: string; message: string }) => void | Promise<void>;
     github?: ReportGitHubConfig;
@@ -76,7 +75,6 @@ export function useReportState({
     identify,
     adapter,
     onNavigate,
-    onRevealTarget,
     onEvent,
     onReply,
     github,
@@ -369,7 +367,6 @@ export function useReportState({
         minimizedReplyReportIds: reply.minimizedReplyReportIds,
         setErrorMessage: panel.setErrorMessage,
         onNavigate,
-        onRevealTarget,
         selectReport,
         closeReplyComposer: closeReplyComposerBridge,
         openReplyComposer: openReplyComposerClearingDraft,

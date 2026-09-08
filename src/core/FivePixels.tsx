@@ -23,7 +23,6 @@ export function FivePixels({
     adapter,
     fields = DEFAULT_FIELDS,
     onNavigate,
-    onRevealTarget,
     onEvent,
     onReply,
     github,
@@ -52,7 +51,6 @@ export function FivePixels({
             adapter={adapter}
             fields={fields}
             onNavigate={onNavigate}
-            onRevealTarget={onRevealTarget}
             onEvent={onEvent}
             onReply={onReply}
             github={github}

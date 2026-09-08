@@ -47,7 +47,6 @@ export type UseReportMarkersParams = {
     minimizedReplyReportIds?: readonly string[];
     setErrorMessage: Dispatch<SetStateAction<string>>;
     onNavigate?: (pathname: string) => void | Promise<void>;
-    onRevealTarget?: (report: ReportFeedback) => boolean | Promise<boolean>;
     selectReport: (reportId: string) => void;
     closeReplyComposer: () => void;
     openReplyComposer: (report: ReportFeedback) => void;
@@ -79,7 +78,6 @@ export function useReportMarkers({
     minimizedReplyReportIds = [],
     setErrorMessage,
     onNavigate,
-    onRevealTarget,
     selectReport,
     closeReplyComposer,
     openReplyComposer,
@@ -315,19 +313,6 @@ export function useReportMarkers({
             let revealed = await restoreFeedbackViews(report.position.viewPath);
 
             if (revealed) {
-                syncMarkers();
-                targetElement = getFeedbackTargetElement(report);
-            }
-
-            if ((!targetElement || !isFeedbackTargetVisible(targetElement)) && onRevealTarget) {
-                try {
-                    revealed = Boolean(await onRevealTarget(report)) || revealed;
-                } catch {
-                    // Keep a successful declarative reveal even if the fallback fails.
-                }
-            }
-
-            if (revealed) {
                 await waitForTargetRevealResync();
                 syncMarkers();
             }
@@ -335,7 +320,7 @@ export function useReportMarkers({
             scrollToFeedbackTarget(report);
             return revealed;
         },
-        [onRevealTarget, syncMarkers],
+        [syncMarkers],
     );
 
     useEffect(() => {

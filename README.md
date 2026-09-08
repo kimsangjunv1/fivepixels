@@ -92,7 +92,6 @@ REST 경로·필수 handler·선택 handler는 `examples/basic/src/fivepixels/ad
 | `adapter` | `FivePixelsAdapter` | 백엔드 연동 handler 묶음. `sync="api"` / `"artemis"`에서 persistence·(선택) 로그인에 사용. |
 | `fields` | `ReportField[]` | 커스텀 필드 (`textarea`, `checkbox`). |
 | `onNavigate` | `(pathname) => void` | View 모드에서 경로 이동. |
-| `onRevealTarget` | `(report) => boolean \| Promise<boolean>` | 다른 페이지 피드백 타깃 노출 시도. |
 | `onEvent` | `(event) => void` | create/update/delete/reply/github 이벤트. |
 | `onReply` | `({ feedbackId, message }) => void` | 답변 side effect. |
 | `github` | `{ enabled?, modes?, onCreate? }` | GitHub Issue 연동. |
@@ -142,7 +141,7 @@ REST 경로·필수 handler·선택 handler는 `examples/basic/src/fivepixels/ad
 <Modal data-fp-view="login">...</Modal>
 ```
 
-중첩된 view는 바깥쪽부터 순서대로 복원하며, 기존 `onRevealTarget`은 선언형 복원으로 열리지 않는 대상의 fallback으로 동작합니다.
+중첩된 view는 바깥쪽부터 순서대로 복원합니다.
 
 ## UI 모드
 

@@ -2,7 +2,6 @@ import type { FivePixelsSync } from "@/shared/constants/loginMethod.js";
 import type { FivePixelsAdapter } from "./adapter.js";
 import type {
     FivePixelsMode,
-    ReportFeedback,
     ReportField,
     ReportGitHubConfig,
     ReportProject,
@@ -55,8 +54,6 @@ export type FivePixelsProps = {
     fields?: ReportField[];
     /** Navigate in view mode when locating feedback on another route. */
     onNavigate?: (pathname: string) => void | Promise<void>;
-    /** Attempt to reveal a target that is not on the current page. */
-    onRevealTarget?: (report: ReportFeedback) => boolean | Promise<boolean>;
     github?: ReportGitHubConfig;
     /** Capture host app fetch/XHR traffic for the API flow tab. Default: true. */
     networkMonitor?: boolean;

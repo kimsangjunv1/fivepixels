@@ -21,7 +21,6 @@ export type ReportStateConfig = {
     identify?: ReportIdentify;
     adapter?: FivePixelsAdapter;
     onNavigate?: (pathname: string) => void | Promise<void>;
-    onRevealTarget?: (report: ReportFeedback) => boolean | Promise<boolean>;
     onEvent?: (event: ReportEvent) => void | Promise<void>;
     onReply?: (params: {
         feedbackId: string;
@@ -38,7 +37,7 @@ export type ReportStateConfig = {
     replyHistory: import("../../../shared/utils/report/reportUi.js").ResolvedReplyHistoryConfig;
     networkMonitor?: boolean;
 };
-export declare function useReportState({ projectId, environment, appVersion, panelAppearance, tooltipAppearance, questionThreadDefault, threadLayoutDefault, fields, authors, requireReviewerKey, identify, adapter, onNavigate, onRevealTarget, onEvent, onReply, github, routeKey, showFeedbackList, initialLocale, messageOverrides, pixelsMode, sync, requireAuth, replyHistory, networkMonitor, }: ReportStateConfig): {
+export declare function useReportState({ projectId, environment, appVersion, panelAppearance, tooltipAppearance, questionThreadDefault, threadLayoutDefault, fields, authors, requireReviewerKey, identify, adapter, onNavigate, onEvent, onReply, github, routeKey, showFeedbackList, initialLocale, messageOverrides, pixelsMode, sync, requireAuth, replyHistory, networkMonitor, }: ReportStateConfig): {
     panelAppearance: ReportAppearance;
     setPanelAppearance: (nextAppearance: ReportAppearance) => void;
     tooltipAppearance: ReportAppearance;
