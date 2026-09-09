@@ -91,6 +91,32 @@ export function formatTimeCompact(value: string, locale: ReportLocale = "en") {
     }).format(date);
 }
 
+/** List clock with seconds, e.g. `오전 09:17:57` / `9:17:57 AM` (network-tab style). */
+export function formatTimeWithSeconds(value: string, locale: ReportLocale = "en") {
+    const date = new Date(value);
+
+    if (locale === "ko") {
+        let hours = date.getHours();
+        const minutes = String(date.getMinutes()).padStart(2, "0");
+        const seconds = String(date.getSeconds()).padStart(2, "0");
+        const isAM = hours < 12;
+        const period = isAM ? "오전" : "오후";
+
+        hours = hours % 12;
+        if (hours === 0) {
+            hours = 12;
+        }
+
+        return `${period} ${String(hours).padStart(2, "0")}:${minutes}:${seconds}`;
+    }
+
+    return new Intl.DateTimeFormat("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        second: "2-digit",
+    }).format(date);
+}
+
 export type RelativeTimeUnit = "second" | "minute" | "hour" | "day" | "month" | "year";
 
 export type RelativeTimeParts = {

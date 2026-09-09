@@ -6,6 +6,8 @@ export declare function formatClockTime(value: string): string;
 export declare function formatTimeOnly(value: string, locale?: ReportLocale): string;
 /** Compact clock for thread meta, e.g. `오후 01:30` / `1:30 PM`. */
 export declare function formatTimeCompact(value: string, locale?: ReportLocale): string;
+/** List clock with seconds, e.g. `오전 09:17:57` / `9:17:57 AM` (network-tab style). */
+export declare function formatTimeWithSeconds(value: string, locale?: ReportLocale): string;
 export type RelativeTimeUnit = "second" | "minute" | "hour" | "day" | "month" | "year";
 export type RelativeTimeParts = {
     unit: RelativeTimeUnit;

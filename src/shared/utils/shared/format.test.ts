@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatRelativeTime, formatRelativeTimeCompact, formatTimeCompact, getRelativeTimeParts } from "./format.js";
+import { formatRelativeTime, formatRelativeTimeCompact, formatTimeCompact, formatTimeWithSeconds, getRelativeTimeParts } from "./format.js";
 
 describe("formatTimeCompact", () => {
     it("formats Korean compact time as 오전/오후 HH:mm in local time", () => {
@@ -10,6 +10,18 @@ describe("formatTimeCompact", () => {
         expect(formatTimeCompact(afternoon.toISOString(), "ko")).toBe("오후 01:30");
         expect(formatTimeCompact(midnight.toISOString(), "ko")).toBe("오전 12:05");
         expect(formatTimeCompact(noon.toISOString(), "ko")).toBe("오후 12:00");
+    });
+});
+
+describe("formatTimeWithSeconds", () => {
+    it("formats Korean list time as 오전/오후 HH:mm:ss in local time", () => {
+        const afternoon = new Date(2026, 6, 23, 9, 17, 57);
+        const midnight = new Date(2026, 6, 23, 0, 5, 8);
+        const noon = new Date(2026, 6, 23, 12, 0, 0);
+
+        expect(formatTimeWithSeconds(afternoon.toISOString(), "ko")).toBe("오전 09:17:57");
+        expect(formatTimeWithSeconds(midnight.toISOString(), "ko")).toBe("오전 12:05:08");
+        expect(formatTimeWithSeconds(noon.toISOString(), "ko")).toBe("오후 12:00:00");
     });
 });
 

@@ -1,7 +1,7 @@
 import { useState, type MouseEvent } from "react";
 import type { ReportFeedback } from "@/shared/types/report.js";
 import type { ReportLocale, ReportMessages } from "@/shared/i18n/types.js";
-import { formatTimeOnly } from "@/shared/utils/shared/format.js";
+import { formatTimeWithSeconds } from "@/shared/utils/shared/format.js";
 import { getIssueSummary } from "@/shared/utils/report/reportCases.js";
 import { getFeedbackCaseId, getMemoCaseId } from "@/shared/utils/feedback/feedbackCaseId.js";
 import { copyTextToClipboard, serializeFeedbackItem } from "@/shared/utils/feedback/feedbackDataTransfer.js";
@@ -26,32 +26,6 @@ type FeedbackListItemProps = {
     onDelete: (id: string) => Promise<void>;
     onCreateGitHubIssue?: (report: ReportFeedback) => Promise<void>;
 };
-
-function ClockIcon({ className }: { className?: string }) {
-    return (
-        <svg
-            viewBox="0 0 16 16"
-            fill="none"
-            aria-hidden
-            className={className}
-        >
-            <circle
-                cx="8"
-                cy="8"
-                r="6.25"
-                stroke="currentColor"
-                strokeWidth="1.5"
-            />
-            <path
-                d="M8 4.5V8l2.25 1.5"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-            />
-        </svg>
-    );
-}
 
 function FeedbackListCopyAction({ report, messages }: { report: ReportFeedback; messages: ReportMessages }) {
     const [copied, setCopied] = useState(false);
@@ -152,19 +126,16 @@ export function FeedbackListItem({
                     <section className="flex flex-col gap-[4px] p-[8px_12px] flex-1">
                         <p className="line-clamp-2 text-[14px] text-[var(--adaptive-black900)] font-medium whitespace-break-spaces leading-[1.5]">{summary}</p>
 
-                        <div className={`flex items-center gap-[6px] ${isMemoItem ? "justify-between" : "justify-end"}`}>
-                            {isMemoItem ? (
-                                <p
-                                    className="min-w-0 truncate text-[12px] text-[var(--adaptive-black500)]"
-                                    title={report.pathname}
-                                >
-                                    {report.pathname || "/"}
-                                </p>
-                            ) : null}
+                        <div className="flex items-center justify-between gap-[6px]">
+                            <p
+                                className="min-w-0 truncate text-[14px] text-[var(--adaptive-black500)]"
+                                title={report.pathname}
+                            >
+                                {report.pathname || "/"}
+                            </p>
 
-                            <span className="flex shrink-0 items-center gap-[4px] text-[12px] tabular-nums text-[var(--adaptive-black900)]">
-                                <ClockIcon className="h-[12px] w-[12px]" />
-                                {formatTimeOnly(activityAt, locale)}
+                            <span className="shrink-0 text-[14px] tabular-nums text-[var(--adaptive-black500)]">
+                                {formatTimeWithSeconds(activityAt, locale)}
                             </span>
                         </div>
                     </section>
