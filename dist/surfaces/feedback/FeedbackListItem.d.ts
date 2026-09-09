@@ -13,6 +13,6 @@ type FeedbackListItemProps = {
     onDelete: (id: string) => Promise<void>;
     onCreateGitHubIssue?: (report: ReportFeedback) => Promise<void>;
 };
-export declare function FeedbackListItem({ report, locale, messages, listScope, listKind, disabled, canCreateGitHubIssue, creatingGitHubIssueId, onLocate, onDelete, onCreateGitHubIssue, }: FeedbackListItemProps): import("react").JSX.Element;
+export declare function FeedbackListItem({ report, locale, messages, listKind, disabled, canCreateGitHubIssue, creatingGitHubIssueId, onLocate, onDelete, onCreateGitHubIssue, }: FeedbackListItemProps): import("react").JSX.Element;
 export {};
 //# sourceMappingURL=FeedbackListItem.d.ts.map

@@ -3,10 +3,7 @@ import type { ReportFeedback } from "@/shared/types/report.js";
 import type { ReportLocale, ReportMessages } from "@/shared/i18n/types.js";
 import { formatTimeOnly } from "@/shared/utils/shared/format.js";
 import { getIssueSummary } from "@/shared/utils/report/reportCases.js";
-import { getReplyCount } from "@/shared/utils/feedback/feedbackThread.js";
 import { getFeedbackCaseId, getMemoCaseId } from "@/shared/utils/feedback/feedbackCaseId.js";
-import { getFeedbackListStatusTag } from "@/shared/utils/feedback/feedbackListStatus.js";
-import { isFeedbackCategory } from "@/shared/constants/feedbackCategory.js";
 import { copyTextToClipboard, serializeFeedbackItem } from "@/shared/utils/feedback/feedbackDataTransfer.js";
 import { GitIssueButton } from "./GitIssueButton.js";
 import { FeedbackDeleteAction } from "./FeedbackDeleteAction.js";
@@ -52,19 +49,6 @@ function ClockIcon({ className }: { className?: string }) {
                 strokeLinecap="round"
                 strokeLinejoin="round"
             />
-        </svg>
-    );
-}
-
-function CategoryShieldIcon({ className }: { className?: string }) {
-    return (
-        <svg
-            viewBox="0 0 16 16"
-            fill="currentColor"
-            aria-hidden
-            className={className}
-        >
-            <path d="M8 1.5 3.5 3.4v3.7c0 3.1 2.1 5.9 4.5 6.9 2.4-1 4.5-3.8 4.5-6.9V3.4L8 1.5Zm0 1.7 3.2 1.3v2.6c0 2.2-1.4 4.2-3.2 5.1-1.8-.9-3.2-2.9-3.2-5.1V4.5L8 3.2Z" />
         </svg>
     );
 }
@@ -133,7 +117,6 @@ export function FeedbackListItem({
     report,
     locale,
     messages,
-    listScope,
     listKind = "feedback",
     disabled = false,
     canCreateGitHubIssue = false,
@@ -148,9 +131,6 @@ export function FeedbackListItem({
     const githubLock = useIntegrationLock("githubIssue");
     const isMemoItem = listKind === "memo" || report.category === "memo";
     const caseId = isMemoItem ? getMemoCaseId(report) : getFeedbackCaseId(report);
-    const replyCount = getReplyCount(report);
-    const statusTag = getFeedbackListStatusTag(report);
-    const category = isFeedbackCategory(report.category) ? report.category : null;
     const summary = getIssueSummary(report, { summaryMore: messages.cases.summaryMore });
     const activityAt = report.created_at;
     const showGitHubAction = !isMemoItem && (canCreateGitHubIssue || githubLock.locked);
@@ -172,7 +152,7 @@ export function FeedbackListItem({
                     <section className="flex flex-col gap-[4px] p-[8px_12px] flex-1">
                         <p className="line-clamp-2 text-[14px] text-[var(--adaptive-black900)] font-medium whitespace-break-spaces leading-[1.5]">{summary}</p>
 
-                        <div className="flex items-center justify-between gap-[6px]">
+                        <div className={`flex items-center gap-[6px] ${isMemoItem ? "justify-between" : "justify-end"}`}>
                             {isMemoItem ? (
                                 <p
                                     className="min-w-0 truncate text-[12px] text-[var(--adaptive-black500)]"
@@ -180,41 +160,15 @@ export function FeedbackListItem({
                                 >
                                     {report.pathname || "/"}
                                 </p>
-                            ) : (
-                                <section className="flex gap-[4px]">
-                                    {category ? (
-                                        <section className="flex items-center rounded-[4px] border-[1px] border-[var(--adaptive-black900)]">
-                                            <span className="px-[2px] py-[1px] text-[12px] font-medium text-[var(--adaptive-black900)]">{messages.feedbackList.categoryTag[category]}</span>
-                                        </section>
-                                    ) : null}
+                            ) : null}
 
-                                    <section className="flex items-center rounded-[4px] border-[1px] border-[var(--adaptive-black900)]">
-                                        <span className="px-[4px] py-[1px] text-[12px] font-medium text-[var(--adaptive-black900)]">{messages.feedbackList.statusTag[statusTag]}</span>
-                                    </section>
-                                    <div className="flex min-w-0 items-center gap-[4px]">
-                                        {replyCount > 0 ? (
-                                            <span className="rounded-[4px] border-[1.5px] border-[var(--adaptive-black900)] px-[1px] text-[12px] font-bold text-[var(--adaptive-black900)]">
-                                                {messages.feedbackList.replyCountBadge(replyCount)}
-                                            </span>
-                                        ) : null}
-                                    </div>
-                                </section>
-                            )}
-
-                            <section>
-                                <div className="flex min-w-0 items-center justify-between gap-[4px]">
-                                    <span className="flex shrink-0 items-center gap-[4px] text-[12px] tabular-nums text-[var(--adaptive-black900)]">
-                                        <ClockIcon className="h-[12px] w-[12px]" />
-
-                                        {formatTimeOnly(activityAt, locale)}
-                                    </span>
-                                </div>
-                            </section>
+                            <span className="flex shrink-0 items-center gap-[4px] text-[12px] tabular-nums text-[var(--adaptive-black900)]">
+                                <ClockIcon className="h-[12px] w-[12px]" />
+                                {formatTimeOnly(activityAt, locale)}
+                            </span>
                         </div>
                     </section>
                 </section>
-
-                {!isMemoItem && listScope === "all" ? <p className="truncate text-[12px] text-[var(--adaptive-black400)]">{report.pathname}</p> : null}
             </button>
 
             <div className="absolute right-[10px] top-[6px] z-[1] flex items-center gap-[2px]">
