@@ -81,7 +81,7 @@ ${active} body {
   max-height: 100% !important;
   overflow: hidden !important;
   background-color: ${background} !important;
-  background-image: linear-gradient(${line} 1px, transparent 1px), linear-gradient(90deg, ${line} 1px, transparent 1px) !important;
+  background-image: radial-gradient(circle, ${line} 1px, transparent 1px) !important;
   background-size: ${gridSize}px ${gridSize}px !important;
 }
 

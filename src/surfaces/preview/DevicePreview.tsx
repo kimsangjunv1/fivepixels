@@ -45,7 +45,7 @@ const DEVICE_PREVIEW_HOST_CANVAS = {
 function buildDevicePreviewCanvasStyle(hostCanvas: (typeof DEVICE_PREVIEW_HOST_CANVAS)[keyof typeof DEVICE_PREVIEW_HOST_CANVAS]) {
     return {
         backgroundColor: hostCanvas.background,
-        backgroundImage: `linear-gradient(${hostCanvas.line} 1px, transparent 1px), linear-gradient(90deg, ${hostCanvas.line} 1px, transparent 1px)`,
+        backgroundImage: `radial-gradient(circle, ${hostCanvas.line} 1px, transparent 1px)`,
         backgroundSize: `${DEVICE_PREVIEW_CANVAS_GRID}px ${DEVICE_PREVIEW_CANVAS_GRID}px`,
         backgroundAttachment: "fixed" as const,
     };

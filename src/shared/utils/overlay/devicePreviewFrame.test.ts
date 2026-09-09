@@ -48,6 +48,7 @@ describe("devicePreview host style", () => {
         expect(css).toContain(`body > :not(#${FIVEPIXELS_HOST_ID})`);
         expect(css).toContain("display: none !important");
         expect(css).toContain(`#${FIVEPIXELS_HOST_ID}`);
+        expect(css).toContain("radial-gradient(circle,");
     });
 });
 
