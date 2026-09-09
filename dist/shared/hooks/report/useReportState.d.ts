@@ -61,6 +61,7 @@ export declare function useReportState({ projectId, environment, appVersion, pan
     apiTeamMembersLoading: boolean;
     refreshTeamMembers: () => Promise<ReportAuthor[] | null>;
     integrationCapabilities: import("../../utils/integration/integrationFeatures.js").IntegrationCapabilities;
+    hideIntegrationLocks: boolean;
     adapterIntegrationStatus: import("../../utils/integration/buildAdapterIntegrationStatus.js").AdapterIntegrationStatus | null;
     onListReviewers: (() => Promise<ReportAuthor[]>) | undefined;
     onListReviewerRequests: (() => Promise<import("../../../shared/types/report.js").ReportReviewerRequest[]>) | undefined;

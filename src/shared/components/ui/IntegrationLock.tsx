@@ -6,7 +6,10 @@ import { formatIntegrationMissingHandlers, type IntegrationFeatureId, type Integ
 import { getIntegrationLock } from "@/shared/utils/integration/integrationGate.js";
 
 export function useIntegrationLock(feature: IntegrationFeatureId) {
-    const { integrationCapabilities, messages } = useReportPreferences();
+    const { integrationCapabilities, messages, hideIntegrationLocks } = useReportPreferences();
+    if (hideIntegrationLocks) {
+        return { locked: false, missingHandlers: [], tooltipLabel: "" };
+    }
     const state = getIntegrationLock(feature, integrationCapabilities);
     const tooltipLabel =
         feature === "dataTransfer" && state.locked

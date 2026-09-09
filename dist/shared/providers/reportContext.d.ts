@@ -32,6 +32,7 @@ declare const ReportContext: Context<{
     apiTeamMembersLoading: boolean;
     refreshTeamMembers: () => Promise<import("../types/report.js").ReportAuthor[] | null>;
     integrationCapabilities: import("../utils/integration/integrationFeatures.js").IntegrationCapabilities;
+    hideIntegrationLocks: boolean;
     adapterIntegrationStatus: import("../utils/integration/buildAdapterIntegrationStatus.js").AdapterIntegrationStatus | null;
     onListReviewers: (() => Promise<import("../types/report.js").ReportAuthor[]>) | undefined;
     onListReviewerRequests: (() => Promise<import("../types/report.js").ReportReviewerRequest[]>) | undefined;
@@ -409,6 +410,7 @@ export declare function useReport(): {
     apiTeamMembersLoading: boolean;
     refreshTeamMembers: () => Promise<import("../types/report.js").ReportAuthor[] | null>;
     integrationCapabilities: import("../utils/integration/integrationFeatures.js").IntegrationCapabilities;
+    hideIntegrationLocks: boolean;
     adapterIntegrationStatus: import("../utils/integration/buildAdapterIntegrationStatus.js").AdapterIntegrationStatus | null;
     onListReviewers: (() => Promise<import("../types/report.js").ReportAuthor[]>) | undefined;
     onListReviewerRequests: (() => Promise<import("../types/report.js").ReportReviewerRequest[]>) | undefined;
@@ -789,6 +791,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         apiTeamMembersLoading: boolean;
         refreshTeamMembers: () => Promise<import("../types/report.js").ReportAuthor[] | null>;
         integrationCapabilities: import("../utils/integration/integrationFeatures.js").IntegrationCapabilities;
+        hideIntegrationLocks: boolean;
         adapterIntegrationStatus: import("../utils/integration/buildAdapterIntegrationStatus.js").AdapterIntegrationStatus | null;
         onListReviewers: (() => Promise<import("../types/report.js").ReportAuthor[]>) | undefined;
         onListReviewerRequests: (() => Promise<import("../types/report.js").ReportReviewerRequest[]>) | undefined;
@@ -1137,7 +1140,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         clearNotifications: () => void;
         activateNotification: (item: import("../types/notification.js").NotificationItem) => void;
         runNotificationAction: (item: import("../types/notification.js").NotificationItem, action: import("../types/notification.js").NotificationActionId) => void;
-    }, "personalKey" | "projectId" | "fields" | "personalKeyRequired" | "environment" | "require" | "requireAuth" | "publicKey" | "authors" | "selfProfile" | "isPresentationMode" | "loginMethod" | "personalKeyCandidates" | "issuePersonalKey" | "rotatePersonalKey" | "insertPersonalKey" | "clearPersonalKey" | "authBootstrapState" | "messages" | "appVersion" | "authorSelectionLocked" | "showMarkerTargetPreview" | "isAuthBootstrapping" | "devicePreviewUiOpen" | "devicePreviewDeviceId" | "devicePreviewScale" | "devicePreviewImageEnabled" | "devicePreviewFitToViewport" | "devicePreviewStatusBarEnabled" | "mobilePreviewUiOpen" | "mobilePreviewDeviceId" | "mobilePreviewOrientation" | "showHiddenDetachedMarkers" | "showModalDetachedMarkers" | "markerAppearance" | "typography" | "panelAppearance" | "tooltipAppearance" | "showFeedbackList" | "locale" | "persistenceStatus" | "questionThreadDisplay" | "threadLayout" | "panelRole" | "setShowMarkerTargetPreview" | "toggleMarkerTargetPreview" | "setDevicePreviewUiOpen" | "setDevicePreviewDeviceId" | "setDevicePreviewScale" | "setDevicePreviewImageEnabled" | "setDevicePreviewFitToViewport" | "setDevicePreviewStatusBarEnabled" | "devicePreviewPreset" | "setMobilePreviewUiOpen" | "setMobilePreviewDeviceId" | "setMobilePreviewOrientation" | "toggleMobilePreviewOrientation" | "mobilePreviewPreset" | "setShowHiddenDetachedMarkers" | "setShowModalDetachedMarkers" | "setMarkerAppearance" | "setMarkerSize" | "setMarkerShape" | "setMarkerFillStyle" | "setMarkerColors" | "setMarkerColor" | "setMarkerStrokeColor" | "setFeedbackModeDotColors" | "setFeedbackModeDotColor" | "setTypography" | "setFontSize" | "setFontFamily" | "setQuestionThreadDisplay" | "setThreadLayout" | "setPanelRole" | "setLocale" | "onListReviewers" | "onListReviewerRequests" | "onCreateReviewerRequest" | "onResolveReviewerRequest" | "onRegisterReviewer" | "onUpdateReviewer" | "onDeleteReviewer" | "teamReviewers" | "teamActor" | "apiTeamDirectory" | "apiTeamMembers" | "apiTeamMembersLoading" | "refreshTeamMembers" | "setPanelAppearance" | "setTooltipAppearance" | "teamActorRole" | "isTeamAdmin" | "canAccessTeamSettings" | "integrationCapabilities" | "adapterIntegrationStatus" | "resolvedPanelAppearance" | "resolvedTooltipAppearance" | "isMobileViewport" | "panelView" | "loginWithApi" | "registerWithApi" | "logoutWithApi" | "refreshWithApi" | "loginWithArtemis" | "completeRemoteOnboarding" | "completeOnboarding" | "restoreFromBackup" | "skipOnboarding" | "presentationViewers" | "visiblePanelTabs" | "visiblePanelTabsSummary" | "resolvedTabAvailabilityContext" | "setVisiblePanelTabs" | "resetVisibleTabsToRoleDefault" | "applyRoleDefaultTabsForOnboarding" | "savePanelTabPreference" | "storedPanelTabPreference">;
+    }, "personalKey" | "projectId" | "fields" | "personalKeyRequired" | "environment" | "require" | "requireAuth" | "publicKey" | "authors" | "selfProfile" | "isPresentationMode" | "loginMethod" | "personalKeyCandidates" | "issuePersonalKey" | "rotatePersonalKey" | "insertPersonalKey" | "clearPersonalKey" | "authBootstrapState" | "messages" | "appVersion" | "authorSelectionLocked" | "showMarkerTargetPreview" | "isAuthBootstrapping" | "devicePreviewUiOpen" | "devicePreviewDeviceId" | "devicePreviewScale" | "devicePreviewImageEnabled" | "devicePreviewFitToViewport" | "devicePreviewStatusBarEnabled" | "mobilePreviewUiOpen" | "mobilePreviewDeviceId" | "mobilePreviewOrientation" | "showHiddenDetachedMarkers" | "showModalDetachedMarkers" | "markerAppearance" | "typography" | "panelAppearance" | "tooltipAppearance" | "showFeedbackList" | "locale" | "persistenceStatus" | "questionThreadDisplay" | "threadLayout" | "panelRole" | "setShowMarkerTargetPreview" | "toggleMarkerTargetPreview" | "setDevicePreviewUiOpen" | "setDevicePreviewDeviceId" | "setDevicePreviewScale" | "setDevicePreviewImageEnabled" | "setDevicePreviewFitToViewport" | "setDevicePreviewStatusBarEnabled" | "devicePreviewPreset" | "setMobilePreviewUiOpen" | "setMobilePreviewDeviceId" | "setMobilePreviewOrientation" | "toggleMobilePreviewOrientation" | "mobilePreviewPreset" | "setShowHiddenDetachedMarkers" | "setShowModalDetachedMarkers" | "setMarkerAppearance" | "setMarkerSize" | "setMarkerShape" | "setMarkerFillStyle" | "setMarkerColors" | "setMarkerColor" | "setMarkerStrokeColor" | "setFeedbackModeDotColors" | "setFeedbackModeDotColor" | "setTypography" | "setFontSize" | "setFontFamily" | "setQuestionThreadDisplay" | "setThreadLayout" | "setPanelRole" | "setLocale" | "onListReviewers" | "onListReviewerRequests" | "onCreateReviewerRequest" | "onResolveReviewerRequest" | "onRegisterReviewer" | "onUpdateReviewer" | "onDeleteReviewer" | "teamReviewers" | "teamActor" | "apiTeamDirectory" | "apiTeamMembers" | "apiTeamMembersLoading" | "refreshTeamMembers" | "setPanelAppearance" | "setTooltipAppearance" | "teamActorRole" | "isTeamAdmin" | "canAccessTeamSettings" | "integrationCapabilities" | "hideIntegrationLocks" | "adapterIntegrationStatus" | "resolvedPanelAppearance" | "resolvedTooltipAppearance" | "isMobileViewport" | "panelView" | "loginWithApi" | "registerWithApi" | "logoutWithApi" | "refreshWithApi" | "loginWithArtemis" | "completeRemoteOnboarding" | "completeOnboarding" | "restoreFromBackup" | "skipOnboarding" | "presentationViewers" | "visiblePanelTabs" | "visiblePanelTabsSummary" | "resolvedTabAvailabilityContext" | "setVisiblePanelTabs" | "resetVisibleTabsToRoleDefault" | "applyRoleDefaultTabsForOnboarding" | "savePanelTabPreference" | "storedPanelTabPreference">;
     session: Pick<{
         panelAppearance: import("../types/report.js").ReportAppearance;
         setPanelAppearance: (nextAppearance: import("../types/report.js").ReportAppearance) => void;
@@ -1162,6 +1165,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         apiTeamMembersLoading: boolean;
         refreshTeamMembers: () => Promise<import("../types/report.js").ReportAuthor[] | null>;
         integrationCapabilities: import("../utils/integration/integrationFeatures.js").IntegrationCapabilities;
+        hideIntegrationLocks: boolean;
         adapterIntegrationStatus: import("../utils/integration/buildAdapterIntegrationStatus.js").AdapterIntegrationStatus | null;
         onListReviewers: (() => Promise<import("../types/report.js").ReportAuthor[]>) | undefined;
         onListReviewerRequests: (() => Promise<import("../types/report.js").ReportReviewerRequest[]>) | undefined;
@@ -1535,6 +1539,7 @@ export declare function useReportContextSlices(state: ReportContextValue): {
         apiTeamMembersLoading: boolean;
         refreshTeamMembers: () => Promise<import("../types/report.js").ReportAuthor[] | null>;
         integrationCapabilities: import("../utils/integration/integrationFeatures.js").IntegrationCapabilities;
+        hideIntegrationLocks: boolean;
         adapterIntegrationStatus: import("../utils/integration/buildAdapterIntegrationStatus.js").AdapterIntegrationStatus | null;
         onListReviewers: (() => Promise<import("../types/report.js").ReportAuthor[]>) | undefined;
         onListReviewerRequests: (() => Promise<import("../types/report.js").ReportReviewerRequest[]>) | undefined;

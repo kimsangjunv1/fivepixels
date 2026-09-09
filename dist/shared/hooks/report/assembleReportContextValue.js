@@ -73,6 +73,8 @@ export function assembleReportContextValue({ panel, auth, draft, markers, mutati
         apiTeamMembersLoading,
         refreshTeamMembers,
         integrationCapabilities,
+        /** FivePixelsDemo(presentation)에서는 연동 잠금 아이콘을 숨긴다 — showcase에서 어차피 조작 불가 */
+        hideIntegrationLocks: auth.isPresentationMode,
         adapterIntegrationStatus,
         onListReviewers,
         onListReviewerRequests,

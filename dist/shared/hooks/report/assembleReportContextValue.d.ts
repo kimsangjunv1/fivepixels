@@ -76,6 +76,8 @@ export declare function assembleReportContextValue({ panel, auth, draft, markers
     apiTeamMembersLoading: boolean;
     refreshTeamMembers: () => Promise<ReportAuthor[] | null>;
     integrationCapabilities: import("../../utils/integration/integrationFeatures.js").IntegrationCapabilities;
+    /** FivePixelsDemo(presentation)에서는 연동 잠금 아이콘을 숨긴다 — showcase에서 어차피 조작 불가 */
+    hideIntegrationLocks: boolean;
     adapterIntegrationStatus: import("../../../shared/utils/integration/buildAdapterIntegrationStatus.js").AdapterIntegrationStatus | null;
     onListReviewers: (() => Promise<ReportAuthor[]>) | undefined;
     onListReviewerRequests: (() => Promise<import("../../../shared/types/report.js").ReportReviewerRequest[]>) | undefined;

@@ -22,6 +22,7 @@ export const REPORT_PREFERENCE_KEYS = [
     "apiTeamMembersLoading",
     "refreshTeamMembers",
     "integrationCapabilities",
+    "hideIntegrationLocks",
     "adapterIntegrationStatus",
     "onListReviewers",
     "onListReviewerRequests",
