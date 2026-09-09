@@ -56,7 +56,7 @@ function cloneDraft(category = "suggestion") {
     return { ...structuredClone(DEMO_DRAFT), category };
 }
 const LIST_PANEL_REPORT_TABS = new Set(["feedback-list", "memo-list", "my-tasks"]);
-function PanelScene({ initialTab = "route-details", visibleTabs = PANEL_TABS, settingsInitialCategory, settingsInitialAppearanceSection, }) {
+function PanelScene({ initialTab = "route-details", visibleTabs = PANEL_TABS, settingsInitialCategory, settingsInitialAppearanceSection }) {
     const locked = useDemoLocked();
     const preferences = useReportPreferences();
     const baseSession = useReportSession();
@@ -307,10 +307,10 @@ function ElementHoverInspectScene() {
             applyItemTarget(itemId, { clientX: event.clientX, clientY: event.clientY });
         },
     });
-    return (_jsxs(ReportSessionContext.Provider, { value: session, children: [_jsxs("div", { ref: boardRef, className: "relative h-full w-full overflow-hidden rounded-[16px] bg-[#f4f6f8] p-[18px]", onPointerEnter: () => setPointerLive(true), onPointerLeave: restorePreview, onPointerMove: (event) => {
+    return (_jsxs(ReportSessionContext.Provider, { value: session, children: [_jsxs("div", { ref: boardRef, className: "relative h-[inherit] w-[inherit] flex flex-col  justify-center items-center overflow-hidden rounded-[16px]", onPointerEnter: () => setPointerLive(true), onPointerLeave: restorePreview, onPointerMove: (event) => {
                     setPointerLive(true);
                     setHoverPointer({ clientX: event.clientX, clientY: event.clientY });
-                }, children: [_jsxs("div", { className: "mb-[14px] flex items-center justify-between gap-[8px]", children: [_jsxs("div", { children: [_jsx("p", { className: "text-[12px] font-semibold uppercase tracking-[0.04em] text-[#8b95a1]", children: isKorean ? "피드백 모드" : "Feedback mode" }), _jsx("h3", { className: "text-[16px] font-bold text-[#191f28]", children: isKorean ? "요소에 올리면 스타일이 보여요" : "Hover an element to inspect styles" })] }), _jsx("span", { className: "h-[24px] w-[72px] shrink-0 rounded-[8px] bg-[var(--adaptive-fillOpacity700)]", "aria-hidden": true })] }), _jsxs("div", { className: "rounded-[16px] border border-[#e5e8eb] bg-white p-[18px] shadow-[0_10px_28px_rgba(25,31,40,0.06)]", children: [_jsx("p", { className: "mb-[10px] text-[11px] font-bold uppercase tracking-[0.06em] text-[#8b95a1]", children: isKorean ? "랜딩 미리보기" : "Landing preview" }), _jsx("h2", { ...bindItem("demo-hero-title"), className: "mb-[12px] h-[64px] w-[min(100%,339px)] rounded-[8px] bg-[var(--adaptive-fillOpacity700)] shadow-[var(--adaptive-popup-shadow)]" }), _jsxs("div", { className: "mb-[16px] flex flex-wrap items-center gap-[10px]", children: [_jsx("span", { ...bindItem("demo-price-badge"), className: "inline-flex items-center rounded-[8px] bg-[var(--adaptive-fillOpacity700)] px-[12px] py-[6px] text-[13px] text-[#777777] shadow-[var(--adaptive-popup-shadow)]", children: "example text" }), _jsx("span", { className: "inline-flex items-center rounded-[8px] bg-[var(--adaptive-fillOpacity700)] px-[12px] py-[6px] text-[13px] text-[#777777]", "aria-hidden": true, children: "example text" })] }), _jsx("button", { ...bindItem("demo-cta-button"), type: "button", className: "h-[48px] w-[180px] rounded-[8px] bg-[var(--adaptive-fillOpacity700)] shadow-[var(--adaptive-popup-shadow)] outline-none", "aria-label": isKorean ? "무료로 시작하기" : "Start for free" })] })] }), _jsx(TargetHighlights, { hoveredTarget: hoveredTarget, selectedTarget: null, showHoverInspect: Boolean(hoveredTarget && hoverPointer), activeMarkerTarget: null })] }));
+                }, children: [_jsx("h2", { ...bindItem("demo-hero-title"), className: "mb-[12px] text-[#777777] px-[12px] py-[6px] flex flex-wrap justify-center items-center w-[min(100%,339px)] rounded-[8px] bg-[var(--adaptive-fillOpacity700)] shadow-[var(--adaptive-popup-shadow)]", children: "example description" }), _jsxs("div", { className: "mb-[16px] flex flex-wrap items-center gap-[10px]", children: [_jsx("span", { ...bindItem("demo-price-badge"), className: "inline-flex items-center rounded-[8px] bg-[var(--adaptive-fillOpacity700)] px-[12px] py-[6px] text-[#777777] shadow-[var(--adaptive-popup-shadow)]", children: "example text" }), _jsx("button", { ...bindItem("demo-cta-button"), type: "button", className: "h-full w-[180px]  px-[12px] py-[6px] rounded-[8px] bg-[var(--adaptive-blue300)] text-[var(--adaptive-black50)] shadow-[var(--adaptive-popup-shadow)] outline-none", "aria-label": isKorean ? "무료로 시작하기" : "Start for free", children: "example button" })] })] }), _jsx(TargetHighlights, { hoveredTarget: hoveredTarget, selectedTarget: null, showHoverInspect: Boolean(hoveredTarget && hoverPointer), activeMarkerTarget: null })] }));
 }
 function ElementInspectorScene() {
     const stateLocked = useDemoLocked();
@@ -590,15 +590,15 @@ export function DemoScene({ scene }) {
         case "network-monitor":
             return _jsx(PanelScene, { initialTab: "api-flow" });
         case "feedback-list":
-            return _jsx(PanelScene, { initialTab: "feedback-list", visibleTabs: LIST_PANEL_TABS });
+            return (_jsx(PanelScene, { initialTab: "feedback-list", visibleTabs: LIST_PANEL_TABS }));
         case "memo-list":
             return (_jsx(PanelScene, { initialTab: "memo-list", visibleTabs: MEMO_PANEL_TABS }));
         case "page-brief":
-            return _jsx(PanelScene, { initialTab: "page-brief", visibleTabs: BRIEF_PANEL_TABS });
+            return (_jsx(PanelScene, { initialTab: "page-brief", visibleTabs: BRIEF_PANEL_TABS }));
         case "my-tasks":
-            return _jsx(PanelScene, { initialTab: "my-tasks", visibleTabs: TASK_PANEL_TABS });
+            return (_jsx(PanelScene, { initialTab: "my-tasks", visibleTabs: TASK_PANEL_TABS }));
         case "project-health":
-            return _jsx(PanelScene, { initialTab: "project-health", visibleTabs: HEALTH_PANEL_TABS });
+            return (_jsx(PanelScene, { initialTab: "project-health", visibleTabs: HEALTH_PANEL_TABS }));
         case "element-hover-inspect":
             return _jsx(ElementHoverInspectScene, {});
         case "element-inspector":
