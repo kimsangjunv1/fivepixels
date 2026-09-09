@@ -462,7 +462,7 @@ function ElementHoverInspectScene() {
                         <p className="text-[12px] font-semibold uppercase tracking-[0.04em] text-[#8b95a1]">{isKorean ? "피드백 모드" : "Feedback mode"}</p>
                         <h3 className="text-[16px] font-bold text-[#191f28]">{isKorean ? "요소에 올리면 스타일이 보여요" : "Hover an element to inspect styles"}</h3>
                     </div>
-                    <span className="shrink-0 rounded-full bg-[#fff1f0] px-[10px] py-[4px] text-[11px] font-bold text-[#f04452]">In Review</span>
+                    <span className="h-[24px] w-[72px] shrink-0 rounded-[8px] bg-[var(--adaptive-fillOpacity700)]" aria-hidden />
                 </div>
 
                 <div className="rounded-[16px] border border-[#e5e8eb] bg-white p-[18px] shadow-[0_10px_28px_rgba(25,31,40,0.06)]">
@@ -470,29 +470,27 @@ function ElementHoverInspectScene() {
 
                     <h2
                         {...bindItem("demo-hero-title")}
-                        className="mb-[12px] max-w-[18ch] text-[28px] font-extrabold leading-[1.15] tracking-[-0.04em] text-[#191f28]"
-                    >
-                        {isKorean ? "웹사이트 위의 대화를, 더 선명하게." : "Clearer conversations on every page."}
-                    </h2>
+                        className="mb-[12px] h-[64px] w-[min(100%,339px)] rounded-[8px] bg-[var(--adaptive-fillOpacity700)] shadow-[var(--adaptive-popup-shadow)]"
+                    />
 
                     <div className="mb-[16px] flex flex-wrap items-center gap-[10px]">
                         <span
                             {...bindItem("demo-price-badge")}
-                            className="inline-flex items-center rounded-full bg-[#111827] px-[12px] py-[6px] text-[13px] font-bold text-white"
+                            className="inline-flex items-center rounded-[8px] bg-[var(--adaptive-fillOpacity700)] px-[12px] py-[6px] text-[13px] text-[#777777] shadow-[var(--adaptive-popup-shadow)]"
                         >
-                            {isKorean ? "월 29,000원" : "$29 / mo"}
+                            example text
                         </span>
-                        <span className="text-[13px] text-[#6b7684]">{isKorean ? "팀 무제한 좌석 · 14일 체험" : "Unlimited seats · 14-day trial"}</span>
+                        <span className="inline-flex items-center rounded-[8px] bg-[var(--adaptive-fillOpacity700)] px-[12px] py-[6px] text-[13px] text-[#777777]" aria-hidden>
+                            example text
+                        </span>
                     </div>
 
                     <button
                         {...bindItem("demo-cta-button")}
                         type="button"
-                        className="inline-flex items-center gap-[8px] rounded-[12px] bg-[#3182f6] px-[16px] py-[12px] text-[15px] font-bold text-white outline-none"
-                    >
-                        <span>{isKorean ? "무료로 시작하기" : "Start for free"}</span>
-                        <span aria-hidden="true">→</span>
-                    </button>
+                        className="h-[48px] w-[180px] rounded-[8px] bg-[var(--adaptive-fillOpacity700)] shadow-[var(--adaptive-popup-shadow)] outline-none"
+                        aria-label={isKorean ? "무료로 시작하기" : "Start for free"}
+                    />
                 </div>
             </div>
 
