@@ -85,12 +85,7 @@ type PanelSceneProps = {
     settingsInitialAppearanceSection?: PanelSettingsInitialAppearanceSection;
 };
 
-function PanelScene({
-    initialTab = "route-details",
-    visibleTabs = PANEL_TABS,
-    settingsInitialCategory,
-    settingsInitialAppearanceSection,
-}: PanelSceneProps) {
+function PanelScene({ initialTab = "route-details", visibleTabs = PANEL_TABS, settingsInitialCategory, settingsInitialAppearanceSection }: PanelSceneProps) {
     const locked = useDemoLocked();
     const preferences = useReportPreferences();
     const baseSession = useReportSession();
@@ -246,19 +241,22 @@ function FeedbackComposerScene({ variant = "feedback" }: { variant?: "feedback" 
     const [draft, setDraft] = useState<DraftReport | null>(() => cloneDraft(draftCategory));
     const [authorName, setAuthorName] = useState("김상준");
 
-    const updateDraftCase = useCallback<ReportSessionValue["updateDraftCase"]>((caseId, text, mentions, userMentions) => {
-        if (locked) {
-            return;
-        }
-        setDraft((current) =>
-            current
-                ? {
-                      ...current,
-                      cases: current.cases.map((item) => (item.id === caseId ? { ...item, text, mentions, user_mentions: userMentions } : item)),
-                  }
-                : current,
-        );
-    }, [locked]);
+    const updateDraftCase = useCallback<ReportSessionValue["updateDraftCase"]>(
+        (caseId, text, mentions, userMentions) => {
+            if (locked) {
+                return;
+            }
+            setDraft((current) =>
+                current
+                    ? {
+                          ...current,
+                          cases: current.cases.map((item) => (item.id === caseId ? { ...item, text, mentions, user_mentions: userMentions } : item)),
+                      }
+                    : current,
+            );
+        },
+        [locked],
+    );
     const addDraftCase = useCallback(() => {
         if (locked) {
             return;
@@ -279,24 +277,33 @@ function FeedbackComposerScene({ variant = "feedback" }: { variant?: "feedback" 
             return { ...current, cases: [...current.cases, nextCase] };
         });
     }, [locked]);
-    const removeDraftCase = useCallback((caseId: string) => {
-        if (locked) {
-            return;
-        }
-        setDraft((current) => (current && current.cases.length > 1 ? { ...current, cases: current.cases.filter((item) => item.id !== caseId) } : current));
-    }, [locked]);
-    const updateDraftField = useCallback((key: string, value: string | boolean) => {
-        if (locked) {
-            return;
-        }
-        setDraft((current) => (current ? { ...current, fieldValues: { ...current.fieldValues, [key]: value } } : current));
-    }, [locked]);
-    const updateDraftCategory = useCallback((category: FeedbackCategory | null) => {
-        if (locked) {
-            return;
-        }
-        setDraft((current) => (current ? { ...current, category } : current));
-    }, [locked]);
+    const removeDraftCase = useCallback(
+        (caseId: string) => {
+            if (locked) {
+                return;
+            }
+            setDraft((current) => (current && current.cases.length > 1 ? { ...current, cases: current.cases.filter((item) => item.id !== caseId) } : current));
+        },
+        [locked],
+    );
+    const updateDraftField = useCallback(
+        (key: string, value: string | boolean) => {
+            if (locked) {
+                return;
+            }
+            setDraft((current) => (current ? { ...current, fieldValues: { ...current.fieldValues, [key]: value } } : current));
+        },
+        [locked],
+    );
+    const updateDraftCategory = useCallback(
+        (category: FeedbackCategory | null) => {
+            if (locked) {
+                return;
+            }
+            setDraft((current) => (current ? { ...current, category } : current));
+        },
+        [locked],
+    );
     const resetDraft = useCallback(() => {
         if (locked) {
             return;
@@ -449,7 +456,7 @@ function ElementHoverInspectScene() {
         <ReportSessionContext.Provider value={session}>
             <div
                 ref={boardRef}
-                className="relative h-full w-full overflow-hidden rounded-[16px] bg-[#f4f6f8] p-[18px]"
+                className="relative h-[inherit] w-[inherit] flex flex-col  justify-center items-center overflow-hidden rounded-[16px]"
                 onPointerEnter={() => setPointerLive(true)}
                 onPointerLeave={restorePreview}
                 onPointerMove={(event) => {
@@ -457,40 +464,29 @@ function ElementHoverInspectScene() {
                     setHoverPointer({ clientX: event.clientX, clientY: event.clientY });
                 }}
             >
-                <div className="mb-[14px] flex items-center justify-between gap-[8px]">
-                    <div>
-                        <p className="text-[12px] font-semibold uppercase tracking-[0.04em] text-[#8b95a1]">{isKorean ? "피드백 모드" : "Feedback mode"}</p>
-                        <h3 className="text-[16px] font-bold text-[#191f28]">{isKorean ? "요소에 올리면 스타일이 보여요" : "Hover an element to inspect styles"}</h3>
-                    </div>
-                    <span className="h-[24px] w-[72px] shrink-0 rounded-[8px] bg-[var(--adaptive-fillOpacity700)]" aria-hidden />
-                </div>
+                <h2
+                    {...bindItem("demo-hero-title")}
+                    className="mb-[12px] text-[#777777] px-[12px] py-[6px] flex flex-wrap justify-center items-center w-[min(100%,339px)] rounded-[8px] bg-[var(--adaptive-fillOpacity700)] shadow-[var(--adaptive-popup-shadow)]"
+                >
+                    example description
+                </h2>
 
-                <div className="rounded-[16px] border border-[#e5e8eb] bg-white p-[18px] shadow-[0_10px_28px_rgba(25,31,40,0.06)]">
-                    <p className="mb-[10px] text-[11px] font-bold uppercase tracking-[0.06em] text-[#8b95a1]">{isKorean ? "랜딩 미리보기" : "Landing preview"}</p>
-
-                    <h2
-                        {...bindItem("demo-hero-title")}
-                        className="mb-[12px] h-[64px] w-[min(100%,339px)] rounded-[8px] bg-[var(--adaptive-fillOpacity700)] shadow-[var(--adaptive-popup-shadow)]"
-                    />
-
-                    <div className="mb-[16px] flex flex-wrap items-center gap-[10px]">
-                        <span
-                            {...bindItem("demo-price-badge")}
-                            className="inline-flex items-center rounded-[8px] bg-[var(--adaptive-fillOpacity700)] px-[12px] py-[6px] text-[13px] text-[#777777] shadow-[var(--adaptive-popup-shadow)]"
-                        >
-                            example text
-                        </span>
-                        <span className="inline-flex items-center rounded-[8px] bg-[var(--adaptive-fillOpacity700)] px-[12px] py-[6px] text-[13px] text-[#777777]" aria-hidden>
-                            example text
-                        </span>
-                    </div>
+                <div className="mb-[16px] flex flex-wrap items-center gap-[10px]">
+                    <span
+                        {...bindItem("demo-price-badge")}
+                        className="inline-flex items-center rounded-[8px] bg-[var(--adaptive-fillOpacity700)] px-[12px] py-[6px] text-[#777777] shadow-[var(--adaptive-popup-shadow)]"
+                    >
+                        example text
+                    </span>
 
                     <button
                         {...bindItem("demo-cta-button")}
                         type="button"
-                        className="h-[48px] w-[180px] rounded-[8px] bg-[var(--adaptive-fillOpacity700)] shadow-[var(--adaptive-popup-shadow)] outline-none"
+                        className="h-full w-[180px]  px-[12px] py-[6px] rounded-[8px] bg-[var(--adaptive-blue300)] text-[var(--adaptive-black50)] shadow-[var(--adaptive-popup-shadow)] outline-none"
                         aria-label={isKorean ? "무료로 시작하기" : "Start for free"}
-                    />
+                    >
+                        example button
+                    </button>
                 </div>
             </div>
 
@@ -590,13 +586,16 @@ function ElementInspectorScene() {
         };
     }, [previewValues, updateTargetRect]);
 
-    const updatePickProbeValue = useCallback((key: PickProbeFieldKey, value: string) => {
-        if (!probeEditable) {
-            return;
-        }
-        setValues((current) => ({ ...current, [key]: value }));
-        setCompareMode("after");
-    }, [probeEditable]);
+    const updatePickProbeValue = useCallback(
+        (key: PickProbeFieldKey, value: string) => {
+            if (!probeEditable) {
+                return;
+            }
+            setValues((current) => ({ ...current, [key]: value }));
+            setCompareMode("after");
+        },
+        [probeEditable],
+    );
     const resetPickProbeValues = useCallback(() => {
         if (!probeEditable) {
             return;
@@ -791,88 +790,97 @@ function NotificationsScene() {
         setNotifications(createDemoNotifications(locale));
     }, [locale]);
 
-    const markNotificationRead = useCallback((id: string) => {
-        if (locked) {
-            return;
-        }
-        setNotifications((current) => current.map((item) => (item.id === id ? { ...item, read: true } : item)));
-    }, [locked]);
+    const markNotificationRead = useCallback(
+        (id: string) => {
+            if (locked) {
+                return;
+            }
+            setNotifications((current) => current.map((item) => (item.id === id ? { ...item, read: true } : item)));
+        },
+        [locked],
+    );
     const markAllNotificationsRead = useCallback(() => {
         if (locked) {
             return;
         }
         setNotifications((current) => current.map((item) => ({ ...item, read: true })));
     }, [locked]);
-    const dismissNotification = useCallback((id: string) => {
-        if (locked || id.startsWith("status:")) {
-            return;
-        }
+    const dismissNotification = useCallback(
+        (id: string) => {
+            if (locked || id.startsWith("status:")) {
+                return;
+            }
 
-        setNotifications((current) => current.filter((item) => item.id !== id));
-    }, [locked]);
+            setNotifications((current) => current.filter((item) => item.id !== id));
+        },
+        [locked],
+    );
     const clearNotifications = useCallback(() => {
         if (locked) {
             return;
         }
         setNotifications((current) => current.filter((item) => item.id.startsWith("status:")));
     }, [locked]);
-    const runNotificationAction = useCallback((item: NotificationItem, action: NotificationActionId) => {
-        if (locked) {
-            return;
-        }
-        setNotifications((current) =>
-            current.map((entry) => {
-                if (entry.id !== item.id) {
-                    return entry;
-                }
+    const runNotificationAction = useCallback(
+        (item: NotificationItem, action: NotificationActionId) => {
+            if (locked) {
+                return;
+            }
+            setNotifications((current) =>
+                current.map((entry) => {
+                    if (entry.id !== item.id) {
+                        return entry;
+                    }
 
-                if (action === "hide_markers" || action === "show_markers") {
-                    return {
-                        ...entry,
-                        read: true,
-                        payload: {
-                            ...entry.payload,
-                            markersVisible: action === "show_markers",
-                        },
-                    };
-                }
+                    if (action === "hide_markers" || action === "show_markers") {
+                        return {
+                            ...entry,
+                            read: true,
+                            payload: {
+                                ...entry.payload,
+                                markersVisible: action === "show_markers",
+                            },
+                        };
+                    }
 
-                if (action === "probe_reset") {
-                    return {
-                        ...entry,
-                        read: true,
-                        payload: { ...entry.payload, canUndo: false, canRedo: false },
-                    };
-                }
+                    if (action === "probe_reset") {
+                        return {
+                            ...entry,
+                            read: true,
+                            payload: { ...entry.payload, canUndo: false, canRedo: false },
+                        };
+                    }
 
-                if (action === "probe_undo") {
-                    return {
-                        ...entry,
-                        read: true,
-                        payload: {
-                            ...entry.payload,
-                            canUndo: false,
-                            canRedo: true,
-                        },
-                    };
-                }
+                    if (action === "probe_undo") {
+                        return {
+                            ...entry,
+                            read: true,
+                            payload: {
+                                ...entry.payload,
+                                canUndo: false,
+                                canRedo: true,
+                            },
+                        };
+                    }
 
-                if (action === "probe_redo") {
-                    return {
-                        ...entry,
-                        read: true,
-                        payload: {
-                            ...entry.payload,
-                            canUndo: true,
-                            canRedo: false,
-                        },
-                    };
-                }
+                    if (action === "probe_redo") {
+                        return {
+                            ...entry,
+                            read: true,
+                            payload: {
+                                ...entry.payload,
+                                canUndo: true,
+                                canRedo: false,
+                            },
+                        };
+                    }
 
-                return { ...entry, read: true };
-            }),
-        );
-    }, [locked]);
+                    return { ...entry, read: true };
+                }),
+            );
+        },
+        [locked],
+    );
     const session = useMemo<ReportSessionValue>(
         () => ({
             ...baseSession,
@@ -912,7 +920,12 @@ export function DemoScene({ scene }: { scene: FivePixelsDemoScene }) {
         case "network-monitor":
             return <PanelScene initialTab="api-flow" />;
         case "feedback-list":
-            return <PanelScene initialTab="feedback-list" visibleTabs={LIST_PANEL_TABS} />;
+            return (
+                <PanelScene
+                    initialTab="feedback-list"
+                    visibleTabs={LIST_PANEL_TABS}
+                />
+            );
         case "memo-list":
             return (
                 <PanelScene
@@ -921,11 +934,26 @@ export function DemoScene({ scene }: { scene: FivePixelsDemoScene }) {
                 />
             );
         case "page-brief":
-            return <PanelScene initialTab="page-brief" visibleTabs={BRIEF_PANEL_TABS} />;
+            return (
+                <PanelScene
+                    initialTab="page-brief"
+                    visibleTabs={BRIEF_PANEL_TABS}
+                />
+            );
         case "my-tasks":
-            return <PanelScene initialTab="my-tasks" visibleTabs={TASK_PANEL_TABS} />;
+            return (
+                <PanelScene
+                    initialTab="my-tasks"
+                    visibleTabs={TASK_PANEL_TABS}
+                />
+            );
         case "project-health":
-            return <PanelScene initialTab="project-health" visibleTabs={HEALTH_PANEL_TABS} />;
+            return (
+                <PanelScene
+                    initialTab="project-health"
+                    visibleTabs={HEALTH_PANEL_TABS}
+                />
+            );
         case "element-hover-inspect":
             return <ElementHoverInspectScene />;
         case "element-inspector":
