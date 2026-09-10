@@ -89,7 +89,7 @@ export function ConceptShotsPage() {
 
                 <section className={`concept-shots__stage concept-shots__stage--${appearance}`} aria-label={`${activeTab.label} concept stage`}>
                     <ConceptShotStageBackground media={media} />
-                    <div className="concept-shots__scene">
+                    <div className={`concept-shots__scene concept-shots__scene--${activeTab.id}`}>
                         <ConceptShotFivepixels
                             key={`${activeTab.id}-${locale}-${appearance}`}
                             scene={activeTab.id}

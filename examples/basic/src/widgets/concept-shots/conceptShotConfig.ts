@@ -25,13 +25,13 @@ export const CONCEPT_SHOT_TABS: ConceptShotTab[] = [
         id: "checkout",
         label: "Checkout review",
         caption: "Review conversion-critical checkout details with product, design, and engineering.",
-        activeTargetId: "checkout-submit",
+        activeTargetId: "checkout-payment-fields",
     },
     {
         id: "analytics",
         label: "Dashboard QA",
         caption: "Pin metric, chart, filter, and table issues directly to a live analytics dashboard.",
-        activeTargetId: "analytics-chart",
+        activeTargetId: "analytics-revenue",
     },
     {
         id: "landing",
@@ -49,7 +49,7 @@ export const CONCEPT_SHOT_TABS: ConceptShotTab[] = [
         id: "incident",
         label: "Incident triage",
         caption: "Connect an API failure, latency spike, deploy, and logs in one debugging frame.",
-        activeTargetId: "incident-error-chart",
+        activeTargetId: "incident-latency",
     },
 ];
 
