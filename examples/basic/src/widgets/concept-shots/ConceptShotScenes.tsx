@@ -21,15 +21,15 @@ function CheckoutScene() {
     return (
         <div className="cs-app cs-checkout">
             <header className="cs-app__header">
-                <strong>Northstar</strong>
+                <strong {...target("checkout-brand")}>Northstar</strong>
                 <nav aria-label="Store navigation"><span>New arrivals</span><span>Collections</span><span>Journal</span></nav>
                 <span>Bag · 2</span>
             </header>
             <main className="cs-checkout__main">
                 <section className="cs-checkout__details">
                     <p className="cs-app__eyebrow">Secure checkout</p>
-                    <h2>Complete your order</h2>
-                    <article className="cs-checkout__product">
+                    <h2 {...target("checkout-title")}>Complete your order</h2>
+                    <article className="cs-checkout__product" {...target("checkout-product")}>
                         <div className="cs-checkout__product-image" aria-hidden="true">N</div>
                         <div><strong>Orbit Runner</strong><span>Cloud / EU 42</span><small>Ships in 1–2 business days</small></div>
                         <b>$118</b>
@@ -93,7 +93,7 @@ function LandingScene() {
     return (
         <div className="cs-app cs-landing">
             <header className="cs-landing__header"><strong>relay.</strong><nav aria-label="Landing navigation"><span>Product</span><span>Solutions</span><span>Pricing</span></nav><button type="button">Sign in</button></header>
-            <main>
+            <main className="cs-landing__main">
                 <section className="cs-landing__hero">
                     <div className="cs-landing__hero-copy">
                         <span className="cs-landing__badge">New · AI workflows</span>
@@ -101,14 +101,16 @@ function LandingScene() {
                         <p>Plan projects, share context, and ship thoughtful work without losing momentum between tools.</p>
                         <div><button type="button" {...target("landing-primary-cta")}>Start for free <span>→</span></button><button type="button">Watch overview</button></div>
                         <small>No credit card required · Set up in 2 minutes</small>
+                        <div className="cs-landing__meta-row">
+                            <section className="cs-landing__proof" {...target("landing-proof")}><span>Trusted by modern product teams</span><div><b>Arc</b><b>Northstar</b><b>Canvas</b><b>Plain</b></div></section>
+                            <section className="cs-landing__pricing" {...target("landing-pricing")}><p className="cs-app__eyebrow">Simple pricing</p><strong>$16 <small>/ user</small></strong></section>
+                        </div>
                     </div>
                     <div className="cs-landing__product" aria-label="Relay product preview">
                         <aside><i /><i /><i /><i /></aside>
                         <section><span>Launch workspace</span><article><b>Website refresh</b><small>8 tasks · 3 teammates</small><em>76%</em></article><article><b>Mobile onboarding</b><small>12 tasks · 5 teammates</small><em>42%</em></article></section>
                     </div>
                 </section>
-                <section className="cs-landing__proof" {...target("landing-proof")}><span>Trusted by modern product teams</span><div><b>Arc</b><b>Northstar</b><b>Canvas</b><b>Plain</b><b>Vertex</b></div></section>
-                <section className="cs-landing__pricing" {...target("landing-pricing")}><div><p className="cs-app__eyebrow">Simple pricing</p><h3>One plan for teams that ship.</h3></div><strong>$16 <small>/ user / month</small></strong><button type="button">View pricing</button></section>
             </main>
         </div>
     );
@@ -147,6 +149,35 @@ function IncidentScene() {
     );
 }
 
+function AgentScene() {
+    return (
+        <div className="cs-agent">
+            <section className="cs-agent__panel">
+                <button type="button" className="cs-agent__thought" {...target("agent-thought")}>Thought for 37s ⌄</button>
+
+                <div className="cs-agent__source-row">
+                    <article {...target("agent-source-docs")}><b>Docs</b><span>Launch Brief &amp; Goals</span></article>
+                    <article><b>Slides</b><span>Product Metrics</span></article>
+                    <article {...target("agent-source-hubspot")}><b>HubSpot</b><span>October Campaign</span></article>
+                    <article className="cs-agent__source-more"><b>···</b><span>15 sources</span><i aria-hidden="true">⤢</i></article>
+                </div>
+
+                <p className="cs-agent__lede" {...target("agent-lede")}>
+                    The <strong>October campaign</strong> outperformed benchmarks for engagement and conversion, setting a strong baseline for <strong>Q4 growth initiatives</strong>.
+                    <span className="cs-agent__cite" aria-hidden="true">▣ ▣ +2</span>
+                </p>
+
+                <h3 {...target("agent-summary")}>Executive summary</h3>
+                <p className="cs-agent__body">
+                    The campaign exceeded engagement targets, driving a <strong>+42% lift in new leads</strong> and a <strong>3-point increase</strong> in feature adoption across activated workspaces.
+                </p>
+
+                <button type="button" className="cs-agent__fab" aria-label="Inspect">⌕</button>
+            </section>
+        </div>
+    );
+}
+
 export function ConceptShotScene({ scene }: { scene: ConceptShotSceneId }) {
     switch (scene) {
         case "checkout": return <CheckoutScene />;
@@ -154,5 +185,6 @@ export function ConceptShotScene({ scene }: { scene: ConceptShotSceneId }) {
         case "landing": return <LandingScene />;
         case "mobile": return <MobileScene />;
         case "incident": return <IncidentScene />;
+        case "agent": return <AgentScene />;
     }
 }

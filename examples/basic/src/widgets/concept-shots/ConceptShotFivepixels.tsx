@@ -24,6 +24,8 @@ type FeedbackSeed = {
     category: ReportFeedback["category"];
     status?: ReportFeedback["status"];
     assignee?: string;
+    /** Normalized pin inside the target (human-ish, not dead-center). */
+    pin?: { x: number; y: number };
 };
 
 const CREATED_AT = "2026-09-09T01:30:00.000Z";
@@ -46,42 +48,50 @@ const CASE_COUNTS_BY_SCENE: Record<ConceptShotSceneId, number[]> = {
     landing: [5, 2, 7, 1],
     mobile: [7, 4, 6, 3, 8],
     incident: [8, 5, 1, 6, 3],
+    agent: [5, 3, 6, 2, 4],
 };
 
 const FEEDBACK_BY_SCENE: Record<ConceptShotSceneId, FeedbackSeed[]> = {
     checkout: [
-        { targetId: "checkout-product-options", text: "Selected size is easy to miss after returning from the cart.", category: "suggestion", assignee: "Mina, Design" },
-        { targetId: "checkout-payment-fields", text: "Card validation message overlaps the expiry field on narrow screens.", category: "problem", assignee: "Noah, Frontend" },
-        { targetId: "checkout-shipping", text: "Can we explain why express shipping is preselected?", category: "question", assignee: "Jules, Product" },
-        { targetId: "checkout-submit", text: "Change the CTA to ‘Complete secure payment’ and increase contrast.", category: "incident", assignee: "Mina, Design" },
-        { targetId: "checkout-trust-note", text: "Return policy copy verified with Legal.", category: "suggestion", status: "resolved", assignee: "Jules, Product" },
+        { targetId: "checkout-brand", text: "Keep the Northstar wordmark tighter to the top-left capture edge.", category: "suggestion", assignee: "Mina, Design", pin: { x: 0.22, y: 0.48 } },
+        { targetId: "checkout-title", text: "Headline hierarchy feels soft next to the secure-checkout label.", category: "suggestion", assignee: "Mina, Design", pin: { x: 0.34, y: 0.62 } },
+        { targetId: "checkout-product", text: "Product row needs clearer size/color summary for reviewers.", category: "problem", assignee: "Jules, Product", pin: { x: 0.18, y: 0.4 } },
+        { targetId: "checkout-product-options", text: "Selected size is easy to miss after returning from the cart.", category: "suggestion", assignee: "Mina, Design", pin: { x: 0.71, y: 0.55 } },
+        { targetId: "checkout-payment-fields", text: "Card validation message overlaps the expiry field on narrow screens.", category: "problem", assignee: "Noah, Frontend", pin: { x: 0.28, y: 0.32 } },
     ],
     analytics: [
-        { targetId: "analytics-revenue", text: "Revenue total differs from the billing export by 2.4%.", category: "problem", assignee: "Evan, Data" },
-        { targetId: "analytics-chart", text: "The trend chart needs a comparison line for the previous period.", category: "suggestion", assignee: "Mina, Design" },
-        { targetId: "analytics-date-filter", text: "Keep the selected range when navigating between reports.", category: "problem", assignee: "Noah, Frontend" },
-        { targetId: "analytics-export", text: "Should export respect the active channel filters?", category: "question", assignee: "Jules, Product" },
-        { targetId: "analytics-table", text: "Conversion values need tooltips explaining attribution windows.", category: "suggestion", assignee: "Evan, Data" },
+        { targetId: "analytics-revenue", text: "Revenue total differs from the billing export by 2.4%.", category: "problem", assignee: "Evan, Data", pin: { x: 0.24, y: 0.38 } },
+        { targetId: "analytics-chart", text: "The trend chart needs a comparison line for the previous period.", category: "suggestion", assignee: "Mina, Design", pin: { x: 0.62, y: 0.44 } },
+        { targetId: "analytics-date-filter", text: "Keep the selected range when navigating between reports.", category: "problem", assignee: "Noah, Frontend", pin: { x: 0.7, y: 0.5 } },
+        { targetId: "analytics-export", text: "Should export respect the active channel filters?", category: "question", assignee: "Jules, Product", pin: { x: 0.55, y: 0.42 } },
+        { targetId: "analytics-table", text: "Conversion values need tooltips explaining attribution windows.", category: "suggestion", assignee: "Evan, Data", pin: { x: 0.3, y: 0.28 } },
     ],
     landing: [
-        { targetId: "landing-hero-copy", text: "The headline wraps too early at common laptop widths.", category: "problem", assignee: "Noah, Frontend" },
-        { targetId: "landing-primary-cta", text: "Test ‘Create your workspace’ against the current generic CTA.", category: "suggestion", assignee: "Mina, Design" },
-        { targetId: "landing-proof", text: "Add one customer outcome before the logo wall.", category: "suggestion", assignee: "Jules, Product" },
-        { targetId: "landing-pricing", text: "Does the price include guest collaborators?", category: "question", assignee: "Sora, Growth" },
+        { targetId: "landing-hero-copy", text: "The headline wraps too early at common laptop widths.", category: "problem", assignee: "Noah, Frontend", pin: { x: 0.26, y: 0.36 } },
+        { targetId: "landing-primary-cta", text: "Test ‘Create your workspace’ against the current generic CTA.", category: "suggestion", assignee: "Mina, Design", pin: { x: 0.42, y: 0.58 } },
+        { targetId: "landing-proof", text: "Add one customer outcome before the logo wall.", category: "suggestion", assignee: "Jules, Product", pin: { x: 0.2, y: 0.45 } },
+        { targetId: "landing-pricing", text: "Does the price include guest collaborators?", category: "question", assignee: "Sora, Growth", pin: { x: 0.68, y: 0.4 } },
     ],
     mobile: [
-        { targetId: "mobile-header", text: "Increase the touch target around the profile control.", category: "suggestion", assignee: "Mina, Design" },
-        { targetId: "mobile-balance", text: "Hide balance amount from the app switcher snapshot.", category: "incident", assignee: "Noah, Frontend" },
-        { targetId: "mobile-quick-actions", text: "Quick actions clip at 320px and need a compact layout.", category: "problem", assignee: "Noah, Frontend" },
-        { targetId: "mobile-chart", text: "Use the portfolio currency in the chart accessibility label.", category: "suggestion", assignee: "Mina, Design" },
-        { targetId: "mobile-bottom-nav", text: "Active state contrast now passes AA.", category: "suggestion", status: "resolved", assignee: "Mina, Design" },
+        { targetId: "mobile-header", text: "Increase the touch target around the profile control.", category: "suggestion", assignee: "Mina, Design", pin: { x: 0.78, y: 0.5 } },
+        { targetId: "mobile-balance", text: "Hide balance amount from the app switcher snapshot.", category: "incident", assignee: "Noah, Frontend", pin: { x: 0.32, y: 0.42 } },
+        { targetId: "mobile-quick-actions", text: "Quick actions clip at 320px and need a compact layout.", category: "problem", assignee: "Noah, Frontend", pin: { x: 0.22, y: 0.55 } },
+        { targetId: "mobile-chart", text: "Use the portfolio currency in the chart accessibility label.", category: "suggestion", assignee: "Mina, Design", pin: { x: 0.58, y: 0.35 } },
+        { targetId: "mobile-bottom-nav", text: "Active state contrast now passes AA.", category: "suggestion", status: "resolved", assignee: "Mina, Design", pin: { x: 0.18, y: 0.48 } },
     ],
     incident: [
-        { targetId: "incident-status", text: "Add the incident commander and next update time to this status.", category: "suggestion", assignee: "Jules, Product" },
-        { targetId: "incident-latency", text: "P95 jumped immediately after the checkout-api deploy.", category: "incident", assignee: "Noah, Frontend" },
-        { targetId: "incident-error-chart", text: "Correlate the 5xx spike with payment provider timeouts.", category: "problem", assignee: "Evan, Data" },
-        { targetId: "incident-deploy", text: "Compare this revision with the last healthy deployment.", category: "suggestion", assignee: "Noah, Frontend" },
-        { targetId: "incident-log-row", text: "Group repeated checkout failures by trace ID.", category: "suggestion", assignee: "Evan, Data" },
+        { targetId: "incident-status", text: "Add the incident commander and next update time to this status.", category: "suggestion", assignee: "Jules, Product", pin: { x: 0.64, y: 0.48 } },
+        { targetId: "incident-latency", text: "P95 jumped immediately after the checkout-api deploy.", category: "incident", assignee: "Noah, Frontend", pin: { x: 0.3, y: 0.4 } },
+        { targetId: "incident-error-chart", text: "Correlate the 5xx spike with payment provider timeouts.", category: "problem", assignee: "Evan, Data", pin: { x: 0.48, y: 0.3 } },
+        { targetId: "incident-deploy", text: "Compare this revision with the last healthy deployment.", category: "suggestion", assignee: "Noah, Frontend", pin: { x: 0.26, y: 0.36 } },
+        { targetId: "incident-log-row", text: "Group repeated checkout failures by trace ID.", category: "suggestion", assignee: "Evan, Data", pin: { x: 0.2, y: 0.25 } },
+    ],
+    agent: [
+        { targetId: "agent-thought", text: "Thought duration should open the reasoning trail on first click.", category: "suggestion", assignee: "Mina, Design", pin: { x: 0.2, y: 0.55 } },
+        { targetId: "agent-source-docs", text: "Docs card needs a last-synced timestamp for reviewers.", category: "suggestion", assignee: "Jules, Product", pin: { x: 0.28, y: 0.34 } },
+        { targetId: "agent-source-hubspot", text: "HubSpot ownership label is easy to miss next to the title.", category: "problem", assignee: "Jules, Product", pin: { x: 0.72, y: 0.3 } },
+        { targetId: "agent-lede", text: "Inline citations obscure the end of the opening sentence.", category: "problem", assignee: "Noah, Frontend", pin: { x: 0.38, y: 0.42 } },
+        { targetId: "agent-summary", text: "Executive summary heading needs a share action for Slack updates.", category: "question", assignee: "Jules, Product", pin: { x: 0.24, y: 0.58 } },
     ],
 };
 
@@ -211,6 +221,7 @@ function createReports(scene: ConceptShotSceneId): ReportFeedback[] {
         );
         const cases = timelines.map(({ caseItem }) => caseItem);
         const replies = timelines.flatMap((timeline) => timeline.replies).sort((left, right) => left.created_at.localeCompare(right.created_at));
+        const pin = seed.pin ?? { x: 0.32 + ((index * 17) % 37) / 100, y: 0.28 + ((index * 23) % 41) / 100 };
 
         return {
             id: reportId,
@@ -227,10 +238,10 @@ function createReports(scene: ConceptShotSceneId): ReportFeedback[] {
             reply_count: replies.length,
             latest_reply: replies[replies.length - 1] ?? null,
             position: {
-                target: { x: 0.5, y: 0.5 },
+                target: pin,
                 viewport: { x: 0.5, y: 0.5, width: 1440, height: 900 },
                 scrollY: 0,
-                anchor: { reportId: seed.targetId, reportType: "item", x: 0.72, y: 0.45 },
+                anchor: { reportId: seed.targetId, reportType: "item", x: pin.x, y: pin.y },
             },
             created_at: CREATED_AT,
             environment: "STAGED",

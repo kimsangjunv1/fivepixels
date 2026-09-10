@@ -18,14 +18,14 @@ export type ConceptShotTab = {
     activeTargetId: string;
 };
 
-export type ConceptShotSceneId = "checkout" | "analytics" | "landing" | "mobile" | "incident";
+export type ConceptShotSceneId = "checkout" | "analytics" | "landing" | "mobile" | "incident" | "agent";
 
 export const CONCEPT_SHOT_TABS: ConceptShotTab[] = [
     {
         id: "checkout",
         label: "Checkout review",
         caption: "Review conversion-critical checkout details with product, design, and engineering.",
-        activeTargetId: "checkout-payment-fields",
+        activeTargetId: "checkout-brand",
     },
     {
         id: "analytics",
@@ -43,13 +43,19 @@ export const CONCEPT_SHOT_TABS: ConceptShotTab[] = [
         id: "mobile",
         label: "Mobile check",
         caption: "Capture responsive UI feedback around balance, actions, chart, and navigation.",
-        activeTargetId: "mobile-quick-actions",
+        activeTargetId: "mobile-header",
     },
     {
         id: "incident",
         label: "Incident triage",
         caption: "Connect an API failure, latency spike, deploy, and logs in one debugging frame.",
-        activeTargetId: "incident-latency",
+        activeTargetId: "incident-status",
+    },
+    {
+        id: "agent",
+        label: "Campaign brief",
+        caption: "Review an AI campaign analysis panel with sources and executive summary.",
+        activeTargetId: "agent-thought",
     },
 ];
 
