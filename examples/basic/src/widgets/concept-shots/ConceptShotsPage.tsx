@@ -11,6 +11,7 @@ export function ConceptShotsPage() {
     const [activeTabId, setActiveTabId] = useState<ConceptShotSceneId>(CONCEPT_SHOT_TABS[0]?.id ?? "checkout");
     const [locale, setLocale] = useState<"ko" | "en">("en");
     const [appearance, setAppearance] = useState<"light" | "dark">("light");
+    const [showElement, setShowElement] = useState(true);
     const [media, setMedia] = useState<ConceptShotMedia>({ kind: "default" });
     const objectUrlRef = useRef<string | null>(null);
     const activeTab = useMemo(() => CONCEPT_SHOT_TABS.find((tab) => tab.id === activeTabId) ?? CONCEPT_SHOT_TABS[0], [activeTabId]);
@@ -62,6 +63,14 @@ export function ConceptShotsPage() {
                             </button>
                         ))}
                     </div>
+                    <div className="concept-shots__segment" role="group" aria-label="Demo element">
+                        <button type="button" aria-pressed={showElement} onClick={() => setShowElement(true)}>
+                            Show
+                        </button>
+                        <button type="button" aria-pressed={!showElement} onClick={() => setShowElement(false)}>
+                            Hide
+                        </button>
+                    </div>
                 </div>
 
                 <p className="concept-shots__hint">Real product context · capture-ready</p>
@@ -89,13 +98,14 @@ export function ConceptShotsPage() {
 
                 <section className={`concept-shots__stage concept-shots__stage--${appearance}`} aria-label={`${activeTab.label} concept stage`}>
                     <ConceptShotStageBackground media={media} />
-                    <div className={`concept-shots__scene concept-shots__scene--${activeTab.id}`}>
+                    <div className={`concept-shots__scene concept-shots__scene--${activeTab.id}${showElement ? "" : " concept-shots__scene--element-hidden"}`}>
                         <ConceptShotFivepixels
                             key={`${activeTab.id}-${locale}-${appearance}`}
                             scene={activeTab.id}
                             activeTargetId={activeTab.activeTargetId}
                             locale={locale}
                             appearance={appearance}
+                            showElement={showElement}
                         >
                             <ConceptShotScene scene={activeTab.id} />
                         </ConceptShotFivepixels>

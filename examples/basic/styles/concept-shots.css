@@ -208,6 +208,10 @@
     overflow: hidden;
 }
 
+.concept-shots__scene--element-hidden {
+    /* Dummy app canvas is omitted in React; panel overlays still render over the stage. */
+}
+
 /* Capture canvases: real DOM targets behind the Fivepixels runtime.
    Board sits hard in the bottom-right so left/top open onto gradient for tooltips. */
 .cs-app {

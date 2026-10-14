@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
 import {
     ReportProvider,
     useReportPreferences,
@@ -13,6 +13,9 @@ import {
 import { ShadowReportRoot } from "@/core/ShadowReportRoot.js";
 import { ThemeScope } from "@/core/ThemeScope.js";
 import { MarkerLayer } from "@/surfaces/marker/MarkerLayer.js";
+import { DraftMarker } from "@/surfaces/marker/DraftMarker.js";
+import { Panel } from "@/surfaces/panel/Panel.js";
+import { DraftTooltip } from "@/surfaces/tooltip/DraftTooltip.js";
 import { TooltipLayer } from "@/surfaces/tooltip/TooltipLayer.js";
 import { WindowLayer } from "@/surfaces/window/WindowLayer.js";
 
@@ -273,44 +276,225 @@ function createConceptAdapter(reports: ReportFeedback[]): FivePixelsAdapter {
     };
 }
 
-function ConceptShotRuntimeState({ activeReportId, locale, appearance }: { activeReportId: string; locale: ReportLocale; appearance: ReportAppearance }) {
-    const initializedRef = useRef(false);
+function ConceptShotRuntimeState({
+    activeReportId,
+    locale,
+    appearance,
+    showMarkers,
+}: {
+    activeReportId: string;
+    locale: ReportLocale;
+    appearance: ReportAppearance;
+    showMarkers: boolean;
+}) {
     const { setLocale, setPanelAppearance, setTooltipAppearance } = useReportPreferences();
     const { markers, mode, setHoveredMarkerId, toggleIssueMode } = useReportSession();
+    const hasActiveMarker = markers.some((marker) => marker.report.id === activeReportId);
 
     useEffect(() => {
         setLocale(locale);
         setPanelAppearance(appearance);
         setTooltipAppearance(appearance);
-        if (mode !== "view") {
+        // Only boot into view from idle — never yank the user out of report (add feedback) mode.
+        if (mode === "idle") {
             toggleIssueMode();
         }
     }, [appearance, locale, mode, setLocale, setPanelAppearance, setTooltipAppearance, toggleIssueMode]);
 
+    // Keep the active marker tooltip locked open for capture while in view mode.
     useEffect(() => {
-        if (initializedRef.current || !markers.some((marker) => marker.report.id === activeReportId)) {
+        if (!showMarkers || !hasActiveMarker || mode !== "view") {
+            if (mode !== "view") {
+                setHoveredMarkerId(null);
+            }
             return;
         }
 
-        const timer = window.setTimeout(() => {
-            initializedRef.current = true;
+        const lockHover = () => {
             setHoveredMarkerId(activeReportId);
-        }, 120);
+        };
 
-        return () => window.clearTimeout(timer);
-    }, [activeReportId, markers, setHoveredMarkerId]);
+        lockHover();
+        const bootTimer = window.setTimeout(lockHover, 160);
+        const keepAlive = window.setInterval(lockHover, 350);
+
+        return () => {
+            window.clearTimeout(bootTimer);
+            window.clearInterval(keepAlive);
+        };
+    }, [activeReportId, hasActiveMarker, mode, setHoveredMarkerId, showMarkers]);
 
     return null;
 }
 
-function ConceptShotOverlay() {
-    const { resolvedTooltipAppearance } = useReportPreferences();
+function clampPanelPosition(
+    left: number,
+    top: number,
+    frame: { width: number; height: number },
+    panelWidth: number,
+    panelHeight: number,
+) {
+    const maxLeft = Math.max(12, frame.width - panelWidth - 12);
+    const maxTop = Math.max(12, frame.height - panelHeight - 12);
+    return {
+        left: Math.min(Math.max(12, left), maxLeft),
+        top: Math.min(Math.max(12, top), maxTop),
+    };
+}
+
+function isConceptPanelDragBlocked(target: EventTarget | null) {
+    return target instanceof Element && Boolean(target.closest("button, a, input, select, textarea, [role='button'], [role='menuitem'], [role='switch']"));
+}
+
+function ConceptShotStagePanel() {
+    const wrapRef = useRef<HTMLDivElement | null>(null);
+    const dragRef = useRef<{ pointerId: number; offsetX: number; offsetY: number } | null>(null);
+    const [frame, setFrame] = useState<{ top: number; left: number; width: number; height: number } | null>(null);
+    const [position, setPosition] = useState<{ left: number; top: number } | null>(null);
+    const [dragging, setDragging] = useState(false);
+
+    useLayoutEffect(() => {
+        const stage = document.querySelector<HTMLElement>(".concept-shots__stage");
+        if (!stage) {
+            return;
+        }
+
+        const sync = () => {
+            const rect = stage.getBoundingClientRect();
+            const nextFrame = { top: rect.top, left: rect.left, width: rect.width, height: rect.height };
+            setFrame(nextFrame);
+
+            const wrap = wrapRef.current;
+            if (!wrap) {
+                return;
+            }
+
+            setPosition((current) => {
+                if (!current) {
+                    return current;
+                }
+                return clampPanelPosition(current.left, current.top, nextFrame, wrap.offsetWidth, wrap.offsetHeight);
+            });
+        };
+
+        sync();
+        const observer = new ResizeObserver(sync);
+        observer.observe(stage);
+        window.addEventListener("resize", sync);
+        window.addEventListener("scroll", sync, true);
+
+        return () => {
+            observer.disconnect();
+            window.removeEventListener("resize", sync);
+            window.removeEventListener("scroll", sync, true);
+        };
+    }, []);
+
+    useEffect(() => {
+        const handlePointerMove = (event: PointerEvent) => {
+            const drag = dragRef.current;
+            const wrap = wrapRef.current;
+            if (!drag || !frame || !wrap || event.pointerId !== drag.pointerId) {
+                return;
+            }
+
+            const next = clampPanelPosition(
+                event.clientX - frame.left - drag.offsetX,
+                event.clientY - frame.top - drag.offsetY,
+                frame,
+                wrap.offsetWidth,
+                wrap.offsetHeight,
+            );
+            setPosition(next);
+        };
+
+        const handlePointerUp = (event: PointerEvent) => {
+            const drag = dragRef.current;
+            if (!drag || event.pointerId !== drag.pointerId) {
+                return;
+            }
+            dragRef.current = null;
+            setDragging(false);
+        };
+
+        window.addEventListener("pointermove", handlePointerMove);
+        window.addEventListener("pointerup", handlePointerUp);
+        window.addEventListener("pointercancel", handlePointerUp);
+        return () => {
+            window.removeEventListener("pointermove", handlePointerMove);
+            window.removeEventListener("pointerup", handlePointerUp);
+            window.removeEventListener("pointercancel", handlePointerUp);
+        };
+    }, [frame]);
+
+    if (!frame) {
+        return null;
+    }
+
+    const handlePointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+        if (event.button !== 0 || !frame || isConceptPanelDragBlocked(event.target)) {
+            return;
+        }
+
+        const header = event.target instanceof Element ? event.target.closest(".cursor-move") : null;
+        if (!header) {
+            return;
+        }
+
+        const wrap = wrapRef.current;
+        if (!wrap) {
+            return;
+        }
+
+        const rect = wrap.getBoundingClientRect();
+        event.preventDefault();
+        event.stopPropagation();
+        dragRef.current = {
+            pointerId: event.pointerId,
+            offsetX: event.clientX - rect.left,
+            offsetY: event.clientY - rect.top,
+        };
+        setDragging(true);
+        setPosition({
+            left: rect.left - frame.left,
+            top: rect.top - frame.top,
+        });
+    };
+
+    return (
+        <div
+            className="pointer-events-none fixed z-[1000000]"
+            style={{ top: frame.top, left: frame.left, width: frame.width, height: frame.height }}
+        >
+            <div
+                ref={wrapRef}
+                className={`pointer-events-auto absolute max-h-[calc(100%-24px)] overflow-auto rounded-[16px] shadow-[var(--adaptive-popup-shadow)] ${dragging ? "cursor-grabbing" : ""}`}
+                style={
+                    position
+                        ? { left: position.left, top: position.top, right: "auto", bottom: "auto" }
+                        : { right: 20, bottom: 20, left: "auto", top: "auto" }
+                }
+                onPointerDown={handlePointerDown}
+            >
+                <Panel embedded />
+            </div>
+        </div>
+    );
+}
+
+function ConceptShotOverlay({ showMarkers }: { showMarkers: boolean }) {
+    const { resolvedPanelAppearance, resolvedTooltipAppearance } = useReportPreferences();
 
     return (
         <ShadowReportRoot tooltipAppearance={resolvedTooltipAppearance}>
+            <ThemeScope appearance={resolvedPanelAppearance}>
+                <ConceptShotStagePanel />
+            </ThemeScope>
             <ThemeScope appearance={resolvedTooltipAppearance}>
                 <TooltipLayer>
-                    <MarkerLayer />
+                    {showMarkers ? <MarkerLayer /> : null}
+                    <DraftMarker />
+                    <DraftTooltip />
                     <WindowLayer />
                 </TooltipLayer>
             </ThemeScope>
@@ -323,21 +507,29 @@ type ConceptShotFivepixelsProps = {
     activeTargetId: string;
     locale: ReportLocale;
     appearance: ReportAppearance;
+    showElement?: boolean;
     children: ReactNode;
 };
 
-export function ConceptShotFivepixels({ scene, activeTargetId, locale, appearance, children }: ConceptShotFivepixelsProps) {
+export function ConceptShotFivepixels({
+    scene,
+    activeTargetId,
+    locale,
+    appearance,
+    showElement = true,
+    children,
+}: ConceptShotFivepixelsProps) {
     const reports = useMemo(() => createReports(scene), [scene]);
     const adapter = useMemo(() => createConceptAdapter(reports), [reports]);
     const activeReportId = reports.find((report) => report.report_id === activeTargetId)?.id ?? reports[0]?.id;
 
     if (!activeReportId) {
-        return children;
+        return showElement ? children : null;
     }
 
     return (
         <ReportProvider
-            project={{ id: `fivepixels-concept-${scene}`, env: "STAGED", version: "0.2.28" }}
+            project={{ id: "fivepixels-basic-example", env: "STAGED", version: "1.0.0" }}
             ui={{ locale, panelAppearance: appearance, tooltipAppearance: appearance, showFeedbackList: true }}
             visibility={{ enabled: true, routeKey: PATHNAME }}
             team={{
@@ -356,9 +548,9 @@ export function ConceptShotFivepixels({ scene, activeTargetId, locale, appearanc
             adapter={adapter}
             networkMonitor={false}
         >
-            {children}
-            <ConceptShotRuntimeState activeReportId={activeReportId} locale={locale} appearance={appearance} />
-            <ConceptShotOverlay />
+            {showElement ? children : null}
+            <ConceptShotRuntimeState activeReportId={activeReportId} locale={locale} appearance={appearance} showMarkers={showElement} />
+            <ConceptShotOverlay showMarkers={showElement} />
         </ReportProvider>
     );
 }
