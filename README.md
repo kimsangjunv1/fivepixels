@@ -1,24 +1,30 @@
 ![fivepixels](https://raw.githubusercontent.com/kimsangjunv1/fivepixels/main/assets/fivepixels-banner.png)
 
-# fivepixels &middot; [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE) [![NPM badge](https://img.shields.io/npm/v/@fivepixels-js/react?logo=npm)](https://www.npmjs.com/package/@fivepixels-js/react)
+# fivepixels
 
-한국어 | [English](./README-en_us.md)
+[MIT](./LICENSE) · [npm](https://www.npmjs.com/package/@fivepixels-js/react) · 한국어 / [English](./README-en_us.md)
 
-`fivepixels`는 스테이징·QA·내부 도구 화면에서 **DOM 요소 단위 피드백**을 남기는 React 라이브러리입니다. 클릭으로 마커를 찍고, 팀과 답변·검수를 거친 뒤 필요하면 GitHub Issue로 승격할 수 있습니다. **UI Edit 모드**로 실제 화면 위에서 스타일·레이아웃을 라이브로 조정해 “이렇게 바꿔 주세요”를 보여 줄 수도 있습니다. UI는 Shadow Root에 렌더링되므로 **별도 CSS import가 필요 없습니다.**
+`fivepixels`는 React 화면에서 요소를 선택해 피드백을 남길 수 있게 도와주는 라이브러리예요.
 
-📖 **상세 가이드:** [library.codi-agit.com/fivepixels/guide](https://library.codi-agit.com/fivepixels/guide)
+화면을 검수하다 보면 버튼 위치가 어긋나거나 문구를 수정해야 할 때가 있어요. 이런 내용을 전달하려면 화면을 캡처하고 어느 부분인지 설명해야 하는데, `fivepixels`를 사용하면 해당 요소를 선택해 바로 피드백을 남길 수 있습니다. 작성한 위치에 마커가 표시되므로 나중에 다시 열어 내용을 확인하거나 답변을 이어갈 수 있어요.
+
+스테이징이나 QA 환경, 내부 도구에서 사용할 수 있고, 화면의 스타일을 직접 바꿔 수정 방향을 보여주는 UI Edit 기능도 제공합니다.
+
+[사용 가이드 보기](https://library.codi-agit.com/fivepixels/guide)
 
 ## 설치
 
+React 18 이상을 사용하는 프로젝트에 설치해 주세요.
+
 ```bash
-npm install @fivepixels-js/react react react-dom
+npm install @fivepixels-js/react
 ```
 
-**요구 사항:** React 18+ · Node.js 18+(패키지 설치 시). 브라우저에서 동작하므로 호스트 앱의 Node 버전이 런타임에 쓰이지는 않습니다. 이 레포를 clone해 빌드·테스트할 때는 **Node.js 22**를 권장합니다(CI와 동일).
+`react`와 `react-dom`은 사용 중인 프로젝트에 설치되어 있어야 합니다. 패키지 설치 시 Node.js 18 이상이 필요하며, 별도 CSS 파일은 가져오지 않아도 돼요.
 
-## 사용 예시
+## 시작하기
 
-피드백 대상 요소에 `data-report-id`를 붙이고, 화면에 `<FivePixels />`를 한 번 렌더링합니다.
+화면에 `<FivePixels />`를 한 번 추가하면 사용할 수 있습니다. 아래 예제에서는 버튼에 `data-report-id`를 붙여 피드백을 남긴 위치를 다시 찾을 수 있게 했어요.
 
 ```tsx
 import { FivePixels } from "@fivepixels-js/react";
@@ -26,188 +32,230 @@ import { FivePixels } from "@fivepixels-js/react";
 export default function App() {
     return (
         <>
-            <FivePixels project={{ id: "my-app" }} />
-
             <main>
-                <section data-report-id="hero" data-report-type="group">
-                    <button data-report-id="hero-cta">시작하기</button>
-                </section>
+                <button data-report-id="signup-button">
+                    가입하기
+                </button>
             </main>
+
+            <FivePixels
+                project={{ id: "my-app" }}
+                ui={{ locale: "ko" }}
+            />
         </>
     );
 }
 ```
 
-`adapter`를 넘기지 않으면 **localStorage**에 저장됩니다. API 연동 시 `sync`와 `adapter`를 함께 넘깁니다. adapter 객체는 **`useMemo`로 고정**해 주세요. 인라인 객체는 목록 API가 반복 호출될 수 있습니다.
+앱을 실행한 뒤 FivePixels 패널의 안내에 따라 작성자 정보를 설정하고, 피드백 추가 모드에서 버튼을 선택해 내용을 작성해 보세요. 저장한 피드백은 화면의 마커나 목록에서 다시 확인할 수 있습니다.
+
+기본 설정에서는 현재 브라우저의 localStorage에 저장됩니다. 다른 브라우저나 팀원과 피드백을 공유하려면 아래의 API 연동이 필요해요.
+
+## 화면 요소 지정하기
+
+`data-report-id`는 피드백을 남긴 요소를 다시 찾을 때 사용하는 식별자입니다. 같은 화면에서 겹치지 않는 값으로 지정하고, 화면이 바뀌어도 유지되는 이름을 사용하는 편이 좋아요.
 
 ```tsx
-import { useMemo } from "react";
-import { FivePixels, type FivePixelsAdapter } from "@fivepixels-js/react";
+<section data-report-id="checkout" data-report-type="group">
+    <button data-report-id="checkout-submit">
+        결제하기
+    </button>
+</section>
+```
 
-function createAdapter(): FivePixelsAdapter {
-    const projectBase = "/projects/my-app";
+버튼처럼 개별 요소에는 `data-report-id`를, 섹션 전체를 하나의 대상으로 다루려면 `data-report-type="group"`을 함께 지정합니다. 식별자가 없는 요소도 선택할 수 있지만, 이 경우 CSS 선택자로 위치를 추적하므로 화면 구조가 바뀌면 찾기 어려워질 수 있어요.
 
-    return {
-        markers: {
-            list: ({ pathname }) =>
-                fetch(`/api/v1/fivepixels${projectBase}/feedbacks/markers?pathname=${encodeURIComponent(pathname)}`).then((r) => r.json()),
+### 모달이나 탭 안에 있는 요소
+
+모달처럼 다시 열어야 보이는 영역에는 `data-fp-view`를, 해당 영역을 여는 버튼에는 같은 값의 `data-fp-open`을 붙여 주세요.
+
+```tsx
+<button data-fp-open="login" onClick={openLogin}>
+    로그인 열기
+</button>
+
+{isLoginOpen && (
+    <div role="dialog" data-fp-view="login">
+        <button data-report-id="login-submit">
+            로그인
+        </button>
+    </div>
+)}
+```
+
+저장된 피드백을 찾아갈 때 라이브러리가 해당 버튼을 실행해 영역을 다시 엽니다. 영역이 중첩되어 있으면 바깥쪽부터 순서대로 열어요.
+
+## 화면에서 수정 방향 보여주기
+
+UI Edit로 선택한 요소의 문구, 색상, 여백 등을 바꿔 볼 수 있습니다. “버튼 간격을 조금 넓혀 주세요”처럼 설명만으로 전달하기 어려운 내용을 화면에서 직접 보여줄 때 사용할 수 있어요.
+
+1. 피드백 추가 모드에서 요소를 선택합니다.
+2. 우클릭 메뉴에서 **수정하기**를 엽니다.
+3. 값을 바꾸고 **적용**을 눌러 화면에서 확인합니다.
+
+텍스트와 색상, padding·margin을 조정할 수 있으며, flex나 grid 요소를 선택하면 정렬과 간격도 변경할 수 있습니다. 적용한 내용은 **원래대로** 또는 패널의 **초기화**로 되돌릴 수 있고, 실행 취소·다시 실행과 Before / After 비교도 지원해요.
+
+피드백을 작성하는 중이라면 변경 내용을 요약해 본문에 넣을 수도 있습니다.
+
+UI Edit는 현재 화면의 DOM을 수정하는 기능입니다. 프로젝트의 소스 코드는 바뀌지 않으며, 피드백 작성을 멈춰도 적용한 편집은 남아 있지만 페이지를 새로고침하면 원래 화면으로 돌아갑니다.
+
+## 표시 설정
+
+언어와 패널·툴팁 테마는 `ui`로 설정합니다. 테마에는 `"light"`, `"dark"`, `"system"`을 사용할 수 있어요.
+
+```tsx
+<FivePixels
+    project={{ id: "my-app" }}
+    ui={{
+        locale: "ko",
+        panelAppearance: "light",
+        tooltipAppearance: "light",
+    }}
+    visibility={{ devOnly: true }}
+/>
+```
+
+`visibility.devOnly`를 설정하면 개발 환경에서만 표시됩니다. 스테이징 등 특정 환경에서 노출하려면 `visibility.enabled`에 앱의 환경 조건을 전달해 주세요.
+
+## API 연동
+
+<details>
+<summary>서버 저장 설정과 예제 보기</summary>
+
+팀원과 피드백을 공유하려면 데이터를 저장할 서버가 필요합니다. `sync="api"`로 설정하고, 서버 요청을 처리하는 `adapter`를 전달하면 돼요.
+
+다음은 회사 로그인 없이 API 저장을 사용하는 예제입니다. `/api/feedbacks` 경로는 예시이므로 사용하는 서버에 맞춰 변경해 주세요.
+
+```tsx
+import {
+    FivePixels,
+    type FivePixelsAdapter,
+    type ReportFeedback,
+} from "@fivepixels-js/react";
+
+async function request<T>(
+    path: string,
+    options?: RequestInit,
+): Promise<T> {
+    const response = await fetch(`/api/feedbacks${path}`, {
+        ...options,
+        headers: {
+            "Content-Type": "application/json",
         },
-        feedback: {
-            create: (payload) =>
-                fetch(`/api/v1/fivepixels${projectBase}/feedbacks`, { method: "POST", body: JSON.stringify(payload) }).then((r) => r.json()),
-            getForUi: (id) => fetch(`/api/v1/fivepixels${projectBase}/feedbacks/${id}/overview`).then((r) => r.json()),
-            update: (id, payload) =>
-                fetch(`/api/v1/fivepixels${projectBase}/feedbacks/${id}`, { method: "PATCH", body: JSON.stringify(payload) }).then((r) => r.json()),
-        },
-    };
+    });
+
+    if (!response.ok) {
+        throw new Error(`피드백 요청 실패: ${response.status}`);
+    }
+
+    return response.json();
 }
 
-export function App() {
-    const adapter = useMemo(() => createAdapter(), []);
+const adapter: FivePixelsAdapter = {
+    markers: {
+        list: ({ pathname }) =>
+            request<ReportFeedback[]>(
+                `/markers?pathname=${encodeURIComponent(pathname)}`,
+            ),
+    },
+    feedback: {
+        create: (payload) =>
+            request<ReportFeedback>("", {
+                method: "POST",
+                body: JSON.stringify(payload),
+            }),
+        getForUi: (id) =>
+            request<ReportFeedback>(`/${encodeURIComponent(id)}/overview`),
+        update: (id, payload) =>
+            request<ReportFeedback>(`/${encodeURIComponent(id)}`, {
+                method: "PATCH",
+                body: JSON.stringify(payload),
+            }),
+    },
+};
 
+export default function App() {
     return (
         <FivePixels
             project={{ id: "my-app", env: "stage" }}
+            ui={{ locale: "ko" }}
             sync="api"
+            require={{ authLogin: false, reviewerKey: false }}
             adapter={adapter}
         />
     );
 }
 ```
 
-REST 경로·필수 handler·선택 handler는 `examples/basic/src/fivepixels/adapter.ts`와 `FivePixelsAdapter` (`src/types/adapter.ts`)를 참고하세요. 설정 패널의 **API 연동** 탭에서 연결 상태를 확인할 수 있습니다.
+이 예제의 API는 목록 요청에서 `ReportFeedback[]`, 생성·조회·수정 요청에서 `ReportFeedback`을 반환해야 합니다. 서버의 응답 구조가 다르면 adapter에서 변환해 주세요.
 
-## Props
+`adapter`는 예제처럼 컴포넌트 밖에서 선언하거나 `useMemo`로 유지해야 합니다. 렌더링할 때마다 새 객체를 전달하면 목록 요청이 반복될 수 있어요.
 
-| Prop | 타입 | 설명 |
-| ---- | ---- | ---- |
-| `project` | `{ id?, env?, version? }` | 프로젝트 식별자. `id` 기본값 `"my-app"`. |
-| `ui` | `{ appearance?, showFeedbackList?, locale?, messages? }` | UI 설정. `appearance`: `light` \| `dark` \| `system`. |
-| `visibility` | `{ enabled?, devOnly?, routeKey? }` | 표시 여부. `devOnly`면 개발 환경에서만 노출. |
-| `team` | `{ reviewers?, user?, requireReviewerKey? }` | `reviewers` 명단. `user`·`requireReviewerKey`는 비권장(후자는 `require.reviewerKey`). |
-| `mode` | `"default"` \| `"presentation"` | 프레젠테이션 모드(시연·데모용 뷰어 전환). |
-| `sync` | `"local"` \| `"api"` \| `"artemis"` | 저장 전략. 기본값 `"local"`. |
-| `require` | `{ authLogin?, reviewerKey? }` | 신원 정책. `authLogin`: 회사 로그인(원격 sync 기본 true). `reviewerKey`: reviewers 키 매칭. |
-| `requireAuth` | `boolean` | **Deprecated** — `require.authLogin` 사용. |
-| `adapter` | `FivePixelsAdapter` | 백엔드 연동 handler 묶음. `sync="api"` / `"artemis"`에서 persistence·(선택) 로그인에 사용. |
-| `fields` | `ReportField[]` | 커스텀 필드 (`textarea`, `checkbox`). |
-| `onNavigate` | `(pathname) => void` | View 모드에서 경로 이동. |
-| `onEvent` | `(event) => void` | create/update/delete/reply/github 이벤트. |
-| `onReply` | `({ feedbackId, message }) => void` | 답변 side effect. |
-| `github` | `{ enabled?, modes?, onCreate? }` | GitHub Issue 연동. |
+서버 저장에 필요한 함수는 `markers.list`, `feedback.create`, 그리고 `feedback.update` 또는 `cases.update`입니다. 답변과 팀원 관리 등 추가 기능을 연동할 때는 해당 함수도 구현해야 합니다.
 
-> `sync="local"`(기본)에서는 `adapter`를 생략하면 localStorage adapter가 사용됩니다. `sync="api"` / `"artemis"`에서는 `adapter.markers.list`, `adapter.feedback.create`, `adapter.feedback.update`(또는 `adapter.cases.update`)가 **필수**입니다. 회사 로그인은 `require.authLogin`(원격 sync 기본 `true`), 개인키·명단 매칭은 `require.reviewerKey`로 제어합니다.
+회사 로그인을 사용하려면 `require.authLogin`을 활성화하고 `auth.login`을 구현해 주세요. API 모드에서는 회사 로그인이 기본으로 활성화되어 있으며, 위 예제처럼 비활성화하면 표시 이름과 개인 키를 설정하는 방식으로 시작합니다.
 
-**로그인 없이 API만 쓰는 공유형 권장 설정:**
+구체적인 요청·응답 타입과 구현은 다음 파일에서 확인할 수 있어요.
 
-```tsx
-<FivePixels
-  sync="api"
-  require={{ authLogin: false, reviewerKey: false }}
-  adapter={adapter}
-/>
-```
+- [API 연동 예제](./examples/basic/src/fivepixels/adapter.ts)
+- [FivePixelsAdapter 타입](./src/shared/types/adapter.ts)
+- [피드백과 요청 데이터 타입](./src/shared/types/report.ts)
 
-이 경우 표시 이름·개인 키로 작성자를 구분하고, 팀 키 승인 대기(`setup-complete`) 없이 바로 사용할 수 있습니다.
+설정 패널의 **API 연동** 탭에서는 연결 상태를 확인할 수 있습니다.
 
-**타입 찾는 법:** 공개 props → `FivePixelsProps` (`src/types/publicApi.ts`) · adapter surface → `FivePixelsAdapter` (`src/types/adapter.ts`) · payload/엔티티 → `CreateReportFeedbackPayload` / `ReportFeedback` 등 (`src/types/report.ts`).
+</details>
 
-## 커스텀 UI 확장
+## 전체 옵션
 
-기본 `<FivePixels />` 대신 `ReportProvider`와 Context 훅으로 패널·오버레이를 직접 조립할 수 있습니다 (`@fivepixels-js/react/report`).
+<details>
+<summary>옵션 목록과 타입 보기</summary>
 
-| 훅 | 용도 |
-| -- | ---- |
-| `useReport()` | 전체 상태 (하위 호환) |
-| `useReportPreferences()` | appearance, locale, role, messages 등 |
-| `useReportSession()` | mode, draft, markers, pickProbe, composers |
-| `useReportData()` | lists, filters, CRUD, stats, reply history |
+| 옵션 | 용도 |
+| --- | --- |
+| `project` | 프로젝트 ID, 환경 이름, 버전 |
+| `ui` | 언어, 패널·툴팁 테마, 피드백 목록과 답변 표시 설정 |
+| `visibility` | 표시 여부, 개발 환경 제한, 현재 경로 식별 |
+| `team` | 팀원·검수자 정보 |
+| `mode` | 기본 모드 또는 시연용 `"presentation"` 모드 |
+| `sync` | 저장 방식. 기본값은 `"local"`, 서버 연동은 `"api"` 또는 `"artemis"` |
+| `require` | 회사 로그인과 검수자 키 확인 여부 |
+| `adapter` | 저장, 로그인, 답변, 팀원 관리에 사용할 서버 요청 함수 |
+| `fields` | 피드백 작성란에 추가할 텍스트 입력이나 체크박스 |
+| `onNavigate` | 다른 경로의 피드백을 찾아갈 때 실행할 함수 |
+| `onEvent` | 피드백 생성·수정·삭제, 답변, GitHub Issue 생성 시 실행할 함수 |
+| `onReply` | 답변 작성 시 실행할 함수 |
+| `github` | GitHub Issue 생성 설정 |
+| `networkMonitor` | 앱의 fetch·XHR 요청 수집 여부. 기본값은 `true` |
 
-내부 Context 파티션은 `src/providers/reportContextPartitions.ts`를 참고하세요.
+정확한 타입은 [FivePixelsProps](./src/shared/types/publicApi.ts)를 참고해 주세요. 기존 `requireAuth`와 `team.requireReviewerKey` 대신 `require.authLogin`, `require.reviewerKey`를 사용합니다.
 
-## DOM 속성
+</details>
 
-| 속성 | 필수 | 설명 |
-| ---- | ---- | ---- |
-| `data-report-id` | 권장 | 요소 식별자. 마커 위치 복원에 사용. 없으면 CSS selector로 대체 추적합니다. |
-| `data-report-type` | | `item`(기본) 또는 `group`(섹션 단위). |
-| `data-fp-view` | | 모달·탭처럼 다시 열어야 하는 영역의 키. |
-| `data-fp-open` | | 같은 키의 `data-fp-view` 영역을 여는 트리거. |
+## 커스텀 UI
 
-숨겨진 영역 안에서 작성한 피드백은 마커를 열 때 기존 트리거를 자동으로 다시 실행합니다.
+<details>
+<summary>Provider와 상태 훅 보기</summary>
 
-```tsx
-<button data-fp-open="login">로그인 열기</button>
-<Modal data-fp-view="login">...</Modal>
-```
+기본 UI 대신 직접 만든 패널이나 오버레이를 사용하려면 `@fivepixels-js/react/report`에서 `ReportProvider`와 필요한 훅을 가져올 수 있습니다.
 
-중첩된 view는 바깥쪽부터 순서대로 복원합니다.
+| 훅 | 접근할 수 있는 내용 |
+| --- | --- |
+| `useReportPreferences()` | 테마, 언어 등 UI 설정 |
+| `useReportSession()` | 현재 모드, 선택한 요소, 작성 중인 피드백과 마커 |
+| `useReportData()` | 피드백 목록, 필터, 생성·수정·삭제와 답변 기록 |
+| `useReport()` | 전체 상태 |
 
-## UI 모드
+훅은 `ReportProvider` 안에서 사용해야 합니다. 내부 구성은 [Context 구현](./src/shared/providers/reportContextPartitions.ts)을 참고해 주세요.
 
-| 모드 | 설명 |
-| ---- | ---- |
-| **report** | 요소 클릭 후 피드백 작성. 우클릭으로 시안 조정·삭제도 가능합니다. |
-| **view** | 마커·목록 조회, 답변·검수 |
-
-## UI Edit 모드 (시안 조정)
-
-피드백 모드에서 선택한 요소의 **실제 DOM**을 세션 동안 라이브로 수정·미리볼 수 있습니다. 기획·디자인·개발이 “말로 설명하기 어려운 UI”를 스테이징 화면에서 바로 맞춰 볼 때 쓰습니다.
-
-### 시작하기
-
-1. **피드백 추가** 모드에서 요소를 선택합니다.
-2. **우클릭 → 수정하기**로 시안 조정 패널을 엽니다.
-3. 값을 바꾼 뒤 **적용**을 누르면 DOM에 반영되고, 해당 요소에 **수정됨** 표시가 붙습니다.
-
-피드백 작성을 멈춰도(**Stop feedback**) 이미 적용한 편집은 DOM에 남습니다.
-
-### 시안 패널에서 조정 가능한 항목
-
-| 구분 | 항목 |
-| ---- | ---- |
-| 텍스트 | `textContent`, `fontSize`, `lineHeight` — 버튼·이미지 등 비텍스트 요소에서는 숨김 |
-| 박스 | `padding`, `margin` (− / + 스테퍼) |
-| 색상 | `textColor`, `backgroundColor`, `borderColor` — hex 입력, 컬러 피커, 복사 버튼 |
-| **flex** | 주축·교차축 정렬(아이콘), 가로/세로 방향·뒤집기, `gap` |
-| **grid** | 가로 칸·세로 칸 수 (− / +, 1~12), `gap` |
-
-`display: flex` / `grid`인 요소만 레이아웃 섹션이 나타납니다. flex일 때 정렬 아이콘은 **화면 기준**(왼쪽·가운데·오른쪽 / 위·가운데·아래)으로 보이며, 세로 방향일 때는 주축·교차축에 맞게 자동 전환됩니다.
-
-### 우클릭 컨텍스트 메뉴
-
-| 메뉴 | 동작 |
-| ---- | ---- |
-| **수정하기** | 시안 조정 패널 열기 |
-| **원래대로** | 해당 요소에 적용한 스타일만 되돌림 (undo 기록에 포함) |
-| **지우기** | 하이라이트 애니메이션 후 DOM에서 제거 (세션 내 복원 가능) |
-
-### 패널 상단 UI Edit 배너
-
-편집·삭제가 한 번이라도 있으면 패널 상단에 **「현재 UI Edit 모드 적용 중」** 배너가 표시됩니다.
-
-| 컨트롤 | 동작 |
-| ------ | ---- |
-| **초기화** | 세션의 모든 스타일 적용·삭제를 한 번에 원래 DOM으로 복원 |
-| **◀ / ▶** | 스타일 적용·원복·삭제를 **한 단계씩** undo / redo |
-| **Before / After** | 저장된 스타일 변경을 Before·After로 비교 (스타일 적용이 있을 때만) |
-
-### 피드백 본문에 반영
-
-피드백 드래프트 작성 중, 시안 조정으로 바꾼 내용이 있으면 **「지금 스타일 변경사항 요약을 입력칸에 반영할까요?」** 배너가 나타납니다. **반영하기**를 누르면 변경 요약이 **새 케이스**에 자동으로 들어갑니다.
-
-### 동작 방식·제한
-
-- 편집은 **`element.style` 인라인 스타일**로 적용됩니다. 기존 CSS 클래스(Tailwind 등)보다 우선합니다.
-- 변경은 **브라우저 탭 세션** 안에서만 유지됩니다. **새로고침**하면 앱이 다시 그린 원본 화면으로 돌아갑니다.
-- UI Edit는 QA·시안 소통용이며, 코드베이스에 자동 저장되지는 않습니다.
-- 복잡한 grid 템플릿(불균등 fr, 셀 병합 등)은 칸 수·gap 중심으로 단순화해 조정합니다.
+</details>
 
 ## 기여
 
-Issue와 Pull Request를 환영합니다. 기능·수정 브랜치는 `develop`에서 분기해 주세요.
+버그를 발견했거나 제안하고 싶은 기능이 있다면 [Issue](https://github.com/kimsangjunv1/fivepixels/issues)를 남겨 주세요. Pull Request도 받고 있습니다.
 
-PR 전 `npm run lint`로 타입·테스트를 확인해 주세요. 자세한 내용은 [CONTRIBUTING.md](./CONTRIBUTING.md)를 참고하세요.
+저장소를 직접 실행할 때는 CI와 같은 Node.js 22를 권장합니다. 기능·수정 브랜치는 `develop`에서 만들고, PR 전에는 `npm run lint`와 `npm run build`를 확인해 주세요.
+
+자세한 내용은 [기여 안내](./CONTRIBUTING.md)에 정리되어 있습니다.
 
 ## 라이선스
 
