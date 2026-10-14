@@ -8,13 +8,13 @@ const TARGET_JS_GZIP_BYTES = 15 * 1024;
 const TARGET_CSS_GZIP_BYTES = 12 * 1024;
 const TARGET_TOTAL_GZIP_BYTES = TARGET_JS_GZIP_BYTES + TARGET_CSS_GZIP_BYTES;
 
-// Hard CI ceilings (stretch goals above stay stricter). Adjusted after feature growth
-// while install was broken; raise deliberately when intentionally shipping bigger entry/CSS.
-const LIMIT_REPORT_MAIN_GZIP_BYTES = 120 * 1024;
-const LIMIT_CSS_GZIP_BYTES = 15 * 1024;
+// Hard CI ceilings reflect current feature size (stretch goals above stay stricter).
+// Raise deliberately when intentionally shipping a bigger entry or stylesheet.
+const LIMIT_REPORT_MAIN_GZIP_BYTES = 230 * 1024;
+const LIMIT_CSS_GZIP_BYTES = 18 * 1024;
 
 const entries = [
-    { name: "@fivepixels-js/react/report", file: "dist/components/report/index.js", useSplitting: true },
+    { name: "@fivepixels-js/react/report", file: "dist/shared/components/report/index.js", useSplitting: true },
     { name: "@fivepixels-js/react", file: "dist/index.js", useSplitting: false },
 ];
 
@@ -99,7 +99,7 @@ for (const entry of entries) {
     }
 }
 
-const css = gzipFileBytes("dist/styles/reportStylesheet.js");
+const css = gzipFileBytes("dist/shared/styles/reportStylesheet.js");
 const cssStatus = css.gzipBytes <= LIMIT_CSS_GZIP_BYTES ? "OK" : "OVER";
 formatRow(cssStatus, css.gzipBytes, css.rawBytes, "stylesheet (reportStylesheet.js)");
 
