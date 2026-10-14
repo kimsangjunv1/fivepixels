@@ -6,7 +6,7 @@
 
 `fivepixels` is a React library for **DOM element-level feedback** on staging, QA, and internal tool screens. Drop markers by clicking targets, collaborate with replies and reviews, and optionally escalate to GitHub Issues. **UI Edit mode** lets you tweak styles and layout on the live page so stakeholders can show—not just describe—desired changes. The UI renders in a **Shadow Root**, so **no CSS import** is required in the host app.
 
-📖 **Full guide:** [library.codi-agit.com/fivepixels/guide](https://library.codi-agit.com/fivepixels/guide)
+📖 **Full guide:** [fivepixels.codi-agit.com/fivepixels/guide](https://fivepixels.codi-agit.com/fivepixels/guide)
 
 ## Install
 
@@ -127,21 +127,86 @@ Context partitions: `src/providers/reportContextPartitions.ts`.
 
 ## DOM attributes
 
-| Attribute | Required | Description |
-| --------- | -------- | ----------- |
-| `data-fp-id` | Recommended | Element identifier for marker restore. Without it, targets fall back to a CSS selector. |
-| `data-fp-type` | | `item` (default) or `group` for section-level targets. |
-| `data-fp-view` | | Key for a restorable modal, tab, or other hidden view. |
-| `data-fp-open` | | Trigger that opens the `data-fp-view` with the same key. |
+These examples describe how elements are selected in FivePixels feedback mode. Your buttons keep their normal click behavior.
 
-Feedback created inside a hidden view automatically reuses its existing trigger when its marker is opened.
+### Give a feedback target a name
+
+Add `data-fp-id` to a button or area where you want to leave feedback. FivePixels uses this name to find the same element when you return to saved feedback.
 
 ```tsx
-<button data-fp-open="login">Open login</button>
-<Modal data-fp-view="login">...</Modal>
+<button data-fp-id="signup-button">
+    Sign up
+</button>
 ```
 
-Nested views are restored from outermost to innermost.
+Choose a name that describes the element, such as `signup-button`. Keep names unique on the page and keep them the same when the layout changes.
+
+You can also leave feedback on elements without `data-fp-id`. FivePixels then finds them using the page's HTML structure, so it may lose track of the original element if that structure changes.
+
+### Select one button
+
+Use `data-fp-type="item"` to select a button as one target, including the text or icons inside it.
+
+```tsx
+<button data-fp-id="signup-button" data-fp-type="item">
+    <span>Sign up</span>
+    <span aria-hidden="true">→</span>
+</button>
+```
+
+Hovering over the text or arrow selects the whole sign-up button. You can leave out `data-fp-type`: `item` is the default when an element has `data-fp-id`.
+
+### Select a whole card or section
+
+Use `data-fp-type="group"` when you want feedback to apply to a whole card rather than its title, description, or button separately.
+
+```tsx
+<section data-fp-id="product-card" data-fp-type="group">
+    <h2>Product name</h2>
+    <p>Product description</p>
+    <button>Buy</button>
+</section>
+```
+
+Hovering over the title, description, or Buy button selects the whole product card.
+
+If you want to select the Buy button separately, give that button its own `data-fp-id`.
+
+```tsx
+<section data-fp-id="product-card" data-fp-type="group">
+    <h2>Product name</h2>
+    <p>Product description</p>
+    <button data-fp-id="product-buy" data-fp-type="item">
+        Buy
+    </button>
+</section>
+```
+
+The Buy button is now selected separately. Hovering over the title or description still selects the whole card. You can omit `data-fp-type="item"` on the button and get the same behavior.
+
+### Find feedback inside a modal or tab
+
+Feedback inside a login modal is hidden when the modal is closed. Add `data-fp-view` to the modal and `data-fp-open` to the button that opens it so FivePixels can reopen it when you return to feedback.
+
+Both attributes must have the same value. This example uses `login`. `isLoginOpen` tells your app whether the modal is open, and `openLogin` is your function for opening it.
+
+```tsx
+<button data-fp-open="login" onClick={openLogin}>
+    Open login
+</button>
+
+{isLoginOpen && (
+    <div role="dialog" data-fp-view="login">
+        <button data-fp-id="login-submit">
+            Log in
+        </button>
+    </div>
+)}
+```
+
+When you return to feedback on the Log in button, FivePixels clicks the button with `data-fp-open="login"` to reopen the modal. Connect its `onClick` as usual: `data-fp-open` identifies the opener, but does not add the code to open the modal.
+
+For tabs, add `data-fp-view` to the tab content and a matching `data-fp-open` to the button that switches to that tab. If one modal is inside another, FivePixels opens the outer one first.
 
 ## UI modes
 

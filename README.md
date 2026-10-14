@@ -10,7 +10,7 @@
 
 스테이징이나 QA 환경, 내부 도구에서 사용할 수 있고, 화면의 스타일을 직접 바꿔 수정 방향을 보여주는 UI Edit 기능도 제공합니다.
 
-[사용 가이드 보기](https://library.codi-agit.com/fivepixels/guide)
+[사용 가이드 보기](https://fivepixels.codi-agit.com/fivepixels/guide)
 
 ## 설치
 
@@ -53,21 +53,70 @@ export default function App() {
 
 ## 화면 요소 지정하기
 
-`data-fp-id`는 피드백을 남긴 요소를 다시 찾을 때 사용하는 식별자입니다. 같은 화면에서 겹치지 않는 값으로 지정하고, 화면이 바뀌어도 유지되는 이름을 사용하는 편이 좋아요.
+아래 설명은 FivePixels의 피드백 추가 모드에서 요소를 선택할 때의 동작입니다. 버튼의 원래 클릭 기능은 그대로 유지돼요.
+
+### 피드백을 남길 요소에 이름 붙이기
+
+`data-fp-id`는 피드백을 남길 요소에 붙이는 이름입니다. 저장한 피드백이 어느 버튼이나 영역에 달렸는지 다시 찾을 때 사용해요.
 
 ```tsx
-<section data-fp-id="checkout" data-fp-type="group">
-    <button data-fp-id="checkout-submit">
-        결제하기
+<button data-fp-id="signup-button">
+    가입하기
+</button>
+```
+
+`signup-button`처럼 어떤 요소인지 알아볼 수 있는 이름을 붙여 주세요. 같은 화면에서는 이름이 겹치지 않게 지정하고, 화면의 배치가 바뀌어도 이름은 유지하는 편이 좋아요.
+
+`data-fp-id`가 없는 요소에도 피드백을 남길 수 있습니다. 다만 이 경우에는 화면의 HTML 구조를 바탕으로 위치를 찾기 때문에, 나중에 구조가 바뀌면 원래 요소를 찾기 어려워질 수 있어요.
+
+### 버튼 하나를 선택하기
+
+버튼 하나에 피드백을 남기려면 `data-fp-type="item"`으로 지정해 주세요. 버튼 안에 글자나 아이콘이 있어도 버튼을 하나의 대상으로 선택합니다.
+
+```tsx
+<button data-fp-id="signup-button" data-fp-type="item">
+    <span>가입하기</span>
+    <span aria-hidden="true">→</span>
+</button>
+```
+
+이 예제에서는 글자나 화살표 위에 마우스를 올려도 가입하기 버튼이 선택됩니다.
+
+`data-fp-type`을 생략하면 `item`으로 동작하므로, 버튼에 `data-fp-id`만 붙여도 됩니다.
+
+### 카드나 섹션 전체를 선택하기
+
+카드 안의 제목, 설명, 버튼을 각각 선택하는 대신 카드 전체에 피드백을 남기고 싶다면 `data-fp-type="group"`으로 지정해 주세요.
+
+```tsx
+<section data-fp-id="product-card" data-fp-type="group">
+    <h2>상품 이름</h2>
+    <p>상품 설명</p>
+    <button>구매하기</button>
+</section>
+```
+
+이 예제에서는 제목, 설명, 구매 버튼 위에 마우스를 올려도 상품 카드 전체가 선택됩니다. 안쪽 요소가 따로 잡히지 않고, 영역 전체를 하나의 대상으로 다루고 싶을 때 사용할 수 있어요.
+
+카드 안의 구매 버튼만 따로 선택하고 싶다면, 그 버튼에도 `data-fp-id`를 붙여 주세요.
+
+```tsx
+<section data-fp-id="product-card" data-fp-type="group">
+    <h2>상품 이름</h2>
+    <p>상품 설명</p>
+    <button data-fp-id="product-buy" data-fp-type="item">
+        구매하기
     </button>
 </section>
 ```
 
-버튼처럼 개별 요소에는 `data-fp-id`를, 섹션 전체를 하나의 대상으로 다루려면 `data-fp-type="group"`을 함께 지정합니다. 식별자가 없는 요소도 선택할 수 있지만, 이 경우 CSS 선택자로 위치를 추적하므로 화면 구조가 바뀌면 찾기 어려워질 수 있어요.
+이렇게 하면 구매 버튼은 개별로 선택되고, 제목이나 설명 위에서는 상품 카드 전체가 선택됩니다. 버튼의 `data-fp-type="item"`은 생략해도 같은 방식으로 동작해요.
 
 ### 모달이나 탭 안에 있는 요소
 
-모달처럼 다시 열어야 보이는 영역에는 `data-fp-view`를, 해당 영역을 여는 버튼에는 같은 값의 `data-fp-open`을 붙여 주세요.
+로그인 모달 안에 남긴 피드백은 모달이 닫혀 있으면 바로 볼 수 없어요. 피드백을 눌렀을 때 모달을 다시 열 수 있도록, 모달에는 `data-fp-view`를 붙이고 모달을 여는 버튼에는 `data-fp-open`을 붙여 주세요.
+
+두 속성에는 같은 값을 지정합니다. 아래 예제에서는 둘 다 `login`으로 지정했어요. `isLoginOpen`은 모달이 열려 있는지 나타내는 값이고, `openLogin`은 모달을 여는 함수입니다.
 
 ```tsx
 <button data-fp-open="login" onClick={openLogin}>
@@ -83,7 +132,11 @@ export default function App() {
 )}
 ```
 
-저장된 피드백을 찾아갈 때 라이브러리가 해당 버튼을 실행해 영역을 다시 엽니다. 영역이 중첩되어 있으면 바깥쪽부터 순서대로 열어요.
+모달 안의 로그인 버튼에 남긴 피드백을 찾아가면 FivePixels가 `data-fp-open="login"` 버튼을 클릭해 모달을 다시 엽니다. 모달을 여는 `onClick`은 평소처럼 직접 연결해 주세요. `data-fp-open`만 붙인다고 모달을 여는 기능이 만들어지지는 않아요.
+
+탭도 같은 방식으로 사용할 수 있습니다. 탭 내용에는 `data-fp-view`를, 해당 탭으로 전환하는 버튼에는 같은 값의 `data-fp-open`을 붙여 주세요.
+
+모달 안에 다른 모달이 있는 것처럼 여러 영역을 열어야 하는 경우에는 바깥쪽부터 순서대로 엽니다.
 
 ## 화면에서 수정 방향 보여주기
 

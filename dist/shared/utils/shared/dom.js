@@ -294,7 +294,11 @@ export function findPickTargetByPoint(overlay, clientX, clientY) {
         if (!isSelectableFeedbackTarget(element)) {
             continue;
         }
-        return element;
+        const target = findTargetElement(element) ?? element;
+        if (target !== element && (!isPickableElement(target) || !isSelectableFeedbackTarget(target))) {
+            continue;
+        }
+        return target;
     }
     return null;
 }

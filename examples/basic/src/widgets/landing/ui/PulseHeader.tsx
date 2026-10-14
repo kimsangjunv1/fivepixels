@@ -1,6 +1,6 @@
 import { useLocation } from "react-router-dom";
 
-const LIBRARY_GUIDE_URL = "https://library.codi-agit.com/fivepixels/guide";
+const LIBRARY_GUIDE_URL = "https://fivepixels.codi-agit.com/fivepixels/guide";
 
 const pageTitleByPath: Record<string, string> = {
     "/": "Overview",

@@ -1,5 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { escapeAttribute, findTargetByPoint, findTargetElement, getFeedbackTargetSelector, getNearestScrollContainer, hasFixedPositionAncestor, hasDirectReportId, isFeedbackTargetVisible, resolveFeedbackDocumentAnchor, resolveReportType, toFeedbackHoverSnapshot, toSnapshot } from "./dom.js";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { escapeAttribute, findPickTargetByPoint, findTargetByPoint, findTargetElement, getFeedbackTargetSelector, getNearestScrollContainer, hasFixedPositionAncestor, hasDirectReportId, isFeedbackTargetVisible, resolveFeedbackDocumentAnchor, resolveReportType, toFeedbackHoverSnapshot, toSnapshot } from "./dom.js";
 
 describe("escapeAttribute", () => {
     it("escapes backslashes and double quotes for selector safety", () => {
@@ -232,6 +232,76 @@ describe("resolveFeedbackDocumentAnchor", () => {
 
         expect(anchor?.id).toBe("modal-demo");
         expect(anchor?.type).toBe("group");
+    });
+});
+
+describe("findPickTargetByPoint", () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    it.each([
+        {
+            name: "selects an id-only button from its text",
+            markup: '<button data-fp-id="signup"><span>Sign up</span></button>',
+            hit: "span",
+            target: "button",
+        },
+        {
+            name: "selects an explicit item from its text",
+            markup: '<button data-fp-id="signup" data-fp-type="item"><span>Sign up</span></button>',
+            hit: "span",
+            target: "button",
+        },
+        {
+            name: "selects the group from an untagged heading",
+            markup: '<section data-fp-id="card" data-fp-type="group"><h2>Product</h2></section>',
+            hit: "h2",
+            target: "section",
+        },
+        {
+            name: "selects the group from an untagged button",
+            markup: '<section data-fp-id="card" data-fp-type="group"><button>Buy</button></section>',
+            hit: "button",
+            target: "section",
+        },
+        {
+            name: "selects a tagged item inside a group from its text",
+            markup: '<section data-fp-id="card" data-fp-type="group"><button data-fp-id="buy" data-fp-type="item"><span>Buy</span></button></section>',
+            hit: "span",
+            target: "button",
+        },
+        {
+            name: "selects an id-only item inside a group",
+            markup: '<section data-fp-id="card" data-fp-type="group"><button data-fp-id="buy">Buy</button></section>',
+            hit: "button",
+            target: "button",
+        },
+        {
+            name: "keeps untagged elements individually selectable",
+            markup: '<section><p>Product description</p></section>',
+            hit: "p",
+            target: "p",
+        },
+    ])("$name", ({ markup, hit, target }) => {
+        document.body.innerHTML = markup;
+        const hitElement = document.querySelector<HTMLElement>(hit)!;
+        const targetElement = document.querySelector<HTMLElement>(target)!;
+        const overlay = document.createElement("div");
+        overlay.style.pointerEvents = "auto";
+
+        for (const element of document.querySelectorAll<HTMLElement>("body *")) {
+            vi.spyOn(element, "getBoundingClientRect").mockReturnValue({
+                left: 0, top: 0, width: 100, height: 40,
+                right: 100, bottom: 40, x: 0, y: 0,
+                toJSON: () => ({}),
+            } as DOMRect);
+        }
+
+        document.elementsFromPoint = vi.fn(() => [hitElement, targetElement, document.body]);
+
+        expect(findPickTargetByPoint(overlay, 10, 10)).toBe(targetElement);
+        expect(overlay.style.pointerEvents).toBe("auto");
     });
 });
 
