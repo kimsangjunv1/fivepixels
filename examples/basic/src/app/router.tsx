@@ -5,6 +5,7 @@ import { DemoInvestThemeProvider } from "../widgets/demo-invest/model/DemoInvest
 import { DemoInvestShell, FeedPage, HomePage, IndexDetailPage, LoginPage, ResponsiveCheckPage, ScreenerPage } from "../widgets/demo-invest";
 import { PulseEdgecasePage } from "../widgets/landing/pages/PulseEdgecasePage";
 import { DemoShowcasePage } from "../widgets/demo-showcase/DemoShowcasePage";
+import { ConceptShotsPage } from "../widgets/concept-shots/ConceptShotsPage";
 
 import "../../styles/pulse-board.css";
 import "../../styles/demo-invest-tokens.css";
@@ -26,6 +27,7 @@ export function AppRouter() {
                     <Route path="signin" element={<LoginPage />} />
                     <Route path="edgecase" element={<PulseEdgecasePage />} />
                     <Route path="demo-showcase" element={<DemoShowcasePage />} />
+                    <Route path="concept-shots" element={<ConceptShotsPage />} />
                     <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
             </ModalDemoProvider>

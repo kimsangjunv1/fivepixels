@@ -14,7 +14,7 @@ function AppContent() {
 
     return (
         <>
-            {location.pathname !== "/demo-showcase" ? (
+            {location.pathname !== "/demo-showcase" && location.pathname !== "/concept-shots" ? (
                 <FivePixels
                     project={{
                         id: PROJECT_ID,
