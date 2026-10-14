@@ -70,7 +70,7 @@ export function getPickTargetTagName(element) {
     return element.tagName.toLowerCase();
 }
 export function getPickTargetReportIdAttribute(element) {
-    return element.dataset.reportId?.trim() || null;
+    return element.dataset.fpId?.trim() || null;
 }
 export function getPickTargetFpOpenAttribute(element) {
     return element.getAttribute("data-fp-open")?.trim() || null;

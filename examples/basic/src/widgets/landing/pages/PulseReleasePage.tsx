@@ -10,18 +10,18 @@ const releases = [
 
 export function PulseReleasePage() {
     return (
-        <section className="pulse-page-section" data-report-id="pulse-release-page" data-report-type="group">
+        <section className="pulse-page-section" data-fp-id="pulse-release-page" data-fp-type="group">
             <header className="pulse-page-section__header">
                 <h2 className="pulse-page-section__title">Releases</h2>
                 <p className="pulse-page-section__desc">배포 타임라인 더미 데이터입니다. 릴리즈 노트와 상태 뱃지에 피드백을 남겨보세요.</p>
             </header>
-            <div className="pulse-release-list" data-report-id="pulse-release-list" data-report-type="group">
+            <div className="pulse-release-list" data-fp-id="pulse-release-list" data-fp-type="group">
                 {releases.map((release) => (
                     <article
                         key={release.id}
                         className="pulse-release-item"
-                        data-report-id={release.id}
-                        data-report-type="item"
+                        data-fp-id={release.id}
+                        data-fp-type="item"
                     >
                         <div className="pulse-release-item__meta">
                             <span className="pulse-release-item__version">{release.version}</span>

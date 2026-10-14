@@ -73,8 +73,8 @@ describe("getMarkerFromReport", () => {
 
     it("anchors to the matched element when data-report attributes exist", () => {
         const target = document.createElement("section");
-        target.dataset.reportId = "hero";
-        target.dataset.reportType = "group";
+        target.dataset.fpId = "hero";
+        target.dataset.fpType = "group";
         document.body.append(target);
 
         vi.spyOn(target, "getBoundingClientRect").mockReturnValue({
@@ -103,7 +103,7 @@ describe("getMarkerFromReport", () => {
 
     it("anchors to id-only item targets", () => {
         const target = document.createElement("button");
-        target.dataset.reportId = "hero-cta";
+        target.dataset.fpId = "hero-cta";
         document.body.append(target);
 
         vi.spyOn(target, "getBoundingClientRect").mockReturnValue({
@@ -154,12 +154,12 @@ describe("getMarkerFromReport", () => {
 
     it("falls back to document coordinates when the target element is missing but a document anchor exists", () => {
         document.body.innerHTML = `
-            <section data-report-id="page-section" data-report-type="group">
+            <section data-fp-id="page-section" data-fp-type="group">
                 <p>content</p>
             </section>
         `;
 
-        const section = document.querySelector<HTMLElement>('[data-report-id="page-section"]')!;
+        const section = document.querySelector<HTMLElement>('[data-fp-id="page-section"]')!;
 
         vi.spyOn(section, "getBoundingClientRect").mockReturnValue({
             left: 80,
@@ -247,12 +247,12 @@ describe("getMarkerFromReport", () => {
 
     it("uses the first matching element when duplicate ids exist", () => {
         const first = document.createElement("section");
-        first.dataset.reportId = "hero";
-        first.dataset.reportType = "group";
+        first.dataset.fpId = "hero";
+        first.dataset.fpType = "group";
 
         const second = document.createElement("section");
-        second.dataset.reportId = "hero";
-        second.dataset.reportType = "group";
+        second.dataset.fpId = "hero";
+        second.dataset.fpType = "group";
 
         document.body.append(first, second);
 
@@ -287,8 +287,8 @@ describe("getMarkerFromReport", () => {
 
     it("falls back to document coordinates when the target element is hidden", () => {
         const target = document.createElement("section");
-        target.dataset.reportId = "hero";
-        target.dataset.reportType = "group";
+        target.dataset.fpId = "hero";
+        target.dataset.fpType = "group";
         target.style.display = "none";
         document.body.append(target);
 
@@ -309,8 +309,8 @@ describe("getMarkerFromReport", () => {
         overlay.style.display = "none";
 
         const target = document.createElement("section");
-        target.dataset.reportId = "hero";
-        target.dataset.reportType = "group";
+        target.dataset.fpId = "hero";
+        target.dataset.fpType = "group";
         overlay.append(target);
         document.body.append(overlay);
 
@@ -346,8 +346,8 @@ describe("getMarkerFromReport", () => {
         overlay.style.position = "fixed";
 
         const target = document.createElement("section");
-        target.dataset.reportId = "hero";
-        target.dataset.reportType = "group";
+        target.dataset.fpId = "hero";
+        target.dataset.fpType = "group";
         target.style.opacity = "0";
         overlay.append(target);
         document.body.append(overlay);
@@ -388,8 +388,8 @@ describe("getMarkerFromReport", () => {
         overlay.style.position = "fixed";
 
         const target = document.createElement("section");
-        target.dataset.reportId = "hero";
-        target.dataset.reportType = "group";
+        target.dataset.fpId = "hero";
+        target.dataset.fpType = "group";
         target.style.opacity = "0";
         overlay.append(target);
         document.body.append(overlay);
@@ -438,14 +438,14 @@ describe("getMarkerFromReport", () => {
 
     it("anchors detached markers to a document-flow parent section", () => {
         document.body.innerHTML = `
-            <section data-report-id="modal-demo" data-report-type="group">
+            <section data-fp-id="modal-demo" data-fp-type="group">
                 <div style="position: fixed; display: none">
-                    <div data-report-id="modal-target" data-report-type="item">target</div>
+                    <div data-fp-id="modal-target" data-fp-type="item">target</div>
                 </div>
             </section>
         `;
 
-        const section = document.querySelector<HTMLElement>('[data-report-id="modal-demo"]')!;
+        const section = document.querySelector<HTMLElement>('[data-fp-id="modal-demo"]')!;
 
         vi.spyOn(section, "getBoundingClientRect").mockReturnValue({
             left: 80,
@@ -489,8 +489,8 @@ describe("getMarkerFromReport", () => {
         Object.defineProperty(scrollContainer, "clientHeight", { configurable: true, value: 300 });
 
         const target = document.createElement("section");
-        target.dataset.reportId = "hero";
-        target.dataset.reportType = "group";
+        target.dataset.fpId = "hero";
+        target.dataset.fpType = "group";
         scrollContainer.append(target);
         document.body.append(scrollContainer);
 
@@ -533,8 +533,8 @@ describe("getMarkerFromReport", () => {
         Object.defineProperty(scrollContainer, "clientHeight", { configurable: true, value: 300 });
 
         const target = document.createElement("section");
-        target.dataset.reportId = "hero";
-        target.dataset.reportType = "group";
+        target.dataset.fpId = "hero";
+        target.dataset.fpType = "group";
         scrollContainer.append(target);
         document.body.append(scrollContainer);
 
@@ -614,8 +614,8 @@ describe("getDraftMarkerPosition", () => {
         Object.defineProperty(scrollContainer, "clientHeight", { configurable: true, value: 300 });
 
         const target = document.createElement("section");
-        target.dataset.reportId = "hero";
-        target.dataset.reportType = "item";
+        target.dataset.fpId = "hero";
+        target.dataset.fpType = "item";
         scrollContainer.append(target);
         document.body.append(scrollContainer);
 

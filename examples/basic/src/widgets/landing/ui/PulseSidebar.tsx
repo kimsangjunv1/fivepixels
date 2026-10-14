@@ -23,8 +23,8 @@ export function PulseSidebar() {
     const { navItems } = useLandingProvider();
 
     return (
-        <aside className="pulse-sidebar" data-report-id="pulse-sidebar" data-report-type="group">
-            <div className="pulse-sidebar__brand" data-report-id="pulse-brand" data-report-type="item">
+        <aside className="pulse-sidebar" data-fp-id="pulse-sidebar" data-fp-type="group">
+            <div className="pulse-sidebar__brand" data-fp-id="pulse-brand" data-fp-type="item">
                 <span className="pulse-sidebar__logo">QA</span>
                 <div className="pulse-sidebar__titles">
                     <span className="pulse-sidebar__title">Pulse Board</span>
@@ -32,15 +32,15 @@ export function PulseSidebar() {
                 </div>
             </div>
 
-            <nav className="pulse-sidebar__nav" data-report-id="pulse-nav" data-report-type="group">
+            <nav className="pulse-sidebar__nav" data-fp-id="pulse-nav" data-fp-type="group">
                 {navItems.map((item) => (
                     <NavLink
                         key={item.id}
                         to={item.to}
                         end={item.to === "/"}
                         className={({ isActive }) => (isActive ? "pulse-sidebar__link pulse-sidebar__link--active" : "pulse-sidebar__link")}
-                        data-report-id={item.id}
-                        data-report-type="item"
+                        data-fp-id={item.id}
+                        data-fp-type="item"
                     >
                         <NavIcon type={item.icon} />
                         {item.label}
@@ -51,8 +51,8 @@ export function PulseSidebar() {
             <button
                 type="button"
                 className="pulse-sidebar__create"
-                data-report-id="pulse-create-issue"
-                data-report-type="item"
+                data-fp-id="pulse-create-issue"
+                data-fp-type="item"
             >
                 Create issue
             </button>

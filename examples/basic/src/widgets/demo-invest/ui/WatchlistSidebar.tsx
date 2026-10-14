@@ -4,8 +4,8 @@ export function WatchlistSidebar() {
     const { openDialog, watchlist, removeWatch } = useDemoInvestInteractions();
 
     return (
-        <aside className="demo-invest__watchlist" data-report-id="demo-watchlist" data-report-type="group">
-            <div className="demo-invest__watchlist-ai" data-report-id="demo-watchlist-ai" data-report-type="item">
+        <aside className="demo-invest__watchlist" data-fp-id="demo-watchlist" data-fp-type="group">
+            <div className="demo-invest__watchlist-ai" data-fp-id="demo-watchlist-ai" data-fp-type="item">
                 <strong>✦ 토스증권 AI</strong>
                 <span>마이크로소프... AI칩 효율 개선으로 0.4% 상승</span>
                 <b>›</b>
@@ -17,8 +17,8 @@ export function WatchlistSidebar() {
                 <div
                     key={item.code}
                     className="demo-invest__watchlist-item"
-                    data-report-id={`demo-watchlist-${item.code}`}
-                    data-report-type="item"
+                    data-fp-id={`demo-watchlist-${item.code}`}
+                    data-fp-type="item"
                 >
                     <img src={item.logoSrc} alt={item.name} className="demo-invest__stock-logo" />
                     <div className="demo-invest__watchlist-info">
@@ -33,7 +33,7 @@ export function WatchlistSidebar() {
                 </div>
             ))}
 
-            <button type="button" className="demo-invest__watchlist-add" data-fp-open="demo-modal-watchlist" data-report-id="demo-watchlist-add" data-report-type="item" onClick={() => openDialog("investWatchlist")}>
+            <button type="button" className="demo-invest__watchlist-add" data-fp-open="demo-modal-watchlist" data-fp-id="demo-watchlist-add" data-fp-type="item" onClick={() => openDialog("investWatchlist")}>
                 <span>＋</span> 추가하기
             </button>
         </aside>

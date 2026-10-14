@@ -38,7 +38,7 @@ export function LoginPage() {
     const logoSrc = theme === "light" ? "/demo-invest/logo-toss-blue.svg" : "/demo-invest/logo-toss-white.png";
 
     return (
-        <div className="demo-invest-login-page" data-theme={theme} data-report-id="demo-login-page" data-report-type="group">
+        <div className="demo-invest-login-page" data-theme={theme} data-fp-id="demo-login-page" data-fp-type="group">
             <Link to="/" className="demo-invest-login-page__brand">
                 <img src={logoSrc} alt="토스증권" />
             </Link>
@@ -48,10 +48,10 @@ export function LoginPage() {
                 <h1>토스 앱으로 로그인</h1>
                 <section className="demo-invest-login-card">
                     <div className="demo-invest-login-card__tabs">
-                        <button type="button" className={method === "phone" ? "is-active" : undefined} onClick={() => setMethod("phone")} data-report-id="demo-login-phone-tab" data-report-type="item">휴대폰 번호로 로그인</button>
-                        <button type="button" className={method === "qr" ? "is-active" : undefined} onClick={() => setMethod("qr")} data-report-id="demo-login-qr-tab" data-report-type="item">QR코드로 로그인</button>
+                        <button type="button" className={method === "phone" ? "is-active" : undefined} onClick={() => setMethod("phone")} data-fp-id="demo-login-phone-tab" data-fp-type="item">휴대폰 번호로 로그인</button>
+                        <button type="button" className={method === "qr" ? "is-active" : undefined} onClick={() => setMethod("qr")} data-fp-id="demo-login-qr-tab" data-fp-type="item">QR코드로 로그인</button>
                     </div>
-                    {method === "phone" ? <div data-report-id="demo-login-phone-panel" data-report-type="group">
+                    {method === "phone" ? <div data-fp-id="demo-login-phone-panel" data-fp-type="group">
                         {withoutApp ? <div className="demo-invest-login-card__alternative">
                             <p>토스 앱 없이 이메일로 로그인해요.</p>
                             <input aria-label="이메일" placeholder="이메일" />
@@ -72,10 +72,10 @@ export function LoginPage() {
                                     </label>
                                 ))}
                             </div>
-                            <button type="button" className="demo-invest-login-card__submit" disabled={!canSubmit} onClick={() => showDialog("login")} data-fp-open="demo-modal-login" data-report-id="demo-login-submit" data-report-type="item">로그인</button>
+                            <button type="button" className="demo-invest-login-card__submit" disabled={!canSubmit} onClick={() => showDialog("login")} data-fp-open="demo-modal-login" data-fp-id="demo-login-submit" data-fp-type="item">로그인</button>
                         </>}
                         <button type="button" className="demo-invest-login-card__without-app" onClick={() => setWithoutApp((current) => !current)}>{withoutApp ? "휴대폰 번호로 로그인하기" : "토스 앱 없이 로그인하기"}</button>
-                    </div> : <div className="demo-invest-login-card__qr" data-report-id="demo-login-qr-panel" data-report-type="group">
+                    </div> : <div className="demo-invest-login-card__qr" data-fp-id="demo-login-qr-panel" data-fp-type="group">
                         <div className="demo-invest-login-card__qr-code" aria-label="QR 코드"><span /><span /><span /></div>
                         <strong>토스 앱으로 QR코드를 스캔해주세요</strong>
                         <p>토스 앱 &gt; 전체 &gt; QR 스캔<br />보안을 위해 2분 동안만 사용할 수 있어요.</p>
@@ -100,8 +100,8 @@ export function LoginPage() {
                 className="demo-invest-login-page__theme-button"
                 onClick={toggleTheme}
                 aria-label={theme === "light" ? "다크 모드로 전환" : "라이트 모드로 전환"}
-                data-report-id="demo-login-theme-toggle"
-                data-report-type="item"
+                data-fp-id="demo-login-theme-toggle"
+                data-fp-type="item"
             >
                 {theme === "light" ? "☾" : "☀"}
             </button>

@@ -14,17 +14,17 @@ export function escapeAttribute(value: string) {
 }
 
 export function resolveReportType(element: HTMLElement): ReportTargetType {
-    return element.dataset.reportType === "group" ? "group" : "item";
+    return element.dataset.fpType === "group" ? "group" : "item";
 }
 
 export function getFeedbackTargetSelector(reportId: string, reportType: ReportTargetType) {
     const escapedId = escapeAttribute(reportId);
 
     if (reportType === "group") {
-        return `[data-report-id="${escapedId}"][data-report-type="group"]`;
+        return `[data-fp-id="${escapedId}"][data-fp-type="group"]`;
     }
 
-    return `[data-report-id="${escapedId}"]:not([data-report-type="group"])`;
+    return `[data-fp-id="${escapedId}"]:not([data-fp-type="group"])`;
 }
 
 export function isFeedbackTargetVisible(element: HTMLElement) {

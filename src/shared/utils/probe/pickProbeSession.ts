@@ -37,7 +37,7 @@ export function createProbeDeletionId() {
 }
 
 export function getPickProbeElementKey(element: HTMLElement) {
-    const reportId = element.dataset.reportId?.trim();
+    const reportId = element.dataset.fpId?.trim();
 
     if (reportId) {
         return `id:${reportId}:${resolveReportType(element)}`;

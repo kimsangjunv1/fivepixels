@@ -224,7 +224,7 @@ function buildHoverTargetFromElement(element, reportId) {
         type: "item",
         rect: toDomRect(element.getBoundingClientRect()),
         isTagged: true,
-        targetSelector: `[data-report-id="${reportId}"]`,
+        targetSelector: `[data-fp-id="${reportId}"]`,
         suggestedReportId: reportId,
         tagName: element.tagName.toLowerCase(),
         reportIdAttribute: reportId,
@@ -299,7 +299,7 @@ function ElementHoverInspectScene() {
         ref: (node) => {
             itemRefs.current[itemId] = node;
         },
-        "data-report-id": itemId,
+        "data-fp-id": itemId,
         onPointerEnter: (event) => {
             applyItemTarget(itemId, { clientX: event.clientX, clientY: event.clientY });
         },
@@ -457,7 +457,7 @@ function ElementInspectorScene() {
         resetPickProbeValues,
         closePickProbe,
     }), [baseSession, closePickProbe, hasEdits, lockedCompare, lockedOpen, lockedValues, probeEditable, resetPickProbeValues, savedProbeEdits, selectedTarget, updatePickProbeValue]);
-    return (_jsxs(ReportSessionContext.Provider, { value: session, children: [_jsxs("div", { className: "grid h-full w-full grid-cols-[minmax(200px,1fr)_320px] gap-[14px] p-[12px]", children: [_jsx("div", { className: "relative flex min-h-0 items-center justify-center overflow-visible", children: _jsxs("button", { ref: buttonRef, type: "button", "data-report-id": DEMO_TARGET.reportIdAttribute ?? "checkout-actions", style: previewStyle, onClick: openPickProbe, className: "min-h-[34px] outline-none", children: [_jsx("span", { children: previewValues.textContent }), _jsx("span", { "aria-hidden": "true", children: "\u2192" })] }) }), _jsx("div", { className: "relative min-h-0", children: _jsx(ProbeTooltip, { embedded: true }) })] }), _jsx(TargetHighlights, { hoveredTarget: null, selectedTarget: selectedTarget, contextMenuTarget: lockedOpen ? selectedTarget : null, showPickProbeCompare: lockedOpen && hasEdits, activeMarkerTarget: null }), _jsx(PickTargetSavedBadges, {})] }));
+    return (_jsxs(ReportSessionContext.Provider, { value: session, children: [_jsxs("div", { className: "grid h-full w-full grid-cols-[minmax(200px,1fr)_320px] gap-[14px] p-[12px]", children: [_jsx("div", { className: "relative flex min-h-0 items-center justify-center overflow-visible", children: _jsxs("button", { ref: buttonRef, type: "button", "data-fp-id": DEMO_TARGET.reportIdAttribute ?? "checkout-actions", style: previewStyle, onClick: openPickProbe, className: "min-h-[34px] outline-none", children: [_jsx("span", { children: previewValues.textContent }), _jsx("span", { "aria-hidden": "true", children: "\u2192" })] }) }), _jsx("div", { className: "relative min-h-0", children: _jsx(ProbeTooltip, { embedded: true }) })] }), _jsx(TargetHighlights, { hoveredTarget: null, selectedTarget: selectedTarget, contextMenuTarget: lockedOpen ? selectedTarget : null, showPickProbeCompare: lockedOpen && hasEdits, activeMarkerTarget: null }), _jsx(PickTargetSavedBadges, {})] }));
 }
 function DemoMobileContent() {
     const { locale } = useReportPreferences();

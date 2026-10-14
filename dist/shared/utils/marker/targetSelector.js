@@ -28,7 +28,7 @@ export function isAutoPickReportId(reportId) {
     return reportId.startsWith(AUTO_ID_PREFIX);
 }
 export function generateSuggestedReportId(element) {
-    const existing = element.dataset.reportId?.trim();
+    const existing = element.dataset.fpId?.trim();
     if (existing) {
         return existing;
     }
@@ -51,7 +51,7 @@ export function generateSuggestedReportId(element) {
     return slugify(`${element.tagName.toLowerCase()}-element`);
 }
 export function buildReportIdAttributeSnippet(reportId, reportType = "item") {
-    return `data-report-id="${reportId}" data-report-type="${reportType}"`;
+    return `data-fp-id="${reportId}" data-fp-type="${reportType}"`;
 }
 function buildSelectorSegment(element) {
     const tag = element.tagName.toLowerCase();
@@ -66,7 +66,7 @@ function buildSelectorSegment(element) {
     return `${tag}:nth-of-type(${siblings.indexOf(element) + 1})`;
 }
 export function generateCssSelector(element) {
-    const reportId = element.dataset.reportId?.trim();
+    const reportId = element.dataset.fpId?.trim();
     if (reportId) {
         return getFeedbackTargetSelector(reportId, resolveReportType(element));
     }

@@ -142,7 +142,7 @@ QA툴 허들 팀	학습곡선·온보딩 부담	새 툴 도입이 부담	보는 
 ```tsv
 필수 근거	랜딩에 쓸 구체 문장 (예시)	대응 기술
 도입 비용	반나절이면 npm install 후 스테이징 1페이지에 붙일 수 있습니다	npm + <FivePixels /> 1회
-점진 적용	전체 앱이 아니라 검수 많은 페이지·요소에만 data-report-id	1페이지부터 확장
+점진 적용	전체 앱이 아니라 검수 많은 페이지·요소에만 data-fp-id	1페이지부터 확장
 Shadow DOM	피드백 UI는 Shadow DOM — 호스트 앱에 CSS import 없음, 스타일 충돌 없음	Shadow Root
 localStorage 체험	API 없이도 localStorage로 팀 체험 가능 (handler 생략 시)	기본 adapter
 devOnly	visibility.devOnly로 프로덕션 비노출, 스테이징에서만 켜기	visibility
@@ -154,7 +154,7 @@ devOnly	visibility.devOnly로 프로덕션 비노출, 스테이징에서만 켜�
 
 ```tsv
 개발자가 궁금한 것	fivepixels 답변	랜딩 한 줄 카피
-세팅 비용이 낮은가?	npm install + <FivePixels /> 1회 + data-report-id	반나절이면 스테이징 1페이지부터
+세팅 비용이 낮은가?	npm install + <FivePixels /> 1회 + data-fp-id	반나절이면 스테이징 1페이지부터
 점진 도입 가능한가?	한 페이지·한 영역만 id 붙여 시작	전체 앱 한꺼번에 태깅할 필요 없음
 기존 워크플로우를 깨나?	피드백 UI는 Shadow DOM, 호스트 CSS import 없음	검수 UI가 앱 스타일을 망가뜨리지 않음
 기술적으로 어떻게 붙나?	React 18+ 컴포넌트 1개 마운트, handler 생략 시 localStorage	백엔드 없이도 팀 체험 가능
@@ -165,7 +165,7 @@ devOnly	visibility.devOnly로 프로덕션 비노출, 스테이징에서만 켜�
 
 ```
 Day 0   npm install + <FivePixels /> + visibility.devOnly
-Day 1   검수 많은 페이지 1곳에만 data-report-id
+Day 1   검수 많은 페이지 1곳에만 data-fp-id
 Day 2+  handler 연동 / GitHub / 팀 규칙 (/guides/rules)
 ```
 
@@ -193,7 +193,7 @@ npm install @fivepixels-js/react react react-dom
 <FivePixels project={{ id: "my-app" }} visibility={{ devOnly: true }} />
 
 // 3) 검수 대상에만
-<button data-report-id="hero-cta">시작하기</button>
+<button data-fp-id="hero-cta">시작하기</button>
 ```
 
 상세: `/docs/setup`
@@ -285,7 +285,7 @@ GitHub · NPM (외부)
 ### `/guides/quickstart`
 
 - **비개발자:** URL → 피드백 추가 → 클릭 → 작성 (단축키 카드 이미지)
-- **개발자:** install → `FivePixels` → `data-report-id` 1개 (5분)
+- **개발자:** install → `FivePixels` → `data-fp-id` 1개 (5분)
 
 ### `/guides/rollout` — 1주
 
@@ -373,7 +373,7 @@ Day 5	미해결만 보기	View 모드 + 필터
 4	비개발자	클라이언트 안내문으로 빠른 검수
 5	개발자	Shadow DOM — 호스트 CSS import 불필요
 6	개발자	로컬 저장으로 백엔드 없이 체험
-7	개발자	1페이지부터 점진적 data-report-id
+7	개발자	1페이지부터 점진적 data-fp-id
 8	성장	GitHub Issue·커스텀 API (선택)
 ```
 
@@ -432,7 +432,7 @@ CTA 하나만	개발자 게이트키퍼 이탈	이중 CTA, Secondary 시각적�
 | ❌ 구현 시 흔한 약한 문장 | ✅ memo 권장 문장 |
 |--------------------------|------------------|
 | 개발도 쉽습니다 | `npm install` 후 `<FivePixels />` 한 번, **반나절**이면 1페이지 |
-| 부담 없이 도입 | **1페이지·몇 개 요소**만 `data-report-id` — 전체 태깅 불필요 |
+| 부담 없이 도입 | **1페이지·몇 개 요소**만 `data-fp-id` — 전체 태깅 불필요 |
 | 스타일 안 깨짐 | **Shadow DOM** — 호스트 CSS import 없음 |
 | 서버 없이 OK | handler 생략 시 **localStorage**로 팀 체험 |
 | 프로덕션 안전 | **`visibility.devOnly`** — 스테이징에서만 노출 |

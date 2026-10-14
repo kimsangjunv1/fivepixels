@@ -254,7 +254,7 @@ function formatContextSection(feedback: ReportFeedback, fields: ReportField[], l
         labels.context,
         `- ${labels.path}: ${feedback.pathname}`,
         `- ${labels.reportId}: ${feedback.report_id}`,
-        `- ${labels.element}: data-report-id="${feedback.report_id}" (${feedback.report_type ?? "item"})`,
+        `- ${labels.element}: data-fp-id="${feedback.report_id}" (${feedback.report_type ?? "item"})`,
         `- ${labels.author}: ${feedback.author_name ?? "-"}`,
         `- ${labels.position}: (${feedback.position.viewport.x}, ${feedback.position.viewport.y})`,
         `- ${labels.tags}: ${tags || "-"}`,

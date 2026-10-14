@@ -17,8 +17,8 @@ export function DashboardModals() {
             <div
                 className={`modal-demo-overlay ${opacityOpen ? "modal-demo-overlay--interactive" : "modal-demo-overlay--hidden-opacity"}`}
                 data-fp-view="modal-opacity"
-                data-report-id="modal-opacity-overlay"
-                data-report-type="group"
+                data-fp-id="modal-opacity-overlay"
+                data-fp-type="group"
                 aria-hidden={!opacityOpen}
             >
                 <ModalDemoDialog
@@ -34,8 +34,8 @@ export function DashboardModals() {
             <div
                 className="modal-demo-overlay"
                 data-fp-view="modal-display"
-                data-report-id="modal-display-overlay"
-                data-report-type="group"
+                data-fp-id="modal-display-overlay"
+                data-fp-type="group"
                 style={{ display: displayOpen ? "flex" : "none" }}
                 aria-hidden={!displayOpen}
             >
@@ -53,8 +53,8 @@ export function DashboardModals() {
                 <div
                     className="modal-demo-overlay modal-demo-overlay--interactive"
                     data-fp-view="modal-conditional"
-                    data-report-id="modal-conditional-overlay"
-                    data-report-type="group"
+                    data-fp-id="modal-conditional-overlay"
+                    data-fp-type="group"
                     aria-hidden={false}
                 >
                     <ModalDemoDialog
@@ -71,8 +71,8 @@ export function DashboardModals() {
             <div
                 className={`modal-demo-overlay ${visibilityOpen ? "modal-demo-overlay--interactive" : "modal-demo-overlay--hidden-visibility"}`}
                 data-fp-view="modal-visibility"
-                data-report-id="modal-visibility-overlay"
-                data-report-type="group"
+                data-fp-id="modal-visibility-overlay"
+                data-fp-type="group"
                 aria-hidden={!visibilityOpen}
             >
                 <ModalDemoDialog
@@ -88,8 +88,8 @@ export function DashboardModals() {
             <div
                 className={`modal-demo-overlay ${offscreenOpen ? "modal-demo-overlay--interactive" : "modal-demo-overlay--hidden-offscreen"}`}
                 data-fp-view="modal-offscreen"
-                data-report-id="modal-offscreen-overlay"
-                data-report-type="group"
+                data-fp-id="modal-offscreen-overlay"
+                data-fp-type="group"
                 aria-hidden={!offscreenOpen}
             >
                 <ModalDemoDialog
@@ -106,8 +106,8 @@ export function DashboardModals() {
                 <div
                     className="modal-demo-overlay modal-demo-overlay--interactive"
                     data-fp-view="modal-zustand"
-                    data-report-id="modal-zustand-overlay"
-                    data-report-type="group"
+                    data-fp-id="modal-zustand-overlay"
+                    data-fp-type="group"
                     aria-hidden={false}
                 >
                     <ModalDemoDialog

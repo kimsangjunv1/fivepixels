@@ -37,7 +37,7 @@ describe("targetSelector", () => {
     });
 
     it("builds report id snippet for developers", () => {
-        expect(buildReportIdAttributeSnippet("hero-cta", "item")).toBe('data-report-id="hero-cta" data-report-type="item"');
+        expect(buildReportIdAttributeSnippet("hero-cta", "item")).toBe('data-fp-id="hero-cta" data-fp-type="item"');
     });
 
     it("resolves feedback targets via selector before report id", () => {
@@ -66,7 +66,7 @@ describe("targetSelector", () => {
         }).kind).toBe("selector");
 
         document.body.innerHTML = `
-            <button data-report-id="hero-cta" data-report-type="item">CTA</button>
+            <button data-fp-id="hero-cta" data-fp-type="item">CTA</button>
         `;
 
         const taggedButton = document.querySelector<HTMLElement>("button")!;

@@ -18,13 +18,13 @@ export function DemoInvestHeader() {
     const logoSrc = theme === "light" ? "/demo-invest/logo-toss-blue.svg" : "/demo-invest/logo-toss-white.png";
 
     return (
-        <header className="demo-invest__header" data-report-id="demo-invest-header" data-report-type="group">
+        <header className="demo-invest__header" data-fp-id="demo-invest-header" data-fp-type="group">
             <div className="demo-invest__header-main">
-                <Link to="/" className="demo-invest__brand" data-report-id="demo-invest-brand" data-report-type="item">
+                <Link to="/" className="demo-invest__brand" data-fp-id="demo-invest-brand" data-fp-type="item">
                     <img src={logoSrc} alt="토스증권" />
                 </Link>
 
-                <nav className="demo-invest__nav" data-report-id="demo-invest-nav" data-report-type="group">
+                <nav className="demo-invest__nav" data-fp-id="demo-invest-nav" data-fp-type="group">
                     {navItems.map((item) => {
                         const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
 
@@ -33,8 +33,8 @@ export function DemoInvestHeader() {
                                 key={item.label}
                                 to={item.href}
                                 className={`demo-invest__nav-link${active ? " demo-invest__nav-link--active" : ""}`}
-                                data-report-id={`demo-nav-${item.label}`}
-                                data-report-type="item"
+                                data-fp-id={`demo-nav-${item.label}`}
+                                data-fp-type="item"
                             >
                                 {item.label}
                             </Link>
@@ -42,13 +42,13 @@ export function DemoInvestHeader() {
                     })}
                 </nav>
 
-                <button type="button" className="demo-invest__search" data-fp-open="demo-modal-search" data-report-id="demo-invest-search" data-report-type="item" onClick={() => openDialog("investSearch")}>
+                <button type="button" className="demo-invest__search" data-fp-open="demo-modal-search" data-fp-id="demo-invest-search" data-fp-type="item" onClick={() => openDialog("investSearch")}>
                     <img src="/demo-invest/icons/icon-search-mono.png" alt="" />
                     <kbd>/</kbd>
                     <span>를 눌러 검색하세요</span>
                 </button>
 
-                <button type="button" className="demo-invest__login" data-fp-open="demo-modal-login" data-report-id="demo-invest-login" data-report-type="item" onClick={() => openDialog("investLogin")}>
+                <button type="button" className="demo-invest__login" data-fp-open="demo-modal-login" data-fp-id="demo-invest-login" data-fp-type="item" onClick={() => openDialog("investLogin")}>
                     로그인
                 </button>
             </div>

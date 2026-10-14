@@ -113,8 +113,8 @@ export function ModalDemoDialog({ title, description, targetId, onClose, childre
     return (
         <div
             className="modal-demo-dialog"
-            data-report-id={targetId}
-            data-report-type="item"
+            data-fp-id={targetId}
+            data-fp-type="item"
             role="dialog"
             aria-modal="true"
             aria-labelledby={`${targetId}-title`}

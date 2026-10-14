@@ -10,13 +10,13 @@ export function PulseStats() {
     const { stats } = useLandingProvider();
 
     return (
-        <section className="pulse-stats" data-report-id="pulse-stats" data-report-type="group">
+        <section className="pulse-stats" data-fp-id="pulse-stats" data-fp-type="group">
             {stats.map((stat) => (
                 <article
                     key={stat.id}
                     className="pulse-stat-card"
-                    data-report-id={stat.id}
-                    data-report-type="item"
+                    data-fp-id={stat.id}
+                    data-fp-type="item"
                 >
                     <p className="pulse-stat-card__label">{stat.label}</p>
                     <p className="pulse-stat-card__value">{stat.value}</p>

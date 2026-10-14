@@ -231,7 +231,7 @@ function createReports(scene: ConceptShotSceneId): ReportFeedback[] {
             pathname: PATHNAME,
             report_id: seed.targetId,
             report_type: "item",
-            target_selector: `[data-report-id="${seed.targetId}"]`,
+            target_selector: `[data-fp-id="${seed.targetId}"]`,
             cases,
             status: cases.every((caseItem) => caseItem.status === "resolved") ? "resolved" : "open",
             fc_number: 101 + index,

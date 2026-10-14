@@ -10,9 +10,9 @@
 |------|------|------|
 | **엔트리포인트** | `<FivePixels />` | 앱에 한 번 렌더링하면 전체 UI·오버레이 활성화 |
 | **렌더링** | Shadow DOM | 별도 CSS import 없이 격리된 UI 렌더링 |
-| **대상 지정** | `data-report-id` | 요소 식별 및 마커 위치 복원 |
-| **대상 유형** | `data-report-type` | `item`(기본) / `group`(섹션 단위) |
-| **대체 추적** | CSS selector | `data-report-id` 없을 때 selector로 대체 추적 |
+| **대상 지정** | `data-fp-id` | 요소 식별 및 마커 위치 복원 |
+| **대상 유형** | `data-fp-type` | `item`(기본) / `group`(섹션 단위) |
+| **대체 추적** | CSS selector | `data-fp-id` 없을 때 selector로 대체 추적 |
 | **프로젝트 스코프** | `project.id/env/version` | 프로젝트·환경·버전별 피드백 분리 |
 
 ---

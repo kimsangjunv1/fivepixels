@@ -27,7 +27,7 @@ export function createProbeDeletionId() {
     return `probe-del-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`;
 }
 export function getPickProbeElementKey(element) {
-    const reportId = element.dataset.reportId?.trim();
+    const reportId = element.dataset.fpId?.trim();
     if (reportId) {
         return `id:${reportId}:${resolveReportType(element)}`;
     }

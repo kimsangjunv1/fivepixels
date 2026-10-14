@@ -196,7 +196,7 @@ function buildReportFromSample(
         pathname: DEMO_PATHNAME,
         report_id: `demo-target-${index + 1}`,
         report_type: index % 2 === 0 ? "item" : "group",
-        target_selector: `[data-report-id="demo-target-${index + 1}"]`,
+        target_selector: `[data-fp-id="demo-target-${index + 1}"]`,
         cases: [
             {
                 id: `demo-case-${id}`,
@@ -319,7 +319,7 @@ export const DEMO_DRAFT: DraftReport = {
     documentY: 150,
     reportId: "checkout-actions",
     reportType: "item",
-    targetSelector: '[data-report-id="checkout-actions"]',
+    targetSelector: '[data-fp-id="checkout-actions"]',
     viewPath: [],
     suggestedReportId: "checkout-actions",
     cases: [
@@ -368,7 +368,7 @@ export const DEMO_TARGET: TargetSnapshot = {
     type: "item",
     rect: DEMO_TARGET_RECT,
     isTagged: true,
-    targetSelector: '[data-report-id="checkout-actions"]',
+    targetSelector: '[data-fp-id="checkout-actions"]',
     suggestedReportId: "checkout-actions",
     tagName: "div",
     reportIdAttribute: "checkout-actions",

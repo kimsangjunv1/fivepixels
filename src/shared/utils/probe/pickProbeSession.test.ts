@@ -195,7 +195,7 @@ describe("pickProbeSession", () => {
 
     it("restores container innerHTML instead of flattening text nodes", () => {
         document.body.innerHTML = `
-            <article id="card" data-report-id="edge-search-field">
+            <article id="card" data-fp-id="edge-search-field">
                 <h3 class="title">Filter input</h3>
                 <p class="desc">태깅된 입력 필드입니다.</p>
                 <button type="button">Tagged action</button>

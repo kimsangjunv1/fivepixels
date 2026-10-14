@@ -59,13 +59,13 @@ export function MarketIndexBar() {
     return (
         <section
             className="demo-invest__market-overview"
-            data-report-id="demo-index-cards"
-            data-report-type="group"
+            data-fp-id="demo-index-cards"
+            data-fp-type="group"
         >
             <div
                 className="demo-invest__market-bar"
-                data-report-id="demo-market-hours"
-                data-report-type="group"
+                data-fp-id="demo-market-hours"
+                data-fp-type="group"
             >
                 <span className="demo-invest__market-dot" />
                 <span>
@@ -79,8 +79,8 @@ export function MarketIndexBar() {
                     type="button"
                     onClick={() => openDialog("investLogin")}
                     data-fp-open="demo-modal-login"
-                    data-report-id="demo-ai-intro"
-                    data-report-type="item"
+                    data-fp-id="demo-ai-intro"
+                    data-fp-type="item"
                 >
                     ✦ 토스증권 AI 소개
                 </button>

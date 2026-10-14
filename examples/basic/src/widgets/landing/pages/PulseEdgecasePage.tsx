@@ -22,7 +22,7 @@ const edgecaseItems: EdgecaseItem[] = [
     {
         id: "edge-hero-banner",
         title: "Hero banner",
-        description: "data-report-id가 있는 상단 배너입니다. 피드백 추가로 바로 선택할 수 있어요.",
+        description: "data-fp-id가 있는 상단 배너입니다. 피드백 추가로 바로 선택할 수 있어요.",
         tagged: true,
         reportType: "group",
     },
@@ -114,8 +114,8 @@ function reportProps(probe: { id: string; tagged: boolean; reportType?: "group" 
     }
 
     return {
-        "data-report-id": probe.id,
-        "data-report-type": probe.reportType ?? "item",
+        "data-fp-id": probe.id,
+        "data-fp-type": probe.reportType ?? "item",
     };
 }
 
@@ -127,7 +127,7 @@ function EdgecaseCard({ item }: { item: EdgecaseItem }) {
     return (
         <article className={layoutClass(item.tagged, "pulse-edgecase-card")} {...reportProps(item)}>
             <div className="pulse-edgecase-card__meta">
-                <span className={layoutClass(item.tagged, "pulse-edgecase-card__badge")}>{item.tagged ? "data-report-id" : "no report id"}</span>
+                <span className={layoutClass(item.tagged, "pulse-edgecase-card__badge")}>{item.tagged ? "data-fp-id" : "no report id"}</span>
                 <code className="pulse-edgecase-card__id">{item.tagged ? item.id : "—"}</code>
             </div>
             <h3 className="pulse-edgecase-card__title">{item.title}</h3>
@@ -236,7 +236,7 @@ export function PulseEdgecasePage() {
             <header className="pulse-page-section__header">
                 <h2 className="pulse-page-section__title">Edgecase · Report ID Mix</h2>
                 <p className="pulse-page-section__desc">
-                    이 페이지는 요소 {allProbes.length}개 중 {taggedCount}개는 <code>data-report-id</code>가 있고, {untaggedCount}개는 없습니다. 방문 시 localStorage에 데모 피드백 {EDGECASE_FEEDBACK_SEED_IDS.length}건(거절의 거절·해피패스·멘션·멀티케이스 등)이 자동으로 준비됩니다. 카드뿐 아니라 flex·grid 레이아웃 요소에서도 피드백 추가 모드 hover 시 보라색 하이라이트와 라벨로 태깅 여부를 확인해 보세요.
+                    이 페이지는 요소 {allProbes.length}개 중 {taggedCount}개는 <code>data-fp-id</code>가 있고, {untaggedCount}개는 없습니다. 방문 시 localStorage에 데모 피드백 {EDGECASE_FEEDBACK_SEED_IDS.length}건(거절의 거절·해피패스·멘션·멀티케이스 등)이 자동으로 준비됩니다. 카드뿐 아니라 flex·grid 레이아웃 요소에서도 피드백 추가 모드 hover 시 보라색 하이라이트와 라벨로 태깅 여부를 확인해 보세요.
                 </p>
             </header>
 

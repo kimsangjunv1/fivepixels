@@ -47,8 +47,8 @@ export function ResponsiveCheckPage() {
     }, []);
 
     return (
-        <div className="demo-invest__responsive-page" data-report-id="demo-responsive-page" data-report-type="group">
-            <section className="demo-invest__responsive-hero" data-report-id="demo-responsive-hero" data-report-type="group">
+        <div className="demo-invest__responsive-page" data-fp-id="demo-responsive-page" data-fp-type="group">
+            <section className="demo-invest__responsive-hero" data-fp-id="demo-responsive-hero" data-fp-type="group">
                 <div>
                     <p className="demo-invest__responsive-eyebrow">Fivepixels demo</p>
                     <h1>반응형 레이아웃 확인</h1>
@@ -56,7 +56,7 @@ export function ResponsiveCheckPage() {
                         모바일 플로팅 미리보기에서 이 페이지를 열면 viewport 폭에 따라 레이아웃이 바뀌는지 확인할 수 있어요.
                     </p>
                 </div>
-                <div className="demo-invest__responsive-metrics" data-report-id="demo-responsive-metrics" data-report-type="group">
+                <div className="demo-invest__responsive-metrics" data-fp-id="demo-responsive-metrics" data-fp-type="group">
                     <div className="demo-invest__responsive-metric">
                         <span>현재 viewport</span>
                         <strong>{viewportWidth}px</strong>
@@ -68,9 +68,9 @@ export function ResponsiveCheckPage() {
                 </div>
             </section>
 
-            <section className="demo-invest__responsive-stats" data-report-id="demo-responsive-stats" data-report-type="group">
+            <section className="demo-invest__responsive-stats" data-fp-id="demo-responsive-stats" data-fp-type="group">
                 {metrics.map((metric) => (
-                    <article key={metric.label} className="demo-invest__responsive-stat" data-report-type="item">
+                    <article key={metric.label} className="demo-invest__responsive-stat" data-fp-type="item">
                         <span>{metric.label}</span>
                         <strong>{metric.value}</strong>
                         <em>{metric.change}</em>
@@ -78,16 +78,16 @@ export function ResponsiveCheckPage() {
                 ))}
             </section>
 
-            <section className="demo-invest__responsive-grid" data-report-id="demo-responsive-grid" data-report-type="group">
+            <section className="demo-invest__responsive-grid" data-fp-id="demo-responsive-grid" data-fp-type="group">
                 {cards.map((card) => (
-                    <article key={card.title} className="demo-invest__responsive-card" data-report-type="item">
+                    <article key={card.title} className="demo-invest__responsive-card" data-fp-type="item">
                         <h2>{card.title}</h2>
                         <p>{card.body}</p>
                     </article>
                 ))}
             </section>
 
-            <section className="demo-invest__responsive-split" data-report-id="demo-responsive-split" data-report-type="group">
+            <section className="demo-invest__responsive-split" data-fp-id="demo-responsive-split" data-fp-type="group">
                 <div className="demo-invest__responsive-panel">
                     <h2>좌측 패널</h2>
                     <p>900px 미만에서는 아래로 내려가 1열 스택으로 보여야 합니다.</p>

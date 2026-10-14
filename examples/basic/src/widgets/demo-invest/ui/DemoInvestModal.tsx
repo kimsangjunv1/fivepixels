@@ -15,8 +15,8 @@ export function DemoInvestModal({ id, title, description, onClose, children, foo
         <div
             className="demo-invest-modal__overlay"
             data-fp-view={id}
-            data-report-id={`${id}-overlay`}
-            data-report-type="group"
+            data-fp-id={`${id}-overlay`}
+            data-fp-type="group"
             role="presentation"
             onMouseDown={(event) => {
                 if (event.currentTarget === event.target) {
@@ -26,8 +26,8 @@ export function DemoInvestModal({ id, title, description, onClose, children, foo
         >
             <section
                 className="demo-invest-modal"
-                data-report-id={id}
-                data-report-type="item"
+                data-fp-id={id}
+                data-fp-type="item"
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby={`${id}-title`}

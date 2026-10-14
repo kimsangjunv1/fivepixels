@@ -9,8 +9,8 @@ export function StockDetailPanel({ stock }: StockDetailPanelProps) {
     const { openDialog } = useDemoInvestInteractions();
 
     return (
-        <aside className="demo-invest__detail-panel" data-stock-code={stock.code} data-report-id="demo-stock-detail" data-report-type="group">
-            <div className="demo-invest__detail-header" data-report-id="demo-detail-header" data-report-type="item">
+        <aside className="demo-invest__detail-panel" data-stock-code={stock.code} data-fp-id="demo-stock-detail" data-fp-type="group">
+            <div className="demo-invest__detail-header" data-fp-id="demo-detail-header" data-fp-type="item">
                 <img src={stock.logoSrc} alt="" className="demo-invest__detail-logo" />
                 <div>
                     <div className="demo-invest__detail-title">{stock.name}</div>
@@ -23,8 +23,8 @@ export function StockDetailPanel({ stock }: StockDetailPanelProps) {
                 src="/demo-invest/charts/home-stock-chart.png"
                 alt={`${stock.name} 차트`}
                 className="demo-invest__chart-img"
-                data-report-id="demo-stock-chart"
-                data-report-type="item"
+                data-fp-id="demo-stock-chart"
+                data-fp-type="item"
             />
 
             <div className="demo-invest__detail-community">

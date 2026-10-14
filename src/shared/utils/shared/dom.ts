@@ -136,7 +136,7 @@ export function isSameHoverTarget(previous: TargetSnapshot | null, next: TargetS
 }
 
 export function hasDirectReportId(element: HTMLElement) {
-    return Boolean(element.dataset.reportId?.trim());
+    return Boolean(element.dataset.fpId?.trim());
 }
 
 export function toFeedbackHoverSnapshot(element: HTMLElement | null): TargetSnapshot | null {
@@ -174,7 +174,7 @@ export function toSnapshot(element: HTMLElement | null): TargetSnapshot | null {
         return null;
     }
 
-    const reportId = element.dataset.reportId?.trim();
+    const reportId = element.dataset.fpId?.trim();
 
     if (!reportId) {
         return null;
@@ -192,7 +192,7 @@ export function resolveFeedbackDocumentAnchor(targetElement: HTMLElement): Targe
     let node: HTMLElement | null = targetElement.parentElement;
 
     while (node && node !== getElementDocumentElement(node)) {
-        const reportId = node.dataset.reportId?.trim();
+        const reportId = node.dataset.fpId?.trim();
 
         if (reportId && getElementWindow(node).getComputedStyle(node).position !== "fixed") {
             return toSnapshot(node);
@@ -213,7 +213,7 @@ export function findTargetElement(baseElement: HTMLElement | null) {
     let node: HTMLElement | null = baseElement;
 
     while (node) {
-        const reportId = node.dataset.reportId?.trim();
+        const reportId = node.dataset.fpId?.trim();
 
         if (reportId) {
             if (resolveReportType(node) === "item") {
@@ -371,7 +371,7 @@ export function toPickSnapshot(element: HTMLElement | null): TargetSnapshot | nu
     }
 
     const selector = generateCssSelector(element);
-    const reportId = element.dataset.reportId?.trim();
+    const reportId = element.dataset.fpId?.trim();
     const suggestedReportId = generateSuggestedReportId(element);
 
     return {

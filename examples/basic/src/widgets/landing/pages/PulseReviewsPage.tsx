@@ -18,20 +18,20 @@ const reviewCards = Array.from({ length: 4 }, (_, row) =>
 
 export function PulseReviewsPage() {
     return (
-        <section className="pulse-page-section" data-report-id="pulse-reviews-page" data-report-type="group">
+        <section className="pulse-page-section" data-fp-id="pulse-reviews-page" data-fp-type="group">
             <header className="pulse-page-section__header">
                 <h2 className="pulse-page-section__title">Reviews</h2>
                 <p className="pulse-page-section__desc">가로 스크롤 보드입니다. 좁은 뷰포트에서 horizontal overflow와 nested target을 테스트하세요.</p>
             </header>
-            <div className="pulse-reviews-scroll" data-report-id="pulse-reviews-scroll" data-report-type="group">
+            <div className="pulse-reviews-scroll" data-fp-id="pulse-reviews-scroll" data-fp-type="group">
                 <div className="pulse-reviews-board">
                     {reviewColumns.map((column) => (
                         <div
                             key={column.id}
                             className="pulse-reviews-column"
                             style={{ minWidth: column.width }}
-                            data-report-id={column.id}
-                            data-report-type="group"
+                            data-fp-id={column.id}
+                            data-fp-type="group"
                         >
                             <header className="pulse-reviews-column__header">{column.title}</header>
                             <div className="pulse-reviews-column__cards">
@@ -41,8 +41,8 @@ export function PulseReviewsPage() {
                                         <article
                                             key={card.id}
                                             className="pulse-reviews-card"
-                                            data-report-id={card.id}
-                                            data-report-type="item"
+                                            data-fp-id={card.id}
+                                            data-fp-type="item"
                                         >
                                             <h4>{card.title}</h4>
                                             <span>{card.reviewer}</span>

@@ -14,7 +14,7 @@ const INCIDENT_LOGS = [
 ];
 
 function target(id: string) {
-    return { "data-report-id": id, "data-report-type": "item" } as const;
+    return { "data-fp-id": id, "data-fp-type": "item" } as const;
 }
 
 function CheckoutScene() {

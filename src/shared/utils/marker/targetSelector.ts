@@ -39,7 +39,7 @@ export function isAutoPickReportId(reportId: string) {
 }
 
 export function generateSuggestedReportId(element: HTMLElement) {
-    const existing = element.dataset.reportId?.trim();
+    const existing = element.dataset.fpId?.trim();
 
     if (existing) {
         return existing;
@@ -73,7 +73,7 @@ export function generateSuggestedReportId(element: HTMLElement) {
 }
 
 export function buildReportIdAttributeSnippet(reportId: string, reportType: "group" | "item" = "item") {
-    return `data-report-id="${reportId}" data-report-type="${reportType}"`;
+    return `data-fp-id="${reportId}" data-fp-type="${reportType}"`;
 }
 
 function buildSelectorSegment(element: HTMLElement) {
@@ -96,7 +96,7 @@ function buildSelectorSegment(element: HTMLElement) {
 }
 
 export function generateCssSelector(element: HTMLElement) {
-    const reportId = element.dataset.reportId?.trim();
+    const reportId = element.dataset.fpId?.trim();
 
     if (reportId) {
         return getFeedbackTargetSelector(reportId, resolveReportType(element));

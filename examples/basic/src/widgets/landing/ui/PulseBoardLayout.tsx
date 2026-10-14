@@ -6,7 +6,7 @@ import { PulseSidebar } from "./PulseSidebar";
 
 export function PulseBoardLayout() {
     return (
-        <div className="pulse-board" data-report-id="pulse-board" data-report-type="group">
+        <div className="pulse-board" data-fp-id="pulse-board" data-fp-type="group">
             <PulseSidebar />
             <div className="pulse-main">
                 <PulseHeader />

@@ -51,44 +51,44 @@ export function StockRankingTable({ stocks, selectedCode, summaryCollapsed, onSe
     }, [contentTab, filter, hideRisk, region, stocks]);
 
     return (
-        <section className="demo-invest__table-section" data-report-id="demo-stock-table" data-report-type="group">
-            <div className="demo-invest__home-tabs" data-report-id="demo-home-content-tabs" data-report-type="group">
+        <section className="demo-invest__table-section" data-fp-id="demo-stock-table" data-fp-type="group">
+            <div className="demo-invest__home-tabs" data-fp-id="demo-home-content-tabs" data-fp-type="group">
                 {contentTabs.map((tab) => (
-                    <button key={tab} type="button" className={contentTab === tab ? "is-active" : undefined} onClick={() => setContentTab(tab)} data-report-id={`demo-home-tab-${tab}`} data-report-type="item">{tab}</button>
+                    <button key={tab} type="button" className={contentTab === tab ? "is-active" : undefined} onClick={() => setContentTab(tab)} data-fp-id={`demo-home-tab-${tab}`} data-fp-type="item">{tab}</button>
                 ))}
-                <button type="button" className="demo-invest__summary-toggle" onClick={onToggleSummary} data-report-id="demo-summary-toggle" data-report-type="item">▣ 요약 {summaryCollapsed ? "펼치기" : "접기"}</button>
+                <button type="button" className="demo-invest__summary-toggle" onClick={onToggleSummary} data-fp-id="demo-summary-toggle" data-fp-type="item">▣ 요약 {summaryCollapsed ? "펼치기" : "접기"}</button>
             </div>
-            <div className="demo-invest__ranking-filters" data-report-id="demo-ranking-filters" data-report-type="group">
+            <div className="demo-invest__ranking-filters" data-fp-id="demo-ranking-filters" data-fp-type="group">
                 <div>
-                    {regions.map((tab) => <button key={tab} type="button" className={region === tab ? "is-active" : undefined} onClick={() => setRegion(tab)} data-report-id={`demo-region-${tab}`} data-report-type="item">{tab}</button>)}
+                    {regions.map((tab) => <button key={tab} type="button" className={region === tab ? "is-active" : undefined} onClick={() => setRegion(tab)} data-fp-id={`demo-region-${tab}`} data-fp-type="item">{tab}</button>)}
                 </div>
                 <div>
-                    {rankingFilters.map((item) => <button key={item} type="button" className={filter === item ? "is-active" : undefined} onClick={() => setFilter(item)} data-report-id={`demo-rank-filter-${item}`} data-report-type="item">{item}</button>)}
+                    {rankingFilters.map((item) => <button key={item} type="button" className={filter === item ? "is-active" : undefined} onClick={() => setFilter(item)} data-fp-id={`demo-rank-filter-${item}`} data-fp-type="item">{item}</button>)}
                 </div>
                 <div className="demo-invest__realtime-wrap">
-                    <button type="button" className="demo-invest__realtime" onClick={() => setRealtimeOpen((current) => !current)} aria-expanded={realtimeOpen} data-report-id="demo-realtime-menu" data-report-type="item">{realtime}⌄</button>
+                    <button type="button" className="demo-invest__realtime" onClick={() => setRealtimeOpen((current) => !current)} aria-expanded={realtimeOpen} data-fp-id="demo-realtime-menu" data-fp-type="item">{realtime}⌄</button>
                     {realtimeOpen ? (
-                        <div className="demo-invest__compact-popover" data-report-id="demo-realtime-popover" data-report-type="group">
+                        <div className="demo-invest__compact-popover" data-fp-id="demo-realtime-popover" data-fp-type="group">
                             {["실시간", "1분", "5분", "15분"].map((option) => <button key={option} type="button" className={realtime === option ? "is-selected" : undefined} onClick={() => { setRealtime(option); setRealtimeOpen(false); }}>{option}</button>)}
                         </div>
                     ) : null}
                 </div>
-                <button type="button" className={`demo-invest__hide-risk${hideRisk ? " is-active" : ""}`} onClick={() => setHideRisk((current) => !current)} aria-pressed={hideRisk} data-report-id="demo-risk-toggle" data-report-type="item">● 투자위험 주식 {hideRisk ? "숨기기" : "보기"}</button>
+                <button type="button" className={`demo-invest__hide-risk${hideRisk ? " is-active" : ""}`} onClick={() => setHideRisk((current) => !current)} aria-pressed={hideRisk} data-fp-id="demo-risk-toggle" data-fp-type="item">● 투자위험 주식 {hideRisk ? "숨기기" : "보기"}</button>
             </div>
 
-            {contentTab !== contentTabs[0] ? <div className="demo-invest__table-context-banner" data-report-id="demo-table-context" data-report-type="item">{contentTab} 기준으로 순위를 다시 정렬했어요.</div> : null}
+            {contentTab !== contentTabs[0] ? <div className="demo-invest__table-context-banner" data-fp-id="demo-table-context" data-fp-type="item">{contentTab} 기준으로 순위를 다시 정렬했어요.</div> : null}
             <div className="demo-invest__ranking-head">
                 <span>순위 · {realtime === "실시간" ? "오늘 10:15 기준" : `${realtime} 단위`}</span><span>현재가</span><span>등락률</span><span>거래대금 순</span><span>시가총액</span><span>토스증권 거래 비율 ⓘ</span><span>산업</span>
             </div>
-            <div className="demo-invest__ranking-body" data-report-id="demo-ranking-results" data-report-type="group">
+            <div className="demo-invest__ranking-body" data-fp-id="demo-ranking-results" data-fp-type="group">
                 {visibleStocks.length > 0 ? visibleStocks.map((stock) => (
                     <button
                         key={stock.code}
                         type="button"
                         className={`demo-invest__ranking-row${stock.code === selectedCode ? " is-selected" : ""}`}
                         onClick={() => onSelect(stock.code)}
-                        data-report-id={`demo-stock-row-${stock.code}`}
-                        data-report-type="item"
+                        data-fp-id={`demo-stock-row-${stock.code}`}
+                        data-fp-type="item"
                     >
                         <span className="demo-invest__ranking-stock"><i>♥</i><b>{stock.rank}</b><img src={stock.logoSrc} alt="" /><strong>{stock.name}</strong></span>
                         <span>{stock.price}</span>
@@ -97,7 +97,7 @@ export function StockRankingTable({ stocks, selectedCode, summaryCollapsed, onSe
                         <span className="demo-invest__trade-ratio"><i style={{ width: `${stock.tradingRatio.buy}%` }} /><i style={{ width: `${stock.tradingRatio.sell}%` }} /><small><b>{stock.tradingRatio.buy}</b><em>{stock.tradingRatio.sell}</em></small></span>
                         <span><mark>{stock.industry}</mark></span>
                     </button>
-                )) : <div className="demo-invest__table-empty" data-report-id="demo-table-empty" data-report-type="item">조건에 맞는 종목이 없어요.<button type="button" onClick={() => { setRegion("전체"); setFilter(rankingFilters[0]); }}>필터 초기화</button></div>}
+                )) : <div className="demo-invest__table-empty" data-fp-id="demo-table-empty" data-fp-type="item">조건에 맞는 종목이 없어요.<button type="button" onClick={() => { setRegion("전체"); setFilter(rankingFilters[0]); }}>필터 초기화</button></div>}
             </div>
         </section>
     );

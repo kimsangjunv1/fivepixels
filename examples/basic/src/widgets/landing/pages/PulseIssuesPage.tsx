@@ -23,18 +23,18 @@ const listItems = Array.from({ length: 30 }, (_, index) => {
 
 export function PulseIssuesPage() {
     return (
-        <section className="pulse-page-section" data-report-id="pulse-issues-page" data-report-type="group">
+        <section className="pulse-page-section" data-fp-id="pulse-issues-page" data-fp-type="group">
             <header className="pulse-page-section__header">
                 <h2 className="pulse-page-section__title">Issues</h2>
                 <p className="pulse-page-section__desc">세로 스크롤이 있는 이슈 리스트입니다. 메인 컨텐츠 영역과 중첩 스크롤을 함께 테스트할 수 있습니다.</p>
             </header>
-            <div className="pulse-list-scroll" data-report-id="pulse-list-scroll" data-report-type="group">
+            <div className="pulse-list-scroll" data-fp-id="pulse-list-scroll" data-fp-type="group">
                 {listItems.map((item) => (
                     <div
                         key={item.id}
                         className="pulse-list-item"
-                        data-report-id={`list-item-${item.id}`}
-                        data-report-type="item"
+                        data-fp-id={`list-item-${item.id}`}
+                        data-fp-type="item"
                     >
                         <span className="pulse-list-item__id">{item.id}</span>
                         <span className="pulse-list-item__title">{item.title}</span>

@@ -9,33 +9,33 @@ describe("escapeAttribute", () => {
 });
 
 describe("resolveReportType", () => {
-    it("returns group only when data-report-type is group", () => {
+    it("returns group only when data-fp-type is group", () => {
         const group = document.createElement("section");
-        group.dataset.reportId = "hero";
-        group.dataset.reportType = "group";
+        group.dataset.fpId = "hero";
+        group.dataset.fpType = "group";
         expect(resolveReportType(group)).toBe("group");
 
         const item = document.createElement("button");
-        item.dataset.reportId = "hero-cta";
+        item.dataset.fpId = "hero-cta";
         expect(resolveReportType(item)).toBe("item");
 
         const explicitItem = document.createElement("button");
-        explicitItem.dataset.reportId = "hero-cta";
-        explicitItem.dataset.reportType = "item";
+        explicitItem.dataset.fpId = "hero-cta";
+        explicitItem.dataset.fpType = "item";
         expect(resolveReportType(explicitItem)).toBe("item");
 
         const invalid = document.createElement("div");
-        invalid.dataset.reportId = "hero";
-        invalid.dataset.reportType = "invalid";
+        invalid.dataset.fpId = "hero";
+        invalid.dataset.fpType = "invalid";
         expect(resolveReportType(invalid)).toBe("item");
     });
 });
 
 describe("getFeedbackTargetSelector", () => {
     it("builds selectors for group and default item targets", () => {
-        expect(getFeedbackTargetSelector("hero", "group")).toBe('[data-report-id="hero"][data-report-type="group"]');
+        expect(getFeedbackTargetSelector("hero", "group")).toBe('[data-fp-id="hero"][data-fp-type="group"]');
         expect(getFeedbackTargetSelector("hero-cta", "item")).toBe(
-            '[data-report-id="hero-cta"]:not([data-report-type="group"])',
+            '[data-fp-id="hero-cta"]:not([data-fp-type="group"])',
         );
     });
 });
@@ -43,43 +43,43 @@ describe("getFeedbackTargetSelector", () => {
 describe("findTargetElement", () => {
     it("prefers the nearest item target over a parent group", () => {
         document.body.innerHTML = `
-            <section data-report-id="hero" data-report-type="group">
-                <button data-report-id="hero-cta" data-report-type="item">CTA</button>
+            <section data-fp-id="hero" data-fp-type="group">
+                <button data-fp-id="hero-cta" data-fp-type="item">CTA</button>
             </section>
         `;
 
         const button = document.querySelector("button")!;
-        expect(findTargetElement(button)?.dataset.reportId).toBe("hero-cta");
-        expect(findTargetElement(button)?.dataset.reportType).toBe("item");
+        expect(findTargetElement(button)?.dataset.fpId).toBe("hero-cta");
+        expect(findTargetElement(button)?.dataset.fpType).toBe("item");
     });
 
     it("treats id-only targets as item and prefers the nearest nested id", () => {
         document.body.innerHTML = `
-            <div data-report-id="test">
-                <div data-report-id="test2">
-                    <div data-report-id="test3">nested</div>
+            <div data-fp-id="test">
+                <div data-fp-id="test2">
+                    <div data-fp-id="test3">nested</div>
                 </div>
             </div>
         `;
 
-        const inner = document.querySelector<HTMLElement>('[data-report-id="test3"]')!;
-        const middle = document.querySelector<HTMLElement>('[data-report-id="test2"]')!;
-        const outer = document.querySelector<HTMLElement>('[data-report-id="test"]')!;
+        const inner = document.querySelector<HTMLElement>('[data-fp-id="test3"]')!;
+        const middle = document.querySelector<HTMLElement>('[data-fp-id="test2"]')!;
+        const outer = document.querySelector<HTMLElement>('[data-fp-id="test"]')!;
 
-        expect(findTargetElement(inner)?.dataset.reportId).toBe("test3");
-        expect(findTargetElement(middle)?.dataset.reportId).toBe("test2");
-        expect(findTargetElement(outer)?.dataset.reportId).toBe("test");
+        expect(findTargetElement(inner)?.dataset.fpId).toBe("test3");
+        expect(findTargetElement(middle)?.dataset.fpId).toBe("test2");
+        expect(findTargetElement(outer)?.dataset.fpId).toBe("test");
     });
 
     it("falls back to a group when no item ancestor exists", () => {
         document.body.innerHTML = `
-            <section data-report-id="hero" data-report-type="group">
+            <section data-fp-id="hero" data-fp-type="group">
                 <p>copy</p>
             </section>
         `;
 
         const paragraph = document.querySelector("p")!;
-        expect(findTargetElement(paragraph)?.dataset.reportId).toBe("hero");
+        expect(findTargetElement(paragraph)?.dataset.fpId).toBe("hero");
     });
 });
 
@@ -90,13 +90,13 @@ describe("toSnapshot", () => {
 
     it("defaults to item when report_type is missing or invalid", () => {
         const withoutType = document.createElement("div");
-        withoutType.dataset.reportId = "hero";
+        withoutType.dataset.fpId = "hero";
         expect(toSnapshot(withoutType)?.type).toBe("item");
         expect(toSnapshot(withoutType)?.isTagged).toBe(true);
 
         const invalid = document.createElement("div");
-        invalid.dataset.reportId = "hero";
-        invalid.dataset.reportType = "invalid";
+        invalid.dataset.fpId = "hero";
+        invalid.dataset.fpType = "invalid";
         expect(toSnapshot(invalid)?.type).toBe("item");
     });
 });
@@ -106,8 +106,8 @@ describe("toFeedbackHoverSnapshot", () => {
         const view = document.createElement("div");
         view.dataset.fpView = "checkout-modal";
         const tagged = document.createElement("button");
-        tagged.dataset.reportId = "hero-cta";
-        tagged.dataset.reportType = "item";
+        tagged.dataset.fpId = "hero-cta";
+        tagged.dataset.fpType = "item";
         tagged.dataset.fpOpen = "checkout-modal";
         view.append(tagged);
         document.body.append(view);
@@ -128,7 +128,7 @@ describe("toFeedbackHoverSnapshot", () => {
 describe("isFeedbackTargetVisible", () => {
     it("returns false for display:none elements", () => {
         const target = document.createElement("div");
-        target.dataset.reportId = "hero";
+        target.dataset.fpId = "hero";
         target.style.display = "none";
         document.body.append(target);
 
@@ -137,7 +137,7 @@ describe("isFeedbackTargetVisible", () => {
 
     it("returns true for visible elements with size", () => {
         const target = document.createElement("div");
-        target.dataset.reportId = "hero";
+        target.dataset.fpId = "hero";
         document.body.append(target);
 
         vi.spyOn(target, "getBoundingClientRect").mockReturnValue({
@@ -160,7 +160,7 @@ describe("isFeedbackTargetVisible", () => {
         overlay.style.opacity = "0";
 
         const target = document.createElement("div");
-        target.dataset.reportId = "hero";
+        target.dataset.fpId = "hero";
         overlay.append(target);
         document.body.append(overlay);
 
@@ -184,7 +184,7 @@ describe("isFeedbackTargetVisible", () => {
         overlay.style.transform = "translateX(-200vw)";
 
         const target = document.createElement("div");
-        target.dataset.reportId = "hero";
+        target.dataset.fpId = "hero";
         overlay.append(target);
         document.body.append(overlay);
 
@@ -208,11 +208,11 @@ describe("hasFixedPositionAncestor", () => {
     it("detects fixed ancestors", () => {
         document.body.innerHTML = `
             <div style="position: fixed">
-                <div data-report-id="hero">target</div>
+                <div data-fp-id="hero">target</div>
             </div>
         `;
 
-        const target = document.querySelector<HTMLElement>("[data-report-id='hero']")!;
+        const target = document.querySelector<HTMLElement>("[data-fp-id='hero']")!;
         expect(hasFixedPositionAncestor(target)).toBe(true);
     });
 });
@@ -220,14 +220,14 @@ describe("hasFixedPositionAncestor", () => {
 describe("resolveFeedbackDocumentAnchor", () => {
     it("returns the nearest non-fixed report ancestor", () => {
         document.body.innerHTML = `
-            <section data-report-id="modal-demo" data-report-type="group">
+            <section data-fp-id="modal-demo" data-fp-type="group">
                 <div class="overlay" style="position: fixed">
-                    <div data-report-id="modal-target" data-report-type="item">target</div>
+                    <div data-fp-id="modal-target" data-fp-type="item">target</div>
                 </div>
             </section>
         `;
 
-        const target = document.querySelector<HTMLElement>('[data-report-id="modal-target"]')!;
+        const target = document.querySelector<HTMLElement>('[data-fp-id="modal-target"]')!;
         const anchor = resolveFeedbackDocumentAnchor(target);
 
         expect(anchor?.id).toBe("modal-demo");
@@ -261,21 +261,21 @@ describe("findTargetByPoint", () => {
     it("skips hidden overlays and selects the visible modal target below", () => {
         document.body.innerHTML = `
             <div
-                data-report-id="modal-overlay-hidden"
+                data-fp-id="modal-overlay-hidden"
                 style="position: fixed; inset: 0; opacity: 0;"
                 aria-hidden="true"
             >
-                <div data-report-id="modal-hidden-target">hidden</div>
+                <div data-fp-id="modal-hidden-target">hidden</div>
             </div>
-            <div data-report-id="modal-overlay-visible" style="position: fixed; inset: 0;">
-                <div data-report-id="modal-visible-target">visible</div>
+            <div data-fp-id="modal-overlay-visible" style="position: fixed; inset: 0;">
+                <div data-fp-id="modal-visible-target">visible</div>
             </div>
         `;
 
-        const hiddenOverlay = document.querySelector<HTMLElement>('[data-report-id="modal-overlay-hidden"]')!;
-        const hiddenTarget = document.querySelector<HTMLElement>('[data-report-id="modal-hidden-target"]')!;
-        const visibleOverlay = document.querySelector<HTMLElement>('[data-report-id="modal-overlay-visible"]')!;
-        const visibleTarget = document.querySelector<HTMLElement>('[data-report-id="modal-visible-target"]')!;
+        const hiddenOverlay = document.querySelector<HTMLElement>('[data-fp-id="modal-overlay-hidden"]')!;
+        const hiddenTarget = document.querySelector<HTMLElement>('[data-fp-id="modal-hidden-target"]')!;
+        const visibleOverlay = document.querySelector<HTMLElement>('[data-fp-id="modal-overlay-visible"]')!;
+        const visibleTarget = document.querySelector<HTMLElement>('[data-fp-id="modal-visible-target"]')!;
         const overlay = document.createElement("div");
 
         mockFullViewportRect(hiddenOverlay);
@@ -286,27 +286,27 @@ describe("findTargetByPoint", () => {
 
         const result = findTargetByPoint(overlay, window.innerWidth / 2, window.innerHeight / 2);
 
-        expect(result?.dataset.reportId).toBe("modal-visible-target");
+        expect(result?.dataset.fpId).toBe("modal-visible-target");
     });
 
     it("skips aria-hidden overlays that still participate in hit testing", () => {
         document.body.innerHTML = `
             <div
-                data-report-id="modal-overlay-closed"
+                data-fp-id="modal-overlay-closed"
                 style="position: fixed; inset: 0;"
                 aria-hidden="true"
             >
-                <div data-report-id="modal-closed-target">closed</div>
+                <div data-fp-id="modal-closed-target">closed</div>
             </div>
-            <div data-report-id="modal-overlay-open" style="position: fixed; inset: 0;" aria-hidden="false">
-                <div data-report-id="modal-open-target">open</div>
+            <div data-fp-id="modal-overlay-open" style="position: fixed; inset: 0;" aria-hidden="false">
+                <div data-fp-id="modal-open-target">open</div>
             </div>
         `;
 
-        const closedOverlay = document.querySelector<HTMLElement>('[data-report-id="modal-overlay-closed"]')!;
-        const closedTarget = document.querySelector<HTMLElement>('[data-report-id="modal-closed-target"]')!;
-        const openOverlay = document.querySelector<HTMLElement>('[data-report-id="modal-overlay-open"]')!;
-        const openTarget = document.querySelector<HTMLElement>('[data-report-id="modal-open-target"]')!;
+        const closedOverlay = document.querySelector<HTMLElement>('[data-fp-id="modal-overlay-closed"]')!;
+        const closedTarget = document.querySelector<HTMLElement>('[data-fp-id="modal-closed-target"]')!;
+        const openOverlay = document.querySelector<HTMLElement>('[data-fp-id="modal-overlay-open"]')!;
+        const openTarget = document.querySelector<HTMLElement>('[data-fp-id="modal-open-target"]')!;
         const overlay = document.createElement("div");
 
         mockFullViewportRect(closedOverlay);
@@ -317,18 +317,18 @@ describe("findTargetByPoint", () => {
 
         const result = findTargetByPoint(overlay, window.innerWidth / 2, window.innerHeight / 2);
 
-        expect(result?.dataset.reportId).toBe("modal-open-target");
+        expect(result?.dataset.fpId).toBe("modal-open-target");
     });
 
     it("returns null when every stacked report target is hidden", () => {
         document.body.innerHTML = `
-            <div data-report-id="modal-overlay-hidden" style="position: fixed; inset: 0; display: none;">
-                <div data-report-id="modal-hidden-target">hidden</div>
+            <div data-fp-id="modal-overlay-hidden" style="position: fixed; inset: 0; display: none;">
+                <div data-fp-id="modal-hidden-target">hidden</div>
             </div>
         `;
 
-        const hiddenTarget = document.querySelector<HTMLElement>('[data-report-id="modal-hidden-target"]')!;
-        const hiddenOverlay = document.querySelector<HTMLElement>('[data-report-id="modal-overlay-hidden"]')!;
+        const hiddenTarget = document.querySelector<HTMLElement>('[data-fp-id="modal-hidden-target"]')!;
+        const hiddenOverlay = document.querySelector<HTMLElement>('[data-fp-id="modal-overlay-hidden"]')!;
         const overlay = document.createElement("div");
 
         mockFullViewportRect(hiddenOverlay);
@@ -341,11 +341,11 @@ describe("findTargetByPoint", () => {
 
     it("does not select page targets below a fixed modal backdrop without report-id", () => {
         document.body.innerHTML = `
-            <button data-report-id="page-target" data-report-type="item">page</button>
+            <button data-fp-id="page-target" data-fp-type="item">page</button>
             <div class="modal-backdrop" style="position: fixed; inset: 0;"></div>
         `;
 
-        const pageTarget = document.querySelector<HTMLElement>('[data-report-id="page-target"]')!;
+        const pageTarget = document.querySelector<HTMLElement>('[data-fp-id="page-target"]')!;
         const modalBackdrop = document.querySelector<HTMLElement>(".modal-backdrop")!;
         const overlay = document.createElement("div");
 
@@ -360,19 +360,19 @@ describe("findTargetByPoint", () => {
 
     it("selects a modal overlay group instead of page targets below the backdrop", () => {
         document.body.innerHTML = `
-            <button data-report-id="page-target" data-report-type="item">page</button>
+            <button data-fp-id="page-target" data-fp-type="item">page</button>
             <div
-                data-report-id="modal-overlay-open"
-                data-report-type="group"
+                data-fp-id="modal-overlay-open"
+                data-fp-type="group"
                 style="position: fixed; inset: 0;"
                 aria-hidden="false"
             >
-                <div data-report-id="modal-open-target" data-report-type="item">open</div>
+                <div data-fp-id="modal-open-target" data-fp-type="item">open</div>
             </div>
         `;
 
-        const pageTarget = document.querySelector<HTMLElement>('[data-report-id="page-target"]')!;
-        const openOverlay = document.querySelector<HTMLElement>('[data-report-id="modal-overlay-open"]')!;
+        const pageTarget = document.querySelector<HTMLElement>('[data-fp-id="page-target"]')!;
+        const openOverlay = document.querySelector<HTMLElement>('[data-fp-id="modal-overlay-open"]')!;
         const overlay = document.createElement("div");
 
         mockFullViewportRect(pageTarget);
@@ -381,8 +381,8 @@ describe("findTargetByPoint", () => {
 
         const result = findTargetByPoint(overlay, window.innerWidth / 2, window.innerHeight / 2);
 
-        expect(result?.dataset.reportId).toBe("modal-overlay-open");
-        expect(result?.dataset.reportType).toBe("group");
+        expect(result?.dataset.fpId).toBe("modal-overlay-open");
+        expect(result?.dataset.fpType).toBe("group");
     });
 });
 
@@ -391,14 +391,14 @@ describe("getNearestScrollContainer", () => {
         document.body.innerHTML = `
             <div id="outer" style="overflow-y: auto; height: 200px">
                 <div id="inner" style="overflow-y: auto; height: 120px">
-                    <section data-report-id="hero">target</section>
+                    <section data-fp-id="hero">target</section>
                 </div>
             </div>
         `;
 
         const outer = document.getElementById("outer")!;
         const inner = document.getElementById("inner")!;
-        const target = document.querySelector<HTMLElement>("[data-report-id='hero']")!;
+        const target = document.querySelector<HTMLElement>("[data-fp-id='hero']")!;
 
         Object.defineProperty(outer, "scrollHeight", { configurable: true, value: 400 });
         Object.defineProperty(outer, "clientHeight", { configurable: true, value: 200 });
@@ -410,7 +410,7 @@ describe("getNearestScrollContainer", () => {
 
     it("returns null when no scrollable ancestor exists", () => {
         const target = document.createElement("section");
-        target.dataset.reportId = "hero";
+        target.dataset.fpId = "hero";
         document.body.append(target);
 
         expect(getNearestScrollContainer(target)).toBeNull();

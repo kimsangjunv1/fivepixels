@@ -9,8 +9,8 @@ describe("getFeedbackTargetElement", () => {
 
     it("returns the element that matches report_id and report_type", () => {
         const target = document.createElement("button");
-        target.dataset.reportId = "hero-cta";
-        target.dataset.reportType = "item";
+        target.dataset.fpId = "hero-cta";
+        target.dataset.fpType = "item";
         document.body.append(target);
 
         const result = getFeedbackTargetElement({ report_id: "hero-cta", report_type: "item" });
@@ -20,7 +20,7 @@ describe("getFeedbackTargetElement", () => {
 
     it("finds id-only targets as item", () => {
         const target = document.createElement("button");
-        target.dataset.reportId = "hero-cta";
+        target.dataset.fpId = "hero-cta";
         document.body.append(target);
 
         const result = getFeedbackTargetElement({ report_id: "hero-cta", report_type: "item" });
@@ -44,7 +44,7 @@ describe("isFeedbackTargetDetached", () => {
 
     it("returns true when the target element is hidden", () => {
         const target = document.createElement("button");
-        target.dataset.reportId = "hero-cta";
+        target.dataset.fpId = "hero-cta";
         target.style.display = "none";
         document.body.append(target);
 
@@ -53,7 +53,7 @@ describe("isFeedbackTargetDetached", () => {
 
     it("returns false when the target element is visible", () => {
         const target = document.createElement("button");
-        target.dataset.reportId = "hero-cta";
+        target.dataset.fpId = "hero-cta";
         document.body.append(target);
 
         vi.spyOn(target, "getBoundingClientRect").mockReturnValue({
@@ -84,8 +84,8 @@ describe("scrollToFeedbackTarget", () => {
 
     it("scrolls the matched element into view", () => {
         const target = document.createElement("section");
-        target.dataset.reportId = "hero";
-        target.dataset.reportType = "group";
+        target.dataset.fpId = "hero";
+        target.dataset.fpType = "group";
         document.body.append(target);
 
         const scrollIntoView = vi.fn();

@@ -86,10 +86,10 @@ export function DemoInvestInteractionProvider({ children }: PropsWithChildren) {
                         value={search}
                         onChange={(event) => setSearch(event.target.value)}
                         placeholder="회사명이나 종목명을 입력하세요"
-                        data-report-id="demo-search-modal-input"
-                        data-report-type="item"
+                        data-fp-id="demo-search-modal-input"
+                        data-fp-type="item"
                     />
-                    <div className="demo-invest-modal__search-results" data-report-id="demo-search-results" data-report-type="group">
+                    <div className="demo-invest-modal__search-results" data-fp-id="demo-search-results" data-fp-type="group">
                         {searchResults.length > 0 ? searchResults.map((item) => (
                             <button key={item.code} type="button" onClick={() => {
                                 closeModal("investSearch");
@@ -182,7 +182,7 @@ export function DemoInvestInteractionProvider({ children }: PropsWithChildren) {
                 </DemoInvestModal>
             ) : null}
 
-            {toast ? <div className="demo-invest-toast" data-report-id="demo-invest-toast" data-report-type="item" role="status">✓ {toast}</div> : null}
+            {toast ? <div className="demo-invest-toast" data-fp-id="demo-invest-toast" data-fp-type="item" role="status">✓ {toast}</div> : null}
         </DemoInvestInteractionContext.Provider>
     );
 }

@@ -354,7 +354,7 @@ function buildHoverTargetFromElement(element: HTMLElement, reportId: string): Ta
         type: "item",
         rect: toDomRect(element.getBoundingClientRect()),
         isTagged: true,
-        targetSelector: `[data-report-id="${reportId}"]`,
+        targetSelector: `[data-fp-id="${reportId}"]`,
         suggestedReportId: reportId,
         tagName: element.tagName.toLowerCase(),
         reportIdAttribute: reportId,
@@ -443,7 +443,7 @@ function ElementHoverInspectScene() {
         ref: (node: HTMLElement | null) => {
             itemRefs.current[itemId] = node;
         },
-        "data-report-id": itemId,
+        "data-fp-id": itemId,
         onPointerEnter: (event: ReactPointerEvent<HTMLElement>) => {
             applyItemTarget(itemId, { clientX: event.clientX, clientY: event.clientY });
         },
@@ -676,7 +676,7 @@ function ElementInspectorScene() {
                     <button
                         ref={buttonRef}
                         type="button"
-                        data-report-id={DEMO_TARGET.reportIdAttribute ?? "checkout-actions"}
+                        data-fp-id={DEMO_TARGET.reportIdAttribute ?? "checkout-actions"}
                         style={previewStyle}
                         onClick={openPickProbe}
                         className="min-h-[34px] outline-none"

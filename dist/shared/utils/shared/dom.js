@@ -86,7 +86,7 @@ export function isSameHoverTarget(previous, next) {
         isSamePickTargetFontStyle(previous.fontStyle, next.fontStyle));
 }
 export function hasDirectReportId(element) {
-    return Boolean(element.dataset.reportId?.trim());
+    return Boolean(element.dataset.fpId?.trim());
 }
 export function toFeedbackHoverSnapshot(element) {
     if (!element) {
@@ -115,7 +115,7 @@ export function toSnapshot(element) {
     if (!element) {
         return null;
     }
-    const reportId = element.dataset.reportId?.trim();
+    const reportId = element.dataset.fpId?.trim();
     if (!reportId) {
         return null;
     }
@@ -129,7 +129,7 @@ export function toSnapshot(element) {
 export function resolveFeedbackDocumentAnchor(targetElement) {
     let node = targetElement.parentElement;
     while (node && node !== getElementDocumentElement(node)) {
-        const reportId = node.dataset.reportId?.trim();
+        const reportId = node.dataset.fpId?.trim();
         if (reportId && getElementWindow(node).getComputedStyle(node).position !== "fixed") {
             return toSnapshot(node);
         }
@@ -144,7 +144,7 @@ export function findTargetElement(baseElement) {
     let groupFallback = null;
     let node = baseElement;
     while (node) {
-        const reportId = node.dataset.reportId?.trim();
+        const reportId = node.dataset.fpId?.trim();
         if (reportId) {
             if (resolveReportType(node) === "item") {
                 return node;
@@ -265,7 +265,7 @@ export function toPickSnapshot(element) {
         return null;
     }
     const selector = generateCssSelector(element);
-    const reportId = element.dataset.reportId?.trim();
+    const reportId = element.dataset.fpId?.trim();
     const suggestedReportId = generateSuggestedReportId(element);
     return {
         id: reportId ?? createAutoPickReportId(selector),

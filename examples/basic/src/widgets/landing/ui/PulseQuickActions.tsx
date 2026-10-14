@@ -16,7 +16,7 @@ export function PulseQuickActions() {
     const openZustand = useModalZustandStore((state) => state.open);
 
     return (
-        <section className="pulse-panel" data-report-id="pulse-quick-actions" data-report-type="group">
+        <section className="pulse-panel" data-fp-id="pulse-quick-actions" data-fp-type="group">
             <header className="pulse-panel__header">Quick actions</header>
             <div className="pulse-quick-actions">
                 <p className="pulse-quick-actions__desc">
@@ -26,24 +26,24 @@ export function PulseQuickActions() {
                     <button
                         type="button"
                         className="pulse-btn pulse-btn--primary"
-                        data-report-id="pulse-action-new-issue"
-                        data-report-type="item"
+                        data-fp-id="pulse-action-new-issue"
+                        data-fp-type="item"
                     >
                         New issue
                     </button>
                     <button
                         type="button"
                         className="pulse-btn pulse-btn--secondary"
-                        data-report-id="pulse-action-export"
-                        data-report-type="item"
+                        data-fp-id="pulse-action-export"
+                        data-fp-type="item"
                     >
                         Export report
                     </button>
                     <Link
                         to="/issues"
                         className="pulse-btn pulse-btn--blue"
-                        data-report-id="pulse-action-list"
-                        data-report-type="item"
+                        data-fp-id="pulse-action-list"
+                        data-fp-type="item"
                     >
                         Go to Issues
                         <span className="pulse-btn__arrow" aria-hidden>
@@ -53,8 +53,8 @@ export function PulseQuickActions() {
                     <Link
                         to="/settings"
                         className="pulse-btn pulse-btn--purple"
-                        data-report-id="pulse-action-modals-page"
-                        data-report-type="item"
+                        data-fp-id="pulse-action-modals-page"
+                        data-fp-type="item"
                     >
                         Go to Modal Lab
                         <span className="pulse-btn__arrow" aria-hidden>
@@ -63,7 +63,7 @@ export function PulseQuickActions() {
                     </Link>
                 </div>
 
-                <div className="pulse-modal-picker" data-report-id="pulse-modal-picker" data-report-type="group">
+                <div className="pulse-modal-picker" data-fp-id="pulse-modal-picker" data-fp-type="group">
                     <p className="pulse-modal-picker__label">Open modal case</p>
                     <div className="pulse-modal-picker__grid">
                         {modalCases.map((item) => (
@@ -71,8 +71,8 @@ export function PulseQuickActions() {
                                 key={item.key}
                                 type="button"
                                 className="pulse-modal-picker__btn"
-                                data-report-id={`pulse-open-modal-${item.key}`}
-                                data-report-type="item"
+                                data-fp-id={`pulse-open-modal-${item.key}`}
+                                data-fp-type="item"
                                 onClick={() => openModal(item.key)}
                             >
                                 {item.label}
@@ -81,8 +81,8 @@ export function PulseQuickActions() {
                         <button
                             type="button"
                             className="pulse-modal-picker__btn pulse-modal-picker__btn--zustand"
-                            data-report-id="pulse-open-modal-zustand"
-                            data-report-type="item"
+                            data-fp-id="pulse-open-modal-zustand"
+                            data-fp-type="item"
                             onClick={openZustand}
                         >
                             zustand

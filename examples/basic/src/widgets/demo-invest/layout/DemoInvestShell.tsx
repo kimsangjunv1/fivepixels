@@ -19,8 +19,8 @@ export function DemoInvestShell() {
                 className="demo-invest"
                 data-theme={theme}
                 data-page={isResponsiveCheckPage ? "responsive-check" : undefined}
-                data-report-id="demo-invest-shell"
-                data-report-type="group"
+                data-fp-id="demo-invest-shell"
+                data-fp-type="group"
             >
                 <DemoInvestHeader />
                 <div className="demo-invest__shell">

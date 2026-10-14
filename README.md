@@ -24,7 +24,7 @@ npm install @fivepixels-js/react
 
 ## 시작하기
 
-화면에 `<FivePixels />`를 한 번 추가하면 사용할 수 있습니다. 아래 예제에서는 버튼에 `data-report-id`를 붙여 피드백을 남긴 위치를 다시 찾을 수 있게 했어요.
+화면에 `<FivePixels />`를 한 번 추가하면 사용할 수 있습니다. 아래 예제에서는 버튼에 `data-fp-id`를 붙여 피드백을 남긴 위치를 다시 찾을 수 있게 했어요.
 
 ```tsx
 import { FivePixels } from "@fivepixels-js/react";
@@ -33,7 +33,7 @@ export default function App() {
     return (
         <>
             <main>
-                <button data-report-id="signup-button">
+                <button data-fp-id="signup-button">
                     가입하기
                 </button>
             </main>
@@ -53,17 +53,17 @@ export default function App() {
 
 ## 화면 요소 지정하기
 
-`data-report-id`는 피드백을 남긴 요소를 다시 찾을 때 사용하는 식별자입니다. 같은 화면에서 겹치지 않는 값으로 지정하고, 화면이 바뀌어도 유지되는 이름을 사용하는 편이 좋아요.
+`data-fp-id`는 피드백을 남긴 요소를 다시 찾을 때 사용하는 식별자입니다. 같은 화면에서 겹치지 않는 값으로 지정하고, 화면이 바뀌어도 유지되는 이름을 사용하는 편이 좋아요.
 
 ```tsx
-<section data-report-id="checkout" data-report-type="group">
-    <button data-report-id="checkout-submit">
+<section data-fp-id="checkout" data-fp-type="group">
+    <button data-fp-id="checkout-submit">
         결제하기
     </button>
 </section>
 ```
 
-버튼처럼 개별 요소에는 `data-report-id`를, 섹션 전체를 하나의 대상으로 다루려면 `data-report-type="group"`을 함께 지정합니다. 식별자가 없는 요소도 선택할 수 있지만, 이 경우 CSS 선택자로 위치를 추적하므로 화면 구조가 바뀌면 찾기 어려워질 수 있어요.
+버튼처럼 개별 요소에는 `data-fp-id`를, 섹션 전체를 하나의 대상으로 다루려면 `data-fp-type="group"`을 함께 지정합니다. 식별자가 없는 요소도 선택할 수 있지만, 이 경우 CSS 선택자로 위치를 추적하므로 화면 구조가 바뀌면 찾기 어려워질 수 있어요.
 
 ### 모달이나 탭 안에 있는 요소
 
@@ -76,7 +76,7 @@ export default function App() {
 
 {isLoginOpen && (
     <div role="dialog" data-fp-view="login">
-        <button data-report-id="login-submit">
+        <button data-fp-id="login-submit">
             로그인
         </button>
     </div>

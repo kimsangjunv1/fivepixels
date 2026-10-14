@@ -19,14 +19,14 @@ function FeedActions({ postId, initialLikes, comments }: FeedActionsProps) {
 
     return (
         <>
-            <div className="demo-invest__feed-actions" aria-label="게시글 반응" data-report-id={`demo-feed-actions-${postId}`} data-report-type="group">
+            <div className="demo-invest__feed-actions" aria-label="게시글 반응" data-fp-id={`demo-feed-actions-${postId}`} data-fp-type="group">
                 <button type="button" className={liked ? "is-active" : undefined} onClick={() => setLiked((current) => !current)} aria-pressed={liked}>♡ {initialLikes + Number(liked)}</button>
                 <button type="button" onClick={() => setCommentsOpen((current) => !current)} aria-expanded={commentsOpen}>◯ {comments}</button>
                 <button type="button" onClick={() => showToast("게시글을 리포스트했어요.")}>↻ 2</button>
                 <button type="button" onClick={() => showToast("공유 링크를 복사했어요.")}>⌯</button>
             </div>
             {commentsOpen ? (
-                <div className="demo-invest__inline-comments" data-report-id={`demo-feed-comments-${postId}`} data-report-type="group">
+                <div className="demo-invest__inline-comments" data-fp-id={`demo-feed-comments-${postId}`} data-fp-type="group">
                     <strong>실시간 댓글</strong><p>오늘 흐름이 정말 강하네요.</p><p>정보 감사합니다 👏</p>
                 </div>
             ) : null}
@@ -45,28 +45,28 @@ export function FeedPage() {
     const toggleFollow = (name: string) => setFollowing((current) => current.includes(name) ? current.filter((item) => item !== name) : [...current, name]);
 
     return (
-        <div className="demo-invest__feed-page" data-report-id="demo-feed-page" data-report-type="group">
-            <div className="demo-invest__feed-tabs" data-report-id="demo-feed-tabs" data-report-type="group">
-                {(["전체", "뉴스"] as const).map((item) => <button key={item} type="button" className={tab === item ? "is-active" : undefined} onClick={() => setTab(item)} data-report-id={`demo-feed-tab-${item}`} data-report-type="item">{item}</button>)}
+        <div className="demo-invest__feed-page" data-fp-id="demo-feed-page" data-fp-type="group">
+            <div className="demo-invest__feed-tabs" data-fp-id="demo-feed-tabs" data-fp-type="group">
+                {(["전체", "뉴스"] as const).map((item) => <button key={item} type="button" className={tab === item ? "is-active" : undefined} onClick={() => setTab(item)} data-fp-id={`demo-feed-tab-${item}`} data-fp-type="item">{item}</button>)}
             </div>
 
             <div className="demo-invest__feed-layout">
                 <section className="demo-invest__feed-stream">
-                    <button type="button" className="demo-invest__opinion-box" onClick={() => openDialog("investOpinion")} data-fp-open="demo-modal-opinion" data-report-id="demo-opinion-trigger" data-report-type="item">
+                    <button type="button" className="demo-invest__opinion-box" onClick={() => openDialog("investOpinion")} data-fp-open="demo-modal-opinion" data-fp-id="demo-opinion-trigger" data-fp-type="item">
                         <span className="demo-invest__avatar demo-invest__avatar--muted">●</span><span>오늘 시장 어떻게 보세요?</span><b>의견 남기기</b>
                     </button>
 
                     {tab === "뉴스" ? (
-                        <div className="demo-invest__news-feed" data-report-id="demo-news-feed" data-report-type="group">
+                        <div className="demo-invest__news-feed" data-fp-id="demo-news-feed" data-fp-type="group">
                             {news.map(([category, title, time], index) => (
-                                <article key={title} data-report-id={`demo-news-card-${index}`} data-report-type="item">
+                                <article key={title} data-fp-id={`demo-news-card-${index}`} data-fp-type="item">
                                     <span>{category}</span><h3>{title}</h3><p>{time} · 토스증권 뉴스룸</p><button type="button" onClick={() => showToast("뉴스 상세 화면을 준비하고 있어요.")}>기사 보기 ›</button>
                                 </article>
                             ))}
                         </div>
                     ) : (
                         <>
-                            <article className="demo-invest__feed-post" data-report-id="demo-feed-post-ai" data-report-type="group">
+                            <article className="demo-invest__feed-post" data-fp-id="demo-feed-post-ai" data-fp-type="group">
                                 <div className="demo-invest__post-head">
                                     <span className="demo-invest__avatar demo-invest__avatar--red">1%</span>
                                     <div><strong>사팔사팔상위일프로</strong> <em>팔로워 부자</em><small>2시간 (수정됨) · SK하이닉스에 남긴 글</small></div>
@@ -78,7 +78,7 @@ export function FeedPage() {
                                 <FeedActions postId="ai" initialLikes={31} comments={2} />
                             </article>
 
-                            <article className="demo-invest__feed-post" data-report-id="demo-feed-post-market" data-report-type="group">
+                            <article className="demo-invest__feed-post" data-fp-id="demo-feed-post-market" data-fp-type="group">
                                 <div className="demo-invest__post-head">
                                     <span className="demo-invest__avatar">🇰🇷</span>
                                     <div><strong>국내주식토론</strong><small>1시간 · 제이투룬님이 남긴 글</small></div>

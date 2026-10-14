@@ -18,7 +18,7 @@ npm install @fivepixels-js/react react react-dom
 
 ## Usage
 
-Add `data-report-id` to target elements and render `<FivePixels />` once on the page.
+Add `data-fp-id` to target elements and render `<FivePixels />` once on the page.
 
 ```tsx
 import { FivePixels } from "@fivepixels-js/react";
@@ -29,8 +29,8 @@ export default function App() {
             <FivePixels project={{ id: "my-app" }} />
 
             <main>
-                <section data-report-id="hero" data-report-type="group">
-                    <button data-report-id="hero-cta">Get started</button>
+                <section data-fp-id="hero" data-fp-type="group">
+                    <button data-fp-id="hero-cta">Get started</button>
                 </section>
             </main>
         </>
@@ -129,8 +129,8 @@ Context partitions: `src/providers/reportContextPartitions.ts`.
 
 | Attribute | Required | Description |
 | --------- | -------- | ----------- |
-| `data-report-id` | Recommended | Element identifier for marker restore. Without it, targets fall back to a CSS selector. |
-| `data-report-type` | | `item` (default) or `group` for section-level targets. |
+| `data-fp-id` | Recommended | Element identifier for marker restore. Without it, targets fall back to a CSS selector. |
+| `data-fp-type` | | `item` (default) or `group` for section-level targets. |
 | `data-fp-view` | | Key for a restorable modal, tab, or other hidden view. |
 | `data-fp-open` | | Trigger that opens the `data-fp-view` with the same key. |
 

@@ -1,6 +1,6 @@
 import type { ReportField, ReportTargetType } from "../../shared/types/report.js";
 export declare const DOT_SIZE = 20;
-export declare const TARGET_SELECTOR = "[data-report-id]";
+export declare const TARGET_SELECTOR = "[data-fp-id]";
 export declare const TARGET_COLOR: Record<ReportTargetType, string>;
 export declare const TARGET_SURFACE: Record<ReportTargetType, string>;
 export declare const FEEDBACK_HIGHLIGHT: {

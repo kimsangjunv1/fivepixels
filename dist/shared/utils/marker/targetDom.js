@@ -9,14 +9,14 @@ export function escapeAttribute(value) {
     return value.split("\\").join("\\\\").split('"').join('\\"');
 }
 export function resolveReportType(element) {
-    return element.dataset.reportType === "group" ? "group" : "item";
+    return element.dataset.fpType === "group" ? "group" : "item";
 }
 export function getFeedbackTargetSelector(reportId, reportType) {
     const escapedId = escapeAttribute(reportId);
     if (reportType === "group") {
-        return `[data-report-id="${escapedId}"][data-report-type="group"]`;
+        return `[data-fp-id="${escapedId}"][data-fp-type="group"]`;
     }
-    return `[data-report-id="${escapedId}"]:not([data-report-type="group"])`;
+    return `[data-fp-id="${escapedId}"]:not([data-fp-type="group"])`;
 }
 export function isFeedbackTargetVisible(element) {
     if ("checkVisibility" in element && typeof element.checkVisibility === "function") {

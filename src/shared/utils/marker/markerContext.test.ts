@@ -42,11 +42,11 @@ describe("resolveDetachedKind", () => {
     it("classifies fixed targets as modal", () => {
         document.body.innerHTML = `
             <div style="position: fixed">
-                <div data-report-id="modal-target">target</div>
+                <div data-fp-id="modal-target">target</div>
             </div>
         `;
 
-        const target = document.querySelector<HTMLElement>('[data-report-id="modal-target"]')!;
+        const target = document.querySelector<HTMLElement>('[data-fp-id="modal-target"]')!;
 
         expect(
             resolveDetachedKind(
@@ -70,7 +70,7 @@ describe("resolveDetachedKind", () => {
 
     it("falls back to hidden for document-flow detached targets", () => {
         const target = document.createElement("section");
-        target.dataset.reportId = "hero";
+        target.dataset.fpId = "hero";
 
         expect(
             resolveDetachedKind(

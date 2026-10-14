@@ -4,7 +4,7 @@ import { indexListItems, relatedEtfs, spxDailyPrices } from "../model/mockMarket
 
 export function IndexDetailPage() {
     return (
-        <div className="demo-invest__index-page" data-report-id="demo-index-page" data-report-type="group">
+        <div className="demo-invest__index-page" data-fp-id="demo-index-page" data-fp-type="group">
             <div className="demo-invest__index-header">
                 <div className="demo-invest__index-title-wrap">
                     <h1>S&amp;P 500</h1>
@@ -14,7 +14,7 @@ export function IndexDetailPage() {
                     </div>
                 </div>
 
-                <div className="demo-invest__index-stats" data-report-id="demo-index-stats" data-report-type="group">
+                <div className="demo-invest__index-stats" data-fp-id="demo-index-stats" data-fp-type="group">
                     {[
                         { label: "거래량", value: "30억 4,136만" },
                         { label: "시가", value: "7,716.74" },
@@ -33,7 +33,7 @@ export function IndexDetailPage() {
 
             <div className="demo-invest__index-layout">
                 <div>
-                    <section className="demo-invest__chart-panel" data-report-id="demo-index-chart" data-report-type="group">
+                    <section className="demo-invest__chart-panel" data-fp-id="demo-index-chart" data-fp-type="group">
                         <div className="demo-invest__chart-toolbar">
                             <div className="demo-invest__chart-tabs">
                                 {["60분", "일", "주", "월", "년"].map((tab, index) => (
@@ -60,7 +60,7 @@ export function IndexDetailPage() {
                         />
                     </section>
 
-                    <section className="demo-invest__insight-locked" data-report-id="demo-index-ai-insight" data-report-type="item">
+                    <section className="demo-invest__insight-locked" data-fp-id="demo-index-ai-insight" data-fp-type="item">
                         <div className="demo-invest__insight-blur">
                             <div className="demo-invest__ai-block-title">
                                 <img src="/demo-invest/icons/sparkle.png" alt="" />
@@ -78,7 +78,7 @@ export function IndexDetailPage() {
                         </div>
                     </section>
 
-                    <section className="demo-invest__daily-table" data-report-id="demo-daily-prices" data-report-type="group">
+                    <section className="demo-invest__daily-table" data-fp-id="demo-daily-prices" data-fp-type="group">
                         <h3>일별 시세</h3>
                         <div className="demo-invest__table-wrap">
                             <table className="demo-invest__table">
@@ -114,7 +114,7 @@ export function IndexDetailPage() {
                 </div>
 
                 <div className="demo-invest__side-column">
-                    <section className="demo-invest__side-card" data-report-id="demo-indices-list" data-report-type="group">
+                    <section className="demo-invest__side-card" data-fp-id="demo-indices-list" data-fp-type="group">
                         <div className="demo-invest__side-tabs">
                             {["지수·환율", "채권", "원자재", "가상자산"].map((tab, index) => (
                                 <button
@@ -138,7 +138,7 @@ export function IndexDetailPage() {
                         ))}
                     </section>
 
-                    <section className="demo-invest__side-card" data-report-id="demo-related-etfs" data-report-type="group">
+                    <section className="demo-invest__side-card" data-fp-id="demo-related-etfs" data-fp-type="group">
                         <h3 style={{ margin: "0 0 12px", fontSize: 15 }}>S&amp;P 500 관련 ETF</h3>
                         {relatedEtfs.map((etf) => (
                             <div key={etf.code} className="demo-invest__etf-item">

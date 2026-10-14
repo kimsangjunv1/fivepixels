@@ -51,11 +51,11 @@ export function ScreenerPage() {
     const filterOptions = openFilter === "시장" ? ["코스피", "코스닥", "나스닥"] : openFilter === "산업" ? ["반도체", "보험", "자동차부품"] : ["1천억원 이상", "1조원 이상", "10조원 이상"];
 
     return (
-        <div className="demo-invest__screener-page" data-report-id="demo-screener-page" data-report-type="group">
+        <div className="demo-invest__screener-page" data-fp-id="demo-screener-page" data-fp-type="group">
             <aside className="demo-invest__screener-nav">
                 <h2>주식 골라보기 목록</h2>
                 <small>내가 만든</small>
-                <button type="button" className="demo-invest__make-preset" onClick={() => openDialog("investFilter")} data-fp-open="demo-modal-filter" data-report-id="demo-create-screener" data-report-type="item">⊕ 직접 만들기</button>
+                <button type="button" className="demo-invest__make-preset" onClick={() => openDialog("investFilter")} data-fp-open="demo-modal-filter" data-fp-id="demo-create-screener" data-fp-type="item">⊕ 직접 만들기</button>
                 <small>토스증권이 만든</small>
                 <ul>
                     {presets.map((preset, index) => (
@@ -67,13 +67,13 @@ export function ScreenerPage() {
                                 onMouseEnter={() => setHoveredPreset(index)}
                                 onMouseLeave={() => setHoveredPreset(null)}
                                 onFocus={() => setHoveredPreset(index)}
-                                data-report-id={`demo-screener-preset-${index}`}
-                                data-report-type="item"
+                                data-fp-id={`demo-screener-preset-${index}`}
+                                data-fp-type="item"
                             >{preset}{index < 2 || index === 3 ? <em>인기</em> : null}</button>
                         </li>
                     ))}
                 </ul>
-                {hoveredPreset !== null ? <div className="demo-invest__preset-tooltip" data-report-id="demo-preset-tooltip" data-report-type="item">
+                {hoveredPreset !== null ? <div className="demo-invest__preset-tooltip" data-fp-id="demo-preset-tooltip" data-fp-type="item">
                     <strong>{presets[hoveredPreset]}</strong>
                     <p>{hoveredPreset === 8 ? "기관과 외국인이 동시에 사들이는 주식" : "토스증권 데이터로 찾은 조건에 맞는 주식"}</p>
                     <b>주가등락률 · 하루 전 보다 · 0% 이상</b>
@@ -88,9 +88,9 @@ export function ScreenerPage() {
                     <p>{activePreset === 0 ? "일주일 연속 상승세를 보이는 주식" : "선택한 투자 조건을 만족하는 주식"}</p>
                 </header>
                 <div className="demo-invest__screener-filters">
-                    <button type="button" onClick={() => openDialog("investFilter")} data-fp-open="demo-modal-filter" data-report-id="demo-add-filter" data-report-type="item">☷ 필터추가</button>
+                    <button type="button" onClick={() => openDialog("investFilter")} data-fp-open="demo-modal-filter" data-fp-id="demo-add-filter" data-fp-type="item">☷ 필터추가</button>
                     <button type="button" className="is-blue">🇰🇷 국내⌄</button>
-                    {["시장", "산업", "시가총액"].map((filter) => <div key={filter} className="demo-invest__screener-filter-wrap"><button type="button" className={openFilter === filter ? "is-open" : undefined} onClick={() => setOpenFilter((current) => current === filter ? null : filter)} aria-expanded={openFilter === filter}>{filter}⌄</button>{openFilter === filter ? <div className="demo-invest__compact-popover demo-invest__screener-popover" data-report-id={`demo-${filter}-popover`} data-report-type="group">{filterOptions.map((option) => <button key={option} type="button" onClick={() => { setOpenFilter(null); showToast(`${option} 필터를 적용했어요.`); }}>{option}</button>)}</div> : null}</div>)}
+                    {["시장", "산업", "시가총액"].map((filter) => <div key={filter} className="demo-invest__screener-filter-wrap"><button type="button" className={openFilter === filter ? "is-open" : undefined} onClick={() => setOpenFilter((current) => current === filter ? null : filter)} aria-expanded={openFilter === filter}>{filter}⌄</button>{openFilter === filter ? <div className="demo-invest__compact-popover demo-invest__screener-popover" data-fp-id={`demo-${filter}-popover`} data-fp-type="group">{filterOptions.map((option) => <button key={option} type="button" onClick={() => { setOpenFilter(null); showToast(`${option} 필터를 적용했어요.`); }}>{option}</button>)}</div> : null}</div>)}
                     <button type="button" className="is-blue">주가등락률 · 1주일 전 보다 · 0% 이상</button>
                     <button type="button" className="is-blue">주가 연속상승 · 5일 이상 연속⌄</button>
                 </div>
@@ -100,7 +100,7 @@ export function ScreenerPage() {
                         <span>카테고리</span><button type="button" onClick={() => setSortKey((current) => current === "cap" ? null : "cap")}>시가총액 ↕</button><button type="button" onClick={() => setSortKey((current) => current === "volume" ? null : "volume")}>거래량 ↕</button><span>애널리스트 분석</span>
                     </div>
                     {displayedRows.map((row, index) => (
-                        <button key={row.name} type="button" className={`demo-invest__screener-row${selectedRow === row.name ? " is-selected" : ""}`} role="row" onClick={() => setSelectedRow(row.name)} data-report-id={`demo-screener-row-${index}`} data-report-type="item">
+                        <button key={row.name} type="button" className={`demo-invest__screener-row${selectedRow === row.name ? " is-selected" : ""}`} role="row" onClick={() => setSelectedRow(row.name)} data-fp-id={`demo-screener-row-${index}`} data-fp-type="item">
                             <span className="demo-invest__screener-name">
                                 <i>♥</i><b>{index + 1}</b><em style={{ background: row.color }}>{row.name.slice(0, 2)}</em><strong>{row.name}</strong>
                             </span>

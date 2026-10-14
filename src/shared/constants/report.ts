@@ -5,7 +5,7 @@ import { getDefaultFields } from "@/shared/i18n/index.js";
 // Marker base dot size used for hitbox + positioning math.
 // Updated from 14px to 20px to make the default marker size visibly larger.
 export const DOT_SIZE = 20;
-export const TARGET_SELECTOR = "[data-report-id]";
+export const TARGET_SELECTOR = "[data-fp-id]";
 
 export const TARGET_COLOR: Record<ReportTargetType, string> = {
     group: "#0ed1b4",

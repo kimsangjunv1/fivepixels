@@ -21,7 +21,7 @@ export function HomePage() {
     );
 
     return (
-        <div data-report-id="demo-home-page" data-report-type="group">
+        <div data-fp-id="demo-home-page" data-fp-type="group">
             <MarketIndexBar />
 
             <div className={`demo-invest__home-grid${summaryCollapsed ? " is-summary-collapsed" : ""}`}>

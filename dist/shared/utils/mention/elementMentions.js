@@ -123,9 +123,9 @@ export function findElementMentionCandidates(query, limit = MAX_CANDIDATES) {
     const normalizedQuery = normalizeSearch(query);
     const matches = [];
     const seen = new Set();
-    // Prioritize tagged feedback targets (data-report-id).
+    // Prioritize tagged feedback targets (data-fp-id).
     for (const element of queryPageSelectorAll(TARGET_SELECTOR).filter(isHtmlElement)) {
-        const reportId = element.dataset.reportId?.trim() ?? "";
+        const reportId = element.dataset.fpId?.trim() ?? "";
         const visibleLabel = collectVisibleLabel(element);
         const label = visibleLabel || reportId;
         pushCandidate(matches, seen, buildElementMentionFromElement(element, label), normalizedQuery);
@@ -136,7 +136,7 @@ export function findElementMentionCandidates(query, limit = MAX_CANDIDATES) {
     let node = walker.nextNode();
     while (node) {
         const element = node;
-        if (!element.dataset.reportId) {
+        if (!element.dataset.fpId) {
             const label = collectVisibleLabel(element);
             if (label) {
                 pushCandidate(matches, seen, buildElementMentionFromElement(element, label), normalizedQuery);
@@ -159,7 +159,7 @@ export function findElementMentionCandidates(query, limit = MAX_CANDIDATES) {
 }
 export function resolveMentionElement(mention) {
     if (mention.reportId) {
-        const tagged = queryPageSelector(`[data-report-id="${CSS.escape(mention.reportId)}"]`);
+        const tagged = queryPageSelector(`[data-fp-id="${CSS.escape(mention.reportId)}"]`);
         if (isHtmlElement(tagged)) {
             return tagged;
         }

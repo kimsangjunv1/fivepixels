@@ -10,13 +10,13 @@ const tagClass: Record<PulseTag, string> = {
 
 function KanbanCardView({ card }: { card: KanbanCard }) {
     return (
-        <article className="pulse-kanban__card" data-report-id={card.id} data-report-type="item">
+        <article className="pulse-kanban__card" data-fp-id={card.id} data-fp-type="item">
             <h4 className="pulse-kanban__card-title">{card.title}</h4>
             {card.description ? (
                 <div
                     className="pulse-kanban__card-desc"
-                    data-report-id={`${card.id}-desc`}
-                    data-report-type="item"
+                    data-fp-id={`${card.id}-desc`}
+                    data-fp-type="item"
                 >
                     {card.description.split("\n").map((line, index) => (
                         <span key={`${card.id}-line-${index}`}>
@@ -44,13 +44,13 @@ export function PulseKanban() {
     const { kanbanColumns } = useLandingProvider();
 
     return (
-        <section className="pulse-kanban" data-report-id="pulse-kanban" data-report-type="group">
+        <section className="pulse-kanban" data-fp-id="pulse-kanban" data-fp-type="group">
             {kanbanColumns.map((column) => (
                 <div
                     key={column.id}
                     className="pulse-kanban__column"
-                    data-report-id={column.id}
-                    data-report-type="group"
+                    data-fp-id={column.id}
+                    data-fp-type="group"
                 >
                     <header className="pulse-kanban__column-header">
                         <span>{column.title}</span>
